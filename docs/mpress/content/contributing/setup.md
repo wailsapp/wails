@@ -13,7 +13,7 @@ This guide walks you through setting up a complete development environment for w
 
 ### Go Development
 
-1. **Install Go 1.25 or later:**
+1. **Install Go 1.26 or later:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation

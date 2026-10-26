@@ -128,7 +128,7 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | `string` by default; `Date` with `-time-type=Date` |
 | `error` | Exception (thrown) |
 
 ### 3. Frontend Call (Runtime)
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### Errors

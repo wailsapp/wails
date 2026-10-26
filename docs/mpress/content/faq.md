@@ -26,7 +26,7 @@ Run `wails3 doctor` at any time to check your system and get platform-specific i
 
 ### What do I need to get started?
 
-- Go 1.25 or newer
+- Go 1.26 or newer
 - Node.js and npm (for the frontend build)
 - Platform toolchain: WebView2 on Windows (preinstalled on 10/11), Xcode Command Line Tools on macOS, `gcc` plus GTK/WebKit development packages on Linux
 

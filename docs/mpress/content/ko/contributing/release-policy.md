@@ -13,7 +13,7 @@ Wails v3 릴리스는 **기능이 아닌 일정에 따라** 진행됩니다. `v3
 
 | 릴리스 | 태그 | 주기 | GitHub 릴리스 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 나이틀리 | `v3.<next>.0-nightly.<YYYYMMDD>`(UTC 날짜, 같은 날 다시 실행하면 `.N` 추가) | 자동으로 매일 실행하며, `UNRELEASED_CHANGELOG.md`에 내용이 있을 때만 릴리스 | 시험판 릴리스, Latest가 **아님** | `v`을 제외하면 같은 버전, dist-tag `next` |
+| 나이틀리 | `v3.<next>.0-nightly.<YYYYMMDD>`(UTC 날짜, 같은 날 다시 실행하면 `.N` 추가) | 자동으로 매일 실행하며, `UNRELEASED_CHANGELOG.md`에 내용이 있을 때만 릴리스 | 시험판 릴리스, Latest가 **아님** | `v`을 제외하면 같은 버전, dist-tag `nightly` |
 | 위클리 | `v3.<next>.0` | 자동으로 일요일 20:00 Australia/Sydney에 실행 **(요일 미확정)** | 정식 릴리스, Latest **(결정 대기 중)** | 같은 버전, dist-tag `latest` |
 | 핫픽스 | `v3.<current>.<N>`, `N > 0` | 드물게 수동으로 실행 | 정식 릴리스, Latest | 같은 버전, dist-tag `latest` |
 | 메이저 | `v4.0.0` | 호환성을 깨는 변경이 있을 때만 실행 | 정식 릴리스 | `latest` |
@@ -49,7 +49,7 @@ CLI, Go 모듈 및 npm 패키지 `@wailsio/runtime`에는 `v3/internal/version/v
 | **재현 가능(권장)** | `go.mod`, CI 및 문서에서 정확한 태그 `v3.1.0`으로 고정 |
 | 나이틀리 | 정확한 태그(`@v3.2.0-nightly.20261102`), `wails3 update cli -nightly` |
 | 종류와 관계없이 최신 빌드 | `wails3 update cli -pre` |
-| 런타임 npm 패키지 | `@wailsio/runtime`(`latest` = 위클리/핫픽스, `next` = 나이틀리) |
+| 런타임 npm 패키지 | `@wailsio/runtime`(`latest` = 위클리/핫픽스, `nightly` = 나이틀리) |
 
 이 방식이 작동하는 이유는 Go가 `@latest`을 **시험판 접미사가 없는** 가장 높은 태그로 해석하고, 릴리스가 없을 때만 시험판 릴리스를 고려하기 때문입니다. GitHub의 "pre-release" 체크박스는 Go 프록시에서 확인할 수 없으므로, 나이틀리는 이 체크박스에 의존하지 않고 semver 시험판 접미사를 사용합니다. 프로덕션에서는 항상 버전을 고정하십시오.
 

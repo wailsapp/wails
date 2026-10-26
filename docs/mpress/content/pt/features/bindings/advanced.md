@@ -1,17 +1,17 @@
 ---
-title: "Vinculação avançada"
-description: "Técnicas avançadas de vinculação, incluindo diretivas, injeção de código e IDs personalizados"
+title: "Binding avançado"
+description: "Técnicas avançadas de binding, incluindo diretivas, injeção de código e IDs personalizados"
 slug: "features/bindings/advanced"
 sourcePath: "features/bindings/advanced.md"
 ---
 
-Este guia aborda técnicas avançadas para personalizar e otimizar o processo de geração de vinculações no Wails v3.
+Este guia aborda técnicas avançadas para personalizar e otimizar o processo de geração de bindings no Wails v3.
 
 ## Personalização do código gerado com diretivas
 
 ### Injeção de código personalizado
 
-A diretiva `//wails:inject` permite injetar código JavaScript/TypeScript personalizado nas vinculações geradas:
+A diretiva `//wails:inject` permite injetar código JavaScript/TypeScript personalizado nos bindings gerados:
 
 ```go
 //wails:inject console.log("Hello from Wails!");
@@ -33,18 +33,18 @@ Você também pode usar a injeção condicional para direcionar o código a form
 
 ### Inclusão de arquivos adicionais
 
-A diretiva `//wails:include` permite incluir arquivos adicionais com as vinculações geradas:
+A diretiva `//wails:include` permite incluir arquivos adicionais nos bindings gerados:
 
 ```go
 //wails:include js/*.js
 package mypackage
 ```
 
-Essa diretiva geralmente é usada nos comentários de documentação do pacote para incluir arquivos JavaScript/TypeScript adicionais com as vinculações geradas.
+Essa diretiva costuma ser usada nos comentários de documentação do pacote para incluir arquivos JavaScript/TypeScript adicionais nos bindings gerados.
 
 ### Marcação de tipos e métodos internos
 
-A diretiva `//wails:internal` marca um tipo ou método como interno, impedindo que ele seja exportado para o frontend:
+A diretiva `//wails:internal` impede a exportação de um tipo ou método nos bindings JavaScript/TypeScript gerados:
 
 ```go
 //wails:internal
@@ -56,18 +56,18 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-Isso é útil para tipos e métodos usados apenas internamente pelo seu código Go e que não devem ser expostos ao frontend.
+Isso controla o SDK gerado, não o acesso em tempo de execução. Em builds normais, os métodos exportados de serviços Go ainda podem ser registrados e chamados por meio do runtime, mesmo quando não estão presentes no SDK gerado. Mantenha as operações privadas não exportadas ou em um tipo sem binding e aplique a autorização nos métodos expostos.
 
 ### Como ignorar métodos
 
-A diretiva `//wails:ignore` faz com que um método seja completamente ignorado durante a geração de vinculações:
+A diretiva `//wails:ignore` ignora completamente um método durante a geração de bindings:
 
 ```go
 //wails:ignore
 func (s *MyService) IgnoredMethod() {}
 ```
 
-Isso é semelhante a `//wails:internal`, mas ignora completamente o método em vez de marcá-lo como interno.
+Isso omite o wrapper gerado. Assim como `//wails:internal`, essa diretiva não constitui um limite de controle de acesso para métodos exportados de serviços Go.
 
 ### IDs de método personalizados
 
@@ -84,7 +84,7 @@ Isso pode ser útil para manter a compatibilidade ao refatorar o código.
 
 ### Structs aninhadas
 
-O gerador de vinculações processa structs aninhadas automaticamente:
+O gerador de bindings processa structs aninhadas automaticamente:
 
 ```go
 type Address struct {
@@ -137,11 +137,11 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-Em JavaScript, maps são representados como objetos e slices, como arrays. Em TypeScript, maps são representados como `Record<K, V>` e slices, como `T[]`.
+Em JavaScript, maps são representados como objetos e slices como arrays. Em TypeScript, maps são representados como `Record<K, V>` e slices como `T[]`.
 
 ### Tipos genéricos
 
-O gerador de vinculações oferece suporte a tipos genéricos:
+O gerador de bindings oferece suporte a tipos genéricos:
 
 ```go
 type Result[T any] struct {
@@ -184,7 +184,7 @@ export class Result<T> {
 
 ### Interfaces
 
-O gerador de vinculações pode gerar interfaces TypeScript em vez de classes usando o sinalizador `-i`:
+O gerador de bindings pode gerar interfaces TypeScript em vez de classes usando a opção `-i`:
 
 ```bash
 wails3 generate bindings -ts -i
@@ -200,17 +200,17 @@ export interface Person {
 }
 ```
 
-## Otimização da geração de vinculações
+## Otimização da geração de bindings
 
 ### Uso de nomes em vez de IDs
 
-Por padrão, o gerador de vinculações usa IDs baseados em hash para chamadas de métodos. Você pode usar o sinalizador `-names` para usar nomes em vez deles:
+Por padrão, o gerador de bindings usa IDs baseados em hash nas chamadas de métodos. Você pode usar a opção `-names` para usar nomes em vez disso:
 
 ```bash
 wails3 generate bindings -names
 ```
 
-Isso gerará um código que chama o método vinculado pelo nome **totalmente qualificado** (`<package>.<Service>.<Method>`) e usa nomes de parâmetros posicionais `$0`, `$1`, …:
+Isso gerará código que chama o método vinculado pelo nome **totalmente qualificado** (`<package>.<Service>.<Method>`) e usa os nomes posicionais de parâmetros `$0`, `$1`, …:
 
 ```javascript
 export function Greet($0) {
@@ -219,11 +219,11 @@ export function Greet($0) {
 }
 ```
 
-Isso pode tornar o código gerado mais legível e fácil de depurar, mas talvez seja um pouco menos eficiente.
+Isso pode tornar o código gerado mais legível e mais fácil de depurar, mas pode ser um pouco menos eficiente.
 
-### Empacotamento do runtime
+### Inclusão do runtime no pacote
 
-Por padrão, o código gerado importa o runtime do Wails do pacote npm `@wailsio/runtime`. Você pode usar o sinalizador `-b` para empacotar o runtime com o código gerado:
+Por padrão, o código gerado importa o runtime do Wails do pacote npm `@wailsio/runtime`. Você pode usar a opção `-b` para incluir o runtime no código gerado:
 
 ```bash
 wails3 generate bindings -b
@@ -233,7 +233,7 @@ Isso incluirá o código do runtime diretamente nos arquivos gerados, eliminando
 
 ### Desativação de arquivos de índice
 
-Se você não precisar dos arquivos de índice, poderá usar o sinalizador `-noindex` para desativar a geração deles:
+Se você não precisar dos arquivos de índice, poderá usar a opção `-noindex` para desativar sua geração:
 
 ```bash
 wails3 generate bindings -noindex
@@ -241,7 +241,7 @@ wails3 generate bindings -noindex
 
 Isso pode ser útil se você preferir importar serviços e modelos diretamente dos respectivos arquivos.
 
-## Exemplos reais
+## Exemplos práticos
 
 ### Serviço de autenticação
 
@@ -338,4 +338,4 @@ Veja um exemplo de injeção condicional de código para diferentes formatos de 
 type Service struct{}
 ```
 
-Isso injeta códigos diferentes nas saídas JavaScript e TypeScript, fornecendo anotações de tipo adequadas para cada linguagem.
+Isso injeta códigos diferentes nas saídas JavaScript e TypeScript, fornecendo as anotações de tipo adequadas para cada linguagem.

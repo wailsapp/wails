@@ -34,8 +34,8 @@ This is a selection of contributions, not an exhaustive list. Thank you to every
 
 ## Sponsors
 
-<object type="image/svg+xml" data="https://wails.io/img/sponsors.svg" aria-label="Sponsors" style="margin: auto; width: 100%; max-width: 800px" >
-  <img src="https://wails.io/img/sponsors.svg" alt="Sponsors" style="width: 100%" />
+<object type="image/svg+xml" data="/img/sponsors.svg" aria-label="Sponsors" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="/img/sponsors.svg" alt="Sponsors" style="width: 100%" />
 </object>
 
 Special thanks:
@@ -53,8 +53,8 @@ Special thanks:
 
 ## Contributors
 
-<object type="image/svg+xml" data="https://wails.io/img/contributors.svg" aria-label="Wails contributors" style="margin: auto; width: 100%; max-width: 800px" >
-  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style="width: 100%" />
+<object type="image/svg+xml" data="/img/contributors.svg" aria-label="Wails contributors" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="/img/contributors.svg" alt="Wails contributors" style="width: 100%" />
 </object>
 
 ## Special Mentions

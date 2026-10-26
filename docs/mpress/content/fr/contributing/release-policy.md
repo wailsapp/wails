@@ -13,7 +13,7 @@ Les publications de Wails v3 suivent un **calendrier, et non les fonctionnalité
 
 | Publication | Tag | Fréquence | Publication GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nocturne | `v3.<next>.0-nightly.<YYYYMMDD>` (date UTC ; `.N` ajouté en cas de nouvelle exécution le même jour) | automatique, quotidienne, uniquement lorsque `UNRELEASED_CHANGELOG.md` contient des éléments | préversion, **pas** Latest | même version sans `v`, dist-tag `next` |
+| Nocturne | `v3.<next>.0-nightly.<YYYYMMDD>` (date UTC ; `.N` ajouté en cas de nouvelle exécution le même jour) | automatique, quotidienne, uniquement lorsque `UNRELEASED_CHANGELOG.md` contient des éléments | préversion, **pas** Latest | même version sans `v`, dist-tag `nightly` |
 | Hebdomadaire | `v3.<next>.0` | automatique, le dimanche 20:00, heure d’Australia/Sydney **(jour non confirmé)** | publication normale, Latest **(décision en attente)** | même version, dist-tag `latest` |
 | Correctif urgent | `v3.<current>.<N>`, `N > 0` | rare, manuelle | publication normale, Latest | même version, dist-tag `latest` |
 | Majeure | `v4.0.0` | uniquement pour les changements incompatibles | publication normale | `latest` |
@@ -49,7 +49,7 @@ Une version hebdomadaire est toujours classée au-dessus de toutes les versions 
 | **Reproductible (recommandé)** | épinglez un tag exact : `v3.1.0` dans `go.mod`, l’intégration continue et la documentation |
 | Une version nocturne | son tag exact (`@v3.2.0-nightly.20261102`), ou `wails3 update cli -nightly` |
 | Build la plus récente, quel que soit son type | `wails3 update cli -pre` |
-| Paquet npm du runtime | `@wailsio/runtime` (`latest` = hebdomadaire/correctif urgent, `next` = nocturne) |
+| Paquet npm du runtime | `@wailsio/runtime` (`latest` = hebdomadaire/correctif urgent, `nightly` = nocturne) |
 
 Pourquoi cela fonctionne : Go résout `@latest` vers le tag le plus élevé **sans suffixe de préversion** et ne tient compte des préversions que lorsqu’aucune publication n’existe. La case « pre-release » de GitHub est invisible pour le proxy Go ; les versions nocturnes portent donc un suffixe de préversion semver au lieu de s’appuyer sur cette case. Épinglez toujours les versions en production.
 

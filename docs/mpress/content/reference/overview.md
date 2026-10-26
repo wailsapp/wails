@@ -26,10 +26,10 @@ Use this section to look up Wails types, methods, options and commands while wor
 @details{title="Go API Conventions - For developers new to Go"}
 ### Naming
 
-- <strong></strong>Types<strong></strong>: PascalCase (e.g., `WebviewWindow`)
-- <strong></strong>Methods<strong></strong>: PascalCase (e.g., `SetTitle()`)
-- <strong></strong>Options<strong></strong>: PascalCase structs (e.g., `WindowOptions`)
-- <strong></strong>Constants<strong></strong>: PascalCase (e.g., `WindowStartStateMaximised`)
+- <strong>Types</strong>: PascalCase (e.g., `WebviewWindow`)
+- <strong>Methods</strong>: PascalCase (e.g., `SetTitle()`)
+- <strong>Options</strong>: PascalCase structs (e.g., `WindowOptions`)
+- <strong>Constants</strong>: PascalCase (e.g., `WindowStartStateMaximised`)
 
 #### Error Handling
 

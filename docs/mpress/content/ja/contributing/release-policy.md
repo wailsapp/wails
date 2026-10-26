@@ -13,7 +13,7 @@ Wails v3 は**機能ではなく、スケジュールに基づいて**リリー�
 
 | リリース | タグ | 頻度 | GitHub リリース | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| ナイトリー | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC の日付。同じ日に再実行した場合は `.N` を付加） | 自動、毎日。`UNRELEASED_CHANGELOG.md`に内容がある場合のみ | プレリリース。Latest には**しない** | `v`を除いた同じバージョン、dist-tag は `next` |
+| ナイトリー | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC の日付。同じ日に再実行した場合は `.N` を付加） | 自動、毎日。`UNRELEASED_CHANGELOG.md`に内容がある場合のみ | プレリリース。Latest には**しない** | `v`を除いた同じバージョン、dist-tag は `nightly` |
 | ウィークリー | `v3.<next>.0` | 自動、日曜日の 20:00（Australia/Sydney）**（曜日は未確定）** | 通常リリース、Latest **（決定保留中）** | 同じバージョン、dist-tag は `latest` |
 | ホットフィックス | `v3.<current>.<N>`, `N > 0` | まれ、手動 | 通常リリース、Latest | 同じバージョン、dist-tag は `latest` |
 | メジャー | `v4.0.0` | 破壊的変更がある場合のみ | 通常リリース | `latest` |
@@ -49,7 +49,7 @@ CLI、Go モジュール、npm パッケージ `@wailsio/runtime` は、`v3/inte
 | **再現可能（推奨）** | `go.mod`、CI、ドキュメントで正確なタグ `v3.1.0` に固定 |
 | ナイトリー | 正確なタグ（`@v3.2.0-nightly.20261102`）、`wails3 update cli -nightly` |
 | 種類を問わない最新ビルド | `wails3 update cli -pre` |
-| ランタイム npm パッケージ | `@wailsio/runtime`（`latest` = ウィークリー／ホットフィックス、`next` = ナイトリー） |
+| ランタイム npm パッケージ | `@wailsio/runtime`（`latest` = ウィークリー／ホットフィックス、`nightly` = ナイトリー） |
 
 この仕組みが成り立つ理由は、Go が `@latest` を、**プレリリースサフィックスのない**最も大きいタグに解決し、リリースが存在しない場合にのみプレリリースを考慮するためです。GitHub の「pre-release」チェックボックスは Go プロキシから認識できないため、ナイトリーはこのチェックボックスに依存せず、semver のプレリリースサフィックスを付けます。本番環境では必ずバージョンを固定してください。
 

@@ -21,7 +21,7 @@ The v3.0.0 compatibility contract covers desktop applications:
 | macOS | Intel and Apple Silicon | The macOS and WebKit versions documented in the installation guide |
 | Linux | amd64 and arm64 | GTK4 + WebKitGTK 6.0 by default; GTK3 + WebKit2GTK 4.1 remains a `-tags gtk3` legacy option through v3.0.x and is removed in v3.1 |
 
-All targets require Go 1.25 or later for development. Android and iOS support remains experimental and is outside the stable desktop compatibility contract.
+All targets require Go 1.26 or later for development. Android and iOS support remains experimental and is outside the stable desktop compatibility contract.
 
 ## How You Can Contribute
 

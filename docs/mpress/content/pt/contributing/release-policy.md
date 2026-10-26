@@ -13,7 +13,7 @@ O Wails v3 faz lançamentos com base em um **cronograma, não em funcionalidades
 
 | Lançamento | Tag | Periodicidade | Lançamento no GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (data UTC; `.N` é acrescentado se houver uma nova execução no mesmo dia) | automatizado, diariamente, somente quando `UNRELEASED_CHANGELOG.md` contém algo | pré-lançamento, **não** marcado como Latest | mesma versão sem `v`, dist-tag `next` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (data UTC; `.N` é acrescentado se houver uma nova execução no mesmo dia) | automatizado, diariamente, somente quando `UNRELEASED_CHANGELOG.md` contém algo | pré-lançamento, **não** marcado como Latest | mesma versão sem `v`, dist-tag `nightly` |
 | Semanal | `v3.<next>.0` | automatizado, domingo às 20:00 no fuso Australia/Sydney **(dia não confirmado)** | lançamento normal, marcado como Latest **(decisão pendente)** | mesma versão, dist-tag `latest` |
 | Correção emergencial | `v3.<current>.<N>`, `N > 0` | raro, manual | lançamento normal, marcado como Latest | mesma versão, dist-tag `latest` |
 | Principal | `v4.0.0` | somente para alterações incompatíveis | lançamento normal | `latest` |
@@ -49,7 +49,7 @@ Um lançamento semanal sempre fica acima de todos os nightlies com o mesmo núme
 | **Reproduzível (recomendado)** | fixe uma tag exata: `v3.1.0` em `go.mod`, na CI e na documentação |
 | Um nightly | sua tag exata (`@v3.2.0-nightly.20261102`), `wails3 update cli -nightly` |
 | Compilação mais recente de qualquer tipo | `wails3 update cli -pre` |
-| Pacote npm do runtime | `@wailsio/runtime` (`latest` = semanal/correção emergencial, `next` = nightly) |
+| Pacote npm do runtime | `@wailsio/runtime` (`latest` = semanal/correção emergencial, `nightly` = nightly) |
 
 Por que isso funciona: o Go resolve `@latest` como a tag mais alta **sem um sufixo de pré-lançamento** e só considera pré-lançamentos quando não existe nenhum lançamento. A caixa de seleção "pre-release" do GitHub não é visível para o proxy do Go; portanto, os nightlies usam um sufixo de pré-lançamento semver em vez de depender dela. Sempre fixe a versão em produção.
 

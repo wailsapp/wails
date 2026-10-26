@@ -13,7 +13,7 @@ Thank you for your interest in contributing to Wails! This guide will help you m
 
 Before you begin, ensure you have:
 
-- **Go 1.25+** installed ([download](https://go.dev/dl/))
+- **Go 1.26+** installed ([download](https://go.dev/dl/))
 - **Node.js 20+** and **npm** ([download](https://nodejs.org/))
 - **Git** configured with your GitHub account
 - Basic familiarity with Go and JavaScript/TypeScript

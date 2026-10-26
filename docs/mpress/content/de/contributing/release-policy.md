@@ -13,7 +13,7 @@ Wails v3 veröffentlicht **zeitgesteuert, nicht funktionsgesteuert**. Nach der `
 
 | Release | Tag | Rhythmus | GitHub-Release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC-Datum; bei erneuter Ausführung am selben Tag wird `.N` angehängt) | automatisiert, täglich, nur wenn `UNRELEASED_CHANGELOG.md` Inhalt enthält | Pre-Release, **nicht** Latest | dieselbe Version ohne `v`, Dist-Tag `next` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC-Datum; bei erneuter Ausführung am selben Tag wird `.N` angehängt) | automatisiert, täglich, nur wenn `UNRELEASED_CHANGELOG.md` Inhalt enthält | Pre-Release, **nicht** Latest | dieselbe Version ohne `v`, Dist-Tag `nightly` |
 | Weekly | `v3.<next>.0` | automatisiert, sonntags um 20:00 Uhr Australia/Sydney **(Tag nicht bestätigt)** | reguläres Release, Latest **(Entscheidung ausstehend)** | dieselbe Version, Dist-Tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | selten, manuell | reguläres Release, Latest | dieselbe Version, Dist-Tag `latest` |
 | Major | `v4.0.0` | nur bei inkompatiblen Änderungen | reguläres Release | `latest` |
@@ -49,7 +49,7 @@ Ein Weekly wird immer oberhalb aller Nightlies mit derselben Versionsnummer eins
 | **Reproduzierbar (empfohlen)** | einen exakten Tag festschreiben: `v3.1.0` in `go.mod`, CI und Dokumentation |
 | Ein Nightly | dessen exakter Tag (`@v3.2.0-nightly.20261102`), `wails3 update cli -nightly` |
 | Neuester Build beliebiger Art | `wails3 update cli -pre` |
-| Runtime-npm-Paket | `@wailsio/runtime` (`latest` = Weekly/Hotfix, `next` = Nightly) |
+| Runtime-npm-Paket | `@wailsio/runtime` (`latest` = Weekly/Hotfix, `nightly` = Nightly) |
 
 Warum dies funktioniert: Go löst `@latest` zum höchsten Tag **ohne Pre-Release-Suffix** auf und berücksichtigt Pre-Releases nur, wenn kein Release vorhanden ist. Das GitHub-Kontrollkästchen „pre-release“ ist für den Go-Proxy nicht sichtbar. Daher tragen Nightlies einen SemVer-Pre-Release-Suffix, statt sich darauf zu verlassen. Schreiben Sie Versionen in Produktionsumgebungen immer fest.
 

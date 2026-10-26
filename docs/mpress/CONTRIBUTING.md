@@ -11,14 +11,14 @@ Fork `wailsapp/wails`, then create your contribution branch from
 
 ## Quick start
 
-Install **M-Press v1.0.19** from the
-[release archives](https://github.com/leaanthony/mpress/releases/tag/v1.0.19).
+Install the **latest stable M-Press release** from the
+[release archives](https://github.com/leaanthony/mpress/releases/latest), matching the repository build script.
 The walkthrough explains archive checksums, extraction and PATH setup. No Go or
-Node.js is needed when using the executable. Alternatively, with Go 1.26.6 or
+Node.js is needed when using the executable. Alternatively, with Go 1.26.10 or
 later (or automatic toolchain selection):
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
+go install github.com/leaanthony/mpress/cmd/mpress@latest
 mpress version
 ```
 

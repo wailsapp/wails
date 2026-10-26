@@ -13,7 +13,7 @@ Wails v3依**固定時程，而非依功能**發布版本。在`v3.0.0`基準版
 
 | 版本類型 | 標籤 | 發布頻率 | GitHub 發布版本 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 夜間版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若同一天重新執行，則附加`.N`） | 每日自動執行，僅在`UNRELEASED_CHANGELOG.md`有內容時發布 | 預發布版本，**不會**標為 Latest | 相同版本但不含`v`，dist-tag 為`next` |
+| 夜間版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若同一天重新執行，則附加`.N`） | 每日自動執行，僅在`UNRELEASED_CHANGELOG.md`有內容時發布 | 預發布版本，**不會**標為 Latest | 相同版本但不含`v`，dist-tag 為`nightly` |
 | 每週版 | `v3.<next>.0` | 於 Australia/Sydney 時區星期日20:00自動執行<strong>（日期尚未確認）</strong> | 一般發布版本，標為 Latest **（決策待定）** | 相同版本，dist-tag 為`latest` |
 | 緊急修補版 | `v3.<current>.<N>`, `N > 0` | 很少發布，手動執行 | 一般發布版本，標為 Latest | 相同版本，dist-tag 為`latest` |
 | 主要版本 | `v4.0.0` | 僅用於破壞性變更 | 一般發布版本 | `latest` |
@@ -49,7 +49,7 @@ CLI、Go 模組與 npm 套件`@wailsio/runtime`採用**相同版本**，取自`v
 | **可重現（建議）** | 固定確切標籤：在`go.mod`、CI 與文件中使用`v3.1.0` |
 | 夜間版 | 使用其確切標籤（`@v3.2.0-nightly.20261102`）、`wails3 update cli -nightly` |
 | 任何類型的最新建置 | `wails3 update cli -pre` |
-| Runtime npm 套件 | `@wailsio/runtime`（`latest` = 每週版／緊急修補版，`next` = 夜間版） |
+| Runtime npm 套件 | `@wailsio/runtime`（`latest` = 每週版／緊急修補版，`nightly` = 夜間版） |
 
 其原理如下：Go 會將`@latest`解析為**不含預發布尾碼**的最高標籤，而且只有在不存在發布版本時才會考慮預發布版本。Go Proxy 無法辨識 GitHub 的「pre-release」核取方塊，因此夜間版使用 semver 預發布尾碼，而不依賴該核取方塊。在正式環境中一律固定版本。
 

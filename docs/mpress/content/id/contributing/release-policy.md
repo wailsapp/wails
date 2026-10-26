@@ -13,7 +13,7 @@ Wails v3 merilis berdasarkan **jadwal, bukan fitur**. Setelah versi dasar `v3.0.
 
 | Rilis | Tag | Frekuensi | Rilis GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (tanggal UTC; `.N` ditambahkan jika dijalankan ulang pada hari yang sama) | otomatis, setiap hari, hanya jika `UNRELEASED_CHANGELOG.md` memiliki konten | prarilis, **bukan** Latest | versi yang sama tanpa `v`, dist-tag `next` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (tanggal UTC; `.N` ditambahkan jika dijalankan ulang pada hari yang sama) | otomatis, setiap hari, hanya jika `UNRELEASED_CHANGELOG.md` memiliki konten | prarilis, **bukan** Latest | versi yang sama tanpa `v`, dist-tag `nightly` |
 | Weekly | `v3.<next>.0` | otomatis, Minggu 20:00 waktu Australia/Sydney **(hari belum dikonfirmasi)** | rilis normal, Latest **(keputusan tertunda)** | versi yang sama, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | jarang, manual | rilis normal, Latest | versi yang sama, dist-tag `latest` |
 | Mayor | `v4.0.0` | hanya untuk perubahan yang merusak kompatibilitas | rilis normal | `latest` |
@@ -49,7 +49,7 @@ Weekly selalu memiliki urutan lebih tinggi daripada setiap nightly dengan nomor 
 | **Dapat direproduksi (disarankan)** | sematkan tag tertentu: `v3.1.0` di `go.mod`, CI, dan dokumentasi |
 | Nightly tertentu | tag persisnya (`@v3.2.0-nightly.20261102`), atau `wails3 update cli -nightly` |
 | Build terbaru dari jenis apa pun | `wails3 update cli -pre` |
-| Paket npm runtime | `@wailsio/runtime` (`latest` = mingguan/hotfix, `next` = rilis nightly) |
+| Paket npm runtime | `@wailsio/runtime` (`latest` = mingguan/hotfix, `nightly` = rilis nightly) |
 
 Alasan mekanisme ini berfungsi: Go me-resolve `@latest` ke tag tertinggi **tanpa akhiran prarilis** dan hanya mempertimbangkan prarilis jika tidak ada rilis. Kotak centang "pre-release" di GitHub tidak terlihat oleh proksi Go. Karena itu, nightly menggunakan akhiran prarilis semver, bukan mengandalkan kotak centang tersebut. Selalu sematkan versi tertentu dalam produksi.
 

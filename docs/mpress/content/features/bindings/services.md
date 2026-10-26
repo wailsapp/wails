@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **Use cases:**
 
-- Multiple instances of same service type
 - Clearer logging
 - Better debugging
+
+`ServiceOptions.Name` is a display name for logging and debugging; it does not change the generated binding namespace. Register at most one service of each Go type. For independently configured instances, use distinct wrapper types, for example:
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+Register `application.NewService(&PrimaryStore{primary})` and `application.NewService(&ArchiveStore{archive})` instead of registering two `*Store` values.
 
 ### HTTP Routes
 

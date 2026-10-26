@@ -199,7 +199,7 @@ The server handles `SIGINT` and `SIGTERM` signals gracefully:
 | System tray | Available | Not available |
 | Native dialogs | Available | Not available |
 | Application menu | Available | Not available |
-| Screen info | Available | Returns error |
+| Screen info | Available | No native screen; `GetPrimary()` returns `nil` |
 | Service bindings | Works | Works |
 | Events | Works | Works (via WebSocket) |
 | Assets | Via webview | Via HTTP |
@@ -209,11 +209,11 @@ The server handles `SIGINT` and `SIGTERM` signals gracefully:
 
 In server mode, window-related APIs are safely handled:
 
-- `app.Window.NewWithOptions()` - Logs a warning, returns nil
+- `app.Window.NewWithOptions(options)` - Returns a non-nil Go window object; this does not create a native desktop window
 - `app.Hide()` / `app.Show()` - No-op
-- `app.Screen.GetPrimary()` - Returns error
+- `app.Screen.GetPrimary()` - Returns `*application.Screen`, which is `nil` when no primary screen is available; check before dereferencing
 
-This allows code that references windows to run without crashing, though window operations have no effect.
+Separate Go window objects from native window availability. Guard desktop-only behaviour when building a server; a non-nil Go window object does not establish that a native window or screen exists.
 
 ### Supported Platforms
 

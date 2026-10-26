@@ -440,3 +440,62 @@ The release translation audit with M-Press 1.0.19 reports nine missing-file erro
 ## Follow up boundaries
 
 This report applies to the checked-in `releases/v3.0.0` baseline above. It makes no claim about the live website or a later branch tip. Native platform, device and signing workflows remain unexecuted where noted. The report contains evidence and suggested corrections; GitHub #6337 is the work tracker, and no documentation or implementation fixes are included in this commit.
+
+## Correction pass — 26 October 2026
+
+The follow-up on `release-prep/v3.0.0` uses `ca6147d6e` as its source baseline.
+It preserves the newer English release policy and release post. GitHub #6337
+remains the authoritative tracker; this section records verification evidence.
+
+The correction pass addresses the documented security, binding/time/event,
+window/server, build/signing, onboarding, CLI, transport, testing and contributor
+inconsistencies. Both first-app routes and the TODO/Notes tutorials explicitly
+select the JavaScript template used by their examples. Go prerequisites are
+aligned with the v3 module's effective Go 1.26 minimum; automatic toolchain
+selection remains documented. M-Press setup uses the latest stable release.
+Corrected pages have matching translations in all nine published locales, and
+the release post's translations are stored under `docs/mpress/drafts/` until
+publication. English release policy decisions remain the owner's existing draft.
+
+Executed checks include a newly generated app, generated bindings, frontend
+build, a real server-mode greeting request and browser-visible greeting toast;
+compiled counter and HTTPS examples; authenticated-encryption round trips and
+tamper rejection; rooted file access with sibling, parent and symlink escape
+attempts; and runtime probes for service registration and server window/screen
+contracts. The strict multilingual site build, local links, documentation helper
+checks and mobile/desktop browser overflow checks also run against the changes.
+
+Credits now serve the existing sponsor/contributor SVGs from the v3 site's own
+static directory, and the daily image workflow maintains those copies. M-Press
+v1.0.23 fixes intrinsic SVG object sizing and preserved bold code beside CJK text.
+A separately reproduced translation bug skipped code-only source updates when
+no prose was pending; v1.0.24 reconstructs those source-owned blocks while
+retaining manual translated prose and avoiding unnecessary provider requests.
+
+Remaining limits: native macOS/Windows UI, platform package installation, code
+signing and mobile hardware were not exercised on this Linux host. The underlying
+default TypeScript starter's HTML entry-point mismatch (F30) is framework work;
+the corrected tutorials avoid that mismatch by selecting the JavaScript template.
+The original audit is not evidence that every historical page or every existing
+translation has been re-reviewed. Findings outside the corrected pages retain
+the repository's previous translation-warning baseline. No live Wails deployment
+or release announcement is part of this correction pass.
+
+Final qualification used the published M-Press v1.0.24 Linux archive, verified
+against its release checksum. The strict translation checker reports no errors
+or warnings across all nine locales, using individually reviewed, file-hash-bound
+exceptions for unchanged technical names and two French requirement heuristics;
+no structural or protected-content finding is waived. All 477 scoped page/locale
+audits and all nine unpublished release-post translations pass. The production
+build emits 2,040 pages, the draft preview emits 2,050, local links/assets pass,
+the site checker reports 204 pages per language and no errors, and all 19 helper
+tests pass. Browser checks pass at 390px and 1440px, including the contributor-grid
+proportions. The API overview's four empty bold spans were repaired without
+changing their text.
+
+CodeRabbit was run before committing. Its recommendation to use the visible
+button text as the accessible name was rejected after checking the current
+starter's explicit `aria-label="greet-btn"` with a real browser. The documented
+selector matches that label; an explanatory code comment preserves the reason.
+The CLI's actual `signing --help` and `entitlements --help` were also executed to
+qualify the documented top-level commands against this branch.

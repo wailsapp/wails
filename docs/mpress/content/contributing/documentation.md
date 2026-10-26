@@ -20,19 +20,19 @@ For a reproducible manual setup, follow the steps below.
 
 ## Download and install M-Press
 
-The documentation toolchain uses **M-Press v1.0.19**. Choose one installation method, then verify that `mpress version` prints `mpress 1.0.19`.
+The repository build script downloads the **latest stable M-Press release**. Use the same release locally: choose an installation method below, run `mpress version`, and compare it with the version shown on the release page.
 
 ### Download an executable
 
-Open the [M-Press v1.0.19 release](https://github.com/leaanthony/mpress/releases/tag/v1.0.19), or download the matching archive below. ARM64 includes Apple Silicon; AMD64 is the usual Intel/AMD PC architecture.
+Open the [latest stable M-Press release](https://github.com/leaanthony/mpress/releases/latest), or download the matching archive below. ARM64 includes Apple Silicon; AMD64 is the usual Intel/AMD PC architecture.
 
 | Computer | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.19/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
 
-Download [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.19/checksums.txt) from the same release. In your download directory, calculate the archive's SHA-256 hash and compare it with the line for that filename in `checksums.txt`:
+Download [checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt) from the same release. In your download directory, calculate the archive's SHA-256 hash and compare it with the line for that filename in `checksums.txt`:
 
 @tabs
 [macOS]
@@ -58,10 +58,10 @@ Use your actual downloaded filename if you chose another architecture. After the
 From the download directory, using the Apple Silicon archive:
 
 ```sh
-mkdir -p mpress-v1.0.19
-tar -xzf mpress-darwin-arm64.tar.gz -C mpress-v1.0.19
+mkdir -p mpress-download
+tar -xzf mpress-darwin-arm64.tar.gz -C mpress-download
 mkdir -p "$HOME/.local/bin"
-install -m 755 mpress-v1.0.19/mpress "$HOME/.local/bin/mpress"
+install -m 755 mpress-download/mpress "$HOME/.local/bin/mpress"
 export PATH="$HOME/.local/bin:$PATH"
 mpress version
 ```
@@ -72,10 +72,10 @@ For Intel Macs, substitute `mpress-darwin-amd64.tar.gz`. Add the `export PATH` l
 From the download directory:
 
 ```sh
-mkdir -p mpress-v1.0.19
-tar -xzf mpress-linux-amd64.tar.gz -C mpress-v1.0.19
+mkdir -p mpress-download
+tar -xzf mpress-linux-amd64.tar.gz -C mpress-download
 mkdir -p "$HOME/.local/bin"
-install -m 755 mpress-v1.0.19/mpress "$HOME/.local/bin/mpress"
+install -m 755 mpress-download/mpress "$HOME/.local/bin/mpress"
 export PATH="$HOME/.local/bin:$PATH"
 mpress version
 ```
@@ -86,9 +86,9 @@ For ARM64, substitute `mpress-linux-arm64.tar.gz`. Add the `export PATH` line to
 From the download directory:
 
 ```powershell
-Expand-Archive .\mpress-windows-amd64.zip -DestinationPath .\mpress-v1.0.19
+Expand-Archive .\mpress-windows-amd64.zip -DestinationPath .\mpress-download
 New-Item -ItemType Directory -Force "$HOME\bin"
-Copy-Item .\mpress-v1.0.19\mpress.exe "$HOME\bin\mpress.exe"
+Copy-Item .\mpress-download\mpress.exe "$HOME\bin\mpress.exe"
 $env:Path = "$HOME\bin;$env:Path"
 mpress version
 ```
@@ -98,10 +98,10 @@ For ARM64, substitute `mpress-windows-arm64.zip`. Add your user `bin` directory 
 
 ### Install with Go
 
-If you already use Go, you can build the same pinned release instead. M-Press v1.0.19 requires **Go 1.26.6 or later**; Go's automatic toolchain selection may download a suitable version.
+If you already use Go, you can build the latest stable release instead. Check its `go.mod` for the required toolchain; Go’s automatic toolchain selection may download it. The release used for this documentation pass requires Go 1.26.10 or later.
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
+go install github.com/leaanthony/mpress/cmd/mpress@latest
 mpress version
 ```
 
@@ -137,7 +137,7 @@ The repository already contains the M-Press configuration. No new site needs to 
 
 English source pages live in `docs/mpress/content/`. Translations live under language folders such as `fr/` and `id/`. The edit icon's contribution instructions identify the source file for the current page.
 
-For an existing page, edit its Markdown and preserve the YAML metadata at the top. Use headings, paragraphs, lists, links and fenced code blocks. Preserve paired M-Press components such as `@note` / `@end` and `@tabs` / `@end`. The [M-Press authoring documentation](https://github.com/leaanthony/mpress/tree/v1.0.19/docs) describes the supported syntax.
+For an existing page, edit its Markdown and preserve the YAML metadata at the top. Use headings, paragraphs, lists, links and fenced code blocks. Preserve paired M-Press components such as `@note` / `@end` and `@tabs` / `@end`. The [M-Press authoring documentation](https://m-press.me/authoring/) describes the supported syntax.
 
 For a new guide, create a file such as `docs/mpress/content/guides/my-guide.md`:
 

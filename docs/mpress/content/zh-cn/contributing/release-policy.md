@@ -13,7 +13,7 @@ Wails v3按**时间表而非功能**发布。在`v3.0.0`基线之后：
 
 | 发布类型 | 标签 | 发布频率 | GitHub 发布版 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 每夜版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若在同一天重新运行，则追加`.N`） | 自动、每日，仅当`UNRELEASED_CHANGELOG.md`有内容时发布 | 预发布版，**不**标记为 Latest | 相同版本，但不含`v`，dist-tag 为`next` |
+| 每夜版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若在同一天重新运行，则追加`.N`） | 自动、每日，仅当`UNRELEASED_CHANGELOG.md`有内容时发布 | 预发布版，**不**标记为 Latest | 相同版本，但不含`v`，dist-tag 为`nightly` |
 | 每周版 | `v3.<next>.0` | 自动，于 Australia/Sydney 时区星期日20:00发布<strong>（日期尚未确认）</strong> | 常规发布版，标记为 Latest **（待决定）** | 相同版本，dist-tag 为`latest` |
 | 热修复版 | `v3.<current>.<N>`, `N > 0` | 很少发布，手动操作 | 常规发布版，标记为 Latest | 相同版本，dist-tag 为`latest` |
 | 主版本 | `v4.0.0` | 仅用于破坏性变更 | 常规发布版 | `latest` |
@@ -49,7 +49,7 @@ CLI、Go 模块和 npm 包`@wailsio/runtime`使用取自`v3/internal/version/ver
 | **可复现（推荐）** | 固定到确切标签：在`go.mod`、CI 和文档中使用`v3.1.0` |
 | 某个每夜版 | 其确切标签（`@v3.2.0-nightly.20261102`）、`wails3 update cli -nightly` |
 | 任意类型的最新构建 | `wails3 update cli -pre` |
-| 运行时 npm 包 | `@wailsio/runtime`（`latest` = 每周版/热修复版，`next` = 每夜版） |
+| 运行时 npm 包 | `@wailsio/runtime`（`latest` = 每周版/热修复版，`nightly` = 每夜版） |
 
 其工作原理是：Go 会将`@latest`解析为**不带预发布后缀**的最高标签，并且仅在不存在发布版时才考虑预发布版。GitHub 的“pre-release”复选框对 Go 代理不可见，因此每夜版使用 semver 预发布后缀，而不依赖该复选框。生产环境中务必固定版本。
 

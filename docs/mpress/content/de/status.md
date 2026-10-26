@@ -5,33 +5,33 @@ slug: "status"
 sourcePath: "status.md"
 ---
 
-## Wails v3.0.0 — Stabil
+## Wails v3.0.0 — stabil
 
-Den aktuellen Status finden Sie im [Änderungsprotokoll](/changelog/).
+Den aktuellen Stand finden Sie im [Changelog](/changelog/).
 
-Diese Dokumentation behandelt Wails v3.0.0. Fehlerkorrekturen werden nach Schweregrad priorisiert und durch nächtliche Patch-Updates ausgeliefert. Neue Funktionen gehören in v3.1.0; Fehlerkorrekturen bleiben außerhalb dieser Funktionsversion.
+Diese Dokumentation behandelt Wails v3.0.0. Fehlerkorrekturen werden nach Schweregrad priorisiert und über nächtliche Patch-Updates bereitgestellt. Neue Funktionen gehören in v3.1.0; Fehlerkorrekturen bleiben außerhalb dieses Feature-Releases.
 
 ## Desktop-Kompatibilität
 
-Die Kompatibilitätszusage für v3.0.0 gilt für Desktop-Anwendungen:
+Der Kompatibilitätsvertrag für v3.0.0 gilt für Desktop-Anwendungen:
 
 | Plattform | Unterstützte Zielsysteme | Anforderungen und Hinweise |
 | --- | --- | --- |
 | Windows | amd64 und arm64 | WebView2-Laufzeitumgebung |
-| macOS | Intel und Apple Silicon | Die in der Installationsanleitung dokumentierten macOS- und WebKit-Versionen |
-| Linux | amd64 und arm64 | Standardmäßig GTK4 + WebKitGTK 6.0; GTK3 + WebKit2GTK 4.1 bleibt bis einschließlich v3.0.x als `-tags gtk3` Legacy-Option verfügbar und wird in v3.1 entfernt |
+| macOS | Intel und Apple Silicon | Die in der Installationsanleitung dokumentierten Versionen von macOS und WebKit |
+| Linux | amd64 und arm64 | Standardmäßig GTK4 + WebKitGTK 6.0; GTK3 + WebKit2GTK 4.1 bleibt bis einschließlich v3.0.x eine `-tags gtk3` Legacy-Option und wird in v3.1 entfernt |
 
-Alle Zielplattformen benötigen für die Entwicklung Go 1.25 oder neuer. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
+Für die Entwicklung auf allen Zielsystemen ist Go 1.26 oder neuer erforderlich. Die Unterstützung für Android und iOS bleibt experimentell und ist nicht Bestandteil des stabilen Kompatibilitätsvertrags für Desktop-Anwendungen.
 
 ## So können Sie mitwirken
 
-- Testen Sie Wails v3.0.0 und melden Sie reproduzierbare Fehler
-- Wirken Sie an der Dokumentation und an Beispielen mit
-- Beteiligen Sie sich an Diskussionen und geben Sie Feedback zu WEP-Entwürfen
-- Reichen Sie Pull Requests für Fehlerbehebungen, Dokumentation oder angenommene WEPs ein
+- Wails v3.0.0 testen und reproduzierbare Fehler melden
+- Zur Dokumentation und zu den Beispielen beitragen
+- An Diskussionen teilnehmen und Feedback zu WEP-Entwürfen geben
+- Pull Requests für Fehlerkorrekturen, Dokumentation oder angenommene WEPs einreichen
 
-Beiträge aus der Community sind willkommen. Wenn Sie uns bei diesen Zielen unterstützen möchten, beteiligen Sie sich an den Diskussionen der Community. Vorschläge für neue Funktionen gehören in einen WEP-PR und nicht in ein Issue für eine Funktionsanfrage.
+Beiträge aus der Community sind willkommen. Wenn Sie an diesen Zielen mitwirken möchten, beteiligen Sie sich an den Community-Diskussionen. Vorschläge für neue Funktionen gehören in einen WEP-PR, nicht in ein Feature-Request-Issue.
 
 ## Feedback und Aktualisierungen
 
-Diese Roadmap kann sich aufgrund des Feedbacks der Community und der Projektprioritäten ändern. Wir aktualisieren sie regelmäßig, um Fortschritte und Richtungsänderungen widerzuspiegeln. Melden Sie reproduzierbare Probleme als Issues; schlagen Sie neue Funktionen über einen PR für ein [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) vor.
+Diese Roadmap kann sich aufgrund von Community-Feedback und Projektprioritäten ändern. Wir aktualisieren sie regelmäßig, um Fortschritte und Kursänderungen abzubilden. Melden Sie reproduzierbare Probleme als Issues; schlagen Sie neue Funktionen über einen [WEP-PR (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) vor.

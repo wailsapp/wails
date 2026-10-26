@@ -16,7 +16,7 @@ In this tutorial you'll add an in-app updater to a fresh Wails v3 application. B
 We'll use **GitHub Releases** as the update source because it's free and requires no infrastructure. The same patterns work with [keygen.sh](/guides/updater/#keygensh--updaterproviderskeygen) and [Sparkle AppCast](/guides/updater/#sparkle-appcast--updaterprovidersappcast) — see the [Updater guide](/guides/updater/) once you finish.
 
 @note{type="tip" title="Prerequisites"}
-- Go 1.25 or newer
+- Go 1.26 or newer
 - `wails3` CLI installed (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - A GitHub repository you can push releases to
 - Familiarity with the [QR Code Service tutorial](/tutorials/01-creating-a-service/) is helpful but not required

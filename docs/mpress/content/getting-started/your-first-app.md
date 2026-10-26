@@ -16,10 +16,10 @@ This guide shows you how to create your first Wails v3 application, covering pro
 Open your terminal and run the following command to create a new Wails project:
 
 ```bash
-wails3 init -n myfirstapp
+wails3 init -n myfirstapp -t vanilla-js
 ```
 
-This command creates a new directory called `myfirstapp` with all the necessary files.
+This lesson selects the JavaScript Vanilla template explicitly. The bare `vanilla` template uses TypeScript. The command creates `myfirstapp` with all the necessary files.
 
    <video src="/assets/wails_init.mp4" controls></video>
 
@@ -53,7 +53,8 @@ Navigate to the `myfirstapp` directory. You'll find several files and folders:
       - wails_tools.nsh               NSIS helper scripts
 - frontend/        Frontend application files
   - index.html   Main HTML file
-  - main.js      Main JavaScript file
+  - src/         Frontend source
+    - main.js    Main JavaScript file
   - package.json NPM package configuration
   - public/      Static assets
   - Inter Font License.txt Font license
@@ -80,7 +81,7 @@ To build your application, execute:
 wails3 build
 ```
 
-This command compiles a debug version of your application and saves it in a new `bin` directory.
+With the generated Taskfiles, this command creates a production build in `bin`. Use `wails3 dev` for development mode, or `wails3 build DEV=true` for an explicit development build.
 
 @note{type="info"}
 `wails3 build` is shorthand for `wails3 task build` and will run the `build` task in `Taskfile.yml`.
@@ -109,7 +110,7 @@ bin\myfirstapp.exe
 
 @end
 
-You'll see a simple UI, the starting point for your application. As it is the debug version, you'll also see logs in the console window. This is useful for debugging purposes.
+You'll see the starter UI. A production build does not promise development inspector or console behaviour; use development mode when debugging.
 
 ### Dev Mode
 We can also run the application in development mode. This mode allows you to make changes to your frontend code and see the changes reflected in the running application without having to rebuild the entire application.
@@ -117,7 +118,7 @@ We can also run the application in development mode. This mode allows you to mak
 1. Open a new terminal window.
 2. Run `wails3 dev`. The application will compile and run in debug mode.
 3. Open `frontend/index.html` in your editor of choice.
-4. Edit the code and change `Please enter your name below` to `Please enter your name below!!!`.
+4. Change the name input’s `placeholder="Your name"` to `placeholder="Your full name"` and save the file.
 5. Save the file.
 
 This change will reflect in your application immediately.
@@ -205,7 +206,7 @@ This ensures your Go module name aligns with Go's module naming conventions and 
 You can automate all of the initialisation steps by using the `-git` flag when creating your project:
 
 ```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
+wails3 init -n myfirstapp -t vanilla-js -git github.com/username/myfirstapp
 ```
 
 This supports various Git URL formats:

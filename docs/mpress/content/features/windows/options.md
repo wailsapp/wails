@@ -1,13 +1,13 @@
 ---
 title: "Window Options"
-description: "Complete reference for WebviewWindowOptions"
+description: "Window options, defaults and platform constraints"
 slug: "features/windows/options"
 sourcePath: "features/windows/options.md"
 ---
 
 ## Window Configuration Options
 
-Wails provides comprehensive window configuration with dozens of options for size, position, appearance, and behaviour. This reference covers all available options across Windows, macOS, and Linux as the **complete reference** for `WebviewWindowOptions`. Every option, every platform, with examples and constraints.
+Wails provides comprehensive window configuration with dozens of options for size, position, appearance, and behaviour. This reference explains common `WebviewWindowOptions` fields across Windows, macOS and Linux. The structure below is a selected-field summary; consult the linked Go source for the complete type.
 
 ## WebviewWindowOptions Structure
 
@@ -56,7 +56,7 @@ type WebviewWindowOptions struct {
     DevToolsEnabled             bool
     DefaultContextMenuDisabled  bool
     ContentProtectionEnabled    bool
-    KeyBindings                 map[string]func(window *WebviewWindow)
+    KeyBindings                 map[string]func(window Window)
 
     // Permissions
     Permissions map[PermissionType]Permission
@@ -76,7 +76,7 @@ type WebviewWindowOptions struct {
 }
 ```
 
-`WebviewWindowOptions` has **no** `Parent` field — for parent/modal relationships use `parentWindow.AttachModal(childWindow)`. It also has **no** `Assets` field — asset configuration lives on `application.Options` (`Assets AssetOptions`).
+`WebviewWindowOptions` has no `Parent` field — for parent/modal relationships use `parentWindow.AttachModal(childWindow)`. It also has no `Assets` field — asset configuration lives on `application.Options` (`Assets AssetOptions`).
 
 Full source: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
@@ -84,7 +84,7 @@ Full source: [`v3/pkg/application/webview_window_options.go`](https://github.com
 
 ### Name
 
-**Type:** `string` **Default:** Auto-generated UUID **Platform:** All
+**Type:** `string` **Default:** `window-<numeric ID>` **Platform:** All
 
 ```go
 Name: "main-window"

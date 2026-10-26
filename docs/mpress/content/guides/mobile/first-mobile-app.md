@@ -42,7 +42,7 @@ Once it opens, quit and move on. Everything that runs on desktop also runs on mo
   ```
 
 
-- **Go 1.25+** and **npm** (already installed if you ran `wails3 init`)
+- **Go 1.26+** and **npm** (already installed if you ran `wails3 init`)
 
 Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
 
