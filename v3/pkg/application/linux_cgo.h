@@ -158,6 +158,7 @@ void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, doubl
 // Window position (X11 only)
 // ============================================================================
 
+gboolean screen_work_area(int *x, int *y, int *width, int *height);
 void window_move_x11(GtkWindow *window, int x, int y);
 void window_get_position_x11(GtkWindow *window, int *x, int *y);
 void window_set_always_on_top(GtkWindow *window, gboolean always_on_top);
