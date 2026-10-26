@@ -41,9 +41,22 @@
     <p>The link may be outdated, or the address may be incorrect.</p>
     <h2>Looking for Wails v2?</h2>
     <p>If you followed an older documentation link, you may be looking for the Wails v2 documentation. You can find it at <a href="https://v2.wails.io/">v2.wails.io</a>.</p>
-    <p><a class="button" href="https://v2.wails.io/docs/introduction">Open Wails v2 documentation</a></p>
+    <p><a class="button" id="v2-link" href="https://v2.wails.io/docs/introduction">Open Wails v2 documentation</a></p>
     <h2>Working with Wails v3?</h2>
     <p><a href="/">Go to the Wails v3 documentation home</a> or <a href="/quick-start/installation/">start with installation</a>.</p>
   </main>
+  <script>
+    // Old wails.io links to v2-only pages (/docs/..., translated /de/docs/...,
+    // and a few top-level pages) open the same page on v2.wails.io.
+    (function () {
+      var path = location.pathname;
+      var v2Page = /^\/([a-z]{2}(-[A-Za-z]+)?\/)?docs(\/|$)/.test(path) ||
+        /^\/(coc|community-guide|showcase|blog\/security-incident-response-march-2025)\/?$/.test(path);
+      if (!v2Page) return;
+      var link = document.getElementById("v2-link");
+      link.href = "https://v2.wails.io" + path + location.search + location.hash;
+      link.textContent = "Open this page in the Wails v2 documentation";
+    })();
+  </script>
 </body>
 </html>
