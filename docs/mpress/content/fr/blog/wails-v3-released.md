@@ -1,10 +1,9 @@
 ---
 title: "Sortie de Wails v3.0.0"
-draft: true
 description: "Wails v3.0.0 est disponible avec la gestion de plusieurs fenêtres, une icône dans la zone de notification, des menus natifs, des services et des liaisons générées, un outil de mise à jour, la prise en charge des appareils mobiles et un nouveau site de documentation."
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"

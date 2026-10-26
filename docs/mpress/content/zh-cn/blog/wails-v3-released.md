@@ -1,10 +1,9 @@
 ---
 title: "Wails v3.0.0 正式发布"
-draft: true
 description: "Wails v3.0.0 已正式推出：支持多窗口、系统托盘、原生菜单、服务和生成式绑定、更新程序、移动端，并启用了全新的文档网站。"
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"

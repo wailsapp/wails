@@ -1,10 +1,9 @@
 ---
 title: "Wails v3.0.0 veröffentlicht"
-draft: true
 description: "Wails v3.0.0 ist da: mehrere Fenster, Taskleistenintegration, native Menüs, Dienste und generierte Bindings, ein Updater, Unterstützung für Mobilgeräte und eine neue Dokumentationswebsite."
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"

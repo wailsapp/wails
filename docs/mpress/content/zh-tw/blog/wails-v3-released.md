@@ -1,10 +1,9 @@
 ---
 title: "Wails v3.0.0 正式發布"
-draft: true
 description: "Wails v3.0.0 正式登場：支援多視窗、系統匣、原生選單、服務與產生的繫結、更新程式、行動裝置，以及全新的文件網站。"
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"

@@ -1,10 +1,9 @@
 ---
 title: "Wails v3.0.0 출시"
-draft: true
 description: "Wails v3.0.0이 출시되었습니다. 여러 창, 시스템 트레이, 네이티브 메뉴, 서비스와 생성된 바인딩, 업데이터, 모바일 지원, 새로운 문서 사이트를 제공합니다."
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"

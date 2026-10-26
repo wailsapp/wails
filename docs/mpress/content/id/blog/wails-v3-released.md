@@ -1,10 +1,9 @@
 ---
 title: "Wails v3.0.0 Dirilis"
-draft: true
 description: "Wails v3.0.0 telah hadir: dukungan untuk banyak jendela, baki sistem, menu native, layanan dan binding yang dihasilkan, pemutakhir, dukungan perangkat seluler, serta situs dokumentasi baru."
 authors: ["leaanthony"]
 tags: ["wails","v3","release"]
-date: "2026-10-25"
+date: "2026-10-26"
 slug: "blog/wails-v3-released"
 image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
