@@ -115,6 +115,8 @@ Merci également à [Travis McLane](https://github.com/tmclane) pour son importa
 
 Un immense merci, du fond du cœur, aux sponsors qui ont soutenu Wails tout au long de cette longue transition. Votre soutien nous a donné le temps de travailler sur l’architecture, les outils, les tests et la documentation qui nous ont permis d’arriver jusqu’ici. Merci tout particulièrement à JetBrains et ZSA, ainsi qu’à [CodeRabbit](https://www.coderabbit.ai/oss) pour son soutien au projet au moyen de revues de code.
 
+Enfin, un grand merci à Valerio Tesei pour tout le soutien qu’il a apporté au projet au fil des années.
+
 ## Le mot de la fin
 
 Beaucoup de travail nous attend déjà. Des avancées passionnantes ont lieu dans l’ensemble du monde technologique, et nous sommes prêts à explorer de nouveaux paradigmes et à doter Wails de fonctionnalités entièrement nouvelles. Mais nous devons d’abord faire de v3 une base stable sur laquelle vous pouvez compter. Il faut y parvenir avant de déployer la suite.

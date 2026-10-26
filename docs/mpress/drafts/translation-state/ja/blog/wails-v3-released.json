@@ -666,7 +666,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0055-heading-01": {
+    "b0055-text-01": {
+      "sourceHash": "f78812475fa8a948093b9b4ae569f0a09872bf39308f7147a2512a44acd22c9f",
+      "targetHash": "313ba0d1061654bada15346629d5446286d637e5e9c0e145f6625e283b17bab7",
+      "machineHash": "313ba0d1061654bada15346629d5446286d637e5e9c0e145f6625e283b17bab7",
+      "machineText": "最後に、長年にわたりプロジェクトを支援してくださった Valerio Tesei 氏に、心より感謝申し上げます。",
+      "status": "machine-translated",
+      "sourcePreview": "Finally, a special thank you to Valerio Tesei for all of his support of the project over the years.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T09:13:22Z"
+    },
+    "b0056-heading-01": {
       "sourceHash": "f07b1fc1d5568637ab8911cb39c530374eb64d13878d0d7eafeb80fcb4425818",
       "targetHash": "4fea4dc6820554a8381e75d803f6cbf32922d04ef55de5c8d181e79d8b27ccb4",
       "machineHash": "4fea4dc6820554a8381e75d803f6cbf32922d04ef55de5c8d181e79d8b27ccb4",
@@ -678,7 +690,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0056-text-01": {
+    "b0057-text-01": {
       "sourceHash": "c4044e284db93bb7b02174beaee136d77c2b64292bae7c1f28776727bb847c9f",
       "targetHash": "ca21ed53767b1f82d74454f0a08eae3e7e2ede7e54187b7a5c47bf5c76834a34",
       "machineHash": "ca21ed53767b1f82d74454f0a08eae3e7e2ede7e54187b7a5c47bf5c76834a34",
@@ -690,7 +702,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0057-text-01": {
+    "b0058-text-01": {
       "sourceHash": "b46ac54b041619595ae285e14daa736d712c83dfcc6507c270de99e56014fe89",
       "targetHash": "7de89210ffc2e1b5164df6d054cd66fff191d95c1fa47292260e70350b4c3c08",
       "machineHash": "7de89210ffc2e1b5164df6d054cd66fff191d95c1fa47292260e70350b4c3c08",
@@ -702,7 +714,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0058-text-01": {
+    "b0059-text-01": {
       "sourceHash": "b8f291487a0c82eb3a266c76043d219d2a8141c9931395b5494677b8412d4127",
       "targetHash": "4d0813b08cbfd87d8d2a1c48cf63a3470c11194054512f16b1cb2370675ff338",
       "machineHash": "4d0813b08cbfd87d8d2a1c48cf63a3470c11194054512f16b1cb2370675ff338",
@@ -714,7 +726,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0059-text-01": {
+    "b0060-text-01": {
       "sourceHash": "3aab9be0e8ac2c6fc413c15ea63cbf9c428f014575eb4333706eb60b0e0ceda4",
       "targetHash": "3aab9be0e8ac2c6fc413c15ea63cbf9c428f014575eb4333706eb60b0e0ceda4",
       "machineHash": "3aab9be0e8ac2c6fc413c15ea63cbf9c428f014575eb4333706eb60b0e0ceda4",
@@ -726,7 +738,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T21:45:19Z"
     },
-    "b0060-text-01": {
+    "b0061-text-01": {
       "sourceHash": "66cb48b0a49a4693a6835be796c7c104630e62ec55c048bac69ac65f3b63d21a",
       "targetHash": "f94e9a3033fe4922335d0695603f07b219296dbd6dad71a91e081fa339cd8571",
       "machineHash": "f94e9a3033fe4922335d0695603f07b219296dbd6dad71a91e081fa339cd8571",

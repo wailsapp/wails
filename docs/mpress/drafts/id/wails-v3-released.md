@@ -115,6 +115,8 @@ Terima kasih juga kepada [Travis McLane](https://github.com/tmclane) atas kontri
 
 Terima kasih yang sungguh tulus kepada para sponsor yang telah mendukung Wails sepanjang transisi panjang ini. Dukungan Anda memberi kami waktu untuk mengerjakan arsitektur, alat bantu, pengujian, dan dokumentasi yang membawa kami hingga tahap ini. Terima kasih khusus juga kepada JetBrains dan ZSA, serta kepada [CodeRabbit](https://www.coderabbit.ai/oss) yang mendukung proyek ini melalui peninjauan kode.
 
+Terakhir, terima kasih khusus kepada Valerio Tesei atas segala dukungannya terhadap proyek ini selama bertahun-tahun.
+
 ## Penutup
 
 Banyak pekerjaan sudah menanti untuk kami kerjakan. Ada sejumlah perkembangan menarik di dunia teknologi, dan kami siap mengeksplorasi paradigma baru serta menghadirkan berbagai fitur yang sepenuhnya baru ke Wails. Namun, terlebih dahulu kami perlu menjadikan v3 sebagai fondasi stabil yang dapat Anda andalkan. Memastikan hal itu tercapai lebih penting daripada meluncurkan apa yang berikutnya.
