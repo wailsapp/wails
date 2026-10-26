@@ -5,10 +5,7 @@ const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
-const { getTranslationProgress } = require("./src/api/crowdin.js");
-
-module.exports = async function configCreatorAsync() {
-  const translationProgress = await getTranslationProgress();
+module.exports = function configCreator() {
   return {
     title: "Wails",
     tagline: "",
@@ -35,32 +32,32 @@ module.exports = async function configCreatorAsync() {
           htmlLang: "en-US",
         },
         "zh-Hans": {
-          label: `简体中文 (${translationProgress["zh-CN"]}%)`,
+          label: "简体中文",
           direction: "ltr",
           htmlLang: "zh-Hans",
         },
         ja: {
-          label: `日本語 (${translationProgress["ja"]}%)`,
+          label: "日本語",
           direction: "ltr",
           htmlLang: "ja-JP",
         },
         ru: {
-          label: `Русский (${translationProgress["ru"]}%)`,
+          label: "Русский",
           direction: "ltr",
           htmlLang: "ru-RU",
         },
         ko: {
-          label: `한국어 (${translationProgress["ko"]}%)`,
+          label: "한국어",
           direction: "ltr",
           htmlLang: "ko-KR",
         },
         fr: {
-          label: `Français (${translationProgress["fr"]}%)`,
+          label: "Français",
           direction: "ltr",
           htmlLang: "fr",
         },
         pt: {
-          label: `Português (${translationProgress["pt-PT"]}%)`,
+          label: "Português",
           direction: "ltr",
           htmlLang: "pt-PT",
         },
@@ -164,12 +161,6 @@ module.exports = async function configCreatorAsync() {
             {
               type: "localeDropdown",
               position: "right",
-              dropdownItemsAfter: [
-                {
-                  to: "/community-guide#documenting",
-                  label: "Help Us Translate ❤",
-                },
-              ],
             },
             {
               href: "https://github.com/wailsapp/wails",
