@@ -170,6 +170,12 @@ jobs:
         set -euo pipefail
         git fetch origin master
         SHA="$(.github/scripts/find-green-commit.sh)"
+        # Keep master's release checks: the green commit can predate fixes to
+        # them (CI-only PRs never become green, so the snapshot may lag).
+        TOOLS="$RUNNER_TEMP/release-tools"
+        mkdir -p "$TOOLS"
+        cp v3/scripts/check-changelog-runs.py v3/scripts/test_check_changelog_runs.py "$TOOLS/"
+        echo "tools=$TOOLS" >> "$GITHUB_OUTPUT"
         git checkout --detach "$SHA"
         echo "sha=$SHA" >> "$GITHUB_OUTPUT"
         echo "Weekly will be cut from $SHA" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -285,9 +291,10 @@ jobs:
         inputs.release_version != ''
       env:
         GH_TOKEN: ${{ github.token }}
+        TOOLS: ${{ steps.green.outputs.tools || 'v3/scripts' }}
       run: |
-        python3 -m unittest discover -s v3/scripts -p 'test_check_changelog_runs.py'
-        python3 v3/scripts/check-changelog-runs.py
+        python3 -m unittest discover -s "$TOOLS" -p 'test_check_changelog_runs.py'
+        python3 "$TOOLS/check-changelog-runs.py"
 
     - name: Run release script
       id: release
