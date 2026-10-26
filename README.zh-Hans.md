@@ -59,7 +59,7 @@ Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版�
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## 内容目录
 
@@ -100,7 +100,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 ## 快速入门
 
-使用说明在 [官网](https://v3.wails.io/zh-cn/quick-start/installation/)。
+使用说明在 [官网](https://wails.io/zh-cn/quick-start/installation/)。
 
 ## 赞助商
 
@@ -131,7 +131,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 ## 贡献者
 
-贡献者列表对于 README 文件来说太大了！所有为这个项目做出贡献的了不起的人在[这里](https://wails.io/credits#contributors)都有自己的页面。
+贡献者列表对于 README 文件来说太大了！所有为这个项目做出贡献的了不起的人在[这里](https://wails.io/credits/)都有自己的页面。
 
 ## 许可证
 

@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML 窗口在加载时没有资产服务器源，因此无法动态获取`/wails/runtime.js`。在这种窗口中与宿主通信有两种方式：
 
 1. <strong>直接编写 HTML。</strong>对于任何在打开时设置了`WebviewWindowOptions.AllowSimpleEventEmit = true`和`HTML`的窗口，框架都会自动注入一个精简的`window.wails.Events`垫片——更新程序的内置路径和 BYO 路径正是如此。无需构建步骤。下面的示例采用此方式。
-2. **使用你偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，并在构建时将其导入自定义 HTML。`Events.On`完全在客户端运行，因此可以开箱即用；`Events.Emit`则通过运行时的 fetch 传输层，而 null 源会使其失效——因此，请通过运行时的[`setTransport`](https://wails.io/wails/runtime.js)钩子安装一个精简的 postMessage 传输层，经由`window._wails.invoke("wails:event:emit:<name>")`进行路由。如果`window.wails.Events`已在作用域中，框架注入不会执行任何操作，因此两种方式不会冲突。
+2. **使用你偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，并在构建时将其导入自定义 HTML。`Events.On`完全在客户端运行，因此可以开箱即用；`Events.Emit`则通过运行时的 fetch 传输层，而 null 源会使其失效——因此，请通过运行时的[`setTransport`](/guides/custom-transport/)钩子安装一个精简的 postMessage 传输层，经由`window._wails.invoke("wails:event:emit:<name>")`进行路由。如果`window.wails.Events`已在作用域中，框架注入不会执行任何操作，因此两种方式不会冲突。
 
 无论采用哪种方式，自定义 HTML 中编写的 JS 都会调用相同的`Events.On`/`Events.Emit` API：
 

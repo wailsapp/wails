@@ -57,7 +57,7 @@ Wails v3.0.0, Windows, macOS ve Linux masaüstü uygulamaları için kararlı s�
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## İçerik
 
@@ -100,7 +100,7 @@ Proje yol haritasına [buradan](https://github.com/wailsapp/wails/discussions/14
 
 ## Başlarken
 
-Kurulum talimatları [resmi web sitesinde](https://v3.wails.io/quick-start/installation/) bulunmaktadır.
+Kurulum talimatları [resmi web sitesinde](https://wails.io/quick-start/installation/) bulunmaktadır.
 
 
 ## Sponsorlar
@@ -109,7 +109,7 @@ Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## Sıkça Sorulan Sorular
@@ -135,7 +135,7 @@ Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir
 
 ## Katkıda Bulunanlar
 
-Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits#contributors) bulunmaktadır.
+Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits/) bulunmaktadır.
 
 
 ## Lisans

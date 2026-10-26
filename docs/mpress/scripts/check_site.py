@@ -12,6 +12,22 @@ from xml.etree import ElementTree
 from check_translations import LANGUAGES
 
 
+def site_url():
+    """Return site.baseURL from mpress.yaml, which sets every canonical URL."""
+    config = Path(__file__).resolve().parents[1] / "mpress.yaml"
+    for line in config.read_text(encoding="utf-8").splitlines():
+        key, _, value = line.strip().partition(":")
+        if key == "baseURL":
+            return value.strip().strip("\"'").rstrip("/")
+    raise SystemExit("site.baseURL is missing from " + str(config))
+
+
+SITE_URL = site_url()
+# Absolute links to the site's own pages: the current host, and v3.wails.io,
+# which redirects to the same path after the move to wails.io.
+SITE_HOSTS = {urlsplit(SITE_URL).netloc, "v3.wails.io"}
+
+
 class Page(HTMLParser):
     def __init__(self, path):
         super().__init__(convert_charrefs=True)
@@ -78,7 +94,7 @@ def check_page(page, site, repository, errors):
         errors.append(relative + ": Markdown code fence was displayed as prose")
     if relative == "404.html":
         return
-    expected = "https://v3.wails.io" + route(page.path, site)
+    expected = SITE_URL + route(page.path, site)
     if page.canonical != expected:
         errors.append(relative + ": incorrect canonical " + page.canonical)
     if page.source:
@@ -88,10 +104,10 @@ def check_page(page, site, repository, errors):
 
 
 def check_links(page, site, pages, aliases, errors):
-    current = "https://v3.wails.io" + route(page.path, site)
+    current = SITE_URL + route(page.path, site)
     for link in page.links:
         target = urlsplit(urljoin(current, link))
-        if target.scheme not in {"http", "https"} or target.netloc != "v3.wails.io":
+        if target.scheme not in {"http", "https"} or target.netloc not in SITE_HOSTS:
             continue
         path = unquote(target.path)
         path = aliases.get(path, path)
