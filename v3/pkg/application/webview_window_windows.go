@@ -2562,8 +2562,12 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	if len(appOpts.AdditionalBrowserArgs) > 0 {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, appOpts.AdditionalBrowserArgs...)
 	}
+	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalBrowserArgs...)
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
+	if opts.WebviewUserDataPath != "" {
+		chromium.DataPath = opts.WebviewUserDataPath
+	}
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
 	// Apply the cross-platform Permissions map first; the WebView2-specific
