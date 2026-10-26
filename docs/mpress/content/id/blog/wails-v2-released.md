@@ -21,24 +21,24 @@ Rilis ini melampaui semua yang pernah saya harapkan. Saya berharap rilis ini mem
 
 ## *Apa itu* Wails?
 
-Jika Anda belum mengenal Wails, ini adalah proyek yang memungkinkan pemrogram Go menyediakan frontend kaya fitur untuk program Go mereka dengan menggunakan teknologi web yang sudah dikenal. Wails merupakan alternatif Electron yang ringan dan berbasis Go. Informasi lebih lengkap dapat ditemukan di [situs resmi](https://wails.io/docs/introduction).
+Jika Anda belum mengenal Wails, ini adalah proyek yang memungkinkan pemrogram Go menyediakan frontend kaya fitur untuk program Go mereka dengan menggunakan teknologi web yang sudah dikenal. Wails merupakan alternatif Electron yang ringan dan berbasis Go. Informasi lebih lengkap dapat ditemukan di [situs resmi](https://v2.wails.io/docs/introduction).
 
 ## Apa yang baru?
 
 Rilis v2 merupakan lompatan besar bagi proyek ini dan mengatasi banyak kendala yang ada di v1. Jika Anda belum membaca postingan blog tentang rilis Beta untuk [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/), atau [Linux](/blog/wails-v2-beta-for-linux/), saya menyarankan Anda membacanya karena semua perubahan utama dibahas secara lebih mendetail. Ringkasnya:
 
 - Komponen Webview2 untuk Windows yang mendukung standar web modern dan kemampuan debugging.
-- [Tema gelap/terang](https://wails.io/docs/reference/options#theme) + [tema khusus](https://wails.io/docs/reference/options#customtheme) di Windows.
+- [Tema gelap/terang](https://v2.wails.io/docs/reference/options#theme) + [tema khusus](https://v2.wails.io/docs/reference/options#customtheme) di Windows.
 - Windows kini tidak memerlukan CGO.
 - Dukungan siap pakai untuk templat proyek Svelte, Vue, React, Preact, Lit, dan Vanilla.
 - Integrasi [Vite](https://vitejs.dev/) yang menyediakan lingkungan pengembangan dengan hot reload untuk aplikasi Anda.
-- [Menu](https://wails.io/docs/guides/application-development#application-menu) dan [dialog](https://wails.io/docs/reference/runtime/dialog) aplikasi native.
-- Efek tembus cahaya sebagian pada jendela native untuk [Windows](https://wails.io/docs/reference/options#windowistranslucent) dan [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Mendukung latar Mica dan Acrylic.
-- Buat [penginstal NSIS](https://wails.io/docs/guides/windows-installer) dengan mudah untuk deployment di Windows.
-- [Pustaka runtime](https://wails.io/docs/reference/runtime/intro) yang kaya fitur dan menyediakan berbagai metode utilitas untuk memanipulasi jendela, menangani peristiwa, dialog, menu, serta logging.
-- Dukungan untuk [mengobfuscasi](https://wails.io/docs/guides/obfuscated) aplikasi Anda menggunakan [garble](https://github.com/burrowers/garble).
+- [Menu](https://v2.wails.io/docs/guides/application-development#application-menu) dan [dialog](https://v2.wails.io/docs/reference/runtime/dialog) aplikasi native.
+- Efek tembus cahaya sebagian pada jendela native untuk [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) dan [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Mendukung latar Mica dan Acrylic.
+- Buat [penginstal NSIS](https://v2.wails.io/docs/guides/windows-installer) dengan mudah untuk deployment di Windows.
+- [Pustaka runtime](https://v2.wails.io/docs/reference/runtime/intro) yang kaya fitur dan menyediakan berbagai metode utilitas untuk memanipulasi jendela, menangani peristiwa, dialog, menu, serta logging.
+- Dukungan untuk [mengobfuscasi](https://v2.wails.io/docs/guides/obfuscated) aplikasi Anda menggunakan [garble](https://github.com/burrowers/garble).
 - Dukungan untuk mengompresi aplikasi Anda menggunakan [UPX](https://upx.github.io/).
-- Pembuatan TypeScript secara otomatis dari struct Go. Informasi selengkapnya tersedia [di sini](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Pembuatan TypeScript secara otomatis dari struct Go. Informasi selengkapnya tersedia [di sini](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - Tidak ada pustaka atau DLL tambahan yang perlu didistribusikan bersama aplikasi Anda, di platform mana pun.
 - Tidak perlu membundel aset frontend. Cukup kembangkan aplikasi Anda seperti aplikasi web lainnya.
 
