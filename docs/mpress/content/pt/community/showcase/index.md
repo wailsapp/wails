@@ -48,6 +48,7 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Captura de tela do Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Captura de tela do Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Captura de tela do MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/wscreensavers/"><img src="/assets/showcase-images/wscreensavers.png" alt="Captura de tela do WScreenSavers" loading="lazy"><span>WScreenSavers</span></a>
 </div>
 
 ## Como adicionar meu projeto à vitrine
