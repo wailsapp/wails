@@ -27,6 +27,11 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 - Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
 - Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
 
+- Fix Linux dark mode detection returning light on a dark desktop until the colour
+  scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend.
+  Both backends now share one implementation, backed by the
+  `org.freedesktop.appearance` portal namespace (#6072)
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
