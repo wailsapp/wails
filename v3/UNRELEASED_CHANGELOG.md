@@ -24,6 +24,8 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
+- Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
