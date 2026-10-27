@@ -7,10 +7,10 @@ sourcePath: "quick-start/installation.md"
 
 ## クイックインストール（5 分）
 
-@note{type="tip" title="要点 — 経験豊富な開発者向け"}
+@note{type="tip" title="要点のみ — 経験豊富な開発者向け"}
 ```bash
-# Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+# Install Go 1.26+, then:
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -22,16 +22,16 @@ wails3 setup   # Interactive setup wizard (experimental)
 
 @steps
 ### Go のインストール（必須）
-Wails には Go 1.25 以降が必要です。
+Wails v3 には、Go 1.26 以降のビルドツールチェーンが必要です。現行の Go 1.26 パッチリリースをインストールしてください。古い Go ランチャーでも、`GOTOOLCHAIN=auto` の場合は適切なツールチェーンが自動的にダウンロードされることがあります。自動ダウンロードを無効にしている場合は、必要なツールチェーンを自分でインストールしてください。スタータープロジェクト自体の `go.mod` 宣言によって、Wails 依存関係の要件が引き下げられることはありません。
 
 @tabs{sync-key="os"}
 [Windows]
-**[go.dev/dl](https://go.dev/dl/)** から Windows インストーラーをダウンロードして実行します。
+**[go.dev/dl](https://go.dev/dl/)** から Windows 用インストーラーをダウンロードして実行します。
 
 **インストールを確認：**
 
 ```powershell
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 ```
 
 **PATH を確認：**
@@ -45,7 +45,7 @@ $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
 [macOS]
 **方法 1：公式インストーラー**
 
-**[go.dev/dl](https://go.dev/dl/)** から macOS インストーラー（.pkg ファイル）をダウンロードして実行します。
+**[go.dev/dl](https://go.dev/dl/)** から macOS 用インストーラー（.pkg ファイル）をダウンロードして実行します。
 
 **方法 2：Homebrew**
 
@@ -56,11 +56,11 @@ brew install go
 **インストールを確認：**
 
 ```bash
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 echo $PATH | grep go/bin  # Should show ~/go/bin
 ```
 
-`~/go/bin` が PATH にない場合は、`~/.zshrc` または `~/.bash_profile` に追加します：
+`~/go/bin` が PATH に含まれていない場合は、`~/.zshrc` または `~/.bash_profile` に追加します：
 
 ```bash
 export PATH=$PATH:~/go/bin
@@ -69,11 +69,11 @@ export PATH=$PATH:~/go/bin
 [Linux]
 **方法 1：公式 tarball**
 
-**[go.dev/dl](https://go.dev/dl/)** から Linux の tarball をダウンロードし、次を実行します：
+**[go.dev/dl](https://go.dev/dl/)** から Linux 用 tarball をダウンロードし、次を実行します：
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 **方法 2：パッケージマネージャー**
@@ -105,20 +105,20 @@ echo $PATH | grep go/bin
 
 @end
 
-### プラットフォーム依存関係のインストール
+### プラットフォーム依存パッケージのインストール
 @tabs{sync-key="os"}
 [Windows]
 **WebView2 Runtime**（通常はプリインストール済み）
 
-Windows 10/11 には、WebView2 が標準で含まれています。含まれていない場合：
+Windows 10/11 には、WebView2 が標準で含まれています。見つからない場合：
 
 - [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) からダウンロードします
-- または、後で `wails3 doctor` を実行します。手順が案内されます
+- または、後で `wails3 doctor` を実行します。必要な手順が案内されます
 
-**これで完了です！** ほかの依存関係は必要ありません。
+<strong>以上で完了です。</strong>ほかの依存パッケージは必要ありません。
 
-@note{type="tip" title="Windows 11 のパフォーマンス向上のヒント"}
-プロジェクトの保存先として [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) の利用を検討してください。Dev Drive は開発者向けワークロードに最適化されており、ビルド時間とディスクアクセス速度を最大 30% 大幅に改善できます。
+@note{type="tip" title="Windows 11 向けパフォーマンスのヒント"}
+プロジェクトの保存先として [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) の使用を検討してください。Dev Drive は開発者のワークロード向けに最適化されており、ビルド時間とディスクアクセス速度を最大 30% 改善できます。
 
 @end
 
@@ -129,7 +129,7 @@ Windows 10/11 には、WebView2 が標準で含まれています。含まれて
 xcode-select --install
 ```
 
-表示されたダイアログで「Install」をクリックします。
+表示されたダイアログで「インストール」をクリックします。
 
 **確認：**
 
@@ -137,19 +137,19 @@ xcode-select --install
 xcode-select -p  # Should show /Library/Developer/CommandLineTools
 ```
 
-**これで完了です！** macOS には WebKit が標準で含まれています。
+<strong>以上で完了です。</strong>macOS には WebKit が標準で含まれています。
 
 [Linux]
 **ビルドツールと WebKit**
 
 @note{type="caution" title="ディストリビューションの最小バージョン"}
-Wails v3 では、デフォルトで **WebKitGTK 6.0** が必要です。WebKit2GTK 4.1 のみを提供するディストリビューション（Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x）では、レガシーの `-tags gtk3` を明示的に有効にしてビルドする必要があります。WebKit2GTK 4.0 のみを提供するさらに古いリリース（Ubuntu 20.04、Debian 11、RHEL 8）はサポートされていません。
+Wails v3 は、デフォルトで **WebKitGTK 6.0** を必要とします。WebKit2GTK 4.1 のみを提供するディストリビューション（Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x）では、レガシーの `-tags gtk3` オプトインを指定してビルドする必要があります。WebKit2GTK 4.0 のみを提供する、さらに古いリリース（Ubuntu 20.04、Debian 11、RHEL 8）はサポートされていません。
 
 @end
 
 @tabs{sync-key="distro"}
 [Ubuntu/Debian]
-デフォルトの GTK4 スタックには Ubuntu 24.04 以降または Debian 13 以降が必要です。
+デフォルトの GTK4 スタックには、Ubuntu 24.04 以降または Debian 13 以降が必要です。
 
 ```bash
 sudo apt update
@@ -177,19 +177,19 @@ sudo emerge --ask net-libs/webkit-gtk:6
 ```
 
 [NixOS]
-使用している `shell.nix` または `devShell` に追加します：
+`shell.nix` または `devShell` に追加します：
 
 ```nix
 buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 ```
 
 [その他]
-Wails のインストール後に `wails3 doctor` を実行します。使用しているディストリビューションに必要なパッケージが正確に表示されます。
+Wails のインストール後に `wails3 doctor` を実行すると、使用しているディストリビューションに必要なパッケージが正確に表示されます。
 
 @end
 
 @note{type="info" title="レガシー GTK3 スタック"}
-対象のディストリビューションがまだ WebKitGTK 6.0 を提供していない場合（Ubuntu 22.04 LTS、Debian 12 など）は、代わりに GTK3 と WebKit2GTK 4.1 の開発ライブラリ（Debian/Ubuntu では `libgtk-3-dev libwebkit2gtk-4.1-dev`、その他のディストリビューションでは相当するもの）をインストールし、`wails3 build -tags gtk3` を指定してビルドします。レガシー方式は v3.0.x 系までサポートされ、v3.1 で削除されます。詳細については、[Linux パッケージング — レガシー GTK3 サポート](/guides/build/linux/#legacy-gtk3-support)を参照してください。
+対象のディストリビューションがまだ WebKitGTK 6.0 を提供していない場合（例：Ubuntu 22.04 LTS、Debian 12）は、代わりに GTK3 + WebKit2GTK 4.1 の開発ライブラリ（Debian/Ubuntu では `libgtk-3-dev libwebkit2gtk-4.1-dev`、ほかのディストリビューションでは同等のもの）をインストールし、`wails3 build -tags gtk3` を指定してビルドしてください。レガシー方式は v3.0.x 系までサポートされ、v3.1 で削除されます。詳細は、[Linux パッケージング — レガシー GTK3 のサポート](/guides/build/linux/#legacy-gtk3-support)を参照してください。
 
 @end
 
@@ -197,7 +197,7 @@ Wails のインストール後に `wails3 doctor` を実行します。使用し
 
 ### Wails CLI のインストール
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 これにより、`wails3` コマンドが `~/go/bin`（Windows では `%USERPROFILE%\go\bin`）にインストールされます。
@@ -207,7 +207,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 wails3 setup
 ```
 
-セットアップウィザードは、依存関係を確認し、不足しているもののインストールを支援して、プロジェクトのデフォルト設定を構成します。
+セットアップウィザードは依存関係を確認し、不足しているもののインストールを支援して、プロジェクトのデフォルト設定を構成します。
 
 @note{type="caution" title="試験的機能"}
 セットアップウィザードは新しい機能で、主に Linux でテストされています。問題が発生した場合は、[報告](https://github.com/wailsapp/wails/issues/4904)し、代わりに `wails3 doctor` を使用してください。
@@ -222,7 +222,7 @@ wails3 doctor
 **想定される出力（または同様の出力）：**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -244,8 +244,8 @@ Wails (v3.0.0-dev)  Wails Doctor
 # Build Environment
 
 ┌─────────────┬─────────────────┐
-| Wails CLI   | Your installed version |
-| Go Version  | go1.25.0        |
+| Wails CLI   | v3.0.0          |
+| Go Version  | go1.26.0        |
 └─────────────┴─────────────────┘
 
 # Dependencies
@@ -266,12 +266,12 @@ SUCCESS Your system is ready for Wails development!
 ```
 
 @note{type="info" title="`wails3` コマンドが見つからない場合"}
-`~/go/bin` が PATH にありません。上記の手順 1 を参照して修正し、ターミナルを再起動してください。
+`~/go/bin` が PATH に含まれていません。上記の手順 1 を参照して修正し、ターミナルを再起動してください。
 
 @end
 
 ### npm のインストール（任意、ただし推奨）
-ほとんどの Wails テンプレートでは、フロントエンドのツールに npm を使用します。
+ほとんどの Wails テンプレートでは、フロントエンドのツールとして npm を使用します。
 
 @tabs{sync-key="os"}
 [Windows]
@@ -284,9 +284,9 @@ npm --version
 ```
 
 [macOS]
-**オプション 1：公式インストーラー** [nodejs.org](https://nodejs.org/) からダウンロードします
+**方法 1：公式インストーラー** [nodejs.org](https://nodejs.org/) からダウンロードします
 
-**オプション 2：Homebrew**
+**方法 2：Homebrew**
 
 ```bash
 brew install node
@@ -299,14 +299,14 @@ npm --version
 ```
 
 [Linux]
-**オプション 1：NodeSource**
+**方法 1：NodeSource**
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt-get install -y nodejs  # Ubuntu/Debian
 ```
 
-**オプション 2：パッケージマネージャー**
+**方法 2：パッケージマネージャー**
 
 ```bash
 sudo dnf install nodejs  # Fedora
@@ -322,7 +322,7 @@ npm --version
 @end
 
 @note{type="tip" title="その他のパッケージマネージャー"}
-`pnpm`、`yarn`、または `bun` を使いたい場合でも問題ありません。プロジェクト内の `Taskfile.yml` を更新し、使用するツールを指定してください。
+`pnpm`、`yarn`、または`bun`を使いたい場合も問題ありません。プロジェクト内の`Taskfile.yml`を更新して、使用するツールを指定してください。
 
 @end
 
@@ -330,18 +330,18 @@ npm --version
 
 ## トラブルシューティング
 
-### `wails3` コマンドが見つからない
+### `wails3`コマンドが見つからない
 
-**原因：** `~/go/bin`（または `%USERPROFILE%\go\bin`）が PATH に含まれていません。
+**原因：**`~/go/bin`（または`%USERPROFILE%\go\bin`）が PATH に含まれていません。
 
 **解決方法：**
 
 @tabs{sync-key="os"}
 [Windows]
 1. 「環境変数」を開きます（スタートメニューで検索してください）
-2. 「ユーザー環境変数」で `Path` を探します
+2. 「ユーザー環境変数」で`Path`を探します
 3. 「編集」→「新規」をクリックします
-4. `C:\Users\YourName\go\bin` を追加します（`YourName` は置き換えてください）
+4. `C:\Users\YourName\go\bin`を追加します（`YourName`は置き換えてください）
 5. すべてのダイアログで「OK」をクリックします
 6. **ターミナルを再起動します**
 
@@ -352,13 +352,13 @@ $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
 ```
 
 [macOS/Linux]
-`~/.zshrc`（macOS）または `~/.bashrc`（Linux）に追加します：
+`~/.zshrc`（macOS）または`~/.bashrc`（Linux）に追加します：
 
 ```bash
 export PATH=$PATH:~/go/bin
 ```
 
-再読み込み：
+再読み込みします：
 
 ```bash
 source ~/.zshrc  # or ~/.bashrc
@@ -375,21 +375,21 @@ wails3 version
 
 ---
 
-#### `wails3 doctor` で依存関係の不足が報告される
+#### `wails3 doctor`で依存関係の不足が報告される
 
-<strong>Linux：</strong>出力には、インストールが必要なパッケージが正確に示されます。例：
+<strong>Linux：</strong>出力には、インストールが必要なパッケージが明示されます。例：
 
 ```
 ❌ webkit2gtk not found
    Install with: sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-<strong>Windows：</strong>WebView2 が見つからない場合：
+<strong>Windows：</strong>WebView2 がない場合：
 
-- [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) からダウンロードします
+- [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)からダウンロードします
 - または、最初のアプリを実行すると自動的にインストールされます
 
-<strong>macOS：</strong>Xcode ツールが見つからない場合：
+<strong>macOS：</strong>Xcode ツールがない場合：
 
 ```bash
 xcode-select --install
@@ -399,18 +399,18 @@ xcode-select --install
 
 #### Go のバージョンが古すぎる
 
-Wails v3 には Go 1.25 以降が必要です。これより古いバージョンを使用している場合：
+Wails v3には Go 1.26以降が必要です。古いバージョンを使用している場合：
 
 @tabs{sync-key="os"}
 [Windows/macOS]
-[go.dev/dl](https://go.dev/dl/) から最新版をダウンロードし、再インストールします。
+[go.dev/dl](https://go.dev/dl/)から最新版をダウンロードし、再インストールします。
 
 [Linux]
-[go.dev/dl](https://go.dev/dl/) から最新の tarball をダウンロードし、次の操作を行います：
+[go.dev/dl](https://go.dev/dl/)から最新の tarball をダウンロードし、次の操作を行います：
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 @end
@@ -422,25 +422,25 @@ sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```
 
 @note{type="caution" title="開発版"}
 - バグや破壊的変更が含まれる可能性があります
-- 作成されるプロジェクトでは、ローカルの Wails を参照するために `replace` ディレクティブが使用されます
-- コントリビューター、または新機能のテストにのみ推奨します
+- 作成したプロジェクトでは、ローカルの Wails を参照するために`replace`ディレクティブが使用されます
+- コントリビューター、または新機能をテストする場合にのみ推奨します
 
 @end
 
 ## 次のステップ
 
-<strong>インストールが完了しました！</strong>お使いのシステムで Wails を使って開発する準備が整いました。
+<strong>インストールが完了しました！</strong>これで、Wails を開発する準備が整いました。
 
 @cards{cols="1"}
 🚀 最初のアプリを作成する
-10 分で動作するアプリケーションを作成します。
+10分で動作するアプリケーションを作成します。
 
 [最初のアプリのチュートリアル →](/quick-start/first-app/)
 
@@ -448,7 +448,7 @@ go install
 
 @cards{cols="1"}
 📖 テンプレートを見る
-すぐに使えるテンプレートを確認します。
+標準で利用できるテンプレートを確認します。
 
 ```bash
 wails3 init -l  # List templates
@@ -458,4 +458,4 @@ wails3 init -l  # List templates
 
 ---
 
-**問題が発生しましたか？**[Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[Issue を作成](https://github.com/wailsapp/wails/issues)してください。
+**問題が発生した場合は、**[Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[Issue を作成](https://github.com/wailsapp/wails/issues)してください。

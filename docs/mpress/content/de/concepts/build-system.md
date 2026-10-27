@@ -686,4 +686,4 @@ Die Cross-Kompilierung zwischen Linux, Windows und macOS erfolgt in v3 im Allgem
 
 ---
 
-**Fragen zum Erstellen von Builds?** Auf [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Build-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/build) ansehen.
+**Fragen zum Erstellen von Builds?** Auf [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Build-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build) ansehen.

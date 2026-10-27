@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` est utile pour les fenêtres contextuelles de la zone de notification sous Windows, macOS et les environnements de bureau Linux où le focus est attribué par clic. Wails désactive ce comportement sous les environnements Linux où le focus suit la souris, notamment dans les configurations courantes de Hyprland, Sway et i3, car le simple fait de quitter la fenêtre contextuelle pourrait sinon la masquer avant de pouvoir l’utiliser. `HideOnEscape` reste disponible dans ces environnements.
 
-Les comportements de clic gauche et de clic droit décrits ci-dessus sont des valeurs par défaut intelligentes. Un gestionnaire `OnClick` ou `OnRightClick` explicite remplace le comportement par défaut correspondant. Pour les vérifications propres aux plateformes et les cas limites, consultez la [suite de tests manuels de la zone de notification](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) et l’[exemple de test de charge de la zone de notification](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+Les comportements de clic gauche et de clic droit décrits ci-dessus sont des valeurs par défaut intelligentes. Un gestionnaire `OnClick` ou `OnRightClick` explicite remplace le comportement par défaut correspondant. Pour les vérifications propres aux plateformes et les cas limites, consultez la [suite de tests manuels de la zone de notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) et l’[exemple de test de charge de la zone de notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Gestionnaires de clics
 
@@ -714,10 +714,10 @@ Créez des menus contextuels accessibles par clic droit.
 📖 Exemple de zone de notification
 Explorez une application complète utilisant la zone de notification.
 
-[En savoir plus →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[En savoir plus →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de zones de notification](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de zones de notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic).

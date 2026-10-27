@@ -19,7 +19,7 @@ This runs `wails3 task windows:package` which:
 2. Generates the WebView2 bootstrapper
 3. Creates an NSIS installer
 
-Output: `build/windows/nsis/<AppName>-installer.exe`
+Output: `bin/<AppName>-<arch>-installer.exe`. The NSIS source scripts remain under `build/windows/nsis/`.
 
 ### MSIX Package
 
@@ -54,7 +54,7 @@ Application metadata comes from `build/windows/info.json`:
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -90,7 +90,7 @@ vars:
 Store your certificate password securely:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 See [Signing Applications](/guides/build/signing/) for details.

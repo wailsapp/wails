@@ -20,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.27"
 
       - name: Update Sponsors
         run: cd tools/sponsorkit && go run . -login leaanthony -out ../../website/static/img/sponsors.svg
@@ -34,18 +34,23 @@ jobs:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           GOWORK: "off"
 
+      - name: Copy images to the v3 site
+        run: |
+          mkdir -p docs/mpress/static/img
+          cp website/static/img/sponsors.svg website/static/img/contributors.svg docs/mpress/static/img/
+
       - name: Commit updated images
         id: commit-images
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- website/static/img/sponsors.svg website/static/img/contributors.svg; then
+          if git diff --quiet -- website/static/img/sponsors.svg website/static/img/contributors.svg docs/mpress/static/img/sponsors.svg docs/mpress/static/img/contributors.svg; then
             echo "No sponsor or contributor changes to commit."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          git add website/static/img/sponsors.svg website/static/img/contributors.svg
-          git commit -m "chore: update sponsors.svg and contributors.svg [skip ci]"
+          git add website/static/img/sponsors.svg website/static/img/contributors.svg docs/mpress/static/img/sponsors.svg docs/mpress/static/img/contributors.svg
+          git commit -m "chore: update sponsor and contributor images"
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Push updated images

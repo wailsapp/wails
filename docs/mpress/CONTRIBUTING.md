@@ -1,44 +1,54 @@
-# Correct the Wails v3 documentation
+# Contribute to the Wails v3.0.0 documentation
 
-Correction PRs are welcome: fix a typo, repair a link, clarify an explanation,
-update an example, or correct a translation. You do not need to open an issue
-or add a failing code test for a documentation-only correction.
+Use the [M-Press contributor walkthrough](content/contributing/documentation.md)
+for downloads, installation on macOS/Linux/Windows, live preview, authoring,
+validation, and submitting a pull request. The same guide is published at
+[Write documentation with M-Press](https://wails.io/contributing/documentation/).
 
-1. Fork `wailsapp/wails` and create a documentation branch from `master`.
-2. Install M-Press v1.0.17 from its release archives, or run:
+Documentation-only corrections do not need a prior issue or a failing code test.
+Fork `wailsapp/wails`, then create your contribution branch from
+`master` and target that branch in your PR.
 
-   ```sh
-   go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-   ```
+## Quick start
 
-3. From the repository root, run `mpress dev`. Edit the `.md` files in
-   `docs/mpress/content/`; English lives directly in that directory and
-   translations live under their language codes (for example `fr/`).
-4. Run `python3 docs/mpress/scripts/check_translations.py`,
-   `mpress build --strict --no-purge-css`, `mpress check`, and
-   `python3 docs/mpress/scripts/check_site.py docs/mpress/site`.
-5. Open a PR against `master`, explain the correction and list the checks run.
-   Include before/after screenshots for layout changes. Verify any code examples
-   you change, and identify the platform and Wails version used.
+Install the **latest stable M-Press release** from the
+[release archives](https://github.com/leaanthony/mpress/releases/latest), matching the repository build script.
+The walkthrough explains archive checksums, extraction and PATH setup. No Go or
+Node.js is needed when using the executable. Alternatively, with Go 1.26.10 or
+later (or automatic toolchain selection):
 
-The production site is static. You do not need Node.js, Cloudflare credentials,
-a translation provider, or private M-Press services to preview or correct it.
-Every published language must contain a complete translation of every English
-page. Do not copy English prose into a language folder or rely on fallbacks.
-A translation correction can change just the affected language. If you change
-English meaning, update the corresponding translations; unrelated pages do not
-need to be regenerated.
+```sh
+go install github.com/leaanthony/mpress/cmd/mpress@latest
+mpress version
+```
 
-The translated `changelog.md` files are retained for publication and coverage,
-but their historical segment audit is excluded until the generated release notes
-are re-synchronised. Translation audits remain strict for every other page.
+From the Wails repository root:
 
-Markdown keeps headings, paragraphs, lists and fenced code readable. Preserve its
-`---` YAML metadata block and matching `@...` / `@end` component boundaries. See
-https://github.com/leaanthony/mpress for the authoring reference.
+```sh
+mpress dev
+```
 
-The M-Press site is built from `docs/mpress/content/`; do not edit generated
-`docs/mpress/site/` files.
+Open `http://127.0.0.1:3000`. Edit Markdown in `docs/mpress/content/` while the
+preview runs. Preserve page metadata and matching `@...` / `@end` components.
+Stop the preview with Ctrl+C before validation:
 
-Wails code contributions and feature proposals retain the project's existing
-rules; this guide applies to documentation corrections.
+```sh
+python3 docs/mpress/scripts/check_translations.py
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
+```
+
+Use `python` on Windows if that is the installed Python 3 command. Translation
+coverage failures block the check; stale translation findings are warnings unless
+`--strict` is requested. Existing English pages can be improved while translation
+sync catches up; new pages need complete translations in every published locale.
+Do not insert English placeholders. Translated changelog segment findings remain
+excluded by the checker's existing historical exception; file coverage still applies.
+
+Review your source diff and changed examples, then submit the PR against
+`master` with the checks you ran. Layout changes need screenshots.
+Generated `docs/mpress/site/` files and local caches stay out of commits.
+Deployment credentials and translation providers are not needed for this workflow.
+
+Wails code contributions and feature proposals retain their separate project rules.

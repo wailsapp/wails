@@ -65,6 +65,10 @@ Você pode consultar o estado atual com `app.Updater.State()` a qualquer momento
 
 `Restart` espera que o processo auxiliar chegue a `application.New` antes de solicitar que o aplicativo em execução seja encerrado. O tempo limite padrão de inicialização é de 30 segundos. Se o aplicativo executar uma inicialização demorada antes de `application.New`, defina `Config.HelperReadyTimeout` com uma duração maior, como `time.Minute`. Zero seleciona o valor padrão; durações negativas são rejeitadas. Se o tempo de inicialização se esgotar, `Restart` retorna `updater.ErrHelperNotReady` e mantém o aplicativo em execução aberto.
 
+A atualização é preparada em um diretório `wails-update-*` ao lado do binário instalado (no macOS, ao lado do pacote `.app`), portanto esse diretório precisa ser gravável.
+
+Dentro de um AppImage, o atualizador substitui e reinicia o arquivo `.AppImage` indicado por `$APPIMAGE`, e não a montagem somente leitura.
+
 A janela padrão reflete automaticamente o estado atual — por exemplo, quando `Check` não retorna nenhuma atualização, o usuário vê esta tela e a fecha com **Fechar**:
 
 ![A janela padrão do atualizador no estado Atualizado — marca de seleção verde, título "Você está usando a versão mais recente" e um único botão Fechar.](/assets/updater/default-window-up-to-date.png)
@@ -334,7 +338,7 @@ app.Updater.Init(updater.Config{
 Janelas InitialHTML são carregadas sem uma origem do servidor de ativos e, portanto, não podem buscar `/wails/runtime.js` dinamicamente. Há duas maneiras de se comunicar com o host a partir de uma delas:
 
 1. **Basta escrever HTML.** O framework injeta automaticamente um shim `window.wails.Events` mínimo em qualquer janela aberta com `WebviewWindowOptions.AllowSimpleEventEmit = true` e `HTML` definidos — exatamente como fazem os fluxos integrado e BYO do atualizador. Nenhuma etapa de build é necessária. Este é o caminho usado pelo exemplo abaixo.
-2. **Empacote `@wailsio/runtime` com o empacotador de sua preferência** (Vite, esbuild, Rollup) e importe-o em seu HTML personalizado durante o build. `Events.On` funciona sem configuração adicional porque opera totalmente no lado do cliente; `Events.Emit` passa pelo transporte fetch do runtime, que é interrompido pela origem nula — portanto, instale um pequeno transporte postMessage por meio do gancho [`setTransport`](https://wails.io/wails/runtime.js) do runtime, que encaminhe as mensagens por `window._wails.invoke("wails:event:emit:<name>")`. A injeção do framework não faz nada se `window.wails.Events` já estiver no escopo, evitando conflitos entre as duas abordagens.
+2. **Empacote `@wailsio/runtime` com o empacotador de sua preferência** (Vite, esbuild, Rollup) e importe-o em seu HTML personalizado durante o build. `Events.On` funciona sem configuração adicional porque opera totalmente no lado do cliente; `Events.Emit` passa pelo transporte fetch do runtime, que é interrompido pela origem nula — portanto, instale um pequeno transporte postMessage por meio do gancho [`setTransport`](/guides/custom-transport/) do runtime, que encaminhe as mensagens por `window._wails.invoke("wails:event:emit:<name>")`. A injeção do framework não faz nada se `window.wails.Events` já estiver no escopo, evitando conflitos entre as duas abordagens.
 
 Em ambos os casos, o JavaScript escrito em seu HTML personalizado chama a mesma API `Events.On` / `Events.Emit`:
 
@@ -648,6 +652,6 @@ Antes de publicar uma versão que o atualizador instalará:
 
 ## Veja também
 
-- Exemplo executável: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Exemplo executável: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Repositório de demonstração para testes: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Como permitir que um aplicativo Wails atualize a si próprio](/tutorials/04-self-update-a-wails-app/)

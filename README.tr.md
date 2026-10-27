@@ -32,7 +32,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -48,6 +48,16 @@
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+Wails v3.0.0, Windows, macOS ve Linux masaüstü uygulamaları için kararlı sürümdür. Android ve iOS desteği deneysel olmaya devam etmektedir.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## İçerik
 
@@ -90,7 +100,7 @@ Proje yol haritasına [buradan](https://github.com/wailsapp/wails/discussions/14
 
 ## Başlarken
 
-Kurulum talimatları [resmi web sitesinde](https://wails.io/docs/gettingstarted/installation) bulunmaktadır.
+Kurulum talimatları [resmi web sitesinde](https://wails.io/quick-start/installation/) bulunmaktadır.
 
 
 ## Sponsorlar
@@ -99,7 +109,7 @@ Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## Sıkça Sorulan Sorular
@@ -125,7 +135,7 @@ Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir
 
 ## Katkıda Bulunanlar
 
-Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits#contributors) bulunmaktadır.
+Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits/) bulunmaktadır.
 
 
 ## Lisans

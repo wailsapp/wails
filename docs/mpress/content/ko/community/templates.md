@@ -12,7 +12,7 @@ sourcePath: "community/templates.md"
 
 <!-- TODO: Update this link -->
 
-이 페이지에는 커뮤니티에서 지원하는 템플릿이 나열되어 있습니다. 자체 템플릿을 만들려면 [템플릿](https://wails.io/docs/guides/templates) 가이드를 참조하세요.
+이 페이지에는 커뮤니티에서 지원하는 템플릿이 나열되어 있습니다. 자체 템플릿을 만들려면 [템플릿](https://v2.wails.io/docs/guides/templates) 가이드를 참조하세요.
 
 @note{type="tip" title="템플릿 제출 방법"}
 하단의 `Edit this page`을 클릭하여 템플릿을 추가할 수 있습니다.

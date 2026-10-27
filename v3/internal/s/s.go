@@ -2,6 +2,7 @@ package s
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"unicode"
 )
 
@@ -210,17 +212,21 @@ func SYMLINK(source string, target string) {
 	checkError(err)
 }
 
-// COPY file from source to target
+// COPY file from source to target, keeping the source's permission bits
 func COPY(source string, target string) {
 	log("COPY %s -> %s", source, target)
 	src, err := os.Open(source)
 	checkError(err)
 	defer closefile(src)
+	info, err := src.Stat()
+	checkError(err)
 	if ISDIR(target) {
 		target = filepath.Join(target, filepath.Base(source))
 	}
 	d, err := os.Create(target)
 	checkError(err)
+	defer closefile(d)
+	checkError(d.Chmod(info.Mode().Perm()))
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
@@ -233,7 +239,46 @@ func MOVE(source string, target string) {
 	}
 	log("MOVE %s -> %s", source, target)
 	err := os.Rename(source, target)
+	if errors.Is(err, syscall.EXDEV) {
+		err = copyAcrossDevices(source, target)
+	}
 	checkError(err)
+}
+
+// copyAcrossDevices moves a regular file when rename cannot, e.g. from a tmpfs
+// build dir to an on-disk output dir. It copies into a temporary file beside
+// the target and renames that over it, so a failed copy leaves an existing
+// output untouched and a symlink at the target is replaced, as with rename.
+// The file mode is kept so an AppImage stays executable.
+func copyAcrossDevices(source, target string) error {
+	src, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	info, err := src.Stat()
+	if err != nil {
+		return err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(target), "."+filepath.Base(target)+".*")
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(tmp, src)
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Chmod(tmp.Name(), info.Mode().Perm())
+	}
+	if err == nil {
+		err = os.Rename(tmp.Name(), target)
+	}
+	if err != nil {
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	return os.Remove(source)
 }
 
 func CWD() string {

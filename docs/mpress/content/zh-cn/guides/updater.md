@@ -65,6 +65,10 @@ func main() {
 
 `Restart` 会等待辅助进程执行到 `application.New`，然后才请求正在运行的应用退出。默认启动超时为 30 秒。如果应用在 `application.New` 之前需要较长时间进行初始化，请将 `Config.HelperReadyTimeout` 设置为更长的时长，例如 `time.Minute`。零值使用默认值；负时长会被拒绝。如果启动超时，`Restart` 会返回 `updater.ErrHelperNotReady`，并保持当前应用运行。
 
+更新会暂存在已安装二进制文件旁边(macOS 上位于 `.app` 包旁边)的 `wails-update-*` 目录中,因此该目录必须可写。
+
+在 AppImage 中，更新程序会替换并重新启动 `$APPIMAGE` 所指向的 `.AppImage` 文件，而不是只读挂载。
+
 默认窗口会自动反映当前状态——例如，当`Check`返回没有可用升级时，用户会看到以下内容，并通过<strong>关闭</strong>将其关闭：
 
 ![处于“已是最新版本”状态的默认更新器窗口——绿色对勾、“你使用的是最新版本”标题，以及唯一的“关闭”按钮。](/assets/updater/default-window-up-to-date.png)
@@ -334,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML 窗口在加载时没有资产服务器源，因此无法动态获取`/wails/runtime.js`。在这种窗口中与宿主通信有两种方式：
 
 1. <strong>直接编写 HTML。</strong>对于任何在打开时设置了`WebviewWindowOptions.AllowSimpleEventEmit = true`和`HTML`的窗口，框架都会自动注入一个精简的`window.wails.Events`垫片——更新程序的内置路径和 BYO 路径正是如此。无需构建步骤。下面的示例采用此方式。
-2. **使用你偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，并在构建时将其导入自定义 HTML。`Events.On`完全在客户端运行，因此可以开箱即用；`Events.Emit`则通过运行时的 fetch 传输层，而 null 源会使其失效——因此，请通过运行时的[`setTransport`](https://wails.io/wails/runtime.js)钩子安装一个精简的 postMessage 传输层，经由`window._wails.invoke("wails:event:emit:<name>")`进行路由。如果`window.wails.Events`已在作用域中，框架注入不会执行任何操作，因此两种方式不会冲突。
+2. **使用你偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，并在构建时将其导入自定义 HTML。`Events.On`完全在客户端运行，因此可以开箱即用；`Events.Emit`则通过运行时的 fetch 传输层，而 null 源会使其失效——因此，请通过运行时的[`setTransport`](/guides/custom-transport/)钩子安装一个精简的 postMessage 传输层，经由`window._wails.invoke("wails:event:emit:<name>")`进行路由。如果`window.wails.Events`已在作用域中，框架注入不会执行任何操作，因此两种方式不会冲突。
 
 无论采用哪种方式，自定义 HTML 中编写的 JS 都会调用相同的`Events.On`/`Events.Emit` API：
 
@@ -648,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 另请参阅
 
-- 可运行示例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- 可运行示例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - 测试演示仓库：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - 教程：[为 Wails 应用添加自更新](/tutorials/04-self-update-a-wails-app/)

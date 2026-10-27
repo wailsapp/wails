@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## ウィンドウイベント
 
-Wails は、単一の API を通じてウィンドウのライフサイクルイベントと状態変更イベントをディスパッチします。イベントを受け取るだけのリスナーには `OnWindowEvent` を、デフォルトのアクションをキャンセルできるフックには `RegisterHook` を使用します。
+Wails は、ウィンドウのライフサイクルイベントと状態変更イベントを単一の API でディスパッチします。受動的なリスナーには `OnWindowEvent` を、デフォルトの動作を阻止できるキャンセル可能なフックには `RegisterHook` を使用します。
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -31,7 +31,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### ウィンドウの作成
 
-`app.Window.OnCreate` を使用すると、ウィンドウが作成されるたびにコールバックを実行できます。
+`app.Window.OnCreate` を使用して、ウィンドウが作成されるたびにコールバックを実行します。
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -49,13 +49,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-コールバックは `application.Window`（インターフェース）を受け取ります。`OnCreate` コールバックは、ウィンドウのランタイムが初期化された後、ウィンドウごとに一度呼び出されます。
+コールバックは `application.Window`（インターフェース）を受け取ります。`OnCreate` コールバックは、登録時に各ウィンドウにつき 1 回、ウィンドウが実行される前に呼び出されます。このコールバックを使用して、ウィンドウの設定とハンドラーの登録を行います。JavaScript を呼び出したり、フロントエンドランタイムを必要とするイベントを送信したりする場合は、`events.Common.WindowRuntimeReady` まで待ってください。
 
 ### WindowClosing
 
 ユーザーがウィンドウを閉じようとしたとき（X のクリック、⌘W、Alt+F4 など）に発生します。
 
-**フック**（`RegisterHook`）を使用してください。終了をキャンセルできるのはフックだけです。リスナーはイベントを監視できますが、終了を阻止することはできません。
+**フック**（`RegisterHook`）を使用してください。ウィンドウを閉じる操作をキャンセルできるのはフックだけです。リスナーはイベントを監視できますが、操作を阻止することはできません。
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -68,11 +68,11 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **重要：**
 
-- `WindowClosing` は、ユーザーが終了を試みたときにディスパッチされます。
-- `RegisterHook` コールバックは `e.Cancel()` を呼び出して、ウィンドウを開いたままにできます。
-- `WindowClosing` に対する `OnWindowEvent` コールバックは監視用です。呼び出されますが、キャンセルはできません。
+- `WindowClosing` は、ユーザーが開始したウィンドウを閉じる操作でディスパッチされます。
+- `RegisterHook` コールバックでは、`e.Cancel()` を呼び出してウィンドウを開いたままにできます。
+- `WindowClosing` に対する `OnWindowEvent` コールバックは監視用です。イベントは発生しますが、キャンセルはできません。
 
-**プログラムによる終了：** `window.Close()` を呼び出します。`window.Destroy()` は存在しません。
+**プログラムから閉じる場合：** `window.Close()` を呼び出します。`window.Destroy()` はありません。
 
 ### WindowRuntimeReady
 
@@ -110,7 +110,7 @@ window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEv
 })
 ```
 
-**例：フォーカス状態に応じた UI：**
+**例：フォーカスに応じた UI**
 
 ```go
 type FocusAwareWindow struct {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` を使用して、プログラムからフルスクリーンへの移行または解除を行います。`SetFullscreen(bool)` は存在しません。状態は `window.IsFullscreen() bool` で確認します。
+`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` を使用して、プログラムからフルスクリーンへの移行や解除を行います。`SetFullscreen(bool)` はありません。状態は `window.IsFullscreen() bool` で照会します。
 
 ## 位置とサイズのイベント
 
@@ -209,9 +209,9 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize` と `WindowDidMove` のイベント自体には座標が含まれません。コールバック内で `window.Size()` / `window.Position()` を使用してウィンドウの情報を取得してください。
+`WindowDidResize` と `WindowDidMove` のイベント自体には座標が含まれません。コールバック内で `window.Size()` / `window.Position()` を使用してウィンドウに照会してください。
 
-**例：レスポンシブレイアウト：**
+**例：レスポンシブレイアウト**
 
 ```go
 window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
@@ -231,7 +231,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## 完全な例
 
-すべてのイベント処理を備えた、本番環境で使用できるウィンドウの例です。
+すべてのイベント処理を備えた、本番環境対応のウィンドウの例です。
 
 ```go
 package main
@@ -423,8 +423,8 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 ### ✅ 推奨事項
 
 - **キャンセルにはフックを使用する** — `e.Cancel()` を呼び出せるのは `RegisterHook` コールバックだけです。
-- **終了時に状態を保存する** — 次回起動時にウィンドウの位置とサイズを復元します。
-- **頻繁に発生するイベントをデバウンスする** — `WindowDidResize` と `WindowDidMove` は短い間隔で繰り返し発生します。
+- **ウィンドウを閉じるときに状態を保存する** — 次回起動時にウィンドウの位置とサイズを復元します。
+- **頻繁に発生するイベントをデバウンスする** — `WindowDidResize` と `WindowDidMove` は短時間に連続して発生します。
 - **フォーカスの変更を処理する** — UI を適切に更新します。
 - **イベントを介して連携する** — ウィンドウ間のメッセージ送信には `app.Event.Emit` を使用します。
 - **購読を解除する** — ハンドラーが不要になったら解除してください。`OnWindowEvent` と `RegisterHook` は、どちらも購読解除用の `func()` を返します。
@@ -432,14 +432,14 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 ### ❌ 非推奨事項
 
 - **イベントハンドラーをブロックしない** — 処理を短時間で完了させてください。
-- **`OnWindowEvent`** からキャンセルしようとしないでください。`RegisterHook` を使用します。
-- **`window.Destroy()`** を使用しないでください。これは存在しないため、`window.Close()` を使用します。
+- **`OnWindowEvent` からキャンセルしようとしない** — `RegisterHook` を使用してください。
+- **`window.Destroy()` を使用しない** — これは存在しません。`window.Close()` を使用してください。
 - **イベントのたびに保存しない** — 先にデバウンスしてください。
 - **イベントに座標が含まれると想定しない** — `window.Position()` / `window.Size()` を呼び出してください。
 
 ## トラブルシューティング
 
-### WindowClosing フックで終了を阻止できない
+### WindowClosing フックでウィンドウを閉じる操作を阻止できない
 
 **原因：** `RegisterHook` ではなく `OnWindowEvent` を使用しています。
 
@@ -459,9 +459,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### イベントが発生しない
 
-<strong>原因：</strong>イベントの発生後にハンドラーを登録しています。
+**原因：** イベントの発生後にハンドラーを登録しています。
 
-<strong>解決策：</strong>ウィンドウの作成直後（または `app.Window.OnCreate` コールバック内）にハンドラーを登録します。
+**解決策：** ウィンドウの作成直後（または `app.Window.OnCreate` コールバック内）にハンドラーを登録してください。
 
 ```go
 window := app.Window.New()
@@ -470,9 +470,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### メモリリーク
 
-<strong>原因：</strong>有効期間の短い状態が、有効期間の長いハンドラーを保持しています。
+**原因：** 短命な状態によって、長期間存続するハンドラーが保持されています。
 
-**解決策：**`OnWindowEvent`/`RegisterHook` が返す購読解除用の `func()` を保持し、クリーンアップ時に呼び出します。
+**解決策：** `OnWindowEvent` / `RegisterHook` が返す購読解除用の `func()` を保持し、クリーンアップ時に呼び出してください。
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -484,12 +484,12 @@ unsub()
 
 **ウィンドウの基本** - ウィンドウ管理の基礎を学びます [詳細を見る →](/features/windows/basics/)
 
-**複数ウィンドウ** - マルチウィンドウアプリケーションのパターンを学びます [詳細を見る →](/features/windows/multiple/)
+**複数のウィンドウ** - マルチウィンドウアプリケーションのパターンを学びます [詳細を見る →](/features/windows/multiple/)
 
 **イベントシステム** - イベントシステムを詳しく学びます [詳細を見る →](/features/events/system/)
 
-**アプリケーションのライフサイクル** - アプリケーションのライフサイクルについて理解します [詳細を見る →](/concepts/lifecycle/)
+**アプリケーションのライフサイクル** - アプリケーションのライフサイクルを理解します [詳細を見る →](/concepts/lifecycle/)
 
 ---
 
-**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。

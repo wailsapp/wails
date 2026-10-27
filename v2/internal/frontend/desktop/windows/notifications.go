@@ -4,6 +4,7 @@
 package windows
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -21,6 +22,7 @@ import (
 	_ "unsafe" // for go:linkname
 
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
+	"git.sr.ht/~jackmordaunt/go-toast/v2/tmpl"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -161,6 +163,29 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 	return true, nil
 }
 
+// pushToast renders the notification and pushes it through the WinRT API only.
+// toast.Notification.Push always enables go-toast's PowerShell fallback, which
+// renders the toast XML into a generated script and cannot deliver activation
+// callbacks, so a WinRT failure is returned to the caller instead.
+func pushToast(n *toast.Notification) error {
+	if n.ActivationType == "" {
+		n.ActivationType = toast.Foreground
+	}
+	if n.Duration == "" {
+		n.Duration = toast.Short
+	}
+	if n.Audio == "" {
+		n.Audio = toast.Default
+	}
+
+	var xml bytes.Buffer
+	if err := tmpl.XMLTemplate.Execute(&xml, n); err != nil {
+		return fmt.Errorf("failed to build notification XML: %w", err)
+	}
+
+	return wintoast.Push(n.AppID, xml.String())
+}
+
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle is only available on macOS and Linux)
 func (f *Frontend) SendNotification(options frontend.NotificationOptions) error {
@@ -181,7 +206,7 @@ func (f *Frontend) SendNotification(options frontend.NotificationOptions) error 
 	}
 	n.ActivationArguments = encodedPayload
 
-	return n.Push()
+	return pushToast(&n)
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
@@ -243,7 +268,7 @@ func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOpti
 		n.Actions[index].Arguments = encodedPayload
 	}
 
-	return n.Push()
+	return pushToast(&n)
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.

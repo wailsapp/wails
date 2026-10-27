@@ -2,6 +2,7 @@ package github
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/semver"
 )
@@ -38,6 +39,22 @@ func (s *SemanticVersion) IsPreRelease() bool {
 		return false
 	}
 	return len(s.Version.Prerelease) > 0
+}
+
+// IsWeekly returns true for a weekly release (vX.Y.0, no suffix). Minor
+// numbers advance with time, not features.
+func (s *SemanticVersion) IsWeekly() bool {
+	return s.IsRelease() && s.Version.Patch == 0
+}
+
+// IsHotfix returns true for a hotfix release (vX.Y.Z, Z > 0, no suffix).
+func (s *SemanticVersion) IsHotfix() bool {
+	return s.IsRelease() && s.Version.Patch > 0
+}
+
+// IsNightly returns true for a nightly pre-release (vX.Y.0-nightly.DATE[.N]).
+func (s *SemanticVersion) IsNightly() bool {
+	return s.IsPreRelease() && strings.HasPrefix(s.Version.Prerelease, "nightly")
 }
 
 func (s *SemanticVersion) String() string {

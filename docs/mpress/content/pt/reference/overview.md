@@ -1,37 +1,39 @@
 ---
 title: "Referência da API"
-description: "Documentação completa da API do Wails v3"
+description: "Consulte tipos, métodos, opções e comandos da CLI do Wails"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## Sobre esta referência
 
-Esta é a referência completa da API do Wails v3. Ela documenta todos os tipos, métodos e opções públicos disponíveis no framework.
+Use esta seção para consultar tipos, métodos, opções e comandos do Wails enquanto trabalha em um aplicativo. Se precisar de uma lição guiada, comece pelos [Tutoriais](/tutorials/overview/). Para ver as etapas de execução de uma tarefa, use os [Guias práticos](/quick-start/next-steps/#features). Para conhecer os fundamentos de design, consulte os [Conceitos fundamentais](/concepts/architecture/).
 
 **Organização:**
 
 - [Aplicativo](/reference/application/) — APIs principais do aplicativo
-- [Janela](/reference/window/) — Criação e gerenciamento de janelas
-- [Menu](/reference/menu/) — Menus do aplicativo, de contexto e da bandeja do sistema
+- [Janela](/reference/window/) — Criação e gerenciamento de janelas; [opções de janela](/features/windows/options/) lista os campos de configuração
+- [Menu](/reference/menu/) — APIs de aplicativo, menu de contexto e bandeja do sistema; a [referência de itens de menu](/features/menus/reference/) aborda os tipos e as propriedades dos itens
 - [Eventos](/reference/events/) — Sistema de eventos e eventos integrados
 - [Caixas de diálogo](/reference/dialogs/) — Caixas de diálogo de arquivos e mensagens
 - [Runtime do frontend](/reference/frontend-runtime/) — APIs do runtime do frontend
-- [CLI](/reference/cli/) — Interface de linha de comando
+- [Visão geral dos comandos da CLI](/reference/cli/) — Comandos agrupados por finalidade; [opções e exemplos](/guides/cli/) apresenta detalhes de cada comando
+- [Protocolo de manifesto de atualização](/reference/update-manifest/) — Metadados de atualização e campos de verificação
+- [API para dispositivos móveis](/guides/mobile/mobile-api/) — APIs experimentais para dispositivos móveis
 
 ## Convenções da API
 
-@details{title="Convenções da API Go — para desenvolvedores iniciantes em Go"}
+@details{title="Convenções da API Go — Para desenvolvedores iniciantes em Go"}
 ### Nomenclatura
 
-- <strong></strong>Tipos<strong></strong>: PascalCase (por exemplo, `WebviewWindow`)
-- <strong></strong>Métodos<strong></strong>: PascalCase (por exemplo, `SetTitle()`)
-- <strong></strong>Opções<strong></strong>: structs em PascalCase (por exemplo, `WindowOptions`)
-- <strong></strong>Constantes<strong></strong>: PascalCase (por exemplo, `WindowStartStateMaximised`)
+- <strong>Tipos</strong>: PascalCase (por exemplo, `WebviewWindow`)
+- <strong>Métodos</strong>: PascalCase (por exemplo, `SetTitle()`)
+- <strong>Opções</strong>: structs em PascalCase (por exemplo, `WindowOptions`)
+- <strong>Constantes</strong>: PascalCase (por exemplo, `WindowStartStateMaximised`)
 
 #### Tratamento de erros
 
-A maioria dos métodos que podem falhar retorna `error` como último valor de retorno. `app.Run()` bloqueia até que o aplicativo seja encerrado e retorna qualquer erro de inicialização:
+A maioria dos métodos que podem falhar retorna `error` como último valor de retorno. `app.Run()` bloqueia até o encerramento do aplicativo e retorna qualquer erro de inicialização:
 
 ```go
 if err := app.Run(); err != nil {
@@ -39,7 +41,7 @@ if err := app.Run(); err != nil {
 }
 ```
 
-A criação de uma janela não retorna um erro — `app.Window.New()` retorna `*WebviewWindow` diretamente.
+A criação de janelas não retorna um erro — `app.Window.New()` retorna `*WebviewWindow` diretamente.
 
 #### Contexto
 
@@ -79,7 +81,7 @@ app := application.New(application.Options{
 
 #### Assíncrona por padrão
 
-Todas as chamadas a métodos Go retornam Promises:
+Todas as chamadas de métodos Go retornam Promises:
 
 ```javascript
 // Async/await (recommended)
@@ -105,7 +107,7 @@ try {
 
 #### Segurança de tipos
 
-As definições TypeScript são geradas automaticamente:
+As definições do TypeScript são geradas automaticamente:
 
 ```typescript
 // Fully typed
@@ -114,7 +116,7 @@ import { Greet } from './bindings/GreetService'
 const message: string = await Greet("World")
 ```
 
-## Estrutura dos pacotes
+## Estrutura de pacotes
 
 ```
 github.com/wailsapp/wails/v3/pkg/
@@ -206,14 +208,14 @@ export function MyMethod(arg: string): Promise<string>
 
 ## Diferenças entre plataformas
 
-Algumas APIs se comportam de maneiras diferentes dependendo da plataforma:
+Algumas APIs se comportam de maneira diferente dependendo da plataforma:
 
 | Recurso | Windows | macOS | Linux |
 | --- | --- | --- | --- |
 | **Menu do aplicativo** | Barra de menus da janela | Barra de menus global | Barra de menus da janela |
 | **Bandeja do sistema** | Área de notificação | Barra de menus | Bandeja do sistema |
-| **Dock** | Não se aplica | ✅ Disponível | Não se aplica |
-| **Caixas de diálogo de arquivos** | Nativas | Nativas | Nativas (GTK) |
+| **Dock** | N/A | ✅ Disponível | N/A |
+| **Caixas de diálogo de arquivos** | Nativa | Nativa | Nativa (GTK) |
 | **Transparência** | ✅ Total | Requer [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) | ⚠️ Limitada |
 
 O comportamento específico de cada plataforma está documentado em cada seção da API.
@@ -222,15 +224,15 @@ O comportamento específico de cada plataforma está documentado em cada seção
 
 O Wails v3 segue o versionamento semântico:
 
-- **Principal** (v3.x.x): alterações incompatíveis
-- **Secundária** (v3.x.x): novos recursos, com compatibilidade retroativa
-- **Correção** (v3.x.x): correções de bugs, com compatibilidade retroativa
+- **Principal** (v4.0.0): alterações incompatíveis
+- **Secundária** (v3.1.0): novos recursos, com compatibilidade retroativa
+- **Correção** (v3.0.1): correções de bugs, com compatibilidade retroativa
 
-**Status atual:** Beta (API estável, aprimoramentos em andamento)
+**Wails v3.0.0:** estável
 
 ## Política de descontinuação
 
-Quando APIs são descontinuadas:
+Quando as APIs são descontinuadas:
 
 1. **Marcadas na documentação** com um aviso de descontinuação
 2. **Alternativa fornecida** com um guia de migração
@@ -250,40 +252,40 @@ Estas APIs são estáveis e seguras para uso em produção:
 - Caixas de diálogo de arquivos
 - Bindings de serviços
 
-### APIs instáveis ⚠️
+### APIs experimentais ⚠️
 
-Estas APIs podem mudar antes da versão final:
+Somente as APIs explicitamente documentadas como experimentais estão fora do contrato de compatibilidade estável para desktop:
 
-- Algumas opções avançadas de janela
-- Recursos específicos da plataforma
-- Recursos experimentais
+- Suporte ao Android
+- Suporte ao iOS
+- Outras APIs explicitamente marcadas como experimentais
 
-As APIs instáveis são identificadas na documentação.
+As APIs experimentais são identificadas na documentação.
 
 ## Como obter ajuda
 
 ### Dúvidas sobre a API
 
 1. **Consulte esta referência** — Documentação completa da API
-2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Pesquise no Discord** — [Servidor do Discord](https://discord.gg/JDdSxwjhGf)
-4. **Pergunte à comunidade** — Canal #help do Discord
+4. **Pergunte à comunidade** — Canal #help no Discord
 
 ### Como relatar problemas na API
 
 Encontrou um bug ou uma inconsistência?
 
-1. **Verifique os problemas existentes** — [Problemas no GitHub](https://github.com/wailsapp/wails/issues)
+1. **Consulte os problemas existentes** — [Problemas no GitHub](https://github.com/wailsapp/wails/issues)
 2. **Crie um relatório detalhado** — Inclua o código, o erro e a plataforma
-3. **Forneça uma reprodução** — Exemplo mínimo que demonstre o problema
+3. **Forneça uma reprodução** — Um exemplo mínimo que demonstre o problema
 
 ## Documentação relacionada
 
-- [Tutoriais](/tutorials/overview/) — Aprenda criando aplicativos reais
+- [Tutoriais](/tutorials/overview/) — Aprenda criando aplicações reais
 - [Guias](/guides/architecture/) — Guias orientados a tarefas para cenários comuns
 - [Recursos](/features/windows/basics/) — Documentação de cada recurso
-- [Exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples) — Exemplos de código funcionais no GitHub
+- [Exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — Exemplos de código funcionais no GitHub
 
 ---
 
-**Navegue pela API:** use a navegação à esquerda para explorar APIs específicas.
+**Explore a API:** use a navegação à esquerda para conhecer APIs específicas.

@@ -111,7 +111,7 @@ void ios_window_release_handle(void* viewController);
 
 // Go callbacks
 extern void ServeAssetRequest(unsigned int windowID, void* urlSchemeTask);
-extern void HandleJSMessage(unsigned int windowID, char* message);
+extern void HandleJSMessage(unsigned int windowID, char* message, bool isMainFrame);
 extern bool hasListeners(unsigned int eventId);
 
 // iOS Runtime bridges

@@ -246,7 +246,7 @@ Drag from selector: ".card" to selector: ".dropzone"
 
 ## Пример приложения
 
-Полное приложение-песочница, демонстрирующее все инструменты, доступно по адресу [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Оно включает:
+Полное приложение-песочница, демонстрирующее все инструменты, доступно по адресу [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp). Оно включает:
 
 - Счётчик с кнопками увеличения и сброса
 - Поле для ввода имени с привязанными методами Greet, Add и Shout

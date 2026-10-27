@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2CompositionController4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionController3Vtbl
 	GetNonClientRegionAtPoint    ComProc
 	QueryNonClientRegion         ComProc
 	AddNonClientRegionChanged    ComProc

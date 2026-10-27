@@ -5,9 +5,9 @@ slug: "guides/mobile/first-mobile-app"
 sourcePath: "guides/mobile/first-mobile-app.md"
 ---
 
-Panduan ini menjalankan aplikasi desktop Wails standar di iOS Simulator atau Android Emulator. **Anda tidak perlu mengubah kode Go.** `main.go` yang sama digunakan untuk membangun aplikasi bagi semua target.
+Panduan ini menjalankan aplikasi desktop Wails standar di iOS Simulator atau Android Emulator. **Anda tidak perlu mengubah kode Go.** `main.go` yang sama dapat dibangun untuk semua target.
 
-**Waktu penyelesaian:** 15–30 menit (sebagian besar waktunya digunakan untuk menginstal toolchain saat pertama kali dijalankan)
+**Waktu penyelesaian:** 15–30 menit (sebagian besar waktu digunakan untuk menginstal toolchain saat pertama kali dijalankan)
 
 ## Mulai dari proyek desktop
 
@@ -18,13 +18,13 @@ wails3 init -n mymobileapp
 cd mymobileapp
 ```
 
-Pastikan terlebih dahulu bahwa aplikasi desktop berfungsi:
+Pastikan aplikasi desktop berfungsi terlebih dahulu:
 
 ```bash
 wails3 dev
 ```
 
-Setelah terbuka, tutup aplikasi lalu lanjutkan. Semua yang berjalan di desktop juga berjalan di perangkat seluler—untuk panduan ini, Anda tidak perlu mengubah `main.go` ataupun kode Go apa pun.
+Setelah terbuka, tutup aplikasi dan lanjutkan. Semua yang berjalan di desktop juga berjalan di perangkat seluler—untuk panduan ini, Anda tidak perlu mengubah `main.go` ataupun kode Go apa pun.
 
 ---
 
@@ -34,7 +34,7 @@ Setelah terbuka, tutup aplikasi lalu lanjutkan. Semua yang berjalan di desktop j
 [iOS Simulator]
 ### Persyaratan
 
-- **macOS** (build iOS hanya dapat dibuat di macOS)
+- **macOS** (build iOS hanya dapat dilakukan di macOS)
 - **Xcode lengkap**—bukan hanya alat baris perintah. Instal dari App Store, lalu:
   ```bash
   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
@@ -42,7 +42,7 @@ Setelah terbuka, tutup aplikasi lalu lanjutkan. Semua yang berjalan di desktop j
   ```
 
 
-- **Go 1.25+** dan **npm** (sudah terinstal jika Anda menjalankan `wails3 init`)
+- **Go 1.26+** dan **npm** (sudah terinstal jika Anda telah menjalankan `wails3 init`)
 
 Jalankan `wails3 doctor` untuk memverifikasi—perintah ini mencantumkan SDK iOS yang dapat ditemukannya.
 
@@ -54,14 +54,14 @@ Jalankan `wails3 doctor` untuk memverifikasi—perintah ini mencantumkan SDK iOS
 wails3 task ios:run
 ```
 
-Selesai—perintah ini membangun aplikasi Anda, memulai simulator jika belum ada yang berjalan, lalu meluncurkan aplikasi.
+Selesai—perintah ini membangun aplikasi Anda, menjalankan simulator jika belum ada yang berjalan, lalu meluncurkan aplikasi.
 
 @note{type="tip"}
-Proses pertama kali memerlukan waktu beberapa menit (karena framework Wails untuk iOS sedang dikompilasi dan disimpan dalam cache). Proses berikutnya jauh lebih cepat.
+Proses pertama memerlukan waktu beberapa menit (Wails sedang mengompilasi dan menyimpan framework Wails untuk iOS ke cache). Proses berikutnya jauh lebih cepat.
 
 @end
 
-Setelah diluncurkan, aplikasi desktop Anda yang tidak dimodifikasi akan berjalan di iOS Simulator—`main.go` yang sama, frontend yang sama:
+Setelah diluncurkan, aplikasi desktop Anda yang belum dimodifikasi berjalan di iOS Simulator—`main.go` yang sama, frontend yang sama:
 
 ![Aplikasi Wails bawaan yang berjalan di iOS Simulator](/assets/ios-simulator-first-app.png)
 
@@ -72,13 +72,13 @@ Di terminal terpisah:
 wails3 task ios:logs:dev
 ```
 
-Perintah ini terus menampilkan log simulator yang difilter untuk aplikasi Anda. Output `fmt.Println` dan `log.Println` akan muncul di sini.
+Perintah ini mengikuti log simulator secara langsung dan memfilternya untuk aplikasi Anda. Output `fmt.Println` dan `log.Println` muncul di sini.
 
 ### Periksa WebView
 Di Safari: **Develop → Simulator → aplikasi Anda**. Seluruh fitur Web Inspector dapat digunakan—konsol, debugger, panel jaringan, dan semuanya.
 
 ### Buat perubahan
-Edit file frontend apa pun (`frontend/src/main.js`, `index.html`, dan sebagainya), lalu jalankan kembali `wails3 task ios:run`. Wails membangun ulang frontend dan meluncurkan kembali aplikasi.
+Edit file frontend apa pun (`frontend/src/main.js`, `index.html`, dan sebagainya), lalu jalankan kembali `wails3 task ios:run`. Wails membangun ulang frontend dan meluncurkan ulang aplikasi.
 
 Untuk perubahan Go, jalankan kembali `wails3 task ios:run` juga. Kompilasi ulang Go bersifat inkremental, sehingga hanya paket yang berubah yang dibangun ulang.
 
@@ -90,7 +90,7 @@ Untuk perubahan Go, jalankan kembali `wails3 task ios:run` juga. Kompilasi ulang
 wails3 task ios:xcode
 ```
 
-Perintah ini membuka `build/ios/` di Xcode. Anda dapat menggunakan Xcode untuk menerapkan aplikasi ke perangkat, melakukan profiling lanjutan, atau mengelola profil penyediaan. Wails membuat ulang proyek Xcode pada setiap build, jadi jangan ubah file yang dihasilkan secara langsung.
+Perintah ini membuka `build/ios/` di Xcode. Anda dapat menggunakan Xcode untuk deployment ke perangkat, profiling tingkat lanjut, atau mengelola profil provisioning. Wails membuat ulang proyek Xcode pada setiap build, jadi jangan ubah file yang dihasilkan secara langsung.
 
 [Android Emulator]
 ### Persyaratan
@@ -99,7 +99,7 @@ Anda memerlukan **Android SDK**, **NDK**, dan **JDK**. Cara termudah adalah meng
 
 @steps
 ### Instal alat baris perintah Android
-Unduh dari [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only), lalu buka kompresinya ke `~/android-sdk/cmdline-tools/latest/`.
+Unduh dari [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only), lalu ekstrak ke `~/android-sdk/cmdline-tools/latest/`.
 
 ### Instal komponen SDK
 ```bash
@@ -119,7 +119,7 @@ avdmanager create avd \
   --device pixel_7
 ```
 
-### Tetapkan variabel lingkungan
+### Atur variabel lingkungan
 Tambahkan ke `~/.zshrc` atau `~/.bashrc`:
 
 ```bash
@@ -156,16 +156,16 @@ Jalankan `wails3 doctor` untuk memastikan semuanya ditemukan.
 wails3 task android:run
 ```
 
-Saat pertama kali dijalankan, proses ini:
+Saat pertama kali dijalankan, perintah ini:
 
-- Memulai emulator jika belum ada yang berjalan
+- Menjalankan emulator jika belum ada yang berjalan
 - Menghasilkan binding dan membangun frontend
 - Mengompilasi kode Go Anda menjadi `libwails.so` melalui cross-compiler NDK
 - Merakit APK debug dengan Gradle
 - Menginstal dan meluncurkannya di emulator
 
 @note{type="tip"}
-Build pertama mengunduh Gradle dan mengompilasi toolchain NDK—proses ini memerlukan waktu sekitar 5–10 menit. Build berikutnya bersifat inkremental dan selesai dalam waktu kurang dari satu menit.
+Build pertama mengunduh Gradle dan mengompilasi toolchain NDK—proses ini memerlukan sekitar 5–10 menit. Build berikutnya bersifat inkremental dan selesai dalam waktu kurang dari satu menit.
 
 @end
 
@@ -176,10 +176,10 @@ Di terminal terpisah:
 wails3 task android:logs
 ```
 
-Perintah ini menjalankan `adb logcat` dengan hasil yang difilter untuk aplikasi Anda. Output `fmt.Println` akan muncul di sini.
+Perintah ini menjalankan `adb logcat` yang difilter untuk aplikasi Anda. Output `fmt.Println` muncul di sini.
 
 ### Periksa WebView
-Buka Chrome dan navigasikan ke `chrome://inspect`. WebView aplikasi Anda akan muncul di bagian **Remote Target**—klik **inspect** untuk membuka DevTools.
+Buka Chrome dan akses `chrome://inspect`. WebView aplikasi Anda muncul di bagian **Remote Target**—klik **inspect** untuk membuka DevTools.
 
 ### Buat perubahan
 Edit file apa pun, lalu jalankan kembali `wails3 task android:run`. Karena build Gradle bersifat inkremental, hanya kode yang berubah yang dikompilasi ulang.
@@ -190,24 +190,24 @@ Edit file apa pun, lalu jalankan kembali `wails3 task android:run`. Karena build
 
 ---
 
-## Memahami apa yang terjadi
+## Memahami proses yang terjadi
 
 `main.go` Anda sama sekali tidak berubah. Wails menangani semuanya:
 
-- **Sistem build** — `Taskfile.yml` dalam proyek Anda berisi tugas `ios:*` dan `android:*` yang menjalankan toolchain khusus platform.
-- **Kompilasi silang Go** — `GOOS=ios` atau `GOOS=android` dengan `GOARCH` dan sysroot yang sesuai.
-- **Host native** — proyek Xcode (iOS) atau proyek Gradle (Android) yang dihasilkan, yang menyematkan kode Go hasil kompilasi Anda dan menjadi host WebView.
-- **Penyajian aset** — `frontend/dist/` Anda disematkan dalam biner Go dan disajikan di dalam proses yang sama. Server localhost tidak diperlukan.
+- **Sistem build**—`Taskfile.yml` dalam proyek Anda berisi task `ios:*` dan `android:*` yang menjalankan toolchain khusus platform.
+- **Kompilasi silang Go**—`GOOS=ios` atau `GOOS=android` dengan `GOARCH` dan sysroot yang sesuai.
+- **Host native**—proyek Xcode (iOS) atau proyek Gradle (Android) yang dihasilkan untuk menyematkan kode Go hasil kompilasi Anda dan meng-host WebView.
+- **Penyajian aset**—`frontend/dist/` Anda disematkan ke dalam biner Go dan disajikan di dalam proses yang sama. Server localhost tidak diperlukan.
 
 ---
 
 ## Sesuaikan aplikasi Anda untuk perangkat seluler
 
-Aplikasi Anda sudah berfungsi, tetapi tampil seperti aplikasi desktop pada layar ponsel. Beberapa perubahan kecil dapat memberikan dampak besar.
+Aplikasi Anda sudah berfungsi, tetapi di layar ponsel tampilannya masih seperti aplikasi desktop. Beberapa perubahan kecil akan memberikan perbedaan besar.
 
 ### CSS responsif
 
-Layar perangkat seluler lebih sempit dan menggunakan pola input yang berbeda. Dalam `frontend/public/style.css` (atau yang setara):
+Layar perangkat seluler lebih sempit dan menggunakan pola input yang berbeda. Di `frontend/public/style.css` (atau file yang setara):
 
 ```css
 /* Prevent horizontal scrolling */
@@ -230,9 +230,9 @@ body {
 }
 ```
 
-### Mendeteksi platform di Go
+### Deteksi platform di Go
 
-Gunakan tag build untuk menambahkan perilaku khusus platform tanpa memenuhi kode bersama dengan detail platform.
+Gunakan tag build untuk menambahkan perilaku khusus platform tanpa membuat kode bersama menjadi berantakan.
 
 Buat `mobile_ios.go` untuk kode khusus iOS:
 
@@ -276,9 +276,9 @@ type mobileOptions struct{}
 func platformOptions() mobileOptions { return mobileOptions{} }
 ```
 
-### Mendeteksi platform di JavaScript dan membatasi UI khusus perangkat seluler
+### Deteksi platform di JavaScript dan batasi UI khusus perangkat seluler
 
-Objek runtime `IOS.*` dan `Android.*` hanya tersedia pada platformnya masing-masing. Memanggilnya di desktop akan menimbulkan error. Pola yang tepat—yang digunakan oleh Kitchen Sink—adalah mendeteksi platform satu kali dan menyembunyikan seluruh kontrol khusus perangkat seluler:
+Objek runtime `IOS.*` dan `Android.*` hanya tersedia di platform masing-masing. Memanggilnya di desktop akan menyebabkan error. Pola yang tepat—seperti yang digunakan Kitchen Sink—adalah mendeteksi platform satu kali dan menyembunyikan seluruh kontrol khusus perangkat seluler:
 
 ```javascript
 // Detect platform from the bridge the host injects into the WebView
@@ -306,9 +306,9 @@ Kemudian, dalam HTML Anda:
 </section>
 ```
 
-Dengan cara ini, tombol khusus perangkat seluler tidak pernah dirender di desktop, dan Anda tidak perlu melindungi setiap pemanggilan dengan pemeriksaan `if (isMobile)`.
+Dengan cara ini, tombol khusus perangkat seluler tidak pernah dirender di desktop, dan Anda tidak perlu melindungi setiap pemanggilan satu per satu dengan pemeriksaan `if (isMobile)`.
 
-Di sisi Go, padukan ini dengan stub bertag build agar event handler hanya didaftarkan pada platform yang memerlukannya:
+Di sisi Go, padukan ini dengan stub bertag build agar handler peristiwa hanya didaftarkan pada platform yang memerlukannya:
 
 ```go {title="native_desktop.go"}
 //go:build !ios && !android
@@ -338,17 +338,17 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Inilah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)—lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
+Inilah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
 
-@note{type="note" title="API fitur native \u0026 penamaan peristiwa"}
+@note{type="note" title="Penamaan API fitur native \u0026 peristiwa"}
 Ada dua konvensi yang perlu diketahui:
 
-- **Fitur native di sisi Go menggunakan pengelola platform.** Panggil fitur tersebut melalui singleton `application.IOS.*` dan `application.Android.*`—misalnya `application.IOS.Haptic("medium")` atau `application.Android.Share(payload)`. Setiap pengelola hanya tersedia pada platformnya sendiri, sehingga pemanggilannya berada dalam file `//go:build ios` / `//go:build android`.
-- **Peristiwa menggunakan namespace berdasarkan cakupannya.** Semua peristiwa yang dipahami oleh kedua platform menggunakan prefiks `common:*` (`common:haptic`, `common:location`, …); peristiwa yang hanya dapat dihasilkan atau ditangani oleh satu platform menggunakan `ios:*` atau `android:*` (misalnya `ios:backgroundTask`, `android:foregroundService`). Karena hampir setiap fitur perangkat seluler digunakan bersama, frontend Anda cukup memiliki satu listener untuk setiap peristiwa di bawah `common:*`.
+- **Fitur native di sisi Go menggunakan pengelola platform.** Panggil fitur tersebut melalui singleton `application.IOS.*` dan `application.Android.*` — misalnya `application.IOS.Haptic("medium")` atau `application.Android.Share(payload)`. Setiap pengelola hanya tersedia pada platformnya sendiri, sehingga pemanggilannya ditempatkan dalam file `//go:build ios` / `//go:build android`.
+- **Peristiwa diberi namespace berdasarkan cakupannya.** Semua peristiwa yang dipahami oleh kedua platform menggunakan prefiks `common:*` (`common:haptic`, `common:location`, …); peristiwa yang hanya dapat dihasilkan atau ditangani oleh satu platform menggunakan `ios:*` atau `android:*` (misalnya `ios:backgroundTask`, `android:foregroundService`). Karena hampir semua fitur seluler digunakan bersama, frontend Anda cukup mempertahankan satu listener untuk setiap peristiwa di bawah `common:*`.
 
 @end
 
-### Menambahkan umpan balik haptik (iOS)
+### Tambahkan umpan balik haptik (iOS)
 
 ```javascript
 import { IOS } from '@wailsio/runtime';
@@ -361,7 +361,7 @@ async function onButtonTap() {
 }
 ```
 
-### Menambahkan getaran (Android)
+### Tambahkan getaran (Android)
 
 ```javascript
 import { Android } from '@wailsio/runtime';
@@ -375,7 +375,7 @@ async function onButtonTap() {
 
 ---
 
-## Melakukan build untuk produksi
+## Build untuk produksi
 
 @tabs{sync-key="mobile-platform"}
 [iOS]
@@ -406,7 +406,7 @@ wails3 task ios:package:ipa IOS_PLATFORM=device \
 ```
 
 @note{type="tip"}
-Untuk mengunggah ke App Store Connect, gunakan `wails3 task ios:xcode` dan biarkan Xcode mengelola penandatanganan serta pengarsipan—Xcode menangani kerumitan sertifikat, profil, dan notarisasi secara otomatis.
+Untuk mengunggah ke App Store Connect, gunakan `wails3 task ios:xcode` dan biarkan Xcode mengelola penandatanganan serta pengarsipan — Xcode secara otomatis menangani kerumitan sertifikat, profil, dan notarisasi.
 
 @end
 
@@ -435,7 +435,7 @@ wails3 task android:package:fat
 ```
 
 @note{type="tip"}
-Untuk mengunggah ke Play Store, buat `.aab` (Android App Bundle), bukan APK—buka `build/android/` di Android Studio, lalu gunakan **Build → Generate Signed Bundle / APK**.
+Untuk mengunggah ke Play Store, buat `.aab` (Android App Bundle), bukan APK — buka `build/android/` di Android Studio, lalu gunakan **Build → Generate Signed Bundle / APK**.
 
 @end
 
@@ -456,16 +456,16 @@ xcode-select -p  # should print the Xcode path
 
 #### `wails3 task android:run` gagal dengan pesan "SDK not found"
 
-Pastikan `ANDROID_HOME` telah ditetapkan dan diekspor. Verifikasikan dengan:
+Pastikan `ANDROID_HOME` telah ditetapkan dan diekspor. Verifikasi dengan:
 
 ```bash
 echo $ANDROID_HOME
 ls $ANDROID_HOME/platform-tools/adb
 ```
 
-#### Simulator tidak dapat melakukan boot
+#### Simulator tidak melakukan boot
 
-Tampilkan daftar simulator yang tersedia dan lakukan boot pada salah satunya secara manual:
+Tampilkan daftar simulator yang tersedia, lalu lakukan boot pada salah satunya secara manual:
 
 ```bash
 xcrun simctl list devices available
@@ -474,7 +474,7 @@ xcrun simctl boot "iPhone 16"
 
 #### `chrome://inspect` tidak menampilkan target
 
-WebView harus berada dalam mode debug (mode default untuk `android:run`). Pastikan Anda menjalankan build debug, bukan build produksi. Pastikan juga `adb devices` menampilkan emulator sebagai perangkat yang terhubung.
+WebView harus berada dalam mode debug (default untuk `android:run`). Pastikan Anda menjalankan build debug, bukan build produksi. Pastikan juga `adb devices` menampilkan emulator sebagai perangkat yang terhubung.
 
 #### Inset area aman tidak diterapkan
 
@@ -488,7 +488,7 @@ Pastikan HTML Anda menyertakan tag meta viewport:
 
 ## Jelajahi Kitchen Sink
 
-Setelah aplikasi pertama Anda berjalan, contoh **Kitchen Sink** adalah cara tercepat untuk mempelajari berbagai kemungkinan lainnya. Contoh ini merupakan aplikasi Wails lengkap yang berjalan di iOS, Android, dan desktop dari satu basis kode, serta mencakup umpan balik haptik, geolokasi, biometrik, notifikasi lokal, penyimpanan aman, dan banyak lagi:
+Setelah aplikasi pertama Anda berjalan, contoh **Kitchen Sink** adalah cara tercepat untuk mempelajari kemungkinan lainnya. Ini adalah aplikasi Wails lengkap yang berjalan di iOS, Android, dan desktop dari satu basis kode, serta mencakup fitur haptik, geolokasi, biometrik, notifikasi lokal, penyimpanan aman, dan lainnya:
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
@@ -499,26 +499,26 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Telusuri kode sumber di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — file `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
+Telusuri kode sumbernya di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — file `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
 
 ## Langkah berikutnya
 
 @cards{cols="2"}
 Panduan iOS
-Referensi lengkap: opsi konfigurasi, tab native, pengaturan WKWebView, build untuk perangkat, dan penandatanganan.
+Referensi lengkap: opsi konfigurasi, tab native, pengaturan WKWebView, build perangkat, dan penandatanganan.
 
 [Panduan iOS →](/guides/mobile/ios/)
 
 ---
 Panduan Android
-Referensi lengkap: konfigurasi, toast, pengemasan untuk Play Store, dan detail NDK.
+Referensi lengkap: konfigurasi, toast, pemaketan untuk Play Store, dan detail NDK.
 
 [Panduan Android →](/guides/mobile/android/)
 
 ---
 📖 Kode sumber Kitchen Sink
-Umpan balik haptik, geolokasi, biometrik, notifikasi, dan penyimpanan aman — semuanya dalam satu aplikasi yang dapat dijalankan.
+Fitur haptik, geolokasi, biometrik, notifikasi, dan penyimpanan aman — semuanya dalam satu aplikasi yang dapat dijalankan.
 
-[Lihat di GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[Lihat di GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

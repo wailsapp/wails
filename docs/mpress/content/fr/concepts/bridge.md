@@ -1,13 +1,13 @@
 ---
-title: "Pont Go-interface utilisateur"
-description: "Présentation détaillée de la communication directe entre Go et JavaScript rendue possible par Wails"
+title: "Pont Go-frontend"
+description: "Découvrez en détail comment Wails permet une communication directe entre Go et JavaScript"
 slug: "concepts/bridge"
 sourcePath: "concepts/bridge.md"
 ---
 
 ## Communication directe entre Go et JavaScript
 
-Wails fournit un pont **direct en mémoire** entre Go et JavaScript, permettant une communication fluide sans surcharge HTTP, frontière entre processus ni goulot d’étranglement lié à la sérialisation.
+Wails fournit un **pont direct en mémoire** entre Go et JavaScript, permettant une communication fluide sans surcharge HTTP, séparation entre processus ni goulot d’étranglement lié à la sérialisation.
 
 ## Vue d’ensemble
 
@@ -63,17 +63,17 @@ Backend: Backend (Go) {
 Frontend.UI -> Frontend.Bindings: "import { Method }"
 Frontend.Bindings -> Bridge.Encoder: "Appeler Method('arg')"
 Bridge.Encoder -> Bridge.Router: Encoder en JSON
-Bridge.Router -> Backend.Registry: Rechercher le service
+Bridge.Router -> Backend.Registry: Trouver le service
 Backend.Registry -> Backend.Services: Invoquer la méthode
 Backend.Services -> Bridge.Decoder: Renvoyer le résultat
-Bridge.Decoder -> Frontend.Bindings: Décoder en JS
+Bridge.Decoder -> Frontend.Bindings: Décoder en JavaScript
 Frontend.Bindings -> Frontend.UI: Résoudre la promesse
 Bridge.TypeGen -> Frontend.Bindings: Générer les types
 ```
 
-**Point essentiel :** ni HTTP, ni IPC, ni frontière entre processus. Uniquement des **appels directs de fonctions** avec **sûreté des types**.
+**Point essentiel :** ni HTTP, ni IPC, ni séparation entre processus. Seulement des **appels directs de fonctions** avec **sécurité des types**.
 
-## Fonctionnement étape par étape
+## Fonctionnement détaillé, étape par étape
 
 ### 1. Enregistrement des services (démarrage)
 
@@ -104,8 +104,8 @@ app := application.New(application.Options{
 
 1. **Analyse la structure** pour rechercher les méthodes exportées
 2. **Extrait les informations de type** (paramètres et types de retour)
-3. **Crée un registre** qui associe les noms de méthodes aux fonctions
-4. **Génère les liaisons TypeScript** avec les définitions de types complètes
+3. **Crée un registre** associant les noms de méthodes aux fonctions
+4. **Génère des liaisons TypeScript** avec les définitions de types complètes
 
 ### 2. Génération des liaisons (compilation)
 
@@ -128,10 +128,10 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | `string` par défaut ; `Date` avec `-time-type=Date` |
 | `error` | Exception (levée) |
 
-### 3. Appel depuis l’interface utilisateur (exécution)
+### 3. Appel depuis le frontend (exécution)
 
 Le développeur appelle la méthode Go depuis JavaScript :
 
@@ -146,12 +146,12 @@ const sum = await Add(5, 3)
 console.log(sum)  // 8
 ```
 
-**Ce qui se passe :**
+**Déroulement :**
 
-1. **Fonction de liaison appelée** — `Greet("World")`
-2. **Message créé** — `{ service: "GreetService", method: "Greet", args: ["World"] }`
+1. **Appel de la fonction de liaison** — `Greet("World")`
+2. **Création du message** — `{ service: "GreetService", method: "Greet", args: ["World"] }`
 3. **Envoi au pont** — via le pont JavaScript de la WebView
-4. **Promesse renvoyée** — attend la réponse
+4. **Renvoi d’une promesse** — en attente de la réponse
 
 ### 4. Traitement par le pont (exécution)
 
@@ -210,14 +210,14 @@ Validate.CheckMethod -> Validate.CheckTypes: Oui
 Validate.CheckMethod -> Error: Non
 Validate.CheckTypes -> Invoke: Oui
 Validate.CheckTypes -> Error: Non
-Invoke -> Encode: Succès
+Invoke -> Encode: Réussite
 Invoke -> Error: Erreur
 Encode -> Send
 ```
 
 **Sécurité :** seuls les services enregistrés et les méthodes exportées peuvent être appelés.
 
-### 5. Exécution Go (exécution)
+### 5. Exécution en Go (exécution)
 
 La méthode Go s’exécute :
 
@@ -231,8 +231,8 @@ func (g *GreetService) Greet(name string) string {
 **Contexte d’exécution :**
 
 - S’exécute dans une **goroutine** (sans blocage)
-- A accès à **toutes les fonctionnalités de Go** (système de fichiers, réseau, bases de données)
-- Peut appeler librement **d’autre code Go**
+- Accède à **toutes les fonctionnalités de Go** (système de fichiers, réseau et bases de données)
+- Peut appeler librement **d’autres éléments de code Go**
 - Renvoie un résultat ou une erreur
 
 ### 6. Réponse (exécution)
@@ -268,7 +268,7 @@ try {
 
 ### Vitesse
 
-**Surcoût habituel d’un appel :** &lt;1 ms
+**Surcoût habituel d’un appel :** &lt;1ms
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -278,8 +278,8 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
 
 **Comparaison avec les autres solutions :**
 
-- **HTTP/REST :** 5-50 ms (pile réseau, sérialisation)
-- **IPC :** 1-10 ms (frontières entre processus, marshalling)
+- **HTTP/REST :** 5-50ms (pile réseau, sérialisation)
+- **IPC :** 1-10 ms (limites entre processus, conversion des données)
 - **Pont Wails :** &lt;1 ms (en mémoire, appel direct)
 
 ### Mémoire
@@ -354,7 +354,7 @@ function Sum(numbers: number[]): Promise<number>
 const total = await Sum([1, 2, 3, 4, 5])  // 15
 ```
 
-#### Dictionnaires
+#### Tables associatives
 
 ```go
 // Go
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### Erreurs
@@ -456,11 +456,11 @@ try {
 
 ### Types non pris en charge
 
-Ces types ne peuvent **pas** être transmis par le pont :
+Ces types ne **peuvent pas** être transmis par le pont :
 
 - **Canaux** (`chan T`)
 - **Fonctions** (`func()`)
-- **Interfaces** (sauf `interface{}` / `any`)
+- **Interfaces** (à l’exception de `interface{}` / `any`)
 - **Pointeurs** (sauf vers des structures)
 - **Champs non exportés** (en minuscules)
 
@@ -522,13 +522,13 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 
 **Le contexte fournit :**
 
-- Fenêtre à l’origine de l’appel
-- Instance de l’application
-- Métadonnées de la requête
+- La fenêtre à l’origine de l’appel
+- L’instance de l’application
+- Les métadonnées de la requête
 
-### Transmission de données en continu
+### Diffusion de données
 
-Pour les volumes de données importants, utilisez des événements plutôt que des valeurs de retour :
+Pour les données volumineuses, utilisez des événements plutôt que des valeurs de retour :
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -587,11 +587,11 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-**Remarque :** le contexte est automatiquement annulé lorsque le frontend se déconnecte.
+**Remarque :** l’annulation du contexte lors de la déconnexion du frontend est automatique.
 
 ### Opérations par lots
 
-Réduisez la surcharge liée au pont en regroupant les opérations :
+Réduisez le surcoût du pont en regroupant les opérations :
 
 ```go
 // ❌ Inefficient: N bridge calls
@@ -628,15 +628,15 @@ app := application.New(application.Options{
 
 **La sortie affiche :**
 
-- Appels de méthodes
-- Paramètres
-- Valeurs de retour
-- Erreurs
-- Informations sur les temps d’exécution
+- Les appels de méthodes
+- Les paramètres
+- Les valeurs de retour
+- Les erreurs
+- Les informations de durée
 
 ### Inspecter les liaisons générées
 
-Consultez `frontend/bindings/` pour voir le code TypeScript généré :
+Consultez `frontend/bindings/` pour afficher le TypeScript généré :
 
 ```javascript
 // frontend/bindings/<full-go-import-path>/myservice.js (real generated shape)
@@ -661,39 +661,39 @@ func TestGreetService(t *testing.T) {
 }
 ```
 
-## Conseils de performance
+## Conseils de performances
 
 ### ✅ À faire
 
-- **Regrouper les opérations** — Réduit le nombre d’appels au pont
-- **Utiliser des événements pour la transmission en continu** — Ne renvoyez pas de grands tableaux
-- **Veiller à la rapidité des méthodes** — Idéalement &lt;100 ms
-- **Utiliser des goroutines** — Pour les opérations longues
-- **Mettre en cache côté Go** — Évite de répéter les calculs
+- **Regroupez les opérations** — Réduisez les appels au pont
+- **Utilisez des événements pour la diffusion** — Ne renvoyez pas de grands tableaux
+- **Veillez à la rapidité des méthodes** — Idéalement &lt;100 ms
+- **Utilisez des goroutines** — Pour les opérations longues
+- **Mettez en cache côté Go** — Évitez les calculs répétés
 
 ### ❌ À ne pas faire
 
-- **Ne pas multiplier les appels** — Regroupez-les lorsque c’est possible
-- **Ne pas renvoyer d’énormes volumes de données** — Utilisez la pagination ou la transmission en continu
-- **Ne pas bloquer** — Utilisez des goroutines pour les opérations longues
-- **Ne pas transmettre de types complexes** — Faites simple
-- **Ne pas ignorer les erreurs** — Gérez-les toujours
+- **Ne multipliez pas excessivement les appels** — Regroupez-les lorsque cela est possible
+- **Ne renvoyez pas d’énormes volumes de données** — Utilisez la pagination ou la diffusion
+- **Ne bloquez pas l’exécution** — Utilisez des goroutines pour les opérations longues
+- **Ne transmettez pas de types complexes** — Faites simple
+- **N’ignorez pas les erreurs** — Gérez-les systématiquement
 
 ## Sécurité
 
 Le pont est sécurisé par défaut :
 
-1. **Liste d’autorisation uniquement** — Seuls les services enregistrés peuvent être appelés
+1. **Liste blanche uniquement** — Seuls les services enregistrés peuvent être appelés
 2. **Validation des types** — Les arguments sont vérifiés par rapport aux types Go
 3. **Pas d’eval()** — Le frontend ne peut pas exécuter de code Go arbitraire
-4. **Pas d’utilisation abusive de la réflexion** — Seules les méthodes exportées sont accessibles
+4. **Aucun usage abusif de la réflexion** — Seules les méthodes exportées sont accessibles
 
 **Bonnes pratiques :**
 
 - **Validez les entrées** dans Go (ne faites pas confiance au frontend)
 - **Utilisez le contexte** pour l’authentification et l’autorisation
 - **Limitez la fréquence** des opérations coûteuses
-- **Nettoyez** les chemins de fichiers et les entrées utilisateur
+- **Assainissez** les chemins de fichiers et les saisies utilisateur
 
 ## Étapes suivantes
 
@@ -701,8 +701,8 @@ Le pont est sécurisé par défaut :
 
 **Services** — Explorez en détail le système de services [En savoir plus →](/features/bindings/services/)
 
-**Événements** - Utilisez les événements pour la communication par publication/abonnement [En savoir plus →](/features/events/system/)
+**Événements** — Utilisez des événements pour la communication par publication-abonnement [En savoir plus →](/features/events/system/)
 
 ---
 
-**Des questions sur le pont ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Des questions sur le pont ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

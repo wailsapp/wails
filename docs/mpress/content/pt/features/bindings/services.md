@@ -1,13 +1,13 @@
 ---
 title: "Serviços"
-description: "Crie componentes de aplicativo modulares e reutilizáveis com serviços"
+description: "Crie componentes de aplicação modulares e reutilizáveis com serviços"
 slug: "features/bindings/services"
 sourcePath: "features/bindings/services.md"
 ---
 
 ## Arquitetura de serviços
 
-Os **serviços** do Wails oferecem uma maneira estruturada de organizar a lógica do aplicativo em componentes modulares e autocontidos. Os serviços reconhecem o ciclo de vida, com hooks de inicialização e encerramento, são vinculados automaticamente ao frontend, permitem injeção de dependências e podem ser testados de forma totalmente isolada.
+Os **serviços** do Wails oferecem uma maneira estruturada de organizar a lógica da aplicação em componentes modulares e autocontidos. Os serviços reconhecem o ciclo de vida, com hooks de inicialização e encerramento, são vinculados automaticamente ao frontend, permitem injeção de dependências e podem ser testados de forma totalmente isolada.
 
 ## Início rápido
 
@@ -32,7 +32,7 @@ app := application.New(application.Options{
 })
 ```
 
-**É só isso!** Agora, `Greet` pode ser chamado pelo JavaScript:
+**Pronto!** Agora, `Greet` pode ser chamado pelo JavaScript:
 
 ```js
 import { Greet } from './bindings/changeme/GreetService';
@@ -69,7 +69,7 @@ app := application.New(application.Options{
 
 **Pontos principais:**
 
-- Somente **métodos exportados** (PascalCase) são vinculados
+- Somente os **métodos exportados** (PascalCase) são vinculados
 - Os serviços são **singletons** (uma única instância)
 - Os métodos podem retornar `(value, error)`
 
@@ -101,7 +101,7 @@ func (c *CounterService) Reset() {
 }
 ```
 
-**Importante:** Os serviços são compartilhados entre todas as janelas. Sempre use mutexes para garantir a segurança entre threads.
+**Importante:** os serviços são compartilhados entre todas as janelas. Sempre use mutexes para garantir a segurança de concorrência.
 
 ### Serviço com dependências
 
@@ -131,7 +131,7 @@ func (u *UserService) GetUser(id int) (*User, error) {
 }
 ```
 
-**Registre com as dependências:**
+**Registre com dependências:**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -148,7 +148,7 @@ app := application.New(application.Options{
 
 ### ServiceStartup
 
-Chamado quando o aplicativo é iniciado:
+Chamado quando a aplicação é iniciada:
 
 ```go
 func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -182,12 +182,12 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 **Importante:**
 
 - Os serviços são iniciados na **ordem de registro**
-- Retorne um erro para **impedir a inicialização do aplicativo**
+- Retorne um erro para **impedir a inicialização da aplicação**
 - Use `ctx` para cancelamento
 
 ### ServiceShutdown
 
-Chamado quando o aplicativo é encerrado:
+Chamado quando a aplicação é encerrada:
 
 ```go
 func (u *UserService) ServiceShutdown() error {
@@ -216,7 +216,7 @@ func (u *UserService) ServiceShutdown() error {
 **Importante:**
 
 - Os serviços são encerrados na **ordem inversa**
-- O contexto do aplicativo já foi cancelado
+- O contexto da aplicação já foi cancelado
 - Retorne um erro para **registrar um aviso no log** (isso não impede o encerramento)
 
 ### Exemplo completo de ciclo de vida
@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **Casos de uso:**
 
-- Várias instâncias do mesmo tipo de serviço
 - Logs mais claros
 - Depuração mais eficiente
+
+`ServiceOptions.Name` é um nome de exibição usado para logs e depuração; ele não altera o namespace de vinculação gerado. Registre no máximo um serviço de cada tipo Go. Para instâncias configuradas de forma independente, use tipos wrapper distintos, por exemplo:
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+Registre `application.NewService(&PrimaryStore{primary})` e `application.NewService(&ArchiveStore{archive})` em vez de registrar dois valores `*Store`.
 
 ### Rotas HTTP
 
@@ -341,7 +349,7 @@ app := application.New(application.Options{
 - Endpoints WebSocket
 - Streaming de mídia
 
-## Padrões de serviço
+## Padrões de serviços
 
 ### Padrão Repository
 
@@ -479,7 +487,7 @@ app := application.New(application.Options{
 })
 ```
 
-### Injeção do aplicativo
+### Injeção da aplicação
 
 ```go
 type NotificationService struct {
@@ -604,21 +612,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ Faça
 
-- **Responsabilidade única** - Um serviço, uma finalidade
-- **Injeção via construtor** - Passe as dependências explicitamente
-- **Estado seguro para acesso concorrente** - Use mutexes
-- **Retorne erros** - Não provoque panic
-- **Registre eventos importantes** - Use logs estruturados
-- **Teste isoladamente** - Simule as dependências
+- **Responsabilidade única** — um serviço, uma finalidade
+- **Injeção pelo construtor** — passe as dependências explicitamente
+- **Estado seguro para concorrência** — use mutexes
+- **Retorne erros** — não cause panic
+- **Registre eventos importantes no log** — use logs estruturados
+- **Teste de forma isolada** — use mocks para as dependências
 
 ### ❌ Não faça
 
-- **Não use estado global** - Passe as dependências
-- **Não bloqueie a inicialização** - Mantenha ServiceStartup rápido
-- **Não ignore o encerramento** - Sempre faça a limpeza
-- **Não crie dependências circulares** - Projete com cuidado
-- **Não exponha métodos internos** - Mantenha-os privados
-- **Não se esqueça da segurança no acesso concorrente** - Os serviços são compartilhados
+- **Não use estado global** — passe as dependências
+- **Não bloqueie a inicialização** — mantenha ServiceStartup rápido
+- **Não ignore o encerramento** — sempre libere os recursos
+- **Não crie dependências circulares** — projete com cuidado
+- **Não exponha métodos internos** — mantenha-os privados
+- **Não se esqueça da segurança de concorrência** — os serviços são compartilhados
 
 ## Exemplo completo
 
@@ -794,11 +802,11 @@ func main() {
 
 ## Próximas etapas
 
-- [Vinculação de métodos](/features/bindings/methods/) - Aprenda a vincular métodos Go ao JavaScript
-- [Modelos](/features/bindings/models/) - Vincule estruturas de dados complexas
-- [Eventos](/features/events/system/) - Use eventos para comunicação por publicação/assinatura
-- [Boas práticas](/features/bindings/best-practices/) - Padrões de design de serviços e boas práticas
+- [Vinculações de métodos](/features/bindings/methods/) — aprenda a vincular métodos Go ao JavaScript
+- [Modelos](/features/bindings/models/) — vincule estruturas de dados complexas
+- [Eventos](/features/events/system/) — use eventos para comunicação pub/sub
+- [Boas práticas](/features/bindings/best-practices/) — padrões de design e boas práticas para serviços
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de serviços](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de serviços](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

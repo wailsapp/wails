@@ -65,6 +65,10 @@ You can read the current state with `app.Updater.State()` at any time. Every tra
 
 `Restart` waits for the helper to reach `application.New` before asking the running app to quit. The default startup timeout is 30 seconds. If your app performs lengthy initialization before `application.New`, set `Config.HelperReadyTimeout` to a longer duration, such as `time.Minute`. Zero selects the default; negative durations are rejected. If startup times out, `Restart` returns `updater.ErrHelperNotReady` and keeps the running app open.
 
+The update is staged in a `wails-update-*` directory beside the installed binary (on macOS, beside the `.app` bundle), so that directory must be writable.
+
+Inside an AppImage the updater replaces and relaunches the `.AppImage` file named by `$APPIMAGE` rather than the read-only mount.
+
 The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
 
 ![The default updater window in the Up-to-Date state — green checkmark, 'You're Up to Date' heading, single Close button.](/assets/updater/default-window-up-to-date.png)
@@ -334,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML windows are loaded with no asset-server origin, so they can't dynamically fetch `/wails/runtime.js`. You have two ways to talk to the host from one:
 
 1. **Just write HTML.** The framework auto-injects a minimal `window.wails.Events` shim into any window opened with `WebviewWindowOptions.AllowSimpleEventEmit = true` and `HTML` set — which is exactly what the updater's builtin and BYO paths do. No build step required. This is the path the example below uses.
-2. **Bundle `@wailsio/runtime` with your preferred bundler** (Vite, esbuild, Rollup) and import it into your custom HTML at build time. `Events.On` works out of the box because it's purely client-side; `Events.Emit` goes through the runtime's fetch transport, which the null origin breaks — so install a tiny postMessage transport via the runtime's [`setTransport`](https://wails.io/wails/runtime.js) hook that routes through `window._wails.invoke("wails:event:emit:<name>")`. The framework injection no-ops if `window.wails.Events` is already in scope, so the two approaches don't fight.
+2. **Bundle `@wailsio/runtime` with your preferred bundler** (Vite, esbuild, Rollup) and import it into your custom HTML at build time. `Events.On` works out of the box because it's purely client-side; `Events.Emit` goes through the runtime's fetch transport, which the null origin breaks — so install a tiny postMessage transport via the runtime's [`setTransport`](/guides/custom-transport/) hook that routes through `window._wails.invoke("wails:event:emit:<name>")`. The framework injection no-ops if `window.wails.Events` is already in scope, so the two approaches don't fight.
 
 Either way, the JS you write in your custom HTML calls the same `Events.On` / `Events.Emit` API:
 
@@ -648,6 +652,6 @@ Before you publish a release that the updater will install:
 
 ## See also
 
-- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Test demo repo: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Adding self-updates to a Wails app](/tutorials/04-self-update-a-wails-app/)

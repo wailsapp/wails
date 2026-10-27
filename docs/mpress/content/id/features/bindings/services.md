@@ -7,7 +7,7 @@ sourcePath: "features/bindings/services.md"
 
 ## Arsitektur Layanan
 
-**Layanan** Wails menyediakan cara terstruktur untuk mengatur logika aplikasi dengan komponen modular dan mandiri. Layanan mendukung siklus hidup melalui hook startup dan shutdown, secara otomatis diikat ke frontend, mendukung injeksi dependensi, dan dapat diuji sepenuhnya secara terpisah.
+**Layanan** Wails menyediakan cara terstruktur untuk mengatur logika aplikasi menggunakan komponen modular yang mandiri. Layanan memahami siklus hidup dengan hook saat dimulai dan dihentikan, secara otomatis diikat ke frontend, mendukung injeksi dependensi, dan dapat diuji sepenuhnya secara terpisah.
 
 ## Mulai Cepat
 
@@ -187,7 +187,7 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 ### ServiceShutdown
 
-Dipanggil saat aplikasi dimatikan:
+Dipanggil saat aplikasi dihentikan:
 
 ```go
 func (u *UserService) ServiceShutdown() error {
@@ -210,14 +210,14 @@ func (u *UserService) ServiceShutdown() error {
 - Tutup koneksi
 - Simpan state
 - Bersihkan sumber daya
-- Tulis data yang masih tersimpan dalam buffer ke tujuannya
+- Kosongkan buffer
 - Batalkan tugas latar belakang
 
 **Penting:**
 
-- Layanan dimatikan dalam **urutan terbalik**
+- Layanan dihentikan dalam **urutan terbalik**
 - Konteks aplikasi sudah dibatalkan
-- Kembalikan error untuk **mencatat peringatan** (tidak mencegah proses shutdown)
+- Kembalikan error untuk **mencatat peringatan** (tidak mencegah penghentian)
 
 ### Contoh Siklus Hidup Lengkap
 
@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **Kasus penggunaan:**
 
-- Beberapa instans dari tipe layanan yang sama
 - Pencatatan log yang lebih jelas
-- Debugging yang lebih mudah
+- Debugging yang lebih baik
+
+`ServiceOptions.Name` adalah nama tampilan untuk pencatatan log dan debugging; nama ini tidak mengubah namespace binding yang dihasilkan. Daftarkan paling banyak satu layanan untuk setiap tipe Go. Untuk instans yang dikonfigurasi secara independen, gunakan tipe wrapper yang berbeda, misalnya:
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+Daftarkan `application.NewService(&PrimaryStore{primary})` dan `application.NewService(&ArchiveStore{archive})` alih-alih mendaftarkan dua nilai `*Store`.
 
 ### Rute HTTP
 
@@ -605,17 +613,17 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 ### ✅ Lakukan
 
 - **Tanggung jawab tunggal** - Satu layanan, satu tujuan
-- **Injeksi melalui konstruktor** - Teruskan dependensi secara eksplisit
+- **Injeksi konstruktor** - Teruskan dependensi secara eksplisit
 - **State yang aman untuk thread** - Gunakan mutex
 - **Kembalikan error** - Jangan memicu panic
-- **Catat peristiwa penting** - Gunakan pencatatan terstruktur
-- **Uji secara terisolasi** - Gunakan mock untuk dependensi
+- **Catat peristiwa penting** - Gunakan pencatatan log terstruktur
+- **Uji secara terpisah** - Gunakan mock untuk dependensi
 
 ### ❌ Jangan Lakukan
 
 - **Jangan gunakan state global** - Teruskan dependensi
-- **Jangan hambat proses startup** - Pastikan ServiceStartup berjalan cepat
-- **Jangan abaikan proses shutdown** - Selalu lakukan pembersihan
+- **Jangan hambat proses startup** - Pastikan ServiceStartup berlangsung cepat
+- **Jangan abaikan proses penghentian** - Selalu lakukan pembersihan
 - **Jangan buat dependensi melingkar** - Rancang dengan cermat
 - **Jangan ekspos metode internal** - Pertahankan sebagai metode privat
 - **Jangan abaikan keamanan thread** - Layanan digunakan bersama
@@ -796,9 +804,9 @@ func main() {
 
 - [Binding Metode](/features/bindings/methods/) - Pelajari cara mengikat metode Go ke JavaScript
 - [Model](/features/bindings/models/) - Ikat struktur data yang kompleks
-- [Peristiwa](/features/events/system/) - Gunakan peristiwa untuk komunikasi publikasi/langganan
+- [Peristiwa](/features/events/system/) - Gunakan peristiwa untuk komunikasi pub/sub
 - [Praktik Terbaik](/features/bindings/best-practices/) - Pola desain layanan dan praktik terbaik
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layanan](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layanan](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

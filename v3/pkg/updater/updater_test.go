@@ -243,6 +243,49 @@ func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	}
 }
 
+// Once an update is staged (StateReady) the periodic loop must leave it
+// alone until Restart; otherwise every tick downloads the release again.
+func TestInit_CheckInterval_DoesNotRedownloadStagedUpdate(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		CheckInterval:  20 * time.Millisecond,
+		Window:         updater.WindowNone,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer u.StopPeriodicCheck()
+	t.Cleanup(func() {
+		if path := u.DownloadedPath(); path != "" {
+			_ = os.RemoveAll(filepath.Dir(path))
+		}
+	})
+
+	deadline := time.Now().Add(2 * time.Second)
+	for u.State() != updater.StateReady {
+		if time.Now().After(deadline) {
+			t.Fatalf("update never staged, state %s", u.State())
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	// Leave room for several more ticks while the update is staged.
+	time.Sleep(200 * time.Millisecond)
+	u.StopPeriodicCheck()
+
+	if p.downloads != 1 {
+		t.Fatalf("expected 1 download while the update is staged, got %d", p.downloads)
+	}
+}
+
 func TestInit_RejectsDoubleConfigure(t *testing.T) {
 	u := updater.New(&fakeHost{})
 	cfg := updater.Config{CurrentVersion: "1.0.0", Providers: []updater.Provider{&fakeProvider{name: "f"}}}
@@ -350,6 +393,10 @@ func TestDownloadAndInstall_NoPendingRelease(t *testing.T) {
 }
 
 func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("hello-end-to-end")
 	rel := &updater.Release{
@@ -368,6 +415,10 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 	if u.State() != updater.StateReady {
 		t.Errorf("state: %s", u.State())
 	}
+	// Staged beside the target so the swap never crosses filesystems.
+	if got := filepath.Dir(filepath.Dir(u.DownloadedPath())); got != appDir {
+		t.Errorf("staged under %s, want %s", got, appDir)
+	}
 	wantOrder := []string{
 		updater.EventCheckStarted,
 		updater.EventUpdateAvailable,
@@ -382,10 +433,14 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 }
 
 // On any failure between download and ready (verify mismatch, unknown
-// digest algo, etc.) the temp staging directory created under
-// os.TempDir/wails-update-* must be removed; otherwise repeated update
+// digest algo, etc.) the staging directory created beside the target as
+// wails-update-* must be removed; otherwise repeated update
 // attempts accumulate orphan directories.
 func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("real-bytes")
 	wrong := sha256.Sum256([]byte("different-bytes"))
@@ -400,7 +455,7 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 	p := &fakeProvider{name: "p", rel: rel, body: body}
 	u := newConfigured(t, host, p)
 
-	before := countStagingDirs(t)
+	before := countStagingDirs(t, appDir)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -409,20 +464,19 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 		t.Fatal("expected error from digest mismatch")
 	}
 
-	after := countStagingDirs(t)
+	after := countStagingDirs(t, appDir)
 	if after > before {
-		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, os.TempDir())
+		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, appDir)
 	}
 }
 
 // countStagingDirs returns the number of `wails-update-*` directories under
-// os.TempDir. Used to detect leaks across the download/install flow without
-// being sensitive to absolute paths.
-func countStagingDirs(t *testing.T) int {
+// dir. Used to detect leaks across the download/install flow.
+func countStagingDirs(t *testing.T, dir string) int {
 	t.Helper()
-	entries, err := os.ReadDir(os.TempDir())
+	entries, err := os.ReadDir(dir)
 	if err != nil {
-		t.Fatalf("read tempdir: %v", err)
+		t.Fatalf("read %s: %v", dir, err)
 	}
 	n := 0
 	for _, e := range entries {
@@ -558,6 +612,250 @@ func TestRestart_DoesNotQuitBeforeHelperReady(t *testing.T) {
 	}
 	if host.quits != 0 {
 		t.Fatalf("Quit dispatched before helper readiness: %d", host.quits)
+	}
+}
+
+// The staged payload belongs to the helper from the moment Restart hands it
+// over. The helper waits for this process to exit before swapping, and a
+// DownloadAndInstall arriving inside that window begins by discarding the
+// staging directory — deleting what the helper is about to install from. A
+// staged .app is a directory, and renaming one succeeds however little it
+// holds, so the helper would report success having installed nothing.
+func TestRestart_StagedPayloadSurvivesConcurrentDownload(t *testing.T) {
+	t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		return exec.Command(path, "-test.run=^$")
+	}))
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		return nil
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	p := &fakeProvider{name: "p", rel: &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	staged := u.DownloadedPath()
+	if staged == "" {
+		t.Fatal("nothing staged after DownloadAndInstall")
+	}
+
+	if err := u.Restart(context.Background()); err != nil {
+		t.Fatalf("Restart: %v", err)
+	}
+
+	if err := u.DownloadAndInstall(context.Background()); !errors.Is(err, updater.ErrRestartPending) {
+		t.Fatalf("DownloadAndInstall during a pending restart: want ErrRestartPending, got %v", err)
+	}
+	if _, err := os.Stat(staged); err != nil {
+		t.Fatalf("staged payload destroyed while a helper waited to install it: %v", err)
+	}
+}
+
+// When no helper is left standing by, ownership of the staging directory has
+// to come back: nothing else would ever clean the directory up, and refusing
+// later downloads on behalf of a helper that is not there would leave the
+// application unable to update until it is relaunched.
+func TestRestart_FailedHandoff_ReturnsStagingOwnership(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		command func(path string) *exec.Cmd
+		ready   func(string, time.Duration) error
+	}{
+		{
+			name:    "spawn fails",
+			command: func(string) *exec.Cmd { return exec.Command(filepath.Join(t.TempDir(), "absent")) },
+			ready:   func(string, time.Duration) error { return nil },
+		},
+		{
+			name:    "helper never signals readiness",
+			command: func(path string) *exec.Cmd { return exec.Command(path, "-test.run=^$") },
+			ready:   func(string, time.Duration) error { return updater.ErrHelperNotReady },
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
+			t.Cleanup(updater.SetNewDetachedCommandForTest(tt.command))
+			t.Cleanup(updater.SetWaitForHelperReadyForTest(tt.ready))
+
+			host := &fakeHost{}
+			body := []byte("payload")
+			p := &fakeProvider{name: "p", rel: &updater.Release{
+				Version:  "2.0.0",
+				Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+			}, body: body}
+			u := newConfigured(t, host, p)
+
+			if _, err := u.Check(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			if err := u.DownloadAndInstall(context.Background()); err != nil {
+				t.Fatalf("DownloadAndInstall: %v", err)
+			}
+			if err := u.Restart(context.Background()); err == nil {
+				t.Fatal("Restart: want a handoff failure, got nil")
+			}
+
+			// Ownership is back, so a fresh attempt is served rather than
+			// refused as a restart already in progress.
+			if err := u.DownloadAndInstall(context.Background()); err != nil {
+				t.Fatalf("DownloadAndInstall after a failed handoff: %v", err)
+			}
+		})
+	}
+}
+
+// helperNewPath returns the staged path a Restart handed to its helper.
+func helperNewPath(cmd *exec.Cmd) string {
+	const key = "WAILS_UPDATER_HELPER_NEW="
+	for _, kv := range cmd.Env {
+		if strings.HasPrefix(kv, key) {
+			return strings.TrimPrefix(kv, key)
+		}
+	}
+	return ""
+}
+
+// The staged path handed to the helper and the claim on its staging directory
+// must be taken together. A DownloadAndInstall that runs between the two
+// discards the directory the path points into, and the helper is then started
+// against a payload that no longer exists. The selfExecutable seam runs inside
+// Restart, which places the download at that point deterministically.
+func TestRestart_HelperNeverHandedDiscardedPayload(t *testing.T) {
+	var u *updater.Updater
+	var armed, interleaved bool
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		if armed && !interleaved {
+			interleaved = true
+			if err := u.DownloadAndInstall(context.Background()); err != nil && !errors.Is(err, updater.ErrRestartPending) {
+				t.Errorf("interleaved DownloadAndInstall: %v", err)
+			}
+		}
+		return os.Executable()
+	}))
+	var cmd *exec.Cmd
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		cmd = exec.Command(path, "-test.run=^$")
+		return cmd
+	}))
+	var handed string
+	var handedErr error
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		handed = helperNewPath(cmd)
+		_, handedErr = os.Stat(handed)
+		return nil
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	p := &fakeProvider{name: "p", rel: &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}, body: body}
+	u = newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	armed = true
+	if err := u.Restart(context.Background()); err != nil {
+		t.Fatalf("Restart: %v", err)
+	}
+	if !interleaved {
+		t.Fatal("selfExecutable seam was not reached")
+	}
+	if handed == "" {
+		t.Fatal("helper was not handed a staged path")
+	}
+	if handedErr != nil {
+		t.Fatalf("helper handed a staged path that does not exist: %v", handedErr)
+	}
+	if err := u.DownloadAndInstall(context.Background()); !errors.Is(err, updater.ErrRestartPending) {
+		t.Fatalf("DownloadAndInstall after Restart: want ErrRestartPending, got %v", err)
+	}
+	if _, err := os.Stat(handed); err != nil {
+		t.Fatalf("staged payload destroyed while a helper waited to install it: %v", err)
+	}
+}
+
+// The built-in window starts a Restart per click, so a second call can arrive
+// while the first helper is still being started. It must be refused: a second
+// helper would race the first for the same target, and its failure would
+// otherwise hand back a staging claim the first helper still depends on. The
+// second call is made from inside the first one's readiness wait, which is the
+// point at which the first helper exists but has not yet been released.
+func TestRestart_SecondCallRefusedWhileRestartPending(t *testing.T) {
+	t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
+	var spawned int
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		spawned++
+		return exec.Command(path, "-test.run=^$")
+	}))
+
+	var u *updater.Updater
+	var depth int
+	var secondErr error
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		depth++
+		defer func() { depth-- }()
+		if depth > 1 {
+			// A second helper, if one is started, never becomes ready.
+			return updater.ErrHelperNotReady
+		}
+		secondErr = u.Restart(context.Background())
+		return nil
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	p := &fakeProvider{name: "p", rel: &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}, body: body}
+	u = newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	staged := u.DownloadedPath()
+
+	if err := u.Restart(context.Background()); err != nil {
+		t.Fatalf("first Restart: %v", err)
+	}
+	if !errors.Is(secondErr, updater.ErrRestartPending) {
+		t.Fatalf("second Restart: want ErrRestartPending, got %v", secondErr)
+	}
+	if spawned != 1 {
+		t.Fatalf("helpers started: got %d, want 1", spawned)
+	}
+	host.mu.Lock()
+	quits := host.quits
+	host.mu.Unlock()
+	if quits != 1 {
+		t.Fatalf("Quit dispatch count: got %d, want 1", quits)
+	}
+
+	// The refused call must leave the first helper's claim intact.
+	if err := u.DownloadAndInstall(context.Background()); !errors.Is(err, updater.ErrRestartPending) {
+		t.Fatalf("DownloadAndInstall after a refused second Restart: want ErrRestartPending, got %v", err)
+	}
+	if _, err := os.Stat(staged); err != nil {
+		t.Fatalf("staged payload destroyed while a helper waited to install it: %v", err)
 	}
 }
 
@@ -833,6 +1131,58 @@ func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
 	err = u.DownloadAndInstall(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "trailing") {
 		t.Fatalf("expected trailing-data error, got %v", err)
+	}
+}
+
+// With Config.PublicKey pinned, a release that carries no signature must be
+// rejected rather than installed. A compromised feed or mirror can strip the
+// signature (or the whole Verification block) to attempt a downgrade to
+// digest-only mode; that must fail closed end-to-end, not just in
+// runVerification.
+func TestDownloadAndInstall_PublicKeyRequiresSignature(t *testing.T) {
+	pub, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkix, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name string
+		v    *updater.Verification
+	}{
+		{"digest-only", &updater.Verification{DigestAlgo: "sha256"}},
+		{"no-verification", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			host := &fakeHost{}
+			body := []byte("unsigned-payload")
+			if tc.v != nil {
+				sum := sha256.Sum256(body)
+				tc.v.Digest = sum[:]
+			}
+			rel := &updater.Release{
+				Version:      "2.0.0",
+				Artifact:     updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+				Verification: tc.v,
+			}
+			p := &fakeProvider{name: "p", rel: rel, body: body}
+			u := newConfiguredWithKey(t, host, pkix, p)
+
+			if _, err := u.Check(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			err := u.DownloadAndInstall(context.Background())
+			if err == nil || !strings.Contains(err.Error(), "must carry a signature") {
+				t.Fatalf("expected fail-closed signature error, got %v", err)
+			}
+			if u.State() != updater.StateError {
+				t.Errorf("state after rejected unsigned release: %s", u.State())
+			}
+		})
 	}
 }
 

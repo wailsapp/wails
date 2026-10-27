@@ -201,3 +201,53 @@ func TestWin32MenuDestroyReleasesDetachedSubmenu(t *testing.T) {
 		t.Errorf("detached submenu remains valid after destroy: count=%d", count)
 	}
 }
+
+// TestWindowsSetMenuNilIsNoOp guards against a regression of
+// https://github.com/wailsapp/wails/issues/6104: windowsWebviewWindow.setMenu
+// used to dereference a nil *Menu via menu.Update() whenever the application
+// was running, panicking instead of behaving like the macOS no-op.
+func TestWindowsSetMenuNilIsNoOp(t *testing.T) {
+	previous := globalApplication
+	globalApplication = &App{running: true}
+	t.Cleanup(func() { globalApplication = previous })
+
+	w := &windowsWebviewWindow{parent: &WebviewWindow{}}
+
+	w.setMenu(nil)
+
+	if w.menu != nil {
+		t.Errorf("setMenu(nil) should not create a native menu, got %#v", w.menu)
+	}
+}
+
+// A tray popup updated while TrackPopupMenuEx is tracking it must keep its
+// HMENU and command mapping until it closes (#4719).
+func TestWin32MenuRequestUpdateDefersWhileShowing(t *testing.T) {
+	menu := NewMenu()
+	gen0 := menu.Add("Gen 0")
+	popup := NewPopupMenu(0, menu)
+	defer popup.Destroy()
+
+	popup.isShowing.Store(true)
+	hmenu := popup.menu
+	menu.Clear()
+	gen1 := menu.Add("Gen 1")
+	popup.requestUpdate()
+
+	if popup.menu != hmenu {
+		t.Fatal("requestUpdate rebuilt the HMENU while the popup was showing")
+	}
+	if popup.menuMapping[MenuItemMsgID+1] != gen0 {
+		t.Fatal("requestUpdate replaced the command mapping while the popup was showing")
+	}
+	if !popup.updatePending.Load() {
+		t.Fatal("requestUpdate did not record the deferred rebuild")
+	}
+
+	popup.isShowing.Store(false)
+	popup.updatePending.Store(false)
+	popup.requestUpdate()
+	if popup.menuMapping[MenuItemMsgID+1] != gen1 {
+		t.Fatal("requestUpdate did not rebuild once the popup closed")
+	}
+}

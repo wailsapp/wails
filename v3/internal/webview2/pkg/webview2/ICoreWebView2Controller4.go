@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Controller4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Controller3Vtbl
 	GetAllowExternalDrop ComProc
 	PutAllowExternalDrop ComProc
 }

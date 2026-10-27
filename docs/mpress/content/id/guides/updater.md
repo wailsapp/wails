@@ -65,6 +65,10 @@ Anda dapat membaca status saat ini menggunakan `app.Updater.State()` kapan saja.
 
 `Restart` menunggu helper mencapai `application.New` sebelum meminta aplikasi yang sedang berjalan untuk keluar. Batas waktu startup default adalah 30 detik. Jika aplikasi melakukan inisialisasi panjang sebelum `application.New`, atur `Config.HelperReadyTimeout` ke durasi yang lebih lama, seperti `time.Minute`. Nilai nol menggunakan default; durasi negatif ditolak. Jika startup melewati batas waktu, `Restart` mengembalikan `updater.ErrHelperNotReady` dan membiarkan aplikasi tetap terbuka.
 
+Pembaruan disiapkan di direktori `wails-update-*` di samping biner yang terpasang (di macOS, di samping bundel `.app`), sehingga direktori tersebut harus dapat ditulis.
+
+Di dalam AppImage, pembaru mengganti dan menjalankan ulang berkas `.AppImage` yang ditunjuk oleh `$APPIMAGE`, bukan mount baca-saja.
+
 Jendela bawaan mencerminkan status saat ini secara otomatis — misalnya, ketika `Check` menyatakan tidak ada peningkatan, pengguna akan melihat tampilan berikut dan menutupnya dengan **Tutup**:
 
 ![Jendela pembaruan bawaan dalam status Versi Terkini — tanda centang hijau, judul 'Versi Anda Sudah Terkini', dan satu tombol Tutup.](/assets/updater/default-window-up-to-date.png)
@@ -334,7 +338,7 @@ app.Updater.Init(updater.Config{
 Jendela InitialHTML dimuat tanpa origin server aset sehingga tidak dapat mengambil `/wails/runtime.js` secara dinamis. Ada dua cara untuk berkomunikasi dengan host dari jendela tersebut:
 
 1. **Cukup tulis HTML.** Framework secara otomatis menyisipkan shim `window.wails.Events` minimal ke setiap jendela yang dibuka dengan `WebviewWindowOptions.AllowSimpleEventEmit = true` dan `HTML` yang telah ditetapkan—persis seperti yang dilakukan jalur bawaan dan BYO milik updater. Tidak diperlukan langkah build. Contoh di bawah menggunakan jalur ini.
-2. **Bundel `@wailsio/runtime` dengan bundler pilihan Anda** (Vite, esbuild, Rollup), lalu impor ke HTML kustom Anda pada waktu build. `Events.On` langsung berfungsi karena sepenuhnya berjalan di sisi klien; `Events.Emit` menggunakan transpor fetch milik runtime, yang tidak berfungsi karena origin null—jadi pasang transpor postMessage kecil melalui hook [`setTransport`](https://wails.io/wails/runtime.js) milik runtime yang merutekannya melalui `window._wails.invoke("wails:event:emit:<name>")`. Penyisipan oleh framework tidak melakukan apa pun jika `window.wails.Events` sudah berada dalam cakupan, sehingga kedua pendekatan tersebut tidak saling bertentangan.
+2. **Bundel `@wailsio/runtime` dengan bundler pilihan Anda** (Vite, esbuild, Rollup), lalu impor ke HTML kustom Anda pada waktu build. `Events.On` langsung berfungsi karena sepenuhnya berjalan di sisi klien; `Events.Emit` menggunakan transpor fetch milik runtime, yang tidak berfungsi karena origin null—jadi pasang transpor postMessage kecil melalui hook [`setTransport`](/guides/custom-transport/) milik runtime yang merutekannya melalui `window._wails.invoke("wails:event:emit:<name>")`. Penyisipan oleh framework tidak melakukan apa pun jika `window.wails.Events` sudah berada dalam cakupan, sehingga kedua pendekatan tersebut tidak saling bertentangan.
 
 Apa pun caranya, JS yang Anda tulis dalam HTML kustom akan memanggil API `Events.On` / `Events.Emit` yang sama:
 
@@ -648,6 +652,6 @@ Sebelum memublikasikan rilis yang akan dipasang oleh pemutakhir:
 
 ## Lihat juga
 
-- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Repositori demo pengujian: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Menambahkan pembaruan mandiri ke aplikasi Wails](/tutorials/04-self-update-a-wails-app/)

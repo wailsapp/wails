@@ -1,13 +1,13 @@
 ---
-title: "Ponte entre Go e frontend"
-description: "Análise detalhada de como o Wails permite a comunicação direta entre Go e JavaScript"
+title: "Ponte entre Go e o frontend"
+description: "Uma análise detalhada de como o Wails permite a comunicação direta entre Go e JavaScript"
 slug: "concepts/bridge"
 sourcePath: "concepts/bridge.md"
 ---
 
 ## Comunicação direta entre Go e JavaScript
 
-O Wails fornece uma ponte **direta e em memória** entre Go e JavaScript, permitindo uma comunicação integrada sem a sobrecarga do HTTP, limites entre processos ou gargalos de serialização.
+O Wails oferece uma **ponte direta em memória** entre Go e JavaScript, permitindo uma comunicação fluida sem a sobrecarga do HTTP, limites entre processos ou gargalos de serialização.
 
 ## Visão geral
 
@@ -71,7 +71,7 @@ Frontend.Bindings -> Frontend.UI: Promise é resolvida
 Bridge.TypeGen -> Frontend.Bindings: Gerar tipos
 ```
 
-**Ponto principal:** sem HTTP, IPC ou limites entre processos. Apenas **chamadas diretas de funções** com **segurança de tipos**.
+**Ponto principal:** sem HTTP, IPC ou limites entre processos. Apenas **chamadas diretas de função** com **segurança de tipos**.
 
 ## Como funciona: passo a passo
 
@@ -128,12 +128,12 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | `string` por padrão; `Date` com `-time-type=Date` |
 | `error` | Exceção (lançada) |
 
-### 3. Chamada do frontend (em tempo de execução)
+### 3. Chamada pelo frontend (em tempo de execução)
 
-O desenvolvedor chama o método Go no JavaScript:
+O desenvolvedor chama o método Go a partir do JavaScript:
 
 ```javascript
 import { Greet, Add } from './bindings/GreetService'
@@ -148,14 +148,14 @@ console.log(sum)  // 8
 
 **O que acontece:**
 
-1. **Função de binding chamada** — `Greet("World")`
-2. **Mensagem criada** — `{ service: "GreetService", method: "Greet", args: ["World"] }`
-3. **Enviada para a ponte** — pela ponte JavaScript da WebView
-4. **Promise retornada** — aguarda a resposta
+1. **A função de binding é chamada** — `Greet("World")`
+2. **A mensagem é criada** — `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **Enviada à ponte** — pela ponte JavaScript da WebView
+4. **Uma Promise é retornada** — aguarda a resposta
 
-### 4. Processamento da ponte (tempo de execução)
+### 4. Processamento pela ponte (em tempo de execução)
 
-A ponte recebe a mensagem e a processa:
+A ponte recebe e processa a mensagem:
 
 ```d2
 direction: down
@@ -217,7 +217,7 @@ Encode -> Send
 
 **Segurança:** somente serviços registrados e métodos exportados podem ser chamados.
 
-### 5. Execução em Go (tempo de execução)
+### 5. Execução em Go (em tempo de execução)
 
 O método Go é executado:
 
@@ -232,10 +232,10 @@ func (g *GreetService) Greet(name string) string {
 
 - É executado em uma **goroutine** (sem bloqueio)
 - Tem acesso a **todos os recursos do Go** (sistema de arquivos, rede e bancos de dados)
-- Pode chamar livremente **outro código Go**
-- Retorna um resultado ou erro
+- Pode chamar livremente **outros códigos Go**
+- Retorna o resultado ou um erro
 
-### 6. Resposta (tempo de execução)
+### 6. Resposta (em tempo de execução)
 
 O resultado é enviado de volta ao JavaScript:
 
@@ -268,7 +268,7 @@ try {
 
 ### Velocidade
 
-**Sobrecarga típica por chamada:** &lt;1 ms
+**Sobrecarga típica por chamada:** &lt;1ms
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -276,17 +276,17 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
    &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
 ```
 
-**Comparação com as alternativas:**
+**Em comparação com as alternativas:**
 
-- **HTTP/REST:** 5-50 ms (pilha de rede, serialização)
-- **IPC:** 1-10 ms (limites entre processos, marshaling)
-- **Ponte do Wails:** &lt;1 ms (em memória, chamada direta)
+- **HTTP/REST:** 5-50ms (pilha de rede, serialização)
+- **IPC:** 1-10ms (limites entre processos, marshaling)
+- **Ponte do Wails:** &lt;1ms (na memória, chamada direta)
 
 ### Memória
 
-**Sobrecarga por chamada:** ~1 KB (buffer de mensagens)
+**Sobrecarga por chamada:** ~1KB (buffer de mensagens)
 
-**Otimização sem cópia:** dados grandes (>1 MB) usam memória compartilhada sempre que possível.
+**Otimização sem cópia:** dados grandes (>1MB) usam memória compartilhada quando possível.
 
 ### Concorrência
 
@@ -354,7 +354,7 @@ function Sum(numbers: number[]): Promise<number>
 const total = await Sum([1, 2, 3, 4, 5])  // 15
 ```
 
-#### Maps
+#### Mapas
 
 ```go
 // Go
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### Erros
@@ -456,13 +456,13 @@ try {
 
 ### Tipos não compatíveis
 
-Estes tipos **não podem** ser transmitidos pela ponte:
+Estes tipos **não podem** ser passados pela ponte:
 
 - **Canais** (`chan T`)
 - **Funções** (`func()`)
 - **Interfaces** (exceto `interface{}` / `any`)
 - **Ponteiros** (exceto para structs)
-- **Campos não exportados** (letras minúsculas)
+- **Campos não exportados** (com inicial minúscula)
 
 **Solução alternativa:** use IDs ou identificadores:
 
@@ -523,7 +523,7 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 **O contexto fornece:**
 
 - Janela que fez a chamada
-- Instância do aplicativo
+- Instância da aplicação
 - Metadados da solicitação
 
 ### Transmissão de dados
@@ -587,7 +587,7 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-**Observação:** o contexto é cancelado automaticamente quando o frontend se desconecta.
+**Observação:** o cancelamento do contexto quando o frontend é desconectado é automático.
 
 ### Operações em lote
 
@@ -615,7 +615,7 @@ func ProcessItems(items []Item) ([]Result, error) {
 
 ## Depuração da ponte
 
-### Ativar logs de depuração
+### Ativar o registro de depuração
 
 ```go
 app := application.New(application.Options{
@@ -636,7 +636,7 @@ app := application.New(application.Options{
 
 ### Inspecionar os bindings gerados
 
-Verifique `frontend/bindings/` para consultar o TypeScript gerado:
+Consulte `frontend/bindings/` para ver o TypeScript gerado:
 
 ```javascript
 // frontend/bindings/<full-go-import-path>/myservice.js (real generated shape)
@@ -663,21 +663,21 @@ func TestGreetService(t *testing.T) {
 
 ## Dicas de desempenho
 
-### ✅ Faça
+### ✅ Recomendações
 
 - **Agrupe operações em lotes** — reduza as chamadas à ponte
-- **Use eventos para transmissão** — não retorne arrays grandes
+- **Use eventos para streaming** — não retorne arrays grandes
 - **Mantenha os métodos rápidos** — o ideal é &lt;100ms
-- **Use goroutines** — para operações demoradas
+- **Use goroutines** — para operações longas
 - **Use cache no lado do Go** — evite cálculos repetidos
 
-### ❌ Não faça
+### ❌ O que não fazer
 
 - **Não faça chamadas em excesso** — agrupe-as em lotes quando possível
-- **Não retorne volumes enormes de dados** — use paginação ou transmissão
-- **Não bloqueie** — use goroutines para operações demoradas
-- **Não passe tipos complexos** — mantenha a simplicidade
-- **Não ignore erros** — sempre trate-os
+- **Não retorne volumes enormes de dados** — use paginação ou streaming
+- **Não bloqueie** — use goroutines para operações longas
+- **Não passe tipos complexos** — mantenha-os simples
+- **Não ignore erros** — sempre os trate
 
 ## Segurança
 
@@ -686,23 +686,23 @@ A ponte é segura por padrão:
 1. **Somente lista de permissões** — apenas serviços registrados podem ser chamados
 2. **Validação de tipos** — os argumentos são verificados em relação aos tipos Go
 3. **Sem eval()** — o frontend não pode executar código Go arbitrário
-4. **Sem uso indevido de reflexão** — apenas métodos exportados são acessíveis
+4. **Sem uso indevido de reflexão** — somente métodos exportados são acessíveis
 
 **Práticas recomendadas:**
 
 - **Valide as entradas** no Go (não confie no frontend)
 - **Use o contexto** para autenticação/autorização
-- **Limite a taxa** de operações dispendiosas
+- **Limite a taxa** de operações de alto custo
 - **Sanitize** caminhos de arquivos e entradas do usuário
 
-## Próximos passos
+## Próximas etapas
 
-**Sistema de build** — saiba como o Wails compila e empacota seu aplicativo [Saiba mais →](/concepts/build-system/)
+**Sistema de build** — saiba como o Wails compila e empacota sua aplicação [Saiba mais →](/concepts/build-system/)
 
-**Serviços** — aprofunde-se no sistema de serviços [Saiba mais →](/features/bindings/services/)
+**Serviços** — conheça o sistema de serviços em detalhes [Saiba mais →](/features/bindings/services/)
 
-**Eventos** — Use eventos para comunicação por publicação/assinatura [Saiba mais →](/features/events/system/)
+**Eventos** — use eventos para comunicação pub/sub [Saiba mais →](/features/events/system/)
 
 ---
 
-**Dúvidas sobre a ponte?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Tem dúvidas sobre a ponte?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

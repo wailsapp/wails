@@ -1,33 +1,35 @@
 ---
 title: "API Reference"
-description: "Complete API documentation for Wails v3"
+description: "Look up Wails types, methods, options and CLI commands"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## About This Reference
 
-This is the complete API reference for Wails v3. It documents every public type, method, and option available in the framework.
+Use this section to look up Wails types, methods, options and commands while working on an application. If you need a guided lesson, start with [Tutorials](/tutorials/overview/). For steps to complete a task, use [How-to Guides](/quick-start/next-steps/#features). For design background, use [Core Concepts](/concepts/architecture/).
 
 **Organisation:**
 
 - [Application](/reference/application/) - Core application APIs
-- [Window](/reference/window/) - Window creation and management
-- [Menu](/reference/menu/) - Application, context, and system tray menus
+- [Window](/reference/window/) - Window creation and management; [window options](/features/windows/options/) lists configuration fields
+- [Menu](/reference/menu/) - Application, context, and system tray APIs; [menu item reference](/features/menus/reference/) covers item types and properties
 - [Events](/reference/events/) - Event system and built-in events
 - [Dialogs](/reference/dialogs/) - File and message dialogs
 - [Frontend Runtime](/reference/frontend-runtime/) - Frontend runtime APIs
-- [CLI](/reference/cli/) - Command-line interface
+- [CLI command overview](/reference/cli/) - Commands grouped by purpose; [flags and examples](/guides/cli/) gives individual command details
+- [Update manifest protocol](/reference/update-manifest/) - Update metadata and verification fields
+- [Mobile API](/guides/mobile/mobile-api/) - Experimental mobile APIs
 
 ## API Conventions
 
 @details{title="Go API Conventions - For developers new to Go"}
 ### Naming
 
-- <strong></strong>Types<strong></strong>: PascalCase (e.g., `WebviewWindow`)
-- <strong></strong>Methods<strong></strong>: PascalCase (e.g., `SetTitle()`)
-- <strong></strong>Options<strong></strong>: PascalCase structs (e.g., `WindowOptions`)
-- <strong></strong>Constants<strong></strong>: PascalCase (e.g., `WindowStartStateMaximised`)
+- <strong>Types</strong>: PascalCase (e.g., `WebviewWindow`)
+- <strong>Methods</strong>: PascalCase (e.g., `SetTitle()`)
+- <strong>Options</strong>: PascalCase structs (e.g., `WindowOptions`)
+- <strong>Constants</strong>: PascalCase (e.g., `WindowStartStateMaximised`)
 
 #### Error Handling
 
@@ -222,11 +224,11 @@ Platform-specific behaviour is documented in each API section.
 
 Wails v3 follows semantic versioning:
 
-- **Major** (v3.x.x): Breaking changes
-- **Minor** (v3.x.x): New features, backwards-compatible
-- **Patch** (v3.x.x): Bug fixes, backwards-compatible
+- **Major** (v4.0.0): Breaking changes
+- **Minor** (v3.1.0): New features, backwards-compatible
+- **Patch** (v3.0.1): Bug fixes, backwards-compatible
 
-**Current status:** Beta (API stable, refinements ongoing)
+**Wails v3.0.0:** Stable
 
 ## Deprecation Policy
 
@@ -250,22 +252,22 @@ These APIs are stable and safe for production use:
 - File dialogs
 - Service bindings
 
-### Unstable APIs ⚠️
+### Experimental APIs ⚠️
 
-These APIs may change before final release:
+Only APIs explicitly documented as experimental are outside the stable desktop compatibility contract:
 
-- Some advanced window options
-- Platform-specific features
-- Experimental features
+- Android support
+- iOS support
+- Other APIs explicitly marked experimental
 
-Unstable APIs are marked in documentation.
+Experimental APIs are marked in documentation.
 
 ## Getting Help
 
 ### API Questions
 
 1. **Check this reference** - Complete API documentation
-2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Search Discord** - [Discord server](https://discord.gg/JDdSxwjhGf)
 4. **Ask the community** - Discord #help channel
 
@@ -282,7 +284,7 @@ Found a bug or inconsistency?
 - [Tutorials](/tutorials/overview/) - Learn by building real applications
 - [Guides](/guides/architecture/) - Task-oriented guides for common scenarios
 - [Features](/features/windows/basics/) - Feature-by-feature documentation
-- [Examples](https://github.com/wailsapp/wails/tree/master/v3/examples) - Working code examples on GitHub
+- [Examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Working code examples on GitHub
 
 ---
 

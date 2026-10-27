@@ -65,6 +65,10 @@ Vous pouvez consulter l’état actuel à tout moment avec `app.Updater.State()`
 
 `Restart` attend que l’assistant atteigne `application.New` avant de demander à l’application en cours de quitter. Le délai de démarrage par défaut est de 30 secondes. Si votre application effectue une longue initialisation avant `application.New`, définissez `Config.HelperReadyTimeout` sur une durée plus longue, par exemple `time.Minute`. Zéro sélectionne la valeur par défaut ; les durées négatives sont rejetées. Si le délai de démarrage expire, `Restart` renvoie `updater.ErrHelperNotReady` et laisse l’application en cours ouverte.
 
+La mise à jour est préparée dans un répertoire `wails-update-*` placé à côté du binaire installé (sous macOS, à côté du bundle `.app`) ; ce répertoire doit donc être accessible en écriture.
+
+Dans une AppImage, le programme de mise à jour remplace et relance le fichier `.AppImage` désigné par `$APPIMAGE` plutôt que le montage en lecture seule.
+
 La fenêtre par défaut reflète automatiquement l’état actuel. Par exemple, lorsque `Check` ne trouve aucune mise à niveau, l’utilisateur en est informé et ferme la fenêtre avec **Fermer** :
 
 ![Fenêtre par défaut du programme de mise à jour dans l’état À jour — coche verte, titre « Vous êtes à jour » et un seul bouton Fermer.](/assets/updater/default-window-up-to-date.png)
@@ -334,7 +338,7 @@ app.Updater.Init(updater.Config{
 Les fenêtres InitialHTML sont chargées sans origine provenant du serveur de ressources et ne peuvent donc pas récupérer `/wails/runtime.js` dynamiquement. Deux méthodes permettent à une telle fenêtre de communiquer avec l’hôte :
 
 1. **Écrivez simplement du HTML.** Le framework injecte automatiquement une couche de compatibilité `window.wails.Events` minimale dans toute fenêtre ouverte avec `WebviewWindowOptions.AllowSimpleEventEmit = true` et `HTML` définis, ce qui correspond exactement aux chemins intégré et BYO du programme de mise à jour. Aucune étape de compilation n’est requise. L’exemple ci-dessous utilise cette méthode.
-2. **Regroupez `@wailsio/runtime` avec l’outil de votre choix** (Vite, esbuild, Rollup), puis importez-le dans votre HTML personnalisé lors de la compilation. `Events.On` fonctionne immédiatement, car il s’exécute entièrement côté client ; `Events.Emit` passe par le transport fetch du runtime, que l’origine nulle rend inopérant. Installez donc un petit transport postMessage au moyen du hook [`setTransport`](https://wails.io/wails/runtime.js) du runtime, qui effectue le routage via `window._wails.invoke("wails:event:emit:<name>")`. L’injection du framework ne fait rien si `window.wails.Events` est déjà dans la portée, afin que les deux approches n’entrent pas en conflit.
+2. **Regroupez `@wailsio/runtime` avec l’outil de votre choix** (Vite, esbuild, Rollup), puis importez-le dans votre HTML personnalisé lors de la compilation. `Events.On` fonctionne immédiatement, car il s’exécute entièrement côté client ; `Events.Emit` passe par le transport fetch du runtime, que l’origine nulle rend inopérant. Installez donc un petit transport postMessage au moyen du hook [`setTransport`](/guides/custom-transport/) du runtime, qui effectue le routage via `window._wails.invoke("wails:event:emit:<name>")`. L’injection du framework ne fait rien si `window.wails.Events` est déjà dans la portée, afin que les deux approches n’entrent pas en conflit.
 
 Dans les deux cas, le JavaScript de votre HTML personnalisé appelle la même API `Events.On` / `Events.Emit` :
 
@@ -648,6 +652,6 @@ Avant de publier une version que le programme de mise à jour installera :
 
 ## Voir aussi
 
-- Exemple exécutable : [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Exemple exécutable : [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Dépôt de démonstration pour les tests : [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutoriel : [Permettre à une application Wails de se mettre à jour elle-même](/tutorials/04-self-update-a-wails-app/)
