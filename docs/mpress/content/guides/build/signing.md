@@ -78,8 +78,8 @@ This means the Taskfile vars are **optional overrides**: if a var is unset, the 
 To configure signing for a single project rather than globally, run the per-project wizard from inside the project — it writes the `vars` into that project's `build/<platform>/Taskfile.yml` files:
 
 ```bash
-wails3 setup signing                                   # all detected platforms
-wails3 setup signing --platform windows --platform linux
+wails3 signing                                   # all detected platforms
+wails3 signing --platform windows --platform linux
 ```
 
 ### Manual Configuration
@@ -115,7 +115,7 @@ vars:
   # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-Password is retrieved from system keychain (run `wails3 setup signing` to configure).
+Password is retrieved from system keychain (run `wails3 signing` to configure).
 
 Then run:
 
@@ -133,7 +133,7 @@ vars:
   # SIGN_ROLE: "builder"  # Options: origin, maint, archive, builder
 ```
 
-Password is retrieved from system keychain (run `wails3 setup signing` to configure).
+Password is retrieved from system keychain (run `wails3 signing` to configure).
 
 Then run:
 
@@ -158,7 +158,7 @@ gpg --list-keys
 For interactive setup of every platform's signing configuration, use the wizard:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 ## macOS Code Signing
@@ -228,7 +228,7 @@ Entitlements control what capabilities your app has access to. Wails apps typica
 Use the interactive setup wizard to generate both files:
 
 ```bash
-wails3 setup entitlements
+wails3 entitlements
 ```
 
 This creates:
@@ -258,7 +258,7 @@ Then set `ENTITLEMENTS` in your Taskfile vars to point to the appropriate file.
 Apple requires all distributed apps to be notarized.
 
 @steps
-### **Store your credentials in the keychain** (one-time setup). Either run `wails3 setup signing` (it prompts for these values and calls `notarytool` under the hood) or call `notarytool` directly:
+### **Store your credentials in the keychain** (one-time setup). Either run `wails3 signing` (it prompts for these values and calls `notarytool` under the hood) or call `notarytool` directly:
 ```bash
 xcrun notarytool store-credentials "my-notarize-profile" \
   --apple-id "your@email.com" \
@@ -325,7 +325,7 @@ These vars are optional **overrides**. If unset, the certificate configured glob
 @end
 
 @note{type="note"}
-The certificate password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_WINDOWS_CERT_PASSWORD` environment variable in CI.
+The certificate password is stored in your system keychain, not in the Taskfile. Run `wails3 signing` to configure it, or set the `WAILS_WINDOWS_CERT_PASSWORD` environment variable in CI.
 
 @end
 
@@ -403,7 +403,7 @@ vars:
 | `SIGN_ROLE` | No | DEB signing role (default: builder) |
 
 @note{type="note"}
-The PGP key password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_PGP_PASSWORD` environment variable in CI.
+The PGP key password is stored in your system keychain, not in the Taskfile. Run `wails3 signing` to configure it, or set the `WAILS_PGP_PASSWORD` environment variable in CI.
 
 @end
 
@@ -506,7 +506,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Import Certificate
         env:
@@ -567,7 +567,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Import Certificate
         env:
@@ -613,7 +613,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Install Build Dependencies
         run: |
@@ -665,12 +665,12 @@ Using a Linux runner for cross-platform signing simplifies CI/CD by eliminating 
 
 ## CLI Reference
 
-### wails3 setup signing
+### wails3 signing
 
 Interactive wizard to configure signing for your project.
 
 ```bash
-wails3 setup signing [flags]
+wails3 signing [flags]
 
 Flags:
   --platform    Platform to configure (darwin, windows, linux). Repeatable.
@@ -683,12 +683,12 @@ The wizard guides you through:
 - **Windows**: Choosing between certificate file or thumbprint, setting password and timestamp server.
 - **Linux**: Using an existing PGP key or generating a new one (calls `gpg`), configuring signing role.
 
-### wails3 setup entitlements
+### wails3 entitlements
 
 Interactive wizard to configure macOS entitlements.
 
 ```bash
-wails3 setup entitlements [flags]
+wails3 entitlements [flags]
 
 Flags:
   --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)
@@ -765,7 +765,7 @@ wails3 tool sign [flags]
 
 ### Inspecting signing state (native tools)
 
-There is **no** `wails3 signing` command in v3. To inspect signing state, use the native tooling directly:
+`wails3 signing` configures signing credentials. To inspect signing state, use the native tooling directly:
 
 | Task | Command |
 | --- | --- |

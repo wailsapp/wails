@@ -1,13 +1,13 @@
 ---
 title: "Services"
-description: "Créez des composants d’application modulaires et réutilisables à l’aide de services"
+description: "Créez des composants d’application modulaires et réutilisables avec des services"
 slug: "features/bindings/services"
 sourcePath: "features/bindings/services.md"
 ---
 
 ## Architecture des services
 
-Les **services** Wails permettent d’organiser la logique de l’application de manière structurée grâce à des composants modulaires et autonomes. Les services prennent en charge le cycle de vie au moyen de hooks de démarrage et d’arrêt, sont automatiquement liés au frontend, peuvent être injectés en tant que dépendances et peuvent être entièrement testés de manière isolée.
+Les **services** Wails permettent d’organiser la logique de l’application sous forme de composants modulaires et autonomes. Les services prennent en charge le cycle de vie grâce à des hooks de démarrage et d’arrêt, sont automatiquement liés au frontend, acceptent l’injection de dépendances et peuvent être entièrement testés de manière isolée.
 
 ## Démarrage rapide
 
@@ -57,7 +57,7 @@ func (c *CalculatorService) Subtract(a, b int) int {
 }
 ```
 
-**Enregistrez-le :**
+**Enregistrez le service :**
 
 ```go
 app := application.New(application.Options{
@@ -131,7 +131,7 @@ func (u *UserService) GetUser(id int) (*User, error) {
 }
 ```
 
-**Enregistrez-le avec ses dépendances :**
+**Enregistrez le service avec ses dépendances :**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -148,7 +148,7 @@ app := application.New(application.Options{
 
 ### ServiceStartup
 
-Appelée au démarrage de l’application :
+Appelé au démarrage de l’application :
 
 ```go
 func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -177,7 +177,7 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 - Valider la configuration
 - Exécuter les migrations
 - Démarrer les tâches en arrière-plan
-- Se connecter aux services externes
+- Se connecter à des services externes
 
 **Important :**
 
@@ -187,7 +187,7 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 ### ServiceShutdown
 
-Appelée lors de l’arrêt de l’application :
+Appelé lors de l’arrêt de l’application :
 
 ```go
 func (u *UserService) ServiceShutdown() error {
@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **Cas d’utilisation :**
 
-- Plusieurs instances d’un même type de service
 - Journalisation plus claire
-- Débogage plus efficace
+- Débogage facilité
+
+`ServiceOptions.Name` est un nom d’affichage utilisé pour la journalisation et le débogage ; il ne modifie pas l’espace de noms des liaisons générées. Enregistrez au maximum un service de chaque type Go. Pour créer des instances configurées indépendamment, utilisez des types enveloppes distincts, par exemple :
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+Enregistrez `application.NewService(&PrimaryStore{primary})` et `application.NewService(&ArchiveStore{archive})` au lieu d’enregistrer deux valeurs `*Store`.
 
 ### Routes HTTP
 
@@ -343,7 +351,7 @@ app := application.New(application.Options{
 
 ## Patrons de conception des services
 
-### Patron Repository
+### Patron dépôt
 
 ```go
 type UserRepository struct {
@@ -367,7 +375,7 @@ func (r *UserRepository) Delete(id int) error {
 }
 ```
 
-### Patron de couche de services
+### Patron couche de services
 
 ```go
 type UserService struct {
@@ -403,7 +411,7 @@ func (s *UserService) RegisterUser(email, password string) (*User, error) {
 }
 ```
 
-### Patron Factory
+### Patron fabrique
 
 ```go
 type ServiceFactory struct {
@@ -426,7 +434,7 @@ func (f *ServiceFactory) CreateOrderService() *OrderService {
 }
 ```
 
-### Patron événementiel
+### Patron piloté par les événements
 
 ```go
 type OrderService struct {
@@ -604,21 +612,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ À faire
 
-- **Responsabilité unique** – Un service, un objectif
-- **Injection par constructeur** – Transmettez explicitement les dépendances
-- **État sûr pour les accès concurrents** – Utilisez des mutex
-- **Renvoyez les erreurs** – Ne déclenchez pas de panique
-- **Journalisez les événements importants** – Utilisez une journalisation structurée
-- **Testez de manière isolée** – Simulez les dépendances
+- **Responsabilité unique** — Un service, un objectif
+- **Injection par constructeur** — Transmettez explicitement les dépendances
+- **État sûr pour les accès concurrents** — Utilisez des mutex
+- **Renvoyez les erreurs** — Ne déclenchez pas de panic
+- **Consignez les événements importants** — Utilisez la journalisation structurée
+- **Testez de manière isolée** — Simulez les dépendances
 
 ### ❌ À ne pas faire
 
-- **N’utilisez pas d’état global** – Transmettez les dépendances
-- **Ne bloquez pas le démarrage** – Veillez à ce que ServiceStartup s’exécute rapidement
-- **Ne négligez pas l’arrêt** – Nettoyez toujours les ressources
-- **Ne créez pas de dépendances circulaires** – Concevez l’architecture avec soin
-- **N’exposez pas les méthodes internes** – Gardez-les privées
-- **N’oubliez pas la sûreté des accès concurrents** – Les services sont partagés
+- **N’utilisez pas d’état global** — Transmettez les dépendances
+- **Ne bloquez pas le démarrage** — Veillez à ce que ServiceStartup s’exécute rapidement
+- **Ne négligez pas l’arrêt** — Effectuez toujours le nettoyage
+- **Ne créez pas de dépendances circulaires** — Concevez-les avec soin
+- **N’exposez pas les méthodes internes** — Gardez-les privées
+- **N’oubliez pas la sûreté des accès concurrents** — Les services sont partagés
 
 ## Exemple complet
 
@@ -794,11 +802,11 @@ func main() {
 
 ## Étapes suivantes
 
-- [Liaisons de méthodes](/features/bindings/methods/) – Découvrez comment lier des méthodes Go à JavaScript
-- [Modèles](/features/bindings/models/) – Liez des structures de données complexes
-- [Événements](/features/events/system/) – Utilisez des événements pour les communications par publication-abonnement
-- [Bonnes pratiques](/features/bindings/best-practices/) – Modèles de conception et bonnes pratiques pour les services
+- [Liaisons de méthodes](/features/bindings/methods/) — Découvrez comment lier des méthodes Go à JavaScript
+- [Modèles](/features/bindings/models/) — Liez des structures de données complexes
+- [Événements](/features/events/system/) — Utilisez des événements pour la communication par publication/abonnement
+- [Bonnes pratiques](/features/bindings/best-practices/) — Patrons de conception et bonnes pratiques pour les services
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de services](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de services](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

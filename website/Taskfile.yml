@@ -34,18 +34,6 @@ tasks:
     cmds:
       - npx docusaurus serve
 
-  crowdin:push:
-    desc: Upload source files to Crowdin
-    deps: [install]
-    cmds:
-      - npx crowdin push -b v2
-
-  crowdin:pull:
-    desc: Download approved translation files from Crowdin to local
-    deps: [install]
-    cmds:
-      - npx crowdin pull -b v2 --export-only-approved
-
   format:md:
     cmds:
       - npx prettier --write "**/*.{md,mdx}"

@@ -570,4 +570,4 @@ Verwenden Sie Ereignisse für Fortschrittsmeldungen.
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele für Dateidialoge](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele für Dateidialoge](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs) an.

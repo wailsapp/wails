@@ -7,13 +7,13 @@ sourcePath: "contributing/setup.md"
 
 ## Настройка среды разработки
 
-В этом руководстве описана полная настройка среды для работы над Wails v3.
+В этом руководстве описана полная настройка среды разработки для работы над Wails v3.
 
 ## Необходимые инструменты
 
 ### Разработка на Go
 
-1. **Установите Go 1.25 или более поздней версии:**
+1. **Установите Go 1.26 или более поздней версии:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -37,7 +37,7 @@ sourcePath: "contributing/setup.md"
 
 ### Node.js и npm
 
-Требуется только для примеров интеграции с фронтендом.
+Требуются только для примеров интеграции с фронтендом.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -60,7 +60,7 @@ xcode-select -p  # Should output a path
 **Windows:**
 
 1. Установите [MSYS2](https://www.msys2.org/), чтобы получить Unix-подобную среду
-2. Среда выполнения WebView2 (предустановлена в Windows 11; для Windows 10 её можно [скачать](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
+2. Среда выполнения WebView2 (предустановлена в Windows 11; для Windows [скачайте её](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) 10)
 3. Необязательно: установите [Git for Windows](https://git-scm.com/download/win)
 
 **Linux (Debian/Ubuntu):**
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -107,7 +107,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 git remote -v
 ```
 
-### Сборка CLI Wails
+### Сборка Wails CLI
 
 ```bash
 # Navigate to v3 directory
@@ -165,7 +165,7 @@ export PATH=$PATH:/path/to/wails
 
 2. **Настройте:**
   - Включите поддержку модулей Go
-  - Настройте наблюдение за файлами для `goimports`
+  - Настройте наблюдатели за файлами для `goimports`
   - Настройте стиль кода в соответствии с соглашениями проекта
 
 
@@ -203,7 +203,7 @@ go test ./...
 cd ..
 ```
 
-### Тесты определённого пакета
+### Тесты отдельных пакетов
 
 ```bash
 cd v3
@@ -228,22 +228,9 @@ go test ./... -race
 
 ## Работа с документацией
 
-Документация Wails v3 написана с использованием M-Press. Исходные файлы на английском языке находятся в  
-`docs/mpress/content/`, а переводы — в каталогах соответствующих языков, например  
-`fr/` и `id/`.
+Авторы документации могут использовать M-Press без установки Wails CLI и зависимостей для сборки настольных приложений. Инструкции по скачиванию закреплённых версий исполняемых файлов, установке, интерактивному предварительному просмотру, проверке и процессу создания PR для ветки выпуска см. в разделе [Создание документации с помощью M-Press](/contributing/documentation/).
 
-Предварительно просмотрите и проверьте изменения в документации из корневого каталога репозитория:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-Рабочий сайт является статическим. Для локальной работы с документацией не требуются Node.js, поставщик услуг перевода и учетные данные Cloudflare.
+Англоязычные файлы Markdown находятся в `docs/mpress/content/`, а переводы — в каталогах соответствующих языков. Команда `mpress dev`, запущенная из корня репозитория, открывает предварительный просмотр по адресу `http://127.0.0.1:3000`. Перед выполнением описанных в руководстве команд проверки остановите её с помощью Ctrl+C.
 
 ## Отладка
 
@@ -279,21 +266,21 @@ dlv debug ./cmd/wails3 -- dev
 
 ### Отладка платформенного кода
 
-Для отладки кода конкретной платформы необходимы платформенные инструменты:
+Для отладки кода конкретной платформы необходимы соответствующие инструменты:
 
 - **macOS:** Xcode Instruments
-- **Windows:** Visual Studio Debugger
+- **Windows:** отладчик Visual Studio
 - **Linux:** GDB
 
 ## Распространённые проблемы
 
 ### «command not found: wails3»
 
-Добавьте каталог Wails в PATH или используйте `./wails3` из корневого каталога проекта.
+Добавьте каталог Wails в PATH или используйте `./wails3` из корня проекта.
 
-### «webkitgtk-6.0 не найден» или «webkit2gtk не найден» (Linux)
+### «webkitgtk-6.0 not found» или «webkit2gtk not found» (Linux)
 
-Установите пакеты для разработки для того стека, под который выполняется сборка:
+Установите пакеты для разработки, соответствующие стеку, с которым выполняется сборка:
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -303,7 +290,7 @@ sudo apt install libwebkitgtk-6.0-dev
 sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-### Сбой сборки из-за ошибок модулей Go
+### Сборка завершается ошибками модулей Go
 
 ```bash
 cd v3
@@ -313,10 +300,10 @@ go mod download
 
 ### Ошибки «CGO_ENABLED» в Windows
 
-Убедитесь, что компилятор C (MinGW-w64 из MSYS2) доступен через PATH.
+Убедитесь, что компилятор C (MinGW-w64 через MSYS2) доступен в PATH.
 
 ## Дальнейшие действия
 
-- Ознакомьтесь со [стандартами написания кода](/contributing/standards/)
+- Ознакомьтесь со [Стандартами написания кода](/contributing/standards/)
 - Изучите [техническую документацию](/contributing/)
-- Найдите задачу, над которой можно поработать: [задачи для начинающих](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Найдите задачу для работы: [задачи для начинающих](https://github.com/wailsapp/wails/labels/good%20first%20issue)

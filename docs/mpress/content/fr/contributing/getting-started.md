@@ -5,24 +5,24 @@ slug: "contributing/getting-started"
 sourcePath: "contributing/getting-started.md"
 ---
 
-## Bienvenue, contributrice ou contributeur !
+## Bienvenue parmi les contributeurs !
 
-Merci de votre intérêt pour la contribution à Wails ! Ce guide vous aidera à apporter votre première contribution.
+Merci de l’intérêt que vous portez à Wails ! Ce guide vous aidera à apporter votre première contribution.
 
 ## Prérequis
 
-Avant de commencer, vérifiez que vous disposez des éléments suivants :
+Avant de commencer, assurez-vous de disposer des éléments suivants :
 
-- **Go 1.25+** installé ([télécharger](https://go.dev/dl/))
+- **Go 1.26+** installé ([télécharger](https://go.dev/dl/))
 - **Node.js 20+** et **npm** ([télécharger](https://nodejs.org/))
 - **Git** configuré avec votre compte GitHub
-- Connaissances de base en Go et en JavaScript/TypeScript
+- Connaissances de base de Go et de JavaScript/TypeScript
 
 ### Prérequis propres à chaque plateforme
 
 **macOS :**
 
-- Outils en ligne de commande de Xcode : `xcode-select --install`
+- Outils en ligne de commande Xcode : `xcode-select --install`
 
 **Windows :**
 
@@ -37,19 +37,19 @@ Avant de commencer, vérifiez que vous disposez des éléments suivants :
 
 ## Vue d’ensemble du processus de contribution
 
-Le processus de contribution habituel comprend les étapes suivantes :
+Le processus de contribution habituel suit les étapes ci-dessous :
 
 1. **Fork et clonage** — Créez votre propre copie du dépôt Wails
 2. **Configuration** — Compilez la CLI Wails et vérifiez votre environnement
 3. **Branche** — Créez une branche de fonctionnalité pour vos modifications
-4. **Développement** — Effectuez vos modifications en respectant nos conventions de codage
+4. **Développement** — Apportez vos modifications conformément à nos normes de codage
 5. **Tests** — Exécutez les tests pour vérifier que tout fonctionne
-6. **Commit** — Enregistrez vos modifications avec des messages de commit clairs et conventionnels
+6. **Commit** — Créez un commit avec un message clair respectant les conventions
 7. **Soumission** — Ouvrez une pull request pour révision
 8. **Itération** — Répondez aux retours et apportez les ajustements nécessaires
 9. **Fusion** — Une fois approuvées, vos modifications sont intégrées à Wails !
 
-## Guide étape par étape
+## Guide détaillé
 
 Choisissez votre type de contribution :
 
@@ -58,7 +58,7 @@ Choisissez votre type de contribution :
 @steps
 ### Rechercher ou signaler le bug
 - Vérifiez si le bug a déjà été signalé dans les [issues GitHub](https://github.com/wailsapp/wails/issues)
-- Sinon, créez une nouvelle issue en indiquant les étapes permettant de reproduire le bug
+- Dans le cas contraire, créez une nouvelle issue en indiquant les étapes permettant de reproduire le bug
 - Attendez une confirmation avant de commencer le travail
 
 ### Créer un fork et le cloner
@@ -82,7 +82,7 @@ go build -o ../wails3 ./cmd/wails3
 # Reproduce the bug to understand it
 ```
 
-### Créer une branche de correction
+### Créer une branche de correction de bug
 Créez une branche pour votre correction :
 
 ```bash
@@ -90,7 +90,7 @@ git checkout -b fix/issue-123-window-crash
 ```
 
 ### Corriger le bug
-- Effectuez uniquement les modifications minimales nécessaires pour corriger le bug
+- Apportez uniquement les modifications nécessaires pour corriger le bug
 - Ne remaniez pas de code sans rapport avec le bug
 - Ajoutez ou mettez à jour des tests pour éviter toute régression
 
@@ -112,7 +112,7 @@ go test ./pkg/application -v
 go test ./... -race
 ```
 
-### Enregistrer votre correction
+### Créer un commit pour votre correction
 Créez un commit avec un message clair :
 
 ```bash
@@ -122,30 +122,30 @@ Fixes #123"
 ```
 
 ### Soumettre une pull request
-Poussez vos modifications et créez une PR :
+Poussez votre branche et créez une pull request :
 
 ```bash
 git push origin fix/issue-123-window-crash
 ```
 
-Dans la description de votre PR :
+Dans la description de votre pull request :
 
-- Expliquez le bug et sa cause première
+- Expliquez le bug et sa cause racine
 - Décrivez votre correction
 - Référencez l’issue : « Fixes #123 »
 - Indiquez le comportement avant et après la correction
 
 ### Répondre aux retours
-Traitez les commentaires de révision et mettez à jour votre PR si nécessaire.
+Traitez les commentaires de révision et mettez à jour votre pull request si nécessaire.
 
 @end
 
 [WEP (amélioration)]
 @steps
 ### Rédiger une WEP
-- Consultez le [processus WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Consultez le [processus WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Copiez le modèle de WEP dans `v3/wep/proposals/<name>/proposal.md`
-- Ouvrez une PR en brouillon intitulée `[WEP] <title>` et contenant uniquement la WEP
+- Ouvrez une pull request en brouillon intitulée `[WEP] <title>` et contenant uniquement la WEP
 - Attendez la décision d’un responsable de maintenance avant de commencer l’implémentation
 
 ### Créer un fork et le cloner
@@ -160,7 +160,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 ```
 
 ### Configurer l’environnement de développement
-Compilez Wails et vérifiez votre environnement :
+Compilez Wails et vérifiez votre environnement :
 
 ```bash
 cd v3
@@ -171,7 +171,7 @@ go test ./...
 ```
 
 ### Créer une branche de fonctionnalité
-Créez une branche au nom descriptif :
+Créez une branche au nom descriptif :
 
 ```bash
 git checkout -b feat/window-transparency-support
@@ -180,7 +180,7 @@ git checkout -b feat/window-transparency-support
 ### Implémenter la fonctionnalité
 - Respectez nos [normes de codage](/contributing/standards/)
 - Limitez les modifications à la fonctionnalité
-- Écrivez du code clair et documenté
+- Écrivez du code propre et documenté
 - Ajoutez des tests complets
 
 ```bash
@@ -191,8 +191,8 @@ git checkout -b feat/window-transparency-support
 # 4. Update documentation
 ```
 
-### Tester minutieusement
-Testez votre fonctionnalité :
+### Effectuer des tests approfondis
+Testez votre fonctionnalité :
 
 ```bash
 # Unit tests
@@ -207,12 +207,12 @@ cd feature-test
 ```
 
 ### Documenter votre fonctionnalité
-- Ajoutez des chaînes de documentation à toutes les API publiques
+- Ajoutez des commentaires de documentation à toutes les API publiques
 - Mettez à jour la documentation pertinente dans `/docs/mpress/content/`
 - Ajoutez des exemples, le cas échéant
 
-### Respecter la convention de commit
-Utilisez des commits conventionnels :
+### Respecter les conventions de commit
+Utilisez les commits conventionnels :
 
 ```bash
 git commit -m "feat: add window transparency support
@@ -225,26 +225,26 @@ Closes #456"
 ```
 
 ### Soumettre une pull request
-Poussez la branche et créez une PR :
+Poussez votre branche et créez une pull request :
 
 ```bash
 git push origin feat/window-transparency-support
 ```
 
-Dans votre PR :
+Dans votre pull request :
 
 - Décrivez la fonctionnalité et ses cas d’utilisation
 - Présentez des exemples ou des captures d’écran
 - Répertoriez toutes les modifications incompatibles
-- Faites référence à la PR WEP acceptée
+- Référencez la pull request de la WEP acceptée
 
-### Apporter des modifications en fonction de la revue
-Les responsables de la maintenance peuvent demander des modifications. Faites preuve de patience et coopérez.
+### Itérer en fonction de la révision
+Les mainteneurs peuvent demander des modifications. Faites preuve de patience et de coopération.
 
 @end
 
 [Documentation]
-Les PR de correction sont les bienvenues sans qu’il soit nécessaire d’ouvrir d’abord une issue. Les corrections portant uniquement sur la documentation ne nécessitent pas de test de code en échec. Suivez [Corriger la documentation](/contributing/documentation/) pour connaître les étapes d’installation de M-Press, les chemins des sources, ainsi que les étapes de prévisualisation, de validation et de création d’une PR.
+Les PR de correction sont les bienvenues sans qu’il soit nécessaire d’ouvrir d’abord une issue. Les corrections portant uniquement sur la documentation n’ont pas besoin d’un test de code en échec. Suivez [Rédiger la documentation avec M-Press](/contributing/documentation/) pour connaître les étapes d’installation de M-Press, les chemins des sources, la prévisualisation, la validation et la création d’une PR.
 
 @end
 
@@ -252,13 +252,13 @@ Les PR de correction sont les bienvenues sans qu’il soit nécessaire d’ouvri
 
 - Recherchez les labels [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue)
 - Consultez les issues [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted)
-- Parcourez les [issues ouvertes](https://github.com/wailsapp/wails/issues) et demandez qu’elles vous soient attribuées
+- Parcourez les [issues ouvertes](https://github.com/wailsapp/wails/issues) et demandez à ce qu’une issue vous soit attribuée
 
 ## Obtenir de l’aide
 
 - **Discord :** rejoignez le [Discord de Wails](https://discord.gg/JDdSxwjhGf)
 - **Discussions :** publiez un message dans les [discussions GitHub](https://github.com/wailsapp/wails/discussions)
-- **Issues :** ouvrez une issue pour un bug reproductible ; utilisez les Discussions pour les questions et une PR WEP pour les améliorations
+- **Issues :** ouvrez une issue pour un bug reproductible ; utilisez les discussions pour les questions et une PR de WEP pour les améliorations
 
 ## Code de conduite
 

@@ -5,15 +5,15 @@ slug: "contributing"
 sourcePath: "contributing/index.md"
 ---
 
-## コントリビューターの皆さん、ようこそ！
+## コントリビューターの皆さまへ
 
-Wails へのコントリビューションを歓迎します！バグ修正、機能追加、ドキュメント改善など、皆さんの協力に感謝します。
+Wails へのコントリビューションを歓迎します。バグの修正、機能の追加、ドキュメントの改善など、皆さまのご協力に感謝します。
 
 ## 貢献する方法
 
 ### 1. 問題を報告する
 
-バグを見つけた場合は、次の情報を添えて[Issue を作成](https://github.com/wailsapp/wails/issues/new)してください。
+バグを見つけた場合は、次の情報を添えて[Issue を作成してください](https://github.com/wailsapp/wails/issues/new)。
 
 - 明確な説明
 - 再現手順
@@ -23,8 +23,8 @@ Wails へのコントリビューションを歓迎します！バグ修正、�
 
 ### 2. ドキュメントを改善する
 
-修正 PR は、事前の Issue や失敗するコードテストがなくても歓迎します。  
-[ドキュメントを修正する](/contributing/documentation/)の手順に従い、M-Press で変更をプレビューして検証してください。
+修正 PR には、事前の Issue や失敗するコードテストは必要ありません。  
+ダウンロード、macOS／Linux／Windows へのインストール、ライブプレビュー、変更の提出については、[M-Press でドキュメントを作成する](/contributing/documentation/)に従ってください。
 
 ドキュメントの改善はいつでも歓迎します。
 
@@ -42,21 +42,21 @@ Wails へのコントリビューションを歓迎します！バグ修正、�
 - パフォーマンスの改善
 - テスト
 
-### 4. 機能改善を提案する（WEP）
+### 4. 機能強化を提案する（WEP）
 
-新しい機能や公開されている動作の変更には、Wails Enhancement Proposal（WEP）プロセスを使用します。このプロセスにより、機能開発の透明性が保たれ、承認されたすべての提案に実装担当者が確保されます。機能リクエストの Issue は作成しないでください。
+新機能や公開動作の変更には、Wails Enhancement Proposal（WEP）プロセスを使用します。このプロセスにより、機能開発の透明性を保ち、承認されたすべての提案に実装担当者がいることを保証します。機能リクエストの Issue は作成しないでください。
 
-1. 必要に応じて、関心の度合いを確認するため、GitHub Discussions の[Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas)カテゴリまたは[Discord](https://discord.gg/JDdSxwjhGf)でアイデアを共有してください。
-2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)を`v3/wep/proposals/<proposal name>/proposal.md`にコピーし、すべてのセクションを記入してください。
-3. 提案のみを含み、タイトルを`[WEP] <title>`としたドラフトのプルリクエストを作成してください。この PR が正式な議論の場となります。
-4. フィードバックと支持（PR へのコメントや賛成を示すリアクション）を集めてください。議論には少なくとも 2 週間を設け、提案の実装担当者について合意してください。
-5. PR をレビュー可能な状態にしてください。最終判断はメンテナーが行います。承認された提案には WEP 番号が割り当てられ、マージされます。
+1. 必要に応じて、関心の度合いを確認するため、GitHub Discussions の[Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas)カテゴリーまたは[Discord](https://discord.gg/JDdSxwjhGf)でアイデアを共有してください。
+2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)を`v3/wep/proposals/<proposal name>/proposal.md`にコピーし、すべてのセクションを記入してください。
+3. 提案だけを含むドラフトのプルリクエストを、タイトルを`[WEP] <title>`として作成してください。この PR が正式な議論の場になります。
+4. フィードバックと支持（PR へのコメントと賛成のリアクション）を集めてください。議論には少なくとも 2 週間を設け、提案の実装担当者について合意してください。
+5. PR をレビュー可能な状態にしてください。最終決定はメンテナーが行います。承認された提案には WEP 番号が割り当てられ、マージされます。
 
-プロセス全体については、[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)に記載されています。
+プロセス全体については、[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)を参照してください。
 
 ## はじめに
 
-### フォークしてクローンする
+### フォークとクローン
 
 ```bash
 # Fork the repository on GitHub
@@ -81,9 +81,9 @@ go build -o ../wails3 ./cmd/wails3
 
 ### テストを実行する
 
-テストは変更の一部であり、最後に行う簡単な動作確認ではありません。ユニットテストは、テスト対象のコードの近くに配置してください。複数の入力やエッジケースで同じ動作を確認する場合は、可能な限りテーブル駆動テストを使用してください。失敗時にどのシナリオか分かるよう、各テストケースに名前を付けてください。
+テストは変更の一部であり、最後に行う簡単な動作確認ではありません。単体テストは対象コードの近くに配置し、複数の入力やエッジケースで同じ動作を確認する場合は、できるだけテーブル駆動テストを使用してください。失敗時にどのシナリオか分かるよう、各ケースに名前を付けてください。
 
-新規または変更されたロジックは、完全にカバーすることが推奨されます。PR で追加または変更するコードについて、Go のステートメントカバレッジ 100% を目標にしてください。リポジトリ全体のカバレッジ率を、変更箇所のテストの代わりにしないでください。たとえば、特定の OS でのみ発生するエラーパスや、実機なしでは再現が現実的でない条件など、カバレッジに不足があっても妥当な場合があります。ただし、その不足と、合理的な方法ではテストできない理由を PR の説明に記載してください。
+新規または変更したロジックは、完全に網羅する必要があります。PR で追加または変更するコードについて、Go のステートメントカバレッジ 100% を目標にしてください。リポジトリ全体のカバレッジ率を、その変更のテストの代わりにしてはいけません。たとえば、特定の OS でのみ発生するエラーパスや、実機なしでは再現が現実的でない条件など、カバレッジに不足があっても妥当な場合があります。その場合は、PR の説明で不足箇所と、合理的な方法ではテストできない理由を説明してください。
 
 ```bash
 # Run all v3 tests
@@ -99,7 +99,7 @@ go tool cover -func=coverage.out
 cd ..
 ```
 
-統合テストスイート、競合状態の検出、および CI と同等の全コマンドについては、[テストと継続的インテグレーション](/contributing/testing-ci/)を参照してください。
+統合テストスイート、競合検出、CI と同等の完全なコマンドについては、[テストと継続的インテグレーション](/contributing/testing-ci/)を参照してください。
 
 ## 変更を加える
 
@@ -116,11 +116,11 @@ git checkout -b feature/my-feature
 
 ### 変更を実装する
 
-1. Go の規約に従って<strong>コードを記述する</strong>
-2. 新機能の<strong>テストを追加する</strong>
-3. 必要に応じて<strong>ドキュメントを更新する</strong>
-4. 問題が発生しないことを確認するため、**テストを実行する**
-5. 明確なメッセージを付けて<strong>変更をコミットする</strong>
+1. Go の規約に従って**コードを書く**
+2. 新機能の**テストを追加する**
+3. 必要に応じて**ドキュメントを更新する**
+4. 問題が生じていないことを確認するために**テストを実行する**
+5. 明確なメッセージを付けて**変更をコミットする**
 
 ### コミットのガイドライン
 
@@ -175,10 +175,10 @@ Fixes #123
 ### PR チェックリスト
 
 - [ ] コードが Go の規約に従っている
-- [ ] テストを追加または更新している
-- [ ] ドキュメントを更新している
+- [ ] テストを追加または更新した
+- [ ] ドキュメントを更新した
 - [ ] すべてのテストが成功している
-- [ ] 破壊的変更がない（ある場合は文書化している）
+- [ ] 破壊的変更がない（または文書化済みである）
 - [ ] コミットメッセージが明確である
 
 ## コードのガイドライン
@@ -235,67 +235,59 @@ func TestProcessData(t *testing.T) {
 
 ## ドキュメント
 
-### ドキュメントの執筆
+### ドキュメントの作成
 
-ドキュメントには M-Press を使用しています。`docs/mpress/content/` 配下の  
-`.md` ファイルを編集し、リポジトリのルートからプレビューと検証を実行してください。
+ドキュメント作業の全手順については、[M-Press でドキュメントを作成する](/contributing/documentation/)に従ってください。固定されたバージョン、実行ファイルと Go のインストール方法、編集可能なソースファイル、ナビゲーション、翻訳チェック、`master`に対する PR の提出について説明しています。
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+ドキュメントのみの作業では、Wails アプリケーションのビルドもプラットフォーム依存関係も必要ありません。M-Press は、リポジトリのルートで`mpress dev`を使用して既存のサイトをプレビューします。
 
 ### ドキュメントのスタイル
 
 - 国際英語の綴りを使用する
 - 問題の説明から始める
-- 動作する例を示す
+- 動作する例を提示する
 - トラブルシューティングを含める
-- 関連コンテンツへの相互参照を示す
+- 関連コンテンツを相互参照する
 
 ## コミュニティ
 
-### ヘルプを得る
+### サポートを受ける
 
-- **Discord：** [コミュニティに参加する](https://discord.gg/JDdSxwjhGf)
+- **Discord：**[コミュニティに参加する](https://discord.gg/JDdSxwjhGf)
 - **GitHub Discussions：** 質問する
 - **GitHub Issues：** バグを報告する
 
 ### 行動規範
 
-互いを尊重し、多様性を受け入れ、プロフェッショナルに振る舞ってください。私たちは皆、優れたソフトウェアを共に作るためにここにいます。詳しくは、[行動規範](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md)を参照してください。
+互いを尊重し、誰もが参加できるプロフェッショナルな態度を心がけてください。私たちは皆、優れたソフトウェアを一緒に作るためにここにいます。詳しくは[行動規範](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md)を参照してください。
 
 ## 貢献者の紹介
 
-貢献者は次の場所で紹介されます：
+コントリビューターは、次の場所で紹介されます。
 
 - リリースノート
-- 貢献者一覧
+- コントリビューター一覧
 - GitHub Insights
 
-Wails に貢献していただき、ありがとうございます！ 🎉
+Wails へのご貢献ありがとうございます！🎉
 
 ## 次のステップ
 
 @cards{cols="2"}
-◆ GitHub リポジトリ
-Wails リポジトリにアクセスします。
+◆ GitHubリポジトリ
+Wailsリポジトリをご覧ください。
 
-[GitHub で表示 →](https://github.com/wailsapp/wails)
+[GitHubで見る →](https://github.com/wailsapp/wails)
 
 ---
-◆ Discord コミュニティ
-コミュニティに参加します。
+◆ Discordコミュニティ
+コミュニティに参加しましょう。
 
-[Discord に参加 →](https://discord.gg/JDdSxwjhGf)
+[Discordに参加 →](https://discord.gg/JDdSxwjhGf)
 
 ---
 📖 ドキュメント
-ドキュメントを読みます。
+ドキュメントをお読みください。
 
 [ドキュメントを見る →](/quick-start/why-wails/)
 

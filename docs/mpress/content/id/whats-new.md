@@ -348,4 +348,4 @@ Fitur eksperimental untuk memanggil metode runtime menggunakan HTML biasa, serup
 
 ## Contoh
 
-Contoh lainnya tersedia di direktori [examples](https://github.com/wailsapp/wails/tree/master/v3/examples). Silakan lihat!
+Contoh lainnya tersedia di direktori [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples). Silakan lihat!

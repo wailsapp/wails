@@ -22,7 +22,7 @@ This page covers:
 ```
 v3/internal/templates/
 ├── _common/        # Files copied into EVERY project (Taskfile.yml, build/, etc.)
-├── base/           # Backend-only "plain Go" base layer (frontend/ + NEXTSTEPS.md)
+├── base/           # Minimal frontend skeleton (frontend/ + NEXTSTEPS.md)
 ├── ios/            # iOS bootstrapper
 ├── vanilla/        vanilla-js/   # TypeScript (default) + JavaScript variant
 ├── react/          react-js/     # TypeScript (default) + JavaScript variant
@@ -32,8 +32,8 @@ v3/internal/templates/
 ```
 
 - **`_common/`** — universal boilerplate (Taskfile, `build/` directory, shared infrastructure) merged into every project.
-- **`base/`** — the Go side that every template starts from. Note: `base/` itself does **not** contain a `template.json`; that file lives inside each framework-specific template.
-- **Framework folders** — contain the frontend (`frontend/`), framework config, and a `template.json` describing the template metadata.
+- **`base/`** — a minimal frontend skeleton for custom templates, not an automatic backend layer. Normal project extraction overlays `_common/` with the selected framework template.
+- **Framework folders** — contain the frontend (`frontend/`), framework config, and a `template.yaml` describing the template metadata.
 - Folder names match the **template ID** you pass to the CLI (`wails3 init -t react`).
 - **Language convention:** TypeScript is the default and owns the bare name (`react`); a JavaScript variant, where one exists, is suffixed `-js` (`react-js`). Built-in templates declare their language explicitly with `typescript: true|false` in `template.yaml`. Community templates may still use the legacy `-ts` suffix, which is honoured as a fallback.
 
@@ -42,6 +42,8 @@ v3/internal/templates/
 > via `//go:embed *`, so users can scaffold projects offline.
 
 ---
+
+The loader also accepts legacy `template.json` metadata. New built-in templates use YAML, including the explicit `typescript` setting.
 
 ## 2. How `wails3 init` Uses Templates
 
@@ -84,7 +86,7 @@ Defined in `internal/flags/init.go`:
 | `-s` | Skip the warning when using remote templates | false |
 | `-productname` / `-productdescription` / `-productversion` / `-productcompany` / `-productcopyright` / `-productcomments` / `-productidentifier` | Metadata baked into the generated build assets | sensible defaults |
 
-There is **no** `-list` long alias (`-l` only) and no per-template `--help`.
+There is no `-list` long alias (`-l` only) and no per-template `--help`.
 
 ### Substitutions
 
@@ -94,7 +96,7 @@ Placeholders are standard Go template directives — the leading `.` is part of 
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | `-n` flag / directory name |
 | `{{.ModulePath}}` | `github.com/me/myapp` | `-mod` flag or derived from `-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Compiled-in constant from `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Compiled-in constant from `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Bake-time metadata | corresponding `-product*` flags |
 
 If you need a new placeholder, add a field to the template data in `internal/templates/templates.go` and a matching field/flag in `internal/flags/init.go` (or set it from `internal/commands/init.go`).
@@ -169,7 +171,7 @@ Ensure:
 1. Edit files under `internal/templates/<id>/`.
 2. Rebuild the CLI (`cd v3 && go build -o ../wails3 ./cmd/wails3`); the `//go:embed *` directive picks up the new content.
 3. Bump any **dependency versions** in `frontend/package.json` & `Taskfile.yml`.
-4. Update the template's `template.json` description if behaviour changes.
+4. Update the template's `template.yaml` description if behaviour changes.
 
 ### Common Tweaks
 
@@ -185,7 +187,7 @@ Ensure:
 
 - **Keep frontend generic** — avoid referencing Wails-specific globals; `/wails/runtime.js` is served by the asset server at runtime.
 - **No compiled artefacts** — exclude `node_modules`, `dist`, `.DS_Store` from the embedded directory (or `.gitignore` them so they're never committed).
-- **Document prerequisites** — Node version, extra CLI tools, etc., in `template.json` or `NEXTSTEPS.md`.
+- **Document prerequisites** — Node version, extra CLI tools, etc., in `template.yaml` or `NEXTSTEPS.md`.
 - **Avoid breaking changes** — if the overhaul is big, create a new template ID rather than mutating an existing one.
 
 ---
@@ -217,7 +219,7 @@ Ensure:
 
 - Templates live in **`internal/templates/`** and are baked into the CLI via `//go:embed *`.
 - `wails3 init -t <id>` extracts the template via `gosod` and runs `go mod tidy` (skippable with `-skipgomodtidy`).
-- Creating a template is as simple as **making a folder**, adding files plus a `template.json`, and using `{{.ProjectName}}`-style placeholders.
+- Creating a template is as simple as **making a folder**, adding files plus a `template.yaml`, and using `{{.ProjectName}}`-style placeholders.
 - The system is **extensible** and **self-contained** — perfect for sharing custom stacks with your team or the community.
 
 Happy templating!

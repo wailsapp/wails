@@ -1,15 +1,15 @@
 ---
-title: "待办事项列表"
-description: "构建一个支持 CRUD 操作的完整待办事项列表应用"
+title: "TODO 列表"
+description: "构建一个支持 CRUD 操作的完整 TODO 列表应用"
 slug: "tutorials/02-todo-vanilla"
 sourcePath: "tutorials/02-todo-vanilla.md"
 ---
 
-在本教程中，你将构建一个功能完备的待办事项列表应用。本教程比二维码服务教程更进一步——你将学习如何管理状态、处理多项操作，以及创建精致的用户界面。
+在本教程中，你将构建一个功能完备的 TODO 列表应用。这比二维码服务教程更进一步：你将学习如何管理状态、处理多项操作，以及创建精美的用户界面。
 
 **你将构建：**
 
-- 一个具备添加、完成和删除功能的完整待办事项应用
+- 一个具备添加、标记完成和删除功能的完整 TODO 应用
 - 线程安全的状态管理（对桌面应用很重要）
 - 现代的玻璃拟态 UI 设计
 - 全部使用原生 JavaScript 实现，无需框架
@@ -21,27 +21,27 @@ sourcePath: "tutorials/02-todo-vanilla.md"
 - 处理和验证用户输入
 - 构建具有原生应用体验的响应式 UI
 
-![待办事项列表应用](/assets/todo-app.png)
+![TODO 列表应用](/assets/todo-app.png)
 
-<strong>完成所需时间：</strong>20分钟
+<strong>完成时间：</strong>20分钟
 
 ## 创建项目
 
 @steps
 ### 生成项目
-首先，创建一个新的 Wails 项目。我们将使用默认的原生模板，以便从一个简洁的基础开始：
+首先，创建一个新的 Wails 项目。我们将使用默认的原生模板，以便从简洁的基础开始：
 
 ```bash
-wails3 init -n todo-app
+wails3 init -n todo-app -t vanilla-js
 cd todo-app
 ```
 
-这会创建一个具有基本结构的新项目：Go 后端位于根目录，前端代码位于`frontend/`目录中。
+这会创建一个具有基本结构的新项目：Go 后端位于根目录，前端代码位于`frontend/`目录。
 
-### 创建待办事项服务
-待办事项服务将管理应用状态，并提供执行 CRUD 操作的方法。Web 服务器的每个请求彼此隔离，而桌面应用可能同时执行多项操作，因此我们需要采用线程安全的状态管理方式。
+### 创建 TODO 服务
+TODO 服务将管理应用状态，并提供执行 CRUD 操作的方法。Web 服务器中的每个请求彼此隔离，而桌面应用可能同时执行多项操作，因此我们需要采用线程安全的状态管理方式。
 
-删除`greetservice.go`，然后创建新文件`todoservice.go`：
+删除`greetservice.go`，然后新建文件`todoservice.go`：
 
 ```go {title="todoservice.go"}
 package main
@@ -122,43 +122,43 @@ func (t *TodoService) Delete(id int) error {
 }
 ```
 
-**这里发生了什么：**
+**这里做了什么：**
 
 **`Todo`结构体：**
 
 - 使用 ID、Title 和 Completed 字段定义数据结构
 - `json:`标签告诉 Go 如何将此结构体转换为供前端使用的 JSON
-- 每个字段都已导出（首字母大写），因此绑定生成器可以识别它们
+- 每个字段都已导出（首字母大写），以便绑定生成器能够识别
 
 **`TodoService`结构体：**
 
-- `todos []Todo`——保存所有待办事项的切片
-- `nextID int`——记录下一个要分配的 ID（模拟自增）
+- `todos []Todo`——用于保存所有 TODO 项的切片
+- `nextID int`——跟踪下一个要分配的 ID（模拟自增）
 - `mu sync.RWMutex`——用于实现线程安全访问的读写互斥锁
 
 **使用`sync.RWMutex`实现线程安全：**
 
-- 桌面应用的 UI 可能同时发起多项操作
-- `RLock()`允许多个读取操作同时进行（例如，多次调用`GetAll`）
-- `Lock()`为写入操作提供独占访问权限（例如`Add`、`Toggle`和`Delete`）
-- `defer`确保即使函数提前返回或发生 panic，也会释放锁
+- 桌面应用可能通过 UI 同时执行多项操作
+- `RLock()`允许多个读取操作同时进行（例如多次调用`GetAll`）
+- `Lock()`为写入操作提供独占访问（例如`Add`、`Toggle`、`Delete`）
+- `defer`可确保即使函数提前返回或发生 panic，也会释放锁
 
-**方法：**
+**这些方法：**
 
-- `GetAll()`——返回所有待办事项（由于不修改数据，因此使用读锁）
-- `Add(title)`——创建新的待办事项、验证输入并递增 ID
-- `Toggle(id)`——切换待办事项的完成状态
-- `Delete(id)`——从切片中移除待办事项
+- `GetAll()`——返回所有 TODO 项（由于不修改数据，因此使用读锁）
+- `Add(title)`——创建新的 TODO 项、验证输入并递增 ID
+- `Toggle(id)`——切换 TODO 项的完成状态
+- `Delete(id)`——从切片中移除 TODO 项
 
 **错误处理：**
 
-- 遵循 Go 的惯例，我们将`error`作为最后一个返回值
+- 我们遵循 Go 惯例，将`error`作为最后一个返回值
 - 拒绝空标题
-- 对不存在的待办事项执行操作时会返回错误
-- 这些错误会在前端转换为 JavaScript 异常
+- 对不存在的 TODO 项执行操作时会返回错误
+- 这些错误在前端会变为 JavaScript 异常
 
 ### 更新 main.go
-在 Wails 应用中注册待办事项服务。在`main.go`中找到`Services`部分，然后用 TodoService 替换 GreetService：
+在 Wails 应用中注册 TODO 服务。找到`main.go`中的`Services`部分，然后将 GreetService 替换为 TodoService：
 
 ```go {title="main.go" highlight="5"}
 Services: []application.Service{
@@ -166,14 +166,14 @@ Services: []application.Service{
 },
 ```
 
-**这里发生了什么：**
+**这里做了什么：**
 
-- 我们移除默认的 GreetService，改为添加 TodoService
+- 我们将移除默认的 GreetService，改为添加 TodoService
 - `application.NewService()`会封装我们的服务，以便 Wails 对其进行管理
-- Wails 会自动为此服务的所有公开方法生成 JavaScript 绑定
+- Wails 会自动为此服务上的所有公开方法生成 JavaScript 绑定
 
 ### 创建前端 UI
-现在来构建前端。我们将在这里调用 Go 方法并显示 UI。为了保持简单，并直接展示绑定的工作方式，我们使用原生 JavaScript。
+现在来构建前端。我们将在这里调用 Go 方法并显示 UI。为保持简单并直接展示绑定的工作方式，我们将使用原生 JavaScript。
 
 替换`frontend/src/main.js`：
 
@@ -220,20 +220,20 @@ window.deleteTodo = async (id) => {
 loadTodos();
 ```
 
-**这里发生了什么：**
+**这里做了什么：**
 
 **导入绑定：**
 
 - `import {TodoService} from "../bindings/changeme"`——导入自动生成的 Go 绑定
-- 注意：`changeme`应替换为`go.mod`中的实际模块名称
+- 注意：`changeme`应为`go.mod`中实际的模块名称
 
 **`loadTodos()`函数：**
 
-- 调用`TodoService.GetAll()`，从 Go 获取所有待办事项
-- 使用模板字面量为每个待办事项构建 HTML
+- 调用`TodoService.GetAll()`从 Go 获取所有 TODO 项
+- 使用模板字面量为每个 TODO 项构建 HTML
 - 动态添加或移除`completed`类以应用样式
 - 使用`onclick`属性将按钮连接到我们的函数
-- 将所有 HTML 拼接在一起并注入 DOM
+- 将所有 HTML 拼接到一起并注入 DOM
 
 **CRUD 函数：**
 
@@ -245,19 +245,19 @@ loadTodos();
 **为什么要挂载到 window：**
 
 - `window.addTodo = ...`使 HTML 的`onclick`属性能够访问这些函数
-- 这是一个适用于原生 JavaScript 的简单模式（框架的处理方式有所不同）
+- 这是原生 JavaScript 中的一种简单模式（框架的处理方式有所不同）
 - 在生产环境中，可以改用规范的事件委托
 
 **刷新模式：**
 
-- 每次更改（添加、切换状态或删除）后，我们都会再次调用`loadTodos()`
+- 每次变更（添加、切换或删除）后，我们都会再次调用`loadTodos()`
 - 这样可以确保 UI 与 Go 中的状态保持同步
-- 另一种方式：让 Go 方法返回新状态，从而避免第二次调用
+- 另一种方案：让 Go 方法返回新状态，以避免第二次调用
 
 ### 更新 HTML
-HTML 为 TODO 应用提供结构。它简洁且语义清晰，真正发挥作用的是 JavaScript 和 CSS。
+HTML 为 TODO 应用提供结构。它简洁且语义清晰，真正的魔法发生在 JavaScript 和 CSS 中。
 
-替换`frontend/index.html`：
+替换 `frontend/index.html`：
 
 ```html {title="frontend/index.html"}
 <!DOCTYPE html>
@@ -288,30 +288,30 @@ HTML 为 TODO 应用提供结构。它简洁且语义清晰，真正发挥作用
 </html>
 ```
 
-**这里的工作原理：**
+**这里发生了什么：**
 
 **结构：**
 
-- `container`— 将应用居中并限制其宽度
-- `card`— 容纳所有内容的白色主卡片
-- `input-box`— 用于输入框和“添加”按钮的弹性容器
-- `todo-list`— JavaScript 将各个待办事项插入此处
+- `container`——将应用居中并限制其宽度
+- `card`——容纳所有内容的白色主卡片
+- `input-box`——用于容纳输入框和“添加”按钮的 Flex 容器
+- `todo-list`——JavaScript 会在此处插入各个待办事项
 
 **事件处理：**
 
-- `onkeypress="if(event.key==='Enter') addTodo()"`— 按下 Enter 时添加待办事项
-- `onclick="addTodo()"`— 单击按钮时添加待办事项
-- 内联事件处理程序很适合简单的原生 JavaScript 应用
+- `onkeypress="if(event.key==='Enter') addTodo()"`——按 Enter 键时添加待办事项
+- `onclick="addTodo()"`——单击按钮时添加待办事项
+- 内联事件处理器很适合简单的原生 JavaScript 应用
 
 **模块脚本：**
 
-- `<script type="module">`允许我们使用 ES6 导入
-- 我们的`main.js`文件可以导入绑定并使用现代 JavaScript
+- `<script type="module">`让我们可以使用 ES6 导入
+- 我们的 `main.js` 文件可以导入绑定并使用现代 JavaScript
 
 ### 设置应用样式
-CSS 通过平滑过渡营造出具有现代感的玻璃拟态设计。我们的目标是打造精致的使用体验，让应用用起来更加愉悦。
+CSS 通过平滑的过渡效果营造出具有现代感的玻璃拟态设计。我们的目标是打造精致的使用体验，让这款应用用起来令人愉悦。
 
-替换`frontend/public/style.css`：
+替换 `frontend/public/style.css`：
 
 ```css {title="frontend/public/style.css"}
 :root {
@@ -497,24 +497,24 @@ h1 {
 }
 ```
 
-**这里的工作原理：**
+**这里发生了什么：**
 
 **玻璃拟态设计：**
 
-- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)`— 紫色渐变背景
-- `backdrop-filter: blur(10px)`— 在卡片上营造磨砂玻璃效果
-- `rgba(255, 255, 255, 0.95)`— 使用半透明白色营造玻璃效果
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)`——紫色渐变背景
+- `backdrop-filter: blur(10px)`——在卡片上营造磨砂玻璃效果
+- `rgba(255, 255, 255, 0.95)`——使用半透明白色营造玻璃效果
 
 **自定义复选框样式：**
 
 - `appearance: none`会移除浏览器的默认复选框
-- 我们使用`::after`创建带有对勾的自定义圆角方框
-- 当`checked`时，会使用 Unicode 字符 ✓ 显示对勾
+- 我们使用 `::after`创建带勾号的自定义圆角方框
+- 当 `checked` 时，会使用 Unicode 字符 ✓ 显示勾号
 
 **悬停交互：**
 
-- 悬停时，待办事项向右滑动（`transform: translateX(4px)`）
-- 删除按钮会一直隐藏，直到悬停时才显示（`opacity: 0` → `opacity: 1`）
+- 悬停时，待办事项会向右滑动（`transform: translateX(4px)`）
+- 删除按钮在悬停前保持隐藏（`opacity: 0` → `opacity: 1`）
 - 悬停时按钮会略微放大，以提供触感反馈
 
 **空状态：**
@@ -529,18 +529,18 @@ h1 {
 wails3 dev
 ```
 
-应用将完成编译并打开。请尝试以下操作：
+应用将完成编译并打开。请试用以下功能：
 
-- 输入待办事项，然后按 Enter 或单击“添加”
-- 单击复选框，将其标记为已完成
+- 输入一项待办事项，然后按 Enter 键或单击“添加”
+- 单击复选框，将待办事项标记为已完成
 - 将鼠标悬停在待办事项上，查看删除按钮出现
-- 注意 UI 如何即时更新——这正是刷新模式在发挥作用
+- 请注意 UI 会立即更新——这表明我们的刷新模式正在正常工作
 
 **工作原理：**
 
-- Wails 自动为 TodoService 方法生成了绑定
-- 开发模式包含热重载功能——尝试修改 CSS，观察它自动更新
-- Go 代码以原生方式运行，无需转换或解释
+- Wails 已自动为 TodoService 的方法生成绑定
+- 开发模式支持热重载——尝试修改 CSS，观察界面随之更新
+- 你的 Go 代码以原生方式运行，无需转译或解释执行
 
 @end
 
@@ -548,7 +548,7 @@ wails3 dev
 
 ### 线程安全的状态管理
 
-`sync.RWMutex`提供安全的并发访问：
+`sync.RWMutex`可确保并发访问的安全：
 
 ```go
 func (t *TodoService) GetAll() []Todo {
@@ -566,14 +566,14 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 
 **为什么这很重要：**
 
-- 多个前端调用可能并发发生
+- 多个前端调用可能同时发生
 - 读取操作不会相互阻塞
-- 写入操作会获得独占访问权
-- `defer`可确保锁始终得到释放
+- 写入操作会获得独占访问权限
+- `defer`可确保锁始终被释放
 
 ### 错误处理
 
-对于无效操作，服务会返回错误：
+服务会为无效操作返回错误：
 
 ```go
 func (t *TodoService) Add(title string) (*Todo, error) {
@@ -596,7 +596,7 @@ try {
 
 ### 状态同步
 
-每次更改后，我们都会重新加载完整列表：
+每次变更后，我们都会重新加载完整列表：
 
 ```javascript
 window.addTodo = async () => {
@@ -605,13 +605,13 @@ window.addTodo = async () => {
 }
 ```
 
-<strong>另一种方式：</strong>让每个方法返回更新后的列表，从而避免第二次调用。
+<strong>另一种方法：</strong>让每个方法返回更新后的列表，以避免第二次调用。
 
 ## 增强功能
 
 ### 添加统计信息
 
-将以下内容添加到`todoservice.go`：
+将以下内容添加到 `todoservice.go`：
 
 ```go
 type TodoStats struct {
@@ -682,60 +682,60 @@ func (t *TodoService) ClearCompleted() int {
 
 ### 添加持久化
 
-对于生产应用，请使用最适合应用的存储解决方案添加持久化，例如 SQLite、PostgreSQL 或托管服务。
+对于生产应用，请使用最适合应用的存储解决方案添加持久化功能，例如 SQLite、PostgreSQL 或托管服务。
 
 ## 构建生产版本
 
-准备分发 TODO 应用时，请构建生产版本：
+准备分发 TODO 应用时，请构建其生产版本：
 
 ```bash
 wails3 build
 ```
 
-这会在`bin/`中创建经过优化的原生可执行文件：
+这会在 `bin/` 中创建经过优化的原生可执行文件：
 
 - 启用优化来编译 Go 代码
 - 为生产环境构建前端
-- 将所有内容打包到一个可执行文件中
-- 生成的应用通常为10-20MB（相比之下，Electron 应用为150MB 以上）
+- 将所有内容打包到单个可执行文件中
+- 生成的应用通常为 10-20MB（相比之下，Electron 应用为 150MB 以上）
 
-你可以直接运行该可执行文件——无需运行时，也无需启动服务器。它是真正的原生应用。
+你可以直接运行该可执行文件，无需运行时，也无需启动服务器。它是真正的原生应用。
 
-## 你构建的内容
+## 你构建了什么
 
 你刚刚构建了一个完整的 TODO 应用，其中包括：
 
 **完整的 CRUD 实现：**
 
-- 创建了一个提供创建、读取、更新和删除操作的服务
+- 创建了包含创建、读取、更新和删除操作的服务
 - 添加了输入验证和错误处理
 - 了解了 Go 错误如何转换为 JavaScript 异常
 
 **线程安全的状态管理：**
 
-- 使用`sync.RWMutex`安全处理并发访问
-- 理解了读锁（RLock）与写锁（Lock）之间的区别
-- 了解了`defer`如何通过保证执行清理操作来防止死锁
+- 使用 `sync.RWMutex`安全地处理并发访问
+- 理解了读锁（RLock）和写锁（Lock）之间的区别
+- 了解了 `defer`如何通过确保执行清理来防止死锁
 
-**现代而精致的 UI：**
+**现代、精致的 UI：**
 
-- 构建了带有渐变和模糊效果的玻璃拟态界面
-- 不使用任何框架，创建了自定义样式的复选框
-- 添加了悬停交互和过渡效果，营造原生应用体验
+- 使用渐变和模糊效果构建了玻璃拟态界面
+- 不借助任何框架，创建了自定义样式的复选框
+- 添加了悬停交互和过渡效果，营造原生应用般的体验
 - 使用纯 CSS 实现了空状态
 
 **Wails 基础知识：**
 
 - 服务注册和自动生成绑定
 - 使用 async/await 从 JavaScript 调用 Go 方法
-- 在 Go 与前端之间同步状态
+- Go 与前端之间的状态同步
 - 构建和打包原生桌面应用
 
 ## 后续步骤
 
-现在你已经了解 CRUD 操作和状态管理，可以尝试：
+现在你已经了解了 CRUD 操作和状态管理，可以尝试：
 
-- <strong>添加持久化：</strong>使用 SQLite 或其他存储解决方案，让待办事项在应用重启后仍然保留
-- <strong>添加更多功能：</strong>筛选（全部/未完成/已完成）、编辑现有待办事项、批量操作
-- <strong>探索 Notes 教程：</strong>了解[Notes](/tutorials/03-notes-vanilla/)中的文件操作如何工作
-- <strong>构建真正实用的应用：</strong>运用这些概念构建你自己的应用！
+- <strong>添加持久化：</strong>使用 SQLite 或其他存储方案，让待办事项在应用重启后仍然保留
+- <strong>添加更多功能：</strong>筛选（全部/进行中/已完成）、编辑现有待办事项、批量操作
+- <strong>探索 Notes 教程：</strong>了解[Notes](/tutorials/03-notes-vanilla/)中的文件操作方式
+- <strong>构建实际应用：</strong>运用这些概念构建你自己的应用！

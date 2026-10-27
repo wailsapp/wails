@@ -739,4 +739,4 @@ Gängige Menümuster und bewährte Vorgehensweisen.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Kontextmenübeispiel](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Kontextmenübeispiel](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/contextmenus) an.
