@@ -173,15 +173,15 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		return err
 	}
 
-	// If we have any hooks, run them first and check if the event was cancelled
-	if e.hooks != nil {
-		if hooks, ok := e.hooks[thisEvent.Name]; ok {
-			for _, thisHook := range hooks {
-				thisHook.callback(thisEvent)
-				if thisEvent.IsCancelled() {
-					return nil
-				}
-			}
+	// If we have any hooks, run them first and check if the event was cancelled.
+	// Copy under the lock: RegisterHook and its remover rewrite the slice in place.
+	e.hookLock.RLock()
+	hooks := slices.Clone(e.hooks[thisEvent.Name])
+	e.hookLock.RUnlock()
+	for _, thisHook := range hooks {
+		thisHook.callback(thisEvent)
+		if thisEvent.IsCancelled() {
+			return nil
 		}
 	}
 

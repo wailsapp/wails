@@ -118,12 +118,6 @@ func activateLinux(data pointer) {
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data pointer) {
 	event := newApplicationEvent(events.ApplicationEventType(eventID))
-
-	switch event.Id {
-	case uint(events.Linux.SystemThemeChanged):
-		isDark := globalApplication.Env.IsDarkMode()
-		event.Context().setIsDarkMode(isDark)
-	}
 	applicationEvents <- event
 }
 
@@ -1489,8 +1483,9 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1 {
-		zoom = 1
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.gdouble(zoom))
 }
