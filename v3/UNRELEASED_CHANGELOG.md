@@ -24,6 +24,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve request bodies on Windows when WebView2 omits the Content-Length header in [PR](https://github.com/wailsapp/wails/pull/6326) by @strraaa
 - Fix data race in event hook emission by snapshotting hooks under lock in [PR](https://github.com/wailsapp/wails/pull/6276) by @DevLumuz
 - Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
 - Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
