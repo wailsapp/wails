@@ -22,7 +22,7 @@ The same `main.go` builds for both desktop and iOS; iOS-specific touches are con
 ## Requirements
 
 - macOS with **full Xcode** installed (the command-line tools alone are not enough) — `wails3 doctor` shows the iOS SDKs it can find
-- Go 1.25+ and npm
+- Go 1.26+ and npm
 
 ## Simulator
 

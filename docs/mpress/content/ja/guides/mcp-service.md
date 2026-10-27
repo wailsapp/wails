@@ -246,7 +246,7 @@ MCP サーバーを使用すると、アプリケーションをプログラム�
 
 ## サンプルアプリケーション
 
-すべてのツールのデモを行う完全なプレイグラウンドアプリケーションを[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp)で利用できます。次の機能が含まれています。
+すべてのツールのデモを行う完全なプレイグラウンドアプリケーションを[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp)で利用できます。次の機能が含まれています。
 
 - インクリメント／リセットボタン付きカウンター
 - Greet、Add、Shout の各バインドメソッドを備えた名前入力欄

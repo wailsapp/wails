@@ -1,993 +1,1006 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "4871add8ab1865610117",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "274d6eae3435b847dabd",
   "sourceFile": "guides/build/customization.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
   "segments": {
     "a0002-title-01": {
       "sourceHash": "d9fd027a819b622b63be53f94bf9f113cf60fe416994d40f6a952e8871a0e719",
-      "targetHash": "4bc38b7e17f6407703481c6535fd7f529d08c2031a4b4fbba438a2db4bdb34cb",
-      "machineHash": "4bc38b7e17f6407703481c6535fd7f529d08c2031a4b4fbba438a2db4bdb34cb",
-      "machineText": "Taskfile の学習",
-      "status": "final",
+      "targetHash": "6d1529afb2ceed3d5806ebef90aef057cb42dff07ccd7dc9624e6b1c38635ec6",
+      "machineHash": "6d1529afb2ceed3d5806ebef90aef057cb42dff07ccd7dc9624e6b1c38635ec6",
+      "machineText": "Taskfile を学ぶ",
+      "status": "machine-translated",
       "sourcePreview": "Learning Taskfile",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0001-heading-01": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "aaaf449bd4eac9c5629ab332244ab95c20fab59150ca0428592b44e1ffeba446",
       "machineHash": "aaaf449bd4eac9c5629ab332244ab95c20fab59150ca0428592b44e1ffeba446",
       "machineText": "概要",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Overview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0002-text-01": {
-      "sourceHash": "ce0f16812631ef35078b773b11074825b7fc944669537827b32ea3fe5a40250c",
-      "targetHash": "71ed5f85ac9412d5ef4f4a5648ca8d18a28aa4a4799c36176514744e53d5af38",
-      "machineHash": "71ed5f85ac9412d5ef4f4a5648ca8d18a28aa4a4799c36176514744e53d5af38",
-      "machineText": "Wails のビルドシステムは、Wails アプリケーションのビルドプロセスを効率化するために設計された、柔軟で強力なツールです。タスクを簡単に定義して実行できるタスクランナー、[Task](https://taskfile.dev)を活用しています。v3 のビルドシステムがデフォルトですが、Wails は「独自のツールを持ち込む」アプローチを推奨しており、開発者は必要に応じてビルドプロセスをカスタマイズできます。",
-      "status": "final",
-      "sourcePreview": "The Wails build system is a flexible and powerful tool designed to streamline\\ the build process for…",
+      "sourceHash": "e6c3fee9e825f1b135a039f0c6d09912fb7c44a37fe70ef63e2f56fdf7994665",
+      "targetHash": "c76c70db95ab239c8ff7df194fdf9920b54b26876c688b0b23bb7a896f06ca0b",
+      "machineHash": "c76c70db95ab239c8ff7df194fdf9920b54b26876c688b0b23bb7a896f06ca0b",
+      "machineText": "Wails のビルドシステムは、Wails アプリケーションのビルドプロセスを効率化するために設計された、柔軟で強力なツールです。タスクを簡単に定義して実行できるタスクランナー、[Task](https://taskfile.dev) を活用しています。デフォルトでは v3 ビルドシステムを使用しますが、Wails は「好みのツールを持ち込む」アプローチを推奨しており、開発者は必要に応じてビルドプロセスをカスタマイズできます。",
+      "status": "machine-translated",
+      "sourcePreview": "The Wails build system is a flexible and powerful tool designed to streamline the build process for …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0003-text-01": {
-      "sourceHash": "46bbbff2ab601518b1774835984ab7642c50a4e40a0adfbfaa88ea7cabdb0fd8",
+      "sourceHash": "37b8b55c2e06d5261ba030e408e286d89bf83cb376f01de5a6ca6c83accf0ae3",
       "targetHash": "5476edf29e4baea4ab724180a75d9324da14900014f488ade2118d28109d8b95",
       "machineHash": "5476edf29e4baea4ab724180a75d9324da14900014f488ade2118d28109d8b95",
       "machineText": "Task の使用方法について詳しくは、[公式ドキュメント](https://taskfile.dev/usage/)を参照してください。",
-      "status": "final",
-      "sourcePreview": "Learn more about how to use Task in the\\ [official documentation](https://taskfile.dev/usage/).",
+      "status": "machine-translated",
+      "sourcePreview": "Learn more about how to use Task in the [official documentation](https://taskfile.dev/usage/).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0004-heading-01": {
       "sourceHash": "9a83da7afc41e21e38ea74f2e5d8161105ebc5ad84bc51f538b80e316b7217da",
       "targetHash": "f923a4d5da198b03bad542c685a20db45e00d2ceb026dcfb4caf6c328eaa9981",
       "machineHash": "f923a4d5da198b03bad542c685a20db45e00d2ceb026dcfb4caf6c328eaa9981",
       "machineText": "Task：ビルドシステムの中核",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Task: The Heart of the Build System",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0005-text-01": {
-      "sourceHash": "93cb0a127ee6aef76a8bd9ac61877dfdcedbb85271ac5ec24896e717748e2bf6",
-      "targetHash": "7c16b37aa415ecde5cb4386e94be115478b7db8dee36cbb53b9746f4ec3c24cd",
-      "machineHash": "7c16b37aa415ecde5cb4386e94be115478b7db8dee36cbb53b9746f4ec3c24cd",
-      "machineText": "[Task](https://taskfile.dev) は、Go で記述された Make のモダンな代替ツールです。YAML ファイルを使用して、タスクとその依存関係を定義します。Wails のビルドシステムでは、[Task](https://taskfile.dev) がビルドプロセスのオーケストレーションにおいて中心的な役割を果たします。",
-      "status": "final",
-      "sourcePreview": "[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It\\ uses a YAML file to…",
+      "sourceHash": "35770ec882f654bb69d63dd7463bcbb0eb03ed16c076baa38823f345fa207133",
+      "targetHash": "e748930bdbb4c8ead2bbf6576e00daf8849d53946decca7c0e720578d80e5163",
+      "machineHash": "e748930bdbb4c8ead2bbf6576e00daf8849d53946decca7c0e720578d80e5163",
+      "machineText": "[Task](https://taskfile.dev) は Go で記述された、Make に代わるモダンなツールです。YAML ファイルを使用してタスクとその依存関係を定義します。Wails のビルドシステムでは、[Task](https://taskfile.dev) がビルドプロセスの統括において中心的な役割を果たします。",
+      "status": "machine-translated",
+      "sourcePreview": "[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It uses a YAML file to …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0006-text-01": {
-      "sourceHash": "e9cbd956cad12e73cd9488f1e86bef5e4344acf2475f0826a97b4b6ac1523f3d",
-      "targetHash": "2442b2c32ddd6eb1562227345a22d68775d1a150315483dfba06b18674ffc607",
-      "machineHash": "2442b2c32ddd6eb1562227345a22d68775d1a150315483dfba06b18674ffc607",
-      "machineText": "メインの `Taskfile.yml` はプロジェクトルートにあり、プラットフォーム固有のタスクは `build/\u003cplatform\u003e/Taskfile.yml` ファイルで定義されます。`build` ディレクトリ内の共通 `Taskfile.yml` ファイルには、プラットフォーム間で共有される共通タスクが含まれています。",
-      "status": "final",
-      "sourcePreview": "The main `Taskfile.yml` is located in the project root, while platform-specific\\ tasks are defined i…",
+      "sourceHash": "069ae69462a4eb2b9710c9d1671405dc1d0a29f64552c3f7c742ba7f8571b78d",
+      "targetHash": "a48ad19ccc14b803a316fc81eb4fda1b1789859f6e646abcc781d98efa6cbf20",
+      "machineHash": "a48ad19ccc14b803a316fc81eb4fda1b1789859f6e646abcc781d98efa6cbf20",
+      "machineText": "メインの `Taskfile.yml` はプロジェクトルートにあり、プラットフォーム固有のタスクは `build/\u003cplatform\u003e/Taskfile.yml` ファイルで定義されています。`build` ディレクトリにある共通の `Taskfile.yml` ファイルには、プラットフォーム間で共有される共通タスクが含まれています。",
+      "status": "machine-translated",
+      "sourcePreview": "The main `Taskfile.yml` is located in the project root, while platform-specific tasks are defined in…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0008-heading-01": {
+    "b0007-heading-01": {
       "sourceHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "targetHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "machineHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "machineText": "Taskfile.yml",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Taskfile.yml",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0009-text-01": {
-      "sourceHash": "df6f57b4140adb3c219b9c4fff586c49a1e360b871d9290c52967f57b69ce130",
-      "targetHash": "7eb897df9bc0909148a3037e7aa2d693b6928194abd1984cb24b0a0d6bd4bf21",
-      "machineHash": "7eb897df9bc0909148a3037e7aa2d693b6928194abd1984cb24b0a0d6bd4bf21",
-      "machineText": "プロジェクトルートにある `Taskfile.yml` ファイルは、ビルドシステムの主要なエントリーポイントです。このファイルでタスクとその依存関係を定義します。デフォルトの `Taskfile.yml` ファイルは次のとおりです。",
-      "status": "final",
+    "b0008-text-01": {
+      "sourceHash": "6a990ba20cfb0b60f0b96d597c5b02bb32d830f376738b36c65038743b14cf36",
+      "targetHash": "aad036970334b501640571f3e022fdba90a836eb53b85c259118a97313ca3b95",
+      "machineHash": "aad036970334b501640571f3e022fdba90a836eb53b85c259118a97313ca3b95",
+      "machineText": "プロジェクトルートにある `Taskfile.yml` ファイルは、ビルドシステムのメインエントリーポイントです。タスクとその依存関係を定義します。デフォルトの `Taskfile.yml` ファイルは次のとおりです。",
+      "status": "machine-translated",
       "sourcePreview": "The `Taskfile.yml` file in the project root is the main entry point for the build system. It defines…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0010-heading-01": {
+    "b0009-heading-01": {
       "sourceHash": "fe190ae3e7bd74987f99a669c7980ae058e94b16b70536eddc366d7e42b47500",
       "targetHash": "e34a2563fd65133d85ef0d23599466ced0709faea4e7ab57240c492c59a7cdce",
       "machineHash": "e34a2563fd65133d85ef0d23599466ced0709faea4e7ab57240c492c59a7cdce",
       "machineText": "プラットフォーム固有の Taskfile",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Platform-Specific Taskfiles",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0011-text-01": {
-      "sourceHash": "913b7d0e970b293e6b90f25e7db601f3367375c18fbd55271893a0bdc81f07cb",
-      "targetHash": "ce3b5db7b0e79d4d4adde93068a7e5da0ce67e100c9b8582f3fda971ee5bc058",
-      "machineHash": "ce3b5db7b0e79d4d4adde93068a7e5da0ce67e100c9b8582f3fda971ee5bc058",
-      "machineText": "各プラットフォームには、`build` ディレクトリ配下の各プラットフォーム用ディレクトリに専用の Taskfile があります。これらのファイルでは、そのプラットフォームの主要なタスクを定義します。各 Taskfile は、`build/Taskfile.yml` ファイルの共通タスクを取り込みます。",
-      "status": "final",
+    "b0010-text-01": {
+      "sourceHash": "531a1a62baab5906a4f2394abcac3bdb5305aacd14b765fff0bb2b71804a8d62",
+      "targetHash": "cb11eb749c0074b217367eb18ef3596dae825c5079303b2fec92493ddaaa9ad9",
+      "machineHash": "cb11eb749c0074b217367eb18ef3596dae825c5079303b2fec92493ddaaa9ad9",
+      "machineText": "各プラットフォームには、それぞれ専用の Taskfile があり、`build` ディレクトリ配下の各プラットフォーム用ディレクトリに配置されています。これらのファイルは、そのプラットフォームの主要なタスクを定義します。各 Taskfile には、`build/Taskfile.yml` ファイルの共通タスクが含まれています。",
+      "status": "machine-translated",
       "sourcePreview": "Each platform has its own Taskfile, located in the platform directories beneath the `build` director…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0012-heading-01": {
+    "b0011-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineText": "Windows",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Windows",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0013-text-01": {
+    "b0012-text-01": {
       "sourceHash": "ed386d8949b81cc1d5436c7d549c8e2365b0b81bc13fd59aec79036c052fb58c",
       "targetHash": "e409101aa9504113273df67c3f7983972a97e158c546a8fe02a01932c3062781",
       "machineHash": "e409101aa9504113273df67c3f7983972a97e158c546a8fe02a01932c3062781",
       "machineText": "場所：`build/windows/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/windows/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0014-text-01": {
-      "sourceHash": "745bc3883f99961f01d8041441edacf026229d18d456bd737d09bf02b905cc8b",
+    "b0013-text-01": {
+      "sourceHash": "9c27d78088b4c2495874d4834bbdbd36e639f6411de4b827112818cd4f276d89",
       "targetHash": "54d776e2119b0b90df65353bd287f80cf10303983c7895af9ada534c1d5935c6",
       "machineHash": "54d776e2119b0b90df65353bd287f80cf10303983c7895af9ada534c1d5935c6",
       "machineText": "Windows 固有の Taskfile には、Windows 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は次のとおりです。",
-      "status": "final",
-      "sourcePreview": "The Windows-specific Taskfile includes tasks for building, packaging, and\\ running the application o…",
+      "status": "machine-translated",
+      "sourcePreview": "The Windows-specific Taskfile includes tasks for building, packaging, and running the application on…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0015-text-01": {
+    "b0014-text-01": {
       "sourceHash": "74d264c2e0b02553a76b62c002714f285821077f91a0b5faa333719ad991c9f3",
-      "targetHash": "f71f32d9ddc2619ecbac6cacf15c74fc4fb6ac7553a91d3efe7edf07aeac58eb",
-      "machineHash": "f71f32d9ddc2619ecbac6cacf15c74fc4fb6ac7553a91d3efe7edf07aeac58eb",
-      "machineText": "任意の本番環境向けフラグを使用したビルド",
-      "status": "final",
+      "targetHash": "0fe81f9bcdc3819b1fe452491d8af526eb6b2d78d14fbe00a944aa14474a452e",
+      "machineHash": "0fe81f9bcdc3819b1fe452491d8af526eb6b2d78d14fbe00a944aa14474a452e",
+      "machineText": "任意のプロダクション用フラグを指定したビルド",
+      "status": "machine-translated",
       "sourcePreview": "Building with optional production flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0016-text-01": {
+    "b0015-text-01": {
       "sourceHash": "b7d6eaccb35bc9af6d77753f5f200b8d232afe7bcc226c487778e320aef68895",
       "targetHash": "484a0d3a7882031b33607252e4a354831b7c000ad854ad1aff1783ff1c5fae22",
       "machineHash": "484a0d3a7882031b33607252e4a354831b7c000ad854ad1aff1783ff1c5fae22",
       "machineText": "`.ico` アイコンファイルの生成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.ico` icon file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0017-text-01": {
+    "b0016-text-01": {
       "sourceHash": "486fe6026d8d396964ff90d77bde3acf36d11229ba972db961b432503370a405",
-      "targetHash": "61ec4d3d3190b8ff81c1e722253463e9c761f051c391289199fec4afa5386872",
-      "machineHash": "61ec4d3d3190b8ff81c1e722253463e9c761f051c391289199fec4afa5386872",
-      "machineText": "Windows の `.syso` ファイルの生成",
-      "status": "final",
+      "targetHash": "f88a9aa5f30cf778255bfb5ee698915d644fa43f2efbf896125071c0c77a0d71",
+      "machineHash": "f88a9aa5f30cf778255bfb5ee698915d644fa43f2efbf896125071c0c77a0d71",
+      "machineText": "Windows `.syso` ファイルの生成",
+      "status": "machine-translated",
       "sourcePreview": "Generating Windows `.syso` file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0018-text-01": {
+    "b0017-text-01": {
       "sourceHash": "09daaa67a7d5f7b2c85098dfb28628d3d4fc34393f3ce4b9acfe9222bd7297f3",
-      "targetHash": "41287d6914d481d471b0a46efc7c0de345a00858e748a5e789fa4b381fc449af",
-      "machineHash": "41287d6914d481d471b0a46efc7c0de345a00858e748a5e789fa4b381fc449af",
-      "machineText": "パッケージ化用 NSIS インストーラーの作成",
-      "status": "final",
+      "targetHash": "abd6d8e12cd2a50268258f86ec6136c8d3d66d75a4e80adaa43da427f9ecf114",
+      "machineHash": "abd6d8e12cd2a50268258f86ec6136c8d3d66d75a4e80adaa43da427f9ecf114",
+      "machineText": "パッケージ化用の NSIS インストーラーの作成",
+      "status": "machine-translated",
       "sourcePreview": "Creating an NSIS installer for packaging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0019-heading-01": {
+    "b0018-heading-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineText": "Linux",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Linux",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0020-text-01": {
+    "b0019-text-01": {
       "sourceHash": "92c159d6e590e850f22667229e82a0f3d37b6e9494cd6ddd734c77e76dc53fa0",
       "targetHash": "87c7d090df44ac6cc0c01e5087ffe654c2197f9cebce77d045a9efa5cfbc0cb9",
       "machineHash": "87c7d090df44ac6cc0c01e5087ffe654c2197f9cebce77d045a9efa5cfbc0cb9",
       "machineText": "場所：`build/linux/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/linux/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0021-text-01": {
-      "sourceHash": "9e847dfcf294f5ab5d39eaec871254bc1529265b334c2588d85e90f2ea435b6c",
+    "b0020-text-01": {
+      "sourceHash": "ad2c094c401ce05e28bbc90a881020d05e1696dd9cdf7c250d491309d5168dc1",
       "targetHash": "c55c19efbe11a949ab9500d5a44762988f3e30ff60c7820cbfcb8d29dc00501f",
       "machineHash": "c55c19efbe11a949ab9500d5a44762988f3e30ff60c7820cbfcb8d29dc00501f",
       "machineText": "Linux 固有の Taskfile には、Linux 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は次のとおりです。",
-      "status": "final",
-      "sourcePreview": "The Linux-specific Taskfile includes tasks for building, packaging, and running\\ the application on …",
+      "status": "machine-translated",
+      "sourcePreview": "The Linux-specific Taskfile includes tasks for building, packaging, and running the application on L…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0022-text-01": {
+    "b0021-text-01": {
       "sourceHash": "74d264c2e0b02553a76b62c002714f285821077f91a0b5faa333719ad991c9f3",
-      "targetHash": "f71f32d9ddc2619ecbac6cacf15c74fc4fb6ac7553a91d3efe7edf07aeac58eb",
-      "machineHash": "f71f32d9ddc2619ecbac6cacf15c74fc4fb6ac7553a91d3efe7edf07aeac58eb",
-      "machineText": "任意の本番環境向けフラグを使用したビルド",
-      "status": "final",
+      "targetHash": "0fe81f9bcdc3819b1fe452491d8af526eb6b2d78d14fbe00a944aa14474a452e",
+      "machineHash": "0fe81f9bcdc3819b1fe452491d8af526eb6b2d78d14fbe00a944aa14474a452e",
+      "machineText": "任意のプロダクション用フラグを指定したビルド",
+      "status": "machine-translated",
       "sourcePreview": "Building with optional production flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0023-text-01": {
+    "b0022-text-01": {
       "sourceHash": "306e07b532890a5f0d5d39e7d8800a09fc7fb30fde199a91bcef5ebb490527a4",
       "targetHash": "4daaa953db0039a224ba814a89c30ad46473f196d5fe00a306057b24b9e9a41c",
       "machineHash": "4daaa953db0039a224ba814a89c30ad46473f196d5fe00a306057b24b9e9a41c",
       "machineText": "AppImage、deb、rpm、および Arch Linux パッケージの作成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating an AppImage, deb, rpm, and Arch Linux packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0024-text-01": {
+    "b0023-text-01": {
       "sourceHash": "281156e1b4b25e612701862935740baa5a0313f93147ccf626d2558018b38fe7",
-      "targetHash": "e4aab2fbc8f58df3e0a65f09d35250aebbe4af65b6d3cb21110ea42fc08fcfc5",
-      "machineHash": "e4aab2fbc8f58df3e0a65f09d35250aebbe4af65b6d3cb21110ea42fc08fcfc5",
-      "machineText": "Linux アプリケーション用 `.desktop` ファイルの生成",
-      "status": "final",
+      "targetHash": "dc3981efd02d14503cf8a61125b2966f4111da49e0368b095eef5f66905b4296",
+      "machineHash": "dc3981efd02d14503cf8a61125b2966f4111da49e0368b095eef5f66905b4296",
+      "machineText": "Linux アプリケーション用の `.desktop` ファイルの生成",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.desktop` file for Linux applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0025-heading-01": {
+    "b0024-heading-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineText": "macOS",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "macOS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0026-text-01": {
+    "b0025-text-01": {
       "sourceHash": "4eb2150e917d60a3b2047c8ba03ba600639f4587cea56c56569381fd8905cb86",
       "targetHash": "3a3ca70be44f98d7a29ad0859bbc41323bb0823bea43d690a2990feca5e86b07",
       "machineHash": "3a3ca70be44f98d7a29ad0859bbc41323bb0823bea43d690a2990feca5e86b07",
       "machineText": "場所：`build/darwin/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/darwin/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0027-text-01": {
-      "sourceHash": "6135f1561d1f10c31c420849a095ef41d8b22b3f79287899834ee0256f0941a1",
+    "b0026-text-01": {
+      "sourceHash": "6d8fff6f36c685d353c66e34ec90042b7ee3cc9e358812fcd18c339ee9b0384b",
       "targetHash": "049a0dd1d89039572ad210ffb6a81ef3b0f3056df34ad10b4420fa862b7d6cf0",
       "machineHash": "049a0dd1d89039572ad210ffb6a81ef3b0f3056df34ad10b4420fa862b7d6cf0",
       "machineText": "macOS 固有の Taskfile には、macOS 上でアプリケーションをビルド、パッケージ化、実行するためのタスクが含まれています。主な機能は次のとおりです。",
-      "status": "final",
-      "sourcePreview": "The macOS-specific Taskfile includes tasks for building, packaging, and running\\ the application on …",
+      "status": "machine-translated",
+      "sourcePreview": "The macOS-specific Taskfile includes tasks for building, packaging, and running the application on m…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0028-text-01": {
+    "b0027-text-01": {
       "sourceHash": "58c1d488723d9ca8cb0e362c936502ac486998cc9b700e58f265f86cd5c38ecb",
-      "targetHash": "cceec4f40e6fd1183a6aad62b8a0b44ea0979618b72c41120f8db9b5b101146d",
-      "machineHash": "cceec4f40e6fd1183a6aad62b8a0b44ea0979618b72c41120f8db9b5b101146d",
-      "machineText": "amd64、arm64、および universal（両方）の各アーキテクチャ向けバイナリのビルド",
-      "status": "final",
+      "targetHash": "5273f98be912d6758aeab39e0b2f9e0a9aaa2acf01c8e54e0d5e0ef1e0361475",
+      "machineHash": "5273f98be912d6758aeab39e0b2f9e0a9aaa2acf01c8e54e0d5e0ef1e0361475",
+      "machineText": "amd64、arm64、およびユニバーサル（両方）アーキテクチャ向けバイナリのビルド",
+      "status": "machine-translated",
       "sourcePreview": "Building binaries for amd64, arm64 and universal (both) architectures",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0029-text-01": {
+    "b0028-text-01": {
       "sourceHash": "1e5b61c6320839e5752e04d02c14b8f734f4e2f684415507adddc2f1dcae64d8",
       "targetHash": "aff9ee1c5a81e5a0635ef057e6a2faab580befa1be6ddce2558fa23ef046647d",
       "machineHash": "aff9ee1c5a81e5a0635ef057e6a2faab580befa1be6ddce2558fa23ef046647d",
       "machineText": "`.icns` アイコンファイルの生成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.icns` icon file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0030-text-01": {
+    "b0029-text-01": {
       "sourceHash": "0fb45d5b1ebe9e5afbec05ec46fddf388f7085241c4f8f6117a85c7cd85317a1",
-      "targetHash": "7c1e5ca6e0078e4f346f18f17c99a1c0c7be8007b004b823e0508fbffcaefc06",
-      "machineHash": "7c1e5ca6e0078e4f346f18f17c99a1c0c7be8007b004b823e0508fbffcaefc06",
-      "machineText": "配布用 `.app` バンドルの作成",
-      "status": "final",
+      "targetHash": "fd8ac1fbc9afe9e5e06cb299ec96db0f84bbedee3399c634236088956d4bfc24",
+      "machineHash": "fd8ac1fbc9afe9e5e06cb299ec96db0f84bbedee3399c634236088956d4bfc24",
+      "machineText": "配布用の `.app` バンドルの作成",
+      "status": "machine-translated",
       "sourcePreview": "Creating an `.app` bundle for distributing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0031-text-01": {
+    "b0030-text-01": {
       "sourceHash": "e22ea510ea11354931f89a763d40ed86ba5aac72f37fc80c56962417d67ca3c0",
       "targetHash": "761bbcfaebb8bf7c2ed41ef7d078d64e9e7329bbc4acf1d563c9754c5178d6b0",
       "machineHash": "761bbcfaebb8bf7c2ed41ef7d078d64e9e7329bbc4acf1d563c9754c5178d6b0",
       "machineText": "`.app` バンドルのアドホック署名",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Ad-hoc signing `.app` bundles",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0032-text-01": {
+    "b0031-text-01": {
       "sourceHash": "f1364f32cda3752b4954b386507984b136f7dbaaa220d63e4d6a93c79cff3e7e",
       "targetHash": "3588709a48f407332ab8d45be5bb606e2936e1617939c398a4563d2cbcc312b9",
       "machineHash": "3588709a48f407332ab8d45be5bb606e2936e1617939c398a4563d2cbcc312b9",
       "machineText": "macOS 固有のビルドフラグと環境変数の設定",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Setting macOS-specific build flags and environment variables",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0033-heading-01": {
+    "b0032-heading-01": {
       "sourceHash": "acf1f0cdf26e29d3702c401357408abc7598ab2e5aba5f859abd2c84ec33cfe3",
       "targetHash": "55b8486ac6519d1a6769fd452da0f2c87e55e41b981e57326ba2dff37b5d2be9",
       "machineHash": "55b8486ac6519d1a6769fd452da0f2c87e55e41b981e57326ba2dff37b5d2be9",
       "machineText": "タスクの実行とコマンドエイリアス",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Task Execution and Command Aliases",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0034-text-01": {
-      "sourceHash": "d9f2e268da73d1cacaa351bae1dafed379d3bd188374f0618b2fe22c03975f86",
-      "targetHash": "8dc449f39b9bbb9f88e29b7d0103c8810d05efcab2bc95fbfec0c064e21e236e",
-      "machineHash": "8dc449f39b9bbb9f88e29b7d0103c8810d05efcab2bc95fbfec0c064e21e236e",
-      "machineText": "`wails3 task` コマンドは [Taskfile](https://taskfile.dev) の組み込み版であり、`Taskfile.yml` に定義されているタスクを実行します。",
-      "status": "final",
+    "b0033-text-01": {
+      "sourceHash": "fb5be2e69f032bbd7207998853d51bb9d0fbae01bbf278f923b8158a116e1de9",
+      "targetHash": "cfbb0cbc1537bf23ec7439ed21b9fa8adcfa0cb509c249ba8f41e2499f955807",
+      "machineHash": "cfbb0cbc1537bf23ec7439ed21b9fa8adcfa0cb509c249ba8f41e2499f955807",
+      "machineText": "`wails3 task` コマンドは、`Taskfile.yml` で定義されたタスクを実行する、[Taskfile](https://taskfile.dev) の組み込み版です。",
+      "status": "machine-translated",
       "sourcePreview": "The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0035-text-01": {
-      "sourceHash": "ba32345db61a2de5dc789b9574b87b411b405ec353e3976c2e31e874a40fd46c",
+    "b0034-text-01": {
+      "sourceHash": "48579049c14ded03da96df7d21e9b23d09f6e440a1b92338a7fa96f7aedf95d1",
       "targetHash": "ede273e9ed3e469791750b6c99e983a8d4f8f890f70569fcef9f96c08bca2f64",
       "machineHash": "ede273e9ed3e469791750b6c99e983a8d4f8f890f70569fcef9f96c08bca2f64",
       "machineText": "`wails3 build` コマンドと `wails3 package` コマンドは、それぞれ `wails3 task build` と `wails3 task package` のエイリアスです。これらのコマンドを実行すると、Wails は内部で適切なタスク実行に変換します。",
-      "status": "final",
-      "sourcePreview": "The `wails3 build` and `wails3 package` commands are aliases for\\ `wails3 task build` and `wails3 ta…",
+      "status": "machine-translated",
+      "sourcePreview": "The `wails3 build` and `wails3 package` commands are aliases for `wails3 task build` and `wails3 tas…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0036-text-01": {
+    "b0035-text-01": {
       "sourceHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "targetHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "machineHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "machineText": "`wails3 build` → `wails3 task build`",
-      "status": "final",
+      "status": "protected",
       "sourcePreview": "`wails3 build` → `wails3 task build`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0037-text-01": {
+    "b0036-text-01": {
       "sourceHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "targetHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "machineHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "machineText": "`wails3 package` → `wails3 task package`",
-      "status": "final",
+      "status": "protected",
       "sourcePreview": "`wails3 package` → `wails3 task package`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0038-heading-01": {
+    "b0037-heading-01": {
       "sourceHash": "51214ddc1c980c6812d38e01c62fa138a13bae657496acb15b9e92f8b791cb84",
       "targetHash": "558e6a39fe1adfae96215ddc945310651699e366bdb8cb563d4e588af8aaddb8",
       "machineHash": "558e6a39fe1adfae96215ddc945310651699e366bdb8cb563d4e588af8aaddb8",
       "machineText": "タスクへのパラメーターの受け渡し",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Passing Parameters to Tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0039-text-01": {
+    "b0038-text-01": {
       "sourceHash": "511ed991362cb984e73b04f9e634a66507ee4a399bce1a048d7e8dc51c6d01bb",
-      "targetHash": "349e310ba7b0be67a98bb648eb19fc2072615ac4c46ec2a8a01a0be9cd9f7fc9",
-      "machineHash": "349e310ba7b0be67a98bb648eb19fc2072615ac4c46ec2a8a01a0be9cd9f7fc9",
-      "machineText": "`KEY=VALUE` 形式を使用して、CLI 変数をタスクに渡せます。これらの変数はエイリアスコマンドを介して転送されます。",
-      "status": "final",
+      "targetHash": "569fabc06fd4dc33c0b55cf62220f51b877f2e02b5efac3df1fb5b18e56093ff",
+      "machineHash": "569fabc06fd4dc33c0b55cf62220f51b877f2e02b5efac3df1fb5b18e56093ff",
+      "machineText": "`KEY=VALUE` 形式を使用して、CLI 変数をタスクに渡すことができます。これらの変数はエイリアスコマンドを介して転送されます。",
+      "status": "machine-translated",
       "sourcePreview": "You can pass CLI variables to tasks using the `KEY=VALUE` format. These variables are forwarded thro…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "b0040-text-01": {
-      "sourceHash": "f08b6b352e634cf6419646756b233a3894b79da42ad034f07db2cfa5de37002a",
-      "targetHash": "27be2ffe9299580f8e9197045ec021cf2daa1123dc1fb12746dc4de95561cd20",
-      "machineHash": "27be2ffe9299580f8e9197045ec021cf2daa1123dc1fb12746dc4de95561cd20",
-      "machineText": "`Taskfile.yml` では、Go テンプレート構文を使用してこれらの変数にアクセスできます。",
-      "status": "final",
-      "sourcePreview": "In your `Taskfile.yml`, you can access these variables using Go template syntax:",
+    "b0039-text-01": {
+      "sourceHash": "a461406b5802d15ed55e2e5d3a85409fc0f5fdd40f88f273d5ea44231e2dce2e",
+      "targetHash": "34be5949291e93ec7cea981297c1257313524d469ff60524e80b6d156264b839",
+      "machineHash": "34be5949291e93ec7cea981297c1257313524d469ff60524e80b6d156264b839",
+      "machineText": "標準タスクでは、`GOOS`、`ARCH`、`DEV` を使用します。`VERSION`、`OUTPUT`、`PLATFORM`、`CONFIG` などの変数は、独自の Taskfile でその変数を読み取る場合にのみタスクへ影響します。次に示すのはカスタム Taskfile の例であり、Wails の標準ビルドタスクではありません。",
+      "status": "machine-translated",
+      "sourcePreview": "The stock tasks use `GOOS`, `ARCH` and `DEV`. Variables such as `VERSION`, `OUTPUT`, `PLATFORM` or `…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
+    },
+    "b0040-text-01": {
+      "sourceHash": "029db3a60bb29f013588d43c15ff8041801ca2b4e66870eddbca83844a0d5b1c",
+      "targetHash": "c2da7a1846555a6fcf1c9ee41d13889129f8f04a4a6864cf36a192c45024f26b",
+      "machineHash": "c2da7a1846555a6fcf1c9ee41d13889129f8f04a4a6864cf36a192c45024f26b",
+      "machineText": "カスタムのパッケージングタスクが `VERSION` と `OUTPUT` を読み取る場合も、同じ方法で渡せます。",
+      "status": "machine-translated",
+      "sourcePreview": "If your custom packaging task reads `VERSION` and `OUTPUT`, you can pass them in the same way:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:37Z"
     },
     "b0041-heading-01": {
       "sourceHash": "0a94aaa389e207b362737f68c55d1ce2e6d41dfb95711b39d2d672bdaca7176a",
       "targetHash": "14334a8187583b58be90e0447ea575a2b1188494635df299b9744127d427d5e3",
       "machineHash": "14334a8187583b58be90e0447ea575a2b1188494635df299b9744127d427d5e3",
       "machineText": "共通のビルドプロセス",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Common Build Process",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0042-text-01": {
       "sourceHash": "b26f34513c7b7600869764e89047a44c06e83afc79bf6823eba51986ad757c98",
-      "targetHash": "8bef6ba4deb8c1ecc44c5917551af9e417520ca01967a959883571bb3d222f03",
-      "machineHash": "8bef6ba4deb8c1ecc44c5917551af9e417520ca01967a959883571bb3d222f03",
-      "machineText": "すべてのプラットフォームに共通して、ビルドプロセスには通常、次の手順が含まれます。",
-      "status": "final",
+      "targetHash": "6834a308fa0ae79dde491be93f0971f38a35208ce133463dca80976b9f237316",
+      "machineHash": "6834a308fa0ae79dde491be93f0971f38a35208ce133463dca80976b9f237316",
+      "machineText": "すべてのプラットフォームで、ビルドプロセスには通常、次の手順が含まれます。",
+      "status": "machine-translated",
       "sourcePreview": "Across all platforms, the build process typically includes the following steps:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0043-text-01": {
       "sourceHash": "58a3a520cb5f5e984cb0b1588f53358bc8a3ba51aeaee71b1653e150a327db71",
       "targetHash": "de600abf22f0e68cae1988adc21e67afaf8ccabc201e20e65c46bd3407e184bd",
       "machineHash": "de600abf22f0e68cae1988adc21e67afaf8ccabc201e20e65c46bd3407e184bd",
       "machineText": "Go モジュールの整理",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Tidying Go modules",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0044-text-01": {
       "sourceHash": "fbaaed40e5c7f78aa5ac7c884e2a5f030eb65585113ac5852ccf6e532d08be9a",
       "targetHash": "e2ecf36db0c31abfbd4eb23467e8f2a9c741877a3e7f89f42d5c8236fcaf20ca",
       "machineHash": "e2ecf36db0c31abfbd4eb23467e8f2a9c741877a3e7f89f42d5c8236fcaf20ca",
       "machineText": "フロントエンドのビルド",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0045-text-01": {
       "sourceHash": "5146220beb30d3eada17edb64e0a89e96a661b9075dfab0ac7b0a76d6ebe7d62",
       "targetHash": "bb00baaba269b1f89b768ca5868f6d7060e5bd75e1f00ce39090f1f59b1db8aa",
       "machineHash": "bb00baaba269b1f89b768ca5868f6d7060e5bd75e1f00ce39090f1f59b1db8aa",
       "machineText": "アイコンの生成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating icons",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0046-text-01": {
       "sourceHash": "e9e6f4ebac8dba174dfb89abc31c2f8e65126900f1ea67fc22faf373cfaaf6bb",
-      "targetHash": "8cc53dd35389e0930b69d23bb9073d07bf895746f454de11167845f44401b31f",
-      "machineHash": "8cc53dd35389e0930b69d23bb9073d07bf895746f454de11167845f44401b31f",
-      "machineText": "プラットフォーム固有のフラグを使用した Go コードのコンパイル",
-      "status": "final",
+      "targetHash": "93a0d8d9a7e1dc8f8be020338f630e180d13a2cfa581093e1f57bf7894719152",
+      "machineHash": "93a0d8d9a7e1dc8f8be020338f630e180d13a2cfa581093e1f57bf7894719152",
+      "machineText": "プラットフォーム固有のフラグを指定した Go コードのコンパイル",
+      "status": "machine-translated",
       "sourcePreview": "Compiling the Go code with platform-specific flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0047-text-01": {
       "sourceHash": "a8a1ce49040d52002ea38be67084c6b132c927575c76097288aeccc1d09ec342",
       "targetHash": "237f23050ddf87fc4f757fb466e53d99f4c5bb65a7c2fad1e8bba52ca2ef706b",
       "machineHash": "237f23050ddf87fc4f757fb466e53d99f4c5bb65a7c2fad1e8bba52ca2ef706b",
       "machineText": "アプリケーションのパッケージ化（プラットフォーム固有）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Packaging the application (platform-specific)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0048-heading-01": {
       "sourceHash": "64c418cbf722340e3d515f047c347fbcfac11cc7c62b2f144f88fec1a28dc680",
       "targetHash": "2ab3dbdb84a259a1025bb553cce2595a6da36bb5101f09aa515b9f0cc76a042b",
       "machineHash": "2ab3dbdb84a259a1025bb553cce2595a6da36bb5101f09aa515b9f0cc76a042b",
       "machineText": "ビルドプロセスのカスタマイズ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customising the Build Process",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0049-text-01": {
-      "sourceHash": "a70f8d8990bcdf7020e76b3c073b5fb7285c13154cf51b226e043511c7983c1c",
-      "targetHash": "70d4ed41d6eee0d8b6bbafc6c0294986e7c524285b1f1a3e00a4117a17e2aad0",
-      "machineHash": "70d4ed41d6eee0d8b6bbafc6c0294986e7c524285b1f1a3e00a4117a17e2aad0",
-      "machineText": "v3 のビルドシステムには実用的なデフォルト設定が用意されていますが、プロジェクトのニーズに合わせて簡単にカスタマイズできます。`Taskfile.yml` とプラットフォーム固有の Taskfile を変更することで、次のことができます。",
-      "status": "final",
-      "sourcePreview": "While the v3 build system provides a solid default configuration, you can easily\\ customise it to fi…",
+      "sourceHash": "3fe8980f1ecc04dfb5ec5214f95b147043f2b3ef8617ed6b1f6a1e038428539e",
+      "targetHash": "20ff2a5fe1d117a3f85f93f76f55d6dd3fca2308ea48091b12f39cad9f8c12dd",
+      "machineHash": "20ff2a5fe1d117a3f85f93f76f55d6dd3fca2308ea48091b12f39cad9f8c12dd",
+      "machineText": "v3 ビルドシステムには堅実なデフォルト設定が用意されていますが、プロジェクトのニーズに合わせて簡単にカスタマイズできます。`Taskfile.yml` とプラットフォーム固有の Taskfile を変更することで、次のことができます。",
+      "status": "machine-translated",
+      "sourcePreview": "While the v3 build system provides a solid default configuration, you can easily customise it to fit…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0050-text-01": {
       "sourceHash": "3a4267b073ebfe35e8c6f85a1b63a62f3e6d35a66d662bd2f62c637c076d248b",
       "targetHash": "ccaf646b02510b0cf86780ab359dd60cd5bf9f011674ec4ee3517d66105d7ede",
       "machineHash": "ccaf646b02510b0cf86780ab359dd60cd5bf9f011674ec4ee3517d66105d7ede",
       "machineText": "新しいタスクの追加",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add new tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0051-text-01": {
       "sourceHash": "12d52e81a68a216a623932890e0efd1b014d3a91c3091cb15d908195f0c776e3",
-      "targetHash": "fa9bba374ed93b067a28464d86070b33eb492673512279097f7980d6b6f05339",
-      "machineHash": "fa9bba374ed93b067a28464d86070b33eb492673512279097f7980d6b6f05339",
-      "machineText": "既存のタスクの変更",
-      "status": "final",
+      "targetHash": "5b1c7615275c170f8047ea606a651f7498853058a6066c6e12272a0cedf7bf60",
+      "machineHash": "5b1c7615275c170f8047ea606a651f7498853058a6066c6e12272a0cedf7bf60",
+      "machineText": "既存タスクの変更",
+      "status": "machine-translated",
       "sourcePreview": "Modify existing tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0052-text-01": {
       "sourceHash": "086bbe31ecec0e5cc52f6a569b10adad2e2ef87437bde0a232a5f7552c83a782",
       "targetHash": "2426530269c7f0ebcb1fc052ad483a2d4c78bf674c78a1eef9cf50941dcca0d5",
       "machineHash": "2426530269c7f0ebcb1fc052ad483a2d4c78bf674c78a1eef9cf50941dcca0d5",
       "machineText": "タスク実行順序の変更",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Change the order of task execution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0053-text-01": {
       "sourceHash": "916293cceb0ae2a42d8ea44cfd79d8a8478eabf529f07e597a7715d86bfad5a5",
-      "targetHash": "bfc02f877ca9cd847153bb98ef83f021f81f65cb9f09dfd778e3981c24b8382d",
-      "machineHash": "bfc02f877ca9cd847153bb98ef83f021f81f65cb9f09dfd778e3981c24b8382d",
-      "machineText": "他のツールやスクリプトとの統合",
-      "status": "final",
+      "targetHash": "78ed893c65ef2077c0d92254dc193301045fac4ffb6b158d8210337fb2abf5ab",
+      "machineHash": "78ed893c65ef2077c0d92254dc193301045fac4ffb6b158d8210337fb2abf5ab",
+      "machineText": "ほかのツールやスクリプトとの統合",
+      "status": "machine-translated",
       "sourcePreview": "Integrate with other tools and scripts",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0054-text-01": {
-      "sourceHash": "27a0ba18b8342650cd4c0b13867260757d62a8e87501ccd26df3bde2d142848c",
+      "sourceHash": "1998df2f1673ca6759d7e7b8810e9f2151f52c287b0ae16b4c1850852112c8cf",
       "targetHash": "953c9c9885025421340135d6b5e4d61fe71df77f92e23cb26ac3c97563f538e7",
       "machineHash": "953c9c9885025421340135d6b5e4d61fe71df77f92e23cb26ac3c97563f538e7",
       "machineText": "この柔軟性により、Wails ビルドシステムが提供する構造を活用しながら、個別の要件に合わせてビルドプロセスを調整できます。",
-      "status": "final",
-      "sourcePreview": "This flexibility allows you to tailor the build process to your specific\\ requirements while still b…",
+      "status": "machine-translated",
+      "sourcePreview": "This flexibility allows you to tailor the build process to your specific requirements while still be…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0055-text-01": {
-      "sourceHash": "9f7e2a865b68e87e6cde3182663882d1f0395c15413b5b5451af1aab2caf2a6b",
-      "targetHash": "9a3670589e2b82a1cb217f8ba4cdfc0a9297f72908abf0863a1a8a2650549a86",
-      "machineHash": "9a3670589e2b82a1cb217f8ba4cdfc0a9297f72908abf0863a1a8a2650549a86",
-      "machineText": "Taskfile を効果的に使用する方法を理解するために、[Taskfile](https://taskfile.dev) のドキュメントを読むことを強く推奨します。Wails CLI に組み込まれている Taskfile のバージョンは、`wails3 task --version` を実行すると確認できます。",
-      "status": "final",
-      "sourcePreview": "We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to\\ understand how to…",
+      "sourceHash": "14b30b9a27b87a3aee1347763f559cdf847d9098095fdda3be70ab42fbb97018",
+      "targetHash": "31fd53bd8efbaf5c10dbe6fb0a4073f8196163efa1d80fc9404e0a2c137f177b",
+      "machineHash": "31fd53bd8efbaf5c10dbe6fb0a4073f8196163efa1d80fc9404e0a2c137f177b",
+      "machineText": "Taskfile を効果的に使用する方法を理解するために、[Taskfile](https://taskfile.dev) のドキュメントを一読することを強く推奨します。Wails CLI に組み込まれている Taskfile のバージョンは、`wails3 task --version` を実行して確認できます。",
+      "status": "machine-translated",
+      "sourcePreview": "We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to understand how to …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0056-heading-01": {
       "sourceHash": "cf175c1f6951a898ec7478fdf6c897892743d3b0744566b8760cdb397cff7666",
       "targetHash": "50a98ec541f98bf2cd35fccfd56ae247f4e851f5bc102a91440234ed648df169",
       "machineHash": "50a98ec541f98bf2cd35fccfd56ae247f4e851f5bc102a91440234ed648df169",
       "machineText": "開発モード",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Development Mode",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0057-text-01": {
-      "sourceHash": "c55fbb88cfb146ea3da2f92e499e8c40ec70313b921065ef247a5d0c63942d48",
-      "targetHash": "9475ce12fe2357dd1c4c05774140b9442cbeb25275ffe5f2ed50fa86a5bfd1a0",
-      "machineHash": "9475ce12fe2357dd1c4c05774140b9442cbeb25275ffe5f2ed50fa86a5bfd1a0",
-      "machineText": "Wails のビルドシステムには、ライブリロードとホットモジュール置換によって開発者体験を向上させる強力な開発モードが含まれています。このモードは、`wails3 dev` コマンドを使用して有効にします。",
-      "status": "final",
-      "sourcePreview": "The Wails build system includes a powerful development mode that enhances the\\ developer experience …",
+      "sourceHash": "cb2e0bdba776effd2374430700b0aa825fe5e42b7e08a7712acf974faa6a8e94",
+      "targetHash": "b53356c2a295ea267815cff831dffb8e6ce19a51ef732949422c7a8a6698a47b",
+      "machineHash": "b53356c2a295ea267815cff831dffb8e6ce19a51ef732949422c7a8a6698a47b",
+      "machineText": "Wails のビルドシステムには、ライブリロードとホットモジュールリプレースメントを提供し、開発者体験を向上させる強力な開発モードが用意されています。このモードは、`wails3 dev` コマンドを使用して有効にします。",
+      "status": "machine-translated",
+      "sourcePreview": "The Wails build system includes a powerful development mode that enhances the developer experience b…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0058-heading-01": {
       "sourceHash": "c1879525c75cb5c2f2f3bcd2db2554aeca020ede722bdbe6949b8f5f51d885d2",
       "targetHash": "04f89470260c7714ef32fe9a40bd75d7de32e9c428a2a999496bfea205492ce6",
       "machineHash": "04f89470260c7714ef32fe9a40bd75d7de32e9c428a2a999496bfea205492ce6",
       "machineText": "仕組み",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How It Works",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0059-text-01": {
       "sourceHash": "7a1202db99de09390756401f9446ead216e8543627e6e1ab779dcfc52dd87879",
-      "targetHash": "93ff79afef6c1a9e3d349f27a7c997ce9878aba2ca12cac22f0e29d5116bd93a",
-      "machineHash": "93ff79afef6c1a9e3d349f27a7c997ce9878aba2ca12cac22f0e29d5116bd93a",
-      "machineText": "`wails3 dev`を実行すると、次の処理が行われます。",
-      "status": "final",
+      "targetHash": "161761eeaeabddb5070445228360a3435723e9126dd2dd254c60ccf330173c6e",
+      "machineHash": "161761eeaeabddb5070445228360a3435723e9126dd2dd254c60ccf330173c6e",
+      "machineText": "`wails3 dev` を実行すると、次の処理が行われます。",
+      "status": "machine-translated",
       "sourcePreview": "When you run `wails3 dev`, the following process occurs:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0060-text-01": {
       "sourceHash": "a74024d290ff052d7ad97081750a59fb8e40093faf8b17cb74b73b463ac5a330",
-      "targetHash": "5d435c8040b3e55c1016cb5081ceec8bb942ba0e532011c11179eb7c0bdc9e5d",
-      "machineHash": "5d435c8040b3e55c1016cb5081ceec8bb942ba0e532011c11179eb7c0bdc9e5d",
-      "machineText": "コマンドは利用可能なポートを確認し、指定されていない場合はデフォルトで9245を使用します。",
-      "status": "final",
+      "targetHash": "cd026d12ad2f1c72c6c7d044b0ff750dbb71730ac48bf9b715f5539521c81eec",
+      "machineHash": "cd026d12ad2f1c72c6c7d044b0ff750dbb71730ac48bf9b715f5539521c81eec",
+      "machineText": "コマンドは利用可能なポートを確認し、ポートが指定されていない場合は 9245 をデフォルトとして使用します。",
+      "status": "machine-translated",
       "sourcePreview": "The command checks for an available port, defaulting to 9245 if not specified.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0061-text-01": {
       "sourceHash": "7d75d7733ca5a226e30ed40f9d630a53f0917d319c21e8d997b61382fd379e40",
       "targetHash": "6ca641021cf063f92e37b29f59e36178833bb62be304ffaceac07e82280a775c",
       "machineHash": "6ca641021cf063f92e37b29f59e36178833bb62be304ffaceac07e82280a775c",
       "machineText": "フロントエンド開発サーバー（Vite）用の環境変数を設定します。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "It sets up the environment variables for the frontend dev server (Vite).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0062-text-01": {
       "sourceHash": "262dda4449fbce4e9c00d41f840148d0884ca84a0e3d36cf6cc3211cabdf975d",
-      "targetHash": "2c183998f43fb08da688a853f87bb7bc127dcaecb562db216cf9b534a46f4238",
-      "machineHash": "2c183998f43fb08da688a853f87bb7bc127dcaecb562db216cf9b534a46f4238",
-      "machineText": "[refresh](https://github.com/atterpac/refresh)ライブラリを使用してファイル監視を開始します。",
-      "status": "final",
+      "targetHash": "665b926717df583e6d18cd50614a960539066d5953558c1db4c87662c0dca357",
+      "machineHash": "665b926717df583e6d18cd50614a960539066d5953558c1db4c87662c0dca357",
+      "machineText": "[refresh](https://github.com/atterpac/refresh) ライブラリを使用してファイル監視を開始します。",
+      "status": "machine-translated",
       "sourcePreview": "It starts the file watcher using the [refresh](https://github.com/atterpac/refresh) library.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0063-text-01": {
-      "sourceHash": "3af0348e74b83446024686c6ded01cc9269aac53201e675f9ef9e15ee844e73b",
-      "targetHash": "a1c15e139c3315b21d997a5a4175981a225b09483e986c1c0ab95459f5e9f606",
-      "machineHash": "a1c15e139c3315b21d997a5a4175981a225b09483e986c1c0ab95459f5e9f606",
-      "machineText": "[refresh](https://github.com/atterpac/refresh)ライブラリは、ファイルの変更を監視し、再ビルドをトリガーします。`./build/config.yml`ファイルの`dev_mode`キーに定義された設定を使用します。\n特定のディレクトリやファイルを無視する設定、監視対象とするファイルの指定、変更を検出した際に実行する処理の指定が可能です。\nデフォルト設定でも十分に機能しますが、必要に応じて自由にカスタマイズできます。",
-      "status": "final",
-      "sourcePreview": "The [refresh](https://github.com/atterpac/refresh) library is responsible for\\ monitoring file chang…",
+      "sourceHash": "f4478159ce56afa7816161cb144ec6c0d1cc3d5e3beaa26dbbcc6c34e64e411a",
+      "targetHash": "29909074b1200edf7ab4cedc222f126d9eeae6cbb2dc19c84cfd579fecabc719",
+      "machineHash": "29909074b1200edf7ab4cedc222f126d9eeae6cbb2dc19c84cfd579fecabc719",
+      "machineText": "[refresh](https://github.com/atterpac/refresh) ライブラリは、ファイルの変更を監視し、再ビルドをトリガーします。`./build/config.yml` ファイルの `dev_mode` キーで定義された設定を使用します。特定のディレクトリやファイルを無視するように設定できるほか、監視対象のファイルや、変更を検出したときに実行するアクションも指定できます。デフォルト設定で十分に機能しますが、必要に応じて自由にカスタマイズしてください。",
+      "status": "machine-translated",
+      "sourcePreview": "The [refresh](https://github.com/atterpac/refresh) library is responsible for monitoring file change…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0064-heading-01": {
       "sourceHash": "b332c3492d5eb10a118eb6d8b0dcd689bc2477ce2ae16b303753b942b54377bc",
       "targetHash": "0d8619aae051ae343ea983e969d29b7bd7a618eb1b25a6c87c133c5e3ee25264",
       "machineHash": "0d8619aae051ae343ea983e969d29b7bd7a618eb1b25a6c87c133c5e3ee25264",
       "machineText": "設定",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configuration",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0065-text-01": {
       "sourceHash": "fe7d1a093789a186d2098b82b076b5e266005d61453435bef430a83f6453e3c9",
       "targetHash": "a118701bf2806d162055abb91a1b73cc874a7a6e42536e68df1227ec3753d83e",
       "machineHash": "a118701bf2806d162055abb91a1b73cc874a7a6e42536e68df1227ec3753d83e",
       "machineText": "構造の例を次に示します。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Here's an example of its structure:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0066-text-01": {
       "sourceHash": "01f251a4e332213134fb784cc2d1852985334f6aa6ee6f4a908e5eab4a34b8cf",
       "targetHash": "96f69e3704859141b5c88750cb69e87ca401432761ca3d582c3d4b9493f93396",
       "machineHash": "96f69e3704859141b5c88750cb69e87ca401432761ca3d582c3d4b9493f93396",
       "machineText": "この設定ファイルでは、次のことができます。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This configuration file allows you to:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0067-text-01": {
       "sourceHash": "f42062d3e669e285a02dad9fe667b7bf3939f35b3bbffcda5cceb934694be4e6",
-      "targetHash": "a84db37a1260043c65ad6868f3d8efc9452fc104abf2f7224ad1ac24ae028a37",
-      "machineHash": "a84db37a1260043c65ad6868f3d8efc9452fc104abf2f7224ad1ac24ae028a37",
-      "machineText": "ファイル監視のルートパスを設定する",
-      "status": "final",
+      "targetHash": "1c34a8970919d8655dbfe03b957a1d2bf36405787e90a926a4b666e1a1daa35e",
+      "machineHash": "1c34a8970919d8655dbfe03b957a1d2bf36405787e90a926a4b666e1a1daa35e",
+      "machineText": "ファイル監視のルートパスの設定",
+      "status": "machine-translated",
       "sourcePreview": "Set the root path for file watching",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0068-text-01": {
       "sourceHash": "ce3615b198951f85f7f04d110d7c452ca6f82d9328f1b0c8652d2e535c71df6f",
-      "targetHash": "5e95cd321ea5a7743da17de950763ace9019fed5eec4a573b502fd29c7b6ace2",
-      "machineHash": "5e95cd321ea5a7743da17de950763ace9019fed5eec4a573b502fd29c7b6ace2",
-      "machineText": "ログレベルを設定する",
-      "status": "final",
+      "targetHash": "d052456d89453fc505f53ac19d6010aff9d323cafa97a955701ec5eabba4c09e",
+      "machineHash": "d052456d89453fc505f53ac19d6010aff9d323cafa97a955701ec5eabba4c09e",
+      "machineText": "ログレベルの設定",
+      "status": "machine-translated",
       "sourcePreview": "Configure logging level",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0069-text-01": {
       "sourceHash": "3c06b94c2b5c68986931a23822e96e09a7d68a7fd7848d410c66d904d1c0359f",
-      "targetHash": "5bb190932b70f4af774087ef7a5c83360205445f326c7077f8f1cb8ffaf6dd42",
-      "machineHash": "5bb190932b70f4af774087ef7a5c83360205445f326c7077f8f1cb8ffaf6dd42",
-      "machineText": "ファイル変更イベントのデバウンス時間を設定する",
-      "status": "final",
+      "targetHash": "5d79de9e05976974b22289b3af3009ad6f57a148862aa5af77f95ec3c3d09513",
+      "machineHash": "5d79de9e05976974b22289b3af3009ad6f57a148862aa5af77f95ec3c3d09513",
+      "machineText": "ファイル変更イベントのデバウンス時間の設定",
+      "status": "machine-translated",
       "sourcePreview": "Set a debounce time for file change events",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0070-text-01": {
       "sourceHash": "d0adcd4a417ba6dcbaaf56a46fbc709e265b365b2d512572b80e79f4cd13972e",
-      "targetHash": "a6983174ff1393c221cd078c17ef2e823939bd213a133c222e5da5ed6978d012",
-      "machineHash": "a6983174ff1393c221cd078c17ef2e823939bd213a133c222e5da5ed6978d012",
-      "machineText": "特定のディレクトリ、ファイル、またはファイル拡張子を無視する",
-      "status": "final",
+      "targetHash": "40cdd1eb97701e84cc276f49b655db5b36743583c64e7ef45f4db1b8d9ab9ebe",
+      "machineHash": "40cdd1eb97701e84cc276f49b655db5b36743583c64e7ef45f4db1b8d9ab9ebe",
+      "machineText": "特定のディレクトリ、ファイル、またはファイル拡張子の除外",
+      "status": "machine-translated",
       "sourcePreview": "Ignore specific directories, files, or file extensions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0071-text-01": {
       "sourceHash": "ce267fbdfe8ff2437625452af797ac2116f706d83d470b51905b42c0287ada94",
-      "targetHash": "ee35c5af1d4609e893d17843c40c36444b1c2ad59034aee870061b34c60ff263",
-      "machineHash": "ee35c5af1d4609e893d17843c40c36444b1c2ad59034aee870061b34c60ff263",
-      "machineText": "ファイル変更時に実行するコマンドを定義する",
-      "status": "final",
+      "targetHash": "3f81c514780818f1ec8858c3ee5d6ef47e86c322fdf17e6c3dd57aaa3ef37986",
+      "machineHash": "3f81c514780818f1ec8858c3ee5d6ef47e86c322fdf17e6c3dd57aaa3ef37986",
+      "machineText": "ファイル変更時に実行するコマンドの定義",
+      "status": "machine-translated",
       "sourcePreview": "Define commands to execute on file changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0072-heading-01": {
       "sourceHash": "51e6ae960458582fed16eb75fed913a900332dd2cac81f5fd977a1e12abfe2a9",
       "targetHash": "c667a7129e3ed8085cfe7de5cdd786d8e876fa36f417ae2710780fe787c83240",
       "machineHash": "c667a7129e3ed8085cfe7de5cdd786d8e876fa36f417ae2710780fe787c83240",
       "machineText": "開発モードのカスタマイズ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customising Development Mode",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0073-text-01": {
       "sourceHash": "1219195dcb46760e55ff0100ea27e5dee43a4cc3853247cf9dc98127627bf772",
-      "targetHash": "56ed796c6a781e50de591141ec7c05cd4d09f266ce5cf940bba46bf1c64441cb",
-      "machineHash": "56ed796c6a781e50de591141ec7c05cd4d09f266ce5cf940bba46bf1c64441cb",
-      "machineText": "`config.yml`ファイル内のこれらの値を変更することで、開発モードをカスタマイズできます。",
-      "status": "final",
+      "targetHash": "f62326e0d1fe7c6e88597d87ae6cdf19c84de503b1662aea54ea5e1ac2241266",
+      "machineHash": "f62326e0d1fe7c6e88597d87ae6cdf19c84de503b1662aea54ea5e1ac2241266",
+      "machineText": "`config.yml` ファイル内のこれらの値を変更することで、開発モードの動作をカスタマイズできます。",
+      "status": "machine-translated",
       "sourcePreview": "You can customise the development mode experience by modifying these values in the `config.yml` file…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0074-text-01": {
       "sourceHash": "3664db4b055e7aa00d0531d777891f0fb410344058c5a6dee8698658846b4e4e",
       "targetHash": "ef7b2aef26b094a348c283c049b378df2340363e8e6c559ff0571060c3eb2437",
       "machineHash": "ef7b2aef26b094a348c283c049b378df2340363e8e6c559ff0571060c3eb2437",
       "machineText": "カスタマイズ方法には、次のようなものがあります。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Some ways to customise include:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0075-text-01": {
       "sourceHash": "aba5d94f96aa234dae5641895db69c571900f8f6649fc21630b5f3e65c5fb5ef",
-      "targetHash": "c86127e3a30569a36aebfd5ae2607b1e7f929924c351ecc8c7d5dbb9a0ac9e8b",
-      "machineHash": "c86127e3a30569a36aebfd5ae2607b1e7f929924c351ecc8c7d5dbb9a0ac9e8b",
-      "machineText": "監視するディレクトリやファイルを変更する",
-      "status": "final",
+      "targetHash": "744068f804662ade6a757171cbeb850b5dadf4fe094db8b9b8acaf918b72a273",
+      "machineHash": "744068f804662ade6a757171cbeb850b5dadf4fe094db8b9b8acaf918b72a273",
+      "machineText": "監視するディレクトリまたはファイルの変更",
+      "status": "machine-translated",
       "sourcePreview": "Changing the watched directories or files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0076-text-01": {
       "sourceHash": "aa09fd18436561b722a91eec8430c6eee982a5c608e500a71643b0604a196aeb",
-      "targetHash": "786b586d0a53cab0c0a8ba097502189902f5f3bf6a0be29eadb11028322c2d89",
-      "machineHash": "786b586d0a53cab0c0a8ba097502189902f5f3bf6a0be29eadb11028322c2d89",
-      "machineText": "システムが変更に応答するまでの速さを制御するため、デバウンス時間を調整する",
-      "status": "final",
+      "targetHash": "deba7b600b61f74ad1130ea1c71d9363555873fdcf455943a623190d24f4e7b9",
+      "machineHash": "deba7b600b61f74ad1130ea1c71d9363555873fdcf455943a623190d24f4e7b9",
+      "machineText": "変更に対するシステムの応答速度を制御するためのデバウンス時間の調整",
+      "status": "machine-translated",
       "sourcePreview": "Adjusting the debounce time to control how quickly the system responds to changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0077-text-01": {
       "sourceHash": "ec5f3400bde8d7c4fd45155455f52863a8dd8f0443797d8699b63ab671cc2460",
-      "targetHash": "120621cb6df3a59807ed0b4770c7da4bc54f299cf94626e3f8f9761ea37fc4a8",
-      "machineHash": "120621cb6df3a59807ed0b4770c7da4bc54f299cf94626e3f8f9761ea37fc4a8",
-      "machineText": "プロジェクトの要件に合わせて実行コマンドを追加または変更する",
-      "status": "final",
+      "targetHash": "18e1f9555eca89c1b2d36027cfdebfc28f37fce6c55b8053b3807bce7449da95",
+      "machineHash": "18e1f9555eca89c1b2d36027cfdebfc28f37fce6c55b8053b3807bce7449da95",
+      "machineText": "プロジェクトのニーズに合わせた実行コマンドの追加または変更",
+      "status": "machine-translated",
       "sourcePreview": "Adding or modifying the execute commands to fit your project's needs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0078-heading-01": {
       "sourceHash": "9619462c96a9508c2ea7e96a3ef128fc533433191e9985846d90c5e152bc3e48",
-      "targetHash": "fd9f88418b8ba683baa37a85e45378db9bc005b0b7f19447bcf7acbec18794a4",
-      "machineHash": "fd9f88418b8ba683baa37a85e45378db9bc005b0b7f19447bcf7acbec18794a4",
-      "machineText": "開発でのブラウザの使用",
-      "status": "final",
+      "targetHash": "e11f80f1dd857e47a86023f2f7a8ca5c6a403abe41f7e0004152d454d39a4dc6",
+      "machineHash": "e11f80f1dd857e47a86023f2f7a8ca5c6a403abe41f7e0004152d454d39a4dc6",
+      "machineText": "開発でのブラウザーの使用",
+      "status": "machine-translated",
       "sourcePreview": "Using a browser for development",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0079-text-01": {
-      "sourceHash": "4c59a6661cdd68947e0e9c091af1e85125b4f38bdd0233ef0b2266aff98020e7",
-      "targetHash": "729895c66b66b6c00b1149adcb29c9862e03f7a3a708c73a9a3241fd6b2f65d6",
-      "machineHash": "729895c66b66b6c00b1149adcb29c9862e03f7a3a708c73a9a3241fd6b2f65d6",
-      "machineText": "Wails v2では開発時のブラウザ使用を完全にサポートしていましたが、多くの混乱を招いていました。ブラウザで動作するアプリケーションがデスクトップアプリケーションでも必ず動作するとは限りません。これは、ブラウザAPIの一部がWebViewでは利用できないためです。",
-      "status": "final",
-      "sourcePreview": "Whilst Wails v2 fully supported the use of a browser for development, it caused a lot\\ of confusion.…",
+      "sourceHash": "a31c25d0831ad27ff845f00fe9c39b6533c19073418d81cb6b33e9f18c165c58",
+      "targetHash": "7c57dcdaa6fa7196e5f8729949ef9a0668f71f979908747d71dcbcd738293a71",
+      "machineHash": "7c57dcdaa6fa7196e5f8729949ef9a0668f71f979908747d71dcbcd738293a71",
+      "machineText": "Wails v2 では、開発時のブラウザー使用が完全にサポートされていましたが、多くの混乱を招きました。すべてのブラウザー API が WebView で利用できるわけではないため、ブラウザーでは動作するアプリケーションがデスクトップアプリケーションでも必ず動作するとは限りません。",
+      "status": "machine-translated",
+      "sourcePreview": "Whilst Wails v2 fully supported the use of a browser for development, it caused a lot of confusion. …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
     "b0080-text-01": {
-      "sourceHash": "1498879a9e0dfe884bcc8fde13c15dc09e254bd7f1a368d2a4a516214128d3c1",
-      "targetHash": "7d8da727331533b5e0918dbc98b42e8a4fe25fd0496a0b84a2566a73b879a3ab",
-      "machineHash": "7d8da727331533b5e0918dbc98b42e8a4fe25fd0496a0b84a2566a73b879a3ab",
-      "machineText": "UIを中心とする開発作業では、v3でも開発モードで`http://localhost:9245`のVite URLにアクセスすることで、ブラウザを柔軟に使用できます。これにより、スタイルやレイアウトの作業中に高機能なブラウザ開発者ツールを利用できます。ただし、このモードではGoバインディングが_動作しない_ことに注意してください。\nバインディングやイベントなどの機能をテストする段階になったら、デスクトップ表示に切り替え、本番環境ですべてが正しく動作することを確認してください。",
-      "status": "final",
-      "sourcePreview": "For UI-focused development work, you still have the flexibility to use a browser\\ in v3, by accessin…",
+      "sourceHash": "2bcdeb4744660a24281e1b1e30f0dd3dc0cb95685e6abc09ede09608f75d6dd5",
+      "targetHash": "3ba7575d7edd1f825a97803acec34af2c3dec5644c8e3c61dd735592a6622656",
+      "machineHash": "3ba7575d7edd1f825a97803acec34af2c3dec5644c8e3c61dd735592a6622656",
+      "machineText": "UI を中心とした開発作業では、引き続き v3 でブラウザーを使用できます。開発モードで `http://localhost:9245` の Vite URL にアクセスしてください。これにより、スタイルやレイアウトの作業中に強力なブラウザー開発ツールを利用できます。ただし、このモードでは Go バインディングが *動作しません*。バインディングやイベントなどの機能をテストする準備ができたら、デスクトップ表示に切り替えて、本番環境ですべてが正しく動作することを確認してください。",
+      "status": "machine-translated",
+      "sourcePreview": "For UI-focused development work, you still have the flexibility to use a browser in v3, by accessing…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "3c9e626ef709fad9d658a0888ff476be5c283a1041d5d0f442ea8c40cec4ac9a",
       "targetHash": "4de279b49000a544a3c310a6cea8c89f4039b9358b4704292eb4e7d2783d9f83",
       "machineHash": "4de279b49000a544a3c310a6cea8c89f4039b9358b4704292eb4e7d2783d9f83",
       "machineText": "Task と Taskfile.yml を使用してビルドプロセスをカスタマイズする",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customize your build process using Task and Taskfile.yml",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "94bab8d21806172860c9a902d5561a0519e6165f3a7731d9df6c847829e44a44",
       "targetHash": "7ce4a0cd690d47e06b70cf6d8803aa4455535a7caf272d7497bc709c58e33ffb",
       "machineHash": "7ce4a0cd690d47e06b70cf6d8803aa4455535a7caf272d7497bc709c58e33ffb",
       "machineText": "ビルドのカスタマイズ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build Customization",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:40:20Z"
     }
   }
 }

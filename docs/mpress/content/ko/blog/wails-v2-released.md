@@ -21,24 +21,24 @@ sourcePath: "blog/wails-v2-released.md"
 
 ## Wails란 *무엇인가요*?
 
-Wails가 생소한 분을 위해 설명하면, Wails는 Go 프로그래머가 익숙한 웹 기술을 사용해 Go 프로그램에 풍부한 프런트엔드를 구현할 수 있게 해 주는 프로젝트입니다. Electron을 대체하는 가벼운 Go 기반 솔루션입니다. 자세한 내용은 [공식 사이트](https://wails.io/docs/introduction)에서 확인할 수 있습니다.
+Wails가 생소한 분을 위해 설명하면, Wails는 Go 프로그래머가 익숙한 웹 기술을 사용해 Go 프로그램에 풍부한 프런트엔드를 구현할 수 있게 해 주는 프로젝트입니다. Electron을 대체하는 가벼운 Go 기반 솔루션입니다. 자세한 내용은 [공식 사이트](https://v2.wails.io/docs/introduction)에서 확인할 수 있습니다.
 
 ## 새로운 기능
 
 v2 릴리스는 v1의 여러 불편 사항을 해결하며 프로젝트를 크게 발전시켰습니다. [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) 또는 [Linux](/blog/wails-v2-beta-for-linux/) 베타 릴리스에 관한 블로그 게시물을 아직 읽지 않았다면 읽어 보시기를 권합니다. 모든 주요 변경 사항을 더 자세히 다루고 있습니다. 요약하면 다음과 같습니다.
 
 - 최신 웹 표준과 디버깅 기능을 지원하는 Windows용 Webview2 구성 요소.
-- Windows에서 [어두운/밝은 테마](https://wails.io/docs/reference/options#theme) 및 [사용자 지정 테마](https://wails.io/docs/reference/options#customtheme) 지원.
+- Windows에서 [어두운/밝은 테마](https://v2.wails.io/docs/reference/options#theme) 및 [사용자 지정 테마](https://v2.wails.io/docs/reference/options#customtheme) 지원.
 - 이제 Windows에서는 CGO가 필요하지 않습니다.
 - Svelte, Vue, React, Preact, Lit 및 Vanilla 프로젝트 템플릿을 기본으로 지원합니다.
 - 애플리케이션에 핫 리로드 개발 환경을 제공하는 [Vite](https://vitejs.dev/) 통합.
-- 네이티브 애플리케이션 [메뉴](https://wails.io/docs/guides/application-development#application-menu) 및 [대화 상자](https://wails.io/docs/reference/runtime/dialog).
-- [Windows](https://wails.io/docs/reference/options#windowistranslucent) 및 [macOS](https://wails.io/docs/reference/options#windowistranslucent-1)용 네이티브 창 반투명 효과. Mica 및 Acrylic 배경을 지원합니다.
-- Windows 배포용 [NSIS 설치 프로그램](https://wails.io/docs/guides/windows-installer)을 손쉽게 생성할 수 있습니다.
-- 창 조작, 이벤트 처리, 대화 상자, 메뉴 및 로깅을 위한 유틸리티 메서드를 제공하는 풍부한 [런타임 라이브러리](https://wails.io/docs/reference/runtime/intro).
-- [garble](https://github.com/burrowers/garble)을 사용한 애플리케이션 [난독화](https://wails.io/docs/guides/obfuscated) 지원.
+- 네이티브 애플리케이션 [메뉴](https://v2.wails.io/docs/guides/application-development#application-menu) 및 [대화 상자](https://v2.wails.io/docs/reference/runtime/dialog).
+- [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) 및 [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1)용 네이티브 창 반투명 효과. Mica 및 Acrylic 배경을 지원합니다.
+- Windows 배포용 [NSIS 설치 프로그램](https://v2.wails.io/docs/guides/windows-installer)을 손쉽게 생성할 수 있습니다.
+- 창 조작, 이벤트 처리, 대화 상자, 메뉴 및 로깅을 위한 유틸리티 메서드를 제공하는 풍부한 [런타임 라이브러리](https://v2.wails.io/docs/reference/runtime/intro).
+- [garble](https://github.com/burrowers/garble)을 사용한 애플리케이션 [난독화](https://v2.wails.io/docs/guides/obfuscated) 지원.
 - [UPX](https://upx.github.io/)을 사용한 애플리케이션 압축 지원.
-- Go 구조체에서 TypeScript를 자동으로 생성합니다. 자세한 내용은 [여기](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)에서 확인하세요.
+- Go 구조체에서 TypeScript를 자동으로 생성합니다. 자세한 내용은 [여기](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods)에서 확인하세요.
 - 어떤 플랫폼에서도 애플리케이션과 함께 추가 라이브러리나 DLL을 배포할 필요가 없습니다.
 - 프런트엔드 자산을 번들로 묶을 필요가 없습니다. 다른 웹 애플리케이션과 같은 방식으로 애플리케이션을 개발하면 됩니다.
 

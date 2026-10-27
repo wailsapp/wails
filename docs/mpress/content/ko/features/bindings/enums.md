@@ -525,4 +525,4 @@ Go 메서드를 프런트엔드에 바인딩합니다.
 
 ---
 
-**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)를 확인하세요.

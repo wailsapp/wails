@@ -315,7 +315,6 @@ func TestGetUnreleasedChangelogTemplate(t *testing.T) {
 		"## Deprecated",
 		"## Removed",
 		"## Security",
-		"### Example Entries",
 	}
 
 	for _, section := range requiredSections {
@@ -324,14 +323,11 @@ func TestGetUnreleasedChangelogTemplate(t *testing.T) {
 		}
 	}
 
-	// Check that template contains guidelines
-	if !strings.Contains(template, "Guidelines:") {
-		t.Error("Template missing guidelines section")
+	if !strings.Contains(template, "AUTO-GENERATED FILE: do not edit") {
+		t.Error("Template must identify generated changelog ownership")
 	}
-
-	// Check that template contains example entries
-	if !strings.Contains(template, "Add support for custom window icons") {
-		t.Error("Template missing example entries")
+	if strings.Contains(template, "Add your changes") || strings.Contains(template, "### Example Entries") {
+		t.Error("Template must not invite manual contribution entries")
 	}
 }
 

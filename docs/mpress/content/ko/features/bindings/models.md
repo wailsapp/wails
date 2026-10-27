@@ -7,7 +7,7 @@ sourcePath: "features/bindings/models.md"
 
 ## 데이터 모델 바인딩
 
-Wails는 Go 구조체에서 <strong>JavaScript/TypeScript 클래스를 자동으로 생성</strong>하여 백엔드와 프런트엔드 간에 복잡한 데이터를 전달할 때 완전한 타입 안전성을 제공합니다. Go 구조체를 작성하고 바인딩을 생성하면 생성자, 타입 주석, JSDoc 주석을 모두 갖춘 완전한 타입 지정 프런트엔드 모델을 얻을 수 있습니다.
+Wails는 Go 구조체에서 **JavaScript/TypeScript 클래스를 자동으로 생성**하여 백엔드와 프런트엔드 간에 복잡한 데이터를 전달할 때 완전한 타입 안전성을 제공합니다. Go 구조체를 작성하고 바인딩을 생성하면 생성자, 타입 주석, JSDoc 주석을 모두 갖춘 완전한 타입 지정 프런트엔드 모델을 사용할 수 있습니다.
 
 ## 빠른 시작
 
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-**이것으로 끝입니다!** 브리지 전체에서 완전한 타입 안전성이 제공됩니다.
+**이것으로 끝입니다!** 브리지 전체에서 완전한 타입 안전성을 제공합니다.
 
 ## 모델 정의
+
+아래 모델 클래스는 필드 형태를 보여 주기 위한 예시입니다. 이 단순화된 클래스를 변환 코드로 복사하지 말고 실제로 생성된 바인딩을 사용하세요.
+
+`time.Time`의 경우 생성기는 기본적으로 `-time-type=string`을 사용합니다. 타임스탬프를 JavaScript `Date` 값으로 변환하는 생성 클래스에는 `-time-type=Date`을 사용하세요. 기본 JavaScript/클래스 템플릿 빌드 작업은 `Date`을 선택하고, TypeScript 인터페이스 작업은 `string`을 유지합니다. 모드를 변경하기 전에 생성된 작업을 확인하세요. Go 타임스탬프는 JSON에서 RFC3339Nano 문자열로 유지됩니다.
+
+Date 모드에서는 생성된 변환 도우미가 해당 문자열을 날짜로 변환합니다. `Object.assign`만으로는 이 변환이 수행되지 않습니다. 문자열 바인딩에서는 Date 메서드를 사용하기 전에 `new Date(timestamp)`을 사용하여 타임스탬프를 명시적으로 변환하세요.
 
 ### 기본 구조체
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 export class User {
@@ -112,7 +118,7 @@ JavaScript의 **필드 이름은 JSON 태그로 제어합니다**.
 
 ### 사용자 정의 JSON 마샬링
 
-바인딩된 메서드의 결과는 Go 표준 `encoding/json` 패키지로 마샬링됩니다. 포인터 리시버에 선언된 `MarshalJSON` 메서드는 마샬링되는 값이 주소 지정 가능할 때만 호출된다는 점에 유의하세요. 따라서 반환된 슬라이스의 요소에는 사용자 정의 마샬러가 호출될 수 있지만, 값으로 반환된 구조체에는 호출되지 않습니다:
+바인딩된 메서드의 결과는 Go 표준 `encoding/json` 패키지로 마샬링됩니다. 포인터 리시버에 선언된 `MarshalJSON` 메서드는 마샬링할 값이 주소 지정 가능한 경우에만 호출된다는 점에 유의하세요. 따라서 반환된 슬라이스의 요소에는 사용자 정의 마샬러가 호출될 수 있지만, 값으로 반환된 구조체에는 호출되지 않습니다.
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 /**
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**생성된 JavaScript:**
+**JavaScript 예시:**
 
 ```javascript
 export class Config {
@@ -312,20 +318,20 @@ const config = new Config({
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | 문자열 키 맵 |
-| `map[K]V` | `{ [_ in K]?: V }` | 문자열이 아닌 `K`은 매핑된 타입으로 렌더링되며, JS `Map`이 **아닙니다** |
+| `map[string]T` | `{ [_: string]: T }` | 문자열 키를 사용하는 맵 |
+| `map[K]V` | `{ [_ in K]?: V }` | 문자열이 아닌 `K`은 JS `Map`이 **아니라** 매핑된 타입으로 렌더링됨 |
 | `[]byte` | `string` | base64로 인코딩됨 |
 | `struct` | `class` / `interface` | 필드 포함 |
-| `time.Time` | `any` | 런타임에서 RFC3339Nano 문자열로 직렬화됨 |
-| `*T` | `T \| null` | 포인터는 null 허용을 의미함 |
+| `time.Time` | `string`(기본값) 또는 `Date` | `-time-type`이 생성되는 표현을 선택함. JSON은 RFC3339Nano 문자열을 사용함 |
+| `*T` | `T \| null` | 포인터는 null을 허용함을 의미함 |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 반환 값이면 Exception, 그 외에는 any |
+| `error` | `any` / `Exception` | 반환 값이면 예외가 발생하고, 그렇지 않으면 any |
 
 ### 지원되지 않는 타입
 
 - `chan T`(채널)
 - `func()`(함수)
-- 복잡한 인터페이스(`interface{}` 제외)
+- 복합 인터페이스(`interface{}` 제외)
 - 내보내지 않은 필드(소문자로 시작)
 
 ## 모델 사용하기
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### 생성된 TypeScript
 
+이 섹션에서는 Date 변환을 사용하는 클래스 바인딩을 설명합니다. 일반 `-ts` 명령은 생성기의 기본 문자열 표현을 유지합니다. 표시된 클래스는 단순화된 것이며, 생성기는 변환 헬퍼도 생성합니다.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **생성 결과:**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### 열거형
 
-바인딩 생성기는 상수가 있는 Go 명명 타입을 자동으로 감지하고 TypeScript 열거형 또는 JavaScript const 객체를 생성합니다. 여기에는 Go의 제로 값에 해당하는 `$zero` 멤버와 완전히 보존된 JSDoc도 포함됩니다.
+바인딩 생성기는 상수가 있는 Go 명명 타입을 자동으로 감지하여 TypeScript 열거형 또는 JavaScript const 객체를 생성합니다. 여기에는 Go의 제로 값에 해당하는 `$zero` 멤버가 포함되며 JSDoc도 완전히 보존됩니다.
 
 ```go
 type UserRole string
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -707,16 +715,16 @@ manager.loadUsers()
 
 - **JSON 태그를 사용하세요** - 필드 이름을 제어할 수 있습니다
 - **주석을 추가하세요** - JSDoc으로 변환됩니다
-- **time.Time을 사용하세요** - Date로 변환됩니다
+- **시간 표현을 선택하세요** - 기본적으로 `time.Time`은 `string`이 되며, `-time-type=Date`을 사용하면 생성된 Date 변환이 활성화됩니다
 - **Go 측에서 유효성을 검사하세요** - 프런트엔드를 신뢰하지 마세요
 - **모델을 단순하게 유지하세요** - 데이터 컨테이너로만 사용하세요
-- **선택적 필드에는 포인터를 사용하세요** - null을 허용하려면 `*string`을 사용하세요
+- **선택적 필드에는 포인터를 사용하세요** - null 허용에는 `*string`을 사용하세요
 
-### ❌ 금지 사항
+### ❌ 피해야 할 사항
 
 - **Go 구조체에 메서드를 추가하지 마세요** - 데이터로만 유지하세요
 - **내보내지 않은 필드를 사용하지 마세요** - 바인딩되지 않습니다
-- **복잡한 인터페이스를 사용하지 마세요** - 지원되지 않습니다
+- **복합 인터페이스를 사용하지 마세요** - 지원되지 않습니다
 - **JSON 태그를 빠뜨리지 마세요** - 필드 이름은 중요합니다
 - **너무 깊게 중첩하지 마세요** - 단순하게 유지하세요
 
@@ -730,13 +738,13 @@ Go 메서드를 바인딩하는 방법을 알아보세요.
 
 ---
 ◆ 서비스
-서비스로 코드를 구성하세요.
+서비스를 사용하여 코드를 구성하세요.
 
 [자세히 알아보기 →](/features/bindings/services/)
 
 ---
 ✓ 모범 사례
-바인딩 디자인 패턴을 알아보세요.
+바인딩 설계 패턴을 알아보세요.
 
 [자세히 알아보기 →](/features/bindings/best-practices/)
 
@@ -750,4 +758,4 @@ Go 메서드를 바인딩하는 방법을 알아보세요.
 
 ---
 
-**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.
+**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)를 확인하세요.

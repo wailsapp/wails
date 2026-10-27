@@ -15,9 +15,10 @@ import (
 
 type UpdateCLIOptions struct {
 	NoColour   bool   `name:"n" description:"Disable colour output"`
-	PreRelease bool   `name:"pre" description:"Update to the latest pre-release (eg beta)"`
+	PreRelease bool   `name:"pre" description:"Update to the newest build of any kind, including nightlies"`
+	Nightly    bool   `name:"nightly" description:"Update to the newest nightly pre-release"`
 	Version    string `name:"version" description:"Update to a specific version (eg v3.0.0)"`
-	Latest     bool   `name:"latest" description:"Install the latest stable release"`
+	Latest     bool   `name:"latest" description:"Install the newest release (weekly or hotfix, no nightlies)"`
 }
 
 func UpdateCLI(options *UpdateCLIOptions) error {
@@ -63,13 +64,15 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 			}
 		}
 	} else {
-		if options.PreRelease {
+		if options.Nightly {
+			desiredVersion, err = github.GetLatestNightly()
+		} else if options.PreRelease {
 			desiredVersion, err = github.GetLatestPreRelease()
 		} else {
 			desiredVersion, err = github.GetLatestStableRelease()
 			if err != nil {
 				pterm.Println("")
-				pterm.Println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
+				pterm.Println("No release found for this major version. To update to the newest build (including nightlies), run:")
 				pterm.Println("   wails3 update cli -pre")
 				return nil
 			}
@@ -86,7 +89,9 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 	if len(options.Version) > 0 {
 		fmt.Printf("    Desired Version : v%s\n", desiredVersion)
 	} else {
-		if options.PreRelease {
+		if options.Nightly {
+			fmt.Printf("     Latest Nightly : v%s\n", desiredVersion)
+		} else if options.PreRelease {
 			fmt.Printf("  Latest Prerelease : v%s\n", desiredVersion)
 		} else {
 			fmt.Printf("     Latest Release : v%s\n", desiredVersion)
@@ -161,12 +166,12 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 		return fmt.Errorf("cannot find home directory: %w", err)
 	}
 
-	cmd := exec.Command("go", "install", "github.com/wailsapp/wails/v3/cmd/wails@"+desiredVersion)
+	cmd := exec.Command("go", "install", "github.com/wailsapp/wails/v3/cmd/wails3@"+desiredVersion)
 	cmd.Dir = homeDir
-	sout, serr := cmd.CombinedOutput()
-	if err := cmd.Run(); err != nil {
+	sout, err := cmd.CombinedOutput()
+	if err != nil {
 		pterm.Println("Failed.")
-		pterm.Error.Println(string(sout) + "\n" + serr.Error())
+		pterm.Error.Println(string(sout) + "\n" + err.Error())
 		return err
 	}
 	pterm.Println("Done.")

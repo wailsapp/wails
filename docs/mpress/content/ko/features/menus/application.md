@@ -688,4 +688,4 @@ func showAbout(ctx *application.Context) {
 
 ---
 
-**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [메뉴 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)를 확인하세요.
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [메뉴 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu)를 확인하세요.

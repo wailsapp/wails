@@ -1,6 +1,6 @@
 ---
-title: "參與貢獻"
-description: "為 Wails 貢獻"
+title: "貢獻指南"
+description: "為 Wails 做出貢獻"
 slug: "contributing"
 sourcePath: "contributing/index.md"
 ---
@@ -13,7 +13,7 @@ sourcePath: "contributing/index.md"
 
 ### 1. 回報問題
 
-發現錯誤了嗎？請[建立議題](https://github.com/wailsapp/wails/issues/new)，並提供：
+發現錯誤了嗎？請[建立議題](https://github.com/wailsapp/wails/issues/new)，並附上：
 
 - 清楚的說明
 - 重現步驟
@@ -23,10 +23,10 @@ sourcePath: "contributing/index.md"
 
 ### 2. 改善文件
 
-歡迎直接提交修正文件的 PR，不必先建立議題，也不需要有失敗的程式碼測試。  
-請依照[修正文件](/contributing/documentation/)的指引，使用 M-Press 預覽並驗證變更。
+歡迎直接提交修正 PR，無須先建立議題或提供失敗的程式碼測試。  
+如需下載、在 macOS/Linux/Windows 上安裝、即時預覽及提交變更的相關說明，請參閱[使用 M-Press 撰寫文件](/contributing/documentation/)。
 
-我們隨時歡迎改善文件：
+我們隨時歡迎以下文件改善：
 
 - 修正錯字與錯誤
 - 新增範例
@@ -35,28 +35,28 @@ sourcePath: "contributing/index.md"
 
 ### 3. 提交程式碼
 
-透過提取要求貢獻程式碼：
+透過 Pull Request 貢獻程式碼：
 
 - 錯誤修正
 - 新功能
 - 效能改善
 - 測試
 
-### 4. 提出增強提案（WEP）
+### 4. 提出改進提案（WEP）
 
-新功能及公開行為的變更須採用 Wails 增強提案（WEP）流程。此流程可讓功能開發保持透明，並確保每個獲接受的提案都有實作者。請勿建立功能請求議題。
+新功能及公開行為的變更須遵循 Wails Enhancement Proposal（WEP）流程。此流程可讓功能開發保持透明，並確保每項獲接受的提案都有實作者。請勿建立功能請求議題。
 
-1. 您可以選擇先在 GitHub Discussions 的[構想](https://github.com/wailsapp/wails/discussions/categories/ideas)分類或[Discord](https://discord.gg/JDdSxwjhGf)上提出構想，以評估社群興趣。
-2. 將[`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)複製到`v3/wep/proposals/<proposal name>/proposal.md`，並填寫每個章節。
-3. 建立標題為`[WEP] <title>`的草稿提取要求，其中只能包含提案。該 PR 是討論提案的正式場所。
-4. 收集意見與支持（PR 上的留言與豎起大拇指反應）。請至少保留兩週供大家討論，並就由誰實作提案達成共識。
-5. 將 PR 標示為可供審查。維護者會做出最終決定：獲接受的提案將獲指派 WEP 編號並合併。
+1. 您可以選擇先在 GitHub Discussions 的[構想](https://github.com/wailsapp/wails/discussions/categories/ideas)分類或[Discord](https://discord.gg/JDdSxwjhGf)上提出構想，以了解大家的興趣。
+2. 將[`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)複製到`v3/wep/proposals/<proposal name>/proposal.md`，並填寫每個章節。
+3. 建立標題為`[WEP] <title>`的草稿 Pull Request，且其中只能包含提案。此 PR 是討論該提案的正式場所。
+4. 收集意見與支持（PR 上的留言及按讚回應）。請預留至少兩週進行討論，並就提案的實作者達成共識。
+5. 將 PR 標示為可供審查。維護者會做出最終決定：獲接受的提案會取得 WEP 編號並合併。
 
-完整流程記載於[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)。
+完整流程記載於[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)。
 
 ## 開始使用
 
-### 建立分支版本並複製儲存庫
+### 建立分支並複製儲存庫
 
 ```bash
 # Fork the repository on GitHub
@@ -81,9 +81,9 @@ go build -o ../wails3 ./cmd/wails3
 
 ### 執行測試
 
-測試是變更的一部分，而不是最後才進行的冒煙測試。請將單元測試放在其所測試的程式碼旁；若要用多種輸入或邊界案例檢查同一項行為，應優先採用表格驅動測試。請為每個案例命名，讓失敗訊息能說明相應情境。
+測試是變更的一部分，而不是最後才執行的冒煙測試。請將單元測試放在其所測試的程式碼旁；當需要以多個輸入或邊界情況檢查同一項行為時，應優先採用表格驅動測試。請為每個測試案例命名，讓失敗訊息能說明其情境。
 
-新增及變更的邏輯應獲得完整涵蓋。PR 新增或變更的程式碼，其 Go 陳述式涵蓋率應以100% 為目標；請勿以整個儲存庫的涵蓋率百分比取代對該變更的測試。涵蓋缺口有時可能合理，例如僅在特定作業系統出現的錯誤路徑，或沒有實體硬體便難以重現的情況；但請在 PR 說明中解釋此缺口，以及無法合理測試的原因。
+新增及變更的邏輯應獲得完整涵蓋。您的 PR 所新增或變更的程式碼，Go 陳述式覆蓋率應以100% 為目標；請勿以整個儲存庫的覆蓋率百分比取代對該變更的測試。覆蓋缺口可能有合理原因，例如僅限特定作業系統的錯誤路徑，或不使用實體硬體就難以重現的情況；但請在 PR 說明中解釋該缺口，以及無法以合理方式測試的原因。
 
 ```bash
 # Run all v3 tests
@@ -99,7 +99,7 @@ go tool cover -func=coverage.out
 cd ..
 ```
 
-如需整合測試套件、競態偵測，以及與完整 CI 等效的命令，請參閱[測試與持續整合](/contributing/testing-ci/)。
+如需整合測試套件、競爭偵測及完整的 CI 等效命令，請參閱[測試與持續整合](/contributing/testing-ci/)。
 
 ## 進行變更
 
@@ -116,11 +116,11 @@ git checkout -b feature/my-feature
 
 ### 進行變更
 
-1. 依照 Go 慣例<strong>撰寫程式碼</strong>
-2. 為新功能<strong>新增測試</strong>
-3. 視需要<strong>更新文件</strong>
-4. **執行測試**，確保沒有任何功能損壞
-5. 以清楚的訊息<strong>提交變更</strong>
+1. 遵循 Go 慣例**撰寫程式碼**
+2. 為新功能**新增測試**
+3. 視需要**更新文件**
+4. **執行測試**，確保沒有破壞任何功能
+5. 以清楚的訊息**提交變更**
 
 ### 提交準則
 
@@ -139,7 +139,7 @@ git commit -m "docs: improve bindings documentation"
 # - chore: Maintenance
 ```
 
-### 提交提取要求
+### 提交 Pull Request
 
 ```bash
 # Push to your fork
@@ -150,7 +150,7 @@ git push origin feature/my-feature
 # Reference related issues
 ```
 
-## 提取要求準則
+## Pull Request 準則
 
 ### 良好的 PR 說明
 
@@ -175,10 +175,10 @@ Fixes #123
 ### PR 檢查清單
 
 - [ ] 程式碼遵循 Go 慣例
-- [ ] 已新增／更新測試
+- [ ] 已新增或更新測試
 - [ ] 已更新文件
-- [ ] 所有測試均通過
-- [ ] 沒有破壞性變更（或已加以記載）
+- [ ] 所有測試均已通過
+- [ ] 沒有破壞性變更（或已記載）
 - [ ] 提交訊息清楚明確
 
 ## 程式碼準則
@@ -237,21 +237,14 @@ func TestProcessData(t *testing.T) {
 
 ### 撰寫文件
 
-文件使用 M-Press。請編輯 `docs/mpress/content/` 下的 `.md` 檔案，然後從儲存庫根目錄預覽並驗證：
+完整的文件工作流程請參閱[使用 M-Press 撰寫文件](/contributing/documentation/)。其中涵蓋固定版本、可執行檔與 Go 的安裝選項、可編輯的原始檔、導覽、翻譯檢查，以及針對`master`提交 PR。
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+僅涉及文件的工作不需要建置 Wails 應用程式，也不需要平台相依項目。M-Press 可在儲存庫根目錄使用`mpress dev`預覽現有網站。
 
 ### 文件風格
 
-- 使用國際英語拼寫
-- 從問題著手
+- 使用國際英語拼字
+- 先說明問題
 - 提供可運作的範例
 - 納入疑難排解資訊
 - 交叉參照相關內容
@@ -270,11 +263,11 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ## 貢獻者表揚
 
-我們會在以下項目中列出貢獻者：
+貢獻者會在以下位置獲得表揚：
 
 - 版本資訊
 - 貢獻者名單
-- GitHub 洞察報告
+- GitHub Insights
 
 感謝您為 Wails 做出貢獻！🎉
 
@@ -284,7 +277,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ◆ GitHub 儲存庫
 造訪 Wails 儲存庫。
 
-[在 GitHub 上檢視 →](https://github.com/wailsapp/wails)
+[在 GitHub 上查看 →](https://github.com/wailsapp/wails)
 
 ---
 ◆ Discord 社群
@@ -293,9 +286,9 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 [加入 Discord →](https://discord.gg/JDdSxwjhGf)
 
 ---
-📖 文件
-閱讀文件。
+📖 說明文件
+閱讀說明文件。
 
-[瀏覽文件 →](/quick-start/why-wails/)
+[瀏覽說明文件 →](/quick-start/why-wails/)
 
 @end

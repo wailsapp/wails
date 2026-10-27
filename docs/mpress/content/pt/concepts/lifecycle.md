@@ -816,4 +816,4 @@ O erro será registrado, e o aplicativo não será iniciado.
 
 ---
 
-**Tem dúvidas sobre o ciclo de vida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Tem dúvidas sobre o ciclo de vida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

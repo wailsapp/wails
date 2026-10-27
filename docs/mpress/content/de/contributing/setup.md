@@ -1,6 +1,6 @@
 ---
 title: "Entwicklungsumgebung einrichten"
-description: "Entwicklungsumgebung für die Entwicklung von Wails v3 einrichten"
+description: "Richten Sie Ihre Entwicklungsumgebung für die Entwicklung von Wails v3 ein"
 slug: "contributing/setup"
 sourcePath: "contributing/setup.md"
 ---
@@ -9,11 +9,11 @@ sourcePath: "contributing/setup.md"
 
 Diese Anleitung führt Sie durch die Einrichtung einer vollständigen Entwicklungsumgebung für die Arbeit an Wails v3.
 
-## Erforderliche Werkzeuge
+## Erforderliche Tools
 
 ### Go-Entwicklung
 
-1. **Installieren Sie Go 1.25 oder höher:**
+1. **Installieren Sie Go 1.26 oder neuer:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -28,7 +28,7 @@ Diese Anleitung führt Sie durch die Einrichtung einer vollständigen Entwicklun
   ```
 
 
-3. **Installieren Sie nützliche Go-Werkzeuge:**
+3. **Installieren Sie nützliche Go-Tools:**
   ```bash
   go install golang.org/x/tools/cmd/goimports@latest
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -141,7 +141,7 @@ Fügen Sie das Wails-Verzeichnis über die Systemeigenschaften zur Umgebungsvari
 1. **Installieren Sie VS Code:** [Herunterladen](https://code.visualstudio.com/)
 
 2. **Installieren Sie Erweiterungen:**
-  - Go (vom Go Team bei Google)
+  - Go (vom Go-Team bei Google)
   - ESLint
   - Prettier
   - MDX (für die Dokumentation)
@@ -203,7 +203,7 @@ go test ./...
 cd ..
 ```
 
-### Tests für bestimmte Pakete
+### Tests für ein bestimmtes Paket
 
 ```bash
 cd v3
@@ -228,22 +228,9 @@ go test ./... -race
 
 ## Mit der Dokumentation arbeiten
 
-Die Wails-v3-Dokumentation ist in M-Press verfasst. Die englischen Quelldateien befinden sich in  
-`docs/mpress/content/`; die Übersetzungen befinden sich in Sprachverzeichnissen wie  
-`fr/` und `id/`.
+Mitwirkende an der Dokumentation können M-Press verwenden, ohne Wails CLI oder die Abhängigkeiten für Desktop-Builds zu installieren. Unter [Dokumentation mit M-Press verfassen](/contributing/documentation/) finden Sie die Downloads der festgelegten Programmversion, die Installation, die Live-Vorschau, die Validierung und den PR-Workflow für Release-Branches.
 
-Zeigen Sie Dokumentationsänderungen in der Vorschau an und validieren Sie sie im Stammverzeichnis des Repositorys:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-Die Produktionswebsite ist statisch. Für die lokale Arbeit an der Dokumentation sind Node.js, ein Übersetzungsanbieter und Cloudflare-Anmeldedaten nicht erforderlich.
+Die englischen Markdown-Dateien befinden sich in `docs/mpress/content/`; die Übersetzungen befinden sich in den Sprachverzeichnissen. Vom Stammverzeichnis des Repositorys aus stellt `mpress dev` die Vorschau unter `http://127.0.0.1:3000` bereit. Beenden Sie sie mit Ctrl+C, bevor Sie die Validierungsbefehle der Anleitung ausführen.
 
 ## Debugging
 
@@ -279,7 +266,7 @@ dlv debug ./cmd/wails3 -- dev
 
 ### Plattformcode debuggen
 
-Für plattformspezifisches Debugging sind plattformspezifische Werkzeuge erforderlich:
+Für das plattformspezifische Debugging sind plattformspezifische Tools erforderlich:
 
 - **macOS:** Xcode Instruments
 - **Windows:** Visual Studio Debugger
@@ -289,11 +276,11 @@ Für plattformspezifisches Debugging sind plattformspezifische Werkzeuge erforde
 
 ### „command not found: wails3“
 
-Fügen Sie das Wails-Verzeichnis zu Ihrem PATH hinzu oder verwenden Sie `./wails3` aus dem Projektstammverzeichnis.
+Fügen Sie das Wails-Verzeichnis zu Ihrem PATH hinzu oder verwenden Sie `./wails3` vom Stammverzeichnis des Projekts aus.
 
 ### „webkitgtk-6.0 not found“ oder „webkit2gtk not found“ (Linux)
 
-Installieren Sie die Entwicklungspakete für den Stack, für den Sie die Anwendung erstellen:
+Installieren Sie die Entwicklungspakete für den Stack, für den Sie den Build erstellen:
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -303,7 +290,7 @@ sudo apt install libwebkitgtk-6.0-dev
 sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-### Build schlägt aufgrund von Go-Modulfehlern fehl
+### Build schlägt wegen Go-Modulfehlern fehl
 
 ```bash
 cd v3
@@ -313,10 +300,10 @@ go mod download
 
 ### „CGO_ENABLED“-Fehler unter Windows
 
-Stellen Sie sicher, dass ein C-Compiler (MinGW-w64 über MSYS2) in Ihrem PATH vorhanden ist.
+Stellen Sie sicher, dass sich ein C-Compiler (MinGW-w64 über MSYS2) in Ihrem PATH befindet.
 
 ## Nächste Schritte
 
-- Lesen Sie die [Programmierrichtlinien](/contributing/standards/).
-- Sehen Sie sich die [technische Dokumentation](/contributing/) an.
-- Suchen Sie nach einem Issue, an dem Sie arbeiten können: [Issues für den Einstieg](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Lesen Sie die [Codierungsstandards](/contributing/standards/)
+- Sehen Sie sich die [technische Dokumentation](/contributing/) an
+- Suchen Sie eine Aufgabe, an der Sie arbeiten können: [Für den Einstieg geeignete Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)

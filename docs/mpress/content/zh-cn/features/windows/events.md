@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## 窗口事件
 
-Wails 通过统一的 API 分发窗口生命周期和状态变更事件：`OnWindowEvent`用于被动监听器，`RegisterHook`用于可取消默认操作的钩子。
+Wails 通过统一的 API 分派窗口生命周期和状态变更事件：使用`OnWindowEvent`注册被动监听器，使用`RegisterHook`注册可取消默认操作的钩子。
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -23,9 +23,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-这两种调用都会返回一个`unsubscribe func()`，你可以调用它来移除处理程序。
+这两个调用都会返回一个`unsubscribe func()`，调用它即可移除处理程序。
 
-跨平台事件位于`events.Common.*`中。平台特定事件位于`events.Mac.*`、`events.Windows.*`和`events.Linux.*`中。完整列表生成在`v3/pkg/events/events.go`中。
+跨平台事件位于`events.Common.*`中。平台特有事件分别位于`events.Mac.*`、`events.Windows.*`和`events.Linux.*`中。完整列表生成在`v3/pkg/events/events.go`中。
 
 ## 生命周期事件
 
@@ -49,13 +49,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-该回调接收`application.Window`（一个接口）。每个窗口的`OnCreate`回调都会在窗口运行时初始化完成后调用一次。
+回调接收`application.Window`（一个接口）。注册期间，每个窗口的`OnCreate`回调都会在窗口运行前调用一次。可用它配置窗口并注册处理程序。调用 JavaScript 或发送依赖前端运行时的事件前，请等待`events.Common.WindowRuntimeReady`。
 
 ### WindowClosing
 
-当用户尝试关闭窗口时触发（单击 X、按 ⌘W、Alt+F4 等）。
+当用户尝试关闭窗口时触发（例如单击 X、按 ⌘W 或 Alt+F4）。
 
-使用<strong>钩子</strong>（`RegisterHook`）——只有钩子才能取消关闭操作。监听器只能观察事件，无法阻止关闭。
+请使用**钩子**（`RegisterHook`）——只有钩子可以取消关闭操作。监听器只能观察事件，无法阻止关闭。
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -68,15 +68,15 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **重要：**
 
-- `WindowClosing`在用户发起关闭尝试时分发。
-- `RegisterHook`回调可以调用`e.Cancel()`以保持窗口打开。
-- `WindowClosing`的`OnWindowEvent`回调是观察者——它们会触发，但无法取消操作。
+- 用户发起关闭尝试时会分派`WindowClosing`。
+- `RegisterHook`回调可以调用`e.Cancel()`，使窗口保持打开。
+- 为`WindowClosing`注册的`OnWindowEvent`回调是观察者——它们会触发，但无法取消操作。
 
 <strong>以编程方式关闭：</strong>调用`window.Close()`。不存在`window.Destroy()`。
 
 ### WindowRuntimeReady
 
-窗口内运行时完成初始化后触发——此时可以安全地调用窗口的 JS 上下文：
+窗口内运行时完成初始化后触发，此时可以安全地调用窗口的 JS 上下文：
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-使用`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()`以编程方式进入或退出全屏——不存在`SetFullscreen(bool)`。使用`window.IsFullscreen() bool`查询状态。
+使用`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()`以编程方式进入或退出全屏模式——不存在`SetFullscreen(bool)`。使用`window.IsFullscreen() bool`查询状态。
 
 ## 位置和大小事件
 
@@ -209,7 +209,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize`和`WindowDidMove`事件本身不携带坐标——请在回调中通过`window.Size()` / `window.Position()`查询窗口。
+`WindowDidResize`和`WindowDidMove`事件本身不携带坐标，请在回调中通过`window.Size()` / `window.Position()`查询窗口。
 
 **示例：响应式布局：**
 
@@ -231,7 +231,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## 完整示例
 
-一个具有完整事件处理功能、可用于生产环境的窗口：
+一个具备完整事件处理能力、可用于生产环境的窗口：
 
 ```go
 package main
@@ -377,7 +377,7 @@ func (mw *ManagedWindow) SaveState() {
 
 ### 跨窗口事件
 
-使用应用程序事件总线在多个窗口之间进行协调：
+使用应用程序事件总线协调多个窗口：
 
 ```go
 // In main window
@@ -420,30 +420,30 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 应该这样做
 
 - **使用钩子取消操作**——只有`RegisterHook`回调可以调用`e.Cancel()`。
 - **关闭时保存状态**——下次启动时恢复窗口的位置和大小。
-- **对高频事件进行防抖**——`WindowDidResize`和`WindowDidMove`会快速连续触发。
+- **对频繁事件进行防抖**——`WindowDidResize`和`WindowDidMove`会快速连续触发。
 - **处理焦点变化**——相应地更新 UI。
-- **通过事件进行协调**——使用`app.Event.Emit`进行跨窗口消息传递。
-- <strong>取消订阅</strong>不再需要的处理程序——`OnWindowEvent`和`RegisterHook`都会返回一个用于取消订阅的`func()`。
+- **通过事件进行协调**——使用`app.Event.Emit`实现跨窗口消息传递。
+- **取消订阅**不再需要的处理程序——`OnWindowEvent`和`RegisterHook`都会返回用于取消订阅的`func()`。
 
-### ❌ 不应该做
+### ❌ 不要这样做
 
-- **不要阻塞事件处理程序**——应让它们快速完成。
-- <strong>不要尝试从`OnWindowEvent`</strong>中取消操作——请使用`RegisterHook`。
-- **不要使用`window.Destroy()`**——它不存在；请使用`window.Close()`。
-- **不要在每次事件触发时都保存**——应先进行防抖。
-- **不要假定事件中包含坐标**——请调用`window.Position()` / `window.Size()`。
+- **不要阻塞事件处理程序**——确保它们快速完成。
+- **不要尝试从`OnWindowEvent`取消操作**——请使用`RegisterHook`。
+- **不要使用`window.Destroy()`**——它并不存在；请使用`window.Close()`。
+- **不要在每次事件触发时都保存**——请先进行防抖。
+- **不要假设事件中包含坐标**——请调用`window.Position()` / `window.Size()`。
 
 ## 故障排除
 
-### WindowClosing 钩子无法阻止关闭
+### WindowClosing 钩子无法阻止窗口关闭
 
-<strong>原因：</strong>你使用了`OnWindowEvent`，而不是`RegisterHook`。
+<strong>原因：</strong>使用了`OnWindowEvent`，而不是`RegisterHook`。
 
-<strong>解决方案：</strong>只有`RegisterHook`回调可以调用`e.Cancel()`。`OnWindowEvent`回调只能观察，无法取消操作。
+<strong>解决方案：</strong>只有`RegisterHook`回调可以调用`e.Cancel()`。`OnWindowEvent`回调只能观察事件，无法取消操作。
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -470,9 +470,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### 内存泄漏
 
-<strong>原因：</strong>短生命周期状态持有了长生命周期的处理程序。
+<strong>原因：</strong>短期状态持有长期存在的处理程序。
 
-<strong>解决方案：</strong>保存`OnWindowEvent`/`RegisterHook`返回的取消订阅`func()`，并在清理时调用它。
+<strong>解决方案：</strong>保留`OnWindowEvent`/`RegisterHook`返回的取消订阅`func()`，并在清理时调用它。
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -484,12 +484,12 @@ unsub()
 
 **窗口基础** - 了解窗口管理的基础知识 [了解更多 →](/features/windows/basics/)
 
-**多窗口** - 了解多窗口应用的设计模式 [了解更多 →](/features/windows/multiple/)
+**多窗口** - 多窗口应用程序的设计模式 [了解更多 →](/features/windows/multiple/)
 
 **事件系统** - 深入了解事件系统 [了解更多 →](/features/events/system/)
 
-**应用生命周期** - 了解应用生命周期 [了解更多 →](/concepts/lifecycle/)
+**应用程序生命周期** - 了解应用程序生命周期 [了解更多 →](/concepts/lifecycle/)
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

@@ -80,4 +80,4 @@ Les surfaces réduites persistantes qui se rouvrent au survol sont délibéréme
 
 @end
 
-Consultez l’[exemple notch-notification](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification) qui présente un moniteur système compact dont l’état JavaScript en temps réel persiste au fil des cycles répétés d’affichage et de masquage des notifications.
+Consultez l’[exemple notch-notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification) qui présente un moniteur système compact dont l’état JavaScript en temps réel persiste au fil des cycles répétés d’affichage et de masquage des notifications.

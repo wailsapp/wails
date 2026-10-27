@@ -2,7 +2,7 @@ name: MSIX packaging v3
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, 'releases/**']
     paths:
       - 'v3/**'
       - '.github/workflows/msix-smoke-v3.yml'
