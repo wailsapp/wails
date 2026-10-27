@@ -24,6 +24,10 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Always advertise the tray Menu property so trays created after Run are not dropped on Linux in [PR](https://github.com/wailsapp/wails/pull/6284) by @AlbinoGeek
+- Hold main-thread work submitted before Run until the application starts in [PR](https://github.com/wailsapp/wails/pull/6287) by @AlbinoGeek
+- Use the correct asset API URL when downloading GitHub updater release assets in [PR](https://github.com/wailsapp/wails/pull/6304) by @gavidroselj
+- Fix screen bounds and positions on mixed-DPI macOS and Linux setups in [PR](https://github.com/wailsapp/wails/pull/6346) by @julianstorer
 - Preserve request bodies on Windows when WebView2 omits the Content-Length header in [PR](https://github.com/wailsapp/wails/pull/6326) by @strraaa
 - Fix data race in event hook emission by snapshotting hooks under lock in [PR](https://github.com/wailsapp/wails/pull/6276) by @DevLumuz
 - Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
