@@ -12,7 +12,7 @@ Cette page est peut-être obsolète pour Wails v3.
 
 <!-- TODO: Update this link -->
 
-Cette page répertorie les modèles pris en charge par la communauté. Pour créer votre propre modèle, consultez le guide sur les [modèles](https://wails.io/docs/guides/templates).
+Cette page répertorie les modèles pris en charge par la communauté. Pour créer votre propre modèle, consultez le guide sur les [modèles](https://v2.wails.io/docs/guides/templates).
 
 @note{type="tip" title="Comment proposer un modèle"}
 Vous pouvez cliquer sur `Edit this page` en bas de la page pour ajouter vos modèles.

@@ -493,7 +493,7 @@ func TestClearUnreleasedChangelog(t *testing.T) {
 	if !strings.Contains(string(content), "## Added") {
 		t.Error("Cleared file doesn't contain Added section")
 	}
-	if !strings.Contains(string(content), "### Example Entries:") {
-		t.Error("Cleared file doesn't contain example section")
+	if !strings.Contains(string(content), "AUTO-GENERATED FILE: do not edit") {
+		t.Error("Cleared file does not identify generated changelog ownership")
 	}
 }

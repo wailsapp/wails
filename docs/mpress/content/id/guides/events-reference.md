@@ -1,33 +1,33 @@
 ---
-title: "Panduan Peristiwa"
-description: "Panduan praktis menggunakan peristiwa di Wails v3 untuk komunikasi aplikasi dan pengelolaan siklus hidup"
+title: "Panduan Event"
+description: "Panduan praktis menggunakan event di Wails v3 untuk komunikasi aplikasi dan pengelolaan siklus hidup"
 slug: "guides/events-reference"
 sourcePath: "guides/events-reference.md"
 ---
 
 **CATATAN: Panduan ini masih dalam proses penyusunan**
 
-## Panduan Peristiwa
+## Panduan Event
 
-Peristiwa merupakan inti komunikasi dalam aplikasi Wails. Peristiwa memungkinkan berbagai bagian aplikasi berkomunikasi satu sama lain tanpa saling terikat erat. Panduan ini akan menjelaskan semua yang perlu Anda ketahui agar dapat menggunakan peristiwa secara efektif dalam aplikasi Wails.
+Event merupakan inti komunikasi dalam aplikasi Wails. Event memungkinkan berbagai bagian aplikasi Anda berkomunikasi tanpa saling terikat erat. Panduan ini akan menjelaskan semua hal yang perlu Anda ketahui untuk menggunakan event secara efektif dalam aplikasi Wails.
 
-## Memahami Peristiwa Wails
+## Memahami Event Wails
 
-Anggap peristiwa sebagai pesan yang disiarkan ke seluruh aplikasi. Setiap bagian aplikasi dapat mendengarkan pesan ini dan meresponsnya. Hal ini sangat berguna untuk:
+Anggap event sebagai pesan yang disiarkan ke seluruh aplikasi Anda. Setiap bagian aplikasi dapat mendengarkan pesan ini dan meresponsnya sesuai kebutuhan. Hal ini sangat berguna untuk:
 
 - **Merespons perubahan jendela**: Mengetahui saat jendela diminimalkan, dimaksimalkan, atau dipindahkan
-- **Menangani peristiwa sistem**: Merespons perubahan tema atau peristiwa daya
-- **Logika aplikasi khusus**: Membuat peristiwa sendiri untuk fitur seperti pembaruan data atau tindakan pengguna
-- **Komunikasi antar-komponen**: Memungkinkan berbagai bagian aplikasi berkomunikasi tanpa dependensi langsung
+- **Menangani event sistem**: Merespons perubahan tema atau event daya
+- **Logika aplikasi khusus**: Membuat event sendiri untuk fitur seperti pembaruan data atau tindakan pengguna
+- **Komunikasi lintas komponen**: Memungkinkan berbagai bagian aplikasi berkomunikasi tanpa dependensi langsung
 
-## Konvensi Penamaan Peristiwa
+## Konvensi Penamaan Event
 
-Semua peristiwa Wails mengikuti pola namespace untuk menunjukkan asalnya dengan jelas:
+Semua event Wails mengikuti pola namespace agar asalnya ditunjukkan dengan jelas:
 
-- `common:` - Peristiwa lintas platform yang berfungsi di Windows, macOS, dan Linux
-- `windows:` - Peristiwa khusus Windows
-- `mac:` - Peristiwa khusus macOS\
-- `linux:` - Peristiwa khusus Linux
+- `common:` - Event lintas platform yang berfungsi di Windows, macOS, dan Linux
+- `windows:` - Event khusus Windows
+- `mac:` - Event khusus macOS\
+- `linux:` - Event khusus Linux
 
 Contoh:
 
@@ -35,11 +35,11 @@ Contoh:
 - `windows:APMSuspend` - Sistem akan ditangguhkan (khusus Windows)
 - `mac:ApplicationDidBecomeActive` - Aplikasi menjadi aktif (khusus macOS)
 
-## Memulai dengan Peristiwa
+## Memulai Penggunaan Event
 
-### Mendengarkan Peristiwa (Frontend)
+### Mendengarkan Event (Frontend)
 
-Kasus penggunaan yang paling umum adalah mendengarkan peristiwa dalam kode frontend:
+Kasus penggunaan yang paling umum adalah mendengarkan event dalam kode frontend Anda:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -63,9 +63,9 @@ Events.On('my-app:data-updated', (event) => {
 });
 ```
 
-### Memancarkan Peristiwa (Backend)
+### Memancarkan Event (Backend)
 
-Dari kode Go, Anda dapat memancarkan peristiwa yang dapat didengarkan oleh frontend:
+Dari kode Go, Anda dapat memancarkan event yang dapat didengarkan oleh frontend:
 
 ```go
 package main
@@ -89,9 +89,9 @@ func (s *Service) UpdateData() {
 }
 ```
 
-### Memancarkan Peristiwa (Frontend)
+### Memancarkan Event (Frontend)
 
-Meskipun tidak terlalu umum digunakan, Anda juga dapat memancarkan peristiwa dari frontend yang dapat didengarkan oleh kode Go:
+Meskipun tidak terlalu umum digunakan, Anda juga dapat memancarkan event dari frontend yang dapat didengarkan oleh kode Go:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -103,11 +103,11 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-Jika menggunakan TypeScript di frontend dan [mendaftarkan peristiwa bertipe](#peristiwa-bertipe-dengan-keamanan-tipe) dalam kode Go, Anda akan memperoleh pelengkapan otomatis/pemeriksaan nama peristiwa serta pemeriksaan tipe data.
+Jika Anda menggunakan TypeScript di frontend dan [mendaftarkan event bertipe](#event-bertipe-dengan-keamanan-tipe) dalam kode Go, Anda akan mendapatkan pelengkapan otomatis/pemeriksaan nama event serta pemeriksaan tipe data.
 
-### Menghapus Listener Peristiwa
+### Menghapus Listener Event
 
-Selalu bersihkan listener peristiwa saat tidak lagi diperlukan:
+Selalu bersihkan listener event saat tidak lagi diperlukan:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -131,7 +131,7 @@ Events.Off('common:WindowFocus');
 
 ## Kasus Penggunaan Umum
 
-### 1. Menjeda/Melanjutkan saat Fokus Jendela Berubah
+### 1. Menjeda/Melanjutkan Berdasarkan Fokus Jendela
 
 Banyak aplikasi perlu menjeda aktivitas tertentu saat jendela kehilangan fokus:
 
@@ -153,7 +153,7 @@ Events.On('common:WindowFocus', () => {
 
 ### 2. Merespons Perubahan Tema
 
-Pastikan aplikasi selalu selaras dengan tema sistem:
+Selaraskan aplikasi Anda dengan tema sistem:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -173,7 +173,7 @@ Events.On('common:ThemeChanged', (event) => {
 
 ### 3. Menangani File yang Dilepas
 
-Buat aplikasi agar menerima file yang diseret dan dilepas:
+Buat aplikasi Anda menerima file yang diseret:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -217,7 +217,7 @@ Events.On('common:WindowRestore', () => {
 
 ### 5. Fitur Khusus Platform
 
-Tangani peristiwa khusus platform saat diperlukan:
+Tangani event khusus platform saat diperlukan:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -240,9 +240,9 @@ Events.On('mac:ApplicationWillTerminate', () => {
 });
 ```
 
-## Membuat Peristiwa Khusus
+## Membuat Event Khusus
 
-Anda dapat membuat peristiwa sendiri untuk kebutuhan khusus aplikasi.
+Anda dapat membuat event sendiri untuk kebutuhan khusus aplikasi.
 
 ### Backend (Go)
 
@@ -295,13 +295,13 @@ Events.On('monitor:stats-updated', (event) => {
 });
 ```
 
-## Peristiwa Bertipe dengan Keamanan Tipe
+## Event Bertipe dengan Keamanan Tipe
 
-Wails v3 mendukung peristiwa bertipe dengan keamanan tipe TypeScript penuh melalui pendaftaran peristiwa dan pembuatan binding otomatis.
+Wails v3 mendukung event bertipe dengan keamanan tipe TypeScript penuh melalui pendaftaran event dan pembuatan binding otomatis.
 
-### Mendaftarkan Peristiwa Khusus
+### Mendaftarkan Event Khusus
 
-Panggil `application.RegisterEvent` pada saat inisialisasi untuk mendaftarkan nama peristiwa khusus beserta tipe datanya:
+Panggil `application.RegisterEvent` saat inisialisasi untuk mendaftarkan nama event khusus beserta tipe datanya:
 
 ```go
 package main
@@ -330,43 +330,43 @@ func init() {
 ```
 
 @note{type="caution"}
-`RegisterEvent` dimaksudkan untuk dipanggil pada saat inisialisasi dan akan mengalami panic jika:
+`RegisterEvent` dimaksudkan untuk dipanggil saat inisialisasi dan akan mengalami panic jika:
 
 - Argumen tidak valid
-- Nama peristiwa yang sama didaftarkan dua kali dengan tipe data yang berbeda
+- Nama event yang sama didaftarkan dua kali dengan tipe data berbeda
 
 @end
 
 @note{type="info"}
-Peristiwa yang sama aman untuk didaftarkan beberapa kali selama tipe datanya selalu sama. Hal ini dapat berguna untuk memastikan suatu peristiwa terdaftar ketika salah satu dari beberapa paket dimuat.
+Event yang sama aman untuk didaftarkan beberapa kali selama tipe datanya selalu sama. Hal ini dapat berguna untuk memastikan event telah terdaftar saat salah satu dari beberapa package dimuat.
 
 @end
 
-### Manfaat Pendaftaran Peristiwa
+### Manfaat Pendaftaran Event
 
 Setelah didaftarkan, tipe argumen data yang diteruskan ke `Event.Emit` akan diperiksa terhadap tipe yang ditentukan. Jika tidak cocok:
 
-- Kesalahan dipancarkan dan dicatat dalam log (atau diteruskan ke handler kesalahan yang terdaftar)
-- Peristiwa yang bermasalah tidak akan diteruskan
-- Hal ini memastikan bahwa bidang data pada peristiwa terdaftar selalu dapat ditetapkan ke tipe yang dideklarasikan
+- Error dipancarkan dan dicatat dalam log (atau diteruskan ke handler error yang terdaftar)
+- Event yang bermasalah tidak akan diteruskan
+- Hal ini memastikan field data pada event terdaftar selalu dapat ditetapkan ke tipe yang dideklarasikan
 
 ### Mode Ketat
 
-Gunakan tag build `strictevents` untuk mengaktifkan peringatan bagi event yang tidak terdaftar selama pengembangan:
+Gunakan build tag `strictevents` untuk mengaktifkan peringatan bagi event yang tidak terdaftar selama pengembangan:
 
 ```bash
 go build -tags strictevents
 ```
 
-Saat mode ketat diaktifkan, runtime mengeluarkan paling banyak satu peringatan untuk setiap nama event yang tidak terdaftar agar log tidak dipenuhi pesan berulang.
+Saat mode ketat diaktifkan, runtime memancarkan maksimal satu peringatan untuk setiap nama event yang tidak terdaftar agar log tidak dibanjiri.
 
 ### Pembuatan Binding TypeScript
 
-Generator binding menghasilkan definisi TypeScript dan kode penghubung untuk mendukung event bertipe secara transparan di frontend.
+Generator binding menghasilkan definisi TypeScript dan kode penghubung untuk menyediakan dukungan event bertipe secara transparan di frontend.
 
-#### 1. Siapkan Plugin Vite
+#### 1. Menyiapkan Plugin Vite
 
-Di `vite.config.ts` Anda:
+Dalam `vite.config.ts` Anda:
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -377,7 +377,7 @@ export default defineConfig({
 })
 ```
 
-#### 2. Buat Binding
+#### 2. Membuat Binding
 
 Jalankan generator binding:
 
@@ -385,20 +385,20 @@ Jalankan generator binding:
 wails3 generate bindings
 ```
 
-Tindakan ini membuat file TypeScript di direktori frontend Anda yang berisi pembuat event bertipe dan antarmuka data.
+Tindakan ini membuat file TypeScript dalam direktori frontend Anda yang berisi definisi data event bertipe, serta modul `bindings/events` yang mengekspor satu konstanta untuk setiap nama event terdaftar. Konstanta tersebut merupakan konstanta waktu kompilasi yang dapat ditemukan oleh generator (misalnya, `user:login` menjadi `UserLogin`).
 
-#### 3. Gunakan Event Bertipe di Frontend
+#### 3. Menggunakan Event Bertipe di Frontend
 
 ```typescript
 import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -419,7 +419,7 @@ Event bertipe menyediakan:
 
 - **Pelengkapan otomatis** untuk nama event
 - **Pemeriksaan tipe** untuk data event
-- **Error saat kompilasi** untuk tipe data yang tidak cocok
+- **Error waktu kompilasi** untuk tipe data yang tidak cocok
 - Dokumentasi **IntelliSense**
 
 ## Referensi Event
@@ -430,66 +430,66 @@ Event berikut berfungsi di semua platform:
 
 | Event | Deskripsi | Waktu Penggunaan |
 | --- | --- | --- |
-| `common:ApplicationStarted` | Aplikasi telah dimulai sepenuhnya | Inisialisasi aplikasi Anda dan muat status yang tersimpan |
+| `common:ApplicationStarted` | Aplikasi telah sepenuhnya dimulai | Inisialisasi aplikasi, muat status tersimpan |
 | `common:WindowRuntimeReady` | Runtime Wails siap | Mulai lakukan panggilan API Wails |
 | `common:ThemeChanged` | Tema sistem berubah | Perbarui tampilan aplikasi |
-| `common:SystemWillSleep` | Sistem akan segera ditangguhkan | Tulis status tertunda dan tutup soket |
-| `common:SystemDidWake` | Sistem dilanjutkan setelah ditangguhkan | Hubungkan kembali dan segarkan data usang |
-| `common:WindowFocus` | Jendela mendapat fokus | Lanjutkan aktivitas dan segarkan data |
-| `common:WindowLostFocus` | Jendela kehilangan fokus | Jeda aktivitas dan simpan status |
-| `common:WindowMinimise` | Jendela diminimalkan | Jeda rendering dan kurangi penggunaan sumber daya |
+| `common:SystemWillSleep` | Sistem akan segera ditangguhkan | Simpan status, tutup soket |
+| `common:SystemDidWake` | Sistem dilanjutkan setelah penangguhan | Hubungkan kembali, segarkan data usang |
+| `common:WindowFocus` | Jendela mendapatkan fokus | Lanjutkan aktivitas, segarkan data |
+| `common:WindowLostFocus` | Jendela kehilangan fokus | Jeda aktivitas, simpan status |
+| `common:WindowMinimise` | Jendela diminimalkan | Jeda rendering, kurangi penggunaan sumber daya |
 | `common:WindowMaximise` | Jendela dimaksimalkan | Sesuaikan tata letak untuk layar penuh |
-| `common:WindowRestore` | Jendela dipulihkan dari keadaan diminimalkan atau dimaksimalkan | Kembalikan ke tata letak normal |
-| `common:WindowClosing` | Jendela akan segera ditutup | Simpan data dan bersihkan sumber daya |
+| `common:WindowRestore` | Jendela dipulihkan dari keadaan diminimalkan/dimaksimalkan | Kembalikan ke tata letak normal |
+| `common:WindowClosing` | Jendela akan segera ditutup | Simpan data, bersihkan sumber daya |
 | `common:WindowFilesDropped` | File dijatuhkan ke jendela | Tangani impor file |
-| `common:WindowDidResize` | Ukuran jendela diubah | Sesuaikan tata letak dan render ulang bagan |
+| `common:WindowDidResize` | Ukuran jendela diubah | Sesuaikan tata letak, render ulang diagram |
 | `common:WindowDidMove` | Jendela dipindahkan | Perbarui fitur yang bergantung pada posisi |
 
-### Event Khusus Platform
+### Peristiwa Khusus Platform
 
-#### Event Windows
+#### Peristiwa Windows
 
 Peristiwa utama untuk aplikasi Windows:
 
 | Peristiwa | Deskripsi | Kasus Penggunaan |
 | --- | --- | --- |
 | `windows:SystemThemeChanged` | Tema Windows berubah | Perbarui warna aplikasi |
-| `windows:APMSuspend` | Sistem memasuki mode tidur | Simpan status, jeda operasi |
-| `windows:APMResumeAutomatic` | Sistem kembali aktif (selalu dipicu saat kembali aktif) | Pulihkan status, segarkan data |
-| `windows:APMResumeSuspend` | Sistem kembali aktif melalui input pengguna (setelah `APMResumeAutomatic`) | Bedakan pengaktifan oleh pengguna |
+| `windows:APMSuspend` | Sistem sedang ditangguhkan | Simpan status, jeda operasi |
+| `windows:APMResumeAutomatic` | Sistem dilanjutkan (selalu dipicu saat sistem dilanjutkan) | Pulihkan status, segarkan data |
+| `windows:APMResumeSuspend` | Sistem dilanjutkan melalui input pengguna (setelah `APMResumeAutomatic`) | Bedakan pengaktifan yang dipicu pengguna |
 | `windows:APMPowerStatusChange` | Status daya berubah | Sesuaikan pengaturan performa |
 
 #### Peristiwa macOS
 
-Peristiwa penting aplikasi macOS:
+Peristiwa penting untuk aplikasi macOS:
 
 | Peristiwa | Deskripsi | Kasus Penggunaan |
 | --- | --- | --- |
 | `mac:ApplicationDidBecomeActive` | Aplikasi menjadi aktif | Lanjutkan operasi |
 | `mac:ApplicationDidResignActive` | Aplikasi menjadi tidak aktif | Jeda operasi |
-| `mac:ApplicationWillTerminate` | Aplikasi akan ditutup | Lakukan pembersihan akhir |
-| `mac:ApplicationWillSleep` | Sistem akan segera memasuki mode tidur | Simpan status, tutup soket |
-| `mac:ApplicationDidWake` | Sistem kembali aktif | Hubungkan kembali, segarkan |
+| `mac:ApplicationWillTerminate` | Aplikasi akan ditutup | Pembersihan akhir |
+| `mac:ApplicationWillSleep` | Sistem akan segera ditangguhkan | Simpan status, tutup soket |
+| `mac:ApplicationDidWake` | Sistem dilanjutkan | Hubungkan kembali, segarkan |
 | `mac:ApplicationScreensDidSleep` | Layar memasuki mode tidur | Jeda rendering (berbeda dari mode tidur sistem) |
-| `mac:ApplicationScreensDidWake` | Layar kembali aktif | Lanjutkan rendering |
-| `mac:WindowDidEnterFullScreen` | Memasuki layar penuh | Sesuaikan UI untuk layar penuh |
-| `mac:WindowDidExitFullScreen` | Keluar dari layar penuh | Pulihkan UI normal |
+| `mac:ApplicationScreensDidWake` | Layar aktif kembali | Lanjutkan rendering |
+| `mac:WindowDidEnterFullScreen` | Memasuki mode layar penuh | Sesuaikan UI untuk layar penuh |
+| `mac:WindowDidExitFullScreen` | Keluar dari mode layar penuh | Pulihkan UI normal |
 
 #### Peristiwa Linux
 
-Peristiwa inti jendela Linux:
+Peristiwa utama jendela Linux:
 
 | Peristiwa | Deskripsi | Kasus Penggunaan |
 | --- | --- | --- |
 | `linux:SystemThemeChanged` | Tema desktop berubah | Perbarui tema aplikasi |
-| `linux:SystemWillSleep` | Sistem akan segera memasuki mode tidur (logind) | Simpan status |
-| `linux:SystemDidWake` | Sistem kembali aktif (logind) | Hubungkan kembali, segarkan |
-| `linux:WindowFocusIn` | Jendela memperoleh fokus | Lanjutkan aktivitas |
+| `linux:SystemWillSleep` | Sistem akan segera ditangguhkan (logind) | Simpan status |
+| `linux:SystemDidWake` | Sistem dilanjutkan (logind) | Hubungkan kembali, segarkan |
+| `linux:WindowFocusIn` | Jendela mendapatkan fokus | Lanjutkan aktivitas |
 | `linux:WindowFocusOut` | Jendela kehilangan fokus | Jeda aktivitas |
 | `linux:WindowLoadStarted` | WebView mulai memuat | Tampilkan indikator pemuatan |
 | `linux:WindowLoadRedirected` | WebView dialihkan | Lacak pengalihan navigasi |
-| `linux:WindowLoadCommitted` | WebView telah melakukan commit pemuatan | Konten sedang diterima |
-| `linux:WindowLoadFinished` | WebView selesai memuat | Sembunyikan indikator pemuatan, injeksikan JS/CSS |
+| `linux:WindowLoadCommitted` | WebView mengonfirmasi pemuatan | Konten sedang diterima |
+| `linux:WindowLoadFinished` | WebView selesai dimuat | Sembunyikan indikator pemuatan, injeksikan JS/CSS |
 
 ## Praktik Terbaik
 
@@ -572,7 +572,7 @@ if (isDevelopment) {
 }
 ```
 
-## Sumber Kebenaran
+## Sumber Acuan
 
 Daftar lengkap peristiwa yang tersedia dapat ditemukan dalam kode sumber Wails:
 
@@ -583,6 +583,6 @@ Selalu rujuk file-file ini untuk mengetahui nama dan ketersediaan peristiwa terb
 
 ## Ringkasan
 
-Peristiwa di Wails menyediakan cara yang andal dan tidak saling bergantung untuk menangani komunikasi dalam aplikasi Anda. Dengan mengikuti pola dan praktik dalam panduan ini, Anda dapat membuat aplikasi responsif yang memperhitungkan platform serta bereaksi dengan lancar terhadap perubahan sistem dan interaksi pengguna.
+Peristiwa di Wails menyediakan cara yang efektif dan tidak saling bergantung untuk menangani komunikasi dalam aplikasi Anda. Dengan mengikuti pola dan praktik dalam panduan ini, Anda dapat membangun aplikasi responsif dan sadar platform yang bereaksi dengan lancar terhadap perubahan sistem serta interaksi pengguna.
 
 Ingat: mulailah dengan peristiwa umum untuk kompatibilitas lintas platform, tambahkan peristiwa khusus platform bila diperlukan, dan selalu bersihkan listener peristiwa Anda untuk mencegah kebocoran memori.

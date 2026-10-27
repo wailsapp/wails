@@ -1,7 +1,7 @@
 ---
 title: "Bangun Aplikasi Desktop dengan Go"
 description: "Aplikasi desktop native menggunakan Go dan teknologi web"
-banner: {"content":"Wails v3 saat ini masih dalam versi beta. \u003ca href=\"https://v2.wails.io\"\u003eMencari dokumentasi v2?\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. <a href=\"https://v2.wails.io\">Mencari dokumentasi v2?</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Mulai","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Lihat Tutorial","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Bangun aplikasi yang indah dan berperforma tinggi menggunakan Go serta teknologi web modern. Satu basis kode. Tiga platform. Tanpa browser.*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Langkah Berikutnya
 
-Berikutnya: [bangun aplikasi lengkap](/tutorials/03-notes-vanilla/), telusuri [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples), atau lihat [referensi API](/reference/application/). Bermigrasi dari v2? Lihat [panduan peningkatan versi](/migration/v2-to-v3/).
+Berikutnya: [bangun aplikasi lengkap](/tutorials/03-notes-vanilla/), telusuri [contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples), atau lihat [referensi API](/reference/application/). Bermigrasi dari v2? Lihat [panduan peningkatan versi](/migration/v2-to-v3/).
 
-@note{type="info" title="Wails v3 Beta"}
-Wails v3 adalah perangkat lunak beta dengan API desktop yang stabil. Sejumlah tim telah menggunakannya di lingkungan produksi, tetapi sebaiknya melakukan pengujian menyeluruh sebelum penerapan selagi kami menyelesaikan penyempurnaan akhir untuk 3.0.
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS tetap eksperimental dan berada di luar jaminan kompatibilitas desktop yang stabil.
 
 @end
 

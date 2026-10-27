@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **更新：**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [ドキュメント](/quick-start/why-wails/)
 - [Discordコミュニティ](https://discord.gg/JDdSxwjhGf)
 - [GitHub Issues](https://github.com/wailsapp/wails/issues)
-- [サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### よくある質問
 
 **Q：v2とv3を並行して実行できますか？** A：はい。両者は異なるインポートパスを使用します。
 
-**Q：v3は本番環境で使用できますか？** A：v3は、安定したデスクトップAPIを備えたベータ版ソフトウェアです。これを使用して本番環境で稼働しているアプリケーションもありますが、デプロイ前に十分なテストを行ってください。v2は引き続き現在の安定版です。
+**Q：v3は本番環境で使用できますか？** Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 Android と iOS のサポートは引き続き実験的であり、安定版デスクトップの互換性保証の対象外です。
 
 **Q：v2は今後もメンテナンスされますか？** A：はい。v2には重要な更新が提供されます。
 
@@ -713,7 +713,7 @@ v3のアーキテクチャを理解します。
 📖 サンプル
 v3の完全なサンプルを確認します。
 
-[サンプルを見る →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[サンプルを見る →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

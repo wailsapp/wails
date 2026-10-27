@@ -24,8 +24,7 @@ Found a bug? [Open an issue](https://github.com/wailsapp/wails/issues/new) with:
 ### 2. Improve Documentation
 
 Correction PRs are welcome without a prior issue or a failing code test.  
-Follow [Correct the documentation](/contributing/documentation/) to preview  
-and validate a change with M-Press.
+Follow [Write documentation with M-Press](/contributing/documentation/) for downloads, installation on macOS/Linux/Windows, live preview and submitting your change.
 
 Documentation improvements are always welcome:
 
@@ -48,12 +47,12 @@ Contribute code through pull requests:
 New functionality and changes to public behaviour use the Wails Enhancement Proposal (WEP) process. It keeps feature development transparent and ensures every accepted proposal has an implementor. Do not open a feature-request issue.
 
 1. Optionally float your idea in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) category on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf) to gauge interest.
-2. Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) to `v3/wep/proposals/<proposal name>/proposal.md` and fill in every section.
+2. Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) to `v3/wep/proposals/<proposal name>/proposal.md` and fill in every section.
 3. Open a draft pull request titled `[WEP] <title>` containing only the proposal. The PR is the official place to discuss it.
 4. Gather feedback and support (comments and thumbs-up reactions on the PR). Allow at least two weeks for discussion, and agree on who will implement the proposal.
 5. Mark the PR ready for review. The maintainers make the final decision: accepted proposals are assigned a WEP number and merged.
 
-The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Getting Started
 
@@ -238,17 +237,9 @@ func TestProcessData(t *testing.T) {
 
 ### Writing Docs
 
-Documentation uses M-Press. Edit the `.md` files under  
-`docs/mpress/content/`, then preview and validate from the repository root:
+Follow [Write documentation with M-Press](/contributing/documentation/) for the complete documentation workflow. It covers the pinned version, executable and Go installation options, editable source files, navigation, translation checks and submitting a PR against `master`.
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+Documentation-only work needs no Wails application build or platform dependencies. M-Press previews the existing site with `mpress dev` from the repository root.
 
 ### Documentation Style
 

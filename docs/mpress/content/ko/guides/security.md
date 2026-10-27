@@ -7,9 +7,9 @@ sourcePath: "guides/security.md"
 
 ## 개요
 
-데스크톱 애플리케이션에서 보안은 매우 중요합니다. 다음 사례를 따라 애플리케이션을 안전하게 보호하세요.
+데스크톱 애플리케이션에서 보안은 매우 중요합니다. 애플리케이션을 안전하게 보호하려면 다음 사례를 따르세요.
 
-## 입력값 검증
+## 입력 검증
 
 ### 항상 검증하기
 
@@ -95,25 +95,40 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### 민감한 데이터 암호화하기
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+주어진 키로 암호화하는 메시지마다 새로운 nonce를 사용하세요. Wails v3에 필요한 Go 툴체인에서는 `NewGCMWithRandomNonce`가 nonce를 자동으로 생성하여 앞에 추가합니다. 반환된 바이트를 변경하지 말고 그대로 저장하세요. `decrypt`는 해당 접두부에서 nonce를 읽습니다. 키는 암호문과 별도로 보관하세요.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+적절한 무작위 생성 AES 키를 사용하고 AEAD의 키별 메시지 한도를 준수하세요. [Go 암호화 참조 문서](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce)를 확인하세요.
 
 ### 안전한 저장소
 
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### HTTPS 사용하기
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### 인증서 검증하기
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,30 +199,26 @@ func secureClient() *http.Client {
 
 ## 파일 작업
 
-### 경로 검증하기
+### 파일 접근 제한하기
+
+애플리케이션이 제어하는 디렉터리를 기준으로 한 상대 경로만 허용하세요. `os.OpenRoot`는 심볼릭 링크를 포함한 파일 시스템 경로 확인을 해당 디렉터리 내부로 제한합니다. `..`을 거부하거나 문자열 접두부만 검사해서는 이러한 경계를 보장할 수 없습니다.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
 
-## 요청 빈도 제한
+예를 들어 `readFile(appDataDir, "notes/today.json")`을 호출하세요. 신뢰할 수 있는 백엔드 코드에서 `appDataDir`을 선택하고, 프런트엔드가 허용되는 루트를 제공하도록 해서는 안 됩니다. 루트는 파일 시스템 탐색 범위를 제한할 뿐이며, 그 안에서 사용자가 읽을 권한이 있는 파일까지 결정하지는 않습니다.
+
+## 요청 속도 제한
 
 ```go
 type RateLimiter struct {
@@ -223,34 +255,34 @@ func (r *RateLimiter) Allow(key string) bool {
 
 ### ✅ 해야 할 일
 
-- 모든 입력값을 검증하세요
+- 모든 입력을 검증하세요
 - 네트워크 호출에 HTTPS를 사용하세요
 - 민감한 데이터를 암호화하세요
 - 안전한 비밀번호 해싱을 사용하세요
-- 요청 빈도 제한을 구현하세요
-- 의존성을 최신 상태로 유지하세요
+- 요청 속도 제한을 구현하세요
+- 종속성을 최신 상태로 유지하세요
 - 보안 이벤트를 기록하세요
-- 운영체제 키체인을 사용하세요
+- OS 키체인을 사용하세요
 
 ### ❌ 하지 말아야 할 일
 
 - 사용자 입력을 신뢰하지 마세요
 - 비밀번호를 평문으로 저장하지 마세요
 - 비밀 정보를 하드코딩하지 마세요
-- 인증서 검증을 생략하지 마세요
+- 인증서 검증을 건너뛰지 마세요
 - 로그에 민감한 데이터를 노출하지 마세요
 - 취약한 암호화를 사용하지 마세요
 - 보안 업데이트를 무시하지 마세요
 
 ## 보안 체크리스트
 
-- [ ] 모든 사용자 입력값 검증 완료
+- [ ] 모든 사용자 입력 검증 완료
 - [ ] bcrypt로 비밀번호 해싱 완료
 - [ ] 민감한 데이터 암호화 완료
 - [ ] 모든 네트워크 호출에 HTTPS 사용
-- [ ] 요청 빈도 제한 구현 완료
+- [ ] 요청 속도 제한 구현 완료
 - [ ] 파일 경로 검증 완료
-- [ ] 의존성을 최신 상태로 유지
+- [ ] 종속성이 최신 상태임
 - [ ] 보안 로깅 활성화
 - [ ] 오류 메시지에서 정보가 유출되지 않음
 - [ ] 코드의 취약점 검토 완료

@@ -686,4 +686,4 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 ---
 
-**Есть вопросы о сборке?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами сборки](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
+**Есть вопросы о сборке?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами сборки](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build).

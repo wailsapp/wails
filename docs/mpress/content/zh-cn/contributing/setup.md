@@ -1,19 +1,19 @@
 ---
 title: "开发环境设置"
-description: "设置用于 Wails v3 开发的开发环境"
+description: "为 Wails v3 开发配置开发环境"
 slug: "contributing/setup"
 sourcePath: "contributing/setup.md"
 ---
 
 ## 开发环境设置
 
-本指南将指导你搭建用于开发 Wails v3 的完整开发环境。
+本指南将引导你配置一个完整的开发环境，以便参与 Wails v3 开发。
 
 ## 必备工具
 
 ### Go 开发环境
 
-1. **安装 Go 1.25或更高版本：**
+1. **安装 Go 1.26 或更高版本：**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -59,9 +59,9 @@ xcode-select -p  # Should output a path
 
 **Windows：**
 
-1. 安装[MSYS2](https://www.msys2.org/)以获得类 Unix 环境
-2. WebView2 Runtime（Windows 11已预装；若使用 Windows 10，请[下载](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)）
-3. 可选：安装[Git for Windows](https://git-scm.com/download/win)
+1. 安装 [MSYS2](https://www.msys2.org/)，以获得类 Unix 环境
+2. WebView2 Runtime（Windows 11 已预安装；对于 Windows 10，请[下载](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)）
+3. 可选：安装 [Git for Windows](https://git-scm.com/download/win)
 
 **Linux（Debian/Ubuntu）：**
 
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -141,7 +141,7 @@ export PATH=$PATH:/path/to/wails
 1. **安装 VS Code：**[下载](https://code.visualstudio.com/)
 
 2. **安装扩展：**
-  - Go（由 Google Go 团队开发）
+  - Go（由 Google 的 Go 团队开发）
   - ESLint
   - Prettier
   - MDX（用于文档）
@@ -164,8 +164,8 @@ export PATH=$PATH:/path/to/wails
 1. **安装 GoLand：**[下载](https://www.jetbrains.com/go/)
 
 2. **配置：**
-  - 启用 Go Modules 支持
-  - 为`goimports`设置文件监视器
+  - 启用 Go 模块支持
+  - 为 `goimports` 设置文件监视器
   - 配置代码样式，使其符合项目约定
 
 
@@ -191,7 +191,7 @@ cd mytest
 ../wails3 dev
 ```
 
-如果测试应用能够成功构建并运行，开发环境就已准备就绪！
+如果测试应用能够成功构建并运行，则说明环境已准备就绪！
 
 ## 运行测试
 
@@ -228,23 +228,9 @@ go test ./... -race
 
 ## 处理文档
 
-Wails v3 文档使用 M-Press 编写。英文源文件位于  
-`docs/mpress/content/`；译文位于各语言目录中，例如  
-`fr/` 和 `id/`。
+文档贡献者无需安装 Wails CLI 或桌面构建依赖项即可使用 M-Press。有关固定版本可执行文件的下载、安装、实时预览、验证以及发布分支 PR 工作流，请参阅[使用 M-Press 编写文档](/contributing/documentation/)。
 
-在仓库根目录中预览并验证文档更改：
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-生产站点是静态站点。在本地处理文档时，不需要 Node.js、翻译服务提供商或 Cloudflare  
-凭据。
+英文 Markdown 文件位于 `docs/mpress/content/`；翻译文件位于各语言目录中。在仓库根目录运行 `mpress dev`，即可在 `http://127.0.0.1:3000` 提供预览。运行指南中的验证命令之前，请先按 Ctrl+C 停止预览。
 
 ## 调试
 
@@ -252,7 +238,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 **VS Code：**
 
-创建`.vscode/launch.json`：
+创建 `.vscode/launch.json`：
 
 ```json
 {
@@ -290,11 +276,11 @@ dlv debug ./cmd/wails3 -- dev
 
 ### “command not found: wails3”
 
-将 Wails 目录添加到 PATH，或在项目根目录中使用`./wails3`。
+将 Wails 目录添加到 PATH，或在项目根目录使用 `./wails3`。
 
 ### “未找到 webkitgtk-6.0”或“未找到 webkit2gtk”（Linux）
 
-根据要构建所针对的技术栈，安装相应的开发包：
+根据构建所面向的技术栈安装相应的开发软件包：
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -320,4 +306,4 @@ go mod download
 
 - 查阅[编码规范](/contributing/standards/)
 - 浏览[技术文档](/contributing/)
-- 查找可参与处理的问题：[适合初次贡献的问题](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- 查找可参与处理的议题：[适合新手的议题](https://github.com/wailsapp/wails/labels/good%20first%20issue)

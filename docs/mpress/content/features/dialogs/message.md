@@ -518,4 +518,4 @@ Use events for non-blocking communication.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [dialog examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs).

@@ -7,7 +7,7 @@ sourcePath: "features/bindings/services.md"
 
 ## Servicearchitektur
 
-Wails-**Services** bieten eine strukturierte Möglichkeit, die Anwendungslogik in modularen, eigenständigen Komponenten zu organisieren. Services berücksichtigen den Lebenszyklus mit Hooks für Start und Herunterfahren, werden automatisch an das Frontend gebunden, unterstützen Dependency Injection und lassen sich vollständig isoliert testen.
+Wails-**Services** bieten eine strukturierte Möglichkeit, Anwendungslogik in modularen, eigenständigen Komponenten zu organisieren. Services berücksichtigen den Lebenszyklus und verfügen über Hooks für Start und Herunterfahren. Sie werden automatisch an das Frontend gebunden, unterstützen Dependency Injection und lassen sich vollständig isoliert testen.
 
 ## Schnellstart
 
@@ -70,7 +70,7 @@ app := application.New(application.Options{
 **Wichtige Punkte:**
 
 - Nur **exportierte Methoden** (PascalCase) werden gebunden
-- Services sind **Singletons** (eine Instanz)
+- Services sind **Singletons** (jeweils eine Instanz)
 - Methoden können `(value, error)` zurückgeben
 
 ### Service mit Zustand
@@ -101,7 +101,7 @@ func (c *CounterService) Reset() {
 }
 ```
 
-**Wichtig:** Services werden von allen Fenstern gemeinsam genutzt. Verwenden Sie zur Threadsicherheit immer Mutexe.
+**Wichtig:** Services werden von allen Fenstern gemeinsam verwendet. Verwenden Sie für Threadsicherheit immer Mutexe.
 
 ### Service mit Abhängigkeiten
 
@@ -181,9 +181,9 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 **Wichtig:**
 
-- Services starten in **Registrierungsreihenfolge**
-- Einen Fehler zurückgeben, um **den Anwendungsstart zu verhindern**
-- `ctx` zum Abbrechen verwenden
+- Services starten in der **Reihenfolge ihrer Registrierung**
+- Geben Sie einen Fehler zurück, um den **Anwendungsstart zu verhindern**
+- Verwenden Sie `ctx` zum Abbrechen
 
 ### ServiceShutdown
 
@@ -217,7 +217,7 @@ func (u *UserService) ServiceShutdown() error {
 
 - Services werden in **umgekehrter Reihenfolge** heruntergefahren
 - Der Anwendungskontext wurde bereits abgebrochen
-- Einen Fehler zurückgeben, um **eine Warnung zu protokollieren** (verhindert das Herunterfahren nicht)
+- Geben Sie einen Fehler zurück, um **eine Warnung zu protokollieren** (verhindert das Herunterfahren nicht)
 
 ### Vollständiges Lebenszyklusbeispiel
 
@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **Anwendungsfälle:**
 
-- Mehrere Instanzen desselben Servicetyps
 - Übersichtlichere Protokollierung
-- Besseres Debugging
+- Einfacheres Debugging
+
+`ServiceOptions.Name` ist ein Anzeigename für Protokollierung und Debugging; er ändert den generierten Binding-Namespace nicht. Registrieren Sie höchstens einen Service jedes Go-Typs. Verwenden Sie für unabhängig konfigurierte Instanzen unterschiedliche Wrapper-Typen, zum Beispiel:
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+Registrieren Sie `application.NewService(&PrimaryStore{primary})` und `application.NewService(&ArchiveStore{archive})`, statt zwei Werte vom Typ `*Store` zu registrieren.
 
 ### HTTP-Routen
 
@@ -336,7 +344,7 @@ app := application.New(application.Options{
 
 **Anwendungsfälle:**
 
-- Bereitstellung von Dateien
+- Bereitstellen von Dateien
 - Benutzerdefinierte APIs
 - WebSocket-Endpunkte
 - Medienstreaming
@@ -367,7 +375,7 @@ func (r *UserRepository) Delete(id int) error {
 }
 ```
 
-### Serviceschichtmuster
+### Service-Layer-Muster
 
 ```go
 type UserService struct {
@@ -453,7 +461,7 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
 
 ## Dependency Injection
 
-### Konstruktorinjektion
+### Konstruktor-Injektion
 
 ```go
 type EmailService struct {
@@ -600,25 +608,25 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 }
 ```
 
-## Bewährte Verfahren
+## Bewährte Vorgehensweisen
 
 ### ✅ Empfohlen
 
 - **Einzelverantwortung** – ein Service, ein Zweck
-- **Konstruktorinjektion** – Abhängigkeiten explizit übergeben
+- **Konstruktor-Injektion** – Abhängigkeiten explizit übergeben
 - **Threadsicherer Zustand** – Mutexe verwenden
-- **Fehler zurückgeben** – keine Panik auslösen
+- **Fehler zurückgeben** – keine Panics auslösen
 - **Wichtige Ereignisse protokollieren** – strukturierte Protokollierung verwenden
 - **Isoliert testen** – Abhängigkeiten durch Mocks ersetzen
 
 ### ❌ Nicht empfohlen
 
 - **Keinen globalen Zustand verwenden** – Abhängigkeiten übergeben
-- **Den Start nicht blockieren** – ServiceStartup schnell abschließen
-- **Das Herunterfahren nicht vernachlässigen** – Ressourcen immer bereinigen
-- **Keine zirkulären Abhängigkeiten erzeugen** – sorgfältig entwerfen
-- **Interne Methoden nicht verfügbar machen** – als privat beibehalten
-- **Threadsicherheit nicht vergessen** – Services werden gemeinsam genutzt
+- **Den Start nicht blockieren** – ServiceStartup kurz halten
+- **Das Herunterfahren nicht ignorieren** – immer aufräumen
+- **Keine zyklischen Abhängigkeiten erstellen** – sorgfältig entwerfen
+- **Interne Methoden nicht verfügbar machen** – privat halten
+- **Threadsicherheit nicht vergessen** – Services werden gemeinsam verwendet
 
 ## Vollständiges Beispiel
 
@@ -794,11 +802,11 @@ func main() {
 
 ## Nächste Schritte
 
-- [Methodenbindungen](/features/bindings/methods/) – erfahren, wie Go-Methoden an JavaScript gebunden werden
+- [Methoden-Bindings](/features/bindings/methods/) – erfahren Sie, wie Sie Go-Methoden an JavaScript binden
 - [Modelle](/features/bindings/models/) – komplexe Datenstrukturen binden
 - [Ereignisse](/features/events/system/) – Ereignisse für die Publish/Subscribe-Kommunikation verwenden
-- [Bewährte Verfahren](/features/bindings/best-practices/) – Entwurfsmuster und bewährte Verfahren für Services
+- [Bewährte Vorgehensweisen](/features/bindings/best-practices/) – Servicedesignmuster und bewährte Vorgehensweisen
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Servicebeispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Servicebeispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) an.

@@ -58,3 +58,44 @@ func TestMailboxAcceptsConcurrentSenders(t *testing.T) {
 		seen[message] = true
 	}
 }
+
+func TestMailboxDiscardDropsQueuedMessagesWithoutWaiting(t *testing.T) {
+	firstStarted := make(chan struct{})
+	releaseFirst := make(chan struct{})
+	consumed := make(chan int, 4)
+
+	messages := New(func(message int) {
+		if message == 1 {
+			close(firstStarted)
+			<-releaseFirst
+		}
+		consumed <- message
+	})
+
+	messages.Send(1)
+	<-firstStarted
+	messages.Send(2)
+	messages.Send(3)
+
+	discarded := make(chan struct{})
+	go func() {
+		messages.Discard()
+		close(discarded)
+	}()
+	<-discarded // must return while message 1 is still being consumed
+
+	messages.lock.Lock()
+	queued := len(messages.pending)
+	messages.lock.Unlock()
+	if got := queued; got != 1 {
+		t.Fatalf("queue holds %d messages after Discard, want only the one in progress", got)
+	}
+
+	close(releaseFirst)
+	messages.Send(4)
+	for _, want := range []int{1, 4} {
+		if got := <-consumed; got != want {
+			t.Fatalf("consumed %d, want %d", got, want)
+		}
+	}
+}

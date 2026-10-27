@@ -7,7 +7,7 @@ sourcePath: "features/bindings/models.md"
 
 ## 資料模型繫結
 
-Wails 會<strong>自動從 Go 結構產生 JavaScript/TypeScript 類別</strong>，讓您在後端與前端之間傳遞複雜資料時享有完整的型別安全。只需撰寫 Go 結構並產生繫結，即可取得具有建構函式、型別註解及 JSDoc 註解的完整型別化前端模型。
+Wails 會根據 Go 結構**自動產生 JavaScript/TypeScript 類別**，在後端與前端之間傳遞複雜資料時提供完整的型別安全性。只需編寫 Go 結構並產生繫結，即可取得具有建構函式、型別註解及 JSDoc 註解的完整型別前端模型。
 
 ## 快速開始
 
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-<strong>就是這麼簡單！</strong>跨橋接層的完整型別安全。
+<strong>就這麼簡單！</strong>在整個橋接層中享有完整的型別安全性。
 
 ## 定義模型
+
+以下模型類別用來說明欄位的結構；請使用實際產生的繫結，而不要複製這些簡化類別作為轉換程式碼。
+
+對於`time.Time`，產生器預設使用`-time-type=string`。若產生的類別需要將時間戳記轉換為 JavaScript `Date`值，請使用`-time-type=Date`。標準 JavaScript／類別範本建置工作會選用`Date`；TypeScript 介面工作則保留`string`。變更模式前，請先檢查產生的工作。Go 時間戳記在 JSON 中仍為 RFC3339Nano 字串。
+
+在 Date 模式下，產生的轉換輔助函式會將這些字串轉換為日期。僅使用`Object.assign`並不會執行此轉換。使用字串繫結時，請先使用`new Date(timestamp)`明確轉換時間戳記，再使用 Date 方法。
 
 ### 基本結構
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 export class User {
@@ -108,11 +114,11 @@ export class User {
 }
 ```
 
-**JSON 標籤會控制** JavaScript 中的欄位名稱。
+**JSON 標籤會控制 JavaScript 中的欄位名稱**。
 
-### 自訂 JSON 編組
+### 自訂 JSON 封送處理
 
-繫結方法的結果會使用 Go 的標準 `encoding/json` 套件進行編組。請注意，只有當正在編組的值可定址時，才會呼叫在指標接收器上宣告的 `MarshalJSON` 方法。這表示自訂編組器可針對傳回切片中的元素呼叫，但不會針對以值傳回的結構呼叫：
+繫結方法的回傳結果會使用 Go 的標準`encoding/json`套件進行封送處理。請注意，只有在要封送的值可定址時，才會呼叫在指標接收器上宣告的`MarshalJSON`方法。這表示回傳切片中的元素可以呼叫自訂封送器，但以值回傳的結構則不會：
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-為確保輸出一致，若該型別可安全複製，請在值接收器上定義 `MarshalJSON`；或者傳回該結構的指標（例如 `*User`）。這是 Go 的 `encoding/json` 行為，而非 Wails 繫結產生機制的差異。
+為確保輸出一致，若該型別可安全複製，請在值接收器上定義`MarshalJSON`；或回傳指向該結構的指標（例如`*User`）。這是 Go 的`encoding/json`行為，而不是 Wails 繫結產生機制的差異。
 
 ### 使用註解
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 /**
@@ -176,7 +182,7 @@ export class User {
 }
 ```
 
-<strong>註解會變成 JSDoc！</strong>您的 IDE 會顯示這些註解。
+<strong>註解會轉換成 JSDoc！</strong>您的 IDE 會顯示這些註解。
 
 ### 巢狀結構
 
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**產生的 JavaScript：**
+**JavaScript 範例：**
 
 ```javascript
 export class Config {
@@ -300,33 +306,33 @@ const config = new Config({
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
-### 複合型別
+### 複雜型別
 
 | Go 型別 | JavaScript/TypeScript | 備註 |
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | 以字串為鍵的映射 |
-| `map[K]V` | `{ [_ in K]?: V }` | 非字串的 `K` 會呈現為對應型別，**而不是** JS `Map` |
+| `map[string]T` | `{ [_: string]: T }` | 以字串為鍵的對映 |
+| `map[K]V` | `{ [_ in K]?: V }` | 非字串的`K`會呈現為對映型別，**而不是**JS 的`Map` |
 | `[]byte` | `string` | 以 base64 編碼 |
 | `struct` | `class` / `interface` | 包含欄位 |
-| `time.Time` | `any` | 在執行階段序列化為 RFC3339Nano 字串 |
+| `time.Time` | `string`（預設）或`Date` | `-time-type`會選擇產生的表示形式；JSON 使用 RFC3339Nano 字串 |
 | `*T` | `T \| null` | 指標表示可為 null |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 作為傳回值時為 Exception，否則為 any |
+| `error` | `any` / `Exception` | 若作為回傳值則為 Exception，否則為 any |
 
 ### 不支援的型別
 
 - `chan T`（通道）
 - `func()`（函式）
 - 複雜介面（`interface{}`除外）
-- 未匯出的欄位（小寫）
+- 未匯出的欄位（小寫開頭）
 
 ## 使用模型
 
@@ -400,11 +406,13 @@ await UpdateUser(user)
 
 ### 產生的 TypeScript
 
+本節說明具有 Date 轉換功能的類別繫結。未加其他選項的`-ts`命令會保留產生器預設的字串表示形式。此處顯示的類別經過簡化；產生器也會產生轉換輔助函式。
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
-**產生的內容：**
+**產生結果：**
 
 ```typescript
 /**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### 列舉
 
-繫結產生器會自動偵測具有常數的 Go 具名型別，並產生 TypeScript 列舉或 JavaScript const 物件，其中包括代表 Go 零值的`$zero`成員，並完整保留 JSDoc。
+繫結產生器會自動偵測具有常數的 Go 具名型別，並產生 TypeScript 列舉或 JavaScript const 物件，其中包括代表 Go 零值的`$zero`成員，且會完整保留 JSDoc。
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-如需全面瞭解字串列舉、整數列舉、型別別名、匯入套件的列舉及其限制，請參閱專門的<strong>[列舉](/features/bindings/enums/)</strong>頁面。
+如需全面瞭解字串列舉、整數列舉、型別別名、匯入套件中的列舉及其限制，請參閱專門的<strong>[列舉](/features/bindings/enums/)</strong>頁面。
 
 ### 驗證
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -706,19 +714,19 @@ manager.loadUsers()
 ### ✅ 建議做法
 
 - **使用 JSON 標籤** — 控制欄位名稱
-- **新增註解** — 註解會轉換為 JSDoc
-- **使用 time.Time** — 會轉換為 Date
-- **在 Go 端驗證** — 不要信任前端
-- **保持模型簡單** — 僅作為資料容器
-- **選用欄位使用指標** — 使用`*string`表示可為 null
+- **新增註解** — 註解會成為 JSDoc
+- **選擇時間表示形式** — `time.Time`預設會轉為`string`；`-time-type=Date`會啟用產生的 Date 轉換功能
+- **在 Go 端進行驗證** — 不要信任前端
+- **保持模型簡潔** — 僅作為資料容器
+- **選用值使用指標** — 使用`*string`表示可為 null
 
-### ❌ 請勿這樣做
+### ❌ 避免做法
 
-- **不要為 Go 結構新增方法** — 僅將其用作資料
+- **不要為 Go 結構新增方法** — 讓它們只承載資料
 - **不要使用未匯出的欄位** — 這些欄位不會被繫結
-- **不要使用複雜介面** — 不支援此類介面
+- **不要使用複雜介面** — 不受支援
 - **不要忘記 JSON 標籤** — 欄位名稱很重要
-- **不要巢狀太深** — 保持簡單
+- **不要巢狀太多層** — 保持簡潔
 
 ## 後續步驟
 
@@ -741,7 +749,7 @@ manager.loadUsers()
 [深入瞭解 →](/features/bindings/best-practices/)
 
 ---
-★ Go 與前端橋接
+★ Go 與前端的橋接
 瞭解橋接機制。
 
 [深入瞭解 →](/concepts/bridge/)
@@ -750,4 +758,4 @@ manager.loadUsers()
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

@@ -632,4 +632,4 @@ Tangani event siklus hidup jendela.
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh event](https://github.com/wailsapp/wails/tree/master/v3/examples/events).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh event](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/events).

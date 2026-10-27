@@ -124,6 +124,19 @@ type TemplateOptions struct {
 	UseTypescript   bool
 	UseInterfaces   bool
 	WailsVersion    string
+	// RuntimeVersion is the @wailsio/runtime version pinned in generated
+	// package.json files (lockstep with the CLI; "latest" for dev builds).
+	RuntimeVersion string
+}
+
+// RuntimeVersionFor returns the npm version of @wailsio/runtime matching the
+// given Wails CLI version (identical, without the leading "v").
+func RuntimeVersionFor(wailsVersion string) string {
+	v := strings.TrimPrefix(strings.TrimSpace(wailsVersion), "v")
+	if v == "" || v == strings.TrimPrefix(version.DevVersion, "v") {
+		return "latest"
+	}
+	return v
 }
 
 type FileAssociation struct {
@@ -377,6 +390,7 @@ func Install(options *flags.Init) error {
 		UseTypescript:   UseTypescript,
 		UseInterfaces:   options.UseInterfaces,
 		WailsVersion:    version.String(),
+		RuntimeVersion:  RuntimeVersionFor(version.String()),
 		Opn:             "{{",
 		Cls:             "}}",
 	}

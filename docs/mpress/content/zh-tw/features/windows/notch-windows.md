@@ -79,4 +79,4 @@ alert.Close()
 
 @end
 
-請參閱[notch-notification 範例](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification)，其中示範一個精簡的系統監視器；其即時 JavaScript 狀態會在反覆顯示與隱藏通知的週期中持續保留。
+請參閱[notch-notification 範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification)，其中示範一個精簡的系統監視器；其即時 JavaScript 狀態會在反覆顯示與隱藏通知的週期中持續保留。

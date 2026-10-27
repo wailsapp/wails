@@ -686,4 +686,4 @@ Dans v3, la compilation croisée entre Linux, Windows et macOS s’effectue gén
 
 ---
 
-**Des questions sur la compilation ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de compilation](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
+**Des questions sur la compilation ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de compilation](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build).

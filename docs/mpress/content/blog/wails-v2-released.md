@@ -21,24 +21,24 @@ This release is more than I'd ever expected it to be. I hope it gives you as muc
 
 ## What *is* Wails?
 
-If you are unfamiliar with Wails, it is a project that enables Go programmers to provide rich frontends for their Go programs using familiar web technologies. It's a lightweight, Go alternative to Electron. Much more information can be found on the [official site](https://wails.io/docs/introduction).
+If you are unfamiliar with Wails, it is a project that enables Go programmers to provide rich frontends for their Go programs using familiar web technologies. It's a lightweight, Go alternative to Electron. Much more information can be found on the [official site](https://v2.wails.io/docs/introduction).
 
 ## What's new?
 
 The v2 release is a huge leap forward for the project, addressing many of the pain points of v1. If you have not read any of the blog posts on the Beta releases for [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) or [Linux](/blog/wails-v2-beta-for-linux/), then I encourage you to do so as it covers all the major changes in more detail. In summary:
 
 - Webview2 component for Windows that supports modern web standards and debugging capabilities.
-- [Dark / Light theme](https://wails.io/docs/reference/options#theme) + [custom theming](https://wails.io/docs/reference/options#customtheme) on Windows.
+- [Dark / Light theme](https://v2.wails.io/docs/reference/options#theme) + [custom theming](https://v2.wails.io/docs/reference/options#customtheme) on Windows.
 - Windows now has no CGO requirements.
 - Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project templates.
 - [Vite](https://vitejs.dev/) integration providing a hot-reload development environment for your application.
-- Native application [menus](https://wails.io/docs/guides/application-development#application-menu) and [dialogs](https://wails.io/docs/reference/runtime/dialog).
-- Native window translucency effects for [Windows](https://wails.io/docs/reference/options#windowistranslucent) and [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Support for Mica & Acrylic backdrops.
-- Easily generate an [NSIS installer](https://wails.io/docs/guides/windows-installer) for Windows deployments.
-- A rich [runtime library](https://wails.io/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging.
-- Support for [obfuscating](https://wails.io/docs/guides/obfuscated) your application using [garble](https://github.com/burrowers/garble).
+- Native application [menus](https://v2.wails.io/docs/guides/application-development#application-menu) and [dialogs](https://v2.wails.io/docs/reference/runtime/dialog).
+- Native window translucency effects for [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) and [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Support for Mica & Acrylic backdrops.
+- Easily generate an [NSIS installer](https://v2.wails.io/docs/guides/windows-installer) for Windows deployments.
+- A rich [runtime library](https://v2.wails.io/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging.
+- Support for [obfuscating](https://v2.wails.io/docs/guides/obfuscated) your application using [garble](https://github.com/burrowers/garble).
 - Support for compressing your application using [UPX](https://upx.github.io/).
-- Automatic TypeScript generation of Go structs. More info [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Automatic TypeScript generation of Go structs. More info [here](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - No extra libraries or DLLs are required to be shipped with your application. For any platform.
 - No requirement to bundle frontend assets. Just develop your application like any other web application.
 

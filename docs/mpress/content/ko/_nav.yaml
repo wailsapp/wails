@@ -1,68 +1,45 @@
 - label: "홈"
   link: "/"
-- label: "Wails를 선택하는 이유"
-  link: "/quick-start/why-wails/"
-- label: "빠른 시작"
+- label: "시작하기"
   collapsed: false
   items:
+    - label: "왜 Wails인가요?"
+      link: "/quick-start/why-wails/"
     - label: "설치"
       link: "/quick-start/installation/"
     - label: "첫 번째 앱"
       link: "/quick-start/first-app/"
     - label: "다음 단계"
       link: "/quick-start/next-steps/"
+    - label: "마이그레이션"
+      collapsed: true
+      items:
+        - label: "v2에서 v3로"
+          link: "/migration/v2-to-v3/"
+        - label: "Electron에서 마이그레이션"
+          link: "/migration/from-electron/"
 - label: "튜토리얼"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "핵심 개념"
+  items:
+    - label: "튜토리얼 선택"
+      link: "/tutorials/overview/"
+    - label: "QR 코드 서비스"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "할 일 목록"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "메모"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "자동 업데이트 앱"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "첫 번째 모바일 앱(실험적 기능)"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "방법 안내서"
   collapsed: true
   items:
-    - label: "Wails 작동 방식"
-      link: "/concepts/architecture/"
-    - label: "관리자 API"
-      link: "/concepts/manager-api/"
-    - label: "애플리케이션 수명 주기"
-      link: "/concepts/lifecycle/"
-    - label: "Go-프런트엔드 브리지"
-      link: "/concepts/bridge/"
-    - label: "빌드 시스템"
-      link: "/concepts/build-system/"
-- label: "기능"
-  collapsed: true
-  items:
-    - label: "창"
+    - label: "Go 호출, 서비스 및 데이터"
       collapsed: true
       items:
-        - label: "창 기본 사항"
-          link: "/features/windows/basics/"
-        - label: "창 옵션"
-          link: "/features/windows/options/"
-        - label: "노치 창"
-          link: "/features/windows/notch-windows/"
-        - label: "권한"
-          link: "/features/windows/permissions/"
-        - label: "다중 창"
-          link: "/features/windows/multiple/"
-        - label: "프레임 없는 창"
-          link: "/features/windows/frameless/"
-        - label: "창 이벤트"
-          link: "/features/windows/events/"
-    - label: "메뉴"
-      collapsed: true
-      items:
-        - label: "애플리케이션 메뉴"
-          link: "/features/menus/application/"
-        - label: "컨텍스트 메뉴"
-          link: "/features/menus/context/"
-        - label: "시스템 트레이 메뉴"
-          link: "/features/menus/systray/"
-        - label: "메뉴 참조"
-          link: "/features/menus/reference/"
-    - label: "바인딩 & 서비스"
-      collapsed: true
-      items:
-        - label: "메서드 바인딩"
+        - label: "JavaScript에서 Go 호출"
           link: "/features/bindings/methods/"
         - label: "서비스"
           link: "/features/bindings/services/"
@@ -85,6 +62,30 @@
           link: "/features/events/window/"
         - label: "사용자 정의 이벤트"
           link: "/features/events/custom/"
+    - label: "창"
+      collapsed: true
+      items:
+        - label: "창 기본 사항"
+          link: "/features/windows/basics/"
+        - label: "노치 창"
+          link: "/features/windows/notch-windows/"
+        - label: "권한"
+          link: "/features/windows/permissions/"
+        - label: "다중 창"
+          link: "/features/windows/multiple/"
+        - label: "프레임 없는 창"
+          link: "/features/windows/frameless/"
+        - label: "창 이벤트"
+          link: "/features/windows/events/"
+    - label: "메뉴"
+      collapsed: true
+      items:
+        - label: "애플리케이션 메뉴"
+          link: "/features/menus/application/"
+        - label: "컨텍스트 메뉴"
+          link: "/features/menus/context/"
+        - label: "시스템 트레이 메뉴"
+          link: "/features/menus/systray/"
     - label: "대화 상자"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "사용자 정의 대화 상자"
           link: "/features/dialogs/custom/"
-    - label: "자동 시작"
+    - label: "데스크톱 통합"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "클립보드"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "브라우저"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "드래그 & 드롭"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "키보드"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "알림"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "화면"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "환경"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "플랫폼별 기능"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "모바일"
-  collapsed: true
-  items:
-    - label: "개요"
-      link: "/guides/mobile/"
-    - label: "첫 번째 모바일 앱"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "모바일 API"
-      link: "/guides/mobile/mobile-api/"
-- label: "실험적 기능"
-  collapsed: true
-  items:
-    - label: "개요"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "LLM 제어(MCP)"
-      link: "/guides/mcp-service/"
-- label: "가이드"
-  collapsed: true
-  items:
+      items:
+        - label: "자동 시작"
+          link: "/features/autostart/basics/"
+        - label: "클립보드"
+          link: "/features/clipboard/basics/"
+        - label: "브라우저 통합"
+          link: "/features/browser/integration/"
+        - label: "끌어서 놓기"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "키보드"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "알림"
+          link: "/features/notifications/overview/"
+        - label: "화면"
+          link: "/features/screens/info/"
+        - label: "환경"
+          link: "/features/environment/info/"
+        - label: "macOS Dock"
+          link: "/features/platform/dock/"
     - label: "개발"
       collapsed: true
       items:
@@ -168,7 +133,7 @@
           link: "/guides/dev/debugging/"
         - label: "테스트"
           link: "/guides/testing/"
-    - label: "빌드 & 패키징"
+    - label: "빌드 및 패키징"
       collapsed: true
       items:
         - label: "애플리케이션 빌드"
@@ -194,7 +159,7 @@
     - label: "배포"
       collapsed: true
       items:
-        - label: "앱 내 업데이터"
+        - label: "앱 내 업데이트"
           link: "/guides/updater/"
         - label: "파일 연결"
           link: "/guides/file-associations/"
@@ -222,13 +187,44 @@
           link: "/guides/server-build/"
         - label: "사용자 정의 템플릿"
           link: "/guides/advanced/custom-templates/"
-        - label: "WML(Wails Markup)"
+        - label: "WML(Wails 마크업)"
           link: "/guides/advanced/wml/"
         - label: "패닉 처리"
           link: "/guides/panic-handling/"
         - label: "보안 모범 사례"
           link: "/guides/security/"
-- label: "API 참조"
+    - label: "모바일(실험적 기능)"
+      collapsed: true
+      items:
+        - label: "개요"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "실험적 기능"
+      collapsed: true
+      items:
+        - label: "개요"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "LLM 제어(MCP)"
+          link: "/guides/mcp-service/"
+- label: "핵심 개념"
+  collapsed: true
+  items:
+    - label: "Wails 작동 방식"
+      link: "/concepts/architecture/"
+    - label: "Manager API"
+      link: "/concepts/manager-api/"
+    - label: "애플리케이션 수명 주기"
+      link: "/concepts/lifecycle/"
+    - label: "Go-프런트엔드 브리지"
+      link: "/concepts/bridge/"
+    - label: "빌드 시스템"
+      link: "/concepts/build-system/"
+- label: "API 레퍼런스"
   collapsed: true
   items:
     - label: "개요"
@@ -236,9 +232,19 @@
     - label: "애플리케이션"
       link: "/reference/application/"
     - label: "창"
-      link: "/reference/window/"
+      collapsed: true
+      items:
+        - label: "창 API"
+          link: "/reference/window/"
+        - label: "창 옵션"
+          link: "/features/windows/options/"
     - label: "메뉴"
-      link: "/reference/menu/"
+      collapsed: true
+      items:
+        - label: "메뉴 API"
+          link: "/reference/menu/"
+        - label: "메뉴 레퍼런스"
+          link: "/features/menus/reference/"
     - label: "이벤트"
       link: "/reference/events/"
     - label: "대화 상자"
@@ -246,16 +252,37 @@
     - label: "프런트엔드 런타임"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "명령어 개요"
+          link: "/reference/cli/"
+        - label: "플래그 및 예제"
+          link: "/guides/cli/"
     - label: "업데이트 매니페스트 프로토콜"
       link: "/reference/update-manifest/"
+    - label: "모바일 API(실험적 기능)"
+      link: "/guides/mobile/mobile-api/"
+- label: "문제 해결"
+  collapsed: true
+  items:
+    - label: "자주 묻는 질문"
+      link: "/faq/"
+    - label: "macOS의 syso 파일"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP 문제"
+          link: "/troubleshooting/windows/rdp/"
 - label: "기여"
   collapsed: true
   items:
-    - label: "문서 수정"
-      link: "/contributing/documentation/"
     - label: "기여 가이드"
       link: "/contributing/"
+    - label: "문서"
+      link: "/contributing/documentation/"
+    - label: "릴리스 정책"
+      link: "/contributing/release-policy/"
     - label: "기술 개요"
       link: "/contributing/overview/"
     - label: "시작하기"
@@ -264,23 +291,6 @@
       link: "/contributing/setup/"
     - label: "코딩 표준"
       link: "/contributing/standards/"
-- label: "마이그레이션"
-  collapsed: true
-  items:
-    - label: "v2에서 v3로"
-      link: "/migration/v2-to-v3/"
-    - label: "Electron에서 이전"
-      link: "/migration/from-electron/"
-- label: "문제 해결"
-  collapsed: true
-  items:
-    - label: "macOS의 Syso 파일"
-      link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
-      collapsed: true
-      items:
-        - label: "RDP 문제"
-          link: "/troubleshooting/windows/rdp/"
 - label: "커뮤니티"
   collapsed: true
   items:
@@ -298,13 +308,16 @@
         - label: "애플리케이션"
           autogenerate:
             directory: "community/showcase"
-- label: "새로운 기능"
-  link: "/whats-new/"
-- label: "상태"
-  link: "/status/"
-- label: "변경 내역"
-  link: "/changelog/"
-- label: "후원"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "기여자"
-  link: "/credits/"
+- label: "프로젝트"
+  collapsed: true
+  items:
+    - label: "새로운 기능"
+      link: "/whats-new/"
+    - label: "상태"
+      link: "/status/"
+    - label: "변경 내역"
+      link: "/changelog/"
+    - label: "후원"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "기여자"
+      link: "/credits/"
