@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **Обновите:**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [Документация](/quick-start/why-wails/)
 - [Сообщество в Discord](https://discord.gg/JDdSxwjhGf)
 - [Задачи на GitHub](https://github.com/wailsapp/wails/issues)
-- [Примеры](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Примеры](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### Частые вопросы
 
 **В: Можно ли использовать v2 и v3 одновременно?** О: Да, они используют разные пути импорта.
 
-**В: Готова ли v3 к использованию в рабочей среде?** О: v3 — бета-версия со стабильным API для настольных приложений. На ней уже работают приложения в рабочей среде, но перед развёртыванием необходимо провести тщательное тестирование. v2 остаётся текущей стабильной версией.
+**В: Готова ли v3 к использованию в рабочей среде?** Wails v3.0.0 — стабильная версия для настольных приложений под Windows, macOS и Linux. Поддержка Android и iOS остаётся экспериментальной и не входит в гарантии совместимости стабильных настольных приложений.
 
 **В: Будет ли поддерживаться v2?** О: Да, для v2 будут выпускаться критически важные обновления.
 
@@ -713,7 +713,7 @@ wails3 generate bindings
 📖 Примеры
 Ознакомьтесь с полными примерами для v3.
 
-[Посмотреть примеры →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[Посмотреть примеры →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

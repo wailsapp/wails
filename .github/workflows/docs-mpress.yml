@@ -2,9 +2,9 @@ name: Wails v3 documentation
 
 on:
   pull_request:
-    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**']
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
   push:
-    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**']
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
   workflow_dispatch:
 
 permissions:
@@ -43,5 +43,5 @@ jobs:
         run: |
           go test scripts/auto-changelog.go scripts/auto-changelog_test.go
           go test scripts/validate-changelog.go scripts/validate-changelog_test.go
-          go test ./tasks/release
+          go test ./tasks/release ./tasks/releasegate
           python3 -m unittest discover -s scripts -p 'test_publish_changelog.py'

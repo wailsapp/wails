@@ -488,4 +488,4 @@ async function paste() {
 
 ---
 
-<strong>有问题？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[剪贴板示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>有问题？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[剪贴板示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-[`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart)中提供了包含狀態、啟用及停用按鈕，且可完整執行的範例。
+[`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart)中提供了包含狀態、啟用及停用按鈕，且可完整執行的範例。

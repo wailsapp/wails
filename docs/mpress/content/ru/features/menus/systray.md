@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` полезен для всплывающих окон из области уведомлений в Windows, macOS и средах рабочего стола Linux, где фокус устанавливается нажатием. Wails отключает это поведение в средах Linux, где фокус следует за указателем мыши (включая распространённые конфигурации Hyprland, Sway и i3): иначе всплывающее окно могло бы скрыться при перемещении указателя за его пределы ещё до того, как им удастся воспользоваться. `HideOnEscape` остаётся доступным в этих средах.
 
-Описанное выше поведение при нажатии левой и правой кнопками мыши — разумные значения по умолчанию. Явно заданный обработчик `OnClick` или `OnRightClick` заменяет соответствующее поведение по умолчанию. Проверки платформы и пограничные случаи описаны в [наборе ручных тестов области уведомлений](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) и [примере стресс-тестирования области уведомлений](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+Описанное выше поведение при нажатии левой и правой кнопками мыши — разумные значения по умолчанию. Явно заданный обработчик `OnClick` или `OnRightClick` заменяет соответствующее поведение по умолчанию. Проверки платформы и пограничные случаи описаны в [наборе ручных тестов области уведомлений](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) и [примере стресс-тестирования области уведомлений](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Обработчики нажатий
 
@@ -714,10 +714,10 @@ menu.Update()  // Add this!
 📖 Пример системного трея
 Изучите полноценное приложение с системным треем.
 
-[Подробнее →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[Подробнее →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами системного трея](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами системного трея](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic).

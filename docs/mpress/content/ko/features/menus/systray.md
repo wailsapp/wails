@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost`은 Windows, macOS 및 클릭하여 포커스를 설정하는 Linux 데스크톱의 트레이 팝업에 유용합니다. Wails는 포커스가 마우스를 따라가는 Linux 환경(일반적인 Hyprland, Sway 및 i3 설정 포함)에서는 이 동작을 비활성화합니다. 그렇지 않으면 팝업에서 마우스 포인터가 벗어날 때 팝업을 사용하기도 전에 숨겨질 수 있기 때문입니다. 이러한 환경에서도 `HideOnEscape`은 계속 사용할 수 있습니다.
 
-위의 왼쪽 및 오른쪽 클릭 동작은 지능형 기본값입니다. 명시적인 `OnClick` 또는 `OnRightClick` 핸들러를 지정하면 해당 기본 동작을 대체합니다. 플랫폼 확인 및 예외 사례는 [수동 systray 테스트 모음](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)과 [systray 스트레스 테스트 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress)를 참조하세요.
+위의 왼쪽 및 오른쪽 클릭 동작은 지능형 기본값입니다. 명시적인 `OnClick` 또는 `OnRightClick` 핸들러를 지정하면 해당 기본 동작을 대체합니다. 플랫폼 확인 및 예외 사례는 [수동 systray 테스트 모음](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray)과 [systray 스트레스 테스트 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress)를 참조하세요.
 
 ## 클릭 핸들러
 
@@ -714,10 +714,10 @@ menu.Update()  // Add this!
 📖 시스템 트레이 예제
 완전한 시스템 트레이 애플리케이션을 살펴보세요.
 
-[자세히 알아보기 →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[자세히 알아보기 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [시스템 트레이 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)를 확인하세요.
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [시스템 트레이 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)를 확인하세요.

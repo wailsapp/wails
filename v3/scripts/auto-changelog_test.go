@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -267,5 +268,114 @@ func TestAppendDocumentationLinksCollapsesBroadChanges(t *testing.T) {
 	want := entry + " — see the [documentation site](https://v3.wails.io) (4 pages updated)"
 	if got != want {
 		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestCallModelDisablesReasoningAndReportsUsage(t *testing.T) {
+	var got map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&got)
+		fmt.Fprint(w, `{"choices":[{"message":{"content":"{\"section\":\"Fixed\",\"entry\":\"fix a thing\"}"}}],`+
+			`"usage":{"prompt_tokens":1200,"completion_tokens":18,"cost":0.00013,"completion_tokens_details":{"reasoning_tokens":0}}}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	raw, usage, err := callModel("ctx", "key", "anthropic/claude-haiku-5.5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got["model"] != "anthropic/claude-haiku-5.5" {
+		t.Fatalf("model = %v", got["model"])
+	}
+	reasoning, _ := got["reasoning"].(map[string]any)
+	if reasoning["enabled"] != false {
+		t.Fatalf("reasoning should be disabled, got %v", got["reasoning"])
+	}
+	if usage.PromptTokens != 1200 || usage.CompletionTokens != 18 || usage.Cost != 0.00013 {
+		t.Fatalf("usage = %+v", usage)
+	}
+	section, entry, err := parseEntry(raw)
+	if err != nil || section != "Fixed" || entry != "fix a thing" {
+		t.Fatalf("parseEntry = %q %q %v", section, entry, err)
+	}
+}
+
+func TestCallModelRetriesWithoutReasoningWhenRejected(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		calls++
+		if _, has := body["reasoning"]; has {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"error":{"message":"Reasoning cannot be disabled for this model"}}`)
+			return
+		}
+		fmt.Fprint(w, `{"choices":[{"message":{"content":"{\"section\":\"Added\",\"entry\":\"add x\"}"}}]}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	raw, _, err := callModel("ctx", "key", "some/model")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls != 2 {
+		t.Fatalf("expected one retry, got %d calls", calls)
+	}
+	if _, _, err := parseEntry(raw); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCallModelDoesNotRetryOtherErrors(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, `{"error":"bad key"}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	if _, _, err := callModel("ctx", "key", "some/model"); err == nil || calls != 1 {
+		t.Fatalf("err=%v calls=%d", err, calls)
+	}
+}
+
+func TestChangelogModelDefaultAndOverride(t *testing.T) {
+	t.Setenv("CHANGELOG_MODEL", "")
+	if got := changelogModel(); got != "anthropic/claude-haiku-5.5" {
+		t.Fatalf("default = %q", got)
+	}
+	t.Setenv("CHANGELOG_MODEL", "google/gemini-2.5-flash-lite")
+	if got := changelogModel(); got != "google/gemini-2.5-flash-lite" {
+		t.Fatalf("override = %q", got)
+	}
+}
+
+func TestParseEntryDefaultsUnknownSectionAndRejectsGarbage(t *testing.T) {
+	section, entry, err := parseEntry("```json\n{\"section\":\"Misc\",\"entry\":\"tidy things\"}\n```")
+	if err != nil || section != "Changed" || entry != "tidy things" {
+		t.Fatalf("got %q %q %v", section, entry, err)
+	}
+	if _, _, err := parseEntry("no json here"); err == nil {
+		t.Fatal("expected an error for a response with no JSON")
+	}
+}
+
+func TestBuildPromptSteersSecurityAndStyle(t *testing.T) {
+	prompt := buildPrompt("PR body")
+	for _, want := range []string{"Use Security for any change that hardens", "imperative present tense", "<pr_data>\nPR body\n</pr_data>"} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("prompt missing %q", want)
+		}
 	}
 }

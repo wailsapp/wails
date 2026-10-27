@@ -518,4 +518,4 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[ダイアログのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[ダイアログのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs)を確認してください。

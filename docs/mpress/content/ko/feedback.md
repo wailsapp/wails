@@ -34,7 +34,7 @@ Discord의 [#v3](https://discord.gg/bdj28QNHmT) 채널에서도 버그에 관해
 [개선 사항]
 새 기능과 공개 동작에 대한 변경은 기능 요청 이슈가 아니라 **WEP(Wails Enhancement Proposal)** 초안 풀 리퀘스트를 통해 제안해야 합니다.
 
-- [WEP 절차](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)를 읽어 주세요.
+- [WEP 절차](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)를 읽어 주세요.
 - 템플릿을 복사한 다음, WEP와 지원 자료만 포함하고 제목이 `[WEP] <title>`인 초안 PR을 열어 주세요.
 - 먼저 [GitHub Discussions](https://github.com/wailsapp/wails/discussions) 또는 Discord의 [#v3](https://discord.gg/bdj28QNHmT) 채널에서 아이디어를 비공식적으로 논의해도 되지만, 메인테이너의 결정을 받으려면 WEP PR이 필요합니다.
 

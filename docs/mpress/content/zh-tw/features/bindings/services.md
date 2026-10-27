@@ -1,13 +1,13 @@
 ---
 title: "服務"
-description: "使用服務建構模組化且可重複使用的應用程式元件"
+description: "使用服務建置模組化、可重複使用的應用程式元件"
 slug: "features/bindings/services"
 sourcePath: "features/bindings/services.md"
 ---
 
 ## 服務架構
 
-Wails <strong>服務</strong>提供一種結構化方式，讓您能以模組化且自成一體的元件組織應用程式邏輯。服務能感知生命週期，並提供啟動與關閉掛鉤；服務會自動繫結至前端、支援相依性注入，也可完全獨立測試。
+Wails **服務**提供一套結構化方式，透過模組化且自成一體的元件組織應用程式邏輯。服務可感知生命週期，並提供啟動與關閉掛鉤；服務會自動繫結至前端、支援相依性注入，且可完全獨立測試。
 
 ## 快速開始
 
@@ -69,8 +69,8 @@ app := application.New(application.Options{
 
 **重點：**
 
-- 只會繫結<strong>匯出的方法</strong>（PascalCase）
-- 服務是<strong>單例</strong>（只有一個執行個體）
+- 只會繫結**匯出的方法**（PascalCase）
+- 服務是**單例**（只有一個執行個體）
 - 方法可以傳回`(value, error)`
 
 ### 具備狀態的服務
@@ -101,9 +101,9 @@ func (c *CounterService) Reset() {
 }
 ```
 
-<strong>重要：</strong>所有視窗會共用服務。務必使用互斥鎖以確保執行緒安全。
+<strong>重要：</strong>所有視窗會共用服務。請一律使用互斥鎖以確保執行緒安全。
 
-### 具備相依性的服務
+### 具有相依性的服務
 
 ```go
 type UserService struct {
@@ -131,7 +131,7 @@ func (u *UserService) GetUser(id int) (*User, error) {
 }
 ```
 
-**連同相依項目一起註冊：**
+**連同相依性一起註冊：**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -148,7 +148,7 @@ app := application.New(application.Options{
 
 ### ServiceStartup
 
-應用程式啟動時呼叫：
+在應用程式啟動時呼叫：
 
 ```go
 func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -174,20 +174,20 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 **使用情境：**
 
 - 初始化資源
-- 驗證組態
-- 執行移轉
+- 驗證設定
+- 執行遷移
 - 啟動背景工作
 - 連線至外部服務
 
 **重要：**
 
-- 服務會依照<strong>註冊順序</strong>啟動
-- 傳回錯誤可<strong>阻止應用程式啟動</strong>
+- 服務會依照**註冊順序**啟動
+- 傳回錯誤以**阻止應用程式啟動**
 - 使用`ctx`進行取消
 
 ### ServiceShutdown
 
-應用程式關閉時呼叫：
+在應用程式關閉時呼叫：
 
 ```go
 func (u *UserService) ServiceShutdown() error {
@@ -210,16 +210,16 @@ func (u *UserService) ServiceShutdown() error {
 - 關閉連線
 - 儲存狀態
 - 清理資源
-- 將緩衝區中的資料寫出至目的地
+- 排清緩衝區
 - 取消背景工作
 
 **重要：**
 
-- 服務會依照<strong>相反順序</strong>關閉
-- 應用程式的執行上下文已取消
-- 傳回錯誤以<strong>記錄警告</strong>（不會阻止關閉）
+- 服務會依照**相反順序**關閉
+- 應用程式內容已取消
+- 傳回錯誤以**記錄警告**（不會阻止關閉）
 
-### 完整的生命週期範例
+### 完整生命週期範例
 
 ```go
 type DatabaseService struct {
@@ -304,13 +304,21 @@ app := application.New(application.Options{
 
 **使用情境：**
 
-- 同一服務型別的多個執行個體
 - 更清楚的記錄
 - 更容易偵錯
 
+`ServiceOptions.Name`是用於記錄和偵錯的顯示名稱；它不會變更產生的繫結命名空間。每種 Go 型別最多註冊一個服務。若需要各自獨立設定的執行個體，請使用不同的包裝型別，例如：
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+請註冊`application.NewService(&PrimaryStore{primary})`和`application.NewService(&ArchiveStore{archive})`，而不是註冊兩個`*Store`值。
+
 ### HTTP 路由
 
-服務可以處理 HTTP 請求：
+服務可以處理 HTTP 要求：
 
 ```go
 type FileService struct {
@@ -548,7 +556,7 @@ func TestCalculatorService_Add(t *testing.T) {
 }
 ```
 
-### 使用相依項目進行測試
+### 使用相依性進行測試
 
 ```go
 func TestUserService_GetUser(t *testing.T) {
@@ -600,25 +608,25 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 }
 ```
 
-## 最佳實務
+## 最佳做法
 
-### ✅ 建議做法
+### ✅ 應該做
 
-- **單一職責**——一個服務只負責一項用途
-- **建構函式注入**——明確傳入相依項目
-- **執行緒安全的狀態**——使用互斥鎖
-- **傳回錯誤**——不要引發 panic
-- **記錄重要事件**——使用結構化日誌記錄
-- **獨立測試**——模擬相依項目
+- **單一職責** - 一個服務只負責一項用途
+- **建構函式注入** - 明確傳入相依性
+- **執行緒安全的狀態** - 使用互斥鎖
+- **傳回錯誤** - 不要引發 panic
+- **記錄重要事件** - 使用結構化記錄
+- **獨立測試** - 使用模擬相依性
 
-### ❌ 避免的做法
+### ❌ 不應該做
 
-- **不要使用全域狀態**——傳入相依項目
-- **不要阻塞啟動流程**——讓 ServiceStartup 快速完成
-- **不要忽略關閉流程**——務必執行清理
-- **不要建立循環相依性**——審慎設計
-- **不要公開內部方法**——將其保留為私有方法
-- **不要忘記執行緒安全**——服務會由多處共用
+- **不要使用全域狀態** - 傳入相依性
+- **不要阻塞啟動流程** - 讓 ServiceStartup 快速完成
+- **不要忽略關閉流程** - 一律執行清理
+- **不要建立循環相依性** - 謹慎設計
+- **不要公開內部方法** - 將其保持為私有
+- **不要忘記執行緒安全** - 服務是共用的
 
 ## 完整範例
 
@@ -794,11 +802,11 @@ func main() {
 
 ## 後續步驟
 
-- [方法繫結](/features/bindings/methods/)——瞭解如何將 Go 方法繫結至 JavaScript
-- [模型](/features/bindings/models/)——繫結複雜的資料結構
-- [事件](/features/events/system/)——使用事件進行發布／訂閱通訊
-- [最佳實務](/features/bindings/best-practices/)——服務設計模式與最佳實務
+- [方法繫結](/features/bindings/methods/) - 瞭解如何將 Go 方法繫結至 JavaScript
+- [模型](/features/bindings/models/) - 繫結複雜的資料結構
+- [事件](/features/events/system/) - 使用事件進行發布／訂閱通訊
+- [最佳做法](/features/bindings/best-practices/) - 服務設計模式與最佳做法
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[服務範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>有疑問嗎？</strong>歡迎到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[服務範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

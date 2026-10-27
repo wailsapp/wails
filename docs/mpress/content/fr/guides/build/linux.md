@@ -1,13 +1,13 @@
 ---
 title: "Création de paquets Linux"
-description: "Créez des paquets de votre application Wails pour la distribuer sous Linux"
+description: "Préparez votre application Wails pour sa distribution sous Linux"
 slug: "guides/build/linux"
 sourcePath: "guides/build/linux.md"
 ---
 
 ## Formats de paquets
 
-Créez des paquets de votre application pour la distribuer sous Linux :
+Préparez votre application pour sa distribution sous Linux :
 
 ```bash
 wails3 package GOOS=linux
@@ -15,14 +15,14 @@ wails3 package GOOS=linux
 
 Cette opération crée plusieurs formats dans le répertoire `bin/` :
 
-- **AppImage** : format portable, exécutable sur toutes les distributions Linux
-- **DEB** : pour Debian, Ubuntu et leurs dérivées
-- **RPM** : pour Fedora, RHEL et leurs dérivées
-- **Arch** : pour Arch Linux et ses dérivées
+- **AppImage** : portable, s’exécute sur toutes les distributions Linux
+- **DEB** : pour Debian, Ubuntu et leurs dérivés
+- **RPM** : pour Fedora, RHEL et leurs dérivés
+- **Arch** : pour Arch Linux et ses dérivés
 
 ### Formats individuels
 
-Créez des formats spécifiques :
+Générez des formats spécifiques :
 
 ```bash
 wails3 task linux:create:appimage
@@ -62,6 +62,8 @@ license: MIT
 
 La configuration d’AppImage se trouve dans `build/linux/appimage/`. L’icône de l’application provient de `build/appicon.png`.
 
+L’AppImage inclut WebKit et ses processus auxiliaires, puis modifie la bibliothèque incluse afin de les démarrer depuis l’intérieur de l’AppImage. Son fichier `AppRun` démarre l’application depuis `usr/lib` dans l’AppImage, où le chemin modifié est résolu à la fois à l’extérieur et à l’intérieur du bac à sable bubblewrap de WebKit, de sorte que le bac à sable reste activé. Ne fournissez votre propre fichier `AppRun` que s’il conserve ce répertoire de travail.
+
 ## Signature des paquets
 
 Signez les paquets DEB et RPM avec une clé PGP :
@@ -84,10 +86,10 @@ vars:
   SIGN_ROLE: "builder"  # origin, maint, archive, or builder
 ```
 
-Enregistrez le mot de passe de votre clé :
+Stockez le mot de passe de votre clé :
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 Pour plus de détails, consultez [Signature des applications](/guides/build/signing/).
@@ -106,10 +108,10 @@ Les compilations ARM64 effectuées depuis des hôtes x86_64 utilisent Docker pou
 
 ## Prise en charge de l’ancienne version GTK3
 
-Par défaut, Wails v3 repose sur **GTK4 avec WebKitGTK 6.0**. Une voie héritée utilisant GTK3 / WebKit2GTK 4.1 reste disponible pour les distributions qui ne fournissent pas encore WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). Cette voie héritée doit être activée explicitement au moyen d’une balise de compilation et sa suppression est prévue dans la version v3.1.
+Par défaut, Wails v3 repose sur **GTK4 avec WebKitGTK 6.0**. Une voie héritée GTK3 / WebKit2GTK 4.1 reste disponible pour les distributions qui ne fournissent pas encore WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). Cette voie héritée doit être activée explicitement au moyen d’une balise de compilation et sa suppression est prévue dans v3.1.
 
 @note{type="caution" title="Voie héritée"}
-La voie GTK3 / WebKit2GTK 4.1 est prise en charge pendant toute la série v3.0.x. Planifiez la migration vers GTK4 en fonction de la disponibilité de GTK4 / WebKitGTK 6.0 dans votre distribution cible : `-tags gtk3` sera supprimé dans la version v3.1.
+La voie GTK3 / WebKit2GTK 4.1 est prise en charge pendant toute la série v3.0.x. Planifiez la migration vers GTK4 en fonction de la disponibilité de GTK4 / WebKitGTK 6.0 dans votre distribution cible : `-tags gtk3` sera supprimé dans v3.1.
 
 @end
 
@@ -146,19 +148,19 @@ go build -tags gtk3 -o myapp .
 
 ### Différences connues par rapport à GTK4
 
-- **Boîtes de dialogue de fichiers** : GTK4 utilise par défaut `xdg-desktop-portal` pour les boîtes de dialogue de fichiers. Certaines options, telles que le répertoire par défaut et l’affichage des filtres personnalisés, se comportent donc différemment sous GTK3. Pour plus de détails, consultez [Référence des boîtes de dialogue — Comportement des boîtes de dialogue sous Linux](/reference/dialogs/#linux-dialog-behavior).
-- **Style du menu** : GTK4 prend en charge une option `LinuxMenuStylePrimaryMenu` qui affiche un bouton de menu hamburger (☰) dans la barre d’en-tête, conformément aux recommandations GNOME HIG. Cette option n’a aucun effet sur les compilations `-tags gtk3`. Consultez [API Window — MenuStyle sous Linux](/reference/window/#linux).
-- **Mise à l’échelle selon le DPI** : GTK4 utilise `gdk_monitor_get_scale` (GTK 4.14+) pour prendre en charge la mise à l’échelle fractionnaire.
+- **Boîtes de dialogue de fichiers** : GTK4 utilise `xdg-desktop-portal` par défaut pour les boîtes de dialogue de fichiers. Certaines options de ces boîtes, comme le répertoire par défaut et l’affichage des filtres personnalisés, se comportent donc différemment par rapport à GTK3. Pour plus de détails, consultez [Référence des boîtes de dialogue — comportement des boîtes de dialogue sous Linux](/reference/dialogs/#linux-dialog-behavior).
+- **Style de menu** : GTK4 prend en charge une option `LinuxMenuStylePrimaryMenu` qui affiche un bouton de menu hamburger (☰) dans la barre d’en-tête, conformément aux recommandations GNOME HIG. Cette option n’a aucun effet sur les compilations `-tags gtk3`. Consultez [API Window — Linux MenuStyle](/reference/window/#linux).
+- **Mise à l’échelle selon la résolution** : GTK4 utilise `gdk_monitor_get_scale` (GTK 4.14+) pour prendre en charge la mise à l’échelle fractionnaire.
 
 ### Vérification de votre compilation
 
-Exécutez `wails3 doctor` pour vérifier votre configuration. Sans aucune option, cette commande vérifie la présence de GTK4 / WebKitGTK 6.0, qui sont utilisés par défaut. Les paquets hérités GTK3 / WebKit2GTK 4.1 sont indiqués comme facultatifs.
+Exécutez `wails3 doctor` pour vérifier votre configuration. Sans option, cette commande recherche GTK4 / WebKitGTK 6.0, utilisés par défaut. Les paquets hérités GTK3 / WebKit2GTK 4.1 sont indiqués comme facultatifs.
 
 ## Dépannage
 
-### AppImage ne s’exécute pas
+### L’AppImage ne s’exécute pas
 
-Rendez le fichier exécutable :
+Rendez-la exécutable :
 
 ```bash
 chmod +x MyApp-x86_64.AppImage
@@ -166,22 +168,33 @@ chmod +x MyApp-x86_64.AppImage
 
 ### Dépendances manquantes
 
-Si l’application ne démarre pas, recherchez les dépendances WebKit manquantes :
+Faites correspondre les bibliothèques à la variante de compilation du fichier binaire. Pour une compilation GTK4/WebKitGTK 6.0 par défaut :
+
+```bash
+# Debian/Ubuntu versions that provide WebKitGTK 6.0
+sudo apt install libgtk-4-1 libwebkitgtk-6.0-4
+# Fedora
+sudo dnf install gtk4 webkitgtk6.0
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+Pour un fichier binaire explicitement compilé avec `-tags gtk3`, installez plutôt les bibliothèques héritées GTK3/WebKit2GTK 4.1 :
 
 ```bash
 # Debian/Ubuntu
-sudo apt install libwebkit2gtk-4.1-0
-
+sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
 # Fedora
-sudo dnf install webkit2gtk4.1
-
+sudo dnf install gtk3 webkit2gtk4.1
 # Arch
-sudo pacman -S webkit2gtk-4.1
+sudo pacman -S gtk3 webkit2gtk-4.1
 ```
+
+La disponibilité et le nom des paquets dépendent de la version de la distribution. Utilisez une version prise en charge qui fournit les bibliothèques requises, ou la méthode documentée de compilation croisée ou par conteneur ; l’installation des bibliothèques héritées ne satisfait pas les exigences d’une compilation par défaut. La portabilité d’une AppImage dépend des éléments réellement inclus dans son paquet et des bibliothèques de l’hôte dont elle a encore besoin.
 
 ### Aucun compilateur C trouvé
 
-Le système de compilation nécessite GCC ou Clang pour CGO :
+Le système de compilation a besoin de GCC ou de Clang pour CGO :
 
 ```bash
 # Debian/Ubuntu
@@ -194,13 +207,13 @@ sudo dnf install gcc
 sudo pacman -S base-devel
 ```
 
-Vous pouvez également exécuter `wails3 task setup:docker` : le système de compilation utilisera alors Docker automatiquement.
+Vous pouvez également exécuter `wails3 task setup:docker` ; le système de compilation utilisera alors Docker automatiquement.
 
-### Fenêtre vide ou blanche avec un GPU NVIDIA
+### Fenêtre vide ou blanche avec un processeur graphique NVIDIA
 
-Sous Linux avec les pilotes propriétaires NVIDIA, les applications Wails peuvent afficher une fenêtre vide ou blanche au démarrage. Ce problème est dû à un bogue de WebKitGTK : le moteur de rendu DMA-BUF échoue avec `gbm_bo_map()` lorsqu’il utilise le pilote propriétaire NVIDIA. Ce bogue touche X11 et Wayland, les versions de pilote 377–580+, ainsi que les GPU de la série 10 et les modèles GT 710 plus anciens.
+Sous Linux avec les pilotes propriétaires NVIDIA, les applications Wails peuvent afficher une fenêtre vide ou blanche au démarrage. Cela est dû à un bogue de WebKitGTK : le moteur de rendu DMA-BUF échoue avec `gbm_bo_map()` face au pilote propriétaire NVIDIA. Le problème affecte X11 et Wayland, les versions de pilote 377–580+, ainsi que les processeurs graphiques de la série 10 et les anciens modèles GT 710.
 
-**Wails applique automatiquement `WEBKIT_DISABLE_DMABUF_RENDERER=1`** lorsqu’il détecte le module du noyau NVIDIA (`/sys/module/nvidia`). La plupart des utilisateurs n’ont donc aucune intervention à effectuer.
+**Wails applique automatiquement `WEBKIT_DISABLE_DMABUF_RENDERER=1`** lorsqu’il détecte le module du noyau NVIDIA (`/sys/module/nvidia`). La plupart des utilisateurs n’ont donc rien à faire.
 
 Si une fenêtre vide s’affiche encore, par exemple dans un conteneur où le chemin du module n’est pas visible, définissez manuellement la variable d’environnement avant de lancer votre application :
 
@@ -210,16 +223,16 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
 
 Bogues connexes en amont : [WebKit nº 262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit nº 180739](https://bugs.webkit.org/show_bug.cgi?id=180739).
 
-### Compatibilité du nettoyage des symboles d’AppImage
+### Compatibilité du dépouillement des AppImages
 
-Sur les distributions Linux modernes (Arch Linux, Fedora 39+, Ubuntu 24.04+), les bibliothèques système sont compilées avec des sections ELF `.relr.dyn` afin d’accélérer les réadressages. L’outil `linuxdeploy` utilisé pour créer les AppImages intègre un ancien exécutable `strip` qui ne peut pas traiter ces sections modernes.
+Sur les distributions Linux modernes (Arch Linux, Fedora 39+, Ubuntu 24.04+), les bibliothèques système sont compilées avec des sections ELF `.relr.dyn` afin d’optimiser les réadressages. L’outil `linuxdeploy` utilisé pour créer les AppImages inclut une ancienne version du fichier binaire `strip`, qui ne peut pas traiter ces sections modernes.
 
-Wails détecte automatiquement cette situation en vérifiant les bibliothèques GTK du système avant de générer l’AppImage. Si elle est détectée, la suppression des symboles est désactivée (`NO_STRIP=1`) afin d’assurer la compatibilité.
+Wails détecte automatiquement cette situation en vérifiant les bibliothèques GTK du système avant de compiler l’AppImage. Lorsqu’elle est détectée, le dépouillement est désactivé (`NO_STRIP=1`) afin de garantir la compatibilité.
 
-**Ce que cela implique :**
+**Conséquences :**
 
 - Les AppImages seront légèrement plus volumineuses (~20-40 %) sur les systèmes concernés
-- Les fonctionnalités de l’application ne sont pas affectées
-- Cette opération est gérée automatiquement : aucune action n’est requise
+- Le fonctionnement de l’application n’est pas affecté
+- Tout est géré automatiquement : aucune intervention n’est requise
 
-Si vous avez besoin d’AppImages moins volumineuses sur les systèmes modernes, vous pouvez installer un binaire `strip` plus récent et configurer `linuxdeploy` pour qu’il l’utilise à la place de la version fournie avec celui-ci.
+Si vous avez besoin d’AppImages plus petites sur les systèmes modernes, vous pouvez installer une version plus récente du fichier binaire `strip` et configurer `linuxdeploy` afin qu’il l’utilise à la place de la version qu’il inclut.

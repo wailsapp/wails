@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` é útil para pop-ups da bandeja no Windows, no macOS e em desktops Linux com foco ao clicar. O Wails desabilita esse comportamento em ambientes Linux que usam foco seguindo o mouse (incluindo configurações comuns do Hyprland, Sway e i3), nos quais afastar o ponteiro do pop-up poderia ocultá-lo antes que ele pudesse ser usado. `HideOnEscape` continua disponível nesses ambientes.
 
-Os comportamentos de clique com os botões esquerdo e direito descritos acima são padrões inteligentes. Um manipulador `OnClick` ou `OnRightClick` explícito substitui o padrão correspondente. Para verificações de plataforma e casos extremos, consulte a [suíte manual da bandeja do sistema](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) e o [exemplo de teste de estresse da bandeja do sistema](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+Os comportamentos de clique com os botões esquerdo e direito descritos acima são padrões inteligentes. Um manipulador `OnClick` ou `OnRightClick` explícito substitui o padrão correspondente. Para verificações de plataforma e casos extremos, consulte a [suíte manual da bandeja do sistema](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) e o [exemplo de teste de estresse da bandeja do sistema](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Manipuladores de clique
 
@@ -714,10 +714,10 @@ Crie menus de contexto acionados com o botão direito.
 📖 Exemplo de bandeja do sistema
 Explore um aplicativo completo com bandeja do sistema.
 
-[Saiba mais →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[Saiba mais →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bandeja do sistema](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bandeja do sistema](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic).

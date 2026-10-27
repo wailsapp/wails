@@ -5,16 +5,16 @@ slug: "guides/custom-transport"
 sourcePath: "guides/custom-transport.md"
 ---
 
-Wails v3 では、生成されたすべてのバインディングとイベント通信を維持したまま、カスタム IPC トランスポート層を使用できます。これにより、デフォルトの HTTP fetch ベースのトランスポートを、WebSocket、カスタムプロトコル、またはその他の任意のトランスポート方式に置き換えられます。
+Wails v3 では、生成されたすべてのバインディングとイベント通信を維持したまま、カスタム IPC トランスポート層を使用できます。これにより、デフォルトの HTTP fetch ベースのトランスポートを、WebSocket、カスタムプロトコル、またはその他の任意のトランスポート機構に置き換えられます。
 
 ## 概要
 
-デフォルトでは、Wails はフロントエンドからの HTTP fetch リクエストを使用し、`/wails/runtime` を介してバックエンドと通信します。カスタムトランスポート API では、次のことが可能です。
+デフォルトでは、Wails はフロントエンドからの HTTP fetch リクエストを使用し、`/wails/runtime` を介してバックエンドと通信します。カスタムトランスポート API を使用すると、次のことができます。
 
 - HTTP トランスポートを WebSocket、gRPC、または任意のカスタムプロトコルに置き換える
 - Wails のコード生成との完全な互換性を維持する
 - 既存のすべてのバインディング、イベント、ダイアログ、およびその他の Wails 機能を維持する
-- 独自の接続管理、認証、エラー処理を実装する
+- 独自の接続管理、認証、およびエラー処理を実装する
 
 ## アーキテクチャ
 
@@ -35,81 +35,49 @@ Wails v3 では、生成されたすべてのバインディングとイベン�
 └─────────────────────────────────────────────────┘
 ```
 
-## 使用方法
+## 完全な WebSocket サンプルの実行
 
-### 1. Transport インターフェースを実装する
+[WebSocket トランスポートのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport)には、リクエスト ID とレスポンス、ライフサイクル管理、JavaScript クライアント、イベント配信という、プロトコルの両側の実装が含まれています。`Start` と `Stop` だけを実装したトランスポートではなく、これらのファイルを出発点にしてください。
 
-`Transport` インターフェースを実装して、カスタムトランスポートを作成します。
+ネイティブプラットフォームの依存関係がインストールされている Wails リポジトリの作業コピーで、次を実行します。
+
+```bash
+cd v3/examples/websocket-transport
+go run .
+```
+
+このサンプルはネイティブウィンドウを開き、ポート 9099 で WebSocket エンドポイントを起動します。信頼できるローカル開発環境で使用してください。ネットワークからアクセス可能な派生版をデプロイする前に、リスナーを制限し、オリジンを検証して、クライアントを認証してください。このサンプルのオリジンポリシーは制限が緩く、本番環境向けのセキュリティポリシーではありません。
+
+### バックエンドの規約
+
+トランスポートは、必須の 3 つのメソッドをすべて実装する必要があります。サンプルの `WebSocketTransport` は `Start`、`JSClient`、`Stop` を実装し、`JSClient` は Wails がページに挿入する JavaScript シムを提供します。実装には、コンパイル時のインターフェースチェックを含めてください。
 
 ```go
-package main
-
-import (
-    "context"
-    "github.com/wailsapp/wails/v3/pkg/application"
-)
-
-type MyCustomTransport struct {
-    // Your fields
-}
-
-func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
-    // Initialize your transport (WebSocket server, gRPC server, etc.)
-    // When you receive requests, call processor.HandleRuntimeCallWithIDs()
-    return nil
-}
-
-func (t *MyCustomTransport) Stop() error {
-    // Clean up your transport
-    return nil
-}
+var _ application.Transport = (*WebSocketTransport)(nil)
 ```
 
-### 2. アプリケーションを設定する
-
-カスタムトランスポートをアプリケーションのオプションに渡します。
+サンプルのコンストラクターを使用してアプリケーションを構成します。
 
 ```go
-func main() {
-    app := application.New(application.Options{
-        Name: "My App",
-        Transport: &MyCustomTransport{},
-        // ... other options
-    })
-
-    err := app.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
+Transport: NewWebSocketTransport("127.0.0.1:9099"),
 ```
 
-### 3. フロントエンドランタイムを変更する
+このフィールドは、通常のアセットおよびサービスと並べて `application.Options` に配置します。コンストラクター呼び出しだけでなく、実装ファイルもコピーしてください。`Start` は `MessageProcessor` を受け取ります。`Stop` は、リスナー、アクティブな接続、および保留中の処理を終了しなければなりません。
 
-カスタムトランスポートを使用する場合は、HTTP fetch の代わりにそのトランスポートを使用するよう、フロントエンドランタイムを変更する必要があります。リクエストの処理に使用される `RuntimeTransport` インターフェースを実装します。
+### フロントエンドの規約
 
-```typescript
-const { setTransport } = await import('/wails/runtime.js');
+サンプルの `websocket-transport.js` は、リクエストとレスポンスの対応付けや、失敗した呼び出しの reject 処理を含むランタイムトランスポートを実装しています。そのファイルをアセットから配信した後、生成されたサービスバインディングを呼び出す前に初期化してください。
 
-class MyRuntimeTransport {
-  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // TODO: implement IPC call with your transport protocol
+```javascript
+import { setTransport } from '/wails/runtime.js'
+import { createWebSocketTransport } from '/websocket-transport.js'
 
-    return resp;
-  }
-}
-
-const myTransport = new MyRuntimeTransport();
-setTransport(myTransport);
+setTransport(createWebSocketTransport('ws://127.0.0.1:9099/wails/ws'))
 ```
 
-## 注意事項
+生成されたサービスバインディングは変更されません。トランスポートがクライアントを置き換える場合は、アプリケーションが使用するメソッドを提供し、そのエラーセマンティクスを維持する必要があります。イベント配信には、オプションのイベントトランスポート規約が必要です。任意の `Transport` 実装によって自動的に提供されるものではありません。完全な WebSocket サンプルでその実装を確認できます。
 
-- カスタムトランスポートを指定しなければ、デフォルトの HTTP トランスポートが引き続き動作します
-- 生成されたバインディングは変更されず、変更されるのはトランスポート層のみです
-- イベント、ダイアログ、クリップボード、およびその他のすべての Wails 機能は透過的に動作します
-- カスタムトランスポートにおけるエラー処理、再接続ロジック、セキュリティは、実装者が担う必要があります
-- 提示されている WebSocket の例はデモ用であり、本番環境で使用するには堅牢化が必要になる場合があります
+リモート環境へデプロイする場合は、TLS と、明示的な認証ポリシーおよびオリジンポリシーを使用してください。ブラウザのみでホストする場合は、以下で説明するように、アプリケーションアセットの配信も必要です。
 
 ## API リファレンス
 
@@ -125,9 +93,9 @@ type Transport interface {
 }
 ```
 
-### AssetServerTransport インターフェース（任意）
+### AssetServerTransport インターフェース（オプション）
 
-ブラウザベースでデプロイする場合、またはカスタムトランスポートを介してアセットと IPC の両方を提供する場合は、`AssetServerTransport` インターフェースを実装します。
+ブラウザベースのデプロイメントで使用する場合、またはカスタムトランスポートを介してアセットと IPC の両方を配信する場合は、`AssetServerTransport` インターフェースを実装してください。
 
 ```go
 type AssetServerTransport interface {
@@ -140,11 +108,11 @@ type AssetServerTransport interface {
 }
 ```
 
-**このインターフェースを実装するケース：**
+**このインターフェースを実装する場合：**
 
 - WebView ではなくブラウザでアプリを実行する場合
-- カスタム IPC トランスポートと併用して、HTTP 経由でアセットを提供する場合
-- ネットワーク経由でアクセス可能なアプリケーションを構築する場合
+- カスタム IPC トランスポートと併せて HTTP 経由でアセットを配信する場合
+- ネットワークからアクセス可能なアプリケーションを構築する場合
 
 **実装例：**
 

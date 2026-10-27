@@ -1,44 +1,44 @@
 ---
-title: "Windows 向けパッケージ化"
-description: "Wails アプリケーションを Windows で配布するためにパッケージ化します"
+title: "Windows 向けパッケージング"
+description: "Wails アプリケーションを Windows で配布できるようにパッケージ化します"
 slug: "guides/build/windows"
 sourcePath: "guides/build/windows.md"
 ---
 
 ## NSIS インストーラー
 
-デフォルトのパッケージ形式では、NSIS インストーラーが作成されます：
+デフォルトのパッケージ形式では、NSIS インストーラーが作成されます。
 
 ```bash
 wails3 package GOOS=windows
 ```
 
-これにより `wails3 task windows:package` が実行され、次の処理が行われます：
+これにより `wails3 task windows:package` が実行され、次の処理が行われます。
 
-1. アプリケーションのビルド
-2. WebView2 ブートストラッパーの生成
-3. NSIS インストーラーの作成
+1. アプリケーションをビルドする
+2. WebView2 ブートストラッパーを生成する
+3. NSIS インストーラーを作成する
 
-出力：`build/windows/nsis/<AppName>-installer.exe`
+出力: `bin/<AppName>-<arch>-installer.exe`。NSIS ソーススクリプトは `build/windows/nsis/` に残ります。
 
 ### MSIX パッケージ
 
-Microsoft Store での配布または最新の Windows 環境への展開には、次を使用します：
+Microsoft Store での配布または最新の Windows 展開を行う場合:
 
 ```bash
 wails3 package GOOS=windows FORMAT=msix
 ```
 
-出力：`bin/<AppName>-<arch>.msix`
+出力: `bin/<AppName>-<arch>.msix`
 
 @note{type="note"}
-MSIX には、`makeappx.exe`（Windows SDK）またはスタンドアロンの MSIX ツールが必要です。Windows Taskfile では、インストールタスクが `wails3 task install:msix:tools` として提供されています。
+MSIX には、`makeappx.exe`（Windows SDK）またはスタンドアロンの MSIX ツールが必要です。Windows の Taskfile では、インストールタスクが `wails3 task install:msix:tools` として提供されています。
 
 @end
 
 ## インストーラーのカスタマイズ
 
-NSIS の設定は `build/windows/nsis/project.nsi` にあります。このファイルを編集すると、次の項目をカスタマイズできます：
+NSIS の設定は `build/windows/nsis/project.nsi` にあります。このファイルを編集すると、次の項目をカスタマイズできます。
 
 - インストーラーの UI とブランディング
 - インストール先ディレクトリ
@@ -46,7 +46,7 @@ NSIS の設定は `build/windows/nsis/project.nsi` にあります。このフ�
 - ファイルの関連付け
 - 使用許諾契約
 
-アプリケーションのメタデータは `build/windows/info.json` から取得されます：
+アプリケーションのメタデータは `build/windows/info.json` から取得されます。
 
 ```json
 {
@@ -54,7 +54,7 @@ NSIS の設定は `build/windows/nsis/project.nsi` にあります。このフ�
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -66,7 +66,7 @@ NSIS の設定は `build/windows/nsis/project.nsi` にあります。このフ�
 
 ## コード署名
 
-SmartScreen の警告を回避するには、実行ファイルとインストーラーに署名します：
+SmartScreen の警告を回避するには、実行可能ファイルとインストーラーに署名します。
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -77,7 +77,7 @@ wails3 task windows:sign
 wails3 task windows:sign:installer
 ```
 
-署名は `build/windows/Taskfile.yml` で設定します：
+署名は `build/windows/Taskfile.yml` で設定します。
 
 ```yaml
 vars:
@@ -87,13 +87,13 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-証明書のパスワードは安全に保管してください：
+証明書のパスワードを安全に保管します。
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
-詳細については、[アプリケーションへの署名](/guides/build/signing/)を参照してください。
+詳しくは、[アプリケーションへの署名](/guides/build/signing/)を参照してください。
 
 ## ARM 向けのビルド
 
@@ -106,7 +106,7 @@ wails3 package GOOS=windows GOARCH=arm64
 
 ### makensis が見つからない
 
-NSIS をインストールします：
+NSIS をインストールします。
 
 ```bash
 # Windows
@@ -117,8 +117,8 @@ winget install NSIS.NSIS
 
 ### SmartScreen の警告
 
-実行ファイルが署名されていません。上記の[コード署名](#heading-1)を参照してください。
+実行可能ファイルが署名されていません。上記の[コード署名](#heading-1)を参照してください。
 
 ### WebView2 が見つからない
 
-インストーラーには、必要に応じてランタイムをダウンロードする WebView2 ブートストラッパーが含まれています。オフラインインストールが必要な場合は、Microsoft から Evergreen Standalone Installer をダウンロードしてください。
+インストーラーには、必要に応じてランタイムをダウンロードする WebView2 ブートストラッパーが含まれています。オフラインでインストールする必要がある場合は、Microsoft から Evergreen Standalone Installer をダウンロードしてください。

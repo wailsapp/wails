@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-Ein vollständiges ausführbares Beispiel mit Schaltflächen für Status, Aktivieren und Deaktivieren befindet sich in [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).
+Ein vollständiges ausführbares Beispiel mit Schaltflächen für Status, Aktivieren und Deaktivieren befindet sich in [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart).

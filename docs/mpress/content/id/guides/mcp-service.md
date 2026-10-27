@@ -246,7 +246,7 @@ Server MCP memberikan kendali terprogram penuh atas aplikasi Anda. Siapa pun yan
 
 ## Aplikasi contoh
 
-Aplikasi playground lengkap yang mendemonstrasikan semua alat tersedia di [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Aplikasi ini mencakup:
+Aplikasi playground lengkap yang mendemonstrasikan semua alat tersedia di [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp). Aplikasi ini mencakup:
 
 - Penghitung dengan tombol untuk menaikkan nilai dan mereset
 - Input nama dengan metode terikat Greet, Add, dan Shout

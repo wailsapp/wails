@@ -49,7 +49,7 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-The callback receives `application.Window` (an interface). The `OnCreate` callback is invoked once per window, after the window's runtime is initialised.
+The callback receives `application.Window` (an interface). The `OnCreate` callback is invoked once per window during registration, before the window is run. Use it to configure the window and register handlers. Wait for `events.Common.WindowRuntimeReady` before calling JavaScript or sending events that require the frontend runtime.
 
 ### WindowClosing
 
@@ -492,4 +492,4 @@ unsub()
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

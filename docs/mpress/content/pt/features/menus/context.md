@@ -739,4 +739,4 @@ Padrões comuns de menus e práticas recomendadas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu de contexto](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu de contexto](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/contextmenus).
