@@ -1,0 +1,69 @@
+name: Drop UNRELEASED_CHANGELOG edits
+
+# v3/UNRELEASED_CHANGELOG.md is generated: Auto Changelog (v3) writes an entry
+# after each PR merges, and the release tooling moves and resets it. Edits made
+# in ordinary PRs only cause merge conflicts between PRs, so this workflow puts
+# the file back to the base branch's version on the PR branch.
+#
+# Security: this runs on pull_request_target with a write token, so it never
+# checks out or runs PR code. It only reads and writes this one file through
+# the GitHub contents API.
+#
+# Exempt: release PRs (head branch bump/*), PRs opened by github-actions[bot],
+# and PRs a maintainer labels `allow-changelog-edit`.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - 'v3/UNRELEASED_CHANGELOG.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drop-unreleased-changelog-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  drop:
+    if: >-
+      github.repository == 'wailsapp/wails' &&
+      !startsWith(github.event.pull_request.head.ref, 'bump/') &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      !contains(github.event.pull_request.labels.*.name, 'allow-changelog-edit')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore v3/UNRELEASED_CHANGELOG.md from the base branch
+        env:
+          # A PAT is needed to push to fork branches ("Allow edits by
+          # maintainers" must be on); GITHUB_TOKEN cannot.
+          GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+          BASE_REPO: ${{ github.repository }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR: ${{ github.event.pull_request.number }}
+          FILE: v3/UNRELEASED_CHANGELOG.md
+        run: |
+          set -euo pipefail
+          base_content="$(gh api "repos/$BASE_REPO/contents/$FILE?ref=$BASE_REF" --jq .content | tr -d '\n')"
+          head_json="$(gh api "repos/$HEAD_REPO/contents/$FILE?ref=$HEAD_REF" 2>/dev/null || true)"
+          head_sha="$(jq -r '.sha // empty' <<<"$head_json")"
+          head_content="$(jq -r '.content // empty' <<<"$head_json" | tr -d '\n')"
+          if [ "$head_content" = "$base_content" ]; then
+            echo "The PR branch already has the base branch's $FILE; nothing to do."
+            exit 0
+          fi
+          args=(-X PUT "repos/$HEAD_REPO/contents/$FILE"
+            -f message="chore: drop edits to the generated $FILE
+
+          This file is generated after merge; editing it in PRs causes conflicts."
+            -f content="$base_content" -f branch="$HEAD_REF")
+          [ -n "$head_sha" ] && args+=(-f sha="$head_sha")
+          if gh api "${args[@]}" >/dev/null; then
+            gh pr comment "$PR" --repo "$BASE_REPO" --body "Thanks for the PR! \`$FILE\` is generated automatically after your PR merges, so I've removed the edits to it from this branch to avoid merge conflicts. Please describe the change in the PR title and description instead; the changelog entry is written from those."
+          else
+            echo "::error::Could not update $FILE on $HEAD_REPO:$HEAD_REF. Revert your changes to $FILE (it is generated after merge), or enable 'Allow edits by maintainers'."
+            exit 1
+          fi

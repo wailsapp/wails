@@ -518,4 +518,4 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или посмотрите [примеры диалоговых окон](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или посмотрите [примеры диалоговых окон](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs).

@@ -488,4 +488,4 @@ Code für die Zwischenablage organisieren.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Zwischenablagebeispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) an.
+**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Zwischenablagebeispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) an.

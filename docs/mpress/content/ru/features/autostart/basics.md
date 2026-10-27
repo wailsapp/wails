@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-Полный готовый к запуску пример с кнопками проверки состояния, включения и отключения находится в [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).
+Полный готовый к запуску пример с кнопками проверки состояния, включения и отключения находится в [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart).

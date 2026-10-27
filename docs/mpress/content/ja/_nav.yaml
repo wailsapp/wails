@@ -1,68 +1,45 @@
 - label: "ホーム"
   link: "/"
-- label: "Wails を選ぶ理由"
-  link: "/quick-start/why-wails/"
-- label: "クイックスタート"
+- label: "はじめに"
   collapsed: false
   items:
+    - label: "Wailsを選ぶ理由"
+      link: "/quick-start/why-wails/"
     - label: "インストール"
       link: "/quick-start/installation/"
     - label: "最初のアプリ"
       link: "/quick-start/first-app/"
     - label: "次のステップ"
       link: "/quick-start/next-steps/"
+    - label: "移行"
+      collapsed: true
+      items:
+        - label: "v2からv3への移行"
+          link: "/migration/v2-to-v3/"
+        - label: "Electronからの移行"
+          link: "/migration/from-electron/"
 - label: "チュートリアル"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "基本概念"
+  items:
+    - label: "チュートリアルを選ぶ"
+      link: "/tutorials/overview/"
+    - label: "QRコードサービス"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "TODOリスト"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "ノート"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "自己更新アプリ"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "最初のモバイルアプリ（実験的機能）"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "ハウツーガイド"
   collapsed: true
   items:
-    - label: "Wails の仕組み"
-      link: "/concepts/architecture/"
-    - label: "マネージャー API"
-      link: "/concepts/manager-api/"
-    - label: "アプリケーションのライフサイクル"
-      link: "/concepts/lifecycle/"
-    - label: "Go・フロントエンド間ブリッジ"
-      link: "/concepts/bridge/"
-    - label: "ビルドシステム"
-      link: "/concepts/build-system/"
-- label: "機能"
-  collapsed: true
-  items:
-    - label: "ウィンドウ"
+    - label: "Goの呼び出し、サービス、データ"
       collapsed: true
       items:
-        - label: "ウィンドウの基本"
-          link: "/features/windows/basics/"
-        - label: "ウィンドウオプション"
-          link: "/features/windows/options/"
-        - label: "ノッチウィンドウ"
-          link: "/features/windows/notch-windows/"
-        - label: "権限"
-          link: "/features/windows/permissions/"
-        - label: "複数ウィンドウ"
-          link: "/features/windows/multiple/"
-        - label: "フレームレスウィンドウ"
-          link: "/features/windows/frameless/"
-        - label: "ウィンドウイベント"
-          link: "/features/windows/events/"
-    - label: "メニュー"
-      collapsed: true
-      items:
-        - label: "アプリケーションメニュー"
-          link: "/features/menus/application/"
-        - label: "コンテキストメニュー"
-          link: "/features/menus/context/"
-        - label: "システムトレイメニュー"
-          link: "/features/menus/systray/"
-        - label: "メニューリファレンス"
-          link: "/features/menus/reference/"
-    - label: "バインディングとサービス"
-      collapsed: true
-      items:
-        - label: "メソッドバインディング"
+        - label: "JavaScriptからGoを呼び出す"
           link: "/features/bindings/methods/"
         - label: "サービス"
           link: "/features/bindings/services/"
@@ -85,6 +62,30 @@
           link: "/features/events/window/"
         - label: "カスタムイベント"
           link: "/features/events/custom/"
+    - label: "ウィンドウ"
+      collapsed: true
+      items:
+        - label: "ウィンドウの基本"
+          link: "/features/windows/basics/"
+        - label: "ノッチウィンドウ"
+          link: "/features/windows/notch-windows/"
+        - label: "権限"
+          link: "/features/windows/permissions/"
+        - label: "複数ウィンドウ"
+          link: "/features/windows/multiple/"
+        - label: "フレームレスウィンドウ"
+          link: "/features/windows/frameless/"
+        - label: "ウィンドウイベント"
+          link: "/features/windows/events/"
+    - label: "メニュー"
+      collapsed: true
+      items:
+        - label: "アプリケーションメニュー"
+          link: "/features/menus/application/"
+        - label: "コンテキストメニュー"
+          link: "/features/menus/context/"
+        - label: "システムトレイメニュー"
+          link: "/features/menus/systray/"
     - label: "ダイアログ"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "カスタムダイアログ"
           link: "/features/dialogs/custom/"
-    - label: "自動起動"
+    - label: "デスクトップ統合"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "クリップボード"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "ブラウザー"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "ドラッグ＆ドロップ"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "キーボード"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "通知"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "画面"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "環境"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "プラットフォーム固有機能"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "モバイル"
-  collapsed: true
-  items:
-    - label: "概要"
-      link: "/guides/mobile/"
-    - label: "最初のモバイルアプリ"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "モバイル API"
-      link: "/guides/mobile/mobile-api/"
-- label: "実験的機能"
-  collapsed: true
-  items:
-    - label: "概要"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "LLM 制御（MCP）"
-      link: "/guides/mcp-service/"
-- label: "ガイド"
-  collapsed: true
-  items:
+      items:
+        - label: "自動起動"
+          link: "/features/autostart/basics/"
+        - label: "クリップボード"
+          link: "/features/clipboard/basics/"
+        - label: "ブラウザー統合"
+          link: "/features/browser/integration/"
+        - label: "ドラッグ＆ドロップ"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "キーボード"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "通知"
+          link: "/features/notifications/overview/"
+        - label: "画面"
+          link: "/features/screens/info/"
+        - label: "環境"
+          link: "/features/environment/info/"
+        - label: "macOS Dock"
+          link: "/features/platform/dock/"
     - label: "開発"
       collapsed: true
       items:
@@ -179,15 +144,15 @@
           link: "/guides/build/cross-platform/"
         - label: "コード署名"
           link: "/guides/build/signing/"
-        - label: "Windows 向けパッケージ化"
+        - label: "Windows向けパッケージ化"
           link: "/guides/build/windows/"
-        - label: "macOS 向けパッケージ化"
+        - label: "macOS向けパッケージ化"
           link: "/guides/build/macos/"
-        - label: "非公開の macOS API"
+        - label: "非公開macOS API"
           link: "/guides/build/private-macos-apis/"
-        - label: "Linux 向けパッケージ化"
+        - label: "Linux向けパッケージ化"
           link: "/guides/build/linux/"
-        - label: "MSIX パッケージ化"
+        - label: "MSIXパッケージ化"
           link: "/guides/build/msix/"
         - label: "難読化ビルド"
           link: "/guides/build/obfuscation/"
@@ -207,9 +172,9 @@
       items:
         - label: "フロントエンドルーティング"
           link: "/guides/routing/"
-        - label: "Gin Router の使用"
+        - label: "Gin Routerの使用"
           link: "/guides/gin-routing/"
-        - label: "Gin サービス"
+        - label: "Ginサービス"
           link: "/guides/gin-services/"
         - label: "データベース統合"
           link: "/guides/patterns/database/"
@@ -228,7 +193,38 @@
           link: "/guides/panic-handling/"
         - label: "セキュリティのベストプラクティス"
           link: "/guides/security/"
-- label: "API リファレンス"
+    - label: "モバイル（実験的機能）"
+      collapsed: true
+      items:
+        - label: "概要"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "実験的機能"
+      collapsed: true
+      items:
+        - label: "概要"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "LLM制御（MCP）"
+          link: "/guides/mcp-service/"
+- label: "コア概念"
+  collapsed: true
+  items:
+    - label: "Wailsの仕組み"
+      link: "/concepts/architecture/"
+    - label: "Manager API"
+      link: "/concepts/manager-api/"
+    - label: "アプリケーションのライフサイクル"
+      link: "/concepts/lifecycle/"
+    - label: "Go・フロントエンド間ブリッジ"
+      link: "/concepts/bridge/"
+    - label: "ビルドシステム"
+      link: "/concepts/build-system/"
+- label: "APIリファレンス"
   collapsed: true
   items:
     - label: "概要"
@@ -236,9 +232,19 @@
     - label: "アプリケーション"
       link: "/reference/application/"
     - label: "ウィンドウ"
-      link: "/reference/window/"
+      collapsed: true
+      items:
+        - label: "ウィンドウAPI"
+          link: "/reference/window/"
+        - label: "ウィンドウオプション"
+          link: "/features/windows/options/"
     - label: "メニュー"
-      link: "/reference/menu/"
+      collapsed: true
+      items:
+        - label: "メニューAPI"
+          link: "/reference/menu/"
+        - label: "メニューリファレンス"
+          link: "/features/menus/reference/"
     - label: "イベント"
       link: "/reference/events/"
     - label: "ダイアログ"
@@ -246,16 +252,37 @@
     - label: "フロントエンドランタイム"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "コマンドの概要"
+          link: "/reference/cli/"
+        - label: "フラグと例"
+          link: "/guides/cli/"
     - label: "更新マニフェストプロトコル"
       link: "/reference/update-manifest/"
+    - label: "モバイルAPI（実験的機能）"
+      link: "/guides/mobile/mobile-api/"
+- label: "トラブルシューティング"
+  collapsed: true
+  items:
+    - label: "よくある質問"
+      link: "/faq/"
+    - label: "macOS上のSysoファイル"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDPの問題"
+          link: "/troubleshooting/windows/rdp/"
 - label: "コントリビューション"
   collapsed: true
   items:
-    - label: "ドキュメントの修正"
-      link: "/contributing/documentation/"
     - label: "コントリビューションガイド"
       link: "/contributing/"
+    - label: "ドキュメント"
+      link: "/contributing/documentation/"
+    - label: "リリースポリシー"
+      link: "/contributing/release-policy/"
     - label: "技術概要"
       link: "/contributing/overview/"
     - label: "はじめに"
@@ -264,23 +291,6 @@
       link: "/contributing/setup/"
     - label: "コーディング規約"
       link: "/contributing/standards/"
-- label: "移行"
-  collapsed: true
-  items:
-    - label: "v2 から v3 への移行"
-      link: "/migration/v2-to-v3/"
-    - label: "Electron からの移行"
-      link: "/migration/from-electron/"
-- label: "トラブルシューティング"
-  collapsed: true
-  items:
-    - label: "macOS 上の Syso ファイル"
-      link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
-      collapsed: true
-      items:
-        - label: "RDP の問題"
-          link: "/troubleshooting/windows/rdp/"
 - label: "コミュニティ"
   collapsed: true
   items:
@@ -298,13 +308,16 @@
         - label: "アプリケーション"
           autogenerate:
             directory: "community/showcase"
-- label: "新機能"
-  link: "/whats-new/"
-- label: "ステータス"
-  link: "/status/"
-- label: "変更履歴"
-  link: "/changelog/"
-- label: "スポンサー"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "クレジット"
-  link: "/credits/"
+- label: "プロジェクト"
+  collapsed: true
+  items:
+    - label: "新機能"
+      link: "/whats-new/"
+    - label: "ステータス"
+      link: "/status/"
+    - label: "変更履歴"
+      link: "/changelog/"
+    - label: "スポンサー"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "クレジット"
+      link: "/credits/"

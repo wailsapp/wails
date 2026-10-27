@@ -790,4 +790,4 @@ type WindowState struct {
 
 ---
 
-**Fragen?** Fragen Sie in [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Beispiel für mehrere Fenster](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window) an.
+**Fragen?** Fragen Sie in [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Beispiel für mehrere Fenster](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/multi-window) an.

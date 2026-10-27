@@ -416,7 +416,7 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 Ознакомьтесь с этим примером:
 
-- [Уведомления](https://github.com/wailsapp/wails/tree/master/v3/examples/notifications)
+- [Уведомления](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notifications)
 
 ## Справочник API
 

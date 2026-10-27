@@ -25,7 +25,7 @@ Android WebView + `WebViewAssetLoader`. Go dikompilasi sebagai `libwails.so` mel
 
 Cara terbaik untuk memahami kemungkinannya adalah dengan melihat **Kitchen Sink** — satu aplikasi Wails yang berjalan secara identik di iOS, Android, dan desktop dari satu basis kode:
 
-@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="Binding · Peristiwa · Dialog · Haptik · Geolokasi · Biometrik · Notifikasi · Penyimpanan aman · dan lainnya — semuanya dari satu main.go"}
+@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="Binding · Peristiwa · Dialog · Haptik · Geolokasi · Biometrik · Notifikasi · Penyimpanan aman · dan lainnya — semuanya dari satu main.go"}
 Contoh ini mendemonstrasikan setiap antarmuka API seluler utama dalam 7 tab — dan juga berjalan di desktop. Tab **Seluler** dan **Perangkat Keras** disembunyikan di desktop melalui pemeriksaan platform di frontend; sisi Go tidak mendaftarkan handler untuk peristiwa seluler `common:*` saat dibuat untuk desktop. Ini adalah pola yang direkomendasikan untuk mendistribusikan satu basis kode ke semua platform.
 
 | Tab | Platform | Yang ditampilkan |

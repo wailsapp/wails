@@ -1,18 +1,15 @@
 # Unreleased Changes
 
-<!-- 
-This file is used to collect changelog entries for the next v3 release.
-Add your changes under the appropriate sections below.
+<!--
+AUTO-GENERATED FILE: do not edit in ordinary contribution PRs.
 
-Guidelines:
-- Follow the "Keep a Changelog" format (https://keepachangelog.com/)
-- Write clear, concise descriptions of changes
-- Include the impact on users when relevant
-- Use present tense ("Add feature" not "Added feature")
-- Reference issue/PR numbers when applicable
+The Auto Changelog (v3) workflow generates entries after PRs merge.
+Describe the user-visible change in the PR title and description instead.
+Release tooling moves staged entries into docs/mpress/content/changelog.md
+and resets this file. Do not delete or reset it by hand.
 
-This file is automatically processed by the nightly release workflow.
-After processing, the content will be moved to the main changelog and this file will be reset.
+For changes to this automation or explicitly requested release-note corrections,
+follow the changelog ownership policy in AGENTS.md and preserve existing entries.
 -->
 
 ## Added
@@ -20,36 +17,27 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Link the 404 page to matching Wails v2 documentation pages on v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6366) by @taliesin-ai
+- Move the v2 documentation site to v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6365) by @taliesin-ai
+- Serve v3 documentation from wails.io and v2 documentation from v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6364) by @taliesin-ai
+- Update v3.0.0 release notes and correct the security advisory claim in [PR](https://github.com/wailsapp/wails/pull/6363) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Windows apps crashing with `panic: SetTextColor failed` when painting the application menu bar on some Windows builds: the menu bar draws on a valid device context or falls back to default drawing, `UAHMENUITEM.Position` now matches the C `int`, and menu painting never panics (#6311)
+- Fix data race in event hook emission by snapshotting hooks under lock in [PR](https://github.com/wailsapp/wails/pull/6276) by @DevLumuz
+- Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
+- Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
+- Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
+- Fix Linux dark mode detection returning light on a dark desktop until the colour scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend. Both backends now share one implementation, backed by the `org.freedesktop.appearance` portal namespace (#6072)
+- `Window.SetZoom` no longer raises factors below 1.0 to 1.0 on framed windows (Windows, macOS, Linux): WebView2 `ZoomFactor`, WKWebView `magnification` and WebKitGTK's zoom level accept any positive value, and the `Zoom` window option already passed such values through. Frameless windows keep the 1.0 floor because their drag and resize regions are not adjusted for zoom ([#4590](https://github.com/wailsapp/wails/issues/4590)); non-positive, NaN and Inf factors are now ignored instead of being raised to 1.0 — by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove Crowdin integration after final translation sync in [PR](https://github.com/wailsapp/wails/pull/5736) by @github-actions[bot]
 
 ## Security
 <!-- Security-related changes -->
 
 ---
-
-### Example Entries:
-
-**Added:**
-- Add support for custom window icons in application options
-- Add new `SetWindowIcon()` method to runtime API (#1234)
-
-**Changed:**
-- Update minimum Go version requirement to 1.21
-- Improve error messages for invalid configuration files
-
-**Fixed:**
-- Fix memory leak in event system during window close operations (#5678)
-- Fix crash when using context menus on Linux with Wayland
-
-**Security:**
-- Update dependencies to address CVE-2024-12345 in third-party library

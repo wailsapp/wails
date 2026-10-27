@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
 **C’est tout !** Vous bénéficiez d’un typage entièrement sûr de part et d’autre du pont.
 
 ## Définition des modèles
+
+Les classes de modèle ci-dessous illustrent la structure des champs ; utilisez les liaisons réellement générées plutôt que de copier ces classes simplifiées comme code de conversion.
+
+Pour `time.Time`, le générateur utilise `-time-type=string` par défaut. Utilisez `-time-type=Date` pour les classes générées qui convertissent les horodatages en valeurs JavaScript `Date`. Les tâches de compilation standard des modèles JavaScript/de classe sélectionnent `Date` ; les tâches pour les interfaces TypeScript conservent `string`. Vérifiez la tâche générée avant de changer de mode. Dans le JSON, les horodatages Go restent des chaînes RFC3339Nano.
+
+En mode Date, les fonctions d’assistance à la conversion générées transforment ces chaînes en dates. `Object.assign` seul n’effectue pas cette conversion. Pour les liaisons sous forme de chaînes, convertissez explicitement un horodatage avec `new Date(timestamp)` avant d’utiliser les méthodes de Date.
 
 ### Structure de base
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 export class User {
@@ -108,11 +114,11 @@ export class User {
 }
 ```
 
-Dans JavaScript, **les balises JSON déterminent le nom des champs**.
+**Les balises JSON déterminent le nom des champs** dans JavaScript.
 
 ### Sérialisation JSON personnalisée
 
-Les résultats des méthodes liées sont sérialisés avec le paquet `encoding/json` standard de Go. Notez que les méthodes `MarshalJSON` déclarées sur un récepteur pointeur ne sont appelées que lorsque la valeur à sérialiser est adressable. Un sérialiseur personnalisé peut donc être appelé pour les éléments d’une tranche renvoyée, mais pas pour une structure renvoyée par valeur :
+Les résultats des méthodes liées sont sérialisés avec le paquet standard `encoding/json` de Go. Sachez que les méthodes `MarshalJSON` déclarées sur un récepteur de type pointeur ne sont appelées que si la valeur à sérialiser est adressable. Un sérialiseur personnalisé peut donc être appelé pour les éléments d’une tranche renvoyée, mais pas pour une structure renvoyée par valeur :
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-Pour garantir un résultat cohérent, définissez `MarshalJSON` sur un récepteur valeur lorsque le type peut être copié sans risque, ou renvoyez un pointeur vers la structure (par exemple, `*User`). Il s’agit d’un comportement du paquet `encoding/json` de Go, et non d’une différence dans la génération des liaisons par Wails.
+Pour garantir un résultat cohérent, définissez `MarshalJSON` sur un récepteur de type valeur lorsque le type peut être copié sans risque, ou renvoyez un pointeur vers la structure (par exemple, `*User`). Il s’agit d’un comportement de `encoding/json` dans Go, et non d’une différence dans la génération des liaisons par Wails.
 
 ### Avec des commentaires
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 /**
@@ -176,7 +182,7 @@ export class User {
 }
 ```
 
-**Les commentaires deviennent des commentaires JSDoc !** Votre IDE les affiche.
+**Les commentaires deviennent du JSDoc !** Votre IDE les affiche.
 
 ### Structures imbriquées
 
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 export class Team {
@@ -264,7 +270,7 @@ const team = new Team({
 })
 ```
 
-### Tables associatives
+### Dictionnaires
 
 ```go
 type Config struct {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**JavaScript généré :**
+**JavaScript à titre d’exemple :**
 
 ```javascript
 export class Config {
@@ -312,14 +318,14 @@ const config = new Config({
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | table associative à clés de type chaîne |
-| `map[K]V` | `{ [_ in K]?: V }` | un type `K` autre qu’une chaîne est rendu sous forme de type mappé, et **non** sous forme de `Map` JS |
+| `map[string]T` | `{ [_: string]: T }` | map avec des clés de type chaîne |
+| `map[K]V` | `{ [_ in K]?: V }` | un `K` qui n’est pas une chaîne est rendu sous forme de type mappé, et **non** comme une `Map` JS |
 | `[]byte` | `string` | encodé en base64 |
 | `struct` | `class` / `interface` | avec des champs |
-| `time.Time` | `any` | sérialisé à l’exécution sous forme de chaîne RFC3339Nano |
-| `*T` | `T \| null` | un pointeur indique une valeur nullable |
+| `time.Time` | `string` (par défaut) ou `Date` | `-time-type` sélectionne la représentation générée ; JSON utilise une chaîne RFC3339Nano |
+| `*T` | `T \| null` | un pointeur indique que la valeur peut être nulle |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | Exception si utilisé comme valeur de retour, sinon any |
+| `error` | `any` / `Exception` | Exception s’il s’agit d’une valeur de retour, sinon any |
 
 ### Types non pris en charge
 
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### TypeScript généré
 
+Cette section illustre les liaisons de classes avec conversion en Date. La commande `-ts` simple conserve la représentation sous forme de chaîne utilisée par défaut par le générateur. La classe affichée est simplifiée ; le générateur produit également des fonctions auxiliaires de conversion.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **Généré :**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### Énumérations
 
-Le générateur de liaisons détecte automatiquement les types nommés Go associés à des constantes et génère des énumérations TypeScript ou des objets JavaScript const, avec notamment un membre `$zero` pour la valeur zéro de Go et la conservation intégrale de JSDoc.
+Le générateur de liaisons détecte automatiquement les types nommés Go associés à des constantes et génère des énumérations TypeScript ou des objets const JavaScript, avec notamment un membre `$zero` pour la valeur zéro de Go et la conservation intégrale de la documentation JSDoc.
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-Pour une présentation complète des énumérations de chaînes, des énumérations d’entiers, des alias de types, des énumérations de paquets importés et des limitations, consultez la page dédiée aux **[énumérations](/features/bindings/enums/)**.
+Pour une présentation complète des énumérations de chaînes et d’entiers, des alias de types, des énumérations de paquets importés et des limitations, consultez la page dédiée aux **[énumérations](/features/bindings/enums/)**.
 
 ### Validation
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -706,19 +714,19 @@ manager.loadUsers()
 ### ✅ À faire
 
 - **Utilisez des balises JSON** — Contrôlez les noms des champs
-- **Ajoutez des commentaires** — Ils deviennent des commentaires JSDoc
-- **Utilisez time.Time** — Il est converti en Date
+- **Ajoutez des commentaires** — Ils deviennent de la documentation JSDoc
+- **Choisissez une représentation temporelle** — `time.Time` devient `string` par défaut ; `-time-type=Date` active la conversion en Date dans le code généré
 - **Validez côté Go** — Ne faites pas confiance au frontend
-- **Gardez les modèles simples** — Utilisez-les uniquement comme conteneurs de données
-- **Utilisez des pointeurs pour les champs facultatifs** — `*string` pour les valeurs nullables
+- **Gardez des modèles simples** — Utilisez-les uniquement comme conteneurs de données
+- **Utilisez des pointeurs pour les champs facultatifs** — `*string` pour les valeurs pouvant être nulles
 
 ### ❌ À ne pas faire
 
-- **N’ajoutez pas de méthodes aux structures Go** — Conservez-les comme données
+- **N’ajoutez pas de méthodes aux structures Go** — Conservez-les comme simples données
 - **N’utilisez pas de champs non exportés** — Ils ne seront pas liés
 - **N’utilisez pas d’interfaces complexes** — Elles ne sont pas prises en charge
 - **N’oubliez pas les balises JSON** — Les noms des champs sont importants
-- **N’imbriquez pas trop profondément** — Restez simple
+- **Évitez une imbrication trop profonde** — Faites simple
 
 ## Étapes suivantes
 
@@ -741,7 +749,7 @@ Modèles de conception des liaisons.
 [En savoir plus →](/features/bindings/best-practices/)
 
 ---
-★ Pont Go-frontend
+★ Pont entre Go et le frontend
 Comprenez le mécanisme du pont.
 
 [En savoir plus →](/concepts/bridge/)
@@ -750,4 +758,4 @@ Comprenez le mécanisme du pont.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

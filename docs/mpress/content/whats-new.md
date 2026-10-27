@@ -348,4 +348,4 @@ An experimental feature to call runtime methods using plain html, similar to [ht
 
 ## Examples
 
-There are more examples available in the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples) directory. Check them out!
+There are more examples available in the [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) directory. Check them out!

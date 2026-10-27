@@ -5,169 +5,145 @@ slug: "guides/e2e-testing"
 sourcePath: "guides/e2e-testing.md"
 ---
 
-## Overview
+## What this guide tests
 
-End-to-end testing validates complete user workflows in your application.
+Use Playwright against a **server build** to exercise your frontend and real Go services in a browser. The Vite preview at port 9245 serves frontend files; opening it in an ordinary browser does not by itself provide Wails service bindings.
 
-## Using Playwright
+This harness covers browser UI and service calls. It does not automate native WebView windows, operating-system menus, tray icons or native file dialogs. Test those separately on each supported desktop platform.
 
-### Setup
+## Prepare a starter application
+
+Create a JavaScript starter, then work in its directory:
 
 ```bash
-# Install Playwright
-npm install -D @playwright/test
-
-# Initialize
-npx playwright install
+wails3 init -n e2e-app -t vanilla-js
+cd e2e-app
 ```
 
-### Configuration
+In `main.go`, add this field to the existing `application.Options` value:
+
+```go
+Server: application.ServerOptions{
+    Host: "127.0.0.1",
+    Port: 8080,
+},
+```
+
+Keep the existing asset handler and service registration. The server options take effect when the application is built with the `server` tag. See [Server Build](/guides/server-build/) for its capabilities and limits.
+
+Generate bindings and build the production frontend before starting the test host:
+
+```bash
+wails3 generate bindings -f '-tags=server'
+cd frontend
+npm install
+npm run build
+npm install -D @playwright/test
+npx playwright install chromium
+```
+
+Commit the resulting package manifest and lockfile so CI can use `npm ci`.
+
+## Start and wait for the Go host
+
+Create `frontend/playwright.config.js`:
 
 ```javascript
-// playwright.config.js
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
   use: {
-    baseURL: 'http://localhost:9245', // Wails v3 dev server (default port)
+    baseURL: 'http://127.0.0.1:8080',
+    viewport: { width: 800, height: 600 },
+  },
+  webServer: {
+    command: 'go run -tags server,production .',
+    cwd: '..',
+    url: 'http://127.0.0.1:8080',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
 })
 ```
 
-### Writing Tests
+Playwright starts the Go application from the project root and waits for its HTTP endpoint. Run one isolated host per test job. Use temporary storage or a test database when adding persistence tests; never aim this harness at real user data.
+
+## Verify a real service call
+
+Create `frontend/e2e/app.spec.js`:
 
 ```javascript
-// e2e/app.spec.js
 import { test, expect } from '@playwright/test'
 
-test('create note', async ({ page }) => {
+test('greet through the Go service', async ({ page }) => {
   await page.goto('/')
-  
-  // Click new note button
-  await page.click('#new-note-btn')
-  
-  // Fill in title
-  await page.fill('#note-title', 'Test Note')
-  
-  // Fill in content
-  await page.fill('#note-content', 'Test content')
-  
-  // Verify note appears in list
-  await expect(page.locator('.note-item')).toContainText('Test Note')
-})
-
-test('delete note', async ({ page }) => {
-  await page.goto('/')
-  
-  // Create a note first
-  await page.click('#new-note-btn')
-  await page.fill('#note-title', 'To Delete')
-  
-  // Delete it
-  await page.click('#delete-btn')
-  
-  // Confirm dialog
-  page.on('dialog', dialog => dialog.accept())
-  
-  // Verify it's gone
-  await expect(page.locator('.note-item')).not.toContainText('To Delete')
+  await page.locator('#name').fill('Ada')
+  // The starter's aria-label supplies the button's accessible name.
+  await page.getByRole('button', { name: 'greet-btn' }).click()
+  await expect(page.locator('#result')).toContainText('Ada')
 })
 ```
 
-## Testing dialogs
+The selectors above match the generated `vanilla-js` starter. Adapt them to your UI after replacing the starter. The result assertion waits for the Go call rather than assuming a fixed delay.
 
-```javascript
-test('file save dialog', async ({ page }) => {
-  await page.goto('/')
-  
-  // Intercept file dialog
-  page.on('filechooser', async (fileChooser) => {
-    await fileChooser.setFiles('/path/to/test/file.json')
-  })
-  
-  // Trigger save
-  await page.click('#save-btn')
-  
-  // Verify success message
-  await expect(page.locator('.success-message')).toBeVisible()
-})
-```
-
-## Testing Window Behaviour
-
-```javascript
-test('window state', async ({ page }) => {
-  await page.goto('/')
-  
-  // Test window title
-  await expect(page).toHaveTitle('My App')
-  
-  // Test window size
-  const size = await page.viewportSize()
-  expect(size.width).toBe(800)
-  expect(size.height).toBe(600)
-})
-```
-
-## Best Practices
-
-### ✅ Do
-
-- Test critical user flows
-- Use data-testid attributes
-- Clean up test data
-- Run tests in CI/CD
-- Test error scenarios
-- Keep tests independent
-
-### ❌ Don't
-
-- Don't test implementation details
-- Don't write brittle selectors
-- Don't skip cleanup
-- Don't ignore flaky tests
-- Don't test everything
-
-## Running E2E Tests
+Run from `frontend`:
 
 ```bash
-# Run all tests
 npx playwright test
-
-# Run in headed mode
-npx playwright test --headed
-
-# Run specific test
-npx playwright test e2e/app.spec.js
-
-# Debug mode
-npx playwright test --debug
 ```
 
-## CI/CD Integration
+This configuration uses Playwright’s default Chromium browser.
+
+## Browser interactions and native boundaries
+
+For a browser `window.confirm`, register the handler **before** the click that opens it:
+
+```javascript
+page.once('dialog', dialog => dialog.accept())
+await page.getByRole('button', { name: 'Delete' }).click()
+```
+
+For an HTML upload input, use `page.locator('input[type=file]').setInputFiles('fixtures/note.json')`. This supplies a file to the browser input; it does not test a Wails native save dialog. Test your application’s save outcome through its service boundary, then verify the native dialog manually or with an appropriate platform automation harness.
+
+The configured 800×600 viewport tests responsive browser layout. `page.viewportSize()` does not measure a native Wails window. Similarly, Playwright browser-dialog handlers do not handle Wails native message dialogs.
+
+## CI
+
+This workflow assumes the application is at the repository root and that the Playwright dependency and lockfile above are committed:
 
 ```yaml
-# .github/workflows/e2e.yml
-name: E2E Tests
-
-on: [push]
-
+name: Browser integration tests
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-      - name: Run tests
-        run: npx playwright test
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+      - run: wails3 generate bindings -f '-tags=server'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npx playwright test
+        working-directory: frontend
 ```
 
-## Next Steps
+The configuration's `webServer` starts the backend in CI as well as locally. Keep server tests separate from native desktop packaging and launch checks.
 
-- [Testing](/guides/testing/) - Learn unit testing
-- [Building](/guides/build/building/) - Build your application
+## Next steps
+
+- [Testing](/guides/testing/) — unit and service-level tests
+- [Server Build](/guides/server-build/) — browser-host behaviour
+- [Building](/guides/build/building/) — native builds

@@ -686,4 +686,4 @@ Cross-compilation between Linux/Windows/macOS in v3 generally happens in a Docke
 
 ---
 
-**Questions about building?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [build examples](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
+**Questions about building?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [build examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build).

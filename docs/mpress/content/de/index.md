@@ -1,7 +1,7 @@
 ---
 title: "Desktop-Anwendungen mit Go entwickeln"
 description: "Native Desktop-Anwendungen mit Go und Webtechnologien"
-banner: {"content":"Wails v3 befindet sich derzeit in der Betaphase. \u003ca href=\"https://v2.wails.io\"\u003eDu suchst die Dokumentation zu v2?\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. <a href=\"https://v2.wails.io\">Du suchst die Dokumentation zu v2?</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Erste Schritte","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Tutorial ansehen","variant":"secondary"}],"image":{"alt":"Wails-Logo","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Entwickle ansprechende, leistungsfähige Anwendungen mit Go und modernen Webtechnologien. Eine Codebasis. Drei Plattformen. Keine Browser.*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Nächste Schritte
 
-Als Nächstes kannst du [eine vollständige Anwendung entwickeln](/tutorials/03-notes-vanilla/), die [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) durchsuchen oder in der [API-Referenz](/reference/application/) nachschlagen. Du migrierst von v2? Sieh dir den [Upgrade-Leitfaden](/migration/v2-to-v3/) an.
+Als Nächstes kannst du [eine vollständige Anwendung entwickeln](/tutorials/03-notes-vanilla/), die [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) durchsuchen oder in der [API-Referenz](/reference/application/) nachschlagen. Du migrierst von v2? Sieh dir den [Upgrade-Leitfaden](/migration/v2-to-v3/) an.
 
-@note{type="info" title="Wails v3 Beta"}
-Wails v3 ist eine Betaversion mit einer stabilen Desktop-API. Teams setzen sie bereits produktiv ein, sollten sie vor der Bereitstellung jedoch gründlich testen, während wir 3.0 den letzten Feinschliff geben.
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
 
 @end
 

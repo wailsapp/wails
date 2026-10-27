@@ -1,68 +1,45 @@
 - label: "首页"
   link: "/"
-- label: "为什么选择 Wails？"
-  link: "/quick-start/why-wails/"
 - label: "快速入门"
   collapsed: false
   items:
+    - label: "为什么选择 Wails？"
+      link: "/quick-start/why-wails/"
     - label: "安装"
       link: "/quick-start/installation/"
-    - label: "创建第一个应用"
+    - label: "你的第一个应用"
       link: "/quick-start/first-app/"
     - label: "后续步骤"
       link: "/quick-start/next-steps/"
+    - label: "迁移"
+      collapsed: true
+      items:
+        - label: "从 v2 迁移到 v3"
+          link: "/migration/v2-to-v3/"
+        - label: "从 Electron 迁移"
+          link: "/migration/from-electron/"
 - label: "教程"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "核心概念"
+  items:
+    - label: "选择教程"
+      link: "/tutorials/overview/"
+    - label: "二维码服务"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "待办事项列表"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "笔记"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "自动更新应用"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "你的第一个移动应用（实验性）"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "操作指南"
   collapsed: true
   items:
-    - label: "Wails 工作原理"
-      link: "/concepts/architecture/"
-    - label: "管理器 API"
-      link: "/concepts/manager-api/"
-    - label: "应用生命周期"
-      link: "/concepts/lifecycle/"
-    - label: "Go 与前端之间的桥接"
-      link: "/concepts/bridge/"
-    - label: "构建系统"
-      link: "/concepts/build-system/"
-- label: "功能"
-  collapsed: true
-  items:
-    - label: "窗口"
+    - label: "Go 调用、服务与数据"
       collapsed: true
       items:
-        - label: "窗口基础"
-          link: "/features/windows/basics/"
-        - label: "窗口选项"
-          link: "/features/windows/options/"
-        - label: "刘海屏窗口"
-          link: "/features/windows/notch-windows/"
-        - label: "权限"
-          link: "/features/windows/permissions/"
-        - label: "多窗口"
-          link: "/features/windows/multiple/"
-        - label: "无边框窗口"
-          link: "/features/windows/frameless/"
-        - label: "窗口事件"
-          link: "/features/windows/events/"
-    - label: "菜单"
-      collapsed: true
-      items:
-        - label: "应用菜单"
-          link: "/features/menus/application/"
-        - label: "上下文菜单"
-          link: "/features/menus/context/"
-        - label: "系统托盘菜单"
-          link: "/features/menus/systray/"
-        - label: "菜单参考"
-          link: "/features/menus/reference/"
-    - label: "绑定与服务"
-      collapsed: true
-      items:
-        - label: "方法绑定"
+        - label: "从 JavaScript 调用 Go"
           link: "/features/bindings/methods/"
         - label: "服务"
           link: "/features/bindings/services/"
@@ -85,6 +62,30 @@
           link: "/features/events/window/"
         - label: "自定义事件"
           link: "/features/events/custom/"
+    - label: "窗口"
+      collapsed: true
+      items:
+        - label: "窗口基础"
+          link: "/features/windows/basics/"
+        - label: "刘海屏窗口"
+          link: "/features/windows/notch-windows/"
+        - label: "权限"
+          link: "/features/windows/permissions/"
+        - label: "多窗口"
+          link: "/features/windows/multiple/"
+        - label: "无边框窗口"
+          link: "/features/windows/frameless/"
+        - label: "窗口事件"
+          link: "/features/windows/events/"
+    - label: "菜单"
+      collapsed: true
+      items:
+        - label: "应用菜单"
+          link: "/features/menus/application/"
+        - label: "上下文菜单"
+          link: "/features/menus/context/"
+        - label: "系统托盘菜单"
+          link: "/features/menus/systray/"
     - label: "对话框"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "自定义对话框"
           link: "/features/dialogs/custom/"
-    - label: "开机自启动"
+    - label: "桌面集成"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "剪贴板"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "浏览器"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "拖放"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "键盘"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "通知"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "屏幕"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "环境"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "平台特定功能"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "移动端"
-  collapsed: true
-  items:
-    - label: "概述"
-      link: "/guides/mobile/"
-    - label: "创建第一个移动应用"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "移动端 API"
-      link: "/guides/mobile/mobile-api/"
-- label: "实验性功能"
-  collapsed: true
-  items:
-    - label: "概述"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "LLM 控制（MCP）"
-      link: "/guides/mcp-service/"
-- label: "指南"
-  collapsed: true
-  items:
+      items:
+        - label: "开机自启动"
+          link: "/features/autostart/basics/"
+        - label: "剪贴板"
+          link: "/features/clipboard/basics/"
+        - label: "浏览器集成"
+          link: "/features/browser/integration/"
+        - label: "拖放"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "键盘"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "通知"
+          link: "/features/notifications/overview/"
+        - label: "屏幕"
+          link: "/features/screens/info/"
+        - label: "环境"
+          link: "/features/environment/info/"
+        - label: "macOS 程序坞"
+          link: "/features/platform/dock/"
     - label: "开发"
       collapsed: true
       items:
@@ -183,7 +148,7 @@
           link: "/guides/build/windows/"
         - label: "macOS 打包"
           link: "/guides/build/macos/"
-        - label: "私有 macOS API"
+        - label: "macOS 私有 API"
           link: "/guides/build/private-macos-apis/"
         - label: "Linux 打包"
           link: "/guides/build/linux/"
@@ -194,7 +159,7 @@
     - label: "分发"
       collapsed: true
       items:
-        - label: "应用内更新程序"
+        - label: "应用内更新器"
           link: "/guides/updater/"
         - label: "文件关联"
           link: "/guides/file-associations/"
@@ -228,6 +193,37 @@
           link: "/guides/panic-handling/"
         - label: "安全最佳实践"
           link: "/guides/security/"
+    - label: "移动端（实验性）"
+      collapsed: true
+      items:
+        - label: "概述"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "实验性功能"
+      collapsed: true
+      items:
+        - label: "概述"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "LLM 控制（MCP）"
+          link: "/guides/mcp-service/"
+- label: "核心概念"
+  collapsed: true
+  items:
+    - label: "Wails 工作原理"
+      link: "/concepts/architecture/"
+    - label: "管理器 API"
+      link: "/concepts/manager-api/"
+    - label: "应用生命周期"
+      link: "/concepts/lifecycle/"
+    - label: "Go 与前端桥接"
+      link: "/concepts/bridge/"
+    - label: "构建系统"
+      link: "/concepts/build-system/"
 - label: "API 参考"
   collapsed: true
   items:
@@ -236,9 +232,19 @@
     - label: "应用"
       link: "/reference/application/"
     - label: "窗口"
-      link: "/reference/window/"
+      collapsed: true
+      items:
+        - label: "窗口 API"
+          link: "/reference/window/"
+        - label: "窗口选项"
+          link: "/features/windows/options/"
     - label: "菜单"
-      link: "/reference/menu/"
+      collapsed: true
+      items:
+        - label: "菜单 API"
+          link: "/reference/menu/"
+        - label: "菜单参考"
+          link: "/features/menus/reference/"
     - label: "事件"
       link: "/reference/events/"
     - label: "对话框"
@@ -246,34 +252,21 @@
     - label: "前端运行时"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "命令概述"
+          link: "/reference/cli/"
+        - label: "标志与示例"
+          link: "/guides/cli/"
     - label: "更新清单协议"
       link: "/reference/update-manifest/"
-- label: "参与贡献"
-  collapsed: true
-  items:
-    - label: "修正文档"
-      link: "/contributing/documentation/"
-    - label: "贡献指南"
-      link: "/contributing/"
-    - label: "技术概述"
-      link: "/contributing/overview/"
-    - label: "入门"
-      link: "/contributing/getting-started/"
-    - label: "开发环境设置"
-      link: "/contributing/setup/"
-    - label: "编码规范"
-      link: "/contributing/standards/"
-- label: "迁移"
-  collapsed: true
-  items:
-    - label: "从 v2 迁移到 v3"
-      link: "/migration/v2-to-v3/"
-    - label: "从 Electron 迁移"
-      link: "/migration/from-electron/"
+    - label: "移动端 API（实验性）"
+      link: "/guides/mobile/mobile-api/"
 - label: "故障排除"
   collapsed: true
   items:
+    - label: "常见问题"
+      link: "/faq/"
     - label: "macOS 上的 Syso 文件"
       link: "/troubleshooting/mac-syso/"
     - label: "Windows"
@@ -281,6 +274,23 @@
       items:
         - label: "RDP 问题"
           link: "/troubleshooting/windows/rdp/"
+- label: "参与贡献"
+  collapsed: true
+  items:
+    - label: "贡献指南"
+      link: "/contributing/"
+    - label: "文档"
+      link: "/contributing/documentation/"
+    - label: "发布政策"
+      link: "/contributing/release-policy/"
+    - label: "技术概览"
+      link: "/contributing/overview/"
+    - label: "快速入门"
+      link: "/contributing/getting-started/"
+    - label: "开发环境设置"
+      link: "/contributing/setup/"
+    - label: "编码规范"
+      link: "/contributing/standards/"
 - label: "社区"
   collapsed: true
   items:
@@ -288,23 +298,26 @@
       link: "/community/links/"
     - label: "模板"
       link: "/community/templates/"
-    - label: "媒体素材"
+    - label: "媒体"
       link: "/community/media/"
     - label: "案例展示"
       collapsed: true
       items:
-        - label: "概述"
+        - label: "概览"
           link: "/community/showcase/"
-        - label: "应用"
+        - label: "应用程序"
           autogenerate:
             directory: "community/showcase"
-- label: "新功能"
-  link: "/whats-new/"
-- label: "状态"
-  link: "/status/"
-- label: "更新日志"
-  link: "/changelog/"
-- label: "赞助"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "致谢"
-  link: "/credits/"
+- label: "项目"
+  collapsed: true
+  items:
+    - label: "新增功能"
+      link: "/whats-new/"
+    - label: "状态"
+      link: "/status/"
+    - label: "更新日志"
+      link: "/changelog/"
+    - label: "赞助"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "致谢"
+      link: "/credits/"

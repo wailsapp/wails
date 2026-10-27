@@ -1,39 +1,39 @@
 ---
 title: "イベントガイド"
-description: "Wails v3でイベントを使用してアプリケーション内の通信とライフサイクルを管理するための実践ガイド"
+description: "アプリケーション内の通信とライフサイクル管理に Wails v3 のイベントを活用するための実践ガイド"
 slug: "guides/events-reference"
 sourcePath: "guides/events-reference.md"
 ---
 
-**注: このガイドは作成中です**
+**注: このガイドは現在作成中です**
 
 ## イベントガイド
 
-イベントは、Wailsアプリケーションにおける通信の要です。イベントを使用すると、アプリケーションの各部分を密結合させることなく、相互に通信できます。このガイドでは、Wailsアプリケーションでイベントを効果的に使用するために必要な知識をすべて説明します。
+イベントは、Wails アプリケーションにおける通信の要です。イベントを使うと、アプリケーションの各部分を密結合させることなく、相互に通信できます。このガイドでは、Wails アプリケーションでイベントを効果的に使用するために必要な知識をすべて説明します。
 
-## Wailsのイベントについて
+## Wails イベントの仕組み
 
-イベントは、アプリケーション全体にブロードキャストされるメッセージと考えることができます。アプリケーションのどの部分でも、これらのメッセージをリッスンし、それに応じて処理できます。イベントは、特に次の用途に役立ちます。
+イベントは、アプリケーション全体にブロードキャストされるメッセージと考えることができます。アプリケーションのどの部分でも、これらのメッセージをリッスンし、それに応じて処理できます。これは特に次の用途に役立ちます。
 
-- **ウィンドウの変化への対応**: ウィンドウが最小化、最大化、または移動されたことを検知する
+- **ウィンドウの変化への対応**: ウィンドウが最小化、最大化、または移動されたタイミングを把握する
 - **システムイベントの処理**: テーマの変更や電源イベントに対応する
-- **アプリケーション固有のロジック**: データの更新やユーザー操作などの機能向けに独自のイベントを作成する
-- **コンポーネント間の通信**: アプリの各部分が直接依存することなく通信できるようにする
+- **アプリケーション固有のロジック**: データの更新やユーザー操作などの機能に独自のイベントを作成する
+- **コンポーネント間の通信**: アプリの各部分を直接依存させることなく通信させる
 
 ## イベントの命名規則
 
-すべてのWailsイベントは、その発生元を明確に示すために名前空間パターンに従います。
+すべての Wails イベントは、発生元を明確に示す名前空間パターンに従います。
 
-- `common:` - Windows、macOS、Linuxで動作するクロスプラットフォームイベント
-- `windows:` - Windows固有のイベント
-- `mac:` - macOS固有のイベント\
-- `linux:` - Linux固有のイベント
+- `common:` - Windows、macOS、Linux で動作するクロスプラットフォームイベント
+- `windows:` - Windows 固有のイベント
+- `mac:` - macOS 固有のイベント\
+- `linux:` - Linux 固有のイベント
 
 例:
 
 - `common:WindowFocus` - ウィンドウがフォーカスを得た（すべてのプラットフォームで動作）
-- `windows:APMSuspend` - システムがサスペンドに移行している（Windowsのみ）
-- `mac:ApplicationDidBecomeActive` - アプリがアクティブになった（macOSのみ）
+- `windows:APMSuspend` - システムがサスペンドに移行している（Windows のみ）
+- `mac:ApplicationDidBecomeActive` - アプリがアクティブになった（macOS のみ）
 
 ## イベントの使用を開始する
 
@@ -65,7 +65,7 @@ Events.On('my-app:data-updated', (event) => {
 
 ### イベントの発行（バックエンド）
 
-Goコードから、フロントエンドがリッスンできるイベントを発行できます。
+Go コードから、フロントエンドでリッスンできるイベントを発行できます。
 
 ```go
 package main
@@ -91,7 +91,7 @@ func (s *Service) UpdateData() {
 
 ### イベントの発行（フロントエンド）
 
-一般的な用途ではありませんが、フロントエンドから、Goコードがリッスンできるイベントを発行することもできます。
+一般的な使い方ではありませんが、フロントエンドから、Go コードでリッスンできるイベントを発行することもできます。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -103,7 +103,7 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-フロントエンドでTypeScriptを使用し、Goコードで[型付きイベントを登録](#heading-9)すると、イベント名の自動補完と検証、およびデータ型の検証を利用できます。
+フロントエンドで TypeScript を使用し、Go コードで[型付きイベントを登録](#heading-9)すると、イベント名の自動補完と検証、およびデータ型の検証を利用できます。
 
 ### イベントリスナーの削除
 
@@ -153,7 +153,7 @@ Events.On('common:WindowFocus', () => {
 
 ### 2. テーマ変更への対応
 
-アプリをシステムテーマと同期させます。
+アプリのテーマをシステムテーマと同期させます。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -173,7 +173,7 @@ Events.On('common:ThemeChanged', (event) => {
 
 ### 3. ファイルドロップの処理
 
-ドラッグされたファイルをアプリで受け入れられるようにします。
+ドラッグされたファイルをアプリで受け取れるようにします。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -242,7 +242,7 @@ Events.On('mac:ApplicationWillTerminate', () => {
 
 ## カスタムイベントの作成
 
-アプリケーション固有の要件に合わせて、独自のイベントを作成できます。
+アプリケーション固有の要件に合わせて独自のイベントを作成できます。
 
 ### バックエンド（Go）
 
@@ -297,11 +297,11 @@ Events.On('monitor:stats-updated', (event) => {
 
 ## 型安全な型付きイベント
 
-Wails v3では、イベントの登録とバインディングの自動生成により、TypeScriptで完全な型安全性を備えた型付きイベントを使用できます。
+Wails v3 は、イベントの登録とバインディングの自動生成により、TypeScript で完全に型安全な型付きイベントをサポートします。
 
 ### カスタムイベントの登録
 
-初期化時に`application.RegisterEvent`を呼び出し、カスタムイベント名とそのデータ型を登録します。
+初期化時に `application.RegisterEvent` を呼び出し、カスタムイベント名とそのデータ型を登録します。
 
 ```go
 package main
@@ -330,10 +330,10 @@ func init() {
 ```
 
 @note{type="caution"}
-`RegisterEvent`は初期化時に呼び出すことを想定しており、次の場合はpanicします。
+`RegisterEvent` は初期化時に呼び出すことを想定しており、次の場合はパニックします。
 
-- 引数が有効でない
-- 同じイベント名が異なるデータ型で2回登録されている
+- 引数が無効である
+- 同じイベント名が異なるデータ型で重複して登録されている
 
 @end
 
@@ -344,11 +344,11 @@ func init() {
 
 ### イベント登録の利点
 
-登録後、`Event.Emit`に渡されたデータ引数は、指定された型に対して型チェックされます。型が一致しない場合は、次のように処理されます。
+登録後、`Event.Emit` に渡されたデータ引数は、指定された型に対して型チェックされます。型が一致しない場合は、次のようになります。
 
-- エラーが発行されてログに記録される（または登録済みのエラーハンドラーに渡される）
+- エラーが発行され、ログに記録される（または登録済みのエラーハンドラーに渡される）
 - 問題のあるイベントは伝播されない
-- これにより、登録済みイベントのデータフィールドが、宣言された型に常に代入可能であることが保証される
+- これにより、登録済みイベントのデータフィールドには、宣言された型に代入可能な値だけが常に設定されます
 
 ### 厳格モード
 
@@ -358,13 +358,13 @@ func init() {
 go build -tags strictevents
 ```
 
-strict モードを有効にすると、ログが警告で埋まるのを避けるため、ランタイムが出力する警告は未登録のイベント名ごとに最大1回となります。
+厳格モードを有効にすると、ログが警告で埋まるのを防ぐため、ランタイムが発行する警告は未登録のイベント名ごとに最大 1 回です。
 
 ### TypeScript バインディングの生成
 
-バインディングジェネレーターは、フロントエンドで透過的に型付きイベントをサポートするための TypeScript 定義とグルーコードを出力します。
+バインディングジェネレーターは、フロントエンドで型付きイベントを透過的にサポートするための TypeScript 定義とグルーコードを出力します。
 
-#### 1. Vite プラグインをセットアップする
+#### 1. Vite プラグインの設定
 
 `vite.config.ts` で次のように設定します。
 
@@ -377,7 +377,7 @@ export default defineConfig({
 })
 ```
 
-#### 2. バインディングを生成する
+#### 2. バインディングの生成
 
 バインディングジェネレーターを実行します。
 
@@ -385,20 +385,20 @@ export default defineConfig({
 wails3 generate bindings
 ```
 
-これにより、型付きイベントクリエーターとデータインターフェースを含む TypeScript ファイルがフロントエンドディレクトリに作成されます。
+これにより、型付きイベントデータの定義を含む TypeScript ファイルがフロントエンドディレクトリに作成されます。さらに、登録済みのイベント名ごとに、ジェネレーターが検出可能なコンパイル時定数を 1 つエクスポートする `bindings/events` モジュールも作成されます（たとえば、`user:login` は `UserLogin` になります）。
 
-#### 3. フロントエンドで型付きイベントを使用する
+#### 3. フロントエンドでの型付きイベントの使用
 
 ```typescript
 import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -415,87 +415,87 @@ Events.On(MonitorStats, (event) => {
 })
 ```
 
-型付きイベントには、次の機能があります。
+型付きイベントでは、次の機能を利用できます。
 
-- イベント名の<strong>自動補完</strong>
-- イベントデータの<strong>型チェック</strong>
-- データ型が一致しない場合の<strong>コンパイル時エラー</strong>
+- イベント名の**自動補完**
+- イベントデータの**型チェック**
+- データ型が一致しない場合の**コンパイル時エラー**
 - **IntelliSense** ドキュメント
 
 ## イベントリファレンス
 
 ### 共通イベント（クロスプラットフォーム）
 
-次のイベントはすべてのプラットフォームで動作します。
+これらのイベントは、すべてのプラットフォームで動作します。
 
-| イベント | 説明 | 使用場面 |
+| イベント | 説明 | 使用するタイミング |
 | --- | --- | --- |
 | `common:ApplicationStarted` | アプリケーションが完全に起動した | アプリを初期化し、保存済みの状態を読み込む |
 | `common:WindowRuntimeReady` | Wails ランタイムの準備が完了した | Wails API の呼び出しを開始する |
 | `common:ThemeChanged` | システムテーマが変更された | アプリの外観を更新する |
-| `common:SystemWillSleep` | システムがまもなくサスペンドする | 状態を永続化し、ソケットを閉じる |
+| `common:SystemWillSleep` | システムがまもなくサスペンドする | 状態をフラッシュし、ソケットを閉じる |
 | `common:SystemDidWake` | システムがサスペンドから復帰した | 再接続し、古くなったデータを更新する |
 | `common:WindowFocus` | ウィンドウがフォーカスを得た | 処理を再開し、データを更新する |
 | `common:WindowLostFocus` | ウィンドウがフォーカスを失った | 処理を一時停止し、状態を保存する |
 | `common:WindowMinimise` | ウィンドウが最小化された | レンダリングを一時停止し、リソース使用量を削減する |
 | `common:WindowMaximise` | ウィンドウが最大化された | 全画面表示に合わせてレイアウトを調整する |
 | `common:WindowRestore` | ウィンドウが最小化または最大化された状態から復元された | 通常のレイアウトに戻す |
-| `common:WindowClosing` | ウィンドウがまもなく閉じる | データを保存し、リソースを解放する |
+| `common:WindowClosing` | ウィンドウがまもなく閉じる | データを保存し、リソースをクリーンアップする |
 | `common:WindowFilesDropped` | ウィンドウにファイルがドロップされた | ファイルのインポートを処理する |
-| `common:WindowDidResize` | ウィンドウのサイズが変更された | レイアウトを調整し、グラフを再レンダリングする |
+| `common:WindowDidResize` | ウィンドウのサイズが変更された | レイアウトを調整し、チャートを再レンダリングする |
 | `common:WindowDidMove` | ウィンドウが移動された | 位置に依存する機能を更新する |
 
 ### プラットフォーム固有のイベント
 
-#### Windows イベント
+#### Windows のイベント
 
-Windowsアプリケーションの主要なイベント：
+Windows アプリケーションの主なイベント：
 
 | イベント | 説明 | ユースケース |
 | --- | --- | --- |
-| `windows:SystemThemeChanged` | Windowsのテーマが変更された | アプリの配色を更新する |
-| `windows:APMSuspend` | システムがサスペンドに移行する | 状態を保存し、処理を一時停止する |
-| `windows:APMResumeAutomatic` | システムが再開した（再開時に必ず発生） | 状態を復元し、データを更新する |
-| `windows:APMResumeSuspend` | ユーザー入力によってシステムが再開した（`APMResumeAutomatic`の後） | ユーザー操作による復帰を判別する |
+| `windows:SystemThemeChanged` | Windows のテーマが変更された | アプリの配色を更新する |
+| `windows:APMSuspend` | システムがサスペンド中 | 状態を保存し、処理を一時停止する |
+| `windows:APMResumeAutomatic` | システムが復帰した（復帰時には必ず発生） | 状態を復元し、データを更新する |
+| `windows:APMResumeSuspend` | ユーザー入力によってシステムが復帰した（`APMResumeAutomatic` の後） | ユーザー操作による復帰を識別する |
 | `windows:APMPowerStatusChange` | 電源状態が変更された | パフォーマンス設定を調整する |
 
-#### macOSイベント
+#### macOS のイベント
 
-macOSアプリケーションの重要なイベント：
+macOS アプリケーションの重要なイベント：
 
 | イベント | 説明 | ユースケース |
 | --- | --- | --- |
 | `mac:ApplicationDidBecomeActive` | アプリがアクティブになった | 処理を再開する |
 | `mac:ApplicationDidResignActive` | アプリが非アクティブになった | 処理を一時停止する |
 | `mac:ApplicationWillTerminate` | アプリが終了しようとしている | 最終的なクリーンアップを行う |
-| `mac:ApplicationWillSleep` | システムがサスペンドに移行しようとしている | 状態を保存し、ソケットを閉じる |
-| `mac:ApplicationDidWake` | システムが再開した | 再接続し、更新する |
-| `mac:ApplicationScreensDidSleep` | ディスプレイがスリープ状態になった | レンダリングを一時停止する（システムのスリープとは異なる） |
+| `mac:ApplicationWillSleep` | システムがまもなくサスペンドする | 状態を保存し、ソケットを閉じる |
+| `mac:ApplicationDidWake` | システムが復帰した | 再接続し、更新する |
+| `mac:ApplicationScreensDidSleep` | ディスプレイがスリープ状態になった | レンダリングを一時停止する（システムのスリープとは別） |
 | `mac:ApplicationScreensDidWake` | ディスプレイがスリープから復帰した | レンダリングを再開する |
-| `mac:WindowDidEnterFullScreen` | フルスクリーン表示になった | フルスクリーン表示に合わせてUIを調整する |
-| `mac:WindowDidExitFullScreen` | フルスクリーン表示を終了した | 通常のUIに戻す |
+| `mac:WindowDidEnterFullScreen` | 全画面表示になった | 全画面表示に合わせて UI を調整する |
+| `mac:WindowDidExitFullScreen` | 全画面表示を終了した | 通常の UI に戻す |
 
-#### Linuxイベント
+#### Linux のイベント
 
-Linuxの主要なウィンドウイベント：
+Linux の主要なウィンドウイベント：
 
 | イベント | 説明 | ユースケース |
 | --- | --- | --- |
-| `linux:SystemThemeChanged` | デスクトップのテーマが変更された | アプリのテーマを更新する |
-| `linux:SystemWillSleep` | システムがサスペンドに移行しようとしている（logind） | 状態を保存する |
-| `linux:SystemDidWake` | システムが再開した（logind） | 再接続し、更新する |
-| `linux:WindowFocusIn` | ウィンドウがフォーカスを得た | アクティビティを再開する |
+| `linux:SystemThemeChanged` | デスクトップテーマが変更された | アプリのテーマを更新する |
+| `linux:SystemWillSleep` | システムがまもなくサスペンドする（logind） | 状態を保存する |
+| `linux:SystemDidWake` | システムが復帰した（logind） | 再接続し、更新する |
+| `linux:WindowFocusIn` | ウィンドウがフォーカスを得た | 処理を再開する |
 | `linux:WindowFocusOut` | ウィンドウがフォーカスを失った | 処理を一時停止する |
 | `linux:WindowLoadStarted` | WebView が読み込みを開始した | 読み込みインジケーターを表示する |
-| `linux:WindowLoadRedirected` | WebView がリダイレクトされた | ナビゲーションのリダイレクトを追跡する |
-| `linux:WindowLoadCommitted` | WebView が読み込みを確定した | コンテンツを受信中 |
-| `linux:WindowLoadFinished` | WebView の読み込みが完了した | 読み込みインジケーターを非表示にし、JS/CSS を挿入する |
+| `linux:WindowLoadRedirected` | WebView がリダイレクトされた | ナビゲーションのリダイレクトを追跡 |
+| `linux:WindowLoadCommitted` | WebView が読み込みを確定 | コンテンツを受信中 |
+| `linux:WindowLoadFinished` | WebView の読み込みが完了 | 読み込みインジケーターを非表示にし、JS/CSS を挿入 |
 
 ## ベストプラクティス
 
 ### 1. イベント名前空間を使用する
 
-カスタムイベントを作成するときは、競合を避けるために名前空間を使用します。
+カスタムイベントを作成する際は、競合を避けるために名前空間を使用します。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -512,7 +512,7 @@ Events.Emit('update');
 
 ### 2. リスナーをクリーンアップする
 
-コンポーネントがアンマウントされるときは、必ずイベントリスナーを削除します。
+コンポーネントがアンマウントされる際は、必ずイベントリスナーを削除します。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -534,7 +534,7 @@ useEffect(() => {
 
 ### 3. プラットフォームの違いに対応する
 
-プラットフォーム固有のイベントを使用するときは、そのプラットフォームで利用可能か確認します。
+プラットフォーム固有のイベントを使用する際は、そのプラットフォームで利用できるか確認します。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -549,12 +549,12 @@ Events.On('mac:ApplicationWillTerminate', handleTerminate);
 
 イベントは強力ですが、あらゆる処理に使用しないでください。
 
-- ✅ イベントの使用に適しているもの：システム通知、ライフサイクルの変更、更新のブロードキャスト
+- ✅ イベントの使用に適したもの：システム通知、ライフサイクルの変更、更新のブロードキャスト
 - ❌ イベントの使用を避けるもの：関数からの直接の戻り値、単一コンポーネントの更新、同期処理
 
 ## イベントのデバッグ
 
-イベントに関する問題をデバッグするには、次の手順を実行します。
+イベントの問題をデバッグするには、次の手順を実行します。
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -576,13 +576,13 @@ if (isDevelopment) {
 
 利用可能なイベントの完全な一覧は、Wails のソースコードで確認できます。
 
-- フロントエンドのイベント：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- バックエンドのイベント：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- フロントエンドイベント：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- バックエンドイベント：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
 
 最新のイベント名と利用可否については、必ずこれらのファイルを参照してください。
 
 ## まとめ
 
-Wails のイベントを使用すると、アプリケーション内の通信を強力かつ疎結合な方法で処理できます。このガイドのパターンとプラクティスに従うことで、システムの変更やユーザー操作に円滑に反応する、応答性が高くプラットフォームを考慮したアプリケーションを構築できます。
+Wails のイベントは、アプリケーション内の通信を処理するための強力で疎結合な手段です。このガイドのパターンとプラクティスに従うことで、システムの変更やユーザー操作に円滑に反応する、応答性が高くプラットフォームを考慮したアプリケーションを構築できます。
 
-重要：クロスプラットフォーム互換性を確保するために、まず共通イベントを使用し、必要に応じてプラットフォーム固有のイベントを追加してください。また、メモリリークを防ぐため、イベントリスナーは必ずクリーンアップしてください。
+覚えておいてください。クロスプラットフォーム互換性のために共通イベントから始め、必要に応じてプラットフォーム固有のイベントを追加し、メモリリークを防ぐためにイベントリスナーを必ずクリーンアップします。

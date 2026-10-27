@@ -1,13 +1,13 @@
 ---
 title: "Go-Frontend-Bridge"
-description: "Detaillierte Erläuterung, wie Wails die direkte Kommunikation zwischen Go und JavaScript ermöglicht"
+description: "Detaillierter Einblick, wie Wails die direkte Kommunikation zwischen Go und JavaScript ermöglicht"
 slug: "concepts/bridge"
 sourcePath: "concepts/bridge.md"
 ---
 
 ## Direkte Go-JavaScript-Kommunikation
 
-Wails stellt eine **direkte In-Memory-Bridge** zwischen Go und JavaScript bereit und ermöglicht so eine nahtlose Kommunikation ohne HTTP-Overhead, Prozessgrenzen oder Serialisierungsengpässe.
+Wails stellt eine **direkte In-Memory-Bridge** zwischen Go und JavaScript bereit. Sie ermöglicht eine nahtlose Kommunikation ohne HTTP-Overhead, Prozessgrenzen oder Engpässe durch Serialisierung.
 
 ## Das Gesamtbild
 
@@ -49,12 +49,12 @@ Bridge: Wails-Bridge {
 }
 
 Backend: Backend (Go) {
-  Services: Ihre Dienste {
+  Services: Ihre Services {
     shape: rectangle
     style.fill: "#00ADD8"
   }
 
-  Registry: Dienstregister {
+  Registry: Service-Registry {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -63,7 +63,7 @@ Backend: Backend (Go) {
 Frontend.UI -> Frontend.Bindings: "import { Method }"
 Frontend.Bindings -> Bridge.Encoder: "Method('arg') aufrufen"
 Bridge.Encoder -> Bridge.Router: Als JSON codieren
-Bridge.Router -> Backend.Registry: Dienst suchen
+Bridge.Router -> Backend.Registry: Service suchen
 Backend.Registry -> Backend.Services: Methode aufrufen
 Backend.Services -> Bridge.Decoder: Ergebnis zurückgeben
 Bridge.Decoder -> Frontend.Bindings: In JS decodieren
@@ -71,11 +71,11 @@ Frontend.Bindings -> Frontend.UI: Promise wird erfüllt
 Bridge.TypeGen -> Frontend.Bindings: Typen generieren
 ```
 
-**Wichtige Erkenntnis:** Kein HTTP, keine IPC, keine Prozessgrenzen. Nur **direkte Funktionsaufrufe** mit **Typsicherheit**.
+**Wichtige Erkenntnis:** Kein HTTP, keine IPC und keine Prozessgrenzen. Nur **direkte Funktionsaufrufe** mit **Typsicherheit**.
 
-## Funktionsweise Schritt für Schritt
+## Funktionsweise: Schritt für Schritt
 
-### 1. Service-Registrierung (beim Start)
+### 1. Service-Registrierung (Start)
 
 Beim Start Ihrer Anwendung durchsucht Wails Ihre Services:
 
@@ -128,7 +128,7 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | Standardmäßig `string`; `Date` mit `-time-type=Date` |
 | `error` | Exception (ausgelöst) |
 
 ### 3. Frontend-Aufruf (Laufzeit)
@@ -150,10 +150,10 @@ console.log(sum)  // 8
 
 1. **Binding-Funktion aufgerufen** – `Greet("World")`
 2. **Nachricht erstellt** – `{ service: "GreetService", method: "Greet", args: ["World"] }`
-3. **An die Bridge gesendet** – über die JavaScript-Bridge des WebViews
+3. **An die Bridge gesendet** – über die JavaScript-Bridge der WebView
 4. **Promise zurückgegeben** – wartet auf die Antwort
 
-### 4. Verarbeitung durch die Bridge (Laufzeit)
+### 4. Bridge-Verarbeitung (Laufzeit)
 
 Die Bridge empfängt und verarbeitet die Nachricht:
 
@@ -170,7 +170,7 @@ Parse: JSON parsen {
 }
 
 Validate: Validieren {
-  Check: Dienst vorhanden? {
+  Check: Service vorhanden? {
     shape: diamond
   }
 
@@ -215,9 +215,9 @@ Invoke -> Error: Fehler
 Encode -> Send
 ```
 
-**Sicherheit:** Nur registrierte Dienste und exportierte Methoden können aufgerufen werden.
+**Sicherheit:** Nur registrierte Services und exportierte Methoden können aufgerufen werden.
 
-### 5. Ausführung in Go (Laufzeit)
+### 5. Go-Ausführung (Laufzeit)
 
 Die Go-Methode wird ausgeführt:
 
@@ -232,7 +232,7 @@ func (g *GreetService) Greet(name string) string {
 
 - Wird in einer **Goroutine** ausgeführt (nicht blockierend)
 - Hat Zugriff auf **alle Go-Funktionen** (Dateisystem, Netzwerk, Datenbanken)
-- Kann uneingeschränkt **anderen Go-Code** aufrufen
+- Kann **anderen Go-Code** frei aufrufen
 - Gibt ein Ergebnis oder einen Fehler zurück
 
 ### 6. Antwort (Laufzeit)
@@ -280,21 +280,21 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
 
 - **HTTP/REST:** 5-50 ms (Netzwerk-Stack, Serialisierung)
 - **IPC:** 1-10 ms (Prozessgrenzen, Marshalling)
-- **Wails-Bridge:** &lt;1 ms (im Arbeitsspeicher, direkter Aufruf)
+- **Wails Bridge:** &lt;1 ms (im Arbeitsspeicher, direkter Aufruf)
 
 ### Arbeitsspeicher
 
-**Overhead pro Aufruf:** ~1 KB (Nachrichtenpuffer)
+**Mehraufwand pro Aufruf:** ~1 KB (Nachrichtenpuffer)
 
-**Zero-Copy-Optimierung:** Große Datenmengen (>1 MB) verwenden nach Möglichkeit gemeinsam genutzten Speicher.
+**Zero-Copy-Optimierung:** Große Datenmengen (>1 MB) nutzen nach Möglichkeit gemeinsam verwendeten Speicher.
 
 ### Nebenläufigkeit
 
-**Aufrufe erfolgen nebenläufig:**
+**Aufrufe werden nebenläufig ausgeführt:**
 
 - Jeder Aufruf wird in einer eigenen Goroutine ausgeführt
 - Mehrere Aufrufe können gleichzeitig ausgeführt werden
-- Aufrufe blockieren einander nicht
+- Aufrufe blockieren sich nicht gegenseitig
 
 ```javascript
 // These run concurrently
@@ -410,7 +410,7 @@ const user = await GetUser(1)
 console.log(user.name)  // "Alice"
 ```
 
-**JSON-Tags:** Verwenden Sie `json:`-Tags, um die Feldnamen in TypeScript festzulegen.
+**JSON-Tags:** Verwende `json:`-Tags, um die Feldnamen in TypeScript festzulegen.
 
 #### Zeit
 
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### Fehler
@@ -456,15 +456,15 @@ try {
 
 ### Nicht unterstützte Typen
 
-Diese Typen können **nicht** über die Bridge übergeben werden:
+Die folgenden Typen können **nicht** über die Bridge übergeben werden:
 
-- **Kanäle** (`chan T`)
+- **Channels** (`chan T`)
 - **Funktionen** (`func()`)
 - **Interfaces** (außer `interface{}` / `any`)
 - **Zeiger** (außer auf Structs)
 - **Nicht exportierte Felder** (kleingeschrieben)
 
-**Problemumgehung:** IDs oder Handles verwenden:
+**Problemumgehung:** Verwende IDs oder Handles:
 
 ```go
 // ❌ Can't pass file handle
@@ -501,7 +501,7 @@ func CloseFile(id string) error {
 
 ### Kontextübergabe
 
-Services können auf den Aufrufkontext zugreifen:
+Services können auf den Kontext des Aufrufs zugreifen:
 
 ```go
 type UserService struct{}
@@ -522,13 +522,13 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 
 **Der Kontext stellt Folgendes bereit:**
 
-- Fenster, das den Aufruf ausgelöst hat
+- Fenster, von dem der Aufruf ausging
 - Anwendungsinstanz
 - Anfragemetadaten
 
 ### Datenstreaming
 
-Für große Datenmengen Ereignisse statt Rückgabewerten verwenden:
+Verwende für große Datenmengen Ereignisse anstelle von Rückgabewerten:
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -569,7 +569,7 @@ await ProcessLargeFile('/path/to/large/file.txt')
 
 ### Abbruch
 
-Für abbrechbare Vorgänge den Kontext verwenden:
+Verwende den Kontext für abbrechbare Vorgänge:
 
 ```go
 func LongRunningTask(ctx context.Context) error {
@@ -591,7 +591,7 @@ func LongRunningTask(ctx context.Context) error {
 
 ### Stapeloperationen
 
-Durch Stapelverarbeitung den Bridge-Overhead reduzieren:
+Reduziere den Bridge-Mehraufwand durch Stapelverarbeitung:
 
 ```go
 // ❌ Inefficient: N bridge calls
@@ -613,7 +613,7 @@ func ProcessItems(items []Item) ([]Result, error) {
 }
 ```
 
-## Bridge debuggen
+## Bridge-Debugging
 
 ### Debug-Protokollierung aktivieren
 
@@ -636,7 +636,7 @@ app := application.New(application.Options{
 
 ### Generierte Bindings prüfen
 
-In `frontend/bindings/` das generierte TypeScript prüfen:
+Prüfe `frontend/bindings/`, um das generierte TypeScript anzuzeigen:
 
 ```javascript
 // frontend/bindings/<full-go-import-path>/myservice.js (real generated shape)
@@ -649,7 +649,7 @@ export function MyMethod($0) {
 
 ### Services direkt testen
 
-Go-Services ohne Frontend testen:
+Teste Go-Services ohne das Frontend:
 
 ```go
 func TestGreetService(t *testing.T) {
@@ -661,21 +661,21 @@ func TestGreetService(t *testing.T) {
 }
 ```
 
-## Tipps zur Performance
+## Performance-Tipps
 
 ### ✅ Empfohlen
 
-- **Operationen bündeln** – Anzahl der Bridge-Aufrufe reduzieren
-- **Ereignisse zum Streamen verwenden** – Keine großen Arrays zurückgeben
-- **Methoden schnell halten** – Ideal sind &lt;100 ms
-- **Goroutinen verwenden** – Für lang laufende Vorgänge
-- **Auf Go-Seite zwischenspeichern** – Wiederholte Berechnungen vermeiden
+- **Operationen bündeln** – Weniger Bridge-Aufrufe ausführen
+- **Ereignisse für Streaming verwenden** – Keine großen Arrays zurückgeben
+- **Methoden schnell halten** – &lt;100 ms sind ideal
+- **Goroutines verwenden** – Für lang dauernde Vorgänge
+- **Auf der Go-Seite zwischenspeichern** – Wiederholte Berechnungen vermeiden
 
 ### ❌ Nicht empfohlen
 
-- **Nicht übermäßig viele Aufrufe durchführen** – Wenn möglich bündeln
-- **Keine riesigen Datenmengen zurückgeben** – Paginierung oder Streaming verwenden
-- **Nicht blockieren** – Für lang laufende Vorgänge Goroutinen verwenden
+- **Nicht übermäßig viele Aufrufe ausführen** – Nach Möglichkeit bündeln
+- **Keine riesigen Datenmengen zurückgeben** – Seitennummerierung oder Streaming verwenden
+- **Nicht blockieren** – Für lang dauernde Vorgänge Goroutines verwenden
 - **Keine komplexen Typen übergeben** – Einfach halten
 - **Fehler nicht ignorieren** – Immer behandeln
 
@@ -697,12 +697,12 @@ Die Bridge ist standardmäßig sicher:
 
 ## Nächste Schritte
 
-**Build-System** – Erfahre, wie Wails deine Anwendung erstellt und bündelt [Mehr erfahren →](/concepts/build-system/)
+**Build-System** – Erfahre, wie Wails deine Anwendung erstellt und bündelt. [Mehr erfahren →](/concepts/build-system/)
 
-**Services** – Vertiefe dein Wissen über das Service-System [Mehr erfahren →](/features/bindings/services/)
+**Services** – Vertiefe dein Wissen über das Service-System. [Mehr erfahren →](/features/bindings/services/)
 
-**Ereignisse** – Verwenden Sie Ereignisse für die Publish/Subscribe-Kommunikation [Mehr erfahren →](/features/events/system/)
+**Ereignisse** – Verwende Ereignisse für die Publish/Subscribe-Kommunikation. [Mehr erfahren →](/features/events/system/)
 
 ---
 
-**Fragen zur Bridge?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.
+**Fragen zur Bridge?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.
