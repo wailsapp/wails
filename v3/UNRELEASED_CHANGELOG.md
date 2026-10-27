@@ -28,6 +28,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 - Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
 - Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
 - Fix Linux dark mode detection returning light on a dark desktop until the colour scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend. Both backends now share one implementation, backed by the `org.freedesktop.appearance` portal namespace (#6072)
+- `Window.SetZoom` no longer raises factors below 1.0 to 1.0 on framed windows (Windows, macOS, Linux): WebView2 `ZoomFactor`, WKWebView `magnification` and WebKitGTK's zoom level accept any positive value, and the `Zoom` window option already passed such values through. Frameless windows keep the 1.0 floor because their drag and resize regions are not adjusted for zoom ([#4590](https://github.com/wailsapp/wails/issues/4590)); non-positive, NaN and Inf factors are now ignored instead of being raised to 1.0 — by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
