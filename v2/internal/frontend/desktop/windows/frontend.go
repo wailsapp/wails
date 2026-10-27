@@ -630,6 +630,12 @@ type privacySettings interface {
 func embedChromium(chromium *edge.Chromium, opts *windows.Options, embed func() bool, settings privacySettings, navigate func()) error {
 	if opts != nil {
 		chromium.CustomCrashReportingEnabled = opts.LocalShellPrivacy
+		// Chromium tooling switches (chrome-launcher/docs/chrome-flags-for-tools.md).
+		// Unsupported for production WebView2; runtime behaviour may change.
+		if opts.LocalShellPrivacy {
+			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs,
+				"--disable-component-update", "--disable-background-networking")
+		}
 		if path := opts.DiagnosticNetLogPath; path != "" {
 			if !filepath.IsAbs(path) || strings.ContainsAny(path, "\"\x00\r\n") {
 				return fmt.Errorf("diagnostic NetLog requires an absolute path without quotes or control characters")

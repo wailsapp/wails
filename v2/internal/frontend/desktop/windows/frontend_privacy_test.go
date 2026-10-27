@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/wailsapp/go-webview2/pkg/edge"
 	opts "github.com/wailsapp/wails/v2/pkg/options/windows"
+	"reflect"
 	"testing"
 )
 
@@ -53,12 +54,14 @@ func TestLocalShellPrivacyPrecedesEmbedAndNavigation(t *testing.T) {
 		}}
 		err := embedChromium(chromium, &opts.Options{LocalShellPrivacy: tc.enabled, DiagnosticNetLogPath: tc.path}, func() bool {
 			privacyCheck(t, tc.enabled == chromium.CustomCrashReportingEnabled, tc.enabled, chromium.CustomCrashReportingEnabled)
-			wantArgs := 0
-			if tc.path != "" {
-				wantArgs = 1
-				privacyCheck(t, len(chromium.AdditionalBrowserArgs) == 1 && chromium.AdditionalBrowserArgs[0] == "--log-net-log=\""+tc.path+"\"", chromium.AdditionalBrowserArgs)
+			var want []string
+			if tc.enabled {
+				want = []string{"--disable-component-update", "--disable-background-networking"}
 			}
-			privacyCheck(t, len(chromium.AdditionalBrowserArgs) == wantArgs, chromium.AdditionalBrowserArgs, wantArgs)
+			if tc.path != "" {
+				want = append(want, "--log-net-log=\""+tc.path+"\"")
+			}
+			privacyCheck(t, reflect.DeepEqual(chromium.AdditionalBrowserArgs, want), chromium.AdditionalBrowserArgs, want)
 			embedded = true
 			return tc.embed
 		}, probe, func() {
@@ -82,5 +85,23 @@ func privacyCheck(t *testing.T, ok bool, values ...any) {
 	t.Helper()
 	if !ok {
 		t.Fatal(values...)
+	}
+}
+
+func TestLocalShellPrivacyBrowserArguments(t *testing.T) {
+	for _, tc := range []struct {
+		options *opts.Options
+		want    []string
+	}{
+		{options: &opts.Options{LocalShellPrivacy: true}, want: []string{"--existing", "--disable-component-update", "--disable-background-networking"}},
+		{options: &opts.Options{}, want: []string{"--existing"}},
+		{want: []string{"--existing"}},
+	} {
+		chromium := &edge.Chromium{AdditionalBrowserArgs: []string{"--existing"}}
+		err := embedChromium(chromium, tc.options, func() bool {
+			privacyCheck(t, reflect.DeepEqual(chromium.AdditionalBrowserArgs, tc.want), chromium.AdditionalBrowserArgs, tc.want)
+			return true
+		}, privacyProbe{set: func(privacyControl, bool) error { return nil }}, func() {})
+		privacyCheck(t, err == nil, err)
 	}
 }
