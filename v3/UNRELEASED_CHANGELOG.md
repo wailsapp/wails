@@ -24,6 +24,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Deliver Go event listener callbacks serially in emit order in [PR](https://github.com/wailsapp/wails/pull/6275) by @DevLumuz
 - Always advertise the tray Menu property so trays created after Run are not dropped on Linux in [PR](https://github.com/wailsapp/wails/pull/6284) by @AlbinoGeek
 - Hold main-thread work submitted before Run until the application starts in [PR](https://github.com/wailsapp/wails/pull/6287) by @AlbinoGeek
 - Use the correct asset API URL when downloading GitHub updater release assets in [PR](https://github.com/wailsapp/wails/pull/6304) by @gavidroselj
