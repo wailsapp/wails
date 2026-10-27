@@ -11,4 +11,4 @@ sourcePath: "community/showcase/wscreensavers.md"
 
 它通过内嵌 XWayland/Xvfb 将经典 XScreenSaver 模块（`-window-id`）与自定义 Three.js WebGL 场景渲染到 Wayland 的 `BACKGROUND` 和 `OVERLAY` 层级表面，支持空闲检测、多显示器、IPC 命令行工具（`wscreensavers ctl`）以及 Noctalia Shell 插件。
 
-[在 GitHub 上查看](https://github.com/chrisfair/wscreensavers) | [发行版](https://github.com/chrisfair/wscreensavers/releases/latest)
+[在 GitHub 上查看](https://github.com/chrisfair/wscreensavers) | [发布版本](https://github.com/chrisfair/wscreensavers/releases/latest)
