@@ -28,6 +28,28 @@ _/
 
 ## [Unreleased]
 
+## v3.1.0-nightly.20261027 - 2026-10-27
+
+## Changed
+- Link the 404 page to matching Wails v2 documentation pages on v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6366) by @taliesin-ai
+- Move the v2 documentation site to v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6365) by @taliesin-ai
+- Serve v3 documentation from wails.io and v2 documentation from v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6364) by @taliesin-ai
+- Update v3.0.0 release notes and correct the security advisory claim in [PR](https://github.com/wailsapp/wails/pull/6363) by @taliesin-ai
+
+## Fixed
+- Deliver Go event listener callbacks serially in emit order in [PR](https://github.com/wailsapp/wails/pull/6275) by @DevLumuz
+- Always advertise the tray Menu property so trays created after Run are not dropped on Linux in [PR](https://github.com/wailsapp/wails/pull/6284) by @AlbinoGeek
+- Hold main-thread work submitted before Run until the application starts in [PR](https://github.com/wailsapp/wails/pull/6287) by @AlbinoGeek
+- Use the correct asset API URL when downloading GitHub updater release assets in [PR](https://github.com/wailsapp/wails/pull/6304) by @gavidroselj
+- Fix screen bounds and positions on mixed-DPI macOS and Linux setups in [PR](https://github.com/wailsapp/wails/pull/6346) by @julianstorer
+- Preserve request bodies on Windows when WebView2 omits the Content-Length header in [PR](https://github.com/wailsapp/wails/pull/6326) by @strraaa
+- Fix data race in event hook emission by snapshotting hooks under lock in [PR](https://github.com/wailsapp/wails/pull/6276) by @DevLumuz
+- Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
+- Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
+- Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
+- Fix Linux dark mode detection returning light on a dark desktop until the colour scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend. Both backends now share one implementation, backed by the `org.freedesktop.appearance` portal namespace (#6072)
+- `Window.SetZoom` no longer raises factors below 1.0 to 1.0 on framed windows (Windows, macOS, Linux): WebView2 `ZoomFactor`, WKWebView `magnification` and WebKitGTK's zoom level accept any positive value, and the `Zoom` window option already passed such values through. Frameless windows keep the 1.0 floor because their drag and resize regions are not adjusted for zoom ([#4590](https://github.com/wailsapp/wails/issues/4590)); non-positive, NaN and Inf factors are now ignored instead of being raised to 1.0 — by @APshenkin
+
 ## v3.0.0 - 2026-10-26
 
 ## Changed
