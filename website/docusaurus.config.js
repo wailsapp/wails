@@ -9,7 +9,7 @@ module.exports = function configCreator() {
   return {
     title: "Wails",
     tagline: "",
-    url: "https://wails.io",
+    url: "https://v2.wails.io",
     baseUrl: "/",
     onBrokenLinks: "warn",
     favicon: "img/favicon.ico",
@@ -94,9 +94,9 @@ module.exports = function configCreator() {
       /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
       ({
         announcementBar: {
-          id: "wails-v3-beta",
+          id: "wails-v3-released",
           content:
-            'Wails v3 is now in beta. <a target="_blank" rel="noopener noreferrer" href="https://v3.wails.io/">Explore the v3 documentation →</a>',
+            'You are viewing the Wails v2 documentation. Wails v3.0.0 is released: <a target="_blank" rel="noopener noreferrer" href="https://wails.io/">read the v3 documentation →</a>',
           backgroundColor: "#c62828",
           textColor: "#fff",
           isCloseable: true,

@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-상태 확인, 활성화 및 비활성화 버튼을 갖춘 실행 가능한 전체 예제는 [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart)에 있습니다.
+상태 확인, 활성화 및 비활성화 버튼을 갖춘 실행 가능한 전체 예제는 [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart)에 있습니다.

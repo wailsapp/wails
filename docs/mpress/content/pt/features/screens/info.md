@@ -473,4 +473,4 @@ Chame funções Go a partir do JavaScript.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de telas](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de telas](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

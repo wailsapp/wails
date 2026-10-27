@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` は、Windows、macOS、およびクリックフォーカス方式の Linux デスクトップでトレイポップアップを表示する場合に便利です。マウス追従フォーカス方式の Linux 環境（一般的な Hyprland、Sway、i3 の構成を含む）では、ポップアップからポインターが外れたときに、使用する前にポップアップが非表示になる可能性があるため、Wails はこの動作を無効にします。`HideOnEscape` は、これらの環境でも引き続き使用できます。
 
-上記の左クリックと右クリックの動作は、状況に応じたデフォルトです。明示的な`OnClick`ハンドラーまたは`OnRightClick`ハンドラーを指定すると、対応するデフォルト動作が置き換えられます。プラットフォームの確認方法とエッジケースについては、[手動 systray テストスイート](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)および[systray ストレステストの例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress)を参照してください。
+上記の左クリックと右クリックの動作は、状況に応じたデフォルトです。明示的な`OnClick`ハンドラーまたは`OnRightClick`ハンドラーを指定すると、対応するデフォルト動作が置き換えられます。プラットフォームの確認方法とエッジケースについては、[手動 systray テストスイート](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray)および[systray ストレステストの例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress)を参照してください。
 
 ## クリックハンドラー
 
@@ -714,10 +714,10 @@ menu.Update()  // Add this!
 📖 システムトレイのサンプル
 完全なシステムトレイアプリケーションを確認します。
 
-[詳細を見る →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[詳細を見る →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[システムトレイのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[システムトレイのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)を確認してください。

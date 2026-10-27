@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/mod/semver"
 )
 
 const (
@@ -39,6 +41,16 @@ type releaseOptions struct {
 	dryRun  bool
 	branch  string
 	target  string
+	// channel selects the release cadence: "nightly" (patch bump), "weekly"
+	// (minor bump, patch reset to 0) or "" / "auto" (derive from an explicit
+	// version's shape, otherwise nightly).
+	channel string
+	// tagOnly cuts the release from the checked-out commit (typically a
+	// detached, CI-verified master commit older than HEAD): only the version
+	// metadata is committed, the branch is NOT pushed (it would not be a
+	// fast-forward) and the changelog is left alone. The caller syncs the
+	// version files back to the branch afterwards.
+	tagOnly bool
 }
 
 var errNoUnreleasedContent = errors.New("No unreleased changelog content found.")
@@ -54,19 +66,16 @@ func checkError(err error) {
 func getUnreleasedChangelogTemplate() string {
 	return `# Unreleased Changes
 
-<!-- 
-This file is used to collect changelog entries for the next v3 release.
-Add your changes under the appropriate sections below.
+<!--
+AUTO-GENERATED FILE: do not edit in ordinary contribution PRs.
 
-Guidelines:
-- Follow the "Keep a Changelog" format (https://keepachangelog.com/)
-- Write clear, concise descriptions of changes
-- Include the impact on users when relevant
-- Use present tense ("Add feature" not "Added feature")
-- Reference issue/PR numbers when applicable
+The Auto Changelog (v3) workflow generates entries after PRs merge.
+Describe the user-visible change in the PR title and description instead.
+Release tooling moves staged entries into docs/mpress/content/changelog.md
+and resets this file. Do not delete or reset it by hand.
 
-This file is automatically processed by the nightly release workflow.
-After processing, the content will be moved to the main changelog and this file will be reset.
+For changes to this automation or explicitly requested release-note corrections,
+follow the changelog ownership policy in AGENTS.md and preserve existing entries.
 -->
 
 ## Added
@@ -88,23 +97,6 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Security-related changes -->
 
 ---
-
-### Example Entries:
-
-**Added:**
-- Add support for custom window icons in application options
-- Add new ` + "`SetWindowIcon()`" + ` method to runtime API (#1234)
-
-**Changed:**
-- Update minimum Go version requirement to 1.21
-- Improve error messages for invalid configuration files
-
-**Fixed:**
-- Fix memory leak in event system during window close operations (#5678)
-- Fix crash when using context menus on Linux with Wayland
-
-**Security:**
-- Update dependencies to address CVE-2024-12345 in third-party library
 `
 }
 
@@ -365,6 +357,183 @@ func syncRuntimePackageVersion(repoDir, releaseVersion string) error {
 	return nil
 }
 
+// Release model (v3.0.0 and later). Tags are chosen so that Go's "@latest"
+// (the highest tag WITHOUT a pre-release suffix) can only ever resolve to a
+// weekly or hotfix release, never to a nightly:
+//
+//	vX.Y.0                    weekly   - minor advances with TIME, not features
+//	vX.Y.Z (Z>0)              hotfix   - rare, manual, on top of a weekly
+//	vX.(Y+1).0-nightly.DATE   nightly  - preview of the NEXT weekly (UTC date)
+//	vX.Y.Z-alpha/beta/rc.N    legacy pre-GA builds
+const (
+	kindPrerelease = "prerelease"
+	kindWeekly     = "weekly"
+	kindHotfix     = "hotfix"
+	kindNightly    = "nightly"
+)
+
+// releasePolicy is everything the pipeline derives from a version's shape.
+type releasePolicy struct {
+	Kind       string // prerelease | weekly | hotfix | nightly
+	Prerelease bool   // GitHub release "prerelease" flag
+	MakeLatest string // GitHub release "make_latest": "true" | "false"
+	NPMTag     string // npm dist-tag for @wailsio/runtime
+}
+
+var versionShape = regexp.MustCompile(`^v?(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.\-]+)?$`)
+
+// nowUTC is replaceable in tests. Nightly tags use the UTC date.
+var nowUTC = func() time.Time { return time.Now().UTC() }
+
+// versionKind classifies a version by shape alone.
+func versionKind(version string) (string, error) {
+	m := versionShape.FindStringSubmatch(strings.TrimSpace(version))
+	if m == nil {
+		return "", fmt.Errorf("invalid semantic version %q", version)
+	}
+	switch {
+	case strings.HasPrefix(m[4], "-nightly."):
+		return kindNightly, nil
+	case m[4] != "":
+		return kindPrerelease, nil
+	case m[3] == "0":
+		return kindWeekly, nil
+	}
+	return kindHotfix, nil
+}
+
+// policyFor maps a version to GitHub release flags and the npm dist-tag.
+//
+//	weekly / hotfix -> normal release, make_latest=true,  npm "latest"
+//	nightly         -> prerelease,     make_latest=false, npm "nightly"
+//	legacy -beta.N  -> prerelease,     make_latest=false, npm "latest" (unchanged pre-GA behaviour)
+func policyFor(version string) (releasePolicy, error) {
+	kind, err := versionKind(version)
+	if err != nil {
+		return releasePolicy{}, err
+	}
+	switch kind {
+	case kindWeekly, kindHotfix:
+		return releasePolicy{Kind: kind, Prerelease: false, MakeLatest: "true", NPMTag: "latest"}, nil
+	case kindNightly:
+		return releasePolicy{Kind: kind, Prerelease: true, MakeLatest: "false", NPMTag: "nightly"}, nil
+	}
+	return releasePolicy{Kind: kind, Prerelease: true, MakeLatest: "false", NPMTag: "latest"}, nil
+}
+
+var releaseTagShape = regexp.MustCompile(`^v3\.\d+\.\d+(-(alpha\d*|beta|rc)\.\d+|-nightly\.\d{8}(\.\d+)?)?$`)
+
+// listReleaseTags returns the v3 release tags (stray tags such as "-tui" are
+// ignored). Returns nil if git is unavailable.
+func listReleaseTags(repoDir string) []string {
+	out, err := exec.Command("git", "-C", repoDir, "tag", "--list", "v3.*").Output()
+	if err != nil {
+		return nil
+	}
+	var tags []string
+	for _, tag := range strings.Fields(string(out)) {
+		if releaseTagShape.MatchString(tag) {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
+// highestOf returns the semver-highest of tags, optionally only those without
+// a pre-release suffix ("what Go resolves @latest to").
+func highestOf(tags []string, releasesOnly bool) string {
+	best := ""
+	for _, tag := range tags {
+		if releasesOnly && semver.Prerelease(tag) != "" {
+			continue
+		}
+		if best == "" || semver.Compare(tag, best) > 0 {
+			best = tag
+		}
+	}
+	return best
+}
+
+func highestReleaseTag(repoDir string) string { return highestOf(listReleaseTags(repoDir), true) }
+
+// nextAutoVersion computes the version of an automatic (no explicit version)
+// release from the existing tags. The base is the highest RELEASE tag
+// (pre-releases ignored), so the result never depends on version.txt being in
+// sync with the tags:
+//
+//	weekly  -> v<M>.<m+1>.0
+//	nightly -> v<M>.<m+1>.0-nightly.<UTC yyyymmdd>[.N]
+//
+// Before any v3 release tag exists (the beta series) a nightly keeps counting
+// the legacy pre-release (v3.0.0-beta.34 -> v3.0.0-beta.35).
+func nextAutoVersion(versionTxt, channel string, tags []string, now time.Time) (string, error) {
+	if channel == "" || channel == "auto" {
+		channel = kindNightly
+	}
+	if channel != kindWeekly && channel != kindNightly {
+		return "", fmt.Errorf("unknown channel %q (want auto, nightly or weekly)", channel)
+	}
+	base := highestOf(tags, true)
+	if base == "" {
+		kind, err := versionKind(versionTxt)
+		if err != nil {
+			return "", err
+		}
+		switch kind {
+		case kindPrerelease:
+			if channel == kindNightly {
+				return computeNextVersion(versionTxt), nil
+			}
+			return "", fmt.Errorf("weekly release needs a release tag or release version.txt, got %q: pass an explicit --version (e.g. v3.0.0) to leave the pre-release series", versionTxt)
+		case kindNightly:
+			// version.txt already names the upcoming weekly; use its M.m.0 as target.
+			m := versionShape.FindStringSubmatch(strings.TrimSpace(versionTxt))
+			minor, _ := strconv.Atoi(m[2])
+			base = fmt.Sprintf("v%s.%d.0", m[1], minor-1)
+			if minor == 0 {
+				base = "v" + m[1] + ".0.0"
+			}
+		default:
+			base = "v" + strings.TrimPrefix(strings.TrimSpace(versionTxt), "v")
+		}
+	}
+	m := versionShape.FindStringSubmatch(base)
+	if m == nil {
+		return "", fmt.Errorf("invalid base version %q", base)
+	}
+	minor, _ := strconv.Atoi(m[2])
+	target := fmt.Sprintf("v%s.%d.0", m[1], minor+1)
+	if channel == kindWeekly {
+		return target, nil
+	}
+	tag := fmt.Sprintf("%s-nightly.%s", target, now.UTC().Format("20060102"))
+	existing := map[string]bool{}
+	for _, t := range tags {
+		existing[t] = true
+	}
+	if !existing[tag] {
+		return tag, nil
+	}
+	for n := 1; ; n++ {
+		if c := fmt.Sprintf("%s.%d", tag, n); !existing[c] {
+			return c, nil
+		}
+	}
+}
+
+// checkMonotonic refuses an automatically computed version that is not
+// strictly greater (real semver ordering: pre-release < release) than every
+// existing tag.
+func checkMonotonic(newVersion, highest string) error {
+	if highest == "" {
+		return nil
+	}
+	if semver.Compare(newVersion, highest) <= 0 {
+		return fmt.Errorf("computed version %s is not greater than existing tag %s: refusing to release", newVersion, highest)
+	}
+	return nil
+}
+
 func computeNextVersion(currentVersion string) string {
 	if currentVersion == "" {
 		return "v0.0.1"
@@ -435,6 +604,32 @@ func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
 		switch args[0] {
+		case "--sync-runtime-version":
+			if len(args) != 2 {
+				fmt.Fprintln(os.Stderr, "usage: --sync-runtime-version VERSION")
+				os.Exit(1)
+			}
+			releaseDir, err := os.Getwd()
+			if err == nil {
+				err = syncRuntimePackageVersion(filepath.Clean(filepath.Join(releaseDir, "..", "..", "..")), args[1])
+			}
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
+		case "--print-policy":
+			if len(args) < 2 {
+				fmt.Println("usage: --print-policy VERSION")
+				os.Exit(1)
+			}
+			pol, err := policyFor(args[1])
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			fmt.Printf("kind=%s\nprerelease=%t\nmake_latest=%s\nnpm_tag=%s\n", pol.Kind, pol.Prerelease, pol.MakeLatest, pol.NPMTag)
+			os.Exit(0)
 		case "--check-only":
 			if err := handleCheckOnly(); err != nil {
 				fmt.Println(err.Error())
@@ -531,6 +726,8 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 	dryRun := fs.Bool("dry-run", false, "simulate the release without pushing changes or creating a GitHub release")
 	branch := fs.String("branch", defaultReleaseBranch, "git branch to push release changes to")
 	target := fs.String("target", defaultReleaseTarget, "target reference for the GitHub release (usually the same as branch)")
+	channel := fs.String("channel", "auto", "release cadence: auto, nightly (patch bump) or weekly (minor bump, patch 0)")
+	tagOnly := fs.Bool("tag-only", false, "commit version metadata, push only the tag (for releasing a detached, CI-verified commit); changelog untouched")
 	versionFlag := fs.String("version", "", "explicit release version (overrides automatic increment)")
 
 	if err := fs.Parse(args); err != nil {
@@ -553,6 +750,8 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 		dryRun:  *dryRun,
 		branch:  *branch,
 		target:  *target,
+		channel: strings.TrimSpace(*channel),
+		tagOnly: *tagOnly,
 	}, nil
 }
 
@@ -570,7 +769,7 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to extract unreleased changelog content: %w", err)
 	}
 	changelogContent = strings.TrimSpace(changelogContent)
-	if changelogContent == "" && strings.TrimSpace(opts.version) == "" {
+	if changelogContent == "" && strings.TrimSpace(opts.version) == "" && opts.channel != kindWeekly {
 		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
 		writeGitHubOutput("release_skipped", "true")
 		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")
@@ -612,32 +811,57 @@ func runRelease(opts releaseOptions) error {
 		}
 		if opts.dryRun {
 			fmt.Printf("✏️  (simulated) version override: %s\n", newVersion)
-		} else {
-			if err := os.WriteFile(versionFile, []byte(newVersion), 0o755); err != nil {
-				return fmt.Errorf("failed to write version file: %w", err)
-			}
-			fmt.Printf("✏️  Version override applied: %s\n", newVersion)
 		}
 	} else {
-		if opts.dryRun {
-			newVersion = computeNextVersion(originalVersion)
-			fmt.Printf("🔢 (simulated) next version: %s\n", newVersion)
-		} else {
-			newVersion = updateVersion()
-			fmt.Printf("🔢 Auto-incremented version to: %s\n", newVersion)
+		tags := listReleaseTags(repoDir)
+		newVersion, err = nextAutoVersion(originalVersion, opts.channel, tags, nowUTC())
+		if err != nil {
+			return err
 		}
+		// Automatic versions must never go backwards or collide with a tag.
+		if err := checkMonotonic(newVersion, highestOf(tags, false)); err != nil {
+			return err
+		}
+		if opts.dryRun {
+			fmt.Printf("🔢 (simulated) next version: %s\n", newVersion)
+		}
+	}
+	policy, err := policyFor(newVersion)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("🏷️  Release kind: %s (prerelease=%t, make_latest=%s, npm tag=%s)\n", policy.Kind, policy.Prerelease, policy.MakeLatest, policy.NPMTag)
+
+	if opts.tagOnly || (policy.Kind == kindWeekly && changelogContent == "") {
+		prev := highestReleaseTag(repoDir)
+		if prev == "" {
+			prev = "the previous release"
+		}
+		changelogContent = fmt.Sprintf("Weekly release: everything merged to master and verified by CI since %s. See the changelog for the individual entries.", prev)
+	}
+
+	if !opts.dryRun {
+		if err := os.WriteFile(versionFile, []byte(newVersion), 0o755); err != nil {
+			return fmt.Errorf("failed to write version file: %w", err)
+		}
+		fmt.Printf("🔢 Version set to: %s\n", newVersion)
 	}
 
 	if !opts.dryRun {
 		if err := syncRuntimePackageVersion(repoDir, newVersion); err != nil {
 			return err
 		}
-		if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
-			return err
+		if !opts.tagOnly {
+			if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
+				return err
+			}
 		}
 	}
 
-	releaseBody := buildReleaseBody(newVersion, changelogContent)
+	releaseBody := buildReleaseBodyFor(newVersion, changelogContent, policy)
+	writeGitHubOutput("release_kind", policy.Kind)
+	writeGitHubOutput("release_npm_tag", policy.NPMTag)
+	writeGitHubOutput("release_prerelease", strconv.FormatBool(policy.Prerelease))
 	writeGitHubOutput("release_version", newVersion)
 	writeGitHubOutput("release_tag", newVersion)
 	writeGitHubOutput("release_target", opts.target)
@@ -653,16 +877,19 @@ func runRelease(opts releaseOptions) error {
 	writeGitHubOutput("release_dry_run", "false")
 
 	git := newGitRunner(repoDir)
-	if err := git.ensureOnBranch(opts.branch); err != nil {
-		return err
+	if !opts.tagOnly {
+		if err := git.ensureOnBranch(opts.branch); err != nil {
+			return err
+		}
 	}
 
 	filesToAdd := []string{
 		"v3/internal/version/version.txt",
 		runtimePackageJSON,
 		runtimePackageLock,
-		"docs/mpress/content/changelog.md",
-		"v3/UNRELEASED_CHANGELOG.md",
+	}
+	if !opts.tagOnly {
+		filesToAdd = append(filesToAdd, "docs/mpress/content/changelog.md", "v3/UNRELEASED_CHANGELOG.md")
 	}
 	if err := git.add(filesToAdd...); err != nil {
 		return fmt.Errorf("failed to stage release files: %w", err)
@@ -683,8 +910,10 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to commit release changes: %w", err)
 	}
 
-	if err := git.push(opts.branch, repoSlug, token); err != nil {
-		return err
+	if !opts.tagOnly {
+		if err := git.push(opts.branch, repoSlug, token); err != nil {
+			return err
+		}
 	}
 
 	if err := git.createAnnotatedTag(newVersion, fmt.Sprintf("Release %s", newVersion)); err != nil {
@@ -696,7 +925,7 @@ func runRelease(opts releaseOptions) error {
 	}
 
 	releaseTitle := fmt.Sprintf(defaultReleaseTitle, newVersion)
-	releaseInfo, err := createGitHubRelease(token, repoSlug, opts.target, newVersion, releaseTitle, releaseBody)
+	releaseInfo, err := createGitHubRelease(token, repoSlug, opts.target, newVersion, releaseTitle, releaseBody, policy)
 	if err != nil {
 		return err
 	}
@@ -830,26 +1059,53 @@ func releaseChannel(version string) string {
 }
 
 func buildReleaseBody(version, changelogContent string) string {
+	pol, err := policyFor(version)
+	if err != nil {
+		pol = releasePolicy{Kind: kindNightly}
+	}
+	return buildReleaseBodyFor(version, changelogContent, pol)
+}
+
+func buildReleaseBodyFor(version, changelogContent string, pol releasePolicy) string {
 	trimmed := strings.TrimSpace(changelogContent)
 	channel := releaseChannel(version)
 	heading := fmt.Sprintf("## Wails v3 Release - %s", version)
-	if channel != "" {
-		heading = fmt.Sprintf("## Wails v3 %s Release - %s", channel, version)
+	var intro, footer string
+	switch pol.Kind {
+	case kindPrerelease:
+		footer = "🤖 This is an automated pre-release generated from the latest changes on master."
+		if channel != "" {
+			heading = fmt.Sprintf("## Wails v3 %s Release - %s", channel, version)
+		}
+	case kindWeekly:
+		heading = fmt.Sprintf("## Wails v3 Weekly Release - %s", version)
+		footer = "🗓️ This is a **weekly** release. Minor version numbers advance with time, not with features: a new minor is not a feature milestone. Nightly previews are published between weekly releases as `-nightly` pre-releases."
+	case kindHotfix:
+		heading = fmt.Sprintf("## Wails v3 Hotfix Release - %s", version)
+		footer = "🩹 This is a **hotfix** release on top of the previous weekly release."
+	case kindNightly:
+		heading = fmt.Sprintf("## Wails v3 Nightly - %s", version)
+		intro = fmt.Sprintf("Nightly preview of the upcoming %s.", nightlyTarget(version))
+		footer = "🤖 This is an automated **nightly** pre-release generated from the latest changes on master. It is not selected by `@latest`; install it by its exact tag."
 	}
-	sections := []string{
-		heading,
-		"",
+	sections := []string{heading, ""}
+	if intro != "" {
+		sections = append(sections, intro, "")
+	}
+	sections = append(sections,
 		trimmed,
 		"",
 		"---",
 		"",
-		"🤖 This is an automated nightly release generated from the latest changes on master.",
+		footer,
 		"",
 		"**Installation:**",
 		"```bash",
 		fmt.Sprintf("go install github.com/wailsapp/wails/v3/cmd/wails3@%s", version),
 		"```",
-	}
+		"",
+		"**Tip:** always pin an exact version (e.g. `@"+version+"`) in `go.mod` and CI rather than `@latest`.",
+	)
 	switch channel {
 	case "Alpha":
 		sections = append(sections, "",
@@ -859,9 +1115,17 @@ func buildReleaseBody(version, changelogContent string) string {
 			"**⚠️ Beta Warning:** This is pre-release software. The API is stable, but you may still encounter issues before the final 3.0 release.")
 	case "Release Candidate":
 		sections = append(sections, "",
-			"**⚠️ Release Candidate Warning:** This is pre-release software undergoing final validation before the stable release.")
+			"**⚠️ Release Candidate Warning:** This is pre-release software undergoing final validation before the final release.")
 	}
 	return strings.Join(sections, "\n")
+}
+
+// nightlyTarget returns the weekly a nightly previews: v3.2.0-nightly.20261102 -> v3.2.0.
+func nightlyTarget(version string) string {
+	if i := strings.Index(version, "-"); i >= 0 {
+		return version[:i]
+	}
+	return version
 }
 
 type gitRunner struct {
@@ -1024,7 +1288,7 @@ type releaseCreateResponse struct {
 	HTMLURL string `json:"html_url"`
 }
 
-func createGitHubRelease(token, repoSlug, target, tag, title, body string) (releaseCreateResponse, error) {
+func createGitHubRelease(token, repoSlug, target, tag, title, body string, policy releasePolicy) (releaseCreateResponse, error) {
 	apiBase := strings.TrimSpace(os.Getenv("GITHUB_API_URL"))
 	if apiBase == "" {
 		apiBase = githubDefaultAPI
@@ -1037,8 +1301,8 @@ func createGitHubRelease(token, repoSlug, target, tag, title, body string) (rele
 		"name":             title,
 		"body":             body,
 		"draft":            false,
-		"prerelease":       true,
-		"make_latest":      "false",
+		"prerelease":       policy.Prerelease,
+		"make_latest":      policy.MakeLatest,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {
@@ -1078,7 +1342,7 @@ func createGitHubRelease(token, repoSlug, target, tag, title, body string) (rele
 			bodyBytes, _ := io.ReadAll(resp.Body)
 			return releaseCreateResponse{}, fmt.Errorf("failed to create GitHub release (status %d): %s", resp.StatusCode, strings.TrimSpace(string(bodyBytes)))
 		}
-		if err := updateGitHubRelease(apiBase, token, repoSlug, release, title, body); err != nil {
+		if err := updateGitHubRelease(apiBase, token, repoSlug, release, title, body, policy); err != nil {
 			return releaseCreateResponse{}, err
 		}
 		if release.HTMLURL != "" {
@@ -1120,15 +1384,15 @@ func fetchReleaseByTag(apiBase, token, repoSlug, tag string) (releaseCreateRespo
 	return result, nil
 }
 
-func updateGitHubRelease(apiBase, token, repoSlug string, release releaseCreateResponse, title, body string) error {
+func updateGitHubRelease(apiBase, token, repoSlug string, release releaseCreateResponse, title, body string, policy releasePolicy) error {
 	if release.ID == 0 {
 		return errors.New("cannot update GitHub release: missing release ID")
 	}
 	payload := map[string]interface{}{
 		"name":        title,
 		"body":        body,
-		"prerelease":  true,
-		"make_latest": "false",
+		"prerelease":  policy.Prerelease,
+		"make_latest": policy.MakeLatest,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

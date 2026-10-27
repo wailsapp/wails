@@ -185,3 +185,28 @@ func TestEventProcessorDispatchesWindowEventsInEmitOrder(t *testing.T) {
 		t.Fatalf("window event order = %v, want [1 2]", order)
 	}
 }
+
+func TestEventProcessorRegisterHookWhileEmitting(t *testing.T) {
+	processor := application.NewWailsEventProcessor(func(*application.CustomEvent) {})
+	stop := make(chan struct{})
+	var emitter sync.WaitGroup
+	emitter.Add(1)
+	go func() {
+		defer emitter.Done()
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				_ = processor.Emit(&application.CustomEvent{Name: "test"})
+			}
+		}
+	}()
+
+	for range 200 {
+		remove := processor.RegisterHook("test", func(*application.CustomEvent) {})
+		remove()
+	}
+	close(stop)
+	emitter.Wait()
+}

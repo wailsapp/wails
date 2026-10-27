@@ -12,13 +12,13 @@ Neste tutorial, você criará um aplicativo de notas que demonstra operações d
 ## O que você criará
 
 - Um aplicativo de notas completo, com funcionalidades para criar, editar e excluir
-- Caixas de diálogo nativas para salvar e abrir arquivos ao importar e exportar notas
+- Caixas de diálogo nativas para salvar e abrir arquivos, permitindo importar e exportar notas
 - Salvamento automático durante a digitação, com debounce para reduzir atualizações desnecessárias
 - Layout profissional de duas colunas (barra lateral + editor), semelhante ao Apple Notes
 
 ## O que você aprenderá
 
-- Como usar caixas de diálogo nativas de arquivos no Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
+- Como usar caixas de diálogo nativas de arquivo no Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
 - Como trabalhar com arquivos JSON para persistir dados
 - Como implementar padrões de salvamento automático com debounce
 - Como criar interfaces profissionais para desktop com CSS moderno
@@ -29,12 +29,12 @@ Neste tutorial, você criará um aplicativo de notas que demonstra operações d
 @steps
 ### Crie um novo projeto Wails
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
 ### Crie o NotesService
-Crie um novo arquivo `notesservice.go` na raiz do projeto:
+Crie um arquivo `notesservice.go` na raiz do projeto:
 
 ```go
 package main
@@ -173,9 +173,9 @@ func generateID() string {
 
 **O que acontece aqui:**
 
-- **Struct Note**: define a estrutura de dados com tags JSON em letras minúsculas para garantir a serialização correta
+- **Struct Note**: define a estrutura de dados com tags JSON (em letras minúsculas) para uma serialização correta
 - **Operações CRUD**: GetAll, Create, Update e Delete para gerenciar notas na memória
-- **Caixas de diálogo de arquivos**: usa `application.Get().Dialog.SaveFile()` e `application.Get().Dialog.OpenFile()` para acessar caixas de diálogo nativas
+- **Caixas de diálogo de arquivo**: usa `application.Get().Dialog.SaveFile()` e `application.Get().Dialog.OpenFile()` para acessar caixas de diálogo nativas
 - **Caixas de diálogo informativas**: exibe mensagens de sucesso usando `application.Get().Dialog.Info()`
 - **Geração de IDs**: gerador simples de IDs baseado em carimbo de data e hora
 
@@ -286,7 +286,7 @@ Substitua `frontend/index.html`:
 
 - **Layout de duas colunas**: barra lateral para a lista de notas e área principal para o editor
 - **Estado vazio**: exibido quando nenhuma nota está selecionada
-- **Runtime do Wails**: deve ser carregado antes do script do módulo
+- **Runtime do Wails**: deve ser carregado antes do script de módulo
 
 ### Adicione os estilos CSS
 Substitua `frontend/public/style.css`:
@@ -473,10 +473,10 @@ body {
 
 **O que acontece aqui:**
 
-- Design no estilo da Apple, com tipografia e cores simples e elegantes
+- Design no estilo Apple, com tipografia e cores simples
 - Layout Flexbox para uma barra lateral e um editor responsivos
 - Destaque da nota ativa com fundo azul
-- Transições suaves ao passar o cursor
+- Transições suaves ao passar o ponteiro
 
 ### Implemente a lógica JavaScript
 Substitua `frontend/src/main.js`:
@@ -617,11 +617,11 @@ loadNotes()
 
 **O que acontece aqui:**
 
-- **Salvamento automático**: o debounce de 500 ms evita chamadas excessivas ao backend durante a digitação
-- **Acesso a propriedades**: usa nomes de propriedades em letras minúsculas (`.id`, `.title`), correspondentes às tags JSON do Go
-- **Gerenciamento de foco**: define automaticamente o foco no título e o seleciona ao criar novas notas
+- **Salvamento automático**: um debounce de 500 ms evita chamadas excessivas ao backend durante a digitação
+- **Acesso às propriedades**: usa nomes de propriedades em letras minúsculas (`.id`, `.title`), correspondentes às tags JSON do Go
+- **Gerenciamento do foco**: coloca automaticamente o foco no título e o seleciona ao criar novas notas
 - **Exclusão sem confirmação**: o `confirm()` do navegador não funciona nas webviews do Wails
-- **Operações de arquivo**: caixas de diálogo nativas gerenciam o salvamento e o carregamento com o tratamento de erros adequado
+- **Operações de arquivo**: caixas de diálogo nativas processam o salvamento e o carregamento com o tratamento adequado de erros
 
 ### Execute o aplicativo
 ```bash
@@ -631,9 +631,9 @@ wails3 dev
 O aplicativo será iniciado e você poderá:
 
 - Clicar em "+ New Note" para criar notas
-- Editar o título e o conteúdo (salvos automaticamente após 500 ms)
+- Editar o título e o conteúdo (o salvamento automático ocorre após 500 ms)
 - Clicar nas notas da barra lateral para alternar entre elas
-- Clicar em "Delete" para remover a nota atual
+- Clicar em "Delete" para excluir a nota atual
 - Clicar em "Save" para exportar as notas como JSON
 - Clicar em "Load" para importar notas salvas anteriormente
 
@@ -641,9 +641,9 @@ O aplicativo será iniciado e você poderá:
 
 ## Principais conceitos
 
-### Caixas de diálogo de arquivos e mensagens
+### Caixas de diálogo de arquivo e de mensagem
 
-No Wails v3, **não** há construtores de caixas de diálogo no nível do pacote — todas as caixas de diálogo são criadas por meio do gerenciador `app.Dialog`. Em um serviço, obtenha o aplicativo por meio de `application.Get()` (que retorna a instância `*application.App` em execução):
+No Wails v3, **não** há construtores de caixas de diálogo no nível do pacote — cada caixa de diálogo é criada por meio do gerenciador `app.Dialog`. Em um serviço, obtenha o aplicativo por meio de `application.Get()` (que retorna o `*application.App` em execução):
 
 ```go
 // Correct — manager-based dialogs.
@@ -654,7 +654,7 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-Os métodos correspondentes são `app.Dialog.Info() / Question() / Warning() / Error()` para caixas de diálogo de mensagens e `app.Dialog.OpenFile() / SaveFile()` (além das variantes `*WithOptions`) para caixas de diálogo de arquivos.
+Os métodos correspondentes são `app.Dialog.Info() / Question() / Warning() / Error()` para caixas de diálogo de mensagem e `app.Dialog.OpenFile() / SaveFile()` (além das variantes de `*WithOptions`) para caixas de diálogo de arquivo.
 
 ### Mapeamento de tags JSON
 
@@ -689,8 +689,8 @@ function scheduleUpdate() {
 
 ## Próximos passos
 
-- Adicione categorias ou etiquetas para organizar as notas
+- Adicione categorias ou tags para organizar as notas
 - Implemente pesquisa e filtragem
-- Adicione a edição de texto formatado com um editor WYSIWYG
+- Adicione edição de rich text com um editor WYSIWYG
 - Sincronize as notas com o armazenamento em nuvem
 - Adicione atalhos de teclado para operações comuns

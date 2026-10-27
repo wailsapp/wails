@@ -1,45 +1,45 @@
 ---
-title: "Ereignisleitfaden"
-description: "Ein praxisorientierter Leitfaden zur Verwendung von Ereignissen in Wails v3 für die Anwendungskommunikation und die Verwaltung des Lebenszyklus"
+title: "Leitfaden zu Ereignissen"
+description: "Ein praxisnaher Leitfaden zur Verwendung von Ereignissen in Wails v3 für die Anwendungskommunikation und die Verwaltung des Lebenszyklus"
 slug: "guides/events-reference"
 sourcePath: "guides/events-reference.md"
 ---
 
-**HINWEIS: Dieser Leitfaden wird derzeit noch ausgearbeitet**
+**HINWEIS: Dieser Leitfaden ist noch in Arbeit**
 
-## Ereignisleitfaden
+## Leitfaden zu Ereignissen
 
-Ereignisse bilden das Herzstück der Kommunikation in Wails-Anwendungen. Sie ermöglichen verschiedenen Teilen Ihrer Anwendung, miteinander zu kommunizieren, ohne eng gekoppelt zu sein. Dieser Leitfaden vermittelt Ihnen alles, was Sie wissen müssen, um Ereignisse in Ihrer Wails-Anwendung effektiv einzusetzen.
+Ereignisse sind das Herzstück der Kommunikation in Wails-Anwendungen. Über sie können verschiedene Teile Ihrer Anwendung miteinander kommunizieren, ohne eng gekoppelt zu sein. Dieser Leitfaden vermittelt Ihnen alles, was Sie wissen müssen, um Ereignisse in Ihrer Wails-Anwendung effektiv einzusetzen.
 
 ## Wails-Ereignisse verstehen
 
-Stellen Sie sich Ereignisse als Nachrichten vor, die in der gesamten Anwendung verbreitet werden. Jeder Teil Ihrer Anwendung kann auf diese Nachrichten warten und entsprechend reagieren. Dies ist besonders nützlich für:
+Stellen Sie sich Ereignisse als Nachrichten vor, die in Ihrer gesamten Anwendung verbreitet werden. Jeder Teil Ihrer Anwendung kann auf diese Nachrichten reagieren. Dies ist besonders nützlich für:
 
 - **Auf Fensteränderungen reagieren**: Erkennen, wenn Ihr Fenster minimiert, maximiert oder verschoben wird
-- **Systemereignisse verarbeiten**: Auf Änderungen des Designs oder Energieereignisse reagieren
+- **Systemereignisse verarbeiten**: Auf Änderungen des Farbschemas oder Energieverwaltungsereignisse reagieren
 - **Benutzerdefinierte Anwendungslogik**: Eigene Ereignisse für Funktionen wie Datenaktualisierungen oder Benutzeraktionen erstellen
 - **Komponentenübergreifende Kommunikation**: Verschiedene Teile Ihrer Anwendung ohne direkte Abhängigkeiten kommunizieren lassen
 
 ## Namenskonvention für Ereignisse
 
-Alle Wails-Ereignisse folgen einem Namensraumschema, das ihre Herkunft eindeutig kennzeichnet:
+Alle Wails-Ereignisse folgen einem Namensraumschema, das ihren Ursprung eindeutig kennzeichnet:
 
-- `common:` – Plattformübergreifende Ereignisse, die unter Windows, macOS und Linux funktionieren
+- `common:` – Plattformübergreifende Ereignisse für Windows, macOS und Linux
 - `windows:` – Windows-spezifische Ereignisse
 - `mac:` – macOS-spezifische Ereignisse\
 - `linux:` – Linux-spezifische Ereignisse
 
 Beispiele:
 
-- `common:WindowFocus` – Das Fenster hat den Fokus erhalten (funktioniert auf allen Plattformen)
-- `windows:APMSuspend` – Das System wechselt in den Energiesparmodus (nur Windows)
+- `common:WindowFocus` – Das Fenster hat den Fokus erhalten (funktioniert überall)
+- `windows:APMSuspend` – Das System wird in den Standbymodus versetzt (nur Windows)
 - `mac:ApplicationDidBecomeActive` – Die Anwendung wurde aktiv (nur macOS)
 
 ## Erste Schritte mit Ereignissen
 
 ### Auf Ereignisse reagieren (Frontend)
 
-Der häufigste Anwendungsfall besteht darin, im Frontend-Code auf Ereignisse zu reagieren:
+Der häufigste Anwendungsfall ist das Reagieren auf Ereignisse in Ihrem Frontend-Code:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -91,7 +91,7 @@ func (s *Service) UpdateData() {
 
 ### Ereignisse auslösen (Frontend)
 
-Obwohl dies seltener verwendet wird, können Sie auch in Ihrem Frontend Ereignisse auslösen, auf die Ihr Go-Code reagieren kann:
+Sie können auch im Frontend Ereignisse auslösen, auf die Ihr Go-Code reagieren kann, auch wenn dies seltener verwendet wird:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -103,11 +103,11 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-Wenn Sie TypeScript in Ihrem Frontend verwenden und in Ihrem Go-Code [typisierte Ereignisse registrieren](#typisierte-ereignisse-mit-typsicherheit), erhalten Sie eine automatische Vervollständigung und Prüfung von Ereignisnamen sowie eine Prüfung der Datentypen.
+Wenn Sie TypeScript in Ihrem Frontend verwenden und in Ihrem Go-Code [typisierte Ereignisse registrieren](#typisierte-ereignisse-mit-typsicherheit), erhalten Sie eine automatische Vervollständigung und Prüfung von Ereignisnamen sowie eine Datentypprüfung.
 
 ### Ereignis-Listener entfernen
 
-Entfernen Sie Ihre Ereignis-Listener immer, sobald sie nicht mehr benötigt werden:
+Entfernen Sie Ereignis-Listener immer, sobald sie nicht mehr benötigt werden:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -131,7 +131,7 @@ Events.Off('common:WindowFocus');
 
 ## Häufige Anwendungsfälle
 
-### 1. Bei Fensterfokus pausieren/fortsetzen
+### 1. Bei Änderung des Fensterfokus pausieren/fortsetzen
 
 Viele Anwendungen müssen bestimmte Aktivitäten pausieren, wenn das Fenster den Fokus verliert:
 
@@ -151,9 +151,9 @@ Events.On('common:WindowFocus', () => {
 });
 ```
 
-### 2. Auf Änderungen des Designs reagieren
+### 2. Auf Änderungen des Farbschemas reagieren
 
-Halten Sie Ihre Anwendung mit dem Systemdesign synchron:
+Halten Sie Ihre Anwendung mit dem Farbschema des Systems synchron:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -297,11 +297,11 @@ Events.On('monitor:stats-updated', (event) => {
 
 ## Typisierte Ereignisse mit Typsicherheit
 
-Wails v3 unterstützt durch Ereignisregistrierung und automatische Binding-Generierung typisierte Ereignisse mit vollständiger TypeScript-Typsicherheit.
+Wails v3 unterstützt durch die Registrierung von Ereignissen und die automatische Generierung von Bindings typisierte Ereignisse mit vollständiger TypeScript-Typsicherheit.
 
 ### Benutzerdefinierte Ereignisse registrieren
 
-Rufen Sie beim Initialisieren `application.RegisterEvent` auf, um die Namen benutzerdefinierter Ereignisse zusammen mit ihren Datentypen zu registrieren:
+Rufen Sie während der Initialisierung `application.RegisterEvent` auf, um benutzerdefinierte Ereignisnamen mit ihren Datentypen zu registrieren:
 
 ```go
 package main
@@ -330,7 +330,7 @@ func init() {
 ```
 
 @note{type="caution"}
-`RegisterEvent` ist für den Aufruf beim Initialisieren vorgesehen und löst in folgenden Fällen eine Panic aus:
+`RegisterEvent` ist für den Aufruf während der Initialisierung vorgesehen und löst in folgenden Fällen eine Panic aus:
 
 - Die Argumente sind ungültig
 - Derselbe Ereignisname wird zweimal mit unterschiedlichen Datentypen registriert
@@ -338,33 +338,33 @@ func init() {
 @end
 
 @note{type="info"}
-Dasselbe Ereignis kann gefahrlos mehrfach registriert werden, solange der Datentyp immer identisch ist. So lässt sich sicherstellen, dass ein Ereignis registriert wird, wenn eines von mehreren Paketen geladen wird.
+Dasselbe Ereignis kann mehrmals sicher registriert werden, solange der Datentyp immer identisch ist. So lässt sich sicherstellen, dass ein Ereignis registriert wird, sobald eines von mehreren Paketen geladen wird.
 
 @end
 
 ### Vorteile der Ereignisregistrierung
 
-Nach der Registrierung werden die an `Event.Emit` übergebenen Datenargumente daraufhin geprüft, ob sie dem angegebenen Typ entsprechen. Bei einer Abweichung:
+Nach der Registrierung werden an `Event.Emit` übergebene Datenargumente anhand des angegebenen Typs geprüft. Bei einer Abweichung gilt:
 
 - Ein Fehler wird ausgegeben und protokolliert (oder an den registrierten Fehler-Handler übergeben)
-- Das betreffende Ereignis wird nicht weitergegeben
-- Dadurch ist sichergestellt, dass das Datenfeld registrierter Ereignisse stets dem deklarierten Typ zuweisbar ist
+- Das betreffende Ereignis wird nicht weitergeleitet
+- Dadurch ist sichergestellt, dass das Datenfeld registrierter Ereignisse stets dem deklarierten Typ zugewiesen werden kann
 
 ### Strikter Modus
 
-Verwenden Sie das Build-Tag `strictevents`, um während der Entwicklung Warnungen für nicht registrierte Events zu aktivieren:
+Verwenden Sie das Build-Tag `strictevents`, um während der Entwicklung Warnungen für nicht registrierte Ereignisse zu aktivieren:
 
 ```bash
 go build -tags strictevents
 ```
 
-Bei aktiviertem Strict Mode gibt die Runtime für jeden nicht registrierten Event-Namen höchstens eine Warnung aus, damit die Logs nicht überflutet werden.
+Bei aktiviertem striktem Modus gibt die Runtime pro nicht registriertem Ereignisnamen höchstens eine Warnung aus, damit die Protokolle nicht überflutet werden.
 
-### Generierung von TypeScript-Bindings
+### TypeScript-Bindings generieren
 
-Der Binding-Generator erzeugt TypeScript-Definitionen und Glue-Code für die transparente Unterstützung typisierter Events im Frontend.
+Der Binding-Generator erzeugt TypeScript-Definitionen und Glue-Code zur transparenten Unterstützung typisierter Ereignisse im Frontend.
 
-#### 1. Vite-Plugin einrichten
+#### 1. Vite-Plug-in einrichten
 
 In Ihrer `vite.config.ts`:
 
@@ -385,20 +385,20 @@ Führen Sie den Binding-Generator aus:
 wails3 generate bindings
 ```
 
-Dadurch werden in Ihrem Frontend-Verzeichnis TypeScript-Dateien mit typisierten Event-Erzeugern und Datenschnittstellen erstellt.
+Dadurch werden in Ihrem Frontend-Verzeichnis TypeScript-Dateien mit typisierten Definitionen der Ereignisdaten sowie ein Modul `bindings/events` erstellt. Dieses Modul exportiert für jeden registrierten Ereignisnamen, der eine vom Generator erkennbare Kompilierzeitkonstante ist, jeweils eine Konstante (beispielsweise wird `user:login` zu `UserLogin`).
 
-#### 3. Typisierte Events im Frontend verwenden
+#### 3. Typisierte Ereignisse im Frontend verwenden
 
 ```typescript
 import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -415,83 +415,83 @@ Events.On(MonitorStats, (event) => {
 })
 ```
 
-Die typisierten Events bieten:
+Die typisierten Ereignisse bieten:
 
-- **Autovervollständigung** für Event-Namen
-- **Typprüfung** für Event-Daten
-- **Fehler zur Kompilierzeit** bei nicht übereinstimmenden Datentypen
+- **Automatische Vervollständigung** für Ereignisnamen
+- **Typprüfung** für Ereignisdaten
+- **Kompilierzeitfehler** bei nicht übereinstimmenden Datentypen
 - **IntelliSense**-Dokumentation
 
-## Event-Referenz
+## Ereignisreferenz
 
-### Allgemeine Events (plattformübergreifend)
+### Allgemeine Ereignisse (plattformübergreifend)
 
-Diese Events funktionieren auf allen Plattformen:
+Diese Ereignisse funktionieren auf allen Plattformen:
 
-| Event | Beschreibung | Verwendungszweck |
+| Ereignis | Beschreibung | Verwendungszweck |
 | --- | --- | --- |
-| `common:ApplicationStarted` | Anwendung wurde vollständig gestartet | Anwendung initialisieren, gespeicherten Zustand laden |
-| `common:WindowRuntimeReady` | Wails-Runtime ist bereit | Wails-API-Aufrufe starten |
-| `common:ThemeChanged` | System-Theme wurde geändert | Erscheinungsbild der Anwendung aktualisieren |
-| `common:SystemWillSleep` | System wechselt gleich in einen Energiesparzustand | Zustand persistieren, Sockets schließen |
-| `common:SystemDidWake` | System wurde aus einem Energiesparzustand reaktiviert | Verbindung wiederherstellen, veraltete Daten aktualisieren |
+| `common:ApplicationStarted` | Die Anwendung wurde vollständig gestartet | App initialisieren, gespeicherten Zustand laden |
+| `common:WindowRuntimeReady` | Wails-Laufzeit ist bereit | Wails-API-Aufrufe starten |
+| `common:ThemeChanged` | Systemdesign wurde geändert | Erscheinungsbild der App aktualisieren |
+| `common:SystemWillSleep` | System wird gleich in den Ruhezustand versetzt | Zustand schreiben, Sockets schließen |
+| `common:SystemDidWake` | System wurde aus dem Ruhezustand fortgesetzt | Verbindung wiederherstellen, veraltete Daten aktualisieren |
 | `common:WindowFocus` | Fenster hat den Fokus erhalten | Aktivitäten fortsetzen, Daten aktualisieren |
 | `common:WindowLostFocus` | Fenster hat den Fokus verloren | Aktivitäten pausieren, Zustand speichern |
 | `common:WindowMinimise` | Fenster wurde minimiert | Rendering pausieren, Ressourcennutzung reduzieren |
-| `common:WindowMaximise` | Fenster wurde maximiert | Layout an den Vollbildmodus anpassen |
+| `common:WindowMaximise` | Fenster wurde maximiert | Layout für den Vollbildmodus anpassen |
 | `common:WindowRestore` | Fenster wurde aus dem minimierten oder maximierten Zustand wiederhergestellt | Zum normalen Layout zurückkehren |
 | `common:WindowClosing` | Fenster wird gleich geschlossen | Daten speichern, Ressourcen bereinigen |
 | `common:WindowFilesDropped` | Dateien wurden auf dem Fenster abgelegt | Dateiimporte verarbeiten |
 | `common:WindowDidResize` | Fenstergröße wurde geändert | Layout anpassen, Diagramme neu rendern |
 | `common:WindowDidMove` | Fenster wurde verschoben | Positionsabhängige Funktionen aktualisieren |
 
-### Plattformspezifische Events
+### Plattformspezifische Ereignisse
 
-#### Windows-Events
+#### Windows-Ereignisse
 
 Wichtige Ereignisse für Windows-Anwendungen:
 
 | Ereignis | Beschreibung | Anwendungsfall |
 | --- | --- | --- |
-| `windows:SystemThemeChanged` | Windows-Design wurde geändert | Anwendungsfarben aktualisieren |
-| `windows:APMSuspend` | System wird in den Energiesparmodus versetzt | Zustand speichern, Vorgänge anhalten |
-| `windows:APMResumeAutomatic` | System wurde reaktiviert (wird bei der Reaktivierung immer ausgelöst) | Zustand wiederherstellen, Daten aktualisieren |
-| `windows:APMResumeSuspend` | System wurde durch eine Benutzereingabe reaktiviert (nach `APMResumeAutomatic`) | Vom Benutzer ausgelöste Reaktivierung unterscheiden |
+| `windows:SystemThemeChanged` | Windows-Design wurde geändert | App-Farben aktualisieren |
+| `windows:APMSuspend` | System wird in den Ruhezustand versetzt | Zustand speichern, Vorgänge pausieren |
+| `windows:APMResumeAutomatic` | System wurde fortgesetzt (wird beim Fortsetzen immer ausgelöst) | Zustand wiederherstellen, Daten aktualisieren |
+| `windows:APMResumeSuspend` | System wurde durch eine Benutzereingabe fortgesetzt (nach `APMResumeAutomatic`) | Vom Benutzer initiiertes Aufwecken erkennen |
 | `windows:APMPowerStatusChange` | Energiestatus wurde geändert | Leistungseinstellungen anpassen |
 
 #### macOS-Ereignisse
 
-Wichtige Ereignisse für macOS-Anwendungen:
+Wichtige macOS-Anwendungsereignisse:
 
 | Ereignis | Beschreibung | Anwendungsfall |
 | --- | --- | --- |
-| `mac:ApplicationDidBecomeActive` | Anwendung wurde aktiv | Vorgänge fortsetzen |
-| `mac:ApplicationDidResignActive` | Anwendung wurde inaktiv | Vorgänge anhalten |
-| `mac:ApplicationWillTerminate` | Anwendung wird beendet | Abschließende Bereinigung |
+| `mac:ApplicationDidBecomeActive` | App wurde aktiv | Vorgänge fortsetzen |
+| `mac:ApplicationDidResignActive` | App wurde inaktiv | Vorgänge pausieren |
+| `mac:ApplicationWillTerminate` | App wird beendet | Abschließende Bereinigung |
 | `mac:ApplicationWillSleep` | System wird gleich in den Ruhezustand versetzt | Zustand speichern, Sockets schließen |
-| `mac:ApplicationDidWake` | System wurde reaktiviert | Verbindung wiederherstellen, Daten aktualisieren |
-| `mac:ApplicationScreensDidSleep` | Bildschirme wurden in den Ruhezustand versetzt | Rendering anhalten (vom Energiesparzustand des Systems zu unterscheiden) |
-| `mac:ApplicationScreensDidWake` | Bildschirme wurden reaktiviert | Rendering fortsetzen |
+| `mac:ApplicationDidWake` | System wurde fortgesetzt | Verbindung wiederherstellen, aktualisieren |
+| `mac:ApplicationScreensDidSleep` | Bildschirme wurden in den Ruhezustand versetzt | Rendering pausieren (unabhängig vom Systemruhezustand) |
+| `mac:ApplicationScreensDidWake` | Bildschirme wurden aufgeweckt | Rendering fortsetzen |
 | `mac:WindowDidEnterFullScreen` | Vollbildmodus wurde aktiviert | Benutzeroberfläche für den Vollbildmodus anpassen |
 | `mac:WindowDidExitFullScreen` | Vollbildmodus wurde beendet | Normale Benutzeroberfläche wiederherstellen |
 
 #### Linux-Ereignisse
 
-Grundlegende Linux-Fensterereignisse:
+Zentrale Linux-Fensterereignisse:
 
 | Ereignis | Beschreibung | Anwendungsfall |
 | --- | --- | --- |
-| `linux:SystemThemeChanged` | Desktop-Design wurde geändert | Anwendungsdesign aktualisieren |
+| `linux:SystemThemeChanged` | Desktop-Design wurde geändert | App-Design aktualisieren |
 | `linux:SystemWillSleep` | System wird gleich in den Ruhezustand versetzt (logind) | Zustand speichern |
-| `linux:SystemDidWake` | System wurde reaktiviert (logind) | Verbindung wiederherstellen, Daten aktualisieren |
+| `linux:SystemDidWake` | System wurde fortgesetzt (logind) | Verbindung wiederherstellen, aktualisieren |
 | `linux:WindowFocusIn` | Fenster hat den Fokus erhalten | Aktivitäten fortsetzen |
 | `linux:WindowFocusOut` | Fenster hat den Fokus verloren | Aktivitäten pausieren |
-| `linux:WindowLoadStarted` | WebView hat den Ladevorgang gestartet | Ladeanzeige einblenden |
-| `linux:WindowLoadRedirected` | WebView wurde umgeleitet | Navigationsumleitungen verfolgen |
-| `linux:WindowLoadCommitted` | WebView hat den Ladevorgang bestätigt | Inhalt wird empfangen |
-| `linux:WindowLoadFinished` | WebView hat den Ladevorgang abgeschlossen | Ladeanzeige ausblenden, JS/CSS injizieren |
+| `linux:WindowLoadStarted` | WebView hat den Ladevorgang gestartet | Ladeanzeige anzeigen |
+| `linux:WindowLoadRedirected` | WebView wurde umgeleitet | Navigationsweiterleitungen verfolgen |
+| `linux:WindowLoadCommitted` | WebView hat den Ladevorgang bestätigt | Inhalte werden empfangen |
+| `linux:WindowLoadFinished` | WebView hat den Ladevorgang abgeschlossen | Ladeanzeige ausblenden, JS/CSS einschleusen |
 
-## Bewährte Methoden
+## Bewährte Vorgehensweisen
 
 ### 1. Ereignisnamensräume verwenden
 
@@ -510,7 +510,7 @@ Events.Emit('login');
 Events.Emit('update');
 ```
 
-### 2. Ereignis-Listener bereinigen
+### 2. Listener bereinigen
 
 Entfernen Sie Ereignis-Listener immer, wenn Komponenten ausgehängt werden:
 
@@ -534,7 +534,7 @@ useEffect(() => {
 
 ### 3. Plattformunterschiede berücksichtigen
 
-Prüfen Sie bei plattformspezifischen Ereignissen, ob sie auf der jeweiligen Plattform verfügbar sind:
+Prüfen Sie bei plattformspezifischen Ereignissen deren Verfügbarkeit auf der jeweiligen Plattform:
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -549,7 +549,7 @@ Events.On('mac:ApplicationWillTerminate', handleTerminate);
 
 Ereignisse sind zwar leistungsfähig, sollten aber nicht für alles verwendet werden:
 
-- ✅ Ereignisse verwenden für: Systembenachrichtigungen, Änderungen des Lebenszyklus, per Broadcast verteilte Aktualisierungen
+- ✅ Ereignisse verwenden für: Systembenachrichtigungen, Lebenszyklusänderungen, übertragene Aktualisierungen
 - ❌ Ereignisse vermeiden für: direkte Funktionsrückgaben, Aktualisierungen einzelner Komponenten, synchrone Vorgänge
 
 ## Ereignisse debuggen
@@ -583,6 +583,6 @@ Die aktuellsten Ereignisnamen und Angaben zu ihrer Verfügbarkeit finden Sie ste
 
 ## Zusammenfassung
 
-Ereignisse bieten in Wails eine leistungsfähige, entkoppelte Möglichkeit, die Kommunikation in Ihrer Anwendung abzuwickeln. Wenn Sie die Muster und bewährten Methoden aus diesem Leitfaden befolgen, können Sie reaktionsschnelle, plattformbewusste Anwendungen entwickeln, die nahtlos auf Systemänderungen und Benutzerinteraktionen reagieren.
+Ereignisse bieten in Wails eine leistungsfähige, entkoppelte Möglichkeit, die Kommunikation in Ihrer Anwendung zu handhaben. Wenn Sie die Muster und bewährten Vorgehensweisen in diesem Leitfaden befolgen, können Sie reaktionsschnelle, plattformgerechte Anwendungen entwickeln, die flüssig auf Systemänderungen und Benutzerinteraktionen reagieren.
 
-Denken Sie daran: Beginnen Sie für plattformübergreifende Kompatibilität mit allgemeinen Ereignissen, ergänzen Sie bei Bedarf plattformspezifische Ereignisse und bereinigen Sie Ihre Ereignis-Listener stets, um Speicherlecks zu vermeiden.
+Beachten Sie: Beginnen Sie für plattformübergreifende Kompatibilität mit allgemeinen Ereignissen, ergänzen Sie bei Bedarf plattformspezifische Ereignisse und bereinigen Sie stets Ihre Ereignis-Listener, um Speicherlecks zu vermeiden.

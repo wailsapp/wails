@@ -1,7 +1,7 @@
 ---
 title: "Создавайте настольные приложения на Go"
 description: "Нативные настольные приложения на Go с использованием веб-технологий"
-banner: {"content":"Wails v3 сейчас находится на стадии бета-тестирования. \u003ca href=\"https://v2.wails.io\"\u003eИщете документацию по v2?\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 — стабильная версия для настольных приложений под Windows, macOS и Linux. <a href=\"https://v2.wails.io\">Ищете документацию по v2?</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Начать работу","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Открыть руководство","variant":"secondary"}],"image":{"alt":"Логотип Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Создавайте красивые и производительные приложения с помощью Go и современных веб-технологий. Одна кодовая база. Три платформы. Никаких браузеров.*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Дальнейшие шаги
 
-Далее: [создайте полноценное приложение](/tutorials/03-notes-vanilla/), просмотрите [примеры](https://github.com/wailsapp/wails/tree/master/v3/examples) или изучите [справочник по API](/reference/application/). Переходите с v2? Ознакомьтесь с [руководством по обновлению](/migration/v2-to-v3/).
+Далее: [создайте полноценное приложение](/tutorials/03-notes-vanilla/), просмотрите [примеры](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) или изучите [справочник по API](/reference/application/). Переходите с v2? Ознакомьтесь с [руководством по обновлению](/migration/v2-to-v3/).
 
-@note{type="info" title="Бета-версия Wails v3"}
-Wails v3 — бета-версия со стабильным API для настольных приложений. Команды уже используют её в рабочей среде, однако перед развёртыванием следует провести тщательное тестирование, пока мы завершаем финальную доработку для 3.0.
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 — стабильная версия для настольных приложений под Windows, macOS и Linux. Поддержка Android и iOS остаётся экспериментальной и не входит в гарантии совместимости стабильных настольных приложений.
 
 @end
 

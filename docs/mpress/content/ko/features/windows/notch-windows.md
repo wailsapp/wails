@@ -79,4 +79,4 @@ alert.Close()
 
 @end
 
-알림을 반복해서 표시하고 숨겨도 실시간 JavaScript 상태가 유지되는 간결한 시스템 모니터는 [notch-notification 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification)를 참조하세요.
+알림을 반복해서 표시하고 숨겨도 실시간 JavaScript 상태가 유지되는 간결한 시스템 모니터는 [notch-notification 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification)를 참조하세요.

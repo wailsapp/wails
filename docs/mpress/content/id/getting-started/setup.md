@@ -5,7 +5,7 @@ sourcePath: "getting-started/setup.md"
 ---
 
 @note{type="caution" title="Eksperimental"}
-Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika Anda mengalami masalah, silakan [laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904), lalu ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies) sebagai gantinya.
+Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika mengalami masalah, harap [laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) dan ikuti [langkah-langkah penginstalan manual](/getting-started/installation/#platform-specific-dependencies) sebagai gantinya.
 
 @end
 
@@ -13,7 +13,7 @@ Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika Anda men
 
 ```bash
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard
 wails3 setup
@@ -31,21 +31,21 @@ cd myapp && wails3 dev
 ## Fungsinya
 
 - **Memeriksa dependensi** - Memverifikasi Go, npm, dan alat platform
-- **Mengonfigurasi nilai default** - Informasi pembuat, prefiks ID bundel, dan templat pilihan
+- **Mengonfigurasi nilai default** - Informasi pembuat, prefiks ID bundle, dan templat pilihan
 - **Build lintas platform** - Penyiapan Docker opsional untuk menjalankan build dari host apa pun
 - **Penandatanganan kode** - Penyiapan opsional untuk macOS, Windows, dan Linux
 
-Konfigurasi disimpan ke `~/.config/wails/config.yaml` dan digunakan oleh `wails3 init`.
+Konfigurasi disimpan di `$XDG_CONFIG_HOME/wails/defaults.yaml`, dengan `~/.config/wails/defaults.yaml` sebagai alternatif, dan digunakan oleh `wails3 init`. Konfigurasi ini terpisah dari `build/config.yml` milik proyek.
 
 ## Subperintah
 
 ```bash
-wails3 setup signing      # Configure code signing
-wails3 setup entitlements # Configure macOS entitlements
+wails3 signing      # Configure code signing
+wails3 entitlements # Configure macOS entitlements
 ```
 
 ## Mengalami Masalah?
 
 1. Jalankan `wails3 doctor` untuk mendiagnosis masalah
-2. Ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies)
-3. [Laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) beserta output `wails3 doctor` Anda
+2. Ikuti [langkah-langkah penginstalan manual](/getting-started/installation/#platform-specific-dependencies)
+3. [Laporkan masalah](https://github.com/wailsapp/wails/issues/4904) dengan menyertakan output `wails3 doctor`

@@ -1,15 +1,15 @@
 ---
 title: "Fensteroptionen"
-description: "Vollständige Referenz für WebviewWindowOptions"
+description: "Fensteroptionen, Standardwerte und Plattformbeschränkungen"
 slug: "features/windows/options"
 sourcePath: "features/windows/options.md"
 ---
 
 ## Optionen zur Fensterkonfiguration
 
-Wails bietet eine umfassende Fensterkonfiguration mit zahlreichen Optionen für Größe, Position, Darstellung und Verhalten. Diese **vollständige Referenz** für `WebviewWindowOptions` behandelt alle verfügbaren Optionen unter Windows, macOS und Linux. Sie enthält jede Option für jede Plattform einschließlich Beispielen und Einschränkungen.
+Wails bietet eine umfassende Fensterkonfiguration mit Dutzenden Optionen für Größe, Position, Darstellung und Verhalten. Diese Referenz erläutert gängige Felder von `WebviewWindowOptions` unter Windows, macOS und Linux. Die folgende Struktur fasst ausgewählte Felder zusammen; den vollständigen Typ finden Sie im verlinkten Go-Quellcode.
 
-## Struktur von WebviewWindowOptions
+## Struktur WebviewWindowOptions
 
 ```go
 type WebviewWindowOptions struct {
@@ -56,7 +56,7 @@ type WebviewWindowOptions struct {
     DevToolsEnabled             bool
     DefaultContextMenuDisabled  bool
     ContentProtectionEnabled    bool
-    KeyBindings                 map[string]func(window *WebviewWindow)
+    KeyBindings                 map[string]func(window Window)
 
     // Permissions
     Permissions map[PermissionType]Permission
@@ -76,27 +76,27 @@ type WebviewWindowOptions struct {
 }
 ```
 
-`WebviewWindowOptions` besitzt **kein** Feld `Parent`. Verwenden Sie für Eltern-/Modalbeziehungen `parentWindow.AttachModal(childWindow)`. Ebenso besitzt es **kein** Feld `Assets`. Die Asset-Konfiguration befindet sich in `application.Options` (`Assets AssetOptions`).
+`WebviewWindowOptions` verfügt über kein Feld `Parent` – verwenden Sie für übergeordnete/modale Beziehungen `parentWindow.AttachModal(childWindow)`. Ebenso gibt es kein Feld `Assets` – die Asset-Konfiguration erfolgt über `application.Options` (`Assets AssetOptions`).
 
-Vollständiger Quellcode: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+Vollständiger Quellcode: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
-## Kernoptionen
+## Grundlegende Optionen
 
 ### Name
 
-**Typ:** `string` **Standardwert:** Automatisch generierte UUID **Plattform:** Alle
+**Typ:** `string` **Standardwert:** `window-<numeric ID>` **Plattform:** Alle
 
 ```go
 Name: "main-window"
 ```
 
-**Zweck:** Eindeutige Kennung, über die das Fenster später gefunden werden kann.
+**Zweck:** Eindeutige Kennung, um Fenster später zu finden.
 
 **Bewährte Vorgehensweisen:**
 
 - Verwenden Sie aussagekräftige Namen: `"main"`, `"settings"`, `"about"`
 - Verwenden Sie Kebab-Case: `"file-browser"`, `"color-picker"`
-- Halten Sie den Namen kurz und einprägsam
+- Wählen Sie einen kurzen und einprägsamen Namen
 
 **Beispiel:**
 
@@ -111,7 +111,7 @@ if settings, ok := app.Window.GetByName("settings-window"); ok {
 }
 ```
 
-### Title
+### Titel
 
 **Typ:** `string` **Standardwert:** Anwendungsname **Plattform:** Alle
 
@@ -127,22 +127,22 @@ Title: "My Application"
 window.SetTitle("My Application - Document.txt")
 ```
 
-### Width / Height
+### Breite/Höhe
 
-**Typ:** `int` (Pixel) **Standardwert:** 800 × 600 **Plattform:** Alle **Einschränkungen:** Muss positiv sein
+**Typ:** `int` (Pixel) **Standardwert:** 800 × 600 **Plattform:** Alle **Beschränkungen:** Muss positiv sein
 
 ```go
 Width:  1200,
 Height: 800,
 ```
 
-**Zweck:** Anfängliche Fenstergröße in logischen Pixeln.
+**Zweck:** Anfangsgröße des Fensters in logischen Pixeln.
 
 **Hinweise:**
 
 - Wails berücksichtigt die DPI-Skalierung automatisch
 - Verwenden Sie logische statt physischer Pixel
-- Berücksichtigen Sie die minimale Bildschirmauflösung (1024x768)
+- Berücksichtigen Sie die minimale Bildschirmauflösung (1024 × 768)
 
 **Beispielgrößen:**
 
@@ -153,7 +153,7 @@ Height: 800,
 | Große Anwendung | 1440 | 900 |
 | Full HD | 1920 | 1080 |
 
-### X / Y
+### X/Y
 
 **Typ:** `int` (Pixel) **Standardwert:** Auf dem Bildschirm zentriert **Plattform:** Alle
 
@@ -162,17 +162,17 @@ X: 100,  // 100px from left edge
 Y: 100,  // 100px from top edge
 ```
 
-**Zweck:** Anfängliche Fensterposition.
+**Zweck:** Anfangsposition des Fensters.
 
 **Koordinatensystem:**
 
-- (0, 0) liegt oben links auf dem primären Bildschirm
+- (0, 0) ist die linke obere Ecke des primären Bildschirms
 - Positive X-Werte verlaufen nach rechts
 - Positive Y-Werte verlaufen nach unten
 
 **Beispiel:**
 
-`X` und `Y` werden nur wirksam, wenn `InitialPosition: application.WindowXY` festgelegt ist. Andernfalls verwendet `InitialPosition` standardmäßig `WindowCentered` und `X`/`Y` werden ignoriert.
+`X` und `Y` werden nur wirksam, wenn `InitialPosition: application.WindowXY` festgelegt ist. Andernfalls verwendet `InitialPosition` standardmäßig `WindowCentered`, und `X`/`Y` werden ignoriert.
 
 ```go
 settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -183,14 +183,14 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Bewährte Vorgehensweise:** Wenn bestimmte Koordinaten keine Rolle spielen, zentrieren Sie das Fenster nach seiner Erstellung mit `Center()`:
+**Bewährte Vorgehensweise:** Wenn bestimmte Koordinaten unwichtig sind, zentrieren Sie das Fenster nach seiner Erstellung mit `Center()`:
 
 ```go
 window := app.Window.New()
 window.Center()
 ```
 
-### MinWidth / MinHeight
+### MinWidth/MinHeight
 
 **Typ:** `int` (Pixel) **Standardwert:** 0 (kein Minimum) **Plattform:** Alle
 
@@ -215,7 +215,7 @@ MinWidth:  400,
 MinHeight: 300,
 ```
 
-### MaxWidth / MaxHeight
+### MaxWidth/MaxHeight
 
 **Typ:** `int` (Pixel) **Standardwert:** 0 (kein Maximum) **Plattform:** Alle
 
@@ -232,9 +232,9 @@ MaxHeight: 1080,
 - Übermäßige Ressourcennutzung verhindern
 - Designvorgaben einhalten
 
-## Statusoptionen
+## Zustandsoptionen
 
-### Hidden
+### Ausgeblendet
 
 **Typ:** `bool` **Standardwert:** `false` **Plattform:** Alle
 
@@ -242,7 +242,7 @@ MaxHeight: 1080,
 Hidden: true,
 ```
 
-**Zweck:** Fenster erstellen, ohne es anzuzeigen.
+**Zweck:** Erstellt das Fenster, ohne es anzuzeigen.
 
 **Anwendungsfälle:**
 
@@ -257,7 +257,7 @@ Hidden: true,
 - **macOS:** Vollständig unterstützt
 - **Linux:** Vollständig unterstützt
 
-**Empfohlenes Muster für flüssiges Laden:**
+**Empfohlenes Muster für ein reibungsloses Laden:**
 
 ```go
 // Create hidden window
@@ -286,7 +286,7 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settings.Show()
 ```
 
-### Frameless
+### Rahmenlos
 
 **Typ:** `bool` **Standardwert:** `false` **Plattform:** Alle
 
@@ -294,7 +294,7 @@ settings.Show()
 Frameless: true,
 ```
 
-**Zweck:** Titelleiste und Fensterrahmen entfernen.
+**Zweck:** Entfernt die Titelleiste und die Fensterrahmen.
 
 **Anwendungsfälle:**
 
@@ -303,11 +303,11 @@ Frameless: true,
 - Kioskanwendungen
 - Individuell gestaltete Fenster
 
-**Wichtig:** Folgendes müssen Sie implementieren:
+**Wichtig:** Sie müssen Folgendes implementieren:
 
 - Verschieben des Fensters
 - Schaltflächen zum Schließen, Minimieren und Maximieren
-- Griffe zur Größenänderung (wenn die Größe veränderbar ist)
+- Griffe zur Größenänderung (falls die Größe veränderbar ist)
 
 **Weitere Informationen finden Sie unter [Rahmenlose Fenster](/features/windows/frameless/).**
 
@@ -319,15 +319,15 @@ Frameless: true,
 DisableResize: true,
 ```
 
-**Zweck:** Größenänderung des Fensters verhindern. Beachten Sie, dass dieses Feld die **Umkehrung** von `Resizable` aus v2 ist. Legen Sie `DisableResize: true` fest, damit die Größe eines Fensters nicht veränderbar ist.
+**Zweck:** Verhindert die Größenänderung des Fensters. Beachten Sie, dass dieses Feld die **Umkehrung** von v2s `Resizable` ist. Setzen Sie `DisableResize: true`, damit die Fenstergröße nicht verändert werden kann.
 
 **Anwendungsfälle:**
 
-- Anwendungen mit fester Fenstergröße
+- Anwendungen mit fester Größe
 - Startbildschirme
-- Dialogfelder
+- Dialogfenster
 
-**Hinweis:** Benutzer können das Fenster weiterhin maximieren oder in den Vollbildmodus versetzen, sofern Sie dies nicht zusätzlich über `MaximiseButtonState` bzw. das Verhalten der Collection deaktivieren.
+**Hinweis:** Benutzer können das Fenster weiterhin maximieren oder in den Vollbildmodus versetzen, sofern Sie diese Funktionen nicht ebenfalls über `MaximiseButtonState` beziehungsweise das Collection-Verhalten deaktivieren.
 
 ### AlwaysOnTop
 
@@ -337,14 +337,14 @@ DisableResize: true,
 AlwaysOnTop: true,
 ```
 
-**Zweck:** Fenster über allen anderen Fenstern halten.
+**Zweck:** Hält das Fenster über allen anderen Fenstern.
 
 **Anwendungsfälle:**
 
 - Schwebende Symbolleisten
 - Benachrichtigungen
 - Bild-im-Bild
-- Zeitgeber
+- Timer
 
 **Plattformhinweise:**
 
@@ -360,7 +360,7 @@ AlwaysOnTop: true,
 StartState: application.WindowStateMaximised,
 ```
 
-**Zweck:** Anfangszustand des Fensters bei der Anzeige.
+**Zweck:** Anfangszustand des Fensters bei seiner Anzeige.
 
 **Werte:**
 
@@ -369,7 +369,7 @@ StartState: application.WindowStateMaximised,
 - `WindowStateMaximised` – Maximiert
 - `WindowStateFullscreen` – Vollbild
 
-Es gibt keine `WindowStateHidden`-Konstante. Verwenden Sie das boolesche Feld `Hidden`, um das Fenster zunächst unsichtbar zu öffnen.
+Es gibt keine Konstante `WindowStateHidden`. Verwenden Sie das boolesche Feld `Hidden`, um das Fenster anfangs unsichtbar zu machen.
 
 **Vollbildmodus zur Laufzeit umschalten:**
 
@@ -383,21 +383,21 @@ window.ToggleFullscreen() // there is no SetFullscreen(bool)
 
 ### BackgroundColour
 
-**Typ:** `RGBA`-Struktur **Standard:** Weiß **Plattform:** Alle
+**Typ:** `RGBA`-Struct **Standardwert:** Weiß **Plattform:** Alle
 
 ```go
 BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
 ```
 
-Die Felder von `RGBA` heißen `Red, Green, Blue, Alpha` und sind jeweils vom Typ uint8. Verwenden Sie vorzugsweise die Hilfsfunktionen `application.NewRGB(r, g, b)` (Alpha 255) oder `application.NewRGBA(r, g, b, a)`.
+Die Felder von `RGBA` sind vom Typ `Red, Green, Blue, Alpha` (uint8). Verwenden Sie vorzugsweise die Hilfsfunktionen `application.NewRGB(r, g, b)` (Alpha 255) oder `application.NewRGBA(r, g, b, a)`.
 
 **Zweck:** Hintergrundfarbe des Fensters, bevor der Inhalt geladen wird.
 
 **Anwendungsfälle:**
 
-- An das Theme Ihrer Anwendung anpassen
-- Weißes Aufblitzen bei dunklen Themes verhindern
-- Für einen flüssigen Ladevorgang sorgen
+- An das Farbschema Ihrer Anwendung anpassen
+- Weißes Aufblitzen bei dunklen Farbschemata verhindern
+- Flüssiger Ladevorgang
 
 **Beispiel:**
 
@@ -417,7 +417,7 @@ window.SetBackgroundColour(application.NewRGB(30, 30, 30))
 
 ### BackgroundType
 
-**Typ:** `BackgroundType`-Enumeration **Standard:** `BackgroundTypeSolid` **Plattform:** macOS, Windows (teilweise)
+**Typ:** `BackgroundType`-Enum **Standardwert:** `BackgroundTypeSolid` **Plattform:** macOS, Windows (teilweise)
 
 ```go
 BackgroundType: application.BackgroundTypeTranslucent,
@@ -425,15 +425,15 @@ BackgroundType: application.BackgroundTypeTranslucent,
 
 **Werte:**
 
-- `BackgroundTypeSolid` – Einfarbig
+- `BackgroundTypeSolid` – Volltonfarbe
 - `BackgroundTypeTransparent` – Vollständig transparent
 - `BackgroundTypeTranslucent` – Halbtransparente Unschärfe
 
 **Plattformunterstützung:**
 
-- **macOS:** Konfigurieren Sie `Mac.Backdrop`; für die Transparenz der Webview ist [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) erforderlich. Ohne diese Einstellung bleibt die Webview undurchsichtig.
+- **macOS:** Konfigurieren Sie `Mac.Backdrop`. Für Webview-Transparenz ist [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) erforderlich. Andernfalls bleibt die Webview undurchsichtig.
 - **Windows:** Transparent und halbtransparent (Windows 11+)
-- **Linux:** Nur einfarbig
+- **Linux:** Nur Volltonfarbe
 
 **Beispiel (macOS):**
 
@@ -446,19 +446,19 @@ Mac: application.MacWindow{
 
 ### OpenInspectorOnStartup und OpenDevTools
 
-**Private API unter macOS:** Für `OpenInspectorOnStartup: true`, Go-`window.OpenDevTools()` und JavaScript-`Window.OpenDevTools()` ist `private_mac_apis` erforderlich, um den Inspektor programmgesteuert zu öffnen. Ohne diese Einstellung bewirken diese Operationen nichts. Produktions-Builds benötigen außerdem `devtools`. Für die öffentliche Safari-Inspektion unter macOS 13.3+ sind keine privaten APIs erforderlich; für die Aktivierung des Inspektors unter älteren macOS-Versionen hingegen schon. Weitere Informationen finden Sie in der [Build-Matrix für den Web Inspector](/guides/build/private-macos-apis/#web-inspector).
+**Private API unter macOS:** `OpenInspectorOnStartup: true`, Go `window.OpenDevTools()` und JavaScript `Window.OpenDevTools()` benötigen `private_mac_apis`, um den Inspektor programmgesteuert zu öffnen. Ohne diese Option haben diese Operationen keine Wirkung. Produktions-Builds benötigen außerdem `devtools`. Die öffentliche Safari-Inspektion unter macOS 13.3+ benötigt keine privaten APIs; die Aktivierung des Inspektors unter älteren macOS-Versionen hingegen schon. Weitere Informationen finden Sie in der [Build-Matrix für den Web Inspector](/guides/build/private-macos-apis/#web-inspector).
 
 ## Inhaltsoptionen
 
 ### URL
 
-**Typ:** `string` **Standard:** Leer (lädt aus Assets) **Plattform:** Alle
+**Typ:** `string` **Standardwert:** Leer (lädt aus Assets) **Plattform:** Alle
 
 ```go
 URL: "https://example.com",
 ```
 
-**Zweck:** Eine externe URL anstelle eingebetteter Assets laden.
+**Zweck:** Lädt anstelle eingebetteter Assets eine externe URL.
 
 **Anwendungsfälle:**
 
@@ -476,7 +476,7 @@ URL: "http://localhost:9245",
 // (Assets is application.Options.Assets, not a WebviewWindowOptions field).
 ```
 
-Anwendungsweites Codefragment für den Produktionseinsatz:
+Codeausschnitt auf Anwendungsebene für den Produktionseinsatz:
 
 ```go
 app := application.New(application.Options{
@@ -489,13 +489,13 @@ app := application.New(application.Options{
 
 ### HTML
 
-**Typ:** `string` **Standard:** Leer **Plattform:** Alle
+**Typ:** `string` **Standardwert:** Leer **Plattform:** Alle
 
 ```go
 HTML: "<h1>Hello World</h1>",
 ```
 
-**Zweck:** Eine HTML-Zeichenkette direkt laden.
+**Zweck:** Lädt direkt eine HTML-Zeichenfolge.
 
 **Anwendungsfälle:**
 
@@ -517,7 +517,7 @@ HTML: `
 
 ### Assets (nur auf Anwendungsebene)
 
-Die Asset-Konfiguration ist **kein** Feld von `WebviewWindowOptions`. Die Anwendung selbst stellt Frontend-Assets über `application.Options.Assets` (`AssetOptions`) bereit; jedes Fenster übernimmt diesen Asset-Server.
+Die Asset-Konfiguration ist **kein** `WebviewWindowOptions`-Feld. Frontend-Assets werden von der Anwendung selbst über `application.Options.Assets` (`AssetOptions`) bereitgestellt; jedes Fenster übernimmt diesen Asset-Server.
 
 ```go
 app := application.New(application.Options{
@@ -531,17 +531,17 @@ app := application.New(application.Options{
 
 ### UseApplicationMenu
 
-**Typ:** `bool` **Standard:** `false` **Plattform:** Windows, Linux (keine Auswirkung unter macOS)
+**Typ:** `bool` **Standardwert:** `false` **Plattform:** Windows, Linux (ohne Auswirkung unter macOS)
 
 ```go
 UseApplicationMenu: true,
 ```
 
-**Zweck:** Das über `app.Menu.Set()` festgelegte Anwendungsmenü für dieses Fenster verwenden.
+**Zweck:** Für dieses Fenster das Anwendungsmenü verwenden, das über `app.Menu.Set()` festgelegt wurde.
 
-Unter **macOS** hat diese Option keine Auswirkung, da macOS immer ein globales Anwendungsmenü am oberen Bildschirmrand verwendet.
+Unter **macOS** hat diese Option keine Auswirkung, da macOS stets ein globales Anwendungsmenü am oberen Bildschirmrand verwendet.
 
-Unter **Windows** und **Linux** zeigen Fenster standardmäßig kein Menü an. Durch das Festlegen von `UseApplicationMenu: true` verwendet das Fenster das anwendungsweite Menü. Dies bietet eine einfache plattformübergreifende Lösung.
+Unter **Windows** und **Linux** zeigen Fenster standardmäßig kein Menü an. Durch Festlegen von `UseApplicationMenu: true` verwendet das Fenster das Menü auf Anwendungsebene. Dies bietet eine einfache plattformübergreifende Lösung.
 
 **Beispiel:**
 
@@ -567,8 +567,8 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Hinweise:**
 
 - Wenn sowohl `UseApplicationMenu` als auch ein fensterspezifisches Menü festgelegt sind, hat das fensterspezifische Menü Vorrang
-- Dies vereinfacht plattformübergreifenden Code, da keine Betriebssystemprüfung zur Laufzeit erforderlich ist
-- Die vollständige Menüdokumentation finden Sie unter [Anwendungsmenüs](/features/menus/application/)
+- Dies vereinfacht plattformübergreifenden Code, da keine Betriebssystemprüfungen zur Laufzeit erforderlich sind
+- Die vollständige Dokumentation zu Menüs finden Sie unter [Anwendungsmenüs](/features/menus/application/)
 
 ## Eingabeoptionen
 
@@ -580,9 +580,9 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 EnableFileDrop: true,
 ```
 
-**Zweck:** Ermöglicht das Ziehen und Ablegen von Dateien aus dem Betriebssystem in das Fenster.
+**Zweck:** Das Ziehen und Ablegen von Dateien aus dem Betriebssystem in das Fenster aktivieren.
 
-Wenn aktiviert:
+Wenn diese Option aktiviert ist:
 
 - Aus Dateimanagern gezogene Dateien können in Ihrer Anwendung abgelegt werden
 - Das Ereignis `WindowFilesDropped` wird mit den Pfaden der abgelegten Dateien ausgelöst
@@ -592,7 +592,7 @@ Wenn aktiviert:
 
 - Oberflächen zum Hochladen von Dateien
 - Dokumenteditoren
-- Tools zum Importieren von Mediendateien
+- Medienimporte
 - Alle Anwendungen, die Dateien akzeptieren
 
 **Beispiel:**
@@ -635,11 +635,11 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 ContentProtectionEnabled: true,
 ```
 
-**Zweck:** Verhindert Bildschirmaufnahmen des Fensterinhalts.
+**Zweck:** Bildschirmaufnahmen des Fensterinhalts verhindern.
 
 **Plattformunterstützung:**
 
-- **Windows:** Windows 10 ab Build 19041 (vollständig), ältere Versionen (teilweise)
+- **Windows:** Windows 10 Build 19041+ (vollständig), ältere Versionen (teilweise)
 - **macOS:** Vollständig unterstützt
 - **Linux:** Nicht unterstützt
 
@@ -653,7 +653,7 @@ ContentProtectionEnabled: true,
 **Wichtige Hinweise:**
 
 1. Verhindert nicht das Abfotografieren des Bildschirms
-2. Einige Tools können den Schutz möglicherweise umgehen
+2. Einige Werkzeuge können den Schutz möglicherweise umgehen
 3. Teil eines umfassenden Sicherheitskonzepts, kein alleiniger Schutz
 4. DevTools-Fenster werden nicht automatisch geschützt
 
@@ -671,7 +671,7 @@ window.SetContentProtection(true)
 
 ### Berechtigungen
 
-**Typ:** `map[PermissionType]Permission` **Standardwert:** `nil` (plattformseitige Standardbehandlung) **Plattform:** Linux, Windows (macOS überlässt dies TCC)
+**Typ:** `map[PermissionType]Permission` **Standardwert:** `nil` (plattformseitige Standardbehandlung) **Plattform:** Linux, Windows (macOS überlässt die Behandlung TCC)
 
 ```go
 Permissions: map[application.PermissionType]application.Permission{
@@ -680,27 +680,27 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-**Zweck:** Steuert deklarativ und ohne plattformspezifischen Code, wie Berechtigungsanfragen des Webinhalts im Fenster für Funktionen wie Kamera, Mikrofon, Standortbestimmung, Benachrichtigungen und das Lesen der Zwischenablage behandelt werden.
+**Zweck:** Deklarativ und ohne plattformspezifischen Code steuern, wie Berechtigungsanfragen aus den Webinhalten des Fensters behandelt werden, etwa für Kamera, Mikrofon, Geolokalisierung, Benachrichtigungen und das Lesen der Zwischenablage.
 
 **PermissionType-Werte:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
 
 **Berechtigungswerte:**
 
-- `PermissionDefault` (0) — plattformeigene Behandlung: Aufforderung durch das Betriebssystem bzw. WebView2 unter macOS/Windows; unter Linux werden Kamera und Mikrofon zugelassen, alles andere wird verweigert
-- `PermissionAllow` (1) — ohne Aufforderung gewähren (Linux: Nur Kamera und Mikrofon sind implementiert; andere Typen bleiben verweigert)
-- `PermissionDeny` (2) — ohne Aufforderung verweigern
+- `PermissionDefault` (0) — native Behandlung der Plattform: Aufforderung des Betriebssystems bzw. von WebView2 unter macOS/Windows; unter Linux werden Kamera und Mikrofon zugelassen und alle anderen Berechtigungen verweigert
+- `PermissionAllow` (1) — ohne Nachfrage gewähren (Linux: Nur Kamera und Mikrofon sind implementiert; andere Typen bleiben verweigert)
+- `PermissionDeny` (2) — ohne Nachfrage verweigern
 
-**Wichtig — Windows:** Bevor diese Option verfügbar war, gewährte Wails stillschweigend alle WebView2-Berechtigungen. Sobald Sie nun einen Eintrag in `Permissions` festlegen, wird diese pauschale Gewährung deaktiviert. Für nicht aufgeführte Berechtigungen zeigt WebView2 seine native Aufforderung an, anstatt sie automatisch zu gewähren. Führen Sie jede von Ihrer Anwendung benötigte Berechtigung ausdrücklich auf.
+**Wichtig — Windows:** Bevor diese Option verfügbar war, gewährte Wails stillschweigend alle WebView2-Berechtigungen. Sobald ein beliebiger Eintrag in `Permissions` festgelegt wird, ist diese pauschale Gewährung deaktiviert. Für nicht aufgeführte Berechtigungen zeigt WebView2 seine native Aufforderung an, statt sie automatisch zu gewähren. Führen Sie jede von Ihrer Anwendung benötigte Berechtigung ausdrücklich auf.
 
 **Den vollständigen Leitfaden, die Plattformmatrix und Beispiele finden Sie unter [Berechtigungen](/features/windows/permissions/).**
 
-## Fensterlebenszyklus-Ereignisse
+## Ereignisse im Fensterlebenszyklus
 
-Fensterlebenszyklus-Ereignisse werden mit `OnWindowEvent` und `RegisterHook` behandelt. Diese Methoden ermöglichen eine präzise Steuerung des Schließ- und Zerstörungsverhaltens von Fenstern.
+Ereignisse im Fensterlebenszyklus werden mit `OnWindowEvent` und `RegisterHook` behandelt. Diese Methoden ermöglichen eine präzise Steuerung des Verhaltens beim Schließen und Zerstören eines Fensters.
 
 ### Schließen eines Fensters abbrechen
 
-Um das Schließen eines Fensters zu verhindern, etwa bei nicht gespeicherten Änderungen, verwenden Sie `RegisterHook` mit dem Ereignis `WindowClosing` und rufen `event.Cancel()` auf:
+Um das Schließen eines Fensters zu verhindern, beispielsweise bei nicht gespeicherten Änderungen, verwenden Sie `RegisterHook` mit dem Ereignis `WindowClosing` und rufen `event.Cancel()` auf:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -727,9 +727,9 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 - Rufen Sie `event.Cancel()` auf, um das Schließen des Fensters zu verhindern
 - Nach dem Abbrechen bleibt das Fenster geöffnet
 
-### Schließen des Fensters behandeln
+### Schließen eines Fensters behandeln
 
-Um beim Schließen eines Fensters Aufräumarbeiten auszuführen, verwenden Sie `OnWindowEvent` mit dem Ereignis `WindowClosing`:
+Um beim Schließen eines Fensters Bereinigungsarbeiten auszuführen, verwenden Sie `OnWindowEvent` mit dem Ereignis `WindowClosing`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -749,12 +749,12 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 **Wichtige Punkte:**
 
 - `OnWindowEvent` behandelt Ereignisse, die unmittelbar bevorstehen
-- Die Aufräumarbeiten werden ausgeführt, bevor das Fenster zerstört wird
-- Das Schließen kann hier nicht abgebrochen werden (verwenden Sie dafür `RegisterHook`)
+- Die Bereinigung wird ausgeführt, bevor das Fenster zerstört wird
+- Das Schließen kann hier nicht abgebrochen werden (verwenden Sie dafür `RegisterHook`).
 
 ### Bereinigungsmuster für Singleton-Fenster
 
-Verwenden Sie bei Singleton-Fenstern (um nur eine Instanz zuzulassen) `WindowClosing`, um die Referenz zu bereinigen:
+Verwenden Sie für Singleton-Fenster (um nur eine Instanz zuzulassen) `WindowClosing`, um die Referenz zu bereinigen:
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -808,61 +808,61 @@ Mac: application.MacWindow{
 },
 ```
 
-**TitleBar** (`MacTitleBar`)
+**Titelleiste** (`MacTitleBar`)
 
 - `AppearsTransparent` – Macht die Titelleiste transparent; der Inhalt erstreckt sich in den Bereich der Titelleiste
 - `Hide` – Blendet die Titelleiste vollständig aus
 - `HideTitle` – Blendet nur den Titeltext aus
 - `FullSizeContent` – Erweitert den Inhalt auf die gesamte Fenstergröße
 
-Unter macOS erfordern die Transparenz der Webview und das programmgesteuerte Öffnen des Inspektors das Build-Tag `private_mac_apis`. Ohne dieses Tag bleiben dieselben Optionen gültig, aber Operationen, die private APIs verwenden, haben keine Wirkung. Auch die Liquid-Glass-Gruppierung wird ignoriert, und für Stile werden öffentliche Alternativen verwendet. Build-Befehle und das genaue Verhalten finden Sie unter [Private macOS-APIs](/guides/build/private-macos-apis/).
+Unter macOS erfordern die Webview-Transparenz und das programmgesteuerte Öffnen des Inspectors das Build-Tag `private_mac_apis`. Ohne dieses Tag bleiben dieselben Optionen gültig, aber Operationen, die private APIs voraussetzen, bleiben wirkungslos. Auch die Liquid-Glass-Gruppierung wird ignoriert, und die Stile verwenden öffentliche Alternativen. Build-Befehle und das genaue Verhalten finden Sie unter [Private macOS-APIs](/guides/build/private-macos-apis/).
 
-**Backdrop** (`MacBackdrop`)
+**Hintergrundeffekt** (`MacBackdrop`)
 
 - `MacBackdropNormal` – Undurchsichtiger Standardhintergrund
-- `MacBackdropTranslucent` – **Für die Transparenz der Webview ist eine private API erforderlich.** Ohne das Tag bleibt die native Unschärfe hinter einer undurchsichtigen Webview.
-- `MacBackdropTransparent` – **Für die Transparenz der Webview ist eine private API erforderlich.** Ohne das Tag bleibt die Webview undurchsichtig.
-- `MacBackdropLiquidGlass` – **Für die Transparenz der Webview ist eine private API erforderlich.** Ohne das Tag bleibt die Glasschicht hinter einer undurchsichtigen Webview; für Stile werden öffentliche Alternativen verwendet.
+- `MacBackdropTranslucent` – **Für Webview-Transparenz ist eine private API erforderlich.** Ohne das Tag bleibt der native Weichzeichnungseffekt hinter einer undurchsichtigen Webview.
+- `MacBackdropTransparent` – **Für Webview-Transparenz ist eine private API erforderlich.** Ohne das Tag bleibt die Webview undurchsichtig.
+- `MacBackdropLiquidGlass` – **Für Webview-Transparenz ist eine private API erforderlich.** Ohne das Tag bleibt die Glasschicht hinter einer undurchsichtigen Webview; die Stile verwenden öffentliche Alternativen.
 
-**LiquidGlass** (`MacLiquidGlass`)
+**Liquid Glass** (`MacLiquidGlass`)
 
 | Feld oder Wert | Abhängigkeit von privaten APIs unter macOS |
 | --- | --- |
-| `Style: LiquidGlassStyleAutomatic` | Der native reguläre Stil ist öffentlich; für die Transparenz der Backdrop-Webview ist `private_mac_apis` erforderlich. |
-| `Style: LiquidGlassStyleLight` | Das Tag behält die vorhandene native Zuordnung zum transparenten Stil bei; ohne das Tag verwendet Wails reguläres Glas mit Aqua-Darstellung. |
-| `Style: LiquidGlassStyleDark` | **Private API:** undokumentierter nativer Stilwert `2`; ohne das Tag reguläres Glas mit Dark-Aqua-Darstellung. |
-| `Style: LiquidGlassStyleVibrant` | Die native Zuordnung zum transparenten Stil ist öffentlich; für die Transparenz der Backdrop-Webview ist das Tag erforderlich. |
+| `Style: LiquidGlassStyleAutomatic` | Der native reguläre Stil ist öffentlich; für die Webview-Transparenz des Hintergrundeffekts ist `private_mac_apis` erforderlich. |
+| `Style: LiquidGlassStyleLight` | Das Tag erhält die bestehende native Zuordnung des transparenten Stils; ohne das Tag verwendet Wails reguläres Glas mit Aqua-Erscheinungsbild. |
+| `Style: LiquidGlassStyleDark` | **Private API:** undokumentierter nativer Stilwert `2`; ohne das Tag wird reguläres Glas mit Dark-Aqua-Erscheinungsbild verwendet. |
+| `Style: LiquidGlassStyleVibrant` | Die native Zuordnung des transparenten Stils ist öffentlich; für die Webview-Transparenz des Hintergrundeffekts ist das Tag erforderlich. |
 | `GroupID` | **Private API:** Nicht leere Werte fordern eine Gruppierung an; ohne das Tag werden sie ignoriert. |
 | `GroupSpacing` | **Private API:** Positive Werte fordern einen Gruppenabstand an; ohne das Tag werden sie ignoriert. |
-| `Material`, `CornerRadius`, `TintColor` | Sie besitzen selbst keine Abhängigkeit von privaten APIs. |
+| `Material`, `CornerRadius`, `TintColor` | Keine eigene Abhängigkeit von privaten APIs. |
 
-Die nativen Stilwerte und ihre Betriebssystemverfügbarkeit finden Sie unter [Liquid-Glass-Werte](/guides/build/private-macos-apis/#liquid-glass-values).
+Native Stilwerte und die Betriebssystemverfügbarkeit finden Sie unter [Liquid-Glass-Werte](/guides/build/private-macos-apis/#liquid-glass-values).
 
-**InvisibleTitleBarHeight** (`int`)
+**Höhe der unsichtbaren Titelleiste** (`int`)
 
 - Höhe des unsichtbaren Titelleistenbereichs (zum Ziehen)
-- Wird nur wirksam, wenn der native Ziehbereich der Titelleiste ausgeblendet ist – also wenn das Fenster rahmenlos ist (`Frameless: true`) oder eine transparente Titelleiste verwendet (`AppearsTransparent: true`)
-- Hat keine Wirkung auf Standardfenster mit sichtbarer Titelleiste
+- Wirkt sich nur aus, wenn der native Ziehbereich der Titelleiste ausgeblendet ist, also wenn das Fenster rahmenlos ist (`Frameless: true`) oder eine transparente Titelleiste verwendet (`AppearsTransparent: true`)
+- Hat keine Auswirkung auf Standardfenster mit sichtbarer Titelleiste
 
-**WindowClass** (`MacWindowClass`)
+**Fensterklasse** (`MacWindowClass`)
 
 - `MacWindowClassWindow` – Standardverhalten von `NSWindow` (Voreinstellung)
-- `MacWindowClassPanel` – Ein zusätzliches `NSPanel`, das niemals zum Hauptfenster der Anwendung wird
+- `MacWindowClassPanel` – Ein zusätzliches `NSPanel`, das nie zum Hauptfenster der Anwendung wird
 
 `PanelPreferences` gilt nur für `MacWindowClassPanel`:
 
-- `NonActivating` fügt `NSWindowStyleMaskNonactivatingPanel` hinzu. Durch Anzeigen oder Fokussieren des Panels wird die Wails-Anwendung nicht aktiviert. Das Panel kann jedoch weiterhin den Key-Status für Steuerelemente und Texteingaben erhalten.
-- `FloatingPanel` aktiviert das Verhalten eines schwebenden Panels von AppKit.
+- `NonActivating` fügt `NSWindowStyleMaskNonactivatingPanel` hinzu. Das Anzeigen oder Fokussieren des Panels aktiviert die Wails-Anwendung nicht; das Panel kann jedoch weiterhin den Key-Status für Steuerelemente und Texteingaben erhalten.
+- `FloatingPanel` aktiviert das Verhalten schwebender Panels von AppKit.
 - `BecomesKeyOnlyIfNeeded` erhält den Key-Status nur, wenn die angeklickte Ansicht eine Tastatureingabe anfordert.
-- `UtilityWindow` wendet den nativen Stil eines Dienstprogrammfensters an.
+- `UtilityWindow` wendet den nativen Stil für Dienstprogrammfenster an.
 
-Wails-Panels bleiben sichtbar, wenn die Anwendung deaktiviert wird, und werden beim Schließen freigegeben. Dies entspricht dem von `WebviewWindow` erwarteten Lebenszyklus. Dabei handelt es sich um beabsichtigte Überschreibungen der gegenteiligen Standardwerte von `NSPanel`.
+Wails-Panels bleiben sichtbar, wenn die Anwendung deaktiviert wird, und werden beim Schließen freigegeben. Dies entspricht dem von `WebviewWindow` erwarteten Lebenszyklus. Diese Einstellungen überschreiben bewusst die gegenteiligen Voreinstellungen von `NSPanel`.
 
-Fensterklasse, Fensterebene, Aktivierungsrichtlinie und Collection-Verhalten lösen jeweils unterschiedliche Probleme:
+Fensterklasse, Fensterebene, Aktivierungsrichtlinie und Sammlungsverhalten lösen unterschiedliche Probleme:
 
 - `WindowClass` wählt `NSWindow` oder `NSPanel` aus und steuert die Semantik von Haupt- und Key-Fenstern.
-- `WindowLevel` steuert die Z-Reihenfolge. Verwenden Sie `MacWindowLevelPopUpMenu` für Overlays der Menüleiste.
-- `MacOptions.ActivationPolicy` steuert die gesamte Anwendung einschließlich ihrer Darstellung im Dock und in der Menüleiste. Ein nicht aktivierendes Panel erfordert keine Accessory-Aktivierungsrichtlinie. Eine Anwendung kann diese jedoch weiterhin verwenden, um ihr Dock-Symbol auszublenden.
+- `WindowLevel` steuert die Z-Reihenfolge. Verwenden Sie `MacWindowLevelPopUpMenu` für Overlays in der Menüleiste.
+- `MacOptions.ActivationPolicy` steuert die Anwendung als Ganzes, einschließlich der Darstellung im Dock und in der Menüleiste. Ein nicht aktivierendes Panel erfordert keine Accessory-Aktivierungsrichtlinie; eine Anwendung kann sie jedoch weiterhin verwenden, um ihr Dock-Symbol auszublenden.
 - `CollectionBehavior` steuert die Teilnahme an Spaces und am Vollbildmodus.
 
 ```go
@@ -879,26 +879,26 @@ Mac: application.MacWindow{
 },
 ```
 
-**WindowLevel** (`MacWindowLevel`)
+**Fensterebene** (`MacWindowLevel`)
 
-- `MacWindowLevelNormal` – Standardfensterebene (Standardwert)
+- `MacWindowLevelNormal` – Standardfensterebene (Voreinstellung)
 - `MacWindowLevelFloating` – Schwebt über normalen Fenstern
 - `MacWindowLevelTornOffMenu` – Ebene für abgetrennte Menüs
 - `MacWindowLevelModalPanel` – Ebene für modale Panels
-- `MacWindowLevelMainMenu` – Ebene des Hauptmenüs
+- `MacWindowLevelMainMenu` – Hauptmenüebene
 - `MacWindowLevelStatus` – Ebene für Statusfenster
-- `MacWindowLevelPopUpMenu` – Ebene für Pop-up-Menüs
-- `MacWindowLevelScreenSaver` – Ebene des Bildschirmschoners
+- `MacWindowLevelPopUpMenu` – Ebene für Einblendmenüs
+- `MacWindowLevelScreenSaver` – Bildschirmschonerebene
 
-Ein explizites `WindowLevel` hat Vorrang vor `AlwaysOnTop` und `PanelPreferences.FloatingPanel`. Ohne explizite Ebene werden `AlwaysOnTop` oder ein schwebendes Panel zu `MacWindowLevelFloating` aufgelöst; andernfalls lautet die Ebene `MacWindowLevelNormal`. Ein späterer Aufruf von `SetAlwaysOnTop` bleibt eine explizite Änderung zur Laufzeit.
+Ein explizites `WindowLevel` hat Vorrang vor `AlwaysOnTop` und `PanelPreferences.FloatingPanel`. Ohne explizite Ebene wird `AlwaysOnTop` oder ein schwebendes Panel in `MacWindowLevelFloating` aufgelöst; andernfalls ist die Ebene `MacWindowLevelNormal`. Ein späterer Aufruf von `SetAlwaysOnTop` bleibt eine explizite Laufzeitänderung.
 
-**CollectionBehavior** (`MacWindowCollectionBehavior`)
+**Sammlungsverhalten** (`MacWindowCollectionBehavior`)
 
-Steuert das Verhalten des Fensters in macOS Spaces und im Vollbildmodus. Diese Werte sind Bitmasken und können mit einem bitweisen ODER (`|`) kombiniert werden.
+Steuert das Verhalten des Fensters über macOS Spaces und den Vollbildmodus hinweg. Diese Bitmaskenwerte lassen sich mit bitweisem ODER (`|`) kombinieren.
 
 **Space-Verhalten:**
 
-- `MacWindowCollectionBehaviorDefault` – Verwendet FullScreenPrimary (Standardwert, abwärtskompatibel)
+- `MacWindowCollectionBehaviorDefault` – Verwendet FullScreenPrimary (Voreinstellung, abwärtskompatibel)
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` – Das Fenster erscheint auf allen Spaces
 - `MacWindowCollectionBehaviorMoveToActiveSpace` – Wechselt beim Anzeigen zum aktiven Space
 - `MacWindowCollectionBehaviorManaged` – Standardverhalten für verwaltete Fenster
@@ -913,7 +913,7 @@ Steuert das Verhalten des Fensters in macOS Spaces und im Vollbildmodus. Diese W
 **Vollbildverhalten:**
 
 - `MacWindowCollectionBehaviorFullScreenPrimary` – Kann in den Vollbildmodus wechseln
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` – Kann Anwendungen im Vollbildmodus überlagern
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` – Kann Vollbild-Apps überlagern
 - `MacWindowCollectionBehaviorFullScreenNone` – Deaktiviert die Vollbildfunktion
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` – Ermöglicht die Anordnung nebeneinander (macOS 10.11+)
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` – Verhindert die Anordnung nebeneinander (macOS 10.11+)
@@ -944,12 +944,12 @@ Mac: application.MacWindow{
 
 **TabbingMode** (`MacWindowTabbingMode`)
 
-Steuert das Verhalten von Fenster-Tabs unter macOS 10.12 und neuer. Mit Fenster-Tabs können mehrere Fenster als Tabs gruppiert werden.
+Steuert das Verhalten von Fenster-Tabs unter macOS 10.12 und neuer. Mit Fenster-Tabs lassen sich mehrere Fenster als Tabs gruppieren.
 
 **Optionen:**
 
-- `MacWindowTabbingModeDefault` – Sentinel-Nullwert (nicht explizit festgelegt). Zur Laufzeit sind Fenster-Tabs standardmäßig nicht zulässig
-- `MacWindowTabbingModeAutomatic` – Das System bestimmt das Verhalten von Fenster-Tabs
+- `MacWindowTabbingModeDefault` – Nullwert als Sentinel (nicht explizit festgelegt). Zur Laufzeit sind Fenster-Tabs standardmäßig nicht zulässig
+- `MacWindowTabbingModeAutomatic` – Das System bestimmt das Verhalten der Fenster-Tabs
 - `MacWindowTabbingModePreferred` – Das Fenster bevorzugt den Tab-Modus
 - `MacWindowTabbingModeDisallowed` – Deaktiviert Fenster-Tabs
 
@@ -971,7 +971,7 @@ Mac: application.MacWindow{
 
 **WebviewPreferences** (`MacWebviewPreferences`)
 
-Ermöglicht die detaillierte Steuerung der zugrunde liegenden `WKWebView`-Konfiguration. Alle Felder sind optional – nicht festgelegte Felder ändern den WebKit-Standardwert nicht.
+Ermöglicht die detaillierte Steuerung der zugrunde liegenden `WKWebView`-Konfiguration. Alle Felder sind optional – nicht festgelegte Felder lassen den WebKit-Standard unverändert.
 
 ```go
 Mac: application.MacWindow{
@@ -990,20 +990,20 @@ Mac: application.MacWindow{
 },
 ```
 
-- `TabFocusesLinks` — Wenn `true`, verschiebt die Tabulatortaste den Fokus auf Links und Formularsteuerelemente (Standard: `false`)
-- `TextInteractionEnabled` — Wenn `true`, können Benutzer Text in der Webview auswählen und mit ihm interagieren (Standard: `true`)
-- `FullscreenEnabled` — Wenn `true`, können Webinhalte über die HTML Fullscreen API in den Vollbildmodus wechseln (Standard: `false`). Erfordert macOS 12.3 oder neuer.
-- `AllowsBackForwardNavigationGestures` — Wenn `true`, lösen horizontale Wischgesten die Rückwärts-/Vorwärtsnavigation aus (Standard: `false`)
-- `AllowsMagnification` — Wenn `true`, ist Pinch-to-Zoom in der Webview aktiviert (Standard: `false`)
-- `AllowsAirPlayForMediaPlayback` — Wenn `true`, können Medien an AirPlay-Geräte gestreamt werden (Standard: `true`)
-- `JavaScriptCanOpenWindowsAutomatically` — Wenn `true`, kann JavaScript ohne Benutzergeste neue Fenster öffnen (Standard: `false`)
-- `MinimumFontSize` — Mindestschriftgröße in Punkt. Legen Sie sie mit `optional.NewVar(12.0)` fest. Wenn sie nicht festgelegt ist, bleibt der WebKit-Standard erhalten.
-- `ApplicationNameForUserAgent` — Überschreibt das Suffix des Anwendungsnamens in der User-Agent-Zeichenfolge von WebKit. Nützlich, wenn Websites die standardmäßige Kennung `"wails.io"` ablehnen (z. B. YouTube-Einbettungen). Lassen Sie den Wert leer, um den Standard beizubehalten.
-- `EnableAutoplayWithoutUserAction` — Wenn `true`, können Audio und Video ohne Benutzergeste automatisch wiedergegeben werden. Wird auf `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` abgebildet (Standard: `false`)
+- `TabFocusesLinks` – Bei `true` verschiebt die Tabulatortaste den Fokus auf Links und Formularsteuerelemente (Standard: `false`)
+- `TextInteractionEnabled` – Bei `true` können Benutzer Text in der Webview auswählen und mit ihm interagieren (Standard: `true`)
+- `FullscreenEnabled` – Bei `true` können Webinhalte über die HTML Fullscreen API in den Vollbildmodus wechseln (Standard: `false`). Erfordert macOS 12.3+.
+- `AllowsBackForwardNavigationGestures` – Bei `true` lösen horizontale Wischgesten die Rückwärts-/Vorwärtsnavigation aus (Standard: `false`)
+- `AllowsMagnification` – Bei `true` ist das Zoomen per Auf- und Zuziehen in der Webview aktiviert (Standard: `false`)
+- `AllowsAirPlayForMediaPlayback` – Bei `true` können Medien an AirPlay-Geräte gestreamt werden (Standard: `true`)
+- `JavaScriptCanOpenWindowsAutomatically` – Bei `true` kann JavaScript ohne Benutzeraktion neue Fenster öffnen (Standard: `false`)
+- `MinimumFontSize` – Mindestschriftgröße in Punkt. Mit `optional.NewVar(12.0)` festlegen. Ist das Feld nicht festgelegt, gilt der WebKit-Standard.
+- `ApplicationNameForUserAgent` – Überschreibt das Suffix des Anwendungsnamens in der WebKit-User-Agent-Zeichenfolge. Nützlich, wenn Websites die standardmäßige Kennung `"wails.io"` ablehnen (z. B. YouTube-Einbettungen). Leer lassen, um den Standard beizubehalten.
+- `EnableAutoplayWithoutUserAction` – Bei `true` können Audio und Video ohne Benutzeraktion automatisch wiedergegeben werden. Entspricht `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (Standard: `false`)
 
 ### Windows-Optionen (pro Fenster)
 
-Die Struktur pro Fenster ist `application.WindowsWindow` — **nicht** `WindowsOptions` (dies ist die Struktur auf <em>Anwendungs</em>ebene).
+Die Struktur pro Fenster ist `application.WindowsWindow` – **nicht** `WindowsOptions` (das ist die Struktur auf *Anwendungs*ebene).
 
 ```go
 Windows: application.WindowsWindow{
@@ -1023,7 +1023,7 @@ Windows: application.WindowsWindow{
 
 **DisableMenu** (`bool`)
 
-- Deaktiviert die Menüleiste für das Fenster. Wenn `true`, zeigt das Fenster auch dann keine Menüleiste an, wenn eine konfiguriert ist.
+- Deaktiviert die Menüleiste für das Fenster. Bei `true` zeigt das Fenster selbst dann keine Menüleiste an, wenn eine konfiguriert ist.
 - Standard: `false`
 
 **BackdropType** (`BackdropType`)
@@ -1031,14 +1031,14 @@ Windows: application.WindowsWindow{
 - `application.Auto` – Systemstandard
 - `application.None` – Kein Hintergrundeffekt
 - `application.Mica` – Mica-Material (Windows 11)
-- `application.Acrylic` – Acrylmaterial (Windows 11)
-- `application.Tabbed` – Material mit Registerkartenoptik (Windows 11)
+- `application.Acrylic` – Acrylic-Material (Windows 11)
+- `application.Tabbed` – Tabbed-Material (Windows 11)
 
-Es gibt keine Konstanten im Stil von `WindowsBackdropTypeMica` — verwenden Sie `application.Mica` usw.
+Es gibt keine Konstanten im Stil von `WindowsBackdropTypeMica` – verwenden Sie `application.Mica` usw.
 
 **CustomTheme** (`ThemeSettings`)
 
-- Wert (kein Zeiger). Benutzerdefinierte Farben für den Dunkel-/Hellmodus für Fensterrahmen, Text und Hintergrund der Titelleiste sowie die Menüleiste.
+- Wert (kein Zeiger). Benutzerdefinierte Farben für den Dunkel-/Hellmodus des Fensterrahmens, des Texts und Hintergrunds der Titelleiste sowie der Menüleiste.
 
 **DisableFramelessWindowDecorations** (`bool`)
 
@@ -1047,13 +1047,13 @@ Es gibt keine Konstanten im Stil von `WindowsBackdropTypeMica` — verwenden Sie
 **NonClientRegionSupport** (`bool`)
 
 - Aktiviert die native WebView2-Unterstützung für `app-region: drag` / `app-region: no-drag` bei rahmenlosen benutzerdefinierten Titelleisten.
-- Dies dient nur zum einfachen nativen Ziehen der Anwendung. Es bietet weder natives Verhalten für benutzerdefinierte Titelleistenschaltflächen noch Windows 11 Snap Assist / Snap Layouts für benutzerdefinierte Maximierungsschaltflächen.
+- Dies dient ausschließlich dem einfachen nativen Ziehen der App. Es bietet weder natives Verhalten für benutzerdefinierte Titelleistenschaltflächen noch Windows 11 Snap Assist / Snap Layouts für benutzerdefinierte Maximieren-Schaltflächen.
 
 **WebView2CompositionHosting** (`bool`)
 
-- Aktiviert die von Wails verwaltete Unterstützung für `--wails-non-client-region` bei benutzerdefinierten Titelleistenschaltflächen mit nativem Windows-Verhalten, einschließlich Windows 11 Snap Assist / Snap Layouts bei benutzerdefinierten Maximierungsschaltflächen.
-- Experimentell. Dadurch wird WebView2 über `ICoreWebView2CompositionController` und DirectComposition statt über den standardmäßigen HWND-gehosteten Controller gehostet.
-- Kann mit `NonClientRegionSupport` kombiniert werden, wenn ein Fenster sowohl native WebView2-Unterstützung für `app-region` als auch von Wails verwaltete benutzerdefinierte Bereiche für Titelleistenschaltflächen benötigt.
+- Aktiviert die von Wails verwaltete `--wails-non-client-region`-Unterstützung für benutzerdefinierte Titelleistenschaltflächen mit nativem Windows-Verhalten, einschließlich Windows 11 Snap Assist / Snap Layouts bei benutzerdefinierten Maximieren-Schaltflächen.
+- Experimentell. Hierbei wird WebView2 über `ICoreWebView2CompositionController` und DirectComposition statt über den standardmäßigen HWND-gehosteten Controller bereitgestellt.
+- Kann mit `NonClientRegionSupport` kombiniert werden, wenn ein Fenster sowohl native WebView2-Unterstützung für `app-region` als auch von Wails verwaltete Bereiche für benutzerdefinierte Titelleistenschaltflächen benötigt.
 
 **Beispiel:**
 
@@ -1073,11 +1073,11 @@ Windows: application.WindowsWindow{
 },
 ```
 
-Ausführliche Informationen zum Verhalten, zu den Kompromissen und zum passenden CSS finden Sie unter [Rahmenlose Fenster](/features/windows/frameless/#native-non-client-regions-on-windows).
+Ausführliche Informationen zu Verhalten, Abwägungen und dem zugehörigen CSS finden Sie unter [Rahmenlose Fenster unter Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
 
 ### Linux-Optionen (pro Fenster)
 
-Die Struktur pro Fenster ist `application.LinuxWindow` — **nicht** `LinuxOptions`.
+Die Struktur pro Fenster ist `application.LinuxWindow` – **nicht** `LinuxOptions`.
 
 ```go
 Linux: application.LinuxWindow{
@@ -1107,7 +1107,7 @@ Linux: application.LinuxWindow{
 
 ## Windows-Optionen auf Anwendungsebene
 
-Einige Windows-spezifische Optionen müssen auf Anwendungsebene statt für einzelne Fenster konfiguriert werden. Der Grund dafür ist, dass WebView2 für jeden Benutzerdatenpfad eine gemeinsame Browserumgebung verwendet.
+Einige Windows-spezifische Optionen müssen auf Anwendungsebene statt pro Fenster konfiguriert werden. Der Grund ist, dass WebView2 pro Benutzerdatenpfad eine einzige Browserumgebung für alle Fenster verwendet.
 
 ### Browser-Flags
 
@@ -1139,7 +1139,7 @@ app := application.New(application.Options{
 **EnabledFeatures** (`[]string`)
 
 - Liste der zu aktivierenden WebView2-Feature-Flags
-- Verfügbare Flags finden Sie unter [WebView2-Browser-Flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags)
+- Die verfügbaren Flags finden Sie unter [WebView2-Browser-Flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags)
 - Beispiel: `"msWebView2EnableDraggableRegions"`
 
 **DisabledFeatures** (`[]string`)
@@ -1151,11 +1151,11 @@ app := application.New(application.Options{
 **AdditionalBrowserArgs** (`[]string`)
 
 - Chromium-Befehlszeilenargumente, die an den Browserprozess übergeben werden
-- Muss das Präfix `--` enthalten (z. B. `"--remote-debugging-port=9222"`)
-- Verfügbare Argumente finden Sie unter [Chromium-Befehlszeilenschalter](https://peter.sh/experiments/chromium-command-line-switches/)
+- Müssen das Präfix `--` enthalten (z. B. `"--remote-debugging-port=9222"`)
+- Die verfügbaren Argumente finden Sie unter [Chromium-Befehlszeilenschalter](https://peter.sh/experiments/chromium-command-line-switches/)
 
 @note{type="caution" title="Wichtig"}
-Diese Flags gelten global für ALLE Fenster, da WebView2 für jeden Benutzerdatenpfad eine gemeinsame Browserumgebung verwendet. Für verschiedene Fenster können keine unterschiedlichen Browser-Flags festgelegt werden.
+Diese Flags gelten global für ALLE Fenster, da WebView2 pro Benutzerdatenpfad eine einzige Browserumgebung verwendet. Sie können nicht für verschiedene Fenster unterschiedliche Browser-Flags verwenden.
 
 @end
 
@@ -1197,7 +1197,7 @@ func main() {
 
 ## Vollständiges Beispiel
 
-Hier sehen Sie eine produktionsreife Fensterkonfiguration:
+Hier ist eine produktionsreife Fensterkonfiguration:
 
 ```go
 package main
@@ -1260,7 +1260,7 @@ func main() {
 }
 ```
 
-Frontend-Assets werden auf Anwendungsebene (`application.Options.Assets`) und nicht für einzelne Fenster bereitgestellt.
+Frontend-Assets werden auf Anwendungsebene (`application.Options.Assets`) und nicht für jedes Fenster separat bereitgestellt.
 
 ## Nächste Schritte
 
@@ -1271,4 +1271,4 @@ Frontend-Assets werden auf Anwendungsebene (`application.Options.Assets`) und ni
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) an.

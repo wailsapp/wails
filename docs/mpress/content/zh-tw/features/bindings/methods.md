@@ -1,5 +1,5 @@
 ---
-title: "方法繫結"
+title: "從 JavaScript 呼叫 Go"
 description: "以型別安全的方式從 JavaScript 呼叫 Go 方法"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -7,11 +7,11 @@ sourcePath: "features/bindings/methods.md"
 
 ## 型別安全的 Go-JavaScript 繫結
 
-Wails 會<strong>自動為您的 Go 方法產生型別安全的 JavaScript/TypeScript 繫結</strong>。編寫 Go 程式碼、執行一個命令，即可取得具有完整型別的前端函式，無 HTTP 額外負擔、無須手動處理，也不需要任何樣板程式碼。
+Wails 會為您的 Go 方法**自動產生型別安全的 JavaScript/TypeScript 繫結**。撰寫 Go 程式碼並執行一個命令，即可取得具備完整型別的前端函式，沒有 HTTP 額外負擔、不必手動處理，也沒有任何樣板程式碼。
 
 ## 快速開始
 
-**1. 編寫 Go 服務：**
+**1. 撰寫 Go 服務：**
 
 ```go
 type GreetService struct{}
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-<strong>就這樣！</strong>以型別安全的方式從 Go 呼叫 JavaScript。
+<strong>就是這麼簡單！</strong>以型別安全的方式從 JavaScript 呼叫 Go。
 
 ## 建立服務
 
@@ -89,18 +89,18 @@ app := application.New(application.Options{
 })
 ```
 
-**要點：**
+**重點：**
 
-- 僅繫結<strong>匯出的方法</strong>（PascalCase）
+- 只有**匯出的方法**（PascalCase）會進行繫結
 - 方法可以傳回值或`(value, error)`
-- 服務是<strong>單例</strong>（每個應用程式一個執行個體）
+- 服務是**單例**（每個應用程式一個執行個體）
 
-### 具狀態的服務
+### 具有狀態的服務
 
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -130,7 +130,7 @@ func (c *CounterService) Reset() {
 }
 ```
 
-<strong>重要：</strong>所有視窗會共用服務。請使用互斥鎖來確保執行緒安全。
+<strong>重要：</strong>所有視窗會共用服務。請使用互斥鎖確保執行緒安全。
 
 ### 具有相依性的服務
 
@@ -150,7 +150,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 }
 ```
 
-**連同相依性一起註冊：**
+**註冊並傳入相依項目：**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -188,7 +188,7 @@ INFO  Output directory: /myproject/frontend/bindings
     - index.js
 @end
 
-### 產生 TypeScript 繫結
+### 產生 TypeScript
 
 ```bash
 wails3 generate bindings -ts
@@ -285,7 +285,7 @@ try {
 - 完整的型別檢查
 - IDE 自動完成
 - 編譯時期錯誤
-- 更易於重構
+- 更容易重構
 
 ### 索引檔案
 
@@ -299,7 +299,7 @@ export * as CounterService from './counterservice.js'
 export * as DatabaseService from './databaseservice.js'
 ```
 
-**簡化的匯入方式：**
+**簡化匯入：**
 
 ```javascript
 import { CalculatorService } from './bindings/myapp'
@@ -315,9 +315,9 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
@@ -327,23 +327,23 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | 以字串為鍵的映射 |
-| `map[K]V` | `{ [_ in K]?: V }` | 非字串的`K`會轉譯為映射型別，<strong>而不是</strong>JS 的`Map` |
+| `map[string]T` | `{ [_: string]: T }` | 以字串為鍵的對應表 |
+| `map[K]V` | `{ [_ in K]?: V }` | 非字串的`K`會呈現為映射型別，**而不是**JS 的`Map` |
 | `[]byte` | `string` | 以 base64 編碼 |
 | `struct` | `class` / `interface` | 包含欄位 |
-| `time.Time` | `any` | 執行階段會序列化為 RFC3339Nano 字串 |
+| `time.Time` | `string`（預設）或`Date` | `-time-type`會選擇產生的表示方式；JSON 使用 RFC3339Nano 字串 |
 | `*T` | `T \| null` | 指標表示可為 null |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 若作為回傳值則為例外，否則為 any |
+| `error` | `any` / `Exception` | 作為傳回值時為例外，否則為 any |
 
 ### 不支援的型別
 
-以下型別<strong>無法</strong>透過橋接傳遞：
+這些型別**無法**透過橋接傳遞：
 
 - `chan T`（通道）
 - `func()`（函式）
 - 複雜介面（`interface{}`除外）
-- 未匯出的欄位（小寫）
+- 未匯出的欄位（小寫開頭）
 
 <strong>因應方法：</strong>使用 ID 或控制代碼：
 
@@ -401,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### JavaScript 端
 
-繫結的方法失敗時，回傳的 Promise 會以 JavaScript `Error`物件拒絕：
+繫結的方法失敗時，傳回的 Promise 會以 JavaScript `Error`物件拒絕：
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-執行階段會根據發生的問題擲回不同的錯誤型別：
+執行階段會根據錯誤原因擲回不同類型的錯誤：
 
-| 錯誤型別 | 擲回時機 |
+| 錯誤類型 | 擲回時機 |
 | --- | --- |
-| `TypeError` | 呼叫所傳入的引數數量不正確，或某個引數無法轉換為 Go 型別 |
-| `RuntimeError` | 方法回傳錯誤，或在執行期間發生 panic |
+| `TypeError` | 呼叫的引數數量不正確，或某個引數無法轉換成 Go 類型 |
+| `RuntimeError` | 方法傳回錯誤，或在執行期間發生 panic |
 | `Error` | 任何其他失敗，例如呼叫不存在的方法 |
 
 每個錯誤都會提供：
 
-- `name`：上表中的錯誤型別
+- `name`：上表所列的錯誤類型
 - `message`：Go 錯誤的訊息
-- `cause`：Go 錯誤序列化後的 JSON（若可取得）。若方法回傳多個錯誤，`cause`會是陣列，每個錯誤各有一個項目。
+- `cause`：可取得時，為序列化成 JSON 的 Go 錯誤。若方法傳回多個錯誤，`cause`會是一個陣列，每個錯誤各有一個項目。
 
-`RuntimeError`類別由`@wailsio/runtime`套件匯出，因此你可以區分 Go 程式碼回傳的錯誤與其他失敗：
+`RuntimeError`類別由`@wailsio/runtime`套件匯出，因此你可以區分 Go 程式碼傳回的錯誤與其他失敗：
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -447,13 +447,13 @@ try {
 ```
 
 @note{type="info"}
-在較舊版本的執行階段中，每次失敗的呼叫都會以一般的`Error`拒絕，其訊息包含底層錯誤的原始 JSON。
+在較早版本的執行階段中，每次失敗的呼叫都會以一般的`Error`拒絕，其訊息包含底層錯誤的原始 JSON。
 
 @end
 
 ### 結構化錯誤資料
 
-從 Go 回傳自訂錯誤型別後，該錯誤的 JSON 形式可透過所擲回錯誤的`cause`屬性取得：
+從 Go 傳回自訂錯誤類型後，即可透過所擲回錯誤的`cause`屬性取得其 JSON 形式：
 
 ```go
 type ValidationError struct {
@@ -485,7 +485,7 @@ try {
 }
 ```
 
-錯誤會使用標準`encoding/json`套件序列化，因此只會包含已匯出的欄位。使用`errors.New`或`fmt.Errorf`建立的錯誤沒有已匯出的欄位，會序列化為空物件。
+錯誤會使用標準的`encoding/json`套件進行序列化，因此只會包含已匯出的欄位。使用`errors.New`或`fmt.Errorf`建立的錯誤沒有已匯出的欄位，因此會序列化成空物件。
 
 若要完全控制錯誤的序列化方式，請在服務選項中提供`MarshalError`函式：
 
@@ -509,13 +509,13 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError`必須回傳有效的 JSON，或回傳`nil`以改用預設序列化。
+`MarshalError`必須傳回有效的 JSON；若要退回使用預設序列化方式，則傳回`nil`。
 
 ## 效能
 
-### 呼叫額外負荷
+### 呼叫開銷
 
-**一般呼叫：**&lt;1ms
+**一般呼叫：**&lt;1毫秒
 
 ```
 JavaScript → Bridge → Go → Bridge → JavaScript
@@ -523,15 +523,15 @@ JavaScript → Bridge → Go → Bridge → JavaScript
   &lt;0.1ms    &lt;0.1ms  [varies] &lt;0.1ms    &lt;0.1ms
 ```
 
-**與其他方式比較：**
+**與其他方案相比：**
 
-- HTTP/REST：5-50ms
-- IPC：1-10ms
-- Wails：&lt;1ms
+- HTTP/REST：5-50毫秒
+- IPC：1-10毫秒
+- Wails：&lt;1毫秒
 
 ### 最佳化技巧
 
-**✅ 批次執行操作：**
+**✅ 批次作業：**
 
 ```javascript
 // ❌ Slow: N calls
@@ -555,7 +555,7 @@ const config = await GetConfig()
 // Use config multiple times
 ```
 
-**✅ 使用事件串流傳輸資料：**
+**✅ 使用事件進行串流傳輸：**
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -693,22 +693,22 @@ app.loadTodos()
 
 ## 最佳實務
 
-### ✅ 建議做法
+### ✅ 應該做
 
-- **保持方法簡潔**——每個方法只負責一項工作
-- **傳回錯誤**——不要引發 panic
+- **讓方法保持簡單**——遵循單一職責原則
+- **傳回錯誤**——不要觸發 panic
 - **使用執行緒安全的狀態**——以互斥鎖保護共用資料
-- **批次執行操作**——減少跨橋接層的呼叫
-- **在 Go 端快取**——避免重複處理
-- **為方法撰寫說明**——註解會轉換為 JSDoc
+- **批次執行作業**——減少橋接呼叫
+- **在 Go 端進行快取**——避免重複工作
+- **記錄方法的說明**——註解會轉換成 JSDoc
 
-### ❌ 避免事項
+### ❌ 不應該做
 
-- **不要阻塞**——長時間執行的操作應使用 goroutine
+- **不要阻塞**——長時間執行的作業請使用 goroutine
 - **不要傳回 channel**——改用事件
-- **不要傳回函式**——不支援此做法
-- **不要忽略錯誤**——一律處理錯誤
-- **不要使用未匯出的欄位**——這些欄位不會產生繫結
+- **不要傳回函式**——不支援此功能
+- **不要忽略錯誤**——務必處理錯誤
+- **不要使用未匯出的欄位**——這些欄位不會被繫結
 
 ## 後續步驟
 
@@ -725,7 +725,7 @@ app.loadTodos()
 [深入瞭解 →](/features/bindings/models/)
 
 ---
-🚀 Go 與前端橋接
+🚀 Go－前端橋接
 瞭解橋接機制。
 
 [深入瞭解 →](/concepts/bridge/)
@@ -740,4 +740,4 @@ app.loadTodos()
 
 ---
 
-<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

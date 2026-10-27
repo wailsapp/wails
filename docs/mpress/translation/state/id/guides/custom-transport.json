@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "d9941e6335ab667e4139",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "0d2afe1362d95c3762fa",
   "sourceFile": "guides/custom-transport.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
@@ -10,456 +11,444 @@
       "targetHash": "c8c8934bc6f114b9631557ed9aee38540caa2c13dfa92b2b3ea8b44cb7ba9c12",
       "machineHash": "c8c8934bc6f114b9631557ed9aee38540caa2c13dfa92b2b3ea8b44cb7ba9c12",
       "machineText": "Wails v3 memungkinkan Anda menyediakan lapisan transport IPC kustom sambil tetap mempertahankan semua binding yang dihasilkan dan komunikasi peristiwa. Dengan demikian, Anda dapat mengganti transport default berbasis HTTP fetch dengan WebSocket, protokol kustom, atau mekanisme transport lainnya.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails v3 allows you to provide a custom IPC transport layer while retaining all generated bindings a…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0002-heading-01": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
-      "targetHash": "e0da1b2254ed5aff7c104bbcf4bbacc812d51fafdc865f39f791c6741b7ee3bb",
-      "machineHash": "e0da1b2254ed5aff7c104bbcf4bbacc812d51fafdc865f39f791c6741b7ee3bb",
-      "machineText": "Ringkasan",
-      "status": "final",
+      "targetHash": "5dcd6aae250163a507e7cdd3d5e7072472a03a0ca5fb82debc399b930838901e",
+      "machineHash": "5dcd6aae250163a507e7cdd3d5e7072472a03a0ca5fb82debc399b930838901e",
+      "machineText": "Gambaran Umum",
+      "status": "machine-translated",
       "sourcePreview": "Overview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0003-text-01": {
       "sourceHash": "a086d67f1346a1e05c0a8382a1a711810fb8e295283b1bda25770aa46b60cefe",
       "targetHash": "f98b5cc3eb0ea41f8df9b3513a6f8cd473beb68c9ed8fa7e47af7375ad46cbdb",
       "machineHash": "f98b5cc3eb0ea41f8df9b3513a6f8cd473beb68c9ed8fa7e47af7375ad46cbdb",
       "machineText": "Secara default, Wails menggunakan permintaan HTTP fetch dari frontend untuk berkomunikasi dengan backend melalui `/wails/runtime`. API transport kustom memungkinkan Anda untuk:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "By default, Wails uses HTTP fetch requests from the frontend to communicate with the backend via `/w…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0004-text-01": {
       "sourceHash": "aa367d15d354444f5227fbcf404d508ac2bc305594598418c99d14a5095d2316",
       "targetHash": "51d08cd589d7e60f5301da0a32ef98384b00457de320a27ca7ff70a39920cf75",
       "machineHash": "51d08cd589d7e60f5301da0a32ef98384b00457de320a27ca7ff70a39920cf75",
       "machineText": "Mengganti transport HTTP dengan WebSocket, gRPC, atau protokol kustom apa pun",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Replace the HTTP transport with WebSockets, gRPC, or any custom protocol",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0005-text-01": {
       "sourceHash": "a7f66838790528040b14321b6216b51f315840e6e637fd2fde238165f7c5f0da",
       "targetHash": "16ef171f5f2a960161cb4a948b882c93754ab13b824cc3f7b7a34e48da95afd0",
       "machineHash": "16ef171f5f2a960161cb4a948b882c93754ab13b824cc3f7b7a34e48da95afd0",
       "machineText": "Mempertahankan kompatibilitas penuh dengan pembuatan kode Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Maintain full compatibility with Wails code generation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0006-text-01": {
       "sourceHash": "19a8361c79cf39248a2c4dced91b5da404d66ff82fb1b1e4ba69444af75aab04",
       "targetHash": "b5b1e08d97536227cf42f0fa913a1e55f6e329ba45ef2bc4c2b4312234e9a1fb",
       "machineHash": "b5b1e08d97536227cf42f0fa913a1e55f6e329ba45ef2bc4c2b4312234e9a1fb",
       "machineText": "Mempertahankan semua binding, peristiwa, dialog, dan fitur Wails lainnya yang sudah ada",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Keep all existing bindings, events, dialogs, and other Wails features",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0007-text-01": {
       "sourceHash": "0b04b37f4b236630595c98c0e715c68c9ebea51d362b888778c70b98fc94bc42",
-      "targetHash": "5726eb689a5c7d1d1af0c59d27402b1003f2fd0ea72821fb1b214c4e75d3f868",
-      "machineHash": "5726eb689a5c7d1d1af0c59d27402b1003f2fd0ea72821fb1b214c4e75d3f868",
-      "machineText": "Mengimplementasikan sendiri pengelolaan koneksi, autentikasi, dan penanganan kesalahan",
-      "status": "final",
+      "targetHash": "e88fb4e19c3235bb5b5d87440277c90ca0af21d5b07c1c8ad97e26cab347012a",
+      "machineHash": "e88fb4e19c3235bb5b5d87440277c90ca0af21d5b07c1c8ad97e26cab347012a",
+      "machineText": "Mengimplementasikan pengelolaan koneksi, autentikasi, dan penanganan kesalahan Anda sendiri",
+      "status": "machine-translated",
       "sourcePreview": "Implement your own connection management, authentication, and error handling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0008-heading-01": {
       "sourceHash": "cd74053c54816e473883dede0ad3b152f38a41995409eade6b42704919bb1359",
       "targetHash": "5fca2d55bae806b18ed9b63fb71bed03b4df8f6622ebeae23a8ff43ef5ef87fa",
       "machineHash": "5fca2d55bae806b18ed9b63fb71bed03b4df8f6622ebeae23a8ff43ef5ef87fa",
       "machineText": "Arsitektur",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Architecture",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0009-heading-01": {
-      "sourceHash": "8d59829c1e15afe1a7fae93e8e5e32d8511bec5fd598a09f4fea6033b31e8a66",
-      "targetHash": "1c55cd43ad1ac1cd33882089e3b31b4ebfc241a1db4a073ae29173b45b2a56d5",
-      "machineHash": "1c55cd43ad1ac1cd33882089e3b31b4ebfc241a1db4a073ae29173b45b2a56d5",
-      "machineText": "Penggunaan",
-      "status": "final",
-      "sourcePreview": "Usage",
+      "sourceHash": "0e0929a725fc69956ccebfb705451b5ab16e1a17be86b579eefd320bf2833fab",
+      "targetHash": "2ded6ae11a9d6f731393b6f92879cbf950a4d110236dff1e81e7ed79f82728fd",
+      "machineHash": "2ded6ae11a9d6f731393b6f92879cbf950a4d110236dff1e81e7ed79f82728fd",
+      "machineText": "Menjalankan contoh WebSocket lengkap",
+      "status": "machine-translated",
+      "sourcePreview": "Run the complete WebSocket example",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0010-heading-01": {
-      "sourceHash": "4d3b0d44aac27d9aa4f472775a4c83864617822f6dc9bb4fb6c753c081f91576",
-      "targetHash": "eb51c777619fc9bbbaf56246ece8982284a1137fdabd2f5c4f35f4ca2f328d94",
-      "machineHash": "eb51c777619fc9bbbaf56246ece8982284a1137fdabd2f5c4f35f4ca2f328d94",
-      "machineText": "1. Implementasikan Antarmuka Transport",
-      "status": "final",
-      "sourcePreview": "1. Implement the Transport Interface",
+    "b0010-text-01": {
+      "sourceHash": "fcc8d763af00800b5dd42a0b646e066de4cfd56c3cf9e54ab74df30a689cbc10",
+      "targetHash": "a6e6a139fdab71b5956b21b04aca418c7603a330054e4ab5a0c05e2a3403246d",
+      "machineHash": "a6e6a139fdab71b5956b21b04aca418c7603a330054e4ab5a0c05e2a3403246d",
+      "machineText": "[Contoh transport WebSocket](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport) mencakup kedua sisi protokol: ID permintaan dan respons, pengelolaan siklus hidup, klien JavaScript, serta pengiriman peristiwa. Mulailah dari file-file tersebut, bukan dari transport yang hanya mengimplementasikan `Start` dan `Stop`.",
+      "status": "machine-translated",
+      "sourcePreview": "The [WebSocket transport example](https://github.com/wailsapp/wails/tree/master/v3/examples/websocke…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0011-text-01": {
-      "sourceHash": "a22be1c580ba98b2e82400760d417fb0ae1181ce81037a34bd3ff66af42ae97e",
-      "targetHash": "1930461a8c91160d75a2d6f698296b77da9bcab11bbdb24e3d8b93deca14f32b",
-      "machineHash": "1930461a8c91160d75a2d6f698296b77da9bcab11bbdb24e3d8b93deca14f32b",
-      "machineText": "Buat transport kustom dengan mengimplementasikan antarmuka `Transport`:",
-      "status": "final",
-      "sourcePreview": "Create a custom transport by implementing the `Transport` interface:",
+      "sourceHash": "7cad785f7ea32d06b028eded63ceec1cf02b4c32db0f8789bd361935018ee203",
+      "targetHash": "b447b6a3de71bffbf90a2a7516dc33d9b73a516432ec70c0932bb0343ec4161e",
+      "machineHash": "b447b6a3de71bffbf90a2a7516dc33d9b73a516432ec70c0932bb0343ec4161e",
+      "machineText": "Dari working tree repositori Wails yang telah dilengkapi dependensi platform native:",
+      "status": "machine-translated",
+      "sourcePreview": "From a Wails repository checkout with the native platform dependencies installed:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0012-heading-01": {
-      "sourceHash": "a0cfead0dcdb872d3b047b491d24c80545385ab1e3bcff798ff69aecbe1568ed",
-      "targetHash": "d0c3a54750ca032fb826da00b952d0a8a10afc45ea6399a04692d3885007d93c",
-      "machineHash": "d0c3a54750ca032fb826da00b952d0a8a10afc45ea6399a04692d3885007d93c",
-      "machineText": "2. Konfigurasikan Aplikasi Anda",
-      "status": "final",
-      "sourcePreview": "2. Configure Your Application",
+    "b0012-text-01": {
+      "sourceHash": "f7bcaa1d66e05ac8c2534d68a2c52865a390bdfbfb38328301d097562f32b254",
+      "targetHash": "514589ba231efa548a063564d42d752def160e7aaf0ca0c753f0605d97888526",
+      "machineHash": "514589ba231efa548a063564d42d752def160e7aaf0ca0c753f0605d97888526",
+      "machineText": "Contoh tersebut membuka jendela native dan memulai endpoint WebSocket pada port 9099. Gunakan contoh ini di lingkungan pengembangan lokal tepercaya. Sebelum menerapkan varian yang dapat diakses melalui jaringan, batasi listener, validasi origin, dan autentikasi klien. Kebijakan origin pada contoh bersifat permisif dan bukan merupakan kebijakan keamanan untuk produksi.",
+      "status": "machine-translated",
+      "sourcePreview": "The example opens a native window and starts a WebSocket endpoint at port 9099. Use it in a trusted …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0013-text-01": {
-      "sourceHash": "bf1892cc0d514ff54da903beedfb8592c7696bb0dbc91eb31399f6ad7b6de19f",
-      "targetHash": "679e58c69d712bbf2b176e1844f6577e72be36467bab09d980eeb83b957b3459",
-      "machineHash": "679e58c69d712bbf2b176e1844f6577e72be36467bab09d980eeb83b957b3459",
-      "machineText": "Teruskan transport kustom Anda ke opsi aplikasi:",
-      "status": "final",
-      "sourcePreview": "Pass your custom transport to the application options:",
+    "b0013-heading-01": {
+      "sourceHash": "8705d1750ad9ae3633054692239c2e801929ad650ef929e7612c95e256273e9e",
+      "targetHash": "ffe6cf521ce2f7d34cd40dc4e45f3313e0b2d10a4f6c9c60bedb4c699c04be97",
+      "machineHash": "ffe6cf521ce2f7d34cd40dc4e45f3313e0b2d10a4f6c9c60bedb4c699c04be97",
+      "machineText": "Kontrak backend",
+      "status": "machine-translated",
+      "sourcePreview": "Backend contract",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0014-heading-01": {
-      "sourceHash": "202beee28e90d45d2fd861af10e8f0f8fd75041085b76cbe06b3d08a11c93bc5",
-      "targetHash": "3371203fba74f4f33917ff788b607c502f8ed11dda7e5457d18f598f97a17035",
-      "machineHash": "3371203fba74f4f33917ff788b607c502f8ed11dda7e5457d18f598f97a17035",
-      "machineText": "3. Ubah Runtime Frontend",
-      "status": "final",
-      "sourcePreview": "3. Modify Frontend Runtime",
+    "b0014-text-01": {
+      "sourceHash": "2273d0949699bf9a567e3adb4915078fd9432b75b88217a693cff37758052c10",
+      "targetHash": "8094af1705d41f1272c49793e836829f2782bffbe844fcc0881652c08a2cc206",
+      "machineHash": "8094af1705d41f1272c49793e836829f2782bffbe844fcc0881652c08a2cc206",
+      "machineText": "Transport harus mengimplementasikan ketiga metode wajib. `WebSocketTransport` dalam contoh mengimplementasikan `Start`, `JSClient`, dan `Stop`; `JSClient` menyediakan shim JavaScript yang disuntikkan Wails ke dalam halaman. Sertakan pemeriksaan antarmuka pada waktu kompilasi dalam implementasi Anda:",
+      "status": "machine-translated",
+      "sourcePreview": "A transport must implement all three required methods. The example's `WebSocketTransport` implements…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0015-text-01": {
-      "sourceHash": "297e75307dff32d92e77ea132350de0f02fc7d3e4082871bdb039a3e18a92793",
-      "targetHash": "54e4aa495884a195b80d4149ba418a85b206e9e157040f2b3adecec55e43d352",
-      "machineHash": "54e4aa495884a195b80d4149ba418a85b206e9e157040f2b3adecec55e43d352",
-      "machineText": "Jika menggunakan transport kustom, Anda perlu mengubah runtime frontend agar menggunakan transport Anda sebagai pengganti HTTP fetch. Implementasikan antarmuka `RuntimeTransport` yang akan digunakan untuk menangani permintaan:",
-      "status": "final",
-      "sourcePreview": "If using a custom transport, you'll need to modify the frontend runtime to use your transport instea…",
+      "sourceHash": "90056161c57cd2756afef7f3e5e75cb103714551e411ef65634613c26bdcab4c",
+      "targetHash": "4345558d30778fb3c0f9ec08e683c89d82b9233e5de9153e352c98c9d29e6dc9",
+      "machineHash": "4345558d30778fb3c0f9ec08e683c89d82b9233e5de9153e352c98c9d29e6dc9",
+      "machineText": "Konfigurasikan aplikasi menggunakan konstruktor dari contoh:",
+      "status": "machine-translated",
+      "sourcePreview": "Configure the application using the constructor from the example:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0016-heading-01": {
-      "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
-      "targetHash": "c8c88633c99e97419063c8f4db246f8ac9688af27448a035881f5086bd875c95",
-      "machineHash": "c8c88633c99e97419063c8f4db246f8ac9688af27448a035881f5086bd875c95",
-      "machineText": "Catatan",
-      "status": "final",
-      "sourcePreview": "Notes",
+    "b0016-text-01": {
+      "sourceHash": "7c589371a7c64511dd954e4bda74d0ee28f4a82b81110ab3d3b72a7994bde230",
+      "targetHash": "265c03a6fc2fafea3275bd069969142e4e546dded2d24f5fc1712fb9a54191f2",
+      "machineHash": "265c03a6fc2fafea3275bd069969142e4e546dded2d24f5fc1712fb9a54191f2",
+      "machineText": "Field ini berada di `application.Options`, bersama aset dan layanan biasa. Salin file implementasi beserta pemanggilan konstruktornya. `Start` menerima `MessageProcessor`; `Stop` harus menutup listener, koneksi aktif, dan pekerjaan yang tertunda.",
+      "status": "machine-translated",
+      "sourcePreview": "This field belongs in `application.Options`, alongside the ordinary assets and services. Copy the im…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0017-text-01": {
-      "sourceHash": "5847b25d4dffca89145ae86e4fe9017dd99f6ed6edcefa65fea21ca48dc75b0e",
-      "targetHash": "29e4cbf979f59d766c4dad8e82d7c45c2b27b76038497d5d43f8d2a4102a14f6",
-      "machineHash": "29e4cbf979f59d766c4dad8e82d7c45c2b27b76038497d5d43f8d2a4102a14f6",
-      "machineText": "Transport HTTP default tetap berfungsi jika tidak ada transport kustom yang ditentukan",
-      "status": "final",
-      "sourcePreview": "The default HTTP transport continues to work if no custom transport is specified",
+    "b0017-heading-01": {
+      "sourceHash": "4493ae4ae29af5defda6980c8a3b64b9ced24a6ea459a7b3ccbc65004cc2c418",
+      "targetHash": "7ed72452bbe3fc314d54b3af7ba6a7e6b6ff670553c617cabe28dc3137fb3c6e",
+      "machineHash": "7ed72452bbe3fc314d54b3af7ba6a7e6b6ff670553c617cabe28dc3137fb3c6e",
+      "machineText": "Kontrak frontend",
+      "status": "machine-translated",
+      "sourcePreview": "Frontend contract",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0018-text-01": {
-      "sourceHash": "b767b0aa6fd8a61d1e4d8f422c2d7facea49fada0277dd7832da5a74f3e18860",
-      "targetHash": "42f16837ef5f5935a41b49f88d7e3be57ef6e236be281c358557d3135313cf51",
-      "machineHash": "42f16837ef5f5935a41b49f88d7e3be57ef6e236be281c358557d3135313cf51",
-      "machineText": "Binding yang dihasilkan tetap tidak berubah—hanya lapisan transport yang berubah",
-      "status": "final",
-      "sourcePreview": "Generated bindings remain unchanged - only the transport layer changes",
+      "sourceHash": "b4b429dc1518ddabac70c64c64a2cf7092c3cd9bbb30ee6a218815a42677ee90",
+      "targetHash": "fb74c1873f3e1e2f390d7118f525433c9e52d9744d687f1e2367be268e05b2e0",
+      "machineHash": "fb74c1873f3e1e2f390d7118f525433c9e52d9744d687f1e2367be268e05b2e0",
+      "machineText": "`websocket-transport.js` dalam contoh mengimplementasikan transport runtime, termasuk korelasi permintaan/respons dan penolakan panggilan yang gagal. Setelah menyajikan file tersebut dari aset Anda, inisialisasikan transport sebelum memanggil binding layanan yang dihasilkan:",
+      "status": "machine-translated",
+      "sourcePreview": "The example's `websocket-transport.js` implements the runtime transport, including request/response …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0019-text-01": {
-      "sourceHash": "c5ebfd45f7440907f23ffce0805b2d1a4066a1d86c8f09fe0105f72b04e05189",
-      "targetHash": "5344205569c2e50d91dc99c895b4622667d8bf1788487ffa80102ec33c5634c1",
-      "machineHash": "5344205569c2e50d91dc99c895b4622667d8bf1788487ffa80102ec33c5634c1",
-      "machineText": "Peristiwa, dialog, papan klip, dan semua fitur Wails lainnya berfungsi secara transparan",
-      "status": "final",
-      "sourcePreview": "Events, dialogs, clipboard, and all other Wails features work transparently",
+      "sourceHash": "87b3ae282b3d53e27fa5f2233e31a66d87062c55e2fcbfd786ec5c2331ed4fd0",
+      "targetHash": "50c307cf1e194a634101dcd149eaf97c06c5234d4252e37a086f3235664a357a",
+      "machineHash": "50c307cf1e194a634101dcd149eaf97c06c5234d4252e37a086f3235664a357a",
+      "machineText": "Binding layanan yang dihasilkan tetap tidak berubah. Jika transport Anda menggantikan klien, transport tersebut harus membawa metode yang digunakan aplikasi Anda dan mempertahankan semantik kesalahannya. Pengiriman peristiwa memerlukan kontrak transport peristiwa opsional; kontrak ini tidak disediakan secara otomatis oleh implementasi `Transport` sembarang. Contoh WebSocket lengkap mendemonstrasikannya.",
+      "status": "machine-translated",
+      "sourcePreview": "Generated service bindings remain unchanged. If your transport replaces the client, it must carry th…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
     "b0020-text-01": {
-      "sourceHash": "fa58e8e6f44becf217b57e57c48a7249cb99000490db2bbd4cee18ae1adcfae2",
-      "targetHash": "84b197fec1d554eac72ab922834140a6a1b8a705b26fc298f2fcf07daa5d800e",
-      "machineHash": "84b197fec1d554eac72ab922834140a6a1b8a705b26fc298f2fcf07daa5d800e",
-      "machineText": "Anda bertanggung jawab atas penanganan kesalahan, logika penyambungan ulang, dan keamanan dalam transport kustom Anda",
-      "status": "final",
-      "sourcePreview": "You're responsible for error handling, reconnection logic, and security in your custom transport",
+      "sourceHash": "621d65af9fc18fc0b2486c91b64375cffb8b91ea1d233e05834a6258a1e6d79e",
+      "targetHash": "3ebff06779172fc104016aeee1d9632f9b778915934cbbdfc4b0f278801671c9",
+      "machineHash": "3ebff06779172fc104016aeee1d9632f9b778915934cbbdfc4b0f278801671c9",
+      "machineText": "Untuk deployment jarak jauh, gunakan TLS serta kebijakan autentikasi dan origin yang eksplisit. Hosting khusus browser juga mengharuskan aset aplikasi disajikan seperti yang dijelaskan di bawah ini.",
+      "status": "machine-translated",
+      "sourcePreview": "For remote deployments, use TLS and an explicit authentication and origin policy. Browser-only hosti…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0021-text-01": {
-      "sourceHash": "2b79f796de73c2ada53d651fa172795d80c0a782822403540df79f6079b7f558",
-      "targetHash": "b65b105873b809c3cee51c182fca18e92927b4af07ce7875e587780c58d5d3bd",
-      "machineHash": "b65b105873b809c3cee51c182fca18e92927b4af07ce7875e587780c58d5d3bd",
-      "machineText": "Contoh WebSocket yang disediakan ditujukan untuk demonstrasi dan mungkin perlu diperkuat agar layak digunakan dalam produksi",
-      "status": "final",
-      "sourcePreview": "The WebSocket example provided is for demonstration and may need hardening for production use",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
-    },
-    "b0022-heading-01": {
+    "b0021-heading-01": {
       "sourceHash": "0b40234a6136f15dedcace3b83580ce8c12f511d2344edcc03075f2dc1852e3d",
       "targetHash": "0a76400b5215effd2de0d43857aae0bf982b151f54d9691a4ec084525fca5e23",
       "machineHash": "0a76400b5215effd2de0d43857aae0bf982b151f54d9691a4ec084525fca5e23",
       "machineText": "Referensi API",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "API Reference",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0023-heading-01": {
+    "b0022-heading-01": {
       "sourceHash": "f0324a9e0f9b3ebc49c60dd25b4091817c3d39d60e801bb0915c4ffe61c40610",
       "targetHash": "df105b39d9fee23611668e618879b30d1792e39e64395cea06687d0fc80b43a8",
       "machineHash": "df105b39d9fee23611668e618879b30d1792e39e64395cea06687d0fc80b43a8",
       "machineText": "Antarmuka Transport",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Transport Interface",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0024-heading-01": {
+    "b0023-heading-01": {
       "sourceHash": "91a2d90f987aa57dd625d6674a822b75ae51cfc7361c4320fa2cbcff1b8fd1ba",
       "targetHash": "cb03ee4f1d04798f75af39f40048e8e11514eb7c73e1652177eacac2c7d2706c",
       "machineHash": "cb03ee4f1d04798f75af39f40048e8e11514eb7c73e1652177eacac2c7d2706c",
       "machineText": "Antarmuka AssetServerTransport (Opsional)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "AssetServerTransport Interface (Optional)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0025-text-01": {
+    "b0024-text-01": {
       "sourceHash": "ce887f393b9b2f21bbe06d4ba1f3673461c8887551d7a44b31389687b00f9071",
-      "targetHash": "76ec597beb3a5869186bc617f160c871c945833a2fdaee8f5a4271989fd00679",
-      "machineHash": "76ec597beb3a5869186bc617f160c871c945833a2fdaee8f5a4271989fd00679",
-      "machineText": "Untuk deployment berbasis browser atau jika Anda ingin menyajikan aset dan IPC melalui transport kustom Anda, implementasikan antarmuka `AssetServerTransport`:",
-      "status": "final",
+      "targetHash": "91eb82e11f748c64bed4d80990d2ea182e25c2d7eb67e2e10706012a09021ed7",
+      "machineHash": "91eb82e11f748c64bed4d80990d2ea182e25c2d7eb67e2e10706012a09021ed7",
+      "machineText": "Untuk deployment berbasis browser, atau jika Anda ingin menyajikan aset dan IPC melalui transport kustom yang sama, implementasikan antarmuka `AssetServerTransport`:",
+      "status": "machine-translated",
       "sourcePreview": "For browser-based deployments or when you want to serve both assets and IPC through your custom tran…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0026-text-01": {
-      "sourceHash": "7a2a6bb886603f7637f993b984c129099221a7e9eb65de00007519b0bbf2c668",
-      "targetHash": "e5c0263cb3429b539702e227cd9e96d32d032e74808b6a8d358067f3e2f9ff54",
-      "machineHash": "e5c0263cb3429b539702e227cd9e96d32d032e74808b6a8d358067f3e2f9ff54",
-      "machineText": "*Kapan antarmuka ini perlu diimplementasikan:*",
-      "status": "final",
-      "sourcePreview": "*When to implement this interface:*",
+    "b0025-text-01": {
+      "sourceHash": "edcbcc10556c34a65855af6a601ebbc1934bb048693877a156f382c003958dcf",
+      "targetHash": "fe31ec49cb3d447eacef065ac13354162531a6aa46b6c2ff65b0d3b443aec7f3",
+      "machineHash": "fe31ec49cb3d447eacef065ac13354162531a6aa46b6c2ff65b0d3b443aec7f3",
+      "machineText": "**Kapan harus mengimplementasikan antarmuka ini:**",
+      "status": "machine-translated",
+      "sourcePreview": "**When to implement this interface:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0027-text-01": {
+    "b0026-text-01": {
       "sourceHash": "1e7034b3a8c9e463247a2dbe99f543eb445c86c3b4684b0f7910f6ddfe0399e8",
-      "targetHash": "3ab53250eb6332d7d7e33bb3b382f750f41b05094b42fb7696f6b5b96e39c417",
-      "machineHash": "3ab53250eb6332d7d7e33bb3b382f750f41b05094b42fb7696f6b5b96e39c417",
-      "machineText": "Menjalankan aplikasi di browser sebagai pengganti webview",
-      "status": "final",
+      "targetHash": "1a71a7e4c6ad83d59eecb375c1df6d0fce175ad5b1184874f1910a86faa44546",
+      "machineHash": "1a71a7e4c6ad83d59eecb375c1df6d0fce175ad5b1184874f1910a86faa44546",
+      "machineText": "Menjalankan aplikasi di browser, bukan di webview",
+      "status": "machine-translated",
       "sourcePreview": "Running the app in a browser instead of a webview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0028-text-01": {
+    "b0027-text-01": {
       "sourceHash": "d7833cd1630790b745a83a0bbddb2a31ce50c15e59926ccc0ce04e6c26049065",
       "targetHash": "7e72374cb24033feaa0fbdfe49e5a6d08f843f37374095aea6f239ca47c91b6c",
       "machineHash": "7e72374cb24033feaa0fbdfe49e5a6d08f843f37374095aea6f239ca47c91b6c",
       "machineText": "Menyajikan aset melalui HTTP bersama transport IPC kustom Anda",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Serving assets over HTTP alongside your custom IPC transport",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0029-text-01": {
+    "b0028-text-01": {
       "sourceHash": "1ac0375afc4367d1f8f68761c46f6b6a001770df337b3c64348164440b689b55",
       "targetHash": "b9038b6dbb17f71770ee6d0bbca7f29d7ce23a025990754f43f23008df15526c",
       "machineHash": "b9038b6dbb17f71770ee6d0bbca7f29d7ce23a025990754f43f23008df15526c",
       "machineText": "Membangun aplikasi yang dapat diakses melalui jaringan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building network-accessible applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0030-text-01": {
-      "sourceHash": "42656c12fd4ca67b89fa643e094609e6336735b0556fe13aabd02c4066b7504a",
-      "targetHash": "13396bc3cf4908520419b0b91a25ae454d075f1bb024de04fd81ade8d9ed8cf7",
-      "machineHash": "13396bc3cf4908520419b0b91a25ae454d075f1bb024de04fd81ade8d9ed8cf7",
-      "machineText": "*Contoh implementasi:*",
-      "status": "final",
-      "sourcePreview": "*Example implementation:*",
+    "b0029-text-01": {
+      "sourceHash": "4c374020ed9fe5072b2b6774620c0ec7832cc5c34f4bddd68bed7af71c50aaae",
+      "targetHash": "1f6b52da03488fa44850d80fe215108b48bcb0e0654c266371693f6aebbdf464",
+      "machineHash": "1f6b52da03488fa44850d80fe215108b48bcb0e0654c266371693f6aebbdf464",
+      "machineText": "**Contoh implementasi:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example implementation:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0031-text-01": {
+    "b0030-text-01": {
       "sourceHash": "49d268a540e2a1a44b6110120df2ecb013881be75e91c386f17a1acc32d7ab8a",
-      "targetHash": "0bf15a98db43dc017fee625075c2f1add62de6e1e0dbade516419cb748844539",
-      "machineHash": "0bf15a98db43dc017fee625075c2f1add62de6e1e0dbade516419cb748844539",
-      "machineText": "Saat `ServeAssets()` dipanggil, assetHandler menyediakan:",
-      "status": "final",
+      "targetHash": "6f264cda4de8abbcb11552fbab2527adceafb26dd442ccd43f7b96d8a5e1ff08",
+      "machineHash": "6f264cda4de8abbcb11552fbab2527adceafb26dd442ccd43f7b96d8a5e1ff08",
+      "machineText": "Ketika `ServeAssets()` dipanggil, assetHandler menyediakan:",
+      "status": "machine-translated",
       "sourcePreview": "When `ServeAssets()` is called, the assetHandler provides:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0032-text-01": {
+    "b0031-text-01": {
       "sourceHash": "1470abc6d9ccb7cb089369ddde547845b7c692d015ce720e41027089aeea1244",
       "targetHash": "c612c084ab82e21ec1c22585b28dfef5a31077662c55098dd40f7ecded709641",
       "machineHash": "c612c084ab82e21ec1c22585b28dfef5a31077662c55098dd40f7ecded709641",
       "machineText": "Semua aset statis (HTML, CSS, JS, gambar, dan sebagainya)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "All static assets (HTML, CSS, JS, images, etc.)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0033-text-01": {
+    "b0032-text-01": {
       "sourceHash": "2c75d455f9f3e41757e3da0f3092a0ad1180880116809493b41bd6ed2bce5e29",
       "targetHash": "4c910f8b4689ecfd74986af6ce74b6d5e510a85d1a43be57418c7eaa9e875128",
       "machineHash": "4c910f8b4689ecfd74986af6ce74b6d5e510a85d1a43be57418c7eaa9e875128",
       "machineText": "`/wails/runtime.js` - Pustaka runtime Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`/wails/runtime.js` - The Wails runtime library",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0034-heading-01": {
+    "b0033-heading-01": {
       "sourceHash": "3f86b834e243323bd671c9d3d3867d5a6cffdabbe063b257302fda50abcb4cb2",
       "targetHash": "4567977b6d66d3f401c1295b2317983341272c91513cd0ad1021729bb0ca7432",
       "machineHash": "4567977b6d66d3f401c1295b2317983341272c91513cd0ad1021729bb0ca7432",
       "machineText": "Lihat Juga",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "See Also",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0035-text-01": {
+    "b0034-text-01": {
       "sourceHash": "73f08ae220907a5baf87cdc524377014245b04e0f3696fd43471c5319fafd4ca",
       "targetHash": "a9bfa6d9a54a3ac982f399be9747a36e9696d70ef6e1a77da6cb7b899e1b14fe",
       "machineHash": "a9bfa6d9a54a3ac982f399be9747a36e9696d70ef6e1a77da6cb7b899e1b14fe",
       "machineText": "`transport.go` - Antarmuka dan tipe transport inti",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`transport.go` - Core transport interfaces and types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "b0036-text-01": {
+    "b0035-text-01": {
       "sourceHash": "bfa46de85f80d244c45cd492225dc5cd6bb4467858a6dd6e8299d4d14a3faaa5",
       "targetHash": "9fc7da3de2f5fc136a4e9cd9feeca7e95156eb99864351ecfa71be9a2cd14779",
       "machineHash": "9fc7da3de2f5fc136a4e9cd9feeca7e95156eb99864351ecfa71be9a2cd14779",
       "machineText": "`messageprocessor.go` - Pemroses pesan dasar yang menangani seluruh IPC Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`messageprocessor.go` - The underlying message processor that handles all Wails IPC",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "7181c3e5e6ec540ac0793efd85937bf183c24421f1c79ba05715392d14a21816",
-      "targetHash": "089cbcade3f4d79b3a135f9f4735b8d22130baec4cc40b787a81e31086e85d05",
-      "machineHash": "089cbcade3f4d79b3a135f9f4735b8d22130baec4cc40b787a81e31086e85d05",
-      "machineText": "Pelajari cara membuat dan menyesuaikan lapisan transport IPC kustom Anda sendiri untuk Wails v3",
-      "status": "final",
+      "targetHash": "8d244aabda96a153229ba5ffcfda1fdccaab38d5ebdfe955a8ad481bdcf36a0d",
+      "machineHash": "8d244aabda96a153229ba5ffcfda1fdccaab38d5ebdfe955a8ad481bdcf36a0d",
+      "machineText": "Pelajari cara membuat dan menyesuaikan lapisan transport IPC kustom Wails v3 Anda sendiri",
+      "status": "machine-translated",
       "sourcePreview": "Learn how to create and customize your own Wails v3 custom IPC transport layer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "0dd407633b08e7ce6a5790c27ebaf8690da4463e9ffca7aa619391b3cdafeb87",
       "targetHash": "662dd9c6a214520d11a939fdcc15aa955db27c2dcd8901e202b1f4c2cf55346f",
       "machineHash": "662dd9c6a214520d11a939fdcc15aa955db27c2dcd8901e202b1f4c2cf55346f",
       "machineText": "Membuat Lapisan Transport Kustom",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating Custom Transport Layer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:30Z"
+      "updatedAt": "2026-10-25T21:46:10Z"
     }
   }
 }

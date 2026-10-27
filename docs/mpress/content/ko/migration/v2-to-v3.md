@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **업데이트:**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [문서](/quick-start/why-wails/)
 - [Discord 커뮤니티](https://discord.gg/JDdSxwjhGf)
 - [GitHub 이슈](https://github.com/wailsapp/wails/issues)
-- [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### 자주 묻는 질문
 
 **질문: v2와 v3를 함께 실행할 수 있나요?** 답변: 예. 서로 다른 가져오기 경로를 사용합니다.
 
-**질문: v3는 프로덕션 환경에서 사용할 준비가 되었나요?** 답변: v3는 안정적인 데스크톱 API를 갖춘 베타 소프트웨어입니다. 이미 프로덕션 환경에서 이를 사용해 실행되는 애플리케이션이 있지만, 배포하기 전에 철저히 테스트하세요. 현재 안정 버전은 여전히 v2입니다.
+**질문: v3는 프로덕션 환경에서 사용할 준비가 되었나요?** Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다.
 
 **질문: v2는 계속 유지보수되나요?** 답변: 예. v2에는 중요 업데이트가 제공됩니다.
 
@@ -713,7 +713,7 @@ v3 아키텍처를 이해하세요.
 📖 예제
 완전한 v3 예제를 살펴보세요.
 
-[예제 보기 →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[예제 보기 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

@@ -7,9 +7,9 @@ sourcePath: "concepts/bridge.md"
 
 ## Komunikasi Langsung Go-JavaScript
 
-Wails menyediakan **bridge langsung dalam memori** antara Go dan JavaScript, sehingga keduanya dapat berkomunikasi dengan lancar tanpa overhead HTTP, batas proses, atau hambatan serialisasi.
+Wails menyediakan **bridge langsung dalam memori** antara Go dan JavaScript, sehingga memungkinkan komunikasi tanpa hambatan tanpa overhead HTTP, batas proses, atau hambatan serialisasi.
 
-## Gambaran Besar
+## Gambaran Umum
 
 ```d2
 direction: right
@@ -63,19 +63,19 @@ Backend: Backend (Go) {
 Frontend.UI -> Frontend.Bindings: "import { Method }"
 Frontend.Bindings -> Bridge.Encoder: "Panggil Method('arg')"
 Bridge.Encoder -> Bridge.Router: Enkode ke JSON
-Bridge.Router -> Backend.Registry: Cari layanan
+Bridge.Router -> Backend.Registry: Temukan layanan
 Backend.Registry -> Backend.Services: Panggil metode
 Backend.Services -> Bridge.Decoder: Kembalikan hasil
 Bridge.Decoder -> Frontend.Bindings: Dekode ke JS
-Frontend.Bindings -> Frontend.UI: Promise diselesaikan
+Frontend.Bindings -> Frontend.UI: Promise terselesaikan
 Bridge.TypeGen -> Frontend.Bindings: Buat tipe
 ```
 
-**Inti penting:** Tanpa HTTP, tanpa IPC, tanpa batas proses. Hanya **pemanggilan fungsi langsung** dengan **keamanan tipe**.
+**Inti utama:** Tanpa HTTP, tanpa IPC, dan tanpa batas proses. Hanya **pemanggilan fungsi langsung** dengan **keamanan tipe**.
 
 ## Cara Kerjanya: Langkah demi Langkah
 
-### 1. Pendaftaran Layanan (Saat Mulai)
+### 1. Pendaftaran Layanan (Saat Memulai)
 
 Saat aplikasi dimulai, Wails memindai layanan Anda:
 
@@ -103,8 +103,8 @@ app := application.New(application.Options{
 **Yang dilakukan Wails:**
 
 1. **Memindai struct** untuk mencari metode yang diekspor
-2. **Mengekstrak informasi tipe** (parameter, tipe nilai kembalian)
-3. **Membuat registri** yang memetakan nama metode ke fungsi
+2. **Mengekstrak informasi tipe** (parameter, tipe kembalian)
+3. **Membangun registri** yang memetakan nama metode ke fungsi
 4. **Membuat binding TypeScript** dengan definisi tipe lengkap
 
 ### 2. Pembuatan Binding (Saat Build)
@@ -128,7 +128,7 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | `string` secara default; `Date` dengan `-time-type=Date` |
 | `error` | Pengecualian (dilempar) |
 
 ### 3. Pemanggilan Frontend (Runtime)
@@ -150,7 +150,7 @@ console.log(sum)  // 8
 
 1. **Fungsi binding dipanggil** - `Greet("World")`
 2. **Pesan dibuat** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
-3. **Dikirim ke bridge** - Melalui bridge JavaScript WebView
+3. **Dikirim ke bridge** - Melalui bridge JavaScript milik WebView
 4. **Promise dikembalikan** - Menunggu respons
 
 ### 4. Pemrosesan Bridge (Runtime)
@@ -215,11 +215,11 @@ Invoke -> Error: Kesalahan
 Encode -> Send
 ```
 
-**Keamanan:** Hanya layanan yang terdaftar dan metode yang diekspor yang dapat dipanggil.
+**Keamanan:** Hanya layanan terdaftar dan metode yang diekspor yang dapat dipanggil.
 
 ### 5. Eksekusi Go (Runtime)
 
-Metode Go dieksekusi:
+Metode Go dijalankan:
 
 ```go
 func (g *GreetService) Greet(name string) string {
@@ -230,10 +230,10 @@ func (g *GreetService) Greet(name string) string {
 
 **Konteks eksekusi:**
 
-- Berjalan dalam sebuah **goroutine** (non-blocking)
+- Berjalan dalam sebuah **goroutine** (nonblocking)
 - Memiliki akses ke **semua fitur Go** (sistem berkas, jaringan, basis data)
 - Dapat memanggil **kode Go lainnya** secara bebas
-- Mengembalikan hasil atau galat
+- Mengembalikan hasil atau kesalahan
 
 ### 6. Respons (Runtime)
 
@@ -245,7 +245,7 @@ const greeting = await Greet("World")
 // greeting = "Hello, World!"
 ```
 
-**Penanganan galat:**
+**Penanganan kesalahan:**
 
 ```go
 func (g *GreetService) Divide(a, b float64) (float64, error) {
@@ -268,7 +268,7 @@ try {
 
 ### Kecepatan
 
-**Overhead panggilan pada umumnya:** &lt;1ms
+**Overhead pemanggilan umum:** &lt;1md
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -278,22 +278,22 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
 
 **Dibandingkan dengan alternatif:**
 
-- **HTTP/REST:** 5-50ms (tumpukan jaringan, serialisasi)
-- **IPC:** 1-10ms (batas proses, marshalling)
-- **Wails Bridge:** &lt;1ms (dalam memori, panggilan langsung)
+- **HTTP/REST:** 5-50md (stack jaringan, serialisasi)
+- **IPC:** 1-10md (batas proses, marshalling)
+- **Bridge Wails:** &lt;1md (dalam memori, pemanggilan langsung)
 
 ### Memori
 
 **Overhead per panggilan:** ~1KB (buffer pesan)
 
-**Optimasi tanpa penyalinan:** Data berukuran besar (>1MB) menggunakan memori bersama jika memungkinkan.
+**Pengoptimalan tanpa penyalinan:** Data berukuran besar (>1MB) menggunakan memori bersama jika memungkinkan.
 
 ### Konkurensi
 
-**Panggilan berlangsung secara konkuren:**
+**Panggilan berjalan secara konkuren:**
 
 - Setiap panggilan berjalan dalam goroutine tersendiri
-- Beberapa panggilan dapat dieksekusi secara bersamaan
+- Beberapa panggilan dapat dijalankan secara bersamaan
 - Tidak ada pemblokiran antar-panggilan
 
 ```javascript
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### Galat
@@ -456,11 +456,11 @@ try {
 
 ### Tipe yang Tidak Didukung
 
-Tipe-tipe ini **tidak dapat** diteruskan melalui bridge:
+Tipe berikut **tidak dapat** diteruskan melalui bridge:
 
 - **Channel** (`chan T`)
 - **Fungsi** (`func()`)
-- **Antarmuka** (kecuali `interface{}` / `any`)
+- **Interface** (kecuali `interface{}` / `any`)
 - **Pointer** (kecuali pointer ke struct)
 - **Field yang tidak diekspor** (huruf kecil)
 
@@ -526,7 +526,7 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 - Instans aplikasi
 - Metadata permintaan
 
-### Aliran data
+### Aliran Data
 
 Untuk data berukuran besar, gunakan event sebagai pengganti nilai kembalian:
 
@@ -587,11 +587,11 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-**Catatan:** Pembatalan context saat frontend terputus berlangsung secara otomatis.
+**Catatan:** Context dibatalkan secara otomatis saat frontend terputus.
 
 ### Operasi Batch
 
-Kurangi overhead bridge dengan mengelompokkan operasi dalam batch:
+Kurangi overhead bridge dengan memproses operasi secara batch:
 
 ```go
 // ❌ Inefficient: N bridge calls
@@ -615,7 +615,7 @@ func ProcessItems(items []Item) ([]Result, error) {
 
 ## Men-debug Bridge
 
-### Aktifkan Logging Debug
+### Mengaktifkan Logging Debug
 
 ```go
 app := application.New(application.Options{
@@ -631,10 +631,10 @@ app := application.New(application.Options{
 - Panggilan metode
 - Parameter
 - Nilai kembalian
-- Error
+- Galat
 - Informasi waktu eksekusi
 
-### Periksa Binding yang Dihasilkan
+### Memeriksa Binding yang Dihasilkan
 
 Periksa `frontend/bindings/` untuk melihat TypeScript yang dihasilkan:
 
@@ -647,7 +647,7 @@ export function MyMethod($0) {
 }
 ```
 
-### Uji Layanan Secara Langsung
+### Menguji Layanan Secara Langsung
 
 Uji layanan Go tanpa frontend:
 
@@ -661,36 +661,36 @@ func TestGreetService(t *testing.T) {
 }
 ```
 
-## Tips Performa
+## Kiat Performa
 
 ### ✅ Lakukan
 
-- **Kelompokkan operasi dalam batch** - Kurangi panggilan bridge
+- **Proses operasi secara batch** - Kurangi jumlah panggilan bridge
 - **Gunakan event untuk streaming** - Jangan kembalikan array berukuran besar
-- **Pastikan metode berjalan cepat** - Idealnya &lt;100 ms
+- **Pastikan metode tetap cepat** - Idealnya &lt;100md
 - **Gunakan goroutine** - Untuk operasi yang berlangsung lama
 - **Gunakan cache di sisi Go** - Hindari perhitungan berulang
 
 ### ❌ Jangan Lakukan
 
-- **Jangan lakukan panggilan secara berlebihan** - Kelompokkan dalam batch jika memungkinkan
-- **Jangan kembalikan data berukuran sangat besar** - Gunakan paginasi atau streaming
+- **Jangan melakukan panggilan secara berlebihan** - Proses secara batch jika memungkinkan
+- **Jangan mengembalikan data yang sangat besar** - Gunakan paginasi atau streaming
 - **Jangan memblokir** - Gunakan goroutine untuk operasi yang berlangsung lama
-- **Jangan teruskan tipe kompleks** - Gunakan tipe yang sederhana
-- **Jangan abaikan error** - Selalu tangani error tersebut
+- **Jangan meneruskan tipe yang kompleks** - Gunakan tipe yang sederhana
+- **Jangan mengabaikan galat** - Selalu tangani galat tersebut
 
 ## Keamanan
 
 Bridge aman secara default:
 
-1. **Hanya daftar yang diizinkan** - Hanya layanan terdaftar yang dapat dipanggil
+1. **Hanya yang masuk daftar izin** - Hanya layanan terdaftar yang dapat dipanggil
 2. **Validasi tipe** - Argumen diperiksa berdasarkan tipe Go
 3. **Tanpa eval()** - Frontend tidak dapat mengeksekusi kode Go arbitrer
-4. **Tidak ada penyalahgunaan refleksi** - Hanya metode yang diekspor yang dapat diakses
+4. **Tanpa penyalahgunaan refleksi** - Hanya metode yang diekspor yang dapat diakses
 
 **Praktik terbaik:**
 
-- **Validasi input** di Go (jangan percayai frontend)
+- **Validasi input** di Go (jangan memercayai frontend)
 - **Gunakan context** untuk autentikasi/otorisasi
 - **Batasi laju** operasi yang mahal
 - **Sanitasi** path file dan input pengguna
@@ -701,8 +701,8 @@ Bridge aman secara default:
 
 **Layanan** - Pelajari sistem layanan secara mendalam [Pelajari Selengkapnya →](/features/bindings/services/)
 
-**Peristiwa** - Gunakan peristiwa untuk komunikasi publikasi/langganan [Pelajari Lebih Lanjut →](/features/events/system/)
+**Event** - Gunakan event untuk komunikasi pub/sub [Pelajari Selengkapnya →](/features/events/system/)
 
 ---
 
-**Ada pertanyaan tentang bridge?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Ada pertanyaan tentang bridge?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

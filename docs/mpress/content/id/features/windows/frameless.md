@@ -1064,4 +1064,4 @@ Pola untuk aplikasi multijendela.
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh jendela tanpa bingkai](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh jendela tanpa bingkai](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/frameless).

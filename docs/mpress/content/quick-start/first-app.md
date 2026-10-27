@@ -14,21 +14,16 @@ We will build a simple greeting application that demonstrates the core Wails con
 
 **Time to complete:** 10 minutes
 
-@note{type="tip" title="Performance Tip for Windows 11 Users"}
-Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30% compared to regular NTFS drives.
-
-@end
-
 ## Create Your Project
 
 @steps
 ### Generate the project
 ```bash
-wails3 init -n myapp
+wails3 init -n myapp -t vanilla-js
 cd myapp
 ```
 
-This creates a new project with the default Vanilla + Vite template (HTML/CSS/TypeScript with the Vite bundler).
+This lesson explicitly selects Vanilla + Vite in JavaScript so the source files below match your generated project. The bare `vanilla` template uses TypeScript.
 
 @note{type="tip" title="Other Templates"}
 Try `-t react`, `-t vue`, or `-t svelte` for your preferred framework. These are TypeScript by default; for plain JavaScript use `-t vanilla-js` or `-t react-js`. Run `wails3 init -l` to see all available templates, or [bring your own frontend framework](/guides/dev/frontend-frameworks/).
@@ -43,12 +38,12 @@ myapp/
 ├── frontend/            # Your UI code
 │   ├── index.html       # HTML entry point
 │   ├── src/
-│   │   └── main.ts      # Frontend TypeScript
+│   │   └── main.js      # Frontend JavaScript
 │   ├── public/
 │   │   └── style.css    # Styles
 │   ├── package.json     # Frontend dependencies
-│   ├── tsconfig.json    # TypeScript configuration
-│   └── vite.config.ts   # Vite bundler config
+│   ├── tsconfig.json    # Editor and JavaScript tooling configuration
+│   └── vite.config.js   # Vite bundler config
 ├── build/               # Build configuration
 └── Taskfile.yml         # Build tasks
 ```
@@ -67,6 +62,11 @@ The app opens showing a greeting interface. Enter your name and click "Greet" - 
 
 @end
 
+@note{type="tip" title="Performance Tip for Windows 11 Users"}
+Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30% compared to regular NTFS drives.
+
+@end
+
 ## How It Works
 
 Let's understand the code that makes this work.
@@ -78,14 +78,10 @@ Open `greetservice.go`:
 ```go {title="greetservice.go"}
 package main
 
-import (
-	"fmt"
-)
-
 type GreetService struct{}
 
 func (g *GreetService) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+	return "Hello " + name + "!"
 }
 ```
 
@@ -110,7 +106,7 @@ Think of services as your backend API, and bindings as the client library that t
 Open `main.go` and find the service registration:
 
 ```go {title="main.go" highlight="4-6"}
-err := application.New(application.Options{
+app := application.New(application.Options{
     Name: "myapp",
     Services: []application.Service{
         application.NewService(&GreetService{}),
@@ -128,9 +124,8 @@ Open `frontend/src/main.js`:
 ```javascript {title="frontend/src/main.js"}
 import {GreetService} from "../bindings/changeme";
 
-window.greet = async () => {
+window.doGreet = async () => {
     const nameElement = document.getElementById('name');
-    const resultElement = document.getElementById('result');
 
     const name = nameElement.value;
     if (!name) {
@@ -139,12 +134,14 @@ window.greet = async () => {
 
     try {
         const result = await GreetService.Greet(name);
-        resultElement.innerText = result;
+        showToast(result);
     } catch (err) {
         console.error(err);
     }
 };
 ```
+
+This simplified handler replaces the starter’s `window.doGreet`; keep the existing `showToast` helper and the other startup code. The generated HTML button calls `doGreet`, and `showToast` makes its result visible. The import path follows the Go module name (`changeme` unless overridden).
 
 **Key concepts:**
 
@@ -174,7 +171,7 @@ Add this to `greetservice.go`:
 func (g *GreetService) GreetMany(names []string) []string {
     greetings := make([]string, len(names))
     for i, name := range names {
-        greetings[i] = fmt.Sprintf("Hello %s!", name)
+        greetings[i] = "Hello " + name + "!"
     }
     return greetings
 }

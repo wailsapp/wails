@@ -25,7 +25,7 @@ Android WebView + `WebViewAssetLoader`. Go는 NDK를 통해 `libwails.so`(으)�
 
 무엇이 가능한지 이해하는 가장 좋은 방법은 하나의 코드베이스로 iOS, Android 및 데스크톱에서 동일하게 실행되는 단일 Wails 앱인 <strong>Kitchen Sink</strong>를 살펴보는 것입니다.
 
-@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="바인딩 · 이벤트 · 대화 상자 · 햅틱 · 위치 정보 · 생체 인증 · 알림 · 보안 저장소 등 — 모두 하나의 main.go에서 제공"}
+@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="바인딩 · 이벤트 · 대화 상자 · 햅틱 · 위치 정보 · 생체 인증 · 알림 · 보안 저장소 등 — 모두 하나의 main.go에서 제공"}
 7개의 탭에서 모든 주요 모바일 API 영역을 보여 주며 데스크톱에서도 실행됩니다. 프런트엔드의 플랫폼 검사를 통해 데스크톱에서는 **모바일** 및 **하드웨어** 탭을 숨깁니다. 데스크톱용으로 빌드할 때 Go 측에서는 `common:*` 모바일 이벤트의 핸들러를 등록하지 않습니다. 하나의 코드베이스를 모든 플랫폼에 배포할 때 권장하는 패턴입니다.
 
 | 탭 | 플랫폼 | 표시하는 기능 |
