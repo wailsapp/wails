@@ -21,6 +21,9 @@ import (
 // to prevent memory bloat from occasional large requests (e.g., images).
 const maxPooledBufferSize = 512 * 1024 // 512KB
 
+// Ordinary requests have the same payload ceiling as assembled chunked requests.
+const maxRuntimeBodyBytes = maxAssembledBytes
+
 var bufferPool = sync.Pool{
 	New: func() any {
 		return bytes.NewBuffer(make([]byte, 0, 4096))
@@ -165,6 +168,10 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 }
 
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
+	if !checkRuntimeRequest(rw, r) {
+		return
+	}
+
 	// Chunked upload: JS splits large bodies into smaller pieces to work
 	// around WebView2's ~2MB request body delivery limit in WebResourceRequested.
 	if chunkID := r.Header.Get(chunkIDHeader); chunkID != "" {
@@ -180,7 +187,13 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 		}
 	}()
 
+	r.Body = http.MaxBytesReader(rw, r.Body, int64(maxRuntimeBodyBytes))
 	if _, err := io.Copy(buf, r.Body); err != nil {
+		var sizeErr *http.MaxBytesError
+		if errors.As(err, &sizeErr) {
+			http.Error(rw, "runtime request body exceeds "+strconv.FormatInt(sizeErr.Limit/(1024*1024), 10)+" MiB", http.StatusRequestEntityTooLarge)
+			return
+		}
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 		return
 	}
@@ -310,9 +323,9 @@ func (t *HTTPTransport) processBody(rw http.ResponseWriter, r *http.Request, bod
 	}
 
 	windowIdStr := r.Header.Get(webViewRequestHeaderWindowId)
-	windowId := 0
+	var windowId uint64
 	if windowIdStr != "" {
-		windowId, err = strconv.Atoi(windowIdStr)
+		windowId, err = strconv.ParseUint(windowIdStr, 10, 32)
 		if err != nil {
 			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "error decoding windowId value"))
 			return

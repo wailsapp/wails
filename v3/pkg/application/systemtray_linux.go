@@ -736,9 +736,11 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			gtkDispatch(item.menuItem.handleClick)
 		}
 	case "opened":
-		if s.parent.clickHandler != nil {
-			s.parent.clickHandler()
-		}
+		// Not the click handler: "opened" says the host is about to show the
+		// context menu, which is the secondary button. ItemIsMenu is false, so
+		// a primary click arrives as Activate and is handled there — firing the
+		// click handler here as well makes every right-click do whatever a
+		// left-click does, on top of opening the menu.
 		if s.parent.onMenuOpen != nil {
 			s.parent.onMenuOpen()
 		}

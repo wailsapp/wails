@@ -5,8 +5,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -120,17 +124,17 @@ func TestDocumentationURLForFile(t *testing.T) {
 	}{
 		{
 			name: "regular page",
-			file: "docs/src/content/docs/features/windows/options.mdx",
+			file: "docs/mpress/content/features/windows/options.md",
 			want: "https://v3.wails.io/features/windows/options",
 		},
 		{
 			name: "index page",
-			file: "docs/src/content/docs/guides/mobile/index.mdx",
+			file: "docs/mpress/content/guides/mobile/index.md",
 			want: "https://v3.wails.io/guides/mobile",
 		},
 		{
 			name: "localized page",
-			file: "docs/src/content/docs/de/quick-start/installation.mdx",
+			file: "docs/mpress/content/de/quick-start/installation.md",
 			want: "https://v3.wails.io/de/quick-start/installation",
 		},
 	}
@@ -149,7 +153,7 @@ func TestDocumentationURLForFile(t *testing.T) {
 }
 
 func TestDocumentationURLForSlug(t *testing.T) {
-	got, err := documentationURLFromPath("docs/src/content/docs/blog/legacy-name.md", "blog/the-road-to-wails-v3")
+	got, err := documentationURLFromPath("docs/mpress/content/blog/legacy-name.md", "blog/the-road-to-wails-v3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,11 +163,219 @@ func TestDocumentationURLForSlug(t *testing.T) {
 }
 
 func TestDocumentationURLForMissingFile(t *testing.T) {
-	got, err := documentationURLForFile("docs/src/content/docs/removed-by-pr.mdx")
+	got, err := documentationURLForFile("docs/mpress/content/removed-by-pr.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got != "" {
 		t.Fatalf("documentationURLForFile() = %q, want empty URL for a missing file", got)
+	}
+}
+
+func TestMarkdownFrontmatterSlug(t *testing.T) {
+	tests := []struct {
+		name, fields, want string
+		wantError          bool
+	}{
+		{name: "nested objects", fields: `banner: {"content":"Welcome"}
+slug: "guides/custom-route"
+hero: {"actions":[{"text":"Start"}]}`, want: "guides/custom-route"},
+		{name: "no override", fields: `hero: {"slug":"not-a-page-route"}`},
+		{name: "escaping", fields: `slug: "guides\u002fcustom-route"`, want: "guides/custom-route"},
+		{name: "plain scalar", fields: `slug: guides/custom-route # comment`, want: "guides/custom-route"},
+		{name: "single quotes", fields: `slug: 'guides/custom-route'`, want: "guides/custom-route"},
+		{name: "invalid type", fields: `slug: {"path":"guide"}`, wantError: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			file := filepath.Join(t.TempDir(), "page.md")
+			source := "---\n" + test.fields + "\n---\nBody"
+			if err := os.WriteFile(file, []byte(source), 0600); err != nil {
+				t.Fatal(err)
+			}
+			slug, err := readFrontmatterSlug(file)
+			if (err != nil) != test.wantError || slug != test.want {
+				t.Fatalf("slug = %q, err = %v; want %q, error %v", slug, err, test.want, test.wantError)
+			}
+		})
+	}
+}
+
+func TestDocumentationMetadataCorpus(t *testing.T) {
+	count := 0
+	err := filepath.WalkDir("../../docs/mpress/content", func(file string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || filepath.Ext(file) != ".md" {
+			return nil
+		}
+		count++
+		_, err = readFrontmatterSlug(file)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count == 0 {
+		t.Fatal("no documentation pages checked")
+	}
+	t.Logf("checked metadata in %d documentation pages", count)
+}
+
+func TestLocalizedMarkdownSlug(t *testing.T) {
+	got, err := documentationURLFromPath("docs/mpress/content/id/contributing/index.md", "contributing")
+	if err != nil || got != "https://v3.wails.io/id/contributing" {
+		t.Fatalf("URL = %q, err = %v", got, err)
+	}
+}
+
+func TestDocumentationIgnoresNonMarkdown(t *testing.T) {
+	files := []string{"docs/legacy/guide.mdx", "docs/mpress/content/changelog.md", "docs/mpress/content/image.svg"}
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			if isDocumentationPage(file) {
+				t.Errorf("%s must not produce a release-note documentation link", file)
+			}
+		})
+	}
+}
+
+func TestAppendDocumentationLinksKeepsFocusedChangesReadable(t *testing.T) {
+	entry := "Add a focused documentation page"
+	urls := []string{
+		"https://v3.wails.io/guides/one",
+		"https://v3.wails.io/guides/two",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see [documentation](https://v3.wails.io/guides/one) and [documentation](https://v3.wails.io/guides/two)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestAppendDocumentationLinksCollapsesBroadChanges(t *testing.T) {
+	entry := "Update the documentation translations"
+	urls := []string{
+		"https://v3.wails.io/one",
+		"https://v3.wails.io/two",
+		"https://v3.wails.io/three",
+		"https://v3.wails.io/four",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see the [documentation site](https://v3.wails.io) (4 pages updated)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestCallModelDisablesReasoningAndReportsUsage(t *testing.T) {
+	var got map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&got)
+		fmt.Fprint(w, `{"choices":[{"message":{"content":"{\"section\":\"Fixed\",\"entry\":\"fix a thing\"}"}}],`+
+			`"usage":{"prompt_tokens":1200,"completion_tokens":18,"cost":0.00013,"completion_tokens_details":{"reasoning_tokens":0}}}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	raw, usage, err := callModel("ctx", "key", "anthropic/claude-haiku-5.5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got["model"] != "anthropic/claude-haiku-5.5" {
+		t.Fatalf("model = %v", got["model"])
+	}
+	reasoning, _ := got["reasoning"].(map[string]any)
+	if reasoning["enabled"] != false {
+		t.Fatalf("reasoning should be disabled, got %v", got["reasoning"])
+	}
+	if usage.PromptTokens != 1200 || usage.CompletionTokens != 18 || usage.Cost != 0.00013 {
+		t.Fatalf("usage = %+v", usage)
+	}
+	section, entry, err := parseEntry(raw)
+	if err != nil || section != "Fixed" || entry != "fix a thing" {
+		t.Fatalf("parseEntry = %q %q %v", section, entry, err)
+	}
+}
+
+func TestCallModelRetriesWithoutReasoningWhenRejected(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		calls++
+		if _, has := body["reasoning"]; has {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"error":{"message":"Reasoning cannot be disabled for this model"}}`)
+			return
+		}
+		fmt.Fprint(w, `{"choices":[{"message":{"content":"{\"section\":\"Added\",\"entry\":\"add x\"}"}}]}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	raw, _, err := callModel("ctx", "key", "some/model")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls != 2 {
+		t.Fatalf("expected one retry, got %d calls", calls)
+	}
+	if _, _, err := parseEntry(raw); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCallModelDoesNotRetryOtherErrors(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, `{"error":"bad key"}`)
+	}))
+	defer srv.Close()
+	old := openRouterURL
+	openRouterURL = srv.URL
+	defer func() { openRouterURL = old }()
+
+	if _, _, err := callModel("ctx", "key", "some/model"); err == nil || calls != 1 {
+		t.Fatalf("err=%v calls=%d", err, calls)
+	}
+}
+
+func TestChangelogModelDefaultAndOverride(t *testing.T) {
+	t.Setenv("CHANGELOG_MODEL", "")
+	if got := changelogModel(); got != "anthropic/claude-haiku-5.5" {
+		t.Fatalf("default = %q", got)
+	}
+	t.Setenv("CHANGELOG_MODEL", "google/gemini-2.5-flash-lite")
+	if got := changelogModel(); got != "google/gemini-2.5-flash-lite" {
+		t.Fatalf("override = %q", got)
+	}
+}
+
+func TestParseEntryDefaultsUnknownSectionAndRejectsGarbage(t *testing.T) {
+	section, entry, err := parseEntry("```json\n{\"section\":\"Misc\",\"entry\":\"tidy things\"}\n```")
+	if err != nil || section != "Changed" || entry != "tidy things" {
+		t.Fatalf("got %q %q %v", section, entry, err)
+	}
+	if _, _, err := parseEntry("no json here"); err == nil {
+		t.Fatal("expected an error for a response with no JSON")
+	}
+}
+
+func TestBuildPromptSteersSecurityAndStyle(t *testing.T) {
+	prompt := buildPrompt("PR body")
+	for _, want := range []string{"Use Security for any change that hardens", "imperative present tense", "<pr_data>\nPR body\n</pr_data>"} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("prompt missing %q", want)
+		}
 	}
 }

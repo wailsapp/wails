@@ -4,12 +4,10 @@ This directory contains automation workflows and scripts to help manage the Wail
 
 ## GitHub Workflow Files
 
-### 1. Auto-Label Issues (`auto-label-issues.yml`)
-- Automatically labels issues and PRs based on their content and modified files
-- Labels are defined in `issue-labeler.yml` and `file-labeler.yml`
-- Activates when issues are opened, edited, or reopened
+### 1. Labeling
+There is no label automation in this repository's workflows. Issues and PRs are labelled by the maintainers' triage tooling, which follows `.github/triage/AGENT_PROMPT.md`.
 
-### 2. Issue Triage Automation (`issue-triage-automation.yml`)
+### 2. Issue Triage Automation
 - Performs automated actions for issue triage
 - Requests more info for incomplete bug reports
 - Prioritizes security issues
@@ -17,17 +15,7 @@ This directory contains automation workflows and scripts to help manage the Wail
 
 ## Configuration Files
 
-### 1. Issue Content Labeler (`issue-labeler.yml`)
-- Defines patterns to match in issue title/body
-- Categorizes by version (v2/v3), component, type, and priority
-- Customize patterns as needed for your project
-
-### 2. File Path Labeler (`file-labeler.yml`)
-- Labels PRs based on which files they modify
-- Helps identify which areas of the codebase are affected
-- Customize file patterns as needed
-
-### 3. Stale Issues Config (`stale.yml`)
+### 1. Stale Issues Config (`stale.yml`)
 - Marks issues as stale after 45 days of inactivity
 - Closes stale issues after an additional 10 days
 - Exempts issues with important labels
@@ -80,9 +68,8 @@ This directory contains automation workflows and scripts to help manage the Wail
 
 Feel free to modify the configuration files and scripts to better suit your project's needs:
 
-1. **Adding New Label Categories**:
-   - Add new patterns to `issue-labeler.yml` for additional components or types
-   - Update `file-labeler.yml` if you add new directories or file types
+1. **Label Policy**:
+   - Edit `.github/triage/AGENT_PROMPT.md` to change how issues and PRs are labelled
 
 2. **Adjusting Automation Thresholds**:
    - Modify `stale.yml` to change how long issues remain active

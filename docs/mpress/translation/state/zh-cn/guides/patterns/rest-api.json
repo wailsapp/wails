@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "7656bd35984863e801e9",
+  "sourceFile": "guides/patterns/rest-api.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6ec87e9d01d822b94eb0ecce5af234931aa212dd3955886677915508ecd91da8",
+      "targetHash": "2d3ea96115879b51d1039077e870791d8d4c1e2c165fc98c3ac13e4ade86263e",
+      "machineHash": "2d3ea96115879b51d1039077e870791d8d4c1e2c165fc98c3ac13e4ade86263e",
+      "machineText": "此页面为占位页面。完整的 REST API 内容即将推出。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full REST API content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "04b3ac026184b259586a801c9bc111780f93695c8bd4bc8ad0e229bc8b2dffa7",
+      "targetHash": "52848b83c99a4861b5120ca83c9434268380efc9508c059d42c67e4aa49f5d34",
+      "machineHash": "52848b83c99a4861b5120ca83c9434268380efc9508c059d42c67e4aa49f5d34",
+      "machineText": "你可以使用标准 Go `net/http`处理程序或[Gin](/guides/gin-routing/)等框架，从 Wails v3 应用程序公开 RESTful API。由于 Wails 通过资源处理程序提供前端内容，因此可以挂载任何 HTTP 处理程序，并从 UI 或其他客户端访问它。",
+      "status": "final",
+      "sourcePreview": "You can expose RESTful APIs from your Wails v3 application using standard Go `net/http` handlers or …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "c9c465f83eeef141d3bccff82e31f7e09f455ac0ec1321cfc53b61b3f6ee79a8",
+      "targetHash": "6e541f1f8e8c7f91d2c9d44248ba5a082918e04db0c5939b13afd2547a40fafa",
+      "machineHash": "6e541f1f8e8c7f91d2c9d44248ba5a082918e04db0c5939b13afd2547a40fafa",
+      "machineText": "从 Wails v3 应用程序公开 RESTful API",
+      "status": "final",
+      "sourcePreview": "Exposing RESTful APIs from your Wails v3 application",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "324f92a9b7c1751f068323cd960359f91459fee2f0c229815fea8e3fdc143bdc",
+      "targetHash": "41a52587276c392bfdf0c5086b78662e089895fe2bf22e3d413af8e75f98bc3d",
+      "machineHash": "41a52587276c392bfdf0c5086b78662e089895fe2bf22e3d413af8e75f98bc3d",
+      "machineText": "REST API",
+      "status": "final",
+      "sourcePreview": "REST APIs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    }
+  }
+}

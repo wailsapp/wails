@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "340eea887f00d84772f2",
+  "sourceFile": "community/showcase/packsmith.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "932e896430131c38239abc49a8f4e4899372301dfb4f64fe3d7d170795a72319",
+      "targetHash": "12c5e758dbd67e58f9346b25b3e1847d95963c13f3016439b1569df44ec9e51c",
+      "machineHash": "12c5e758dbd67e58f9346b25b3e1847d95963c13f3016439b1569df44ec9e51c",
+      "machineText": "![Packsmith 스크린샷](/assets/showcase-images/packsmith-screenshot.webp)",
+      "status": "final",
+      "sourcePreview": "![Packsmith Screenshot](/assets/showcase-images/packsmith-screenshot.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "46111fe2df653c08911ac749296553db05a564dcbb66f435edc10fb54a9a04d6",
+      "targetHash": "b3238bd38333cad4faabd37fe6375d161bbd12e6cbf5eda08883dba938c64a44",
+      "machineHash": "b3238bd38333cad4faabd37fe6375d161bbd12e6cbf5eda08883dba938c64a44",
+      "machineText": "[Packsmith](https://github.com/sqot0/packsmith)는 Minecraft 모드팩을 관리하는 오픈 소스 애플리케이션으로, 다음 작업을 수행할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "[Packsmith](https://github.com/sqot0/packsmith) is an open source application for managing Minecraft…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "c8d2da6e4bc3bd6772a232352afab58dff5e816586545baaedc78ac056775f98",
+      "targetHash": "7d853ad768225a4b33b3144da5d0f43b8530b4edb308a499d4bd9997a88bd92e",
+      "machineHash": "7d853ad768225a4b33b3144da5d0f43b8530b4edb308a499d4bd9997a88bd92e",
+      "machineText": "Forge, Fabric, Neoforge 또는 Quilt 모드 로더를 사용하는 모드팩을 관리합니다.",
+      "status": "final",
+      "sourcePreview": "Manage modpacks with Forge, Fabric, Neoforge, or Quilt mod loaders.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e0999c02823685af1b1606fdfd868135d19b912334c6c18a9be902458adf39b3",
+      "targetHash": "f3e64b4bd3e7e4a0dcbce344a2175a7918882fabb866dfae4ba6a3e197f09e18",
+      "machineHash": "f3e64b4bd3e7e4a0dcbce344a2175a7918882fabb866dfae4ba6a3e197f09e18",
+      "machineText": "Modrinth와 CurseForge에서 모드를 검색하고 다운로드합니다.",
+      "status": "final",
+      "sourcePreview": "Search and download mods from Modrinth and CurseForge.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "9123c223edc18ebff5904b418621e19b6b137bb04c6d177a500beaedffa67d2d",
+      "targetHash": "8b510552bbe103b06b684ff56d25f5e0cc7ab3e443f99875dc871f278a01dd8d",
+      "machineHash": "8b510552bbe103b06b684ff56d25f5e0cc7ab3e443f99875dc871f278a01dd8d",
+      "machineText": "클라이언트용 모드와 서버용 모드를 분리합니다.",
+      "status": "final",
+      "sourcePreview": "Separate mods for client and server.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "6413845d8d0a9778a0fa6e580d48199159d444809792a4c143616400e52a0e5e",
+      "targetHash": "01c68549b88e202c755cc880ca6676a3a34a269dbf58e177308f818b93e86bd1",
+      "machineHash": "01c68549b88e202c755cc880ca6676a3a34a269dbf58e177308f818b93e86bd1",
+      "machineText": "모드팩의 모드를 업데이트하거나 버전을 변경하거나 삭제합니다.",
+      "status": "final",
+      "sourcePreview": "Update, change versions, or delete mods from your modpack.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "targetHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineText": "Packsmith",
+      "status": "final",
+      "sourcePreview": "Packsmith",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

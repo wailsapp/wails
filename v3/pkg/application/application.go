@@ -64,9 +64,6 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	// Set up signal handling (platform-specific)
-	result.setupSignalHandler(appOptions)
-
 	result.logStartup()
 	result.logPlatformInfo()
 
@@ -266,6 +263,10 @@ type windowMessage struct {
 	windowId   uint
 	message    string
 	originInfo *OriginInfo
+	// childFrame is true when the platform reports that the message was posted
+	// by a child frame (iframe) rather than the window's main frame. Platforms
+	// that cannot identify the posting frame leave it false.
+	childFrame bool
 }
 
 type OriginInfo struct {
@@ -373,6 +374,14 @@ func (r *webViewAssetRequest) URL() (string, error) {
 
 func (r *webViewAssetRequest) Method() (string, error) {
 	return r.Request.Method()
+}
+
+// Context preserves native request cancellation through the header-injecting wrapper.
+func (r *webViewAssetRequest) Context() context.Context {
+	if contextual, ok := r.Request.(interface{ Context() context.Context }); ok {
+		return contextual.Context()
+	}
+	return nil
 }
 
 func (r *webViewAssetRequest) Header() (http.Header, error) {
@@ -763,6 +772,9 @@ func (a *App) Run() error {
 	if err := startup(); err != nil {
 		return err
 	}
+	// Handle signals only after the application is ready to quit.
+	a.setupSignalHandler(a.options)
+
 	return a.impl.run()
 }
 
@@ -851,6 +863,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		// Reserved framework messages are only accepted from the main frame
+		if event.childFrame {
+			a.debug("handleWindowMessage: Ignoring wails message from child frame", "message", event.message)
+			return
+		}
 		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {

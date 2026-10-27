@@ -34,6 +34,7 @@ typedef struct CallbackID
 } CallbackID;
 
 extern void dispatchOnMainThreadCallback(unsigned int);
+extern void handleMenuDestroy(void *, void *);
 
 static gboolean dispatchCallback(gpointer data) {
     struct CallbackID *args = data;
@@ -598,11 +599,6 @@ func processApplicationEvent(eventID C.uint, data pointer) {
 	//	}
 	//}
 
-	switch event.Id {
-	case uint(events.Linux.SystemThemeChanged):
-		isDark := globalApplication.Env.IsDarkMode()
-		event.Context().setIsDarkMode(isDark)
-	}
 	applicationEvents <- event
 }
 
@@ -619,9 +615,8 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
-	// Name is already sanitized by sanitizeAppName() in application_linux.go
-	appId := fmt.Sprintf("org.wails.%s", name)
+func appNew(appId string) pointer {
+	// Already resolved by applicationID() in application_linux_appid.go.
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
@@ -658,6 +653,7 @@ func appRun(app pointer) error {
 }
 
 func appDestroy(application pointer) {
+	webview.CloseActiveRequests()
 	C.g_application_quit((*C.GApplication)(application))
 }
 
@@ -769,6 +765,36 @@ func clipboardSet(text string) {
 }
 
 // Menu
+// The destroy signal releases the Go state before a later rebuild can reuse a
+// pointer to a destroyed widget. Callbacks run on the GTK thread; the mutex
+// protects the registry from menus constructed on other goroutines.
+var (
+	menuDestroyCallbacks   = make(map[pointer]func())
+	menuDestroyCallbacksMu sync.Mutex
+)
+
+// menuOnDestroy registers callback to run when the GTK widget is destroyed.
+func menuOnDestroy(widget pointer, callback func()) {
+	menuDestroyCallbacksMu.Lock()
+	menuDestroyCallbacks[widget] = callback
+	menuDestroyCallbacksMu.Unlock()
+	signal := C.CString("destroy")
+	defer C.free(unsafe.Pointer(signal))
+	C.g_signal_connect_data(C.gpointer(widget), signal, C.GCallback(C.handleMenuDestroy), nil, nil, 0)
+}
+
+//export handleMenuDestroy
+func handleMenuDestroy(widget unsafe.Pointer, _ unsafe.Pointer) {
+	key := pointer(widget)
+	menuDestroyCallbacksMu.Lock()
+	callback := menuDestroyCallbacks[key]
+	delete(menuDestroyCallbacks, key)
+	menuDestroyCallbacksMu.Unlock()
+	if callback != nil {
+		callback()
+	}
+}
+
 func menuAddSeparator(menu *Menu) {
 	C.gtk_menu_shell_append(
 		(*C.GtkMenuShell)((menu.impl).(*linuxMenu).native),
@@ -1157,6 +1183,9 @@ func widgetSetVisible(widget pointer, hidden bool) {
 }
 
 func (w *linuxWebviewWindow) close() {
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_widget_destroy(w.gtkWidget())
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
@@ -1288,6 +1317,9 @@ func (w *linuxWebviewWindow) destroy() {
 		w.gtkmenu = nil
 	}
 	// Free window
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_widget_destroy(w.gtkWidget())
 }
 
@@ -1506,6 +1538,18 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
 	C.webkit_user_script_unref(linuxBlobBodyShim)
 	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
+	// Drop reserved wails: messages posted from child frames (GHSA-2p5f-2gx8-mh8m).
+	childFrameGuardSource := C.CString(linuxChildFrameGuardJS)
+	childFrameGuard := C.webkit_user_script_new(
+		childFrameGuardSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, childFrameGuard)
+	C.webkit_user_script_unref(childFrameGuard)
+	C.free(unsafe.Pointer(childFrameGuardSource))
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
-import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit } from './api';
+import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit, complete } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
@@ -140,7 +140,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
 
   return (
     <aside
-      className="w-48 flex-shrink-0 bg-gray-100/50 dark:bg-[#0a0e16]/40 backdrop-blur-[50px] backdrop-saturate-[1.8] border-r border-gray-200 dark:border-white/10 flex flex-col"
+      className="w-48 shrink-0 bg-gray-100/50 dark:bg-[#0a0e16]/40 backdrop-blur-[50px] backdrop-saturate-[1.8] border-r border-gray-200 dark:border-white/10 flex flex-col"
       aria-label="Setup progress"
     >
       <div className="p-6 flex justify-center">
@@ -172,7 +172,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                   aria-label={`Step ${stageIndex}: ${stage.label}, ${stepStatus}`}
                 >
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
                       isCompleted
                         ? 'bg-green-500 text-white'
                         : isCurrent
@@ -228,7 +228,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
       <div className="p-4 flex justify-center gap-3">
         <button
           onClick={handleReportBug}
-          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           aria-label="Report a bug"
           title="Report a bug"
         >
@@ -238,7 +238,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
         </button>
         <button
           onClick={handleSponsorClick}
-          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           aria-label="Sponsor Wails on GitHub"
         >
           <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -247,7 +247,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
         </button>
         <button
           onClick={toggleTheme}
-          className="p-1 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          className="p-1 hover:opacity-70 transition-opacity focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {theme === 'dark' ? (
@@ -328,12 +328,12 @@ function PageTemplate({
   }, [title]);
 
   const actionsElement = (primaryAction || secondaryAction) ? (
-    <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5" role="group" aria-label="Page actions">
+    <div className="shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5" role="group" aria-label="Page actions">
       <div className="flex items-center gap-3">
         {canGoBack && onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             Back
           </button>
@@ -342,7 +342,7 @@ function PageTemplate({
           <button
             onClick={primaryAction}
             disabled={primaryDisabled}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors border focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
               primaryDisabled
                 ? 'border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed'
                 : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10'
@@ -356,7 +356,7 @@ function PageTemplate({
       {secondaryAction && secondaryLabel && (
         <button
           onClick={secondaryAction}
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
         >
           {secondaryLabel}
         </button>
@@ -374,11 +374,11 @@ function PageTemplate({
       className="flex-1 flex flex-col"
       aria-labelledby="page-title"
     >
-      <header className="text-center mb-6 flex-shrink-0 px-10 pt-10">
+      <header className="text-center mb-6 shrink-0 px-10 pt-10">
         <h1
           ref={headingRef}
           id="page-title"
-          className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-none"
+          className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-hidden"
           tabIndex={-1}
         >
           {title}
@@ -450,7 +450,7 @@ function SplashPage({ onNext }: { onNext: () => void }) {
           <h1
             ref={headingRef}
             id="splash-title"
-            className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight focus:outline-none"
+            className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight focus:outline-hidden"
             tabIndex={-1}
           >
             Welcome to Wails
@@ -464,7 +464,7 @@ function SplashPage({ onNext }: { onNext: () => void }) {
       <motion.button
         ref={startButtonRef}
         onClick={onNext}
-        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -503,7 +503,7 @@ function CheckingPage() {
       <h2
         ref={headingRef}
         id="checking-title"
-        className="text-xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-none"
+        className="text-xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-hidden"
         tabIndex={-1}
       >
         Checking your system...
@@ -515,7 +515,38 @@ function CheckingPage() {
   );
 }
 
-function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBack?: () => void; canGoBack?: boolean }) {
+function SystemDetails({ system }: { system: SystemInfo | null }) {
+  if (!system) return null;
+  const details = system.details;
+  const rows = [
+    ['OS', [details?.name || system.osName || system.os, details?.version || system.osVersion].filter(Boolean).join(' ')],
+    ['Architecture', details?.architecture || system.arch],
+    ['CPU', details?.cpu],
+    ['GPU', details?.gpu],
+    ['Memory', details?.memory],
+    ['Go', system.goVersion],
+    ['Wails', system.wailsVersion],
+    ...Object.entries(details?.extras || {})
+      .filter(([key]) => !['CPU', 'GPU', 'Memory'].includes(key))
+      .sort(([a], [b]) => a.localeCompare(b)),
+  ].filter(([, value]) => value);
+
+  return (
+    <details className="w-full max-w-lg mb-6 rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-left">
+      <summary className="cursor-pointer text-sm font-medium text-gray-800 dark:text-gray-200">System and environment details</summary>
+      <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-xs">
+        {rows.map(([label, value]) => (
+          <div key={label} className="contents">
+            <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
+            <dd className="break-words text-gray-800 dark:text-gray-200">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
+function DepsReadyPage({ onNext, onBack, canGoBack, system }: { onNext: () => void; onBack?: () => void; canGoBack?: boolean; system: SystemInfo | null }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -547,7 +578,7 @@ function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBa
       <h2
         ref={headingRef}
         id="deps-ready-title"
-        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-none"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 focus:outline-hidden"
         tabIndex={-1}
       >
         All dependencies installed
@@ -556,18 +587,20 @@ function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBa
         Your system has everything needed to build Wails apps
       </p>
 
+      <SystemDetails system={system} />
+
       <div className="flex items-center gap-3" role="group" aria-label="Navigation">
         {canGoBack && onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             Back
           </button>
         )}
         <button
           onClick={onNext}
-          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         >
           Continue
         </button>
@@ -582,13 +615,15 @@ function DepsMissingPage({
   onRetry,
   onContinue,
   onBack,
-  canGoBack
+  canGoBack,
+  system
 }: {
   dependencies: DependencyStatus[];
   onRetry: () => void;
   onContinue: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
+  system: SystemInfo | null;
 }) {
   const [copied, setCopied] = useState(false);
   const missingDeps = dependencies.filter(d => !d.installed && d.required);
@@ -648,11 +683,12 @@ function DepsMissingPage({
       onBack={onBack}
       canGoBack={canGoBack}
     >
+      <SystemDetails system={system} />
       {/* Missing dependencies list */}
       <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-4 mb-4">
         {missingDeps.map(dep => (
           <div key={dep.name} className="flex items-start gap-3 py-2 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0">
-            <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-3 h-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -1498,7 +1534,7 @@ function MobileDepRow({ dep, busyName, onInstall }: {
   };
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${ok ? 'bg-green-500/20' : needsConfig ? 'bg-orange-500/20' : dep.required ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${ok ? 'bg-green-500/20' : needsConfig ? 'bg-orange-500/20' : dep.required ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
         {ok ? (
           <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
         ) : needsConfig ? (
@@ -1520,7 +1556,7 @@ function MobileDepRow({ dep, busyName, onInstall }: {
               {dep.configCommand}
             </code>
             <button type="button" onClick={copyConfig}
-              className="flex-shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+              className="shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
@@ -1535,7 +1571,7 @@ function MobileDepRow({ dep, busyName, onInstall }: {
       </div>
       {!ok && dep.installCommand && (
         <button type="button" onClick={() => onInstall(dep)} disabled={busyName !== null}
-          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50">
+          className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50">
           {busyName === dep.name ? 'Installing…' : 'Install'}
         </button>
       )}
@@ -1650,7 +1686,7 @@ function LanguageSelectPage({
       <h2
         ref={headingRef}
         id="language-title"
-        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-none"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-hidden"
         tabIndex={-1}
       >
         Language Preference
@@ -1664,7 +1700,7 @@ function LanguageSelectPage({
           onClick={() => onSelect(false)}
           role="radio"
           aria-checked={!preferTypeScript}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             !preferTypeScript
               ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1681,7 +1717,7 @@ function LanguageSelectPage({
           onClick={() => onSelect(true)}
           role="radio"
           aria-checked={preferTypeScript}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             preferTypeScript
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1699,14 +1735,14 @@ function LanguageSelectPage({
         {canGoBack && onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             Back
           </button>
         )}
         <button
           onClick={onNext}
-          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         >
           Continue
         </button>
@@ -1747,7 +1783,7 @@ function BindingStylePage({
       <h2
         ref={headingRef}
         id="binding-title"
-        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-none"
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center focus:outline-hidden"
         tabIndex={-1}
       >
         TypeScript Binding Style
@@ -1761,7 +1797,7 @@ function BindingStylePage({
           onClick={() => onSelect(true)}
           role="radio"
           aria-checked={useInterfaces}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             useInterfaces
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -1785,7 +1821,7 @@ function BindingStylePage({
           onClick={() => onSelect(false)}
           role="radio"
           aria-checked={!useInterfaces}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             !useInterfaces
               ? 'border-purple-400 bg-purple-400/10 shadow-lg shadow-purple-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -1816,14 +1852,14 @@ function BindingStylePage({
         {canGoBack && onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             Back
           </button>
         )}
         <button
           onClick={onNext}
-          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-6 py-2.5 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         >
           Continue
         </button>
@@ -1871,7 +1907,7 @@ function TemplateSelectPage({
             onClick={() => onSelect(framework.id)}
             role="radio"
             aria-checked={selectedFramework === framework.id}
-            className={`flex items-center gap-4 text-left rounded-xl p-4 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+            className={`flex items-center gap-4 text-left rounded-xl p-4 transition-all border-2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
               selectedFramework === framework.id
                 ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
                 : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1881,7 +1917,7 @@ function TemplateSelectPage({
               src={`/logos/${framework.id === 'vanilla' ? (preferTypeScript ? 'typescript' : 'javascript') : framework.icon}.svg`}
               alt=""
               aria-hidden="true"
-              className="w-10 h-10 flex-shrink-0"
+              className="w-10 h-10 shrink-0"
             />
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-gray-900 dark:text-white">{framework.name}</span>
@@ -1981,13 +2017,13 @@ function ProjectsPage({
                   autoFocus
                   placeholder="Your Name"
                   aria-label="Author name"
-                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-red-500 rounded px-1"
                 />
               </div>
             </div>
           ) : (
             <button
-              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              className="settings-row w-full text-left focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-red-500"
               onClick={() => handleRowClick('name')}
               aria-label={`Author: ${defaults.author.name || 'Not set'}. Click to edit.`}
             >
@@ -2013,13 +2049,13 @@ function ProjectsPage({
                   autoFocus
                   placeholder="Acme Corp"
                   aria-label="Company name"
-                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-red-500 rounded px-1"
                 />
               </div>
             </div>
           ) : (
             <button
-              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              className="settings-row w-full text-left focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-red-500"
               onClick={() => handleRowClick('company')}
               aria-label={`Company: ${defaults.author.company || 'Not set'}. Click to edit.`}
             >
@@ -2045,13 +2081,13 @@ function ProjectsPage({
                   autoFocus
                   placeholder="com.example"
                   aria-label="Bundle identifier"
-                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1 font-mono"
+                  className="w-full bg-transparent border-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-red-500 rounded px-1 font-mono"
                 />
               </div>
             </div>
           ) : (
             <button
-              className="settings-row w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              className="settings-row w-full text-left focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-red-500"
               onClick={() => handleRowClick('bundleId')}
               aria-label={`Bundle identifier: ${defaults.project.productIdentifierPrefix || 'com.example'}. Click to edit.`}
             >
@@ -2071,8 +2107,48 @@ function ProjectsPage({
   );
 }
 
-function CompletePage() {
+function useSetupCompletion(onFinished: () => void) {
+  const [finishing, setFinishing] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [dockerBuilding, setDockerBuilding] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (finished) return;
+    const finishOnExit = () => {
+      const body = new Blob([], { type: 'text/plain' });
+      if (!navigator.sendBeacon?.('/api/complete', body)) {
+        void fetch('/api/complete', { method: 'POST', keepalive: true })
+          .catch((cause) => console.warn('Could not finish setup while leaving the page', cause));
+      }
+    };
+    window.addEventListener('pagehide', finishOnExit);
+    return () => window.removeEventListener('pagehide', finishOnExit);
+  }, [finished]);
+
+  const finish = async () => {
+    if (finishing || finished) return;
+    setFinishing(true);
+    setError('');
+    try {
+      const result = await complete();
+      if (result.status !== 'complete') throw new Error('The wizard did not confirm completion');
+      setDockerBuilding(result.dockerBuilding);
+      setFinished(true);
+      onFinished();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not finish setup');
+    } finally {
+      setFinishing(false);
+    }
+  };
+
+  return { finishing, finished, dockerBuilding, error, finish };
+}
+
+function CompletePage({ onFinished }: { onFinished: () => void }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { finishing, finished, dockerBuilding, error, finish } = useSetupCompletion(onFinished);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -2080,6 +2156,7 @@ function CompletePage() {
 
   const handleStartBuilding = () => {
     window.open('https://v3alpha.wails.io/quick-start/first-app/', '_blank', 'noopener,noreferrer');
+    void finish();
   };
 
   return (
@@ -2106,20 +2183,42 @@ function CompletePage() {
       <h2
         ref={headingRef}
         id="complete-title"
-        className="text-xl font-semibold text-gray-900 dark:text-white mb-6 focus:outline-none"
+        className="text-xl font-semibold text-gray-900 dark:text-white mb-6 focus:outline-hidden"
         tabIndex={-1}
       >
         You're ready to build!
       </h2>
 
-      <button
-        onClick={handleStartBuilding}
-        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-      >
-        Start Building
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={() => void finish()}
+          disabled={finishing || finished}
+          className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-medium disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+        >
+          {finishing ? 'Finishing...' : finished ? 'Setup finished' : 'Finish setup'}
+        </button>
+        <button
+          onClick={handleStartBuilding}
+          disabled={finishing}
+          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          Start Building
+        </button>
+      </div>
+      <CompletionFeedback finished={finished} dockerBuilding={dockerBuilding} error={error} />
     </motion.main>
   );
+}
+
+function CompletionFeedback({ finished, dockerBuilding, error }: { finished: boolean; dockerBuilding: boolean; error: string }) {
+  return <>
+    {finished && <p className="mt-4 text-sm text-gray-600 dark:text-gray-300" role="status">
+      {dockerBuilding ? 'Setup will close after the background Docker download finishes. You can close this tab.' : 'Setup is finished. You can close this tab.'}
+    </p>}
+    {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">
+      {error}. Try Finish setup again, or press Ctrl+C in the terminal to stop the wizard.
+    </p>}
+  </>;
 }
 
 // Main App
@@ -2127,7 +2226,7 @@ export default function App() {
   const [step, setStep] = useState<OOBEStep>('splash');
   const [stepHistory, setStepHistory] = useState<OOBEStep[]>([]);
   const [dependencies, setDependencies] = useState<DependencyStatus[]>([]);
-  const [_system, setSystem] = useState<SystemInfo | null>(null);
+  const [system, setSystem] = useState<SystemInfo | null>(null);
   const [dockerStatus, setDockerStatus] = useState<DockerStatus | null>(null);
   const [buildingImage, setBuildingImage] = useState(false);
   const [defaults, setDefaults] = useState<GlobalDefaults>({
@@ -2184,7 +2283,7 @@ export default function App() {
     setStep(previousStep);
   };
 
-  const canGoBack = stepHistory.length > 0 && step !== 'splash' && step !== 'checking';
+  const canGoBack = stepHistory.length > 0 && step !== 'splash' && step !== 'checking' && step !== 'complete';
 
   const toggleTheme = () => {
     setTheme(prev => {
@@ -2467,7 +2566,7 @@ export default function App() {
 
   // Stream Docker status in background via SSE
   useEffect(() => {
-    if (backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
+    if (step !== 'complete' && backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
       const unsubscribe = subscribeDockerStatus((status) => {
         setDockerStatus(status);
         if (status.pullStatus !== 'pulling') {
@@ -2476,7 +2575,7 @@ export default function App() {
       });
       return unsubscribe;
     }
-  }, [backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
+  }, [step, backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
 
   useEffect(() => {
     if (prevDockerPullStatus === 'pulling' && dockerStatus?.pullStatus === 'complete' && step !== 'docker-setup') {
@@ -2569,7 +2668,7 @@ export default function App() {
                   <CheckingPage key="checking" />
                 )}
                 {step === 'deps-ready' && (
-                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} onBack={goBack} canGoBack={canGoBack} />
+                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} onBack={goBack} canGoBack={canGoBack} system={system} />
                 )}
                 {step === 'deps-missing' && (
                   <DepsMissingPage
@@ -2579,6 +2678,7 @@ export default function App() {
                     onContinue={handleDepsMissingContinue}
                     onBack={goBack}
                     canGoBack={canGoBack}
+                    system={system}
                   />
                 )}
                 {step === 'cross-platform' && (
@@ -2701,7 +2801,7 @@ export default function App() {
                   />
                 )}
                 {step === 'complete' && (
-                  <CompletePage key="complete" />
+                  <CompletePage key="complete" onFinished={() => setShowDockerToast(false)} />
                 )}
               </AnimatePresence>
             </div>

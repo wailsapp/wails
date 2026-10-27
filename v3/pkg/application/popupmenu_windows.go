@@ -57,6 +57,11 @@ type Win32Menu struct {
 	onMenuOpen    func()
 	isShowing     atomic.Bool // guards against concurrent TrackPopupMenuEx calls
 
+	// updatePending records a rebuild requested while the popup was showing.
+	// See requestUpdate.
+	updatePending atomic.Bool
+	destroyed     bool
+
 	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
 	// buildMenu so they can be released when the menu is rebuilt or
 	// destroyed. DestroyMenu does not free bitmaps set via
@@ -92,6 +97,23 @@ func releaseMenuBitmaps(bitmaps []w32.HBITMAP, mapping map[int]*MenuItem) {
 func (p *Win32Menu) freeBitmaps() {
 	releaseMenuBitmaps(p.bitmaps, p.menuMapping)
 	p.bitmaps = nil
+}
+
+// takeRuntimeBitmaps moves the HBITMAP handles MenuItem.SetBitmap allocated
+// after the build off the item impls and into the menu's own list.
+//
+// It exists for the same reason Update does the equivalent inline: building a
+// menu reassigns item.impl, so any handle still hanging off the old impl
+// becomes unreachable through this menu's mapping and would never be freed.
+// A caller replacing one Win32Menu with another has to take them before the
+// new build, and can then Destroy the old one afterwards.
+func (p *Win32Menu) takeRuntimeBitmaps() {
+	for _, item := range p.menuMapping {
+		if impl, ok := item.impl.(*windowsMenuItem); ok && impl.bitmap != 0 {
+			p.bitmaps = append(p.bitmaps, impl.bitmap)
+			impl.bitmap = 0
+		}
+	}
 }
 
 func (p *Win32Menu) newMenu() w32.HMENU {
@@ -314,7 +336,16 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 	if !p.isShowing.CompareAndSwap(false, true) {
 		return
 	}
-	defer p.isShowing.Store(false)
+	defer func() {
+		p.isShowing.Store(false)
+		if p.updatePending.Swap(false) {
+			// TrackPopupMenuEx has already posted the WM_COMMAND for the
+			// clicked row, numbered against the current menuMapping. Post the
+			// rebuild behind it (from a goroutine, as InvokeAsync runs inline
+			// on the main thread) so that command is dispatched first.
+			go InvokeAsync(p.requestUpdate)
+		}
+	}()
 
 	w32.SetForegroundWindow(p.parent)
 
@@ -322,8 +353,9 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	// Get screen dimensions to determine menu positioning
-	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	// Get the dimensions of the monitor containing the menu position, which
+	// may differ from the monitor of the owner window.
+	monitor := w32.MonitorFromPoint(x, y, w32.MONITOR_DEFAULTTONEAREST)
 	var monitorInfo w32.MONITORINFO
 	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
 	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
@@ -390,7 +422,23 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 	return true
 }
 
+// requestUpdate rebuilds the menu from menuData, or defers the rebuild until
+// the popup closes if it is showing: TrackPopupMenuEx is still tracking the
+// current HMENU and Update would destroy it (#4719). Must run on the main
+// thread.
+func (p *Win32Menu) requestUpdate() {
+	if p.destroyed {
+		return
+	}
+	if p.isShowing.Load() {
+		p.updatePending.Store(true)
+		return
+	}
+	p.Update()
+}
+
 func (p *Win32Menu) Destroy() {
+	p.destroyed = true
 	p.freeBitmaps()
 	p.detachedSubmenus.destroyAll()
 	w32.DestroyMenu(p.menu)

@@ -142,9 +142,13 @@ type nopCloser struct {
 
 func (nopCloser) Close() error { return nil }
 
+// pipe creates the response body pipe with O_CLOEXEC on both ends. Without it, a
+// child process forked while a response is in flight (os/exec, a helper the app
+// spawns, ...) inherits the write end, and WebKit never sees EOF on the body
+// until that child exits, so fetch() stalls although the handler has returned.
 func pipe() (r int, w *os.File, err error) {
 	var p [2]int
-	e := syscall.Pipe2(p[0:], 0)
+	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	if e != nil {
 		return 0, nil, fmt.Errorf("pipe2: %s", e)
 	}

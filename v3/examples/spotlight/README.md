@@ -3,6 +3,18 @@
 This example demonstrates how to create a Spotlight-like launcher using an
 opt-in macOS `NSPanel` together with `CollectionBehavior`.
 
+## Running on macOS with private APIs
+
+This example configures a translucent macOS backdrop. The webview transparency needed to reveal that backdrop requires the `private_mac_apis` build tag. Without it, the example runs with an opaque webview above the native backdrop.
+
+From this example directory, run:
+
+```bash
+go run -tags private_mac_apis .
+```
+
+Omit `-tags private_mac_apis` to run with public macOS APIs only. The tag has no effect on Windows, Linux, iOS, or Android. See the [shared private API guide](../README.md#private-macos-apis) for production builds and fallback details.
+
 ## Features
 
 - **Appears on all Spaces**: Using `MacWindowCollectionBehaviorCanJoinAllSpaces`, the window is visible across all virtual desktops
@@ -16,6 +28,7 @@ opt-in macOS `NSPanel` together with `CollectionBehavior`.
 ## Running the example
 
 ```bash
+# Public macOS APIs only; private effects and inspector opening are disabled.
 go run .
 ```
 

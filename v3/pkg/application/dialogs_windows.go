@@ -4,7 +4,10 @@ package application
 
 import (
 	"path/filepath"
+	"runtime"
 	"strings"
+	"syscall"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -46,6 +49,15 @@ func (m *windowsDialog) show() {
 		}
 	}
 
+	// MessageBox cannot show custom button captions, so question dialogs with
+	// custom buttons use a TaskDialog (#5794). It needs comctl32 v6; if that is
+	// unavailable (no manifest) or the call fails, fall back to MessageBox.
+	if m.dialog.DialogType == QuestionDialogType && len(m.dialog.Buttons) > 0 {
+		if m.showTaskDialog(parentWindow) {
+			return
+		}
+	}
+
 	if m.UseAppIcon || m.dialog.Icon != nil {
 		// Use the application's embedded icon resource (ID 3). MessageBoxIndirect
 		// cannot render arbitrary icon bytes, so a custom Icon also maps to the
@@ -69,20 +81,93 @@ func (m *windowsDialog) show() {
 			globalApplication.handleFatalError(err)
 		}
 	}
-	// This maps MessageBox return values to strings
-	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
-	result := "Error"
-	if int(button) < len(responses) {
-		result = responses[button]
-	}
 	// Check if there's a callback for the button pressed
-	for _, buttonInDialog := range m.dialog.Buttons {
-		if buttonInDialog.Label == result {
-			if buttonInDialog.Callback != nil {
-				buttonInDialog.Callback()
-			}
+	if b := messageBoxButtonFor(m.dialog.Buttons, button); b != nil && b.Callback != nil {
+		b.Callback()
+	}
+}
+
+// taskDialogCreated preserves MessageBox's MB_SYSTEMMODAL topmost behavior.
+// TaskDialogIndirect itself provides modality relative to hwndParent.
+var taskDialogCreated = syscall.NewCallback(func(hwnd, notification, wparam, lparam, data uintptr) uintptr {
+	const tdnCreated = 0
+	if notification == tdnCreated {
+		w32.SetWindowPos(hwnd, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOACTIVATE)
+	}
+	return 0 // S_OK
+})
+
+// taskDialogIcon uses the same embedded app icon as MessageBoxWithIcon.
+// Missing development resources omit the icon while preserving custom captions.
+func (m *windowsDialog) taskDialogIcon() (instance, resource uint64) {
+	if m.UseAppIcon || m.dialog.Icon != nil {
+		handle := w32.GetApplicationHandle()
+		if w32.LoadIconWithResourceID(handle, 3) != 0 {
+			return uint64(handle), 3
 		}
 	}
+	return 0, 0
+}
+
+// showTaskDialog shows the dialog with its own button captions. It returns
+// false, without having shown anything, when TaskDialogIndirect cannot be used.
+func (m *windowsDialog) showTaskDialog(parentWindow uintptr) bool {
+	if !w32.TaskDialogAvailable() {
+		return false
+	}
+	plan := planTaskDialog(m.dialog.Buttons)
+	if len(plan.buttons) == 0 {
+		return false
+	}
+
+	ptrSize := int(unsafe.Sizeof(uintptr(0)))
+	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
+	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
+	labels := make([]*uint16, len(plan.buttons))
+	labelAddrs := make([]uint64, len(plan.buttons))
+	ids := make([]int32, len(plan.buttons))
+	for i, b := range plan.buttons {
+		labels[i] = w32.MustStringToUTF16Ptr(b.Label)
+		labelAddrs[i] = uint64(uintptr(unsafe.Pointer(labels[i])))
+		ids[i] = b.ID
+	}
+	buttons := encodeTaskDialogButtons(ptrSize, ids, labelAddrs)
+
+	var flags uint32
+	if plan.cancel != nil {
+		flags |= tdfAllowDialogCancellation
+	}
+	if parentWindow != 0 {
+		flags |= tdfPositionRelativeToWindow
+	}
+	hInstance, mainIcon := m.taskDialogIcon()
+	config := encodeTaskDialogConfig(ptrSize, taskDialogConfig{
+		hwndParent:    uint64(parentWindow),
+		hInstance:     hInstance,
+		mainIcon:      mainIcon,
+		callback:      uint64(taskDialogCreated),
+		flags:         flags,
+		title:         uint64(uintptr(unsafe.Pointer(title))),
+		content:       uint64(uintptr(unsafe.Pointer(message))),
+		buttonCount:   uint32(len(plan.buttons)),
+		buttons:       uint64(uintptr(unsafe.Pointer(&buttons[0]))),
+		defaultButton: plan.defaultID,
+	})
+
+	result, err := w32.TaskDialogIndirect(config)
+	// The config only holds raw addresses; keep what they point to alive.
+	runtime.KeepAlive(title)
+	runtime.KeepAlive(message)
+	runtime.KeepAlive(labels)
+	runtime.KeepAlive(buttons)
+	if err != nil {
+		globalApplication.warning("TaskDialogIndirect failed, falling back to MessageBox: %v", err)
+		return false
+	}
+	if b := plan.buttonFor(result); b != nil && b.Callback != nil {
+		b.Callback()
+	}
+	return true
 }
 
 func newDialogImpl(d *MessageDialog) *windowsDialog {
@@ -123,7 +208,8 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 	}
 
 	var result []string
-	if m.dialog.allowsMultipleSelection && !m.dialog.canChooseDirectories {
+	switch openDialogKindFor(m.dialog.canChooseDirectories, m.dialog.allowsMultipleSelection) {
+	case openMultipleFiles:
 		temp, err := showCfdDialog(
 			func() (cfd.Dialog, error) {
 				return cfd.NewOpenMultipleFilesDialog(config)
@@ -132,26 +218,33 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			return nil, err
 		}
 		result = temp.([]string)
-	} else {
-		if m.dialog.canChooseDirectories {
-			temp, err := showCfdDialog(
-				func() (cfd.Dialog, error) {
-					return cfd.NewSelectFolderDialog(config)
-				}, false, m.dialog.window)
-			if err != nil {
-				return nil, err
-			}
-			result = []string{temp.(string)}
-		} else {
-			temp, err := showCfdDialog(
-				func() (cfd.Dialog, error) {
-					return cfd.NewOpenFileDialog(config)
-				}, false, m.dialog.window)
-			if err != nil {
-				return nil, err
-			}
-			result = []string{temp.(string)}
+	case openMultipleFolders:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewSelectMultipleFoldersDialog(config)
+			}, true, m.dialog.window)
+		if err != nil {
+			return nil, err
 		}
+		result = temp.([]string)
+	case openSingleFolder:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewSelectFolderDialog(config)
+			}, false, m.dialog.window)
+		if err != nil {
+			return nil, err
+		}
+		result = []string{temp.(string)}
+	default:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewOpenFileDialog(config)
+			}, false, m.dialog.window)
+		if err != nil {
+			return nil, err
+		}
+		result = []string{temp.(string)}
 	}
 
 	files := make(chan string)
@@ -163,6 +256,33 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		close(files)
 	}()
 	return files, nil
+}
+
+// openDialogKind is the Common Item Dialog an OpenFile dialog is shown as.
+type openDialogKind int
+
+const (
+	openSingleFile openDialogKind = iota
+	openMultipleFiles
+	openSingleFolder
+	openMultipleFolders
+)
+
+// openDialogKindFor picks the dialog for an OpenFile request. The Windows
+// dialog cannot mix files and folders, so directories take precedence when
+// both are allowed (unchanged); multiple selection applies to folders as well
+// as files, matching macOS and Linux.
+func openDialogKindFor(canChooseDirectories, allowsMultipleSelection bool) openDialogKind {
+	switch {
+	case canChooseDirectories && allowsMultipleSelection:
+		return openMultipleFolders
+	case canChooseDirectories:
+		return openSingleFolder
+	case allowsMultipleSelection:
+		return openMultipleFiles
+	default:
+		return openSingleFile
+	}
 }
 
 type windowSaveFileDialog struct {

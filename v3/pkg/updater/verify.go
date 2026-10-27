@@ -64,13 +64,30 @@ var verifierRegistry = map[string]verifier{
 // runVerification is the single entry point used by the Updater. It enforces
 // the contract: if Verification has a digest, it must match; if it has a
 // signature, the signature must verify under configKey. Returns nil only when
-// every present check passed.
+// every required check passed.
 //
 // Signature verification uses configKey (Config.PublicKey) and nothing else.
 // The release source does not get to choose its own trust anchor — that would
-// defeat the purpose of pinning a key out-of-band at build time. Releases that
-// carry a Signature without a configured key fail closed.
+// defeat the purpose of pinning a key out-of-band at build time.
+//
+// The presence of configKey is itself a requirement, in both directions:
+//   - a configured key makes the signature mandatory (fail closed), so a
+//     release that omits it is rejected rather than installed unverified;
+//   - a release that carries a Signature but no configured key is rejected.
+//
+// When no key is configured, digest-only releases still install (with the
+// digest checked) and a Signature is rejected.
 func runVerification(computedDigest []byte, v *Verification, configKey []byte) error {
+	// Fail closed when a trust anchor is pinned. A configured PublicKey means
+	// the developer asked for release signatures to be mandatory, so a
+	// release that carries no signature at all (no Verification block, or a
+	// digest-only block) is exactly the downgrade a compromised feed or
+	// mirror would attempt: it would otherwise install unauthenticated bytes
+	// as if the key protected them.
+	if len(configKey) > 0 && (v == nil || len(v.Signature) == 0) {
+		return errors.New("updater: a public key is configured, so the release must carry a signature")
+	}
+
 	if v == nil {
 		return nil // nothing to check
 	}

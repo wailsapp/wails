@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "23378b911d502c437428b4a00ad01295d5d047def2a225d377a8d73835531824",
+      "machineHash": "23378b911d502c437428b4a00ad01295d5d047def2a225d377a8d73835531824",
+      "machineText": "O [LTools](https://github.com/lian-yang/ltools) é uma caixa de ferramentas multiplataforma para desktop baseada em plugins, desenvolvida com Wails v3 e inspirada no uTools. Ele oferece uma central unificada de utilitários para desenvolvedores por meio de uma arquitetura modular de plugins.",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "e14e9d9ac8b10c3bf627beee6b1b9050f34042d8a5150ea75e7b859e51fa61f3",
+      "machineHash": "e14e9d9ac8b10c3bf627beee6b1b9050f34042d8a5150ea75e7b859e51fa61f3",
+      "machineText": "Ele conta com uma barra de pesquisa global (no estilo Spotlight), integração com a bandeja do sistema e plugins integrados, incluindo gerenciador da área de transferência, ferramenta de captura de tela com anotações, editor de JSON, calculadora, monitor do sistema e muito mais. Novas ferramentas podem ser adicionadas por meio do seu sistema extensível de plugins.",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "e23a7d0163621358735469c3bc5ada7c1b941373be608934367e67d4f5293d42",
+      "machineHash": "e23a7d0163621358735469c3bc5ada7c1b941373be608934367e67d4f5293d42",
+      "machineText": "Uma caixa de ferramentas multiplataforma para desktop baseada em plugins, desenvolvida com Wails v3",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

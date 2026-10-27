@@ -17,34 +17,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"sync"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
-var leadingDigits = regexp.MustCompile(`^[0-9]+`)
-
-func sanitizeAppName(name string) string {
-	name = invalidAppNameChars.ReplaceAllString(name, "_")
-	name = leadingDigits.ReplaceAllString(name, "_$0")
-	for strings.Contains(name, "__") {
-		name = strings.ReplaceAll(name, "__", "_")
-	}
-	name = strings.Trim(name, "_")
-	if name == "" {
-		name = "wailsapp"
-	}
-	return strings.ToLower(name)
-}
-
 func init() {
-	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// Disable the DMA-BUF renderer when WebKit renders on NVIDIA (isNVIDIAGPU), on any session type, to prevent blank windows and
 	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
 	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
 	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
@@ -52,13 +34,6 @@ func init() {
 	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
-}
-
-func isNVIDIAGPU() bool {
-	if _, err := os.Stat("/sys/module/nvidia"); err == nil {
-		return true
-	}
-	return false
 }
 
 type linuxApp struct {
@@ -70,8 +45,6 @@ type linuxApp struct {
 
 	windowMap     map[windowPointer]uint
 	windowMapLock sync.Mutex
-
-	theme string
 
 	icon pointer
 }
@@ -116,8 +89,9 @@ func (a *linuxApp) run() error {
 		}
 	})
 	a.setupCommonEvents()
-	// Theme changes are already monitored by listenForSystemThemeChanges via init();
-	// it uses the portal-standard org.freedesktop.appearance namespace.
+	// Started here, not from init(): init() is not part of the platformApp
+	// interface and nothing calls it, so a monitor started there never runs.
+	a.monitorThemeChanges()
 	a.monitorPowerEvents()
 	return appRun(a.application)
 }
@@ -177,41 +151,6 @@ func (a *linuxApp) init(_ *App, options Options) {
 	if options.Icon != nil {
 		a.setIcon(options.Icon)
 	}
-
-	go listenForSystemThemeChanges(a)
-}
-
-func listenForSystemThemeChanges(a *linuxApp) {
-	conn, err := dbus.SessionBus()
-	if err != nil {
-		a.parent.error("failed to connect to session bus: %v", err)
-		return
-	}
-
-	if err = conn.AddMatchSignal(
-		dbus.WithMatchInterface("org.freedesktop.portal.Settings"),
-		dbus.WithMatchMember("SettingChanged"),
-	); err != nil {
-		return
-	}
-
-	c := make(chan *dbus.Signal, 10)
-	conn.Signal(c)
-
-	for s := range c {
-		if len(s.Body) < 3 {
-			continue
-		}
-		namespace, ok := s.Body[0].(string)
-		if !ok || namespace != "org.freedesktop.appearance" {
-			continue
-		}
-		key, ok := s.Body[1].(string)
-		if !ok || key != "color-scheme" {
-			continue
-		}
-		processApplicationEvent(C.uint(events.Linux.SystemThemeChanged), nil)
-	}
 }
 
 func (a *linuxApp) registerWindow(window pointer, id uint) {
@@ -232,16 +171,20 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
-	name := sanitizeAppName(parent.options.Name)
+	appID, err := applicationID(parent.options)
+	if err != nil {
+		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
+	}
+
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: appNew(appID),
 		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}
 
-	if parent.options.Linux.ProgramName != "" {
-		setProgramName(parent.options.Linux.ProgramName)
+	if name := programName(parent.options, appID); name != "" {
+		setProgramName(name)
 	}
 
 	return app
@@ -300,35 +243,6 @@ func (a *linuxApp) getIconForFile(filename string) ([]byte, error) {
 
 func getIconBytes(iconName string) ([]byte, error) {
 	return nil, fmt.Errorf("icon lookup is not currently implemented for the GTK4 build path; build with -tags gtk3 for the legacy implementation")
-}
-
-func (a *linuxApp) isDarkMode() bool {
-	conn, err := dbus.SessionBus()
-	if err != nil {
-		return false
-	}
-
-	obj := conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
-	call := obj.Call("org.freedesktop.portal.Settings.Read", 0, "org.freedesktop.appearance", "color-scheme")
-	if call.Err != nil {
-		return false
-	}
-
-	var result dbus.Variant
-	if err := call.Store(&result); err != nil {
-		return false
-	}
-
-	innerVariant, ok := result.Value().(dbus.Variant)
-	if !ok {
-		return false
-	}
-	colorScheme, ok := innerVariant.Value().(uint32)
-	if !ok {
-		return false
-	}
-
-	return colorScheme == 1
 }
 
 func (a *linuxApp) getAccentColor() string {

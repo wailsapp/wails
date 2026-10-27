@@ -12,7 +12,7 @@ name: Verify Runtime Assets
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, 'releases/**']
 
 permissions:
   contents: read
