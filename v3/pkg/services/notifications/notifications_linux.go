@@ -76,10 +76,14 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 	}
 	ln.conn = conn
 
+	// Bounded so a notification daemon that is slow to start can't hold up app startup;
+	// on timeout the old behaviour (no actions) stays.
+	capsCtx, cancelCaps := context.WithTimeout(ctx, 2*time.Second)
 	var caps []string
-	if err := conn.Object(dbusNotificationInterface, dbusNotificationPath).Call(dbusNotificationInterface+".GetCapabilities", 0).Store(&caps); err == nil {
+	if err := conn.Object(dbusNotificationInterface, dbusNotificationPath).CallWithContext(capsCtx, dbusNotificationInterface+".GetCapabilities", 0).Store(&caps); err == nil {
 		ln.actions = slices.Contains(caps, "actions")
 	}
+	cancelCaps()
 
 	if err := ln.loadCategories(); err != nil {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
