@@ -2,7 +2,7 @@ name: GTK3 Menu Regression v3
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, 'releases/**']
     paths:
       - 'v3/pkg/application/**'
       - 'v3/go.mod'

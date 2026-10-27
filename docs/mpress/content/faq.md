@@ -26,7 +26,7 @@ Run `wails3 doctor` at any time to check your system and get platform-specific i
 
 ### What do I need to get started?
 
-- Go 1.25 or newer
+- Go 1.26 or newer
 - Node.js and npm (for the frontend build)
 - Platform toolchain: WebView2 on Windows (preinstalled on 10/11), Xcode Command Line Tools on macOS, `gcc` plus GTK/WebKit development packages on Linux
 
@@ -34,7 +34,7 @@ Run `wails3 doctor` at any time to check your system and get platform-specific i
 
 ### Is Wails v3 production-ready?
 
-Wails v3 is beta software with a stable desktop API. Applications are running in production with it, but you should test thoroughly before deployment while we complete the final polish for 3.0. See the [project status page](/status/) for the current picture. Wails v2 is the current stable release and continues to receive fixes.
+Wails v3.0.0 is the stable release for desktop applications on Windows, macOS and Linux. Android and iOS support remains experimental and is outside the stable desktop compatibility contract. See [project status page](/status/).
 
 ## Development
 
@@ -187,7 +187,7 @@ The usual fixes, in order:
 
 1. `go mod tidy`
 2. `cd frontend && npm install` (a missing `node_modules` is the most common cause)
-3. Update the CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. Update the CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. On Linux, check `wails3 doctor` for missing GTK/WebKit packages
 
 ### My bindings are missing or stale
@@ -214,7 +214,7 @@ v3 brings multi-window support, a cleaner services-based API, a built-in updater
 
 ### Will v2 be maintained?
 
-Yes. v2 continues to receive fixes while v3 moves towards its stable release.
+Yes. Wails v2 continues to receive critical updates. New projects should use Wails v3.0.0.
 
 ### Can I run v2 and v3 side by side?
 
@@ -230,11 +230,11 @@ Yes. The CLIs are separate binaries (`wails` and `wails3`) and the modules have 
 
 ### How do I contribute?
 
-See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) draft PR. Informal discussion on Discord or GitHub Discussions is optional.
+See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) draft PR. Informal discussion on Discord or GitHub Discussions is optional.
 
 ### Where can I find examples?
 
-The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, services and more: [v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, services and more: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
 
 ## Still Have Questions?
 

@@ -1,44 +1,73 @@
 - label: "Início"
   link: "/"
-- label: "Por que usar o Wails?"
-  link: "/quick-start/why-wails/"
-- label: "Início rápido"
+- label: "Primeiros passos"
   collapsed: false
   items:
+    - label: "Por que usar o Wails?"
+      link: "/quick-start/why-wails/"
     - label: "Instalação"
       link: "/quick-start/installation/"
     - label: "Seu primeiro aplicativo"
       link: "/quick-start/first-app/"
     - label: "Próximos passos"
       link: "/quick-start/next-steps/"
+    - label: "Migração"
+      collapsed: true
+      items:
+        - label: "Do v2 para o v3"
+          link: "/migration/v2-to-v3/"
+        - label: "Do Electron"
+          link: "/migration/from-electron/"
 - label: "Tutoriais"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "Conceitos fundamentais"
+  items:
+    - label: "Escolha um tutorial"
+      link: "/tutorials/overview/"
+    - label: "Serviço de código QR"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "Lista de tarefas"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "Notas"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "Aplicativo com atualização automática"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "Seu primeiro aplicativo móvel (experimental)"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "Guias práticos"
   collapsed: true
   items:
-    - label: "Como o Wails funciona"
-      link: "/concepts/architecture/"
-    - label: "API do gerenciador"
-      link: "/concepts/manager-api/"
-    - label: "Ciclo de vida do aplicativo"
-      link: "/concepts/lifecycle/"
-    - label: "Ponte entre Go e frontend"
-      link: "/concepts/bridge/"
-    - label: "Sistema de compilação"
-      link: "/concepts/build-system/"
-- label: "Recursos"
-  collapsed: true
-  items:
+    - label: "Chamadas Go, serviços e dados"
+      collapsed: true
+      items:
+        - label: "Chamar Go a partir do JavaScript"
+          link: "/features/bindings/methods/"
+        - label: "Serviços"
+          link: "/features/bindings/services/"
+        - label: "Modelos de dados"
+          link: "/features/bindings/models/"
+        - label: "Enumerações"
+          link: "/features/bindings/enums/"
+        - label: "Binding avançado"
+          link: "/features/bindings/advanced/"
+        - label: "Práticas recomendadas"
+          link: "/features/bindings/best-practices/"
+    - label: "Eventos"
+      collapsed: true
+      items:
+        - label: "Sistema de eventos"
+          link: "/features/events/system/"
+        - label: "Eventos do aplicativo"
+          link: "/features/events/application/"
+        - label: "Eventos de janela"
+          link: "/features/events/window/"
+        - label: "Eventos personalizados"
+          link: "/features/events/custom/"
     - label: "Janelas"
       collapsed: true
       items:
         - label: "Conceitos básicos de janelas"
           link: "/features/windows/basics/"
-        - label: "Opções de janela"
-          link: "/features/windows/options/"
-        - label: "Janelas com entalhe"
+        - label: "Janelas com recorte"
           link: "/features/windows/notch-windows/"
         - label: "Permissões"
           link: "/features/windows/permissions/"
@@ -57,34 +86,6 @@
           link: "/features/menus/context/"
         - label: "Menus da bandeja do sistema"
           link: "/features/menus/systray/"
-        - label: "Referência de menus"
-          link: "/features/menus/reference/"
-    - label: "Vinculações e serviços"
-      collapsed: true
-      items:
-        - label: "Vinculação de métodos"
-          link: "/features/bindings/methods/"
-        - label: "Serviços"
-          link: "/features/bindings/services/"
-        - label: "Modelos de dados"
-          link: "/features/bindings/models/"
-        - label: "Enumerações"
-          link: "/features/bindings/enums/"
-        - label: "Vinculação avançada"
-          link: "/features/bindings/advanced/"
-        - label: "Boas práticas"
-          link: "/features/bindings/best-practices/"
-    - label: "Eventos"
-      collapsed: true
-      items:
-        - label: "Sistema de eventos"
-          link: "/features/events/system/"
-        - label: "Eventos do aplicativo"
-          link: "/features/events/application/"
-        - label: "Eventos de janela"
-          link: "/features/events/window/"
-        - label: "Eventos personalizados"
-          link: "/features/events/custom/"
     - label: "Caixas de diálogo"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "Caixas de diálogo personalizadas"
           link: "/features/dialogs/custom/"
-    - label: "Inicialização automática"
+    - label: "Integração com o desktop"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "Área de transferência"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "Navegador"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "Arrastar e soltar"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "Teclado"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "Notificações"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "Telas"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "Ambiente"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "Específico da plataforma"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "Dispositivos móveis"
-  collapsed: true
-  items:
-    - label: "Visão geral"
-      link: "/guides/mobile/"
-    - label: "Seu primeiro aplicativo móvel"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "API para dispositivos móveis"
-      link: "/guides/mobile/mobile-api/"
-- label: "Experimental"
-  collapsed: true
-  items:
-    - label: "Visão geral"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "Controle por LLM (MCP)"
-      link: "/guides/mcp-service/"
-- label: "Guias"
-  collapsed: true
-  items:
+      items:
+        - label: "Inicialização automática"
+          link: "/features/autostart/basics/"
+        - label: "Área de transferência"
+          link: "/features/clipboard/basics/"
+        - label: "Integração com o navegador"
+          link: "/features/browser/integration/"
+        - label: "Arrastar e soltar"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "Teclado"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "Notificações"
+          link: "/features/notifications/overview/"
+        - label: "Telas"
+          link: "/features/screens/info/"
+        - label: "Ambiente"
+          link: "/features/environment/info/"
+        - label: "Dock do macOS"
+          link: "/features/platform/dock/"
     - label: "Desenvolvimento"
       collapsed: true
       items:
@@ -207,7 +172,7 @@
       items:
         - label: "Roteamento no frontend"
           link: "/guides/routing/"
-        - label: "Como usar o roteador Gin"
+        - label: "Uso do roteador Gin"
           link: "/guides/gin-routing/"
         - label: "Serviços Gin"
           link: "/guides/gin-services/"
@@ -226,8 +191,39 @@
           link: "/guides/advanced/wml/"
         - label: "Tratamento de panics"
           link: "/guides/panic-handling/"
-        - label: "Boas práticas de segurança"
+        - label: "Práticas recomendadas de segurança"
           link: "/guides/security/"
+    - label: "Dispositivos móveis (experimental)"
+      collapsed: true
+      items:
+        - label: "Visão geral"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "Experimental"
+      collapsed: true
+      items:
+        - label: "Visão geral"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "Controle por LLM (MCP)"
+          link: "/guides/mcp-service/"
+- label: "Conceitos fundamentais"
+  collapsed: true
+  items:
+    - label: "Como o Wails funciona"
+      link: "/concepts/architecture/"
+    - label: "API do gerenciador"
+      link: "/concepts/manager-api/"
+    - label: "Ciclo de vida do aplicativo"
+      link: "/concepts/lifecycle/"
+    - label: "Ponte entre Go e frontend"
+      link: "/concepts/bridge/"
+    - label: "Sistema de compilação"
+      link: "/concepts/build-system/"
 - label: "Referência da API"
   collapsed: true
   items:
@@ -235,10 +231,20 @@
       link: "/reference/overview/"
     - label: "Aplicativo"
       link: "/reference/application/"
-    - label: "Janela"
-      link: "/reference/window/"
-    - label: "Menu"
-      link: "/reference/menu/"
+    - label: "Janelas"
+      collapsed: true
+      items:
+        - label: "API de janelas"
+          link: "/reference/window/"
+        - label: "Opções de janela"
+          link: "/features/windows/options/"
+    - label: "Menus"
+      collapsed: true
+      items:
+        - label: "API de menus"
+          link: "/reference/menu/"
+        - label: "Referência de menus"
+          link: "/features/menus/reference/"
     - label: "Eventos"
       link: "/reference/events/"
     - label: "Caixas de diálogo"
@@ -246,16 +252,37 @@
     - label: "Runtime do frontend"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "Visão geral dos comandos"
+          link: "/reference/cli/"
+        - label: "Flags e exemplos"
+          link: "/guides/cli/"
     - label: "Protocolo do manifesto de atualização"
       link: "/reference/update-manifest/"
+    - label: "API para dispositivos móveis (experimental)"
+      link: "/guides/mobile/mobile-api/"
+- label: "Solução de problemas"
+  collapsed: true
+  items:
+    - label: "Perguntas frequentes"
+      link: "/faq/"
+    - label: "Arquivos Syso no macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Problemas com RDP"
+          link: "/troubleshooting/windows/rdp/"
 - label: "Como contribuir"
   collapsed: true
   items:
-    - label: "Corrigir a documentação"
-      link: "/contributing/documentation/"
     - label: "Guia de contribuição"
       link: "/contributing/"
+    - label: "Documentação"
+      link: "/contributing/documentation/"
+    - label: "Política de lançamento"
+      link: "/contributing/release-policy/"
     - label: "Visão geral técnica"
       link: "/contributing/overview/"
     - label: "Primeiros passos"
@@ -264,23 +291,6 @@
       link: "/contributing/setup/"
     - label: "Padrões de codificação"
       link: "/contributing/standards/"
-- label: "Migração"
-  collapsed: true
-  items:
-    - label: "Da v2 para a v3"
-      link: "/migration/v2-to-v3/"
-    - label: "Do Electron"
-      link: "/migration/from-electron/"
-- label: "Solução de problemas"
-  collapsed: true
-  items:
-    - label: "Arquivos Syso no macOS"
-      link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
-      collapsed: true
-      items:
-        - label: "Problemas com RDP"
-          link: "/troubleshooting/windows/rdp/"
 - label: "Comunidade"
   collapsed: true
   items:
@@ -290,7 +300,7 @@
       link: "/community/templates/"
     - label: "Mídia"
       link: "/community/media/"
-    - label: "Vitrine"
+    - label: "Galeria"
       collapsed: true
       items:
         - label: "Visão geral"
@@ -298,13 +308,16 @@
         - label: "Aplicativos"
           autogenerate:
             directory: "community/showcase"
-- label: "Novidades"
-  link: "/whats-new/"
-- label: "Status"
-  link: "/status/"
-- label: "Registro de alterações"
-  link: "/changelog/"
-- label: "Patrocine"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "Créditos"
-  link: "/credits/"
+- label: "Projeto"
+  collapsed: true
+  items:
+    - label: "Novidades"
+      link: "/whats-new/"
+    - label: "Status"
+      link: "/status/"
+    - label: "Registro de alterações"
+      link: "/changelog/"
+    - label: "Patrocine"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "Créditos"
+      link: "/credits/"

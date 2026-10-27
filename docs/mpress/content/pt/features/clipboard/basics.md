@@ -488,4 +488,4 @@ Organize o código da área de transferência.
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de uso da área de transferência](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de uso da área de transferência](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

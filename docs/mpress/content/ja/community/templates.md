@@ -12,7 +12,7 @@ sourcePath: "community/templates.md"
 
 <!-- TODO: Update this link -->
 
-このページでは、コミュニティによってサポートされているテンプレートを一覧で紹介します。独自の テンプレートを作成する方法については、[テンプレート](https://wails.io/docs/guides/templates) ガイドを参照してください。
+このページでは、コミュニティによってサポートされているテンプレートを一覧で紹介します。独自の テンプレートを作成する方法については、[テンプレート](https://v2.wails.io/docs/guides/templates) ガイドを参照してください。
 
 @note{type="tip" title="テンプレートを登録する方法"}
 下部にある `Edit this page` をクリックすると、作成したテンプレートを追加できます。

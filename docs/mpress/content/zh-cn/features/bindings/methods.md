@@ -1,5 +1,5 @@
 ---
-title: "方法绑定"
+title: "从 JavaScript 调用 Go"
 description: "以类型安全的方式从 JavaScript 调用 Go 方法"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -7,7 +7,7 @@ sourcePath: "features/bindings/methods.md"
 
 ## 类型安全的 Go-JavaScript 绑定
 
-Wails 会为你的 Go 方法<strong>自动生成类型安全的 JavaScript/TypeScript 绑定</strong>。编写 Go 代码并运行一条命令，即可获得类型完备的前端函数，无 HTTP 开销、无需手动操作，也没有任何样板代码。
+Wails 会为你的 Go 方法**自动生成类型安全的 JavaScript/TypeScript 绑定**。编写 Go 代码并运行一条命令，即可获得具有完整类型的前端函数，无 HTTP 开销、无需手动操作，也没有任何样板代码。
 
 ## 快速开始
 
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-<strong>就是这么简单！</strong>以类型安全的方式从 Go 调用 JavaScript。
+<strong>就是这么简单！</strong>以类型安全的方式从 JavaScript 调用 Go。
 
 ## 创建服务
 
@@ -91,16 +91,16 @@ app := application.New(application.Options{
 
 **要点：**
 
-- 仅绑定<strong>导出的方法</strong>（PascalCase）
+- 仅绑定**已导出的方法**（PascalCase）
 - 方法可以返回值或`(value, error)`
-- 服务是<strong>单例</strong>（每个应用程序一个实例）
+- 服务是**单例**（每个应用程序一个实例）
 
 ### 有状态服务
 
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -194,7 +194,7 @@ INFO  Output directory: /myproject/frontend/bindings
 wails3 generate bindings -ts
 ```
 
-**生成包含完整 TypeScript 类型的`.ts`文件**。
+**生成具有完整 TypeScript 类型的`.ts`文件**。
 
 ### 自定义输出目录
 
@@ -208,7 +208,7 @@ wails3 generate bindings -d ./src/bindings
 wails3 dev
 ```
 
-Go 代码发生变化时，**自动重新生成绑定**。
+Go 代码更改时**自动重新生成绑定**。
 
 ## 使用绑定
 
@@ -284,8 +284,8 @@ try {
 
 - 完整的类型检查
 - IDE 自动补全
-- 编译时错误检查
-- 更易于重构
+- 编译时错误
+- 更便于重构
 
 ### 索引文件
 
@@ -299,7 +299,7 @@ export * as CounterService from './counterservice.js'
 export * as DatabaseService from './databaseservice.js'
 ```
 
-**简化的导入方式：**
+**简化导入：**
 
 ```javascript
 import { CalculatorService } from './bindings/myapp'
@@ -315,35 +315,35 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
 ### 复杂类型
 
-| Go 类型 | JavaScript/TypeScript | 说明 |
+| Go 类型 | JavaScript/TypeScript | 备注 |
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | 以字符串为键的映射 |
-| `map[K]V` | `{ [_ in K]?: V }` | 非字符串类型的`K`会呈现为映射类型，<strong>而不是</strong>JS `Map` |
-| `[]byte` | `string` | Base64 编码 |
+| `map[K]V` | `{ [_ in K]?: V }` | 非字符串`K`会呈现为映射类型，**而不是**JS `Map` |
+| `[]byte` | `string` | 使用 base64 编码 |
 | `struct` | `class` / `interface` | 包含字段 |
-| `time.Time` | `any` | 在运行时序列化为 RFC3339Nano 字符串 |
+| `time.Time` | `string`（默认）或`Date` | `-time-type`选择生成的表示形式；JSON 使用 RFC3339Nano 字符串 |
 | `*T` | `T \| null` | 指针表示可为 null |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 作为返回值时为异常，否则为 any |
+| `error` | `any` / `Exception` | 用作返回值时为 Exception，否则为 any |
 
 ### 不支持的类型
 
-以下类型<strong>不能</strong>通过桥接层传递：
+以下类型**无法**通过桥接传递：
 
 - `chan T`（通道）
 - `func()`（函数）
 - 复杂接口（`interface{}`除外）
-- 未导出的字段（小写）
+- 未导出的字段（小写开头）
 
 <strong>解决方法：</strong>使用 ID 或句柄：
 
@@ -401,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### JavaScript 端
 
-绑定的方法失败时，返回的 Promise 会以 JavaScript `Error`对象拒绝：
+绑定方法失败时，返回的 Promise 会以 JavaScript `Error`对象拒绝：
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-运行时会根据具体的错误原因抛出不同类型的错误：
+运行时会根据具体错误抛出不同类型的错误：
 
-| 错误类型 | 抛出条件 |
+| 错误类型 | 抛出时机 |
 | --- | --- |
-| `TypeError` | 调用的参数数量错误，或某个参数无法转换为相应的 Go 类型 |
+| `TypeError` | 调用的实参数量不正确，或某个实参无法转换为相应的 Go 类型 |
 | `RuntimeError` | 方法返回了错误，或在运行时发生 panic |
 | `Error` | 任何其他故障，例如调用了不存在的方法 |
 
-每个错误都提供：
+每个错误都提供以下信息：
 
-- `name`：上表中的错误类型
+- `name`：上表所列的错误类型
 - `message`：Go 错误的消息
-- `cause`：Go 错误的 JSON 序列化形式（如有）。如果方法返回了多个错误，`cause`将是一个数组，每个错误对应一个元素。
+- `cause`：Go 错误序列化后的 JSON（如有）。如果方法返回了多个错误，`cause`将是一个数组，每个错误对应一个元素。
 
-`RuntimeError`类由`@wailsio/runtime`包导出，因此可以区分 Go 代码返回的错误与其他故障：
+`RuntimeError`类由`@wailsio/runtime`包导出，因此你可以区分 Go 代码返回的错误与其他故障：
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -485,7 +485,7 @@ try {
 }
 ```
 
-错误使用标准`encoding/json`包进行序列化，因此只包含已导出的字段。使用`errors.New`或`fmt.Errorf`创建的错误没有已导出字段，会序列化为空对象。
+错误使用标准`encoding/json`包进行序列化，因此只包含已导出的字段。使用`errors.New`或`fmt.Errorf`创建的错误没有已导出字段，会被序列化为空对象。
 
 如需完全控制错误的序列化方式，请在服务选项中提供`MarshalError`函数：
 
@@ -509,7 +509,7 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError`必须返回有效的 JSON，或返回`nil`以回退到默认序列化方式。
+`MarshalError`必须返回有效的 JSON；也可返回`nil`，以回退到默认序列化方式。
 
 ## 性能
 
@@ -698,17 +698,17 @@ app.loadTodos()
 - **保持方法简单**——遵循单一职责原则
 - **返回错误**——不要触发 panic
 - **使用线程安全的状态**——用互斥锁保护共享数据
-- **批量执行操作**——减少跨桥调用
+- **批量执行操作**——减少桥接调用
 - **在 Go 端缓存**——避免重复工作
 - **为方法编写文档**——注释会转换为 JSDoc
 
-### ❌ 不应该做
+### ❌ 不要做
 
-- **不要阻塞**——长时间运行的操作应使用 goroutine
+- **不要阻塞**——对耗时操作使用 goroutine
 - **不要返回通道**——改用事件
 - **不要返回函数**——不受支持
 - **不要忽略错误**——始终处理错误
-- **不要使用未导出的字段**——这些字段不会生成绑定
+- **不要使用未导出的字段**——这些字段不会被绑定
 
 ## 后续步骤
 
@@ -725,7 +725,7 @@ app.loadTodos()
 [了解更多 →](/features/bindings/models/)
 
 ---
-🚀 Go-前端桥接
+🚀 Go 与前端之间的桥接
 了解桥接机制。
 
 [了解更多 →](/concepts/bridge/)
@@ -740,4 +740,4 @@ app.loadTodos()
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

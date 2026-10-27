@@ -686,4 +686,4 @@ v3에서 Linux/Windows/macOS 간 교차 컴파일은 일반적으로 Docker `wai
 
 ---
 
-**빌드에 관해 궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [빌드 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/build)를 확인하세요.
+**빌드에 관해 궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [빌드 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build)를 확인하세요.

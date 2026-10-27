@@ -17,9 +17,7 @@ Robust desktop frameworks demand rock-solid testing. Wails v3 employs a **layere
 
 This document explains **where tests live**, **how to run them**, and **what the Taskfile orchestrates**.
 
-> The race guidance referenced by older drafts as `pkg/application/RACE.md`
->
-> lives in `v3/TESTING.md` today.
+`v3/TESTING.md` documents cross-platform example builds; it is not a race-suppression catalogue.
 
 ---
 
@@ -31,7 +29,7 @@ v3/
 ├── pkg/.../_test.go          # Public API tests
 ├── tasks/events/generate.go  # Code generator for event constants (NOT a test harness)
 ├── tests/                    # Top-level integration test harness
-└── TESTING.md                # Race / Cgo testing guidance
+└── TESTING.md                # Cross-platform example-build guidance
 ```
 
 Guidelines:
@@ -85,7 +83,7 @@ task test:templates      # build every shipped template
 task test:infrastructure # supporting helpers
 task test:examples       # exercise the example matrix (downloads as needed)
 task test:all            # everything above
-task sanity              # quick smoke check (also: sanity:gtk4)
+task sanity              # default GTK4 smoke check (legacy: sanity:gtk3)
 task precommit           # what you should run before pushing
 ```
 
@@ -93,7 +91,7 @@ task precommit           # what you should run before pushing
 
 ## 3. Integration Tests
 
-`v3/tests/` hosts the cross-package integration harness. The Taskfile `test:example:*` and `test:examples:*` targets drive build-and-launch checks across darwin / windows / linux (including Docker-based GTK3 / GTK4 matrices on Linux).
+`v3/tests/` hosts the cross-package integration harness. The Taskfile `test:example:*` and `test:examples:*` targets drive compilation checks across darwin / windows / linux (including Docker-based GTK3 / GTK4 matrices on Linux).
 
 > Runnable examples live in `v3/examples/`. The test targets select and build
 >
@@ -112,12 +110,9 @@ task test:examples:all   # full matrix (slow)
 
 Data races are fatal in GUI runtimes.
 
-### Race Guide
+### Investigating a race
 
-See `v3/TESTING.md` for:
-
-- Known benign races and suppression rationale
-- How to interpret stack-traces crossing Cgo boundaries (Linux GTK + WebKit2GTK)
+Inspect both conflicting accesses and reproduce on the affected platform. Do not treat a report as benign or suppress it without evidence. `v3/TESTING.md` describes example compilation; passing those builds does not establish race freedom or native runtime behaviour.
 
 ### Local Race Suite
 
@@ -139,7 +134,7 @@ Real workflow files under `.github/workflows/` (verified against the tree):
 
 | File | Purpose |
 | --- | --- |
-| `build-and-test-v3.yml` | Main v3 build + test matrix. Uses `actions/setup-go@v5` with `go-version: 1.25`. Runs `task runtime:check`, `task runtime:test`, `task runtime:build`, `task test:examples` (and `BUILD_TAGS=gtk4 task test:examples` for the GTK4 path), `task generator:test:check`, `task install`, then `wails3 build` as a smoke check. Linux jobs install `libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk` and run the test suite under `dbus-run-session -- xvfb-run`. |
+| `build-and-test-v3.yml` | Go 1.26/1.27 matrix, runtime and generator checks, template/example compilation, and application build checks. Linux uses GTK4/WebKitGTK 6.0 by default; the legacy variant sets `BUILD_TAGS=gtk3`. Native launch and interaction must be checked separately. |
 | `cross-compile-test-v3.yml` | Cross-compile sanity checks |
 | `auto-changelog-v3.yml`, `changelog-v3.yml` | Changelog automation |
 | `nightly-release-v3.yml` | Nightly v3 release artefacts |
@@ -148,9 +143,7 @@ Real workflow files under `.github/workflows/` (verified against the tree):
 | `publish-npm.yml` | Publishes the embedded `@wailsio/runtime` JS runtime to npm |
 | `pr-master.yml` | PR-side checks against the `master` branch |
 | `semgrep.yml` | Semgrep static analysis |
-| `stale-issues.yml`, `issue-labeler.yml`, `file-labeler.yml`, `claude.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Repo-housekeeping / v2-side flows |
-
-There is **no** `qodana.yaml` and **no** `runtime.yml` in this tree — older drafts of this page named both, but only `semgrep.yml` covers static analysis and the runtime JS package is published through `publish-npm.yml`.
+| `stale-issues.yml`, `generate-sponsor-image.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Repository housekeeping and v2 workflows; the old Crowdin sync/upload workflows are retired. |
 
 The CI steps mirror the Taskfile targets above (`task test:cli`, `task test:generator`, `task test:templates`, `task test:examples`, …) so you can reproduce CI locally one-to-one. The smoke `wails3 build` step in `build-and-test-v3.yml` is invoked with **no extra flags** — there is no `-skip-package` flag on `wails3 build`.
 
@@ -195,10 +188,10 @@ task test:examples
 | --- | --- |
 | Generator round-trip test | `internal/generator/generate_test.go` |
 | Build-assets test | `internal/commands/build-assets_test.go` |
-| Race / Cgo guide | `v3/TESTING.md` |
+| Cross-platform example builds | `v3/TESTING.md` |
 | Taskfile test targets | `v3/Taskfile.yaml` |
 | Event-constants generator | `v3/tasks/events/generate.go` |
-| CI workflow | `.github/workflows/build-and-test-v3.yml` (Go 1.25 via `actions/setup-go@v5`) |
+| CI workflow | `.github/workflows/build-and-test-v3.yml` (Go 1.26/1.27 via `actions/setup-go@v5`) |
 | Static analysis | `.github/workflows/semgrep.yml` |
 | Runtime npm publish | `.github/workflows/publish-npm.yml` |
 

@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-**Остались вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примером окна без рамки](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless).
+**Остались вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примером окна без рамки](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/frameless).

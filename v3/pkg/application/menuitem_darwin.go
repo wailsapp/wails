@@ -12,6 +12,18 @@ package application
 
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
 
+static void* newMenuSectionHeader(char *label) {
+	NSMenuItem *item = nil;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+	if (@available(macOS 14.0, *)) {
+		// Match the owning reference returned by newMenuItem for rebuild/destroy.
+		item = [[NSMenuItem sectionHeaderWithTitle:[NSString stringWithUTF8String:label]] retain];
+	}
+#endif
+	free(label);
+	return item;
+}
+
 // Create menu item
 void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip, char* selector) {
 	MenuItem *menuItem = [MenuItem new];
@@ -410,6 +422,10 @@ func (m *macosMenuItem) destroy() {
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	result := &macosMenuItem{
 		menuItem: item,
+	}
+	if item.itemType == sectionHeader {
+		result.nsMenuItem = C.newMenuSectionHeader(C.CString(item.label))
+		return result
 	}
 
 	selector := getSelectorForRole(item.role)

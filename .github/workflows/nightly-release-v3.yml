@@ -1,8 +1,16 @@
-name: Nightly Release v3
+name: Nightly + Weekly Release v3
 
 on:
   schedule:
-    - cron: '0 15 * * *'  # 3 PM UTC daily
+    - cron: '0 15 * * *'  # 3 PM UTC daily  -> nightly pre-release (vX.(Y+1).0-nightly.YYYYMMDD)
+    # Weekly (minor bump, vX.Y.0) at 20:00 Australia/Sydney. GitHub cron is
+    # UTC-only and has no timezone key, so both DST offsets are scheduled and
+    # the `cadence` job proceeds only when it is really 20:00 in Sydney
+    # (UTC+11 Oct-Apr -> 09:00 UTC, UTC+10 Apr-Oct -> 10:00 UTC).
+    # UNCONFIRMED: the weekday is Sunday; change the two cron day fields AND
+    # WEEKLY_DAY_SYDNEY together.
+    - cron: '0 9 * * 0'
+    - cron: '0 10 * * 0'
   workflow_dispatch:
     inputs:
       force_release:
@@ -15,45 +23,118 @@ on:
         required: false
         default: true
         type: boolean
+      channel:
+        description: 'Cadence: nightly = vX.(Y+1).0-nightly.DATE (pre-release); weekly = vX.(Y+1).0 (normal release). Ignored when release_version is set (shape decides).'
+        required: false
+        default: 'nightly'
+        type: choice
+        options:
+          - nightly
+          - weekly
+      override_reason:
+        description: 'RELEASE LEAD ONLY. Non-empty skips the weekly release gate (blockers are recorded in the summary and status issue). Protect with an environment that requires reviewers.'
+        required: false
+        default: ''
+        type: string
+      ref:
+        description: 'Branch to release from (nightly/weekly: master; releases/** only for a one-off with release_version such as v3.0.0 or a hotfix v3.1.1)'
+        required: false
+        default: 'master'
+        type: string
       release_version:
-        description: 'Optional explicit version for an ad-hoc release (e.g. v3.0.0-beta.8)'
+        description: 'Optional explicit version: GA v3.0.0 or hotfix v3.1.1 (normal release, Latest). Do not use for nightlies.'
         required: false
         default: ''
         type: string
 
+env:
+  WEEKLY_DAY_SYDNEY: '7'   # ISO weekday (1=Mon .. 7=Sun). UNCONFIRMED by the owner.
+  WEEKLY_HOUR_SYDNEY: '20'
+
+# Serialise with every other job that pushes to master or tags releases.
+concurrency:
+  group: release-v3
+  cancel-in-progress: false
+
 jobs:
-  nightly-release:
+  cadence:
+    name: Resolve cadence
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    permissions: {}
+    outputs:
+      proceed: ${{ steps.resolve.outputs.proceed }}
+      channel: ${{ steps.resolve.outputs.channel }}
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+    - name: Resolve cadence and branch
+      id: resolve
+      env:
+        EVENT_SCHEDULE: ${{ github.event.schedule }}
+        INPUT_CHANNEL: ${{ inputs.channel }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_VERSION: ${{ inputs.release_version }}
+      run: |
+        CHANNEL="${INPUT_CHANNEL:-nightly}"
+        REF="${INPUT_REF:-master}"
+        PROCEED=true
+        case "$EVENT_SCHEDULE" in
+          '0 9 * * 0'|'0 10 * * 0')
+            CHANNEL=weekly; REF=master
+            SYD_HOUR="$(TZ=Australia/Sydney date +%H)"
+            SYD_DAY="$(TZ=Australia/Sydney date +%u)"
+            if [ "$SYD_HOUR" != "$WEEKLY_HOUR_SYDNEY" ] || [ "$SYD_DAY" != "$WEEKLY_DAY_SYDNEY" ]; then
+              PROCEED=false
+              echo "Not weekly time in Sydney (day=$SYD_DAY hour=$SYD_HOUR); skipping this DST-twin cron."
+            fi ;;
+          '') ;;
+          *) CHANNEL=nightly; REF=master ;;
+        esac
+        case "$REF" in master|releases/*) ;; *) echo "::error::ref must be master or releases/**"; exit 1;; esac
+        if [ "$REF" != master ] && [ -z "$INPUT_VERSION" ]; then
+          echo "::error::releases from $REF need an explicit release_version (GA or hotfix); nightly/weekly are cut from master"; exit 1
+        fi
+        echo "proceed=$PROCEED" >> "$GITHUB_OUTPUT"
+        echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+        echo "ref=$REF" >> "$GITHUB_OUTPUT"
+        echo "Cadence: $CHANNEL from $REF (proceed=$PROCEED)"
+
+  nightly-release:
+    needs: [cadence]
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails' && needs.cadence.outputs.proceed == 'true'
     env:
       GOWORK: "off"
-    
+      CHANNEL: ${{ needs.cadence.outputs.channel }}
+      RELEASE_REF: ${{ needs.cadence.outputs.ref }}
+
     permissions:
       contents: write
       pull-requests: read
       actions: write
-    
+      checks: read
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: master
+        ref: ${{ needs.cadence.outputs.ref }}
         fetch-depth: 0
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-    
+
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.25'
+        go-version: '1.27'
         cache: true
         cache-dependency-path: 'v3/go.sum'
-    
+
     - name: Install Task
       uses: arduino/setup-task@v2
       with:
         version: 3.x
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Setup Git
       run: |
         git config --global user.name "github-actions[bot]"
@@ -61,6 +142,55 @@ jobs:
         
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
+
+    - name: Release gate (weekly)
+      # Runs from master HEAD (before the detached checkout of the green SHA). Fails (and does not tag) when a maintainer-set blocker exists. Nightlies
+      # never run the gate. Needs WAILS_REPO_TOKEN with the scopes listed in
+      # v3/tasks/releasegate/main.go; the gate FAILS CLOSED without them.
+      if: env.CHANNEL == 'weekly' && inputs.release_version == ''
+      working-directory: v3
+      env:
+        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+        REPO: ${{ github.repository }}
+        OVERRIDE_REASON: ${{ inputs.override_reason }}
+        STATUS_ISSUE: ${{ vars.WEEKLY_STATUS_ISSUE }}
+      run: go run ./tasks/releasegate
+
+    - name: Select newest green master commit (weekly)
+      # The weekly promotes the newest master commit whose required checks
+      # (v3 Build Results, Run Go Tests, Bundled runtime matches source) all
+      # passed - not simply HEAD - and is cut from that exact SHA. If no commit
+      # since the last weekly is green the job FAILS and nothing is released.
+      id: green
+      if: env.CHANNEL == 'weekly' && env.RELEASE_REF == 'master'
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        git fetch origin master
+        SHA="$(.github/scripts/find-green-commit.sh)"
+        # Keep master's release checks: the green commit can predate fixes to
+        # them (CI-only PRs never become green, so the snapshot may lag).
+        TOOLS="$RUNNER_TEMP/release-tools"
+        mkdir -p "$TOOLS"
+        cp v3/scripts/check-changelog-runs.py v3/scripts/test_check_changelog_runs.py "$TOOLS/"
+        echo "tools=$TOOLS" >> "$GITHUB_OUTPUT"
+        git checkout --detach "$SHA"
+        echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+        echo "Weekly will be cut from $SHA" | tee -a "$GITHUB_STEP_SUMMARY"
+
+    - name: Warn if master HEAD is not green (nightly)
+      if: env.CHANNEL == 'nightly'
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+      run: |
+        # Advisory only: a nightly still ships, but the run is annotated.
+        if ! .github/scripts/find-green-commit.sh --check "$(git rev-parse HEAD)"; then
+          echo "::warning::master HEAD $(git rev-parse --short HEAD) has no green required checks; this nightly is unverified."
+        fi
 
     - name: Check for existing release tag
       id: check_tag
@@ -124,6 +254,7 @@ jobs:
     - name: Early exit - No changes detected
       if: |
         steps.quick_check.outputs.should_continue == 'false' && 
+        needs.cadence.outputs.channel != 'weekly' &&
         github.event.inputs.force_release != 'true' &&
         inputs.release_version == ''
       run: |
@@ -143,6 +274,7 @@ jobs:
     - name: Continue with release process
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
+        needs.cadence.outputs.channel == 'weekly' ||
         github.event.inputs.force_release == 'true' ||
         inputs.release_version != ''
       run: |
@@ -154,18 +286,21 @@ jobs:
     - name: Verify changelog workflow evidence
       if: |
         steps.quick_check.outputs.should_continue == 'true' ||
+        needs.cadence.outputs.channel == 'weekly' ||
         github.event.inputs.force_release == 'true' ||
         inputs.release_version != ''
       env:
         GH_TOKEN: ${{ github.token }}
+        TOOLS: ${{ steps.green.outputs.tools || 'v3/scripts' }}
       run: |
-        python3 -m unittest discover -s v3/scripts -p 'test_check_changelog_runs.py'
-        python3 v3/scripts/check-changelog-runs.py
+        python3 -m unittest discover -s "$TOOLS" -p 'test_check_changelog_runs.py'
+        python3 "$TOOLS/check-changelog-runs.py"
 
     - name: Run release script
       id: release
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
+        needs.cadence.outputs.channel == 'weekly' ||
         github.event.inputs.force_release == 'true' ||
         inputs.release_version != ''
       env:
@@ -178,9 +313,14 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         DRY_RUN: ${{ inputs.dry_run }}
         RELEASE_VERSION: ${{ inputs.release_version }}
+        GREEN_SHA: ${{ steps.green.outputs.sha }}
       run: |
         cd v3/tasks/release
-        ARGS=()
+        ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$RELEASE_REF")
+        if [ -n "$GREEN_SHA" ]; then
+          # Detached, CI-verified commit: tag it, never push the branch.
+          ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$GREEN_SHA" --tag-only)
+        fi
         if [ "$DRY_RUN" == "true" ]; then
           ARGS+=(--dry-run)
         fi
@@ -188,6 +328,44 @@ jobs:
           ARGS+=(--version "$RELEASE_VERSION")
         fi
         go run release.go "${ARGS[@]}"
+
+    - name: Sync release commit back to master
+      # Keeps master's version.txt monotonic: otherwise the next nightly would
+      # compute a lower/duplicate version (the release tool also refuses that).
+      #  - weekly cut from a green SHA (tag-only): copy the three version files
+      #    from the tag onto master HEAD (no conflicts, no changelog touched).
+      #  - release from releases/**: cherry-pick the release commit (version,
+      #    runtime metadata, changelog) onto master.
+      if: >-
+        steps.release.outcome == 'success' &&
+        inputs.dry_run != true &&
+        (steps.green.outputs.sha != '' || env.RELEASE_REF != 'master')
+      env:
+        TAG: ${{ steps.release.outputs.release_tag }}
+        GREEN_SHA: ${{ steps.green.outputs.sha }}
+        PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        set -euo pipefail
+        PKG=v3/internal/runtime/desktop/@wailsio/runtime
+        for attempt in 1 2 3 4 5; do
+          git fetch origin master
+          git checkout -B sync-master origin/master
+          if [ -n "$GREEN_SHA" ]; then
+            # Copy only the version fields: a weekly is cut from an older green
+            # commit, so checking out whole files from the tag would revert
+            # dependency and lockfile updates merged to master since then.
+            git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
+            (cd v3/tasks/release && go run release.go --sync-runtime-version "$TAG")
+            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json"
+            git commit -m "chore(v3): sync version to ${TAG}"
+          else
+            git cherry-pick -x "${TAG}^{commit}"
+          fi
+          if git push "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master; then exit 0; fi
+          sleep $(( attempt * 5 ))
+        done
+        echo "::error::could not sync ${TAG} back to master; version.txt on master is now behind the tag"
+        exit 1
 
     - name: Summary
       if: always()

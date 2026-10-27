@@ -1,6 +1,6 @@
 ---
 title: "Windows 封裝"
-description: "封裝 Wails 應用程式以供 Windows 發佈"
+description: "封裝 Wails 應用程式以便在 Windows 上發佈"
 slug: "guides/build/windows"
 sourcePath: "guides/build/windows.md"
 ---
@@ -19,7 +19,7 @@ wails3 package GOOS=windows
 2. 產生 WebView2 啟動載入器
 3. 建立 NSIS 安裝程式
 
-輸出：`build/windows/nsis/<AppName>-installer.exe`
+輸出：`bin/<AppName>-<arch>-installer.exe`。NSIS 來源指令碼會保留在`build/windows/nsis/`下。
 
 ### MSIX 套件
 
@@ -38,7 +38,7 @@ MSIX 需要`makeappx.exe`（Windows SDK）或獨立的 MSIX 工具。Windows Tas
 
 ## 自訂安裝程式
 
-NSIS 組態位於`build/windows/nsis/project.nsi`。編輯此檔案可自訂：
+NSIS 設定位於`build/windows/nsis/project.nsi`。編輯此檔案即可自訂：
 
 - 安裝程式使用者介面與品牌識別
 - 安裝目錄
@@ -54,7 +54,7 @@ NSIS 組態位於`build/windows/nsis/project.nsi`。編輯此檔案可自訂：
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -66,7 +66,7 @@ NSIS 組態位於`build/windows/nsis/project.nsi`。編輯此檔案可自訂：
 
 ## 程式碼簽署
 
-簽署可執行檔與安裝程式，以避免 SmartScreen 警告：
+簽署可執行檔與安裝程式，以避免出現 SmartScreen 警告：
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -90,12 +90,12 @@ vars:
 安全地儲存憑證密碼：
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 如需詳細資訊，請參閱[簽署應用程式](/guides/build/signing/)。
 
-## 針對 ARM 建置
+## 為 ARM 建置
 
 ```bash
 wails3 build GOOS=windows GOARCH=arm64

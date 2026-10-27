@@ -739,4 +739,4 @@ contextMenu.Update()  // Add this!
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примером контекстного меню](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus).
+**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примером контекстного меню](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/contextmenus).

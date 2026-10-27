@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML ウィンドウはアセットサーバーのオリジンなしで読み込まれるため、`/wails/runtime.js` を動的に取得できません。このウィンドウからホストと通信する方法は 2 つあります。
 
 1. **HTML をそのまま記述します。** フレームワークは、`WebviewWindowOptions.AllowSimpleEventEmit = true` と `HTML` が設定されたウィンドウに最小限の `window.wails.Events` shim を自動挿入します。これはまさに、アップデーターの組み込みパスと BYO パスが行う設定です。ビルド手順は不要です。以下の例ではこの方法を使用します。
-2. **任意のバンドラー**（Vite、esbuild、Rollup）で `@wailsio/runtime` をバンドルし、ビルド時にカスタム HTML へインポートします。`Events.On` は完全にクライアント側で動作するため、そのまま使用できます。一方、`Events.Emit` はランタイムの fetch トランスポートを経由しますが、null オリジンでは機能しません。そのため、ランタイムの [`setTransport`](https://wails.io/wails/runtime.js) フックを使用し、`window._wails.invoke("wails:event:emit:<name>")` 経由でルーティングする小さな postMessage トランスポートを組み込みます。`window.wails.Events` がすでにスコープ内にある場合、フレームワークによる挿入は何も行わないため、2 つの方法が競合することはありません。
+2. **任意のバンドラー**（Vite、esbuild、Rollup）で `@wailsio/runtime` をバンドルし、ビルド時にカスタム HTML へインポートします。`Events.On` は完全にクライアント側で動作するため、そのまま使用できます。一方、`Events.Emit` はランタイムの fetch トランスポートを経由しますが、null オリジンでは機能しません。そのため、ランタイムの [`setTransport`](/guides/custom-transport/) フックを使用し、`window._wails.invoke("wails:event:emit:<name>")` 経由でルーティングする小さな postMessage トランスポートを組み込みます。`window.wails.Events` がすでにスコープ内にある場合、フレームワークによる挿入は何も行わないため、2 つの方法が競合することはありません。
 
 どちらの方法でも、カスタム HTML に記述する JS は同じ `Events.On` / `Events.Emit` API を呼び出します。
 
@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 関連項目
 
-- 実行可能な例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- 実行可能な例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - テスト用デモリポジトリ：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - チュートリアル：[Wailsアプリに自己更新機能を追加する](/tutorials/04-self-update-a-wails-app/)

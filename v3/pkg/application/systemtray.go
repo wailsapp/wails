@@ -1,6 +1,7 @@
 package application
 
 import (
+	"cmp"
 	"errors"
 	"runtime"
 	"strings"
@@ -79,6 +80,7 @@ type systemTrayImpl interface {
 
 type SystemTray struct {
 	id           uint
+	textLock     sync.RWMutex // guards label and tooltip
 	label        string
 	tooltip      string
 	icon         []byte
@@ -117,8 +119,10 @@ func newSystemTray(id uint) *SystemTray {
 }
 
 func (s *SystemTray) SetLabel(label string) {
+	s.textLock.Lock()
+	s.label = label
+	s.textLock.Unlock()
 	if s.impl == nil {
-		s.label = label
 		return
 	}
 	InvokeSync(func() {
@@ -127,7 +131,17 @@ func (s *SystemTray) SetLabel(label string) {
 }
 
 func (s *SystemTray) Label() string {
+	s.textLock.RLock()
+	defer s.textLock.RUnlock()
 	return s.label
+}
+
+// tooltipOrLabel is the text Windows shows on hover: the tooltip, or the label when
+// no tooltip is set, since Windows has no text next to the tray icon.
+func (s *SystemTray) tooltipOrLabel() string {
+	s.textLock.RLock()
+	defer s.textLock.RUnlock()
+	return cmp.Or(s.tooltip, s.label)
 }
 
 func (s *SystemTray) Run() {
@@ -255,6 +269,7 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 		s.menu = menu
 	} else {
 		InvokeSync(func() {
+			s.menu = menu
 			s.impl.setMenu(menu)
 		})
 	}
@@ -285,8 +300,10 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetTooltip(tooltip string) {
+	s.textLock.Lock()
+	s.tooltip = tooltip
+	s.textLock.Unlock()
 	if s.impl == nil {
-		s.tooltip = tooltip
 		return
 	}
 	InvokeSync(func() {
@@ -397,11 +414,12 @@ func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 }
 
 func (s *SystemTray) OpenMenu() {
-	if s.menu == nil {
-		return
-	}
 	if s.impl == nil {
 		return
 	}
-	InvokeSync(s.impl.openMenu)
+	InvokeSync(func() {
+		if s.menu != nil {
+			s.impl.openMenu()
+		}
+	})
 }

@@ -69,6 +69,7 @@ type Chromium struct {
 	permissionRequested              *iCoreWebView2PermissionRequestedEventHandler
 	webResourceRequested             *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
+	moveFocusRequested               *ICoreWebView2MoveFocusRequestedEventHandler
 	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
 	navigationStarting               *ICoreWebView2NavigationStartingEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
@@ -99,7 +100,11 @@ type Chromium struct {
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
 	AcceleratorKeyCallback                   func(uint) bool
-	CursorChangedCallback                    func(cursor HCURSOR, systemCursorID uint32)
+	// MoveFocusRequestedCallback is called when the user tabs (or shift+tabs)
+	// out of the WebView. Return true to take over focus handling (the
+	// WebView will not wrap focus back to its own first/last element).
+	MoveFocusRequestedCallback func(reason COREWEBVIEW2_MOVE_FOCUS_REASON) bool
+	CursorChangedCallback      func(cursor HCURSOR, systemCursorID uint32)
 
 	// Error handling
 	globalErrorCallback func(error)
@@ -131,6 +136,7 @@ func NewChromium() *Chromium {
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
+	e.moveFocusRequested = newICoreWebView2MoveFocusRequestedEventHandler(e)
 	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
 	e.navigationStarting = newICoreWebView2NavigationStartingEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
@@ -171,6 +177,7 @@ func (e *Chromium) ShuttingDown() {
 	e.ProcessFailedCallback = nil
 	e.ContainsFullScreenElementChangedCallback = nil
 	e.AcceleratorKeyCallback = nil
+	e.MoveFocusRequestedCallback = nil
 	e.CursorChangedCallback = nil
 	e.globalErrorCallback = globalErrorHandler
 }
@@ -686,6 +693,12 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	if err != nil {
 		return e.initializationFailed(err)
 	}
+	// Without this handler WebView2 wraps Tab focus around inside the page,
+	// so keyboard focus can never leave the WebView (wailsapp/wails#3783).
+	err = e.controller.AddMoveFocusRequested(e.moveFocusRequested, &token)
+	if err != nil {
+		return e.initializationFailed(err)
+	}
 	if e.compositionController != nil {
 		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
 		if err != nil {
@@ -710,15 +723,18 @@ func (e *Chromium) CursorChanged(sender *ICoreWebView2CompositionController, _ *
 		return 0
 	}
 
+	// A cursor that cannot be read leaves the previous cursor showing until
+	// the next change; that is recoverable, killing the process
+	// (errorCallback) is not (wailsapp/wails#5580).
 	cursor, err := sender.GetCursor()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] CursorChanged failed to get cursor: %v", err)
 		return 0
 	}
 
 	systemCursorID, err := sender.GetSystemCursorId()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] CursorChanged failed to get system cursor id: %v", err)
 		return 0
 	}
 
@@ -771,7 +787,10 @@ func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
 		return
 	}
 	if err := e.SetBackgroundColourWithError(R, G, B, A); err != nil {
-		e.errorCallback(err)
+		// The window keeps its previous background colour; that is
+		// recoverable, killing the process is not (wailsapp/wails#5580).
+		// Setup uses SetBackgroundColourWithError to see the error.
+		log.Printf("[WebView2] SetBackgroundColour failed: %v", err)
 	}
 }
 
@@ -807,12 +826,19 @@ func (e *Chromium) SetGlobalPermission(state CoreWebView2PermissionState) {
 }
 
 func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2PermissionRequestedEventArgs) uintptr {
+	var result CoreWebView2PermissionState
 	kind, err := args.GetPermissionKind()
 	if err != nil {
-		e.errorCallback(err)
-	}
-	var result CoreWebView2PermissionState
-	if e.globalPermission != nil {
+		// A request whose kind cannot be read cannot match a per-kind rule,
+		// so it is denied unless a global permission applies; denying one
+		// request is recoverable, killing the process is not
+		// (wailsapp/wails#5580).
+		log.Printf("[WebView2] PermissionRequested failed to get permission kind: %v", err)
+		result = CoreWebView2PermissionStateDeny
+		if e.globalPermission != nil {
+			result = *e.globalPermission
+		}
+	} else if e.globalPermission != nil {
 		result = *e.globalPermission
 	} else {
 		var ok bool
@@ -823,7 +849,8 @@ func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2Perm
 	}
 	err = args.PutState(result)
 	if err != nil {
-		e.errorCallback(err)
+		// WebView2 then applies its default handling to this request.
+		log.Printf("[WebView2] PermissionRequested failed to set state: %v", err)
 	}
 	return 0
 }
@@ -850,7 +877,11 @@ func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebVie
 
 func (e *Chromium) AddWebResourceRequestedFilter(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) {
 	if err := e.AddWebResourceRequestedFilterWithError(filter, ctx); err != nil {
-		e.errorCallback(err)
+		// Requests matching the filter fall back to WebView2's default
+		// handling; that is recoverable, killing the process is not
+		// (wailsapp/wails#5580). Setup uses
+		// AddWebResourceRequestedFilterWithError to see the error.
+		log.Printf("[WebView2] AddWebResourceRequestedFilter failed: %v", err)
 	}
 }
 
@@ -881,7 +912,10 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 		if !status.WasKeyDown {
 			err := args.PutHandled(e.AcceleratorKeyCallback(virtualKey))
 			if err != nil {
-				e.errorCallback(err)
+				// The key then takes WebView2's default path; that is
+				// recoverable, killing the process on a keypress is not
+				// (wailsapp/wails#5580).
+				log.Printf("[WebView2] AcceleratorKeyPressed failed to set handled: %v", err)
 			}
 		} else {
 			return 0
@@ -889,9 +923,37 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 	}
 	err := args.PutHandled(false)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] AcceleratorKeyPressed failed to set handled: %v", err)
 	}
 	return 0
+}
+
+// MoveFocusRequested is called when the user tabs out of the WebView. If
+// MoveFocusRequestedCallback reports the request as handled, WebView2's default
+// behaviour (wrapping focus inside the page) is suppressed.
+func (e *Chromium) MoveFocusRequested(sender *ICoreWebView2Controller, args *ICoreWebView2MoveFocusRequestedEventArgs) uintptr {
+	handled := false
+	if !e.shuttingDown && e.MoveFocusRequestedCallback != nil {
+		if reason, err := args.GetReason(); err == nil {
+			handled = e.MoveFocusRequestedCallback(reason)
+		}
+	}
+	if err := args.PutHandled(handled); err != nil {
+		log.Printf("[WebView2] MoveFocusRequested PutHandled failed: %v", err)
+	}
+	return 0
+}
+
+// MoveFocus moves focus into the WebView for the given reason. Use
+// COREWEBVIEW2_MOVE_FOCUS_REASON_NEXT / _PREVIOUS to enter at the first / last
+// focusable element when tabbing in from the host window.
+func (e *Chromium) MoveFocus(reason COREWEBVIEW2_MOVE_FOCUS_REASON) {
+	if !e.IsReady() {
+		return
+	}
+	if err := e.controller.MoveFocus(reason); err != nil {
+		log.Printf("[WebView2] MoveFocus failed: %v", err)
+	}
 }
 
 func (e *Chromium) GetSettings() (*ICoreWebViewSettings, error) {
@@ -950,7 +1012,9 @@ func (e *Chromium) Bounds() *Rect {
 
 	rect, err := e.controller.GetBounds()
 	if err != nil {
-		e.errorCallback(err)
+		// nil already means "bounds unavailable" (see above); a failed read
+		// is recoverable, killing the process is not (wailsapp/wails#5580).
+		log.Printf("[WebView2] Bounds failed: %v", err)
 		return nil
 	}
 	return rect

@@ -1,26 +1,26 @@
 ---
 title: "개발 환경 설정"
-description: "Wails v3 개발을 위한 개발 환경을 설정합니다"
+description: "Wails v3 개발을 위한 개발 환경 설정"
 slug: "contributing/setup"
 sourcePath: "contributing/setup.md"
 ---
 
 ## 개발 환경 설정
 
-이 가이드에서는 Wails v3 작업에 필요한 완전한 개발 환경을 설정하는 방법을 안내합니다.
+이 가이드에서는 Wails v3 개발에 필요한 전체 개발 환경을 설정하는 방법을 안내합니다.
 
 ## 필수 도구
 
 ### Go 개발
 
-1. **Go 1.25 이상을 설치하세요.**
+1. **Go 1.26 이상을 설치합니다.**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
   ```
 
 
-2. **Go 환경을 구성하세요.**
+2. **Go 환경을 구성합니다.**
   ```bash
   # Add to your shell profile (.bashrc, .zshrc, etc.)
   export GOPATH=$HOME/go
@@ -28,7 +28,7 @@ sourcePath: "contributing/setup.md"
   ```
 
 
-3. **유용한 Go 도구를 설치하세요.**
+3. **유용한 Go 도구를 설치합니다.**
   ```bash
   go install golang.org/x/tools/cmd/goimports@latest
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
@@ -59,9 +59,9 @@ xcode-select -p  # Should output a path
 
 **Windows:**
 
-1. Unix 계열 환경을 사용하려면 [MSYS2](https://www.msys2.org/)를 설치하세요
+1. Unix와 유사한 환경을 사용하려면 [MSYS2](https://www.msys2.org/)를 설치합니다.
 2. WebView2 Runtime(Windows 11에는 사전 설치되어 있으며, Windows 10용은 [다운로드](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)할 수 있음)
-3. 선택 사항: [Git for Windows](https://git-scm.com/download/win)를 설치하세요
+3. 선택 사항: [Git for Windows](https://git-scm.com/download/win)를 설치합니다.
 
 **Linux(Debian/Ubuntu):**
 
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -132,22 +132,22 @@ export PATH=$PATH:/path/to/wails
 
 **Windows:**
 
-시스템 속성에서 Wails 디렉터리를 PATH 환경 변수에 추가하세요.
+시스템 속성에서 Wails 디렉터리를 PATH 환경 변수에 추가합니다.
 
 ## IDE 설정
 
 ### VS Code(권장)
 
-1. **VS Code를 설치하세요.** [다운로드](https://code.visualstudio.com/)
+1. **VS Code를 설치합니다.** [다운로드](https://code.visualstudio.com/)
 
-2. **확장 프로그램을 설치하세요.**
-  - Go(Google의 Go Team 제공)
+2. **확장 프로그램을 설치합니다.**
+  - Go(Google Go Team 제공)
   - ESLint
   - Prettier
   - MDX(문서용)
 
 
-3. **워크스페이스 설정을 구성하세요**(`.vscode/settings.json`).
+3. **워크스페이스 설정을 구성합니다**(`.vscode/settings.json`).
   ```json
   {
     "go.useLanguageServer": true,
@@ -161,17 +161,17 @@ export PATH=$PATH:/path/to/wails
 
 ### GoLand
 
-1. **GoLand를 설치하세요.** [다운로드](https://www.jetbrains.com/go/)
+1. **GoLand를 설치합니다.** [다운로드](https://www.jetbrains.com/go/)
 
-2. **다음과 같이 구성하세요.**
-  - Go 모듈 지원을 활성화하세요
-  - `goimports`용 파일 감시자를 설정하세요
-  - 프로젝트 규칙에 맞게 코드 스타일을 구성하세요
+2. **다음과 같이 구성합니다.**
+  - Go 모듈 지원을 활성화합니다.
+  - `goimports`용 파일 감시자를 설정합니다.
+  - 프로젝트 규칙에 맞게 코드 스타일을 구성합니다.
 
 
 ## 설정 확인
 
-다음 명령을 실행하여 모든 항목이 정상적으로 작동하는지 확인하세요.
+다음 명령을 실행하여 모든 항목이 제대로 작동하는지 확인합니다.
 
 ```bash
 # Go version check
@@ -219,7 +219,7 @@ go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 
-### 경쟁 상태 감지기와 함께 실행
+### 레이스 감지기와 함께 실행
 
 ```bash
 cd v3
@@ -228,22 +228,9 @@ go test ./... -race
 
 ## 문서 작업
 
-Wails v3 문서는 M-Press로 작성됩니다. 영어 원본 파일은  
-`docs/mpress/content/`에 있으며, 번역 파일은 `fr/` 및 `id/` 같은 언어별 디렉터리에 있습니다.
+문서 기여자는 Wails CLI 또는 데스크톱 빌드 종속성을 설치하지 않고도 M-Press를 사용할 수 있습니다. 고정된 버전의 실행 파일 다운로드, 설치, 실시간 미리 보기, 검증 및 릴리스 브랜치 PR 워크플로에 관한 내용은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요.
 
-저장소 루트에서 문서 변경 사항을 미리 보고 검증하세요:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-프로덕션 사이트는 정적 사이트입니다. 로컬에서 문서 작업을 할 때는 Node.js, 번역 제공업체 및 Cloudflare  
-자격 증명이 필요하지 않습니다.
+영어 Markdown은 `docs/mpress/content/`에 있으며, 번역은 언어별 디렉터리에 있습니다. 저장소 루트에서 `mpress dev`를 실행하면 `http://127.0.0.1:3000`에서 미리 보기가 제공됩니다. 가이드의 검증 명령을 실행하기 전에 Ctrl+C로 미리 보기를 중지하세요.
 
 ## 디버깅
 
@@ -251,7 +238,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 **VS Code:**
 
-`.vscode/launch.json`을 생성하세요.
+`.vscode/launch.json`을 생성합니다.
 
 ```json
 {
@@ -279,7 +266,7 @@ dlv debug ./cmd/wails3 -- dev
 
 ### 플랫폼 코드 디버깅
 
-플랫폼별 디버깅에는 해당 플랫폼용 도구가 필요합니다.
+플랫폼별 디버깅에는 해당 플랫폼의 도구가 필요합니다.
 
 - **macOS:** Xcode Instruments
 - **Windows:** Visual Studio Debugger
@@ -293,7 +280,7 @@ Wails 디렉터리를 PATH에 추가하거나 프로젝트 루트에서 `./wails
 
 ### "webkitgtk-6.0 not found" 또는 "webkit2gtk not found"(Linux)
 
-빌드 대상으로 사용하는 스택에 맞는 개발 패키지를 설치하세요.
+빌드 대상으로 사용하는 스택의 개발 패키지를 설치하세요.
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -313,7 +300,7 @@ go mod download
 
 ### Windows에서 발생하는 "CGO_ENABLED" 오류
 
-C 컴파일러(MSYS2를 통한 MinGW-w64)가 PATH에 포함되어 있는지 확인하세요.
+C 컴파일러(MSYS2를 통해 설치한 MinGW-w64)가 PATH에 포함되어 있는지 확인하세요.
 
 ## 다음 단계
 

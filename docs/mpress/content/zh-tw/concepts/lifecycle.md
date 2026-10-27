@@ -816,4 +816,4 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ---
 
-<strong>對生命週期有疑問嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>對生命週期有疑問嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

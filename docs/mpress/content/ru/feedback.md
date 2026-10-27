@@ -34,7 +34,7 @@ sourcePath: "feedback.md"
 [Улучшения]
 Новую функциональность и изменения общедоступного поведения следует предлагать в виде чернового запроса на включение изменений с **WEP (Wails Enhancement Proposal)**, а не сообщения с запросом новой функции.
 
-- Ознакомьтесь с [процессом WEP](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Ознакомьтесь с [процессом WEP](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Скопируйте шаблон, затем создайте черновой PR с заголовком `[WEP] <title>`, содержащий только WEP и сопроводительные материалы.
 - Сначала идею можно неформально обсудить в [GitHub Discussions](https://github.com/wailsapp/wails/discussions) или в канале [#v3](https://discord.gg/bdj28QNHmT) в Discord, но для решения сопровождающего необходим PR с WEP.
 

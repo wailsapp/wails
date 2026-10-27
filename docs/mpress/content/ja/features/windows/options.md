@@ -1,15 +1,15 @@
 ---
 title: "ウィンドウオプション"
-description: "WebviewWindowOptions の完全なリファレンス"
+description: "ウィンドウオプション、既定値、プラットフォームの制約"
 slug: "features/windows/options"
 sourcePath: "features/windows/options.md"
 ---
 
-## ウィンドウ設定オプション
+## ウィンドウ構成オプション
 
-Wails には、サイズ、位置、外観、動作に関する数十のオプションが用意されており、ウィンドウを包括的に設定できます。このリファレンスでは、`WebviewWindowOptions`の<strong>完全なリファレンス</strong>として、Windows、macOS、Linux で利用可能なすべてのオプションを説明します。すべてのオプションと対応プラットフォームを、例および制約とともに示します。
+Wails では、サイズ、位置、外観、動作に関する多数のオプションを使用して、ウィンドウを包括的に構成できます。このリファレンスでは、Windows、macOS、Linux に共通する `WebviewWindowOptions` のフィールドについて説明します。以下の構造体は一部のフィールドを抜粋した概要です。完全な型については、リンク先の Go ソースを参照してください。
 
-## WebviewWindowOptions の構造
+## WebviewWindowOptions 構造体
 
 ```go
 type WebviewWindowOptions struct {
@@ -56,7 +56,7 @@ type WebviewWindowOptions struct {
     DevToolsEnabled             bool
     DefaultContextMenuDisabled  bool
     ContentProtectionEnabled    bool
-    KeyBindings                 map[string]func(window *WebviewWindow)
+    KeyBindings                 map[string]func(window Window)
 
     // Permissions
     Permissions map[PermissionType]Permission
@@ -76,26 +76,26 @@ type WebviewWindowOptions struct {
 }
 ```
 
-`WebviewWindowOptions`には<strong>`Parent`フィールドがありません</strong>。親子関係やモーダル関係には`parentWindow.AttachModal(childWindow)`を使用します。また、**`Assets`フィールドもありません**。アセットの設定は`application.Options`（`Assets AssetOptions`）にあります。
+`WebviewWindowOptions` には `Parent` フィールドがありません。親子関係やモーダル関係には `parentWindow.AttachModal(childWindow)` を使用してください。また、`Assets` フィールドもありません。アセットの構成は `application.Options`（`Assets AssetOptions`）にあります。
 
-完全なソース：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go)。
+完全なソース：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go)。
 
 ## 基本オプション
 
-### 名前
+### Name
 
-**型：** `string` **デフォルト：** 自動生成された UUID **プラットフォーム：** すべて
+**型：** `string` **既定値：** `window-<numeric ID>` **プラットフォーム：** すべて
 
 ```go
 Name: "main-window"
 ```
 
-**用途：** 後でウィンドウを検索するための一意の識別子。
+<strong>用途：</strong>後でウィンドウを検索するための一意の識別子。
 
 **ベストプラクティス：**
 
-- `"main"`、`"settings"`、`"about"`のように、用途が分かる名前を使用する
-- `"file-browser"`、`"color-picker"`のように、ケバブケースを使用する
+- `"main"`、`"settings"`、`"about"` のような、内容が分かる名前を使用する
+- `"file-browser"`、`"color-picker"` のようなケバブケースを使用する
 - 短く覚えやすい名前にする
 
 **例：**
@@ -111,15 +111,15 @@ if settings, ok := app.Window.GetByName("settings-window"); ok {
 }
 ```
 
-### タイトル
+### Title
 
-**型：** `string` **デフォルト：** アプリケーション名 **プラットフォーム：** すべて
+**型：** `string` **既定値：** アプリケーション名 **プラットフォーム：** すべて
 
 ```go
 Title: "My Application"
 ```
 
-**用途：** タイトルバーとタスクバーに表示されるテキスト。
+<strong>用途：</strong>タイトルバーとタスクバーに表示するテキスト。
 
 **動的な更新：**
 
@@ -127,42 +127,42 @@ Title: "My Application"
 window.SetTitle("My Application - Document.txt")
 ```
 
-### 幅／高さ
+### Width / Height
 
-**型：** `int`（ピクセル） **デフォルト：** 800 x 600 **プラットフォーム：** すべて **制約：** 正の値であること
+**型：** `int`（ピクセル）**既定値：** 800 × 600 **プラットフォーム：** すべて **制約：** 正の値であること
 
 ```go
 Width:  1200,
 Height: 800,
 ```
 
-**用途：** 論理ピクセル単位で指定するウィンドウの初期サイズ。
+<strong>用途：</strong>論理ピクセル単位の初期ウィンドウサイズ。
 
 **注意事項：**
 
 - Wails が DPI スケーリングを自動的に処理する
 - 物理ピクセルではなく論理ピクセルを使用する
-- 最小画面解像度（1024x768）を考慮する
+- 最低画面解像度（1024×768）を考慮する
 
 **サイズの例：**
 
 | 用途 | 幅 | 高さ |
 | --- | --- | --- |
-| 小規模なユーティリティ | 400 | 300 |
-| 標準的なアプリ | 1024 | 768 |
-| 大規模なアプリ | 1440 | 900 |
-| フル HD | 1920 | 1080 |
+| 小型ユーティリティ | 400 | 300 |
+| 標準アプリケーション | 1024 | 768 |
+| 大型アプリケーション | 1440 | 900 |
+| フルHD | 1920 | 1080 |
 
-### X／Y
+### X / Y
 
-**型：** `int`（ピクセル） **デフォルト：** 画面中央 **プラットフォーム：** すべて
+**型：** `int`（ピクセル）**既定値：** 画面中央 **プラットフォーム：** すべて
 
 ```go
 X: 100,  // 100px from left edge
 Y: 100,  // 100px from top edge
 ```
 
-**用途：** ウィンドウの初期位置。
+<strong>用途：</strong>ウィンドウの初期位置。
 
 **座標系：**
 
@@ -172,7 +172,7 @@ Y: 100,  // 100px from top edge
 
 **例：**
 
-`X`と`Y`は、`InitialPosition: application.WindowXY`が設定されている場合にのみ有効です。設定されていない場合、`InitialPosition`のデフォルトは`WindowCentered`となり、`X`／`Y`は無視されます。
+`X` と `Y` は、`InitialPosition: application.WindowXY` が設定されている場合にのみ有効です。設定されていない場合、`InitialPosition` の既定値は `WindowCentered` となり、`X`/`Y` は無視されます。
 
 ```go
 settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -183,7 +183,7 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**ベストプラクティス：** 特定の座標を指定する必要がない場合は、作成後に`Center()`を使用してウィンドウを中央に配置します：
+<strong>ベストプラクティス：</strong>特定の座標を指定する必要がない場合は、ウィンドウの作成後に `Center()` を使用して中央に配置します。
 
 ```go
 window := app.Window.New()
@@ -192,14 +192,14 @@ window.Center()
 
 ### MinWidth / MinHeight
 
-**型：** `int`（ピクセル） **デフォルト：** 0（最小値なし） **プラットフォーム：** すべて
+**型：** `int`（ピクセル）**既定値：** 0（最小値なし）**プラットフォーム：** すべて
 
 ```go
 MinWidth:  400,
 MinHeight: 300,
 ```
 
-**用途：** ウィンドウが小さくなりすぎるのを防ぐ。
+<strong>用途：</strong>ウィンドウが小さくなりすぎるのを防ぐ。
 
 **ユースケース：**
 
@@ -217,47 +217,47 @@ MinHeight: 300,
 
 ### MaxWidth / MaxHeight
 
-**型：** `int`（ピクセル） **デフォルト：** 0（最大値なし） **プラットフォーム：** すべて
+**型：** `int`（ピクセル）**既定値：** 0（最大値なし）**プラットフォーム：** すべて
 
 ```go
 MaxWidth:  1920,
 MaxHeight: 1080,
 ```
 
-**用途：** ウィンドウが大きくなりすぎるのを防ぐ。
+<strong>用途：</strong>ウィンドウが大きくなりすぎるのを防ぐ。
 
 **ユースケース：**
 
 - 固定サイズのアプリケーション
-- リソースの過剰な使用を防止
-- 設計上の制約を維持
+- 過剰なリソース使用を防ぐ
+- 設計上の制約を維持する
 
 ## 状態オプション
 
 ### Hidden
 
-**型：** `bool` **デフォルト：** `false` **プラットフォーム：** すべて
+**型：** `bool` **既定値：** `false` **プラットフォーム：** すべて
 
 ```go
 Hidden: true,
 ```
 
-**目的：** ウィンドウを表示せずに作成します。
+<strong>用途：</strong>表示せずにウィンドウを作成する。
 
-**用途：**
+**ユースケース：**
 
 - バックグラウンドウィンドウ
 - 必要に応じて表示するウィンドウ
-- スプラッシュ画面（作成、読み込み後に表示）
-- コンテンツの読み込み中に白い画面が一瞬表示されるのを防止
+- スプラッシュ画面（作成、読み込み、表示の順に実行）
+- コンテンツの読み込み中に白い画面が一瞬表示されるのを防ぐ
 
 **プラットフォーム別の改善点：**
 
-- **Windows：** ウィンドウが白く一瞬表示される問題を修正しました。`Show()`が呼び出されるまでウィンドウは非表示のままです
-- **macOS：** 完全対応
-- **Linux：** 完全対応
+- <strong>Windows：</strong>白いウィンドウが一瞬表示される問題を修正。`Show()` が呼び出されるまでウィンドウは非表示のままになります
+- <strong>macOS：</strong>完全対応
+- <strong>Linux：</strong>完全対応
 
-**滑らかに読み込むための推奨パターン：**
+**スムーズに読み込むための推奨パターン：**
 
 ```go
 // Create hidden window
@@ -288,28 +288,28 @@ settings.Show()
 
 ### Frameless
 
-**型：** `bool` **デフォルト：** `false` **プラットフォーム：** すべて
+**型：** `bool` **既定値：** `false` **プラットフォーム：** すべて
 
 ```go
 Frameless: true,
 ```
 
-**目的：** タイトルバーとウィンドウの境界線を取り除きます。
+<strong>用途：</strong>タイトルバーとウィンドウの境界線を削除する。
 
-**用途：**
+**ユースケース：**
 
 - カスタムウィンドウ装飾
 - スプラッシュ画面
 - キオスクアプリケーション
 - 独自デザインのウィンドウ
 
-**重要：** 次の機能を実装する必要があります：
+**重要：** 次の機能を実装する必要があります。
 
-- ウィンドウのドラッグ移動
+- ウィンドウのドラッグ
 - 閉じる／最小化／最大化ボタン
-- サイズ変更ハンドル（サイズ変更を許可する場合）
+- サイズ変更用ハンドル（サイズ変更可能な場合）
 
-**詳細については、[フレームレスウィンドウ](/features/windows/frameless/)を参照してください。**
+**詳しくは、[フレームレスウィンドウ](/features/windows/frameless/)を参照してください。**
 
 ### DisableResize
 
@@ -319,15 +319,15 @@ Frameless: true,
 DisableResize: true,
 ```
 
-**目的：** ウィンドウのサイズ変更を禁止します。このフィールドは、v2の`Resizable`とは<strong>逆</strong>であることに注意してください。ウィンドウのサイズを変更できないようにするには、`DisableResize: true`を設定します。
+**目的：** ウィンドウのサイズ変更を禁止します。このフィールドは、v2の`Resizable`とは**逆**であることに注意してください。ウィンドウのサイズを変更不可にするには、`DisableResize: true`を設定します。
 
-**用途：**
+**使用例：**
 
 - 固定サイズのアプリケーション
 - スプラッシュ画面
 - ダイアログ
 
-**注意：** `MaximiseButtonState`またはコレクション動作でも無効にしない限り、ユーザーは引き続き最大化や全画面表示を行えます。
+**注：** `MaximiseButtonState`またはコレクションの動作で無効にしない限り、ユーザーは引き続き最大化やフルスクリーン表示を行えます。
 
 ### AlwaysOnTop
 
@@ -337,41 +337,41 @@ DisableResize: true,
 AlwaysOnTop: true,
 ```
 
-**目的：** ウィンドウをほかのすべてのウィンドウより前面に保ちます。
+**目的：** ウィンドウをほかのすべてのウィンドウより前面に維持します。
 
-**用途：**
+**使用例：**
 
 - フローティングツールバー
 - 通知
 - ピクチャーインピクチャー
 - タイマー
 
-**プラットフォーム別の注意事項：**
+**プラットフォームに関する注意事項：**
 
 - **macOS：** 完全対応
 - **Windows：** 完全対応
-- **Linux：** ウィンドウマネージャーに依存
+- **Linux：** ウィンドウマネージャーによって異なる
 
 ### StartState
 
-**型：** `WindowState`列挙型 **デフォルト：** `WindowStateNormal` **プラットフォーム：** すべて
+**型：** `WindowState` 列挙型 **デフォルト：** `WindowStateNormal` **プラットフォーム：** すべて
 
 ```go
 StartState: application.WindowStateMaximised,
 ```
 
-**目的：** ウィンドウを表示するときの初期状態を指定します。
+**目的：** 表示時のウィンドウの初期状態を指定します。
 
 **値：**
 
 - `WindowStateNormal` - 通常のウィンドウ
 - `WindowStateMinimised` - 最小化
 - `WindowStateMaximised` - 最大化
-- `WindowStateFullscreen` - 全画面表示
+- `WindowStateFullscreen` - フルスクリーン
 
-`WindowStateHidden`定数はありません。ウィンドウを非表示の状態で起動するには、`Hidden`ブールフィールドを使用します。
+`WindowStateHidden`定数はありません。ウィンドウを非表示の状態で起動するには、真偽値フィールド`Hidden`を使用してください。
 
-**実行時に全画面表示を切り替える：**
+**実行時にフルスクリーンを切り替える：**
 
 ```go
 window.Fullscreen()
@@ -389,11 +389,11 @@ window.ToggleFullscreen() // there is no SetFullscreen(bool)
 BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
 ```
 
-`RGBA` の各フィールドは `Red, Green, Blue, Alpha`（uint8）です。ヘルパー `application.NewRGB(r, g, b)`（アルファ値 255）または `application.NewRGBA(r, g, b, a)` の使用を推奨します。
+`RGBA`の各フィールドは`Red, Green, Blue, Alpha`（uint8）です。ヘルパー`application.NewRGB(r, g, b)`（アルファ値255）または`application.NewRGBA(r, g, b, a)`の使用を推奨します。
 
-**用途：** コンテンツが読み込まれるまでのウィンドウの背景色。
+**目的：** コンテンツが読み込まれる前のウィンドウの背景色を指定します。
 
-**ユースケース：**
+**使用例：**
 
 - アプリのテーマに合わせる
 - ダークテーマで白く点滅するのを防ぐ
@@ -426,13 +426,13 @@ BackgroundType: application.BackgroundTypeTranslucent,
 **値：**
 
 - `BackgroundTypeSolid` - 単色
-- `BackgroundTypeTransparent` - 完全な透明
+- `BackgroundTypeTransparent` - 完全に透明
 - `BackgroundTypeTranslucent` - 半透明のぼかし
 
-**プラットフォームの対応状況：**
+**プラットフォーム対応：**
 
-- **macOS：** `Mac.Backdrop` を設定します。WebViewを透明にするには [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) が必要です。これがない場合、WebViewは不透明なままです。
-- **Windows：** 透明および半透明（Windows 11 以降）
+- **macOS：** `Mac.Backdrop`を設定します。WebViewを透明にするには[`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background)が必要です。これがない場合、WebViewは不透明のままです。
+- **Windows：** 透明および半透明（Windows 11以降）
 - **Linux：** 単色のみ
 
 **例（macOS）：**
@@ -446,21 +446,21 @@ Mac: application.MacWindow{
 
 ### OpenInspectorOnStartupとOpenDevTools
 
-**macOSでのプライベートAPI：** `OpenInspectorOnStartup: true`、Goの `window.OpenDevTools()`、JavaScriptの `Window.OpenDevTools()` からプログラムでインスペクターを開くには、`private_mac_apis` が必要です。これがない場合、これらの操作は何も行いません。プロダクションビルドでは `devtools` も必要です。macOS 13.3 以降のSafariによる公開インスペクションにはプライベートAPIは不要ですが、それより古いmacOSでインスペクターを有効にするには必要です。[Web Inspectorのビルドマトリックス](/guides/build/private-macos-apis/#web-inspector)を参照してください。
+**macOSの非公開API：** `OpenInspectorOnStartup: true`、Goの`window.OpenDevTools()`、JavaScriptの`Window.OpenDevTools()`からプログラムでインスペクターを開くには、`private_mac_apis`が必要です。これがない場合、これらの操作では何も実行されません。プロダクションビルドでは`devtools`も必要です。macOS 13.3以降のSafariによる公開インスペクションには非公開APIは不要ですが、それより古いmacOSでインスペクターを有効にするには必要です。[Webインスペクターのビルドマトリックス](/guides/build/private-macos-apis/#web-inspector)を参照してください。
 
 ## コンテンツオプション
 
 ### URL
 
-**型：** `string` **デフォルト：** 空（Assetsから読み込み） **プラットフォーム：** すべて
+**型：** `string` **デフォルト：** 空（Assetsから読み込む） **プラットフォーム：** すべて
 
 ```go
 URL: "https://example.com",
 ```
 
-**用途：** 埋め込みアセットの代わりに外部URLを読み込みます。
+**目的：** 埋め込みアセットの代わりに外部URLを読み込みます。
 
-**ユースケース：**
+**使用例：**
 
 - 開発時（開発サーバーから読み込む）
 - Webベースのアプリケーション
@@ -476,7 +476,7 @@ URL: "http://localhost:9245",
 // (Assets is application.Options.Assets, not a WebviewWindowOptions field).
 ```
 
-プロダクション環境向けのアプリケーションレベルのスニペット：
+プロダクション環境向けのアプリケーションレベルのコード例：
 
 ```go
 app := application.New(application.Options{
@@ -495,9 +495,9 @@ app := application.New(application.Options{
 HTML: "<h1>Hello World</h1>",
 ```
 
-**用途：** HTML文字列を直接読み込みます。
+**目的：** HTML文字列を直接読み込みます。
 
-**ユースケース：**
+**使用例：**
 
 - シンプルなウィンドウ
 - 生成されたコンテンツ
@@ -515,9 +515,9 @@ HTML: `
 `,
 ```
 
-### Assets（アプリケーションレベルのみ）
+### アセット（アプリケーションレベルのみ）
 
-アセット設定は **`WebviewWindowOptions` のフィールドではありません**。フロントエンドアセットは、アプリケーション自体が `application.Options.Assets`（`AssetOptions`）を介して配信します。すべてのウィンドウがそのアセットサーバーを継承します。
+アセット設定は<strong>`WebviewWindowOptions`のフィールドではありません</strong>。フロントエンドアセットは、アプリケーション自体が`application.Options.Assets`（`AssetOptions`）を介して配信します。すべてのウィンドウはそのアセットサーバーを継承します。
 
 ```go
 app := application.New(application.Options{
@@ -537,11 +537,11 @@ app := application.New(application.Options{
 UseApplicationMenu: true,
 ```
 
-**用途：** このウィンドウで、`app.Menu.Set()` を介して設定したアプリケーションメニューを使用します。
+<strong>目的：</strong>このウィンドウで、`app.Menu.Set()`を介して設定したアプリケーションメニューを使用します。
 
-**macOS** では、画面上部のグローバルアプリケーションメニューが常に使用されるため、このオプションは効果がありません。
+**macOS**では常に画面上部のグローバルアプリケーションメニューが使用されるため、このオプションは効果がありません。
 
-**Windows** および **Linux** では、デフォルトでウィンドウにメニューは表示されません。`UseApplicationMenu: true` を設定すると、ウィンドウでアプリケーションレベルのメニューが使用され、シンプルなクロスプラットフォームソリューションを実現できます。
+**Windows**および**Linux**では、デフォルトでウィンドウにメニューが表示されません。`UseApplicationMenu: true`を設定すると、ウィンドウでアプリケーションレベルのメニューが使用され、シンプルなクロスプラットフォーム対応が可能になります。
 
 **例：**
 
@@ -564,23 +564,23 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**注記：**
+**注意事項：**
 
-- `UseApplicationMenu`とウィンドウ固有のメニューの両方を設定した場合、ウィンドウ固有のメニューが優先されます
-- 実行時にOSを判定する必要がなくなるため、クロスプラットフォーム対応のコードを簡潔にできます
-- メニューの完全なドキュメントについては、[アプリケーションメニュー](/features/menus/application/)を参照してください
+- `UseApplicationMenu`とウィンドウ固有のメニューの両方が設定されている場合は、ウィンドウ固有のメニューが優先されます
+- 実行時にOSを確認する必要がなくなるため、クロスプラットフォームコードを簡素化できます
+- メニューに関する完全なドキュメントについては、[アプリケーションメニュー](/features/menus/application/)を参照してください
 
 ## 入力オプション
 
 ### EnableFileDrop
 
-**型：** `bool` **デフォルト：** `false` **プラットフォーム：** すべて
+<strong>型：</strong> `bool` <strong>デフォルト：</strong> `false` <strong>プラットフォーム：</strong>すべて
 
 ```go
 EnableFileDrop: true,
 ```
 
-**目的：** オペレーティングシステムからウィンドウへのファイルのドラッグ＆ドロップを有効にします。
+<strong>目的：</strong>オペレーティングシステムからウィンドウへのファイルのドラッグ＆ドロップを有効にします。
 
 有効にすると、次のように動作します。
 
@@ -614,7 +614,7 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 })
 ```
 
-**HTMLのドロップゾーン：**
+**HTMLドロップゾーン：**
 
 ```html
 <!-- Mark elements as drop targets -->
@@ -635,11 +635,11 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 ContentProtectionEnabled: true,
 ```
 
-**目的：** ウィンドウ内容の画面キャプチャを防止します。
+<strong>目的：</strong>ウィンドウ内容の画面キャプチャを防止します。
 
-**プラットフォームの対応状況：**
+**プラットフォーム対応：**
 
-- **Windows：** Windows 10 ビルド19041以降（完全対応）、それ以前のバージョン（一部対応）
+- **Windows：** Windows 10ビルド19041以降（完全対応）、それより前のバージョン（一部対応）
 - <strong>macOS：</strong>完全対応
 - <strong>Linux：</strong>未対応
 
@@ -680,27 +680,27 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-**目的：** ウィンドウのWebコンテンツからの機能要求（カメラ、マイク、位置情報、通知、クリップボードの読み取り）の処理方法を、プラットフォーム固有のコードを使わずに宣言的に制御します。
+<strong>目的：</strong>ウィンドウ内のWebコンテンツからの機能要求（カメラ、マイク、位置情報、通知、クリップボードの読み取り）を処理する方法を、プラットフォーム固有のコードを使用せずに宣言的に制御します。
 
 **PermissionTypeの値：** `PermissionMicrophone`、`PermissionCamera`、`PermissionGeolocation`、`PermissionNotifications`、`PermissionClipboardRead`
 
-**権限の値：**
+**Permissionの値：**
 
-- `PermissionDefault`（0）— プラットフォームのネイティブ処理。macOS／WindowsではOS／WebView2のプロンプトを表示します。Linuxではカメラとマイクを許可し、それ以外はすべて拒否します
+- `PermissionDefault`（0）— プラットフォームのネイティブ処理：macOS／WindowsではOS／WebView2のプロンプトを表示します。Linuxではカメラとマイクを許可し、それ以外はすべて拒否します
 - `PermissionAllow`（1）— プロンプトを表示せずに許可します（Linuxではカメラとマイクのみ実装されており、その他の種類は引き続き拒否されます）
 - `PermissionDeny`（2）— プロンプトを表示せずに拒否します
 
-<strong>重要 — Windows：</strong>このオプションが導入される前は、WailsはすべてのWebView2機能を通知せずに許可していました。現在は、`Permissions`にいずれかの項目を設定すると、その一括許可が無効になります。リストに含まれていない機能は自動的に許可されず、WebView2のネイティブプロンプトが表示されます。アプリに必要なすべての機能を明示的に列挙してください。
+<strong>重要 — Windows：</strong>このオプションが導入される前は、WailsはすべてのWebView2機能を暗黙的に許可していました。現在は、`Permissions`にいずれかの項目を設定すると、その一括許可が無効になります。リストに含まれていない機能は自動的に許可されず、WebView2のネイティブプロンプトが表示されます。アプリに必要な機能をすべて明示的に列挙してください。
 
 **完全なガイド、プラットフォーム対応表、例については、[権限](/features/windows/permissions/)を参照してください。**
 
 ## ウィンドウのライフサイクルイベント
 
-ウィンドウのライフサイクルイベントは、`OnWindowEvent`と`RegisterHook`を使用して処理します。これらのメソッドを使用すると、ウィンドウを閉じる動作と破棄する動作を細かく制御できます。
+ウィンドウのライフサイクルイベントは、`OnWindowEvent`と`RegisterHook`を使用して処理します。これらのメソッドにより、ウィンドウを閉じる処理と破棄処理を細かく制御できます。
 
-### ウィンドウを閉じる処理のキャンセル
+### ウィンドウを閉じる操作のキャンセル
 
-ウィンドウが閉じるのを防ぐには（未保存の変更がある場合など）、`WindowClosing`イベントに対して`RegisterHook`を使用し、`event.Cancel()`を呼び出します：
+未保存の変更がある場合など、ウィンドウが閉じないようにするには、`WindowClosing`イベントで`RegisterHook`を使用し、`event.Cancel()`を呼び出します。
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -723,13 +723,13 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 **要点：**
 
-- `RegisterHook` は、イベントが発生する前にイベントをインターセプトします
-- ウィンドウが閉じないようにするには、`event.Cancel()` を呼び出します
+- `RegisterHook`はイベントが発生する前にインターセプトします
+- ウィンドウが閉じないようにするには、`event.Cancel()`を呼び出します
 - キャンセル後もウィンドウは開いたままになります
 
 ### ウィンドウを閉じる処理
 
-ウィンドウが閉じるときにクリーンアップを実行するには、`WindowClosing` イベントで `OnWindowEvent` を使用します：
+ウィンドウを閉じる際にクリーンアップを実行するには、`WindowClosing`イベントで`OnWindowEvent`を使用します。
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -748,13 +748,13 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 
 **要点：**
 
-- `OnWindowEvent` は、まもなく発生するイベントを処理します
-- クリーンアップはウィンドウが破棄される前に実行されます
-- ここから閉じる処理をキャンセルすることはできません（キャンセルするには `RegisterHook` を使用します）
+- `OnWindowEvent`は、まさに発生しようとしているイベントを処理します
+- ウィンドウが破棄される前にクリーンアップが実行されます
+- ここから閉じる処理をキャンセルすることはできません（キャンセルするには`RegisterHook`を使用してください）
 
 ### シングルトンウィンドウのクリーンアップパターン
 
-シングルトンウィンドウ（インスタンスを1つだけに制限）では、参照のクリーンアップに `WindowClosing` を使用します：
+シングルトンウィンドウ（インスタンスを1つだけに制限するウィンドウ）では、参照のクリーンアップに `WindowClosing` を使用します。
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -783,7 +783,7 @@ func ShowSettings(app *application.App) {
 
 ## プラットフォーム固有のオプション
 
-### Macオプション
+### Mac のオプション
 
 ```go
 Mac: application.MacWindow{
@@ -808,62 +808,62 @@ Mac: application.MacWindow{
 },
 ```
 
-**TitleBar**（`MacTitleBar`）
+**タイトルバー**（`MacTitleBar`）
 
 - `AppearsTransparent` - タイトルバーを透明にし、コンテンツをタイトルバー領域まで拡張します
 - `Hide` - タイトルバーを完全に非表示にします
 - `HideTitle` - タイトルテキストのみを非表示にします
 - `FullSizeContent` - コンテンツをウィンドウ全体のサイズまで拡張します
 
-macOSでは、WebViewの透明化とプログラムによるインスペクターの起動に `private_mac_apis` ビルドタグが必要です。このタグがなくても同じオプションは有効ですが、プライベートAPIのみで可能な操作は何も実行しません。Liquid Glassのグループ化も無視され、スタイルには公開APIによる代替手段が使用されます。ビルドコマンドと正確な動作については、[macOSのプライベートAPI](/guides/build/private-macos-apis/)を参照してください。
+macOS で WebView の透過とプログラムによるインスペクターの起動を使用するには、`private_mac_apis` ビルドタグが必要です。このタグがなくても同じオプションは有効ですが、プライベート API 専用の操作は何も行いません。Liquid Glass のグループ化も無視され、スタイルには公開 API による代替手段が使用されます。ビルドコマンドと正確な動作については、[macOS のプライベート API](/guides/build/private-macos-apis/)を参照してください。
 
-**Backdrop**（`MacBackdrop`）
+**背景効果**（`MacBackdrop`）
 
 - `MacBackdropNormal` - 標準の不透明な背景
-- `MacBackdropTranslucent` - <strong>WebViewの透明化にはプライベートAPIが必要です。</strong>このタグがない場合、ネイティブのぼかし効果は不透明なWebViewの背後に残ります。
-- `MacBackdropTransparent` - <strong>WebViewの透明化にはプライベートAPIが必要です。</strong>このタグがない場合、WebViewは不透明なままです。
-- `MacBackdropLiquidGlass` - <strong>WebViewの透明化にはプライベートAPIが必要です。</strong>このタグがない場合、ガラスレイヤーは不透明なWebViewの背後に残り、スタイルには公開APIによる代替手段が使用されます。
+- `MacBackdropTranslucent` - <strong>WebView の透過にはプライベート API が必要です。</strong>このタグがない場合、ネイティブのぼかし効果は不透明な WebView の背後に残ります。
+- `MacBackdropTransparent` - <strong>WebView の透過にはプライベート API が必要です。</strong>このタグがない場合、WebView は不透明なままです。
+- `MacBackdropLiquidGlass` - <strong>WebView の透過にはプライベート API が必要です。</strong>このタグがない場合、ガラスレイヤーは不透明な WebView の背後に残り、スタイルには公開 API による代替手段が使用されます。
 
-**LiquidGlass**（`MacLiquidGlass`）
+**Liquid Glass**（`MacLiquidGlass`）
 
-| フィールドまたは値 | macOSでのプライベートAPIへの依存 |
+| フィールドまたは値 | macOS でのプライベート API への依存 |
 | --- | --- |
-| `Style: LiquidGlassStyleAutomatic` | ネイティブのregularスタイルは公開APIです。背景でWebViewを透明化するには `private_mac_apis` が必要です。 |
-| `Style: LiquidGlassStyleLight` | このタグを指定すると、既存のネイティブclearスタイルへのマッピングが維持されます。指定しない場合、WailsはAquaアピアランスのregular glassを使用します。 |
-| `Style: LiquidGlassStyleDark` | <strong>プライベートAPI：</strong>文書化されていないネイティブスタイル値 `2`。このタグがない場合は、Dark Aquaアピアランスのregular glassを使用します。 |
-| `Style: LiquidGlassStyleVibrant` | ネイティブのclearスタイルへのマッピングは公開APIです。背景でWebViewを透明化するには、このタグが必要です。 |
-| `GroupID` | <strong>プライベートAPI：</strong>空でない値を指定するとグループ化が要求されます。このタグがない場合は無視されます。 |
-| `GroupSpacing` | <strong>プライベートAPI：</strong>正の値を指定するとグループ間隔が要求されます。このタグがない場合は無視されます。 |
-| `Material`、`CornerRadius`、`TintColor` | これら自体はプライベートAPIに依存しません。 |
+| `Style: LiquidGlassStyleAutomatic` | ネイティブの通常スタイルは公開 API です。背景効果を適用した WebView の透過には `private_mac_apis` が必要です。 |
+| `Style: LiquidGlassStyleLight` | このタグを指定すると、既存のネイティブなクリアスタイルへのマッピングが維持されます。指定しない場合、Wails は Aqua アピアランスの通常のガラス効果を使用します。 |
+| `Style: LiquidGlassStyleDark` | <strong>プライベート API：</strong>文書化されていないネイティブスタイル値 `2`。このタグがない場合は、Dark Aqua アピアランスの通常のガラス効果になります。 |
+| `Style: LiquidGlassStyleVibrant` | ネイティブのクリアスタイルへのマッピングは公開 API です。背景効果を適用した WebView の透過には、このタグが必要です。 |
+| `GroupID` | <strong>プライベート API：</strong>空でない値はグループ化を要求します。このタグがない場合は無視されます。 |
+| `GroupSpacing` | <strong>プライベート API：</strong>正の値はグループ間隔を要求します。このタグがない場合は無視されます。 |
+| `Material`, `CornerRadius`, `TintColor` | これら自体はプライベート API に依存しません。 |
 
-ネイティブスタイルの値と対応OSについては、[Liquid Glassの値](/guides/build/private-macos-apis/#liquid-glass-values)を参照してください。
+ネイティブスタイルの値と対応 OS については、[Liquid Glass の値](/guides/build/private-macos-apis/#liquid-glass-values)を参照してください。
 
-**InvisibleTitleBarHeight**（`int`）
+**非表示タイトルバーの高さ**（`int`）
 
 - 非表示のタイトルバー領域の高さ（ドラッグ用）
-- ネイティブのタイトルバーのドラッグ領域が非表示の場合、つまりウィンドウがフレームレス（`Frameless: true`）であるか、透明なタイトルバー（`AppearsTransparent: true`）を使用している場合にのみ有効です
-- タイトルバーが表示される標準ウィンドウには影響しません
+- ネイティブのタイトルバードラッグ領域が非表示の場合、つまりウィンドウがフレームレス（`Frameless: true`）であるか、透明なタイトルバー（`AppearsTransparent: true`）を使用している場合にのみ有効です
+- タイトルバーが表示される標準ウィンドウには効果がありません
 
-**WindowClass**（`MacWindowClass`）
+**ウィンドウクラス**（`MacWindowClass`）
 
-- `MacWindowClassWindow` - 標準の `NSWindow` の動作（デフォルト）
-- `MacWindowClassPanel` - アプリケーションのメインウィンドウには決してならない補助的な `NSPanel`
+- `MacWindowClassWindow` - 標準の `NSWindow` 動作（デフォルト）
+- `MacWindowClassPanel` - アプリケーションのメインウィンドウにはならない補助的な `NSPanel`
 
-`PanelPreferences` は `MacWindowClassPanel` にのみ適用されます：
+`PanelPreferences` は `MacWindowClassPanel` にのみ適用されます。
 
-- `NonActivating`は`NSWindowStyleMaskNonactivatingPanel`を追加します。パネルを表示またはフォーカスしても Wails アプリケーションはアクティブになりませんが、コントロールやテキスト入力のためにパネルをキーウインドウにすることはできます。
-- `FloatingPanel`は、AppKit のフローティングパネル動作を有効にします。
-- `BecomesKeyOnlyIfNeeded`は、クリックされたビューがキーボード入力を要求した場合にのみキーウインドウになります。
-- `UtilityWindow`は、ネイティブのユーティリティウインドウスタイルを適用します。
+- `NonActivating` は `NSWindowStyleMaskNonactivatingPanel` を追加します。パネルを表示またはフォーカスしても Wails アプリケーションはアクティブになりませんが、コントロールやテキスト入力のためにパネルがキーウィンドウになることはできます。
+- `FloatingPanel` は AppKit のフローティングパネル動作を有効にします。
+- `BecomesKeyOnlyIfNeeded` は、クリックされたビューがキーボード入力を要求した場合にのみキー状態になります。
+- `UtilityWindow` はネイティブのユーティリティウィンドウスタイルを適用します。
 
-Wails のパネルは、アプリケーションが非アクティブになっても表示されたままで、閉じると解放されます。これは`WebviewWindow`で想定されるライフサイクルに一致します。これらは、逆の動作をする`NSPanel`のデフォルト値を意図的に上書きするものです。
+Wails のパネルは、アプリケーションが非アクティブになっても表示されたままで、閉じると解放されます。これは `WebviewWindow` で想定されるライフサイクルと一致します。これらは、`NSPanel` の反対のデフォルト動作を意図的に上書きするものです。
 
-ウインドウクラス、ウインドウレベル、アクティベーションポリシー、コレクション動作は、それぞれ異なる問題を解決します：
+ウィンドウクラス、ウィンドウレベル、アクティベーションポリシー、コレクション動作は、それぞれ異なる問題を解決します。
 
-- `WindowClass`は`NSWindow`または`NSPanel`を選択し、メインウインドウおよびキーウインドウのセマンティクスを制御します。
-- `WindowLevel`は Z オーダーを制御します。メニューバーのオーバーレイには`MacWindowLevelPopUpMenu`を使用します。
-- `MacOptions.ActivationPolicy`は、Dock とメニューバーの表示を含むアプリケーション全体を制御します。アプリケーションをアクティブにしないパネルにアクセサリアクティベーションポリシーは不要ですが、アプリケーションが Dock アイコンを非表示にするためにこのポリシーを使用することはできます。
-- `CollectionBehavior`は、Spaces とフルスクリーンへの参加を制御します。
+- `WindowClass` は `NSWindow` または `NSPanel` を選択し、メインウィンドウとキーウィンドウのセマンティクスを制御します。
+- `WindowLevel` は Z オーダーを制御します。メニューバーのオーバーレイには `MacWindowLevelPopUpMenu` を使用します。
+- `MacOptions.ActivationPolicy` は、Dock やメニューバーの表示を含め、アプリケーション全体を制御します。非アクティブ化パネルにアクセサリアクティベーションポリシーは必要ありませんが、アプリで Dock アイコンを非表示にするために使用することはできます。
+- `CollectionBehavior` は Spaces とフルスクリーンへの参加を制御します。
 
 ```go
 // Spotlight/menu-bar panel that leaves the current application active.
@@ -879,46 +879,46 @@ Mac: application.MacWindow{
 },
 ```
 
-**WindowLevel**（`MacWindowLevel`）
+**ウィンドウレベル**（`MacWindowLevel`）
 
-- `MacWindowLevelNormal` - 標準のウインドウレベル（デフォルト）
-- `MacWindowLevelFloating` - 通常のウインドウより前面に表示
+- `MacWindowLevelNormal` - 標準のウィンドウレベル（デフォルト）
+- `MacWindowLevelFloating` - 通常のウィンドウより前面に表示されます
 - `MacWindowLevelTornOffMenu` - 切り離されたメニューのレベル
 - `MacWindowLevelModalPanel` - モーダルパネルのレベル
 - `MacWindowLevelMainMenu` - メインメニューのレベル
-- `MacWindowLevelStatus` - ステータスウインドウのレベル
+- `MacWindowLevelStatus` - ステータスウィンドウのレベル
 - `MacWindowLevelPopUpMenu` - ポップアップメニューのレベル
 - `MacWindowLevelScreenSaver` - スクリーンセーバーのレベル
 
-明示的な`WindowLevel`は、`AlwaysOnTop`および`PanelPreferences.FloatingPanel`より優先されます。レベルが明示されていない場合、`AlwaysOnTop`またはフローティングパネルは`MacWindowLevelFloating`に解決され、それ以外ではレベルは`MacWindowLevelNormal`になります。後から`SetAlwaysOnTop`を呼び出した場合も、明示的な実行時変更として扱われます。
+明示的な `WindowLevel` は、`AlwaysOnTop` と `PanelPreferences.FloatingPanel` より優先されます。レベルが明示されていない場合、`AlwaysOnTop` またはフローティングパネルは `MacWindowLevelFloating` に解決され、それ以外の場合のレベルは `MacWindowLevelNormal` になります。後から `SetAlwaysOnTop` を呼び出した場合も、明示的なランタイム変更として扱われます。
 
-**CollectionBehavior**（`MacWindowCollectionBehavior`）
+**コレクション動作**（`MacWindowCollectionBehavior`）
 
-macOS の Spaces およびフルスクリーンでのウインドウの動作を制御します。これらは、ビット単位 OR（`|`）で組み合わせられるビットマスク値です。
+macOS の Spaces とフルスクリーンでウィンドウがどのように動作するかを制御します。これらはビットマスク値であり、ビット単位 OR（`|`）で組み合わせることができます。
 
-**Space の動作：**
+**Space での動作：**
 
-- `MacWindowCollectionBehaviorDefault` - FullScreenPrimary を使用（デフォルト、後方互換）
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - すべての Space にウインドウを表示
-- `MacWindowCollectionBehaviorMoveToActiveSpace` - 表示時にアクティブな Space へ移動
-- `MacWindowCollectionBehaviorManaged` - デフォルトの管理対象ウインドウ動作
-- `MacWindowCollectionBehaviorTransient` - 一時的／過渡的なウインドウ
-- `MacWindowCollectionBehaviorStationary` - Space の切り替え中も同じ位置に留まる
+- `MacWindowCollectionBehaviorDefault` - FullScreenPrimary を使用します（デフォルト、後方互換）
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - すべての Space にウィンドウを表示します
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - 表示時にアクティブな Space へ移動します
+- `MacWindowCollectionBehaviorManaged` - デフォルトの管理対象ウィンドウ動作
+- `MacWindowCollectionBehaviorTransient` - 一時的なウィンドウ
+- `MacWindowCollectionBehaviorStationary` - Space の切り替え中も同じ位置に留まります
 
-**ウインドウの巡回：**
+**ウィンドウの循環切り替え：**
 
-- `MacWindowCollectionBehaviorParticipatesInCycle` - Cmd+`による巡回の対象に含める
-- `MacWindowCollectionBehaviorIgnoresCycle` - Cmd+`による巡回の対象から除外
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Cmd+` による循環切り替えの対象に含めます
+- `MacWindowCollectionBehaviorIgnoresCycle` - Cmd+` による循環切り替えの対象から除外します
 
-**フルスクリーンの動作：**
+**フルスクリーン動作：**
 
-- `MacWindowCollectionBehaviorFullScreenPrimary` - フルスクリーンモードへの移行が可能
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - フルスクリーンアプリケーションへのオーバーレイが可能
+- `MacWindowCollectionBehaviorFullScreenPrimary` - フルスクリーンモードに移行可能
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - フルスクリーンアプリの上に重ねて表示可能
 - `MacWindowCollectionBehaviorFullScreenNone` - フルスクリーン機能を無効化
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - 左右に並べるタイル表示を許可（macOS 10.11以降）
 - `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - タイル表示を禁止（macOS 10.11以降）
 
-**例 - Spotlight のようなウインドウ：**
+**例 — Spotlight風のウィンドウ：**
 
 ```go
 // Window that appears on all Spaces AND can overlay fullscreen apps
@@ -933,7 +933,7 @@ Mac: application.MacWindow{
 },
 ```
 
-**例 - 単一の動作：**
+**例 — 単一の動作：**
 
 ```go
 // Window that can appear over fullscreen applications
@@ -944,16 +944,16 @@ Mac: application.MacWindow{
 
 **TabbingMode**（`MacWindowTabbingMode`）
 
-macOS 10.12以降でのウインドウのタブ化動作を制御します。ウインドウのタブ化により、複数のウインドウをタブとしてグループ化できます。
+macOS 10.12以降で、ウィンドウのタブ化動作を制御します。ウィンドウのタブ化により、複数のウィンドウをタブとしてグループ化できます。
 
 **オプション：**
 
-- `MacWindowTabbingModeDefault` - ゼロ値の番兵値（明示的に未設定）。実行時のデフォルトではタブ化を許可しない
-- `MacWindowTabbingModeAutomatic` - システムがタブ化の動作を決定
-- `MacWindowTabbingModePreferred` - ウインドウでタブモードを優先
-- `MacWindowTabbingModeDisallowed` - ウインドウのタブ化を無効化
+- `MacWindowTabbingModeDefault` - ゼロ値を示す番兵値（明示的に未設定）。実行時には、デフォルトでタブ化が禁止されます
+- `MacWindowTabbingModeAutomatic` - システムがタブ化動作を決定
+- `MacWindowTabbingModePreferred` - ウィンドウでタブ化モードを優先
+- `MacWindowTabbingModeDisallowed` - ウィンドウのタブ化を無効化
 
-**例 - ウインドウのタブ化を無効化：**
+**例 — ウィンドウのタブ化を無効にする：**
 
 ```go
 Mac: application.MacWindow{
@@ -961,7 +961,7 @@ Mac: application.MacWindow{
 },
 ```
 
-**例 - ウインドウのタブ化を優先：**
+**例 — ウィンドウのタブ化を優先する：**
 
 ```go
 Mac: application.MacWindow{
@@ -971,7 +971,7 @@ Mac: application.MacWindow{
 
 **WebviewPreferences**（`MacWebviewPreferences`）
 
-基盤となる`WKWebView`の構成をきめ細かく制御します。すべてのフィールドは任意です。未設定のフィールドについては、WebKit のデフォルトから変更されません。
+基盤となる`WKWebView`設定をきめ細かく制御します。すべてのフィールドは任意です。未設定のフィールドについては、WebKitのデフォルトがそのまま使用されます。
 
 ```go
 Mac: application.MacWindow{
@@ -990,20 +990,20 @@ Mac: application.MacWindow{
 },
 ```
 
-- `TabFocusesLinks` — `true`の場合、Tab キーを押すとリンクおよびフォームコントロールにフォーカスが移動します（デフォルト：`false`）
-- `TextInteractionEnabled` — `true`の場合、ユーザーは WebView 内のテキストを選択して操作できます（デフォルト：`true`）
-- `FullscreenEnabled` — `true`の場合、Web コンテンツは HTML Fullscreen API を介してフルスクリーン表示に移行できます（デフォルト：`false`）。macOS 12.3 以降が必要です。
-- `AllowsBackForwardNavigationGestures` — `true`の場合、水平方向のスワイプジェスチャーで「戻る」または「進む」ナビゲーションが実行されます（デフォルト：`false`）
-- `AllowsMagnification` — `true`の場合、WebView でピンチズームが有効になります（デフォルト：`false`）
-- `AllowsAirPlayForMediaPlayback` — `true`の場合、メディアを AirPlay デバイスへストリーミングできます（デフォルト：`true`）
-- `JavaScriptCanOpenWindowsAutomatically` — `true`の場合、JavaScript はユーザージェスチャーなしで新しいウィンドウを開けます（デフォルト：`false`）
-- `MinimumFontSize` — ポイント単位の最小フォントサイズです。設定するには `optional.NewVar(12.0)` を使用します。未設定の場合、WebKit のデフォルト値が維持されます。
-- `ApplicationNameForUserAgent` — WebKit のユーザーエージェント文字列に含まれるアプリケーション名のサフィックスを上書きします。サイトがデフォルトの `"wails.io"` 識別子を拒否する場合（YouTube の埋め込みなど）に便利です。デフォルトを維持するには空のままにします。
-- `EnableAutoplayWithoutUserAction` — `true`の場合、音声と動画をユーザージェスチャーなしで自動再生できます。`WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` に対応します（デフォルト：`false`）
+- `TabFocusesLinks` — `true`の場合、Tabキーを押すとリンクおよびフォームコントロールへフォーカスが移動します（デフォルト：`false`）
+- `TextInteractionEnabled` — `true`の場合、ユーザーはWebView内のテキストを選択して操作できます（デフォルト：`true`）
+- `FullscreenEnabled` — `true`の場合、WebコンテンツはHTML Fullscreen APIを介してフルスクリーン表示に移行できます（デフォルト：`false`）。macOS 12.3以降が必要です。
+- `AllowsBackForwardNavigationGestures` — `true`の場合、水平方向のスワイプジェスチャーで前後のページへ移動します（デフォルト：`false`）
+- `AllowsMagnification` — `true`の場合、WebViewでピンチズームが有効になります（デフォルト：`false`）
+- `AllowsAirPlayForMediaPlayback` — `true`の場合、メディアをAirPlayデバイスへストリーミングできます（デフォルト：`true`）
+- `JavaScriptCanOpenWindowsAutomatically` — `true`の場合、JavaScriptはユーザージェスチャーなしで新しいウィンドウを開けます（デフォルト：`false`）
+- `MinimumFontSize` — ポイント単位の最小フォントサイズ。設定するには`optional.NewVar(12.0)`を使用します。未設定の場合はWebKitのデフォルトが使用されます。
+- `ApplicationNameForUserAgent` — WebKitのユーザーエージェント文字列に含まれるアプリケーション名のサフィックスを上書きします。サイトがデフォルトの`"wails.io"`識別子を拒否する場合（YouTubeの埋め込みなど）に便利です。デフォルトを維持するには空のままにします。
+- `EnableAutoplayWithoutUserAction` — `true`の場合、音声と動画をユーザージェスチャーなしで自動再生できます。`WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone`に対応します（デフォルト：`false`）
 
-### Windows オプション（ウィンドウ単位）
+### Windowsオプション（ウィンドウ単位）
 
-ウィンドウ単位の構造体は `application.WindowsWindow` です。`WindowsOptions` では<strong>ありません</strong>（こちらは<em>アプリケーション</em>レベルの構造体です）。
+ウィンドウ単位の構造体は`application.WindowsWindow`です。`WindowsOptions`では**ありません**（こちらは*アプリケーション*レベルの構造体です）。
 
 ```go
 Windows: application.WindowsWindow{
@@ -1023,37 +1023,37 @@ Windows: application.WindowsWindow{
 
 **DisableMenu**（`bool`）
 
-- ウィンドウのメニューバーを無効にします。`true`の場合、メニューバーが構成されていてもウィンドウには表示されません。
+- ウィンドウのメニューバーを無効にします。`true`の場合、メニューバーが設定されていてもウィンドウには表示されません。
 - デフォルト：`false`
 
 **BackdropType**（`BackdropType`）
 
 - `application.Auto` - システムのデフォルト
 - `application.None` - 背景効果なし
-- `application.Mica` - Mica マテリアル（Windows 11）
-- `application.Acrylic` - Acrylic マテリアル（Windows 11）
-- `application.Tabbed` - Tabbed マテリアル（Windows 11）
+- `application.Mica` - Micaマテリアル（Windows 11）
+- `application.Acrylic` - Acrylicマテリアル（Windows 11）
+- `application.Tabbed` - Tabbedマテリアル（Windows 11）
 
-`WindowsBackdropTypeMica` 形式の定数はありません。`application.Mica` などを使用してください。
+`WindowsBackdropTypeMica`形式の定数はありません。`application.Mica`などを使用してください。
 
 **CustomTheme**（`ThemeSettings`）
 
-- 値型（ポインターではありません）。ウィンドウの境界線、タイトルバーのテキストと背景、およびメニューバーに使用する、ダークモード／ライトモードのカスタムカラーです。
+- 値型（ポインターではありません）。ウィンドウの境界線、タイトルバーのテキストと背景、およびメニューバーに、ダーク／ライトモード用のカスタム色を設定します。
 
 **DisableFramelessWindowDecorations**（`bool`）
 
-- デフォルトのフレームレス装飾（Aero の影、角の丸み）を無効にします。
+- フレームレスウィンドウのデフォルト装飾（Aeroシャドウ、角丸）を無効にします。
 
 **NonClientRegionSupport**（`bool`）
 
-- フレームレスのカスタムタイトルバー向けに、WebView2 ネイティブの `app-region: drag`／`app-region: no-drag` サポートを有効にします。
-- これは、単純なネイティブアプリのドラッグ専用です。ネイティブのカスタムキャプションボタン動作や、カスタム最大化ボタンに対する Windows 11 Snap Assist／Snap Layouts は提供しません。
+- フレームレスのカスタムタイトルバーで、WebView2ネイティブの`app-region: drag`／`app-region: no-drag`サポートを有効にします。
+- これは、単純なネイティブアプリのドラッグ専用です。ネイティブのカスタムキャプションボタンの動作や、カスタム最大化ボタンでのWindows 11 Snap Assist／Snap Layoutsは提供しません。
 
 **WebView2CompositionHosting**（`bool`）
 
-- ネイティブの Windows 動作を備えたカスタムキャプションボタン向けに、Wails が管理する `--wails-non-client-region` サポートを有効にします。これには、カスタム最大化ボタンに対する Windows 11 Snap Assist／Snap Layouts も含まれます。
-- 試験的な機能です。デフォルトの HWND ホスト型コントローラーの代わりに、`ICoreWebView2CompositionController` と DirectComposition を介して WebView2 をホストします。
-- ウィンドウで WebView2 ネイティブの `app-region` サポートと、Wails が管理するカスタムキャプションボタン領域の両方が必要な場合は、`NonClientRegionSupport` と組み合わせて使用できます。
+- カスタムキャプションボタンに対するWails管理の`--wails-non-client-region`サポートを有効にし、カスタム最大化ボタンでのWindows 11 Snap Assist／Snap Layoutsなど、Windowsネイティブの動作を提供します。
+- 試験的な機能です。デフォルトのHWNDホスト型コントローラーではなく、`ICoreWebView2CompositionController`とDirectCompositionを介してWebView2をホストします。
+- WebView2ネイティブの`app-region`サポートと、Wails管理のカスタムキャプションボタン領域の両方がウィンドウに必要な場合は、`NonClientRegionSupport`と組み合わせて使用できます。
 
 **例：**
 
@@ -1064,7 +1064,7 @@ Windows: application.WindowsWindow{
 },
 ```
 
-**例 - Windows のカスタムタイトルバー領域：**
+**例 — Windowsのカスタムタイトルバー領域：**
 
 ```go
 Windows: application.WindowsWindow{
@@ -1073,11 +1073,11 @@ Windows: application.WindowsWindow{
 },
 ```
 
-動作の詳細、トレードオフ、および対応する CSS については、[フレームレスウィンドウ](/features/windows/frameless/#native-non-client-regions-on-windows)を参照してください。
+動作の詳細、トレードオフ、および対応するCSSについては、[フレームレスWindows](/features/windows/frameless/#native-non-client-regions-on-windows)を参照してください。
 
-### Linux オプション（ウィンドウ単位）
+### Linuxオプション（ウィンドウ単位）
 
-ウィンドウ単位の構造体は `application.LinuxWindow` です。`LinuxOptions` では<strong>ありません</strong>。
+ウィンドウ単位の構造体は`application.LinuxWindow`です。`LinuxOptions`では**ありません**。
 
 ```go
 Linux: application.LinuxWindow{
@@ -1088,7 +1088,7 @@ Linux: application.LinuxWindow{
 
 **Icon**（`[]byte`）
 
-- ウィンドウアイコン（PNG 形式）。
+- ウィンドウアイコン（PNG形式）。
 
 **WindowIsTranslucent**（`bool`）
 
@@ -1105,13 +1105,13 @@ Linux: application.LinuxWindow{
 },
 ```
 
-## アプリケーションレベルの Windows オプション
+## アプリケーションレベルのWindowsオプション
 
-Windows 固有の一部のオプションは、ウィンドウごとではなくアプリケーションレベルで設定する必要があります。これは、WebView2 がユーザーデータパスごとに単一のブラウザー環境を共有するためです。
+Windows固有の一部のオプションは、ウィンドウ単位ではなくアプリケーションレベルで設定する必要があります。これは、WebView2がユーザーデータパスごとに単一のブラウザー環境を共有するためです。
 
 ### ブラウザーフラグ
 
-WebView2 のブラウザーフラグは、アプリケーション内の<strong>すべてのウィンドウ</strong>にわたって、試験的な機能や動作を制御します。これらは `application.Options.Windows` で設定する必要があります：
+WebView2のブラウザーフラグは、アプリケーション内の**すべてのウィンドウ**にわたって試験的機能と動作を制御します。これらは`application.Options.Windows`で設定する必要があります：
 
 ```go
 app := application.New(application.Options{
@@ -1139,27 +1139,27 @@ app := application.New(application.Options{
 **EnabledFeatures**（`[]string`）
 
 - 有効にする WebView2 機能フラグの一覧
-- 利用可能なフラグについては、[WebView2 のブラウザーフラグ](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags)を参照してください
-- 例：`"msWebView2EnableDraggableRegions"`
+- 利用可能なフラグについては、[WebView2 のブラウザフラグ](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags)を参照してください
+- 例: `"msWebView2EnableDraggableRegions"`
 
 **DisabledFeatures**（`[]string`）
 
 - 無効にする WebView2 機能フラグの一覧
 - Wails は `msSmartScreenProtection` を自動的に無効にします
-- 例：`"msExperimentalFeature"`
+- 例: `"msExperimentalFeature"`
 
 **AdditionalBrowserArgs**（`[]string`）
 
-- ブラウザープロセスに渡す Chromium のコマンドライン引数
-- `--` プレフィックスを含める必要があります（例：`"--remote-debugging-port=9222"`）
+- ブラウザプロセスに渡す Chromium コマンドライン引数
+- `--` プレフィックスを含める必要があります（例: `"--remote-debugging-port=9222"`）
 - 利用可能な引数については、[Chromium のコマンドラインスイッチ](https://peter.sh/experiments/chromium-command-line-switches/)を参照してください
 
 @note{type="caution" title="重要"}
-WebView2 はユーザーデータパスごとに単一のブラウザー環境を共有するため、これらのフラグはすべてのウィンドウにグローバルに適用されます。ウィンドウごとに異なるブラウザーフラグを設定することはできません。
+WebView2 はユーザーデータパスごとに単一のブラウザ環境を共有するため、これらのフラグはすべてのウィンドウにグローバルに適用されます。ウィンドウごとに異なるブラウザフラグを指定することはできません。
 
 @end
 
-**完全な例：**
+**完全な例:**
 
 ```go
 package main
@@ -1197,7 +1197,7 @@ func main() {
 
 ## 完全な例
 
-以下は、本番環境で使用できるウィンドウ設定です：
+以下は、本番環境で使用できるウィンドウ設定です:
 
 ```go
 package main
@@ -1260,15 +1260,15 @@ func main() {
 }
 ```
 
-フロントエンドアセットは、ウィンドウごとではなくアプリケーションレベル（`application.Options.Assets`）で配信されます。
+フロントエンドアセットは、ウィンドウ単位ではなく、アプリケーションレベル（`application.Options.Assets`）で配信されます。
 
 ## 次のステップ
 
 - [ウィンドウの基本](/features/windows/basics/) - ウィンドウの作成と制御
-- [複数ウィンドウ](/features/windows/multiple/) - マルチウィンドウのパターン
-- [フレームレスウィンドウ](/features/windows/frameless/) - カスタムウィンドウ装飾
+- [複数のウィンドウ](/features/windows/multiple/) - マルチウィンドウのパターン
+- [フレームレスウィンドウ](/features/windows/frameless/) - カスタムウィンドウフレーム
 - [ウィンドウイベント](/features/windows/events/) - ライフサイクルイベント
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。

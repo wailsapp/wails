@@ -1,13 +1,13 @@
 ---
 title: "サービス"
-description: "サービスを使用して、モジュール化された再利用可能なアプリケーションコンポーネントを構築します"
+description: "サービスを使用して、モジュール化された再利用可能なアプリケーションコンポーネントを構築する"
 slug: "features/bindings/services"
 sourcePath: "features/bindings/services.md"
 ---
 
 ## サービスアーキテクチャ
 
-Wailsの<strong>サービス</strong>を使用すると、モジュール化された自己完結型のコンポーネントでアプリケーションロジックを体系的に整理できます。サービスはライフサイクルに対応し、起動時と終了時のフックを備えています。また、フロントエンドに自動的にバインドされ、依存性を注入でき、単独で完全にテストできます。
+Wails の**サービス**を使用すると、モジュール化された自己完結型コンポーネントとしてアプリケーションロジックを体系的に整理できます。サービスはライフサイクルに対応し、起動および終了フックを備えています。また、フロントエンドに自動的にバインドされ、依存性注入が可能で、単独で完全にテストできます。
 
 ## クイックスタート
 
@@ -32,7 +32,7 @@ app := application.New(application.Options{
 })
 ```
 
-**これだけです！** これで、JavaScriptから`Greet`を呼び出せます。
+<strong>これだけです！</strong>これで、JavaScript から `Greet` を呼び出せます。
 
 ```js
 import { Greet } from './bindings/changeme/GreetService';
@@ -69,9 +69,9 @@ app := application.New(application.Options{
 
 **要点：**
 
-- バインドされるのは、**エクスポートされたメソッド**（PascalCase）のみです
-- サービスは<strong>シングルトン</strong>です（インスタンスは1つ）
-- メソッドは`(value, error)`を返せます
+- **エクスポートされたメソッド**（PascalCase）のみがバインドされます
+- サービスは**シングルトン**です（インスタンスは 1 つ）
+- メソッドは `(value, error)` を返せます
 
 ### 状態を持つサービス
 
@@ -101,7 +101,7 @@ func (c *CounterService) Reset() {
 }
 ```
 
-**重要：** サービスはすべてのウィンドウで共有されます。スレッドセーフにするため、必ずミューテックスを使用してください。
+<strong>重要：</strong>サービスはすべてのウィンドウで共有されます。スレッドセーフにするため、必ずミューテックスを使用してください。
 
 ### 依存関係を持つサービス
 
@@ -171,7 +171,7 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 }
 ```
 
-**ユースケース：**
+**用途：**
 
 - リソースを初期化する
 - 設定を検証する
@@ -181,9 +181,9 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 **重要：**
 
-- サービスは<strong>登録順</strong>に起動します
-- エラーを返すと、<strong>アプリケーションの起動を中止</strong>できます
-- キャンセルには`ctx`を使用します
+- サービスは**登録順**に起動します
+- エラーを返すと、**アプリケーションの起動を中止**できます
+- キャンセルには `ctx` を使用します
 
 ### ServiceShutdown
 
@@ -205,19 +205,19 @@ func (u *UserService) ServiceShutdown() error {
 }
 ```
 
-**ユースケース：**
+**用途：**
 
 - 接続を閉じる
 - 状態を保存する
-- リソースをクリーンアップする
+- リソースを解放する
 - バッファをフラッシュする
 - バックグラウンドタスクをキャンセルする
 
 **重要：**
 
-- サービスは<strong>逆順</strong>に終了します
+- サービスは**逆順**に終了します
 - アプリケーションコンテキストはすでにキャンセルされています
-- エラーを返すと<strong>警告がログに記録</strong>されます（終了処理は中止されません）
+- エラーを返すと**警告がログに記録**されます（終了処理は中止されません）
 
 ### ライフサイクルの完全な例
 
@@ -302,15 +302,23 @@ app := application.New(application.Options{
 })
 ```
 
-**ユースケース：**
+**用途：**
 
-- 同じサービスタイプの複数のインスタンス
-- より明確なログ記録
-- デバッグの改善
+- ログを分かりやすくする
+- デバッグを容易にする
 
-### HTTPルート
+`ServiceOptions.Name` は、ログ記録およびデバッグ用の表示名です。生成されるバインディングの名前空間は変更されません。Go の型ごとに登録できるサービスは最大 1 つです。個別に設定したインスタンスを使用する場合は、次の例のように異なるラッパー型を使用してください：
 
-サービスでHTTPリクエストを処理できます：
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+2 つの `*Store` 値を登録する代わりに、`application.NewService(&PrimaryStore{primary})` と `application.NewService(&ArchiveStore{archive})` を登録します。
+
+### HTTP ルート
+
+サービスは HTTP リクエストを処理できます：
 
 ```go
 type FileService struct {
@@ -334,11 +342,11 @@ app := application.New(application.Options{
 
 **アクセス：** `http://wails.localhost/files/...`
 
-**ユースケース：**
+**用途：**
 
 - ファイル配信
-- カスタムAPI
-- WebSocketエンドポイント
+- カスタム API
+- WebSocket エンドポイント
 - メディアストリーミング
 
 ## サービスパターン
@@ -403,7 +411,7 @@ func (s *UserService) RegisterUser(email, password string) (*User, error) {
 }
 ```
 
-### ファクトリーパターン
+### ファクトリパターン
 
 ```go
 type ServiceFactory struct {
@@ -453,7 +461,7 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
 
 ## 依存性注入
 
-### コンストラクタインジェクション
+### コンストラクタ注入
 
 ```go
 type EmailService struct {
@@ -479,7 +487,7 @@ app := application.New(application.Options{
 })
 ```
 
-### アプリケーションインジェクション
+### アプリケーション注入
 
 ```go
 type NotificationService struct {
@@ -604,21 +612,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ 推奨事項
 
-- **単一責任** - 1つのサービスに1つの目的を持たせる
-- **コンストラクターインジェクション** - 依存関係を明示的に渡す
+- **単一責任** - 1 つのサービスには 1 つの役割だけを持たせる
+- **コンストラクタ注入** - 依存関係を明示的に渡す
 - **スレッドセーフな状態** - ミューテックスを使用する
-- **エラーを返す** - パニックを発生させない
+- **エラーを返す** - panic を発生させない
 - **重要なイベントをログに記録する** - 構造化ログを使用する
 - **単独でテストする** - 依存関係をモック化する
 
-### ❌ 非推奨事項
+### ❌ 禁止事項
 
 - **グローバル状態を使用しない** - 依存関係を渡す
-- **起動処理をブロックしない** - ServiceStartupを短時間で完了させる
-- **シャットダウン処理を無視しない** - 必ずクリーンアップする
+- **起動処理をブロックしない** - ServiceStartup を短時間で完了させる
+- **終了処理を無視しない** - 必ずクリーンアップする
 - **循環依存を作らない** - 慎重に設計する
 - **内部メソッドを公開しない** - 非公開のままにする
-- **スレッドセーフ性を忘れない** - サービスは共有される
+- **スレッドセーフ対応を忘れない** - サービスは共有される
 
 ## 完全な例
 
@@ -794,11 +802,11 @@ func main() {
 
 ## 次のステップ
 
-- [メソッドバインディング](/features/bindings/methods/) - GoのメソッドをJavaScriptにバインドする方法を学ぶ
+- [メソッドバインディング](/features/bindings/methods/) - Go メソッドを JavaScript にバインドする方法を学ぶ
 - [モデル](/features/bindings/models/) - 複雑なデータ構造をバインドする
-- [イベント](/features/events/system/) - イベントを使用してPub/Sub通信を行う
+- [イベント](/features/events/system/) - イベントを使用して Pub/Sub 通信を行う
 - [ベストプラクティス](/features/bindings/best-practices/) - サービスの設計パターンとベストプラクティス
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[サービスの例](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サービスのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。

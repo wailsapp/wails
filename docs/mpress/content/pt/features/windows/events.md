@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## Eventos de janela
 
-O Wails despacha eventos do ciclo de vida e de mudança de estado da janela por meio de uma única API: `OnWindowEvent` para listeners passivos e `RegisterHook` para hooks canceláveis que podem impedir a ação padrão.
+O Wails dispara eventos do ciclo de vida e de mudança de estado da janela por meio de uma única API: `OnWindowEvent` para listeners passivos e `RegisterHook` para hooks canceláveis que podem impedir a ação padrão.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -29,7 +29,7 @@ Os eventos multiplataforma ficam em `events.Common.*`. Os eventos específicos d
 
 ## Eventos do ciclo de vida
 
-### Criação da janela
+### Criação de janelas
 
 Execute um callback sempre que uma janela for criada usando `app.Window.OnCreate`:
 
@@ -49,13 +49,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-O callback recebe `application.Window` (uma interface). O callback `OnCreate` é invocado uma vez por janela, após a inicialização do runtime da janela.
+O callback recebe `application.Window` (uma interface). O callback `OnCreate` é invocado uma vez para cada janela durante o registro, antes de a janela ser executada. Use-o para configurar a janela e registrar manipuladores. Aguarde `events.Common.WindowRuntimeReady` antes de chamar JavaScript ou enviar eventos que exijam o runtime do frontend.
 
 ### WindowClosing
 
 Disparado quando o usuário tenta fechar a janela (clicando no X, pressionando ⌘W, Alt+F4 etc.).
 
-Use um **hook** (`RegisterHook`) — somente hooks podem cancelar o fechamento. Listeners observam o evento, mas não podem impedi-lo.
+Use um **hook** (`RegisterHook`) — somente hooks podem cancelar o fechamento. Os listeners observam o evento, mas não podem impedi-lo.
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -68,15 +68,15 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Importante:**
 
-- `WindowClosing` é disparado nas tentativas de fechamento iniciadas pelo usuário.
-- Um callback de `RegisterHook` pode chamar `e.Cancel()` para manter a janela aberta.
-- Os callbacks de `OnWindowEvent` para `WindowClosing` são observadores — eles são executados, mas não podem cancelar.
+- `WindowClosing` é disparado em tentativas de fechamento iniciadas pelo usuário.
+- Um callback `RegisterHook` pode chamar `e.Cancel()` para manter a janela aberta.
+- Os callbacks `OnWindowEvent` de `WindowClosing` são observadores — eles são executados, mas não podem cancelar.
 
 **Fechamento programático:** chame `window.Close()`. Não existe `window.Destroy()`.
 
 ### WindowRuntimeReady
 
-Disparado quando o runtime da janela termina de ser inicializado — este é um ponto seguro para fazer chamadas ao contexto JS da janela:
+Disparado quando o runtime dentro da janela termina de inicializar — é o momento seguro para fazer chamadas no contexto JS da janela:
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-Entre e saia do modo de tela cheia programaticamente com `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — não existe `SetFullscreen(bool)`. Consulte o estado com `window.IsFullscreen() bool`.
+Entre ou saia do modo de tela cheia programaticamente com `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — não existe `SetFullscreen(bool)`. Consulte o estado com `window.IsFullscreen() bool`.
 
 ## Eventos de posição e tamanho
 
@@ -418,16 +418,16 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
-- **Use hooks para cancelamento** — somente callbacks de `RegisterHook` podem chamar `e.Cancel()`.
+- **Use hooks para cancelamento** — somente callbacks `RegisterHook` podem chamar `e.Cancel()`.
 - **Salve o estado ao fechar** — restaure a posição e o tamanho da janela na próxima inicialização.
 - **Aplique debounce a eventos frequentes** — `WindowDidResize` e `WindowDidMove` são disparados rapidamente.
-- **Trate as mudanças de foco** — atualize a interface adequadamente.
-- **Coordene por meio de eventos** — use `app.Event.Emit` para trocar mensagens entre janelas.
-- **Cancele a inscrição** quando os manipuladores não forem mais necessários — tanto `OnWindowEvent` quanto `RegisterHook` retornam uma função `func()` para cancelar a inscrição.
+- **Trate mudanças de foco** — atualize a interface adequadamente.
+- **Coordene por meio de eventos** — use `app.Event.Emit` para a comunicação entre janelas.
+- **Cancele a inscrição** quando os manipuladores não forem mais necessários — tanto `OnWindowEvent` quanto `RegisterHook` retornam uma função `func()` de cancelamento da inscrição.
 
 ### ❌ Não faça
 
@@ -443,7 +443,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 **Causa:** você usou `OnWindowEvent` em vez de `RegisterHook`.
 
-**Solução:** somente callbacks de `RegisterHook` podem chamar `e.Cancel()`. Os callbacks de `OnWindowEvent` apenas observam; eles não podem cancelar.
+**Solução:** somente callbacks `RegisterHook` podem chamar `e.Cancel()`. Os callbacks `OnWindowEvent` apenas observam; eles não podem cancelar.
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -457,7 +457,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-### Eventos não disparados
+### Os eventos não são disparados
 
 **Causa:** o manipulador foi registrado depois que o evento ocorreu.
 
@@ -472,7 +472,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 **Causa:** manipuladores de longa duração mantidos por um estado de curta duração.
 
-**Solução:** mantenha a função de cancelamento de inscrição `func()` retornada por `OnWindowEvent`/`RegisterHook` e chame-a durante a limpeza.
+**Solução:** mantenha a função `func()` de cancelamento da inscrição retornada por `OnWindowEvent`/`RegisterHook` e chame-a durante a limpeza.
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -482,14 +482,14 @@ unsub()
 
 ## Próximos passos
 
-**Noções básicas sobre janelas** - Aprenda os fundamentos do gerenciamento de janelas [Saiba mais →](/features/windows/basics/)
+**Conceitos básicos de janelas** - Aprenda os fundamentos do gerenciamento de janelas [Saiba mais →](/features/windows/basics/)
 
 **Várias janelas** - Padrões para aplicações com várias janelas [Saiba mais →](/features/windows/multiple/)
 
-**Sistema de eventos** - Conheça o sistema de eventos em detalhes [Saiba mais →](/features/events/system/)
+**Sistema de eventos** - Aprofunde-se no sistema de eventos [Saiba mais →](/features/events/system/)
 
 **Ciclo de vida da aplicação** - Entenda o ciclo de vida da aplicação [Saiba mais →](/concepts/lifecycle/)
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

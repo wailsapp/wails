@@ -95,6 +95,7 @@ func eventHandlers(e *Chromium) map[string]unsafe.Pointer {
 		"permissionRequested":              unsafe.Pointer(e.permissionRequested),
 		"webResourceRequested":             unsafe.Pointer(e.webResourceRequested),
 		"acceleratorKeyPressed":            unsafe.Pointer(e.acceleratorKeyPressed),
+		"moveFocusRequested":               unsafe.Pointer(e.moveFocusRequested),
 		"navigationStarting":               unsafe.Pointer(e.navigationStarting),
 		"navigationCompleted":              unsafe.Pointer(e.navigationCompleted),
 		"processFailed":                    unsafe.Pointer(e.processFailed),

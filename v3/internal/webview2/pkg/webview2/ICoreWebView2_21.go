@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_21Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_20Vtbl
 	ExecuteScriptWithResult ComProc
 }
 

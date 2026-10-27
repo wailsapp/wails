@@ -488,4 +488,4 @@ Organisez le code du presse-papiers.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples relatifs au presse-papiers](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples relatifs au presse-papiers](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

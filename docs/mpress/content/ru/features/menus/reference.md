@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **Рекомендация:** не размещайте разделители в начале или конце меню.
 
+### Заголовки разделов
+
+Нативные неинтерактивные подписи для группы пунктов меню в **macOS 14+**:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` использует стандартное оформление заголовков разделов AppKit. Метод не возвращает пункт меню и не назначает действие. В более ранних версиях macOS, Windows, Linux, на мобильных платформах и в серверных сборках вызов ничего не делает и не вставляет строку.
+
+Используйте этот метод в меню системного трея, контекстных меню или меню приложения для обозначения связанных команд. Используйте `AddSeparator()` для разделения групп переключателей на всех платформах, поскольку пропущенные заголовки не разделяют такие группы. Сигнатура метода приведена в [API Menu](/reference/menu#addsectionheader), а заголовок с именем хоста — в примере `systray-menu`.
+
 ## Свойства элементов меню
 
 ### Метка
@@ -571,4 +585,4 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами меню](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).
+**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами меню](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu).

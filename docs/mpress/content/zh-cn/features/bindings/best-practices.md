@@ -700,4 +700,4 @@ func TestUserService_WithMock(t *testing.T) {
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

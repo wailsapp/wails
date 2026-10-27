@@ -1,46 +1,31 @@
 # Unreleased Changes
 
-<!-- 
-This file is used to collect changelog entries for the next v3 release.
-Add your changes under the appropriate sections below.
+<!--
+AUTO-GENERATED FILE: do not edit in ordinary contribution PRs.
 
-Guidelines:
-- Follow the "Keep a Changelog" format (https://keepachangelog.com/)
-- Write clear, concise descriptions of changes
-- Include the impact on users when relevant
-- Use present tense ("Add feature" not "Added feature")
-- Reference issue/PR numbers when applicable
+The Auto Changelog (v3) workflow generates entries after PRs merge.
+Describe the user-visible change in the PR title and description instead.
+Release tooling moves staged entries into docs/mpress/content/changelog.md
+and resets this file. Do not delete or reset it by hand.
 
-This file is automatically processed by the nightly release workflow.
-After processing, the content will be moved to the main changelog and this file will be reset.
+For changes to this automation or explicitly requested release-note corrections,
+follow the changelog ownership policy in AGENTS.md and preserve existing entries.
 -->
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Expose the `@wailsio/runtime/cancellable` subpath export so `CancellablePromise` can be imported without evaluating the root runtime entry (#6153)
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Link the 404 page to matching Wails v2 documentation pages on v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6366) by @taliesin-ai
+- Move the v2 documentation site to v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6365) by @taliesin-ai
+- Serve v3 documentation from wails.io and v2 documentation from v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6364) by @taliesin-ai
+- Update v3.0.0 release notes and correct the security advisory claim in [PR](https://github.com/wailsapp/wails/pull/6363) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
-- Fix the updater failing to swap on Linux when the temp dir is on another filesystem (such as a tmpfs `/tmp`) by staging beside the installed binary and copying across filesystems
-- Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
-- Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
-- Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
-- Handle cross-device rename failures in Linux updater with staged copy fallback in [PR](https://github.com/wailsapp/wails/pull/6135) by @john-okeefe
-- Fix `WebviewWindow.SetMenu` on Windows not redrawing the menu bar unless a menubar theme was configured, fixing [#6103](https://github.com/wailsapp/wails/issues/6103)
-- Fix `WebviewWindow.SetMenu(nil)` panicking on Windows instead of being a no-op like on macOS, fixing [#6104](https://github.com/wailsapp/wails/issues/6104)
-- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
-- Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
-- Prevent duplicate window teardown on macOS in [PR](https://github.com/wailsapp/wails/pull/6159) by @charlesbalderson
-- Handle WM_CONTEXTMENU for systray menu to open on right-click in [PR](https://github.com/wailsapp/wails/pull/6162) by @wzk2025
-- Fix all five `InvokeSync*` variants blocking their caller forever when the dispatched callback panics, fixing [#6107](https://github.com/wailsapp/wails/issues/6107), in [PR](https://github.com/wailsapp/wails/pull/6108) by @RALIST
-- Rebuilds destroyed GTK3 submenus safely in [PR](https://github.com/wailsapp/wails/pull/6236) by @leaanthony
-- Implement Windows worker forwarding shim for nested workers in [PR](https://github.com/wailsapp/wails/pull/6261) by @taliesin-ai
-- Fix `OpenFile()` on Windows ignoring `PromptForMultipleSelection()` when `CanChooseDirectories(true)`: users can now pick several folders at once, as on macOS and Linux (#6263)
-- Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale`, cookie `Expires`, and the print settings scale, page size and margins were affected there (the print-settings setters previously returned `ErrDoubleArgUnsupported`): affected calls now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
+- Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
+- Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
 
 - Fix Linux dark mode detection returning light on a dark desktop until the colour
   scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend.
@@ -57,20 +42,3 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Security-related changes -->
 
 ---
-
-### Example Entries:
-
-**Added:**
-- Add support for custom window icons in application options
-- Add new `SetWindowIcon()` method to runtime API (#1234)
-
-**Changed:**
-- Update minimum Go version requirement to 1.21
-- Improve error messages for invalid configuration files
-
-**Fixed:**
-- Fix memory leak in event system during window close operations (#5678)
-- Fix crash when using context menus on Linux with Wayland
-
-**Security:**
-- Update dependencies to address CVE-2024-12345 in third-party library
