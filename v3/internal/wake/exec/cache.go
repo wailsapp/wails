@@ -58,15 +58,14 @@ func LoadTaskCache(baseDir string) (*TaskCache, error) {
 }
 
 func (tc *TaskCache) Save() error {
-	tc.mu.RLock()
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 	dir := filepath.Join(tc.Dir, cacheDirName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		tc.mu.RUnlock()
 		return fmt.Errorf("wake: create cache dir: %w", err)
 	}
 	path := filepath.Join(dir, cacheFileName)
 	data, err := json.MarshalIndent(tc, "", "  ")
-	tc.mu.RUnlock()
 	if err != nil {
 		return fmt.Errorf("wake: marshal cache: %w", err)
 	}
