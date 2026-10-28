@@ -35,6 +35,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Make status checks respect task directories in [PR](https://github.com/wailsapp/wails/pull/6462) by @taliesin-ai
 - Detect TODO, FIXME and TBD placeholders in changelog entries in [PR](https://github.com/wailsapp/wails/pull/6459) by @taliesin-ai
 - Generate runtime assets from embedded bundles in the CLI in [PR](https://github.com/wailsapp/wails/pull/6458) by @taliesin-ai
 - Separate stderr from parsed HEAD output in git commands in [PR](https://github.com/wailsapp/wails/pull/6457) by @taliesin-ai
