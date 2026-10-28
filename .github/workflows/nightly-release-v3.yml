@@ -51,7 +51,7 @@ env:
   WEEKLY_DAY_SYDNEY: '7'   # ISO weekday (1=Mon .. 7=Sun). UNCONFIRMED by the owner.
   WEEKLY_HOUR_SYDNEY: '20'
 
-# Serialise with every other job that pushes to master or tags releases.
+# Serialise scheduled/manual v3 release pipelines, including validation.
 concurrency:
   group: release-v3
   cancel-in-progress: false
@@ -61,11 +61,13 @@ jobs:
     name: Resolve cadence
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
-    permissions: {}
+    permissions:
+      contents: read
     outputs:
       proceed: ${{ steps.resolve.outputs.proceed }}
       channel: ${{ steps.resolve.outputs.channel }}
       ref: ${{ steps.resolve.outputs.ref }}
+      sha: ${{ steps.snapshot.outputs.sha }}
     steps:
     - name: Resolve cadence and branch
       id: resolve
@@ -99,8 +101,64 @@ jobs:
         echo "ref=$REF" >> "$GITHUB_OUTPUT"
         echo "Cadence: $CHANNEL from $REF (proceed=$PROCEED)"
 
+    - name: Checkout release snapshot
+      if: steps.resolve.outputs.proceed == 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.resolve.outputs.ref }}
+        persist-credentials: false
+    - name: Pin release snapshot
+      if: steps.resolve.outputs.proceed == 'true'
+      id: snapshot
+      run: |
+        SHA="$(git rev-parse HEAD)"
+        echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+        echo "Release source: $SHA" >> "$GITHUB_STEP_SUMMARY"
+
+  full-ci:
+    needs: cadence
+    if: needs.cadence.outputs.proceed == 'true'
+    permissions:
+      contents: read
+      actions: write # The reusable build removes its temporary artifacts.
+    uses: ./.github/workflows/build-and-test-v3.yml
+    with:
+      ref: ${{ needs.cadence.outputs.sha }}
+      full: true
+
+  runtime-assets:
+    needs: cadence
+    if: needs.cadence.outputs.proceed == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/verify-runtime-assets.yml
+    with:
+      ref: ${{ needs.cadence.outputs.sha }}
+
+  changelog-tests:
+    needs: cadence
+    if: needs.cadence.outputs.proceed == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/changelog-publication-tests.yml
+    with:
+      ref: ${{ needs.cadence.outputs.sha }}
+
+  security-scan:
+    needs: cadence
+    if: needs.cadence.outputs.proceed == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/semgrep.yml
+    with:
+      ref: ${{ needs.cadence.outputs.sha }}
+    secrets:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # release.go adds version/changelog metadata on top of the tested source.
+  # It must never pull or rebase that snapshot onto newer application code.
   nightly-release:
-    needs: [cadence]
+    needs: [cadence, full-ci, runtime-assets, changelog-tests, security-scan]
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails' && needs.cadence.outputs.proceed == 'true'
     env:
@@ -118,7 +176,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ needs.cadence.outputs.ref }}
+        ref: ${{ needs.cadence.outputs.sha }}
         fetch-depth: 0
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
 
@@ -144,7 +202,7 @@ jobs:
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
 
     - name: Release gate (weekly)
-      # Runs from master HEAD (before the detached checkout of the green SHA). Fails (and does not tag) when a maintainer-set blocker exists. Nightlies
+      # Runs from the tested snapshot. Fails without tagging when a blocker exists. Nightlies
       # never run the gate. Needs WAILS_REPO_TOKEN with the scopes listed in
       # v3/tasks/releasegate/main.go; the gate FAILS CLOSED without them.
       if: env.CHANNEL == 'weekly' && inputs.release_version == ''
@@ -156,40 +214,18 @@ jobs:
         STATUS_ISSUE: ${{ vars.WEEKLY_STATUS_ISSUE }}
       run: go run ./tasks/releasegate
 
-    - name: Select newest green master commit (weekly)
-      # The weekly promotes the newest master commit whose required checks
-      # (v3 Build Results, Run Go Tests, Bundled runtime matches source) all
-      # passed - not simply HEAD - and is cut from that exact SHA. If no commit
-      # since the last weekly is green the job FAILS and nothing is released.
-      id: green
-      if: env.CHANNEL == 'weekly' && env.RELEASE_REF == 'master'
+    - name: Refuse a stale release snapshot
+      # Weekly tag-only releases do not push the source branch. Other releases
+      # must not rebase onto changes that arrived while CI was running. The
+      # release script's non-force push also catches movement after this check.
+      if: env.CHANNEL != 'weekly' || env.RELEASE_REF != 'master'
       env:
-        GH_TOKEN: ${{ github.token }}
-        REPO: ${{ github.repository }}
+        TESTED_SHA: ${{ needs.cadence.outputs.sha }}
       run: |
-        set -euo pipefail
-        git fetch origin master
-        SHA="$(.github/scripts/find-green-commit.sh)"
-        # Keep master's release checks: the green commit can predate fixes to
-        # them (CI-only PRs never become green, so the snapshot may lag).
-        TOOLS="$RUNNER_TEMP/release-tools"
-        mkdir -p "$TOOLS"
-        cp v3/scripts/check-changelog-runs.py v3/scripts/test_check_changelog_runs.py "$TOOLS/"
-        echo "tools=$TOOLS" >> "$GITHUB_OUTPUT"
-        git checkout --detach "$SHA"
-        echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-        echo "Weekly will be cut from $SHA" | tee -a "$GITHUB_STEP_SUMMARY"
-
-    - name: Warn if master HEAD is not green (nightly)
-      if: env.CHANNEL == 'nightly'
-      continue-on-error: true
-      env:
-        GH_TOKEN: ${{ github.token }}
-        REPO: ${{ github.repository }}
-      run: |
-        # Advisory only: a nightly still ships, but the run is annotated.
-        if ! .github/scripts/find-green-commit.sh --check "$(git rev-parse HEAD)"; then
-          echo "::warning::master HEAD $(git rev-parse --short HEAD) has no green required checks; this nightly is unverified."
+        git fetch origin "$RELEASE_REF"
+        if [[ "$(git rev-parse FETCH_HEAD)" != "$TESTED_SHA" ]]; then
+          echo "::error::$RELEASE_REF advanced during CI. Start a new release run to test a new snapshot."
+          exit 1
         fi
 
     - name: Check for existing release tag
@@ -291,7 +327,7 @@ jobs:
         inputs.release_version != ''
       env:
         GH_TOKEN: ${{ github.token }}
-        TOOLS: ${{ steps.green.outputs.tools || 'v3/scripts' }}
+        TOOLS: v3/scripts
       run: |
         python3 -m unittest discover -s "$TOOLS" -p 'test_check_changelog_runs.py'
         python3 "$TOOLS/check-changelog-runs.py"
@@ -313,13 +349,13 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         DRY_RUN: ${{ inputs.dry_run }}
         RELEASE_VERSION: ${{ inputs.release_version }}
-        GREEN_SHA: ${{ steps.green.outputs.sha }}
+        TESTED_SHA: ${{ needs.cadence.outputs.sha }}
       run: |
         cd v3/tasks/release
-        ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$RELEASE_REF")
-        if [ -n "$GREEN_SHA" ]; then
-          # Detached, CI-verified commit: tag it, never push the branch.
-          ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$GREEN_SHA" --tag-only)
+        ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$TESTED_SHA")
+        if [ "$CHANNEL" == weekly ] && [ "$RELEASE_REF" == master ]; then
+          # Weekly releases retain the existing tag-only publication policy.
+          ARGS=(--channel "$CHANNEL" --branch "$RELEASE_REF" --target "$TESTED_SHA" --tag-only)
         fi
         if [ "$DRY_RUN" == "true" ]; then
           ARGS+=(--dry-run)
@@ -332,17 +368,17 @@ jobs:
     - name: Sync release commit back to master
       # Keeps master's version.txt monotonic: otherwise the next nightly would
       # compute a lower/duplicate version (the release tool also refuses that).
-      #  - weekly cut from a green SHA (tag-only): copy the three version files
+      #  - weekly cut from the tested SHA (tag-only): copy the three version files
       #    from the tag onto master HEAD (no conflicts, no changelog touched).
       #  - release from releases/**: cherry-pick the release commit (version,
       #    runtime metadata, changelog) onto master.
       if: >-
         steps.release.outcome == 'success' &&
         inputs.dry_run != true &&
-        (steps.green.outputs.sha != '' || env.RELEASE_REF != 'master')
+        (env.CHANNEL == 'weekly' || env.RELEASE_REF != 'master')
       env:
         TAG: ${{ steps.release.outputs.release_tag }}
-        GREEN_SHA: ${{ steps.green.outputs.sha }}
+        TAG_ONLY: ${{ env.CHANNEL == 'weekly' && env.RELEASE_REF == 'master' }}
         PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         set -euo pipefail
@@ -350,8 +386,8 @@ jobs:
         for attempt in 1 2 3 4 5; do
           git fetch origin master
           git checkout -B sync-master origin/master
-          if [ -n "$GREEN_SHA" ]; then
-            # Copy only the version fields: a weekly is cut from an older green
+          if [ "$TAG_ONLY" == true ]; then
+            # Copy only the version fields: a weekly is cut from a tested
             # commit, so checking out whole files from the tag would revert
             # dependency and lockfile updates merged to master since then.
             git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
@@ -375,6 +411,7 @@ jobs:
         else
           echo "## 🚀 Nightly Release Summary" >> $GITHUB_STEP_SUMMARY
         fi
+        echo "**Tested source:** ${{ needs.cadence.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
         echo "================================" >> $GITHUB_STEP_SUMMARY
 
         if [ -n "${{ steps.release.outputs.release_version }}" ]; then
