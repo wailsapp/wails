@@ -4,6 +4,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io/fs"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -22,6 +23,11 @@ func (b *BundledAssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request
 		switch req.URL.Path {
 		case "/wails/runtime.js":
 			rw.Header().Set("Content-Type", "application/javascript")
+			rw.Header().Set(HeaderContentLength, strconv.Itoa(len(bundledassets.RuntimeJS)))
+			if req.Method == http.MethodHead {
+				rw.WriteHeader(http.StatusOK)
+				return
+			}
 			rw.Write([]byte(bundledassets.RuntimeJS))
 			return
 		}
