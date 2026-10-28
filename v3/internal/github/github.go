@@ -63,13 +63,14 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 		if err != nil {
 			return result, err
 		}
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return result, fmt.Errorf("GitHub tags request failed: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
+		}
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return result, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return result, fmt.Errorf("GitHub tags API returned HTTP %d", resp.StatusCode)
 		}
 
 		data := []map[string]interface{}{}
