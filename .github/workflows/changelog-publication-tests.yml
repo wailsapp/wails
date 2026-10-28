@@ -31,4 +31,5 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/ci-test-venv"
           "$RUNNER_TEMP/ci-test-venv/bin/pip" install PyYAML==6.0.3
       - name: Test CI scope, release gating, and competing pushes
-        run: "$RUNNER_TEMP/ci-test-venv/bin/python" .github/scripts/test_release_ci.py
+        run: |
+          "$RUNNER_TEMP/ci-test-venv/bin/python" .github/scripts/test_release_ci.py
