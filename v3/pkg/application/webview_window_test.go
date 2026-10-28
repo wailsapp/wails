@@ -290,3 +290,94 @@ func TestSetMinSizeStillResizesAnOrdinaryWindow(t *testing.T) {
 		t.Errorf("window is %dx%d, want 800x600", impl.stubWidth, impl.stubHeight)
 	}
 }
+
+func TestSetSizeConstraintsUpdatesSavedValuesOnlyWhileDisabled(t *testing.T) {
+	for _, state := range []string{"ordinary", "fullscreen", "maximised"} {
+		for _, clear := range []bool{false, true} {
+			name := state
+			if clear {
+				name += "/clear"
+			}
+			t.Run(name, func(t *testing.T) {
+				impl := &sizeStateImpl{
+					stubWidth: 1000, stubHeight: 700,
+					stubFullscreen: state == "fullscreen", stubMaximised: state == "maximised",
+				}
+				w := newSizeStateWindow(t, impl)
+				w.options.MinWidth, w.options.MinHeight = 200, 100
+				w.options.MaxWidth, w.options.MaxHeight = 1400, 900
+				w.savedMinWidth, w.savedMinHeight = 200, 100
+				w.savedMaxWidth, w.savedMaxHeight = 1400, 900
+				disabled := state != "ordinary"
+				if disabled {
+					w.DisableSizeConstraints()
+				}
+
+				want := [4]int{300, 200, 1200, 800}
+				if clear {
+					want = [4]int{}
+				}
+				w.SetMinSize(want[0], want[1])
+				w.SetMaxSize(want[2], want[3])
+
+				wantSaved := [4]int{200, 100, 1400, 900}
+				if disabled {
+					wantSaved = want
+				}
+				if got := [4]int{w.savedMinWidth, w.savedMinHeight, w.savedMaxWidth, w.savedMaxHeight}; got != wantSaved {
+					t.Errorf("saved constraints = %v, want %v", got, wantSaved)
+				}
+				if w.constraintsSaved != disabled {
+					t.Errorf("constraintsSaved = %v, want %v", w.constraintsSaved, disabled)
+				}
+
+				w.EnableSizeConstraints()
+				if got := [4]int{w.options.MinWidth, w.options.MinHeight, w.options.MaxWidth, w.options.MaxHeight}; got != want {
+					t.Errorf("restored constraints = %v, want %v", got, want)
+				}
+				if w.constraintsSaved {
+					t.Error("constraintsSaved should be false after enabling")
+				}
+			})
+		}
+	}
+}
+
+type sizeConstraintDispatcher struct {
+	threadProbeApp
+	dispatches int
+}
+
+func (d *sizeConstraintDispatcher) dispatchOnMainThread(id uint) {
+	d.dispatches++
+	d.threadProbeApp.dispatchOnMainThread(id)
+	d.runPending()
+}
+
+func TestSetSizeConstraintsUsesOneMainThreadDispatch(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		setter func(*WebviewWindow, int, int) Window
+		width  int
+		height int
+	}{
+		{"minimum", (*WebviewWindow).SetMinSize, 1800, 1200},
+		{"maximum", (*WebviewWindow).SetMaxSize, 800, 600},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			impl := &sizeStateImpl{stubWidth: 1200, stubHeight: 900}
+			w := newSizeStateWindow(t, impl)
+			dispatcher := &sizeConstraintDispatcher{}
+			globalApplication.impl = dispatcher
+
+			tc.setter(w, tc.width, tc.height)
+
+			if dispatcher.dispatches != 1 {
+				t.Errorf("main-thread dispatches = %d, want 1 for size read, state check and resize", dispatcher.dispatches)
+			}
+			if impl.stubSetSizes != 1 || impl.stubWidth != tc.width || impl.stubHeight != tc.height {
+				t.Errorf("setSize called %d times, size = %dx%d, want one call with %dx%d", impl.stubSetSizes, impl.stubWidth, impl.stubHeight, tc.width, tc.height)
+			}
+		})
+	}
+}

@@ -613,24 +613,28 @@ func (w *WebviewWindow) stateOwnsSize() bool {
 
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
-	currentWidth, currentHeight := w.Size()
-	newWidth, newHeight := currentWidth, currentHeight
-
-	var newSize bool
-	if minHeight != 0 && currentHeight < minHeight {
-		newHeight = minHeight
-		newSize = true
-	}
-	if minWidth != 0 && currentWidth < minWidth {
-		newWidth = minWidth
-		newSize = true
-	}
-	if newSize && w.stateOwnsSize() {
-		newSize = false
-	}
 	InvokeSync(func() {
+		currentWidth, currentHeight := w.Size()
+		newWidth, newHeight := currentWidth, currentHeight
+
+		var newSize bool
+		if minHeight != 0 && currentHeight < minHeight {
+			newHeight = minHeight
+			newSize = true
+		}
+		if minWidth != 0 && currentWidth < minWidth {
+			newWidth = minWidth
+			newSize = true
+		}
+		if newSize && w.stateOwnsSize() {
+			newSize = false
+		}
 		w.options.MinWidth = minWidth
 		w.options.MinHeight = minHeight
+		if w.constraintsSaved {
+			w.savedMinWidth = minWidth
+			w.savedMinHeight = minHeight
+		}
 		if newSize {
 			w.options.Height = newHeight
 			w.options.Width = newWidth
@@ -647,24 +651,28 @@ func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
 
 // SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
-	currentWidth, currentHeight := w.Size()
-	newWidth, newHeight := currentWidth, currentHeight
-
-	var newSize bool
-	if maxHeight != 0 && currentHeight > maxHeight {
-		newHeight = maxHeight
-		newSize = true
-	}
-	if maxWidth != 0 && currentWidth > maxWidth {
-		newWidth = maxWidth
-		newSize = true
-	}
-	if newSize && w.stateOwnsSize() {
-		newSize = false
-	}
 	InvokeSync(func() {
+		currentWidth, currentHeight := w.Size()
+		newWidth, newHeight := currentWidth, currentHeight
+
+		var newSize bool
+		if maxHeight != 0 && currentHeight > maxHeight {
+			newHeight = maxHeight
+			newSize = true
+		}
+		if maxWidth != 0 && currentWidth > maxWidth {
+			newWidth = maxWidth
+			newSize = true
+		}
+		if newSize && w.stateOwnsSize() {
+			newSize = false
+		}
 		w.options.MaxWidth = maxWidth
 		w.options.MaxHeight = maxHeight
+		if w.constraintsSaved {
+			w.savedMaxWidth = maxWidth
+			w.savedMaxHeight = maxHeight
+		}
 		if newSize {
 			w.options.Height = newHeight
 			w.options.Width = newWidth
