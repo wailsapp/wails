@@ -8,6 +8,42 @@ import (
 	"time"
 )
 
+func TestStatementHandleParsing(t *testing.T) {
+	service := New()
+	if err := service.Open(); err != nil {
+		t.Fatal(err)
+	}
+	defer service.Close()
+	stmt, err := service.Prepare("SELECT 1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stmt.Close()
+	encoded, err := stmt.MarshalText()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var valid Stmt
+	if err := valid.UnmarshalText(encoded); err != nil {
+		t.Fatal(err)
+	}
+	if rows, err := service.QueryPrepared(context.Background(), &valid); err != nil || len(rows) != 1 {
+		t.Fatalf("round-trip handle unusable: %v, %v", rows, err)
+	}
+	for _, text := range []string{
+		"", "not-hex", strings.Repeat("f", 17),
+		string(encoded) + "junk", string(encoded) + " more",
+		" " + string(encoded), string(encoded) + "\n",
+	} {
+		t.Run(text, func(t *testing.T) {
+			var decoded Stmt
+			if err := decoded.UnmarshalText([]byte(text)); err == nil {
+				t.Errorf("malformed handle %q resolved to statement %d", text, decoded.id)
+			}
+		})
+	}
+}
+
 func TestConnectionCleanupDropsStatementHandles(t *testing.T) {
 	for _, operation := range []string{"close", "reopen"} {
 		t.Run(operation, func(t *testing.T) {
