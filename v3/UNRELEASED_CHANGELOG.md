@@ -34,6 +34,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Generate runtime assets from embedded bundles in the CLI in [PR](https://github.com/wailsapp/wails/pull/6458) by @taliesin-ai
 - Separate stderr from parsed HEAD output in git commands in [PR](https://github.com/wailsapp/wails/pull/6457) by @taliesin-ai
 - Preserve the default in-memory SQLite database under concurrent access in [PR](https://github.com/wailsapp/wails/pull/6456) by @taliesin-ai
 - Return correct responses to HEAD requests for the fallback index page in [PR](https://github.com/wailsapp/wails/pull/6451) by @taliesin-ai
