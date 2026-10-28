@@ -53,6 +53,9 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
 	}
 	args := strings.Fields(execCmd)
+	if len(args) == 0 {
+		return fallbackExplorerBinArgs(path, selectFile)
+	}
 	if !strings.Contains(strings.Join(args, " "), path) {
 		args = append(args, path)
 	}
