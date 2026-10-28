@@ -206,13 +206,17 @@ func findFileWithLdconfig(fileName string) (string, error) {
 		return "", err
 	}
 
-	baseName := strings.TrimSuffix(fileName, ".so")
 	for _, line := range strings.Split(string(output), "\n") {
-		if strings.Contains(line, baseName) {
-			parts := strings.Split(line, "=>")
-			if len(parts) == 2 {
-				return strings.TrimSpace(parts[1]), nil
-			}
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		name := fields[0]
+		if name != fileName && !(strings.HasSuffix(fileName, ".so") && strings.HasPrefix(name, fileName+".")) {
+			continue
+		}
+		if _, libPath, ok := strings.Cut(line, "=>"); ok {
+			return strings.TrimSpace(libPath), nil
 		}
 	}
 
