@@ -118,14 +118,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
-	taskDir := baseDir
-	if task.Dir != "" {
-		if filepath.IsAbs(task.Dir) {
-			taskDir = task.Dir
-		} else {
-			taskDir = filepath.Join(baseDir, task.Dir)
-		}
-	}
+	taskDir := taskDirectory(baseDir, task.Dir)
 
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {

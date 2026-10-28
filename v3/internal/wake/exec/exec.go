@@ -213,7 +213,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	var mergedVars map[string]*ast.Var
 	if len(task.Precondition) > 0 {
 		mergedVars = e.mergeVars(task, depVars)
-		if err := checkPreconditions(task, mergedVars); err != nil {
+		if err := checkPreconditions(task, mergedVars, e.Dir); err != nil {
 			return err
 		}
 	}
@@ -335,16 +335,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	// the output capture decodes and routes them to this build's reporter.
 	env = append(env, "WAKE_REPORT=1")
 
-	dir := parse.ExpandTemplates(task.Dir, mergedVars)
-	if dir == "" {
-		dir = e.Dir
-	} else if !filepath.IsAbs(dir) {
-		// filepath.IsAbs handles `C:\…` on Windows; the previous
-		// `strings.HasPrefix("/")` check misclassified Windows absolute
-		// paths as relative and prefixed them with e.Dir, producing nonsense
-		// like `C:\proj\C:\foo` for the task's working directory.
-		dir = filepath.Join(e.Dir, dir)
-	}
+	dir := taskDirectory(e.Dir, parse.ExpandTemplates(task.Dir, mergedVars))
 
 	label := parse.ExpandTemplates(task.Label, mergedVars)
 
