@@ -29,6 +29,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve request bodies when the development proxy retries requests in [PR](https://github.com/wailsapp/wails/pull/6432) by @taliesin-ai
 - Honor the launch deadline during desktop file explorer discovery in [PR](https://github.com/wailsapp/wails/pull/6430) by @taliesin-ai
 - Reject HTTP errors before saving AppImage tooling downloads in [PR](https://github.com/wailsapp/wails/pull/6429) by @taliesin-ai
 - Order oversized numeric prerelease identifiers correctly in semver comparisons in [PR](https://github.com/wailsapp/wails/pull/6427) by @taliesin-ai
