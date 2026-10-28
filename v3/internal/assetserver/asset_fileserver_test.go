@@ -21,10 +21,10 @@ func TestNonSeekingAssetPrefixWriteFailure(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			bytesRead := 0
 			server := &assetFileServer{fs: nonSeekingTestFS{
-				FS: fstest.MapFS{"asset.txt": {Data: make([]byte, 1024)}}, bytesRead: &bytesRead,
+				FS: fstest.MapFS{"asset.unknown": {Data: make([]byte, 1024)}}, bytesRead: &bytesRead,
 			}}
 			writer := &prefixFailureWriter{ResponseWriter: httptest.NewRecorder(), err: writeErr}
-			err := server.serveFSFile(writer, httptest.NewRequest(http.MethodGet, "/asset.txt", nil), "asset.txt")
+			err := server.serveFSFile(writer, httptest.NewRequest(http.MethodGet, "/asset.unknown", nil), "asset.unknown")
 			want := writeErr
 			if want == nil {
 				want = io.ErrShortWrite
@@ -185,7 +185,7 @@ func TestAssetFileServerNonSeekingHEAD(t *testing.T) {
 		wantBody    string
 		wantRead    int
 	}{
-		{"HEAD/sniffed", http.MethodHead, "", "text/plain; charset=utf-8", "", 512},
+		{"HEAD/extension", http.MethodHead, "", "text/plain; charset=utf-8", "", 0},
 		{"HEAD/explicit", http.MethodHead, "text/custom", "text/custom", "", 0},
 		{"GET/sniffed", http.MethodGet, "", "text/plain; charset=utf-8", data, len(data)},
 		{"GET/explicit", http.MethodGet, "text/custom", "text/custom", data, len(data)},

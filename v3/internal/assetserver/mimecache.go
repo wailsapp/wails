@@ -91,15 +91,19 @@ var (
 
 // GetMimetype uses a known file extension or sniffs the current content.
 func GetMimetype(filename string, data []byte) string {
-	// Fast path: check extension map first (no lock needed)
-	extension := filepath.Ext(filename)
-	if result := mimeTypesByExt[extension]; result != "" {
-		return result
-	}
-	if result := mimeTypesByExt[strings.ToLower(extension)]; result != "" {
+	if result := mimetypeByExtension(filename); result != "" {
 		return result
 	}
 
 	// Content may change for the same filename; sniff without retaining names.
 	return http.DetectContentType(data)
+}
+
+func mimetypeByExtension(filename string) string {
+	// Fast path: check extension map first (no lock needed)
+	extension := filepath.Ext(filename)
+	if result := mimeTypesByExt[extension]; result != "" {
+		return result
+	}
+	return mimeTypesByExt[strings.ToLower(extension)]
 }
