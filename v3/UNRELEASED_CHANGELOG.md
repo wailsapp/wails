@@ -29,6 +29,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent write panics in kvstore after loading a JSON null value in [PR](https://github.com/wailsapp/wails/pull/6442) by @taliesin-ai
 - Print plain terminal messages without interpreting format verbs in [PR](https://github.com/wailsapp/wails/pull/6441) by @taliesin-ai
 - Surface errors when looking up the latest stable release in the updater in [PR](https://github.com/wailsapp/wails/pull/6440) by @taliesin-ai
 - Ignore hidden entries and headers in changelog comment blocks in [PR](https://github.com/wailsapp/wails/pull/6439) by @taliesin-ai
