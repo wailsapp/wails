@@ -51,12 +51,13 @@ func (p *Parser) ParseContent(reader io.Reader) (*ChangelogEntry, error) {
 	scanner := bufio.NewScanner(reader)
 	var currentSection string
 	var inExampleSection bool
+	var comments commentBlock
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 
 		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "<!--") || strings.HasPrefix(line, "-->") {
+		if line == "" || comments.skip(line) || strings.HasPrefix(line, "-->") {
 			continue
 		}
 
