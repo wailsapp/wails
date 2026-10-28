@@ -27,10 +27,7 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 
 // IsRelease returns true if it's a release version
 func (s *SemanticVersion) IsRelease() bool {
-	if s.Version.Major != majorVersion {
-		return false
-	}
-	return len(s.Version.Prerelease) == 0 && len(s.Version.Metadata) == 0
+	return s.Version.Major == majorVersion && s.Version.Prerelease == ""
 }
 
 // IsPreRelease returns true if it's a prerelease version
