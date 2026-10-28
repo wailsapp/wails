@@ -30,6 +30,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Return snapshots for whole-store reads in kvstore in [PR](https://github.com/wailsapp/wails/pull/6444) by @taliesin-ai
 - Prevent write panics in kvstore after loading a JSON null value in [PR](https://github.com/wailsapp/wails/pull/6442) by @taliesin-ai
 - Print plain terminal messages without interpreting format verbs in [PR](https://github.com/wailsapp/wails/pull/6441) by @taliesin-ai
 - Surface errors when looking up the latest stable release in the updater in [PR](https://github.com/wailsapp/wails/pull/6440) by @taliesin-ai
