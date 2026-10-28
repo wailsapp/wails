@@ -43,13 +43,13 @@ func findPathToFile(fileSystem fs.FS, file string) (string, error) {
 	if stat != nil && !stat.IsDir() {
 		return ".", nil
 	}
-	var indexFiles []string
+	var selected string
 	err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && d.Name() == file {
-			indexFiles = append(indexFiles, path)
+		if !d.IsDir() && d.Name() == file && (selected == "" || len(path) < len(selected)) {
+			selected = path
 		}
 		return nil
 	})
@@ -57,18 +57,8 @@ func findPathToFile(fileSystem fs.FS, file string) (string, error) {
 		return "", err
 	}
 
-	if len(indexFiles) > 1 {
-		selected := indexFiles[0]
-		for _, f := range indexFiles {
-			if len(f) < len(selected) {
-				selected = f
-			}
-		}
+	if selected != "" {
 		path, _ := filepath.Split(selected)
-		return path, nil
-	}
-	if len(indexFiles) > 0 {
-		path, _ := filepath.Split(indexFiles[0])
 		return path, nil
 	}
 	return "", fmt.Errorf("%s: %w", file, os.ErrNotExist)
