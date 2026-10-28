@@ -131,7 +131,6 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		// Check if the path matches a service route
 		for _, svc := range a.services {
 			if strings.HasPrefix(reqPath, svc.Route) {
-				req.URL.Path = strings.TrimPrefix(reqPath, svc.Route)
 				svc.Handler.ServeHTTP(rw, req)
 				return
 			}
@@ -143,7 +142,7 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 }
 
 func (a *AssetServer) AttachServiceHandler(route string, handler http.Handler) {
-	a.services = append(a.services, service{route, handler})
+	a.services = append(a.services, service{route, http.StripPrefix(route, handler)})
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
