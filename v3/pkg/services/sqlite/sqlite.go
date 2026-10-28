@@ -425,6 +425,9 @@ func parseRows(ctx context.Context, rows *sql.Rows) (Rows, error) {
 
 		results = append(results, row)
 	}
+	if err := rows.Err(); err != nil && !errors.Is(err, ctx.Err()) {
+		return nil, err
+	}
 
 	return results, nil
 }
