@@ -38,6 +38,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Route command chains and redirections through the shell in [PR](https://github.com/wailsapp/wails/pull/6479) by @taliesin-ai
 - Preserve quoted regex and path backslashes in wake command parsing in [PR](https://github.com/wailsapp/wails/pull/6477) by @taliesin-ai
 - Preserve existing DMG files when packaging builds fail in [PR](https://github.com/wailsapp/wails/pull/6476) by @taliesin-ai
 - Replace symlinks with generated regular files in bindings output in [PR](https://github.com/wailsapp/wails/pull/6474) by @taliesin-ai
