@@ -126,9 +126,29 @@ func (m *windowsApp) show() {
 func (m *windowsApp) on(_ uint) {
 }
 
-func (m *windowsApp) setIcon(_ []byte) {
-}
+func (m *windowsApp) setIcon(icon []byte) {
+	hIcon, err := w32.CreateLargeHIconFromImage(icon)
+	if err != nil {
+		m.parent.error("unable to create icon:", err)
+		return
+	}
 
+	for _, window := range m.windowMap {
+		// This is a dumb workaround to prevent windows adding the icon back, when DisableIcon is set to true
+		iconDisabled := window.parent.options.Windows.DisableIcon
+		style := w32.GetWindowLong(window.hwnd, w32.GWL_STYLE)
+
+		if iconDisabled {
+			w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style&^w32.WS_SYSMENU))
+		}
+
+		window.setIcon(hIcon)
+
+		if iconDisabled {
+			w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style))
+		}
+	}
+}
 func (m *windowsApp) name() string {
 	// appName := C.getAppName()
 	// defer C.free(unsafe.Pointer(appName))
