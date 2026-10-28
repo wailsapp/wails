@@ -30,6 +30,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Release prepared-statement handles when SQLite database is closed or reopened in [PR](https://github.com/wailsapp/wails/pull/6448) by @taliesin-ai
 - Keep extraction destination paths literal when using gosod in [PR](https://github.com/wailsapp/wails/pull/6447) by @taliesin-ai
 - Propagate errors from SQLite queries after partial row iteration in [PR](https://github.com/wailsapp/wails/pull/6446) by @taliesin-ai
 - Return snapshots for whole-store reads in kvstore in [PR](https://github.com/wailsapp/wails/pull/6444) by @taliesin-ai
