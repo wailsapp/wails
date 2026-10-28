@@ -1,8 +1,23 @@
 package assetserver
 
 import (
+	"net/http"
 	"testing"
 )
+
+func TestGetMimetypeContentChanges(t *testing.T) {
+	for _, data := range [][]byte{
+		[]byte("<!DOCTYPE html><html></html>"),
+		{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'},
+		nil,
+		{0, 1, 2, 3},
+	} {
+		want := http.DetectContentType(data)
+		if got := GetMimetype("changing-asset.unknown", data); got != want {
+			t.Errorf("GetMimetype with %x = %q, want %q", data, got, want)
+		}
+	}
+}
 
 func TestGetMimetype(t *testing.T) {
 	type args struct {

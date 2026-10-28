@@ -8,20 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sync"
+	"strconv"
 	"testing"
 )
 
-// resetMimeCache clears the mime cache for benchmark isolation
-func resetMimeCache() {
-	mimeCache = sync.Map{}
-}
-
 // BenchmarkGetMimetype measures MIME type detection performance
 func BenchmarkGetMimetype(b *testing.B) {
-	// Reset cache between runs
-	resetMimeCache()
-
 	b.Run("ByExtension/JS", func(b *testing.B) {
 		data := []byte("function test() {}")
 		for b.Loop() {
@@ -29,7 +21,6 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
 	b.Run("ByExtension/CSS", func(b *testing.B) {
 		data := []byte(".class { color: red; }")
 		for b.Loop() {
@@ -37,7 +28,6 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
 	b.Run("ByExtension/HTML", func(b *testing.B) {
 		data := []byte("<!DOCTYPE html><html></html>")
 		for b.Loop() {
@@ -45,7 +35,6 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
 	b.Run("ByExtension/JSON", func(b *testing.B) {
 		data := []byte(`{"key": "value"}`)
 		for b.Loop() {
@@ -53,7 +42,6 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
 	b.Run("Detection/Unknown", func(b *testing.B) {
 		data := []byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05}
 		for b.Loop() {
@@ -61,7 +49,6 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
 	b.Run("Detection/PNG", func(b *testing.B) {
 		// PNG magic bytes
 		data := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00}
@@ -70,21 +57,17 @@ func BenchmarkGetMimetype(b *testing.B) {
 		}
 	})
 
-	resetMimeCache()
-	b.Run("CacheHit", func(b *testing.B) {
+	b.Run("RepeatedUnknown", func(b *testing.B) {
 		data := []byte{0x00, 0x01, 0x02}
-		// Prime the cache
-		_ = GetMimetype("cached.bin", data)
 		b.ResetTimer()
 		for b.Loop() {
-			_ = GetMimetype("cached.bin", data)
+			_ = GetMimetype("repeated.bin", data)
 		}
 	})
 }
 
 // BenchmarkGetMimetype_Concurrent tests concurrent MIME type lookups
 func BenchmarkGetMimetype_Concurrent(b *testing.B) {
-	resetMimeCache()
 	data := []byte("function test() {}")
 
 	b.RunParallel(func(pb *testing.PB) {
@@ -92,6 +75,15 @@ func BenchmarkGetMimetype_Concurrent(b *testing.B) {
 			_ = GetMimetype("script.js", data)
 		}
 	})
+}
+
+func BenchmarkGetMimetypeUnique(b *testing.B) {
+	data := []byte("<!DOCTYPE html><html></html>")
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; b.Loop(); i++ {
+		_ = GetMimetype("unique-"+strconv.Itoa(i)+".unknown", data)
+	}
 }
 
 // BenchmarkAssetServerServeHTTP measures request handling overhead
