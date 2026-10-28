@@ -38,3 +38,16 @@ func TestCopyClosesDestination(t *testing.T) {
 		t.Errorf("COPY left %d destination descriptors open after 32 copies", leaked)
 	}
 }
+
+func TestCopyToNullDevice(t *testing.T) {
+	source := filepath.Join(t.TempDir(), "source")
+	const content = "copy to a device without truncating it"
+	if err := os.WriteFile(source, []byte(content), 0600); err != nil {
+		t.Fatal(err)
+	}
+	COPY(source, os.DevNull)
+	data, err := os.ReadFile(source)
+	if err != nil || string(data) != content {
+		t.Fatalf("source=%q, error=%v", data, err)
+	}
+}
