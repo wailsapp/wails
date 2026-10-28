@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // findEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
@@ -41,7 +40,7 @@ func findEmbedRootPath(fileSystem embed.FS) (string, error) {
 
 func findPathToFile(fileSystem fs.FS, file string) (string, error) {
 	stat, _ := fs.Stat(fileSystem, file)
-	if stat != nil {
+	if stat != nil && !stat.IsDir() {
 		return ".", nil
 	}
 	var indexFiles []string
@@ -49,7 +48,7 @@ func findPathToFile(fileSystem fs.FS, file string) (string, error) {
 		if err != nil {
 			return err
 		}
-		if strings.HasSuffix(path, file) {
+		if !d.IsDir() && d.Name() == file {
 			indexFiles = append(indexFiles, path)
 		}
 		return nil
