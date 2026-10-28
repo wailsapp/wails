@@ -22,6 +22,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Only serve exact index files when resolving directory requests in the asset server in [PR](https://github.com/wailsapp/wails/pull/6400) by @taliesin-ai
 - Fix dismissed Linux notifications being reported as clicks on servers without action support in [PR](https://github.com/wailsapp/wails/pull/6367) by @bercedev
 - Stop dev processes when the terminal closes in [PR](https://github.com/wailsapp/wails/pull/6371) by @xmasdev
 - Hold Windows taskbar restart debounce for one second before clearing the flag in [PR](https://github.com/wailsapp/wails/pull/6386) by @taliesin-ai
