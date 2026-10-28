@@ -243,9 +243,9 @@ func (v *Validator) validateBulletPointContent(content string, lineNum int, resu
 
 	// Check for placeholder text
 	placeholders := []string{
-		"TODO",
-		"FIXME",
-		"TBD",
+		"todo",
+		"fixme",
+		"tbd",
 		"placeholder",
 		"example",
 		"sample",

@@ -297,17 +297,14 @@ func TestValidateEntry_PlaceholderContent(t *testing.T) {
 		t.Error("ValidateEntry() should be invalid for placeholder content")
 	}
 
-	placeholderErrors := 0
-	for _, err := range result.Errors {
-		if strings.Contains(err.Message, "placeholder text") {
-			placeholderErrors++
-		}
+	// TODO, placeholder, FIXME, example and TBD each produce an error.
+	if len(result.Errors) != 5 {
+		t.Errorf("Expected 5 placeholder errors, got %d", len(result.Errors))
 	}
-
-	// Expecting 4 placeholder errors: TODO, placeholder, example, TBD
-	// FIXME should also be caught but let's check what we actually get
-	if placeholderErrors < 2 {
-		t.Errorf("Expected at least 2 placeholder errors, got %d", placeholderErrors)
+	for _, err := range result.Errors {
+		if !strings.Contains(err.Message, "placeholder text") {
+			t.Errorf("Expected placeholder error, got %q", err.Message)
+		}
 	}
 }
 
