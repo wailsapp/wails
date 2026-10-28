@@ -95,14 +95,24 @@ func pathToURI(path string) string {
 }
 
 func findDesktopFile(xdgFileName string) (string, error) {
-	paths := []string{
-		filepath.Join(os.Getenv("XDG_DATA_HOME"), "applications"),
-		filepath.Join(os.Getenv("HOME"), ".local", "share", "applications"),
-		"/usr/share/applications",
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if !filepath.IsAbs(dataHome) {
+		dataHome = ""
+		if home, err := os.UserHomeDir(); err == nil {
+			dataHome = filepath.Join(home, ".local", "share")
+		}
 	}
+	dataDirs := os.Getenv("XDG_DATA_DIRS")
+	if dataDirs == "" {
+		dataDirs = "/usr/local/share:/usr/share"
+	}
+	paths := append([]string{dataHome}, filepath.SplitList(dataDirs)...)
 
-	for _, path := range paths {
-		desktopFile := filepath.Join(path, xdgFileName)
+	for _, dataDir := range paths {
+		if !filepath.IsAbs(dataDir) {
+			continue
+		}
+		desktopFile := filepath.Join(dataDir, "applications", xdgFileName)
 		if _, err := os.Stat(desktopFile); err == nil {
 			return desktopFile, nil
 		}
