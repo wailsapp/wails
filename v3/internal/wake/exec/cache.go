@@ -75,6 +75,8 @@ func ComputeTaskHash(task *ast.Task, baseDir string) (string, error) {
 
 	h.Write([]byte(task.Name))
 	h.Write([]byte("\n"))
+	h.Write([]byte(task.Dir))
+	h.Write([]byte("\n"))
 
 	for _, cmd := range task.Cmds {
 		h.Write([]byte(cmd.Cmd))
