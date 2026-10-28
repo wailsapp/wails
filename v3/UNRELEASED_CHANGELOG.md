@@ -22,6 +22,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fill MIME sniffing prefix correctly across short reads in the asset server in [PR](https://github.com/wailsapp/wails/pull/6402) by @taliesin-ai
 - Avoid reading full response bodies for non-seekable HEAD requests in the asset server in [PR](https://github.com/wailsapp/wails/pull/6401) by @taliesin-ai
 - Only serve exact index files when resolving directory requests in the asset server in [PR](https://github.com/wailsapp/wails/pull/6400) by @taliesin-ai
 - Fix dismissed Linux notifications being reported as clicks on servers without action support in [PR](https://github.com/wailsapp/wails/pull/6367) by @bercedev
