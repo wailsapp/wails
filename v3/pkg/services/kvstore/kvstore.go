@@ -125,6 +125,9 @@ func (kvs *KVStoreService) Load() error {
 			return err
 		}
 	}
+	if data == nil {
+		data = make(map[string]any)
+	}
 
 	kvs.data = data
 	kvs.unsaved = false
