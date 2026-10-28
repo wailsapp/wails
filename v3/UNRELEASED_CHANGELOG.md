@@ -22,6 +22,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Correctly detect content type in asset server without retaining filenames in [PR](https://github.com/wailsapp/wails/pull/6394) by @taliesin-ai
 - Fall back to a default when a desktop entry has no command in [PR](https://github.com/wailsapp/wails/pull/6392) by @taliesin-ai
 - Stop the liquid-glass example from showing a dialog before the app starts on non-macOS in [PR](https://github.com/wailsapp/wails/pull/6389) by @taliesin-ai
 - Keep window size constraints when fullscreen starts from a constrained size on Windows in [PR](https://github.com/wailsapp/wails/pull/6387) by @taliesin-ai
