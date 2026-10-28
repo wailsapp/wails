@@ -2,12 +2,37 @@ package assetserver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+func TestAssetServerWithoutLogger(t *testing.T) {
+	options := &Options{Handler: http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte("response"))
+	})}
+	server, err := NewAssetServer(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/asset.txt", nil))
+	if response.Code != http.StatusAccepted {
+		t.Errorf("status = %d, want 202", response.Code)
+	}
+	server.ServeHTTP(&failingWriter{ResponseWriter: httptest.NewRecorder(), failOn: 1},
+		httptest.NewRequest(http.MethodGet, "/asset.txt", nil))
+	if options.Logger != nil {
+		t.Error("constructor modified the caller's options")
+	}
+	if server.options.Logger.Enabled(context.Background(), slog.LevelError) {
+		t.Error("missing logger enabled error logging")
+	}
+}
 
 func TestAssetServerRequestDebugLogging(t *testing.T) {
 	var output bytes.Buffer

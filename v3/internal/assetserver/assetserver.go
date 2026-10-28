@@ -35,6 +35,11 @@ type AssetServer struct {
 }
 
 func NewAssetServer(options *Options) (*AssetServer, error) {
+	if options.Logger == nil {
+		config := *options
+		config.Logger = slog.New(slog.DiscardHandler)
+		options = &config
+	}
 	result := &AssetServer{
 		options: options,
 	}
