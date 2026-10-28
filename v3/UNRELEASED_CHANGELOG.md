@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when serving localized fallback pages in [PR](https://github.com/wailsapp/wails/pull/6485) by @taliesin-ai
 - Speed up AppImage runtime discovery by avoiding unnecessary metadata lookups in [PR](https://github.com/wailsapp/wails/pull/6482) by @taliesin-ai
 - Reuse compiled command routing patterns to improve wake performance in [PR](https://github.com/wailsapp/wails/pull/6475) by @taliesin-ai
 - Improve performance by avoiding rescanning of unfinished output lines in [PR](https://github.com/wailsapp/wails/pull/6473) by @taliesin-ai
