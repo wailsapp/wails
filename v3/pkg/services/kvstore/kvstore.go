@@ -2,6 +2,7 @@ package kvstore
 
 import (
 	"context"
+	"maps"
 	"os"
 	"sync"
 
@@ -158,13 +159,14 @@ func (kvs *KVStoreService) Save() error {
 	return nil
 }
 
-// Get returns the value for the given key. If key is empty, the entire store is returned.
+// Get returns the value for the given key. If key is empty, a shallow snapshot
+// of the entire store is returned. Nested values are not copied.
 func (kvs *KVStoreService) Get(key string) any {
 	kvs.lock.RLock()
 	defer kvs.lock.RUnlock()
 
 	if key == "" {
-		return kvs.data
+		return maps.Clone(kvs.data)
 	}
 
 	return kvs.data[key]
