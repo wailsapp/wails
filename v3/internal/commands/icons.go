@@ -156,18 +156,11 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 		return err
 	}
 
-	dest, err := os.Create(options.MacFilename)
-	if err != nil {
+	var output bytes.Buffer
+	if err := icns.Encode(&output, srcImg); err != nil {
 		return err
-
 	}
-	defer func() {
-		err = dest.Close()
-		if err == nil {
-			return
-		}
-	}()
-	return icns.Encode(dest, srcImg)
+	return os.WriteFile(options.MacFilename, output.Bytes(), 0644)
 }
 
 func generateMacAsset(options *IconsOptions) error {
