@@ -3,6 +3,7 @@ package exec
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -21,7 +22,18 @@ var cache = &runCache{
 	lastRuns: make(map[string]time.Time),
 }
 
-func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
+func taskDirectory(baseDir, directory string) string {
+	if directory == "" {
+		return baseDir
+	}
+	if filepath.IsAbs(directory) {
+		return directory
+	}
+	return filepath.Join(baseDir, directory)
+}
+
+func checkPreconditions(task *ast.Task, vars map[string]*ast.Var, baseDir string) error {
+	dir := taskDirectory(baseDir, parse.ExpandTemplates(task.Dir, vars))
 	for _, pc := range task.Precondition {
 		// Precondition `sh:` strings are Go templates just like cmds. They must
 		// be expanded against the task's resolved vars before running; otherwise
@@ -33,6 +45,7 @@ func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 			continue
 		}
 		c := platform.ShellCommand(sh)
+		c.Dir = dir
 		if err := c.Run(); err != nil {
 			msg := parse.ExpandTemplates(pc.Msg, vars)
 			if msg == "" {
