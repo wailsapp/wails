@@ -35,6 +35,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve literal percent signs in Linux explorer commands in [PR](https://github.com/wailsapp/wails/pull/6470) by @taliesin-ai
 - Align precondition and task command directories so they resolve consistently in [PR](https://github.com/wailsapp/wails/pull/6471) by @taliesin-ai
 - Run default tasks in the executor base directory in [PR](https://github.com/wailsapp/wails/pull/6469) by @taliesin-ai
 - Prevent legacy checks from hiding cache misses in [PR](https://github.com/wailsapp/wails/pull/6468) by @taliesin-ai
