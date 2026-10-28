@@ -140,6 +140,10 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	}
 
 	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+	if req.Method == http.MethodHead {
+		rw.WriteHeader(http.StatusOK)
+		return nil
+	}
 
 	// Write the first 512 bytes used for MimeType sniffing
 	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))
