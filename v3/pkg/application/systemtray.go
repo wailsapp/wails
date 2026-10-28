@@ -413,6 +413,8 @@ func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 	return s
 }
 
+// OpenMenu opens the system tray menu, if one is set.
+// On Linux this is only a request to the desktop's tray host, which may ignore it.
 func (s *SystemTray) OpenMenu() {
 	if s.impl == nil {
 		return
