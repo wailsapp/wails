@@ -3,10 +3,26 @@ package assetserver
 import (
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 )
+
+func TestBundledRuntimeHEAD(t *testing.T) {
+	server := &BundledAssetServer{}
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, httptest.NewRequest(http.MethodHead, "/wails/runtime.js", nil))
+	if response.Code != http.StatusOK || response.Body.Len() != 0 {
+		t.Errorf("HEAD status = %d, body bytes = %d; want 200, 0", response.Code, response.Body.Len())
+	}
+	if got := response.Header().Get(HeaderContentLength); got != strconv.Itoa(len(bundledassets.RuntimeJS)) {
+		t.Errorf("HEAD Content-Length = %q, want %d", got, len(bundledassets.RuntimeJS))
+	}
+	if got := response.Header().Get(HeaderContentType); got != "application/javascript" {
+		t.Errorf("HEAD Content-Type = %q", got)
+	}
+}
 
 func TestBundledAssetServerRoutes(t *testing.T) {
 	server := &BundledAssetServer{handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +51,9 @@ func TestBundledAssetServerRoutes(t *testing.T) {
 			}
 			if tt.path == "/wails/runtime.js" && response.Header().Get(HeaderContentType) != "application/javascript" {
 				t.Error("runtime response lost its JavaScript content type")
+			}
+			if tt.path == "/wails/runtime.js" && response.Header().Get(HeaderContentLength) != strconv.Itoa(len(bundledassets.RuntimeJS)) {
+				t.Error("GET runtime response has an incorrect Content-Length")
 			}
 		})
 	}
