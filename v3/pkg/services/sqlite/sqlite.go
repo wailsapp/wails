@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"sync"
 	"sync/atomic"
 
@@ -495,9 +496,11 @@ func (s *Stmt) MarshalText() ([]byte, error) {
 }
 
 func (s *Stmt) UnmarshalText(text []byte) error {
-	if n, err := fmt.Fscanf(bytes.NewReader(text), "%x", &s.id); n < 1 || err != nil {
+	id, err := strconv.ParseUint(string(text), 16, 64)
+	if err != nil {
 		return errors.New("invalid prepared statement id")
 	}
+	s.id = id
 
 	if stmt, ok := stmts.Load(s.id); ok {
 		*s = *(stmt.(*Stmt))
