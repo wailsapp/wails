@@ -73,7 +73,7 @@ func TestContentTypeSnifferWritesPassThroughAfterFlush(t *testing.T) {
 	}
 }
 
-// Flushing before anything is written must not panic or emit a header.
+// Flushing before anything is written commits the response and ends buffering.
 func TestContentTypeSnifferFlushBeforeWrite(t *testing.T) {
 	rec := httptest.NewRecorder()
 	rw := newContentTypeSniffer(rec)
@@ -82,6 +82,29 @@ func TestContentTypeSnifferFlushBeforeWrite(t *testing.T) {
 
 	if rec.Body.Len() != 0 {
 		t.Errorf("expected no body, got %q", rec.Body.String())
+	}
+	if !rec.Flushed {
+		t.Fatal("Flush did not reach the wrapped writer")
+	}
+	rw.WriteHeader(http.StatusNotFound)
+	if _, err := io.WriteString(rw, "next"); err != nil {
+		t.Fatal(err)
+	}
+	if got := rec.Body.String(); got != "next" {
+		t.Errorf("write after empty flush remained buffered: body = %q", got)
+	}
+	if rw.status != http.StatusOK || rec.Code != http.StatusOK {
+		t.Errorf("status changed after flush: sniffer = %d, response = %d", rw.status, rec.Code)
+	}
+}
+
+func TestContentTypeSnifferFlushPreservesStatus(t *testing.T) {
+	rec := httptest.NewRecorder()
+	rw := newContentTypeSniffer(rec)
+	rw.WriteHeader(http.StatusAccepted)
+	rw.Flush()
+	if rec.Code != http.StatusAccepted {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusAccepted)
 	}
 }
 

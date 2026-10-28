@@ -179,6 +179,8 @@ func (rw *contentTypeSniffer) closeClient() {
 // instead of a full one. That is the right trade: an explicit flush is the
 // caller stating that what has been written so far should be sent now.
 func (rw *contentTypeSniffer) Flush() {
+	rw.WriteHeader(http.StatusOK)
+
 	// Errors are dropped deliberately: http.Flusher cannot report one, and the
 	// same write error will surface from the next Write or from complete.
 	_, _ = rw.complete()
