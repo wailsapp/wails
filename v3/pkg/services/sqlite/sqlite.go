@@ -147,6 +147,10 @@ func (s *SQLiteService) Open() error {
 	if err != nil {
 		return fmt.Errorf("error opening database connection: %w", err)
 	}
+	if s.config.DBSource == ":memory:" {
+		// Each :memory: connection is a separate database.
+		conn.SetMaxOpenConns(1)
+	}
 
 	// Test connection
 	if err := conn.Ping(); err != nil {
