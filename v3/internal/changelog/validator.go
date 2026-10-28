@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // ValidationError represents a validation error with context
@@ -35,14 +36,19 @@ type Validator struct {
 	issueRefRegex      *regexp.Regexp
 }
 
-// NewValidator creates a new changelog validator
-func NewValidator() *Validator {
-	return &Validator{
+var validatorDefaults = sync.OnceValue(func() Validator {
+	return Validator{
 		sectionHeaderRegex: regexp.MustCompile(`^##\s+(Added|Changed|Fixed|Deprecated|Removed|Security)\s*$`),
 		bulletPointRegex:   regexp.MustCompile(`^[\s]*[-*]\s+(.+)$`),
 		urlRegex:           regexp.MustCompile(`https?://[^\s]+`),
 		issueRefRegex:      regexp.MustCompile(`#\d+`),
 	}
+})
+
+// NewValidator creates a new changelog validator
+func NewValidator() *Validator {
+	validator := validatorDefaults()
+	return &validator
 }
 
 // ValidateContent validates raw changelog content for proper formatting
