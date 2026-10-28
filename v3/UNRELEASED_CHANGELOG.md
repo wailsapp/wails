@@ -23,6 +23,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve file paths during field expansion in the file explorer in [PR](https://github.com/wailsapp/wails/pull/6406) by @taliesin-ai
 - Avoid duplicating expanded URI targets in file explorer in [PR](https://github.com/wailsapp/wails/pull/6405) by @taliesin-ai
 - Commit successful empty non-seekable asset responses instead of leaving them pending in [PR](https://github.com/wailsapp/wails/pull/6403) by @taliesin-ai
 - Fill MIME sniffing prefix correctly across short reads in the asset server in [PR](https://github.com/wailsapp/wails/pull/6402) by @taliesin-ai
