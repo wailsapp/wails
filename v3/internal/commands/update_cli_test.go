@@ -15,11 +15,15 @@ import (
 
 func TestUpdateCLIInstall(t *testing.T) {
 	for _, tc := range []struct {
-		name, exit string
-		wantCode   int
+		name, exit, current, target string
+		wantCode                    int
+		force                       bool
 	}{
-		{"failure", "7", 7},
-		{"success", "0", 0},
+		{"failure", "7", "v3.0.0", "v3.0.1", 7, true},
+		{"success", "0", "v3.0.0", "v3.0.1", 0, true},
+		{"stable metadata", "0", "v3.0.0+build", "v3.0.1", 0, false},
+		{"stable metadata to prerelease", "0", "v3.0.0+build", "v3.0.0-beta.1", 0, false},
+		{"stable to prerelease", "0", "v3.0.0", "v3.0.0-beta.1", 0, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
@@ -31,11 +35,11 @@ func TestUpdateCLIInstall(t *testing.T) {
 			t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("WAILS_UPDATE_LOG", logFile)
 			t.Setenv("WAILS_UPDATE_EXIT", tc.exit)
-			target, err := github.NewSemanticVersion("v3.0.1")
+			target, err := github.NewSemanticVersion(tc.target)
 			if err != nil {
 				t.Fatal(err)
 			}
-			err = updateToVersion(target, true, "v3.0.0")
+			err = updateToVersion(target, tc.force, tc.current)
 			if tc.wantCode == 0 {
 				if err != nil {
 					t.Errorf("successful installer returned error: %v", err)
@@ -50,7 +54,7 @@ func TestUpdateCLIInstall(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			want := "install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.1\n"
+			want := "install github.com/wailsapp/wails/v3/cmd/wails3@" + tc.target + "\n"
 			if string(data) != want {
 				t.Errorf("installer invocations=%q, want exactly %q", strings.TrimSpace(string(data)), strings.TrimSpace(want))
 			}

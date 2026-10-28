@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 type Executor interface {
@@ -45,7 +47,7 @@ type ShellCmd struct {
 }
 
 func (s *ShellCmd) Run() error {
-	c := exec.Command("sh", "-c", s.Cmd)
+	c := platform.ShellCommand(s.Cmd)
 	c.Dir = s.Dir
 	c.Env = s.Env
 	s.apply(c)
@@ -210,7 +212,9 @@ func parseGoBuildArgs(args []string) GoBuildOptions {
 				continue
 			}
 		default:
-			if !strings.HasPrefix(args[i], "-") {
+			if strings.HasPrefix(args[i], "-o=") {
+				opts.Output = strings.TrimPrefix(args[i], "-o=")
+			} else if !strings.HasPrefix(args[i], "-") {
 				opts.Package = args[i]
 			} else {
 				opts.ExtraArgs = append(opts.ExtraArgs, args[i])
@@ -288,6 +292,8 @@ func parseGoTestArgs(args []string) GoTestOptions {
 				// `-count 10` became 1, `-count 100` became 1, etc.
 				if n, err := strconv.Atoi(args[i+1]); err == nil {
 					opts.Count = n
+				} else {
+					opts.Extra = append(opts.Extra, "-count", args[i+1])
 				}
 				i += 2
 				continue

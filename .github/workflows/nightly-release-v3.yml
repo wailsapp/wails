@@ -37,7 +37,7 @@ on:
         default: ''
         type: string
       ref:
-        description: 'Branch to release from (nightly/weekly: master; releases/** only for a one-off with release_version such as v3.0.0 or a hotfix v3.1.1)'
+        description: 'Source branch: master or releases/** for live releases; any branch for dry runs'
         required: false
         default: 'master'
         type: string
@@ -53,7 +53,7 @@ env:
 
 # Serialise scheduled/manual v3 release pipelines, including validation.
 concurrency:
-  group: release-v3
+  group: ${{ inputs.dry_run && format('release-v3-dry-run-{0}', github.run_id) || 'release-v3' }}
   cancel-in-progress: false
 
 jobs:
@@ -76,6 +76,7 @@ jobs:
         INPUT_CHANNEL: ${{ inputs.channel }}
         INPUT_REF: ${{ inputs.ref }}
         INPUT_VERSION: ${{ inputs.release_version }}
+        INPUT_DRY_RUN: ${{ inputs.dry_run }}
       run: |
         CHANNEL="${INPUT_CHANNEL:-nightly}"
         REF="${INPUT_REF:-master}"
@@ -92,8 +93,10 @@ jobs:
           '') ;;
           *) CHANNEL=nightly; REF=master ;;
         esac
-        case "$REF" in master|releases/*) ;; *) echo "::error::ref must be master or releases/**"; exit 1;; esac
-        if [ "$REF" != master ] && [ -z "$INPUT_VERSION" ]; then
+        if [ "$INPUT_DRY_RUN" != true ]; then
+          case "$REF" in master|releases/*) ;; *) echo "::error::live release ref must be master or releases/**"; exit 1;; esac
+        fi
+        if [ "$INPUT_DRY_RUN" != true ] && [ "$REF" != master ] && [ -z "$INPUT_VERSION" ]; then
           echo "::error::releases from $REF need an explicit release_version (GA or hotfix); nightly/weekly are cut from master"; exit 1
         fi
         echo "proceed=$PROCEED" >> "$GITHUB_OUTPUT"

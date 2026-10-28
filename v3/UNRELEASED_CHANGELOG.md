@@ -17,6 +17,10 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when formatting terminal hyperlinks in [PR](https://github.com/wailsapp/wails/pull/6443) by @taliesin-ai
+- Reduce allocations when serving assets by sniffing MIME buffers lazily in [PR](https://github.com/wailsapp/wails/pull/6428) by @taliesin-ai
+- Skip debug log preparation in the asset server when debug logging is disabled in [PR](https://github.com/wailsapp/wails/pull/6420) by @taliesin-ai
+- Reduce allocations in webview request handling by avoiding discarded request contexts in [PR](https://github.com/wailsapp/wails/pull/6419) by @taliesin-ai
 - Speed up asset serving by skipping MIME sniffing for known file extensions in [PR](https://github.com/wailsapp/wails/pull/6414) by @taliesin-ai
 - Reduce allocations when serving assets by avoiding a reader for content sniffing in [PR](https://github.com/wailsapp/wails/pull/6410) by @taliesin-ai
 - Reduce allocations when serving non-seekable asset files in [PR](https://github.com/wailsapp/wails/pull/6408) by @taliesin-ai
@@ -26,6 +30,29 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Propagate errors from SQLite queries after partial row iteration in [PR](https://github.com/wailsapp/wails/pull/6446) by @taliesin-ai
+- Return snapshots for whole-store reads in kvstore in [PR](https://github.com/wailsapp/wails/pull/6444) by @taliesin-ai
+- Prevent write panics in kvstore after loading a JSON null value in [PR](https://github.com/wailsapp/wails/pull/6442) by @taliesin-ai
+- Print plain terminal messages without interpreting format verbs in [PR](https://github.com/wailsapp/wails/pull/6441) by @taliesin-ai
+- Surface errors when looking up the latest stable release in the updater in [PR](https://github.com/wailsapp/wails/pull/6440) by @taliesin-ai
+- Ignore hidden entries and headers in changelog comment blocks in [PR](https://github.com/wailsapp/wails/pull/6439) by @taliesin-ai
+- Install wails3 once and surface installer errors in the updater in [PR](https://github.com/wailsapp/wails/pull/6438) by @taliesin-ai
+- Preserve literal bracketed template paths in gosod in [PR](https://github.com/wailsapp/wails/pull/6437) by @taliesin-ai
+- Reject failed GitHub tag responses before decoding them in the updater in [PR](https://github.com/wailsapp/wails/pull/6436) by @taliesin-ai
+- Preserve cancellation errors during parallel library searches in [PR](https://github.com/wailsapp/wails/pull/6435) by @taliesin-ai
+- Close HTTP response bodies on every return path to prevent resource leaks in [PR](https://github.com/wailsapp/wails/pull/6434) by @taliesin-ai
+- Preserve request bodies when the development proxy retries requests in [PR](https://github.com/wailsapp/wails/pull/6432) by @taliesin-ai
+- Honor the launch deadline during desktop file explorer discovery in [PR](https://github.com/wailsapp/wails/pull/6430) by @taliesin-ai
+- Reject HTTP errors before saving AppImage tooling downloads in [PR](https://github.com/wailsapp/wails/pull/6429) by @taliesin-ai
+- Order oversized numeric prerelease identifiers correctly in semver comparisons in [PR](https://github.com/wailsapp/wails/pull/6427) by @taliesin-ai
+- Preserve escaped paths when routing services in the asset server in [PR](https://github.com/wailsapp/wails/pull/6426) by @taliesin-ai
+- Handle HEAD requests for the bundled runtime in the asset server in [PR](https://github.com/wailsapp/wails/pull/6425) by @taliesin-ai
+- Return 404 for missing bundled assets instead of an incorrect response in [PR](https://github.com/wailsapp/wails/pull/6424) by @taliesin-ai
+- Stop dev proxy retries when a request is cancelled in [PR](https://github.com/wailsapp/wails/pull/6423) by @taliesin-ai
+- Avoid shared start URL mutation and stale ports in the asset server in [PR](https://github.com/wailsapp/wails/pull/6422) by @taliesin-ai
+- Honor the optional logger configuration in the asset server in [PR](https://github.com/wailsapp/wails/pull/6421) by @taliesin-ai
+- Remove data race in library path cache invalidation in [PR](https://github.com/wailsapp/wails/pull/6418) by @taliesin-ai
+- Avoid false library matches when searching ldconfig output in [PR](https://github.com/wailsapp/wails/pull/6416) by @taliesin-ai
 - Prevent asset server queue growth and shrink oscillation under load in [PR](https://github.com/wailsapp/wails/pull/6415) by @taliesin-ai
 - Release callback captures after the debounce timer fires to avoid retaining stale references in [PR](https://github.com/wailsapp/wails/pull/6413) by @taliesin-ai
 - Preserve file explorer targets found inside executable paths in [PR](https://github.com/wailsapp/wails/pull/6412) by @taliesin-ai
@@ -60,5 +87,6 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Security
 <!-- Security-related changes -->
+- Constrain filesystem library fallback matches to prevent loading unintended libraries in [PR](https://github.com/wailsapp/wails/pull/6417) by @taliesin-ai
 
 ---

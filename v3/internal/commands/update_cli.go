@@ -124,7 +124,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 
 		// Release -> Pre-Release = Massage current version to prerelease format
 		if targetVersion.IsPreRelease() && currentVersion.IsRelease() {
-			testVersion, err := github.NewSemanticVersion(compareVersion + "-0")
+			testVersion, err := github.NewSemanticVersion(currentVersion.MainVersion().String() + "-0")
 			if err != nil {
 				return err
 			}

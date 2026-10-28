@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/cmds"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
 )
 
@@ -27,14 +28,10 @@ const (
 // classifyGoCmd recognises the native Go commands wake can cache implicitly.
 // The string must already be template-expanded.
 func classifyGoCmd(cmd string) goCmdKind {
-	f := strings.Fields(cmd)
-	if len(f) < 2 || f[0] != "go" {
-		return goCmdNone
-	}
-	switch {
-	case f[1] == "build":
+	switch cmds.Route(cmd, cmds.RouteOptions{}).(type) {
+	case *cmds.GoBuildCmd:
 		return goCmdBuild
-	case f[1] == "mod" && len(f) >= 3 && f[2] == "tidy":
+	case *cmds.GoModTidyCmd:
 		return goCmdModTidy
 	}
 	return goCmdNone
@@ -64,19 +61,11 @@ func (e *Executor) goCmdInputs(kind goCmdKind, task *ast.Task, expandedCmd, dir 
 	return nil, ""
 }
 
-// parseOutputFlag extracts the value of the `-o` flag from a `go build` line.
-// Both `-o <path>` and `-o=<path>` are accepted; the previous implementation
-// only handled the two-token form, so `go build -o=bin/app` slipped through
-// with output="" and the cache could skip without the binary existing.
+// parseOutputFlag reuses native argument parsing so quoted and escaped paths
+// match the output location used by command execution.
 func parseOutputFlag(cmd string) string {
-	f := strings.Fields(cmd)
-	for i := 0; i < len(f); i++ {
-		if f[i] == "-o" && i+1 < len(f) {
-			return f[i+1]
-		}
-		if strings.HasPrefix(f[i], "-o=") {
-			return strings.TrimPrefix(f[i], "-o=")
-		}
+	if build, ok := cmds.Route(cmd, cmds.RouteOptions{}).(*cmds.GoBuildCmd); ok {
+		return build.Opts.Output
 	}
 	return ""
 }

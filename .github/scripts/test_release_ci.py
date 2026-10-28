@@ -63,6 +63,23 @@ const github = {rest: {repos: {getCollaboratorPermissionLevel: async (args) => {
                     self.assertEqual(result.returncode, 0)
                     self.assertEqual(output.read_text().strip(), expected)
 
+    def test_pr_branches_are_allowed_only_for_dry_runs(self):
+        script = step(self.release['cadence'], 'Resolve cadence and branch')['run']
+        for dry_run, ref, version, allowed in [
+            ('true', 'codex/nightly-ci-gate', '', True),
+            ('false', 'codex/nightly-ci-gate', '', False),
+            ('false', 'master', '', True),
+            ('false', 'releases/3.1', '', False),
+            ('false', 'releases/3.1', 'v3.1.1', True),
+        ]:
+            with self.subTest(dry_run=dry_run, ref=ref, version=version), tempfile.TemporaryDirectory() as directory:
+                output = Path(directory) / 'output'
+                result = subprocess.run(['bash', '-e', '-c', script],
+                                        env={**os.environ, 'EVENT_SCHEDULE': '', 'INPUT_CHANNEL': 'nightly',
+                                             'INPUT_REF': ref, 'INPUT_VERSION': version, 'INPUT_DRY_RUN': dry_run,
+                                             'GITHUB_OUTPUT': str(output)}, capture_output=True)
+                self.assertEqual(result.returncode == 0, allowed)
+
     def test_results_reject_failed_cancelled_and_skipped_full_checks(self):
         script = self.build['build_results']['steps'][0]['run']
         checks = ['test_go', 'test_js', 'test_templates', 'test_mac_private_apis', 'cross-compile', 'gtk3-menus', 'msix']

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -26,12 +27,21 @@ func Cp(_ *CpOptions) error {
 		if err != nil {
 			return err
 		}
-		input, err := os.ReadFile(src)
+		sourceFile, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer sourceFile.Close()
+		sourceInfo, err := sourceFile.Stat()
+		if err != nil {
+			return err
+		}
+		input, err := io.ReadAll(sourceFile)
 		if err != nil {
 			return err
 		}
 
-		err = os.WriteFile(dst, input, 0644)
+		err = os.WriteFile(dst, input, sourceInfo.Mode().Perm())
 		if err != nil {
 			return fmt.Errorf("error creating %s: %s", dst, err.Error())
 		}
