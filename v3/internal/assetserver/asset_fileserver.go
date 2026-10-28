@@ -53,7 +53,7 @@ func (d *assetFileServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	err := d.err
 	if err == nil {
-		filename := path.Clean(strings.TrimPrefix(url, "/"))
+		filename := path.Clean(strings.TrimLeft(url, "/"))
 		d.logInfo(ctx, "Handling request", "url", url, "file", filename)
 		err = d.serveFSFile(rw, req, filename)
 		if os.IsNotExist(err) {
