@@ -601,6 +601,16 @@ func (w *WebviewWindow) Resizable() bool {
 	return !w.options.DisableResize
 }
 
+// stateOwnsSize reports whether the window's size currently belongs to the
+// window state rather than to the application. A fullscreen or maximised
+// window is sized by the platform, and resizing it to satisfy a new
+// constraint leaves the geometry and the state disagreeing - on macOS
+// IsFullscreen() goes on reporting true at the new size. The constraint is
+// still recorded, and UnFullscreen/UnMaximise restores a frame it applies to.
+func (w *WebviewWindow) stateOwnsSize() bool {
+	return w.IsFullscreen() || w.IsMaximised()
+}
+
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
 	currentWidth, currentHeight := w.Size()
@@ -614,6 +624,9 @@ func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
 	if minWidth != 0 && currentWidth < minWidth {
 		newWidth = minWidth
 		newSize = true
+	}
+	if newSize && w.stateOwnsSize() {
+		newSize = false
 	}
 	InvokeSync(func() {
 		w.options.MinWidth = minWidth
@@ -645,6 +658,9 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
 	if maxWidth != 0 && currentWidth > maxWidth {
 		newWidth = maxWidth
 		newSize = true
+	}
+	if newSize && w.stateOwnsSize() {
+		newSize = false
 	}
 	InvokeSync(func() {
 		w.options.MaxWidth = maxWidth
