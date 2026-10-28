@@ -61,5 +61,6 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Security
 <!-- Security-related changes -->
+- Constrain filesystem library fallback matches to prevent loading unintended libraries in [PR](https://github.com/wailsapp/wails/pull/6417) by @taliesin-ai
 
 ---
