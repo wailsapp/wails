@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
@@ -131,6 +132,11 @@ func ResolveVarShell(vr *ast.Var) error {
 	cmd := platform.ShellCommand(vr.Shell)
 	out, err := cmd.Output()
 	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if diagnostic := strings.TrimSpace(string(exitError.Stderr)); diagnostic != "" {
+				return fmt.Errorf("wake: var shell command %q failed: %w\n%s", vr.Shell, err, diagnostic)
+			}
+		}
 		return fmt.Errorf("wake: var shell command %q failed: %w", vr.Shell, err)
 	}
 
