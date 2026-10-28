@@ -25,6 +25,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve file explorer targets found inside executable paths in [PR](https://github.com/wailsapp/wails/pull/6412) by @taliesin-ai
 - Skip directories that shadow desktop entries in file explorer in [PR](https://github.com/wailsapp/wails/pull/6411) by @taliesin-ai
 - Fix asset server headers not being sent when a response body is empty in [PR](https://github.com/wailsapp/wails/pull/6409) by @taliesin-ai
 - Respect XDG desktop-file search directories when locating application icons in [PR](https://github.com/wailsapp/wails/pull/6407) by @taliesin-ai
