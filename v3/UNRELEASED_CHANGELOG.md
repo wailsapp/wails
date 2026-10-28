@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Improve changelog generation speed by reusing compiled regex patterns in [PR](https://github.com/wailsapp/wails/pull/6490) by @taliesin-ai
 - Reduce allocations when serving localized fallback pages in [PR](https://github.com/wailsapp/wails/pull/6485) by @taliesin-ai
 - Speed up AppImage runtime discovery by avoiding unnecessary metadata lookups in [PR](https://github.com/wailsapp/wails/pull/6482) by @taliesin-ai
 - Reuse compiled command routing patterns to improve wake performance in [PR](https://github.com/wailsapp/wails/pull/6475) by @taliesin-ai
