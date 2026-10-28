@@ -2,9 +2,10 @@
 package sqlite
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"strconv"
 	"sync"
@@ -485,14 +486,11 @@ func (s *Stmt) Close() error {
 }
 
 func (s *Stmt) MarshalText() ([]byte, error) {
-	var buf bytes.Buffer
-	buf.Grow(16)
-
-	if _, err := fmt.Fprintf(&buf, "%016x", s.id); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	var id [8]byte
+	binary.BigEndian.PutUint64(id[:], s.id)
+	text := make([]byte, hex.EncodedLen(len(id)))
+	hex.Encode(text, id[:])
+	return text, nil
 }
 
 func (s *Stmt) UnmarshalText(text []byte) error {
