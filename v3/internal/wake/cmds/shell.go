@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 type Executor interface {
@@ -45,7 +47,7 @@ type ShellCmd struct {
 }
 
 func (s *ShellCmd) Run() error {
-	c := exec.Command("sh", "-c", s.Cmd)
+	c := platform.ShellCommand(s.Cmd)
 	c.Dir = s.Dir
 	c.Env = s.Env
 	s.apply(c)
