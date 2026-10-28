@@ -56,6 +56,7 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 	var currentSection string
 	var hasValidSections bool
 	var inExampleSection bool
+	var comments commentBlock
 	lineNum := 0
 
 	for _, line := range lines {
@@ -63,7 +64,7 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 		trimmedLine := strings.TrimSpace(line)
 
 		// Skip empty lines and comments
-		if trimmedLine == "" || strings.HasPrefix(trimmedLine, "<!--") || strings.HasPrefix(trimmedLine, "-->") {
+		if trimmedLine == "" || comments.skip(trimmedLine) || strings.HasPrefix(trimmedLine, "-->") {
 			continue
 		}
 
