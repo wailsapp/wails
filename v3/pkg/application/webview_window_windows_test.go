@@ -4,14 +4,6 @@ package application
 
 import "testing"
 
-// A window that starts fullscreen reaches the platform fullscreen() directly
-// from the StartState switch in run(), so WebviewWindow.DisableSizeConstraints
-// - which keeps its own saved copy - never runs. On this platform
-// setMinSize/setMaxSize write nothing but parent.options, the clamp being read
-// back from there in WM_GETMINMAXINFO, so suspending it by zeroing those
-// options used to destroy the only copy and the window never got its limits
-// back.
-
 func newConstraintTestWindow() *windowsWebviewWindow {
 	return &windowsWebviewWindow{
 		parent: &WebviewWindow{
@@ -65,9 +57,8 @@ func TestWindowsSuspendingConstraintsTwiceKeepsTheFirstCopy(t *testing.T) {
 	}
 }
 
-// With nothing suspended, restoring still has to read the options - that is
-// the path taken when the window-level EnableSizeConstraints has already put
-// them back before unfullscreen() runs.
+// The public EnableSizeConstraints may already have restored the shared copy
+// before the platform unfullscreen runs.
 func TestWindowsRestoringUnsuspendedConstraintsLeavesOptionsAlone(t *testing.T) {
 	w := newConstraintTestWindow()
 
@@ -77,5 +68,88 @@ func TestWindowsRestoringUnsuspendedConstraintsLeavesOptionsAlone(t *testing.T) 
 	if options.MinWidth != 200 || options.MinHeight != 100 || options.MaxWidth != 800 || options.MaxHeight != 600 {
 		t.Errorf("options changed to min %dx%d max %dx%d, want 200x100 and 800x600",
 			options.MinWidth, options.MinHeight, options.MaxWidth, options.MaxHeight)
+	}
+}
+
+// Stub native fullscreen transitions while retaining the Windows constraint code.
+type constraintTestWindow struct {
+	*windowsWebviewWindow
+}
+
+func (w *constraintTestWindow) fullscreen() {
+	w.disableSizeConstraints()
+	w.isCurrentlyFullscreen = true
+}
+
+func (w *constraintTestWindow) unfullscreen() {
+	w.isCurrentlyFullscreen = false
+	w.enableSizeConstraints()
+}
+
+func (w *constraintTestWindow) size() (int, int) { return 640, 480 }
+func (w *constraintTestWindow) setSize(int, int) {}
+
+func TestWindowsFullscreenConstraintRoundTrip(t *testing.T) {
+	for _, startup := range []bool{false, true} {
+		entry := "public"
+		if startup {
+			entry = "startup"
+		}
+		t.Run(entry, func(t *testing.T) {
+			for _, tt := range []struct {
+				name   string
+				update func(*WebviewWindow)
+				want   [4]int
+			}{
+				{"unchanged", func(*WebviewWindow) {}, [4]int{200, 100, 800, 600}},
+				{"minimum", func(w *WebviewWindow) { w.SetMinSize(300, 250) }, [4]int{300, 250, 800, 600}},
+				{"maximum", func(w *WebviewWindow) { w.SetMaxSize(1200, 900) }, [4]int{200, 100, 1200, 900}},
+				{"both", func(w *WebviewWindow) {
+					w.SetMinSize(300, 250)
+					w.SetMaxSize(1200, 900)
+				}, [4]int{300, 250, 1200, 900}},
+				{"clear minimum", func(w *WebviewWindow) { w.SetMinSize(0, 0) }, [4]int{0, 0, 800, 600}},
+				{"clear maximum", func(w *WebviewWindow) { w.SetMaxSize(0, 0) }, [4]int{200, 100, 0, 0}},
+				{"clear both", func(w *WebviewWindow) {
+					w.SetMinSize(0, 0)
+					w.SetMaxSize(0, 0)
+				}, [4]int{}},
+			} {
+				t.Run(tt.name, func(t *testing.T) {
+					previous := globalApplication
+					dispatcher := &threadProbeApp{}
+					dispatcher.onMain.Store(true)
+					globalApplication = &App{impl: dispatcher}
+					t.Cleanup(func() { globalApplication = previous })
+
+					platform := &constraintTestWindow{newConstraintTestWindow()}
+					w := platform.parent
+					w.impl = platform
+					if startup {
+						platform.fullscreen()
+					} else {
+						w.Fullscreen()
+					}
+					w.Fullscreen() // Re-entering must preserve the saved copy.
+					tt.update(w)
+					w.UnFullscreen()
+
+					for cycle := range 2 {
+						options := w.options
+						got := [4]int{options.MinWidth, options.MinHeight, options.MaxWidth, options.MaxHeight}
+						if got != tt.want {
+							t.Fatalf("cycle %d: constraints = %v, want %v", cycle, got, tt.want)
+						}
+						if w.constraintsSaved {
+							t.Fatal("constraints still saved after leaving fullscreen")
+						}
+						if cycle == 0 {
+							w.Fullscreen()
+							w.UnFullscreen()
+						}
+					}
+				})
+			}
+		})
 	}
 }
