@@ -20,6 +20,12 @@ func BenchmarkGetMimetype(b *testing.B) {
 			_ = GetMimetype("script.js", data)
 		}
 	})
+	b.Run("ByExtension/UppercaseJS", func(b *testing.B) {
+		data := []byte("function test() {}")
+		for b.Loop() {
+			_ = GetMimetype("script.JS", data)
+		}
+	})
 
 	b.Run("ByExtension/CSS", func(b *testing.B) {
 		data := []byte(".class { color: red; }")
