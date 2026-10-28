@@ -113,7 +113,7 @@ func findDesktopFile(xdgFileName string) (string, error) {
 			continue
 		}
 		desktopFile := filepath.Join(dataDir, "applications", xdgFileName)
-		if _, err := os.Stat(desktopFile); err == nil {
+		if info, err := os.Stat(desktopFile); err == nil && !info.IsDir() {
 			return desktopFile, nil
 		}
 	}
