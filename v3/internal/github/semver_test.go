@@ -71,3 +71,26 @@ func TestReleaseShapes(t *testing.T) {
 		t.Error("weekly must sort above its nightlies")
 	}
 }
+
+func TestSemanticVersionReleaseClassification(t *testing.T) {
+	for _, tc := range []struct {
+		input               string
+		release, prerelease bool
+	}{
+		{"v3.0.0", true, false},
+		{"v3.0.0+build.123", true, false},
+		{"v3.0.0+nightly", true, false},
+		{"v3.0.0-beta.1+build.123", false, true},
+		{"v2.0.0+build.123", false, false},
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			version, err := NewSemanticVersion(tc.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if version.IsRelease() != tc.release || version.IsPreRelease() != tc.prerelease {
+				t.Errorf("release=%t, prerelease=%t; want %t, %t", version.IsRelease(), version.IsPreRelease(), tc.release, tc.prerelease)
+			}
+		})
+	}
+}
