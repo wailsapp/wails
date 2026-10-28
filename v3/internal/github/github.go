@@ -18,6 +18,7 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"

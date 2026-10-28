@@ -1,10 +1,12 @@
 package github
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+	"testing/iotest"
 )
 
 type tagTransport func(*http.Request) (*http.Response, error)
@@ -52,5 +54,49 @@ func TestVersionTagSelection(t *testing.T) {
 	valid, err = IsValidTag("v2.99.0")
 	if err != nil || valid {
 		t.Errorf("v2 tag accepted: valid=%t, error=%v", valid, err)
+	}
+}
+
+type trackedResponseBody struct {
+	io.Reader
+	closeCalls int
+}
+
+func (b *trackedResponseBody) Close() error {
+	b.closeCalls++
+	return nil
+}
+
+func TestGitHubResponsesClose(t *testing.T) {
+	apis := []struct {
+		name, response string
+		run            func()
+	}{
+		{"tags", `[{"name":"v3.0.0"}]`, func() { _, _ = GetVersionTags() }},
+		{"notes", `{"body":"release notes"}`, func() { GetReleaseNotes("v3.0.0", true) }},
+	}
+	for _, api := range apis {
+		cases := []struct {
+			name   string
+			reader io.Reader
+		}{
+			{"success", strings.NewReader(api.response)},
+			{"invalid_json", strings.NewReader("{")},
+			{"read_error", iotest.ErrReader(errors.New("read failed"))},
+		}
+		for _, tc := range cases {
+			t.Run(api.name+"/"+tc.name, func(t *testing.T) {
+				previousClient := http.DefaultClient
+				t.Cleanup(func() { http.DefaultClient = previousClient })
+				body := &trackedResponseBody{Reader: tc.reader}
+				http.DefaultClient = &http.Client{Transport: tagTransport(func(*http.Request) (*http.Response, error) {
+					return &http.Response{StatusCode: http.StatusOK, Body: body, Header: make(http.Header)}, nil
+				})}
+				api.run()
+				if body.closeCalls != 1 {
+					t.Errorf("response body closed %d times, want 1", body.closeCalls)
+				}
+			})
+		}
 	}
 }
