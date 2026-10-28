@@ -41,6 +41,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix build cache misses for Go outputs with quoted or escaped spaces in [PR](https://github.com/wailsapp/wails/pull/6495) by @taliesin-ai
 - Serialize notification category persistence on Linux to prevent concurrent write races in [PR](https://github.com/wailsapp/wails/pull/6494) by @taliesin-ai
 - Keep shell command chains out of the implicit Go build cache in [PR](https://github.com/wailsapp/wails/pull/6493) by @taliesin-ai
 - Fix notification category maps failing to load when saved data is null in [PR](https://github.com/wailsapp/wails/pull/6491) by @taliesin-ai
