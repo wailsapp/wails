@@ -4,6 +4,7 @@ package fileexplorer
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -15,13 +16,16 @@ import (
 )
 
 // when possible; the fallback method does not support selecting a file.
-func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
-	fileManagerQuery := exec.Command("xdg-mime", "query", "default", "inode/directory")
+func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string, []string, error) {
+	fileManagerQuery := exec.CommandContext(ctx, "xdg-mime", "query", "default", "inode/directory")
 	buf := new(bytes.Buffer)
 	fileManagerQuery.Stdout = buf
 	fileManagerQuery.Stderr = nil
 
 	if err := fileManagerQuery.Run(); err != nil {
+		if err := ctx.Err(); err != nil {
+			return "", nil, err
+		}
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
