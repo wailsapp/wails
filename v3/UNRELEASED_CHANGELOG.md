@@ -20,6 +20,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep window size constraints when fullscreen starts from a constrained size on Windows in [PR](https://github.com/wailsapp/wails/pull/6387) by @taliesin-ai
 - Fix dialogs called before Run blocking forever instead of returning in [PR](https://github.com/wailsapp/wails/pull/6390) by @taliesin-ai
 
 ## Deprecated
