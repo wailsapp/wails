@@ -18,7 +18,7 @@ func TestVersionTagSelection(t *testing.T) {
 	previousClient := http.DefaultClient
 	t.Cleanup(func() { http.DefaultClient = previousClient })
 	http.DefaultClient = &http.Client{Transport: tagTransport(func(r *http.Request) (*http.Response, error) {
-		if r.URL.String() != "https://api.github.com/repos/wailsapp/wails/tags" {
+		if r.URL.String() != "https://api.github.com/repos/wailsapp/wails/tags?per_page=100&page=1" {
 			t.Errorf("unexpected request: %s", r.URL)
 		}
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(`[
