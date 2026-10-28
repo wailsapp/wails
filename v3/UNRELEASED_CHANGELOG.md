@@ -28,6 +28,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Return 404 for missing bundled assets instead of an incorrect response in [PR](https://github.com/wailsapp/wails/pull/6424) by @taliesin-ai
 - Stop dev proxy retries when a request is cancelled in [PR](https://github.com/wailsapp/wails/pull/6423) by @taliesin-ai
 - Avoid shared start URL mutation and stale ports in the asset server in [PR](https://github.com/wailsapp/wails/pull/6422) by @taliesin-ai
 - Honor the optional logger configuration in the asset server in [PR](https://github.com/wailsapp/wails/pull/6421) by @taliesin-ai
