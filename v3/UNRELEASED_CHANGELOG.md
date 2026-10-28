@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Speed up asset server index root selection by avoiding candidate collection in [PR](https://github.com/wailsapp/wails/pull/6404) by @taliesin-ai
 - Improve asset server performance by formatting content lengths without fmt in [PR](https://github.com/wailsapp/wails/pull/6393) by @taliesin-ai
 - Reduce memory copying when reading desktop file explorer metadata in [PR](https://github.com/wailsapp/wails/pull/6391) by @taliesin-ai
 
