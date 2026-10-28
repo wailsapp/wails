@@ -401,10 +401,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Generates the pre-built version of the runtime.
+Exports the pre-built runtime embedded in the CLI as `runtime.js` (production) and `runtime-debug.js` (debug). It works from an installed CLI without access to the Wails source tree, including builds made with `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
