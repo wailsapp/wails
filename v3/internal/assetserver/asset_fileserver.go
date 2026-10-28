@@ -119,17 +119,18 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 		return fmt.Errorf("a file has been requested with a trailing slash, please remove the trailing slash from your request")
 	}
 
-	var buf [512]byte
-	var n int
+	var prefix []byte
 	if _, haveType := rw.Header()[HeaderContentType]; !haveType {
 		contentType := mimetypeByExtension(filename)
 		if contentType == "" {
 			// Only unknown extensions require reading a MIME sniffing prefix.
-			n, err = io.ReadFull(file, buf[:])
+			prefix = make([]byte, 512)
+			n, err := io.ReadFull(file, prefix)
 			if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 				return err
 			}
-			contentType = http.DetectContentType(buf[:n])
+			prefix = prefix[:n]
+			contentType = http.DetectContentType(prefix)
 		}
 		rw.Header().Set(HeaderContentType, contentType)
 	}
@@ -150,12 +151,12 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	}
 
 	// Write the first 512 bytes used for MimeType sniffing
-	if n > 0 {
-		written, err := rw.Write(buf[:n])
+	if len(prefix) > 0 {
+		written, err := rw.Write(prefix)
 		if err != nil {
 			return err
 		}
-		if written != n {
+		if written != len(prefix) {
 			return io.ErrShortWrite
 		}
 	}
