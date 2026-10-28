@@ -108,21 +108,23 @@ func comparePrerelease(a, b string) int {
 	as := strings.Split(a, ".")
 	bs := strings.Split(b, ".")
 	for i := 0; i < len(as) && i < len(bs); i++ {
-		ai, aErr := strconv.ParseUint(as[i], 10, 64)
-		bi, bErr := strconv.ParseUint(bs[i], 10, 64)
+		ai, bi := as[i], bs[i]
+		aNumeric := ai != "" && strings.Trim(ai, "0123456789") == ""
+		bNumeric := bi != "" && strings.Trim(bi, "0123456789") == ""
 		switch {
-		case aErr == nil && bErr == nil:
-			if c := cmpUint(ai, bi); c != 0 {
+		case aNumeric && bNumeric:
+			// Compare decimal strings without imposing an integer size limit.
+			ai, bi = strings.TrimLeft(ai, "0"), strings.TrimLeft(bi, "0")
+			if c := cmpUint(uint64(len(ai)), uint64(len(bi))); c != 0 {
 				return c
 			}
-		case aErr == nil:
+		case aNumeric:
 			return -1 // numeric < alphanumeric
-		case bErr == nil:
+		case bNumeric:
 			return 1
-		default:
-			if c := strings.Compare(as[i], bs[i]); c != 0 {
-				return c
-			}
+		}
+		if c := strings.Compare(ai, bi); c != 0 {
+			return c
 		}
 	}
 	return cmpUint(uint64(len(as)), uint64(len(bs)))
@@ -158,4 +160,3 @@ func (v *Version) Equal(other *Version) bool {
 func (v *Version) GreaterThanOrEqual(other *Version) bool {
 	return v.compare(other) >= 0
 }
-
