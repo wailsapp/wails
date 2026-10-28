@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/charmbracelet/glamour/styles"
 	"io"
@@ -12,6 +13,9 @@ import (
 
 	"github.com/charmbracelet/glamour"
 )
+
+// ErrNoStableRelease means the available tags contain no stable release.
+var ErrNoStableRelease = errors.New("no release tag found")
 
 func GetReleaseNotes(tagVersion string, noColour bool) string {
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
@@ -115,7 +119,7 @@ func GetLatestStableRelease() (result *SemanticVersion, err error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no release tag found")
+	return nil, ErrNoStableRelease
 }
 
 // GetLatestNightly gets the newest nightly pre-release (vX.Y.0-nightly.DATE).
