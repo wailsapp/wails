@@ -218,7 +218,9 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		}
 	}
 
-	if !e.Force && isUpToDate(task, e.Dir) {
+	// A persistent cache miss must execute: the legacy check does not compare
+	// task hashes and can otherwise hide changed commands.
+	if !e.Force && e.Cache == nil && isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
 		e.reportPrunedCached(task)
 		return nil
