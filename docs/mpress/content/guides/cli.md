@@ -332,10 +332,12 @@ wails3 generate icons [flags]
 | `-input` | Input PNG file | Required |
 | `-windowsfilename` | Windows output filename |  |
 | `-macfilename` | macOS output filename |  |
-| `-sizes` | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-sizes` | Icon sizes from 1 to 256 pixels (comma-separated; zeros ignored) | `256,128,64,48,32,16` |
 | `-example` | Generate example icon | `false` |
 | `-iconcomposerinput` | Input Icon Composer file (`.icon`) |  |
 | `-macassetdir` | Output directory for Mac assets (Assets.car + icns) |  |
+
+At least one nonzero size is required.
 
 #### Icon Composer (macOS)
 
