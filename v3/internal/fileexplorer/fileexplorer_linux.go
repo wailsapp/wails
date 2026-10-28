@@ -42,6 +42,7 @@ func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string,
 
 	uri := pathToURI(path)
 	fieldCodes := strings.NewReplacer(
+		"%%", "%",
 		"%d", "", "%D", "", "%n", "", "%N", "", "%v", "", "%m", "",
 		"%f", path, "%F", path, "%u", uri, "%U", uri,
 	)
@@ -52,8 +53,10 @@ func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string,
 	for _, field := range fields {
 		if expanded := fieldCodes.Replace(field); expanded != "" {
 			args = append(args, expanded)
-			targetExpanded = targetExpanded || strings.Contains(field, "%f") || strings.Contains(field, "%F") ||
-				strings.Contains(field, "%u") || strings.Contains(field, "%U")
+			// Escaped percent signs do not introduce file or URI placeholders.
+			unescapedCodes := strings.ReplaceAll(field, "%%", "")
+			targetExpanded = targetExpanded || strings.Contains(unescapedCodes, "%f") || strings.Contains(unescapedCodes, "%F") ||
+				strings.Contains(unescapedCodes, "%u") || strings.Contains(unescapedCodes, "%U")
 		}
 	}
 	if len(args) == 0 {
