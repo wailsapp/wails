@@ -181,7 +181,7 @@ func (s *SQLiteService) closeImpl() error {
 	}
 
 	for id := range s.stmts {
-		if stmt, ok := stmts.Load(id); ok {
+		if stmt, ok := stmts.LoadAndDelete(id); ok {
 			// WARN: do not delegate to [Stmt.Close], it would cause a deadlock.
 			// Ignore errors, closing the connection should free up all resources.
 			_ = stmt.(*Stmt).sqlStmt.Close()

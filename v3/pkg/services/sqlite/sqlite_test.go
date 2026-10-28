@@ -8,6 +8,70 @@ import (
 	"time"
 )
 
+func TestConnectionCleanupDropsStatementHandles(t *testing.T) {
+	for _, operation := range []string{"close", "reopen"} {
+		t.Run(operation, func(t *testing.T) {
+			service := New()
+			if err := service.Open(); err != nil {
+				t.Fatal(err)
+			}
+			defer service.Close()
+			other := New()
+			if err := other.Open(); err != nil {
+				t.Fatal(err)
+			}
+			defer other.Close()
+			live, err := other.Prepare("SELECT 1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer live.Close()
+			var prepared []*Stmt
+			for range 32 {
+				stmt, err := service.Prepare("SELECT 1")
+				if err != nil {
+					t.Fatal(err)
+				}
+				prepared = append(prepared, stmt)
+			}
+			if operation == "close" {
+				err = service.Close()
+			} else {
+				err = service.Open()
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			retained := 0
+			for _, stmt := range prepared {
+				if _, ok := stmts.Load(stmt.id); ok {
+					retained++
+				}
+			}
+			if retained != 0 {
+				t.Errorf("cleanup retained %d of 32 statement handles", retained)
+			}
+			encoded, err := prepared[0].MarshalText()
+			if err != nil {
+				t.Fatal(err)
+			}
+			var decoded Stmt
+			if err := decoded.UnmarshalText(encoded); err != nil {
+				t.Fatal(err)
+			}
+			if decoded.sqlStmt != nil {
+				t.Error("closed statement handle still resolves")
+			}
+			if _, ok := stmts.Load(live.id); !ok {
+				t.Error("cleanup removed another service's live handle")
+			}
+			if rows, err := other.QueryPrepared(context.Background(), live); err != nil || len(rows) != 1 {
+				t.Errorf("other service statement unusable: %v, %v", rows, err)
+			}
+		})
+	}
+}
+
 func TestQueryReportsRowIterationError(t *testing.T) {
 	for _, prepared := range []bool{false, true} {
 		name := "direct"
