@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/cmds"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
 )
 
@@ -27,14 +28,10 @@ const (
 // classifyGoCmd recognises the native Go commands wake can cache implicitly.
 // The string must already be template-expanded.
 func classifyGoCmd(cmd string) goCmdKind {
-	f := strings.Fields(cmd)
-	if len(f) < 2 || f[0] != "go" {
-		return goCmdNone
-	}
-	switch {
-	case f[1] == "build":
+	switch cmds.Route(cmd, cmds.RouteOptions{}).(type) {
+	case *cmds.GoBuildCmd:
 		return goCmdBuild
-	case f[1] == "mod" && len(f) >= 3 && f[2] == "tidy":
+	case *cmds.GoModTidyCmd:
 		return goCmdModTidy
 	}
 	return goCmdNone

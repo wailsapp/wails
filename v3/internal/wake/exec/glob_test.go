@@ -66,10 +66,14 @@ func TestClassifyGoCmd(t *testing.T) {
 		want goCmdKind
 	}{
 		{"go build -o bin/app", goCmdBuild},
+		{`go build -o "path with spaces/app"`, goCmdBuild},
 		{"go mod tidy", goCmdModTidy},
 		{"go test ./...", goCmdNone},
 		{"npm install", goCmdNone},
 		{"GOOS=darwin go build", goCmdNone}, // env prefix not stripped here; classifier expects clean cmd
+		{"go build && echo done", goCmdNone},
+		{"go mod tidy > tidy.log", goCmdNone},
+		{`go build -o "unterminated`, goCmdNone},
 	}
 	for _, c := range cases {
 		if got := classifyGoCmd(c.cmd); got != c.want {
