@@ -475,6 +475,10 @@ func (ln *linuxNotifier) getConfigDir() (string, error) {
 
 // Save notification categories.
 func (ln *linuxNotifier) saveCategories() error {
+	// Keep the snapshot and its write ordered with other category saves.
+	ln.categoriesLock.Lock()
+	defer ln.categoriesLock.Unlock()
+
 	configDir, err := ln.getConfigDir()
 	if err != nil {
 		return err
@@ -482,9 +486,7 @@ func (ln *linuxNotifier) saveCategories() error {
 
 	categoriesFile := filepath.Join(configDir, "notification-categories.json")
 
-	ln.categoriesLock.RLock()
 	categoriesData, err := json.MarshalIndent(ln.categories, "", "  ")
-	ln.categoriesLock.RUnlock()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal notification categories: %w", err)
