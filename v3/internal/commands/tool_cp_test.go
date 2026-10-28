@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCpSourcePermissions(t *testing.T) {
@@ -41,6 +43,9 @@ func TestCpSourcePermissions(t *testing.T) {
 				if got := info.Mode().Perm(); got != want {
 					t.Errorf("%s permissions=%#o, want %#o", path, got, want)
 				}
+				contents, err := os.ReadFile(path)
+				require.NoError(t, err)
+				require.Equal(t, "payload", string(contents), path)
 			}
 		})
 	}
