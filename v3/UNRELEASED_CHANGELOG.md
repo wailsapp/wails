@@ -92,6 +92,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Security
 <!-- Security-related changes -->
+- Require complete hexadecimal statement handles in SQLite plugin in [PR](https://github.com/wailsapp/wails/pull/6452) by @taliesin-ai
 - Constrain filesystem library fallback matches to prevent loading unintended libraries in [PR](https://github.com/wailsapp/wails/pull/6417) by @taliesin-ai
 
 ---
