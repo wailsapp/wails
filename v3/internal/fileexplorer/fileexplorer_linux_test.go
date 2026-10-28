@@ -9,6 +9,79 @@ import (
 	"testing"
 )
 
+func writeSearchDesktopFile(t *testing.T, dataDir string) string {
+	t.Helper()
+	dir := filepath.Join(dataDir, "applications")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(dir, "wails-xdg-search-test.desktop")
+	if err := os.WriteFile(file, nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+	return file
+}
+
+func TestFindDesktopFileXDGDataDirs(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("HOME", filepath.Join(root, "home"))
+	user := filepath.Join(root, "user")
+	first := filepath.Join(root, "first")
+	second := filepath.Join(root, "second")
+	t.Setenv("XDG_DATA_HOME", user)
+	t.Setenv("XDG_DATA_DIRS", first+string(os.PathListSeparator)+second)
+	files := []string{
+		writeSearchDesktopFile(t, user),
+		writeSearchDesktopFile(t, first),
+		writeSearchDesktopFile(t, second),
+	}
+	writeSearchDesktopFile(t, filepath.Join(root, "home", ".local", "share"))
+	for _, want := range files {
+		got, err := findDesktopFile(filepath.Base(want))
+		if err != nil || got != want {
+			t.Fatalf("findDesktopFile = %q, %v; want %q", got, err, want)
+		}
+		if err := os.Remove(want); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestFindDesktopFileDefaultHomeIgnoresRelativePaths(t *testing.T) {
+	for _, dataHome := range []string{"", "relative-user"} {
+		t.Run("home="+dataHome, func(t *testing.T) {
+			root := t.TempDir()
+			t.Chdir(root)
+			home := filepath.Join(root, "home")
+			t.Setenv("HOME", home)
+			t.Setenv("XDG_DATA_HOME", dataHome)
+			t.Setenv("XDG_DATA_DIRS", filepath.Join(root, "system"))
+			want := writeSearchDesktopFile(t, filepath.Join(home, ".local", "share"))
+			writeSearchDesktopFile(t, ".")
+			writeSearchDesktopFile(t, "relative-user")
+			got, err := findDesktopFile(filepath.Base(want))
+			if err != nil || got != want {
+				t.Errorf("findDesktopFile = %q, %v; want %q", got, err, want)
+			}
+		})
+	}
+}
+
+func TestFindDesktopFileIgnoresRelativeDataDirs(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	t.Setenv("HOME", filepath.Join(root, "home"))
+	t.Setenv("XDG_DATA_HOME", filepath.Join(root, "user"))
+	system := filepath.Join(root, "system")
+	t.Setenv("XDG_DATA_DIRS", "relative-system"+string(os.PathListSeparator)+system)
+	writeSearchDesktopFile(t, "relative-system")
+	want := writeSearchDesktopFile(t, system)
+	got, err := findDesktopFile(filepath.Base(want))
+	if err != nil || got != want {
+		t.Errorf("findDesktopFile = %q, %v; want %q", got, err, want)
+	}
+}
+
 func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 	root := t.TempDir()
 	applications := filepath.Join(root, "applications")
