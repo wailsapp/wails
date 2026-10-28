@@ -28,6 +28,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve escaped paths when routing services in the asset server in [PR](https://github.com/wailsapp/wails/pull/6426) by @taliesin-ai
 - Handle HEAD requests for the bundled runtime in the asset server in [PR](https://github.com/wailsapp/wails/pull/6425) by @taliesin-ai
 - Return 404 for missing bundled assets instead of an incorrect response in [PR](https://github.com/wailsapp/wails/pull/6424) by @taliesin-ai
 - Stop dev proxy retries when a request is cancelled in [PR](https://github.com/wailsapp/wails/pull/6423) by @taliesin-ai
