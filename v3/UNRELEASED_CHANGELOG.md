@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Improve performance by avoiding rescanning of unfinished output lines in [PR](https://github.com/wailsapp/wails/pull/6473) by @taliesin-ai
 - Stream executable copies during MSIX package staging to reduce memory use and speed up builds in [PR](https://github.com/wailsapp/wails/pull/6472) by @taliesin-ai
 - Avoid copying unfinished command-output lines to improve performance in [PR](https://github.com/wailsapp/wails/pull/6460) by @taliesin-ai
 - Reduce allocations when generating name-based UUIDs in [PR](https://github.com/wailsapp/wails/pull/6455) by @taliesin-ai
