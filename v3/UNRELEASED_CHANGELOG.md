@@ -116,6 +116,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Security
 <!-- Security-related changes -->
+- Validate generated icon sizes before image allocation to prevent excessive memory use in [PR](https://github.com/wailsapp/wails/pull/6478) by @taliesin-ai
 - Validate release notes API responses before use in [PR](https://github.com/wailsapp/wails/pull/6461) by @taliesin-ai
 - Require complete hexadecimal statement handles in SQLite plugin in [PR](https://github.com/wailsapp/wails/pull/6452) by @taliesin-ai
 - Constrain filesystem library fallback matches to prevent loading unintended libraries in [PR](https://github.com/wailsapp/wails/pull/6417) by @taliesin-ai
