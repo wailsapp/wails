@@ -512,6 +512,9 @@ func DOWNLOAD(url string, target string) {
 	resp, err := http.Get(url)
 	checkError(err)
 	defer resp.Body.Close()
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		checkError(fmt.Errorf("download %s: unexpected HTTP status %s", url, resp.Status))
+	}
 
 	out, err := os.Create(target)
 	checkError(err)
