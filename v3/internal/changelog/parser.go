@@ -6,6 +6,7 @@ import (
 	"io"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,12 +30,17 @@ type Parser struct {
 	bulletRegex *regexp.Regexp
 }
 
-// NewParser creates a new changelog parser
-func NewParser() *Parser {
-	return &Parser{
+var parserDefaults = sync.OnceValue(func() Parser {
+	return Parser{
 		sectionRegex: regexp.MustCompile(`^##\s+(Added|Changed|Fixed|Deprecated|Removed|Security)\s*$`),
 		bulletRegex:  regexp.MustCompile(`^[\s]*[-*]\s+(.+)$`),
 	}
+})
+
+// NewParser creates a new changelog parser
+func NewParser() *Parser {
+	parser := parserDefaults()
+	return &parser
 }
 
 // ParseContent parses changelog content from a reader and returns a ChangelogEntry
