@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Avoid copying unfinished command-output lines to improve performance in [PR](https://github.com/wailsapp/wails/pull/6460) by @taliesin-ai
 - Reduce allocations when generating name-based UUIDs in [PR](https://github.com/wailsapp/wails/pull/6455) by @taliesin-ai
 - Reduce allocations when formatting SQLite statement handles in [PR](https://github.com/wailsapp/wails/pull/6454) by @taliesin-ai
 - Reduce UUID string conversion to a single allocation in [PR](https://github.com/wailsapp/wails/pull/6453) by @taliesin-ai
