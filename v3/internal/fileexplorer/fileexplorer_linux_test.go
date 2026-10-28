@@ -3,6 +3,7 @@
 package fileexplorer
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -160,7 +161,7 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 				[]byte("[Desktop Entry]\nName=Test\n"+tt.command), 0644); err != nil {
 				t.Fatal(err)
 			}
-			bin, args, err := explorerBinArgs(tt.path, true)
+			bin, args, err := explorerBinArgs(context.Background(), tt.path, true)
 			if err != nil {
 				t.Fatal(err)
 			}
