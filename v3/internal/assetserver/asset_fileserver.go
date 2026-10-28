@@ -1,7 +1,6 @@
 package assetserver
 
 import (
-	"bytes"
 	"context"
 	"embed"
 	"errors"
@@ -152,9 +151,14 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	}
 
 	// Write the first 512 bytes used for MimeType sniffing
-	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))
-	if err != nil {
-		return err
+	if n > 0 {
+		written, err := rw.Write(buf[:n])
+		if err != nil {
+			return err
+		}
+		if written != n {
+			return io.ErrShortWrite
+		}
 	}
 
 	// Copy the remaining content of the file

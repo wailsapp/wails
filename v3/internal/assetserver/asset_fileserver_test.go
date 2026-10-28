@@ -3,6 +3,8 @@ package assetserver
 import (
 	"bytes"
 	"context"
+	"errors"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -12,6 +14,41 @@ import (
 	"testing"
 	"testing/fstest"
 )
+
+func TestNonSeekingAssetPrefixWriteFailure(t *testing.T) {
+	writeError := errors.New("prefix write failed")
+	for name, writeErr := range map[string]error{"short write": nil, "write error": writeError} {
+		t.Run(name, func(t *testing.T) {
+			bytesRead := 0
+			server := &assetFileServer{fs: nonSeekingTestFS{
+				FS: fstest.MapFS{"asset.txt": {Data: make([]byte, 1024)}}, bytesRead: &bytesRead,
+			}}
+			writer := &prefixFailureWriter{ResponseWriter: httptest.NewRecorder(), err: writeErr}
+			err := server.serveFSFile(writer, httptest.NewRequest(http.MethodGet, "/asset.txt", nil), "asset.txt")
+			want := writeErr
+			if want == nil {
+				want = io.ErrShortWrite
+			}
+			if !errors.Is(err, want) {
+				t.Errorf("error = %v, want %v", err, want)
+			}
+			if bytesRead != 512 || writer.writes != 1 {
+				t.Errorf("continued after prefix failure: read %d bytes, wrote %d times", bytesRead, writer.writes)
+			}
+		})
+	}
+}
+
+type prefixFailureWriter struct {
+	http.ResponseWriter
+	err    error
+	writes int
+}
+
+func (w *prefixFailureWriter) Write(p []byte) (int, error) {
+	w.writes++
+	return len(p) / 2, w.err
+}
 
 func TestNonSeekingAssetsConcurrent(t *testing.T) {
 	for i := 0; i < 16; i++ {
