@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when serving assets by sniffing MIME buffers lazily in [PR](https://github.com/wailsapp/wails/pull/6428) by @taliesin-ai
 - Skip debug log preparation in the asset server when debug logging is disabled in [PR](https://github.com/wailsapp/wails/pull/6420) by @taliesin-ai
 - Reduce allocations in webview request handling by avoiding discarded request contexts in [PR](https://github.com/wailsapp/wails/pull/6419) by @taliesin-ai
 - Speed up asset serving by skipping MIME sniffing for known file extensions in [PR](https://github.com/wailsapp/wails/pull/6414) by @taliesin-ai
