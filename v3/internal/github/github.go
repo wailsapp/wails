@@ -23,22 +23,30 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return "No release notes found"
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Sprintf("Unable to retrieve release notes: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
-	data := map[string]interface{}{}
+	var data struct {
+		Body *string `json:"body"`
+	}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
-	if data["body"] == nil {
+	if data.Body == nil {
 		return "No release notes found"
 	}
 
-	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
+	result := "# Release Notes for " + tagVersion + "\n" + *data.Body
 	var renderer *glamour.TermRenderer
 
 	if noColour {
