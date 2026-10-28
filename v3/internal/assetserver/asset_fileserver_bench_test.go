@@ -28,3 +28,19 @@ func BenchmarkServeNonSeekingAsset(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkServeKnownExtensionHEAD(b *testing.B) {
+	bytesRead := 0
+	server := &assetFileServer{fs: nonSeekingTestFS{
+		FS: fstest.MapFS{"asset.JS": {Data: make([]byte, 4096)}}, bytesRead: &bytesRead,
+	}}
+	request := httptest.NewRequest(http.MethodHead, "/asset.JS", nil)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		response := httptest.NewRecorder()
+		response.Body = nil
+		server.ServeHTTP(response, request)
+	}
+	b.ReportMetric(float64(bytesRead)/float64(b.N), "read-B/op")
+}
