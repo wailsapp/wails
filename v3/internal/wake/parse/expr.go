@@ -39,9 +39,7 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 			}
 			return val
 		},
-		"eq": func(a, b interface{}) bool {
-			return fmt.Sprint(a) == fmt.Sprint(b)
-		},
+		"eq": templateEqual,
 		"ne": func(a, b interface{}) bool {
 			return fmt.Sprint(a) != fmt.Sprint(b)
 		},
@@ -109,6 +107,20 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	}
 
 	return buf.String()
+}
+
+// templateEqual retains Wake's string coercion while accepting multiple candidates.
+func templateEqual(a, b interface{}, alternatives ...interface{}) bool {
+	first := fmt.Sprint(a)
+	if first == fmt.Sprint(b) {
+		return true
+	}
+	for _, alternative := range alternatives {
+		if first == fmt.Sprint(alternative) {
+			return true
+		}
+	}
+	return false
 }
 
 func ResolveVarShell(vr *ast.Var) error {
