@@ -15,6 +15,7 @@ import (
 
 // when possible; the fallback method does not support selecting a file.
 func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
+	uri := pathToURI(path)
 	// Map of field codes to their replacements
 	var fieldCodes = map[string]string{
 		"%d": "",
@@ -25,8 +26,8 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		"%m": "",
 		"%f": path,
 		"%F": path,
-		"%u": pathToURI(path),
-		"%U": pathToURI(path),
+		"%u": uri,
+		"%U": uri,
 	}
 	fileManagerQuery := exec.Command("xdg-mime", "query", "default", "inode/directory")
 	buf := new(bytes.Buffer)
@@ -56,7 +57,8 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 	if len(args) == 0 {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
-	if !strings.Contains(strings.Join(args, " "), path) {
+	joined := strings.Join(args, " ")
+	if !strings.Contains(joined, path) && !strings.Contains(joined, uri) {
 		args = append(args, path)
 	}
 

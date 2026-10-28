@@ -25,6 +25,10 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 	if err := os.WriteFile(file, nil, 0644); err != nil {
 		t.Fatal(err)
 	}
+	uriFile := filepath.Join(root, "selected file #1 %20.txt")
+	if err := os.WriteFile(uriFile, nil, 0644); err != nil {
+		t.Fatal(err)
+	}
 
 	tests := []struct {
 		name     string
@@ -43,6 +47,9 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 		{"removed codes/directory", "Exec=%d %D %n %N %v %m\n", root, "xdg-open", root},
 		{"valid/file", "Exec=wails-test-manager %f\n", file, "wails-test-manager", file},
 		{"valid/directory", "Exec=wails-test-manager %f\n", root, "wails-test-manager", root},
+		{"URI/plain", "Exec=wails-test-manager %U\n", file, "wails-test-manager", pathToURI(file)},
+		{"URI/escaped-list", "Exec=wails-test-manager %U\n", uriFile, "wails-test-manager", pathToURI(uriFile)},
+		{"URI/escaped-single", "Exec=wails-test-manager %u\n", uriFile, "wails-test-manager", pathToURI(uriFile)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
