@@ -35,6 +35,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Run default tasks in the executor base directory in [PR](https://github.com/wailsapp/wails/pull/6469) by @taliesin-ai
 - Prevent legacy checks from hiding cache misses in [PR](https://github.com/wailsapp/wails/pull/6468) by @taliesin-ai
 - Fix CLI prerelease numbering to increment without integer overflow limits in [PR](https://github.com/wailsapp/wails/pull/6467) by @taliesin-ai
 - Avoid a panic when cache entries decode as null in [PR](https://github.com/wailsapp/wails/pull/6466) by @taliesin-ai
