@@ -32,14 +32,27 @@ type retryTransport struct {
 func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	var err error
+	ctx := req.Context()
 	for i := 0; i < t.maxRetries; i++ {
+		if err := ctx.Err(); err != nil {
+			if i == 0 && req.Body != nil {
+				_ = req.Body.Close()
+			}
+			return nil, err
+		}
 		resp, err = t.base.RoundTrip(req)
 		if err == nil {
 			return resp, nil
 		}
 		// Only retry on connection errors (e.g., connection refused)
 		if isConnectionError(err) && i < t.maxRetries-1 {
-			time.Sleep(t.delay)
+			timer := time.NewTimer(t.delay)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return nil, ctx.Err()
+			case <-timer.C:
+			}
 			continue
 		}
 		break
