@@ -28,6 +28,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Avoid shared start URL mutation and stale ports in the asset server in [PR](https://github.com/wailsapp/wails/pull/6422) by @taliesin-ai
 - Honor the optional logger configuration in the asset server in [PR](https://github.com/wailsapp/wails/pull/6421) by @taliesin-ai
 - Remove data race in library path cache invalidation in [PR](https://github.com/wailsapp/wails/pull/6418) by @taliesin-ai
 - Avoid false library matches when searching ldconfig output in [PR](https://github.com/wailsapp/wails/pull/6416) by @taliesin-ai
