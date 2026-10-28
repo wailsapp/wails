@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce memory copying when reading desktop file explorer metadata in [PR](https://github.com/wailsapp/wails/pull/6391) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
