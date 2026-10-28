@@ -1,6 +1,7 @@
 package kvstore
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -36,4 +37,47 @@ func TestLoadEmptyStoreRemainsWritable(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetStoreSnapshot(t *testing.T) {
+	store := New()
+	if err := store.Set("key", "original"); err != nil {
+		t.Fatal(err)
+	}
+	snapshot := store.Get("").(map[string]any)
+	if err := store.Set("key", "updated"); err != nil {
+		t.Fatal(err)
+	}
+	if got := snapshot["key"]; got != "original" {
+		t.Errorf("snapshot changed after Set: %v", got)
+	}
+	snapshot["extra"] = "outside"
+	delete(snapshot, "key")
+	if got := store.Get("key"); got != "updated" {
+		t.Errorf("snapshot deletion changed store: %v", got)
+	}
+	if got := store.Get("extra"); got != nil {
+		t.Errorf("snapshot insertion changed store: %v", got)
+	}
+}
+
+func TestGetStoreSnapshotConcurrentSerialization(t *testing.T) {
+	store := New()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for i := range 1000 {
+			if err := store.Set("key", i); err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	}()
+	for range 1000 {
+		if _, err := json.Marshal(store.Get("")); err != nil {
+			t.Error(err)
+			break
+		}
+	}
+	<-done
 }
