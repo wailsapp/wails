@@ -27,6 +27,8 @@ jobs:
       - name: Test competing pushes and release evidence
         run: python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'
       - name: Install workflow test dependency
-        run: python3 -m pip install PyYAML==6.0.3
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ci-test-venv"
+          "$RUNNER_TEMP/ci-test-venv/bin/pip" install PyYAML==6.0.3
       - name: Test CI scope, release gating, and competing pushes
-        run: python3 .github/scripts/test_release_ci.py
+        run: "$RUNNER_TEMP/ci-test-venv/bin/python" .github/scripts/test_release_ci.py
