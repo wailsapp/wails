@@ -128,6 +128,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 			// Windows. The previous unconditional `sh -c` here broke status-
 			// based skipping on stock Windows installs.
 			c := platform.ShellCommand(cmd)
+			c.Dir = taskDir
 			if err := c.Run(); err != nil {
 				return false
 			}
