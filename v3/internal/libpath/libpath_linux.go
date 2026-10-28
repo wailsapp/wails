@@ -509,6 +509,9 @@ func FindAllLibraries(libNames ...string) []LibraryMatch {
 
 // findLibraryPathCtx is FindLibraryPath with context support.
 func findLibraryPathCtx(ctx context.Context, libName string) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
 	// Create a child context for this search
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -552,8 +555,16 @@ func findLibraryPathCtx(ctx context.Context, libName string) (string, error) {
 		close(results)
 	}()
 
-	if result, ok := <-results; ok {
-		return result.path, nil
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case result, ok := <-results:
+		if ok {
+			return result.path, nil
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return "", err
 	}
 
 	return "", &LibraryNotFoundError{Name: libName}
