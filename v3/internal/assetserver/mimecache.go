@@ -3,6 +3,7 @@ package assetserver
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -91,7 +92,11 @@ var (
 // GetMimetype uses a known file extension or sniffs the current content.
 func GetMimetype(filename string, data []byte) string {
 	// Fast path: check extension map first (no lock needed)
-	if result := mimeTypesByExt[filepath.Ext(filename)]; result != "" {
+	extension := filepath.Ext(filename)
+	if result := mimeTypesByExt[extension]; result != "" {
+		return result
+	}
+	if result := mimeTypesByExt[strings.ToLower(extension)]; result != "" {
 		return result
 	}
 
