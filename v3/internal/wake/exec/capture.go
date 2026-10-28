@@ -42,9 +42,7 @@ func (w *captureWriter) Write(p []byte) (int, error) {
 		w.handleLine(string(data[start : start+i]))
 		start += i + 1
 	}
-	rest := append([]byte(nil), data[start:]...)
-	w.partial.Reset()
-	w.partial.Write(rest)
+	w.partial.Next(start)
 	return len(p), nil
 }
 
