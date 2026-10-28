@@ -29,6 +29,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve literal bracketed template paths in gosod in [PR](https://github.com/wailsapp/wails/pull/6437) by @taliesin-ai
 - Reject failed GitHub tag responses before decoding them in the updater in [PR](https://github.com/wailsapp/wails/pull/6436) by @taliesin-ai
 - Preserve cancellation errors during parallel library searches in [PR](https://github.com/wailsapp/wails/pull/6435) by @taliesin-ai
 - Close HTTP response bodies on every return path to prevent resource leaks in [PR](https://github.com/wailsapp/wails/pull/6434) by @taliesin-ai
