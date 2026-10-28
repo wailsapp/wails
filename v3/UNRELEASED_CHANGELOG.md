@@ -25,6 +25,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Release callback captures after the debounce timer fires to avoid retaining stale references in [PR](https://github.com/wailsapp/wails/pull/6413) by @taliesin-ai
 - Preserve file explorer targets found inside executable paths in [PR](https://github.com/wailsapp/wails/pull/6412) by @taliesin-ai
 - Skip directories that shadow desktop entries in file explorer in [PR](https://github.com/wailsapp/wails/pull/6411) by @taliesin-ai
 - Fix asset server headers not being sent when a response body is empty in [PR](https://github.com/wailsapp/wails/pull/6409) by @taliesin-ai
