@@ -117,7 +117,7 @@ func (t *TemplateDir) resolveTarget(path, targetDir string, data any) string {
 	if data == nil {
 		return result
 	}
-	tmpl, err := template.New("p").Parse(result)
+	tmpl, err := template.New("p").Parse(path)
 	if err != nil {
 		return result
 	}
@@ -125,7 +125,7 @@ func (t *TemplateDir) resolveTarget(path, targetDir string, data any) string {
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return result
 	}
-	return buf.String()
+	return filepath.Join(targetDir, buf.String())
 }
 
 func (t *TemplateDir) createDirs(targetDir string, data any) error {
