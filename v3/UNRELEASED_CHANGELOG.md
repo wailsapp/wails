@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when serving assets by avoiding a reader for content sniffing in [PR](https://github.com/wailsapp/wails/pull/6410) by @taliesin-ai
 - Reduce allocations when serving non-seekable asset files in [PR](https://github.com/wailsapp/wails/pull/6408) by @taliesin-ai
 - Speed up asset server index root selection by avoiding candidate collection in [PR](https://github.com/wailsapp/wails/pull/6404) by @taliesin-ai
 - Improve asset server performance by formatting content lengths without fmt in [PR](https://github.com/wailsapp/wails/pull/6393) by @taliesin-ai
