@@ -13,6 +13,28 @@ import (
 	"testing/fstest"
 )
 
+func TestNonSeekingAssetsConcurrent(t *testing.T) {
+	for i := 0; i < 16; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+			data := bytes.Repeat([]byte{byte('a' + i)}, 64*1024)
+			bytesRead := 0
+			server := &assetFileServer{fs: nonSeekingTestFS{
+				FS:        fstest.MapFS{"asset.txt": {Data: data}},
+				bytesRead: &bytesRead,
+			}}
+			recorder := httptest.NewRecorder()
+			server.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/asset.txt", nil))
+			if recorder.Code != http.StatusOK || !bytes.Equal(recorder.Body.Bytes(), data) {
+				t.Errorf("concurrent response status=%d, body length=%d", recorder.Code, recorder.Body.Len())
+			}
+			if bytesRead != len(data) {
+				t.Errorf("read %d bytes, want %d", bytesRead, len(data))
+			}
+		})
+	}
+}
+
 func TestEmptyNonSeekingAssetCommitsSuccess(t *testing.T) {
 	for contentType, wantType := range map[string]string{"": "text/plain; charset=utf-8", "text/custom": "text/custom"} {
 		t.Run("type="+contentType, func(t *testing.T) {

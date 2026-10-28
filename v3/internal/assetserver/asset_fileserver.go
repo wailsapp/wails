@@ -12,11 +12,17 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 const (
-	indexHTML = "index.html"
+	indexHTML               = "index.html"
+	assetFileCopyBufferSize = 32 * 1024
 )
+
+var assetFileCopyBuffers = sync.Pool{
+	New: func() any { return new([assetFileCopyBufferSize]byte) },
+}
 
 type assetFileServer struct {
 	fs  iofs.FS
@@ -152,7 +158,9 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	}
 
 	// Copy the remaining content of the file
-	_, err = io.Copy(rw, file)
+	buffer := assetFileCopyBuffers.Get().(*[assetFileCopyBufferSize]byte)
+	defer assetFileCopyBuffers.Put(buffer)
+	_, err = io.CopyBuffer(rw, file, buffer[:])
 	if err == nil {
 		rw.WriteHeader(http.StatusOK)
 	}
