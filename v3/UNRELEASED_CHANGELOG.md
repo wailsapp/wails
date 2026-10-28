@@ -40,6 +40,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix wake template matching when multiple equality candidates exist in [PR](https://github.com/wailsapp/wails/pull/6489) by @taliesin-ai
 - Serialize concurrent cache-file saves to prevent corrupted cache writes in [PR](https://github.com/wailsapp/wails/pull/6488) by @taliesin-ai
 - Prevent races when replacing the active reporter in [PR](https://github.com/wailsapp/wails/pull/6487) by @taliesin-ai
 - Report resource-generation failures accurately in the CLI in [PR](https://github.com/wailsapp/wails/pull/6486) by @taliesin-ai
