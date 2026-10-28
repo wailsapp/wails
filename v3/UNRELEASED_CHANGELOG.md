@@ -35,6 +35,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent data loss when packaging copies a file onto itself in [PR](https://github.com/wailsapp/wails/pull/6463) by @taliesin-ai
 - Make status checks respect task directories in [PR](https://github.com/wailsapp/wails/pull/6462) by @taliesin-ai
 - Detect TODO, FIXME and TBD placeholders in changelog entries in [PR](https://github.com/wailsapp/wails/pull/6459) by @taliesin-ai
 - Generate runtime assets from embedded bundles in the CLI in [PR](https://github.com/wailsapp/wails/pull/6458) by @taliesin-ai
