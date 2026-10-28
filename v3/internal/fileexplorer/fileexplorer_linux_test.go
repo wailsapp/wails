@@ -47,6 +47,29 @@ func TestFindDesktopFileXDGDataDirs(t *testing.T) {
 	}
 }
 
+func TestFindDesktopFileSkipsDirectories(t *testing.T) {
+	root := t.TempDir()
+	user := filepath.Join(root, "user")
+	system := filepath.Join(root, "system")
+	t.Setenv("XDG_DATA_HOME", user)
+	t.Setenv("XDG_DATA_DIRS", system)
+	want := writeSearchDesktopFile(t, system)
+	name := filepath.Base(want)
+	if err := os.MkdirAll(filepath.Join(user, "applications", name), 0755); err != nil {
+		t.Fatal(err)
+	}
+	got, err := findDesktopFile(name)
+	if err != nil || got != want {
+		t.Errorf("directory shadowed desktop file: got %q, %v; want %q", got, err, want)
+	}
+	if err := os.Remove(want); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := findDesktopFile(name); err == nil || got != "" {
+		t.Errorf("directory accepted as desktop file: got %q, %v", got, err)
+	}
+}
+
 func TestFindDesktopFileDefaultHomeIgnoresRelativePaths(t *testing.T) {
 	for _, dataHome := range []string{"", "relative-user"} {
 		t.Run("home="+dataHome, func(t *testing.T) {
