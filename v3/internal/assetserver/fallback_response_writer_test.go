@@ -6,6 +6,47 @@ import (
 	"testing"
 )
 
+func TestFallbackResponseWriterFlushCommitsHeaders(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	fallbackCalled := false
+	writer := &fallbackResponseWriter{
+		rw:  recorder,
+		req: httptest.NewRequest(http.MethodGet, "/", nil),
+		fallback: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fallbackCalled = true
+		}),
+	}
+	writer.Header().Set("X-Stream", "ready")
+	writer.Flush()
+	response := recorder.Result()
+	if !recorder.Flushed || response.StatusCode != http.StatusOK || response.Header.Get("X-Stream") != "ready" {
+		t.Errorf("flush response: flushed=%v, status=%d, headers=%v", recorder.Flushed, response.StatusCode, response.Header)
+	}
+	writer.WriteHeader(http.StatusNotFound)
+	if fallbackCalled {
+		t.Error("fallback ran after the response was flushed")
+	}
+}
+
+func TestFallbackResponseWriterFlushPreservesFallback(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	writer := &fallbackResponseWriter{
+		rw:  recorder,
+		req: httptest.NewRequest(http.MethodGet, "/", nil),
+		fallback: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("X-Source", "fallback")
+			w.WriteHeader(http.StatusAccepted)
+		}),
+	}
+	writer.Header().Set("X-Source", "main")
+	writer.WriteHeader(http.StatusNotFound)
+	writer.Flush()
+	response := recorder.Result()
+	if !recorder.Flushed || response.StatusCode != http.StatusAccepted || response.Header.Get("X-Source") != "fallback" {
+		t.Errorf("flush response: flushed=%v, status=%d, headers=%v", recorder.Flushed, response.StatusCode, response.Header)
+	}
+}
+
 func TestFallbackResponseWriterHeaderDeletions(t *testing.T) {
 	for _, status := range []int{http.StatusOK, http.StatusNotFound} {
 		t.Run(http.StatusText(status), func(t *testing.T) {
