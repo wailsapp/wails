@@ -4,7 +4,7 @@ package uuid
 import (
 	"crypto/rand"
 	"crypto/sha1"
-	"fmt"
+	"encoding/hex"
 )
 
 // UUID is a 16-byte UUID value.
@@ -38,6 +38,12 @@ func NewSHA1(ns UUID, data []byte) UUID {
 
 // String returns the standard UUID string representation.
 func (id UUID) String() string {
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
-		id[0:4], id[4:6], id[6:8], id[8:10], id[10:16])
+	var text [36]byte
+	hex.Encode(text[0:8], id[0:4])
+	hex.Encode(text[9:13], id[4:6])
+	hex.Encode(text[14:18], id[6:8])
+	hex.Encode(text[19:23], id[8:10])
+	hex.Encode(text[24:36], id[10:16])
+	text[8], text[13], text[18], text[23] = '-', '-', '-', '-'
+	return string(text[:])
 }
