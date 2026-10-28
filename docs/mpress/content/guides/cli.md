@@ -332,10 +332,12 @@ wails3 generate icons [flags]
 | `-input` | Input PNG file | Required |
 | `-windowsfilename` | Windows output filename |  |
 | `-macfilename` | macOS output filename |  |
-| `-sizes` | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-sizes` | Icon sizes from 1 to 256 pixels (comma-separated; zeros ignored) | `256,128,64,48,32,16` |
 | `-example` | Generate example icon | `false` |
 | `-iconcomposerinput` | Input Icon Composer file (`.icon`) |  |
 | `-macassetdir` | Output directory for Mac assets (Assets.car + icns) |  |
+
+At least one nonzero size is required.
 
 #### Icon Composer (macOS)
 
@@ -401,10 +403,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Generates the pre-built version of the runtime.
+Exports the pre-built runtime embedded in the CLI as `runtime.js` (production) and `runtime-debug.js` (debug). It works from an installed CLI without access to the Wails source tree, including builds made with `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`

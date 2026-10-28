@@ -11,9 +11,9 @@ import (
 
 func TestNewVersion_Valid(t *testing.T) {
 	cases := []struct {
-		input             string
+		input               string
 		major, minor, patch uint64
-		pre, meta         string
+		pre, meta           string
 	}{
 		{"1.2.3", 1, 2, 3, "", ""},
 		{"v1.2.3", 1, 2, 3, "", ""},
@@ -231,8 +231,8 @@ func TestComparePrerelease(t *testing.T) {
 		{"alpha.1", "alpha.1", 0},
 
 		// longer wins when prefix equal
-		{"alpha", "alpha.1", -1},  // shorter < longer
-		{"alpha.1", "alpha", 1},   // longer > shorter
+		{"alpha", "alpha.1", -1}, // shorter < longer
+		{"alpha.1", "alpha", 1},  // longer > shorter
 
 		// numeric longer wins
 		{"1", "1.1", -1},
@@ -276,6 +276,10 @@ func TestVersionOrdering(t *testing.T) {
 		"1.0.0-beta",
 		"1.0.0-beta.2",
 		"1.0.0-beta.11",
+		"1.0.0-beta.18446744073709551615",
+		"1.0.0-beta.18446744073709551616",
+		"1.0.0-beta.99999999999999999999",
+		"1.0.0-beta.100000000000000000000",
 		"1.0.0-rc.1",
 		"1.0.0",
 	}
@@ -315,5 +319,31 @@ func TestCmpUintEqual(t *testing.T) {
 	b := mustParse(t, "3.3.3")
 	if got := a.compare(b); got != 0 {
 		t.Errorf("compare identical versions = %d, want 0", got)
+	}
+}
+
+func TestCompareLargeNumericPrerelease(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want int
+	}{
+		// Numeric identifiers have no uint64 size limit.
+		{"18446744073709551615", "18446744073709551616", -1},
+		{"99999999999999999999", "100000000000000000000", -1},
+		{"100000000000000000000", "99999999999999999999", 1},
+		{"18446744073709551616", "18446744073709551616", 0},
+		{"18446744073709551616", "0a", -1},
+		{"0a", "18446744073709551616", 1},
+		{"beta.99999999999999999999", "beta.100000000000000000000", -1},
+		{"18446744073709551616", "18446744073709551616.1", -1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.a+"_vs_"+tc.b, func(t *testing.T) {
+			a := mustParse(t, "1.0.0-"+tc.a)
+			b := mustParse(t, "1.0.0-"+tc.b)
+			if got := a.compare(b); got != tc.want {
+				t.Errorf("compare(%s, %s) = %d, want %d", a, b, got, tc.want)
+			}
+		})
 	}
 }

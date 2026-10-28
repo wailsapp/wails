@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/charmbracelet/glamour/styles"
 	"io"
@@ -13,27 +14,39 @@ import (
 	"github.com/charmbracelet/glamour"
 )
 
+// ErrNoStableRelease means the available tags contain no stable release.
+var ErrNoStableRelease = errors.New("no release tag found")
+
 func GetReleaseNotes(tagVersion string, noColour bool) string {
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return "No release notes found"
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Sprintf("Unable to retrieve release notes: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
-	data := map[string]interface{}{}
+	var data struct {
+		Body *string `json:"body"`
+	}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
-	if data["body"] == nil {
+	if data.Body == nil {
 		return "No release notes found"
 	}
 
-	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
+	result := "# Release Notes for " + tagVersion + "\n" + *data.Body
 	var renderer *glamour.TermRenderer
 
 	if noColour {
@@ -62,13 +75,14 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 		if err != nil {
 			return result, err
 		}
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return result, fmt.Errorf("GitHub tags request failed: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
+		}
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return result, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return result, fmt.Errorf("GitHub tags API returned HTTP %d", resp.StatusCode)
 		}
 
 		data := []map[string]interface{}{}
@@ -113,7 +127,7 @@ func GetLatestStableRelease() (result *SemanticVersion, err error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no release tag found")
+	return nil, ErrNoStableRelease
 }
 
 // GetLatestNightly gets the newest nightly pre-release (vX.Y.0-nightly.DATE).

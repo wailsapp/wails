@@ -346,12 +346,16 @@ func relocateWebKitHelpers(appDir string, helperDirs []string) error {
 }
 
 func findGTKFiles(files []string) ([]string, error) {
+	return findGTKFilesInRoots([]string{"/usr/lib", "/usr/lib64", "/usr/libexec"}, files)
+}
+
+func findGTKFilesInRoots(roots []string, files []string) ([]string, error) {
 	notFound := []string{}
 	found := []string{}
 	// Distros install WebKit's helpers and injected bundle under these. Walking all of /usr also reaches /usr/local and
 	// /usr/src, where other projects' AppDirs and cross-built binaries would be bundled too.
-	for _, root := range []string{"/usr/lib", "/usr/lib64", "/usr/libexec"} {
-		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	for _, root := range roots {
+		err := filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
 			if err != nil {
 				if os.IsPermission(err) || (path == root && os.IsNotExist(err)) {
 					return nil

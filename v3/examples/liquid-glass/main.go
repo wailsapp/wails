@@ -23,14 +23,15 @@ func main() {
 		Description: "Demonstrates the native Liquid Glass effect on macOS",
 	})
 
-	// Check if running on macOS
+	// Check if running on macOS. Say so on the console and stop: a dialog
+	// cannot be raised here, because this runs before app.Run() and so before
+	// there is a platform application to raise one from. Show() dispatches to
+	// the main thread and waits, and nothing will ever run that work - the
+	// process hangs on macOS and crashes on Linux.
 	if runtime.GOOS != "darwin" {
-		// Show dialog for non-macOS platforms
-		app.Dialog.Info().
-			SetTitle("macOS Only Demo").
-			SetMessage("The Liquid Glass effect is a macOS-specific feature that uses native NSGlassEffectView (macOS 15.0+) or NSVisualEffectView.\n\nThis demo is not available on " + runtime.GOOS + ".").
-			Show()
-		fmt.Println("The Liquid Glass effect is a macOS-specific feature. This demo is not available on", runtime.GOOS)
+		fmt.Println("The Liquid Glass effect is a macOS-specific feature, using the native")
+		fmt.Println("NSGlassEffectView (macOS 15.0+) or NSVisualEffectView. This demo is not")
+		fmt.Println("available on", runtime.GOOS+".")
 		return
 	}
 

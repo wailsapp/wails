@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -222,5 +223,77 @@ func TestToolPackage(t *testing.T) {
 				t.Errorf("ToolPackage() error = %v, want error containing %v", err, tt.errMsg)
 			}
 		})
+	}
+}
+
+func TestBuildDMGPreservesPreviousOutput(t *testing.T) {
+	for _, name := range []string{"build failure", "missing output", "success"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			output := filepath.Join(root, "previous image.dmg")
+			if err := os.WriteFile(output, []byte("previous image"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			buildError := errors.New("conversion failed after writing output")
+			err := buildDMG(dmg.Options{OutputPath: output}, func(opts dmg.Options) error {
+				if name == "missing output" {
+					return nil
+				}
+				if err := os.WriteFile(opts.OutputPath, []byte("new image"), 0600); err != nil {
+					return err
+				}
+				if name == "build failure" {
+					return buildError
+				}
+				return nil
+			})
+			want := "new image"
+			if name != "success" {
+				want = "previous image"
+				if err == nil {
+					t.Error("expected build or replacement failure")
+				}
+				if name == "build failure" && !errors.Is(err, buildError) {
+					t.Errorf("error=%v, want build failure", err)
+				}
+			} else if err != nil {
+				t.Fatal(err)
+			}
+			got, err := os.ReadFile(output)
+			if err != nil || string(got) != want {
+				t.Errorf("output=%q, want %q; error=%v", got, want, err)
+			}
+			entries, err := os.ReadDir(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(entries) != 1 {
+				t.Errorf("staging files retained: %v", entries)
+			}
+		})
+	}
+}
+
+func TestBuildDMGNative(t *testing.T) {
+	root := t.TempDir()
+	app := filepath.Join(root, "Example.app")
+	if err := os.Mkdir(app, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(app, "content.txt"), []byte("example app"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	output := filepath.Join(root, "Example.dmg")
+	opts := dmg.DefaultOptions(app, output)
+	opts.Backend = dmg.BackendNative
+	if err := buildDMG(opts, dmg.Build); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) < 512 || string(data[len(data)-512:len(data)-508]) != "koly" {
+		t.Fatal("output lacks a UDIF trailer")
 	}
 }

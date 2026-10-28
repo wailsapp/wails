@@ -1008,6 +1008,15 @@ func (a *App) SetIcon(icon []byte) {
 	}
 }
 
+// platformAppReady reports whether the platform application exists yet. It is
+// the condition dispatchOnMainThread needs in order to run work rather than
+// queue it for Run to replay.
+func (a *App) platformAppReady() bool {
+	a.earlyDispatchLock.Lock()
+	defer a.earlyDispatchLock.Unlock()
+	return a.impl != nil
+}
+
 func (a *App) dispatchOnMainThread(fn func()) {
 	// Before Run there is no main loop to run fn on, so it waits for one.
 	a.earlyDispatchLock.Lock()

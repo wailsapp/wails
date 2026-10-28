@@ -6,6 +6,7 @@ import (
 	"io"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,12 +30,17 @@ type Parser struct {
 	bulletRegex *regexp.Regexp
 }
 
-// NewParser creates a new changelog parser
-func NewParser() *Parser {
-	return &Parser{
+var parserDefaults = sync.OnceValue(func() Parser {
+	return Parser{
 		sectionRegex: regexp.MustCompile(`^##\s+(Added|Changed|Fixed|Deprecated|Removed|Security)\s*$`),
 		bulletRegex:  regexp.MustCompile(`^[\s]*[-*]\s+(.+)$`),
 	}
+})
+
+// NewParser creates a new changelog parser
+func NewParser() *Parser {
+	parser := parserDefaults()
+	return &parser
 }
 
 // ParseContent parses changelog content from a reader and returns a ChangelogEntry
@@ -51,12 +57,13 @@ func (p *Parser) ParseContent(reader io.Reader) (*ChangelogEntry, error) {
 	scanner := bufio.NewScanner(reader)
 	var currentSection string
 	var inExampleSection bool
+	var comments commentBlock
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 
 		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "<!--") || strings.HasPrefix(line, "-->") {
+		if line == "" || comments.skip(line) || strings.HasPrefix(line, "-->") {
 			continue
 		}
 
@@ -134,49 +141,37 @@ func (entry *ChangelogEntry) FormatForChangelog() string {
 
 	if len(entry.Added) > 0 {
 		builder.WriteString("### Added\n")
-		for _, item := range entry.Added {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Added)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Changed) > 0 {
 		builder.WriteString("### Changed\n")
-		for _, item := range entry.Changed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Changed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Fixed) > 0 {
 		builder.WriteString("### Fixed\n")
-		for _, item := range entry.Fixed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Fixed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Deprecated) > 0 {
 		builder.WriteString("### Deprecated\n")
-		for _, item := range entry.Deprecated {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Deprecated)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Removed) > 0 {
 		builder.WriteString("### Removed\n")
-		for _, item := range entry.Removed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Removed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Security) > 0 {
 		builder.WriteString("### Security\n")
-		for _, item := range entry.Security {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Security)
 		builder.WriteString("\n")
 	}
 
@@ -189,51 +184,47 @@ func (entry *ChangelogEntry) FormatForRelease() string {
 
 	if len(entry.Added) > 0 {
 		builder.WriteString("## ✨ Added\n")
-		for _, item := range entry.Added {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Added)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Changed) > 0 {
 		builder.WriteString("## 🔄 Changed\n")
-		for _, item := range entry.Changed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Changed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Fixed) > 0 {
 		builder.WriteString("## 🐛 Fixed\n")
-		for _, item := range entry.Fixed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Fixed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Deprecated) > 0 {
 		builder.WriteString("## ⚠️ Deprecated\n")
-		for _, item := range entry.Deprecated {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Deprecated)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Removed) > 0 {
 		builder.WriteString("## 🗑️ Removed\n")
-		for _, item := range entry.Removed {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Removed)
 		builder.WriteString("\n")
 	}
 
 	if len(entry.Security) > 0 {
 		builder.WriteString("## 🔒 Security\n")
-		for _, item := range entry.Security {
-			builder.WriteString(fmt.Sprintf("- %s\n", item))
-		}
+		writeBulletPoints(&builder, entry.Security)
 		builder.WriteString("\n")
 	}
 
 	return strings.TrimSpace(builder.String())
+}
+
+func writeBulletPoints(builder *strings.Builder, items []string) {
+	for _, item := range items {
+		builder.WriteString("- ")
+		builder.WriteString(item)
+		builder.WriteByte('\n')
+	}
 }
