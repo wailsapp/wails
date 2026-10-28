@@ -118,8 +118,17 @@ func shellSplit(s string) []string {
 		c := s[i]
 		switch {
 		case c == '\\' && !inS && i+1 < len(s):
-			cur.WriteByte(s[i+1])
+			next := s[i+1]
+			if inD && strings.IndexByte("$`\"\\\n", next) < 0 {
+				cur.WriteByte(c)
+				active = true
+				continue
+			}
 			i++
+			if next == '\n' {
+				continue
+			}
+			cur.WriteByte(next)
 			active = true
 		case c == '\'' && !inD:
 			inS = !inS
