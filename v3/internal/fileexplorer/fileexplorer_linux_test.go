@@ -25,7 +25,7 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 	if err := os.WriteFile(file, nil, 0644); err != nil {
 		t.Fatal(err)
 	}
-	uriFile := filepath.Join(root, "selected file #1 %20.txt")
+	uriFile := filepath.Join(root, "selected file #1 %u %20.txt")
 	if err := os.WriteFile(uriFile, nil, 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -47,6 +47,8 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 		{"removed codes/directory", "Exec=%d %D %n %N %v %m\n", root, "xdg-open", root},
 		{"valid/file", "Exec=wails-test-manager %f\n", file, "wails-test-manager", file},
 		{"valid/directory", "Exec=wails-test-manager %f\n", root, "wails-test-manager", root},
+		{"path/spaced-single", "Exec=wails-test-manager %f\n", uriFile, "wails-test-manager", uriFile},
+		{"path/spaced-list", "Exec=wails-test-manager %F\n", uriFile, "wails-test-manager", uriFile},
 		{"URI/plain", "Exec=wails-test-manager %U\n", file, "wails-test-manager", pathToURI(file)},
 		{"URI/escaped-list", "Exec=wails-test-manager %U\n", uriFile, "wails-test-manager", pathToURI(uriFile)},
 		{"URI/escaped-single", "Exec=wails-test-manager %u\n", uriFile, "wails-test-manager", pathToURI(uriFile)},
