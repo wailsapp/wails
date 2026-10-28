@@ -515,8 +515,8 @@ func (ln *linuxNotifier) loadCategories() error {
 		return fmt.Errorf("failed to read notification categories from disk: %w", err)
 	}
 
-	categories := make(map[string]NotificationCategory)
-	if err := json.Unmarshal(categoriesData, &categories); err != nil {
+	categories, err := decodeCategories(categoriesData)
+	if err != nil {
 		return fmt.Errorf("failed to unmarshal notification categories: %w", err)
 	}
 
