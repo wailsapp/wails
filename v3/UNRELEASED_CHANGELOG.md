@@ -21,6 +21,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Stop the liquid-glass example from showing a dialog before the app starts on non-macOS in [PR](https://github.com/wailsapp/wails/pull/6389) by @taliesin-ai
 - Keep window size constraints when fullscreen starts from a constrained size on Windows in [PR](https://github.com/wailsapp/wails/pull/6387) by @taliesin-ai
 - Fix dialogs called before Run blocking forever instead of returning in [PR](https://github.com/wailsapp/wails/pull/6390) by @taliesin-ai
 
