@@ -1,7 +1,9 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -58,7 +60,11 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 }
 
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	start := time.Now()
+	debugEnabled := a.options.Logger.Enabled(context.Background(), slog.LevelDebug)
+	var start time.Time
+	if debugEnabled {
+		start = time.Now()
+	}
 	wrapped := newContentTypeSniffer(rw)
 	defer func() {
 		if _, err := wrapped.complete(); err != nil {
@@ -69,15 +75,17 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
 	a.handler.ServeHTTP(wrapped, req)
 
-	a.options.Logger.Debug(
-		"Asset Request:",
-		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
-		"windowID", req.Header.Get(webViewRequestHeaderWindowId),
-		"code", wrapped.status,
-		"method", req.Method,
-		"path", req.URL.EscapedPath(),
-		"duration", time.Since(start),
-	)
+	if debugEnabled {
+		a.options.Logger.Debug(
+			"Asset Request:",
+			"windowName", req.Header.Get(webViewRequestHeaderWindowName),
+			"windowID", req.Header.Get(webViewRequestHeaderWindowId),
+			"code", wrapped.status,
+			"method", req.Method,
+			"path", req.URL.EscapedPath(),
+			"duration", time.Since(start),
+		)
+	}
 }
 
 func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userHandler http.Handler) {
