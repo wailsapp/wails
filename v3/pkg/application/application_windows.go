@@ -130,42 +130,46 @@ func (m *windowsApp) on(_ uint) {
 }
 
 func (m *windowsApp) setIcon(icon []byte) {
-	hIcon, err := w32.CreateLargeHIconFromImage(icon)
-	if err != nil {
-		m.parent.error("unable to create icon: %w", err)
-		return
-	}
+	InvokeAsync(func() {
+		hIcon, err := w32.CreateLargeHIconFromImage(icon)
+		if err != nil {
+			m.parent.error("unable to create icon: %w", err)
+			return
+		}
 
-	m.windowMapLock.Lock()
-	windows := make([]*windowsWebviewWindow, 0, len(m.windowMap))
+		previousIcon := m.currentIcon
+		m.currentIcon = hIcon
 
-	for _, window := range m.windowMap {
-		windows = append(windows, window)
-	}
+		m.windowMapLock.Lock()
+		windows := make([]*windowsWebviewWindow, 0, len(m.windowMap))
+		for _, window := range m.windowMap {
+			windows = append(windows, window)
+		}
+		m.windowMapLock.Unlock()
 
-	m.windowMapLock.Unlock()
+		for _, window := range windows {
+			m.applyIcon(window, hIcon)
+		}
 
-	for _, window := range windows {
-		m.applyIcon(window, hIcon)
-	}
+		if previousIcon != 0 {
+			w32.DestroyIcon(previousIcon)
+		}
+	})
 }
 
 func (m *windowsApp) applyIcon(window *windowsWebviewWindow, icon w32.HICON) {
-	// This is a dumb workaround to prevent windows adding the icon back, when DisableIcon is set to true
 	iconDisabled := window.parent.options.Windows.DisableIcon
+
+	if !iconDisabled {
+		window.setIcon(icon)
+		return
+	}
+
+	// This is a dumb workaround to prevent windows adding the icon back, when DisableIcon is set to true
 	style := w32.GetWindowLong(window.hwnd, w32.GWL_STYLE)
-
-	if iconDisabled {
-		w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style&^w32.WS_SYSMENU))
-	}
-
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style&^w32.WS_SYSMENU))
 	window.setIcon(icon)
-	w32.SendMessage(window.hwnd, w32.WM_SETICON, w32.ICON_BIG, icon)
-	m.currentIcon = icon
-
-	if iconDisabled {
-		w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style))
-	}
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style))
 }
 
 func (m *windowsApp) name() string {
@@ -241,6 +245,13 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+
+	// Release icons, if any
+	if m.currentIcon != 0 {
+		w32.DestroyIcon(m.currentIcon)
+		m.currentIcon = 0
+	}
+
 	// destroy the main thread window
 	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
