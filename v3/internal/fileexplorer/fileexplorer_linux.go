@@ -15,20 +15,6 @@ import (
 
 // when possible; the fallback method does not support selecting a file.
 func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
-	uri := pathToURI(path)
-	// Map of field codes to their replacements
-	var fieldCodes = map[string]string{
-		"%d": "",
-		"%D": "",
-		"%n": "",
-		"%N": "",
-		"%v": "",
-		"%m": "",
-		"%f": path,
-		"%F": path,
-		"%u": uri,
-		"%U": uri,
-	}
 	fileManagerQuery := exec.Command("xdg-mime", "query", "default", "inode/directory")
 	buf := new(bytes.Buffer)
 	fileManagerQuery.Stdout = buf
@@ -49,11 +35,19 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	execCmd := entry.Exec
-	for fieldCode, replacement := range fieldCodes {
-		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
+	uri := pathToURI(path)
+	fieldCodes := strings.NewReplacer(
+		"%d", "", "%D", "", "%n", "", "%N", "", "%v", "", "%m", "",
+		"%f", path, "%F", path, "%u", uri, "%U", uri,
+	)
+	// Split before expanding so whitespace in a selected path stays in one argument.
+	fields := strings.Fields(entry.Exec)
+	args := fields[:0]
+	for _, field := range fields {
+		if expanded := fieldCodes.Replace(field); expanded != "" {
+			args = append(args, expanded)
+		}
 	}
-	args := strings.Fields(execCmd)
 	if len(args) == 0 {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
