@@ -91,14 +91,19 @@ func FindLibraryFile(fileName string) (string, error) {
 	for _, dir := range GetAllLibPaths() {
 		// Check exact match
 		fullPath := filepath.Join(dir, fileName)
-		if _, err := os.Stat(fullPath); err == nil {
+		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
 			return fullPath, nil
 		}
 
 		// Check with .so suffix variations
-		matches, err := filepath.Glob(filepath.Join(dir, fileName+"*"))
-		if err == nil && len(matches) > 0 {
-			return matches[0], nil
+		matches, err := filepath.Glob(filepath.Join(dir, fileName+".[0-9]*"))
+		if err != nil {
+			continue
+		}
+		for _, match := range matches {
+			if info, err := os.Stat(match); err == nil && !info.IsDir() {
+				return match, nil
+			}
 		}
 	}
 
