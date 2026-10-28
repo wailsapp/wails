@@ -160,8 +160,9 @@ func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 }
 
 func GetStartURL(userURL string) (string, error) {
+	requestBaseURL := baseURL
 	devServerURL := GetDevServerURL()
-	startURL := baseURL.String()
+	startURL := requestBaseURL.String()
 	if devServerURL != "" {
 		// Parse the port
 		parsedURL, err := url.Parse(devServerURL)
@@ -170,13 +171,13 @@ func GetStartURL(userURL string) (string, error) {
 		}
 		port := parsedURL.Port()
 		if port != "" {
-			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
-			startURL = baseURL.String()
+			requestBaseURL.Host = net.JoinHostPort(requestBaseURL.Hostname(), port)
+			startURL = requestBaseURL.String()
 		}
 	}
 
 	if userURL != "" {
-		parsedURL, err := baseURL.Parse(userURL)
+		parsedURL, err := requestBaseURL.Parse(userURL)
 		if err != nil {
 			return "", fmt.Errorf("error parsing URL: %w", err)
 		}
