@@ -312,18 +312,18 @@ func (s *SQLiteService) PrepareContext(ctx context.Context, query string) (*Stmt
 		}
 	}
 
-	func() {
-		s.lock.Lock()
-		defer s.lock.Unlock()
-
-		s.stmts[id] = struct{}{}
-	}()
-
 	wrapper := &Stmt{
 		sqlStmt: stmt,
 		db:      s,
 		id:      id,
 	}
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	if s.conn != conn {
+		_ = stmt.Close()
+		return nil, errors.New("database connection changed while preparing statement")
+	}
+	s.stmts[id] = struct{}{}
 	stmts.Store(id, wrapper)
 
 	return wrapper, nil
