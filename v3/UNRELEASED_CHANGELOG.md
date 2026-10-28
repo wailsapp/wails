@@ -35,6 +35,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Probe ports once per check in the CLI in [PR](https://github.com/wailsapp/wails/pull/6465) by @taliesin-ai
 - Include the task directory in cache identity to avoid stale wake results in [PR](https://github.com/wailsapp/wails/pull/6464) by @taliesin-ai
 - Prevent data loss when packaging copies a file onto itself in [PR](https://github.com/wailsapp/wails/pull/6463) by @taliesin-ai
 - Make status checks respect task directories in [PR](https://github.com/wailsapp/wails/pull/6462) by @taliesin-ai
