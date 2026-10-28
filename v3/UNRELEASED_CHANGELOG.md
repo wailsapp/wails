@@ -31,6 +31,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Return correct responses to HEAD requests for the fallback index page in [PR](https://github.com/wailsapp/wails/pull/6451) by @taliesin-ai
 - Handle SQLite statement preparation racing with database close or reopen in [PR](https://github.com/wailsapp/wails/pull/6450) by @taliesin-ai
 - Release prepared-statement handles when SQLite database is closed or reopened in [PR](https://github.com/wailsapp/wails/pull/6448) by @taliesin-ai
 - Keep extraction destination paths literal when using gosod in [PR](https://github.com/wailsapp/wails/pull/6447) by @taliesin-ai
