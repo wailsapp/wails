@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -122,7 +123,13 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			fallback: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				// Set content type for default index.html
 				header.Set(HeaderContentType, "text/html; charset=utf-8")
-				a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
+				blob := defaultIndexHTML(acceptLanguage)
+				if req.Method == http.MethodHead {
+					header.Set(HeaderContentLength, strconv.Itoa(len(blob)))
+					rw.WriteHeader(http.StatusOK)
+					return
+				}
+				a.writeBlob(rw, indexHTML, blob)
 			}),
 		}
 		userHandler.ServeHTTP(wrapped, req)
