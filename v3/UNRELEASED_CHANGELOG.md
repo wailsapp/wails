@@ -39,6 +39,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Serve assets whose request paths contain repeated leading slashes in [PR](https://github.com/wailsapp/wails/pull/6483) by @taliesin-ai
 - Fix shell fallback execution for wake on each platform in [PR](https://github.com/wailsapp/wails/pull/6481) by @taliesin-ai
 - Preserve previous Linux packages when a build fails in [PR](https://github.com/wailsapp/wails/pull/6480) by @taliesin-ai
 - Route command chains and redirections through the shell in [PR](https://github.com/wailsapp/wails/pull/6479) by @taliesin-ai
