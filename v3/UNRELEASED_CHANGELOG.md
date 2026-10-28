@@ -29,6 +29,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Ignore hidden entries and headers in changelog comment blocks in [PR](https://github.com/wailsapp/wails/pull/6439) by @taliesin-ai
 - Install wails3 once and surface installer errors in the updater in [PR](https://github.com/wailsapp/wails/pull/6438) by @taliesin-ai
 - Preserve literal bracketed template paths in gosod in [PR](https://github.com/wailsapp/wails/pull/6437) by @taliesin-ai
 - Reject failed GitHub tag responses before decoding them in the updater in [PR](https://github.com/wailsapp/wails/pull/6436) by @taliesin-ai
