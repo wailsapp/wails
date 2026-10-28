@@ -336,7 +336,9 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	env = append(env, "WAKE_REPORT=1")
 
 	dir := parse.ExpandTemplates(task.Dir, mergedVars)
-	if dir != "" && !filepath.IsAbs(dir) {
+	if dir == "" {
+		dir = e.Dir
+	} else if !filepath.IsAbs(dir) {
 		// filepath.IsAbs handles `C:\…` on Windows; the previous
 		// `strings.HasPrefix("/")` check misclassified Windows absolute
 		// paths as relative and prefixed them with e.Dir, producing nonsense
