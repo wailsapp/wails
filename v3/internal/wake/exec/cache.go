@@ -50,6 +50,9 @@ func LoadTaskCache(baseDir string) (*TaskCache, error) {
 	if err := json.Unmarshal(data, tc); err != nil {
 		return tc, nil
 	}
+	if tc.Entries == nil {
+		tc.Entries = make(map[string]TaskCacheEntry)
+	}
 
 	return tc, nil
 }
