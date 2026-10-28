@@ -516,10 +516,12 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Copies files.
+Copies one source file to one destination file. Existing files are overwritten
+and keep their current permissions. New files use the source permissions, subject
+to the system umask on Unix. Parent directories must already exist.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
