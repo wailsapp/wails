@@ -1,7 +1,6 @@
 package term
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
@@ -137,5 +136,5 @@ func Hyperlink(url, text string) string {
 	// ANSI escape code to reset text formatting
 	resetFormat := "\x1b[0m"
 
-	return fmt.Sprintf("%s%s%s%s%s%s%s", linkStart, url, "\x1b\\", underlineStart, text, resetFormat, linkEnd)
+	return linkStart + url + "\x1b\\" + underlineStart + text + resetFormat + linkEnd
 }
