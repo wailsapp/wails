@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations in webview request handling by avoiding discarded request contexts in [PR](https://github.com/wailsapp/wails/pull/6419) by @taliesin-ai
 - Speed up asset serving by skipping MIME sniffing for known file extensions in [PR](https://github.com/wailsapp/wails/pull/6414) by @taliesin-ai
 - Reduce allocations when serving assets by avoiding a reader for content sniffing in [PR](https://github.com/wailsapp/wails/pull/6410) by @taliesin-ai
 - Reduce allocations when serving non-seekable asset files in [PR](https://github.com/wailsapp/wails/pull/6408) by @taliesin-ai
