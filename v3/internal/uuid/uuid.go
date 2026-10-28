@@ -27,7 +27,8 @@ func NewSHA1(ns UUID, data []byte) UUID {
 	h := sha1.New()
 	h.Write(ns[:])
 	h.Write(data)
-	sum := h.Sum(nil)
+	var digest [sha1.Size]byte
+	sum := h.Sum(digest[:0])
 
 	var id UUID
 	copy(id[:], sum)
