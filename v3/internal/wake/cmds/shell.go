@@ -57,27 +57,27 @@ type RouteOptions struct {
 	Env []string
 }
 
-func Route(cmdStr string, opts RouteOptions) Executor {
-	routes := []struct {
-		pattern *regexp.Regexp
-		build   func([]string, RouteOptions) Executor
-	}{
-		{regexp.MustCompile(`^go\s+build\b`), buildGoBuild},
-		{regexp.MustCompile(`^go\s+run\b`), buildGoRun},
-		{regexp.MustCompile(`^go\s+test\b`), buildGoTest},
-		{regexp.MustCompile(`^go\s+mod\s+tidy\b`), buildGoModTidy},
-		{regexp.MustCompile(`^go\s+mod\s+(\S+)`), buildGoMod},
-		{regexp.MustCompile(`^go\s+install\b`), buildGoInstall},
-		{regexp.MustCompile(`^go\s+vet\b`), buildGoVet},
-		{regexp.MustCompile(`^go\s+fmt\b`), buildGoFmt},
-		{regexp.MustCompile(`^npm\s+install\b`), buildNpmInstall},
-		{regexp.MustCompile(`^npm\s+run\s+(\S+)`), buildNpmRun},
-		{regexp.MustCompile(`^bun\s+install\b`), buildBunInstall},
-		{regexp.MustCompile(`^pnpm\s+install\b`), buildPnpmInstall},
-		{regexp.MustCompile(`^yarn\s+install\b`), buildYarnInstall},
-	}
+var commandRoutes = []struct {
+	pattern *regexp.Regexp
+	build   func([]string, RouteOptions) Executor
+}{
+	{regexp.MustCompile(`^go\s+build\b`), buildGoBuild},
+	{regexp.MustCompile(`^go\s+run\b`), buildGoRun},
+	{regexp.MustCompile(`^go\s+test\b`), buildGoTest},
+	{regexp.MustCompile(`^go\s+mod\s+tidy\b`), buildGoModTidy},
+	{regexp.MustCompile(`^go\s+mod\s+(\S+)`), buildGoMod},
+	{regexp.MustCompile(`^go\s+install\b`), buildGoInstall},
+	{regexp.MustCompile(`^go\s+vet\b`), buildGoVet},
+	{regexp.MustCompile(`^go\s+fmt\b`), buildGoFmt},
+	{regexp.MustCompile(`^npm\s+install\b`), buildNpmInstall},
+	{regexp.MustCompile(`^npm\s+run\s+(\S+)`), buildNpmRun},
+	{regexp.MustCompile(`^bun\s+install\b`), buildBunInstall},
+	{regexp.MustCompile(`^pnpm\s+install\b`), buildPnpmInstall},
+	{regexp.MustCompile(`^yarn\s+install\b`), buildYarnInstall},
+}
 
-	for _, r := range routes {
+func Route(cmdStr string, opts RouteOptions) Executor {
+	for _, r := range commandRoutes {
 		if r.pattern.MatchString(cmdStr) {
 			// Tokenise with shell-aware quoting so args like
 			// `-ldflags="-w -s"` stay as a single token instead of being
