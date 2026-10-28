@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when formatting changelog bullet entries in [PR](https://github.com/wailsapp/wails/pull/6449) by @taliesin-ai
 - Reduce allocations when formatting terminal hyperlinks in [PR](https://github.com/wailsapp/wails/pull/6443) by @taliesin-ai
 - Reduce allocations when serving assets by sniffing MIME buffers lazily in [PR](https://github.com/wailsapp/wails/pull/6428) by @taliesin-ai
 - Skip debug log preparation in the asset server when debug logging is disabled in [PR](https://github.com/wailsapp/wails/pull/6420) by @taliesin-ai
