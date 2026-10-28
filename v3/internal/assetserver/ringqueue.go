@@ -87,7 +87,8 @@ func (q *ringqueue[T]) Remove() (T, bool) {
 	q.head = (q.head + 1) % len(q.nodes)
 	q.cnt--
 
-	if n := len(q.nodes) / 2; n > q.minSize && q.cnt <= n {
+	// Shrink at quarter occupancy so an add/remove pair cannot oscillate capacity.
+	if n := len(q.nodes) / 2; n >= q.minSize && q.cnt <= n/2 {
 		q.resize(n)
 	}
 
