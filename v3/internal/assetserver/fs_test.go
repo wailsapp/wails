@@ -9,6 +9,26 @@ import (
 	"testing/fstest"
 )
 
+func TestFindPathToFileSelectionOrder(t *testing.T) {
+	tests := []struct {
+		name   string
+		assets fstest.MapFS
+		want   string
+	}{
+		{"shorter later", fstest.MapFS{"a/deep/index.html": {}, "z/index.html": {}}, "z/"},
+		{"first equal length", fstest.MapFS{"a/index.html": {}, "b/index.html": {}}, "a/"},
+		{"length before depth", fstest.MapFS{"a/b/index.html": {}, "long-directory/index.html": {}}, "a/b/"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := findPathToFile(tt.assets, indexHTML)
+			if err != nil || got != tt.want {
+				t.Errorf("findPathToFile = %q, %v; want %q", got, err, tt.want)
+			}
+		})
+	}
+}
+
 func TestAssetFileServerIgnoresIndexLookalikes(t *testing.T) {
 	tests := []struct {
 		name   string
