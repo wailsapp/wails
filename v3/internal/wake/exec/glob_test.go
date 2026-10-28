@@ -83,6 +83,11 @@ func TestClassifyGoCmd(t *testing.T) {
 }
 
 func TestParseOutputFlag(t *testing.T) {
+	for _, command := range []string{`go build -o "app with spaces"`, `go build -o="app with spaces"`, `go build -o app\ with\ spaces`} {
+		if got := parseOutputFlag(command); got != "app with spaces" {
+			t.Errorf("parseOutputFlag(%q) = %q, want unquoted output path", command, got)
+		}
+	}
 	if got := parseOutputFlag(`go build -buildvcs=false -o bin/badge`); got != "bin/badge" {
 		t.Errorf("parseOutputFlag = %q, want bin/badge", got)
 	}

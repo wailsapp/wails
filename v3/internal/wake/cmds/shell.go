@@ -212,7 +212,9 @@ func parseGoBuildArgs(args []string) GoBuildOptions {
 				continue
 			}
 		default:
-			if !strings.HasPrefix(args[i], "-") {
+			if strings.HasPrefix(args[i], "-o=") {
+				opts.Output = strings.TrimPrefix(args[i], "-o=")
+			} else if !strings.HasPrefix(args[i], "-") {
 				opts.Package = args[i]
 			} else {
 				opts.ExtraArgs = append(opts.ExtraArgs, args[i])
