@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -43,16 +44,18 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 	// Split before expanding so whitespace in a selected path stays in one argument.
 	fields := strings.Fields(entry.Exec)
 	args := fields[:0]
+	targetExpanded := false
 	for _, field := range fields {
 		if expanded := fieldCodes.Replace(field); expanded != "" {
 			args = append(args, expanded)
+			targetExpanded = targetExpanded || strings.Contains(field, "%f") || strings.Contains(field, "%F") ||
+				strings.Contains(field, "%u") || strings.Contains(field, "%U")
 		}
 	}
 	if len(args) == 0 {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
-	joined := strings.Join(args, " ")
-	if !strings.Contains(joined, path) && !strings.Contains(joined, uri) {
+	if !targetExpanded && !slices.Contains(args[1:], path) && !slices.Contains(args[1:], uri) {
 		args = append(args, path)
 	}
 
