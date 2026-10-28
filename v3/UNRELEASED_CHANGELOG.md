@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Reduce allocations when formatting SQLite statement handles in [PR](https://github.com/wailsapp/wails/pull/6454) by @taliesin-ai
 - Reduce UUID string conversion to a single allocation in [PR](https://github.com/wailsapp/wails/pull/6453) by @taliesin-ai
 - Reduce allocations when formatting changelog bullet entries in [PR](https://github.com/wailsapp/wails/pull/6449) by @taliesin-ai
 - Reduce allocations when formatting terminal hyperlinks in [PR](https://github.com/wailsapp/wails/pull/6443) by @taliesin-ai
