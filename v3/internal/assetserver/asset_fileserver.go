@@ -118,8 +118,8 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	var n int
 	if _, haveType := rw.Header()[HeaderContentType]; !haveType {
 		// Detect MimeType by sniffing the first 512 bytes
-		n, err = file.Read(buf[:])
-		if err != nil && err != io.EOF {
+		n, err = io.ReadFull(file, buf[:])
+		if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 			return err
 		}
 
