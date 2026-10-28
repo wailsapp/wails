@@ -104,8 +104,8 @@ func Route(cmdStr string, opts RouteOptions) Executor {
 // themselves are stripped. Adjacent quoted/unquoted fragments concatenate
 // into one token (e.g. `-ldflags="-w -s"` → `-ldflags=-w -s` as ONE arg).
 //
-// Returns nil for unbalanced quoting; callers should fall back to `sh -c`
-// in that case rather than risk mis-parsing the user's command.
+// Returns nil for unbalanced quoting or unquoted shell operators; callers
+// should fall back to `sh -c` rather than mis-parse the user's command.
 func shellSplit(s string) []string {
 	var (
 		out    []string
@@ -136,6 +136,8 @@ func shellSplit(s string) []string {
 		case c == '"' && !inS:
 			inD = !inD
 			active = true
+		case !inS && !inD && strings.IndexByte("&|;<>()\n", c) >= 0:
+			return nil
 		case (c == ' ' || c == '\t') && !inS && !inD:
 			if active {
 				out = append(out, cur.String())
