@@ -9,6 +9,21 @@ import (
 	"testing"
 )
 
+func TestContentTypeSnifferReleasesConsumedPrefix(t *testing.T) {
+	for _, size := range []int{16, 1 << 20} {
+		rec := httptest.NewRecorder()
+		rec.Body = nil
+		rw := newContentTypeSniffer(rec)
+		if _, err := rw.Write(make([]byte, size)); err != nil {
+			t.Fatal(err)
+		}
+		rw.Flush()
+		if rw.prefix != nil {
+			t.Errorf("%d-byte write retained its consumed prefix buffer", size)
+		}
+	}
+}
+
 // A response shorter than the 512-byte sniffing prefix is held back until the
 // handler returns. Flush has to release it, or a streaming handler that writes
 // a short chunk and then waits delivers nothing while reporting success.
