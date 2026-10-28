@@ -23,6 +23,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Respect XDG desktop-file search directories when locating application icons in [PR](https://github.com/wailsapp/wails/pull/6407) by @taliesin-ai
 - Preserve file paths during field expansion in the file explorer in [PR](https://github.com/wailsapp/wails/pull/6406) by @taliesin-ai
 - Avoid duplicating expanded URI targets in file explorer in [PR](https://github.com/wailsapp/wails/pull/6405) by @taliesin-ai
 - Commit successful empty non-seekable asset responses instead of leaving them pending in [PR](https://github.com/wailsapp/wails/pull/6403) by @taliesin-ai
