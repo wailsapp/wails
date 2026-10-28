@@ -2,6 +2,7 @@ package github
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -54,6 +55,40 @@ func TestVersionTagSelection(t *testing.T) {
 	valid, err = IsValidTag("v2.99.0")
 	if err != nil || valid {
 		t.Errorf("v2 tag accepted: valid=%t, error=%v", valid, err)
+	}
+}
+
+func TestVersionTagsRejectHTTPFailures(t *testing.T) {
+	cases := []struct {
+		status int
+		reader io.Reader
+	}{
+		{http.StatusForbidden, strings.NewReader(`{"message":"API rate limit exceeded"}`)},
+		{http.StatusTooManyRequests, strings.NewReader(`{"message":"Too many requests"}`)},
+		{http.StatusInternalServerError, strings.NewReader("<html>Server error</html>")},
+		{http.StatusServiceUnavailable, iotest.ErrReader(errors.New("body read failed"))},
+		{http.StatusBadGateway, strings.NewReader(`[{"name":"v3.0.0"}]`)},
+	}
+	for _, tc := range cases {
+		t.Run(http.StatusText(tc.status), func(t *testing.T) {
+			previousClient := http.DefaultClient
+			t.Cleanup(func() { http.DefaultClient = previousClient })
+			body := &trackedResponseBody{Reader: tc.reader}
+			http.DefaultClient = &http.Client{Transport: tagTransport(func(*http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: tc.status, Body: body, Header: make(http.Header)}, nil
+			})}
+			tags, err := GetVersionTags()
+			want := fmt.Sprintf("HTTP %d (%s)", tc.status, http.StatusText(tc.status))
+			if err == nil || !strings.Contains(err.Error(), want) {
+				t.Errorf("error=%v, want HTTP status %q", err, want)
+			}
+			if len(tags) != 0 {
+				t.Errorf("failed HTTP response returned tags: %v", tags)
+			}
+			if body.closeCalls != 1 {
+				t.Errorf("response body closed %d times, want 1", body.closeCalls)
+			}
+		})
 	}
 }
 
