@@ -26,6 +26,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Avoid false library matches when searching ldconfig output in [PR](https://github.com/wailsapp/wails/pull/6416) by @taliesin-ai
 - Prevent asset server queue growth and shrink oscillation under load in [PR](https://github.com/wailsapp/wails/pull/6415) by @taliesin-ai
 - Release callback captures after the debounce timer fires to avoid retaining stale references in [PR](https://github.com/wailsapp/wails/pull/6413) by @taliesin-ai
 - Preserve file explorer targets found inside executable paths in [PR](https://github.com/wailsapp/wails/pull/6412) by @taliesin-ai
