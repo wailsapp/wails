@@ -39,6 +39,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Recognize stable versions that include build metadata in the CLI in [PR](https://github.com/wailsapp/wails/pull/6484) by @taliesin-ai
 - Serve assets whose request paths contain repeated leading slashes in [PR](https://github.com/wailsapp/wails/pull/6483) by @taliesin-ai
 - Fix shell fallback execution for wake on each platform in [PR](https://github.com/wailsapp/wails/pull/6481) by @taliesin-ai
 - Preserve previous Linux packages when a build fails in [PR](https://github.com/wailsapp/wails/pull/6480) by @taliesin-ai
