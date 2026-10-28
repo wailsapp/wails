@@ -41,6 +41,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep fullscreen and maximised windows from resizing when min or max size constraints change in [PR](https://github.com/wailsapp/wails/pull/6388) by @taliesin-ai
 - Publish scheduled star history updates for the wailsapp/wails repository in [PR](https://github.com/wailsapp/wails/pull/6500) by @taliesin-ai
 - Stop discarding invalid Go test count flags in wake in [PR](https://github.com/wailsapp/wails/pull/6497) by @taliesin-ai
 - Preserve Mac icons when encoding fails in [PR](https://github.com/wailsapp/wails/pull/6496) by @taliesin-ai
