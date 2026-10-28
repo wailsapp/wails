@@ -218,15 +218,24 @@ func COPY(source string, target string) {
 	src, err := os.Open(source)
 	checkError(err)
 	defer closefile(src)
-	info, err := src.Stat()
+	sourceInfo, err := src.Stat()
 	checkError(err)
 	if ISDIR(target) {
 		target = filepath.Join(target, filepath.Base(source))
 	}
-	d, err := os.Create(target)
+	// Compare open files before truncating, including symlink and hard-link aliases.
+	d, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE, sourceInfo.Mode().Perm())
 	checkError(err)
 	defer closefile(d)
-	checkError(d.Chmod(info.Mode().Perm()))
+	targetInfo, err := d.Stat()
+	checkError(err)
+	if os.SameFile(sourceInfo, targetInfo) {
+		checkError(fmt.Errorf("source %q and target %q are the same file", source, target))
+	}
+	if targetInfo.Mode().IsRegular() {
+		checkError(d.Chmod(sourceInfo.Mode().Perm()))
+		checkError(d.Truncate(0))
+	}
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
