@@ -292,6 +292,8 @@ func parseGoTestArgs(args []string) GoTestOptions {
 				// `-count 10` became 1, `-count 100` became 1, etc.
 				if n, err := strconv.Atoi(args[i+1]); err == nil {
 					opts.Count = n
+				} else {
+					opts.Extra = append(opts.Extra, "-count", args[i+1])
 				}
 				i += 2
 				continue
