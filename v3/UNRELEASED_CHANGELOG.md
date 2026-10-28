@@ -23,6 +23,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Avoid duplicating expanded URI targets in file explorer in [PR](https://github.com/wailsapp/wails/pull/6405) by @taliesin-ai
 - Commit successful empty non-seekable asset responses instead of leaving them pending in [PR](https://github.com/wailsapp/wails/pull/6403) by @taliesin-ai
 - Fill MIME sniffing prefix correctly across short reads in the asset server in [PR](https://github.com/wailsapp/wails/pull/6402) by @taliesin-ai
 - Avoid reading full response bodies for non-seekable HEAD requests in the asset server in [PR](https://github.com/wailsapp/wails/pull/6401) by @taliesin-ai
