@@ -53,6 +53,14 @@ type windowsWebviewWindow struct {
 	previousWindowExStyle   uint32
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
+	// Size constraints suspended for the duration of a fullscreen. On this
+	// platform setMinSize/setMaxSize only write parent.options - the clamp is
+	// read back from there when Windows asks, in WM_GETMINMAXINFO - so zeroing
+	// them to suspend the clamp destroys the only copy. These hold it.
+	constraintsSuspended                  bool
+	suspendedMinWidth, suspendedMinHeight int
+	suspendedMaxWidth, suspendedMaxHeight int
+
 	// Webview
 	chromium                   *edge.Chromium
 	webviewNavigationCompleted bool
@@ -708,11 +716,23 @@ func (w *windowsWebviewWindow) center() {
 }
 
 func (w *windowsWebviewWindow) disableSizeConstraints() {
+	if !w.constraintsSuspended {
+		options := w.parent.options
+		w.suspendedMinWidth, w.suspendedMinHeight = options.MinWidth, options.MinHeight
+		w.suspendedMaxWidth, w.suspendedMaxHeight = options.MaxWidth, options.MaxHeight
+		w.constraintsSuspended = true
+	}
 	w.setMaxSize(0, 0)
 	w.setMinSize(0, 0)
 }
 
 func (w *windowsWebviewWindow) enableSizeConstraints() {
+	if w.constraintsSuspended {
+		w.setMinSize(w.suspendedMinWidth, w.suspendedMinHeight)
+		w.setMaxSize(w.suspendedMaxWidth, w.suspendedMaxHeight)
+		w.constraintsSuspended = false
+		return
+	}
 	options := w.parent.options
 	if options.MinWidth > 0 || options.MinHeight > 0 {
 		w.setMinSize(options.MinWidth, options.MinHeight)
