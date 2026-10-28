@@ -22,6 +22,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Release removed ring queue references in the asset server to avoid memory leaks in [PR](https://github.com/wailsapp/wails/pull/6397) by @taliesin-ai
 - Release consumed content-sniffer buffers in the asset server to reduce memory use in [PR](https://github.com/wailsapp/wails/pull/6396) by @taliesin-ai
 - Recognize mixed-case asset file extensions when serving assets in [PR](https://github.com/wailsapp/wails/pull/6395) by @taliesin-ai
 - Correctly detect content type in asset server without retaining filenames in [PR](https://github.com/wailsapp/wails/pull/6394) by @taliesin-ai
