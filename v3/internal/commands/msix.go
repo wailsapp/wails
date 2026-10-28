@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -438,15 +439,44 @@ func generatePlaceholderImage(outputPath string) error {
 }
 
 // copyFile copies a file from src to dst
-func copyFile(src, dst string) error {
-	// Read the source file
-	data, err := os.ReadFile(src)
+func copyFile(src, dst string) (err error) {
+	source, err := os.Open(src)
 	if err != nil {
 		return err
 	}
+	defer source.Close()
+	sourceInfo, err := source.Stat()
+	if err != nil {
+		return err
+	}
+	if sourceInfo.IsDir() {
+		return fmt.Errorf("cannot copy directory %q", src)
+	}
 
-	// Write the destination file
-	return os.WriteFile(dst, data, 0644)
+	// Check file identity before truncating, including symlink/hard-link aliases.
+	target, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := target.Close(); err == nil {
+			err = closeErr
+		}
+	}()
+	targetInfo, err := target.Stat()
+	if err != nil {
+		return err
+	}
+	if os.SameFile(sourceInfo, targetInfo) {
+		return nil
+	}
+	if targetInfo.Mode().IsRegular() {
+		if err := target.Truncate(0); err != nil {
+			return err
+		}
+	}
+	_, err = io.Copy(target, source)
+	return err
 }
 
 // InstallMSIXTools installs the required tools for MSIX packaging
