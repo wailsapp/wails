@@ -41,6 +41,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Publish scheduled star history updates for the wailsapp/wails repository in [PR](https://github.com/wailsapp/wails/pull/6500) by @taliesin-ai
 - Stop discarding invalid Go test count flags in wake in [PR](https://github.com/wailsapp/wails/pull/6497) by @taliesin-ai
 - Preserve Mac icons when encoding fails in [PR](https://github.com/wailsapp/wails/pull/6496) by @taliesin-ai
 - Fix build cache misses for Go outputs with quoted or escaped spaces in [PR](https://github.com/wailsapp/wails/pull/6495) by @taliesin-ai
