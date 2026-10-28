@@ -153,6 +153,9 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 
 	// Copy the remaining content of the file
 	_, err = io.Copy(rw, file)
+	if err == nil {
+		rw.WriteHeader(http.StatusOK)
+	}
 	return err
 }
 

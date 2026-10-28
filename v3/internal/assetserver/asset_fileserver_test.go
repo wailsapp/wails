@@ -2,7 +2,9 @@ package assetserver
 
 import (
 	"bytes"
+	"context"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -10,6 +12,37 @@ import (
 	"testing"
 	"testing/fstest"
 )
+
+func TestEmptyNonSeekingAssetCommitsSuccess(t *testing.T) {
+	for contentType, wantType := range map[string]string{"": "text/plain; charset=utf-8", "text/custom": "text/custom"} {
+		t.Run("type="+contentType, func(t *testing.T) {
+			bytesRead := 0
+			files := &assetFileServer{fs: nonSeekingTestFS{
+				FS:        fstest.MapFS{"slow": {}},
+				bytesRead: &bytesRead,
+			}}
+			server, err := NewAssetServer(&Options{Logger: slog.Default(), Handler: files})
+			if err != nil {
+				t.Fatal(err)
+			}
+			response := &contextWebViewResponse{}
+			if contentType != "" {
+				response.Header().Set(HeaderContentType, contentType)
+			}
+			request := &contextWebViewRequest{ctx: context.Background(), rw: response}
+			server.processWebViewRequest(request)
+			if response.Code() != http.StatusOK || response.body.Len() != 0 {
+				t.Errorf("response status=%d, body length=%d; want 200 with no body", response.Code(), response.body.Len())
+			}
+			if response.Header().Get(HeaderContentLength) != "0" || response.Header().Get(HeaderContentType) != wantType {
+				t.Errorf("unexpected headers: %v", response.Header())
+			}
+			if response.finishCount.Load() != 1 || request.closeCount.Load() != 1 {
+				t.Error("request was not finished and closed exactly once")
+			}
+		})
+	}
+}
 
 type nonSeekingTestFS struct {
 	fs.FS
