@@ -136,7 +136,11 @@ func (rw *contentTypeSniffer) complete() (n int, err error) {
 		if n > len(rw.prefix) {
 			n = len(rw.prefix)
 		}
-		rw.prefix = rw.prefix[n:]
+		if n == len(rw.prefix) {
+			rw.prefix = nil
+		} else {
+			rw.prefix = rw.prefix[n:]
+		}
 
 		if err != nil {
 			rw.err = err

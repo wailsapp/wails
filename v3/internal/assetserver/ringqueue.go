@@ -82,6 +82,8 @@ func (q *ringqueue[T]) Remove() (T, bool) {
 		return none, false
 	}
 	i := q.nodes[q.head]
+	var zero T
+	q.nodes[q.head] = zero
 	q.head = (q.head + 1) % len(q.nodes)
 	q.cnt--
 

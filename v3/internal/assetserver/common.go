@@ -2,9 +2,9 @@ package assetserver
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -33,7 +33,7 @@ var assetServerLoggerKey assetServerLogger
 // writing the body.
 func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
-	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
+	header.Set(HeaderContentLength, strconv.Itoa(len(blob)))
 	if mimeType := header.Get(HeaderContentType); mimeType == "" {
 		mimeType = GetMimetype(filename, blob)
 		header.Set(HeaderContentType, mimeType)

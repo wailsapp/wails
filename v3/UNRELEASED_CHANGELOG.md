@@ -17,20 +17,19 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Link the 404 page to matching Wails v2 documentation pages on v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6366) by @taliesin-ai
-- Move the v2 documentation site to v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6365) by @taliesin-ai
-- Serve v3 documentation from wails.io and v2 documentation from v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6364) by @taliesin-ai
-- Update v3.0.0 release notes and correct the security advisory claim in [PR](https://github.com/wailsapp/wails/pull/6363) by @taliesin-ai
+- Improve asset server performance by formatting content lengths without fmt in [PR](https://github.com/wailsapp/wails/pull/6393) by @taliesin-ai
+- Reduce memory copying when reading desktop file explorer metadata in [PR](https://github.com/wailsapp/wails/pull/6391) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
-- Preserve request bodies on Windows when WebView2 omits the Content-Length header in [PR](https://github.com/wailsapp/wails/pull/6326) by @strraaa
-- Fix data race in event hook emission by snapshotting hooks under lock in [PR](https://github.com/wailsapp/wails/pull/6276) by @DevLumuz
-- Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
-- Run changelog evidence check in the weekly release workflow in [PR](https://github.com/wailsapp/wails/pull/6374) by @taliesin-ai
-- Fix release changelog evidence check to map runs to squash-merge commits in [PR](https://github.com/wailsapp/wails/pull/6373) by @taliesin-ai
-- Fix Linux dark mode detection returning light on a dark desktop until the colour scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend. Both backends now share one implementation, backed by the `org.freedesktop.appearance` portal namespace (#6072)
-- `Window.SetZoom` no longer raises factors below 1.0 to 1.0 on framed windows (Windows, macOS, Linux): WebView2 `ZoomFactor`, WKWebView `magnification` and WebKitGTK's zoom level accept any positive value, and the `Zoom` window option already passed such values through. Frameless windows keep the 1.0 floor because their drag and resize regions are not adjusted for zoom ([#4590](https://github.com/wailsapp/wails/issues/4590)); non-positive, NaN and Inf factors are now ignored instead of being raised to 1.0 — by @APshenkin
+- Release removed ring queue references in the asset server to avoid memory leaks in [PR](https://github.com/wailsapp/wails/pull/6397) by @taliesin-ai
+- Release consumed content-sniffer buffers in the asset server to reduce memory use in [PR](https://github.com/wailsapp/wails/pull/6396) by @taliesin-ai
+- Recognize mixed-case asset file extensions when serving assets in [PR](https://github.com/wailsapp/wails/pull/6395) by @taliesin-ai
+- Correctly detect content type in asset server without retaining filenames in [PR](https://github.com/wailsapp/wails/pull/6394) by @taliesin-ai
+- Fall back to a default when a desktop entry has no command in [PR](https://github.com/wailsapp/wails/pull/6392) by @taliesin-ai
+- Stop the liquid-glass example from showing a dialog before the app starts on non-macOS in [PR](https://github.com/wailsapp/wails/pull/6389) by @taliesin-ai
+- Keep window size constraints when fullscreen starts from a constrained size on Windows in [PR](https://github.com/wailsapp/wails/pull/6387) by @taliesin-ai
+- Fix dialogs called before Run blocking forever instead of returning in [PR](https://github.com/wailsapp/wails/pull/6390) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
