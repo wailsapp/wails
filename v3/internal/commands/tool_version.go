@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
+	"math/big"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/github"
@@ -16,37 +16,19 @@ type ToolVersionOptions struct {
 	Prerelease bool   `name:"prerelease" description:"Bump prerelease version (e.g., alpha.5 to alpha.6)"`
 }
 
-// bumpPrerelease increments the numeric part of a prerelease string
-// For example, "alpha.5" becomes "alpha.6"
+// bumpPrerelease increments the final numeric prerelease identifier.
 func bumpPrerelease(prerelease string) string {
-	// If prerelease is empty, return it as is
-	if prerelease == "" {
-		return prerelease
-	}
-
-	// Split the prerelease string by dots
 	parts := strings.Split(prerelease, ".")
-
-	// If there's only one part (e.g., "alpha"), return it as is
-	if len(parts) == 1 {
-		return prerelease
-	}
-
-	// Try to parse the last part as a number
 	lastPart := parts[len(parts)-1]
-	num, err := strconv.Atoi(lastPart)
-	if err != nil {
-		// If the last part is not a number, return the prerelease as is
+	if lastPart == "" || strings.Trim(lastPart, "0123456789") != "" {
 		return prerelease
 	}
 
-	// Increment the number
-	num++
-
-	// Replace the last part with the incremented number
-	parts[len(parts)-1] = strconv.Itoa(num)
-
-	// Join the parts back together
+	// Prerelease identifiers have no machine-integer size limit.
+	var num big.Int
+	num.SetString(lastPart, 10)
+	num.Add(&num, big.NewInt(1))
+	parts[len(parts)-1] = num.String()
 	return strings.Join(parts, ".")
 }
 

@@ -229,3 +229,25 @@ func TestToolVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestBumpPrerelease(t *testing.T) {
+	cases := []struct{ input, want string }{
+		{"", ""},
+		{"alpha", "alpha"},
+		{"0", "1"},
+		{"9", "10"},
+		{"alpha.5", "alpha.6"},
+		{"alpha.9beta", "alpha.9beta"},
+		{"alpha.-1", "alpha.-1"},
+		{"alpha.9223372036854775807", "alpha.9223372036854775808"},
+		{"alpha.18446744073709551616", "alpha.18446744073709551617"},
+		{"999999999999999999999999999999", "1000000000000000000000000000000"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.input, func(t *testing.T) {
+			if got := bumpPrerelease(tc.input); got != tc.want {
+				t.Errorf("bumpPrerelease(%q)=%q, want %q", tc.input, got, tc.want)
+			}
+		})
+	}
+}
