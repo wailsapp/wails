@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -70,7 +71,7 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 			desiredVersion, err = github.GetLatestPreRelease()
 		} else {
 			desiredVersion, err = github.GetLatestStableRelease()
-			if err != nil {
+			if errors.Is(err, github.ErrNoStableRelease) {
 				pterm.Println("")
 				pterm.Println("No release found for this major version. To update to the newest build (including nightlies), run:")
 				pterm.Println("   wails3 update cli -pre")
