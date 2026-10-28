@@ -20,6 +20,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix dialogs called before Run blocking forever instead of returning in [PR](https://github.com/wailsapp/wails/pull/6390) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
