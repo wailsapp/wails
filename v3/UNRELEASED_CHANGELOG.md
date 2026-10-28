@@ -41,6 +41,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep shell command chains out of the implicit Go build cache in [PR](https://github.com/wailsapp/wails/pull/6493) by @taliesin-ai
 - Fix notification category maps failing to load when saved data is null in [PR](https://github.com/wailsapp/wails/pull/6491) by @taliesin-ai
 - Show diagnostics from failed variable shell commands in [PR](https://github.com/wailsapp/wails/pull/6492) by @taliesin-ai
 - Fix wake template matching when multiple equality candidates exist in [PR](https://github.com/wailsapp/wails/pull/6489) by @taliesin-ai
