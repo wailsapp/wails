@@ -38,6 +38,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve existing DMG files when packaging builds fail in [PR](https://github.com/wailsapp/wails/pull/6476) by @taliesin-ai
 - Replace symlinks with generated regular files in bindings output in [PR](https://github.com/wailsapp/wails/pull/6474) by @taliesin-ai
 - Preserve literal percent signs in Linux explorer commands in [PR](https://github.com/wailsapp/wails/pull/6470) by @taliesin-ai
 - Align precondition and task command directories so they resolve consistently in [PR](https://github.com/wailsapp/wails/pull/6471) by @taliesin-ai
