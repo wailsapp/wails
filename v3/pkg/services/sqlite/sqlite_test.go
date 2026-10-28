@@ -1,10 +1,65 @@
 package sqlite
 
 import (
+	"context"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 )
+
+func TestQueryReportsRowIterationError(t *testing.T) {
+	for _, prepared := range []bool{false, true} {
+		name := "direct"
+		if prepared {
+			name = "prepared"
+		}
+		t.Run(name, func(t *testing.T) {
+			service := New()
+			if err := service.Open(); err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = service.Close() })
+			const query = "SELECT 1 AS value UNION ALL SELECT abs(-9223372036854775808)"
+			var rows Rows
+			var err error
+			if prepared {
+				stmt, prepareErr := service.Prepare(query)
+				if prepareErr != nil {
+					t.Fatal(prepareErr)
+				}
+				defer stmt.Close()
+				rows, err = service.QueryPrepared(context.Background(), stmt)
+			} else {
+				rows, err = service.Query(query)
+			}
+			if err == nil || !strings.Contains(err.Error(), "integer overflow") {
+				t.Errorf("query error=%v, want integer overflow", err)
+			}
+			if len(rows) != 0 {
+				t.Errorf("failed query returned partial rows as success: %v", rows)
+			}
+		})
+	}
+}
+
+func TestParseRowsCancellation(t *testing.T) {
+	service := New()
+	if err := service.Open(); err != nil {
+		t.Fatal(err)
+	}
+	defer service.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	rows, err := service.conn.QueryContext(ctx, "SELECT 1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cancel()
+	if result, err := parseRows(ctx, rows); err != nil || len(result) != 0 {
+		t.Errorf("cancelled query result=%v, error=%v", result, err)
+	}
+}
 
 func TestPrepareConcurrent(t *testing.T) {
 	s := New()
