@@ -140,7 +140,11 @@ func (t *TemplateDir) createDirs(targetDir string, data any) error {
 
 func (t *TemplateDir) processTemplates(targetDir string, data interface{}) error {
 	for _, srcPath := range t.templateFiles {
-		tmpl, err := template.ParseFS(t.fs, srcPath)
+		content, err := fs.ReadFile(t.fs, srcPath)
+		if err != nil {
+			return err
+		}
+		tmpl, err := template.New(filepath.Base(srcPath)).Parse(string(content))
 		if err != nil {
 			return err
 		}
