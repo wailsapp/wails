@@ -3,6 +3,7 @@ package wake
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,23 +40,25 @@ tasks:
       - echo local-only > local.out
 `), 0644))
 
+	// cmd's echo writes a trailing space before CRLF on Windows, so compare
+	// trimmed output instead of exact bytes.
 	// Overridden task: local cmds replace base cmds.
 	require.NoError(t, Execute("greet", ExecuteOptions{Dir: dir, Silent: true}))
 	got, err := os.ReadFile(filepath.Join(dir, "greet.out"))
 	require.NoError(t, err)
-	require.Equal(t, "overridden\n", string(got))
+	require.Equal(t, "overridden", strings.TrimSpace(string(got)))
 
 	// Local-only task is reachable through the merged taskfile.
 	require.NoError(t, Execute("local-only", ExecuteOptions{Dir: dir, Silent: true}))
 	got, err = os.ReadFile(filepath.Join(dir, "local.out"))
 	require.NoError(t, err)
-	require.Equal(t, "local-only\n", string(got))
+	require.Equal(t, "local-only", strings.TrimSpace(string(got)))
 
 	// Untouched base-only task still runs.
 	require.NoError(t, Execute("base-only", ExecuteOptions{Dir: dir, Silent: true}))
 	got, err = os.ReadFile(filepath.Join(dir, "base.out"))
 	require.NoError(t, err)
-	require.Equal(t, "base-only\n", string(got))
+	require.Equal(t, "base-only", strings.TrimSpace(string(got)))
 }
 
 // TestOverridesDisabledOptOut verifies WAILS_NO_OVERRIDES=true skips local
@@ -89,7 +92,7 @@ tasks:
 	require.NoError(t, Execute("greet", ExecuteOptions{Dir: dir, Silent: true}))
 	got, err := os.ReadFile(filepath.Join(dir, "greet.out"))
 	require.NoError(t, err)
-	require.Equal(t, "base\n", string(got))
+	require.Equal(t, "base", strings.TrimSpace(string(got)))
 
 	// Local-only task is not present, so executing it fails.
 	require.Error(t, Execute("local-only", ExecuteOptions{Dir: dir, Silent: true}))
