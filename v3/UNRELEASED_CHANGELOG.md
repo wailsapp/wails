@@ -20,6 +20,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `Browser.OpenURL` doing nothing on Android and iOS; it now opens the URL through the native bridge (#6324)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
