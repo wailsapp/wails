@@ -84,6 +84,7 @@ extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
+extern gboolean handleDecidePolicy(WebKitWebView*, WebKitPolicyDecision*, WebKitPolicyDecisionType, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
@@ -121,6 +122,14 @@ static int is_user_media_for_audio(WebKitPermissionRequest *request) {
 
 static int is_user_media_for_video(WebKitPermissionRequest *request) {
 	return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+// The URL a navigation or new-window policy decision is asking to load.
+static const char* navigation_policy_decision_uri(WebKitPolicyDecision *decision) {
+	WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+	WebKitURIRequest *request = action != NULL ? webkit_navigation_action_get_request(action) : NULL;
+	const char *uri = request != NULL ? webkit_uri_request_get_uri(request) : NULL;
+	return uri != NULL ? uri : "";
 }
 
 static void* new_message_dialog(GtkWindow *parent, const gchar *msg, int dialogType, bool hasButtons) {
@@ -1883,6 +1892,30 @@ func handlePermissionRequest(webview *C.WebKitWebView, request *C.WebKitPermissi
 	return C.gboolean(1)
 }
 
+//export handleDecidePolicy
+func handleDecidePolicy(webview *C.WebKitWebView, decision *C.WebKitPolicyDecision, decisionType C.WebKitPolicyDecisionType, data C.uintptr_t) C.gboolean {
+	// Only connected for windows with an OnBeforeNavigate. Response decisions
+	// (what to do with a loaded resource) are left to WebKit.
+	if decisionType != C.WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION &&
+		decisionType != C.WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION {
+		return C.gboolean(0)
+	}
+	request := NavigationRequest{
+		URL: C.GoString(C.navigation_policy_decision_uri(decision)),
+		// WebKitGTK does not say which frame a navigation targets, so every
+		// one is treated as the main frame: a policy that keeps the main
+		// frame on the app's origin then refuses off-origin iframes too,
+		// rather than letting main-frame navigations through as iframes.
+		IsMainFrame: true,
+	}
+	if decideNavigation(uint(data), request) {
+		C.webkit_policy_decision_use(decision)
+	} else {
+		C.webkit_policy_decision_ignore(decision)
+	}
+	return C.gboolean(1)
+}
+
 //export handleLoadChanged
 func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
@@ -1913,6 +1946,9 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
+	if w.parent.interceptsNavigation() {
+		C.signal_connect(wv, c.String("decide-policy"), C.handleDecidePolicy, winID)
+	}
 	C.signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), C.handleConfigureEvent, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())

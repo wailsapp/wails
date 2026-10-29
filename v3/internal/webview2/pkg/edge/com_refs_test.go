@@ -38,7 +38,9 @@ func abandonWithHostCallbacks() (comAddr, weak.Pointer[hostWindow]) {
 	e.MessageCallback = func(string, *ICoreWebView2, *ICoreWebView2WebMessageReceivedEventArgs) { w.events++ }
 	e.MessageWithAdditionalObjectsCallback = e.MessageCallback
 	e.WebResourceRequestedCallback = func(*ICoreWebView2WebResourceRequest, *ICoreWebView2WebResourceRequestedEventArgs) { w.events++ }
-	e.NavigationStartingCallback = func(*ICoreWebView2) { w.events++ }
+	e.NavigationStartingCallback = func(*ICoreWebView2, *ICoreWebView2NavigationStartingEventArgs) { w.events++ }
+	e.FrameNavigationStartingCallback = func(*ICoreWebView2, *ICoreWebView2NavigationStartingEventArgs) { w.events++ }
+	e.NewWindowRequestedCallback = func(*ICoreWebView2, *ICoreWebView2NewWindowRequestedEventArgs) { w.events++ }
 	e.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { w.events++ }
 	e.ProcessFailedCallback = func(*ICoreWebView2, *ICoreWebView2ProcessFailedEventArgs) { w.events++ }
 	e.ContainsFullScreenElementChangedCallback = func(*ICoreWebView2, *ICoreWebView2ContainsFullScreenElementChangedEventArgs) { w.events++ }

@@ -1573,6 +1573,9 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
+	if w.parent.interceptsNavigation() {
+		C.signal_connect(wv, c.String("decide-policy"), C.handleDecidePolicy, winID)
+	}
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1666,6 +1669,30 @@ func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionReq
 		C.webkit_permission_request_allow(request)
 	} else {
 		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
+}
+
+//export handleDecidePolicy
+func handleDecidePolicy(wv *C.WebKitWebView, decision *C.WebKitPolicyDecision, decisionType C.WebKitPolicyDecisionType, data C.uintptr_t) C.gboolean {
+	// Only connected for windows with an OnBeforeNavigate. Response decisions
+	// (what to do with a loaded resource) are left to WebKit.
+	if decisionType != C.WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION &&
+		decisionType != C.WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION {
+		return C.gboolean(0)
+	}
+	request := NavigationRequest{
+		URL: C.GoString(C.navigation_policy_decision_uri(decision)),
+		// WebKitGTK does not say which frame a navigation targets, so every
+		// one is treated as the main frame: a policy that keeps the main
+		// frame on the app's origin then refuses off-origin iframes too,
+		// rather than letting main-frame navigations through as iframes.
+		IsMainFrame: true,
+	}
+	if decideNavigation(uint(data), request) {
+		C.webkit_policy_decision_use(decision)
+	} else {
+		C.webkit_policy_decision_ignore(decision)
 	}
 	return C.gboolean(1)
 }
