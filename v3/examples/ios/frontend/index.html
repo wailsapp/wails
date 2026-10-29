@@ -34,6 +34,11 @@
           <!-- Screen 2: Go Runtime -->
           <div class="p-mobile-tabs--content" id="screen-go">
             <div class="input-box">
+              <button class="p-btn p-prim-col" onclick="selectNativeTab(0)">Go to Tab 1</button>
+              <button class="p-btn" onclick="setNativeTabsEnabled(false)">Disable Native Tabs</button>
+              <button class="p-btn" onclick="setNativeTabsEnabled(true)">Enable Native Tabs</button>
+            </div>
+            <div class="input-box">
               <label><input type="checkbox" id="goScrollEnabled" checked onchange="setGoToggle('ios:setScrollEnabled', this.checked)"> Scroll Enabled (Go)</label>
             </div>
             <div class="input-box">
