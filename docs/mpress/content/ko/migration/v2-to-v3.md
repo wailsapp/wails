@@ -677,7 +677,7 @@ wails3 generate bindings
 - [문서](/quick-start/why-wails/)
 - [Discord 커뮤니티](https://discord.gg/JDdSxwjhGf)
 - [GitHub 이슈](https://github.com/wailsapp/wails/issues)
-- [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+- [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 ### 자주 묻는 질문
 
@@ -713,7 +713,7 @@ v3 아키텍처를 이해하세요.
 📖 예제
 완전한 v3 예제를 살펴보세요.
 
-[예제 보기 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+[예제 보기 →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 @end
 

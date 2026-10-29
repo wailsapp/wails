@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
+git clone --branch master https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,7 +228,7 @@ go test ./... -race
 
 ## 문서 작업
 
-문서 기여자는 Wails CLI 또는 데스크톱 빌드 종속성을 설치하지 않고도 M-Press를 사용할 수 있습니다. 고정된 버전의 실행 파일 다운로드, 설치, 실시간 미리 보기, 검증 및 릴리스 브랜치 PR 워크플로에 관한 내용은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요.
+문서 기여자는 Wails CLI 또는 데스크톱 빌드 종속성을 설치하지 않고도 M-Press를 사용할 수 있습니다. 고정된 버전의 실행 파일 다운로드, 설치, 실시간 미리 보기, 검증 및 `master` 브랜치 PR 워크플로에 관한 내용은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요.
 
 영어 Markdown은 `docs/mpress/content/`에 있으며, 번역은 언어별 디렉터리에 있습니다. 저장소 루트에서 `mpress dev`를 실행하면 `http://127.0.0.1:3000`에서 미리 보기가 제공됩니다. 가이드의 검증 명령을 실행하기 전에 Ctrl+C로 미리 보기를 중지하세요.
 

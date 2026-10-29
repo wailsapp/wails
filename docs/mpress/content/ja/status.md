@@ -34,4 +34,4 @@ v3.0.0 の互換性保証は、デスクトップアプリケーションを対�
 
 ## フィードバックと更新情報
 
-このロードマップは、コミュニティからのフィードバックやプロジェクトの優先事項に応じて変更される場合があります。進捗や方向性の変更を反映するため、定期的に更新します。再現可能な問題は Issue として報告し、新機能は [WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) の PR を通じて提案してください。
+このロードマップは、コミュニティからのフィードバックやプロジェクトの優先事項に応じて変更される場合があります。進捗や方向性の変更を反映するため、定期的に更新します。再現可能な問題は Issue として報告し、新機能は [WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) の PR を通じて提案してください。

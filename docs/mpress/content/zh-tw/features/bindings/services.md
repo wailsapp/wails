@@ -809,4 +809,4 @@ func main() {
 
 ---
 
-<strong>有疑問嗎？</strong>歡迎到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[服務範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+<strong>有疑問嗎？</strong>歡迎到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[服務範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

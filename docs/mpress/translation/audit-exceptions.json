@@ -328,8 +328,8 @@
     "file": "concepts/build-system.md",
     "segment": "b0129-text-01",
     "code": "untranslated",
-    "sourceSHA256": "eddf81084fca93658ab5c9e604016fb4598e445cca1c8d8e8b3e3abfe7b24a06",
-    "targetSHA256": "37a6b8f958d1998ff831ca4d0498ba3986ed40a68da3696a14caad1e29a63c6c",
+    "sourceSHA256": "0a189dd849eceb67644d908e025f1619673d14d2f79384aaf50a5759eee32f6d",
+    "targetSHA256": "d3f81154f06894a151065b0d2ae3499cfc01835ca33e0bf60f6bca01f27033e8",
     "reason": "Reviewed unchanged text: *UPX (optional):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -346,8 +346,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0084-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "2b5e21a1899706da8c480daab823c8df4ad51c26015419bb8237c742fc6ee507",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "4fd3de035b79f56b24b1db4607c9c45223ee55afcaaee74352a7eb81c326c0fb",
     "reason": "Reviewed unchanged text: *Frontend (TypeScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -355,8 +355,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0085-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "2b5e21a1899706da8c480daab823c8df4ad51c26015419bb8237c742fc6ee507",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "4fd3de035b79f56b24b1db4607c9c45223ee55afcaaee74352a7eb81c326c0fb",
     "reason": "Reviewed unchanged text: *Frontend (JavaScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -364,8 +364,8 @@
     "file": "features/dialogs/custom.md",
     "segment": "b0011-text-01",
     "code": "untranslated",
-    "sourceSHA256": "3a205a5b1f4618e930fbaffbef6fa8fcffac20ba86619efee390f054d2a018ed",
-    "targetSHA256": "8f99e37f80a4b9648b3fa5dc549cca5aa8fb32c8490d473b4e7bf090fb9e1756",
+    "sourceSHA256": "2f9cd69b371d0d8f3ac83ca44e8010be0eef14902f93afe231a08ce46f462a9a",
+    "targetSHA256": "d42a827d3651f70f39fae61386211d0c0a0569823b2fbc5166f4ae13e7960999",
     "reason": "Reviewed unchanged text: *Frontend (HTML/JS):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -373,8 +373,8 @@
     "file": "features/dialogs/file.md",
     "segment": "b0066-text-01",
     "code": "untranslated",
-    "sourceSHA256": "78b585890f6893fa7fe444a7af0ccfd6b5abab0476b093fe9f95f3bcc9541c93",
-    "targetSHA256": "7f5c7b4d187bfce480c7d73d3176aa5b45cde42bb210343cf5c592d605aa489e",
+    "sourceSHA256": "8e80653fec8d1c007d58bdfc48fc3e0b43cb27aad7fb0d127146dbebe7aa3b57",
+    "targetSHA256": "a967990289ef10911c9e3bd27312e9f3db31b3b55c4cc1677ecc7f230c903fa1",
     "reason": "Reviewed unchanged text: Native NSOpenPanel/NSSavePanel. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -391,8 +391,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "5d54d4f48d54562e4c41c3f5c6333f841163d2eca0bc15877dc1cf27293acea2",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "810a9cdd4fd36e411c3e8efc773a473ad26bcfa51ccffb42b46b7bc1ad3464cc",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -400,8 +400,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "5d54d4f48d54562e4c41c3f5c6333f841163d2eca0bc15877dc1cf27293acea2",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "810a9cdd4fd36e411c3e8efc773a473ad26bcfa51ccffb42b46b7bc1ad3464cc",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -526,8 +526,8 @@
     "file": "guides/distribution/custom-protocols.md",
     "segment": "b0061-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "5d90ca0d0f577b02269fb9b65a19f28a34ca66ae86440014f27eab4bde384768",
-    "targetSHA256": "c2e99b14b19b0e866ee3884b2668cfb7c21a8c25229cb3f9385083868b6ec16a",
+    "sourceSHA256": "1d7969f55da01c9d805757bf74eb19b48a2c91563924dda20731d190a3887911",
+    "targetSHA256": "c0296e01ced5ab9f408c098ea5d956f8b268ae7b069ad14441530e94a4183f1c",
     "reason": "Reviewed unchanged technical text: Universal Links. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -643,8 +643,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0094-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "7b2986e3eabebefcc24266e63c05c7361aa052d2680076a0dc4d10999b497cfc",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "523a3b6149b951b9616c21af0ace305b430111662f84074200507e34549e770e",
     "reason": "Reviewed unchanged text: *v2 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -652,8 +652,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0095-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "7b2986e3eabebefcc24266e63c05c7361aa052d2680076a0dc4d10999b497cfc",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "523a3b6149b951b9616c21af0ace305b430111662f84074200507e34549e770e",
     "reason": "Reviewed unchanged text: *v3 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -1075,8 +1075,8 @@
     "file": "concepts/lifecycle.md",
     "segment": "b0085-text-01",
     "code": "requirement-language",
-    "sourceSHA256": "7ccfeaeab2e18165a66bb1d07e5539abeb6d1f8d02df1729984d477de47b904f",
-    "targetSHA256": "c513908e7a23b7891465a86a140c3d3560138b8f66dad1e0dff51f8200d2a770",
+    "sourceSHA256": "df3541ec97b9fe48655f4cc0213a97733c43b950db35a72bae05ef24d1e77872",
+    "targetSHA256": "518499430b9fbbdd9b73da0a96833eeff6f6e7df4d3bc4ccec074b753a7ecdde",
     "reason": "French sans possibilité de l’annuler explicitly preserves the inability to cancel."
   },
   {
@@ -1111,8 +1111,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "7ba96ba68bf7a584fe2dbf78d1386cf2b4b9ece5d8f5011a1cb6628b03131b63",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "0a0f65586a57a699acd566bdc32c9f6112a1ba47d29f307cd1ede48c887f7787",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1120,8 +1120,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "7ba96ba68bf7a584fe2dbf78d1386cf2b4b9ece5d8f5011a1cb6628b03131b63",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "0a0f65586a57a699acd566bdc32c9f6112a1ba47d29f307cd1ede48c887f7787",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1129,8 +1129,8 @@
     "file": "features/windows/basics.md",
     "segment": "b0077-text-01",
     "code": "requirement-language",
-    "sourceSHA256": "78c85b807f5d9ffd0fa1906301182b4c1a52323208a3fac656623a3a99f25728",
-    "targetSHA256": "3a3a52836de6a1dac731598fe89d70cd2f98611f6cb36e5c13a247ad01dc3730",
+    "sourceSHA256": "0f2e0782f07920b18603707f21c73726f560335260e7b07b87099d94d66d3579",
+    "targetSHA256": "c6863601c50783e0c2564034a2649cc2a4987678fc602c4d2ec4718d93b0585f",
     "reason": "French sans possibilité d’annulation preserves the non-cancellable listener and contrasts it with the cancellable hook."
   },
   {
@@ -1219,8 +1219,8 @@
     "file": "guides/distribution/custom-protocols.md",
     "segment": "b0063-text-01",
     "code": "requirement-language",
-    "sourceSHA256": "5d90ca0d0f577b02269fb9b65a19f28a34ca66ae86440014f27eab4bde384768",
-    "targetSHA256": "4a050adfd66f0f62a8fc9654be4606aa383405dc507d9fdc17bc6b074c7b9a0b",
+    "sourceSHA256": "1d7969f55da01c9d805757bf74eb19b48a2c91563924dda20731d190a3887911",
+    "targetSHA256": "1889e6ea04eff1d50dbb10665d6defa4f7f5647ca12819845cfc1935991ba69e",
     "reason": "French doit être signée, ne pourront pas, and assurez-vous preserve the signing requirement, inability of unsigned builds to open links, and required preparation."
   },
   {
@@ -1705,8 +1705,8 @@
     "file": "concepts/build-system.md",
     "segment": "b0047-text-01",
     "code": "untranslated",
-    "sourceSHA256": "eddf81084fca93658ab5c9e604016fb4598e445cca1c8d8e8b3e3abfe7b24a06",
-    "targetSHA256": "414ec0c0183ab889b13a9eb49f10a31fceee7e3a9bcc1e67ba0053f6a0c7065e",
+    "sourceSHA256": "0a189dd849eceb67644d908e025f1619673d14d2f79384aaf50a5759eee32f6d",
+    "targetSHA256": "1dc794782893737ef5eb464dc3c4ddabfc98a6d3037f0effd726f372615ba017",
     "reason": "Reviewed unchanged name or technical wording: Windows: `myapp.exe` (~15MB). Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
   },
   {
@@ -1714,8 +1714,8 @@
     "file": "concepts/build-system.md",
     "segment": "b0048-text-01",
     "code": "untranslated",
-    "sourceSHA256": "eddf81084fca93658ab5c9e604016fb4598e445cca1c8d8e8b3e3abfe7b24a06",
-    "targetSHA256": "414ec0c0183ab889b13a9eb49f10a31fceee7e3a9bcc1e67ba0053f6a0c7065e",
+    "sourceSHA256": "0a189dd849eceb67644d908e025f1619673d14d2f79384aaf50a5759eee32f6d",
+    "targetSHA256": "1dc794782893737ef5eb464dc3c4ddabfc98a6d3037f0effd726f372615ba017",
     "reason": "Reviewed unchanged name or technical wording: macOS: `myapp.app` (~15MB). Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
   },
   {
@@ -1723,8 +1723,8 @@
     "file": "concepts/build-system.md",
     "segment": "b0049-text-01",
     "code": "untranslated",
-    "sourceSHA256": "eddf81084fca93658ab5c9e604016fb4598e445cca1c8d8e8b3e3abfe7b24a06",
-    "targetSHA256": "414ec0c0183ab889b13a9eb49f10a31fceee7e3a9bcc1e67ba0053f6a0c7065e",
+    "sourceSHA256": "0a189dd849eceb67644d908e025f1619673d14d2f79384aaf50a5759eee32f6d",
+    "targetSHA256": "1dc794782893737ef5eb464dc3c4ddabfc98a6d3037f0effd726f372615ba017",
     "reason": "Reviewed unchanged name or technical wording: Linux: `myapp` (~15MB). Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
   },
   {
@@ -1759,8 +1759,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0084-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "0e9de0346b43228b6469875a523b41186e4a5b5d37a35108111d39b16cda515f",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "bc080cfefff69dcc2321c1d3004703d9ba1990a989f1271e374017d977445e55",
     "reason": "Reviewed unchanged text: *Frontend (TypeScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1768,8 +1768,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0085-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "0e9de0346b43228b6469875a523b41186e4a5b5d37a35108111d39b16cda515f",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "bc080cfefff69dcc2321c1d3004703d9ba1990a989f1271e374017d977445e55",
     "reason": "Reviewed unchanged text: *Frontend (JavaScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1777,8 +1777,8 @@
     "file": "features/dialogs/custom.md",
     "segment": "b0011-text-01",
     "code": "untranslated",
-    "sourceSHA256": "3a205a5b1f4618e930fbaffbef6fa8fcffac20ba86619efee390f054d2a018ed",
-    "targetSHA256": "a718f67f01a4e0fbe486bdd25b577bd9cafe1f7fe478ff1d277a0cdd8d10115c",
+    "sourceSHA256": "2f9cd69b371d0d8f3ac83ca44e8010be0eef14902f93afe231a08ce46f462a9a",
+    "targetSHA256": "98b74d8ddd661c995d78b5da2cfc28826c8e5c49e8eda7e48bcbe2d256ba880c",
     "reason": "Reviewed unchanged text: *Frontend (HTML/JS):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1786,8 +1786,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "182e804362d59be70e071ab3ce7d25e7d16cdba03c3146a68139670d9b4c694d",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "f91252f6686f33fee94b4039cd6909c336f84512ebb3f36dac607262eff72daa",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1795,8 +1795,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "182e804362d59be70e071ab3ce7d25e7d16cdba03c3146a68139670d9b4c694d",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "f91252f6686f33fee94b4039cd6909c336f84512ebb3f36dac607262eff72daa",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1912,8 +1912,8 @@
     "file": "guides/distribution/custom-protocols.md",
     "segment": "b0061-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "5d90ca0d0f577b02269fb9b65a19f28a34ca66ae86440014f27eab4bde384768",
-    "targetSHA256": "48c8f9a876ffddf3ef2284e71b1d0e525b5ff028871fa3674dde7b6e43bd7d95",
+    "sourceSHA256": "1d7969f55da01c9d805757bf74eb19b48a2c91563924dda20731d190a3887911",
+    "targetSHA256": "0e7b2972aeb97a15be43243c85426cca9f4fe42f9ffb8602d93e8a583df42358",
     "reason": "Reviewed unchanged technical text: Universal Links. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -2047,8 +2047,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0094-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "067f96542b790de389dec84e716180a007effe2d2a009fbaf34b197d91e3d24b",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "9c5ab58d82502b239ae59d57f695597d86e38b2798a158a039fe1f35415ee73c",
     "reason": "Reviewed unchanged text: *v2 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -2056,8 +2056,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0095-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "067f96542b790de389dec84e716180a007effe2d2a009fbaf34b197d91e3d24b",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "9c5ab58d82502b239ae59d57f695597d86e38b2798a158a039fe1f35415ee73c",
     "reason": "Reviewed unchanged text: *v3 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -2506,8 +2506,8 @@
     "file": "guides/distribution/custom-protocols.md",
     "segment": "b0061-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "5d90ca0d0f577b02269fb9b65a19f28a34ca66ae86440014f27eab4bde384768",
-    "targetSHA256": "387e61235d631b20033f250e81f035f435a7b486d43f7945f4ab39a2c7146395",
+    "sourceSHA256": "1d7969f55da01c9d805757bf74eb19b48a2c91563924dda20731d190a3887911",
+    "targetSHA256": "a3f81b3836c50572797d1192c39164728a1bf8368d32c62298b65dc7ac4cc1bb",
     "reason": "Reviewed unchanged technical text: Universal Links. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -2668,8 +2668,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0153-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "681d43a8c0105a2492834a4e88d1b74359bf57b3261c4673dddea74648d95f63",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "18f4ccdc386d2c089e872be5dc5745f2ab8b72d850194b1980df7940b5d5183d",
     "reason": "Reviewed unchanged text: [GitHub Issues](https://github.com/wailsapp/wails/issues). Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3037,8 +3037,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "8397057312d2a5c4d1d3776b8230da6c344ba54bb4ba160857fdda6230a7519d",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "dc2f757130e1f7330172596ec01f0f3e66009444e13ec2a208348fe404c10a58",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3046,8 +3046,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "8397057312d2a5c4d1d3776b8230da6c344ba54bb4ba160857fdda6230a7519d",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "dc2f757130e1f7330172596ec01f0f3e66009444e13ec2a208348fe404c10a58",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3163,8 +3163,8 @@
     "file": "guides/distribution/custom-protocols.md",
     "segment": "b0061-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "5d90ca0d0f577b02269fb9b65a19f28a34ca66ae86440014f27eab4bde384768",
-    "targetSHA256": "a7a92d59b8c77ac3a1d2ec1d34fbebc6b81dfb9ef6d7fa61da4c47fc99ab6e4e",
+    "sourceSHA256": "1d7969f55da01c9d805757bf74eb19b48a2c91563924dda20731d190a3887911",
+    "targetSHA256": "ef09518ecdcaf1b3cf27b573c6e315cb93ca95358856d82673705c97bd35d733",
     "reason": "Reviewed unchanged technical text: Universal Links. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -3343,8 +3343,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0094-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "e39c690d2d2a33f57ebe0eb8f660afcc50d62b839f56dfac729f3bf67962e34d",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "1c616eefff27feb11ad7aa36fad9b37641fcd546ae215bf97df006d3e3d2987f",
     "reason": "Reviewed unchanged text: *v2 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3352,8 +3352,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0095-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "e39c690d2d2a33f57ebe0eb8f660afcc50d62b839f56dfac729f3bf67962e34d",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "1c616eefff27feb11ad7aa36fad9b37641fcd546ae215bf97df006d3e3d2987f",
     "reason": "Reviewed unchanged text: *v3 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3730,8 +3730,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0084-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "664126e12122307d6d6e4515675f661ec9d7030926e68b093c44a04d0c1f14ba",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "3268042814229744c241488e4edf7dd632216cd5c76ae5515ab2fda1979a0823",
     "reason": "Reviewed unchanged text: *Frontend (TypeScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3739,8 +3739,8 @@
     "file": "features/bindings/enums.md",
     "segment": "b0085-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f7e461b3466d78db77411ee21ccb7a2f9cf36efaedd40caa60e7178fdb6666e1",
-    "targetSHA256": "664126e12122307d6d6e4515675f661ec9d7030926e68b093c44a04d0c1f14ba",
+    "sourceSHA256": "a0745780193316551b8fc288c460a86f0fef9e7d919a1316b993b9ec7b368c69",
+    "targetSHA256": "3268042814229744c241488e4edf7dd632216cd5c76ae5515ab2fda1979a0823",
     "reason": "Reviewed unchanged text: *Frontend (JavaScript):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3748,8 +3748,8 @@
     "file": "features/dialogs/custom.md",
     "segment": "b0011-text-01",
     "code": "untranslated",
-    "sourceSHA256": "3a205a5b1f4618e930fbaffbef6fa8fcffac20ba86619efee390f054d2a018ed",
-    "targetSHA256": "a0967f253eb0ce49050a5b1f5ad2cc849ef59b5088e0e9889f2a6261fcf6de63",
+    "sourceSHA256": "2f9cd69b371d0d8f3ac83ca44e8010be0eef14902f93afe231a08ce46f462a9a",
+    "targetSHA256": "ff2ea1323cfa7fc1bb6588ba31133cdbdb22b8633d954a29374f0049521c9c81",
     "reason": "Reviewed unchanged text: *Frontend (HTML/JS):*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3757,8 +3757,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "44367bcccb026c45e29dc6cda67043bd5ba218ff25e5abadbfa80d7fa1b8fb28",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "63f159f9591727c08dc7a923020b23109eb12d54e05e70a4fe7446dd2b401ed5",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3766,8 +3766,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "44367bcccb026c45e29dc6cda67043bd5ba218ff25e5abadbfa80d7fa1b8fb28",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "63f159f9591727c08dc7a923020b23109eb12d54e05e70a4fe7446dd2b401ed5",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -3991,8 +3991,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0094-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "c36cab084e03090e408ed02127b717006ecceee549a95f90211791844319aea6",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "20a9fd19c0f6fc57fe8b8aa19f0fca822d09847f6b88cdbf88d25ee222aa99a9",
     "reason": "Reviewed unchanged text: *v2 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4000,8 +4000,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0095-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "c36cab084e03090e408ed02127b717006ecceee549a95f90211791844319aea6",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "20a9fd19c0f6fc57fe8b8aa19f0fca822d09847f6b88cdbf88d25ee222aa99a9",
     "reason": "Reviewed unchanged text: *v3 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4342,8 +4342,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0018-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "525b39994047cc9506a8c8c946346aa362c14018862860db756ace9e48f72533",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "12edb95f20353ba850474cd3319f78b2251ff2ab4576a2f18ba04bfd50ad1805",
     "reason": "Reviewed unchanged text: PNG, ICO. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -4351,8 +4351,8 @@
     "file": "features/menus/systray.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "75dc78f6704c6dbea5813b860f9416629cfdebfa82b5e774e9a93a44aee7534a",
-    "targetSHA256": "525b39994047cc9506a8c8c946346aa362c14018862860db756ace9e48f72533",
+    "sourceSHA256": "14cb383551de5938f781f33768fe6ffd75962bb0e0918b958772576c72693afa",
+    "targetSHA256": "12edb95f20353ba850474cd3319f78b2251ff2ab4576a2f18ba04bfd50ad1805",
     "reason": "Reviewed unchanged text: PNG, SVG. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -4567,8 +4567,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0094-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "d79836e923888959440eb59be17a52dc4d0e3b1632380d19e41af3189b4e3dfc",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "efc819734a140b71d420aa620735b8538d803a9b5c583e30826bfbe0ab871271",
     "reason": "Reviewed unchanged text: *v2 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4576,8 +4576,8 @@
     "file": "migration/v2-to-v3.md",
     "segment": "b0095-text-01",
     "code": "untranslated",
-    "sourceSHA256": "de55ea9b3effe99f9dc91fa5b2a480aea90c49b02de40f25cb500742fbc4acf6",
-    "targetSHA256": "d79836e923888959440eb59be17a52dc4d0e3b1632380d19e41af3189b4e3dfc",
+    "sourceSHA256": "afc3646ef9aaa7c8953ff8b3f6e00ad31fde12df8168b0fc5ffa38a78cb0233d",
+    "targetSHA256": "efc819734a140b71d420aa620735b8538d803a9b5c583e30826bfbe0ab871271",
     "reason": "Reviewed unchanged text: *v3 (wails.json):*. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -5422,8 +5422,8 @@
     "file": "whats-new.md",
     "segment": "b0024-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "13e745d43ee0e03f39966920860865af466e34335a11b2ff8ed8bb8a1eaa258d",
-    "targetSHA256": "99db9da71da6e00b72e81a00ac0d39c72f75638e0171b4b18927ff66f3732357",
+    "sourceSHA256": "f95ebe2027754bd6f4add2541af4c243eb939a253776d7e1efef2fe6e62ecc0e",
+    "targetSHA256": "480f9588ee85e4f99cdbcf07f2775f08fb29c950d30c68ab4fccf163507d6b60",
     "reason": "Reviewed unchanged text: Wails Markup Language (wml). This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -5512,8 +5512,8 @@
     "file": "whats-new.md",
     "segment": "b0024-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "13e745d43ee0e03f39966920860865af466e34335a11b2ff8ed8bb8a1eaa258d",
-    "targetSHA256": "7a376cda2e9c98fd604fe57279c9a02e083ae89cffa8fe2c3f0f23da766c4592",
+    "sourceSHA256": "f95ebe2027754bd6f4add2541af4c243eb939a253776d7e1efef2fe6e62ecc0e",
+    "targetSHA256": "8b5dadb7d55b2a2da6e28889b69d7727f43b37694824126e431f8ee9eb24065c",
     "reason": "Reviewed unchanged text: Wails Markup Language (wml). This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6061,8 +6061,8 @@
     "file": "concepts/build-system.md",
     "segment": "tab0001-label-002",
     "code": "untranslated",
-    "sourceSHA256": "eddf81084fca93658ab5c9e604016fb4598e445cca1c8d8e8b3e3abfe7b24a06",
-    "targetSHA256": "5300d0947ef1ad0ab4355b836ea0e342f88e816b4cdef357b74f7bb2752b599e",
+    "sourceSHA256": "0a189dd849eceb67644d908e025f1619673d14d2f79384aaf50a5759eee32f6d",
+    "targetSHA256": "e763b48de310963db11876913175978e3e82241a2d7badcf2f753f2748079234",
     "reason": "Reviewed unchanged text: Production (wails3 build). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6079,8 +6079,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0055-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "56c598586e4d5e020236a566206b93e871b1f39e70c6c76cde4097adc715009d",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "0d6d54a2e59df5a87d9bf9b9111a101113ec25b8836f94ad8562d1e1e5ee52c4",
     "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6088,8 +6088,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0002-label-004",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "a6b846a019f80726a0eaee3f30601d2f5860b08640301ed4b852bb66eeafdf9a",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "e05f4f0909f9b2d5a66ea1f7fb81e71c92b3890b1310dbb6d3b9bc5ec27df1c1",
     "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6097,8 +6097,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "a6b846a019f80726a0eaee3f30601d2f5860b08640301ed4b852bb66eeafdf9a",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "e05f4f0909f9b2d5a66ea1f7fb81e71c92b3890b1310dbb6d3b9bc5ec27df1c1",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6106,8 +6106,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-006",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "a6b846a019f80726a0eaee3f30601d2f5860b08640301ed4b852bb66eeafdf9a",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "e05f4f0909f9b2d5a66ea1f7fb81e71c92b3890b1310dbb6d3b9bc5ec27df1c1",
     "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6115,8 +6115,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6124,8 +6124,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6133,8 +6133,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6142,8 +6142,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6151,8 +6151,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6160,8 +6160,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6169,8 +6169,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "30b87ade45849a06797b75ed5411617521a20265f2a5824ce3a97fbee683853f",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "cee5110533fbd8ffde4528d53d68fa16bb5b9f57f7730ea6889b9f1e241405d9",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6313,8 +6313,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0002-label-004",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "ba850dc23d2c72ab3a126259512bb801eb79c37c1776087465905205cec19f29",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "95e6079d6f09717389bd27f4833f2306db394eed730890d732ca7a7c8d6143a0",
     "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6322,8 +6322,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "ba850dc23d2c72ab3a126259512bb801eb79c37c1776087465905205cec19f29",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "95e6079d6f09717389bd27f4833f2306db394eed730890d732ca7a7c8d6143a0",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6331,8 +6331,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-006",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "ba850dc23d2c72ab3a126259512bb801eb79c37c1776087465905205cec19f29",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "95e6079d6f09717389bd27f4833f2306db394eed730890d732ca7a7c8d6143a0",
     "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6340,8 +6340,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "de9a6fd372275c48a81ef7b81494572c3075d81e78e821c8498b28d4c1654515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "a704089c8bc0b3504f6e5efdef541591be370cb32ad6ea00a8f7168965ced5f3",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6349,8 +6349,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "de9a6fd372275c48a81ef7b81494572c3075d81e78e821c8498b28d4c1654515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "a704089c8bc0b3504f6e5efdef541591be370cb32ad6ea00a8f7168965ced5f3",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6358,8 +6358,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "de9a6fd372275c48a81ef7b81494572c3075d81e78e821c8498b28d4c1654515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "a704089c8bc0b3504f6e5efdef541591be370cb32ad6ea00a8f7168965ced5f3",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6367,8 +6367,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "de9a6fd372275c48a81ef7b81494572c3075d81e78e821c8498b28d4c1654515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "a704089c8bc0b3504f6e5efdef541591be370cb32ad6ea00a8f7168965ced5f3",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6376,8 +6376,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "de9a6fd372275c48a81ef7b81494572c3075d81e78e821c8498b28d4c1654515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "a704089c8bc0b3504f6e5efdef541591be370cb32ad6ea00a8f7168965ced5f3",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6529,8 +6529,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0002-label-004",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "684c8ea86998f8cb1a82348788e8a4a369af59639990182ea7b9c38873f06448",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "258a0469e768ae2e22f654ef71bf7f5af9c441f7728d1e447de8d554e6908646",
     "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6538,8 +6538,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "684c8ea86998f8cb1a82348788e8a4a369af59639990182ea7b9c38873f06448",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "258a0469e768ae2e22f654ef71bf7f5af9c441f7728d1e447de8d554e6908646",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6547,8 +6547,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-006",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "684c8ea86998f8cb1a82348788e8a4a369af59639990182ea7b9c38873f06448",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "258a0469e768ae2e22f654ef71bf7f5af9c441f7728d1e447de8d554e6908646",
     "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6556,8 +6556,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6565,8 +6565,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6574,8 +6574,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6583,8 +6583,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6592,8 +6592,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6601,8 +6601,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6610,8 +6610,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "65c78a2435c018364e6bbe36abf5ca00e0ae726b376291cfa64a3f551b484939",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "af13e14047181daa19041b7d5c186a1dbdc99cba520a9298ac16fd1b063acf87",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6736,8 +6736,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0002-label-004",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "2344595febd328aa3a12259eab55e15bf30d41991c52d934e8e90eaa5d7717d6",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "c7a35b05d74a6d1f395139999d654f9c172602f835ecfdfb3eb9b2c2b4d3b9f0",
     "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6745,8 +6745,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "2344595febd328aa3a12259eab55e15bf30d41991c52d934e8e90eaa5d7717d6",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "c7a35b05d74a6d1f395139999d654f9c172602f835ecfdfb3eb9b2c2b4d3b9f0",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6754,8 +6754,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-006",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "2344595febd328aa3a12259eab55e15bf30d41991c52d934e8e90eaa5d7717d6",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "c7a35b05d74a6d1f395139999d654f9c172602f835ecfdfb3eb9b2c2b4d3b9f0",
     "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6763,8 +6763,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6772,8 +6772,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6781,8 +6781,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6790,8 +6790,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6799,8 +6799,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6808,8 +6808,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6817,8 +6817,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "879b8f52d7ba246660347576dbbbdadbcb4bbb0ae5568cbb7203019954804d64",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b1218c140a9bc32fd78e8703001d7c141e5c220f00f78131bc79a618a06dc895",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6970,8 +6970,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0055-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "0b7d60525f6896c09cb234468f8bef9e0b01e64541252987760e0cfe5d05822b",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "57ff4470628f326abc585011636fd1a1faca1973187b8ff43b839d405b8a210b",
     "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6979,8 +6979,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "9057819ab8d34aeb9b07f8c03b7bf571532242bc29765ad33772a85a7de28b6e",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "51d076328b6a9f95bbfcb5e1d391d599927be018d26f25ed46f269d6cbab5f22",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6988,8 +6988,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -6997,8 +6997,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7006,8 +7006,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7015,8 +7015,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7024,8 +7024,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7033,8 +7033,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "ac53e3b0bdd2bd07e7e90adcd5e622560848959d8e88aa7e283bd2a002c40a20",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "b8b211829d7ecd7edfb8ec330a0c548ef034e1ed53821a703be2aa25dd430f4c",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7186,8 +7186,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0055-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "eb46847a9c44cb6e64486b416ab2066e9c4c306bd4e851f58ee024a17488955e",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "1ce541b29cd6524231dbe4bfebed18ac6a7ea3e3fd657c4d84790c0481a40eea",
     "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7195,8 +7195,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "684438826cf6f238b876cbfd3f8ffbffd255c34b185df6a35ef0296612e5e866",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "0f38defa1f1a5fc418d78b14f163773dc6cf1b3037886acb7a33d0ef95faed8e",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7204,8 +7204,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7213,8 +7213,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7222,8 +7222,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7231,8 +7231,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7240,8 +7240,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7249,8 +7249,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7258,8 +7258,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "884e63f4ec346adf5fc04319ca0c214f3b4c5b7034f1978efb91714aa88d4b07",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "fd342c11eb5d3d9601c8fa32a4da53b2cb09cb15619e84cd9ddb71ea984f9339",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7384,8 +7384,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0055-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "e8270f67556d8f2b68eab390d634403bd9077d27607aae73d70b2fc6545463b4",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "864864c6d3408799ac6a9db48b20976ecf6b8ba0f5b942019d0733994e5c8635",
     "reason": "Reviewed unchanged text: WebView2 app-region. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7393,8 +7393,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "494e36e14a9c481a921683b8abbd0e2210f132a2191a213fc9acc340efdbaa8a",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "1516bdd287496ed8900aeb5dc0e6d77564fc3b587e18969df715d79aefea7a87",
     "reason": "Reviewed unchanged text: Claude Code. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7402,8 +7402,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "11413b15b5d73898fbf170834959e7ccc9377d94a44dc062a92540be54706515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "0e58774b25df43489cd8ee0f3818a92a1e7928a20fef1da0eb67c7584fc748b1",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7411,8 +7411,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "11413b15b5d73898fbf170834959e7ccc9377d94a44dc062a92540be54706515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "0e58774b25df43489cd8ee0f3818a92a1e7928a20fef1da0eb67c7584fc748b1",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7420,8 +7420,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "11413b15b5d73898fbf170834959e7ccc9377d94a44dc062a92540be54706515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "0e58774b25df43489cd8ee0f3818a92a1e7928a20fef1da0eb67c7584fc748b1",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7429,8 +7429,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "11413b15b5d73898fbf170834959e7ccc9377d94a44dc062a92540be54706515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "0e58774b25df43489cd8ee0f3818a92a1e7928a20fef1da0eb67c7584fc748b1",
     "reason": "Reviewed unchanged text: Android SDK + NDK 26.3.x + JDK. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7438,8 +7438,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "11413b15b5d73898fbf170834959e7ccc9377d94a44dc062a92540be54706515",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "0e58774b25df43489cd8ee0f3818a92a1e7928a20fef1da0eb67c7584fc748b1",
     "reason": "Reviewed unchanged text: ✅ Storage Access Framework. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7564,8 +7564,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0055-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "c70c73010ae1526c0d94c39d9814f339672ee67e9cb72e3529e8928373a9c347",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "69643864211834702181a5029de4092e155834a5763912dd9c494821e33d132f",
     "reason": "Reviewed unchanged text: WebView2 app-region. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7573,8 +7573,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "b8cf8c62216eb9d96dbc72ed980b31c20517b784058d115a870ca840ef2337b6",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "97144e6786d850dab9ba6f53f5d46e8252ef1e01388418c6037645eb25c2b522",
     "reason": "Reviewed unchanged text: Claude Code. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
   },
   {
@@ -7582,8 +7582,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: Mobile Kitchen Sink — GitHub. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7591,8 +7591,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7600,8 +7600,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7609,8 +7609,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7618,8 +7618,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: Android SDK + NDK 26.3.x + JDK. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7627,8 +7627,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "f043cea73962b6641f2b1f6e6035ed1e016d7f1b5514c6ff1418c423061f4dad",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "8ec35670720772173a903fbec7e94dd61363f3141d01aa6114c963272e45e872",
     "reason": "Reviewed unchanged text: ✅ Storage Access Framework. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7771,8 +7771,8 @@
     "file": "features/autostart/basics.md",
     "segment": "tab0001-label-004",
     "code": "untranslated",
-    "sourceSHA256": "4a3ef31357315fb678ad542343ed3adaf1bcb24cddf7bdfb5429d14a2705f884",
-    "targetSHA256": "193f7e0ea57b62961d5b5341960942fbea7e64f1c0b3f82b9b6bdb46bfc36bec",
+    "sourceSHA256": "c6c6afc8a20cc9409ea84907533acce8ca640f45e454a9975eeb439273cf053e",
+    "targetSHA256": "3cc4bdc972ad29dd2c54c5783122ffdb0c81720c0c7ab0d4a3242f412e3e6d6f",
     "reason": "Reviewed unchanged text: iOS / Android / server. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7789,8 +7789,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0002-label-004",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "0329692c6fbf2b5515f973602904839c03e76390706a9fe0bbc918d8bf57936e",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "d343efbb0b60288522b28acb13463cbcbd840cd19b4d58c3dd87fd77e3e7b8c8",
     "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7798,8 +7798,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-005",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "0329692c6fbf2b5515f973602904839c03e76390706a9fe0bbc918d8bf57936e",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "d343efbb0b60288522b28acb13463cbcbd840cd19b4d58c3dd87fd77e3e7b8c8",
     "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7807,8 +7807,8 @@
     "file": "guides/mcp-service.md",
     "segment": "tab0003-label-006",
     "code": "untranslated",
-    "sourceSHA256": "cb97afde9b63631ee6e2bd60d9550c70ba839c1b64ff5ad9c656a485395f316f",
-    "targetSHA256": "0329692c6fbf2b5515f973602904839c03e76390706a9fe0bbc918d8bf57936e",
+    "sourceSHA256": "87fbfbb313c0a38d8b9afebe32fd8b21899b2a84596583b3c3775c72638cab2a",
+    "targetSHA256": "d343efbb0b60288522b28acb13463cbcbd840cd19b4d58c3dd87fd77e3e7b8c8",
     "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7816,8 +7816,8 @@
     "file": "guides/mobile/index.md",
     "segment": "a0002-title-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7825,8 +7825,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0023-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7834,8 +7834,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0026-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7843,8 +7843,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0029-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7852,8 +7852,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0045-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7861,8 +7861,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0048-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7870,8 +7870,8 @@
     "file": "guides/mobile/index.md",
     "segment": "b0075-cell-01",
     "code": "untranslated",
-    "sourceSHA256": "bd0717cb55ed9006652f0099e4b788c8856a1f1e63398a75ede4f771c402f30e",
-    "targetSHA256": "0f6252984f218958426409eecbf60a2535eececacea82200d0e5f297fa29102d",
+    "sourceSHA256": "7b9ec39e3f1db7025d65e17cf603ff43db101b4959a0a4d6f5c02cc38eab6ac8",
+    "targetSHA256": "38fe9a7d3d1a94bae29181961fdd0a5459a5031ff2eef369fd9fe5aee314dd20",
     "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
   },
   {
@@ -7924,8 +7924,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0097-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "65a234ef39367d938233f3b3afffaa4dda5a6d9f0cf0bab7df96d702d6fae6b2",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "7d8fa389b88284f0199c74614b56fd7dfc1d52e76ce49c0c7312df84f48a42d6",
     "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7942,8 +7942,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0097-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "a29a8fd2863c805e9dbbd0158c0a91cacce2e3b2463e4d69f4515ddf95bec6a8",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "58fa094672d3947e6923d25ee45ee9667d3c43ad800281bbb0a2e35a5cf02920",
     "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7960,8 +7960,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0097-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "d668b9ebadee7e4d79b6906ae458c873a7e09c6f7295e1cf200bcb9acb3c7366",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "de9d001adefc2366dd5941af7c773536a0a423ab5f9b5eaf0528d49cffa66113",
     "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -7978,8 +7978,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0097-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "eb46847a9c44cb6e64486b416ab2066e9c4c306bd4e851f58ee024a17488955e",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "1ce541b29cd6524231dbe4bfebed18ac6a7ea3e3fd657c4d84790c0481a40eea",
     "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8014,8 +8014,8 @@
     "file": "features/windows/frameless.md",
     "segment": "b0097-text-01",
     "code": "untranslated",
-    "sourceSHA256": "f2f170fbb06613b077b2722838481c9f21fe7d477665cef5c86c3c6ec6678120",
-    "targetSHA256": "7528c435db0ed3011c22fb1dfedb1e9d248a280c772cbc82b0c1a68162b3761a",
+    "sourceSHA256": "46ac522a7bebad046e8ce3cf2bf7794faef51126fc11d7e29f6159045688fc1c",
+    "targetSHA256": "1500e650905d339e52a19637fc6f147452b71615b4874747ceed37dba745182f",
     "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -9221,8 +9221,8 @@
     "segment": "d0001-label-2c5b07782963219d",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Backend (Go)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "c69ff8d1afa56593183fcd48a660f20f79f7abc7b0f3a37063bd2bc1a87b62df"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "1b5c9311e5ec6af9ff643218ef1ee62bde7494df4a702c2d697042926acaf835"
   },
   {
     "language": "fr",
@@ -9230,8 +9230,8 @@
     "segment": "d0001-label-7c2f1cdaebf42e46",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Frontend (JavaScript)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "c69ff8d1afa56593183fcd48a660f20f79f7abc7b0f3a37063bd2bc1a87b62df"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "1b5c9311e5ec6af9ff643218ef1ee62bde7494df4a702c2d697042926acaf835"
   },
   {
     "language": "fr",
@@ -9239,8 +9239,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "c69ff8d1afa56593183fcd48a660f20f79f7abc7b0f3a37063bd2bc1a87b62df"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "1b5c9311e5ec6af9ff643218ef1ee62bde7494df4a702c2d697042926acaf835"
   },
   {
     "language": "de",
@@ -9248,8 +9248,8 @@
     "segment": "d0001-label-2c5b07782963219d",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Backend (Go)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "32a17417f54ae664596bfce9529cf9cbf245181ce27d9cef38a398b665350c46"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "b447041d58ec685df6598fdd8722c86247fc947efb32c50475db4dcc571a6ec4"
   },
   {
     "language": "de",
@@ -9257,8 +9257,8 @@
     "segment": "d0001-label-7c2f1cdaebf42e46",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Frontend (JavaScript)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "32a17417f54ae664596bfce9529cf9cbf245181ce27d9cef38a398b665350c46"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "b447041d58ec685df6598fdd8722c86247fc947efb32c50475db4dcc571a6ec4"
   },
   {
     "language": "de",
@@ -9266,8 +9266,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "32a17417f54ae664596bfce9529cf9cbf245181ce27d9cef38a398b665350c46"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "b447041d58ec685df6598fdd8722c86247fc947efb32c50475db4dcc571a6ec4"
   },
   {
     "language": "pt",
@@ -9275,8 +9275,8 @@
     "segment": "d0001-label-2c5b07782963219d",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Backend (Go)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "d63196db3ed7263cd2edf6a8e6e9c4ff3ce1b8960a01e190d6be38f62ae085a2"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "50e72db1423c2cf91cfac016a63f869359535f352479ed8e3bcf71decb58dc48"
   },
   {
     "language": "pt",
@@ -9284,8 +9284,8 @@
     "segment": "d0001-label-7c2f1cdaebf42e46",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Frontend (JavaScript)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "d63196db3ed7263cd2edf6a8e6e9c4ff3ce1b8960a01e190d6be38f62ae085a2"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "50e72db1423c2cf91cfac016a63f869359535f352479ed8e3bcf71decb58dc48"
   },
   {
     "language": "pt",
@@ -9293,8 +9293,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "d63196db3ed7263cd2edf6a8e6e9c4ff3ce1b8960a01e190d6be38f62ae085a2"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "50e72db1423c2cf91cfac016a63f869359535f352479ed8e3bcf71decb58dc48"
   },
   {
     "language": "ru",
@@ -9302,8 +9302,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "72dc1f7e26b45a697fb755ba143c68540c98ecb785eecff078a923e53d6e75c6"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "6d67021540c760608f671e179768052da19bbcf8a81f034fb4c642f7c0286a5d"
   },
   {
     "language": "ja",
@@ -9311,8 +9311,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "4f0f10aaf9b0cd8e4ed118d06a139658b0e8b1015d38aca72a1133f1673f3fe0"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "9ac918e96d625a3276ec716a0979e926a25e352d8e55d277d527c4a7d6a1c73f"
   },
   {
     "language": "ko",
@@ -9320,8 +9320,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "529c1b4e6e758a6580b9ca8f836eb777b67ef967438290f3613e541eef4ca3b9"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "59fdf25057ba77cd0e06146419e984c58b98613bac2c7a1c5fbc7ba8e44bceda"
   },
   {
     "language": "zh-cn",
@@ -9329,8 +9329,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "75770bbb2f03ca21b255f91baac93bcc353ececfced355c6856b75eb6dd026bd"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "d0b3465d29f793bcd846300bfe11ab878548074da5a47c0b868b5be7290a155c"
   },
   {
     "language": "zh-tw",
@@ -9338,8 +9338,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "8734c58b0ad4a64d65134cc99deaaabb03a992541b04d1c7566833250ffbd8d1"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "ea7f1ced26d5179a30acab70fae90303c680bb892a7c1704cec248063a545661"
   },
   {
     "language": "id",
@@ -9347,8 +9347,8 @@
     "segment": "d0001-label-2c5b07782963219d",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Backend (Go)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "e8928d5e03b13929ad7205af838581960a3f437963ba0da98ed51400082c625b"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "6f3bbd35eb71f07f240228e02f8bb6589e22e5fd6581e08cf486a897e5d2aeb4"
   },
   {
     "language": "id",
@@ -9356,8 +9356,8 @@
     "segment": "d0001-label-7c2f1cdaebf42e46",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Frontend (JavaScript)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "e8928d5e03b13929ad7205af838581960a3f437963ba0da98ed51400082c625b"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "6f3bbd35eb71f07f240228e02f8bb6589e22e5fd6581e08cf486a897e5d2aeb4"
   },
   {
     "language": "id",
@@ -9365,8 +9365,8 @@
     "segment": "d0001-label-d1aacdc40d45078c",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'import { Method }': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "ada1e08f38ccdac5199c2dd99b70e7c657e5348a2c45c7f65e63331277ba28f2",
-    "targetSHA256": "e8928d5e03b13929ad7205af838581960a3f437963ba0da98ed51400082c625b"
+    "sourceSHA256": "4c7e45a8ec72b82a1b22e467e66067a050d179aa0b9398bc2f238dfa242d0686",
+    "targetSHA256": "6f3bbd35eb71f07f240228e02f8bb6589e22e5fd6581e08cf486a897e5d2aeb4"
   },
   {
     "language": "fr",
@@ -9698,8 +9698,8 @@
     "segment": "b0011-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Xcode Command Line Tools: `xcode-select --install`': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "32b33a066b8c703a97ccfa2fe193c9dfe440e99e097438f8fa4f4b6828429620",
-    "targetSHA256": "74a03e0f28d513e077db9f4b7189c171d42d3dbacb2c0e6ee72e7d9afd0f4deb"
+    "sourceSHA256": "add93a77abd87f4103f44425cf76197c1d13e3c993d8c85950062068c6e95556",
+    "targetSHA256": "d4dddd8565105433862514f463205a8e211d1e12e4ce006694d339834fd22ae6"
   },
   {
     "language": "id",
@@ -9707,8 +9707,8 @@
     "segment": "b0011-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Xcode Command Line Tools: `xcode-select --install`': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "32b33a066b8c703a97ccfa2fe193c9dfe440e99e097438f8fa4f4b6828429620",
-    "targetSHA256": "ba488bb9f37ad9e49af1c1130c139fefd2ed235f28a030eb4e0c2b5930f1161d"
+    "sourceSHA256": "add93a77abd87f4103f44425cf76197c1d13e3c993d8c85950062068c6e95556",
+    "targetSHA256": "987fed1cafd1749ef86cb14b9117e8f03f414ac2111704559f6df2bfcaf26027"
   },
   {
     "language": "de",
@@ -9716,8 +9716,8 @@
     "segment": "b0016-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Debian/Ubuntu):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9725,8 +9725,8 @@
     "segment": "b0017-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Fedora/RHEL):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9734,8 +9734,8 @@
     "segment": "b0018-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Arch):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9743,8 +9743,8 @@
     "segment": "b0054-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**VS Code:**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9752,8 +9752,8 @@
     "segment": "b0059-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**macOS:** Xcode Instruments': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9761,8 +9761,8 @@
     "segment": "b0060-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Windows:** Visual Studio Debugger': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "de",
@@ -9770,8 +9770,8 @@
     "segment": "b0061-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux:** GDB': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "85356eaaa1190a51349d7545149e5402b450cfce3c029b666a30722d3b10cf29"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "49c8a685c5186636b3820ddfb2b132746e4c8151ee9028980ea2c5b9cc398033"
   },
   {
     "language": "pt",
@@ -9779,8 +9779,8 @@
     "segment": "b0016-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Debian/Ubuntu):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9788,8 +9788,8 @@
     "segment": "b0017-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Fedora/RHEL):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9797,8 +9797,8 @@
     "segment": "b0018-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Arch):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9806,8 +9806,8 @@
     "segment": "b0054-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**VS Code:**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9815,8 +9815,8 @@
     "segment": "b0059-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**macOS:** Xcode Instruments': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9824,8 +9824,8 @@
     "segment": "b0060-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Windows:** Visual Studio Debugger': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9833,8 +9833,8 @@
     "segment": "b0061-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux:** GDB': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "pt",
@@ -9842,8 +9842,8 @@
     "segment": "b0063-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '\"command not found: wails3\"': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "65adee485792cb9042affb228288817b16b51cfce5e2e14abcd9d9a118bdd7d1"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "03c743340b8ecb1f08692d6e4d1909a71f978a3dba5ba4feecc4d9b8db2ff7af"
   },
   {
     "language": "ru",
@@ -9851,8 +9851,8 @@
     "segment": "b0016-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Debian/Ubuntu):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ru",
@@ -9860,8 +9860,8 @@
     "segment": "b0017-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Fedora/RHEL):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ru",
@@ -9869,8 +9869,8 @@
     "segment": "b0018-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Arch):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ru",
@@ -9878,8 +9878,8 @@
     "segment": "b0054-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**VS Code:**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ru",
@@ -9887,8 +9887,8 @@
     "segment": "b0059-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**macOS:** Xcode Instruments': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ru",
@@ -9896,8 +9896,8 @@
     "segment": "b0061-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux:** GDB': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "8e9ff6e173c0554010343c9bb59a9df3aadca91de409a31b286eb056da594d18"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "c27a302f640eade6fc13ba7366e894851553052466826285e472a337eedf8d77"
   },
   {
     "language": "ko",
@@ -9905,8 +9905,8 @@
     "segment": "b0054-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**VS Code:**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "0c18160b75ccbed27fffd7599c69c16e2bbdf04f8ed1d4528ca0148e70d5e713"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "e1051ab28a5567237c4a21ff48c0436d74718f036d4bd1ea13dbfb7f5d58ce01"
   },
   {
     "language": "ko",
@@ -9914,8 +9914,8 @@
     "segment": "b0059-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**macOS:** Xcode Instruments': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "0c18160b75ccbed27fffd7599c69c16e2bbdf04f8ed1d4528ca0148e70d5e713"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "e1051ab28a5567237c4a21ff48c0436d74718f036d4bd1ea13dbfb7f5d58ce01"
   },
   {
     "language": "ko",
@@ -9923,8 +9923,8 @@
     "segment": "b0060-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Windows:** Visual Studio Debugger': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "0c18160b75ccbed27fffd7599c69c16e2bbdf04f8ed1d4528ca0148e70d5e713"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "e1051ab28a5567237c4a21ff48c0436d74718f036d4bd1ea13dbfb7f5d58ce01"
   },
   {
     "language": "ko",
@@ -9932,8 +9932,8 @@
     "segment": "b0061-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux:** GDB': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "0c18160b75ccbed27fffd7599c69c16e2bbdf04f8ed1d4528ca0148e70d5e713"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "e1051ab28a5567237c4a21ff48c0436d74718f036d4bd1ea13dbfb7f5d58ce01"
   },
   {
     "language": "ko",
@@ -9941,8 +9941,8 @@
     "segment": "b0063-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '\"command not found: wails3\"': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "0c18160b75ccbed27fffd7599c69c16e2bbdf04f8ed1d4528ca0148e70d5e713"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "e1051ab28a5567237c4a21ff48c0436d74718f036d4bd1ea13dbfb7f5d58ce01"
   },
   {
     "language": "id",
@@ -9950,8 +9950,8 @@
     "segment": "b0016-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Debian/Ubuntu):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -9959,8 +9959,8 @@
     "segment": "b0017-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Fedora/RHEL):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -9968,8 +9968,8 @@
     "segment": "b0018-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux (Arch):**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -9977,8 +9977,8 @@
     "segment": "b0054-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**VS Code:**': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -9986,8 +9986,8 @@
     "segment": "b0059-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**macOS:** Xcode Instruments': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -9995,8 +9995,8 @@
     "segment": "b0060-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Windows:** Visual Studio Debugger': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -10004,8 +10004,8 @@
     "segment": "b0061-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**Linux:** GDB': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "id",
@@ -10013,8 +10013,8 @@
     "segment": "b0063-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '\"command not found: wails3\"': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "18e0314bce2aec044677127f38de56209481ecdbeadde38be6be0e58b471b0c4",
-    "targetSHA256": "7ddb45ff2abf42cb2ef66048bd3b03e730738b5e116f9aa470ef2f345cadd12a"
+    "sourceSHA256": "cb48c1819ae5c40d551fce08c2bf7b217d6acef8af1c4fde19ff2c13550b9df7",
+    "targetSHA256": "438c596413bf266bdeeecb843319cca81945a81605f7ebf379e51f8d145cb17f"
   },
   {
     "language": "fr",
@@ -10103,8 +10103,8 @@
     "segment": "b0131-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'HTTP/REST: 5-50ms': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "cb3fc8df121495924d7c80e2b4d445cfa22778273acc038a85cc410de7f92ffb",
-    "targetSHA256": "ddc8018ec638997947c041723b70e6ce7047e90eb655b421d519c1483bf48f76"
+    "sourceSHA256": "d75ce1c94787f9e6fbe36c57fab1152cc4fea34bb64bcb6886278fd8f447f154",
+    "targetSHA256": "22570d645d24a03894e2ab453d5f8d6368c27e5b8d51c16b9c68aba8873171d6"
   },
   {
     "language": "pt",
@@ -10112,8 +10112,8 @@
     "segment": "b0132-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'IPC: 1-10ms': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "cb3fc8df121495924d7c80e2b4d445cfa22778273acc038a85cc410de7f92ffb",
-    "targetSHA256": "ddc8018ec638997947c041723b70e6ce7047e90eb655b421d519c1483bf48f76"
+    "sourceSHA256": "d75ce1c94787f9e6fbe36c57fab1152cc4fea34bb64bcb6886278fd8f447f154",
+    "targetSHA256": "22570d645d24a03894e2ab453d5f8d6368c27e5b8d51c16b9c68aba8873171d6"
   },
   {
     "language": "ko",
@@ -10121,8 +10121,8 @@
     "segment": "b0131-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'HTTP/REST: 5-50ms': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "cb3fc8df121495924d7c80e2b4d445cfa22778273acc038a85cc410de7f92ffb",
-    "targetSHA256": "7a34209738e50b7b79b52a650e7dea8eccbdc2d0ed6477cfe57fd78c15321194"
+    "sourceSHA256": "d75ce1c94787f9e6fbe36c57fab1152cc4fea34bb64bcb6886278fd8f447f154",
+    "targetSHA256": "b74b239b82c45e45c1037a5612a952ce1d625a7500882766d98679a927915610"
   },
   {
     "language": "ko",
@@ -10130,8 +10130,8 @@
     "segment": "b0132-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'IPC: 1-10ms': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "cb3fc8df121495924d7c80e2b4d445cfa22778273acc038a85cc410de7f92ffb",
-    "targetSHA256": "7a34209738e50b7b79b52a650e7dea8eccbdc2d0ed6477cfe57fd78c15321194"
+    "sourceSHA256": "d75ce1c94787f9e6fbe36c57fab1152cc4fea34bb64bcb6886278fd8f447f154",
+    "targetSHA256": "b74b239b82c45e45c1037a5612a952ce1d625a7500882766d98679a927915610"
   },
   {
     "language": "de",
@@ -10139,8 +10139,8 @@
     "segment": "b0062-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Dependency Injection': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "ad850d96975e7ac3c45e7ac66244664d4011f8d7c926d28305266566582a89f7",
-    "targetSHA256": "7463a8cabecaabde0494ead0028f468cf6fc83af9eaeded3e9a7b6f96fbff660"
+    "sourceSHA256": "60ae6aa411f3249f0a8507a18fc1ddb4ff1ed71ebf500e8ee0929468c8123312",
+    "targetSHA256": "3b6292d2962df04ff7bdaf755c7ab305c24ec7761dd13a2dffc9ee8d93883b06"
   },
   {
     "language": "fr",
@@ -10256,8 +10256,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "747d393e00b13d0e85b636b6518509081915b704697bc1514af5fe9a7f1c87c8"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "5bcdaf5cd60445993c89676b0b2f83e789ee4e961f8199fbb93b199ee926d581"
   },
   {
     "language": "fr",
@@ -10265,8 +10265,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "747d393e00b13d0e85b636b6518509081915b704697bc1514af5fe9a7f1c87c8"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "5bcdaf5cd60445993c89676b0b2f83e789ee4e961f8199fbb93b199ee926d581"
   },
   {
     "language": "fr",
@@ -10274,8 +10274,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "747d393e00b13d0e85b636b6518509081915b704697bc1514af5fe9a7f1c87c8"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "5bcdaf5cd60445993c89676b0b2f83e789ee4e961f8199fbb93b199ee926d581"
   },
   {
     "language": "de",
@@ -10283,8 +10283,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "6f6438334d68594aaf4a05ad53a94234a2c11f2945458c599d987327981dc83d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "2db03278650463b0c5181fcb4aa3cc06256fd96957b03bde71e688800c4fca6a"
   },
   {
     "language": "de",
@@ -10292,8 +10292,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "6f6438334d68594aaf4a05ad53a94234a2c11f2945458c599d987327981dc83d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "2db03278650463b0c5181fcb4aa3cc06256fd96957b03bde71e688800c4fca6a"
   },
   {
     "language": "de",
@@ -10301,8 +10301,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "6f6438334d68594aaf4a05ad53a94234a2c11f2945458c599d987327981dc83d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "2db03278650463b0c5181fcb4aa3cc06256fd96957b03bde71e688800c4fca6a"
   },
   {
     "language": "pt",
@@ -10310,8 +10310,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "acb0942331d82044877aa6020aaaa5fe3cf0dc7a4560dc788d6f72ecacecae1d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "bd44d2b19b8437dce5c354db160a091e6b913a963cdaeda58c88dd8a7a663ad0"
   },
   {
     "language": "pt",
@@ -10319,8 +10319,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "acb0942331d82044877aa6020aaaa5fe3cf0dc7a4560dc788d6f72ecacecae1d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "bd44d2b19b8437dce5c354db160a091e6b913a963cdaeda58c88dd8a7a663ad0"
   },
   {
     "language": "pt",
@@ -10328,8 +10328,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "acb0942331d82044877aa6020aaaa5fe3cf0dc7a4560dc788d6f72ecacecae1d"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "bd44d2b19b8437dce5c354db160a091e6b913a963cdaeda58c88dd8a7a663ad0"
   },
   {
     "language": "ru",
@@ -10337,8 +10337,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "fb903744426d4fefaf74395bf27634fc40b0309707744be62e701032cf18b7e2"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "7183524dcc3c0053a5b48077baac066b95b97b68802b2c1987b876eae7f31e78"
   },
   {
     "language": "ru",
@@ -10346,8 +10346,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "fb903744426d4fefaf74395bf27634fc40b0309707744be62e701032cf18b7e2"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "7183524dcc3c0053a5b48077baac066b95b97b68802b2c1987b876eae7f31e78"
   },
   {
     "language": "ru",
@@ -10355,8 +10355,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "fb903744426d4fefaf74395bf27634fc40b0309707744be62e701032cf18b7e2"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "7183524dcc3c0053a5b48077baac066b95b97b68802b2c1987b876eae7f31e78"
   },
   {
     "language": "ja",
@@ -10364,8 +10364,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "40e75923bbfaee39e682294713bd2321478a0e644b31a9d876b9fb00685e5dfa"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "fb99e9ca7262381ebc09adad4ec3a7291c707ae0c5b16888dd8e71da540ccad4"
   },
   {
     "language": "ja",
@@ -10373,8 +10373,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "40e75923bbfaee39e682294713bd2321478a0e644b31a9d876b9fb00685e5dfa"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "fb99e9ca7262381ebc09adad4ec3a7291c707ae0c5b16888dd8e71da540ccad4"
   },
   {
     "language": "ja",
@@ -10382,8 +10382,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "40e75923bbfaee39e682294713bd2321478a0e644b31a9d876b9fb00685e5dfa"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "fb99e9ca7262381ebc09adad4ec3a7291c707ae0c5b16888dd8e71da540ccad4"
   },
   {
     "language": "ko",
@@ -10391,8 +10391,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "0770e14c111078104dd86fd3d61c0ea00bde9285d7f54c5879adce5de79c4a61"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "099543cfcaa97848a6861b27d2dd3eddc5661277bb228d16a9a65fa3efc58dc7"
   },
   {
     "language": "ko",
@@ -10400,8 +10400,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "0770e14c111078104dd86fd3d61c0ea00bde9285d7f54c5879adce5de79c4a61"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "099543cfcaa97848a6861b27d2dd3eddc5661277bb228d16a9a65fa3efc58dc7"
   },
   {
     "language": "ko",
@@ -10409,8 +10409,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "0770e14c111078104dd86fd3d61c0ea00bde9285d7f54c5879adce5de79c4a61"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "099543cfcaa97848a6861b27d2dd3eddc5661277bb228d16a9a65fa3efc58dc7"
   },
   {
     "language": "zh-cn",
@@ -10418,8 +10418,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "f30b91a7f356d6ff54369be73ffef89a11ab2f86aaf078efcffb9b7d1f336376"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "c14e58fb823bb25d3d5d32c2cffebbb0e5dc31c170acfd9344aa6e87e934c9a9"
   },
   {
     "language": "zh-cn",
@@ -10427,8 +10427,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "f30b91a7f356d6ff54369be73ffef89a11ab2f86aaf078efcffb9b7d1f336376"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "c14e58fb823bb25d3d5d32c2cffebbb0e5dc31c170acfd9344aa6e87e934c9a9"
   },
   {
     "language": "zh-cn",
@@ -10436,8 +10436,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "f30b91a7f356d6ff54369be73ffef89a11ab2f86aaf078efcffb9b7d1f336376"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "c14e58fb823bb25d3d5d32c2cffebbb0e5dc31c170acfd9344aa6e87e934c9a9"
   },
   {
     "language": "zh-tw",
@@ -10445,8 +10445,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "2c980ae52d9d9f41e44c9e2df33ac32cc59c7b610a0294cf6e473c496aa680bd"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "9ce659d321702f8b068bd06a426fdb8876044de75a981c7d7a323329667fc66a"
   },
   {
     "language": "zh-tw",
@@ -10454,8 +10454,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "2c980ae52d9d9f41e44c9e2df33ac32cc59c7b610a0294cf6e473c496aa680bd"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "9ce659d321702f8b068bd06a426fdb8876044de75a981c7d7a323329667fc66a"
   },
   {
     "language": "zh-tw",
@@ -10463,8 +10463,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "2c980ae52d9d9f41e44c9e2df33ac32cc59c7b610a0294cf6e473c496aa680bd"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "9ce659d321702f8b068bd06a426fdb8876044de75a981c7d7a323329667fc66a"
   },
   {
     "language": "id",
@@ -10472,8 +10472,8 @@
     "segment": "b0026-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMinimise / WindowUnMinimise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "00f49564ff40a24a1da71ab8d4c49fa26f14f3f4df71c9a6ad4752e53eadf374"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "a8d627ef34852117972dbb512c8c1c915568a491eefb18f5c9b7a945b37f1356"
   },
   {
     "language": "id",
@@ -10481,8 +10481,8 @@
     "segment": "b0027-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowMaximise / WindowUnMaximise': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "00f49564ff40a24a1da71ab8d4c49fa26f14f3f4df71c9a6ad4752e53eadf374"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "a8d627ef34852117972dbb512c8c1c915568a491eefb18f5c9b7a945b37f1356"
   },
   {
     "language": "id",
@@ -10490,8 +10490,8 @@
     "segment": "b0028-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'WindowFullscreen / WindowUnFullscreen': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "02af4cfe113bc9ff18a6aaf155a595db547d232b9d5076c78daa73bf79d84080",
-    "targetSHA256": "00f49564ff40a24a1da71ab8d4c49fa26f14f3f4df71c9a6ad4752e53eadf374"
+    "sourceSHA256": "aa4defa8631613d9429d4d412eeb2250ee088ef911e7c12abece0cb87dc01291",
+    "targetSHA256": "a8d627ef34852117972dbb512c8c1c915568a491eefb18f5c9b7a945b37f1356"
   },
   {
     "language": "fr",
@@ -10499,8 +10499,8 @@
     "segment": "b0362-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**WebView2CompositionHosting** (`bool`)': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "1f46827749ba592f0c238facbcd193fd4fe63dbf3d982bc239a852c6cc5a17cc"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "d6a7629443d6c41d6d6f33413cea1899d8a2f0a1e89979143e5bc432cac3895d"
   },
   {
     "language": "fr",
@@ -10508,8 +10508,8 @@
     "segment": "b0392-text-01",
     "code": "requirement-language",
     "reason": "Reviewed French “Vous ne pouvez pas utiliser … différents selon les fenêtres” retains the source prohibition on different browser flags per window.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "1f46827749ba592f0c238facbcd193fd4fe63dbf3d982bc239a852c6cc5a17cc"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "d6a7629443d6c41d6d6f33413cea1899d8a2f0a1e89979143e5bc432cac3895d"
   },
   {
     "language": "de",
@@ -10517,8 +10517,8 @@
     "segment": "b0362-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**WebView2CompositionHosting** (`bool`)': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "a50c76cc92886ae34edfdc27a0cdcd18ce0a9539b3c9f6d453a9830787f00c24"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "d714276dc19c625f151bb60496280740d3344a9bfd15fc952f39674c23dfe0a9"
   },
   {
     "language": "pt",
@@ -10526,8 +10526,8 @@
     "segment": "b0362-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**WebView2CompositionHosting** (`bool`)': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "b15ec19cded974144d2df59de55587119192c54af8f50c304f0fcb35c4ae6769"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "5d9e1502757a5db2ae819efc0a7a033a7e2c041b5db7e85c0beeff66a9b1b70b"
   },
   {
     "language": "ru",
@@ -10535,8 +10535,8 @@
     "segment": "b0019-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Width / Height': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "b2d7bb1bc6df85cafc027f80acc8547a7bbcab0f096d81f2567c626fa86036fa"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "aa01bb0e4d581c17579b4f61e23ff6cc906c329c0339e22e2d48e59262a19132"
   },
   {
     "language": "ru",
@@ -10544,8 +10544,8 @@
     "segment": "b0052-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'MinWidth / MinHeight': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "b2d7bb1bc6df85cafc027f80acc8547a7bbcab0f096d81f2567c626fa86036fa"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "aa01bb0e4d581c17579b4f61e23ff6cc906c329c0339e22e2d48e59262a19132"
   },
   {
     "language": "ru",
@@ -10553,8 +10553,8 @@
     "segment": "b0060-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'MaxWidth / MaxHeight': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "b2d7bb1bc6df85cafc027f80acc8547a7bbcab0f096d81f2567c626fa86036fa"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "aa01bb0e4d581c17579b4f61e23ff6cc906c329c0339e22e2d48e59262a19132"
   },
   {
     "language": "ru",
@@ -10562,8 +10562,8 @@
     "segment": "b0362-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**WebView2CompositionHosting** (`bool`)': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "b2d7bb1bc6df85cafc027f80acc8547a7bbcab0f096d81f2567c626fa86036fa"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "aa01bb0e4d581c17579b4f61e23ff6cc906c329c0339e22e2d48e59262a19132"
   },
   {
     "language": "ja",
@@ -10571,8 +10571,8 @@
     "segment": "b0019-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Width / Height': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "54f46f5cbcd010be7391dea3f5debe61e8053892d997edf255e1141bad349672"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "edf9b60a746d13b62b9caee5cae8010f8d21af59c71fc1c6143820937f988f52"
   },
   {
     "language": "ja",
@@ -10580,8 +10580,8 @@
     "segment": "b0052-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'MinWidth / MinHeight': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "54f46f5cbcd010be7391dea3f5debe61e8053892d997edf255e1141bad349672"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "edf9b60a746d13b62b9caee5cae8010f8d21af59c71fc1c6143820937f988f52"
   },
   {
     "language": "ja",
@@ -10589,8 +10589,8 @@
     "segment": "b0060-heading-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'MaxWidth / MaxHeight': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "54f46f5cbcd010be7391dea3f5debe61e8053892d997edf255e1141bad349672"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "edf9b60a746d13b62b9caee5cae8010f8d21af59c71fc1c6143820937f988f52"
   },
   {
     "language": "id",
@@ -10598,8 +10598,8 @@
     "segment": "b0362-text-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged '**WebView2CompositionHosting** (`bool`)': a literal API, command, event identifier or error must retain its spelling; surrounding explanatory prose is translated.",
-    "sourceSHA256": "2e3300a02c168736a9dcdfda7a8f30fc6fe73b9ecd3fd8cfd4f2650dd104fc82",
-    "targetSHA256": "2a4f07ad652aa4135995adfb6dd046955c60c12402055a45edb784f3a9220826"
+    "sourceSHA256": "fba29f081944b364ef0132357fdd45745823f6139cc4801ad11ba59241a76ffb",
+    "targetSHA256": "c42e0720ba69d44be1af02d8b6bec742c9bd427253e2c20bf5a75d807ed682a6"
   },
   {
     "language": "fr",
@@ -11561,8 +11561,8 @@
     "segment": "tab0001-label-001",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'iOS Simulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "61e11052bc2ddfd5b2325e23e079f861124fc6986875f87fd57b9baadcc8ec1b"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "45d2df6cd4a694fcdfc110576c2a5177b0bf4b395b02689bb3d731f7262c189c"
   },
   {
     "language": "ja",
@@ -11570,8 +11570,8 @@
     "segment": "tab0003-label-002",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Android Emulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "61e11052bc2ddfd5b2325e23e079f861124fc6986875f87fd57b9baadcc8ec1b"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "45d2df6cd4a694fcdfc110576c2a5177b0bf4b395b02689bb3d731f7262c189c"
   },
   {
     "language": "ko",
@@ -11579,8 +11579,8 @@
     "segment": "tab0001-label-001",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'iOS Simulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "4ea1588a7396b33bddfaada9e97ebea07c63f9f06e86a65217f0c1f211eef27e"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "6d8d8792a407d1e7e6e2090c1f1fb3963fe632b3f96eef5f481e1eec447663de"
   },
   {
     "language": "ko",
@@ -11588,8 +11588,8 @@
     "segment": "tab0003-label-002",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Android Emulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "4ea1588a7396b33bddfaada9e97ebea07c63f9f06e86a65217f0c1f211eef27e"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "6d8d8792a407d1e7e6e2090c1f1fb3963fe632b3f96eef5f481e1eec447663de"
   },
   {
     "language": "id",
@@ -11597,8 +11597,8 @@
     "segment": "tab0001-label-001",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'iOS Simulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "a5e9b182211b4acf6454a4ea74a5b04039b97a1c9df358b2af3e477ee8dd14df"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "4f4f562a7fba5f134d8328130ce7de8dfccc979f4a04dd67637408e1749bac05"
   },
   {
     "language": "id",
@@ -11606,8 +11606,8 @@
     "segment": "tab0003-label-002",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Android Emulator': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "8179f44790c73decfb8c5446999c4f9b8b6e99f86629b638519bb7bbd4cd8d04",
-    "targetSHA256": "a5e9b182211b4acf6454a4ea74a5b04039b97a1c9df358b2af3e477ee8dd14df"
+    "sourceSHA256": "ed5ec4b3d0e9926afbcd9a25672171069a581f2c6d714cc90856e1568a35c7df",
+    "targetSHA256": "4f4f562a7fba5f134d8328130ce7de8dfccc979f4a04dd67637408e1749bac05"
   },
   {
     "language": "ja",
@@ -12182,7 +12182,7 @@
     "segment": "b0064-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Native (GTK)': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "f69a0dbbc4d8e3eb898394e0a0e9ac466b6bbeee70d8eb3ece7e9b1bb0859de0",
-    "targetSHA256": "016ec54c4c981570c552032870e1423aca2b1fadab1b04833e3e870546855d80"
+    "sourceSHA256": "af116ec4f4c9186b7bdcaf0ecc9d33726c44d5097d6910e58aa6288fd1fc30ac",
+    "targetSHA256": "869cb05d6c0af63665b373dcb4395ba7967129a36d192e28c18129dd30fa78ca"
   }
 ]

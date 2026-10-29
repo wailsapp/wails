@@ -758,4 +758,4 @@ Go 메서드를 바인딩하는 방법을 알아보세요.
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)를 확인하세요.
+**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)를 확인하세요.

@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
+git clone --branch master https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,7 +228,7 @@ go test ./... -race
 
 ## 处理文档
 
-文档贡献者无需安装 Wails CLI 或桌面构建依赖项即可使用 M-Press。有关固定版本可执行文件的下载、安装、实时预览、验证以及发布分支 PR 工作流，请参阅[使用 M-Press 编写文档](/contributing/documentation/)。
+文档贡献者无需安装 Wails CLI 或桌面构建依赖项即可使用 M-Press。有关固定版本可执行文件的下载、安装、实时预览、验证以及面向 `master` 分支的 PR 工作流，请参阅[使用 M-Press 编写文档](/contributing/documentation/)。
 
 英文 Markdown 文件位于 `docs/mpress/content/`；翻译文件位于各语言目录中。在仓库根目录运行 `mpress dev`，即可在 `http://127.0.0.1:3000` 提供预览。运行指南中的验证命令之前，请先按 Ctrl+C 停止预览。
 

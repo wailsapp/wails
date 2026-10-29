@@ -47,12 +47,12 @@ PR с исправлениями приветствуются без предв�
 Для новой функциональности и изменений публичного поведения используется процесс Wails Enhancement Proposal (WEP). Он обеспечивает прозрачность разработки функций и наличие исполнителя у каждого принятого предложения. Не создавайте issue с запросом функции.
 
 1. При желании сначала предложите идею в категории [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) в GitHub Discussions или в [Discord](https://discord.gg/JDdSxwjhGf), чтобы оценить интерес сообщества.
-2. Скопируйте [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) в `v3/wep/proposals/<proposal name>/proposal.md` и заполните все разделы.
+2. Скопируйте [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/WEP_TEMPLATE.md) в `v3/wep/proposals/<proposal name>/proposal.md` и заполните все разделы.
 3. Создайте черновой pull request с заголовком `[WEP] <title>`, содержащий только предложение. PR служит официальным местом для его обсуждения.
 4. Соберите отзывы и поддержку — комментарии и реакции «палец вверх» в PR. Выделите на обсуждение не менее двух недель и согласуйте, кто реализует предложение.
 5. Отметьте PR как готовый к проверке. Окончательное решение принимают сопровождающие проекта: принятым предложениям присваивается номер WEP, после чего они сливаются в основную ветку.
 
-Полное описание процесса приведено в [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
+Полное описание процесса приведено в [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
 
 ## Начало работы
 

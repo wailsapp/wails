@@ -118,4 +118,4 @@ wails3 <command> --help
 
 ---
 
-<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

@@ -677,7 +677,7 @@ wails3 generate bindings
 - [Documentação](/quick-start/why-wails/)
 - [Comunidade no Discord](https://discord.gg/JDdSxwjhGf)
 - [Issues do GitHub](https://github.com/wailsapp/wails/issues)
-- [Exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+- [Exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 ### Perguntas frequentes
 
@@ -713,7 +713,7 @@ Conheça o novo sistema de vinculações.
 📖 Exemplos
 Veja exemplos completos da v3.
 
-[Ver exemplos →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+[Ver exemplos →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 @end
 

@@ -740,4 +740,4 @@ Ereignisse für die Publish/Subscribe-Kommunikation verwenden.
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.
