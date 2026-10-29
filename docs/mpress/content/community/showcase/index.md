@@ -21,6 +21,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 <a class="mpress-showcase-card" href="/community/showcase/filehound/"><img src="/assets/showcase-images/filehound.webp" alt="FileHound Export Utility screenshot" loading="lazy"><span>FileHound Export Utility</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/hiposter/"><img src="/assets/showcase-images/hiposter.webp" alt="hiposter screenshot" loading="lazy"><span>hiposter</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/kira/"><img src="/assets/showcase-images/kira_screenshot_1.png" alt="Kira screenshot" loading="lazy"><span>Kira</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larder/"><img src="/assets/showcase-images/larder.webp" alt="Larder screenshot" loading="lazy"><span>Larder</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/ltools/"><img src="/assets/showcase-images/ltools.webp" alt="LTools screenshot" loading="lazy"><span>LTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mchat/"><img src="/assets/showcase-images/mchat.png" alt="Mchat screenshot" loading="lazy"><span>Mchat</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/minecraftupdater/"><img src="/assets/showcase-images/minecraft-mod-updater.webp" alt="Minecraft Updater screenshot" loading="lazy"><span>Minecraft Updater</span></a>
