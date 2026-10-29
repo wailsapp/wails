@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows skipping application shutdown when the last window is closed: closing the final window now runs OnShutdown hooks (and honours ShouldQuit) before quitting, matching Linux and macOS (#6368)
 - Fix Windows apps crashing with `panic: SetTextColor failed` when painting the application menu bar on some Windows builds: the menu bar draws on a valid device context or falls back to default drawing, `UAHMENUITEM.Position` now matches the C `int`, and menu painting never panics (#6311)
 
 ## Deprecated
