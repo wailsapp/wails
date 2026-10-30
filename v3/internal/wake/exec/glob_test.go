@@ -66,10 +66,18 @@ func TestClassifyGoCmd(t *testing.T) {
 		want goCmdKind
 	}{
 		{"go build -o bin/app", goCmdBuild},
+		{`go build -o "path with spaces/app"`, goCmdBuild},
 		{"go mod tidy", goCmdModTidy},
+		{"go mod tidy -diff", goCmdNone},
+		{"go mod tidy -compat=1.25", goCmdNone},
 		{"go test ./...", goCmdNone},
 		{"npm install", goCmdNone},
 		{"GOOS=darwin go build", goCmdNone}, // env prefix not stripped here; classifier expects clean cmd
+		{"go build && echo done", goCmdNone},
+		{"go build *.go", goCmdNone},
+		{`go build "[ab]*.go"`, goCmdBuild},
+		{"go mod tidy > tidy.log", goCmdNone},
+		{`go build -o "unterminated`, goCmdNone},
 	}
 	for _, c := range cases {
 		if got := classifyGoCmd(c.cmd); got != c.want {
@@ -79,6 +87,11 @@ func TestClassifyGoCmd(t *testing.T) {
 }
 
 func TestParseOutputFlag(t *testing.T) {
+	for _, command := range []string{`go build -o "app with spaces"`, `go build -o="app with spaces"`, `go build -o app\ with\ spaces`} {
+		if got := parseOutputFlag(command); got != "app with spaces" {
+			t.Errorf("parseOutputFlag(%q) = %q, want unquoted output path", command, got)
+		}
+	}
 	if got := parseOutputFlag(`go build -buildvcs=false -o bin/badge`); got != "bin/badge" {
 		t.Errorf("parseOutputFlag = %q, want bin/badge", got)
 	}

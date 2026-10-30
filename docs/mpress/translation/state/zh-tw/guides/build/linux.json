@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "de966cbf686157f2ae07",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "3afec73623ff0206e87f",
   "sourceFile": "guides/build/linux.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
@@ -10,744 +11,780 @@
       "targetHash": "00d1e86f7677d00076890af31b41c9eb0bc400b2ea1e7a3cde3e4e60fc515604",
       "machineHash": "00d1e86f7677d00076890af31b41c9eb0bc400b2ea1e7a3cde3e4e60fc515604",
       "machineText": "舊版途徑",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Legacy path",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0001-heading-01": {
       "sourceHash": "860e08d59f1db47e5d5c7dd2ee1e9eef69436dfb82158d82f5b4c21f3d097d5a",
       "targetHash": "576860e2ecc3d39a1cc0b006b33e4c51ba4038327ccaa1c78086897b3dfd0e2a",
       "machineHash": "576860e2ecc3d39a1cc0b006b33e4c51ba4038327ccaa1c78086897b3dfd0e2a",
       "machineText": "套件格式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Package Formats",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0002-text-01": {
       "sourceHash": "58ab0f5f4682ae8b3cb96258a8022acf473aec53f2d586011305ae89f123453a",
-      "targetHash": "2c1494f204667b4dac6de99b4023ebb90cc281312d50d5c8adba50f52ea9ce26",
-      "machineHash": "2c1494f204667b4dac6de99b4023ebb90cc281312d50d5c8adba50f52ea9ce26",
-      "machineText": "封裝您的應用程式以供 Linux 發行：",
-      "status": "final",
+      "targetHash": "ebeb959ccc40cbe14adb691c6be3eb3d36c379acab06e09f4e8e5ea0c43c18f2",
+      "machineHash": "ebeb959ccc40cbe14adb691c6be3eb3d36c379acab06e09f4e8e5ea0c43c18f2",
+      "machineText": "封裝應用程式以發佈至 Linux：",
+      "status": "machine-translated",
       "sourcePreview": "Package your app for Linux distribution:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0003-text-01": {
       "sourceHash": "217b846c56c4da2611b2efef9d903a83703dad030879806e03f34ecaae304187",
       "targetHash": "528fa61fda674e4df5f18729b311d2559e3a663194f4339d1a8c16ad3b2ba8d9",
       "machineHash": "528fa61fda674e4df5f18729b311d2559e3a663194f4339d1a8c16ad3b2ba8d9",
       "machineText": "這會在`bin/`目錄中建立多種格式：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This creates multiple formats in the `bin/` directory:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0004-text-01": {
-      "sourceHash": "e227dd3337f28cf197c31baf0ba77bccca0906d1e64e1560061199cde21c6070",
-      "targetHash": "9f9fcb1d8fc35e47b98fe0a894b00c4ee070744693733ed2e6fbc162ba962eda",
-      "machineHash": "9f9fcb1d8fc35e47b98fe0a894b00c4ee070744693733ed2e6fbc162ba962eda",
-      "machineText": "*AppImage*：可攜式，可在任何 Linux 發行版上執行",
-      "status": "final",
-      "sourcePreview": "*AppImage*: Portable, runs on any Linux distribution",
+      "sourceHash": "c923cbe0cb7d8a47fbf31f9db194fce51bdffd790564b7ed6b4b70b50c8c794f",
+      "targetHash": "b7ba71a3cb709612713ef2bb5a0582935d463b8c1732e8069b77a18471e1cd66",
+      "machineHash": "b7ba71a3cb709612713ef2bb5a0582935d463b8c1732e8069b77a18471e1cd66",
+      "machineText": "**AppImage**：可攜式，可在任何 Linux 發行版上執行",
+      "status": "machine-translated",
+      "sourcePreview": "**AppImage**: Portable, runs on any Linux distribution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0005-text-01": {
-      "sourceHash": "6dcd078db16577c3c711d0f4d73ec537796a0886471aad55f7df63c22944fcef",
-      "targetHash": "28f6ba73158f31de96c8cd6976b6b86a1ce82641d8d5cfebc649b115bd0622af",
-      "machineHash": "28f6ba73158f31de96c8cd6976b6b86a1ce82641d8d5cfebc649b115bd0622af",
-      "machineText": "*DEB*：適用於 Debian、Ubuntu 及其衍生發行版",
-      "status": "final",
-      "sourcePreview": "*DEB*: For Debian, Ubuntu, and derivatives",
+      "sourceHash": "d0936c64649ccc488f8d42c18d18d3dee14647e5731bf76166de51e731c75e87",
+      "targetHash": "7d12f9ed0f8f3abb3dd8da76da3eb752d1f521bb9938269802d671229a9c8049",
+      "machineHash": "7d12f9ed0f8f3abb3dd8da76da3eb752d1f521bb9938269802d671229a9c8049",
+      "machineText": "**DEB**：適用於 Debian、Ubuntu 及其衍生發行版",
+      "status": "machine-translated",
+      "sourcePreview": "**DEB**: For Debian, Ubuntu, and derivatives",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0006-text-01": {
-      "sourceHash": "ef761dc4a5fbd5d0b40fd05a3058a8d31f6a65707aaa5a5168b4d1ddd827401f",
-      "targetHash": "f6062809b234deafb49f0e0321fe72d91d44c602f6a021419f0e3900ff0c82e1",
-      "machineHash": "f6062809b234deafb49f0e0321fe72d91d44c602f6a021419f0e3900ff0c82e1",
-      "machineText": "*RPM*：適用於 Fedora、RHEL 及其衍生發行版",
-      "status": "final",
-      "sourcePreview": "*RPM*: For Fedora, RHEL, and derivatives",
+      "sourceHash": "4eb2d223d747a111cf2d39191dbff102b910b3434094bd4780628e3b7b526c99",
+      "targetHash": "531cfaa5750bde752dce9966c4d72fe1694409941c22b3a119b41ed6eab7121b",
+      "machineHash": "531cfaa5750bde752dce9966c4d72fe1694409941c22b3a119b41ed6eab7121b",
+      "machineText": "**RPM**：適用於 Fedora、RHEL 及其衍生發行版",
+      "status": "machine-translated",
+      "sourcePreview": "**RPM**: For Fedora, RHEL, and derivatives",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0007-text-01": {
-      "sourceHash": "8dfc055b28bccde0a63247cb5772a941875b12419d5accb31598f04d95f0bd26",
-      "targetHash": "8de26e395d1243d6f4f9f3c9c25002227a83020f29ad45661201a62dcfc780c4",
-      "machineHash": "8de26e395d1243d6f4f9f3c9c25002227a83020f29ad45661201a62dcfc780c4",
-      "machineText": "*Arch*：適用於 Arch Linux 及其衍生發行版",
-      "status": "final",
-      "sourcePreview": "*Arch*: For Arch Linux and derivatives",
+      "sourceHash": "64082c7d33e9dee37d06e86c0ae3bc7fcb2aaac284023e99757b348299c080d2",
+      "targetHash": "3e44c301cf38e0a27f66c6dd66512ea16babd20890f45d2dfb4d84b7641cd5e8",
+      "machineHash": "3e44c301cf38e0a27f66c6dd66512ea16babd20890f45d2dfb4d84b7641cd5e8",
+      "machineText": "**Arch**：適用於 Arch Linux 及其衍生發行版",
+      "status": "machine-translated",
+      "sourcePreview": "**Arch**: For Arch Linux and derivatives",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0008-heading-01": {
       "sourceHash": "f479974c0b59e16605180d0aa8b820c7f51caf78bfa7a2b5894c97f897f45679",
       "targetHash": "3c40a4c4ff35bf9f137680a0d8d3011ff50de37a6f86d7ca332ab6764e0701b1",
       "machineHash": "3c40a4c4ff35bf9f137680a0d8d3011ff50de37a6f86d7ca332ab6764e0701b1",
       "machineText": "個別格式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Individual Formats",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0009-text-01": {
       "sourceHash": "09767d15fb02981e11f93cef76357c75a11d35274ddc8a2395f4eeb13899b28c",
       "targetHash": "b9ea9874398088927512f80ae2d8e330b3bf5f4875b7cb91f4cb8ed493e0ea01",
       "machineHash": "b9ea9874398088927512f80ae2d8e330b3bf5f4875b7cb91f4cb8ed493e0ea01",
       "machineText": "建置特定格式：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build specific formats:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0010-heading-01": {
       "sourceHash": "cb6e944fe1f65688149857991d384bfc935d3157c9a88948017da62f62e5b632",
       "targetHash": "9ab59a8aadd1275ffc70046119a3e1d4fce1324a66bf03ce140d1cc05b0a1b09",
       "machineHash": "9ab59a8aadd1275ffc70046119a3e1d4fce1324a66bf03ce140d1cc05b0a1b09",
       "machineText": "自訂套件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customizing Packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0011-heading-01": {
       "sourceHash": "607caf452dcf7977f517c595af1033510e76494dfe2e68823e050af125ccab64",
       "targetHash": "7a67b1ae53c35ec14b4b6d1ec83f77d01328794de6fcfb60a900d4971ba21129",
       "machineHash": "7a67b1ae53c35ec14b4b6d1ec83f77d01328794de6fcfb60a900d4971ba21129",
       "machineText": "桌面項目",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Desktop Entry",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0012-text-01": {
       "sourceHash": "9018c3dcff148581b0e9541ca896923d72e19b798f44ea4c13b4840935e05a6a",
       "targetHash": "b95814f5524411638e79f0a9e7a12b6a9060b55a7e63daeb93ec5e93bbc43323",
       "machineHash": "b95814f5524411638e79f0a9e7a12b6a9060b55a7e63daeb93ec5e93bbc43323",
       "machineText": "`.desktop`檔案控制應用程式在應用程式選單中的顯示方式。此檔案會根據`build/linux/Taskfile.yml`中的值產生：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The `.desktop` file controls how your app appears in application menus. It's generated from values i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0013-heading-01": {
       "sourceHash": "0e2009944ec3f21d86254a69c6350f4f5ca0de98181655f96e632940bce0b48e",
       "targetHash": "b77685b346c015d91627bac88fdb94fdff348e9325e551c0c90eccdf3bfb648d",
       "machineHash": "b77685b346c015d91627bac88fdb94fdff348e9325e551c0c90eccdf3bfb648d",
       "machineText": "套件中繼資料",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Package Metadata",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0014-text-01": {
       "sourceHash": "d4c69757027531f69f24ebb7cc6e7625a9c47477a2288fa1de97f93e5fa1148c",
       "targetHash": "5b6a76ffea09c05c8f5b065385a79cf00bab733dbef7d2e41065b7992366a3b8",
       "machineHash": "5b6a76ffea09c05c8f5b065385a79cf00bab733dbef7d2e41065b7992366a3b8",
       "machineText": "編輯`build/linux/nfpm/nfpm.yaml`以自訂 DEB 和 RPM 套件：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Edit `build/linux/nfpm/nfpm.yaml` to customize DEB and RPM packages:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0015-heading-01": {
       "sourceHash": "87eebc7b02335915e690ef4548bbfe64b7d644d57f2038bd80f52c3d369cf601",
       "targetHash": "87eebc7b02335915e690ef4548bbfe64b7d644d57f2038bd80f52c3d369cf601",
       "machineHash": "87eebc7b02335915e690ef4548bbfe64b7d644d57f2038bd80f52c3d369cf601",
       "machineText": "AppImage",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "AppImage",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0016-text-01": {
       "sourceHash": "8d9e362271b2233cc468759f38c93a0b00fd2ae7ecd22cead64c93b1268b4ed0",
-      "targetHash": "738da5223f424a7d2869a63a5c41c1341de9742884e4f4d2a94dd8ad9baa71fb",
-      "machineHash": "738da5223f424a7d2869a63a5c41c1341de9742884e4f4d2a94dd8ad9baa71fb",
-      "machineText": "AppImage 設定位於`build/linux/appimage/`。應用程式圖示來自`build/appicon.png`。",
-      "status": "final",
+      "targetHash": "82dab87f157d962c9aed3f84ac3b47e37508fbf29cd76ac4f9b915a9071d3fdc",
+      "machineHash": "82dab87f157d962c9aed3f84ac3b47e37508fbf29cd76ac4f9b915a9071d3fdc",
+      "machineText": "AppImage 的設定位於`build/linux/appimage/`。應用程式圖示來自`build/appicon.png`。",
+      "status": "machine-translated",
       "sourcePreview": "AppImage configuration is in `build/linux/appimage/`. The app icon comes from `build/appicon.png`.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0017-heading-01": {
+    "b0017-text-01": {
+      "sourceHash": "84781f3e916189ecea0cb6dc18a593af67c9f3e1cb0bd50d19c3362e29092f17",
+      "targetHash": "0793b7866d6a27629b09fddf2e2bca59faee637caed7a018f607bb33a481c9df",
+      "machineHash": "0793b7866d6a27629b09fddf2e2bca59faee637caed7a018f607bb33a481c9df",
+      "machineText": "AppImage 會將 WebKit 及其輔助程序封裝在內，並修補封裝的程式庫，使其從 AppImage 內啟動這些程序。它的`AppRun`會從 AppImage 內的`usr/lib`啟動應用程式；修補後的路徑在 WebKit 的 bubblewrap 沙箱外部與內部都能正確解析，因此沙箱會維持啟用。只有在您自己的`AppRun`能保留該工作目錄時，才應加以提供。",
+      "status": "machine-translated",
+      "sourcePreview": "The AppImage bundles WebKit and its helper processes, and patches the bundled library to start them …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:16Z"
+    },
+    "b0018-heading-01": {
       "sourceHash": "ede550d1d31e490acaafa9d29efcbb6e44b34cfa8dbc38c654992a9b44c787ad",
       "targetHash": "08bcd2a6c024afcbbb27c37da04d8f43fd3e3a11db4fc16517a711f5fbe8a445",
       "machineHash": "08bcd2a6c024afcbbb27c37da04d8f43fd3e3a11db4fc16517a711f5fbe8a445",
       "machineText": "簽署套件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Signing Packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0018-text-01": {
+    "b0019-text-01": {
       "sourceHash": "1f0244140723ee93eaed34b63c6b5a4b1cfd1ee13ed6bcff62b7125d0943437b",
       "targetHash": "675fa176f55bab6bc330440ceccbbb9bd0e4f4c67e844b17507fe6465c4572d6",
       "machineHash": "675fa176f55bab6bc330440ceccbbb9bd0e4f4c67e844b17507fe6465c4572d6",
       "machineText": "使用 PGP 金鑰簽署 DEB 和 RPM 套件：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Sign DEB and RPM packages with a PGP key:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0019-text-01": {
+    "b0020-text-01": {
       "sourceHash": "99f4769df296458ef384f6cf796b961638c099433846e402c5b42882e3bc1545",
       "targetHash": "0e94843584c341d2078d0c65a7b552b491cef0ec320a49e020e979965267edbd",
       "machineHash": "0e94843584c341d2078d0c65a7b552b491cef0ec320a49e020e979965267edbd",
       "machineText": "在`build/linux/Taskfile.yml`中設定簽署：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configure signing in `build/linux/Taskfile.yml`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0020-text-01": {
+    "b0021-text-01": {
       "sourceHash": "03058b6bcbcf1a979974177d7051b048d212c9ff43e87430117bd5849640434d",
-      "targetHash": "da4a624c747f14aa9f5b6eb2755d9448546184f3b1b25e7f591b2f72db56d31c",
-      "machineHash": "da4a624c747f14aa9f5b6eb2755d9448546184f3b1b25e7f591b2f72db56d31c",
-      "machineText": "儲存您的金鑰密碼：",
-      "status": "final",
+      "targetHash": "28120f9631c404929dddc43cc0cb11990de06361b2cd019be9ae5c4aba928154",
+      "machineHash": "28120f9631c404929dddc43cc0cb11990de06361b2cd019be9ae5c4aba928154",
+      "machineText": "儲存金鑰密碼：",
+      "status": "machine-translated",
       "sourcePreview": "Store your key password:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0021-text-01": {
+    "b0022-text-01": {
       "sourceHash": "2155acb9bd69d17a69854f45bd14cab90ebe2dda62f02e3c0d2e20276f34c5c9",
-      "targetHash": "c7b2c861d651bc64862c8aaffc55a70fda1bd1c7048bdebcee83a9e9d8a26df4",
-      "machineHash": "c7b2c861d651bc64862c8aaffc55a70fda1bd1c7048bdebcee83a9e9d8a26df4",
-      "machineText": "如需詳細資訊，請參閱[簽署應用程式](/guides/build/signing/)。",
-      "status": "final",
+      "targetHash": "3425d77cc846ec0d32be0e023f3cdd5e4808552accf01afd3fb3285580d0df3d",
+      "machineHash": "3425d77cc846ec0d32be0e023f3cdd5e4808552accf01afd3fb3285580d0df3d",
+      "machineText": "詳情請參閱[簽署應用程式](/guides/build/signing/)。",
+      "status": "machine-translated",
       "sourcePreview": "See [Signing Applications](/guides/build/signing/) for details.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0022-heading-01": {
+    "b0023-heading-01": {
       "sourceHash": "4c5e6e50b9a050f7dbd74ae47c78f97e2995deac6c0c66205cd7b5f98966b7a8",
       "targetHash": "dca51eebbe99a2e1b4ec9594bdb3fe101eb377fc47089c121273ed0112382b63",
       "machineHash": "dca51eebbe99a2e1b4ec9594bdb3fe101eb377fc47089c121273ed0112382b63",
       "machineText": "針對 ARM 建置",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building for ARM",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0023-text-01": {
+    "b0024-text-01": {
       "sourceHash": "e1fbfdcb40b8c977e37f1eb1c1b1db8167799d0e4e98f0b8b08bcf984e707b0f",
       "targetHash": "2059e27456e0ed668b6aa94a07a9cd7161e367675fc878fb98356520f61cefcf",
       "machineHash": "2059e27456e0ed668b6aa94a07a9cd7161e367675fc878fb98356520f61cefcf",
       "machineText": "從 x86_64 主機進行 ARM64 建置時，會使用 Docker 執行 CGO 交叉編譯。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "ARM64 builds from x86_64 hosts use Docker for CGO cross-compilation.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0024-heading-01": {
+    "b0025-heading-01": {
       "sourceHash": "f7a4abb444ac084fd4eff5283716c68a3ac4ee0ea36860a9f85d1153ebccc3b2",
       "targetHash": "98c9f46fbaf16fc17f7eb1f5e3874c36b1fe55bba39dbc1a342e3bd44f2f1b67",
       "machineHash": "98c9f46fbaf16fc17f7eb1f5e3874c36b1fe55bba39dbc1a342e3bd44f2f1b67",
       "machineText": "舊版 GTK3 支援",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Legacy GTK3 Support",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0025-text-01": {
-      "sourceHash": "9f116019ecfc57e1cb477452871cf9a6dcd192070e2c398fd93755033981d9ba",
-      "targetHash": "6567571b8b83d703f10d43bfd360d51c8b2cacbde163207ce34794d5084fa410",
-      "machineHash": "6567571b8b83d703f10d43bfd360d51c8b2cacbde163207ce34794d5084fa410",
-      "machineText": "Wails v3 預設以*GTK4 搭配 WebKitGTK 6.0*建置。對於尚未提供 WebKitGTK 6.0的發行版（Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x），仍可使用舊版 GTK3 / WebKit2GTK 4.1建置途徑。您必須透過建置標籤選用舊版途徑，且此途徑預定於 v3.1 移除。",
-      "status": "final",
-      "sourcePreview": "Wails v3 builds on *GTK4 with WebKitGTK 6.0* by default. A legacy GTK3 / WebKit2GTK 4.1 path is stil…",
+    "b0026-text-01": {
+      "sourceHash": "d061e290165353b75234a81b06395d9ff6f22cfa3edae52709aa203487a14ed3",
+      "targetHash": "abafa068f076abf7a3f1215fedde8914f59d399d1bed64c4ae49c20b427c376c",
+      "machineHash": "abafa068f076abf7a3f1215fedde8914f59d399d1bed64c4ae49c20b427c376c",
+      "machineText": "Wails v3預設以**GTK4 搭配 WebKitGTK 6.0**進行建置。對於尚未提供 WebKitGTK 6.0的發行版（Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x），仍可使用舊版 GTK3／WebKit2GTK 4.1建置途徑。舊版途徑必須透過建置標籤選擇啟用，並預計於v3.1移除。",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3 builds on **GTK4 with WebKitGTK 6.0** by default. A legacy GTK3 / WebKit2GTK 4.1 path is st…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0026-text-01": {
+    "b0027-text-01": {
       "sourceHash": "25399d880ac787d8ef06276b5f712531aaf8e17e020efdcfa89b20559bf94a79",
-      "targetHash": "ebd736eb443cf18cc8124839e9641ccb0a87a81033db23b818678490c9ced212",
-      "machineHash": "ebd736eb443cf18cc8124839e9641ccb0a87a81033db23b818678490c9ced212",
-      "machineText": "GTK3 / WebKit2GTK 4.1途徑會持續支援至 v3.0.x 系列。請配合目標發行版提供 GTK4 / WebKitGTK 6.0的時程規劃遷移至 GTK4，因為`-tags gtk3`將於 v3.1 移除。",
-      "status": "final",
+      "targetHash": "f47a36bec32450350ebe539ff1809df846ad99d5ce271d9f2074db7688265c69",
+      "machineHash": "f47a36bec32450350ebe539ff1809df846ad99d5ce271d9f2074db7688265c69",
+      "machineText": "GTK3／WebKit2GTK 4.1途徑會支援至v3.0.x 版本線。請配合目標發行版提供 GTK4／WebKitGTK 6.0的時程規劃遷移至 GTK4，因為`-tags gtk3`將於v3.1移除。",
+      "status": "machine-translated",
       "sourcePreview": "The GTK3 / WebKit2GTK 4.1 path is supported through the v3.0.x line. Plan to migrate to GTK4 in coor…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0027-heading-01": {
+    "b0028-heading-01": {
       "sourceHash": "2e41b118eb209c139f2bcbf690486f6e1509ab978aa96feb053877a70a1a5a09",
       "targetHash": "1983ea9589bf78fe741fc763c2ff18b0e1e4746b8d93761964e530b4fb2ca4b9",
       "machineHash": "1983ea9589bf78fe741fc763c2ff18b0e1e4746b8d93761964e530b4fb2ca4b9",
       "machineText": "相依套件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Dependencies",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0028-text-01": {
+    "b0029-text-01": {
       "sourceHash": "5e9e65e5140f38747c62ac4919719ddd53ba43ba15ee65fd291b794603665466",
       "targetHash": "0c10087b45b541ea161626668c7115536719783eec038b862fb81b068159de48",
       "machineHash": "0c10087b45b541ea161626668c7115536719783eec038b862fb81b068159de48",
       "machineText": "安裝 GTK3 和 WebKit2GTK 4.1開發程式庫：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Install GTK3 and WebKit2GTK 4.1 development libraries:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0029-text-01": {
+    "b0030-text-01": {
       "sourceHash": "0a4a06a369c1f5e82ed000cb99d5cc9329edfe42d7e32616aaff7a35a5a176d5",
       "targetHash": "5f49db2f97723fcd1571bd8996f71000dcca6ed37ab11113ea20730f349d4324",
       "machineHash": "5f49db2f97723fcd1571bd8996f71000dcca6ed37ab11113ea20730f349d4324",
       "machineText": "必要的 pkg-config 套件為`gtk+-3.0`和`webkit2gtk-4.1`。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The required pkg-config packages are `gtk+-3.0` and `webkit2gtk-4.1`.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0030-heading-01": {
+    "b0031-heading-01": {
       "sourceHash": "af064befce85faed0e741e1f9fe02a965ae50dae348c1e011fc0ede6c0b6af76",
       "targetHash": "31a28082ae91c97dfd558a3b7d6c4a526f0afd7179915c42871c4c1e578f2cc8",
       "machineHash": "31a28082ae91c97dfd558a3b7d6c4a526f0afd7179915c42871c4c1e578f2cc8",
       "machineText": "使用 GTK3 建置",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building with GTK3",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0031-text-01": {
+    "b0032-text-01": {
       "sourceHash": "54b61290dc8e15147c2f2fcf5c13537b90b6bac569463e47fea31e1bd6692905",
       "targetHash": "069b3e062fedefe8d9aded5337c5aade797d1ada3423fc3837edff8b41ca9a71",
       "machineHash": "069b3e062fedefe8d9aded5337c5aade797d1ada3423fc3837edff8b41ca9a71",
       "machineText": "使用`-tags gtk3`旗標：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Use the `-tags gtk3` flag:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0032-text-01": {
+    "b0033-text-01": {
       "sourceHash": "e17189ed6e145c8fe75ad0581479af155c48c5d17f5c30c013646874a61240ee",
       "targetHash": "1cb6bb0a7fa26718c980a338b1cde04a72394b3772a6219ce1203bfcb5379cf0",
       "machineHash": "1cb6bb0a7fa26718c980a338b1cde04a72394b3772a6219ce1203bfcb5379cf0",
       "machineText": "或直接使用 Go：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Or directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0033-heading-01": {
+    "b0034-heading-01": {
       "sourceHash": "3a40cd960a9854a3f61295e97be41b5e92901e39d0d7ac585332f674f2e23a3d",
       "targetHash": "f93b35c399228d8308d6d35cd0428ee8c61a1baa7d64409ca5977588c0f28de7",
       "machineHash": "f93b35c399228d8308d6d35cd0428ee8c61a1baa7d64409ca5977588c0f28de7",
       "machineText": "與 GTK4 的已知差異",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Known Differences from GTK4",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
-    },
-    "b0034-text-01": {
-      "sourceHash": "1d3ca8e01c28c49b041555792d0f7689ba196f433340de8b748b83129e39b65b",
-      "targetHash": "f4dae9a1e4bd0ace06f3d4ef732501b833f5fbba6b27d125103976b0d895b585",
-      "machineHash": "f4dae9a1e4bd0ace06f3d4ef732501b833f5fbba6b27d125103976b0d895b585",
-      "machineText": "*檔案對話方塊*：GTK4 預設使用`xdg-desktop-portal`顯示檔案對話方塊，因此部分對話方塊選項（例如預設目錄、自訂篩選器的顯示方式）的行為與 GTK3 不同。如需詳細資訊，請參閱[對話方塊參考資料 — Linux 對話方塊行為](/reference/dialogs/#linux-dialog-behavior)。",
-      "status": "final",
-      "sourcePreview": "*File dialogs*: GTK4 uses `xdg-desktop-portal` for file dialogs (the default), which means some dial…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0035-text-01": {
-      "sourceHash": "f1d5e6d7146ec5f387c769ca9d41737915eb10fd040eb62c0d48d5c491e9206a",
-      "targetHash": "76684aab588edb7ebe6a8bfd1af3c77fd925e8c7ef329e121f261bc915f7cef6",
-      "machineHash": "76684aab588edb7ebe6a8bfd1af3c77fd925e8c7ef329e121f261bc915f7cef6",
-      "machineText": "*選單樣式*：GTK4 支援`LinuxMenuStylePrimaryMenu`選項，可依循 GNOME HIG 在標題列中顯示漢堡選單按鈕（☰）。此選項不會影響`-tags gtk3`建置。如需詳細資訊，請參閱[視窗 API — Linux MenuStyle](/reference/window/#linux)。",
-      "status": "final",
-      "sourcePreview": "*Menu style*: GTK4 supports a `LinuxMenuStylePrimaryMenu` option that displays a hamburger button (☰…",
+      "sourceHash": "1cde32d935e5577d040a14a7c7a1d9e7e240d9d18a0b44c089417ec6e32bbfd1",
+      "targetHash": "763bb0cf2afe91b73b0d065c4a5fb4bf6a760587f054d356398bda64de362384",
+      "machineHash": "763bb0cf2afe91b73b0d065c4a5fb4bf6a760587f054d356398bda64de362384",
+      "machineText": "**檔案對話方塊**：GTK4 預設使用`xdg-desktop-portal`顯示檔案對話方塊，因此某些對話方塊選項（例如預設目錄、自訂篩選器的顯示方式）的行為與 GTK3 不同。詳情請參閱[對話方塊參考資料－Linux 對話方塊行為](/reference/dialogs/#linux-dialog-behavior)。",
+      "status": "machine-translated",
+      "sourcePreview": "**File dialogs**: GTK4 uses `xdg-desktop-portal` for file dialogs (the default), which means some di…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
     "b0036-text-01": {
-      "sourceHash": "a4964688d1a5f64a79d407fb14a17567b7b7e11c45fbdcb3d226f5bac3c02356",
-      "targetHash": "d35523eaa3b05a7927cd98fe8f8456aba09d402502443288b0ae53cc03f61a36",
-      "machineHash": "d35523eaa3b05a7927cd98fe8f8456aba09d402502443288b0ae53cc03f61a36",
-      "machineText": "*DPI 縮放*：GTK4 使用`gdk_monitor_get_scale`（GTK 4.14+）支援非整數縮放。",
-      "status": "final",
-      "sourcePreview": "*DPI scaling*: GTK4 uses `gdk_monitor_get_scale` (GTK 4.14+) for fractional scaling support.",
+      "sourceHash": "0c7cc3a0bdcd301c922ab66953bb21a2a078ccc8f4fd1b90514e6ffdc817d0a4",
+      "targetHash": "a76f0987b6178d2aa547509fb175f4cd6b4091911054864d3975c00476321fc1",
+      "machineHash": "a76f0987b6178d2aa547509fb175f4cd6b4091911054864d3975c00476321fc1",
+      "machineText": "**選單樣式**：GTK4 支援`LinuxMenuStylePrimaryMenu`選項，會依循 GNOME HIG 在標題列顯示漢堡選單按鈕（☰）。此選項不會影響`-tags gtk3`建置。請參閱[Window API－Linux MenuStyle](/reference/window/#linux)。",
+      "status": "machine-translated",
+      "sourcePreview": "**Menu style**: GTK4 supports a `LinuxMenuStylePrimaryMenu` option that displays a hamburger button …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0037-heading-01": {
+    "b0037-text-01": {
+      "sourceHash": "75133cec85046e13fef1a6e6f837ae40c6b2a528e6d66fe1d43e96931ab1c5ba",
+      "targetHash": "931addff51559f66f5e3b69a0aafa1305f4882088b8e02e077b7150a8a1124d9",
+      "machineHash": "931addff51559f66f5e3b69a0aafa1305f4882088b8e02e077b7150a8a1124d9",
+      "machineText": "**DPI 縮放**：GTK4 使用`gdk_monitor_get_scale`（GTK 4.14+）來支援非整數縮放。",
+      "status": "machine-translated",
+      "sourcePreview": "**DPI scaling**: GTK4 uses `gdk_monitor_get_scale` (GTK 4.14+) for fractional scaling support.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:16Z"
+    },
+    "b0038-heading-01": {
       "sourceHash": "d8b4c7f98d6f6be29f582de2a1f280f17d042384a747ad91a08dd83e121f6c73",
       "targetHash": "42c2902237e49b27f3fdfc08aba57253a82c977170f152b9d5a096fbecd1fef3",
       "machineHash": "42c2902237e49b27f3fdfc08aba57253a82c977170f152b9d5a096fbecd1fef3",
       "machineText": "檢查建置環境",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Checking Your Build",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0038-text-01": {
+    "b0039-text-01": {
       "sourceHash": "ea6e99283b97acbf25ecf3efd49dd28f62378db4debf1da4242953f8752d4471",
-      "targetHash": "d989408491f04f9fd5f620860e1ff314d9e51e7de2c8a4e297370ffcc1c5af93",
-      "machineHash": "d989408491f04f9fd5f620860e1ff314d9e51e7de2c8a4e297370ffcc1c5af93",
-      "machineText": "執行`wails3 doctor`以驗證您的設定。不加任何旗標時，它會檢查 GTK4 / WebKitGTK 6.0（預設選項）。舊版 GTK3 / WebKit2GTK 4.1套件會列為選用項目。",
-      "status": "final",
+      "targetHash": "775f7956b64ebcd2360bfa226df9d6cae61bd683c146e404d29106d2aa1dbf88",
+      "machineHash": "775f7956b64ebcd2360bfa226df9d6cae61bd683c146e404d29106d2aa1dbf88",
+      "machineText": "執行`wails3 doctor`以驗證設定。未指定旗標時，它會檢查 GTK4／WebKitGTK 6.0（預設值）。舊版 GTK3／WebKit2GTK 4.1套件則會列為選用項目。",
+      "status": "machine-translated",
       "sourcePreview": "Run `wails3 doctor` to verify your setup. With no flags it checks for GTK4 / WebKitGTK 6.0 (the defa…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0039-heading-01": {
+    "b0040-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "79f915c4e18884adeaa5dc24a4cee2e2a26ea4973e7828ec2bfe8e8354304410",
       "machineHash": "79f915c4e18884adeaa5dc24a4cee2e2a26ea4973e7828ec2bfe8e8354304410",
       "machineText": "疑難排解",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Troubleshooting",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0040-heading-01": {
+    "b0041-heading-01": {
       "sourceHash": "72bec9805fc07e09dd597cc8c7fa8964f47e0bdd3f62229f0d19b497d8d0b1fc",
       "targetHash": "1f19db88e250a9c934516d0fe01666a3449db551e5a355bbab03c5047a4aada5",
       "machineHash": "1f19db88e250a9c934516d0fe01666a3449db551e5a355bbab03c5047a4aada5",
       "machineText": "AppImage 無法執行",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "AppImage won't run",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0041-text-01": {
+    "b0042-text-01": {
       "sourceHash": "523e4ed8bc448cb9544202668f731b27bf9688584d012fd234046c748f8a2115",
       "targetHash": "45a51db324d93ddea8df51d5752a84df8a036fa7ad189f32fa11d93b95c67702",
       "machineHash": "45a51db324d93ddea8df51d5752a84df8a036fa7ad189f32fa11d93b95c67702",
       "machineText": "將其設為可執行：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Make it executable:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0042-heading-01": {
+    "b0043-heading-01": {
       "sourceHash": "9343ff31522be82c76ec91e3d24a041530076d62180602af4399cfc37f9f097e",
       "targetHash": "03860deb49257f3feefb2259d2d2be92f244ebc470f5470bfebf8785be31aee6",
       "machineHash": "03860deb49257f3feefb2259d2d2be92f244ebc470f5470bfebf8785be31aee6",
       "machineText": "缺少相依套件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Missing dependencies",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0043-text-01": {
-      "sourceHash": "70aa5361fc8af54e63939ff70434a96b9b1a95625fe807947588475f97c53f82",
-      "targetHash": "747a5c4dc2a399bbcfdd5bf2e0cc49843a921d0d325a6a375df2cc574f02f0b5",
-      "machineHash": "747a5c4dc2a399bbcfdd5bf2e0cc49843a921d0d325a6a375df2cc574f02f0b5",
-      "machineText": "如果應用程式無法啟動，請檢查是否缺少 WebKit 相依套件：",
-      "status": "final",
-      "sourcePreview": "If the app fails to start, check for missing WebKit dependencies:",
+    "b0044-text-01": {
+      "sourceHash": "17844c67e223ccb7e66e6b11300388a90879f52611513a462d4beb2294efd122",
+      "targetHash": "3fd8f262ca489c4f3d2589e3a2a8878cdd88d387119a4802eafb85798a1481df",
+      "machineHash": "3fd8f262ca489c4f3d2589e3a2a8878cdd88d387119a4802eafb85798a1481df",
+      "machineText": "請安裝與二進位檔建置變體相符的程式庫。對於預設的 GTK4／WebKitGTK 6.0建置：",
+      "status": "machine-translated",
+      "sourcePreview": "Match the libraries to the binary's build variant. For a default GTK4/WebKitGTK 6.0 build:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0044-heading-01": {
+    "b0045-text-01": {
+      "sourceHash": "d9a044f9ac938d11f44bd1f3364be00e8e56b738812c31769d2a113d046c0e75",
+      "targetHash": "0d291a908854ab5831a98488222e8d5442f36a01a759d6f7cb81ec64fad7ab30",
+      "machineHash": "0d291a908854ab5831a98488222e8d5442f36a01a759d6f7cb81ec64fad7ab30",
+      "machineText": "對於明確使用`-tags gtk3`建置的二進位檔，請改為安裝舊版 GTK3／WebKit2GTK 4.1程式庫：",
+      "status": "machine-translated",
+      "sourcePreview": "For a binary explicitly built with `-tags gtk3`, install the legacy GTK3/WebKit2GTK 4.1 libraries in…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:16Z"
+    },
+    "b0046-text-01": {
+      "sourceHash": "d3912500a9192a54ef7061adc40060f592ecdccafd6b74679eaadfc7dc0e5489",
+      "targetHash": "9f9f68252148ad5f4e77516bee320f3cee8bcbf15e04217e1de5fadca31a14b4",
+      "machineHash": "9f9f68252148ad5f4e77516bee320f3cee8bcbf15e04217e1de5fadca31a14b4",
+      "machineText": "套件是否可用及其名稱取決於發行版版本。請使用具備必要程式庫的受支援版本，或使用文件記載的交叉建置／容器途徑；安裝舊版程式庫並不能滿足預設建置的需求。AppImage 的可攜性取決於其封裝實際包含哪些項目，以及仍需使用哪些主機程式庫。",
+      "status": "machine-translated",
+      "sourcePreview": "Package availability and names depend on the distribution release. Use a supported release with the …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:16Z"
+    },
+    "b0047-heading-01": {
       "sourceHash": "480158c5ac246066d959c70c1d50c61e39e2d83115318c201c0ce4afa6788f7a",
       "targetHash": "fed3aa51d877854deb9ebca44a294bf5993844959f7bba8258e880e8262e7ca1",
       "machineHash": "fed3aa51d877854deb9ebca44a294bf5993844959f7bba8258e880e8262e7ca1",
       "machineText": "找不到 C 編譯器",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "No C compiler found",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0045-text-01": {
+    "b0048-text-01": {
       "sourceHash": "abf55edb276e44ea963e9bce3293e430b7484254e02f2d06de3820e2397cdc74",
       "targetHash": "8379f5a69016953398b0919bfe53ca6061c7883e416a8b385895eb254a708fc7",
       "machineHash": "8379f5a69016953398b0919bfe53ca6061c7883e416a8b385895eb254a708fc7",
       "machineText": "建置系統需要 GCC 或 Clang 才能使用 CGO：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The build system needs GCC or Clang for CGO:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0046-text-01": {
+    "b0049-text-01": {
       "sourceHash": "cd01cff514a2a821f7340530979de534258e761f465b10eead8eed52afbec087",
       "targetHash": "640d257209f34af870a5c2262f6ce29c05a1db484afa2c13b4f47c2dda667317",
       "machineHash": "640d257209f34af870a5c2262f6ce29c05a1db484afa2c13b4f47c2dda667317",
       "machineText": "或者，執行`wails3 task setup:docker`，建置系統便會自動使用 Docker。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Alternatively, run `wails3 task setup:docker` and the build system will use Docker automatically.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0047-heading-01": {
+    "b0050-heading-01": {
       "sourceHash": "cc1512ee44a0b42ca17584e8a356d2319df7748276363efa15bc61bd9aa9ff5a",
-      "targetHash": "a93d5db4b95c6ade88d4cdbaf5a09d19627d390fa569ef266030b1fdd5e1969c",
-      "machineHash": "a93d5db4b95c6ade88d4cdbaf5a09d19627d390fa569ef266030b1fdd5e1969c",
-      "machineText": "NVIDIA GPU 上出現空白或全白視窗",
-      "status": "final",
+      "targetHash": "3dc5b56c1fb3ffb87bebf96002c5ab96180e3fc45fc43b4028b067eceeed17aa",
+      "machineHash": "3dc5b56c1fb3ffb87bebf96002c5ab96180e3fc45fc43b4028b067eceeed17aa",
+      "machineText": "在 NVIDIA GPU 上顯示空白或全白視窗",
+      "status": "machine-translated",
       "sourcePreview": "Blank or white window on NVIDIA GPU",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0048-text-01": {
+    "b0051-text-01": {
       "sourceHash": "3aa857798091c05b7f13fa78cf9e954173161f87da00630d4ec0e26104741a5a",
-      "targetHash": "40ac17c1344f14287ec23329149f5cc54cfe3a696ac0826c2c0151bdc44c4bff",
-      "machineHash": "40ac17c1344f14287ec23329149f5cc54cfe3a696ac0826c2c0151bdc44c4bff",
-      "machineText": "在使用 NVIDIA 專有驅動程式的 Linux 上，Wails 應用程式啟動時可能會顯示空白或全白視窗。這是 WebKitGTK 的錯誤所致：DMA-BUF 轉譯器搭配 NVIDIA 專有驅動程式使用`gbm_bo_map()`時會失敗（影響 X11 和 Wayland、377–580+ 版驅動程式，以及10系列和更舊的 GT 710 GPU）。",
-      "status": "final",
+      "targetHash": "f2628247b670c5c0ebbf9ccc7191a04ded331d3c3a571fc51b1e63ac3daf2a23",
+      "machineHash": "f2628247b670c5c0ebbf9ccc7191a04ded331d3c3a571fc51b1e63ac3daf2a23",
+      "machineText": "在使用 NVIDIA 專有驅動程式的 Linux 上，Wails 應用程式啟動時可能顯示空白或全白視窗。這是 WebKitGTK 的錯誤所致：DMA-BUF 轉譯器搭配 NVIDIA 專有驅動程式時會因`gbm_bo_map()`而失敗（影響 X11 和 Wayland、377–580+ 版驅動程式、10系列及更舊的 GT 710 GPU）。",
+      "status": "machine-translated",
       "sourcePreview": "On Linux with NVIDIA proprietary drivers, Wails apps may show a blank or white window on startup. Th…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0049-text-01": {
-      "sourceHash": "7cfde544524b994238cd071c1f5e17871cd774434e7fe103d339542a6a14eb66",
-      "targetHash": "d985273205d347f427795ef4fb09abde2b52572a9e7d670ec4034ec982a09298",
-      "machineHash": "d985273205d347f427795ef4fb09abde2b52572a9e7d670ec4034ec982a09298",
-      "machineText": "*Wails 偵測到 NVIDIA 核心模組（`/sys/module/nvidia`）時，會自動套用`WEBKIT_DISABLE_DMABUF_RENDERER=1`*，因此大多數使用者不需要採取任何動作。",
-      "status": "final",
-      "sourcePreview": "*Wails applies `WEBKIT_DISABLE_DMABUF_RENDERER=1` automatically* when it detects the NVIDIA kernel m…",
+    "b0052-text-01": {
+      "sourceHash": "c84e97657b5e58724ebbbc4ada69052af7253fa81f3b3c57b00cf441c9106712",
+      "targetHash": "677b1ea1f61bfcbb2f84aa41d6214a463c858625d168eb13d6f72ee3269d666a",
+      "machineHash": "677b1ea1f61bfcbb2f84aa41d6214a463c858625d168eb13d6f72ee3269d666a",
+      "machineText": "**Wails 偵測到 NVIDIA 核心模組（`/sys/module/nvidia`）時，會`WEBKIT_DISABLE_DMABUF_RENDERER=1`自動套用**，因此大多數使用者不需要採取任何動作。",
+      "status": "machine-translated",
+      "sourcePreview": "**Wails applies `WEBKIT_DISABLE_DMABUF_RENDERER=1` automatically** when it detects the NVIDIA kernel…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0050-text-01": {
+    "b0053-text-01": {
       "sourceHash": "52cc6372146b0a27c0aab97e247993b6490fbb3c4b628d60c624336cc4738c0e",
-      "targetHash": "829fdd49cade2319beb884095fc1e2153a9674f56585a187491c15432ef38703",
-      "machineHash": "829fdd49cade2319beb884095fc1e2153a9674f56585a187491c15432ef38703",
-      "machineText": "如果仍看到空白視窗（例如在看不到模組路徑的容器中），請先手動設定環境變數，再啟動應用程式：",
-      "status": "final",
+      "targetHash": "79d136f9763481e9455667b8151159cf7c3da174b9ef33c8901a57896db3527f",
+      "machineHash": "79d136f9763481e9455667b8151159cf7c3da174b9ef33c8901a57896db3527f",
+      "machineText": "如果仍看到空白視窗（例如在無法看見模組路徑的容器中），請先手動設定環境變數，再啟動應用程式：",
+      "status": "machine-translated",
       "sourcePreview": "If you still see a blank window (for example in a container where the module path is not visible), s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0051-text-01": {
+    "b0054-text-01": {
       "sourceHash": "44066f7412e3d12be98cb22b83106c5c0445382c81ddbe5d92df82f54f620b90",
       "targetHash": "383886658aadfc6926e71c683adf62e6e0d9756f739dbb117da046d06f5fc15b",
       "machineHash": "383886658aadfc6926e71c683adf62e6e0d9756f739dbb117da046d06f5fc15b",
       "machineText": "相關的上游錯誤：[WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607)、[WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739)。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Related upstream bugs: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit #18…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0052-heading-01": {
+    "b0055-heading-01": {
       "sourceHash": "b44e465124866baf2ec9386e30c974eef367ba061852f5c58e3cb0132028f6ab",
       "targetHash": "ebc83a5f8268717119cbd58326b7bc0e1ab1b59834d92722c1da0f3bd937e600",
       "machineHash": "ebc83a5f8268717119cbd58326b7bc0e1ab1b59834d92722c1da0f3bd937e600",
       "machineText": "AppImage strip 相容性",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "AppImage strip compatibility",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0053-text-01": {
+    "b0056-text-01": {
       "sourceHash": "4cc24d212304ceff09deeea16a8c288a0bc84067fc9b30b3c92af2c97b451d1b",
-      "targetHash": "60c52721ff59c62efd20a053832cc766244ae7134b38c31b7aeb95cffa344c97",
-      "machineHash": "60c52721ff59c62efd20a053832cc766244ae7134b38c31b7aeb95cffa344c97",
-      "machineText": "在現代 Linux 發行版（Arch Linux、Fedora 39+、Ubuntu 24.04+）上，系統程式庫會使用`.relr.dyn` ELF 區段編譯，以提高重新定位的效率。用於建立 AppImage 的`linuxdeploy`工具內含較舊的`strip`二進位檔，無法處理這些現代區段。",
-      "status": "final",
+      "targetHash": "061c6b3639ef30fe2e55afe4e7b87cef50a31c7eebb3f888005b4b1463836e0c",
+      "machineHash": "061c6b3639ef30fe2e55afe4e7b87cef50a31c7eebb3f888005b4b1463836e0c",
+      "machineText": "在現代 Linux 發行版（Arch Linux、Fedora 39+、Ubuntu 24.04+）上，系統程式庫會使用`.relr.dyn` ELF 區段編譯，以提高重定位效率。用於建立 AppImage 的`linuxdeploy`工具內含較舊的`strip`二進位檔，無法處理這些現代區段。",
+      "status": "machine-translated",
       "sourcePreview": "On modern Linux distributions (Arch Linux, Fedora 39+, Ubuntu 24.04+), system libraries are compiled…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0054-text-01": {
+    "b0057-text-01": {
       "sourceHash": "c73fcfe5063bc092835dea663daa9b3992a5605ff7a7b2900dc929482ad35e3c",
-      "targetHash": "a009961218f4946b49adb58575f61393ee5b7cb8a2154e5aa73eec1980c9eeb9",
-      "machineHash": "a009961218f4946b49adb58575f61393ee5b7cb8a2154e5aa73eec1980c9eeb9",
-      "machineText": "Wails 會在建置 AppImage 前檢查系統 GTK 程式庫，自動偵測此情況。偵測到時，系統會停用移除符號資訊（`NO_STRIP=1`），以確保相容性。",
-      "status": "final",
+      "targetHash": "4f98a928be10bb9e6dd87cfb675186aeb16b4bb6594355de2634225fdab90708",
+      "machineHash": "4f98a928be10bb9e6dd87cfb675186aeb16b4bb6594355de2634225fdab90708",
+      "machineText": "Wails 會在建置 AppImage 前檢查系統 GTK 程式庫，自動偵測此情況。偵測到時，會停用符號剝除（`NO_STRIP=1`）以確保相容性。",
+      "status": "machine-translated",
       "sourcePreview": "Wails automatically detects this situation by checking system GTK libraries before building the AppI…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0055-text-01": {
-      "sourceHash": "2a085797d802273d2b563074a3817f6c1b46d9da7a74faf87193df906dd5b44f",
-      "targetHash": "27da0bf6aa21f546067f217559b7c1c67f38e10c6ddae1d2682c8dcf7c1cbff9",
-      "machineHash": "27da0bf6aa21f546067f217559b7c1c67f38e10c6ddae1d2682c8dcf7c1cbff9",
-      "machineText": "*這表示：*",
-      "status": "final",
-      "sourcePreview": "*What this means:*",
+    "b0058-text-01": {
+      "sourceHash": "f73ddf978c7d163b4491c8b9e78ce5eff675ac75a91b03bd480eb65be6b493ba",
+      "targetHash": "6c9ff3aa4b7a1bcd4a11186b4ac95a680d6270f06e2423262437fceaecb183fc",
+      "machineHash": "6c9ff3aa4b7a1bcd4a11186b4ac95a680d6270f06e2423262437fceaecb183fc",
+      "machineText": "**這表示：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What this means:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0056-text-01": {
+    "b0059-text-01": {
       "sourceHash": "58f62a6ffaa40e2aab318737c8e4c627409d9138f834e39489e676acfa068ee6",
-      "targetHash": "3f963fad8d10670229777b27467abc37338c360f9bfbf93f08b15f8969d33674",
-      "machineHash": "3f963fad8d10670229777b27467abc37338c360f9bfbf93f08b15f8969d33674",
-      "machineText": "在受影響的系統上，AppImage 會稍微變大（約 20-40%）",
-      "status": "final",
+      "targetHash": "7cd4ef02cfc5c013898f777017e95f1a29480a2f74bd224c84a8d0f1ee9a7600",
+      "machineHash": "7cd4ef02cfc5c013898f777017e95f1a29480a2f74bd224c84a8d0f1ee9a7600",
+      "machineText": "在受影響的系統上，AppImage 會稍大一些（約增加20-40%）",
+      "status": "machine-translated",
       "sourcePreview": "AppImages will be slightly larger (~20-40%) on affected systems",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0057-text-01": {
+    "b0060-text-01": {
       "sourceHash": "a6858e41dd7a4891f277aad1c444ed321f7029a71f3a4f582171b1d8f9a130cd",
       "targetHash": "82d562f6e74c96f1ab9b13e3690b265f48c6ff320b30fa443d238a58c2f91abb",
       "machineHash": "82d562f6e74c96f1ab9b13e3690b265f48c6ff320b30fa443d238a58c2f91abb",
       "machineText": "應用程式功能不受影響",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The application functionality is not affected",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0058-text-01": {
+    "b0061-text-01": {
       "sourceHash": "2682eae9c6e0eb8fed6872153391906031fddec89f7e269775cadb1cdae4f988",
       "targetHash": "f8cce527edb73dc7c57cfead441fa393cee7740f6b0f95a3b003f88504284938",
       "machineHash": "f8cce527edb73dc7c57cfead441fa393cee7740f6b0f95a3b003f88504284938",
       "machineText": "此情況會自動處理，無須採取任何動作",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This is handled automatically—no action required",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "b0059-text-01": {
+    "b0062-text-01": {
       "sourceHash": "b8241c758164db4f0cb0b407386b52f2a065cfb1def89540c456d0b233fca1f7",
-      "targetHash": "836c6a107a80bedd339b8913cc20c8c5bc540f7c54193c6b473c3b659a3449ff",
-      "machineHash": "836c6a107a80bedd339b8913cc20c8c5bc540f7c54193c6b473c3b659a3449ff",
-      "machineText": "如果您需要在現代系統上建立較小的 AppImage，可以安裝較新的 `strip` 二進位檔，並設定 `linuxdeploy` 使用該檔案，而非其內附的版本。",
-      "status": "final",
+      "targetHash": "f866474f4263d1291ec344890674da07b52bc2a152da54614baadfd9be593b86",
+      "machineHash": "f866474f4263d1291ec344890674da07b52bc2a152da54614baadfd9be593b86",
+      "machineText": "若需要在現代系統上產生較小的 AppImage，可以安裝較新的`strip`二進位檔，並設定`linuxdeploy`使用該檔案，而非其內含版本。",
+      "status": "machine-translated",
       "sourcePreview": "If you need smaller AppImages on modern systems, you can install a newer `strip` binary and configur…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "ec35bb2b4584d97af7ea10e1857715cef28cfaab32c8e101eb9e6bb633aa1a52",
-      "targetHash": "1c1ac71cf8d5145f63ec16538585afd38b601f989beda129a08bdbbde62a8d14",
-      "machineHash": "1c1ac71cf8d5145f63ec16538585afd38b601f989beda129a08bdbbde62a8d14",
-      "machineText": "封裝 Wails 應用程式以供 Linux 發行",
-      "status": "final",
+      "targetHash": "da930e41421a577ce251495ba082444bb1957a335765820d9271cca322749a91",
+      "machineHash": "da930e41421a577ce251495ba082444bb1957a335765820d9271cca322749a91",
+      "machineText": "封裝 Wails 應用程式以發佈至 Linux",
+      "status": "machine-translated",
       "sourcePreview": "Package your Wails application for Linux distribution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "6dc403ea10d0d73b0db3fc101b590e373a7960eeed45ea9a9550d68f4685bf96",
       "targetHash": "cbced749fa52f141842a2fa09d6157957af1a6c06692e9b9a4be71e20f643628",
       "machineHash": "cbced749fa52f141842a2fa09d6157957af1a6c06692e9b9a4be71e20f643628",
       "machineText": "Linux 封裝",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Linux Packaging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:41:16Z"
     }
   }
 }

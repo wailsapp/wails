@@ -1,5 +1,5 @@
 ---
-title: "Go－前端橋接器"
+title: "Go 與前端橋接器"
 description: "深入瞭解 Wails 如何讓 Go 與 JavaScript 直接通訊"
 slug: "concepts/bridge"
 sourcePath: "concepts/bridge.md"
@@ -7,7 +7,7 @@ sourcePath: "concepts/bridge.md"
 
 ## Go 與 JavaScript 直接通訊
 
-Wails 在 Go 與 JavaScript 之間提供<strong>直接的記憶體內橋接</strong>，無須承受 HTTP 額外負荷、跨越處理程序邊界，也不會遭遇序列化瓶頸，即可順暢通訊。
+Wails 在 Go 與 JavaScript 之間提供**直接的記憶體內橋接器**，無須承擔 HTTP 額外負荷、跨越處理程序邊界，也不會遇到序列化瓶頸，即可順暢通訊。
 
 ## 整體架構
 
@@ -54,7 +54,7 @@ Backend: 後端（Go） {
     style.fill: "#00ADD8"
   }
 
-  Registry: 服務登錄庫 {
+  Registry: 服務登錄檔 {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -71,7 +71,7 @@ Frontend.Bindings -> Frontend.UI: Promise 完成
 Bridge.TypeGen -> Frontend.Bindings: 產生型別
 ```
 
-<strong>關鍵要點：</strong>沒有 HTTP、沒有 IPC，也沒有處理程序邊界。只有具備<strong>型別安全性</strong>的<strong>直接函式呼叫</strong>。
+**關鍵概念：**沒有 HTTP、IPC，也沒有處理程序邊界，只有具備**型別安全**的**直接函式呼叫**。
 
 ## 運作方式：逐步說明
 
@@ -102,10 +102,10 @@ app := application.New(application.Options{
 
 **Wails 執行的作業：**
 
-1. <strong>掃描結構體</strong>以尋找匯出的方法
+1. **掃描結構體**中的匯出方法
 2. **擷取型別資訊**（參數、傳回型別）
-3. **建立登錄庫**，將方法名稱對應至函式
-4. **產生 TypeScript 繫結**，其中包含完整的型別定義
+3. **建立登錄檔**，將方法名稱對應至函式
+4. **產生 TypeScript 繫結**，並包含完整的型別定義
 
 ### 2. 產生繫結（建置時）
 
@@ -122,14 +122,14 @@ export function Add(a: number, b: number): Promise<number>
 | Go 型別 | TypeScript 型別 |
 | --- | --- |
 | `string` | `string` |
-| `int`、`int32`、`int64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int32`, `int64` | `number` |
+| `float32`, `float64` | `number` |
 | `bool` | `boolean` |
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
-| `error` | 例外（擲出） |
+| `time.Time` | 預設為`string`；搭配`-time-type=Date`時則為`Date` |
+| `error` | 例外狀況（擲回） |
 
 ### 3. 前端呼叫（執行階段）
 
@@ -148,14 +148,14 @@ console.log(sum)  // 8
 
 **執行流程：**
 
-1. **呼叫繫結函式**－`Greet("World")`
-2. **建立訊息**－`{ service: "GreetService", method: "Greet", args: ["World"] }`
-3. **傳送至橋接器**—透過 WebView 的 JavaScript 橋接器
-4. **傳回 Promise**—等待回應
+1. **呼叫繫結函式** — `Greet("World")`
+2. **建立訊息** — `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **傳送至橋接器** — 透過 WebView 的 JavaScript 橋接器
+4. **傳回 Promise** — 等待回應
 
-### 4. 橋接處理（執行階段）
+### 4. 橋接器處理（執行階段）
 
-橋接器接收訊息並進行處理：
+橋接器接收並處理訊息：
 
 ```d2
 direction: down
@@ -215,11 +215,11 @@ Invoke -> Error: 錯誤
 Encode -> Send
 ```
 
-<strong>安全性：</strong>只能叫用已註冊的服務與已匯出的方法。
+<strong>安全性：</strong>只能呼叫已註冊的服務及匯出方法。
 
-### 5. Go 執行（執行階段）
+### 5. 執行 Go 程式碼（執行階段）
 
-Go 方法會執行：
+執行 Go 方法：
 
 ```go
 func (g *GreetService) Greet(name string) string {
@@ -230,9 +230,9 @@ func (g *GreetService) Greet(name string) string {
 
 **執行環境：**
 
-- 在 **goroutine** 中執行（非阻塞）
-- 可存取 **Go 的所有功能**（檔案系統、網路、資料庫）
-- 可自由呼叫<strong>其他 Go 程式碼</strong>
+- 在**goroutine**中執行（非阻塞）
+- 可使用**所有 Go 功能**（檔案系統、網路、資料庫）
+- 可自由呼叫**其他 Go 程式碼**
 - 傳回結果或錯誤
 
 ### 6. 回應（執行階段）
@@ -268,7 +268,7 @@ try {
 
 ### 速度
 
-**一般呼叫開銷：**&lt;1ms
+**一般呼叫額外負荷：**&lt;1ms
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -276,17 +276,17 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
    &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
 ```
 
-**與其他方案相比：**
+**與替代方案比較：**
 
 - <strong>HTTP/REST：</strong>5-50ms（網路堆疊、序列化）
-- <strong>IPC：</strong>1-10ms（跨處理程序、資料編組）
+- <strong>IPC：</strong>1-10ms（跨程序邊界、資料編組）
 - **Wails 橋接器：**&lt;1ms（記憶體內直接呼叫）
 
 ### 記憶體
 
-<strong>每次呼叫的開銷：</strong>約 1KB（訊息緩衝區）
+<strong>每次呼叫的額外負荷：</strong>約1KB（訊息緩衝區）
 
-<strong>零複製最佳化：</strong>大型資料（>1MB）會盡可能使用共用記憶體。
+<strong>零複製最佳化：</strong>大型資料（>1MB）會盡可能使用共享記憶體。
 
 ### 並行處理
 
@@ -410,7 +410,7 @@ const user = await GetUser(1)
 console.log(user.name)  // "Alice"
 ```
 
-<strong>JSON 標籤：</strong>使用 `json:` 標籤控制 TypeScript 中的欄位名稱。
+<strong>JSON 標籤：</strong>使用`json:`標籤控制 TypeScript 中的欄位名稱。
 
 #### 時間
 
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### 錯誤
@@ -456,15 +456,15 @@ try {
 
 ### 不支援的型別
 
-以下型別<strong>無法</strong>透過橋接器傳遞：
+下列型別**無法**透過橋接器傳遞：
 
 - **通道**（`chan T`）
 - **函式**（`func()`）
 - **介面**（`interface{}`／`any`除外）
-- **指標**（指向結構的指標除外）
-- **未匯出的欄位**（小寫）
+- **指標**（指向結構體的指標除外）
+- **未匯出的欄位**（小寫開頭）
 
-<strong>替代方案：</strong>使用 ID 或控制代碼：
+<strong>因應方式：</strong>使用 ID 或控制代碼：
 
 ```go
 // ❌ Can't pass file handle
@@ -499,9 +499,9 @@ func CloseFile(id string) error {
 
 ## 進階模式
 
-### 傳遞內容脈絡
+### 傳遞內容資訊
 
-服務可以存取呼叫的內容脈絡：
+服務可存取呼叫的內容資訊：
 
 ```go
 type UserService struct{}
@@ -520,15 +520,15 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 }
 ```
 
-**內容脈絡提供：**
+**內容資訊提供：**
 
 - 發出呼叫的視窗
 - 應用程式執行個體
-- 請求中繼資料
+- 要求中繼資料
 
 ### 串流資料
 
-對於大量資料，請使用事件而非傳回值：
+若要傳遞大型資料，請使用事件而非傳回值：
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -567,9 +567,9 @@ Events.On('file-progress', (data) => {
 await ProcessLargeFile('/path/to/large/file.txt')
 ```
 
-### 取消
+### 取消操作
 
-對於可取消的操作，請使用內容脈絡：
+對於可取消的操作，請使用內容資訊：
 
 ```go
 func LongRunningTask(ctx context.Context) error {
@@ -587,11 +587,11 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-<strong>注意：</strong>前端中斷連線時，內容脈絡會自動取消。
+<strong>注意：</strong>前端中斷連線時，內容資訊會自動取消。
 
 ### 批次操作
 
-透過批次處理來降低橋接層的額外負擔：
+透過批次處理降低橋接器的額外負荷：
 
 ```go
 // ❌ Inefficient: N bridge calls
@@ -613,7 +613,7 @@ func ProcessItems(items []Item) ([]Result, error) {
 }
 ```
 
-## 偵錯橋接層
+## 偵錯橋接器
 
 ### 啟用偵錯記錄
 
@@ -626,7 +626,7 @@ app := application.New(application.Options{
 })
 ```
 
-**輸出會顯示：**
+**輸出內容包括：**
 
 - 方法呼叫
 - 參數
@@ -636,7 +636,7 @@ app := application.New(application.Options{
 
 ### 檢查產生的繫結
 
-查看`frontend/bindings/`以檢視產生的 TypeScript：
+查看`frontend/bindings/`以檢查產生的 TypeScript：
 
 ```javascript
 // frontend/bindings/<full-go-import-path>/myservice.js (real generated shape)
@@ -649,7 +649,7 @@ export function MyMethod($0) {
 
 ### 直接測試服務
 
-不透過前端直接測試 Go 服務：
+不經前端直接測試 Go 服務：
 
 ```go
 func TestGreetService(t *testing.T) {
@@ -665,44 +665,44 @@ func TestGreetService(t *testing.T) {
 
 ### ✅ 建議做法
 
-- **批次執行操作**——減少橋接層呼叫
-- **使用事件進行串流傳輸**——不要傳回大型陣列
-- **讓方法快速完成**——理想情況下應&lt;100ms
-- **使用 goroutine**——適用於耗時操作
+- **批次處理操作**——減少橋接器呼叫次數
+- **使用事件傳輸串流資料**——不要傳回大型陣列
+- **讓方法保持快速**——理想時間為&lt;100ms
+- **使用 goroutine**——適用於長時間執行的操作
 - **在 Go 端快取**——避免重複計算
 
-### ❌ 請勿這樣做
+### ❌ 避免做法
 
-- **請勿過度呼叫**——可行時採用批次處理
-- **請勿傳回巨量資料**——使用分頁或串流傳輸
-- **請勿阻塞**——耗時操作請使用 goroutine
-- **請勿傳遞複雜型別**——保持簡單
-- **請勿忽略錯誤**——務必處理錯誤
+- **不要進行過多呼叫**——可行時採用批次處理
+- **不要傳回大量資料**——使用分頁或串流
+- **不要阻塞**——長時間執行的操作應使用 goroutine
+- **不要傳遞複雜型別**——保持簡單
+- **不要忽略錯誤**——一律處理錯誤
 
 ## 安全性
 
-橋接層預設即具安全性：
+橋接器預設為安全：
 
-1. **僅限白名單**——只能呼叫已註冊的服務
-2. **型別驗證**——依照 Go 型別檢查引數
+1. **僅允許白名單**——只能呼叫已註冊的服務
+2. **型別驗證**——依據 Go 型別檢查引數
 3. **不使用 eval()**——前端無法執行任意 Go 程式碼
 4. **無法濫用反射**——只能存取已匯出的方法
 
 **最佳實務：**
 
-- 在 Go 中<strong>驗證輸入</strong>（不要信任前端）
-- <strong>使用執行脈絡</strong>進行身分驗證／授權
-- 對耗費大量資源的操作進行<strong>速率限制</strong>
-- <strong>清理</strong>檔案路徑和使用者輸入
+- 在 Go 中**驗證輸入**（不要信任前端）
+- 使用**內容資訊**進行身分驗證／授權
+- 對高成本操作進行**速率限制**
+- **清理**檔案路徑與使用者輸入
 
 ## 後續步驟
 
-**建置系統**——瞭解 Wails 如何建置並封裝您的應用程式 [深入瞭解 →](/concepts/build-system/)
+**建置系統**——瞭解 Wails 如何建置及封裝您的應用程式 [深入瞭解 →](/concepts/build-system/)
 
-**服務**——深入探討服務系統 [深入瞭解 →](/features/bindings/services/)
+**服務**——深入探索服務系統 [深入瞭解 →](/features/bindings/services/)
 
-**事件** - 使用事件進行發布／訂閱通訊 [深入瞭解 →](/features/events/system/)
+**事件**——使用事件進行發布／訂閱通訊 [深入瞭解 →](/features/events/system/)
 
 ---
 
-<strong>對橋接機制有疑問嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>對橋接器有疑問嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

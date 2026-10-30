@@ -34,7 +34,7 @@ Se você tiver uma correção de bug ou uma melhoria para a documentação:
 [Aprimoramentos]
 Novas funcionalidades e alterações no comportamento público devem ser propostas por meio de um pull request de rascunho de uma **WEP (Proposta de Aprimoramento do Wails)**, e não por uma issue de solicitação de recurso.
 
-- Leia o [processo de WEP](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Leia o [processo de WEP](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Copie o modelo e abra um PR de rascunho com o título `[WEP] <title>`, contendo apenas a WEP e o material de apoio.
 - Você pode primeiro discutir informalmente uma ideia nas [Discussões do GitHub](https://github.com/wailsapp/wails/discussions) ou no canal [#v3](https://discord.gg/bdj28QNHmT) do Discord, mas um PR de WEP é obrigatório para que um mantenedor tome uma decisão.
 

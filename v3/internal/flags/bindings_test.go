@@ -1,10 +1,10 @@
 package flags
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildFlags(t *testing.T) {
@@ -113,12 +113,10 @@ func TestBuildFlags(t *testing.T) {
 
 			gotFlags, gotErr := options.BuildFlags()
 
-			if diff := cmp.Diff(tt.wantFlags, gotFlags); diff != "" {
-				t.Errorf("BuildFlags() unexpected result: %s\n", diff)
-			}
+			assert.Equal(t, tt.wantFlags, gotFlags, "BuildFlags() unexpected result")
 
-			if diff := cmp.Diff(wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("BuildFlags() unexpected error: %s\n", diff)
+			if !errors.Is(gotErr, wantErr) {
+				t.Errorf("BuildFlags() error = %v, want %v", gotErr, wantErr)
 			}
 		})
 	}

@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost`適合用於 Windows、macOS 及採用點擊聚焦模式的 Linux 桌面上的系統匣快顯視窗。Wails 會在採用焦點跟隨滑鼠模式的 Linux 環境（包括常見的 Hyprland、Sway 和 i3 設定）中停用該行為，否則游標離開快顯視窗時，視窗可能會在使用者能夠操作前便隱藏。在這些環境中，`HideOnEscape`仍可使用。
 
-上述滑鼠左鍵和右鍵點擊行為是智慧型預設值。明確指定的`OnClick`或`OnRightClick`處理常式會取代對應的預設行為。如需瞭解平台檢查及邊界案例，請參閱[手動系統匣測試套件](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)和[系統匣壓力測試範例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress)。
+上述滑鼠左鍵和右鍵點擊行為是智慧型預設值。明確指定的`OnClick`或`OnRightClick`處理常式會取代對應的預設行為。如需瞭解平台檢查及邊界案例，請參閱[手動系統匣測試套件](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray)和[系統匣壓力測試範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress)。
 
 ## 點擊處理常式
 
@@ -714,10 +714,10 @@ menu.Update()  // Add this!
 📖 系統匣範例
 探索完整的系統匣應用程式。
 
-[深入瞭解 →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[深入瞭解 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-<strong>有問題嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[系統匣範例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)。
+<strong>有問題嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[系統匣範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)。

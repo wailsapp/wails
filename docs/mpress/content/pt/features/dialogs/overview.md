@@ -522,4 +522,4 @@ Saiba mais sobre o gerenciamento de janelas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs).

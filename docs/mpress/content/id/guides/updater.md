@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 Jendela InitialHTML dimuat tanpa origin server aset sehingga tidak dapat mengambil `/wails/runtime.js` secara dinamis. Ada dua cara untuk berkomunikasi dengan host dari jendela tersebut:
 
 1. **Cukup tulis HTML.** Framework secara otomatis menyisipkan shim `window.wails.Events` minimal ke setiap jendela yang dibuka dengan `WebviewWindowOptions.AllowSimpleEventEmit = true` dan `HTML` yang telah ditetapkan—persis seperti yang dilakukan jalur bawaan dan BYO milik updater. Tidak diperlukan langkah build. Contoh di bawah menggunakan jalur ini.
-2. **Bundel `@wailsio/runtime` dengan bundler pilihan Anda** (Vite, esbuild, Rollup), lalu impor ke HTML kustom Anda pada waktu build. `Events.On` langsung berfungsi karena sepenuhnya berjalan di sisi klien; `Events.Emit` menggunakan transpor fetch milik runtime, yang tidak berfungsi karena origin null—jadi pasang transpor postMessage kecil melalui hook [`setTransport`](https://wails.io/wails/runtime.js) milik runtime yang merutekannya melalui `window._wails.invoke("wails:event:emit:<name>")`. Penyisipan oleh framework tidak melakukan apa pun jika `window.wails.Events` sudah berada dalam cakupan, sehingga kedua pendekatan tersebut tidak saling bertentangan.
+2. **Bundel `@wailsio/runtime` dengan bundler pilihan Anda** (Vite, esbuild, Rollup), lalu impor ke HTML kustom Anda pada waktu build. `Events.On` langsung berfungsi karena sepenuhnya berjalan di sisi klien; `Events.Emit` menggunakan transpor fetch milik runtime, yang tidak berfungsi karena origin null—jadi pasang transpor postMessage kecil melalui hook [`setTransport`](/guides/custom-transport/) milik runtime yang merutekannya melalui `window._wails.invoke("wails:event:emit:<name>")`. Penyisipan oleh framework tidak melakukan apa pun jika `window.wails.Events` sudah berada dalam cakupan, sehingga kedua pendekatan tersebut tidak saling bertentangan.
 
 Apa pun caranya, JS yang Anda tulis dalam HTML kustom akan memanggil API `Events.On` / `Events.Emit` yang sama:
 
@@ -652,6 +652,6 @@ Sebelum memublikasikan rilis yang akan dipasang oleh pemutakhir:
 
 ## Lihat juga
 
-- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Repositori demo pengujian: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Menambahkan pembaruan mandiri ke aplikasi Wails](/tutorials/04-self-update-a-wails-app/)

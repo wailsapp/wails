@@ -24,6 +24,7 @@ type captureWriter struct {
 	stream  bool
 	buf     bytes.Buffer
 	partial bytes.Buffer
+	scanned int // bytes in partial already checked for a newline
 }
 
 func newCaptureWriter(rep report.Reporter, stepID report.StepID, stream bool) *captureWriter {
@@ -34,17 +35,19 @@ func (w *captureWriter) Write(p []byte) (int, error) {
 	w.partial.Write(p)
 	data := w.partial.Bytes()
 	start := 0
+	search := w.scanned
 	for {
-		i := bytes.IndexByte(data[start:], '\n')
+		i := bytes.IndexByte(data[search:], '\n')
 		if i < 0 {
 			break
 		}
-		w.handleLine(string(data[start : start+i]))
-		start += i + 1
+		end := search + i
+		w.handleLine(string(data[start:end]))
+		start = end + 1
+		search = start
 	}
-	rest := append([]byte(nil), data[start:]...)
-	w.partial.Reset()
-	w.partial.Write(rest)
+	w.partial.Next(start)
+	w.scanned = w.partial.Len()
 	return len(p), nil
 }
 
@@ -66,6 +69,7 @@ func (w *captureWriter) flush() {
 		w.handleLine(w.partial.String())
 		w.partial.Reset()
 	}
+	w.scanned = 0
 }
 
 // output returns the captured stdout+stderr. nil-safe so a caller that

@@ -348,4 +348,4 @@ Une fonctionnalité expérimentale permettant d’appeler des méthodes du runti
 
 ## Exemples
 
-D’autres exemples sont disponibles dans le répertoire [examples](https://github.com/wailsapp/wails/tree/master/v3/examples). Découvrez-les !
+D’autres exemples sont disponibles dans le répertoire [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples). Découvrez-les !

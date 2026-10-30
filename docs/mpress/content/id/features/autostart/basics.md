@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-Contoh lengkap yang dapat dijalankan dengan tombol status / aktifkan / nonaktifkan tersedia di [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).
+Contoh lengkap yang dapat dijalankan dengan tombol status / aktifkan / nonaktifkan tersedia di [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart).

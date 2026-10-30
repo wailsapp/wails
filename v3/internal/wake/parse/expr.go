@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
@@ -39,9 +40,7 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 			}
 			return val
 		},
-		"eq": func(a, b interface{}) bool {
-			return fmt.Sprint(a) == fmt.Sprint(b)
-		},
+		"eq": templateEqual,
 		"ne": func(a, b interface{}) bool {
 			return fmt.Sprint(a) != fmt.Sprint(b)
 		},
@@ -111,6 +110,20 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	return buf.String()
 }
 
+// templateEqual retains Wake's string coercion while accepting multiple candidates.
+func templateEqual(a, b interface{}, alternatives ...interface{}) bool {
+	first := fmt.Sprint(a)
+	if first == fmt.Sprint(b) {
+		return true
+	}
+	for _, alternative := range alternatives {
+		if first == fmt.Sprint(alternative) {
+			return true
+		}
+	}
+	return false
+}
+
 func ResolveVarShell(vr *ast.Var) error {
 	if vr.Shell == "" || vr.Value != "" {
 		return nil
@@ -119,6 +132,11 @@ func ResolveVarShell(vr *ast.Var) error {
 	cmd := platform.ShellCommand(vr.Shell)
 	out, err := cmd.Output()
 	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if diagnostic := strings.TrimSpace(string(exitError.Stderr)); diagnostic != "" {
+				return fmt.Errorf("wake: var shell command %q failed: %w\n%s", vr.Shell, err, diagnostic)
+			}
+		}
 		return fmt.Errorf("wake: var shell command %q failed: %w", vr.Shell, err)
 	}
 

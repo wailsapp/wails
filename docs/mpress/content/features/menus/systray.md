@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` is useful for tray popups on Windows, macOS, and click-to-focus Linux desktops. Wails disables that behaviour on Linux focus-follows-mouse environments (including common Hyprland, Sway, and i3 setups), where leaving the popup could otherwise hide it before it can be used. `HideOnEscape` remains available in those environments.
 
-The left- and right-click behaviours above are smart defaults. An explicit `OnClick` or `OnRightClick` handler replaces the corresponding default. For platform checks and edge cases, see the [manual systray suite](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) and the [systray stress example](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+The left- and right-click behaviours above are smart defaults. An explicit `OnClick` or `OnRightClick` handler replaces the corresponding default. For platform checks and edge cases, see the [manual systray suite](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) and the [systray stress example](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Click Handlers
 
@@ -714,10 +714,10 @@ Create right-click context menus.
 📖 System Tray Example
 Explore a complete system tray application.
 
-[Learn More →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[Learn More →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic).

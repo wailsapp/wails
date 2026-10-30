@@ -7,20 +7,20 @@ sourcePath: "contributing/setup.md"
 
 ## Configuração do ambiente de desenvolvimento
 
-Este guia mostra como configurar um ambiente de desenvolvimento completo para trabalhar no Wails v3.
+Este guia orienta você na configuração de um ambiente de desenvolvimento completo para trabalhar no Wails v3.
 
 ## Ferramentas necessárias
 
 ### Desenvolvimento em Go
 
-1. **Instale o Go 1.25 ou posterior:**
+1. **Instale o Go 1.26 ou posterior:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
   ```
 
 
-2. **Configure o ambiente do Go:**
+2. **Configure o ambiente Go:**
   ```bash
   # Add to your shell profile (.bashrc, .zshrc, etc.)
   export GOPATH=$HOME/go
@@ -59,7 +59,7 @@ xcode-select -p  # Should output a path
 
 **Windows:**
 
-1. Instale o [MSYS2](https://www.msys2.org/) para obter um ambiente semelhante ao Unix
+1. Instale o [MSYS2](https://www.msys2.org/) para ter um ambiente semelhante ao Unix
 2. WebView2 Runtime (pré-instalado no Windows 11; para o Windows 10, faça o [download](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
 3. Opcional: instale o [Git for Windows](https://git-scm.com/download/win)
 
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -138,16 +138,16 @@ Adicione o diretório do Wails à variável de ambiente PATH por meio das Propri
 
 ### VS Code (recomendado)
 
-1. **Instale o VS Code:** [Download](https://code.visualstudio.com/)
+1. **Instale o VS Code:** [Baixar](https://code.visualstudio.com/)
 
 2. **Instale as extensões:**
   - Go (da equipe do Go no Google)
   - ESLint
   - Prettier
-  - MDX (para documentação)
+  - MDX (para a documentação)
 
 
-3. **Defina as configurações do espaço de trabalho** (`.vscode/settings.json`):
+3. **Configure as definições do espaço de trabalho** (`.vscode/settings.json`):
   ```json
   {
     "go.useLanguageServer": true,
@@ -161,10 +161,10 @@ Adicione o diretório do Wails à variável de ambiente PATH por meio das Propri
 
 ### GoLand
 
-1. **Instale o GoLand:** [Download](https://www.jetbrains.com/go/)
+1. **Instale o GoLand:** [Baixar](https://www.jetbrains.com/go/)
 
 2. **Configure:**
-  - Habilite o suporte a módulos Go
+  - Ative o suporte a módulos Go
   - Configure observadores de arquivos para `goimports`
   - Configure o estilo do código de acordo com as convenções do projeto
 
@@ -228,23 +228,9 @@ go test ./... -race
 
 ## Trabalhar com a documentação
 
-A documentação do Wails v3 é escrita em M-Press. Os arquivos-fonte em inglês ficam em  
-`docs/mpress/content/`; as traduções ficam em diretórios de idiomas, como  
-`fr/` e `id/`.
+Quem contribui para a documentação pode usar o M-Press sem instalar a CLI do Wails nem as dependências de compilação para desktop. Consulte [Escrever documentação com o M-Press](/contributing/documentation/) para obter instruções sobre downloads dos executáveis com versões fixadas, instalação, visualização ao vivo, validação e fluxo de trabalho de PRs para branches de lançamento.
 
-Visualize e valide as alterações na documentação a partir da raiz do repositório:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-O site de produção é estático. Node.js, um provedor de tradução e credenciais da Cloudflare  
-não são necessários para trabalhar localmente na documentação.
+Os arquivos Markdown em inglês ficam em `docs/mpress/content/`; as traduções ficam nos diretórios dos idiomas. Na raiz do repositório, `mpress dev` disponibiliza a visualização em `http://127.0.0.1:3000`. Interrompa-a com Ctrl+C antes de executar os comandos de validação do guia.
 
 ## Depuração
 
@@ -280,7 +266,7 @@ dlv debug ./cmd/wails3 -- dev
 
 ### Depurar código específico da plataforma
 
-A depuração específica da plataforma requer ferramentas próprias da plataforma:
+A depuração específica da plataforma exige ferramentas próprias da plataforma:
 
 - **macOS:** Xcode Instruments
 - **Windows:** Visual Studio Debugger
@@ -292,7 +278,7 @@ A depuração específica da plataforma requer ferramentas próprias da platafor
 
 Adicione o diretório do Wails ao PATH ou use `./wails3` na raiz do projeto.
 
-### "webkitgtk-6.0 não encontrado" ou "webkit2gtk não encontrado" (Linux)
+### "webkitgtk-6.0 not found" ou "webkit2gtk not found" (Linux)
 
 Instale os pacotes de desenvolvimento da pilha para a qual você está compilando:
 
@@ -314,10 +300,10 @@ go mod download
 
 ### Erros de "CGO_ENABLED" no Windows
 
-Verifique se há um compilador C (MinGW-w64 via MSYS2) no seu PATH.
+Verifique se há um compilador C (MinGW-w64 via MSYS2) no PATH.
 
 ## Próximas etapas
 
 - Consulte os [Padrões de codificação](/contributing/standards/)
-- Explore a [documentação técnica](/contributing/)
-- Encontre uma issue na qual trabalhar: [Boas issues para iniciantes](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Explore a [Documentação técnica](/contributing/)
+- Encontre uma issue na qual trabalhar: [Issues para iniciantes](https://github.com/wailsapp/wails/labels/good%20first%20issue)

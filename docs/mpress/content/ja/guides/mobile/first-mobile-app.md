@@ -5,26 +5,26 @@ slug: "guides/mobile/first-mobile-app"
 sourcePath: "guides/mobile/first-mobile-app.md"
 ---
 
-このガイドでは、標準的な Wails デスクトップアプリを iOS Simulator または Android Emulator 上で実行します。<strong>Go コードを変更する必要はありません。</strong>すべてのターゲットで同じ `main.go` をビルドします。
+このガイドでは、標準的な Wails デスクトップアプリを iOS Simulator または Android Emulator 上で実行します。**Go コードを変更する必要はありません。** 同じ `main.go` からすべてのターゲット向けにビルドできます。
 
-<strong>所要時間：</strong>15～30 分（大部分は初回実行時のツールチェーンのインストールにかかる時間です）
+**所要時間:** 15～30 分（その大半は初回実行時のツールチェーンのインストールにかかります）
 
 ## デスクトッププロジェクトから始める
 
-まだプロジェクトがない場合は、新規作成します：
+まだプロジェクトがない場合は、新規作成します。
 
 ```bash
 wails3 init -n mymobileapp
 cd mymobileapp
 ```
 
-まず、デスクトップアプリが動作することを確認します：
+まず、デスクトップアプリが動作することを確認します。
 
 ```bash
 wails3 dev
 ```
 
-アプリが開いたら終了し、次に進みます。デスクトップで動作するものはすべてモバイルでも動作します。このガイドでは、`main.go`にも Go コードにも手を加える必要はありません。
+アプリが開いたら終了し、次へ進みます。デスクトップで動作するものはすべてモバイルでも動作します。このガイドでは、`main.go` にも Go コードにも手を加える必要はありません。
 
 ---
 
@@ -34,17 +34,17 @@ wails3 dev
 [iOS Simulator]
 ### 要件
 
-- **macOS**（iOS のビルドは macOS でのみ行えます）
-- **完全版の Xcode** — コマンドラインツールだけでは不十分です。App Store からインストールしてから、次を実行します：
+- **macOS**（iOS 向けビルドは macOS でのみ行えます）
+- **完全版の Xcode** — コマンドラインツールだけでは不十分です。App Store からインストールした後、次を実行します。
   ```bash
   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
   sudo xcodebuild -license accept
   ```
 
 
-- <strong>Go 1.25 以降</strong>と **npm**（`wails3 init`を実行済みであれば、すでにインストールされています）
+- **Go 1.26 以降**と **npm**（`wails3 init` を実行済みであれば、すでにインストールされています）
 
-確認するには `wails3 doctor` を実行します。検出された iOS SDK の一覧が表示されます。
+確認のため `wails3 doctor` を実行します。検出された iOS SDK の一覧が表示されます。
 
 ### Simulator 上で実行する
 
@@ -54,33 +54,33 @@ wails3 dev
 wails3 task ios:run
 ```
 
-これだけです。アプリがビルドされ、Simulator がまだ起動していなければ起動し、その上でアプリが起動します。
+これだけです。アプリがビルドされ、起動中の Simulator がなければ起動し、その上でアプリが起動します。
 
 @note{type="tip"}
 初回実行には数分かかります（iOS 用の Wails フレームワークをコンパイルしてキャッシュするためです）。2 回目以降は大幅に速くなります。
 
 @end
 
-起動すると、変更を加えていないデスクトップアプリが iOS Simulator 上で動作します。`main.go`もフロントエンドも同じです：
+起動すると、変更していないデスクトップアプリが iOS Simulator 上で動作します。`main.go` もフロントエンドも同じです。
 
 ![iOS Simulator 上で動作するデフォルトの Wails アプリ](/assets/ios-simulator-first-app.png)
 
-### ログをリアルタイム表示する
-別のターミナルで次を実行します：
+### ログをストリーミングする
+別のターミナルで次を実行します。
 
 ```bash
 wails3 task ios:logs:dev
 ```
 
-Simulator のログをアプリに絞り込み、リアルタイムで表示します。`fmt.Println`と `log.Println` の出力がここに表示されます。
+Simulator のログをアプリに絞り込み、継続的に表示します。`fmt.Println` と `log.Println` の出力がここに表示されます。
 
 ### WebView を調査する
-Safari で <strong>開発 → Simulator → アプリ</strong>を選択します。コンソール、デバッガー、ネットワークパネルなど、Web インスペクタの全機能を使用できます。
+Safari で **開発 → Simulator → 対象のアプリ** を選択します。コンソール、デバッガー、ネットワークパネルなど、Web Inspector の全機能を使用できます。
 
 ### 変更を加える
-任意のフロントエンドファイル（`frontend/src/main.js`、`index.html`など）を編集し、`wails3 task ios:run`を再実行します。Wails がフロントエンドを再ビルドし、アプリを再起動します。
+任意のフロントエンドファイル（`frontend/src/main.js`、`index.html` など）を編集し、`wails3 task ios:run` を再実行します。Wails がフロントエンドを再ビルドし、アプリを再起動します。
 
-Go コードを変更した場合も、`wails3 task ios:run`を再実行します。Go の再コンパイルは増分方式のため、変更されたパッケージだけが再ビルドされます。
+Go のコードを変更した場合も、`wails3 task ios:run` を再実行します。Go の再コンパイルはインクリメンタルなので、変更されたパッケージだけが再ビルドされます。
 
 @end
 
@@ -90,16 +90,16 @@ Go コードを変更した場合も、`wails3 task ios:run`を再実行しま�
 wails3 task ios:xcode
 ```
 
-これにより、`build/ios/`が Xcode で開きます。Xcode は、実機へのデプロイ、高度なプロファイリング、プロビジョニングプロファイルの管理に使用できます。Wails はビルドのたびに Xcode プロジェクトを再生成するため、生成されたファイルを直接変更しないでください。
+`build/ios/` が Xcode で開きます。Xcode を使用して、実機へのデプロイ、高度なプロファイリング、プロビジョニングプロファイルの管理を行えます。Wails はビルドのたびに Xcode プロジェクトを再生成するため、生成されたファイルを直接変更しないでください。
 
 [Android Emulator]
 ### 要件
 
-**Android SDK**、**NDK**、<strong>JDK</strong>が必要です。最も簡単な方法は Android Studio を使用することですが、コマンドラインツールも使用できます：
+**Android SDK**、**NDK**、**JDK** が必要です。最も簡単なのは Android Studio を使用する方法ですが、コマンドラインツールも使用できます。
 
 @steps
 ### Android コマンドラインツールをインストールする
-[developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only)からダウンロードし、`~/android-sdk/cmdline-tools/latest/`に展開します。
+[developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only) からダウンロードし、`~/android-sdk/cmdline-tools/latest/` に展開します。
 
 ### SDK コンポーネントをインストールする
 ```bash
@@ -120,7 +120,7 @@ avdmanager create avd \
 ```
 
 ### 環境変数を設定する
-`~/.zshrc`または `~/.bashrc` に追加します：
+`~/.zshrc` または `~/.bashrc` に追加します。
 
 ```bash
 export ANDROID_HOME=~/android-sdk
@@ -128,7 +128,7 @@ export ANDROID_SDK_ROOT=~/android-sdk
 export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
 ```
 
-再読み込みします：`source ~/.zshrc`
+再読み込みします: `source ~/.zshrc`
 
 ### JDK をインストールする
 ```bash
@@ -146,7 +146,7 @@ scoop install openjdk21
 
 @end
 
-必要なものがすべて検出されることを確認するため、`wails3 doctor`を実行します。
+`wails3 doctor` を実行し、すべて検出されることを確認します。
 
 ### Emulator 上で実行する
 
@@ -156,33 +156,33 @@ scoop install openjdk21
 wails3 task android:run
 ```
 
-初回実行時には、次の処理が行われます：
+初回実行時には、次の処理が行われます。
 
-- 実行中のエミュレーターがなければ起動する
+- 起動中のエミュレーターがなければ起動する
 - バインディングを生成し、フロントエンドをビルドする
-- NDK クロスコンパイラーを使用して Go コードをコンパイルし、`libwails.so` を生成する
-- Gradle でデバッグ APK を組み立てる
-- エミュレーターにインストールして起動する
+- NDK クロスコンパイラーを使用して、Go コードを `libwails.so` にコンパイルする
+- Gradle でデバッグ APK を作成する
+- APK をエミュレーターにインストールして起動する
 
 @note{type="tip"}
-初回ビルドでは Gradle をダウンロードし、NDK ツールチェーンをコンパイルするため、5～10 分かかります。2 回目以降は増分ビルドとなり、1 分以内で完了します。
+初回ビルドでは Gradle をダウンロードし、NDK ツールチェーンをコンパイルするため、5～10 分かかります。2 回目以降はインクリメンタルビルドとなり、1 分未満で完了します。
 
 @end
 
-### ログをリアルタイム表示する
-別のターミナルで次を実行します：
+### ログをストリーミングする
+別のターミナルで次を実行します。
 
 ```bash
 wails3 task android:logs
 ```
 
-アプリに絞り込んで `adb logcat` を実行します。`fmt.Println` の出力がここに表示されます。
+`adb logcat` を実行し、出力をアプリに絞り込みます。`fmt.Println` の出力がここに表示されます。
 
 ### WebView を調査する
-Chrome を開き、`chrome://inspect`に移動します。アプリの WebView が **Remote Target** の下に表示されます。<strong>inspect</strong>をクリックして DevTools を開きます。
+Chrome を開き、`chrome://inspect` に移動します。アプリの WebView が **Remote Target** の下に表示されます。**inspect** をクリックして DevTools を開きます。
 
 ### 変更を加える
-任意のファイルを編集し、`wails3 task android:run`を再実行します。Gradle の増分ビルドにより、変更されたコードだけが再コンパイルされます。
+任意のファイルを編集し、`wails3 task android:run` を再実行します。Gradle のインクリメンタルビルドにより、変更されたコードだけが再コンパイルされます。
 
 @end
 
@@ -192,22 +192,22 @@ Chrome を開き、`chrome://inspect`に移動します。アプリの WebView �
 
 ## 実行された処理を理解する
 
-`main.go`には一切変更が加えられていません。すべての処理は Wails が行いました：
+`main.go` はまったく変更されていません。すべて Wails が処理しました。
 
-- **ビルドシステム** — プロジェクト内の`Taskfile.yml`には、プラットフォーム固有のツールチェーンを実行する`ios:*`タスクと`android:*`タスクが含まれています。
-- **Go のクロスコンパイル** — 適切な`GOARCH`と sysroot を使用した`GOOS=ios`または`GOOS=android`。
-- **ネイティブホスト** — コンパイル済みの Go コードを組み込み、WebView をホストする、生成済みの Xcode プロジェクト（iOS）または Gradle プロジェクト（Android）。
-- **アセットの配信** — `frontend/dist/`は Go バイナリに埋め込まれ、同じプロセス内から配信されます。localhost サーバーは不要です。
+- **ビルドシステム** — プロジェクト内の `Taskfile.yml` には、プラットフォーム固有のツールチェーンを動かす `ios:*` タスクと `android:*` タスクが含まれています。
+- **Go のクロスコンパイル** — 適切な `GOARCH` と sysroot を指定した `GOOS=ios` または `GOOS=android` を使用します。
+- **ネイティブホスト** — コンパイル済みの Go コードを組み込み、WebView をホストする、生成済みの Xcode プロジェクト（iOS）または Gradle プロジェクト（Android）です。
+- **アセットの配信** — `frontend/dist/` は Go バイナリに埋め込まれ、同じプロセス内から配信されます。localhost サーバーは不要です。
 
 ---
 
 ## アプリをモバイル対応にする
 
-アプリはすでに動作しますが、スマートフォンの画面ではデスクトップアプリのように見えます。少し変更するだけで、見栄えは大きく改善します。
+アプリはすでに動作しますが、スマートフォンの画面ではデスクトップアプリのように見えます。わずかな変更でも、見栄えと使いやすさは大きく向上します。
 
 ### レスポンシブ CSS
 
-モバイル画面は幅が狭く、入力方法も異なります。`frontend/public/style.css`（または同等のファイル）で次のように設定します。
+モバイル画面は幅が狭く、異なる入力パターンを使用します。`frontend/public/style.css`（または同等のファイル）で次のようにします。
 
 ```css
 /* Prevent horizontal scrolling */
@@ -232,9 +232,9 @@ body {
 
 ### Go でプラットフォームを検出する
 
-ビルドタグを使用すると、共有コードを煩雑にせずにプラットフォーム固有の動作を追加できます。
+ビルドタグを使用すれば、共有コードを煩雑にすることなく、プラットフォーム固有の動作を追加できます。
 
-iOS 専用コード用に`mobile_ios.go`を作成します。
+iOS 専用コード用の `mobile_ios.go` を作成します。
 
 ```go {title="mobile_ios.go"}
 //go:build ios
@@ -250,7 +250,7 @@ func platformOptions() application.IOSOptions {
 }
 ```
 
-Android 専用コード用に`mobile_android.go`を作成します。
+Android 専用コード用の `mobile_android.go` を作成します。
 
 ```go {title="mobile_android.go"}
 //go:build android
@@ -264,7 +264,7 @@ func platformOptions() application.AndroidOptions {
 }
 ```
 
-デスクトップでも共有コードをコンパイルできるように、スタブとして`mobile_desktop.go`を作成します。
+デスクトップでも共有コードをコンパイルできるように、スタブとして `mobile_desktop.go` を作成します。
 
 ```go {title="mobile_desktop.go"}
 //go:build !ios && !android
@@ -278,7 +278,7 @@ func platformOptions() mobileOptions { return mobileOptions{} }
 
 ### JavaScript でプラットフォームを検出し、モバイル専用 UI を制御する
 
-`IOS.*`と`Android.*`のランタイムオブジェクトは、それぞれ対応するプラットフォームにのみ存在します。デスクトップで呼び出すと例外がスローされます。Kitchen Sink で使用されている適切なパターンは、プラットフォームを一度だけ検出し、モバイル専用コントロールを完全に非表示にすることです。
+`IOS.*` と `Android.*` のランタイムオブジェクトは、それぞれに対応するプラットフォームにのみ存在します。デスクトップで呼び出すと例外が発生します。Kitchen Sink で採用されている正しいパターンは、プラットフォームを一度だけ検出し、モバイル専用のコントロールを完全に非表示にすることです。
 
 ```javascript
 // Detect platform from the bridge the host injects into the WebView
@@ -298,7 +298,7 @@ document.querySelectorAll('.mobile-only').forEach(el => {
 });
 ```
 
-次に、HTML では次のように記述します。
+次に、HTML では次のようにします。
 
 ```html
 <section class="mobile-only">
@@ -306,9 +306,9 @@ document.querySelectorAll('.mobile-only').forEach(el => {
 </section>
 ```
 
-この方法なら、モバイル専用ボタンはデスクトップでは一切レンダリングされず、個々の呼び出しを毎回`if (isMobile)`チェックで保護する必要もありません。
+これにより、モバイル専用ボタンがデスクトップでレンダリングされることはなく、個々の呼び出しを毎回 `if (isMobile)` チェックで保護する必要もありません。
 
-Go 側では、ビルドタグ付きのスタブと組み合わせ、必要なプラットフォームでのみイベントハンドラーが登録されるようにします。
+Go 側では、これをビルドタグ付きのスタブと組み合わせ、必要なプラットフォームでのみイベントハンドラーが登録されるようにします。
 
 ```go {title="native_desktop.go"}
 //go:build !ios && !android
@@ -338,13 +338,13 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-これは[Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。
+これは [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。
 
-@note{type="note" title="ネイティブ機能 API とイベントの命名規則"}
+@note{type="note" title="ネイティブ機能の API とイベントの命名規則"}
 知っておくべき規則が 2 つあります。
 
-- **Go 側のネイティブ機能ではプラットフォームマネージャーを使用します。**`application.IOS.*`と`application.Android.*`のシングルトン経由で呼び出します。たとえば、`application.IOS.Haptic("medium")`や`application.Android.Share(payload)`です。各マネージャーは対応するプラットフォームにのみ存在するため、その呼び出しは`//go:build ios`ファイルまたは`//go:build android`ファイルに記述します。
-- <strong>イベントは到達範囲に応じて名前空間で分けられます。</strong>両方のプラットフォームが認識するイベントには`common:*`プレフィックスを使用します（`common:haptic`、`common:location`など）。一方、一方のプラットフォームだけが生成または処理できるイベントには`ios:*`または`android:*`を使用します（例：`ios:backgroundTask`、`android:foregroundService`）。ほぼすべてのモバイル機能は共通しているため、フロントエンドでは`common:*`配下でイベントごとに 1 つのリスナーを維持します。
+- **Go 側のネイティブ機能では、プラットフォームマネージャーを使用します。** `application.IOS.*` と `application.Android.*` のシングルトンを介して呼び出します。たとえば、`application.IOS.Haptic("medium")` や `application.Android.Share(payload)` です。各マネージャーは対応するプラットフォームにのみ存在するため、その呼び出しは `//go:build ios` / `//go:build android` ファイルに記述します。
+- **イベントには、対象範囲に応じた名前空間を使用します。** 両方のプラットフォームが認識するイベントには `common:*` プレフィックス（`common:haptic`、`common:location`、…）を使用します。一方、一方のプラットフォームでしか生成または処理できないイベントには `ios:*` または `android:*` を使用します（例：`ios:backgroundTask`、`android:foregroundService`）。ほぼすべてのモバイル機能は共通しているため、フロントエンドでは `common:*` の下でイベントごとに 1 つのリスナーを保持します。
 
 @end
 
@@ -375,18 +375,18 @@ async function onButtonTap() {
 
 ---
 
-## 本番向けにビルドする
+## 本番環境向けにビルドする
 
 @tabs{sync-key="mobile-platform"}
 [iOS]
-**シミュレーター向けビルド**（シミュレーターでのテスト用。署名は不要）：
+**シミュレーター用ビルド**（シミュレーターでのテスト用。署名は不要）：
 
 ```bash
 wails3 task ios:package
 wails3 task ios:deploy-simulator
 ```
 
-**実機向けビルド**（署名 ID とプロビジョニングプロファイルが必要）：
+**デバイス用ビルド**（署名 ID とプロビジョニングプロファイルが必要）：
 
 ```bash
 wails3 task ios:package \
@@ -406,7 +406,7 @@ wails3 task ios:package:ipa IOS_PLATFORM=device \
 ```
 
 @note{type="tip"}
-App Store Connect にアップロードする場合は、`wails3 task ios:xcode`を使用し、署名とアーカイブを Xcode に管理させます。証明書、プロファイル、公証に伴う複雑な処理は Xcode が自動的に行います。
+App Store Connect にアップロードする場合は、`wails3 task ios:xcode` を使用し、署名とアーカイブは Xcode に管理させます。証明書、プロファイル、公証に関する複雑な処理が自動的に行われます。
 
 @end
 
@@ -435,7 +435,7 @@ wails3 task android:package:fat
 ```
 
 @note{type="tip"}
-Play Store にアップロードする場合は、APK ではなく`.aab`（Android App Bundle）を生成します。Android Studio で`build/android/`を開き、<strong>Build → Generate Signed Bundle / APK</strong>を使用します。
+Play Store にアップロードする場合は、APK ではなく `.aab`（Android App Bundle）を生成します。Android Studio で `build/android/` を開き、**Build → Generate Signed Bundle / APK** を使用してください。
 
 @end
 
@@ -445,7 +445,7 @@ Play Store にアップロードする場合は、APK ではなく`.aab`（Andro
 
 ## トラブルシューティング
 
-### `wails3 task ios:run`が「no iOS SDKs found」で失敗する
+### `wails3 task ios:run` が「no iOS SDKs found」で失敗する
 
 完全版の Xcode をインストールし、選択しておく必要があります。
 
@@ -454,9 +454,9 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 xcode-select -p  # should print the Xcode path
 ```
 
-#### `wails3 task android:run`が「SDK not found」で失敗する
+#### `wails3 task android:run` が「SDK not found」で失敗する
 
-`ANDROID_HOME`が設定され、エクスポートされていることを確認します。次のコマンドで検証してください。
+`ANDROID_HOME` が設定され、export されていることを確認してください。次のコマンドで確認できます。
 
 ```bash
 echo $ANDROID_HOME
@@ -465,16 +465,16 @@ ls $ANDROID_HOME/platform-tools/adb
 
 #### シミュレーターが起動しない
 
-利用可能なシミュレーターを一覧表示し、いずれかを手動で起動します。
+利用可能なシミュレーターを一覧表示し、手動で起動します。
 
 ```bash
 xcrun simctl list devices available
 xcrun simctl boot "iPhone 16"
 ```
 
-#### `chrome://inspect`にターゲットが表示されない
+#### `chrome://inspect` にターゲットが表示されない
 
-WebView はデバッグモードである必要があります（`android:run`ではデフォルトです）。本番ビルドではなく、デバッグビルドを実行していることを確認してください。また、`adb devices`でエミュレーターが接続済みと表示されていることも確認します。
+WebView はデバッグモードである必要があります（`android:run` ではデフォルト）。本番用ビルドではなく、デバッグビルドを実行していることを確認してください。また、`adb devices` でエミュレーターが接続済みと表示されることも確認してください。
 
 #### セーフエリアのインセットが適用されない
 
@@ -488,7 +488,7 @@ HTML に viewport メタタグが含まれていることを確認してくだ�
 
 ## Kitchen Sink を試す
 
-最初のアプリが動作したら、ほかに何ができるかを学ぶには、**Kitchen Sink** のサンプルを試すのが最も近道です。これは、単一のコードベースから iOS、Android、デスクトップで動作する完全な Wails アプリで、触覚フィードバック、位置情報、生体認証、ローカル通知、セキュアストレージなどを網羅しています。
+最初のアプリが動作したら、ほかに何ができるかを学ぶには **Kitchen Sink** サンプルが最も手早い方法です。これは単一のコードベースから iOS、Android、デスクトップで動作する完全な Wails アプリで、触覚フィードバック、位置情報、生体認証、ローカル通知、セキュアストレージなどを網羅しています。
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
@@ -499,13 +499,13 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) でソースを参照してください。特に `native_features_ios.go` ファイルと `native_features_android.go` ファイルは、プラットフォーム固有の機能をコピー＆ペーストで実装する際の出発点として役立ちます。
+ソースは [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) で確認できます。特に `native_features_ios.go` と `native_features_android.go` の各ファイルは、プラットフォーム固有機能を実装する際にコピー＆ペーストして使える出発点として役立ちます。
 
 ## 次のステップ
 
 @cards{cols="2"}
 iOS ガイド
-完全なリファレンス：設定オプション、ネイティブタブ、WKWebView の機能・設定の有効／無効を切り替える項目、実機向けビルド、署名。
+完全なリファレンス：設定オプション、ネイティブタブ、WKWebView の切り替え、デバイス用ビルド、署名。
 
 [iOS ガイド →](/guides/mobile/ios/)
 
@@ -517,8 +517,8 @@ Android ガイド
 
 ---
 📖 Kitchen Sink のソース
-触覚フィードバック、位置情報、生体認証、通知、セキュアストレージを、実行可能な 1 つのアプリにまとめています。
+触覚フィードバック、位置情報、生体認証、通知、セキュアストレージを、1 つの実行可能なアプリですべて確認できます。
 
-[GitHub で表示 →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[GitHub で表示 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

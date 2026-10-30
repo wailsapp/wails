@@ -1,5 +1,5 @@
 ---
-title: "Methoden-Bindings"
+title: "Go aus JavaScript aufrufen"
 description: "Go-Methoden typsicher aus JavaScript aufrufen"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -7,7 +7,7 @@ sourcePath: "features/bindings/methods.md"
 
 ## Typsichere Go-JavaScript-Bindings
 
-Wails **generiert automatisch typsichere JavaScript-/TypeScript-Bindings** für Ihre Go-Methoden. Schreiben Sie Go-Code, führen Sie einen einzigen Befehl aus und erhalten Sie vollständig typisierte Frontend-Funktionen – ohne HTTP-Overhead, manuelle Arbeit oder Boilerplate-Code.
+Wails **generiert automatisch typsichere JavaScript-/TypeScript-Bindings** für Ihre Go-Methoden. Schreiben Sie Go-Code, führen Sie einen Befehl aus und erhalten Sie vollständig typisierte Frontend-Funktionen – ohne HTTP-Overhead, manuelle Arbeit oder Boilerplate-Code.
 
 ## Schnellstart
 
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**Das ist alles!** Typsichere Aufrufe von Go nach JavaScript.
+**Das ist alles!** Typsichere Aufrufe von Go aus JavaScript.
 
 ## Services erstellen
 
@@ -100,7 +100,7 @@ app := application.New(application.Options{
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -328,13 +328,13 @@ const sum = await CalculatorService.Add(5, 3)
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | Map mit Zeichenfolgenschlüsseln |
-| `map[K]V` | `{ [_ in K]?: V }` | `K`, die keine Zeichenfolgen sind, werden als gemappter Typ dargestellt und **nicht** als JavaScript-`Map` |
+| `map[K]V` | `{ [_ in K]?: V }` | `K`, das keine Zeichenfolge ist, wird als zugeordneter Typ und **nicht** als JS-`Map` gerendert |
 | `[]byte` | `string` | Base64-codiert |
 | `struct` | `class` / `interface` | mit Feldern |
-| `time.Time` | `any` | wird zur Laufzeit als RFC3339Nano-Zeichenfolge serialisiert |
-| `*T` | `T \| null` | Zeiger bedeutet, dass null zulässig ist |
+| `time.Time` | `string` (Standard) oder `Date` | `-time-type` wählt die generierte Darstellung aus; JSON verwendet eine RFC3339Nano-Zeichenfolge |
+| `*T` | `T \| null` | Zeiger bedeutet nullable |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | Als Rückgabewert Exception, andernfalls any |
+| `error` | `any` / `Exception` | Exception bei Verwendung als Rückgabewert, andernfalls any |
 
 ### Nicht unterstützte Typen
 
@@ -342,10 +342,10 @@ Diese Typen können **nicht** über die Bridge übergeben werden:
 
 - `chan T` (Kanäle)
 - `func()` (Funktionen)
-- Komplexe Schnittstellen (außer `interface{}`)
+- Komplexe Interfaces (außer `interface{}`)
 - Nicht exportierte Felder (kleingeschrieben)
 
-**Problemumgehung:** Verwenden Sie IDs oder Handles:
+**Problemumgehung:** IDs oder Handles verwenden:
 
 ```go
 // ❌ Can't return file handle
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-Die Runtime löst abhängig von der Fehlerursache einen anderen Fehlertyp aus:
+Die Runtime löst je nach Fehlerursache einen anderen Fehlertyp aus:
 
 | Fehlertyp | Ausgelöst, wenn |
 | --- | --- |
-| `TypeError` | der Aufruf die falsche Anzahl an Argumenten enthält oder ein Argument nicht in den Go-Typ konvertiert werden kann |
-| `RuntimeError` | die Methode einen Fehler zurückgegeben hat oder während ihrer Ausführung eine Panic aufgetreten ist |
+| `TypeError` | der Aufruf die falsche Anzahl von Argumenten enthält oder ein Argument nicht in den Go-Typ konvertiert werden kann |
+| `RuntimeError` | die Methode einen Fehler zurückgegeben hat oder während der Ausführung eine Panic aufgetreten ist |
 | `Error` | ein anderer Fehler auftritt, beispielsweise beim Aufruf einer nicht vorhandenen Methode |
 
-Jeder Fehler enthält:
+Jeder Fehler stellt Folgendes bereit:
 
 - `name`: den Fehlertyp aus der obigen Tabelle
 - `message`: die Meldung des Go-Fehlers
-- `cause`: den als JSON serialisierten Go-Fehler, sofern verfügbar. Hat die Methode mehrere Fehler zurückgegeben, ist `cause` ein Array mit einem Eintrag pro Fehler.
+- `cause`: sofern verfügbar, den als JSON serialisierten Go-Fehler. Hat die Methode mehrere Fehler zurückgegeben, ist `cause` ein Array mit einem Eintrag pro Fehler.
 
-Die Klasse `RuntimeError` wird vom Paket `@wailsio/runtime` exportiert. Dadurch können Sie von Ihrem Go-Code zurückgegebene Fehler von anderen Fehlern unterscheiden:
+Die Klasse `RuntimeError` wird vom Paket `@wailsio/runtime` exportiert. So können Sie von Ihrem Go-Code zurückgegebene Fehler von anderen Fehlern unterscheiden:
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -447,7 +447,7 @@ try {
 ```
 
 @note{type="info"}
-In früheren Versionen der Runtime wurde jeder fehlgeschlagene Aufruf mit einem einfachen `Error` abgelehnt, dessen Meldung das unverarbeitete JSON des zugrunde liegenden Fehlers enthielt.
+In früheren Versionen der Runtime wurde jeder fehlgeschlagene Aufruf mit einem einfachen `Error` abgelehnt, dessen Meldung das rohe JSON des zugrunde liegenden Fehlers enthielt.
 
 @end
 
@@ -487,7 +487,7 @@ try {
 
 Fehler werden mit dem Standardpaket `encoding/json` serialisiert, daher werden nur exportierte Felder einbezogen. Mit `errors.New` oder `fmt.Errorf` erstellte Fehler haben keine exportierten Felder und werden als leeres Objekt serialisiert.
 
-Um vollständig zu steuern, wie Fehler serialisiert werden, geben Sie in den Dienstoptionen eine `MarshalError`-Funktion an:
+Um vollständig zu steuern, wie Fehler serialisiert werden, geben Sie in den Serviceoptionen eine `MarshalError`-Funktion an:
 
 ```go
 app := application.New(application.Options{
@@ -509,9 +509,9 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError` muss gültiges JSON zurückgeben oder, um auf die Standardserialisierung zurückzugreifen, `nil`.
+`MarshalError` muss gültiges JSON zurückgeben oder `nil`, damit auf die Standardserialisierung zurückgegriffen wird.
 
-## Leistung
+## Performance
 
 ### Aufruf-Overhead
 
@@ -555,7 +555,7 @@ const config = await GetConfig()
 // Use config multiple times
 ```
 
-**✅ Events für Streaming verwenden:**
+**✅ Ereignisse für Streaming verwenden:**
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -695,44 +695,44 @@ app.loadTodos()
 
 ### ✅ Empfohlen
 
-- **Methoden einfach halten** – Nur eine Verantwortlichkeit
-- **Fehler zurückgeben** – Keine Panik auslösen
+- **Methoden einfach halten** – Eine Verantwortlichkeit
+- **Fehler zurückgeben** – Keine Panic auslösen
 - **Threadsicheren Zustand verwenden** – Mutexe für gemeinsam genutzte Daten
-- **Operationen bündeln** – Aufrufe über die Bridge reduzieren
+- **Operationen bündeln** – Bridge-Aufrufe reduzieren
 - **Auf der Go-Seite zwischenspeichern** – Wiederholte Arbeit vermeiden
 - **Methoden dokumentieren** – Kommentare werden zu JSDoc
 
 ### ❌ Nicht empfohlen
 
-- **Nicht blockieren** – Goroutinen für lang laufende Operationen verwenden
-- **Keine Channels zurückgeben** – Stattdessen Events verwenden
+- **Nicht blockieren** – Für lang laufende Operationen Goroutinen verwenden
+- **Keine Channels zurückgeben** – Stattdessen Ereignisse verwenden
 - **Keine Funktionen zurückgeben** – Wird nicht unterstützt
 - **Fehler nicht ignorieren** – Immer behandeln
-- **Keine nicht exportierten Felder verwenden** – Für sie werden keine Bindings erstellt
+- **Keine nicht exportierten Felder verwenden** – Sie werden nicht gebunden
 
 ## Nächste Schritte
 
 @cards{cols="2"}
 ◆ Services
-Vertiefen Sie Ihr Wissen über das Service-System.
+Ausführliche Einführung in das Service-System.
 
 [Mehr erfahren →](/features/bindings/services/)
 
 ---
 📖 Modelle
-Binden Sie komplexe Datenstrukturen ein.
+Komplexe Datenstrukturen binden.
 
 [Mehr erfahren →](/features/bindings/models/)
 
 ---
 🚀 Go-Frontend-Bridge
-Machen Sie sich mit dem Bridge-Mechanismus vertraut.
+Den Bridge-Mechanismus verstehen.
 
 [Mehr erfahren →](/concepts/bridge/)
 
 ---
-★ Events
-Verwenden Sie Events für die Publish/Subscribe-Kommunikation.
+★ Ereignisse
+Ereignisse für die Publish/Subscribe-Kommunikation verwenden.
 
 [Mehr erfahren →](/features/events/system/)
 
@@ -740,4 +740,4 @@ Verwenden Sie Events für die Publish/Subscribe-Kommunikation.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.

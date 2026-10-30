@@ -213,12 +213,14 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	var mergedVars map[string]*ast.Var
 	if len(task.Precondition) > 0 {
 		mergedVars = e.mergeVars(task, depVars)
-		if err := checkPreconditions(task, mergedVars); err != nil {
+		if err := checkPreconditions(task, mergedVars, e.Dir); err != nil {
 			return err
 		}
 	}
 
-	if !e.Force && isUpToDate(task, e.Dir) {
+	// A persistent cache miss must execute: the legacy check does not compare
+	// task hashes and can otherwise hide changed commands.
+	if !e.Force && e.Cache == nil && isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
 		e.reportPrunedCached(task)
 		return nil
@@ -333,14 +335,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	// the output capture decodes and routes them to this build's reporter.
 	env = append(env, "WAKE_REPORT=1")
 
-	dir := parse.ExpandTemplates(task.Dir, mergedVars)
-	if dir != "" && !filepath.IsAbs(dir) {
-		// filepath.IsAbs handles `C:\…` on Windows; the previous
-		// `strings.HasPrefix("/")` check misclassified Windows absolute
-		// paths as relative and prefixed them with e.Dir, producing nonsense
-		// like `C:\proj\C:\foo` for the task's working directory.
-		dir = filepath.Join(e.Dir, dir)
-	}
+	dir := taskDirectory(e.Dir, parse.ExpandTemplates(task.Dir, mergedVars))
 
 	label := parse.ExpandTemplates(task.Label, mergedVars)
 
@@ -365,7 +360,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 				return nil
 			}
 			goRecord = func() {
-				if err := e.Cache.RecordGoCmd(task.Name, expanded); err != nil {
+				if err := e.Cache.RecordGoCmd(task.Name, expanded, sources); err != nil {
 					e.log("go-cache record failed for %q: %v", task.Name, err)
 				}
 			}

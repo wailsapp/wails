@@ -246,7 +246,7 @@ Le serveur MCP offre un contrôle programmatique complet de votre application. T
 
 ## Exemple d’application
 
-Une application bac à sable complète présentant tous les outils est disponible à l’emplacement [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Elle comprend :
+Une application bac à sable complète présentant tous les outils est disponible à l’emplacement [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp). Elle comprend :
 
 - Compteur avec des boutons d’incrémentation et de réinitialisation
 - Champ de saisie du nom avec les méthodes liées Greet, Add et Shout

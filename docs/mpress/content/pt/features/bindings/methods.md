@@ -1,13 +1,13 @@
 ---
-title: "Vinculações de métodos"
+title: "Chamar Go pelo JavaScript"
 description: "Chame métodos Go pelo JavaScript com segurança de tipos"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
 ---
 
-## Vinculações Go–JavaScript com segurança de tipos
+## Bindings Go-JavaScript com segurança de tipos
 
-O Wails **gera automaticamente vinculações JavaScript/TypeScript com segurança de tipos** para seus métodos Go. Escreva o código Go, execute um comando e obtenha funções de frontend totalmente tipadas, sem a sobrecarga de HTTP, sem trabalho manual e sem código repetitivo.
+O Wails **gera automaticamente bindings JavaScript/TypeScript com segurança de tipos** para seus métodos Go. Escreva o código Go, execute um comando e obtenha funções de frontend totalmente tipadas, sem a sobrecarga do HTTP, sem trabalho manual e sem código repetitivo.
 
 ## Início rápido
 
@@ -31,7 +31,7 @@ app := application.New(application.Options{
 })
 ```
 
-**3. Gere as vinculações:**
+**3. Gere os bindings:**
 
 ```bash
 wails3 generate bindings
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**Pronto!** Chamadas do Go para o JavaScript com segurança de tipos.
+**É só isso!** Chamadas de Go para JavaScript com segurança de tipos.
 
 ## Criação de serviços
 
@@ -91,16 +91,16 @@ app := application.New(application.Options{
 
 **Pontos principais:**
 
-- Somente métodos **exportados** (PascalCase) são vinculados
+- Somente **métodos exportados** (PascalCase) recebem bindings
 - Os métodos podem retornar valores ou `(value, error)`
-- Os serviços são **singletons** (uma instância por aplicativo)
+- Os serviços são **singletons** (uma instância por aplicação)
 
 ### Serviço com estado
 
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -150,7 +150,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 }
 ```
 
-**Registre com as dependências:**
+**Registre com dependências:**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -162,7 +162,7 @@ app := application.New(application.Options{
 })
 ```
 
-## Geração de vinculações
+## Geração de bindings
 
 ### Geração básica
 
@@ -188,7 +188,7 @@ INFO  Output directory: /myproject/frontend/bindings
     - index.js
 @end
 
-### Geração para TypeScript
+### Geração de TypeScript
 
 ```bash
 wails3 generate bindings -ts
@@ -208,13 +208,13 @@ wails3 generate bindings -d ./src/bindings
 wails3 dev
 ```
 
-**Regenera automaticamente as vinculações** quando o código Go é alterado.
+**Gera novamente os bindings automaticamente** quando o código Go é alterado.
 
-## Uso das vinculações
+## Uso dos bindings
 
 ### JavaScript
 
-**Vinculação gerada:**
+**Binding gerado:**
 
 ```javascript
 // frontend/bindings/<full-go-import-path>/calculatorservice.js
@@ -253,7 +253,7 @@ try {
 
 ### TypeScript
 
-**Vinculação gerada:**
+**Binding gerado:**
 
 ```typescript
 // frontend/bindings/changeme/calculatorservice.ts
@@ -283,9 +283,9 @@ try {
 **Benefícios:**
 
 - Verificação completa de tipos
-- Preenchimento automático no IDE
+- Preenchimento automático da IDE
 - Erros em tempo de compilação
-- Refatoração aprimorada
+- Refatoração mais segura
 
 ### Arquivos de índice
 
@@ -327,14 +327,14 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | map com chaves do tipo string |
-| `map[K]V` | `{ [_ in K]?: V }` | um `K` que não seja string é renderizado como um tipo mapeado, e **não** como um `Map` do JS |
+| `map[string]T` | `{ [_: string]: T }` | mapa com chaves do tipo string |
+| `map[K]V` | `{ [_ in K]?: V }` | `K` que não seja string é renderizado como um tipo mapeado, e **não** como um `Map` do JS |
 | `[]byte` | `string` | codificado em base64 |
 | `struct` | `class` / `interface` | com campos |
-| `time.Time` | `any` | serializado no runtime como uma string RFC3339Nano |
+| `time.Time` | `string` (padrão) ou `Date` | `-time-type` seleciona a representação gerada; o JSON usa uma string RFC3339Nano |
 | `*T` | `T \| null` | o ponteiro indica que o valor pode ser nulo |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | Exception se usado como valor de retorno; caso contrário, any |
+| `error` | `any` / `Exception` | Exceção se for um valor de retorno; caso contrário, any |
 
 ### Tipos não compatíveis
 
@@ -343,7 +343,7 @@ Estes tipos **não podem** ser passados pela ponte:
 - `chan T` (canais)
 - `func()` (funções)
 - Interfaces complexas (exceto `interface{}`)
-- Campos não exportados (com inicial minúscula)
+- Campos não exportados (em minúsculas)
 
 **Solução alternativa:** use IDs ou identificadores:
 
@@ -378,7 +378,7 @@ func CloseFile(id string) error {
 
 ## Tratamento de erros
 
-### No Go
+### No lado do Go
 
 ```go
 func (d *DatabaseService) GetUser(id int) (*User, error) {
@@ -399,9 +399,9 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 }
 ```
 
-### No JavaScript
+### No lado do JavaScript
 
-Quando um método vinculado falha, a promise retornada é rejeitada com um objeto JavaScript `Error`:
+Quando um método vinculado falha, a promessa retornada é rejeitada com um objeto JavaScript `Error`:
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,19 +415,19 @@ try {
 }
 ```
 
-O runtime lança um tipo de erro diferente conforme o que deu errado:
+O runtime lança um tipo de erro diferente conforme o problema ocorrido:
 
-| Tipo de erro | Lançado quando |
+| Tipo de erro | Quando é lançado |
 | --- | --- |
-| `TypeError` | A chamada tem um número incorreto de argumentos ou um argumento não pode ser convertido para o tipo Go |
+| `TypeError` | A chamada tem o número incorreto de argumentos ou um argumento não pode ser convertido para o tipo Go |
 | `RuntimeError` | O método retornou um erro ou entrou em pânico durante a execução |
-| `Error` | Qualquer outra falha, como uma chamada a um método inexistente |
+| `Error` | Qualquer outra falha, por exemplo, uma chamada a um método inexistente |
 
-Cada erro fornece:
+Todos os erros fornecem:
 
 - `name`: o tipo de erro da tabela acima
 - `message`: a mensagem do erro do Go
-- `cause`: o erro do Go serializado como JSON, quando disponível. Se o método retornar vários erros, `cause` será um array com uma entrada para cada erro.
+- `cause`: o erro do Go serializado como JSON, quando disponível. Se o método tiver retornado vários erros, `cause` será um array com uma entrada para cada erro.
 
 A classe `RuntimeError` é exportada pelo pacote `@wailsio/runtime`, permitindo distinguir os erros retornados pelo seu código Go de outras falhas:
 
@@ -451,9 +451,9 @@ Em versões anteriores do runtime, toda chamada com falha era rejeitada com um `
 
 @end
 
-### Dados de erro estruturados
+### Dados estruturados de erros
 
-Ao retornar um tipo de erro personalizado do Go, sua representação em JSON fica disponível na propriedade `cause` do erro lançado:
+Ao retornar um tipo de erro personalizado do Go, sua representação JSON fica disponível na propriedade `cause` do erro lançado:
 
 ```go
 type ValidationError struct {
@@ -485,9 +485,9 @@ try {
 }
 ```
 
-Os erros são serializados com o pacote padrão `encoding/json`, portanto apenas os campos exportados são incluídos. Erros criados com `errors.New` ou `fmt.Errorf` não têm campos exportados e são serializados como um objeto vazio.
+Os erros são serializados com o pacote padrão `encoding/json`, portanto, somente os campos exportados são incluídos. Erros criados com `errors.New` ou `fmt.Errorf` não têm campos exportados e são serializados como um objeto vazio.
 
-Para ter controle total sobre como os erros são serializados, forneça uma função `MarshalError` nas opções do serviço:
+Para controlar totalmente como os erros são serializados, forneça uma função `MarshalError` nas opções do serviço:
 
 ```go
 app := application.New(application.Options{
@@ -509,13 +509,13 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError` deve retornar um JSON válido ou `nil` para usar a serialização padrão como alternativa.
+`MarshalError` deve retornar um JSON válido ou `nil` para usar a serialização padrão.
 
 ## Desempenho
 
 ### Sobrecarga das chamadas
 
-**Chamada típica:** &lt;1 ms
+**Chamada típica:** &lt;1ms
 
 ```
 JavaScript → Bridge → Go → Bridge → JavaScript
@@ -523,11 +523,11 @@ JavaScript → Bridge → Go → Bridge → JavaScript
   &lt;0.1ms    &lt;0.1ms  [varies] &lt;0.1ms    &lt;0.1ms
 ```
 
-**Em comparação com as alternativas:**
+**Comparação com alternativas:**
 
-- HTTP/REST: 5-50 ms
-- IPC: 1-10 ms
-- Wails: &lt;1 ms
+- HTTP/REST: 5-50ms
+- IPC: 1-10ms
+- Wails: &lt;1ms
 
 ### Dicas de otimização
 
@@ -691,13 +691,13 @@ const app = new TodoApp()
 app.loadTodos()
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
 - **Mantenha os métodos simples** — Responsabilidade única
-- **Retorne erros** — Não cause panic
-- **Use estado seguro para concorrência** — Use mutexes para dados compartilhados
+- **Retorne erros** — Não entre em pânico
+- **Use estado seguro para threads** — Use mutexes para dados compartilhados
 - **Agrupe operações** — Reduza as chamadas pela ponte
 - **Use cache no lado do Go** — Evite trabalho repetido
 - **Documente os métodos** — Os comentários se tornam JSDoc
@@ -707,14 +707,14 @@ app.loadTodos()
 - **Não bloqueie** — Use goroutines para operações demoradas
 - **Não retorne canais** — Use eventos em vez disso
 - **Não retorne funções** — Não há suporte
-- **Não ignore erros** — Sempre trate-os
+- **Não ignore erros** — Sempre os trate
 - **Não use campos não exportados** — Eles não serão vinculados
 
 ## Próximas etapas
 
 @cards{cols="2"}
 ◆ Serviços
-Explore em detalhes o sistema de serviços.
+Conheça o sistema de serviços em detalhes.
 
 [Saiba mais →](/features/bindings/services/)
 
@@ -725,14 +725,14 @@ Vincule estruturas de dados complexas.
 [Saiba mais →](/features/bindings/models/)
 
 ---
-🚀 Ponte Go-frontend
+🚀 Ponte entre Go e frontend
 Entenda o mecanismo da ponte.
 
 [Saiba mais →](/concepts/bridge/)
 
 ---
 ★ Eventos
-Use eventos para comunicação de publicação/assinatura.
+Use eventos para comunicação pub/sub.
 
 [Saiba mais →](/features/events/system/)
 
@@ -740,4 +740,4 @@ Use eventos para comunicação de publicação/assinatura.
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

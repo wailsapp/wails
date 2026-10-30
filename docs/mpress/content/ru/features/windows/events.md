@@ -1,13 +1,13 @@
 ---
 title: "События окна"
-description: "Обработка событий жизненного цикла окна и изменения его состояния"
+description: "Обработка событий жизненного цикла и изменения состояния окна"
 slug: "features/windows/events"
 sourcePath: "features/windows/events.md"
 ---
 
 ## События окна
 
-Wails отправляет события жизненного цикла окна и изменения его состояния через единый API: `OnWindowEvent` — для пассивных слушателей, а `RegisterHook` — для отменяемых перехватчиков, которые могут предотвратить действие по умолчанию.
+Wails отправляет события жизненного цикла и изменения состояния окна через единый API: `OnWindowEvent` — для пассивных обработчиков, а `RegisterHook` — для перехватываемых событий, которые позволяют отменить действие по умолчанию.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -25,7 +25,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 Оба вызова возвращают `unsubscribe func()`, который можно вызвать, чтобы удалить обработчик.
 
-Кроссплатформенные события находятся в `events.Common.*`. События для отдельных платформ находятся в `events.Mac.*`, `events.Windows.*` и `events.Linux.*`. Полный список генерируется в `v3/pkg/events/events.go`.
+Кроссплатформенные события находятся в `events.Common.*`. События для отдельных платформ находятся в `events.Mac.*`, `events.Windows.*` и `events.Linux.*`. Полный список создаётся в `v3/pkg/events/events.go`.
 
 ## События жизненного цикла
 
@@ -49,13 +49,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-Функция обратного вызова получает `application.Window` (интерфейс). Функция обратного вызова `OnCreate` вызывается один раз для каждого окна после инициализации среды выполнения этого окна.
+Функция обратного вызова получает `application.Window` (интерфейс). Функция обратного вызова `OnCreate` вызывается для каждого окна один раз во время регистрации, до запуска окна. Используйте её для настройки окна и регистрации обработчиков. Прежде чем вызывать JavaScript или отправлять события, для которых требуется среда выполнения фронтенда, дождитесь `events.Common.WindowRuntimeReady`.
 
 ### WindowClosing
 
 Срабатывает, когда пользователь пытается закрыть окно (нажимает X, ⌘W, Alt+F4 и т. д.).
 
-Используйте **перехватчик** (`RegisterHook`) — только перехватчики могут отменить закрытие. Слушатели отслеживают событие, но не могут предотвратить закрытие.
+Используйте **перехватчик** (`RegisterHook`) — только перехватчики могут отменить закрытие. Обработчики получают событие, но не могут предотвратить закрытие.
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-Чтобы программно перейти в полноэкранный режим или выйти из него, используйте `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — `SetFullscreen(bool)` не существует. Проверяйте состояние с помощью `window.IsFullscreen() bool`.
+Для программного перехода в полноэкранный режим и выхода из него используйте `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — `SetFullscreen(bool)` не существует. Чтобы получить текущее состояние, используйте `window.IsFullscreen() bool`.
 
 ## События изменения положения и размера
 
@@ -209,9 +209,9 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-Сами события `WindowDidResize` и `WindowDidMove` не содержат координат — получайте их из окна с помощью `window.Size()` / `window.Position()` внутри функции обратного вызова.
+Сами события `WindowDidResize` и `WindowDidMove` не содержат координат — запросите их у окна через `window.Size()` / `window.Position()` внутри функции обратного вызова.
 
-**Пример: адаптивная компоновка:**
+**Пример: адаптивный макет:**
 
 ```go
 window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
@@ -377,7 +377,7 @@ func (mw *ManagedWindow) SaveState() {
 
 ### События между окнами
 
-Координируйте работу нескольких окон с помощью шины событий приложения:
+Координируйте работу нескольких окон через шину событий приложения:
 
 ```go
 // In main window
@@ -420,7 +420,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## Рекомендации
 
-### ✅ Делайте так
+### ✅ Следует
 
 - **Используйте перехватчики для отмены** — только функции обратного вызова `RegisterHook` могут вызывать `e.Cancel()`.
 - **Сохраняйте состояние при закрытии** — восстанавливайте положение и размер окна при следующем запуске.
@@ -429,21 +429,21 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 - **Координируйте работу через события** — используйте `app.Event.Emit` для обмена сообщениями между окнами.
 - **Отписывайтесь**, когда обработчики больше не нужны: и `OnWindowEvent`, и `RegisterHook` возвращают функцию отписки `func()`.
 
-### ❌ Не делайте так
+### ❌ Не следует
 
 - **Не блокируйте обработчики событий** — они должны выполняться быстро.
 - **Не пытайтесь отменить событие из `OnWindowEvent`** — используйте `RegisterHook`.
 - **Не используйте `window.Destroy()`** — такого API не существует; используйте `window.Close()`.
 - **Не сохраняйте данные при каждом событии** — сначала устраните дребезг.
-- **Не предполагайте, что событие содержит координаты** — вызывайте `window.Position()` / `window.Size()`.
+- **Не рассчитывайте, что событие содержит координаты** — вызовите `window.Position()` / `window.Size()`.
 
 ## Устранение неполадок
 
 ### Перехватчик WindowClosing не предотвращает закрытие
 
-**Причина:** вы использовали `OnWindowEvent` вместо `RegisterHook`.
+**Причина:** вместо `RegisterHook` использован `OnWindowEvent`.
 
-**Решение:** только функции обратного вызова `RegisterHook` могут вызывать `e.Cancel()`. Функции обратного вызова `OnWindowEvent` только наблюдают за событием и не могут его отменить.
+**Решение:** только функции обратного вызова `RegisterHook` могут вызывать `e.Cancel()`. Функции обратного вызова `OnWindowEvent` являются наблюдателями и не могут отменить закрытие.
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -461,7 +461,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Причина:** обработчик зарегистрирован после возникновения события.
 
-**Решение:** регистрируйте обработчики сразу после создания окна (или в обратном вызове `app.Window.OnCreate`).
+**Решение:** регистрируйте обработчики сразу после создания окна (или в функции обратного вызова `app.Window.OnCreate`).
 
 ```go
 window := app.Window.New()
@@ -470,7 +470,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### Утечки памяти
 
-**Причина:** обработчики с длительным временем жизни, хранящиеся в состоянии с коротким временем жизни.
+**Причина:** долгоживущие обработчики, удерживаемые короткоживущим состоянием.
 
 **Решение:** сохраните функцию отписки `func()`, возвращаемую `OnWindowEvent`/`RegisterHook`, и вызовите её при очистке.
 
@@ -486,10 +486,10 @@ unsub()
 
 **Несколько окон** — шаблоны для многооконных приложений [Подробнее →](/features/windows/multiple/)
 
-**Система событий** — углублённое изучение системы событий [Подробнее →](/features/events/system/)
+**Система событий** — подробное изучение системы событий [Подробнее →](/features/events/system/)
 
 **Жизненный цикл приложения** — разберитесь в жизненном цикле приложения [Подробнее →](/concepts/lifecycle/)
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Остались вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

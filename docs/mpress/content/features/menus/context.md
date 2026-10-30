@@ -739,4 +739,4 @@ Common menu patterns and best practices.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [context menu example](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [context menu example](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/contextmenus).

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/goreleaser/nfpm/v2"
 	_ "github.com/goreleaser/nfpm/v2/apk"  // Register APK packager
@@ -30,7 +31,8 @@ const (
 	ARCH PackageType = "archlinux"
 )
 
-// CreatePackageFromConfig loads a configuration file and creates a package
+// CreatePackageFromConfig loads a configuration file and creates a package.
+// The output path is replaced only after package creation and file close succeed.
 func CreatePackageFromConfig(pkgType PackageType, configPath string, output string) error {
 	// Parse nfpm config
 	config, err := nfpm.ParseFile(configPath)
@@ -50,8 +52,14 @@ func CreatePackageFromConfig(pkgType PackageType, configPath string, output stri
 		return fmt.Errorf("error getting packager: %w", err)
 	}
 
-	// Create output file
-	out, err := os.Create(output)
+	// Stage on the output filesystem so failures preserve the previous package.
+	stageDir, err := os.MkdirTemp(filepath.Dir(output), ".wails-package-*")
+	if err != nil {
+		return fmt.Errorf("error creating package staging directory: %w", err)
+	}
+	defer os.RemoveAll(stageDir)
+	stagedOutput := filepath.Join(stageDir, filepath.Base(output))
+	out, err := os.Create(stagedOutput)
 	if err != nil {
 		return fmt.Errorf("error creating output file: %w", err)
 	}
@@ -60,6 +68,19 @@ func CreatePackageFromConfig(pkgType PackageType, configPath string, output stri
 	// Create the package
 	if err := packager.Package(info, out); err != nil {
 		return fmt.Errorf("error creating package: %w", err)
+	}
+	if info, err := os.Stat(output); err == nil {
+		if err := out.Chmod(info.Mode().Perm()); err != nil {
+			return fmt.Errorf("error preserving package permissions: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("error checking output package: %w", err)
+	}
+	if err := out.Close(); err != nil {
+		return fmt.Errorf("error closing package file: %w", err)
+	}
+	if err := os.Rename(stagedOutput, output); err != nil {
+		return fmt.Errorf("error replacing output package: %w", err)
 	}
 
 	return nil

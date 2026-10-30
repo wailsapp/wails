@@ -686,4 +686,4 @@ Kompilasi silang antara Linux/Windows/macOS di v3 umumnya dilakukan dalam kontai
 
 ---
 
-**Ada pertanyaan tentang proses build?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh build](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
+**Ada pertanyaan tentang proses build?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh build](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build).

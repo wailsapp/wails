@@ -49,4 +49,9 @@ func TestCaptureWriterFlushesTrailingLine(t *testing.T) {
 	if cw.output() != "no newline here\n" {
 		t.Fatalf("flush did not emit trailing line: %q", cw.output())
 	}
+	_, _ = cw.Write([]byte("next\ntrailing"))
+	cw.flush()
+	if cw.output() != "no newline here\nnext\ntrailing\n" {
+		t.Fatalf("capture after flush lost output: %q", cw.output())
+	}
 }
