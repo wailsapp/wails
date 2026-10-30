@@ -632,4 +632,4 @@ Trate os eventos do ciclo de vida das janelas.
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de eventos](https://github.com/wailsapp/wails/tree/master/v3/examples/events).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de eventos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/events).

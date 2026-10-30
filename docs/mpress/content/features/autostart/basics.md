@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-A complete runnable example with status / enable / disable buttons is in [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).
+A complete runnable example with status / enable / disable buttons is in [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart).

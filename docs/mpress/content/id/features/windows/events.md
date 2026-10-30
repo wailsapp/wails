@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## Peristiwa Jendela
 
-Wails mengirimkan peristiwa siklus hidup dan perubahan status jendela melalui satu API: `OnWindowEvent` untuk listener pasif dan `RegisterHook` untuk hook yang dapat dibatalkan guna mencegah tindakan bawaan.
+Wails mengirimkan peristiwa siklus hidup dan perubahan status jendela melalui satu API: `OnWindowEvent` untuk listener pasif dan `RegisterHook` untuk hook yang dapat dibatalkan serta dapat mencegah tindakan default.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -25,7 +25,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 Kedua pemanggilan tersebut mengembalikan `unsubscribe func()` yang dapat Anda panggil untuk menghapus handler.
 
-Peristiwa lintas platform berada di `events.Common.*`. Peristiwa khusus platform berada di `events.Mac.*`, `events.Windows.*`, dan `events.Linux.*`. Daftar lengkapnya dibuat di `v3/pkg/events/events.go`.
+Peristiwa lintas platform berada di `events.Common.*`. Peristiwa khusus platform berada di `events.Mac.*`, `events.Windows.*`, dan `events.Linux.*`. Daftar lengkapnya dihasilkan di `v3/pkg/events/events.go`.
 
 ## Peristiwa Siklus Hidup
 
@@ -49,11 +49,11 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-Callback menerima `application.Window` (sebuah antarmuka). Callback `OnCreate` dipanggil sekali untuk setiap jendela, setelah runtime jendela diinisialisasi.
+Callback menerima `application.Window` (sebuah interface). Callback `OnCreate` dipanggil satu kali untuk setiap jendela selama pendaftaran, sebelum jendela dijalankan. Gunakan callback ini untuk mengonfigurasi jendela dan mendaftarkan handler. Tunggu `events.Common.WindowRuntimeReady` sebelum memanggil JavaScript atau mengirim peristiwa yang memerlukan runtime frontend.
 
 ### WindowClosing
 
-Dipicu saat pengguna mencoba menutup jendela (mengeklik X, menekan ⌘W, Alt+F4, dan sebagainya).
+Dipicu saat pengguna mencoba menutup jendela (mengeklik X, ⌘W, Alt+F4, dan sebagainya).
 
 Gunakan **hook** (`RegisterHook`) — hanya hook yang dapat membatalkan penutupan. Listener mengamati peristiwa tersebut, tetapi tidak dapat mencegahnya.
 
@@ -68,7 +68,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Penting:**
 
-- `WindowClosing` dikirim saat pengguna mencoba menutup jendela.
+- `WindowClosing` dikirimkan saat pengguna mencoba melakukan penutupan.
 - Callback `RegisterHook` dapat memanggil `e.Cancel()` agar jendela tetap terbuka.
 - Callback `OnWindowEvent` untuk `WindowClosing` berfungsi sebagai pengamat — callback tersebut dipicu, tetapi tidak dapat membatalkan.
 
@@ -76,7 +76,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### WindowRuntimeReady
 
-Dipicu setelah runtime dalam jendela selesai diinisialisasi — ini adalah saat yang aman untuk memanggil konteks JS jendela:
+Dipicu setelah runtime dalam jendela selesai diinisialisasi — saat yang aman untuk memanggil konteks JS jendela:
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -209,7 +209,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize` dan `WindowDidMove` tidak membawa koordinat pada peristiwanya sendiri — periksa jendela melalui `window.Size()` / `window.Position()` di dalam callback.
+`WindowDidResize` dan `WindowDidMove` tidak membawa koordinat pada peristiwa itu sendiri — periksa jendela melalui `window.Size()` / `window.Position()` di dalam callback.
 
 **Contoh: Tata letak responsif:**
 
@@ -423,19 +423,19 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 ### ✅ Lakukan
 
 - **Gunakan hook untuk pembatalan** — hanya callback `RegisterHook` yang dapat memanggil `e.Cancel()`.
-- **Simpan status saat jendela ditutup** — pulihkan posisi/ukuran jendela saat aplikasi dijalankan berikutnya.
+- **Simpan status saat penutupan** — pulihkan posisi/ukuran jendela saat peluncuran berikutnya.
 - **Terapkan debounce pada peristiwa yang sering terjadi** — `WindowDidResize` dan `WindowDidMove` dipicu dengan cepat.
 - **Tangani perubahan fokus** — perbarui UI sebagaimana mestinya.
-- **Lakukan koordinasi melalui peristiwa** — gunakan `app.Event.Emit` untuk pengiriman pesan lintas jendela.
+- **Lakukan koordinasi melalui peristiwa** — gunakan `app.Event.Emit` untuk olah pesan lintas jendela.
 - **Berhenti berlangganan** saat handler tidak lagi diperlukan — `OnWindowEvent`/`RegisterHook` sama-sama mengembalikan `func()` untuk berhenti berlangganan.
 
-### ❌ Jangan Lakukan
+### ❌ Jangan
 
-- **Jangan memblokir handler peristiwa** — pastikan handler tetap berjalan cepat.
+- **Jangan memblokir handler peristiwa** — pastikan handler tetap cepat.
 - **Jangan mencoba membatalkan dari `OnWindowEvent`** — gunakan `RegisterHook`.
 - **Jangan gunakan `window.Destroy()`** — itu tidak ada; gunakan `window.Close()`.
 - **Jangan menyimpan pada setiap peristiwa** — terapkan debounce terlebih dahulu.
-- **Jangan menganggap koordinat tersedia pada peristiwa** — panggil `window.Position()` / `window.Size()`.
+- **Jangan berasumsi bahwa koordinat tersedia pada peristiwa** — panggil `window.Position()` / `window.Size()`.
 
 ## Pemecahan Masalah
 
@@ -470,9 +470,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### Kebocoran Memori
 
-**Penyebab:** Handler berumur panjang disimpan oleh state berumur pendek.
+**Penyebab:** Handler berumur panjang yang dipertahankan oleh status berumur pendek.
 
-**Solusi:** Simpan fungsi berhenti berlangganan `func()` yang dikembalikan oleh `OnWindowEvent`/`RegisterHook`, lalu panggil fungsi tersebut saat pembersihan.
+**Solusi:** Simpan `func()` untuk berhenti berlangganan yang dikembalikan oleh `OnWindowEvent`/`RegisterHook`, lalu panggil saat pembersihan.
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -482,14 +482,14 @@ unsub()
 
 ## Langkah Berikutnya
 
-**Dasar-Dasar Jendela** - Pelajari dasar-dasar pengelolaan jendela [Pelajari Selengkapnya →](/features/windows/basics/)
+**Dasar-Dasar Jendela** - Pelajari dasar-dasar pengelolaan jendela [Pelajari Lebih Lanjut →](/features/windows/basics/)
 
-**Beberapa Jendela** - Pola untuk aplikasi dengan beberapa jendela [Pelajari Selengkapnya →](/features/windows/multiple/)
+**Beberapa Jendela** - Pola untuk aplikasi multi-jendela [Pelajari Lebih Lanjut →](/features/windows/multiple/)
 
-**Sistem Peristiwa** - Pelajari sistem peristiwa secara mendalam [Pelajari Selengkapnya →](/features/events/system/)
+**Sistem Peristiwa** - Pelajari sistem peristiwa secara mendalam [Pelajari Lebih Lanjut →](/features/events/system/)
 
-**Siklus Hidup Aplikasi** - Pahami siklus hidup aplikasi [Pelajari Selengkapnya →](/concepts/lifecycle/)
+**Siklus Hidup Aplikasi** - Pahami siklus hidup aplikasi [Pelajari Lebih Lanjut →](/concepts/lifecycle/)
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

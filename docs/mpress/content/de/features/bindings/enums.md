@@ -525,4 +525,4 @@ Entwurfsmuster für Bindings.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.
+**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.

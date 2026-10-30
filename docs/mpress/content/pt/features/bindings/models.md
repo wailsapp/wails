@@ -7,7 +7,7 @@ sourcePath: "features/bindings/models.md"
 
 ## Vinculações de modelos de dados
 
-O Wails **gera automaticamente classes JavaScript/TypeScript** a partir de structs do Go, garantindo total segurança de tipos ao passar dados complexos entre o backend e o frontend. Escreva structs em Go, gere as vinculações e obtenha modelos de frontend totalmente tipados, com construtores, anotações de tipo e comentários JSDoc.
+O Wails **gera automaticamente classes JavaScript/TypeScript** a partir de structs do Go, garantindo segurança total de tipos ao passar dados complexos entre o backend e o frontend. Escreva structs do Go, gere as vinculações e obtenha modelos de frontend totalmente tipados, com construtores, anotações de tipo e comentários JSDoc.
 
 ## Início rápido
 
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-**É só isso!** Segurança total de tipos em toda a ponte.
+**Pronto!** Segurança total de tipos nos dois lados da ponte.
 
 ## Definição de modelos
+
+As classes de modelo abaixo ilustram os formatos dos campos; use os bindings gerados reais em vez de copiar essas classes simplificadas como código de conversão.
+
+Para `time.Time`, o gerador usa `-time-type=string` por padrão. Use `-time-type=Date` para classes geradas que convertem timestamps em valores `Date` do JavaScript. As tarefas de build padrão dos templates JavaScript/de classe selecionam `Date`; as tarefas de interface TypeScript mantêm `string`. Verifique a tarefa gerada antes de alterar os modos. Os timestamps do Go permanecem como strings RFC3339Nano no JSON.
+
+No modo Date, os auxiliares de conversão gerados transformam essas strings em datas. `Object.assign` por si só não realiza essa conversão. Para bindings de string, converta explicitamente um timestamp com `new Date(timestamp)` antes de usar métodos de Date.
 
 ### Struct básica
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 export class User {
@@ -112,7 +118,7 @@ export class User {
 
 ### Serialização JSON personalizada
 
-Os resultados de métodos vinculados são serializados com o pacote padrão `encoding/json` do Go. Esteja ciente de que os métodos `MarshalJSON` declarados em um receptor de ponteiro só são chamados quando o valor que está sendo serializado é endereçável. Isso significa que um serializador personalizado pode ser chamado para elementos de um slice retornado, mas não para uma struct retornada por valor:
+Os resultados de métodos vinculados são serializados com o pacote padrão `encoding/json` do Go. Observe que os métodos `MarshalJSON` declarados em um receptor de ponteiro só são chamados quando o valor que está sendo serializado é endereçável. Isso significa que um serializador personalizado pode ser chamado para os elementos de um slice retornado, mas não para uma struct retornada por valor:
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 /**
@@ -176,7 +182,7 @@ export class User {
 }
 ```
 
-**Os comentários se tornam JSDoc!** Sua IDE os exibe.
+**Os comentários se transformam em JSDoc!** Sua IDE os exibe.
 
 ### Structs aninhadas
 
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**JavaScript gerado:**
+**JavaScript ilustrativo:**
 
 ```javascript
 export class Config {
@@ -312,14 +318,14 @@ const config = new Config({
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | mapa com chaves do tipo string |
-| `map[K]V` | `{ [_ in K]?: V }` | `K` que não seja string é renderizado como um tipo mapeado, e **não** como um `Map` do JS |
+| `map[string]T` | `{ [_: string]: T }` | mapa com chaves de string |
+| `map[K]V` | `{ [_ in K]?: V }` | `K` que não seja string é renderizado como um tipo mapeado, **não** como um `Map` do JS |
 | `[]byte` | `string` | codificado em base64 |
 | `struct` | `class` / `interface` | com campos |
-| `time.Time` | `any` | serializado como string RFC3339Nano no runtime |
-| `*T` | `T \| null` | ponteiro indica que o valor pode ser nulo |
+| `time.Time` | `string` (padrão) ou `Date` | `-time-type` seleciona a representação gerada; o JSON usa uma string RFC3339Nano |
+| `*T` | `T \| null` | um ponteiro indica que aceita nulo |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | Exception se for usado como valor de retorno; caso contrário, any |
+| `error` | `any` / `Exception` | Exceção se usado como valor de retorno; caso contrário, qualquer valor |
 
 ### Tipos não compatíveis
 
@@ -352,7 +358,7 @@ const user3 = User.createFrom('{"id":1,"name":"Alice"}')
 const user4 = User.createFrom({ id: 1, name: "Alice" })
 ```
 
-### Como passar dados para Go
+### Como passar dados para o Go
 
 ```javascript
 import { CreateUser } from './bindings/changeme/userservice'
@@ -367,7 +373,7 @@ const created = await CreateUser(user)
 console.log("Created user:", created.id)
 ```
 
-### Como receber dados de Go
+### Como receber dados do Go
 
 ```javascript
 import { GetUser } from './bindings/changeme/userservice'
@@ -396,12 +402,14 @@ user.email = "alice.smith@example.com"
 await UpdateUser(user)
 ```
 
-## Suporte a TypeScript
+## Compatibilidade com TypeScript
 
 ### TypeScript gerado
 
+Esta seção demonstra bindings de classes com conversão de Date. O comando `-ts` simples mantém a representação padrão do gerador como string. A classe exibida está simplificada; o gerador também emite funções auxiliares de conversão.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **Gerado:**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### Enums
 
-O gerador de bindings detecta automaticamente tipos nomeados do Go com constantes e gera enums do TypeScript ou objetos const do JavaScript — incluindo um membro `$zero` para o valor zero do Go e preservando integralmente o JSDoc.
+O gerador de bindings detecta automaticamente tipos nomeados do Go que tenham constantes e gera enums do TypeScript ou objetos const do JavaScript — incluindo um membro `$zero` para o valor zero do Go e preservando integralmente o JSDoc.
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-Para uma abordagem completa de enums de string, enums de inteiros, aliases de tipo, enums de pacotes importados e limitações, consulte a página específica sobre **[Enums](/features/bindings/enums/)**.
+Para uma abordagem abrangente de enums de strings, enums de inteiros, aliases de tipos, enums de pacotes importados e limitações, consulte a página dedicada a **[Enums](/features/bindings/enums/)**.
 
 ### Validação
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -705,26 +713,26 @@ manager.loadUsers()
 
 ### ✅ Faça
 
-- **Use tags JSON** — Controle os nomes dos campos
-- **Adicione comentários** — Eles são convertidos em JSDoc
-- **Use time.Time** — É convertido em Date
-- **Valide no lado do Go** — Não confie no frontend
-- **Mantenha os modelos simples** — Use-os apenas como contêineres de dados
-- **Use ponteiros para campos opcionais** — `*string` para valores que podem ser nulos
+- **Use tags JSON** - Controle os nomes dos campos
+- **Adicione comentários** - Eles se tornam JSDoc
+- **Escolha uma representação de tempo** - `time.Time` se torna `string` por padrão; `-time-type=Date` habilita a conversão gerada para Date
+- **Valide no lado do Go** - Não confie no frontend
+- **Mantenha os modelos simples** - Use-os apenas como contêineres de dados
+- **Use ponteiros para campos opcionais** - `*string` para campos que aceitam nulo
 
 ### ❌ Não faça
 
-- **Não adicione métodos às structs do Go** — Mantenha-as como dados
-- **Não use campos não exportados** — Eles não serão incluídos no binding
-- **Não use interfaces complexas** — Elas não são compatíveis
-- **Não se esqueça das tags JSON** — Os nomes dos campos são importantes
-- **Não crie níveis de aninhamento demais** — Mantenha a simplicidade
+- **Não adicione métodos às structs do Go** - Mantenha-as como dados
+- **Não use campos não exportados** - Eles não serão vinculados
+- **Não use interfaces complexas** - Elas não são compatíveis
+- **Não se esqueça das tags JSON** - Os nomes dos campos são importantes
+- **Não crie muitos níveis de aninhamento** - Mantenha tudo simples
 
 ## Próximas etapas
 
 @cards{cols="2"}
 🚀 Bindings de métodos
-Saiba como criar bindings para métodos do Go.
+Aprenda a vincular métodos do Go.
 
 [Saiba mais →](/features/bindings/methods/)
 
@@ -736,7 +744,7 @@ Organize o código com serviços.
 
 ---
 ✓ Práticas recomendadas
-Padrões de projeto para bindings.
+Padrões de design de bindings.
 
 [Saiba mais →](/features/bindings/best-practices/)
 
@@ -750,4 +758,4 @@ Entenda o mecanismo da ponte.
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

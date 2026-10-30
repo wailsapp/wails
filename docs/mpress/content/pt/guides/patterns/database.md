@@ -6,10 +6,10 @@ sourcePath: "guides/patterns/database.md"
 ---
 
 @note{type="info"}
-Esta página é provisória. O conteúdo completo sobre integração com bancos de dados estará disponível em breve.
+Esta página é um conteúdo provisório. O conteúdo completo sobre integração com bancos de dados estará disponível em breve.
 
 @end
 
-Os aplicativos Wails v3 são aplicativos Go, portanto, você pode usar qualquer driver de banco de dados padrão do Go — incluindo [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx) e [MySQL](https://github.com/go-sql-driver/mysql) — nos serviços vinculados.
+Os aplicativos Wails v3 são aplicativos Go, portanto você pode usar qualquer driver de banco de dados padrão para Go — incluindo [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx) e [MySQL](https://github.com/go-sql-driver/mysql) — nos seus serviços vinculados.
 
-Para ver um exemplo funcional, consulte o [tutorial de TODO](/tutorials/02-todo-vanilla/), que demonstra como adicionar persistência com SQLite a um aplicativo completo.
+O [tutorial TODO](/tutorials/02-todo-vanilla/) demonstra um serviço vinculado com armazenamento em memória; ele não implementa persistência com SQLite. Para persistência em arquivos, consulte o [tutorial Notes](/tutorials/03-notes-vanilla/). O gerenciamento de conexões, as migrações e as transações específicas de bancos de dados não são abordados neste conteúdo provisório.

@@ -1,7 +1,7 @@
 ---
 title: "Go로 데스크톱 앱 빌드하기"
 description: "Go와 웹 기술을 사용하는 네이티브 데스크톱 애플리케이션"
-banner: {"content":"Wails v3는 현재 베타 버전입니다. \u003ca href=\"https://v2.wails.io\"\u003ev2 문서를 찾고 계신가요?\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. <a href=\"https://v2.wails.io\">v2 문서를 찾고 계신가요?</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"시작하기","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"튜토리얼 보기","variant":"secondary"}],"image":{"alt":"Wails 로고","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go와 최신 웹 기술로 아름답고 성능이 뛰어난 애플리케이션을 빌드하세요. 하나의 코드베이스. 세 가지 플랫폼. 브라우저 불필요.*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 다음 단계
 
-다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
+다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
 
-@note{type="info" title="Wails v3 베타"}
-Wails v3는 안정적인 데스크톱 API를 제공하는 베타 소프트웨어입니다. 이미 여러 팀이 프로덕션 환경에서 사용하고 있지만, 3.0을 위한 최종 마무리 작업이 진행 중이므로 배포하기 전에 철저히 테스트하는 것이 좋습니다.
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다.
 
 @end
 

@@ -79,4 +79,4 @@ Permukaan diciutkan persisten yang terbuka kembali saat di-hover sengaja dipisah
 
 @end
 
-Lihat [contoh notch-notification](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification) untuk monitor sistem ringkas yang status JavaScript aktifnya tetap dipertahankan melalui siklus tampil dan sembunyi notifikasi yang berulang.
+Lihat [contoh notch-notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification) untuk monitor sistem ringkas yang status JavaScript aktifnya tetap dipertahankan melalui siklus tampil dan sembunyi notifikasi yang berulang.

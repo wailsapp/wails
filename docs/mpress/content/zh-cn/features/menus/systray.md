@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost`适用于 Windows、macOS 和采用点击聚焦方式的 Linux 桌面上的托盘弹出窗口。Wails 会在采用焦点跟随鼠标方式的 Linux 环境（包括常见的 Hyprland、Sway 和 i3 配置）中禁用该行为，否则鼠标离开弹出窗口时，窗口可能会在用户能够操作之前隐藏。`HideOnEscape`在这些环境中仍然可用。
 
-上述左键和右键单击行为是智能默认设置。显式设置`OnClick`或`OnRightClick`处理程序会替代相应的默认行为。有关平台检查和边界情况，请参阅[手动系统托盘测试套件](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)和[系统托盘压力测试示例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress)。
+上述左键和右键单击行为是智能默认设置。显式设置`OnClick`或`OnRightClick`处理程序会替代相应的默认行为。有关平台检查和边界情况，请参阅[手动系统托盘测试套件](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray)和[系统托盘压力测试示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress)。
 
 ## 点击处理程序
 
@@ -714,10 +714,10 @@ menu.Update()  // Add this!
 📖 系统托盘示例
 探索一个完整的系统托盘应用。
 
-[了解更多 →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[了解更多 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-<strong>有疑问？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[系统托盘示例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)。
+<strong>有疑问？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[系统托盘示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)。

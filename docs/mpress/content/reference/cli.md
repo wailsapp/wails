@@ -1,9 +1,11 @@
 ---
-title: "CLI Reference"
-description: "Complete reference for the Wails CLI commands"
+title: "CLI Command Overview"
+description: "Find Wails CLI commands by purpose: projects, builds, signing, tools and services"
 slug: "reference/cli"
 sourcePath: "reference/cli.md"
 ---
+
+Start here to find a command by purpose. For command-specific flags and usage examples, see [CLI Flags and Examples](/guides/cli/).
 
 ## Overview
 
@@ -42,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Generate Go-to-frontend bindings. Flags: `-d` (output dir), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emit `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`, `-obfuscated` (generate `wails_obfuscated.gen.go` with stable binding IDs for Garble builds; see [Obfuscated Builds](/guides/build/obfuscation/)), `-obfuscated-output` (directory for the generated file; defaults to the main package directory). Accepts package patterns (e.g. `./...`); falls back to the current directory if none given. |
 | `generate icons` | Convert a source PNG into the platform icon formats. Flags: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Generate the `build/` directory contents (Taskfile snippets, NSIS files, `Info.plist`, `.desktop` template, etc.) from `build/config.yml`. |
-| `generate runtime` | Regenerate the pre-built `/wails/runtime.js` shipped to the webview. |
+| `generate runtime` | Export the CLI's embedded production/debug JavaScript bundles (`-d` selects the destination). |
 | `generate syso` | Generate the Windows `.syso` resource file (icon + manifest + version info). |
 | `generate webview2bootstrapper` | Generate a WebView2 bootstrap installer for Windows. |
 | `generate constants` | Generate JS event-name constants from Go event types. |
@@ -63,12 +65,12 @@ wails3 <command> --help
 
 | Command | Description |
 | --- | --- |
-| `wails3 setup signing` | Interactive wizard that configures signing for the platforms it detects in `build/`. Flags: `--platform` (repeatable; defaults to auto-detect from build directory). |
-| `wails3 setup entitlements` | Interactive wizard for macOS entitlements. Flag: `--output` (path; default `build/darwin/entitlements.plist`). |
+| `wails3 signing` | Interactive wizard that configures signing for the platforms it detects in `build/`. Flags: `--platform` (repeatable; defaults to auto-detect from build directory). |
+| `wails3 entitlements` | Interactive wizard for macOS entitlements. Flag: `--output` (path; default `build/darwin/entitlements.plist`). |
 | `wails3 sign [GOOS=…]` | Wrapper that runs the platform-specific `*:sign` Taskfile task for the current OS (or the one specified via `GOOS`). |
 | `wails3 tool sign` | Low-level direct signing entry point. Flags: `--input`, `--output`, `--verbose`, `--certificate`, `--password`, `--thumbprint`, `--timestamp`, `--identity`, `--entitlements`, `--hardened-runtime`, `--notarize`, `--keychain-profile`, `--pgp-key`, `--pgp-password`, `--role`. |
 
-There is **no** `wails3 signing` subcommand — for keychain credentials use `xcrun notarytool store-credentials`, and for PGP keys use `gpg` directly (the `wails3 setup signing` wizard automates both).
+In this release, the CLI parser exposes `signing` and `entitlements` at the top level. Check `wails3 signing --help` and `wails3 entitlements --help`; `wails3 setup signing` does not select the signing wizard. For direct credential management, use `xcrun notarytool store-credentials` or `gpg`.
 
 ## Tools
 
@@ -108,12 +110,12 @@ There is **no** `wails3 signing` subcommand — for keychain credentials use `xc
 - Native binaries land in `bin/<APP_NAME>` (or `bin/<APP_NAME>.exe` on Windows). There is no `build/bin/`.
 - Packaged outputs (`.app`, `.dmg`, NSIS installer, MSIX, DEB/RPM/AppImage) likewise land in `bin/` (or under platform-specific subdirectories created by the relevant Taskfile task).
 
-## Global flags
+## Shared flags
 
 | Flag | Applies to | Description |
 | --- | --- | --- |
-| `--no-colour` | All commands | Disable ANSI colour in CLI output. |
+| `-nocolour` | Commands that expose it in `--help` (for example `init` and `update cli`) | Disable ANSI colour in CLI output. It is not accepted by every command, including `version`. |
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

@@ -669,8 +669,8 @@ func (wn *windowsNotifier) loadCategoriesFromRegistry() error {
 		return fmt.Errorf("failed to read categories from registry: %w", err)
 	}
 
-	categories := make(map[string]NotificationCategory)
-	if err := json.Unmarshal([]byte(data), &categories); err != nil {
+	categories, err := decodeCategories([]byte(data))
+	if err != nil {
 		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 

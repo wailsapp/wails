@@ -1,12 +1,37 @@
 package templates
 
 import (
+	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"testing/fstest"
+	texttemplate "text/template"
 )
+
+func BenchmarkCommonModuleTemplate(b *testing.B) {
+	source, err := templates.ReadFile("_common/go.mod.tmpl")
+	if err != nil {
+		b.Fatal(err)
+	}
+	data := map[string]string{
+		"ModulePath": "example.com/project", "WailsVersion": "v3.0.0-dev",
+		"LocalModulePath": "../wails/",
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		module, err := texttemplate.New("go.mod").Parse(string(source))
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := module.Execute(io.Discard, data); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
 
 // --- parseTemplate ---
 
@@ -281,7 +306,6 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 	}
 }
 
-
 func TestSplitTemplateURI(t *testing.T) {
 	tests := []struct {
 		uri, url, tag string
@@ -304,5 +328,70 @@ func TestSplitTemplateURI(t *testing.T) {
 		if url != tt.url || tag != tt.tag {
 			t.Errorf("splitTemplateURI(%q) = (%q, %q), want (%q, %q)", tt.uri, url, tag, tt.url, tt.tag)
 		}
+	}
+}
+
+func TestRuntimeVersionFor(t *testing.T) {
+	cases := map[string]string{
+		"v3.1.0":                  "3.1.0",
+		"v3.2.0-nightly.20261102": "3.2.0-nightly.20261102",
+		"v3.0.0-beta.34":          "3.0.0-beta.34",
+		"v3.0.0-dev":              "latest",
+		"":                        "latest",
+	}
+	for in, want := range cases {
+		if got := RuntimeVersionFor(in); got != want {
+			t.Errorf("RuntimeVersionFor(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+// Every embedded template must pin @wailsio/runtime through the template
+// variable (lockstep with the CLI) and never to the floating "latest" tag.
+func TestTemplatesPinRuntimeToCLIVersion(t *testing.T) {
+	found := 0
+	err := fs.WalkDir(templates, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		base := filepath.Base(path)
+		if base != "package.json" && base != "package.json.tmpl" {
+			return nil
+		}
+		data, _ := templates.ReadFile(path)
+		if !strings.Contains(string(data), "@wailsio/runtime") {
+			return nil
+		}
+		found++
+		if base == "package.json" || !strings.Contains(string(data), `"@wailsio/runtime": "{{.RuntimeVersion}}"`) {
+			t.Errorf("%s must be a .tmpl pinning @wailsio/runtime to {{.RuntimeVersion}}", path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found < 10 {
+		t.Errorf("expected >=10 template package.json files, found %d", found)
+	}
+}
+
+// Rendering a template through the real generator produces an exact pin.
+func TestInstalledTemplatePinsRuntime(t *testing.T) {
+	data := TemplateOptions{RuntimeVersion: RuntimeVersionFor("v3.1.0")}
+	raw, err := templates.ReadFile("vanilla/frontend/package.json.tmpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := texttemplate.New("p").Parse(string(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sb strings.Builder
+	if err := tpl.Execute(&sb, data); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(sb.String(), `"@wailsio/runtime": "3.1.0"`) {
+		t.Errorf("rendered package.json:\n%s", sb.String())
 	}
 }

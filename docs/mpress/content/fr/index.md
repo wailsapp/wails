@@ -1,7 +1,7 @@
 ---
 title: "Créez des applications de bureau avec Go"
 description: "Applications de bureau natives utilisant Go et les technologies web"
-banner: {"content":"Wails v3 est actuellement en version bêta. \u003ca href=\"https://v2.wails.io\"\u003eVous recherchez la documentation de la v2 ?\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. <a href=\"https://v2.wails.io\">Vous recherchez la documentation de la v2 ?</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Bien démarrer","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Voir le tutoriel","variant":"secondary"}],"image":{"alt":"Logo de Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Créez de belles applications performantes avec Go et les technologies web modernes. Une seule base de code. Trois plateformes. Aucun navigateur.*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Étapes suivantes
 
-Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
+Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
 
-@note{type="info" title="Wails v3 bêta"}
-Wails v3 est un logiciel en version bêta doté d’une API de bureau stable. Des équipes l’utilisent déjà en production, mais devraient effectuer des tests approfondis avant le déploiement pendant que nous apportons les dernières finitions pour 3.0.
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. La prise en charge d’Android et d’iOS reste expérimentale et ne relève pas du contrat de compatibilité stable des applications de bureau.
 
 @end
 

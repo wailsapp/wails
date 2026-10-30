@@ -47,7 +47,7 @@ func ToolPackage(options *flags.ToolPackage) error {
 		if err != nil {
 			return err
 		}
-		if err := dmg.Build(opts); err != nil {
+		if err := buildDMG(opts, dmg.Build); err != nil {
 			return fmt.Errorf("error creating DMG: %w", err)
 		}
 		return nil
@@ -159,6 +159,24 @@ func addDMGFiles(opts *dmg.Options, value string) error {
 			return fmt.Errorf("DMG file %q conflicts with an existing entry", name)
 		}
 		opts.Files[name] = path
+	}
+	return nil
+}
+
+// buildDMG installs a completed image at its requested output path.
+func buildDMG(opts dmg.Options, build func(dmg.Options) error) error {
+	outputPath := opts.OutputPath
+	stageDir, err := os.MkdirTemp(filepath.Dir(outputPath), ".wails-dmg-*")
+	if err != nil {
+		return fmt.Errorf("create DMG staging directory: %w", err)
+	}
+	defer os.RemoveAll(stageDir)
+	opts.OutputPath = filepath.Join(stageDir, filepath.Base(outputPath))
+	if err := build(opts); err != nil {
+		return err
+	}
+	if err := os.Rename(opts.OutputPath, outputPath); err != nil {
+		return fmt.Errorf("replace output DMG: %w", err)
 	}
 	return nil
 }

@@ -13,7 +13,7 @@ Agradecemos seu interesse em contribuir com o Wails! Este guia ajudará você a 
 
 Antes de começar, verifique se você tem:
 
-- **Go 1.25+** instalado ([baixar](https://go.dev/dl/))
+- **Go 1.26+** instalado ([baixar](https://go.dev/dl/))
 - **Node.js 20+** e **npm** ([baixar](https://nodejs.org/))
 - **Git** configurado com sua conta do GitHub
 - Conhecimentos básicos de Go e JavaScript/TypeScript
@@ -22,32 +22,32 @@ Antes de começar, verifique se você tem:
 
 **macOS:**
 
-- Ferramentas de Linha de Comando do Xcode: `xcode-select --install`
+- Ferramentas de linha de comando do Xcode: `xcode-select --install`
 
 **Windows:**
 
 - Recomenda-se o MSYS2 ou um ambiente semelhante ao Unix
-- Runtime do WebView2 (geralmente pré-instalado no Windows 11)
+- Runtime do WebView2 (normalmente pré-instalado no Windows 11)
 
 **Linux:**
 
 - `gcc`, `pkg-config`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` (pilha GTK4 padrão)
-- Instale usando: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
+- Instale com: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
 - Para o fluxo de compilação legado `-tags gtk3`, instale também `libgtk-3-dev` e `libwebkit2gtk-4.1-dev`
 
 ## Visão geral do processo de contribuição
 
-O fluxo de trabalho típico de contribuição segue estas etapas:
+O fluxo de trabalho típico para contribuições segue estas etapas:
 
-1. **Crie um fork e clone** — Crie sua própria cópia do repositório do Wails
-2. **Configure o ambiente** — Compile a CLI do Wails e verifique seu ambiente
+1. **Faça um fork e clone** — Crie sua própria cópia do repositório do Wails
+2. **Configure** — Compile a CLI do Wails e verifique seu ambiente
 3. **Crie uma branch** — Crie uma branch de funcionalidade para suas alterações
-4. **Desenvolva** — Faça suas alterações seguindo nossos padrões de código
+4. **Desenvolva** — Faça suas alterações de acordo com nossos padrões de código
 5. **Teste** — Execute os testes para garantir que tudo funcione
-6. **Faça o commit** — Faça o commit usando mensagens claras e convencionais
+6. **Faça o commit** — Faça o commit com mensagens claras e convencionais
 7. **Envie** — Abra uma pull request para revisão
-8. **Aprimore** — Responda ao feedback e faça os ajustes necessários
-9. **Faça o merge** — Após a aprovação, suas alterações passam a fazer parte do Wails!
+8. **Faça os ajustes** — Responda ao feedback e faça os ajustes necessários
+9. **Faça o merge** — Após a aprovação, suas alterações passarão a fazer parte do Wails!
 
 ## Guia passo a passo
 
@@ -56,13 +56,13 @@ Escolha o tipo de contribuição:
 @tabs
 [Correção de bug]
 @steps
-### Encontre ou reporte o bug
-- Verifique se o bug já foi reportado nas [issues do GitHub](https://github.com/wailsapp/wails/issues)
+### Encontre ou relate o bug
+- Verifique se o bug já foi relatado nas [Issues do GitHub](https://github.com/wailsapp/wails/issues)
 - Caso contrário, crie uma nova issue com as etapas para reproduzi-lo
 - Aguarde a confirmação antes de começar o trabalho
 
-### Crie um fork e clone
-Crie um fork do repositório em [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+### Faça um fork e clone
+Faça um fork do repositório em [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
 Clone seu fork:
 
@@ -121,14 +121,14 @@ git commit -m "fix: prevent window crash when closing during initialization
 Fixes #123"
 ```
 
-### Envie uma pull request
+### Envie a pull request
 Faça o push e crie a PR:
 
 ```bash
 git push origin fix/issue-123-window-crash
 ```
 
-Na descrição da PR:
+Na descrição da sua PR:
 
 - Explique o bug e sua causa raiz
 - Descreva sua correção
@@ -136,20 +136,20 @@ Na descrição da PR:
 - Inclua o comportamento antes e depois da correção
 
 ### Responda ao feedback
-Resolva os comentários da revisão e atualize sua PR conforme necessário.
+Atenda aos comentários da revisão e atualize sua PR conforme necessário.
 
 @end
 
-[WEP (aprimoramento)]
+[WEP (Aprimoramento)]
 @steps
 ### Escreva uma WEP
-- Leia o processo de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Leia o [processo de WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Copie o modelo de WEP para `v3/wep/proposals/<name>/proposal.md`
 - Abra uma PR de rascunho intitulada `[WEP] <title>` contendo apenas a WEP
 - Aguarde a decisão de um mantenedor antes de implementar
 
-### Crie um fork e clone
-Crie um fork do repositório em [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+### Faça um fork e clone
+Faça um fork do repositório em [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
 Clone seu fork:
 
@@ -159,7 +159,7 @@ cd wails
 git remote add upstream https://github.com/wailsapp/wails.git
 ```
 
-### Configurar o ambiente de desenvolvimento
+### Configure o ambiente de desenvolvimento
 Compile o Wails e verifique seu ambiente:
 
 ```bash
@@ -170,16 +170,16 @@ go build -o ../wails3 ./cmd/wails3
 go test ./...
 ```
 
-### Criar uma branch de recurso
+### Crie uma branch de funcionalidade
 Crie uma branch com um nome descritivo:
 
 ```bash
 git checkout -b feat/window-transparency-support
 ```
 
-### Implementar o recurso
-- Siga nossos [Padrões de Código](/contributing/standards/)
-- Mantenha as alterações concentradas no recurso
+### Implemente a funcionalidade
+- Siga nossos [padrões de código](/contributing/standards/)
+- Mantenha as alterações focadas na funcionalidade
 - Escreva código limpo e documentado
 - Adicione testes abrangentes
 
@@ -191,8 +191,8 @@ git checkout -b feat/window-transparency-support
 # 4. Update documentation
 ```
 
-### Testar minuciosamente
-Teste seu recurso:
+### Teste minuciosamente
+Teste sua funcionalidade:
 
 ```bash
 # Unit tests
@@ -206,12 +206,12 @@ cd feature-test
 ../wails3 dev
 ```
 
-### Documentar seu recurso
-- Adicione strings de documentação a todas as APIs públicas
-- Atualize a documentação relevante em `/docs/mpress/content/`
+### Documente sua funcionalidade
+- Adicione comentários de documentação a todas as APIs públicas
+- Atualize a documentação pertinente em `/docs/mpress/content/`
 - Adicione exemplos, se aplicável
 
-### Fazer commits conforme a convenção
+### Siga a convenção nos commits
 Use commits convencionais:
 
 ```bash
@@ -224,48 +224,48 @@ git commit -m "feat: add window transparency support
 Closes #456"
 ```
 
-### Enviar um pull request
-Envie as alterações e crie um PR:
+### Envie a pull request
+Faça o push e crie a PR:
 
 ```bash
 git push origin feat/window-transparency-support
 ```
 
-Em seu PR:
+Na sua PR:
 
-- Descreva o recurso e os casos de uso
-- Apresente exemplos ou capturas de tela
+- Descreva a funcionalidade e os casos de uso
+- Mostre exemplos ou capturas de tela
 - Liste todas as alterações incompatíveis
-- Faça referência ao PR de WEP aceito
+- Faça referência à PR da WEP aceita
 
-### Aprimorar com base na revisão
+### Faça os ajustes com base na revisão
 Os mantenedores podem solicitar alterações. Tenha paciência e colabore.
 
 @end
 
 [Documentação]
-PRs de correção são bem-vindos sem que seja necessário abrir uma issue primeiro. Correções somente na documentação não precisam de um teste de código que falhe. Siga [Corrigir a documentação](/contributing/documentation/) para ver as etapas de instalação do M-Press, caminhos do código-fonte, visualização, validação e PR.
+PRs de correção são bem-vindos sem a necessidade de abrir uma issue primeiro. Correções apenas na documentação não precisam de um teste de código que falhe. Siga [Escrever documentação com o M-Press](/contributing/documentation/) para conhecer as etapas de instalação do M-Press, os caminhos do código-fonte, a pré-visualização, a validação e o PR.
 
 @end
 
-## Encontrar issues para contribuir
+## Como encontrar issues para trabalhar
 
-- Procure labels [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue)
-- Consulte as issues [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted)
-- Explore as [issues abertas](https://github.com/wailsapp/wails/issues) e peça para ser designado
+- Procure as etiquetas [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Confira as issues [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted)
+- Consulte as [issues abertas](https://github.com/wailsapp/wails/issues) e peça para ser designado
 
-## Obter ajuda
+## Como obter ajuda
 
-- **Discord:** Entre no [Discord do Wails](https://discord.gg/JDdSxwjhGf)
-- **Discussões:** Publique nas [Discussões do GitHub](https://github.com/wailsapp/wails/discussions)
-- **Issues:** Abra uma issue para relatar um bug reproduzível; use as Discussões para perguntas e um PR de WEP para melhorias
+- **Discord:** entre no [Discord do Wails](https://discord.gg/JDdSxwjhGf)
+- **Discussões:** publique no [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- **Issues:** abra uma issue para relatar um bug reproduzível; use o Discussions para perguntas e um PR de WEP para melhorias
 
 ## Código de Conduta
 
-Seja respeitoso, construtivo e acolhedor. Estamos construindo uma comunidade amigável, dedicada a criar excelentes softwares em conjunto.
+Seja respeitoso, construtivo e acolhedor. Estamos construindo uma comunidade amigável, dedicada a criar ótimos softwares em conjunto.
 
 ## Próximas etapas
 
-- Configure seu [Ambiente de Desenvolvimento](/contributing/setup/)
-- Consulte nossos [Padrões de Código](/contributing/standards/)
-- Explore a [Documentação Técnica](/contributing/overview/)
+- Configure seu [ambiente de desenvolvimento](/contributing/setup/)
+- Consulte nossos [padrões de codificação](/contributing/standards/)
+- Explore a [documentação técnica](/contributing/overview/)

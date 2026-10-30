@@ -13,7 +13,7 @@ The setup wizard is new and primarily tested on Linux. If you encounter issues, 
 
 ```bash
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard
 wails3 setup
@@ -35,13 +35,13 @@ cd myapp && wails3 dev
 - **Cross-platform builds** - Optional Docker setup for building from any host
 - **Code signing** - Optional setup for macOS, Windows, and Linux
 
-Configuration is saved to `~/.config/wails/config.yaml` and used by `wails3 init`.
+Configuration is saved to `$XDG_CONFIG_HOME/wails/defaults.yaml`, falling back to `~/.config/wails/defaults.yaml`, and used by `wails3 init`. This is separate from a project’s `build/config.yml`.
 
 ## Sub-Commands
 
 ```bash
-wails3 setup signing      # Configure code signing
-wails3 setup entitlements # Configure macOS entitlements
+wails3 signing      # Configure code signing
+wails3 entitlements # Configure macOS entitlements
 ```
 
 ## Having Issues?

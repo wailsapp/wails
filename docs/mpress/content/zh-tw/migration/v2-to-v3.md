@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **更新：**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [文件](/quick-start/why-wails/)
 - [Discord 社群](https://discord.gg/JDdSxwjhGf)
 - [GitHub 議題](https://github.com/wailsapp/wails/issues)
-- [範例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### 常見問題
 
 **問：可以同時執行 v2 和 v3 嗎？** 答：可以，兩者使用不同的匯入路徑。
 
-**問：v3 已可用於正式環境嗎？** 答：v3 是測試版軟體，並提供穩定的桌面 API。已有應用程式使用它在 正式環境中執行，但部署前仍須進行完整測試。v2 仍是 目前的穩定版本。
+**問：v3 已可用於正式環境嗎？** Wails v3.0.0 是適用於 Windows、macOS 和 Linux 桌面應用程式的穩定版本。 Android 和 iOS 支援仍屬實驗性質，不在穩定桌面版的相容性保證範圍內。
 
 **問：v2會繼續維護嗎？** 答：會，v2將持續收到關鍵更新。
 
@@ -713,7 +713,7 @@ wails3 generate bindings
 📖 範例
 查看完整的 v3 範例。
 
-[查看範例 →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[查看範例 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

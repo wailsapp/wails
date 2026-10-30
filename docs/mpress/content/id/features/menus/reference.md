@@ -585,4 +585,4 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu).

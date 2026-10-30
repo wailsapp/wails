@@ -13,15 +13,15 @@ O assistente de configuração é novo e foi testado principalmente no Linux. Se
 
 ```bash
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard
 wails3 setup
 ```
 
-O assistente é aberto no navegador e orienta você na verificação das dependências, na definição dos padrões do projeto e na configuração opcional de builds multiplataforma.
+O assistente é aberto no navegador e orienta você na verificação das dependências, na definição dos padrões do projeto e na configuração opcional de compilação multiplataforma.
 
-Em seguida, você estará pronto para criar seu primeiro projeto:
+Depois disso, você estará pronto para criar seu primeiro projeto:
 
 ```bash
 wails3 init -n myapp -t vanilla
@@ -30,18 +30,18 @@ cd myapp && wails3 dev
 
 ## O que ele faz
 
-- **Verifica as dependências** - Verifica o Go, o npm e as ferramentas da plataforma
-- **Configura os padrões** - Informações do autor, prefixo do ID do pacote e modelos preferidos
-- **Builds multiplataforma** - Configuração opcional do Docker para compilar a partir de qualquer host
-- **Assinatura de código** - Configuração opcional para macOS, Windows e Linux
+- **Verifica as dependências** — Verifica o Go, o npm e as ferramentas da plataforma
+- **Configura os padrões** — Informações do autor, prefixo do ID do pacote e modelos preferidos
+- **Compilações multiplataforma** — Configuração opcional do Docker para compilar em qualquer sistema host
+- **Assinatura de código** — Configuração opcional para macOS, Windows e Linux
 
-A configuração é salva em `~/.config/wails/config.yaml` e usada por `wails3 init`.
+A configuração é salva em `$XDG_CONFIG_HOME/wails/defaults.yaml`, com `~/.config/wails/defaults.yaml` como alternativa, e é usada por `wails3 init`. Ela é separada do `build/config.yml` de um projeto.
 
 ## Subcomandos
 
 ```bash
-wails3 setup signing      # Configure code signing
-wails3 setup entitlements # Configure macOS entitlements
+wails3 signing      # Configure code signing
+wails3 entitlements # Configure macOS entitlements
 ```
 
 ## Está com problemas?
