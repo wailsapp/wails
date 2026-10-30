@@ -3,6 +3,7 @@
 package edge
 
 import (
+	"runtime"
 	"testing"
 	"unsafe"
 	"weak"
@@ -26,7 +27,43 @@ func TestHandlerReferenceCounting(t *testing.T) {
 	}
 }
 
-type hostWindow struct{ events int }
+// hostWindow stands in for the window whose callbacks a Chromium holds. Tests
+// prove it unreachable by its weak pointer becoming nil, which the runtime only
+// promises for an object it does not batch into one allocation slot with
+// others. It batches tiny pointer-free objects, so the pointer field keeps a
+// window out of any batch: without it, one allocated just before an object
+// that stays referenced is retained with it.
+type hostWindow struct {
+	events int
+	_      *hostWindow
+}
+
+// besideLiveNeighbours allocates windows that nothing references, each
+// followed at once by a small pointer-free object the caller keeps.
+//
+//go:noinline
+func besideLiveNeighbours() ([]weak.Pointer[hostWindow], []*int64) {
+	windows := make([]weak.Pointer[hostWindow], 0, 8)
+	neighbours := make([]*int64, 0, 8)
+	for i := 0; i < 8; i++ {
+		windows = append(windows, weak.Make(&hostWindow{}))
+		neighbours = append(neighbours, new(int64))
+	}
+	return windows, neighbours
+}
+
+// The lifetime tests prove a window unreachable by its weak pointer becoming
+// nil. That proof needs a window the runtime frees on its own, never batched
+// into one allocation slot with an object that is still referenced.
+func TestHostWindowIsCollectedBesideLiveObjects(t *testing.T) {
+	windows, neighbours := besideLiveNeighbours()
+	defer runtime.KeepAlive(neighbours)
+	for i, window := range windows {
+		if !waitCollected(window) {
+			t.Fatalf("window %d was retained by the live object allocated beside it", i)
+		}
+	}
+}
 
 // abandonWithHostCallbacks returns a handler that native code still references
 // and the window whose callbacks its abandoned Chromium used to hold.
