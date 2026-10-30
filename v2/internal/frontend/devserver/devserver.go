@@ -291,7 +291,9 @@ func (d *DevWebServer) handleIPCWebSocket(c echo.Context, cookieName string) err
 		go func(m string) {
 			defer wg.Done()
 
-			if m == "drag" {
+			// Neither is a dispatcher message: drag is unsupported in browsers, and
+			// runtime:ready is consumed by the desktop frontends before they dispatch.
+			if m == "drag" || m == "runtime:ready" {
 				return
 			}
 
