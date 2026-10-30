@@ -416,7 +416,7 @@ Linux의 알림은 다음과 같습니다:
 
 다음 예제를 살펴보세요.
 
-- [알림](https://github.com/wailsapp/wails/tree/master/v3/examples/notifications)
+- [알림](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notifications)
 
 ## API 참조
 

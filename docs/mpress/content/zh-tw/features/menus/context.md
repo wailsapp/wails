@@ -739,4 +739,4 @@ contextMenu.Update()  // Add this!
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[內容選單範例](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[內容選單範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/contextmenus)。

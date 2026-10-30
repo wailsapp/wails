@@ -13,17 +13,17 @@ sourcePath: "guides/build/windows.md"
 wails3 package GOOS=windows
 ```
 
-这会运行`wails3 task windows:package`，它将：
+这会运行`wails3 task windows:package`，其操作如下：
 
 1. 构建应用
 2. 生成 WebView2 引导程序
 3. 创建 NSIS 安装程序
 
-输出：`build/windows/nsis/<AppName>-installer.exe`
+输出：`bin/<AppName>-<arch>-installer.exe`。NSIS 源脚本保留在`build/windows/nsis/`下。
 
 ### MSIX 包
 
-用于通过 Microsoft Store 分发或进行现代 Windows 部署：
+如需通过 Microsoft Store 分发或使用现代 Windows 部署方式：
 
 ```bash
 wails3 package GOOS=windows FORMAT=msix
@@ -54,7 +54,7 @@ NSIS 配置位于`build/windows/nsis/project.nsi`中。编辑此文件可自定�
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -66,7 +66,7 @@ NSIS 配置位于`build/windows/nsis/project.nsi`中。编辑此文件可自定�
 
 ## 代码签名
 
-对可执行文件和安装程序进行签名，以避免 SmartScreen 警告：
+为可执行文件和安装程序签名，以避免出现 SmartScreen 警告：
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -87,10 +87,10 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-安全存储证书密码：
+安全地存储证书密码：
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 有关详细信息，请参阅[应用签名](/guides/build/signing/)。
@@ -117,7 +117,7 @@ winget install NSIS.NSIS
 
 ### SmartScreen 警告
 
-可执行文件未签名。请参阅上文的[代码签名](#heading-1)。
+你的可执行文件未签名。请参阅上面的[代码签名](#heading-1)。
 
 ### 缺少 WebView2
 

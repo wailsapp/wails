@@ -1,7 +1,3 @@
-github.com/imdario/mergo v0.3.12 h1:b6R2BslTbIEToALKP7LxUvijTsNI9TAe80pLWN2g/HU=
-github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
-github.com/leaanthony/slicer v1.5.0 h1:aHYTN8xbCCLxJmkNKiLB6tgcMARl4eWmH9/F+S/0HtY=
-github.com/leaanthony/slicer v1.5.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5AzRtwV7m4AY=
 github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
 github.com/wailsapp/wails/v3 v3.0.0-alpha.7 h1:LNX2EnbxTEYJYICJT8UkuzoGVNalRizTNGBY47endmk=
 github.com/wailsapp/wails/v3 v3.0.0-alpha.7/go.mod h1:lBz4zedFxreJBoVpMe9u89oo4IE3IlyHJg5rOWnGNR0=

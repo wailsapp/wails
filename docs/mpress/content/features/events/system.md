@@ -167,6 +167,13 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
+**Delivery order:** each handler registered with `On`, `Once` or `OnMultiple` handles one event
+at a time, so it never runs concurrently with itself, and receives sequential `Emit` calls in
+order: if one `Emit` returns before the next is made, every handler sees them in that order.
+Concurrent `Emit` calls from different goroutines have no defined order between them. Different handlers run independently: a slow handler does not delay the others, and
+there is no ordering between handlers. `Emit` never waits for handlers. After a handler is
+removed, events still queued for it are dropped.
+
 ### In JavaScript
 
 **Basic listener:**
@@ -632,4 +639,4 @@ Handle window lifecycle events.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [event examples](https://github.com/wailsapp/wails/tree/master/v3/examples/events).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [event examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/events).

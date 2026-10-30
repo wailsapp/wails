@@ -1,25 +1,25 @@
 ---
 title: "Aplicativo Wails com atualização automática"
-description: "Crie um aplicativo Wails v3 que se atualiza pelo GitHub Releases — desde `wails3 init` até a verificação da versão assinada e a substituição no modo auxiliar."
+description: "Crie um aplicativo Wails v3 que se atualiza pelo GitHub Releases — desde `wails3 init` até a verificação assinada da versão e a substituição no modo auxiliar."
 slug: "tutorials/04-self-update-a-wails-app"
 sourcePath: "tutorials/04-self-update-a-wails-app.md"
 ---
 
 Neste tutorial, você adicionará um atualizador integrado a um novo aplicativo Wails v3. Ao final, o aplicativo poderá:
 
-- Verificar o GitHub Releases sob demanda (e, opcionalmente, por um temporizador).
-- Baixar o artefato correto para o sistema operacional e a arquitetura em execução.
+- Verificar o GitHub Releases sob demanda (e, opcionalmente, de forma periódica).
+- Baixar o ativo correto para o sistema operacional e a arquitetura em execução.
 - Verificar um resumo SHA-256 (e, opcionalmente, uma assinatura Ed25519) em relação aos bytes baixados.
 - Exibir as notas da versão na janela de atualização padrão do framework.
 - Substituir o binário em execução e reiniciar o aplicativo — tudo isso sem distribuir um executável auxiliar separado.
 
-Usaremos o **GitHub Releases** como fonte de atualizações porque ele é gratuito e não exige infraestrutura. Os mesmos padrões funcionam com o [keygen.sh](/guides/updater/#keygensh--updaterproviderskeygen) e o [Sparkle AppCast](/guides/updater/#sparkle-appcast--updaterprovidersappcast) — quando terminar, consulte o [guia do atualizador](/guides/updater/).
+Usaremos o **GitHub Releases** como fonte das atualizações porque ele é gratuito e não exige infraestrutura. Os mesmos padrões funcionam com o [keygen.sh](/guides/updater/#keygensh--updaterproviderskeygen) e o [Sparkle AppCast](/guides/updater/#sparkle-appcast--updaterprovidersappcast) — ao terminar, consulte o [guia do Updater](/guides/updater/).
 
 @note{type="tip" title="Pré-requisitos"}
-- Go 1.25 ou mais recente
-- CLI `wails3` instalada (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- Go 1.26 ou mais recente
+- CLI `wails3` instalada (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - Um repositório do GitHub no qual você possa publicar versões
-- Conhecer o [tutorial do serviço de QR Code](/tutorials/01-creating-a-service/) é útil, mas não obrigatório
+- Ter familiaridade com o [tutorial do serviço de códigos QR](/tutorials/01-creating-a-service/) é útil, mas não obrigatório
 
 @end
 
@@ -40,7 +40,7 @@ Agora você deve ter um diretório com `main.go`, `frontend/` e um `Taskfile.yml
 wails3 task dev
 ```
 
-Uma janela vazia do Wails deve ser aberta. Feche-a e continue.
+Uma janela vazia do Wails deverá ser aberta. Encerre o aplicativo e prossiga.
 
 ### Adicione a importação do atualizador
 Abra `main.go` e adicione os dois pacotes do atualizador às importações:
@@ -57,7 +57,7 @@ import (
 )
 ```
 
-Esses pacotes importam o próprio Updater e o provedor do GitHub Releases.
+Eles incluem o próprio Updater e o provedor do GitHub Releases.
 
 ### Configure o Updater
 `app.Updater` já está integrado a cada `*application.App` — basta chamar `Init`:
@@ -81,10 +81,10 @@ if err := app.Updater.Init(updater.Config{
 }
 ```
 
-Coloque isto depois de `application.New` e antes de `app.Run()`.
+Coloque este código depois de `application.New` e antes de `app.Run()`.
 
 @note{type="note" title="Formato da string de versão"}
-Passe a mesma versão usada para marcar as versões, **sem** o `v` inicial. O provedor remove `v` dos nomes das tags no lado dele. `1.0.0` aqui ↔ `v1.0.0` no GitHub.
+Forneça a mesma versão usada para marcar as versões, **sem** o `v` inicial. O provedor remove `v` dos nomes das tags. Portanto, use `1.0.0` aqui ↔ `v1.0.0` no GitHub.
 
 @end
 
@@ -104,10 +104,10 @@ appMenu.Add("Check for Updates…").OnClick(func(*application.Context) {
 })
 ```
 
-`CheckAndInstall` abre a janela de atualização do framework, executa `Check` e, se encontrar uma versão, executa `DownloadAndInstall` automaticamente. Quando não há novidades, a janela permanece aberta no estado "Atualizado" — o usuário a fecha com o botão **Fechar**.
+`CheckAndInstall` abre a janela de atualização do framework, executa `Check` e, se uma versão for encontrada, executa `DownloadAndInstall` automaticamente. Quando não há novidades, a janela permanece aberta no estado "Atualizado" — o usuário a fecha com o botão **Fechar**.
 
 @note{type="caution" title="Execute em uma goroutine"}
-`CheckAndInstall` fica bloqueado até a conclusão da verificação e da instalação. Chamá-lo diretamente no clique do menu bloquearia a thread da interface. Encapsule a chamada em `go func()`.
+`CheckAndInstall` fica bloqueado até a conclusão da verificação e da instalação. Chamá-lo diretamente pelo clique no menu bloquearia a thread da interface. Encapsule a chamada em `go func()`.
 
 @end
 
@@ -116,18 +116,18 @@ appMenu.Add("Check for Updates…").OnClick(func(*application.Context) {
 wails3 task dev
 ```
 
-Clique em **Aplicativo → Verificar atualizações…**. A janela de atualização deve abrir brevemente, consultar a API do GitHub, não encontrar versões mais recentes que `1.0.0` e permanecer no estado **Atualizado**, com um ✓ verde.
+Clique em **App → Verificar atualizações…**. A janela de atualização deverá abrir brevemente, consultar a API do GitHub, não encontrar nenhuma versão mais recente que `1.0.0` e permanecer no estado **Atualizado**, com um ✓ verde.
 
-Se ocorrer um erro aqui, geralmente será um destes:
+Se ocorrer um erro aqui, normalmente será um destes:
 
 | Sintoma | Correção |
 | --- | --- |
-| `404 Not Found` | O campo `Repository` está incorreto — deve ser `owner/repo` |
+| `404 Not Found` | O campo `Repository` está incorreto — ele deve ser `owner/repo` |
 | `403 rate-limited` | Adicione `Token: "ghp_…"` a github.Config (use um PAT com o escopo `public_repo`) |
 | Erros de rede | Confirme que o aplicativo em execução consegue acessar `api.github.com` |
 
 ### Publique uma versão de teste
-Atualize `currentVersion` em `main.go` para `1.0.0` (ou deixe como está). Compile para uma plataforma a fim de obter um binário que você possa anexar a uma versão:
+Altere `currentVersion` em `main.go` para `1.0.0` (ou mantenha o valor atual). Compile para uma plataforma a fim de obter um binário que possa ser anexado a uma versão:
 
 @tabs
 [macOS]
@@ -162,7 +162,7 @@ shasum -a 256 updater-tutorial-* > SHA256SUMS
 cat SHA256SUMS
 ```
 
-Você deve ver uma ou mais linhas como esta:
+Você deverá ver uma ou mais linhas como estas:
 
 ```
 abc123…  updater-tutorial-darwin-arm64.zip
@@ -182,8 +182,8 @@ gh release create v2.0.0 \
     bin/SHA256SUMS bin/updater-tutorial-*
 ```
 
-@note{type="note" title="Nomenclatura dos artefatos"}
-O seletor de artefatos padrão escolhe pelo trecho `GOOS` + `GOARCH` no nome do arquivo. Desde que o nome do artefato inclua `darwin` (ou `linux` / `windows`) e `arm64` (ou `amd64` / `386`), o seletor o encontrará. Consulte o [guia do atualizador](/guides/updater/#github-releases--updaterprovidersgithub) para saber como usar seletores personalizados.
+@note{type="note" title="Nomenclatura dos ativos"}
+O seletor de ativos padrão faz a correspondência pelas substrings `GOOS` e `GOARCH` no nome do arquivo. Desde que o nome do ativo inclua `darwin` (ou `linux` / `windows`) e `arm64` (ou `amd64` / `386`), o seletor o encontrará. Consulte o [guia do Updater](/guides/updater/#github-releases--updaterprovidersgithub) para criar seletores personalizados.
 
 @end
 
@@ -194,25 +194,25 @@ Com `currentVersion` ainda definido como `1.0.0`, execute o aplicativo novamente
 wails3 task dev
 ```
 
-Clique em **Aplicativo → Verificar atualizações…**. Desta vez, você deve ver algo assim:
+Clique em **App → Verificar atualizações…**. Desta vez, você deverá ver algo semelhante a isto:
 
-![Janela padrão do atualizador no estado Atualização pronta, mostrando o indicador da versão, as notas da versão renderizadas em Markdown e o botão principal Reiniciar e aplicar.](/assets/updater/default-window-ready.png)
+![Janela padrão do atualizador no estado Atualização pronta, exibindo o indicador de versão, as notas da versão renderizadas em Markdown e o botão principal Reiniciar e aplicar.](/assets/updater/default-window-ready.png)
 
-- O ícone principal muda de ↓ azul ("Atualização disponível") para ✓ verde ("Atualização pronta").
-- O subtítulo mostra `v1.0.0 → v2.0.0 · <size>`.
-- O painel de notas da versão renderiza o Markdown com negrito, trechos de código e a tabela.
+- O ícone principal muda de uma ↓ azul ("Atualização disponível") para um ✓ verde ("Atualização pronta").
+- O subtítulo exibe `v1.0.0 → v2.0.0 · <size>`.
+- O painel de notas da versão renderiza seu Markdown com negrito, trechos de código e a tabela.
 - A barra de progresso é preenchida durante o download (será rápido — o binário é pequeno).
 
 O Updater prepara o novo binário em um diretório temporário. Para concluir a atualização:
 
 - Clique em **Reiniciar e aplicar**.
-- O aplicativo é encerrado, o auxiliar substitui o binário e o novo binário reinicia.
-- O aplicativo reiniciado informa `currentVersion = "1.0.0"` (porque definimos esse valor diretamente no código), mas os bytes no disco correspondem à compilação v2.0.0.
+- O aplicativo é encerrado, o auxiliar substitui o binário e o novo binário é reiniciado.
+- O aplicativo reiniciado informa `currentVersion = "1.0.0"` (porque fixamos esse valor no código), mas os bytes no disco correspondem à compilação v2.0.0.
 
-Em um aplicativo real, `currentVersion` seria definido no momento da compilação por meio de `-ldflags`, para que o novo binário saiba que agora é v2.0.0 e uma verificação posterior não encontre nenhuma atualização.
+Em um aplicativo real, `currentVersion` seria definido durante a compilação por meio de `-ldflags`, para que o novo binário saiba que agora é a versão v2.0.0 e uma verificação posterior não encontre nenhuma atualização.
 
 ### Vincule `currentVersion` à compilação
-Substitua a constante por uma variável definida no momento da compilação:
+Substitua a constante por uma variável definida durante a compilação:
 
 ```go {title="main.go" ins="2,4"}
 var (
@@ -220,16 +220,16 @@ var (
 )
 ```
 
-Depois, no comando de compilação:
+Em seguida, no comando de compilação:
 
 ```bash
 wails3 task build:darwin -- -ldflags "-X main.currentVersion=2.0.0"
 ```
 
-Ou adicione `-ldflags` ao seu `Taskfile.yml` para que o valor seja obtido de `git describe --tags`.
+Como alternativa, adicione `-ldflags` ao seu `Taskfile.yml` para que ele obtenha o valor de `git describe --tags`.
 
-### Adicione uma assinatura criptográfica (recomendado para produção)
-O caminho SHA256SUMS verifica a *integridade* (os bytes correspondem ao que o GitHub armazenou), mas não a *autenticidade* (se esses bytes foram produzidos pelo seu pipeline de lançamento, e não por meio de uma conta de mantenedor comprometida). Para oferecer resistência à adulteração, assine cada versão com uma chave Ed25519:
+### Adicione assinatura criptográfica (recomendado para produção)
+O caminho SHA256SUMS verifica a *integridade* (os bytes correspondem ao que o GitHub armazenou), mas não a *autenticidade* (se esses bytes foram produzidos pelo seu pipeline de lançamento, e não por uma conta de mantenedor comprometida). Para oferecer resistência a adulterações, assine cada versão com uma chave Ed25519:
 
 ```bash
 # One-time: generate the keypair
@@ -238,7 +238,7 @@ ssh-keygen -t ed25519 -f updater-key -N "" -C "wails-updater"
 #   updater-key.pub  — bundle in your app
 ```
 
-A cada versão, assine com sua chave privada o resumo SHA-256 de cada artefato. Um pequeno utilitário em Go:
+Para cada versão, assine o resumo SHA-256 de cada artefato com sua chave privada. Veja um pequeno utilitário em Go:
 
 ```go {title="cmd/sign-release/main.go"}
 package main
@@ -265,9 +265,9 @@ func main() {
 }
 ```
 
-No momento, o provedor padrão do GitHub não busca um arquivo de assinatura separado — você pode [criar um provedor personalizado](/guides/updater/#writing-your-own-provider) que faça isso ou mudar para o **keygen.sh**, que assina cada artefato no servidor e disponibiliza tanto o resumo quanto a assinatura por meio de sua API.
+No momento, o provedor padrão do GitHub não baixa um arquivo de assinatura separado — você pode [criar um provedor personalizado](/guides/updater/#writing-your-own-provider) que faça isso ou mudar para o **keygen.sh**, que assina cada artefato no servidor e disponibiliza tanto o resumo quanto a assinatura por meio de sua API.
 
-Incorpore a chave pública ao seu aplicativo:
+Incorpore a chave pública ao aplicativo:
 
 ```go {title="main.go" ins="1,6"}
 //go:embed updater-key.pub
@@ -280,10 +280,10 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Com `PublicKey` definido, qualquer versão que forneça um `Signature` deve ser validada com essa chave. A origem da versão não tem como substituir a chave por outra — esse é justamente o objetivo de fixá-la por um canal independente durante a compilação.
+Com `PublicKey` definido, qualquer versão que inclua um `Signature` deverá ser verificada com essa chave. A origem da versão não tem como substituir a chave por outra — esse é justamente o objetivo de fixá-la por um canal independente durante a compilação.
 
 ### Personalize a janela
-A janela padrão atende ao caso mais comum. Se precisar de mais controle, há três alternativas — escolha uma conforme o grau de personalização desejado:
+A janela padrão atende ao caso mais comum. Se precisar de mais controle, há três alternativas — escolha uma de acordo com o nível de personalização desejado:
 
 @tabs
 [Somente CSS]
@@ -309,7 +309,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Seu HTML deve assinar os eventos `updater:*` e emitir as ações `updater:user:*` pelo canal de eventos do Wails. Consulte [Substituir o modelo](/guides/updater/#replace-the-template) para ver o shim de JS.
+Seu HTML deve assinar os eventos `updater:*` e emitir as ações `updater:user:*` pelo canal de eventos do Wails. Consulte [Substituir o modelo](/guides/updater/#replace-the-template) para ver o adaptador JS.
 
 [Use sua própria janela]
 ```go
@@ -325,19 +325,19 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Essa opção é útil quando você já tem sua própria infraestrutura de janelas e quer que o atualizador a controle, em vez de abrir outra janela. Um modelo HTML totalmente personalizado — controlado pelos mesmos eventos do atualizador usados pelo modelo padrão — tem esta aparência:
+Isso é útil quando você já tem sua própria infraestrutura de janelas e quer que o atualizador a controle em vez de abrir outra janela. Um modelo HTML totalmente personalizado — controlado pelos mesmos eventos do atualizador que o modelo padrão — tem esta aparência:
 
-![Uma janela própria para o atualizador, com fundo em gradiente rosa e laranja e um layout personalizado de cartão com cantos arredondados, demonstrando que a interface padrão pode ser totalmente substituída.](/assets/updater/byo-custom-window.png)
+![Uma janela de atualizador própria, com fundo em gradiente rosa e laranja e um layout personalizado de cartões arredondados, demonstrando que a interface padrão pode ser totalmente substituída.](/assets/updater/byo-custom-window.png)
 
 @note{type="caution" title="`AllowSimpleEventEmit` é obrigatório"}
-O shim de HTML personalizado do atualizador aciona Instalar / Ignorar / Lembrar / Reiniciar pelo atalho `wails:event:emit:` postMessage, que, por segurança, só fica disponível quando esse campo está habilitado. Se você se esquecer dele, os botões não farão nada, sem exibir qualquer aviso. Não o habilite em janelas que carregam HTML que você não controla completamente — consulte a seção [Use sua própria janela](/guides/updater/#bring-your-own-window) do guia para entender o modelo de ameaças.
+O adaptador para HTML personalizado do atualizador aciona Instalar / Ignorar / Lembrar / Reiniciar pelo atalho `wails:event:emit:` postMessage, e, por segurança, esse atalho só é habilitado por esse campo. Se você não o definir, os botões não farão nada, sem exibir nenhum aviso. Não o habilite em janelas que carregam HTML sobre o qual você não tenha controle total — consulte a seção [Use sua própria janela](/guides/updater/#bring-your-own-window) do guia para conhecer o modelo de ameaças.
 
 @end
 
 @end
 
 ### Execute verificações automáticas em segundo plano
-Para executar a verificação periodicamente, em vez de usar o clique no menu (ou além dele):
+Para verificar periodicamente em vez de clicar no menu (ou além disso):
 
 ```go {ins="5"}
 app.Updater.Init(updater.Config{
@@ -348,7 +348,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Cada intervalo executa o mesmo fluxo `CheckAndInstall` de um clique manual. Defina `Window: updater.WindowNone` se quiser que a verificação periódica permaneça silenciosa até que algo seja realmente encontrado — depois, assine `EventUpdateAvailable` por conta própria para decidir qual experiência apresentar ao usuário.
+Cada intervalo executa o mesmo fluxo `CheckAndInstall` de um clique manual. Defina `Window: updater.WindowNone` se quiser que a verificação periódica permaneça silenciosa até que algo seja de fato encontrado — depois, assine `EventUpdateAvailable` por conta própria para decidir qual experiência mostrar ao usuário.
 
 @end
 
@@ -356,21 +356,21 @@ Cada intervalo executa o mesmo fluxo `CheckAndInstall` de um clique manual. Defi
 
 Agora você tem um aplicativo Wails que:
 
-- Verifica se há atualizações nas versões do GitHub sob demanda e periodicamente.
+- Verifica se há atualizações no GitHub Releases sob demanda e periodicamente.
 - Renderiza as notas da versão como Markdown em uma janela padrão bem-acabada.
-- Valida os downloads usando um resumo SHA-256 publicado por você.
-- Opcionalmente, valida uma assinatura Ed25519 usando uma chave pública incorporada durante a compilação.
-- Substitui o binário em execução no próprio local e reinicia o aplicativo automaticamente.
+- Verifica os downloads usando um resumo SHA-256 publicado por você.
+- Opcionalmente, verifica uma assinatura Ed25519 usando uma chave pública incorporada durante a compilação.
+- Substitui no local o binário em execução e reinicia o aplicativo automaticamente.
 
 ## Próximas etapas
 
-- O [guia do atualizador](/guides/updater/) contém a referência completa da API, todos os eventos, todas as opções de configuração e o funcionamento da substituição no modo auxiliar.
-- Consulte [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater) para ver um exemplo funcional completo que você pode clonar.
-- O repositório de destino para testes [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) mostra a estrutura recomendada para os artefatos da versão.
+- O [guia do atualizador](/guides/updater/) contém a referência completa da API, todos os eventos, todas as opções de configuração e a mecânica de substituição no modo auxiliar.
+- Consulte [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) para ver um exemplo funcional completo que você pode clonar.
+- O repositório de destino para testes [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) mostra a organização recomendada dos artefatos da versão.
 
-## Cuidados no ambiente de produção
+## Pontos de atenção em produção
 
-- **Assinatura de código no macOS** — o Gatekeeper exige que o binário substituído seja assinado e autenticado por notarização. Assine seu pacote `.app` *antes* de compactá-lo em ZIP para a versão. O atualizador preserva os bytes exatamente como estão; ele não assina nada novamente.
-- **Antivírus no Windows** — arquivos `.exe` não assinados baixados da internet podem acionar avisos do SmartScreen. Assine seu binário com um certificado Authenticode ou considere que usuários de máquinas com restrições rigorosas talvez precisem adicionar seu aplicativo à lista de permissões.
-- **Versões atômicas** — publique `SHA256SUMS` (e seus binários) juntos, não em commits separados. O atualizador baixa o arquivo auxiliar separadamente do binário; se eles ficarem dessincronizados, a verificação do resumo falhará de modo seguro.
-- **Versões ignoradas** — o botão "Ignorar esta versão" da janela padrão registra localmente que a versão deve ser ignorada. Se você lançar uma atualização de segurança crítica, atribua a ela um novo número de versão para que não seja ignorada automaticamente por usuários que dispensaram uma versão anterior.
+- **Assinatura de código no macOS** — o Gatekeeper exige que o binário substituído esteja assinado e autenticado em cartório. Assine o pacote `.app` *antes de* compactá-lo em ZIP para a versão. O atualizador preserva os bytes exatamente como estão; ele não assina nada novamente.
+- **Antivírus no Windows** — arquivos `.exe` não assinados baixados da internet podem acionar avisos do SmartScreen. Assine o binário com um certificado Authenticode ou aceite que os usuários de máquinas com restrições rigorosas talvez precisem adicionar seu aplicativo à lista de permissões.
+- **Versões atômicas** — publique `SHA256SUMS` (e seus binários) juntos, não em commits separados. O atualizador baixa o arquivo auxiliar separadamente do binário; se eles ficarem dessincronizados, a verificação do resumo falhará de forma segura.
+- **Versões ignoradas** — o botão "Ignorar esta versão" da janela padrão registra a versão ignorada localmente. Se você lançar uma atualização de segurança crítica, atribua a ela um novo número de versão para que não seja ignorada automaticamente pelos usuários que dispensaram uma versão anterior.

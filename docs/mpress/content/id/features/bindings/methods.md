@@ -1,5 +1,5 @@
 ---
-title: "Binding Metode"
+title: "Memanggil Go dari JavaScript"
 description: "Panggil metode Go dari JavaScript dengan keamanan tipe"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -7,7 +7,7 @@ sourcePath: "features/bindings/methods.md"
 
 ## Binding Go-JavaScript yang Aman secara Tipe
 
-Wails **secara otomatis menghasilkan binding JavaScript/TypeScript yang aman secara tipe** untuk metode Go Anda. Tulis kode Go, jalankan satu perintah, lalu dapatkan fungsi frontend dengan tipe lengkap tanpa overhead HTTP, tanpa pekerjaan manual, dan tanpa kode boilerplate.
+Wails **secara otomatis menghasilkan binding JavaScript/TypeScript yang aman secara tipe** untuk metode Go Anda. Tulis kode Go, jalankan satu perintah, lalu dapatkan fungsi frontend dengan tipe lengkap tanpa overhead HTTP, pekerjaan manual, maupun kode boilerplate.
 
 ## Mulai Cepat
 
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**Selesai!** Panggilan dari Go ke JavaScript yang aman secara tipe.
+**Selesai!** Panggilan Go ke JavaScript yang aman secara tipe.
 
 ## Membuat Layanan
 
@@ -100,7 +100,7 @@ app := application.New(application.Options{
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -150,7 +150,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 }
 ```
 
-**Daftarkan dengan dependensi:**
+**Daftarkan bersama dependensinya:**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -170,7 +170,7 @@ app := application.New(application.Options{
 wails3 generate bindings
 ```
 
-**Output:**
+**Keluaran:**
 
 ```
 INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
@@ -196,7 +196,7 @@ wails3 generate bindings -ts
 
 **Menghasilkan file `.ts`** dengan tipe TypeScript lengkap.
 
-### Direktori Output Khusus
+### Direktori Keluaran Khusus
 
 ```bash
 wails3 generate bindings -d ./src/bindings
@@ -285,7 +285,7 @@ try {
 - Pemeriksaan tipe lengkap
 - Pelengkapan otomatis IDE
 - Kesalahan pada waktu kompilasi
-- Refactoring yang lebih baik
+- Refaktor yang lebih baik
 
 ### File Indeks
 
@@ -331,21 +331,21 @@ const sum = await CalculatorService.Add(5, 3)
 | `map[K]V` | `{ [_ in K]?: V }` | `K` non-string dirender sebagai tipe terpetakan, **bukan** `Map` JS |
 | `[]byte` | `string` | dikodekan dengan base64 |
 | `struct` | `class` / `interface` | dengan field |
-| `time.Time` | `any` | diserialisasi sebagai string RFC3339Nano saat runtime |
+| `time.Time` | `string` (bawaan) atau `Date` | `-time-type` memilih representasi yang dihasilkan; JSON menggunakan string RFC3339Nano |
 | `*T` | `T \| null` | pointer berarti dapat bernilai null |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | Exception jika digunakan sebagai nilai kembalian; jika tidak, any |
 
 ### Tipe yang Tidak Didukung
 
-Tipe-tipe ini **tidak dapat** diteruskan melalui bridge:
+Tipe berikut **tidak dapat** diteruskan melalui bridge:
 
 - `chan T` (channel)
 - `func()` (fungsi)
 - Interface kompleks (kecuali `interface{}`)
-- Field yang tidak diekspor (huruf kecil)
+- Kolom yang tidak diekspor (huruf kecil)
 
-**Solusi alternatif:** Gunakan ID atau handle:
+**Solusi sementara:** Gunakan ID atau handle:
 
 ```go
 // ❌ Can't return file handle
@@ -401,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### Sisi JavaScript
 
-Ketika metode yang terikat gagal, promise yang dikembalikan ditolak dengan objek `Error` JavaScript:
+Ketika metode yang diikat gagal, promise yang dikembalikan ditolak dengan objek JavaScript `Error`:
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,9 +415,9 @@ try {
 }
 ```
 
-Runtime melempar tipe error yang berbeda bergantung pada penyebab kegagalan:
+Runtime melempar jenis error yang berbeda, tergantung pada penyebab kegagalannya:
 
-| Tipe error | Dilempar ketika |
+| Jenis error | Dilempar ketika |
 | --- | --- |
 | `TypeError` | Pemanggilan memiliki jumlah argumen yang salah, atau suatu argumen tidak dapat dikonversi ke tipe Go |
 | `RuntimeError` | Metode mengembalikan error atau mengalami panic saat dijalankan |
@@ -425,11 +425,11 @@ Runtime melempar tipe error yang berbeda bergantung pada penyebab kegagalan:
 
 Setiap error menyediakan:
 
-- `name`: tipe error dari tabel di atas
+- `name`: jenis error dari tabel di atas
 - `message`: pesan error Go
-- `cause`: error Go yang diserialisasi sebagai JSON, jika tersedia. Jika metode mengembalikan beberapa error, `cause` berupa array dengan satu entri untuk setiap error.
+- `cause`: error Go yang diserialisasi sebagai JSON, jika tersedia. Jika metode mengembalikan beberapa error, `cause` adalah array dengan satu entri untuk setiap error.
 
-Kelas `RuntimeError` diekspor oleh paket `@wailsio/runtime`, sehingga Anda dapat membedakan error yang dikembalikan oleh kode Go Anda dari kegagalan lainnya:
+Kelas `RuntimeError` diekspor oleh paket `@wailsio/runtime` sehingga Anda dapat membedakan error yang dikembalikan oleh kode Go Anda dari kegagalan lainnya:
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -453,7 +453,7 @@ Pada versi runtime sebelumnya, setiap pemanggilan yang gagal menolak promise den
 
 ### Data Error Terstruktur
 
-Mengembalikan tipe error khusus dari Go membuat bentuk JSON-nya tersedia pada properti `cause` dari error yang dilempar:
+Jika Anda mengembalikan tipe error khusus dari Go, bentuk JSON-nya akan tersedia pada properti `cause` milik error yang dilempar:
 
 ```go
 type ValidationError struct {
@@ -485,7 +485,7 @@ try {
 }
 ```
 
-Error diserialisasi dengan paket standar `encoding/json`, sehingga hanya field yang diekspor yang disertakan. Error yang dibuat dengan `errors.New` atau `fmt.Errorf` tidak memiliki field yang diekspor dan diserialisasi sebagai objek kosong.
+Error diserialisasi dengan paket standar `encoding/json` sehingga hanya kolom yang diekspor yang disertakan. Error yang dibuat dengan `errors.New` atau `fmt.Errorf` tidak memiliki kolom yang diekspor dan diserialisasi sebagai objek kosong.
 
 Untuk mengontrol sepenuhnya cara error diserialisasi, sediakan fungsi `MarshalError` dalam opsi layanan:
 
@@ -515,7 +515,7 @@ app := application.New(application.Options{
 
 ### Overhead Pemanggilan
 
-**Panggilan umum:** &lt;1ms
+**Pemanggilan umum:** &lt;1md
 
 ```
 JavaScript → Bridge → Go → Bridge → JavaScript
@@ -525,9 +525,9 @@ JavaScript → Bridge → Go → Bridge → JavaScript
 
 **Dibandingkan dengan alternatif:**
 
-- HTTP/REST: 5-50ms
-- IPC: 1-10ms
-- Wails: &lt;1ms
+- HTTP/REST: 5-50md
+- IPC: 1-10md
+- Wails: &lt;1md
 
 ### Tips Optimasi
 
@@ -543,7 +543,7 @@ for (const item of items) {
 await ProcessItems(items)
 ```
 
-**✅ Simpan hasil dalam cache:**
+**✅ Cache hasil:**
 
 ```javascript
 // ❌ Repeated calls
@@ -696,10 +696,10 @@ app.loadTodos()
 ### ✅ Lakukan
 
 - **Buat metode tetap sederhana** - Satu tanggung jawab
-- **Kembalikan error** - Jangan memicu panic
+- **Kembalikan error** - Jangan lakukan panic
 - **Gunakan state yang aman untuk thread** - Gunakan mutex untuk data bersama
-- **Kelompokkan operasi** - Kurangi panggilan melalui bridge
-- **Simpan dalam cache di sisi Go** - Hindari pekerjaan berulang
+- **Kelompokkan operasi** - Kurangi pemanggilan bridge
+- **Lakukan caching di sisi Go** - Hindari pekerjaan berulang
 - **Dokumentasikan metode** - Komentar menjadi JSDoc
 
 ### ❌ Jangan Lakukan
@@ -708,7 +708,7 @@ app.loadTodos()
 - **Jangan kembalikan channel** - Gunakan event sebagai gantinya
 - **Jangan kembalikan fungsi** - Tidak didukung
 - **Jangan abaikan error** - Selalu tangani error tersebut
-- **Jangan gunakan field yang tidak diekspor** - Field tersebut tidak akan dibuatkan binding
+- **Jangan gunakan kolom yang tidak diekspor** - Kolom tersebut tidak akan diikat
 
 ## Langkah Berikutnya
 
@@ -720,7 +720,7 @@ Pelajari sistem layanan secara mendalam.
 
 ---
 📖 Model
-Buat binding untuk struktur data yang kompleks.
+Ikat struktur data yang kompleks.
 
 [Pelajari Lebih Lanjut →](/features/bindings/models/)
 
@@ -740,4 +740,4 @@ Gunakan event untuk komunikasi pub/sub.
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

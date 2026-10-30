@@ -570,4 +570,4 @@ JavaScript から Go 関数を呼び出します。
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ファイルダイアログのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ファイルダイアログのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs)を確認してください。

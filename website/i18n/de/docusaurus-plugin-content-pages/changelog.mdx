@@ -385,7 +385,7 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Wails verwendet nun eine eigene, integrierte Go-Implementierung der webview2loader dll. Das bedeutet, dass es nicht notwendig ist, die `Webview2Loader.dll` Datei in deine Binärdateien einzubetten, was bedeutet, dass die Dateigrößen ~130 k kleiner sind! Danke an @stffabi für diesen [tollen Beitrag](https://github.com/wailsapp/wails/pull/1974)!
-- Diese Version bietet viel mehr Kontrolle über den Umgang mit benutzerdefinierten assets über die neuen [AssetServer](https://wails.io/docs/reference/options#assetserver) Optionen. Damit kannst du eigene spezifische Asset-Handler zur Verfügung stellen und über Middlewares in die Anfragekette einbinden. Vielen Dank an @stffabi für diesen [tollen Beitrag](https://github.com/wailsapp/wails/pull/2016) und @mholt für die [Initialidee](https://github.com/wailsapp/wails/issues/2007) und das umfangreiche Testen.
+- Diese Version bietet viel mehr Kontrolle über den Umgang mit benutzerdefinierten assets über die neuen [AssetServer](https://v2.wails.io/docs/reference/options#assetserver) Optionen. Damit kannst du eigene spezifische Asset-Handler zur Verfügung stellen und über Middlewares in die Anfragekette einbinden. Vielen Dank an @stffabi für diesen [tollen Beitrag](https://github.com/wailsapp/wails/pull/2016) und @mholt für die [Initialidee](https://github.com/wailsapp/wails/issues/2007) und das umfangreiche Testen.
 - Es ist jetzt möglich, das Layout deiner Wails Projekte mit 2 neuen Optionen in `wails.json` anzupassen:
   - `build:dir` kann verwendet werden um festzulegen, wo die Build-Dateien liegen sollen
   - `frontend:dir` kann verwendet werden um festzulegen, wo die Frontend-Dateien liegen sollen
@@ -402,12 +402,12 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Die Anleitung zur Fehlerbehebung wurde aktualisiert, um eine Anleitung zu liefern, wenn [Vite nicht startet](https://wails.io/docs/guides/troubleshooting#cannot-start-service-host-version-xxx-does-not-match-binary-version-xxx). Danke an @willdot für den [PR](https://github.com/wailsapp/wails/pull/2000).
+- Die Anleitung zur Fehlerbehebung wurde aktualisiert, um eine Anleitung zu liefern, wenn [Vite nicht startet](https://v2.wails.io/docs/guides/troubleshooting#cannot-start-service-host-version-xxx-does-not-match-binary-version-xxx). Danke an @willdot für den [PR](https://github.com/wailsapp/wails/pull/2000).
 - Englische, Chinesische und Japanische Dokumentationsaktualisierungen. Danke an @misitebao.
 
 ### Deprecated
 
-- Die Option [AssetsHandler](https://wails.io/docs/reference/options#assetshandler) wurde veraltet. Bitte verwende stattdessen die [AssetServer](https://wails.io/docs/reference/options#assetserver) Option.
+- Die Option [AssetsHandler](https://v2.wails.io/docs/reference/options#assetshandler) wurde veraltet. Bitte verwende stattdessen die [AssetServer](https://v2.wails.io/docs/reference/options#assetserver) Option.
 
 ### New Contributators
 
@@ -425,12 +425,12 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- [Unterstützung für die Voreinstellung der Schaltfläche "Nein" in Windows-Dialogen](https://wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony in https://github.com/wailsapp/wails/pull/1875
+- [Unterstützung für die Voreinstellung der Schaltfläche "Nein" in Windows-Dialogen](https://v2.wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony in https://github.com/wailsapp/wails/pull/1875
 - Fehlende Größe für Rahmenlose Fenster unter Linux hinzufügen - @Lyimmi in https://github.com/wailsapp/wails/pull/1918
-- [Fenstertransparenz für Linux hinzugefügt](https://wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi in https://github.com/wailsapp/wails/pull/1926 hinzu
-- [WindowExecJS-Methode hinzugefügt](https://wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony in https://github.com/wailsapp/wails/pull/1927 hinzufügen
-- [Support für `Info.dev.plist` auf macOS](https://wails.io/docs//reference/cli#dev) - @leaanthony in https://github.com/wailsapp/wails/pull/1960
-- [ZoomFactor get/set hinzugefügt und die entsprechenden Windows spezifischen Optionen](https://wails.io/docs/reference/options#zoomfactor) - @pierrejoye in https://github.com/wailsapp/wails/pull/1463 hinzu
+- [Fenstertransparenz für Linux hinzugefügt](https://v2.wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi in https://github.com/wailsapp/wails/pull/1926 hinzu
+- [WindowExecJS-Methode hinzugefügt](https://v2.wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony in https://github.com/wailsapp/wails/pull/1927 hinzufügen
+- [Support für `Info.dev.plist` auf macOS](https://v2.wails.io/docs//reference/cli#dev) - @leaanthony in https://github.com/wailsapp/wails/pull/1960
+- [ZoomFactor get/set hinzugefügt und die entsprechenden Windows spezifischen Optionen](https://v2.wails.io/docs/reference/options#zoomfactor) - @pierrejoye in https://github.com/wailsapp/wails/pull/1463 hinzu
 
 ### Fixed
 
@@ -667,7 +667,7 @@ Experimental: &options.Experimental{
 
 ### Deprecated
 
-- Die Option `Fullscreen` der Anwendung ist veraltet. Bitte verwende [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) stattdessen.
+- Die Option `Fullscreen` der Anwendung ist veraltet. Bitte verwende [`WindowStartState`](https://v2.wails.io/docs/reference/options#windowstartstate) stattdessen.
 
 ### New Contributators
 
@@ -829,18 +829,18 @@ Experimental: &options.Experimental{
 ### Breaking Changes
 
 - Wenn Daten an den `EventsOn` Callback gesendet wurden, wurden sie als ein slice von Werten anstelle von optionalen Parametern an die Methode gesendet. `EventsOn` funktioniert jetzt wie erwartet, aber du musst deinen Code aktualisieren, wenn du die bisherige Funktionalität verwendet hast. [Weitere Informationen](https://github.com/wailsapp/wails/issues/1324)
-- Die kaputten `bindings.js` und `bindings.d.ts` Dateien wurden durch ein neues JS/TS Codegenerierungssystem ersetzt. Mehr Details [hier](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
+- Die kaputten `bindings.js` und `bindings.d.ts` Dateien wurden durch ein neues JS/TS Codegenerierungssystem ersetzt. Mehr Details [hier](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods)
 
 ### Added
 
 - **Neue Vorlagen**: Svelte, React, Vue, Preact, Lit und Vanilla Vorlagen, sowohl JS als auch TS Versionen. `wails init -l` für mehr informationen.
 - Standardvorlagen verwenden jetzt [Vite](https://vitejs.dev). Das ermöglicht blitzschnelle Reloads, wenn du `wails dev` benutzt!
-- Unterstützung für externe Frontend-Entwicklungsserver hinzufügt. Siehe `frontend:dev:serverUrl` in der [Projektkonfiguration](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
-- [Voll konfigurierbarer Darkmode](https://wails.io/docs/reference/options#theme) für Windows.
-- Erheblich verbessrte [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (sowohl für JavaScript als auch TypeScript)
+- Unterstützung für externe Frontend-Entwicklungsserver hinzufügt. Siehe `frontend:dev:serverUrl` in der [Projektkonfiguration](https://v2.wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
+- [Voll konfigurierbarer Darkmode](https://v2.wails.io/docs/reference/options#theme) für Windows.
+- Erheblich verbessrte [WailsJS generation](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods) (sowohl für JavaScript als auch TypeScript)
 - Wails doctor meldet jetzt Informationen über die Wails Installation- [@stffabi](https://github.com/stffabi)
-- Dokumentation für [Code-Signierung](https://wails.io/docs/guides/signing) und [NSIS Installer](https://wails.io/docs/guides/windows-installer) hinzugefügt - [@gardc](https://github.com/gardc)
-- Unterstützung für `-trimpath` [build flag](https://wails.io/docs/reference/cli#build) hinzufügt
+- Dokumentation für [Code-Signierung](https://v2.wails.io/docs/guides/signing) und [NSIS Installer](https://v2.wails.io/docs/guides/windows-installer) hinzugefügt - [@gardc](https://github.com/gardc)
+- Unterstützung für `-trimpath` [build flag](https://v2.wails.io/docs/reference/cli#build) hinzufügt
 - Unterstützung für einen Standard-AssetsHandler hinzufügt - [@stffabi](https://github.com/stffabi)
 
 ### Fixed
