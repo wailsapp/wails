@@ -1,37 +1,39 @@
 ---
 title: "API 参考"
-description: "Wails v3 的完整 API 文档"
+description: "查阅 Wails 类型、方法、选项和 CLI 命令"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## 关于本参考文档
 
-这是 Wails v3 的完整 API 参考文档，其中记录了框架提供的所有公共类型、方法和选项。
+开发应用时，可使用本节查阅 Wails 类型、方法、选项和命令。如果需要循序渐进的课程，请从[教程](/tutorials/overview/)开始。有关完成任务的步骤，请参阅[操作指南](/quick-start/next-steps/#features)。有关设计背景，请参阅[核心概念](/concepts/architecture/)。
 
-**组织结构：**
+**文档结构：**
 
 - [应用程序](/reference/application/) - 核心应用程序 API
-- [窗口](/reference/window/) - 窗口创建和管理
-- [菜单](/reference/menu/) - 应用程序菜单、上下文菜单和系统托盘菜单
+- [窗口](/reference/window/) - 窗口创建和管理；[窗口选项](/features/windows/options/)列出了配置字段
+- [菜单](/reference/menu/) - 应用程序菜单、上下文菜单和系统托盘 API；[菜单项参考](/features/menus/reference/)介绍菜单项类型和属性
 - [事件](/reference/events/) - 事件系统和内置事件
-- [对话框](/reference/dialogs/) - 文件对话框和消息对话框
+- [对话框](/reference/dialogs/) - 文件和消息对话框
 - [前端运行时](/reference/frontend-runtime/) - 前端运行时 API
-- [CLI](/reference/cli/) - 命令行界面
+- [CLI 命令概览](/reference/cli/) - 按用途分组的命令；[标志和示例](/guides/cli/)提供各个命令的详细信息
+- [更新清单协议](/reference/update-manifest/) - 更新元数据和验证字段
+- [移动端 API](/guides/mobile/mobile-api/) - 实验性移动端 API
 
 ## API 约定
 
 @details{title="Go API 约定 - 面向 Go 新手开发者"}
 ### 命名
 
-- <strong></strong>类型<strong></strong>：PascalCase（例如 `WebviewWindow`）
-- <strong></strong>方法<strong></strong>：PascalCase（例如 `SetTitle()`）
-- <strong></strong>选项<strong></strong>：PascalCase 结构体（例如 `WindowOptions`）
-- <strong></strong>常量<strong></strong>：PascalCase（例如 `WindowStartStateMaximised`）
+- <strong>类型</strong>：PascalCase（例如`WebviewWindow`）
+- <strong>方法</strong>：PascalCase（例如`SetTitle()`）
+- <strong>选项</strong>：采用 PascalCase 的结构体（例如`WindowOptions`）
+- <strong>常量</strong>：PascalCase（例如`WindowStartStateMaximised`）
 
 #### 错误处理
 
-大多数可能失败的方法都将`error`作为最后一个返回值。`app.Run()`会阻塞，直到应用退出，并返回任何启动错误：
+大多数可能失败的方法都将`error`作为最后一个返回值。`app.Run()`会阻塞至应用程序退出，并返回任何启动错误：
 
 ```go
 if err := app.Run(); err != nil {
@@ -39,7 +41,7 @@ if err := app.Run(); err != nil {
 }
 ```
 
-创建窗口不会返回错误——`app.Window.New()`会直接返回`*WebviewWindow`。
+构造窗口不会返回错误——`app.Window.New()`会直接返回`*WebviewWindow`。
 
 #### 上下文
 
@@ -52,7 +54,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-可通过`app.Context()`访问应用的生命周期上下文。不存在`RunWithContext`——请调用`app.Run()`。
+可通过`app.Context()`获取应用程序生命周期上下文。不存在`RunWithContext`——请调用`app.Run()`。
 
 #### 选项模式
 
@@ -74,12 +76,12 @@ app := application.New(application.Options{
 
 #### 命名
 
-- **函数**：camelCase（例如 `setTitle()`）
-- **常量**：SCREAMING<em>SNAKE</em>CASE（例如 `WINDOW_EVENT_FOCUS`）
+- **函数**：camelCase（例如`setTitle()`）
+- **常量**：SCREAMING<em>SNAKE</em>CASE（例如`WINDOW_EVENT_FOCUS`）
 
 #### 默认异步
 
-所有 Go 方法调用都返回 Promise：
+所有 Go 方法调用均返回 Promise：
 
 ```javascript
 // Async/await (recommended)
@@ -216,74 +218,74 @@ export function MyMethod(arg: string): Promise<string>
 | **文件对话框** | 原生 | 原生 | 原生（GTK） |
 | **透明效果** | ✅ 完全支持 | 需要[`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) | ⚠️ 支持有限 |
 
-每个 API 章节中都记录了特定于平台的行为。
+每个 API 章节中都记录了平台特定行为。
 
-## 版本控制
+## 版本管理
 
-Wails v3 遵循语义化版本控制：
+Wails v3遵循语义化版本控制：
 
-- **主版本**（v3.x.x）：破坏性变更
-- **次版本**（v3.x.x）：新增功能，向后兼容
-- **补丁版本**（v3.x.x）：错误修复，向后兼容
+- **主版本**（v4.0.0）：破坏性变更
+- **次版本**（v3.1.0）：新增功能，向后兼容
+- **补丁版本**（v3.0.1）：错误修复，向后兼容
 
-<strong>当前状态：</strong>Beta（API 已稳定，仍在持续完善）
+<strong>Wails v3.0.0：</strong>稳定版
 
 ## 弃用政策
 
 API 被弃用时：
 
-1. <strong>在文档中标记</strong>并附上弃用通知
-2. <strong>提供替代方案</strong>并附上迁移指南
-3. **移除前仍会维护 1 个主版本**
-4. **编译器警告**（如可实现）
+1. **在文档中标记**并附上弃用通知
+2. **提供替代方案**和迁移指南
+3. **移除前继续维护1个主版本**
+4. **编译器警告**（如可行）
 
 ## API 稳定性
 
 ### 稳定 API ✅
 
-以下 API 已稳定，可安全用于生产环境：
+以下 API 已达到稳定状态，可安全用于生产环境：
 
-- 核心应用 API
+- 核心应用程序 API
 - 窗口管理
 - 菜单系统
 - 事件系统
 - 文件对话框
 - 服务绑定
 
-### 不稳定 API ⚠️
+### 实验性 API ⚠️
 
-以下 API 在正式发布前可能发生变化：
+只有明确标注为实验性的 API 不受稳定桌面兼容性契约的约束：
 
-- 部分高级窗口选项
-- 平台特定功能
-- 实验性功能
+- Android 支持
+- iOS 支持
+- 其他明确标记为实验性的 API
 
-不稳定 API 会在文档中标明。
+实验性 API 会在文档中标明。
 
 ## 获取帮助
 
 ### API 问题
 
-1. **查阅此参考文档** — 完整的 API 文档
-2. **查看示例** — [GitHub 示例](https://github.com/wailsapp/wails/tree/master/v3/examples)
-3. **搜索 Discord** — [Discord 服务器](https://discord.gg/JDdSxwjhGf)
-4. **向社区提问** — Discord #help 频道
+1. **查阅此参考文档** - 完整的 API 文档
+2. **查看示例** - [GitHub 示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+3. **搜索 Discord** - [Discord 服务器](https://discord.gg/JDdSxwjhGf)
+4. **向社区提问** - Discord 的 #help 频道
 
 ### 报告 API 问题
 
 发现了错误或不一致之处？
 
-1. **查看现有问题** — [GitHub issues](https://github.com/wailsapp/wails/issues)
-2. **创建详细报告** — 包含代码、错误信息和平台
-3. **提供复现步骤** — 提供可重现该问题的最小示例
+1. **查看现有问题** - [GitHub Issues](https://github.com/wailsapp/wails/issues)
+2. **创建详细报告** - 包含代码、错误信息和平台
+3. **提供复现方法** - 能够重现问题的最小示例
 
 ## 相关文档
 
-- [教程](/tutorials/overview/) — 通过构建真实应用进行学习
-- [指南](/guides/architecture/) — 面向常见场景的任务型指南
-- [功能](/features/windows/basics/) — 按功能逐项介绍的文档
-- [示例](https://github.com/wailsapp/wails/tree/master/v3/examples) — GitHub 上可运行的代码示例
+- [教程](/tutorials/overview/) - 通过构建实际应用程序来学习
+- [指南](/guides/architecture/) - 面向常见场景的任务型指南
+- [功能](/features/windows/basics/) - 按功能编写的文档
+- [示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub 上可运行的代码示例
 
 ---
 
-<strong>浏览 API：</strong>使用左侧导航探索具体 API。
+<strong>浏览 API：</strong>使用左侧导航探索具体的 API。

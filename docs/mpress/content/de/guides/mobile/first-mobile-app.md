@@ -5,9 +5,9 @@ slug: "guides/mobile/first-mobile-app"
 sourcePath: "guides/mobile/first-mobile-app.md"
 ---
 
-In dieser Anleitung führen Sie eine standardmäßige Wails-Desktop-App im iOS-Simulator oder Android-Emulator aus. **Sie müssen Ihren Go-Code nicht ändern.** Derselbe `main.go` wird für alle Zielplattformen erstellt.
+In diesem Leitfaden führen Sie eine standardmäßige Wails-Desktop-App im iOS-Simulator oder Android-Emulator aus. **Sie müssen Ihren Go-Code nicht ändern.** Dieselbe `main.go` wird für alle Zielplattformen gebaut.
 
-**Benötigte Zeit:** 15–30 Minuten (der Großteil davon entfällt beim ersten Durchlauf auf die Installation der Toolchain)
+**Benötigte Zeit:** 15–30 Minuten (größtenteils für die Installation der Toolchain beim ersten Durchlauf)
 
 ## Mit einem Desktop-Projekt beginnen
 
@@ -24,7 +24,7 @@ Prüfen Sie zunächst, ob die Desktop-App funktioniert:
 wails3 dev
 ```
 
-Sobald sie geöffnet ist, beenden Sie sie und fahren Sie fort. Alles, was auf dem Desktop läuft, läuft auch auf Mobilgeräten — für diese Anleitung müssen Sie weder `main.go` noch anderen Go-Code ändern.
+Sobald sie geöffnet ist, beenden Sie sie und fahren Sie fort. Alles, was auf dem Desktop läuft, läuft auch auf Mobilgeräten – für diesen Leitfaden müssen Sie weder `main.go` noch anderen Go-Code bearbeiten.
 
 ---
 
@@ -35,16 +35,16 @@ Sobald sie geöffnet ist, beenden Sie sie und fahren Sie fort. Alles, was auf de
 ### Voraussetzungen
 
 - **macOS** (iOS-Builds sind nur unter macOS möglich)
-- **Vollständiges Xcode** — nicht nur die Befehlszeilenwerkzeuge. Installieren Sie es aus dem App Store und führen Sie anschließend Folgendes aus:
+- **Vollständiges Xcode** – nicht nur die Befehlszeilentools. Installieren Sie es aus dem App Store und führen Sie anschließend Folgendes aus:
   ```bash
   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
   sudo xcodebuild -license accept
   ```
 
 
-- **Go 1.25+** und **npm** (bereits installiert, wenn Sie `wails3 init` ausgeführt haben)
+- **Go 1.26+** und **npm** (bereits installiert, wenn Sie `wails3 init` ausgeführt haben)
 
-Führen Sie zur Überprüfung `wails3 doctor` aus — der Befehl listet alle gefundenen iOS-SDKs auf.
+Führen Sie zur Überprüfung `wails3 doctor` aus. Der Befehl listet alle gefundenen iOS-SDKs auf.
 
 ### Im Simulator ausführen
 
@@ -54,33 +54,33 @@ Führen Sie zur Überprüfung `wails3 doctor` aus — der Befehl listet alle gef
 wails3 task ios:run
 ```
 
-Das ist alles — dadurch wird Ihre App erstellt, bei Bedarf ein Simulator gestartet und die App darin geöffnet.
+Das ist alles: Ihre App wird gebaut, bei Bedarf ein Simulator gestartet und die App darin geöffnet.
 
 @note{type="tip"}
-Der erste Durchlauf dauert einige Minuten, da das Wails-Framework für iOS kompiliert und zwischengespeichert wird. Alle weiteren Durchläufe sind wesentlich schneller.
+Der erste Durchlauf dauert einige Minuten, da das Wails-Framework für iOS kompiliert und zwischengespeichert wird. Alle weiteren Durchläufe sind deutlich schneller.
 
 @end
 
-Nach dem Start läuft Ihre unveränderte Desktop-App im iOS-Simulator — mit demselben `main.go` und demselben Frontend:
+Nach dem Start läuft Ihre unveränderte Desktop-App im iOS-Simulator – mit derselben `main.go` und demselben Frontend:
 
 ![Eine standardmäßige Wails-App im iOS-Simulator](/assets/ios-simulator-first-app.png)
 
-### Logs fortlaufend anzeigen
+### Logs streamen
 In einem separaten Terminal:
 
 ```bash
 wails3 task ios:logs:dev
 ```
 
-Damit wird das Simulator-Log fortlaufend und nach Ihrer App gefiltert angezeigt. Die Ausgabe von `fmt.Println` und `log.Println` erscheint hier.
+Damit verfolgen Sie das auf Ihre App gefilterte Simulator-Log fortlaufend. Die Ausgaben von `fmt.Println` und `log.Println` erscheinen hier.
 
 ### WebView untersuchen
-In Safari: **Entwickler → Simulator → Ihre App**. Der vollständige Web Inspector ist verfügbar — Konsole, Debugger, Netzwerkbereich und alle weiteren Funktionen.
+Öffnen Sie in Safari **Entwickler → Simulator → Ihre App**. Der vollständige Web Inspector ist verfügbar – einschließlich Konsole, Debugger, Netzwerkbereich und aller weiteren Funktionen.
 
 ### Änderung vornehmen
-Bearbeiten Sie eine beliebige Frontend-Datei (`frontend/src/main.js`, `index.html` usw.) und führen Sie `wails3 task ios:run` erneut aus. Wails erstellt das Frontend neu und startet die App erneut.
+Bearbeiten Sie eine beliebige Frontend-Datei (`frontend/src/main.js`, `index.html` usw.) und führen Sie `wails3 task ios:run` erneut aus. Wails baut das Frontend neu und startet die App erneut.
 
-Führen Sie nach Änderungen am Go-Code ebenfalls `wails3 task ios:run` erneut aus. Go kompiliert inkrementell neu, sodass nur geänderte Pakete neu erstellt werden.
+Führen Sie nach Änderungen an Go ebenfalls `wails3 task ios:run` erneut aus. Go kompiliert inkrementell, sodass nur geänderte Pakete neu gebaut werden.
 
 @end
 
@@ -90,16 +90,16 @@ Führen Sie nach Änderungen am Go-Code ebenfalls `wails3 task ios:run` erneut a
 wails3 task ios:xcode
 ```
 
-Dadurch wird `build/ios/` in Xcode geöffnet. Sie können Xcode für die Bereitstellung auf Geräten, erweitertes Profiling oder die Verwaltung von Bereitstellungsprofilen verwenden. Wails generiert das Xcode-Projekt bei jedem Build neu; ändern Sie die generierten Dateien daher nicht direkt.
+Damit wird `build/ios/` in Xcode geöffnet. Sie können Xcode für die Bereitstellung auf Geräten, erweitertes Profiling oder die Verwaltung von Provisioning-Profilen verwenden. Wails generiert das Xcode-Projekt bei jedem Build neu; bearbeiten Sie die generierten Dateien daher nicht direkt.
 
 [Android-Emulator]
 ### Voraussetzungen
 
-Sie benötigen das **Android SDK**, das **NDK** und ein **JDK**. Am einfachsten geht dies mit Android Studio oder alternativ mit den Befehlszeilenwerkzeugen:
+Sie benötigen das **Android SDK**, das **NDK** und ein **JDK**. Am einfachsten geht dies mit Android Studio oder alternativ mit den Befehlszeilentools:
 
 @steps
-### Android-Befehlszeilenwerkzeuge installieren
-Laden Sie sie von [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only) herunter und entpacken Sie sie nach `~/android-sdk/cmdline-tools/latest/`.
+### Android-Befehlszeilentools installieren
+Laden Sie die Tools von [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only) herunter und entpacken Sie sie nach `~/android-sdk/cmdline-tools/latest/`.
 
 ### SDK-Komponenten installieren
 ```bash
@@ -128,7 +128,7 @@ export ANDROID_SDK_ROOT=~/android-sdk
 export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
 ```
 
-Neu laden: `source ~/.zshrc`
+Laden Sie die Konfiguration neu: `source ~/.zshrc`
 
 ### JDK installieren
 ```bash
@@ -146,7 +146,7 @@ scoop install openjdk21
 
 @end
 
-Führen Sie `wails3 doctor` aus, um zu bestätigen, dass alle Komponenten gefunden werden.
+Führen Sie `wails3 doctor` aus, um zu prüfen, ob alles gefunden wird.
 
 ### Im Emulator ausführen
 
@@ -159,30 +159,30 @@ wails3 task android:run
 Beim ersten Durchlauf geschieht Folgendes:
 
 - Der Emulator wird gestartet, falls noch keiner läuft
-- Bindings werden generiert und das Frontend wird erstellt
-- Ihr Go-Code wird mit dem NDK-Cross-Compiler zu `libwails.so` kompiliert
+- Bindings werden generiert und das Frontend wird gebaut
+- Ihr Go-Code wird mit dem NDK-Cross-Compiler nach `libwails.so` kompiliert
 - Mit Gradle wird eine Debug-APK erstellt
-- Sie wird im Emulator installiert und gestartet
+- Die APK wird im Emulator installiert und gestartet
 
 @note{type="tip"}
-Beim ersten Build wird Gradle heruntergeladen und die NDK-Toolchain kompiliert — rechnen Sie mit 5–10 Minuten. Nachfolgende Builds sind inkrementell und dauern weniger als eine Minute.
+Beim ersten Build wird Gradle heruntergeladen und die NDK-Toolchain kompiliert – rechnen Sie mit 5–10 Minuten. Nachfolgende Builds erfolgen inkrementell und dauern weniger als eine Minute.
 
 @end
 
-### Logs fortlaufend anzeigen
+### Logs streamen
 In einem separaten Terminal:
 
 ```bash
 wails3 task android:logs
 ```
 
-Damit wird `adb logcat` ausgeführt und nach Ihrer App gefiltert. Die Ausgabe von `fmt.Println` erscheint hier.
+Damit wird `adb logcat` mit einem Filter für Ihre App ausgeführt. Die Ausgabe von `fmt.Println` erscheint hier.
 
 ### WebView untersuchen
-Öffnen Sie Chrome und rufen Sie `chrome://inspect` auf. Die WebView Ihrer App wird unter **Remote-Ziel** angezeigt — klicken Sie auf **Untersuchen**, um die DevTools zu öffnen.
+Öffnen Sie Chrome und rufen Sie `chrome://inspect` auf. Die WebView Ihrer App erscheint unter **Remote Target**. Klicken Sie auf **inspect**, um die DevTools zu öffnen.
 
 ### Änderung vornehmen
-Bearbeiten Sie eine beliebige Datei und führen Sie `wails3 task android:run` erneut aus. Dank des inkrementellen Builds von Gradle wird nur geänderter Code neu kompiliert.
+Bearbeiten Sie eine beliebige Datei und führen Sie `wails3 task android:run` erneut aus. Dank des inkrementellen Gradle-Builds wird nur geänderter Code neu kompiliert.
 
 @end
 
@@ -190,24 +190,24 @@ Bearbeiten Sie eine beliebige Datei und führen Sie `wails3 task android:run` er
 
 ---
 
-## Was ist geschehen?
+## Was dabei geschehen ist
 
-Ihr `main.go` wurde überhaupt nicht geändert. Wails hat alles übernommen:
+Ihre `main.go` wurde überhaupt nicht geändert. Wails hat alles übernommen:
 
-- **Build-System** — `Taskfile.yml` in Ihrem Projekt enthält die Tasks `ios:*` und `android:*`, die die plattformspezifische Toolchain steuern.
-- **Go-Cross-Kompilierung** — `GOOS=ios` oder `GOOS=android` mit dem passenden `GOARCH` und Sysroot.
-- **Nativer Host** — ein generiertes Xcode-Projekt (iOS) oder Gradle-Projekt (Android), das Ihren kompilierten Go-Code einbettet und die WebView hostet.
-- **Bereitstellung von Assets** — Ihr `frontend/dist/` wird in die Go-Binärdatei eingebettet und innerhalb des Prozesses bereitgestellt. Ein localhost-Server ist nicht erforderlich.
+- **Build-System** – `Taskfile.yml` in Ihrem Projekt enthält die Tasks `ios:*` und `android:*`, die die plattformspezifische Toolchain steuern.
+- **Go-Cross-Kompilierung** – `GOOS=ios` oder `GOOS=android` mit der passenden `GOARCH` und Sysroot.
+- **Nativer Host** – ein generiertes Xcode-Projekt (iOS) oder Gradle-Projekt (Android), das Ihren kompilierten Go-Code einbettet und die WebView hostet.
+- **Bereitstellung von Assets** – Ihre `frontend/dist/` wird in die Go-Binärdatei eingebettet und innerhalb desselben Prozesses bereitgestellt. Ein localhost-Server ist nicht erforderlich.
 
 ---
 
-## Ihre App für Mobilgeräte optimieren
+## App für Mobilgeräte optimieren
 
-Ihre App funktioniert bereits, sieht auf einem Smartphone-Bildschirm aber wie eine Desktop-App aus. Einige kleine Änderungen bewirken viel.
+Ihre App funktioniert bereits, sieht auf einem Smartphone-Display jedoch noch wie eine Desktop-App aus. Wenige kleine Änderungen bewirken einen großen Unterschied.
 
 ### Responsives CSS
 
-Bildschirme von Mobilgeräten sind schmaler und verwenden andere Eingabemuster. In `frontend/public/style.css` (oder einer entsprechenden Datei):
+Mobile Displays sind schmaler und verwenden andere Eingabemuster. Fügen Sie in `frontend/public/style.css` (oder einer entsprechenden Datei) Folgendes hinzu:
 
 ```css
 /* Prevent horizontal scrolling */
@@ -232,9 +232,9 @@ body {
 
 ### Plattform in Go erkennen
 
-Verwenden Sie Build-Tags, um plattformspezifisches Verhalten hinzuzufügen, ohne den gemeinsam genutzten Code unübersichtlich zu machen.
+Verwenden Sie Build-Tags, um plattformspezifisches Verhalten hinzuzufügen, ohne den gemeinsamen Code zu überladen.
 
-Erstellen Sie `mobile_ios.go` für Code, der ausschließlich unter iOS verwendet wird:
+Erstellen Sie `mobile_ios.go` für Code, der nur unter iOS verwendet wird:
 
 ```go {title="mobile_ios.go"}
 //go:build ios
@@ -250,7 +250,7 @@ func platformOptions() application.IOSOptions {
 }
 ```
 
-Erstellen Sie `mobile_android.go` für Code, der ausschließlich unter Android verwendet wird:
+Erstellen Sie `mobile_android.go` für Code, der nur unter Android verwendet wird:
 
 ```go {title="mobile_android.go"}
 //go:build android
@@ -264,7 +264,7 @@ func platformOptions() application.AndroidOptions {
 }
 ```
 
-Erstellen Sie `mobile_desktop.go` als Stub, damit der gemeinsam genutzte Code auch für Desktop-Plattformen kompiliert wird:
+Erstellen Sie `mobile_desktop.go` als Stub, damit der gemeinsame Code auch für Desktop-Plattformen kompiliert wird:
 
 ```go {title="mobile_desktop.go"}
 //go:build !ios && !android
@@ -276,9 +276,9 @@ type mobileOptions struct{}
 func platformOptions() mobileOptions { return mobileOptions{} }
 ```
 
-### Plattform in JavaScript erkennen und ausschließlich mobile Benutzeroberflächen gezielt aktivieren
+### Plattform in JavaScript erkennen und ausschließlich mobile Benutzeroberfläche bedingt aktivieren
 
-Die Runtime-Objekte `IOS.*` und `Android.*` sind jeweils nur auf der entsprechenden Plattform vorhanden. Wenn Sie sie auf einer Desktop-Plattform aufrufen, wird eine Exception ausgelöst. Das richtige, auch vom Kitchen Sink verwendete Muster besteht darin, die Plattform einmal zu erkennen und ausschließlich für Mobilgeräte bestimmte Steuerelemente vollständig auszublenden:
+Die Runtime-Objekte `IOS.*` und `Android.*` sind nur auf ihrer jeweiligen Plattform vorhanden. Ein Aufruf auf einer Desktop-Plattform löst einen Fehler aus. Das richtige, auch im Kitchen Sink verwendete Muster besteht darin, die Plattform einmal zu erkennen und ausschließlich mobile Bedienelemente vollständig auszublenden:
 
 ```javascript
 // Detect platform from the bridge the host injects into the WebView
@@ -298,7 +298,7 @@ document.querySelectorAll('.mobile-only').forEach(el => {
 });
 ```
 
-Anschließend in Ihrem HTML:
+Dann in deinem HTML:
 
 ```html
 <section class="mobile-only">
@@ -306,9 +306,9 @@ Anschließend in Ihrem HTML:
 </section>
 ```
 
-So werden ausschließlich für Mobilgeräte bestimmte Schaltflächen auf Desktop-Plattformen nie gerendert, und Sie müssen nicht jeden einzelnen Aufruf durch eine `if (isMobile)`-Prüfung absichern.
+So werden Schaltflächen, die nur für Mobilgeräte bestimmt sind, auf dem Desktop nie gerendert, und du musst nicht jeden einzelnen Aufruf mit einer `if (isMobile)`-Prüfung absichern.
 
-Kombinieren Sie dies auf der Go-Seite mit einem Build-Tag-Stub, damit die Event-Handler nur auf den Plattformen registriert werden, die sie benötigen:
+Kombiniere dies auf der Go-Seite mit einem Build-Tag-Stub, damit die Event-Handler nur auf den Plattformen registriert werden, die sie benötigen:
 
 ```go {title="native_desktop.go"}
 //go:build !ios && !android
@@ -338,13 +338,13 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Genau dieses Muster verwendet der [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
+Genau dieses Muster verwendet das [Kitchen-Sink-Beispiel](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) – siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
 
-@note{type="note" title="API für native Funktionen und Benennung von Events"}
-Zwei Konventionen sollten Sie kennen:
+@note{type="note" title="API für native Funktionen und Eventbenennung"}
+Zwei Konventionen solltest du kennen:
 
-- **Native Funktionen auf der Go-Seite verwenden Plattform-Manager.** Rufen Sie sie über die Singletons `application.IOS.*` und `application.Android.*` auf — beispielsweise `application.IOS.Haptic("medium")` oder `application.Android.Share(payload)`. Jeder Manager ist nur auf seiner eigenen Plattform vorhanden; deshalb befinden sich seine Aufrufe in `//go:build ios`- bzw. `//go:build android`-Dateien.
-- **Events verwenden Namensräume entsprechend ihrer Reichweite.** Alles, was beide Plattformen verstehen, verwendet das Präfix `common:*` (`common:haptic`, `common:location`, …); Events, die nur eine Plattform erzeugen oder verarbeiten kann, verwenden `ios:*` oder `android:*` (beispielsweise `ios:backgroundTask`, `android:foregroundService`). Da fast alle mobilen Funktionen gemeinsam genutzt werden, benötigt Ihr Frontend unter `common:*` nur einen Listener pro Event.
+- **Native Funktionen auf der Go-Seite verwenden Plattform-Manager.** Rufe sie über die Singletons `application.IOS.*` und `application.Android.*` auf, beispielsweise mit `application.IOS.Haptic("medium")` oder `application.Android.Share(payload)`. Jeder Manager ist nur auf seiner eigenen Plattform vorhanden. Daher befinden sich seine Aufrufe in `//go:build ios`- bzw. `//go:build android`-Dateien.
+- **Events erhalten entsprechend ihrer Reichweite einen Namespace.** Alles, was beide Plattformen verstehen, verwendet das Präfix `common:*` (`common:haptic`, `common:location`, …). Events, die nur eine Plattform erzeugen oder verarbeiten kann, verwenden `ios:*` oder `android:*` (beispielsweise `ios:backgroundTask`, `android:foregroundService`). Da fast alle Mobilfunktionen gemeinsam genutzt werden, benötigt dein Frontend unter `common:*` nur einen Listener pro Event.
 
 @end
 
@@ -375,11 +375,11 @@ async function onButtonTap() {
 
 ---
 
-## Für den Produktivbetrieb bauen
+## Für die Produktion bauen
 
 @tabs{sync-key="mobile-platform"}
 [iOS]
-**Simulator-Build** (zum Testen im Simulator; keine Signierung erforderlich):
+**Simulator-Build** (zum Testen im Simulator, keine Signierung erforderlich):
 
 ```bash
 wails3 task ios:package
@@ -397,7 +397,7 @@ wails3 task ios:package \
 wails3 task ios:deploy-device   # installs via xcrun devicectl
 ```
 
-**IPA für die Verteilung** (für den App Store oder TestFlight):
+**Distributions-IPA** (für den App Store oder TestFlight):
 
 ```bash
 wails3 task ios:package:ipa IOS_PLATFORM=device \
@@ -406,19 +406,19 @@ wails3 task ios:package:ipa IOS_PLATFORM=device \
 ```
 
 @note{type="tip"}
-Verwenden Sie für Uploads zu App Store Connect `wails3 task ios:xcode` und lassen Sie Xcode die Signierung und Archivierung verwalten — die komplexe Handhabung von Zertifikaten, Profilen und Notarisierung übernimmt Xcode automatisch.
+Verwende für Uploads zu App Store Connect `wails3 task ios:xcode` und überlasse Xcode die Signierung und Archivierung. Xcode handhabt die komplexen Zertifikate, Profile und die Notarisierung automatisch.
 
 @end
 
 [Android]
-**Debug-APK** (mit dem Android-Debug-Keystore signiert und direkt installierbar):
+**Debug-APK** (mit dem Android-Debug-Keystore signiert, direkt installierbar):
 
 ```bash
 wails3 task android:package
 wails3 task android:deploy-emulator
 ```
 
-**Release-APK** (mit Ihrem eigenen Keystore signiert):
+**Release-APK** (mit deinem eigenen Keystore signiert):
 
 ```bash
 ANDROID_KEYSTORE_FILE=/path/to/release.jks \
@@ -428,14 +428,14 @@ ANDROID_KEY_PASSWORD=yourkeypassword \
   wails3 task android:package
 ```
 
-**Universelle APK** (arm64 und x86_64 in einer Datei):
+**Universelles APK** (arm64 und x86_64 in einer Datei):
 
 ```bash
 wails3 task android:package:fat
 ```
 
 @note{type="tip"}
-Erstellen Sie für Uploads zum Play Store anstelle einer APK ein `.aab` (Android App Bundle) — öffnen Sie `build/android/` in Android Studio und wählen Sie **Build → Generate Signed Bundle / APK**.
+Erstelle für Uploads in den Play Store statt eines APK ein `.aab` (Android App Bundle). Öffne `build/android/` in Android Studio und wähle **Build → Generate Signed Bundle / APK**.
 
 @end
 
@@ -445,7 +445,7 @@ Erstellen Sie für Uploads zum Play Store anstelle einer APK ein `.aab` (Android
 
 ## Fehlerbehebung
 
-### `wails3 task ios:run` schlägt mit "no iOS SDKs found" fehl
+### `wails3 task ios:run` schlägt mit „no iOS SDKs found“ fehl
 
 Die vollständige Xcode-Version muss installiert und ausgewählt sein:
 
@@ -454,18 +454,18 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 xcode-select -p  # should print the Xcode path
 ```
 
-#### `wails3 task android:run` schlägt mit "SDK not found" fehl
+#### `wails3 task android:run` schlägt mit „SDK not found“ fehl
 
-Stellen Sie sicher, dass `ANDROID_HOME` festgelegt und exportiert ist. Überprüfen Sie dies mit:
+Stelle sicher, dass `ANDROID_HOME` gesetzt und exportiert ist. Prüfe dies mit:
 
 ```bash
 echo $ANDROID_HOME
 ls $ANDROID_HOME/platform-tools/adb
 ```
 
-#### Simulator startet nicht
+#### Der Simulator startet nicht
 
-Listen Sie die verfügbaren Simulatoren auf und starten Sie einen davon manuell:
+Liste die verfügbaren Simulatoren auf und starte einen davon manuell:
 
 ```bash
 xcrun simctl list devices available
@@ -474,11 +474,11 @@ xcrun simctl boot "iPhone 16"
 
 #### `chrome://inspect` zeigt keine Ziele an
 
-Die WebView muss sich im Debug-Modus befinden (der Standard für `android:run`). Stellen Sie sicher, dass Sie einen Debug-Build und keinen Produktions-Build ausführen. Prüfen Sie außerdem, ob `adb devices` den Emulator als verbunden anzeigt.
+Die WebView muss sich im Debug-Modus befinden (die Standardeinstellung für `android:run`). Stelle sicher, dass du einen Debug-Build und keinen Produktions-Build ausführst. Prüfe außerdem, ob `adb devices` den Emulator als verbunden anzeigt.
 
 #### Safe-Area-Abstände werden nicht angewendet
 
-Stellen Sie sicher, dass Ihr HTML das Viewport-Meta-Tag enthält:
+Stelle sicher, dass dein HTML das Viewport-Meta-Tag enthält:
 
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -486,9 +486,9 @@ Stellen Sie sicher, dass Ihr HTML das Viewport-Meta-Tag enthält:
 
 ---
 
-## Kitchen Sink erkunden
+## Das Kitchen-Sink-Beispiel erkunden
 
-Sobald Ihre erste App läuft, ist das Beispiel **Kitchen Sink** der schnellste Weg, weitere Möglichkeiten kennenzulernen. Es ist eine vollständige Wails-App, die mit einer einzigen Codebasis unter iOS, Android und auf Desktop-Systemen läuft und unter anderem Haptik, Geolokalisierung, Biometrie, lokale Benachrichtigungen und sichere Speicherung abdeckt:
+Sobald deine erste App läuft, ist das **Kitchen-Sink-Beispiel** der schnellste Weg, weitere Möglichkeiten kennenzulernen. Es ist eine vollständige Wails-App, die mit einer einzigen Codebasis unter iOS, Android und auf dem Desktop läuft und unter anderem Haptik, Geolokalisierung, Biometrie, lokale Benachrichtigungen und sicheren Speicher abdeckt:
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
@@ -499,13 +499,13 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Sehen Sie sich den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) an. Insbesondere die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Einfügen für plattformspezifische Funktionen.
+Durchsuche den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile). Besonders die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Anpassen plattformspezifischer Funktionen.
 
 ## Wie geht es weiter?
 
 @cards{cols="2"}
 iOS-Leitfaden
-Vollständige Referenz: Konfigurationsoptionen, native Tabs, WKWebView-Umschalter, Builds für Geräte und Signierung.
+Vollständige Referenz: Konfigurationsoptionen, native Tabs, WKWebView-Umschalter, Geräte-Builds und Signierung.
 
 [iOS-Leitfaden →](/guides/mobile/ios/)
 
@@ -517,8 +517,8 @@ Vollständige Referenz: Konfiguration, Toast-Benachrichtigungen, Paketierung fü
 
 ---
 📖 Kitchen-Sink-Quellcode
-Haptik, Geolokalisierung, Biometrie, Benachrichtigungen und sichere Speicherung – alles in einer einzigen ausführbaren App.
+Haptik, Geolokalisierung, Biometrie, Benachrichtigungen und sicherer Speicher – alles in einer ausführbaren App.
 
-[Auf GitHub ansehen →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[Auf GitHub ansehen →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

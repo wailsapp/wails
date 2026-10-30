@@ -7,29 +7,28 @@ sourcePath: "contributing/index.md"
 
 ## Bienvenue aux contributeurs !
 
-Nous accueillons avec plaisir les contributions à Wails ! Que vous corrigiez des bugs, ajoutiez des fonctionnalités ou amélioriez la documentation, votre aide est appréciée.
+Vos contributions à Wails sont les bienvenues ! Que vous corrigiez des bogues, ajoutiez des fonctionnalités ou amélioriez la documentation, votre aide est précieuse.
 
 ## Façons de contribuer
 
 ### 1. Signaler des problèmes
 
-Vous avez trouvé un bug ? [Ouvrez un ticket](https://github.com/wailsapp/wails/issues/new) en fournissant :
+Vous avez trouvé un bogue ? [Ouvrez un ticket](https://github.com/wailsapp/wails/issues/new) en indiquant :
 
 - Une description claire
 - Les étapes de reproduction
-- Le comportement attendu et le comportement observé
+- Le comportement attendu et le comportement réel
 - Les informations système
 - Des exemples de code
 
 ### 2. Améliorer la documentation
 
-Les PR de correction sont les bienvenues sans ticket préalable ni test de code en échec.  
-Suivez la procédure [Corriger la documentation](/contributing/documentation/) pour prévisualiser  
-et valider une modification avec M-Press.
+Les PR de correction sont les bienvenues sans ticket préalable ni échec d’un test de code.  
+Suivez [Rédiger de la documentation avec M-Press](/contributing/documentation/) pour le téléchargement, l’installation sous macOS/Linux/Windows, l’aperçu en direct et la soumission de votre modification.
 
 Les améliorations de la documentation sont toujours les bienvenues :
 
-- Corriger les fautes de frappe et les erreurs
+- Corriger les coquilles et les erreurs
 - Ajouter des exemples
 - Clarifier les explications
 - Traduire le contenu
@@ -38,22 +37,22 @@ Les améliorations de la documentation sont toujours les bienvenues :
 
 Contribuez au code au moyen de pull requests :
 
-- Corrections de bugs
+- Corrections de bogues
 - Nouvelles fonctionnalités
 - Améliorations des performances
 - Tests
 
 ### 4. Proposer une amélioration (WEP)
 
-Les nouvelles fonctionnalités et les modifications du comportement public suivent le processus de proposition d’amélioration de Wails (Wails Enhancement Proposal, WEP). Ce processus garantit la transparence du développement des fonctionnalités et qu’un responsable de l’implémentation est désigné pour chaque proposition acceptée. N’ouvrez pas de ticket de demande de fonctionnalité.
+Les nouvelles fonctionnalités et les modifications du comportement public suivent le processus Wails Enhancement Proposal (WEP). Celui-ci garantit la transparence du développement des fonctionnalités et veille à ce que chaque proposition acceptée ait une personne chargée de sa mise en œuvre. N’ouvrez pas de ticket de demande de fonctionnalité.
 
-1. Vous pouvez éventuellement présenter votre idée dans la catégorie [Idées](https://github.com/wailsapp/wails/discussions/categories/ideas) des discussions GitHub ou sur [Discord](https://discord.gg/JDdSxwjhGf) afin d’évaluer l’intérêt qu’elle suscite.
-2. Copiez [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) dans `v3/wep/proposals/<proposal name>/proposal.md` et remplissez chaque section.
-3. Ouvrez une pull request en brouillon intitulée `[WEP] <title>` et contenant uniquement la proposition. Cette PR constitue l’espace officiel pour en discuter.
-4. Recueillez des retours et des marques de soutien (commentaires et réactions 👍 sur la PR). Prévoyez au moins deux semaines de discussion et convenez de la personne qui implémentera la proposition.
-5. Indiquez que la PR est prête à être examinée. Les responsables de la maintenance prennent la décision finale : les propositions acceptées reçoivent un numéro WEP et sont fusionnées.
+1. Vous pouvez éventuellement présenter votre idée dans la catégorie [Idées](https://github.com/wailsapp/wails/discussions/categories/ideas) de GitHub Discussions ou sur [Discord](https://discord.gg/JDdSxwjhGf) afin d’évaluer l’intérêt qu’elle suscite.
+2. Copiez [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) dans `v3/wep/proposals/<proposal name>/proposal.md` et remplissez chaque section.
+3. Ouvrez une pull request en brouillon intitulée `[WEP] <title>` qui contient uniquement la proposition. La PR est l’espace officiel pour en discuter.
+4. Recueillez des commentaires et des soutiens (commentaires et réactions « pouce levé » sur la PR). Prévoyez au moins deux semaines de discussion et convenez de la personne qui mettra en œuvre la proposition.
+5. Marquez la PR comme prête pour la revue. La décision finale revient aux mainteneurs : les propositions acceptées reçoivent un numéro WEP et sont fusionnées.
 
-Le processus complet est documenté dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Le processus complet est décrit dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Bien démarrer
 
@@ -82,9 +81,9 @@ go build -o ../wails3 ./cmd/wails3
 
 ### Exécuter les tests
 
-Les tests font partie intégrante de la modification et ne constituent pas une simple vérification finale. Placez les tests unitaires à côté du code qu’ils testent et privilégiez les tests pilotés par table lorsqu’un même comportement est vérifié avec plusieurs entrées ou cas limites. Nommez chaque cas afin que tout échec indique clairement le scénario concerné.
+Les tests font partie intégrante de la modification ; ils ne constituent pas une simple vérification finale. Placez les tests unitaires à côté du code qu’ils exercent et privilégiez les tests pilotés par table lorsqu’un même comportement est vérifié avec plusieurs entrées ou cas limites. Nommez chaque cas afin qu’un échec indique clairement le scénario concerné.
 
-La logique nouvelle ou modifiée devrait être entièrement couverte. Visez une couverture de 100 % des instructions Go pour le code ajouté ou modifié par votre PR ; ne considérez pas le pourcentage de couverture de l’ensemble du dépôt comme un substitut aux tests de la modification. Une lacune peut être justifiée, par exemple pour un chemin d’erreur propre à un système d’exploitation ou une condition impossible à reproduire en pratique sans matériel réel, mais expliquez cette lacune et pourquoi elle ne peut raisonnablement pas être testée dans la description de la PR.
+Toute logique nouvelle ou modifiée doit être entièrement couverte. Visez une couverture de 100 % des instructions Go du code ajouté ou modifié par votre PR ; ne considérez pas le pourcentage à l’échelle du dépôt comme un substitut aux tests de la modification. Une lacune peut être légitime — par exemple, un chemin d’erreur propre à un système d’exploitation ou une condition impossible à reproduire en pratique sans matériel réel — mais expliquez-la dans la description de la PR et précisez pourquoi elle ne peut raisonnablement pas être testée.
 
 ```bash
 # Run all v3 tests
@@ -100,7 +99,7 @@ go tool cover -func=coverage.out
 cd ..
 ```
 
-Pour les suites d’intégration, la détection des courses aux données et toutes les commandes équivalentes à celles de la CI, consultez [Tests et intégration continue](/contributing/testing-ci/).
+Pour les suites d’intégration, la détection des conditions de concurrence et l’ensemble des commandes équivalentes à celles de la CI, consultez [Tests et intégration continue](/contributing/testing-ci/).
 
 ## Apporter des modifications
 
@@ -117,13 +116,13 @@ git checkout -b feature/my-feature
 
 ### Effectuer vos modifications
 
-1. **Écrivez du code** conforme aux conventions Go
+1. **Écrivez le code** conformément aux conventions Go
 2. **Ajoutez des tests** pour les nouvelles fonctionnalités
 3. **Mettez à jour la documentation** si nécessaire
-4. **Exécutez les tests** pour vérifier que rien ne cesse de fonctionner
+4. **Exécutez les tests** pour vérifier que rien ne casse
 5. **Validez les modifications** avec des messages clairs
 
-### Règles relatives aux commits
+### Consignes relatives aux commits
 
 ```bash
 # Good commit messages
@@ -151,9 +150,9 @@ git push origin feature/my-feature
 # Reference related issues
 ```
 
-## Règles relatives aux pull requests
+## Consignes relatives aux pull requests
 
-### Rédiger une bonne description de PR
+### Bonne description de PR
 
 ```markdown
 ## Description
@@ -176,13 +175,13 @@ Fixes #123
 ### Liste de contrôle de la PR
 
 - [ ] Le code respecte les conventions Go
-- [ ] Les tests ont été ajoutés ou mis à jour
-- [ ] La documentation a été mise à jour
+- [ ] Tests ajoutés ou mis à jour
+- [ ] Documentation mise à jour
 - [ ] Tous les tests réussissent
-- [ ] Aucune rupture de compatibilité, ou toute rupture est documentée
-- [ ] Les messages de commit sont clairs
+- [ ] Aucune modification incompatible, ou celle-ci est documentée
+- [ ] Messages de commit clairs
 
-## Règles relatives au code
+## Consignes relatives au code
 
 ### Style du code Go
 
@@ -238,45 +237,37 @@ func TestProcessData(t *testing.T) {
 
 ### Rédiger la documentation
 
-La documentation utilise M-Press. Modifiez les fichiers `.md` situés dans  
-`docs/mpress/content/`, puis prévisualisez-les et validez-les depuis la racine du dépôt :
+Suivez [Rédiger de la documentation avec M-Press](/contributing/documentation/) pour connaître le flux de travail complet de la documentation. Ce guide couvre la version épinglée, les options d’installation de l’exécutable et de Go, les fichiers sources modifiables, la navigation, les vérifications des traductions et la soumission d’une PR vers `master`.
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+Les travaux portant uniquement sur la documentation ne nécessitent ni compilation d’une application Wails ni dépendances propres à une plateforme. Depuis la racine du dépôt, M-Press affiche un aperçu du site existant avec `mpress dev`.
 
 ### Style de la documentation
 
-- Utilisez l’orthographe de l’anglais international
-- Commencez par le problème
-- Fournissez des exemples fonctionnels
-- Incluez une section de dépannage
-- Ajoutez des renvois vers le contenu associé
+- Utiliser l’orthographe de l’anglais international
+- Commencer par le problème
+- Fournir des exemples fonctionnels
+- Inclure des conseils de dépannage
+- Ajouter des renvois vers le contenu connexe
 
 ## Communauté
 
 ### Obtenir de l’aide
 
 - **Discord :** [Rejoignez notre communauté](https://discord.gg/JDdSxwjhGf)
-- **Discussions GitHub :** posez vos questions
-- **Tickets GitHub :** signalez les bogues
+- **GitHub Discussions :** posez vos questions
+- **GitHub Issues :** signalez des bogues
 
 ### Code de conduite
 
-Soyez respectueux, inclusifs et professionnels. Nous sommes tous ici pour créer ensemble d’excellents logiciels. Consultez le [Code de conduite](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) pour plus de détails.
+Faites preuve de respect, d’inclusion et de professionnalisme. Nous sommes tous ici pour créer ensemble d’excellents logiciels. Consultez le [Code de conduite](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) pour en savoir plus.
 
 ## Reconnaissance
 
 Les contributeurs sont mentionnés dans :
 
-- Notes de version
-- Liste des contributeurs
-- Statistiques GitHub
+- Les notes de version
+- La liste des contributeurs
+- Les statistiques GitHub
 
 Merci de contribuer à Wails ! 🎉
 
@@ -296,7 +287,7 @@ Rejoignez la communauté.
 
 ---
 📖 Documentation
-Lisez la documentation.
+Consultez la documentation.
 
 [Parcourir la documentation →](/quick-start/why-wails/)
 

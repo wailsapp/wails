@@ -632,4 +632,4 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 
-**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами событий](https://github.com/wailsapp/wails/tree/master/v3/examples/events).
+**Есть вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами событий](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/events).

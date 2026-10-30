@@ -5,21 +5,21 @@ slug: "getting-started/your-first-app"
 sourcePath: "getting-started/your-first-app.md"
 ---
 
-Ce guide vous montre comment créer votre première application Wails v3, de la configuration du projet à sa compilation, en passant par le flux de travail de développement.
+Ce guide vous montre comment créer votre première application Wails v3, de la configuration du projet au workflow de développement, en passant par la compilation.
 
 <br/>
 
 <br/>
 
 @steps
-### Création d’un projet
-Ouvrez votre terminal et exécutez la commande suivante pour créer un projet Wails :
+### Création d’un nouveau projet
+Ouvrez votre terminal et exécutez la commande suivante pour créer un nouveau projet Wails :
 
 ```bash
-wails3 init -n myfirstapp
+wails3 init -n myfirstapp -t vanilla-js
 ```
 
-Cette commande crée un répertoire nommé `myfirstapp` contenant tous les fichiers nécessaires.
+Cette leçon sélectionne explicitement le modèle JavaScript Vanilla. Le modèle `vanilla` sans option utilise TypeScript. La commande crée `myfirstapp` avec tous les fichiers nécessaires.
 
    <video src="/assets/wails_init.mp4" controls></video>
 
@@ -53,20 +53,21 @@ Accédez au répertoire `myfirstapp`. Vous y trouverez plusieurs fichiers et dos
       - wails_tools.nsh               Scripts utilitaires NSIS
 - frontend/        Fichiers de l’application frontend
   - index.html   Fichier HTML principal
-  - main.js      Fichier JavaScript principal
+  - src/         Code source du frontend
+    - main.js    Fichier JavaScript principal
   - package.json NPM package configuration
   - public/      Ressources statiques
   - Inter Font License.txt Font license
 - .gitignore      Fichier d’exclusion Git
 - README.md       Documentation du projet
 - Taskfile.yml    Tâches du projet
-- go.mod          Fichier du module Go
+- go.mod          Fichier de module Go
 - go.sum          Sommes de contrôle du module Go
 - greetservice.go Greeting service
 - main.go         Code principal de l’application
 @end
 
-Prenez le temps d’explorer ces fichiers et de vous familiariser avec la structure.
+Prenez le temps d’explorer ces fichiers et de vous familiariser avec cette structure.
 
 @note{type="info"}
 Bien que Wails v3 utilise [Task](https://taskfile.dev/) comme système de compilation par défaut, rien ne vous empêche d’utiliser `make` ou tout autre système de compilation.
@@ -80,10 +81,10 @@ Pour compiler votre application, exécutez :
 wails3 build
 ```
 
-Cette commande compile une version de débogage de votre application et l’enregistre dans un nouveau répertoire `bin`.
+Avec les fichiers Task générés, cette commande crée une version de production dans `bin`. Utilisez `wails3 dev` pour le mode développement ou `wails3 build DEV=true` pour une compilation de développement explicite.
 
 @note{type="info"}
-`wails3 build` est la forme abrégée de `wails3 task build` et exécute la tâche `build` dans `Taskfile.yml`.
+`wails3 build` est une forme abrégée de `wails3 task build` qui exécute la tâche `build` dans `Taskfile.yml`.
 
 @end
 
@@ -109,20 +110,20 @@ bin\myfirstapp.exe
 
 @end
 
-Une interface utilisateur simple s’affiche : elle constitue le point de départ de votre application. Comme il s’agit de la version de débogage, des journaux s’affichent également dans la fenêtre de la console. Ils sont utiles pour le débogage.
+L’interface utilisateur de démarrage s’affiche. Une version de production ne garantit pas le comportement de l’inspecteur ou de la console de développement ; utilisez le mode développement pour le débogage.
 
 ### Mode développement
-Vous pouvez également exécuter l’application en mode développement. Ce mode vous permet de modifier le code de votre frontend et de voir immédiatement les changements dans l’application en cours d’exécution, sans avoir à recompiler toute l’application.
+Vous pouvez également exécuter l’application en mode développement. Ce mode vous permet de modifier le code de votre frontend et de voir immédiatement les changements dans l’application en cours d’exécution, sans avoir à recompiler l’ensemble de l’application.
 
 1. Ouvrez une nouvelle fenêtre de terminal.
 2. Exécutez `wails3 dev`. L’application sera compilée et exécutée en mode débogage.
 3. Ouvrez `frontend/index.html` dans l’éditeur de votre choix.
-4. Modifiez le code en remplaçant `Please enter your name below` par `Please enter your name below!!!`.
+4. Remplacez la valeur `placeholder="Your name"` du champ de saisie du nom par `placeholder="Your full name"`, puis enregistrez le fichier.
 5. Enregistrez le fichier.
 
-Cette modification apparaîtra immédiatement dans votre application.
+Cette modification apparaît immédiatement dans votre application.
 
-Toute modification du code backend déclenchera une recompilation :
+Toute modification du code backend déclenche une nouvelle compilation :
 
 1. Ouvrez `greetservice.go`.
 2. Dans la ligne contenant `return "Hello " + name + "!"`, remplacez cette valeur par `return "Hello there " + name + "!"`.
@@ -152,7 +153,7 @@ Pour créer un programme d’installation NSIS :
 wails3 package
 ```
 
-Cette commande crée une version de production et la conditionne dans un programme d’installation NSIS placé dans le répertoire `bin`.
+Cette commande crée une version de production et la conditionne sous forme de programme d’installation NSIS dans le répertoire `bin`.
 
 [Linux]
 Wails prend en charge plusieurs formats de paquets pour la distribution sous Linux :
@@ -170,12 +171,12 @@ wails3 task linux:create:aur       # Arch Linux package
 
 @end
 
-Pour obtenir des informations plus détaillées sur les options et la configuration de la création de paquets, consultez notre [guide de compilation et de création de paquets](/guides/build/building/).
+Pour en savoir plus sur les options et la configuration de la création de paquets, consultez notre [guide de compilation et de création de paquets](/guides/build/building/).
 
 ### Configuration du contrôle de version et du nom du module
-Votre projet est créé avec le nom de module temporaire `changeme`. Il est recommandé de le modifier pour qu’il corresponde à l’URL de votre dépôt :
+Votre projet est créé avec le nom de module provisoire `changeme`. Il est recommandé de le modifier pour qu’il corresponde à l’URL de votre dépôt :
 
-1. Créez un dépôt sur GitHub ou sur l’hébergeur Git de votre choix
+1. Créez un nouveau dépôt sur GitHub ou sur la plateforme d’hébergement Git de votre choix
 2. Initialisez Git dans le répertoire de votre projet :
   ```bash
   git init
@@ -188,7 +189,7 @@ Votre projet est créé avec le nom de module temporaire `changeme`. Il est reco
   git remote add origin https://github.com/username/myfirstapp.git
   ```
 
-4. Dans `go.mod`, modifiez le nom de votre module pour qu’il corresponde à l’URL de votre dépôt :
+4. Mettez à jour le nom de votre module dans `go.mod` afin qu’il corresponde à l’URL de votre dépôt :
   ```bash
   go mod edit -module github.com/username/myfirstapp
   ```
@@ -199,16 +200,16 @@ Votre projet est créé avec le nom de module temporaire `changeme`. Il est reco
   ```
 
 
-Cela garantit que le nom de votre module Go respecte les conventions de nommage des modules Go et facilite le partage de votre code.
+Ainsi, le nom de votre module Go respecte les conventions de nommage des modules Go et votre code est plus facile à partager.
 
 @note{type="tip" title="Conseil de pro"}
 Vous pouvez automatiser toutes les étapes d’initialisation à l’aide de l’option `-git` lors de la création de votre projet :
 
 ```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
+wails3 init -n myfirstapp -t vanilla-js -git github.com/username/myfirstapp
 ```
 
-Cette option prend en charge différents formats d’URL Git :
+Plusieurs formats d’URL Git sont pris en charge :
 
 - HTTPS : `https://github.com/username/project`
 - SSH : `git@github.com:username/project` ou `ssh://git@github.com/username/project`
@@ -221,10 +222,10 @@ Cette option prend en charge différents formats d’URL Git :
 
 ## Félicitations !
 
-Vous venez de créer, de développer et de conditionner votre première application Wails. Ce n’est que le début de tout ce que vous pouvez accomplir avec Wails v3.
+Vous venez de créer, de développer et de empaqueter votre première application Wails. Ce n’est que le début de tout ce que vous pouvez accomplir avec Wails v3.
 
 ## Étapes suivantes
 
-Si vous découvrez Wails, nous vous recommandons de consulter ensuite nos tutoriels, qui vous guideront de manière pratique à travers les différentes fonctionnalités de Wails. Le premier tutoriel est [Créer un service](/tutorials/01-creating-a-service/).
+Si vous débutez avec Wails, nous vous recommandons de poursuivre avec nos tutoriels, qui vous guideront de manière pratique à travers les différentes fonctionnalités de Wails. Le premier tutoriel est [Créer un service](/tutorials/01-creating-a-service/).
 
-Si vous êtes un utilisateur plus expérimenté, consultez le [Guide de compilation et de création de paquets](/guides/build/building/) pour obtenir des informations plus détaillées sur l’utilisation de Wails.
+Si vous êtes un utilisateur plus expérimenté, consultez le [guide de compilation et d’empaquetage](/guides/build/building/) pour obtenir des informations plus détaillées sur l’utilisation de Wails.

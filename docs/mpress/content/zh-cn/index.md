@@ -1,7 +1,7 @@
 ---
 title: "使用 Go 构建桌面应用"
 description: "使用 Go 和 Web 技术构建原生桌面应用"
-banner: {"content":"Wails v3 目前处于测试阶段。\u003ca href=\"https://v2.wails.io\"\u003e想查看 v2 文档？\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版本。 <a href=\"https://v2.wails.io\">想查看 v2 文档？</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"开始使用","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"查看教程","variant":"secondary"}],"image":{"alt":"Wails 徽标","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"使用 Go 和现代 Web 技术构建美观且高性能的应用。一个代码库，支持三个平台，无需浏览器。*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 后续步骤
 
-接下来：[构建一个完整的应用](/tutorials/03-notes-vanilla/)、浏览[示例](https://github.com/wailsapp/wails/tree/master/v3/examples)，或查看[API 参考](/reference/application/)。要从 v2 迁移？请参阅[升级指南](/migration/v2-to-v3/)。
+接下来：[构建一个完整的应用](/tutorials/03-notes-vanilla/)、浏览[示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)，或查看[API 参考](/reference/application/)。要从 v2 迁移？请参阅[升级指南](/migration/v2-to-v3/)。
 
-@note{type="info" title="Wails v3 测试版"}
-Wails v3 是测试版软件，拥有稳定的桌面 API。已有团队在生产环境中使用它，但在我们完成3.0的最后完善工作期间，部署前仍应进行充分测试。
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版本。 Android 和 iOS 支持仍处于实验阶段，不在稳定桌面版的兼容性保证范围内。
 
 @end
 

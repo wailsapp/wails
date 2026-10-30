@@ -1,6 +1,6 @@
 ---
 title: "iOS"
-description: "Wails-Anwendungen unter iOS erstellen und ausführen — Einrichtung, Simulator, Geräte-Builds, Konfiguration und native Funktionen"
+description: "Wails-Anwendungen unter iOS erstellen und ausführen – Einrichtung, Simulator, Geräte-Builds, Konfiguration und native Funktionen"
 slug: "guides/mobile/ios"
 sourcePath: "guides/mobile/ios.md"
 ---
@@ -11,22 +11,22 @@ Die iOS-Unterstützung ist experimentell und kann sich in zukünftigen Versionen
 @end
 
 @note{type="tip"}
-Noch keine Erfahrung mit Wails für Mobilgeräte? Beginnen Sie mit [Ihre erste mobile App →](/guides/mobile/first-mobile-app/), um eine schrittweise Anleitung zu erhalten, und kehren Sie anschließend zur vollständigen Referenz hierher zurück.
+Noch keine Erfahrung mit mobilen Wails-Apps? Beginnen Sie mit [Ihre erste mobile App →](/guides/mobile/first-mobile-app/), um eine schrittweise Anleitung zu erhalten. Kehren Sie anschließend hierher zurück, um die vollständige Referenz zu lesen.
 
 @end
 
-Wails-v3-Apps werden unter iOS als vollständig native Apps ausgeführt — und das Beste daran: Sie funktionieren *genau* wie die Desktopversion. Dasselbe Go-Backend, dasselbe Frontend und dieselbe `@wailsio/runtime`: Dienstbindungen, Ereignisse, Dialoge und die Zwischenablage verhalten sich alle identisch, mit **null** mobilspezifischen Anpassungen. Es gibt keine separate Codebasis für Mobilgeräte, keine Portierungsschicht und keine spezielle API, die Sie erlernen müssen — Ihre vorhandene Wails-App läuft einfach unter iOS. Die Portierung ist wirklich nahtlos: Übernehmen Sie Ihre App unverändert und veröffentlichen Sie sie.
+Wails-v3-Apps werden unter iOS als vollständig native Apps ausgeführt – und das Beste daran: Sie funktionieren *genau* wie die Desktopversion. Dasselbe Go-Backend, dasselbe Frontend und dieselben `@wailsio/runtime`: Service-Bindings, Ereignisse, Dialoge und die Zwischenablage verhalten sich identisch, ganz **ohne** mobilspezifische Anpassungen. Es gibt weder eine separate mobile Codebasis noch eine Portierungsschicht oder eine spezielle API, die Sie erlernen müssen – Ihre vorhandene Wails-App läuft einfach unter iOS. Die Portierung ist tatsächlich nahtlos: Übernehmen Sie Ihre App unverändert und veröffentlichen Sie sie.
 
-Dasselbe `main.go` wird sowohl für den Desktop als auch für iOS erstellt; iOS-spezifische Anpassungen werden über `application.Options.IOS` konfiguriert.
+Dasselbe `main.go` wird sowohl für Desktop als auch für iOS erstellt; iOS-spezifische Anpassungen konfigurieren Sie über `application.Options.IOS`.
 
 ## Voraussetzungen
 
-- macOS mit installiertem **vollständigem Xcode** (die Befehlszeilenwerkzeuge allein reichen nicht aus) — `wails3 doctor` zeigt die gefundenen iOS-SDKs an
-- Go 1.25+ und npm
+- macOS mit installiertem **vollständigem Xcode** (die Befehlszeilentools allein reichen nicht aus) – `wails3 doctor` zeigt die gefundenen iOS-SDKs an
+- Go 1.26+ und npm
 
 ## Simulator
 
-Aus Ihrem Projektverzeichnis:
+Führen Sie im Projektverzeichnis Folgendes aus:
 
 ```bash
 wails3 task ios:run
@@ -34,14 +34,14 @@ wails3 task ios:run
 
 Dadurch wird Ihre App erstellt, bei Bedarf ein Simulator gestartet und die App darin ausgeführt.
 
-Nützliche Begleitbefehle:
+Nützliche Zusatzbefehle:
 
 ```bash
 wails3 task ios:logs:dev    # stream the app's logs from the simulator
 wails3 task ios:xcode       # open the generated Xcode project
 ```
 
-In Debug-Builds kann die WebView über das Menü „Entwickler“ von Safari untersucht werden.
+Bei Debug-Builds kann die WebView über das Menü „Entwickler“ in Safari untersucht werden.
 
 ## Paketierung
 
@@ -50,7 +50,7 @@ wails3 task ios:package             # production .app for the simulator
 wails3 task ios:deploy-simulator    # install + launch it
 ```
 
-Dies sind optimierte Produktions-Builds mit entfernten Debug- und Symbolinformationen.
+Dies sind optimierte, bereinigte Produktions-Builds.
 
 ## Geräte-Builds
 
@@ -63,7 +63,7 @@ wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # install + launch on a dev
 wails3 task ios:package:ipa IOS_PLATFORM=device ...  # distribution .ipa
 ```
 
-`IOS_PLATFORM=device` erstellt einen Build für ein physisches Gerät. Berechtigungen stammen aus `build/ios/entitlements.plist` und gelten nur für Geräte-Builds — fügen Sie die von Ihrer App benötigten Funktionsschlüssel hinzu.
+`IOS_PLATFORM=device` erstellt einen Build für ein physisches Gerät. Die Berechtigungen stammen aus `build/ios/entitlements.plist` und gelten nur für Geräte-Builds – fügen Sie die von Ihrer App benötigten Funktionsschlüssel hinzu.
 
 @note{type="tip"}
 Öffnen Sie für automatisch verwaltete Signierung, Bereitstellung und App-Store-Archive das generierte Xcode-Projekt mit `wails3 task ios:xcode` und erstellen Sie den Build stattdessen in Xcode.
@@ -86,7 +86,7 @@ Zu den Startoptionen (`application.Options.IOS`) gehören `DisableScroll`, `Disa
 
 ## Native Funktionen
 
-iOS-spezifische Funktionen sind über `application.IOS` verfügbar. Rufen Sie sie in Go innerhalb einer `//go:build ios`-Datei auf, damit Ihr gemeinsam genutzter Code plattformunabhängig bleibt. Android stellt dieselben Funktionen über `application.Android` bereit.
+iOS-spezifische Funktionen sind über `application.IOS` verfügbar. Rufen Sie sie in Go innerhalb einer `//go:build ios`-Datei auf, damit Ihr gemeinsam genutzter Code plattformunabhängig bleibt. Android bietet dieselben Funktionen über `application.Android` an.
 
 Einmalige Aktionen kehren sofort zurück:
 
@@ -100,11 +100,11 @@ application.IOS.PostNotification(`{"title":"Done","body":"Build finished","delay
 application.IOS.SecureSet("token", "abc") // stored securely
 ```
 
-Abfragehilfen geben ihre Ergebnisse als JSON zurück — `SafeAreaJSON()`, `AppInfoJSON()`, `PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`, `GetBrightness()`. `StoragePath()` gibt den absoluten Pfad zum Application-Support-Verzeichnis der App zurück — ein geeigneter Speicherort für Datenbanken und andere persistente Dateien (das iOS-Pendant zu `getFilesDir()` unter Android). Das Verzeichnis wird beim ersten Zugriff erstellt; `StoragePath()` gibt eine leere Zeichenfolge zurück, wenn es nicht erstellt werden kann. Prüfen Sie daher vor der Verwendung auf `""`.
+Abfragehilfen geben ihre Ergebnisse als JSON zurück: `SafeAreaJSON()`, `AppInfoJSON()`, `PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`, `GetBrightness()`. `StoragePath()` gibt den absoluten Pfad zum Application-Support-Verzeichnis der App zurück – ein geeigneter Speicherort für Datenbanken und andere persistente Dateien (das iOS-Pendant zu `getFilesDir()` unter Android). Das Verzeichnis wird beim ersten Zugriff erstellt. Kann es nicht erstellt werden, gibt `StoragePath()` eine leere Zeichenfolge zurück. Prüfen Sie daher vor der Verwendung auf `""`.
 
 ### Ereignisse
 
-Alles, was erst später abgeschlossen wird — eine Berechtigungsabfrage, ein Sensorstream oder eine Kameraaufnahme — liefert sein Ergebnis als **Ereignis** statt als Rückgabewert. Sie können es in Go oder im Frontend empfangen. Namen erhalten für mit Android gemeinsam genutzte Funktionen das Präfix `common:` und für ausschließlich unter iOS verfügbare Funktionen das Präfix `ios:`.
+Alles, was erst später abgeschlossen wird – etwa eine Berechtigungsabfrage, ein Sensorstream oder eine Kameraaufnahme –, liefert das Ergebnis als **Ereignis** statt als Rückgabewert. Sie können dieses Ereignis in Go oder im Frontend abonnieren. Namen erhalten das Präfix `common:` für mit Android gemeinsam genutzte Funktionen und `ios:` für ausschließlich unter iOS verfügbare Funktionen.
 
 ```go
 // Go
@@ -132,11 +132,11 @@ Events.On("common:notification", (e) => { /* {ok, scheduled, presented, tapped, 
 | `common:screenCapture` | `SetScreenProtect(true)` | `{screenshot, recording}` |
 | `ios:backgroundTask` | `BeginBackgroundTask(seconds)` | `{message, granted}` |
 
-Das umfassende Beispiel unter `v3/examples/mobile` verbindet jede der oben genannten Funktionen durchgängig.
+Das umfassende Beispiel unter `v3/examples/mobile` bindet alle oben genannten Funktionen vollständig ein.
 
 ## WebView-Steuerung
 
-Einige Verhaltensweisen der WebView lassen sich auch zur Laufzeit aus Go ändern:
+Einige WebView-Verhaltensweisen lassen sich außerdem zur Laufzeit aus Go ändern:
 
 ```go
 application.IOS.SetScrollEnabled(false)
@@ -148,7 +148,7 @@ application.IOS.SetInspectableEnabled(true)
 application.IOS.SetCustomUserAgent("MyApp/1.0")
 ```
 
-Das gebündelte `@wailsio/runtime` stellt außerdem einen kleinen iOS-Namensraum für das **Frontend** bereit:
+Das mitgelieferte `@wailsio/runtime` stellt außerdem einen kleinen iOS-Namespace für das **Frontend** bereit:
 
 ```js
 import { IOS } from "@wailsio/runtime";
@@ -156,7 +156,7 @@ await IOS.Haptics.Impact("medium"); // light|medium|heavy|soft|rigid
 const info = await IOS.Device.Info();
 ```
 
-Die Auswahl nativer Tabs am unteren Rand wird als `nativeTabSelected`-Ereignis auf `window` empfangen.
+Die Auswahl nativer unterer Registerkarten wird auf `window` als `nativeTabSelected`-Ereignis empfangen.
 
 ## Unterstützungsstatus
 
@@ -165,16 +165,16 @@ Die Auswahl nativer Tabs am unteren Rand wird als `nativeTabSelected`-Ereignis a
 | Frontend-Rendering und Assets | ✅ |
 | Service-Bindings, Ereignisse (in beide Richtungen) | ✅ |
 | Meldungsdialoge | ✅ |
-| Dialoge zum Öffnen einer Datei, mehrerer Dateien oder eines Verzeichnisses | ✅ Als Sandbox-Kopien importiert |
-| Dialoge zum Speichern von Dateien | ❌ Schreiben Sie stattdessen in die App-Sandbox |
+| Dialoge zum Öffnen von Dateien, mehreren Dateien oder Verzeichnissen | ✅ Als Kopien in die Sandbox importiert |
+| Dialoge zum Speichern von Dateien | ❌ Schreiben Sie stattdessen innerhalb der App-Sandbox |
 | Zwischenablage | ✅ |
-| Screens-API | ✅ Enthält den Arbeitsbereich innerhalb der sicheren Bereiche |
+| Screens-API | ✅ Schließt den sicheren Arbeitsbereich ein |
 | Lebenszyklusereignisse | ✅ |
-| Fenstergeometrie, Menüs, System-Tray | Unter iOS ohne Wirkung |
+| Fenstergeometrie, Menüs, Infobereich | Unter iOS ohne Wirkung |
 | Mehrere Fenster | Nur das erste Fenster wird angezeigt |
 
 ## Hinweise zur Portierung
 
-- Desktop-Code lässt sich unverändert für iOS erstellen – Aufrufe für Fenster, Menüs und den System-Tray bleiben dort einfach ohne Wirkung.
-- Ersetzen Sie Dialoge zum Speichern von Dateien durch das Schreiben in die App-Sandbox mit anschließendem Teilen.
+- Desktop-Code wird unverändert für iOS kompiliert – Aufrufe für Fenster, Menüs und den System-Tray bewirken lediglich nichts.
+- Ersetzen Sie Dialoge zum Speichern von Dateien durch das Schreiben in die Sandbox der App mit anschließendem Teilen.
 - Gestalten Sie das Frontend responsiv; sichere Bereiche werden automatisch berücksichtigt.

@@ -624,4 +624,4 @@ Utilisez des événements pour la communication avec les boîtes de dialogue.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue personnalisées](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue personnalisées](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs).

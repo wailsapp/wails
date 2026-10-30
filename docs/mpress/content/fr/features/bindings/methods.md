@@ -1,17 +1,17 @@
 ---
-title: "Liaisons de méthodes"
-description: "Appelez des méthodes Go depuis JavaScript avec un typage sûr"
+title: "Appeler Go depuis JavaScript"
+description: "Appeler des méthodes Go depuis JavaScript avec sûreté de typage"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
 ---
 
 ## Liaisons Go-JavaScript à typage sûr
 
-Wails **génère automatiquement des liaisons JavaScript/TypeScript à typage sûr** pour vos méthodes Go. Écrivez du code Go, exécutez une commande et obtenez des fonctions frontend entièrement typées, sans surcoût HTTP, sans intervention manuelle et sans aucun code répétitif.
+Wails **génère automatiquement des liaisons JavaScript/TypeScript à typage sûr** pour vos méthodes Go. Écrivez le code Go, exécutez une commande et obtenez des fonctions frontend entièrement typées, sans surcoût HTTP, sans intervention manuelle et sans code répétitif.
 
 ## Démarrage rapide
 
-**1. Écrivez le service Go :**
+**1. Écrivez un service Go :**
 
 ```go
 type GreetService struct{}
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**C’est tout !** Vous disposez maintenant d’appels de Go vers JavaScript à typage sûr.
+**C’est tout !** Vous disposez désormais d’appels de Go depuis JavaScript à typage sûr.
 
 ## Création de services
 
@@ -100,7 +100,7 @@ app := application.New(application.Options{
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -202,7 +202,7 @@ wails3 generate bindings -ts
 wails3 generate bindings -d ./src/bindings
 ```
 
-### Mode surveillance (développement)
+### Mode de surveillance (développement)
 
 ```bash
 wails3 dev
@@ -285,7 +285,7 @@ try {
 - Vérification complète des types
 - Autocomplétion dans l’IDE
 - Erreurs détectées à la compilation
-- Refactorisation facilitée
+- Refactorisation plus fiable
 
 ### Fichiers d’index
 
@@ -327,12 +327,12 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | table associative à clés de type chaîne |
-| `map[K]V` | `{ [_ in K]?: V }` | un `K` qui n’est pas de type chaîne est représenté par un type mappé, et **non** par un `Map` JS |
+| `map[string]T` | `{ [_: string]: T }` | map avec des clés de type chaîne |
+| `map[K]V` | `{ [_ in K]?: V }` | un `K` autre qu’une chaîne est rendu sous forme de type mappé, et **non** sous forme de `Map` JS |
 | `[]byte` | `string` | encodé en base64 |
 | `struct` | `class` / `interface` | avec des champs |
-| `time.Time` | `any` | sérialisé à l’exécution sous forme de chaîne RFC3339Nano |
-| `*T` | `T \| null` | un pointeur indique une valeur nullable |
+| `time.Time` | `string` (par défaut) ou `Date` | `-time-type` sélectionne la représentation générée ; JSON utilise une chaîne RFC3339Nano |
+| `*T` | `T \| null` | un pointeur indique que la valeur peut être nulle |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | Exception si utilisé comme valeur de retour, sinon any |
 
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-Le runtime lève un type d’erreur différent selon la nature du problème :
+Le runtime lève un type d’erreur différent selon la cause de l’échec :
 
 | Type d’erreur | Levée lorsque |
 | --- | --- |
-| `TypeError` | L’appel comporte un nombre incorrect d’arguments, ou un argument ne peut pas être converti vers le type Go |
+| `TypeError` | L’appel comporte un nombre incorrect d’arguments ou un argument ne peut pas être converti vers le type Go |
 | `RuntimeError` | La méthode a renvoyé une erreur ou a déclenché une panique pendant son exécution |
-| `Error` | Tout autre échec, par exemple un appel à une méthode inexistante |
+| `Error` | Tout autre échec, par exemple l’appel d’une méthode inexistante |
 
 Chaque erreur fournit :
 
 - `name` : le type d’erreur indiqué dans le tableau ci-dessus
 - `message` : le message de l’erreur Go
-- `cause` : l’erreur Go sérialisée en JSON, lorsqu’elle est disponible. Si la méthode a renvoyé plusieurs erreurs, `cause` est un tableau contenant une entrée par erreur.
+- `cause` : l’erreur Go sérialisée au format JSON, lorsqu’elle est disponible. Si la méthode a renvoyé plusieurs erreurs, `cause` est un tableau contenant une entrée par erreur.
 
-La classe `RuntimeError` est exportée par le package `@wailsio/runtime`, ce qui vous permet de distinguer les erreurs renvoyées par votre code Go des autres échecs :
+La classe `RuntimeError` est exportée par le paquet `@wailsio/runtime`, ce qui vous permet de distinguer les erreurs renvoyées par votre code Go des autres échecs :
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -447,13 +447,13 @@ try {
 ```
 
 @note{type="info"}
-Dans les versions antérieures du runtime, chaque appel ayant échoué rejetait la promesse avec un simple `Error` dont le message contenait le JSON brut de l’erreur sous-jacente.
+Dans les versions précédentes du runtime, chaque appel ayant échoué était rejeté avec un simple `Error` dont le message contenait le JSON brut de l’erreur sous-jacente.
 
 @end
 
 ### Données d’erreur structurées
 
-Lorsque Go renvoie un type d’erreur personnalisé, sa représentation JSON est disponible dans la propriété `cause` de l’erreur levée :
+Lorsque vous renvoyez un type d’erreur personnalisé depuis Go, sa représentation JSON est disponible dans la propriété `cause` de l’erreur levée :
 
 ```go
 type ValidationError struct {
@@ -485,7 +485,7 @@ try {
 }
 ```
 
-Les erreurs sont sérialisées avec le package standard `encoding/json` ; seuls les champs exportés sont donc inclus. Les erreurs créées avec `errors.New` ou `fmt.Errorf` ne comportent aucun champ exporté et sont sérialisées sous forme d’objet vide.
+Les erreurs sont sérialisées avec le paquet standard `encoding/json` ; seuls les champs exportés sont donc inclus. Les erreurs créées avec `errors.New` ou `fmt.Errorf` ne comportent aucun champ exporté et sont sérialisées sous la forme d’un objet vide.
 
 Pour contrôler entièrement la sérialisation des erreurs, fournissez une fonction `MarshalError` dans les options du service :
 
@@ -515,7 +515,7 @@ app := application.New(application.Options{
 
 ### Surcoût des appels
 
-**Appel standard :** &lt;1ms
+**Appel type :** &lt;1ms
 
 ```
 JavaScript → Bridge → Go → Bridge → JavaScript
@@ -555,7 +555,7 @@ const config = await GetConfig()
 // Use config multiple times
 ```
 
-**✅ Utilisez des événements pour la diffusion en continu :**
+**✅ Utilisez des événements pour les flux de données :**
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -698,41 +698,41 @@ app.loadTodos()
 - **Gardez les méthodes simples** — Une seule responsabilité
 - **Renvoyez les erreurs** — Ne déclenchez pas de panique
 - **Utilisez un état sûr pour les accès concurrents** — Protégez les données partagées avec des mutex
-- **Regroupez les opérations** — Réduisez les appels à la passerelle
+- **Regroupez les opérations** — Réduisez les appels au bridge
 - **Mettez les données en cache côté Go** — Évitez de répéter le même travail
-- **Documentez les méthodes** — Les commentaires deviennent de la JSDoc
+- **Documentez les méthodes** — Les commentaires deviennent du JSDoc
 
 ### ❌ À ne pas faire
 
 - **Ne bloquez pas l’exécution** — Utilisez des goroutines pour les opérations longues
 - **Ne renvoyez pas de canaux** — Utilisez plutôt des événements
-- **Ne renvoyez pas de fonctions** — Ce n’est pas pris en charge
+- **Ne renvoyez pas de fonctions** — Elles ne sont pas prises en charge
 - **N’ignorez pas les erreurs** — Gérez-les systématiquement
-- **N’utilisez pas de champs non exportés** — Aucune liaison ne sera générée pour eux
+- **N’utilisez pas de champs non exportés** — Ils ne seront pas liés
 
 ## Étapes suivantes
 
 @cards{cols="2"}
 ◆ Services
-Explorez en détail le système de services.
+Approfondissez le fonctionnement du système de services.
 
 [En savoir plus →](/features/bindings/services/)
 
 ---
 📖 Modèles
-Créez des liaisons pour des structures de données complexes.
+Liez des structures de données complexes.
 
 [En savoir plus →](/features/bindings/models/)
 
 ---
-🚀 Passerelle Go-frontend
-Comprenez le mécanisme de la passerelle.
+🚀 Bridge entre Go et le frontend
+Comprenez le mécanisme du bridge.
 
 [En savoir plus →](/concepts/bridge/)
 
 ---
 ★ Événements
-Utilisez des événements pour les communications par publication/abonnement.
+Utilisez des événements pour la communication par publication/abonnement.
 
 [En savoir plus →](/features/events/system/)
 
@@ -740,4 +740,4 @@ Utilisez des événements pour les communications par publication/abonnement.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML-Fenster werden ohne Ursprung des Asset-Servers geladen und können daher `/wails/runtime.js` nicht dynamisch abrufen. Sie haben zwei Möglichkeiten, von einem solchen Fenster mit dem Host zu kommunizieren:
 
 1. **Schreiben Sie einfach HTML.** Das Framework fügt automatisch einen minimalen `window.wails.Events`-Shim in jedes Fenster ein, das mit gesetzten Optionen `WebviewWindowOptions.AllowSimpleEventEmit = true` und `HTML` geöffnet wird – genau das tun die integrierten und BYO-Pfade des Updaters. Ein Build-Schritt ist nicht erforderlich. Das folgende Beispiel verwendet diesen Weg.
-2. **Bündeln Sie `@wailsio/runtime` mit Ihrem bevorzugten Bundler** (Vite, esbuild, Rollup) und importieren Sie es zur Build-Zeit in Ihr benutzerdefiniertes HTML. `Events.On` funktioniert direkt, da es ausschließlich clientseitig arbeitet. `Events.Emit` verwendet hingegen den Fetch-Transport der Runtime, der durch den Null-Ursprung nicht funktioniert. Installieren Sie daher über den [`setTransport`](https://wails.io/wails/runtime.js)-Hook der Runtime einen kleinen postMessage-Transport, der über `window._wails.invoke("wails:event:emit:<name>")` weiterleitet. Die Framework-Injektion führt keine Aktion aus, wenn `window.wails.Events` bereits im Gültigkeitsbereich vorhanden ist, sodass sich die beiden Ansätze nicht gegenseitig beeinträchtigen.
+2. **Bündeln Sie `@wailsio/runtime` mit Ihrem bevorzugten Bundler** (Vite, esbuild, Rollup) und importieren Sie es zur Build-Zeit in Ihr benutzerdefiniertes HTML. `Events.On` funktioniert direkt, da es ausschließlich clientseitig arbeitet. `Events.Emit` verwendet hingegen den Fetch-Transport der Runtime, der durch den Null-Ursprung nicht funktioniert. Installieren Sie daher über den [`setTransport`](/guides/custom-transport/)-Hook der Runtime einen kleinen postMessage-Transport, der über `window._wails.invoke("wails:event:emit:<name>")` weiterleitet. Die Framework-Injektion führt keine Aktion aus, wenn `window.wails.Events` bereits im Gültigkeitsbereich vorhanden ist, sodass sich die beiden Ansätze nicht gegenseitig beeinträchtigen.
 
 In beiden Fällen ruft das JavaScript in Ihrem benutzerdefinierten HTML dieselbe `Events.On`-/`Events.Emit`-API auf:
 
@@ -652,6 +652,6 @@ Bevor Sie ein Release veröffentlichen, das der Updater installieren soll:
 
 ## Siehe auch
 
-- Ausführbares Beispiel: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Ausführbares Beispiel: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Demo-Repository für Tests: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Selbstaktualisierungen zu einer Wails-App hinzufügen](/tutorials/04-self-update-a-wails-app/)

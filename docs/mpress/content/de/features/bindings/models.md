@@ -7,7 +7,7 @@ sourcePath: "features/bindings/models.md"
 
 ## Datenmodellbindungen
 
-Wails **generiert automatisch JavaScript-/TypeScript-Klassen** aus Go-Structs und gewährleistet vollständige Typsicherheit bei der Übergabe komplexer Daten zwischen Backend und Frontend. Schreiben Sie Go-Structs, generieren Sie Bindungen und erhalten Sie vollständig typisierte Frontend-Modelle einschließlich Konstruktoren, Typannotationen und JSDoc-Kommentaren.
+Wails **generiert automatisch JavaScript-/TypeScript-Klassen** aus Go-Structs und gewährleistet vollständige Typsicherheit bei der Übergabe komplexer Daten zwischen Backend und Frontend. Definieren Sie Go-Structs, generieren Sie Bindings und erhalten Sie vollständig typisierte Frontend-Modelle mit Konstruktoren, Typannotationen und JSDoc-Kommentaren.
 
 ## Schnellstart
 
@@ -39,14 +39,20 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
 **Das ist alles!** Vollständige Typsicherheit über die Bridge hinweg.
 
 ## Modelle definieren
 
-### Einfacher Struct
+Die folgenden Modellklassen veranschaulichen die Feldstrukturen. Verwenden Sie die tatsächlich generierten Bindings, statt diese vereinfachten Klassen als Konvertierungscode zu kopieren.
+
+Für `time.Time` verwendet der Generator standardmäßig `-time-type=string`. Verwenden Sie `-time-type=Date` für generierte Klassen, die Zeitstempel in JavaScript-Werte vom Typ `Date` konvertieren. Die Standard-Build-Tasks für JavaScript-/Klassenvorlagen wählen `Date`; Tasks für TypeScript-Schnittstellen behalten `string` bei. Prüfen Sie Ihren generierten Task, bevor Sie den Modus ändern. Go-Zeitstempel bleiben in JSON RFC3339Nano-Zeichenfolgen.
+
+Im Date-Modus wandeln die generierten Konvertierungshilfen diese Zeichenfolgen in Datumswerte um. `Object.assign` allein führt diese Konvertierung nicht durch. Konvertieren Sie bei String-Bindings einen Zeitstempel explizit mit `new Date(timestamp)`, bevor Sie Date-Methoden verwenden.
+
+### Einfaches Struct
 
 ```go
 type Person struct {
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 export class User {
@@ -108,11 +114,11 @@ export class User {
 }
 ```
 
-**JSON-Tags bestimmen die Feldnamen** in JavaScript.
+**JSON-Tags steuern die Feldnamen** in JavaScript.
 
 ### Benutzerdefiniertes JSON-Marshalling
 
-Ergebnisse gebundener Methoden werden mit dem Go-Standardpaket `encoding/json` gemarshallt. Beachten Sie, dass für einen Pointer-Receiver deklarierte `MarshalJSON`-Methoden nur aufgerufen werden, wenn der zu marshallende Wert adressierbar ist. Das bedeutet, dass ein benutzerdefinierter Marshaler für Elemente eines zurückgegebenen Slices aufgerufen werden kann, nicht jedoch für einen als Wert zurückgegebenen Struct:
+Die Ergebnisse gebundener Methoden werden mit dem Go-Standardpaket `encoding/json` gemarshallt. Beachten Sie, dass für einen Pointer-Receiver deklarierte `MarshalJSON`-Methoden nur aufgerufen werden, wenn der zu marshallende Wert adressierbar ist. Das bedeutet, dass ein benutzerdefinierter Marshaller für Elemente eines zurückgegebenen Slices aufgerufen werden kann, nicht jedoch für ein als Wert zurückgegebenes Struct:
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-Um eine konsistente Ausgabe sicherzustellen, definieren Sie `MarshalJSON` entweder für einen Value-Receiver, wenn der Typ gefahrlos kopiert werden kann, oder geben Sie einen Pointer auf den Struct zurück (zum Beispiel `*User`). Dies ist ein Verhalten von Gos `encoding/json` und kein Unterschied bei der Bindungsgenerierung von Wails.
+Um eine konsistente Ausgabe sicherzustellen, definieren Sie `MarshalJSON` entweder für einen Value-Receiver, wenn der Typ sicher kopiert werden kann, oder geben Sie einen Pointer auf das Struct zurück, beispielsweise `*User`. Dies ist ein Verhalten von Go-`encoding/json` und kein Unterschied bei der Binding-Generierung von Wails.
 
 ### Mit Kommentaren
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 /**
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**Generiertes JavaScript:**
+**JavaScript-Beispiel:**
 
 ```javascript
 export class Config {
@@ -313,13 +319,13 @@ const config = new Config({
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | Map mit String-Schlüsseln |
-| `map[K]V` | `{ [_ in K]?: V }` | `K`, die keine Strings sind, werden als zugeordneter Typ dargestellt, **nicht** als JavaScript-`Map` |
-| `[]byte` | `string` | Base64-codiert |
+| `map[K]V` | `{ [_ in K]?: V }` | Ein Nicht-String-`K` wird als gemappter Typ dargestellt, **nicht** als JavaScript-`Map` |
+| `[]byte` | `string` | Base64-kodiert |
 | `struct` | `class` / `interface` | mit Feldern |
-| `time.Time` | `any` | wird zur Laufzeit als RFC3339Nano-Zeichenfolge serialisiert |
-| `*T` | `T \| null` | Zeiger bedeutet, dass null zulässig ist |
+| `time.Time` | `string` (Standard) oder `Date` | `-time-type` wählt die generierte Darstellung aus; JSON verwendet einen RFC3339Nano-String |
+| `*T` | `T \| null` | Zeiger bedeutet nullable |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | Als Rückgabewert Exception, andernfalls any |
+| `error` | `any` / `Exception` | Exception bei Verwendung als Rückgabewert, andernfalls any |
 
 ### Nicht unterstützte Typen
 
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### Generiertes TypeScript
 
+Dieser Abschnitt veranschaulicht Klassenbindungen mit Date-Konvertierung. Der einfache Befehl `-ts` behält die standardmäßige String-Darstellung des Generators bei. Die dargestellte Klasse ist vereinfacht; der Generator erzeugt außerdem Konvertierungshilfen.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **Generiert:**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -496,9 +504,9 @@ if (user.nickname) {
 }
 ```
 
-### Enumerationen
+### Enums
 
-Der Binding-Generator erkennt automatisch benannte Go-Typen mit Konstanten und generiert TypeScript-Enumerationen oder JavaScript-const-Objekte – einschließlich eines `$zero`-Members für den Nullwert von Go und unter vollständiger Beibehaltung von JSDoc.
+Der Bindungsgenerator erkennt automatisch benannte Go-Typen mit Konstanten und generiert TypeScript-Enums oder JavaScript-Const-Objekte – einschließlich eines `$zero`-Members für den Nullwert von Go und unter vollständiger Beibehaltung von JSDoc.
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-Eine umfassende Beschreibung von Zeichenfolgen- und Ganzzahl-Enumerationen, Typaliasen, Enumerationen aus importierten Paketen sowie Einschränkungen finden Sie auf der gesonderten Seite **[Enumerationen](/features/bindings/enums/)**.
+Umfassende Informationen zu String-Enums, Integer-Enums, Typaliasen, Enums aus importierten Paketen und Einschränkungen finden Sie auf der speziellen Seite **[Enums](/features/bindings/enums/)**.
 
 ### Validierung
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -701,48 +709,48 @@ const manager = new UserManager()
 manager.loadUsers()
 ```
 
-## Bewährte Vorgehensweisen
+## Bewährte Methoden
 
 ### ✅ Empfohlen
 
 - **JSON-Tags verwenden** – Feldnamen steuern
 - **Kommentare hinzufügen** – Sie werden zu JSDoc
-- **time.Time verwenden** – Wird in Date konvertiert
+- **Zeitdarstellung auswählen** – `time.Time` wird standardmäßig zu `string`; `-time-type=Date` aktiviert die generierte Date-Konvertierung
 - **Auf der Go-Seite validieren** – Dem Frontend nicht vertrauen
-- **Modelle einfach halten** – Nur als Datencontainer verwenden
-- **Zeiger für optionale Felder verwenden** – `*string` verwenden, wenn null zulässig sein soll
+- **Modelle einfach halten** – Nur Datencontainer verwenden
+- **Zeiger für optionale Werte verwenden** – `*string` für nullable Werte
 
-### ❌ Nicht tun
+### ❌ Nicht empfohlen
 
-- **Go-Structs keine Methoden hinzufügen** – Als reine Datenstrukturen belassen
-- **Keine nicht exportierten Felder verwenden** – Für sie werden keine Bindings erstellt
+- **Go-Structs keine Methoden hinzufügen** – Als reine Datenstrukturen beibehalten
+- **Keine nicht exportierten Felder verwenden** – Sie werden nicht gebunden
 - **Keine komplexen Interfaces verwenden** – Sie werden nicht unterstützt
-- **JSON-Tags nicht vergessen** – Feldnamen sind wichtig
+- **JSON-Tags nicht vergessen** – Feldnamen sind relevant
 - **Nicht zu tief verschachteln** – Einfach halten
 
 ## Nächste Schritte
 
 @cards{cols="2"}
-🚀 Methoden-Bindings
+🚀 Methodenbindungen
 Erfahren Sie, wie Sie Go-Methoden binden.
 
 [Mehr erfahren →](/features/bindings/methods/)
 
 ---
-◆ Dienste
-Organisieren Sie Code mithilfe von Diensten.
+◆ Services
+Organisieren Sie Code mit Services.
 
 [Mehr erfahren →](/features/bindings/services/)
 
 ---
-✓ Bewährte Vorgehensweisen
-Entwurfsmuster für Bindings.
+✓ Bewährte Methoden
+Entwurfsmuster für Bindungen.
 
 [Mehr erfahren →](/features/bindings/best-practices/)
 
 ---
-★ Go-Frontend-Brücke
-Lernen Sie den Brückenmechanismus kennen.
+★ Go-Frontend-Bridge
+Verstehen Sie den Bridge-Mechanismus.
 
 [Mehr erfahren →](/concepts/bridge/)
 
@@ -750,4 +758,4 @@ Lernen Sie den Brückenmechanismus kennen.
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.

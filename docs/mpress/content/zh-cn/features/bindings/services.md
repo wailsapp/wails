@@ -7,7 +7,7 @@ sourcePath: "features/bindings/services.md"
 
 ## 服务架构
 
-Wails <strong>服务</strong>提供了一种结构化方式，使用模块化、自包含的组件来组织应用程序逻辑。服务支持生命周期，可使用启动和关闭钩子；服务会自动绑定到前端，支持依赖注入，并且完全可以单独测试。
+Wails **服务**提供了一种结构化方式，通过模块化且自包含的组件来组织应用程序逻辑。服务可感知生命周期，提供启动和关闭钩子，会自动绑定到前端，支持依赖注入，并且可以完全隔离测试。
 
 ## 快速入门
 
@@ -32,7 +32,7 @@ app := application.New(application.Options{
 })
 ```
 
-<strong>就是这样！</strong>现在可以从 JavaScript 调用`Greet`：
+<strong>就这么简单！</strong>现在可以从 JavaScript 调用`Greet`：
 
 ```js
 import { Greet } from './bindings/changeme/GreetService';
@@ -69,11 +69,11 @@ app := application.New(application.Options{
 
 **要点：**
 
-- 仅绑定<strong>导出的方法</strong>（PascalCase）
-- 服务是<strong>单例</strong>（只有一个实例）
+- 仅绑定**导出的方法**（PascalCase）
+- 服务是**单例**（只有一个实例）
 - 方法可以返回`(value, error)`
 
-### 有状态服务
+### 带状态的服务
 
 ```go
 type CounterService struct {
@@ -101,9 +101,9 @@ func (c *CounterService) Reset() {
 }
 ```
 
-<strong>重要：</strong>所有窗口共享服务。请始终使用互斥锁来确保线程安全。
+<strong>重要：</strong>所有窗口共享服务。务必使用互斥锁来保证线程安全。
 
-### 具有依赖项的服务
+### 带依赖项的服务
 
 ```go
 type UserService struct {
@@ -131,7 +131,7 @@ func (u *UserService) GetUser(id int) (*User, error) {
 }
 ```
 
-**注册具有依赖项的服务：**
+**注册带依赖项的服务：**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -171,7 +171,7 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 }
 ```
 
-**使用场景：**
+**适用场景：**
 
 - 初始化资源
 - 验证配置
@@ -181,8 +181,8 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 **重要：**
 
-- 服务按照<strong>注册顺序</strong>启动
-- 返回错误可<strong>阻止应用程序启动</strong>
+- 服务按**注册顺序**启动
+- 返回错误可**阻止应用程序启动**
 - 使用`ctx`执行取消操作
 
 ### ServiceShutdown
@@ -205,7 +205,7 @@ func (u *UserService) ServiceShutdown() error {
 }
 ```
 
-**使用场景：**
+**适用场景：**
 
 - 关闭连接
 - 保存状态
@@ -215,11 +215,11 @@ func (u *UserService) ServiceShutdown() error {
 
 **重要：**
 
-- 服务按照<strong>相反顺序</strong>关闭
-- 应用程序上下文此时已取消
-- 返回错误可<strong>记录警告</strong>（不会阻止关闭）
+- 服务按**相反顺序**关闭
+- 应用程序上下文已取消
+- 返回错误可**记录警告**（不会阻止关闭）
 
-### 完整的生命周期示例
+### 完整生命周期示例
 
 ```go
 type DatabaseService struct {
@@ -302,11 +302,19 @@ app := application.New(application.Options{
 })
 ```
 
-**使用场景：**
+**适用场景：**
 
-- 同一服务类型的多个实例
-- 使日志更加清晰
-- 更便于调试
+- 日志更清晰
+- 更易于调试
+
+`ServiceOptions.Name`是用于日志记录和调试的显示名称；它不会更改生成的绑定命名空间。每种 Go 类型最多注册一个服务。对于独立配置的实例，请使用不同的包装类型，例如：
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+注册`application.NewService(&PrimaryStore{primary})`和`application.NewService(&ArchiveStore{archive})`，而不是注册两个`*Store`值。
 
 ### HTTP 路由
 
@@ -332,11 +340,11 @@ app := application.New(application.Options{
 })
 ```
 
-**访问：**`http://wails.localhost/files/...`
+**访问地址：**`http://wails.localhost/files/...`
 
-**使用场景：**
+**适用场景：**
 
-- 提供文件
+- 文件服务
 - 自定义 API
 - WebSocket 端点
 - 媒体流传输
@@ -503,7 +511,7 @@ app := application.New(application.Options{})
 app.RegisterService(application.NewService(NewNotificationService(app)))
 ```
 
-### 服务间依赖关系
+### 服务间依赖
 
 ```go
 type OrderService struct {
@@ -548,7 +556,7 @@ func TestCalculatorService_Add(t *testing.T) {
 }
 ```
 
-### 使用依赖项进行测试
+### 带依赖项的测试
 
 ```go
 func TestUserService_GetUser(t *testing.T) {
@@ -604,21 +612,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ 应该做
 
-- **单一职责**——一个服务只负责一个用途
-- **构造函数注入**——显式传递依赖项
-- **线程安全的状态**——使用互斥锁
-- **返回错误**——不要触发 panic
-- **记录重要事件**——使用结构化日志
-- **独立测试**——模拟依赖项
+- **单一职责** - 一个服务只负责一项功能
+- **构造函数注入** - 显式传入依赖项
+- **线程安全的状态** - 使用互斥锁
+- **返回错误** - 不要触发 panic
+- **记录重要事件** - 使用结构化日志
+- **隔离测试** - 模拟依赖项
 
 ### ❌ 不应该做
 
-- **不要使用全局状态**——传递依赖项
-- **不要阻塞启动过程**——确保 ServiceStartup 快速完成
-- **不要忽视关闭过程**——始终执行清理
-- **不要创建循环依赖**——谨慎设计
-- **不要公开内部方法**——将其保持为私有方法
-- **不要忘记线程安全**——服务会被共享
+- **不要使用全局状态** - 传入依赖项
+- **不要阻塞启动过程** - 确保 ServiceStartup 快速完成
+- **不要忽略关闭过程** - 始终执行清理
+- **不要创建循环依赖** - 谨慎设计
+- **不要暴露内部方法** - 将其保持为私有方法
+- **不要忘记线程安全** - 服务是共享的
 
 ## 完整示例
 
@@ -794,11 +802,11 @@ func main() {
 
 ## 后续步骤
 
-- [方法绑定](/features/bindings/methods/)——了解如何将 Go 方法绑定到 JavaScript
-- [模型](/features/bindings/models/)——绑定复杂的数据结构
-- [事件](/features/events/system/)——使用事件进行发布/订阅通信
-- [最佳实践](/features/bindings/best-practices/)——服务设计模式与最佳实践
+- [方法绑定](/features/bindings/methods/) - 了解如何将 Go 方法绑定到 JavaScript
+- [模型](/features/bindings/models/) - 绑定复杂数据结构
+- [事件](/features/events/system/) - 使用事件进行发布/订阅通信
+- [最佳实践](/features/bindings/best-practices/) - 服务设计模式和最佳实践
 
 ---
 
-<strong>有问题？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[服务示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>有疑问？</strong>请前往[Discord](https://discord.gg/JDdSxwjhGf)提问，或查看[服务示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

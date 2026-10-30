@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -147,19 +148,26 @@ func (Nop) Level() Verbosity                      { return Normal }
 // active is the reporter for the current in-process build. Producers that run
 // in-process (not as a subprocess) reach the UI through it.
 var active Reporter = Nop{}
+var activeMu sync.RWMutex
 
 // SetActive installs r as the reporter for in-process producers. Passing nil
 // resets to a no-op. The executor sets this for the duration of a build.
 func SetActive(r Reporter) {
 	if r == nil {
-		active = Nop{}
-		return
+		r = Nop{}
 	}
+	activeMu.Lock()
 	active = r
+	activeMu.Unlock()
 }
 
 // Active returns the in-process reporter (never nil).
-func Active() Reporter { return active }
+func Active() Reporter {
+	activeMu.RLock()
+	r := active
+	activeMu.RUnlock()
+	return r
+}
 
 // --- Wire protocol -------------------------------------------------------
 //

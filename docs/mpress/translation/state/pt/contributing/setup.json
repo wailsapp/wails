@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "a9b1604d60bdae78c009",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "4a44b5e395bc95f918aa",
   "sourceFile": "contributing/setup.md",
   "sourceLanguage": "en",
   "targetLanguage": "pt",
@@ -10,96 +11,96 @@
       "targetHash": "0f0a23b3e6d5f4fb842d12fddf5f6f7074a5b62c17e0de8cf294cdf52870b9bc",
       "machineHash": "0f0a23b3e6d5f4fb842d12fddf5f6f7074a5b62c17e0de8cf294cdf52870b9bc",
       "machineText": "Configuração do ambiente de desenvolvimento",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Development Environment Setup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0002-text-01": {
       "sourceHash": "86b60f5c8126985971969e5b1ad05525b664b4655f99f7a139c38f3adce3da2a",
-      "targetHash": "5752830e0e3c499f5f5c936779eb8085e6fb8441790fc3af96075df548bb3f90",
-      "machineHash": "5752830e0e3c499f5f5c936779eb8085e6fb8441790fc3af96075df548bb3f90",
-      "machineText": "Este guia mostra como configurar um ambiente de desenvolvimento completo para trabalhar no Wails v3.",
-      "status": "final",
+      "targetHash": "db722febec2415845e88d82211c18e7e63c361df8ea720449def3789c8d6b7af",
+      "machineHash": "db722febec2415845e88d82211c18e7e63c361df8ea720449def3789c8d6b7af",
+      "machineText": "Este guia orienta você na configuração de um ambiente de desenvolvimento completo para trabalhar no Wails v3.",
+      "status": "machine-translated",
       "sourcePreview": "This guide walks you through setting up a complete development environment for working on Wails v3.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0003-heading-01": {
       "sourceHash": "1b36cf461526ea99e185f7b0a3e8e3c0690c36399e488d45e70b91bf8f50815d",
       "targetHash": "6f6d3ba31b66768e2f014b37c2b72b4c927b75302a3f7a254de3da636ee845c8",
       "machineHash": "6f6d3ba31b66768e2f014b37c2b72b4c927b75302a3f7a254de3da636ee845c8",
       "machineText": "Ferramentas necessárias",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Required Tools",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0004-heading-01": {
       "sourceHash": "c88208da04dbb5d6e16bb803a581eedd7689d2db7ee2d36057ab2be7dcc01ec6",
       "targetHash": "8990315ae03f3ed495ab0f7eb7f091891a6c256173753db439bc43efe854e4f7",
       "machineHash": "8990315ae03f3ed495ab0f7eb7f091891a6c256173753db439bc43efe854e4f7",
       "machineText": "Desenvolvimento em Go",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Go Development",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0005-text-01": {
-      "sourceHash": "ff321c76fe40f4868757a03e4f3492152152c0077046d42c0148bd7c81682b99",
-      "targetHash": "6462cace97404ab5886c6ff704b74a81ba581e32624b1083a15cfd4fd9968b83",
-      "machineHash": "6462cace97404ab5886c6ff704b74a81ba581e32624b1083a15cfd4fd9968b83",
-      "machineText": "*Instale o Go 1.25 ou posterior:*",
-      "status": "final",
-      "sourcePreview": "*Install Go 1.25 or later:*",
+      "sourceHash": "16edff662d4c5b3fabe2e38d3f9ff44ce60435619a517646b92a36afb0084e44",
+      "targetHash": "30cd945f892d0789e2d515e8f7123cb65c8a56f8749260f2afad7bb499b3d492",
+      "machineHash": "30cd945f892d0789e2d515e8f7123cb65c8a56f8749260f2afad7bb499b3d492",
+      "machineText": "**Instale o Go 1.26 ou posterior:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Install Go 1.26 or later:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0006-text-01": {
-      "sourceHash": "6da0703f1125cdfea2211087b9e6940a1e0d3840376925c71c4e1b3bd144d9c1",
-      "targetHash": "2a965d605622fab3c54df547d381befbb0ef485cf070c853b568db678e34d155",
-      "machineHash": "2a965d605622fab3c54df547d381befbb0ef485cf070c853b568db678e34d155",
-      "machineText": "*Configure o ambiente do Go:*",
-      "status": "final",
-      "sourcePreview": "*Configure Go environment:*",
+      "sourceHash": "afcfc95f38ca3c6d4ff205a6120186effdaa7b465612cdce975493aaa57c4f78",
+      "targetHash": "b4ce6da1d318107bdcf7f18625f87863ab79bea79e2bd743cd83b34935bb9b69",
+      "machineHash": "b4ce6da1d318107bdcf7f18625f87863ab79bea79e2bd743cd83b34935bb9b69",
+      "machineText": "**Configure o ambiente Go:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Configure Go environment:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0007-text-01": {
-      "sourceHash": "7e74cdf84b99b85bd2e0cc78ea1af653d466f0a30a35d6ca7392e537e6ac4fde",
-      "targetHash": "1912636ee42aa495096ad6de8af67d61f4868ab335f925c807a0effa82162c04",
-      "machineHash": "1912636ee42aa495096ad6de8af67d61f4868ab335f925c807a0effa82162c04",
-      "machineText": "*Instale ferramentas úteis do Go:*",
-      "status": "final",
-      "sourcePreview": "*Install useful Go tools:*",
+      "sourceHash": "5bfedbc7e8c09ffb23bb9f8367b2a2317b2ad3a5d50212f1905aebbe6a607a01",
+      "targetHash": "ad992b6c7043561bf94bced21ba9333d4559e515cb9ecbab71a680566903775a",
+      "machineHash": "ad992b6c7043561bf94bced21ba9333d4559e515cb9ecbab71a680566903775a",
+      "machineText": "**Instale ferramentas úteis do Go:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Install useful Go tools:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0008-heading-01": {
       "sourceHash": "9c9b1695a7ef0686ecfc691d01b45cf7e1682e2b7671bbf6b0978c70a7d8b874",
       "targetHash": "d99d806632c17c40cdea76146dd02acabd2e323b8ddd9e84a13f4ecf8721b1d0",
       "machineHash": "d99d806632c17c40cdea76146dd02acabd2e323b8ddd9e84a13f4ecf8721b1d0",
       "machineText": "Node.js e npm",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Node.js and npm",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0009-text-01": {
       "sourceHash": "9b2ba8b6e0a00e89c6eba9491f6a0830d3824708bdc63c0917a13c3a846f8c37",
@@ -111,811 +112,799 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0010-heading-01": {
       "sourceHash": "4f9e800783673962ad238fd66e3333648ed967811e5a6a0dfd47a2908c899004",
       "targetHash": "1d4929d152026d2fc3af13c5d8a51ee6979faa0a260f093143fbfaa03298fbcc",
       "machineHash": "1d4929d152026d2fc3af13c5d8a51ee6979faa0a260f093143fbfaa03298fbcc",
       "machineText": "Dependências específicas da plataforma",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Platform-Specific Dependencies",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0011-text-01": {
-      "sourceHash": "8c1964ba42937d7d0f5283e1a4a44d9d4a286e50c619180a0d6f3e3ff2f83c78",
-      "targetHash": "8c1964ba42937d7d0f5283e1a4a44d9d4a286e50c619180a0d6f3e3ff2f83c78",
-      "machineHash": "8c1964ba42937d7d0f5283e1a4a44d9d4a286e50c619180a0d6f3e3ff2f83c78",
-      "machineText": "*macOS:*",
-      "status": "final",
-      "sourcePreview": "*macOS:*",
+      "sourceHash": "cf2f82b7f6d44673c2abddda38d21059447b36ac1d468ecfb6ce6b6b30945128",
+      "targetHash": "cf2f82b7f6d44673c2abddda38d21059447b36ac1d468ecfb6ce6b6b30945128",
+      "machineHash": "cf2f82b7f6d44673c2abddda38d21059447b36ac1d468ecfb6ce6b6b30945128",
+      "machineText": "**macOS:**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0012-text-01": {
-      "sourceHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "targetHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "machineHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "machineText": "*Windows:*",
-      "status": "final",
-      "sourcePreview": "*Windows:*",
+      "sourceHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "targetHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "machineHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "machineText": "**Windows:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0013-text-01": {
       "sourceHash": "273d03dcff867b9ffaa6da267302e763183123590055b4845e00a7a2c5d5a17f",
-      "targetHash": "37f41bc35cae25a0ea6c76e013a7d25e9c293d639f0d0290cfbad7b350cac308",
-      "machineHash": "37f41bc35cae25a0ea6c76e013a7d25e9c293d639f0d0290cfbad7b350cac308",
-      "machineText": "Instale o [MSYS2](https://www.msys2.org/) para obter um ambiente semelhante ao Unix",
-      "status": "final",
+      "targetHash": "83074b03fc60f0f863585d71e6fe194f99ccdceb4e51c74b8beef9fa716be63f",
+      "machineHash": "83074b03fc60f0f863585d71e6fe194f99ccdceb4e51c74b8beef9fa716be63f",
+      "machineText": "Instale o [MSYS2](https://www.msys2.org/) para ter um ambiente semelhante ao Unix",
+      "status": "machine-translated",
       "sourcePreview": "Install [MSYS2](https://www.msys2.org/) for a Unix-like environment",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0014-text-01": {
       "sourceHash": "dec19dc2b9da9e724a3b4b7ff4e385fb3d89936125bc6941e0b53fc3ac4846e3",
       "targetHash": "2f9aac292b6053b1afc4a226d1355e9c041f818e60b35e59d6ae218f2949b1f2",
       "machineHash": "2f9aac292b6053b1afc4a226d1355e9c041f818e60b35e59d6ae218f2949b1f2",
       "machineText": "WebView2 Runtime (pré-instalado no Windows 11; para o Windows 10, faça o [download](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "WebView2 Runtime (pre-installed on Windows 11, [download](https://developer.microsoft.com/en-us/micr…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0015-text-01": {
       "sourceHash": "55f0a413accedaafc420d36fe1ba6c4b89c9da82b8cd6dad3ab1f792817ee1ad",
       "targetHash": "d6debe6869517592dce62163c6e278107a1f91d0a8871c3815aac48fa14558f1",
       "machineHash": "d6debe6869517592dce62163c6e278107a1f91d0a8871c3815aac48fa14558f1",
       "machineText": "Opcional: instale o [Git for Windows](https://git-scm.com/download/win)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Optional: Install [Git for Windows](https://git-scm.com/download/win)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0016-text-01": {
-      "sourceHash": "dcdb1230431e7a91aef1420def93e707609167ed6f68752ea7f9242c3b9d60ee",
-      "targetHash": "dcdb1230431e7a91aef1420def93e707609167ed6f68752ea7f9242c3b9d60ee",
-      "machineHash": "dcdb1230431e7a91aef1420def93e707609167ed6f68752ea7f9242c3b9d60ee",
-      "machineText": "*Linux (Debian/Ubuntu):*",
-      "status": "final",
-      "sourcePreview": "*Linux (Debian/Ubuntu):*",
+      "sourceHash": "4650ea5e5373b471a1ccd9e333121dd4a3bdd63b8e44a328b7764a7c9d55b20d",
+      "targetHash": "4650ea5e5373b471a1ccd9e333121dd4a3bdd63b8e44a328b7764a7c9d55b20d",
+      "machineHash": "4650ea5e5373b471a1ccd9e333121dd4a3bdd63b8e44a328b7764a7c9d55b20d",
+      "machineText": "**Linux (Debian/Ubuntu):**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux (Debian/Ubuntu):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0017-text-01": {
-      "sourceHash": "1295c9811cf5524cb6c92a99a21da545e2d019f006de0920c64d7a4ad9119877",
-      "targetHash": "1295c9811cf5524cb6c92a99a21da545e2d019f006de0920c64d7a4ad9119877",
-      "machineHash": "1295c9811cf5524cb6c92a99a21da545e2d019f006de0920c64d7a4ad9119877",
-      "machineText": "*Linux (Fedora/RHEL):*",
-      "status": "final",
-      "sourcePreview": "*Linux (Fedora/RHEL):*",
+      "sourceHash": "fb345955c8939044fc92a4202c9c78b479a30d13e955a3416a0e67892f5a9dbe",
+      "targetHash": "fb345955c8939044fc92a4202c9c78b479a30d13e955a3416a0e67892f5a9dbe",
+      "machineHash": "fb345955c8939044fc92a4202c9c78b479a30d13e955a3416a0e67892f5a9dbe",
+      "machineText": "**Linux (Fedora/RHEL):**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux (Fedora/RHEL):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0018-text-01": {
-      "sourceHash": "c5367763e0b668ccecdade6f6a74c222c99df736c50006dcc5c3b9c87dea7c2d",
-      "targetHash": "c5367763e0b668ccecdade6f6a74c222c99df736c50006dcc5c3b9c87dea7c2d",
-      "machineHash": "c5367763e0b668ccecdade6f6a74c222c99df736c50006dcc5c3b9c87dea7c2d",
-      "machineText": "*Linux (Arch):*",
-      "status": "final",
-      "sourcePreview": "*Linux (Arch):*",
+      "sourceHash": "acb52464ed94a02a6ae7d0773d13e83e3848a8e1f97460356ed4249898bc4767",
+      "targetHash": "acb52464ed94a02a6ae7d0773d13e83e3848a8e1f97460356ed4249898bc4767",
+      "machineHash": "acb52464ed94a02a6ae7d0773d13e83e3848a8e1f97460356ed4249898bc4767",
+      "machineText": "**Linux (Arch):**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux (Arch):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0019-heading-01": {
       "sourceHash": "902b75d6fd7e220ded51f7549cd1be15de98ac08cad87f5e42259e5600c10a8a",
       "targetHash": "19937344b75788fb8cf6553ef22d7e12484dca39b63042040e82ce2541feb8dc",
       "machineHash": "19937344b75788fb8cf6553ef22d7e12484dca39b63042040e82ce2541feb8dc",
       "machineText": "Configuração do repositório",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Repository Setup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0020-heading-01": {
       "sourceHash": "044b7f1fd0981d6fdeca54bc9cd10c1a15bc4cde4494450e28c9f3920325e800",
       "targetHash": "f7bcee717ac8438294fbc241a916f3bdd63641aeef99082993c712efa9c1cb9d",
       "machineHash": "f7bcee717ac8438294fbc241a916f3bdd63641aeef99082993c712efa9c1cb9d",
       "machineText": "Clonar e configurar",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Clone and Configure",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0021-heading-01": {
       "sourceHash": "ab3a2f0572b58b2439a88485b60f54355b081c2d35457df2d02816a8880936b9",
       "targetHash": "101fba8681fab426efbaeeae2eeb3e180b59d5bc52357d0acbd91ad5b4ac12de",
       "machineHash": "101fba8681fab426efbaeeae2eeb3e180b59d5bc52357d0acbd91ad5b4ac12de",
       "machineText": "Compilar a CLI do Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build the Wails CLI",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0022-heading-01": {
       "sourceHash": "7a524fcc4ee87a79bf30f4db1febf55cca3f72e488d36677a1a3a4d5690c2c12",
       "targetHash": "bd2464fe704a3898d97d97a776c186f1d6e5158dfa25f23f0bb67c6280206ee8",
       "machineHash": "bd2464fe704a3898d97d97a776c186f1d6e5158dfa25f23f0bb67c6280206ee8",
       "machineText": "Adicionar ao PATH (opcional)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add to PATH (Optional)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0023-text-01": {
-      "sourceHash": "47d31d238f8ea6ab6bc1a27fcf1c884aff6db7c98bdcd29f824058ed4e9149f4",
-      "targetHash": "47d31d238f8ea6ab6bc1a27fcf1c884aff6db7c98bdcd29f824058ed4e9149f4",
-      "machineHash": "47d31d238f8ea6ab6bc1a27fcf1c884aff6db7c98bdcd29f824058ed4e9149f4",
-      "machineText": "*Linux/macOS:*",
-      "status": "final",
-      "sourcePreview": "*Linux/macOS:*",
+      "sourceHash": "a239a2cf3e373b711efc3a473368a2f502d02d280333eae570c9ed3a188c9568",
+      "targetHash": "a239a2cf3e373b711efc3a473368a2f502d02d280333eae570c9ed3a188c9568",
+      "machineHash": "a239a2cf3e373b711efc3a473368a2f502d02d280333eae570c9ed3a188c9568",
+      "machineText": "**Linux/macOS:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux/macOS:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0024-text-01": {
-      "sourceHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "targetHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "machineHash": "493134e0c08f5f37631c9bb8527604ba088a87193c7cec18efccd038fdfa099f",
-      "machineText": "*Windows:*",
-      "status": "final",
-      "sourcePreview": "*Windows:*",
+      "sourceHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "targetHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "machineHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
+      "machineText": "**Windows:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0025-text-01": {
       "sourceHash": "0465cd08b55287536fb15269202fbc441301696d92b04ccba9b366177150db60",
       "targetHash": "ad0b44b3d7d360c23c872b0ff7df422b7f780f3ecd9b1293990456ab87bf2f1a",
       "machineHash": "ad0b44b3d7d360c23c872b0ff7df422b7f780f3ecd9b1293990456ab87bf2f1a",
       "machineText": "Adicione o diretório do Wails à variável de ambiente PATH por meio das Propriedades do Sistema.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add the Wails directory to your PATH environment variable through System Properties.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0026-heading-01": {
       "sourceHash": "b3e6264ccbcf83a8885da072ec0dd26afc3740c36ba0042bb87cfe713b8f8093",
       "targetHash": "38237db647951f78be28fe1485718cd00c9c998f11d0435a79137970cadf556a",
       "machineHash": "38237db647951f78be28fe1485718cd00c9c998f11d0435a79137970cadf556a",
       "machineText": "Configuração do IDE",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "IDE Setup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0027-heading-01": {
       "sourceHash": "5a3d2016db0dba64661bbd62d53bb1fdc32e80368e3adfb3426da914620e69a1",
       "targetHash": "6576e4e3c7dc8aa3e8fd8cbc0b9fd78939647a13f4e6fcffbfead9fecdf7ea3f",
       "machineHash": "6576e4e3c7dc8aa3e8fd8cbc0b9fd78939647a13f4e6fcffbfead9fecdf7ea3f",
       "machineText": "VS Code (recomendado)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "VS Code (Recommended)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0028-text-01": {
-      "sourceHash": "5219ff3b20f97386a078af8328603f13e916d986ae6694f85d231df04941122d",
-      "targetHash": "cb8e5a4f55d6d5f10582363ddc1272fca02521361e58782b59eb4b4c1c97d45b",
-      "machineHash": "cb8e5a4f55d6d5f10582363ddc1272fca02521361e58782b59eb4b4c1c97d45b",
-      "machineText": "*Instale o VS Code:* [Download](https://code.visualstudio.com/)",
-      "status": "final",
-      "sourcePreview": "*Install VS Code:* [Download](https://code.visualstudio.com/)",
+      "sourceHash": "c95dbd1eddd646c43481ba0eae51576ca79596df2990ce806f0d23b839874046",
+      "targetHash": "f68e00c0e64b839200d1e2708f33ba9b89ea0e2b57d4707a56c3ff499f2238ff",
+      "machineHash": "f68e00c0e64b839200d1e2708f33ba9b89ea0e2b57d4707a56c3ff499f2238ff",
+      "machineText": "**Instale o VS Code:** [Baixar](https://code.visualstudio.com/)",
+      "status": "machine-translated",
+      "sourcePreview": "**Install VS Code:** [Download](https://code.visualstudio.com/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0029-text-01": {
-      "sourceHash": "0688e513f07ac0ad36990b82d509897613b13b69aba43c5129073747c0d55ef5",
-      "targetHash": "383248bbb093d220951872cfb965907f12624637913457539aa063a86cda3a95",
-      "machineHash": "383248bbb093d220951872cfb965907f12624637913457539aa063a86cda3a95",
-      "machineText": "*Instale as extensões:*",
-      "status": "final",
-      "sourcePreview": "*Install extensions:*",
+      "sourceHash": "4c66ccbf502f1b2711925b4fc320f882585c2c93d289286dca96c0aa74432282",
+      "targetHash": "555870e55de1942f84349973fca2eea11c898f4197b33acf3a146d0dc8fce8db",
+      "machineHash": "555870e55de1942f84349973fca2eea11c898f4197b33acf3a146d0dc8fce8db",
+      "machineText": "**Instale as extensões:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Install extensions:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0030-text-01": {
       "sourceHash": "4ff4916fb33998894bcd4531f6a7a43df430a84e1d5b6acc592545c557465360",
       "targetHash": "22d889850c6656f086070af404def9545ba102387daa5d236441b985c7c97aa5",
       "machineHash": "22d889850c6656f086070af404def9545ba102387daa5d236441b985c7c97aa5",
       "machineText": "Go (da equipe do Go no Google)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Go (by Go Team at Google)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0031-text-01": {
       "sourceHash": "6e3a6f9e9947021031d8864ca2758613f8589ccdfe59c93fcf8a0330b92b2521",
       "targetHash": "6e3a6f9e9947021031d8864ca2758613f8589ccdfe59c93fcf8a0330b92b2521",
       "machineHash": "6e3a6f9e9947021031d8864ca2758613f8589ccdfe59c93fcf8a0330b92b2521",
       "machineText": "ESLint",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "ESLint",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0032-text-01": {
       "sourceHash": "61dfdd7a227f42f2e09d8ba79aece31f0d8127e6e72f1c6182aeb9fdd7688a90",
       "targetHash": "61dfdd7a227f42f2e09d8ba79aece31f0d8127e6e72f1c6182aeb9fdd7688a90",
       "machineHash": "61dfdd7a227f42f2e09d8ba79aece31f0d8127e6e72f1c6182aeb9fdd7688a90",
       "machineText": "Prettier",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Prettier",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0033-text-01": {
       "sourceHash": "0aa6d0d805a77c32ff9f8fbc50ba5787cd43410f4ff06251091cfc627d46e814",
-      "targetHash": "2e2c322c590ce55b95659fabae87c5d4ac24d563bc47eb9b414c13fa51b9ce86",
-      "machineHash": "2e2c322c590ce55b95659fabae87c5d4ac24d563bc47eb9b414c13fa51b9ce86",
-      "machineText": "MDX (para documentação)",
-      "status": "final",
+      "targetHash": "88792cfe9d9bda0e38883b777c1fe86a88a37b884a62b791f7e362901eb355e5",
+      "machineHash": "88792cfe9d9bda0e38883b777c1fe86a88a37b884a62b791f7e362901eb355e5",
+      "machineText": "MDX (para a documentação)",
+      "status": "machine-translated",
       "sourcePreview": "MDX (for documentation)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0034-text-01": {
-      "sourceHash": "c6552f38976596cfb95845dda61cd949f5bdc5c0c569856416ad9c6d448238a6",
-      "targetHash": "9fb6e9a2be05f0259a3205cc3035060c5f4844175189bf56aa70a5c1063bb0cf",
-      "machineHash": "9fb6e9a2be05f0259a3205cc3035060c5f4844175189bf56aa70a5c1063bb0cf",
-      "machineText": "*Defina as configurações do espaço de trabalho* (`.vscode/settings.json`):",
-      "status": "final",
-      "sourcePreview": "*Configure workspace settings* (`.vscode/settings.json`):",
+      "sourceHash": "42f9a0ca6bc5b53ad66d591ce681932d7ef3e8682e3ca074ee9b06e38b78594c",
+      "targetHash": "f7d6602c04039f3543c9cb00b63e0ac92acf060258454017ee60e2ce7022c6a2",
+      "machineHash": "f7d6602c04039f3543c9cb00b63e0ac92acf060258454017ee60e2ce7022c6a2",
+      "machineText": "**Configure as definições do espaço de trabalho** (`.vscode/settings.json`):",
+      "status": "machine-translated",
+      "sourcePreview": "**Configure workspace settings** (`.vscode/settings.json`):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0035-heading-01": {
       "sourceHash": "b66e9770689a74b9562cbde50504fc4f4cf6965a483d22efbb67b72664648728",
       "targetHash": "b66e9770689a74b9562cbde50504fc4f4cf6965a483d22efbb67b72664648728",
       "machineHash": "b66e9770689a74b9562cbde50504fc4f4cf6965a483d22efbb67b72664648728",
       "machineText": "GoLand",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "GoLand",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0036-text-01": {
-      "sourceHash": "f23c3b227cbfb3050ef6eaddfedb74693f53511aa58063ea0f321721e57749f3",
-      "targetHash": "7b7931e4a1dd68555e839973282d3d1b9c3c88c728795a33f0d1d2c3f9a9377b",
-      "machineHash": "7b7931e4a1dd68555e839973282d3d1b9c3c88c728795a33f0d1d2c3f9a9377b",
-      "machineText": "*Instale o GoLand:* [Download](https://www.jetbrains.com/go/)",
-      "status": "final",
-      "sourcePreview": "*Install GoLand:* [Download](https://www.jetbrains.com/go/)",
+      "sourceHash": "918682dcee1cc034291225976dc1523578a43b3f4be02a99335ef5aa7834927e",
+      "targetHash": "68537362b81761bbdb6c6a266531e9dc10f0239c554d67e6f5d4407a47409cd7",
+      "machineHash": "68537362b81761bbdb6c6a266531e9dc10f0239c554d67e6f5d4407a47409cd7",
+      "machineText": "**Instale o GoLand:** [Baixar](https://www.jetbrains.com/go/)",
+      "status": "machine-translated",
+      "sourcePreview": "**Install GoLand:** [Download](https://www.jetbrains.com/go/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0037-text-01": {
-      "sourceHash": "075d7cc4841bd9bce279126c870744ce25356b1a397c08e54ec544c81dc1debc",
-      "targetHash": "075d7cc4841bd9bce279126c870744ce25356b1a397c08e54ec544c81dc1debc",
-      "machineHash": "075d7cc4841bd9bce279126c870744ce25356b1a397c08e54ec544c81dc1debc",
-      "machineText": "*Configure:*",
-      "status": "final",
-      "sourcePreview": "*Configure:*",
+      "sourceHash": "4ef88819709ed9ba7fe916616968cf70f21b453680dd1f17bada34f345dfd1f2",
+      "targetHash": "4ef88819709ed9ba7fe916616968cf70f21b453680dd1f17bada34f345dfd1f2",
+      "machineHash": "4ef88819709ed9ba7fe916616968cf70f21b453680dd1f17bada34f345dfd1f2",
+      "machineText": "**Configure:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Configure:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0038-text-01": {
       "sourceHash": "0a7f0cd5b87bcdbccce42eebd895068866836d93c71c9e33560e3cfd168d8be4",
-      "targetHash": "081ed142bb99ec6a612df056a3a7cb577b1da28d3a9430b0a10f063583a58af1",
-      "machineHash": "081ed142bb99ec6a612df056a3a7cb577b1da28d3a9430b0a10f063583a58af1",
-      "machineText": "Habilite o suporte a módulos Go",
-      "status": "final",
+      "targetHash": "4638712d63fb5fd519eb813aaa4bf7164206d1ad401a698c86a3d6f858ea9b82",
+      "machineHash": "4638712d63fb5fd519eb813aaa4bf7164206d1ad401a698c86a3d6f858ea9b82",
+      "machineText": "Ative o suporte a módulos Go",
+      "status": "machine-translated",
       "sourcePreview": "Enable Go modules support",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0039-text-01": {
       "sourceHash": "e45b4d1d882a28e77c584bee6dd3861e5e373fcec0d685721cb2daa9fc74d993",
       "targetHash": "04932138b01c58e46cc92b7e8c44a9686568726249eca072eaeb72babb77b278",
       "machineHash": "04932138b01c58e46cc92b7e8c44a9686568726249eca072eaeb72babb77b278",
       "machineText": "Configure observadores de arquivos para `goimports`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Set up file watchers for `goimports`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0040-text-01": {
       "sourceHash": "a40416cb9c91ef371b64a6f86fb9996ee0999659860a7455b74ab8461ff347da",
       "targetHash": "6de2fb6b58b5af65ccd6828f7077eb394862243432ae45e812bb4f13eb929512",
       "machineHash": "6de2fb6b58b5af65ccd6828f7077eb394862243432ae45e812bb4f13eb929512",
       "machineText": "Configure o estilo do código de acordo com as convenções do projeto",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configure code style to match project conventions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0041-heading-01": {
       "sourceHash": "39615a6a3c0cd8d16f7aa9f83b985c6afe98d1b976a8776ad751da9f69b6124d",
       "targetHash": "89a6fc2e8dc843060909f5b9a99e66a9d7ae58501a2c5c136926a3016242f70d",
       "machineHash": "89a6fc2e8dc843060909f5b9a99e66a9d7ae58501a2c5c136926a3016242f70d",
       "machineText": "Verificar a configuração",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Verify Your Setup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0042-text-01": {
       "sourceHash": "cefff91197d8fcf54e4b4cdbaa48e483ca230283ad22accfaff749b038ceabc4",
       "targetHash": "d1e1fb893b8f7a730a4951060e048ff4169c7839839f9e342469a6a904febbf3",
       "machineHash": "d1e1fb893b8f7a730a4951060e048ff4169c7839839f9e342469a6a904febbf3",
       "machineText": "Execute estes comandos para verificar se tudo está funcionando:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run these commands to verify everything is working:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0043-text-01": {
       "sourceHash": "6991ae49ac7363b03c9a96550299a029bed40235fd6931ec23b8c12d69c33ce6",
       "targetHash": "b315e2de5dd2041fea2531362e9f3c81095850b25d2ac6c4f43418caca35ebd7",
       "machineHash": "b315e2de5dd2041fea2531362e9f3c81095850b25d2ac6c4f43418caca35ebd7",
       "machineText": "Se o aplicativo de teste for compilado e executado, seu ambiente estará pronto!",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "If the test app builds and runs, your environment is ready!",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0044-heading-01": {
       "sourceHash": "8981f52e12ff43fe050a5aad50e1b90e2d527fdf4af9e48cb7dc353e27226aea",
       "targetHash": "ae5462997dbb882ab12c5551e4dabfb136bd3958027233aa55340bc32ec4bc73",
       "machineHash": "ae5462997dbb882ab12c5551e4dabfb136bd3958027233aa55340bc32ec4bc73",
       "machineText": "Executar testes",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Running Tests",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0045-heading-01": {
       "sourceHash": "dada9f6298aed180b5ce45b9bb0ab312cd65211f52f74e7c23a48ffb56f3bf31",
       "targetHash": "44a6acaf71c2e1f5408c643b778ba6f956c17b15598d6f166bf608556481d47d",
       "machineHash": "44a6acaf71c2e1f5408c643b778ba6f956c17b15598d6f166bf608556481d47d",
       "machineText": "Testes unitários",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Unit Tests",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0046-heading-01": {
       "sourceHash": "ca0796acf76116b2d0f815efa77459cca1b30cea0a02922231bce4e69ef6a5e0",
       "targetHash": "39a7a2da3f0d2935eb24f40bb87ec98d4a243696ec65fc368fb8ad2c1a374dad",
       "machineHash": "39a7a2da3f0d2935eb24f40bb87ec98d4a243696ec65fc368fb8ad2c1a374dad",
       "machineText": "Testes de pacotes específicos",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Specific Package Tests",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0047-heading-01": {
       "sourceHash": "11472defa7afda4c3801bd434e59a2c24896a82b31950f60edd3c85c9f7ef1ab",
       "targetHash": "c2df9644e915b81500465abbf01c87b99a27c5c8b2cb789ece7b53d0bb767880",
       "machineHash": "c2df9644e915b81500465abbf01c87b99a27c5c8b2cb789ece7b53d0bb767880",
       "machineText": "Executar com cobertura",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run with Coverage",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0048-heading-01": {
       "sourceHash": "c89712508771ee2b31ac3c660afbec20f11b82567b054fd183fbb605a041ca1b",
       "targetHash": "03019d7d46d19241b180e6ea5d79b404b6a9d2b5cd614086f653919e84d13c2b",
       "machineHash": "03019d7d46d19241b180e6ea5d79b404b6a9d2b5cd614086f653919e84d13c2b",
       "machineText": "Executar com o detector de condições de corrida",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run with Race Detector",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0049-heading-01": {
       "sourceHash": "d436757b79866d0e90b6c691ea595acbd31e06ae2fdda6c59506d22e088203a0",
       "targetHash": "25fcf45fa46c8afdf3c9cf7ad19b6c7d8419e3e37519cd1289ede8f16950d230",
       "machineHash": "25fcf45fa46c8afdf3c9cf7ad19b6c7d8419e3e37519cd1289ede8f16950d230",
       "machineText": "Trabalhar com a documentação",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Working with Documentation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0050-text-01": {
-      "sourceHash": "06252cf18e503d4b6390df0c709e2628d27a89285307e386ec903e7bdb43e917",
-      "targetHash": "1f9f5e95464f25c6977ef010443e4d60f616d9753af9b9466b765a3519ff3ef1",
-      "machineHash": "1f9f5e95464f25c6977ef010443e4d60f616d9753af9b9466b765a3519ff3ef1",
-      "machineText": "A documentação do Wails v3 é escrita em M-Press. Os arquivos-fonte em inglês ficam em\n`docs/mpress/content/`; as traduções ficam em diretórios de idiomas, como\n`fr/` e `id/`.",
+      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
+      "targetHash": "4fc58c0a060e227c5bd4257ee7f1a3f09b892421a41d532d53f6f9cbf2087380",
+      "machineHash": "4fc58c0a060e227c5bd4257ee7f1a3f09b892421a41d532d53f6f9cbf2087380",
+      "machineText": "Quem contribui para a documentação pode usar o M-Press sem instalar a CLI do Wails nem as dependências de compilação para desktop. Consulte [Escrever documentação com o M-Press](/contributing/documentation/) para obter instruções sobre downloads dos executáveis com versões fixadas, instalação, visualização ao vivo, validação e fluxo de trabalho de PRs para branches de lançamento.",
       "status": "machine-translated",
-      "sourcePreview": "The Wails v3 documentation is written in M-Press. English source files live in `docs/mpress/content/…",
+      "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0051-text-01": {
-      "sourceHash": "2d54b9fcb7027805c41713ab8bfe1e5487c248c1710f8a6a0b448c39b9578392",
-      "targetHash": "1b426d642cde8ad928c05c7d8d811ee3d26977f3a9cd4420a0563d8e6a9c720a",
-      "machineHash": "1b426d642cde8ad928c05c7d8d811ee3d26977f3a9cd4420a0563d8e6a9c720a",
-      "machineText": "Visualize e valide as alterações na documentação a partir da raiz do repositório:",
+      "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",
+      "targetHash": "f95c0b7053a8eac70846411426f10e9584c1b46172ee6c56162ee01ede67df26",
+      "machineHash": "f95c0b7053a8eac70846411426f10e9584c1b46172ee6c56162ee01ede67df26",
+      "machineText": "Os arquivos Markdown em inglês ficam em `docs/mpress/content/`; as traduções ficam nos diretórios dos idiomas. Na raiz do repositório, `mpress dev` disponibiliza a visualização em `http://127.0.0.1:3000`. Interrompa-a com Ctrl+C antes de executar os comandos de validação do guia.",
       "status": "machine-translated",
-      "sourcePreview": "Preview and validate documentation changes from the repository root:",
+      "sourcePreview": "English Markdown lives in `docs/mpress/content/`; translations live in language directories. From th…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0052-text-01": {
-      "sourceHash": "e90780d524cf2ab687c608a0258308ee70114031166c054a5b2a4042ce055e5f",
-      "targetHash": "8f5c67d0acff2b29213af22edcf632581c4305a031fe043969c87c19fd6f38fa",
-      "machineHash": "8f5c67d0acff2b29213af22edcf632581c4305a031fe043969c87c19fd6f38fa",
-      "machineText": "O site de produção é estático. Node.js, um provedor de tradução e credenciais da Cloudflare\nnão são necessários para trabalhar localmente na documentação.",
-      "status": "machine-translated",
-      "sourcePreview": "The production site is static. Node.js, a translation provider, and Cloudflare credentials are not r…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
-    },
-    "b0053-heading-01": {
+    "b0052-heading-01": {
       "sourceHash": "47fc5bfb5680bd7a9d55085c13c03c5c75ab3a5e2beb3eebd08067146a17a0f1",
       "targetHash": "bf7d5fcda23048974412d0e5ab967b889c8d944eee1562186ea5e7af261aaf94",
       "machineHash": "bf7d5fcda23048974412d0e5ab967b889c8d944eee1562186ea5e7af261aaf94",
       "machineText": "Depuração",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Debugging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0054-heading-01": {
+    "b0053-heading-01": {
       "sourceHash": "0d5ff3c61bbe34da1064b4f23411fb5a0f796fb338e4ce7ede0bb09f65dc3b38",
       "targetHash": "a27c95c56a93b9519534ea9565e512502f80fc2485f261ddced535c1e72796d7",
       "machineHash": "a27c95c56a93b9519534ea9565e512502f80fc2485f261ddced535c1e72796d7",
       "machineText": "Depurar código Go",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Debugging Go Code",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0055-text-01": {
-      "sourceHash": "28cd94c8d6f419f5e0e08e92c6f862139b0e11d16b43f750eb907af721d0080b",
-      "targetHash": "28cd94c8d6f419f5e0e08e92c6f862139b0e11d16b43f750eb907af721d0080b",
-      "machineHash": "28cd94c8d6f419f5e0e08e92c6f862139b0e11d16b43f750eb907af721d0080b",
-      "machineText": "*VS Code:*",
-      "status": "final",
-      "sourcePreview": "*VS Code:*",
+    "b0054-text-01": {
+      "sourceHash": "8500d15965cdd92a34fe4387b35d6edda6924d45ffea34e992ba9f85b5346185",
+      "targetHash": "8500d15965cdd92a34fe4387b35d6edda6924d45ffea34e992ba9f85b5346185",
+      "machineHash": "8500d15965cdd92a34fe4387b35d6edda6924d45ffea34e992ba9f85b5346185",
+      "machineText": "**VS Code:**",
+      "status": "machine-translated",
+      "sourcePreview": "**VS Code:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0056-text-01": {
+    "b0055-text-01": {
       "sourceHash": "7c30b27f613709c46b213ad83a5293bb0d2ffd7a0d2409a7b1f7a9d81c1e3631",
       "targetHash": "9a063c16e51bf93944cf64676814c658f0e4faa631eba645afd62c47d5e8005c",
       "machineHash": "9a063c16e51bf93944cf64676814c658f0e4faa631eba645afd62c47d5e8005c",
       "machineText": "Crie `.vscode/launch.json`:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Create `.vscode/launch.json`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0057-text-01": {
-      "sourceHash": "178f04048dc49f7665884c36176a8cf001402bccf7d21a96ae42f419a7975a15",
-      "targetHash": "90d740c2c2adb6886e2422c98a97549ab1fe6f63235ec99987b574b1e2a97ad1",
-      "machineHash": "90d740c2c2adb6886e2422c98a97549ab1fe6f63235ec99987b574b1e2a97ad1",
-      "machineText": "*Linha de comando:*",
-      "status": "final",
-      "sourcePreview": "*Command Line:*",
+    "b0056-text-01": {
+      "sourceHash": "ea3a1a6e5c9d226961663fdac7cc11d93c8f07881e837d72b1d38956eb1ac5b8",
+      "targetHash": "5ddfcc57197c87dd7e13127fa1489e7d44ed12ff63b0a0ff1e588bd576fd4dfb",
+      "machineHash": "5ddfcc57197c87dd7e13127fa1489e7d44ed12ff63b0a0ff1e588bd576fd4dfb",
+      "machineText": "**Linha de comando:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Command Line:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0058-heading-01": {
+    "b0057-heading-01": {
       "sourceHash": "2d671bc248457ac617347a04f5b52f185daf18c248672da05b94bd14e39437d3",
       "targetHash": "e2dfa3edd78c663ef41ecca544bb3551ac8ecb254811c204d8b7625b65e357b5",
       "machineHash": "e2dfa3edd78c663ef41ecca544bb3551ac8ecb254811c204d8b7625b65e357b5",
       "machineText": "Depurar código específico da plataforma",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Debugging Platform Code",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0059-text-01": {
+    "b0058-text-01": {
       "sourceHash": "69581ba4110a7789b8f236ec47cd8099aa8e129420159b0f83dc262deff81a85",
-      "targetHash": "f1f656fef3a4b0e28ddd344052450cd956489c8463236fa4d7cf2d3649e7a07a",
-      "machineHash": "f1f656fef3a4b0e28ddd344052450cd956489c8463236fa4d7cf2d3649e7a07a",
-      "machineText": "A depuração específica da plataforma requer ferramentas próprias da plataforma:",
-      "status": "final",
+      "targetHash": "01e9281325e0b09cb9c577b905dc27ad1841cb4cfa2491f000874b247bd1c364",
+      "machineHash": "01e9281325e0b09cb9c577b905dc27ad1841cb4cfa2491f000874b247bd1c364",
+      "machineText": "A depuração específica da plataforma exige ferramentas próprias da plataforma:",
+      "status": "machine-translated",
       "sourcePreview": "Platform-specific debugging requires platform tools:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
+    },
+    "b0059-text-01": {
+      "sourceHash": "e122a7dfb61e058a76d8688473258321446f8e7a44a1d665bbad2f111d04057a",
+      "targetHash": "e122a7dfb61e058a76d8688473258321446f8e7a44a1d665bbad2f111d04057a",
+      "machineHash": "e122a7dfb61e058a76d8688473258321446f8e7a44a1d665bbad2f111d04057a",
+      "machineText": "**macOS:** Xcode Instruments",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS:** Xcode Instruments",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0060-text-01": {
-      "sourceHash": "124924ada130bb506214ce18be7fe3fa39932cc0257ae0d94ee2d729e5bdc24c",
-      "targetHash": "124924ada130bb506214ce18be7fe3fa39932cc0257ae0d94ee2d729e5bdc24c",
-      "machineHash": "124924ada130bb506214ce18be7fe3fa39932cc0257ae0d94ee2d729e5bdc24c",
-      "machineText": "*macOS:* Xcode Instruments",
-      "status": "final",
-      "sourcePreview": "*macOS:* Xcode Instruments",
+      "sourceHash": "a99d0fd5a2b53e6d441e13417656ec614bf62f8c5750bd6aa0efeb3d668219fb",
+      "targetHash": "a99d0fd5a2b53e6d441e13417656ec614bf62f8c5750bd6aa0efeb3d668219fb",
+      "machineHash": "a99d0fd5a2b53e6d441e13417656ec614bf62f8c5750bd6aa0efeb3d668219fb",
+      "machineText": "**Windows:** Visual Studio Debugger",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:** Visual Studio Debugger",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0061-text-01": {
-      "sourceHash": "4f7a8236d84749ca45c1145ec1a58000b30aeaf046782e0c79fe660f5ebce9e4",
-      "targetHash": "4f7a8236d84749ca45c1145ec1a58000b30aeaf046782e0c79fe660f5ebce9e4",
-      "machineHash": "4f7a8236d84749ca45c1145ec1a58000b30aeaf046782e0c79fe660f5ebce9e4",
-      "machineText": "*Windows:* Visual Studio Debugger",
-      "status": "final",
-      "sourcePreview": "*Windows:* Visual Studio Debugger",
+      "sourceHash": "30e66657edd56e1b99b4d8bedde1a9e84a47d4e1b6cb96e26ac6905facaff847",
+      "targetHash": "30e66657edd56e1b99b4d8bedde1a9e84a47d4e1b6cb96e26ac6905facaff847",
+      "machineHash": "30e66657edd56e1b99b4d8bedde1a9e84a47d4e1b6cb96e26ac6905facaff847",
+      "machineText": "**Linux:** GDB",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux:** GDB",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0062-text-01": {
-      "sourceHash": "12f5b1b1869c3d5c1a4070275682e36e8b7471ce2ca65d811210caafea74396b",
-      "targetHash": "12f5b1b1869c3d5c1a4070275682e36e8b7471ce2ca65d811210caafea74396b",
-      "machineHash": "12f5b1b1869c3d5c1a4070275682e36e8b7471ce2ca65d811210caafea74396b",
-      "machineText": "*Linux:* GDB",
-      "status": "final",
-      "sourcePreview": "*Linux:* GDB",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
-    },
-    "b0063-heading-01": {
+    "b0062-heading-01": {
       "sourceHash": "e2f95b4099ab32568e8f8b26a4d2b7995163c5fb0debdd74fa994155eca4af43",
       "targetHash": "e5719c702f54c77c1e56b9f2fd38238d5fb8d8d10f436eadf0b817760d8c57d9",
       "machineHash": "e5719c702f54c77c1e56b9f2fd38238d5fb8d8d10f436eadf0b817760d8c57d9",
       "machineText": "Problemas comuns",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Common Issues",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0064-heading-01": {
+    "b0063-heading-01": {
       "sourceHash": "f9cbef203fd8512585d7ba8598d8b1e2554ad5a15f0d081053197764af0d59f3",
       "targetHash": "f9cbef203fd8512585d7ba8598d8b1e2554ad5a15f0d081053197764af0d59f3",
       "machineHash": "f9cbef203fd8512585d7ba8598d8b1e2554ad5a15f0d081053197764af0d59f3",
       "machineText": "\"command not found: wails3\"",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "\"command not found: wails3\"",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0065-text-01": {
+    "b0064-text-01": {
       "sourceHash": "8818fb92e795da05b675657742dbbee80490f7ea0f547c95d9b83ba94da66283",
       "targetHash": "13a50aa9f95c29c814acf9f38a7e0a3f27b7f9e074f7e21a48bbfd735bbf3cce",
       "machineHash": "13a50aa9f95c29c814acf9f38a7e0a3f27b7f9e074f7e21a48bbfd735bbf3cce",
       "machineText": "Adicione o diretório do Wails ao PATH ou use `./wails3` na raiz do projeto.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add the Wails directory to your PATH or use `./wails3` from the project root.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0066-heading-01": {
+    "b0065-heading-01": {
       "sourceHash": "741f0751398b19ff41e49ca0ca54d7cdc76810c1dd02204bb1e6dd9578f81020",
-      "targetHash": "351d1ab52b132be9ae1a65f57a4cb780c667af1519dc291b0ac2ede4b3885fd9",
-      "machineHash": "351d1ab52b132be9ae1a65f57a4cb780c667af1519dc291b0ac2ede4b3885fd9",
-      "machineText": "\"webkitgtk-6.0 não encontrado\" ou \"webkit2gtk não encontrado\" (Linux)",
-      "status": "final",
+      "targetHash": "c83441bfbcd7f40ddba2d5fa4eeca9ed6cba8234867631d3729ffe43c328bef2",
+      "machineHash": "c83441bfbcd7f40ddba2d5fa4eeca9ed6cba8234867631d3729ffe43c328bef2",
+      "machineText": "\"webkitgtk-6.0 not found\" ou \"webkit2gtk not found\" (Linux)",
+      "status": "machine-translated",
       "sourcePreview": "\"webkitgtk-6.0 not found\" or \"webkit2gtk not found\" (Linux)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0067-text-01": {
+    "b0066-text-01": {
       "sourceHash": "45932beb895474b0a9d87f6f3d17152110e79686c88d4c4efd35cd0f5878d251",
       "targetHash": "b8b38df086b4aebc757e23b482418ccf8f34cbe2d3acccc36b84a511c8d08f29",
       "machineHash": "b8b38df086b4aebc757e23b482418ccf8f34cbe2d3acccc36b84a511c8d08f29",
       "machineText": "Instale os pacotes de desenvolvimento da pilha para a qual você está compilando:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Install the development packages for whichever stack you're building against:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0068-heading-01": {
+    "b0067-heading-01": {
       "sourceHash": "2e94b5bbc6efbd3f7e675cd8e8edf6092183c0bc18bf83b866928e3f16228125",
       "targetHash": "a450debbe6e4f7ba4b3fa08ab052db619aee6226f6dc661e4d6ecfea24b9566d",
       "machineHash": "a450debbe6e4f7ba4b3fa08ab052db619aee6226f6dc661e4d6ecfea24b9566d",
       "machineText": "A compilação falha com erros de módulos Go",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build fails with Go module errors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0069-heading-01": {
+    "b0068-heading-01": {
       "sourceHash": "646d5fce45aafb97cccfec63df3834b6a8fbe794153555445c48596e8d3e7c44",
       "targetHash": "2dbe182cae279b9eda352822291ef43bd1a9492dd1e538ee236caf1aae6cf907",
       "machineHash": "2dbe182cae279b9eda352822291ef43bd1a9492dd1e538ee236caf1aae6cf907",
       "machineText": "Erros de \"CGO_ENABLED\" no Windows",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "\"CGO_ENABLED\" errors on Windows",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0070-text-01": {
+    "b0069-text-01": {
       "sourceHash": "6c78f79fa8860c569f35b9a1d34be2eae32fca2d81b72d46a058cd195c8821a9",
-      "targetHash": "0bc54718b15fca66836e7f06ebae646f35ac3bda4a59fcee0f2225cbd8cdbaa2",
-      "machineHash": "0bc54718b15fca66836e7f06ebae646f35ac3bda4a59fcee0f2225cbd8cdbaa2",
-      "machineText": "Verifique se há um compilador C (MinGW-w64 via MSYS2) no seu PATH.",
-      "status": "final",
+      "targetHash": "3128e6abcd42da61e0f1c0d54ff4053d266f191f541b475f75b0642ceb491dc3",
+      "machineHash": "3128e6abcd42da61e0f1c0d54ff4053d266f191f541b475f75b0642ceb491dc3",
+      "machineText": "Verifique se há um compilador C (MinGW-w64 via MSYS2) no PATH.",
+      "status": "machine-translated",
       "sourcePreview": "Ensure you have a C compiler (MinGW-w64 via MSYS2) in your PATH.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0071-heading-01": {
+    "b0070-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
       "machineHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
       "machineText": "Próximas etapas",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0072-text-01": {
+    "b0071-text-01": {
       "sourceHash": "dca29a95b2b909df2aa8e05eeef50f16cf39da6b53f6120c02e5e2020a739116",
       "targetHash": "503dd853eb960b9cf183bb539a7902227bf91962f707f77cc70de5dcafff962d",
       "machineHash": "503dd853eb960b9cf183bb539a7902227bf91962f707f77cc70de5dcafff962d",
       "machineText": "Consulte os [Padrões de codificação](/contributing/standards/)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Review [Coding Standards](/contributing/standards/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0073-text-01": {
+    "b0072-text-01": {
       "sourceHash": "729bd3501bccfa0779dd1cf2d5dae4e05a41eb72556f6912aab619c3ab4765a4",
-      "targetHash": "ae3501845f148cb849bc635af7e83fc3d79902307afdba69054e0beaf8759a50",
-      "machineHash": "ae3501845f148cb849bc635af7e83fc3d79902307afdba69054e0beaf8759a50",
-      "machineText": "Explore a [documentação técnica](/contributing/)",
-      "status": "final",
+      "targetHash": "94b95896feaae01dfffb578919acb661fbb3bd752ab14a4889069a4088e5ef13",
+      "machineHash": "94b95896feaae01dfffb578919acb661fbb3bd752ab14a4889069a4088e5ef13",
+      "machineText": "Explore a [Documentação técnica](/contributing/)",
+      "status": "machine-translated",
       "sourcePreview": "Explore the [Technical Documentation](/contributing/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "b0074-text-01": {
+    "b0073-text-01": {
       "sourceHash": "33dd90006961472e6adc13fb1a58f971c20d0856160841e9e6b07e013c5283a9",
-      "targetHash": "3ec638df47d22fde6ba989c79c6cc9ebc2bf891122a5423721c5c516b72bf971",
-      "machineHash": "3ec638df47d22fde6ba989c79c6cc9ebc2bf891122a5423721c5c516b72bf971",
-      "machineText": "Encontre uma issue na qual trabalhar: [Boas issues para iniciantes](https://github.com/wailsapp/wails/labels/good%20first%20issue)",
-      "status": "final",
+      "targetHash": "c7bd5427d56847cef43f3372483309020de2a8883816adb7d3c964bff4b30977",
+      "machineHash": "c7bd5427d56847cef43f3372483309020de2a8883816adb7d3c964bff4b30977",
+      "machineText": "Encontre uma issue na qual trabalhar: [Issues para iniciantes](https://github.com/wailsapp/wails/labels/good%20first%20issue)",
+      "status": "machine-translated",
       "sourcePreview": "Find an issue to work on: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "d0adc23cfbb6ce5e8f6d000838b7a132f54997dbb85de045a109f52a94f90ab1",
       "targetHash": "715d275a80bb0e57c84a0209a8c8fb0c7a78f69d9f5e10c5cf40b93375bc50d3",
       "machineHash": "715d275a80bb0e57c84a0209a8c8fb0c7a78f69d9f5e10c5cf40b93375bc50d3",
       "machineText": "Configure seu ambiente de desenvolvimento para trabalhar no Wails v3",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Set up your development environment for Wails v3 development",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "a0bb08b1f7873e1619b1bc37732e31d371fb84a2706b9b1237ff69cc9d67df82",
       "targetHash": "0f0a23b3e6d5f4fb842d12fddf5f6f7074a5b62c17e0de8cf294cdf52870b9bc",
       "machineHash": "0f0a23b3e6d5f4fb842d12fddf5f6f7074a5b62c17e0de8cf294cdf52870b9bc",
       "machineText": "Configuração do ambiente de desenvolvimento",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Development Setup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:23Z"
+      "updatedAt": "2026-10-26T00:51:21Z"
     }
   }
 }

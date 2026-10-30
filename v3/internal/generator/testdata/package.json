@@ -4,7 +4,6 @@
   "description": "Output from generator testcases. This package.json is here only to pull in the Typescript compiler as a dependency.",
   "type": "module",
   "devDependencies": {
-    "typescript": "^5.7.3",
-    "madge": "^8.0.0"
+    "typescript": "^5.7.3"
   }
 }
