@@ -13,7 +13,10 @@ permissions:
 jobs:
   parity:
     runs-on: ubuntu-latest
-    container: registry.fedoraproject.org/fedora:44
+    container:
+      image: registry.fedoraproject.org/fedora:44
+      # WebKit and GTK image loaders create nested namespace sandboxes.
+      options: --security-opt seccomp=unconfined --security-opt apparmor=unconfined
     defaults:
       run:
         working-directory: v3
