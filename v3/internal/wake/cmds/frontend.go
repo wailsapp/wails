@@ -30,8 +30,9 @@ func DetectPackageManager(dir string) string {
 
 type NpmInstallCmd struct {
 	Output
-	Dir string
-	Env []string
+	Args []string
+	Dir  string
+	Env  []string
 }
 
 func NpmInstall() *NpmInstallCmd {
@@ -39,7 +40,8 @@ func NpmInstall() *NpmInstallCmd {
 }
 
 func (n *NpmInstallCmd) Run() error {
-	c := exec.Command("npm", "install")
+	args := append([]string{"install"}, n.Args...)
+	c := exec.Command("npm", args...)
 	c.Dir = n.Dir
 	c.Env = n.Env
 	n.apply(c)
@@ -48,6 +50,7 @@ func (n *NpmInstallCmd) Run() error {
 
 type NpmRunCmd struct {
 	Output
+	Args   []string
 	Script string
 	Dir    string
 	Env    []string
@@ -58,7 +61,8 @@ func NpmRun(script string) *NpmRunCmd {
 }
 
 func (n *NpmRunCmd) Run() error {
-	c := exec.Command("npm", "run", n.Script)
+	args := append([]string{"run", n.Script}, n.Args...)
+	c := exec.Command("npm", args...)
 	c.Dir = n.Dir
 	c.Env = n.Env
 	n.apply(c)
@@ -67,8 +71,9 @@ func (n *NpmRunCmd) Run() error {
 
 type BunInstallCmd struct {
 	Output
-	Dir string
-	Env []string
+	Args []string
+	Dir  string
+	Env  []string
 }
 
 func BunInstall() *BunInstallCmd {
@@ -76,7 +81,8 @@ func BunInstall() *BunInstallCmd {
 }
 
 func (b *BunInstallCmd) Run() error {
-	c := exec.Command("bun", "install")
+	args := append([]string{"install"}, b.Args...)
+	c := exec.Command("bun", args...)
 	c.Dir = b.Dir
 	c.Env = b.Env
 	b.apply(c)
@@ -85,8 +91,9 @@ func (b *BunInstallCmd) Run() error {
 
 type PnpmInstallCmd struct {
 	Output
-	Dir string
-	Env []string
+	Args []string
+	Dir  string
+	Env  []string
 }
 
 func PnpmInstall() *PnpmInstallCmd {
@@ -94,7 +101,8 @@ func PnpmInstall() *PnpmInstallCmd {
 }
 
 func (p *PnpmInstallCmd) Run() error {
-	c := exec.Command("pnpm", "install")
+	args := append([]string{"install"}, p.Args...)
+	c := exec.Command("pnpm", args...)
 	c.Dir = p.Dir
 	c.Env = p.Env
 	p.apply(c)
@@ -103,8 +111,9 @@ func (p *PnpmInstallCmd) Run() error {
 
 type YarnInstallCmd struct {
 	Output
-	Dir string
-	Env []string
+	Args []string
+	Dir  string
+	Env  []string
 }
 
 func YarnInstall() *YarnInstallCmd {
@@ -112,7 +121,8 @@ func YarnInstall() *YarnInstallCmd {
 }
 
 func (y *YarnInstallCmd) Run() error {
-	c := exec.Command("yarn", "install")
+	args := append([]string{"install"}, y.Args...)
+	c := exec.Command("yarn", args...)
 	c.Dir = y.Dir
 	c.Env = y.Env
 	y.apply(c)

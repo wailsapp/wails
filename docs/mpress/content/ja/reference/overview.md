@@ -1,37 +1,39 @@
 ---
 title: "API リファレンス"
-description: "Wails v3 の完全な API ドキュメント"
+description: "Wails の型、メソッド、オプション、CLI コマンドを調べる"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## このリファレンスについて
 
-これは Wails v3 の完全な API リファレンスです。フレームワークで利用できるすべての公開型、メソッド、オプションについて説明します。
+アプリケーションの開発中に Wails の型、メソッド、オプション、コマンドを調べるには、このセクションを使用します。手順に沿って学ぶ場合は、[チュートリアル](/tutorials/overview/)から始めてください。タスクを完了するための手順については、[ハウツーガイド](/quick-start/next-steps/#features)を参照してください。設計の背景については、[コアコンセプト](/concepts/architecture/)を参照してください。
 
 **構成：**
 
 - [アプリケーション](/reference/application/) - アプリケーションのコア API
-- [ウィンドウ](/reference/window/) - ウィンドウの作成と管理
-- [メニュー](/reference/menu/) - アプリケーションメニュー、コンテキストメニュー、システムトレイメニュー
+- [ウィンドウ](/reference/window/) - ウィンドウの作成と管理。構成フィールドについては、[ウィンドウオプション](/features/windows/options/)を参照してください
+- [メニュー](/reference/menu/) - アプリケーションメニュー、コンテキストメニュー、システムトレイの API。項目の種類とプロパティについては、[メニュー項目リファレンス](/features/menus/reference/)を参照してください
 - [イベント](/reference/events/) - イベントシステムと組み込みイベント
 - [ダイアログ](/reference/dialogs/) - ファイルダイアログとメッセージダイアログ
 - [フロントエンドランタイム](/reference/frontend-runtime/) - フロントエンドランタイム API
-- [CLI](/reference/cli/) - コマンドラインインターフェース
+- [CLI コマンドの概要](/reference/cli/) - 目的別に分類されたコマンド。各コマンドの詳細については、[フラグと使用例](/guides/cli/)を参照してください
+- [更新マニフェストプロトコル](/reference/update-manifest/) - 更新メタデータと検証フィールド
+- [モバイル API](/guides/mobile/mobile-api/) - 試験的なモバイル API
 
 ## API の規約
 
-@details{title="Go API の規則 - Go 初心者の開発者向け"}
+@details{title="Go API の規約 - Go を初めて使用する開発者向け"}
 ### 命名規則
 
-- <strong></strong>型<strong></strong>：PascalCase（例：`WebviewWindow`）
-- <strong></strong>メソッド<strong></strong>：PascalCase（例：`SetTitle()`）
-- <strong></strong>オプション<strong></strong>：PascalCase の構造体（例：`WindowOptions`）
-- <strong></strong>定数<strong></strong>：PascalCase（例：`WindowStartStateMaximised`）
+- <strong>型</strong>：PascalCase（例：`WebviewWindow`）
+- <strong>メソッド</strong>：PascalCase（例：`SetTitle()`）
+- <strong>オプション</strong>：PascalCase の構造体（例：`WindowOptions`）
+- <strong>定数</strong>：PascalCase（例：`WindowStartStateMaximised`）
 
 #### エラー処理
 
-失敗する可能性があるほとんどのメソッドは、最後の戻り値として `error` を返します。`app.Run()` はアプリケーションが終了するまでブロックし、起動時に発生したエラーがあれば返します：
+失敗する可能性があるほとんどのメソッドは、最後の戻り値として `error` を返します。`app.Run()` はアプリケーションが終了するまでブロックし、起動時に発生したエラーがあればそれを返します：
 
 ```go
 if err := app.Run(); err != nil {
@@ -39,7 +41,7 @@ if err := app.Run(); err != nil {
 }
 ```
 
-ウィンドウの構築はエラーを返しません。`app.Window.New()` は `*WebviewWindow` を直接返します。
+ウィンドウの構築ではエラーは返されません。`app.Window.New()` は `*WebviewWindow` を直接返します。
 
 #### コンテキスト
 
@@ -56,7 +58,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 #### オプションパターン
 
-設定にはオプション構造体を使用します：
+構成にはオプション構造体を使用します：
 
 ```go
 app := application.New(application.Options{
@@ -79,7 +81,7 @@ app := application.New(application.Options{
 
 #### デフォルトで非同期
 
-すべての Go メソッド呼び出しは Promise を返します。
+すべての Go メソッド呼び出しは Promise を返します：
 
 ```javascript
 // Async/await (recommended)
@@ -93,7 +95,7 @@ MyService.DoSomething()
 
 #### エラー処理
 
-Go のエラーは JavaScript の例外になります。
+Go のエラーは JavaScript の例外になります：
 
 ```javascript
 try {
@@ -105,7 +107,7 @@ try {
 
 #### 型安全性
 
-TypeScript の型定義は自動生成されます。
+TypeScript の型定義は自動生成されます：
 
 ```typescript
 // Fully typed
@@ -204,9 +206,9 @@ export function MyMethod(arg: string): Promise<string>
 
 @end
 
-## プラットフォームによる違い
+## プラットフォーム間の相違点
 
-一部の API は、プラットフォームによって動作が異なります。
+一部の API はプラットフォームによって動作が異なります：
 
 | 機能 | Windows | macOS | Linux |
 | --- | --- | --- | --- |
@@ -214,76 +216,76 @@ export function MyMethod(arg: string): Promise<string>
 | **システムトレイ** | 通知領域 | メニューバー | システムトレイ |
 | **Dock** | 該当なし | ✅ 利用可能 | 該当なし |
 | **ファイルダイアログ** | ネイティブ | ネイティブ | ネイティブ（GTK） |
-| **透過** | ✅ 完全対応 | [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background)が必要 | ⚠️ 制限あり |
+| **透過表示** | ✅ 完全対応 | [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) が必要 | ⚠️ 制限あり |
 
-プラットフォーム固有の動作については、各 API セクションで説明します。
+プラットフォーム固有の動作については、各 API セクションに記載されています。
 
 ## バージョニング
 
-Wails v3 はセマンティックバージョニングに従います。
+Wails v3 はセマンティックバージョニングに従います：
 
-- **メジャー**（v3.x.x）：破壊的変更
-- **マイナー**（v3.x.x）：後方互換性のある新機能
-- **パッチ**（v3.x.x）：後方互換性のあるバグ修正
+- **メジャー**（v4.0.0）：破壊的変更
+- **マイナー**（v3.1.0）：後方互換性のある新機能
+- **パッチ**（v3.0.1）：後方互換性のあるバグ修正
 
-<strong>現在のステータス：</strong>ベータ（API は安定、改良は継続中）
+**Wails v3.0.0：** 安定版
 
-## 非推奨化ポリシー
+## 非推奨ポリシー
 
-API が非推奨になった場合：
+API が非推奨になる場合：
 
-1. <strong>ドキュメントに明記</strong>し、非推奨であることを通知
-2. <strong>代替手段を提示</strong>し、移行ガイドを提供
-3. 削除前に<strong>1 メジャーバージョン分</strong>の期間は保守されます
+1. **ドキュメントに記載**し、非推奨である旨を通知
+2. **代替手段を提供**し、移行ガイドを用意
+3. 削除まで **1 メジャーバージョン**にわたって保守
 4. **コンパイラ警告**（可能な場合）
 
 ## API の安定性
 
 ### 安定版 API ✅
 
-以下の API は安定しており、本番環境で安全に使用できます。
+以下の API は安定しており、本番環境で安全に使用できます：
 
-- コアアプリケーション API
+- アプリケーションのコア API
 - ウィンドウ管理
 - メニューシステム
 - イベントシステム
 - ファイルダイアログ
 - サービスバインディング
 
-### 不安定版 API ⚠️
+### 実験的 API ⚠️
 
-以下の API は正式リリースまでに変更される可能性があります。
+安定版デスクトップの互換性契約の対象外となるのは、実験的であると明記された以下の API のみです。
 
-- 一部の高度なウィンドウオプション
-- プラットフォーム固有の機能
-- 実験的機能
+- Android サポート
+- iOS サポート
+- その他、実験的であると明記された API
 
-不安定版 API はドキュメントに明記されています。
+実験的 API はドキュメント内で明示されています。
 
-## ヘルプの利用
+## ヘルプ
 
 ### API に関する質問
 
-1. **このリファレンスを確認** — 完全な API ドキュメント
-2. **サンプルを確認** — [GitHub のサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)
-3. **Discord を検索** — [Discord サーバー](https://discord.gg/JDdSxwjhGf)
-4. **コミュニティに質問** — Discord の #help チャンネル
+1. **このリファレンスを確認** - 完全な API ドキュメント
+2. **サンプルを確認** - [GitHub のサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+3. **Discord を検索** - [Discord サーバー](https://discord.gg/JDdSxwjhGf)
+4. **コミュニティに質問** - Discord の #help チャンネル
 
-### API の問題の報告
+### API の問題を報告する
 
 バグや不整合を見つけましたか？
 
-1. **既存の Issue を確認** — [GitHub Issues](https://github.com/wailsapp/wails/issues)
-2. **詳細なレポートを作成** — コード、エラー、プラットフォームを含める
-3. **再現手順を提示** — 問題を再現する最小限のサンプル
+1. **既存の Issue を確認** - [GitHub Issues](https://github.com/wailsapp/wails/issues)
+2. **詳細なレポートを作成** - コード、エラー、プラットフォームを含める
+3. **再現手順を提供** - 問題を再現できる最小限のサンプル
 
 ## 関連ドキュメント
 
-- [チュートリアル](/tutorials/overview/) — 実際のアプリケーションを構築しながら学習
-- [ガイド](/guides/architecture/) — 一般的なシナリオ向けのタスク別ガイド
-- [機能](/features/windows/basics/) — 機能ごとのドキュメント
-- [サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples) — GitHub 上の動作するコード例
+- [チュートリアル](/tutorials/overview/) - 実際のアプリケーションを構築しながら学ぶ
+- [ガイド](/guides/architecture/) - 一般的なシナリオに対応するタスク指向のガイド
+- [機能](/features/windows/basics/) - 機能別のドキュメント
+- [サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub 上の動作するコードサンプル
 
 ---
 
-<strong>API を参照：</strong>左側のナビゲーションを使用して、個々の API を確認できます。
+**API を参照：** 左側のナビゲーションを使用して、個別の API を確認できます。

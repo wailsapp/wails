@@ -3,6 +3,7 @@ package cmds
 import (
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 type GoBuildOptions struct {
@@ -179,6 +180,7 @@ func (g *GoModTidyCmd) Run() error {
 
 type GoInstallOptions struct {
 	Package string
+	Args    []string
 }
 
 type GoInstallCmd struct {
@@ -193,7 +195,7 @@ func GoInstall(opts GoInstallOptions) *GoInstallCmd {
 }
 
 func (g *GoInstallCmd) Run() error {
-	args := []string{"install"}
+	args := append([]string{"install"}, g.Opts.Args...)
 	if g.Opts.Package != "" {
 		args = append(args, g.Opts.Package)
 	}
@@ -231,6 +233,7 @@ func (g *GoModCmd) Run() error {
 
 type GoVetCmd struct {
 	Output
+	Args    []string
 	Package string
 	Dir     string
 	Env     []string
@@ -241,7 +244,7 @@ func GoVet() *GoVetCmd {
 }
 
 func (g *GoVetCmd) Run() error {
-	args := []string{"vet"}
+	args := append([]string{"vet"}, g.Args...)
 	if g.Package != "" {
 		args = append(args, g.Package)
 	}
@@ -285,12 +288,5 @@ func (g *GoFmtCmd) Run() error {
 }
 
 func joinTags(tags []string) string {
-	result := ""
-	for i, t := range tags {
-		if i > 0 {
-			result += " "
-		}
-		result += t
-	}
-	return result
+	return strings.Join(tags, " ")
 }

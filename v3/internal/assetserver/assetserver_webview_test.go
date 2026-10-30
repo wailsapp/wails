@@ -118,3 +118,47 @@ func (r *contextWebViewResponse) Finish() error {
 	return nil
 }
 func (r *contextWebViewResponse) Code() int { return r.code }
+
+type uriWebViewRequest struct {
+	*contextWebViewRequest
+	uri string
+}
+
+func (r *uriWebViewRequest) URL() (string, error) { return r.uri, nil }
+
+func TestWebViewRequestURIPreservesHTTPForm(t *testing.T) {
+	for _, tc := range []struct{ uri, want string }{
+		{"wails://localhost", "/"},
+		{"wails://localhost?key=value", "/?key=value"},
+		{"wails://localhost?", "/?"},
+		{"wails://localhost/", "/"},
+		{"wails://localhost/api/item%2Fname?key=a%2Fb", "/api/item%2Fname?key=a%2Fb"},
+		{"wails://localhost/caf%C3%A9", "/caf%C3%A9"},
+		{"wails://localhost/path#fragment", "/path"},
+	} {
+		t.Run(tc.uri, func(t *testing.T) {
+			calls := 0
+			server, err := NewAssetServer(&Options{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls++
+				if r.RequestURI != tc.want {
+					t.Errorf("RequestURI = %q, want %q", r.RequestURI, tc.want)
+				}
+				if r.Host != "localhost" || r.URL.Scheme != "" || r.URL.Host != "" || r.URL.Fragment != "" {
+					t.Errorf("unexpected server request: host=%q, URL=%#v", r.Host, r.URL)
+				}
+				w.WriteHeader(http.StatusAccepted)
+			})})
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := &uriWebViewRequest{
+				contextWebViewRequest: &contextWebViewRequest{ctx: context.Background(), rw: &contextWebViewResponse{}},
+				uri:                   tc.uri,
+			}
+			server.processWebViewRequest(request)
+			if calls != 1 || request.rw.Code() != http.StatusAccepted {
+				t.Errorf("handler calls=%d, response=%d; want 1, 202", calls, request.rw.Code())
+			}
+		})
+	}
+}

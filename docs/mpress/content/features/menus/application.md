@@ -688,4 +688,4 @@ Common menu patterns and best practices.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu).

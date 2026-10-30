@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **Aktualisieren:**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [Dokumentation](/quick-start/why-wails/)
 - [Discord-Community](https://discord.gg/JDdSxwjhGf)
 - [GitHub-Issues](https://github.com/wailsapp/wails/issues)
-- [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### Häufige Fragen
 
 **F: Kann ich v2 und v3 parallel ausführen?** A: Ja, sie verwenden unterschiedliche Importpfade.
 
-**F: Ist v3 produktionsreif?** A: v3 ist eine Beta-Software mit einer stabilen Desktop-API. Anwendungen werden damit bereits produktiv betrieben. Testen Sie sie jedoch vor der Bereitstellung gründlich. v2 bleibt die derzeitige stabile Version.
+**F: Ist v3 produktionsreif?** Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
 
 **F: Wird v2 weiterhin gepflegt?** A: Ja, v2 wird weiterhin kritische Updates erhalten.
 
@@ -713,7 +713,7 @@ Lernen Sie das neue Binding-System kennen.
 📖 Beispiele
 Sehen Sie sich vollständige Beispiele für v3 an.
 
-[Beispiele ansehen →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[Beispiele ansehen →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

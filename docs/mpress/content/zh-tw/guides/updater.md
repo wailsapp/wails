@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML 視窗載入時沒有資產伺服器來源，因此無法動態擷取`/wails/runtime.js`。您有兩種方式可讓這類視窗與主機通訊：
 
 1. <strong>直接撰寫 HTML。</strong>對於任何以`WebviewWindowOptions.AllowSimpleEventEmit = true`開啟且已設定`HTML`的視窗，框架都會自動注入精簡的`window.wails.Events`墊片；更新程式的內建與 BYO 路徑正是如此。不需要建置步驟。下方範例採用的就是此路徑。
-2. **使用您偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，並在建置時將其匯入自訂 HTML。`Events.On`完全在用戶端運作，因此開箱即用；`Events.Emit`則會經過執行階段的 fetch 傳輸，而 null 來源會使其失效。因此，請透過執行階段的[`setTransport`](https://wails.io/wails/runtime.js)掛鉤安裝一個精簡的 postMessage 傳輸，使其經由`window._wails.invoke("wails:event:emit:<name>")`路由。如果`window.wails.Events`已在作用域內，框架注入不會執行任何操作，因此兩種方法不會互相衝突。
+2. **使用您偏好的打包工具**（Vite、esbuild、Rollup）打包`@wailsio/runtime`，並在建置時將其匯入自訂 HTML。`Events.On`完全在用戶端運作，因此開箱即用；`Events.Emit`則會經過執行階段的 fetch 傳輸，而 null 來源會使其失效。因此，請透過執行階段的[`setTransport`](/guides/custom-transport/)掛鉤安裝一個精簡的 postMessage 傳輸，使其經由`window._wails.invoke("wails:event:emit:<name>")`路由。如果`window.wails.Events`已在作用域內，框架注入不會執行任何操作，因此兩種方法不會互相衝突。
 
 無論採用哪種方式，您在自訂 HTML 中撰寫的 JS 都會呼叫相同的`Events.On`／`Events.Emit`API：
 
@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 另請參閱
 
-- 可執行的範例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- 可執行的範例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - 測試示範存放庫：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - 教學課程：[為 Wails 應用程式加入自我更新](/tutorials/04-self-update-a-wails-app/)

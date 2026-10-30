@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +28,9 @@ type linuxNotifier struct {
 	scheduledLock     sync.Mutex
 	appName           string
 	cancel            context.CancelFunc
+	// actions is set when the server advertises the "actions" capability: a click then arrives
+	// as ActionInvoked, so a NotificationClosed with reason 2 is a dismissal.
+	actions bool
 }
 
 type notificationData struct {
@@ -71,6 +75,15 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 		return fmt.Errorf("failed to connect to session bus: %w", err)
 	}
 	ln.conn = conn
+
+	// Bounded so a notification daemon that is slow to start can't hold up app startup;
+	// on timeout the old behaviour (no actions) stays.
+	capsCtx, cancelCaps := context.WithTimeout(ctx, 2*time.Second)
+	var caps []string
+	if err := conn.Object(dbusNotificationInterface, dbusNotificationPath).CallWithContext(capsCtx, dbusNotificationInterface+".GetCapabilities", 0).Store(&caps); err == nil {
+		ln.actions = slices.Contains(caps, "actions")
+	}
+	cancelCaps()
 
 	if err := ln.loadCategories(); err != nil {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
@@ -475,6 +488,10 @@ func (ln *linuxNotifier) getConfigDir() (string, error) {
 
 // Save notification categories.
 func (ln *linuxNotifier) saveCategories() error {
+	// Keep the snapshot and its write ordered with other category saves.
+	ln.categoriesLock.Lock()
+	defer ln.categoriesLock.Unlock()
+
 	configDir, err := ln.getConfigDir()
 	if err != nil {
 		return err
@@ -482,9 +499,7 @@ func (ln *linuxNotifier) saveCategories() error {
 
 	categoriesFile := filepath.Join(configDir, "notification-categories.json")
 
-	ln.categoriesLock.RLock()
 	categoriesData, err := json.MarshalIndent(ln.categories, "", "  ")
-	ln.categoriesLock.RUnlock()
 
 	if err != nil {
 		return fmt.Errorf("failed to marshal notification categories: %w", err)
@@ -515,8 +530,8 @@ func (ln *linuxNotifier) loadCategories() error {
 		return fmt.Errorf("failed to read notification categories from disk: %w", err)
 	}
 
-	categories := make(map[string]NotificationCategory)
-	if err := json.Unmarshal(categoriesData, &categories); err != nil {
+	categories, err := decodeCategories(categoriesData)
+	if err != nil {
 		return fmt.Errorf("failed to unmarshal notification categories: %w", err)
 	}
 
@@ -626,7 +641,7 @@ func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
 // Handle NotificationClosed signal.
 // Reason codes:
 // 1 - expired timeout
-// 2 - dismissed by user (click on X)
+// 2 - dismissed by user (click on X; on a server without actions, also a click on the body)
 // 3 - closed by CloseNotification call
 // 4 - undefined/reserved
 func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
@@ -655,7 +670,8 @@ func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
 		return
 	}
 
-	if reason == 2 {
+	// With actions, a click already came as ActionInvoked and removed the notification (#6334).
+	if reason == 2 && !ln.actions {
 		response := NotificationResponse{
 			ID:               notification.ID,
 			ActionIdentifier: DefaultActionIdentifier,

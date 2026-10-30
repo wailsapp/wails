@@ -246,7 +246,7 @@ MCP 服务器可通过程序完全控制你的应用程序。任何能够访问�
 
 ## 示例应用程序
 
-[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp)提供了一个演示所有工具的完整试验场应用程序。它包括：
+[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp)提供了一个演示所有工具的完整试验场应用程序。它包括：
 
 - 带有递增和重置按钮的计数器
 - 姓名输入框，以及已绑定的 Greet、Add、Shout 方法

@@ -5,9 +5,9 @@ slug: "contributing"
 sourcePath: "contributing/index.md"
 ---
 
-## 기여자 여러분을 환영합니다!
+## 기여자 여러분, 환영합니다!
 
-Wails에 대한 기여를 환영합니다! 버그 수정, 기능 추가, 문서 개선 등 어떤 도움이든 감사드립니다.
+Wails에 대한 기여를 환영합니다! 버그 수정, 기능 추가, 문서 개선 등 어떤 방식으로든 도움을 주시면 감사하겠습니다.
 
 ## 기여 방법
 
@@ -23,19 +23,19 @@ Wails에 대한 기여를 환영합니다! 버그 수정, 기능 추가, 문서 
 
 ### 2. 문서 개선
 
-문서 수정 PR은 사전 이슈나 실패하는 코드 테스트 없이도 제출할 수 있습니다.  
-M-Press로 변경 사항을 미리 보고 검증하려면 [문서 수정하기](/contributing/documentation/)를 따르세요.
+수정 PR은 사전 이슈나 실패하는 코드 테스트 없이도 환영합니다.  
+다운로드, macOS/Linux/Windows 설치, 실시간 미리 보기 및 변경 사항 제출 방법은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요.
 
-다음과 같은 문서 개선은 언제든 환영합니다:
+다음과 같은 문서 개선은 언제나 환영합니다:
 
-- 오탈자와 오류 수정
+- 오탈자 및 오류 수정
 - 예제 추가
-- 설명 명확히 하기
+- 설명 명확화
 - 콘텐츠 번역
 
 ### 3. 코드 제출
 
-풀 리퀘스트를 통해 다음과 같은 코드를 기여하세요:
+풀 리퀘스트를 통해 코드를 기여하세요:
 
 - 버그 수정
 - 새 기능
@@ -44,15 +44,15 @@ M-Press로 변경 사항을 미리 보고 검증하려면 [문서 수정하기](
 
 ### 4. 개선 사항 제안(WEP)
 
-새 기능과 공개 동작의 변경에는 Wails Enhancement Proposal(WEP) 절차를 사용합니다. 이 절차는 기능 개발을 투명하게 유지하고 승인된 모든 제안에 구현 담당자가 있도록 보장합니다. 기능 요청 이슈를 등록하지 마세요.
+새 기능과 공개 동작 변경에는 Wails Enhancement Proposal(WEP) 절차를 사용합니다. 이 절차를 통해 기능 개발을 투명하게 유지하고 승인된 모든 제안에 구현 담당자가 있도록 보장합니다. 기능 요청 이슈를 등록하지 마세요.
 
-1. 선택 사항으로, 관심도를 파악하기 위해 GitHub Discussions의 [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) 카테고리나 [Discord](https://discord.gg/JDdSxwjhGf)에서 아이디어를 먼저 공유해도 됩니다.
-2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)을 `v3/wep/proposals/<proposal name>/proposal.md`에 복사하고 모든 섹션을 작성하세요.
-3. 제안만 포함하는 `[WEP] <title>` 제목의 초안 풀 리퀘스트를 등록하세요. 이 PR이 제안을 논의하는 공식 공간입니다.
-4. 피드백과 지지를 모으세요(PR의 댓글과 좋아요 반응). 논의에 최소 2주를 할애하고 제안을 구현할 담당자를 합의하세요.
-5. PR을 검토 준비 상태로 표시하세요. 최종 결정은 메인테이너가 내립니다. 승인된 제안에는 WEP 번호가 할당되고 병합됩니다.
+1. 관심도를 파악하려면 선택적으로 GitHub Discussions의 [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) 카테고리나 [Discord](https://discord.gg/JDdSxwjhGf)에 아이디어를 먼저 공유하세요.
+2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)을 `v3/wep/proposals/<proposal name>/proposal.md`에 복사하고 모든 섹션을 작성하세요.
+3. 제안서만 포함하고 제목이 `[WEP] <title>`인 초안 풀 리퀘스트를 여세요. 이 PR이 제안을 논의하는 공식 공간입니다.
+4. 피드백과 지지를 모으세요(PR의 댓글 및 좋아요 반응). 토론 기간을 최소 2주 두고 제안을 구현할 담당자를 합의하세요.
+5. PR을 검토 준비 상태로 표시하세요. 최종 결정은 메인테이너가 내리며, 승인된 제안에는 WEP 번호가 할당되고 병합됩니다.
 
-전체 절차는 [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)에 문서화되어 있습니다.
+전체 절차는 [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)에 설명되어 있습니다.
 
 ## 시작하기
 
@@ -81,9 +81,9 @@ go build -o ../wails3 ./cmd/wails3
 
 ### 테스트 실행
 
-테스트는 변경 작업의 일부이며, 마지막에 수행하는 단순 확인 절차가 아닙니다. 단위 테스트는 테스트 대상 코드 옆에 두고, 하나의 동작을 여러 입력이나 극단 사례로 검사할 때는 가능한 한 테이블 기반 테스트를 사용하세요. 실패 시 어떤 시나리오인지 알 수 있도록 각 사례에 이름을 지정하세요.
+테스트는 최종 스모크 검사가 아니라 변경 사항의 일부입니다. 단위 테스트는 테스트 대상 코드 옆에 두고, 하나의 동작을 여러 입력이나 경계 사례로 검사할 때는 가능하면 테이블 기반 테스트를 사용하세요. 실패 시 어떤 시나리오인지 알 수 있도록 각 사례에 이름을 지정하세요.
 
-새로 추가하거나 변경한 로직은 완전히 테스트해야 합니다. PR에서 추가하거나 변경한 코드의 Go 구문 커버리지 100%를 목표로 하세요. 저장소 전체의 커버리지 비율을 변경 사항 테스트의 대안으로 간주해서는 안 됩니다. 예를 들어 특정 OS에서만 발생하는 오류 경로나 실제 하드웨어 없이는 재현하기 어려운 조건처럼 커버리지 공백이 타당할 수는 있지만, PR 설명에 해당 공백과 합리적인 테스트가 불가능한 이유를 설명하세요.
+새로 추가하거나 변경한 로직은 모두 테스트로 다뤄야 합니다. PR에서 추가하거나 변경한 코드의 Go 문장 커버리지 100%를 목표로 하세요. 저장소 전체의 커버리지 백분율을 변경 사항 테스트의 대체 수단으로 간주해서는 안 됩니다. 예를 들어 특정 OS에서만 발생하는 오류 경로나 실제 하드웨어 없이는 재현하기 어려운 조건처럼 테스트 공백이 타당할 수도 있지만, PR 설명에 해당 공백과 합리적으로 테스트할 수 없는 이유를 명시하세요.
 
 ```bash
 # Run all v3 tests
@@ -99,9 +99,9 @@ go tool cover -func=coverage.out
 cd ..
 ```
 
-통합 테스트 스위트, 경쟁 상태 감지 및 CI 전체와 동일한 명령은 [테스트 및 지속적 통합](/contributing/testing-ci/)을 참조하세요.
+통합 테스트 모음, 경쟁 상태 감지 및 전체 CI와 동등한 명령어는 [테스트 및 지속적 통합](/contributing/testing-ci/)을 참조하세요.
 
-## 변경 작업
+## 변경 사항 만들기
 
 ### 브랜치 생성
 
@@ -114,13 +114,13 @@ git pull upstream master
 git checkout -b feature/my-feature
 ```
 
-### 변경 사항 작성
+### 변경 작업 수행
 
 1. Go 규칙에 따라 **코드를 작성하세요**
 2. 새 기능에 대한 **테스트를 추가하세요**
 3. 필요한 경우 **문서를 업데이트하세요**
-4. 문제가 발생하지 않는지 확인하기 위해 **테스트를 실행하세요**
-5. 명확한 메시지와 함께 **변경 사항을 커밋하세요**
+4. 문제가 발생하지 않는지 확인하도록 **테스트를 실행하세요**
+5. 명확한 메시지로 **변경 사항을 커밋하세요**
 
 ### 커밋 지침
 
@@ -175,10 +175,10 @@ Fixes #123
 ### PR 체크리스트
 
 - [ ] 코드가 Go 규칙을 준수함
-- [ ] 테스트를 추가하거나 업데이트함
+- [ ] 테스트를 추가/업데이트함
 - [ ] 문서를 업데이트함
 - [ ] 모든 테스트를 통과함
-- [ ] 호환성을 깨는 변경이 없음(또는 문서화함)
+- [ ] 호환성을 깨는 변경 사항이 없음(또는 문서화함)
 - [ ] 커밋 메시지가 명확함
 
 ## 코드 지침
@@ -237,40 +237,33 @@ func TestProcessData(t *testing.T) {
 
 ### 문서 작성
 
-문서는 M-Press를 사용합니다. `docs/mpress/content/` 아래의 `.md` 파일을 편집한 다음, 저장소 루트에서 미리 보고 유효성을 검사하세요:
+전체 문서 작업 흐름은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요. 여기에서는 고정된 버전, 실행 파일 및 Go 설치 옵션, 편집 가능한 소스 파일, 탐색 메뉴, 번역 검사, `master`을 대상으로 한 PR 제출 방법을 다룹니다.
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+문서만 변경하는 작업에는 Wails 애플리케이션 빌드나 플랫폼 종속성이 필요하지 않습니다. M-Press는 저장소 루트에서 `mpress dev`을 사용하여 기존 사이트를 미리 보여 줍니다.
 
 ### 문서 스타일
 
-- 국제 영어 철자를 사용하세요
-- 문제부터 설명하세요
-- 실제로 작동하는 예제를 제공하세요
-- 문제 해결 방법을 포함하세요
-- 관련 콘텐츠를 상호 참조하세요
+- 국제 영어 철자법 사용
+- 문제부터 설명
+- 실행 가능한 예제 제공
+- 문제 해결 방법 포함
+- 관련 콘텐츠 상호 참조
 
 ## 커뮤니티
 
 ### 도움받기
 
 - **Discord:** [커뮤니티에 참여하세요](https://discord.gg/JDdSxwjhGf)
-- **GitHub Discussions:** 질문하세요
-- **GitHub Issues:** 버그를 신고하세요
+- **GitHub Discussions:** 질문하기
+- **GitHub Issues:** 버그 보고하기
 
 ### 행동 강령
 
-서로 존중하고 포용하며 전문적인 태도를 유지하세요. 우리 모두는 훌륭한 소프트웨어를 함께 만들기 위해 이곳에 모였습니다. 자세한 내용은 [행동 강령](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md)을 참조하세요.
+서로 존중하고 포용하며 전문적으로 행동하세요. 우리 모두는 훌륭한 소프트웨어를 함께 만들기 위해 이곳에 있습니다. 자세한 내용은 [행동 강령](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md)을 참조하세요.
 
 ## 기여자 표기
 
-기여자는 다음 항목에 이름이 올라갑니다:
+기여자는 다음 항목에 이름이 게재됩니다:
 
 - 릴리스 노트
 - 기여자 목록
@@ -290,11 +283,11 @@ Wails 저장소를 방문하세요.
 ◆ Discord 커뮤니티
 커뮤니티에 참여하세요.
 
-[Discord 참여하기 →](https://discord.gg/JDdSxwjhGf)
+[Discord 참여 →](https://discord.gg/JDdSxwjhGf)
 
 ---
 📖 문서
-문서를 읽어 보세요.
+문서를 읽어보세요.
 
 [문서 둘러보기 →](/quick-start/why-wails/)
 

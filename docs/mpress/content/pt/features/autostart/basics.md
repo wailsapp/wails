@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-Um exemplo completo e executável, com botões de status, ativação e desativação, está em [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).
+Um exemplo completo e executável, com botões de status, ativação e desativação, está em [`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart).

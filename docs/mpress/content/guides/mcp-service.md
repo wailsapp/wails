@@ -246,7 +246,7 @@ The MCP server gives full programmatic control over your application. Anyone who
 
 ## Example application
 
-A complete playground application demonstrating all tools is available at [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). It includes:
+A complete playground application demonstrating all tools is available at [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp). It includes:
 
 - Counter with increment/reset buttons
 - Name input with Greet, Add, Shout bound methods

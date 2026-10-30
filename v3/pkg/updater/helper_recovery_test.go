@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestRunHelperSwap_ReplaceFails_RelaunchesWithoutHelperEnv(t *testing.T) {
+func TestRunHelperSwap_StagedPayloadVanishes_RelaunchesWithoutHelperEnv(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "app.bin")
 	newPath := filepath.Join(dir, "new.bin")
@@ -31,12 +31,18 @@ func TestRunHelperSwap_ReplaceFails_RelaunchesWithoutHelperEnv(t *testing.T) {
 		}
 		return nil
 	}}
-	// Remove the staged file after validation to exercise failed replacement
-	// and rollback through the full helper flow.
+	// Remove the staged file while the helper waits for the parent, so the
+	// payload is gone by the time the swap would run.
+	//
+	// This is caught by the post-wait validation, before the backup is taken
+	// and before the target is removed — hence 18 rather than the 13 the
+	// replace loop would report. Detecting it earlier is the point: nothing is
+	// disturbed, so recovery is a relaunch rather than a restore that could
+	// itself fail.
 	wait := func(int, time.Duration) error { return os.Remove(newPath) }
 	code := runHelperSwap(target, newPath, 1234, filepath.Join(dir, "log"), wait, l)
-	if code != 13 || calls != 1 {
-		t.Fatalf("code=%d launches=%d, want 13 and 1", code, calls)
+	if code != 18 || calls != 1 {
+		t.Fatalf("code=%d launches=%d, want 18 and 1", code, calls)
 	}
 }
 

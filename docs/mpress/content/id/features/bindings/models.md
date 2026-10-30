@@ -7,7 +7,7 @@ sourcePath: "features/bindings/models.md"
 
 ## Pengikatan Model Data
 
-Wails **secara otomatis menghasilkan kelas JavaScript/TypeScript** dari struct Go, sehingga memberikan keamanan tipe penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan pengikatan, lalu dapatkan model frontend bertipe lengkap beserta konstruktor, anotasi tipe, dan komentar JSDoc.
+Wails **secara otomatis menghasilkan class JavaScript/TypeScript** dari struct Go, sehingga memberikan keamanan tipe penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan binding, dan dapatkan model frontend bertipe lengkap beserta konstruktor, anotasi tipe, dan komentar JSDoc.
 
 ## Mulai Cepat
 
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-**Selesai!** Keamanan tipe penuh di seluruh penghubung.
+**Selesai!** Keamanan tipe penuh di seluruh bridge.
 
 ## Mendefinisikan Model
+
+Kelas model di bawah ini menggambarkan bentuk field; gunakan binding aktual yang dihasilkan alih-alih menyalin kelas yang disederhanakan ini sebagai kode konversi.
+
+Untuk `time.Time`, generator secara default menggunakan `-time-type=string`. Gunakan `-time-type=Date` untuk kelas yang dihasilkan yang mengonversi stempel waktu menjadi nilai `Date` JavaScript. Tugas build templat JavaScript/class standar memilih `Date`; tugas antarmuka TypeScript tetap menggunakan `string`. Periksa tugas yang dihasilkan sebelum mengubah mode. Stempel waktu Go tetap berupa string RFC3339Nano dalam JSON.
+
+Helper konversi yang dihasilkan mengubah string tersebut menjadi tanggal dalam mode Date. `Object.assign` saja tidak melakukan konversi tersebut. Untuk binding string, konversikan stempel waktu secara eksplisit dengan `new Date(timestamp)` sebelum menggunakan metode Date.
 
 ### Struct Dasar
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 export class User {
@@ -112,7 +118,7 @@ export class User {
 
 ### Marshalling JSON Kustom
 
-Hasil metode yang diikat di-marshalling dengan paket standar `encoding/json` milik Go. Perhatikan bahwa metode `MarshalJSON` yang dideklarasikan pada receiver pointer hanya dipanggil jika nilai yang di-marshalling dapat dialamati. Artinya, marshaler kustom dapat dipanggil untuk elemen slice yang dikembalikan, tetapi tidak untuk struct yang dikembalikan sebagai nilai:
+Hasil method yang diikat di-marshalling dengan package `encoding/json` standar Go. Perhatikan bahwa method `MarshalJSON` yang dideklarasikan pada receiver pointer hanya dipanggil jika nilai yang di-marshalling dapat dialamati. Artinya, marshaler kustom dapat dipanggil untuk elemen slice yang dikembalikan, tetapi tidak untuk struct yang dikembalikan berdasarkan nilai:
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-Untuk memastikan keluaran yang konsisten, definisikan `MarshalJSON` pada receiver nilai jika tipe tersebut dapat disalin dengan aman, atau kembalikan pointer ke struct (misalnya, `*User`). Ini merupakan perilaku `encoding/json` milik Go, bukan perbedaan dalam pembuatan pengikatan Wails.
+Untuk memastikan keluaran yang konsisten, definisikan `MarshalJSON` pada receiver nilai jika tipenya dapat disalin dengan aman, atau kembalikan pointer ke struct tersebut (misalnya, `*User`). Ini merupakan perilaku `encoding/json` milik Go, bukan perbedaan dalam pembuatan binding Wails.
 
 ### Dengan Komentar
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 /**
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**JavaScript yang dihasilkan:**
+**JavaScript ilustratif:**
 
 ```javascript
 export class Config {
@@ -313,10 +319,10 @@ const config = new Config({
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | map dengan kunci string |
-| `map[K]V` | `{ [_ in K]?: V }` | `K` non-string dirender sebagai tipe terpetakan, **bukan** `Map` JS |
+| `map[K]V` | `{ [_ in K]?: V }` | `K` non-string dirender sebagai mapped type, **bukan** `Map` JS |
 | `[]byte` | `string` | dikodekan dengan base64 |
 | `struct` | `class` / `interface` | dengan field |
-| `time.Time` | `any` | diserialisasikan sebagai string RFC3339Nano saat runtime |
+| `time.Time` | `string` (default) atau `Date` | `-time-type` memilih representasi yang dihasilkan; JSON menggunakan string RFC3339Nano |
 | `*T` | `T \| null` | pointer berarti dapat bernilai null |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | Exception jika digunakan sebagai nilai kembalian; jika tidak, any |
@@ -400,11 +406,13 @@ await UpdateUser(user)
 
 ### TypeScript yang Dihasilkan
 
+Bagian ini menunjukkan binding kelas dengan konversi Date. Perintah `-ts` biasa mempertahankan representasi string default generator. Kelas yang ditampilkan telah disederhanakan; generator juga menghasilkan helper konversi.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
-**Hasil pembuatan:**
+**Hasil:**
 
 ```typescript
 /**
@@ -444,7 +452,7 @@ export class User {
 }
 ```
 
-### Penggunaan di TypeScript
+### Penggunaan dalam TypeScript
 
 ```typescript
 import { GetUser, CreateUser } from './bindings/changeme/userservice'
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-Untuk pembahasan lengkap tentang enum string, enum bilangan bulat, alias tipe, enum dari package yang diimpor, dan batasannya, lihat halaman khusus **[Enum](/features/bindings/enums/)**.
+Untuk pembahasan lengkap tentang enum string, enum integer, alias tipe, enum dari paket yang diimpor, dan batasannya, lihat halaman khusus **[Enum](/features/bindings/enums/)**.
 
 ### Validasi
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -705,49 +713,49 @@ manager.loadUsers()
 
 ### ✅ Lakukan
 
-- **Gunakan tag JSON**—Kendalikan nama field
-- **Tambahkan komentar**—Komentar tersebut akan menjadi JSDoc
-- **Gunakan time.Time**—Dikonversi menjadi Date
-- **Lakukan validasi di sisi Go**—Jangan percayai frontend
-- **Pertahankan model tetap sederhana**—Gunakan hanya sebagai wadah data
-- **Gunakan pointer untuk field opsional**—Gunakan `*string` agar dapat bernilai null
+- **Gunakan tag JSON** - Kendalikan nama field
+- **Tambahkan komentar** - Komentar akan menjadi JSDoc
+- **Pilih representasi waktu** - Secara default, `time.Time` menjadi `string`; `-time-type=Date` mengaktifkan konversi Date yang dihasilkan
+- **Lakukan validasi di sisi Go** - Jangan percayai frontend
+- **Buat model tetap sederhana** - Gunakan hanya sebagai wadah data
+- **Gunakan pointer untuk nilai opsional** - Gunakan `*string` untuk nilai yang dapat bernilai null
 
 ### ❌ Jangan Lakukan
 
-- **Jangan tambahkan metode ke struct Go**—Pertahankan sebagai data
-- **Jangan gunakan field yang tidak diekspor**—Field tersebut tidak akan di-binding
-- **Jangan gunakan interface kompleks**—Tidak didukung
-- **Jangan lupakan tag JSON**—Nama field itu penting
-- **Jangan membuat struktur bersarang terlalu dalam**—Pertahankan tetap sederhana
+- **Jangan tambahkan metode ke struct Go** - Pertahankan sebagai data
+- **Jangan gunakan field yang tidak diekspor** - Field tersebut tidak akan diikat
+- **Jangan gunakan interface kompleks** - Tidak didukung
+- **Jangan lupa menambahkan tag JSON** - Nama field itu penting
+- **Jangan membuat struktur terlalu bersarang** - Buat tetap sederhana
 
 ## Langkah Berikutnya
 
 @cards{cols="2"}
 🚀 Binding Metode
-Pelajari cara melakukan binding pada metode Go.
+Pelajari cara mengikat metode Go.
 
-[Pelajari Selengkapnya →](/features/bindings/methods/)
+[Pelajari Lebih Lanjut →](/features/bindings/methods/)
 
 ---
 ◆ Layanan
 Atur kode dengan layanan.
 
-[Pelajari Selengkapnya →](/features/bindings/services/)
+[Pelajari Lebih Lanjut →](/features/bindings/services/)
 
 ---
 ✓ Praktik Terbaik
 Pola desain binding.
 
-[Pelajari Selengkapnya →](/features/bindings/best-practices/)
+[Pelajari Lebih Lanjut →](/features/bindings/best-practices/)
 
 ---
 ★ Jembatan Go-Frontend
 Pahami mekanisme jembatan.
 
-[Pelajari Selengkapnya →](/concepts/bridge/)
+[Pelajari Lebih Lanjut →](/concepts/bridge/)
 
 @end
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

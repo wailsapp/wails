@@ -25,7 +25,7 @@ Android WebView と `WebViewAssetLoader` を使用します。Go は NDK を介�
 
 何ができるかを理解するには、**Kitchen Sink** を見るのが最適です。これは、1 つのコードベースから iOS、Android、デスクトップで同じように動作する単一の Wails アプリです。
 
-@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="バインディング · イベント · ダイアログ · 触覚フィードバック · 位置情報 · 生体認証 · 通知 · セキュアストレージ · その他 — すべて 1 つの main.go から利用可能"}
+@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="バインディング · イベント · ダイアログ · 触覚フィードバック · 位置情報 · 生体認証 · 通知 · セキュアストレージ · その他 — すべて 1 つの main.go から利用可能"}
 7 個のタブで主要なモバイル API サーフェスをすべて実演し、デスクトップでも動作します。**Mobile** タブと **Hardware** タブは、フロントエンドでプラットフォームを確認してデスクトップでは非表示にします。デスクトップ向けにビルドした場合、Go 側では `common:*` モバイルイベント用のハンドラーを登録しません。1 つのコードベースをあらゆる環境に提供するには、このパターンを推奨します。
 
 | タブ | プラットフォーム | 実演内容 |

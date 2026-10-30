@@ -246,7 +246,7 @@ MCP 서버는 애플리케이션을 프로그래밍 방식으로 완전히 제�
 
 ## 예제 애플리케이션
 
-모든 도구를 시연하는 완전한 플레이그라운드 애플리케이션은 [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp)에서 사용할 수 있습니다. 다음 항목이 포함되어 있습니다:
+모든 도구를 시연하는 완전한 플레이그라운드 애플리케이션은 [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp)에서 사용할 수 있습니다. 다음 항목이 포함되어 있습니다:
 
 - 증가/초기화 버튼이 있는 카운터
 - Greet, Add, Shout 바인딩 메서드를 사용하는 이름 입력란

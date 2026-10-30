@@ -1,13 +1,13 @@
 ---
 title: "Go-프런트엔드 브리지"
-description: "Wails가 Go와 JavaScript 간의 직접 통신을 지원하는 방식을 자세히 알아봅니다"
+description: "Wails가 Go와 JavaScript 간의 직접 통신을 지원하는 방식 자세히 알아보기"
 slug: "concepts/bridge"
 sourcePath: "concepts/bridge.md"
 ---
 
 ## Go-JavaScript 직접 통신
 
-Wails는 Go와 JavaScript 사이에 <strong>직접 연결되는 인메모리 브리지</strong>를 제공하여 HTTP 오버헤드, 프로세스 경계 또는 직렬화 병목 현상 없이 원활하게 통신할 수 있도록 합니다.
+Wails는 Go와 JavaScript 사이에 **직접 연결되는 인메모리 브리지**를 제공하여 HTTP 오버헤드, 프로세스 경계 또는 직렬화 병목 현상 없이 원활하게 통신할 수 있도록 합니다.
 
 ## 전체 구조
 
@@ -20,7 +20,7 @@ Frontend: 프런트엔드(JavaScript) {
     style.fill: "#8B5CF6"
   }
 
-  Bindings: 자동 생성된 바인딩 {
+  Bindings: 자동 생성 바인딩 {
     shape: rectangle
     style.fill: "#A78BFA"
   }
@@ -49,7 +49,7 @@ Bridge: Wails 브리지 {
 }
 
 Backend: 백엔드(Go) {
-  Services: 사용자 서비스 {
+  Services: 사용자 정의 서비스 {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -71,7 +71,7 @@ Frontend.Bindings -> Frontend.UI: Promise 이행
 Bridge.TypeGen -> Frontend.Bindings: 타입 생성
 ```
 
-**핵심:** HTTP도, IPC도, 프로세스 경계도 없습니다. <strong>타입 안전성</strong>이 보장되는 <strong>직접 함수 호출</strong>만 사용합니다.
+**핵심:** HTTP도, IPC도, 프로세스 경계도 없습니다. **타입 안전성**을 갖춘 **직접 함수 호출**만 사용합니다.
 
 ## 작동 방식: 단계별 설명
 
@@ -102,10 +102,10 @@ app := application.New(application.Options{
 
 **Wails가 수행하는 작업:**
 
-1. 내보낸 메서드를 찾기 위해 **구조체를 검사합니다**
-2. **타입 정보를 추출합니다**(매개변수, 반환 타입)
-3. 메서드 이름을 함수에 매핑하는 **레지스트리를 구축합니다**
-4. 전체 타입 정의가 포함된 **TypeScript 바인딩을 생성합니다**
+1. 내보낸 메서드를 찾기 위해 **구조체를 검사합니다**.
+2. **타입 정보를 추출합니다**(매개변수, 반환 타입).
+3. 메서드 이름을 함수에 매핑하는 **레지스트리를 구축합니다**.
+4. 전체 타입 정의가 포함된 **TypeScript 바인딩을 생성합니다**.
 
 ### 2. 바인딩 생성(빌드 시)
 
@@ -128,7 +128,7 @@ export function Add(a: number, b: number): Promise<number>
 | `[]T` | `T[]` |
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
-| `time.Time` | `Date` |
+| `time.Time` | 기본값은 `string`, `-time-type=Date`를 사용하면 `Date` |
 | `error` | 예외(throw됨) |
 
 ### 3. 프런트엔드 호출(런타임)
@@ -146,7 +146,7 @@ const sum = await Add(5, 3)
 console.log(sum)  // 8
 ```
 
-**처리 과정:**
+**진행 과정:**
 
 1. **바인딩 함수 호출** - `Greet("World")`
 2. **메시지 생성** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
@@ -155,7 +155,7 @@ console.log(sum)  // 8
 
 ### 4. 브리지 처리(런타임)
 
-브리지가 메시지를 수신하여 처리합니다:
+브리지가 메시지를 수신하여 처리합니다.
 
 ```d2
 direction: down
@@ -215,11 +215,11 @@ Invoke -> Error: 오류
 Encode -> Send
 ```
 
-**보안:** 등록된 서비스와 외부에 공개된 메서드만 호출할 수 있습니다.
+**보안:** 등록된 서비스와 내보낸 메서드만 호출할 수 있습니다.
 
 ### 5. Go 실행(런타임)
 
-Go 메서드가 실행됩니다:
+Go 메서드가 실행됩니다.
 
 ```go
 func (g *GreetService) Greet(name string) string {
@@ -230,14 +230,14 @@ func (g *GreetService) Greet(name string) string {
 
 **실행 컨텍스트:**
 
-- <strong>goroutine</strong>에서 실행됩니다(비차단 방식).
-- **모든 Go 기능**(파일 시스템, 네트워크, 데이터베이스)을 사용할 수 있습니다.
-- <strong>다른 Go 코드</strong>를 자유롭게 호출할 수 있습니다.
+- **goroutine**에서 실행됩니다(비차단).
+- **Go의 모든 기능**(파일 시스템, 네트워크, 데이터베이스)을 사용할 수 있습니다.
+- **다른 Go 코드**를 자유롭게 호출할 수 있습니다.
 - 결과 또는 오류를 반환합니다.
 
 ### 6. 응답(런타임)
 
-결과가 JavaScript로 다시 전송됩니다:
+결과가 JavaScript로 다시 전송됩니다.
 
 ```javascript
 // Promise resolves with result
@@ -276,7 +276,7 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
    &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
 ```
 
-**다른 방식과의 비교:**
+**다른 방식과 비교:**
 
 - **HTTP/REST:** 5-50ms(네트워크 스택, 직렬화)
 - **IPC:** 1-10ms(프로세스 경계, 마샬링)
@@ -284,13 +284,13 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
 
 ### 메모리
 
-**호출당 오버헤드:** ~1KB(메시지 버퍼)
+**호출당 오버헤드:** 약 1KB(메시지 버퍼)
 
-**제로 카피 최적화:** 가능한 경우 대용량 데이터(>1MB)에 공유 메모리를 사용합니다.
+**제로 카피 최적화:** 대용량 데이터(>1MB)는 가능한 경우 공유 메모리를 사용합니다.
 
 ### 동시성
 
-**호출은 동시에 실행됩니다:**
+**호출은 동시에 실행됩니다.**
 
 - 각 호출은 자체 goroutine에서 실행됩니다.
 - 여러 호출을 동시에 실행할 수 있습니다.
@@ -423,11 +423,11 @@ func GetTimestamp() time.Time {
 
 ```typescript
 // TypeScript
-function GetTimestamp(): Promise<Date>
+function GetTimestamp(): Promise<string> // default -time-type=string
 
 // Usage
 const timestamp = await GetTimestamp()
-console.log(timestamp.toISOString())
+console.log(new Date(timestamp).toISOString())
 ```
 
 #### 오류
@@ -456,7 +456,7 @@ try {
 
 ### 지원되지 않는 타입
 
-다음 타입은 브리지를 통해 전달할 수 **없습니다**:
+다음 타입은 브리지를 통해 전달할 수 **없습니다**.
 
 - **채널**(`chan T`)
 - **함수**(`func()`)
@@ -501,7 +501,7 @@ func CloseFile(id string) error {
 
 ### 컨텍스트 전달
 
-서비스에서 호출 컨텍스트에 접근할 수 있습니다.
+서비스는 호출 컨텍스트에 접근할 수 있습니다.
 
 ```go
 type UserService struct{}
@@ -520,9 +520,9 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 }
 ```
 
-**컨텍스트에서 제공하는 정보:**
+**컨텍스트가 제공하는 정보:**
 
-- 호출한 창
+- 호출을 수행한 창
 - 애플리케이션 인스턴스
 - 요청 메타데이터
 
@@ -587,7 +587,7 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-**참고:** 프런트엔드 연결이 끊어지면 컨텍스트가 자동으로 취소됩니다.
+**참고:** 프런트엔드 연결이 끊기면 컨텍스트가 자동으로 취소됩니다.
 
 ### 일괄 작업
 
@@ -632,9 +632,9 @@ app := application.New(application.Options{
 - 매개변수
 - 반환 값
 - 오류
-- 실행 시간 정보
+- 타이밍 정보
 
-### 생성된 바인딩 확인
+### 생성된 바인딩 검사
 
 생성된 TypeScript를 확인하려면 `frontend/bindings/`을 살펴보세요.
 
@@ -661,23 +661,23 @@ func TestGreetService(t *testing.T) {
 }
 ```
 
-## 성능 최적화 팁
+## 성능 팁
 
 ### ✅ 권장 사항
 
-- **작업 일괄 처리** - 브리지 호출 횟수를 줄이세요.
-- **스트리밍에 이벤트 사용** - 대용량 배열을 반환하지 마세요.
-- **메서드를 빠르게 유지** - &lt;100ms가 이상적입니다.
-- **goroutine 사용** - 오래 걸리는 작업에 사용하세요.
-- **Go 측에서 캐싱** - 반복 계산을 피하세요.
+- **작업을 일괄 처리하세요** - 브리지 호출을 줄일 수 있습니다.
+- **스트리밍에는 이벤트를 사용하세요** - 대용량 배열을 반환하지 마세요.
+- **메서드를 빠르게 유지하세요** - &lt;100ms가 적절합니다.
+- **goroutine을 사용하세요** - 오래 걸리는 작업에 사용합니다.
+- **Go 측에서 캐시하세요** - 반복 계산을 피할 수 있습니다.
 
 ### ❌ 금지 사항
 
-- **지나치게 많이 호출하지 않기** - 가능하면 일괄 처리하세요.
-- **방대한 데이터를 반환하지 않기** - 페이지네이션 또는 스트리밍을 사용하세요.
-- **블로킹하지 않기** - 오래 걸리는 작업에는 goroutine을 사용하세요.
-- **복잡한 타입을 전달하지 않기** - 단순하게 유지하세요.
-- **오류를 무시하지 않기** - 항상 처리하세요.
+- **과도하게 호출하지 마세요** - 가능한 경우 일괄 처리하세요.
+- **막대한 양의 데이터를 반환하지 마세요** - 페이지네이션 또는 스트리밍을 사용하세요.
+- **블로킹하지 마세요** - 오래 걸리는 작업에는 goroutine을 사용하세요.
+- **복잡한 타입을 전달하지 마세요** - 단순하게 유지하세요.
+- **오류를 무시하지 마세요** - 항상 처리하세요.
 
 ## 보안
 
@@ -685,14 +685,14 @@ func TestGreetService(t *testing.T) {
 
 1. **허용 목록만 사용** - 등록된 서비스만 호출할 수 있습니다.
 2. **타입 검증** - 인수를 Go 타입과 대조하여 검사합니다.
-3. **eval() 미사용** - 프런트엔드에서 임의의 Go 코드를 실행할 수 없습니다.
+3. **eval() 미사용** - 프런트엔드는 임의의 Go 코드를 실행할 수 없습니다.
 4. **리플렉션 악용 방지** - 내보낸 메서드에만 접근할 수 있습니다.
 
 **권장 사례:**
 
 - Go에서 **입력을 검증하세요**(프런트엔드를 신뢰하지 마세요).
 - 인증/권한 부여에 **컨텍스트를 사용하세요**.
-- 비용이 큰 작업은 **호출 빈도를 제한하세요**.
+- 비용이 큰 작업에는 **호출 빈도 제한을 적용하세요**.
 - 파일 경로와 사용자 입력을 **정제하세요**.
 
 ## 다음 단계
@@ -701,8 +701,8 @@ func TestGreetService(t *testing.T) {
 
 **서비스** - 서비스 시스템을 자세히 살펴보세요. [자세히 알아보기 →](/features/bindings/services/)
 
-**이벤트** - 게시/구독 통신에 이벤트 사용 [자세히 알아보기 →](/features/events/system/)
+**이벤트** - 게시/구독 통신에 이벤트를 사용하세요. [자세히 알아보기 →](/features/events/system/)
 
 ---
 
-**브리지에 대해 궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.
+**브리지에 관해 궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)를 확인하세요.

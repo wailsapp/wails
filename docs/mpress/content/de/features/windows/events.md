@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## Fensterereignisse
 
-Wails löst Fensterlebenszyklus- und Zustandsänderungsereignisse über eine einheitliche API aus: `OnWindowEvent` für passive Listener und `RegisterHook` für abbrechbare Hooks, die die Standardaktion verhindern können.
+Wails löst Lebenszyklus- und Zustandsänderungsereignisse von Fenstern über eine einheitliche API aus: `OnWindowEvent` für passive Listener und `RegisterHook` für abbrechbare Hooks, die die Standardaktion verhindern können.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -49,7 +49,7 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-Der Callback erhält `application.Window` (ein Interface). Der `OnCreate`-Callback wird einmal pro Fenster aufgerufen, nachdem dessen Runtime initialisiert wurde.
+Der Callback empfängt `application.Window` (ein Interface). Der Callback `OnCreate` wird während der Registrierung einmal pro Fenster aufgerufen, bevor das Fenster ausgeführt wird. Verwenden Sie ihn, um das Fenster zu konfigurieren und Handler zu registrieren. Warten Sie auf `events.Common.WindowRuntimeReady`, bevor Sie JavaScript aufrufen oder Ereignisse senden, die die Frontend-Runtime benötigen.
 
 ### WindowClosing
 
@@ -68,11 +68,11 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Wichtig:**
 
-- `WindowClosing` wird bei vom Benutzer initiierten Schließversuchen ausgelöst.
+- `WindowClosing` wird bei vom Benutzer ausgelösten Schließversuchen ausgelöst.
 - Ein `RegisterHook`-Callback kann `e.Cancel()` aufrufen, um das Fenster geöffnet zu halten.
-- `OnWindowEvent`-Callbacks für `WindowClosing` sind Beobachter: Sie werden ausgelöst, können den Vorgang aber nicht abbrechen.
+- `OnWindowEvent`-Callbacks für `WindowClosing` sind Beobachter – sie werden ausgelöst, können den Vorgang aber nicht abbrechen.
 
-**Programmatisches Schließen:** Rufen Sie `window.Close()` auf. `window.Destroy()` existiert nicht.
+**Programmgesteuertes Schließen:** Rufen Sie `window.Close()` auf. `window.Destroy()` existiert nicht.
 
 ### WindowRuntimeReady
 
@@ -110,7 +110,7 @@ window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEv
 })
 ```
 
-**Beispiel: fokusabhängige Benutzeroberfläche:**
+**Beispiel: Fokusabhängige Benutzeroberfläche:**
 
 ```go
 type FocusAwareWindow struct {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-Aktivieren oder beenden Sie den Vollbildmodus programmgesteuert mit `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` – `SetFullscreen(bool)` existiert nicht. Fragen Sie den Zustand mit `window.IsFullscreen() bool` ab.
+Aktivieren oder verlassen Sie den Vollbildmodus programmgesteuert mit `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` – `SetFullscreen(bool)` existiert nicht. Fragen Sie den Zustand mit `window.IsFullscreen() bool` ab.
 
 ## Positions- und Größenereignisse
 
@@ -209,9 +209,9 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize` und `WindowDidMove` enthalten im Ereignis selbst keine Koordinaten. Fragen Sie das Fenster innerhalb des Callbacks über `window.Size()` / `window.Position()` ab.
+`WindowDidResize` und `WindowDidMove` enthalten im Ereignis selbst keine Koordinaten – fragen Sie das Fenster innerhalb des Callbacks über `window.Size()` / `window.Position()` ab.
 
-**Beispiel: responsives Layout:**
+**Beispiel: Responsives Layout:**
 
 ```go
 window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
@@ -418,22 +418,22 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-## Bewährte Methoden
+## Bewährte Verfahren
 
 ### ✅ Empfohlen
 
 - **Verwenden Sie Hooks zum Abbrechen** – nur `RegisterHook`-Callbacks können `e.Cancel()` aufrufen.
-- **Speichern Sie beim Schließen den Zustand** – stellen Sie beim nächsten Start Position und Größe des Fensters wieder her.
+- **Speichern Sie den Zustand beim Schließen** – stellen Sie Position und Größe des Fensters beim nächsten Start wieder her.
 - **Entprellen Sie häufige Ereignisse** – `WindowDidResize` und `WindowDidMove` werden in schneller Folge ausgelöst.
 - **Verarbeiten Sie Fokusänderungen** – aktualisieren Sie die Benutzeroberfläche entsprechend.
 - **Koordinieren Sie über Ereignisse** – verwenden Sie `app.Event.Emit` für die fensterübergreifende Kommunikation.
-- **Melden Sie Handler ab**, wenn sie nicht mehr benötigt werden – `OnWindowEvent` und `RegisterHook` geben jeweils eine `func()` zum Abmelden zurück.
+- **Melden Sie Handler ab**, sobald sie nicht mehr benötigt werden – sowohl `OnWindowEvent` als auch `RegisterHook` geben eine `func()` zum Abmelden zurück.
 
-### ❌ Nicht tun
+### ❌ Nicht empfohlen
 
-- **Blockieren Sie Ereignishandler nicht** – halten Sie deren Ausführung kurz.
-- **Versuchen Sie nicht, den Vorgang über `OnWindowEvent`** abzubrechen – verwenden Sie `RegisterHook`.
-- **Verwenden Sie `window.Destroy()`** nicht – es existiert nicht; verwenden Sie `window.Close()`.
+- **Blockieren Sie keine Ereignis-Handler** – halten Sie sie schnell.
+- **Versuchen Sie nicht, den Vorgang über `OnWindowEvent` abzubrechen** – verwenden Sie `RegisterHook`.
+- **Verwenden Sie nicht `window.Destroy()`** – dies existiert nicht; verwenden Sie `window.Close()`.
 - **Speichern Sie nicht bei jedem Ereignis** – entprellen Sie es zuerst.
 - **Gehen Sie nicht davon aus, dass das Ereignis Koordinaten enthält** – rufen Sie `window.Position()` / `window.Size()` auf.
 
@@ -443,7 +443,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 **Ursache:** Sie haben `OnWindowEvent` anstelle von `RegisterHook` verwendet.
 
-**Lösung:** Nur `RegisterHook`-Callbacks können `e.Cancel()` aufrufen. `OnWindowEvent`-Callbacks beobachten das Ereignis; sie können es nicht abbrechen.
+**Lösung:** Nur `RegisterHook`-Callbacks können `e.Cancel()` aufrufen. `OnWindowEvent`-Callbacks beobachten das Ereignis; sie können den Vorgang nicht abbrechen.
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -461,7 +461,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Ursache:** Der Handler wurde erst registriert, nachdem das Ereignis eingetreten war.
 
-**Lösung:** Registrieren Sie Handler unmittelbar nach der Fenstererstellung (oder im `app.Window.OnCreate`-Callback).
+**Lösung:** Registrieren Sie Handler unmittelbar nach der Fenstererstellung oder im `app.Window.OnCreate`-Callback.
 
 ```go
 window := app.Window.New()
@@ -470,9 +470,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### Speicherlecks
 
-**Ursache:** Langlebige Handler werden von kurzlebigem Zustand referenziert.
+**Ursache:** Langlebige Handler werden von kurzlebigem Zustand gehalten.
 
-**Lösung:** Bewahren Sie die von `OnWindowEvent`/`RegisterHook` zurückgegebene Funktion `func()` zum Abmelden auf und rufen Sie sie bei der Bereinigung auf.
+**Lösung:** Bewahren Sie die von `OnWindowEvent`/`RegisterHook` zurückgegebene `func()` zum Abmelden auf und rufen Sie sie bei der Bereinigung auf.
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -482,14 +482,14 @@ unsub()
 
 ## Nächste Schritte
 
-**Fenstergrundlagen** – Lernen Sie die Grundlagen der Fensterverwaltung kennen [Mehr erfahren →](/features/windows/basics/)
+**Grundlagen zu Fenstern** – Lernen Sie die Grundlagen der Fensterverwaltung kennen [Mehr erfahren →](/features/windows/basics/)
 
 **Mehrere Fenster** – Muster für Anwendungen mit mehreren Fenstern [Mehr erfahren →](/features/windows/multiple/)
 
-**Ereignissystem** – Vertiefender Einblick in das Ereignissystem [Mehr erfahren →](/features/events/system/)
+**Ereignissystem** – Vertiefung des Ereignissystems [Mehr erfahren →](/features/events/system/)
 
-**Anwendungslebenszyklus** – Machen Sie sich mit dem Anwendungslebenszyklus vertraut [Mehr erfahren →](/concepts/lifecycle/)
+**Anwendungslebenszyklus** – Lernen Sie den Lebenszyklus der Anwendung kennen [Mehr erfahren →](/concepts/lifecycle/)
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) an.

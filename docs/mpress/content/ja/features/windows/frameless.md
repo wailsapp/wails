@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[フレームレスのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[フレームレスのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/frameless)を確認してください。

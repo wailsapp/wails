@@ -34,7 +34,7 @@ Discord の [#v3](https://discord.gg/bdj28QNHmT) チャンネルでバグにつ�
 [機能強化]
 新機能や公開されている動作の変更は、機能リクエストの Issue ではなく、<strong>WEP（Wails Enhancement Proposal）</strong>のドラフトプルリクエストを通じて提案します。
 
-- [WEP のプロセス](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)を確認してください。
+- [WEP のプロセス](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)を確認してください。
 - テンプレートをコピーし、WEP と補足資料のみを含む、タイトルが `[WEP] <title>` のドラフト PR を作成してください。
 - 最初に [GitHub Discussions](https://github.com/wailsapp/wails/discussions) または Discord の [#v3](https://discord.gg/bdj28QNHmT) チャンネルでアイデアについて非公式に話し合うこともできますが、メンテナーが判断を下すには WEP の PR が必要です。
 
