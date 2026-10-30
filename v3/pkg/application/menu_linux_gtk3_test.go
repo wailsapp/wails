@@ -87,6 +87,26 @@ func TestGTK3MenuRebuildProcess(t *testing.T) {
 		t.Fatal("removed item retains an activation handler")
 	}
 
+	// A tray built from this menu rebinds every item after each rebuild. The
+	// tray must pick up the rebuild, and the next rebuild must still release
+	// the handlers of items removed in between.
+	tray := &SystemTray{id: 1, menu: menu}
+	trayImpl := &linuxSystemTray{parent: tray}
+	trayImpl.menuVersion.Store(1)
+	tray.impl = trayImpl
+	globalApplication.systemTrays = map[uint]*SystemTray{tray.id: tray}
+	trayed := inner.Add("Trayed").OnClick(func(*Context) {})
+	menu.Update()
+	if _, ok := trayImpl.itemMap[int32(trayed.id)]; !ok {
+		t.Fatal("tray menu was not rebuilt by Menu.Update")
+	}
+	inner.RemoveMenuItem(trayed)
+	menu.Update()
+	if _, ok := gtkSignalToMenuItem[trayed.id]; ok {
+		t.Fatal("item removed from a tray menu retains an activation handler")
+	}
+	globalApplication.systemTrays = nil
+
 	// An independently rebuilt submenu must also survive a later parent rebuild.
 	inner.Clear()
 	inner.Add("After clear")

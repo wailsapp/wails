@@ -140,10 +140,15 @@ func (l *linuxMenuItem) trackDestroy() {
 	menuOnDestroy(l.native, func() {
 		l.native = nil
 		l.handlerId = 0
+		// A newer native item owns the handler entry; a tray binding does not,
+		// so the entry must still go or items removed from a tray menu leak.
+		if impl, ok := l.menuItem.impl.(*linuxMenuItem); ok && impl != l {
+			return
+		}
 		if l.menuItem.impl == l {
 			l.menuItem.impl = nil
-			delete(gtkSignalToMenuItem, l.menuItem.id)
 		}
+		delete(gtkSignalToMenuItem, l.menuItem.id)
 	})
 }
 
