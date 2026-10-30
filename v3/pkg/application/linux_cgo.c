@@ -1,4 +1,4 @@
-//go:build linux && !android && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !purego && !server
 
 #include "linux_cgo.h"
 
@@ -359,6 +359,28 @@ gboolean get_action_state(const char *action_name) {
         }
     }
     return FALSE;
+}
+
+// Radio group actions carry a string state: the selected item's target.
+// get_action_state_string returns a g_strdup copy the caller frees with g_free,
+// or NULL when the action is missing.
+char* get_action_state_string(const char *action_name) {
+    if (app_action_group == NULL) return NULL;
+    GAction *action = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (action == NULL) return NULL;
+    GVariant *state = g_action_get_state(action);
+    if (state == NULL) return NULL;
+    char *result = g_strdup(g_variant_get_string(state, NULL));
+    g_variant_unref(state);
+    return result;
+}
+
+void set_action_state_string(const char *action_name, const char *value) {
+    if (app_action_group == NULL) return;
+    GAction *action = g_action_map_lookup_action(G_ACTION_MAP(app_action_group), action_name);
+    if (action != NULL && G_IS_SIMPLE_ACTION(action)) {
+        g_simple_action_set_state(G_SIMPLE_ACTION(action), g_variant_new_string(value));
+    }
 }
 
 void menu_remove_item(GMenu *menu, gint position) {

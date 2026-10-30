@@ -2,92 +2,6 @@
 
 package main
 
-/*
-#include <mach/mach.h>
-#include <mach/mach_host.h>
-#include <mach/processor_info.h>
-#include <stdint.h>
-#include <sys/mount.h>
-#include <sys/sysctl.h>
-
-typedef struct {
-    uint64_t active_ticks;
-    uint64_t total_ticks;
-    uint64_t memory_used;
-    uint64_t memory_total;
-    uint64_t disk_used;
-    uint64_t disk_total;
-} WailsSystemSample;
-
-static int wails_read_system_sample(WailsSystemSample* sample) {
-    natural_t cpuCount = 0;
-    processor_info_array_t cpuInfo = NULL;
-    mach_msg_type_number_t cpuInfoCount = 0;
-    kern_return_t result = host_processor_info(
-        mach_host_self(),
-        PROCESSOR_CPU_LOAD_INFO,
-        &cpuCount,
-        &cpuInfo,
-        &cpuInfoCount);
-    if (result != KERN_SUCCESS) {
-        return 0;
-    }
-
-    processor_cpu_load_info_t loads = (processor_cpu_load_info_t)cpuInfo;
-    for (natural_t index = 0; index < cpuCount; index++) {
-        uint64_t user = loads[index].cpu_ticks[CPU_STATE_USER];
-        uint64_t system = loads[index].cpu_ticks[CPU_STATE_SYSTEM];
-        uint64_t nice = loads[index].cpu_ticks[CPU_STATE_NICE];
-        uint64_t idle = loads[index].cpu_ticks[CPU_STATE_IDLE];
-        sample->active_ticks += user + system + nice;
-        sample->total_ticks += user + system + nice + idle;
-    }
-    vm_deallocate(
-        mach_task_self(),
-        (vm_address_t)cpuInfo,
-        (vm_size_t)cpuInfoCount * sizeof(integer_t));
-
-    uint64_t memoryTotal = 0;
-    size_t memoryTotalSize = sizeof(memoryTotal);
-    if (sysctlbyname("hw.memsize", &memoryTotal, &memoryTotalSize, NULL, 0) != 0) {
-        return 0;
-    }
-
-    vm_statistics64_data_t vmStats;
-    mach_msg_type_number_t vmStatsCount = HOST_VM_INFO64_COUNT;
-    result = host_statistics64(
-        mach_host_self(),
-        HOST_VM_INFO64,
-        (host_info64_t)&vmStats,
-        &vmStatsCount);
-    if (result != KERN_SUCCESS) {
-        return 0;
-    }
-
-    vm_size_t pageSize = 0;
-    if (host_page_size(mach_host_self(), &pageSize) != KERN_SUCCESS) {
-        return 0;
-    }
-    uint64_t reclaimablePages = (uint64_t)vmStats.free_count +
-        (uint64_t)vmStats.inactive_count +
-        (uint64_t)vmStats.purgeable_count;
-    uint64_t reclaimableBytes = reclaimablePages * (uint64_t)pageSize;
-    sample->memory_total = memoryTotal;
-    sample->memory_used = reclaimableBytes < memoryTotal ? memoryTotal - reclaimableBytes : 0;
-
-    struct statfs diskStats;
-    if (statfs("/", &diskStats) != 0) {
-        return 0;
-    }
-    uint64_t blockSize = (uint64_t)diskStats.f_bsize;
-    sample->disk_total = (uint64_t)diskStats.f_blocks * blockSize;
-    uint64_t diskFree = (uint64_t)diskStats.f_bavail * blockSize;
-    sample->disk_used = diskFree < sample->disk_total ? sample->disk_total - diskFree : 0;
-    return 1;
-}
-*/
-import "C"
-
 import (
 	"context"
 	"encoding/json"
@@ -96,6 +10,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
+
+	"github.com/ebitengine/purego"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -118,17 +36,17 @@ type SystemStats struct {
 }
 
 func (controller *NotificationController) systemStats() SystemStats {
-	var sample C.WailsSystemSample
-	if C.wails_read_system_sample(&sample) == 0 {
+	sample, ok := readSystemSample()
+	if !ok {
 		return SystemStats{}
 	}
 
-	active := uint64(sample.active_ticks)
-	total := uint64(sample.total_ticks)
-	memoryUsed := uint64(sample.memory_used)
-	memoryTotal := uint64(sample.memory_total)
-	diskUsed := uint64(sample.disk_used)
-	diskTotal := uint64(sample.disk_total)
+	active := sample.activeTicks
+	total := sample.totalTicks
+	memoryUsed := sample.memoryUsed
+	memoryTotal := sample.memoryTotal
+	diskUsed := sample.diskUsed
+	diskTotal := sample.diskTotal
 
 	controller.mu.Lock()
 	cpuPercent := controller.lastCPUPercent
@@ -156,6 +74,128 @@ func (controller *NotificationController) systemStats() SystemStats {
 		DiskFreeGB:    float64(diskFree) / bytesPerGiB,
 		DiskPercent:   percentage(diskUsed, diskTotal),
 	}
+}
+
+// systemSample is one reading of the machine counters. The mach calls go
+// through purego so the example builds with and without cgo.
+type systemSample struct {
+	activeTicks uint64
+	totalTicks  uint64
+	memoryUsed  uint64
+	memoryTotal uint64
+	diskUsed    uint64
+	diskTotal   uint64
+}
+
+const (
+	processorCPULoadInfo = 2  // PROCESSOR_CPU_LOAD_INFO
+	hostVMInfo64         = 4  // HOST_VM_INFO64
+	hostVMInfo64Count    = 38 // HOST_VM_INFO64_COUNT: sizeof(vm_statistics64) / sizeof(integer_t)
+	cpuStateUser         = 0
+	cpuStateSystem       = 1
+	cpuStateIdle         = 2
+	cpuStateNice         = 3
+	cpuStateMax          = 4
+	kernSuccess          = 0
+)
+
+// vmStatistics64 mirrors vm_statistics64 from <mach/vm_statistics.h>.
+type vmStatistics64 struct {
+	freeCount, activeCount, inactiveCount, wireCount        uint32
+	zeroFillCount, reactivations, pageins, pageouts, faults uint64
+	cowFaults, lookups, hits, purges                        uint64
+	purgeableCount, speculativeCount                        uint32
+	decompressions, compressions, swapins, swapouts         uint64
+	compressorPageCount, throttledCount                     uint32
+	externalPageCount, internalPageCount                    uint32
+	totalUncompressedPagesInCompressor                      uint64
+}
+
+var (
+	machOnce          sync.Once
+	machErr           error
+	machHostSelf      func() uint32
+	machTaskSelf      uint32
+	hostProcessorInfo func(host uint32, flavor int32, count *uint32, info *unsafe.Pointer, infoCount *uint32) int32
+	hostStatistics64  func(host uint32, flavor int32, info unsafe.Pointer, count *uint32) int32
+	hostPageSize      func(host uint32, size *uintptr) int32
+	vmDeallocate      func(task uint32, address unsafe.Pointer, size uintptr) int32
+)
+
+func loadMach() error {
+	machOnce.Do(func() {
+		lib, err := purego.Dlopen("/usr/lib/libSystem.B.dylib", purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		if err != nil {
+			machErr = err
+			return
+		}
+		task, err := purego.Dlsym(lib, "mach_task_self_")
+		if err != nil {
+			machErr = err
+			return
+		}
+		// task is the address of the mach_task_self_ variable.
+		machTaskSelf = **(**uint32)(unsafe.Pointer(&task))
+		purego.RegisterLibFunc(&machHostSelf, lib, "mach_host_self")
+		purego.RegisterLibFunc(&hostProcessorInfo, lib, "host_processor_info")
+		purego.RegisterLibFunc(&hostStatistics64, lib, "host_statistics64")
+		purego.RegisterLibFunc(&hostPageSize, lib, "host_page_size")
+		purego.RegisterLibFunc(&vmDeallocate, lib, "vm_deallocate")
+	})
+	return machErr
+}
+
+func readSystemSample() (systemSample, bool) {
+	var sample systemSample
+	if loadMach() != nil {
+		return sample, false
+	}
+	host := machHostSelf()
+
+	var cpuCount, infoCount uint32
+	var info unsafe.Pointer
+	if hostProcessorInfo(host, processorCPULoadInfo, &cpuCount, &info, &infoCount) != kernSuccess {
+		return sample, false
+	}
+	ticks := unsafe.Slice((*uint32)(info), int(cpuCount)*cpuStateMax)
+	for cpu := 0; cpu < int(cpuCount); cpu++ {
+		load := ticks[cpu*cpuStateMax : (cpu+1)*cpuStateMax]
+		busy := uint64(load[cpuStateUser]) + uint64(load[cpuStateSystem]) + uint64(load[cpuStateNice])
+		sample.activeTicks += busy
+		sample.totalTicks += busy + uint64(load[cpuStateIdle])
+	}
+	vmDeallocate(machTaskSelf, info, uintptr(infoCount)*4)
+
+	memoryTotal, err := unix.SysctlUint64("hw.memsize")
+	if err != nil {
+		return sample, false
+	}
+
+	var vmStats vmStatistics64
+	vmStatsCount := uint32(hostVMInfo64Count)
+	if hostStatistics64(host, hostVMInfo64, unsafe.Pointer(&vmStats), &vmStatsCount) != kernSuccess {
+		return sample, false
+	}
+	var pageSize uintptr
+	if hostPageSize(host, &pageSize) != kernSuccess {
+		return sample, false
+	}
+	reclaimable := (uint64(vmStats.freeCount) + uint64(vmStats.inactiveCount) + uint64(vmStats.purgeableCount)) * uint64(pageSize)
+	sample.memoryTotal = memoryTotal
+	if reclaimable < memoryTotal {
+		sample.memoryUsed = memoryTotal - reclaimable
+	}
+
+	var disk unix.Statfs_t
+	if unix.Statfs("/", &disk) != nil {
+		return sample, false
+	}
+	blockSize := uint64(disk.Bsize)
+	sample.diskTotal = disk.Blocks * blockSize
+	if free := disk.Bavail * blockSize; free < sample.diskTotal {
+		sample.diskUsed = sample.diskTotal - free
+	}
+	return sample, true
 }
 
 var (

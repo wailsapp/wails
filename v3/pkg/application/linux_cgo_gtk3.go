@@ -1,4 +1,4 @@
-//go:build linux && cgo && gtk3 && !android && !server
+//go:build linux && cgo && gtk3 && !android && !server && !purego
 
 package application
 
@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -92,6 +91,7 @@ extern void onDragEnter(gpointer data);
 extern void onDragLeave(gpointer data);
 extern void onDragOver(gint x, gint y, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
+extern gboolean onKeyReleaseEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
 // exported below (end)
@@ -497,12 +497,6 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator. Returns a pointer so the allocation
-// pool is shared across calls without copying.
-func NewCalloc() *Calloc {
-	return &Calloc{}
-}
-
 // String creates a new C string and retains a reference to it.
 func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
@@ -523,26 +517,6 @@ type identifier C.uint
 type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
-
-// getLinuxWebviewWindow safely extracts a linuxWebviewWindow from a Window interface
-// Returns nil if the window is not a WebviewWindow or not a Linux implementation
-func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
-	if window == nil {
-		return nil
-	}
-
-	webviewWindow, ok := window.(*WebviewWindow)
-	if !ok {
-		return nil
-	}
-
-	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
-	if !ok {
-		return nil
-	}
-
-	return lw
-}
 
 var (
 	nilPointer    pointer       = nil
@@ -688,7 +662,11 @@ func (a *linuxApp) getCurrentWindowID() uint {
 	if window == nil {
 		return uint(1)
 	}
+	// registerWindow and unregisterWindow write windowMap from other
+	// goroutines, so it is read under the same lock.
+	a.windowMapLock.Lock()
 	identifier, ok := a.windowMap[window]
+	a.windowMapLock.Unlock()
 	if ok {
 		return identifier
 	}
@@ -908,14 +886,6 @@ func menuItemDestroy(widget pointer) {
 }
 
 func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) pointer {
-	/*
-		   // FIXME: Support accelerator configuration
-		   activate := C.CString("activate")
-			defer C.free(unsafe.Pointer(activate))
-			accelGroup := C.gtk_accel_group_new()
-			C.gtk_widget_add_accelerator(menuItem, activate, accelGroup,
-				C.GDK_KEY_m, C.GDK_CONTROL_MASK, C.GTK_ACCEL_VISIBLE)
-	*/
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
 	lbl := unsafe.Pointer(C.gtk_accel_label_new(cLabel))
@@ -984,10 +954,20 @@ func menuItemSetDisabled(widget pointer, disabled bool) {
 
 func menuItemSetLabel(widget pointer, label string) {
 	value := C.CString(label)
-	C.gtk_menu_item_set_label(
-		(*C.GtkMenuItem)(widget),
-		value)
-	C.free(unsafe.Pointer(value))
+	defer C.free(unsafe.Pointer(value))
+	// menuItemAddProperties gives every item a GtkBox child (an optional image,
+	// then the accel label). gtk_menu_item_set_label only updates a GtkLabel
+	// child, so it did nothing here: set the label inside the box instead.
+	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
+	if box == nil || C.g_type_check_instance_is_a((*C.GTypeInstance)(unsafe.Pointer(box)), C.gtk_box_get_type()) == 0 {
+		C.gtk_menu_item_set_label((*C.GtkMenuItem)(widget), value)
+		return
+	}
+	children := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(box)))
+	defer C.g_list_free(children)
+	if last := C.g_list_last(children); last != nil {
+		C.gtk_label_set_text_with_mnemonic((*C.GtkLabel)(last.data), value)
+	}
 }
 
 func menuItemRemoveBitmap(widget pointer) {
@@ -1246,31 +1226,6 @@ func (w *linuxWebviewWindow) execJSDragOver(x, y int) {
 		nil)
 }
 
-// writeInt writes an integer to a byte slice and returns the number of bytes written
-func writeInt(buf []byte, n int) int {
-	if n < 0 {
-		buf[0] = '-'
-		return 1 + writeInt(buf[1:], -n)
-	}
-	if n == 0 {
-		buf[0] = '0'
-		return 1
-	}
-	// Count digits
-	tmp := n
-	digits := 0
-	for tmp > 0 {
-		digits++
-		tmp /= 10
-	}
-	// Write digits in reverse
-	for i := digits - 1; i >= 0; i-- {
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	return digits
-}
-
 func getMousePosition() (int, int, *Screen) {
 	var x, y C.gint
 	var screen *C.GdkScreen
@@ -1506,9 +1461,10 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_iconify(w.gtkWindow())
 }
 
-func windowNew(application pointer, menu pointer, _ LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
+func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox, menubar pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
+	windowAddMenuAccelGroup(window)
 	webview = windowNewWebview(windowId, gpuPolicy)
 	vbox = pointer(C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0))
 	name := C.CString("webview-box")
@@ -1517,10 +1473,64 @@ func windowNew(application pointer, menu pointer, _ LinuxMenuStyle, windowId uin
 
 	C.gtk_container_add((*C.GtkContainer)(window), (*C.GtkWidget)(vbox))
 	if menu != nil {
-		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0, 0, 0)
+		menubar = windowAttachMenuBar(window, vbox, menu, menuStyle)
 	}
 	C.gtk_box_pack_start((*C.GtkBox)(unsafe.Pointer(vbox)), (*C.GtkWidget)(webview), 1, 1, 0)
 	return
+}
+
+// windowAttachMenuBar packs the GtkMenuBar menu at the top of the window box.
+// GTK3 has no header-bar menu, so menuStyle does not apply. It returns the
+// widget windowDetachMenuBar takes back.
+func windowAttachMenuBar(_ pointer, vbox pointer, menu pointer, _ LinuxMenuStyle) pointer {
+	C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0, 0, 0)
+	// pack_start appends after the children already packed at the start (the
+	// webview, when it is there): move the bar back to the top.
+	C.gtk_box_reorder_child((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0)
+	// A widget packed into a shown window stays hidden until shown: run() shows
+	// the window's tree at startup, but a bar attached later must show itself
+	// (and its items), or its accelerators never fire.
+	C.gtk_widget_show_all((*C.GtkWidget)(menu))
+	return menu
+}
+
+// windowDetachMenuBar destroys a bar windowAttachMenuBar installed. Destroying
+// it, rather than only unpacking it, releases the widget and clears the
+// owning linuxMenu's native pointer, so a later Update builds a new bar.
+func windowDetachMenuBar(_ pointer, _ pointer, bar pointer, _ LinuxMenuStyle) {
+	C.gtk_widget_destroy((*C.GtkWidget)(bar))
+}
+
+// menuAccelGroup is the GtkAccelGroup behind menu accelerators. Every window
+// has it (windowAddMenuAccelGroup), so the accelerators work whichever window
+// has focus, as GTK4's app-wide accels do. GTK thread only.
+var menuAccelGroupPtr pointer
+
+func menuAccelGroup() pointer {
+	if menuAccelGroupPtr == nil {
+		menuAccelGroupPtr = pointer(C.gtk_accel_group_new())
+	}
+	return menuAccelGroupPtr
+}
+
+func windowAddMenuAccelGroup(window pointer) {
+	C.gtk_window_add_accel_group((*C.GtkWindow)(window), (*C.GtkAccelGroup)(menuAccelGroup()))
+}
+
+// menuItemAddAccelerator binds keyval and modifiers to the item's activate
+// signal. GTK_ACCEL_VISIBLE makes the item's accel label show the shortcut.
+func menuItemAddAccelerator(item pointer, keyval, mods uint32) {
+	signal := C.CString("activate")
+	defer C.free(unsafe.Pointer(signal))
+	C.gtk_widget_add_accelerator((*C.GtkWidget)(item), signal,
+		(*C.GtkAccelGroup)(menuAccelGroup()),
+		C.guint(keyval), C.GdkModifierType(mods), C.GTK_ACCEL_VISIBLE)
+}
+
+func menuItemRemoveAccelerator(item pointer, keyval, mods uint32) {
+	C.gtk_widget_remove_accelerator((*C.GtkWidget)(item),
+		(*C.GtkAccelGroup)(menuAccelGroup()),
+		C.guint(keyval), C.GdkModifierType(mods))
 }
 
 func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
@@ -1764,9 +1774,6 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 	C.gtk_window_set_keep_above(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
-func (w *linuxWebviewWindow) flash(_ bool) {
-}
-
 func (w *linuxWebviewWindow) setOpacity(opacity float64) {
 	C.gtk_widget_set_opacity(w.gtkWidget(), C.double(opacity))
 }
@@ -1858,6 +1865,8 @@ func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) 
 		if focusEvent.in == C.TRUE {
 			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusIn))
 		} else {
+			// A key released while focus is elsewhere is never seen as a release.
+			keyRepeats.reset()
 			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 		}
 	}
@@ -1920,6 +1929,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
+	C.signal_connect(wv, c.String("key-release-event"), C.onKeyReleaseEvent, winID)
 }
 
 func getMouseButtons() (bool, bool, bool) {
@@ -2004,18 +2014,6 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 }
 
 const zoomInFactor = 1.10
-
-func (w *linuxWebviewWindow) zoomIn() {
-	w.setZoom(w.getZoom() * zoomInFactor)
-}
-
-func (w *linuxWebviewWindow) zoomOut() {
-	w.setZoom(w.getZoom() * (1.0 / zoomInFactor))
-}
-
-func (w *linuxWebviewWindow) zoomReset() {
-	w.setZoom(1.0)
-}
 
 func (w *linuxWebviewWindow) reload() {
 	uri := C.CString("wails://")
@@ -2178,39 +2176,33 @@ func onUriList(extracted **C.char, x C.gint, y C.gint, data unsafe.Pointer) {
 	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
-var debounceTimer *time.Timer
-var isDebouncing bool = false
+// keyRepeats drops X auto-repeat presses of a held key (keyRepeatFilter). It is
+// only used on the GTK thread.
+var keyRepeats keyRepeatFilter
+
+//export onKeyReleaseEvent
+func onKeyReleaseEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
+	keyRepeats.release(uint(event.hardware_keycode))
+	return C.gboolean(0)
+}
 
 //export onKeyPressEvent
 func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
-	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
-	if isDebouncing {
-		debounceTimer.Reset(50 * time.Millisecond)
-		// Still consume undo/redo during debounce so auto-repeat does not
-		// let stray events through to webkit2gtk's native handler.
-		if accelerator, ok := getKeyboardState(event); ok {
-			if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
-				return C.gboolean(1)
-			}
-		}
-		return C.gboolean(0)
-	}
-
-	// Start the debounce
-	isDebouncing = true
-	debounceTimer = time.AfterFunc(50*time.Millisecond, func() {
-		isDebouncing = false
-	})
+	repeat := keyRepeats.press(uint(event.hardware_keycode))
 
 	windowID := uint(C.uint(userData))
 	if accelerator, ok := getKeyboardState(event); ok {
-		windowKeyEvents <- &windowKeyEvent{
-			windowId:          windowID,
-			acceleratorString: accelerator,
+		// A repeat is not a new key press, so it is not sent to the frontend.
+		if !repeat {
+			windowKeyEvents <- &windowKeyEvent{
+				windowId:          windowID,
+				acceleratorString: accelerator,
+			}
 		}
 		// Consume undo/redo so that webkit2gtk's native handler does not also fire.
 		// webkit2gtk's built-in Ctrl+Z is unreliable for <input> elements; we call
 		// document.execCommand('undo') instead via handleKeyEvent → undo()/redo().
+		// Repeats are consumed too, so auto-repeat does not reach webkit's handler.
 		if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
 			return C.gboolean(1)
 		}
@@ -2527,7 +2519,8 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	}
 
 	defer C.gtk_widget_destroy((*C.GtkWidget)(dialog))
-	return int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
+	response := int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
+	return dialogResponseIndex(response, options.Buttons)
 }
 
 func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
@@ -2551,29 +2544,10 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 	return results, err
 }
 
-func (w *linuxWebviewWindow) cut() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_CUT)
-}
-
-func (w *linuxWebviewWindow) paste() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_PASTE)
-}
-
-func (w *linuxWebviewWindow) copy() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_COPY)
-}
-
-func (w *linuxWebviewWindow) selectAll() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_SELECT_ALL)
-}
-
-func (w *linuxWebviewWindow) undo() {
-	w.execJS("document.execCommand('undo')")
-}
-
-func (w *linuxWebviewWindow) redo() {
-	w.execJS("document.execCommand('redo')")
-}
-
-func (w *linuxWebviewWindow) delete() {
+// executeEditingCommand is the native half of the editing commands
+// (webview_window_linux_editing.go). GTK thread only.
+func (w *linuxWebviewWindow) executeEditingCommand(command string) {
+	value := C.CString(command)
+	defer C.free(unsafe.Pointer(value))
+	C.webkit_web_view_execute_editing_command(w.webKitWebView(), value)
 }

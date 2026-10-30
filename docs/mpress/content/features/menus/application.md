@@ -178,6 +178,18 @@ If a window needs a different menu than the application menu, set it directly:
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**Removing a window's menu bar:**
+
+Pass `nil` to remove the menu bar from a window:
+
+```go
+window.SetMenu(nil)
+```
+
+On Windows and Linux the window then shows no menu bar, not even the application menu it opted into with `UseApplicationMenu`, and the removed menu's accelerators stop working in that window. Calling it before the window has started creates the window without a menu bar. A later `SetMenu(menu)` puts a bar back.
+
+On macOS the menu bar belongs to the application, not to a window, so `SetMenu` does nothing there. Use `app.Menu.Set` to change the application menu.
+
 ## Menu Roles
 
 Wails provides **predefined menu roles** that create platform-appropriate menu structures automatically.

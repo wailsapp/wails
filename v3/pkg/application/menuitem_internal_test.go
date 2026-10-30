@@ -411,3 +411,75 @@ func TestMenuItem_Chaining(t *testing.T) {
 	// Clean up
 	removeMenuItemByID(item.id)
 }
+
+// RemoveAccelerator drops the item's window menu binding for its chord, and
+// only that item's: another item bound to the same chord keeps its entry.
+func TestRemoveAcceleratorDropsOwnWindowMenuBinding(t *testing.T) {
+	saved := globalApplication
+	t.Cleanup(func() { globalApplication = saved })
+
+	for _, tc := range []struct {
+		name      string
+		ownedByMe bool
+		wantEntry bool
+	}{
+		{"own binding is removed", true, false},
+		{"another item's binding is kept", false, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			app := &App{windows: map[uint]Window{}}
+			app.Window = &WindowManager{app: app}
+			globalApplication = app
+
+			window := &WebviewWindow{menuBindings: map[string]*MenuItem{}}
+			app.windows[1] = window
+
+			item := NewMenuItem("Save")
+			item.SetAccelerator("CmdOrCtrl+s")
+			key := item.accelerator.String()
+			owner := item
+			if !tc.ownedByMe {
+				owner = NewMenuItem("Other")
+			}
+			window.menuBindings[key] = owner
+
+			item.RemoveAccelerator()
+
+			got, present := window.menuBindings[key]
+			if present != tc.wantEntry {
+				t.Fatalf("binding for %q present = %v (item %v), want %v", key, present, got != nil, tc.wantEntry)
+			}
+			if !tc.wantEntry && got != nil {
+				t.Fatalf("binding for %q still points at an item", key)
+			}
+		})
+	}
+}
+
+func TestMenuItemSetCheckedRadioUnchecksGroup(t *testing.T) {
+	menu := NewMenu()
+	first := menu.AddRadio("First", true)
+	second := menu.AddRadio("Second", false)
+	menu.AddSeparator()
+	other := menu.AddRadio("Other group", true)
+	menu.processRadioGroups()
+
+	second.SetChecked(true)
+	if first.Checked() || !second.Checked() {
+		t.Fatalf("after second.SetChecked(true): first=%v second=%v", first.Checked(), second.Checked())
+	}
+	if !other.Checked() {
+		t.Fatal("a radio item in another group was unchecked")
+	}
+
+	second.SetChecked(false)
+	if first.Checked() || second.Checked() {
+		t.Fatalf("SetChecked(false) changed the group: first=%v second=%v", first.Checked(), second.Checked())
+	}
+
+	box := menu.AddCheckbox("Box", true)
+	menu.AddCheckbox("Box 2", true).SetChecked(true)
+	if !box.Checked() {
+		t.Fatal("checking a checkbox unchecked another checkbox")
+	}
+}

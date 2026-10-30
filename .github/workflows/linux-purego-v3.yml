@@ -1,0 +1,96 @@
+name: Linux purego parity (v3)
+
+on:
+  pull_request:
+    paths:
+      - 'v3/**'
+      - '.github/workflows/linux-purego-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:44
+    defaults:
+      run:
+        working-directory: v3
+    steps:
+      - name: Install native dependencies
+        working-directory: .
+        run: >-
+          dnf install -y git tar gzip gcc clang pkgconf-pkg-config gtk4-devel webkitgtk6.0-devel
+          gtk3-devel webkit2gtk4.1-devel libX11-devel xorg-x11-server-Xvfb xdotool dbus-daemon weston
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.5'
+          cache-dependency-path: v3/go.sum
+      - name: Check generated bindings
+        run: |
+          go run ./internal/puregogen -manifest internal/puregogen/gtk4.json -out pkg/application/linux_purego_generated.go -check
+          go run ./internal/puregogen -cgo-manifest internal/puregogen/gtk3.json -check
+      - name: Test both backends and their reference implementations
+        env:
+          GDK_BACKEND: x11
+          GTK_A11Y: none
+          NO_AT_BRIDGE: '1'
+          GSK_RENDERER: cairo
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          WAILS_TEST_DIALOGS: '1'
+        run: |
+          for tags in purego purego,gtk3 '' gtk3; do
+            case "$tags" in *purego*) export CGO_ENABLED=0;; *) export CGO_ENABLED=1;; esac
+            xvfb-run -a dbus-run-session -- go test -tags "$tags" ./pkg/application ./internal/assetserver/webview ./internal/puregogen
+            go build -tags "$tags" -o /tmp/wails-parity ./tests/purego
+            GOGC=1 xvfb-run -a dbus-run-session -- /tmp/wails-parity
+          done
+      - name: Exercise purego on Wayland
+        env:
+          CGO_ENABLED: '0'
+          GDK_BACKEND: wayland
+          GTK_A11Y: none
+          NO_AT_BRIDGE: '1'
+          GSK_RENDERER: cairo
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          WAYLAND_DISPLAY: wayland-wails
+        run: |
+          export XDG_RUNTIME_DIR=$(mktemp -d)
+          chmod 700 "$XDG_RUNTIME_DIR"
+          for tags in purego purego,gtk3; do
+            go build -tags "$tags" -o /tmp/wails-parity ./tests/purego
+            GOGC=1 dbus-run-session -- weston --backend=headless --renderer=pixman --fake-seat --socket=wayland-wails --no-config -- /tmp/wails-parity > /tmp/wails-wayland.log 2>&1
+            cat /tmp/wails-wayland.log
+            grep -q '^PASS: assets, binary POST' /tmp/wails-wayland.log
+          done
+      - name: Cross-compile without CGo
+        env:
+          CGO_ENABLED: '0'
+          GOOS: linux
+          GOARCH: arm64
+        run: |
+          go build -tags purego ./pkg/application ./cmd/wails3
+          go build -tags purego,gtk3 ./pkg/application ./cmd/wails3
+          go build -tags purego,production ./tests/purego
+          go build -tags purego,gtk3,production ./tests/purego
+      - name: Race-check native dispatch and cancellation
+        env:
+          CGO_ENABLED: '1'
+          DISPLAY: ''
+        run: |
+          go test -tags purego -race -c -o /tmp/wails-webview-race ./internal/assetserver/webview
+          for iteration in 1 2 3 4 5; do
+            /tmp/wails-webview-race
+          done
+      - name: Assert application and CLI have no CGo dependencies
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          for tags in purego purego,gtk3; do
+            dependencies=$(go list -tags "$tags" -deps -f '{{if .CgoFiles}}{{.ImportPath}}{{end}}' ./pkg/application ./cmd/wails3)
+            test -z "$dependencies" || { echo "$dependencies"; exit 1; }
+          done

@@ -1,0 +1,55 @@
+{
+  "build": "linux && purego && gtk3 && !android && !server",
+  "pkg_config": [
+    "gtk+-3.0",
+    "webkit2gtk-4.1"
+  ],
+  "sources": {
+    "pkg/application/linux_cgo_gtk3.go": "pkg/application/linux_purego_gtk3_generated.go",
+    "pkg/application/application_linux_gtk3.go": "pkg/application/application_linux_purego_gtk3_generated.go"
+  },
+  "bindings": "pkg/application/linux_purego_gtk3_bindings_generated.go",
+  "shims": [
+    "CString",
+    "GDK_SELECTION_CLIPBOARD",
+    "GDK_SELECTION_PRIMARY",
+    "GoString",
+    "disableDND",
+    "dispatchOnMainThread",
+    "enableDND",
+    "g_thread_self",
+    "get_compiled_gtk_major_version",
+    "get_compiled_gtk_micro_version",
+    "get_compiled_gtk_minor_version",
+    "get_compiled_webkit_major_version",
+    "get_compiled_webkit_micro_version",
+    "get_compiled_webkit_minor_version",
+    "get_object_uint",
+    "get_webview_from_content_manager",
+    "get_window_id",
+    "gtkFileChooserDialogNew",
+    "install_signal_handlers",
+    "is_user_media_for_audio",
+    "is_user_media_for_video",
+    "is_user_media_permission_request",
+    "new_message_dialog",
+    "save_webview_to_content_manager",
+    "save_window_id",
+    "schedule_signal_handler_fix",
+    "set_object_uint",
+    "signal_connect",
+    "webkit_web_view"
+  ],
+  "guards": {
+    "appNew": "requireGTK3Libraries"
+  },
+  "integer_handles": [
+    "struct__GdkAtom"
+  ],
+  "integer_callback_data": [
+    "onDragEnter",
+    "onDragLeave",
+    "onDragOver",
+    "onUriList"
+  ]
+}

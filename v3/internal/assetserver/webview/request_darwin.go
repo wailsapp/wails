@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !purego
 
 package webview
 
@@ -109,7 +109,6 @@ import "C"
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -132,6 +131,8 @@ type request struct {
 	header http.Header
 	body   io.ReadCloser
 	rw     *responseWriter
+
+	bodyBase64 bool // the body shim encoded the body (body_shim_darwin.go)
 }
 
 func (r *request) URL() (string, error) {
@@ -161,6 +162,7 @@ func (r *request) Header() (http.Header, error) {
 		}
 		C.free(unsafe.Pointer(cHeaders))
 	}
+	r.bodyBase64 = unshimHeader(header)
 	r.header = header
 	return header, nil
 }
@@ -168,6 +170,9 @@ func (r *request) Header() (http.Header, error) {
 func (r *request) Body() (io.ReadCloser, error) {
 	if r.body != nil {
 		return r.body, nil
+	}
+	if _, err := r.Header(); err != nil {
+		return nil, err
 	}
 
 	var body unsafe.Pointer
@@ -182,16 +187,10 @@ func (r *request) Body() (io.ReadCloser, error) {
 		r.body = &requestBodyStreamReader{task: r.task}
 	}
 
-	return r.body, nil
-}
-
-func (r *request) Response() ResponseWriter {
-	if r.rw != nil {
-		return r.rw
+	if r.bodyBase64 {
+		r.body = unshimBody(r.body)
 	}
-
-	r.rw = &responseWriter{r: r}
-	return r.rw
+	return r.body, nil
 }
 
 func (r *request) Close() error {
@@ -211,32 +210,9 @@ type requestBodyStreamReader struct {
 	closed bool
 }
 
-// Read implements io.Reader
-func (r *requestBodyStreamReader) Read(p []byte) (n int, err error) {
-	var content unsafe.Pointer
-	var contentLen int
-	if p != nil {
-		content = unsafe.Pointer(&p[0])
-		contentLen = len(p)
-	}
-
-	res := C.URLSchemeTaskRequestBodyStreamRead(r.task, content, C.int(contentLen))
-	if res > 0 {
-		return int(res), nil
-	}
-
-	switch res {
-	case 0:
-		return 0, io.EOF
-	case -1:
-		return 0, errors.New("body: stream error")
-	case -2:
-		return 0, errors.New("body: no stream defined")
-	case -3:
-		return 0, io.ErrClosedPipe
-	default:
-		return 0, fmt.Errorf("body: unknown error %d", res)
-	}
+// readStream is the native read behind requestBodyStreamReader.Read.
+func (r *requestBodyStreamReader) readStream(buf unsafe.Pointer, bufLen int) int {
+	return int(C.URLSchemeTaskRequestBodyStreamRead(r.task, buf, C.int(bufLen)))
 }
 
 func (r *requestBodyStreamReader) Close() error {

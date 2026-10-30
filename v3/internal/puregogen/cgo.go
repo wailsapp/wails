@@ -1,0 +1,261 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"go/ast"
+	"go/format"
+	"go/parser"
+	"go/token"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+
+	"golang.org/x/tools/go/ast/astutil"
+)
+
+type cgoPort struct {
+	Build               string            `json:"build"`
+	PkgConfig           []string          `json:"pkg_config"`
+	Sources             map[string]string `json:"sources"`
+	Bindings            string            `json:"bindings"`
+	Shims               []string          `json:"shims"`
+	IntegerHandles      []string          `json:"integer_handles"`
+	IntegerCallbackData []string          `json:"integer_callback_data"`
+	// Guards maps a function in a source file to a call inserted as its first
+	// statement, e.g. a startup check that reports a failed library load.
+	Guards map[string]string `json:"guards"`
+}
+
+// portCgo uses cmd/cgo only as a build-time C ABI extractor. The output contains
+// no runtime/cgo, linknames, compiled C, or calls into the cgo runtime. Existing
+// Go control flow is rewritten mechanically; native C helper bodies must have
+// explicit pure-Go shims. This keeps bug fixes in the reference backend from
+// silently disappearing in a hand-maintained second copy.
+func portCgo(path string, check bool) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var config cgoPort
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&config); err != nil {
+		return err
+	}
+	dir, err := os.MkdirTemp("", "puregogen-abi-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	flags, err := exec.Command("pkg-config", append([]string{"--cflags"}, config.PkgConfig...)...).Output()
+	if err != nil {
+		return fmt.Errorf("pkg-config: %w", err)
+	}
+	sources := make([]string, 0, len(config.Sources))
+	for source := range config.Sources {
+		sources = append(sources, source)
+	}
+	sort.Strings(sources)
+	args := append([]string{"tool", "cgo", "-objdir", dir, "--"}, strings.Fields(string(flags))...)
+	args = append(args, sources...)
+	cmd := exec.Command("go", args...)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("extract C ABI: %w\n%s", err, output)
+	}
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, filepath.Join(dir, "_cgo_gotypes.go"), nil, 0)
+	if err != nil {
+		return err
+	}
+	handles := map[string]bool{}
+	for _, name := range config.IntegerHandles {
+		handles["_Ctype_"+name] = true
+	}
+	astutil.Apply(file, func(cursor *astutil.Cursor) bool {
+		ptr, ok := cursor.Node().(*ast.StarExpr)
+		if !ok {
+			return true
+		}
+		name, ok := ptr.X.(*ast.Ident)
+		if ok && handles[name.Name] {
+			cursor.Replace(ast.NewIdent("uintptr"))
+			return false
+		}
+		return true
+	}, nil)
+	shims := map[string]bool{}
+	for _, name := range config.Shims {
+		shims[name] = true
+	}
+	names := map[string]string{}
+	macros := map[string]bool{}
+	var decls []ast.Decl
+	var bindings []string
+	var callbacks []string
+	for _, decl := range file.Decls {
+		switch decl := decl.(type) {
+		case *ast.GenDecl:
+			for _, spec := range decl.Specs {
+				switch spec := spec.(type) {
+				case *ast.TypeSpec:
+					if !strings.HasPrefix(spec.Name.Name, "_Ctype_") {
+						continue
+					}
+					names[strings.TrimPrefix(spec.Name.Name, "_Ctype_")] = spec.Name.Name
+					if sel, ok := spec.Type.(*ast.SelectorExpr); ok && sel.Sel.Name == "Incomplete" {
+						spec.Type = &ast.StructType{Fields: &ast.FieldList{}}
+					}
+					decls = append(decls, &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{spec}})
+				case *ast.ValueSpec:
+					name := spec.Names[0].Name
+					if strings.HasPrefix(name, "_Ciconst_") || strings.HasPrefix(name, "_Csconst_") {
+						names[name[len("_Ciconst_"):]] = name
+						decls = append(decls, &ast.GenDecl{Tok: token.CONST, Specs: []ast.Spec{spec}})
+					} else if strings.HasPrefix(name, "_Cfpvar_fp_") {
+						callback := strings.TrimPrefix(name, "_Cfpvar_fp_")
+						names[callback] = name
+						callbacks = append(callbacks, callback)
+					}
+				}
+			}
+		case *ast.FuncDecl:
+			name := decl.Name.Name
+			if strings.HasPrefix(name, "_Cmacro_") {
+				cname := strings.TrimPrefix(name, "_Cmacro_")
+				if !shims[cname] {
+					return fmt.Errorf("macro %s requires an explicit Go shim", cname)
+				}
+				names[cname], macros[cname] = name, true
+			} else if strings.HasPrefix(name, "_Cfunc_") {
+				cname := strings.TrimPrefix(name, "_Cfunc_")
+				names[cname] = name
+				if shims[cname] {
+					continue
+				}
+				if decl.Type.Results != nil && len(decl.Type.Results.List) == 1 {
+					if typ, ok := decl.Type.Results.List[0].Type.(*ast.Ident); ok && typ.Name == "_Ctype_void" {
+						decl.Type.Results = nil
+					}
+				}
+				decls = append(decls, &ast.GenDecl{Tok: token.VAR, Specs: []ast.Spec{&ast.ValueSpec{Names: []*ast.Ident{ast.NewIdent(name)}, Type: decl.Type}}})
+				bindings = append(bindings, cname)
+			}
+		}
+	}
+	var out bytes.Buffer
+	fmt.Fprintf(&out, "// Code generated by internal/puregogen from CGo source and C headers; DO NOT EDIT.\n//go:build %s\n\npackage %s\n\nimport (\"unsafe\"; \"github.com/ebitengine/purego\")\n\n", config.Build, file.Name.Name)
+	for _, decl := range decls {
+		if err := format.Node(&out, fset, decl); err != nil {
+			return err
+		}
+		out.WriteByte('\n')
+	}
+	for _, name := range callbacks {
+		fmt.Fprintf(&out, "var _Cfpvar_fp_%s = unsafe.Pointer(purego.NewCallback(%s))\n", name, name)
+	}
+	fmt.Fprintln(&out, "func registerGTK3Functions(lib uintptr, missing *[]string) {")
+	for _, name := range bindings {
+		fmt.Fprintf(&out, "bindGTK3Symbol(missing, lib, &_Cfunc_%s, %q)\n", name, name)
+	}
+	fmt.Fprintln(&out, "}")
+	if err := writeGenerated(config.Bindings, out.Bytes(), check); err != nil {
+		return err
+	}
+	for _, source := range sources {
+		if err := rewriteCgoSource(source, config.Sources[source], config.Build, names, macros, config.IntegerCallbackData, config.Guards, check); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func rewriteCgoSource(source, output, build string, names map[string]string, macros map[string]bool, integerData []string, guards map[string]string, check bool) error {
+	fset := token.NewFileSet()
+	// Comments include C preambles and //export directives; none belong in the
+	// generated Go backend. The reference files retain all explanatory comments.
+	file, err := parser.ParseFile(fset, source, nil, 0)
+	if err != nil {
+		return err
+	}
+	astutil.DeleteImport(fset, file, "C")
+	var rewriteErr error
+	astutil.Apply(file, func(cursor *astutil.Cursor) bool {
+		sel, ok := cursor.Node().(*ast.SelectorExpr)
+		if !ok {
+			return true
+		}
+		pkg, ok := sel.X.(*ast.Ident)
+		if !ok || pkg.Name != "C" {
+			return true
+		}
+		name, ok := names[sel.Sel.Name]
+		if !ok {
+			rewriteErr = fmt.Errorf("%s: C.%s missing from extracted ABI", source, sel.Sel.Name)
+			return false
+		}
+		var replacement ast.Expr = ast.NewIdent(name)
+		if macros[sel.Sel.Name] {
+			replacement = &ast.CallExpr{Fun: replacement}
+		}
+		cursor.Replace(replacement)
+		return false
+	}, nil)
+	if rewriteErr != nil {
+		return rewriteErr
+	}
+	// The native library must be loaded before this reference init records the
+	// main thread. Keep startup logic otherwise identical to the cgo source.
+	for _, decl := range file.Decls {
+		fn, ok := decl.(*ast.FuncDecl)
+		if !ok {
+			continue
+		}
+		for _, name := range integerData {
+			if fn.Name.Name == name {
+				fn.Type.Params.List[len(fn.Type.Params.List)-1].Type = ast.NewIdent("uintptr")
+			}
+		}
+		if fn.Name.Name != "init" {
+			continue
+		}
+		fn.Body.List = append([]ast.Stmt{&ast.ExprStmt{X: &ast.CallExpr{Fun: ast.NewIdent("ensureGTK3Libraries")}}}, fn.Body.List...)
+	}
+	for _, decl := range file.Decls {
+		fn, ok := decl.(*ast.FuncDecl)
+		if !ok {
+			continue
+		}
+		if guard, ok := guards[fn.Name.Name]; ok {
+			fn.Body.List = append([]ast.Stmt{&ast.ExprStmt{X: &ast.CallExpr{Fun: ast.NewIdent(guard)}}}, fn.Body.List...)
+		}
+	}
+	var out bytes.Buffer
+	fmt.Fprintf(&out, "// Code generated by internal/puregogen from %s; DO NOT EDIT.\n//go:build %s\n\n", filepath.Base(source), build)
+	if err := format.Node(&out, fset, file); err != nil {
+		return err
+	}
+	return writeGenerated(output, out.Bytes(), check)
+}
+
+func writeGenerated(path string, data []byte, check bool) error {
+	formatted, err := format.Source(data)
+	if err != nil {
+		return fmt.Errorf("format %s: %w", path, err)
+	}
+	if check {
+		old, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(old, formatted) {
+			return fmt.Errorf("%s is stale; regenerate", strconv.Quote(path))
+		}
+		return nil
+	}
+	return os.WriteFile(path, formatted, 0644)
+}

@@ -42,14 +42,25 @@ const (
 	mcpEnvVar = "WAILS_MCP"
 	// mcpBuildTag is the Go build tag that compiles in the MCP service.
 	mcpBuildTag = "mcp"
+	// puregoEnvVar selects the experimental CGO-free macOS and Linux backend
+	// when set to a truthy value, so stock Taskfiles and `wails3 dev` use it
+	// without edits.
+	puregoEnvVar = "WAILS_PUREGO"
+	// puregoBuildTag is the Go build tag that selects that backend.
+	puregoBuildTag = "purego"
 )
 
 // envTags returns the build tags implied by environment variables.
 func envTags() []string {
 	var tags []string
-	switch strings.ToLower(strings.TrimSpace(os.Getenv(mcpEnvVar))) {
-	case "1", "true", "on", "yes":
-		tags = append(tags, mcpBuildTag)
+	for _, e := range []struct{ name, tag string }{
+		{mcpEnvVar, mcpBuildTag},
+		{puregoEnvVar, puregoBuildTag},
+	} {
+		switch strings.ToLower(strings.TrimSpace(os.Getenv(e.name))) {
+		case "1", "true", "on", "yes":
+			tags = append(tags, e.tag)
+		}
 	}
 	return tags
 }
@@ -79,7 +90,10 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 	return wrapTask("build", otherArgs)
 }
 
-func Package(_ *flags.Package, otherArgs []string) error {
+func Package(packageFlags *flags.Package, otherArgs []string) error {
+	if tags := mergeTags(packageFlags.Tags, envTags()...); tags != "" {
+		otherArgs = append(otherArgs, "EXTRA_TAGS="+tags)
+	}
 	return wrapTask("package", otherArgs)
 }
 

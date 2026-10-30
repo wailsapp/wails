@@ -11,6 +11,10 @@ type linuxMenuItem struct {
 	menuItem  *MenuItem
 	native    pointer
 	handlerId uint
+	// The accelerator bound to native, so it can be replaced or removed.
+	accelSet  bool
+	accelKey  uint32
+	accelMods uint32
 }
 
 func (l linuxMenuItem) setTooltip(tooltip string) {
@@ -85,17 +89,33 @@ func (l linuxMenuItem) setHidden(hidden bool) {
 	})
 }
 
-func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
-	// Set the keyboard shortcut of the menu item
-	//	var modifier C.int
-	//	var key *C.char
-	if accelerator != nil {
-		//		modifier = C.int(toMacModifier(accelerator.Modifiers))
-		//		key = C.CString(accelerator.Key)
+// setAccelerator binds the shortcut to the item (nil removes it). The item
+// keeps the binding it was given, so a later call removes exactly that one.
+func (l *linuxMenuItem) setAccelerator(accelerator *accelerator) {
+	if l.native == nil {
+		return
 	}
+	InvokeSync(func() {
+		l.clearAccelerator()
+		if accelerator == nil {
+			return
+		}
+		key := gtk3AcceleratorKeyval(accelerator.Key)
+		if key == 0 {
+			globalApplication.warning("menu accelerator %q has no GTK key", accelerator.String())
+			return
+		}
+		mods := gtk3AcceleratorModifiers(accelerator.Modifiers)
+		menuItemAddAccelerator(l.native, key, mods)
+		l.accelSet, l.accelKey, l.accelMods = true, key, mods
+	})
+}
 
-	// Convert the key to a string
-	//	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
+func (l *linuxMenuItem) clearAccelerator() {
+	if l.accelSet && l.native != nil {
+		menuItemRemoveAccelerator(l.native, l.accelKey, l.accelMods)
+	}
+	l.accelSet = false
 }
 
 func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
@@ -105,6 +125,9 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	switch item.itemType {
 	case text:
 		result.native = menuItemNew(item.label, item.bitmap)
+		if item.accelerator != nil {
+			result.setAccelerator(item.accelerator)
+		}
 
 	case checkbox:
 		result.native = menuCheckItemNew(item.label, item.bitmap)
@@ -127,6 +150,9 @@ func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
 		native:   menuRadioItemNew(group, item.label),
+	}
+	if item.accelerator != nil {
+		result.setAccelerator(item.accelerator)
 	}
 	result.setChecked(item.checked)
 	result.setDisabled(result.menuItem.disabled)

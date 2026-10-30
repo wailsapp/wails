@@ -190,6 +190,10 @@ type WebviewWindow struct {
 	keyBindings     map[string]func(Window)
 	keyBindingsLock sync.RWMutex
 
+	// menuRemoved is set by SetMenu(nil): the window shows no menu bar, not
+	// even the application menu it would otherwise fall back to.
+	menuRemoved bool
+
 	// menuBindings holds the menu bindings for the window
 	menuBindings     map[string]*MenuItem
 	menuBindingsLock sync.RWMutex
@@ -222,6 +226,13 @@ type WebviewWindow struct {
 	constraintsSaved bool
 }
 
+// SetMenu sets the window's menu bar on platforms where windows have one
+// (Linux and Windows), replacing the bar it shows. SetMenu(nil) removes the
+// bar: the window then shows no menu, not even the application menu, and the
+// removed menu's accelerators stop working in it. On a window that has not
+// started yet, it is created without a menu bar. On macOS the menu bar
+// belongs to the application, not the window, so SetMenu does nothing there:
+// use app.Menu.Set instead.
 func (w *WebviewWindow) SetMenu(menu *Menu) {
 	switch runtime.GOOS {
 	case "darwin":
@@ -231,6 +242,7 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	case "linux":
 		w.options.Linux.Menu = menu
 	}
+	w.menuRemoved = menu == nil
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setMenu(menu)
@@ -1815,6 +1827,21 @@ func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
 	w.menuBindingsLock.Lock()
 	defer w.menuBindingsLock.Unlock()
 	w.menuBindings[a.String()] = nil
+}
+
+// removeMenuBindingsOf unregisters the accelerators that items hold in this
+// window, leaving any accelerator that now belongs to another item alone.
+func (w *WebviewWindow) removeMenuBindingsOf(items []*MenuItem) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	for _, item := range items {
+		if item.accelerator == nil {
+			continue
+		}
+		if key := item.accelerator.String(); w.menuBindings[key] == item {
+			delete(w.menuBindings, key)
+		}
+	}
 }
 
 func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {

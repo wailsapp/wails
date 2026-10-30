@@ -42,6 +42,10 @@ type linuxWebviewWindow struct {
 	drag          dragInfo
 	lastX, lastY  int
 	gtkmenu       pointer
+	// menuInstalled is the explicit menu whose bar is shown in the window, so
+	// a later setMenu knows which accelerators to unregister. nil when the
+	// window shows no menu or the application menu.
+	menuInstalled *Menu
 	ctxMenuOpened bool
 
 	moveDebouncer     func(func())
@@ -302,11 +306,21 @@ func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 }
 
 func (w *linuxWebviewWindow) setMenu(menu *Menu) {
-	if menu == nil {
-		w.gtkmenu = nil
+	if w.window != nilPointer {
+		// Realised window: swap the menu bar in place. A destroyed window has
+		// no widgets left to change.
+		if !w.parent.isDestroyed() {
+			InvokeSync(func() {
+				w.replaceMenuBar(menu)
+			})
+		}
 		return
 	}
-	w.parent.options.Linux.Menu = menu
+	// Not realised yet: run() builds the menu bar from options.Linux.Menu.
+	if menu == nil {
+		w.gtkmenu = nilPointer
+		return
+	}
 	// NewMenu leaves impl nil until Update. Callers must not have to know
 	// that sequence: initialize on the GTK thread before reading native (#6232).
 	InvokeSync(func() {
@@ -317,6 +331,66 @@ func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 		return
 	}
 	w.gtkmenu = impl.native
+}
+
+// replaceMenuBar shows menu as the menu bar of a realised window, replacing
+// the bar it had, or removes the bar when menu is nil. The previous explicit
+// menu's accelerators are unregistered unless another window or the
+// application menu still uses that menu. GTK thread only.
+func (w *linuxWebviewWindow) replaceMenuBar(menu *Menu) {
+	previous := w.menuInstalled
+	style := w.parent.options.Linux.MenuStyle
+	if w.menubar != nilPointer {
+		windowDetachMenuBar(w.window, w.vbox, w.menubar, style)
+		w.menubar = nilPointer
+	}
+	w.gtkmenu = nilPointer
+	w.menuInstalled = nil
+	if previous != nil && !menuInUseElsewhere(previous, w.parent) {
+		clearMenuAccelerators(previous)
+	}
+	if menu == nil {
+		return
+	}
+	menu.Update()
+	impl, ok := menu.impl.(*linuxMenu)
+	if !ok || impl == nil {
+		return
+	}
+	w.gtkmenu = impl.native
+	w.menubar = windowAttachMenuBar(w.window, w.vbox, impl.native, style)
+	w.menuInstalled = menu
+}
+
+// menuInUseElsewhere reports whether menu is the application menu or the
+// explicit menu of a window other than self. Its accelerators must stay
+// registered then. GTK thread only.
+func menuInUseElsewhere(menu *Menu, self *WebviewWindow) bool {
+	if globalApplication == nil {
+		return false
+	}
+	if globalApplication.applicationMenu == menu {
+		return true
+	}
+	globalApplication.windowsLock.RLock()
+	defer globalApplication.windowsLock.RUnlock()
+	for _, win := range globalApplication.windows {
+		if other, ok := win.(*WebviewWindow); ok && other != self && other.options.Linux.Menu == menu {
+			return true
+		}
+	}
+	return false
+}
+
+// clearMenuAccelerators unregisters the accelerators of every item in menu,
+// submenus included.
+func clearMenuAccelerators(menu *Menu) {
+	for _, item := range menu.items {
+		unregisterMenuItemAccelerator(item.id)
+		if item.submenu != nil {
+			clearMenuAccelerators(item.submenu)
+		}
+	}
 }
 
 func (w *linuxWebviewWindow) run() {
@@ -345,7 +419,7 @@ func (w *linuxWebviewWindow) run() {
 	app := getNativeApplication()
 
 	var menu = w.parent.options.Linux.Menu
-	if menu == nil {
+	if menu == nil && !w.parent.menuRemoved {
 		menu = globalApplication.applicationMenu
 	}
 	if menu != nil {
@@ -354,7 +428,7 @@ func (w *linuxWebviewWindow) run() {
 			menu.Update()
 		})
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
-	} else if w.parent.options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+	} else if w.parent.options.UseApplicationMenu && !w.parent.menuRemoved && globalApplication.applicationMenu != nil {
 		// Use the global application menu if opted in
 		InvokeSync(func() {
 			globalApplication.applicationMenu.Update()
@@ -362,7 +436,10 @@ func (w *linuxWebviewWindow) run() {
 		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
 	}
 
-	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	w.window, w.webview, w.vbox, w.menubar = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	if explicit := w.parent.options.Linux.Menu; explicit != nil && w.menubar != nilPointer {
+		w.menuInstalled = explicit
+	}
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableFileDrop {
@@ -535,4 +612,29 @@ func (w *linuxWebviewWindow) toggleMenuBar()                    {}
 func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
 func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}
 func (w *linuxWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}
+
+func (w *linuxWebviewWindow) flash(_ bool) {}
+
+func (w *linuxWebviewWindow) zoomReset() {
+	w.setZoom(1.0)
+}
+
+// getLinuxWebviewWindow safely extracts a linuxWebviewWindow from a Window interface
+func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
+	if window == nil {
+		return nil
+	}
+
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return nil
+	}
+
+	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
+	if !ok {
+		return nil
+	}
+
+	return lw
 }

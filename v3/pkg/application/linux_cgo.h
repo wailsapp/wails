@@ -137,6 +137,8 @@ char* build_accelerator_string(guint key, GdkModifierType mods);
 void set_action_enabled(const char *action_name, gboolean enabled);
 void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
+char* get_action_state_string(const char *action_name);
+void set_action_state_string(const char *action_name, const char *value);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
 void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);

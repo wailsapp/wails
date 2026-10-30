@@ -131,17 +131,11 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
-	if menu == nil {
-		// Match macOS, where SetMenu(nil) is a no-op.
-		return
-	}
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
-	// A nil menu means "no menu", which is what macOS makes of it. Update
-	// dereferences its receiver once the application is running, so without
-	// this the call panicked rather than doing nothing (#6104).
 	if menu == nil {
+		w.removeMenu()
 		return
 	}
 	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
@@ -172,8 +166,10 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	w.menu = replacement
 
 	// Only once the window has been given the new menu: destroying one that is
-	// still assigned to a window leaves it pointing at a freed handle.
+	// still assigned to a window leaves it pointing at a freed handle. Its
+	// accelerators go too, except those the replacement still holds.
 	if previous != nil {
+		w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, replacement))
 		previous.Destroy()
 	}
 
@@ -201,6 +197,47 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 		// Log warning about menubar visibility issue
 		globalApplication.debug("Warning: Menubars may be invisible when using translucent backgrounds with Mica/Acrylic/Tabbed effects", "window", w.parent.id)
 	}
+}
+
+// removeMenu takes the menu bar off the window (SetMenu(nil)): the window
+// shows no bar, and the removed menu's accelerators stop working in it.
+func (w *windowsWebviewWindow) removeMenu() {
+	previous := w.menu
+	if previous == nil {
+		return
+	}
+	// The window must let go of the menu before it is destroyed: one still
+	// assigned to a window leaves it pointing at a freed handle.
+	if !w32.SetMenu(w.hwnd, 0) {
+		return
+	}
+	previous.takeRuntimeBitmaps()
+	w.menu = nil
+	w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, nil))
+	previous.Destroy()
+	w32.DrawMenuBar(w.hwnd)
+	// The client area grows by the bar's height: resize the webview into it.
+	if w.chromium != nil {
+		w.chromium.Resize()
+	}
+}
+
+// itemsOnlyIn returns the items of menu that replacement (which may be nil)
+// does not also hold.
+func itemsOnlyIn(menu, replacement *Win32Menu) []*MenuItem {
+	kept := make(map[*MenuItem]bool)
+	if replacement != nil {
+		for _, item := range replacement.menuMapping {
+			kept[item] = true
+		}
+	}
+	var items []*MenuItem
+	for _, item := range menu.menuMapping {
+		if !kept[item] {
+			items = append(items, item)
+		}
+	}
+	return items
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -530,7 +567,7 @@ func (w *windowsWebviewWindow) run() {
 			w.menu = NewApplicationMenu(w, userMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
-		} else if options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		} else if options.UseApplicationMenu && !w.parent.menuRemoved && globalApplication.applicationMenu != nil {
 			// Use the global application menu if opted in
 			globalApplication.applicationMenu.Update()
 			w.menu = NewApplicationMenu(w, globalApplication.applicationMenu)

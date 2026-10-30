@@ -12,7 +12,7 @@ sourcePath: "guides/mcp-service.md"
 
 Wails v3 内置了[模型上下文协议](https://modelcontextprotocol.io)（MCP）服务器，LLM 智能体（Claude Code、IDE 助手或任何 MCP 客户端）可通过它检查、测试和操控<strong>正在运行的</strong> Wails 应用。
 
-如需自动化项目生命周期，请使用单独的`wails3 mcp` CLI 服务器。智能体可通过它检查和初始化项目、运行诊断、启动构建和开发任务、生成绑定、运行指定的 Taskfile 任务，以及获取有界的任务输出。默认情况下，CLI 服务器仅限访问当前目录，且不提供任意 shell 命令执行功能。有关传输、身份验证和工具的详细信息，请参阅[CLI MCP 文档](/guides/cli/#mcp)。
+如需自动化项目生命周期，请使用单独的`wails3 mcp` CLI 服务器。智能体可通过它检查和初始化项目、运行诊断、启动构建和开发任务、生成绑定、运行指定的 Taskfile 任务，以及获取有界的任务输出。默认情况下，CLI 服务器仅限访问当前目录，且不提供任意 shell 命令执行功能。有关传输、身份验证和工具的详细信息，请参阅[CLI MCP 文档](/zh-cn/guides/cli/#mcp)。
 
 启用后，连接到应用的智能体可以：
 
