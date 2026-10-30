@@ -50,7 +50,8 @@ type releaseOptions struct {
 	// metadata is committed, the branch is NOT pushed (it would not be a
 	// fast-forward) and the changelog is left alone. The caller syncs the
 	// version files back to the branch afterwards.
-	tagOnly bool
+	tagOnly     bool
+	prepareDocs func(string, bool) error
 }
 
 var errNoUnreleasedContent = errors.New("No unreleased changelog content found.")
@@ -858,6 +859,10 @@ func runRelease(opts releaseOptions) error {
 		}
 	}
 
+	if err := opts.prepareDocumentation(repoDir, newVersion); err != nil {
+		return fmt.Errorf("documentation validation failed before release commit/tag: %w", err)
+	}
+
 	releaseBody := buildReleaseBodyFor(newVersion, changelogContent, policy)
 	writeGitHubOutput("release_kind", policy.Kind)
 	writeGitHubOutput("release_npm_tag", policy.NPMTag)
@@ -883,44 +888,16 @@ func runRelease(opts releaseOptions) error {
 		}
 	}
 
-	filesToAdd := []string{
-		"v3/internal/version/version.txt",
-		runtimePackageJSON,
-		runtimePackageLock,
-	}
-	if !opts.tagOnly {
-		filesToAdd = append(filesToAdd, "docs/mpress/content/changelog.md", "v3/UNRELEASED_CHANGELOG.md")
-	}
-	if err := git.add(filesToAdd...); err != nil {
-		return fmt.Errorf("failed to stage release files: %w", err)
-	}
-
-	hasChanges, err := git.hasStagedChanges()
-	if err != nil {
-		return fmt.Errorf("failed to inspect staged changes: %w", err)
-	}
-	if !hasChanges {
-		return errors.New("no changes were staged for commit")
-	}
-
-	// Do not add [skip ci] here: version.txt changes must trigger
-	// publish-npm.yml so the matching runtime package is published.
-	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog", newVersion)
-	if err := git.commit(commitMessage); err != nil {
-		return fmt.Errorf("failed to commit release changes: %w", err)
-	}
-
-	if !opts.tagOnly {
-		if err := git.push(opts.branch, repoSlug, token); err != nil {
-			return err
-		}
+	if err := git.commitRelease(newVersion, opts.tagOnly, policy.Prerelease); err != nil {
+		return err
 	}
 
 	if err := git.createAnnotatedTag(newVersion, fmt.Sprintf("Release %s", newVersion)); err != nil {
 		return fmt.Errorf("failed to create git tag: %w", err)
 	}
 
-	if err := git.pushTag(newVersion, repoSlug, token); err != nil {
+	// A branch-triggered docs build must see both the registry commit and tag.
+	if err := git.pushRelease(opts.branch, newVersion, repoSlug, token, opts.tagOnly); err != nil {
 		return err
 	}
 
@@ -936,6 +913,24 @@ func runRelease(opts releaseOptions) error {
 	writeGitHubOutput("release_outcome", "success")
 	fmt.Println("🎉 Release completed successfully.")
 	return nil
+}
+
+func (opts releaseOptions) prepareDocumentation(repoDir, version string) error {
+	if opts.prepareDocs != nil {
+		return opts.prepareDocs(version, opts.dryRun)
+	}
+	return prepareReleaseDocumentation(repoDir, version, opts.dryRun)
+}
+
+func prepareReleaseDocumentation(repoDir, version string, dryRun bool) error {
+	args := []string{filepath.Join(repoDir, "docs", "mpress", "scripts", "release_docs.py"), "prepare", "--root", repoDir, "--version", version}
+	if dryRun {
+		args = append(args, "--dry-run")
+	}
+	command := exec.Command("python3", args...)
+	command.Dir = repoDir
+	command.Stdout, command.Stderr = os.Stdout, os.Stderr
+	return command.Run()
 }
 
 // selectAPIToken picks the token used for git pushes and the GitHub REST
@@ -1202,11 +1197,49 @@ func (g *gitRunner) currentBranch() (string, error) {
 	return branch, nil
 }
 
-func (g *gitRunner) push(branch, repoSlug, token string) error {
-	fmt.Printf("⬆️  Pushing changes to %s\n", branch)
-	authURL := buildAuthURL(repoSlug, token)
-	if err := g.run("push", authURL, "HEAD:"+branch); err != nil {
-		return fmt.Errorf("failed to push branch %s: %w", branch, err)
+func (g *gitRunner) commitRelease(newVersion string, tagOnly, prerelease bool) error {
+	filesToAdd := []string{
+		"v3/internal/version/version.txt",
+		runtimePackageJSON,
+		runtimePackageLock,
+	}
+	if !tagOnly {
+		filesToAdd = append(filesToAdd, "docs/mpress/content/changelog.md", "v3/UNRELEASED_CHANGELOG.md")
+	}
+	if !prerelease {
+		filesToAdd = append(filesToAdd, "docs/mpress/releases.json")
+	}
+	if err := g.add(filesToAdd...); err != nil {
+		return fmt.Errorf("failed to stage release files: %w", err)
+	}
+
+	hasChanges, err := g.hasStagedChanges()
+	if err != nil {
+		return fmt.Errorf("failed to inspect staged changes: %w", err)
+	}
+	if !hasChanges {
+		return errors.New("no changes were staged for commit")
+	}
+
+	// Do not add [skip ci] here: version.txt changes must trigger
+	// publish-npm.yml so the matching runtime package is published.
+	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog", newVersion)
+	if err := g.commit(commitMessage); err != nil {
+		return fmt.Errorf("failed to commit release changes: %w", err)
+	}
+
+	return nil
+}
+
+func (g *gitRunner) pushRelease(branch, tag, repoSlug, token string, tagOnly bool) error {
+	refs := []string{"refs/tags/" + tag}
+	if !tagOnly {
+		refs = append(refs, "HEAD:refs/heads/"+branch)
+	}
+	fmt.Printf("⬆️  Pushing release refs atomically: %v\n", refs)
+	args := append([]string{"push", "--atomic", buildAuthURL(repoSlug, token)}, refs...)
+	if err := g.run(args...); err != nil {
+		return fmt.Errorf("failed to push release refs: %w", err)
 	}
 	return nil
 }
@@ -1214,15 +1247,6 @@ func (g *gitRunner) push(branch, repoSlug, token string) error {
 func (g *gitRunner) createAnnotatedTag(tag, message string) error {
 	fmt.Printf("🏷️  Creating tag %s\n", tag)
 	return g.run("tag", "-a", "-f", tag, "-m", message)
-}
-
-func (g *gitRunner) pushTag(tag, repoSlug, token string) error {
-	fmt.Printf("⬆️  Pushing tag %s\n", tag)
-	authURL := buildAuthURL(repoSlug, token)
-	if err := g.run("push", authURL, tag); err != nil {
-		return fmt.Errorf("failed to push tag %s: %w", tag, err)
-	}
-	return nil
 }
 
 func resolveRepoSlug(repoDir string) (string, error) {

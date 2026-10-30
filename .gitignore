@@ -104,3 +104,10 @@ go.work.sum
 .mpress/
 .wrangler/
 history/
+
+# Generated M-Press release captures and publication staging
+/.mpress/
+/docs/mpress/.mpress/
+/docs/mpress/site.new/
+/docs/mpress/site.previous/
+/docs/mpress/releases/

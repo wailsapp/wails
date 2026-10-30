@@ -202,10 +202,11 @@ func TestRunRelease_ExplicitVersionContinuesWithEmptyChangelog(t *testing.T) {
 	t.Setenv("GITHUB_OUTPUT", githubOutput)
 
 	opts := releaseOptions{
-		version: "3.0.0-beta.9",
-		dryRun:  true,
-		branch:  defaultReleaseBranch,
-		target:  defaultReleaseTarget,
+		prepareDocs: func(string, bool) error { return nil },
+		version:     "3.0.0-beta.9",
+		dryRun:      true,
+		branch:      defaultReleaseBranch,
+		target:      defaultReleaseTarget,
 	}
 	if err := runRelease(opts); err != nil {
 		t.Fatalf("runRelease() failed: %v", err)
