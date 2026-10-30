@@ -20,6 +20,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix a second instance launched while the first is quitting handing its launch to the exiting app, by releasing the single-instance lock (the D-Bus name on Linux, the mutex on Windows) at the start of shutdown
 - Fix assorted v3 nightly build issues and clean up dependencies in [PR](https://github.com/wailsapp/wails/pull/6519) by @taliesin-ai
 
 ## Deprecated

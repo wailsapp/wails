@@ -42,13 +42,20 @@ func (l *windowsLock) acquire(uniqueID string) error {
 	l.windowName = id + "-siw"
 	mutexName := id + "-sim"
 
-	_, err := windows.CreateMutex(nil, false, windows.StringToUTF16Ptr(mutexName))
+	// CreateMutex returns a handle to the existing mutex together with
+	// ERROR_ALREADY_EXISTS, so a second instance closes it before handing off.
+	handle, err := windows.CreateMutex(nil, false, windows.StringToUTF16Ptr(mutexName))
 	if err != nil {
-		// Find the window
+		if handle != 0 {
+			windows.CloseHandle(handle)
+		}
 		return alreadyRunningError
-	} else {
-		l.hwnd = createEventTargetWindow(l.className, l.windowName)
 	}
+	// Kept so release can close it: the mutex must go when the app starts
+	// shutting down, or a new instance would find it and hand off to a window
+	// that no longer exists.
+	l.handle = syscall.Handle(handle)
+	l.hwnd = createEventTargetWindow(l.className, l.windowName)
 
 	return nil
 }
