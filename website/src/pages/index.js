@@ -1,5 +1,4 @@
 import React from "react";
-import clsx from "clsx";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
@@ -13,7 +12,7 @@ function HomepageHeader() {
     const {siteConfig} = useDocusaurusContext();
     return (
         <div>
-            <header className={clsx("hero", styles.heroBanner)}>
+            <header className={`hero ${styles.heroBanner}`}>
                 <div className="container">
                     <div className="col">
                         <Carousel

@@ -5,7 +5,7 @@ slug: "reference/frontend-runtime"
 sourcePath: "reference/frontend-runtime.md"
 ---
 
-Runtime frontend Wails adalah pustaka standar untuk aplikasi Wails. Runtime ini menyediakan sejumlah fitur yang dapat digunakan dalam aplikasi Anda, termasuk:
+Runtime frontend Wails adalah pustaka standar untuk aplikasi Wails. Pustaka ini menyediakan sejumlah fitur yang dapat digunakan dalam aplikasi Anda, termasuk:
 
 - Pengelolaan jendela
 - Dialog
@@ -16,7 +16,7 @@ Runtime frontend Wails adalah pustaka standar untuk aplikasi Wails. Runtime ini 
 - Peristiwa
 - Menu konteks
 - Layar
-- WML (Bahasa Markah Wails)
+- WML (Wails Markup Language)
 
 Runtime diperlukan untuk integrasi antara Go dan frontend. Ada 2 cara untuk mengintegrasikan runtime:
 
@@ -41,7 +41,7 @@ Beberapa proyek tidak menggunakan bundler JavaScript dan mungkin lebih memilih v
 wails3 generate runtime
 ```
 
-Perintah tersebut akan menghasilkan file `runtime.js` (dan `runtime.debug.js`) di direktori saat ini. File ini merupakan modul ES yang dapat diimpor oleh skrip aplikasi Anda seperti paket npm, tetapi API-nya juga diekspor ke objek window global. Jadi, untuk aplikasi yang lebih sederhana, Anda dapat menggunakannya sebagai berikut:
+Perintah tersebut akan menghasilkan berkas `runtime.js` (dan `runtime-debug.js`) di direktori saat ini. Berkas ini adalah modul ES yang dapat diimpor oleh skrip aplikasi Anda seperti paket npm, tetapi API-nya juga diekspor ke objek window global. Karena itu, untuk aplikasi yang lebih sederhana, Anda dapat menggunakannya sebagai berikut:
 
 ```html
 <html>
@@ -58,22 +58,22 @@ Perintah tersebut akan menghasilkan file `runtime.js` (dan `runtime.debug.js`) d
 ```
 
 @note{type="caution"}
-Penting untuk menyertakan atribut `type="module"` pada tag `<script>` yang memuat runtime dan menunggu hingga halaman dimuat sepenuhnya sebelum memanggil API karena skrip dengan atribut `type="module"` berjalan secara asinkron.
+Atribut `type="module"` harus disertakan pada tag `<script>` yang memuat runtime, dan Anda harus menunggu hingga halaman dimuat sepenuhnya sebelum memanggil API karena skrip dengan atribut `type="module"` berjalan secara asinkron.
 
 @end
 
 ## Inisialisasi
 
-Selain fungsi API, runtime menyediakan dukungan untuk menu konteks dan penyeretan jendela. Fitur-fitur ini hanya akan berfungsi sebagaimana mestinya setelah runtime diinisialisasi. Meskipun Anda tidak menggunakan API, pastikan untuk menyertakan pernyataan impor efek samping di suatu tempat dalam kode frontend Anda:
+Selain fungsi API, runtime menyediakan dukungan untuk menu konteks dan penyeretan jendela. Fitur-fitur ini hanya akan berfungsi sebagaimana mestinya setelah runtime diinisialisasi. Meskipun tidak menggunakan API, pastikan Anda menyertakan pernyataan impor berefek samping di suatu tempat dalam kode frontend:
 
 ```javascript
 import "@wailsio/runtime";
 ```
 
-Bundler Anda seharusnya mendeteksi adanya efek samping dan menyertakan semua kode inisialisasi yang diperlukan dalam build.
+Bundler Anda semestinya mendeteksi adanya efek samping dan menyertakan semua kode inisialisasi yang diperlukan dalam build.
 
 @note{type="info"}
-Jika Anda lebih memilih bundel siap pakai, cukup tambahkan tag skrip seperti yang ditunjukkan di atas.
+Jika Anda memilih bundel siap pakai, cukup tambahkan tag skrip seperti yang ditunjukkan di atas.
 
 @end
 
@@ -90,14 +90,16 @@ import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
+
+Argumennya adalah direktori binding yang dihasilkan, relatif terhadap proyek Vite. Hasilkan binding sebelum membangun frontend.
 
 ### Manfaat
 
 - **Pemuatan Ulang Otomatis**: Binding peristiwa dibuat ulang dan dimuat ulang secara otomatis saat Anda menjalankan `wails3 generate bindings`
-- **Mode Pengembangan**: Terintegrasi lancar dengan `wails3 dev` untuk pembaruan seketika
+- **Mode Pengembangan**: Terintegrasi mulus dengan `wails3 dev` untuk pembaruan instan
 - **Keamanan Tipe**: Dukungan penuh TypeScript dengan pelengkapan otomatis dan pemeriksaan tipe
 
 ### Penggunaan dengan Pendaftaran Peristiwa
@@ -115,7 +117,7 @@ func init() {
 }
 ```
 
-Buat binding:
+Hasilkan binding:
 
 ```bash
 wails3 generate bindings
@@ -134,10 +136,10 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## Referensi API
@@ -150,15 +152,14 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### Peristiwa
 
-Sistem peristiwa untuk komunikasi antara Go dan JavaScript.
+Sistem peristiwa untuk komunikasi antara Go dan JavaScript. Ekspor peristiwa yang dihasilkan, seperti `UserUpdated`, merupakan konstanta string, bukan fungsi pembuat payload. Generator memperluas `CustomEvents` untuk memetakan nama peristiwa yang terdaftar ke tipe payload. Tipe-tipe di bawah ini (`WailsEventName`, `WailsEventCallback`, `WailsEventData`) diekspor oleh modul Events.
 
 #### On()
 
 Daftarkan callback untuk suatu peristiwa.
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Mengembalikan:** Fungsi untuk berhenti berlangganan
@@ -189,8 +190,7 @@ Events.On(UserLogin, (event) => {
 Daftarkan callback yang hanya dijalankan satu kali.
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Contoh:**
@@ -205,14 +205,14 @@ Events.Once('app-ready', () => {
 
 #### Emit()
 
-Pancarkan peristiwa ke backend Go atau jendela lain.
+Kirim peristiwa ke backend Go atau jendela lain.
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
-**Mengembalikan:** Promise yang di-resolve menjadi `true` jika peristiwa dibatalkan, atau `false` jika tidak
+**Mengembalikan:** Promise yang diselesaikan dengan nilai `true` jika peristiwa dibatalkan, atau `false` jika tidak
 
 **Contoh:**
 
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')
@@ -360,7 +360,7 @@ function Minimise(): Promise<void>
 function Maximise(): Promise<void>
 ```
 
-**Fullscreen()** - Beralih ke layar penuh
+**Fullscreen()** - Mengaktifkan mode layar penuh
 
 ```typescript
 function Fullscreen(): Promise<void>
@@ -410,7 +410,7 @@ function Name(): Promise<string>
 function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
 ```
 
-**SetAlwaysOnTop(alwaysOnTop)** - Menjaga jendela tetap berada di atas
+**SetAlwaysOnTop(alwaysOnTop)** - Menjaga jendela tetap di atas
 
 ```typescript
 function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
@@ -490,7 +490,7 @@ function ZoomReset(): Promise<void>
 
 #### Pencetakan
 
-**Print()** - Membuka dialog pencetakan native
+**Print()** - Membuka dialog cetak native
 
 ```typescript
 function Print(): Promise<void>
@@ -505,7 +505,7 @@ import { Window } from '@wailsio/runtime'
 await Window.Print()
 ```
 
-**Catatan:** Tindakan ini membuka dialog pencetakan native dari sistem operasi sehingga pengguna dapat memilih pengaturan printer dan mencetak konten jendela saat ini. Tidak seperti `window.print()` yang mungkin tidak berfungsi di webview, fungsi ini menggunakan API pencetakan native platform.
+**Catatan:** Ini membuka dialog cetak native sistem operasi sehingga pengguna dapat memilih pengaturan printer dan mencetak konten jendela saat ini. Berbeda dengan `window.print()` yang mungkin tidak berfungsi di webview, fitur ini menggunakan API pencetakan native platform.
 
 ### Papan Klip
 
@@ -697,7 +697,7 @@ console.log('Primary screen:', primary.Name)
 
 ### Dialog
 
-Dialog bawaan sistem operasi dari JavaScript.
+Dialog native sistem operasi dari JavaScript.
 
 #### Info()
 
@@ -801,7 +801,7 @@ WML menyediakan atribut deklaratif untuk tindakan umum. Tambahkan atribut ke ele
 
 #### Atribut
 
-**wml-event** - Memancarkan peristiwa saat diklik
+**wml-event** - Memancarkan event saat diklik
 
 ```html
 <button wml-event="save-clicked">Save</button>
@@ -909,17 +909,17 @@ screens.forEach(screen => {
 - **Tangani promise** - Semua metode mengembalikan promise
 - **Gunakan WML untuk tindakan sederhana** - Lebih ringkas daripada JavaScript
 - **Periksa nilai kembalian** - Terutama untuk dialog
-- **Berhenti berlangganan peristiwa** - Bersihkan setelah selesai
+- **Berhenti berlangganan event** - Bersihkan setelah selesai
 
-### ❌ Jangan
+### ❌ Jangan lakukan
 
 - **Jangan lupa menggunakan await** - Sebagian besar metode bersifat asinkron
-- **Jangan blokir UI** - Gunakan async/await dengan benar
-- **Jangan abaikan kesalahan** - Selalu tangani penolakan promise
+- **Jangan memblokir UI** - Gunakan async/await dengan benar
+- **Jangan abaikan error** - Selalu tangani rejection
 
 ## Dukungan TypeScript
 
-Runtime menyertakan definisi TypeScript yang lengkap:
+Runtime menyertakan definisi TypeScript lengkap:
 
 ```typescript
 import { Events, Window } from '@wailsio/runtime'

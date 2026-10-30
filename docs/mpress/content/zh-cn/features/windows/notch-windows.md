@@ -79,4 +79,4 @@ alert.Close()
 
 @end
 
-请参阅[notch-notification 示例](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification)。它是一个紧凑的系统监视器，其 JavaScript 运行时状态在反复显示和隐藏通知后仍会保留。
+请参阅[notch-notification 示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification)。它是一个紧凑的系统监视器，其 JavaScript 运行时状态在反复显示和隐藏通知后仍会保留。

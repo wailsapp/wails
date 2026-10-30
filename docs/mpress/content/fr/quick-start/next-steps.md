@@ -1,34 +1,52 @@
 ---
 title: "Étapes suivantes"
-description: "Que faire après avoir créé votre première application"
+description: "Pour aller plus loin après avoir créé votre première application"
 slug: "quick-start/next-steps"
 sourcePath: "quick-start/next-steps.md"
 ---
 
-Vous avez créé votre première application Wails et en maîtrisez les bases. Voici comment poursuivre.
+Vous avez créé votre première application Wails. Suivez le parcours d’apprentissage ci-dessous ou accédez directement à un guide si vous savez déjà ce que vous souhaitez créer.
 
 ## En savoir plus
 
-Entraînez-vous en créant des applications complètes :
+Continuez votre apprentissage en réalisant une application complète à la fois :
 
-- [Application de gestion des tâches](/tutorials/02-todo-vanilla/) — opérations CRUD, gestion de l’état, interface utilisateur moderne
-- [Tous les tutoriels](/tutorials/overview/) — applications de prise de notes, tableaux de bord, applications de la zone de notification, et plus encore
+1. **[Créez un service de génération de codes QR](/tutorials/01-creating-a-service/).** Entraînez-vous à exposer la logique Go à votre frontend par l’intermédiaire d’un service.
+2. **[Créez une liste de tâches](/tutorials/02-todo-vanilla/).** Ajoutez, modifiez et supprimez les données de l’application au moyen d’appels de service.
+3. **[Créez une application de prise de notes](/tutorials/03-notes-vanilla/).** Manipulez des fichiers, des boîtes de dialogue natives et des données enregistrées.
+
+Lorsque vous serez prêt à explorer la gestion des versions, suivez le [tutoriel sur les applications à mise à jour automatique](/tutorials/04-self-update-a-wails-app/). Consultez [tous les tutoriels](/tutorials/overview/) pour connaître les acquis de chaque leçon.
 
 ## Fonctionnalités
 
-Wails fournit des fonctionnalités de bureau natives :
+**Vous développez déjà votre propre application ?** Consultez le guide pratique correspondant à la tâche qui vous occupe :
 
-- [Fenêtres](/features/windows/basics/) — fenêtres multiples, fenêtres sans cadre, positionnement
-- [Menus](/features/menus/application/) — menus d’application, menus contextuels, zone de notification
-- [Boîtes de dialogue](/features/dialogs/file/) — ouverture et enregistrement de fichiers, boîtes de dialogue de message
-- [Événements](/features/events/system/) — communication entre les composants
-- [Liaisons](/features/bindings/methods/) — appels Go ↔ JavaScript avec typage sûr
-- [Presse-papiers](/features/clipboard/basics/) — opérations de copier-coller
-- [Glisser-déposer](/features/drag-and-drop/files/) — glisser-déposer de fichiers
-- [Clavier](/features/keyboard/shortcuts/) — raccourcis globaux
+| Je souhaite… | Commencez ici |
+| --- | --- |
+| Appeler du code Go depuis mon frontend | [Appeler du code Go depuis JavaScript](/features/bindings/methods/) |
+| Ouvrir ou gérer une fenêtre | [Principes de base des fenêtres](/features/windows/basics/) |
+| Ajouter des menus natifs ou une icône dans la zone de notification | [Menus de l’application](/features/menus/application/) ou [menus de la zone de notification](/features/menus/systray/) |
+| Demander à l’utilisateur d’ouvrir ou d’enregistrer un fichier | [Boîtes de dialogue de sélection de fichiers](/features/dialogs/file/) |
+| Envoyer des événements entre les composants | [Système d’événements](/features/events/system/) |
+| Copier du texte ou accepter des fichiers déposés | [Presse-papiers](/features/clipboard/basics/) ou [glisser-déposer de fichiers](/features/drag-and-drop/files/) |
+| Ajouter des raccourcis clavier | [Raccourcis clavier](/features/keyboard/shortcuts/) |
+| Compiler et empaqueter mon application | [Compilation d’applications](/guides/build/building/), puis empaquetage pour [Windows](/guides/build/windows/), [macOS](/guides/build/macos/) ou [Linux](/guides/build/linux/) |
+
+Ces pages se trouvent sous **Guides pratiques** dans la barre latérale. Vous pouvez ouvrir la rubrique pertinente sans lire toute la section dans l’ordre.
+
+## Comprendre le fonctionnement de Wails
+
+Consultez les **Concepts fondamentaux** pour comprendre les choix de conception qui sous-tendent le code :
+
+- [Fonctionnement de Wails](/concepts/architecture/) explique comment le backend Go, le frontend et la WebView native sont reliés.
+- [Pont entre Go et le frontend](/concepts/bridge/) explique comment les appels passent entre Go et JavaScript.
+- [Cycle de vie de l’application](/concepts/lifecycle/) explique le démarrage et l’arrêt.
+- [Système de compilation](/concepts/build-system/) explique le rôle des tâches du projet et des outils du frontend.
+
+## Consulter une API
+
+Consultez la [Référence de l’API](/reference/overview/) lorsque vous recherchez un type, une méthode, une option ou une commande plutôt qu’une leçon. Pour travailler en ligne de commande, commencez par la [vue d’ensemble des commandes de la CLI](/reference/cli/), puis consultez les [options et exemples de la CLI](/guides/cli/) pour obtenir des informations détaillées sur chaque commande.
 
 ## Obtenir de l’aide
 
-- [Discord](https://discord.gg/JDdSxwjhGf) — posez des questions et partagez vos projets
-- [Exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) — plus de 50 exemples fonctionnels
-- [Référence de l’API](/reference/overview/) — documentation complète
+Consultez la [foire aux questions](/faq/), parcourez les [exemples fonctionnels](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples) ou posez votre question sur [Discord](https://discord.gg/JDdSxwjhGf). Les problèmes propres à chaque plateforme sont regroupés sous **Dépannage** dans la barre latérale.

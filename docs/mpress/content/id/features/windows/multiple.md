@@ -790,4 +790,4 @@ type WindowState struct {
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh multijendela](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh multijendela](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/multi-window).

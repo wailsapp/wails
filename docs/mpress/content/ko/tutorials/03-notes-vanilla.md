@@ -9,18 +9,18 @@ sourcePath: "tutorials/03-notes-vanilla.md"
 
 ![메모 앱 스크린샷](/assets/notes-app.png)
 
-## 만들어 볼 항목
+## 만들 결과물
 
-- 메모 작성, 편집, 삭제 기능을 갖춘 완전한 메모 앱
+- 만들기, 편집, 삭제 기능을 갖춘 완전한 메모 앱
 - 메모를 가져오고 내보내기 위한 네이티브 파일 저장/열기 대화 상자
-- 불필요한 업데이트를 줄이기 위해 디바운스를 적용한 입력 시 자동 저장
-- Apple Notes를 본뜬 전문적인 2열 레이아웃(사이드바 + 편집기)
+- 불필요한 업데이트를 줄이는 디바운스 기반 입력 시 자동 저장
+- Apple Notes와 유사한 전문적인 2열 레이아웃(사이드바 + 편집기)
 
 ## 학습할 내용
 
 - Wails에서 네이티브 파일 대화 상자 사용하기(`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
-- 데이터 영속화를 위한 JSON 파일 사용하기
-- 디바운스가 적용된 자동 저장 패턴 구현하기
+- 데이터 영속성을 위한 JSON 파일 다루기
+- 디바운스 기반 자동 저장 패턴 구현하기
 - 최신 CSS로 전문적인 데스크톱 UI 만들기
 - Go 구조체를 올바르게 JSON으로 직렬화하기
 
@@ -29,12 +29,12 @@ sourcePath: "tutorials/03-notes-vanilla.md"
 @steps
 ### 새 Wails 프로젝트 만들기
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
 ### NotesService 만들기
-프로젝트 루트에 새 파일 `notesservice.go`을 만드세요:
+프로젝트 루트에 새 파일 `notesservice.go`을 만듭니다.
 
 ```go
 package main
@@ -171,16 +171,16 @@ func generateID() string {
 }
 ```
 
-**여기서 수행되는 작업:**
+**여기서 수행하는 작업:**
 
 - **Note 구조체**: 올바른 직렬화를 위해 소문자 JSON 태그가 지정된 데이터 구조를 정의합니다.
-- **CRUD 작업**: 메모리에서 메모를 관리하기 위한 GetAll, Create, Update, Delete 작업입니다.
-- **파일 대화 상자**: 네이티브 대화 상자에 접근하기 위해 `application.Get().Dialog.SaveFile()` 및 `application.Get().Dialog.OpenFile()`을 사용합니다.
+- **CRUD 작업**: 메모리를 사용하는 메모 관리를 위해 GetAll, Create, Update, Delete를 제공합니다.
+- **파일 대화 상자**: `application.Get().Dialog.SaveFile()`와 `application.Get().Dialog.OpenFile()`을 사용하여 네이티브 대화 상자에 접근합니다.
 - **정보 대화 상자**: `application.Get().Dialog.Info()`을 사용하여 성공 메시지를 표시합니다.
-- **ID 생성**: 타임스탬프를 기반으로 하는 간단한 ID 생성기입니다.
+- **ID 생성**: 타임스탬프 기반의 간단한 ID 생성기를 사용합니다.
 
 ### main.go 업데이트하기
-`main.go`의 내용을 교체하세요:
+`main.go`의 내용을 바꿉니다.
 
 ```go
 package main
@@ -226,14 +226,14 @@ func main() {
 }
 ```
 
-**여기서 수행되는 작업:**
+**여기서 수행하는 작업:**
 
 - 애플리케이션에 `NotesService`을 등록합니다.
-- Apple Notes를 본뜬 크기(1000x700)의 창을 만듭니다.
-- 마지막 창이 닫히면 종료되도록 올바른 macOS 동작을 설정합니다.
+- Apple Notes와 유사하게 크기가 (1000x700)인 창을 만듭니다.
+- 마지막 창이 닫힐 때 종료되도록 올바른 macOS 동작을 설정합니다.
 
 ### HTML 구조 만들기
-`frontend/index.html`을 교체하세요:
+`frontend/index.html`을 바꿉니다.
 
 ```html
 <!DOCTYPE html>
@@ -282,14 +282,14 @@ func main() {
 </html>
 ```
 
-**여기서 수행되는 작업:**
+**여기서 수행하는 작업:**
 
 - **2열 레이아웃**: 사이드바에는 메모 목록을, 기본 영역에는 편집기를 배치합니다.
-- **빈 상태**: 선택된 메모가 없을 때 표시됩니다.
+- **빈 상태**: 선택된 메모가 없을 때 표시합니다.
 - **Wails 런타임**: 모듈 스크립트보다 먼저 로드해야 합니다.
 
 ### CSS 스타일 추가하기
-`frontend/public/style.css`을 교체하세요:
+`frontend/public/style.css`을 바꿉니다.
 
 ```css
 * {
@@ -471,15 +471,15 @@ body {
 }
 ```
 
-**여기서 수행되는 작업:**
+**여기서 수행하는 작업:**
 
-- 깔끔한 타이포그래피와 색상을 사용한 Apple 스타일 디자인
+- 깔끔한 타이포그래피와 색상을 적용한 Apple 스타일 디자인
 - 반응형 사이드바와 편집기를 위한 Flexbox 레이아웃
-- 활성 메모를 파란색 배경으로 강조 표시
-- 부드러운 마우스 오버 전환 효과
+- 활성 메모를 파란색 배경으로 강조
+- 부드러운 호버 전환 효과
 
 ### JavaScript 로직 구현하기
-`frontend/src/main.js`을 교체하세요:
+`frontend/src/main.js`을 바꿉니다.
 
 ```javascript
 import { NotesService } from '../bindings/changeme'
@@ -615,27 +615,27 @@ document.getElementById('load-btn').addEventListener('click', async () => {
 loadNotes()
 ```
 
-**여기서 수행되는 작업:**
+**여기서 수행하는 작업:**
 
-- **자동 저장**: 500ms 디바운스를 적용하여 입력 중 백엔드 호출이 지나치게 많이 발생하지 않도록 합니다.
+- **자동 저장**: 500ms 디바운스로 입력 중 백엔드 호출이 과도하게 발생하는 것을 방지합니다.
 - **속성 접근**: Go JSON 태그와 일치하는 소문자 속성 이름(`.id`, `.title`)을 사용합니다.
-- **포커스 관리**: 새 메모를 만들 때 제목에 자동으로 포커스를 두고 제목을 선택합니다.
-- **확인 없는 삭제**: 브라우저의 `confirm()`은 Wails WebView에서 작동하지 않습니다.
-- **파일 작업**: 네이티브 대화 상자에서 적절한 오류 처리와 함께 저장 및 불러오기를 수행합니다.
+- **포커스 관리**: 새 메모를 만들 때 제목에 자동으로 포커스를 맞추고 제목을 선택합니다.
+- **확인 없이 삭제**: 브라우저의 `confirm()`은 Wails 웹뷰에서 작동하지 않습니다.
+- **파일 작업**: 네이티브 대화 상자가 적절한 오류 처리와 함께 저장 및 불러오기를 수행합니다.
 
 ### 애플리케이션 실행하기
 ```bash
 wails3 dev
 ```
 
-앱이 시작되면 다음 작업을 할 수 있습니다:
+앱이 시작되면 다음 작업을 할 수 있습니다.
 
-- "+ New Note"를 클릭하여 메모를 만드세요.
-- 제목과 내용을 편집하세요(500ms 후 자동 저장됩니다).
-- 사이드바에서 메모를 클릭하여 메모 사이를 전환하세요.
-- "Delete"를 클릭하여 현재 메모를 삭제하세요.
-- "Save"를 클릭하여 메모를 JSON으로 내보내세요.
-- "Load"를 클릭하여 이전에 저장한 메모를 가져오세요.
+- "+ New Note"를 클릭하여 메모를 만듭니다.
+- 제목과 내용을 편집합니다(500ms 후 자동 저장).
+- 사이드바에서 메모를 클릭하여 메모 사이를 전환합니다.
+- "Delete"를 클릭하여 현재 메모를 삭제합니다.
+- "Save"를 클릭하여 메모를 JSON으로 내보냅니다.
+- "Load"를 클릭하여 이전에 저장한 메모를 가져옵니다.
 
 @end
 
@@ -643,7 +643,7 @@ wails3 dev
 
 ### 파일 및 메시지 대화 상자
 
-Wails v3에는 패키지 수준의 대화 상자 생성자가 **없으며**, 모든 대화 상자는 `app.Dialog` 관리자를 통해 생성됩니다. 서비스에서는 `application.Get()`을 통해 앱을 가져오세요. 이 함수는 실행 중인 `*application.App`을 반환합니다:
+Wails v3에는 패키지 수준의 대화 상자 생성자가 **없습니다**. 모든 대화 상자는 `app.Dialog` 관리자를 통해 생성합니다. 서비스에서는 `application.Get()`을 통해 앱을 가져옵니다(실행 중인 `*application.App`을 반환합니다).
 
 ```go
 // Correct — manager-based dialogs.
@@ -654,11 +654,11 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-대응하는 메서드는 메시지 대화 상자의 경우 `app.Dialog.Info() / Question() / Warning() / Error()`이고, 파일 대화 상자의 경우 `app.Dialog.OpenFile() / SaveFile()` 및 `*WithOptions` 변형입니다.
+이에 해당하는 메서드는 메시지 대화 상자용 `app.Dialog.Info() / Question() / Warning() / Error()`과 파일 대화 상자용 `app.Dialog.OpenFile() / SaveFile()` 및 `*WithOptions` 변형입니다.
 
 ### JSON 태그 매핑
 
-JavaScript 속성 접근과 일치하도록 Go 구조체의 JSON 태그는 소문자여야 합니다:
+JavaScript 속성 접근과 일치하도록 Go 구조체의 JSON 태그는 소문자여야 합니다.
 
 ```go
 type Note struct {
@@ -672,9 +672,9 @@ const noteId = note.id // Correct
 const noteId = note.ID // Would be undefined
 ```
 
-### 디바운스가 적용된 자동 저장
+### 디바운스 기반 자동 저장
 
-500ms 디바운스를 적용하면 불필요한 백엔드 호출이 줄어듭니다:
+500ms 디바운스로 불필요한 백엔드 호출을 줄입니다.
 
 ```javascript
 let updateTimeout
@@ -689,8 +689,8 @@ function scheduleUpdate() {
 
 ## 다음 단계
 
-- 노트를 정리할 수 있도록 카테고리 또는 태그를 추가하세요
-- 검색 및 필터링 기능을 구현하세요
-- WYSIWYG 편집기를 사용한 서식 있는 텍스트 편집 기능을 추가하세요
-- 노트를 클라우드 스토리지와 동기화하세요
-- 자주 사용하는 작업에 대한 키보드 단축키를 추가하세요
+- 메모 정리를 위한 카테고리 또는 태그 추가
+- 검색 및 필터링 구현
+- WYSIWYG 편집기를 사용한 서식 있는 텍스트 편집 기능 추가
+- 메모를 클라우드 스토리지와 동기화
+- 일반적인 작업을 위한 키보드 단축키 추가

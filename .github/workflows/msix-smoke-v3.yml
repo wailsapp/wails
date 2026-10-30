@@ -1,11 +1,12 @@
 name: MSIX packaging v3
 
 on:
-  pull_request:
-    branches: [master]
-    paths:
-      - 'v3/**'
-      - '.github/workflows/msix-smoke-v3.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable commit to test
+        required: true
+        type: string
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,8 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: v3/go.mod

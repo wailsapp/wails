@@ -21,24 +21,24 @@ sourcePath: "blog/wails-v2-released.md"
 
 ## Wails *とは*？
 
-Wails をご存じない方のために説明すると、Wails は、Go プログラマーが使い慣れた Web 技術を使用して、Go プログラムにリッチなフロントエンドを提供できるようにするプロジェクトです。Electron に代わる、Go ベースの軽量な選択肢です。詳しくは、[公式サイト](https://wails.io/docs/introduction)をご覧ください。
+Wails をご存じない方のために説明すると、Wails は、Go プログラマーが使い慣れた Web 技術を使用して、Go プログラムにリッチなフロントエンドを提供できるようにするプロジェクトです。Electron に代わる、Go ベースの軽量な選択肢です。詳しくは、[公式サイト](https://v2.wails.io/docs/introduction)をご覧ください。
 
 ## 新機能
 
 v2 リリースは、このプロジェクトにとって大きな飛躍であり、v1 の多くの課題を解消しています。[macOS](/blog/wails-v2-beta-for-mac/)、[Windows](/blog/wails-v2-beta-for-windows/)、[Linux](/blog/wails-v2-beta-for-linux/) 向けベータ版に関するブログ記事をまだ読んでいない場合は、ぜひご覧ください。主要な変更点がすべて詳しく説明されています。概要は次のとおりです。
 
 - 最新の Web 標準とデバッグ機能に対応した Windows 用 Webview2 コンポーネント。
-- Windows での[ダーク／ライトテーマ](https://wails.io/docs/reference/options#theme)と[カスタムテーマ](https://wails.io/docs/reference/options#customtheme)。
+- Windows での[ダーク／ライトテーマ](https://v2.wails.io/docs/reference/options#theme)と[カスタムテーマ](https://v2.wails.io/docs/reference/options#customtheme)。
 - Windows では CGO が不要になりました。
 - Svelte、Vue、React、Preact、Lit、Vanilla の各プロジェクトテンプレートを標準でサポート。
 - アプリケーションのホットリロード開発環境を提供する[Vite](https://vitejs.dev/)統合。
-- ネイティブアプリケーションの[メニュー](https://wails.io/docs/guides/application-development#application-menu)と[ダイアログ](https://wails.io/docs/reference/runtime/dialog)。
-- [Windows](https://wails.io/docs/reference/options#windowistranslucent) と [macOS](https://wails.io/docs/reference/options#windowistranslucent-1) 向けのネイティブなウィンドウ半透明効果。Mica および Acrylic の背景効果をサポート。
-- Windows へのデプロイ用[NSIS インストーラー](https://wails.io/docs/guides/windows-installer)を簡単に生成。
-- ウィンドウ操作、イベント処理、ダイアログ、メニュー、ロギングのユーティリティメソッドを提供する充実した[ランタイムライブラリ](https://wails.io/docs/reference/runtime/intro)。
-- [garble](https://github.com/burrowers/garble) を使用したアプリケーションの[難読化](https://wails.io/docs/guides/obfuscated)をサポート。
+- ネイティブアプリケーションの[メニュー](https://v2.wails.io/docs/guides/application-development#application-menu)と[ダイアログ](https://v2.wails.io/docs/reference/runtime/dialog)。
+- [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) と [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1) 向けのネイティブなウィンドウ半透明効果。Mica および Acrylic の背景効果をサポート。
+- Windows へのデプロイ用[NSIS インストーラー](https://v2.wails.io/docs/guides/windows-installer)を簡単に生成。
+- ウィンドウ操作、イベント処理、ダイアログ、メニュー、ロギングのユーティリティメソッドを提供する充実した[ランタイムライブラリ](https://v2.wails.io/docs/reference/runtime/intro)。
+- [garble](https://github.com/burrowers/garble) を使用したアプリケーションの[難読化](https://v2.wails.io/docs/guides/obfuscated)をサポート。
 - [UPX](https://upx.github.io/) を使用したアプリケーションの圧縮をサポート。
-- Go 構造体から TypeScript を自動生成。詳しくは[こちら](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)をご覧ください。
+- Go 構造体から TypeScript を自動生成。詳しくは[こちら](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods)をご覧ください。
 - どのプラットフォームでも、アプリケーションに追加のライブラリや DLL を同梱する必要はありません。
 - フロントエンドアセットをバンドルする必要はありません。他の Web アプリケーションと同じようにアプリケーションを開発できます。
 

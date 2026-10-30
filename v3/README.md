@@ -1,6 +1,12 @@
-# Wails v3 Beta
+# Wails v3.0.0
 
-Thanks for wanting to help out with testing/developing Wails v3! This guide will help you get started.
+Wails v3.0.0 is the stable release for desktop applications on Windows, macOS and Linux.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+Android and iOS support remains experimental and is outside the stable desktop compatibility contract.
 
 ## Getting Started
 

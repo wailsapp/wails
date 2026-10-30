@@ -25,7 +25,7 @@ Android WebView + `WebViewAssetLoader`. Go est compilé sous forme de `libwails.
 
 La meilleure façon de comprendre les possibilités offertes consiste à examiner **Kitchen Sink**, une application Wails unique qui, à partir d’une seule base de code, s’exécute de façon identique sur iOS, Android et les plateformes de bureau :
 
-@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="Liaisons · Événements · Boîtes de dialogue · Retour haptique · Géolocalisation · Biométrie · Notifications · Stockage sécurisé · et plus encore — le tout depuis un seul fichier main.go"}
+@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="Liaisons · Événements · Boîtes de dialogue · Retour haptique · Géolocalisation · Biométrie · Notifications · Stockage sécurisé · et plus encore — le tout depuis un seul fichier main.go"}
 Cet exemple présente toutes les principales surfaces d’API mobiles dans 7 onglets et s’exécute également sur les plateformes de bureau. Les onglets **Mobile** et **Matériel** y sont masqués grâce à une vérification de la plateforme dans le frontend ; côté Go, aucun gestionnaire d’événements mobiles `common:*` n’est enregistré lors d’une compilation pour une plateforme de bureau. Il s’agit du modèle recommandé pour déployer une base de code unique sur toutes les plateformes.
 
 | Onglet | Plateformes | Fonctionnalités présentées |

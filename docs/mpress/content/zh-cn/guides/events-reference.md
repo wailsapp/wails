@@ -1,6 +1,6 @@
 ---
 title: "事件指南"
-description: "在 Wails v3 中使用事件实现应用通信和生命周期管理的实用指南"
+description: "在 Wails v3 中使用事件进行应用通信和生命周期管理的实用指南"
 slug: "guides/events-reference"
 sourcePath: "guides/events-reference.md"
 ---
@@ -9,20 +9,20 @@ sourcePath: "guides/events-reference.md"
 
 ## 事件指南
 
-事件是 Wails 应用中通信的核心。应用的不同部分可以通过事件相互通信，而无需紧密耦合。本指南将全面介绍如何在 Wails 应用中有效地使用事件。
+事件是 Wails 应用中通信的核心。应用的不同部分可以通过事件相互通信，而无需紧密耦合。本指南将全面介绍如何在 Wails 应用中有效使用事件。
 
 ## 了解 Wails 事件
 
-可以将事件看作在整个应用中广播的消息。应用的任何部分都可以监听这些消息并作出相应响应。事件尤其适用于：
+可以将事件理解为在整个应用中广播的消息。应用的任何部分都可以监听这些消息并作出相应响应。事件尤其适用于：
 
-- **响应窗口变化**：获知窗口何时最小化、最大化或移动
+- **响应窗口变化**：了解窗口何时最小化、最大化或移动
 - **处理系统事件**：响应主题变化或电源事件
 - **自定义应用逻辑**：为数据更新或用户操作等功能创建自己的事件
-- **跨组件通信**：让应用的不同部分在没有直接依赖关系的情况下进行通信
+- **跨组件通信**：让应用的不同部分无需直接依赖即可通信
 
 ## 事件命名约定
 
-所有 Wails 事件都遵循命名空间模式，以明确表明其来源：
+所有 Wails 事件都遵循命名空间模式，以明确标示其来源：
 
 - `common:` - 可在 Windows、macOS 和 Linux 上使用的跨平台事件
 - `windows:` - Windows 专用事件
@@ -32,8 +32,8 @@ sourcePath: "guides/events-reference.md"
 例如：
 
 - `common:WindowFocus` - 窗口获得焦点（适用于所有平台）
-- `windows:APMSuspend` - 系统正在挂起（仅限 Windows）
-- `mac:ApplicationDidBecomeActive` - 应用进入活动状态（仅限 macOS）
+- `windows:APMSuspend` - 系统即将挂起（仅限 Windows）
+- `mac:ApplicationDidBecomeActive` - 应用变为活动状态（仅限 macOS）
 
 ## 事件入门
 
@@ -91,7 +91,7 @@ func (s *Service) UpdateData() {
 
 ### 触发事件（前端）
 
-虽然不太常用，但也可以从前端触发事件，供 Go 代码监听：
+虽然这种用法不太常见，但也可以从前端触发事件，供 Go 代码监听：
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -103,7 +103,7 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-如果前端使用 TypeScript，并在 Go 代码中[注册类型化事件](#heading-9)，即可获得事件名称自动补全和检查以及数据类型检查。
+如果前端使用 TypeScript，并在 Go 代码中[注册类型化事件](#heading-9)，则可获得事件名称自动补全和检查，以及数据类型检查。
 
 ### 移除事件监听器
 
@@ -131,7 +131,7 @@ Events.Off('common:WindowFocus');
 
 ## 常见用例
 
-### 1. 窗口焦点变化时暂停/恢复
+### 1. 窗口焦点变化时暂停或恢复
 
 许多应用需要在窗口失去焦点时暂停某些活动：
 
@@ -217,7 +217,7 @@ Events.On('common:WindowRestore', () => {
 
 ### 5. 平台专用功能
 
-按需处理平台专用事件：
+根据需要处理平台专用事件：
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -242,7 +242,7 @@ Events.On('mac:ApplicationWillTerminate', () => {
 
 ## 创建自定义事件
 
-可以根据应用的特定需求创建自己的事件。
+可以针对应用的特定需求创建自己的事件。
 
 ### 后端（Go）
 
@@ -295,13 +295,13 @@ Events.On('monitor:stats-updated', (event) => {
 });
 ```
 
-## 具有类型安全保障的类型化事件
+## 具有类型安全的类型化事件
 
-Wails v3 通过事件注册和自动生成绑定，支持具有完整 TypeScript 类型安全保障的类型化事件。
+Wails v3 通过事件注册和自动生成绑定，支持具有完整 TypeScript 类型安全的类型化事件。
 
 ### 注册自定义事件
 
-在初始化时调用`application.RegisterEvent`，注册自定义事件名称及其数据类型：
+在初始化时调用`application.RegisterEvent`，以注册自定义事件名称及其数据类型：
 
 ```go
 package main
@@ -330,29 +330,29 @@ func init() {
 ```
 
 @note{type="caution"}
-`RegisterEvent`应在初始化时调用，并会在以下情况下触发 panic：
+`RegisterEvent`应在初始化时调用，并会在以下情况下引发 panic：
 
 - 参数无效
-- 使用不同的数据类型重复注册同一事件名称
+- 使用不同的数据类型重复注册同一个事件名称
 
 @end
 
 @note{type="info"}
-只要数据类型始终相同，多次注册同一事件就是安全的。当加载多个包中的任意一个时都需要确保某个事件已注册，这种方式会很有用。
+只要数据类型始终相同，多次注册同一个事件就是安全的。当多个包中的任意一个被加载时，可利用这一点确保事件已注册。
 
 @end
 
 ### 事件注册的优势
 
-注册后，系统会根据指定类型对传给`Event.Emit`的数据参数进行类型检查。如果类型不匹配：
+注册后，传递给`Event.Emit`的数据参数会根据指定类型进行类型检查。如果类型不匹配：
 
-- 系统会产生并记录错误（或将错误传给已注册的错误处理程序）
-- 不会传播引发错误的事件
-- 这可确保已注册事件的 data 字段始终可赋值给声明的类型
+- 系统会触发并记录错误（或将其传递给已注册的错误处理程序）
+- 有问题的事件不会继续传播
+- 这可确保已注册事件的数据字段始终可赋值给声明的类型
 
 ### 严格模式
 
-使用 `strictevents` 构建标签，在开发环境中为未注册的事件启用警告：
+在开发过程中，使用`strictevents`构建标签为未注册事件启用警告：
 
 ```bash
 go build -tags strictevents
@@ -362,11 +362,11 @@ go build -tags strictevents
 
 ### 生成 TypeScript 绑定
 
-绑定生成器会输出 TypeScript 定义和粘合代码，为前端提供透明的类型化事件支持。
+绑定生成器会输出 TypeScript 定义和粘合代码，从而在前端透明地支持类型化事件。
 
-#### 1. 配置 Vite 插件
+#### 1. 设置 Vite 插件
 
-在你的 `vite.config.ts` 中：
+在`vite.config.ts`中：
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -385,7 +385,7 @@ export default defineConfig({
 wails3 generate bindings
 ```
 
-这会在前端目录中创建包含类型化事件创建器和数据接口的 TypeScript 文件。
+这会在前端目录中创建包含类型化事件数据定义的 TypeScript 文件，并创建一个`bindings/events`模块。对于每个已注册且生成器能够发现的编译时常量事件名称，该模块都会导出一个常量（例如，`user:login`会变为`UserLogin`）。
 
 #### 3. 在前端使用类型化事件
 
@@ -394,11 +394,11 @@ import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -417,76 +417,76 @@ Events.On(MonitorStats, (event) => {
 
 类型化事件提供：
 
-- 事件名称的<strong>自动补全</strong>
-- 事件数据的<strong>类型检查</strong>
-- 数据类型不匹配时的<strong>编译时错误</strong>
+- 事件名称的**自动补全**
+- 事件数据的**类型检查**
+- 数据类型不匹配时的**编译时错误**
 - **IntelliSense** 文档
 
 ## 事件参考
 
 ### 通用事件（跨平台）
 
-以下事件适用于所有平台：
+这些事件适用于所有平台：
 
 | 事件 | 说明 | 使用场景 |
 | --- | --- | --- |
-| `common:ApplicationStarted` | 应用程序已完全启动 | 初始化应用程序并加载已保存的状态 |
+| `common:ApplicationStarted` | 应用已完全启动 | 初始化应用并加载已保存的状态 |
 | `common:WindowRuntimeReady` | Wails 运行时已就绪 | 开始调用 Wails API |
-| `common:ThemeChanged` | 系统主题已更改 | 更新应用程序外观 |
-| `common:SystemWillSleep` | 系统即将挂起 | 将状态写入持久存储并关闭套接字 |
+| `common:ThemeChanged` | 系统主题已更改 | 更新应用外观 |
+| `common:SystemWillSleep` | 系统即将挂起 | 写入状态并关闭套接字 |
 | `common:SystemDidWake` | 系统已从挂起状态恢复 | 重新连接并刷新过期数据 |
-| `common:WindowFocus` | 窗口已获得焦点 | 恢复活动并刷新数据 |
-| `common:WindowLostFocus` | 窗口已失去焦点 | 暂停活动并保存状态 |
+| `common:WindowFocus` | 窗口获得焦点 | 恢复活动并刷新数据 |
+| `common:WindowLostFocus` | 窗口失去焦点 | 暂停活动并保存状态 |
 | `common:WindowMinimise` | 窗口已最小化 | 暂停渲染并减少资源使用 |
-| `common:WindowMaximise` | 窗口已最大化 | 针对全屏调整布局 |
+| `common:WindowMaximise` | 窗口已最大化 | 调整全屏布局 |
 | `common:WindowRestore` | 窗口已从最小化或最大化状态还原 | 恢复正常布局 |
 | `common:WindowClosing` | 窗口即将关闭 | 保存数据并清理资源 |
 | `common:WindowFilesDropped` | 文件已拖放到窗口中 | 处理文件导入 |
 | `common:WindowDidResize` | 窗口大小已调整 | 调整布局并重新渲染图表 |
-| `common:WindowDidMove` | 窗口已移动 | 更新依赖位置的功能 |
+| `common:WindowDidMove` | 窗口已移动 | 更新与位置相关的功能 |
 
 ### 平台特定事件
 
 #### Windows 事件
 
-Windows 应用程序的关键事件：
+Windows 应用的主要事件：
 
-| 事件 | 说明 | 用例 |
+| 事件 | 说明 | 使用场景 |
 | --- | --- | --- |
 | `windows:SystemThemeChanged` | Windows 主题已更改 | 更新应用颜色 |
 | `windows:APMSuspend` | 系统正在挂起 | 保存状态并暂停操作 |
 | `windows:APMResumeAutomatic` | 系统已恢复（恢复时始终触发） | 恢复状态并刷新数据 |
-| `windows:APMResumeSuspend` | 系统通过用户输入恢复（在`APMResumeAutomatic`之后） | 识别由用户发起的唤醒 |
+| `windows:APMResumeSuspend` | 系统因用户输入而恢复（在`APMResumeAutomatic`之后） | 识别由用户发起的唤醒 |
 | `windows:APMPowerStatusChange` | 电源状态已更改 | 调整性能设置 |
 
 #### macOS 事件
 
-重要的 macOS 应用程序事件：
+重要的 macOS 应用事件：
 
-| 事件 | 说明 | 用例 |
+| 事件 | 说明 | 使用场景 |
 | --- | --- | --- |
 | `mac:ApplicationDidBecomeActive` | 应用已变为活跃状态 | 恢复操作 |
 | `mac:ApplicationDidResignActive` | 应用已变为非活跃状态 | 暂停操作 |
 | `mac:ApplicationWillTerminate` | 应用即将退出 | 执行最终清理 |
 | `mac:ApplicationWillSleep` | 系统即将挂起 | 保存状态并关闭套接字 |
 | `mac:ApplicationDidWake` | 系统已恢复 | 重新连接并刷新 |
-| `mac:ApplicationScreensDidSleep` | 显示器已进入睡眠状态 | 暂停渲染（不同于系统睡眠） |
+| `mac:ApplicationScreensDidSleep` | 显示器已进入休眠状态 | 暂停渲染（不同于系统休眠） |
 | `mac:ApplicationScreensDidWake` | 显示器已唤醒 | 恢复渲染 |
 | `mac:WindowDidEnterFullScreen` | 已进入全屏模式 | 针对全屏模式调整 UI |
-| `mac:WindowDidExitFullScreen` | 已退出全屏模式 | 恢复常规 UI |
+| `mac:WindowDidExitFullScreen` | 已退出全屏模式 | 恢复正常 UI |
 
 #### Linux 事件
 
-Linux 的核心窗口事件：
+Linux 核心窗口事件：
 
-| 事件 | 说明 | 用例 |
+| 事件 | 说明 | 使用场景 |
 | --- | --- | --- |
 | `linux:SystemThemeChanged` | 桌面主题已更改 | 更新应用主题 |
 | `linux:SystemWillSleep` | 系统即将挂起（logind） | 保存状态 |
 | `linux:SystemDidWake` | 系统已恢复（logind） | 重新连接并刷新 |
-| `linux:WindowFocusIn` | 窗口已获得焦点 | 恢复活动 |
+| `linux:WindowFocusIn` | 窗口获得焦点 | 恢复活动 |
 | `linux:WindowFocusOut` | 窗口失去焦点 | 暂停活动 |
-| `linux:WindowLoadStarted` | WebView 开始加载 | 显示加载指示器 |
+| `linux:WindowLoadStarted` | WebView 已开始加载 | 显示加载指示器 |
 | `linux:WindowLoadRedirected` | WebView 已重定向 | 跟踪导航重定向 |
 | `linux:WindowLoadCommitted` | WebView 已提交加载 | 正在接收内容 |
 | `linux:WindowLoadFinished` | WebView 已完成加载 | 隐藏加载指示器，注入 JS/CSS |
@@ -534,7 +534,7 @@ useEffect(() => {
 
 ### 3. 处理平台差异
 
-使用平台特定事件时，请检查其在当前平台上是否可用：
+使用平台特有事件时，请检查其在当前平台上是否可用：
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -545,12 +545,12 @@ Events.On('windows:APMSuspend', handleSuspend);
 Events.On('mac:ApplicationWillTerminate', handleTerminate);
 ```
 
-### 4. 不要过度使用事件
+### 4. 不要滥用事件
 
 事件虽然功能强大，但不要将其用于所有场景：
 
 - ✅ 适合使用事件的场景：系统通知、生命周期变化、广播更新
-- ❌ 避免使用事件的场景：直接返回函数结果、更新单个组件、同步操作
+- ❌ 不适合使用事件的场景：直接返回函数结果、更新单个组件、同步操作
 
 ## 调试事件
 
@@ -574,15 +574,15 @@ if (isDevelopment) {
 
 ## 权威来源
 
-可用事件的完整列表可以在 Wails 源代码中找到：
+可用事件的完整列表可在 Wails 源代码中找到：
 
 - 前端事件：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
 - 后端事件：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
 
-请始终以这些文件为准，获取最新的事件名称及其可用性信息。
+请始终参阅这些文件，以获取最新的事件名称及其可用性信息。
 
 ## 总结
 
-Wails 中的事件提供了一种强大且解耦的应用内通信方式。遵循本指南中的模式和实践，即可构建响应迅速、感知平台差异的应用，使其能够顺畅响应系统变化和用户交互。
+Wails 中的事件为处理应用程序内的通信提供了一种功能强大且解耦的方式。遵循本指南中的模式和实践，可以构建响应迅速、能够感知平台差异的应用程序，使其流畅响应系统变化和用户交互。
 
-请记住：首先使用通用事件以确保跨平台兼容性，在需要时添加平台特定事件，并始终清理事件监听器以防止内存泄漏。
+请记住：首先使用通用事件以确保跨平台兼容性，在需要时添加平台特有事件，并始终清理事件监听器以防止内存泄漏。

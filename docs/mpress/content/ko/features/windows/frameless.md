@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [프레임리스 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [프레임리스 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/frameless)를 확인하세요.

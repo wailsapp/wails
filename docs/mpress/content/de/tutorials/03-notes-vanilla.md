@@ -5,7 +5,7 @@ slug: "tutorials/03-notes-vanilla"
 sourcePath: "tutorials/03-notes-vanilla.md"
 ---
 
-In diesem Tutorial erstellen Sie mit Wails v3 eine Notizanwendung, die Dateioperationen, native Dialoge und moderne Muster für Desktop-Apps veranschaulicht.
+In diesem Tutorial erstellen Sie mit Wails v3 eine Notizanwendung, die Dateioperationen, native Dialoge und moderne Entwurfsmuster für Desktopanwendungen demonstriert.
 
 ![Screenshot der Notizanwendung](/assets/notes-app.png)
 
@@ -14,22 +14,22 @@ In diesem Tutorial erstellen Sie mit Wails v3 eine Notizanwendung, die Dateioper
 - Eine vollständige Notizanwendung mit Funktionen zum Erstellen, Bearbeiten und Löschen
 - Native Dialoge zum Speichern und Öffnen von Dateien, um Notizen zu importieren und zu exportieren
 - Automatisches Speichern während der Eingabe mit Entprellung, um unnötige Aktualisierungen zu reduzieren
-- Professionelles, an Apple Notes angelehntes zweispaltiges Layout (Seitenleiste und Editor)
+- Professionelles zweispaltiges Layout (Seitenleiste und Editor) nach dem Vorbild von Apple Notizen
 
 ## Was Sie lernen
 
 - Native Dateidialoge in Wails verwenden (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
 - Mit JSON-Dateien zur dauerhaften Datenspeicherung arbeiten
-- Muster für automatisches Speichern mit Entprellung implementieren
+- Entprelltes automatisches Speichern implementieren
 - Professionelle Desktop-Benutzeroberflächen mit modernem CSS erstellen
-- Go-Strukturen ordnungsgemäß als JSON serialisieren
+- Go-Strukturen korrekt als JSON serialisieren
 
 ## Projekt einrichten
 
 @steps
 ### Neues Wails-Projekt erstellen
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
@@ -173,8 +173,8 @@ func generateID() string {
 
 **Was hier geschieht:**
 
-- **Note-Struktur**: Definiert die Datenstruktur mit kleingeschriebenen JSON-Tags für eine ordnungsgemäße Serialisierung
-- **CRUD-Operationen**: GetAll, Create, Update und Delete zum Verwalten von Notizen im Arbeitsspeicher
+- **Note-Struktur**: Definiert die Datenstruktur mit kleingeschriebenen JSON-Tags für eine korrekte Serialisierung
+- **CRUD-Operationen**: GetAll, Create, Update und Delete verwalten Notizen im Arbeitsspeicher
 - **Dateidialoge**: Verwendet `application.Get().Dialog.SaveFile()` und `application.Get().Dialog.OpenFile()` für den Zugriff auf native Dialoge
 - **Informationsdialoge**: Zeigt mit `application.Get().Dialog.Info()` Erfolgsmeldungen an
 - **ID-Erzeugung**: Einfacher zeitstempelbasierter ID-Generator
@@ -229,7 +229,7 @@ func main() {
 **Was hier geschieht:**
 
 - Registriert `NotesService` bei der Anwendung
-- Erstellt ein an Apple Notes angelehntes Fenster mit den Abmessungen 1000x700
+- Erstellt nach dem Vorbild von Apple Notizen ein Fenster mit den Abmessungen (1000x700)
 - Konfiguriert das korrekte Verhalten unter macOS, sodass die Anwendung beim Schließen des letzten Fensters beendet wird
 
 ### HTML-Struktur erstellen
@@ -284,7 +284,7 @@ Ersetzen Sie `frontend/index.html`:
 
 **Was hier geschieht:**
 
-- **Zweispaltiges Layout**: Seitenleiste für die Notizenliste, Hauptbereich für den Editor
+- **Zweispaltiges Layout**: Seitenleiste für die Notizliste und Hauptbereich für den Editor
 - **Leerer Zustand**: Wird angezeigt, wenn keine Notiz ausgewählt ist
 - **Wails-Laufzeit**: Muss vor dem Modulskript geladen werden
 
@@ -473,10 +473,10 @@ body {
 
 **Was hier geschieht:**
 
-- Design im Apple-Stil mit klarer Typografie und Farbgestaltung
+- Apple-ähnliches Design mit klarer Typografie und Farbgebung
 - Flexbox-Layout für eine responsive Seitenleiste und einen responsiven Editor
 - Hervorhebung der aktiven Notiz mit blauem Hintergrund
-- Fließende Übergänge beim Daraufzeigen
+- Fließende Übergänge beim Bewegen des Mauszeigers über Elemente
 
 ### JavaScript-Logik implementieren
 Ersetzen Sie `frontend/src/main.js`:
@@ -633,7 +633,7 @@ Die Anwendung wird gestartet. Anschließend können Sie:
 - Auf „+ New Note“ klicken, um Notizen zu erstellen
 - Titel und Inhalt bearbeiten (werden nach 500 ms automatisch gespeichert)
 - In der Seitenleiste auf Notizen klicken, um zwischen ihnen zu wechseln
-- Auf „Delete“ klicken, um die aktuelle Notiz zu löschen
+- Auf „Delete“ klicken, um die aktuelle Notiz zu entfernen
 - Auf „Save“ klicken, um Notizen als JSON zu exportieren
 - Auf „Load“ klicken, um zuvor gespeicherte Notizen zu importieren
 
@@ -643,7 +643,7 @@ Die Anwendung wird gestartet. Anschließend können Sie:
 
 ### Datei- und Meldungsdialoge
 
-In Wails v3 gibt es **keine** Dialogkonstruktoren auf Paketebene – jeder Dialog wird über den `app.Dialog`-Manager erstellt. Rufen Sie innerhalb eines Dienstes die Anwendung über `application.Get()` ab (die Funktion gibt die laufende `*application.App` zurück):
+In Wails v3 gibt es **keine** Dialogkonstruktoren auf Paketebene – jeder Dialog wird über den `app.Dialog`-Manager erstellt. Rufen Sie innerhalb eines Dienstes die Anwendung über `application.Get()` ab (die Methode gibt die laufende `*application.App` zurück):
 
 ```go
 // Correct — manager-based dialogs.
@@ -658,7 +658,7 @@ Die entsprechenden Methoden sind `app.Dialog.Info() / Question() / Warning() / E
 
 ### Zuordnung von JSON-Tags
 
-JSON-Tags von Go-Strukturen müssen kleingeschrieben sein, damit sie mit dem JavaScript-Eigenschaftszugriff übereinstimmen:
+JSON-Tags von Go-Strukturen müssen kleingeschrieben sein, damit sie zum Eigenschaftszugriff in JavaScript passen:
 
 ```go
 type Note struct {
@@ -672,7 +672,7 @@ const noteId = note.id // Correct
 const noteId = note.ID // Would be undefined
 ```
 
-### Automatisches Speichern mit Entprellung
+### Entprelltes automatisches Speichern
 
 Die Entprellzeit von 500 ms reduziert unnötige Backend-Aufrufe:
 
@@ -689,8 +689,8 @@ function scheduleUpdate() {
 
 ## Nächste Schritte
 
-- Kategorien oder Tags zum Organisieren von Notizen hinzufügen
+- Kategorien oder Tags hinzufügen, um Notizen zu organisieren
 - Suche und Filterung implementieren
 - Rich-Text-Bearbeitung mit einem WYSIWYG-Editor hinzufügen
-- Notizen mit einem Cloud-Speicher synchronisieren
-- Tastenkombinationen für häufige Aktionen hinzufügen
+- Notizen mit einem Cloudspeicher synchronisieren
+- Tastenkürzel für häufig verwendete Aktionen hinzufügen

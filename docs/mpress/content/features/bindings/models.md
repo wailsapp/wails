@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
 **That's it!** Full type safety across the bridge.
 
 ## Defining Models
+
+The model classes below illustrate field shapes; use the actual generated bindings rather than copying these simplified classes as conversion code.
+
+For `time.Time`, the generator defaults to `-time-type=string`. Use `-time-type=Date` for generated classes that convert timestamps to JavaScript `Date` values. Stock JavaScript/class template build tasks select `Date`; TypeScript interface tasks keep `string`. Check your generated task before changing modes. Go timestamps remain RFC3339Nano strings in JSON.
+
+Generated conversion helpers turn those strings into dates in Date mode. `Object.assign` alone does not perform that conversion. For string bindings, convert a timestamp explicitly with `new Date(timestamp)` before using Date methods.
 
 ### Basic Struct
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 export class User {
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 /**
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**Generated JavaScript:**
+**Illustrative JavaScript:**
 
 ```javascript
 export class Config {
@@ -316,7 +322,7 @@ const config = new Config({
 | `map[K]V` | `{ [_ in K]?: V }` | non-string `K` is rendered as a mapped type, **not** a JS `Map` |
 | `[]byte` | `string` | base64-encoded |
 | `struct` | `class` / `interface` | with fields |
-| `time.Time` | `any` | serialized as RFC3339Nano string in runtime |
+| `time.Time` | `string` (default) or `Date` | `-time-type` selects the generated representation; JSON uses an RFC3339Nano string |
 | `*T` | `T \| null` | pointer means nullable |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | Exception if as return value else any |
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### Generated TypeScript
 
+This section illustrates class bindings with Date conversion. The plain `-ts` command keeps the generator’s default string representation. The displayed class is simplified; the generator also emits conversion helpers.
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **Generated:**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -707,7 +715,7 @@ manager.loadUsers()
 
 - **Use JSON tags** - Control field names
 - **Add comments** - They become JSDoc
-- **Use time.Time** - Converts to Date
+- **Choose a time representation** - `time.Time` becomes `string` by default; `-time-type=Date` enables generated Date conversion
 - **Validate on Go side** - Don't trust frontend
 - **Keep models simple** - Data containers only
 - **Use pointers for optional** - `*string` for nullable
@@ -750,4 +758,4 @@ Understand the bridge mechanism.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

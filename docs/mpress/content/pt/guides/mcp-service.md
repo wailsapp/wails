@@ -246,7 +246,7 @@ O servidor MCP oferece controle programático total sobre a sua aplicação. Qua
 
 ## Aplicação de exemplo
 
-Uma aplicação playground completa que demonstra todas as ferramentas está disponível em [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Ela inclui:
+Uma aplicação playground completa que demonstra todas as ferramentas está disponível em [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp). Ela inclui:
 
 - Contador com botões para incrementar e redefinir
 - Campo de nome com os métodos vinculados Greet, Add e Shout

@@ -522,4 +522,4 @@ Mehr über die Fensterverwaltung erfahren.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Dialogbeispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) an.
+**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Dialogbeispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/dialogs) an.

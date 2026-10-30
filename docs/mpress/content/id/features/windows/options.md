@@ -1,13 +1,13 @@
 ---
 title: "Opsi Jendela"
-description: "Referensi lengkap untuk WebviewWindowOptions"
+description: "Opsi jendela, nilai default, dan batasan platform"
 slug: "features/windows/options"
 sourcePath: "features/windows/options.md"
 ---
 
 ## Opsi Konfigurasi Jendela
 
-Wails menyediakan konfigurasi jendela yang lengkap dengan puluhan opsi untuk ukuran, posisi, tampilan, dan perilaku. Referensi ini mencakup semua opsi yang tersedia di Windows, macOS, dan Linux sebagai **referensi lengkap** untuk `WebviewWindowOptions`. Setiap opsi dan platform disertai contoh serta batasannya.
+Wails menyediakan konfigurasi jendela yang lengkap dengan puluhan opsi untuk ukuran, posisi, tampilan, dan perilaku. Referensi ini menjelaskan bidang-bidang umum `WebviewWindowOptions` di Windows, macOS, dan Linux. Struktur di bawah ini merupakan ringkasan bidang yang dipilih; lihat kode sumber Go yang ditautkan untuk mengetahui tipe lengkapnya.
 
 ## Struktur WebviewWindowOptions
 
@@ -56,7 +56,7 @@ type WebviewWindowOptions struct {
     DevToolsEnabled             bool
     DefaultContextMenuDisabled  bool
     ContentProtectionEnabled    bool
-    KeyBindings                 map[string]func(window *WebviewWindow)
+    KeyBindings                 map[string]func(window Window)
 
     // Permissions
     Permissions map[PermissionType]Permission
@@ -76,15 +76,15 @@ type WebviewWindowOptions struct {
 }
 ```
 
-`WebviewWindowOptions` **tidak** memiliki bidang `Parent` — untuk hubungan induk/modal, gunakan `parentWindow.AttachModal(childWindow)`. Struktur ini juga **tidak** memiliki bidang `Assets` — konfigurasi aset berada di `application.Options` (`Assets AssetOptions`).
+`WebviewWindowOptions` tidak memiliki bidang `Parent` — untuk hubungan induk/modal, gunakan `parentWindow.AttachModal(childWindow)`. Struktur ini juga tidak memiliki bidang `Assets` — konfigurasi aset berada di `application.Options` (`Assets AssetOptions`).
 
-Sumber lengkap: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+Kode sumber lengkap: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Opsi Inti
 
 ### Nama
 
-**Tipe:** `string` **Default:** UUID yang dibuat secara otomatis **Platform:** Semua
+**Tipe:** `string` **Default:** `window-<numeric ID>` **Platform:** Semua
 
 ```go
 Name: "main-window"
@@ -94,9 +94,9 @@ Name: "main-window"
 
 **Praktik terbaik:**
 
-- Gunakan nama yang deskriptif: `"main"`, `"settings"`, `"about"`
+- Gunakan nama deskriptif: `"main"`, `"settings"`, `"about"`
 - Gunakan kebab-case: `"file-browser"`, `"color-picker"`
-- Buat nama tetap singkat dan mudah diingat
+- Buat tetap singkat dan mudah diingat
 
 **Contoh:**
 
@@ -155,7 +155,7 @@ Height: 800,
 
 ### X / Y
 
-**Tipe:** `int` (piksel) **Default:** Di tengah layar **Platform:** Semua
+**Tipe:** `int` (piksel) **Default:** Berada di tengah layar **Platform:** Semua
 
 ```go
 X: 100,  // 100px from left edge
@@ -183,16 +183,16 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Praktik terbaik:** Gunakan `Center()` untuk memusatkan jendela setelah dibuat jika Anda tidak memerlukan koordinat tertentu:
+**Praktik terbaik:** Gunakan `Center()` untuk menempatkan jendela di tengah setelah dibuat jika Anda tidak memerlukan koordinat tertentu:
 
 ```go
 window := app.Window.New()
 window.Center()
 ```
 
-### MinWidth / MinHeight
+### Lebar Minimum / Tinggi Minimum
 
-**Tipe:** `int` (piksel) **Default:** 0 (tanpa batas minimum) **Platform:** Semua
+**Tipe:** `int` (piksel) **Default:** 0 (tanpa nilai minimum) **Platform:** Semua
 
 ```go
 MinWidth:  400,
@@ -215,9 +215,9 @@ MinWidth:  400,
 MinHeight: 300,
 ```
 
-### MaxWidth / MaxHeight
+### Lebar Maksimum / Tinggi Maksimum
 
-**Tipe:** `int` (piksel) **Default:** 0 (tanpa batas maksimum) **Platform:** Semua
+**Tipe:** `int` (piksel) **Default:** 0 (tanpa nilai maksimum) **Platform:** Semua
 
 ```go
 MaxWidth:  1920,
@@ -234,7 +234,7 @@ MaxHeight: 1080,
 
 ## Opsi Status
 
-### Hidden
+### Tersembunyi
 
 **Tipe:** `bool` **Default:** `false` **Platform:** Semua
 
@@ -253,11 +253,11 @@ Hidden: true,
 
 **Peningkatan pada platform:**
 
-- **Windows:** Kilatan putih pada jendela telah diperbaiki—jendela tetap tidak terlihat hingga `Show()` dipanggil
+- **Windows:** Kilatan putih pada jendela telah diperbaiki — jendela tetap tidak terlihat hingga `Show()` dipanggil
 - **macOS:** Dukungan penuh
 - **Linux:** Dukungan penuh
 
-**Pola yang disarankan agar pemuatan berjalan mulus:**
+**Pola yang disarankan untuk pemuatan yang mulus:**
 
 ```go
 // Create hidden window
@@ -286,7 +286,7 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settings.Show()
 ```
 
-### Frameless
+### Tanpa Bingkai
 
 **Tipe:** `bool` **Default:** `false` **Platform:** Semua
 
@@ -294,11 +294,11 @@ settings.Show()
 Frameless: true,
 ```
 
-**Tujuan:** Menghapus bilah judul dan bingkai jendela.
+**Tujuan:** Menghapus bilah judul dan batas jendela.
 
 **Kasus penggunaan:**
 
-- Elemen bingkai jendela khusus
+- Chrome jendela khusus
 - Layar pembuka
 - Aplikasi kios
 - Jendela dengan desain khusus
@@ -307,7 +307,7 @@ Frameless: true,
 
 - Penyeretan jendela
 - Tombol tutup/minimalkan/maksimalkan
-- Handel pengubah ukuran (jika ukurannya dapat diubah)
+- Handel pengubahan ukuran (jika ukuran dapat diubah)
 
 **Lihat [Jendela Tanpa Bingkai](/features/windows/frameless/) untuk detailnya.**
 
@@ -319,7 +319,7 @@ Frameless: true,
 DisableResize: true,
 ```
 
-**Tujuan:** Mencegah perubahan ukuran jendela. Perhatikan bahwa field struct ini merupakan **kebalikan** dari `Resizable` pada v2—atur `DisableResize: true` agar ukuran jendela tidak dapat diubah.
+**Tujuan:** Mencegah perubahan ukuran jendela. Perhatikan bahwa kolom ini merupakan **kebalikan** dari `Resizable` milik v2 — tetapkan `DisableResize: true` agar ukuran jendela tidak dapat diubah.
 
 **Kasus penggunaan:**
 
@@ -327,7 +327,7 @@ DisableResize: true,
 - Layar pembuka
 - Dialog
 
-**Catatan:** Pengguna tetap dapat memaksimalkan jendela atau beralih ke layar penuh, kecuali Anda juga menonaktifkannya melalui `MaximiseButtonState` / perilaku koleksi.
+**Catatan:** Pengguna tetap dapat memaksimalkan jendela atau mengaktifkan layar penuh, kecuali Anda juga menonaktifkannya melalui `MaximiseButtonState` / perilaku koleksi.
 
 ### AlwaysOnTop
 
@@ -337,7 +337,7 @@ DisableResize: true,
 AlwaysOnTop: true,
 ```
 
-**Tujuan:** Mempertahankan jendela di atas semua jendela lainnya.
+**Tujuan:** Menjaga jendela tetap berada di atas semua jendela lainnya.
 
 **Kasus penggunaan:**
 
@@ -369,9 +369,9 @@ StartState: application.WindowStateMaximised,
 - `WindowStateMaximised` - Dimaksimalkan
 - `WindowStateFullscreen` - Layar penuh
 
-Tidak ada konstanta `WindowStateHidden`—gunakan field boolean `Hidden` agar jendela tidak terlihat saat dimulai.
+Tidak ada konstanta `WindowStateHidden` — gunakan kolom boolean `Hidden` agar jendela tidak terlihat saat dimulai.
 
-**Alihkan layar penuh saat runtime:**
+**Alihkan mode layar penuh saat runtime:**
 
 ```go
 window.Fullscreen()
@@ -383,21 +383,21 @@ window.ToggleFullscreen() // there is no SetFullscreen(bool)
 
 ### BackgroundColour
 
-**Tipe:** `RGBA` struct **Default:** Putih **Platform:** Semua
+**Tipe:** struct `RGBA` **Default:** Putih **Platform:** Semua
 
 ```go
 BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
 ```
 
-Field pada `RGBA` adalah `Red, Green, Blue, Alpha`, masing-masing bertipe uint8. Sebaiknya gunakan fungsi pembantu `application.NewRGB(r, g, b)` (alfa 255) atau `application.NewRGBA(r, g, b, a)`.
+Kolom `RGBA` bertipe `Red, Green, Blue, Alpha` (uint8). Sebaiknya gunakan fungsi pembantu `application.NewRGB(r, g, b)` (alfa 255) atau `application.NewRGBA(r, g, b, a)`.
 
 **Tujuan:** Warna latar belakang jendela sebelum konten dimuat.
 
 **Kasus penggunaan:**
 
-- Sesuaikan dengan tema aplikasi Anda
-- Cegah kilatan putih pada tema gelap
-- Ciptakan pengalaman pemuatan yang mulus
+- Menyesuaikan dengan tema aplikasi Anda
+- Mencegah kilatan putih pada tema gelap
+- Pengalaman pemuatan yang mulus
 
 **Contoh:**
 
@@ -427,11 +427,11 @@ BackgroundType: application.BackgroundTypeTranslucent,
 
 - `BackgroundTypeSolid` - Warna solid
 - `BackgroundTypeTransparent` - Sepenuhnya transparan
-- `BackgroundTypeTranslucent` - Buram semi-transparan
+- `BackgroundTypeTranslucent` - Efek buram semi-transparan
 
 **Dukungan platform:**
 
-- **macOS:** Konfigurasikan `Mac.Backdrop`; transparansi webview memerlukan [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background). Tanpanya, webview tetap opak.
+- **macOS:** Konfigurasikan `Mac.Backdrop`; transparansi webview memerlukan [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background). Tanpanya, webview tetap buram.
 - **Windows:** Transparan dan translusen (Windows 11+)
 - **Linux:** Hanya solid
 
@@ -446,19 +446,19 @@ Mac: application.MacWindow{
 
 ### OpenInspectorOnStartup dan OpenDevTools
 
-**API privat di macOS:** `OpenInspectorOnStartup: true`, `window.OpenDevTools()` Go, dan `Window.OpenDevTools()` JavaScript memerlukan `private_mac_apis` untuk membuka inspector secara terprogram. Tanpanya, operasi ini tidak melakukan apa pun. Build produksi juga memerlukan `devtools`. Inspeksi publik Safari di macOS 13.3+ tidak memerlukan API privat; pengaktifan inspector di versi macOS yang lebih lama memerlukannya. Lihat [matriks build Web Inspector](/guides/build/private-macos-apis/#web-inspector).
+**API privat di macOS:** `OpenInspectorOnStartup: true`, Go `window.OpenDevTools()`, dan JavaScript `Window.OpenDevTools()` memerlukan `private_mac_apis` untuk membuka inspector secara terprogram. Tanpanya, operasi ini tidak melakukan apa pun. Build produksi juga memerlukan `devtools`. Inspeksi Safari publik di macOS 13.3+ tidak memerlukan API privat; pengaktifan inspector pada macOS versi lama memerlukannya. Lihat [matriks build Web Inspector](/guides/build/private-macos-apis/#web-inspector).
 
 ## Opsi Konten
 
 ### URL
 
-**Tipe:** `string` **Default:** Kosong (memuat dari Assets) **Platform:** Semua
+**Tipe:** `string` **Default:** Kosong (dimuat dari Assets) **Platform:** Semua
 
 ```go
 URL: "https://example.com",
 ```
 
-**Tujuan:** Muat URL eksternal sebagai pengganti aset tersemat.
+**Tujuan:** Memuat URL eksternal sebagai pengganti aset tersemat.
 
 **Kasus penggunaan:**
 
@@ -495,7 +495,7 @@ app := application.New(application.Options{
 HTML: "<h1>Hello World</h1>",
 ```
 
-**Tujuan:** Muat string HTML secara langsung.
+**Tujuan:** Memuat string HTML secara langsung.
 
 **Kasus penggunaan:**
 
@@ -515,7 +515,7 @@ HTML: `
 `,
 ```
 
-### Assets (hanya tingkat aplikasi)
+### Aset (khusus tingkat aplikasi)
 
 Konfigurasi aset **bukan** merupakan field `WebviewWindowOptions`. Aset frontend disajikan oleh aplikasi itu sendiri melalui `application.Options.Assets` (`AssetOptions`); setiap jendela mewarisi server aset tersebut.
 
@@ -531,17 +531,17 @@ app := application.New(application.Options{
 
 ### UseApplicationMenu
 
-**Tipe:** `bool` **Default:** `false` **Platform:** Windows, Linux (tidak berpengaruh di macOS)
+**Tipe:** `bool` **Nilai default:** `false` **Platform:** Windows, Linux (tidak berpengaruh pada macOS)
 
 ```go
 UseApplicationMenu: true,
 ```
 
-**Tujuan:** Gunakan menu aplikasi (ditetapkan melalui `app.Menu.Set()`) untuk jendela ini.
+**Tujuan:** Menggunakan menu aplikasi (ditetapkan melalui `app.Menu.Set()`) untuk jendela ini.
 
-Di **macOS**, opsi ini tidak berpengaruh karena macOS selalu menggunakan menu aplikasi global di bagian atas layar.
+Pada **macOS**, opsi ini tidak berpengaruh karena macOS selalu menggunakan menu aplikasi global di bagian atas layar.
 
-Di **Windows** dan **Linux**, jendela tidak menampilkan menu secara default. Menetapkan `UseApplicationMenu: true` akan membuat jendela menggunakan menu tingkat aplikasi, sehingga menyediakan solusi lintas platform yang sederhana.
+Pada **Windows** dan **Linux**, jendela secara default tidak menampilkan menu. Menetapkan `UseApplicationMenu: true` akan menginstruksikan jendela untuk menggunakan menu tingkat aplikasi, sehingga menyediakan solusi lintas platform yang sederhana.
 
 **Contoh:**
 
@@ -567,33 +567,33 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Catatan:**
 
 - Jika `UseApplicationMenu` dan menu khusus jendela sama-sama ditetapkan, menu khusus jendela akan diprioritaskan
-- Hal ini menyederhanakan kode lintas platform karena tidak perlu memeriksa sistem operasi saat runtime
-- Lihat [Menu Aplikasi](/features/menus/application/) untuk dokumentasi menu lengkap
+- Ini menyederhanakan kode lintas platform karena tidak memerlukan pemeriksaan OS saat runtime
+- Lihat [Menu Aplikasi](/features/menus/application/) untuk dokumentasi menu yang lengkap
 
 ## Opsi Input
 
 ### EnableFileDrop
 
-**Tipe:** `bool` **Default:** `false` **Platform:** Semua
+**Tipe:** `bool` **Nilai default:** `false` **Platform:** Semua
 
 ```go
 EnableFileDrop: true,
 ```
 
-**Tujuan:** Memungkinkan berkas dari sistem operasi diseret dan dilepas ke dalam jendela.
+**Tujuan:** Mengaktifkan fitur seret dan lepas untuk file dari sistem operasi ke dalam jendela.
 
 Jika diaktifkan:
 
-- Berkas yang diseret dari pengelola berkas dapat dilepas ke dalam aplikasi Anda
-- Peristiwa `WindowFilesDropped` dipicu dengan jalur berkas yang dilepas
-- Elemen dengan atribut `data-file-drop-target` menyediakan informasi terperinci tentang operasi pelepasan
+- File yang diseret dari pengelola file dapat dilepaskan ke dalam aplikasi Anda
+- Peristiwa `WindowFilesDropped` dipicu dengan path file yang dilepaskan
+- Elemen dengan atribut `data-file-drop-target` menyediakan informasi mendetail tentang operasi pelepasan
 
 **Kasus penggunaan:**
 
-- Antarmuka unggah berkas
+- Antarmuka unggah file
 - Editor dokumen
 - Pengimpor media
-- Aplikasi apa pun yang menerima berkas
+- Aplikasi apa pun yang menerima file
 
 **Contoh:**
 
@@ -623,23 +623,23 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 </div>
 ```
 
-**Lihat [Pelepasan Berkas](/features/drag-and-drop/files/) untuk dokumentasi lengkap.**
+**Lihat [Pelepasan File](/features/drag-and-drop/files/) untuk dokumentasi lengkap.**
 
 ## Opsi Keamanan
 
 ### ContentProtectionEnabled
 
-**Tipe:** `bool` **Default:** `false` **Platform:** Windows (10+), macOS
+**Tipe:** `bool` **Nilai default:** `false` **Platform:** Windows (10+), macOS
 
 ```go
 ContentProtectionEnabled: true,
 ```
 
-**Tujuan:** Mencegah tangkapan layar atas konten jendela.
+**Tujuan:** Mencegah perekaman konten jendela dari layar.
 
 **Dukungan platform:**
 
-- **Windows:** Windows 10 build 19041+ (penuh), versi lama (sebagian)
+- **Windows:** Windows 10 build 19041+ (penuh), versi yang lebih lama (sebagian)
 - **macOS:** Dukungan penuh
 - **Linux:** Tidak didukung
 
@@ -652,7 +652,7 @@ ContentProtectionEnabled: true,
 
 **Catatan penting:**
 
-1. Tidak mencegah pemotretan secara fisik
+1. Tidak mencegah pemotretan fisik
 2. Beberapa alat mungkin dapat melewati perlindungan
 3. Merupakan bagian dari keamanan menyeluruh, bukan satu-satunya perlindungan
 4. Jendela DevTools tidak dilindungi secara otomatis
@@ -671,7 +671,7 @@ window.SetContentProtection(true)
 
 ### Izin
 
-**Tipe:** `map[PermissionType]Permission` **Default:** `nil` (penanganan default platform) **Platform:** Linux, Windows (macOS menyerahkannya kepada TCC)
+**Tipe:** `map[PermissionType]Permission` **Nilai default:** `nil` (penanganan default platform) **Platform:** Linux, Windows (macOS menyerahkannya kepada TCC)
 
 ```go
 Permissions: map[application.PermissionType]application.Permission{
@@ -680,27 +680,27 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-**Tujuan:** Mengontrol secara deklaratif cara menangani permintaan kapabilitas (kamera, mikrofon, geolokasi, notifikasi, pembacaan papan klip) dari konten web jendela, tanpa kode khusus platform.
+**Tujuan:** Mengontrol secara deklaratif cara penanganan permintaan kapabilitas (kamera, mikrofon, geolokasi, notifikasi, pembacaan clipboard) dari konten web jendela, tanpa kode khusus platform.
 
 **Nilai PermissionType:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
 
 **Nilai izin:**
 
-- `PermissionDefault` (0) — penanganan bawaan platform: dialog konfirmasi OS/WebView2 pada macOS/Windows; di Linux, kamera/mikrofon diizinkan dan semua yang lain ditolak
-- `PermissionAllow` (1) — berikan izin tanpa meminta konfirmasi (Linux: hanya kamera/mikrofon yang diimplementasikan; jenis lainnya tetap ditolak)
-- `PermissionDeny` (2) — tolak tanpa meminta konfirmasi
+- `PermissionDefault` (0) — penanganan native platform: permintaan konfirmasi OS/WebView2 pada macOS/Windows; di Linux, kamera/mikrofon diizinkan, sedangkan semua yang lain ditolak
+- `PermissionAllow` (1) — memberikan izin tanpa meminta konfirmasi (Linux: hanya kamera/mikrofon yang telah diimplementasikan; tipe lainnya tetap ditolak)
+- `PermissionDeny` (2) — menolak tanpa meminta konfirmasi
 
-**Penting — Windows:** Sebelum opsi ini tersedia, Wails secara diam-diam memberikan semua kapabilitas WebView2. Kini, menetapkan entri apa pun dalam `Permissions` akan menonaktifkan pemberian izin menyeluruh tersebut. Kapabilitas yang tidak tercantum akan menampilkan dialog konfirmasi bawaan WebView2, alih-alih diizinkan secara otomatis. Cantumkan secara eksplisit setiap kapabilitas yang diperlukan aplikasi Anda.
+**Penting — Windows:** Sebelum opsi ini tersedia, Wails secara diam-diam memberikan semua kapabilitas WebView2. Sekarang, menetapkan entri apa pun dalam `Permissions` akan menonaktifkan pemberian izin menyeluruh tersebut. Kapabilitas yang tidak tercantum akan menampilkan permintaan konfirmasi native WebView2 dan tidak lagi diizinkan secara otomatis. Cantumkan secara eksplisit setiap kapabilitas yang diperlukan aplikasi Anda.
 
 **Lihat [Izin](/features/windows/permissions/) untuk panduan lengkap, matriks platform, dan contoh.**
 
 ## Peristiwa Siklus Hidup Jendela
 
-Peristiwa siklus hidup jendela ditangani menggunakan `OnWindowEvent` dan `RegisterHook`. Metode ini memberikan kontrol terperinci atas perilaku penutupan dan penghancuran jendela.
+Peristiwa siklus hidup jendela ditangani menggunakan `OnWindowEvent` dan `RegisterHook`. Metode ini memberikan kontrol terperinci atas perilaku penutupan dan pemusnahan jendela.
 
 ### Membatalkan Penutupan Jendela
 
-Untuk mencegah jendela ditutup (misalnya karena ada perubahan yang belum disimpan), gunakan `RegisterHook` dengan peristiwa `WindowClosing`, lalu panggil `event.Cancel()`:
+Untuk mencegah jendela ditutup (misalnya, karena ada perubahan yang belum disimpan), gunakan `RegisterHook` dengan peristiwa `WindowClosing`, lalu panggil `event.Cancel()`:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -749,7 +749,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 **Poin penting:**
 
 - `OnWindowEvent` menangani peristiwa yang akan segera terjadi
-- Pembersihan dijalankan sebelum jendela dihancurkan
+- Pembersihan dijalankan sebelum jendela dimusnahkan
 - Penutupan tidak dapat dibatalkan dari sini (gunakan `RegisterHook` untuk melakukannya)
 
 ### Pola Pembersihan Jendela Singleton
@@ -813,35 +813,35 @@ Mac: application.MacWindow{
 - `AppearsTransparent` - Membuat bilah judul transparan sehingga konten meluas ke area bilah judul
 - `Hide` - Menyembunyikan bilah judul sepenuhnya
 - `HideTitle` - Hanya menyembunyikan teks judul
-- `FullSizeContent` - Memperluas konten hingga memenuhi ukuran jendela
+- `FullSizeContent` - Memperluas konten hingga memenuhi seluruh ukuran jendela
 
-Di macOS, transparansi webview dan pembukaan inspector secara terprogram memerlukan tag build `private_mac_apis`. Tanpa tag tersebut, opsi yang sama tetap valid, tetapi operasi yang hanya menggunakan API privat tidak melakukan apa pun. Pengelompokan Liquid Glass juga diabaikan, dan gaya menggunakan alternatif dari API publik. Lihat [API macOS privat](/guides/build/private-macos-apis/) untuk perintah build dan perilaku persisnya.
+Di macOS, transparansi webview dan pembukaan inspector secara terprogram memerlukan tag build `private_mac_apis`. Tanpa tag tersebut, opsi yang sama tetap valid, tetapi operasi yang hanya menggunakan API privat tidak melakukan apa pun. Pengelompokan Liquid Glass juga diabaikan dan gaya menggunakan alternatif API publik. Lihat [API macOS privat](/guides/build/private-macos-apis/) untuk mengetahui perintah build dan perilaku yang tepat.
 
 **Backdrop** (`MacBackdrop`)
 
-- `MacBackdropNormal` - Latar belakang standar yang tidak transparan
-- `MacBackdropTranslucent` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, efek blur native tetap berada di belakang webview yang tidak transparan.
-- `MacBackdropTransparent` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, webview tetap tidak transparan.
-- `MacBackdropLiquidGlass` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, lapisan kaca tetap berada di belakang webview yang tidak transparan; gaya menggunakan alternatif dari API publik.
+- `MacBackdropNormal` - Latar belakang opak standar
+- `MacBackdropTranslucent` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, efek buram native tetap berada di belakang webview yang opak.
+- `MacBackdropTransparent` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, webview tetap opak.
+- `MacBackdropLiquidGlass` - **API privat diperlukan untuk transparansi webview.** Tanpa tag tersebut, lapisan kaca tetap berada di belakang webview yang opak; gaya menggunakan alternatif API publik.
 
 **LiquidGlass** (`MacLiquidGlass`)
 
-| Field atau nilai | Ketergantungan pada API privat di macOS |
+| Bidang atau nilai | Ketergantungan pada API privat di macOS |
 | --- | --- |
-| `Style: LiquidGlassStyleAutomatic` | Gaya regular native bersifat publik; transparansi webview pada backdrop memerlukan `private_mac_apis`. |
-| `Style: LiquidGlassStyleLight` | Tag tersebut mempertahankan pemetaan gaya clear native yang sudah ada; tanpanya, Wails menggunakan kaca regular dengan tampilan Aqua. |
-| `Style: LiquidGlassStyleDark` | **API privat:** nilai gaya native yang tidak terdokumentasi `2`; tanpa tag tersebut, kaca regular dengan tampilan Dark Aqua digunakan. |
-| `Style: LiquidGlassStyleVibrant` | Pemetaan gaya clear native bersifat publik; transparansi webview pada backdrop memerlukan tag tersebut. |
+| `Style: LiquidGlassStyleAutomatic` | Gaya reguler native bersifat publik; transparansi webview pada latar belakang memerlukan `private_mac_apis`. |
+| `Style: LiquidGlassStyleLight` | Tag tersebut mempertahankan pemetaan gaya transparan native yang sudah ada; tanpa tag itu, Wails menggunakan kaca reguler dengan tampilan Aqua. |
+| `Style: LiquidGlassStyleDark` | **API privat:** nilai gaya native yang tidak terdokumentasi `2`; tanpa tag tersebut, kaca reguler dengan tampilan Dark Aqua. |
+| `Style: LiquidGlassStyleVibrant` | Pemetaan gaya transparan native bersifat publik; transparansi webview pada latar belakang memerlukan tag tersebut. |
 | `GroupID` | **API privat:** nilai yang tidak kosong meminta pengelompokan; diabaikan tanpa tag tersebut. |
 | `GroupSpacing` | **API privat:** nilai positif meminta jarak antarkelompok; diabaikan tanpa tag tersebut. |
-| `Material`, `CornerRadius`, `TintColor` | Ketiganya tidak memiliki ketergantungan tersendiri pada API privat. |
+| `Material`, `CornerRadius`, `TintColor` | Tidak memiliki ketergantungan sendiri pada API privat. |
 
-Lihat [nilai Liquid Glass](/guides/build/private-macos-apis/#liquid-glass-values) untuk mengetahui nilai gaya native dan ketersediaannya pada sistem operasi.
+Lihat [Nilai Liquid Glass](/guides/build/private-macos-apis/#liquid-glass-values) untuk mengetahui nilai gaya native dan ketersediaannya pada sistem operasi.
 
 **InvisibleTitleBarHeight** (`int`)
 
 - Tinggi area bilah judul tak terlihat (untuk menyeret jendela)
-- Hanya berlaku ketika area seret bilah judul native disembunyikan—yakni ketika jendela tidak berbingkai (`Frameless: true`) atau menggunakan bilah judul transparan (`AppearsTransparent: true`)
+- Hanya berlaku ketika area seret bilah judul native disembunyikan—yaitu ketika jendela tidak memiliki bingkai (`Frameless: true`) atau menggunakan bilah judul transparan (`AppearsTransparent: true`)
 - Tidak berpengaruh pada jendela standar dengan bilah judul yang terlihat
 
 **WindowClass** (`MacWindowClass`)
@@ -851,18 +851,18 @@ Lihat [nilai Liquid Glass](/guides/build/private-macos-apis/#liquid-glass-values
 
 `PanelPreferences` hanya berlaku untuk `MacWindowClassPanel`:
 
-- `NonActivating` menambahkan `NSWindowStyleMaskNonactivatingPanel`. Menampilkan atau memfokuskan panel tidak mengaktifkan aplikasi Wails, tetapi panel tersebut tetap dapat menjadi jendela penerima input papan ketik untuk kontrol dan input teks.
+- `NonActivating` menambahkan `NSWindowStyleMaskNonactivatingPanel`. Menampilkan atau memfokuskan panel tidak mengaktifkan aplikasi Wails, tetapi panel tetap dapat menjadi jendela key untuk kontrol dan input teks.
 - `FloatingPanel` mengaktifkan perilaku panel mengambang AppKit.
-- `BecomesKeyOnlyIfNeeded` hanya memperoleh status sebagai jendela penerima input papan ketik ketika tampilan yang diklik meminta input papan ketik.
+- `BecomesKeyOnlyIfNeeded` hanya memperoleh status key ketika tampilan yang diklik meminta input papan ketik.
 - `UtilityWindow` menerapkan gaya jendela utilitas native.
 
-Panel Wails tetap terlihat ketika aplikasi dinonaktifkan dan dilepas ketika ditutup, sesuai dengan siklus hidup yang diharapkan oleh `WebviewWindow`. Hal ini merupakan pengesampingan yang disengaja terhadap nilai default `NSPanel` yang berlawanan.
+Panel Wails tetap terlihat ketika aplikasi dinonaktifkan dan dilepas saat ditutup, sesuai dengan siklus hidup yang diharapkan oleh `WebviewWindow`. Perilaku ini sengaja menggantikan default `NSPanel` yang berlawanan.
 
-Kelas jendela, level, kebijakan aktivasi, dan perilaku koleksi mengatasi masalah yang berbeda:
+Kelas jendela, level, kebijakan aktivasi, dan perilaku koleksi menyelesaikan masalah yang berbeda:
 
 - `WindowClass` memilih `NSWindow` atau `NSPanel` serta mengontrol semantik jendela utama/key.
-- `WindowLevel` mengontrol urutan-z. Gunakan `MacWindowLevelPopUpMenu` untuk overlay bilah menu.
-- `MacOptions.ActivationPolicy` mengontrol aplikasi secara keseluruhan, termasuk tampilan Dock dan bilah menu. Panel yang tidak mengaktifkan aplikasi tidak memerlukan kebijakan aktivasi aksesori, meskipun aplikasi tetap dapat menggunakannya untuk menyembunyikan ikon Dock.
+- `WindowLevel` mengontrol urutan z. Gunakan `MacWindowLevelPopUpMenu` untuk overlay bilah menu.
+- `MacOptions.ActivationPolicy` mengontrol aplikasi secara keseluruhan, termasuk penyajian Dock dan bilah menu. Panel yang tidak mengaktifkan aplikasi tidak memerlukan kebijakan aktivasi aksesori, meskipun aplikasi tetap dapat menggunakannya untuk menyembunyikan ikon Dock.
 - `CollectionBehavior` mengontrol partisipasi dalam Spaces dan mode layar penuh.
 
 ```go
@@ -890,33 +890,33 @@ Mac: application.MacWindow{
 - `MacWindowLevelPopUpMenu` - Level menu pop-up
 - `MacWindowLevelScreenSaver` - Level penghemat layar
 
-`WindowLevel` yang ditentukan secara eksplisit lebih diprioritaskan daripada `AlwaysOnTop` dan `PanelPreferences.FloatingPanel`. Tanpa level eksplisit, `AlwaysOnTop` atau panel mengambang ditetapkan menjadi `MacWindowLevelFloating`; jika tidak, levelnya adalah `MacWindowLevelNormal`. Pemanggilan `SetAlwaysOnTop` setelahnya tetap merupakan perubahan runtime yang eksplisit.
+`WindowLevel` yang ditetapkan secara eksplisit lebih diutamakan daripada `AlwaysOnTop` dan `PanelPreferences.FloatingPanel`. Tanpa level eksplisit, `AlwaysOnTop` atau panel mengambang akan menghasilkan `MacWindowLevelFloating`; jika tidak, levelnya adalah `MacWindowLevelNormal`. Pemanggilan `SetAlwaysOnTop` setelahnya tetap merupakan perubahan runtime eksplisit.
 
 **CollectionBehavior** (`MacWindowCollectionBehavior`)
 
-Mengontrol perilaku jendela di berbagai macOS Spaces dan mode layar penuh. Nilai-nilai ini merupakan bitmask yang dapat digabungkan menggunakan operasi OR bitwise (`|`).
+Mengontrol perilaku jendela di berbagai macOS Spaces dan mode layar penuh. Nilai-nilai ini berupa bitmask yang dapat digabungkan menggunakan OR bitwise (`|`).
 
 **Perilaku Space:**
 
 - `MacWindowCollectionBehaviorDefault` - Menggunakan FullScreenPrimary (default, kompatibel dengan versi sebelumnya)
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Jendela muncul di semua Spaces
 - `MacWindowCollectionBehaviorMoveToActiveSpace` - Berpindah ke Space aktif ketika ditampilkan
-- `MacWindowCollectionBehaviorManaged` - Perilaku default jendela terkelola
+- `MacWindowCollectionBehaviorManaged` - Perilaku default untuk jendela terkelola
 - `MacWindowCollectionBehaviorTransient` - Jendela sementara/transien
-- `MacWindowCollectionBehaviorStationary` - Tetap pada posisinya saat beralih Space
+- `MacWindowCollectionBehaviorStationary` - Tetap diam saat beralih Space
 
-**Siklus jendela:**
+**Peralihan siklus jendela:**
 
-- `MacWindowCollectionBehaviorParticipatesInCycle` - Disertakan dalam siklus Cmd+`
-- `MacWindowCollectionBehaviorIgnoresCycle` - Dikecualikan dari siklus Cmd+`
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Disertakan dalam pergantian dengan Cmd+`
+- `MacWindowCollectionBehaviorIgnoresCycle` - Tidak disertakan dalam pergantian dengan Cmd+`
 
 **Perilaku layar penuh:**
 
-- `MacWindowCollectionBehaviorFullScreenPrimary` - Dapat masuk ke mode layar penuh
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat melapisi aplikasi layar penuh
+- `MacWindowCollectionBehaviorFullScreenPrimary` - Dapat memasuki mode layar penuh
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat ditampilkan di atas aplikasi layar penuh
 - `MacWindowCollectionBehaviorFullScreenNone` - Menonaktifkan kemampuan layar penuh
 - `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Mengizinkan penyusunan berdampingan (macOS 10.11+)
-- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Mencegah penyusunan berdampingan (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Mencegah penyusunan (macOS 10.11+)
 
 **Contoh - Jendela seperti Spotlight:**
 
@@ -948,8 +948,8 @@ Mengontrol perilaku tab jendela pada macOS 10.12 dan versi yang lebih baru. Tab 
 
 **Opsi:**
 
-- `MacWindowTabbingModeDefault` - Sentinel bernilai nol (tidak ditetapkan secara eksplisit). Saat runtime, nilai defaultnya adalah tidak mengizinkan tab jendela
-- `MacWindowTabbingModeAutomatic` - Sistem menentukan perilaku tab jendela
+- `MacWindowTabbingModeDefault` - Nilai sentinel nol (tidak ditetapkan secara eksplisit). Saat runtime, nilai bakunya adalah tidak mengizinkan tab
+- `MacWindowTabbingModeAutomatic` - Sistem menentukan perilaku tab
 - `MacWindowTabbingModePreferred` - Jendela lebih memilih berada dalam mode tab
 - `MacWindowTabbingModeDisallowed` - Menonaktifkan tab jendela
 
@@ -971,7 +971,7 @@ Mac: application.MacWindow{
 
 **WebviewPreferences** (`MacWebviewPreferences`)
 
-Kontrol mendetail atas konfigurasi `WKWebView` yang mendasarinya. Semua bidang bersifat opsional — bidang yang tidak ditetapkan tidak mengubah nilai default WebKit.
+Kontrol terperinci atas konfigurasi `WKWebView` yang mendasarinya. Semua bidang bersifat opsional—bidang yang tidak ditetapkan tidak mengubah nilai baku WebKit.
 
 ```go
 Mac: application.MacWindow{
@@ -990,20 +990,20 @@ Mac: application.MacWindow{
 },
 ```
 
-- `TabFocusesLinks` — Jika `true`, menekan Tab akan memindahkan fokus ke tautan dan kontrol formulir (default: `false`)
-- `TextInteractionEnabled` — Jika `true`, pengguna dapat memilih dan berinteraksi dengan teks dalam webview (default: `true`)
-- `FullscreenEnabled` — Jika `true`, konten web dapat memasuki mode layar penuh melalui HTML Fullscreen API (default: `false`). Memerlukan macOS 12.3+.
-- `AllowsBackForwardNavigationGestures` — Jika `true`, gestur usap horizontal memicu navigasi mundur/maju (default: `false`)
-- `AllowsMagnification` — Jika `true`, gestur cubit untuk memperbesar diaktifkan pada webview (default: `false`)
-- `AllowsAirPlayForMediaPlayback` — Jika `true`, media dapat dialirkan ke perangkat AirPlay (default: `true`)
-- `JavaScriptCanOpenWindowsAutomatically` — Jika `true`, JavaScript dapat membuka jendela baru tanpa gestur pengguna (default: `false`)
-- `MinimumFontSize` — Ukuran font minimum dalam poin. Gunakan `optional.NewVar(12.0)` untuk menetapkannya. Jika tidak ditetapkan, nilai default WebKit tetap digunakan.
-- `ApplicationNameForUserAgent` — Mengganti sufiks nama aplikasi dalam string agen pengguna WebKit. Berguna ketika situs menolak pengidentifikasi default `"wails.io"` (misalnya sematan YouTube). Biarkan kosong untuk mempertahankan nilai default.
-- `EnableAutoplayWithoutUserAction` — Jika `true`, audio dan video dapat diputar otomatis tanpa gestur pengguna. Dipetakan ke `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (default: `false`)
+- `TabFocusesLinks` — Jika `true`, menekan Tab memindahkan fokus ke tautan dan kontrol formulir (nilai baku: `false`)
+- `TextInteractionEnabled` — Jika `true`, pengguna dapat memilih dan berinteraksi dengan teks dalam webview (nilai baku: `true`)
+- `FullscreenEnabled` — Jika `true`, konten web dapat memasuki layar penuh melalui HTML Fullscreen API (nilai baku: `false`). Memerlukan macOS 12.3+.
+- `AllowsBackForwardNavigationGestures` — Jika `true`, gestur usap horizontal memicu navigasi mundur/maju (nilai baku: `false`)
+- `AllowsMagnification` — Jika `true`, pembesaran dengan gestur cubit diaktifkan pada webview (nilai baku: `false`)
+- `AllowsAirPlayForMediaPlayback` — Jika `true`, media dapat dialirkan ke perangkat AirPlay (nilai baku: `true`)
+- `JavaScriptCanOpenWindowsAutomatically` — Jika `true`, JavaScript dapat membuka jendela baru tanpa gestur pengguna (nilai baku: `false`)
+- `MinimumFontSize` — Ukuran fon minimum dalam poin. Gunakan `optional.NewVar(12.0)` untuk menetapkannya. Jika tidak ditetapkan, nilai baku WebKit tetap digunakan.
+- `ApplicationNameForUserAgent` — Mengganti sufiks nama aplikasi dalam string user-agent WebKit. Berguna ketika situs menolak pengenal bawaan `"wails.io"` (misalnya sematan YouTube). Biarkan kosong untuk mempertahankan nilai baku.
+- `EnableAutoplayWithoutUserAction` — Jika `true`, audio dan video dapat diputar otomatis tanpa gestur pengguna. Dipetakan ke `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (nilai baku: `false`)
 
 ### Opsi Windows (per jendela)
 
-Struct per jendela adalah `application.WindowsWindow` — **bukan** `WindowsOptions` (yang terakhir adalah struct tingkat *aplikasi*).
+Struct per jendela adalah `application.WindowsWindow`—**bukan** `WindowsOptions` (yang terakhir adalah struct tingkat *aplikasi*).
 
 ```go
 Windows: application.WindowsWindow{
@@ -1019,22 +1019,22 @@ Windows: application.WindowsWindow{
 
 **DisableIcon** (`bool`)
 
-- Hapus ikon dari bilah judul.
+- Menghapus ikon dari bilah judul.
 
 **DisableMenu** (`bool`)
 
-- Nonaktifkan bilah menu untuk jendela. Jika `true`, jendela tidak menampilkan bilah menu meskipun bilah tersebut telah dikonfigurasi.
-- Default: `false`
+- Menonaktifkan bilah menu untuk jendela. Jika `true`, jendela tidak menampilkan bilah menu meskipun bilah tersebut telah dikonfigurasi.
+- Nilai baku: `false`
 
 **BackdropType** (`BackdropType`)
 
-- `application.Auto` - Default sistem
+- `application.Auto` - Nilai baku sistem
 - `application.None` - Tanpa latar belakang
 - `application.Mica` - Material Mica (Windows 11)
 - `application.Acrylic` - Material Acrylic (Windows 11)
 - `application.Tabbed` - Material Tabbed (Windows 11)
 
-Tidak ada konstanta bergaya `WindowsBackdropTypeMica` — gunakan `application.Mica` dan seterusnya.
+Tidak ada konstanta bergaya `WindowsBackdropTypeMica`—gunakan `application.Mica` dan seterusnya.
 
 **CustomTheme** (`ThemeSettings`)
 
@@ -1042,18 +1042,18 @@ Tidak ada konstanta bergaya `WindowsBackdropTypeMica` — gunakan `application.M
 
 **DisableFramelessWindowDecorations** (`bool`)
 
-- Nonaktifkan dekorasi tanpa bingkai default (bayangan Aero, sudut membulat).
+- Menonaktifkan dekorasi bawaan untuk jendela tanpa bingkai (bayangan Aero, sudut membulat).
 
 **NonClientRegionSupport** (`bool`)
 
 - Mengaktifkan dukungan `app-region: drag` / `app-region: no-drag` bawaan WebView2 untuk bilah judul khusus tanpa bingkai.
-- Opsi ini hanya untuk menyeret aplikasi secara native dengan cara sederhana. Opsi ini tidak menyediakan perilaku native untuk tombol kontrol bilah judul khusus maupun Windows 11 Snap Assist / Snap Layouts bagi tombol maksimalkan khusus.
+- Opsi ini hanya untuk penyeretan aplikasi native sederhana. Opsi ini tidak menyediakan perilaku native untuk tombol caption khusus maupun Windows 11 Snap Assist / Snap Layouts pada tombol maksimalkan khusus.
 
 **WebView2CompositionHosting** (`bool`)
 
-- Mengaktifkan dukungan `--wails-non-client-region` yang dikelola Wails untuk tombol kontrol bilah judul khusus dengan perilaku native Windows, termasuk Windows 11 Snap Assist / Snap Layouts pada tombol maksimalkan khusus.
-- Eksperimental. Opsi ini menghosting WebView2 melalui `ICoreWebView2CompositionController` dan DirectComposition, bukan melalui pengontrol default yang dihosting HWND.
-- Dapat digabungkan dengan `NonClientRegionSupport` ketika jendela memerlukan dukungan `app-region` bawaan WebView2 sekaligus wilayah tombol kontrol bilah judul khusus yang dikelola Wails.
+- Mengaktifkan dukungan `--wails-non-client-region` yang dikelola Wails untuk tombol caption khusus dengan perilaku native Windows, termasuk Windows 11 Snap Assist / Snap Layouts pada tombol maksimalkan khusus.
+- Eksperimental. Opsi ini meng-host WebView2 melalui `ICoreWebView2CompositionController` dan DirectComposition sebagai pengganti pengontrol bawaan yang di-host HWND.
+- Dapat digabungkan dengan `NonClientRegionSupport` jika sebuah jendela memerlukan dukungan `app-region` bawaan WebView2 sekaligus area tombol caption khusus yang dikelola Wails.
 
 **Contoh:**
 
@@ -1064,7 +1064,7 @@ Windows: application.WindowsWindow{
 },
 ```
 
-**Contoh - Wilayah bilah judul Windows khusus:**
+**Contoh - Area bilah judul Windows khusus:**
 
 ```go
 Windows: application.WindowsWindow{
@@ -1073,11 +1073,11 @@ Windows: application.WindowsWindow{
 },
 ```
 
-Lihat [Jendela Tanpa Bingkai](/features/windows/frameless/#native-non-client-regions-on-windows) untuk mengetahui perilaku mendetail, konsekuensi pilihan, dan CSS yang sesuai.
+Lihat [Windows Tanpa Bingkai](/features/windows/frameless/#native-non-client-regions-on-windows) untuk mengetahui detail perilaku, kompromi, dan CSS yang sesuai.
 
 ### Opsi Linux (per jendela)
 
-Struct per jendela adalah `application.LinuxWindow` — **bukan** `LinuxOptions`.
+Struct per jendela adalah `application.LinuxWindow`—**bukan** `LinuxOptions`.
 
 ```go
 Linux: application.LinuxWindow{
@@ -1152,10 +1152,10 @@ app := application.New(application.Options{
 
 - Argumen baris perintah Chromium yang diteruskan ke proses browser
 - Harus menyertakan prefiks `--` (misalnya, `"--remote-debugging-port=9222"`)
-- Lihat [switch baris perintah Chromium](https://peter.sh/experiments/chromium-command-line-switches/) untuk mengetahui argumen yang tersedia
+- Lihat [sakelar baris perintah Chromium](https://peter.sh/experiments/chromium-command-line-switches/) untuk mengetahui argumen yang tersedia
 
 @note{type="caution" title="Penting"}
-Flag ini berlaku secara global pada SEMUA jendela karena WebView2 menggunakan satu lingkungan browser bersama untuk setiap jalur data pengguna. Anda tidak dapat menggunakan flag browser yang berbeda untuk jendela yang berbeda.
+Flag ini berlaku secara global untuk SEMUA jendela karena WebView2 menggunakan satu lingkungan browser bersama untuk setiap jalur data pengguna. Anda tidak dapat menggunakan flag browser yang berbeda untuk jendela yang berbeda.
 
 @end
 
@@ -1260,15 +1260,15 @@ func main() {
 }
 ```
 
-Aset frontend disajikan pada tingkat aplikasi (`application.Options.Assets`), bukan per jendela.
+Aset frontend disajikan di tingkat aplikasi (`application.Options.Assets`), bukan per jendela.
 
 ## Langkah Berikutnya
 
 - [Dasar-Dasar Jendela](/features/windows/basics/) - Membuat dan mengontrol jendela
-- [Beberapa Jendela](/features/windows/multiple/) - Pola aplikasi multijendela
-- [Jendela Tanpa Bingkai](/features/windows/frameless/) - Ornamen jendela khusus
+- [Beberapa Jendela](/features/windows/multiple/) - Pola multijendela
+- [Jendela Tanpa Bingkai](/features/windows/frameless/) - Bingkai jendela kustom
 - [Peristiwa Jendela](/features/windows/events/) - Peristiwa siklus hidup
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

@@ -688,4 +688,4 @@ func showAbout(ctx *application.Context) {
 
 ---
 
-**ご質問がありますか？**[Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[メニューのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)を確認してください。
+**ご質問がありますか？**[Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[メニューのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu)を確認してください。

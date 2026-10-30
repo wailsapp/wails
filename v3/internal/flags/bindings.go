@@ -2,7 +2,6 @@ package flags
 
 import (
 	"errors"
-	"slices"
 	"strings"
 	"unicode/utf8"
 )
@@ -91,8 +90,8 @@ func (options *GenerateBindingsOptions) BuildFlags() (flags []string, err error)
 			str = str[closingQuote+quoteSize:]
 		}
 
-		// append a clone of the flag to the result, then reuse buffer space
-		flags = append(flags, string(slices.Clone(flag)))
+		// Convert to a string before reusing the buffer for the next flag.
+		flags = append(flags, string(flag))
 		flag = flag[:0]
 	}
 

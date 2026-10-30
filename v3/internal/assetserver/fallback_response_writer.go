@@ -65,8 +65,10 @@ func (fw *fallbackResponseWriter) WriteHeader(statusCode int) {
 
 	if fw.header != nil {
 		// Apply headers and forward original map to the main handler.
-		maps.Copy(fw.rw.Header(), fw.header)
-		fw.header = fw.rw.Header()
+		header := fw.rw.Header()
+		clear(header)
+		maps.Copy(header, fw.header)
+		fw.header = header
 	}
 
 	fw.rw.WriteHeader(statusCode)
@@ -74,6 +76,7 @@ func (fw *fallbackResponseWriter) WriteHeader(statusCode int) {
 
 // Flush implements the http.Flusher interface.
 func (rw *fallbackResponseWriter) Flush() {
+	rw.WriteHeader(http.StatusOK)
 	if f, ok := rw.rw.(http.Flusher); ok {
 		f.Flush()
 	}

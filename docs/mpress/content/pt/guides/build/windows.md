@@ -19,7 +19,7 @@ Isso executa `wails3 task windows:package`, que:
 2. Gera o bootstrapper do WebView2
 3. Cria um instalador NSIS
 
-Saída: `build/windows/nsis/<AppName>-installer.exe`
+Saída: `bin/<AppName>-<arch>-installer.exe`. Os scripts-fonte do NSIS permanecem em `build/windows/nsis/`.
 
 ### Pacote MSIX
 
@@ -32,7 +32,7 @@ wails3 package GOOS=windows FORMAT=msix
 Saída: `bin/<AppName>-<arch>.msix`
 
 @note{type="note"}
-O MSIX requer `makeappx.exe` (Windows SDK) ou as ferramentas MSIX autônomas. O Taskfile do Windows disponibiliza a tarefa de instalação como `wails3 task install:msix:tools`.
+O MSIX requer `makeappx.exe` (Windows SDK) ou as ferramentas MSIX independentes. O Taskfile do Windows disponibiliza a tarefa de instalação como `wails3 task install:msix:tools`.
 
 @end
 
@@ -40,7 +40,7 @@ O MSIX requer `makeappx.exe` (Windows SDK) ou as ferramentas MSIX autônomas. O 
 
 A configuração do NSIS está em `build/windows/nsis/project.nsi`. Edite esse arquivo para personalizar:
 
-- Interface do instalador e identidade visual
+- Interface e identidade visual do instalador
 - Diretório de instalação
 - Atalhos do menu Iniciar e da área de trabalho
 - Associações de arquivos
@@ -54,7 +54,7 @@ Os metadados do aplicativo vêm de `build/windows/info.json`:
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -87,10 +87,10 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-Armazene a senha do certificado com segurança:
+Armazene a senha do certificado de forma segura:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 Consulte [Assinatura de aplicativos](/guides/build/signing/) para obter detalhes.
@@ -121,4 +121,4 @@ Seu executável não está assinado. Consulte [Assinatura de código](#assinatur
 
 ### WebView2 ausente
 
-O instalador inclui um bootstrapper do WebView2 que baixa o runtime quando necessário. Se você precisar de uma instalação offline, baixe o Evergreen Standalone Installer da Microsoft.
+O instalador inclui um bootstrapper do WebView2 que baixa o runtime quando necessário. Se você precisar fazer a instalação offline, baixe o Evergreen Standalone Installer da Microsoft.

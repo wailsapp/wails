@@ -79,4 +79,4 @@ alert.Close()
 
 @end
 
-通知の表示と非表示を繰り返してもライブの JavaScript 状態が維持されるコンパクトなシステムモニターについては、[notch-notification のサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification)を参照してください。
+通知の表示と非表示を繰り返してもライブの JavaScript 状態が維持されるコンパクトなシステムモニターについては、[notch-notification のサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification)を参照してください。

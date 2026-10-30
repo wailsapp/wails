@@ -816,4 +816,4 @@ Kesalahan akan dicatat dan aplikasi tidak akan dimulai.
 
 ---
 
-**Ada pertanyaan tentang siklus hidup?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan tentang siklus hidup?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

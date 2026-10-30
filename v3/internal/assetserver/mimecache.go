@@ -3,14 +3,10 @@ package assetserver
 import (
 	"net/http"
 	"path/filepath"
-	"sync"
+	"strings"
 )
 
 var (
-	// mimeCache uses sync.Map for better concurrent read performance
-	// since reads are far more common than writes
-	mimeCache sync.Map
-
 	// mimeTypesByExt maps file extensions to MIME types for common web formats.
 	// This approach is preferred over content-based detection because:
 	// 1. Extension-based lookup is O(1) vs O(n) content scanning
@@ -93,24 +89,21 @@ var (
 	}
 )
 
-// "application/octet-stream".
+// GetMimetype uses a known file extension or sniffs the current content.
 func GetMimetype(filename string, data []byte) string {
-	// Fast path: check extension map first (no lock needed)
-	if result := mimeTypesByExt[filepath.Ext(filename)]; result != "" {
+	if result := mimetypeByExtension(filename); result != "" {
 		return result
 	}
 
-	// Check cache (lock-free read)
-	if cached, ok := mimeCache.Load(filename); ok {
-		return cached.(string)
-	}
+	// Content may change for the same filename; sniff without retaining names.
+	return http.DetectContentType(data)
+}
 
-	// Slow path: use stdlib content-based detection and cache
-	result := http.DetectContentType(data)
-	if result == "" {
-		result = "application/octet-stream"
+func mimetypeByExtension(filename string) string {
+	// Fast path: check extension map first (no lock needed)
+	extension := filepath.Ext(filename)
+	if result := mimeTypesByExt[extension]; result != "" {
+		return result
 	}
-
-	mimeCache.Store(filename, result)
-	return result
+	return mimeTypesByExt[strings.ToLower(extension)]
 }

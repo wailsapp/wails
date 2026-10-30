@@ -1,15 +1,15 @@
 ---
 title: "Opções de janela"
-description: "Referência completa de WebviewWindowOptions"
+description: "Opções de janela, valores padrão e restrições de plataforma"
 slug: "features/windows/options"
 sourcePath: "features/windows/options.md"
 ---
 
 ## Opções de configuração da janela
 
-O Wails oferece uma configuração abrangente de janelas, com dezenas de opções de tamanho, posição, aparência e comportamento. Esta é a **referência completa** de todas as opções disponíveis para Windows, macOS e Linux referentes a `WebviewWindowOptions`. Todas as opções, todas as plataformas, com exemplos e restrições.
+O Wails oferece uma configuração abrangente de janelas, com dezenas de opções de tamanho, posição, aparência e comportamento. Esta referência explica campos comuns de `WebviewWindowOptions` no Windows, macOS e Linux. A estrutura abaixo resume alguns campos selecionados; consulte o código-fonte Go vinculado para ver o tipo completo.
 
-## Estrutura de WebviewWindowOptions
+## Estrutura WebviewWindowOptions
 
 ```go
 type WebviewWindowOptions struct {
@@ -56,7 +56,7 @@ type WebviewWindowOptions struct {
     DevToolsEnabled             bool
     DefaultContextMenuDisabled  bool
     ContentProtectionEnabled    bool
-    KeyBindings                 map[string]func(window *WebviewWindow)
+    KeyBindings                 map[string]func(window Window)
 
     // Permissions
     Permissions map[PermissionType]Permission
@@ -76,15 +76,15 @@ type WebviewWindowOptions struct {
 }
 ```
 
-`WebviewWindowOptions` **não** tem um campo `Parent` — para relações de janela pai/modal, use `parentWindow.AttachModal(childWindow)`. Também **não** tem um campo `Assets` — a configuração de ativos fica em `application.Options` (`Assets AssetOptions`).
+`WebviewWindowOptions` não possui o campo `Parent` — para relações de janela pai/modal, use `parentWindow.AttachModal(childWindow)`. Também não possui o campo `Assets` — a configuração de ativos fica em `application.Options` (`Assets AssetOptions`).
 
-Código-fonte completo: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+Código-fonte completo: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Opções principais
 
 ### Nome
 
-**Tipo:** `string` **Padrão:** UUID gerado automaticamente **Plataforma:** Todas
+**Tipo:** `string` **Padrão:** `window-<numeric ID>` **Plataforma:** Todas
 
 ```go
 Name: "main-window"
@@ -92,10 +92,10 @@ Name: "main-window"
 
 **Finalidade:** Identificador exclusivo para localizar janelas posteriormente.
 
-**Práticas recomendadas:**
+**Boas práticas:**
 
 - Use nomes descritivos: `"main"`, `"settings"`, `"about"`
-- Use kebab-case: `"file-browser"`, `"color-picker"`
+- Utilize kebab-case: `"file-browser"`, `"color-picker"`
 - Use um nome curto e fácil de lembrar
 
 **Exemplo:**
@@ -127,7 +127,7 @@ Title: "My Application"
 window.SetTitle("My Application - Document.txt")
 ```
 
-### Largura / Altura
+### Largura / altura
 
 **Tipo:** `int` (pixels) **Padrão:** 800 x 600 **Plataforma:** Todas **Restrições:** Deve ser positivo
 
@@ -140,11 +140,11 @@ Height: 800,
 
 **Observações:**
 
-- O Wails processa automaticamente o dimensionamento de DPI
+- O Wails gerencia automaticamente o dimensionamento por DPI
 - Use pixels lógicos, não pixels físicos
 - Considere a resolução mínima da tela (1024x768)
 
-**Exemplos de tamanho:**
+**Exemplos de tamanhos:**
 
 | Caso de uso | Largura | Altura |
 | --- | --- | --- |
@@ -167,8 +167,8 @@ Y: 100,  // 100px from top edge
 **Sistema de coordenadas:**
 
 - (0, 0) corresponde ao canto superior esquerdo da tela principal
-- Os valores positivos de X avançam para a direita
-- Os valores positivos de Y avançam para baixo
+- O eixo X positivo aponta para a direita
+- O eixo Y positivo aponta para baixo
 
 **Exemplo:**
 
@@ -183,14 +183,14 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Prática recomendada:** Se você não precisar de coordenadas específicas, use `Center()` para centralizar uma janela após criá-la:
+**Boa prática:** Se as coordenadas específicas não forem importantes, use `Center()` para centralizar uma janela após criá-la:
 
 ```go
 window := app.Window.New()
 window.Center()
 ```
 
-### MinWidth / MinHeight
+### Largura mínima / altura mínima
 
 **Tipo:** `int` (pixels) **Padrão:** 0 (sem mínimo) **Plataforma:** Todas
 
@@ -215,7 +215,7 @@ MinWidth:  400,
 MinHeight: 300,
 ```
 
-### MaxWidth / MaxHeight
+### Largura máxima / altura máxima
 
 **Tipo:** `int` (pixels) **Padrão:** 0 (sem máximo) **Plataforma:** Todas
 
@@ -234,7 +234,7 @@ MaxHeight: 1080,
 
 ## Opções de estado
 
-### Hidden
+### Oculta
 
 **Tipo:** `bool` **Padrão:** `false` **Plataforma:** Todas
 
@@ -251,11 +251,11 @@ Hidden: true,
 - Telas de abertura (criar, carregar e depois exibir)
 - Evitar um clarão branco durante o carregamento do conteúdo
 
-**Melhorias específicas de plataforma:**
+**Melhorias por plataforma:**
 
-- **Windows:** O clarão branco da janela foi corrigido — a janela permanece invisível até que `Show()` seja chamado
-- **macOS:** Compatibilidade total
-- **Linux:** Compatibilidade total
+- **Windows:** Corrigido o clarão branco da janela — ela permanece invisível até `Show()` ser chamado
+- **macOS:** Compatibilidade completa
+- **Linux:** Compatibilidade completa
 
 **Padrão recomendado para um carregamento suave:**
 
@@ -286,7 +286,7 @@ settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settings.Show()
 ```
 
-### Frameless
+### Sem moldura
 
 **Tipo:** `bool` **Padrão:** `false` **Plataforma:** Todas
 
@@ -298,12 +298,12 @@ Frameless: true,
 
 **Casos de uso:**
 
-- Decoração de janela personalizada
+- Cromado de janela personalizado
 - Telas de abertura
 - Aplicativos de quiosque
 - Janelas com design personalizado
 
-**Importante:** Você precisará implementar:
+**Importante:** você precisará implementar:
 
 - Arrastar a janela
 - Botões de fechar, minimizar e maximizar
@@ -313,13 +313,13 @@ Frameless: true,
 
 ### DisableResize
 
-**Tipo:** `bool` **Padrão:** `false` (por padrão, a janela é redimensionável) **Plataforma:** Todas
+**Tipo:** `bool` **Padrão:** `false` (por padrão, a janela é redimensionável) **Plataforma:** todas
 
 ```go
 DisableResize: true,
 ```
 
-**Finalidade:** Impedir o redimensionamento da janela. Observe que o campo é o **inverso** de `Resizable` na v2 — defina `DisableResize: true` para impedir que uma janela seja redimensionada.
+**Finalidade:** impedir o redimensionamento da janela. Observe que o campo é o **inverso** de v2 de `Resizable` — defina `DisableResize: true` para impedir o redimensionamento de uma janela.
 
 **Casos de uso:**
 
@@ -327,47 +327,47 @@ DisableResize: true,
 - Telas de abertura
 - Caixas de diálogo
 
-**Observação:** Os usuários ainda podem maximizar a janela ou colocá-la em tela cheia, a menos que você também desative essas opções por meio de `MaximiseButtonState` ou do comportamento da coleção.
+**Observação:** os usuários ainda podem maximizar a janela ou colocá-la em tela cheia, a menos que você também desative essas opções por meio de `MaximiseButtonState` ou do comportamento da coleção.
 
 ### AlwaysOnTop
 
-**Tipo:** `bool` **Padrão:** `false` **Plataforma:** Todas
+**Tipo:** `bool` **Padrão:** `false` **Plataforma:** todas
 
 ```go
 AlwaysOnTop: true,
 ```
 
-**Finalidade:** Manter a janela acima de todas as outras.
+**Finalidade:** manter a janela acima de todas as outras.
 
 **Casos de uso:**
 
 - Barras de ferramentas flutuantes
 - Notificações
-- Picture-in-picture
+- Imagem em imagem
 - Temporizadores
 
-**Observações específicas de plataforma:**
+**Observações sobre as plataformas:**
 
-- **macOS:** Compatibilidade total
-- **Windows:** Compatibilidade total
-- **Linux:** Depende do gerenciador de janelas
+- **macOS:** compatibilidade completa
+- **Windows:** compatibilidade completa
+- **Linux:** depende do gerenciador de janelas
 
 ### StartState
 
-**Tipo:** enum `WindowState` **Padrão:** `WindowStateNormal` **Plataforma:** Todas
+**Tipo:** enum `WindowState` **Padrão:** `WindowStateNormal` **Plataforma:** todas
 
 ```go
 StartState: application.WindowStateMaximised,
 ```
 
-**Finalidade:** Definir o estado inicial da janela quando ela for exibida.
+**Finalidade:** definir o estado inicial da janela quando ela for exibida.
 
 **Valores:**
 
-- `WindowStateNormal` — Janela normal
-- `WindowStateMinimised` — Minimizada
-- `WindowStateMaximised` — Maximizada
-- `WindowStateFullscreen` — Tela cheia
+- `WindowStateNormal` - Janela normal
+- `WindowStateMinimised` - Minimizada
+- `WindowStateMaximised` - Maximizada
+- `WindowStateFullscreen` - Tela cheia
 
 Não há uma constante `WindowStateHidden` — use o campo booleano `Hidden` para iniciar a janela invisível.
 
@@ -383,15 +383,15 @@ window.ToggleFullscreen() // there is no SetFullscreen(bool)
 
 ### BackgroundColour
 
-**Tipo:** struct `RGBA` **Padrão:** Branco **Plataforma:** Todas
+**Tipo:** struct `RGBA` **Padrão:** branco **Plataforma:** todas
 
 ```go
 BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
 ```
 
-Os campos de `RGBA` são `Red, Green, Blue, Alpha` (uint8). Prefira as funções auxiliares `application.NewRGB(r, g, b)` (alfa 255) ou `application.NewRGBA(r, g, b, a)`.
+Os campos de `RGBA` são do tipo `Red, Green, Blue, Alpha` (uint8). Prefira as funções auxiliares `application.NewRGB(r, g, b)` (alfa 255) ou `application.NewRGBA(r, g, b, a)`.
 
-**Finalidade:** Cor de fundo da janela antes do carregamento do conteúdo.
+**Finalidade:** definir a cor de fundo da janela antes do carregamento do conteúdo.
 
 **Casos de uso:**
 
@@ -417,7 +417,7 @@ window.SetBackgroundColour(application.NewRGB(30, 30, 30))
 
 ### BackgroundType
 
-**Tipo:** enum `BackgroundType` **Padrão:** `BackgroundTypeSolid` **Plataforma:** macOS, Windows (parcial)
+**Tipo:** enum `BackgroundType` **Padrão:** `BackgroundTypeSolid` **Plataforma:** macOS e Windows (parcial)
 
 ```go
 BackgroundType: application.BackgroundTypeTranslucent,
@@ -425,15 +425,15 @@ BackgroundType: application.BackgroundTypeTranslucent,
 
 **Valores:**
 
-- `BackgroundTypeSolid` — Cor sólida
-- `BackgroundTypeTransparent` — Totalmente transparente
-- `BackgroundTypeTranslucent` — Desfoque semitransparente
+- `BackgroundTypeSolid` - Cor sólida
+- `BackgroundTypeTransparent` - Totalmente transparente
+- `BackgroundTypeTranslucent` - Desfoque semitransparente
 
-**Compatibilidade com plataformas:**
+**Compatibilidade por plataforma:**
 
-- **macOS:** Configure `Mac.Backdrop`; a transparência da webview requer [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background). Sem isso, a webview permanece opaca.
-- **Windows:** Transparente e translúcido (Windows 11+)
-- **Linux:** Somente sólido
+- **macOS:** configure `Mac.Backdrop`; a transparência da webview requer [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background). Sem isso, a webview permanece opaca.
+- **Windows:** transparente e translúcido (Windows 11+)
+- **Linux:** somente sólido
 
 **Exemplo (macOS):**
 
@@ -446,24 +446,24 @@ Mac: application.MacWindow{
 
 ### OpenInspectorOnStartup e OpenDevTools
 
-**API privada no macOS:** `OpenInspectorOnStartup: true`, `window.OpenDevTools()` do Go e `Window.OpenDevTools()` do JavaScript exigem `private_mac_apis` para abrir o inspetor por meio de programação. Sem isso, essas operações não têm efeito. As compilações de produção também precisam de `devtools`. A inspeção pública do Safari no macOS 13.3+ não precisa de APIs privadas; a ativação do inspetor em versões anteriores do macOS precisa. Consulte a [matriz de compilação do Inspetor Web](/guides/build/private-macos-apis/#web-inspector).
+**API privada no macOS:** `OpenInspectorOnStartup: true`, `window.OpenDevTools()` em Go e `Window.OpenDevTools()` em JavaScript exigem `private_mac_apis` para abrir o inspetor por meio de código. Sem isso, essas operações não têm efeito. As compilações de produção também precisam de `devtools`. A inspeção pública do Safari no macOS 13.3+ não exige APIs privadas; a ativação do inspetor em versões anteriores do macOS exige. Consulte a [matriz de compilação do Inspetor Web](/guides/build/private-macos-apis/#web-inspector).
 
 ## Opções de conteúdo
 
 ### URL
 
-**Tipo:** `string` **Padrão:** Vazio (carrega a partir de Assets) **Plataforma:** Todas
+**Tipo:** `string` **Padrão:** vazio (carrega de Assets) **Plataforma:** todas
 
 ```go
 URL: "https://example.com",
 ```
 
-**Finalidade:** Carregar uma URL externa em vez dos recursos incorporados.
+**Finalidade:** carregar uma URL externa em vez dos assets incorporados.
 
 **Casos de uso:**
 
-- Desenvolvimento (carregar a partir do servidor de desenvolvimento)
-- Aplicativos baseados na Web
+- Desenvolvimento (carregar do servidor de desenvolvimento)
+- Aplicativos baseados na web
 - Aplicativos híbridos
 
 **Exemplo:**
@@ -489,13 +489,13 @@ app := application.New(application.Options{
 
 ### HTML
 
-**Tipo:** `string` **Padrão:** Vazio **Plataforma:** Todas
+**Tipo:** `string` **Padrão:** vazio **Plataforma:** todas
 
 ```go
 HTML: "<h1>Hello World</h1>",
 ```
 
-**Finalidade:** Carregar diretamente uma string HTML.
+**Finalidade:** carregar diretamente uma string HTML.
 
 **Casos de uso:**
 
@@ -517,7 +517,7 @@ HTML: `
 
 ### Assets (somente no nível do aplicativo)
 
-A configuração de recursos **não** é um campo de `WebviewWindowOptions`. Os recursos do frontend são servidos pelo próprio aplicativo por meio de `application.Options.Assets` (`AssetOptions`); todas as janelas herdam esse servidor de recursos.
+A configuração de assets **não** é um campo de `WebviewWindowOptions`. Os assets do frontend são servidos pelo próprio aplicativo por meio de `application.Options.Assets` (`AssetOptions`); todas as janelas herdam esse servidor de assets.
 
 ```go
 app := application.New(application.Options{
@@ -527,7 +527,7 @@ app := application.New(application.Options{
 })
 ```
 
-**Consulte [Sistema de compilação](/concepts/build-system/) para obter detalhes.**
+**Consulte [Sistema de build](/concepts/build-system/) para obter detalhes.**
 
 ### UseApplicationMenu
 
@@ -539,7 +539,7 @@ UseApplicationMenu: true,
 
 **Finalidade:** Usar o menu do aplicativo (definido por meio de `app.Menu.Set()`) nesta janela.
 
-No **macOS**, esta opção não tem efeito porque o macOS sempre usa um menu global do aplicativo na parte superior da tela.
+No **macOS**, essa opção não tem efeito, pois o macOS sempre usa um menu global do aplicativo na parte superior da tela.
 
 No **Windows** e no **Linux**, as janelas não exibem um menu por padrão. Definir `UseApplicationMenu: true` instrui a janela a usar o menu no nível do aplicativo, oferecendo uma solução multiplataforma simples.
 
@@ -567,7 +567,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Observações:**
 
 - Se `UseApplicationMenu` e um menu específico da janela estiverem definidos, o menu específico da janela terá prioridade
-- Isso simplifica o código multiplataforma, eliminando a necessidade de verificar o sistema operacional em tempo de execução
+- Isso simplifica o código multiplataforma ao eliminar a necessidade de verificações do sistema operacional em tempo de execução
 - Consulte [Menus do aplicativo](/features/menus/application/) para obter a documentação completa sobre menus
 
 ## Opções de entrada
@@ -580,13 +580,13 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 EnableFileDrop: true,
 ```
 
-**Finalidade:** Permitir arrastar e soltar arquivos do sistema operacional na janela.
+**Finalidade:** Habilitar o recurso de arrastar e soltar arquivos do sistema operacional na janela.
 
-Quando ativado:
+Quando habilitado:
 
-- Os arquivos arrastados de gerenciadores de arquivos podem ser soltos no aplicativo
+- Arquivos arrastados de gerenciadores de arquivos podem ser soltos no aplicativo
 - O evento `WindowFilesDropped` é disparado com os caminhos dos arquivos soltos
-- Os elementos com o atributo `data-file-drop-target` fornecem informações detalhadas sobre a operação de soltar arquivos
+- Elementos com o atributo `data-file-drop-target` fornecem informações detalhadas sobre os arquivos soltos
 
 **Casos de uso:**
 
@@ -639,9 +639,9 @@ ContentProtectionEnabled: true,
 
 **Compatibilidade com plataformas:**
 
-- **Windows:** Windows 10, compilação 19041+ (compatibilidade total); versões anteriores (compatibilidade parcial)
+- **Windows:** build 10 do Windows 19041 ou posterior (compatibilidade total); versões anteriores (compatibilidade parcial)
 - **macOS:** Compatibilidade total
-- **Linux:** Sem compatibilidade
+- **Linux:** Sem suporte
 
 **Casos de uso:**
 
@@ -680,23 +680,23 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-**Finalidade:** Controlar declarativamente, sem código específico da plataforma, como são tratadas as solicitações de recursos (câmera, microfone, geolocalização, notificações e leitura da área de transferência) provenientes do conteúdo web da janela.
+**Finalidade:** Controlar declarativamente, sem código específico da plataforma, como são tratadas as solicitações de recursos feitas pelo conteúdo web da janela, como câmera, microfone, geolocalização, notificações e leitura da área de transferência.
 
 **Valores de PermissionType:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
 
-**Valores de Permission:**
+**Valores de permissão:**
 
-- `PermissionDefault` (0) — tratamento nativo da plataforma: solicitação do sistema operacional/WebView2 no macOS/Windows; no Linux, o acesso à câmera e ao microfone é permitido, e todos os demais são negados
-- `PermissionAllow` (1) — conceder sem solicitar confirmação (Linux: apenas câmera e microfone estão implementados; os demais tipos continuam negados)
+- `PermissionDefault` (0) — tratamento nativo da plataforma: solicitação do sistema operacional/WebView2 no macOS/Windows; no Linux, câmera e microfone são permitidos, e todo o restante é negado
+- `PermissionAllow` (1) — conceder sem solicitar confirmação (Linux: somente câmera e microfone estão implementados; os outros tipos continuam negados)
 - `PermissionDeny` (2) — negar sem solicitar confirmação
 
-**Importante — Windows:** Antes da existência desta opção, o Wails concedia silenciosamente todos os recursos do WebView2. Agora, definir qualquer entrada em `Permissions` desativa essa concessão geral. Os recursos não listados exibirão a solicitação nativa do WebView2, em vez de serem permitidos automaticamente. Liste explicitamente todos os recursos necessários ao aplicativo.
+**Importante — Windows:** Antes de essa opção existir, o Wails concedia silenciosamente todos os recursos do WebView2. Agora, definir qualquer entrada em `Permissions` desabilita essa concessão geral. Para os recursos não listados, será exibida a solicitação nativa do WebView2 em vez da concessão automática. Liste explicitamente todos os recursos de que seu aplicativo precisa.
 
 **Consulte [Permissões](/features/windows/permissions/) para acessar o guia completo, a matriz de plataformas e os exemplos.**
 
 ## Eventos do ciclo de vida da janela
 
-Os eventos do ciclo de vida da janela são tratados usando `OnWindowEvent` e `RegisterHook`. Esses métodos permitem controlar detalhadamente o comportamento de fechamento e destruição da janela.
+Os eventos do ciclo de vida da janela são tratados por meio de `OnWindowEvent` e `RegisterHook`. Esses métodos oferecem controle detalhado sobre o comportamento de fechamento e destruição da janela.
 
 ### Cancelamento do fechamento da janela
 
@@ -723,13 +723,13 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 **Pontos principais:**
 
-- `RegisterHook` intercepta eventos antes que ocorram
-- Chame `event.Cancel()` para impedir que a janela seja fechada
+- `RegisterHook` intercepta os eventos antes que ocorram
+- Chame `event.Cancel()` para impedir o fechamento da janela
 - A janela permanecerá aberta após o cancelamento
 
 ### Tratamento do fechamento da janela
 
-Para realizar a limpeza quando uma janela for fechada, use `OnWindowEvent` com o evento `WindowClosing`:
+Para executar a limpeza quando uma janela for fechada, use `OnWindowEvent` com o evento `WindowClosing`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -749,12 +749,12 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 **Pontos principais:**
 
 - `OnWindowEvent` trata eventos que estão prestes a ocorrer
-- A limpeza é executada antes que a janela seja destruída
-- Não é possível cancelar o fechamento aqui (para isso, use `RegisterHook`)
+- A limpeza é executada antes de a janela ser destruída
+- Não é possível cancelar o fechamento aqui (use `RegisterHook` para isso)
 
 ### Padrão de limpeza de janela singleton
 
-Para janelas singleton (para garantir apenas uma instância), use `WindowClosing` para limpar a referência:
+Para janelas singleton (para garantir que haja apenas uma instância), use `WindowClosing` para limpar a referência:
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -783,7 +783,7 @@ func ShowSettings(app *application.App) {
 
 ## Opções específicas da plataforma
 
-### Opções do Mac
+### Opções do macOS
 
 ```go
 Mac: application.MacWindow{
@@ -808,61 +808,61 @@ Mac: application.MacWindow{
 },
 ```
 
-**TitleBar** (`MacTitleBar`)
+**Barra de título** (`MacTitleBar`)
 
-- `AppearsTransparent` — Torna a barra de título transparente e estende o conteúdo até a área da barra de título
-- `Hide` — Oculta completamente a barra de título
-- `HideTitle` — Oculta apenas o texto do título
-- `FullSizeContent` — Estende o conteúdo por toda a janela
+- `AppearsTransparent` - Torna a barra de título transparente, estendendo o conteúdo até a área da barra de título
+- `Hide` - Oculta completamente a barra de título
+- `HideTitle` - Oculta apenas o texto do título
+- `FullSizeContent` - Estende o conteúdo por todo o tamanho da janela
 
-No macOS, a transparência da webview e a abertura programática do inspetor exigem a tag de compilação `private_mac_apis`. Sem ela, as mesmas opções continuam válidas, mas as operações que dependem de APIs privadas não fazem nada. O agrupamento Liquid Glass também é ignorado, e os estilos usam alternativas públicas. Consulte [APIs privadas do macOS](/guides/build/private-macos-apis/) para ver os comandos de compilação e o comportamento exato.
+No macOS, a transparência da webview e a abertura programática do inspetor exigem a tag de compilação `private_mac_apis`. Sem ela, as mesmas opções continuam válidas, mas as operações que dependem de APIs privadas não têm efeito. O agrupamento Liquid Glass também é ignorado, e os estilos usam alternativas públicas. Consulte [APIs privadas do macOS](/guides/build/private-macos-apis/) para ver os comandos de compilação e o comportamento exato.
 
-**Backdrop** (`MacBackdrop`)
+**Plano de fundo** (`MacBackdrop`)
 
-- `MacBackdropNormal` — Fundo opaco padrão
-- `MacBackdropTranslucent` — **É necessária uma API privada para a transparência da webview.** Sem a tag, o desfoque nativo permanece atrás de uma webview opaca.
-- `MacBackdropTransparent` — **É necessária uma API privada para a transparência da webview.** Sem a tag, a webview permanece opaca.
-- `MacBackdropLiquidGlass` — **É necessária uma API privada para a transparência da webview.** Sem a tag, a camada de vidro permanece atrás de uma webview opaca; os estilos usam alternativas públicas.
+- `MacBackdropNormal` - Plano de fundo opaco padrão
+- `MacBackdropTranslucent` - **Uma API privada é necessária para a transparência da webview.** Sem a tag, o desfoque nativo permanece atrás de uma webview opaca.
+- `MacBackdropTransparent` - **Uma API privada é necessária para a transparência da webview.** Sem a tag, a webview permanece opaca.
+- `MacBackdropLiquidGlass` - **Uma API privada é necessária para a transparência da webview.** Sem a tag, a camada de vidro permanece atrás de uma webview opaca; os estilos usam alternativas públicas.
 
-**LiquidGlass** (`MacLiquidGlass`)
+**Liquid Glass** (`MacLiquidGlass`)
 
 | Campo ou valor | Dependência de API privada no macOS |
 | --- | --- |
 | `Style: LiquidGlassStyleAutomatic` | O estilo regular nativo é público; a transparência da webview sobre o plano de fundo exige `private_mac_apis`. |
-| `Style: LiquidGlassStyleLight` | A tag preserva o mapeamento existente para o estilo nativo transparente; sem ela, o Wails usa vidro regular com a aparência Aqua. |
+| `Style: LiquidGlassStyleLight` | A tag preserva o mapeamento existente para o estilo transparente nativo; sem ela, o Wails usa vidro regular com a aparência Aqua. |
 | `Style: LiquidGlassStyleDark` | **API privada:** valor de estilo nativo não documentado `2`; sem a tag, usa vidro regular com a aparência Dark Aqua. |
-| `Style: LiquidGlassStyleVibrant` | O mapeamento para o estilo nativo transparente é público; a transparência da webview sobre o plano de fundo exige a tag. |
+| `Style: LiquidGlassStyleVibrant` | O mapeamento para o estilo transparente nativo é público; a transparência da webview sobre o plano de fundo exige a tag. |
 | `GroupID` | **API privada:** valores não vazios solicitam agrupamento; sem a tag, são ignorados. |
 | `GroupSpacing` | **API privada:** valores positivos solicitam espaçamento entre grupos; sem a tag, são ignorados. |
-| `Material`, `CornerRadius`, `TintColor` | Não possuem dependência própria de API privada. |
+| `Material`, `CornerRadius`, `TintColor` | Não têm dependência própria de APIs privadas. |
 
-Consulte [Valores de Liquid Glass](/guides/build/private-macos-apis/#liquid-glass-values) para ver os valores de estilo nativo e a disponibilidade nos sistemas operacionais.
+Consulte [Valores do Liquid Glass](/guides/build/private-macos-apis/#liquid-glass-values) para ver os valores de estilo nativos e a disponibilidade por sistema operacional.
 
-**InvisibleTitleBarHeight** (`int`)
+**Altura da barra de título invisível** (`int`)
 
 - Altura da área invisível da barra de título (para arrastar)
-- Só tem efeito quando a área nativa de arrastar da barra de título está oculta, ou seja, quando a janela não tem moldura (`Frameless: true`) ou usa uma barra de título transparente (`AppearsTransparent: true`)
-- Não tem efeito em janelas padrão com barra de título visível
+- Só tem efeito quando a área nativa de arraste da barra de título está oculta — ou seja, quando a janela não tem moldura (`Frameless: true`) ou usa uma barra de título transparente (`AppearsTransparent: true`)
+- Não tem efeito em janelas padrão com uma barra de título visível
 
-**WindowClass** (`MacWindowClass`)
+**Classe da janela** (`MacWindowClass`)
 
-- `MacWindowClassWindow` — Comportamento padrão de `NSWindow` (padrão)
-- `MacWindowClassPanel` — Uma `NSPanel` auxiliar que nunca se torna a janela principal do aplicativo
+- `MacWindowClassWindow` - Comportamento padrão de `NSWindow` (padrão)
+- `MacWindowClassPanel` - Um `NSPanel` auxiliar que nunca se torna a janela principal do aplicativo
 
-`PanelPreferences` aplica-se apenas a `MacWindowClassPanel`:
+`PanelPreferences` aplica-se somente a `MacWindowClassPanel`:
 
-- `NonActivating` adiciona `NSWindowStyleMaskNonactivatingPanel`. Exibir ou colocar o painel em foco não ativa o aplicativo Wails, mas o painel ainda pode se tornar a janela que recebe a entrada do teclado para controles e entrada de texto.
+- `NonActivating` adiciona `NSWindowStyleMaskNonactivatingPanel`. Exibir ou colocar o painel em foco não ativa o aplicativo Wails, mas o painel ainda pode se tornar a janela-chave para controles e entrada de texto.
 - `FloatingPanel` habilita o comportamento de painel flutuante do AppKit.
-- `BecomesKeyOnlyIfNeeded` assume o foco de entrada do teclado somente quando a visualização clicada solicita entrada pelo teclado.
-- `UtilityWindow` aplica o estilo nativo de janela de utilitário.
+- `BecomesKeyOnlyIfNeeded` só assume o status de janela-chave quando a visualização clicada solicita entrada pelo teclado.
+- `UtilityWindow` aplica o estilo nativo de janela utilitária.
 
-Os painéis do Wails permanecem visíveis quando o aplicativo é desativado e são liberados ao serem fechados, de acordo com o ciclo de vida esperado por `WebviewWindow`. Essas são sobrescritas intencionais dos padrões opostos de `NSPanel`.
+Os painéis do Wails permanecem visíveis quando o aplicativo é desativado e são liberados ao serem fechados, correspondendo ao ciclo de vida esperado por `WebviewWindow`. Essas são substituições intencionais dos padrões opostos de `NSPanel`.
 
 A classe, o nível, a política de ativação e o comportamento de coleção da janela resolvem problemas distintos:
 
 - `WindowClass` seleciona `NSWindow` ou `NSPanel` e controla a semântica de janela principal e janela-chave.
-- `WindowLevel` controla a ordem Z. Use `MacWindowLevelPopUpMenu` para sobreposições na barra de menus.
-- `MacOptions.ActivationPolicy` controla o aplicativo como um todo, incluindo sua apresentação no Dock e na barra de menus. Um painel que não ativa o aplicativo não exige uma política de ativação de acessório, embora um aplicativo ainda possa usá-la para ocultar seu ícone no Dock.
+- `WindowLevel` controla a ordem de sobreposição. Use `MacWindowLevelPopUpMenu` para sobreposições na barra de menus.
+- `MacOptions.ActivationPolicy` controla o aplicativo como um todo, inclusive sua apresentação no Dock e na barra de menus. Um painel que não ativa o aplicativo não exige uma política de ativação acessória, embora o aplicativo ainda possa usá-la para ocultar seu ícone no Dock.
 - `CollectionBehavior` controla a participação nos Spaces e no modo de tela cheia.
 
 ```go
@@ -879,7 +879,7 @@ Mac: application.MacWindow{
 },
 ```
 
-**WindowLevel** (`MacWindowLevel`)
+**Nível da janela** (`MacWindowLevel`)
 
 - `MacWindowLevelNormal` - Nível de janela padrão (padrão)
 - `MacWindowLevelFloating` - Flutua acima das janelas normais
@@ -888,37 +888,37 @@ Mac: application.MacWindow{
 - `MacWindowLevelMainMenu` - Nível do menu principal
 - `MacWindowLevelStatus` - Nível de janela de status
 - `MacWindowLevelPopUpMenu` - Nível de menu pop-up
-- `MacWindowLevelScreenSaver` - Nível do protetor de tela
+- `MacWindowLevelScreenSaver` - Nível de protetor de tela
 
 Um `WindowLevel` explícito tem precedência sobre `AlwaysOnTop` e `PanelPreferences.FloatingPanel`. Sem um nível explícito, `AlwaysOnTop` ou um painel flutuante resulta em `MacWindowLevelFloating`; caso contrário, o nível é `MacWindowLevelNormal`. Uma chamada posterior a `SetAlwaysOnTop` continua sendo uma alteração explícita em tempo de execução.
 
-**CollectionBehavior** (`MacWindowCollectionBehavior`)
+**Comportamento de coleção** (`MacWindowCollectionBehavior`)
 
-Controla como a janela se comporta nos Spaces do macOS e no modo de tela cheia. Esses são valores de máscara de bits que podem ser combinados usando a operação OR bit a bit (`|`).
+Controla o comportamento da janela entre os Spaces do macOS e no modo de tela cheia. Esses são valores de máscara de bits que podem ser combinados usando o operador OR bit a bit (`|`).
 
 **Comportamento nos Spaces:**
 
 - `MacWindowCollectionBehaviorDefault` - Usa FullScreenPrimary (padrão, compatível com versões anteriores)
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - A janela aparece em todos os Spaces
-- `MacWindowCollectionBehaviorMoveToActiveSpace` - Move-se para o Space ativo quando exibida
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - Move-se para o Space ativo quando é exibida
 - `MacWindowCollectionBehaviorManaged` - Comportamento padrão de janela gerenciada
 - `MacWindowCollectionBehaviorTransient` - Janela temporária/transitória
-- `MacWindowCollectionBehaviorStationary` - Permanece imóvel durante a alternância entre Spaces
+- `MacWindowCollectionBehaviorStationary` - Permanece parada durante as trocas de Space
 
-**Alternância cíclica entre janelas:**
+**Alternância entre janelas:**
 
-- `MacWindowCollectionBehaviorParticipatesInCycle` - Incluída na alternância cíclica com Cmd+`
-- `MacWindowCollectionBehaviorIgnoresCycle` - Excluída da alternância cíclica com Cmd+`
+- `MacWindowCollectionBehaviorParticipatesInCycle` — Incluída na alternância com Cmd+`
+- `MacWindowCollectionBehaviorIgnoresCycle` — Excluída da alternância com Cmd+`
 
 **Comportamento em tela cheia:**
 
-- `MacWindowCollectionBehaviorFullScreenPrimary` - Pode entrar no modo de tela cheia
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Pode ser sobreposta a aplicativos em tela cheia
-- `MacWindowCollectionBehaviorFullScreenNone` - Desabilita o recurso de tela cheia
-- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Permite o posicionamento lado a lado (macOS 10.11+)
-- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Impede o posicionamento lado a lado (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenPrimary` — Pode entrar no modo de tela cheia
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` — Pode sobrepor aplicativos em tela cheia
+- `MacWindowCollectionBehaviorFullScreenNone` — Desativa o recurso de tela cheia
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` — Permite o lado a lado (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` — Impede o lado a lado (macOS 10.11+)
 
-**Exemplo — janela semelhante ao Spotlight:**
+**Exemplo — Janela semelhante ao Spotlight:**
 
 ```go
 // Window that appears on all Spaces AND can overlay fullscreen apps
@@ -933,7 +933,7 @@ Mac: application.MacWindow{
 },
 ```
 
-**Exemplo — comportamento único:**
+**Exemplo — Comportamento único:**
 
 ```go
 // Window that can appear over fullscreen applications
@@ -944,16 +944,16 @@ Mac: application.MacWindow{
 
 **TabbingMode** (`MacWindowTabbingMode`)
 
-Controla o comportamento das abas de janela no macOS 10.12 e posteriores. As abas permitem agrupar várias janelas como abas.
+Controla o comportamento de agrupamento de janelas em abas no macOS 10.12 e posteriores. Esse recurso permite agrupar várias janelas como abas.
 
 **Opções:**
 
-- `MacWindowTabbingModeDefault` - Valor sentinela zero (não definido explicitamente). Em tempo de execução, o padrão é não permitir abas
-- `MacWindowTabbingModeAutomatic` - O sistema determina o comportamento das abas
-- `MacWindowTabbingModePreferred` - A janela prefere permanecer no modo de abas
-- `MacWindowTabbingModeDisallowed` - Desabilita as abas de janela
+- `MacWindowTabbingModeDefault` — Valor sentinela zero (não definido explicitamente). Em tempo de execução, o padrão é não permitir o agrupamento em abas
+- `MacWindowTabbingModeAutomatic` — O sistema determina o comportamento do agrupamento em abas
+- `MacWindowTabbingModePreferred` — A janela prefere usar o modo de abas
+- `MacWindowTabbingModeDisallowed` — Desativa o agrupamento de janelas em abas
 
-**Exemplo — desabilitar abas de janela:**
+**Exemplo — Desativar o agrupamento de janelas em abas:**
 
 ```go
 Mac: application.MacWindow{
@@ -961,7 +961,7 @@ Mac: application.MacWindow{
 },
 ```
 
-**Exemplo — dar preferência a abas de janela:**
+**Exemplo — Preferir o agrupamento de janelas em abas:**
 
 ```go
 Mac: application.MacWindow{
@@ -971,7 +971,7 @@ Mac: application.MacWindow{
 
 **WebviewPreferences** (`MacWebviewPreferences`)
 
-Controle detalhado sobre a configuração subjacente de `WKWebView`. Todos os campos são opcionais — os campos não definidos mantêm inalterado o padrão do WebKit.
+Controle detalhado da configuração `WKWebView` subjacente. Todos os campos são opcionais — os campos não definidos mantêm inalterado o padrão do WebKit.
 
 ```go
 Mac: application.MacWindow{
@@ -992,13 +992,13 @@ Mac: application.MacWindow{
 
 - `TabFocusesLinks` — Quando `true`, pressionar Tab move o foco para links e controles de formulário (padrão: `false`)
 - `TextInteractionEnabled` — Quando `true`, os usuários podem selecionar e interagir com o texto na webview (padrão: `true`)
-- `FullscreenEnabled` — Quando `true`, o conteúdo da Web pode entrar em tela cheia por meio da API Fullscreen do HTML (padrão: `false`). Requer macOS 12.3 ou posterior.
-- `AllowsBackForwardNavigationGestures` — Quando `true`, gestos de deslizamento horizontal acionam a navegação para trás/para a frente (padrão: `false`)
-- `AllowsMagnification` — Quando `true`, o zoom por gesto de pinça é habilitado na webview (padrão: `false`)
+- `FullscreenEnabled` — Quando `true`, o conteúdo web pode entrar em tela cheia pela API Fullscreen do HTML (padrão: `false`). Requer macOS 12.3 ou posterior.
+- `AllowsBackForwardNavigationGestures` — Quando `true`, gestos de deslizar horizontalmente acionam a navegação para trás/para a frente (padrão: `false`)
+- `AllowsMagnification` — Quando `true`, o zoom por gesto de pinça é ativado na webview (padrão: `false`)
 - `AllowsAirPlayForMediaPlayback` — Quando `true`, é possível transmitir mídia para dispositivos AirPlay (padrão: `true`)
 - `JavaScriptCanOpenWindowsAutomatically` — Quando `true`, o JavaScript pode abrir novas janelas sem um gesto do usuário (padrão: `false`)
-- `MinimumFontSize` — Tamanho mínimo da fonte em pontos. Use `optional.NewVar(12.0)` para defini-lo. Se não for definido, o padrão do WebKit será mantido.
-- `ApplicationNameForUserAgent` — Substitui o sufixo do nome do aplicativo na string de agente do usuário do WebKit. Útil quando sites rejeitam o identificador `"wails.io"` padrão (por exemplo, incorporações do YouTube). Deixe vazio para manter o padrão.
+- `MinimumFontSize` — Tamanho mínimo da fonte em pontos. Use `optional.NewVar(12.0)` para defini-lo. Se não for definido, mantém o padrão do WebKit.
+- `ApplicationNameForUserAgent` — Substitui o sufixo do nome do aplicativo na string de agente do usuário do WebKit. Útil quando sites rejeitam o identificador padrão `"wails.io"` (por exemplo, incorporações do YouTube). Deixe vazio para manter o padrão.
 - `EnableAutoplayWithoutUserAction` — Quando `true`, áudio e vídeo podem ser reproduzidos automaticamente sem um gesto do usuário. Corresponde a `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (padrão: `false`)
 
 ### Opções do Windows (por janela)
@@ -1023,37 +1023,37 @@ Windows: application.WindowsWindow{
 
 **DisableMenu** (`bool`)
 
-- Desabilita a barra de menus da janela. Quando `true`, a janela não exibe uma barra de menus, mesmo que uma esteja configurada.
+- Desativa a barra de menus da janela. Quando `true`, a janela não exibe uma barra de menus, mesmo que uma esteja configurada.
 - Padrão: `false`
 
 **BackdropType** (`BackdropType`)
 
-- `application.Auto` - Padrão do sistema
-- `application.None` - Sem plano de fundo
-- `application.Mica` - Material Mica (Windows 11)
-- `application.Acrylic` - Material Acrylic (Windows 11)
-- `application.Tabbed` - Material Tabbed (Windows 11)
+- `application.Auto` — Padrão do sistema
+- `application.None` — Sem plano de fundo
+- `application.Mica` — Material Mica (Windows 11)
+- `application.Acrylic` — Material Acrylic (Windows 11)
+- `application.Tabbed` — Material com abas (Windows 11)
 
 Não há constantes no estilo `WindowsBackdropTypeMica` — use `application.Mica` etc.
 
 **CustomTheme** (`ThemeSettings`)
 
-- Valor (não um ponteiro). Cores personalizadas para os modos escuro/claro da borda da janela, do texto/plano de fundo da barra de título e da barra de menus.
+- Valor (não ponteiro). Cores personalizadas para os modos escuro/claro da borda da janela, do texto/plano de fundo da barra de título e da barra de menus.
 
 **DisableFramelessWindowDecorations** (`bool`)
 
-- Desabilita as decorações padrão de janelas sem moldura (sombra Aero e cantos arredondados).
+- Desativa as decorações padrão de janelas sem moldura (sombra Aero e cantos arredondados).
 
 **NonClientRegionSupport** (`bool`)
 
-- Habilita o suporte nativo do WebView2 a `app-region: drag` / `app-region: no-drag` para barras de título personalizadas sem moldura.
-- Destina-se somente ao arraste nativo simples do aplicativo. Não oferece comportamento nativo para botões de legenda personalizados nem o Snap Assist / Snap Layouts do Windows 11 para botões de maximização personalizados.
+- Ativa o suporte nativo do WebView2 a `app-region: drag` / `app-region: no-drag` para barras de título personalizadas sem moldura.
+- Isso serve apenas para o arraste nativo simples do aplicativo. Não fornece o comportamento nativo de botões de legenda personalizados nem o Snap Assist / Snap Layouts do Windows 11 para botões personalizados de maximização.
 
 **WebView2CompositionHosting** (`bool`)
 
-- Habilita o suporte gerenciado pelo Wails a `--wails-non-client-region` para botões de legenda personalizados com comportamento nativo do Windows, incluindo o Snap Assist / Snap Layouts do Windows 11 em botões de maximização personalizados.
+- Ativa o suporte `--wails-non-client-region` gerenciado pelo Wails para botões de legenda personalizados com o comportamento nativo do Windows, incluindo o Snap Assist / Snap Layouts do Windows 11 em botões personalizados de maximização.
 - Experimental. Hospeda o WebView2 por meio de `ICoreWebView2CompositionController` e DirectComposition, em vez do controlador padrão hospedado em HWND.
-- Pode ser combinado com `NonClientRegionSupport` quando uma janela precisar tanto do suporte nativo do WebView2 a `app-region` quanto de regiões de botões de legenda personalizados gerenciadas pelo Wails.
+- Pode ser combinado com `NonClientRegionSupport` quando uma janela precisa tanto do suporte nativo do WebView2 a `app-region` quanto de regiões de botões de legenda personalizados gerenciadas pelo Wails.
 
 **Exemplo:**
 
@@ -1073,7 +1073,7 @@ Windows: application.WindowsWindow{
 },
 ```
 
-Consulte [Janelas sem moldura](/features/windows/frameless/#native-non-client-regions-on-windows) para ver o comportamento detalhado, as vantagens e desvantagens e o CSS correspondente.
+Consulte [Janelas sem moldura no Windows](/features/windows/frameless/#native-non-client-regions-on-windows) para obter detalhes sobre o comportamento, as implicações e o CSS correspondente.
 
 ### Opções do Linux (por janela)
 
@@ -1109,9 +1109,9 @@ Linux: application.LinuxWindow{
 
 Algumas opções específicas do Windows devem ser configuradas no nível do aplicativo, e não por janela. Isso ocorre porque o WebView2 compartilha um único ambiente de navegador por caminho de dados do usuário.
 
-### Flags do navegador
+### Sinalizadores do navegador
 
-As flags do navegador WebView2 controlam recursos experimentais e o comportamento em **todas as janelas** do aplicativo. Elas devem ser definidas em `application.Options.Windows`:
+Os sinalizadores do navegador WebView2 controlam recursos experimentais e o comportamento em **todas as janelas** do seu aplicativo. Eles devem ser definidos em `application.Options.Windows`:
 
 ```go
 app := application.New(application.Options{
@@ -1138,24 +1138,24 @@ app := application.New(application.Options{
 
 **EnabledFeatures** (`[]string`)
 
-- Lista de flags de recursos do WebView2 a serem habilitadas
-- Consulte [flags do navegador WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) para ver as flags disponíveis
+- Lista de sinalizadores de recursos do WebView2 a serem habilitados
+- Consulte [Sinalizadores do navegador WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) para ver os sinalizadores disponíveis
 - Exemplo: `"msWebView2EnableDraggableRegions"`
 
 **DisabledFeatures** (`[]string`)
 
-- Lista de flags de recursos do WebView2 a serem desabilitadas
+- Lista de sinalizadores de recursos do WebView2 a serem desabilitados
 - O Wails desabilita automaticamente `msSmartScreenProtection`
 - Exemplo: `"msExperimentalFeature"`
 
 **AdditionalBrowserArgs** (`[]string`)
 
 - Argumentos de linha de comando do Chromium passados ao processo do navegador
-- Devem incluir o prefixo `--` (por exemplo, `"--remote-debugging-port=9222"`)
-- Consulte [opções de linha de comando do Chromium](https://peter.sh/experiments/chromium-command-line-switches/) para ver os argumentos disponíveis
+- Deve incluir o prefixo `--` (por exemplo, `"--remote-debugging-port=9222"`)
+- Consulte [Opções de linha de comando do Chromium](https://peter.sh/experiments/chromium-command-line-switches/) para ver os argumentos disponíveis
 
 @note{type="caution" title="Importante"}
-Essas flags se aplicam globalmente a TODAS as janelas, pois o WebView2 compartilha um único ambiente de navegador por caminho de dados do usuário. Não é possível usar flags de navegador diferentes para janelas diferentes.
+Esses sinalizadores se aplicam globalmente a TODAS as janelas, pois o WebView2 compartilha um único ambiente de navegador por caminho de dados do usuário. Não é possível usar sinalizadores de navegador diferentes em janelas distintas.
 
 @end
 
@@ -1262,13 +1262,13 @@ func main() {
 
 Os recursos do frontend são servidos no nível do aplicativo (`application.Options.Assets`), e não por janela.
 
-## Próximos passos
+## Próximas etapas
 
-- [Conceitos básicos de janelas](/features/windows/basics/) - Como criar e controlar janelas
-- [Várias janelas](/features/windows/multiple/) - Padrões para várias janelas
-- [Janelas sem moldura](/features/windows/frameless/) - Decoração de janela personalizada
-- [Eventos de janela](/features/windows/events/) - Eventos do ciclo de vida
+- [Noções básicas sobre janelas](/features/windows/basics/) — Como criar e controlar janelas
+- [Várias janelas](/features/windows/multiple/) — Padrões para múltiplas janelas
+- [Janelas sem moldura](/features/windows/frameless/) — Decoração de janela personalizada
+- [Eventos de janela](/features/windows/events/) — Eventos do ciclo de vida
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

@@ -7,9 +7,9 @@ sourcePath: "features/bindings/models.md"
 
 ## 数据模型绑定
 
-Wails **会根据 Go 结构体自动生成 JavaScript/TypeScript 类**，在后端与前端之间传递复杂数据时提供完整的类型安全保障。编写 Go 结构体并生成绑定，即可获得具有构造函数、类型注解和 JSDoc 注释的完全类型化前端模型。
+Wails 会根据 Go 结构体**自动生成 JavaScript/TypeScript 类**，在后端与前端之间传递复杂数据时提供完整的类型安全保障。编写 Go 结构体并生成绑定，即可获得具有构造函数、类型注解和 JSDoc 注释的完全类型化前端模型。
 
-## 快速入门
+## 快速开始
 
 **Go 结构体：**
 
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-<strong>就是这样！</strong>桥接两端均具有完整的类型安全保障。
+<strong>就是这么简单！</strong>跨桥接层实现完整的类型安全。
 
 ## 定义模型
+
+以下模型类用于说明字段的形式；请使用实际生成的绑定，不要复制这些简化类作为转换代码。
+
+对于`time.Time`，生成器默认使用`-time-type=string`。如果生成的类需要将时间戳转换为 JavaScript 的`Date`值，请使用`-time-type=Date`。标准 JavaScript/类模板的构建任务选择`Date`；TypeScript 接口任务则保留`string`。更改模式前，请检查生成的任务。Go 时间戳在 JSON 中仍为 RFC3339Nano 字符串。
+
+在 Date 模式下，生成的转换辅助函数会将这些字符串转换为日期。仅使用`Object.assign`不会执行该转换。对于字符串绑定，请先使用`new Date(timestamp)`显式转换时间戳，再调用 Date 方法。
 
 ### 基本结构体
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 export class User {
@@ -112,7 +118,7 @@ export class User {
 
 ### 自定义 JSON 编组
 
-绑定方法的结果使用 Go 的标准`encoding/json`包进行编组。请注意，只有当被编组的值可寻址时，才会调用在指针接收者上声明的`MarshalJSON`方法。这意味着，对于返回的切片中的元素，可以调用自定义编组器，但对于按值返回的结构体则不会调用：
+绑定方法的返回结果使用 Go 的标准`encoding/json`包进行编组。请注意，只有被编组的值可寻址时，才会调用在指针接收者上声明的`MarshalJSON`方法。这意味着，对于返回切片中的元素，可以调用自定义编组器；但对于按值返回的结构体，则不会调用：
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-为确保输出一致，如果该类型能够安全复制，请在值接收者上定义`MarshalJSON`；或者返回指向该结构体的指针（例如`*User`）。这是 Go 的`encoding/json`所具有的行为，而不是 Wails 绑定生成方式的差异。
+为确保输出一致，如果该类型可以安全复制，请在值接收者上定义`MarshalJSON`；或者返回指向结构体的指针（例如`*User`）。这是 Go 的`encoding/json`行为，并非 Wails 绑定生成机制的差异。
 
 ### 使用注释
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 /**
@@ -176,7 +182,7 @@ export class User {
 }
 ```
 
-<strong>注释会转换为 JSDoc！</strong>你的 IDE 会显示这些注释。
+<strong>注释会变成 JSDoc！</strong>你的 IDE 会显示这些注释。
 
 ### 嵌套结构体
 
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**生成的 JavaScript：**
+**JavaScript 示例：**
 
 ```javascript
 export class Config {
@@ -300,9 +306,9 @@ const config = new Config({
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
@@ -313,10 +319,10 @@ const config = new Config({
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | 以字符串为键的映射 |
-| `map[K]V` | `{ [_ in K]?: V }` | 非字符串`K`会呈现为映射类型，<strong>而不是</strong>JS 的`Map` |
-| `[]byte` | `string` | 使用 base64 编码 |
+| `map[K]V` | `{ [_ in K]?: V }` | 键类型非字符串的`K`会呈现为映射类型，**而不是** JS `Map` |
+| `[]byte` | `string` | Base64 编码 |
 | `struct` | `class` / `interface` | 包含字段 |
-| `time.Time` | `any` | 在运行时序列化为 RFC3339Nano 字符串 |
+| `time.Time` | `string`（默认）或`Date` | `-time-type`用于选择生成的表示形式；JSON 使用 RFC3339Nano 字符串 |
 | `*T` | `T \| null` | 指针表示可为 null |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | 作为返回值时为 Exception，否则为 any |
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### 生成的 TypeScript
 
+本节演示带 Date 转换的类绑定。普通的`-ts`命令会保留生成器默认的字符串表示形式。此处显示的类经过简化；生成器还会生成转换辅助函数。
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **生成结果：**
@@ -465,7 +473,7 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### 枚举
 
-绑定生成器会自动检测带常量的 Go 命名类型，并生成 TypeScript 枚举或 JavaScript const 对象，其中包括表示 Go 零值的`$zero`成员，并完整保留 JSDoc。
+绑定生成器会自动检测带常量的 Go 命名类型，并生成 TypeScript 枚举或 JavaScript const 对象，其中包括表示 Go 零值的`$zero`成员，同时完整保留 JSDoc。
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-有关字符串枚举、整数枚举、类型别名、导入包中的枚举以及相关限制的全面说明，请参阅专门的<strong>[枚举](/features/bindings/enums/)</strong>页面。
+有关字符串枚举、整数枚举、类型别名、导入包中的枚举以及限制的全面说明，请参阅专门的<strong>[枚举](/features/bindings/enums/)</strong>页面。
 
 ### 验证
 
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -707,18 +715,18 @@ manager.loadUsers()
 
 - **使用 JSON 标签**——控制字段名称
 - **添加注释**——注释会转换为 JSDoc
-- **使用 time.Time**——它会转换为 Date
+- **选择时间表示形式**——`time.Time`默认转换为`string`；`-time-type=Date`可启用生成的 Date 转换
 - **在 Go 端进行验证**——不要信任前端
-- **保持模型简单**——仅用作数据容器
-- **对可选字段使用指针**——使用`*string`表示可为 null
+- **保持模型简洁**——仅用作数据容器
+- **使用指针表示可选值**——使用`*string`表示可为 null
 
 ### ❌ 不要做
 
-- **不要向 Go 结构体添加方法**——让它们仅用于存放数据
+- **不要为 Go 结构体添加方法**——使其仅承载数据
 - **不要使用未导出的字段**——它们不会被绑定
 - **不要使用复杂接口**——不受支持
-- **不要忘记 JSON 标签**——字段名称很重要
-- **不要嵌套得太深**——保持简单
+- **不要忘记添加 JSON 标签**——字段名称很重要
+- **不要嵌套过深**——保持简洁
 
 ## 后续步骤
 
@@ -750,4 +758,4 @@ manager.loadUsers()
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。

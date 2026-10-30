@@ -1,37 +1,39 @@
 ---
 title: "Referensi API"
-description: "Dokumentasi API lengkap untuk Wails v3"
+description: "Cari tipe, metode, opsi, dan perintah CLI Wails"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## Tentang Referensi Ini
 
-Ini adalah referensi API lengkap untuk Wails v3. Referensi ini mendokumentasikan setiap tipe, metode, dan opsi publik yang tersedia dalam kerangka kerja ini.
+Gunakan bagian ini untuk mencari tipe, metode, opsi, dan perintah Wails saat mengembangkan aplikasi. Jika Anda memerlukan pembelajaran terpandu, mulailah dengan [Tutorial](/tutorials/overview/). Untuk langkah-langkah menyelesaikan tugas, gunakan [Panduan Praktis](/quick-start/next-steps/#features). Untuk memahami latar belakang desain, gunakan [Konsep Inti](/concepts/architecture/).
 
-**Organisasi:**
+**Susunan:**
 
-- [Aplikasi](/reference/application/) - API aplikasi inti
-- [Jendela](/reference/window/) - Pembuatan dan pengelolaan jendela
-- [Menu](/reference/menu/) - Menu aplikasi, konteks, dan baki sistem
+- [Aplikasi](/reference/application/) - API inti aplikasi
+- [Jendela](/reference/window/) - Pembuatan dan pengelolaan jendela; [opsi jendela](/features/windows/options/) mencantumkan kolom konfigurasi
+- [Menu](/reference/menu/) - API aplikasi, menu konteks, dan baki sistem; [referensi item menu](/features/menus/reference/) membahas tipe dan properti item
 - [Peristiwa](/reference/events/) - Sistem peristiwa dan peristiwa bawaan
 - [Dialog](/reference/dialogs/) - Dialog file dan pesan
 - [Runtime Frontend](/reference/frontend-runtime/) - API runtime frontend
-- [CLI](/reference/cli/) - Antarmuka baris perintah
+- [Ikhtisar perintah CLI](/reference/cli/) - Perintah yang dikelompokkan berdasarkan tujuan; [flag dan contoh](/guides/cli/) memberikan detail setiap perintah
+- [Protokol manifes pembaruan](/reference/update-manifest/) - Metadata pembaruan dan kolom verifikasi
+- [API Seluler](/guides/mobile/mobile-api/) - API seluler eksperimental
 
 ## Konvensi API
 
 @details{title="Konvensi API Go - Untuk pengembang yang baru mengenal Go"}
 ### Penamaan
 
-- <strong></strong>Tipe<strong></strong>: PascalCase (misalnya, `WebviewWindow`)
-- <strong></strong>Metode<strong></strong>: PascalCase (misalnya, `SetTitle()`)
-- <strong></strong>Opsi<strong></strong>: struct PascalCase (misalnya, `WindowOptions`)
-- <strong></strong>Konstanta<strong></strong>: PascalCase (misalnya, `WindowStartStateMaximised`)
+- <strong>Tipe</strong>: PascalCase (misalnya, `WebviewWindow`)
+- <strong>Metode</strong>: PascalCase (misalnya, `SetTitle()`)
+- <strong>Opsi</strong>: struct PascalCase (misalnya, `WindowOptions`)
+- <strong>Konstanta</strong>: PascalCase (misalnya, `WindowStartStateMaximised`)
 
 #### Penanganan Kesalahan
 
-Sebagian besar metode yang dapat gagal mengembalikan `error` sebagai nilai kembalian terakhir. `app.Run()` memblokir hingga aplikasi ditutup dan mengembalikan galat apa pun yang terjadi saat aplikasi dimulai:
+Sebagian besar metode yang dapat gagal mengembalikan `error` sebagai nilai kembalian terakhir. `app.Run()` memblokir hingga aplikasi ditutup dan mengembalikan kesalahan saat memulai, jika ada:
 
 ```go
 if err := app.Run(); err != nil {
@@ -39,11 +41,11 @@ if err := app.Run(); err != nil {
 }
 ```
 
-Pembuatan jendela tidak mengembalikan galat — `app.Window.New()` mengembalikan `*WebviewWindow` secara langsung.
+Pembuatan jendela tidak mengembalikan kesalahan — `app.Window.New()` langsung mengembalikan `*WebviewWindow`.
 
 #### Konteks
 
-Metode siklus hidup layanan menerima sebuah `context.Context`:
+Metode siklus hidup layanan menerima `context.Context`:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -77,7 +79,7 @@ app := application.New(application.Options{
 - **Fungsi**: camelCase (misalnya, `setTitle()`)
 - **Konstanta**: SCREAMING<em>SNAKE</em>CASE (misalnya, `WINDOW_EVENT_FOCUS`)
 
-#### Asinkron secara Bawaan
+#### Asinkron secara Default
 
 Semua pemanggilan metode Go mengembalikan Promise:
 
@@ -91,9 +93,9 @@ MyService.DoSomething()
     .catch(error => console.error(error))
 ```
 
-#### Penanganan Galat
+#### Penanganan Kesalahan
 
-Kesalahan Go menjadi pengecualian JavaScript:
+Kesalahan Go menjadi exception JavaScript:
 
 ```javascript
 try {
@@ -134,7 +136,7 @@ github.com/wailsapp/wails/v3/pkg/
     └── sqlite/           # SQLite service
 ```
 
-## Jalur Impor
+## Path Impor
 
 ### Go
 
@@ -212,8 +214,8 @@ Beberapa API berperilaku berbeda pada platform yang berbeda:
 | --- | --- | --- | --- |
 | **Menu Aplikasi** | Bilah menu jendela | Bilah menu global | Bilah menu jendela |
 | **Baki Sistem** | Area notifikasi | Bilah menu | Baki sistem |
-| **Dock** | Tidak berlaku | ✅ Tersedia | Tidak berlaku |
-| **Dialog file** | Native | Native | Bawaan (GTK) |
+| **Dock** | Tidak tersedia | ✅ Tersedia | Tidak tersedia |
+| **Dialog file** | Native | Native | Native (GTK) |
 | **Transparansi** | ✅ Penuh | Memerlukan [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) | ⚠️ Terbatas |
 
 Perilaku khusus platform didokumentasikan di setiap bagian API.
@@ -222,20 +224,20 @@ Perilaku khusus platform didokumentasikan di setiap bagian API.
 
 Wails v3 mengikuti pembuatan versi semantik:
 
-- **Mayor** (v3.x.x): Perubahan yang merusak kompatibilitas
-- **Minor** (v3.x.x): Fitur baru, kompatibel dengan versi sebelumnya
-- **Patch** (v3.x.x): Perbaikan bug, kompatibel dengan versi sebelumnya
+- **Mayor** (v4.0.0): Perubahan yang merusak kompatibilitas
+- **Minor** (v3.1.0): Fitur baru yang kompatibel dengan versi sebelumnya
+- **Patch** (v3.0.1): Perbaikan bug yang kompatibel dengan versi sebelumnya
 
-**Status saat ini:** Beta (API stabil, penyempurnaan masih berlangsung)
+**Wails v3.0.0:** Stabil
 
-## Kebijakan Deprekasi
+## Kebijakan Penghentian Dukungan
 
-Ketika API dideprekasi:
+Ketika API dihentikan dukungannya:
 
-1. **Ditandai dalam dokumentasi** dengan pemberitahuan penghentian penggunaan
+1. **Ditandai dalam dokumentasi** dengan pemberitahuan penghentian dukungan
 2. **Alternatif disediakan** beserta panduan migrasi
 3. **Tetap dipelihara selama 1 versi mayor** sebelum dihapus
-4. **Peringatan compiler** (jika memungkinkan)
+4. **Peringatan kompilator** (jika memungkinkan)
 
 ## Stabilitas API
 
@@ -244,28 +246,28 @@ Ketika API dideprekasi:
 API berikut stabil dan aman digunakan dalam produksi:
 
 - API inti aplikasi
-- Pengelolaan jendela
+- Manajemen jendela
 - Sistem menu
 - Sistem peristiwa
-- Dialog berkas
+- Dialog file
 - Binding layanan
 
-### API Tidak Stabil ⚠️
+### API Eksperimental ⚠️
 
-API berikut dapat berubah sebelum rilis final:
+Hanya API yang secara eksplisit didokumentasikan sebagai eksperimental yang berada di luar kontrak kompatibilitas desktop stabil:
 
-- Beberapa opsi jendela tingkat lanjut
-- Fitur khusus platform
-- Fitur eksperimental
+- Dukungan Android
+- Dukungan iOS
+- API lain yang secara eksplisit ditandai sebagai eksperimental
 
-API yang tidak stabil ditandai dalam dokumentasi.
+API eksperimental ditandai dalam dokumentasi.
 
 ## Mendapatkan Bantuan
 
 ### Pertanyaan tentang API
 
-1. **Periksa referensi ini** - Dokumentasi API lengkap
-2. **Periksa contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+1. **Lihat referensi ini** - Dokumentasi API lengkap
+2. **Lihat contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Cari di Discord** - [Server Discord](https://discord.gg/JDdSxwjhGf)
 4. **Tanyakan kepada komunitas** - Kanal #help di Discord
 
@@ -275,15 +277,15 @@ Menemukan bug atau inkonsistensi?
 
 1. **Periksa masalah yang sudah ada** - [Masalah di GitHub](https://github.com/wailsapp/wails/issues)
 2. **Buat laporan terperinci** - Sertakan kode, pesan kesalahan, dan platform
-3. **Berikan langkah reproduksi** - Contoh minimal yang menunjukkan masalah
+3. **Sediakan langkah reproduksi** - Contoh minimal yang menunjukkan masalah
 
 ## Dokumentasi Terkait
 
-- [Tutorial](/tutorials/overview/) - Pelajari dengan membangun aplikasi nyata
+- [Tutorial](/tutorials/overview/) - Belajar dengan membangun aplikasi nyata
 - [Panduan](/guides/architecture/) - Panduan berorientasi tugas untuk skenario umum
 - [Fitur](/features/windows/basics/) - Dokumentasi untuk setiap fitur
-- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples) - Contoh kode yang berfungsi dan tersedia di GitHub
+- [Contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Contoh kode siap pakai di GitHub
 
 ---
 
-**Telusuri API:** Gunakan navigasi di sebelah kiri untuk menjelajahi API tertentu.
+**Jelajahi API:** Gunakan navigasi di sebelah kiri untuk menjelajahi API tertentu.

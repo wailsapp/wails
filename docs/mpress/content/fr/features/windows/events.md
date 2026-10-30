@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## Événements de fenêtre
 
-Wails émet les événements du cycle de vie et de changement d’état des fenêtres par l’intermédiaire d’une API unique : `OnWindowEvent` pour les écouteurs passifs et `RegisterHook` pour les hooks annulables capables d’empêcher l’action par défaut.
+Wails distribue les événements du cycle de vie et de changement d’état des fenêtres par l’intermédiaire d’une API unique : `OnWindowEvent` pour les écouteurs passifs et `RegisterHook` pour les hooks annulables qui peuvent empêcher l’action par défaut.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -23,7 +23,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-Ces deux appels renvoient une fonction `unsubscribe func()` que vous pouvez appeler pour supprimer le gestionnaire.
+Les deux appels renvoient une fonction `unsubscribe func()` que vous pouvez appeler pour supprimer le gestionnaire.
 
 Les événements multiplateformes se trouvent dans `events.Common.*`. Les événements propres à chaque plateforme se trouvent dans `events.Mac.*`, `events.Windows.*` et `events.Linux.*`. La liste complète est générée dans `v3/pkg/events/events.go`.
 
@@ -49,11 +49,11 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-La fonction de rappel reçoit `application.Window` (une interface). La fonction de rappel `OnCreate` est appelée une fois par fenêtre, après l’initialisation de l’environnement d’exécution de celle-ci.
+La fonction de rappel reçoit `application.Window`, qui est une interface. La fonction de rappel `OnCreate` est invoquée une fois pour chaque fenêtre lors de son enregistrement, avant son exécution. Utilisez-la pour configurer la fenêtre et enregistrer les gestionnaires. Attendez `events.Common.WindowRuntimeReady` avant d’appeler du code JavaScript ou d’envoyer des événements qui nécessitent le runtime frontend.
 
 ### WindowClosing
 
-Se déclenche lorsque l’utilisateur tente de fermer la fenêtre (en cliquant sur X, avec ⌘W, Alt+F4, etc.).
+Se déclenche lorsque l’utilisateur tente de fermer la fenêtre (clic sur X, ⌘W, Alt+F4, etc.).
 
 Utilisez un **hook** (`RegisterHook`) : seuls les hooks peuvent annuler la fermeture. Les écouteurs observent l’événement, mais ne peuvent pas l’empêcher.
 
@@ -68,15 +68,15 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Important :**
 
-- `WindowClosing` est émis lors des tentatives de fermeture déclenchées par l’utilisateur.
+- `WindowClosing` est distribué lors des tentatives de fermeture déclenchées par l’utilisateur.
 - Une fonction de rappel `RegisterHook` peut appeler `e.Cancel()` pour maintenir la fenêtre ouverte.
-- Les fonctions de rappel `OnWindowEvent` associées à `WindowClosing` sont des observateurs : elles sont exécutées, mais ne peuvent pas annuler l’action.
+- Les fonctions de rappel `OnWindowEvent` pour `WindowClosing` sont des observateurs : elles se déclenchent, mais ne peuvent pas annuler l’action.
 
 **Fermeture par programmation :** appelez `window.Close()`. Il n’existe pas de `window.Destroy()`.
 
 ### WindowRuntimeReady
 
-Se déclenche une fois l’initialisation de l’environnement d’exécution intégré à la fenêtre terminée ; vous pouvez alors appeler sans risque le contexte JS de la fenêtre :
+Se déclenche une fois l’initialisation du runtime intégré à la fenêtre terminée ; vous pouvez alors appeler en toute sécurité le contexte JS de la fenêtre :
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -209,7 +209,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize` et `WindowDidMove` ne fournissent pas de coordonnées dans l’événement lui-même : interrogez la fenêtre avec `window.Size()` / `window.Position()` dans la fonction de rappel.
+`WindowDidResize` et `WindowDidMove` ne contiennent pas de coordonnées dans l’événement lui-même : interrogez la fenêtre avec `window.Size()` / `window.Position()` depuis la fonction de rappel.
 
 **Exemple : mise en page adaptative :**
 
@@ -377,7 +377,7 @@ func (mw *ManagedWindow) SaveState() {
 
 ### Événements entre fenêtres
 
-Coordonnez plusieurs fenêtres au moyen du bus d’événements de l’application :
+Coordonnez plusieurs fenêtres à l’aide du bus d’événements de l’application :
 
 ```go
 // In main window
@@ -423,19 +423,19 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 ### ✅ À faire
 
 - **Utilisez des hooks pour l’annulation** : seules les fonctions de rappel `RegisterHook` peuvent appeler `e.Cancel()`.
-- **Enregistrez l’état lors de la fermeture** : restaurez la position et la taille de la fenêtre au prochain lancement.
+- **Enregistrez l’état lors de la fermeture** afin de restaurer la position et la taille de la fenêtre au prochain lancement.
 - **Temporisez les événements fréquents** : `WindowDidResize` et `WindowDidMove` se déclenchent rapidement.
-- **Gérez les changements de focus** : mettez à jour l’interface utilisateur de façon appropriée.
-- **Coordonnez les fenêtres au moyen d’événements** : utilisez `app.Event.Emit` pour les messages entre fenêtres.
-- **Désabonnez-vous** lorsque les gestionnaires ne sont plus nécessaires : `OnWindowEvent` et `RegisterHook` renvoient tous deux une fonction `func()` de désabonnement.
+- **Gérez les changements de focus** en mettant à jour l’interface utilisateur de manière appropriée.
+- **Coordonnez les fenêtres au moyen d’événements** : utilisez `app.Event.Emit` pour la communication entre fenêtres.
+- **Désabonnez les gestionnaires** lorsqu’ils ne sont plus nécessaires : `OnWindowEvent` et `RegisterHook` renvoient tous deux une fonction de désabonnement `func()`.
 
 ### ❌ À ne pas faire
 
-- **Ne bloquez pas les gestionnaires d’événements** : veillez à ce qu’ils s’exécutent rapidement.
+- **Ne bloquez pas les gestionnaires d’événements** : leur exécution doit rester rapide.
 - **N’essayez pas d’annuler l’action depuis `OnWindowEvent`** : utilisez `RegisterHook`.
 - **N’utilisez pas `window.Destroy()`** : cette fonction n’existe pas ; utilisez `window.Close()`.
 - **N’enregistrez pas l’état à chaque événement** : appliquez d’abord une temporisation.
-- **Ne supposez pas que l’événement contient des coordonnées** : appelez `window.Position()` / `window.Size()`.
+- **Ne supposez pas que l’événement contient les coordonnées** : appelez `window.Position()` / `window.Size()`.
 
 ## Dépannage
 
@@ -443,7 +443,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 **Cause :** vous avez utilisé `OnWindowEvent` au lieu de `RegisterHook`.
 
-**Solution :** seules les fonctions de rappel `RegisterHook` peuvent appeler `e.Cancel()`. Les fonctions de rappel `OnWindowEvent` observent l’événement ; elles ne peuvent pas l’annuler.
+**Solution :** seules les fonctions de rappel `RegisterHook` peuvent appeler `e.Cancel()`. Les fonctions de rappel `OnWindowEvent` observent l’événement ; elles ne peuvent pas annuler l’action.
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -461,7 +461,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Cause :** le gestionnaire a été enregistré après le déclenchement de l’événement.
 
-**Solution :** enregistrez les gestionnaires immédiatement après la création de la fenêtre (ou dans le rappel `app.Window.OnCreate`).
+**Solution :** enregistrez les gestionnaires immédiatement après la création de la fenêtre, ou dans la fonction de rappel `app.Window.OnCreate`.
 
 ```go
 window := app.Window.New()
@@ -482,14 +482,14 @@ unsub()
 
 ## Étapes suivantes
 
-**Principes de base des fenêtres** – Découvrez les fondamentaux de la gestion des fenêtres [En savoir plus →](/features/windows/basics/)
+**Principes de base des fenêtres** - Découvrez les principes fondamentaux de la gestion des fenêtres [En savoir plus →](/features/windows/basics/)
 
-**Fenêtres multiples** – Modèles pour les applications multifenêtres [En savoir plus →](/features/windows/multiple/)
+**Fenêtres multiples** - Découvrez les modèles pour les applications à plusieurs fenêtres [En savoir plus →](/features/windows/multiple/)
 
-**Système d’événements** – Explorez en détail le système d’événements [En savoir plus →](/features/events/system/)
+**Système d’événements** - Explorez en détail le système d’événements [En savoir plus →](/features/events/system/)
 
-**Cycle de vie de l’application** – Comprenez le cycle de vie de l’application [En savoir plus →](/concepts/lifecycle/)
+**Cycle de vie de l’application** - Comprenez le cycle de vie de l’application [En savoir plus →](/concepts/lifecycle/)
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

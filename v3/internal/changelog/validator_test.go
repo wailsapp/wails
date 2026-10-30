@@ -297,17 +297,14 @@ func TestValidateEntry_PlaceholderContent(t *testing.T) {
 		t.Error("ValidateEntry() should be invalid for placeholder content")
 	}
 
-	placeholderErrors := 0
-	for _, err := range result.Errors {
-		if strings.Contains(err.Message, "placeholder text") {
-			placeholderErrors++
-		}
+	// TODO, placeholder, FIXME, example and TBD each produce an error.
+	if len(result.Errors) != 5 {
+		t.Errorf("Expected 5 placeholder errors, got %d", len(result.Errors))
 	}
-
-	// Expecting 4 placeholder errors: TODO, placeholder, example, TBD
-	// FIXME should also be caught but let's check what we actually get
-	if placeholderErrors < 2 {
-		t.Errorf("Expected at least 2 placeholder errors, got %d", placeholderErrors)
+	for _, err := range result.Errors {
+		if !strings.Contains(err.Message, "placeholder text") {
+			t.Errorf("Expected placeholder error, got %q", err.Message)
+		}
 	}
 }
 
@@ -434,6 +431,40 @@ func TestValidationResult_GetValidationSummary(t *testing.T) {
 				if !strings.Contains(summary, expected) {
 					t.Errorf("GetValidationSummary() should contain '%s', got: %s", expected, summary)
 				}
+			}
+		})
+	}
+}
+
+func TestBulletWhitespaceValidation(t *testing.T) {
+	validator := NewValidator()
+	for _, tc := range []struct {
+		line, field string
+	}{
+		{"- \t preserve application behavior", ""},
+		{"*\fpreserve application behavior", ""},
+		{"-\rpreserve application behavior", ""},
+		{"- \u00a0preserve application behavior", ""},
+		{"-\u00a0preserve application behavior", "bullet_point"},
+		{"-\vpreserve application behavior", "bullet_point"},
+		{"-  \u00a0TODO preserve application behavior", "bullet_content"},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			result := validator.ValidateContent("## Fixed\n" + tc.line + "\n")
+			if tc.field == "" {
+				if !result.Valid {
+					t.Errorf("valid bullet rejected: %+v", result)
+				}
+				return
+			}
+			if result.Valid || len(result.Errors) != 1 {
+				t.Fatalf("want one %s error, got %+v", tc.field, result)
+			}
+			if got := result.Errors[0]; got.Field != tc.field || got.Line != 2 {
+				t.Errorf("diagnostic changed: %+v", got)
+			}
+			if tc.field == "bullet_content" && !strings.Contains(result.Errors[0].Message, "'TODO preserve application behavior'") {
+				t.Errorf("bullet content not trimmed: %s", result.Errors[0].Message)
 			}
 		})
 	}
