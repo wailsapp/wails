@@ -2,10 +2,12 @@
 package sqlite
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
+	"strconv"
 	"sync"
 	"sync/atomic"
 
@@ -145,6 +147,10 @@ func (s *SQLiteService) Open() error {
 	if err != nil {
 		return fmt.Errorf("error opening database connection: %w", err)
 	}
+	if s.config.DBSource == ":memory:" {
+		// Each :memory: connection is a separate database.
+		conn.SetMaxOpenConns(1)
+	}
 
 	// Test connection
 	if err := conn.Ping(); err != nil {
@@ -181,7 +187,7 @@ func (s *SQLiteService) closeImpl() error {
 	}
 
 	for id := range s.stmts {
-		if stmt, ok := stmts.Load(id); ok {
+		if stmt, ok := stmts.LoadAndDelete(id); ok {
 			// WARN: do not delegate to [Stmt.Close], it would cause a deadlock.
 			// Ignore errors, closing the connection should free up all resources.
 			_ = stmt.(*Stmt).sqlStmt.Close()
@@ -312,18 +318,18 @@ func (s *SQLiteService) PrepareContext(ctx context.Context, query string) (*Stmt
 		}
 	}
 
-	func() {
-		s.lock.Lock()
-		defer s.lock.Unlock()
-
-		s.stmts[id] = struct{}{}
-	}()
-
 	wrapper := &Stmt{
 		sqlStmt: stmt,
 		db:      s,
 		id:      id,
 	}
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	if s.conn != conn {
+		_ = stmt.Close()
+		return nil, errors.New("database connection changed while preparing statement")
+	}
+	s.stmts[id] = struct{}{}
 	stmts.Store(id, wrapper)
 
 	return wrapper, nil
@@ -425,6 +431,9 @@ func parseRows(ctx context.Context, rows *sql.Rows) (Rows, error) {
 
 		results = append(results, row)
 	}
+	if err := rows.Err(); err != nil && !errors.Is(err, ctx.Err()) {
+		return nil, err
+	}
 
 	return results, nil
 }
@@ -481,20 +490,19 @@ func (s *Stmt) Close() error {
 }
 
 func (s *Stmt) MarshalText() ([]byte, error) {
-	var buf bytes.Buffer
-	buf.Grow(16)
-
-	if _, err := fmt.Fprintf(&buf, "%016x", s.id); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	var id [8]byte
+	binary.BigEndian.PutUint64(id[:], s.id)
+	text := make([]byte, hex.EncodedLen(len(id)))
+	hex.Encode(text, id[:])
+	return text, nil
 }
 
 func (s *Stmt) UnmarshalText(text []byte) error {
-	if n, err := fmt.Fscanf(bytes.NewReader(text), "%x", &s.id); n < 1 || err != nil {
+	id, err := strconv.ParseUint(string(text), 16, 64)
+	if err != nil {
 		return errors.New("invalid prepared statement id")
 	}
+	s.id = id
 
 	if stmt, ok := stmts.Load(s.id); ok {
 		*s = *(stmt.(*Stmt))

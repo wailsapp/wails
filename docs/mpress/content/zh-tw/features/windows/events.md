@@ -7,7 +7,7 @@ sourcePath: "features/windows/events.md"
 
 ## 視窗事件
 
-Wails 透過單一 API 分派視窗生命週期與狀態變更事件：使用`OnWindowEvent`註冊被動監聽器，使用`RegisterHook`註冊可取消的勾點，以阻止預設動作。
+Wails 透過單一 API 分派視窗生命週期與狀態變更事件：使用`OnWindowEvent`註冊被動監聽器，並使用`RegisterHook`註冊可取消預設動作的掛鉤。
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -25,7 +25,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 這兩種呼叫都會傳回一個`unsubscribe func()`，您可以呼叫它來移除處理常式。
 
-跨平台事件位於`events.Common.*`。平台特定事件位於`events.Mac.*`、`events.Windows.*`和`events.Linux.*`。完整清單會產生於`v3/pkg/events/events.go`。
+跨平台事件位於`events.Common.*`。平台特定事件位於`events.Mac.*`、`events.Windows.*`及`events.Linux.*`。完整清單會產生於`v3/pkg/events/events.go`。
 
 ## 生命週期事件
 
@@ -49,13 +49,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-回呼會接收`application.Window`（介面）。每個視窗的`OnCreate`回呼都會在其執行階段初始化後呼叫一次。
+回呼會接收`application.Window`（介面）。註冊期間，每個視窗都會在執行前叫用一次`OnCreate`回呼。請使用它設定視窗並註冊處理常式。必須等到`events.Common.WindowRuntimeReady`後，才能呼叫 JavaScript 或傳送需要前端執行階段的事件。
 
 ### WindowClosing
 
-當使用者嘗試關閉視窗時觸發（例如按一下 X、⌘W 或 Alt+F4）。
+當使用者嘗試關閉視窗時（按一下 X、按下 ⌘W、Alt+F4 等）觸發。
 
-使用<strong>勾點</strong>（`RegisterHook`）——只有勾點能取消關閉動作。監聽器可以觀察事件，但無法阻止關閉。
+請使用**掛鉤**（`RegisterHook`）——只有掛鉤能取消關閉動作。監聽器可以觀察事件，但無法阻止視窗關閉。
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -68,15 +68,15 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **重要：**
 
-- `WindowClosing`會在使用者發起關閉嘗試時分派。
+- `WindowClosing`會在使用者主動嘗試關閉視窗時分派。
 - `RegisterHook`回呼可以呼叫`e.Cancel()`，讓視窗保持開啟。
-- 針對`WindowClosing`的`OnWindowEvent`回呼是觀察者——它們會觸發，但無法取消。
+- `WindowClosing`的`OnWindowEvent`回呼是觀察者——它們會觸發，但無法取消動作。
 
-<strong>以程式方式關閉：</strong>呼叫`window.Close()`。不存在`window.Destroy()`。
+<strong>以程式方式關閉：</strong>請呼叫`window.Close()`。不存在`window.Destroy()`。
 
 ### WindowRuntimeReady
 
-視窗內執行階段完成初始化後觸發——此時可安全地呼叫視窗 JS 執行環境中的程式碼：
+視窗內的執行階段完成初始化後觸發一次——此時可安全呼叫視窗的 JS 環境：
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -88,7 +88,7 @@ window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.Windo
 
 ### WindowFocus
 
-當視窗取得焦點時呼叫：
+視窗取得焦點時呼叫：
 
 ```go
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -100,7 +100,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### WindowLostFocus
 
-當視窗失去焦點時呼叫：
+視窗失去焦點時呼叫：
 
 ```go
 window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
@@ -110,7 +110,7 @@ window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEv
 })
 ```
 
-**範例：感知焦點的 UI：**
+**範例：感知焦點狀態的 UI：**
 
 ```go
 type FocusAwareWindow struct {
@@ -181,7 +181,7 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-使用`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()`以程式方式進入或退出全螢幕——不存在`SetFullscreen(bool)`。使用`window.IsFullscreen() bool`查詢狀態。
+使用`window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()`，以程式方式進入或結束全螢幕模式——不存在`SetFullscreen(bool)`。使用`window.IsFullscreen() bool`查詢狀態。
 
 ## 位置與大小事件
 
@@ -209,7 +209,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize`和`WindowDidMove`的事件本身不包含座標——請在回呼內透過`window.Size()` / `window.Position()`查詢視窗。
+`WindowDidResize`與`WindowDidMove`事件本身不包含座標——請在回呼中透過`window.Size()` / `window.Position()`查詢視窗。
 
 **範例：響應式版面配置：**
 
@@ -231,7 +231,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## 完整範例
 
-具備完整事件處理、可用於生產環境的視窗：
+具備完整事件處理功能、可用於正式環境的視窗：
 
 ```go
 package main
@@ -401,7 +401,7 @@ window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEve
 })
 ```
 
-### 防抖事件
+### 防彈跳事件
 
 ```go
 var resizeTimer *time.Timer
@@ -418,32 +418,32 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-## 最佳做法
+## 最佳實務
 
 ### ✅ 建議做法
 
-- **使用勾點取消動作**——只有`RegisterHook`回呼能呼叫`e.Cancel()`。
-- **關閉時儲存狀態**——下次啟動時還原視窗的位置和大小。
-- **對頻繁事件進行防抖處理**——`WindowDidResize`和`WindowDidMove`會快速連續觸發。
+- **使用掛鉤取消動作**——只有`RegisterHook`回呼可以呼叫`e.Cancel()`。
+- **關閉時儲存狀態**——下次啟動時還原視窗的位置與大小。
+- **對頻繁事件進行防彈跳處理**——`WindowDidResize`與`WindowDidMove`會快速連續觸發。
 - **處理焦點變更**——適當更新 UI。
 - **透過事件進行協調**——使用`app.Event.Emit`進行跨視窗通訊。
-- <strong>取消訂閱</strong>不再需要的處理常式——`OnWindowEvent`和`RegisterHook`都會傳回用於取消訂閱的`func()`。
+- **取消訂閱**不再需要的處理常式——`OnWindowEvent`與`RegisterHook`都會傳回用於取消訂閱的`func()`。
 
-### ❌ 請勿這樣做
+### ❌ 避免的做法
 
 - **不要阻塞事件處理常式**——應讓它們快速完成。
-- <strong>不要嘗試從`OnWindowEvent`</strong>取消動作——請使用`RegisterHook`。
-- **不要使用`window.Destroy()`**——它並不存在；請使用`window.Close()`。
-- **不要在每次事件觸發時都儲存**——請先進行防抖處理。
+- **不要嘗試從`OnWindowEvent`取消動作**——請使用`RegisterHook`。
+- **不要使用`window.Destroy()`**——它不存在；請使用`window.Close()`。
+- **不要在每次事件發生時都儲存**——請先進行防彈跳處理。
 - **不要假設事件包含座標**——請呼叫`window.Position()` / `window.Size()`。
 
 ## 疑難排解
 
-### WindowClosing 勾點無法阻止關閉
+### WindowClosing 掛鉤無法阻止視窗關閉
 
-<strong>原因：</strong>您使用了`OnWindowEvent`，而非`RegisterHook`。
+<strong>原因：</strong>您使用了`OnWindowEvent`，而不是`RegisterHook`。
 
-<strong>解決方案：</strong>只有`RegisterHook`回呼能呼叫`e.Cancel()`。`OnWindowEvent`回呼只能觀察，無法取消。
+<strong>解決方法：</strong>只有`RegisterHook`回呼可以呼叫`e.Cancel()`。`OnWindowEvent`回呼只能觀察事件，無法取消動作。
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -459,7 +459,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### 事件未觸發
 
-<strong>原因：</strong>事件發生後才註冊處理常式。
+<strong>原因：</strong>處理常式是在事件發生後才註冊。
 
 <strong>解決方法：</strong>請在建立視窗後立即註冊處理常式（或在`app.Window.OnCreate`回呼中註冊）。
 
@@ -470,9 +470,9 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### 記憶體洩漏
 
-<strong>原因：</strong>短生命週期的狀態持有長生命週期的處理常式。
+<strong>原因：</strong>生命週期較短的狀態持有生命週期較長的處理常式。
 
-<strong>解決方法：</strong>保留`OnWindowEvent`/`RegisterHook`傳回的取消訂閱`func()`，並在清理時呼叫它。
+<strong>解決方法：</strong>保留`OnWindowEvent`/`RegisterHook`所傳回、用於取消訂閱的`func()`，並在清理期間呼叫它。
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -486,10 +486,10 @@ unsub()
 
 **多視窗** - 多視窗應用程式的設計模式 [深入瞭解 →](/features/windows/multiple/)
 
-**事件系統** - 深入探索事件系統 [深入瞭解 →](/features/events/system/)
+**事件系統** - 深入探討事件系統 [深入瞭解 →](/features/events/system/)
 
 **應用程式生命週期** - 瞭解應用程式生命週期 [深入瞭解 →](/concepts/lifecycle/)
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。

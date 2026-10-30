@@ -669,4 +669,4 @@ app := application.New(application.Options{
 
 ---
 
-**Fragen?** Im [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) ansehen.
+**Fragen?** Im [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) ansehen.

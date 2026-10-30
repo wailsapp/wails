@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` berguna untuk popup baki pada Windows, macOS, dan desktop Linux dengan fokus melalui klik. Wails menonaktifkan perilaku tersebut pada lingkungan Linux yang menerapkan fokus mengikuti tetikus (termasuk konfigurasi umum Hyprland, Sway, dan i3), karena meninggalkan popup dalam lingkungan tersebut dapat menyembunyikannya sebelum sempat digunakan. `HideOnEscape` tetap tersedia dalam lingkungan tersebut.
 
-Perilaku klik kiri dan klik kanan di atas merupakan default cerdas. Handler `OnClick` atau `OnRightClick` yang ditetapkan secara eksplisit menggantikan default terkait. Untuk pemeriksaan platform dan kasus khusus, lihat [rangkaian pengujian manual systray](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) dan [contoh pengujian beban systray](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+Perilaku klik kiri dan klik kanan di atas merupakan default cerdas. Handler `OnClick` atau `OnRightClick` yang ditetapkan secara eksplisit menggantikan default terkait. Untuk pemeriksaan platform dan kasus khusus, lihat [rangkaian pengujian manual systray](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) dan [contoh pengujian beban systray](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Handler Klik
 
@@ -714,10 +714,10 @@ Buat menu konteks klik kanan.
 📖 Contoh Baki Sistem
 Jelajahi aplikasi baki sistem yang lengkap.
 
-[Pelajari Lebih Lanjut →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[Pelajari Lebih Lanjut →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh baki sistem](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh baki sistem](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic).

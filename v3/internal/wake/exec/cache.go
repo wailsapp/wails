@@ -50,20 +50,22 @@ func LoadTaskCache(baseDir string) (*TaskCache, error) {
 	if err := json.Unmarshal(data, tc); err != nil {
 		return tc, nil
 	}
+	if tc.Entries == nil {
+		tc.Entries = make(map[string]TaskCacheEntry)
+	}
 
 	return tc, nil
 }
 
 func (tc *TaskCache) Save() error {
-	tc.mu.RLock()
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 	dir := filepath.Join(tc.Dir, cacheDirName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		tc.mu.RUnlock()
 		return fmt.Errorf("wake: create cache dir: %w", err)
 	}
 	path := filepath.Join(dir, cacheFileName)
 	data, err := json.MarshalIndent(tc, "", "  ")
-	tc.mu.RUnlock()
 	if err != nil {
 		return fmt.Errorf("wake: marshal cache: %w", err)
 	}
@@ -74,6 +76,8 @@ func ComputeTaskHash(task *ast.Task, baseDir string) (string, error) {
 	h := sha256.New()
 
 	h.Write([]byte(task.Name))
+	h.Write([]byte("\n"))
+	h.Write([]byte(task.Dir))
 	h.Write([]byte("\n"))
 
 	for _, cmd := range task.Cmds {
@@ -113,14 +117,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
-	taskDir := baseDir
-	if task.Dir != "" {
-		if filepath.IsAbs(task.Dir) {
-			taskDir = task.Dir
-		} else {
-			taskDir = filepath.Join(baseDir, task.Dir)
-		}
-	}
+	taskDir := taskDirectory(baseDir, task.Dir)
 
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
@@ -128,6 +125,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 			// Windows. The previous unconditional `sh -c` here broke status-
 			// based skipping on stock Windows installs.
 			c := platform.ShellCommand(cmd)
+			c.Dir = taskDir
 			if err := c.Run(); err != nil {
 				return false
 			}

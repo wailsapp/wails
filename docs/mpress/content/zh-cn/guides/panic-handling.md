@@ -5,15 +5,15 @@ slug: "guides/panic-handling"
 sourcePath: "guides/panic-handling.md"
 ---
 
-在 Go 应用程序中，如果运行时发生意外情况，可能会出现 panic。本指南介绍如何在常规 Go 代码中以及专门在 Wails 应用程序中处理 panic。
+在 Go 应用程序中，运行时发生意外情况可能会引发 panic。本指南介绍如何在常规 Go 代码以及 Wails 应用程序中处理 panic。
 
 ## 了解 Go 中的 panic
 
 在深入了解 Wails 特有的 panic 处理方式之前，必须先了解 panic 在 Go 中的工作原理：
 
 1. panic 用于表示正常运行期间不应发生且无法恢复的错误
-2. 当某个 goroutine 中发生 panic 时，只有该 goroutine 会受到影响
-3. 可以使用 `defer` 和 `recover()` 从 panic 中恢复
+2. panic 会展开当前 goroutine；如果一直传播到顶层而未被恢复，进程将终止，其他 goroutine 也会随之终止
+3. 恢复操作必须在发生 panic 的同一 goroutine 中通过延迟函数执行
 
 下面是一个在 Go 中处理 panic 的基本示例：
 
@@ -35,18 +35,18 @@ func doSomething() {
 
 ## Wails 中的 panic 处理
 
-从前端调用 Service 方法时，Wails 会自动处理这些方法中发生的 panic。这意味着你无需为这些方法添加 panic 恢复逻辑——Wails 会捕获 panic，并通过你配置的 panic 处理程序进行处理。
+从前端调用 Service 方法时，如果这些方法发生 panic，Wails 会自动处理。这意味着你无需在这些方法中添加 panic 恢复逻辑；Wails 会捕获 panic，并通过你配置的 panic 处理器进行处理。
 
-panic 处理程序专门用于捕获：
+panic 处理器专门用于捕获：
 
 - 从前端调用的已绑定服务方法中发生的 panic
-- Wails 运行时内部的 panic
+- 显式安装了 Wails 恢复机制的运行时路径中发生的 panic；它并不是适用于每个 goroutine 的进程级处理器
 
-对于后台 goroutine 或独立 Go 代码等其他场景，你应使用 Go 的标准 panic 恢复机制自行处理 panic。
+对于后台 goroutine 或独立 Go 代码等其他场景，应使用 Go 的标准 panic 恢复机制自行处理 panic。
 
 ## PanicDetails 结构体
 
-发生 panic 时，Wails 会将有关该 panic 的重要信息捕获到 `PanicDetails` 结构体中：
+发生 panic 时，Wails 会在`PanicDetails`结构体中捕获有关该 panic 的重要信息：
 
 ```go
 type PanicDetails struct {
@@ -65,13 +65,13 @@ type PanicDetails struct {
 - `FullStackTrace`：包含运行时栈帧的完整堆栈跟踪
 
 @note{type="info" title="Service 代码中的 panic"}
-从前端调用 Service 代码并捕获其中的 panic 后，系统会裁剪堆栈跟踪，使其重点显示代码中发生 panic 的确切位置。 如果你想查看完整的堆栈跟踪，可以使用 `FullStackTrace` 字段。
+从前端调用 Service 代码后，如果其中的 panic 被捕获，堆栈跟踪会被裁剪，以准确聚焦于代码中发生 panic 的位置。如果要查看完整的堆栈跟踪，可以使用`FullStackTrace`字段。
 
 @end
 
-## 默认 panic 处理程序
+## 默认 panic 处理器
 
-如果你未指定自定义 panic 处理程序，Wails 将使用默认处理程序，以格式化日志消息的形式输出错误信息，然后退出。 例如：
+如果未指定自定义 panic 处理器，Wails 将使用默认处理器，以格式化日志消息输出错误信息，然后退出。例如：
 
 ```
 ************************ FATAL ******************************
@@ -87,9 +87,9 @@ main.(*WindowService).GeneratePanic
 *************************************************************
 ```
 
-## 自定义 panic 处理程序
+## 自定义 panic 处理器
 
-创建应用程序时，可以通过设置 `PanicHandler` 选项来实现自己的 panic 处理程序。示例如下：
+创建应用程序时，可以通过设置`PanicHandler`选项来实现自己的 panic 处理器。示例如下：
 
 ```go
 app := application.New(application.Options{
@@ -110,8 +110,8 @@ app := application.New(application.Options{
 })
 ```
 
-有关在 Wails 应用程序中处理 panic 的完整可运行示例，请参阅 `v3/examples/panic-handling` 中的 panic-handling 示例。
+有关在 Wails 应用程序中处理 panic 的完整可运行示例，请参阅`v3/examples/panic-handling`中的 panic-handling 示例。
 
 ## 最后说明
 
-请记住，Wails panic 处理程序专门用于处理已绑定方法中的 panic 和运行时内部错误。对于应用程序的其他部分，应在适当情况下使用 Go 的标准错误处理模式和 panic 恢复机制。与所有 Go 应用程序一样，应尽可能通过正确的错误处理来防止 panic。
+请记住，Wails panic 处理器专门用于处理已绑定方法和内部运行时错误中的 panic。对于应用程序的其他部分，应在适当之处使用 Go 的标准错误处理模式和 panic 恢复机制。与所有 Go 应用程序一样，应尽可能通过妥善的错误处理来避免 panic。

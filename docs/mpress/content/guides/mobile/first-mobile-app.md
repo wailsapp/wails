@@ -42,7 +42,7 @@ Once it opens, quit and move on. Everything that runs on desktop also runs on mo
   ```
 
 
-- **Go 1.25+** and **npm** (already installed if you ran `wails3 init`)
+- **Go 1.26+** and **npm** (already installed if you ran `wails3 init`)
 
 Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
 
@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) uses — see `native_features_stub.go`, `native_features_ios.go`, and `native_features_android.go`.
+This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) uses — see `native_features_stub.go`, `native_features_ios.go`, and `native_features_android.go`.
 
 @note{type="note" title="Native feature API & event naming"}
 Two conventions are worth knowing:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — the `native_features_ios.go` and `native_features_android.go` files are particularly useful as copy-paste starting points for platform-specific features.
+Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — the `native_features_ios.go` and `native_features_android.go` files are particularly useful as copy-paste starting points for platform-specific features.
 
 ## What's next
 
@@ -519,6 +519,6 @@ Full reference: configuration, toasts, Play Store packaging, NDK details.
 📖 Kitchen Sink source
 Haptics, geolocation, biometrics, notifications, secure storage — all in one runnable app.
 
-[View on GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[View on GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

@@ -8,21 +8,21 @@ import (
 )
 
 type EnumDeclaration struct {
-	Name   string       `parser:"'typedef' 'enum' @Ident '{'"`
-	Values []*EnumValue `parser:" (@@)+ '}' Ident ';'"`
+	Name   string
+	Values []*EnumValue
 
 	// private
 	decl *Declaration
 }
 
 type EnumValue struct {
-	Key   string         `parser:"@Ident"`
-	Value *EnumValueDecl `parser:"('=' @@)? ','?"`
+	Key   string
+	Value *EnumValueDecl
 }
 
 type EnumValueDecl struct {
-	Value     string `parser:"@Hex | @Int"`
-	LeftShift *int   `parser:"('<' '<' @Int)?"`
+	Value     string
+	LeftShift *int
 }
 
 func (e *EnumValueDecl) Process() {
@@ -42,7 +42,7 @@ func (d *EnumDeclaration) Process(decl *Declaration) error {
 			value.Value.Process()
 		}
 	}
-	decl.library.enums.Add(d.Name)
+	decl.library.enums = append(decl.library.enums, d.Name)
 	return nil
 }
 

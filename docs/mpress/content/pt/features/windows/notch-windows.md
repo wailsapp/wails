@@ -80,4 +80,4 @@ Superfícies recolhidas persistentes que reabrem ao passar o ponteiro são inten
 
 @end
 
-Consulte o exemplo [notch-notification](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification) de um monitor de sistema compacto cujo estado ativo do JavaScript persiste durante ciclos repetidos de exibição e ocultação de notificações.
+Consulte o exemplo [notch-notification](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification) de um monitor de sistema compacto cujo estado ativo do JavaScript persiste durante ciclos repetidos de exibição e ocultação de notificações.

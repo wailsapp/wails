@@ -204,48 +204,50 @@ func cScreenToScreen(screen C.Screen) *Screen {
 	C.free(unsafe.Pointer(screen.id))
 	C.free(unsafe.Pointer(screen.name))
 
-	// NSScreen.frame and visibleFrame return values in points (already DIPs).
-	// applyDPIScaling in screenmanager.go expects Physical* fields to be in
-	// device pixels and produces Bounds/WorkArea in DIPs by dividing by
-	// ScaleFactor. Pre-multiply the point values by backingScaleFactor so the
-	// division lands back on the original point values. Without this, bounds
-	// on Retina displays are halved (e.g. 1496×967 becomes 748×484).
+	// NSScreen.frame and visibleFrame return points, which processScreen has
+	// flipped into the canonical DIP space — exactly what Bounds and WorkArea
+	// hold, and the space windowGetPosition reports a window's frame in. They are
+	// therefore carried across as they are, and the Physical* rectangles are the
+	// same rectangles in device pixels. Scaling the origins here instead, to
+	// synthesise the device-pixel input LayoutScreens expects, is what moved a
+	// non-primary display out of the space its own windows are measured in; the
+	// screens go to layoutDIPScreens (see processAndCacheScreens).
 	sf := float64(screen.scaleFactor)
-	toPhysical := func(points C.int) int { return int(float64(points) * sf) }
+	toPixels := func(points C.int) int { return int(float64(points) * sf) }
+
+	bounds := Rect{
+		X:      int(screen.x),
+		Y:      int(screen.y),
+		Width:  int(screen.width),
+		Height: int(screen.height),
+	}
+	workArea := Rect{
+		X:      int(screen.w_x),
+		Y:      int(screen.w_y),
+		Width:  int(screen.w_width),
+		Height: int(screen.w_height),
+	}
 
 	return &Screen{
 		// Screen.X/Y must mirror Bounds.X/Y: shared code in screenmanager.go
-		// (areScreensTouching, calculateScreenPlacement, move) reads the
-		// top-level fields alongside Bounds and assumes they agree.
-		X: toPhysical(screen.x),
-		Y: toPhysical(screen.y),
-		Size: Size{
-			Width:  int(screen.p_width),
-			Height: int(screen.p_height),
-		},
-		Bounds: Rect{
-			X:      toPhysical(screen.x),
-			Y:      toPhysical(screen.y),
-			Height: toPhysical(screen.height),
-			Width:  toPhysical(screen.width),
-		},
+		// (screenNearestPoint, intersects, right, bottom) reads the top-level
+		// fields alongside Bounds and assumes they agree.
+		X:      bounds.X,
+		Y:      bounds.Y,
+		Size:   bounds.Size(),
+		Bounds: bounds,
 		PhysicalBounds: Rect{
-			X:      toPhysical(screen.x),
-			Y:      toPhysical(screen.y),
-			Height: toPhysical(screen.height),
-			Width:  toPhysical(screen.width),
+			X:      toPixels(screen.x),
+			Y:      toPixels(screen.y),
+			Width:  toPixels(screen.width),
+			Height: toPixels(screen.height),
 		},
-		WorkArea: Rect{
-			X:      toPhysical(screen.w_x),
-			Y:      toPhysical(screen.w_y),
-			Height: toPhysical(screen.w_height),
-			Width:  toPhysical(screen.w_width),
-		},
+		WorkArea: workArea,
 		PhysicalWorkArea: Rect{
-			X:      toPhysical(screen.w_x),
-			Y:      toPhysical(screen.w_y),
-			Height: toPhysical(screen.w_height),
-			Width:  toPhysical(screen.w_width),
+			X:      toPixels(screen.w_x),
+			Y:      toPixels(screen.w_y),
+			Width:  toPixels(screen.w_width),
+			Height: toPixels(screen.w_height),
 		},
 		ScaleFactor: float32(screen.scaleFactor),
 		ID:          id,
@@ -286,7 +288,7 @@ func (m *macosApp) processAndCacheScreens() error {
 	} else {
 		InvokeSync(func() { screens = allScreens() })
 	}
-	return m.parent.Screen.LayoutScreens(screens)
+	return m.parent.Screen.layoutDIPScreens(screens)
 }
 
 func (m *macosApp) getPrimaryScreen() (*Screen, error) {

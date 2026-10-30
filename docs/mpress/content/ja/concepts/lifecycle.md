@@ -816,4 +816,4 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ---
 
-**ライフサイクルについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**ライフサイクルについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。

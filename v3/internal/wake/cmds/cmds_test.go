@@ -39,17 +39,6 @@ func TestRouteGoTest(t *testing.T) {
 	require.IsType(t, &GoTestCmd{}, ex)
 }
 
-func TestParseGoTestCount(t *testing.T) {
-	// Regression: parseGoTestArgs used to read only the first digit of the
-	// -count value via args[i+1][0]-'0', so `-count 10` became 1 and
-	// `-count 100` became 1 too. Pin the full-integer parse in place.
-	for _, in := range []string{"1", "10", "100", "1000"} {
-		got := parseGoTestArgs([]string{"go", "test", "-count", in, "./..."})
-		want := map[string]int{"1": 1, "10": 10, "100": 100, "1000": 1000}[in]
-		require.Equal(t, want, got.Count, "-count %s parsed as %d", in, got.Count)
-	}
-}
-
 func TestRouteGoModTidy(t *testing.T) {
 	ex := Route("go mod tidy", RouteOptions{})
 	require.IsType(t, &GoModTidyCmd{}, ex)
@@ -167,56 +156,6 @@ func TestParseGoBuildArgs(t *testing.T) {
 			require.Equal(t, tt.expected.Ldflags, opts.Ldflags)
 			require.Equal(t, tt.expected.Trimpath, opts.Trimpath)
 			require.Equal(t, tt.expected.Package, opts.Package)
-		})
-	}
-}
-
-func TestParseGoTestArgs(t *testing.T) {
-	tests := []struct {
-		name     string
-		args     []string
-		expected GoTestOptions
-	}{
-		{
-			name:     "simple test",
-			args:     []string{"go", "test"},
-			expected: GoTestOptions{},
-		},
-		{
-			name:     "verbose test",
-			args:     []string{"go", "test", "-v"},
-			expected: GoTestOptions{Verbose: true},
-		},
-		{
-			name:     "test with package",
-			args:     []string{"go", "test", "./..."},
-			expected: GoTestOptions{Package: "./..."},
-		},
-		{
-			name:     "test with run",
-			args:     []string{"go", "test", "-run", "TestFoo"},
-			expected: GoTestOptions{Run: "TestFoo"},
-		},
-		{
-			name:     "test with race",
-			args:     []string{"go", "test", "-race"},
-			expected: GoTestOptions{Race: true},
-		},
-		{
-			name:     "test with cover",
-			args:     []string{"go", "test", "-cover"},
-			expected: GoTestOptions{Cover: true},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opts := parseGoTestArgs(tt.args)
-			require.Equal(t, tt.expected.Verbose, opts.Verbose)
-			require.Equal(t, tt.expected.Package, opts.Package)
-			require.Equal(t, tt.expected.Run, opts.Run)
-			require.Equal(t, tt.expected.Race, opts.Race)
-			require.Equal(t, tt.expected.Cover, opts.Cover)
 		})
 	}
 }

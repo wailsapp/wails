@@ -1,23 +1,23 @@
 ---
 title: "伺服器建置"
-description: "將 Wails 應用程式作為 HTTP 伺服器執行，無需原生 GUI 視窗"
+description: "以 HTTP 伺服器執行 Wails 應用程式，不建立原生 GUI 視窗"
 slug: "guides/server-build"
 sourcePath: "guides/server-build.md"
 ---
 
-Wails v3 支援伺服器模式，可讓您將應用程式作為純 HTTP 伺服器執行，而不建立原生視窗，也不需要 GUI 相依項目。因此，同一個 Wails 應用程式可部署至伺服器、容器及網頁瀏覽器。
+Wails v3 支援伺服器模式，可讓您將應用程式當作純 HTTP 伺服器執行，無須建立原生視窗或使用 GUI 相依項目。因此，同一個 Wails 應用程式可部署至伺服器、容器和網頁瀏覽器。
 
 伺服器模式適用於：
 
-- **Docker／容器部署**：不依賴 X11／Wayland 即可執行
+- **Docker／容器部署**：無須 X11／Wayland 相依項目即可執行
 - **伺服器端應用程式**：部署為可透過瀏覽器存取的網頁伺服器
 - **僅限網頁存取**：桌面版與網頁版共用同一套程式碼
-- **CI/CD 測試**：無需顯示伺服器即可執行整合測試
+- **CI/CD 測試**：無須顯示伺服器即可執行整合測試
 - **微服務**：在無頭後端服務中使用 Wails 繫結
 
-## 快速開始
+## 快速入門
 
-伺服器模式透過 `server` 建置標籤啟用。應用程式碼無需變更，只要使用該標籤進行建置即可：
+伺服器模式透過 `server` 建置標籤啟用。應用程式碼不需要變更，只要使用此標籤建置即可：
 
 ```bash
 # Using Taskfile (recommended)
@@ -28,7 +28,7 @@ wails3 task run:server
 go build -tags server -o myapp-server .
 ```
 
-以下是最精簡的範例：
+以下是最小範例：
 
 ```go
 package main
@@ -66,7 +66,7 @@ func main() {
 }
 ```
 
-同一份程式碼既可建置為桌面模式（不使用該標籤），也可建置為伺服器模式（使用 `-tags server`）。
+同一套程式碼既可建置為桌面模式（不使用標籤），也可建置為伺服器模式（使用 `-tags server`）。
 
 ## 設定
 
@@ -95,11 +95,11 @@ Server: application.ServerOptions{
     // Graceful shutdown timeout. Default: 30s
     ShutdownTimeout: 30 * time.Second,
 
-    // Additional origins allowed to open WebSocket connections.
-    // Same-origin connections are always allowed.
+    // Additional origins allowed to open WebSocket connections and call
+    // /wails/runtime. Same-origin requests are always allowed.
     WebSocketOriginPatterns: []string{"app.example.com"},
 
-    // Disable WebSocket origin checks. Unsafe; default: false.
+    // Disable WebSocket and runtime origin checks. Unsafe; default: false.
     WebSocketAllowAllOrigins: false,
 
     // TLS configuration (optional)
@@ -114,7 +114,7 @@ Server: application.ServerOptions{
 
 ### 健康狀態檢查端點
 
-`/health` 會自動提供健康狀態檢查端點：
+系統會自動在 `/health` 提供健康狀態檢查端點：
 
 ```bash
 curl http://localhost:8080/health
@@ -129,7 +129,7 @@ curl http://localhost:8080/health
 
 ### 服務繫結
 
-所有服務繫結的運作方式都與桌面模式完全相同：
+所有服務繫結的運作方式都與桌面模式相同：
 
 ```go
 type GreetService struct{}
@@ -144,7 +144,7 @@ Services: []application.Service{
 },
 ```
 
-前端可使用標準 Wails 執行階段呼叫這些繫結：
+前端可以使用標準 Wails 執行階段呼叫這些繫結：
 
 ```javascript
 const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
@@ -152,12 +152,12 @@ const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
 
 ### 事件
 
-在伺服器模式中，事件可雙向傳遞：
+在伺服器模式下，事件可雙向傳遞：
 
-- **前端到後端**：瀏覽器發出的事件會透過 HTTP 傳送，並由您的 Go 事件處理常式接收
-- **後端到前端**：Go 發出的事件會透過 WebSocket 廣播至所有已連線的瀏覽器
+- **前端至後端**：瀏覽器發出的事件會透過 HTTP 傳送，並由 Go 事件處理常式接收
+- **後端至前端**：Go 發出的事件會透過 WebSocket 廣播至所有已連線的瀏覽器
 
-每個瀏覽器分頁都會表示為具有唯一名稱（`browser-1`、`browser-2` 等）的「視窗」，並可透過 `event.Sender` 存取：
+每個瀏覽器分頁都會以具有唯一名稱（`browser-1`、`browser-2` 等）的「視窗」表示，並可透過 `event.Sender` 存取：
 
 ```go
 // Listen for events from browsers
@@ -182,12 +182,12 @@ wails.Events.On('server-update', (event) => {
 });
 ```
 
-### 順暢關閉
+### 正常關閉
 
 伺服器會妥善處理 `SIGINT` 和 `SIGTERM` 訊號：
 
 1. 停止接受新連線
-2. 等待作用中的要求完成（最多等待 `ShutdownTimeout`）
+2. 等待進行中的要求完成（最長等待 `ShutdownTimeout`）
 3. 執行 `OnShutdown` 掛鉤
 4. 以相反順序關閉服務
 
@@ -199,27 +199,34 @@ wails.Events.On('server-update', (event) => {
 | 系統匣 | 可用 | 不可用 |
 | 原生對話方塊 | 可用 | 不可用 |
 | 應用程式選單 | 可用 | 不可用 |
-| 螢幕資訊 | 可用 | 傳回錯誤 |
+| 螢幕資訊 | 可用 | 沒有原生螢幕；`GetPrimary()` 會傳回 `nil` |
 | 服務繫結 | 可運作 | 可運作 |
 | 事件 | 可運作 | 可運作（透過 WebSocket） |
-| 資產 | 透過 WebView | 透過 HTTP |
+| 資源 | 透過 webview | 透過 HTTP |
 | 需要 CGO | 是 | 否 |
 
 ### 視窗 API 行為
 
-在伺服器模式中，與視窗相關的 API 會以安全的方式處理：
+在伺服器模式下，系統會安全地處理視窗相關 API：
 
-- `app.Window.NewWithOptions()`：記錄警告並傳回 nil
+- `app.Window.NewWithOptions(options)`：傳回非 nil 的 Go 視窗物件；這不會建立原生桌面視窗
 - `app.Hide()`／`app.Show()`：不執行任何操作
-- `app.Screen.GetPrimary()`：傳回錯誤
+- `app.Screen.GetPrimary()`：傳回 `*application.Screen`；若沒有可用的主要螢幕，其值為 `nil`。解除參照前請先檢查
 
-如此一來，參照視窗的程式碼便可執行而不會當機，但視窗操作不會產生任何效果。
+請區分 Go 視窗物件與原生視窗的可用性。建置伺服器時，請保護僅限桌面的行為；非 nil 的 Go 視窗物件並不表示原生視窗或螢幕存在。
 
-## 建置正式環境版本
+### 支援的平台
+
+伺服器模式以純 Go 實作，無須 CGO 即可針對 Wails 支援的每個 `GOOS`（包括 `android` 和 `ios`）進行編譯。在行動裝置目標上，只會建置無頭伺服器：
+
+- 原生行動裝置 API `application.Android` 和 `application.IOS` 無法使用。使用這些 API 的程式碼必須透過 `!server` 建置條件約束，排除在伺服器建置之外。
+- 預設記錄器為桌面版記錄器；在開發建置中，它會寫入 stderr，而不是 logcat 或 WebView 主控台。
+
+## 建置正式版本
 
 ### 使用 Task（建議）
 
-使用`wails3 init`建立的專案包含一個`build:server`工作：
+使用 `wails3 init` 建立的專案包含 `build:server` 工作：
 
 ```bash
 # Build for server mode
@@ -248,7 +255,7 @@ wails3 task build:docker
 wails3 task run:docker
 ```
 
-就這麼簡單！您可以在`http://localhost:8080`存取應用程式。
+就是這麼簡單！您的應用程式將可透過 `http://localhost:8080` 存取。
 
 您可以使用幾個選項自訂建置：
 
@@ -260,7 +267,7 @@ wails3 task build:docker TAG=myapp:v1.0.0
 wails3 task run:docker PORT=3000
 ```
 
-產生的`Dockerfile.server`會建立以 distroless 為基礎的最小映像檔。它會自動處理網路繫結，因此可從容器外部存取您的應用程式。
+產生的 `Dockerfile.server` 會建立以 distroless 為基礎的最小映像檔。它會自動處理網路繫結，因此您可以從容器外部存取應用程式。
 
 ### Docker Compose
 
@@ -282,13 +289,13 @@ services:
 ```
 
 @note{type="info"}
-此健康狀態檢查範例使用`wget`。如果您使用 distroless 基礎映像檔，則需要在映像檔中加入健康狀態檢查二進位檔，或使用外部健康狀態檢查機制（例如 Docker 的`curl`選項或 Sidecar 容器）。
+健康檢查範例使用`wget`。若使用 distroless 基礎映像檔，您必須在映像檔中包含健康檢查二進位檔，或使用外部健康檢查機制（例如 Docker 的`curl`選項或 sidecar 容器）。
 
 @end
 
 ### 自訂 Dockerfile
 
-如果需要更多控制權，您可以自行建立 Dockerfile。請務必設定`WAILS_SERVER_HOST=0.0.0.0`，讓伺服器接受來自容器外部的連線：
+如果需要更完整的控制，可以自行建立 Dockerfile。請務必設定`WAILS_SERVER_HOST=0.0.0.0`，讓伺服器接受來自容器外部的連線：
 
 ```dockerfile
 # Build stage
@@ -312,11 +319,11 @@ ENTRYPOINT ["/server"]
 
 部署伺服器模式應用程式時：
 
-1. **預設繫結至 localhost**－僅在必要時使用`0.0.0.0`
-2. **在正式環境中使用 TLS**－設定`ServerOptions.TLS`
-3. **置於反向 Proxy 後方**－使用 nginx/traefik 提供額外安全防護
-4. **讓 WebSocket 保持同源**－僅使用`WebSocketOriginPatterns`新增受信任的來源；避免使用`WebSocketAllowAllOrigins`
-5. **驗證所有輸入**－採用與任何 Web 應用程式相同的安全實務
+1. **預設繫結至 localhost** - 僅在必要時使用`0.0.0.0`
+2. **在正式環境中使用 TLS** - 設定`ServerOptions.TLS`
+3. **置於反向 Proxy 後方** - 使用 nginx/traefik 提供額外安全防護
+4. **讓 WebSocket 與執行階段呼叫保持同源** - 僅透過`WebSocketOriginPatterns`新增受信任的來源；避免使用`WebSocketAllowAllOrigins`
+5. **驗證所有輸入** - 採用與任何 Web 應用程式相同的安全性實務
 
 ## 範例
 
@@ -336,21 +343,31 @@ go run -tags server .
 
 ## 環境變數
 
-若部署情境需要在不變更程式碼的情況下覆寫伺服器設定，Wails 可識別下列環境變數：
+在需要覆寫伺服器設定而不變更程式碼的部署情境中，Wails 可辨識以下環境變數：
 
 | 變數 | 說明 | 預設值 |
 | --- | --- | --- |
 | `WAILS_SERVER_HOST` | 要繫結的網路介面 | `localhost` |
-| `WAILS_SERVER_PORT` | 要接聽的連接埠 | `8080` |
+| `WAILS_SERVER_PORT` | 要監聽的連接埠 | `8080` |
 
-這些環境變數的優先順序高於程式碼中的`ServerOptions`，因此 Docker 範例會設定`WAILS_SERVER_HOST=0.0.0.0`；這可讓容器接受外部連線，而不必變更應用程式。
+這些環境變數的優先順序高於程式碼中的`ServerOptions`，因此 Docker 範例會設定`WAILS_SERVER_HOST=0.0.0.0`；這讓容器無須變更應用程式即可接受外部連線。
 
 ## 另請參閱
 
-- [自訂傳輸](/guides/custom-transport/)－用於進階 IPC 自訂
-- [服務](/features/bindings/services/)－服務繫結文件
-- [事件](/guides/events-reference/)－事件系統文件
+- [自訂傳輸](/guides/custom-transport/) - 用於進階 IPC 自訂
+- [服務](/features/bindings/services/) - 服務繫結文件
+- [事件](/guides/events-reference/) - 事件系統文件
 
-### 執行階段要求大小
+### 執行階段請求大小
 
-傳送至`/wails/runtime`的要求在進行 JSON 處理前，大小上限為64 MiB。超過此限制的一般要求會收到 HTTP 413，未包含`Content-Length`的要求亦同。分塊執行階段上傳仍各自受每個分塊1 MiB 及組合後承載資料64 MiB 的大小限制。適當時，請使用應用程式中介軟體或反向 Proxy 設定更低的限制。
+在進行 JSON 處理之前，傳送至`/wails/runtime`的請求大小上限為64 MiB。超過此限制的一般請求會收到 HTTP 413，未包含`Content-Length`的請求也包括在內。分塊執行階段上傳仍分別採用每個區塊1 MiB 與組合後承載資料64 MiB 的限制。適當時，請使用應用程式中介軟體或反向 Proxy 設定更低的限制。
+
+### 執行階段請求來源
+
+`/wails/runtime`僅接受`POST`請求；其他方法會收到 HTTP 405。若瀏覽器請求的`Origin`既不是請求主機，也不符合`WebSocketOriginPatterns`，則會收到 HTTP 403；未包含`Origin`且其`Sec-Fetch-Site`為`cross-site`或`same-site`的請求也是如此。未攜帶這兩個標頭的請求（例如來自`curl`或其他非瀏覽器用戶端的請求）會獲得接受。若反向 Proxy 重寫`Host`標頭，請將公開來源新增至`WebSocketOriginPatterns`。
+
+`WebSocketOriginPatterns`用於公開來源與應用程式所見`Host`不同的反向 Proxy 部署。不支援由不同來源提供、並直接呼叫`/wails/runtime`的前端：該端點不會發出 CORS 標頭，且會以 HTTP 405回應預檢`OPTIONS`請求。請由 Wails 伺服器提供前端，或將兩者置於相同的 Proxy 來源後方。
+
+### 迴送 Host 檢查
+
+當伺服器繫結至迴送位址（預設的`localhost`、任何`127.0.0.0/8`位址或`::1`，無論是在`ServerOptions.Host`或`WAILS_SERVER_HOST`中設定）時，每個請求都必須攜帶`Host`標頭，並在其中指定`localhost`、IP 常值、繫結主機，或與`WebSocketOriginPatterns`項目之主機部分相符的主機；任何其他`Host`都會收到 HTTP 403。這可阻止 DNS 重新繫結攻擊；在這類攻擊中，惡意網頁會將自己的主機名稱指向`127.0.0.1`，使其請求通過上述同源檢查。系統不會比較連接埠，且會拒絕`localhost.`（結尾有句點）或`127.1`等寫法。即使已設定`WebSocketAllowAllOrigins`，此檢查仍會套用。若本機反向 Proxy 轉送其公開`Host`，請將該主機新增至`WebSocketOriginPatterns`。繫結至其他位址（例如容器中的`0.0.0.0`）不受影響。

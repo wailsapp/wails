@@ -1,37 +1,39 @@
 ---
 title: "API-Referenz"
-description: "Vollständige API-Dokumentation für Wails v3"
+description: "Wails-Typen, -Methoden, -Optionen und CLI-Befehle nachschlagen"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## Über diese Referenz
 
-Dies ist die vollständige API-Referenz für Wails v3. Sie dokumentiert alle öffentlichen Typen, Methoden und Optionen des Frameworks.
+In diesem Abschnitt können Sie beim Arbeiten an einer Anwendung Wails-Typen, -Methoden, -Optionen und -Befehle nachschlagen. Wenn Sie eine schrittweise Einführung benötigen, beginnen Sie mit den [Tutorials](/tutorials/overview/). Anleitungen zum Ausführen einer Aufgabe finden Sie in den [Praxisanleitungen](/quick-start/next-steps/#features). Hintergrundinformationen zum Design finden Sie unter [Kernkonzepte](/concepts/architecture/).
 
 **Gliederung:**
 
-- [Anwendung](/reference/application/) – Kern-APIs der Anwendung
-- [Fenster](/reference/window/) – Erstellen und Verwalten von Fenstern
-- [Menüs](/reference/menu/) – Anwendungs-, Kontext- und Infobereichsmenüs
+- [Anwendung](/reference/application/) – Zentrale Anwendungs-APIs
+- [Fenster](/reference/window/) – Erstellen und Verwalten von Fenstern; unter [Fensteroptionen](/features/windows/options/) sind die Konfigurationsfelder aufgeführt
+- [Menü](/reference/menu/) – APIs für Anwendungsmenüs, Kontextmenüs und den Infobereich; die [Menüelementreferenz](/features/menus/reference/) beschreibt Elementtypen und Eigenschaften
 - [Ereignisse](/reference/events/) – Ereignissystem und integrierte Ereignisse
-- [Dialogfelder](/reference/dialogs/) – Datei- und Meldungsdialogfelder
+- [Dialoge](/reference/dialogs/) – Datei- und Meldungsdialoge
 - [Frontend-Laufzeit](/reference/frontend-runtime/) – APIs der Frontend-Laufzeit
-- [CLI](/reference/cli/) – Befehlszeilenschnittstelle
+- [Übersicht der CLI-Befehle](/reference/cli/) – Nach Zweck gruppierte Befehle; [Flags und Beispiele](/guides/cli/) enthält Details zu den einzelnen Befehlen
+- [Protokoll für Aktualisierungsmanifeste](/reference/update-manifest/) – Aktualisierungsmetadaten und Prüffelder
+- [Mobile API](/guides/mobile/mobile-api/) – Experimentelle APIs für Mobilgeräte
 
 ## API-Konventionen
 
-@details{title="Go-API-Konventionen – Für Entwickler, die neu in Go sind"}
+@details{title="Konventionen der Go-API – Für Entwickler, die mit Go noch nicht vertraut sind"}
 ### Benennung
 
-- <strong></strong>Typen<strong></strong>: PascalCase (z. B. `WebviewWindow`)
-- <strong></strong>Methoden<strong></strong>: PascalCase (z. B. `SetTitle()`)
-- <strong></strong>Optionen<strong></strong>: Structs in PascalCase (z. B. `WindowOptions`)
-- <strong></strong>Konstanten<strong></strong>: PascalCase (z. B. `WindowStartStateMaximised`)
+- <strong>Typen</strong>: PascalCase (z. B. `WebviewWindow`)
+- <strong>Methoden</strong>: PascalCase (z. B. `SetTitle()`)
+- <strong>Optionen</strong>: Structs in PascalCase (z. B. `WindowOptions`)
+- <strong>Konstanten</strong>: PascalCase (z. B. `WindowStartStateMaximised`)
 
 #### Fehlerbehandlung
 
-Die meisten Methoden, die fehlschlagen können, geben `error` als letzten Rückgabewert zurück. `app.Run()` blockiert, bis die Anwendung beendet wird, und gibt etwaige Startfehler zurück:
+Die meisten Methoden, die fehlschlagen können, geben als letzten Rückgabewert `error` zurück. `app.Run()` blockiert, bis die Anwendung beendet wird, und gibt etwaige Startfehler zurück:
 
 ```go
 if err := app.Run(); err != nil {
@@ -43,7 +45,7 @@ Das Erstellen eines Fensters gibt keinen Fehler zurück – `app.Window.New()` g
 
 #### Kontext
 
-Methoden für den Lebenszyklus von Diensten erhalten einen `context.Context`:
+Methoden des Dienstlebenszyklus erhalten einen `context.Context`:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -52,7 +54,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-Der Lebenszeitkontext der Anwendung ist über `app.Context()` verfügbar. `RunWithContext` ist nicht vorhanden – rufen Sie `app.Run()` auf.
+Der Kontext für die Lebensdauer der Anwendung ist über `app.Context()` verfügbar. Es gibt kein `RunWithContext` – rufen Sie `app.Run()` auf.
 
 #### Optionsmuster
 
@@ -155,9 +157,9 @@ import { MyMethod } from './bindings/MyService'
 import { Events, Window } from '@wailsio/runtime'
 ```
 
-## Typreferenz
+## Typenreferenz
 
-### Häufig verwendete Typen
+### Allgemeine Typen
 
 @tabs{sync-key="lang"}
 [Go]
@@ -213,35 +215,35 @@ Einige APIs verhalten sich je nach Plattform unterschiedlich:
 | **Anwendungsmenü** | Fenstermenüleiste | Globale Menüleiste | Fenstermenüleiste |
 | **Infobereich** | Benachrichtigungsbereich | Menüleiste | Infobereich |
 | **Dock** | Nicht verfügbar | ✅ Verfügbar | Nicht verfügbar |
-| **Dateidialogfelder** | Nativ | Nativ | Nativ (GTK) |
+| **Dateidialoge** | Nativ | Nativ | Nativ (GTK) |
 | **Transparenz** | ✅ Vollständig | Erfordert [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) | ⚠️ Eingeschränkt |
 
 Plattformspezifisches Verhalten ist im jeweiligen API-Abschnitt dokumentiert.
 
 ## Versionierung
 
-Wails v3 folgt der semantischen Versionierung:
+Wails v3 verwendet semantische Versionierung:
 
-- **Hauptversion** (v3.x.x): Inkompatible Änderungen
-- **Nebenversion** (v3.x.x): Neue, abwärtskompatible Funktionen
-- **Patchversion** (v3.x.x): Abwärtskompatible Fehlerbehebungen
+- **Hauptversion** (v4.0.0): Inkompatible Änderungen
+- **Nebenversion** (v3.1.0): Neue Funktionen, abwärtskompatibel
+- **Patchversion** (v3.0.1): Fehlerbehebungen, abwärtskompatibel
 
-**Aktueller Status:** Beta (API stabil, weitere Verbesserungen laufen)
+**Wails v3.0.0:** Stabil
 
-## Richtlinie zur Kennzeichnung veralteter APIs
+## Richtlinie zur Abkündigung
 
 Wenn APIs als veraltet markiert werden:
 
-1. **In der Dokumentation gekennzeichnet** mit einem Hinweis auf den veralteten Status
+1. **In der Dokumentation gekennzeichnet**, einschließlich eines Hinweises zur Abkündigung
 2. **Alternative bereitgestellt**, einschließlich einer Migrationsanleitung
-3. **Wird vor der Entfernung noch 1 Hauptversion lang unterstützt**
+3. **Vor der Entfernung für 1 Hauptversion** weiter gepflegt
 4. **Compilerwarnungen** (soweit möglich)
 
 ## API-Stabilität
 
 ### Stabile APIs ✅
 
-Diese APIs sind stabil und für den produktiven Einsatz geeignet:
+Diese APIs sind stabil und können sicher in Produktionsumgebungen eingesetzt werden:
 
 - Zentrale Anwendungs-APIs
 - Fensterverwaltung
@@ -250,40 +252,40 @@ Diese APIs sind stabil und für den produktiven Einsatz geeignet:
 - Dateidialoge
 - Service-Bindings
 
-### Instabile APIs ⚠️
+### Experimentelle APIs ⚠️
 
-Diese APIs können sich vor der endgültigen Veröffentlichung noch ändern:
+Nur APIs, die ausdrücklich als experimentell dokumentiert sind, fallen nicht unter die stabile Kompatibilitätsgarantie für Desktop-Anwendungen:
 
-- Einige erweiterte Fensteroptionen
-- Plattformspezifische Funktionen
-- Experimentelle Funktionen
+- Android-Unterstützung
+- iOS-Unterstützung
+- Andere ausdrücklich als experimentell gekennzeichnete APIs
 
-Instabile APIs sind in der Dokumentation gekennzeichnet.
+Experimentelle APIs sind in der Dokumentation entsprechend gekennzeichnet.
 
 ## Hilfe erhalten
 
 ### Fragen zur API
 
-1. **Diese Referenz lesen** – vollständige API-Dokumentation
-2. **Beispiele ansehen** – [GitHub-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples)
+1. **Diese Referenz lesen** – Vollständige API-Dokumentation
+2. **Beispiele ansehen** – [GitHub-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Discord durchsuchen** – [Discord-Server](https://discord.gg/JDdSxwjhGf)
 4. **Die Community fragen** – Discord-Kanal #help
 
 ### API-Probleme melden
 
-Einen Fehler oder eine Unstimmigkeit gefunden?
+Einen Fehler oder eine Inkonsistenz gefunden?
 
 1. **Vorhandene Issues prüfen** – [GitHub-Issues](https://github.com/wailsapp/wails/issues)
 2. **Detaillierten Bericht erstellen** – Code, Fehlermeldung und Plattform angeben
-3. **Reproduktionsbeispiel bereitstellen** – minimales Beispiel, das das Problem veranschaulicht
+3. **Reproduktionsbeispiel bereitstellen** – Ein minimales Beispiel, das das Problem veranschaulicht
 
 ## Weiterführende Dokumentation
 
-- [Tutorials](/tutorials/overview/) – durch die Entwicklung realer Anwendungen lernen
-- [Anleitungen](/guides/architecture/) – aufgabenorientierte Anleitungen für häufige Szenarien
+- [Tutorials](/tutorials/overview/) – Durch das Erstellen echter Anwendungen lernen
+- [Anleitungen](/guides/architecture/) – Aufgabenorientierte Anleitungen für häufige Szenarien
 - [Funktionen](/features/windows/basics/) – Dokumentation der einzelnen Funktionen
-- [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) – ausführbare Codebeispiele auf GitHub
+- [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) – Funktionsfähige Codebeispiele auf GitHub
 
 ---
 
-**API durchsuchen:** Verwenden Sie die Navigation auf der linken Seite, um bestimmte APIs zu erkunden.
+**API durchsuchen:** Verwenden Sie die Navigation auf der linken Seite, um die einzelnen APIs zu erkunden.

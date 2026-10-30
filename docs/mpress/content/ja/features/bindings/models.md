@@ -1,17 +1,17 @@
 ---
 title: "データモデル"
-description: "Go と JavaScript の間で複雑なデータ構造をバインドします"
+description: "Go と JavaScript の間で複雑なデータ構造をバインドする"
 slug: "features/bindings/models"
 sourcePath: "features/bindings/models.md"
 ---
 
 ## データモデルのバインディング
 
-Wails は Go 構造体から<strong>JavaScript/TypeScript クラスを自動生成</strong>し、バックエンドとフロントエンドの間で複雑なデータを受け渡す際の完全な型安全性を実現します。Go 構造体を記述してバインディングを生成するだけで、コンストラクター、型注釈、JSDoc コメントを備えた、完全に型付けされたフロントエンドモデルを利用できます。
+Wails は、Go の構造体から**JavaScript/TypeScript クラスを自動生成し**、バックエンドとフロントエンドの間で複雑なデータを受け渡す際の完全な型安全性を提供します。Go の構造体を記述してバインディングを生成するだけで、コンストラクター、型注釈、JSDoc コメントを備えた、完全に型付けされたフロントエンドモデルを利用できます。
 
 ## クイックスタート
 
-**Go 構造体：**
+**Go の構造体：**
 
 ```go
 type User struct {
@@ -39,12 +39,18 @@ import { GetUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 const user = await GetUser(1)
-console.log(user.Name)  // Type-safe!
+console.log(user.name)  // Type-safe!
 ```
 
-<strong>これだけです！</strong>ブリッジ全体で完全な型安全性が確保されます。
+<strong>これだけです。</strong>ブリッジ全体で完全な型安全性が得られます。
 
 ## モデルの定義
+
+以下のモデルクラスはフィールドの構造を示すためのものです。これらの簡略化したクラスを変換コードとしてコピーするのではなく、実際に生成されたバインディングを使用してください。
+
+`time.Time`の場合、ジェネレーターのデフォルトは`-time-type=string`です。タイムスタンプをJavaScriptの`Date`値に変換する生成クラスには、`-time-type=Date`を使用してください。標準のJavaScript／クラステンプレートのビルドタスクでは`Date`が選択され、TypeScriptインターフェースのタスクでは`string`が維持されます。モードを変更する前に、生成されたタスクを確認してください。Goのタイムスタンプは、JSON内では引き続きRFC3339Nano文字列です。
+
+Dateモードでは、生成された変換ヘルパーがこれらの文字列を日付に変換します。`Object.assign`だけでは、この変換は行われません。文字列バインディングでは、Dateのメソッドを使用する前に、`new Date(timestamp)`でタイムスタンプを明示的に変換してください。
 
 ### 基本的な構造体
 
@@ -55,7 +61,7 @@ type Person struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 export class Person {
@@ -86,7 +92,7 @@ type User struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 export class User {
@@ -108,11 +114,11 @@ export class User {
 }
 ```
 
-JavaScript での<strong>フィールド名は JSON タグで制御します</strong>。
+JavaScript での**フィールド名は JSON タグによって制御されます**。
 
 ### カスタム JSON マーシャリング
 
-バインドされたメソッドの結果は、Go の標準`encoding/json`パッケージでマーシャリングされます。ポインターレシーバーで宣言された`MarshalJSON`メソッドが呼び出されるのは、マーシャリング対象の値がアドレス指定可能な場合に限られることに注意してください。つまり、返されたスライスの要素に対してはカスタムマーシャラーが呼び出されますが、値として返された構造体に対しては呼び出されません。
+バインドされたメソッドの結果は、Go の標準`encoding/json`パッケージでマーシャリングされます。ポインターレシーバーに宣言された`MarshalJSON`メソッドは、マーシャリング対象の値がアドレス指定可能な場合にのみ呼び出されることに注意してください。つまり、返されたスライスの要素ではカスタムマーシャラーが呼び出されますが、値として返された構造体では呼び出されない場合があります。
 
 ```go
 func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -131,7 +137,7 @@ func (s *UserService) GetUsers() []User {
 }
 ```
 
-一貫した出力を確保するには、その型を安全にコピーできる場合は値レシーバーに`MarshalJSON`を定義するか、構造体へのポインター（たとえば`*User`）を返してください。これは Wails のバインディング生成による違いではなく、Go の`encoding/json`の動作です。
+一貫した出力を確保するには、その型を安全にコピーできる場合は値レシーバーに`MarshalJSON`を定義するか、構造体へのポインター（たとえば`*User`）を返してください。これは Wails のバインディング生成の違いではなく、Go の`encoding/json`の動作です。
 
 ### コメントを使用する
 
@@ -149,7 +155,7 @@ type User struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 /**
@@ -176,7 +182,7 @@ export class User {
 }
 ```
 
-<strong>コメントが JSDoc になります！</strong>IDE にその内容が表示されます。
+<strong>コメントは JSDoc になります。</strong>IDE にコメントが表示されます。
 
 ### ネストされた構造体
 
@@ -194,7 +200,7 @@ type User struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 export class Address {
@@ -243,7 +249,7 @@ type Team struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 export class Team {
@@ -272,7 +278,7 @@ type Config struct {
 }
 ```
 
-**生成された JavaScript：**
+**JavaScriptの例：**
 
 ```javascript
 export class Config {
@@ -300,26 +306,26 @@ const config = new Config({
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
 ### 複合型
 
-| Go の型 | JavaScript/TypeScript | 備考 |
+| Go の型 | JavaScript/TypeScript | 注記 |
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | 文字列をキーとするマップ |
-| `map[K]V` | `{ [_ in K]?: V }` | 文字列以外の`K`は、JS の`Map`では<strong>なく</strong>、マップ型としてレンダリングされます |
+| `map[K]V` | `{ [_ in K]?: V }` | 文字列以外の`K`は、JS の`Map`では**なく**、マップ型としてレンダリングされる |
 | `[]byte` | `string` | base64 エンコード済み |
-| `struct` | `class` / `interface` | フィールドあり |
-| `time.Time` | `any` | ランタイムでは RFC3339Nano 形式の文字列としてシリアル化 |
-| `*T` | `T \| null` | ポインターの場合は null 許容 |
+| `struct` | `class` / `interface` | フィールドを持つ |
+| `time.Time` | `string`（デフォルト）または`Date` | `-time-type`で生成される表現を選択する。JSON では RFC3339Nano 文字列を使用する |
+| `*T` | `T \| null` | ポインターは null 許容を意味する |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 戻り値の場合は Exception、それ以外は any |
+| `error` | `any` / `Exception` | 戻り値の場合は例外、それ以外は any |
 
 ### サポートされていない型
 
@@ -400,8 +406,10 @@ await UpdateUser(user)
 
 ### 生成される TypeScript
 
+このセクションでは、Date 変換を伴うクラスバインディングについて説明します。通常の`-ts`コマンドでは、ジェネレーターのデフォルトである文字列表現が維持されます。表示しているクラスは簡略化されています。ジェネレーターは変換ヘルパーも生成します。
+
 ```bash
-wails3 generate bindings -ts
+wails3 generate bindings -ts -time-type=Date
 ```
 
 **生成結果：**
@@ -465,13 +473,13 @@ async function example() {
     // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
-    console.log(user.createdAt.getTime()) // ✅ Date method
+    console.log(user.createdAt.getTime()) // Date mode selected above
 }
 ```
 
 ## 高度なパターン
 
-### 任意フィールド
+### オプションフィールド
 
 ```go
 type User struct {
@@ -498,7 +506,7 @@ if (user.nickname) {
 
 ### 列挙型
 
-バインディングジェネレーターは、定数を持つ Go の名前付き型を自動的に検出し、TypeScript の列挙型または JavaScript の const オブジェクトを生成します。これには、Go のゼロ値に対応する `$zero` メンバーと、完全に保持された JSDoc も含まれます。
+バインディングジェネレーターは、定数を持つ Go の名前付き型を自動検出し、TypeScript の列挙型または JavaScript の const オブジェクトを生成します。これには、Go のゼロ値に対応する`$zero`メンバーと、完全に保持された JSDoc も含まれます。
 
 ```go
 type UserRole string
@@ -532,7 +540,7 @@ const admin = new User({
 })
 ```
 
-文字列列挙型、整数列挙型、型エイリアス、インポートしたパッケージの列挙型、および制限事項について詳しくは、専用の<strong>[列挙型](/features/bindings/enums/)</strong>ページを参照してください。
+文字列列挙型、整数列挙型、型エイリアス、インポートしたパッケージの列挙型、および制限事項についての包括的な説明は、専用の<strong>[列挙型](/features/bindings/enums/)</strong>ページを参照してください。
 
 ### 検証
 
@@ -557,7 +565,7 @@ const invalid = new User({ name: "", email: "invalid" })
 invalid.validate()  // ❌ Throws
 ```
 
-### シリアル化
+### シリアライズ
 
 ```javascript
 // To JSON
@@ -691,7 +699,7 @@ class UserManager {
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
                 <p>${user.address.city}, ${user.address.country}</p>
-                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+                <small>Created: ${new Date(user.createdAt).toLocaleDateString()}</small>
             </div>
         `).join('')
     }
@@ -705,49 +713,49 @@ manager.loadUsers()
 
 ### ✅ 推奨事項
 
-- **JSON タグを使用する** — フィールド名を制御できます
-- **コメントを追加する** — JSDoc に変換されます
-- **time.Time を使用する** — Date に変換されます
-- **Go 側で検証する** — フロントエンドを信用しないでください
-- **モデルをシンプルに保つ** — データコンテナーとしてのみ使用してください
-- **任意フィールドにはポインターを使用する** — null 許容には `*string` を使用してください
+- **JSON タグを使用する** - フィールド名を制御できます
+- **コメントを追加する** - JSDoc に変換されます
+- **時刻の表現を選択する** - `time.Time`はデフォルトで`string`になります。`-time-type=Date`を使用すると、生成される Date 変換が有効になります
+- **Go 側で検証する** - フロントエンドを信用しないでください
+- **モデルをシンプルに保つ** - データコンテナーとしてのみ使用してください
+- **オプション項目にはポインターを使用する** - null 許容には`*string`を使用します
 
-### ❌ 禁止事項
+### ❌ 非推奨事項
 
-- **Go の構造体にメソッドを追加しない** — データとして扱ってください
-- **非公開フィールドを使用しない** — バインドされません
-- **複雑なインターフェースを使用しない** — サポートされていません
-- **JSON タグを付け忘れない** — フィールド名は重要です
-- **深くネストしすぎない** — シンプルに保ってください
+- **Go 構造体にメソッドを追加しない** - データとして維持してください
+- **非公開フィールドを使用しない** - バインドされません
+- **複雑なインターフェースを使用しない** - サポートされていません
+- **JSON タグを付け忘れない** - フィールド名は重要です
+- **ネストを深くしすぎない** - シンプルに保ってください
 
 ## 次のステップ
 
 @cards{cols="2"}
-🚀 メソッドのバインディング
+🚀 メソッドバインディング
 Go メソッドをバインドする方法を学びます。
 
-[詳しく見る →](/features/bindings/methods/)
+[詳細を見る →](/features/bindings/methods/)
 
 ---
 ◆ サービス
 サービスを使用してコードを整理します。
 
-[詳しく見る →](/features/bindings/services/)
+[詳細を見る →](/features/bindings/services/)
 
 ---
 ✓ ベストプラクティス
-バインディングの設計パターンを学びます。
+バインディングの設計パターン。
 
-[詳しく見る →](/features/bindings/best-practices/)
+[詳細を見る →](/features/bindings/best-practices/)
 
 ---
 ★ Go とフロントエンドのブリッジ
 ブリッジの仕組みを理解します。
 
-[詳しく見る →](/concepts/bridge/)
+[詳細を見る →](/concepts/bridge/)
 
 @end
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)を確認してください。
+**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)を確認してください。
