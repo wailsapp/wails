@@ -171,6 +171,8 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
+	warnIfWebKitSandboxBlocked(parent)
+
 	appID, err := applicationID(parent.options)
 	if err != nil {
 		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
