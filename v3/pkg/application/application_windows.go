@@ -358,7 +358,8 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 
 	// If this was the last window...
 	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {
-		w32.PostQuitMessage(0)
+		// Quit through destroy so the shutdown hooks run, matching Linux.
+		m.destroy()
 	}
 }
 
