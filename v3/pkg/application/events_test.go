@@ -8,7 +8,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/require"
 )
 
 type mockNotifier struct {
@@ -29,7 +29,7 @@ func (m *mockNotifier) Reset() {
 }
 
 func Test_EventsOn(t *testing.T) {
-	i := is.New(t)
+	i := require.New(t)
 	notifier := &mockNotifier{}
 	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 
@@ -63,7 +63,7 @@ func Test_EventsOn(t *testing.T) {
 }
 
 func Test_EventsOnce(t *testing.T) {
-	i := is.New(t)
+	i := require.New(t)
 	notifier := &mockNotifier{}
 	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 
@@ -100,7 +100,7 @@ func Test_EventsOnce(t *testing.T) {
 
 }
 func Test_EventsOnMultiple(t *testing.T) {
-	i := is.New(t)
+	i := require.New(t)
 	notifier := &mockNotifier{}
 	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 

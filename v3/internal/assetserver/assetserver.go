@@ -1,7 +1,6 @@
 package assetserver
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net"
@@ -66,7 +65,7 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 }
 
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	debugEnabled := a.options.Logger.Enabled(context.Background(), slog.LevelDebug)
+	debugEnabled := a.options.Logger.Enabled(req.Context(), slog.LevelDebug)
 	var start time.Time
 	if debugEnabled {
 		start = time.Now()
@@ -74,7 +73,7 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	wrapped := newContentTypeSniffer(rw)
 	defer func() {
 		if _, err := wrapped.complete(); err != nil {
-			a.options.Logger.Error("Error writing response data.", "uri", req.RequestURI, "error", err)
+			a.options.Logger.ErrorContext(req.Context(), "Error writing response data.", "uri", req.RequestURI, "error", err)
 		}
 	}()
 
@@ -82,7 +81,7 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	a.handler.ServeHTTP(wrapped, req)
 
 	if debugEnabled {
-		a.options.Logger.Debug(
+		a.options.Logger.DebugContext(req.Context(),
 			"Asset Request:",
 			"windowName", req.Header.Get(webViewRequestHeaderWindowName),
 			"windowID", req.Header.Get(webViewRequestHeaderWindowId),

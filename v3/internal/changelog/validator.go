@@ -58,14 +58,13 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 		Errors: []ValidationError{},
 	}
 
-	lines := strings.Split(content, "\n")
 	var currentSection string
 	var hasValidSections bool
 	var inExampleSection bool
 	var comments commentBlock
 	lineNum := 0
 
-	for _, line := range lines {
+	for line := range strings.SplitSeq(content, "\n") {
 		lineNum++
 		trimmedLine := strings.TrimSpace(line)
 
@@ -129,8 +128,8 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 				continue
 			}
 
-			if matches := v.bulletPointRegex.FindStringSubmatch(trimmedLine); len(matches) > 1 {
-				content := strings.TrimSpace(matches[1])
+			if v.bulletPointRegex.MatchString(trimmedLine) {
+				content := strings.TrimSpace(trimmedLine[1:])
 				if content == "" {
 					result.Valid = false
 					result.Errors = append(result.Errors, ValidationError{

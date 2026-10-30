@@ -147,6 +147,10 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 		{"percent/escaped-URI-code", "Exec=wails%%Umanager\n", file, "wails%Umanager", file},
 		{"percent/repeated-escape", "Exec=wails%%%%fmanager\n", file, "wails%%fmanager", file},
 		{"percent/mixed-field", "Exec=wails-test-manager --select=%%%f\n", uriFile, "wails-test-manager", "--select=%" + uriFile},
+		{"quoted/executable", "Exec=\"/opt/My File Manager/files\" %f\n", file, "/opt/My File Manager/files", file},
+		{"quoted/unbalanced", "Exec=\"manager\n", file, "xdg-open", root},
+		{"quoted/empty-executable", "Exec=\"\" %f\n", file, "xdg-open", root},
+		{"quoted/argument", "Exec=wails-test-manager \"open window\"\n", "open window", "wails-test-manager", "open window"},
 		{"valid/file", "Exec=wails-test-manager %f\n", file, "wails-test-manager", file},
 		{"valid/directory", "Exec=wails-test-manager %f\n", root, "wails-test-manager", root},
 		{"root/absolute-command", "Exec=/usr/bin/wails-test-manager\n", "/", "/usr/bin/wails-test-manager", "/"},
@@ -175,4 +179,14 @@ func TestExplorerBinArgsDesktopCommand(t *testing.T) {
 			}
 		})
 	}
+	t.Run("quoted empty argument", func(t *testing.T) {
+		content := "[Desktop Entry]\nExec=wails-test-manager \"\" %f\n"
+		if err := os.WriteFile(filepath.Join(applications, "wails-test.desktop"), []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+		bin, args, err := explorerBinArgs(context.Background(), file, true)
+		if err != nil || bin != "wails-test-manager" || !slices.Equal(args, []string{"", file}) {
+			t.Errorf("empty argument lost: %q %q, %v", bin, args, err)
+		}
+	})
 }

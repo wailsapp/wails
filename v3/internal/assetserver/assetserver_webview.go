@@ -178,19 +178,13 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	req.URL.Fragment = ""
 	req.URL.RawFragment = ""
 
-	if requestURL := req.URL; req.RequestURI == "" && requestURL != nil {
-		req.RequestURI = requestURL.String()
-	}
+	req.RequestURI = req.URL.RequestURI()
 
 	req.Header = header
 
 	if req.RemoteAddr == "" {
 		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
 		req.RemoteAddr = "192.0.2.1:1234"
-	}
-
-	if req.RequestURI == "" && req.URL != nil {
-		req.RequestURI = req.URL.String()
 	}
 
 	if req.ContentLength == 0 {

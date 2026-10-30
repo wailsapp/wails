@@ -39,8 +39,9 @@ tasks:
     deps:
       - install-deps
     cmds:
+      - node --test check-cycles.test.mjs
       - node typecheck.mjs
-      - npx madge --circular output/
+      - node check-cycles.mjs output/
 
   install-deps:
     internal: true

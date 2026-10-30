@@ -417,3 +417,41 @@ func TestUpdaterVerifyECDSAP256(t *testing.T) {
 		t.Fatal("ecdsa-p256 verify passed on tampered artifact")
 	}
 }
+
+func TestUpdaterGenKeyForceRestrictsPrivatePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix private-key permissions")
+	}
+	for _, mode := range []os.FileMode{0644, 0666} {
+		t.Run(mode.String(), func(t *testing.T) {
+			keyPath := filepath.Join(t.TempDir(), "updater.key")
+			if err := os.WriteFile(keyPath, []byte("old key"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Chmod(keyPath, mode); err != nil {
+				t.Fatal(err)
+			}
+			if err := UpdaterGenKey(&UpdaterGenKeyOptions{Out: keyPath, Force: true}); err != nil {
+				t.Fatal(err)
+			}
+			info, err := os.Stat(keyPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := info.Mode().Perm(); got != 0600 {
+				t.Errorf("private key mode=%#o, want 0600", got)
+			}
+			priv, err := loadUpdaterPrivateKey(keyPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			pub, err := loadUpdaterPublicKey(keyPath + ".pub")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !priv.Public().(ed25519.PublicKey).Equal(pub) {
+				t.Error("regenerated keypair does not match")
+			}
+		})
+	}
+}
