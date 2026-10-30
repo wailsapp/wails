@@ -1,7 +1,6 @@
 package assetserver
 
 import (
-	"bytes"
 	"context"
 	"embed"
 	"errors"
@@ -12,11 +11,17 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 const (
-	indexHTML = "index.html"
+	indexHTML               = "index.html"
+	assetFileCopyBufferSize = 32 * 1024
 )
+
+var assetFileCopyBuffers = sync.Pool{
+	New: func() any { return new([assetFileCopyBufferSize]byte) },
+}
 
 type assetFileServer struct {
 	fs  iofs.FS
@@ -48,7 +53,7 @@ func (d *assetFileServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	err := d.err
 	if err == nil {
-		filename := path.Clean(strings.TrimPrefix(url, "/"))
+		filename := path.Clean(strings.TrimLeft(url, "/"))
 		d.logInfo(ctx, "Handling request", "url", url, "file", filename)
 		err = d.serveFSFile(rw, req, filename)
 		if os.IsNotExist(err) {
@@ -114,20 +119,20 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 		return fmt.Errorf("a file has been requested with a trailing slash, please remove the trailing slash from your request")
 	}
 
-	var buf [512]byte
-	var n int
+	var prefix []byte
 	if _, haveType := rw.Header()[HeaderContentType]; !haveType {
-		// Detect MimeType by sniffing the first 512 bytes
-		n, err = file.Read(buf[:])
-		if err != nil && err != io.EOF {
-			return err
+		contentType := mimetypeByExtension(filename)
+		if contentType == "" {
+			// Only unknown extensions require reading a MIME sniffing prefix.
+			prefix = make([]byte, 512)
+			n, err := io.ReadFull(file, prefix)
+			if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+				return err
+			}
+			prefix = prefix[:n]
+			contentType = http.DetectContentType(prefix)
 		}
-
-		// Do the custom MimeType sniffing even though http.ServeContent would do it in case
-		// of an io.ReadSeeker. We would like to have a consistent behaviour in both cases.
-		if contentType := GetMimetype(filename, buf[:n]); contentType != "" {
-			rw.Header().Set(HeaderContentType, contentType)
-		}
+		rw.Header().Set(HeaderContentType, contentType)
 	}
 
 	if fileSeeker, _ := file.(io.ReadSeeker); fileSeeker != nil {
@@ -140,15 +145,29 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 	}
 
 	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+	if req.Method == http.MethodHead {
+		rw.WriteHeader(http.StatusOK)
+		return nil
+	}
 
 	// Write the first 512 bytes used for MimeType sniffing
-	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))
-	if err != nil {
-		return err
+	if len(prefix) > 0 {
+		written, err := rw.Write(prefix)
+		if err != nil {
+			return err
+		}
+		if written != len(prefix) {
+			return io.ErrShortWrite
+		}
 	}
 
 	// Copy the remaining content of the file
-	_, err = io.Copy(rw, file)
+	buffer := assetFileCopyBuffers.Get().(*[assetFileCopyBufferSize]byte)
+	defer assetFileCopyBuffers.Put(buffer)
+	_, err = io.CopyBuffer(rw, file, buffer[:])
+	if err == nil {
+		rw.WriteHeader(http.StatusOK)
+	}
 	return err
 }
 

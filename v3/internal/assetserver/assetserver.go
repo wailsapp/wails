@@ -1,10 +1,13 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -33,6 +36,11 @@ type AssetServer struct {
 }
 
 func NewAssetServer(options *Options) (*AssetServer, error) {
+	if options.Logger == nil {
+		config := *options
+		config.Logger = slog.New(slog.DiscardHandler)
+		options = &config
+	}
 	result := &AssetServer{
 		options: options,
 	}
@@ -58,7 +66,11 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 }
 
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	start := time.Now()
+	debugEnabled := a.options.Logger.Enabled(context.Background(), slog.LevelDebug)
+	var start time.Time
+	if debugEnabled {
+		start = time.Now()
+	}
 	wrapped := newContentTypeSniffer(rw)
 	defer func() {
 		if _, err := wrapped.complete(); err != nil {
@@ -69,15 +81,17 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
 	a.handler.ServeHTTP(wrapped, req)
 
-	a.options.Logger.Debug(
-		"Asset Request:",
-		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
-		"windowID", req.Header.Get(webViewRequestHeaderWindowId),
-		"code", wrapped.status,
-		"method", req.Method,
-		"path", req.URL.EscapedPath(),
-		"duration", time.Since(start),
-	)
+	if debugEnabled {
+		a.options.Logger.Debug(
+			"Asset Request:",
+			"windowName", req.Header.Get(webViewRequestHeaderWindowName),
+			"windowID", req.Header.Get(webViewRequestHeaderWindowId),
+			"code", wrapped.status,
+			"method", req.Method,
+			"path", req.URL.EscapedPath(),
+			"duration", time.Since(start),
+		)
+	}
 }
 
 func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userHandler http.Handler) {
@@ -109,7 +123,13 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			fallback: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				// Set content type for default index.html
 				header.Set(HeaderContentType, "text/html; charset=utf-8")
-				a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
+				blob := defaultIndexHTML(acceptLanguage)
+				if req.Method == http.MethodHead {
+					header.Set(HeaderContentLength, strconv.Itoa(len(blob)))
+					rw.WriteHeader(http.StatusOK)
+					return
+				}
+				a.writeBlob(rw, indexHTML, blob)
 			}),
 		}
 		userHandler.ServeHTTP(wrapped, req)
@@ -118,7 +138,6 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		// Check if the path matches a service route
 		for _, svc := range a.services {
 			if strings.HasPrefix(reqPath, svc.Route) {
-				req.URL.Path = strings.TrimPrefix(reqPath, svc.Route)
 				svc.Handler.ServeHTTP(rw, req)
 				return
 			}
@@ -130,7 +149,7 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 }
 
 func (a *AssetServer) AttachServiceHandler(route string, handler http.Handler) {
-	a.services = append(a.services, service{route, handler})
+	a.services = append(a.services, service{route, http.StripPrefix(route, handler)})
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
@@ -147,8 +166,9 @@ func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 }
 
 func GetStartURL(userURL string) (string, error) {
+	requestBaseURL := baseURL
 	devServerURL := GetDevServerURL()
-	startURL := baseURL.String()
+	startURL := requestBaseURL.String()
 	if devServerURL != "" {
 		// Parse the port
 		parsedURL, err := url.Parse(devServerURL)
@@ -157,13 +177,13 @@ func GetStartURL(userURL string) (string, error) {
 		}
 		port := parsedURL.Port()
 		if port != "" {
-			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
-			startURL = baseURL.String()
+			requestBaseURL.Host = net.JoinHostPort(requestBaseURL.Hostname(), port)
+			startURL = requestBaseURL.String()
 		}
 	}
 
 	if userURL != "" {
-		parsedURL, err := baseURL.Parse(userURL)
+		parsedURL, err := requestBaseURL.Parse(userURL)
 		if err != nil {
 			return "", fmt.Errorf("error parsing URL: %w", err)
 		}

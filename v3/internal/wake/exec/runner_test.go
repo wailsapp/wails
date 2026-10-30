@@ -24,21 +24,21 @@ func TestCheckPreconditionsExpandsTemplates(t *testing.T) {
 	}
 
 	t.Run("unset var resolves to true and passes", func(t *testing.T) {
-		if err := checkPreconditions(newTask(), map[string]*ast.Var{}); err != nil {
+		if err := checkPreconditions(newTask(), map[string]*ast.Var{}, ""); err != nil {
 			t.Fatalf("expected precondition to pass when OBFUSCATED is unset, got: %v", err)
 		}
 	})
 
 	t.Run("non-true var resolves to true and passes", func(t *testing.T) {
 		vars := map[string]*ast.Var{"OBFUSCATED": {Value: "false"}}
-		if err := checkPreconditions(newTask(), vars); err != nil {
+		if err := checkPreconditions(newTask(), vars, ""); err != nil {
 			t.Fatalf("expected precondition to pass when OBFUSCATED is false, got: %v", err)
 		}
 	})
 
 	t.Run("true var runs the guard and reports msg on failure", func(t *testing.T) {
 		vars := map[string]*ast.Var{"OBFUSCATED": {Value: "true"}}
-		err := checkPreconditions(newTask(), vars)
+		err := checkPreconditions(newTask(), vars, "")
 		if err == nil {
 			t.Fatal("expected precondition to fail when OBFUSCATED is true and the tool is missing")
 		}

@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Generate Go-to-frontend bindings. Flags: `-d` (output dir), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emit `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`, `-obfuscated` (generate `wails_obfuscated.gen.go` with stable binding IDs for Garble builds; see [Obfuscated Builds](/guides/build/obfuscation/)), `-obfuscated-output` (directory for the generated file; defaults to the main package directory). Accepts package patterns (e.g. `./...`); falls back to the current directory if none given. |
 | `generate icons` | Convert a source PNG into the platform icon formats. Flags: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Generate the `build/` directory contents (Taskfile snippets, NSIS files, `Info.plist`, `.desktop` template, etc.) from `build/config.yml`. |
-| `generate runtime` | Regenerate the pre-built `/wails/runtime.js` shipped to the webview. |
+| `generate runtime` | Export the CLI's embedded production/debug JavaScript bundles (`-d` selects the destination). |
 | `generate syso` | Generate the Windows `.syso` resource file (icon + manifest + version info). |
 | `generate webview2bootstrapper` | Generate a WebView2 bootstrap installer for Windows. |
 | `generate constants` | Generate JS event-name constants from Go event types. |

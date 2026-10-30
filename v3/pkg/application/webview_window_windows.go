@@ -708,11 +708,14 @@ func (w *windowsWebviewWindow) center() {
 }
 
 func (w *windowsWebviewWindow) disableSizeConstraints() {
+	// Startup fullscreen bypasses the public Fullscreen method, so save here too.
+	w.parent.saveSizeConstraintOptions()
 	w.setMaxSize(0, 0)
 	w.setMinSize(0, 0)
 }
 
 func (w *windowsWebviewWindow) enableSizeConstraints() {
+	w.parent.restoreSavedSizeConstraintOptions()
 	options := w.parent.options
 	if options.MinWidth > 0 || options.MinHeight > 0 {
 		w.setMinSize(options.MinWidth, options.MinHeight)
