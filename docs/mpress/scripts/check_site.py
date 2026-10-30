@@ -92,14 +92,15 @@ def check_page(page, site, repository, errors):
         errors.append(relative + ": D2 diagram was displayed as source code")
     if page.unrendered_fence:
         errors.append(relative + ": Markdown code fence was displayed as prose")
-    if relative == "404.html":
+    if page.path.name == "404.html":
         return
     expected = SITE_URL + route(page.path, site)
     if page.canonical != expected:
         errors.append(relative + ": incorrect canonical " + page.canonical)
     if page.source:
         source = (repository / page.source).resolve()
-        if not source.is_relative_to(repository / "docs/mpress/content") or not source.is_file():
+        historical = relative.startswith("versions/") or (site / "documentation-release.json").is_file()
+        if not source.is_relative_to(repository / "docs/mpress/content") or (not historical and not source.is_file()):
             errors.append(relative + ": invalid contribution source " + page.source)
 
 
@@ -129,14 +130,34 @@ def check_translation_routes(site, pages, errors):
         if page.lang != "en" or path.name == "404.html":
             continue
         relative = path.relative_to(site)
+        view = site
+        if relative.parts[0] == "versions" and len(relative.parts) > 2:
+            view = site / "versions" / relative.parts[1]
+            relative = path.relative_to(view)
         if relative.parts[0] in LANGUAGES:
             errors.append(relative.as_posix() + ": English fallback in a translated route")
             continue
         for language in LANGUAGES:
-            translated = site / language / relative
+            translated = view / language / relative
             target = pages.get(translated)
             if target is None or target.lang != language:
                 errors.append(translated.relative_to(site).as_posix() + ": missing translated page")
+
+
+def check_search_indexes(site, errors):
+    for index in site.rglob("search-index.json"):
+        relative = index.relative_to(site)
+        prefix = "/"
+        if relative.parts[0] == "versions":
+            prefix = "/versions/" + relative.parts[1] + "/"
+        try:
+            for entry in json.loads(index.read_text()):
+                url = entry["url"]
+                target = (site / url.lstrip("/")).resolve()
+                if not url.startswith(prefix) or not target.is_relative_to(site) or not (target / "index.html").is_file():
+                    errors.append(relative.as_posix() + ": invalid search result " + url)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            errors.append(relative.as_posix() + ": invalid search index: " + str(exc))
 
 
 def check_knowledge_assets(site, errors):
@@ -195,6 +216,7 @@ def main():
     for name in ["search-index.json", "sitemap.xml", "robots.txt", "llms.txt"]:
         if not (site / name).is_file():
             errors.append("Missing generated asset: " + name)
+    check_search_indexes(site, errors)
     check_knowledge_assets(site, errors)
     check_rss_feed(site, pages, errors)
     for source, target in aliases.items():

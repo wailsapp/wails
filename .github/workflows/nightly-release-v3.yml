@@ -204,6 +204,12 @@ jobs:
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
 
+    - name: Install pinned documentation renderer
+      run: |
+        test -f docs/mpress/scripts/release_docs.py
+        bash docs/mpress/scripts/install_mpress.sh "$RUNNER_TEMP/mpress"
+        echo "MPRESS_BIN=$RUNNER_TEMP/mpress/mpress" >> "$GITHUB_ENV"
+
     - name: Release gate (weekly)
       # Runs from the tested snapshot. Fails without tagging when a blocker exists. Nightlies
       # never run the gate. Needs WAILS_REPO_TOKEN with the scopes listed in
@@ -395,8 +401,9 @@ jobs:
             # dependency and lockfile updates merged to master since then.
             git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
             (cd v3/tasks/release && go run release.go --sync-runtime-version "$TAG")
-            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json"
-            git commit -m "chore(v3): sync version to ${TAG}"
+            python3 docs/mpress/scripts/release_docs.py register --version "$TAG"
+            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json" docs/mpress/releases.json
+            git commit -m "chore(v3): sync version and documentation to ${TAG}"
           else
             git cherry-pick -x "${TAG}^{commit}"
           fi
@@ -405,6 +412,20 @@ jobs:
         done
         echo "::error::could not sync ${TAG} back to master; version.txt on master is now behind the tag"
         exit 1
+
+    - name: Capture stable documentation from the release tag
+      if: steps.release.outputs.release_prerelease == 'false' && steps.release.outputs.release_dry_run == 'false'
+      env:
+        RELEASE_TAG: ${{ steps.release.outputs.release_tag }}
+      run: python3 docs/mpress/scripts/release_docs.py snapshot --version "$RELEASE_TAG" --output "$RUNNER_TEMP/documentation-release"
+
+    - name: Store stable documentation artifact
+      if: steps.release.outputs.release_prerelease == 'false' && steps.release.outputs.release_dry_run == 'false'
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: documentation-${{ steps.release.outputs.release_tag }}
+        path: ${{ runner.temp }}/documentation-release/
+        if-no-files-found: error
 
     - name: Summary
       if: always()

@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from check_site import Page, check_links, check_page, check_translation_routes, check_knowledge_assets, check_rss_feed
+from check_site import Page, check_links, check_page, check_translation_routes, check_knowledge_assets, check_rss_feed, check_search_indexes
 
 
 class SiteChecks(unittest.TestCase):
@@ -95,11 +95,28 @@ class SiteChecks(unittest.TestCase):
         self.assertFalse(literal.unrendered_fence)
 
     def test_every_english_route_requires_all_translations(self):
-        page = self.page("guide/index.html", '<html lang="en"><p>English</p>')
+        for prefix in ["", "versions/nightly/", "versions/v3.0.0/"]:
+            with self.subTest(view=prefix):
+                page = self.page(prefix + "guide/index.html", '<html lang="en"><p>English</p>')
+                errors = []
+                check_translation_routes(self.site, {page.path: page}, errors)
+                self.assertEqual(len(errors), 9)
+                self.assertIn(prefix + "fr/guide/index.html: missing translated page", errors)
+                self.assertFalse(any("fr/versions/" in error for error in errors))
+
+    def test_search_results_cannot_leave_the_selected_version(self):
+        index = self.site / "versions/nightly/search-index.json"
+        index.parent.mkdir(parents=True)
+        self.page("guide/index.html", "Stable")
+        index.write_text('[{"url": "/guide/"}]')
         errors = []
-        check_translation_routes(self.site, {page.path: page}, errors)
-        self.assertEqual(len(errors), 9)
-        self.assertIn("fr/guide/index.html: missing translated page", errors)
+        check_search_indexes(self.site, errors)
+        self.assertEqual(errors, ["versions/nightly/search-index.json: invalid search result /guide/"])
+        self.page("versions/nightly/guide/index.html", "Nightly")
+        index.write_text('[{"url": "/versions/nightly/guide/"}]')
+        errors = []
+        check_search_indexes(self.site, errors)
+        self.assertEqual(errors, [])
 
     def test_knowledge_artifacts_follow_manifest_paths(self):
         directory = self.site / "knowledge"

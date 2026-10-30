@@ -66,3 +66,8 @@ translation:
   glossary: docs/mpress/translation/glossary.yaml
   styleGuide: docs/mpress/translation/style-guide.md
   stateDir: docs/mpress/translation/state
+
+versioning:
+  enabled: true
+  current: nightly
+  artifactsDir: .mpress/versions

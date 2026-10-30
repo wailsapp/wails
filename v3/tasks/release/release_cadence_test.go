@@ -230,6 +230,9 @@ func dryRun(t *testing.T, current string, opts releaseOptions, withChangelog boo
 	old := nowUTC
 	nowUTC = func() time.Time { return day(2026, time.November, 2) }
 	defer func() { nowUTC = old }()
+	if opts.prepareDocs == nil {
+		opts.prepareDocs = func(string, bool) error { return nil }
+	}
 	opts.dryRun = true
 	opts.branch, opts.target = defaultReleaseBranch, defaultReleaseTarget
 	err := runRelease(opts)

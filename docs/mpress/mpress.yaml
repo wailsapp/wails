@@ -66,3 +66,8 @@ translation:
   glossary: translation/glossary.yaml
   styleGuide: translation/style-guide.md
   stateDir: translation/state
+
+versioning:
+  enabled: true
+  current: nightly
+  artifactsDir: .mpress/versions

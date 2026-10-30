@@ -6,6 +6,11 @@ on:
   push:
     paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
   workflow_dispatch:
+    inputs:
+      snapshot_version:
+        description: 'Optional existing stable tag to archive (for example v3.0.0)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -16,15 +21,37 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_dispatch' || inputs.snapshot_version == ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-      - name: Build and validate with latest M-Press
+        with:
+          fetch-depth: 0
+      - name: Build and validate stable and nightly documentation
         run: bash docs/mpress/scripts/build.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: wails-v3-docs
           path: docs/mpress/site/
+          if-no-files-found: error
+
+  snapshot:
+    if: github.event_name == 'workflow_dispatch' && inputs.snapshot_version != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Generate an archive from the existing stable tag
+        env:
+          SNAPSHOT_VERSION: ${{ inputs.snapshot_version }}
+        run: |
+          bash docs/mpress/scripts/install_mpress.sh "$RUNNER_TEMP/mpress"
+          python3 docs/mpress/scripts/release_docs.py snapshot --mpress "$RUNNER_TEMP/mpress/mpress" --version "$SNAPSHOT_VERSION" --output "$RUNNER_TEMP/documentation-release"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: documentation-${{ inputs.snapshot_version }}
+          path: ${{ runner.temp }}/documentation-release/
           if-no-files-found: error
 
   automation:
