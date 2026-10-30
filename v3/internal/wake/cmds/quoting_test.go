@@ -31,7 +31,7 @@ func TestRoutePreservesTestPattern(t *testing.T) {
 	if !ok {
 		t.Fatal("expected native Go test command")
 	}
-	if command.Opts.Run != `^Test\w+$` {
-		t.Errorf("test pattern = %q, want original regex", command.Opts.Run)
+	if want := []string{"-run", `^Test\w+$`}; !reflect.DeepEqual(command.Opts.Extra, want) {
+		t.Errorf("test arguments = %q, want %q", command.Opts.Extra, want)
 	}
 }

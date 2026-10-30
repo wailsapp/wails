@@ -47,11 +47,11 @@ func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string,
 		"%f", path, "%F", path, "%u", uri, "%U", uri,
 	)
 	// Split before expanding so whitespace in a selected path stays in one argument.
-	fields := strings.Fields(entry.Exec)
+	fields := splitDesktopExec(entry.Exec)
 	args := fields[:0]
 	targetExpanded := false
 	for _, field := range fields {
-		if expanded := fieldCodes.Replace(field); expanded != "" {
+		if expanded := fieldCodes.Replace(field); expanded != "" || field == "" {
 			args = append(args, expanded)
 			// Escaped percent signs do not introduce file or URI placeholders.
 			unescapedCodes := strings.ReplaceAll(field, "%%", "")

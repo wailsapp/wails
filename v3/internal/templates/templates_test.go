@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -9,6 +10,28 @@ import (
 	"testing/fstest"
 	texttemplate "text/template"
 )
+
+func BenchmarkCommonModuleTemplate(b *testing.B) {
+	source, err := templates.ReadFile("_common/go.mod.tmpl")
+	if err != nil {
+		b.Fatal(err)
+	}
+	data := map[string]string{
+		"ModulePath": "example.com/project", "WailsVersion": "v3.0.0-dev",
+		"LocalModulePath": "../wails/",
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		module, err := texttemplate.New("go.mod").Parse(string(source))
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := module.Execute(io.Discard, data); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
 
 // --- parseTemplate ---
 

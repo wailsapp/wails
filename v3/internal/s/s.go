@@ -517,21 +517,46 @@ func REPLACEALL(filename string, substitutions Sub) {
 
 func DOWNLOAD(url string, target string) {
 	log("DOWNLOAD %s -> %s", url, target)
-	// create HTTP client
+	checkError(downloadFile(url, target))
+}
+
+// Return errors before DOWNLOAD exits, so staging cleanup can finish first.
+func downloadFile(url string, target string) error {
 	resp, err := http.Get(url)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		checkError(fmt.Errorf("download %s: unexpected HTTP status %s", url, resp.Status))
+		return fmt.Errorf("download %s: unexpected HTTP status %s", url, resp.Status)
 	}
 
-	out, err := os.Create(target)
-	checkError(err)
+	// A private sibling directory keeps staging on the destination filesystem.
+	staging, err := os.MkdirTemp(filepath.Dir(target), ".wails-download-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(staging)
+	staged := filepath.Join(staging, "download")
+	out, err := os.OpenFile(staged, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		return err
+	}
 	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	checkError(err)
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return err
+	}
+	if info, err := os.Stat(target); err == nil {
+		if err := out.Chmod(info.Mode().Perm()); err != nil {
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := out.Close(); err != nil {
+		return err
+	}
+	return os.Rename(staged, target)
 }
 
 func FINDFILES(root string, filenames ...string) []string {

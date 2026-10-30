@@ -55,12 +55,12 @@ func contextWithLogger(ctx context.Context, logger *slog.Logger) context.Context
 
 func logInfo(ctx context.Context, message string, args ...interface{}) {
 	if logger, _ := ctx.Value(assetServerLoggerKey).(*slog.Logger); logger != nil {
-		logger.Info(message, args...)
+		logger.InfoContext(ctx, message, args...)
 	}
 }
 
 func logError(ctx context.Context, message string, args ...interface{}) {
 	if logger, _ := ctx.Value(assetServerLoggerKey).(*slog.Logger); logger != nil {
-		logger.Error(message, args...)
+		logger.ErrorContext(ctx, message, args...)
 	}
 }

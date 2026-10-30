@@ -12,16 +12,18 @@ func TestReleaseNotesResponses(t *testing.T) {
 		status  int
 		payload string
 		want    string
+		wantErr bool
 	}{
-		{"success", 200, `{"body":"Useful release notes"}`, "Useful release notes"},
-		{"missing_release", 404, `{"message":"Not Found"}`, "No release notes found"},
-		{"rate_limit", 403, `{"message":"API rate limit exceeded"}`, "HTTP 403 (Forbidden)"},
-		{"too_many_requests", 429, `{"message":"Too many requests"}`, "HTTP 429 (Too Many Requests)"},
-		{"server_error", 500, `<html>Server error</html>`, "HTTP 500 (Internal Server Error)"},
-		{"error_with_body", 502, `{"body":"Not actual release notes"}`, "HTTP 502 (Bad Gateway)"},
-		{"missing_body", 200, `{}`, "No release notes found"},
-		{"null_body", 200, `{"body":null}`, "No release notes found"},
-		{"invalid_body", 200, `{"body":123}`, "Unable to retrieve release notes"},
+		{"success", 200, `{"body":"Useful release notes"}`, "# Release Notes for v3.0.0\nUseful release notes", false},
+		{"empty_body", 200, `{"body":""}`, "# Release Notes for v3.0.0\n", false},
+		{"missing_release", 404, `{"message":"Not Found"}`, "No release notes found", true},
+		{"rate_limit", 403, `{"message":"API rate limit exceeded"}`, "HTTP 403 (Forbidden)", true},
+		{"too_many_requests", 429, `{"message":"Too many requests"}`, "HTTP 429 (Too Many Requests)", true},
+		{"server_error", 500, `<html>Server error</html>`, "HTTP 500 (Internal Server Error)", true},
+		{"error_with_body", 502, `{"body":"Not actual release notes"}`, "HTTP 502 (Bad Gateway)", true},
+		{"missing_body", 200, `{}`, "No release notes found", true},
+		{"null_body", 200, `{"body":null}`, "No release notes found", true},
+		{"invalid_body", 200, `{"body":123}`, "Unable to retrieve release notes", true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -34,7 +36,13 @@ func TestReleaseNotesResponses(t *testing.T) {
 				}
 				return &http.Response{StatusCode: tc.status, Body: body, Header: make(http.Header)}, nil
 			})}
-			got := GetReleaseNotes("v3.0.0", true)
+			got, err := GetReleaseNotes("v3.0.0")
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("error = %v, want error %v", err, tc.wantErr)
+			}
+			if err != nil {
+				got = err.Error()
+			}
 			if !strings.Contains(got, tc.want) {
 				t.Errorf("got %q, want %q", got, tc.want)
 			}

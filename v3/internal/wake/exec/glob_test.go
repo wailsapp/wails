@@ -68,10 +68,14 @@ func TestClassifyGoCmd(t *testing.T) {
 		{"go build -o bin/app", goCmdBuild},
 		{`go build -o "path with spaces/app"`, goCmdBuild},
 		{"go mod tidy", goCmdModTidy},
+		{"go mod tidy -diff", goCmdNone},
+		{"go mod tidy -compat=1.25", goCmdNone},
 		{"go test ./...", goCmdNone},
 		{"npm install", goCmdNone},
 		{"GOOS=darwin go build", goCmdNone}, // env prefix not stripped here; classifier expects clean cmd
 		{"go build && echo done", goCmdNone},
+		{"go build *.go", goCmdNone},
+		{`go build "[ab]*.go"`, goCmdBuild},
 		{"go mod tidy > tidy.log", goCmdNone},
 		{`go build -o "unterminated`, goCmdNone},
 	}

@@ -354,7 +354,7 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 
 	// Copy the executable
 	executableDest := filepath.Join(outputDir, filepath.Base(options.ExecutableName))
-	if err := copyFile(options.ExecutablePath, executableDest); err != nil {
+	if err := copyFile(options.ExecutablePath, executableDest, 0644); err != nil {
 		return fmt.Errorf("error copying executable: %w", err)
 	}
 
@@ -438,8 +438,8 @@ func generatePlaceholderImage(outputPath string) error {
 	return os.WriteFile(outputPath, data.Bytes(), 0644)
 }
 
-// copyFile copies a file from src to dst
-func copyFile(src, dst string) (err error) {
+// copyFile streams src to dst, using mode when creating a destination.
+func copyFile(src, dst string, mode os.FileMode) (err error) {
 	source, err := os.Open(src)
 	if err != nil {
 		return err
@@ -453,8 +453,13 @@ func copyFile(src, dst string) (err error) {
 		return fmt.Errorf("cannot copy directory %q", src)
 	}
 
+	// A zero mode requests permissions from the same open file being copied.
+	if mode == 0 {
+		mode = sourceInfo.Mode().Perm()
+	}
+
 	// Check file identity before truncating, including symlink/hard-link aliases.
-	target, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE, 0644)
+	target, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE, mode)
 	if err != nil {
 		return err
 	}
