@@ -1,7 +1,7 @@
 ---
 title: "Go でデスクトップアプリを構築"
 description: "Go と Web 技術を使用したネイティブデスクトップアプリケーション"
-banner: {"content":"Wails v3 は現在ベータ版です。\u003ca href=\"https://v2.wails.io\"\u003ev2 のドキュメントをお探しですか？\u003c/a\u003e\n"}
+banner: {"content": "Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 <a href=\"https://v2.wails.io\">v2 のドキュメントをお探しですか？</a>\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"はじめる","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"チュートリアルを見る","variant":"secondary"}],"image":{"alt":"Wails のロゴ","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go と最新の Web 技術を使用して、美しく高性能なアプリケーションを構築できます。1 つのコードベース。3 つのプラットフォーム。ブラウザー不要。*"}
 sourcePath: "index.md"
@@ -119,7 +119,7 @@ sourcePath: "index.md"
 
 @terminal{frame="macos" prompt="none"}
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard (experimental)
 wails3 setup
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 次のステップ
 
-次は、[完全なアプリケーションを構築する](/tutorials/03-notes-vanilla/)、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を見る、または[API リファレンス](/reference/application/)を確認してください。v2 から移行する場合は、[アップグレードガイド](/migration/v2-to-v3/)を参照してください。
+次は、[完全なアプリケーションを構築する](/tutorials/03-notes-vanilla/)、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を見る、または[API リファレンス](/reference/application/)を確認してください。v2 から移行する場合は、[アップグレードガイド](/migration/v2-to-v3/)を参照してください。
 
-@note{type="info" title="Wails v3 ベータ版"}
-Wails v3 は、安定したデスクトップ API を備えたベータ版ソフトウェアです。すでに本番環境で使用しているチームもありますが、私たちが3.0に向けた最終調整を進めている間は、デプロイ前に十分なテストを行うことをお勧めします。
+@note{type="info" title="Wails v3.0.0"}
+Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 Android と iOS のサポートは引き続き実験的であり、安定版デスクトップの互換性保証の対象外です。
 
 @end
 

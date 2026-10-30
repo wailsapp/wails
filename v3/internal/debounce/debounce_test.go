@@ -13,6 +13,19 @@ const (
 	waitFor = 300 * time.Millisecond
 )
 
+func TestCallbackCanScheduleNext(t *testing.T) {
+	debounced := New(0)
+	done := make(chan struct{})
+	debounced(func() {
+		debounced(func() { close(done) })
+	})
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("callback could not schedule the next invocation")
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Basic: single call fires after duration
 // ---------------------------------------------------------------------------

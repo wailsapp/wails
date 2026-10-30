@@ -3,9 +3,9 @@ version: '3'
 
 tasks:
   setup:
-    summary: Install the pinned M-Press CLI with embedded D2
+    summary: Install the latest stable M-Press CLI with embedded D2
     cmds:
-      - go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+      - go install github.com/leaanthony/mpress/cmd/mpress@latest
 
   dev:
     summary: Preview the Wails v3 documentation

@@ -5,7 +5,7 @@ sourcePath: "getting-started/setup.md"
 ---
 
 @note{type="caution" title="Experimentell"}
-Der Einrichtungsassistent ist neu und wurde hauptsächlich unter Linux getestet. Wenn Probleme auftreten, [melden Sie sie](https://github.com/wailsapp/wails/issues/4904) und führen Sie stattdessen die [Schritte zur manuellen Installation](/getting-started/installation/#platform-specific-dependencies) aus.
+Der Einrichtungsassistent ist neu und wurde hauptsächlich unter Linux getestet. Wenn Probleme auftreten, [melden Sie sie](https://github.com/wailsapp/wails/issues/4904) bitte und führen Sie stattdessen die Schritte zur [manuellen Installation](/getting-started/installation/#platform-specific-dependencies) aus.
 
 @end
 
@@ -13,7 +13,7 @@ Der Einrichtungsassistent ist neu und wurde hauptsächlich unter Linux getestet.
 
 ```bash
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard
 wails3 setup
@@ -28,24 +28,24 @@ wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 ```
 
-## Funktionsumfang
+## Funktionsweise
 
-- **Prüft Abhängigkeiten** – Überprüft Go, npm und plattformspezifische Werkzeuge
-- **Konfiguriert Standardeinstellungen** – Autoreninformationen, Bundle-ID-Präfix und bevorzugte Vorlagen
+- **Prüft Abhängigkeiten** – Überprüft Go, npm und die plattformspezifischen Werkzeuge
+- **Konfiguriert Standardeinstellungen** – Angaben zum Autor, Bundle-ID-Präfix und bevorzugte Vorlagen
 - **Plattformübergreifende Builds** – Optionale Docker-Einrichtung für Builds auf jedem Hostsystem
 - **Codesignierung** – Optionale Einrichtung für macOS, Windows und Linux
 
-Die Konfiguration wird unter `~/.config/wails/config.yaml` gespeichert und von `wails3 init` verwendet.
+Die Konfiguration wird in `$XDG_CONFIG_HOME/wails/defaults.yaml` gespeichert, wobei ersatzweise `~/.config/wails/defaults.yaml` verwendet wird, und von `wails3 init` genutzt. Sie ist von der Datei `build/config.yml` eines Projekts getrennt.
 
 ## Unterbefehle
 
 ```bash
-wails3 setup signing      # Configure code signing
-wails3 setup entitlements # Configure macOS entitlements
+wails3 signing      # Configure code signing
+wails3 entitlements # Configure macOS entitlements
 ```
 
 ## Probleme?
 
 1. Führen Sie `wails3 doctor` aus, um Probleme zu diagnostizieren
-2. Führen Sie die [Schritte zur manuellen Installation](/getting-started/installation/#platform-specific-dependencies) aus
-3. [Melden Sie das Problem](https://github.com/wailsapp/wails/issues/4904) und fügen Sie die Ausgabe von `wails3 doctor` bei
+2. Führen Sie die Schritte zur [manuellen Installation](/getting-started/installation/#platform-specific-dependencies) aus
+3. [Melden Sie das Problem](https://github.com/wailsapp/wails/issues/4904) zusammen mit der Ausgabe von `wails3 doctor`

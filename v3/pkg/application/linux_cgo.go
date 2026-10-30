@@ -118,12 +118,6 @@ func activateLinux(data pointer) {
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data pointer) {
 	event := newApplicationEvent(events.ApplicationEventType(eventID))
-
-	switch event.Id {
-	case uint(events.Linux.SystemThemeChanged):
-		isDark := globalApplication.Env.IsDarkMode()
-		event.Context().setIsDarkMode(isDark)
-	}
 	applicationEvents <- event
 }
 
@@ -1240,6 +1234,18 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
 	C.webkit_user_script_unref(linuxBlobBodyShim)
 	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
+	// Drop reserved wails: messages posted from child frames (GHSA-2p5f-2gx8-mh8m).
+	childFrameGuardSource := C.CString(linuxChildFrameGuardJS)
+	childFrameGuard := C.webkit_user_script_new(
+		childFrameGuardSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, childFrameGuard)
+	C.webkit_user_script_unref(childFrameGuard)
+	C.free(unsafe.Pointer(childFrameGuardSource))
 	// WebKitGTK 6.0: register_script_message_handler signature changed
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"), nil)
 
@@ -1493,8 +1499,9 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1 {
-		zoom = 1
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.gdouble(zoom))
 }

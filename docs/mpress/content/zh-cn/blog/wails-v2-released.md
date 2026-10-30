@@ -21,24 +21,24 @@ sourcePath: "blog/wails-v2-released.md"
 
 ## Wails<em>是什么</em>？
 
-如果你不熟悉 Wails，它是一个让 Go 程序员能够使用熟悉的 Web 技术，为自己的 Go 程序构建丰富前端的项目。它是 Electron 的轻量级 Go 替代方案。你可以在[官方网站](https://wails.io/docs/introduction)上找到更多信息。
+如果你不熟悉 Wails，它是一个让 Go 程序员能够使用熟悉的 Web 技术，为自己的 Go 程序构建丰富前端的项目。它是 Electron 的轻量级 Go 替代方案。你可以在[官方网站](https://v2.wails.io/docs/introduction)上找到更多信息。
 
 ## 有哪些新变化？
 
 v2 版本是这个项目的一次巨大飞跃，解决了 v1 的许多痛点。如果你尚未阅读有关 [macOS](/blog/wails-v2-beta-for-mac/)、[Windows](/blog/wails-v2-beta-for-windows/) 或 [Linux](/blog/wails-v2-beta-for-linux/) Beta 版本的博文，我建议你读一读，其中更详细地介绍了所有重大变化。简而言之：
 
 - 面向 Windows 的 WebView2 组件，支持现代 Web 标准和调试功能。
-- Windows 上的[深色/浅色主题](https://wails.io/docs/reference/options#theme)和[自定义主题](https://wails.io/docs/reference/options#customtheme)。
+- Windows 上的[深色/浅色主题](https://v2.wails.io/docs/reference/options#theme)和[自定义主题](https://v2.wails.io/docs/reference/options#customtheme)。
 - Windows 现在不再需要 CGO。
 - 开箱即用地支持 Svelte、Vue、React、Preact、Lit 和 Vanilla 项目模板。
 - 集成[Vite](https://vitejs.dev/)，为应用提供支持热重载的开发环境。
-- 原生应用[菜单](https://wails.io/docs/guides/application-development#application-menu)和[对话框](https://wails.io/docs/reference/runtime/dialog)。
-- 为[Windows](https://wails.io/docs/reference/options#windowistranslucent)和[macOS](https://wails.io/docs/reference/options#windowistranslucent-1)提供原生窗口半透明效果。支持 Mica 和 Acrylic 背景材质。
-- 可轻松生成用于 Windows 部署的[NSIS 安装程序](https://wails.io/docs/guides/windows-installer)。
-- 功能丰富的[运行时库](https://wails.io/docs/reference/runtime/intro)，为窗口操作、事件处理、对话框、菜单和日志记录提供实用方法。
-- 支持使用[garble](https://github.com/burrowers/garble)对应用进行[混淆](https://wails.io/docs/guides/obfuscated)。
+- 原生应用[菜单](https://v2.wails.io/docs/guides/application-development#application-menu)和[对话框](https://v2.wails.io/docs/reference/runtime/dialog)。
+- 为[Windows](https://v2.wails.io/docs/reference/options#windowistranslucent)和[macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1)提供原生窗口半透明效果。支持 Mica 和 Acrylic 背景材质。
+- 可轻松生成用于 Windows 部署的[NSIS 安装程序](https://v2.wails.io/docs/guides/windows-installer)。
+- 功能丰富的[运行时库](https://v2.wails.io/docs/reference/runtime/intro)，为窗口操作、事件处理、对话框、菜单和日志记录提供实用方法。
+- 支持使用[garble](https://github.com/burrowers/garble)对应用进行[混淆](https://v2.wails.io/docs/guides/obfuscated)。
 - 支持使用[UPX](https://upx.github.io/)压缩应用。
-- 根据 Go 结构体自动生成 TypeScript。更多信息请参阅[此处](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)。
+- 根据 Go 结构体自动生成 TypeScript。更多信息请参阅[此处](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods)。
 - 无论在哪个平台，都无需随应用一起分发额外的库或 DLL。
 - 无需打包前端资源。像开发任何其他 Web 应用一样开发你的应用即可。
 

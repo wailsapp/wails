@@ -7,8 +7,8 @@ import (
 )
 
 type StructDeclaration struct {
-	Name   string         `parser:"'typedef' 'struct' @Ident '{' "`
-	Fields []*StructField `parser:" (@@)+ '}' Ident ';'"`
+	Name   string
+	Fields []*StructField
 
 	// private
 	decl *Declaration
@@ -44,8 +44,8 @@ func (d *StructDeclaration) Generate(packageName string, w io.Writer) error {
 }
 
 type StructField struct {
-	Type string `parser:"@('UINT32' | 'BOOL' | 'BYTE')"`
-	Name string `parser:"@Ident ';'"`
+	Type string
+	Name string
 
 	// process
 	GoType string

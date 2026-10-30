@@ -1,12 +1,17 @@
 name: Changelog publication tests
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable commit to test
+        required: true
+        type: string
   pull_request:
     paths:
       - 'v3/scripts/*changelog*.py'
-      - '.github/workflows/auto-changelog-v3.yml'
-      - '.github/workflows/nightly-release-v3.yml'
-      - '.github/workflows/changelog-publication-tests.yml'
+      - '.github/workflows/**'
+      - '.github/scripts/test_release_ci.py'
 
 permissions:
   contents: read
@@ -17,6 +22,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
       - name: Test competing pushes and release evidence
         run: python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'
+      - name: Install workflow test dependency
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ci-test-venv"
+          "$RUNNER_TEMP/ci-test-venv/bin/pip" install PyYAML==6.0.3
+      - name: Test CI scope, release gating, and competing pushes
+        run: |
+          "$RUNNER_TEMP/ci-test-venv/bin/python" .github/scripts/test_release_ci.py

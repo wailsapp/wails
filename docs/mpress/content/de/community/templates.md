@@ -12,7 +12,7 @@ Diese Seite ist möglicherweise für Wails v3 veraltet.
 
 <!-- TODO: Update this link -->
 
-Diese Seite enthält eine Liste von Vorlagen, die von der Community unterstützt werden. Informationen zum Erstellen einer eigenen Vorlage finden Sie im Leitfaden zu [Vorlagen](https://wails.io/docs/guides/templates).
+Diese Seite enthält eine Liste von Vorlagen, die von der Community unterstützt werden. Informationen zum Erstellen einer eigenen Vorlage finden Sie im Leitfaden zu [Vorlagen](https://v2.wails.io/docs/guides/templates).
 
 @note{type="tip" title="Vorlage einreichen"}
 Klicken Sie unten auf `Edit this page`, um Ihre Vorlagen hinzuzufügen.

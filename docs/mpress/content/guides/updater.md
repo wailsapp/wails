@@ -338,7 +338,7 @@ app.Updater.Init(updater.Config{
 InitialHTML windows are loaded with no asset-server origin, so they can't dynamically fetch `/wails/runtime.js`. You have two ways to talk to the host from one:
 
 1. **Just write HTML.** The framework auto-injects a minimal `window.wails.Events` shim into any window opened with `WebviewWindowOptions.AllowSimpleEventEmit = true` and `HTML` set — which is exactly what the updater's builtin and BYO paths do. No build step required. This is the path the example below uses.
-2. **Bundle `@wailsio/runtime` with your preferred bundler** (Vite, esbuild, Rollup) and import it into your custom HTML at build time. `Events.On` works out of the box because it's purely client-side; `Events.Emit` goes through the runtime's fetch transport, which the null origin breaks — so install a tiny postMessage transport via the runtime's [`setTransport`](https://wails.io/wails/runtime.js) hook that routes through `window._wails.invoke("wails:event:emit:<name>")`. The framework injection no-ops if `window.wails.Events` is already in scope, so the two approaches don't fight.
+2. **Bundle `@wailsio/runtime` with your preferred bundler** (Vite, esbuild, Rollup) and import it into your custom HTML at build time. `Events.On` works out of the box because it's purely client-side; `Events.Emit` goes through the runtime's fetch transport, which the null origin breaks — so install a tiny postMessage transport via the runtime's [`setTransport`](/guides/custom-transport/) hook that routes through `window._wails.invoke("wails:event:emit:<name>")`. The framework injection no-ops if `window.wails.Events` is already in scope, so the two approaches don't fight.
 
 Either way, the JS you write in your custom HTML calls the same `Events.On` / `Events.Emit` API:
 
@@ -652,6 +652,6 @@ Before you publish a release that the updater will install:
 
 ## See also
 
-- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Test demo repo: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Adding self-updates to a Wails app](/tutorials/04-self-update-a-wails-app/)

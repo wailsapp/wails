@@ -26,9 +26,9 @@ const sampleReleaseJSON = `{
   "published_at": "2026-03-01T10:00:00Z",
   "html_url": "https://github.com/o/r/releases/tag/v2.0.0",
   "assets": [
-    {"id": 1, "name": "app-darwin-arm64.dmg", "content_type": "application/octet-stream", "size": 12345, "browser_download_url": "%s/dl/darwin-arm64"},
-    {"id": 2, "name": "app-linux-amd64.tar.gz", "content_type": "application/gzip", "size": 22222, "browser_download_url": "%s/dl/linux-amd64"},
-    {"id": 3, "name": "app-windows-amd64.zip", "content_type": "application/zip", "size": 33333, "browser_download_url": "%s/dl/windows-amd64"}
+    {"id": 1, "name": "app-darwin-arm64.dmg", "content_type": "application/octet-stream", "size": 12345, "url": "%s/dl/darwin-arm64"},
+    {"id": 2, "name": "app-linux-amd64.tar.gz", "content_type": "application/gzip", "size": 22222, "url": "%s/dl/linux-amd64"},
+    {"id": 3, "name": "app-windows-amd64.zip", "content_type": "application/zip", "size": 33333, "url": "%s/dl/windows-amd64"}
   ]
 }`
 
@@ -203,8 +203,8 @@ func TestCheck_ChecksumSidecar_PopulatesVerification(t *testing.T) {
 		  "published_at": "2026-03-01T10:00:00Z",
 		  "html_url": "",
 		  "assets": [
-		    {"id": 1, "name": "app-linux-amd64.tar.gz", "content_type": "application/gzip", "size": %d, "browser_download_url": "%s/dl/asset"},
-		    {"id": 2, "name": "SHA256SUMS", "content_type": "text/plain", "size": 64, "browser_download_url": "%s/dl/sums"}
+		    {"id": 1, "name": "app-linux-amd64.tar.gz", "content_type": "application/gzip", "size": %d, "url": "%s/dl/asset"},
+		    {"id": 2, "name": "SHA256SUMS", "content_type": "text/plain", "size": 64, "url": "%s/dl/sums"}
 		  ]
 		}`, len(body), host, host)
 	})

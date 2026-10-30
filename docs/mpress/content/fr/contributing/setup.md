@@ -1,6 +1,6 @@
 ---
 title: "Configuration de l’environnement de développement"
-description: "Configurez votre environnement pour le développement de Wails v3"
+description: "Configurez votre environnement de développement pour contribuer au développement de Wails v3"
 slug: "contributing/setup"
 sourcePath: "contributing/setup.md"
 ---
@@ -11,9 +11,9 @@ Ce guide vous accompagne dans la configuration d’un environnement de développ
 
 ## Outils requis
 
-### Développement avec Go
+### Développement en Go
 
-1. **Installez Go 1.25 ou une version ultérieure :**
+1. **Installez Go 1.26 ou une version ultérieure :**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -37,7 +37,7 @@ Ce guide vous accompagne dans la configuration d’un environnement de développ
 
 ### Node.js et npm
 
-Requis uniquement pour les exemples d’intégration avec le frontend.
+Requis uniquement pour les exemples d’intégration d’interfaces frontend.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -60,7 +60,7 @@ xcode-select -p  # Should output a path
 **Windows :**
 
 1. Installez [MSYS2](https://www.msys2.org/) pour disposer d’un environnement de type Unix
-2. WebView2 Runtime (préinstallé sur Windows 11, à [télécharger](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) pour Windows 10)
+2. WebView2 Runtime (préinstallé sur Windows 11 ; pour Windows 10, procédez au [téléchargement](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
 3. Facultatif : installez [Git for Windows](https://git-scm.com/download/win)
 
 **Linux (Debian/Ubuntu) :**
@@ -93,11 +93,11 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ## Configuration du dépôt
 
-### Clonage et configuration
+### Cloner et configurer
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -107,7 +107,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 git remote -v
 ```
 
-### Génération de la CLI Wails
+### Compiler la CLI Wails
 
 ```bash
 # Navigate to v3 directory
@@ -121,7 +121,7 @@ cd ..
 ./wails3 version
 ```
 
-### Ajout au PATH (facultatif)
+### Ajouter au PATH (facultatif)
 
 **Linux/macOS :**
 
@@ -169,9 +169,9 @@ Ajoutez le répertoire Wails à votre variable d’environnement PATH dans les p
   - Configurez le style du code conformément aux conventions du projet
 
 
-## Vérification de la configuration
+## Vérifier votre configuration
 
-Exécutez ces commandes pour vérifier que tout fonctionne :
+Exécutez les commandes suivantes pour vérifier que tout fonctionne :
 
 ```bash
 # Go version check
@@ -191,9 +191,9 @@ cd mytest
 ../wails3 dev
 ```
 
-Si l’application de test est générée et s’exécute correctement, votre environnement est prêt !
+Si l’application de test se compile et s’exécute, votre environnement est prêt !
 
-## Exécution des tests
+## Exécuter les tests
 
 ### Tests unitaires
 
@@ -203,7 +203,7 @@ go test ./...
 cd ..
 ```
 
-### Tests d’un paquet spécifique
+### Tests d’un paquet précis
 
 ```bash
 cd v3
@@ -211,7 +211,7 @@ go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
 
-### Exécution avec mesure de la couverture
+### Exécuter avec la mesure de couverture
 
 ```bash
 cd v3
@@ -219,36 +219,22 @@ go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 
-### Exécution avec le détecteur de situations de concurrence
+### Exécuter avec le détecteur de situations de concurrence
 
 ```bash
 cd v3
 go test ./... -race
 ```
 
-## Utilisation de la documentation
+## Travailler sur la documentation
 
-La documentation de Wails v3 est rédigée avec M-Press. Les fichiers sources en anglais se trouvent dans  
-`docs/mpress/content/` ; les traductions se trouvent dans des répertoires de langue tels que  
-`fr/` et `id/`.
+Les personnes qui contribuent à la documentation peuvent utiliser M-Press sans installer la CLI Wails ni les dépendances de compilation des applications de bureau. Consultez [Rédiger la documentation avec M-Press](/contributing/documentation/) pour connaître la procédure de téléchargement des exécutables aux versions épinglées, d’installation, d’aperçu en direct, de validation et de création des PR destinées aux branches de publication.
 
-Prévisualisez et validez les modifications apportées à la documentation depuis la racine du dépôt :
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-Le site de production est statique. Node.js, un fournisseur de traduction et des identifiants  
-Cloudflare ne sont pas requis pour travailler localement sur la documentation.
+Les fichiers Markdown en anglais se trouvent dans `docs/mpress/content/` ; les traductions se trouvent dans les répertoires propres à chaque langue. Depuis la racine du dépôt, `mpress dev` met l’aperçu à disposition à l’adresse `http://127.0.0.1:3000`. Arrêtez-le avec Ctrl+C avant d’exécuter les commandes de validation du guide.
 
 ## Débogage
 
-### Débogage du code Go
+### Déboguer le code Go
 
 **VS Code :**
 
@@ -278,23 +264,23 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 dlv debug ./cmd/wails3 -- dev
 ```
 
-### Débogage du code propre à chaque plateforme
+### Déboguer le code propre à chaque plateforme
 
-Le débogage propre à chaque plateforme nécessite les outils correspondants :
+Le débogage du code propre à une plateforme nécessite les outils correspondants :
 
 - **macOS :** Xcode Instruments
-- **Windows :** Débogueur de Visual Studio
+- **Windows :** Visual Studio Debugger
 - **Linux :** GDB
 
 ## Problèmes courants
 
-### "command not found: wails3"
+### « command not found: wails3 »
 
 Ajoutez le répertoire Wails à votre PATH ou utilisez `./wails3` depuis la racine du projet.
 
 ### « webkitgtk-6.0 not found » ou « webkit2gtk not found » (Linux)
 
-Installez les paquets de développement correspondant à la pile avec laquelle vous effectuez la compilation :
+Installez les paquets de développement correspondant à la pile pour laquelle vous compilez :
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -318,6 +304,6 @@ Vérifiez qu’un compilateur C (MinGW-w64 via MSYS2) est présent dans votre PA
 
 ## Étapes suivantes
 
-- Consultez les [normes de codage](/contributing/standards/)
-- Explorez la [documentation technique](/contributing/)
-- Trouvez un problème sur lequel travailler : [problèmes adaptés aux premières contributions](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Consultez les [Normes de codage](/contributing/standards/)
+- Explorez la [Documentation technique](/contributing/)
+- Trouvez un ticket sur lequel travailler : [Tickets pour débuter](https://github.com/wailsapp/wails/labels/good%20first%20issue)

@@ -129,10 +129,11 @@ func replaceFile(src, dst string) error {
 }
 
 // sameFileContent reports whether a and b are regular files with equal
-// content. Generated bindings are small, so a full read is fine.
+// content, without following symbolic links. Generated bindings are small,
+// so a full read is fine.
 func sameFileContent(a, b string) bool {
-	infoA, errA := os.Stat(a)
-	infoB, errB := os.Stat(b)
+	infoA, errA := os.Lstat(a)
+	infoB, errB := os.Lstat(b)
 	if errA != nil || errB != nil || !infoA.Mode().IsRegular() || !infoB.Mode().IsRegular() || infoA.Size() != infoB.Size() {
 		return false
 	}

@@ -34,7 +34,7 @@ Si vous disposez d’un correctif pour un bug ou d’une amélioration de la doc
 [Améliorations]
 Les nouvelles fonctionnalités et les modifications du comportement public doivent être proposées au moyen d’une pull request en brouillon contenant une **WEP (proposition d’amélioration de Wails)**, et non d’un problème de demande de fonctionnalité.
 
-- Consultez le [processus WEP](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Consultez le [processus WEP](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Copiez le modèle, puis ouvrez une PR en brouillon intitulée `[WEP] <title>` qui ne contient que la WEP et les documents à l’appui.
 - Vous pouvez commencer par discuter d’une idée de manière informelle dans les [discussions GitHub](https://github.com/wailsapp/wails/discussions) ou sur le canal Discord [#v3](https://discord.gg/bdj28QNHmT), mais une PR de WEP est requise pour qu’un responsable de maintenance prenne une décision.
 

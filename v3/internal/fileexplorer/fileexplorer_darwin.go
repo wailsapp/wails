@@ -2,9 +2,12 @@
 
 package fileexplorer
 
-import "syscall"
+import (
+	"context"
+	"syscall"
+)
 
-func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
+func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string, []string, error) {
 	args := []string{}
 	if selectFile {
 		args = append(args, "-R")

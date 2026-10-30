@@ -8,7 +8,32 @@ def incomplete_runs(runs, includes):
     # Closing an unmerged PR intentionally skips the workflow's only job.
     """Return unsuccessful runs whose commits belong to the release snapshot."""
     return [run for run in runs
-            if includes(run['head_sha']) and run['conclusion'] not in ('success', 'skipped')]
+            if run['conclusion'] not in ('success', 'skipped') and includes(run['head_sha'])]
+
+
+def make_includes(is_ancestor, merge_commits):
+    """Build the snapshot test for a changelog run's head commit.
+
+    Auto Changelog runs on pull_request_target, so head_sha is the PR branch
+    head. PRs are squash-merged and their branches deleted, so that commit is
+    usually neither in master's history nor fetchable. What belongs to the
+    release is the PR's merge commit, so fall back to it.
+
+    is_ancestor(sha) returns True/False, or None when Git does not have sha.
+    merge_commits(sha) returns the merge commits of merged PRs headed at sha.
+    """
+    def includes(sha):
+        direct = is_ancestor(sha)
+        if direct:
+            return True
+        merges = merge_commits(sha)
+        if merges:
+            return any(is_ancestor(merge) for merge in merges)
+        if direct is None:
+            # Unknown commit and no merged PR: fail closed rather than guess.
+            raise RuntimeError(f'Cannot determine whether changelog run commit {sha} is in this release')
+        return False
+    return includes
 
 
 def main():
@@ -24,14 +49,22 @@ def main():
     ], text=True)
     runs = [run for page in json.loads(output) for run in page['workflow_runs']]
 
-    def includes(sha):
-        """Check commit ancestry, failing closed when Git cannot establish it."""
-        result = subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'])
+    def is_ancestor(sha):
+        """Check commit ancestry; None when Git cannot establish it."""
+        result = subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'],
+                                stderr=subprocess.DEVNULL)
         if result.returncode not in (0, 1):
-            raise RuntimeError(f'Cannot determine whether changelog run commit {sha} is in this release')
+            return None
         return result.returncode == 0
 
-    missing = incomplete_runs(runs, includes)
+    def merge_commits(sha):
+        """Merge commits of the merged PRs whose head is sha."""
+        pulls = json.loads(subprocess.check_output(
+            ['gh', 'api', f'repos/{repo}/commits/{sha}/pulls'], text=True))
+        return [pr['merge_commit_sha'] for pr in pulls
+                if pr.get('merged_at') and pr.get('merge_commit_sha')]
+
+    missing = incomplete_runs(runs, make_includes(is_ancestor, merge_commits))
     if missing:
         for run in missing:
             print(f"Changelog run requires recovery: {run['html_url']} ({run['status']}/{run['conclusion']})")

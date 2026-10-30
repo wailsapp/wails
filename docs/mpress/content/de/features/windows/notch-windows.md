@@ -80,4 +80,4 @@ Persistente eingeklappte Oberflächen, die sich beim Darüberbewegen des Zeigers
 
 @end
 
-Siehe das [Beispiel für Notch-Benachrichtigungen](https://github.com/wailsapp/wails/tree/master/v3/examples/notch-notification) für einen kompakten Systemmonitor, dessen aktueller JavaScript-Zustand wiederholte Ein- und Ausblendzyklen der Benachrichtigung überdauert.
+Siehe das [Beispiel für Notch-Benachrichtigungen](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notch-notification) für einen kompakten Systemmonitor, dessen aktueller JavaScript-Zustand wiederholte Ein- und Ausblendzyklen der Benachrichtigung überdauert.

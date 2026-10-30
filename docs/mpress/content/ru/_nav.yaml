@@ -1,43 +1,72 @@
 - label: "Главная"
   link: "/"
-- label: "Почему Wails?"
-  link: "/quick-start/why-wails/"
-- label: "Быстрый старт"
+- label: "Начало работы"
   collapsed: false
   items:
+    - label: "Почему Wails?"
+      link: "/quick-start/why-wails/"
     - label: "Установка"
       link: "/quick-start/installation/"
     - label: "Ваше первое приложение"
       link: "/quick-start/first-app/"
     - label: "Следующие шаги"
       link: "/quick-start/next-steps/"
+    - label: "Миграция"
+      collapsed: true
+      items:
+        - label: "С v2 на v3"
+          link: "/migration/v2-to-v3/"
+        - label: "С Electron"
+          link: "/migration/from-electron/"
 - label: "Учебные руководства"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "Основные концепции"
+  items:
+    - label: "Выбор учебного руководства"
+      link: "/tutorials/overview/"
+    - label: "Сервис QR-кодов"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "Список задач"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "Заметки"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "Самообновляемое приложение"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "Ваше первое мобильное приложение (экспериментальная функция)"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "Практические руководства"
   collapsed: true
   items:
-    - label: "Как работает Wails"
-      link: "/concepts/architecture/"
-    - label: "API менеджера"
-      link: "/concepts/manager-api/"
-    - label: "Жизненный цикл приложения"
-      link: "/concepts/lifecycle/"
-    - label: "Мост между Go и фронтендом"
-      link: "/concepts/bridge/"
-    - label: "Система сборки"
-      link: "/concepts/build-system/"
-- label: "Возможности"
-  collapsed: true
-  items:
+    - label: "Вызовы Go, сервисы и данные"
+      collapsed: true
+      items:
+        - label: "Вызов Go из JavaScript"
+          link: "/features/bindings/methods/"
+        - label: "Сервисы"
+          link: "/features/bindings/services/"
+        - label: "Модели данных"
+          link: "/features/bindings/models/"
+        - label: "Перечисления"
+          link: "/features/bindings/enums/"
+        - label: "Расширенное связывание"
+          link: "/features/bindings/advanced/"
+        - label: "Рекомендации"
+          link: "/features/bindings/best-practices/"
+    - label: "События"
+      collapsed: true
+      items:
+        - label: "Система событий"
+          link: "/features/events/system/"
+        - label: "События приложения"
+          link: "/features/events/application/"
+        - label: "События окна"
+          link: "/features/events/window/"
+        - label: "Пользовательские события"
+          link: "/features/events/custom/"
     - label: "Окна"
       collapsed: true
       items:
         - label: "Основы работы с окнами"
           link: "/features/windows/basics/"
-        - label: "Параметры окна"
-          link: "/features/windows/options/"
         - label: "Окна с вырезом"
           link: "/features/windows/notch-windows/"
         - label: "Разрешения"
@@ -57,34 +86,6 @@
           link: "/features/menus/context/"
         - label: "Меню в системном трее"
           link: "/features/menus/systray/"
-        - label: "Справочник по меню"
-          link: "/features/menus/reference/"
-    - label: "Привязки & сервисы"
-      collapsed: true
-      items:
-        - label: "Привязка методов"
-          link: "/features/bindings/methods/"
-        - label: "Сервисы"
-          link: "/features/bindings/services/"
-        - label: "Модели данных"
-          link: "/features/bindings/models/"
-        - label: "Перечисления"
-          link: "/features/bindings/enums/"
-        - label: "Расширенная привязка"
-          link: "/features/bindings/advanced/"
-        - label: "Рекомендации"
-          link: "/features/bindings/best-practices/"
-    - label: "События"
-      collapsed: true
-      items:
-        - label: "Система событий"
-          link: "/features/events/system/"
-        - label: "События приложения"
-          link: "/features/events/application/"
-        - label: "События окна"
-          link: "/features/events/window/"
-        - label: "Пользовательские события"
-          link: "/features/events/custom/"
     - label: "Диалоговые окна"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "Пользовательские диалоговые окна"
           link: "/features/dialogs/custom/"
-    - label: "Автозапуск"
+    - label: "Интеграция с рабочим столом"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "Буфер обмена"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "Браузер"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "Перетаскивание & сброс"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "Клавиатура"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "Уведомления"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "Экраны"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "Окружение"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "Особенности платформ"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "Мобильные приложения"
-  collapsed: true
-  items:
-    - label: "Обзор"
-      link: "/guides/mobile/"
-    - label: "Ваше первое мобильное приложение"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "Мобильный API"
-      link: "/guides/mobile/mobile-api/"
-- label: "Экспериментальные возможности"
-  collapsed: true
-  items:
-    - label: "Обзор"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "Управление через LLM (MCP)"
-      link: "/guides/mcp-service/"
-- label: "Руководства"
-  collapsed: true
-  items:
+      items:
+        - label: "Автозапуск"
+          link: "/features/autostart/basics/"
+        - label: "Буфер обмена"
+          link: "/features/clipboard/basics/"
+        - label: "Интеграция с браузером"
+          link: "/features/browser/integration/"
+        - label: "Перетаскивание"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "Клавиатура"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "Уведомления"
+          link: "/features/notifications/overview/"
+        - label: "Экраны"
+          link: "/features/screens/info/"
+        - label: "Окружение"
+          link: "/features/environment/info/"
+        - label: "Панель Dock в macOS"
+          link: "/features/platform/dock/"
     - label: "Разработка"
       collapsed: true
       items:
@@ -168,7 +133,7 @@
           link: "/guides/dev/debugging/"
         - label: "Тестирование"
           link: "/guides/testing/"
-    - label: "Сборка & упаковка"
+    - label: "Сборка и упаковка"
       collapsed: true
       items:
         - label: "Сборка приложений"
@@ -205,7 +170,7 @@
     - label: "Шаблоны интеграции"
       collapsed: true
       items:
-        - label: "Маршрутизация фронтенда"
+        - label: "Маршрутизация во фронтенде"
           link: "/guides/routing/"
         - label: "Использование маршрутизатора Gin"
           link: "/guides/gin-routing/"
@@ -228,6 +193,37 @@
           link: "/guides/panic-handling/"
         - label: "Рекомендации по безопасности"
           link: "/guides/security/"
+    - label: "Мобильные платформы (экспериментальная функция)"
+      collapsed: true
+      items:
+        - label: "Обзор"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "Экспериментальные функции"
+      collapsed: true
+      items:
+        - label: "Обзор"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "Управление с помощью LLM (MCP)"
+          link: "/guides/mcp-service/"
+- label: "Основные концепции"
+  collapsed: true
+  items:
+    - label: "Как работает Wails"
+      link: "/concepts/architecture/"
+    - label: "API менеджера"
+      link: "/concepts/manager-api/"
+    - label: "Жизненный цикл приложения"
+      link: "/concepts/lifecycle/"
+    - label: "Мост между Go и фронтендом"
+      link: "/concepts/bridge/"
+    - label: "Система сборки"
+      link: "/concepts/build-system/"
 - label: "Справочник API"
   collapsed: true
   items:
@@ -235,10 +231,20 @@
       link: "/reference/overview/"
     - label: "Приложение"
       link: "/reference/application/"
-    - label: "Окно"
-      link: "/reference/window/"
+    - label: "Окна"
+      collapsed: true
+      items:
+        - label: "API окон"
+          link: "/reference/window/"
+        - label: "Параметры окон"
+          link: "/features/windows/options/"
     - label: "Меню"
-      link: "/reference/menu/"
+      collapsed: true
+      items:
+        - label: "API меню"
+          link: "/reference/menu/"
+        - label: "Справочник по меню"
+          link: "/features/menus/reference/"
     - label: "События"
       link: "/reference/events/"
     - label: "Диалоговые окна"
@@ -246,16 +252,37 @@
     - label: "Среда выполнения фронтенда"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "Обзор команд"
+          link: "/reference/cli/"
+        - label: "Флаги и примеры"
+          link: "/guides/cli/"
     - label: "Протокол манифеста обновления"
       link: "/reference/update-manifest/"
+    - label: "API мобильных платформ (экспериментальная функция)"
+      link: "/guides/mobile/mobile-api/"
+- label: "Устранение неполадок"
+  collapsed: true
+  items:
+    - label: "Часто задаваемые вопросы"
+      link: "/faq/"
+    - label: "Файлы syso в macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Проблемы с RDP"
+          link: "/troubleshooting/windows/rdp/"
 - label: "Участие в разработке"
   collapsed: true
   items:
-    - label: "Исправление документации"
-      link: "/contributing/documentation/"
     - label: "Руководство по участию в разработке"
       link: "/contributing/"
+    - label: "Документация"
+      link: "/contributing/documentation/"
+    - label: "Политика выпуска версий"
+      link: "/contributing/release-policy/"
     - label: "Технический обзор"
       link: "/contributing/overview/"
     - label: "Начало работы"
@@ -264,23 +291,6 @@
       link: "/contributing/setup/"
     - label: "Стандарты кодирования"
       link: "/contributing/standards/"
-- label: "Миграция"
-  collapsed: true
-  items:
-    - label: "С v2 на v3"
-      link: "/migration/v2-to-v3/"
-    - label: "С Electron"
-      link: "/migration/from-electron/"
-- label: "Устранение неполадок"
-  collapsed: true
-  items:
-    - label: "Файлы Syso в macOS"
-      link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
-      collapsed: true
-      items:
-        - label: "Проблемы с RDP"
-          link: "/troubleshooting/windows/rdp/"
 - label: "Сообщество"
   collapsed: true
   items:
@@ -288,7 +298,7 @@
       link: "/community/links/"
     - label: "Шаблоны"
       link: "/community/templates/"
-    - label: "Медиаматериалы"
+    - label: "Медиа"
       link: "/community/media/"
     - label: "Галерея"
       collapsed: true
@@ -298,13 +308,16 @@
         - label: "Приложения"
           autogenerate:
             directory: "community/showcase"
-- label: "Что нового"
-  link: "/whats-new/"
-- label: "Статус"
-  link: "/status/"
-- label: "Журнал изменений"
-  link: "/changelog/"
-- label: "Спонсорство"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "Благодарности"
-  link: "/credits/"
+- label: "Проект"
+  collapsed: true
+  items:
+    - label: "Что нового"
+      link: "/whats-new/"
+    - label: "Статус"
+      link: "/status/"
+    - label: "Журнал изменений"
+      link: "/changelog/"
+    - label: "Спонсорство"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "Благодарности"
+      link: "/credits/"

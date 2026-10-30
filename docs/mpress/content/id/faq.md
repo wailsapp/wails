@@ -1,5 +1,5 @@
 ---
-title: "Pertanyaan Umum"
+title: "Pertanyaan yang Sering Diajukan"
 description: "Jawaban atas pertanyaan paling umum tentang pembuatan aplikasi dengan Wails v3"
 slug: "faq"
 sourcePath: "faq.md"
@@ -9,46 +9,46 @@ sourcePath: "faq.md"
 
 ### Apa itu Wails?
 
-Wails adalah framework untuk membuat aplikasi desktop dengan Go dan teknologi web. Logika aplikasi ditulis dalam Go, antarmuka dibuat dengan HTML, CSS, dan JavaScript (atau framework frontend apa pun), lalu Wails merendernya dalam webview native sistem operasi. Hasilnya adalah aplikasi kecil dan cepat yang terasa native: tanpa browser yang dibundel, penggunaan memori rendah, dan satu file biner yang biasanya berukuran sekitar 10 MB.
+Wails adalah framework untuk membuat aplikasi desktop dengan Go dan teknologi web. Logika aplikasi Anda ditulis dalam Go, antarmukanya dibuat dengan HTML, CSS, dan JavaScript (atau framework frontend apa pun), lalu Wails merendernya dalam webview bawaan sistem operasi. Hasilnya adalah aplikasi berukuran kecil, cepat, dan terasa native: tanpa browser yang dibundel, dengan penggunaan memori rendah, serta satu berkas biner yang biasanya berukuran sekitar 10MB.
 
 ### Platform apa saja yang didukung Wails?
 
 | Platform | Persyaratan |
 | --- | --- |
-| Windows | AMD64 dan ARM64. Menggunakan [runtime WebView2](https://developer.microsoft.com/microsoft-edge/webview2/). |
+| Windows | AMD64 dan ARM64. Menggunakan runtime [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/). |
 | macOS | 10.15+ pada Intel (aplikasi dapat menargetkan 10.13+), 11.0+ pada Apple Silicon. Biner universal didukung. |
-| Linux | AMD64 dan ARM64. Stack default-nya adalah GTK4 dengan WebKitGTK 6.0 (Ubuntu 24.04+, Debian 13+, Fedora 40+, dan yang serupa). Distribusi yang hanya menyediakan WebKit2GTK 4.1, seperti Ubuntu 22.04, Debian 12, dan RHEL 9, didukung melalui build `-tags gtk3` lama (tersedia hingga v3.1). Distribusi yang hanya memiliki WebKit2GTK 4.0 tidak didukung. Lihat [panduan build Linux](/guides/build/linux/). |
-| iOS dan Android | Eksperimental. Lihat [panduan seluler](/guides/mobile/). |
+| Linux | AMD64 dan ARM64. Stack default adalah GTK4 dengan WebKitGTK 6.0 (Ubuntu 24.04+, Debian 13+, Fedora 40+, dan distribusi serupa). Distribusi yang hanya menyediakan WebKit2GTK 4.1, seperti Ubuntu 22.04, Debian 12, dan RHEL 9, didukung melalui build lama `-tags gtk3` (tersedia hingga v3.1). Distribusi yang hanya menyediakan WebKit2GTK 4.0 tidak didukung. Lihat [panduan build Linux](/guides/build/linux/). |
+| iOS dan Android | Eksperimental. Lihat [panduan perangkat seluler](/guides/mobile/). |
 
 Anda juga dapat menyajikan aplikasi sebagai aplikasi web biasa menggunakan [build server](/guides/server-build/).
 
-Jalankan `wails3 doctor` kapan saja untuk memeriksa sistem Anda dan mendapatkan petunjuk instalasi khusus platform.
+Jalankan `wails3 doctor` kapan saja untuk memeriksa sistem Anda dan mendapatkan petunjuk penginstalan khusus platform.
 
 ### Apa yang saya perlukan untuk memulai?
 
-- Go 1.25 atau yang lebih baru
+- Go 1.26 atau yang lebih baru
 - Node.js dan npm (untuk build frontend)
-- Toolchain platform: WebView2 pada Windows (sudah terinstal pada 10/11), Xcode Command Line Tools pada macOS, serta `gcc` dan paket pengembangan GTK/WebKit pada Linux
+- Toolchain platform: WebView2 pada Windows (sudah terinstal di 10/11), Xcode Command Line Tools pada macOS, serta `gcc` dan paket pengembangan GTK/WebKit pada Linux
 
-`wails3 doctor` memeriksa semua ini untuk Anda dan memberi tahu dengan tepat apa yang belum tersedia. Lihat [Instalasi](/quick-start/installation/) untuk panduan lengkapnya.
+`wails3 doctor` memeriksa semua ini untuk Anda dan memberi tahu dengan tepat apa yang belum tersedia. Lihat [Penginstalan](/quick-start/installation/) untuk panduan lengkapnya.
 
 ### Apakah Wails v3 siap digunakan dalam produksi?
 
-Wails v3 adalah perangkat lunak beta dengan API desktop yang stabil. Aplikasi yang menggunakannya sudah berjalan dalam produksi, tetapi Anda sebaiknya mengujinya secara menyeluruh sebelum melakukan deployment selagi kami menyelesaikan penyempurnaan akhir untuk 3.0. Lihat [halaman status proyek](/status/) untuk mengetahui kondisi terkini. Wails v2 adalah rilis stabil saat ini dan terus menerima perbaikan.
+Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop pada Windows, macOS, dan Linux. Dukungan Android dan iOS masih bersifat eksperimental dan tidak termasuk dalam kontrak kompatibilitas desktop stabil. Lihat [halaman status proyek](/status/).
 
 ## Pengembangan
 
 ### Apakah saya perlu menguasai Go?
 
-Pengetahuan dasar tentang Go akan membantu, tetapi Anda tidak perlu menjadi ahli. Logika aplikasi berada dalam metode Go biasa, dan [tutorial](/tutorials/overview/) akan memandu Anda memahami hal-hal lainnya. Banyak pengembang mempelajari Go sambil membuat aplikasi Wails pertama mereka.
+Pengetahuan dasar tentang Go akan membantu, tetapi Anda tidak perlu menjadi ahli. Logika aplikasi berada dalam metode Go biasa, dan [tutorial](/tutorials/overview/) akan memandu Anda mempelajari semua hal lainnya. Banyak pengembang mempelajari Go sambil membuat aplikasi Wails pertama mereka.
 
-### Bisakah saya menggunakan framework frontend favorit saya?
+### Dapatkah saya menggunakan framework frontend favorit saya?
 
-Ya. Jika dapat di-build menjadi HTML, CSS, dan JavaScript, framework tersebut dapat digunakan dengan Wails. Tersedia templat untuk React, Vue, Svelte, dan JavaScript standar (masing-masing dengan varian TypeScript), sedangkan pilihan lainnya dapat diintegrasikan dalam hitungan menit. Lihat [Framework Frontend](/guides/dev/frontend-frameworks/).
+Ya. Jika dapat dibangun menjadi HTML, CSS, dan JavaScript, framework tersebut dapat digunakan dengan Wails. Tersedia templat untuk React, Vue, Svelte, dan JavaScript biasa (masing-masing dengan varian TypeScript), dan framework lainnya dapat diintegrasikan dalam hitungan menit. Lihat [Framework Frontend](/guides/dev/frontend-frameworks/).
 
 ### Bagaimana cara memanggil fungsi Go dari JavaScript?
 
-Daftarkan layanan, lalu Wails akan membuat binding bertipe untuk layanan tersebut:
+Daftarkan sebuah layanan, lalu Wails akan menghasilkan binding bertipe untuk layanan tersebut:
 
 ```go
 // Go
@@ -68,11 +68,11 @@ const message = await GreetService.Greet("World");
 
 Binding dibuat ulang secara otomatis selama `wails3 dev`, atau sesuai kebutuhan dengan `wails3 generate bindings`. Lihat [Layanan](/features/bindings/services/).
 
-### Bisakah saya menggunakan TypeScript?
+### Dapatkah saya menggunakan TypeScript?
 
-Ya. Generator binding menghasilkan definisi TypeScript untuk layanan Anda beserta tipenya, sehingga pemanggilan ke Go sepenuhnya bertipe.
+Ya. Generator binding menghasilkan definisi TypeScript untuk layanan dan tipe Anda, sehingga pemanggilan ke Go memiliki tipe yang lengkap.
 
-### Bagaimana cara mengirim peristiwa antara Go dan JavaScript?
+### Bagaimana cara mengirim event antara Go dan JavaScript?
 
 ```go
 // Go
@@ -88,11 +88,11 @@ Events.On("time", (event) => {
 });
 ```
 
-Nama peristiwa harus sama persis. Lihat [Referensi Peristiwa](/guides/events-reference/).
+Nama event harus sama persis. Lihat [Referensi Event](/guides/events-reference/).
 
 ### Bagaimana cara men-debug aplikasi saya?
 
-Jalankan `wails3 dev`, lalu klik kanan di dalam jendela untuk membuka alat pengembang browser, sama seperti saat Anda mengembangkan aplikasi web. Server pengembangan juga mendukung hot reload untuk frontend Anda. Lihat [Debugging](/guides/dev/debugging/).
+Jalankan `wails3 dev`, lalu klik kanan di dalam jendela untuk membuka alat pengembang browser, persis seperti yang Anda lakukan di web. Server pengembangan juga mendukung hot reload untuk frontend Anda. Lihat [Debugging](/guides/dev/debugging/).
 
 ## Build & Distribusi
 
@@ -102,11 +102,11 @@ Jalankan `wails3 dev`, lalu klik kanan di dalam jendela untuk membuka alat penge
 wails3 build
 ```
 
-File biner Anda akan ditempatkan di `bin/`. Build produksi sudah menerapkan default yang sesuai (tag build, `-trimpath`, simbol yang dihapus), sehingga tidak diperlukan flag tambahan untuk menghasilkan file biner yang ringkas.
+Berkas biner Anda akan ditempatkan di `bin/`. Build produksi sudah menerapkan default yang sesuai (tag build, `-trimpath`, simbol yang dihapus), sehingga tidak diperlukan flag tambahan untuk menghasilkan berkas biner yang ringkas.
 
-### Bisakah saya melakukan kompilasi silang?
+### Dapatkah saya melakukan kompilasi silang?
 
-Bisa, dengan batasan tertentu. Kompilasi silang Go murni tidak berlaku karena setiap platform menggunakan pustaka webview native, tetapi tersedia dukungan yang baik untuk kasus umum:
+Bisa, dengan batasan tertentu. Kompilasi silang Go murni tidak dapat digunakan karena setiap platform memakai pustaka webview native, tetapi tersedia dukungan yang baik untuk kasus-kasus umum:
 
 ```bash
 # Different architecture, same OS
@@ -116,15 +116,15 @@ wails3 build GOOS=windows GOARCH=arm64
 wails3 task darwin:build:universal
 ```
 
-Pembuatan build untuk Linux dari sistem operasi lain menggunakan toolchain berbasis Docker. Lihat [Build Lintas Platform](/guides/build/cross-platform/) untuk matriks lengkapnya.
+Pembuatan build Linux dari sistem operasi lain menggunakan toolchain berbasis Docker. Lihat [Build Lintas Platform](/guides/build/cross-platform/) untuk matriks lengkapnya.
 
-### Bagaimana cara membuat installer atau paket?
+### Bagaimana cara membuat penginstal atau paket?
 
 ```bash
 wails3 package
 ```
 
-Proses ini menghasilkan format native platform, dan [panduan Installer](/guides/installers/) membahas NSIS pada Windows, bundel `.app` dan DMG pada macOS, serta paket Linux.
+Proses ini menghasilkan format native platform, dan [panduan Penginstal](/guides/installers/) membahas NSIS pada Windows, bundle `.app` dan DMG pada macOS, serta paket Linux.
 
 ### Bagaimana cara menandatangani kode aplikasi saya?
 
@@ -132,9 +132,9 @@ Penandatanganan pada Windows dan macOS (termasuk notarisasi) dibahas langkah dem
 
 ## Fitur
 
-### Bisakah saya membuat beberapa jendela?
+### Dapatkah saya membuat beberapa jendela?
 
-Ya, dukungan multi-jendela tersedia secara native di v3:
+Ya, dukungan untuk beberapa jendela tersedia secara native di v3:
 
 ```go
 window1 := app.Window.New()
@@ -155,7 +155,7 @@ systemTray.SetMenu(myMenu)
 
 Lihat [Baki Sistem](/features/menus/systray/).
 
-### Bisakah saya menggunakan dialog native?
+### Dapatkah saya menggunakan dialog native?
 
 Ya. Dialog berkas, dialog pesan, dan dialog pertanyaan semuanya menggunakan implementasi native:
 
@@ -169,56 +169,56 @@ Lihat [Dialog](/features/dialogs/overview/).
 
 ### Apakah Wails mendukung pembaruan otomatis?
 
-Ya. Wails v3 menyertakan pembaru mandiri bawaan (`app.Updater`) dengan penyedia yang dapat dipasang untuk GitHub Releases, keygen.sh, dan Sparkle AppCast, verifikasi tanda tangan kriptografis, serta UI bawaan yang dapat Anda sesuaikan temanya atau ganti. Lihat panduan [Pembaruan Dalam Aplikasi](/guides/updater/) dan tutorial [Aplikasi Wails yang Memperbarui Diri](/tutorials/04-self-update-a-wails-app/).
+Ya. Wails v3 menyertakan pembaru mandiri bawaan (`app.Updater`) dengan penyedia yang dapat dipasang untuk GitHub Releases, keygen.sh, dan Sparkle AppCast, verifikasi tanda tangan kriptografis, serta antarmuka default yang dapat Anda sesuaikan temanya atau ganti. Lihat panduan [Pembaruan Dalam Aplikasi](/guides/updater/) dan tutorial [Aplikasi Wails yang Memperbarui Diri](/tutorials/04-self-update-a-wails-app/).
 
 ## Pemecahan Masalah
 
-### Ada sesuatu yang tidak berfungsi. Dari mana saya harus mulai?
+### Ada sesuatu yang tidak berfungsi. Dari mana saya harus memulai?
 
 ```bash
 wails3 doctor
 ```
 
-Fitur ini memverifikasi toolchain Anda, mencantumkan dependensi yang belum tersedia beserta perintah instalasinya, dan mencetak informasi versi yang sebaiknya Anda sertakan dalam setiap laporan bug.
+Fitur ini memverifikasi toolchain Anda, mencantumkan dependensi yang belum tersedia beserta perintah penginstalannya, dan menampilkan informasi versi yang harus Anda sertakan dalam setiap laporan bug.
 
 ### Build saya gagal
 
-Solusi yang biasanya berhasil, secara berurutan:
+Cobalah solusi umum berikut secara berurutan:
 
 1. `go mod tidy`
-2. `cd frontend && npm install` (`node_modules` yang tidak tersedia merupakan penyebab paling umum)
-3. Perbarui CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
-4. Di Linux, periksa `wails3 doctor` untuk mengetahui paket GTK/WebKit yang belum tersedia
+2. `cd frontend && npm install` (`node_modules` yang tidak tersedia adalah penyebab paling umum)
+3. Perbarui CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
+4. Pada Linux, periksa paket GTK/WebKit yang belum tersedia dengan `wails3 doctor`
 
-### Binding saya tidak tersedia atau sudah usang
+### Binding saya hilang atau kedaluwarsa
 
 ```bash
 wails3 generate bindings
 ```
 
-Binding dibuat ulang secara otomatis dalam mode pengembangan; jika Anda menambahkan layanan baru atau mengubah signature metode di luar `wails3 dev`, buat ulang binding secara manual.
+Binding dibuat ulang secara otomatis dalam mode pengembangan; jika Anda menambahkan layanan baru atau mengubah signature metode di luar `wails3 dev`, buat ulang binding tersebut secara manual.
 
-### Event tidak dipicu
+### Peristiwa tidak dipicu
 
-Nama event harus sama persis antara `app.Event.Emit("name", ...)` di Go dan `Events.On("name", ...)` di JavaScript. Periksa dahulu kesalahan ketik dan perbedaan huruf besar-kecil.
+Nama peristiwa harus sama persis antara `app.Event.Emit("name", ...)` di Go dan `Events.On("name", ...)` di JavaScript. Periksa terlebih dahulu kesalahan ketik dan perbedaan huruf besar-kecil.
 
 ### Saya menemukan bug
 
-Silakan [buka issue](https://github.com/wailsapp/wails/issues) dan sertakan output `wails3 doctor` Anda. [Panduan umpan balik](/feedback/) menjelaskan cara membuat laporan yang mudah ditindaklanjuti.
+Silakan [buat issue](https://github.com/wailsapp/wails/issues) dan sertakan output `wails3 doctor` Anda. [Panduan pemberian masukan](/feedback/) menjelaskan hal-hal yang membuat laporan mudah ditindaklanjuti.
 
 ## Bermigrasi dari v2
 
 ### Haruskah saya bermigrasi dari v2 ke v3?
 
-v3 menghadirkan dukungan multi-jendela, API berbasis layanan yang lebih rapi, pembaru bawaan, sistem build yang jauh lebih fleksibel, dan performa yang lebih baik. Proyek baru sebaiknya dimulai dengan v3. Untuk proyek yang sudah ada, [Panduan Migrasi](/migration/v2-to-v3/) menjelaskan perbedaannya langkah demi langkah.
+v3 menghadirkan dukungan multi-jendela, API berbasis layanan yang lebih rapi, pemutakhiran bawaan, sistem build yang jauh lebih fleksibel, dan performa yang lebih baik. Proyek baru sebaiknya dimulai dengan v3. Untuk proyek yang sudah ada, [Panduan Migrasi](/migration/v2-to-v3/) menjelaskan perbedaannya langkah demi langkah.
 
 ### Apakah v2 akan tetap dipelihara?
 
-Ya. v2 akan terus menerima perbaikan sementara v3 bergerak menuju rilis stabilnya.
+Ya. Wails v2 tetap menerima pembaruan penting. Proyek baru sebaiknya menggunakan Wails v3.0.0.
 
-### Bisakah saya menjalankan v2 dan v3 secara berdampingan?
+### Dapatkah saya menjalankan v2 dan v3 secara berdampingan?
 
-Ya. CLI keduanya merupakan biner terpisah (`wails` dan `wails3`), dan modulnya memiliki jalur impor yang berbeda, sehingga proyek dengan versi mayor yang berbeda dapat berjalan berdampingan tanpa masalah pada satu mesin.
+Ya. CLI-nya merupakan biner terpisah (`wails` dan `wails3`), sedangkan modulnya memiliki jalur impor yang berbeda. Karena itu, proyek dengan versi mayor yang berbeda dapat berjalan berdampingan tanpa masalah pada satu mesin.
 
 ## Komunitas
 
@@ -230,12 +230,12 @@ Ya. CLI keduanya merupakan biner terpisah (`wails` dan `wails3`), dan modulnya m
 
 ### Bagaimana cara berkontribusi?
 
-Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan PR draf [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
+Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan draf PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
 
 ### Di mana saya dapat menemukan contoh?
 
-Repositori ini menyertakan lebih dari 60 contoh yang dapat dijalankan, mencakup jendela, dialog, event, baki sistem, layanan, dan lainnya: [v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+Repositori ini menyediakan lebih dari 60 contoh yang dapat dijalankan, mencakup jendela, dialog, peristiwa, baki sistem, layanan, dan lainnya: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
 
-## Masih Ada Pertanyaan?
+## Masih Punya Pertanyaan?
 
-Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau [buka diskusi](https://github.com/wailsapp/wails/discussions).
+Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau [buat diskusi](https://github.com/wailsapp/wails/discussions).

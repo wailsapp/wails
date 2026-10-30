@@ -348,4 +348,4 @@ Um recurso experimental para chamar métodos de tempo de execução usando HTML 
 
 ## Exemplos
 
-Há mais exemplos disponíveis no diretório  [examples](https://github.com/wailsapp/wails/tree/master/v3/examples). Confira!
+Há mais exemplos disponíveis no diretório  [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples). Confira!

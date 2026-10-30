@@ -2,13 +2,16 @@ package exec
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/cmds"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
 )
 
@@ -27,21 +30,17 @@ const (
 // classifyGoCmd recognises the native Go commands wake can cache implicitly.
 // The string must already be template-expanded.
 func classifyGoCmd(cmd string) goCmdKind {
-	f := strings.Fields(cmd)
-	if len(f) < 2 || f[0] != "go" {
-		return goCmdNone
-	}
-	switch {
-	case f[1] == "build":
+	switch cmds.Route(cmd, cmds.RouteOptions{}).(type) {
+	case *cmds.GoBuildCmd:
 		return goCmdBuild
-	case f[1] == "mod" && len(f) >= 3 && f[2] == "tidy":
+	case *cmds.GoModTidyCmd:
 		return goCmdModTidy
 	}
 	return goCmdNone
 }
 
-// goCmdInputs derives the implicit source files an output of a recognised Go
-// command. For `go build` the inputs are the module's own .go files, go.mod,
+// goCmdInputs derives implicit sources and output for a recognised Go command.
+// For `go build` the inputs are the module's Go/native source files, go.mod,
 // go.sum, plus everything the task's dependencies generate (e.g. the embedded
 // frontend/dist), so a change to any embedded asset still forces a rebuild.
 func (e *Executor) goCmdInputs(kind goCmdKind, task *ast.Task, expandedCmd, dir string) (sources []string, output string) {
@@ -56,7 +55,7 @@ func (e *Executor) goCmdInputs(kind goCmdKind, task *ast.Task, expandedCmd, dir 
 		if output != "" && !filepath.IsAbs(output) {
 			output = filepath.Join(dir, output)
 		}
-		sources = collectGoFiles(dir)
+		sources = collectGoSourceFiles(dir)
 		sources = append(sources, goMod, goSum)
 		sources = append(sources, e.depGenerates(task, map[string]bool{})...)
 		return sources, output
@@ -64,26 +63,18 @@ func (e *Executor) goCmdInputs(kind goCmdKind, task *ast.Task, expandedCmd, dir 
 	return nil, ""
 }
 
-// parseOutputFlag extracts the value of the `-o` flag from a `go build` line.
-// Both `-o <path>` and `-o=<path>` are accepted; the previous implementation
-// only handled the two-token form, so `go build -o=bin/app` slipped through
-// with output="" and the cache could skip without the binary existing.
+// parseOutputFlag reuses native argument parsing so quoted and escaped paths
+// match the output location used by command execution.
 func parseOutputFlag(cmd string) string {
-	f := strings.Fields(cmd)
-	for i := 0; i < len(f); i++ {
-		if f[i] == "-o" && i+1 < len(f) {
-			return f[i+1]
-		}
-		if strings.HasPrefix(f[i], "-o=") {
-			return strings.TrimPrefix(f[i], "-o=")
-		}
+	if build, ok := cmds.Route(cmd, cmds.RouteOptions{}).(*cmds.GoBuildCmd); ok {
+		return build.Opts.Output
 	}
 	return ""
 }
 
-// collectGoFiles walks root and returns all non-test .go files, skipping
-// directories that never contain buildable module sources.
-func collectGoFiles(root string) []string {
+// collectGoSourceFiles walks root for Go and native compilation inputs, excluding
+// Go test files and the existing generated/dependency directories.
+func collectGoSourceFiles(root string) []string {
 	var files []string
 	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -96,7 +87,13 @@ func collectGoFiles(root string) []string {
 			}
 			return nil
 		}
-		if strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, "_test.go") {
+		switch filepath.Ext(path) {
+		case ".go":
+			if !strings.HasSuffix(path, "_test.go") {
+				files = append(files, path)
+			}
+		case ".c", ".cc", ".cpp", ".cxx", ".m", ".h", ".hh", ".hpp", ".hxx",
+			".f", ".F", ".for", ".f90", ".s", ".S", ".sx", ".swig", ".swigcxx", ".syso":
 			files = append(files, path)
 		}
 		return nil
@@ -141,12 +138,23 @@ func (e *Executor) depGenerates(task *ast.Task, seen map[string]bool) []string {
 
 func goCmdHash(expandedCmd string) string {
 	h := sha256.Sum256([]byte(expandedCmd))
-	return fmt.Sprintf("%x", h[:])
+	var encoded [sha256.Size * 2]byte
+	hex.Encode(encoded[:], h[:])
+	return string(encoded[:])
+}
+
+// goCmdInputsHash includes the discovered file set without depending on its order.
+func goCmdInputsHash(expandedCmd string, sources []string) string {
+	paths := slices.Clone(sources)
+	slices.Sort(paths)
+	paths = slices.Compact(paths)
+	// Successful command arguments and file names cannot contain NUL bytes.
+	return goCmdHash(expandedCmd + "\x00" + strings.Join(paths, "\x00"))
 }
 
 // ShouldSkipGoCmd reports whether a previously-cached native Go command can be
-// skipped: the command (flags) is unchanged, the expected output still exists,
-// and no input file has been modified since the last successful run.
+// skipped: the command and discovered input-file set are unchanged, the output
+// still exists, and no input has been modified since the last successful run.
 func (tc *TaskCache) ShouldSkipGoCmd(name, expandedCmd string, sources []string, output string) bool {
 	tc.mu.RLock()
 	entry, ok := tc.Entries[name+goCacheSuffix]
@@ -154,7 +162,7 @@ func (tc *TaskCache) ShouldSkipGoCmd(name, expandedCmd string, sources []string,
 	if !ok {
 		return false
 	}
-	if entry.Hash != goCmdHash(expandedCmd) {
+	if entry.Hash != goCmdInputsHash(expandedCmd, sources) {
 		return false
 	}
 	if output != "" {
@@ -179,10 +187,10 @@ func (tc *TaskCache) ShouldSkipGoCmd(name, expandedCmd string, sources []string,
 
 // RecordGoCmd stores the implicit cache entry for a native Go command after a
 // successful run.
-func (tc *TaskCache) RecordGoCmd(name, expandedCmd string) error {
+func (tc *TaskCache) RecordGoCmd(name, expandedCmd string, sources []string) error {
 	tc.mu.Lock()
 	tc.Entries[name+goCacheSuffix] = TaskCacheEntry{
-		Hash:    goCmdHash(expandedCmd),
+		Hash:    goCmdInputsHash(expandedCmd, sources),
 		LastRun: time.Now(),
 	}
 	tc.mu.Unlock()

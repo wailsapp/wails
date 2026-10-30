@@ -1,13 +1,13 @@
 ---
-title: "메서드 바인딩"
-description: "타입 안전성을 유지하면서 JavaScript에서 Go 메서드 호출"
+title: "JavaScript에서 Go 호출하기"
+description: "타입 안전성을 유지하며 JavaScript에서 Go 메서드 호출하기"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
 ---
 
-## 타입 안전 Go-JavaScript 바인딩
+## 타입 안전한 Go-JavaScript 바인딩
 
-Wails는 Go 메서드에 사용할 **타입 안전 JavaScript/TypeScript 바인딩을 자동으로 생성합니다**. Go 코드를 작성하고 명령 하나만 실행하면 HTTP 오버헤드, 수작업, 상용구 코드 없이 타입이 완전히 지정된 프런트엔드 함수를 얻을 수 있습니다.
+Wails는 Go 메서드에 대한 **타입 안전한 JavaScript/TypeScript 바인딩을 자동으로 생성합니다**. Go 코드를 작성하고 명령 하나를 실행하면 HTTP 오버헤드나 수작업, 상용구 코드 없이 완전한 타입이 지정된 프런트엔드 함수를 사용할 수 있습니다.
 
 ## 빠른 시작
 
@@ -46,9 +46,9 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**이것으로 끝입니다!** 타입 안전 Go-JavaScript 호출을 사용할 수 있습니다.
+**이것으로 끝입니다!** 타입 안전한 Go-JavaScript 호출이 완성되었습니다.
 
-## 서비스 생성
+## 서비스 만들기
 
 ### 기본 서비스
 
@@ -91,16 +91,16 @@ app := application.New(application.Options{
 
 **핵심 사항:**
 
-- **내보낸 메서드**(PascalCase)만 바인딩됩니다
-- 메서드는 값 또는 `(value, error)`을 반환할 수 있습니다
-- 서비스는 <strong>싱글턴</strong>입니다(애플리케이션당 인스턴스 하나)
+- **내보낸 메서드**(PascalCase)만 바인딩됩니다.
+- 메서드는 값 또는 `(value, error)`을 반환할 수 있습니다.
+- 서비스는 **싱글턴**입니다(애플리케이션당 인스턴스 하나).
 
 ### 상태가 있는 서비스
 
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -132,7 +132,7 @@ func (c *CounterService) Reset() {
 
 **중요:** 서비스는 모든 창에서 공유됩니다. 스레드 안전성을 위해 뮤텍스를 사용하세요.
 
-### 종속성이 있는 서비스
+### 의존성이 있는 서비스
 
 ```go
 type DatabaseService struct {
@@ -150,7 +150,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 }
 ```
 
-**종속성과 함께 등록:**
+**의존성과 함께 등록:**
 
 ```go
 db, _ := sql.Open("sqlite3", "app.db")
@@ -162,7 +162,7 @@ app := application.New(application.Options{
 })
 ```
 
-## 바인딩 생성
+## 바인딩 생성하기
 
 ### 기본 생성
 
@@ -194,7 +194,7 @@ INFO  Output directory: /myproject/frontend/bindings
 wails3 generate bindings -ts
 ```
 
-완전한 TypeScript 타입이 포함된 <strong>`.ts` 파일</strong>을 생성합니다.
+완전한 TypeScript 타입이 포함된 **`.ts` 파일**을 생성합니다.
 
 ### 사용자 지정 출력 디렉터리
 
@@ -210,7 +210,7 @@ wails3 dev
 
 Go 코드가 변경되면 **바인딩을 자동으로 다시 생성합니다**.
 
-## 바인딩 사용
+## 바인딩 사용하기
 
 ### JavaScript
 
@@ -284,7 +284,7 @@ try {
 
 - 완전한 타입 검사
 - IDE 자동 완성
-- 컴파일 시간 오류
+- 컴파일 시점 오류
 - 더 나은 리팩터링
 
 ### 인덱스 파일
@@ -327,14 +327,14 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
-| `map[string]T` | `{ [_: string]: T }` | 문자열 키 맵 |
-| `map[K]V` | `{ [_ in K]?: V }` | 문자열이 아닌 `K`은 JS `Map`이 **아니라** 매핑된 타입으로 렌더링됨 |
+| `map[string]T` | `{ [_: string]: T }` | 문자열 키를 사용하는 맵 |
+| `map[K]V` | `{ [_ in K]?: V }` | 문자열이 아닌 `K`은 JS `Map`이 **아니라** 매핑된 타입으로 렌더링됩니다. |
 | `[]byte` | `string` | base64로 인코딩됨 |
 | `struct` | `class` / `interface` | 필드 포함 |
-| `time.Time` | `any` | 런타임에서 RFC3339Nano 문자열로 직렬화됨 |
-| `*T` | `T \| null` | 포인터는 null 허용을 의미함 |
+| `time.Time` | `string`(기본값) 또는 `Date` | `-time-type`이 생성되는 표현을 선택합니다. JSON은 RFC3339Nano 문자열을 사용합니다. |
+| `*T` | `T \| null` | 포인터는 null 허용을 의미합니다. |
 | `any` / `interface{}` | `any` | - |
-| `error` | `any` / `Exception` | 반환 값이면 Exception, 아니면 any |
+| `error` | `any` / `Exception` | 반환 값이면 예외이며, 그렇지 않으면 any입니다. |
 
 ### 지원되지 않는 타입
 
@@ -342,10 +342,10 @@ const sum = await CalculatorService.Add(5, 3)
 
 - `chan T`(채널)
 - `func()`(함수)
-- 복잡한 인터페이스(`interface{}` 제외)
+- 복합 인터페이스(`interface{}` 제외)
 - 내보내지 않은 필드(소문자로 시작)
 
-**해결 방법:** ID 또는 핸들을 사용하세요:
+**해결 방법:** ID 또는 핸들을 사용하세요.
 
 ```go
 // ❌ Can't return file handle
@@ -401,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### JavaScript 측
 
-바인딩된 메서드가 실패하면 반환된 Promise가 JavaScript `Error` 객체와 함께 거부됩니다:
+바인딩된 메서드가 실패하면 반환된 Promise가 JavaScript `Error` 객체와 함께 거부됩니다.
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-런타임은 발생한 문제에 따라 서로 다른 오류 타입을 throw합니다:
+런타임은 발생한 문제에 따라 서로 다른 오류 유형을 던집니다.
 
-| 오류 타입 | 발생 조건 |
+| 오류 유형 | 발생 조건 |
 | --- | --- |
-| `TypeError` | 호출에 전달된 인수의 개수가 잘못되었거나 인수를 Go 타입으로 변환할 수 없는 경우 |
+| `TypeError` | 호출에 전달된 인수의 개수가 잘못되었거나 인수를 Go 유형으로 변환할 수 없는 경우 |
 | `RuntimeError` | 메서드가 오류를 반환했거나 실행 중 패닉이 발생한 경우 |
-| `Error` | 존재하지 않는 메서드를 호출한 경우 등 그 밖의 오류가 발생한 경우 |
+| `Error` | 존재하지 않는 메서드 호출 등 그 밖의 오류가 발생한 경우 |
 
-모든 오류는 다음 정보를 제공합니다:
+모든 오류는 다음 정보를 제공합니다.
 
-- `name`: 위 표에 나온 오류 타입
+- `name`: 위 표에 나온 오류 유형
 - `message`: Go 오류 메시지
-- `cause`: 가능한 경우 JSON으로 직렬화한 Go 오류입니다. 메서드가 여러 오류를 반환한 경우 `cause`은 오류별 항목이 하나씩 포함된 배열입니다.
+- `cause`: 가능한 경우 JSON으로 직렬화된 Go 오류. 메서드가 여러 오류를 반환했다면 `cause`은 오류마다 항목 하나를 포함하는 배열입니다.
 
-`RuntimeError` 클래스는 `@wailsio/runtime` 패키지에서 내보내므로, Go 코드가 반환한 오류를 다른 실패와 구분할 수 있습니다:
+`RuntimeError` 클래스는 `@wailsio/runtime` 패키지에서 내보내므로, Go 코드가 반환한 오류를 다른 오류와 구분할 수 있습니다.
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -447,13 +447,13 @@ try {
 ```
 
 @note{type="info"}
-이전 버전의 런타임에서는 모든 실패한 호출이 내부 오류의 원시 JSON을 메시지에 포함한 일반 `Error`과 함께 거부되었습니다.
+이전 버전의 런타임에서는 실패한 모든 호출이 내부 오류의 원시 JSON을 메시지에 포함한 일반 `Error`와 함께 거부되었습니다.
 
 @end
 
 ### 구조화된 오류 데이터
 
-Go에서 사용자 정의 오류 타입을 반환하면 해당 JSON 형식을 throw된 오류의 `cause` 속성에서 사용할 수 있습니다:
+Go에서 사용자 정의 오류 유형을 반환하면 던져진 오류의 `cause` 속성에서 해당 오류의 JSON 표현을 사용할 수 있습니다.
 
 ```go
 type ValidationError struct {
@@ -487,7 +487,7 @@ try {
 
 오류는 표준 `encoding/json` 패키지로 직렬화되므로 내보낸 필드만 포함됩니다. `errors.New` 또는 `fmt.Errorf`로 생성한 오류에는 내보낸 필드가 없으므로 빈 객체로 직렬화됩니다.
 
-오류 직렬화 방식을 완전히 제어하려면 서비스 옵션에 `MarshalError` 함수를 제공하세요:
+오류 직렬화 방식을 완전히 제어하려면 서비스 옵션에 `MarshalError` 함수를 제공하세요.
 
 ```go
 app := application.New(application.Options{
@@ -509,7 +509,7 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError`은 유효한 JSON을 반환해야 하며, 기본 직렬화 방식을 사용하려면 `nil`을 반환해야 합니다.
+`MarshalError`은 유효한 JSON을 반환해야 합니다. 기본 직렬화 방식을 사용하려면 `nil`을 반환하세요.
 
 ## 성능
 
@@ -531,7 +531,7 @@ JavaScript → Bridge → Go → Bridge → JavaScript
 
 ### 최적화 팁
 
-**✅ 작업을 일괄 처리하세요:**
+**✅ 작업을 일괄 처리하세요.**
 
 ```javascript
 // ❌ Slow: N calls
@@ -543,7 +543,7 @@ for (const item of items) {
 await ProcessItems(items)
 ```
 
-**✅ 결과를 캐시하세요:**
+**✅ 결과를 캐시하세요.**
 
 ```javascript
 // ❌ Repeated calls
@@ -555,7 +555,7 @@ const config = await GetConfig()
 // Use config multiple times
 ```
 
-**✅ 스트리밍에는 이벤트를 사용하세요:**
+**✅ 스트리밍에는 이벤트를 사용하세요.**
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -691,24 +691,24 @@ const app = new TodoApp()
 app.loadTodos()
 ```
 
-## 권장 사례
+## 모범 사례
 
 ### ✅ 권장 사항
 
-- **메서드를 단순하게 유지하세요** - 단일 책임 원칙을 따르세요
-- **오류를 반환하세요** - 패닉을 일으키지 마세요
-- **스레드 안전 상태를 사용하세요** - 공유 데이터에는 뮤텍스를 사용하세요
-- **작업을 일괄 처리하세요** - 브리지 호출을 줄이세요
-- **Go 측에서 캐시하세요** - 반복 작업을 피하세요
-- **메서드를 문서화하세요** - 주석이 JSDoc으로 변환됩니다
+- **메서드를 단순하게 유지하세요.** - 단일 책임 원칙을 따르세요.
+- **오류를 반환하세요.** - 패닉을 발생시키지 마세요.
+- **스레드 안전 상태를 사용하세요.** - 공유 데이터에는 뮤텍스를 사용하세요.
+- **작업을 일괄 처리하세요.** - 브리지 호출을 줄이세요.
+- **Go 측에서 캐시하세요.** - 반복 작업을 피하세요.
+- **메서드를 문서화하세요.** - 주석이 JSDoc으로 변환됩니다.
 
 ### ❌ 금지 사항
 
-- **블로킹하지 마세요** - 오래 걸리는 작업에는 고루틴을 사용하세요
-- **채널을 반환하지 마세요** - 대신 이벤트를 사용하세요
-- **함수를 반환하지 마세요** - 지원되지 않습니다
-- **오류를 무시하지 마세요** - 항상 처리하세요
-- **내보내지 않은 필드를 사용하지 마세요** - 바인딩되지 않습니다
+- **실행을 차단하지 마세요.** - 오래 걸리는 작업에는 고루틴을 사용하세요.
+- **채널을 반환하지 마세요.** - 대신 이벤트를 사용하세요.
+- **함수를 반환하지 마세요.** - 지원되지 않습니다.
+- **오류를 무시하지 마세요.** - 항상 처리하세요.
+- **내보내지 않은 필드를 사용하지 마세요.** - 바인딩되지 않습니다.
 
 ## 다음 단계
 
@@ -740,4 +740,4 @@ app.loadTodos()
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.
+**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)를 확인하세요.

@@ -1,26 +1,26 @@
 ---
 title: "開発環境のセットアップ"
-description: "Wails v3の開発環境をセットアップします"
+description: "Wails v3 の開発環境をセットアップする"
 slug: "contributing/setup"
 sourcePath: "contributing/setup.md"
 ---
 
 ## 開発環境のセットアップ
 
-このガイドでは、Wails v3の開発に必要な一通りの開発環境をセットアップする手順を説明します。
+このガイドでは、Wails v3 の開発に必要な環境一式をセットアップする手順を説明します。
 
 ## 必要なツール
 
-### Go開発環境
+### Go 開発環境
 
-1. **Go 1.25以降をインストールします：**
+1. **Go 1.26 以降をインストールします。**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
   ```
 
 
-2. **Go環境を設定します：**
+2. **Go 環境を設定します。**
   ```bash
   # Add to your shell profile (.bashrc, .zshrc, etc.)
   export GOPATH=$HOME/go
@@ -28,16 +28,16 @@ sourcePath: "contributing/setup.md"
   ```
 
 
-3. **便利なGoツールをインストールします：**
+3. **便利な Go ツールをインストールします。**
   ```bash
   go install golang.org/x/tools/cmd/goimports@latest
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
   ```
 
 
-### Node.jsとnpm
+### Node.js と npm
 
-フロントエンド統合の例を使用する場合にのみ必要です。
+フロントエンド統合のサンプルを使用する場合にのみ必要です。
 
 ```bash
 # Install Node.js 20+ and npm
@@ -59,9 +59,9 @@ xcode-select -p  # Should output a path
 
 **Windows：**
 
-1. Unixに似た環境を利用するために[MSYS2](https://www.msys2.org/)をインストールします
-2. WebView2 Runtime（Windows 11にはプリインストールされています。Windows 10向けには[ダウンロード](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)してください）
-3. 任意：[Git for Windows](https://git-scm.com/download/win)をインストールします
+1. Unix ライクな環境として [MSYS2](https://www.msys2.org/) をインストールします
+2. WebView2 Runtime（Windows 11 にはプリインストール済み。Windows 10 の場合は[ダウンロード](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)してください）
+3. 任意：[Git for Windows](https://git-scm.com/download/win) をインストールします
 
 **Linux（Debian/Ubuntu）：**
 
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -107,7 +107,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 git remote -v
 ```
 
-### Wails CLIのビルド
+### Wails CLI のビルド
 
 ```bash
 # Navigate to v3 directory
@@ -121,7 +121,7 @@ cd ..
 ./wails3 version
 ```
 
-### PATHへの追加（任意）
+### PATH への追加（任意）
 
 **Linux/macOS：**
 
@@ -132,22 +132,22 @@ export PATH=$PATH:/path/to/wails
 
 **Windows：**
 
-システムのプロパティから、WailsディレクトリをPATH環境変数に追加します。
+システムのプロパティから、Wails ディレクトリを PATH 環境変数に追加します。
 
-## IDEのセットアップ
+## IDE のセットアップ
 
 ### VS Code（推奨）
 
-1. **VS Codeをインストールします：** [ダウンロード](https://code.visualstudio.com/)
+1. **VS Code をインストールします：** [ダウンロード](https://code.visualstudio.com/)
 
 2. **拡張機能をインストールします：**
-  - Go（GoogleのGo Team製）
+  - Go（Google の Go Team 提供）
   - ESLint
   - Prettier
   - MDX（ドキュメント用）
 
 
-3. **ワークスペース設定**（`.vscode/settings.json`）を構成します：
+3. **ワークスペース設定を構成します**（`.vscode/settings.json`）：
   ```json
   {
     "go.useLanguageServer": true,
@@ -161,17 +161,17 @@ export PATH=$PATH:/path/to/wails
 
 ### GoLand
 
-1. **GoLandをインストールします：** [ダウンロード](https://www.jetbrains.com/go/)
+1. **GoLand をインストールします：** [ダウンロード](https://www.jetbrains.com/go/)
 
-2. **次の項目を設定します：**
-  - Go modulesのサポートを有効にします
-  - `goimports`用のファイルウォッチャーを設定します
+2. **設定します：**
+  - Go modules のサポートを有効にします
+  - `goimports` 用のファイルウォッチャーを設定します
   - プロジェクトの規約に合わせてコードスタイルを設定します
 
 
 ## セットアップの確認
 
-次のコマンドを実行して、すべてが正常に動作することを確認します：
+次のコマンドを実行し、すべてが正常に動作することを確認します。
 
 ```bash
 # Go version check
@@ -211,7 +211,7 @@ go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
 
-### カバレッジを有効にして実行
+### カバレッジを計測して実行
 
 ```bash
 cd v3
@@ -219,7 +219,7 @@ go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 
-### レースディテクターを有効にして実行
+### Race Detector を使用して実行
 
 ```bash
 cd v3
@@ -228,31 +228,17 @@ go test ./... -race
 
 ## ドキュメントの作業
 
-Wails v3 ドキュメントは M-Press で記述されています。英語のソースファイルは  
-`docs/mpress/content/` にあり、翻訳ファイルは `fr/` や  
-`id/` などの言語別ディレクトリにあります。
+ドキュメントのコントリビューターは、Wails CLI やデスクトップビルド用の依存関係をインストールせずに M-Press を使用できます。固定バージョンの実行ファイルのダウンロード、インストール、ライブプレビュー、検証、およびリリースブランチ向け PR のワークフローについては、[M-Press でドキュメントを作成する](/contributing/documentation/)を参照してください。
 
-リポジトリのルートからドキュメントの変更をプレビューし、検証します。
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-本番サイトは静的サイトです。ローカルでドキュメントを編集する場合、Node.js、翻訳プロバイダー、Cloudflare  
-の認証情報は必要ありません。
+英語版の Markdown は `docs/mpress/content/` にあり、翻訳版は言語別ディレクトリにあります。リポジトリのルートから `mpress dev` を実行すると、`http://127.0.0.1:3000` でプレビューが配信されます。ガイドに記載された検証コマンドを実行する前に、Ctrl+C でプレビューを停止してください。
 
 ## デバッグ
 
-### Goコードのデバッグ
+### Go コードのデバッグ
 
 **VS Code：**
 
-`.vscode/launch.json`を作成します：
+`.vscode/launch.json` を作成します：
 
 ```json
 {
@@ -280,7 +266,7 @@ dlv debug ./cmd/wails3 -- dev
 
 ### プラットフォームコードのデバッグ
 
-プラットフォーム固有のデバッグには、各プラットフォーム用のツールが必要です：
+プラットフォーム固有のデバッグには、各プラットフォーム用のツールが必要です。
 
 - **macOS：** Xcode Instruments
 - **Windows：** Visual Studio Debugger
@@ -304,7 +290,7 @@ sudo apt install libwebkitgtk-6.0-dev
 sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-### Go モジュールのエラーによりビルドに失敗する
+### Go モジュールエラーでビルドが失敗する
 
 ```bash
 cd v3
@@ -314,7 +300,7 @@ go mod download
 
 ### Windows での「CGO_ENABLED」エラー
 
-C コンパイラ（MSYS2 経由の MinGW-w64）が PATH に含まれていることを確認してください。
+C コンパイラー（MSYS2 経由の MinGW-w64）が PATH に含まれていることを確認してください。
 
 ## 次のステップ
 
