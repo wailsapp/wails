@@ -20,6 +20,38 @@ class EvidenceTest(unittest.TestCase):
         run = {'head_sha': 'newer', 'conclusion': None}
         self.assertEqual(gate.incomplete_runs([run], lambda sha: False), [])
 
+    def test_successful_runs_need_no_ancestry_lookup(self):
+        """A successful run never blocks, even when its commit is unknown."""
+        def unknown(sha):
+            raise RuntimeError('should not be called')
+        run = {'head_sha': 'deleted-branch-head', 'conclusion': 'success'}
+        self.assertEqual(gate.incomplete_runs([run], unknown), [])
+
+
+class IncludesTest(unittest.TestCase):
+    """Map a changelog run's PR head commit to the release snapshot."""
+
+    def includes(self, ancestry, merges):
+        return gate.make_includes(lambda sha: ancestry.get(sha), lambda sha: merges.get(sha, []))
+
+    def test_commit_in_history(self):
+        self.assertTrue(self.includes({'head': True}, {})('head'))
+
+    def test_squash_merged_pr_with_deleted_branch(self):
+        """Unknown PR head, but its merge commit is in the snapshot."""
+        self.assertTrue(self.includes({'head': None, 'merge': True}, {'head': ['merge']})('head'))
+
+    def test_squash_merged_after_snapshot(self):
+        """PR merged after the snapshot commit: not part of this release."""
+        self.assertFalse(self.includes({'head': None, 'merge': False}, {'head': ['merge']})('head'))
+
+    def test_known_commit_outside_snapshot(self):
+        self.assertFalse(self.includes({'head': False}, {})('head'))
+
+    def test_unknown_commit_without_merged_pr_fails_closed(self):
+        with self.assertRaises(RuntimeError):
+            self.includes({'head': None}, {})('head')
+
 
 if __name__ == '__main__':
     unittest.main()

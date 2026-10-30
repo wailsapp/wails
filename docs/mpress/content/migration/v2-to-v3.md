@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **Update:**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [Documentation](/quick-start/why-wails/)
 - [Discord Community](https://discord.gg/JDdSxwjhGf)
 - [GitHub Issues](https://github.com/wailsapp/wails/issues)
-- [Examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### Common Questions
 
 **Q: Can I run v2 and v3 side by side?** A: Yes, they use different import paths.
 
-**Q: Is v3 production-ready?** A: v3 is beta software with a stable desktop API. Applications are running in production with it, but test thoroughly before deployment. v2 remains the current stable release.
+**Q: Is v3 production-ready?** Wails v3.0.0 is the stable release for desktop applications on Windows, macOS and Linux. Android and iOS support remains experimental and is outside the stable desktop compatibility contract.
 
 **Q: Will v2 be maintained?** A: Yes, v2 will receive critical updates.
 
@@ -713,7 +713,7 @@ Learn the new bindings system.
 📖 Examples
 See complete v3 examples.
 
-[View Examples →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[View Examples →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

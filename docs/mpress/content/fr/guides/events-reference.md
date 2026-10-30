@@ -9,37 +9,37 @@ sourcePath: "guides/events-reference.md"
 
 ## Guide des événements
 
-Les événements sont au cœur de la communication dans les applications Wails. Ils permettent aux différentes parties de votre application de communiquer entre elles sans être étroitement couplées. Ce guide vous présente tout ce que vous devez savoir pour utiliser efficacement les événements dans votre application Wails.
+Les événements sont au cœur de la communication dans les applications Wails. Ils permettent aux différentes parties de votre application de communiquer sans être étroitement couplées. Ce guide vous présente tout ce que vous devez savoir pour utiliser efficacement les événements dans votre application Wails.
 
 ## Comprendre les événements Wails
 
-Considérez les événements comme des messages diffusés dans toute votre application. Chaque partie de votre application peut écouter ces messages et réagir en conséquence. Cela s’avère particulièrement utile pour :
+Considérez les événements comme des messages diffusés dans toute votre application. Chaque partie de l’application peut écouter ces messages et réagir en conséquence. Cela s’avère particulièrement utile pour :
 
 - **Réagir aux changements de la fenêtre** : savoir quand votre fenêtre est réduite, agrandie ou déplacée
-- **Gérer les événements système** : réagir aux changements de thème ou aux événements d’alimentation
-- **Implémenter une logique propre à l’application** : créer vos propres événements pour des fonctionnalités telles que les mises à jour de données ou les actions utilisateur
-- **Faire communiquer les composants** : permettre aux différentes parties de votre application de communiquer sans dépendances directes
+- **Gérer les événements système** : réagir aux changements de thème ou aux événements liés à l’alimentation
+- **Créer une logique d’application personnalisée** : créer vos propres événements pour des fonctionnalités comme la mise à jour des données ou les actions de l’utilisateur
+- **Communiquer entre les composants** : permettre aux différentes parties de votre application de communiquer sans dépendances directes
 
 ## Convention de nommage des événements
 
 Tous les événements Wails suivent une convention d’espace de noms qui indique clairement leur origine :
 
-- `common:` — Événements multiplateformes fonctionnant sous Windows, macOS et Linux
-- `windows:` — Événements propres à Windows
-- `mac:` — Événements propres à macOS\
-- `linux:` — Événements propres à Linux
+- `common:` - Événements multiplateformes qui fonctionnent sous Windows, macOS et Linux
+- `windows:` - Événements propres à Windows
+- `mac:` - Événements propres à macOS\
+- `linux:` - Événements propres à Linux
 
 Par exemple :
 
-- `common:WindowFocus` — La fenêtre a obtenu le focus (fonctionne sur toutes les plateformes)
-- `windows:APMSuspend` — Le système entre en veille (Windows uniquement)
-- `mac:ApplicationDidBecomeActive` — L’application est devenue active (macOS uniquement)
+- `common:WindowFocus` - La fenêtre a obtenu le focus (fonctionne partout)
+- `windows:APMSuspend` - Le système passe en veille (Windows uniquement)
+- `mac:ApplicationDidBecomeActive` - L’application est devenue active (macOS uniquement)
 
-## Premiers pas avec les événements
+## Bien démarrer avec les événements
 
 ### Écouter les événements (frontend)
 
-Le cas d’usage le plus courant consiste à écouter les événements dans le code de votre frontend :
+Le cas d’usage le plus courant consiste à écouter les événements dans votre code frontend :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -65,7 +65,7 @@ Events.On('my-app:data-updated', (event) => {
 
 ### Émettre des événements (backend)
 
-Votre code Go peut émettre des événements que votre frontend peut écouter :
+Depuis votre code Go, vous pouvez émettre des événements que votre frontend peut écouter :
 
 ```go
 package main
@@ -91,7 +91,7 @@ func (s *Service) UpdateData() {
 
 ### Émettre des événements (frontend)
 
-Bien que cet usage soit moins courant, votre frontend peut également émettre des événements que votre code Go peut écouter :
+Bien que ce soit moins courant, vous pouvez également émettre depuis votre frontend des événements que votre code Go peut écouter :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -103,7 +103,7 @@ Events.Emit('myapp:close-window')
 Events.Emit('myapp:disconnect-requested', 'id-123')
 ```
 
-Si vous utilisez TypeScript dans votre frontend et que vous [enregistrez des événements typés](#vnements-typs-avec-sret-des-types) dans votre code Go, vous bénéficierez de l’autocomplétion et de la vérification des noms d’événements, ainsi que de la vérification des types de données.
+Si vous utilisez TypeScript dans votre frontend et que vous [enregistrez des événements typés](#vnements-typs-avec-sret-des-types) dans votre code Go, vous bénéficierez de l’autocomplétion et de la vérification des noms d’événements, ainsi que de la vérification du type des données.
 
 ### Supprimer les écouteurs d’événements
 
@@ -131,7 +131,7 @@ Events.Off('common:WindowFocus');
 
 ## Cas d’usage courants
 
-### 1. Suspendre et reprendre selon le focus de la fenêtre
+### 1. Mettre en pause et reprendre selon le focus de la fenêtre
 
 De nombreuses applications doivent suspendre certaines activités lorsque la fenêtre perd le focus :
 
@@ -173,7 +173,7 @@ Events.On('common:ThemeChanged', (event) => {
 
 ### 3. Gérer le dépôt de fichiers
 
-Permettez à votre application d’accepter les fichiers déposés par glisser-déposer :
+Permettez à votre application d’accepter les fichiers glissés-déposés :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -217,7 +217,7 @@ Events.On('common:WindowRestore', () => {
 
 ### 5. Fonctionnalités propres à chaque plateforme
 
-Gérez les événements propres à chaque plateforme lorsque nécessaire :
+Gérez les événements propres à chaque plateforme lorsque cela est nécessaire :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -301,7 +301,7 @@ Wails v3 prend en charge les événements typés avec une sûreté complète des
 
 ### Enregistrer des événements personnalisés
 
-Appelez `application.RegisterEvent` lors de l’initialisation pour enregistrer les noms d’événements personnalisés avec leurs types de données :
+Appelez `application.RegisterEvent` lors de l’initialisation pour enregistrer les noms des événements personnalisés avec leurs types de données :
 
 ```go
 package main
@@ -330,7 +330,7 @@ func init() {
 ```
 
 @note{type="caution"}
-`RegisterEvent` est destiné à être appelé lors de l’initialisation et provoquera une panique si :
+`RegisterEvent` doit être appelé lors de l’initialisation et provoquera une panique si :
 
 - Les arguments ne sont pas valides
 - Le même nom d’événement est enregistré deux fois avec des types de données différents
@@ -338,33 +338,33 @@ func init() {
 @end
 
 @note{type="info"}
-Vous pouvez enregistrer sans risque le même événement plusieurs fois, à condition que son type de données soit toujours identique. Cela peut être utile pour garantir l’enregistrement d’un événement lorsque l’un quelconque de plusieurs paquets est chargé.
+Vous pouvez enregistrer sans risque le même événement plusieurs fois, à condition que son type de données soit toujours identique. Cela peut être utile pour garantir l’enregistrement d’un événement lors du chargement de n’importe lequel de plusieurs paquets.
 
 @end
 
 ### Avantages de l’enregistrement des événements
 
-Après l’enregistrement, le type des arguments de données transmis à `Event.Emit` est vérifié par rapport au type spécifié. En cas d’incompatibilité :
+Une fois l’événement enregistré, le type des arguments de données transmis à `Event.Emit` est vérifié par rapport au type spécifié. En cas d’incompatibilité :
 
-- Une erreur est émise et consignée dans les journaux (ou transmise au gestionnaire d’erreurs enregistré)
-- L’événement concerné ne sera pas propagé
+- Une erreur est émise et consignée dans le journal (ou transmise au gestionnaire d’erreurs enregistré)
+- L’événement concerné n’est pas propagé
 - Cela garantit que le champ de données des événements enregistrés est toujours assignable au type déclaré
 
 ### Mode strict
 
-Utilisez le tag de build `strictevents` pour activer, pendant le développement, les avertissements concernant les événements non enregistrés :
+Utilisez la balise de compilation `strictevents` pour activer, pendant le développement, les avertissements relatifs aux événements non enregistrés :
 
 ```bash
 go build -tags strictevents
 ```
 
-Lorsque le mode strict est activé, l’environnement d’exécution émet au maximum un avertissement par nom d’événement non enregistré afin de ne pas saturer les journaux.
+Lorsque le mode strict est activé, le runtime émet au maximum un avertissement par nom d’événement non enregistré afin d’éviter de saturer les journaux.
 
 ### Génération des liaisons TypeScript
 
-Le générateur de liaisons produit des définitions TypeScript et du code d’intégration assurant une prise en charge transparente des événements typés dans le frontend.
+Le générateur de liaisons produit des définitions TypeScript et du code d’adaptation pour assurer de manière transparente la prise en charge des événements typés dans le frontend.
 
-#### 1. Configurez le plugin Vite
+#### 1. Configurer le plugin Vite
 
 Dans votre fichier `vite.config.ts` :
 
@@ -377,7 +377,7 @@ export default defineConfig({
 })
 ```
 
-#### 2. Générez les liaisons
+#### 2. Générer les liaisons
 
 Exécutez le générateur de liaisons :
 
@@ -385,20 +385,20 @@ Exécutez le générateur de liaisons :
 wails3 generate bindings
 ```
 
-Cette commande crée, dans le répertoire de votre frontend, des fichiers TypeScript contenant des fonctions de création d’événements typés et des interfaces de données.
+Cette commande crée dans votre répertoire frontend des fichiers TypeScript contenant les définitions typées des données d’événements, ainsi qu’un module `bindings/events` qui exporte, pour chaque nom d’événement enregistré, une constante de compilation détectable par le générateur (par exemple, `user:login` devient `UserLogin`).
 
-#### 3. Utilisez les événements typés dans le frontend
+#### 3. Utiliser les événements typés dans le frontend
 
 ```typescript
 import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -417,10 +417,10 @@ Events.On(MonitorStats, (event) => {
 
 Les événements typés offrent :
 
-- **Autocomplétion** des noms d’événements
-- **Vérification des types** des données d’événement
-- **Erreurs à la compilation** en cas d’incompatibilité des types de données
-- Documentation **IntelliSense**
+- **L’autocomplétion** des noms d’événements
+- **La vérification des types** des données d’événements
+- **Des erreurs de compilation** en cas de types de données incompatibles
+- **La documentation IntelliSense**
 
 ## Référence des événements
 
@@ -430,72 +430,72 @@ Ces événements fonctionnent sur toutes les plateformes :
 
 | Événement | Description | Quand l’utiliser |
 | --- | --- | --- |
-| `common:ApplicationStarted` | L’application a complètement démarré | Initialiser votre application et charger l’état enregistré |
-| `common:WindowRuntimeReady` | L’environnement d’exécution Wails est prêt | Commencer à appeler l’API Wails |
-| `common:ThemeChanged` | Le thème du système a changé | Mettre à jour l’apparence de l’application |
-| `common:SystemWillSleep` | Le système est sur le point d’entrer en veille | Enregistrer l’état sur le stockage et fermer les sockets |
+| `common:ApplicationStarted` | L’application a entièrement démarré | Initialiser l’application et charger l’état enregistré |
+| `common:WindowRuntimeReady` | Le runtime Wails est prêt | Commencer à appeler les API Wails |
+| `common:ThemeChanged` | Le thème système a changé | Mettre à jour l’apparence de l’application |
+| `common:SystemWillSleep` | Le système est sur le point de se mettre en veille | Enregistrer l’état sur le stockage et fermer les sockets |
 | `common:SystemDidWake` | Le système est sorti de veille | Se reconnecter et actualiser les données obsolètes |
 | `common:WindowFocus` | La fenêtre a obtenu le focus | Reprendre les activités et actualiser les données |
 | `common:WindowLostFocus` | La fenêtre a perdu le focus | Suspendre les activités et enregistrer l’état |
 | `common:WindowMinimise` | La fenêtre a été réduite | Suspendre le rendu et réduire l’utilisation des ressources |
 | `common:WindowMaximise` | La fenêtre a été agrandie | Adapter la mise en page au plein écran |
-| `common:WindowRestore` | La fenêtre a été restaurée après avoir été réduite ou agrandie | Rétablir la mise en page normale |
+| `common:WindowRestore` | La fenêtre a été restaurée après réduction ou agrandissement | Rétablir la mise en page normale |
 | `common:WindowClosing` | La fenêtre est sur le point de se fermer | Enregistrer les données et libérer les ressources |
-| `common:WindowFilesDropped` | Des fichiers ont été déposés sur la fenêtre | Traiter les importations de fichiers |
-| `common:WindowDidResize` | La fenêtre a été redimensionnée | Adapter la mise en page et restituer à nouveau les graphiques |
-| `common:WindowDidMove` | La fenêtre a été déplacée | Mettre à jour les fonctionnalités dépendant de la position |
+| `common:WindowFilesDropped` | Des fichiers ont été déposés sur la fenêtre | Gérer l’importation des fichiers |
+| `common:WindowDidResize` | La fenêtre a été redimensionnée | Adapter la mise en page et effectuer un nouveau rendu des graphiques |
+| `common:WindowDidMove` | La fenêtre a été déplacée | Mettre à jour les fonctionnalités dépendantes de la position |
 
 ### Événements propres à chaque plateforme
 
 #### Événements Windows
 
-Principaux événements pour les applications Windows :
+Principaux événements des applications Windows :
 
 | Événement | Description | Cas d’utilisation |
 | --- | --- | --- |
 | `windows:SystemThemeChanged` | Le thème Windows a changé | Mettre à jour les couleurs de l’application |
-| `windows:APMSuspend` | Le système passe en veille | Enregistrer l’état et suspendre les opérations |
-| `windows:APMResumeAutomatic` | Le système est sorti de veille (toujours déclenché à la sortie de veille) | Restaurer l’état et actualiser les données |
-| `windows:APMResumeSuspend` | Le système est sorti de veille à la suite d’une saisie utilisateur (après `APMResumeAutomatic`) | Distinguer une sortie de veille déclenchée par l’utilisateur |
+| `windows:APMSuspend` | Le système se met en veille | Enregistrer l’état et suspendre les opérations |
+| `windows:APMResumeAutomatic` | Le système est sorti de veille (cet événement est toujours déclenché à la sortie de veille) | Restaurer l’état et actualiser les données |
+| `windows:APMResumeSuspend` | Le système est sorti de veille à la suite d’une action de l’utilisateur (après `APMResumeAutomatic`) | Distinguer une sortie de veille déclenchée par l’utilisateur |
 | `windows:APMPowerStatusChange` | L’état de l’alimentation a changé | Adapter les paramètres de performances |
 
 #### Événements macOS
 
-Événements importants des applications macOS :
+Événements importants des applications macOS :
 
 | Événement | Description | Cas d’utilisation |
 | --- | --- | --- |
 | `mac:ApplicationDidBecomeActive` | L’application est devenue active | Reprendre les opérations |
 | `mac:ApplicationDidResignActive` | L’application est devenue inactive | Suspendre les opérations |
 | `mac:ApplicationWillTerminate` | L’application va se fermer | Effectuer le nettoyage final |
-| `mac:ApplicationWillSleep` | Le système est sur le point de passer en veille | Enregistrer l’état et fermer les sockets |
+| `mac:ApplicationWillSleep` | Le système est sur le point de se mettre en veille | Enregistrer l’état et fermer les sockets |
 | `mac:ApplicationDidWake` | Le système est sorti de veille | Se reconnecter et actualiser |
-| `mac:ApplicationScreensDidSleep` | Les écrans se sont mis en veille | Suspendre le rendu (indépendamment de la mise en veille du système) |
+| `mac:ApplicationScreensDidSleep` | Les écrans se sont mis en veille | Suspendre le rendu (à distinguer de la mise en veille du système) |
 | `mac:ApplicationScreensDidWake` | Les écrans sont sortis de veille | Reprendre le rendu |
-| `mac:WindowDidEnterFullScreen` | Passage en plein écran | Adapter l’interface utilisateur au mode plein écran |
-| `mac:WindowDidExitFullScreen` | Sortie du mode plein écran | Rétablir l’interface utilisateur normale |
+| `mac:WindowDidEnterFullScreen` | Le mode plein écran a été activé | Adapter l’interface utilisateur au plein écran |
+| `mac:WindowDidExitFullScreen` | Le mode plein écran a été désactivé | Rétablir l’interface utilisateur normale |
 
 #### Événements Linux
 
-Principaux événements de fenêtre sous Linux :
+Principaux événements de fenêtre sous Linux :
 
 | Événement | Description | Cas d’utilisation |
 | --- | --- | --- |
 | `linux:SystemThemeChanged` | Le thème du bureau a changé | Mettre à jour le thème de l’application |
-| `linux:SystemWillSleep` | Le système est sur le point de passer en veille (logind) | Enregistrer l’état |
+| `linux:SystemWillSleep` | Le système est sur le point de se mettre en veille (logind) | Enregistrer l’état |
 | `linux:SystemDidWake` | Le système est sorti de veille (logind) | Se reconnecter et actualiser |
 | `linux:WindowFocusIn` | La fenêtre a obtenu le focus | Reprendre les activités |
 | `linux:WindowFocusOut` | La fenêtre a perdu le focus | Suspendre les activités |
-| `linux:WindowLoadStarted` | La WebView a commencé le chargement | Afficher l’indicateur de chargement |
+| `linux:WindowLoadStarted` | La WebView a commencé le chargement | Afficher un indicateur de chargement |
 | `linux:WindowLoadRedirected` | La WebView a été redirigée | Suivre les redirections de navigation |
-| `linux:WindowLoadCommitted` | La WebView a validé le chargement | Le contenu est en cours de réception |
-| `linux:WindowLoadFinished` | La WebView a terminé le chargement | Masquer l’indicateur de chargement, injecter du JS/CSS |
+| `linux:WindowLoadCommitted` | Chargement validé par la WebView | Réception du contenu en cours |
+| `linux:WindowLoadFinished` | Chargement terminé par la WebView | Masquer l’indicateur de chargement, injecter du JS/CSS |
 
 ## Bonnes pratiques
 
-### 1. Utiliser des espaces de noms pour les événements
+### 1. Utilisez des espaces de noms pour les événements
 
-Lors de la création d’événements personnalisés, utilisez des espaces de noms pour éviter les conflits :
+Lorsque vous créez des événements personnalisés, utilisez des espaces de noms pour éviter les conflits :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -510,9 +510,9 @@ Events.Emit('login');
 Events.Emit('update');
 ```
 
-### 2. Supprimer les écouteurs inutilisés
+### 2. Supprimez les écouteurs
 
-Supprimez toujours les écouteurs d’événements lorsque les composants sont démontés :
+Supprimez toujours les écouteurs d’événements lorsque les composants sont démontés :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -532,9 +532,9 @@ useEffect(() => {
 }, []);
 ```
 
-### 3. Gérer les différences entre les plateformes
+### 3. Gérez les différences entre les plateformes
 
-Lorsque vous utilisez des événements propres à une plateforme, vérifiez leur disponibilité sur celle-ci :
+Lorsque vous utilisez des événements propres à une plateforme, vérifiez leur disponibilité sur celle-ci :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -545,16 +545,16 @@ Events.On('windows:APMSuspend', handleSuspend);
 Events.On('mac:ApplicationWillTerminate', handleTerminate);
 ```
 
-### 4. Ne pas abuser des événements
+### 4. N’utilisez pas les événements à l’excès
 
-Bien que les événements soient puissants, ne les utilisez pas pour tout :
+Bien que les événements soient puissants, ne les utilisez pas pour tout :
 
-- ✅ Utilisez les événements pour : les notifications système, les changements de cycle de vie et la diffusion de mises à jour
-- ❌ Évitez les événements pour : les valeurs de retour directes des fonctions, les mises à jour d’un seul composant et les opérations synchrones
+- ✅ Utilisez les événements pour : les notifications système, les changements de cycle de vie et les mises à jour diffusées
+- ❌ Évitez les événements pour : les valeurs de retour directes de fonctions, les mises à jour d’un seul composant et les opérations synchrones
 
 ## Débogage des événements
 
-Pour déboguer les problèmes liés aux événements :
+Pour déboguer les problèmes liés aux événements :
 
 ```javascript
 import { Events } from '@wailsio/runtime';
@@ -574,15 +574,15 @@ if (isDevelopment) {
 
 ## Source de référence
 
-La liste complète des événements disponibles se trouve dans le code source de Wails :
+La liste complète des événements disponibles se trouve dans le code source de Wails :
 
-- Événements frontend : [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- Événements backend : [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- Événements frontend : [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Événements backend : [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
 
 Consultez toujours ces fichiers pour connaître les noms d’événements et leur disponibilité les plus récents.
 
 ## Résumé
 
-Dans Wails, les événements offrent un moyen puissant et découplé de gérer la communication au sein de votre application. En suivant les modèles et les pratiques présentés dans ce guide, vous pouvez créer des applications réactives, adaptées aux différentes plateformes et capables de réagir avec fluidité aux changements du système et aux interactions de l’utilisateur.
+Dans Wails, les événements offrent un moyen puissant et découplé de gérer les communications au sein de votre application. En suivant les modèles et les pratiques présentés dans ce guide, vous pouvez créer des applications réactives, adaptées aux différentes plateformes et capables de répondre avec fluidité aux changements du système et aux interactions des utilisateurs.
 
-À retenir : commencez par les événements communs pour assurer la compatibilité multiplateforme, ajoutez des événements propres à chaque plateforme lorsque cela est nécessaire et supprimez toujours vos écouteurs d’événements afin d’éviter les fuites de mémoire.
+À retenir : commencez par les événements communs pour assurer la compatibilité multiplateforme, ajoutez des événements propres à chaque plateforme lorsque cela est nécessaire et supprimez toujours vos écouteurs d’événements afin d’éviter les fuites de mémoire.

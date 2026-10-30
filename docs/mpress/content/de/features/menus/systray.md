@@ -193,7 +193,7 @@ systray.WindowOffset(5)
 
 `HideOnFocusLost` ist für System-Tray-Popups unter Windows und macOS sowie auf Linux-Desktops mit Fokus durch Klicken nützlich. Wails deaktiviert dieses Verhalten unter Linux in Umgebungen, in denen der Fokus der Maus folgt (darunter gängige Hyprland-, Sway- und i3- Konfigurationen). Andernfalls könnte das Popup beim Verlassen ausgeblendet werden, bevor es verwendet werden kann. `HideOnEscape` bleibt in diesen Umgebungen verfügbar.
 
-Die oben beschriebenen Verhaltensweisen für Links- und Rechtsklicks sind sinnvolle Standardwerte. Ein expliziter `OnClick`- oder `OnRightClick`-Handler ersetzt den jeweiligen Standardwert. Plattformprüfungen und Sonderfälle findest du in der [manuellen Systray-Testsuite](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray) und im [Systray-Stresstestbeispiel](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+Die oben beschriebenen Verhaltensweisen für Links- und Rechtsklicks sind sinnvolle Standardwerte. Ein expliziter `OnClick`- oder `OnRightClick`-Handler ersetzt den jeweiligen Standardwert. Plattformprüfungen und Sonderfälle findest du in der [manuellen Systray-Testsuite](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/test/manual/systray) und im [Systray-Stresstestbeispiel](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-stress).
 
 ## Klick-Handler
 
@@ -714,10 +714,10 @@ Kontextmenüs für Rechtsklicks erstellen.
 📖 System-Tray-Beispiel
 Eine vollständige System-Tray-Anwendung erkunden.
 
-[Mehr erfahren →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
+[Mehr erfahren →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic)
 
 @end
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [System-Tray-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [System-Tray-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/systray-basic) an.

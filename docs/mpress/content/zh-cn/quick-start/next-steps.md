@@ -5,30 +5,48 @@ slug: "quick-start/next-steps"
 sourcePath: "quick-start/next-steps.md"
 ---
 
-你已经构建了第一个 Wails 应用，并掌握了基础知识。接下来可以继续了解以下内容。
+你已经构建了第一个 Wails 应用。请按照下面的学习路径继续学习；如果已经知道自己想构建什么，也可以直接查看相应指南。
 
 ## 深入学习
 
-通过构建完整的应用进行实践：
+每次完成一个完整应用，继续学习：
 
-- [待办事项应用](/tutorials/02-todo-vanilla/) - CRUD 操作、状态管理、现代化 UI
-- [所有教程](/tutorials/overview/) - 笔记应用、仪表板、系统托盘应用等
+1. <strong>[创建二维码服务](/tutorials/01-creating-a-service/)。</strong>练习如何通过服务向前端公开 Go 逻辑。
+2. <strong>[构建待办事项列表](/tutorials/02-todo-vanilla/)。</strong>通过服务调用添加、修改和删除应用数据。
+3. <strong>[构建笔记应用](/tutorials/03-notes-vanilla/)。</strong>使用文件、原生对话框和已保存的数据。
+
+准备好探索发布流程后，请学习[应用自更新教程](/tutorials/04-self-update-a-wails-app/)。如需了解各课程的学习成果，请查看[所有教程](/tutorials/overview/)。
 
 ## 功能
 
-Wails 提供原生桌面功能：
+<strong>已经在构建自己的应用？</strong>请针对当前任务使用相应的操作指南：
 
-- [窗口](/features/windows/basics/) - 多窗口、无边框窗口、窗口定位
-- [菜单](/features/menus/application/) - 应用菜单、上下文菜单、系统托盘
-- [对话框](/features/dialogs/file/) - 打开/保存文件、消息对话框
-- [事件](/features/events/system/) - 组件间通信
-- [绑定](/features/bindings/methods/) - 类型安全的 Go ↔ JavaScript 调用
-- [剪贴板](/features/clipboard/basics/) - 复制/粘贴操作
-- [拖放](/features/drag-and-drop/files/) - 文件拖放
-- [键盘](/features/keyboard/shortcuts/) - 全局快捷键
+| 我想要…… | 从这里开始 |
+| --- | --- |
+| 从前端调用 Go | [从 JavaScript 调用 Go](/features/bindings/methods/) |
+| 打开或管理窗口 | [窗口基础知识](/features/windows/basics/) |
+| 添加原生菜单或托盘图标 | [应用菜单](/features/menus/application/)或[系统托盘菜单](/features/menus/systray/) |
+| 让用户打开或保存文件 | [文件对话框](/features/dialogs/file/) |
+| 在组件之间发送事件 | [事件系统](/features/events/system/) |
+| 复制文本或接收拖放的文件 | [剪贴板](/features/clipboard/basics/)或[文件拖放](/features/drag-and-drop/files/) |
+| 添加键盘快捷键 | [键盘快捷键](/features/keyboard/shortcuts/) |
+| 构建并打包应用 | 先参阅[构建应用](/guides/build/building/)，然后针对[Windows](/guides/build/windows/)、[macOS](/guides/build/macos/)或[Linux](/guides/build/linux/)进行打包 |
+
+这些页面位于侧边栏的**操作指南**下。无需按顺序阅读整个章节，即可直接打开相关主题。
+
+## 了解 Wails 的工作原理
+
+如果想了解代码背后的设计，请参阅**核心概念**：
+
+- [Wails 的工作原理](/concepts/architecture/)介绍 Go 后端、前端和原生 WebView 之间的连接。
+- [Go 与前端之间的桥接](/concepts/bridge/)说明调用如何在 Go 与 JavaScript 之间传递。
+- [应用生命周期](/concepts/lifecycle/)说明应用的启动和关闭过程。
+- [构建系统](/concepts/build-system/)说明项目任务和前端工具的作用。
+
+## 查阅 API
+
+当你需要查找类型、方法、选项或命令，而不是学习课程时，请使用[API 参考](/reference/overview/)。进行命令行操作时，请先查看[CLI 命令概览](/reference/cli/)；如需了解各个命令的详细信息，请参阅[CLI 标志和示例](/guides/cli/)。
 
 ## 获取帮助
 
-- [Discord](https://discord.gg/JDdSxwjhGf) - 提问、分享项目
-- [示例](https://github.com/wailsapp/wails/tree/master/v3/examples) - 50+ 个可运行示例
-- [API 参考](/reference/overview/) - 完整文档
+查看[常见问题](/faq/)、浏览[可运行示例](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples)，或在[Discord](https://discord.gg/JDdSxwjhGf)中提问。平台特有的问题归类在侧边栏的**故障排除**下。

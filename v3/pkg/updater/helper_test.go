@@ -150,8 +150,8 @@ func TestRunHelperSwap_MarkerWriteFails_RestoresBackup(t *testing.T) {
 
 	l := &fakeLauncher{}
 	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
-	if code != 15 {
-		t.Fatalf("code: %d (want 15)", code)
+	if code != 21 {
+		t.Fatalf("code: %d (want 21)", code)
 	}
 	if got := readFile(t, target); string(got) != "OLD" {
 		t.Errorf("after restore target contents: %q (want OLD)", got)
@@ -379,8 +379,17 @@ func readFile(t *testing.T, path string) []byte {
 // makeAppBundle creates a minimal Contents/MacOS/exe layout under root,
 // with `payload` as the executable's contents. This is the structure macOS
 // treats as a .app bundle.
+//
+// The Info.plist and the executable bit are part of that structure, not
+// decoration: the helper refuses to install a bundle missing either, on the
+// grounds that a bundle which cannot launch is not an improvement on the one
+// being replaced.
 func makeAppBundle(t *testing.T, root, payload string) {
 	t.Helper()
 	exe := filepath.Join(root, "Contents", "MacOS", "exe")
 	writeFile(t, exe, []byte(payload))
+	if err := os.Chmod(exe, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(root, "Contents", "Info.plist"), []byte("<plist><dict></dict></plist>"))
 }

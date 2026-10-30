@@ -5,7 +5,7 @@ slug: "reference/frontend-runtime"
 sourcePath: "reference/frontend-runtime.md"
 ---
 
-O runtime do frontend do Wails é a biblioteca padrão para aplicativos Wails. Ele oferece diversos recursos que podem ser usados nos seus aplicativos, incluindo:
+O runtime do frontend do Wails é a biblioteca padrão para aplicações Wails. Ele oferece diversos recursos que podem ser usados em suas aplicações, incluindo:
 
 - Gerenciamento de janelas
 - Caixas de diálogo
@@ -25,7 +25,7 @@ O runtime é necessário para a integração entre o Go e o frontend. Há 2 mane
 
 ## Usando o pacote npm
 
-O pacote `@wailsio/runtime` é um pacote JavaScript que fornece acesso ao runtime do Wails pelo frontend. Ele é usado por todos os modelos padrão e é a forma recomendada de integrar o runtime ao seu aplicativo. Ao usar o pacote `@wailsio/runtime`, você incluirá apenas as partes do runtime que utilizar.
+O pacote `@wailsio/runtime` é um pacote JavaScript que fornece acesso ao runtime do Wails pelo frontend. Ele é usado por todos os modelos padrão e é a maneira recomendada de integrar o runtime à sua aplicação. Ao usar o pacote `@wailsio/runtime`, você incluirá apenas as partes do runtime que utiliza.
 
 O pacote está disponível no npm e pode ser instalado usando:
 
@@ -41,7 +41,7 @@ Alguns projetos não usam um empacotador JavaScript e podem preferir uma versão
 wails3 generate runtime
 ```
 
-O comando gerará um arquivo `runtime.js` (e `runtime.debug.js`) no diretório atual. Esse arquivo é um módulo ES que pode ser importado pelos scripts do seu aplicativo da mesma forma que o pacote npm, mas a API também é exportada para o objeto global da janela. Portanto, em aplicativos mais simples, você pode usá-la da seguinte forma:
+O comando gerará um arquivo `runtime.js` (e `runtime-debug.js`) no diretório atual. Esse arquivo é um módulo ES que pode ser importado pelos scripts da sua aplicação da mesma forma que o pacote npm, mas a API também é exportada para o objeto global da janela. Assim, em aplicações mais simples, você pode usá-lo da seguinte maneira:
 
 ```html
 <html>
@@ -64,7 +64,7 @@ O comando gerará um arquivo `runtime.js` (e `runtime.debug.js`) no diretório a
 
 ## Inicialização
 
-Além das funções da API, o runtime oferece suporte a menus de contexto e ao arraste de janelas. Esses recursos só funcionarão conforme o esperado depois que o runtime for inicializado. Mesmo que você não use a API, inclua uma instrução de importação com efeito colateral em algum ponto do código do frontend:
+Além das funções da API, o runtime oferece suporte a menus de contexto e ao arraste de janelas. Esses recursos funcionarão como esperado somente depois que o runtime for inicializado. Mesmo que você não use a API, inclua uma instrução de importação por efeito colateral em algum lugar do código do frontend:
 
 ```javascript
 import "@wailsio/runtime";
@@ -73,13 +73,13 @@ import "@wailsio/runtime";
 Seu empacotador deve detectar a presença de efeitos colaterais e incluir no build todo o código de inicialização necessário.
 
 @note{type="info"}
-Se preferir o bundle pré-compilado, basta adicionar uma tag de script como mostrado acima.
+Se preferir o bundle pré-compilado, basta adicionar uma tag de script conforme mostrado acima.
 
 @end
 
 ## Plugin do Vite para eventos tipados
 
-O runtime inclui um plugin do Vite que habilita o suporte a HMR (substituição de módulos a quente) para eventos tipados durante o desenvolvimento.
+O runtime inclui um plugin do Vite que habilita o suporte a HMR (Hot Module Replacement) para eventos tipados durante o desenvolvimento.
 
 ### Configuração
 
@@ -90,15 +90,17 @@ import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
 
+O argumento é o diretório dos bindings gerados, relativo ao projeto Vite. Gere os bindings antes de compilar o frontend.
+
 ### Benefícios
 
-- **Recarregamento automático**: os bindings de eventos são regenerados e recarregados automaticamente quando você executa `wails3 generate bindings`
-- **Modo de desenvolvimento**: funciona perfeitamente com `wails3 dev` para fornecer atualizações instantâneas
-- **Segurança de tipos**: suporte completo a TypeScript, com preenchimento automático e verificação de tipos
+- **Recarregamento automático**: os bindings de eventos são gerados novamente e recarregados automaticamente quando você executa `wails3 generate bindings`
+- **Modo de desenvolvimento**: funciona perfeitamente com `wails3 dev` para oferecer atualizações instantâneas
+- **Segurança de tipos**: suporte completo ao TypeScript, com preenchimento automático e verificação de tipos
 
 ### Uso com registro de eventos
 
@@ -134,15 +136,15 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## Referência da API
 
-O runtime é organizado em módulos, cada um com uma funcionalidade específica. Importe apenas o que for necessário:
+O runtime é organizado em módulos, cada um oferecendo funcionalidades específicas. Importe apenas o que for necessário:
 
 ```javascript
 import { Events, Window, Clipboard } from '@wailsio/runtime'
@@ -150,18 +152,17 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### Eventos
 
-Sistema de eventos para comunicação entre o Go e o JavaScript.
+Sistema de eventos para comunicação entre Go e JavaScript. As exportações de eventos geradas, como `UserUpdated`, são constantes de string, não fábricas de payload. O gerador amplia `CustomEvents` para associar os nomes dos eventos registrados aos tipos de payload. Os tipos abaixo (`WailsEventName`, `WailsEventCallback`, `WailsEventData`) são exportados pelo módulo Events.
 
 #### On()
 
-Registra um callback para um evento.
+Registra uma função de callback para um evento.
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
-**Retorna:** função de cancelamento da inscrição
+**Retorno:** função para cancelar a inscrição
 
 **Exemplo:**
 
@@ -186,11 +187,10 @@ Events.On(UserLogin, (event) => {
 
 #### Once()
 
-Registra um callback que é executado apenas uma vez.
+Registra uma função de callback que é executada apenas uma vez.
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Exemplo:**
@@ -208,11 +208,11 @@ Events.Once('app-ready', () => {
 Emite um evento para o backend em Go ou para outras janelas.
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
-**Retorna:** uma Promise que é resolvida como `true` se o evento tiver sido cancelado; caso contrário, como `false`
+**Retorno:** uma Promise que é resolvida como `true` se o evento tiver sido cancelado; caso contrário, como `false`
 
 **Exemplo:**
 
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')
@@ -283,13 +283,13 @@ await otherWindow.Show()
 
 #### Visibilidade
 
-**Show()** — Exibe a janela
+**Show()** - Exibe a janela
 
 ```typescript
 function Show(): Promise<void>
 ```
 
-**Hide()** — Oculta a janela
+**Hide()** - Oculta a janela
 
 ```typescript
 function Hide(): Promise<void>
@@ -490,7 +490,7 @@ function ZoomReset(): Promise<void>
 
 #### Impressão
 
-**Print()** - Abre a caixa de diálogo de impressão nativa
+**Print()** - Abre a caixa de diálogo nativa de impressão
 
 ```typescript
 function Print(): Promise<void>
@@ -505,7 +505,7 @@ import { Window } from '@wailsio/runtime'
 await Window.Print()
 ```
 
-**Observação:** Isso abre a caixa de diálogo de impressão nativa do sistema operacional, permitindo que o usuário selecione as configurações da impressora e imprima o conteúdo atual da janela. Diferentemente de `window.print()`, que pode não funcionar em webviews, esse recurso usa a API de impressão nativa da plataforma.
+**Observação:** Isso abre a caixa de diálogo nativa de impressão do sistema operacional, permitindo que o usuário selecione as configurações da impressora e imprima o conteúdo atual da janela. Ao contrário de `window.print()`, que pode não funcionar em webviews, esse método usa a API nativa de impressão da plataforma.
 
 ### Área de transferência
 
@@ -546,11 +546,11 @@ console.log('Clipboard:', clipboardText)
 
 ### Sistema
 
-Métodos de sistema de baixo nível para comunicação direta com o backend.
+Métodos de baixo nível para comunicação direta com o backend.
 
 #### invoke()
 
-Envia uma mensagem bruta diretamente ao backend. Isso ignora o sistema de vinculação padrão e é tratado por `RawMessageHandler` nas opções do aplicativo.
+Envia uma mensagem bruta diretamente ao backend. Isso ignora o sistema padrão de vinculação e é tratado pelo `RawMessageHandler` nas opções do aplicativo.
 
 ```typescript
 function invoke(message: any): void
@@ -569,7 +569,7 @@ System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 ```
 
 @note{type="caution"}
-Essa é uma função do tipo disparar e esquecer, sem valor de retorno. Use eventos para receber respostas do backend.
+Essa função apenas envia a mensagem, sem aguardar resposta, e não retorna nenhum valor. Use eventos para receber respostas do backend.
 
 @end
 
@@ -697,11 +697,11 @@ console.log('Primary screen:', primary.Name)
 
 ### Caixas de diálogo
 
-Caixas de diálogo nativas do sistema operacional no JavaScript.
+Caixas de diálogo nativas do sistema operacional abertas pelo JavaScript.
 
 #### Info()
 
-Exibe uma caixa de diálogo informativa.
+Exibe uma caixa de diálogo de informações.
 
 ```typescript
 function Info(options: MessageDialogOptions): Promise<string>
@@ -801,7 +801,7 @@ A WML fornece atributos declarativos para ações comuns. Adicione atributos aos
 
 #### Atributos
 
-**wml-event** - Emite um evento quando recebe um clique
+**wml-event** - Emite um evento ao receber um clique
 
 ```html
 <button wml-event="save-clicked">Save</button>
@@ -906,18 +906,18 @@ screens.forEach(screen => {
 ### ✅ Faça
 
 - **Importe seletivamente** - Importe apenas o necessário
-- **Trate as promessas** - Todos os métodos retornam promessas
-- **Use WML para ações simples** - É mais simples do que JavaScript
-- **Verifique os valores retornados** - Especialmente em caixas de diálogo
-- **Cancele as assinaturas de eventos** - Faça a limpeza quando terminar
+- **Trate as promises** - Todos os métodos retornam promises
+- **Use WML para ações simples** — Mais simples do que JavaScript
+- **Verifique os valores retornados** — Especialmente em caixas de diálogo
+- **Cancele a inscrição em eventos** — Faça a limpeza ao terminar
 
 ### ❌ Não faça
 
-- **Não se esqueça de await** - A maioria dos métodos é assíncrona
-- **Não bloqueie a interface do usuário** - Use async/await corretamente
-- **Não ignore erros** - Sempre trate as rejeições
+- **Não se esqueça de usar await** — A maioria dos métodos é assíncrona
+- **Não bloqueie a interface** — Use async/await corretamente
+- **Não ignore erros** — Sempre trate as rejeições
 
-## Compatibilidade com TypeScript
+## Suporte a TypeScript
 
 O runtime inclui definições completas de TypeScript:
 

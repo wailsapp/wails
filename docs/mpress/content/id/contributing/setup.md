@@ -7,13 +7,13 @@ sourcePath: "contributing/setup.md"
 
 ## Penyiapan Lingkungan Pengembangan
 
-Panduan ini memandu Anda menyiapkan lingkungan pengembangan lengkap untuk mengerjakan Wails v3.
+Panduan ini memandu Anda menyiapkan lingkungan pengembangan lengkap untuk mengembangkan Wails v3.
 
 ## Alat yang Diperlukan
 
 ### Pengembangan Go
 
-1. **Instal Go 1.25 atau versi yang lebih baru:**
+1. **Instal Go 1.26 atau versi yang lebih baru:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -59,7 +59,7 @@ xcode-select -p  # Should output a path
 
 **Windows:**
 
-1. Instal [MSYS2](https://www.msys2.org/) untuk mendapatkan lingkungan menyerupai Unix
+1. Instal [MSYS2](https://www.msys2.org/) untuk mendapatkan lingkungan serupa Unix
 2. WebView2 Runtime (sudah terinstal di Windows 11, [unduh](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) untuk Windows 10)
 3. Opsional: Instal [Git for Windows](https://git-scm.com/download/win)
 
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -107,7 +107,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 git remote -v
 ```
 
-### Bangun CLI Wails
+### Membangun CLI Wails
 
 ```bash
 # Navigate to v3 directory
@@ -121,7 +121,7 @@ cd ..
 ./wails3 version
 ```
 
-### Tambahkan ke PATH (Opsional)
+### Menambahkan ke PATH (Opsional)
 
 **Linux/macOS:**
 
@@ -169,7 +169,7 @@ Tambahkan direktori Wails ke variabel lingkungan PATH melalui System Properties.
   - Konfigurasikan gaya kode agar sesuai dengan konvensi proyek
 
 
-## Verifikasi Penyiapan Anda
+## Memverifikasi Penyiapan Anda
 
 Jalankan perintah berikut untuk memastikan semuanya berfungsi:
 
@@ -211,7 +211,7 @@ go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
 
-### Jalankan dengan Cakupan Kode
+### Menjalankan dengan Cakupan Kode
 
 ```bash
 cd v3
@@ -219,36 +219,22 @@ go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 
-### Jalankan dengan Pendeteksi Race Condition
+### Menjalankan dengan Pendeteksi Race
 
 ```bash
 cd v3
 go test ./... -race
 ```
 
-## Mengelola Dokumentasi
+## Mengembangkan Dokumentasi
 
-Dokumentasi Wails v3 ditulis dalam M-Press. File sumber bahasa Inggris berada di  
-`docs/mpress/content/`; terjemahan berada di direktori bahasa seperti  
-`fr/` dan `id/`.
+Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal CLI Wails atau dependensi pembangunan desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh executable dengan versi yang telah ditetapkan, melakukan instalasi, melihat pratinjau langsung, menjalankan validasi, dan mengikuti alur kerja PR untuk cabang rilis.
 
-Pratinjau dan validasi perubahan dokumentasi dari direktori utama repositori:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-Situs produksi bersifat statis. Node.js, penyedia layanan terjemahan, dan kredensial Cloudflare  
-tidak diperlukan untuk mengerjakan dokumentasi secara lokal.
+Markdown bahasa Inggris berada di `docs/mpress/content/`; terjemahan berada di direktori bahasa. Dari root repositori, `mpress dev` menyajikan pratinjau di `http://127.0.0.1:3000`. Hentikan dengan Ctrl+C sebelum menjalankan perintah validasi dalam panduan.
 
 ## Debugging
 
-### Men-debug Kode Go
+### Debugging Kode Go
 
 **VS Code:**
 
@@ -278,7 +264,7 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 dlv debug ./cmd/wails3 -- dev
 ```
 
-### Men-debug Kode Platform
+### Debugging Kode Platform
 
 Debugging khusus platform memerlukan alat platform:
 
@@ -290,11 +276,11 @@ Debugging khusus platform memerlukan alat platform:
 
 ### "command not found: wails3"
 
-Tambahkan direktori Wails ke PATH Anda atau gunakan `./wails3` dari direktori utama proyek.
+Tambahkan direktori Wails ke PATH Anda atau gunakan `./wails3` dari root proyek.
 
-### "webkitgtk-6.0 tidak ditemukan" atau "webkit2gtk tidak ditemukan" (Linux)
+### "webkitgtk-6.0 not found" atau "webkit2gtk not found" (Linux)
 
-Instal paket pengembangan untuk stack yang Anda gunakan dalam proses build:
+Instal paket pengembangan untuk stack yang Anda gunakan dalam pembangunan:
 
 ```bash
 # Default GTK4 stack (Debian/Ubuntu):
@@ -304,7 +290,7 @@ sudo apt install libwebkitgtk-6.0-dev
 sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-### Build gagal karena kesalahan modul Go
+### Pembangunan gagal karena kesalahan modul Go
 
 ```bash
 cd v3
@@ -314,10 +300,10 @@ go mod download
 
 ### Kesalahan "CGO_ENABLED" di Windows
 
-Pastikan compiler C (MinGW-w64 melalui MSYS2) tersedia di PATH Anda.
+Pastikan kompiler C (MinGW-w64 melalui MSYS2) tersedia di PATH Anda.
 
 ## Langkah Berikutnya
 
 - Tinjau [Standar Penulisan Kode](/contributing/standards/)
 - Jelajahi [Dokumentasi Teknis](/contributing/)
-- Temukan masalah untuk dikerjakan: [Masalah yang Cocok untuk Kontributor Pemula](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Temukan isu yang dapat dikerjakan: [Isu yang Cocok untuk Pemula](https://github.com/wailsapp/wails/labels/good%20first%20issue)

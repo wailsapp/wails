@@ -246,7 +246,7 @@ MCP 伺服器可讓您以程式完整控制應用程式。任何能夠存取其�
 
 ## 範例應用程式
 
-[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp)提供了展示所有工具的完整遊樂場應用程式。  
+[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp)提供了展示所有工具的完整遊樂場應用程式。  
 其中包括：
 
 - 附有遞增／重設按鈕的計數器

@@ -5,7 +5,7 @@ slug: "contributing"
 sourcePath: "contributing/index.md"
 ---
 
-## Selamat Datang, Para Kontributor!
+## Selamat Datang, Kontributor!
 
 Kami menyambut kontribusi untuk Wails! Baik Anda memperbaiki bug, menambahkan fitur, maupun menyempurnakan dokumentasi, bantuan Anda sangat kami hargai.
 
@@ -13,20 +13,20 @@ Kami menyambut kontribusi untuk Wails! Baik Anda memperbaiki bug, menambahkan fi
 
 ### 1. Laporkan Masalah
 
-Menemukan bug? [Buka issue](https://github.com/wailsapp/wails/issues/new) yang menyertakan:
+Menemukan bug? [Buka issue](https://github.com/wailsapp/wails/issues/new) dengan menyertakan:
 
 - Deskripsi yang jelas
 - Langkah-langkah untuk mereproduksi masalah
-- Perilaku yang diharapkan dan perilaku aktual
+- Perilaku yang diharapkan dibandingkan dengan perilaku aktual
 - Informasi sistem
 - Contoh kode
 
 ### 2. Sempurnakan Dokumentasi
 
-PR perbaikan dokumentasi dapat diajukan tanpa issue sebelumnya atau pengujian kode yang gagal.  
-Ikuti [Perbaiki dokumentasi](/contributing/documentation/) untuk melihat pratinjau dan memvalidasi perubahan dengan M-Press.
+PR koreksi diterima tanpa perlu issue sebelumnya atau pengujian kode yang gagal.  
+Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh, menginstal di macOS/Linux/Windows, melihat pratinjau langsung, dan mengirimkan perubahan Anda.
 
-Penyempurnaan dokumentasi selalu kami sambut:
+Penyempurnaan dokumentasi selalu diterima:
 
 - Perbaiki kesalahan ketik dan kekeliruan
 - Tambahkan contoh
@@ -44,15 +44,15 @@ Kontribusikan kode melalui pull request:
 
 ### 4. Ajukan Penyempurnaan (WEP)
 
-Fungsionalitas baru dan perubahan pada perilaku publik menggunakan proses Wails Enhancement Proposal (WEP). Proses ini menjaga transparansi pengembangan fitur dan memastikan setiap proposal yang diterima memiliki pelaksana. Jangan buka issue permintaan fitur.
+Fungsionalitas baru dan perubahan pada perilaku publik menggunakan proses Wails Enhancement Proposal (WEP). Proses ini menjaga pengembangan fitur tetap transparan dan memastikan setiap proposal yang diterima memiliki pelaksana. Jangan membuka issue permintaan fitur.
 
-1. Jika ingin, sampaikan terlebih dahulu ide Anda dalam kategori [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) di GitHub Discussions atau di [Discord](https://discord.gg/JDdSxwjhGf) untuk mengukur minat.
-2. Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/<proposal name>/proposal.md`, lalu isi setiap bagiannya.
-3. Buka draft pull request berjudul `[WEP] <title>` yang hanya berisi proposal tersebut. PR itu merupakan tempat resmi untuk membahasnya.
-4. Kumpulkan masukan dan dukungan (komentar dan reaksi jempol pada PR). Berikan waktu setidaknya dua minggu untuk berdiskusi dan sepakati siapa yang akan mengimplementasikan proposal tersebut.
-5. Tandai PR sebagai siap ditinjau. Maintainer mengambil keputusan akhir: proposal yang diterima akan diberi nomor WEP dan digabungkan.
+1. Jika ingin, sampaikan terlebih dahulu ide Anda di kategori [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) pada GitHub Discussions atau di [Discord](https://discord.gg/JDdSxwjhGf) untuk mengukur minat.
+2. Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/<proposal name>/proposal.md` dan isi setiap bagiannya.
+3. Buka draf pull request berjudul `[WEP] <title>` yang hanya berisi proposal tersebut. PR itu merupakan tempat resmi untuk membahasnya.
+4. Kumpulkan masukan dan dukungan (komentar dan reaksi jempol pada PR). Berikan waktu setidaknya dua minggu untuk berdiskusi, lalu sepakati siapa yang akan mengimplementasikan proposal tersebut.
+5. Tandai PR sebagai siap ditinjau. Pengelola membuat keputusan akhir: proposal yang diterima akan diberi nomor WEP dan digabungkan.
 
-Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Proses lengkap didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Memulai
 
@@ -81,9 +81,9 @@ go build -o ../wails3 ./cmd/wails3
 
 ### Jalankan Pengujian
 
-Pengujian merupakan bagian dari perubahan, bukan sekadar pemeriksaan dasar di tahap akhir untuk memastikan perangkat lunak berfungsi. Tempatkan unit test di dekat kode yang diuji dan utamakan pengujian berbasis tabel setiap kali satu perilaku diuji dengan beberapa input atau kasus ekstrem. Beri nama setiap kasus agar kegagalan menjelaskan skenarionya.
+Pengujian merupakan bagian dari perubahan, bukan sekadar pemeriksaan awal terakhir. Letakkan pengujian unit di dekat kode yang diuji dan utamakan pengujian berbasis tabel ketika satu perilaku diperiksa dengan beberapa input atau kasus ekstrem. Beri nama pada setiap kasus agar kegagalan dapat menjelaskan skenarionya.
 
-Logika baru dan yang diubah sebaiknya tercakup sepenuhnya. Targetkan cakupan statement Go sebesar 100% untuk kode yang ditambahkan atau diubah oleh PR Anda; jangan gunakan persentase cakupan seluruh repositori sebagai pengganti pengujian perubahan tersebut. Kekurangan cakupan dapat dibenarkan—misalnya, jalur kesalahan yang hanya berlaku pada OS tertentu atau kondisi yang tidak praktis untuk direproduksi tanpa perangkat keras nyata—tetapi jelaskan kekurangan itu dan alasan hal tersebut tidak dapat diuji secara wajar dalam deskripsi PR.
+Logika baru dan yang diubah harus tercakup sepenuhnya. Targetkan cakupan pernyataan Go sebesar 100% untuk kode yang ditambahkan atau diubah oleh PR Anda; jangan menganggap persentase untuk seluruh repositori sebagai pengganti pengujian perubahan tersebut. Kekurangan cakupan bisa saja valid—misalnya, jalur kesalahan khusus OS atau kondisi yang tidak praktis untuk direproduksi tanpa perangkat keras nyata—tetapi jelaskan kekurangan tersebut dan alasan mengapa hal itu tidak dapat diuji secara wajar dalam deskripsi PR.
 
 ```bash
 # Run all v3 tests
@@ -122,7 +122,7 @@ git checkout -b feature/my-feature
 4. **Jalankan pengujian** untuk memastikan tidak ada yang rusak
 5. **Commit perubahan** dengan pesan yang jelas
 
-### Pedoman Commit
+### Panduan Commit
 
 ```bash
 # Good commit messages
@@ -150,7 +150,7 @@ git push origin feature/my-feature
 # Reference related issues
 ```
 
-## Pedoman Pull Request
+## Panduan Pull Request
 
 ### Deskripsi PR yang Baik
 
@@ -175,13 +175,13 @@ Fixes #123
 ### Daftar Periksa PR
 
 - [ ] Kode mengikuti konvensi Go
-- [ ] Pengujian ditambahkan atau diperbarui
+- [ ] Pengujian ditambahkan/diperbarui
 - [ ] Dokumentasi diperbarui
-- [ ] Semua pengujian lulus
-- [ ] Tidak ada breaking change (atau sudah didokumentasikan)
+- [ ] Semua pengujian berhasil
+- [ ] Tidak ada perubahan yang merusak kompatibilitas (atau sudah didokumentasikan)
 - [ ] Pesan commit jelas
 
-## Pedoman Kode
+## Panduan Kode
 
 ### Gaya Kode Go
 
@@ -237,25 +237,17 @@ func TestProcessData(t *testing.T) {
 
 ### Menulis Dokumentasi
 
-Dokumentasi menggunakan M-Press. Edit file `.md` di bawah  
-`docs/mpress/content/`, lalu pratinjau dan validasi dari direktori akar repositori:
+Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk alur kerja dokumentasi lengkap. Panduan tersebut mencakup versi yang disematkan, opsi penginstalan berkas yang dapat dieksekusi dan Go, berkas sumber yang dapat diedit, navigasi, pemeriksaan terjemahan, serta pengiriman PR terhadap `master`.
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+Pekerjaan yang hanya berkaitan dengan dokumentasi tidak memerlukan build aplikasi Wails atau dependensi platform. M-Press menampilkan pratinjau situs yang ada menggunakan `mpress dev` dari root repositori.
 
 ### Gaya Dokumentasi
 
-- Gunakan ejaan bahasa Inggris internasional
-- Mulailah dengan masalah yang akan diselesaikan
-- Berikan contoh yang dapat dijalankan
-- Sertakan panduan pemecahan masalah
-- Cantumkan referensi silang ke konten terkait
+- Gunakan ejaan bahasa Inggris Internasional
+- Mulailah dengan masalahnya
+- Berikan contoh yang berfungsi
+- Sertakan pemecahan masalah
+- Berikan referensi silang ke konten terkait
 
 ## Komunitas
 
@@ -267,11 +259,11 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ### Kode Etik
 
-Bersikaplah saling menghormati, inklusif, dan profesional. Kita semua berada di sini untuk bersama-sama membangun perangkat lunak yang hebat. Lihat [Kode Etik](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) untuk detail selengkapnya.
+Bersikaplah penuh hormat, inklusif, dan profesional. Kita semua berada di sini untuk bersama-sama membangun perangkat lunak yang hebat. Lihat [Kode Etik](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) untuk detailnya.
 
 ## Pengakuan
 
-Kontributor mendapat pengakuan dalam:
+Kontributor dicantumkan dalam:
 
 - Catatan rilis
 - Daftar kontributor
@@ -291,7 +283,7 @@ Kunjungi repositori Wails.
 ◆ Komunitas Discord
 Bergabunglah dengan komunitas.
 
-[Bergabung ke Discord →](https://discord.gg/JDdSxwjhGf)
+[Bergabung dengan Discord →](https://discord.gg/JDdSxwjhGf)
 
 ---
 📖 Dokumentasi

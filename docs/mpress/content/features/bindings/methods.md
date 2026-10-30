@@ -1,5 +1,5 @@
 ---
-title: "Method Bindings"
+title: "Call Go from JavaScript"
 description: "Call Go methods from JavaScript with type safety"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -100,7 +100,7 @@ app := application.New(application.Options{
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -331,7 +331,7 @@ const sum = await CalculatorService.Add(5, 3)
 | `map[K]V` | `{ [_ in K]?: V }` | non-string `K` is rendered as a mapped type, **not** a JS `Map` |
 | `[]byte` | `string` | base64-encoded |
 | `struct` | `class` / `interface` | with fields |
-| `time.Time` | `any` | serialized as RFC3339Nano string in runtime |
+| `time.Time` | `string` (default) or `Date` | `-time-type` selects the generated representation; JSON uses an RFC3339Nano string |
 | `*T` | `T \| null` | pointer means nullable |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | Exception if as return value else any |
@@ -740,4 +740,4 @@ Use events for pub/sub communication.
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).

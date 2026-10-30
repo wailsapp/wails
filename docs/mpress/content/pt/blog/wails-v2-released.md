@@ -21,24 +21,24 @@ Esta versão superou todas as minhas expectativas. Espero que ela proporcione a 
 
 ## O que *é* o Wails?
 
-Se você ainda não conhece o Wails, ele é um projeto que permite aos programadores Go criar interfaces avançadas para seus programas em Go usando tecnologias web conhecidas. É uma alternativa leve ao Electron, escrita em Go. Há muito mais informações no [site oficial](https://wails.io/docs/introduction).
+Se você ainda não conhece o Wails, ele é um projeto que permite aos programadores Go criar interfaces avançadas para seus programas em Go usando tecnologias web conhecidas. É uma alternativa leve ao Electron, escrita em Go. Há muito mais informações no [site oficial](https://v2.wails.io/docs/introduction).
 
 ## Quais são as novidades?
 
 A versão v2 representa um enorme avanço para o projeto e resolve muitos dos pontos problemáticos da v1. Se você ainda não leu as publicações do blog sobre as versões beta para [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) ou [Linux](/blog/wails-v2-beta-for-linux/), recomendo que as leia, pois elas abordam todas as principais mudanças em mais detalhes. Em resumo:
 
 - Componente WebView2 para Windows, compatível com padrões web modernos e recursos de depuração.
-- [Tema escuro/claro](https://wails.io/docs/reference/options#theme) + [temas personalizados](https://wails.io/docs/reference/options#customtheme) no Windows.
+- [Tema escuro/claro](https://v2.wails.io/docs/reference/options#theme) + [temas personalizados](https://v2.wails.io/docs/reference/options#customtheme) no Windows.
 - O Windows agora não exige CGO.
 - Compatibilidade pronta para uso com modelos de projeto Svelte, Vue, React, Preact, Lit e Vanilla.
 - Integração com o [Vite](https://vitejs.dev/), que oferece um ambiente de desenvolvimento com recarregamento automático para seu aplicativo.
-- [Menus](https://wails.io/docs/guides/application-development#application-menu) e [caixas de diálogo](https://wails.io/docs/reference/runtime/dialog) nativos do aplicativo.
-- Efeitos nativos de translucidez de janelas para [Windows](https://wails.io/docs/reference/options#windowistranslucent) e [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Compatibilidade com planos de fundo Mica e Acrylic.
-- Gere facilmente um [instalador NSIS](https://wails.io/docs/guides/windows-installer) para implantações no Windows.
-- Uma ampla [biblioteca de runtime](https://wails.io/docs/reference/runtime/intro) que fornece métodos utilitários para manipulação de janelas, eventos, caixas de diálogo, menus e registro de logs.
-- Compatibilidade com a [ofuscação](https://wails.io/docs/guides/obfuscated) do seu aplicativo usando o [garble](https://github.com/burrowers/garble).
+- [Menus](https://v2.wails.io/docs/guides/application-development#application-menu) e [caixas de diálogo](https://v2.wails.io/docs/reference/runtime/dialog) nativos do aplicativo.
+- Efeitos nativos de translucidez de janelas para [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) e [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Compatibilidade com planos de fundo Mica e Acrylic.
+- Gere facilmente um [instalador NSIS](https://v2.wails.io/docs/guides/windows-installer) para implantações no Windows.
+- Uma ampla [biblioteca de runtime](https://v2.wails.io/docs/reference/runtime/intro) que fornece métodos utilitários para manipulação de janelas, eventos, caixas de diálogo, menus e registro de logs.
+- Compatibilidade com a [ofuscação](https://v2.wails.io/docs/guides/obfuscated) do seu aplicativo usando o [garble](https://github.com/burrowers/garble).
 - Compatibilidade com a compactação do seu aplicativo usando o [UPX](https://upx.github.io/).
-- Geração automática de TypeScript a partir de structs Go. Mais informações [aqui](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Geração automática de TypeScript a partir de structs Go. Mais informações [aqui](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - Não é necessário distribuir bibliotecas adicionais nem DLLs com seu aplicativo. Em nenhuma plataforma.
 - Não é necessário empacotar os ativos do frontend. Basta desenvolver seu aplicativo como qualquer outro aplicativo web.
 
