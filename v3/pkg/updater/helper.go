@@ -32,6 +32,7 @@ const (
 	envHelperPID    = "WAILS_UPDATER_HELPER_PID"    // parent PID to wait for
 	envHelperLog    = "WAILS_UPDATER_HELPER_LOG"    // optional log file path
 	envHelperReady  = "WAILS_UPDATER_HELPER_READY"  // readiness status file path
+	envHelperFrom   = "WAILS_UPDATER_HELPER_FROM"   // version being replaced
 )
 
 // HandleHelperMode returns immediately when the current process was not
@@ -122,8 +123,10 @@ var swapRetryDelay = 500 * time.Millisecond
 //	18  staged payload was not installable; original untouched and relaunched
 //	19  installed application failed validation, backup restored
 //	20  validation failed AND restore failed — the install is broken
+//	21  applied marker could not be written, backup restored
+//	22  marker write failed AND restore failed — the install is broken
 //
-// Only 14, 16 and 20 leave the user without a working application, and each is
+// Only 14, 16, 20 and 22 leave the user without a working application, and each is
 // a restore that itself failed after an earlier failure. Every other code has
 // either changed nothing or rolled back to what was there before.
 func runHelperSwap(target, newPath string, parentPID int, logPath string, wait processWaiter, l launcher) int {
@@ -168,6 +171,7 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	// The parent has exited. Clear helper mode before backup or replacement
 	// so both the new application and any recovered original boot normally.
+	from := os.Getenv(envHelperFrom)
 	clearHelperEnv()
 
 	// Re-validate the payload now the wait is over. The stat at the top of this
@@ -282,7 +286,27 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		return 19
 	}
 
+	marker := appliedMarker(target)
+	if from != "" {
+		// Without the marker the new version never sees OnUpdateApplied, so its post-update bookkeeping would be
+		// skipped; the old version runs again instead and the update can be retried.
+		if err := os.WriteFile(marker, []byte(from), 0o600); err != nil {
+			_ = os.Remove(marker)
+			lg.logf("applied marker: %v — restoring backup", err)
+			if err := restoreFromBackup(backup, target, l); err != nil {
+				lg.logf("restore failed: %v", err)
+				return 22
+			}
+			return 21
+		}
+	}
+
 	if err := l.launch(target); err != nil {
+		// A marker left behind names the restored version itself, which
+		// consumeAppliedMarker ignores.
+		if err := os.Remove(marker); err != nil && !os.IsNotExist(err) {
+			lg.logf("applied marker cleanup: %v", err)
+		}
 		lg.logf("launch new failed: %v — restoring backup", err)
 		if err := restoreFromBackup(backup, target, l); err != nil {
 			lg.logf("restore failed: %v", err)
@@ -311,6 +335,39 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	lg.logf("helper done")
 	return 0
+}
+
+// appliedMarker is where the helper tells the relaunched application which
+// version it replaced, since environment variables do not survive a relaunch
+// through `open` on macOS. It sits beside the target, in the directory the
+// update already has to write to, rather than in a temp dir other local users
+// can write to.
+func appliedMarker(target string) string {
+	return filepath.Join(filepath.Dir(target), "."+filepath.Base(target)+".wails-updated")
+}
+
+// consumeAppliedMarker returns the version recorded by the helper that just
+// replaced this application, removing the marker so it is reported once. It
+// reports nothing when the marker cannot be removed, or when it names current,
+// which means the helper restored the old version after a failed launch.
+func consumeAppliedMarker(current string) (string, bool) {
+	target, err := resolveTarget()
+	if err != nil {
+		return "", false
+	}
+	path := appliedMarker(target)
+	// Reading a FIFO would block Init.
+	if info, err := os.Lstat(path); err != nil || !info.Mode().IsRegular() {
+		return "", false
+	}
+	from, err := os.ReadFile(path)
+	if err != nil {
+		return "", false
+	}
+	if err := os.Remove(path); err != nil {
+		return "", false
+	}
+	return string(from), string(from) != current
 }
 
 func restoreFromBackup(backup, target string, l launcher) error {
@@ -453,7 +510,7 @@ func (h *helperLog) Close() {
 // process. Called after the parent exits and before backup or replacement,
 // so both the new application and any recovered original boot normally.
 func clearHelperEnv() {
-	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
+	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady, envHelperFrom} {
 		_ = os.Unsetenv(k)
 	}
 }

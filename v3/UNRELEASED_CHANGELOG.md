@@ -14,6 +14,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `updater.Config.OnUpdateApplied`, called on the first launch after an update with the replaced version, for bookkeeping such as refreshing an installer's registered version
 
 ## Changed
 <!-- Changes in existing functionality -->
