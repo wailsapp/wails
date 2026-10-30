@@ -164,7 +164,7 @@ type _Ctype___uint32_t = _Ctype_uint
 type _Ctype_bool bool
 type _Ctype_cairo_rectangle_int_t = _Ctype_struct__cairo_rectangle_int
 type _Ctype_cairo_region_t = _Ctype_struct__cairo_region
-type _Ctype_char uint8
+type _Ctype_char int8
 type _Ctype_double float64
 type _Ctype_float float32
 type _Ctype_gboolean = _Ctype_gint
