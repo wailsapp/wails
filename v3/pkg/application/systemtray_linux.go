@@ -524,9 +524,24 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	return impl
 }
 
+// openMenu asks hosts to show the tray menu by emitting dbusmenu's
+// ItemActivationRequested for the root item. This is best-effort: many
+// StatusNotifierItem hosts ignore the signal, and SNI offers no other way
+// for an application to open its own menu.
 func (s *linuxSystemTray) openMenu() {
-	// FIXME: Emit com.canonical to open?
-	globalApplication.info("systray error: openMenu not implemented on Linux")
+	if s.conn == nil {
+		return
+	}
+
+	if err := menu.Emit(s.conn, &menu.Dbusmenu_ItemActivationRequestedSignal{
+		Path: menuPath,
+		Body: &menu.Dbusmenu_ItemActivationRequestedSignalBody{
+			Id:        0, // root: the whole menu
+			Timestamp: 0, // X11 CurrentTime; there is no originating input event
+		},
+	}); err != nil {
+		globalApplication.error("systray error: failed to request menu activation: %w", err)
+	}
 }
 
 func (s *linuxSystemTray) setLabel(label string) {
