@@ -46,7 +46,10 @@ func SchemaReferenceMarkdown() []byte {
 			defaultValue = "`" + field.Default + "`"
 		}
 		appliesTo := strings.Join(nonempty(field.Platforms, field.Formats), ", ")
-		fmt.Fprintf(&output, "| `%s` | %s | %s | %s | `%s` | %s | %s |\n", field.Path, field.Type, map[bool]string{true: "yes", false: "no"}[field.Required], defaultValue, field.Example, appliesTo, field.Description)
+		if appliesTo != "" {
+			appliesTo = "`" + appliesTo + "`"
+		}
+		fmt.Fprintf(&output, "| `%s` | `%s` | %s | %s | `%s` | %s | %s |\n", field.Path, field.Type, map[bool]string{true: "yes", false: "no"}[field.Required], defaultValue, field.Example, appliesTo, field.Description)
 	}
 	return []byte(output.String())
 }
@@ -259,6 +262,9 @@ var schemaAttributeExamples = map[string]string{
 }
 
 func schemaDescription(path, name string) string {
+	if metadata, ok := platformSigningMetadata(path, name); ok {
+		return metadata.description
+	}
 	if path == "dev.args" || strings.HasSuffix(path, ".dev.args") {
 		return "Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list."
 	}
@@ -272,6 +278,9 @@ func schemaDescription(path, name string) string {
 }
 
 func schemaExample(path, name string, destination reflect.Type, defaultText string) string {
+	if metadata, ok := platformSigningMetadata(path, name); ok {
+		return metadata.example
+	}
 	if path == "version" {
 		return "3"
 	}

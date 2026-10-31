@@ -85,6 +85,59 @@ a profile:
 wails3 build --targets linux/amd64 --formats deb,rpm
 ```
 
+## Cross-compile desktop applications
+
+For the experimental pure-Go desktop backend, set `CGO_ENABLED: "0"` in the
+build environment. Wake selects the `purego` tag for macOS and Linux GUI
+programs and uses Go directly on Windows, macOS and Linux hosts. Building
+desktop executables does not require Docker, emulation, a C compiler or a
+target-platform SDK in this mode. Application dependencies must also support
+`CGO_ENABLED=0`.
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+build:
+  output: bin
+  environment:
+    CGO_ENABLED: "0"
+```
+
+```bash
+wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwin/amd64,darwin/arm64
+wails3 build --targets darwin/universal --formats dmg
+```
+
+The second command combines both macOS architectures and creates an unsigned
+DMG using Go. It can run on any supported desktop host. Code signing and Apple
+notarisation remain separate macOS operations.
+
+The resolved mode is selected independently for each executable. A declared
+`build.environment.CGO_ENABLED`, target environment or binary environment
+overrides the invoking terminal's value. Otherwise, an explicitly selected
+`purego` tag, a CLI/server program or a Windows target defaults to `0`; macOS
+and Linux GUI programs default to `1`. `--plan --json` reports each executable's
+resolved compiler, CGo mode and tags. Cross-compilation creates target files;
+running an incompatible desktop target still requires the appropriate host.
+
+With `CGO_ENABLED=1`, Wake uses a compatible native toolchain or the configured
+`CC` cross-compiler first, then Zig for a Windows cross-build when available,
+then its existing Docker/Podman fallback where supported. An explicit `CC`
+must supply the target compiler, libraries and sysroot; Zig alone does not
+provide a Linux GTK/WebKit sysroot. Packaging and signing may need additional
+tools as described below. Mobile targets require CGo and their platform SDKs.
+
+Go-only compilation does not bundle the destination's system libraries.
+Linux GUI applications, including GUI companion executables, still require the
+GTK/WebKitGTK runtime selected by their build tags. Package dependencies or an
+appropriate deployment environment must provide it. CLI/server-only packages
+do not add those GUI dependencies by default; explicit dependency overrides
+remain available.
+
 ## Build several executables
 
 The project defines the primary program. Set `project.package` to its Go package
@@ -139,23 +192,84 @@ executables; zero disables it. UPX must be installed. Development and macOS
 builds omit compression. A compilation or compression failure preserves the
 previous published program.
 
-## Native package adapters
+## Package and sign for distribution
+
+Unsigned package creation has a different host/tool requirement from signing:
+
+| Output | Creation hosts and tools | Signing |
+| --- | --- | --- |
+| Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Windows host and signing tools. |
+| Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Windows host and signing tools. |
+| macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | macOS with Apple tools and credentials. |
+| Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned. |
+| Linux AppImage | Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin. | No built-in AppImage signing flow. |
 
 Windows MSIX archives are created directly in Go; creating an unsigned package
 does not require the Windows SDK or Docker. Windows signing still requires a
 Windows host and its signing tools. NSIS uses the external NSIS compiler and
-accepts literal definitions through `packages.nsis.defines`.
+accepts literal definitions through `packages.nsis.defines`. On macOS, Wails
+supplies a UTF-8 locale only to the NSIS compiler child when its inherited
+locale is not UTF-8; terminal and application environments are unchanged.
+The stock NSIS installer omits the WebView2 bootstrapper when every packaged
+executable is a CLI or server. A GUI primary or companion retains WebView2.
+Custom NSIS scripts retain the bootstrapper for compatibility with their own
+runtime-installation logic.
 
 Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain
 the external linuxdeploy and GTK plugin boundary. Set
 `packages.appimage.update_info` to request a zsync file and
 `packages.appimage.checksum: true` for a SHA256 file. Sidecars are restored from
 the package cache and listed in the artifact receipt alongside the AppImage.
+AppImage packaging currently requires Linux and a matching host/target
+architecture. Its GTK detection does not discover libraries loaded dynamically
+by a pure-Go GUI, so this adapter does not yet support pure-Go GUI deployment.
+Use one of the Linux package-manager formats for that build mode.
+
+Arch packages preserve prereleases in native package metadata, for example
+`1.2.3-beta.2` becomes `1.2.3beta.2-1`, which sorts before the final release.
+Void dependencies accept bare package names such as `gtk4`, normalised to
+`gtk4>=0`; explicit version comparisons and complete `name-version_revision`
+values are preserved. Use Void package names rather than library filenames.
+
+To create an Arch package and detached signature, use an exported armored PGP
+private-key file and optionally name a passphrase environment variable:
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+build:
+  environment:
+    CGO_ENABLED: "0"
+linux:
+  signing:
+    certificate: signing/private-key.asc
+    credential: ARCH_SIGNING_PASSPHRASE
+profiles:
+  release:
+    targets:
+      linux/amd64:
+        formats: [archlinux]
+        sign: true
+```
+
+Set the named environment variable through your local environment or CI secret
+store, then run `wails3 build release`. Omit `credential` for an unencrypted
+key. The Go signer runs on every supported desktop host and does not require
+GPG. It publishes the original `.pkg.tar.zst` and a sibling `.pkg.tar.zst.sig`;
+both are recorded separately in the artifact receipt. Key contents are not
+staged or stored in the build cache. Signatures and their publication are never
+reused from cache. Failed signing preserves the previous published pair, and
+publication rolls both files back if installing either file fails. This does
+not make two filesystem renames atomic to concurrent readers.
 
 macOS app bundles include companion programs. Set
 `darwin.microphone_usage_description` to add the usage text and, when no custom
 entitlements file is supplied, the audio-input entitlement. Custom plist and
-entitlements sources remain unchanged. Signing and notarization use the
+entitlements sources remain unchanged. Signing and notarisation use the
 existing Apple tools and credentials on macOS; notarization requires a real
 notary profile. Signed outputs retain their platform extension, for example
 `notes.signed.app` and `notes.signed.dmg`.
@@ -376,8 +490,8 @@ release warns on legacy Taskfile routing, and the next removes Taskfile
 execution together with the aliases. Each transition requires the native-host
 acceptance matrix for that release to be green.
 
-See the generated [`wails.yaml` field reference](/reference/wails-yaml-fields)
+See the generated [`wails.yaml` field reference](/reference/wails-yaml-fields/)
 for every field, type, default and applicability rule.
 
-The [`wails3 run` configuration reference](/reference/wails-yaml-run) describes
+The [`wails3 run` configuration reference](/reference/wails-yaml-run/) describes
 local launch defaults, platform overrides and the no-manifest `go run .` fallback.

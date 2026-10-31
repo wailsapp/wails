@@ -288,7 +288,7 @@ func TestSchemaReferenceDerivesFieldsTypesAndDefaults(t *testing.T) {
 	assert.True(t, byPath["project"].Required)
 	assert.True(t, byPath[`profiles["profile"].targets`].Required)
 	assert.True(t, byPath[`file_associations["association"].extensions`].Required)
-	assert.Contains(t, string(SchemaReferenceMarkdown()), "| `build.output` | string | no | `bin` | `\"bin\"` |")
+	assert.Contains(t, string(SchemaReferenceMarkdown()), "| `build.output` | `string` | no | `bin` | `\"bin\"` |")
 	assert.Equal(t, "nsis", byPath[`packages["format"].install_scope`].Formats)
 }
 

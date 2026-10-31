@@ -209,6 +209,12 @@
           link: "/experimental/"
         - label: "Wake"
           link: "/experimental/wake/"
+        - label: "YAML-Builds"
+          link: "/experimental/yaml-builds/"
+        - label: "YAML-Manifestfelder"
+          link: "/reference/wails-yaml-fields/"
+        - label: "YAML-Ausführungskonfiguration"
+          link: "/reference/wails-yaml-run/"
         - label: "LLM-Steuerung (MCP)"
           link: "/guides/mcp-service/"
 - label: "Grundkonzepte"
@@ -231,7 +237,7 @@
       link: "/reference/overview/"
     - label: "Anwendung"
       link: "/reference/application/"
-    - label: "Fenster"
+    - label: "Windows"
       collapsed: true
       items:
         - label: "Fenster-API"
@@ -269,7 +275,7 @@
       link: "/faq/"
     - label: "Syso-Dateien unter macOS"
       link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
+    - label: "Fenster"
       collapsed: true
       items:
         - label: "RDP-Probleme"

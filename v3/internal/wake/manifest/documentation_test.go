@@ -31,10 +31,12 @@ func TestPublishedYAMLGuideExamplesMatchTheManifestSchema(t *testing.T) {
 			require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", script), []byte("#!/bin/sh\n"), 0o755))
 		}
 		require.NoError(t, os.WriteFile(filepath.Join(root, "version.txt"), []byte("1.0.0\n"), 0o644))
-		_, err := decodeYAML(root, guide, []byte(example), "")
+		loaded, err := decodeYAML(root, guide, []byte(example), "")
 		require.NoErrorf(t, err, "YAML example %d", index+1)
-		_, err = decodeYAML(root, guide, []byte(example), "release")
-		require.NoErrorf(t, err, "YAML example %d release profile", index+1)
+		for profile := range loaded.Config.Profiles {
+			_, err = decodeYAML(root, guide, []byte(example), profile)
+			require.NoErrorf(t, err, "YAML example %d profile %s", index+1, profile)
+		}
 	}
 }
 

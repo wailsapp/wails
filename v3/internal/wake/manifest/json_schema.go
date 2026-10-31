@@ -108,7 +108,7 @@ func jsonSchemaNamedMap(name string, child *schemaNode, parent string) map[strin
 	switch name {
 	case "package":
 		properties := map[string]any{}
-		for _, format := range []string{"nsis", "msix", "dmg", "appimage", "deb", "rpm", "archlinux"} {
+		for _, format := range []string{"nsis", "msix", "dmg", "appimage", "deb", "rpm", "archlinux", "void"} {
 			properties[format] = jsonSchemaNode(child, `packages[`+strconv.Quote(format)+`]`)
 		}
 		result["properties"] = properties

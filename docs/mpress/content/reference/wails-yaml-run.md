@@ -31,6 +31,10 @@ root and the desktop application's working directory.
 The default target is the host operating system and architecture. Mobile targets
 require explicit selection. Cross-compilation does not imply that a desktop
 executable can run on the host; incompatible desktop targets fail before building.
+This includes executables built with `CGO_ENABLED=0`: a successful Go-only
+cross-build does not supply an emulator or change the local launch contract.
+Use [`wails3 build` for cross-compilation](/experimental/yaml-builds/#cross-compile-desktop-applications)
+and run or install the resulting files on their target system.
 Use `--target android/arm64 --device <adb-serial>` or `--target android/arm64 --emulator <avd-name>` for Android.
 The selected architecture must match the device or emulator. Use `--target ios/arm64 --device <udid>` for an iOS simulator, adding `--destination device` for a physical device. iOS planning and execution require macOS and Xcode.
 
@@ -73,12 +77,12 @@ precedence over OS-wide settings, regardless of map order.
 
 | Field | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `run.tags` | list(string) | `[]` | Additional Go tags used only by run builds. |
-| `run.args` | list(string) | `[]` | Arguments passed to the application. |
-| `run.environment` | map(string) | `{}` | Runtime environment overrides, separate from compiler environment. |
-| `target["<os>"].run.tags` | list(string) | `[]` | Additional run tags for the selected platform. |
-| `target["<os>"].run.args` | list(string) | inherited | Replaces shared arguments when explicitly set; `[]` clears them. |
-| `target["<os>"].run.environment` | map(string) | `{}` | Overrides shared runtime environment values by key. |
+| `run.tags` | `list(string)` | `[]` | Additional Go tags used only by run builds. |
+| `run.args` | `list(string)` | `[]` | Arguments passed to the application. |
+| `run.environment` | `map(string)` | `{}` | Runtime environment overrides, separate from compiler environment. |
+| `target["<os>"].run.tags` | `list(string)` | `[]` | Additional run tags for the selected platform. |
+| `target["<os>"].run.args` | `list(string)` | inherited | Replaces shared arguments when explicitly set; `[]` clears them. |
+| `target["<os>"].run.environment` | `map(string)` | `{}` | Overrides shared runtime environment values by key. |
 
 Arguments are passed as an argument vector, without shell expansion. Environment
 values are literal strings under the existing YAML literal-only contract.

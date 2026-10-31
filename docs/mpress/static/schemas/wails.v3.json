@@ -39,19 +39,19 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative signing certificate file.",
+              "description": "Project-relative Android signing keystore file.",
               "type": "string"
             },
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Name of the environment variable containing the keystore password; never the password itself.",
               "type": "string"
             },
             "entitlements": {
-              "description": "Project-relative Apple entitlements file.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "identity": {
-              "description": "Signing identity selected through the platform toolchain.",
+              "description": "Android signing key alias when key_alias is omitted.",
               "type": "string"
             },
             "key_alias": {
@@ -59,15 +59,15 @@
               "type": "string"
             },
             "provisioning_profile": {
-              "description": "Project-relative Apple provisioning profile.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "thumbprint": {
-              "description": "Windows certificate thumbprint.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the signing timestamp service.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             }
           },
@@ -258,7 +258,7 @@
           "additionalProperties": false,
           "properties": {
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Name of the Apple notarytool keychain profile used for notarisation.",
               "type": "string"
             }
           },
@@ -272,11 +272,11 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative signing certificate file.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "entitlements": {
@@ -284,23 +284,23 @@
               "type": "string"
             },
             "identity": {
-              "description": "Signing identity selected through the platform toolchain.",
+              "description": "macOS code-signing identity from the keychain; use - for ad-hoc signing.",
               "type": "string"
             },
             "key_alias": {
-              "description": "Alias of the Android signing key.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "provisioning_profile": {
-              "description": "Project-relative Apple provisioning profile.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "thumbprint": {
-              "description": "Windows certificate thumbprint.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the signing timestamp service.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             }
           },
@@ -638,11 +638,11 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative signing certificate file.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "entitlements": {
@@ -650,11 +650,11 @@
               "type": "string"
             },
             "identity": {
-              "description": "Signing identity selected through the platform toolchain.",
+              "description": "Apple code-signing identity from the macOS keychain.",
               "type": "string"
             },
             "key_alias": {
-              "description": "Alias of the Android signing key.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "provisioning_profile": {
@@ -662,11 +662,11 @@
               "type": "string"
             },
             "thumbprint": {
-              "description": "Windows certificate thumbprint.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the signing timestamp service.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             }
           },
@@ -713,35 +713,35 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative signing certificate file.",
+              "description": "Arch: project-relative exported armored PGP private-key file. DEB/RPM: PGP key identifier passed to the external signing tool.",
               "type": "string"
             },
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Arch: optional environment variable containing the private-key passphrase; omit for an unencrypted key.",
               "type": "string"
             },
             "entitlements": {
-              "description": "Project-relative Apple entitlements file.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "identity": {
-              "description": "Signing identity selected through the platform toolchain.",
+              "description": "DEB signing role; defaults to builder. Not used by the Arch detached signer.",
               "type": "string"
             },
             "key_alias": {
-              "description": "Alias of the Android signing key.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "provisioning_profile": {
-              "description": "Project-relative Apple provisioning profile.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "thumbprint": {
-              "description": "Windows certificate thumbprint.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the signing timestamp service.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             }
           },
@@ -972,6 +972,43 @@
             },
             "template": {
               "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "void": {
+          "additionalProperties": false,
+          "properties": {
+            "dependencies": {
+              "description": "Native package dependencies.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maintainer": {
+              "description": "Native Linux package maintainer.",
+              "type": "string"
+            },
+            "post_install": {
+              "description": "Project-relative Linux post-install script.",
+              "type": "string"
+            },
+            "post_remove": {
+              "description": "Project-relative Linux post-remove script.",
+              "type": "string"
+            },
+            "pre_install": {
+              "description": "Project-relative Linux pre-install script.",
+              "type": "string"
+            },
+            "pre_remove": {
+              "description": "Project-relative Linux pre-remove script.",
+              "type": "string"
+            },
+            "section": {
+              "description": "Linux package repository section.",
               "type": "string"
             }
           },
@@ -1350,35 +1387,35 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative signing certificate file.",
+              "description": "Project-relative PFX signing certificate file; alternatively configure thumbprint.",
               "type": "string"
             },
             "credential": {
-              "description": "Named external credential reference; never secret material.",
+              "description": "Name of the environment variable containing the PFX certificate password; never the password itself.",
               "type": "string"
             },
             "entitlements": {
-              "description": "Project-relative Apple entitlements file.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "identity": {
-              "description": "Signing identity selected through the platform toolchain.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "key_alias": {
-              "description": "Alias of the Android signing key.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "provisioning_profile": {
-              "description": "Project-relative Apple provisioning profile.",
+              "description": "Not used by this platform's signing operation.",
               "type": "string"
             },
             "thumbprint": {
-              "description": "Windows certificate thumbprint.",
+              "description": "Thumbprint of a certificate in the Windows certificate store.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the signing timestamp service.",
+              "description": "URL of the Windows signing timestamp service.",
               "type": "string"
             }
           },
