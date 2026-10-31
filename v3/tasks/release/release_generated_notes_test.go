@@ -42,6 +42,9 @@ func TestGeneratedNotesReachReleaseAndTag(t *testing.T) {
 			write(runtimePackageLock, "{\n  \"version\": \"3.0.0\",\n  \"packages\": {\n    \"\": {\n      \"version\": \"3.0.0\"\n    }\n  }\n}\n")
 			write("docs/mpress/content/changelog.md", "# Changelog\n\n## [Unreleased]\n\n## v3.0.0 - 2026-10-01\n\n## Fixed\n- Historical fix\n")
 			gitIn(t, root, "init", "-q", "-b", "master")
+			// runRelease commits directly, outside gitIn's per-command identity.
+			gitIn(t, root, "config", "user.name", "Release test")
+			gitIn(t, root, "config", "user.email", "release-test@example.invalid")
 			gitIn(t, root, "add", ".")
 			gitIn(t, root, "commit", "-q", "-m", "baseline")
 			gitIn(t, root, "tag", "v3.0.0")
