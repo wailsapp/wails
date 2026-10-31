@@ -9,11 +9,14 @@ on:
         type: string
   pull_request:
     paths:
-      - 'v3/scripts/*changelog*.py'
+      - 'v3/scripts/*changelog*.go'
+      - 'v3/tasks/changelog/**'
+      - 'v3/tasks/releaseci/**'
+      - 'v3/go.mod'
+      - 'v3/go.sum'
       - 'v3/tasks/release/**'
       - 'v3/UNRELEASED_CHANGELOG.md'
       - '.github/workflows/**'
-      - '.github/scripts/test_release_ci.py'
 
 permissions:
   contents: read
@@ -32,12 +35,11 @@ jobs:
             echo '::error::DO NOT recreate v3/UNRELEASED_CHANGELOG.md. Release notes come from merged PRs.'
             exit 1
           fi
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.27'
+          cache-dependency-path: v3/go.sum
       - name: Test release-note generation and archive synchronization
-        run: python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'
-      - name: Install workflow test dependency
-        run: |
-          python3 -m venv "$RUNNER_TEMP/ci-test-venv"
-          "$RUNNER_TEMP/ci-test-venv/bin/pip" install PyYAML==6.0.3
+        run: go -C v3 test -race ./tasks/changelog
       - name: Test CI scope, release gating, and competing pushes
-        run: |
-          "$RUNNER_TEMP/ci-test-venv/bin/python" .github/scripts/test_release_ci.py
+        run: go -C v3 test -race ./tasks/releaseci
