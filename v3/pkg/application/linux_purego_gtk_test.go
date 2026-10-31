@@ -1632,8 +1632,8 @@ func TestGTKMenuActionsAreScopedToWindow(t *testing.T) {
 	native := menu.impl.(*linuxMenu).native
 	first := newTestWindow(t, app, 1041, pointer(native), LinuxMenuStyleMenuBar)
 	second := newTestWindow(t, app, 1042, pointer(native), LinuxMenuStyleMenuBar)
-	first.menuInstalled = menu
-	second.menuInstalled = menu
+	globalApplication.applicationMenu = menu
+	// Both windows inherit the application menu, so neither is explicit.
 	activate := func(w *linuxWebviewWindow) bool {
 		return tGtkWidgetActivateActionVariant(uintptr(w.webview), "app."+name, 0) != 0
 	}

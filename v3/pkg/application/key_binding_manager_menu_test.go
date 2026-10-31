@@ -13,6 +13,9 @@ func TestApplicationMenuBindingRespectsWindowRemoval(t *testing.T) {
 	item := menu.AddSubmenu("File").Add("Action").SetAccelerator("Ctrl+M").OnClick(func(*Context) { clicks <- struct{}{} })
 	app.applicationMenu = menu
 	manager.addMenuBinding(item)
+	if got := manager.GetAll(); len(got) != 1 {
+		t.Fatalf("menu binding is absent from GetAll: %v", got)
+	}
 	key := item.accelerator.String()
 	removed := &WebviewWindow{menuRemoved: true}
 	visible := &WebviewWindow{}
@@ -32,8 +35,20 @@ func TestApplicationMenuBindingRespectsWindowRemoval(t *testing.T) {
 	if !manager.Process(key, removed) || !called {
 		t.Fatal("removal suppressed an unrelated application key binding")
 	}
+	called = false
+	if !manager.Process(key, visible) || !called {
+		t.Fatal("menu shortcut masked an application key binding")
+	}
+	if got := manager.GetAll(); len(got) != 1 {
+		t.Fatalf("duplicate shortcut in GetAll: %v", got)
+	}
 	manager.removeMenuBinding(item)
 	if !manager.Process(key, visible) {
 		t.Fatal("removing menu binding removed application key binding")
+	}
+	manager.addMenuBinding(item)
+	manager.Remove(key)
+	if manager.Process(key, visible) || len(manager.GetAll()) != 0 {
+		t.Fatal("Remove left a binding behind")
 	}
 }
