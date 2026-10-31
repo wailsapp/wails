@@ -614,7 +614,9 @@ func generatePGPKeyForSetup(name, email, password, privatePath, publicPath strin
 		return fmt.Errorf("failed to create armor encoder: %w", err)
 	}
 
-	err = entity.SerializePrivate(privateArmor, config)
+	// NewEntity already created the self-signatures. Re-signing after encryption
+	// requires private key material that Encrypt has removed from memory.
+	err = entity.SerializePrivateWithoutSigning(privateArmor, config)
 	if err != nil {
 		return fmt.Errorf("failed to serialize private key: %w", err)
 	}
