@@ -107,6 +107,10 @@ func Write(ctx context.Context, output io.Writer, options Options) error {
 	if err != nil {
 		return err
 	}
+	options.Metadata, err = normalizeDependencies(options.Metadata)
+	if err != nil {
+		return err
+	}
 	description, _, _ := strings.Cut(options.Description, "\n")
 	if description == "" || len([]rune(description)) > 80 {
 		return fmt.Errorf("XBPS description needs a nonempty first line of at most 80 characters")

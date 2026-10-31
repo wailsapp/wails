@@ -17,13 +17,13 @@ func (h *manifestHandler) packageVoid(ctx context.Context, spec pipeline.Package
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	options := voidpackage.Options{Metadata: voidpackage.Metadata{Name: spec.Project.BinaryName, Version: strings.ReplaceAll(version.Version, "-", "~"), SourceVersion: version.Version, Arch: spec.TargetArch, Description: spec.Project.Description, Maintainer: spec.Config.Maintainer, Depends: spec.Config.Dependencies}, Contents: []voidpackage.Entry{{Source: filepath.Join(h.root, spec.Binary), Destination: "usr/bin/" + spec.Project.BinaryName, Mode: 0755}}}
+	options := voidpackage.Options{Metadata: voidpackage.Metadata{Name: spec.Project.BinaryName, Version: strings.ReplaceAll(version.Version, "-", "~"), SourceVersion: version.Version, Arch: spec.TargetArch, Description: spec.Project.Description, Maintainer: spec.Config.Maintainer, Depends: spec.Config.Dependencies}, Contents: []voidpackage.Entry{{Source: filepath.Join(h.root, spec.Binary), Destination: "/usr/bin/" + spec.Project.BinaryName, Mode: 0755}}}
 	for _, binary := range spec.Companions {
-		options.Contents = append(options.Contents, voidpackage.Entry{Source: filepath.Join(h.root, binary.Path), Destination: "usr/bin/" + binary.Name, Mode: 0755})
+		options.Contents = append(options.Contents, voidpackage.Entry{Source: filepath.Join(h.root, binary.Path), Destination: "/usr/bin/" + binary.Name, Mode: 0755})
 	}
 	for _, item := range []struct{ source, destination string }{
-		{filepath.Join(h.root, spec.Assets, "appicon.png"), "usr/share/icons/hicolor/256x256/apps/" + spec.Project.BinaryName + ".png"},
-		{filepath.Join(h.root, spec.Assets, "linux", spec.Project.BinaryName+".desktop"), "usr/share/applications/" + spec.Project.BinaryName + ".desktop"},
+		{filepath.Join(h.root, spec.Assets, "appicon.png"), "/usr/share/icons/hicolor/256x256/apps/" + spec.Project.BinaryName + ".png"},
+		{filepath.Join(h.root, spec.Assets, "linux", spec.Project.BinaryName+".desktop"), "/usr/share/applications/" + spec.Project.BinaryName + ".desktop"},
 	} {
 		if _, err := os.Stat(item.source); err == nil {
 			options.Contents = append(options.Contents, voidpackage.Entry{Source: item.source, Destination: item.destination, Mode: 0644})

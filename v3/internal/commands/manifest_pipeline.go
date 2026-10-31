@@ -2323,6 +2323,13 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 	config["arch"] = s.TargetArch
 	config["platform"] = "linux"
 	config["version"] = s.Project.Version
+	if s.Format == "archlinux" {
+		// Arch ignores NFPM's extracted prerelease field. Supply the complete
+		// native version explicitly; Debian/RPM's tilde sorts incorrectly here.
+		version, _, _ := strings.Cut(s.Project.Version, "+")
+		config["version"] = strings.ReplaceAll(version, "-", "")
+		config["version_schema"] = "none"
+	}
 	if s.Config.Maintainer != "" {
 		config["maintainer"] = s.Config.Maintainer
 	}
