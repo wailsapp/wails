@@ -23,7 +23,7 @@ type Dev struct {
 
 type Package struct {
 	Common
-	Tags string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
+	Tags    string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
 	Profile string `name:"profile" description:"Named profile to package"`
 	Targets string `name:"targets" description:"Comma-separated platform/architecture targets"`
 	Formats string `name:"formats" description:"Comma-separated package formats"`

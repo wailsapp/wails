@@ -178,7 +178,10 @@ func packageWithOperations(options *flags.Package, otherArgs []string, operation
 		if err != nil {
 			return err
 		}
-		return operations.run(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
+		return operations.run(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: splitComma(mergeTags(options.Tags, envTags()...))})
+	}
+	if tags := mergeTags(options.Tags, envTags()...); tags != "" {
+		otherArgs = append(otherArgs, "EXTRA_TAGS="+tags)
 	}
 	return operations.task("package", otherArgs)
 }

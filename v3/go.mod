@@ -13,8 +13,6 @@ require (
 	github.com/coder/websocket v1.8.14
 	github.com/danieljoos/wincred v1.2.3
 	github.com/ebitengine/purego v0.11.1
-	github.com/go-git/go-billy/v5 v5.7.0
-	github.com/go-git/go-git/v5 v5.16.4
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/goreleaser/nfpm/v2 v2.44.1
@@ -33,7 +31,11 @@ require (
 	modernc.org/sqlite v1.44.3
 )
 
-require github.com/BurntSushi/toml v1.6.0 // indirect
+require (
+	github.com/BurntSushi/toml v1.6.0 // indirect
+	github.com/go-git/go-billy/v5 v5.7.0 // indirect
+	github.com/go-git/go-git/v5 v5.16.4 // indirect
+)
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
