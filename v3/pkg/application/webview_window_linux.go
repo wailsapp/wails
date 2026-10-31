@@ -338,6 +338,7 @@ func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 // menu's accelerators are unregistered unless another window or the
 // application menu still uses that menu. GTK thread only.
 func (w *linuxWebviewWindow) replaceMenuBar(menu *Menu) {
+	setWindowMenuActions(w.window, menu != nil)
 	previous := w.menuInstalled
 	style := w.parent.options.Linux.MenuStyle
 	if w.menubar != nilPointer {
@@ -439,6 +440,9 @@ func (w *linuxWebviewWindow) run() {
 	w.window, w.webview, w.vbox, w.menubar = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	if explicit := w.parent.options.Linux.Menu; explicit != nil && w.menubar != nilPointer {
 		w.menuInstalled = explicit
+	}
+	if w.parent.menuRemoved {
+		setWindowMenuActions(w.window, false)
 	}
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()

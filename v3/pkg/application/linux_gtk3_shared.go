@@ -15,6 +15,8 @@ func (w *linuxWebviewWindow) zoomOut() {
 // holding the item is destroyed (windowDetachMenuBar).
 func unregisterMenuItemAccelerator(_ uint) {}
 
+func setWindowMenuActions(_ pointer, _ bool) {}
+
 // NewCalloc creates a new allocator. Returns a pointer so the allocation
 // pool is shared across calls without copying.
 func NewCalloc() *Calloc {

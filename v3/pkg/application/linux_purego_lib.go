@@ -186,7 +186,7 @@ func loadLinuxLibraries() error {
 	if len(missingSymbols) > 0 {
 		return fmt.Errorf("the installed GTK4/WebKitGTK libraries are missing required symbols: %s\n"+
 			"This usually means the libraries are older than the minimum supported versions "+
-			"(GTK 4.10+, WebKitGTK 2.40+). Please upgrade them",
+			"(GTK 4.8+, WebKitGTK 2.40+). Please upgrade them",
 			strings.Join(missingSymbols, ", "))
 	}
 	return nil

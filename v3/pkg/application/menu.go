@@ -287,3 +287,21 @@ func NewSubmenu(s string, items *Menu) *MenuItem {
 	result.submenu = items
 	return result
 }
+
+// suppressesApplicationMenuItem applies only to a window that removed its bar.
+func suppressesApplicationMenuItem(window Window, menu *Menu, item *MenuItem) bool {
+	w, ok := window.(*WebviewWindow)
+	return ok && w.menuRemoved && menuContainsItem(menu, item)
+}
+
+func menuContainsItem(menu *Menu, target *MenuItem) bool {
+	if menu == nil {
+		return false
+	}
+	for _, item := range menu.items {
+		if item == target || menuContainsItem(item.submenu, target) {
+			return true
+		}
+	}
+	return false
+}

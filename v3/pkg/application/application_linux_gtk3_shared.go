@@ -88,10 +88,11 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 func (a *linuxApp) unregisterWindow(w windowPointer) {
 	a.windowMapLock.Lock()
 	delete(a.windowMap, w)
+	remainingWindows := len(a.windowMap)
 	a.windowMapLock.Unlock()
 
 	// If this was the last window...
-	if len(a.windowMap) == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
+	if remainingWindows == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
 		a.destroy()
 	}
 }

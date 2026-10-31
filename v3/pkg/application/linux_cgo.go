@@ -1051,6 +1051,19 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_minimize(w.gtkWindow())
 }
 
+// setWindowMenuActions shadows the shared app actions when a window has no menu.
+func setWindowMenuActions(window pointer, enabled bool) {
+	if enabled {
+		C.attach_action_group_to_widget((*C.GtkWidget)(window))
+		return
+	}
+	group := C.g_simple_action_group_new()
+	name := C.CString("app")
+	defer C.free(unsafe.Pointer(name))
+	C.gtk_widget_insert_action_group((*C.GtkWidget)(window), name, (*C.GActionGroup)(unsafe.Pointer(group)))
+	C.g_object_unref(C.gpointer(group))
+}
+
 func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox, menubar pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))

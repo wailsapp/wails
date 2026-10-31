@@ -39,6 +39,7 @@ var (
 	testBindOnce sync.Once
 
 	tGtkInitCheck                     func() int32
+	tGtkWidgetActivateActionVariant   func(uintptr, string, uintptr) int32
 	tGApplicationRegister             func(uintptr, uintptr, uintptr) int32
 	tGMenuModelGetNItems              func(uintptr) int32
 	tGMenuModelGetItemAttributeValue  func(uintptr, int32, string, uintptr) uintptr
@@ -63,6 +64,7 @@ var (
 func bindTestNatives() {
 	testBindOnce.Do(func() {
 		purego.RegisterLibFunc(&tGtkInitCheck, libGtk, "gtk_init_check")
+		purego.RegisterLibFunc(&tGtkWidgetActivateActionVariant, libGtk, "gtk_widget_activate_action_variant")
 		purego.RegisterLibFunc(&tGApplicationRegister, libGio, "g_application_register")
 		purego.RegisterLibFunc(&tGMenuModelGetNItems, libGio, "g_menu_model_get_n_items")
 		purego.RegisterLibFunc(&tGMenuModelGetItemAttributeValue, libGio, "g_menu_model_get_item_attribute_value")
@@ -1613,5 +1615,40 @@ func TestGTKSetMenuPrimaryStyleHeaderBar(t *testing.T) {
 	w.setMenu(alpha)
 	if tGtkWindowGetTitlebar(uintptr(w.window)) == 0 {
 		t.Fatal("primary style header bar lost after re-set")
+	}
+}
+
+func TestGTKMenuActionsAreScopedToWindow(t *testing.T) {
+	if !runGTKTestInChild(t) {
+		return
+	}
+	app := newTestLinuxApp(t)
+	menu := newRuntimeMenu("Shared", "5")
+	item := runtimeMenuItem(menu)
+	name, ok := lookupActionName(item.id)
+	if !ok {
+		t.Fatal("missing menu action")
+	}
+	native := menu.impl.(*linuxMenu).native
+	first := newTestWindow(t, app, 1041, pointer(native), LinuxMenuStyleMenuBar)
+	second := newTestWindow(t, app, 1042, pointer(native), LinuxMenuStyleMenuBar)
+	first.menuInstalled = menu
+	second.menuInstalled = menu
+	activate := func(w *linuxWebviewWindow) bool {
+		return tGtkWidgetActivateActionVariant(uintptr(w.webview), "app."+name, 0) != 0
+	}
+	if !activate(first) || !activate(second) {
+		t.Fatal("shared menu action not available in both windows")
+	}
+	first.setMenu(nil)
+	if activate(first) {
+		t.Fatal("removed menu action still available")
+	}
+	if !activate(second) {
+		t.Fatal("other window lost its menu action")
+	}
+	first.setMenu(menu)
+	if !activate(first) {
+		t.Fatal("menu action did not return after restoring menu")
 	}
 }

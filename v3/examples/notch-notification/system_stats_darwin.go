@@ -112,14 +112,15 @@ type vmStatistics64 struct {
 }
 
 var (
-	machOnce          sync.Once
-	machErr           error
-	machHostSelf      func() uint32
-	machTaskSelf      uint32
-	hostProcessorInfo func(host uint32, flavor int32, count *uint32, info *unsafe.Pointer, infoCount *uint32) int32
-	hostStatistics64  func(host uint32, flavor int32, info unsafe.Pointer, count *uint32) int32
-	hostPageSize      func(host uint32, size *uintptr) int32
-	vmDeallocate      func(task uint32, address unsafe.Pointer, size uintptr) int32
+	machOnce           sync.Once
+	machErr            error
+	machHostSelf       func() uint32
+	machTaskSelf       uint32
+	hostProcessorInfo  func(host uint32, flavor int32, count *uint32, info *unsafe.Pointer, infoCount *uint32) int32
+	hostStatistics64   func(host uint32, flavor int32, info unsafe.Pointer, count *uint32) int32
+	hostPageSize       func(host uint32, size *uintptr) int32
+	vmDeallocate       func(task uint32, address unsafe.Pointer, size uintptr) int32
+	machPortDeallocate func(task, name uint32) int32
 )
 
 func loadMach() error {
@@ -141,6 +142,7 @@ func loadMach() error {
 		purego.RegisterLibFunc(&hostStatistics64, lib, "host_statistics64")
 		purego.RegisterLibFunc(&hostPageSize, lib, "host_page_size")
 		purego.RegisterLibFunc(&vmDeallocate, lib, "vm_deallocate")
+		purego.RegisterLibFunc(&machPortDeallocate, lib, "mach_port_deallocate")
 	})
 	return machErr
 }
@@ -151,6 +153,7 @@ func readSystemSample() (systemSample, bool) {
 		return sample, false
 	}
 	host := machHostSelf()
+	defer machPortDeallocate(machTaskSelf, host)
 
 	var cpuCount, infoCount uint32
 	var info unsafe.Pointer

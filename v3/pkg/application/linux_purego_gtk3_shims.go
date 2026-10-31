@@ -139,6 +139,9 @@ func _Cfunc_g_thread_self() *_Ctype_GThread {
 
 func _Cfunc_CString(value string) *_Ctype_char {
 	ensureGTK3Libraries()
+	if gtk3Malloc == nil {
+		return nil // appNew reports the library loading error.
+	}
 	ptr := gtk3Malloc(uintptr(len(value) + 1))
 	buf := unsafe.Slice((*byte)(ptr), len(value)+1)
 	copy(buf, value)

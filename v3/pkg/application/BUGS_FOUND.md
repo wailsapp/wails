@@ -107,8 +107,9 @@ asset server with an empty body, so the echo comes back empty. Text bodies
 fails identically, so this is not a purego regression: the WKURLSchemeTask's
 NSURLRequest carries neither `HTTPBody` nor `HTTPBodyStream` for these
 requests. Linux solves the WebKitGTK equivalent with the injected Blob shim
-(see the GTK4 webview setup); macOS has no such shim. The parity probe reports
-Fixed in both backends by darwin_body_fetch_shim.js, installed at document
+(see the GTK4 webview setup); macOS had no such shim.
+
+This is fixed in both backends by darwin_body_fetch_shim.js, installed at document
 start: fetch and XMLHttpRequest bodies that are an ArrayBuffer or a typed-array
 view, and preconstructed Request bodies, are wrapped in a Blob for wails://
 requests. The parity probe now posts every binary body shape and fails on any

@@ -82,11 +82,14 @@ var (
 )
 
 // gsX11GrabError is the grab error flag, set by the X error handler installed
-// on our dedicated Display connection. Because every Xlib call this file makes
+// temporarily during a grab. Because every Xlib call this file makes
 // is serialized onto a single goroutine (the event loop), plain reads/writes
 // would suffice; atomics are used out of caution since the handler runs inside
 // Xlib.
 var gsX11GrabError int32
+
+// XSetErrorHandler is process-wide, so our grab operations must not overlap.
+var gsX11GrabMu sync.Mutex
 
 // gsX11ErrorHandler is the X error handler callback, created exactly once as a
 // package var (purego callback slots are a finite resource). It mirrors the
@@ -186,7 +189,6 @@ func newX11GlobalShortcuts(manager *GlobalShortcutManager) globalShortcutImpl {
 		g.startErr = fmt.Errorf("could not open an X11 display (global shortcuts via X require an X11 session)")
 		return g
 	}
-	lib.setErrorHandler(gsX11ErrorHandler)
 
 	fds := make([]int, 2)
 	if err := syscall.Pipe(fds); err != nil {
@@ -267,7 +269,11 @@ func (g *x11GlobalShortcuts) keycodeForName(name string) uint {
 // happens when another client already holds the combination. Must be called on
 // the event-loop goroutine.
 func (g *x11GlobalShortcuts) grabKey(keycode, modmask uint32) int {
+	gsX11GrabMu.Lock()
+	defer gsX11GrabMu.Unlock()
 	root := g.lib.defaultRootWindow(g.display)
+	previousHandler := g.lib.setErrorHandler(gsX11ErrorHandler)
+	defer g.lib.setErrorHandler(previousHandler)
 	atomic.StoreInt32(&gsX11GrabError, 0)
 	for _, lm := range gsX11LockMasks {
 		g.lib.grabKey(g.display, int32(keycode), modmask|lm, root, gsX11False, gsX11GrabModeAsync, gsX11GrabModeAsync)

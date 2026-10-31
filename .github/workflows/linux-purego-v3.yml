@@ -15,8 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: registry.fedoraproject.org/fedora:44
-      # WebKit and GTK image loaders create nested namespace sandboxes.
-      options: --security-opt seccomp=unconfined --security-opt apparmor=unconfined
     defaults:
       run:
         working-directory: v3
@@ -45,6 +43,8 @@ jobs:
           GSK_RENDERER: cairo
           LIBGL_ALWAYS_SOFTWARE: '1'
           WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          # The CI container cannot create WebKit's nested user namespaces.
+          WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
           WAILS_TEST_DIALOGS: '1'
         run: |
           for tags in purego purego,gtk3 '' gtk3; do
@@ -62,6 +62,8 @@ jobs:
           GSK_RENDERER: cairo
           LIBGL_ALWAYS_SOFTWARE: '1'
           WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          # The CI container cannot create WebKit's nested user namespaces.
+          WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
           WAYLAND_DISPLAY: wayland-wails
         run: |
           export XDG_RUNTIME_DIR=$(mktemp -d)
@@ -91,11 +93,12 @@ jobs:
           for iteration in 1 2 3 4 5; do
             /tmp/wails-webview-race
           done
-      - name: Assert application and CLI have no CGo dependencies
+      - name: Assert application and CLI have no unexpected CGo dependencies
         env:
-          CGO_ENABLED: '0'
+          CGO_ENABLED: '1'
         run: |
           for tags in purego purego,gtk3; do
             dependencies=$(go list -tags "$tags" -deps -f '{{if .CgoFiles}}{{.ImportPath}}{{end}}' ./pkg/application ./cmd/wails3)
+            dependencies=$(printf '%s\n' "$dependencies" | grep -Ev '^(runtime/cgo|github.com/ebitengine/purego/internal/cgo|net|os/user)?$' || true)
             test -z "$dependencies" || { echo "$dependencies"; exit 1; }
           done

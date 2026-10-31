@@ -88,6 +88,9 @@ func TestRunGIRVersionChecks(t *testing.T) {
 }
 
 func TestRunResolveOnThisOS(t *testing.T) {
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		t.Skip("resolve is only implemented for darwin and linux")
+	}
 	// An empty tree names nothing, so resolve only loads the platform
 	// libraries and must succeed.
 	if got := run([]string{"-root", t.TempDir(), "-goos", runtime.GOOS, "resolve"}); got != 0 {
