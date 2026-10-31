@@ -19,11 +19,11 @@ links to this guide through **Contributing → Documentation** in its sidebar.
 
 ## Preview and validate
 
-Install the [latest stable M-Press release](https://github.com/leaanthony/mpress/releases/latest)
+Install the [pinned M-Press v1.0.27 release](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)
 from a release archive, or use Go:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 ```
 
 From the repository root:

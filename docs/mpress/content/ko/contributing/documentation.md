@@ -24,15 +24,15 @@ M-Press가 설치되어 있으면 이 명령은 M-Press를 사용합니다. 설�
 
 ### 실행 파일 다운로드
 
-[최신 안정 버전의 M-Press 릴리스](https://github.com/leaanthony/mpress/releases/latest)를 열거나 아래에서 해당 아카이브를 다운로드하세요. ARM64에는 Apple Silicon이 포함되며, AMD64는 일반적인 Intel/AMD PC 아키텍처입니다.
+[최신 안정 버전의 M-Press 릴리스](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)를 열거나 아래에서 해당 아카이브를 다운로드하세요. ARM64에는 Apple Silicon이 포함되며, AMD64는 일반적인 Intel/AMD PC 아키텍처입니다.
 
 | 컴퓨터 | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-같은 릴리스에서 [checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt)를 다운로드하세요. 다운로드 디렉터리에서 아카이브의 SHA-256 해시를 계산하고 `checksums.txt`에서 해당 파일 이름이 있는 줄과 비교하세요.
+같은 릴리스에서 [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)를 다운로드하세요. 다운로드 디렉터리에서 아카이브의 SHA-256 해시를 계산하고 `checksums.txt`에서 해당 파일 이름이 있는 줄과 비교하세요.
 
 @tabs
 [macOS]
@@ -101,7 +101,7 @@ ARM64에서는 `mpress-windows-arm64.zip`으로 바꾸세요. 이후 세션에�
 이미 Go를 사용하고 있다면 최신 안정 버전 릴리스를 직접 빌드할 수도 있습니다. 필요한 도구 체인은 해당 릴리스의 `go.mod`에서 확인하세요. Go의 자동 도구 체인 선택 기능이 이를 다운로드할 수 있습니다. 이 문서 작업에 사용된 릴리스에는 Go 1.26.10 이상이 필요합니다.
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 mpress version
 ```
 
