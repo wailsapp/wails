@@ -104,3 +104,7 @@ go.work.sum
 .mpress/
 .wrangler/
 history/
+
+# Release-local notes and provenance, never shared staging files
+/v3/release_changelog.md
+/v3/release_changelog.json

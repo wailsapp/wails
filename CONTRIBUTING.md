@@ -16,7 +16,7 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Docs: [wails.io](https://wails.io/).
 - Detailed contributor guide: [wails.io/contributing](https://wails.io/contributing/).
 - **Documentation contributions:** [download M-Press and follow the contributor walkthrough](docs/mpress/content/contributing/documentation.md). You can preview and edit the docs without building Wails.
-- Changelog: v3 entries are generated automatically after merge from the PR title and CodeRabbit walkthrough when available. Describe the user-visible impact clearly in your PR title and description. Do not edit `v3/UNRELEASED_CHANGELOG.md` or `docs/mpress/content/changelog.md` in ordinary contributions; changelog automation maintenance and explicitly requested release-note corrections are separate maintainer work.
+- Changelog: v3 release notes are generated at release time from merged PRs. Describe the user-visible impact in the PR title or an optional `## Release notes` section in the description. **DO NOT EDIT or recreate `v3/UNRELEASED_CHANGELOG.md`**; it has been removed. Do not edit the published `docs/mpress/content/changelog.md` in ordinary contributions. Changelog automation maintenance and requested release-note corrections are separate maintainer work.
 - **New functionality and changes to public behaviour require a [Wails Enhancement Proposal (WEP)](v3/wep/README.md)** before implementation. Open the WEP as a draft PR; do not open a feature-request issue. [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) is available for optional early discussion.
 
 ## Pull request checklist
