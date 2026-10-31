@@ -434,8 +434,8 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			}
 			plan.Artifacts = []NodeKey{lastRunnable}
 			plan.Roots = []NodeKey{lastRunnable}
-			if request.Development && afterBuild != "" && capability.Runnable != runnableApp {
-				plan.Roots = []NodeKey{afterBuild}
+			if request.Development && capability.Runnable != runnableApp {
+				plan.Roots = buildBarrier
 				plan.Artifacts = []NodeKey{lastRunnable}
 			}
 			return finalizeTargetPlan(plan, config, request, multiTarget)
