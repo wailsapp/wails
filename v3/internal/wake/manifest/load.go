@@ -18,6 +18,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ErrNotFound means discovery found no native manifest, rather than a manifest
+// whose contents could not be read.
+var ErrNotFound = fmt.Errorf("native manifest not found: %w", fs.ErrNotExist)
+
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 type Loaded struct {
@@ -35,16 +39,16 @@ func Exists(root string) bool {
 // Discover searches upward for the nearest manifest. The directory containing
 // it is the project root; callers never need to infer a root independently.
 func Discover(start string) (root, path string, err error) {
-	return discoverNativeWithOperations(start, filepath.Abs, os.Stat, os.ReadFile)
+	return discoverNativeWithOperations(start, filepath.Abs, os.Stat, os.Lstat, os.ReadFile)
 }
 
 func discoverWithOperations(start string, absolute func(string) (string, error), stat func(string) (fs.FileInfo, error)) (root, path string, err error) {
-	return discoverNativeWithOperations(start, absolute, stat, func(string) ([]byte, error) {
+	return discoverNativeWithOperations(start, absolute, stat, stat, func(string) ([]byte, error) {
 		return []byte("version: 3\nproject: {}\n"), nil
 	})
 }
 
-func discoverNativeWithOperations(start string, absolute func(string) (string, error), stat func(string) (fs.FileInfo, error), readFile func(string) ([]byte, error)) (root, path string, err error) {
+func discoverNativeWithOperations(start string, absolute func(string) (string, error), stat, lstat func(string) (fs.FileInfo, error), readFile func(string) ([]byte, error)) (root, path string, err error) {
 	current, err := absolute(start)
 	if err != nil {
 		return "", "", err
@@ -54,7 +58,7 @@ func discoverNativeWithOperations(start string, absolute func(string) (string, e
 	}
 	for {
 		candidate := filepath.Join(current, Filename)
-		if info, statErr := stat(candidate); statErr == nil {
+		if info, statErr := lstat(candidate); statErr == nil {
 			if info.IsDir() {
 				return "", "", fmt.Errorf("%s is a directory", candidate)
 			}
@@ -70,13 +74,13 @@ func discoverNativeWithOperations(start string, absolute func(string) (string, e
 		}
 		module := filepath.Join(current, "go.mod")
 		if info, statErr := stat(module); statErr == nil && !info.IsDir() {
-			return "", "", fs.ErrNotExist
+			return "", "", ErrNotFound
 		} else if statErr != nil && !errors.Is(statErr, fs.ErrNotExist) {
 			return "", "", statErr
 		}
 		parent := filepath.Dir(current)
 		if parent == current {
-			return "", "", fs.ErrNotExist
+			return "", "", ErrNotFound
 		}
 		current = parent
 	}
@@ -101,7 +105,7 @@ func Load(start, profile string) (*Loaded, error) {
 func loadWithOperations(start, profile string, discover func(string) (string, string, error), readFile func(string) ([]byte, error)) (*Loaded, error) {
 	root, path, err := discover(start)
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, fmt.Errorf("could not find %s from %s", Filename, start)
 		}
 		return nil, err

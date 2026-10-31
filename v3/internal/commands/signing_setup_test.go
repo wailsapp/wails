@@ -58,7 +58,7 @@ func TestSigningSetupWithoutExperimentUsesTaskfiles(t *testing.T) {
 	t.Chdir(t.TempDir())
 	require.NoError(t, os.MkdirAll("build/linux", 0755))
 	require.NoError(t, os.WriteFile("build/linux/Taskfile.yml", []byte("version: '3'\nvars:\n  PGP_KEY: old.asc\ntasks:\n  custom:\n    cmds: ['echo keep']\n"), 0644))
-	require.NoError(t, os.WriteFile("wails.yaml", []byte("do not read or modify"), 0644))
+	require.NoError(t, os.WriteFile("wails.yaml", []byte("info:\n  productName: Legacy\n"), 0644))
 	previous := runLinuxSigningSetup
 	t.Cleanup(func() { runLinuxSigningSetup = previous })
 	runLinuxSigningSetup = func(save signingSetupSave) error {
@@ -71,5 +71,21 @@ func TestSigningSetupWithoutExperimentUsesTaskfiles(t *testing.T) {
 	require.Contains(t, string(data), "echo keep")
 	data, err = os.ReadFile("wails.yaml")
 	require.NoError(t, err)
-	require.Equal(t, "do not read or modify", string(data))
+	require.Equal(t, "info:\n  productName: Legacy\n", string(data))
+}
+
+func TestSigningSetupNativeManifestRequiresExperiment(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
+	t.Chdir(t.TempDir())
+	require.NoError(t, manifest.WriteMinimal(".", manifest.Project{
+		Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0",
+	}))
+	previous := runLinuxSigningSetup
+	t.Cleanup(func() { runLinuxSigningSetup = previous })
+	runLinuxSigningSetup = func(signingSetupSave) error {
+		t.Fatal("native manifest must not select legacy signing setup")
+		return nil
+	}
+	require.ErrorContains(t, SigningSetup(&flags.SigningSetup{Platforms: []string{"linux"}}), "Taskfile fallback is disabled")
 }

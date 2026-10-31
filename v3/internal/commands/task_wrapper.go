@@ -250,7 +250,7 @@ func activeManifestProjectAt(root string) (bool, error) {
 	// Taskfiles are completely ignored—even when the manifest is invalid—so a
 	// configuration error can never silently execute a different build path.
 	_, _, err := manifest.Discover(root)
-	if errors.Is(err, os.ErrNotExist) {
+	if errors.Is(err, manifest.ErrNotFound) {
 		return false, nil
 	}
 	if err != nil {

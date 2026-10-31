@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -76,7 +75,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 		}
 	}()
 	_, _, err = manifest.Discover(root)
-	if errors.Is(err, fs.ErrNotExist) {
+	if errors.Is(err, manifest.ErrNotFound) {
 		if options.SkipBuild {
 			return fmt.Errorf("--skip-build requires an active YAML project")
 		}
