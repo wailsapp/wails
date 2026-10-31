@@ -637,6 +637,12 @@ func (w *windowsWebviewWindow) run() {
 		w.disableIcon()
 	}
 
+	// Apply last used custom icon to new windows, if any
+	windowsApp := globalApplication.impl.(*windowsApp)
+	if windowsApp.currentIcon != 0 {
+		windowsApp.applyIcon(w, windowsApp.currentIcon)
+	}
+
 	// Process the theme
 	switch options.Windows.Theme {
 	case SystemDefault:
