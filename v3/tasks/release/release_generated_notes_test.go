@@ -5,19 +5,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/wailsapp/wails/v3/tasks/changelog"
 )
 
 // Exercise generation, release payload, tagged archive and push using only
 // isolated Git repositories, local bare remotes and a local HTTP server.
 func TestGeneratedNotesReachReleaseAndTag(t *testing.T) {
-	script, err := filepath.Abs("../../scripts/generate-release-changelog.py")
-	if err != nil {
-		t.Fatal(err)
-	}
 	for _, tagOnly := range []bool{false, true} {
 		name, version := "nightly", "v3.1.0-nightly.20261031"
 		if tagOnly {
@@ -55,20 +52,19 @@ func TestGeneratedNotesReachReleaseAndTag(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			generator := `import importlib.util, pathlib, sys
-spec = importlib.util.spec_from_file_location("generator", sys.argv[1])
-m = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(m)
-root, sha = pathlib.Path(sys.argv[2]), sys.argv[3]
-def api(endpoint):
-    if "/pulls?" in endpoint:
-        return [{"number": 42, "title": "fix: Correct fixture size", "merged_at": "2026-10-31", "merge_commit_sha": sha, "base": {"repo": {"full_name": "fixture/private"}}, "user": {"login": "fixture"}}]
-    return [{"filename": "v3/change.go"}]
-m.generate(root, "fixture/private", sha, sys.argv[4], api=api)
-`
-			command := exec.Command("python3", "-c", generator, script, root, source, name)
-			if output, err := command.CombinedOutput(); err != nil {
-				t.Fatalf("generator: %v\n%s", err, output)
+			api := func(endpoint string) ([]json.RawMessage, error) {
+				if strings.Contains(endpoint, "/pulls?") {
+					data, err := json.Marshal(map[string]any{
+						"number": 42, "title": "fix: Correct fixture size", "merged_at": "2026-10-31",
+						"merge_commit_sha": source, "base": map[string]any{"repo": map[string]string{"full_name": "fixture/private"}},
+						"user": map[string]string{"login": "fixture"},
+					})
+					return []json.RawMessage{data}, err
+				}
+				return []json.RawMessage{json.RawMessage(`{"filename":"v3/change.go"}`)}, nil
+			}
+			if _, err := changelog.Generate(root, changelog.Options{Repository: "fixture/private", Target: source, Channel: name}, api); err != nil {
+				t.Fatal(err)
 			}
 			remote := filepath.Join(t.TempDir(), "release.git")
 			gitIn(t, root, "init", "--bare", "-q", remote)

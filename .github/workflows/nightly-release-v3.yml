@@ -248,7 +248,7 @@ jobs:
         TESTED_SHA: ${{ needs.cadence.outputs.sha }}
         RELEASE_VERSION: ${{ inputs.release_version }}
       run: |
-        python3 v3/scripts/generate-release-changelog.py generate --target "$TESTED_SHA" --channel "$CHANNEL" --version "$RELEASE_VERSION"
+        go -C v3 run ./scripts/generate-release-changelog.go generate --target "$TESTED_SHA" --channel "$CHANNEL" --version "$RELEASE_VERSION"
 
     - name: Preserve generated release notes and provenance
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -400,7 +400,7 @@ jobs:
             # dependency and lockfile updates merged to master since then.
             git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
             (cd v3/tasks/release && go run release.go --sync-runtime-version "$TAG")
-            python3 v3/scripts/generate-release-changelog.py sync --tag "$TAG"
+            go -C v3 run ./scripts/generate-release-changelog.go sync --tag "$TAG"
             git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json" docs/mpress/content/changelog.md
             git commit -m "chore(v3): sync version to ${TAG}"
           else
