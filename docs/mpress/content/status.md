@@ -34,4 +34,4 @@ We welcome contributions from the community. If you'd like to help with these ob
 
 ## Feedback and Updates
 
-This roadmap is subject to change based on community feedback and project priorities. We'll update it regularly to reflect progress and changes in direction. Report reproducible problems as issues; propose new functionality through a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) PR.
+This roadmap is subject to change based on community feedback and project priorities. We'll update it regularly to reflect progress and changes in direction. Report reproducible problems as issues; propose new functionality through a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) PR.

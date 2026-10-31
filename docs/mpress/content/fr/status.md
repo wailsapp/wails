@@ -34,4 +34,4 @@ Les contributions de la communauté sont les bienvenues. Si vous souhaitez parti
 
 ## Retours et mises à jour
 
-Cette feuille de route est susceptible d’évoluer en fonction des retours de la communauté et des priorités du projet. Nous la mettrons régulièrement à jour pour refléter l’avancement et les changements d’orientation. Signalez les problèmes reproductibles sous forme de tickets ; proposez les nouvelles fonctionnalités au moyen d’une pull request [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
+Cette feuille de route est susceptible d’évoluer en fonction des retours de la communauté et des priorités du projet. Nous la mettrons régulièrement à jour pour refléter l’avancement et les changements d’orientation. Signalez les problèmes reproductibles sous forme de tickets ; proposez les nouvelles fonctionnalités au moyen d’une pull request [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).

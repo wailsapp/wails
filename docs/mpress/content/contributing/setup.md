@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
+git clone --branch master https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,7 +228,7 @@ go test ./... -race
 
 ## Working with Documentation
 
-Documentation contributors can use M-Press without installing the Wails CLI or desktop build dependencies. Follow [Write documentation with M-Press](/contributing/documentation/) for the pinned executable downloads, installation, live preview, validation and release-branch PR workflow.
+Documentation contributors can use M-Press without installing the Wails CLI or desktop build dependencies. Follow [Write documentation with M-Press](/contributing/documentation/) for the pinned executable downloads, installation, live preview, validation and PR workflow targeting `master`.
 
 English Markdown lives in `docs/mpress/content/`; translations live in language directories. From the repository root, `mpress dev` serves the preview at `http://127.0.0.1:3000`. Stop it with Ctrl+C before running the guide's validation commands.
 

@@ -34,4 +34,4 @@ v3.0.0相容性契約涵蓋桌面應用程式：
 
 ## 意見回饋與更新
 
-本路線圖可能會因社群意見和專案優先順序而變更。我們會定期更新，以反映進度及方向調整。請將可重現的問題回報為議題；若要提議新功能，請提交[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) PR。
+本路線圖可能會因社群意見和專案優先順序而變更。我們會定期更新，以反映進度及方向調整。請將可重現的問題回報為議題；若要提議新功能，請提交[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) PR。

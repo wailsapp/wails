@@ -267,7 +267,7 @@ API 被弃用时：
 ### API 问题
 
 1. **查阅此参考文档** - 完整的 API 文档
-2. **查看示例** - [GitHub 示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **查看示例** - [GitHub 示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **搜索 Discord** - [Discord 服务器](https://discord.gg/JDdSxwjhGf)
 4. **向社区提问** - Discord 的 #help 频道
 
@@ -284,7 +284,7 @@ API 被弃用时：
 - [教程](/tutorials/overview/) - 通过构建实际应用程序来学习
 - [指南](/guides/architecture/) - 面向常见场景的任务型指南
 - [功能](/features/windows/basics/) - 按功能编写的文档
-- [示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub 上可运行的代码示例
+- [示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - GitHub 上可运行的代码示例
 
 ---
 

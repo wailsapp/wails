@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 次のステップ
 
 - [アップデーターガイド](/guides/updater/)には、完全な API リファレンス、すべてのイベントと設定オプション、およびヘルパーモードでの置換処理の仕組みが記載されています。
-- クローンできる完全な動作例については、[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)を参照してください。
+- クローンできる完全な動作例については、[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)を参照してください。
 - テスト対象リポジトリ[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)では、推奨されるリリースアセットの構成を確認できます。
 
 ## 本番環境での注意事項

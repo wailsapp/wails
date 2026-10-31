@@ -143,7 +143,7 @@ git push origin fix/issue-123-window-crash
 [WEP (улучшение)]
 @steps
 ### Напишите WEP
-- Ознакомьтесь с [процессом WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
+- Ознакомьтесь с [процессом WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)
 - Скопируйте шаблон WEP в `v3/wep/proposals/<name>/proposal.md`
 - Откройте черновик pull request с заголовком `[WEP] <title>`, содержащий только WEP
 - Прежде чем приступать к реализации, дождитесь решения сопровождающего

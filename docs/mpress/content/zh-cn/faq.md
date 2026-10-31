@@ -230,11 +230,11 @@ v3带来了多窗口支持、更简洁的基于服务的 API、内置更新程�
 
 ### 如何参与贡献？
 
-请参阅[贡献指南](/contributing/)。随时欢迎提交 bug 修复；新增功能和公共行为变更需通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)草案 PR 提出。你可以选择在 Discord 或 GitHub Discussions 上进行非正式讨论。
+请参阅[贡献指南](/contributing/)。随时欢迎提交 bug 修复；新增功能和公共行为变更需通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)草案 PR 提出。你可以选择在 Discord 或 GitHub Discussions 上进行非正式讨论。
 
 ### 在哪里可以找到示例？
 
-仓库附带超过60个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+仓库附带超过60个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
 
 ## 还有其他问题？
 

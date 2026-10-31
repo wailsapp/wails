@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-C’est exactement l’approche utilisée par le [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) : consultez `native_features_stub.go`, `native_features_ios.go` et `native_features_android.go`.
+C’est exactement l’approche utilisée par le [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) : consultez `native_features_stub.go`, `native_features_ios.go` et `native_features_android.go`.
 
 @note{type="note" title="API des fonctionnalités natives et nommage des événements"}
 Deux conventions sont à connaître :
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Parcourez le code source à l’adresse [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile). Les fichiers `native_features_ios.go` et `native_features_android.go` constituent des points de départ particulièrement utiles à copier-coller pour les fonctionnalités propres à chaque plateforme.
+Parcourez le code source à l’adresse [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile). Les fichiers `native_features_ios.go` et `native_features_android.go` constituent des points de départ particulièrement utiles à copier-coller pour les fonctionnalités propres à chaque plateforme.
 
 ## Étapes suivantes
 
@@ -519,6 +519,6 @@ Référence complète : configuration, toasts, empaquetage pour le Play Store e
 📖 Code source du Kitchen Sink
 Retour haptique, géolocalisation, biométrie, notifications et stockage sécurisé : le tout dans une seule application exécutable.
 
-[Voir sur GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
+[Voir sur GitHub →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)
 
 @end

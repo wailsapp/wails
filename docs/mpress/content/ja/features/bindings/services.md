@@ -809,4 +809,4 @@ func main() {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サービスのサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サービスのサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。

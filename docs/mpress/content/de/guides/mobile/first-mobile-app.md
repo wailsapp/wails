@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Genau dieses Muster verwendet das [Kitchen-Sink-Beispiel](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) – siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
+Genau dieses Muster verwendet das [Kitchen-Sink-Beispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) – siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
 
 @note{type="note" title="API für native Funktionen und Eventbenennung"}
 Zwei Konventionen solltest du kennen:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Durchsuche den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile). Besonders die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Anpassen plattformspezifischer Funktionen.
+Durchsuche den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile). Besonders die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Anpassen plattformspezifischer Funktionen.
 
 ## Wie geht es weiter?
 
@@ -519,6 +519,6 @@ Vollständige Referenz: Konfiguration, Toast-Benachrichtigungen, Paketierung fü
 📖 Kitchen-Sink-Quellcode
 Haptik, Geolokalisierung, Biometrie, Benachrichtigungen und sicherer Speicher – alles in einer ausführbaren App.
 
-[Auf GitHub ansehen →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
+[Auf GitHub ansehen →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)
 
 @end

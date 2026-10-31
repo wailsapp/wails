@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions`에는 `Parent` 필드가 없습니다. 부모/모달 관계에는 `parentWindow.AttachModal(childWindow)`을 사용하세요. 또한 `Assets` 필드도 없습니다. 애셋 구성은 `application.Options`(`Assets AssetOptions`)에 있습니다.
 
-전체 소스: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
+전체 소스: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## 핵심 옵션
 
@@ -1271,4 +1271,4 @@ func main() {
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)를 확인하세요.
+**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.

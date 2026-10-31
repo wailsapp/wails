@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## Дальнейшие действия
 
 - В [руководстве по средству обновления](/guides/updater/) приведены полный справочник API, все события, все параметры конфигурации и описание механизма замены в режиме вспомогательного процесса.
-- Полный рабочий пример, который можно клонировать, находится в [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater).
+- Полный рабочий пример, который можно клонировать, находится в [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater).
 - Рекомендуемая структура артефактов выпуска показана в целевом тестовом репозитории [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo).
 
 ## На что обратить внимание при использовании в рабочей среде

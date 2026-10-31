@@ -1064,4 +1064,4 @@ Padrões para aplicativos com várias janelas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de janela sem moldura](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/frameless).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de janela sem moldura](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless).
