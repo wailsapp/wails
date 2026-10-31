@@ -311,6 +311,7 @@ func planOutput(plan pipeline.Plan, inspections ...pipeline.Inspection) manifest
 		if artifact, ok := planArtifact(plan.Nodes[root]); ok {
 			result.Artifacts = append(result.Artifacts, artifact)
 		}
+		result.Artifacts = append(result.Artifacts, associatedPlanArtifacts(plan.Nodes[root])...)
 	}
 	return result
 }
@@ -906,6 +907,9 @@ func (h *manifestHandler) collect(spec pipeline.CollectSpec) (pipeline.RunResult
 }
 
 func (h *manifestHandler) publish(spec pipeline.PublishSpec) (pipeline.RunResult, error) {
+	if len(spec.Associated) != 0 {
+		return h.publishAssociated(spec, os.Rename)
+	}
 	cleanSource := filepath.ToSlash(filepath.Clean(spec.Source))
 	if cleanSource != ".wails" && !strings.HasPrefix(cleanSource, ".wails/") {
 		return pipeline.RunResult{}, fmt.Errorf("publish source %q is not in the generated .wails workspace", spec.Source)
@@ -2762,6 +2766,9 @@ func (h *manifestHandler) packageIPA(ctx context.Context, s pipeline.PackageSpec
 func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeline.RunResult, error) {
 	if !s.Config.Enabled {
 		return pipeline.RunResult{}, fmt.Errorf("signing is not enabled for %s", s.TargetOS)
+	}
+	if s.TargetOS == "linux" && s.Format == "archlinux" {
+		return h.signArch(ctx, s)
 	}
 	input := filepath.Join(h.root, s.Input)
 	output := filepath.Join(h.root, s.Input+".signed")

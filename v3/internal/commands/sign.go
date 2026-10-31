@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -95,6 +96,9 @@ func Sign(options *flags.Sign) error {
 	}
 	if ext == ".rpm" {
 		return signRPM(options)
+	}
+	if strings.HasSuffix(strings.ToLower(options.Input), ".pkg.tar.zst") {
+		return signArchPackage(context.Background(), options.Input, options.PGPKey, options.PGPPassword)
 	}
 
 	// macOS binary (no extension typically)

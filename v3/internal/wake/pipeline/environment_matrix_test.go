@@ -86,7 +86,7 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 	case "android":
 		return true
 	case "linux":
-		return format == "deb" || format == "rpm"
+		return format == "deb" || format == "rpm" || format == "archlinux"
 	default:
 		return false
 	}

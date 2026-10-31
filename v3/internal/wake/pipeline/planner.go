@@ -64,7 +64,7 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 	references := make([]ArtifactReference, 0, len(combined.Artifacts))
 	for _, key := range combined.Artifacts {
 		node := combined.Nodes[key]
-		references = append(references, ArtifactReference{Key: key, Path: node.Output, Identity: node.Artifact})
+		references = append(references, publicationArtifacts(node)...)
 	}
 	collectCache := CacheArtifact
 	for _, key := range appendUniqueKeys(append([]NodeKey(nil), combined.Artifacts...), terminalRoots...) {
@@ -240,13 +240,14 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	publish := func(source NodeKey, destination string) NodeKey {
 		node := plan.Nodes[source]
+		spec, identity := publicationSpec(node, destination)
 		cachePolicy := CacheArtifact
 		if node.Cache == CacheNever {
 			cachePolicy = CacheNever
 		}
 		return add(Node{Key: NodeKey("publish:" + strings.TrimPrefix(string(source), "package:")), Kind: PublishArtifact, Label: "Publish " + filepath.Base(destination), Scope: node.Scope, Dependencies: []NodeKey{source},
-			Spec: PublishSpec{Source: publishSource(node), Destination: destination}, Output: destination,
-			Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 128}, EstimateMS: 25, Artifact: node.Artifact})
+			Spec: spec, Output: destination,
+			Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 128}, EstimateMS: 25, Artifact: identity})
 	}
 
 	var tags []string
@@ -565,9 +566,11 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			}
 			identity := plan.Nodes[artifact].Artifact
 			identity.Signed, identity.Notarized = true, config.Signing.Darwin.Notarize
-			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: identity.Format, Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
+			format := identity.Format
+			output, publication, identity := signingOutputs(input, finalOutputs[artifact], identity)
+			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: output, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
 			signed = append(signed, signedKey)
-			finalOutputs[signedKey] = signedPublicationPath(finalOutputs[artifact], request.TargetOS)
+			finalOutputs[signedKey] = publication
 		}
 		packageRoots = signed
 		afterSign := hookNode(manifest.AfterSign, TargetScope, packageScopeOutput(nodeOutputs(plan, signed)), signed)

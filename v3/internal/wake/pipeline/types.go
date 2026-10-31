@@ -286,6 +286,11 @@ type SignSpec struct {
 type PublishSpec struct {
 	Source      string
 	Destination string
+	Associated  []PublishedFile
+}
+type PublishedFile struct {
+	Source, Destination string
+	Identity            ArtifactIdentity
 }
 type ArtifactReference struct {
 	Key      NodeKey

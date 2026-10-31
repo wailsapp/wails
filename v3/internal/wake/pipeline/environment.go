@@ -635,6 +635,11 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			return hostConfigurationField("sign", requireHostTools(host, operation, "dpkg-sig"))
 		case "rpm":
 			return hostConfigurationField("sign", requireHostTools(host, operation, "rpmsign"))
+		case "archlinux":
+			if spec.Config.Credential != "" && !host.hasCredential(spec.Config.Credential) {
+				return hostConfigurationField("credential", fmt.Errorf("Arch signing credential %q is unavailable", spec.Config.Credential))
+			}
+			return nil
 		default:
 			return hostConfigurationField("sign", fmt.Errorf("signing format %q is not supported for linux", spec.Format))
 		}
