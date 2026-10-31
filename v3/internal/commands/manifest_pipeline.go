@@ -554,7 +554,11 @@ func (h *manifestHandler) packageToolPaths(ctx context.Context, spec pipeline.Pa
 		if err != nil {
 			return nil, err
 		}
-		return []string{resolved.LinuxDeploy, resolved.AppRun}, nil
+		paths := []string{resolved.LinuxDeploy}
+		if resolved.AppRun != "" {
+			paths = append(paths, resolved.AppRun)
+		}
+		return paths, nil
 	}
 	if spec.Format != "nsis" {
 		return nil, nil

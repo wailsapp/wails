@@ -46,18 +46,16 @@ func configureNativeAppImageFixture(t *testing.T, root string, spec *pipeline.Pa
 		t.Fatal(err)
 	}
 	tools := t.TempDir()
-	for _, name := range []string{"linuxdeploy", "AppRun"} {
-		if err := os.WriteFile(filepath.Join(tools, name), []byte("external tool fixture"), 0755); err != nil {
-			t.Fatal(err)
-		}
+	if err := os.WriteFile(filepath.Join(tools, "linuxdeploy"), []byte("external tool fixture"), 0755); err != nil {
+		t.Fatal(err)
 	}
 	previous, previousTools := manifestAppImageCreate, manifestAppImageTools
 	t.Cleanup(func() { manifestAppImageCreate, manifestAppImageTools = previous, previousTools })
 	manifestAppImageTools = func(appimage.Options, context.Context) (appimage.Tools, error) {
-		return appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy"), AppRun: filepath.Join(tools, "AppRun")}, nil
+		return appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy")}, nil
 	}
 	manifestAppImageCreate = func(ctx context.Context, options appimage.Options) error {
-		options.Tools = appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy"), AppRun: filepath.Join(tools, "AppRun")}
+		options.Tools = appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy")}
 		options.Runner = func(ctx context.Context, command appimage.Command) error {
 			image := fixtureELF(options.Arch, true)
 			output := filepath.Join(command.Directory, command.Env["OUTPUT"])
@@ -138,5 +136,23 @@ packages:
 				t.Fatal(err)
 			}
 		}
+	}
+}
+
+func TestAppImageToolIdentityIncludesOnlyExternalOverrides(t *testing.T) {
+	previous := manifestAppImageTools
+	t.Cleanup(func() { manifestAppImageTools = previous })
+	resolved := appimage.Tools{LinuxDeploy: "linuxdeploy"}
+	manifestAppImageTools = func(appimage.Options, context.Context) (appimage.Tools, error) { return resolved, nil }
+	handler := &manifestHandler{root: t.TempDir()}
+	spec := pipeline.PackageSpec{Format: "appimage", TargetArch: "amd64"}
+	paths, err := handler.packageToolPaths(t.Context(), spec)
+	if err != nil || len(paths) != 1 || paths[0] != "linuxdeploy" {
+		t.Fatalf("default tool identity: %q, %v", paths, err)
+	}
+	resolved.AppRun = "custom-AppRun"
+	paths, err = handler.packageToolPaths(t.Context(), spec)
+	if err != nil || len(paths) != 2 || paths[1] != "custom-AppRun" {
+		t.Fatalf("custom launcher identity: %q, %v", paths, err)
 	}
 }

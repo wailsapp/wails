@@ -5,7 +5,6 @@ package appimage
 import (
 	"context"
 	"debug/elf"
-	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -15,7 +14,6 @@ import (
 	"runtime"
 	"slices"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/stagefile"
@@ -297,31 +295,16 @@ func (options Options) PrepareTools(ctx context.Context) (Tools, error) {
 		cache = filepath.Join(".wake", "appimage-tools")
 	}
 	cache = filepath.Join(options.path(cache), options.Arch)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	var group sync.WaitGroup
-	var errorsByTool [2]error
-	for i, tool := range []struct {
-		path      *string
-		name, url string
-	}{
-		{&tools.LinuxDeploy, "linuxdeploy.AppImage", "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-" + label + ".AppImage"},
-		{&tools.AppRun, "AppRun", "https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-" + label},
-	} {
-		if *tool.path != "" {
-			*tool.path = options.path(*tool.path)
-			continue
-		}
-		*tool.path = filepath.Join(cache, tool.name)
-		group.Go(func() {
-			errorsByTool[i] = ensureTool(ctx, options.Client, tool.url, *tool.path, options.ForceTools)
-			if errorsByTool[i] != nil {
-				cancel()
-			}
-		})
+	if tools.AppRun != "" {
+		tools.AppRun = options.path(tools.AppRun)
 	}
-	group.Wait()
-	return tools, errors.Join(errorsByTool[:]...)
+	if tools.LinuxDeploy != "" {
+		tools.LinuxDeploy = options.path(tools.LinuxDeploy)
+		return tools, nil
+	}
+	tools.LinuxDeploy = filepath.Join(cache, "linuxdeploy.AppImage")
+	url := "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-" + label + ".AppImage"
+	return tools, ensureTool(ctx, options.Client, url, tools.LinuxDeploy, options.ForceTools)
 }
 
 func (options Options) prepareDirectory(ctx context.Context, stage, appRun, gtk string) (string, error) {
@@ -335,7 +318,15 @@ func (options Options) prepareDirectory(ctx context.Context, stage, appRun, gtk 
 			return "", err
 		}
 	}
-	if err := stagefile.Copy(ctx, appRun, filepath.Join(appdir, "AppRun"), 0755, buffer); err != nil {
+	if err := os.MkdirAll(filepath.Join(appdir, "usr", "lib"), 0755); err != nil {
+		return "", err
+	}
+	launcherPath := filepath.Join(appdir, "AppRun")
+	if appRun == "" {
+		if err := os.WriteFile(launcherPath, Launcher(options.Binaries[0].Name), 0755); err != nil {
+			return "", err
+		}
+	} else if err := stagefile.Copy(ctx, appRun, launcherPath, 0755, buffer); err != nil {
 		return "", err
 	}
 	if err := stagefile.Copy(ctx, options.path(options.Icon), filepath.Join(appdir, ".DirIcon"), 0644, buffer); err != nil {
