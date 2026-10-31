@@ -24,9 +24,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-git/go-billy/v5/osfs"
-	gitignore "github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/wailsapp/wails/v3/internal/dirscan"
+	"github.com/wailsapp/wails/v3/internal/sourceignore"
 	"github.com/zeebo/blake3"
 )
 
@@ -306,19 +305,15 @@ func (c *Cache) observeTree(root string, options SnapshotOptions, semanticGo boo
 	})
 }
 
-func readGitignoreMatcher(root string) (gitignore.Matcher, error) {
-	patterns, err := gitignore.ReadPatterns(osfs.New(root), nil)
-	if err != nil {
-		return nil, err
-	}
-	return gitignore.NewMatcher(patterns), nil
+func readGitignoreMatcher(root string) (sourceignore.Matcher, error) {
+	return sourceignore.Read(root)
 }
 
 type cacheTreeOperations struct {
 	stat    func(string) (fs.FileInfo, error)
 	lstat   func(string) (fs.FileInfo, error)
-	ignored func(string) (gitignore.Matcher, error)
-	walk    func(string, map[string]bool, gitignore.Matcher, func(string) bool) ([]*observedFile, error)
+	ignored func(string) (sourceignore.Matcher, error)
+	walk    func(string, map[string]bool, sourceignore.Matcher, func(string) bool) ([]*observedFile, error)
 }
 
 func (c *Cache) observeTreeWithOperations(root string, options SnapshotOptions, semanticGo bool, operations cacheTreeOperations) (*treeObservation, error) {
@@ -356,7 +351,7 @@ func (c *Cache) observeTreeWithOperations(root string, options SnapshotOptions, 
 	}
 
 	excluded := makeSet(excludedValues)
-	var ignored gitignore.Matcher
+	var ignored sourceignore.Matcher
 	if options.UseGitIgnore {
 		ignored, err = operations.ignored(root)
 		if err != nil {
@@ -399,7 +394,7 @@ func treeObservationKey(root string, options SnapshotOptions) string {
 		"\x00all=" + strconv.FormatBool(options.IncludeAll) + "\x00gitignore=" + strconv.FormatBool(options.UseGitIgnore)
 }
 
-func observeDirectoryTree(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool) ([]*observedFile, error) {
+func observeDirectoryTree(root string, excluded map[string]bool, ignored sourceignore.Matcher, eagerInfo func(string) bool) ([]*observedFile, error) {
 	workers := directoryTreeWorkers(max(1, runtime.GOMAXPROCS(0)), runtime.GOOS)
 	return observeDirectoryTreeWithWorkers(root, excluded, ignored, eagerInfo, workers)
 }
@@ -411,13 +406,13 @@ func directoryTreeWorkers(defaultWorkers int, goos string) int {
 	return min(defaultWorkers, 16)
 }
 
-func observeDirectoryTreeWithWorkers(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool, workers int) ([]*observedFile, error) {
+func observeDirectoryTreeWithWorkers(root string, excluded map[string]bool, ignored sourceignore.Matcher, eagerInfo func(string) bool, workers int) ([]*observedFile, error) {
 	return observeDirectoryTreeWithWalk(root, excluded, ignored, eagerInfo, workers, dirscan.Walk)
 }
 
 type cacheWalker func(string, int, fs.WalkDirFunc) error
 
-func observeDirectoryTreeWithWalk(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool, workers int, walk cacheWalker) ([]*observedFile, error) {
+func observeDirectoryTreeWithWalk(root string, excluded map[string]bool, ignored sourceignore.Matcher, eagerInfo func(string) bool, workers int, walk cacheWalker) ([]*observedFile, error) {
 	var filesMu sync.Mutex
 	var files []*observedFile
 	prefix := root + string(filepath.Separator)

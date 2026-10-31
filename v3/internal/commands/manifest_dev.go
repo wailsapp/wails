@@ -18,11 +18,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-git/go-billy/v5/osfs"
-	gitignore "github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/rjeczalik/notify"
 	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/sourceignore"
 	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
@@ -42,7 +41,7 @@ type manifestProcess struct {
 
 type manifestWatchSet struct {
 	events  chan notify.EventInfo
-	ignored gitignore.Matcher
+	ignored sourceignore.Matcher
 	matcher devWatchMatcher
 	root    string
 }
@@ -325,11 +324,11 @@ func isCreatedDevDirectory(event notify.EventInfo) bool {
 	return err == nil && info.IsDir()
 }
 
-func directoryContainsDevInput(root string, config manifest.Config, ignored gitignore.Matcher, directory string) bool {
+func directoryContainsDevInput(root string, config manifest.Config, ignored sourceignore.Matcher, directory string) bool {
 	return directoryContainsDevInputMatched(root, config, ignored, newDevWatchMatcher(config.Dev.Watch), directory)
 }
 
-func directoryContainsDevInputMatched(root string, config manifest.Config, ignored gitignore.Matcher, matcher devWatchMatcher, directory string) bool {
+func directoryContainsDevInputMatched(root string, config manifest.Config, ignored sourceignore.Matcher, matcher devWatchMatcher, directory string) bool {
 	found := false
 	_ = filepath.WalkDir(directory, func(current string, entry os.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -725,11 +724,11 @@ func waitForProcessStable(ctx context.Context, process *manifestProcess, duratio
 		return nil
 	}
 }
-func ignoreDevEvent(root string, config manifest.Config, ignored gitignore.Matcher, path string) bool {
+func ignoreDevEvent(root string, config manifest.Config, ignored sourceignore.Matcher, path string) bool {
 	return ignoreDevEventMatched(root, config, ignored, newDevWatchMatcher(config.Dev.Watch), path)
 }
 
-func ignoreDevEventMatched(root string, config manifest.Config, ignored gitignore.Matcher, matcher devWatchMatcher, path string) bool {
+func ignoreDevEventMatched(root string, config manifest.Config, ignored sourceignore.Matcher, matcher devWatchMatcher, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	if err != nil {
 		return true
@@ -752,7 +751,7 @@ func ignoreDevEventMatched(root string, config manifest.Config, ignored gitignor
 	return strings.HasSuffix(rel, "_test.go") || !matcher.Match(rel)
 }
 
-func registerManifestWatches(root string, config manifest.Config, ignored gitignore.Matcher, events chan<- notify.EventInfo) error {
+func registerManifestWatches(root string, config manifest.Config, ignored sourceignore.Matcher, events chan<- notify.EventInfo) error {
 	return filepath.WalkDir(root, func(current string, entry os.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -775,15 +774,11 @@ func registerManifestWatches(root string, config manifest.Config, ignored gitign
 	})
 }
 
-func loadDevGitIgnore(root string, enabled bool) (gitignore.Matcher, error) {
+func loadDevGitIgnore(root string, enabled bool) (sourceignore.Matcher, error) {
 	if !enabled {
 		return nil, nil
 	}
-	patterns, err := gitignore.ReadPatterns(osfs.New(root), nil)
-	if err != nil {
-		return nil, err
-	}
-	return gitignore.NewMatcher(patterns), nil
+	return sourceignore.Read(root)
 }
 
 func devPathExcluded(config manifest.Config, rel string) bool {
@@ -804,7 +799,7 @@ func devPathExcluded(config manifest.Config, rel string) bool {
 	return false
 }
 
-func shouldRefreshDevWatchesForDirectory(root string, config manifest.Config, ignored gitignore.Matcher, directory string) bool {
+func shouldRefreshDevWatchesForDirectory(root string, config manifest.Config, ignored sourceignore.Matcher, directory string) bool {
 	relative, err := filepath.Rel(root, directory)
 	if err != nil {
 		return false

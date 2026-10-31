@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	gitignore "github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/sourceignore"
 )
 
 func TestOpenCacheFormatMigrationAndFailures(t *testing.T) {
@@ -1236,7 +1236,7 @@ func TestSnapshotHonoursGitIgnoreForDevelopmentInputs(t *testing.T) {
 func TestObserveDirectoryTreeCallbackContracts(t *testing.T) {
 	root := string(filepath.Separator) + "project"
 	want := errors.New("injected failure")
-	ignored := gitignore.NewMatcher([]gitignore.Pattern{gitignore.ParsePattern("ignored/", nil), gitignore.ParsePattern("ignored.txt", nil)})
+	ignored := sourceignore.New("ignored/", "ignored.txt")
 
 	_, err := observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
 		return callback(root, cacheDirEntry{name: "project", dir: true}, want)
@@ -1334,8 +1334,8 @@ func TestObserveTreeFaultsRootFilesAndEagerSelection(t *testing.T) {
 	base := cacheTreeOperations{
 		stat:    os.Stat,
 		lstat:   os.Lstat,
-		ignored: func(string) (gitignore.Matcher, error) { return nil, nil },
-		walk: func(string, map[string]bool, gitignore.Matcher, func(string) bool) ([]*observedFile, error) {
+		ignored: func(string) (sourceignore.Matcher, error) { return nil, nil },
+		walk: func(string, map[string]bool, sourceignore.Matcher, func(string) bool) ([]*observedFile, error) {
 			return nil, nil
 		},
 	}
@@ -1365,19 +1365,19 @@ func TestObserveTreeFaultsRootFilesAndEagerSelection(t *testing.T) {
 	assert.Equal(t, "input.txt", observation.files[0].relative)
 
 	operations = base
-	operations.ignored = func(string) (gitignore.Matcher, error) { return nil, want }
+	operations.ignored = func(string) (sourceignore.Matcher, error) { return nil, want }
 	_, err = store.observeTreeWithOperations(root, SnapshotOptions{UseGitIgnore: true}, false, operations)
 	require.ErrorIs(t, err, want)
 
 	operations = base
-	operations.walk = func(string, map[string]bool, gitignore.Matcher, func(string) bool) ([]*observedFile, error) {
+	operations.walk = func(string, map[string]bool, sourceignore.Matcher, func(string) bool) ([]*observedFile, error) {
 		return nil, want
 	}
 	_, err = store.observeTreeWithOperations(root, SnapshotOptions{}, false, operations)
 	require.ErrorIs(t, err, want)
 
 	operations = base
-	operations.walk = func(_ string, excluded map[string]bool, _ gitignore.Matcher, eager func(string) bool) ([]*observedFile, error) {
+	operations.walk = func(_ string, excluded map[string]bool, _ sourceignore.Matcher, eager func(string) bool) ([]*observedFile, error) {
 		assert.True(t, excluded["node_modules"])
 		assert.True(t, eager("main.go"))
 		assert.False(t, eager("main_test.go"))
@@ -1387,7 +1387,7 @@ func TestObserveTreeFaultsRootFilesAndEagerSelection(t *testing.T) {
 	_, err = store.observeTreeWithOperations(root, SnapshotOptions{ExcludeDirs: []string{"node_modules"}}, true, operations)
 	require.NoError(t, err)
 
-	operations.walk = func(_ string, _ map[string]bool, _ gitignore.Matcher, eager func(string) bool) ([]*observedFile, error) {
+	operations.walk = func(_ string, _ map[string]bool, _ sourceignore.Matcher, eager func(string) bool) ([]*observedFile, error) {
 		assert.True(t, eager("go.mod"))
 		assert.True(t, eager("main.go"))
 		assert.False(t, eager("main_test.go"))
@@ -1399,12 +1399,12 @@ func TestObserveTreeFaultsRootFilesAndEagerSelection(t *testing.T) {
 
 	store.shareTrees = true
 	store.observations = map[string]*treeObservation{}
-	operations.walk = func(string, map[string]bool, gitignore.Matcher, func(string) bool) ([]*observedFile, error) {
+	operations.walk = func(string, map[string]bool, sourceignore.Matcher, func(string) bool) ([]*observedFile, error) {
 		return []*observedFile{}, nil
 	}
 	first, err := store.observeTreeWithOperations(root, SnapshotOptions{}, false, operations)
 	require.NoError(t, err)
-	operations.walk = func(string, map[string]bool, gitignore.Matcher, func(string) bool) ([]*observedFile, error) {
+	operations.walk = func(string, map[string]bool, sourceignore.Matcher, func(string) bool) ([]*observedFile, error) {
 		t.Fatal("cached observation walked twice")
 		return nil, nil
 	}
