@@ -187,7 +187,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Next Steps
 
-Next: [Build a complete application](/tutorials/03-notes-vanilla/), browse [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples), or check the [API reference](/reference/application/). Migrating from v2? See the [upgrade guide](/migration/v2-to-v3/).
+Next: [Build a complete application](/tutorials/03-notes-vanilla/), browse [examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples), or check the [API reference](/reference/application/). Migrating from v2? See the [upgrade guide](/migration/v2-to-v3/).
 
 @note{type="info" title="Wails v3.0.0"}
 Wails v3.0.0 is the stable release for desktop applications on Windows, macOS and Linux. Android and iOS support remains experimental and is outside the stable desktop compatibility contract.

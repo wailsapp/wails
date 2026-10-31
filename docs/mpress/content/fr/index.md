@@ -177,7 +177,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ---
 ▣ Bureau et mobile
-- Windows, macOS, Linux, iOS, Android
+- Windows, macOS, Linux, iOS et Android
 - Même base de code, aucune réécriture
 - WebView native sur chaque plateforme
 - Aucun port ouvert, aucun serveur localhost
@@ -187,7 +187,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Étapes suivantes
 
-Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
+Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
 
 @note{type="info" title="Wails v3.0.0"}
 Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. La prise en charge d’Android et d’iOS reste expérimentale et ne relève pas du contrat de compatibilité stable des applications de bureau.
