@@ -162,6 +162,9 @@ func executableUPXLevel(level int, development bool, targetOS string) int {
 }
 
 func finalizeTargetPlan(plan Plan, config manifest.Config, request Request, multiTarget bool) (Plan, error) {
+	if err := resolveCompileModes(&plan, request); err != nil {
+		return Plan{}, err
+	}
 	refineCompileInputs(&plan, config.Root)
 	if err := publishAppImageSidecars(&plan); err != nil {
 		return Plan{}, err

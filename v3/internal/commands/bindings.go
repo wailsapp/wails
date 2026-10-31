@@ -13,6 +13,10 @@ import (
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
+	return generateBindingsWithEnvironment(options, patterns, nil)
+}
+
+func generateBindingsWithEnvironment(options *flags.GenerateBindingsOptions, patterns, environment []string) error {
 	DisableFooter = true
 
 	if options.Silent {
@@ -90,7 +94,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		options,
 		creator,
 		logger,
-	).Generate(patterns...)
+	).WithEnvironment(environment).Generate(patterns...)
 
 	summary := fmt.Sprintf(
 		"Processed: %s, %s, %s, %s, %s, %s in %s.",

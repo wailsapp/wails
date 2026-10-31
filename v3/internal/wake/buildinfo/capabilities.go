@@ -156,7 +156,7 @@ var targetRegistry = [...]TargetCapability{
 var formatRegistry = [...]FormatCapability{
 	{Name: "nsis", Platform: "windows", Production: true, Hosts: HostAny, RequiredTools: [3]string{"makensis"}, ToolCount: 1, style: outputNSIS},
 	{Name: "msix", Platform: "windows", Production: true, Hosts: HostAny, suffix: ".msix"},
-	{Name: "dmg", Platform: "darwin", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"hdiutil"}, ToolCount: 1, suffix: ".dmg"},
+	{Name: "dmg", Platform: "darwin", Production: true, Hosts: HostAny, suffix: ".dmg"},
 	{Name: "appimage", Platform: "linux", Production: true, Hosts: HostLinux, style: outputAppImage},
 	{Name: "deb", Platform: "linux", Production: true, Hosts: HostAny, style: outputDeb},
 	{Name: "rpm", Platform: "linux", Production: true, Hosts: HostAny, style: outputRPM},

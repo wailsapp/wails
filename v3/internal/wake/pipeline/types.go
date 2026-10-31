@@ -184,6 +184,9 @@ type ExecuteOptions struct {
 type Target = buildinfo.Target
 
 type Request struct {
+	// CGOEnabled is the caller environment; executable declarations take precedence.
+	CGOEnabled                 string
+	CC                         string
 	Binaries                   []string
 	SkipFrontend, SkipBindings bool
 	Verb                       string
@@ -211,6 +214,7 @@ type InstallSpec struct {
 	Environment                 map[string]string
 }
 type BindingsSpec struct {
+	CGOEnabled string
 	Package    string
 	Config     manifest.Bindings
 	Tags       []string
@@ -223,6 +227,7 @@ type FrontendSpec struct {
 	Environment                         map[string]string
 }
 type CompileSpec struct {
+	CGOEnabled                                   string
 	Package                                      string
 	Console                                      bool
 	UPXLevel                                     int

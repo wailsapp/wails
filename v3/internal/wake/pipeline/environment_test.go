@@ -293,7 +293,7 @@ func TestHostResolutionFallsBackToSigningBlockRangeForMissingField(t *testing.T)
 func TestHostResolutionRejectsUnavailablePackageOperations(t *testing.T) {
 	config := testConfig(t)
 	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}}, testHost("linux", "amd64", "docker", "hdiutil"))
-	assert.ErrorContains(t, err, "dmg packaging for darwin/arm64 requires a darwin host")
+	require.NoError(t, err, "the DMG writer supports all desktop hosts")
 
 	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"nsis"}}, testHost("windows", "amd64"))
 	assert.ErrorContains(t, err, `nsis packaging for windows/amd64 requires tool "makensis"`)

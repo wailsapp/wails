@@ -437,10 +437,10 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 	if err := validateCompilerTools(spec, host, operation); err != nil {
 		return err
 	}
-	if spec.Toolchain == "docker" {
+	if spec.Toolchain == "docker" || spec.CGOEnabled == "0" {
 		return nil
 	}
-	if spec.TargetOS == "linux" && spec.Toolchain == "native" && !host.hasTool("cc") && !host.hasTool("gcc") && !host.hasTool("clang") {
+	if spec.TargetOS == "linux" && spec.Toolchain == "native" && spec.Environment["CC"] == "" && !host.hasTool("cc") && !host.hasTool("gcc") && !host.hasTool("clang") {
 		return hostConfigurationField("toolchain", fmt.Errorf("%s with the native toolchain requires a C compiler (cc, gcc, or clang)", operation))
 	}
 	if spec.TargetOS == "android" {
@@ -540,14 +540,23 @@ func dockerToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 }
 
 func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
+	if spec.CGOEnabled == "0" && (spec.TargetOS == "windows" || spec.TargetOS == "darwin" || spec.TargetOS == "linux") {
+		return hostBit(host.os) != 0
+	}
+	if spec.CGOEnabled == "1" && spec.Environment["CC"] != "" && (spec.TargetOS == "windows" || spec.TargetOS == "darwin" || spec.TargetOS == "linux") {
+		return hostBit(host.os) != 0
+	}
 	switch spec.TargetOS {
 	case "android":
 		return hostBit(host.os) != 0
 	case "ios":
 		return host.os == "darwin"
 	case "windows":
-		// Wails' Windows runtime does not require CGo. Go can build both
-		// supported Windows architectures without an external cross compiler.
+		if spec.CGOEnabled == "1" {
+			// Go defaults to gcc on Windows. Prefer Zig when it is absent;
+			// an explicitly configured compiler was handled above.
+			return host.os == "windows" && host.arch == spec.TargetArch && host.hasTool("gcc")
+		}
 		return hostBit(host.os) != 0
 	default:
 		return host.os == spec.TargetOS && (host.arch == spec.TargetArch || spec.TargetOS == "darwin")

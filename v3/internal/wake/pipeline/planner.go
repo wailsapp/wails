@@ -56,6 +56,7 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 			return Plan{}, err
 		}
 	}
+	resolveBindingsBackend(&combined)
 	terminalRoots := append([]NodeKey(nil), combined.Roots...)
 	if len(combined.Artifacts) == 0 {
 		combined.Artifacts = append([]NodeKey(nil), terminalRoots...)
@@ -333,7 +334,8 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	trimPath, strip := config.Build.TrimPath, config.Build.Strip
 	if request.Development {
 		linkerFlags, compilerFlags, garbleArgs = nil, nil, nil
-		environment = nil
+		// Development drops release settings but preserves the runtime backend.
+		environment = developmentCompileEnvironment(environment)
 		trimPath, strip = false, false
 	}
 	compileTargets := []Target{{OS: request.TargetOS, Arch: request.TargetArch}}

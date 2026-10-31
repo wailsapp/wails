@@ -11,12 +11,14 @@ import (
 
 // ResolveSystemPaths resolves paths for stdlib and Wails packages.
 func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err error) {
-	return resolveSystemPaths("", buildFlags)
+	return (packageLoader{}).resolveSystemPaths("", buildFlags)
 }
 
-func resolveSystemPaths(directory string, buildFlags []string) (paths *config.SystemPaths, err error) {
+type packageLoader struct{ environment []string }
+
+func (loader packageLoader) resolveSystemPaths(directory string, buildFlags []string) (paths *config.SystemPaths, err error) {
 	// Resolve std context pkg path.
-	contextPkgPaths, err := resolvePatterns(directory, buildFlags, "context")
+	contextPkgPaths, err := loader.resolvePatterns(directory, buildFlags, "context")
 	if err != nil {
 		return
 	} else if len(contextPkgPaths) < 1 {
@@ -28,7 +30,7 @@ func resolveSystemPaths(directory string, buildFlags []string) (paths *config.Sy
 	}
 
 	// Resolve std time pkg path.
-	timePkgPaths, err := resolvePatterns(directory, buildFlags, "time")
+	timePkgPaths, err := loader.resolvePatterns(directory, buildFlags, "time")
 	if err != nil {
 		return
 	} else if len(timePkgPaths) < 1 {
@@ -40,7 +42,7 @@ func resolveSystemPaths(directory string, buildFlags []string) (paths *config.Sy
 	}
 
 	// Resolve wails app pkg path.
-	wailsAppPkgPaths, err := resolvePatterns(directory, buildFlags, config.WailsAppPkgPath)
+	wailsAppPkgPaths, err := loader.resolvePatterns(directory, buildFlags, config.WailsAppPkgPath)
 	if err != nil {
 		return
 	} else if len(wailsAppPkgPaths) < 1 {
@@ -52,7 +54,7 @@ func resolveSystemPaths(directory string, buildFlags []string) (paths *config.Sy
 	}
 
 	// Resolve wails internal pkg path.
-	wailsInternalPkgPaths, err := resolvePatterns(directory, buildFlags, config.WailsInternalPkgPath)
+	wailsInternalPkgPaths, err := loader.resolvePatterns(directory, buildFlags, config.WailsInternalPkgPath)
 	if err != nil {
 		return
 	} else if len(wailsInternalPkgPaths) < 1 {
@@ -76,16 +78,17 @@ func resolveSystemPaths(directory string, buildFlags []string) (paths *config.Sy
 // that match the given patterns, according to the underlying build tool
 // and within the context of the current working directory.
 func ResolvePatterns(buildFlags []string, patterns ...string) (paths []string, err error) {
-	return resolvePatterns("", buildFlags, patterns...)
+	return (packageLoader{}).resolvePatterns("", buildFlags, patterns...)
 }
 
-func resolvePatterns(directory string, buildFlags []string, patterns ...string) (paths []string, err error) {
+func (loader packageLoader) resolvePatterns(directory string, buildFlags []string, patterns ...string) (paths []string, err error) {
 	rewrittenPatterns := make([]string, len(patterns))
 	for i, pattern := range patterns {
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
 	pkgs, err := packages.Load(&packages.Config{
+		Env:        loader.environment,
 		Dir:        directory,
 		Mode:       packages.NeedName,
 		BuildFlags: buildFlags,
@@ -113,10 +116,10 @@ func resolvePatterns(directory string, buildFlags []string, patterns ...string) 
 // on each returned package. Therefore, source positions
 // are canonical across all loaded packages.
 func LoadPackages(buildFlags []string, patterns ...string) (pkgs []*packages.Package, err error) {
-	return loadPackages("", buildFlags, patterns...)
+	return (packageLoader{}).loadPackages("", buildFlags, patterns...)
 }
 
-func loadPackages(directory string, buildFlags []string, patterns ...string) (pkgs []*packages.Package, err error) {
+func (loader packageLoader) loadPackages(directory string, buildFlags []string, patterns ...string) (pkgs []*packages.Package, err error) {
 	rewrittenPatterns := make([]string, len(patterns))
 	for i, pattern := range patterns {
 		rewrittenPatterns[i] = "pattern=" + pattern
@@ -126,6 +129,7 @@ func loadPackages(directory string, buildFlags []string, patterns ...string) (pk
 	fset := token.NewFileSet()
 
 	roots, err := packages.Load(&packages.Config{
+		Env: loader.environment,
 		Dir: directory,
 		// NOTE: some Go maintainers now believe deprecation was an error and recommend using Load* modes
 		// (see e.g. https://github.com/golang/go/issues/48226#issuecomment-1948792315).

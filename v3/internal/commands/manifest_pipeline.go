@@ -73,6 +73,7 @@ type manifestPlanRequest struct {
 }
 
 type manifestPlanCompiler struct {
+	CGOEnabled string   `json:"cgo_enabled"`
 	Binary     string   `json:"binary"`
 	Package    string   `json:"package"`
 	Target     string   `json:"target"`
@@ -210,7 +211,8 @@ func resolveManifestPlanWithOperations(options manifestRunOptions, operations ma
 	if loaded.Config.Root != "" {
 		root = loaded.Config.Root
 	}
-	plan, err := operations.plan(loaded.Config, pipeline.Request{Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
+	environment := environmentValues(mergeEnvironment(os.Environ(), options.Environment))
+	plan, err := operations.plan(loaded.Config, pipeline.Request{CGOEnabled: environment["CGO_ENABLED"], CC: environment["CC"], Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
 	if err != nil {
 		return "", nil, pipeline.Plan{}, err
 	}
@@ -241,7 +243,7 @@ func printManifestPlan(options manifestRunOptions, asJSON bool) error {
 		fmt.Printf("Formats: %s\n", strings.Join(document.Request.Formats, " · "))
 	}
 	for _, compiler := range document.Request.Compilers {
-		fmt.Printf("Compiler %s: toolchain=%s; tags=%s; obfuscated=%s", compiler.Target, compiler.Toolchain, strings.Join(compiler.Tags, ", "), chooseString(compiler.Obfuscated, "yes", "no"))
+		fmt.Printf("Compiler %s: toolchain=%s; CGO_ENABLED=%s; tags=%s; obfuscated=%s", compiler.Target, compiler.Toolchain, compiler.CGOEnabled, strings.Join(compiler.Tags, ", "), chooseString(compiler.Obfuscated, "yes", "no"))
 		if len(compiler.GarbleArgs) > 0 {
 			fmt.Printf("; garble args=%s", strings.Join(compiler.GarbleArgs, " "))
 		}
@@ -356,7 +358,7 @@ func resolvedPlanCompilers(plan pipeline.Plan) []manifestPlanCompiler {
 		if !ok {
 			continue
 		}
-		result = append(result, manifestPlanCompiler{Binary: filepath.Base(spec.Output), Package: executablePackage(spec.Package), Target: spec.TargetOS + "/" + spec.TargetArch, Toolchain: spec.Toolchain, Tags: append([]string(nil), spec.Tags...), Obfuscated: spec.Obfuscated, GarbleArgs: append([]string(nil), spec.GarbleArgs...)})
+		result = append(result, manifestPlanCompiler{CGOEnabled: spec.CGOEnabled, Binary: filepath.Base(spec.Output), Package: executablePackage(spec.Package), Target: spec.TargetOS + "/" + spec.TargetArch, Toolchain: spec.Toolchain, Tags: append([]string(nil), spec.Tags...), Obfuscated: spec.Obfuscated, GarbleArgs: append([]string(nil), spec.GarbleArgs...)})
 	}
 	sort.Slice(result, func(i, j int) bool {
 		if result[i].Target != result[j].Target {
@@ -1000,7 +1002,11 @@ func (h *manifestHandler) bindings(s pipeline.BindingsSpec, output string) (pipe
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("bindings output: %w", err)
 	}
-	err = GenerateBindings(&flags.GenerateBindingsOptions{PackageDirectory: filepath.Join(h.root, executablePackage(s.Package)), BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil)
+	environment := h.environment
+	if s.CGOEnabled != "" {
+		environment = append(append([]string(nil), environment...), "CGO_ENABLED="+s.CGOEnabled)
+	}
+	err = generateBindingsWithEnvironment(&flags.GenerateBindingsOptions{PackageDirectory: filepath.Join(h.root, executablePackage(s.Package)), BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil, mergeEnvironment(os.Environ(), environment))
 	return pipeline.RunResult{}, err
 }
 
@@ -1050,28 +1056,12 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		}
 		args = append(args, "-overlay", overlay)
 	}
-	env := declaredEnvironment(h.environment, s.Environment)
-	env = append(env, "GOOS="+s.TargetOS, "GOARCH="+s.TargetArch)
-	// CGo defaults to disabled when Go cross-compiles between architectures,
-	// even when both architectures use the native macOS toolchain. Wails'
-	// Darwin implementation is CGo-backed, so Intel builds on Apple Silicon
-	// (and the amd64 half of universal builds) must enable it explicitly.
-	if s.TargetOS == "darwin" {
-		env = append(env, "CGO_ENABLED=1")
-	}
-	if s.Toolchain == "zig" {
-		triple, err := zigTarget(s.TargetOS, s.TargetArch)
-		if err != nil {
-			return pipeline.RunResult{}, err
-		}
-		env = append(env, "CGO_ENABLED=1", "CC=zig cc -target "+triple, "CXX=zig c++ -target "+triple)
-	}
-	if s.TargetOS == "darwin" && s.MinimumVersion != "" {
-		minimumFlag := "-mmacosx-version-min=" + s.MinimumVersion
-		env = append(env, "MACOSX_DEPLOYMENT_TARGET="+s.MinimumVersion, "CGO_CFLAGS="+minimumFlag, "CGO_LDFLAGS="+minimumFlag)
+	env, err := nativeCompileEnvironment(s, h.environment)
+	if err != nil {
+		return pipeline.RunResult{}, err
 	}
 	var result string
-	err := producePathTransactional(output, ".compile-output-*", func(staged string) error {
+	err = producePathTransactional(output, ".compile-output-*", func(staged string) error {
 		var runErr error
 		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
 		if runErr == nil {
@@ -1083,6 +1073,31 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		return pipeline.RunResult{}, fmt.Errorf("go module files need maintenance; run `go mod tidy` manually: %w", err)
 	}
 	return pipeline.RunResult{Detail: result}, err
+}
+
+func nativeCompileEnvironment(s pipeline.CompileSpec, overrides []string) ([]string, error) {
+	env := declaredEnvironment(overrides, s.Environment)
+	env = append(env, "GOOS="+s.TargetOS, "GOARCH="+s.TargetArch)
+	if s.CGOEnabled != "" {
+		env = append(env, "CGO_ENABLED="+s.CGOEnabled)
+	} else if s.TargetOS == "darwin" {
+		env = append(env, "CGO_ENABLED=1")
+	}
+	if s.Toolchain == "zig" {
+		triple, err := zigTarget(s.TargetOS, s.TargetArch)
+		if err != nil {
+			return nil, err
+		}
+		env = append(env, "CC=zig cc -target "+triple, "CXX=zig c++ -target "+triple)
+		if s.CGOEnabled == "" {
+			env = append(env, "CGO_ENABLED=1")
+		}
+	}
+	if s.TargetOS == "darwin" && s.MinimumVersion != "" {
+		minimumFlag := "-mmacosx-version-min=" + s.MinimumVersion
+		env = append(env, "MACOSX_DEPLOYMENT_TARGET="+s.MinimumVersion, "CGO_CFLAGS="+minimumFlag, "CGO_LDFLAGS="+minimumFlag)
+	}
+	return env, nil
 }
 
 func zigTarget(targetOS, targetArch string) (string, error) {
@@ -1148,6 +1163,9 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 	sort.Strings(keys)
 	for _, key := range keys {
 		arguments = append(arguments, "-e", key+"="+environment[key])
+	}
+	if s.CGOEnabled != "" {
+		arguments = append(arguments, "-e", "CGO_ENABLED="+s.CGOEnabled)
 	}
 	if s.TargetOS == "darwin" && s.MinimumVersion != "" {
 		arguments = append(arguments, "-e", "MACOSX_DEPLOYMENT_TARGET="+s.MinimumVersion)

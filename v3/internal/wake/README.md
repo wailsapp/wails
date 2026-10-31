@@ -57,6 +57,35 @@ environment values. Reproducible outputs use the machine-local content store;
 stateful dependency installation uses receipts. Credentials are direct
 read-only inputs and are never staged or cached.
 
+### Desktop compiler selection
+
+Set `CGO_ENABLED=0` in the caller environment or a manifest build environment
+to cross-compile desktop targets with Go alone. Wake adds the experimental
+`purego` backend tag for macOS and Linux GUI executables. Selecting that tag
+explicitly also defaults compilation to `CGO_ENABLED=0`. Windows executables
+and CLI/server programs default to CGo disabled; macOS and Linux GUI programs
+retain the CGo default unless opted into pure Go. Per-executable environment
+settings override the caller's choice. Development preserves the CGo choice
+and declared `CC`/`CXX` settings.
+
+Pure-Go desktop builds select the native Go toolchain across operating systems
+and architectures. Binding generation uses an isolated Go-only environment
+when the primary GUI uses pure Go, so analysis does not require a host C
+compiler either. The resolved CGo choice appears in plan output and compiler
+cache identities. Target GTK/WebKit libraries remain runtime requirements on
+Linux.
+
+With `CGO_ENABLED=1`, Wake uses a compatible native compiler or an explicitly
+configured cross compiler (`CC`), then available Zig for Windows cross builds,
+then the existing container fallback. Linux CGo cross builds still require
+the target desktop libraries and headers; Zig alone does not provide those.
+
+macOS application assembly, universal binary merging and DMG creation run on
+all desktop hosts. DMGs use the existing Go image writer when macOS tools are
+unavailable. Signing and notarisation retain their separate host and credential
+requirements. AppImage deployment currently requires a matching Linux host;
+it still needs a portable dependency and image-building path.
+
 ### Development sessions
 
 The dev session owns persistent frontend and backend processes plus a

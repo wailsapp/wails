@@ -191,7 +191,7 @@ func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		toolchain = "docker"
 	}
-	assert.Contains(t, output, "Compiler linux/amd64: toolchain="+toolchain+"; tags=production, sqlite, wails_obfuscated")
+	assert.Contains(t, output, "Compiler linux/amd64: toolchain="+toolchain+"; CGO_ENABLED=1; tags=production, sqlite, wails_obfuscated")
 	assert.Contains(t, output, "obfuscated=yes")
 	assert.Contains(t, output, "garble args=-tiny -seed=random")
 

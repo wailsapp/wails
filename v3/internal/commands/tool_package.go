@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/leaanthony/dmg/dmg"
@@ -33,10 +32,6 @@ func toolPackage(options *flags.ToolPackage) error {
 
 	// Handle DMG creation for macOS
 	if isDMG {
-		if runtime.GOOS != "darwin" {
-			return fmt.Errorf("DMG creation is only supported on macOS")
-		}
-
 		// For DMG, we expect the .app bundle to already exist
 		appPath := filepath.Join(options.Out, fmt.Sprintf("%s.app", options.ExecutableName))
 		if _, err := os.Stat(appPath); os.IsNotExist(err) {
