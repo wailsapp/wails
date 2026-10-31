@@ -120,16 +120,17 @@ func Create(ctx context.Context, options Options) error {
 		return err
 	}
 	var appdir string
+	var helperDirs []string
 	err = options.runStage("Stage AppImage files", func() error {
 		var stageErr error
-		appdir, stageErr = options.prepareDirectory(ctx, stage, tools.AppRun, analysis.gtk)
+		appdir, helperDirs, stageErr = options.prepareDirectory(ctx, stage, tools.AppRun, analysis.gtk)
 		return stageErr
 	})
 	if err != nil {
 		return err
 	}
 	if err = options.runStage("Deploy dependencies and compress AppImage", func() error {
-		return options.runLinuxdeploy(ctx, stage, tools.LinuxDeploy, appdir, analysis)
+		return options.runLinuxdeploy(ctx, stage, tools.LinuxDeploy, appdir, analysis, helperDirs)
 	}); err != nil {
 		return err
 	}
@@ -228,7 +229,7 @@ func normalizeOutputOptions(options Options) (Options, error) {
 	return options, nil
 }
 
-func (options Options) runLinuxdeploy(ctx context.Context, stage, tool, appdir string, analysis elfAnalysis) error {
+func (options Options) runLinuxdeploy(ctx context.Context, stage, tool, appdir string, analysis elfAnalysis, helperDirs []string) error {
 	env := maps.Clone(options.Env)
 	if env == nil {
 		env = map[string]string{}
@@ -241,7 +242,10 @@ func (options Options) runLinuxdeploy(ctx context.Context, stage, tool, appdir s
 	if analysis.relr {
 		env["NO_STRIP"] = "1"
 	}
-	args := []string{"--appimage-extract-and-run", "--appdir", appdir, "--output", "appimage"}
+	args := []string{"--appimage-extract-and-run", "--appdir", appdir}
+	if !options.WebKit {
+		args = append(args, "--output", "appimage")
+	}
 	if analysis.gtk != "" {
 		plugin := filepath.Join(stage, "linuxdeploy-plugin-gtk.sh")
 		if err := os.WriteFile(plugin, options.GTKPlugin, 0755); err != nil {
@@ -252,7 +256,16 @@ func (options Options) runLinuxdeploy(ctx context.Context, stage, tool, appdir s
 		env["PATH"] = stage + string(os.PathListSeparator) + options.environment("PATH")
 		args = append(args, "--plugin", "gtk")
 	}
-	return options.Runner(ctx, Command{Program: tool, Args: args, Directory: stage, Env: env})
+	if err := options.Runner(ctx, Command{Program: tool, Args: args, Directory: stage, Env: env}); err != nil {
+		return err
+	}
+	if !options.WebKit {
+		return nil
+	}
+	if err := RelocateWebKitHelpers(appdir, helperDirs); err != nil {
+		return err
+	}
+	return options.Runner(ctx, Command{Program: tool, Args: []string{"--appimage-extract-and-run", "--appdir", appdir, "--output", "appimage"}, Directory: stage, Env: env})
 }
 
 func (options Options) libraryDirs() []string {
@@ -307,54 +320,52 @@ func (options Options) PrepareTools(ctx context.Context) (Tools, error) {
 	return tools, ensureTool(ctx, options.Client, url, tools.LinuxDeploy, options.ForceTools)
 }
 
-func (options Options) prepareDirectory(ctx context.Context, stage, appRun, gtk string) (string, error) {
+func (options Options) prepareDirectory(ctx context.Context, stage, appRun, gtk string) (string, []string, error) {
 	buffer := make([]byte, 32<<10)
 	appdir := filepath.Join(stage, "AppDir")
 	if err := os.MkdirAll(appdir, 0755); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	for _, binary := range options.Binaries {
 		if err := stagefile.Copy(ctx, binary.Path, filepath.Join(appdir, "usr", "bin", binary.Name), 0755, buffer); err != nil {
-			return "", err
+			return "", nil, err
 		}
 	}
 	if err := os.MkdirAll(filepath.Join(appdir, "usr", "lib"), 0755); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	launcherPath := filepath.Join(appdir, "AppRun")
 	if appRun == "" {
 		if err := os.WriteFile(launcherPath, Launcher(options.Binaries[0].Name), 0755); err != nil {
-			return "", err
+			return "", nil, err
 		}
 	} else if err := stagefile.Copy(ctx, appRun, launcherPath, 0755, buffer); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if err := stagefile.Copy(ctx, options.path(options.Icon), filepath.Join(appdir, ".DirIcon"), 0644, buffer); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	iconName := options.IconName
 	if iconName == "" {
 		iconName = filepath.Base(options.Icon)
 	}
 	if iconName != filepath.Base(iconName) || iconName == "." || iconName == ".." {
-		return "", fmt.Errorf("invalid bundled icon name %q", iconName)
+		return "", nil, fmt.Errorf("invalid bundled icon name %q", iconName)
 	}
 	if err := os.Symlink(".DirIcon", filepath.Join(appdir, iconName)); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if err := stagefile.Copy(ctx, options.path(options.DesktopFile), filepath.Join(appdir, filepath.Base(options.DesktopFile)), 0644, buffer); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if options.WebKit {
-		if err := options.copyWebKitFiles(ctx, appdir, gtk, buffer); err != nil {
-			return "", err
-		}
+		helperDirs, err := options.copyWebKitFiles(ctx, appdir, gtk, buffer)
+		return appdir, helperDirs, err
 	}
-
-	return appdir, nil
+	return appdir, nil, nil
 }
 
-func (options Options) copyWebKitFiles(ctx context.Context, appdir, gtk string, buffer []byte) error {
+func (options Options) copyWebKitFiles(ctx context.Context, appdir, gtk string, buffer []byte) ([]string, error) {
 	injected := "libwebkit2gtkinjectedbundle.so"
 	if gtk == "4" {
 		injected = "libwebkitgtkinjectedbundle.so"
@@ -375,16 +386,29 @@ func (options Options) copyWebKitFiles(ctx context.Context, appdir, gtk string, 
 		return findErr
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-
+	var helperDirs []string
+	for _, file := range files {
+		if strings.HasPrefix(filepath.Base(file), "WebKit") && !slices.Contains(helperDirs, filepath.Dir(file)) {
+			helperDirs = append(helperDirs, filepath.Dir(file))
+		}
+		if filepath.Base(file) == "WebKitWebProcess" {
+			gpu := filepath.Join(filepath.Dir(file), "WebKitGPUProcess")
+			if _, err := os.Stat(gpu); err == nil {
+				files = append(files, gpu)
+			} else if !os.IsNotExist(err) {
+				return nil, err
+			}
+		}
+	}
 	for _, source := range files {
 		destination := filepath.Join(appdir, strings.TrimLeft(source, "/"))
 		if err = stagefile.Copy(ctx, source, destination, 0, buffer); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return helperDirs, nil
 }
 
 func verify(filename, arch string) error {

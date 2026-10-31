@@ -24,7 +24,7 @@ func TestDefaultLauncherRunsFromBundledLibraries(t *testing.T) {
 	for i := range options.Binaries {
 		options.Binaries[i].Path = options.path(options.Binaries[i].Path)
 	}
-	appdir, err := options.prepareDirectory(context.Background(), filepath.Join(t.TempDir(), "directory's name"), "", "")
+	appdir, _, err := options.prepareDirectory(context.Background(), filepath.Join(t.TempDir(), "directory's name"), "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
