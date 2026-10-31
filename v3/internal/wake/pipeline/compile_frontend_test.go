@@ -197,3 +197,29 @@ func TestOrderOnlyDependenciesAreValidatedAndChangeActionIdentity(t *testing.T) 
 		}
 	}
 }
+
+func TestFrontendTracksIgnoredGeneratedGoSources(t *testing.T) {
+	plan, handler := frontendCompilePlan(t)
+	writeCompileFixture(t, handler.root, "cmd/helper/main.go", "package main\nimport \"fmt\"\nfunc main(){fmt.Print(generated)}\n")
+	writeCompileFixture(t, handler.root, "cmd/helper/generated.go", "package main\nconst generated = \"before\"\n")
+	writeCompileFixture(t, handler.root, "cmd/helper/.gitignore", "generated.go\n")
+	node := plan.Nodes["helper"]
+	node.Inputs[0].UseGitIgnore = true
+	plan.Nodes["helper"] = node
+	refineCompileInputs(&plan, handler.root)
+	executor := Executor{Handler: handler}
+	if _, err := executor.Execute(t.Context(), plan, ExecuteOptions{Root: handler.root}); err != nil {
+		t.Fatal(err)
+	}
+	handler.generate = func() error {
+		return os.WriteFile(filepath.Join(handler.root, "cmd/helper/generated.go"), []byte("package main\nconst generated = \"after\"\n"), 0644)
+	}
+	writeCompileFixture(t, handler.root, "frontend/src/page.txt", "changed/")
+	if _, err := executor.Execute(t.Context(), plan, ExecuteOptions{Root: handler.root}); err != nil {
+		t.Fatal(err)
+	}
+	output, err := exec.CommandContext(t.Context(), filepath.Join(handler.root, plan.Nodes["helper"].Output)).CombinedOutput()
+	if err != nil || string(output) != "after" {
+		t.Fatalf("ignored generated Go source stayed stale: %q, %v", output, err)
+	}
+}

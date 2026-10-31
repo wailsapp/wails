@@ -20,15 +20,18 @@ func refineCompileInputs(plan *Plan, root string) {
 		if !ok {
 			continue
 		}
+		allowFrontendReuse := spec.CGOEnabled == "0"
 		node.OrderOnlyDependencies = nil
 		node.Inputs = append([]InputSpec(nil), node.Inputs...)
 		for i := range node.Inputs {
 			if node.Inputs[i].Label == "go-sources" {
 				node.Inputs[i].Root = root
+				allowFrontendReuse = allowFrontendReuse && !node.Inputs[i].UseGitIgnore
 			}
 		}
 		plan.Nodes[key] = node
-		if spec.CGOEnabled != "0" {
+		// Ignored generated Go files may still be consumed by the compiler.
+		if !allowFrontendReuse {
 			continue
 		}
 		if _, complete := collectExecutableInputs(root, spec.Package, node.Inputs); !complete {
