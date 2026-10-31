@@ -2314,6 +2314,18 @@ func setLinuxExecutableMode(entry map[string]any) {
 	info["mode"] = 0o755
 }
 
+func setLinuxPackageDependencies(config map[string]any, spec pipeline.PackageSpec) {
+	if spec.Config.Dependencies == nil && packageUsesWebView(spec) {
+		return
+	}
+	config["depends"] = append([]string{}, spec.Config.Dependencies...)
+	if overrides, ok := config["overrides"].(map[string]any); ok {
+		if selected, ok := overrides[spec.Format].(map[string]any); ok {
+			delete(selected, "depends")
+		}
+	}
+}
+
 func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (string, error) {
 	workspace := h.packageWorkspace(s)
 	configPath := filepath.Join(workspace, "nfpm.yaml")
@@ -2351,9 +2363,7 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 	if s.Config.Section != "" {
 		config["section"] = s.Config.Section
 	}
-	if len(s.Config.Dependencies) > 0 {
-		config["depends"] = append([]string(nil), s.Config.Dependencies...)
-	}
+	setLinuxPackageDependencies(config, s)
 	if contents, ok := config["contents"].([]any); ok {
 		for _, raw := range contents {
 			entry, ok := raw.(map[string]any)
@@ -2441,7 +2451,7 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	options := installerbuild.Options{Script: filepath.Join(dir, "project.nsi"), Output: filepath.Join(h.root, s.Output), Arch: s.TargetArch, Scope: s.Config.InstallScope, Primary: installerbuild.File{Name: s.Project.BinaryName + ".exe", Path: filepath.Join(h.root, s.Binary)}, Version: &info, Defines: s.Config.Defines, SkipWebView2: !nsisUsesWebView2(s)}
+	options := installerbuild.Options{Script: filepath.Join(dir, "project.nsi"), Output: filepath.Join(h.root, s.Output), Arch: s.TargetArch, Scope: s.Config.InstallScope, Primary: installerbuild.File{Name: s.Project.BinaryName + ".exe", Path: filepath.Join(h.root, s.Binary)}, Version: &info, Defines: s.Config.Defines, SkipWebView2: !packageUsesWebView(s)}
 	for _, binary := range s.Companions {
 		options.Companions = append(options.Companions, installerbuild.File{Name: binary.Name, Path: filepath.Join(h.root, binary.Path)})
 	}
@@ -2455,9 +2465,9 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 	return pipeline.RunResult{Detail: detail}, err
 }
 
-// Custom scripts retain their existing runtime contract. Stock installers need
-// WebView2 whenever any packaged executable may create a Wails window.
-func nsisUsesWebView2(spec pipeline.PackageSpec) bool {
+// Custom templates retain their existing runtime contract. Stock packages need
+// a webview runtime whenever any packaged executable may create a Wails window.
+func packageUsesWebView(spec pipeline.PackageSpec) bool {
 	if spec.Config.Template != "" || spec.Project.Kind != "cli" && spec.Project.Kind != "server" {
 		return true
 	}
@@ -2487,7 +2497,7 @@ func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, pac
 		if err := os.MkdirAll(filepath.Join(staged, "bin"), 0o755); err != nil {
 			return err
 		}
-		if nsisUsesWebView2(s) {
+		if packageUsesWebView(s) {
 			return GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: stagedDir})
 		}
 		return nil

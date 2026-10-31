@@ -403,7 +403,7 @@ func encodeYAMLPackage(format string, value PackageFormat) *yaml.Node {
 		yamlSetOptionalStrings(result, "categories", value.Categories, false)
 	}
 	if packageAttributeAllowed(format, "dependencies") {
-		yamlSetOptionalStrings(result, "dependencies", value.Dependencies, false)
+		yamlSetOptionalStrings(result, "dependencies", value.Dependencies, value.Dependencies != nil)
 	}
 	return result
 }

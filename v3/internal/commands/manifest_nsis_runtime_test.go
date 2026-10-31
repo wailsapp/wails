@@ -115,7 +115,7 @@ binaries:
 		t.Fatal("missing NSIS package")
 	}
 	spec := node.Spec.(pipeline.PackageSpec)
-	if len(spec.Companions) != 1 || spec.Companions[0].Kind != "gui" || !nsisUsesWebView2(spec) {
+	if len(spec.Companions) != 1 || spec.Companions[0].Kind != "gui" || !packageUsesWebView(spec) {
 		t.Fatalf("lost GUI companion requirements: %+v", spec.Companions)
 	}
 
@@ -125,7 +125,7 @@ binaries:
 		t.Fatal(err)
 	}
 	spec = plan.Nodes[pipeline.NodeKey("package:windows/amd64:nsis")].Spec.(pipeline.PackageSpec)
-	if len(spec.Companions) != 1 || spec.Companions[0].Kind != "cli" || nsisUsesWebView2(spec) {
+	if len(spec.Companions) != 1 || spec.Companions[0].Kind != "cli" || packageUsesWebView(spec) {
 		t.Fatalf("lost default CLI companion semantics: %+v", spec.Companions)
 	}
 }

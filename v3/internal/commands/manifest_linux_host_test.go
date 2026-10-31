@@ -14,7 +14,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
-func linuxPackageFixture(t *testing.T) (*manifestHandler, pipeline.PackageSpec) {
+func linuxPackageFixture(t testing.TB) (*manifestHandler, pipeline.PackageSpec) {
 	t.Helper()
 	root := t.TempDir()
 	if err := GenerateBuildAssets(&BuildAssetsOptions{Dir: filepath.Join(root, "assets"), Name: "example", BinaryName: "example", ProductName: "Example", ProductVersion: "1.0.0", Silent: true}); err != nil {
@@ -46,7 +46,7 @@ func TestLinuxPackageBinariesExecutableWithWindowsSourceModes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	payload := debDataTar(t, data)
+	payload := debTarMember(t, data, "data.tar.gz")
 	for name, want := range map[string]string{"usr/local/bin/example": "primary payload", "usr/bin/helper": "companion payload"} {
 		archive := tar.NewReader(bytes.NewReader(payload))
 		found := false
@@ -78,7 +78,7 @@ func TestLinuxPackageBinariesExecutableWithWindowsSourceModes(t *testing.T) {
 }
 
 // DEB's short-named ar members allow an independent stdlib-only payload check.
-func debDataTar(t *testing.T, data []byte) []byte {
+func debTarMember(t *testing.T, data []byte, member string) []byte {
 	t.Helper()
 	if !bytes.HasPrefix(data, []byte("!<arch>\n")) {
 		t.Fatal("not a DEB ar archive")
@@ -90,7 +90,7 @@ func debDataTar(t *testing.T, data []byte) []byte {
 			t.Fatal("invalid ar member size")
 		}
 		name := strings.TrimRight(strings.TrimSpace(string(header[:16])), "/")
-		if name == "data.tar.gz" {
+		if name == member {
 			reader, err := gzip.NewReader(bytes.NewReader(data[offset+60 : offset+60+size]))
 			if err != nil {
 				t.Fatal(err)
@@ -104,6 +104,6 @@ func debDataTar(t *testing.T, data []byte) []byte {
 		}
 		offset += 60 + size + size%2
 	}
-	t.Fatal("missing data.tar.gz")
+	t.Fatalf("missing %s", member)
 	return nil
 }

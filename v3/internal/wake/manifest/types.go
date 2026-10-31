@@ -357,7 +357,7 @@ type PackageFormat struct {
 	Categories   []string          `manifest:"categories,optional" formats:"appimage" json:"categories,omitempty"`
 	Maintainer   string            `manifest:"maintainer,optional" formats:"deb,rpm,archlinux,void" json:"maintainer,omitempty"`
 	Section      string            `manifest:"section,optional" formats:"deb,rpm,archlinux,void" json:"section,omitempty"`
-	Dependencies []string          `manifest:"dependencies,optional" formats:"deb,rpm,archlinux,void" json:"dependencies,omitempty"`
+	Dependencies []string          `manifest:"dependencies,optional" formats:"deb,rpm,archlinux,void" json:"dependencies"`
 	PreInstall   string            `manifest:"pre_install,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"pre_install,omitempty"`
 	PostInstall  string            `manifest:"post_install,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"post_install,omitempty"`
 	PreRemove    string            `manifest:"pre_remove,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"pre_remove,omitempty"`

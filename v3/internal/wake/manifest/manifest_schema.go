@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -636,7 +637,7 @@ func applyPackage(packages *Packages, raw PackageFormat) error {
 	case "appimage":
 		packages.Linux.AppImage = AppImagePackage{UpdateInfo: raw.UpdateInfo, Checksum: raw.Checksum, Icon: raw.Icon, DesktopEntry: raw.DesktopEntry, Categories: append([]string(nil), raw.Categories...)}
 	case "deb", "rpm", "archlinux", "void":
-		value := LinuxPackage{Template: raw.Template, Maintainer: raw.Maintainer, Section: raw.Section, Dependencies: append([]string(nil), raw.Dependencies...), PreInstall: raw.PreInstall, PostInstall: raw.PostInstall, PreRemove: raw.PreRemove, PostRemove: raw.PostRemove}
+		value := LinuxPackage{Template: raw.Template, Maintainer: raw.Maintainer, Section: raw.Section, Dependencies: slices.Clone(raw.Dependencies), PreInstall: raw.PreInstall, PostInstall: raw.PostInstall, PreRemove: raw.PreRemove, PostRemove: raw.PostRemove}
 		switch raw.Format {
 		case "deb":
 			packages.Linux.Deb = value
@@ -695,7 +696,7 @@ func ResolvePackageFormat(packages Packages, platform, format string) (PackageFo
 		case "archlinux":
 			value = packages.Linux.ArchLinux
 		}
-		return PackageFormat{Template: value.Template, Maintainer: value.Maintainer, Section: value.Section, Dependencies: append([]string(nil), value.Dependencies...), PreInstall: value.PreInstall, PostInstall: value.PostInstall, PreRemove: value.PreRemove, PostRemove: value.PostRemove}, nil
+		return PackageFormat{Template: value.Template, Maintainer: value.Maintainer, Section: value.Section, Dependencies: slices.Clone(value.Dependencies), PreInstall: value.PreInstall, PostInstall: value.PostInstall, PreRemove: value.PreRemove, PostRemove: value.PostRemove}, nil
 	default:
 		return PackageFormat{}, fmt.Errorf("package format %q is not supported for %s", format, platform)
 	}
@@ -840,7 +841,7 @@ func packageAttributeAllowed(format, name string) bool {
 }
 
 func packageConfigured(format PackageFormat) bool {
-	return len(format.Defines) > 0 || format.UpdateInfo != "" || format.Checksum || format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || len(format.Dependencies) > 0 || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
+	return len(format.Defines) > 0 || format.UpdateInfo != "" || format.Checksum || format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || format.Dependencies != nil || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
 }
 
 func platformConfigured(platform Platform) bool {
