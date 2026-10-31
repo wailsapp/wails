@@ -9374,8 +9374,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c3692f4eafea576ae062a66416bd04563084e3f0df6fbdd7b12e6eb680a38cff"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "b8de9dc671d8e2a41f13d9303ac03660f7a15488a615a56f129206c4bfe22573"
   },
   {
     "language": "fr",
@@ -9383,8 +9383,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c3692f4eafea576ae062a66416bd04563084e3f0df6fbdd7b12e6eb680a38cff"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "b8de9dc671d8e2a41f13d9303ac03660f7a15488a615a56f129206c4bfe22573"
   },
   {
     "language": "fr",
@@ -9392,8 +9392,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c3692f4eafea576ae062a66416bd04563084e3f0df6fbdd7b12e6eb680a38cff"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "b8de9dc671d8e2a41f13d9303ac03660f7a15488a615a56f129206c4bfe22573"
   },
   {
     "language": "fr",
@@ -9401,8 +9401,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in fr; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c3692f4eafea576ae062a66416bd04563084e3f0df6fbdd7b12e6eb680a38cff"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "b8de9dc671d8e2a41f13d9303ac03660f7a15488a615a56f129206c4bfe22573"
   },
   {
     "language": "de",
@@ -9410,8 +9410,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "07bd865d5c998a9c84e8aed5ce420e84d1b0713be04d78782b024be0d1e1a619"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "cc0cc75fa0654c69fd57a8bf0f67f8fecb2ec53c193d29beba4754eef7ee3f6b"
   },
   {
     "language": "de",
@@ -9419,8 +9419,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "07bd865d5c998a9c84e8aed5ce420e84d1b0713be04d78782b024be0d1e1a619"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "cc0cc75fa0654c69fd57a8bf0f67f8fecb2ec53c193d29beba4754eef7ee3f6b"
   },
   {
     "language": "de",
@@ -9428,8 +9428,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "07bd865d5c998a9c84e8aed5ce420e84d1b0713be04d78782b024be0d1e1a619"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "cc0cc75fa0654c69fd57a8bf0f67f8fecb2ec53c193d29beba4754eef7ee3f6b"
   },
   {
     "language": "de",
@@ -9437,8 +9437,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in de; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "07bd865d5c998a9c84e8aed5ce420e84d1b0713be04d78782b024be0d1e1a619"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "cc0cc75fa0654c69fd57a8bf0f67f8fecb2ec53c193d29beba4754eef7ee3f6b"
   },
   {
     "language": "pt",
@@ -9446,8 +9446,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "ec4e6293bdbbf44b117ad10dd6a6a53f190c68f21887d8f5ef612f500984bcdf"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "baf454e20da7def9174abaf45940aa122e6dbedb50f6c2f7e16dcf4e5fa27731"
   },
   {
     "language": "pt",
@@ -9455,8 +9455,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "ec4e6293bdbbf44b117ad10dd6a6a53f190c68f21887d8f5ef612f500984bcdf"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "baf454e20da7def9174abaf45940aa122e6dbedb50f6c2f7e16dcf4e5fa27731"
   },
   {
     "language": "pt",
@@ -9464,8 +9464,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "ec4e6293bdbbf44b117ad10dd6a6a53f190c68f21887d8f5ef612f500984bcdf"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "baf454e20da7def9174abaf45940aa122e6dbedb50f6c2f7e16dcf4e5fa27731"
   },
   {
     "language": "pt",
@@ -9473,8 +9473,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in pt; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "ec4e6293bdbbf44b117ad10dd6a6a53f190c68f21887d8f5ef612f500984bcdf"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "baf454e20da7def9174abaf45940aa122e6dbedb50f6c2f7e16dcf4e5fa27731"
   },
   {
     "language": "ru",
@@ -9482,8 +9482,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c19a93bc8bdcdba48b162a23b10d5f510972a5fa301c40eb190253d022a03078"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "8ae931807f73e13519edfc0fa1a18127abbccbe86c80e2f7ea3aa0cda8b4ac6c"
   },
   {
     "language": "ru",
@@ -9491,8 +9491,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c19a93bc8bdcdba48b162a23b10d5f510972a5fa301c40eb190253d022a03078"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "8ae931807f73e13519edfc0fa1a18127abbccbe86c80e2f7ea3aa0cda8b4ac6c"
   },
   {
     "language": "ru",
@@ -9500,8 +9500,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c19a93bc8bdcdba48b162a23b10d5f510972a5fa301c40eb190253d022a03078"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "8ae931807f73e13519edfc0fa1a18127abbccbe86c80e2f7ea3aa0cda8b4ac6c"
   },
   {
     "language": "ru",
@@ -9509,8 +9509,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ru; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "c19a93bc8bdcdba48b162a23b10d5f510972a5fa301c40eb190253d022a03078"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "8ae931807f73e13519edfc0fa1a18127abbccbe86c80e2f7ea3aa0cda8b4ac6c"
   },
   {
     "language": "ja",
@@ -9518,8 +9518,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "3ad36d73b2cd3c1ae2f701d04a129a868bed3e673d56df3758e336d51b41ed65"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "a8aafab5f6bdc3133d961f896730a497863779b015b7de7bc4a0e3b778c98962"
   },
   {
     "language": "ja",
@@ -9527,8 +9527,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "3ad36d73b2cd3c1ae2f701d04a129a868bed3e673d56df3758e336d51b41ed65"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "a8aafab5f6bdc3133d961f896730a497863779b015b7de7bc4a0e3b778c98962"
   },
   {
     "language": "ja",
@@ -9536,8 +9536,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "3ad36d73b2cd3c1ae2f701d04a129a868bed3e673d56df3758e336d51b41ed65"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "a8aafab5f6bdc3133d961f896730a497863779b015b7de7bc4a0e3b778c98962"
   },
   {
     "language": "ja",
@@ -9545,8 +9545,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ja; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "3ad36d73b2cd3c1ae2f701d04a129a868bed3e673d56df3758e336d51b41ed65"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "a8aafab5f6bdc3133d961f896730a497863779b015b7de7bc4a0e3b778c98962"
   },
   {
     "language": "ko",
@@ -9554,8 +9554,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "623a7b12b42f0d83c42d6627413b3b42426d7fe853895a5bc718b090d08ab90b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "45a5068a307e778e3f4866181182c0881109021efb75f53e63ec95eee8f632ca"
   },
   {
     "language": "ko",
@@ -9563,8 +9563,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "623a7b12b42f0d83c42d6627413b3b42426d7fe853895a5bc718b090d08ab90b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "45a5068a307e778e3f4866181182c0881109021efb75f53e63ec95eee8f632ca"
   },
   {
     "language": "ko",
@@ -9572,8 +9572,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "623a7b12b42f0d83c42d6627413b3b42426d7fe853895a5bc718b090d08ab90b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "45a5068a307e778e3f4866181182c0881109021efb75f53e63ec95eee8f632ca"
   },
   {
     "language": "ko",
@@ -9581,8 +9581,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in ko; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "623a7b12b42f0d83c42d6627413b3b42426d7fe853895a5bc718b090d08ab90b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "45a5068a307e778e3f4866181182c0881109021efb75f53e63ec95eee8f632ca"
   },
   {
     "language": "zh-cn",
@@ -9590,8 +9590,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-cn; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "f2fdf43462e655ecae3e8e52f5ccfebc18c36d41ea465288e4c4dbdb35376d25"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "35d6f2f5ca65422f712d26108eb215cebd596bb1af247e2ef26d8e6f3362939a"
   },
   {
     "language": "zh-cn",
@@ -9599,8 +9599,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-cn; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "f2fdf43462e655ecae3e8e52f5ccfebc18c36d41ea465288e4c4dbdb35376d25"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "35d6f2f5ca65422f712d26108eb215cebd596bb1af247e2ef26d8e6f3362939a"
   },
   {
     "language": "zh-cn",
@@ -9608,8 +9608,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-cn; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "f2fdf43462e655ecae3e8e52f5ccfebc18c36d41ea465288e4c4dbdb35376d25"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "35d6f2f5ca65422f712d26108eb215cebd596bb1af247e2ef26d8e6f3362939a"
   },
   {
     "language": "zh-cn",
@@ -9617,8 +9617,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-cn; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "f2fdf43462e655ecae3e8e52f5ccfebc18c36d41ea465288e4c4dbdb35376d25"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "35d6f2f5ca65422f712d26108eb215cebd596bb1af247e2ef26d8e6f3362939a"
   },
   {
     "language": "zh-tw",
@@ -9626,8 +9626,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-tw; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "fa9ef13d3f10fd704393f197f7460b51893c72a3faf7c85c7c9b1d4d054b1a43"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "d1e6669cbce63905320b9a5b6a3f540490fafb5290f7b8f3110164121c6d24bb"
   },
   {
     "language": "zh-tw",
@@ -9635,8 +9635,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-tw; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "fa9ef13d3f10fd704393f197f7460b51893c72a3faf7c85c7c9b1d4d054b1a43"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "d1e6669cbce63905320b9a5b6a3f540490fafb5290f7b8f3110164121c6d24bb"
   },
   {
     "language": "zh-tw",
@@ -9644,8 +9644,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-tw; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "fa9ef13d3f10fd704393f197f7460b51893c72a3faf7c85c7c9b1d4d054b1a43"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "d1e6669cbce63905320b9a5b6a3f540490fafb5290f7b8f3110164121c6d24bb"
   },
   {
     "language": "zh-tw",
@@ -9653,8 +9653,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in zh-tw; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "fa9ef13d3f10fd704393f197f7460b51893c72a3faf7c85c7c9b1d4d054b1a43"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "d1e6669cbce63905320b9a5b6a3f540490fafb5290f7b8f3110164121c6d24bb"
   },
   {
     "language": "id",
@@ -9662,8 +9662,8 @@
     "segment": "b0013-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'AMD64 / Intel': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "36f33c582c8d320c9040f96e01e8e8aac6af19a078b7ae139c33001712e7a60b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "fd93bd7b16819d9a48f11ea1d102ff90410ccec146492fb51d285de713b32002"
   },
   {
     "language": "id",
@@ -9671,8 +9671,8 @@
     "segment": "b0014-cell-01",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'ARM64 / Apple Silicon': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "36f33c582c8d320c9040f96e01e8e8aac6af19a078b7ae139c33001712e7a60b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "fd93bd7b16819d9a48f11ea1d102ff90410ccec146492fb51d285de713b32002"
   },
   {
     "language": "id",
@@ -9680,8 +9680,8 @@
     "segment": "tab0001-label-003",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "36f33c582c8d320c9040f96e01e8e8aac6af19a078b7ae139c33001712e7a60b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "fd93bd7b16819d9a48f11ea1d102ff90410ccec146492fb51d285de713b32002"
   },
   {
     "language": "id",
@@ -9689,8 +9689,8 @@
     "segment": "tab0002-label-006",
     "code": "untranslated",
     "reason": "Reviewed unchanged 'Windows PowerShell': an established product/platform/protocol/API name, numeric measurement, or valid shared technical wording in id; surrounding prose is translated.",
-    "sourceSHA256": "4fffda21c3bdb86ae9308b48280765ec47348b27c3b462f17ebce2596b49f0fd",
-    "targetSHA256": "36f33c582c8d320c9040f96e01e8e8aac6af19a078b7ae139c33001712e7a60b"
+    "sourceSHA256": "b8872eee24b167a2fb2965306acd80c07db332887528b54e040d33442d892e30",
+    "targetSHA256": "fd93bd7b16819d9a48f11ea1d102ff90410ccec146492fb51d285de713b32002"
   },
   {
     "language": "de",
