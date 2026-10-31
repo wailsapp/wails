@@ -23,6 +23,7 @@ const (
 	GenerateBindings            NodeKind = "GenerateBindings"
 	BuildFrontend               NodeKind = "BuildFrontend"
 	CompileApplication          NodeKind = "CompileApplication"
+	ImportBinary                NodeKind = "ImportBinary"
 	MergeUniversalBinaries      NodeKind = "MergeUniversalBinaries"
 	GeneratePlatformAssets      NodeKind = "GeneratePlatformAssets"
 	AssembleApplication         NodeKind = "AssembleApplication"
@@ -192,6 +193,7 @@ type Request struct {
 	CC                         string
 	Binaries                   []string
 	SkipFrontend, SkipBindings bool
+	SkipBuild                  bool
 	Verb                       string
 	TargetOS                   string
 	TargetArch                 string
@@ -215,6 +217,10 @@ type InstallSpec struct {
 	Manager, Directory, Command string
 	Arguments                   []string
 	Environment                 map[string]string
+}
+type PrebuiltSpec struct {
+	Source, Output string
+	Target         Target
 }
 type BindingsSpec struct {
 	CGOEnabled string
@@ -318,6 +324,7 @@ func (InstallSpec) nodeSpec()  {}
 func (BindingsSpec) nodeSpec() {}
 func (FrontendSpec) nodeSpec() {}
 func (CompileSpec) nodeSpec()  {}
+func (PrebuiltSpec) nodeSpec() {}
 func (MergeSpec) nodeSpec()    {}
 func (AssetsSpec) nodeSpec()   {}
 func (PackageSpec) nodeSpec()  {}
@@ -466,6 +473,9 @@ func validNodeSpec(node Node) bool {
 		return ok
 	case CompileApplication:
 		_, ok := node.Spec.(CompileSpec)
+		return ok
+	case ImportBinary:
+		_, ok := node.Spec.(PrebuiltSpec)
 		return ok
 	case MergeUniversalBinaries:
 		_, ok := node.Spec.(MergeSpec)

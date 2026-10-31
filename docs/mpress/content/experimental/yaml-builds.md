@@ -194,6 +194,43 @@ previous published program.
 
 ## Package and sign for distribution
 
+### Use prebuilt desktop executables
+
+Use `--skip-build` when another build system or CI job has already produced the
+executables:
+
+```bash
+wails3 build --targets linux/amd64 --formats deb,rpm --skip-build
+wails3 run --skip-build -- --example-mode
+```
+
+Place each executable in `build.output` (default `bin`), using
+`project.binary_name` for the main executable and each `binaries` entry's name
+for companions. Windows names end in `.exe`. A multi-target invocation reads
+each target's files from an `<os>-<arch>` subdirectory. For a macOS GUI, Wake
+reads the raw executable at `bin/<name>` if present, otherwise
+`bin/<name>.app/Contents/MacOS/<name>`. A `darwin/universal` input must contain
+both amd64 and arm64 executable slices.
+
+Wake validates file type and target architecture, copies the executables into
+its generated workspace and tracks their contents for package caching. Missing,
+incompatible or symlinked executable inputs fail instead of rebuilding or
+restoring an old input. Supplied executables are not overwritten or chmodded.
+Changes to any executable invalidate packages that use it.
+
+This mode skips frontend installation/builds, bindings, Go compilation, UPX and
+the `before_build`/`after_build` hooks. It still generates package assets,
+assembles macOS app bundles and runs configured packaging/signing hooks.
+Package and signing tools remain subject to the table below; Go and frontend
+build tools are not required. Package metadata comes from the current manifest,
+including `version_file` when configured; no version is inferred from the binary.
+Use matching build and package settings, including GUI versus CLI kind.
+
+`wails3 package --skip-build` is also supported. With `wails3 run`, launch
+arguments and environment still apply, and the executable must run on the host.
+This mode requires an active YAML project and supports production desktop
+targets only; it does not apply to development sessions or mobile packaging.
+
 Unsigned package creation has a different host/tool requirement from signing:
 
 | Output | Creation hosts and tools | Signing |

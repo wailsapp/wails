@@ -18,6 +18,20 @@ func resolveBuildConfig(config manifest.Config, request Request) (manifest.Confi
 	if request.SkipFrontend {
 		selected.Frontend.Disabled = true
 	}
+	if request.SkipBuild {
+		selected.Frontend.Disabled = true
+		selected.Hooks = make(map[manifest.HookPhase]manifest.Hook, len(config.Hooks))
+		for phase, hook := range config.Hooks {
+			if phase != manifest.BeforeBuild && phase != manifest.AfterBuild {
+				selected.Hooks[phase] = hook
+			}
+		}
+		selected.Project.CommitSymbol = ""
+		selected.Binaries = append([]manifest.Binary(nil), selected.Binaries...)
+		for i := range selected.Binaries {
+			selected.Binaries[i].CommitSymbol = ""
+		}
+	}
 	return resolveProjectMetadata(selected)
 }
 
@@ -166,6 +180,9 @@ func executableUPXLevel(level int, development bool, targetOS string) int {
 }
 
 func finalizeTargetPlan(plan Plan, config manifest.Config, request Request, multiTarget bool) (Plan, error) {
+	if request.SkipBuild {
+		return planPrebuilt(plan, config, request, multiTarget)
+	}
 	if err := resolveCompileModes(&plan, request); err != nil {
 		return Plan{}, err
 	}

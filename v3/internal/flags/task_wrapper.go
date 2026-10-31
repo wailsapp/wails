@@ -1,6 +1,7 @@
 package flags
 
 type Build struct {
+	SkipBuild    bool   `name:"skip-build" description:"Package existing desktop binaries from the YAML output directory without building"`
 	Jobs         int    `name:"jobs" description:"Maximum concurrent Wake build steps (0 uses available CPUs)"`
 	Binaries     string `name:"binaries" description:"Comma-separated executable names to build (requires an active YAML project)"`
 	SkipFrontend bool   `name:"skip-frontend" description:"Use existing frontend assets without installing dependencies, generating bindings or rebuilding frontend"`
@@ -22,6 +23,7 @@ type Dev struct {
 }
 
 type Package struct {
+	SkipBuild bool `name:"skip-build" description:"Package existing desktop binaries from the YAML output directory without building"`
 	Common
 	Tags    string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
 	Profile string `name:"profile" description:"Named profile to package"`

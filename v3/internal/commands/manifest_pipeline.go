@@ -41,6 +41,7 @@ import (
 )
 
 type manifestRunOptions struct {
+	SkipBuild                           bool
 	Jobs                                int
 	Binaries                            []string
 	SkipFrontend, SkipBindings          bool
@@ -212,7 +213,7 @@ func resolveManifestPlanWithOperations(options manifestRunOptions, operations ma
 		root = loaded.Config.Root
 	}
 	environment := environmentValues(mergeEnvironment(os.Environ(), options.Environment))
-	plan, err := operations.plan(loaded.Config, pipeline.Request{CGOEnabled: environment["CGO_ENABLED"], CC: environment["CC"], Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
+	plan, err := operations.plan(loaded.Config, pipeline.Request{SkipBuild: options.SkipBuild, CGOEnabled: environment["CGO_ENABLED"], CC: environment["CC"], Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
 	if err != nil {
 		return "", nil, pipeline.Plan{}, err
 	}
@@ -344,6 +345,8 @@ func planArtifact(node pipeline.Node) (manifestPlanArtifact, bool) {
 		return manifestPlanArtifact{Target: spec.TargetOS + "/" + spec.TargetArch, Format: spec.Format, Kind: node.Artifact.DisplayKind(), Path: node.Output}, true
 	case pipeline.CompileSpec:
 		return manifestPlanArtifact{Target: spec.TargetOS + "/" + spec.TargetArch, Format: "binary", Kind: node.Artifact.DisplayKind(), Path: node.Output}, true
+	case pipeline.PrebuiltSpec:
+		return manifestPlanArtifact{Target: spec.Target.OS + "/" + spec.Target.Arch, Format: "binary", Kind: node.Artifact.DisplayKind(), Path: node.Output}, true
 	default:
 		return manifestPlanArtifact{}, false
 	}
@@ -380,6 +383,8 @@ func planStage(kind pipeline.NodeKind) string {
 		return "frontend"
 	case pipeline.CompileApplication:
 		return "compile"
+	case pipeline.ImportBinary:
+		return "import"
 	case pipeline.MergeUniversalBinaries:
 		return "assemble"
 	case pipeline.AssembleApplication:
@@ -421,6 +426,15 @@ var manifestDockerImageIdentity = func(ctx context.Context, runtime, image strin
 }
 
 func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (string, error) {
+	if node.Kind == pipeline.ImportBinary {
+		spec, err := manifestNodeSpec[pipeline.PrebuiltSpec](node)
+		if err != nil {
+			return "", err
+		}
+		if _, err := h.prebuiltSource(spec); err != nil {
+			return "", err
+		}
+	}
 	var tools []string
 	var externalIdentity string
 	if executable, err := os.Executable(); err == nil {
@@ -650,6 +664,12 @@ func environmentValues(environment []string) map[string]string {
 
 func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline.RunResult, error) {
 	switch node.Kind {
+	case pipeline.ImportBinary:
+		spec, err := manifestNodeSpec[pipeline.PrebuiltSpec](node)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+		return h.importBinary(spec)
 	case pipeline.InstallFrontendDependencies:
 		spec, err := manifestNodeSpec[pipeline.InstallSpec](node)
 		if err != nil {

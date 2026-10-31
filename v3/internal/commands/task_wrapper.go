@@ -136,11 +136,14 @@ func buildWithOperations(buildFlags *flags.Build, otherArgs []string, operations
 		if len(formats) > 0 {
 			verb = "package"
 		}
-		options := manifestRunOptions{Jobs: buildFlags.Jobs, Binaries: splitComma(buildFlags.Binaries), SkipFrontend: buildFlags.SkipFrontend, SkipBindings: buildFlags.SkipBindings, Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags), GarbleArgs: garbleArgs}
+		options := manifestRunOptions{SkipBuild: buildFlags.SkipBuild, Jobs: buildFlags.Jobs, Binaries: splitComma(buildFlags.Binaries), SkipFrontend: buildFlags.SkipFrontend, SkipBindings: buildFlags.SkipBindings, Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags), GarbleArgs: garbleArgs}
 		if buildFlags.Plan {
 			return operations.plan(options, buildFlags.JSON)
 		}
 		return operations.run(options)
+	}
+	if buildFlags.SkipBuild {
+		return fmt.Errorf("--skip-build requires an active YAML project")
 	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -178,7 +181,10 @@ func packageWithOperations(options *flags.Package, otherArgs []string, operation
 		if err != nil {
 			return err
 		}
-		return operations.run(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: splitComma(mergeTags(options.Tags, envTags()...))})
+		return operations.run(manifestRunOptions{SkipBuild: options.SkipBuild, Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: splitComma(mergeTags(options.Tags, envTags()...))})
+	}
+	if options.SkipBuild {
+		return fmt.Errorf("--skip-build requires an active YAML project")
 	}
 	if tags := mergeTags(options.Tags, envTags()...); tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+tags)

@@ -23,6 +23,7 @@ import (
 )
 
 type RunOptions struct {
+	SkipBuild   bool     `name:"skip-build" description:"Run existing desktop binaries from the YAML output directory without building"`
 	AppArgs     []string `name:"appargs" description:"Application arguments as one shell-quoted string; prefer -- followed by arguments"`
 	Device      string   `name:"device" description:"Android adb serial or iOS device/simulator identifier"`
 	Emulator    string   `name:"emulator" description:"Android Virtual Device to start or reuse"`
@@ -76,6 +77,9 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 	}()
 	_, _, err = manifest.Discover(root)
 	if errors.Is(err, fs.ErrNotExist) {
+		if options.SkipBuild {
+			return fmt.Errorf("--skip-build requires an active YAML project")
+		}
 		if options.Device != "" || options.Emulator != "" || options.Destination != "" {
 			return fmt.Errorf("mobile launch options require wails.yaml")
 		}
@@ -133,7 +137,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 	if args != nil {
 		settings.Args = append([]string{}, args...)
 	}
-	build := manifestRunOptions{Context: ctx, Verb: "run", Loaded: loaded, TargetOS: goos, TargetArch: arch, Tags: appendUniqueStrings(settings.Tags, splitComma(options.Tags)...)}
+	build := manifestRunOptions{SkipBuild: options.SkipBuild, Context: ctx, Verb: "run", Loaded: loaded, TargetOS: goos, TargetArch: arch, Tags: appendUniqueStrings(settings.Tags, splitComma(options.Tags)...)}
 	if err := configureRunTarget(options, goos, arch, settings, &build); err != nil {
 		return err
 	}
@@ -159,7 +163,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 	if _, err := runManifestPipelineResult(build); err != nil {
 		return err
 	}
-	if goos == "darwin" {
+	if goos == "darwin" && loaded.Config.Project.Kind != "cli" && loaded.Config.Project.Kind != "server" {
 		if err := registerRunBundle(ctx, root, executable, runManifestTool); err != nil {
 			return err
 		}

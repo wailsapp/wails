@@ -276,9 +276,13 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if request.Verb == "run" && (request.TargetOS == "android" || request.TargetOS == "ios") {
 		tags = appendUnique(tags, request.TargetOS)
 	}
-	localInputs, err := goLocalSourceInputs(config.Root)
-	if err != nil {
-		return Plan{}, err
+	var localInputs []InputSpec
+	if !request.SkipBuild {
+		var err error
+		localInputs, err = goLocalSourceInputs(config.Root)
+		if err != nil {
+			return Plan{}, err
+		}
 	}
 	if request.Development && config.Dev.UseGitIgnore {
 		for index := range localInputs {

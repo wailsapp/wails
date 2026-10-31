@@ -47,6 +47,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan` resolves and displays the selected target, effective build tags,
@@ -58,6 +59,7 @@ building, installing or launching. The plan lists environment override key names
 | Option | Meaning |
 | --- | --- |
 | `--tags <tags>` | Additional comma-separated Go build tags. |
+| `--skip-build` | Import existing desktop executables from the YAML output directory, then launch without compiling. |
 | `--target <os>/<arch>` | Select one target; defaults to the host OS and architecture. |
 | `--plan` | Display resolved settings without building or launching. Cross-platform desktop plans are allowed. |
 | `--device <id>` | Android adb serial or iOS simulator/device identifier. |
@@ -67,6 +69,15 @@ building, installing or launching. The plan lists environment override key names
 | `--appargs <string>` | Compatibility spelling: parse one string using POSIX-style quoting. Cannot be repeated or combined with arguments after `--`. |
 
 Mobile selectors require a manifest and a matching mobile target.
+
+`--skip-build` requires an active YAML project and a compatible desktop
+executable. It skips frontend work, bindings, compilation, UPX and build hooks;
+configured launch arguments and environment still apply. Imported executables
+are validated and copied into Wake's generated workspace without modifying
+their source files. macOS GUI applications are assembled from those inputs and
+the current package assets. See [prebuilt input paths and requirements](/experimental/yaml-builds/#use-prebuilt-desktop-executables).
+Build tags cannot change a prebuilt executable, so `--tags` and configured build
+tags have no effect in this mode.
 
 ## Fields
 
