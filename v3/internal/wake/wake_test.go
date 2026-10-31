@@ -257,9 +257,9 @@ tasks:
 func TestResolveInNamespacePrefersLocal(t *testing.T) {
 	tf := &ast.Taskfile{
 		Tasks: map[string]*ast.Task{
-			"build":          {Name: "build"},
-			"darwin:build":   {Name: "darwin:build"},
-			"darwin:package": {Name: "darwin:package"},
+			"build":                     {Name: "build"},
+			"darwin:build":              {Name: "darwin:build"},
+			"darwin:package":            {Name: "darwin:package"},
 			"darwin:common:go:mod:tidy": {Name: "darwin:common:go:mod:tidy"},
 		},
 		Includes: map[string]*ast.Include{"common": {}},
@@ -280,16 +280,4 @@ func TestResolveInNamespacePrefersLocal(t *testing.T) {
 	if got, ok := resolveInNamespace(tf, "run", "build"); !ok || got != "build" {
 		t.Errorf("resolveInNamespace(run, build) = %q,%v; want build,true", got, ok)
 	}
-}
-
-func TestUseWakeEnvVar(t *testing.T) {
-	os.Setenv("WAILS_USE_WAKE", "true")
-	defer os.Unsetenv("WAILS_USE_WAKE")
-	require.True(t, useWake())
-
-	os.Setenv("WAILS_USE_WAKE", "false")
-	require.False(t, useWake())
-
-	os.Unsetenv("WAILS_USE_WAKE")
-	require.False(t, useWake())
 }

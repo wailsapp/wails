@@ -80,6 +80,9 @@ func Sign(options *flags.Sign) error {
 	if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
 		return signMacOSApp(options)
 	}
+	if ext == ".dmg" {
+		return signMacOSDiskImage(options)
+	}
 
 	// macOS binary or Windows executable
 	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
@@ -100,6 +103,41 @@ func Sign(options *flags.Sign) error {
 	}
 
 	return fmt.Errorf("unsupported file type: %s", ext)
+}
+
+func signMacOSDiskImage(options *flags.Sign) error {
+	resolveSigningDefaults(options)
+	if options.Identity == "" {
+		return fmt.Errorf("--identity is required for macOS disk image signing (set via `wails3 setup` or --identity flag)")
+	}
+	args := []string{"--force", "--sign", options.Identity, options.Input}
+	cmd := exec.Command("codesign", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("codesign disk image failed: %w", err)
+	}
+	pterm.Success.Printfln("Signed: %s", options.Input)
+	if !options.Notarize {
+		return nil
+	}
+	if options.KeychainProfile == "" {
+		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
+	}
+	submit := exec.Command("xcrun", "notarytool", "submit", options.Input, "--keychain-profile", options.KeychainProfile, "--wait")
+	submit.Stdout = os.Stdout
+	submit.Stderr = os.Stderr
+	if err := submit.Run(); err != nil {
+		return fmt.Errorf("disk image notarization failed: %w", err)
+	}
+	staple := exec.Command("xcrun", "stapler", "staple", options.Input)
+	staple.Stdout = os.Stdout
+	staple.Stderr = os.Stderr
+	if err := staple.Run(); err != nil {
+		return fmt.Errorf("disk image stapling failed: %w", err)
+	}
+	pterm.Success.Println("Notarization complete and ticket stapled")
+	return nil
 }
 
 func signMacOSApp(options *flags.Sign) error {
@@ -263,12 +301,10 @@ func signWindows(options *flags.Sign) error {
 
 	// Try native signtool first on Windows
 	if runtime.GOOS == "windows" {
-		err := signWindowsNative(options, password)
-		if err == nil {
-			return nil
-		}
-		if options.Verbose {
-			pterm.Warning.Printfln("Native signing failed, trying built-in: %v", err)
+		if _, err := findSigntool(); err == nil {
+			// A present signer rejected this request. Preserve its diagnostic;
+			// an unrelated fallback must not hide a bad password or certificate.
+			return signWindowsNative(options, password)
 		}
 	}
 
@@ -306,11 +342,13 @@ func signWindowsNative(options *flags.Sign, password string) error {
 	args = append(args, options.Input)
 
 	cmd := exec.Command(signtool, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("signtool failed: %w", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		detail := strings.TrimSpace(string(output))
+		if password != "" {
+			detail = strings.ReplaceAll(detail, password, "<redacted>")
+		}
+		return fmt.Errorf("signtool failed: %s: %w", detail, err)
 	}
 
 	pterm.Success.Printfln("Signed: %s", options.Input)
@@ -356,7 +394,7 @@ func signWindowsBuiltin(options *flags.Sign, password string) error {
 
 func signDEB(options *flags.Sign) error {
 	if options.PGPKey == "" {
-		return fmt.Errorf("no PGP signing key found for DEB signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
+		return fmt.Errorf("no PGP signing key found for DEB signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided
@@ -416,7 +454,7 @@ func signDEBWithGPG(options *flags.Sign, password, role string) error {
 
 func signRPM(options *flags.Sign) error {
 	if options.PGPKey == "" {
-		return fmt.Errorf("no PGP signing key found for RPM signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
+		return fmt.Errorf("no PGP signing key found for RPM signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided

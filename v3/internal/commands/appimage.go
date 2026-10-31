@@ -230,8 +230,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 	output, err = s.EXEC(linuxdeploy + " --output appimage")
 	if err != nil {
-		fmt.Println(string(output))
-		return err
+		return fmt.Errorf("linuxdeploy failed: %w\n%s", err, commandOutputTail(string(output), 20))
 	}
 
 	// Move file to output directory
@@ -427,4 +426,12 @@ func hasRelrDynSections() bool {
 		}
 	}
 	return false
+}
+
+func commandOutputTail(output string, lines int) string {
+	items := strings.Split(strings.TrimSpace(output), "\n")
+	if len(items) > lines {
+		items = items[len(items)-lines:]
+	}
+	return strings.Join(items, "\n")
 }

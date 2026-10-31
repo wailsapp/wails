@@ -1,0 +1,6 @@
+version: "3"
+
+vars:
+  APP_NAME: Partial
+
+tasks: {}

@@ -1,0 +1,509 @@
+package pipeline
+
+import (
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+)
+
+func TestCurrentHostCapabilityProbeIsDeterministicAndCopiesFacts(t *testing.T) {
+	root := t.TempDir()
+	sdk := filepath.Join(root, "sdk")
+	badNDK := filepath.Join(sdk, "ndk", "bad")
+	goodNDK := filepath.Join(sdk, "ndk", "good")
+	require.NoError(t, os.MkdirAll(goodNDK, 0o755))
+	require.NoError(t, os.WriteFile(badNDK, []byte("not a directory"), 0o644))
+	environment := map[string]string{"ANDROID_SDK_ROOT": sdk, "SIGNING_PASSWORD": "present"}
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "arm64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "docker" || name == "xcrun" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(name string) (string, bool) { value, ok := environment[name]; return value, ok },
+		getenv:    func(name string) string { return environment[name] },
+		stat:      os.Stat,
+		glob:      func(string) ([]string, error) { return []string{badNDK, goodNDK}, nil },
+		run: func(name string, arguments ...string) error {
+			if name == "docker" || name == "xcrun" && !strings.Contains(strings.Join(arguments, " "), "iphonesimulator") {
+				return nil
+			}
+			return errors.New("unavailable")
+		},
+	}
+	host := currentHostCapabilitiesWithOperations([]string{"", "MISSING", "SIGNING_PASSWORD"}, operations)
+	assert.Equal(t, "linux", host.os)
+	assert.Equal(t, "arm64", host.arch)
+	assert.True(t, host.hasTool("go"))
+	assert.True(t, host.hasCredential("SIGNING_PASSWORD"))
+	assert.True(t, host.androidSDK)
+	assert.True(t, host.androidNDK)
+	assert.True(t, host.hasDockerImage(CrossContainerImage))
+	assert.True(t, host.hasAppleSDK("macosx"))
+	assert.True(t, host.hasAppleSDK("iphoneos"))
+	assert.False(t, host.hasAppleSDK("iphonesimulator"))
+}
+
+func TestCurrentHostCapabilitiesUsesTheRealProbeAdapterWithoutRequiringInstalledSDKs(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("PATH probing uses PATHEXT resolution on Windows")
+	}
+	tools := t.TempDir()
+	for _, tool := range []string{"go", "docker", "xcrun"} {
+		require.NoError(t, os.WriteFile(filepath.Join(tools, tool), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	}
+	t.Setenv("PATH", tools)
+	t.Setenv("ANDROID_HOME", "")
+	t.Setenv("ANDROID_SDK_ROOT", "")
+	t.Setenv("ANDROID_NDK_HOME", "")
+	t.Setenv("PIPELINE_TEST_CREDENTIAL", "present")
+	host := CurrentHostCapabilities("PIPELINE_TEST_CREDENTIAL")
+	assert.NotEmpty(t, host.os)
+	assert.NotEmpty(t, host.arch)
+	assert.True(t, host.hasTool("go"))
+	assert.True(t, host.hasCredential("PIPELINE_TEST_CREDENTIAL"))
+	assert.True(t, host.hasDockerImage(CrossContainerImage))
+	assert.True(t, host.hasAppleSDK("iphonesimulator"))
+}
+
+func TestCurrentHostPlanningProbesContainerImagesOnlyForSelectedContainerBuilds(t *testing.T) {
+	probeCalls := 0
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "podman" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(name string, arguments ...string) error {
+			if name == "podman" {
+				probeCalls++
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, 0, probeCalls)
+	assert.Equal(t, "native", plan.Nodes["target:linux/amd64:compile"].Spec.(CompileSpec).Toolchain)
+
+	plan, err = planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, 1, probeCalls)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
+	assert.Equal(t, CrossContainerImage, compile.ContainerImage)
+}
+
+func TestCurrentHostPlanningSupportsLegacyImageAndRejectsMissingImages(t *testing.T) {
+	imageAvailable := true
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "docker" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(_ string, arguments ...string) error {
+			if imageAvailable && arguments[len(arguments)-1] == "wails-cross" {
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, "wails-cross", plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec).ContainerImage)
+
+	imageAvailable = false
+	_, err = planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	assert.ErrorContains(t, err, "requires container image")
+}
+
+func TestCurrentHostPlanningUsesPodmanWhenOnlyPodmanHasTheImage(t *testing.T) {
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "docker" || name == "podman" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(name string, arguments ...string) error {
+			if name == "podman" && arguments[len(arguments)-1] == CrossContainerImage {
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
+	assert.Equal(t, CrossContainerImage, compile.ContainerImage)
+}
+
+func testHost(hostOS, hostArch string, extraTools ...string) HostCapabilities {
+	tools := append([]string{"go", "npm", "cc"}, extraTools...)
+	return NewHostCapabilitiesWithFacts(hostOS, hostArch, tools, nil, HostFacts{
+		AndroidSDK: true, AndroidNDK: true,
+		DockerImages: []string{"wails-cross"},
+		AppleSDKs:    []string{"macosx", "iphoneos", "iphonesimulator"},
+	})
+}
+
+func TestHostResolutionChoosesTheFastestAvailableCompatibleToolchain(t *testing.T) {
+	config := testConfig(t)
+	request := Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64"}
+
+	plan, err := PlanBuildForHost(config, request, testHost("linux", "amd64", "zig", "docker"))
+	require.NoError(t, err)
+	assert.Equal(t, "zig", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
+
+	plan, err = PlanBuildForHost(config, request, testHost("linux", "amd64", "docker"))
+	require.NoError(t, err)
+	assert.Equal(t, "docker", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
+
+	_, err = PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "requires zig, Docker, or Podman")
+}
+
+func TestWindowsHostBuildsBothArchitecturesWithNativeGo(t *testing.T) {
+	for _, hostArch := range []string{"amd64", "arm64"} {
+		for _, arch := range []string{"amd64", "arm64"} {
+			plan, err := PlanBuildForHost(testConfig(t), Request{Verb: "build", TargetOS: "windows", TargetArch: arch}, testHost("windows", hostArch))
+			require.NoError(t, err)
+			assert.Equal(t, "native", plan.Nodes[NodeKey("target:windows/"+arch+":compile")].Spec.(CompileSpec).Toolchain)
+		}
+	}
+}
+
+func TestHostResolutionUsesAContainerForLinuxCrossCompilation(t *testing.T) {
+	config := testConfig(t)
+	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}
+	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "cc", "zig", "podman"}, nil, HostFacts{
+		ContainerRuntime: "podman",
+		ContainerImages:  []string{"wails-cross"},
+	})
+
+	plan, err := PlanBuildForHost(config, request, host)
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "docker", compile.Toolchain)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
+}
+
+func TestHostResolutionUsesTheInjectedHostAsTheAnonymousDefaultTarget(t *testing.T) {
+	plan, err := PlanBuildForHost(testConfig(t), Request{Verb: "build"}, testHost("windows", "arm64"))
+	require.NoError(t, err)
+	assert.Equal(t, "windows/arm64", plan.Target)
+	assert.Equal(t, "native", plan.Nodes["target:windows/arm64:compile"].Spec.(CompileSpec).Toolchain)
+}
+
+func TestHostResolutionEnforcesExplicitToolchains(t *testing.T) {
+	config := testConfig(t)
+	config.Targets.Linux.ARM64.Toolchain = "native"
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, testHost("darwin", "arm64"))
+	assert.ErrorContains(t, err, `toolchain "native" cannot build linux/arm64 on darwin/arm64`)
+
+	config.Targets.Linux.ARM64.Toolchain = "zig"
+	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, testHost("darwin", "arm64"))
+	assert.ErrorContains(t, err, `toolchain "zig" requires tool "zig"`)
+
+	config.Targets.Linux.ARM64.Toolchain = "docker"
+	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, testHost("windows", "amd64", "docker"))
+	assert.ErrorContains(t, err, `toolchain "docker" cannot build linux/arm64 on windows/amd64`)
+
+	android := configForAndroid(t)
+	android.Targets.Android.ARM64.Toolchain = "docker"
+	_, err = PlanBuildForHost(android, Request{Verb: "build", TargetOS: "android", TargetArch: "arm64"}, testHost("linux", "amd64", "docker"))
+	assert.ErrorContains(t, err, `toolchain "docker" is not supported for target android/arm64`)
+}
+
+func TestHostResolutionPreservesConfiguredToolchainSourceRange(t *testing.T) {
+	config := testConfig(t)
+	field := `targets["linux/arm64"].toolchain`
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.yaml", StartLine: 20, StartColumn: 15, EndLine: 20, EndColumn: 23}
+	config.Targets.Linux.ARM64.Toolchain = "native"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, testHost("darwin", "arm64"))
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, field, validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+}
+
+func TestHostResolutionPreservesProfileTargetRangeForMissingAndroidSDK(t *testing.T) {
+	config := configForAndroid(t)
+	field := `profiles["mobile"].targets["android/arm64"]`
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.yaml", StartLine: 40, StartColumn: 10, EndLine: 40, EndColumn: 25}
+	config.Selected = manifest.Profile{Name: "mobile", Targets: []manifest.ProfileTarget{{Target: "android/arm64", Formats: []string{"aab"}}}}
+	config.Profile = "mobile"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "java"}, nil, HostFacts{})
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build"}, host)
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, field, validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+	assert.ErrorContains(t, err, "Android SDK")
+}
+
+func TestHostResolutionFallsBackToSigningBlockRangeForMissingField(t *testing.T) {
+	config := testConfig(t)
+	field := "linux.signing"
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.yaml", StartLine: 30, StartColumn: 3, EndLine: 30, EndColumn: 10}
+	config.Signing.Linux.Enabled = true
+	config.Selected = manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "linux/amd64", Formats: []string{"deb"}, Sign: true}}}
+	config.Profile = "release"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build"}, testHost("linux", "amd64", "dpkg-sig"))
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, "linux.signing.certificate", validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+	assert.NotContains(t, validation.Detail, "release@example.com")
+}
+
+func TestHostResolutionRejectsUnavailablePackageOperations(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}}, testHost("linux", "amd64", "docker", "hdiutil"))
+	assert.ErrorContains(t, err, "dmg packaging for darwin/arm64 requires a darwin host")
+
+	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"nsis"}}, testHost("windows", "amd64"))
+	assert.ErrorContains(t, err, `nsis packaging for windows/amd64 requires tool "makensis"`)
+}
+
+func TestHostResolutionDoesNotBlameManifestForAnonymousPackageSelection(t *testing.T) {
+	config := testConfig(t)
+	field := `targets["windows/amd64"]`
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: manifest.SourceRange{Filename: "/project/wails.yaml", StartLine: 20}}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"nsis"}}, testHost("windows", "amd64"))
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `requires tool "makensis"`)
+	var validation *manifest.ValidationError
+	assert.False(t, errors.As(err, &validation), "CLI-only package selection must remain an ordinary command error")
+}
+
+func TestHostResolutionRejectsUnavailableSigningAndNotarization(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuildForHost(config, Request{Verb: "sign", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb"}}, testHost("linux", "amd64"))
+	assert.ErrorContains(t, err, "signing is not enabled for linux")
+
+	config.Signing.Darwin.Enabled = true
+	config.Signing.Darwin.Identity = "Developer ID Application: Example"
+	config.Selected.Name = "release"
+	config.Selected.Targets = []manifest.ProfileTarget{{Target: "darwin/arm64", Formats: []string{"dmg"}, Sign: true, Notarize: true}}
+	_, err = PlanBuildForHost(config, Request{Verb: "build"}, testHost("darwin", "arm64", "hdiutil", "codesign", "xcrun"))
+	assert.ErrorContains(t, err, "notarization requires signing.darwin.notarization credential")
+}
+
+func TestHostResolutionValidatesFormatSpecificSigningRequirements(t *testing.T) {
+	config := testConfig(t)
+	config.Signing.Linux.Enabled = true
+	request := Request{Verb: "sign", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb"}}
+	_, err := PlanBuildForHost(config, request, testHost("linux", "amd64"))
+	assert.ErrorContains(t, err, "PGP key identifier")
+
+	config.Signing.Linux.Certificate = "release@example.com"
+	_, err = PlanBuildForHost(config, request, testHost("linux", "amd64"))
+	assert.ErrorContains(t, err, `requires tool "dpkg-sig"`)
+	_, err = PlanBuildForHost(config, request, testHost("linux", "amd64", "dpkg-sig"))
+	require.NoError(t, err)
+
+	config.Signing.Windows.Enabled = true
+	_, err = PlanBuildForHost(config, Request{Verb: "sign", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"msix"}}, testHost("windows", "amd64", "MakeAppx.exe", "signtool.exe"))
+	assert.ErrorContains(t, err, "certificate or thumbprint")
+}
+
+func TestAndroidSigningReportsTheSpecificMissingField(t *testing.T) {
+	host := NewHostCapabilities("linux", "amd64", []string{"jarsigner"}, []string{"ANDROID_PASSWORD"})
+	config := manifest.SigningPlatform{Enabled: true, Certificate: "release.jks"}
+
+	err := validateSigningHost(SignSpec{TargetOS: "android", TargetArch: "arm64", Format: "aab", Config: config}, host)
+	var fieldError *hostConfigurationFieldError
+	require.ErrorAs(t, err, &fieldError)
+	assert.Equal(t, "key_alias", fieldError.field)
+
+	config.KeyAlias = "release"
+	err = validateSigningHost(SignSpec{TargetOS: "android", TargetArch: "arm64", Format: "aab", Config: config}, host)
+	require.ErrorAs(t, err, &fieldError)
+	assert.Equal(t, "credential", fieldError.field)
+}
+
+func TestHostResolutionRejectsMissingBuildExecutables(t *testing.T) {
+	config := testConfig(t)
+	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}
+	_, err := PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"npm"}, nil))
+	assert.ErrorContains(t, err, `requires tool "go"`)
+
+	_, err = PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
+	assert.ErrorContains(t, err, `requires tool "npm"`)
+
+	config.Build.Obfuscation = true
+	_, err = PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"go", "npm"}, nil))
+	assert.ErrorContains(t, err, `requires tool "garble"`)
+}
+
+func TestHostResolutionRejectsMissingToolchainRuntimeFacts(t *testing.T) {
+	config := testConfig(t)
+	config.Targets.Windows.AMD64.Toolchain = "docker"
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64"}, NewHostCapabilities("linux", "amd64", []string{"go", "npm", "docker"}, nil))
+	assert.ErrorContains(t, err, `requires container image "ghcr.io/wailsapp/wails-cross:latest"`)
+
+	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "java"}, nil, HostFacts{})
+	_, err = PlanBuildForHost(configForAndroid(t), Request{Verb: "build", TargetOS: "android", TargetArch: "arm64"}, host)
+	assert.ErrorContains(t, err, "Android SDK")
+
+	host = NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "java"}, nil, HostFacts{AndroidSDK: true})
+	_, err = PlanBuildForHost(configForAndroid(t), Request{Verb: "build", TargetOS: "android", TargetArch: "arm64"}, host)
+	assert.ErrorContains(t, err, "Android NDK")
+}
+
+func TestHostResolutionRejectsUnavailableAppleSDK(t *testing.T) {
+	config := testConfig(t)
+	config.Selected = manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "ios/arm64", Destination: "simulator"}}}
+	host := NewHostCapabilitiesWithFacts("darwin", "arm64", []string{"go", "npm", "xcrun", "codesign"}, nil, HostFacts{AppleSDKs: []string{"iphoneos"}})
+	_, err := PlanBuildForHost(config, Request{Verb: "build"}, host)
+	assert.ErrorContains(t, err, `requires Apple SDK "iphonesimulator"`)
+}
+
+func TestHostAndToolchainValidationCoversEveryFailureContract(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, NewHostCapabilities("plan9", "amd64", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "unsupported build host")
+	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, NewHostCapabilities("linux", "", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "unsupported build host")
+
+	assert.NoError(t, requireCommandTool(HostCapabilities{}, "custom command", "./tools/frontend"))
+	assert.NoError(t, requireCommandTool(HostCapabilities{}, "empty command", ""))
+	assert.Equal(t, "npm", firstCommand(nil, "npm"))
+	assert.Equal(t, "pnpm", firstCommand([]string{"pnpm", "run", "build"}, "npm"))
+
+	nativeLinux := CompileSpec{TargetOS: "linux", TargetArch: "amd64", Toolchain: "native"}
+	err = validateCompileEnvironment(nativeLinux, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
+	assert.ErrorContains(t, err, "requires a C compiler")
+	assert.NoError(t, validateCompileEnvironment(nativeLinux, NewHostCapabilities("linux", "amd64", []string{"go", "gcc"}, nil)))
+
+	docker := CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}
+	err = validateCompileEnvironment(docker, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
+	assert.ErrorContains(t, err, "container image")
+	hostWithImage := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "docker"}, nil, HostFacts{DockerImages: []string{"wails-cross"}})
+	assert.NoError(t, validateCompileEnvironment(docker, hostWithImage))
+
+	_, err = resolveToolchain(CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
+	assert.ErrorContains(t, err, `requires Docker or Podman`)
+	_, err = resolveToolchain(CompileSpec{TargetOS: "plan9", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
+	assert.ErrorContains(t, err, "cannot build")
+	assert.False(t, dockerToolchainSupports(CompileSpec{TargetOS: "plan9", TargetArch: "amd64"}, testHost("linux", "amd64", "docker")))
+	assert.False(t, nativeToolchainSupports(CompileSpec{TargetOS: "android", TargetArch: "arm64"}, HostCapabilities{os: "plan9", arch: "amd64"}))
+	androidCompile := CompileSpec{TargetOS: "android", TargetArch: "arm64", Toolchain: "native"}
+	err = validateCompileEnvironment(androidCompile, NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go"}, nil, HostFacts{}))
+	assert.ErrorContains(t, err, "Android SDK")
+}
+
+func TestHostPlanningReportsInstallAndIOSAssemblyToolFailures(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Install = []string{"pnpm", "install"}
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, testHost("linux", "amd64"))
+	assert.ErrorContains(t, err, `frontend dependency installation requires tool "pnpm"`)
+
+	config = testConfig(t)
+	config.Selected = manifest.Profile{Name: "simulator", Targets: []manifest.ProfileTarget{{Target: "ios/arm64", Destination: "simulator"}}}
+	host := NewHostCapabilitiesWithFacts("darwin", "arm64", []string{"go", "npm", "xcrun"}, nil, HostFacts{AppleSDKs: []string{"iphonesimulator"}})
+	_, err = PlanBuildForHost(config, Request{Verb: "build"}, host)
+	assert.ErrorContains(t, err, `iOS application assembly for ios/arm64 requires tool "codesign"`)
+}
+
+func TestSigningHostValidationCoversEveryPlatformContract(t *testing.T) {
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("darwin", "arm64")), "codesign")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign")), "xcrun")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "app", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign", "xcrun")), "ditto")
+
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("darwin", "arm64", "codesign")))
+
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Certificate: "app.pfx"}}, testHost("linux", "amd64", "signtool.exe")), "requires a windows host")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Thumbprint: "abc"}}, testHost("windows", "amd64", "signtool.exe")))
+
+	android := manifest.SigningPlatform{Enabled: true, Certificate: "upload.jks", KeyAlias: "upload", Credential: "ANDROID_PASSWORD"}
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: manifest.SigningPlatform{Enabled: true}}, testHost("linux", "amd64", "jarsigner")), "certificate, key_alias, and credential")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: android}, testHost("linux", "amd64", "jarsigner")), "credential")
+	androidHost := NewHostCapabilities("linux", "amd64", []string{"jarsigner", "apksigner"}, []string{"ANDROID_PASSWORD"})
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: android}, androidHost))
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "apk", Config: android}, androidHost))
+
+	linux := manifest.SigningPlatform{Enabled: true, Certificate: "release@example.com"}
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "linux", Format: "rpm", Config: linux}, testHost("linux", "amd64", "rpmsign")))
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "linux", Format: "appimage", Config: linux}, testHost("linux", "amd64")), "not supported")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "unknown", Config: manifest.SigningPlatform{Enabled: true}}, HostCapabilities{}))
+}
+
+func TestHostCapabilityCollectionHelpersAreDeterministic(t *testing.T) {
+	assert.Empty(t, uniqueSorted(nil))
+	assert.Equal(t, []string{"a", "b"}, uniqueSorted([]string{"b", "a", "b"}))
+	assert.False(t, containsSorted(nil, "a"))
+	assert.Empty(t, firstNonemptyEnvironment(func(string) string { return "" }, "first", "second"))
+}
+
+func configForAndroid(t *testing.T) manifest.Config {
+	t.Helper()
+	return testConfig(t)
+}
+
+func TestCurrentHostPlanningDiscoversConfiguredFrontendExecutable(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Install = []string{"custom-manager", "install"}
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "cc" || name == "npm" || name == "custom-manager" {
+				return "/tools/" + name, nil
+			}
+			return "", os.ErrNotExist
+		}, lookupEnv: func(string) (string, bool) { return "", false }, getenv: func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(string, ...string) error { return os.ErrNotExist },
+	}
+	_, err := planBuildForCurrentHostWithOperations(config, Request{}, nil, operations)
+	require.NoError(t, err)
+	config.Frontend.Install = []string{"missing-manager", "install"}
+	_, err = planBuildForCurrentHostWithOperations(config, Request{}, nil, operations)
+	require.ErrorContains(t, err, "missing-manager")
+}
+
+func TestSignedWindowsPublicationsRetainFileExtensions(t *testing.T) {
+	for _, path := range []string{"bin/app.exe", "bin/app.msix"} {
+		got := signedPublicationPath(path, "windows")
+		assert.Equal(t, filepath.Ext(path), filepath.Ext(got))
+		assert.NotEqual(t, path, got)
+	}
+}

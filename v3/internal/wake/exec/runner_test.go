@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
@@ -13,10 +14,11 @@ import (
 // precondition's `msg:` surfaces as a spurious "garble is required" error on
 // every build. See the obfuscation false-positive regression.
 func TestCheckPreconditionsExpandsTemplates(t *testing.T) {
-	// exit 0 / exit 1 behave the same under `sh -c` (Unix) and `cmd /C`
-	// (Windows), so the test checks template expansion on every platform.
-	const guard = `{{if eq .OBFUSCATED "true"}}exit 1{{else}}exit 0{{end}}`
+	guard := `{{if eq .OBFUSCATED "true"}}command -v definitely-not-a-real-binary >/dev/null 2>&1{{else}}true{{end}}`
 
+	if runtime.GOOS == "windows" {
+		guard = `{{if eq .OBFUSCATED "true"}}exit /b 1{{else}}exit /b 0{{end}}`
+	}
 	newTask := func() *ast.Task {
 		return &ast.Task{
 			Precondition: []*ast.Precondition{{Sh: guard, Msg: "garble is required for obfuscated builds"}},

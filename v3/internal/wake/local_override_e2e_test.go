@@ -8,14 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestLocalOverrideEndToEnd drives the public Execute entrypoint (the same one
-// the CLI's runWakeTask calls) to prove a Taskfile.local.yml override takes
+// TestLocalOverrideEndToEnd drives the internal Execute entrypoint
+// to prove a Taskfile.local.yml override takes
 // effect through the full discover -> merge -> execute path.
 func TestLocalOverrideEndToEnd(t *testing.T) {
-	t.Setenv("WAILS_USE_WAKE", "true")
 
 	dir := t.TempDir()
-	// Mirror the CLI: runWakeTask runs with the project dir as the process cwd,
+	// Run with the project directory as the process cwd,
 	// and tasks without an explicit `dir:` execute there.
 	t.Chdir(dir)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "Taskfile.yml"), []byte(`
@@ -61,7 +60,6 @@ tasks:
 // TestOverridesDisabledOptOut verifies WAILS_NO_OVERRIDES=true skips local
 // override loading entirely, so the committed base Taskfile runs unmodified.
 func TestOverridesDisabledOptOut(t *testing.T) {
-	t.Setenv("WAILS_USE_WAKE", "true")
 	t.Setenv("WAILS_NO_OVERRIDES", "true")
 
 	dir := t.TempDir()

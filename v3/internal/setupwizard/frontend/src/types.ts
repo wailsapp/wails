@@ -38,18 +38,6 @@ export interface UserConfig {
   editor: string;
 }
 
-export interface WailsConfig {
-  info: {
-    companyName: string;
-    productName: string;
-    productIdentifier: string;
-    description: string;
-    copyright: string;
-    comments: string;
-    version: string;
-  };
-}
-
 export interface SystemInfo {
   os: string;
   arch: string;
@@ -82,8 +70,6 @@ export interface WizardState {
   system: SystemInfo;
   startTime: string;
 }
-
-export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'signing' | 'config' | 'wails-config' | 'complete';
 
 export interface AuthorDefaults {
   name: string;
@@ -147,6 +133,7 @@ export interface InitTemplate {
 }
 
 export interface InitData {
+  buildConfigFile: string;
   mode: string;
   projectName: string;
   templateName: string;

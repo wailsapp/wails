@@ -7,12 +7,15 @@ toolchain go1.26.10
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/atterpac/refresh v1.1.4
+	github.com/charlievieth/fastwalk v1.0.14
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/coder/websocket v1.8.14
 	github.com/danieljoos/wincred v1.2.3
 	github.com/ebitengine/purego v0.11.1
+	github.com/go-git/go-billy/v5 v5.7.0
+	github.com/go-git/go-git/v5 v5.16.4
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/goreleaser/nfpm/v2 v2.44.1
@@ -23,12 +26,15 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
+	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/sys v0.48.0
 	golang.org/x/term v0.46.0
 	golang.org/x/tools v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.44.3
 )
+
+require github.com/BurntSushi/toml v1.6.0 // indirect
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
@@ -45,8 +51,9 @@ require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.4.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/go-git/go-git/v5 v5.19.2 // indirect
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/jsonschema-go v0.4.3 // indirect
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/lmittmann/tint v1.1.3 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -67,7 +74,6 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
-	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Ladicle/tabwriter v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
@@ -92,7 +98,6 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.9.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-task/template v0.2.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
@@ -125,7 +130,7 @@ require (
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rjeczalik/notify v0.9.3 // indirect
+	github.com/rjeczalik/notify v0.9.3
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -145,7 +150,7 @@ require (
 	golang.org/x/image v0.45.0
 	golang.org/x/mod v0.41.0
 	golang.org/x/net v0.60.0 // indirect
-	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sync v0.23.0
 	golang.org/x/text v0.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
