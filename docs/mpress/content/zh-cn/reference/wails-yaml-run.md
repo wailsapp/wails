@@ -44,6 +44,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan`会解析并显示所选目标、生效的构建标签、
@@ -55,6 +56,7 @@ wails3 run --plan
 | 选项 | 含义 |
 | --- | --- |
 | `--tags <tags>` | 以逗号分隔的其他 Go 构建标签。 |
+| `--skip-build` | 从 YAML 输出目录导入现有桌面可执行文件，然后直接启动，无需编译。 |
 | `--target <os>/<arch>` | 选择一个目标；默认为主机操作系统和体系结构。 |
 | `--plan` | 显示解析后的设置，但不构建或启动。允许生成跨平台桌面目标的计划。 |
 | `--device <id>` | Android adb 序列号或 iOS 模拟器/设备标识符。 |
@@ -64,6 +66,9 @@ wails3 run --plan
 | `--appargs <string>` | 兼容拼写形式：使用 POSIX 风格的引号规则解析一个字符串。不能重复使用，也不能与`--`之后的参数组合使用。 |
 
 移动平台选择器要求存在清单和匹配的移动目标。
+
+`--skip-build` 要求当前存在有效的 YAML 项目和兼容的桌面可执行文件。此模式会跳过前端处理、绑定生成、编译、UPX 和构建钩子；但配置的启动参数和环境仍然适用。导入的可执行文件会经过验证并复制到 Wake 生成的工作区中，且不会修改其源文件。macOS GUI 应用程序会使用这些输入文件和当前软件包资源进行组装。请参阅[预构建输入路径和要求](/experimental/yaml-builds/#use-prebuilt-desktop-executables)。
+构建标签无法更改预构建的可执行文件，因此在此模式下，`--tags`和配置的构建标签均不起作用。
 
 ## 字段
 

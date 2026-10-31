@@ -24,6 +24,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan` menentukan dan menampilkan target yang dipilih, tag build efektif, artefak executable atau yang dapat diinstal, argumen, serta direktori kerja tanpa membangun, menginstal, atau meluncurkan. Rencana mencantumkan nama kunci penimpaan lingkungan dan tidak menampilkan nilainya.
@@ -33,6 +34,7 @@ wails3 run --plan
 | Opsi | Arti |
 | --- | --- |
 | `--tags <tags>` | Tag build Go tambahan yang dipisahkan dengan koma. |
+| `--skip-build` | Impor executable desktop yang sudah ada dari direktori keluaran YAML, lalu jalankan tanpa melakukan kompilasi. |
 | `--target <os>/<arch>` | Pilih satu target; default-nya adalah OS dan arsitektur host. |
 | `--plan` | Tampilkan pengaturan yang telah ditentukan tanpa membangun atau meluncurkan. Rencana desktop lintas platform diperbolehkan. |
 | `--device <id>` | Nomor seri adb Android atau pengenal simulator/perangkat iOS. |
@@ -42,6 +44,8 @@ wails3 run --plan
 | `--appargs <string>` | Ejaan kompatibilitas: uraikan satu string menggunakan pengutipan bergaya POSIX. Tidak dapat diulang atau digabungkan dengan argumen setelah `--`. |
 
 Pemilih seluler memerlukan manifes dan target seluler yang sesuai.
+
+`--skip-build` memerlukan proyek YAML yang aktif dan executable desktop yang kompatibel. Opsi ini melewati pekerjaan frontend, binding, kompilasi, UPX, dan hook build; argumen peluncuran serta lingkungan yang dikonfigurasi tetap berlaku. Executable yang diimpor divalidasi dan disalin ke ruang kerja yang dihasilkan Wake tanpa mengubah file sumbernya. Aplikasi GUI macOS dirakit dari masukan tersebut dan aset paket saat ini. Lihat [jalur dan persyaratan masukan bawaan](/experimental/yaml-builds/#use-prebuilt-desktop-executables). Tag build tidak dapat mengubah executable bawaan, sehingga `--tags` dan tag build yang dikonfigurasi tidak berpengaruh dalam mode ini.
 
 ## Kolom
 

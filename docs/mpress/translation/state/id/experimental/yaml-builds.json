@@ -16,31 +16,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0001-text-01": {
       "sourceHash": "518709e150224233724dc0b05d6f8581ce61887ffafab86cd289c552cd9e73ee",
-      "targetHash": "d66b74de2239562df010452df19db2ff50b230c2b11432adf43a2f068055931f",
-      "machineHash": "d66b74de2239562df010452df19db2ff50b230c2b11432adf43a2f068055931f",
-      "machineText": "Rilis pertama yang diterima hanya mendukung konfigurasi literal. Eksperimen ini juga membuat prototipe hook siklus hidup berbatas agar bentuknya dapat dievaluasi sebelum diusulkan untuk dirilis. Tahap kustom, ekspresi YAML, dan pemanggilan alat Wails bertipe masih ditangguhkan. Proyek yang sudah ada tetap menggunakan Taskfile sampai Anda secara eksplisit mengaktifkan migrasi yang telah ditinjau.",
+      "targetHash": "59357d7aed240739f76918b6792da0117fc2c57374b677329b115b90fed5c338",
+      "machineHash": "59357d7aed240739f76918b6792da0117fc2c57374b677329b115b90fed5c338",
+      "machineText": "Rilis pertama yang diterima hanya mendukung konfigurasi literal. Eksperimen ini juga membuat purwarupa hook siklus hidup berbatas agar bentuknya dapat dievaluasi sebelum diusulkan untuk dirilis. Tahap kustom, ekspresi YAML, dan pemanggilan alat Wails bertipe masih ditangguhkan. Proyek yang sudah ada tetap menggunakan Taskfile sampai Anda secara eksplisit mengaktifkan migrasi yang telah ditinjau.",
       "status": "machine-translated",
       "sourcePreview": "The accepted first release supports literal configuration only. This experiment also prototypes boun…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0002-heading-01": {
       "sourceHash": "02aa31ff6ee330efc04cdfedbe38c4c8642123aeb275776f31719ba47e38c889",
-      "targetHash": "9423c17e1272e249d7f84069d728898c885b7f6180c84ea78e9a1071a975d0ea",
-      "machineHash": "9423c17e1272e249d7f84069d728898c885b7f6180c84ea78e9a1071a975d0ea",
-      "machineText": "Aktifkan build YAML",
+      "targetHash": "553f0bb28f2e90a2eb7fe1e68f13f125639285eec3abfaf322b4d5de6d107049",
+      "machineHash": "553f0bb28f2e90a2eb7fe1e68f13f125639285eec3abfaf322b4d5de6d107049",
+      "machineText": "Mengaktifkan build YAML",
       "status": "machine-translated",
       "sourcePreview": "Enable YAML builds",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0003-text-01": {
       "sourceHash": "a8c413e5ffbfa6d155e3bc083db2db011d99005ce469212f994d112069a444bc",
@@ -52,7 +52,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0004-text-01": {
       "sourceHash": "ecf768e5e8980a6cdd1ece2a0304a5fc941f16e56212864546e062d614847d21",
@@ -64,43 +64,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0005-text-01": {
       "sourceHash": "81e972fc460ea90283fc9c24e58b5c482dcd4fa510f1520ce3d9837eb18bb170",
-      "targetHash": "4b572f3ed45bee7428dc34d7b9042ef77914ffbfde7453ce28eb01f5562cbca3",
-      "machineHash": "4b572f3ed45bee7428dc34d7b9042ef77914ffbfde7453ce28eb01f5562cbca3",
-      "machineText": "Variabel ini mengaktifkan fitur berdasarkan keberadaannya: bahkan nilai kosong atau `false` akan mengaktifkannya. Hapus variabel tersebut (`unset WAILS_EXP_USE_WAKE` di Bash/Zsh atau `Remove-Item Env:WAILS_EXP_USE_WAKE` di PowerShell) untuk menonaktifkan eksperimen. Setelah `wails.yaml` aktif, perintah mengharuskan Wake diaktifkan kembali dan tidak pernah beralih kembali ke Taskfile.\nTanpa variabel tersebut, perutean build/dev YAML dan pembuatan proyek YAML dinonaktifkan, sedangkan perintah `migrate`, `config`, dan `eject` tidak tersedia. Proyek yang belum dimigrasikan tetap diproses melalui runtime Task tersemat yang terpisah.",
+      "targetHash": "16c9af3ec2824db7d2947bdc3d6d7b466fd460105ad1ba7e8e183ec190688006",
+      "machineHash": "16c9af3ec2824db7d2947bdc3d6d7b466fd460105ad1ba7e8e183ec190688006",
+      "machineText": "Variabel ini mengaktifkan fitur berdasarkan keberadaannya: nilai kosong sekalipun atau `false` akan mengaktifkannya. Hapus variabel tersebut (`unset WAILS_EXP_USE_WAKE` di Bash/Zsh atau `Remove-Item Env:WAILS_EXP_USE_WAKE` di PowerShell) untuk menonaktifkan eksperimen. Setelah `wails.yaml` aktif, perintah mengharuskan Wake diaktifkan kembali dan tidak pernah kembali menggunakan Taskfile.\nTanpa variabel tersebut, perutean build/dev YAML dan pembuatan proyek YAML dinonaktifkan, serta perintah `migrate`, `config`, dan `eject` tidak tersedia. Proyek yang belum dimigrasikan tetap diproses melalui runtime Task tertanam yang terpisah.",
       "status": "machine-translated",
       "sourcePreview": "The variable is a presence-based opt-in: even an empty value or `false` enables it. Unset it (`unset…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0006-heading-01": {
       "sourceHash": "f1d23cc1c5eb6caacc9e9b3c6fa1486c6e648ac99ff425520c2423e45267cf62",
-      "targetHash": "5b99d76b1c666665d7b363eed49ece2ff1e31c58bd8f19659d9d2ea64fad529d",
-      "machineHash": "5b99d76b1c666665d7b363eed49ece2ff1e31c58bd8f19659d9d2ea64fad529d",
-      "machineText": "Konfigurasikan proyek",
+      "targetHash": "16e1f1e68dcc1527da57672f52fd4fb030d172d458ac452af24aa981494b5e0a",
+      "machineHash": "16e1f1e68dcc1527da57672f52fd4fb030d172d458ac452af24aa981494b5e0a",
+      "machineText": "Mengonfigurasi proyek",
       "status": "machine-translated",
       "sourcePreview": "Configure a project",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0007-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",
-      "targetHash": "8c8e9943a8f699504cb0bf18e3cc16f9a27d3daeec964b039431cac74e683525",
-      "machineHash": "8c8e9943a8f699504cb0bf18e3cc16f9a27d3daeec964b039431cac74e683525",
-      "machineText": "Setelah opsi tersebut diaktifkan, tambahkan `wails.yaml` di root proyek. Keberadaannya memilih sistem build native dan membuat Wails mengabaikan setiap Taskfile dalam proyek tersebut. Biarkan opsi ini aktif untuk semua perintah di bawah. Modeline skema mengaktifkan pelengkapan dan validasi sebaris pada editor yang mendukung server bahasa YAML.",
+      "targetHash": "c02e1a371d4131d457072994bdf4fd7e1bc95f6acd3b25620a7bb5d3f9460068",
+      "machineHash": "c02e1a371d4131d457072994bdf4fd7e1bc95f6acd3b25620a7bb5d3f9460068",
+      "machineText": "Setelah pilihan ikut serta diaktifkan, tambahkan `wails.yaml` di akar proyek. Keberadaan file tersebut memilih sistem build native dan membuat Wails mengabaikan setiap Taskfile dalam proyek itu. Pertahankan pilihan ikut serta tetap aktif untuk semua perintah di bawah ini. Modeline skema mengaktifkan pelengkapan dan validasi sebaris di editor yang mendukung server bahasa YAML.",
       "status": "machine-translated",
       "sourcePreview": "With the opt-in enabled, add `wails.yaml` at the project root. Its presence selects the native build…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0008-text-01": {
       "sourceHash": "5789fe5b9585e418536f48e0506d7820c994f805f11f50ce3a6cabe01b7ac419",
@@ -112,43 +112,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0009-text-01": {
       "sourceHash": "c48a5bc44ed52fe432717c3f814d5d1eb4a03ec066a4ddfb841531c161daad78",
-      "targetHash": "8dc358b25779ecdf347d30a13ce942dac18a0db7d59088ba3cc991bdaf953ffa",
-      "machineHash": "8dc358b25779ecdf347d30a13ce942dac18a0db7d59088ba3cc991bdaf953ffa",
-      "machineText": "Untuk build sekali pakai, pilih target dan format yang dipisahkan koma tanpa menambahkan profil:",
+      "targetHash": "5e046c9ee6c60ef1a3ef27409405bc667795ebeb378d1d587ddd05f30f4d0f93",
+      "machineHash": "5e046c9ee6c60ef1a3ef27409405bc667795ebeb378d1d587ddd05f30f4d0f93",
+      "machineText": "Untuk build sekali jalan, pilih target dan format yang dipisahkan koma tanpa menambahkan profil:",
       "status": "machine-translated",
       "sourcePreview": "For a one-off build, select comma-separated targets and formats without adding a profile:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0010-heading-01": {
       "sourceHash": "84f60202f588d3c9c47bae03f85b04554a4ea8309b99176ac1a92a33951283af",
-      "targetHash": "81cbb7f67addfb14e6bb90c72fbff1dd5e216c9c67a5e0e5bff5acb071adcea6",
-      "machineHash": "81cbb7f67addfb14e6bb90c72fbff1dd5e216c9c67a5e0e5bff5acb071adcea6",
-      "machineText": "Kompilasi silang aplikasi desktop",
+      "targetHash": "4473024c46c05fd64f862058502b59fab919cb5edc7c8ff3822913e70aebb5fa",
+      "machineHash": "4473024c46c05fd64f862058502b59fab919cb5edc7c8ff3822913e70aebb5fa",
+      "machineText": "Mengompilasi silang aplikasi desktop",
       "status": "machine-translated",
       "sourcePreview": "Cross-compile desktop applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0011-text-01": {
       "sourceHash": "dbb783123b9bb5698ef4b897a618fd10534dcab041a44a789cad4b336e9da37f",
-      "targetHash": "4f078d8d60425d6f7b501317d541e7003159fe5817427075d7e44e121008ef10",
-      "machineHash": "4f078d8d60425d6f7b501317d541e7003159fe5817427075d7e44e121008ef10",
-      "machineText": "Untuk backend desktop pure-Go eksperimental, tetapkan `CGO_ENABLED: \"0\"` di lingkungan build. Wake memilih tag `purego` untuk program GUI macOS dan Linux serta menggunakan Go secara langsung pada host Windows, macOS, dan Linux. Dalam mode ini, pembuatan executable desktop tidak memerlukan Docker, emulasi, compiler C, ataupun SDK platform target. Dependensi aplikasi juga harus mendukung `CGO_ENABLED=0`.",
+      "targetHash": "cd58b2c08bda92b62434bb1c7ba5cf5c8478645527baf68a69005970d5b63d38",
+      "machineHash": "cd58b2c08bda92b62434bb1c7ba5cf5c8478645527baf68a69005970d5b63d38",
+      "machineText": "Untuk backend desktop eksperimental yang sepenuhnya menggunakan Go, tetapkan `CGO_ENABLED: \"0\"` di lingkungan build. Wake memilih tag `purego` untuk program GUI macOS dan Linux serta menggunakan Go secara langsung pada host Windows, macOS, dan Linux. Dalam mode ini, membangun executable desktop tidak memerlukan Docker, emulasi, compiler C, atau SDK platform target. Dependensi aplikasi juga harus mendukung `CGO_ENABLED=0`.",
       "status": "machine-translated",
       "sourcePreview": "For the experimental pure-Go desktop backend, set `CGO_ENABLED: \"0\"` in the build environment. Wake …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0012-text-01": {
       "sourceHash": "8a6136eee54bd7cb507dc846278c5eeeac019c93324cf15fa390985e7e2bf1f1",
@@ -160,79 +160,79 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0013-text-01": {
       "sourceHash": "2221cd9350d90239b313ce556cfec27c020b4bbd00a53821685a1f649707a4b5",
-      "targetHash": "af969c4eb137742e62987c1fce8fbe056bd0905c0df2966e3b7f7e020c4c6710",
-      "machineHash": "af969c4eb137742e62987c1fce8fbe056bd0905c0df2966e3b7f7e020c4c6710",
-      "machineText": "Mode hasil resolusi dipilih secara independen untuk setiap executable. `build.environment.CGO_ENABLED` yang dideklarasikan, lingkungan target, atau lingkungan biner menggantikan nilai terminal yang menjalankan perintah. Jika tidak, tag `purego` yang dipilih secara eksplisit, program CLI/server, atau target Windows secara default menggunakan `0`; program GUI macOS dan Linux secara default menggunakan `1`. `--plan --json` melaporkan compiler, mode CGo, dan tag hasil resolusi untuk setiap executable. Kompilasi silang membuat file target; menjalankan target desktop yang tidak kompatibel tetap memerlukan host yang sesuai.",
+      "targetHash": "a2399cb4307c5e142e874d093c5cf7032dc63c66a91e1fa3d28a06d1e408f1d8",
+      "machineHash": "a2399cb4307c5e142e874d093c5cf7032dc63c66a91e1fa3d28a06d1e408f1d8",
+      "machineText": "Mode hasil resolusi dipilih secara independen untuk setiap executable. `build.environment.CGO_ENABLED` yang dideklarasikan, lingkungan target, atau lingkungan biner menggantikan nilai terminal yang menjalankan perintah. Jika tidak, tag `purego` yang dipilih secara eksplisit, program CLI/server, atau target Windows menggunakan `0` secara default; program GUI macOS dan Linux menggunakan `1` secara default. `--plan --json` melaporkan compiler, mode CGo, dan tag hasil resolusi untuk setiap executable. Kompilasi silang membuat file target; menjalankan target desktop yang tidak kompatibel tetap memerlukan host yang sesuai.",
       "status": "machine-translated",
       "sourcePreview": "The resolved mode is selected independently for each executable. A declared `build.environment.CGO_E…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0014-text-01": {
       "sourceHash": "be67c57d0c07639fcc0a29b9636bd7ecb203730ce7934d5b51ccd1d0d8e84d9a",
-      "targetHash": "7716aa6cb5957934c0b35e2eb822412be716d7e538252f330648d0c8924b33a3",
-      "machineHash": "7716aa6cb5957934c0b35e2eb822412be716d7e538252f330648d0c8924b33a3",
-      "machineText": "Dengan `CGO_ENABLED=1`, Wake terlebih dahulu menggunakan toolchain native yang kompatibel atau cross-compiler `CC` yang dikonfigurasi, kemudian Zig untuk build silang Windows jika tersedia, lalu fallback Docker/Podman yang sudah ada jika didukung. `CC` yang ditetapkan secara eksplisit harus menyediakan compiler, pustaka, dan sysroot target; Zig saja tidak menyediakan sysroot GTK/WebKit Linux. Pemaketan dan penandatanganan mungkin memerlukan alat tambahan sebagaimana dijelaskan di bawah. Target seluler memerlukan CGo dan SDK platformnya.",
+      "targetHash": "7e084b1f4d9cf4163504d7e844abba9038c3844b409365da40ec2324e65c3375",
+      "machineHash": "7e084b1f4d9cf4163504d7e844abba9038c3844b409365da40ec2324e65c3375",
+      "machineText": "Dengan `CGO_ENABLED=1`, Wake terlebih dahulu menggunakan toolchain native yang kompatibel atau cross-compiler `CC` yang dikonfigurasi, kemudian Zig untuk build silang Windows jika tersedia, lalu fallback Docker/Podman yang sudah ada jika didukung. `CC` yang ditetapkan secara eksplisit harus menyediakan compiler target, pustaka, dan sysroot; Zig saja tidak menyediakan sysroot GTK/WebKit Linux. Pemaketan dan penandatanganan mungkin memerlukan alat tambahan seperti dijelaskan di bawah. Target seluler memerlukan CGo dan SDK platformnya.",
       "status": "machine-translated",
       "sourcePreview": "With `CGO_ENABLED=1`, Wake uses a compatible native toolchain or the configured `CC` cross-compiler …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0015-text-01": {
       "sourceHash": "be0ca9f721a3441e4efdcafda7ab4b7dae8c487d0a12a2c921888b70f72ff839",
-      "targetHash": "c3b1cbc5a8b1fbc37f134cbbb01ee5c381b912465e976d1a9d531733ea362368",
-      "machineHash": "c3b1cbc5a8b1fbc37f134cbbb01ee5c381b912465e976d1a9d531733ea362368",
-      "machineText": "Kompilasi khusus Go tidak membundel pustaka sistem milik platform tujuan.\nAplikasi GUI Linux, termasuk executable pendamping GUI, tetap memerlukan runtime\nGTK/WebKitGTK yang dipilih oleh tag build-nya. Dependensi paket atau lingkungan\ndeployment yang sesuai harus menyediakannya. Secara default, paket yang hanya\nberisi CLI/server tidak menambahkan dependensi GUI tersebut; penggantian\ndependensi secara eksplisit tetap tersedia.",
+      "targetHash": "40c30cd8bc2e961e9bb5b05f78026a39cb83e2290f534d56abbdab00f25e1245",
+      "machineHash": "40c30cd8bc2e961e9bb5b05f78026a39cb83e2290f534d56abbdab00f25e1245",
+      "machineText": "Kompilasi khusus Go tidak membundel pustaka sistem milik tujuan. Aplikasi GUI Linux, termasuk executable pendamping GUI, tetap memerlukan runtime GTK/WebKitGTK yang dipilih oleh tag build-nya. Dependensi paket atau lingkungan deployment yang sesuai harus menyediakannya. Secara default, paket yang hanya berisi CLI/server tidak menambahkan dependensi GUI tersebut; penggantian dependensi secara eksplisit tetap tersedia.",
       "status": "machine-translated",
       "sourcePreview": "Go-only compilation does not bundle the destination's system libraries. Linux GUI applications, incl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:53:42Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0016-heading-01": {
       "sourceHash": "2052e625337e7c382c3d9522c490642cfde34af9bc8e0a221dec69a53d08bfee",
-      "targetHash": "b9dc767cebd208a4970835f8c8414b2ca5d987e03dc5035b83c2d289661d1a9f",
-      "machineHash": "b9dc767cebd208a4970835f8c8414b2ca5d987e03dc5035b83c2d289661d1a9f",
-      "machineText": "Build beberapa executable",
+      "targetHash": "592faf22c6b6a6af88b58837bf0e4694f64a37d6737cacd8aa4255192b20619e",
+      "machineHash": "592faf22c6b6a6af88b58837bf0e4694f64a37d6737cacd8aa4255192b20619e",
+      "machineText": "Membangun beberapa executable",
       "status": "machine-translated",
       "sourcePreview": "Build several executables",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0017-text-01": {
       "sourceHash": "bf8f85b4deeb906ecea88730802788bb12fe8a821fda60bf34ca55f1995c8f1d",
-      "targetHash": "4ee8f5b77d1370b12d6eb7a643408db141e89295182f39d014458eb042e2ec10",
-      "machineHash": "4ee8f5b77d1370b12d6eb7a643408db141e89295182f39d014458eb042e2ec10",
-      "machineText": "Proyek menentukan program utama. Tetapkan `project.package` ke paket Go-nya (default `.`) dan `project.kind` ke `gui`, `cli`, atau `server` (default `gui`). Program tambahan menggunakan entri bernama di bawah `binaries`:",
+      "targetHash": "21014c109cc3fe293bf90291042b4bfa77409f967438fbebf66d3bffea9e7643",
+      "machineHash": "21014c109cc3fe293bf90291042b4bfa77409f967438fbebf66d3bffea9e7643",
+      "machineText": "Proyek mendefinisikan program utama. Tetapkan `project.package` ke paket Go-nya (default `.`) dan `project.kind` ke `gui`, `cli`, atau `server` (default `gui`). Program tambahan menggunakan entri bernama di bawah `binaries`:",
       "status": "machine-translated",
       "sourcePreview": "The project defines the primary program. Set `project.package` to its Go package (default `.`) and `…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0018-text-01": {
       "sourceHash": "addf5918d8c4fb4ede22dc4c2735f19f4ad14c5db21ae5488571b8b2e1063a3f",
-      "targetHash": "59dda02052684aac0c6a0793beb8ec753b346e8c629a61bb53a94b4473f59688",
-      "machineHash": "59dda02052684aac0c6a0793beb8ec753b346e8c629a61bb53a94b4473f59688",
-      "machineText": "Setiap program memiliki input kompilasi dan cache sendiri. Paket proyek yang diimpor dan file tersemat dilacak; perubahan pada program independen tidak menyebabkan program lain dibangun ulang. Executable tambahan didukung di desktop serta disertakan dalam bundel aplikasi dan penginstal default. File paket pengganti milik pengguna mengendalikan kontennya sendiri.",
+      "targetHash": "c2c4943c4c6e677a93c272d8ee0edd32a054a2948622b0428bbc9e91ad6caef0",
+      "machineHash": "c2c4943c4c6e677a93c272d8ee0edd32a054a2948622b0428bbc9e91ad6caef0",
+      "machineText": "Setiap program memiliki input kompilasi dan cache tersendiri. Paket proyek yang diimpor dan file tertanam dilacak; pengeditan pada program independen tidak membangun ulang program lainnya. Executable tambahan didukung di desktop serta disertakan dalam bundel aplikasi dan penginstal default. File paket pengganti milik pengguna mengendalikan kontennya sendiri.",
       "status": "machine-translated",
       "sourcePreview": "Each program gets its own compilation and cache inputs. Imported project packages and embedded files…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0019-text-01": {
       "sourceHash": "9815499a6284eddc98a8a11b39b13679b0a4654db44a40b698c2721d8321ff96",
@@ -244,45 +244,117 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0020-text-01": {
       "sourceHash": "9e44f1d1e97ff6b67d1a4b52216ea7a6d6f574e05bb50bd0af78750532ca76b7",
-      "targetHash": "c39d38942fb0bdb16fc7f9fa340bc56dcc1ef061504b06b9313e06f9d0e61058",
-      "machineHash": "c39d38942fb0bdb16fc7f9fa340bc56dcc1ef061504b06b9313e06f9d0e61058",
-      "machineText": "Untuk membaca versi tanpa menjalankan kode aplikasi, konfigurasikan `project.version_file` dan `project.version_symbol`. File tersebut harus berisi deklarasi string Go statis. Literal `project.version` kemudian dapat dihilangkan. Tetapkan `commit_symbol: main.Commit` pada proyek atau biner bernama untuk menyisipkan revisi repositori ke dalam variabel string executable tersebut. Tidak adanya metadata repositori merupakan kesalahan ketika penyisipan commit diminta.",
+      "targetHash": "e6b1896c4039ab8ad06303f3e2c8117c1c9e336ad7432a4365c39daa3687ab85",
+      "machineHash": "e6b1896c4039ab8ad06303f3e2c8117c1c9e336ad7432a4365c39daa3687ab85",
+      "machineText": "Untuk membaca versi tanpa menjalankan kode aplikasi, konfigurasikan `project.version_file` dan `project.version_symbol`. File tersebut harus berisi deklarasi string Go statis. Literal `project.version` kemudian dapat dihilangkan. Tetapkan `commit_symbol: main.Commit` pada proyek atau biner bernama untuk menyuntikkan revisi repositori ke variabel string executable tersebut. Ketiadaan metadata repositori merupakan kesalahan ketika penyuntikan commit diminta.",
       "status": "machine-translated",
       "sourcePreview": "To read a version without running application code, configure both `project.version_file` and `proje…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0021-text-01": {
       "sourceHash": "e649671eb97f11b638f8c16275bbba79100b90c3eff3934b406dd0767fe7e8da",
-      "targetHash": "1e6048a4414fe2d3a439823873cf56e2ce5a77fdd3257ae88aa6ddbce7c99e7b",
-      "machineHash": "1e6048a4414fe2d3a439823873cf56e2ce5a77fdd3257ae88aa6ddbce7c99e7b",
-      "machineText": "`upx_level: 1` hingga `9` secara opsional mengompresi executable rilis Linux dan Windows; nilai nol menonaktifkannya. UPX harus terinstal. Build pengembangan dan macOS tidak menggunakan kompresi. Kegagalan kompilasi atau kompresi mempertahankan program yang sebelumnya dipublikasikan.",
+      "targetHash": "a9a995a0fccb7baf7456345604d2eb6e57c15181f1a0df01e2e55c5af61b0566",
+      "machineHash": "a9a995a0fccb7baf7456345604d2eb6e57c15181f1a0df01e2e55c5af61b0566",
+      "machineText": "`upx_level: 1` hingga `9` secara opsional mengompresi executable rilis Linux dan Windows; nol menonaktifkannya. UPX harus terinstal. Build pengembangan dan macOS tidak menggunakan kompresi. Kegagalan kompilasi atau kompresi mempertahankan program yang sebelumnya dipublikasikan.",
       "status": "machine-translated",
       "sourcePreview": "`upx_level: 1` through `9` optionally compresses release Linux and Windows executables; zero disable…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0022-heading-01": {
       "sourceHash": "76e87e97fb52c3b2e6cf9e2db727b7eab07d2d2cebcfa789fa91da44fd696ee5",
-      "targetHash": "9c622622a96e17de31afbe88d3773e41fd7af7413af521f90825fbbd855d9cc4",
-      "machineHash": "9c622622a96e17de31afbe88d3773e41fd7af7413af521f90825fbbd855d9cc4",
-      "machineText": "Paketkan dan tandatangani untuk distribusi",
+      "targetHash": "727690d579a27f67d5a21655484a055f47e3cfdbd946782d4789ff00637ccc5c",
+      "machineHash": "727690d579a27f67d5a21655484a055f47e3cfdbd946782d4789ff00637ccc5c",
+      "machineText": "Memaketkan dan menandatangani untuk distribusi",
       "status": "machine-translated",
       "sourcePreview": "Package and sign for distribution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0023-text-01": {
+    "b0023-heading-01": {
+      "sourceHash": "91949300d18aefff2dbcd6897b23c1513c167f1d142818d9b361085306d6b4a9",
+      "targetHash": "0d6e367b9daa248d4c0c88753bb1fae5f2b462a5686b6266f235be9e4895b217",
+      "machineHash": "0d6e367b9daa248d4c0c88753bb1fae5f2b462a5686b6266f235be9e4895b217",
+      "machineText": "Menggunakan executable desktop yang telah dibangun sebelumnya",
+      "status": "machine-translated",
+      "sourcePreview": "Use prebuilt desktop executables",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "6fc3c5c0941b5feac437e83506b686bbe02a5dbe1784a0c7e8df999c5ad84eb2",
+      "targetHash": "2f722b1210c2d5b7ede845ff59b0c838c5db7e92fdba7997ea65da85e7afdba9",
+      "machineHash": "2f722b1210c2d5b7ede845ff59b0c838c5db7e92fdba7997ea65da85e7afdba9",
+      "machineText": "Gunakan `--skip-build` jika sistem build atau tugas CI lain telah menghasilkan executable:",
+      "status": "machine-translated",
+      "sourcePreview": "Use `--skip-build` when another build system or CI job has already produced the executables:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "7be35e75db871f2fe82f41f0f48f7785de3f7ca975bc5b335432c2df68dc673a",
+      "targetHash": "ce1550ddb01e4d52d97bf39213f5d49145ca4d6e7e2c2b7cd45d543d847ddb2e",
+      "machineHash": "ce1550ddb01e4d52d97bf39213f5d49145ca4d6e7e2c2b7cd45d543d847ddb2e",
+      "machineText": "Tempatkan setiap executable di `build.output` (nilai defaultnya `bin`), dengan menggunakan `project.binary_name` untuk executable utama dan nama setiap entri `binaries` untuk executable pendamping. Nama untuk Windows diakhiri dengan `.exe`. Pemanggilan dengan beberapa target membaca file setiap target dari subdirektori `\u003cos\u003e-\u003carch\u003e`. Untuk GUI macOS, Wake membaca executable mentah di `bin/\u003cname\u003e` jika tersedia; jika tidak, dari `bin/\u003cname\u003e.app/Contents/MacOS/\u003cname\u003e`. Input `darwin/universal` harus berisi slice executable amd64 dan arm64.",
+      "status": "machine-translated",
+      "sourcePreview": "Place each executable in `build.output` (default `bin`), using `project.binary_name` for the main ex…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:39Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "327430600b6a536b632ebe9f3de19c3ec2467256f8631b3b908deedcf0f80308",
+      "targetHash": "096bd2c611992a111f5ef70315875f4d878e2e39d916842a3812ba791fe57f5f",
+      "machineHash": "096bd2c611992a111f5ef70315875f4d878e2e39d916842a3812ba791fe57f5f",
+      "machineText": "Wake memvalidasi jenis file dan arsitektur target, menyalin executable ke ruang kerja yang dihasilkannya, serta melacak kontennya untuk cache paket. Input executable yang tidak ada, tidak kompatibel, atau berupa symlink menyebabkan kegagalan alih-alih membangun ulang atau memulihkan input lama. Executable yang diberikan tidak ditimpa atau diubah modenya dengan chmod. Perubahan pada executable mana pun membatalkan cache paket yang menggunakannya.",
+      "status": "machine-translated",
+      "sourcePreview": "Wake validates file type and target architecture, copies the executables into its generated workspac…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "fa03f76b0fad60f21e26e0e9f55286e83d8885124c60baaba3a98088ac14f6b0",
+      "targetHash": "26e95d8e4b8af1c047e340ca579191c1d04d6bd64a7c8772bcb4e6968367b07e",
+      "machineHash": "26e95d8e4b8af1c047e340ca579191c1d04d6bd64a7c8772bcb4e6968367b07e",
+      "machineText": "Mode ini melewatkan instalasi/build frontend, binding, kompilasi Go, UPX, serta hook `before_build`/`after_build`. Mode ini tetap menghasilkan aset paket, menyusun bundel aplikasi macOS, dan menjalankan hook pemaketan/penandatanganan yang dikonfigurasi. Alat pemaketan dan penandatanganan tetap tunduk pada tabel di bawah; Go dan alat build frontend tidak diperlukan. Metadata paket berasal dari manifes saat ini, termasuk `version_file` jika dikonfigurasi; versi tidak disimpulkan dari biner. Gunakan pengaturan build dan paket yang sesuai, termasuk jenis GUI versus CLI.",
+      "status": "machine-translated",
+      "sourcePreview": "This mode skips frontend installation/builds, bindings, Go compilation, UPX and the `before_build`/`…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
+    },
+    "b0028-text-01": {
+      "sourceHash": "3df17e599fe2f35a677d9f885bda5ac7526ebb03527a067f3ee2668fbc5077a8",
+      "targetHash": "1f4781bb59e2553a24d7e94721d0c3a7a5843b5c56223219c78b67dcf186d9f4",
+      "machineHash": "1f4781bb59e2553a24d7e94721d0c3a7a5843b5c56223219c78b67dcf186d9f4",
+      "machineText": "`wails3 package --skip-build` juga didukung. Dengan `wails3 run`, argumen peluncuran dan lingkungan tetap berlaku, dan executable harus dapat berjalan pada host. Mode ini memerlukan proyek YAML aktif dan hanya mendukung target desktop produksi; mode ini tidak berlaku untuk sesi pengembangan atau pemaketan seluler.",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 package --skip-build` is also supported. With `wails3 run`, launch arguments and environment…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
+    },
+    "b0029-text-01": {
       "sourceHash": "707168e8197382e3eecbd904fe532621a7d13c28311680d0b898eebb6747dc6f",
       "targetHash": "dd8449c3d4f4603981b3e2ba79ad063637e83bd853a6af30ffb559a2675494c2",
       "machineHash": "dd8449c3d4f4603981b3e2ba79ad063637e83bd853a6af30ffb559a2675494c2",
@@ -292,21 +364,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0024-cell-01": {
+    "b0030-cell-01": {
       "sourceHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
-      "targetHash": "7021ce1d50d6fbbffc3d4557bfe87350274dca4db495e559536796e09cbe0a9d",
-      "machineHash": "7021ce1d50d6fbbffc3d4557bfe87350274dca4db495e559536796e09cbe0a9d",
-      "machineText": "Keluaran",
+      "targetHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
+      "machineHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
+      "machineText": "Output",
       "status": "machine-translated",
       "sourcePreview": "Output",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0025-cell-01": {
+    "b0031-cell-01": {
       "sourceHash": "96a18d5fe6b52c58d95e17dd521ed383de51f36592f90b8cd77e26480ab53e9e",
       "targetHash": "1830a8da114d5e455afac8bad44b22bd8853cde4f8702b7ef6b4d9786e4b3f39",
       "machineHash": "1830a8da114d5e455afac8bad44b22bd8853cde4f8702b7ef6b4d9786e4b3f39",
@@ -316,9 +388,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0026-cell-01": {
+    "b0032-cell-01": {
       "sourceHash": "4f75100c085ab3ef312f498514694695fb83873cd41de6e73a9255885b9a08d3",
       "targetHash": "5fe20a1c0ce052a59bbe8c2e8d4eeb75f0fe79a9781be46eb7f11bf923e00a25",
       "machineHash": "5fe20a1c0ce052a59bbe8c2e8d4eeb75f0fe79a9781be46eb7f11bf923e00a25",
@@ -328,9 +400,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0027-cell-01": {
+    "b0033-cell-01": {
       "sourceHash": "9f5c05a33c4d722bf5fb56dccb3756a0d12cf3fd677d1dc0a275ce0c93dfda66",
       "targetHash": "1c63607d081bb8f52952221a7c3e6c55eec22995048e2612fe37b5d3bd4a5289",
       "machineHash": "1c63607d081bb8f52952221a7c3e6c55eec22995048e2612fe37b5d3bd4a5289",
@@ -340,21 +412,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0028-cell-01": {
+    "b0034-cell-01": {
       "sourceHash": "a40d94c3b164ef46e467619ef48d79a252cffa007314e21178635818e4fbea03",
-      "targetHash": "11c75773347c13aaad00f8618fe5affda93dda159c51d7e397b5b44bf3f1ac58",
-      "machineHash": "11c75773347c13aaad00f8618fe5affda93dda159c51d7e397b5b44bf3f1ac58",
-      "machineText": "Windows, macOS, atau Linux; penulis Go, tanpa memerlukan Windows SDK.",
+      "targetHash": "5f39a64ef8a5f0faba110218a4fb495f49b886fa3fea6cf340f5a55793922f38",
+      "machineHash": "5f39a64ef8a5f0faba110218a4fb495f49b886fa3fea6cf340f5a55793922f38",
+      "machineText": "Windows, macOS, atau Linux; penulis Go, tidak memerlukan Windows SDK.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; Go writer, no Windows SDK required.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0029-cell-01": {
+    "b0035-cell-01": {
       "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
       "targetHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
       "machineHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
@@ -364,9 +436,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0030-cell-01": {
+    "b0036-cell-01": {
       "sourceHash": "7252704eccc82d7b68b94d9af526782aae7585afe4fa17924ccf522af84ad985",
       "targetHash": "9f4144a6b5782b6bf4cabc92d50927ae1ca8f601f8e51967cae83555f80ad834",
       "machineHash": "9f4144a6b5782b6bf4cabc92d50927ae1ca8f601f8e51967cae83555f80ad834",
@@ -376,21 +448,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0031-cell-01": {
+    "b0037-cell-01": {
       "sourceHash": "9d3724853dd0e3545eae4e23d347152ce2b20408983478d466b20b757fa32b82",
-      "targetHash": "c7ed3322421ecde4a66ad69ac8b08b8658800f87e9f3356122ddf0aa6f9105a0",
-      "machineHash": "c7ed3322421ecde4a66ad69ac8b08b8658800f87e9f3356122ddf0aa6f9105a0",
-      "machineText": "Windows, macOS, atau Linux; memerlukan `makensis` native untuk host.",
+      "targetHash": "68040028b2e0e8761f217d789516e8092b42ba1ac891e0de26d24cb7942ac440",
+      "machineHash": "68040028b2e0e8761f217d789516e8092b42ba1ac891e0de26d24cb7942ac440",
+      "machineText": "Windows, macOS, atau Linux; memerlukan `makensis` native host.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; host-native `makensis` required.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0032-cell-01": {
+    "b0038-cell-01": {
       "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
       "targetHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
       "machineHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
@@ -400,9 +472,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0033-cell-01": {
+    "b0039-cell-01": {
       "sourceHash": "a41c5f4d85a579c940bb2041d1069a4b36f3beb4e91467b0949b89e53aa07bec",
       "targetHash": "62ccc331fac04f2329b1b70da605364e1759cc577f4152a509c73a410bab0859",
       "machineHash": "62ccc331fac04f2329b1b70da605364e1759cc577f4152a509c73a410bab0859",
@@ -412,21 +484,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0034-cell-01": {
+    "b0040-cell-01": {
       "sourceHash": "522e2a8d6893e8559f1b2ff110227445a503e899eb8d414a339b467f88b138c0",
-      "targetHash": "a39994567d360323c46d3b42b48d7079829793b2c214547f8401e5be4ff95291",
-      "machineHash": "a39994567d360323c46d3b42b48d7079829793b2c214547f8401e5be4ff95291",
-      "machineText": "Windows, macOS, atau Linux; perakitan dengan Go, penggabungan biner universal, dan penulis DMG portabel.",
+      "targetHash": "189e8cb5af69c9b30146f7006c07750b61fbcaab46fceb13c2bf01d508155589",
+      "machineHash": "189e8cb5af69c9b30146f7006c07750b61fbcaab46fceb13c2bf01d508155589",
+      "machineText": "Windows, macOS, atau Linux; penyusunan dengan Go, penggabungan biner universal, dan penulis DMG portabel.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0035-cell-01": {
+    "b0041-cell-01": {
       "sourceHash": "b6a740e22d2146b269cee16f25c415ac496fb32c9f2421599ebd6f437234e055",
       "targetHash": "06be449d2a9724dace95e4a207ec05cc40a35b56a8c9c76ca293b2ed77d65e56",
       "machineHash": "06be449d2a9724dace95e4a207ec05cc40a35b56a8c9c76ca293b2ed77d65e56",
@@ -436,9 +508,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0036-cell-01": {
+    "b0042-cell-01": {
       "sourceHash": "f1d4c9e8cefe70483cc6ab160c5ac51f2ef8a87b5fae3dea9e52bd42f04f7939",
       "targetHash": "d4a3f27803ad6bb1036f514af038357a444bbbbfc314dc71afd726074a3c4d43",
       "machineHash": "d4a3f27803ad6bb1036f514af038357a444bbbbfc314dc71afd726074a3c4d43",
@@ -448,33 +520,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0037-cell-01": {
+    "b0043-cell-01": {
       "sourceHash": "558d9e79347e39523130ac03a8fc215621add42103ac69a900da052c81f2ae15",
-      "targetHash": "56df6bd753af02a7a6dbcc699a75c2fd8ace4d02de76d27d263bd397be632259",
-      "machineHash": "56df6bd753af02a7a6dbcc699a75c2fd8ace4d02de76d27d263bd397be632259",
-      "machineText": "Windows, macOS, atau Linux; penulis paket native Go.",
+      "targetHash": "3991af1b4e61423b746ccc4e1edead0c301a4d695fef4347cd873102fcba825a",
+      "machineHash": "3991af1b4e61423b746ccc4e1edead0c301a4d695fef4347cd873102fcba825a",
+      "machineText": "Windows, macOS, atau Linux; penulis paket Go native.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; native Go package writers.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0038-cell-01": {
+    "b0044-cell-01": {
       "sourceHash": "aba93fd5e803a97c7b5bf1e5793672cff0c0a02e369185fadda1454f4fef38b6",
-      "targetHash": "131a251c40731c68cdf8196acf5b8c159c061ff68e85413d2ef67d8a2a171904",
-      "machineHash": "131a251c40731c68cdf8196acf5b8c159c061ff68e85413d2ef67d8a2a171904",
-      "machineText": "DEB/RPM menggunakan alat penandatanganan eksternalnya; Arch menggunakan penanda tangan Go di bawah. Keluaran Void tidak ditandatangani.",
+      "targetHash": "3fb969d9c2c5a9a67d620a3371a20cf354c2e36efb3f462bf953a34794b40d00",
+      "machineHash": "3fb969d9c2c5a9a67d620a3371a20cf354c2e36efb3f462bf953a34794b40d00",
+      "machineText": "DEB/RPM menggunakan alat penandatanganan eksternalnya; Arch menggunakan penanda tangan Go di bawah ini. Output Void tidak ditandatangani.",
       "status": "machine-translated",
       "sourcePreview": "DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0039-cell-01": {
+    "b0045-cell-01": {
       "sourceHash": "869ed18033ca2a490561629f6c1c8af844141fbf168f68b391f425a19460e0ba",
       "targetHash": "2cda79d3184d58304c5acdf02df90d7d5212bdea9ed01dfc4a176652907cd25f",
       "machineHash": "2cda79d3184d58304c5acdf02df90d7d5212bdea9ed01dfc4a176652907cd25f",
@@ -484,9 +556,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0040-cell-01": {
+    "b0046-cell-01": {
       "sourceHash": "95fc52c4b6f2ca1d6119306875bdeeac831b61da0150945bb78e478a9332997a",
       "targetHash": "aab1a7ac560dc21bdf80bfc6c265b22a449a8d496fe4e895a0238ce0c7756a90",
       "machineHash": "aab1a7ac560dc21bdf80bfc6c265b22a449a8d496fe4e895a0238ce0c7756a90",
@@ -496,93 +568,93 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0041-cell-01": {
+    "b0047-cell-01": {
       "sourceHash": "d3dc0b0795be03eddf75791619e6b58445e94207297a51047981a7145807636b",
-      "targetHash": "20a740f9d982ea8310d2cbd3ced9a1335278e538a52f2e3163906dd3929ccf07",
-      "machineHash": "20a740f9d982ea8310d2cbd3ced9a1335278e538a52f2e3163906dd3929ccf07",
-      "machineText": "Tidak ada alur penandatanganan AppImage bawaan.",
+      "targetHash": "dcc815e4496c0262fe64ff44fbf6fb081f693ebdd8d100a792e060b2ad776cd2",
+      "machineHash": "dcc815e4496c0262fe64ff44fbf6fb081f693ebdd8d100a792e060b2ad776cd2",
+      "machineText": "Tidak ada alur bawaan untuk menandatangani AppImage.",
       "status": "machine-translated",
       "sourcePreview": "No built-in AppImage signing flow.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0042-text-01": {
+    "b0048-text-01": {
       "sourceHash": "69f9a5d3682d44266663e4618e1c16182b40fc38cce881e3540a7a934b965699",
-      "targetHash": "4a35c74fc1354dea288b8bed69dc0bb8ff68540ad6ee44160778be3c26fab85b",
-      "machineHash": "4a35c74fc1354dea288b8bed69dc0bb8ff68540ad6ee44160778be3c26fab85b",
-      "machineText": "Arsip MSIX Windows dibuat langsung dengan Go; pembuatan paket tanpa tanda tangan\ntidak memerlukan Windows SDK atau Docker. Penandatanganan Windows tetap memerlukan\nhost Windows beserta alat penandatanganannya. NSIS menggunakan compiler NSIS\neksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails\nmenyediakan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale\nyang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah.\nInstaller NSIS bawaan tidak menyertakan bootstrapper WebView2 jika setiap\nexecutable yang dikemas adalah CLI atau server. Executable utama atau pendamping\nberbasis GUI tetap menyertakan WebView2. Skrip NSIS kustom tetap menyertakan\nbootstrapper demi kompatibilitas dengan logika instalasi runtime miliknya sendiri.",
+      "targetHash": "23aa5ce1be7859f5b2b32088e24f413c24da42338dde5e61499cee6ae5182026",
+      "machineHash": "23aa5ce1be7859f5b2b32088e24f413c24da42338dde5e61499cee6ae5182026",
+      "machineText": "Arsip MSIX Windows dibuat langsung di Go; pembuatan paket yang tidak ditandatangani tidak memerlukan Windows SDK atau Docker. Penandatanganan Windows tetap memerlukan host Windows beserta alat penandatanganannya. NSIS menggunakan compiler NSIS eksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails memberikan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale yang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah. Penginstal NSIS standar menghilangkan bootstrapper WebView2 jika setiap executable dalam paket merupakan CLI atau server. Executable utama atau pendamping yang memiliki GUI tetap menyertakan WebView2. Skrip NSIS khusus tetap menyertakan bootstrapper demi kompatibilitas dengan logika penginstalan runtime-nya sendiri.",
       "status": "machine-translated",
       "sourcePreview": "Windows MSIX archives are created directly in Go; creating an unsigned package does not require the …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:53:42Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0043-text-01": {
+    "b0049-text-01": {
       "sourceHash": "5d7cef63606aa728eaa683f15b25456fc23542855febfaee5e1d9d4c6df411dc",
-      "targetHash": "3843a63143bcf46cad64e7fdd3d89c23a76eeb18d67ab0db52fd5d369c487407",
-      "machineHash": "3843a63143bcf46cad64e7fdd3d89c23a76eeb18d67ab0db52fd5d369c487407",
-      "machineText": "Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. AppImage tetap mempertahankan batas integrasi dengan linuxdeploy eksternal dan plugin GTK. Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. File sidecar dipulihkan dari cache paket dan dicantumkan dalam bukti artefak bersama AppImage. Pemaketan AppImage saat ini memerlukan Linux serta arsitektur host/target yang cocok. Deteksi GTK-nya tidak menemukan pustaka yang dimuat secara dinamis oleh GUI pure-Go, sehingga adaptor ini belum mendukung deployment GUI pure-Go. Gunakan salah satu format pengelola paket Linux untuk mode build tersebut.",
+      "targetHash": "ed4b6d77ce241f7be1d76b219c75b190e9915730d80d193ac5aae1a095604dc9",
+      "machineHash": "ed4b6d77ce241f7be1d76b219c75b190e9915730d80d193ac5aae1a095604dc9",
+      "machineText": "Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. AppImage tetap menggunakan batas integrasi dengan linuxdeploy eksternal dan plugin GTK. Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. File sidecar dipulihkan dari cache paket dan dicantumkan dalam tanda terima artefak bersama AppImage. Saat ini, pemaketan AppImage memerlukan Linux serta arsitektur host dan target yang cocok. Deteksi GTK-nya tidak menemukan pustaka yang dimuat secara dinamis oleh GUI Go murni, sehingga adaptor ini belum mendukung deployment GUI Go murni. Gunakan salah satu format pengelola paket Linux untuk mode build tersebut.",
       "status": "machine-translated",
       "sourcePreview": "Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain the external linux…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0044-text-01": {
+    "b0050-text-01": {
       "sourceHash": "a1f799d1b5a7af1b502fecd1f019a0c81fa8e9b36c55e50f9e212db66ed4e82c",
-      "targetHash": "4253fab40bc657523fb647d6ed570a76df938346b54c2a7c310d130cae53c68c",
-      "machineHash": "4253fab40bc657523fb647d6ed570a76df938346b54c2a7c310d130cae53c68c",
-      "machineText": "Paket Arch mempertahankan prarilis dalam metadata paket native; misalnya, `1.2.3-beta.2` menjadi `1.2.3beta.2-1`, yang diurutkan sebelum rilis final. Dependensi Void menerima nama paket polos seperti `gtk4`, yang dinormalisasi menjadi `gtk4\u003e=0`; perbandingan versi eksplisit dan nilai `name-version_revision` yang lengkap dipertahankan. Gunakan nama paket Void, bukan nama file pustaka.",
+      "targetHash": "7661e84fe9ee69fd90969a9e8600fadc76f77d1778c809f7797230c42459c684",
+      "machineHash": "7661e84fe9ee69fd90969a9e8600fadc76f77d1778c809f7797230c42459c684",
+      "machineText": "Paket Arch mempertahankan prarilis dalam metadata paket native. Misalnya, `1.2.3-beta.2` menjadi `1.2.3beta.2-1`, yang diurutkan sebelum rilis final. Dependensi Void menerima nama paket tanpa keterangan tambahan seperti `gtk4`, yang dinormalisasi menjadi `gtk4\u003e=0`; perbandingan versi eksplisit dan nilai `name-version_revision` lengkap dipertahankan. Gunakan nama paket Void, bukan nama file pustaka.",
       "status": "machine-translated",
       "sourcePreview": "Arch packages preserve prereleases in native package metadata, for example `1.2.3-beta.2` becomes `1…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0045-text-01": {
+    "b0051-text-01": {
       "sourceHash": "0e09095d765b5190ee6aaf743e177eaa49d9dc1e50bc6877105cd3ce72771ed5",
-      "targetHash": "495f838b6cb4f7e74fdab41367fed7fab1aebbbe009b97de0f1e7182a72fb43d",
-      "machineHash": "495f838b6cb4f7e74fdab41367fed7fab1aebbbe009b97de0f1e7182a72fb43d",
-      "machineText": "Untuk membuat paket Arch dan tanda tangan terpisah, gunakan file kunci privat PGP berformat armored yang diekspor dan, jika perlu, tentukan nama variabel lingkungan frasa sandi:",
+      "targetHash": "441689baf1558b313e46d941f7b95b8263251d8b880e3df4b6a623193bc1ef50",
+      "machineHash": "441689baf1558b313e46d941f7b95b8263251d8b880e3df4b6a623193bc1ef50",
+      "machineText": "Untuk membuat paket Arch dan tanda tangan terpisah, gunakan file kunci privat PGP berformat armored yang telah diekspor dan, jika perlu, tentukan nama variabel lingkungan untuk frasa sandi:",
       "status": "machine-translated",
       "sourcePreview": "To create an Arch package and detached signature, use an exported armored PGP private-key file and o…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0046-text-01": {
+    "b0052-text-01": {
       "sourceHash": "704f658453c7b1cad30561999877190bf0f77b24da12855554f62c32bf99da2b",
-      "targetHash": "27d88b101ee1c4083c349736335af6fe0057850c71af5f51b61b10382b5a883b",
-      "machineHash": "27d88b101ee1c4083c349736335af6fe0057850c71af5f51b61b10382b5a883b",
-      "machineText": "Tetapkan variabel lingkungan yang disebutkan melalui lingkungan lokal atau penyimpanan rahasia CI Anda, lalu jalankan `wails3 build release`. Hilangkan `credential` untuk kunci yang tidak dienkripsi. Penanda tangan Go berjalan pada setiap host desktop yang didukung dan tidak memerlukan GPG. Penanda tangan tersebut menerbitkan `.pkg.tar.zst` asli dan `.pkg.tar.zst.sig` di lokasi yang sama; keduanya dicatat secara terpisah dalam tanda terima artefak. Isi kunci tidak ditempatkan sementara atau disimpan dalam cache build. Tanda tangan dan penerbitannya tidak pernah digunakan kembali dari cache. Jika penandatanganan gagal, pasangan yang sebelumnya diterbitkan tetap dipertahankan, dan penerbitan mengembalikan kedua berkas jika pemasangan salah satunya gagal. Hal ini tidak membuat dua operasi penggantian nama pada sistem berkas menjadi atomik bagi pembaca serentak.",
+      "targetHash": "2d641284f7c68bd021c694b5e65a76cd03d499ef0e8409660bd26bd589fc4e2e",
+      "machineHash": "2d641284f7c68bd021c694b5e65a76cd03d499ef0e8409660bd26bd589fc4e2e",
+      "machineText": "Tetapkan variabel lingkungan bernama tersebut melalui lingkungan lokal atau penyimpanan rahasia CI Anda, lalu jalankan `wails3 build release`. Hilangkan `credential` untuk kunci yang tidak dienkripsi. Penanda tangan Go berjalan di setiap host desktop yang didukung dan tidak memerlukan GPG. Penanda tangan ini menerbitkan `.pkg.tar.zst` asli dan file `.pkg.tar.zst.sig` di lokasi yang sama; keduanya dicatat secara terpisah dalam tanda terima artefak. Isi kunci tidak ditempatkan di area staging atau disimpan dalam cache build. Tanda tangan dan penerbitannya tidak pernah digunakan kembali dari cache. Jika penandatanganan gagal, pasangan yang diterbitkan sebelumnya tetap dipertahankan. Jika penginstalan salah satu file gagal, penerbitan akan mengembalikan kedua file ke keadaan sebelumnya. Hal ini tidak membuat dua operasi penggantian nama pada sistem file menjadi atomik bagi pembaca konkuren.",
       "status": "machine-translated",
       "sourcePreview": "Set the named environment variable through your local environment or CI secret store, then run `wail…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0047-text-01": {
+    "b0053-text-01": {
       "sourceHash": "4ce189198de7ebfe8b0d03a510a71259552abcb52899dd94efcf321ffb11540f",
-      "targetHash": "65cace4dd1f7007ce9a85f9d1d73dfc667c4bac2a8ed507e95c4ac749d0f706e",
-      "machineHash": "65cace4dd1f7007ce9a85f9d1d73dfc667c4bac2a8ed507e95c4ac749d0f706e",
-      "machineText": "Bundel aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika berkas entitlement khusus tidak disediakan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Penandatanganan dan notarisasi menggunakan alat serta kredensial Apple yang sudah ada di macOS; notarisasi memerlukan profil notaris yang sebenarnya. Output yang ditandatangani mempertahankan ekstensi platformnya, misalnya `notes.signed.app` dan `notes.signed.dmg`.",
+      "targetHash": "bf2b5fb4090337975767d19b8f3134bcd2881424512b7dad72213e4ffa2a42e1",
+      "machineHash": "bf2b5fb4090337975767d19b8f3134bcd2881424512b7dad72213e4ffa2a42e1",
+      "machineText": "Bundel aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika tidak ada file entitlement khusus yang diberikan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Penandatanganan dan notarisasi menggunakan alat serta kredensial Apple yang sudah ada di macOS; notarisasi memerlukan profil notaris yang nyata. Output yang ditandatangani mempertahankan ekstensi platformnya, misalnya `notes.signed.app` dan `notes.signed.dmg`.",
       "status": "machine-translated",
       "sourcePreview": "macOS app bundles include companion programs. Set `darwin.microphone_usage_description` to add the u…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0048-heading-01": {
+    "b0054-heading-01": {
       "sourceHash": "3c47edf354269c8a13572aeb933f90deec93cf85f632db7004f3eb5f0cbae224",
       "targetHash": "a156db324189714cdfb00be9ffcee016ca0c113e7e04ea6f020bfcb6cc7abd11",
       "machineHash": "a156db324189714cdfb00be9ffcee016ca0c113e7e04ea6f020bfcb6cc7abd11",
@@ -592,21 +664,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0049-text-01": {
+    "b0055-text-01": {
       "sourceHash": "a011a59f57c1cb68dd46ecec895e68904030c1127aba9e8b583d5558e52ef34a",
-      "targetHash": "0fa629613c2bb44f9fe9eb78f5e91fb38d9752a327a7b6007a1e22bded4b7ab4",
-      "machineHash": "0fa629613c2bb44f9fe9eb78f5e91fb38d9752a327a7b6007a1e22bded4b7ab4",
-      "machineText": "Selama `wails3 dev` berlangsung, masukkan perintah yang diikuti Enter:",
+      "targetHash": "7d63c51b66fba77114602cf80457d0c0fd11a8c9d0feb4ebd97c9d5410d7d16d",
+      "machineHash": "7d63c51b66fba77114602cf80457d0c0fd11a8c9d0feb4ebd97c9d5410d7d16d",
+      "machineText": "Selama `wails3 dev` berjalan, masukkan perintah lalu tekan Enter:",
       "status": "machine-translated",
       "sourcePreview": "During `wails3 dev`, enter a command followed by Enter:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0050-cell-01": {
+    "b0056-cell-01": {
       "sourceHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c",
       "targetHash": "557a2bac0589671e00f4939704425798f807dab8c93dc3addbecae69bd98666b",
       "machineHash": "557a2bac0589671e00f4939704425798f807dab8c93dc3addbecae69bd98666b",
@@ -616,9 +688,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0051-cell-01": {
+    "b0057-cell-01": {
       "sourceHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6",
       "targetHash": "5b3062c5bcc9c7bd60a1f957a437dfaaffa014b7e7f2c6fd1265b1d7e9d1a724",
       "machineHash": "5b3062c5bcc9c7bd60a1f957a437dfaaffa014b7e7f2c6fd1265b1d7e9d1a724",
@@ -628,15 +700,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0052-cell-01": {
+    "b0058-cell-01": {
       "sourceHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
       "targetHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
+      "machineHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
+      "machineText": "`r`",
       "status": "protected",
-      "sourcePreview": "`r`"
+      "sourcePreview": "`r`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0053-cell-01": {
+    "b0059-cell-01": {
       "sourceHash": "523854e094232949a66ba339e806d93540fe1d76148a2a2c3c2d50e1596e5640",
       "targetHash": "922df7cc428929b0f42092805dcc810b256c8abbcc054326e10827db507bdf72",
       "machineHash": "922df7cc428929b0f42092805dcc810b256c8abbcc054326e10827db507bdf72",
@@ -646,15 +724,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0054-cell-01": {
+    "b0060-cell-01": {
       "sourceHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
       "targetHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
+      "machineHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
+      "machineText": "`b`",
       "status": "protected",
-      "sourcePreview": "`b`"
+      "sourcePreview": "`b`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0055-cell-01": {
+    "b0061-cell-01": {
       "sourceHash": "b986d19825ee26ad251ae3340fb8e2678809148879290d6af25a297ed3e14c06",
       "targetHash": "327eb499ba09cefdc46e80b05676238b7c1669c83a83f70b0c7ac1b871bbcf6e",
       "machineHash": "327eb499ba09cefdc46e80b05676238b7c1669c83a83f70b0c7ac1b871bbcf6e",
@@ -664,15 +748,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0056-cell-01": {
+    "b0062-cell-01": {
       "sourceHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
       "targetHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
+      "machineHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
+      "machineText": "`f`",
       "status": "protected",
-      "sourcePreview": "`f`"
+      "sourcePreview": "`f`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0057-cell-01": {
+    "b0063-cell-01": {
       "sourceHash": "d720082578a66f8f57245808ec6a28fab735a52b45946ad3cc3bc67b467b9653",
       "targetHash": "d2939d4be03f9d4691e88f7f4527121791a1b5808ac1f9c4b133d6060e477bdd",
       "machineHash": "d2939d4be03f9d4691e88f7f4527121791a1b5808ac1f9c4b133d6060e477bdd",
@@ -682,15 +772,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0058-cell-01": {
+    "b0064-cell-01": {
       "sourceHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
       "targetHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
+      "machineHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
+      "machineText": "`c`",
       "status": "protected",
-      "sourcePreview": "`c`"
+      "sourcePreview": "`c`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0059-cell-01": {
+    "b0065-cell-01": {
       "sourceHash": "22ec5d506bc373f6d2e56716743b3b0b268f1ab3c17aae92f5d9040f51939cb8",
       "targetHash": "0a0e28262fb97931532a33fdb7d9a188952706629b97c60c579698ccb6d2c68c",
       "machineHash": "0a0e28262fb97931532a33fdb7d9a188952706629b97c60c579698ccb6d2c68c",
@@ -700,15 +796,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0060-cell-01": {
+    "b0066-cell-01": {
       "sourceHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
       "targetHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
+      "machineHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
+      "machineText": "`q`",
       "status": "protected",
-      "sourcePreview": "`q`"
+      "sourcePreview": "`q`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0061-cell-01": {
+    "b0067-cell-01": {
       "sourceHash": "cc73e262d30473b46380386a01f53168c0029f277e14897d5322d8968ea736d1",
       "targetHash": "a8c7c5598dc3fe29b84afd1017ee87d32891afc9bd9e1efb6f4718b284bc65e3",
       "machineHash": "a8c7c5598dc3fe29b84afd1017ee87d32891afc9bd9e1efb6f4718b284bc65e3",
@@ -718,15 +820,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0062-cell-01": {
+    "b0068-cell-01": {
       "sourceHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
       "targetHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
+      "machineHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
+      "machineText": "`h`",
       "status": "protected",
-      "sourcePreview": "`h`"
+      "sourcePreview": "`h`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0063-cell-01": {
+    "b0069-cell-01": {
       "sourceHash": "c987906121e403aef5e189d81bc2bfbb6f2dd9714c4d6a1e549e1cf3ac60c603",
       "targetHash": "1852ee576b13b15c5787d11f0463208753dbe892337271f3483221ca14d4ebab",
       "machineHash": "1852ee576b13b15c5787d11f0463208753dbe892337271f3483221ca14d4ebab",
@@ -736,9 +844,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0064-text-01": {
+    "b0070-text-01": {
       "sourceHash": "911cc158f6be95f0897492f9c190424420584b41d627e72677e8876004274f92",
       "targetHash": "1b55775abc2408592bb5d3d42f72b097b90a2ca14367d58b10253c35d27c60a8",
       "machineHash": "1b55775abc2408592bb5d3d42f72b097b90a2ca14367d58b10253c35d27c60a8",
@@ -748,9 +856,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0065-heading-01": {
+    "b0071-heading-01": {
       "sourceHash": "9af1b890d971c5f094709524b04bb3eec300e2d664595b0a5f1108308abaf948",
       "targetHash": "437ae93a8f6cc90696cb00ceab77d441387af5518272ce20459ae7d93983d9aa",
       "machineHash": "437ae93a8f6cc90696cb00ceab77d441387af5518272ce20459ae7d93983d9aa",
@@ -760,21 +868,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0066-text-01": {
+    "b0072-text-01": {
       "sourceHash": "18fd75c7c8d901824e0ce01d11243cf94b817b6e8eecd68c19ff764d16eb135a",
-      "targetHash": "94e4ca7e764eb2f29483506640b9ac38b608c0b3d120365468eee25a2ef799fc",
-      "machineHash": "94e4ca7e764eb2f29483506640b9ac38b608c0b3d120365468eee25a2ef799fc",
-      "machineText": "Pemeriksaan rencana me-resolve graf tetap yang sama dengan yang digunakan oleh eksekusi. Teks ditujukan bagi manusia; JSON merupakan kontrak yang dapat dibaca mesin dan memiliki versi.",
+      "targetHash": "484acd7aff21a9f8ef5d35236e1dad1c772080fdda21ceb8ed844acc7031066a",
+      "machineHash": "484acd7aff21a9f8ef5d35236e1dad1c772080fdda21ceb8ed844acc7031066a",
+      "machineText": "Pemeriksaan rencana me-resolve graf imutabel yang sama dengan yang digunakan oleh eksekusi. Teks ditujukan untuk manusia; JSON adalah kontrak terbaca mesin yang memiliki versi.",
       "status": "machine-translated",
       "sourcePreview": "Plan inspection resolves the same immutable graph used by execution. Text is for people; JSON is a v…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0067-heading-01": {
+    "b0073-heading-01": {
       "sourceHash": "8794e6408e37792c01a6ba137d2d37a7236e6a86e5dbc4a3c4883c8f974f474e",
       "targetHash": "0a3715b4957b84889a859b0be83052f36b95eea2f3d00109de751e362638e363",
       "machineHash": "0a3715b4957b84889a859b0be83052f36b95eea2f3d00109de751e362638e363",
@@ -784,33 +892,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0068-text-01": {
+    "b0074-text-01": {
       "sourceHash": "7227be62b57650f04560a5087aaf3ac0f3d7f7395a57f87c10afd0c35adac305",
-      "targetHash": "3d7f866a50f04ff6608d10f6f74837db15c3658cfcce11320abc22b11cedf1b6",
-      "machineHash": "3d7f866a50f04ff6608d10f6f74837db15c3658cfcce11320abc22b11cedf1b6",
-      "machineText": "Gunakan perintah preflight khusus di CI, dalam tugas editor, atau sebelum melakukan commit konfigurasi. Tanpa profil, perintah tersebut memvalidasi manifes dasar dan setiap profil bernama; dengan profil, perintah tersebut hanya memeriksa permintaan lengkap itu:",
+      "targetHash": "90082e3cb163b82c14498c2af0e25bb9ce35096d3bef683fc1185fd0e753c5d3",
+      "machineHash": "90082e3cb163b82c14498c2af0e25bb9ce35096d3bef683fc1185fd0e753c5d3",
+      "machineText": "Gunakan perintah preflight khusus di CI, sebagai tugas editor, atau sebelum melakukan commit konfigurasi. Tanpa profil, perintah ini memvalidasi manifes dasar dan setiap profil bernama; dengan profil, perintah ini hanya memeriksa permintaan lengkap tersebut:",
       "status": "machine-translated",
       "sourcePreview": "Use the dedicated preflight command in CI, an editor task, or before committing configuration. With …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0069-text-01": {
+    "b0075-text-01": {
       "sourceHash": "372aa4e026f284362ca487a7c7fba397e935c758aea24724b339652d57e46d24",
-      "targetHash": "c2f107569f5478c932aa9c419e5e588e8e2036a640e4da23193a97488ef7d6d7",
-      "machineHash": "c2f107569f5478c932aa9c419e5e588e8e2036a640e4da23193a97488ef7d6d7",
-      "machineText": "Kegagalan sintaks, skema, semantik, jalur, target, format, penandatanganan, perencana, dan kemampuan host yang ditentukan konfigurasi menggunakan perender diagnostik yang sama dengan Build dan Dev. Diagnostik mengidentifikasi bidang dan rentang sumber, menampilkan baris sumber beserta tanda sisipan, serta menyertakan petunjuk perbaikan jika berguna. Nilai lingkungan disamarkan dari kutipan sumber diagnostik. Kegagalan host yang hanya disebabkan oleh pilihan baris perintah tetap dilaporkan sebagai galat perintah biasa, bukan secara keliru sebagai YAML yang tidak valid.",
+      "targetHash": "2c84213abaadef6917c351f7f0c121e8d9d787c0f4a35c33a2a00ecdf523ea27",
+      "machineHash": "2c84213abaadef6917c351f7f0c121e8d9d787c0f4a35c33a2a00ecdf523ea27",
+      "machineText": "Kegagalan sintaks, skema, semantik, jalur, target, format, penandatanganan, perencana, dan kemampuan host yang ditentukan konfigurasi menggunakan perender diagnostik yang sama dengan Build dan Dev. Diagnostik mengidentifikasi kolom dan rentang sumber, menampilkan baris sumber beserta tanda sisipan, serta menyertakan petunjuk koreksi jika berguna. Nilai lingkungan disamarkan dalam cuplikan sumber diagnostik. Kegagalan host yang hanya disebabkan oleh pilihan baris perintah tetap dilaporkan sebagai kesalahan perintah biasa, bukan secara keliru sebagai YAML yang tidak valid.",
       "status": "machine-translated",
       "sourcePreview": "Syntax, schema, semantic, path, target, format, signing, planner and configuration-owned host-capabi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0070-heading-01": {
+    "b0076-heading-01": {
       "sourceHash": "12448bd4b73db79862be5374f3ad0277af8e2541edaf641866da221502ab7ff1",
       "targetHash": "c6381d874c7978daa3f55efcd73784c34d7e8a4e89c56bbb683fa3c685e41722",
       "machineHash": "c6381d874c7978daa3f55efcd73784c34d7e8a4e89c56bbb683fa3c685e41722",
@@ -820,21 +928,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0071-text-01": {
+    "b0077-text-01": {
       "sourceHash": "2690d985e8763b02fc5b4cead626d4dcafca82772d4be81a8f888853953e89cc",
-      "targetHash": "44acae6a4c4a9b9f86deca3011509e0922967ca07d2d1f3a08af0a6f2d5f1655",
-      "machineHash": "44acae6a4c4a9b9f86deca3011509e0922967ca07d2d1f3a08af0a6f2d5f1655",
-      "machineText": "Jalur manifes merujuk ke berkas milik Anda, seperti ikon, manifes platform, templat paket, dan skrip pengelola. Wails tidak pernah mengedit sumber tersebut. Wails menyalinnya ke ruang kerja `.wails/` sementara sebelum digunakan oleh suatu alat. Artefak akhir ditempatkan di bawah `build.output` dan tanda terima terverifikasi ditulis ke `.wails/artifacts/receipt.json`.",
+      "targetHash": "833adc71c5d2ee7a475b0a0de86bca9aa44f6ec81582a9c386df0f34587ae4a1",
+      "machineHash": "833adc71c5d2ee7a475b0a0de86bca9aa44f6ec81582a9c386df0f34587ae4a1",
+      "machineText": "Jalur manifes merujuk pada file milik Anda, seperti ikon, manifes platform, templat paket, dan skrip maintainer. Wails tidak pernah mengedit sumber tersebut. Wails menyalinnya ke ruang kerja sementara `.wails/` sebelum digunakan oleh suatu alat. Artefak final ditempatkan di bawah `build.output` dan tanda terima terverifikasi ditulis ke `.wails/artifacts/receipt.json`.",
       "status": "machine-translated",
       "sourcePreview": "Manifest paths refer to files you own, such as icons, platform manifests, package templates and main…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0072-heading-01": {
+    "b0078-heading-01": {
       "sourceHash": "d5b9acbb02c276184569f4f7770cf628a8763a48ea88c0345dbc18257f0e8618",
       "targetHash": "4f9516cc6dfb6858126251ff62855a45911da4470aaba07cd19d2f47002966e3",
       "machineHash": "4f9516cc6dfb6858126251ff62855a45911da4470aaba07cd19d2f47002966e3",
@@ -844,81 +952,81 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0073-text-01": {
+    "b0079-text-01": {
       "sourceHash": "c628c6b63404c420e8e4456d9cc7b9b9feaef79e38d748a28e884fcf57f70035",
-      "targetHash": "124554e32067bbb03a1a174c508364e54212c4db3b81de202232f952ca238df9",
-      "machineHash": "124554e32067bbb03a1a174c508364e54212c4db3b81de202232f952ca238df9",
-      "machineText": "Profil Android produksi menghasilkan AAB. Untuk deployment lokal, Wails secara internal membuat APK debug khusus ABI, memasangnya dengan ADB, lalu meluncurkan aplikasi:",
+      "targetHash": "5bb61026d223c218def661c2822607e9636faaf93f0c203a98f70a5183eda2ba",
+      "machineHash": "5bb61026d223c218def661c2822607e9636faaf93f0c203a98f70a5183eda2ba",
+      "machineText": "Profil Android produksi menghasilkan AAB. Untuk deployment lokal, Wails membuat APK debug khusus ABI secara internal, menginstalnya dengan ADB, lalu meluncurkan aplikasi:",
       "status": "machine-translated",
       "sourcePreview": "Production Android profiles produce AABs. For local deployment, Wails builds an ABI-specific debug A…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0074-text-01": {
+    "b0080-text-01": {
       "sourceHash": "b2f77afc81e69752f694f54716889014ad9b462578fc6655727fcc423c5d3654",
-      "targetHash": "b4dcfcd14c2679d9dd5683a14de6b8890f8ad094c9f035b6a01c98b1aaca7d8d",
-      "machineHash": "b4dcfcd14c2679d9dd5683a14de6b8890f8ad094c9f035b6a01c98b1aaca7d8d",
-      "machineText": "Tanpa pemilih eksplisit, terminal interaktif menawarkan perangkat yang terhubung dan Android Virtual Device yang telah dikonfigurasi. Otomatisasi dengan beberapa target yang tersedia harus menyediakan `--device` atau `--emulator`.",
+      "targetHash": "7fd1d8b267895c78e788a5061d33215bbe27002261549870b1a9f1708b262090",
+      "machineHash": "7fd1d8b267895c78e788a5061d33215bbe27002261549870b1a9f1708b262090",
+      "machineText": "Tanpa pemilih eksplisit, terminal interaktif menawarkan perangkat yang terhubung dan Android Virtual Device yang telah dikonfigurasi. Otomatisasi dengan beberapa target yang tersedia harus memberikan `--device` atau `--emulator`.",
       "status": "machine-translated",
       "sourcePreview": "Without an explicit selector, an interactive terminal offers connected devices and configured Androi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0075-text-01": {
+    "b0081-text-01": {
       "sourceHash": "9886beab4065f92f7c525c44b95fce94040cf936318a014ba277fbd5eb29acce",
-      "targetHash": "c9ba0599e7e72454aa42ef8a46b568a4d26770c7313a89d115833663e6f404f6",
-      "machineHash": "c9ba0599e7e72454aa42ef8a46b568a4d26770c7313a89d115833663e6f404f6",
-      "machineText": "Lampirkan aliran log dalam cakupan aplikasi dan pantau target hingga aplikasi berhenti atau Anda menekan Ctrl+C:",
+      "targetHash": "6da067d1cc4ba1181b49599b1e6bbf68ddb50f0f0154ecc23ffc25af9b067bf3",
+      "machineHash": "6da067d1cc4ba1181b49599b1e6bbf68ddb50f0f0154ecc23ffc25af9b067bf3",
+      "machineText": "Lampirkan aliran log dengan cakupan aplikasi dan pantau target hingga aplikasi berhenti atau Anda menekan Ctrl+C:",
       "status": "machine-translated",
       "sourcePreview": "Attach an application-scoped log stream and monitor the target until the app exits or you press Ctrl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0076-text-01": {
+    "b0082-text-01": {
       "sourceHash": "d22fe66aeb183007b3727d3129e3abd951342e3c4d0743242e77da26844106e5",
-      "targetHash": "596f709d914d2b1ac39ef191c86f2dfe0b72a5a3d9eb1387de8e55ad4473ef7e",
-      "machineHash": "596f709d914d2b1ac39ef191c86f2dfe0b72a5a3d9eb1387de8e55ad4473ef7e",
-      "machineText": "Proses yang dijalankan dengan lampiran akan mengikuti mulai ulang aplikasi dan melaporkan terputusnya koneksi target atau peralihan ke status offline. Secara default, emulator tetap berjalan agar iterasi dapat dilakukan dengan cepat. `--stop-emulator` bersifat eksplisit, memerlukan `--logs`, dan hanya menghentikan target emulator ketika sesi terlampir berakhir. Jika Wails memulai emulator baru tetapi kesiapan boot gagal atau dibatalkan, Wails otomatis membersihkan proses tersebut.",
+      "targetHash": "f4c9d3f84d5f32b6a876a5313087bf0351fc6990f99fea3f516d0bcc5613fd7f",
+      "machineHash": "f4c9d3f84d5f32b6a876a5313087bf0351fc6990f99fea3f516d0bcc5613fd7f",
+      "machineText": "Proses yang dijalankan dalam mode terlampir akan mengikuti aplikasi ketika dimulai ulang dan melaporkan terputusnya koneksi target atau transisi ke status offline. Secara default, emulator tetap berjalan agar iterasi dapat dilakukan dengan cepat. `--stop-emulator` harus ditentukan secara eksplisit, memerlukan `--logs`, dan hanya menghentikan target emulator saat sesi terlampir berakhir. Jika Wails memulai emulator baru tetapi emulator gagal mencapai kesiapan boot atau proses dibatalkan, Wails otomatis membersihkan proses tersebut.",
       "status": "machine-translated",
       "sourcePreview": "Attached runs follow an application restart and report target disconnects or offline transitions. Em…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0077-heading-01": {
+    "b0083-heading-01": {
       "sourceHash": "558c2173a537c0f6d30ff4a937bc564c9600d5bec08d8079fdc637b17b620104",
-      "targetHash": "c06f06a99391bb8963a4649513255c5777acffcf1242f9dcdd1d96f8a1966d3b",
-      "machineHash": "c06f06a99391bb8963a4649513255c5777acffcf1242f9dcdd1d96f8a1966d3b",
-      "machineText": "Jalankan hook siklus hidup yang dibatasi",
+      "targetHash": "3a049d4f942aef14ccafb9843ded2f22488394eec3ab831cc6ff19b63e85739a",
+      "machineHash": "3a049d4f942aef14ccafb9843ded2f22488394eec3ab831cc6ff19b63e85739a",
+      "machineText": "Jalankan hook siklus hidup dengan batasan",
       "status": "machine-translated",
       "sourcePreview": "Run bounded lifecycle hooks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0078-text-01": {
+    "b0084-text-01": {
       "sourceHash": "48c054d2beed84b71f101603cc38306ceb5e8de72c1c8896f9f9f8ba5be25baa",
-      "targetHash": "2f6ed62d931fb092bee050248ec1dcb44bbfd5e58e726533e266c2d8f9c85720",
-      "machineHash": "2f6ed62d931fb092bee050248ec1dcb44bbfd5e58e726533e266c2d8f9c85720",
-      "machineText": "Antarmuka hook eksperimental menjalankan satu skrip milik proyek pada setiap fase yang dideklarasikan. Hook bukan perintah shell: Wails mengeksekusi berkas tersebut secara langsung dari root proyek, kecuali jika `directory` ditetapkan.",
+      "targetHash": "2dd0e75b617419e5a6df33dbfa9245fe0caade4d59ddb515e6c31b489a66a58d",
+      "machineHash": "2dd0e75b617419e5a6df33dbfa9245fe0caade4d59ddb515e6c31b489a66a58d",
+      "machineText": "Antarmuka hook eksperimental menjalankan satu skrip milik proyek pada setiap fase yang dideklarasikan. Hook bukan perintah shell: Wails mengeksekusi file secara langsung dari root proyek, kecuali jika `directory` ditetapkan.",
       "status": "machine-translated",
       "sourcePreview": "The experimental hook surface invokes one project-owned script at each declared phase. A hook is not…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0079-text-01": {
+    "b0085-text-01": {
       "sourceHash": "22dac4dc8a943d3ce01460b0f526ff07c5d0e20058ed4af7721310d3abb70f9d",
       "targetHash": "f2413491071463aec0e8eed4720678acb133321d569efac1d0302f02a1e3fe10",
       "machineHash": "f2413491071463aec0e8eed4720678acb133321d569efac1d0302f02a1e3fe10",
@@ -928,69 +1036,69 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0080-text-01": {
+    "b0086-text-01": {
       "sourceHash": "8f4a86c5dfee1cd78734b2d7639fe624f4bbd808c0d6d4547a6596d302658dfc",
-      "targetHash": "6b41d91ae5b7ba67f95d76f86d0596d8b985c43a319b7ca3401f7fe48c5ddfb2",
-      "machineHash": "6b41d91ae5b7ba67f95d76f86d0596d8b985c43a319b7ca3401f7fe48c5ddfb2",
-      "machineText": "Fase yang didukung adalah `before_build`, `after_build`, `before_package`, `after_package`, `before_sign`, dan `after_sign`. Hook build berjalan satu kali untuk proyek bersama atau satu kali per target, sesuai kebutuhan. Hook paket dan penandatanganan membentuk penghalang di sekeliling semua format yang diminta untuk suatu target, sementara operasi format di dalam penghalang tetap berjalan secara serentak.",
+      "targetHash": "2756cae1c87210aa7976db81c0b52c19aa556975ee5f367b357b7900f2363102",
+      "machineHash": "2756cae1c87210aa7976db81c0b52c19aa556975ee5f367b357b7900f2363102",
+      "machineText": "Fase yang didukung adalah `before_build`, `after_build`, `before_package`, `after_package`, `before_sign`, dan `after_sign`. Hook build dijalankan satu kali untuk proyek bersama atau satu kali per target, sesuai kebutuhan. Hook paket dan penandatanganan membentuk penghalang yang mengapit semua format yang diminta untuk suatu target, sementara operasi format di dalam penghalang tetap berjalan secara konkuren.",
       "status": "machine-translated",
       "sourcePreview": "Supported phases are `before_build`, `after_build`, `before_package`, `after_package`, `before_sign`…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0081-text-01": {
+    "b0087-text-01": {
       "sourceHash": "3075b7ad1cdf0b4c638f2ed35a0c7dc67c4582c60da8133a764f673a2c485ad3",
-      "targetHash": "ae3565fbe45a3f4c3cbd5b93e86648e9ab687c952b652c9304e7c1f56d839a47",
-      "machineHash": "ae3565fbe45a3f4c3cbd5b93e86648e9ab687c952b652c9304e7c1f56d839a47",
-      "machineText": "Hook menerima satu variabel lingkungan milik Wails: `WAILS_HOOK_CONTEXT_FILE`. Variabel ini menyebutkan berkas JSON terlindungi yang berisi konteks pemanggilan berversi:",
+      "targetHash": "52baeec413fa7cabe48f31eea501653183408d82596cef981ebab2bc551574c3",
+      "machineHash": "52baeec413fa7cabe48f31eea501653183408d82596cef981ebab2bc551574c3",
+      "machineText": "Hook menerima satu variabel lingkungan milik Wails: `WAILS_HOOK_CONTEXT_FILE`. Variabel ini menunjuk ke file JSON terlindungi yang berisi konteks pemanggilan berversi:",
       "status": "machine-translated",
       "sourcePreview": "Hooks receive one Wails-owned environment variable: `WAILS_HOOK_CONTEXT_FILE`. It names a protected …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0082-text-01": {
+    "b0088-text-01": {
       "sourceHash": "2a803b9716c233972e758e12b247e07ec8933835cbe3e02dabd57672738687c8",
-      "targetHash": "c524bb5c5b8760d9464754009f8d3fbb4bd6f94ead5a9c8bf868ac1ac72382e5",
-      "machineHash": "c524bb5c5b8760d9464754009f8d3fbb4bd6f94ead5a9c8bf868ac1ac72382e5",
-      "machineText": "Konteks tersebut berisi jalur yang telah di-resolve, tetapi tidak pernah menyalin lingkungan proses yang diwarisi maupun rahasia. Wails membuatnya secara atomik dengan izin berkas khusus pemilik di bawah `.wails/hooks/context/`. Berkas tersebut dihapus setelah berhasil atau dibatalkan. Jika terjadi kegagalan, berkas dipertahankan untuk diagnosis dan jalurnya disertakan dalam galat. Status keluar bukan nol menggagalkan langkah Plan normal, dan pembatalan menghentikan grup proses hook.",
+      "targetHash": "2f24f91a90c588a7a1427291bf7054156157bfd57cc5ab7d0d4b94f1a535f015",
+      "machineHash": "2f24f91a90c588a7a1427291bf7054156157bfd57cc5ab7d0d4b94f1a535f015",
+      "machineText": "Konteks tersebut memuat jalur yang telah di-resolve, tetapi tidak pernah menyalin lingkungan proses yang diwariskan maupun rahasia. Wails membuatnya secara atomik dengan izin file khusus pemilik di bawah `.wails/hooks/context/`. File tersebut dihapus setelah berhasil atau dibatalkan. Jika terjadi kegagalan, file dipertahankan untuk diagnosis dan jalurnya disertakan dalam pesan kesalahan. Kode keluar bukan nol menggagalkan langkah Plan normal, dan pembatalan menghentikan grup proses hook.",
       "status": "machine-translated",
       "sourcePreview": "The context contains resolved paths but never copies the inherited process environment or secrets. W…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0083-text-01": {
+    "b0089-text-01": {
       "sourceHash": "6208c3c8a8583f46263266ab47582c7c6f92d435245e29f915df032f5c00af48",
-      "targetHash": "1309e28be7d1e2c4496a102446072d225f6c9293857ac34783b68c7470f826e3",
-      "machineHash": "1309e28be7d1e2c4496a102446072d225f6c9293857ac34783b68c7470f826e3",
-      "machineText": "Secara default, hook berjalan pada setiap pemanggilan. Aktifkan caching hanya jika skrip memiliki input dan output lengkap yang dideklarasikan:",
+      "targetHash": "47fce1f99bd740583a872e48bf5cba17ab834856529866a127928de83e8d329f",
+      "machineHash": "47fce1f99bd740583a872e48bf5cba17ab834856529866a127928de83e8d329f",
+      "machineText": "Secara default, hook berjalan pada setiap pemanggilan. Aktifkan caching hanya jika skrip memiliki semua input dan output yang dideklarasikan:",
       "status": "machine-translated",
       "sourcePreview": "Hooks run on every invocation by default. Opt into caching only when the script has complete declare…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0084-text-01": {
+    "b0090-text-01": {
       "sourceHash": "f4a8952a42698fbb794f96cd26a5fb18ca33701eef3e8f843a3997215ed7edb5",
-      "targetHash": "dc0aa1e96af22cadf59537e2141ef5a3c70c66a4be321e7f11906582d134107e",
-      "machineHash": "dc0aa1e96af22cadf59537e2141ef5a3c70c66a4be321e7f11906582d134107e",
-      "machineText": "Skrip dan mode executable-nya merupakan input implisit. Beberapa output harus menggunakan satu direktori non-root yang sama, yang menjadi artefak terbatas yang dicatat dan dipulihkan oleh Wails. Root output tidak boleh berisi skrip atau input yang dideklarasikan, dan pohon output yang di-cache hanya boleh berisi berkas serta direktori biasa, tidak pernah tautan simbolis atau berkas khusus. Hook yang selalu dijalankan membuat operasi turunannya tidak dapat di-cache karena efek samping yang tidak dideklarasikan tidak dapat diberi sidik jari secara aman. Hook yang dapat di-cache mempertahankan caching turunan melalui identitas artefak yang dideklarasikan.",
+      "targetHash": "16f8d2e6b9329d7bce955e807bd0371b204f4d2884407417bb9674a22a293ef1",
+      "machineHash": "16f8d2e6b9329d7bce955e807bd0371b204f4d2884407417bb9674a22a293ef1",
+      "machineText": "Skrip dan mode executable-nya merupakan input implisit. Beberapa output harus berbagi satu direktori non-root, yang menjadi artefak terbatas yang dicatat dan dipulihkan oleh Wails. Root output tidak boleh memuat skrip atau input yang dideklarasikan, dan pohon output yang di-cache hanya boleh memuat file biasa dan direktori, tidak pernah tautan simbolis atau file khusus. Hook yang selalu dijalankan membuat operasi setelahnya tidak dapat di-cache karena efek samping yang tidak dideklarasikan tidak dapat dibuat sidik jarinya secara aman. Hook yang dapat di-cache mempertahankan caching untuk operasi setelahnya melalui identitas artefak yang dideklarasikan.",
       "status": "machine-translated",
       "sourcePreview": "The script and its executable mode are implicit inputs. Multiple outputs must share one non-root dir…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0085-heading-01": {
+    "b0091-heading-01": {
       "sourceHash": "391ff241dbd12b1515fc1bb2839545855c219145a62076327fbb7dc4acabe618",
       "targetHash": "af9712180bf22e3b48f9eee6106ed11b656a324d63330748d6feae8f612da0a4",
       "machineHash": "af9712180bf22e3b48f9eee6106ed11b656a324d63330748d6feae8f612da0a4",
@@ -1000,45 +1108,45 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0086-text-01": {
+    "b0092-text-01": {
       "sourceHash": "aa7375fec3c1401ddf6c840280256dbcfe2bf7d0f63262ca2b4b16929921aca4",
-      "targetHash": "fde4c2ec6ea9c671f609aa20b651cd781743be97de41156d59a6609823744273",
-      "machineHash": "fde4c2ec6ea9c671f609aa20b651cd781743be97de41156d59a6609823744273",
-      "machineText": "Buat dan tinjau draf yang tidak aktif:",
+      "targetHash": "61fc543ba836a6064158202c1e7597df405f254c028ecc4a42fc3135a5d29bcd",
+      "machineHash": "61fc543ba836a6064158202c1e7597df405f254c028ecc4a42fc3135a5d29bcd",
+      "machineText": "Buat dan tinjau draf yang belum aktif:",
       "status": "machine-translated",
       "sourcePreview": "Create and review an inactive draft:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0087-text-01": {
+    "b0093-text-01": {
       "sourceHash": "a0a69a7f9d5137d1b87da7b174c920a4451956e24c37f016b801e9de6580140f",
-      "targetHash": "097b4480f065af11fb2e853233baf3578105d02d6049cf1312544a6141698197",
-      "machineHash": "097b4480f065af11fb2e853233baf3578105d02d6049cf1312544a6141698197",
-      "machineText": "Tugas siklus hidup konservatif tanpa argumen yang menjalankan skrip milik proyek diterjemahkan menjadi hook. Perilaku Taskfile khusus lain yang dapat dijangkau dilaporkan sebagai penghambat. Setelah meninjau `wails.migrated.yaml`, aktifkan secara eksplisit:",
+      "targetHash": "1dbc017e3e8838bc22ab8da35c9e7a40bd4acd1350f0b1ea528f9cd1b0d84e09",
+      "machineHash": "1dbc017e3e8838bc22ab8da35c9e7a40bd4acd1350f0b1ea528f9cd1b0d84e09",
+      "machineText": "Tugas siklus hidup konservatif tanpa argumen yang menjalankan skrip milik proyek\nditerjemahkan menjadi hook. Perilaku Taskfile kustom lain yang dapat dijangkau\ndilaporkan sebagai penghambat. Setelah meninjau\n`wails.migrated.yaml`, aktifkan secara eksplisit:",
       "status": "machine-translated",
       "sourcePreview": "Conservative argument-free lifecycle tasks that invoke a project-owned script are translated to hook…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0088-text-01": {
+    "b0094-text-01": {
       "sourceHash": "b8b0b2b4752f11221757fed4226686b98ff1989ae601381a46a04b3e6c5289d0",
-      "targetHash": "435865c7096e56531505d19b20399cc7895f395853997ed67b1604d433635215",
-      "machineHash": "435865c7096e56531505d19b20399cc7895f395853997ed67b1604d433635215",
-      "machineText": "Aktivasi membuat `wails.yaml` secara atomik. Aktivasi tidak menghapus, mengganti nama, atau mengedit Taskfile, `build/config.yml`, skrip, maupun aset. YAML yang tidak valid gagal sebagai YAML; proses tidak pernah kembali ke rute lama.",
+      "targetHash": "beb23aa4bfa2f4bf9e240d96bb64bf20f5deff7663a93086b70fa8a976308113",
+      "machineHash": "beb23aa4bfa2f4bf9e240d96bb64bf20f5deff7663a93086b70fa8a976308113",
+      "machineText": "Aktivasi membuat `wails.yaml` secara atomik. Aktivasi tidak menghapus, mengganti nama, atau mengedit\nTaskfile, `build/config.yml`, skrip, maupun aset. YAML yang tidak valid akan gagal sebagai YAML;\nsistem tidak pernah beralih kembali ke jalur lama.",
       "status": "machine-translated",
       "sourcePreview": "Activation creates `wails.yaml` atomically. It does not delete, rename or edit Taskfiles, `build/con…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0089-heading-01": {
+    "b0095-heading-01": {
       "sourceHash": "38fcb62bb21edaea8e1a19907be5ed12eb3be9596db673f00a25f8f58c1a226a",
       "targetHash": "d7bc200bb36d5030531d289c38eea327cdbb50fe164285f5297008b8b50690ed",
       "machineHash": "d7bc200bb36d5030531d289c38eea327cdbb50fe164285f5297008b8b50690ed",
@@ -1048,21 +1156,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0090-text-01": {
+    "b0096-text-01": {
       "sourceHash": "7258fd780164131dccac2ad0061b7a098ee694ae23273703cb858b6f6c6f0cfe",
-      "targetHash": "19da33a3773cb7ebdad08dfce47c071c4f9744555a5da8a2228de58b0f6a419a",
-      "machineHash": "19da33a3773cb7ebdad08dfce47c071c4f9744555a5da8a2228de58b0f6a419a",
-      "machineText": "Untuk memeriksa atau menyalin konfigurasi lengkap yang telah di-resolve, tulis snapshot yang tidak aktif:",
+      "targetHash": "16b7f1625ee1bb6c19e38c1009d5f63f388ea872943cbec59f2c6212bfad80ed",
+      "machineHash": "16b7f1625ee1bb6c19e38c1009d5f63f388ea872943cbec59f2c6212bfad80ed",
+      "machineText": "Untuk memeriksa atau menyalin konfigurasi lengkap yang telah di-resolve, tulis snapshot\ntidak aktif:",
       "status": "machine-translated",
       "sourcePreview": "To inspect or copy the complete resolved configuration, write an inactive snapshot:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0091-text-01": {
+    "b0097-text-01": {
       "sourceHash": "586fcba4ad5121ee547afb4f8967603677cf0a376a73971a9142757306d4f7ab",
       "targetHash": "dcb24cc1b92ddd2508e12dffa42d563d25d2cfe35ffc054b509889fdd5d5da39",
       "machineHash": "dcb24cc1b92ddd2508e12dffa42d563d25d2cfe35ffc054b509889fdd5d5da39",
@@ -1072,67 +1180,67 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0092-heading-01": {
+    "b0098-heading-01": {
       "sourceHash": "103f67987ac91bcf9406eeccfba026f5997678164c426bee4f90a3d237dadb6d",
-      "targetHash": "1b107914f558e6b54f203ab54683acd891c8795b2eb8873f699dacb79f4e62f4",
-      "machineHash": "1b107914f558e6b54f203ab54683acd891c8795b2eb8873f699dacb79f4e62f4",
-      "machineText": "Jendela kompatibilitas",
+      "targetHash": "4ff0a44c33bbe1a30d7cf0955e96a653a26000266e062834d375baee3cd674b5",
+      "machineHash": "4ff0a44c33bbe1a30d7cf0955e96a653a26000266e062834d375baee3cd674b5",
+      "machineText": "Periode kompatibilitas",
       "status": "machine-translated",
       "sourcePreview": "Compatibility window",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0093-text-01": {
+    "b0099-text-01": {
       "sourceHash": "bad7397de917d117fa06e49c96058289eb1c4f825e6e9b14ffefaee21a7714bf",
-      "targetHash": "36eb0b5b04ccc5f0df8b645c0b7b1102c18c0f6f420b6e0c36c176ffbdec929e",
-      "machineHash": "36eb0b5b04ccc5f0df8b645c0b7b1102c18c0f6f420b6e0c36c176ffbdec929e",
-      "machineText": "`wails3 package` dan `wails3 sign` adalah alias usang untuk perencana yang sama; otomatisasi baru sebaiknya menggunakan `wails3 build` dengan profil atau format. Peluncuran dibatasi berdasarkan rilis: rilis pertama menjadikan YAML sebagai jalur proyek baru, rilis berikutnya memperingatkan tentang perutean Taskfile lama, dan rilis setelahnya menghapus eksekusi Taskfile beserta alias tersebut. Setiap transisi mengharuskan matriks penerimaan host native untuk rilis tersebut berstatus lulus.",
+      "targetHash": "0603a2ebb38baa136d6bd4cd990a3417597d3e3792f53a1f72ca5b42822d31a6",
+      "machineHash": "0603a2ebb38baa136d6bd4cd990a3417597d3e3792f53a1f72ca5b42822d31a6",
+      "machineText": "`wails3 package` dan `wails3 sign` adalah alias usang untuk perencana yang sama;\notomatisasi baru sebaiknya menggunakan `wails3 build` dengan profil atau format. Peluncurannya\ndibatasi oleh rilis: rilis pertama menjadikan YAML sebagai jalur untuk proyek baru, rilis berikutnya\nmemperingatkan tentang perutean Taskfile lama, dan rilis selanjutnya menghapus eksekusi Taskfile\nbeserta alias tersebut. Setiap transisi mengharuskan matriks pengujian penerimaan host native\nuntuk rilis tersebut lulus.",
       "status": "machine-translated",
       "sourcePreview": "`wails3 package` and `wails3 sign` are deprecated aliases for the same planner; new automation shoul…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0094-text-01": {
+    "b0100-text-01": {
       "sourceHash": "bda0bf3d3fb6e110ddf56782749ca114319c2ec6da511cc1514e49f281d7b33d",
-      "targetHash": "3597a40d9c7ef150fa871bc25a155e33a3a89e7b57c5e0168530fceae5520e73",
-      "machineHash": "3597a40d9c7ef150fa871bc25a155e33a3a89e7b57c5e0168530fceae5520e73",
-      "machineText": "Lihat referensi bidang [`wails.yaml` yang dihasilkan](/reference/wails-yaml-fields/) untuk setiap bidang, tipe, nilai default, dan aturan penerapan.",
+      "targetHash": "6f4b0a7e9b38235f92480492d5b7ee0e4cb4a5cd0024cbcb7e0ce420b118c45a",
+      "machineHash": "6f4b0a7e9b38235f92480492d5b7ee0e4cb4a5cd0024cbcb7e0ce420b118c45a",
+      "machineText": "Lihat referensi kolom [`wails.yaml` yang dihasilkan](/reference/wails-yaml-fields/)\nuntuk setiap kolom, tipe, nilai default, dan aturan penerapan.",
       "status": "machine-translated",
       "sourcePreview": "See the generated [`wails.yaml` field reference](/reference/wails-yaml-fields/) for every field, typ…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0095-text-01": {
+    "b0101-text-01": {
       "sourceHash": "21dce0b0af92732cb96ea69c3f12feaa1453cc9f4c305098ef4c49108836cd16",
-      "targetHash": "f000380844c2a3091de6897760b940b3771c37b759a2d479a873b711c1411dd8",
-      "machineHash": "f000380844c2a3091de6897760b940b3771c37b759a2d479a873b711c1411dd8",
-      "machineText": "Referensi konfigurasi [`wails3 run`](/reference/wails-yaml-run/) menjelaskan nilai default peluncuran lokal, penggantian khusus platform, dan fallback `go run .` tanpa manifes.",
+      "targetHash": "96a4bcb000d161f61bddceb04d5fdffab411df95880c68a50a4b8e72791c143c",
+      "machineHash": "96a4bcb000d161f61bddceb04d5fdffab411df95880c68a50a4b8e72791c143c",
+      "machineText": "Referensi konfigurasi [`wails3 run`](/reference/wails-yaml-run/) menjelaskan\nnilai default peluncuran lokal, penggantian khusus platform, dan fallback `go run .` tanpa manifes.",
       "status": "machine-translated",
       "sourcePreview": "The [`wails3 run` configuration reference](/reference/wails-yaml-run/) describes local launch defaul…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "fm-description": {
       "sourceHash": "55e85280d8e3bafd5fe21ff0b0f6ab6d13437fbfec4b05c4be76433c3a0a363d",
-      "targetHash": "ff43ade1e5891a69633d1fdb384111aa5d5b6b23cc778dfc552a7d87ce8df19d",
-      "machineHash": "ff43ade1e5891a69633d1fdb384111aa5d5b6b23cc778dfc552a7d87ce8df19d",
-      "machineText": "Konfigurasikan dan jalankan sistem build native Wails v3 yang eksperimental dengan satu file wails.yaml.",
+      "targetHash": "737d07cbfe858fca88a65ff92494d85dbb128ff801e66d88b2a86cc620e38383",
+      "machineHash": "737d07cbfe858fca88a65ff92494d85dbb128ff801e66d88b2a86cc620e38383",
+      "machineText": "Konfigurasikan dan jalankan sistem build native Wails v3 eksperimental dengan satu file wails.yaml.",
       "status": "machine-translated",
       "sourcePreview": "Configure and run the experimental Wails v3 native build system with one wails.yaml file.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "fm-sidebar-badge-text": {
       "sourceHash": "3dc9f569422dcfdadcb2c33f3eb2ee6fcebc8ba679bd63e690f9ddd0ff7c24be",
@@ -1144,7 +1252,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     },
     "fm-title": {
       "sourceHash": "8fbd70bc69b96e30471d254a8ebb4900e4b9494f66f14e96c3f6b155272f778a",
@@ -1156,7 +1264,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:37:23Z"
+      "updatedAt": "2026-10-31T23:21:07Z"
     }
   }
 }

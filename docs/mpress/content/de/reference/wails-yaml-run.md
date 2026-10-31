@@ -24,6 +24,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan` löst das ausgewählte Ziel, die effektiven Build-Tags, das ausführbare oder installierbare Artefakt, die Argumente und das Arbeitsverzeichnis auf und zeigt sie an, ohne etwas zu erstellen, zu installieren oder zu starten. Der Plan führt die Schlüsselnamen der Umgebungsüberschreibungen auf und lässt deren Werte aus.
@@ -33,6 +34,7 @@ wails3 run --plan
 | Option | Bedeutung |
 | --- | --- |
 | `--tags <tags>` | Zusätzliche, durch Kommas getrennte Go-Build-Tags. |
+| `--skip-build` | Vorhandene Desktop-Executables aus dem YAML-Ausgabeverzeichnis importieren und anschließend ohne Kompilierung starten. |
 | `--target <os>/<arch>` | Wählt ein Ziel aus; standardmäßig werden Betriebssystem und Architektur des Hosts verwendet. |
 | `--plan` | Zeigt die aufgelösten Einstellungen an, ohne etwas zu erstellen oder zu starten. Plattformübergreifende Desktoppläne sind zulässig. |
 | `--device <id>` | Android-adb-Seriennummer oder Kennung eines iOS-Simulators beziehungsweise -Geräts. |
@@ -42,6 +44,9 @@ wails3 run --plan
 | `--appargs <string>` | Kompatible Schreibweise: Analysiert eine Zeichenfolge mit POSIX-artiger Quotierung. Kann weder wiederholt noch mit Argumenten nach `--` kombiniert werden. |
 
 Selektoren für Mobilgeräte erfordern ein Manifest und ein passendes mobiles Ziel.
+
+`--skip-build` erfordert ein aktives YAML-Projekt und ein kompatibles Desktop-Executable. Dabei werden Frontend-Verarbeitung, Bindings, Kompilierung, UPX und Build-Hooks übersprungen; konfigurierte Startargumente und Umgebungsvariablen gelten weiterhin. Importierte Executables werden validiert und in den von Wake generierten Arbeitsbereich kopiert, ohne ihre Quelldateien zu ändern. macOS-GUI-Anwendungen werden aus diesen Eingaben und den aktuellen Paket-Assets zusammengestellt. Siehe [Pfade und Anforderungen für vorkompilierte Eingaben](/experimental/yaml-builds/#use-prebuilt-desktop-executables).
+Build-Tags können ein vorkompiliertes Executable nicht ändern. Daher haben `--tags` und konfigurierte Build-Tags in diesem Modus keine Wirkung.
 
 ## Felder
 

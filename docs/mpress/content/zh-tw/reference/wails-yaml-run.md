@@ -44,6 +44,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan`會解析並顯示所選目標、實際採用的建置標籤、
@@ -55,6 +56,7 @@ wails3 run --plan
 | 選項 | 意義 |
 | --- | --- |
 | `--tags <tags>` | 其他以逗號分隔的 Go 建置標籤。 |
+| `--skip-build` | 從 YAML 輸出目錄匯入現有的桌面可執行檔，然後不經編譯直接啟動。 |
 | `--target <os>/<arch>` | 選取一個目標；預設為主機的作業系統與架構。 |
 | `--plan` | 顯示解析後的設定，不進行建置或啟動。允許規劃跨平台桌面目標。 |
 | `--device <id>` | Android adb 序號或 iOS 模擬器／裝置識別碼。 |
@@ -64,6 +66,9 @@ wails3 run --plan
 | `--appargs <string>` | 相容拼法：使用 POSIX 風格的引號規則剖析單一字串。不得重複使用，也不得與`--`之後的引數併用。 |
 
 行動平台選取器需要資訊清單以及相符的行動平台目標。
+
+`--skip-build`需要有效的 YAML 專案和相容的桌面可執行檔。此模式會略過前端工作、繫結、編譯、UPX 和建置掛鉤；已設定的啟動引數和環境仍然適用。匯入的可執行檔經過驗證後，會複製到 Wake 產生的工作區，而不會修改其來源檔案。macOS GUI 應用程式會使用這些輸入和目前的套件資產組裝。請參閱[預先建置輸入的路徑與需求](/experimental/yaml-builds/#use-prebuilt-desktop-executables)。
+建置標籤無法變更預先建置的可執行檔，因此`--tags`和已設定的建置標籤在此模式下不會生效。
 
 ## 欄位
 

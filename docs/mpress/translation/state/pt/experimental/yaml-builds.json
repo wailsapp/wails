@@ -16,31 +16,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0001-text-01": {
       "sourceHash": "518709e150224233724dc0b05d6f8581ce61887ffafab86cd289c552cd9e73ee",
-      "targetHash": "60dfbf48749feedb8d679232774cc687a88574147720aff98049adc01cc10999",
-      "machineHash": "60dfbf48749feedb8d679232774cc687a88574147720aff98049adc01cc10999",
-      "machineText": "A primeira versão aceita apenas configurações literais. Este experimento também cria protótipos de hooks de ciclo de vida limitados, para que seu formato possa ser avaliado antes que sejam propostos para lançamento. Estágios personalizados, expressões YAML e chamadas tipadas às ferramentas do Wails continuam adiados. Os projetos existentes continuam usando Taskfiles até que você ative explicitamente uma migração revisada.",
+      "targetHash": "16c31e15f37453c790aa5f80b7e8f5bfb9a132100ac2b059883b8b1ba9794f0e",
+      "machineHash": "16c31e15f37453c790aa5f80b7e8f5bfb9a132100ac2b059883b8b1ba9794f0e",
+      "machineText": "A primeira versão aceita apenas configuração literal. Este experimento também cria protótipos de hooks de ciclo de vida com duração limitada, para que seu formato possa ser avaliado antes de serem propostos para lançamento. Estágios personalizados, expressões YAML e chamadas tipadas às ferramentas do Wails continuam adiados. Os projetos existentes continuam usando Taskfiles até que você ative explicitamente uma migração revisada.",
       "status": "machine-translated",
       "sourcePreview": "The accepted first release supports literal configuration only. This experiment also prototypes boun…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0002-heading-01": {
       "sourceHash": "02aa31ff6ee330efc04cdfedbe38c4c8642123aeb275776f31719ba47e38c889",
-      "targetHash": "d616aa185e4525799f0a6efaae4a356d973e72aa9438b81fbd15d48fe94ef132",
-      "machineHash": "d616aa185e4525799f0a6efaae4a356d973e72aa9438b81fbd15d48fe94ef132",
-      "machineText": "Habilitar builds com YAML",
+      "targetHash": "a07aef8473cb591ef18751b2ee90f2f5a923edc5190066dde98e31f7a324eaac",
+      "machineHash": "a07aef8473cb591ef18751b2ee90f2f5a923edc5190066dde98e31f7a324eaac",
+      "machineText": "Habilitar builds YAML",
       "status": "machine-translated",
       "sourcePreview": "Enable YAML builds",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0003-text-01": {
       "sourceHash": "a8c413e5ffbfa6d155e3bc083db2db011d99005ce469212f994d112069a444bc",
@@ -52,7 +52,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0004-text-01": {
       "sourceHash": "ecf768e5e8980a6cdd1ece2a0304a5fc941f16e56212864546e062d614847d21",
@@ -64,19 +64,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0005-text-01": {
       "sourceHash": "81e972fc460ea90283fc9c24e58b5c482dcd4fa510f1520ce3d9837eb18bb170",
-      "targetHash": "3d8013d101809ffeaf8b49f0790e5a002eb784ff994a5397230fda5487afa126",
-      "machineHash": "3d8013d101809ffeaf8b49f0790e5a002eb784ff994a5397230fda5487afa126",
-      "machineText": "A variável habilita o recurso com base em sua presença: até mesmo um valor vazio ou `false` o habilita. Remova sua definição (`unset WAILS_EXP_USE_WAKE` no Bash/Zsh ou `Remove-Item Env:WAILS_EXP_USE_WAKE` no PowerShell) para desabilitar o experimento. Quando `wails.yaml` estiver ativo, os comandos exigirão que o Wake seja reabilitado e nunca recorrerão aos Taskfiles.\nSem a variável, o roteamento de build/dev com YAML e a geração de projetos YAML ficam desabilitados, e os comandos `migrate`, `config` e `eject` ficam indisponíveis.\nOs projetos que ainda não foram migrados continuam usando o runtime Task incorporado, que é separado.",
+      "targetHash": "5a954cb3cbb6ca387bcb13c89f61e08fd2c2f5e28fbddf680b0b779c86b7a250",
+      "machineHash": "5a954cb3cbb6ca387bcb13c89f61e08fd2c2f5e28fbddf680b0b779c86b7a250",
+      "machineText": "A adesão é determinada pela presença da variável: até mesmo um valor vazio ou `false` habilita o experimento. Remova a definição dela (`unset WAILS_EXP_USE_WAKE` no Bash/Zsh ou `Remove-Item Env:WAILS_EXP_USE_WAKE` no PowerShell) para desabilitá-lo. Depois que `wails.yaml` for ativado, os comandos exigirão que o Wake seja reabilitado e nunca recorrerão a Taskfiles.\nSem a variável, o roteamento de builds e sessões de desenvolvimento por YAML e a geração de projetos YAML ficam desabilitados, e os comandos `migrate`, `config` e `eject` ficam indisponíveis.\nProjetos que ainda não foram migrados continuam usando o runtime Task integrado separado.",
       "status": "machine-translated",
       "sourcePreview": "The variable is a presence-based opt-in: even an empty value or `false` enables it. Unset it (`unset…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0006-heading-01": {
       "sourceHash": "f1d23cc1c5eb6caacc9e9b3c6fa1486c6e648ac99ff425520c2423e45267cf62",
@@ -88,67 +88,67 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0007-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",
-      "targetHash": "64a804b4557424dfa2d530f84beed9e2cd88fdf1fe04d0b6a63ceac9ed514e6d",
-      "machineHash": "64a804b4557424dfa2d530f84beed9e2cd88fdf1fe04d0b6a63ceac9ed514e6d",
-      "machineText": "Com a opção habilitada, adicione `wails.yaml` à raiz do projeto. A presença desse arquivo seleciona o sistema de build nativo e faz o Wails ignorar todos os Taskfiles do projeto. Mantenha a opção habilitada para todos os comandos abaixo. A modeline do esquema habilita o preenchimento automático e a validação em linha nos editores compatíveis com servidor de linguagem YAML.",
+      "targetHash": "bbfe6d569e71097d4167fe700fa1639b00c59eb7489b472e5cbf179c6ebd7b6e",
+      "machineHash": "bbfe6d569e71097d4167fe700fa1639b00c59eb7489b472e5cbf179c6ebd7b6e",
+      "machineText": "Com a adesão habilitada, adicione `wails.yaml` à raiz do projeto. A presença desse arquivo seleciona o sistema de build nativo e faz o Wails ignorar todos os Taskfiles desse projeto. Mantenha a adesão habilitada para todos os comandos abaixo. A modeline do esquema habilita o preenchimento automático e a validação em linha em editores compatíveis com servidores de linguagem YAML.",
       "status": "machine-translated",
       "sourcePreview": "With the opt-in enabled, add `wails.yaml` at the project root. Its presence selects the native build…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0008-text-01": {
       "sourceHash": "5789fe5b9585e418536f48e0506d7820c994f805f11f50ce3a6cabe01b7ac419",
-      "targetHash": "79a6e1371171463bd0a974ebe8426d98f139f5834cc193e38fb074f287e60465",
-      "machineHash": "79a6e1371171463bd0a974ebe8426d98f139f5834cc193e38fb074f287e60465",
-      "machineText": "Execute o build padrão para o host ou a solicitação completa de lançamento nomeada:",
+      "targetHash": "caea9a229df2547bccab4fa5c7e654714f65a1fd714bf02d035ac1e65bd05b3a",
+      "machineHash": "caea9a229df2547bccab4fa5c7e654714f65a1fd714bf02d035ac1e65bd05b3a",
+      "machineText": "Execute o build padrão para o host ou a solicitação de lançamento nomeada completa:",
       "status": "machine-translated",
       "sourcePreview": "Run the default host build or the complete named release request:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0009-text-01": {
       "sourceHash": "c48a5bc44ed52fe432717c3f814d5d1eb4a03ec066a4ddfb841531c161daad78",
-      "targetHash": "ce76e1e0688217a55af973988eaf34ea4bd9f9fa992e5f93ff3f6923ae4250ea",
-      "machineHash": "ce76e1e0688217a55af973988eaf34ea4bd9f9fa992e5f93ff3f6923ae4250ea",
-      "machineText": "Para um build avulso, selecione destinos e formatos separados por vírgulas sem adicionar um perfil:",
+      "targetHash": "c7883892f235dc022f1f038ebc2de647a4847e979420e02a874abbf23d17b5c2",
+      "machineHash": "c7883892f235dc022f1f038ebc2de647a4847e979420e02a874abbf23d17b5c2",
+      "machineText": "Para um build avulso, selecione alvos e formatos separados por vírgulas sem adicionar um perfil:",
       "status": "machine-translated",
       "sourcePreview": "For a one-off build, select comma-separated targets and formats without adding a profile:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0010-heading-01": {
       "sourceHash": "84f60202f588d3c9c47bae03f85b04554a4ea8309b99176ac1a92a33951283af",
-      "targetHash": "a29cc5f71867bf452fa63bd2b865a61a5af093f6a5b8137e4409d0734752820c",
-      "machineHash": "a29cc5f71867bf452fa63bd2b865a61a5af093f6a5b8137e4409d0734752820c",
-      "machineText": "Fazer compilação cruzada de aplicações desktop",
+      "targetHash": "3b7ab1f2c6b8ff2617acb8ee3ceaf0059c1d4bca9bf6adc00df1c26c9c557dbd",
+      "machineHash": "3b7ab1f2c6b8ff2617acb8ee3ceaf0059c1d4bca9bf6adc00df1c26c9c557dbd",
+      "machineText": "Fazer compilação cruzada de aplicativos desktop",
       "status": "machine-translated",
       "sourcePreview": "Cross-compile desktop applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0011-text-01": {
       "sourceHash": "dbb783123b9bb5698ef4b897a618fd10534dcab041a44a789cad4b336e9da37f",
-      "targetHash": "74e320bf6df01b42754d5fe5842ffcf8d90629a7bc1eec4f032a6c36f9db9736",
-      "machineHash": "74e320bf6df01b42754d5fe5842ffcf8d90629a7bc1eec4f032a6c36f9db9736",
-      "machineText": "Para o backend desktop experimental escrito somente em Go, defina `CGO_ENABLED: \"0\"` no ambiente de build. O Wake seleciona a tag `purego` para programas com interface gráfica no macOS e Linux e usa o Go diretamente em hosts Windows, macOS e Linux. Nesse modo, a criação de executáveis desktop não exige Docker, emulação, compilador C nem SDK da plataforma de destino. As dependências da aplicação também devem ser compatíveis com `CGO_ENABLED=0`.",
+      "targetHash": "48719d0c5599b0858da7bce1db9e97953e59d733cae063a4ac7722a95a8ac665",
+      "machineHash": "48719d0c5599b0858da7bce1db9e97953e59d733cae063a4ac7722a95a8ac665",
+      "machineText": "Para o backend desktop experimental implementado exclusivamente em Go, defina `CGO_ENABLED: \"0\"` no ambiente de build. O Wake seleciona a tag `purego` para programas com GUI no macOS e no Linux e usa o Go diretamente em hosts Windows, macOS e Linux. Nesse modo, a criação de executáveis desktop não exige Docker, emulação, compilador C nem um SDK da plataforma de destino. As dependências do aplicativo também devem ser compatíveis com `CGO_ENABLED=0`.",
       "status": "machine-translated",
       "sourcePreview": "For the experimental pure-Go desktop backend, set `CGO_ENABLED: \"0\"` in the build environment. Wake …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0012-text-01": {
       "sourceHash": "8a6136eee54bd7cb507dc846278c5eeeac019c93324cf15fa390985e7e2bf1f1",
@@ -160,43 +160,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0013-text-01": {
       "sourceHash": "2221cd9350d90239b313ce556cfec27c020b4bbd00a53821685a1f649707a4b5",
-      "targetHash": "bea0193c2b75c86f785b16ea9b78506db26131c29447080b9bdc9b4b7868c242",
-      "machineHash": "bea0193c2b75c86f785b16ea9b78506db26131c29447080b9bdc9b4b7868c242",
-      "machineText": "O modo resolvido é selecionado de forma independente para cada executável. Um `build.environment.CGO_ENABLED` declarado, um ambiente de destino ou um ambiente do binário substitui o valor do terminal que invocou o comando. Caso contrário, uma tag `purego` selecionada explicitamente, um programa de CLI/servidor ou um destino Windows usa `0` por padrão; programas com interface gráfica para macOS e Linux usam `1` por padrão. `--plan --json` informa o compilador, o modo CGo e as tags resolvidos para cada executável. A compilação cruzada cria arquivos para o destino; a execução de um destino desktop incompatível ainda exige o host apropriado.",
+      "targetHash": "d679c9319e1f7141f82f43958566e6dc8075efb5c515453ddc9301de12b640eb",
+      "machineHash": "d679c9319e1f7141f82f43958566e6dc8075efb5c515453ddc9301de12b640eb",
+      "machineText": "O modo resultante é selecionado de forma independente para cada executável. Um `build.environment.CGO_ENABLED` declarado, o ambiente do alvo ou o ambiente do binário substitui o valor do terminal que invocou o comando. Caso contrário, uma tag `purego` selecionada explicitamente, um programa CLI/servidor ou um alvo Windows usa `0` por padrão; programas com GUI no macOS e no Linux usam `1` por padrão. `--plan --json` informa o compilador, o modo CGo e as tags resultantes de cada executável. A compilação cruzada cria arquivos para o alvo; a execução de um alvo desktop incompatível ainda exige o host apropriado.",
       "status": "machine-translated",
       "sourcePreview": "The resolved mode is selected independently for each executable. A declared `build.environment.CGO_E…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0014-text-01": {
       "sourceHash": "be67c57d0c07639fcc0a29b9636bd7ecb203730ce7934d5b51ccd1d0d8e84d9a",
-      "targetHash": "d01c87d378e4ccbd8bc81e18c5a6213d0c397311e14b322960a4e7d98e3a26f7",
-      "machineHash": "d01c87d378e4ccbd8bc81e18c5a6213d0c397311e14b322960a4e7d98e3a26f7",
-      "machineText": "Com `CGO_ENABLED=1`, o Wake usa primeiro uma cadeia de ferramentas nativa compatível ou o compilador cruzado `CC` configurado; em seguida, usa o Zig para um build cruzado do Windows, quando disponível; por fim, usa o fallback existente para Docker/Podman, quando compatível. Um `CC` explícito deve fornecer o compilador, as bibliotecas e o sysroot de destino; o Zig sozinho não fornece um sysroot GTK/WebKit do Linux. O empacotamento e a assinatura podem exigir ferramentas adicionais, conforme descrito abaixo. Destinos móveis exigem CGo e os SDKs de suas plataformas.",
+      "targetHash": "7fde4b14d9cd13929fc5b598889698cec71f32964c14f7ad833f1a2f94602b35",
+      "machineHash": "7fde4b14d9cd13929fc5b598889698cec71f32964c14f7ad833f1a2f94602b35",
+      "machineText": "Com `CGO_ENABLED=1`, o Wake usa primeiro uma cadeia de ferramentas nativa compatível ou o compilador cruzado `CC` configurado; depois, usa o Zig para um build cruzado destinado ao Windows, quando disponível; por fim, recorre ao fallback existente com Docker/Podman, onde houver suporte. Um `CC` explícito deve fornecer o compilador, as bibliotecas e o sysroot do alvo; o Zig sozinho não fornece um sysroot do GTK/WebKit para Linux. O empacotamento e a assinatura podem exigir ferramentas adicionais, conforme descrito abaixo. Alvos móveis exigem CGo e os SDKs de suas plataformas.",
       "status": "machine-translated",
       "sourcePreview": "With `CGO_ENABLED=1`, Wake uses a compatible native toolchain or the configured `CC` cross-compiler …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0015-text-01": {
       "sourceHash": "be0ca9f721a3441e4efdcafda7ab4b7dae8c487d0a12a2c921888b70f72ff839",
-      "targetHash": "24ed301b50010e536e5e2c602cfd9f8841364942a47515e8371527bb8ff9be02",
-      "machineHash": "24ed301b50010e536e5e2c602cfd9f8841364942a47515e8371527bb8ff9be02",
-      "machineText": "A compilação somente com Go não inclui as bibliotecas de sistema do destino.\nAplicativos Linux com interface gráfica, inclusive executáveis auxiliares com interface gráfica, ainda exigem o runtime GTK/WebKitGTK selecionado por suas tags de compilação. As dependências do pacote ou um ambiente de implantação apropriado devem fornecê-lo. Por padrão, pacotes que contêm apenas CLI ou servidor não adicionam essas dependências de interface gráfica; ainda é possível substituir explicitamente as dependências.",
+      "targetHash": "47bfbd8e5f63570d3daedd191f749ab941ab3a10b0c38af4b0ebf38dc3158af5",
+      "machineHash": "47bfbd8e5f63570d3daedd191f749ab941ab3a10b0c38af4b0ebf38dc3158af5",
+      "machineText": "A compilação somente com Go não inclui as bibliotecas de sistema do destino. Aplicativos Linux com GUI, inclusive executáveis complementares com GUI, ainda exigem o runtime GTK/WebKitGTK selecionado por suas tags de build. As dependências do pacote ou um ambiente de implantação apropriado devem fornecê-lo. Por padrão, pacotes que contêm somente programas CLI/servidor não adicionam essas dependências de GUI; substituições explícitas de dependências continuam disponíveis.",
       "status": "machine-translated",
       "sourcePreview": "Go-only compilation does not bundle the destination's system libraries. Linux GUI applications, incl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:53:28Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0016-heading-01": {
       "sourceHash": "2052e625337e7c382c3d9522c490642cfde34af9bc8e0a221dec69a53d08bfee",
@@ -208,67 +208,67 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0017-text-01": {
       "sourceHash": "bf8f85b4deeb906ecea88730802788bb12fe8a821fda60bf34ca55f1995c8f1d",
-      "targetHash": "9bde3482dfd08e26e29b713816f2398ae142f25b09682bece332ff6bc3899f65",
-      "machineHash": "9bde3482dfd08e26e29b713816f2398ae142f25b09682bece332ff6bc3899f65",
-      "machineText": "O projeto define o programa principal. Defina `project.package` como seu pacote Go (o padrão é `.`) e `project.kind` como `gui`, `cli` ou `server` (o padrão é `gui`).\nOs programas adicionais usam entradas nomeadas em `binaries`:",
+      "targetHash": "088ffffe8000e78b3b065cfe057e042b6b1458d1eb900a6be54861850f2ae3ce",
+      "machineHash": "088ffffe8000e78b3b065cfe057e042b6b1458d1eb900a6be54861850f2ae3ce",
+      "machineText": "O projeto define o programa principal. Defina `project.package` como o pacote Go dele (o padrão é `.`) e `project.kind` como `gui`, `cli` ou `server` (o padrão é `gui`). Programas adicionais usam entradas nomeadas em `binaries`:",
       "status": "machine-translated",
       "sourcePreview": "The project defines the primary program. Set `project.package` to its Go package (default `.`) and `…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0018-text-01": {
       "sourceHash": "addf5918d8c4fb4ede22dc4c2735f19f4ad14c5db21ae5488571b8b2e1063a3f",
-      "targetHash": "bd97458b1f1d618e87b96e6e8a343270ecf9c0f48e9f98780ef0cff9e3e4db54",
-      "machineHash": "bd97458b1f1d618e87b96e6e8a343270ecf9c0f48e9f98780ef0cff9e3e4db54",
-      "machineText": "Cada programa tem sua própria compilação e suas próprias entradas de cache. Os pacotes importados do projeto e os arquivos incorporados são rastreados; editar um programa independente não recompila os demais. Executáveis adicionais são compatíveis com desktop e incluídos nos pacotes de aplicações e instaladores padrão. Os arquivos de pacote substitutos pertencentes ao usuário controlam o próprio conteúdo.",
+      "targetHash": "f809ffdad19221ef6c580ec549041165a84ac9d72e78347224f2d35ca8e003c8",
+      "machineHash": "f809ffdad19221ef6c580ec549041165a84ac9d72e78347224f2d35ca8e003c8",
+      "machineText": "Cada programa tem seus próprios dados de entrada para compilação e cache. Os pacotes importados do projeto e os arquivos incorporados são rastreados; a edição de um programa independente não recompila os demais. Há suporte a executáveis adicionais no desktop, e eles são incluídos nos pacotes de aplicativo e instaladores padrão. Arquivos de pacote substitutos pertencentes ao usuário controlam o próprio conteúdo.",
       "status": "machine-translated",
       "sourcePreview": "Each program gets its own compilation and cache inputs. Imported project packages and embedded files…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0019-text-01": {
       "sourceHash": "9815499a6284eddc98a8a11b39b13679b0a4654db44a40b698c2721d8321ff96",
-      "targetHash": "04d8404923f02b5c8783e46266d09ea9396602d03b9cd73c12cf2cb3c34d1ce9",
-      "machineHash": "04d8404923f02b5c8783e46266d09ea9396602d03b9cd73c12cf2cb3c34d1ce9",
-      "machineText": "Um perfil nomeado é uma solicitação completa; use essas substituições de seleção com um build anônimo. `--jobs` limita os workers de execução. Selecionar apenas programas de CLI/servidor omite o trabalho de frontend.",
+      "targetHash": "88b8d87c71e582f3d9d150a2078ea70ff9994a04f6bfc2cc4ad7892379c128d8",
+      "machineHash": "88b8d87c71e582f3d9d150a2078ea70ff9994a04f6bfc2cc4ad7892379c128d8",
+      "machineText": "Um perfil nomeado é uma solicitação completa; use estas substituições de seleção com um build anônimo. `--jobs` limita os workers de execução. Selecionar apenas programas CLI/servidor omite o trabalho de frontend.",
       "status": "machine-translated",
       "sourcePreview": "A named profile is a complete request; use these selection overrides with an anonymous build. `--job…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0020-text-01": {
       "sourceHash": "9e44f1d1e97ff6b67d1a4b52216ea7a6d6f574e05bb50bd0af78750532ca76b7",
-      "targetHash": "a5bf3b5968231cdd92a08ff031c2edf85d3f0a63feadced1646f5733249be910",
-      "machineHash": "a5bf3b5968231cdd92a08ff031c2edf85d3f0a63feadced1646f5733249be910",
-      "machineText": "Para ler uma versão sem executar o código da aplicação, configure `project.version_file` e `project.version_symbol`. O arquivo deve conter uma declaração estática de string em Go. O literal `project.version` poderá então ser omitido. Defina `commit_symbol: main.Commit` no projeto ou em um binário nomeado para injetar a revisão do repositório na variável string desse executável. A ausência de metadados do repositório é um erro quando a injeção do commit é solicitada.",
+      "targetHash": "b9a76825e7f60cf75593262dac20a770d4a781e0a8950d0c2d2b6ab3d9382843",
+      "machineHash": "b9a76825e7f60cf75593262dac20a770d4a781e0a8950d0c2d2b6ab3d9382843",
+      "machineText": "Para ler uma versão sem executar o código do aplicativo, configure tanto `project.version_file` quanto `project.version_symbol`. O arquivo deve conter uma declaração estática de string em Go. O literal `project.version` poderá então ser omitido. Defina `commit_symbol: main.Commit` no projeto ou em um binário nomeado para injetar a revisão do repositório na variável de string desse executável. A ausência de metadados do repositório é um erro quando a injeção do commit é solicitada.",
       "status": "machine-translated",
       "sourcePreview": "To read a version without running application code, configure both `project.version_file` and `proje…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0021-text-01": {
       "sourceHash": "e649671eb97f11b638f8c16275bbba79100b90c3eff3934b406dd0767fe7e8da",
-      "targetHash": "b3d5f4ba2ed57b655a1cb5ec81ca622f69c40a38875a6f0b4596a892fc578aad",
-      "machineHash": "b3d5f4ba2ed57b655a1cb5ec81ca622f69c40a38875a6f0b4596a892fc578aad",
-      "machineText": "De `upx_level: 1` a `9`, opcionalmente, comprime executáveis de lançamento para Linux e Windows; zero desabilita a compressão. O UPX deve estar instalado. Builds de desenvolvimento e do macOS omitem a compressão. Uma falha de compilação ou compressão preserva o programa publicado anteriormente.",
+      "targetHash": "0361d89ce812d71affb9284683f51f7a2de5b153a57d4c234f1a98c16af8638a",
+      "machineHash": "0361d89ce812d71affb9284683f51f7a2de5b153a57d4c234f1a98c16af8638a",
+      "machineText": "De `upx_level: 1` a `9`, o valor opcionalmente compacta executáveis de lançamento para Linux e Windows; zero desabilita a compactação. O UPX deve estar instalado. Builds de desenvolvimento e para macOS omitem a compactação. Uma falha de compilação ou compactação preserva o programa publicado anteriormente.",
       "status": "machine-translated",
       "sourcePreview": "`upx_level: 1` through `9` optionally compresses release Linux and Windows executables; zero disable…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0022-heading-01": {
       "sourceHash": "76e87e97fb52c3b2e6cf9e2db727b7eab07d2d2cebcfa789fa91da44fd696ee5",
@@ -280,9 +280,81 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0023-text-01": {
+    "b0023-heading-01": {
+      "sourceHash": "91949300d18aefff2dbcd6897b23c1513c167f1d142818d9b361085306d6b4a9",
+      "targetHash": "bbdae39b3ca66aa613ddbb758df96ceb34cf6db0094fe9d8bec11e4d521f69ee",
+      "machineHash": "bbdae39b3ca66aa613ddbb758df96ceb34cf6db0094fe9d8bec11e4d521f69ee",
+      "machineText": "Usar executáveis desktop pré-compilados",
+      "status": "machine-translated",
+      "sourcePreview": "Use prebuilt desktop executables",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "6fc3c5c0941b5feac437e83506b686bbe02a5dbe1784a0c7e8df999c5ad84eb2",
+      "targetHash": "601242ac0d6259040372707527b96c4ceb1824369a3482c187b0a6723cfd5372",
+      "machineHash": "601242ac0d6259040372707527b96c4ceb1824369a3482c187b0a6723cfd5372",
+      "machineText": "Use `--skip-build` quando outro sistema de build ou job de CI já tiver produzido os executáveis:",
+      "status": "machine-translated",
+      "sourcePreview": "Use `--skip-build` when another build system or CI job has already produced the executables:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "7be35e75db871f2fe82f41f0f48f7785de3f7ca975bc5b335432c2df68dc673a",
+      "targetHash": "47990355d81013ea0685a6c9d8a3e919d63ef07059b9bd45158b840d99f2253c",
+      "machineHash": "47990355d81013ea0685a6c9d8a3e919d63ef07059b9bd45158b840d99f2253c",
+      "machineText": "Coloque cada executável em `build.output` (o padrão é `bin`), usando `project.binary_name` para o executável principal e o nome de cada entrada `binaries` para os executáveis auxiliares. No Windows, os nomes terminam em `.exe`. Uma invocação para vários destinos lê os arquivos de cada destino em um subdiretório `\u003cos\u003e-\u003carch\u003e`. Para uma GUI do macOS, o Wake lê o executável bruto em `bin/\u003cname\u003e`, se estiver presente; caso contrário, usa `bin/\u003cname\u003e.app/Contents/MacOS/\u003cname\u003e`. Uma entrada `darwin/universal` deve conter slices de executável para amd64 e arm64.",
+      "status": "machine-translated",
+      "sourcePreview": "Place each executable in `build.output` (default `bin`), using `project.binary_name` for the main ex…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:40Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "327430600b6a536b632ebe9f3de19c3ec2467256f8631b3b908deedcf0f80308",
+      "targetHash": "d0eec3b0a111c75c1bad2ca853e2b1ec352b35f02dd3e24eb6ba6835454a1b62",
+      "machineHash": "d0eec3b0a111c75c1bad2ca853e2b1ec352b35f02dd3e24eb6ba6835454a1b62",
+      "machineText": "O Wake valida o tipo de arquivo e a arquitetura de destino, copia os executáveis para o workspace gerado e rastreia o conteúdo deles para o cache de pacotes. Entradas de executáveis ausentes, incompatíveis ou que sejam links simbólicos causam uma falha, em vez de serem recompiladas ou restauradas a partir de uma entrada antiga. Os executáveis fornecidos não são sobrescritos nem têm suas permissões alteradas com chmod. Alterações em qualquer executável invalidam os pacotes que o utilizam.",
+      "status": "machine-translated",
+      "sourcePreview": "Wake validates file type and target architecture, copies the executables into its generated workspac…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "fa03f76b0fad60f21e26e0e9f55286e83d8885124c60baaba3a98088ac14f6b0",
+      "targetHash": "4272f7538d642531f9a30b608f00b05382559e423fb506082ba0a1c5a69f38e8",
+      "machineHash": "4272f7538d642531f9a30b608f00b05382559e423fb506082ba0a1c5a69f38e8",
+      "machineText": "Esse modo ignora a instalação e os builds do frontend, os bindings, a compilação Go, o UPX e os hooks `before_build`/`after_build`. Ele ainda gera os recursos do pacote, monta pacotes de aplicativo do macOS e executa os hooks configurados de empacotamento e assinatura. As ferramentas de empacotamento e assinatura continuam sujeitas à tabela abaixo; as ferramentas de build de Go e do frontend não são necessárias. Os metadados do pacote vêm do manifesto atual, incluindo `version_file` quando configurado; nenhuma versão é inferida do binário. Use configurações correspondentes de build e empacotamento, inclusive quanto ao tipo GUI ou CLI.",
+      "status": "machine-translated",
+      "sourcePreview": "This mode skips frontend installation/builds, bindings, Go compilation, UPX and the `before_build`/`…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
+    },
+    "b0028-text-01": {
+      "sourceHash": "3df17e599fe2f35a677d9f885bda5ac7526ebb03527a067f3ee2668fbc5077a8",
+      "targetHash": "ff3556fbd0a1191ade3621caafc7bce8c6f2de4e514651db8910b2cfbe074904",
+      "machineHash": "ff3556fbd0a1191ade3621caafc7bce8c6f2de4e514651db8910b2cfbe074904",
+      "machineText": "`wails3 package --skip-build` também é compatível. Com `wails3 run`, os argumentos de inicialização e o ambiente ainda são aplicados, e o executável deve poder ser executado no host. Esse modo exige um projeto YAML ativo e só é compatível com alvos desktop de produção; ele não se aplica a sessões de desenvolvimento nem ao empacotamento para dispositivos móveis.",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 package --skip-build` is also supported. With `wails3 run`, launch arguments and environment…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
+    },
+    "b0029-text-01": {
       "sourceHash": "707168e8197382e3eecbd904fe532621a7d13c28311680d0b898eebb6747dc6f",
       "targetHash": "169f41fb5aa521ab6d202d4b7732071a0c2425611f05b732f3f7afd6d2064fb2",
       "machineHash": "169f41fb5aa521ab6d202d4b7732071a0c2425611f05b732f3f7afd6d2064fb2",
@@ -292,9 +364,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0024-cell-01": {
+    "b0030-cell-01": {
       "sourceHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
       "targetHash": "ddb5a44a2d4c88c248bacb79772591a7b408669d53faa50b68abdf82e423499c",
       "machineHash": "ddb5a44a2d4c88c248bacb79772591a7b408669d53faa50b68abdf82e423499c",
@@ -304,9 +376,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0025-cell-01": {
+    "b0031-cell-01": {
       "sourceHash": "96a18d5fe6b52c58d95e17dd521ed383de51f36592f90b8cd77e26480ab53e9e",
       "targetHash": "e7725f1ae5f3d86670d1618b879963ffe72c47b024c9e4f2bacfc53cea631ea7",
       "machineHash": "e7725f1ae5f3d86670d1618b879963ffe72c47b024c9e4f2bacfc53cea631ea7",
@@ -316,9 +388,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0026-cell-01": {
+    "b0032-cell-01": {
       "sourceHash": "4f75100c085ab3ef312f498514694695fb83873cd41de6e73a9255885b9a08d3",
       "targetHash": "82a0fe474e4323532bbcf4f9e6288b4b5d976880014c92b6e224b657654346bf",
       "machineHash": "82a0fe474e4323532bbcf4f9e6288b4b5d976880014c92b6e224b657654346bf",
@@ -328,9 +400,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0027-cell-01": {
+    "b0033-cell-01": {
       "sourceHash": "9f5c05a33c4d722bf5fb56dccb3756a0d12cf3fd677d1dc0a275ce0c93dfda66",
       "targetHash": "214c029a6aff89b586b2f4766638b827c7034d6fe5cb4b5d8b4b451c501502d2",
       "machineHash": "214c029a6aff89b586b2f4766638b827c7034d6fe5cb4b5d8b4b451c501502d2",
@@ -340,21 +412,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0028-cell-01": {
+    "b0034-cell-01": {
       "sourceHash": "a40d94c3b164ef46e467619ef48d79a252cffa007314e21178635818e4fbea03",
-      "targetHash": "7ddb29fed213c974eb3117948ec55e1102e774a6fa51b447e3b9deb8139caa15",
-      "machineHash": "7ddb29fed213c974eb3117948ec55e1102e774a6fa51b447e3b9deb8139caa15",
-      "machineText": "Windows, macOS ou Linux; gravador em Go, sem exigir o SDK do Windows.",
+      "targetHash": "afc29694972492b7e74a9280a37f41ba44d495d43f668656c3c186014194895b",
+      "machineHash": "afc29694972492b7e74a9280a37f41ba44d495d43f668656c3c186014194895b",
+      "machineText": "Windows, macOS ou Linux; gerador em Go, sem necessidade do SDK do Windows.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; Go writer, no Windows SDK required.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0029-cell-01": {
+    "b0035-cell-01": {
       "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
       "targetHash": "5ece7e19d38491113ff7fc33193ba9eb7212fa246b2efe37ab77aecb4b6a1f11",
       "machineHash": "5ece7e19d38491113ff7fc33193ba9eb7212fa246b2efe37ab77aecb4b6a1f11",
@@ -364,9 +436,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0030-cell-01": {
+    "b0036-cell-01": {
       "sourceHash": "7252704eccc82d7b68b94d9af526782aae7585afe4fa17924ccf522af84ad985",
       "targetHash": "a4b75d97d54ab9f3bfa0390d9272d9a3a7171a6d6a81ad2d4cc8670f127b7269",
       "machineHash": "a4b75d97d54ab9f3bfa0390d9272d9a3a7171a6d6a81ad2d4cc8670f127b7269",
@@ -376,9 +448,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0031-cell-01": {
+    "b0037-cell-01": {
       "sourceHash": "9d3724853dd0e3545eae4e23d347152ce2b20408983478d466b20b757fa32b82",
       "targetHash": "9106e269400a0ca23214fa5add873432dde0088c183b63cb6a451c05bc5c5234",
       "machineHash": "9106e269400a0ca23214fa5add873432dde0088c183b63cb6a451c05bc5c5234",
@@ -388,9 +460,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0032-cell-01": {
+    "b0038-cell-01": {
       "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
       "targetHash": "5ece7e19d38491113ff7fc33193ba9eb7212fa246b2efe37ab77aecb4b6a1f11",
       "machineHash": "5ece7e19d38491113ff7fc33193ba9eb7212fa246b2efe37ab77aecb4b6a1f11",
@@ -400,33 +472,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0033-cell-01": {
+    "b0039-cell-01": {
       "sourceHash": "a41c5f4d85a579c940bb2041d1069a4b36f3beb4e91467b0949b89e53aa07bec",
-      "targetHash": "e2804493e24c712d547ffd7f02b78e2f622596e5ba3f56f60392acb5acdf0939",
-      "machineHash": "e2804493e24c712d547ffd7f02b78e2f622596e5ba3f56f60392acb5acdf0939",
-      "machineText": "Aplicação e DMG do macOS",
+      "targetHash": "7ba308d68f4fa278e935f675a30103c7c62c813d0d7f2898ade6891116225209",
+      "machineHash": "7ba308d68f4fa278e935f675a30103c7c62c813d0d7f2898ade6891116225209",
+      "machineText": "Aplicativo e DMG do macOS",
       "status": "machine-translated",
       "sourcePreview": "macOS app and DMG",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0034-cell-01": {
+    "b0040-cell-01": {
       "sourceHash": "522e2a8d6893e8559f1b2ff110227445a503e899eb8d414a339b467f88b138c0",
-      "targetHash": "6bef374665f7899a05436fbc810edafc4934a3c78ac6f7cac9a7efcb6a470401",
-      "machineHash": "6bef374665f7899a05436fbc810edafc4934a3c78ac6f7cac9a7efcb6a470401",
-      "machineText": "Windows, macOS ou Linux; montagem em Go, combinação de binários universais e gravador de DMG portátil.",
+      "targetHash": "f6225cfe2dd60c70b1b2646fae2e36670119d53bada5ecdb9c15c778da10528f",
+      "machineHash": "f6225cfe2dd60c70b1b2646fae2e36670119d53bada5ecdb9c15c778da10528f",
+      "machineText": "Windows, macOS ou Linux; montagem em Go, mesclagem de binários universais e gerador portátil de DMG.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0035-cell-01": {
+    "b0041-cell-01": {
       "sourceHash": "b6a740e22d2146b269cee16f25c415ac496fb32c9f2421599ebd6f437234e055",
       "targetHash": "3385c9189291e9660c3362b9eea3c6d8365c084c6fdb0b75809781b6c5065a35",
       "machineHash": "3385c9189291e9660c3362b9eea3c6d8365c084c6fdb0b75809781b6c5065a35",
@@ -436,9 +508,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0036-cell-01": {
+    "b0042-cell-01": {
       "sourceHash": "f1d4c9e8cefe70483cc6ab160c5ac51f2ef8a87b5fae3dea9e52bd42f04f7939",
       "targetHash": "4e097923a70e2a937cf22833aaa1afe5f1fc209ceffbbe64cd4cd3d26f2c7093",
       "machineHash": "4e097923a70e2a937cf22833aaa1afe5f1fc209ceffbbe64cd4cd3d26f2c7093",
@@ -448,33 +520,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0037-cell-01": {
+    "b0043-cell-01": {
       "sourceHash": "558d9e79347e39523130ac03a8fc215621add42103ac69a900da052c81f2ae15",
-      "targetHash": "fc27cbc496cc9526905f3026e81d2ff073ac8d7f1f581d60be2861f9dc563b7a",
-      "machineHash": "fc27cbc496cc9526905f3026e81d2ff073ac8d7f1f581d60be2861f9dc563b7a",
-      "machineText": "Windows, macOS ou Linux; gravadores de pacotes nativos em Go.",
+      "targetHash": "cc16c39d902595e5263d5a418c728ada953fb215b01d9769a4c77dacef3466c9",
+      "machineHash": "cc16c39d902595e5263d5a418c728ada953fb215b01d9769a4c77dacef3466c9",
+      "machineText": "Windows, macOS ou Linux; geradores nativos de pacotes em Go.",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS or Linux; native Go package writers.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0038-cell-01": {
+    "b0044-cell-01": {
       "sourceHash": "aba93fd5e803a97c7b5bf1e5793672cff0c0a02e369185fadda1454f4fef38b6",
-      "targetHash": "ce57af256272b3e09c7edd05ec2e70e5fdca47bca6913a216894b82c5ef2d81d",
-      "machineHash": "ce57af256272b3e09c7edd05ec2e70e5fdca47bca6913a216894b82c5ef2d81d",
-      "machineText": "DEB/RPM usam suas ferramentas externas de assinatura; Arch usa o assinador em Go descrito abaixo. A saída do Void não é assinada.",
+      "targetHash": "b8c030e0e04d9c28b812900fcea66858dda29b7107da34b24c8fe2d3961df94f",
+      "machineHash": "b8c030e0e04d9c28b812900fcea66858dda29b7107da34b24c8fe2d3961df94f",
+      "machineText": "DEB/RPM usam suas ferramentas externas de assinatura; o Arch usa o assinador em Go abaixo. A saída do Void não é assinada.",
       "status": "machine-translated",
       "sourcePreview": "DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0039-cell-01": {
+    "b0045-cell-01": {
       "sourceHash": "869ed18033ca2a490561629f6c1c8af844141fbf168f68b391f425a19460e0ba",
       "targetHash": "ba744b418680bd3c263490065fd0cdcf3825c7f12863d8fa324416747df06daa",
       "machineHash": "ba744b418680bd3c263490065fd0cdcf3825c7f12863d8fa324416747df06daa",
@@ -484,21 +556,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0040-cell-01": {
+    "b0046-cell-01": {
       "sourceHash": "95fc52c4b6f2ca1d6119306875bdeeac831b61da0150945bb78e478a9332997a",
-      "targetHash": "cde9bba2e26a76f03f81c68108540a39f3fa56df7cd59c30b6a46f2add4b8a27",
-      "machineHash": "cde9bba2e26a76f03f81c68108540a39f3fa56df7cd59c30b6a46f2add4b8a27",
-      "machineText": "Host Linux e arquitetura de destino correspondentes; linuxdeploy externo e plugin de implantação GTK.",
+      "targetHash": "c21950239e3154fd3a8fdbcd3f5b5e6936379c1ba9eecca84385fdea17c3fd27",
+      "machineHash": "c21950239e3154fd3a8fdbcd3f5b5e6936379c1ba9eecca84385fdea17c3fd27",
+      "machineText": "Host Linux e arquitetura de destino correspondentes; linuxdeploy externo e plugin de implantação do GTK.",
       "status": "machine-translated",
       "sourcePreview": "Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0041-cell-01": {
+    "b0047-cell-01": {
       "sourceHash": "d3dc0b0795be03eddf75791619e6b58445e94207297a51047981a7145807636b",
       "targetHash": "80f0089b43fb5fdf3900ba0e463cd887aa14dbfcd36f1556fb3d27e329a232be",
       "machineHash": "80f0089b43fb5fdf3900ba0e463cd887aa14dbfcd36f1556fb3d27e329a232be",
@@ -508,81 +580,81 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0042-text-01": {
+    "b0048-text-01": {
       "sourceHash": "69f9a5d3682d44266663e4618e1c16182b40fc38cce881e3540a7a934b965699",
-      "targetHash": "f3173f56d23a4caa247e2b0efa356944c5e474ba2f17ced064224d226f006712",
-      "machineHash": "f3173f56d23a4caa247e2b0efa356944c5e474ba2f17ced064224d226f006712",
-      "machineText": "Os arquivos MSIX do Windows são criados diretamente em Go; a criação de um pacote não assinado não exige o SDK do Windows nem o Docker. A assinatura no Windows ainda exige um host Windows e suas ferramentas de assinatura. O NSIS usa o compilador NSIS externo e aceita definições literais por meio de `packages.nsis.defines`. No macOS, o Wails fornece uma localidade UTF-8 somente ao processo filho do compilador NSIS quando a localidade herdada não é UTF-8; os ambientes do terminal e do aplicativo permanecem inalterados. O instalador NSIS padrão omite o bootstrapper do WebView2 quando todos os executáveis incluídos no pacote são CLI ou servidores. Um executável principal ou auxiliar com interface gráfica mantém o WebView2. Scripts NSIS personalizados mantêm o bootstrapper para preservar a compatibilidade com sua própria lógica de instalação do runtime.",
+      "targetHash": "c9fe06cec1769cd84ccaf61b0a440500113bf0a924eb66204c4d8d15a06a4800",
+      "machineHash": "c9fe06cec1769cd84ccaf61b0a440500113bf0a924eb66204c4d8d15a06a4800",
+      "machineText": "Os arquivos MSIX do Windows são criados diretamente em Go; a criação de um pacote não assinado não exige o SDK do Windows nem o Docker. A assinatura no Windows ainda exige um host Windows e suas ferramentas de assinatura. O NSIS usa o compilador NSIS externo e aceita definições literais por meio de `packages.nsis.defines`. No macOS, o Wails fornece uma localidade UTF-8 somente ao processo filho do compilador NSIS quando a localidade herdada não é UTF-8; os ambientes do terminal e do aplicativo permanecem inalterados. O instalador NSIS padrão omite o bootstrapper do WebView2 quando todos os executáveis empacotados são ferramentas de linha de comando ou servidores. Um executável principal ou complementar com interface gráfica mantém o WebView2. Scripts NSIS personalizados mantêm o bootstrapper para preservar a compatibilidade com sua própria lógica de instalação do runtime.",
       "status": "machine-translated",
       "sourcePreview": "Windows MSIX archives are created directly in Go; creating an unsigned package does not require the …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:53:28Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0043-text-01": {
+    "b0049-text-01": {
       "sourceHash": "5d7cef63606aa728eaa683f15b25456fc23542855febfaee5e1d9d4c6df411dc",
-      "targetHash": "8ec9af5f883383b217a5fd32958e3a8838c8d9815a4324fe4266106bf0bb5926",
-      "machineHash": "8ec9af5f883383b217a5fd32958e3a8838c8d9815a4324fe4266106bf0bb5926",
-      "machineText": "O Linux é compatível com pacotes AppImage, DEB, RPM, Arch Linux e Void. Os AppImages mantêm o limite externo do linuxdeploy e do plugin GTK. Defina `packages.appimage.update_info` para solicitar um arquivo zsync e `packages.appimage.checksum: true` para um arquivo SHA256. Os arquivos auxiliares são restaurados do cache de pacotes e listados no recibo de artefatos junto com o AppImage. Atualmente, o empacotamento de AppImage exige Linux e arquiteturas correspondentes no host e no destino. A detecção de GTK não encontra bibliotecas carregadas dinamicamente por uma interface gráfica escrita somente em Go; portanto, esse adaptador ainda não é compatível com a implantação de interfaces gráficas escritas somente em Go. Use um dos formatos de gerenciadores de pacotes do Linux para esse modo de build.",
+      "targetHash": "d5c9feb94c88eb505df14e47b6d5eab1a093532d5263c6891f15505f314cfe80",
+      "machineHash": "d5c9feb94c88eb505df14e47b6d5eab1a093532d5263c6891f15505f314cfe80",
+      "machineText": "O Linux oferece suporte a pacotes AppImage, DEB, RPM, Arch Linux e Void. Os AppImages mantêm o limite externo do linuxdeploy e do plugin GTK. Defina `packages.appimage.update_info` para solicitar um arquivo zsync e `packages.appimage.checksum: true` para solicitar um arquivo SHA256. Os arquivos auxiliares são restaurados do cache de pacotes e relacionados no recibo de artefatos junto com o AppImage. Atualmente, o empacotamento de AppImage exige Linux e correspondência entre as arquiteturas do host e do destino. A detecção do GTK não encontra bibliotecas carregadas dinamicamente por uma interface gráfica implementada inteiramente em Go; portanto, este adaptador ainda não oferece suporte à implantação desse tipo de interface. Use um dos formatos de gerenciador de pacotes do Linux para esse modo de compilação.",
       "status": "machine-translated",
       "sourcePreview": "Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain the external linux…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0044-text-01": {
+    "b0050-text-01": {
       "sourceHash": "a1f799d1b5a7af1b502fecd1f019a0c81fa8e9b36c55e50f9e212db66ed4e82c",
-      "targetHash": "382cbffca31ae1849ddc1dd6a3d5c38f3bfb2ff761906ce2cc5558e8e9aae7b1",
-      "machineHash": "382cbffca31ae1849ddc1dd6a3d5c38f3bfb2ff761906ce2cc5558e8e9aae7b1",
-      "machineText": "Os pacotes Arch preservam pré-lançamentos nos metadados nativos do pacote; por exemplo, `1.2.3-beta.2` torna-se `1.2.3beta.2-1`, que é ordenado antes da versão final. As dependências do Void aceitam nomes simples de pacotes, como `gtk4`, normalizados para `gtk4\u003e=0`; comparações explícitas de versão e valores `name-version_revision` completos são preservados. Use nomes de pacotes do Void, não nomes de arquivos de biblioteca.",
+      "targetHash": "8142e74c854c73c9b05ad07cc4682669587501f63940cc5dbb386cc380212913",
+      "machineHash": "8142e74c854c73c9b05ad07cc4682669587501f63940cc5dbb386cc380212913",
+      "machineText": "Os pacotes Arch preservam versões de pré-lançamento nos metadados nativos do pacote; por exemplo, `1.2.3-beta.2` se torna `1.2.3beta.2-1`, que é ordenado antes da versão final. As dependências do Void aceitam nomes de pacotes simples, como `gtk4`, normalizados para `gtk4\u003e=0`; comparações explícitas de versão e valores `name-version_revision` completos são preservados. Use nomes de pacotes do Void, não nomes de arquivos de biblioteca.",
       "status": "machine-translated",
       "sourcePreview": "Arch packages preserve prereleases in native package metadata, for example `1.2.3-beta.2` becomes `1…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0045-text-01": {
+    "b0051-text-01": {
       "sourceHash": "0e09095d765b5190ee6aaf743e177eaa49d9dc1e50bc6877105cd3ce72771ed5",
-      "targetHash": "5262447671d62ee78fa0a6917365f25c5a1b7670c9f07c778b7e281f5ac4a6d3",
-      "machineHash": "5262447671d62ee78fa0a6917365f25c5a1b7670c9f07c778b7e281f5ac4a6d3",
-      "machineText": "Para criar um pacote Arch e uma assinatura separada, use um arquivo exportado de chave privada PGP com codificação ASCII armor e, opcionalmente, especifique o nome de uma variável de ambiente que contenha a frase secreta:",
+      "targetHash": "8b39da87a958741722119e944407b07d7468e7f907bb87276f5cec84ba1e648e",
+      "machineHash": "8b39da87a958741722119e944407b07d7468e7f907bb87276f5cec84ba1e648e",
+      "machineText": "Para criar um pacote Arch e uma assinatura separada, use um arquivo exportado de chave privada PGP em formato ASCII Armor e, opcionalmente, indique o nome de uma variável de ambiente que contenha a frase secreta:",
       "status": "machine-translated",
       "sourcePreview": "To create an Arch package and detached signature, use an exported armored PGP private-key file and o…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0046-text-01": {
+    "b0052-text-01": {
       "sourceHash": "704f658453c7b1cad30561999877190bf0f77b24da12855554f62c32bf99da2b",
-      "targetHash": "c1b171c9489b33d83068095caa46dfbe370accc5a20e4278d5d53ef1468d9415",
-      "machineHash": "c1b171c9489b33d83068095caa46dfbe370accc5a20e4278d5d53ef1468d9415",
-      "machineText": "Defina a variável de ambiente indicada no seu ambiente local ou no armazenamento de segredos da CI e execute `wails3 build release`. Omita `credential` se a chave não estiver criptografada. O assinador em Go é executado em todos os hosts de desktop compatíveis e não requer GPG. Ele publica o `.pkg.tar.zst` original e um `.pkg.tar.zst.sig` no mesmo diretório; ambos são registrados separadamente no recibo de artefatos. O conteúdo da chave não é preparado nem armazenado no cache de compilação. As assinaturas e sua publicação nunca são reutilizadas do cache. Se a assinatura falhar, o par publicado anteriormente será preservado; se a instalação de qualquer um dos arquivos falhar, a publicação reverterá ambos. Isso não torna atômicas, para leitores simultâneos, duas operações de renomeação no sistema de arquivos.",
+      "targetHash": "a59d64d558334e927f5d9c7bea49dfcaae000eadfa77d17f558c711d55c3cc28",
+      "machineHash": "a59d64d558334e927f5d9c7bea49dfcaae000eadfa77d17f558c711d55c3cc28",
+      "machineText": "Defina a variável de ambiente indicada no seu ambiente local ou no repositório de segredos da CI e execute `wails3 build release`. Omita `credential` se a chave não estiver criptografada. O assinador em Go é executado em todos os hosts de desktop compatíveis e não exige GPG. Ele publica o `.pkg.tar.zst` original e um arquivo `.pkg.tar.zst.sig` no mesmo diretório; ambos são registrados separadamente no recibo de artefatos. O conteúdo da chave não é preparado nem armazenado no cache de compilação. As assinaturas e sua publicação nunca são reutilizadas do cache. Se a assinatura falhar, o par publicado anteriormente será preservado; se a instalação de qualquer um dos arquivos falhar, a publicação reverterá os dois. Isso não torna atômicas para leitores simultâneos duas operações de renomeação no sistema de arquivos.",
       "status": "machine-translated",
       "sourcePreview": "Set the named environment variable through your local environment or CI secret store, then run `wail…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0047-text-01": {
+    "b0053-text-01": {
       "sourceHash": "4ce189198de7ebfe8b0d03a510a71259552abcb52899dd94efcf321ffb11540f",
-      "targetHash": "9502e6cfbd390dc25a34ced1882820e70652c849d8b3ea91f0c64212490aaf4f",
-      "machineHash": "9502e6cfbd390dc25a34ced1882820e70652c849d8b3ea91f0c64212490aaf4f",
-      "machineText": "Os pacotes de aplicativo do macOS incluem programas auxiliares. Defina `darwin.microphone_usage_description` para adicionar o texto de uso e, quando nenhum arquivo personalizado de direitos for fornecido, o direito de entrada de áudio. As fontes personalizadas de plist e de direitos permanecem inalteradas. A assinatura e a notarização usam as ferramentas e credenciais existentes da Apple no macOS; a notarização requer um perfil de notário real. As saídas assinadas mantêm a extensão da plataforma, por exemplo, `notes.signed.app` e `notes.signed.dmg`.",
+      "targetHash": "c0848877b3d9113bdc7a8cefa724636a150d1a2a6b9cef7cc315b45006f7f969",
+      "machineHash": "c0848877b3d9113bdc7a8cefa724636a150d1a2a6b9cef7cc315b45006f7f969",
+      "machineText": "Os pacotes de aplicativos do macOS incluem programas complementares. Defina `darwin.microphone_usage_description` para adicionar o texto de uso e, quando nenhum arquivo de direitos personalizado for fornecido, o direito de entrada de áudio. As fontes personalizadas de plist e de direitos permanecem inalteradas. A assinatura e a notarização usam as ferramentas e credenciais existentes da Apple no macOS; a notarização exige um perfil de notário real. As saídas assinadas mantêm a extensão da plataforma, por exemplo, `notes.signed.app` e `notes.signed.dmg`.",
       "status": "machine-translated",
       "sourcePreview": "macOS app bundles include companion programs. Set `darwin.microphone_usage_description` to add the u…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0048-heading-01": {
+    "b0054-heading-01": {
       "sourceHash": "3c47edf354269c8a13572aeb933f90deec93cf85f632db7004f3eb5f0cbae224",
       "targetHash": "cb3337acd4dd44d0fc7e29f6d10ad52e7e5d0743d3ca94f210b707cecb32b7b4",
       "machineHash": "cb3337acd4dd44d0fc7e29f6d10ad52e7e5d0743d3ca94f210b707cecb32b7b4",
@@ -592,9 +664,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0049-text-01": {
+    "b0055-text-01": {
       "sourceHash": "a011a59f57c1cb68dd46ecec895e68904030c1127aba9e8b583d5558e52ef34a",
       "targetHash": "f568329ef254e116cf873aecf6052a70284e848f90964626348823b5f79fcb9f",
       "machineHash": "f568329ef254e116cf873aecf6052a70284e848f90964626348823b5f79fcb9f",
@@ -604,9 +676,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0050-cell-01": {
+    "b0056-cell-01": {
       "sourceHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c",
       "targetHash": "143e52685e82bc8ca4eba61c639056149c049cb9b961d29241c1499c93816b9b",
       "machineHash": "143e52685e82bc8ca4eba61c639056149c049cb9b961d29241c1499c93816b9b",
@@ -616,9 +688,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0051-cell-01": {
+    "b0057-cell-01": {
       "sourceHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6",
       "targetHash": "1dfbdde6410ab51a811ae7e551c89cff5e8cb7153b7a28a9e178584430f844d4",
       "machineHash": "1dfbdde6410ab51a811ae7e551c89cff5e8cb7153b7a28a9e178584430f844d4",
@@ -628,141 +700,177 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0052-cell-01": {
+    "b0058-cell-01": {
       "sourceHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
       "targetHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
+      "machineHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
+      "machineText": "`r`",
       "status": "protected",
-      "sourcePreview": "`r`"
+      "sourcePreview": "`r`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0053-cell-01": {
+    "b0059-cell-01": {
       "sourceHash": "523854e094232949a66ba339e806d93540fe1d76148a2a2c3c2d50e1596e5640",
-      "targetHash": "a9bbe3992436714ca502802b55e13d694d005360e86e5499f57024b01f3f709c",
-      "machineHash": "a9bbe3992436714ca502802b55e13d694d005360e86e5499f57024b01f3f709c",
-      "machineText": "Força uma nova compilação e reinicialização, incluindo um backend inalterado.",
+      "targetHash": "ba2a76bdf9ab1ca7ab86c8dec07d94a8f7a5383129e16a9e162b78edbc4f8de5",
+      "machineHash": "ba2a76bdf9ab1ca7ab86c8dec07d94a8f7a5383129e16a9e162b78edbc4f8de5",
+      "machineText": "Forçar uma nova compilação e reinicialização, inclusive quando o backend não tiver sido alterado.",
       "status": "machine-translated",
       "sourcePreview": "Force a rebuild and restart, including an unchanged backend.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0054-cell-01": {
+    "b0060-cell-01": {
       "sourceHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
       "targetHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
+      "machineHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
+      "machineText": "`b`",
       "status": "protected",
-      "sourcePreview": "`b`"
+      "sourcePreview": "`b`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0055-cell-01": {
+    "b0061-cell-01": {
       "sourceHash": "b986d19825ee26ad251ae3340fb8e2678809148879290d6af25a297ed3e14c06",
-      "targetHash": "1dc3c679ea3e0bca159ff0336ffdd7b651320eae6813be283d5a041c53b6a70f",
-      "machineHash": "1dc3c679ea3e0bca159ff0336ffdd7b651320eae6813be283d5a041c53b6a70f",
-      "machineText": "Gera novamente os bindings e recompila.",
+      "targetHash": "d85cbccd5c63072e2b50cfe166f3dc9b872993824f2be8ee1d809aa593e0164f",
+      "machineHash": "d85cbccd5c63072e2b50cfe166f3dc9b872993824f2be8ee1d809aa593e0164f",
+      "machineText": "Gerar novamente os bindings e recompilar.",
       "status": "machine-translated",
       "sourcePreview": "Regenerate bindings and rebuild.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0056-cell-01": {
+    "b0062-cell-01": {
       "sourceHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
       "targetHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
+      "machineHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
+      "machineText": "`f`",
       "status": "protected",
-      "sourcePreview": "`f`"
+      "sourcePreview": "`f`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0057-cell-01": {
+    "b0063-cell-01": {
       "sourceHash": "d720082578a66f8f57245808ec6a28fab735a52b45946ad3cc3bc67b467b9653",
-      "targetHash": "16788cb7d8c53b6ae2cefdab70294a9fe8db78203458af1eb4233f1fe4a2c1b8",
-      "machineHash": "16788cb7d8c53b6ae2cefdab70294a9fe8db78203458af1eb4233f1fe4a2c1b8",
-      "machineText": "Reinicia o frontend.",
+      "targetHash": "ee53d85f85048f99e8522950a5f97219e9a36778db59daa1ea74f4acf0d13608",
+      "machineHash": "ee53d85f85048f99e8522950a5f97219e9a36778db59daa1ea74f4acf0d13608",
+      "machineText": "Reiniciar o frontend.",
       "status": "machine-translated",
       "sourcePreview": "Restart the frontend.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0058-cell-01": {
+    "b0064-cell-01": {
       "sourceHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
       "targetHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
+      "machineHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
+      "machineText": "`c`",
       "status": "protected",
-      "sourcePreview": "`c`"
+      "sourcePreview": "`c`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0059-cell-01": {
+    "b0065-cell-01": {
       "sourceHash": "22ec5d506bc373f6d2e56716743b3b0b268f1ab3c17aae92f5d9040f51939cb8",
-      "targetHash": "67aa7bbf720a8c4974ddee80b5071801a9f46012ba90e2f4d4e7c5ecde6d1916",
-      "machineHash": "67aa7bbf720a8c4974ddee80b5071801a9f46012ba90e2f4d4e7c5ecde6d1916",
-      "machineText": "Limpa o terminal.",
+      "targetHash": "ba909e3b0a912d773ff49ad08f5cdbbc698bc223abe092a7677b75a7cfc09976",
+      "machineHash": "ba909e3b0a912d773ff49ad08f5cdbbc698bc223abe092a7677b75a7cfc09976",
+      "machineText": "Limpar o terminal.",
       "status": "machine-translated",
       "sourcePreview": "Clear the terminal.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0060-cell-01": {
+    "b0066-cell-01": {
       "sourceHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
       "targetHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
+      "machineHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
+      "machineText": "`q`",
       "status": "protected",
-      "sourcePreview": "`q`"
+      "sourcePreview": "`q`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0061-cell-01": {
+    "b0067-cell-01": {
       "sourceHash": "cc73e262d30473b46380386a01f53168c0029f277e14897d5322d8968ea736d1",
-      "targetHash": "387529d512ded3ca8e604ab2f0a6ab3cbeb487b9af29944320756d88640cae04",
-      "machineHash": "387529d512ded3ca8e604ab2f0a6ab3cbeb487b9af29944320756d88640cae04",
-      "machineText": "Encerra a sessão e seus processos filhos.",
+      "targetHash": "604f7f4d235935a62aede99a204f41d2bb05b409b354c06c502d53d06fdbcc88",
+      "machineHash": "604f7f4d235935a62aede99a204f41d2bb05b409b354c06c502d53d06fdbcc88",
+      "machineText": "Encerrar a sessão e seus processos filhos.",
       "status": "machine-translated",
       "sourcePreview": "Stop the session and its child processes.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0062-cell-01": {
+    "b0068-cell-01": {
       "sourceHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
       "targetHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
+      "machineHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
+      "machineText": "`h`",
       "status": "protected",
-      "sourcePreview": "`h`"
+      "sourcePreview": "`h`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0063-cell-01": {
+    "b0069-cell-01": {
       "sourceHash": "c987906121e403aef5e189d81bc2bfbb6f2dd9714c4d6a1e549e1cf3ac60c603",
-      "targetHash": "f5f9573eb7fa6d8ea2fbdad0d212d40a5d89a79a558ffee65eb4dd8bf4c4e6f0",
-      "machineHash": "f5f9573eb7fa6d8ea2fbdad0d212d40a5d89a79a558ffee65eb4dd8bf4c4e6f0",
-      "machineText": "Exibe os controles.",
+      "targetHash": "dbba276add51ec3d856f2198ce31fb8c061cba4a6e2bc2403136b6d938e4e111",
+      "machineHash": "dbba276add51ec3d856f2198ce31fb8c061cba4a6e2bc2403136b6d938e4e111",
+      "machineText": "Exibir os controles.",
       "status": "machine-translated",
       "sourcePreview": "Show controls.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0064-text-01": {
+    "b0070-text-01": {
       "sourceHash": "911cc158f6be95f0897492f9c190424420584b41d627e72677e8876004274f92",
-      "targetHash": "2915777dbe618c340c5657f519cf4c958f33f456e6c772dc29e5ec0eda13ea27",
-      "machineHash": "2915777dbe618c340c5657f519cf4c958f33f456e6c772dc29e5ec0eda13ea27",
-      "machineText": "Se uma compilação falhar, o aplicativo atual continuará em execução. Os controles requerem um terminal interativo; a entrada redirecionada por pipe não altera o comportamento da sessão.",
+      "targetHash": "fc8b1f7fa3726831e516e480f5370a2b877a56bd253f97b273be5266f79e5cc8",
+      "machineHash": "fc8b1f7fa3726831e516e480f5370a2b877a56bd253f97b273be5266f79e5cc8",
+      "machineText": "Quando uma compilação falha, o aplicativo atual continua em execução. Os controles exigem um terminal interativo; a entrada redirecionada por pipe não altera o comportamento da sessão.",
       "status": "machine-translated",
       "sourcePreview": "Failed builds keep the current application running. Controls require an interactive terminal; piped …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0065-heading-01": {
+    "b0071-heading-01": {
       "sourceHash": "9af1b890d971c5f094709524b04bb3eec300e2d664595b0a5f1108308abaf948",
-      "targetHash": "7c554af1fb0744695a6b1acb3323b6852e120c1172cc390d618993dd6e72cc27",
-      "machineHash": "7c554af1fb0744695a6b1acb3323b6852e120c1172cc390d618993dd6e72cc27",
-      "machineText": "Inspecione o trabalho antes de executá-lo",
+      "targetHash": "929dd6c66532d7ea9e482a200617f375219c09799fe314c324dc00e99b5d45ed",
+      "machineHash": "929dd6c66532d7ea9e482a200617f375219c09799fe314c324dc00e99b5d45ed",
+      "machineText": "Inspecionar o trabalho antes de executá-lo",
       "status": "machine-translated",
       "sourcePreview": "Inspect work before running it",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0066-text-01": {
+    "b0072-text-01": {
       "sourceHash": "18fd75c7c8d901824e0ce01d11243cf94b817b6e8eecd68c19ff764d16eb135a",
       "targetHash": "6dd4792f87fb813fa46c740eac9db1af2075a30a6090e031d27741aa60c1dace",
       "machineHash": "6dd4792f87fb813fa46c740eac9db1af2075a30a6090e031d27741aa60c1dace",
@@ -772,177 +880,177 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0067-heading-01": {
+    "b0073-heading-01": {
       "sourceHash": "8794e6408e37792c01a6ba137d2d37a7236e6a86e5dbc4a3c4883c8f974f474e",
-      "targetHash": "eef6f2ab66fe87ac1798562439b757805cf4aa851d61af9f98912979e411a324",
-      "machineHash": "eef6f2ab66fe87ac1798562439b757805cf4aa851d61af9f98912979e411a324",
-      "machineText": "Valide a configuração sem compilar",
+      "targetHash": "d27237d0d72c64dee5286831e56fae566435309d24dc5c98d7728bfcda3021d0",
+      "machineHash": "d27237d0d72c64dee5286831e56fae566435309d24dc5c98d7728bfcda3021d0",
+      "machineText": "Validar a configuração sem compilar",
       "status": "machine-translated",
       "sourcePreview": "Validate configuration without building",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0068-text-01": {
+    "b0074-text-01": {
       "sourceHash": "7227be62b57650f04560a5087aaf3ac0f3d7f7395a57f87c10afd0c35adac305",
-      "targetHash": "d96c3796a7efad7dc4ac6ce3879844d8a95678eb07234c8aafbca4141077e70d",
-      "machineHash": "d96c3796a7efad7dc4ac6ce3879844d8a95678eb07234c8aafbca4141077e70d",
-      "machineText": "Use o comando de verificação preliminar dedicado na CI, em uma tarefa do editor ou antes de confirmar alterações na configuração. Sem um perfil, ele valida o manifesto base e todos os perfis nomeados; com um perfil, verifica apenas essa solicitação completa:",
+      "targetHash": "67fb3c0e965319b69261cbbec9e5bc237017c0f19d7607ab4402e760fe9ccbd2",
+      "machineHash": "67fb3c0e965319b69261cbbec9e5bc237017c0f19d7607ab4402e760fe9ccbd2",
+      "machineText": "Use o comando dedicado de pré-verificação na CI, em uma tarefa do editor ou antes de fazer commit da configuração. Sem um perfil, ele valida o manifesto base e todos os perfis nomeados; com um perfil, verifica apenas essa solicitação completa:",
       "status": "machine-translated",
       "sourcePreview": "Use the dedicated preflight command in CI, an editor task, or before committing configuration. With …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0069-text-01": {
+    "b0075-text-01": {
       "sourceHash": "372aa4e026f284362ca487a7c7fba397e935c758aea24724b339652d57e46d24",
-      "targetHash": "f3e75d882d843d97f063248922112780742a5511c728bcc4cfccd1b86ecdec20",
-      "machineHash": "f3e75d882d843d97f063248922112780742a5511c728bcc4cfccd1b86ecdec20",
-      "machineText": "Falhas de sintaxe, esquema, semântica, caminho, destino, formato, assinatura, planejador e recursos do host definidos pela configuração usam o mesmo renderizador de diagnósticos que Build e Dev. Os diagnósticos identificam o campo e o intervalo no código-fonte, exibem a linha do código-fonte e um acento circunflexo e incluem uma sugestão de correção quando ela for útil. Os valores de ambiente são ocultados nos trechos do código-fonte exibidos nos diagnósticos. Falhas do host causadas apenas por opções da linha de comando continuam sendo erros comuns de comando, em vez de serem relatadas incorretamente como YAML inválido.",
+      "targetHash": "2389b8d1745b5218e0d8620b93e8c3f3bd7e535ab5749c797a757befd9e6ec27",
+      "machineHash": "2389b8d1745b5218e0d8620b93e8c3f3bd7e535ab5749c797a757befd9e6ec27",
+      "machineText": "Falhas de sintaxe, esquema, semântica, caminho, destino, formato, assinatura, planejador e recursos do host definidos pela configuração usam o mesmo renderizador de diagnósticos de Build e Dev. Os diagnósticos identificam o campo e o intervalo no código-fonte, exibem a linha correspondente e um acento circunflexo e incluem uma sugestão de correção quando ela é útil. Os valores de ambiente são ocultados dos trechos do código-fonte exibidos nos diagnósticos. Falhas do host causadas apenas por opções da linha de comando continuam sendo erros comuns de comando, em vez de serem incorretamente relatadas como YAML inválido.",
       "status": "machine-translated",
       "sourcePreview": "Syntax, schema, semantic, path, target, format, signing, planner and configuration-owned host-capabi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0070-heading-01": {
+    "b0076-heading-01": {
       "sourceHash": "12448bd4b73db79862be5374f3ad0277af8e2541edaf641866da221502ab7ff1",
-      "targetHash": "98f72c629474c115ddca7a21f794728f4bf9adddf824dc02e6051e3ddeb88d3b",
-      "machineHash": "98f72c629474c115ddca7a21f794728f4bf9adddf824dc02e6051e3ddeb88d3b",
-      "machineText": "Use ativos pertencentes ao projeto",
+      "targetHash": "9cda6312663fd69779ad5c1ef17293c79140f9e78cbdcd69bbfb8a2574e3536f",
+      "machineHash": "9cda6312663fd69779ad5c1ef17293c79140f9e78cbdcd69bbfb8a2574e3536f",
+      "machineText": "Usar ativos pertencentes ao projeto",
       "status": "machine-translated",
       "sourcePreview": "Use project-owned assets",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0071-text-01": {
+    "b0077-text-01": {
       "sourceHash": "2690d985e8763b02fc5b4cead626d4dcafca82772d4be81a8f888853953e89cc",
-      "targetHash": "8d587c458986e6a7c4907c67e0a5fa7bef8cf601eaee5b7e9845e3eb6b304493",
-      "machineHash": "8d587c458986e6a7c4907c67e0a5fa7bef8cf601eaee5b7e9845e3eb6b304493",
-      "machineText": "Os caminhos do manifesto fazem referência a arquivos que pertencem a você, como ícones, manifestos de plataforma, modelos de pacote e scripts de manutenção. O Wails nunca edita essas fontes. Ele as copia para um espaço de trabalho descartável em `.wails/` antes que uma ferramenta as utilize. Os artefatos finais são colocados em `build.output`, e um recibo verificado é gravado em `.wails/artifacts/receipt.json`.",
+      "targetHash": "e0398c3a576908af55afe470c2d74daaf419dcb20c8669330068c725ee347ad6",
+      "machineHash": "e0398c3a576908af55afe470c2d74daaf419dcb20c8669330068c725ee347ad6",
+      "machineText": "Os caminhos do manifesto fazem referência a arquivos que pertencem a você, como ícones, manifestos de plataforma, modelos de pacote e scripts de manutenção. O Wails nunca edita essas fontes. Ele as copia para um espaço de trabalho `.wails/` descartável antes que uma ferramenta as consuma. Os artefatos finais são armazenados em `build.output`, e um recibo verificado é gravado em `.wails/artifacts/receipt.json`.",
       "status": "machine-translated",
       "sourcePreview": "Manifest paths refer to files you own, such as icons, platform manifests, package templates and main…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0072-heading-01": {
+    "b0078-heading-01": {
       "sourceHash": "d5b9acbb02c276184569f4f7770cf628a8763a48ea88c0345dbc18257f0e8618",
-      "targetHash": "f21f458edf9eb94b7b925f6b6d03af903da11d05754e483ccc60212da426e406",
-      "machineHash": "f21f458edf9eb94b7b925f6b6d03af903da11d05754e483ccc60212da426e406",
-      "machineText": "Implante no Android",
+      "targetHash": "f543898bfec2e5bce6ff307d6e30fe4a4385e38c303d7640370b147084915ca5",
+      "machineHash": "f543898bfec2e5bce6ff307d6e30fe4a4385e38c303d7640370b147084915ca5",
+      "machineText": "Implantar no Android",
       "status": "machine-translated",
       "sourcePreview": "Deploy to Android",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0073-text-01": {
+    "b0079-text-01": {
       "sourceHash": "c628c6b63404c420e8e4456d9cc7b9b9feaef79e38d748a28e884fcf57f70035",
-      "targetHash": "2f881a55fabc09f6e7e600c64a9095e2a67c4c59e38bc7158d12303798b0710d",
-      "machineHash": "2f881a55fabc09f6e7e600c64a9095e2a67c4c59e38bc7158d12303798b0710d",
-      "machineText": "Os perfis de produção para Android geram AABs. Para implantação local, o Wails compila internamente um APK de depuração específico para a ABI, instala-o com o ADB e inicia o aplicativo:",
+      "targetHash": "f657f24f573110c70175b6034ac9b886ab31f7fd323d8dc17af9cdbdbcd1c242",
+      "machineHash": "f657f24f573110c70175b6034ac9b886ab31f7fd323d8dc17af9cdbdbcd1c242",
+      "machineText": "Os perfis de produção do Android geram AABs. Para implantação local, o Wails compila internamente um APK de depuração específico para a ABI, instala-o com o ADB e inicia o aplicativo:",
       "status": "machine-translated",
       "sourcePreview": "Production Android profiles produce AABs. For local deployment, Wails builds an ABI-specific debug A…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0074-text-01": {
+    "b0080-text-01": {
       "sourceHash": "b2f77afc81e69752f694f54716889014ad9b462578fc6655727fcc423c5d3654",
-      "targetHash": "b80be4d085bf81e95b140162e090597e2c9a0e2cf2c4ea4964fe743e1536e596",
-      "machineHash": "b80be4d085bf81e95b140162e090597e2c9a0e2cf2c4ea4964fe743e1536e596",
-      "machineText": "Sem um seletor explícito, um terminal interativo apresenta os dispositivos conectados e os Android Virtual Devices configurados. A automação deve fornecer `--device` ou `--emulator` quando houver vários destinos disponíveis.",
+      "targetHash": "7a2fda2ecef867eadf8a53e17b13b4290e9f7c9f3fe549bc8f69eb925574ec89",
+      "machineHash": "7a2fda2ecef867eadf8a53e17b13b4290e9f7c9f3fe549bc8f69eb925574ec89",
+      "machineText": "Sem um seletor explícito, um terminal interativo apresenta os dispositivos conectados e os Android Virtual Devices configurados. A automação com vários destinos disponíveis deve fornecer `--device` ou `--emulator`.",
       "status": "machine-translated",
       "sourcePreview": "Without an explicit selector, an interactive terminal offers connected devices and configured Androi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0075-text-01": {
+    "b0081-text-01": {
       "sourceHash": "9886beab4065f92f7c525c44b95fce94040cf936318a014ba277fbd5eb29acce",
-      "targetHash": "d545bb455f1cef4476b10d54f2c5e1f4d170601337ef1153efa4dc16ef75bad1",
-      "machineHash": "d545bb455f1cef4476b10d54f2c5e1f4d170601337ef1153efa4dc16ef75bad1",
-      "machineText": "Anexe um fluxo de logs com escopo de aplicativo e monitore o destino até que o aplicativo seja encerrado ou você pressione Ctrl+C:",
+      "targetHash": "a3e76579713893a6a8599c0b8d19e873721d243eb91adffd8a2627e6f84ed61f",
+      "machineHash": "a3e76579713893a6a8599c0b8d19e873721d243eb91adffd8a2627e6f84ed61f",
+      "machineText": "Anexe um fluxo de logs restrito ao aplicativo e monitore o destino até que o aplicativo seja encerrado ou você pressione Ctrl+C:",
       "status": "machine-translated",
       "sourcePreview": "Attach an application-scoped log stream and monitor the target until the app exits or you press Ctrl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0076-text-01": {
+    "b0082-text-01": {
       "sourceHash": "d22fe66aeb183007b3727d3129e3abd951342e3c4d0743242e77da26844106e5",
-      "targetHash": "733e20a4d91b9edc3edc1faa258fdb2cb60d6191e22c3f72e6f22df5e13be076",
-      "machineHash": "733e20a4d91b9edc3edc1faa258fdb2cb60d6191e22c3f72e6f22df5e13be076",
-      "machineText": "As execuções anexadas acompanham a reinicialização do aplicativo e informam desconexões do destino ou transições para o estado offline. Por padrão, os emuladores permanecem em execução para permitir iterações rápidas. `--stop-emulator` é explícito, requer `--logs` e encerra somente um destino que seja emulador quando a sessão anexada termina. Se o Wails iniciar um novo emulador, mas a prontidão da inicialização falhar ou for cancelada, ele encerrará esse processo automaticamente.",
+      "targetHash": "be0554b39aab1c56c7127b3c9bf6205add898f18b153c982397019f4fadde7bd",
+      "machineHash": "be0554b39aab1c56c7127b3c9bf6205add898f18b153c982397019f4fadde7bd",
+      "machineText": "As execuções anexadas acompanham a reinicialização do aplicativo e informam desconexões do destino ou transições para o estado offline. Por padrão, os emuladores continuam em execução para agilizar as iterações. `--stop-emulator` é explícito, exige `--logs` e, ao término da sessão anexada, interrompe somente um destino que seja emulador. Se o Wails iniciar um novo emulador, mas a verificação de prontidão da inicialização falhar ou for cancelada, ele encerrará esse processo automaticamente.",
       "status": "machine-translated",
       "sourcePreview": "Attached runs follow an application restart and report target disconnects or offline transitions. Em…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0077-heading-01": {
+    "b0083-heading-01": {
       "sourceHash": "558c2173a537c0f6d30ff4a937bc564c9600d5bec08d8079fdc637b17b620104",
-      "targetHash": "c484aea6258b2a0606fc87e7b950f38f6c60d2ca58510c7daeec1cd20e865c75",
-      "machineHash": "c484aea6258b2a0606fc87e7b950f38f6c60d2ca58510c7daeec1cd20e865c75",
-      "machineText": "Execute hooks de ciclo de vida delimitados",
+      "targetHash": "a21181e276937cb15dea7b8aad79c4b4c65b8e5171dee6818c217d1ab35021ca",
+      "machineHash": "a21181e276937cb15dea7b8aad79c4b4c65b8e5171dee6818c217d1ab35021ca",
+      "machineText": "Executar hooks de ciclo de vida com escopo limitado",
       "status": "machine-translated",
       "sourcePreview": "Run bounded lifecycle hooks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0078-text-01": {
+    "b0084-text-01": {
       "sourceHash": "48c054d2beed84b71f101603cc38306ceb5e8de72c1c8896f9f9f8ba5be25baa",
-      "targetHash": "9b331363e6f60682a31b2cd7721e8900af73bec1af6e4b8e4b15c4e5c2a1f5b4",
-      "machineHash": "9b331363e6f60682a31b2cd7721e8900af73bec1af6e4b8e4b15c4e5c2a1f5b4",
-      "machineText": "A interface experimental de hooks invoca um script pertencente ao projeto em cada fase declarada. Um hook não é um comando de shell: o Wails executa o arquivo diretamente a partir da raiz do projeto, a menos que `directory` esteja definido.",
+      "targetHash": "82489e7f2b2d176af659a8dcacee9b49bd4f5910c5bdf2b5a2c5885931bd96e3",
+      "machineHash": "82489e7f2b2d176af659a8dcacee9b49bd4f5910c5bdf2b5a2c5885931bd96e3",
+      "machineText": "A interface experimental de hooks invoca um script pertencente ao projeto em cada fase declarada. Um hook não é um comando do shell: o Wails executa o arquivo diretamente, a partir da raiz do projeto, a menos que `directory` esteja definido.",
       "status": "machine-translated",
       "sourcePreview": "The experimental hook surface invokes one project-owned script at each declared phase. A hook is not…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0079-text-01": {
+    "b0085-text-01": {
       "sourceHash": "22dac4dc8a943d3ce01460b0f526ff07c5d0e20058ed4af7721310d3abb70f9d",
-      "targetHash": "7b2508a2ea1d823965a424dab4202f957417264a993ee4d89156f04f504cf229",
-      "machineHash": "7b2508a2ea1d823965a424dab4202f957417264a993ee4d89156f04f504cf229",
-      "machineText": "Em hosts Unix, o script deve ser executável e começar com um shebang. Hosts Windows aceitam scripts `.cmd`, `.bat` e `.ps1` por meio de adaptadores fixos de interpretador; o Wails não analisa comandos de shell embutidos em nenhuma das plataformas.",
+      "targetHash": "817c8d5325250e976bcefba40d0c5fd5df17fec36577b410a57b9805b248f981",
+      "machineHash": "817c8d5325250e976bcefba40d0c5fd5df17fec36577b410a57b9805b248f981",
+      "machineText": "Em hosts Unix, o script deve ser executável e começar com um shebang. Hosts Windows aceitam scripts `.cmd`, `.bat` e `.ps1` por meio de adaptadores fixos de interpretador; o Wails não analisa comandos de shell inline em nenhuma das plataformas.",
       "status": "machine-translated",
       "sourcePreview": "On Unix hosts the script must be executable and start with a shebang. Windows hosts accept `.cmd`, `…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0080-text-01": {
+    "b0086-text-01": {
       "sourceHash": "8f4a86c5dfee1cd78734b2d7639fe624f4bbd808c0d6d4547a6596d302658dfc",
-      "targetHash": "ee2e780119f7521d34b06f623f665114e65314252941726655b2177799a04682",
-      "machineHash": "ee2e780119f7521d34b06f623f665114e65314252941726655b2177799a04682",
-      "machineText": "As fases compatíveis são `before_build`, `after_build`, `before_package`, `after_package`, `before_sign` e `after_sign`. Conforme apropriado, os hooks de compilação são executados uma vez para o projeto compartilhado ou uma vez por destino. Os hooks de empacotamento e assinatura formam barreiras em torno de todos os formatos solicitados para um destino, enquanto as operações de formato dentro da barreira permanecem simultâneas.",
+      "targetHash": "216b1012e47afeb793914491abfc56cc605a3aff4f4e554c145a3c8b06d45822",
+      "machineHash": "216b1012e47afeb793914491abfc56cc605a3aff4f4e554c145a3c8b06d45822",
+      "machineText": "As fases compatíveis são `before_build`, `after_build`, `before_package`, `after_package`, `before_sign` e `after_sign`. Conforme apropriado, os hooks de compilação são executados uma vez para o projeto compartilhado ou uma vez por destino. Os hooks de empacotamento e assinatura formam barreiras ao redor de todos os formatos solicitados para um destino, enquanto as operações de formato dentro da barreira permanecem simultâneas.",
       "status": "machine-translated",
       "sourcePreview": "Supported phases are `before_build`, `after_build`, `before_package`, `after_package`, `before_sign`…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0081-text-01": {
+    "b0087-text-01": {
       "sourceHash": "3075b7ad1cdf0b4c638f2ed35a0c7dc67c4582c60da8133a764f673a2c485ad3",
       "targetHash": "8efe9807e385a029057662b7063635bc6cd0438022186a151146dc629e006ea6",
       "machineHash": "8efe9807e385a029057662b7063635bc6cd0438022186a151146dc629e006ea6",
@@ -952,57 +1060,57 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0082-text-01": {
+    "b0088-text-01": {
       "sourceHash": "2a803b9716c233972e758e12b247e07ec8933835cbe3e02dabd57672738687c8",
-      "targetHash": "e86c5be0dfb91145525ce2d37a72bf546e1f7141d49739b9c02e89c4399bda8f",
-      "machineHash": "e86c5be0dfb91145525ce2d37a72bf546e1f7141d49739b9c02e89c4399bda8f",
-      "machineText": "O contexto contém caminhos resolvidos, mas nunca copia o ambiente herdado do processo nem segredos. O Wails o cria atomicamente em `.wails/hooks/context/`, com permissões de arquivo exclusivas do proprietário. Ele é removido após a conclusão bem-sucedida ou o cancelamento. Em caso de falha, ele é mantido para diagnóstico, e seu caminho é incluído no erro. Um código de saída diferente de zero causa a falha da etapa Plan normal, e o cancelamento encerra o grupo de processos do hook.",
+      "targetHash": "d071ebc6817a6268297fa1c0d6407a01d5371f8f922b6d7bdfd6176da34e9108",
+      "machineHash": "d071ebc6817a6268297fa1c0d6407a01d5371f8f922b6d7bdfd6176da34e9108",
+      "machineText": "O contexto contém caminhos resolvidos, mas nunca copia o ambiente herdado do processo nem segredos. O Wails o cria atomicamente em `.wails/hooks/context/`, com permissões de arquivo exclusivas para o proprietário. Ele é removido após a conclusão bem-sucedida ou o cancelamento. Em caso de falha, é mantido para diagnóstico, e seu caminho é incluído no erro. Um código de saída diferente de zero faz a etapa Plan normal falhar, e o cancelamento encerra o grupo de processos do hook.",
       "status": "machine-translated",
       "sourcePreview": "The context contains resolved paths but never copies the inherited process environment or secrets. W…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0083-text-01": {
+    "b0089-text-01": {
       "sourceHash": "6208c3c8a8583f46263266ab47582c7c6f92d435245e29f915df032f5c00af48",
-      "targetHash": "3f4f6a3c23b8516399cd470927241347be4ffeca1bad5fc6e0ed88eb142a4680",
-      "machineHash": "3f4f6a3c23b8516399cd470927241347be4ffeca1bad5fc6e0ed88eb142a4680",
-      "machineText": "Por padrão, os hooks são executados em todas as invocações. Habilite o cache somente quando o script tiver entradas e saídas declaradas completas:",
+      "targetHash": "99d6f6816043924cda66def8981b61f8b145f7ac603ef6c3b88fbc848f4f60e7",
+      "machineHash": "99d6f6816043924cda66def8981b61f8b145f7ac603ef6c3b88fbc848f4f60e7",
+      "machineText": "Por padrão, os hooks são executados em todas as invocações. Habilite o cache somente quando o script tiver todas as entradas e saídas declaradas:",
       "status": "machine-translated",
       "sourcePreview": "Hooks run on every invocation by default. Opt into caching only when the script has complete declare…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0084-text-01": {
+    "b0090-text-01": {
       "sourceHash": "f4a8952a42698fbb794f96cd26a5fb18ca33701eef3e8f843a3997215ed7edb5",
-      "targetHash": "fdd7768c84d66b0b491b8eb15729ba4caf342709dd79b560b8eb0e35a7a238d4",
-      "machineHash": "fdd7768c84d66b0b491b8eb15729ba4caf342709dd79b560b8eb0e35a7a238d4",
-      "machineText": "O script e seu modo executável são entradas implícitas. Várias saídas devem compartilhar um único diretório que não seja a raiz, o qual constitui o artefato delimitado que o Wails registra e restaura. A raiz de saída não pode conter o script nem uma entrada declarada, e as árvores de saída armazenadas em cache podem conter apenas arquivos regulares e diretórios, nunca links simbólicos ou arquivos especiais. Um hook executado sempre impede o uso de cache nas operações posteriores, pois não é possível calcular com segurança a impressão digital de efeitos colaterais não declarados. Um hook armazenável em cache preserva o cache das operações posteriores por meio da identidade de seu artefato declarado.",
+      "targetHash": "68a2e2dc33011254258ffa108c95f6dd57971b4914a808cfaa2285ff19dc6ccc",
+      "machineHash": "68a2e2dc33011254258ffa108c95f6dd57971b4914a808cfaa2285ff19dc6ccc",
+      "machineText": "O script e seu modo executável são entradas implícitas. Várias saídas devem compartilhar um único diretório que não seja a raiz; esse diretório é o artefato com escopo limitado que o Wails registra e restaura. A raiz de saída não pode conter o script nem uma entrada declarada, e as árvores de saída armazenadas em cache podem conter somente arquivos comuns e diretórios, nunca links simbólicos ou arquivos especiais. Um hook executado sempre impede o armazenamento em cache de suas operações posteriores, pois não é possível gerar com segurança uma impressão digital de efeitos colaterais não declarados. Um hook armazenável em cache preserva o cache posterior por meio da identidade de seu artefato declarado.",
       "status": "machine-translated",
       "sourcePreview": "The script and its executable mode are implicit inputs. Multiple outputs must share one non-root dir…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0085-heading-01": {
+    "b0091-heading-01": {
       "sourceHash": "391ff241dbd12b1515fc1bb2839545855c219145a62076327fbb7dc4acabe618",
-      "targetHash": "aca8c26144451b29c1fcafcdf61e9e17bc01334a3c1b69df853fea319f8b4fef",
-      "machineHash": "aca8c26144451b29c1fcafcdf61e9e17bc01334a3c1b69df853fea319f8b4fef",
-      "machineText": "Migre um projeto existente",
+      "targetHash": "057f2a21ceb9c7894257f1c579c3652fd7f3cc1e5590f5cecf16cf2d6335444d",
+      "machineHash": "057f2a21ceb9c7894257f1c579c3652fd7f3cc1e5590f5cecf16cf2d6335444d",
+      "machineText": "Migrar um projeto existente",
       "status": "machine-translated",
       "sourcePreview": "Migrate an existing project",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0086-text-01": {
+    "b0092-text-01": {
       "sourceHash": "aa7375fec3c1401ddf6c840280256dbcfe2bf7d0f63262ca2b4b16929921aca4",
       "targetHash": "c2de7e2ee17836c731d02635c95447fd404af4688937571946471cc6599bc7fa",
       "machineHash": "c2de7e2ee17836c731d02635c95447fd404af4688937571946471cc6599bc7fa",
@@ -1012,69 +1120,69 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0087-text-01": {
+    "b0093-text-01": {
       "sourceHash": "a0a69a7f9d5137d1b87da7b174c920a4451956e24c37f016b801e9de6580140f",
-      "targetHash": "c7188a3e5aa91ce5443ca8e2c223f95eb0c5e6d1a394e7c6f28121bfeb680dcc",
-      "machineHash": "c7188a3e5aa91ce5443ca8e2c223f95eb0c5e6d1a394e7c6f28121bfeb680dcc",
-      "machineText": "Tarefas conservadoras do ciclo de vida sem argumentos que invoquem um script pertencente ao projeto são convertidas em hooks. Outros comportamentos personalizados acessíveis do Taskfile são relatados como bloqueadores. Após revisar `wails.migrated.yaml`, ative-o explicitamente:",
+      "targetHash": "b180ccc4f4a9c89393d0dcb813ce96cf9c659887f88b2c1a1223631aec8d8d2b",
+      "machineHash": "b180ccc4f4a9c89393d0dcb813ce96cf9c659887f88b2c1a1223631aec8d8d2b",
+      "machineText": "As tarefas conservadoras de ciclo de vida sem argumentos que invocam um script pertencente ao projeto são convertidas em hooks. Outros comportamentos personalizados acessíveis do Taskfile são relatados como bloqueadores. Após revisar `wails.migrated.yaml`, ative-o explicitamente:",
       "status": "machine-translated",
       "sourcePreview": "Conservative argument-free lifecycle tasks that invoke a project-owned script are translated to hook…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0088-text-01": {
+    "b0094-text-01": {
       "sourceHash": "b8b0b2b4752f11221757fed4226686b98ff1989ae601381a46a04b3e6c5289d0",
-      "targetHash": "9b550d01d2ed098d999d3ce22e79d4ba0b909b835dde9fe74091ca6c2923369e",
-      "machineHash": "9b550d01d2ed098d999d3ce22e79d4ba0b909b835dde9fe74091ca6c2923369e",
-      "machineText": "A ativação cria `wails.yaml` atomicamente. Ela não exclui, renomeia nem edita Taskfiles, `build/config.yml`, scripts ou ativos. YAML inválido falha como YAML; nunca há fallback para a rota legada.",
+      "targetHash": "3bc6a98ad7b75222d1ae3b85f35dbfcf6ec73c2a13a7d9e593577b8034f183fe",
+      "machineHash": "3bc6a98ad7b75222d1ae3b85f35dbfcf6ec73c2a13a7d9e593577b8034f183fe",
+      "machineText": "A ativação cria `wails.yaml` de forma atômica. Ela não exclui, renomeia nem edita Taskfiles, `build/config.yml`, scripts ou ativos. Um YAML inválido falha como YAML; nunca recorre à rota legada.",
       "status": "machine-translated",
       "sourcePreview": "Activation creates `wails.yaml` atomically. It does not delete, rename or edit Taskfiles, `build/con…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0089-heading-01": {
+    "b0095-heading-01": {
       "sourceHash": "38fcb62bb21edaea8e1a19907be5ed12eb3be9596db673f00a25f8f58c1a226a",
-      "targetHash": "b248f101ba7e5108524f3e78dccef30407b43150971373fc7286367e24622edf",
-      "machineHash": "b248f101ba7e5108524f3e78dccef30407b43150971373fc7286367e24622edf",
-      "machineText": "Materialize todos os valores padrão",
+      "targetHash": "77c31e5f982b5550ac4936f5f639f78b118c53ad778dcc4d84f178715020c573",
+      "machineHash": "77c31e5f982b5550ac4936f5f639f78b118c53ad778dcc4d84f178715020c573",
+      "machineText": "Materializar todos os valores padrão",
       "status": "machine-translated",
       "sourcePreview": "Materialise all defaults",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0090-text-01": {
+    "b0096-text-01": {
       "sourceHash": "7258fd780164131dccac2ad0061b7a098ee694ae23273703cb858b6f6c6f0cfe",
-      "targetHash": "78f1437859fe04b3eca60cca5f862ae5018eaacb6ccc2b6ea41651543be2e043",
-      "machineHash": "78f1437859fe04b3eca60cca5f862ae5018eaacb6ccc2b6ea41651543be2e043",
-      "machineText": "Para inspecionar ou copiar toda a configuração resolvida, grave um snapshot inativo:",
+      "targetHash": "379965b3cb2e25319b1129a5aa4784e988e904bd3e402301ac0070c731192c8c",
+      "machineHash": "379965b3cb2e25319b1129a5aa4784e988e904bd3e402301ac0070c731192c8c",
+      "machineText": "Para inspecionar ou copiar a configuração resolvida completa, grave um snapshot inativo:",
       "status": "machine-translated",
       "sourcePreview": "To inspect or copy the complete resolved configuration, write an inactive snapshot:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0091-text-01": {
+    "b0097-text-01": {
       "sourceHash": "586fcba4ad5121ee547afb4f8967603677cf0a376a73971a9142757306d4f7ab",
-      "targetHash": "1471496522a457a49785e42dd6032c0f5777aceff7f443874feeee45033ad658",
-      "machineHash": "1471496522a457a49785e42dd6032c0f5777aceff7f443874feeee45033ad658",
-      "machineText": "Isso cria `wails.ejected.yaml`. A configuração ativa nunca é regravada.",
+      "targetHash": "74cbaf9acf33e781360e6df7191cd27c3ac0f8a2527e1b6c5e7b4ac357e26105",
+      "machineHash": "74cbaf9acf33e781360e6df7191cd27c3ac0f8a2527e1b6c5e7b4ac357e26105",
+      "machineText": "Isso cria `wails.ejected.yaml`. A configuração ativa nunca é reescrita.",
       "status": "machine-translated",
       "sourcePreview": "This creates `wails.ejected.yaml`. It never rewrites active configuration.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0092-heading-01": {
+    "b0098-heading-01": {
       "sourceHash": "103f67987ac91bcf9406eeccfba026f5997678164c426bee4f90a3d237dadb6d",
       "targetHash": "e02874263c747565bfd70752067bf9df634af3a4ef934266c3ef4eecbe29fc1f",
       "machineHash": "e02874263c747565bfd70752067bf9df634af3a4ef934266c3ef4eecbe29fc1f",
@@ -1084,43 +1192,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0093-text-01": {
+    "b0099-text-01": {
       "sourceHash": "bad7397de917d117fa06e49c96058289eb1c4f825e6e9b14ffefaee21a7714bf",
-      "targetHash": "c9658f5ff6a444f58e0aec293dc28d65218a7c9de666650ef36ef5138dc428bd",
-      "machineHash": "c9658f5ff6a444f58e0aec293dc28d65218a7c9de666650ef36ef5138dc428bd",
-      "machineText": "`wails3 package` e `wails3 sign` são aliases obsoletos do mesmo planejador; novas automações devem usar `wails3 build` com um perfil ou formatos. A implantação é condicionada às versões: a primeira versão torna o YAML o caminho para novos projetos; a versão seguinte emite um aviso sobre o roteamento legado por Taskfile; e a próxima remove a execução de Taskfiles junto com os aliases. Cada transição requer que a matriz de testes de aceitação nos hosts nativos dessa versão esteja totalmente aprovada.",
+      "targetHash": "2fa7e3d5e422c7fa890836a434130c9059525fd5c43b253698a3c121db4de801",
+      "machineHash": "2fa7e3d5e422c7fa890836a434130c9059525fd5c43b253698a3c121db4de801",
+      "machineText": "`wails3 package` e `wails3 sign` são aliases obsoletos do mesmo planejador; novas automações devem usar `wails3 build` com um perfil ou formatos. A implantação é condicionada às versões: a primeira versão torna o YAML o caminho para novos projetos, a versão seguinte emite um aviso sobre o roteamento pelo Taskfile legado e a próxima remove a execução do Taskfile junto com os aliases. Cada transição exige que a matriz de testes de aceitação dos hosts nativos dessa versão esteja totalmente aprovada.",
       "status": "machine-translated",
       "sourcePreview": "`wails3 package` and `wails3 sign` are deprecated aliases for the same planner; new automation shoul…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0094-text-01": {
+    "b0100-text-01": {
       "sourceHash": "bda0bf3d3fb6e110ddf56782749ca114319c2ec6da511cc1514e49f281d7b33d",
-      "targetHash": "de3f6d9b1875a41d083892c1f8e7ed1f2e52b865070a1fdc2d5b7eb7389c52e7",
-      "machineHash": "de3f6d9b1875a41d083892c1f8e7ed1f2e52b865070a1fdc2d5b7eb7389c52e7",
-      "machineText": "Consulte a [`wails.yaml`referência de campos gerada](/reference/wails-yaml-fields/) para conhecer todos os campos, tipos, valores padrão e regras de aplicabilidade.",
+      "targetHash": "4ce5065b534e4e6feb346b6fc28f1b7e021e8a2465cb9e358a5e2225dd710ca0",
+      "machineHash": "4ce5065b534e4e6feb346b6fc28f1b7e021e8a2465cb9e358a5e2225dd710ca0",
+      "machineText": "Consulte a referência gerada de campos de [`wails.yaml`](/reference/wails-yaml-fields/) para ver todos os campos, tipos, valores padrão e regras de aplicabilidade.",
       "status": "machine-translated",
       "sourcePreview": "See the generated [`wails.yaml` field reference](/reference/wails-yaml-fields/) for every field, typ…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
-    "b0095-text-01": {
+    "b0101-text-01": {
       "sourceHash": "21dce0b0af92732cb96ea69c3f12feaa1453cc9f4c305098ef4c49108836cd16",
-      "targetHash": "23f40637c592a07232ad32179ab2608621645f4bae46916d7bb9d13492e7cf09",
-      "machineHash": "23f40637c592a07232ad32179ab2608621645f4bae46916d7bb9d13492e7cf09",
-      "machineText": "A [`wails3 run`referência de configuração](/reference/wails-yaml-run/) descreve os valores padrão para inicialização local, as substituições específicas de plataforma e o fallback de `go run .` quando não há manifesto.",
+      "targetHash": "d7dfa0d20fe77e3ec52946e66c43793c341d981bdcf731fd866edfc9be27eeda",
+      "machineHash": "d7dfa0d20fe77e3ec52946e66c43793c341d981bdcf731fd866edfc9be27eeda",
+      "machineText": "A referência de configuração de [`wails3 run`](/reference/wails-yaml-run/) descreve os valores padrão de inicialização local, as substituições específicas de plataforma e o fallback de `go run .` quando não há manifesto.",
       "status": "machine-translated",
       "sourcePreview": "The [`wails3 run` configuration reference](/reference/wails-yaml-run/) describes local launch defaul…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "fm-description": {
       "sourceHash": "55e85280d8e3bafd5fe21ff0b0f6ab6d13437fbfec4b05c4be76433c3a0a363d",
@@ -1132,7 +1240,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "fm-sidebar-badge-text": {
       "sourceHash": "3dc9f569422dcfdadcb2c33f3eb2ee6fcebc8ba679bd63e690f9ddd0ff7c24be",
@@ -1144,19 +1252,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     },
     "fm-title": {
       "sourceHash": "8fbd70bc69b96e30471d254a8ebb4900e4b9494f66f14e96c3f6b155272f778a",
-      "targetHash": "543ea8ab7a5c33fdbfc1eef11ed45b412eeca4cc372eda9554e92a5ab59b8368",
-      "machineHash": "543ea8ab7a5c33fdbfc1eef11ed45b412eeca4cc372eda9554e92a5ab59b8368",
-      "machineText": "Builds com YAML",
+      "targetHash": "f2dad14a3bdb0e976990743776435bcc1b40904df5dec5d37c7df92b7dd8bd10",
+      "machineHash": "f2dad14a3bdb0e976990743776435bcc1b40904df5dec5d37c7df92b7dd8bd10",
+      "machineText": "Builds YAML",
       "status": "machine-translated",
       "sourcePreview": "YAML builds",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T13:36:34Z"
+      "updatedAt": "2026-10-31T23:21:01Z"
     }
   }
 }

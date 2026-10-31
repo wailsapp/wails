@@ -24,6 +24,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan` resolve e exibe o destino selecionado, as tags de compilação efetivas, o artefato executável ou instalável, os argumentos e o diretório de trabalho, sem compilar, instalar nem iniciar. O plano lista os nomes das chaves de substituição do ambiente e omite seus valores.
@@ -33,6 +34,7 @@ wails3 run --plan
 | Opção | Significado |
 | --- | --- |
 | `--tags <tags>` | Tags adicionais de compilação Go, separadas por vírgulas. |
+| `--skip-build` | Importe os executáveis de desktop existentes do diretório de saída do YAML e, em seguida, inicie sem compilar. |
 | `--target <os>/<arch>` | Seleciona um destino; o padrão é o sistema operacional e a arquitetura do host. |
 | `--plan` | Exibe as configurações resolvidas sem compilar nem iniciar. Planos de desktop multiplataforma são permitidos. |
 | `--device <id>` | Número de série adb do Android ou identificador do simulador/dispositivo iOS. |
@@ -42,6 +44,9 @@ wails3 run --plan
 | `--appargs <string>` | Grafia de compatibilidade: analisa uma string usando regras de aspas no estilo POSIX. Não pode ser repetida nem combinada com argumentos após `--`. |
 
 Seletores móveis exigem um manifesto e um destino móvel correspondente.
+
+`--skip-build` requer um projeto YAML ativo e um executável de desktop compatível. Esse modo ignora o trabalho de frontend, os bindings, a compilação, o UPX e os hooks de build; os argumentos de inicialização e o ambiente configurados ainda se aplicam. Os executáveis importados são validados e copiados para o workspace gerado pelo Wake sem modificar os arquivos de origem. No macOS, os aplicativos com interface gráfica são montados com base nessas entradas e nos assets do pacote atual. Consulte [caminhos e requisitos das entradas pré-compiladas](/experimental/yaml-builds/#use-prebuilt-desktop-executables).
+As tags de build não podem alterar um executável pré-compilado; portanto, `--tags` e as tags de build configuradas não têm efeito nesse modo.
 
 ## Campos
 

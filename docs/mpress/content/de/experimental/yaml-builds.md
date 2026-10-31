@@ -1,6 +1,6 @@
 ---
 title: "YAML-Builds"
-description: "Konfigurieren und verwenden Sie das experimentelle native Buildsystem von Wails v3 mit einer einzigen wails.yaml-Datei."
+description: "Konfigurieren und verwenden Sie das experimentelle native Build-System von Wails v3 mit einer einzigen wails.yaml-Datei."
 sidebar:
   order: 2
   badge:
@@ -9,12 +9,12 @@ sidebar:
 ---
 
 @note{type="caution" title="Experimentelle Vorschau"}
-Die erste unterstützte Version akzeptiert ausschließlich literale Konfiguration. Dieses Experiment erprobt außerdem zeitlich begrenzte Lebenszyklus-Hooks, damit deren Gestaltung bewertet werden kann, bevor sie für eine Veröffentlichung vorgeschlagen werden. Benutzerdefinierte Phasen, YAML-Ausdrücke und typisierte Wails-Toolaufrufe bleiben zurückgestellt. Bestehende Projekte verwenden weiterhin Taskfiles, bis Sie eine geprüfte Migration ausdrücklich aktivieren.
+Die erste akzeptierte Version unterstützt ausschließlich literale Konfiguration. Dieses Experiment dient außerdem als Prototyp für zeitlich begrenzte Lebenszyklus-Hooks, damit deren Gestaltung vor einem Vorschlag für eine Veröffentlichung bewertet werden kann. Benutzerdefinierte Phasen, YAML-Ausdrücke und typisierte Wails-Toolaufrufe bleiben vorerst zurückgestellt. Bestehende Projekte verwenden weiterhin Taskfiles, bis Sie eine geprüfte Migration ausdrücklich aktivieren.
 @end
 
 ## YAML-Builds aktivieren
 
-Setzen Sie `WAILS_EXP_USE_WAKE` in jedem Terminal, in dem die experimentellen Befehle ausgeführt werden. Für Bash oder Zsh:
+Setzen Sie `WAILS_EXP_USE_WAKE` in jedem Terminal, in dem Sie die experimentellen Befehle ausführen. Für Bash oder Zsh:
 
 ```bash
 export WAILS_EXP_USE_WAKE=1
@@ -26,13 +26,11 @@ Für PowerShell:
 $env:WAILS_EXP_USE_WAKE = '1'
 ```
 
-Die Variable aktiviert die Funktion allein durch ihre Existenz: Selbst ein leerer Wert oder `false` aktiviert sie. Entfernen Sie die Variable (mit `unset WAILS_EXP_USE_WAKE` in Bash/Zsh oder `Remove-Item Env:WAILS_EXP_USE_WAKE` in PowerShell), um das Experiment zu deaktivieren. Sobald `wails.yaml` aktiv ist, müssen Befehle Wake erneut aktivieren und greifen niemals auf Taskfiles zurück.
-Ohne die Variable sind das Build-/Dev-Routing über YAML und die YAML-Projektgenerierung deaktiviert; außerdem sind die Befehle `migrate`, `config` und `eject` nicht verfügbar.
-Noch nicht migrierte Projekte werden weiterhin über die separate eingebettete Task-Laufzeit verarbeitet.
+Die Variable aktiviert die Funktion allein durch ihre Existenz: Selbst ein leerer Wert oder `false` aktiviert sie. Entfernen Sie die Variable (mit `unset WAILS_EXP_USE_WAKE` in Bash/Zsh oder `Remove-Item Env:WAILS_EXP_USE_WAKE` in PowerShell), um das Experiment zu deaktivieren. Sobald `wails.yaml` aktiv ist, müssen Befehle Wake erneut aktivieren und greifen nie auf Taskfiles zurück. Ohne die Variable sind das YAML-Build-/Dev-Routing und die YAML-Projekterzeugung deaktiviert; außerdem sind die Befehle `migrate`, `config` und `eject` nicht verfügbar. Noch nicht migrierte Projekte verwenden weiterhin die separate eingebettete Task-Laufzeit.
 
 ## Ein Projekt konfigurieren
 
-Fügen Sie bei aktivierter Opt-in-Funktion `wails.yaml` im Projektstammverzeichnis hinzu. Das Vorhandensein der Datei wählt das native Buildsystem aus und veranlasst Wails, sämtliche Taskfiles in diesem Projekt zu ignorieren. Lassen Sie die Opt-in-Funktion für alle folgenden Befehle aktiviert. Die Schema-Modeline ermöglicht in Editoren mit Unterstützung für YAML-Sprachserver die Vervollständigung und Inline-Validierung.
+Fügen Sie bei aktivierter Opt-in-Option im Projektstamm `wails.yaml` hinzu. Das Vorhandensein dieser Datei wählt das native Build-System aus und bewirkt, dass Wails sämtliche Taskfiles in diesem Projekt ignoriert. Lassen Sie die Opt-in-Option für alle folgenden Befehle aktiviert. Die Schema-Modeline ermöglicht in Editoren mit Unterstützung für YAML-Sprachserver die Vervollständigung und Inline-Validierung.
 
 ```yaml
 # yaml-language-server: $schema=https://v3.wails.io/schemas/wails.v3.json
@@ -66,15 +64,15 @@ wails3 build
 wails3 build release
 ```
 
-Wählen Sie für einen einmaligen Build kommagetrennte Ziele und Formate aus, ohne ein Profil hinzuzufügen:
+Wählen Sie für einen einmaligen Build durch Kommas getrennte Ziele und Formate aus, ohne ein Profil hinzuzufügen:
 
 ```bash
 wails3 build --targets linux/amd64 --formats deb,rpm
 ```
 
-## Desktopanwendungen crosskompilieren
+## Desktopanwendungen kreuzkompilieren
 
-Setzen Sie für das experimentelle, ausschließlich auf Go basierende Desktop-Backend `CGO_ENABLED: "0"` in der Buildumgebung. Wake wählt für macOS- und Linux-GUI-Programme das Tag `purego` und verwendet Go direkt auf Windows-, macOS- und Linux-Hosts. In diesem Modus erfordert das Erstellen von Desktop-Programmdateien weder Docker noch Emulation, einen C-Compiler oder ein SDK der Zielplattform. Auch die Anwendungsabhängigkeiten müssen `CGO_ENABLED=0` unterstützen.
+Setzen Sie für das experimentelle reine Go-Desktop-Backend `CGO_ENABLED: "0"` in der Build-Umgebung. Wake wählt für macOS- und Linux-GUI-Programme das Tag `purego` aus und verwendet Go direkt auf Windows-, macOS- und Linux-Hosts. Das Erstellen von Desktop-Programmdateien erfordert in diesem Modus weder Docker noch Emulation, einen C-Compiler oder ein SDK der Zielplattform. Auch die Anwendungsabhängigkeiten müssen `CGO_ENABLED=0` unterstützen.
 
 ```yaml
 version: 3
@@ -96,17 +94,15 @@ wails3 build --targets darwin/universal --formats dmg
 
 Der zweite Befehl kombiniert beide macOS-Architekturen und erstellt mit Go ein unsigniertes DMG. Er kann auf jedem unterstützten Desktop-Host ausgeführt werden. Codesignierung und Apple-Notarisierung bleiben separate macOS-Vorgänge.
 
-Der aufgelöste Modus wird für jede Programmdatei unabhängig ausgewählt. Ein deklariertes `build.environment.CGO_ENABLED`, eine Zielumgebung oder die Umgebung der Binärdatei überschreibt den Wert des aufrufenden Terminals. Andernfalls verwenden ein ausdrücklich ausgewähltes `purego`-Tag, ein CLI-/Serverprogramm oder ein Windows-Ziel standardmäßig `0`; macOS- und Linux-GUI-Programme verwenden standardmäßig `1`. `--plan --json` meldet für jede Programmdatei den aufgelösten Compiler, den CGo-Modus und die Tags. Bei der Crosskompilierung werden Zieldateien erstellt; zum Ausführen eines inkompatiblen Desktopziels ist weiterhin der entsprechende Host erforderlich.
+Der aufgelöste Modus wird für jede Programmdatei unabhängig ausgewählt. Ein deklariertes `build.environment.CGO_ENABLED`, eine Zielumgebung oder eine Binärdateiumgebung überschreibt den Wert des aufrufenden Terminals. Andernfalls verwenden ein ausdrücklich ausgewähltes `purego`-Tag, ein CLI-/Serverprogramm oder ein Windows-Ziel standardmäßig `0`; macOS- und Linux-GUI-Programme verwenden standardmäßig `1`. `--plan --json` meldet für jede Programmdatei den aufgelösten Compiler, den CGo-Modus und die Tags. Die Kreuzkompilierung erstellt Zieldateien; zum Ausführen eines inkompatiblen Desktop-Ziels ist weiterhin der entsprechende Host erforderlich.
 
-Mit `CGO_ENABLED=1` verwendet Wake zunächst eine kompatible native Toolchain oder den konfigurierten `CC`-Crosscompiler, anschließend – sofern verfügbar – Zig für einen Windows-Cross-Build und danach, soweit unterstützt, den vorhandenen Docker-/Podman-Fallback. Ein explizites `CC` muss den Zielcompiler, die Bibliotheken und das Sysroot bereitstellen; Zig allein stellt kein Linux-GTK-/WebKit-Sysroot bereit. Für Paketierung und Signierung können wie nachfolgend beschrieben zusätzliche Werkzeuge erforderlich sein. Mobile Ziele erfordern CGo und die jeweiligen Plattform-SDKs.
+Mit `CGO_ENABLED=1` verwendet Wake zuerst eine kompatible native Toolchain oder den konfigurierten `CC`-Cross-Compiler, danach – sofern verfügbar – Zig für einen Windows-Cross-Build und anschließend, soweit unterstützt, den bestehenden Docker-/Podman-Fallback. Ein ausdrücklich angegebenes `CC` muss den Zielcompiler, die Bibliotheken und das Sysroot bereitstellen; Zig allein stellt kein Linux-GTK-/WebKit-Sysroot bereit. Für Paketierung und Signierung können wie nachfolgend beschrieben zusätzliche Werkzeuge erforderlich sein. Mobile Ziele benötigen CGo und die SDKs ihrer Plattformen.
 
-Bei einer reinen Go-Kompilierung werden die Systembibliotheken des Zielsystems nicht mitgeliefert.
-Linux-GUI-Anwendungen einschließlich ausführbarer GUI-Begleitprogramme benötigen weiterhin die durch ihre Build-Tags ausgewählte GTK/WebKitGTK-Laufzeitumgebung. Sie muss über Paketabhängigkeiten oder eine geeignete Bereitstellungsumgebung bereitgestellt werden. Reine CLI-/Serverpakete fügen diese GUI-Abhängigkeiten standardmäßig nicht hinzu; explizite Überschreibungen der Abhängigkeiten sind weiterhin möglich.
+Eine reine Go-Kompilierung bündelt die Systembibliotheken des Zielsystems nicht. Linux-GUI-Anwendungen einschließlich begleitender GUI-Programmdateien benötigen weiterhin die durch ihre Build-Tags ausgewählte GTK-/WebKitGTK-Laufzeit. Paketabhängigkeiten oder eine geeignete Bereitstellungsumgebung müssen sie bereitstellen. Reine CLI-/Serverpakete fügen diese GUI-Abhängigkeiten standardmäßig nicht hinzu; explizite Überschreibungen der Abhängigkeiten bleiben verfügbar.
 
 ## Mehrere Programmdateien erstellen
 
-Das Projekt definiert das primäre Programm. Setzen Sie `project.package` auf dessen Go-Paket (Standard: `.`) und `project.kind` auf `gui`, `cli` oder `server` (Standard: `gui`).
-Zusätzliche Programme verwenden benannte Einträge unter `binaries`:
+Das Projekt definiert das primäre Programm. Setzen Sie `project.package` auf dessen Go-Paket (Standard: `.`) und `project.kind` auf `gui`, `cli` oder `server` (Standard: `gui`). Zusätzliche Programme verwenden benannte Einträge unter `binaries`:
 
 ```yaml
 version: 3
@@ -129,38 +125,55 @@ profiles:
       linux/amd64: {}
 ```
 
-Jedes Programm erhält eigene Kompilierungs- und Cache-Eingaben. Importierte Projektpakete und eingebettete Dateien werden nachverfolgt; nach einer Änderung an einem unabhängigen Programm werden die anderen nicht neu erstellt. Zusätzliche Programmdateien werden auf Desktopplattformen unterstützt und in die standardmäßigen App-Bundles und Installationsprogramme aufgenommen. Paketersatzdateien im Besitz der Benutzer steuern ihren Inhalt selbst.
+Jedes Programm erhält eigene Kompilierungs- und Cache-Eingaben. Importierte Projektpakete und eingebettete Dateien werden nachverfolgt; eine Änderung an einem unabhängigen Programm führt nicht dazu, dass die anderen neu erstellt werden. Zusätzliche Programmdateien werden auf Desktopplattformen unterstützt und in die standardmäßigen App-Bundles und Installationsprogramme aufgenommen. Vom Benutzer bereitgestellte Ersatzpaketdateien bestimmen ihren Inhalt selbst.
 
 ```bash
 wails3 build --binaries notes,notes-tool --jobs 4
 wails3 build --binaries notes-tool --skip-frontend --skip-bindings
 ```
 
-Ein benanntes Profil ist eine vollständige Anforderung; verwenden Sie diese Auswahlüberschreibungen bei einem anonymen Build. `--jobs` begrenzt die Anzahl der ausführenden Worker. Wenn Sie ausschließlich CLI-/Serverprogramme auswählen, entfällt die Frontend-Verarbeitung.
+Ein benanntes Profil ist eine vollständige Anforderung; verwenden Sie diese Auswahlüberschreibungen bei einem anonymen Build. `--jobs` begrenzt die Zahl der Ausführungs-Worker. Wenn Sie ausschließlich CLI-/Serverprogramme auswählen, entfallen die Frontend-Arbeiten.
 
-Konfigurieren Sie sowohl `project.version_file` als auch `project.version_symbol`, um eine Version zu lesen, ohne Anwendungscode auszuführen. Die Datei muss eine statische Go-Zeichenfolgendeklaration enthalten. Das Literal `project.version` kann dann entfallen. Setzen Sie `commit_symbol: main.Commit` für das Projekt oder eine benannte Binärdatei, um die Repository-Revision in die Zeichenfolgenvariable dieser Programmdatei einzufügen. Wenn die Commit-Injektion angefordert wurde, sind fehlende Repository-Metadaten ein Fehler.
+Um eine Version zu lesen, ohne Anwendungscode auszuführen, konfigurieren Sie sowohl `project.version_file` als auch `project.version_symbol`. Die Datei muss eine statische Go-Stringdeklaration enthalten. Das Literal `project.version` kann dann entfallen. Setzen Sie `commit_symbol: main.Commit` für das Projekt oder eine benannte Binärdatei, um die Repository-Revision in die Stringvariable dieser Programmdatei einzufügen. Wenn die Commit-Einfügung angefordert wurde, sind fehlende Repository-Metadaten ein Fehler.
 
-`upx_level: 1` bis `9` komprimiert optional Linux- und Windows-Programmdateien für Releases; null deaktiviert die Komprimierung. UPX muss installiert sein. Entwicklungs- und macOS-Builds verzichten auf die Komprimierung. Bei einem Kompilierungs- oder Komprimierungsfehler bleibt das zuvor veröffentlichte Programm erhalten.
+`upx_level: 1` bis `9` komprimiert optional Linux- und Windows-Programmdateien für Releases; null deaktiviert die Komprimierung. UPX muss installiert sein. Entwicklungs- und macOS-Builds verwenden keine Komprimierung. Bei einem Kompilierungs- oder Komprimierungsfehler bleibt das zuvor veröffentlichte Programm erhalten.
 
 ## Für die Verteilung paketieren und signieren
 
-Für das Erstellen unsignierter Pakete gelten andere Host-/Werkzeuganforderungen als für das Signieren:
+### Vorgefertigte Desktop-Programmdateien verwenden
+
+Verwenden Sie `--skip-build`, wenn ein anderes Build-System oder ein CI-Auftrag die Programmdateien bereits erstellt hat:
+
+```bash
+wails3 build --targets linux/amd64 --formats deb,rpm --skip-build
+wails3 run --skip-build -- --example-mode
+```
+
+Lege jede ausführbare Datei in `build.output` (standardmäßig `bin`) ab. Verwende dabei `project.binary_name` für die ausführbare Hauptdatei und für Begleitdateien den Namen des jeweiligen `binaries`-Eintrags. Unter Windows enden die Namen auf `.exe`. Bei einem Aufruf für mehrere Zielplattformen werden die Dateien jeder Zielplattform aus einem `<os>-<arch>`-Unterverzeichnis gelesen. Für eine macOS-GUI liest Wake die unverarbeitete ausführbare Datei aus `bin/<name>`, sofern sie dort vorhanden ist, andernfalls aus `bin/<name>.app/Contents/MacOS/<name>`. Eine `darwin/universal`-Eingabe muss ausführbare Slices sowohl für amd64 als auch für arm64 enthalten.
+
+Wake validiert Dateityp und Zielarchitektur, kopiert die Programmdateien in seinen generierten Arbeitsbereich und verfolgt ihren Inhalt für das Paket-Caching. Fehlende, inkompatible oder als symbolische Links bereitgestellte Programmdateien führen zu einem Fehler, statt neu erstellt oder aus einer alten Eingabe wiederhergestellt zu werden. Bereitgestellte Programmdateien werden weder überschrieben noch mit chmod geändert. Änderungen an einer beliebigen Programmdatei invalidieren die Pakete, die sie verwenden.
+
+Dieser Modus überspringt Frontend-Installation und -Builds, Bindings, Go-Kompilierung, UPX sowie die Hooks `before_build`/`after_build`. Er generiert weiterhin Paketressourcen, stellt macOS-App-Bundles zusammen und führt konfigurierte Paketierungs-/Signierungs-Hooks aus. Für Paketierungs- und Signierungswerkzeuge gelten weiterhin die Anforderungen der nachfolgenden Tabelle; Go- und Frontend-Build-Werkzeuge sind nicht erforderlich. Die Paketmetadaten stammen aus dem aktuellen Manifest, gegebenenfalls einschließlich `version_file`; aus der Binärdatei wird keine Version abgeleitet. Verwenden Sie übereinstimmende Build- und Paketeinstellungen, einschließlich der Art GUI oder CLI.
+
+`wails3 package --skip-build` wird ebenfalls unterstützt. Mit `wails3 run` gelten Startargumente und Umgebung weiterhin, und die Programmdatei muss auf dem Host ausführbar sein. Dieser Modus erfordert ein aktives YAML-Projekt und unterstützt ausschließlich produktive Desktop-Ziele; er gilt weder für Entwicklungssitzungen noch für die Paketierung mobiler Anwendungen.
+
+Für die Erstellung unsignierter Pakete gelten andere Host-/Werkzeuganforderungen als für die Signierung:
 
 | Ausgabe | Hosts und Werkzeuge für die Erstellung | Signierung |
 | --- | --- | --- |
-| Windows-MSIX | Windows, macOS oder Linux; Go-Writer, kein Windows SDK erforderlich. | Windows-Host und Signierwerkzeuge. |
-| Windows-NSIS-Installationsprogramm | Windows, macOS oder Linux; hostnatives `makensis` erforderlich. | Windows-Host und Signierwerkzeuge. |
-| macOS-App und DMG | Windows, macOS oder Linux; Go-Zusammenstellung, Zusammenführung universeller Binärdateien und portabler DMG-Writer. | macOS mit Apple-Werkzeugen und Zugangsdaten. |
-| Linux DEB, RPM, Arch und Void | Windows, macOS oder Linux; native Go-Paket-Writer. | DEB/RPM verwenden ihre externen Signierwerkzeuge; Arch verwendet den nachfolgend beschriebenen Go-Signierer. Die Void-Ausgabe ist unsigniert. |
-| Linux-AppImage | Übereinstimmender Linux-Host und passende Zielarchitektur; externes linuxdeploy und GTK-Bereitstellungs-Plug-in. | Kein integrierter AppImage-Signierablauf. |
+| Windows MSIX | Windows, macOS oder Linux; Go-Writer, kein Windows SDK erforderlich. | Windows-Host und Signierungswerkzeuge. |
+| Windows-NSIS-Installationsprogramm | Windows, macOS oder Linux; hostnatives `makensis` erforderlich. | Windows-Host und Signierungswerkzeuge. |
+| macOS-App und DMG | Windows, macOS oder Linux; Zusammenstellung mit Go, Zusammenführung universeller Binärdateien und portabler DMG-Writer. | macOS mit Apple-Werkzeugen und Zugangsdaten. |
+| Linux DEB, RPM, Arch und Void | Windows, macOS oder Linux; native Go-Paket-Writer. | DEB/RPM verwenden ihre externen Signierungswerkzeuge; Arch verwendet den nachfolgend beschriebenen Go-Signierer. Die Void-Ausgabe ist unsigniert. |
+| Linux AppImage | Übereinstimmende Linux-Host- und Zielarchitektur; externes linuxdeploy und GTK-Bereitstellungs-Plugin. | Kein integrierter Signierablauf für AppImages. |
 
-Windows-MSIX-Archive werden direkt in Go erstellt; zum Erstellen eines unsignierten Pakets sind weder das Windows SDK noch Docker erforderlich. Zum Signieren unter Windows sind weiterhin ein Windows-Host und dessen Signierwerkzeuge erforderlich. NSIS verwendet den externen NSIS-Compiler und akzeptiert literale Definitionen über `packages.nsis.defines`. Unter macOS stellt Wails ausschließlich dem untergeordneten NSIS-Compilerprozess eine UTF-8-Locale bereit, wenn dessen geerbte Locale nicht UTF-8 ist; die Umgebungen des Terminals und der Anwendung bleiben unverändert. Das standardmäßige NSIS-Installationsprogramm lässt den WebView2-Bootstrapper weg, wenn alle paketierten ausführbaren Dateien CLI- oder Serverprogramme sind. Bei einem primären GUI-Programm oder einem GUI-Begleitprogramm bleibt WebView2 enthalten. Benutzerdefinierte NSIS-Skripte behalten den Bootstrapper bei, damit sie mit ihrer eigenen Logik zur Installation der Laufzeitumgebung kompatibel bleiben.
+Windows-MSIX-Archive werden direkt in Go erstellt; zum Erstellen eines unsignierten Pakets sind weder das Windows SDK noch Docker erforderlich. Das Signieren unter Windows erfordert weiterhin einen Windows-Host und dessen Signierwerkzeuge. NSIS verwendet den externen NSIS-Compiler und akzeptiert literale Definitionen über `packages.nsis.defines`. Unter macOS stellt Wails nur dem untergeordneten NSIS-Compiler-Prozess eine UTF-8-Locale bereit, wenn die geerbte Locale nicht UTF-8 ist; die Umgebungen des Terminals und der Anwendung bleiben unverändert. Das standardmäßige NSIS-Installationsprogramm lässt den WebView2-Bootstrapper weg, wenn jede paketierte ausführbare Datei ein CLI- oder Serverprogramm ist. Bei einer primären GUI-Anwendung oder einem GUI-Begleitprogramm bleibt WebView2 erhalten. Benutzerdefinierte NSIS-Skripte behalten den Bootstrapper bei, um mit ihrer eigenen Logik zur Installation der Laufzeitumgebung kompatibel zu bleiben.
 
-Linux unterstützt AppImage-, DEB-, RPM-, Arch-Linux- und Void-Pakete. AppImages behalten die Grenze zu externem linuxdeploy und dem GTK-Plug-in bei. Setzen Sie `packages.appimage.update_info`, um eine zsync-Datei anzufordern, und `packages.appimage.checksum: true` für eine SHA256-Datei. Begleitdateien werden aus dem Paketcache wiederhergestellt und im Artefaktbeleg zusammen mit dem AppImage aufgeführt. Die AppImage-Paketierung erfordert derzeit Linux sowie eine übereinstimmende Host-/Zielarchitektur. Ihre GTK-Erkennung findet keine Bibliotheken, die von einer reinen Go-GUI dynamisch geladen werden; daher unterstützt dieser Adapter die Bereitstellung reiner Go-GUIs noch nicht. Verwenden Sie für diesen Buildmodus eines der Linux-Paketmanagerformate.
+Linux unterstützt AppImage-, DEB-, RPM-, Arch-Linux- und Void-Pakete. AppImages verwenden weiterhin die externe Schnittstelle zu linuxdeploy und dem GTK-Plugin. Setzen Sie `packages.appimage.update_info`, um eine zsync-Datei anzufordern, und `packages.appimage.checksum: true` für eine SHA256-Datei. Begleitdateien werden aus dem Paket-Cache wiederhergestellt und zusammen mit dem AppImage im Artefaktbeleg aufgeführt. Für die AppImage-Paketierung sind derzeit Linux und eine übereinstimmende Host-/Zielarchitektur erforderlich. Die GTK-Erkennung findet keine Bibliotheken, die von einer vollständig in Go geschriebenen GUI dynamisch geladen werden. Daher unterstützt dieser Adapter die Bereitstellung solcher GUIs noch nicht. Verwenden Sie für diesen Build-Modus eines der Linux-Paketmanagerformate.
 
-Arch-Pakete bewahren Vorabversionen in nativen Paketmetadaten auf; beispielsweise wird `1.2.3-beta.2` zu `1.2.3beta.2-1`, das vor der endgültigen Version einsortiert wird. Void-Abhängigkeiten akzeptieren reine Paketnamen wie `gtk4`, die zu `gtk4>=0` normalisiert werden; explizite Versionsvergleiche und vollständige `name-version_revision`-Werte bleiben erhalten. Verwenden Sie Void-Paketnamen statt Bibliotheksdateinamen.
+Arch-Pakete bewahren Vorabversionen in den nativen Paketmetadaten; beispielsweise wird `1.2.3-beta.2` zu `1.2.3beta.2-1`, das vor der endgültigen Version einsortiert wird. Void-Abhängigkeiten akzeptieren reine Paketnamen wie `gtk4`, die zu `gtk4>=0` normalisiert werden; explizite Versionsvergleiche und vollständige `name-version_revision`-Werte bleiben erhalten. Verwenden Sie Void-Paketnamen anstelle von Bibliotheksdateinamen.
 
-Verwenden Sie zum Erstellen eines Arch-Pakets und einer separaten Signatur eine exportierte, ASCII-armierte PGP-Datei mit privatem Schlüssel und geben Sie optional den Namen einer Umgebungsvariable für die Passphrase an:
+Verwenden Sie zum Erstellen eines Arch-Pakets und einer abgetrennten Signatur eine exportierte, ASCII-armierte PGP-Datei mit privatem Schlüssel und geben Sie optional den Namen einer Umgebungsvariablen für die Passphrase an:
 
 ```yaml
 version: 3
@@ -184,28 +197,28 @@ profiles:
         sign: true
 ```
 
-Legen Sie die benannte Umgebungsvariable in Ihrer lokalen Umgebung oder im Secret-Speicher der CI fest und führen Sie dann `wails3 build release` aus. Lassen Sie `credential` bei einem unverschlüsselten Schlüssel weg. Der Go-Signierer läuft auf jedem unterstützten Desktop-Host und benötigt kein GPG. Er veröffentlicht die ursprüngliche Datei `.pkg.tar.zst` und daneben eine Datei `.pkg.tar.zst.sig`; beide werden separat im Artefaktbeleg erfasst. Schlüsselinhalte werden weder bereitgestellt noch im Build-Cache gespeichert. Signaturen und ihre Veröffentlichung werden niemals aus dem Cache wiederverwendet. Schlägt das Signieren fehl, bleibt das zuvor veröffentlichte Dateipaar erhalten. Schlägt die Installation einer der beiden Dateien fehl, macht die Veröffentlichung beide Installationen rückgängig. Dadurch werden zwei Umbenennungen im Dateisystem für gleichzeitige Leser nicht atomar.
+Setzen Sie die angegebene Umgebungsvariable in Ihrer lokalen Umgebung oder im Secret-Speicher Ihrer CI und führen Sie anschließend `wails3 build release` aus. Lassen Sie `credential` bei einem unverschlüsselten Schlüssel weg. Das Go-Signierprogramm läuft auf jedem unterstützten Desktop-Host und benötigt kein GPG. Es veröffentlicht das ursprüngliche `.pkg.tar.zst` und eine gleichgeordnete `.pkg.tar.zst.sig`-Datei; beide werden separat im Artefaktbeleg erfasst. Schlüsselinhalte werden weder im Staging-Bereich noch im Build-Cache gespeichert. Signaturen und deren Veröffentlichung werden niemals aus dem Cache wiederverwendet. Wenn das Signieren fehlschlägt, bleibt das zuvor veröffentlichte Dateipaar erhalten. Schlägt die Installation einer der beiden Dateien fehl, setzt die Veröffentlichung beide Dateien zurück. Dadurch werden zwei Dateisystemumbenennungen für nebenläufige Leser nicht atomar.
 
-macOS-App-Bundles enthalten Begleitprogramme. Legen Sie `darwin.microphone_usage_description` fest, um den Verwendungstext und – sofern keine benutzerdefinierte Entitlements-Datei angegeben ist – das Entitlement für die Audioeingabe hinzuzufügen. Benutzerdefinierte plist- und Entitlements-Quelldateien bleiben unverändert. Signierung und Beglaubigung verwenden unter macOS die vorhandenen Apple-Werkzeuge und Anmeldedaten; für die Beglaubigung ist ein echtes Notarprofil erforderlich. Signierte Ausgaben behalten ihre plattformspezifische Erweiterung bei, beispielsweise `notes.signed.app` und `notes.signed.dmg`.
+macOS-App-Bundles enthalten Begleitprogramme. Setzen Sie `darwin.microphone_usage_description`, um den Verwendungstext und, wenn keine benutzerdefinierte Entitlements-Datei angegeben ist, das Entitlement für die Audioeingabe hinzuzufügen. Benutzerdefinierte plist- und Entitlements-Quelldateien bleiben unverändert. Zum Signieren und Notarisieren werden unter macOS die vorhandenen Apple-Werkzeuge und Anmeldedaten verwendet; für die Notarisierung ist ein echtes Notarprofil erforderlich. Signierte Ausgaben behalten ihre plattformspezifische Erweiterung bei, beispielsweise `notes.signed.app` und `notes.signed.dmg`.
 
-## Steuerung während der Entwicklung
+## Entwicklungssteuerung
 
 Geben Sie während `wails3 dev` einen Befehl ein und drücken Sie anschließend die Eingabetaste:
 
 | Befehl | Aktion |
 | --- | --- |
-| `r` | Erzwingt einen erneuten Build und Neustart, auch bei unverändertem Backend. |
-| `b` | Generiert Bindings neu und führt einen erneuten Build aus. |
-| `f` | Startet das Frontend neu. |
-| `c` | Leert das Terminal. |
-| `q` | Beendet die Sitzung und ihre Kindprozesse. |
-| `h` | Zeigt die Steuerungsbefehle an. |
+| `r` | Neuen Build und Neustart erzwingen, einschließlich eines unveränderten Backends. |
+| `b` | Bindings neu generieren und erneut bauen. |
+| `f` | Frontend neu starten. |
+| `c` | Terminal leeren. |
+| `q` | Sitzung und ihre untergeordneten Prozesse beenden. |
+| `h` | Steuerbefehle anzeigen. |
 
-Bei fehlgeschlagenen Builds läuft die aktuelle Anwendung weiter. Die Steuerung erfordert ein interaktives Terminal; über eine Pipe weitergeleitete Eingaben ändern das Sitzungsverhalten nicht.
+Bei fehlgeschlagenen Builds läuft die aktuelle Anwendung weiter. Die Steuerbefehle erfordern ein interaktives Terminal; weitergeleitete Eingaben ändern das Sitzungsverhalten nicht.
 
 ## Arbeit vor der Ausführung prüfen
 
-Die Planprüfung löst denselben unveränderlichen Graphen auf, den auch die Ausführung verwendet. Die Textausgabe ist für Menschen bestimmt; JSON ist ein versionierter, maschinenlesbarer Vertrag.
+Die Planprüfung löst denselben unveränderlichen Graphen auf, den auch die Ausführung verwendet. Text ist für Menschen bestimmt; JSON ist ein versionierter, maschinenlesbarer Vertrag.
 
 ```bash
 wails3 build release --plan
@@ -214,22 +227,22 @@ wails3 build release --plan --json
 
 ## Konfiguration ohne Build validieren
 
-Verwenden Sie den dafür vorgesehenen Preflight-Befehl in der CI, als Editor-Task oder vor dem Committen der Konfiguration. Ohne Profil validiert er das BasismManifest und jedes benannte Profil; mit einem Profil prüft er nur diese vollständige Anforderung:
+Verwenden Sie den dedizierten Preflight-Befehl in der CI, als Editor-Aufgabe oder bevor Sie Konfigurationsänderungen committen. Ohne Profil validiert er das Basismanifest und jedes benannte Profil; mit einem Profil prüft er nur diese vollständige Anforderung:
 
 ```bash
 wails3 config check
 wails3 config check release
 ```
 
-Fehler bei Syntax, Schema, Semantik, Pfaden, Zielsystemen, Formaten, Signierung und Planung sowie durch die Konfiguration verursachte Fehler bei Host-Fähigkeiten verwenden denselben Diagnose-Renderer wie Build und Dev. Diagnosen geben das Feld und den Quellbereich an, zeigen die Quellzeile mit einem Einfügezeichen und enthalten, sofern hilfreich, einen Korrekturhinweis. Umgebungswerte werden in Quellauszügen der Diagnose unkenntlich gemacht. Host-Fehler, die ausschließlich durch Befehlszeilenoptionen verursacht werden, bleiben gewöhnliche Befehlsfehler und werden nicht fälschlich als ungültiges YAML gemeldet.
+Fehler der Syntax, des Schemas, der Semantik, der Pfade, des Ziels, des Formats, der Signierung, des Planers und der von der Konfiguration festgelegten Host-Fähigkeiten verwenden denselben Diagnose-Renderer wie Build und Dev. Diagnosen nennen das Feld und den Quellbereich, geben die Quellzeile mit einem Markierungszeichen aus und enthalten gegebenenfalls einen hilfreichen Korrekturhinweis. Umgebungswerte werden in den Quellauszügen der Diagnose unkenntlich gemacht. Hostfehler, die ausschließlich durch Befehlszeilenoptionen verursacht werden, bleiben gewöhnliche Befehlsfehler und werden nicht fälschlich als ungültiges YAML gemeldet.
 
 ## Projekteigene Assets verwenden
 
-Pfade im Manifest verweisen auf Dateien in Ihrem Besitz, etwa Symbole, Plattformmanifeste, Paketvorlagen und Maintainer-Skripte. Wails bearbeitet diese Quelldateien niemals. Bevor ein Werkzeug sie verarbeitet, kopiert Wails sie in einen temporären `.wails/`-Arbeitsbereich. Die endgültigen Artefakte werden unter `build.output` abgelegt, und ein verifizierter Beleg wird nach `.wails/artifacts/receipt.json` geschrieben.
+Manifestpfade verweisen auf Dateien, die Ihnen gehören, beispielsweise Symbole, Plattformmanifeste, Paketvorlagen und Maintainer-Skripte. Wails bearbeitet diese Quelldateien niemals. Bevor ein Werkzeug sie verarbeitet, kopiert Wails sie in einen temporären `.wails/`-Arbeitsbereich. Die endgültigen Artefakte werden unter `build.output` abgelegt und ein verifizierter Beleg wird in `.wails/artifacts/receipt.json` geschrieben.
 
 ## Auf Android bereitstellen
 
-Android-Produktionsprofile erzeugen AABs. Für die lokale Bereitstellung erstellt Wails intern ein ABI-spezifisches Debug-APK, installiert es mit ADB und startet die App:
+Android-Produktionsprofile erzeugen AABs. Für die lokale Bereitstellung erstellt Wails intern eine ABI-spezifische Debug-APK, installiert sie mit ADB und startet die App:
 
 ```bash
 wails3 android devices
@@ -237,22 +250,22 @@ wails3 android run --device SERIAL
 wails3 android run --emulator AVD_NAME
 ```
 
-Ohne expliziten Selektor bietet ein interaktives Terminal verbundene Geräte und konfigurierte virtuelle Android-Geräte zur Auswahl an. Bei einer automatisierten Ausführung mit mehreren verfügbaren Zielsystemen muss `--device` oder `--emulator` angegeben werden.
+Ohne explizite Auswahl bietet ein interaktives Terminal verbundene Geräte und konfigurierte Android Virtual Devices an. Bei der Automatisierung mit mehreren verfügbaren Zielen muss `--device` oder `--emulator` angegeben werden.
 
-Binden Sie einen auf die Anwendung beschränkten Log-Stream ein und überwachen Sie das Zielsystem, bis die App beendet wird oder Sie Strg+C drücken:
+Hängen Sie einen auf die Anwendung beschränkten Log-Datenstrom an und überwachen Sie das Ziel, bis die App beendet wird oder Sie Strg+C drücken:
 
 ```bash
 wails3 android run --emulator AVD_NAME --logs
 wails3 android run --emulator AVD_NAME --logs --stop-emulator
 ```
 
-Eingebundene Ausführungen folgen einem Neustart der Anwendung und melden Verbindungsabbrüche oder Offline-Übergänge des Zielsystems. Emulatoren laufen standardmäßig weiter, um schnelle Iterationen zu ermöglichen. `--stop-emulator` muss explizit angegeben werden, erfordert `--logs` und beendet beim Ende der eingebundenen Sitzung nur ein Emulatorziel. Wenn Wails einen neuen Emulator startet, dessen Startbereitschaft jedoch nicht erreicht oder der Vorgang abgebrochen wird, bereinigt Wails diesen Prozess automatisch.
+Angehängte Ausführungen folgen einem Neustart der Anwendung und melden, wenn die Verbindung zum Ziel getrennt wird oder das Ziel offline geht. Für schnelle Iterationen laufen Emulatoren standardmäßig weiter. `--stop-emulator` muss explizit angegeben werden, erfordert `--logs` und beendet beim Ende der angehängten Sitzung ausschließlich ein Emulatorziel. Wenn Wails einen neuen Emulator startet, dessen Startbereitschaft jedoch fehlschlägt oder abgebrochen wird, bereinigt Wails diesen Prozess automatisch.
 
 ## Begrenzte Lebenszyklus-Hooks ausführen
 
-Die experimentelle Hook-Schnittstelle ruft in jeder deklarierten Phase genau ein projekteigenes Skript auf. Ein Hook ist kein Shell-Befehl: Wails führt die Datei direkt aus, standardmäßig vom Projektstammverzeichnis aus, sofern `directory` nicht festgelegt ist.
+Die experimentelle Hook-Schnittstelle ruft in jeder deklarierten Phase ein projekteigenes Skript auf. Ein Hook ist kein Shell-Befehl: Wails führt die Datei direkt aus, standardmäßig vom Projektstammverzeichnis aus, sofern `directory` nicht gesetzt ist.
 
-Auf Unix-Hosts muss das Skript ausführbar sein und mit einem Shebang beginnen. Windows-Hosts akzeptieren `.cmd`-, `.bat`- und `.ps1`-Skripte über feste Interpreter-Adapter; Wails parst auf keiner der beiden Plattformen einen eingebetteten Shell-Befehl.
+Auf Unix-Hosts muss das Skript ausführbar sein und mit einem Shebang beginnen. Windows-Hosts akzeptieren `.cmd`-, `.bat`- und `.ps1`-Skripte über festgelegte Interpreter-Adapter; Wails analysiert auf keiner der beiden Plattformen einen eingebetteten Shell-Befehl.
 
 ```yaml
 version: 3
@@ -272,9 +285,9 @@ profiles:
       linux/amd64: {}
 ```
 
-Unterstützte Phasen sind `before_build`, `after_build`, `before_package`, `after_package`, `before_sign` und `after_sign`. Build-Hooks werden je nach Bedarf einmal für das gemeinsame Projekt oder einmal pro Zielsystem ausgeführt. Paketierungs- und Signierungs-Hooks bilden Barrieren um alle für ein Zielsystem angeforderten Formate, während die Formatoperationen innerhalb der Barriere weiterhin gleichzeitig ausgeführt werden.
+Unterstützte Phasen sind `before_build`, `after_build`, `before_package`, `after_package`, `before_sign` und `after_sign`. Build-Hooks werden je nach Bedarf einmal für das gemeinsam genutzte Projekt oder einmal pro Ziel ausgeführt. Paketierungs- und Signier-Hooks bilden Barrieren um alle für ein Ziel angeforderten Formate, während die Formatoperationen innerhalb der Barriere weiterhin nebenläufig ausgeführt werden.
 
-Hooks erhalten genau eine von Wails verwaltete Umgebungsvariable: `WAILS_HOOK_CONTEXT_FILE`. Sie bezeichnet eine geschützte JSON-Datei mit dem versionierten Aufrufkontext:
+Hooks erhalten eine Wails-eigene Umgebungsvariable: `WAILS_HOOK_CONTEXT_FILE`. Sie benennt eine geschützte JSON-Datei, die den versionierten Aufrufkontext enthält:
 
 ```json
 {
@@ -291,9 +304,9 @@ Hooks erhalten genau eine von Wails verwaltete Umgebungsvariable: `WAILS_HOOK_CO
 }
 ```
 
-Der Kontext enthält aufgelöste Pfade, kopiert jedoch niemals die geerbte Prozessumgebung oder Geheimnisse. Wails erstellt ihn atomar und mit Dateiberechtigungen ausschließlich für den Eigentümer unter `.wails/hooks/context/`. Nach erfolgreichem Abschluss oder Abbruch wird er entfernt. Bei einem Fehler bleibt er zur Diagnose erhalten, und sein Pfad wird in die Fehlermeldung aufgenommen. Ein Exitcode ungleich null lässt den regulären Plan-Schritt fehlschlagen; ein Abbruch beendet die Prozessgruppe des Hooks.
+Der Kontext enthält aufgelöste Pfade, kopiert jedoch niemals die geerbte Prozessumgebung oder Secrets. Wails erstellt ihn atomar mit Dateiberechtigungen ausschließlich für den Eigentümer unter `.wails/hooks/context/`. Nach erfolgreicher Ausführung oder einem Abbruch wird er entfernt. Bei einem Fehler bleibt er zur Diagnose erhalten und sein Pfad wird in die Fehlermeldung aufgenommen. Ein Exitcode ungleich null lässt den regulären Plan-Schritt fehlschlagen; bei einem Abbruch wird die Prozessgruppe des Hooks beendet.
 
-Hooks werden standardmäßig bei jedem Aufruf ausgeführt. Aktivieren Sie die Zwischenspeicherung nur, wenn für das Skript sämtliche Eingaben und Ausgaben vollständig deklariert sind:
+Hooks werden standardmäßig bei jedem Aufruf ausgeführt. Aktivieren Sie die Zwischenspeicherung nur, wenn das Skript vollständig deklarierte Ein- und Ausgaben besitzt:
 
 ```yaml
 version: 3
@@ -314,9 +327,9 @@ profiles:
       linux/amd64: {}
 ```
 
-Das Skript und sein Ausführbarkeitsmodus sind implizite Eingaben. Mehrere Ausgaben müssen sich ein einziges Verzeichnis außerhalb des Stammverzeichnisses teilen; dieses bildet das begrenzte Artefakt, das Wails erfasst und wiederherstellt. Das Ausgabestammverzeichnis darf weder das Skript noch eine deklarierte Eingabe enthalten. Zwischengespeicherte Ausgabebäume dürfen ausschließlich reguläre Dateien und Verzeichnisse enthalten, niemals symbolische Links oder spezielle Dateien. Ein stets ausgeführter Hook verhindert die Zwischenspeicherung seiner nachgelagerten Operationen, da nicht deklarierte Nebeneffekte nicht sicher in einem Fingerabdruck erfasst werden können. Ein zwischenspeicherbarer Hook erhält die Zwischenspeicherung nachgelagerter Operationen über seine deklarierte Artefaktidentität aufrecht.
+Das Skript und sein Ausführbarkeitsmodus sind implizite Eingaben. Mehrere Ausgaben müssen sich in einem gemeinsamen Verzeichnis unterhalb des Stammverzeichnisses befinden. Dieses Verzeichnis ist das begrenzte Artefakt, das Wails erfasst und wiederherstellt. Das Ausgabestammverzeichnis darf weder das Skript noch eine deklarierte Eingabe enthalten. Zwischengespeicherte Ausgabebäume dürfen ausschließlich reguläre Dateien und Verzeichnisse enthalten, niemals symbolische Links oder Spezialdateien. Ein immer ausgeführter Hook verhindert die Zwischenspeicherung nachgelagerter Operationen, da nicht deklarierte Seiteneffekte nicht sicher mit einem Fingerabdruck versehen werden können. Ein zwischenspeicherbarer Hook erhält durch die deklarierte Artefaktidentität die Zwischenspeicherung nachgelagerter Operationen aufrecht.
 
-## Vorhandenes Projekt migrieren
+## Ein vorhandenes Projekt migrieren
 
 Erstellen und prüfen Sie einen inaktiven Entwurf:
 
@@ -326,13 +339,13 @@ wails3 migrate --dry-run
 wails3 migrate --json
 ```
 
-Konservative Lebenszyklus-Tasks ohne Argumente, die ein projekteigenes Skript aufrufen, werden in Hooks übersetzt. Anderes erreichbares benutzerdefiniertes Taskfile-Verhalten wird als Blocker gemeldet. Aktivieren Sie `wails.migrated.yaml` nach der Prüfung ausdrücklich:
+Konservative, argumentlose Lebenszyklus-Tasks, die ein projekteigenes Skript aufrufen, werden in Hooks übersetzt. Anderes erreichbares benutzerdefiniertes Taskfile-Verhalten wird als Blocker gemeldet. Aktivieren Sie den Entwurf nach der Prüfung von `wails.migrated.yaml` ausdrücklich:
 
 ```bash
 wails3 migrate --activate
 ```
 
-Bei der Aktivierung wird `wails.yaml` atomar erstellt. Taskfiles, `build/config.yml`, Skripte oder Assets werden weder gelöscht noch umbenannt oder bearbeitet. Ungültiges YAML schlägt als YAML fehl; es wird niemals auf den Legacy-Pfad zurückgegriffen.
+Bei der Aktivierung wird `wails.yaml` atomar erstellt. Taskfiles, `build/config.yml`, Skripte oder Assets werden dabei weder gelöscht noch umbenannt oder bearbeitet. Ungültiges YAML führt zu einem YAML-Fehler; es wird niemals auf den Legacy-Pfad zurückgegriffen.
 
 ## Alle Standardwerte materialisieren
 
@@ -342,12 +355,12 @@ Schreiben Sie einen inaktiven Snapshot, um die vollständig aufgelöste Konfigur
 wails3 eject
 ```
 
-Dadurch wird `wails.ejected.yaml` erstellt. Die aktive Konfiguration wird niemals überschrieben.
+Dadurch wird `wails.ejected.yaml` erstellt. Die aktive Konfiguration wird niemals neu geschrieben.
 
 ## Kompatibilitätszeitraum
 
-`wails3 package` und `wails3 sign` sind veraltete Aliasse für denselben Planer; neue Automatisierungen sollten `wails3 build` mit einem Profil oder Formaten verwenden. Die Einführung ist an Releases gebunden: Das erste Release macht YAML zum Pfad für neue Projekte, das folgende Release warnt bei Legacy-Taskfile-Routing, und das nächste entfernt die Taskfile-Ausführung zusammen mit den Aliassen. Für jeden Übergang muss die Akzeptanzmatrix der nativen Hosts für das jeweilige Release vollständig erfolgreich sein.
+`wails3 package` und `wails3 sign` sind veraltete Aliasse für denselben Planer; neue Automatisierungen sollten `wails3 build` mit einem Profil oder mit Formaten verwenden. Die Einführung ist an Releases gebunden: Im ersten Release wird YAML zum Pfad für neue Projekte, das darauffolgende Release warnt bei Legacy-Routing über Taskfiles und das nächste entfernt die Taskfile-Ausführung zusammen mit den Aliassen. Für jeden Übergang muss die Akzeptanzmatrix der nativen Hosts für das jeweilige Release vollständig erfolgreich sein.
 
-Eine Beschreibung aller Felder, Typen, Standardwerte und Anwendbarkeitsregeln finden Sie in der generierten [`wails.yaml`Feldreferenz](/reference/wails-yaml-fields/).
+Alle Felder, Typen, Standardwerte und Anwendbarkeitsregeln finden Sie in der generierten [`wails.yaml`Feldreferenz](/reference/wails-yaml-fields/).
 
-Die [`wails3 run`Konfigurationsreferenz](/reference/wails-yaml-run/) beschreibt die Standardwerte für lokale Starts, plattformspezifische Überschreibungen und den `go run .`-Fallback ohne Manifest.
+Die [`wails3 run`Konfigurationsreferenz](/reference/wails-yaml-run/) beschreibt die Standardwerte für den lokalen Start, plattformspezifische Überschreibungen und den `go run .`-Fallback ohne Manifest.

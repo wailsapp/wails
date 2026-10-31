@@ -24,6 +24,7 @@ wails3 run
 wails3 run --tags extra_tag
 wails3 run -- --example-mode other
 wails3 run --plan
+wails3 run --skip-build
 ```
 
 `--plan` résout et affiche la cible sélectionnée, les tags de compilation effectifs, l’artefact exécutable ou installable, les arguments et le répertoire de travail, sans compiler, installer ni lancer quoi que ce soit. Le plan répertorie les noms des clés de substitution d’environnement et omet leurs valeurs.
@@ -33,6 +34,7 @@ wails3 run --plan
 | Option | Signification |
 | --- | --- |
 | `--tags <tags>` | Tags de compilation Go supplémentaires, séparés par des virgules. |
+| `--skip-build` | Importez les exécutables de bureau existants depuis le répertoire de sortie YAML, puis lancez-les sans compilation. |
 | `--target <os>/<arch>` | Sélectionne une cible ; par défaut, utilise le système d’exploitation et l’architecture de l’hôte. |
 | `--plan` | Affiche les paramètres résolus sans compiler ni lancer. Les plans de bureau multiplateformes sont autorisés. |
 | `--device <id>` | Numéro de série adb Android ou identifiant d’un simulateur ou appareil iOS. |
@@ -42,6 +44,8 @@ wails3 run --plan
 | `--appargs <string>` | Graphie de compatibilité : analyse une chaîne unique selon les règles de citation POSIX. Cette option ne peut pas être répétée ni combinée avec des arguments placés après `--`. |
 
 Les sélecteurs mobiles nécessitent un manifeste et une cible mobile correspondante.
+
+`--skip-build` nécessite un projet YAML actif et un exécutable de bureau compatible. Cette option ignore les opérations sur le frontend, les liaisons, la compilation, UPX et les hooks de build ; les arguments de lancement et l’environnement configurés continuent toutefois de s’appliquer. Les exécutables importés sont validés et copiés dans l’espace de travail généré par Wake sans modification de leurs fichiers sources. Les applications macOS avec interface graphique sont assemblées à partir de ces entrées et des ressources du paquet actuel. Consultez [les chemins et les exigences des entrées précompilées](/experimental/yaml-builds/#use-prebuilt-desktop-executables). Les tags de build ne peuvent pas modifier un exécutable précompilé ; `--tags` et les tags de build configurés n’ont donc aucun effet dans ce mode.
 
 ## Champs
 
