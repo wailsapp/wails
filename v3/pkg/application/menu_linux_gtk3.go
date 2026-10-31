@@ -6,6 +6,7 @@ type linuxMenu struct {
 	menu      *Menu
 	native    pointer
 	isSubmenu bool
+	onDestroy func()
 }
 
 func newMenuImpl(menu *Menu) *linuxMenu {
@@ -28,6 +29,9 @@ func (m *linuxMenu) createNative() {
 		// Retain the menu kind so Update on a detached submenu recreates a
 		// GtkMenu, rather than a GtkMenuBar that cannot be reattached.
 		m.native = nil
+		if m.onDestroy != nil {
+			m.onDestroy()
+		}
 	})
 }
 
@@ -40,6 +44,7 @@ func (m *linuxMenu) update() {
 		return
 	}
 	m.processMenu(m.menu)
+	refreshGTK3MenuViews(m.menu)
 }
 
 func (m *linuxMenu) processMenu(menu *Menu) {

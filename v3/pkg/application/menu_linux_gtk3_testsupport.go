@@ -125,3 +125,17 @@ func gtkMenuTestBoxChildren(box pointer) []pointer {
 func gtkMenuTestNative(menu *Menu) pointer {
 	return menu.impl.(*linuxMenu).native
 }
+
+func gtkMenuTestItemLabel(item *MenuItem) string {
+	box := C.gtk_bin_get_child((*C.GtkBin)(item.impl.(*linuxMenuItem).native))
+	if box == nil {
+		return ""
+	}
+	children := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(box)))
+	defer C.g_list_free(children)
+	last := C.g_list_last(children)
+	if last == nil {
+		return ""
+	}
+	return C.GoString(C.gtk_label_get_text((*C.GtkLabel)(last.data)))
+}

@@ -294,10 +294,20 @@ func TestGTK3SetMenuOnRunningWindowProcess(t *testing.T) {
 	expectBar := func(menu *Menu, want ...string) {
 		t.Helper()
 		kids := gtkMenuTestBoxChildren(box)
-		if len(kids) != 2 || kids[1] != webview || kids[0] != gtkMenuTestNative(menu) {
-			t.Fatalf("box children = %#x, want [menu bar %#x, webview %#x]", kids, gtkMenuTestNative(menu), webview)
+		if len(kids) != 2 || kids[1] != webview || kids[0] != w.menubar {
+			t.Fatalf("box children = %#x, want [menu bar %#x, webview %#x]", kids, w.menubar, webview)
 		}
-		if got := gtkMenuTestLabels(menu); !slices.Equal(got, want) {
+		var view *Menu
+		for candidate := range gtk3MenuViews[menu] {
+			if gtkMenuTestNative(candidate) == w.menubar {
+				view = candidate
+				break
+			}
+		}
+		if view == nil {
+			t.Fatal("menu bar has no matching window view")
+		}
+		if got := gtkMenuTestLabels(view); !slices.Equal(got, want) {
 			t.Fatalf("menu bar labels = %q, want %q", got, want)
 		}
 	}
@@ -357,5 +367,122 @@ func TestGTK3SetMenuOnRunningWindowProcess(t *testing.T) {
 	expectBar(alpha, "Alpha")
 	if !chord(keyOne) {
 		t.Fatal("alpha accelerator not registered after re-adding the menu")
+	}
+}
+
+// The application menu is inherited by both windows; removing it from one
+// must neither keep its shortcut there nor disable it in the other window.
+func TestGTK3InheritedMenuAccelerators(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestGTK3InheritedMenuAcceleratorsProcess$", "-test.v")
+	cmd.Env = append(os.Environ(), "WAILS_TEST_GTK3_INHERITED=1", "G_DEBUG=fatal-criticals")
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("inherited menu: %v\n%s", err, output)
+	}
+}
+
+func TestGTK3InheritedMenuAcceleratorsProcess(t *testing.T) {
+	if os.Getenv("WAILS_TEST_GTK3_INHERITED") != "1" {
+		t.Skip("run by TestGTK3InheritedMenuAccelerators")
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	if !gtkMenuTestInit() {
+		t.Fatal("GTK display unavailable")
+	}
+	globalApplication = &App{impl: &gtkMenuTestApp{}, running: true, Logger: slog.Default()}
+	menu := NewMenu()
+	file := menu.AddSubmenu("File")
+	file.Add("Action").SetAccelerator("ctrl+1").OnClick(func(*Context) {})
+	check := file.AddCheckbox("Check", false)
+	file.AddRadio("First", true)
+	radio := file.AddRadio("Second", false).SetAccelerator("ctrl+3").OnClick(func(*Context) {})
+	menu.Update()
+	globalApplication.applicationMenu = menu
+	first := gtkMenuTestRealisedWindow()
+	second := gtkMenuTestRealisedWindow()
+	first.menubar = windowAttachMenuBar(first.window, first.vbox, windowMenuNative(menu), LinuxMenuStyleMenuBar)
+	second.menubar = windowAttachMenuBar(second.window, second.vbox, windowMenuNative(menu), LinuxMenuStyleMenuBar)
+	if first.menubar == second.menubar {
+		t.Fatal("windows share one native menu bar")
+	}
+	const key, ctrl = 0x31, 1 << 2
+	activate := func(window pointer, key uint32) bool {
+		matched := gtkMenuTestAccelActivate(window, key, ctrl)
+		if matched {
+			select {
+			case <-menuItemClicked:
+			default:
+			}
+		}
+		return matched
+	}
+	if !activate(second.window, key) {
+		t.Fatal("inherited accelerator did not fire in second window")
+	}
+	menu.FindByLabel("Action").SetLabel("Renamed")
+	check.SetChecked(true)
+	for view := range gtk3MenuViews[menu] {
+		if !view.items[0].submenu.FindByLabel("Check").impl.(*linuxMenuItem).isChecked() {
+			t.Fatal("checked state did not propagate")
+		}
+		if got := gtkMenuTestItemLabel(view.items[0].submenu.items[0]); got != "Renamed" {
+			t.Fatalf("native label = %q", got)
+		}
+	}
+	if !gtkMenuTestAccelActivate(second.window, '3', ctrl) {
+		t.Fatal("radio shortcut did not activate")
+	}
+	select {
+	case id := <-menuItemClicked:
+		if id != radio.id {
+			t.Fatalf("radio activation id = %d", id)
+		}
+	default:
+		t.Fatal("radio activation not dispatched")
+	}
+	radio.handleClick()
+	for view := range gtk3MenuViews[menu] {
+		submenu := view.items[0].submenu
+		if !submenu.FindByLabel("Second").impl.(*linuxMenuItem).isChecked() || submenu.FindByLabel("First").impl.(*linuxMenuItem).isChecked() {
+			t.Fatal("radio state did not propagate")
+		}
+	}
+	first.setMenu(nil)
+	if activate(first.window, key) {
+		t.Error("removed window still has the accelerator")
+	}
+	if !activate(second.window, key) {
+		t.Error("other window lost its inherited accelerator")
+	}
+	first.setMenu(menu)
+	if !activate(first.window, key) {
+		t.Error("restored menu lost its accelerator")
+	}
+	menu.FindByLabel("Renamed").SetAccelerator("ctrl+2")
+	if activate(first.window, key) || !activate(first.window, '2') || !activate(second.window, '2') {
+		t.Error("accelerator update did not propagate")
+	}
+	menu.items[0].submenu.Add("Added")
+	menu.items[0].submenu.Update()
+	for view := range gtk3MenuViews[menu] {
+		submenu := view.items[0].submenu
+		if submenu.FindByLabel("Added") == nil || len(gtkMenuTestBoxChildren(gtkMenuTestNative(submenu))) != 5 {
+			t.Fatal("submenu rebuild did not propagate")
+		}
+	}
+	first.setMenu(nil)
+	second.setMenu(nil)
+	if len(gtk3MenuViews[menu]) != 0 {
+		t.Fatal("destroyed windows left menu views behind")
+	}
+	action := menu.FindByLabel("Renamed")
+	if got := len(gtk3ItemViews[action]); got != 1 {
+		t.Fatalf("remaining native item views = %d, want the original only", got)
+	}
+	menu.Destroy()
+	if len(gtk3ItemViews) != 0 {
+		t.Fatalf("destroyed menu retained %d item view entries", len(gtk3ItemViews))
 	}
 }

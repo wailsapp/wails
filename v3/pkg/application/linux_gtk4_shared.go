@@ -284,3 +284,11 @@ func (a *linuxApp) getCurrentWindowID() uint {
 	}
 	return uint(1)
 }
+
+func windowMenuNative(menu *Menu) pointer {
+	menu.Update()
+	if impl, ok := menu.impl.(*linuxMenu); ok && impl != nil {
+		return impl.native
+	}
+	return nilPointer
+}

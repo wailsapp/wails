@@ -45,8 +45,9 @@ type linuxWebviewWindow struct {
 	// menuInstalled is the explicit menu whose bar is shown in the window, so
 	// a later setMenu knows which accelerators to unregister. nil when the
 	// window shows no menu or the application menu.
-	menuInstalled *Menu
-	ctxMenuOpened bool
+	menuInstalled       *Menu
+	menuActionsDisabled bool
+	ctxMenuOpened       bool
 
 	moveDebouncer     func(func())
 	resizeDebouncer   func(func())
@@ -333,12 +334,20 @@ func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 	w.gtkmenu = impl.native
 }
 
+func (w *linuxWebviewWindow) setMenuActions(enabled bool) {
+	if w.menuActionsDisabled == !enabled {
+		return
+	}
+	setWindowMenuActions(w.window, enabled)
+	w.menuActionsDisabled = !enabled
+}
+
 // replaceMenuBar shows menu as the menu bar of a realised window, replacing
 // the bar it had, or removes the bar when menu is nil. The previous explicit
 // menu's accelerators are unregistered unless another window or the
 // application menu still uses that menu. GTK thread only.
 func (w *linuxWebviewWindow) replaceMenuBar(menu *Menu) {
-	setWindowMenuActions(w.window, menu != nil)
+	w.setMenuActions(menu != nil)
 	previous := w.menuInstalled
 	style := w.parent.options.Linux.MenuStyle
 	if w.menubar != nilPointer {
@@ -353,13 +362,11 @@ func (w *linuxWebviewWindow) replaceMenuBar(menu *Menu) {
 	if menu == nil {
 		return
 	}
-	menu.Update()
-	impl, ok := menu.impl.(*linuxMenu)
-	if !ok || impl == nil {
+	w.gtkmenu = windowMenuNative(menu)
+	if w.gtkmenu == nilPointer {
 		return
 	}
-	w.gtkmenu = impl.native
-	w.menubar = windowAttachMenuBar(w.window, w.vbox, impl.native, style)
+	w.menubar = windowAttachMenuBar(w.window, w.vbox, w.gtkmenu, style)
 	w.menuInstalled = menu
 }
 
@@ -426,15 +433,13 @@ func (w *linuxWebviewWindow) run() {
 	if menu != nil {
 		// Explicit window menu takes priority
 		InvokeSync(func() {
-			menu.Update()
+			w.gtkmenu = windowMenuNative(menu)
 		})
-		w.gtkmenu = (menu.impl).(*linuxMenu).native
 	} else if w.parent.options.UseApplicationMenu && !w.parent.menuRemoved && globalApplication.applicationMenu != nil {
 		// Use the global application menu if opted in
 		InvokeSync(func() {
-			globalApplication.applicationMenu.Update()
+			w.gtkmenu = windowMenuNative(globalApplication.applicationMenu)
 		})
-		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
 	}
 
 	w.window, w.webview, w.vbox, w.menubar = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
@@ -442,7 +447,7 @@ func (w *linuxWebviewWindow) run() {
 		w.menuInstalled = explicit
 	}
 	if w.parent.menuRemoved {
-		setWindowMenuActions(w.window, false)
+		w.setMenuActions(false)
 	}
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()

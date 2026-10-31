@@ -53,6 +53,7 @@ jobs:
             go build -tags "$tags" -o /tmp/wails-parity ./tests/purego
             GOGC=1 xvfb-run -a dbus-run-session -- /tmp/wails-parity
           done
+          CGO_ENABLED=1 xvfb-run -a dbus-run-session -- go test -tags gtk3,wailsintegration ./pkg/application -run '^TestGTK3(MenuRebuild|MenuAccelerator|SetMenuOnRunningWindow|InheritedMenuAccelerators)$'
       - name: Exercise purego on Wayland
         env:
           CGO_ENABLED: '0'

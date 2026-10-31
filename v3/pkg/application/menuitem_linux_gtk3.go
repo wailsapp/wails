@@ -9,6 +9,7 @@ import (
 
 type linuxMenuItem struct {
 	menuItem  *MenuItem
+	owner     *MenuItem
 	native    pointer
 	handlerId uint
 	// The accelerator bound to native, so it can be replaced or removed.
@@ -17,97 +18,84 @@ type linuxMenuItem struct {
 	accelMods uint32
 }
 
-func (l linuxMenuItem) setTooltip(tooltip string) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemSetToolTip(l.native, tooltip)
-	})
-}
-
-func (l *linuxMenuItem) destroy() {
-	InvokeSync(func() {
+// eachNative propagates changes made through the original item to its live views.
+func (l *linuxMenuItem) eachNative(fn func(*linuxMenuItem)) {
+	if l.owner == nil || l.menuItem != l.owner {
 		if l.native != nil {
-			l.blockSignal()
-			menuItemDestroy(l.native)
+			fn(l)
 		}
+		return
+	}
+	peers := gtk3ItemPeers(l.owner)
+	if len(peers) == 0 && l.native != nil {
+		fn(l)
+		return
+	}
+	for _, peer := range peers {
+		fn(peer)
+	}
+}
+
+func (l *linuxMenuItem) withNative(fn func(*linuxMenuItem)) {
+	InvokeSync(func() {
+		l.eachNative(func(peer *linuxMenuItem) {
+			peer.blockSignal()
+			defer peer.unBlockSignal()
+			fn(peer)
+		})
 	})
 }
 
-func (l linuxMenuItem) blockSignal() {
+func (l *linuxMenuItem) setTooltip(s string) {
+	l.withNative(func(p *linuxMenuItem) { menuItemSetToolTip(p.native, s) })
+}
+func (l *linuxMenuItem) setBitmap(b []byte) {
+	l.withNative(func(p *linuxMenuItem) { menuItemSetBitmap(p.native, b) })
+}
+func (l *linuxMenuItem) setLabel(s string) {
+	l.withNative(func(p *linuxMenuItem) { menuItemSetLabel(p.native, s) })
+}
+func (l *linuxMenuItem) setDisabled(b bool) {
+	l.withNative(func(p *linuxMenuItem) { menuItemSetDisabled(p.native, b) })
+}
+func (l *linuxMenuItem) setChecked(b bool) {
+	l.withNative(func(p *linuxMenuItem) { menuItemSetChecked(p.native, b) })
+}
+func (l *linuxMenuItem) setHidden(b bool) {
+	l.withNative(func(p *linuxMenuItem) { widgetSetVisible(p.native, b) })
+}
+func (l *linuxMenuItem) isChecked() bool { return l.native != nil && menuItemChecked(l.native) }
+func (l *linuxMenuItem) blockSignal() {
 	if l.handlerId != 0 {
 		menuItemSignalBlock(l.native, l.handlerId, true)
 	}
 }
-func (l linuxMenuItem) setBitmap(data []byte) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemSetBitmap(l.native, data)
-	})
-}
-
-func (l linuxMenuItem) unBlockSignal() {
+func (l *linuxMenuItem) unBlockSignal() {
 	if l.handlerId != 0 {
 		menuItemSignalBlock(l.native, l.handlerId, false)
 	}
 }
 
-func (l linuxMenuItem) setLabel(s string) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemSetLabel(l.native, s)
-	})
+func (l *linuxMenuItem) destroy() {
+	InvokeSync(func() { l.eachNative(func(p *linuxMenuItem) { p.blockSignal(); menuItemDestroy(p.native) }) })
 }
 
-func (l linuxMenuItem) isChecked() bool {
-	return menuItemChecked(l.native)
-}
-
-func (l linuxMenuItem) setDisabled(disabled bool) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemSetDisabled(l.native, disabled)
-	})
-}
-
-func (l linuxMenuItem) setChecked(checked bool) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemSetChecked(l.native, checked)
-	})
-}
-
-func (l linuxMenuItem) setHidden(hidden bool) {
-	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		widgetSetVisible(l.native, hidden)
-	})
-}
-
-// setAccelerator binds the shortcut to the item (nil removes it). The item
-// keeps the binding it was given, so a later call removes exactly that one.
 func (l *linuxMenuItem) setAccelerator(accelerator *accelerator) {
-	if l.native == nil {
-		return
-	}
 	InvokeSync(func() {
-		l.clearAccelerator()
-		if accelerator == nil {
-			return
-		}
-		key := gtk3AcceleratorKeyval(accelerator.Key)
-		if key == 0 {
-			globalApplication.warning("menu accelerator %q has no GTK key", accelerator.String())
-			return
-		}
-		mods := gtk3AcceleratorModifiers(accelerator.Modifiers)
-		menuItemAddAccelerator(l.native, key, mods)
-		l.accelSet, l.accelKey, l.accelMods = true, key, mods
+		l.eachNative(func(p *linuxMenuItem) {
+			p.clearAccelerator()
+			if accelerator == nil {
+				return
+			}
+			key := gtk3AcceleratorKeyval(accelerator.Key)
+			if key == 0 {
+				globalApplication.warning("menu accelerator %q has no GTK key", accelerator.String())
+				return
+			}
+			mods := gtk3AcceleratorModifiers(accelerator.Modifiers)
+			menuItemAddAccelerator(p.native, key, mods)
+			p.accelSet, p.accelKey, p.accelMods = true, key, mods
+		})
 	})
 }
 
@@ -143,6 +131,7 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	}
 	result.setDisabled(result.menuItem.disabled)
 	result.trackDestroy()
+	registerGTK3ItemView(result)
 	return result
 }
 
@@ -157,6 +146,7 @@ func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
 	result.setChecked(item.checked)
 	result.setDisabled(result.menuItem.disabled)
 	result.trackDestroy()
+	registerGTK3ItemView(result)
 	return result
 }
 
@@ -164,11 +154,11 @@ func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
 // Go implementation too, including items removed from the Go menu before Update.
 func (l *linuxMenuItem) trackDestroy() {
 	menuOnDestroy(l.native, func() {
+		unregisterGTK3ItemView(l)
 		l.native = nil
 		l.handlerId = 0
 		if l.menuItem.impl == l {
 			l.menuItem.impl = nil
-			delete(gtkSignalToMenuItem, l.menuItem.id)
 		}
 	})
 }

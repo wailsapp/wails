@@ -316,8 +316,7 @@ func handleClick(idPtr unsafe.Pointer) {
 	case text, checkbox:
 		menuItemClicked <- item.id
 	case radio:
-		menuItem := (item.impl).(*linuxMenuItem)
-		if menuItem.isChecked() {
+		if menuItemChecked(pointer(idPtr)) {
 			menuItemClicked <- item.id
 		}
 	}
@@ -335,7 +334,11 @@ func attachMenuHandler(item *MenuItem) uint {
 	defer _Cfunc_free(unsafe.Pointer(ident))
 	_Cfunc_set_object_uint((*_Ctype_GObject)(widget), ident, _Ctype_guint(item.id))
 
-	gtkSignalToMenuItem[item.id] = item
+	if original := getMenuItemByID(item.id); original != nil {
+		gtkSignalToMenuItem[item.id] = original
+	} else {
+		gtkSignalToMenuItem[item.id] = item
+	}
 	return uint(handlerId)
 }
 
@@ -916,6 +919,10 @@ func menuAccelGroup() pointer {
 
 func windowAddMenuAccelGroup(window pointer) {
 	_Cfunc_gtk_window_add_accel_group((*_Ctype_GtkWindow)(window), (*_Ctype_GtkAccelGroup)(menuAccelGroup()))
+}
+
+func windowRemoveMenuAccelGroup(window pointer) {
+	_Cfunc_gtk_window_remove_accel_group((*_Ctype_GtkWindow)(window), (*_Ctype_GtkAccelGroup)(menuAccelGroup()))
 }
 
 func menuItemAddAccelerator(item pointer, keyval, mods uint32) {
