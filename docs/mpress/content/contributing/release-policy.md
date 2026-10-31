@@ -11,7 +11,7 @@ Wails v3 releases on a **clock, not on features**. After the `v3.0.0` baseline:
 
 | Release | Tag | Cadence | GitHub release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when `UNRELEASED_CHANGELOG.md` has content | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when merged PRs in the tested release range produce user-visible notes | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
 | Weekly | `v3.<next>.0` | automated, Sunday 20:00 Australia/Sydney **(day unconfirmed)** | normal release, Latest | same version, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | rare, manual | normal release, Latest | same version, dist-tag `latest` |
 | Major | `v4.0.0` | only for breaking changes | normal release | `latest` |
@@ -62,7 +62,7 @@ Weeklies are cut from `master`, but **not from its tip**: the workflow picks the
 
 ## How to cut a release
 
-Release rights are limited to the project Lead (see the governance document). Contributors never tag or publish; they add entries to `v3/UNRELEASED_CHANGELOG.md`.
+Release rights are limited to the project Lead (see the governance document). Contributors never tag or publish; they describe user-visible changes in PR titles or a `## Release notes` description section. Release automation generates notes from merged PRs in the exact tested commit range; `v3/UNRELEASED_CHANGELOG.md` has been removed.
 
 Everything runs from **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 

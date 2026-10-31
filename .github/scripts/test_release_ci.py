@@ -120,6 +120,37 @@ const github = {rest: {repos: {getCollaboratorPermissionLevel: async (args) => {
             self.assertIn(job, self.build['build_results']['needs'])
             self.assertEqual(self.build[job]['with']['ref'], '${{ inputs.ref || github.sha }}')
 
+    def test_release_generates_notes_before_checking_or_publishing(self):
+        job = self.release['nightly-release']
+        steps = job['steps']
+        generate = step(job, 'Generate changelog from merged PRs in the tested snapshot')
+        self.assertEqual(generate['env']['TESTED_SHA'], '${{ needs.cadence.outputs.sha }}')
+        self.assertIn('--target "$TESTED_SHA"', generate['run'])
+        self.assertIn('--version "$RELEASE_VERSION"', generate['run'])
+        self.assertLess(steps.index(generate), steps.index(step(job, 'Check for unreleased changelog content')))
+        self.assertLess(steps.index(generate), steps.index(step(job, 'Run release script')))
+        self.assertNotIn('continue-on-error', generate)
+        sync = step(job, 'Sync release commit back to master')['run']
+        self.assertIn('generate-release-changelog.py sync --tag "$TAG"', sync)
+        self.assertFalse((WORKFLOWS / 'auto-changelog-v3.yml').exists())
+        self.assertFalse((WORKFLOWS / 'drop-unreleased-changelog.yml').exists())
+        self.assertFalse((ROOT / 'v3/UNRELEASED_CHANGELOG.md').exists())
+
+    def test_retired_staging_file_is_rejected_by_read_only_check(self):
+        job = workflow('changelog-publication-tests')['jobs']['publication']
+        script = step(job, 'Reject the retired shared changelog file')['run']
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(['git', 'init', '-q', directory], check=True)
+            clean = subprocess.run(['bash', '-e', '-c', script], cwd=directory, capture_output=True)
+            self.assertEqual(clean.returncode, 0)
+            (root / 'v3').mkdir()
+            (root / 'v3/UNRELEASED_CHANGELOG.md').write_text('recreated')
+            subprocess.run(['git', '-C', directory, 'add', '.'], check=True)
+            rejected = subprocess.run(['bash', '-e', '-c', script], cwd=directory, capture_output=True)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn(b'DO NOT recreate', rejected.stdout)
+
     def test_branch_movement_cannot_silently_change_release_source(self):
         script = step(self.release['nightly-release'], 'Refuse a stale release snapshot')['run']
         with tempfile.TemporaryDirectory() as directory:

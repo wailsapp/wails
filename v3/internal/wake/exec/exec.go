@@ -360,7 +360,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 				return nil
 			}
 			goRecord = func() {
-				if err := e.Cache.RecordGoCmd(task.Name, expanded); err != nil {
+				if err := e.Cache.RecordGoCmd(task.Name, expanded, sources); err != nil {
 					e.log("go-cache record failed for %q: %v", task.Name, err)
 				}
 			}

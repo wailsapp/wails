@@ -6,8 +6,8 @@ set ORIGINAL_DIR=%CD%
 cd ..\..
 
 REM Backup existing file
-if exist UNRELEASED_CHANGELOG.md (
-    copy UNRELEASED_CHANGELOG.md UNRELEASED_CHANGELOG.md.backup > nul
+if exist release_changelog.md (
+    copy release_changelog.md release_changelog.md.backup > nul
 )
 
 echo.
@@ -15,18 +15,18 @@ echo Test 1: Empty changelog (should fail)
 echo -------------------------------------
 
 REM Create empty changelog
-echo # Unreleased Changes > UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Added >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- New features --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Changed >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Changes --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Fixed >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Bug fixes --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo --- >> UNRELEASED_CHANGELOG.md
+echo # Unreleased Changes > release_changelog.md
+echo. >> release_changelog.md
+echo ## Added >> release_changelog.md
+echo ^<^!-- New features --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Changed >> release_changelog.md
+echo ^<^!-- Changes --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Fixed >> release_changelog.md
+echo ^<^!-- Bug fixes --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo --- >> release_changelog.md
 
 cd tasks\release
 go run release.go --create-release-notes 2>&1
@@ -41,13 +41,13 @@ echo Test 2: Only comments (should fail)
 echo -----------------------------------
 
 cd ..\..
-echo # Unreleased Changes > UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Added >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- This is just a comment --^> >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Another comment --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo --- >> UNRELEASED_CHANGELOG.md
+echo # Unreleased Changes > release_changelog.md
+echo. >> release_changelog.md
+echo ## Added >> release_changelog.md
+echo ^<^!-- This is just a comment --^> >> release_changelog.md
+echo ^<^!-- Another comment --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo --- >> release_changelog.md
 
 cd tasks\release
 go run release.go --create-release-notes 2>&1
@@ -62,14 +62,14 @@ echo Test 3: Mixed bullet styles
 echo ---------------------------
 
 cd ..\..
-echo # Unreleased Changes > UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Added >> UNRELEASED_CHANGELOG.md
-echo - Dash bullet point >> UNRELEASED_CHANGELOG.md
-echo * Asterisk bullet point >> UNRELEASED_CHANGELOG.md
-echo - Another dash >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo --- >> UNRELEASED_CHANGELOG.md
+echo # Unreleased Changes > release_changelog.md
+echo. >> release_changelog.md
+echo ## Added >> release_changelog.md
+echo - Dash bullet point >> release_changelog.md
+echo * Asterisk bullet point >> release_changelog.md
+echo - Another dash >> release_changelog.md
+echo. >> release_changelog.md
+echo --- >> release_changelog.md
 
 cd tasks\release
 go run release.go --create-release-notes
@@ -100,8 +100,8 @@ if %ERRORLEVEL% EQU 0 (
 REM Clean up
 cd ..\..
 if exist release_notes.md del release_notes.md
-if exist UNRELEASED_CHANGELOG.md.backup (
-    move /Y UNRELEASED_CHANGELOG.md.backup UNRELEASED_CHANGELOG.md > nul
+if exist release_changelog.md.backup (
+    move /Y release_changelog.md.backup release_changelog.md > nul
 )
 
 cd %ORIGINAL_DIR%
