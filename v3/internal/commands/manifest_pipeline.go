@@ -2298,9 +2298,20 @@ func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResu
 func appendCompanionPackageContents(config map[string]any, root string, companions []pipeline.NamedBinary) {
 	contents, _ := config["contents"].([]any)
 	for _, binary := range companions {
-		contents = append(contents, map[string]any{"src": filepath.Join(root, binary.Path), "dst": "/usr/bin/" + binary.Name})
+		entry := map[string]any{"src": filepath.Join(root, binary.Path), "dst": "/usr/bin/" + binary.Name}
+		setLinuxExecutableMode(entry)
+		contents = append(contents, entry)
 	}
 	config["contents"] = contents
+}
+
+func setLinuxExecutableMode(entry map[string]any) {
+	info, _ := entry["file_info"].(map[string]any)
+	if info == nil {
+		info = map[string]any{}
+		entry["file_info"] = info
+	}
+	info["mode"] = 0o755
 }
 
 func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (string, error) {
@@ -2353,6 +2364,7 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 			switch {
 			case strings.Contains(source, "/bin/"):
 				entry["src"] = filepath.Join(h.root, s.Binary)
+				setLinuxExecutableMode(entry)
 			case strings.HasSuffix(source, "appicon.png"):
 				entry["src"] = filepath.Join(assets, "appicon.png")
 			case strings.HasSuffix(source, ".desktop"):
