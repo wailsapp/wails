@@ -19,15 +19,16 @@ type File struct {
 }
 
 type Options struct {
-	Script     string
-	Output     string
-	Arch       string
-	Scope      string
-	Primary    File
-	Companions []File
-	Version    *buildmeta.Info
-	Prepare    func(context.Context, string) error
-	Defines    map[string]string
+	Script       string
+	Output       string
+	Arch         string
+	Scope        string
+	Primary      File
+	Companions   []File
+	Version      *buildmeta.Info
+	Prepare      func(context.Context, string) error
+	Defines      map[string]string
+	SkipWebView2 bool
 }
 
 type Compile func(ctx context.Context, directory string, args []string) error
@@ -163,6 +164,9 @@ func wrapperScript(script, output string, options Options) (string, error) {
 	}
 	fmt.Fprintf(&text, "!define ARG_WAILS_%s_BINARY %s\n", strings.ToUpper(options.Arch), sourceQuote(primary))
 	define("PRODUCT_EXECUTABLE", options.Primary.Name)
+	if options.SkipWebView2 {
+		define("WAILS_SKIP_WEBVIEW2", "1")
+	}
 	if options.Scope != "" {
 		define("WAILS_INSTALL_SCOPE", options.Scope)
 		if options.Scope == "user" {
@@ -213,7 +217,7 @@ func validateDefines(defines map[string]string) error {
 			}
 		}
 		switch name {
-		case "PRODUCT_EXECUTABLE", "WAILS_INSTALL_SCOPE", "REQUEST_EXECUTION_LEVEL", "INFO_PRODUCTVERSION":
+		case "PRODUCT_EXECUTABLE", "WAILS_INSTALL_SCOPE", "REQUEST_EXECUTION_LEVEL", "INFO_PRODUCTVERSION", "WAILS_SKIP_WEBVIEW2":
 			return fmt.Errorf("NSIS define %s is owned by Wake", name)
 		}
 		if strings.HasPrefix(name, "ARG_WAILS_") {

@@ -170,6 +170,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 # Install webview2 by launching the bootstrapper
 # See https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#online-only-deployment
 !macro wails.webview2runtime
+    !ifndef WAILS_SKIP_WEBVIEW2
     !ifndef WAILS_INSTALL_WEBVIEW_DETAILPRINT
         !define WAILS_INSTALL_WEBVIEW_DETAILPRINT "Installing: WebView2 Runtime"
     !endif
@@ -201,6 +202,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     
     SetDetailsPrint both
     ok:
+    !endif
 !macroend
 
 # Copy of APP_ASSOCIATE and APP_UNASSOCIATE macros from here https://gist.github.com/nikku/281d0ef126dbc215dd58bfd5b3a5cd5b

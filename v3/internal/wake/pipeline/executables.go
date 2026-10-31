@@ -64,6 +64,10 @@ func planCompanions(plan *Plan, config manifest.Config, request Request, targets
 	var roots []NodeKey
 	var binaries []NamedBinary
 	for _, binary := range config.Binaries {
+		kind := binary.Kind
+		if kind == "" {
+			kind = "cli"
+		}
 		name := binary.Name
 		if request.TargetOS == "windows" {
 			name += ".exe"
@@ -74,7 +78,7 @@ func planCompanions(plan *Plan, config manifest.Config, request Request, targets
 		for _, target := range targets {
 			base := plan.Nodes[NodeKey("target:"+target.OS+"/"+target.Arch+":compile")]
 			spec := base.Spec.(CompileSpec)
-			spec.Package, spec.Console = binary.Package, binary.Kind != "gui"
+			spec.Package, spec.Console = binary.Package, kind != "gui"
 			spec.Output = output
 			if len(targets) > 1 {
 				spec.Output = filepath.ToSlash(filepath.Join(generated, "companions", target.Arch, name))
@@ -115,7 +119,7 @@ func planCompanions(plan *Plan, config manifest.Config, request Request, targets
 			addNode(plan, Node{Key: root, Kind: MergeUniversalBinaries, Label: "Merge " + binary.Name, Scope: TargetScope, Dependencies: components, Spec: MergeSpec{Inputs: paths, Output: output}, Inputs: []InputSpec{{Label: "companion-components", Files: paths}}, Output: output, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 256}, Artifact: ArtifactIdentity{Kind: ArtifactBinary, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}}}, nil)
 		}
 		roots = append(roots, root)
-		binaries = append(binaries, NamedBinary{Name: name, Path: output})
+		binaries = append(binaries, NamedBinary{Name: name, Path: output, Kind: kind})
 	}
 	return roots, binaries, nil
 }

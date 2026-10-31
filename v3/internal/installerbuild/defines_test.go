@@ -41,7 +41,7 @@ func TestInstallerCustomDefinesAreLiteralAndDeterministic(t *testing.T) {
 }
 
 func TestInstallerRejectsUnsafeOrOwnedDefinesBeforeCompiler(t *testing.T) {
-	for _, name := range []string{"", "bad name", "bad\n!include", "0start", "PRODUCT_EXECUTABLE", "ARG_WAILS_ARM64_BINARY", "WAILS_INSTALL_SCOPE", "INFO_PRODUCTVERSION", "REQUEST_EXECUTION_LEVEL"} {
+	for _, name := range []string{"", "bad name", "bad\n!include", "0start", "PRODUCT_EXECUTABLE", "ARG_WAILS_ARM64_BINARY", "WAILS_INSTALL_SCOPE", "INFO_PRODUCTVERSION", "REQUEST_EXECUTION_LEVEL", "WAILS_SKIP_WEBVIEW2"} {
 		options := testOptions(t)
 		options.Defines = map[string]string{name: "value"}
 		err := Create(context.Background(), options, func(context.Context, string, []string) error { t.Error("invalid define reached compiler"); return nil })

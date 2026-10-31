@@ -248,7 +248,7 @@ type MergeSpec struct {
 	Inputs []string
 	Output string
 }
-type NamedBinary struct{ Name, Path string }
+type NamedBinary struct{ Name, Path, Kind string }
 
 type ComponentBinary struct {
 	Arch string

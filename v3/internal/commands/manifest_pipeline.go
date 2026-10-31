@@ -2429,7 +2429,7 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	options := installerbuild.Options{Script: filepath.Join(dir, "project.nsi"), Output: filepath.Join(h.root, s.Output), Arch: s.TargetArch, Scope: s.Config.InstallScope, Primary: installerbuild.File{Name: s.Project.BinaryName + ".exe", Path: filepath.Join(h.root, s.Binary)}, Version: &info, Defines: s.Config.Defines}
+	options := installerbuild.Options{Script: filepath.Join(dir, "project.nsi"), Output: filepath.Join(h.root, s.Output), Arch: s.TargetArch, Scope: s.Config.InstallScope, Primary: installerbuild.File{Name: s.Project.BinaryName + ".exe", Path: filepath.Join(h.root, s.Binary)}, Version: &info, Defines: s.Config.Defines, SkipWebView2: !nsisUsesWebView2(s)}
 	for _, binary := range s.Companions {
 		options.Companions = append(options.Companions, installerbuild.File{Name: binary.Name, Path: filepath.Join(h.root, binary.Path)})
 	}
@@ -2441,6 +2441,20 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 		return runErr
 	})
 	return pipeline.RunResult{Detail: detail}, err
+}
+
+// Custom scripts retain their existing runtime contract. Stock installers need
+// WebView2 whenever any packaged executable may create a Wails window.
+func nsisUsesWebView2(spec pipeline.PackageSpec) bool {
+	if spec.Config.Template != "" || spec.Project.Kind != "cli" && spec.Project.Kind != "server" {
+		return true
+	}
+	for _, companion := range spec.Companions {
+		if companion.Kind != "cli" && companion.Kind != "server" {
+			return true
+		}
+	}
+	return false
 }
 
 func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, packageRoot string, err error) {
@@ -2461,7 +2475,10 @@ func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, pac
 		if err := os.MkdirAll(filepath.Join(staged, "bin"), 0o755); err != nil {
 			return err
 		}
-		return GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: stagedDir})
+		if nsisUsesWebView2(s) {
+			return GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: stagedDir})
+		}
+		return nil
 	})
 	return dir, packageRoot, err
 }
