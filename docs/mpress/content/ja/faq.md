@@ -230,11 +230,11 @@ v3では、マルチウィンドウ対応、より簡潔なサービスベース
 
 ### コントリビュートするにはどうすればよいですか？
 
-[コントリビューションガイド](/contributing/)を参照してください。バグ修正はいつでも歓迎します。新機能や公開されている動作の変更には、[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)のドラフト PR を使用します。Discord または GitHub Discussions での非公式な議論は任意です。
+[コントリビューションガイド](/contributing/)を参照してください。バグ修正はいつでも歓迎します。新機能や公開されている動作の変更には、[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)のドラフト PR を使用します。Discord または GitHub Discussions での非公式な議論は任意です。
 
 ### サンプルはどこにありますか？
 
-リポジトリには、ウィンドウ、ダイアログ、イベント、システムトレイ、サービスなどを扱う、実行可能なサンプルが60以上含まれています：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+リポジトリには、ウィンドウ、ダイアログ、イベント、システムトレイ、サービスなどを扱う、実行可能なサンプルが60以上含まれています：[v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
 
 ## ほかにも質問がありますか？
 

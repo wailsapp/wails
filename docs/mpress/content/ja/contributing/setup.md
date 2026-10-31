@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
+git clone --branch master https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,7 +228,7 @@ go test ./... -race
 
 ## ドキュメントの作業
 
-ドキュメントのコントリビューターは、Wails CLI やデスクトップビルド用の依存関係をインストールせずに M-Press を使用できます。固定バージョンの実行ファイルのダウンロード、インストール、ライブプレビュー、検証、およびリリースブランチ向け PR のワークフローについては、[M-Press でドキュメントを作成する](/contributing/documentation/)を参照してください。
+ドキュメントのコントリビューターは、Wails CLI やデスクトップビルド用の依存関係をインストールせずに M-Press を使用できます。固定バージョンの実行ファイルのダウンロード、インストール、ライブプレビュー、検証、および`master` ブランチ向け PR のワークフローについては、[M-Press でドキュメントを作成する](/contributing/documentation/)を参照してください。
 
 英語版の Markdown は `docs/mpress/content/` にあり、翻訳版は言語別ディレクトリにあります。リポジトリのルートから `mpress dev` を実行すると、`http://127.0.0.1:3000` でプレビューが配信されます。ガイドに記載された検証コマンドを実行する前に、Ctrl+C でプレビューを停止してください。
 

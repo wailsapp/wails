@@ -242,10 +242,27 @@ jobs:
           echo "tag=" >> $GITHUB_OUTPUT
         fi
     
+    - name: Generate changelog from merged PRs in the tested snapshot
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TESTED_SHA: ${{ needs.cadence.outputs.sha }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
+      run: |
+        python3 v3/scripts/generate-release-changelog.py generate --target "$TESTED_SHA" --channel "$CHANNEL" --version "$RELEASE_VERSION"
+
+    - name: Preserve generated release notes and provenance
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: release-notes-${{ needs.cadence.outputs.sha }}
+        path: |
+          v3/release_changelog.md
+          v3/release_changelog.json
+        if-no-files-found: error
+
     - name: Check for unreleased changelog content
       id: changelog_check
       run: |
-        echo "🔍 Checking UNRELEASED_CHANGELOG.md for content..."
+        echo "🔍 Checking generated release notes for content..."
         
         # Run the release script in check mode to see if there's content
         cd v3/tasks/release
@@ -322,19 +339,6 @@ jobs:
           echo "🔨 FORCE RELEASE: Overriding change detection"
         fi
     
-    - name: Verify changelog workflow evidence
-      if: |
-        steps.quick_check.outputs.should_continue == 'true' ||
-        needs.cadence.outputs.channel == 'weekly' ||
-        github.event.inputs.force_release == 'true' ||
-        inputs.release_version != ''
-      env:
-        GH_TOKEN: ${{ github.token }}
-        TOOLS: v3/scripts
-      run: |
-        python3 -m unittest discover -s "$TOOLS" -p 'test_check_changelog_runs.py'
-        python3 "$TOOLS/check-changelog-runs.py"
-
     - name: Run release script
       id: release
       if: |
@@ -372,7 +376,8 @@ jobs:
       # Keeps master's version.txt monotonic: otherwise the next nightly would
       # compute a lower/duplicate version (the release tool also refuses that).
       #  - weekly cut from the tested SHA (tag-only): copy the three version files
-      #    from the tag onto master HEAD (no conflicts, no changelog touched).
+      #    from the tag onto master HEAD and insert its changelog section without
+      #    overwriting sections published since the tested snapshot.
       #  - release from releases/**: cherry-pick the release commit (version,
       #    runtime metadata, changelog) onto master.
       if: >-
@@ -395,7 +400,8 @@ jobs:
             # dependency and lockfile updates merged to master since then.
             git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
             (cd v3/tasks/release && go run release.go --sync-runtime-version "$TAG")
-            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json"
+            python3 v3/scripts/generate-release-changelog.py sync --tag "$TAG"
+            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json" docs/mpress/content/changelog.md
             git commit -m "chore(v3): sync version to ${TAG}"
           else
             git cherry-pick -x "${TAG}^{commit}"
@@ -428,7 +434,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changelog" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
-            echo "✅ Unreleased changelog processed and reset." >> $GITHUB_STEP_SUMMARY
+            echo "✅ Release notes generated from merged PRs and included in the release." >> $GITHUB_STEP_SUMMARY
           else
             echo "ℹ️ No unreleased changelog content detected." >> $GITHUB_STEP_SUMMARY
           fi

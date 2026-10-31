@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 В `WebviewWindowOptions` нет поля `Parent` — для родительских и модальных отношений используйте `parentWindow.AttachModal(childWindow)`. В этой структуре также нет поля `Assets` — ресурсы настраиваются в `application.Options` (`Assets AssetOptions`).
 
-Полный исходный код: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
+Полный исходный код: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Основные параметры
 
@@ -1271,4 +1271,4 @@ func main() {
 
 ---
 
-**Остались вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+**Остались вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

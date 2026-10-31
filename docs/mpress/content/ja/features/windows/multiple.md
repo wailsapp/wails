@@ -790,4 +790,4 @@ type WindowState struct {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[マルチウィンドウの例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/multi-window)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[マルチウィンドウの例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window)を確認してください。

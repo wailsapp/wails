@@ -1,0 +1,37 @@
+name: Documentation external links
+
+on:
+  schedule:
+    - cron: '23 6 * * *'
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-external-links
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    if: github.event_name != 'delete' || github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Scheduled/delete events use the default branch so a deleted branch does
+      # not need to exist for its former documentation links to be audited.
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: master
+      - name: Build, validate and audit GitHub destinations
+        run: bash docs/mpress/scripts/build.sh --external-audit "$RUNNER_TEMP/external-links.json"
+      - name: Summarize external destinations
+        if: always()
+        run: python3 docs/mpress/scripts/summarize_external_links.py "$RUNNER_TEMP/external-links.json" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: docs-external-links
+          path: ${{ runner.temp }}/external-links.json
+          if-no-files-found: warn

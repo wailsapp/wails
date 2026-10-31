@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 後續步驟
 
 - [更新程式指南](/guides/updater/)包含完整的 API 參考、所有事件與設定選項，以及輔助程式模式的替換機制。
-- 請參閱[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)，其中提供可供複製的完整運作範例。
+- 請參閱[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)，其中提供可供複製的完整運作範例。
 - 測試目標儲存庫[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)展示了建議的發佈資產配置。
 
 ## 正式環境中的注意事項

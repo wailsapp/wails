@@ -34,4 +34,4 @@ Kami menyambut kontribusi dari komunitas. Jika Anda ingin membantu mencapai tuju
 
 ## Masukan dan Pembaruan
 
-Peta jalan ini dapat berubah berdasarkan masukan komunitas dan prioritas proyek. Kami akan memperbaruinya secara berkala untuk mencerminkan kemajuan dan perubahan arah. Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
+Peta jalan ini dapat berubah berdasarkan masukan komunitas dan prioritas proyek. Kami akan memperbaruinya secara berkala untuk mencerminkan kemajuan dan perubahan arah. Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).

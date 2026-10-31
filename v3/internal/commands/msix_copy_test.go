@@ -35,7 +35,7 @@ func TestMSIXCopyFile(t *testing.T) {
 					t.Skipf("cannot create %s fixture: %v", name, err)
 				}
 			}
-			if err := copyFile(source, destination); err != nil {
+			if err := copyFile(source, destination, 0644); err != nil {
 				t.Fatal(err)
 			}
 			got, err := os.ReadFile(destination)
@@ -52,7 +52,7 @@ func TestMSIXCopyRejectsDirectorySource(t *testing.T) {
 	if err := os.WriteFile(target, []byte("existing"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if err := copyFile(dir, target); err == nil {
+	if err := copyFile(dir, target, 0644); err == nil {
 		t.Fatal("accepted directory source")
 	}
 	got, err := os.ReadFile(target)
@@ -79,7 +79,7 @@ func BenchmarkMSIXCopyFile(b *testing.B) {
 	b.SetBytes(size)
 	b.ResetTimer()
 	for b.Loop() {
-		if err := copyFile(source, target); err != nil {
+		if err := copyFile(source, target, 0644); err != nil {
 			b.Fatal(err)
 		}
 	}

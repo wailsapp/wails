@@ -24,15 +24,15 @@ sourcePath: "contributing/documentation.md"
 
 ### Скачайте исполняемый файл
 
-Откройте страницу [последнего стабильного выпуска M-Press](https://github.com/leaanthony/mpress/releases/latest) или загрузите ниже соответствующий архив. ARM64 включает Apple Silicon, а AMD64 — это распространённая архитектура ПК на базе Intel/AMD.
+Откройте страницу [последнего стабильного выпуска M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) или загрузите ниже соответствующий архив. ARM64 включает Apple Silicon, а AMD64 — это распространённая архитектура ПК на базе Intel/AMD.
 
 | Компьютер | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Загрузите файл [checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt) из того же выпуска. В каталоге загрузки вычислите SHA-256-хеш архива и сравните его со строкой для этого имени файла в `checksums.txt`:
+Загрузите файл [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) из того же выпуска. В каталоге загрузки вычислите SHA-256-хеш архива и сравните его со строкой для этого имени файла в `checksums.txt`:
 
 @tabs
 [macOS]
@@ -101,7 +101,7 @@ mpress version
 Если вы уже используете Go, вместо этого можно собрать последний стабильный выпуск. Проверьте требования к инструментарию в его файле `go.mod`; функция автоматического выбора инструментария Go может загрузить необходимую версию. Для выпуска, использованного при подготовке этой версии документации, требуется Go 1.26.10 или новее.
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 mpress version
 ```
 

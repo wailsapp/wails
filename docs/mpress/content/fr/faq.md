@@ -230,11 +230,11 @@ Oui. Les interfaces en ligne de commande sont des exécutables distincts (`wails
 
 ### Comment contribuer ?
 
-Consultez le [guide de contribution](/contributing/). Les corrections de bugs sont toujours les bienvenues. Les nouvelles fonctionnalités et les modifications du comportement public nécessitent une pull request contenant un brouillon de [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md). Une discussion informelle sur Discord ou dans les Discussions GitHub est facultative.
+Consultez le [guide de contribution](/contributing/). Les corrections de bugs sont toujours les bienvenues. Les nouvelles fonctionnalités et les modifications du comportement public nécessitent une pull request contenant un brouillon de [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md). Une discussion informelle sur Discord ou dans les Discussions GitHub est facultative.
 
 ### Où trouver des exemples ?
 
-Le dépôt fournit plus de 60 exemples exécutables portant sur les fenêtres, les boîtes de dialogue, les événements, la zone de notification, les services et bien plus encore : [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+Le dépôt fournit plus de 60 exemples exécutables portant sur les fenêtres, les boîtes de dialogue, les événements, la zone de notification, les services et bien plus encore : [v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
 
 ## Vous avez encore des questions ?
 

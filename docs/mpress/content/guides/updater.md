@@ -652,6 +652,6 @@ Before you publish a release that the updater will install:
 
 ## See also
 
-- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
+- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - Test demo repo: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Adding self-updates to a Wails app](/tutorials/04-self-update-a-wails-app/)

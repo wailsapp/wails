@@ -20,6 +20,7 @@ func NewOpenFileDialog(config DialogConfig) (OpenFileDialog, error) {
 	}
 	err = config.apply(openDialog)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	return openDialog, nil
@@ -35,10 +36,12 @@ func NewOpenMultipleFilesDialog(config DialogConfig) (OpenMultipleFilesDialog, e
 	}
 	err = config.apply(openDialog)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	err = openDialog.setIsMultiselect(true)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	return openDialog, nil
@@ -54,10 +57,12 @@ func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
 	}
 	err = config.apply(openDialog)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	err = openDialog.setPickFolders(true)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	return openDialog, nil
@@ -75,14 +80,17 @@ func NewSelectMultipleFoldersDialog(config DialogConfig) (OpenMultipleFilesDialo
 	}
 	err = config.apply(openDialog)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	err = openDialog.setPickFolders(true)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	err = openDialog.setIsMultiselect(true)
 	if err != nil {
+		_ = openDialog.Release()
 		return nil, err
 	}
 	return openDialog, nil
@@ -98,6 +106,7 @@ func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
 	}
 	err = config.apply(saveDialog)
 	if err != nil {
+		_ = saveDialog.Release()
 		return nil, err
 	}
 	return saveDialog, nil

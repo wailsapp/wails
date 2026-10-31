@@ -1,9 +1,8 @@
 # Wails v3.0.0 documentation
 
-This branch prepares the documentation for the Wails v3.0.0 release. Installation
-examples target `v3.0.0`; those commands require the release tag to be published.
-To work on the release before publication, follow the [source setup guide](mpress/content/contributing/setup.md)
-using the `releases/v3.0.0` branch.
+This documentation covers the Wails v3.0.0 release. Installation examples target
+the published `v3.0.0` tag. For framework development, follow the
+[source setup guide](mpress/content/contributing/setup.md) using the `master` branch.
 
 The M-Press documentation lives in `docs/mpress/`, with English as the default
 language at `/` and existing translations under their language codes.
@@ -20,11 +19,11 @@ links to this guide through **Contributing → Documentation** in its sidebar.
 
 ## Preview and validate
 
-Install the [latest stable M-Press release](https://github.com/leaanthony/mpress/releases/latest)
+Install the [pinned M-Press v1.0.27 release](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)
 from a release archive, or use Go:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 ```
 
 From the repository root:

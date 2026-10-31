@@ -4,7 +4,6 @@ import (
 	"io"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/wake/platform"
@@ -106,8 +105,9 @@ func Route(cmdStr string, opts RouteOptions) Executor {
 // themselves are stripped. Adjacent quoted/unquoted fragments concatenate
 // into one token (e.g. `-ldflags="-w -s"` → `-ldflags=-w -s` as ONE arg).
 //
-// Returns nil for unbalanced quoting or unquoted shell operators; callers
-// should fall back to `sh -c` rather than mis-parse the user's command.
+// Returns nil for unbalanced quoting, unquoted shell operators or glob patterns,
+// and shell expansions; callers should fall back to the shell rather than
+// mis-parse the user's command.
 func shellSplit(s string) []string {
 	var (
 		out    []string
@@ -138,7 +138,11 @@ func shellSplit(s string) []string {
 		case c == '"' && !inS:
 			inD = !inD
 			active = true
-		case !inS && !inD && strings.IndexByte("&|;<>()\n", c) >= 0:
+		case !inS && c == '`':
+			return nil
+		case !inS && c == '$' && i+1 < len(s) && strings.IndexByte("\"' \t\r\n", s[i+1]) < 0:
+			return nil
+		case !inS && !inD && strings.IndexByte("&|;<>()\n*?[", c) >= 0:
 			return nil
 		case (c == ' ' || c == '\t') && !inS && !inD:
 			if active {
@@ -253,7 +257,8 @@ func parseGoRunArgs(args []string) GoRunOptions {
 		case "-trimpath":
 			opts.Trimpath = true
 		default:
-			opts.Args = append(opts.Args, args[i])
+			opts.Args = append(opts.Args, args[i:]...)
+			return opts
 		}
 		i++
 	}
@@ -261,62 +266,16 @@ func parseGoRunArgs(args []string) GoRunOptions {
 }
 
 func buildGoTest(args []string, opts RouteOptions) Executor {
-	parsed := parseGoTestArgs(args)
-	cmd := GoTest(parsed)
+	cmd := GoTest(GoTestOptions{Extra: args[2:]})
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
 }
 
-func parseGoTestArgs(args []string) GoTestOptions {
-	opts := GoTestOptions{}
-	i := 2
-	for i < len(args) {
-		switch args[i] {
-		case "-v":
-			opts.Verbose = true
-		case "-cover":
-			opts.Cover = true
-		case "-race":
-			opts.Race = true
-		case "-tags":
-			if i+1 < len(args) {
-				opts.Tags = strings.Split(args[i+1], " ")
-				i += 2
-				continue
-			}
-		case "-count":
-			if i+1 < len(args) {
-				// Parse the full integer, not just the first character.
-				// The previous implementation read args[i+1][0]-'0', so
-				// `-count 10` became 1, `-count 100` became 1, etc.
-				if n, err := strconv.Atoi(args[i+1]); err == nil {
-					opts.Count = n
-				} else {
-					opts.Extra = append(opts.Extra, "-count", args[i+1])
-				}
-				i += 2
-				continue
-			}
-		case "-run":
-			if i+1 < len(args) {
-				opts.Run = args[i+1]
-				i += 2
-				continue
-			}
-		default:
-			if !strings.HasPrefix(args[i], "-") {
-				opts.Package = args[i]
-			} else {
-				opts.Extra = append(opts.Extra, args[i])
-			}
-		}
-		i++
-	}
-	return opts
-}
-
 func buildGoModTidy(args []string, opts RouteOptions) Executor {
+	if len(args) > 3 {
+		return buildGoMod(args, opts)
+	}
 	cmd := GoModTidy()
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
@@ -333,11 +292,7 @@ func buildGoMod(args []string, opts RouteOptions) Executor {
 }
 
 func buildGoInstall(args []string, opts RouteOptions) Executor {
-	pkg := ""
-	if len(args) > 2 {
-		pkg = args[2]
-	}
-	cmd := GoInstall(GoInstallOptions{Package: pkg})
+	cmd := GoInstall(GoInstallOptions{Args: args[2:]})
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -345,6 +300,7 @@ func buildGoInstall(args []string, opts RouteOptions) Executor {
 
 func buildGoVet(args []string, opts RouteOptions) Executor {
 	cmd := GoVet()
+	cmd.Args = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -352,6 +308,7 @@ func buildGoVet(args []string, opts RouteOptions) Executor {
 
 func buildGoFmt(args []string, opts RouteOptions) Executor {
 	cmd := GoFmt()
+	cmd.Paths = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -359,6 +316,7 @@ func buildGoFmt(args []string, opts RouteOptions) Executor {
 
 func buildNpmInstall(args []string, opts RouteOptions) Executor {
 	cmd := NpmInstall()
+	cmd.Args = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -367,6 +325,7 @@ func buildNpmInstall(args []string, opts RouteOptions) Executor {
 func buildNpmRun(args []string, opts RouteOptions) Executor {
 	if len(args) >= 3 {
 		cmd := NpmRun(args[2])
+		cmd.Args = args[3:]
 		cmd.Dir = opts.Dir
 		cmd.Env = opts.Env
 		return cmd
@@ -376,6 +335,7 @@ func buildNpmRun(args []string, opts RouteOptions) Executor {
 
 func buildBunInstall(args []string, opts RouteOptions) Executor {
 	cmd := BunInstall()
+	cmd.Args = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -383,6 +343,7 @@ func buildBunInstall(args []string, opts RouteOptions) Executor {
 
 func buildPnpmInstall(args []string, opts RouteOptions) Executor {
 	cmd := PnpmInstall()
+	cmd.Args = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd
@@ -390,6 +351,7 @@ func buildPnpmInstall(args []string, opts RouteOptions) Executor {
 
 func buildYarnInstall(args []string, opts RouteOptions) Executor {
 	cmd := YarnInstall()
+	cmd.Args = args[2:]
 	cmd.Dir = opts.Dir
 	cmd.Env = opts.Env
 	return cmd

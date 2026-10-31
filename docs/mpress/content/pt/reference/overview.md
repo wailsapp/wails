@@ -267,7 +267,7 @@ As APIs experimentais são identificadas na documentação.
 ### Dúvidas sobre a API
 
 1. **Consulte esta referência** — Documentação completa da API
-2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Pesquise no Discord** — [Servidor do Discord](https://discord.gg/JDdSxwjhGf)
 4. **Pergunte à comunidade** — Canal #help no Discord
 
@@ -284,7 +284,7 @@ Encontrou um bug ou uma inconsistência?
 - [Tutoriais](/tutorials/overview/) — Aprenda criando aplicações reais
 - [Guias](/guides/architecture/) — Guias orientados a tarefas para cenários comuns
 - [Recursos](/features/windows/basics/) — Documentação de cada recurso
-- [Exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — Exemplos de código funcionais no GitHub
+- [Exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) — Exemplos de código funcionais no GitHub
 
 ---
 

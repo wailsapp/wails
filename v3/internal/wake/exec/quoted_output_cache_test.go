@@ -26,7 +26,7 @@ func TestQuotedGoOutputCache(t *testing.T) {
 			if output != wantOutput {
 				t.Errorf("cache output = %q, want %q", output, wantOutput)
 			}
-			if err := cache.RecordGoCmd(task.Name, command); err != nil {
+			if err := cache.RecordGoCmd(task.Name, command, sources); err != nil {
 				t.Fatal(err)
 			}
 			if !cache.ShouldSkipGoCmd(task.Name, command, sources, output) {

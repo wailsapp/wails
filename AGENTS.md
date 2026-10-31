@@ -35,11 +35,12 @@ For Wails release planning and issue/PR triage:
 
 ## Changelog ownership
 
-- For ordinary v3 contributions, **do not edit `v3/UNRELEASED_CHANGELOG.md` or `docs/mpress/content/changelog.md`**. The former is the automation's staging file; the latter is the published release history. The root `CHANGELOG.md` is only a legacy link, not another v3 changelog.
-- Describe the user-visible change accurately in the PR title and description. After merge, `.github/workflows/auto-changelog-v3.yml` generates an entry from the PR title and CodeRabbit walkthrough when available. Internal-only PRs may intentionally produce no entry.
-- Release tooling consumes the staged entries, adds a versioned section to the published changelog, and resets the staging file. Do not delete, rename, reset or replace either file to simplify an ordinary PR.
-- Changelog automation maintenance and explicitly requested release-note corrections are exceptions: change the owning generator/workflow and any coupled output together, preserve existing entries, and run the changelog publication and release tests.
-- v2 retains its separate contributor workflow in `website/src/pages/changelog.mdx`; the v3 automation rule does not change it.
+- v3 release notes are generated at release time from merged PRs whose merge commits are in the tested Git range. Do not edit or recreate `v3/UNRELEASED_CHANGELOG.md`; it has been removed.
+- Describe the user-visible change in the PR title. An optional `## Release notes` section in the PR description overrides that summary. Conventional title types choose the category; `changelog:added|changed|fixed|deprecated|removed|security` labels override it, and `skip-changelog` excludes a PR. Internal-only title types are excluded unless explicitly categorized.
+- `v3/scripts/generate-release-changelog.py` writes ignored release-local notes and a provenance receipt. It reads GitHub metadata only; it does not use external reviewers or models. Nightlies start at the nearest reachable v3 release tag; stable releases start at the nearest reachable stable v3 tag. Bootstrap requires an explicit `--since` ancestor.
+- Release tooling consumes those notes for the GitHub release and the versioned section of `docs/mpress/content/changelog.md`. Keep the published release history intact. Weekly synchronization inserts only the tagged release section and preserves newer entries.
+- Changelog automation maintenance and explicitly requested release-note corrections are exceptions to generated-file ownership: change the owning generator/workflow and coupled output together and run the release/changelog tests.
+- v2 retains its separate contributor workflow in `website/src/pages/changelog.mdx`.
 
 ## Wails MCP tools for agents
 

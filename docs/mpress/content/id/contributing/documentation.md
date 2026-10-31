@@ -24,15 +24,15 @@ Skrip build repositori mengunduh **rilis stabil terbaru M-Press**. Gunakan rilis
 
 ### Unduh berkas siap eksekusi
 
-Buka [rilis stabil terbaru M-Press](https://github.com/leaanthony/mpress/releases/latest), atau unduh arsip yang sesuai di bawah ini. ARM64 mencakup Apple Silicon; AMD64 adalah arsitektur yang umum digunakan pada PC Intel/AMD.
+Buka [rilis stabil terbaru M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27), atau unduh arsip yang sesuai di bawah ini. ARM64 mencakup Apple Silicon; AMD64 adalah arsitektur yang umum digunakan pada PC Intel/AMD.
 
 | Komputer | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Unduh [checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt) dari rilis yang sama. Di direktori unduhan Anda, hitung hash SHA-256 arsip tersebut, lalu bandingkan dengan baris untuk nama file itu di `checksums.txt`:
+Unduh [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) dari rilis yang sama. Di direktori unduhan Anda, hitung hash SHA-256 arsip tersebut, lalu bandingkan dengan baris untuk nama file itu di `checksums.txt`:
 
 @tabs
 [macOS]
@@ -101,7 +101,7 @@ Untuk ARM64, gunakan `mpress-windows-arm64.zip` sebagai gantinya. Tambahkan dire
 Jika Anda sudah menggunakan Go, Anda dapat membangun rilis stabil terbaru sebagai alternatif. Periksa `go.mod` rilis tersebut untuk mengetahui toolchain yang diperlukan; pemilihan toolchain otomatis Go mungkin akan mengunduhnya. Rilis yang digunakan untuk proses dokumentasi ini memerlukan Go 1.26.10 atau yang lebih baru.
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 mpress version
 ```
 

@@ -705,4 +705,4 @@ Die Bridge ist standardmäßig sicher:
 
 ---
 
-**Fragen zur Bridge?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.
+**Fragen zur Bridge?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.
