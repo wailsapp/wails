@@ -2,9 +2,11 @@
 package changelog
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -75,9 +77,14 @@ type pullRequest struct {
 }
 
 func git(root string, args ...string) (string, error) {
-	output, err := exec.Command("git", append([]string{"-C", root}, args...)...).CombinedOutput()
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	command := exec.CommandContext(ctx, "git", append([]string{"-C", root}, args...)...)
+	var stderr bytes.Buffer
+	command.Stderr = &stderr
+	output, err := command.Output()
 	if err != nil {
-		return "", fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, output)
+		return "", fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(stderr.String()))
 	}
 	return strings.TrimSpace(string(output)), nil
 }
@@ -87,6 +94,10 @@ func GitHubPages(endpoint string) ([]json.RawMessage, error) {
 	defer cancel()
 	output, err := exec.CommandContext(ctx, "gh", "api", "--method", "GET", "--paginate", "--slurp", endpoint, "-H", "Accept: application/vnd.github+json").Output()
 	if err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			return nil, fmt.Errorf("GitHub %s: %w: %s", endpoint, err, bytes.TrimSpace(exitError.Stderr))
+		}
 		return nil, fmt.Errorf("GitHub %s: %w", endpoint, err)
 	}
 	var pages []json.RawMessage
@@ -114,12 +125,14 @@ func baseline(root, target string, stable bool) (string, error) {
 		return "", err
 	}
 	args := []string{"describe", "--tags", "--abbrev=0"}
+	hasEligibleTag := false
 	for _, tag := range strings.Fields(output) {
 		if versionPattern.MatchString(tag) && (!stable || !strings.Contains(tag, "-")) {
 			args = append(args, "--match", tag)
+			hasEligibleTag = true
 		}
 	}
-	if len(args) == 3 {
+	if !hasEligibleTag {
 		return "", fmt.Errorf("no eligible v3 release tag; use --since for an explicit bootstrap baseline")
 	}
 	result, err := git(root, append(args, target)...)

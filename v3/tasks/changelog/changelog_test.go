@@ -1,7 +1,9 @@
 package changelog
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -132,6 +134,32 @@ func TestBoundaries(t *testing.T) {
 	equal(t, f.generate(Options{Version: "v3.1.1"}).Entries, weekly.Entries)
 }
 
+func TestGitOutputAndDiagnostics(t *testing.T) {
+	f := newFixture(t)
+	t.Setenv("LC_ALL", "C")
+	f.git("tag", "-f", "-a", "v3.0.0", "-m", "baseline")
+	f.git("update-ref", "refs/tags/v3.0.1", "refs/tags/v3.0.0")
+	args := []string{"describe", "--tags", "--abbrev=0", "--match", "v3.0.1", "HEAD"}
+	command := exec.CommandContext(t.Context(), "git", append([]string{"-C", f.root}, args...)...)
+	var diagnostic bytes.Buffer
+	command.Stderr = &diagnostic
+	want, err := command.Output()
+	if err != nil || !strings.Contains(diagnostic.String(), "externally known") {
+		t.Fatalf("expected successful Git warning: %v; %s", err, diagnostic.String())
+	}
+	got, err := git(f.root, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	equal(t, got, strings.TrimSpace(string(want)))
+	_, err = git(f.root, "show", "missing-release")
+	fails(t, err, "unknown revision or path")
+	var exitError *exec.ExitError
+	if !errors.As(err, &exitError) {
+		t.Fatalf("Git exit error was not preserved: %v", err)
+	}
+}
+
 func TestMergeMembershipAndDeduplication(t *testing.T) {
 	f := newFixture(t)
 	f.git("switch", "-q", "-c", "feature")
@@ -255,6 +283,35 @@ func TestGitHubPagination(t *testing.T) {
 		} else {
 			fails(t, err, "paginated lists")
 		}
+	}
+}
+
+func TestGitHubCommandErrors(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX gh fixture exercises the Linux release command")
+	}
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	path := filepath.Join(dir, "gh")
+	if err := os.WriteFile(path, []byte("#!/bin/sh\nprintf '  fixture authentication failed  \\n' >&2\nexit 42\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	_, err := GitHubPages("repos/fixture/private/example")
+	fails(t, err, "fixture authentication failed")
+	var exitError *exec.ExitError
+	if !errors.As(err, &exitError) || exitError.ExitCode() != 42 {
+		t.Fatalf("GitHub exit error was not preserved: %v", err)
+	}
+	if strings.HasSuffix(err.Error(), " ") || strings.HasSuffix(err.Error(), "\n") {
+		t.Fatalf("diagnostic was not trimmed: %q", err)
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	_, err = GitHubPages("repos/fixture/private/example")
+	var lookupError *exec.Error
+	if !errors.As(err, &lookupError) {
+		t.Fatalf("GitHub lookup error was not preserved: %v", err)
 	}
 }
 
