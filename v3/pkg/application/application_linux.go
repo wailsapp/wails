@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk3 && !android && !server
+//go:build linux && cgo && !gtk3 && !android && !server && !purego
 
 package application
 
@@ -16,13 +16,9 @@ import "C"
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"slices"
-	"strings"
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func init() {
@@ -47,82 +43,6 @@ type linuxApp struct {
 	windowMapLock sync.Mutex
 
 	icon pointer
-}
-
-func (a *linuxApp) GetFlags(options Options) map[string]any {
-	if options.Flags == nil {
-		options.Flags = make(map[string]any)
-	}
-	return options.Flags
-}
-
-func (a *linuxApp) name() string {
-	return appName()
-}
-
-func (a *linuxApp) run() error {
-	if len(os.Args) == 2 {
-		arg1 := os.Args[1]
-		if strings.Contains(arg1, "://") {
-			eventContext := newApplicationEventContext()
-			eventContext.setURL(arg1)
-			applicationEvents <- &ApplicationEvent{
-				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
-				ctx: eventContext,
-			}
-		} else if a.parent.options.FileAssociations != nil {
-			ext := filepath.Ext(arg1)
-			if slices.Contains(a.parent.options.FileAssociations, ext) {
-				eventContext := newApplicationEventContext()
-				eventContext.setOpenedWithFile(arg1)
-				applicationEvents <- &ApplicationEvent{
-					Id:  uint(events.Common.ApplicationOpenedWithFile),
-					ctx: eventContext,
-				}
-			}
-		}
-	}
-
-	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
-		if err := a.processAndCacheScreens(); err != nil {
-			a.parent.handleError(err)
-		}
-	})
-	a.setupCommonEvents()
-	// Started here, not from init(): init() is not part of the platformApp
-	// interface and nothing calls it, so a monitor started there never runs.
-	a.monitorThemeChanges()
-	a.monitorPowerEvents()
-	return appRun(a.application)
-}
-
-func (a *linuxApp) destroy() {
-	if !globalApplication.shouldQuit() {
-		return
-	}
-	globalApplication.cleanup()
-	appDestroy(a.application)
-}
-
-func (a *linuxApp) getApplicationMenu() *Menu {
-	return nil
-}
-
-func (a *linuxApp) setApplicationMenu(menu *Menu) {}
-
-func (a *linuxApp) hide() {
-	a.hideAllWindows()
-}
-
-func (a *linuxApp) show() {
-	a.showAllWindows()
-}
-
-func (a *linuxApp) on(eventID uint) {
-}
-
-func (a *linuxApp) isOnMainThread() bool {
-	return isOnMainThread()
 }
 
 func (a *linuxApp) appendGTKVersion(result map[string]string) {
@@ -151,137 +71,6 @@ func (a *linuxApp) init(_ *App, options Options) {
 	if options.Icon != nil {
 		a.setIcon(options.Icon)
 	}
-}
-
-func (a *linuxApp) registerWindow(window pointer, id uint) {
-	a.windowMapLock.Lock()
-	a.windowMap[windowPointer(window)] = id
-	a.windowMapLock.Unlock()
-}
-
-func (a *linuxApp) unregisterWindow(window windowPointer) {
-	a.windowMapLock.Lock()
-	delete(a.windowMap, window)
-	remainingWindows := len(a.windowMap)
-	a.windowMapLock.Unlock()
-
-	if remainingWindows == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
-		a.destroy()
-	}
-}
-
-func newPlatformApp(parent *App) *linuxApp {
-	appID, err := applicationID(parent.options)
-	if err != nil {
-		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
-	}
-
-	app := &linuxApp{
-		parent:      parent,
-		application: appNew(appID),
-		activated:   make(chan struct{}),
-		windowMap:   map[windowPointer]uint{},
-	}
-
-	if name := programName(parent.options, appID); name != "" {
-		setProgramName(name)
-	}
-
-	return app
-}
-
-func (a *linuxApp) markActivated() {
-	a.activatedOnce.Do(func() {
-		close(a.activated)
-	})
-}
-
-func (a *linuxApp) waitForActivation() {
-	<-a.activated
-}
-
-func (a *linuxApp) getIconForFile(filename string) ([]byte, error) {
-	if filename == "" {
-		return nil, nil
-	}
-
-	ext := filepath.Ext(filename)
-	iconMap := map[string]string{
-		".txt":  "text-x-generic",
-		".pdf":  "application-pdf",
-		".doc":  "x-office-document",
-		".docx": "x-office-document",
-		".xls":  "x-office-spreadsheet",
-		".xlsx": "x-office-spreadsheet",
-		".ppt":  "x-office-presentation",
-		".pptx": "x-office-presentation",
-		".zip":  "package-x-generic",
-		".tar":  "package-x-generic",
-		".gz":   "package-x-generic",
-		".jpg":  "image-x-generic",
-		".jpeg": "image-x-generic",
-		".png":  "image-x-generic",
-		".gif":  "image-x-generic",
-		".mp3":  "audio-x-generic",
-		".wav":  "audio-x-generic",
-		".mp4":  "video-x-generic",
-		".avi":  "video-x-generic",
-		".html": "text-html",
-		".css":  "text-css",
-		".js":   "text-javascript",
-		".json": "text-json",
-		".xml":  "text-xml",
-	}
-
-	iconName := "application-x-generic"
-	if name, ok := iconMap[ext]; ok {
-		iconName = name
-	}
-
-	return getIconBytes(iconName)
-}
-
-func getIconBytes(iconName string) ([]byte, error) {
-	return nil, fmt.Errorf("icon lookup is not currently implemented for the GTK4 build path; build with -tags gtk3 for the legacy implementation")
-}
-
-func (a *linuxApp) getAccentColor() string {
-	return "rgb(0,122,255)"
-}
-
-func (a *linuxApp) isVisible() bool {
-	windows := a.getWindows()
-	for _, window := range windows {
-		if C.gtk_widget_is_visible((*C.GtkWidget)(window)) != 0 {
-			return true
-		}
-	}
-	return false
-}
-
-func getNativeApplication() *linuxApp {
-	return globalApplication.impl.(*linuxApp)
-}
-
-// logPlatformInfo logs the platform information to the console
-func (a *App) logPlatformInfo() {
-	info, err := operatingsystem.Info()
-	if err != nil {
-		a.error("error getting OS info: %w", err)
-		return
-	}
-
-	platformInfo := info.AsLogSlice()
-	platformInfo = append(platformInfo, "GTK", fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version()))
-	platformInfo = append(platformInfo, "WebKitGTK", fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version()))
-
-	a.info("Platform Info:", platformInfo...)
 }
 
 func buildVersionString(major, minor, micro C.guint) string {
@@ -319,7 +108,13 @@ func (a *App) platformEnvironment() map[string]any {
 	return result
 }
 
-func fatalHandler(errFunc func(error)) {
-	// Stub for windows function
-	return
+// gtkVersion and webkitVersion report the versions this binary was compiled
+// against. The purego backend cannot read the compiled headers, so it reports
+// the versions loaded at runtime instead; that is the one deliberate difference.
+func gtkVersion() (major, minor, micro uint) {
+	return uint(C.get_compiled_gtk_major_version()), uint(C.get_compiled_gtk_minor_version()), uint(C.get_compiled_gtk_micro_version())
+}
+
+func webkitVersion() (major, minor, micro uint) {
+	return uint(C.get_compiled_webkit_major_version()), uint(C.get_compiled_webkit_minor_version()), uint(C.get_compiled_webkit_micro_version())
 }

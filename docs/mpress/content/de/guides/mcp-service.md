@@ -12,7 +12,7 @@ Der integrierte MCP-Server ist experimentell und die API kann sich in zukünftig
 
 Wails v3 verfügt über einen integrierten [Model Context Protocol](https://modelcontextprotocol.io) (MCP)-Server, mit dem LLM-Agenten – Claude Code, IDE-Assistenten oder beliebige MCP-Clients – eine **laufende** Wails-Anwendung untersuchen, testen und steuern können.
 
-Verwenden Sie für die Automatisierung des Projektlebenszyklus den separaten `wails3 mcp` CLI-Server. Damit können Agenten Projekte untersuchen und initialisieren, Diagnosen ausführen, Builds und Entwicklungsaufträge starten, Bindings generieren, benannte Taskfile-Tasks ausführen und begrenzte Auftragsausgaben abrufen. Der CLI-Server ist standardmäßig auf das aktuelle Verzeichnis beschränkt und ermöglicht keine beliebige Shell-Ausführung. Einzelheiten zu Transport, Authentifizierung und Tools finden Sie in der [CLI-MCP-Dokumentation](/guides/cli/#mcp).
+Verwenden Sie für die Automatisierung des Projektlebenszyklus den separaten `wails3 mcp` CLI-Server. Damit können Agenten Projekte untersuchen und initialisieren, Diagnosen ausführen, Builds und Entwicklungsaufträge starten, Bindings generieren, benannte Taskfile-Tasks ausführen und begrenzte Auftragsausgaben abrufen. Der CLI-Server ist standardmäßig auf das aktuelle Verzeichnis beschränkt und ermöglicht keine beliebige Shell-Ausführung. Einzelheiten zu Transport, Authentifizierung und Tools finden Sie in der [CLI-MCP-Dokumentation](/de/guides/cli/#mcp).
 
 Wenn die Funktion aktiviert ist, kann ein mit Ihrer App verbundener Agent:
 

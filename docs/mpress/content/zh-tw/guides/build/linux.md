@@ -149,7 +149,7 @@ go build -tags gtk3 -o myapp .
 ### 與 GTK4 的已知差異
 
 - **檔案對話方塊**：GTK4 預設使用`xdg-desktop-portal`顯示檔案對話方塊，因此某些對話方塊選項（例如預設目錄、自訂篩選器的顯示方式）的行為與 GTK3 不同。詳情請參閱[對話方塊參考資料－Linux 對話方塊行為](/reference/dialogs/#linux-dialog-behavior)。
-- **選單樣式**：GTK4 支援`LinuxMenuStylePrimaryMenu`選項，會依循 GNOME HIG 在標題列顯示漢堡選單按鈕（☰）。此選項不會影響`-tags gtk3`建置。請參閱[Window API－Linux MenuStyle](/reference/window/#linux)。
+- **選單樣式**：GTK4 支援`LinuxMenuStylePrimaryMenu`選項，會依循 GNOME HIG 在標題列顯示漢堡選單按鈕（☰）。此選項不會影響`-tags gtk3`建置。請參閱[Window API－Linux MenuStyle](/zh-tw/reference/window/#linux)。
 - **DPI 縮放**：GTK4 使用`gdk_monitor_get_scale`（GTK 4.14+）來支援非整數縮放。
 
 ### 檢查建置環境

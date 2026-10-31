@@ -146,7 +146,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 					p.parentWindow.parent.removeMenuBinding(item.accelerator)
 				} else {
 					// Remove the global keybindings
-					globalApplication.KeyBinding.Remove(item.accelerator.String())
+					globalApplication.KeyBinding.removeMenuBinding(item)
 				}
 			}
 		}
@@ -198,13 +198,11 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		var menuText = item.Label()
 		if item.accelerator != nil {
 			menuText = menuText + "\t" + item.accelerator.String()
-			if item.callback != nil {
+			if !item.Hidden() && item.callback != nil {
 				if p.parentWindow != nil {
 					p.parentWindow.parent.addMenuBinding(item.accelerator, item)
 				} else {
-					globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
-						item.handleClick()
-					})
+					globalApplication.KeyBinding.addMenuBinding(item)
 				}
 			}
 		}

@@ -149,7 +149,7 @@ go build -tags gtk3 -o myapp .
 ### GTK4 との既知の相違点
 
 - **ファイルダイアログ**：GTK4 では、デフォルトでファイルダイアログに `xdg-desktop-portal` を使用します。そのため、一部のダイアログオプション（デフォルトディレクトリやカスタムフィルターの表示など）の動作が GTK3 とは異なります。詳しくは、[ダイアログリファレンス - Linux でのダイアログの動作](/reference/dialogs/#linux-dialog-behavior)を参照してください。
-- **メニュースタイル**：GTK4 は、GNOME HIG に準拠してヘッダーバーにハンバーガーボタン（☰）を表示する `LinuxMenuStylePrimaryMenu` オプションをサポートしています。このオプションは `-tags gtk3` ビルドには影響しません。[Window API - Linux MenuStyle](/reference/window/#linux) を参照してください。
+- **メニュースタイル**：GTK4 は、GNOME HIG に準拠してヘッダーバーにハンバーガーボタン（☰）を表示する `LinuxMenuStylePrimaryMenu` オプションをサポートしています。このオプションは `-tags gtk3` ビルドには影響しません。[Window API - Linux MenuStyle](/ja/reference/window/#linux) を参照してください。
 - **DPI スケーリング**：GTK4 は、小数倍率のスケーリングをサポートするために `gdk_monitor_get_scale`（GTK 4.14 以降）を使用します。
 
 ### ビルドの確認

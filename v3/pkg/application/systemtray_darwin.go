@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -32,28 +32,12 @@ static void systemTrayHide(void* nsStatusItem) {
 import "C"
 import (
 	"errors"
-	"strings"
 	"unsafe"
 )
 
-type macosSystemTray struct {
-	id    uint
-	label string
-	icon  []byte
-	menu  *Menu
-
-	nsStatusItem      unsafe.Pointer
-	nsImage           unsafe.Pointer
-	nsMenu            unsafe.Pointer
-	iconPosition      IconPosition
-	isTemplateIcon    bool
-	parent            *SystemTray
-	lastClickedScreen unsafe.Pointer
-
-	// displayedMenu is the menu on screen, if any. SetMenu can replace s.menu
-	// while it is open, so the close must be reported to this one.
-	displayedMenu *Menu
-}
+// macosSystemTrayNative is empty: the cgo backend keeps a tray's native state
+// in its Objective-C classes.
+type macosSystemTrayNative struct{}
 
 func (s *macosSystemTray) Show() {
 	if s.nsStatusItem == nil {
@@ -67,13 +51,6 @@ func (s *macosSystemTray) Hide() {
 		return
 	}
 	C.systemTrayHide(s.nsStatusItem)
-}
-
-func (s *macosSystemTray) openMenu() {
-	if s.nsMenu == nil {
-		return
-	}
-	C.showMenu(s.nsStatusItem, s.nsMenu)
 }
 
 type button int
@@ -92,81 +69,6 @@ func coerceStatusItemEventType(rawEventType int, pressedMouseButtons uint64) int
 	return int(C.systemTrayCoerceEventType(C.int(rawEventType), C.ulong(pressedMouseButtons)))
 }
 
-//export systrayClickCallback
-func systrayClickCallback(id C.long, buttonID C.int) {
-	// Get the system tray
-	systemTray := systemTrayMap[uint(id)]
-	if systemTray == nil {
-		globalApplication.error("system tray not found: %v", id)
-		return
-	}
-	systemTray.processClick(button(buttonID))
-}
-
-// systrayMenuDisplayedCallback is called on the main thread when the tray
-// menu opens (displayed=1) or closes (displayed=0), so Menu.Clear keeps the IDs
-// of the rows on screen resolvable however often the menu is updated (#4719).
-//
-//export systrayMenuDisplayedCallback
-func systrayMenuDisplayedCallback(id C.long, displayed C.int) {
-	systemTray := systemTrayMap[uint(id)]
-	if systemTray == nil {
-		return
-	}
-	if systemTray.displayedMenu != nil {
-		systemTray.displayedMenu.displayed.Store(false)
-		systemTray.displayedMenu = nil
-	}
-	if displayed != 0 && systemTray.menu != nil {
-		systemTray.displayedMenu = systemTray.menu
-		systemTray.displayedMenu.displayed.Store(true)
-	}
-}
-
-// systrayPreClickCallback is called from the NSEvent local monitor BEFORE the
-// button processes the mouse-down.  It returns 1 when the framework should
-// show the menu via native tracking (proper highlight, no app activation),
-// or 0 to let the action handler fire for custom click/window behaviour.
-//
-//export systrayPreClickCallback
-func systrayPreClickCallback(id C.long, buttonID C.int) C.int {
-	systemTray := systemTrayMap[uint(id)]
-	if systemTray == nil || systemTray.nsMenu == nil {
-		return 0
-	}
-	b := button(buttonID)
-	switch b {
-	case leftButtonDown:
-		if systemTray.parent.clickHandler == nil &&
-			systemTray.parent.attachedWindow.Window == nil {
-			return 1
-		}
-	case rightButtonDown:
-		if systemTray.parent.rightClickHandler == nil {
-			// Hide the attached window before the menu appears.
-			if systemTray.parent.attachedWindow.Window != nil &&
-				systemTray.parent.attachedWindow.Window.IsVisible() {
-				systemTray.parent.attachedWindow.Window.Hide()
-			}
-			return 1
-		}
-	}
-	return 0
-}
-
-func (s *macosSystemTray) setIconPosition(position IconPosition) {
-	s.iconPosition = position
-}
-
-func (s *macosSystemTray) setMenu(menu *Menu) {
-	s.menu = menu
-	if s.nsStatusItem != nil && menu != nil {
-		menu.Update()
-		s.nsMenu = (menu.impl).(*macosMenu).nsMenu
-		C.systemTraySetCachedMenu(s.nsStatusItem, s.nsMenu)
-	}
-}
-
 func (s *macosSystemTray) positionWindow(window Window, offset int) error {
 	// Get the platform-specific window implementation
 	nativeWindow := window.NativeWindow()
@@ -178,23 +80,6 @@ func (s *macosSystemTray) positionWindow(window Window, offset int) error {
 	C.systemTrayPositionWindow(s.nsStatusItem, nativeWindow, C.int(offset))
 
 	return nil
-}
-
-func (s *macosSystemTray) getScreen() (*Screen, error) {
-	if s.lastClickedScreen != nil {
-		// Get the screen frame
-		frame := C.NSScreen_frame(s.lastClickedScreen)
-		result := &Screen{
-			Bounds: Rect{
-				X:      int(frame.origin.x),
-				Y:      int(frame.origin.y),
-				Width:  int(frame.size.width),
-				Height: int(frame.size.height),
-			},
-		}
-		return result, nil
-	}
-	return nil, errors.New("no screen available")
 }
 
 func (s *macosSystemTray) bounds() (*Rect, error) {
@@ -213,69 +98,6 @@ func (s *macosSystemTray) bounds() (*Rect, error) {
 		Height: int(rect.size.height),
 	}
 	return result, nil
-}
-
-func (s *macosSystemTray) run() {
-	globalApplication.dispatchOnMainThread(func() {
-		if s.nsStatusItem != nil {
-			Fatal("System tray '%d' already running", s.id)
-		}
-		s.nsStatusItem = unsafe.Pointer(C.systemTrayNew(C.long(s.id)))
-
-		if s.label != "" {
-			s.setLabel(s.label)
-		}
-		if s.icon != nil {
-			s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&s.icon[0]), C.int(len(s.icon))))
-			C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
-		}
-		if s.menu != nil {
-			s.menu.Update()
-			// Convert impl to macosMenu object
-			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
-			// Cache on the ObjC controller for the event monitor.
-			C.systemTraySetCachedMenu(s.nsStatusItem, s.nsMenu)
-		}
-	})
-}
-
-func (s *macosSystemTray) setIcon(icon []byte) {
-	s.icon = icon
-	globalApplication.dispatchOnMainThread(func() {
-		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
-		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
-	})
-}
-
-func (s *macosSystemTray) setDarkModeIcon(icon []byte) {
-	s.setIcon(icon)
-}
-
-func (s *macosSystemTray) setTemplateIcon(icon []byte) {
-	s.icon = icon
-	s.isTemplateIcon = true
-	globalApplication.dispatchOnMainThread(func() {
-		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
-		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
-	})
-}
-
-func (s *macosSystemTray) setTooltip(tooltip string) {
-	// Tooltips not supported on macOS
-}
-
-func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
-	result := &macosSystemTray{
-		parent:         s,
-		id:             s.id,
-		label:          s.label,
-		icon:           s.icon,
-		menu:           s.menu,
-		iconPosition:   s.iconPosition,
-		isTemplateIcon: s.isTemplateIcon,
-	}
-	systemTrayMap[s.id] = result
-	return result
 }
 
 func (s *macosSystemTray) setLabel(label string) {
@@ -298,10 +120,6 @@ func (s *macosSystemTray) setLabel(label string) {
 		freeCStrings(cLabel, cFg, cBg)
 	}
 	C.systemTraySetANSILabel(s.nsStatusItem, attr)
-}
-
-func hasANSICodes(s string) bool {
-	return strings.Contains(s, "\033[")
 }
 
 func partToCStrings(p SystemTrayLabelPart) (label, fg, bg *C.char) {
@@ -330,36 +148,59 @@ func (s *macosSystemTray) destroy() {
 	C.systemTrayDestroy(s.nsStatusItem)
 }
 
-func (s *macosSystemTray) processClick(b button) {
-	switch b {
-	case leftButtonDown:
-		// Check if we have a callback
-		if s.parent.clickHandler != nil {
-			s.parent.clickHandler()
-			return
-		}
-		if s.parent.attachedWindow.Window != nil {
-			s.parent.defaultClickHandler()
-			return
-		}
-		if s.menu != nil {
-			C.showMenu(s.nsStatusItem, s.nsMenu)
-		}
-	case rightButtonDown:
-		// Check if we have a callback
-		if s.parent.rightClickHandler != nil {
-			s.parent.rightClickHandler()
-			return
-		}
-		if s.menu != nil {
-			if s.parent.attachedWindow.Window != nil {
-				s.parent.attachedWindow.Window.Hide()
-			}
-			C.showMenu(s.nsStatusItem, s.nsMenu)
-			return
-		}
-		if s.parent.attachedWindow.Window != nil {
-			s.parent.defaultClickHandler()
-		}
+// showMenu pops the status item's menu up natively (NSMenu tracking). The
+// shared processClick and openMenu call it.
+func (s *macosSystemTray) showMenu() {
+	C.showMenu(s.nsStatusItem, s.nsMenu)
+}
+
+// applyIcon converts icon to an NSImage and installs it on the status item.
+func (s *macosSystemTray) applyIcon(icon []byte) {
+	s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
+	C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
+}
+
+// newStatusItem creates the NSStatusItem for the tray.
+func (s *macosSystemTray) newStatusItem() unsafe.Pointer {
+	return unsafe.Pointer(C.systemTrayNew(C.long(s.id)))
+}
+
+// cacheMenu caches s.nsMenu on the ObjC controller for the event monitor.
+func (s *macosSystemTray) cacheMenu() {
+	C.systemTraySetCachedMenu(s.nsStatusItem, s.nsMenu)
+}
+
+// lastClickedScreenBounds returns the frame of the screen the tray was last clicked on.
+func (s *macosSystemTray) lastClickedScreenBounds() Rect {
+	frame := C.NSScreen_frame(s.lastClickedScreen)
+	return Rect{
+		X:      int(frame.origin.x),
+		Y:      int(frame.origin.y),
+		Width:  int(frame.size.width),
+		Height: int(frame.size.height),
 	}
+}
+
+// systrayMenuDisplayedCallback is the //export entry point for the menu
+// open/close notification; the logic lives in systrayMenuDisplayed.
+//
+//export systrayMenuDisplayedCallback
+func systrayMenuDisplayedCallback(id C.long, displayed C.int) {
+	systrayMenuDisplayed(uint(id), int(displayed))
+}
+
+// systrayPreClickCallback is the //export entry point called from the NSEvent
+// local monitor BEFORE the button processes the mouse-down; the logic lives in
+// systrayPreClick.
+//
+//export systrayPreClickCallback
+func systrayPreClickCallback(id C.long, buttonID C.int) C.int {
+	return C.int(systrayPreClick(uint(id), int(buttonID)))
+}
+
+// systrayClickCallback is the //export entry point for a processed tray click.
+//
+//export systrayClickCallback
+func systrayClickCallback(id C.long, buttonID C.int) {
+	systrayClick(uint(id), int(buttonID))
 }

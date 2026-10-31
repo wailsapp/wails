@@ -30,6 +30,35 @@ func TestEnvTags(t *testing.T) {
 	}
 }
 
+func TestEnvTagsPurego(t *testing.T) {
+	t.Setenv(mcpEnvVar, "")
+	t.Setenv(puregoEnvVar, "1")
+	assert.Equal(t, []string{puregoBuildTag}, envTags())
+	t.Setenv(mcpEnvVar, "yes")
+	assert.Equal(t, []string{mcpBuildTag, puregoBuildTag}, envTags())
+	t.Setenv(puregoEnvVar, "0")
+	assert.Equal(t, []string{mcpBuildTag}, envTags())
+}
+
+func TestPackageCommandPassesTags(t *testing.T) {
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+	var captured []string
+	runTaskFunc = func(_ *RunTaskOptions, otherArgs []string) error {
+		captured = otherArgs
+		return nil
+	}
+	t.Setenv(mcpEnvVar, "")
+	t.Setenv(puregoEnvVar, "1")
+	assert.NoError(t, Package(&flags.Package{Tags: "gtk3"}, nil))
+	assert.Contains(t, captured, "EXTRA_TAGS=gtk3,purego")
+	t.Setenv(puregoEnvVar, "")
+	assert.NoError(t, Package(&flags.Package{}, nil))
+	for _, arg := range captured {
+		assert.NotContains(t, arg, "EXTRA_TAGS")
+	}
+}
+
 func TestBuildCommandWithMCPEnvVar(t *testing.T) {
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH

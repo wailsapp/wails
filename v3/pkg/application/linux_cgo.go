@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk3 && !android && !server
+//go:build linux && cgo && !gtk3 && !android && !server && !purego
 
 package application
 
@@ -52,25 +52,6 @@ type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
 
-// getLinuxWebviewWindow safely extracts a linuxWebviewWindow from a Window interface
-func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
-	if window == nil {
-		return nil
-	}
-
-	webviewWindow, ok := window.(*WebviewWindow)
-	if !ok {
-		return nil
-	}
-
-	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
-	if !ok {
-		return nil
-	}
-
-	return lw
-}
-
 var (
 	nilPointer    pointer       = nil
 	nilRadioGroup GSListPointer = nil
@@ -117,8 +98,7 @@ func activateLinux(data pointer) {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data pointer) {
-	event := newApplicationEvent(events.ApplicationEventType(eventID))
-	applicationEvents <- event
+	dispatchApplicationEvent(uint(eventID))
 }
 
 func isOnMainThread() bool {
@@ -174,18 +154,6 @@ func appRun(app pointer) error {
 	return err
 }
 
-func appDestroy(application pointer) {
-	webview.CloseActiveRequests()
-	C.g_application_quit((*C.GApplication)(application))
-}
-
-func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
-	// GTK4: GtkPopoverMenu items are wired through the "app" GAction group,
-	// which is attached to the window in windowNew. The popover's "closed"
-	// signal (used for cleanup) is connected in show_context_menu, so there
-	// is nothing to wire up here.
-}
-
 func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData) {
 	// GTK4: present the GMenu model as a GtkPopoverMenu anchored to the
 	// webview at the click coordinates (which are relative to the webview).
@@ -197,16 +165,10 @@ func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData
 	)
 }
 
-func (a *linuxApp) getCurrentWindowID() uint {
-	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(a.application)))
-	if window == nil {
-		return uint(1)
-	}
-	identifier, ok := a.windowMap[window]
-	if ok {
-		return identifier
-	}
-	return uint(1)
+// activeWindow is the native half of getCurrentWindowID.
+func activeWindow(application pointer) (windowPointer, bool) {
+	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(application)))
+	return windowPointer(window), window != nil
 }
 
 func (a *linuxApp) getWindows() []pointer {
@@ -217,24 +179,6 @@ func (a *linuxApp) getWindows() []pointer {
 		result = append(result, pointer(windows.data))
 	}
 	return result
-}
-
-func (a *linuxApp) hideAllWindows() {
-	for _, window := range a.getWindows() {
-		C.gtk_widget_set_visible((*C.GtkWidget)(window), C.gboolean(0))
-	}
-}
-
-func (a *linuxApp) showAllWindows() {
-	for _, window := range a.getWindows() {
-		C.gtk_window_present((*C.GtkWindow)(window))
-	}
-}
-
-func (a *linuxApp) setIcon(icon []byte) {
-	// GTK4 removed per-window icon APIs. The application icon is determined by
-	// the .desktop file's Icon= field at the desktop-integration level.
-	// No programmatic equivalent exists for setting icons from bytes in GTK4.
 }
 
 func clipboardGet() string {
@@ -264,6 +208,10 @@ var menuItemActionCounter uint32 = 0
 var menuItemActions = make(map[uint]string)
 var menuItemActionsLock sync.RWMutex
 var menuItemIds = make(map[pointer]uint)
+
+// menuItemRadioGroups maps a radio item's id to its shared group action
+// ("radio_group_N"). Guarded by menuItemIdsMutex.
+var menuItemRadioGroups = make(map[uint]string)
 var menuItemIdsMutex sync.RWMutex
 
 func generateActionName(itemId uint) string {
@@ -284,27 +232,7 @@ func lookupActionName(itemId uint) (string, bool) {
 
 //export menuActionActivated
 func menuActionActivated(id C.guint) {
-	gtkSignalToMenuItemLock.RLock()
-	item, ok := gtkSignalToMenuItem[uint(id)]
-	gtkSignalToMenuItemLock.RUnlock()
-	if !ok {
-		return
-	}
-	switch item.itemType {
-	case text:
-		menuItemClicked <- item.id
-	case checkbox:
-		impl := item.impl.(*linuxMenuItem)
-		currentState := impl.isChecked()
-		impl.setChecked(!currentState)
-		menuItemClicked <- item.id
-	case radio:
-		menuItem := item.impl.(*linuxMenuItem)
-		if !menuItem.isChecked() {
-			menuItem.setChecked(true)
-			menuItemClicked <- item.id
-		}
-	}
+	menuItemActivatedByID(uint(id))
 }
 
 func menuNewSection() pointer {
@@ -321,25 +249,6 @@ func menuAppendSection(menu *Menu, section pointer) {
 	}
 	gmenu := (*C.GMenu)(impl.native)
 	C.g_menu_append_section(gmenu, nil, (*C.GMenuModel)(section))
-}
-
-func menuAppendItemToSection(section pointer, item *MenuItem) {
-	if item.impl == nil {
-		return
-	}
-	menuImpl := item.impl.(*linuxMenuItem)
-	if menuImpl.native == nil {
-		return
-	}
-	gsection := (*C.GMenu)(section)
-	gitem := (*C.GMenuItem)(menuImpl.native)
-
-	menuImpl.parentMenu = section
-	menuImpl.isHidden = item.hidden
-
-	if !item.hidden {
-		C.g_menu_append_item(gsection, gitem)
-	}
 }
 
 var menuItemCounters = make(map[pointer]int)
@@ -398,33 +307,8 @@ func menuNew() pointer {
 	return pointer(C.g_menu_new())
 }
 
-func menuSetSubmenu(item *MenuItem, menu *Menu) {
-	if item.impl == nil || menu.impl == nil {
-		return
-	}
-	itemImpl := item.impl.(*linuxMenuItem)
-	menuImpl := menu.impl.(*linuxMenu)
-	if itemImpl.native == nil || menuImpl.native == nil {
-		return
-	}
-	gitem := (*C.GMenuItem)(itemImpl.native)
-	gmenu := (*C.GMenu)(menuImpl.native)
-	C.g_menu_item_set_submenu(gitem, (*C.GMenuModel)(unsafe.Pointer(gmenu)))
-}
-
-func menuGetRadioGroup(item *linuxMenuItem) *GSList {
-	return nil
-}
-
 //export handleClick
 func handleClick(idPtr unsafe.Pointer) {
-}
-
-func attachMenuHandler(item *MenuItem) uint {
-	gtkSignalToMenuItemLock.Lock()
-	gtkSignalToMenuItem[item.id] = item
-	gtkSignalToMenuItemLock.Unlock()
-	return item.id
 }
 
 func menuItemChecked(widget pointer) bool {
@@ -433,9 +317,13 @@ func menuItemChecked(widget pointer) bool {
 	}
 	menuItemIdsMutex.RLock()
 	itemId, exists := menuItemIds[widget]
+	radioGroup, isRadio := menuItemRadioGroups[itemId]
 	menuItemIdsMutex.RUnlock()
 	if !exists {
 		return false
+	}
+	if isRadio {
+		return getActionStateString(radioGroup) == radioItemTarget(itemId)
 	}
 	actionName, ok := lookupActionName(itemId)
 	if !ok {
@@ -519,8 +407,18 @@ func menuItemSetChecked(widget pointer, checked bool) {
 	}
 	menuItemIdsMutex.RLock()
 	itemId, exists := menuItemIds[widget]
+	radioGroup, isRadio := menuItemRadioGroups[itemId]
 	menuItemIdsMutex.RUnlock()
 	if !exists {
+		return
+	}
+	if isRadio {
+		// Only selecting makes sense for a radio item. Clearing a member is a
+		// no-op: the group always holds the selected item's target, and the
+		// member that becomes selected overwrites it.
+		if checked {
+			setActionStateString(radioGroup, radioItemTarget(itemId))
+		}
 		return
 	}
 	actionName, ok := lookupActionName(itemId)
@@ -568,16 +466,57 @@ func menuItemSetLabel(widget pointer, label string) {
 	C.g_menu_item_set_label((*C.GMenuItem)(widget), cLabel)
 }
 
-func menuItemRemoveBitmap(widget pointer) {
+// menuItemSetIdAttribute tags a GMenuItem with its Wails id. The attribute is
+// copied into the model with the item, so menuModelReplaceItem can find the
+// model's copy without relying on its position.
+func menuItemSetIdAttribute(widget pointer, itemId uint) {
+	cName := C.CString(menuItemIdAttribute)
+	defer C.free(unsafe.Pointer(cName))
+	C.g_menu_item_set_attribute_value((*C.GMenuItem)(widget), cName, C.g_variant_new_uint32(C.guint32(itemId)))
 }
 
-func menuItemSetBitmap(widget pointer, bitmap []byte) {
+// menuModelReplaceItem swaps the copy of item held by model for item itself,
+// so the copy picks up changes made to the original after it was appended.
+// Hidden items are not in the model and are left alone.
+func menuModelReplaceItem(model, item pointer, itemId uint) {
+	gmodel := (*C.GMenuModel)(model)
+	cName := C.CString(menuItemIdAttribute)
+	defer C.free(unsafe.Pointer(cName))
+	n := C.g_menu_model_get_n_items(gmodel)
+	for i := C.gint(0); i < n; i++ {
+		v := C.g_menu_model_get_item_attribute_value(gmodel, i, cName, nil)
+		if v == nil {
+			continue
+		}
+		id := C.g_variant_get_uint32(v)
+		C.g_variant_unref(v)
+		if uint(id) == itemId {
+			C.menu_remove_item((*C.GMenu)(model), i)
+			C.menu_insert_item((*C.GMenu)(model), i, (*C.GMenuItem)(item))
+			return
+		}
+	}
 }
 
-func menuItemSetToolTip(widget pointer, tooltip string) {
+// setActionStateString and getActionStateString handle the string-typed state
+// of a radio group action, whose state is the selected item's target.
+func setActionStateString(actionName, value string) {
+	cName := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cName))
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cValue))
+	C.set_action_state_string(cName, cValue)
 }
 
-func menuItemSignalBlock(widget pointer, handlerId uint, block bool) {
+func getActionStateString(actionName string) string {
+	cName := C.CString(actionName)
+	defer C.free(unsafe.Pointer(cName))
+	s := C.get_action_state_string(cName)
+	if s == nil {
+		return ""
+	}
+	defer C.g_free(C.gpointer(unsafe.Pointer(s)))
+	return C.GoString(s)
 }
 
 func menuRadioItemNew(group *GSList, label string) pointer {
@@ -624,73 +563,18 @@ func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedI
 
 	menuItemIdsMutex.Lock()
 	menuItemIds[pointer(gitem)] = itemId
+	menuItemRadioGroups[itemId] = actionName
 	menuItemIdsMutex.Unlock()
 	return pointer(gitem)
 }
 
 // Keyboard accelerator support for GTK4 menus
 
-// namedKeysToGTK maps Wails key names to GDK keysym values
-// These are X11 keysym values that GDK uses
-var namedKeysToGTK = map[string]C.guint{
-	"backspace": C.guint(0xff08),
-	"tab":       C.guint(0xff09),
-	"return":    C.guint(0xff0d),
-	"enter":     C.guint(0xff0d),
-	"escape":    C.guint(0xff1b),
-	"left":      C.guint(0xff51),
-	"right":     C.guint(0xff53),
-	"up":        C.guint(0xff52),
-	"down":      C.guint(0xff54),
-	"space":     C.guint(0xff80),
-	"delete":    C.guint(0xff9f),
-	"home":      C.guint(0xff95),
-	"end":       C.guint(0xff9c),
-	"page up":   C.guint(0xff9a),
-	"page down": C.guint(0xff9b),
-	"f1":        C.guint(0xffbe),
-	"f2":        C.guint(0xffbf),
-	"f3":        C.guint(0xffc0),
-	"f4":        C.guint(0xffc1),
-	"f5":        C.guint(0xffc2),
-	"f6":        C.guint(0xffc3),
-	"f7":        C.guint(0xffc4),
-	"f8":        C.guint(0xffc5),
-	"f9":        C.guint(0xffc6),
-	"f10":       C.guint(0xffc7),
-	"f11":       C.guint(0xffc8),
-	"f12":       C.guint(0xffc9),
-	"f13":       C.guint(0xffca),
-	"f14":       C.guint(0xffcb),
-	"f15":       C.guint(0xffcc),
-	"f16":       C.guint(0xffcd),
-	"f17":       C.guint(0xffce),
-	"f18":       C.guint(0xffcf),
-	"f19":       C.guint(0xffd0),
-	"f20":       C.guint(0xffd1),
-	"f21":       C.guint(0xffd2),
-	"f22":       C.guint(0xffd3),
-	"f23":       C.guint(0xffd4),
-	"f24":       C.guint(0xffd5),
-	"f25":       C.guint(0xffd6),
-	"f26":       C.guint(0xffd7),
-	"f27":       C.guint(0xffd8),
-	"f28":       C.guint(0xffd9),
-	"f29":       C.guint(0xffda),
-	"f30":       C.guint(0xffdb),
-	"f31":       C.guint(0xffdc),
-	"f32":       C.guint(0xffdd),
-	"f33":       C.guint(0xffde),
-	"f34":       C.guint(0xffdf),
-	"f35":       C.guint(0xffe0),
-	"numlock":   C.guint(0xff7f),
-}
-
 // parseKeyGTK converts a Wails key string to a GDK keysym value
 func parseKeyGTK(key string) C.guint {
 	// Check named keys first
-	if result, found := namedKeysToGTK[key]; found {
-		return result
+	if result, found := gtk4NamedKeys[key]; found {
+		return C.guint(result)
 	}
 	// For single character keys, convert using gdk_unicode_to_keyval
 	if len(key) != 1 {
@@ -762,6 +646,24 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	cActionName := C.CString(actionName)
 	defer C.free(unsafe.Pointer(cActionName))
 	C.set_action_accelerator((*C.GtkApplication)(app.application), cActionName, accelString)
+}
+
+// clearMenuItemAccelerator removes every accelerator GTK holds for the item's
+// action.
+func clearMenuItemAccelerator(itemId uint) {
+	actionName, ok := lookupActionName(itemId)
+	if !ok {
+		return
+	}
+	app := getNativeApplication()
+	if app == nil || app.application == nil {
+		return
+	}
+	cFullName := C.CString("app." + actionName)
+	defer C.free(unsafe.Pointer(cFullName))
+	// A NULL-terminated list with no entries clears the action's accelerators.
+	var none [1]*C.char
+	C.gtk_application_set_accels_for_action((*C.GtkApplication)(app.application), cFullName, &none[0])
 }
 
 // screen related
@@ -841,13 +743,6 @@ func (w *linuxWebviewWindow) setEnabled(enabled bool) {
 	C.gtk_widget_set_sensitive(w.gtkWidget(), C.gboolean(btoi(enabled)))
 }
 
-func btoi(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
-
 func widgetSetVisible(widget pointer, hidden bool) {
 	C.gtk_widget_set_visible((*C.GtkWidget)(widget), C.gboolean(btoi(!hidden)))
 }
@@ -907,28 +802,6 @@ func (w *linuxWebviewWindow) execJSDragOver(x, y int) {
 		nil,
 		nil,
 		nil)
-}
-
-func writeInt(buf []byte, n int) int {
-	if n < 0 {
-		buf[0] = '-'
-		return 1 + writeInt(buf[1:], -n)
-	}
-	if n == 0 {
-		buf[0] = '0'
-		return 1
-	}
-	tmp := n
-	digits := 0
-	for tmp > 0 {
-		digits++
-		tmp /= 10
-	}
-	for i := digits - 1; i >= 0; i-- {
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	return digits
 }
 
 func getMousePosition() (int, int, *Screen) {
@@ -1165,19 +1038,9 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 	return state&C.GDK_TOPLEVEL_STATE_MINIMIZED != 0
 }
 
-func (w *linuxWebviewWindow) isVisible() bool {
-	// The GTK widget is created lazily in run() (windowNew). On GTK4 that only
-	// happens after the application's "activate" signal fires: WebviewWindow.Run
-	// sets w.impl and then blocks in waitForActivation *before* creating the
-	// widget, so there is a startup window in which w.impl != nil but w.window is
-	// still NULL. A window whose widget does not exist yet is, by definition, not
-	// visible; without this guard a visibility poll during that gap calls
-	// gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion and
-	// returns false anyway.
-	if w.window == nil {
-		return false
-	}
-	return C.gtk_widget_is_visible(w.gtkWidget()) != 0
+// widgetIsVisible reports whether a GTK widget is mapped and visible.
+func widgetIsVisible(widget pointer) bool {
+	return C.gtk_widget_is_visible((*C.GtkWidget)(widget)) != 0
 }
 
 func (w *linuxWebviewWindow) maximise() {
@@ -1188,7 +1051,20 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_minimize(w.gtkWindow())
 }
 
-func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
+// setWindowMenuActions shadows the shared app actions when a window has no menu.
+func setWindowMenuActions(window pointer, enabled bool) {
+	if enabled {
+		C.attach_action_group_to_widget((*C.GtkWidget)(window))
+		return
+	}
+	group := C.g_simple_action_group_new()
+	name := C.CString("app")
+	defer C.free(unsafe.Pointer(name))
+	C.gtk_widget_insert_action_group((*C.GtkWidget)(window), name, (*C.GActionGroup)(unsafe.Pointer(group)))
+	C.g_object_unref(C.gpointer(group))
+}
+
+func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox, menubar pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 
@@ -1203,20 +1079,46 @@ func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, wind
 	C.gtk_window_set_child((*C.GtkWindow)(window), (*C.GtkWidget)(vbox))
 
 	if menu != nil {
-		switch menuStyle {
-		case LinuxMenuStylePrimaryMenu:
-			headerBar := C.create_header_bar_with_menu((*C.GMenu)(menu))
-			C.gtk_window_set_titlebar((*C.GtkWindow)(window), headerBar)
-		default:
-			menuBar := C.create_menu_bar_from_model((*C.GMenu)(menu))
-			C.gtk_box_prepend((*C.GtkBox)(vbox), menuBar)
-		}
+		menubar = windowAttachMenuBar(window, vbox, menu, menuStyle)
 	}
 
 	C.gtk_box_append((*C.GtkBox)(vbox), (*C.GtkWidget)(webview))
 	C.gtk_widget_set_vexpand((*C.GtkWidget)(webview), C.gboolean(1))
 	C.gtk_widget_set_hexpand((*C.GtkWidget)(webview), C.gboolean(1))
 	return
+}
+
+// windowAttachMenuBar shows the GMenu model menu in the window: as the menu bar
+// above the webview, or in the header bar for LinuxMenuStylePrimaryMenu. It
+// returns the widget windowDetachMenuBar takes back.
+func windowAttachMenuBar(window, vbox, menu pointer, menuStyle LinuxMenuStyle) pointer {
+	switch menuStyle {
+	case LinuxMenuStylePrimaryMenu:
+		headerBar := C.create_header_bar_with_menu((*C.GMenu)(menu))
+		C.gtk_window_set_titlebar((*C.GtkWindow)(window), headerBar)
+		return pointer(headerBar)
+	default:
+		menuBar := C.create_menu_bar_from_model((*C.GMenu)(menu))
+		C.gtk_box_prepend((*C.GtkBox)(vbox), menuBar)
+		return pointer(menuBar)
+	}
+}
+
+// unregisterMenuItemAccelerator removes the accelerator registered for the
+// item's action, so the action no longer fires from the keyboard.
+func unregisterMenuItemAccelerator(itemId uint) {
+	actionName, ok := lookupActionName(itemId)
+	if !ok {
+		return
+	}
+	app := getNativeApplication()
+	if app == nil || app.application == nil {
+		return
+	}
+	cAction := C.CString("app." + actionName)
+	defer C.free(unsafe.Pointer(cAction))
+	none := []*C.gchar{nil}
+	C.gtk_application_set_accels_for_action((*C.GtkApplication)(app.application), (*C.gchar)(unsafe.Pointer(cAction)), &none[0])
 }
 
 func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
@@ -1333,16 +1235,6 @@ func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
 	C.gtk_window_set_default_size(w.gtkWindow(), C.int(width), C.int(height))
 }
 
-func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
-	w := (*C.GtkWidget)(window)
-	if minWidth > 0 && minHeight > 0 {
-		C.gtk_widget_set_size_request(w, C.int(minWidth), C.int(minHeight))
-	}
-	if maxWidth > 0 || maxHeight > 0 {
-		C.window_set_max_size((*C.GtkWindow)(window), C.int(maxWidth), C.int(maxHeight))
-	}
-}
-
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
@@ -1421,18 +1313,9 @@ func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
-func (w *linuxWebviewWindow) setTransparent() {
-	// GTK4: Transparency via CSS - different from GTK3
-}
-
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.float(colour.Red) / 255.0, C.float(colour.Green) / 255.0, C.float(colour.Blue) / 255.0, C.float(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color(w.webKitWebView(), &rgba)
-}
-
-func (w *linuxWebviewWindow) setIcon(icon pointer) {
-	// GTK4 removed gtk_window_set_icon. Window icons are set via the
-	// application's .desktop file at the desktop-integration level.
 }
 
 func (w *linuxWebviewWindow) startDrag() error {
@@ -1490,18 +1373,6 @@ func (w *linuxWebviewWindow) setZoom(zoom float64) {
 	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.gdouble(zoom))
 }
 
-func (w *linuxWebviewWindow) zoomIn() {
-	w.setZoom(w.getZoom() * 1.10)
-}
-
-func (w *linuxWebviewWindow) zoomOut() {
-	w.setZoom(w.getZoom() / 1.10)
-}
-
-func (w *linuxWebviewWindow) zoomReset() {
-	w.setZoom(1.0)
-}
-
 func (w *linuxWebviewWindow) reload() {
 	uri := C.CString("wails://")
 	C.webkit_web_view_load_uri(w.webKitWebView(), uri)
@@ -1524,42 +1395,16 @@ func (w *linuxWebviewWindow) setHTML(html string) {
 	C.webkit_web_view_load_alternate_html(w.webKitWebView(), cHTML, uri, empty)
 }
 
-func (w *linuxWebviewWindow) flash(_ bool) {}
-
 func (w *linuxWebviewWindow) setOpacity(opacity float64) {
 	C.gtk_widget_set_opacity(w.gtkWidget(), C.double(opacity))
 }
 
-func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
-	// GTK4: Input handling is different
-}
-
-func (w *linuxWebviewWindow) copy() {
-	w.execJS("document.execCommand('copy')")
-}
-
-func (w *linuxWebviewWindow) cut() {
-	w.execJS("document.execCommand('cut')")
-}
-
-func (w *linuxWebviewWindow) paste() {
-	w.execJS("document.execCommand('paste')")
-}
-
-func (w *linuxWebviewWindow) delete() {
-	w.execJS("document.execCommand('delete')")
-}
-
-func (w *linuxWebviewWindow) selectAll() {
-	w.execJS("document.execCommand('selectAll')")
-}
-
-func (w *linuxWebviewWindow) undo() {
-	w.execJS("document.execCommand('undo')")
-}
-
-func (w *linuxWebviewWindow) redo() {
-	w.execJS("document.execCommand('redo')")
+// executeEditingCommand is the native half of the editing commands
+// (webview_window_linux_editing.go). GTK thread only.
+func (w *linuxWebviewWindow) executeEditingCommand(command string) {
+	value := C.CString(command)
+	defer C.free(unsafe.Pointer(value))
+	C.webkit_web_view_execute_editing_command(w.webKitWebView(), value)
 }
 
 func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventType)) {
@@ -1881,13 +1726,6 @@ var (
 	alertDialogCallbacks = make(map[uint]chan int)
 )
 
-func nextDialogRequestID() uint {
-	dialogRequestMutex.Lock()
-	defer dialogRequestMutex.Unlock()
-	dialogRequestCounter++
-	return uint(dialogRequestCounter)
-}
-
 //export fileDialogCallback
 func fileDialogCallback(requestID C.uint, files **C.char, count C.int, cancelled C.gboolean) {
 	dialogRequestMutex.Lock()
@@ -1945,7 +1783,7 @@ func alertDialogCallback(requestID C.uint, buttonIndex C.int) {
 	close(ch)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFile, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, currentName, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
 	requestID := nextDialogRequestID()
 	resultChan := make(chan string, 100)
 
@@ -1974,8 +1812,8 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 			C.set_file_dialog_filters(dialog, filterStore)
 		}
 
-		if currentFile != "" {
-			cName := C.CString(currentFile)
+		if currentName != "" {
+			cName := C.CString(currentName)
 			C.gtk_file_dialog_set_initial_name(dialog, cName)
 			C.free(unsafe.Pointer(cName))
 		}
@@ -2010,85 +1848,6 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	})
 
 	return resultChan, nil
-}
-
-func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
-	var action int
-
-	if dialog.canChooseDirectories {
-		action = 2 // GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
-	} else {
-		action = 0 // GTK_FILE_CHOOSER_ACTION_OPEN
-	}
-
-	window := nilPointer
-	if dialog.window != nil {
-		nativeWindow := dialog.window.NativeWindow()
-		if nativeWindow != nil {
-			window = pointer(nativeWindow)
-		}
-	}
-
-	buttonText := dialog.buttonText
-	if buttonText == "" {
-		buttonText = "_Open"
-	}
-
-	return runChooserDialog(
-		window,
-		dialog.allowsMultipleSelection,
-		false, // createFolders not applicable for open
-		dialog.showHiddenFiles,
-		"",
-		dialog.directory,
-		dialog.title,
-		action,
-		buttonText,
-		dialog.filters,
-	)
-}
-
-func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
-	window := nilPointer
-	if dialog.window != nil {
-		nativeWindow := dialog.window.NativeWindow()
-		if nativeWindow != nil {
-			window = pointer(nativeWindow)
-		}
-	}
-
-	buttonText := dialog.buttonText
-	if buttonText == "" {
-		buttonText = "_Save"
-	}
-
-	return runChooserDialog(
-		window,
-		false,
-		dialog.canCreateDirectories,
-		dialog.showHiddenFiles,
-		dialog.filename,
-		dialog.directory,
-		dialog.title,
-		1, // GTK_FILE_CHOOSER_ACTION_SAVE
-		buttonText,
-		dialog.filters,
-	)
-}
-
-func dialogTypeToIconName(dialogType DialogType) string {
-	switch dialogType {
-	case InfoDialogType:
-		return "dialog-information-symbolic"
-	case WarningDialogType:
-		return "dialog-warning-symbolic"
-	case ErrorDialogType:
-		return "dialog-error-symbolic"
-	case QuestionDialogType:
-		return "dialog-question-symbolic"
-	default:
-		return ""
-	}
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -2271,3 +2030,48 @@ func enableDevTools(wv pointer) {
 var _ = time.Now
 var _ = events.Linux
 var _ = strings.TrimSpace
+
+// nativeWindowPointer converts a window's native handle to a dialog parent.
+func nativeWindowPointer(native unsafe.Pointer) pointer {
+	return pointer(native)
+}
+
+// gMenuAppendItem appends item to the GMenu (or GMenu section) menu.
+func gMenuAppendItem(menu, item pointer) {
+	C.g_menu_append_item((*C.GMenu)(menu), (*C.GMenuItem)(item))
+}
+
+// windowPresent raises and focuses a GTK window.
+func windowPresent(window pointer) {
+	C.gtk_window_present((*C.GtkWindow)(window))
+}
+
+// gApplicationQuit asks a GApplication to quit its main loop.
+func gApplicationQuit(application pointer) {
+	C.g_application_quit((*C.GApplication)(application))
+}
+
+// gMenuItemSetSubmenu attaches the GMenu menu as the submenu of item.
+func gMenuItemSetSubmenu(item, menu pointer) {
+	C.g_menu_item_set_submenu((*C.GMenuItem)(item), (*C.GMenuModel)(menu))
+}
+
+// windowSetTitlebar sets the titlebar widget of a GtkWindow. nilPointer clears it.
+func windowSetTitlebar(window, titlebar pointer) {
+	C.gtk_window_set_titlebar((*C.GtkWindow)(window), (*C.GtkWidget)(titlebar))
+}
+
+// gtkWidgetUnparent detaches a widget from its parent.
+func gtkWidgetUnparent(widget pointer) {
+	C.gtk_widget_unparent((*C.GtkWidget)(widget))
+}
+
+// widgetSetSizeRequest sets the minimum size request of a widget.
+func widgetSetSizeRequest(widget pointer, width, height int) {
+	C.gtk_widget_set_size_request((*C.GtkWidget)(widget), C.int(width), C.int(height))
+}
+
+// setWindowMaxSize sets the maximum size of a GtkWindow.
+func setWindowMaxSize(window pointer, maxWidth, maxHeight int) {
+	C.window_set_max_size((*C.GtkWindow)(window), C.int(maxWidth), C.int(maxHeight))
+}

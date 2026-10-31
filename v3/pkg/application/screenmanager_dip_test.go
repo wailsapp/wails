@@ -35,7 +35,7 @@ func layoutDIP(t *testing.T, screens []dipScreen) *ScreenManager {
 	return manager
 }
 
-func rect(x, y, w, h int) Rect {
+func dipRect(x, y, w, h int) Rect {
 	return Rect{X: x, Y: y, Width: w, Height: h}
 }
 
@@ -56,45 +56,45 @@ func TestLayoutDIPScreensKeepsMixedDPICoordinates(t *testing.T) {
 		{
 			name: "2x primary with 1x display to the right",
 			screens: []dipScreen{
-				{id: "builtin", scale: 2, bounds: rect(0, 0, 1512, 982), workArea: rect(0, 37, 1512, 945), primary: true},
-				{id: "external", scale: 1, bounds: rect(1512, 0, 1920, 1080), workArea: rect(1512, 0, 1920, 1080)},
+				{id: "builtin", scale: 2, bounds: dipRect(0, 0, 1512, 982), workArea: dipRect(0, 37, 1512, 945), primary: true},
+				{id: "external", scale: 1, bounds: dipRect(1512, 0, 1920, 1080), workArea: dipRect(1512, 0, 1920, 1080)},
 			},
 		},
 		{
 			name: "1x primary with 2x display to the right",
 			screens: []dipScreen{
-				{id: "external", scale: 1, bounds: rect(0, 0, 1920, 1080), workArea: rect(0, 25, 1920, 1055), primary: true},
-				{id: "builtin", scale: 2, bounds: rect(1920, 0, 1512, 982), workArea: rect(1920, 37, 1512, 945)},
+				{id: "external", scale: 1, bounds: dipRect(0, 0, 1920, 1080), workArea: dipRect(0, 25, 1920, 1055), primary: true},
+				{id: "builtin", scale: 2, bounds: dipRect(1920, 0, 1512, 982), workArea: dipRect(1920, 37, 1512, 945)},
 			},
 		},
 		{
 			name: "1x primary with 2x display below",
 			screens: []dipScreen{
-				{id: "external", scale: 1, bounds: rect(0, 0, 1920, 1080), workArea: rect(0, 25, 1920, 1055), primary: true},
-				{id: "builtin", scale: 2, bounds: rect(0, 1080, 1512, 982), workArea: rect(0, 1117, 1512, 945)},
+				{id: "external", scale: 1, bounds: dipRect(0, 0, 1920, 1080), workArea: dipRect(0, 25, 1920, 1055), primary: true},
+				{id: "builtin", scale: 2, bounds: dipRect(0, 1080, 1512, 982), workArea: dipRect(0, 1117, 1512, 945)},
 			},
 		},
 		{
 			name: "1x primary with 2x display to the left",
 			screens: []dipScreen{
-				{id: "external", scale: 1, bounds: rect(0, 0, 1920, 1080), workArea: rect(0, 25, 1920, 1055), primary: true},
-				{id: "builtin", scale: 2, bounds: rect(-1512, 0, 1512, 982), workArea: rect(-1512, 37, 1512, 945)},
+				{id: "external", scale: 1, bounds: dipRect(0, 0, 1920, 1080), workArea: dipRect(0, 25, 1920, 1055), primary: true},
+				{id: "builtin", scale: 2, bounds: dipRect(-1512, 0, 1512, 982), workArea: dipRect(-1512, 37, 1512, 945)},
 			},
 		},
 		{
 			// The arrangement reported in #5409.
 			name: "1x primary with 2x display above",
 			screens: []dipScreen{
-				{id: "external", scale: 1, bounds: rect(0, 0, 1920, 1080), workArea: rect(0, 25, 1920, 1055), primary: true},
-				{id: "builtin", scale: 2, bounds: rect(0, -982, 1512, 982), workArea: rect(0, -945, 1512, 945)},
+				{id: "external", scale: 1, bounds: dipRect(0, 0, 1920, 1080), workArea: dipRect(0, 25, 1920, 1055), primary: true},
+				{id: "builtin", scale: 2, bounds: dipRect(0, -982, 1512, 982), workArea: dipRect(0, -945, 1512, 945)},
 			},
 		},
 		{
 			name: "three displays, three scale factors",
 			screens: []dipScreen{
-				{id: "left", scale: 1, bounds: rect(-2560, 0, 2560, 1440), workArea: rect(-2560, 0, 2560, 1440)},
-				{id: "middle", scale: 2, bounds: rect(0, 0, 1512, 982), workArea: rect(0, 37, 1512, 945), primary: true},
-				{id: "right", scale: 3, bounds: rect(1512, 0, 1280, 800), workArea: rect(1512, 0, 1280, 800)},
+				{id: "left", scale: 1, bounds: dipRect(-2560, 0, 2560, 1440), workArea: dipRect(-2560, 0, 2560, 1440)},
+				{id: "middle", scale: 2, bounds: dipRect(0, 0, 1512, 982), workArea: dipRect(0, 37, 1512, 945), primary: true},
+				{id: "right", scale: 3, bounds: dipRect(1512, 0, 1280, 800), workArea: dipRect(1512, 0, 1280, 800)},
 			},
 		},
 	}
@@ -130,11 +130,11 @@ func TestLayoutDIPScreensKeepsMixedDPICoordinates(t *testing.T) {
 // it.
 func TestLayoutDIPScreensFindsWindowOnSecondDisplay(t *testing.T) {
 	manager := layoutDIP(t, []dipScreen{
-		{id: "external", scale: 1, bounds: rect(0, 0, 1920, 1080), workArea: rect(0, 25, 1920, 1055), primary: true},
-		{id: "builtin", scale: 2, bounds: rect(1920, 0, 1512, 982), workArea: rect(1920, 37, 1512, 945)},
+		{id: "external", scale: 1, bounds: dipRect(0, 0, 1920, 1080), workArea: dipRect(0, 25, 1920, 1055), primary: true},
+		{id: "builtin", scale: 2, bounds: dipRect(1920, 0, 1512, 982), workArea: dipRect(1920, 37, 1512, 945)},
 	})
 
-	window := rect(2076, 128, 1200, 800)
+	window := dipRect(2076, 128, 1200, 800)
 
 	var found *Screen
 	for _, screen := range manager.GetAll() {
@@ -155,10 +155,10 @@ func TestLayoutDIPScreensFindsWindowOnSecondDisplay(t *testing.T) {
 // in for a platform that reports only the logical rectangles, and the refusal to
 // overwrite a Physical* rectangle a platform measured for itself.
 func TestLayoutDIPScreensCompletesBookkeeping(t *testing.T) {
-	measured := rect(7, 9, 11, 13)
+	measured := dipRect(7, 9, 11, 13)
 	screens := []*Screen{
-		{ID: "derived", ScaleFactor: 2, IsPrimary: true, Bounds: rect(0, 0, 1512, 982), WorkArea: rect(0, 37, 1512, 945)},
-		{ID: "measured", ScaleFactor: 2, Bounds: rect(1512, 0, 1280, 800), WorkArea: rect(1512, 0, 1280, 800), PhysicalBounds: measured},
+		{ID: "derived", ScaleFactor: 2, IsPrimary: true, Bounds: dipRect(0, 0, 1512, 982), WorkArea: dipRect(0, 37, 1512, 945)},
+		{ID: "measured", ScaleFactor: 2, Bounds: dipRect(1512, 0, 1280, 800), WorkArea: dipRect(1512, 0, 1280, 800), PhysicalBounds: measured},
 	}
 
 	manager := &ScreenManager{}
@@ -170,10 +170,10 @@ func TestLayoutDIPScreensCompletesBookkeeping(t *testing.T) {
 	if want := (Size{Width: 1512, Height: 982}); derived.Size != want {
 		t.Errorf("Size = %+v, want %+v", derived.Size, want)
 	}
-	if want := rect(0, 0, 3024, 1964); derived.PhysicalBounds != want {
+	if want := dipRect(0, 0, 3024, 1964); derived.PhysicalBounds != want {
 		t.Errorf("PhysicalBounds = %+v, want %+v", derived.PhysicalBounds, want)
 	}
-	if want := rect(0, 74, 3024, 1890); derived.PhysicalWorkArea != want {
+	if want := dipRect(0, 74, 3024, 1890); derived.PhysicalWorkArea != want {
 		t.Errorf("PhysicalWorkArea = %+v, want %+v", derived.PhysicalWorkArea, want)
 	}
 
@@ -194,7 +194,7 @@ func TestLayoutDIPScreensRejectsUnusableInput(t *testing.T) {
 		t.Error("layoutDIPScreens(nil) = nil, want an error")
 	}
 
-	noPrimary := []*Screen{{ID: "only", ScaleFactor: 1, Bounds: rect(0, 0, 800, 600)}}
+	noPrimary := []*Screen{{ID: "only", ScaleFactor: 1, Bounds: dipRect(0, 0, 800, 600)}}
 	if err := manager.layoutDIPScreens(noPrimary); err == nil {
 		t.Error("layoutDIPScreens with no primary = nil, want an error")
 	}
@@ -204,7 +204,7 @@ func TestLayoutDIPScreensRejectsUnusableInput(t *testing.T) {
 // out of the cache, where GetAll and the ScreenNearest* lookups would meet it.
 func TestLayoutDIPScreensDropsNilEntries(t *testing.T) {
 	manager := &ScreenManager{}
-	primary := &Screen{ID: "primary", ScaleFactor: 1, IsPrimary: true, Bounds: rect(0, 0, 800, 600)}
+	primary := &Screen{ID: "primary", ScaleFactor: 1, IsPrimary: true, Bounds: dipRect(0, 0, 800, 600)}
 	if err := manager.layoutDIPScreens([]*Screen{nil, primary, nil}); err != nil {
 		t.Fatalf("layoutDIPScreens: %v", err)
 	}

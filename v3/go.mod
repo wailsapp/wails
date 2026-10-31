@@ -12,6 +12,7 @@ require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/coder/websocket v1.8.14
 	github.com/danieljoos/wincred v1.2.3
+	github.com/ebitengine/purego v0.11.1
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/goreleaser/nfpm/v2 v2.44.1

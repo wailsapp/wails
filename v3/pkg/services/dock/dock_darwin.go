@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !purego
 
 package dock
 
@@ -42,40 +42,14 @@ bool setBadge(const char *label) {
 */
 import "C"
 import (
-	"context"
 	"fmt"
 	"sync"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type darwinDock struct {
 	mu    sync.RWMutex
 	Badge *string
-}
-
-// Creates a new Dock Service.
-func New() *DockService {
-	return &DockService{
-		impl: &darwinDock{
-			Badge: nil,
-		},
-	}
-}
-
-// NewWithOptions creates a new dock service with badge options.
-// Currently, options are not available on macOS and are ignored.
-func NewWithOptions(options BadgeOptions) *DockService {
-	return New()
-}
-
-func (d *darwinDock) Startup(ctx context.Context, options application.ServiceOptions) error {
-	return nil
-}
-
-func (d *darwinDock) Shutdown() error {
-	return nil
 }
 
 // HideAppIcon hides the app icon in the macOS Dock.
@@ -108,33 +82,4 @@ func (d *darwinDock) setBadge(label *string) error {
 	d.mu.Unlock()
 
 	return nil
-}
-
-// SetBadge sets the badge label on the application icon.
-// Available default badge labels:
-// Single space " " empty badge
-// Empty string "" dot "●" indeterminate badge
-func (d *darwinDock) SetBadge(label string) error {
-	// Always pick a label (use "●" if empty), then allocate + free exactly once.
-	if label == "" {
-		label = "●" // Default badge character
-	}
-	return d.setBadge(&label)
-}
-
-// SetCustomBadge is not supported on macOS, SetBadge is called instead.
-func (d *darwinDock) SetCustomBadge(label string, options BadgeOptions) error {
-	return d.SetBadge(label)
-}
-
-// RemoveBadge removes the badge label from the application icon.
-func (d *darwinDock) RemoveBadge() error {
-	return d.setBadge(nil)
-}
-
-// GetBadge returns the badge label on the application icon.
-func (d *darwinDock) GetBadge() *string {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	return d.Badge
 }

@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -30,7 +30,6 @@ static char* getMacOSTempDir() {
 import "C"
 import (
 	"os"
-	"syscall"
 	"unsafe"
 )
 
@@ -38,37 +37,6 @@ type darwinLock struct {
 	file     *os.File
 	uniqueID string
 	manager  *singleInstanceManager
-}
-
-func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
-	return &darwinLock{
-		manager: manager,
-	}, nil
-}
-
-func (l *darwinLock) acquire(uniqueID string) error {
-	l.uniqueID = uniqueID
-	// NSTemporaryDirectory() returns the correct sandbox-container temp dir
-	// regardless of $TMPDIR, which may point outside the sandbox when launched from a terminal.
-	cTmpDir := C.getMacOSTempDir()
-	lockFilePath := C.GoString(cTmpDir)
-	C.free(unsafe.Pointer(cTmpDir))
-	lockFileName := uniqueID + ".lock"
-	var err error
-	l.file, err = createLockFile(lockFilePath + lockFileName)
-	if err != nil {
-		return alreadyRunningError
-	}
-	return nil
-}
-
-func (l *darwinLock) release() {
-	if l.file != nil {
-		syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
-		l.file.Close()
-		os.Remove(l.file.Name())
-		l.file = nil
-	}
 }
 
 func (l *darwinLock) notify(data string) error {
@@ -83,26 +51,15 @@ func (l *darwinLock) notify(data string) error {
 	return nil
 }
 
-// CreateLockFile tries to create a file with given name and acquire an
-// exclusive lock on it. If the file already exists AND is still locked, it will
-// fail.
-func createLockFile(filename string) (*os.File, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		return nil, err
-	}
-
-	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if err != nil {
-		file.Close()
-		return nil, err
-	}
-
-	return file, nil
-}
-
 //export handleSecondInstanceData
 func handleSecondInstanceData(secondInstanceMessage *C.char) {
 	message := C.GoString(secondInstanceMessage)
 	secondInstanceBuffer <- message
+}
+
+// macOSTempDir returns NSTemporaryDirectory() as a Go string.
+func macOSTempDir() string {
+	cTmpDir := C.getMacOSTempDir()
+	defer C.free(unsafe.Pointer(cTmpDir))
+	return C.GoString(cTmpDir)
 }

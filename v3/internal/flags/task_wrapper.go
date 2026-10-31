@@ -13,6 +13,7 @@ type Dev struct {
 
 type Package struct {
 	Common
+	Tags string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
 }
 
 type SignWrapper struct {
