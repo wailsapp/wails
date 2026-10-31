@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -231,6 +232,9 @@ func TestRenderingAndReceipt(t *testing.T) {
 }
 
 func TestGitHubPagination(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX gh fixture exercises the Linux release command")
+	}
 	dir := t.TempDir()
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	path := filepath.Join(dir, "gh")
@@ -349,6 +353,9 @@ func TestArchiveSync(t *testing.T) {
 }
 
 func TestCommandLine(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX gh fixture exercises the Linux release command")
+	}
 	binary := filepath.Join(t.TempDir(), "changelog")
 	build := exec.Command("go", "build", "-o", binary, "../../scripts/generate-release-changelog.go")
 	if out, err := build.CombinedOutput(); err != nil {

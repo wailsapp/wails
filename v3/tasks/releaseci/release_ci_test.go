@@ -1,3 +1,6 @@
+//go:build !windows
+
+// These tests execute the Bash scripts used by the Linux release workflows.
 package releaseci
 
 import (
