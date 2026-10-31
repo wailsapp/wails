@@ -101,8 +101,9 @@ func TestOpenCacheFormatMigrationAndFailures(t *testing.T) {
 	}
 	loaded, err = openCacheWithOperations(root, operations)
 	require.NoError(t, err)
-	assert.Equal(t, "digest", loaded.index.Actions["action"].Artifact)
-	assert.True(t, loaded.dirty, "legacy JSON is rewritten as the binary v2 format")
+	assert.Empty(t, loaded.index.Actions, "legacy digests use a different hash algorithm")
+	assert.Equal(t, cacheHashAlgorithm, loaded.index.HashAlgorithm)
+	assert.True(t, loaded.dirty, "legacy JSON is rewritten with current hash metadata")
 
 	operations.readFile = func(path string) ([]byte, error) {
 		if filepath.Base(path) == "wake-index.json" {

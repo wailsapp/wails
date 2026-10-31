@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/hex"
@@ -26,11 +27,11 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/dirscan"
 	"github.com/wailsapp/wails/v3/internal/sourceignore"
-	"github.com/zeebo/blake3"
 )
 
 const (
-	handlerVersion                       = "wake-pipeline-2"
+	handlerVersion                       = "wake-pipeline-3-sha256"
+	cacheHashAlgorithm                   = "sha256"
 	metadataFastPathWindow time.Duration = 2_000_000_000
 )
 
@@ -49,11 +50,12 @@ type ActionResult struct {
 }
 
 type indexData struct {
-	GoEmbeds map[string][]string     `json:"go_embeds,omitempty"`
-	Files    map[string]FileRecord   `json:"files"`
-	GoAPI    map[string]FileRecord   `json:"go_api"`
-	Actions  map[string]ActionResult `json:"actions"`
-	Receipts map[string]time.Time    `json:"receipts"`
+	HashAlgorithm string                  `json:"hash_algorithm"`
+	GoEmbeds      map[string][]string     `json:"go_embeds,omitempty"`
+	Files         map[string]FileRecord   `json:"files"`
+	GoAPI         map[string]FileRecord   `json:"go_api"`
+	Actions       map[string]ActionResult `json:"actions"`
+	Receipts      map[string]time.Time    `json:"receipts"`
 }
 
 type Cache struct {
@@ -199,6 +201,11 @@ func openCacheWithOperations(root string, operations cacheOpenOperations) (*Cach
 		}
 	} else {
 		return nil, fmt.Errorf("wake: read action index: %w", err)
+	}
+	if c.index.HashAlgorithm != cacheHashAlgorithm {
+		// Metadata shortcuts must never reuse digests from a different algorithm.
+		c.index = indexData{HashAlgorithm: cacheHashAlgorithm}
+		c.dirty = c.dirty || err == nil
 	}
 	if c.index.Files == nil {
 		c.index.Files = make(map[string]FileRecord)
@@ -466,7 +473,7 @@ func (c *Cache) Snapshot(options SnapshotOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	h := blake3.New()
+	h := sha256.New()
 	writePart(h, "wake.snapshot.v1")
 	writePart(h, options.Label)
 	for _, file := range observation.files {
@@ -539,7 +546,7 @@ func (c *Cache) snapshotFilesWithOperations(label string, paths []string, operat
 		entries = append(entries, entry{path: filepath.ToSlash(logical), digest: digest, mode: info.Mode()})
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].path < entries[j].path })
-	h := blake3.New()
+	h := sha256.New()
 	writePart(h, "wake.snapshot-files.v1")
 	writePart(h, label)
 	for _, e := range entries {
@@ -564,7 +571,7 @@ func (c *Cache) SnapshotGoAPI(options SnapshotOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	h := blake3.New()
+	h := sha256.New()
 	writePart(h, "wake.go-api.v1")
 	writePart(h, options.Label)
 	for _, observed := range observation.files {
@@ -628,7 +635,7 @@ func (c *Cache) goAPIDigestWithFormatter(path string, info fs.FileInfo, identity
 	if err := formatNode(&data, fset, semantic); err != nil {
 		return "", err
 	}
-	sum := blake3.Sum256(data.Bytes())
+	sum := sha256.Sum256(data.Bytes())
 	digest := hex.EncodeToString(sum[:])
 	c.stats.BytesRead += int64(data.Len())
 	c.index.GoAPI[key] = FileRecord{Size: info.Size(), ModTimeNS: info.ModTime().UnixNano(), Mode: uint32(info.Mode()), Identity: identity, Digest: digest}
@@ -649,7 +656,7 @@ func ActionKey(kind string, spec any, inputs, dependencies []string) (string, er
 	if err != nil {
 		return "", err
 	}
-	sum := blake3.Sum256(data)
+	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:]), nil
 }
 
@@ -885,7 +892,7 @@ func (c *Cache) fileDigestWithOperations(path string, info fs.FileInfo, identity
 		if err != nil {
 			return "", err
 		}
-		sum := blake3.Sum256([]byte("symlink\x00" + target))
+		sum := sha256.Sum256([]byte("symlink\x00" + target))
 		digest = hex.EncodeToString(sum[:])
 		c.stats.BytesRead += int64(len(target))
 	} else {
@@ -893,7 +900,7 @@ func (c *Cache) fileDigestWithOperations(path string, info fs.FileInfo, identity
 		if err != nil {
 			return "", err
 		}
-		h := blake3.New()
+		h := sha256.New()
 		n, copyErr := io.Copy(h, file)
 		closeErr := file.Close()
 		if copyErr != nil {
@@ -1081,7 +1088,7 @@ func artifactDigestWithOperations(root string, operations cacheArtifactDigestOpe
 	if _, err := operations.lstat(root); err != nil {
 		return "", err
 	}
-	hash := blake3.New()
+	hash := sha256.New()
 	writePart(hash, "wake.artifact.v2")
 	err := operations.walkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -1112,7 +1119,7 @@ func artifactDigestWithOperations(root string, operations cacheArtifactDigestOpe
 		if err != nil {
 			return err
 		}
-		content := blake3.New()
+		content := sha256.New()
 		_, copyErr := io.Copy(content, file)
 		closeErr := file.Close()
 		if copyErr != nil {
@@ -1226,12 +1233,12 @@ func copyFileWithOperations(source, destination string, mode fs.FileMode, operat
 	return inCloseErr
 }
 
-func writePart(w *blake3.Hasher, value string) {
+func writePart(w io.Writer, value string) {
 	var encodedLength [24]byte
 	length := strconv.AppendInt(encodedLength[:0], int64(len(value)), 10)
+	length = append(length, ':')
 	_, _ = w.Write(length)
-	_, _ = w.WriteString(":")
-	_, _ = w.WriteString(value)
+	_, _ = io.WriteString(w, value)
 }
 
 func makeSet(values []string) map[string]bool {
