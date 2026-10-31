@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -23,7 +24,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/migration"
 	"github.com/wailsapp/wails/v3/internal/wake/migration/taskfile"
 	wakeast "github.com/wailsapp/wails/v3/internal/wake/migration/taskfile/ast"
-	"github.com/zeebo/blake3"
 )
 
 type MigrateOptions struct {
@@ -516,7 +516,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 			// Git commonly checks out generated Taskfiles as CRLF on Windows.
 			// YAML normalises these line breaks; keep the source receipt's raw
 			// digest, but compare historical defaults using their shipped LF form.
-			sum := blake3.Sum256(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")))
+			sum := sha256.Sum256(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")))
 			knownStock = knownStockTaskfiles[role][hex.EncodeToString(sum[:])]
 		}
 		classification := migration.Taskfile{File: rel, Role: role}
@@ -1032,40 +1032,40 @@ var legacyTaskNames = map[string]map[string]bool{
 	"linux":   set("build", "build:native", "build:docker", "package", "create:appimage", "create:deb", "create:rpm", "create:aur", "generate:deb", "generate:rpm", "generate:aur", "generate:dotdesktop", "run", "sign:deb", "sign:rpm", "sign:packages"),
 }
 
-// Exact BLAKE3 fingerprints of generated platform Taskfiles shipped in v3
+// Exact SHA256 fingerprints of generated platform Taskfiles shipped in v3
 // examples before the manifest cutover. These distinguish historical defaults
 // from user edits without weakening comparison against the current templates.
 var knownStockTaskfiles = map[string]map[string]bool{
 	"common": set(
-		"4ab65b0363866b550ef897db8f7aae12794789056dd4f2e82407a738a64f6819",
-		"64cef372c5d2ae21526043751993f57b6d5b469287da0adfc8a78dde0d7ad86a",
-		"9a85cde94f9c2562240676b4306b1176158f0df8956d010e7b9b0d15b08a76b9",
-		"371fafce90a2648d89e705e377ae06ade62292271a4baabf1806e838e5431a7d",
-		"5e14a693d4e63dd8c548998502bea0d66798a2d8dbbbb95a251056051ff63636",
-		"c7413c1fd1dcae671502a94715b6309f56def27f644e1921f4ca982431a24e42",
-		"3ee740d29d727fd11b098cc4ee343cf2d9bc40c8940d6bce3bc9df181f74f549",
+		"eab2e71045aa6a1bd6cf54fc1a9222184dc9fb6af00ba6e137d3797cdefe26cd",
+		"d1b5e40d4c6dd9a2eff9fb4b16ffa829522c683fac49b473414b5f1690e75b6d",
+		"ed59e465c150f605abf361a0d85f8f7b85183b21a659a1d7a73e4b40740e9198",
+		"8340567cb86c254059cd2de5822c93d39d952648f46c10a337e993bf1fb63336",
+		"33339f2554bc2422fc64a2c92bed7d35f1815ea2630733b83289bc340a7e5ddd",
+		"3b1c9ac25d1491ce00a66dbd249604e4e01c6f420d53878125f20faa4b56cff3",
+		"374ead652337eef98dc5fbf8bea6ed9a451e65f0bfcca1173736568c4999bee4",
 	),
 	"windows": set(
-		"2036534db056f76202df0ade442e697a4572643b985ed5bc3c0042f97de773ea",
-		"ca9fb9e4d61c1816b6cc6919598feb54adc69451c444afe3af68588ed1d7d441",
-		"ab1b5cec4dc3f7f42a8c222b3b87744405e9b1b20f520ab7d9ab44bfcca88013",
+		"7142682189eaa323166330c87fe4741503db68f8d7d4a50a7e69d043f936dd2f",
+		"bbc1c366f0d2dd14ad9bf4722e7b2e5977c49461b11f17d7789b8dd10ed3ba45",
+		"6dbce0ac85b317d49b8c53acc67844d40e12eb625a63627d10c598bfcf25ca39",
 	),
 	"darwin": set(
-		"7038bc9483e9aeb89b8bcce45dbe99bc1ea53601d6327758552d27c370164cfd",
-		"ed7dd8950f9422105e7d4349c223e0aeda1eca364186a621b4083052c9e4ca68",
-		"9c030aea973144d4041859e6a82fe791a5a3b919d1fbe3549830b19f93cb25b2",
+		"6b75611710a8ab7aeb33e61b925c15fcb38aa7b22c1482f45e7b5e492909cec4",
+		"a5e086690d6dbeb1506718b26516b8025631f48107f471e470a81904c7d9ab64",
+		"1a8995dc7e3a0d710218203e16a914be5c775867289b58acd2dd367a97b7a14a",
 	),
 	"linux": set(
-		"5fed27274feb32c231426a77edd1f66fdf8fb77a0f074ab7db862dc0d3f31d6e",
-		"0fde154fbc54fc44c64e6ff4cc9e55474f118c80d750a7f479dd7c8a45c5cfa5",
+		"208c899a8871442bc67b41d95fcd70a9a671548a44e8cd995e747178d0d06357",
+		"d7cc6d72e5cd370b1f6d2a65bb5602d0063cf1abbb0cd7482ae68090230c04f2",
 	),
 	"ios": set(
-		"b0839989d6583756f6a1d71886a1462b9983e70d6255672ead8dcca952b42268",
-		"676f5bb6bee3a521907a8cd213c9a5b43653d2cd16631debb71328f16c5d03c4",
+		"3fc2d20d261308e347bc59b4c85c2753d51e7374ea5c593d5f6a1d48238608ff",
+		"f40e4938c8a4b85baf0a015608f8f9c92b57b36c514459a9c01abd93a43bc003",
 	),
 	"android": set(
-		"c36c2687b8ef10117ef7ea2218d26b64cea9d5ef1a8cdca25e5c3cf30964be2e",
-		"1e17b34e61333f3037986d27dcec870fe64432c72b22e70dad7603fbde0b4ba3",
+		"a0c72b5349146dc8b59b8a4c424b1ee68080289c0d3ce2f5ad35fb3e96ae5610",
+		"48b6e8f3ac3e87c1898f9aa018919d7b95a8cf4ee8011105c33b37410525ff7f",
 	),
 }
 
@@ -1110,7 +1110,7 @@ func digestFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	sum := blake3.Sum256(data)
+	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:]), nil
 }
 func first(value, fallback string) string {

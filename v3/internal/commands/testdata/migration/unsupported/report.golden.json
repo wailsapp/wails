@@ -6,7 +6,7 @@
     "wails.migrated.yaml"
   ],
   "sources": {
-    "Taskfile.yml": "80231e3684ca0a58f1a7af793df8a79db18e8821f7048442a6a1ebcfe20aa924"
+    "Taskfile.yml": "39fe1a89cdf26e6aa62b3454d3660c2408310c774610300abef8dbeca68716d8"
   },
   "taskfiles": [
     {

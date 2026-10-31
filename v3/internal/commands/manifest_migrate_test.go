@@ -307,9 +307,9 @@ func TestMigrateGoldenFixtures(t *testing.T) {
 			}
 			actualDigest, digestErr := digestFile(draftPath)
 			require.NoError(t, digestErr)
-			expectedDigest, digestErr := os.ReadFile(filepath.Join(fixture, "wails.migrated.golden.blake3"))
+			expectedDigest, digestErr := os.ReadFile(filepath.Join(fixture, "wails.migrated.golden.sha256"))
 			if os.Getenv("UPDATE_GOLDEN") == "1" {
-				require.NoError(t, os.WriteFile(filepath.Join(fixture, "wails.migrated.golden.blake3"), []byte(actualDigest+"\n"), 0o644))
+				require.NoError(t, os.WriteFile(filepath.Join(fixture, "wails.migrated.golden.sha256"), []byte(actualDigest+"\n"), 0o644))
 				expectedDigest = []byte(actualDigest)
 				digestErr = nil
 			}
