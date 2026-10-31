@@ -2436,7 +2436,8 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 	var detail string
 	err = installerbuild.Create(ctx, options, func(ctx context.Context, directory string, args []string) error {
 		var runErr error
-		detail, runErr = runManifestCommand(ctx, directory, h.environment, "makensis", args...)
+		environment := installerbuild.CompilerEnvironment(runtime.GOOS, mergeEnvironment(os.Environ(), h.environment))
+		detail, runErr = runManifestCommandWithEnvironment(ctx, directory, environment, "makensis", args...)
 		return runErr
 	})
 	return pipeline.RunResult{Detail: detail}, err

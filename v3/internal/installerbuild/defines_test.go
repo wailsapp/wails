@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -78,6 +79,7 @@ BrandingText "${APP_MESSAGE}"
 	if err := Create(context.Background(), options, func(ctx context.Context, directory string, args []string) error {
 		cmd := exec.CommandContext(ctx, compiler, args...)
 		cmd.Dir = directory
+		cmd.Env = CompilerEnvironment(runtime.GOOS, os.Environ())
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("%w: %s", err, output)

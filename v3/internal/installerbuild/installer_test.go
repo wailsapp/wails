@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -112,6 +113,9 @@ func TestInstallerWithRealCompiler(t *testing.T) {
 			t.Skip("makensis not installed")
 		}
 	}
+	if runtime.GOOS == "darwin" {
+		t.Setenv("LC_ALL", "C")
+	}
 	options := testOptions(t)
 	version, err := buildmeta.Parse("1.2.3-beta.4+build.5")
 	if err != nil {
@@ -125,6 +129,7 @@ func TestInstallerWithRealCompiler(t *testing.T) {
 	err = Create(context.Background(), options, func(ctx context.Context, directory string, args []string) error {
 		cmd := exec.CommandContext(ctx, compiler, args...)
 		cmd.Dir = directory
+		cmd.Env = CompilerEnvironment(runtime.GOOS, os.Environ())
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return errors.New(string(output) + ": " + err.Error())
