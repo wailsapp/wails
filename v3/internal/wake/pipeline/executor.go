@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -111,6 +112,7 @@ func (e Executor) Inspect(ctx context.Context, plan Plan, root string) (Inspecti
 }
 
 func (e Executor) inspectNode(ctx context.Context, store executorCache, node Node, operations map[NodeKey]OperationInspection, results map[NodeKey]Result, actionKey func(string, any, []string, []string) (string, error)) (OperationInspection, Result, error) {
+	node = resolveCompileInputs(node)
 	inputs, err := snapshotNodeInputs(store, node)
 	if err != nil {
 		return OperationInspection{}, Result{}, err
@@ -123,7 +125,7 @@ func (e Executor) inspectNode(ctx context.Context, store executorCache, node Nod
 		return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
 	}
 	for _, dependency := range node.Dependencies {
-		if operations[dependency].Decision == "run" {
+		if operations[dependency].Decision == "run" || (operations[dependency].Decision == "restore" && slices.Contains(node.OrderOnlyDependencies, dependency)) {
 			return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
 		}
 	}
@@ -131,13 +133,8 @@ func (e Executor) inspectNode(ctx context.Context, store executorCache, node Nod
 	if err != nil {
 		return OperationInspection{}, Result{}, err
 	}
-	dependencyArtifacts := make([]string, 0, len(node.Dependencies))
-	for _, dependency := range node.Dependencies {
-		if artifact := results[dependency].Artifact; artifact != "" {
-			dependencyArtifacts = append(dependencyArtifacts, artifact)
-		}
-	}
-	action, err := actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, dependencyArtifacts)
+	dependencyArtifacts := nodeDependencyArtifacts(node, results)
+	action, err := actionKey(string(node.Kind), nodeActionSpec(node, identity), inputs, dependencyArtifacts)
 	if err != nil {
 		return OperationInspection{}, Result{}, err
 	}
@@ -356,18 +353,14 @@ func (e Executor) runNode(ctx context.Context, store executorCache, cacheMu *syn
 			return fail(err, "")
 		}
 		cacheMu.Lock()
+		node = resolveCompileInputs(node)
 		inputs, snapshotErr := snapshotNodeInputs(store, node)
 		cacheMu.Unlock()
 		if snapshotErr != nil {
 			return fail(snapshotErr, "")
 		}
-		depArtifacts = make([]string, 0, len(node.Dependencies))
-		for _, key := range node.Dependencies {
-			if artifact := deps[key].Artifact; artifact != "" {
-				depArtifacts = append(depArtifacts, artifact)
-			}
-		}
-		action, err = actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, depArtifacts)
+		depArtifacts = nodeDependencyArtifacts(node, deps)
+		action, err = actionKey(string(node.Kind), nodeActionSpec(node, identity), inputs, depArtifacts)
 		if err != nil {
 			return fail(err, "")
 		}
@@ -418,7 +411,7 @@ execute:
 		// the post-run identity so the immediately following build is a hit.
 		postInputs, snapshotErr := snapshotNodeInputs(store, node)
 		if snapshotErr == nil {
-			action, snapshotErr = actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, postInputs, depArtifacts)
+			action, snapshotErr = actionKey(string(node.Kind), nodeActionSpec(node, identity), postInputs, depArtifacts)
 		}
 		if snapshotErr != nil {
 			cacheMu.Unlock()
@@ -442,7 +435,26 @@ execute:
 	return result, nil
 }
 
+func nodeDependencyArtifacts(node Node, results map[NodeKey]Result) []string {
+	artifacts := make([]string, 0, len(node.Dependencies))
+	for _, key := range node.Dependencies {
+		if artifact := results[key].Artifact; artifact != "" && !slices.Contains(node.OrderOnlyDependencies, key) {
+			artifacts = append(artifacts, artifact)
+		}
+	}
+	return artifacts
+}
+
+func nodeActionSpec(node Node, identity string) map[string]any {
+	spec := map[string]any{"spec": node.Spec, "tool": identity}
+	if len(node.OrderOnlyDependencies) != 0 {
+		spec["order_only_dependencies"] = node.OrderOnlyDependencies
+	}
+	return spec
+}
+
 func snapshotNodeInputs(store executorCache, node Node) ([]string, error) {
+	node = resolveCompileInputs(node)
 	inputs := make([]string, 0, len(node.Inputs))
 	for _, input := range node.Inputs {
 		var (

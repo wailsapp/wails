@@ -103,15 +103,18 @@ type Node struct {
 	Label        string
 	Scope        Scope
 	Dependencies []NodeKey
-	Spec         NodeSpec
-	Inputs       []InputSpec
-	Output       string
-	Marker       string
-	Cache        CachePolicy
-	Claims       ResourceClaims
-	EstimateMS   int64
-	Artifact     ArtifactIdentity
-	Origins      []OriginReference
+	// OrderOnlyDependencies are a subset of Dependencies whose outputs are
+	// already represented by direct inputs. Execution still waits for them.
+	OrderOnlyDependencies []NodeKey
+	Spec                  NodeSpec
+	Inputs                []InputSpec
+	Output                string
+	Marker                string
+	Cache                 CachePolicy
+	Claims                ResourceClaims
+	EstimateMS            int64
+	Artifact              ArtifactIdentity
+	Origins               []OriginReference
 }
 
 type OriginReference struct {
@@ -375,15 +378,8 @@ func (p Plan) Validate(root string) error {
 			}
 			owners[clean] = key
 		}
-		dependencies := make(map[NodeKey]bool, len(node.Dependencies))
-		for _, dep := range node.Dependencies {
-			if _, ok := p.Nodes[dep]; !ok {
-				return fmt.Errorf("wake: node %s depends on missing %s", key, dep)
-			}
-			if dependencies[dep] {
-				return fmt.Errorf("wake: node %s contains duplicate dependency %s", key, dep)
-			}
-			dependencies[dep] = true
+		if err := p.validateNodeDependencies(node); err != nil {
+			return err
 		}
 	}
 	state := map[NodeKey]uint8{}
@@ -432,6 +428,27 @@ func (p Plan) Validate(root string) error {
 		if !reachable[NodeKey(key)] {
 			return fmt.Errorf("wake: node %s is unreachable from plan roots", key)
 		}
+	}
+	return nil
+}
+
+func (p Plan) validateNodeDependencies(node Node) error {
+	dependencies := make(map[NodeKey]bool, len(node.Dependencies))
+	for _, dep := range node.Dependencies {
+		if _, ok := p.Nodes[dep]; !ok {
+			return fmt.Errorf("wake: node %s depends on missing %s", node.Key, dep)
+		}
+		if dependencies[dep] {
+			return fmt.Errorf("wake: node %s contains duplicate dependency %s", node.Key, dep)
+		}
+		dependencies[dep] = true
+	}
+	orderOnly := make(map[NodeKey]bool, len(node.OrderOnlyDependencies))
+	for _, dep := range node.OrderOnlyDependencies {
+		if !dependencies[dep] || orderOnly[dep] {
+			return fmt.Errorf("wake: node %s has invalid or duplicate order-only dependency %s", node.Key, dep)
+		}
+		orderOnly[dep] = true
 	}
 	return nil
 }

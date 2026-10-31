@@ -12,20 +12,64 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-// Keep local replacement/workspace modules conservatively tracked as before.
-// Within the project module, each executable tracks its imported Go packages,
-// including inactive platform files, plus the existing broad native-file input.
-// Unknown or incomplete source graphs retain the original conservative inputs.
+// Retain the source roots so generated imports can be resolved after frontend
+// work finishes, rather than freezing an incomplete graph during planning.
 func refineCompileInputs(plan *Plan, root string) {
 	for key, node := range plan.Nodes {
-		if spec, ok := node.Spec.(CompileSpec); ok {
-			node.Inputs = executableInputs(root, spec.Package, node.Inputs)
-			plan.Nodes[key] = node
+		spec, ok := node.Spec.(CompileSpec)
+		if !ok {
+			continue
 		}
+		node.OrderOnlyDependencies = nil
+		node.Inputs = append([]InputSpec(nil), node.Inputs...)
+		for i := range node.Inputs {
+			if node.Inputs[i].Label == "go-sources" {
+				node.Inputs[i].Root = root
+			}
+		}
+		plan.Nodes[key] = node
+		if spec.CGOEnabled != "0" {
+			continue
+		}
+		if _, complete := collectExecutableInputs(root, spec.Package, node.Inputs); !complete {
+			continue
+		}
+		for _, dependency := range node.Dependencies {
+			if plan.Nodes[dependency].Kind == BuildFrontend {
+				node.OrderOnlyDependencies = append(node.OrderOnlyDependencies, dependency)
+			}
+		}
+		plan.Nodes[key] = node
 	}
 }
 
+func resolveCompileInputs(node Node) Node {
+	spec, ok := node.Spec.(CompileSpec)
+	if !ok {
+		return node
+	}
+	for _, input := range node.Inputs {
+		if input.Label == "go-sources" && filepath.IsAbs(input.Root) {
+			var complete bool
+			node.Inputs, complete = collectExecutableInputs(input.Root, spec.Package, node.Inputs)
+			if !complete {
+				node.OrderOnlyDependencies = nil
+			}
+			break
+		}
+	}
+	return node
+}
+
 func executableInputs(root, entry string, original []InputSpec) []InputSpec {
+	inputs, _ := collectExecutableInputs(root, entry, original)
+	return inputs
+}
+
+// Local replacement/workspace modules stay conservatively tracked. Within the
+// project module, track imported packages (including inactive platform files),
+// embeds and native sources; incomplete graphs keep the original broad inputs.
+func collectExecutableInputs(root, entry string, original []InputSpec) ([]InputSpec, bool) {
 	var source InputSpec
 	found := false
 	for _, input := range original {
@@ -36,16 +80,16 @@ func executableInputs(root, entry string, original []InputSpec) []InputSpec {
 		}
 	}
 	if !found {
-		return original
+		return original, false
 	}
 	moduleRoot, modulePath := projectModule(root)
 	if modulePath == "" {
-		return original
+		return original, false
 	}
 	directory := filepath.Join(root, entry)
 	graph := packageInputsGraph{root: root, moduleRoot: moduleRoot, modulePath: modulePath, source: source, seen: map[string]bool{}}
 	if !graph.collect(directory) {
-		return original
+		return original, false
 	}
 	native := source
 	native.Label, native.IncludeGoEmbed = "go-native-sources", false
@@ -70,7 +114,7 @@ func executableInputs(root, entry string, original []InputSpec) []InputSpec {
 		input.IncludeNames = append(append([]string(nil), input.IncludeNames...), "modules.txt")
 		result = append(result, input)
 	}
-	return result
+	return result, true
 }
 
 func projectModule(root string) (string, string) {
@@ -113,6 +157,7 @@ func (graph *packageInputsGraph) collect(directory string) bool {
 	input.IncludeExtensions = append([]string(nil), graph.source.IncludeExtensions...)
 	input.ExcludeDirs = append([]string(nil), input.ExcludeDirs...)
 	var imports []string
+	goFiles := 0
 	for _, entry := range entries {
 		if entry.IsDir() {
 			input.ExcludeDirs = appendUnique(input.ExcludeDirs, entry.Name())
@@ -121,6 +166,7 @@ func (graph *packageInputsGraph) collect(directory string) bool {
 		if !strings.HasSuffix(entry.Name(), ".go") || strings.HasSuffix(entry.Name(), "_test.go") {
 			continue
 		}
+		goFiles++
 		file, err := parser.ParseFile(token.NewFileSet(), filepath.Join(directory, entry.Name()), nil, parser.ImportsOnly)
 		if err != nil {
 			return false
@@ -132,6 +178,9 @@ func (graph *packageInputsGraph) collect(directory string) bool {
 			}
 			imports = append(imports, name)
 		}
+	}
+	if goFiles == 0 {
+		return false
 	}
 	graph.inputs = append(graph.inputs, input)
 	for _, name := range imports {
