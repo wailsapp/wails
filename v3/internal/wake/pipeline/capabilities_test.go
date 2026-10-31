@@ -108,7 +108,7 @@ func TestCapabilityRegistryOwnsHostAndToolchainRules(t *testing.T) {
 
 	msix, _ := lookupFormat("msix")
 	assert.True(t, msix.SupportsHost("windows"))
-	assert.False(t, msix.SupportsHost("linux"))
+	assert.True(t, msix.SupportsHost("linux"))
 	dmg, _ := lookupFormat("dmg")
 	assert.True(t, dmg.SupportsHost("darwin"))
 	assert.False(t, dmg.SupportsHost("windows"))

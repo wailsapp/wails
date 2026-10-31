@@ -23,7 +23,7 @@ func TestDarwinAppUsesExactCustomInfoPlist(t *testing.T) {
 	spec.Binary = "bin/example"
 	spec.Assets = ".wails/assets"
 	spec.Output = "dist/Example.app"
-	_, err := (&manifestHandler{root: root}).packageApp(spec)
+	_, err := (&manifestHandler{root: root}).packageApp(t.Context(), spec)
 	require.NoError(t, err)
 	data, err := os.ReadFile(filepath.Join(root, "dist", "Example.app", "Contents", "Info.plist"))
 	require.NoError(t, err)
@@ -297,7 +297,7 @@ func TestMSIXWorkspacePreparationPreservesLastCompleteState(t *testing.T) {
 	manifestHostOS = "windows"
 	t.Cleanup(func() { manifestHostOS = previousHost })
 
-	_, err := handler.packageMSIX(spec)
+	_, err := handler.packageMSIX(t.Context(), spec)
 	require.ErrorContains(t, err, "package msix manifest")
 	assert.Equal(t, "preserve", string(readTestFile(t, filepath.Join(workspace, "last-complete"))))
 	staging, globErr := filepath.Glob(filepath.Join(filepath.Dir(workspace), ".msix-stage-*"))

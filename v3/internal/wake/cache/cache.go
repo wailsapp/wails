@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charlievieth/fastwalk"
 	"github.com/go-git/go-billy/v5/osfs"
 	gitignore "github.com/go-git/go-git/v5/plumbing/format/gitignore"
+	"github.com/wailsapp/wails/v3/internal/dirscan"
 	"github.com/zeebo/blake3"
 )
 
@@ -400,7 +400,7 @@ func treeObservationKey(root string, options SnapshotOptions) string {
 }
 
 func observeDirectoryTree(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool) ([]*observedFile, error) {
-	workers := directoryTreeWorkers(fastwalk.DefaultNumWorkers(), runtime.GOOS)
+	workers := directoryTreeWorkers(max(1, runtime.GOMAXPROCS(0)), runtime.GOOS)
 	return observeDirectoryTreeWithWorkers(root, excluded, ignored, eagerInfo, workers)
 }
 
@@ -412,18 +412,16 @@ func directoryTreeWorkers(defaultWorkers int, goos string) int {
 }
 
 func observeDirectoryTreeWithWorkers(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool, workers int) ([]*observedFile, error) {
-	return observeDirectoryTreeWithWalk(root, excluded, ignored, eagerInfo, workers, fastwalk.Walk)
+	return observeDirectoryTreeWithWalk(root, excluded, ignored, eagerInfo, workers, dirscan.Walk)
 }
 
-type cacheWalker func(*fastwalk.Config, string, fs.WalkDirFunc) error
+type cacheWalker func(string, int, fs.WalkDirFunc) error
 
 func observeDirectoryTreeWithWalk(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool, workers int, walk cacheWalker) ([]*observedFile, error) {
 	var filesMu sync.Mutex
 	var files []*observedFile
-	config := fastwalk.DefaultConfig.Copy()
-	config.NumWorkers = workers
 	prefix := root + string(filepath.Separator)
-	err := walk(config, root, func(path string, entry fs.DirEntry, walkErr error) error {
+	err := walk(root, workers, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}

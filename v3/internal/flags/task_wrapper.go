@@ -1,6 +1,10 @@
 package flags
 
 type Build struct {
+	Jobs         int    `name:"jobs" description:"Maximum concurrent Wake build steps (0 uses available CPUs)"`
+	Binaries     string `name:"binaries" description:"Comma-separated executable names to build (requires an active YAML project)"`
+	SkipFrontend bool   `name:"skip-frontend" description:"Use existing frontend assets without installing dependencies, generating bindings or rebuilding frontend"`
+	SkipBindings bool   `name:"skip-bindings" description:"Build frontend with existing generated bindings"`
 	Common
 	Tags       string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
 	Obfuscated bool   `name:"obfuscated" description:"Build with garble and stable obfuscated binding IDs"`

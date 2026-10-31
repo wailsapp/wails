@@ -19,10 +19,10 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/version"
-	wakeast "github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/migration"
-	"github.com/wailsapp/wails/v3/internal/wake/parse"
+	"github.com/wailsapp/wails/v3/internal/wake/migration/taskfile"
+	wakeast "github.com/wailsapp/wails/v3/internal/wake/migration/taskfile/ast"
 	"github.com/zeebo/blake3"
 )
 
@@ -275,7 +275,7 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 		ancestors[path] = true
 		defer delete(ancestors, path)
 		loadedPaths[path] = true
-		tf, err := parse.Parse(path)
+		tf, err := taskfile.Parse(path)
 		if err != nil {
 			return err
 		}
@@ -497,7 +497,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 			return report, manifest.Document{}, err
 		}
 		report.Sources[rel] = digest
-		tf, err := parse.Parse(path)
+		tf, err := taskfile.Parse(path)
 		if err != nil {
 			return report, manifest.Document{}, err
 		}
@@ -787,7 +787,7 @@ func discoverTaskfiles(root string) ([]string, error) {
 			return nil
 		}
 		seen[abs] = true
-		tf, err := parse.Parse(abs)
+		tf, err := taskfile.Parse(abs)
 		if err != nil {
 			return err
 		}
@@ -934,7 +934,7 @@ func parseStockTasks(data []byte) map[string]*wakeast.Task {
 	if err := tmp.Close(); err != nil {
 		return nil
 	}
-	tf, err := parse.Parse(name)
+	tf, err := taskfile.Parse(name)
 	if err != nil {
 		return nil
 	}

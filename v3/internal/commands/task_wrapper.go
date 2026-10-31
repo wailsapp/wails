@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -102,6 +103,9 @@ type manifestCommandOperations struct {
 }
 
 func buildWithOperations(buildFlags *flags.Build, otherArgs []string, operations manifestCommandOperations) error {
+	if buildFlags.Jobs < 0 {
+		return fmt.Errorf("--jobs must be zero or positive")
+	}
 	userTags := buildFlags.Tags
 	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
 	if buildFlags.JSON && !buildFlags.Plan {
@@ -125,14 +129,14 @@ func buildWithOperations(buildFlags *flags.Build, otherArgs []string, operations
 			return err
 		}
 		formats := splitComma(buildFlags.Formats)
-		if profile != "" && (len(targets) > 0 || len(formats) > 0 || userTags != "" || buildFlags.Obfuscated || buildFlags.GarbleArgs != "") {
+		if profile != "" && (buildFlags.Binaries != "" || buildFlags.SkipFrontend || buildFlags.SkipBindings || len(targets) > 0 || len(formats) > 0 || userTags != "" || buildFlags.Obfuscated || buildFlags.GarbleArgs != "") {
 			return fmt.Errorf("named profile %q is a complete build request and does not accept artifact-affecting overrides", profile)
 		}
 		verb := "build"
 		if len(formats) > 0 {
 			verb = "package"
 		}
-		options := manifestRunOptions{Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags), GarbleArgs: garbleArgs}
+		options := manifestRunOptions{Jobs: buildFlags.Jobs, Binaries: splitComma(buildFlags.Binaries), SkipFrontend: buildFlags.SkipFrontend, SkipBindings: buildFlags.SkipBindings, Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags), GarbleArgs: garbleArgs}
 		if buildFlags.Plan {
 			return operations.plan(options, buildFlags.JSON)
 		}
@@ -236,7 +240,17 @@ func activeManifestProjectAt(root string) (bool, error) {
 	// Within the experiment, the native manifest is the cutover marker. Once it exists,
 	// Taskfiles are completely ignored—even when the manifest is invalid—so a
 	// configuration error can never silently execute a different build path.
-	return features.WakeEnabled() && manifest.Exists(root), nil
+	_, _, err := manifest.Discover(root)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if !features.WakeEnabled() {
+		return false, fmt.Errorf("wails.yaml found: this project has migrated to Wake; set WAILS_EXP_USE_WAKE=1 (Taskfile fallback is disabled)")
+	}
+	return true, nil
 }
 
 func splitTarget(target string) (string, string, error) {

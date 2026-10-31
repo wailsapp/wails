@@ -88,6 +88,12 @@ func TestExperimentalCLICompatibility(t *testing.T) {
 					require.Error(t, err, output)
 					require.NoFileExists(t, filepath.Join(dir, "marker.txt"))
 				} else {
+					require.Error(t, err, output)
+					require.Contains(t, output, "Taskfile fallback is disabled")
+					require.NoFileExists(t, filepath.Join(dir, "marker.txt"))
+					// A separate, unmigrated project still uses embedded Task.
+					require.NoError(t, os.Remove(filepath.Join(dir, "wails.yaml")))
+					output, err = run(dir, value, "build")
 					require.NoError(t, err, output)
 					require.FileExists(t, filepath.Join(dir, "marker.txt"))
 					require.NotContains(t, output, "deprecated")

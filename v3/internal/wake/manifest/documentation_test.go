@@ -26,6 +26,7 @@ func TestPublishedYAMLGuideExamplesMatchTheManifestSchema(t *testing.T) {
 		root := t.TempDir()
 		require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend"), 0o755))
 		require.NoError(t, os.MkdirAll(filepath.Join(root, "scripts"), 0o755))
+		require.NoError(t, os.MkdirAll(filepath.Join(root, "cmd", "notes-tool"), 0o755))
 		for _, script := range []string{"generate-version.sh", "check-packages.sh"} {
 			require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", script), []byte("#!/bin/sh\n"), 0o755))
 		}

@@ -122,7 +122,7 @@ func currentHostCapabilitiesWithOperations(credentials []string, operations host
 }
 
 func probeHostToolsAndCredentials(credentials []string, operations hostProbeOperations) ([]string, []string) {
-	knownTools := []string{"go", "garble", "zig", "docker", "podman", "cc", "gcc", "clang", "npm", "pnpm", "yarn", "bun", "makensis", "MakeAppx.exe", "signtool.exe", "hdiutil", "xcrun", "codesign", "ditto", "zip", "java", "jarsigner", "apksigner", "dpkg-sig", "rpmsign"}
+	knownTools := []string{"go", "garble", "upx", "zig", "docker", "podman", "cc", "gcc", "clang", "npm", "pnpm", "yarn", "bun", "makensis", "MakeAppx.exe", "signtool.exe", "hdiutil", "xcrun", "codesign", "ditto", "zip", "java", "jarsigner", "apksigner", "dpkg-sig", "rpmsign"}
 	tools := make([]string, 0, len(knownTools))
 	for _, tool := range knownTools {
 		if _, err := operations.lookPath(tool); err == nil {
@@ -434,22 +434,11 @@ func requireCommandTool(host HostCapabilities, operation, command string) error 
 
 func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 	operation := "compiling " + spec.TargetOS + "/" + spec.TargetArch
+	if err := validateCompilerTools(spec, host, operation); err != nil {
+		return err
+	}
 	if spec.Toolchain == "docker" {
-		if host.containerImagesKnown && host.crossContainerImage() == "" {
-			return hostConfigurationField("toolchain", fmt.Errorf("%s with Docker or Podman requires container image %q", operation, CrossContainerImage))
-		}
 		return nil
-	}
-	tool := "go"
-	if spec.Obfuscated {
-		tool = "garble"
-	}
-	if err := requireHostTools(host, operation, "go", tool); err != nil {
-		field := ""
-		if tool == "garble" {
-			field = "obfuscated"
-		}
-		return hostConfigurationField(field, err)
 	}
 	if spec.TargetOS == "linux" && spec.Toolchain == "native" && !host.hasTool("cc") && !host.hasTool("gcc") && !host.hasTool("clang") {
 		return hostConfigurationField("toolchain", fmt.Errorf("%s with the native toolchain requires a C compiler (cc, gcc, or clang)", operation))
@@ -470,6 +459,32 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 		if !host.hasAppleSDK(sdk) {
 			return hostConfigurationField("destination", fmt.Errorf("%s requires Apple SDK %q", operation, sdk))
 		}
+	}
+	return nil
+}
+
+func validateCompilerTools(spec CompileSpec, host HostCapabilities, operation string) error {
+	if spec.UPXLevel > 0 {
+		if err := requireHostTools(host, operation, "upx"); err != nil {
+			return hostConfigurationField("upx_level", err)
+		}
+	}
+	if spec.Toolchain == "docker" {
+		if host.containerImagesKnown && host.crossContainerImage() == "" {
+			return hostConfigurationField("toolchain", fmt.Errorf("%s with Docker or Podman requires container image %q", operation, CrossContainerImage))
+		}
+		return nil
+	}
+	tool := "go"
+	if spec.Obfuscated {
+		tool = "garble"
+	}
+	if err := requireHostTools(host, operation, "go", tool); err != nil {
+		field := ""
+		if tool == "garble" {
+			field = "obfuscated"
+		}
+		return hostConfigurationField(field, err)
 	}
 	return nil
 }
@@ -533,7 +548,7 @@ func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 	case "windows":
 		// Wails' Windows runtime does not require CGo. Go can build both
 		// supported Windows architectures without an external cross compiler.
-		return host.os == "windows"
+		return hostBit(host.os) != 0
 	default:
 		return host.os == spec.TargetOS && (host.arch == spec.TargetArch || spec.TargetOS == "darwin")
 	}

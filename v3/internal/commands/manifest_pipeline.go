@@ -21,8 +21,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wailsapp/wails/v3/internal/appbundle"
+	"github.com/wailsapp/wails/v3/internal/appimage"
+	"github.com/wailsapp/wails/v3/internal/artifactsum"
+	"github.com/wailsapp/wails/v3/internal/buildmeta"
 	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/installerbuild"
 	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
 	"github.com/wailsapp/wails/v3/internal/term"
@@ -30,11 +35,15 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/packagetemplate"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
+	"github.com/wailsapp/wails/v3/internal/windowspackage"
 	"golang.org/x/mod/modfile"
 	"gopkg.in/yaml.v3"
 )
 
 type manifestRunOptions struct {
+	Jobs                                int
+	Binaries                            []string
+	SkipFrontend, SkipBindings          bool
 	Context                             context.Context
 	Verb, Profile, TargetOS, TargetArch string
 	Loaded                              *manifest.Loaded
@@ -64,6 +73,8 @@ type manifestPlanRequest struct {
 }
 
 type manifestPlanCompiler struct {
+	Binary     string   `json:"binary"`
+	Package    string   `json:"package"`
 	Target     string   `json:"target"`
 	Toolchain  string   `json:"toolchain"`
 	Tags       []string `json:"tags"`
@@ -128,7 +139,7 @@ func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun,
 		ctx, cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()
 	}
-	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config, environment: options.Environment}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Force: options.Force, Reporter: reporter})
+	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config, environment: options.Environment}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Workers: options.Jobs, Force: options.Force, Reporter: reporter})
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
 			reporter.BuildCanceled(time.Since(started))
@@ -199,7 +210,7 @@ func resolveManifestPlanWithOperations(options manifestRunOptions, operations ma
 	if loaded.Config.Root != "" {
 		root = loaded.Config.Root
 	}
-	plan, err := operations.plan(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
+	plan, err := operations.plan(loaded.Config, pipeline.Request{Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
 	if err != nil {
 		return "", nil, pipeline.Plan{}, err
 	}
@@ -345,9 +356,14 @@ func resolvedPlanCompilers(plan pipeline.Plan) []manifestPlanCompiler {
 		if !ok {
 			continue
 		}
-		result = append(result, manifestPlanCompiler{Target: spec.TargetOS + "/" + spec.TargetArch, Toolchain: spec.Toolchain, Tags: append([]string(nil), spec.Tags...), Obfuscated: spec.Obfuscated, GarbleArgs: append([]string(nil), spec.GarbleArgs...)})
+		result = append(result, manifestPlanCompiler{Binary: filepath.Base(spec.Output), Package: executablePackage(spec.Package), Target: spec.TargetOS + "/" + spec.TargetArch, Toolchain: spec.Toolchain, Tags: append([]string(nil), spec.Tags...), Obfuscated: spec.Obfuscated, GarbleArgs: append([]string(nil), spec.GarbleArgs...)})
 	}
-	sort.Slice(result, func(i, j int) bool { return result[i].Target < result[j].Target })
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Target != result[j].Target {
+			return result[i].Target < result[j].Target
+		}
+		return result[i].Binary < result[j].Binary
+	})
 	return result
 }
 
@@ -386,14 +402,13 @@ type manifestHandler struct {
 	environment []string
 }
 
-// manifestExecutable is injectable so package adapters can be tested without
-// invoking the test binary as a second CLI process.
-var manifestExecutable = os.Executable
 var manifestHostOS = runtime.GOOS
 var manifestLipo = ToolLipo
 var manifestToolPackage = toolPackage
 var manifestSign = Sign
 var manifestPrepareDMGForSigning = prepareManifestDMGForSigning
+var manifestAppImageCreate = appimage.Create
+var manifestAppImageTools = appimage.Options.PrepareTools
 var manifestDockerImageIdentity = func(ctx context.Context, runtime, image string) (string, error) {
 	output, err := exec.CommandContext(ctx, runtime, "image", "inspect", "--format", "{{.Id}}", image).Output()
 	if err != nil {
@@ -456,23 +471,13 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 			if err != nil {
 				return "", err
 			}
-			if spec.Obfuscated {
-				names = append(names, "garble")
-			}
-			switch spec.Toolchain {
-			case "zig":
-				names = append(names, "zig")
-			case "docker":
-				runtime := spec.ContainerRuntime
-				if runtime == "" {
-					runtime = "docker"
-				}
-				names = []string{runtime}
+			names = compilerToolNames(spec)
+			if spec.Toolchain == "docker" {
 				image := spec.ContainerImage
 				if image == "" {
 					image = "wails-cross"
 				}
-				externalIdentity, err = manifestDockerImageIdentity(ctx, runtime, image)
+				externalIdentity, err = manifestDockerImageIdentity(ctx, names[0], image)
 				if err != nil {
 					return "", fmt.Errorf("inspect wails-cross image identity: %w", err)
 				}
@@ -490,14 +495,11 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 		if err != nil {
 			return "", err
 		}
-		name := map[string]string{"nsis": "makensis", "msix": "MakeAppx.exe"}[spec.Format]
-		if name != "" {
-			path, err := exec.LookPath(name)
-			if err != nil {
-				return "", fmt.Errorf("%s packaging requires %s: %w", spec.Format, name, err)
-			}
-			tools = append(tools, path)
+		paths, err := h.packageToolPaths(ctx, spec)
+		if err != nil {
+			return "", err
 		}
+		tools = append(tools, paths...)
 	case pipeline.SignArtifact:
 		// The signer is implemented by this CLI; its executable identity below
 		// is the complete tool identity.
@@ -527,6 +529,47 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 		hookRoot = "|hook-root:" + filepath.Clean(h.root)
 	}
 	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|external:" + externalIdentity + "|env:" + relevantEnvironment(node, h.environment) + hookRoot, nil
+}
+
+func (h *manifestHandler) packageToolPaths(ctx context.Context, spec pipeline.PackageSpec) ([]string, error) {
+	if spec.Format == "appimage" {
+		resolved, err := manifestAppImageTools(appimage.Options{Root: h.root, Arch: spec.TargetArch, CacheDir: filepath.Join(h.root, ".wails", "tools", "appimage")}, ctx)
+		if err != nil {
+			return nil, err
+		}
+		return []string{resolved.LinuxDeploy, resolved.AppRun}, nil
+	}
+	if spec.Format != "nsis" {
+		return nil, nil
+	}
+	path, err := exec.LookPath("makensis")
+	if err != nil {
+		return nil, fmt.Errorf("nsis packaging requires makensis: %w", err)
+	}
+	return []string{path}, nil
+}
+
+func compilerToolNames(spec pipeline.CompileSpec) []string {
+	var names []string
+	if spec.Toolchain == "docker" {
+		runtime := spec.ContainerRuntime
+		if runtime == "" {
+			runtime = "docker"
+		}
+		names = []string{runtime}
+	} else {
+		names = []string{"go"}
+		if spec.Obfuscated {
+			names = append(names, "garble")
+		}
+		if spec.Toolchain == "zig" {
+			names = append(names, "zig")
+		}
+	}
+	if spec.UPXLevel > 0 {
+		names = append(names, "upx")
+	}
+	return names
 }
 
 // Go also reads persistent settings written by go env -w. The filename alone
@@ -957,7 +1000,7 @@ func (h *manifestHandler) bindings(s pipeline.BindingsSpec, output string) (pipe
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("bindings output: %w", err)
 	}
-	err = GenerateBindings(&flags.GenerateBindingsOptions{PackageDirectory: h.root, BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil)
+	err = GenerateBindings(&flags.GenerateBindingsOptions{PackageDirectory: filepath.Join(h.root, executablePackage(s.Package)), BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil)
 	return pipeline.RunResult{}, err
 }
 
@@ -1000,7 +1043,7 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 	}
 	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
 	tool, args := compileGoArgs(s)
-	if s.TargetOS == "windows" {
+	if s.TargetOS == "windows" && !s.Console {
 		overlay, err := h.windowsResourceOverlay(s)
 		if err != nil {
 			return pipeline.RunResult{}, err
@@ -1030,7 +1073,10 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 	var result string
 	err := producePathTransactional(output, ".compile-output-*", func(staged string) error {
 		var runErr error
-		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, ".")...)
+		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
+		if runErr == nil {
+			runErr = h.compressExecutable(ctx, s, staged, &result)
+		}
 		return runErr
 	})
 	if err != nil && strings.Contains(result, "updates to go.mod needed") {
@@ -1058,7 +1104,7 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 	}
 	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
 	tool, buildArgs := compileGoArgs(s)
-	if s.TargetOS == "windows" {
+	if s.TargetOS == "windows" && !s.Console {
 		overlay, err := h.windowsResourceOverlay(s)
 		if err != nil {
 			return pipeline.RunResult{}, err
@@ -1110,9 +1156,12 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 	var result string
 	err = producePathTransactional(output, ".docker-compile-output-*", func(staged string) error {
 		commandArguments := append(append([]string(nil), arguments...), buildArgs...)
-		commandArguments = append(commandArguments, "-o", staged, ".")
+		commandArguments = append(commandArguments, "-o", staged, executablePackage(s.Package))
 		var runErr error
 		result, runErr = runManifestCommand(ctx, h.root, nil, runtime, commandArguments...)
+		if runErr == nil {
+			runErr = h.compressExecutable(ctx, s, staged, &result)
+		}
 		return runErr
 	})
 	if err != nil && strings.Contains(result, "updates to go.mod needed") {
@@ -1169,6 +1218,9 @@ func compileGoArgs(s pipeline.CompileSpec) (string, []string) {
 		args = append(args, "-gcflags", strings.Join(s.CompilerFlags, " "))
 	}
 	ld := append([]string{}, s.LinkerFlags...)
+	if s.TargetOS == "windows" && !s.Console {
+		ld = append(ld, "-H=windowsgui")
+	}
 	if s.Strip {
 		ld = appendUniqueStrings(ld, "-w", "-s")
 	}
@@ -1184,7 +1236,7 @@ func (h *manifestHandler) windowsResourceOverlay(s pipeline.CompileSpec) (string
 		return "", err
 	}
 	assets := filepath.Join(h.root, filepath.FromSlash(s.Assets), "windows")
-	generated := filepath.Join(root, ".wails", "generated", "windows", s.TargetArch)
+	generated := filepath.Join(root, ".wails", "generated", "windows", s.TargetArch, filepath.Base(s.Output))
 	syso := filepath.Join(generated, "wails_windows_"+s.TargetArch+".syso")
 	moduleData, err := os.ReadFile(filepath.Join(h.root, "go.mod"))
 	if err != nil {
@@ -1196,7 +1248,7 @@ func (h *manifestHandler) windowsResourceOverlay(s pipeline.CompileSpec) (string
 	}
 	// Go's pack and CGo steps open .syso files directly, bypassing -overlay.
 	// Keep the object in a real generated package and overlay only its import.
-	virtual := filepath.Join(root, "wails_windows_resources.go")
+	virtual := filepath.Join(root, filepath.FromSlash(executablePackage(s.Package)), "wails_windows_resources.go")
 	if _, err := os.Lstat(virtual); err == nil {
 		return "", fmt.Errorf("Windows resource overlay would replace project file %s", virtual)
 	} else if !errors.Is(err, fs.ErrNotExist) {
@@ -1216,7 +1268,11 @@ func (h *manifestHandler) windowsResourceOverlay(s pipeline.CompileSpec) (string
 		if err := os.WriteFile(filepath.Join(staged, "resources.go"), []byte("package wailsresources\n"), 0o644); err != nil {
 			return err
 		}
-		importPath := modulePath + "/.wails/generated/windows/" + s.TargetArch
+		relativeGenerated, err := filepath.Rel(root, generated)
+		if err != nil {
+			return err
+		}
+		importPath := modulePath + "/" + filepath.ToSlash(relativeGenerated)
 		if err := os.MkdirAll(filepath.Join(staged, "overlay"), 0o755); err != nil {
 			return err
 		}
@@ -1279,7 +1335,10 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 	var result string
 	err := producePathTransactional(output, ".android-compile-output-*", func(staged string) error {
 		var runErr error
-		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, ".")...)
+		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
+		if runErr == nil {
+			runErr = h.compressExecutable(ctx, s, staged, &result)
+		}
 		return runErr
 	})
 	return pipeline.RunResult{Detail: result}, err
@@ -1323,7 +1382,10 @@ func (h *manifestHandler) compileIOS(ctx context.Context, s pipeline.CompileSpec
 	var result string
 	err = producePathTransactional(output, ".ios-compile-output-*", func(staged string) error {
 		var runErr error
-		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, ".")...)
+		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
+		if runErr == nil {
+			runErr = h.compressExecutable(ctx, s, staged, &result)
+		}
 		return runErr
 	})
 	return pipeline.RunResult{Detail: result}, err
@@ -1445,6 +1507,9 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		return pipeline.RunResult{}, err
 	}
 	if err := h.applyUserPlatformInputs(staged, s.TargetOS, s.Project.BinaryName); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	if err := h.applyMicrophoneMetadata(staged, s); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	if err := h.applyUserSigningInputs(staged, s.TargetOS); err != nil {
@@ -1940,7 +2005,7 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		if s.TargetOS == "ios" {
 			return h.packageIOS(ctx, s, false)
 		}
-		return h.packageApp(s)
+		return h.packageApp(ctx, s)
 	case "dmg":
 		options, err := h.dmgOptions(s)
 		if err != nil {
@@ -1967,12 +2032,14 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		return pipeline.RunResult{}, findAndMovePackage(outputDirectory, s.Project.BinaryName, "dmg", filepath.Join(h.root, s.Output))
 	case "appimage":
 		return h.packageAppImage(ctx, s)
+	case "void":
+		return h.packageVoid(ctx, s)
 	case "deb", "rpm", "archlinux":
 		return h.packageLinux(s)
 	case "nsis":
 		return h.packageNSIS(ctx, s)
 	case "msix":
-		return h.packageMSIX(s)
+		return h.packageMSIX(ctx, s)
 	case "ipa":
 		return h.packageIOS(ctx, s, true)
 	case "apk", "aab":
@@ -2100,50 +2167,33 @@ func (h *manifestHandler) dmgOptionsWithRead(s pipeline.PackageSpec, readFile fu
 	}, nil
 }
 
-func (h *manifestHandler) packageApp(s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
-	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	staged, err := os.MkdirTemp(filepath.Dir(output), ".darwin-app-stage-*")
-	if err != nil {
-		return pipeline.RunResult{}, err
-	}
-	defer os.RemoveAll(staged)
-	macos := filepath.Join(staged, "Contents", "MacOS")
-	resources := filepath.Join(staged, "Contents", "Resources")
-	if err := os.MkdirAll(macos, 0o755); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	if err := os.MkdirAll(resources, 0o755); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	if err := copyManifestPath(filepath.Join(h.root, s.Binary), filepath.Join(macos, s.Project.BinaryName)); err != nil {
-		return pipeline.RunResult{}, err
-	}
+func (h *manifestHandler) packageApp(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
 	assets := filepath.Join(h.root, s.Assets, "darwin")
-	for _, name := range []string{"Info.plist", "icons.icns", "Assets.car"} {
-		source := filepath.Join(assets, name)
-		if _, err := os.Stat(source); err == nil {
-			dest := filepath.Join(staged, "Contents", name)
-			if name == "icons.icns" || name == "Assets.car" {
-				dest = filepath.Join(resources, name)
-			}
-			if err := copyManifestPath(source, dest); err != nil {
-				return pipeline.RunResult{}, err
+	binaries := map[string]string{s.Project.BinaryName: filepath.Join(h.root, s.Binary)}
+	for _, companion := range s.Companions {
+		binaries[companion.Name] = filepath.Join(h.root, companion.Path)
+	}
+	icon := ""
+	if _, err := os.Stat(filepath.Join(assets, "icons.icns")); err == nil {
+		icon = filepath.Join(assets, "icons.icns")
+	}
+	assetsCar := ""
+	if _, err := os.Stat(filepath.Join(assets, "Assets.car")); err == nil {
+		assetsCar = filepath.Join(assets, "Assets.car")
+	}
+	err := appbundle.Create(ctx, appbundle.Options{Output: filepath.Join(h.root, s.Output), InfoPlist: filepath.Join(assets, "Info.plist"), Icon: icon, Assets: assetsCar, Binaries: binaries, Prepare: func(ctx context.Context, staged string) error {
+		icons, err := filepath.Glob(filepath.Join(assets, "association-*.icns"))
+		if err != nil {
+			return err
+		}
+		for _, source := range icons {
+			if err := copyManifestPath(source, filepath.Join(staged, "Contents", "Resources", filepath.Base(source))); err != nil {
+				return err
 			}
 		}
-	}
-	associationIcons, err := filepath.Glob(filepath.Join(assets, "association-*.icns"))
-	if err != nil {
-		return pipeline.RunResult{}, err
-	}
-	for _, source := range associationIcons {
-		if err := copyManifestPath(source, filepath.Join(resources, filepath.Base(source))); err != nil {
-			return pipeline.RunResult{}, err
-		}
-	}
-	return pipeline.RunResult{}, replacePathTransactional(staged, output)
+		return nil
+	}})
+	return pipeline.RunResult{}, err
 }
 
 func (h *manifestHandler) packageAppImage(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
@@ -2151,29 +2201,24 @@ func (h *manifestHandler) packageAppImage(ctx context.Context, s pipeline.Packag
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	outDir := filepath.Join(buildDir, "output")
-	if err := removeGenerated(outDir); err != nil {
+	binaries := []appimage.Binary{{Name: s.Project.BinaryName, Path: filepath.Join(h.root, s.Binary)}}
+	for _, companion := range s.Companions {
+		binaries = append(binaries, appimage.Binary{Name: companion.Name, Path: filepath.Join(h.root, companion.Path)})
+	}
+	options := appimage.Options{Root: h.root, Name: s.Project.BinaryName, Arch: s.TargetArch, Output: filepath.Join(h.root, s.Output), Icon: icon, DesktopFile: desktop, WorkDir: buildDir, CacheDir: filepath.Join(h.root, ".wails", "tools", "appimage"), Binaries: binaries, GTKPlugin: gtkPlugin, WebKit: s.Project.Kind != "cli" && s.Project.Kind != "server", UpdateInfo: s.Config.UpdateInfo, Env: map[string]string{"VERSION": s.Project.Version}, Runner: func(ctx context.Context, command appimage.Command) error {
+		env := declaredEnvironment(h.environment, command.Env)
+		_, err := runManifestCommand(ctx, command.Directory, env, command.Program, command.Args...)
+		return err
+	}}
+	if err := manifestAppImageCreate(ctx, options); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	if err := os.MkdirAll(outDir, 0o755); err != nil {
-		return pipeline.RunResult{}, err
+	if s.Config.Checksum {
+		if err := artifactsum.Write(ctx, filepath.Join(h.root, s.Output)); err != nil {
+			return pipeline.RunResult{}, err
+		}
 	}
-	executable, err := manifestExecutable()
-	if err != nil {
-		return pipeline.RunResult{}, err
-	}
-	detail, err := runManifestCommand(ctx, h.root, nil, executable,
-		"generate", "appimage",
-		"-binary", filepath.Join(h.root, s.Binary),
-		"-icon", icon,
-		"-desktopfile", desktop,
-		"-outputdir", outDir,
-		"-builddir", buildDir,
-	)
-	if err != nil {
-		return pipeline.RunResult{Detail: detail}, err
-	}
-	return pipeline.RunResult{}, ensureExpectedAppImage(outDir, filepath.Join(h.root, s.Output))
+	return pipeline.RunResult{}, nil
 }
 
 func (h *manifestHandler) prepareAppImageInputs(s pipeline.PackageSpec) (desktop, icon, buildDir string, err error) {
@@ -2228,6 +2273,14 @@ func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResu
 	return pipeline.RunResult{}, findAndMovePackage(outDir, s.Project.BinaryName, s.Format, filepath.Join(h.root, s.Output))
 }
 
+func appendCompanionPackageContents(config map[string]any, root string, companions []pipeline.NamedBinary) {
+	contents, _ := config["contents"].([]any)
+	for _, binary := range companions {
+		contents = append(contents, map[string]any{"src": filepath.Join(root, binary.Path), "dst": "/usr/bin/" + binary.Name})
+	}
+	config["contents"] = contents
+}
+
 func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (string, error) {
 	workspace := h.packageWorkspace(s)
 	configPath := filepath.Join(workspace, "nfpm.yaml")
@@ -2278,6 +2331,7 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 			}
 		}
 	}
+	appendCompanionPackageContents(config, h.root, s.Companions)
 	if scripts, ok := config["scripts"].(map[string]any); ok {
 		for name, raw := range scripts {
 			path, ok := raw.(string)
@@ -2338,32 +2392,25 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 }
 
 func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	dir, packageRoot, err := h.prepareNSISWorkspace(s)
+	dir, _, err := h.prepareNSISWorkspace(s)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	flag := "AMD64"
-	if s.TargetArch == "arm64" {
-		flag = "ARM64"
-	}
-	binary, err := filepath.Abs(filepath.Join(h.root, s.Binary))
+	info, err := buildmeta.Parse(s.Project.Version)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	args := []string{"-DARG_WAILS_" + flag + "_BINARY=" + binary}
-	if s.Config.InstallScope != "" {
-		args = append(args, "-DWAILS_INSTALL_SCOPE="+s.Config.InstallScope)
+	options := installerbuild.Options{Script: filepath.Join(dir, "project.nsi"), Output: filepath.Join(h.root, s.Output), Arch: s.TargetArch, Scope: s.Config.InstallScope, Primary: installerbuild.File{Name: s.Project.BinaryName + ".exe", Path: filepath.Join(h.root, s.Binary)}, Version: &info, Defines: s.Config.Defines}
+	for _, binary := range s.Companions {
+		options.Companions = append(options.Companions, installerbuild.File{Name: binary.Name, Path: filepath.Join(h.root, binary.Path)})
 	}
-	args = append(args, "project.nsi")
-	result, err := runManifestCommand(ctx, dir, nil, "makensis", args...)
-	if err != nil {
-		return pipeline.RunResult{Detail: result}, err
-	}
-	generated := filepath.Join(packageRoot, "bin", s.Project.Name+"-"+s.TargetArch+"-installer.exe")
-	if err := copyPathTransactional(generated, filepath.Join(h.root, s.Output), ".nsis-output-*"); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	return pipeline.RunResult{Detail: result}, nil
+	var detail string
+	err = installerbuild.Create(ctx, options, func(ctx context.Context, directory string, args []string) error {
+		var runErr error
+		detail, runErr = runManifestCommand(ctx, directory, h.environment, "makensis", args...)
+		return runErr
+	})
+	return pipeline.RunResult{Detail: detail}, err
 }
 
 func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, packageRoot string, err error) {
@@ -2389,66 +2436,47 @@ func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, pac
 	return dir, packageRoot, err
 }
 
-func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	if manifestHostOS != "windows" {
-		return pipeline.RunResult{}, fmt.Errorf("MSIX packaging requires Windows")
-	}
+func (h *manifestHandler) packageMSIX(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
 	workspace := h.packageWorkspace(s)
-	var associations []map[string]any
-	for _, association := range s.Associations {
-		for _, extension := range association.Extensions {
-			associations = append(associations, map[string]any{"ext": extension, "name": association.Name, "description": association.Description, "iconName": association.Icon, "role": association.Role, "mimeType": association.MIMEType})
-		}
-	}
-	var protocols []map[string]any
-	for _, protocol := range s.Protocols {
-		protocols = append(protocols, map[string]any{"scheme": protocol.Scheme, "description": protocol.Description})
-	}
-	config := map[string]any{"info": map[string]any{"companyName": s.Project.CompanyName, "productName": s.Project.ProductName, "productIdentifier": s.Project.Identifier, "description": s.Project.Description, "copyright": s.Project.Copyright, "comments": s.Project.Comments, "version": s.Project.Version}, "fileAssociations": associations, "protocols": protocols}
-	data, err := json.Marshal(config)
+	info, err := buildmeta.Parse(s.Project.Version)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	configPath := filepath.Join(workspace, "config.json")
-	arch := map[string]string{"amd64": "x64", "arm64": "arm64", "386": "x86"}[s.TargetArch]
-	if arch == "" {
-		return pipeline.RunResult{}, fmt.Errorf("unsupported MSIX architecture %s", s.TargetArch)
+	numeric, err := info.Windows()
+	if err != nil {
+		return pipeline.RunResult{}, err
 	}
-	signing := h.config.Signing.Windows
-	publisher := "CN=" + s.Project.CompanyName
-	if s.Config.Publisher != "" {
-		publisher = s.Config.Publisher
+	options := MSIXOptions{Publisher: firstNonempty(s.Config.Publisher, h.config.Signing.Windows.Identity, "CN="+s.Project.CompanyName), ProcessorArchitecture: map[string]string{"amd64": "x64", "arm64": "arm64", "386": "x86"}[s.TargetArch], ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), IconPath: filepath.Join(h.root, s.Assets, "appicon.png")}
+	options.Info.ProductName, options.Info.ProductIdentifier, options.Info.CompanyName, options.Info.Description = s.Project.ProductName, s.Project.Identifier, s.Project.CompanyName, s.Project.Description
+	options.Info.Version = fmt.Sprintf("%d.%d.%d.%d", numeric[0], numeric[1], numeric[2], numeric[3])
+	for _, association := range s.Associations {
+		for _, extension := range association.Extensions {
+			options.FileAssociations = append(options.FileAssociations, FileAssociation{Ext: extension, Name: association.Name, Description: association.Description, IconName: association.Icon, Role: association.Role, MimeType: association.MIMEType})
+		}
 	}
-	if signing.Identity != "" {
-		publisher = signing.Identity
+	for _, protocol := range s.Protocols {
+		options.Protocols = append(options.Protocols, ProtocolConfig{Scheme: protocol.Scheme, Description: protocol.Description})
 	}
-	appxManifest := ""
 	if s.Config.Manifest != "" {
-		appxManifest = filepath.Join(workspace, "AppxManifest.xml")
+		options.AppxManifest, err = existingPathInsideProject(h.root, s.Config.Manifest)
+		if err != nil {
+			return pipeline.RunResult{}, fmt.Errorf("package msix manifest: %w", err)
+		}
 	}
 	if err := prepareGeneratedWorkspace(workspace, ".msix-stage-*", func(staged string) error {
-		if err := os.WriteFile(filepath.Join(staged, "config.json"), data, 0o644); err != nil {
+		if err := createMSIXPackageStructure(&options, staged); err != nil {
 			return err
 		}
-		if s.Config.Manifest == "" {
-			return nil
+		for _, binary := range s.Companions {
+			if err := copyManifestPath(filepath.Join(h.root, binary.Path), filepath.Join(staged, binary.Name)); err != nil {
+				return err
+			}
 		}
-		source, err := existingPathInsideProject(h.root, s.Config.Manifest)
-		if err != nil {
-			return fmt.Errorf("package msix manifest: %w", err)
-		}
-		return copyManifestPath(source, filepath.Join(staged, "AppxManifest.xml"))
+		return nil
 	}); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	generatedOutput := filepath.Join(workspace, "output", filepath.Base(s.Output))
-	if err := os.MkdirAll(filepath.Dir(generatedOutput), 0o755); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	if err := ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: generatedOutput, AppxManifest: appxManifest, IconPath: filepath.Join(h.root, s.Assets, "appicon.png"), UseMakeAppx: true}); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	return pipeline.RunResult{}, copyPathTransactional(generatedOutput, filepath.Join(h.root, s.Output), ".msix-output-*")
+	return pipeline.RunResult{}, windowspackage.Create(ctx, windowspackage.Options{Directory: workspace, Output: filepath.Join(h.root, s.Output)})
 }
 
 func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
@@ -3015,16 +3043,6 @@ func copyManifestPath(source, destination string) error {
 		return copyErr
 	}
 	return closeErr
-}
-func ensureExpectedAppImage(dir, expected string) error {
-	matches, err := filepath.Glob(filepath.Join(dir, "*.AppImage"))
-	if err != nil {
-		return err
-	}
-	if len(matches) != 1 {
-		return fmt.Errorf("AppImage packager produced %d candidates, expected %s", len(matches), expected)
-	}
-	return copyPathTransactional(matches[0], expected, ".appimage-output-*")
 }
 func findAndMovePackage(dir, name, format, expected string) error {
 	extension := "." + format

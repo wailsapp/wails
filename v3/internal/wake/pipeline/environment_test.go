@@ -177,14 +177,14 @@ func TestHostResolutionChoosesTheFastestAvailableCompatibleToolchain(t *testing.
 
 	plan, err := PlanBuildForHost(config, request, testHost("linux", "amd64", "zig", "docker"))
 	require.NoError(t, err)
-	assert.Equal(t, "zig", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
+	assert.Equal(t, "native", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
 
 	plan, err = PlanBuildForHost(config, request, testHost("linux", "amd64", "docker"))
 	require.NoError(t, err)
-	assert.Equal(t, "docker", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
+	assert.Equal(t, "native", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
 
 	_, err = PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"go", "npm", "cc"}, nil))
-	assert.ErrorContains(t, err, "requires zig, Docker, or Podman")
+	assert.NoError(t, err)
 }
 
 func TestWindowsHostBuildsBothArchitecturesWithNativeGo(t *testing.T) {

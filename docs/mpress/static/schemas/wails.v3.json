@@ -88,6 +88,59 @@
       },
       "type": "object"
     },
+    "binaries": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "commit_symbol": {
+            "description": "Qualified Go string variable receiving the application's Git revision through linker flags.",
+            "type": "string"
+          },
+          "compiler_flags": {
+            "description": "Additional Go compiler flags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "environment": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Environment variables added to this operation.",
+            "type": "object"
+          },
+          "kind": {
+            "description": "Executable kind: gui, cli or server; companions default to cli.",
+            "type": "string"
+          },
+          "ldflags": {
+            "description": "Additional Go linker flags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "package": {
+            "description": "Project-relative directory containing one Go main package.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Additional Go build tags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "upx_level": {
+            "description": "Optional UPX compression effort, 0 disabled or 1 through 9; skipped on macOS and in development.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "type": "object"
+    },
     "build": {
       "additionalProperties": false,
       "properties": {
@@ -191,6 +244,10 @@
         },
         "info_plist": {
           "description": "User-owned Apple Info.plist file.",
+          "type": "string"
+        },
+        "microphone_usage_description": {
+          "description": "macOS microphone permission text; generates the audio-input entitlement unless a user-owned entitlement file is configured.",
           "type": "string"
         },
         "minimum_version": {
@@ -706,12 +763,20 @@
               },
               "type": "array"
             },
+            "checksum": {
+              "description": "Publish a SHA-256 checksum alongside the AppImage.",
+              "type": "boolean"
+            },
             "desktop_entry": {
               "description": "User-owned Linux desktop-entry file.",
               "type": "string"
             },
             "icon": {
               "description": "Project-relative user-owned icon file.",
+              "type": "string"
+            },
+            "update_info": {
+              "description": "AppImage update-information string; requires a matching zsync sidecar from linuxdeploy.",
               "type": "string"
             }
           },
@@ -853,6 +918,13 @@
         "nsis": {
           "additionalProperties": false,
           "properties": {
+            "defines": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Literal custom NSIS preprocessor definitions; Wails-owned names are reserved.",
+              "type": "object"
+            },
             "install_scope": {
               "description": "NSIS installation scope.",
               "type": "string"
@@ -983,6 +1055,10 @@
           "description": "Additional package metadata comments.",
           "type": "string"
         },
+        "commit_symbol": {
+          "description": "Qualified Go string variable receiving the application's Git revision through linker flags.",
+          "type": "string"
+        },
         "company": {
           "description": "Company or organisation name.",
           "type": "string"
@@ -1004,9 +1080,19 @@
           "minLength": 1,
           "type": "string"
         },
+        "kind": {
+          "default": "gui",
+          "description": "Executable kind: gui, cli or server; companions default to cli.",
+          "type": "string"
+        },
         "name": {
           "description": "Stable project or registration name.",
           "minLength": 1,
+          "type": "string"
+        },
+        "package": {
+          "default": ".",
+          "description": "Project-relative directory containing one Go main package.",
           "type": "string"
         },
         "product_name": {
@@ -1021,17 +1107,29 @@
           },
           "type": "array"
         },
+        "upx_level": {
+          "default": 0,
+          "description": "Optional UPX compression effort, 0 disabled or 1 through 9; skipped on macOS and in development.",
+          "type": "integer"
+        },
         "version": {
           "description": "Manifest or application version.",
           "minLength": 1,
+          "type": "string"
+        },
+        "version_file": {
+          "description": "Go source file declaring the application version; paired with version_symbol.",
+          "type": "string"
+        },
+        "version_symbol": {
+          "description": "Static Go string declaration used instead of the literal project version.",
           "type": "string"
         }
       },
       "required": [
         "name",
         "product_name",
-        "identifier",
-        "version"
+        "identifier"
       ],
       "type": "object"
     },

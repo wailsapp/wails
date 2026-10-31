@@ -13,8 +13,8 @@ import (
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/term"
-	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
@@ -258,7 +258,7 @@ func main() {
 		}
 		// A wake build failure is already rendered as a clean panel by the build
 		// reporter; printing the raw error again would duplicate it.
-		if !wake.IsReported(err) {
+		if !report.IsReported(err) {
 			if diagnostic, ok := manifest.FormatValidationDiagnostics(err); ok {
 				pterm.Error.Println("Invalid wails.yaml\n" + diagnostic)
 			} else {

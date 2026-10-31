@@ -446,7 +446,7 @@ func TestEjectionCoversEveryPlatformSchemaField(t *testing.T) {
 	doc := defaults(project)
 	all := Platform{
 		ProductName: "Product", Identifier: "com.example.platform", MinimumVersion: "1.0", BuildNumber: 7,
-		Capabilities: []string{"capability"}, Icon: "icon", Manifest: "manifest", AssetsCar: "Assets.car",
+		MicrophoneUsageDescription: "Record audio", Capabilities: []string{"capability"}, Icon: "icon", Manifest: "manifest", AssetsCar: "Assets.car",
 		InfoPlist: "Info.plist", Publisher: "CN=Publisher", DesktopEntry: "application.desktop",
 		CompanyName: "Company", Comments: "Comments", CFBundleIconName: "AppIcon",
 		BackgroundModes: []string{"audio"}, VersionName: "1.0", VersionCode: 7, MinimumSDK: 24, TargetSDK: 35,
@@ -486,10 +486,11 @@ func TestEjectionCoversEveryPlatformSchemaField(t *testing.T) {
 func TestEjectionCoversEveryPackageSchemaField(t *testing.T) {
 	project := Project{Name: "package-ejection", ProductName: "Package Ejection", Identifier: "com.example.package-ejection", Version: "1.0.0"}
 	packageNode := schemaNodesByType[reflect.TypeOf(PackageFormat{})]
-	for _, format := range []string{"nsis", "msix", "dmg", "appimage", "deb", "rpm", "archlinux"} {
+	for _, format := range []string{"nsis", "msix", "dmg", "appimage", "deb", "rpm", "archlinux", "void"} {
 		t.Run(format, func(t *testing.T) {
 			doc := defaults(project)
 			raw := PackageFormat{
+				Defines: map[string]string{"EXAMPLE": "value"}, UpdateInfo: "zsync|https://example.test/app.zsync", Checksum: true,
 				Format: format, InstallScope: "user", Publisher: "CN=Publisher", Manifest: "manifest",
 				Background: "background", VolumeIcon: "volume", FileIcon: "file", Files: map[string]string{"License": "LICENSE"},
 				WindowWidth: 640, WindowHeight: 480, Icon: "icon", DesktopEntry: "application.desktop",

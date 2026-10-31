@@ -15,7 +15,8 @@ import (
 // manifestDocument is intentionally a closed schema. Keep the YAML surface small:
 // this is declarative build intent, never a programmable pipeline.
 type manifestDocument struct {
-	Run *manifestRun `manifest:"run,block"`
+	Binaries []Binary     `manifest:"binary,block"`
+	Run      *manifestRun `manifest:"run,block"`
 
 	Version      int                   `manifest:"version"`
 	Project      *manifestProject      `manifest:"project,block" required:"true"`
@@ -45,12 +46,19 @@ type manifestHook struct {
 }
 
 type manifestProject struct {
+	Package       *string `manifest:"package,optional" default:"." path:"true"`
+	Kind          *string `manifest:"kind,optional" default:"gui"`
+	VersionFile   *string `manifest:"version_file,optional" path:"true"`
+	VersionSymbol *string `manifest:"version_symbol,optional"`
+	CommitSymbol  *string `manifest:"commit_symbol,optional"`
+	UPXLevel      *int    `manifest:"upx_level,optional" default:"0"`
+
 	SupportedPlatforms *[]string `manifest:"supported_platforms,optional"`
 
 	Name        *string `manifest:"name,optional" required:"true" nonempty:"true"`
 	ProductName *string `manifest:"product_name,optional" required:"true" nonempty:"true"`
 	Identifier  *string `manifest:"identifier,optional" required:"true" nonempty:"true"`
-	Version     *string `manifest:"version,optional" required:"true" nonempty:"true"`
+	Version     *string `manifest:"version,optional" nonempty:"true"`
 	Company     *string `manifest:"company,optional"`
 	BinaryName  *string `manifest:"binary_name,optional" default:"$project.name.slug"`
 	Icon        *string `manifest:"icon,optional"`
@@ -106,30 +114,31 @@ type manifestDev struct {
 }
 
 type manifestPlatform struct {
-	ProductName      *string               `manifest:"product_name,optional" platforms:"windows,darwin,linux"`
-	Identifier       *string               `manifest:"identifier,optional" platforms:"windows,darwin,linux"`
-	MinimumVersion   *string               `manifest:"minimum_version,optional" platforms:"windows,darwin,linux,ios"`
-	BuildNumber      *int                  `manifest:"build_number,optional" platforms:"windows,darwin,linux,ios"`
-	Capabilities     *[]string             `manifest:"capabilities,optional" platforms:"windows,darwin,linux,ios"`
-	Icon             *string               `manifest:"icon,optional" platforms:"windows,darwin,linux,ios,android"`
-	Manifest         *string               `manifest:"manifest,optional" platforms:"windows,android"`
-	AssetsCar        *string               `manifest:"assets_car,optional" platforms:"darwin,ios"`
-	InfoPlist        *string               `manifest:"info_plist,optional" platforms:"darwin,ios"`
-	Publisher        *string               `manifest:"publisher,optional" platforms:"windows"`
-	DesktopEntry     *string               `manifest:"desktop_entry,optional" platforms:"linux"`
-	BundleID         *string               `manifest:"bundle_id,optional" platforms:"ios"`
-	DisplayName      *string               `manifest:"display_name,optional" platforms:"ios,android"`
-	VersionName      *string               `manifest:"version_name,optional" platforms:"android"`
-	VersionCode      *int                  `manifest:"version_code,optional" platforms:"android"`
-	MinimumSDK       *int                  `manifest:"minimum_sdk,optional" platforms:"android"`
-	TargetSDK        *int                  `manifest:"target_sdk,optional" platforms:"android"`
-	ApplicationID    *string               `manifest:"application_id,optional" platforms:"android"`
-	Company          *string               `manifest:"company,optional" platforms:"ios,android"`
-	Comments         *string               `manifest:"comments,optional" platforms:"ios,android"`
-	CFBundleIconName *string               `manifest:"cf_bundle_icon_name,optional" platforms:"darwin,ios"`
-	BackgroundModes  *[]string             `manifest:"background_modes,optional" platforms:"ios"`
-	Signing          *manifestSigning      `manifest:"signing,block"`
-	Notarization     *manifestNotarization `manifest:"notarization,block" platforms:"darwin"`
+	MicrophoneUsageDescription *string               `manifest:"microphone_usage_description,optional" platforms:"darwin"`
+	ProductName                *string               `manifest:"product_name,optional" platforms:"windows,darwin,linux"`
+	Identifier                 *string               `manifest:"identifier,optional" platforms:"windows,darwin,linux"`
+	MinimumVersion             *string               `manifest:"minimum_version,optional" platforms:"windows,darwin,linux,ios"`
+	BuildNumber                *int                  `manifest:"build_number,optional" platforms:"windows,darwin,linux,ios"`
+	Capabilities               *[]string             `manifest:"capabilities,optional" platforms:"windows,darwin,linux,ios"`
+	Icon                       *string               `manifest:"icon,optional" platforms:"windows,darwin,linux,ios,android"`
+	Manifest                   *string               `manifest:"manifest,optional" platforms:"windows,android"`
+	AssetsCar                  *string               `manifest:"assets_car,optional" platforms:"darwin,ios"`
+	InfoPlist                  *string               `manifest:"info_plist,optional" platforms:"darwin,ios"`
+	Publisher                  *string               `manifest:"publisher,optional" platforms:"windows"`
+	DesktopEntry               *string               `manifest:"desktop_entry,optional" platforms:"linux"`
+	BundleID                   *string               `manifest:"bundle_id,optional" platforms:"ios"`
+	DisplayName                *string               `manifest:"display_name,optional" platforms:"ios,android"`
+	VersionName                *string               `manifest:"version_name,optional" platforms:"android"`
+	VersionCode                *int                  `manifest:"version_code,optional" platforms:"android"`
+	MinimumSDK                 *int                  `manifest:"minimum_sdk,optional" platforms:"android"`
+	TargetSDK                  *int                  `manifest:"target_sdk,optional" platforms:"android"`
+	ApplicationID              *string               `manifest:"application_id,optional" platforms:"android"`
+	Company                    *string               `manifest:"company,optional" platforms:"ios,android"`
+	Comments                   *string               `manifest:"comments,optional" platforms:"ios,android"`
+	CFBundleIconName           *string               `manifest:"cf_bundle_icon_name,optional" platforms:"darwin,ios"`
+	BackgroundModes            *[]string             `manifest:"background_modes,optional" platforms:"ios"`
+	Signing                    *manifestSigning      `manifest:"signing,block"`
+	Notarization               *manifestNotarization `manifest:"notarization,block" platforms:"darwin"`
 }
 
 type manifestSigning struct {
@@ -251,6 +260,12 @@ func documentFromManifest(raw manifestDocument) (Document, error) {
 		return Document{}, fieldValidationError("project", "block is required")
 	}
 	project := Project{}
+	setString(&project.Package, raw.Project.Package)
+	setString(&project.Kind, raw.Project.Kind)
+	setString(&project.VersionFile, raw.Project.VersionFile)
+	setString(&project.VersionSymbol, raw.Project.VersionSymbol)
+	setString(&project.CommitSymbol, raw.Project.CommitSymbol)
+	setInt(&project.UPXLevel, raw.Project.UPXLevel)
 	setStrings(&project.SupportedPlatforms, raw.Project.SupportedPlatforms)
 	setString(&project.Name, raw.Project.Name)
 	setString(&project.ProductName, raw.Project.ProductName)
@@ -267,6 +282,7 @@ func documentFromManifest(raw manifestDocument) (Document, error) {
 		return Document{}, err
 	}
 	doc := defaults(project)
+	doc.Binaries = append([]Binary(nil), raw.Binaries...)
 	applyRun(&doc.Run, raw.Run)
 	if raw.Frontend != nil {
 		applyFrontend(&doc.Frontend, raw.Frontend)
@@ -477,6 +493,7 @@ func applyPlatform(doc *Document, name string, raw *manifestPlatform) {
 	platform := platformByName(&doc.Targets, name)
 	setString(&platform.ProductName, raw.ProductName)
 	setString(&platform.Identifier, raw.Identifier)
+	setString(&platform.MicrophoneUsageDescription, raw.MicrophoneUsageDescription)
 	setString(&platform.MinimumVersion, raw.MinimumVersion)
 	setInt(&platform.BuildNumber, raw.BuildNumber)
 	setStrings(&platform.Capabilities, raw.Capabilities)
@@ -611,20 +628,22 @@ func applyTarget(targets *Targets, raw manifestTarget) error {
 func applyPackage(packages *Packages, raw PackageFormat) error {
 	switch raw.Format {
 	case "nsis":
-		packages.Windows.NSIS = NSISPackage{Template: raw.Template, InstallScope: raw.InstallScope}
+		packages.Windows.NSIS = NSISPackage{Defines: cloneStringMapValue(raw.Defines), Template: raw.Template, InstallScope: raw.InstallScope}
 	case "msix":
 		packages.Windows.MSIX = MSIXPackage{Publisher: raw.Publisher, Manifest: raw.Manifest}
 	case "dmg":
 		packages.Darwin.DMG = DMGPackage{Template: raw.Template, Background: raw.Background, VolumeIcon: raw.VolumeIcon, FileIcon: raw.FileIcon, Files: cloneStringMapValue(raw.Files), WindowWidth: raw.WindowWidth, WindowHeight: raw.WindowHeight}
 	case "appimage":
-		packages.Linux.AppImage = AppImagePackage{Icon: raw.Icon, DesktopEntry: raw.DesktopEntry, Categories: append([]string(nil), raw.Categories...)}
-	case "deb", "rpm", "archlinux":
+		packages.Linux.AppImage = AppImagePackage{UpdateInfo: raw.UpdateInfo, Checksum: raw.Checksum, Icon: raw.Icon, DesktopEntry: raw.DesktopEntry, Categories: append([]string(nil), raw.Categories...)}
+	case "deb", "rpm", "archlinux", "void":
 		value := LinuxPackage{Template: raw.Template, Maintainer: raw.Maintainer, Section: raw.Section, Dependencies: append([]string(nil), raw.Dependencies...), PreInstall: raw.PreInstall, PostInstall: raw.PostInstall, PreRemove: raw.PreRemove, PostRemove: raw.PostRemove}
 		switch raw.Format {
 		case "deb":
 			packages.Linux.Deb = value
 		case "rpm":
 			packages.Linux.RPM = value
+		case "void":
+			packages.Linux.Void = value
 		case "archlinux":
 			packages.Linux.ArchLinux = value
 		}
@@ -652,7 +671,7 @@ func ResolvePackageFormat(packages Packages, platform, format string) (PackageFo
 	switch platform + "/" + format {
 	case "windows/nsis":
 		value := packages.Windows.NSIS
-		return PackageFormat{Template: value.Template, InstallScope: value.InstallScope}, nil
+		return PackageFormat{Defines: cloneStringMapValue(value.Defines), Template: value.Template, InstallScope: value.InstallScope}, nil
 	case "windows/msix":
 		value := packages.Windows.MSIX
 		return PackageFormat{Publisher: value.Publisher, Manifest: value.Manifest}, nil
@@ -663,14 +682,16 @@ func ResolvePackageFormat(packages Packages, platform, format string) (PackageFo
 		return PackageFormat{Template: value.Template, Background: value.Background, VolumeIcon: value.VolumeIcon, FileIcon: value.FileIcon, Files: cloneStringMapValue(value.Files), WindowWidth: value.WindowWidth, WindowHeight: value.WindowHeight}, nil
 	case "linux/appimage":
 		value := packages.Linux.AppImage
-		return PackageFormat{Icon: value.Icon, DesktopEntry: value.DesktopEntry, Categories: append([]string(nil), value.Categories...)}, nil
-	case "linux/deb", "linux/rpm", "linux/archlinux":
+		return PackageFormat{UpdateInfo: value.UpdateInfo, Checksum: value.Checksum, Icon: value.Icon, DesktopEntry: value.DesktopEntry, Categories: append([]string(nil), value.Categories...)}, nil
+	case "linux/deb", "linux/rpm", "linux/archlinux", "linux/void":
 		var value LinuxPackage
 		switch format {
 		case "deb":
 			value = packages.Linux.Deb
 		case "rpm":
 			value = packages.Linux.RPM
+		case "void":
+			value = packages.Linux.Void
 		case "archlinux":
 			value = packages.Linux.ArchLinux
 		}
@@ -819,11 +840,11 @@ func packageAttributeAllowed(format, name string) bool {
 }
 
 func packageConfigured(format PackageFormat) bool {
-	return format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || len(format.Dependencies) > 0 || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
+	return len(format.Defines) > 0 || format.UpdateInfo != "" || format.Checksum || format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || len(format.Dependencies) > 0 || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
 }
 
 func platformConfigured(platform Platform) bool {
-	return platform.ProductName != "" || platform.Identifier != "" || platform.MinimumVersion != "" || platform.BuildNumber != 0 || len(platform.Capabilities) > 0 || platform.Icon != "" || platform.Manifest != "" || platform.AssetsCar != "" || platform.InfoPlist != "" || platform.Publisher != "" || platform.DesktopEntry != "" || platform.CompanyName != "" || platform.Comments != "" || platform.CFBundleIconName != "" || len(platform.BackgroundModes) > 0 || platform.VersionName != "" || platform.VersionCode != 0 || platform.MinimumSDK != 0 || platform.TargetSDK != 0
+	return platform.MicrophoneUsageDescription != "" || platform.ProductName != "" || platform.Identifier != "" || platform.MinimumVersion != "" || platform.BuildNumber != 0 || len(platform.Capabilities) > 0 || platform.Icon != "" || platform.Manifest != "" || platform.AssetsCar != "" || platform.InfoPlist != "" || platform.Publisher != "" || platform.DesktopEntry != "" || platform.CompanyName != "" || platform.Comments != "" || platform.CFBundleIconName != "" || len(platform.BackgroundModes) > 0 || platform.VersionName != "" || platform.VersionCode != 0 || platform.MinimumSDK != 0 || platform.TargetSDK != 0
 }
 
 func manifestValueWasExplicit(origins map[string]Origin, path string) bool {

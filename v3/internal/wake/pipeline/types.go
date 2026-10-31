@@ -184,19 +184,21 @@ type ExecuteOptions struct {
 type Target = buildinfo.Target
 
 type Request struct {
-	Verb        string
-	TargetOS    string
-	TargetArch  string
-	Targets     []Target
-	Formats     []string
-	Development bool
-	ExtraTags   []string
-	GarbleArgs  []string
-	Obfuscated  bool
-	resolved    bool
-	sign        bool
-	notarize    bool
-	destination string
+	Binaries                   []string
+	SkipFrontend, SkipBindings bool
+	Verb                       string
+	TargetOS                   string
+	TargetArch                 string
+	Targets                    []Target
+	Formats                    []string
+	Development                bool
+	ExtraTags                  []string
+	GarbleArgs                 []string
+	Obfuscated                 bool
+	resolved                   bool
+	sign                       bool
+	notarize                   bool
+	destination                string
 }
 
 // NodeSpec is a closed set of typed planner data. It deliberately contains no
@@ -209,6 +211,7 @@ type InstallSpec struct {
 	Environment                 map[string]string
 }
 type BindingsSpec struct {
+	Package    string
 	Config     manifest.Bindings
 	Tags       []string
 	Obfuscated bool
@@ -220,6 +223,9 @@ type FrontendSpec struct {
 	Environment                         map[string]string
 }
 type CompileSpec struct {
+	Package                                      string
+	Console                                      bool
+	UPXLevel                                     int
 	TargetOS, TargetArch, Output                 string
 	Assets                                       string
 	Destination                                  string
@@ -237,11 +243,14 @@ type MergeSpec struct {
 	Inputs []string
 	Output string
 }
+type NamedBinary struct{ Name, Path string }
+
 type ComponentBinary struct {
 	Arch string
 	Path string
 }
 type AssetsSpec struct {
+	MicrophoneUsageDescription      string
 	TargetSDK                       int
 	BackgroundModes                 []string
 	TargetOS, TargetArch, Directory string
@@ -252,6 +261,7 @@ type AssetsSpec struct {
 	Protocols                       []manifest.Protocol
 }
 type PackageSpec struct {
+	Companions                                           []NamedBinary
 	Development                                          bool
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
 	Binaries                                             []ComponentBinary

@@ -15,7 +15,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/charlievieth/fastwalk"
 	gitignore "github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1239,12 +1238,12 @@ func TestObserveDirectoryTreeCallbackContracts(t *testing.T) {
 	want := errors.New("injected failure")
 	ignored := gitignore.NewMatcher([]gitignore.Pattern{gitignore.ParsePattern("ignored/", nil), gitignore.ParsePattern("ignored.txt", nil)})
 
-	_, err := observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(_ *fastwalk.Config, _ string, callback fs.WalkDirFunc) error {
+	_, err := observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
 		return callback(root, cacheDirEntry{name: "project", dir: true}, want)
 	})
 	require.ErrorIs(t, err, want)
 
-	files, err := observeDirectoryTreeWithWalk(root, map[string]bool{"excluded": true, "nested/path": true}, ignored, func(string) bool { return true }, 2, func(_ *fastwalk.Config, _ string, callback fs.WalkDirFunc) error {
+	files, err := observeDirectoryTreeWithWalk(root, map[string]bool{"excluded": true, "nested/path": true}, ignored, func(string) bool { return true }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
 		require.NoError(t, callback(root, cacheDirEntry{name: "project", dir: true}, nil))
 		assert.ErrorIs(t, callback(filepath.Join(root, "ignored"), cacheDirEntry{name: "ignored", dir: true}, nil), fs.SkipDir)
 		require.NoError(t, callback(filepath.Join(root, "ignored.txt"), cacheDirEntry{name: "ignored.txt"}, nil))
@@ -1260,12 +1259,12 @@ func TestObserveDirectoryTreeCallbackContracts(t *testing.T) {
 	assert.Equal(t, "a.txt", files[0].relative)
 	assert.Equal(t, "z.txt", files[1].relative)
 
-	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return true }, 2, func(_ *fastwalk.Config, _ string, callback fs.WalkDirFunc) error {
+	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return true }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
 		return callback(filepath.Join(root, "bad.go"), cacheDirEntry{name: "bad.go", infoErr: want}, nil)
 	})
 	require.ErrorIs(t, err, want)
 
-	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(*fastwalk.Config, string, fs.WalkDirFunc) error {
+	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(string, int, fs.WalkDirFunc) error {
 		return want
 	})
 	require.ErrorIs(t, err, want)

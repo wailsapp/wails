@@ -29,6 +29,15 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `android.target_sdk` | integer | no |  | `1` | android | Android SDK level targeted by the application. |
 | `android.version_code` | integer | no |  | `1` | android | Monotonic Android release number. |
 | `android.version_name` | string | no |  | `"1.0.0"` | android | Human-readable Android release version. |
+| `binaries` | map(object) | no |  | `{}` |  | Additional project executables bundled with the application. |
+| `binaries["binary"].commit_symbol` | string | no |  | `"value"` |  | Qualified Go string variable receiving the application's Git revision through linker flags. |
+| `binaries["binary"].compiler_flags` | list(string) | no |  | `["all=-l"]` |  | Additional Go compiler flags. |
+| `binaries["binary"].environment` | map(string) | no |  | `{RELEASE: "true"}` |  | Environment variables added to this operation. |
+| `binaries["binary"].kind` | string | no |  | `"value"` |  | Executable kind: gui, cli or server; companions default to cli. |
+| `binaries["binary"].ldflags` | list(string) | no |  | `["-X example/build.version=1.0.0"]` |  | Additional Go linker flags. |
+| `binaries["binary"].package` | string | no |  | `"value"` |  | Project-relative directory containing one Go main package. |
+| `binaries["binary"].tags` | list(string) | no |  | `["value"]` |  | Additional Go build tags. |
+| `binaries["binary"].upx_level` | integer | no |  | `1` |  | Optional UPX compression effort, 0 disabled or 1 through 9; skipped on macOS and in development. |
 | `build` | object | no |  | `{}` |  | Native production build settings. |
 | `build.compiler_flags` | list(string) | no | `[]` | `["all=-l"]` |  | Additional Go compiler flags. |
 | `build.environment` | map(string) | no | `{}` | `{RELEASE: "true"}` |  | Environment variables added to this operation. |
@@ -48,6 +57,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `darwin.icon` | string | no |  | `"assets/appicon.png"` | windows,darwin,linux,ios,android | Project-relative user-owned icon file. |
 | `darwin.identifier` | string | no |  | `"com.example.app"` | windows,darwin,linux | Reverse-domain application identifier. |
 | `darwin.info_plist` | string | no |  | `"assets/Info.plist"` | darwin,ios | User-owned Apple Info.plist file. |
+| `darwin.microphone_usage_description` | string | no |  | `"value"` | darwin | macOS microphone permission text; generates the audio-input entitlement unless a user-owned entitlement file is configured. |
 | `darwin.minimum_version` | string | no |  | `"12.0"` | windows,darwin,linux,ios | Minimum supported operating-system version. |
 | `darwin.notarization` | object | no |  | `{}` | darwin | macOS notarization settings. |
 | `darwin.notarization.credential` | string | no |  | `"release-signing"` |  | Named external credential reference; never secret material. |
@@ -141,21 +151,24 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `packages` | map(object) | no |  | `{}` |  | Named package format settings. |
 | `packages["format"].background` | string | no |  | `"assets/dmg-background.png"` | dmg | User-owned DMG background image. |
 | `packages["format"].categories` | list(string) | no |  | `["Development"]` | appimage | Desktop menu categories. |
-| `packages["format"].dependencies` | list(string) | no |  | `["libgtk-4-1"]` | deb,rpm,archlinux | Native package dependencies. |
+| `packages["format"].checksum` | boolean | no |  | `true` | appimage | Publish a SHA-256 checksum alongside the AppImage. |
+| `packages["format"].defines` | map(string) | no |  | `{KEY: value}` | nsis | Literal custom NSIS preprocessor definitions; Wails-owned names are reserved. |
+| `packages["format"].dependencies` | list(string) | no |  | `["libgtk-4-1"]` | deb,rpm,archlinux,void | Native package dependencies. |
 | `packages["format"].desktop_entry` | string | no |  | `"assets/app.desktop"` | appimage | User-owned Linux desktop-entry file. |
 | `packages["format"].file_icon` | string | no |  | `"assets/file.icns"` | dmg | User-owned DMG file icon. |
 | `packages["format"].files` | map(string) | no |  | `{License.pdf: LICENSE.pdf}` | dmg | User-owned files copied into the DMG, keyed by destination name. |
 | `packages["format"].icon` | string | no |  | `"assets/appicon.png"` | appimage | Project-relative user-owned icon file. |
 | `packages["format"].install_scope` | string | no |  | `"user"` | nsis | NSIS installation scope. |
-| `packages["format"].maintainer` | string | no |  | `"Example <release@example.com>"` | deb,rpm,archlinux | Native Linux package maintainer. |
+| `packages["format"].maintainer` | string | no |  | `"Example <release@example.com>"` | deb,rpm,archlinux,void | Native Linux package maintainer. |
 | `packages["format"].manifest` | string | no |  | `"assets/manifest.xml"` | msix | Project-relative user-owned platform or package manifest. |
-| `packages["format"].post_install` | string | no |  | `"packaging/postinstall.sh"` | deb,rpm,archlinux | Project-relative Linux post-install script. |
-| `packages["format"].post_remove` | string | no |  | `"packaging/postremove.sh"` | deb,rpm,archlinux | Project-relative Linux post-remove script. |
-| `packages["format"].pre_install` | string | no |  | `"packaging/preinstall.sh"` | deb,rpm,archlinux | Project-relative Linux pre-install script. |
-| `packages["format"].pre_remove` | string | no |  | `"packaging/preremove.sh"` | deb,rpm,archlinux | Project-relative Linux pre-remove script. |
+| `packages["format"].post_install` | string | no |  | `"packaging/postinstall.sh"` | deb,rpm,archlinux,void | Project-relative Linux post-install script. |
+| `packages["format"].post_remove` | string | no |  | `"packaging/postremove.sh"` | deb,rpm,archlinux,void | Project-relative Linux post-remove script. |
+| `packages["format"].pre_install` | string | no |  | `"packaging/preinstall.sh"` | deb,rpm,archlinux,void | Project-relative Linux pre-install script. |
+| `packages["format"].pre_remove` | string | no |  | `"packaging/preremove.sh"` | deb,rpm,archlinux,void | Project-relative Linux pre-remove script. |
 | `packages["format"].publisher` | string | no |  | `"CN=Example"` | msix | Windows package publisher identity. |
-| `packages["format"].section` | string | no |  | `"utils"` | deb,rpm,archlinux | Linux package repository section. |
+| `packages["format"].section` | string | no |  | `"utils"` | deb,rpm,archlinux,void | Linux package repository section. |
 | `packages["format"].template` | string | no |  | `"packaging/package.tmpl"` | nsis,dmg,deb,rpm,archlinux | Complete user-owned package template replacement. |
+| `packages["format"].update_info` | string | no |  | `"value"` | appimage | AppImage update-information string; requires a matching zsync sidecar from linuxdeploy. |
 | `packages["format"].volume_icon` | string | no |  | `"assets/volume.icns"` | dmg | User-owned DMG volume icon. |
 | `packages["format"].window_height` | integer | no |  | `1` | dmg | DMG Finder window height in pixels. |
 | `packages["format"].window_width` | integer | no |  | `1` | dmg | DMG Finder window width in pixels. |
@@ -169,15 +182,21 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `project.binary_name` | string | no | `$project.name.slug` | `"my-app"` |  | Base name of the native executable. |
 | `project.build_number` | integer | no | `1` | `1` |  | Platform build number. |
 | `project.comments` | string | no |  | `"value"` |  | Additional package metadata comments. |
+| `project.commit_symbol` | string | no |  | `"value"` |  | Qualified Go string variable receiving the application's Git revision through linker flags. |
 | `project.company` | string | no |  | `"value"` |  | Company or organisation name. |
 | `project.copyright` | string | no |  | `"value"` |  | Copyright notice embedded in artifacts. |
 | `project.description` | string | no |  | `"value"` |  | Human-readable description. |
 | `project.icon` | string | no |  | `"assets/appicon.png"` |  | Project-relative user-owned icon file. |
 | `project.identifier` | string | yes |  | `"com.example.app"` |  | Reverse-domain application identifier. |
+| `project.kind` | string | no | `gui` | `"gui"` |  | Executable kind: gui, cli or server; companions default to cli. |
 | `project.name` | string | yes |  | `"value"` |  | Stable project or registration name. |
+| `project.package` | string | no | `.` | `"."` |  | Project-relative directory containing one Go main package. |
 | `project.product_name` | string | yes |  | `"value"` |  | Human-readable product name. |
 | `project.supported_platforms` | list(string) | no |  | `["linux"]` |  | Platforms supported by this project; empty permits all platforms. |
-| `project.version` | string | yes |  | `"value"` |  | Manifest or application version. |
+| `project.upx_level` | integer | no | `0` | `0` |  | Optional UPX compression effort, 0 disabled or 1 through 9; skipped on macOS and in development. |
+| `project.version` | string | no |  | `"value"` |  | Manifest or application version. |
+| `project.version_file` | string | no |  | `"value"` |  | Go source file declaring the application version; paired with version_symbol. |
+| `project.version_symbol` | string | no |  | `"value"` |  | Static Go string declaration used instead of the literal project version. |
 | `protocols` | map(object) | no |  | `{}` |  | Named custom protocol registrations. |
 | `protocols["scheme"].description` | string | no |  | `"value"` |  | Human-readable description. |
 | `protocols["scheme"].platforms` | list(string) | no |  | `["windows", "darwin", "linux"]` |  | Platforms receiving this registration. |

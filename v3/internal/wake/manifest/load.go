@@ -172,7 +172,7 @@ func defaultPlatform(architectures ...string) Platform {
 }
 
 func configFromDocument(root, profile string, doc Document) Config {
-	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Run: doc.Run, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Profiles: doc.Profiles, Origins: defaultOrigins()}
+	config := Config{Binaries: doc.Binaries, Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Run: doc.Run, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Profiles: doc.Profiles, Origins: defaultOrigins()}
 	if profile != "" {
 		config.Selected = doc.Profiles[profile]
 	}
@@ -185,13 +185,16 @@ func validateProject(project Project) error {
 			return fieldValidationError("project.supported_platforms", "unsupported platform %q", platform)
 		}
 	}
-	if project.Name == "" || project.ProductName == "" || project.Identifier == "" || project.Version == "" {
+	if project.Name == "" || project.ProductName == "" || project.Identifier == "" || (project.Version == "" && project.VersionFile == "") {
 		return fieldValidationError("project", "requires name, product_name, identifier, and version")
 	}
 	return nil
 }
 
 func validateConfig(config Config) error {
+	if err := validateExecutables(config); err != nil {
+		return err
+	}
 	if err := validateApplicationArgs("dev.args", config.Dev.Args); err != nil {
 		return err
 	}
@@ -342,7 +345,7 @@ func validateConfig(config Config) error {
 	}
 	for _, formatEntry := range []struct{ platform, format string }{
 		{"windows", "nsis"}, {"windows", "msix"}, {"darwin", "app"}, {"darwin", "dmg"},
-		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"},
+		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"}, {"linux", "void"},
 		{"ios", "app"}, {"ios", "ipa"}, {"android", "apk"}, {"android", "aab"},
 	} {
 		name := formatEntry.platform + "." + formatEntry.format

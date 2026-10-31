@@ -139,12 +139,15 @@ func runManifestDevContext(ctx context.Context, options *DevOptions) error {
 }
 
 func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops manifestDevOps) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	output := ops.output
 	if output == nil {
 		output = dev.NewOutput(os.Stdout, report.Normal)
 	}
 	operations := dev.Operations{
-		Getwd: ops.getwd, Load: ops.load, Target: splitTarget, CheckPort: ops.checkPort,
+		GenerateBindings: manifestDevBindings,
+		Getwd:            ops.getwd, Load: ops.load, Target: splitTarget, CheckPort: ops.checkPort,
 		Plan: func(l *manifest.Loaded, o, a string, args []string) error {
 			return printManifestDevPlan(manifestRunOptions{Verb: "build", Loaded: l, TargetOS: o, TargetArch: a, Development: true, Tags: manifestDevTags(options)}, args)
 		},
@@ -211,13 +214,29 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 	} else if options.Device != "" || options.Emulator != "" || options.Destination != "" {
 		return fmt.Errorf("--device, --emulator and --destination require a mobile --target")
 	}
-	err := dev.Run(ctx, dev.Options{Profile: options.Profile, Target: options.Target, Plan: options.Plan, Secure: options.Secure, VitePort: options.VitePort, Host: options.Host, Output: output, Args: options.applicationArgs}, operations)
+	var controls <-chan string
+	if !options.Plan {
+		controls = manifestDevInput(ctx)
+	}
+	err := dev.Run(ctx, dev.Options{Controls: controls, Profile: options.Profile, Target: options.Target, Plan: options.Plan, Secure: options.Secure, VitePort: options.VitePort, Host: options.Host, Output: output, Args: options.applicationArgs}, operations)
 	if err != nil {
 		output.Failure(0, "session", "failed", err, "")
 		return report.MarkReported(err)
 	}
 	return nil
 }
+func manifestDevBindings(ctx context.Context, loaded *manifest.Loaded) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	config := loaded.Config
+	if config.Frontend.Disabled {
+		return fmt.Errorf("frontend is disabled")
+	}
+	_, err := (&manifestHandler{root: config.Root, config: config}).bindings(pipeline.BindingsSpec{Package: config.Project.Package, Tags: config.Dev.Tags, Config: config.Frontend.Bindings}, filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.Bindings.OutputDirectory)))
+	return err
+}
+
 func (p *manifestProcess) Done() <-chan struct{} { return p.done }
 func (p *manifestProcess) Stop(t time.Duration)  { p.stop(t) }
 func (p *manifestProcess) Err() error {
@@ -262,7 +281,7 @@ func runManifestDevBuild(ctx context.Context, options *DevOptions, loaded *manif
 		"FRONTEND_DEVSERVER_URL=" + frontendURL,
 		wailsVitePort + "=" + strconv.Itoa(port),
 	}
-	return runManifestPipelineResult(manifestRunOptions{Context: ctx, Verb: "build", Loaded: loaded, TargetOS: goos, TargetArch: goarch, Environment: environment, Development: true, Tags: manifestDevTags(options)})
+	return runManifestPipelineResult(manifestRunOptions{Force: dev.IsForcedRebuild(ctx), Context: ctx, Verb: "build", Loaded: loaded, TargetOS: goos, TargetArch: goarch, Environment: environment, Development: true, Tags: manifestDevTags(options)})
 }
 
 func manifestDevTags(options *DevOptions) []string {

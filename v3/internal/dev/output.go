@@ -298,3 +298,9 @@ func processFailure(p Process, component, phase, message string) *Diagnostic {
 	}
 	return diagnostic
 }
+
+func (o *Output) Clear() {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	fmt.Fprint(o.writer, "\x1b[H\x1b[2J")
+}

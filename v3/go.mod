@@ -7,7 +7,6 @@ toolchain go1.26.10
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/atterpac/refresh v1.1.4
-	github.com/charlievieth/fastwalk v1.0.14
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0

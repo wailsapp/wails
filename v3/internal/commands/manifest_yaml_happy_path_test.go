@@ -602,6 +602,21 @@ file_associations:
 	assert.Equal(t, "user-owned taskfile\n", readTestFile(t, filepath.Join(root, "Taskfile.yml")))
 }
 
+func prepareManifestPackageFixture(t *testing.T, config manifest.Config, request pipeline.Request, key pipeline.NodeKey) (*manifestHandler, pipeline.Node) {
+	t.Helper()
+	plan, err := pipeline.PlanBuild(config, request)
+	require.NoError(t, err)
+	node := plan.Nodes[key]
+	spec := node.Spec.(pipeline.PackageSpec)
+	handler := &manifestHandler{root: config.Root, config: config}
+	_, err = handler.Run(t.Context(), plan.Nodes[pipeline.NodeKey("target:"+spec.TargetOS+"/"+spec.TargetArch+":assets")])
+	require.NoError(t, err)
+	path := filepath.Join(config.Root, spec.Binary)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
+	require.NoError(t, os.WriteFile(path, []byte("binary"), 0755))
+	return handler, node
+}
+
 func TestYAMLDarwinAppPackageUsesGeneratedPlatformAssets(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
@@ -625,16 +640,8 @@ darwin:
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(yaml), 0o644))
 	loaded, err := manifest.Load(root, "")
 	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build", TargetOS: "darwin", TargetArch: "amd64"})
-	require.NoError(t, err)
-	handler := &manifestHandler{root: root, config: loaded.Config}
-	assetsNode := plan.Nodes[pipeline.NodeKey("target:darwin/amd64:assets")]
-	_, err = handler.Run(t.Context(), assetsNode)
-	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("assemble:darwin/amd64")]
+	handler, packageNode := prepareManifestPackageFixture(t, loaded.Config, pipeline.Request{Verb: "build", TargetOS: "darwin", TargetArch: "amd64"}, "assemble:darwin/amd64")
 	spec := packageNode.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("binary"), 0o755))
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, spec.Output, "Contents", "MacOS", "macapp"))
@@ -768,17 +775,6 @@ profiles:
 			assert.FileExists(t, generated)
 		}
 	}
-
-	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "makensis"), []byte("#!/bin/sh\nmkdir -p ../../../bin\nprintf installer > ../../../bin/platforms-amd64-installer.exe\n"), 0o755))
-	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
-	windowsPackage := plan.Nodes[pipeline.NodeKey("package:windows/amd64:nsis")]
-	windowsSpec := windowsPackage.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, windowsSpec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, windowsSpec.Binary), []byte("windows binary"), 0o755))
-	_, err = handler.Run(t.Context(), windowsPackage)
-	require.NoError(t, err)
-	assert.FileExists(t, filepath.Join(root, windowsSpec.Output))
 
 	androidAssets := filepath.Join(root, ".wails", "build", "release", "android-arm64", "assets", "android")
 	require.NoError(t, os.WriteFile(filepath.Join(androidAssets, "gradlew"), []byte("#!/bin/sh\nif [ \"$1\" = bundleRelease ]; then mkdir -p app/build/outputs/bundle/release; printf aab > app/build/outputs/bundle/release/app-release.aab; else mkdir -p app/build/outputs/apk/release; printf apk > app/build/outputs/apk/release/app-release.apk; fi\n"), 0o755))
@@ -918,22 +914,11 @@ profiles:
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(yaml), 0o644))
 	loaded, err := manifest.Load(root, "release")
 	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
-	require.NoError(t, err)
-	handler := &manifestHandler{root: root, config: loaded.Config}
-	assetsNode := plan.Nodes[pipeline.NodeKey("target:linux/amd64:assets")]
-	_, err = handler.Run(t.Context(), assetsNode)
-	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("package:linux/amd64:appimage")]
+	handler, packageNode := prepareManifestPackageFixture(t, loaded.Config, pipeline.Request{Verb: "build"}, "package:linux/amd64:appimage")
 	spec := packageNode.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("binary"), 0o755))
 
-	fakeCLI := filepath.Join(t.TempDir(), "wails-fake")
-	require.NoError(t, os.WriteFile(fakeCLI, []byte("#!/bin/sh\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-outputdir\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$output\"\nprintf appimage > \"$output/image-amd64.AppImage\"\n"), 0o755))
-	previous := manifestExecutable
-	manifestExecutable = func() (string, error) { return fakeCLI, nil }
-	t.Cleanup(func() { manifestExecutable = previous })
+	configureNativeAppImageFixture(t, root, &spec)
+	packageNode.Spec = spec
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
@@ -972,19 +957,8 @@ profiles:
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("binary"), 0o755))
-	fakeCLI := filepath.Join(t.TempDir(), "wails-fake")
-	require.NoError(t, os.WriteFile(fakeCLI, []byte(`#!/bin/sh
-output=
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "-outputdir" ]; then output=$2; shift; fi
-  shift
-done
-mkdir -p "$output"
-printf appimage > "$output/default-image-amd64.AppImage"
-`), 0o755))
-	previous := manifestExecutable
-	manifestExecutable = func() (string, error) { return fakeCLI, nil }
-	t.Cleanup(func() { manifestExecutable = previous })
+	configureNativeAppImageFixture(t, root, &spec)
+	packageNode.Spec = spec
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
@@ -1622,8 +1596,8 @@ printf windows > "$output"
 		_, err = handler.Run(t.Context(), compileNode)
 		require.NoError(t, err, arch)
 		assert.FileExists(t, filepath.Join(root, compileNode.Output))
-		assert.FileExists(t, filepath.Join(root, ".wails", "generated", "windows", arch, "wails_windows_"+arch+".syso"))
-		assert.FileExists(t, filepath.Join(root, ".wails", "generated", "windows", arch, "overlay.json"))
+		assert.FileExists(t, filepath.Join(root, ".wails", "generated", "windows", arch, "hello.exe", "wails_windows_"+arch+".syso"))
+		assert.FileExists(t, filepath.Join(root, ".wails", "generated", "windows", arch, "hello.exe", "overlay.json"))
 	}
 }
 
@@ -1689,115 +1663,6 @@ profiles:
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(yaml), 0o644))
 	_, err := manifest.Load(root, "release")
 	require.ErrorContains(t, err, `unsupported target "linux/arm"`)
-}
-
-func TestYAMLMSIXPackagingUsesMakeAppxOnTheWindowsTarget(t *testing.T) {
-	root := t.TempDir()
-	t.Chdir(root)
-	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "AppxManifest.xml.tmpl"), []byte("<Package Identity=\"com.example.hello\" />"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "release.pfx"), []byte("certificate"), 0o644))
-	yaml := yamlBuildFixture + `
-windows:
-  signing:
-    identity: CN=Example Publisher
-    certificate: release.pfx
-packages:
-  msix:
-    manifest: packaging/AppxManifest.xml.tmpl
-file_associations:
-  document:
-    extensions: [docx]
-    description: Example document
-    platforms: [windows]
-protocols:
-  example:
-    description: Example protocol
-    platforms: [windows]
-profiles:
-  release:
-    targets:
-      windows/amd64:
-        formats: [msix]
-`
-	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(yaml), 0o644))
-	loaded, err := manifest.Load(root, "release")
-	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
-	require.NoError(t, err)
-
-	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "where"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "signtool.exe"), []byte("#!/bin/sh\necho unexpected signing during packaging >&2\nexit 97\n"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "MakeAppx.exe"), []byte(`#!/bin/sh
-output=
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "/p" ]; then output=$2; shift; fi
-  shift
-done
-mkdir -p "$(dirname "$output")"
-printf msix > "$output"
-`), 0o755))
-	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
-	previousHost := manifestHostOS
-	manifestHostOS = "windows"
-	t.Cleanup(func() { manifestHostOS = previousHost })
-
-	handler := &manifestHandler{root: root, config: loaded.Config}
-	assetsNode := plan.Nodes[pipeline.NodeKey("target:windows/amd64:assets")]
-	_, err = handler.Run(t.Context(), assetsNode)
-	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("package:windows/amd64:msix")]
-	spec := packageNode.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("windows binary"), 0o755))
-	_, err = handler.Run(t.Context(), packageNode)
-	require.NoError(t, err)
-	assert.FileExists(t, filepath.Join(root, spec.Output))
-	workspace := filepath.Join(root, ".wails", "build", "release", "windows-amd64", "package", "msix")
-	assert.Contains(t, readTestFile(t, filepath.Join(workspace, "config.json")), "docx")
-	assert.Contains(t, readTestFile(t, filepath.Join(workspace, "config.json")), "example")
-	assert.Equal(t, "<Package Identity=\"com.example.hello\" />", readTestFile(t, filepath.Join(workspace, "AppxManifest.xml")))
-}
-
-func TestYAMLNSISPackagingUsesTheARM64InstallerDefinition(t *testing.T) {
-	root := t.TempDir()
-	t.Chdir(root)
-	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "project.nsi.tmpl"), []byte("# custom arm64"), 0o644))
-	yaml := yamlBuildFixture + `
-packages:
-  nsis:
-    template: packaging/project.nsi.tmpl
-profiles:
-  release:
-    targets:
-      windows/arm64:
-        formats: [nsis]
-`
-	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(yaml), 0o644))
-	loaded, err := manifest.Load(root, "release")
-	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
-	require.NoError(t, err)
-	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "makensis"), []byte(`#!/bin/sh
-mkdir -p ../../../bin
-printf installer > ../../../bin/hello-arm64-installer.exe
-`), 0o755))
-	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
-	handler := &manifestHandler{root: root, config: loaded.Config}
-	assetsNode := plan.Nodes[pipeline.NodeKey("target:windows/arm64:assets")]
-	_, err = handler.Run(t.Context(), assetsNode)
-	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("package:windows/arm64:nsis")]
-	spec := packageNode.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("windows binary"), 0o755))
-	_, err = handler.Run(t.Context(), packageNode)
-	require.NoError(t, err)
-	assert.FileExists(t, filepath.Join(root, spec.Output))
-	assert.Equal(t, "# custom arm64", readTestFile(t, filepath.Join(root, ".wails", "build", "release", "windows-arm64", "package", "nsis", "assets", "windows", "nsis", "project.nsi")))
 }
 
 func TestYAMLAndroidSigningProducesTheProductionAABArtifact(t *testing.T) {

@@ -3,7 +3,10 @@
 // target or format cannot be accepted by one layer and rejected by another.
 package buildinfo
 
-import "path/filepath"
+import (
+	"path/filepath"
+	"strings"
+)
 
 type Target struct {
 	OS   string
@@ -45,13 +48,14 @@ const (
 	outputDeb
 	outputRPM
 	outputArchLinux
+	outputVoid
 )
 
 type TargetCapability struct {
 	Target         Target
 	Components     [2]Target
 	ComponentCount uint8
-	Formats        [4]string
+	Formats        [5]string
 	FormatCount    uint8
 	Toolchains     ToolchainMask
 	Runnable       RunnableKind
@@ -108,6 +112,13 @@ func (c FormatCapability) OutputPath(directory, binaryName, version, arch string
 		return filepath.ToSlash(base + "_" + version + "_" + arch + ".deb")
 	case outputRPM:
 		return filepath.ToSlash(base + "-" + version + "." + arch + ".rpm")
+	case outputVoid:
+		if arch == "amd64" {
+			arch = "x86_64"
+		} else if arch == "arm64" {
+			arch = "aarch64"
+		}
+		return filepath.ToSlash(base + "-" + strings.ReplaceAll(version, "-", "~") + "_1." + arch + ".xbps")
 	case outputArchLinux:
 		return filepath.ToSlash(base + "-" + version + "-" + arch + ".pkg.tar.zst")
 	default:
@@ -129,26 +140,27 @@ func (c FormatCapability) RequiredTool(index int) string {
 // Fixed arrays keep registry storage immutable. Lookup and enumeration return
 // values, never registry-owned slices or maps.
 var targetRegistry = [...]TargetCapability{
-	{Target: Target{OS: "windows", Arch: "amd64"}, Formats: [4]string{"nsis", "msix"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary, RunnableSuffix: ".exe"},
-	{Target: Target{OS: "windows", Arch: "arm64"}, Formats: [4]string{"nsis", "msix"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary, RunnableSuffix: ".exe"},
-	{Target: Target{OS: "darwin", Arch: "amd64"}, Formats: [4]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
-	{Target: Target{OS: "darwin", Arch: "arm64"}, Formats: [4]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
-	{Target: Target{OS: "darwin", Arch: "universal"}, Components: [2]Target{{OS: "darwin", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}, ComponentCount: 2, Formats: [4]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
-	{Target: Target{OS: "linux", Arch: "amd64"}, Formats: [4]string{"appimage", "deb", "rpm", "archlinux"}, FormatCount: 4, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary},
-	{Target: Target{OS: "linux", Arch: "arm64"}, Formats: [4]string{"appimage", "deb", "rpm", "archlinux"}, FormatCount: 4, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary},
-	{Target: Target{OS: "ios", Arch: "arm64"}, Formats: [4]string{"ipa"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative, Runnable: RunnableApp, RunnableSuffix: ".app"},
-	{Target: Target{OS: "android", Arch: "amd64"}, Formats: [4]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
-	{Target: Target{OS: "android", Arch: "arm64"}, Formats: [4]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
-	{Target: Target{OS: "android", Arch: "universal"}, Components: [2]Target{{OS: "android", Arch: "amd64"}, {OS: "android", Arch: "arm64"}}, ComponentCount: 2, Formats: [4]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
+	{Target: Target{OS: "windows", Arch: "amd64"}, Formats: [5]string{"nsis", "msix"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary, RunnableSuffix: ".exe"},
+	{Target: Target{OS: "windows", Arch: "arm64"}, Formats: [5]string{"nsis", "msix"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary, RunnableSuffix: ".exe"},
+	{Target: Target{OS: "darwin", Arch: "amd64"}, Formats: [5]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
+	{Target: Target{OS: "darwin", Arch: "arm64"}, Formats: [5]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
+	{Target: Target{OS: "darwin", Arch: "universal"}, Components: [2]Target{{OS: "darwin", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}, ComponentCount: 2, Formats: [5]string{"dmg"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative | ToolchainDocker, Runnable: RunnableApp, RunnableSuffix: ".app"},
+	{Target: Target{OS: "linux", Arch: "amd64"}, Formats: [5]string{"appimage", "deb", "rpm", "archlinux", "void"}, FormatCount: 5, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary},
+	{Target: Target{OS: "linux", Arch: "arm64"}, Formats: [5]string{"appimage", "deb", "rpm", "archlinux", "void"}, FormatCount: 5, Toolchains: ToolchainAuto | ToolchainNative | ToolchainZig | ToolchainDocker, Runnable: RunnableBinary},
+	{Target: Target{OS: "ios", Arch: "arm64"}, Formats: [5]string{"ipa"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative, Runnable: RunnableApp, RunnableSuffix: ".app"},
+	{Target: Target{OS: "android", Arch: "amd64"}, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
+	{Target: Target{OS: "android", Arch: "arm64"}, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
+	{Target: Target{OS: "android", Arch: "universal"}, Components: [2]Target{{OS: "android", Arch: "amd64"}, {OS: "android", Arch: "arm64"}}, ComponentCount: 2, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
 }
 
 var formatRegistry = [...]FormatCapability{
 	{Name: "nsis", Platform: "windows", Production: true, Hosts: HostAny, RequiredTools: [3]string{"makensis"}, ToolCount: 1, style: outputNSIS},
-	{Name: "msix", Platform: "windows", Production: true, Hosts: HostWindows, RequiredTools: [3]string{"MakeAppx.exe"}, ToolCount: 1, suffix: ".msix"},
+	{Name: "msix", Platform: "windows", Production: true, Hosts: HostAny, suffix: ".msix"},
 	{Name: "dmg", Platform: "darwin", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"hdiutil"}, ToolCount: 1, suffix: ".dmg"},
 	{Name: "appimage", Platform: "linux", Production: true, Hosts: HostLinux, style: outputAppImage},
 	{Name: "deb", Platform: "linux", Production: true, Hosts: HostAny, style: outputDeb},
 	{Name: "rpm", Platform: "linux", Production: true, Hosts: HostAny, style: outputRPM},
+	{Name: "void", Platform: "linux", Production: true, Hosts: HostAny, style: outputVoid},
 	{Name: "archlinux", Platform: "linux", Production: true, Hosts: HostAny, style: outputArchLinux},
 	{Name: "ipa", Platform: "ios", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"xcrun", "codesign", "zip"}, ToolCount: 3, RequiredDestination: "device", suffix: ".ipa"},
 	{Name: "aab", Platform: "android", Production: true, Hosts: HostAny, RequiredTools: [3]string{"java"}, ToolCount: 1, suffix: ".aab"},

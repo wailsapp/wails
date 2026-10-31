@@ -20,7 +20,8 @@ type Run struct {
 }
 
 type Document struct {
-	Run Run
+	Binaries []Binary
+	Run      Run
 
 	Project      Project
 	Frontend     Frontend
@@ -36,7 +37,9 @@ type Document struct {
 }
 
 type Config struct {
-	Run Run `json:"run"`
+	PrimaryExecutable *Binary  `json:"-"`
+	Binaries          []Binary `json:"binaries,omitempty"`
+	Run               Run      `json:"run"`
 
 	Root         string             `json:"root"`
 	Profile      string             `json:"profile,omitempty"`
@@ -99,6 +102,13 @@ type Origin struct {
 }
 
 type Project struct {
+	Revision           string   `json:"revision,omitempty"`
+	Package            string   `json:"package,omitempty"`
+	Kind               string   `json:"kind,omitempty"`
+	VersionFile        string   `json:"version_file,omitempty"`
+	VersionSymbol      string   `json:"version_symbol,omitempty"`
+	CommitSymbol       string   `json:"commit_symbol,omitempty"`
+	UPXLevel           int      `json:"upx_level,omitempty"`
 	SupportedPlatforms []string `json:"supported_platforms,omitempty"`
 
 	Name        string `json:"name"`
@@ -112,6 +122,20 @@ type Project struct {
 	Copyright   string `json:"copyright,omitempty"`
 	Comments    string `json:"comments,omitempty"`
 	Icon        string `json:"icon,omitempty"`
+}
+
+// Binary declares an additional executable shipped with the primary application.
+// Its package is local to the project; arguments are passed directly to Go.
+type Binary struct {
+	Name          string            `manifest:",label" schema_label:"binary" json:"name"`
+	Package       string            `manifest:"package,optional" path:"true" json:"package"`
+	Kind          string            `manifest:"kind,optional" json:"kind,omitempty"`
+	Tags          []string          `manifest:"tags,optional" json:"tags,omitempty"`
+	LinkerFlags   []string          `manifest:"ldflags,optional" json:"ldflags,omitempty"`
+	CompilerFlags []string          `manifest:"compiler_flags,optional" json:"compiler_flags,omitempty"`
+	Environment   map[string]string `manifest:"environment,optional" json:"environment,omitempty"`
+	CommitSymbol  string            `manifest:"commit_symbol,optional" json:"commit_symbol,omitempty"`
+	UPXLevel      int               `manifest:"upx_level,optional" json:"upx_level,omitempty"`
 }
 
 type Frontend struct {
@@ -203,30 +227,31 @@ type Targets struct {
 }
 
 type Platform struct {
-	ProductName      string   `json:"product_name,omitempty"`
-	Identifier       string   `json:"identifier,omitempty"`
-	MinimumVersion   string   `json:"minimum_version,omitempty"`
-	BuildNumber      int      `json:"build_number,omitempty"`
-	Capabilities     []string `json:"capabilities,omitempty"`
-	Icon             string   `json:"icon,omitempty"`
-	Manifest         string   `json:"manifest,omitempty"`
-	AssetsCar        string   `json:"assets_car,omitempty"`
-	InfoPlist        string   `json:"info_plist,omitempty"`
-	Publisher        string   `json:"publisher,omitempty"`
-	DesktopEntry     string   `json:"desktop_entry,omitempty"`
-	CompanyName      string   `json:"company_name,omitempty"`
-	Comments         string   `json:"comments,omitempty"`
-	CFBundleIconName string   `json:"cf_bundle_icon_name,omitempty"`
-	BackgroundModes  []string `json:"background_modes,omitempty"`
-	VersionName      string   `json:"version_name,omitempty"`
-	VersionCode      int      `json:"version_code,omitempty"`
-	MinimumSDK       int      `json:"minimum_sdk,omitempty"`
-	TargetSDK        int      `json:"target_sdk,omitempty"`
-	AMD64            Target   `json:"amd64,omitempty"`
-	ARM64            Target   `json:"arm64,omitempty"`
-	ARM              Target   `json:"arm,omitempty"`
-	X86              Target   `json:"386,omitempty"`
-	Universal        Target   `json:"universal,omitempty"`
+	MicrophoneUsageDescription string   `json:"microphone_usage_description,omitempty"`
+	ProductName                string   `json:"product_name,omitempty"`
+	Identifier                 string   `json:"identifier,omitempty"`
+	MinimumVersion             string   `json:"minimum_version,omitempty"`
+	BuildNumber                int      `json:"build_number,omitempty"`
+	Capabilities               []string `json:"capabilities,omitempty"`
+	Icon                       string   `json:"icon,omitempty"`
+	Manifest                   string   `json:"manifest,omitempty"`
+	AssetsCar                  string   `json:"assets_car,omitempty"`
+	InfoPlist                  string   `json:"info_plist,omitempty"`
+	Publisher                  string   `json:"publisher,omitempty"`
+	DesktopEntry               string   `json:"desktop_entry,omitempty"`
+	CompanyName                string   `json:"company_name,omitempty"`
+	Comments                   string   `json:"comments,omitempty"`
+	CFBundleIconName           string   `json:"cf_bundle_icon_name,omitempty"`
+	BackgroundModes            []string `json:"background_modes,omitempty"`
+	VersionName                string   `json:"version_name,omitempty"`
+	VersionCode                int      `json:"version_code,omitempty"`
+	MinimumSDK                 int      `json:"minimum_sdk,omitempty"`
+	TargetSDK                  int      `json:"target_sdk,omitempty"`
+	AMD64                      Target   `json:"amd64,omitempty"`
+	ARM64                      Target   `json:"arm64,omitempty"`
+	ARM                        Target   `json:"arm,omitempty"`
+	X86                        Target   `json:"386,omitempty"`
+	Universal                  Target   `json:"universal,omitempty"`
 }
 
 type Target struct {
@@ -263,6 +288,7 @@ type PackagePlatform struct {
 	AppImage  AppImagePackage `json:"appimage,omitempty"`
 	Deb       LinuxPackage    `json:"deb,omitempty"`
 	RPM       LinuxPackage    `json:"rpm,omitempty"`
+	Void      LinuxPackage    `json:"void,omitempty"`
 	ArchLinux LinuxPackage    `json:"archlinux,omitempty"`
 	IPA       RunnablePackage `json:"ipa,omitempty"`
 	APK       RunnablePackage `json:"apk,omitempty"`
@@ -272,8 +298,9 @@ type PackagePlatform struct {
 type RunnablePackage struct{}
 
 type NSISPackage struct {
-	Template     string `json:"template,omitempty"`
-	InstallScope string `json:"install_scope,omitempty"`
+	Defines      map[string]string `json:"defines,omitempty"`
+	Template     string            `json:"template,omitempty"`
+	InstallScope string            `json:"install_scope,omitempty"`
 }
 
 type MSIXPackage struct {
@@ -292,6 +319,8 @@ type DMGPackage struct {
 }
 
 type AppImagePackage struct {
+	UpdateInfo   string   `json:"update_info,omitempty"`
+	Checksum     bool     `json:"checksum,omitempty"`
 	Icon         string   `json:"icon,omitempty"`
 	DesktopEntry string   `json:"desktop_entry,omitempty"`
 	Categories   []string `json:"categories,omitempty"`
@@ -309,6 +338,9 @@ type LinuxPackage struct {
 }
 
 type PackageFormat struct {
+	Defines      map[string]string `manifest:"defines,optional" formats:"nsis" json:"defines,omitempty"`
+	UpdateInfo   string            `manifest:"update_info,optional" formats:"appimage" json:"update_info,omitempty"`
+	Checksum     bool              `manifest:"checksum,optional" formats:"appimage" json:"checksum,omitempty"`
 	Format       string            `manifest:",label" schema_label:"format" json:"format,omitempty"`
 	Template     string            `manifest:"template,optional" formats:"nsis,dmg,deb,rpm,archlinux" path:"true" json:"template,omitempty"`
 	InstallScope string            `manifest:"install_scope,optional" formats:"nsis" json:"install_scope,omitempty"`
@@ -323,13 +355,13 @@ type PackageFormat struct {
 	Icon         string            `manifest:"icon,optional" formats:"appimage" path:"true" json:"icon,omitempty"`
 	DesktopEntry string            `manifest:"desktop_entry,optional" formats:"appimage" path:"true" json:"desktop_entry,omitempty"`
 	Categories   []string          `manifest:"categories,optional" formats:"appimage" json:"categories,omitempty"`
-	Maintainer   string            `manifest:"maintainer,optional" formats:"deb,rpm,archlinux" json:"maintainer,omitempty"`
-	Section      string            `manifest:"section,optional" formats:"deb,rpm,archlinux" json:"section,omitempty"`
-	Dependencies []string          `manifest:"dependencies,optional" formats:"deb,rpm,archlinux" json:"dependencies,omitempty"`
-	PreInstall   string            `manifest:"pre_install,optional" formats:"deb,rpm,archlinux" path:"true" json:"pre_install,omitempty"`
-	PostInstall  string            `manifest:"post_install,optional" formats:"deb,rpm,archlinux" path:"true" json:"post_install,omitempty"`
-	PreRemove    string            `manifest:"pre_remove,optional" formats:"deb,rpm,archlinux" path:"true" json:"pre_remove,omitempty"`
-	PostRemove   string            `manifest:"post_remove,optional" formats:"deb,rpm,archlinux" path:"true" json:"post_remove,omitempty"`
+	Maintainer   string            `manifest:"maintainer,optional" formats:"deb,rpm,archlinux,void" json:"maintainer,omitempty"`
+	Section      string            `manifest:"section,optional" formats:"deb,rpm,archlinux,void" json:"section,omitempty"`
+	Dependencies []string          `manifest:"dependencies,optional" formats:"deb,rpm,archlinux,void" json:"dependencies,omitempty"`
+	PreInstall   string            `manifest:"pre_install,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"pre_install,omitempty"`
+	PostInstall  string            `manifest:"post_install,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"post_install,omitempty"`
+	PreRemove    string            `manifest:"pre_remove,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"pre_remove,omitempty"`
+	PostRemove   string            `manifest:"post_remove,optional" formats:"deb,rpm,archlinux,void" path:"true" json:"post_remove,omitempty"`
 }
 
 type Signing struct {

@@ -79,7 +79,11 @@ func TestManifestRegressionDevPreservesProductionBundle(t *testing.T) {
 	binary := filepath.Join(root, spec.Binary)
 	require.NoError(t, os.MkdirAll(filepath.Dir(binary), 0755))
 	require.NoError(t, os.WriteFile(binary, []byte("development executable"), 0755))
-	_, err = (&manifestHandler{root: root, config: loaded.Config}).packageApp(spec)
+
+	assets := filepath.Join(root, spec.Assets, "darwin")
+	require.NoError(t, os.MkdirAll(assets, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(assets, "Info.plist"), []byte("development metadata"), 0644))
+	_, err = (&manifestHandler{root: root, config: loaded.Config}).packageApp(t.Context(), spec)
 	require.NoError(t, err)
 	_, err = os.Stat(sentinel)
 	assert.NoError(t, err, "development assembly must preserve production bundle")

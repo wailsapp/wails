@@ -332,7 +332,7 @@ func TestAnonymousGarbleArgumentsAreAppliedOnceAndAffectActionIdentity(t *testin
 	assert.NotEqual(t, baseKey, overriddenKey)
 }
 
-func TestBindingAndCompileSnapshotsShareTreeSelectors(t *testing.T) {
+func TestBindingAndCompileSnapshotsShareLocalModuleSelectors(t *testing.T) {
 	config := performanceConfig(t)
 	local := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(local, "go.mod"), []byte("module example.com/local\n"), 0o644))
@@ -346,7 +346,7 @@ func TestBindingAndCompileSnapshotsShareTreeSelectors(t *testing.T) {
 		compileByRoot[input.Root] = input
 	}
 	for _, input := range binding.Inputs {
-		if !input.SemanticGo {
+		if !input.SemanticGo || input.Label == "go-binding-api" {
 			continue
 		}
 		matching, ok := compileByRoot[input.Root]
@@ -691,7 +691,7 @@ func TestSigningInputsAreRewrittenToFrozenStagedCopies(t *testing.T) {
 		Entitlements:        "user-assets/release.entitlements",
 		ProvisioningProfile: "user-assets/distribution.mobileprovision",
 	}}
-	resolved := signingPlatformForPlan(signing, "darwin", ".wails/generated/darwin/assets")
+	resolved := signingPlatformForPlan(manifest.Config{Signing: signing}, "darwin", ".wails/generated/darwin/assets")
 	assert.Equal(t, ".wails/generated/darwin/assets/signing/entitlements.entitlements", resolved.Entitlements)
 	assert.Equal(t, ".wails/generated/darwin/assets/signing/provisioning-profile.mobileprovision", resolved.ProvisioningProfile)
 	assert.Equal(t, "user-assets/release.entitlements", signing.Darwin.Entitlements, "planning must not mutate user configuration")

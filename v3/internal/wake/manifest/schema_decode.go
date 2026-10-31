@@ -62,6 +62,7 @@ const (
 	applicabilityDeb
 	applicabilityRPM
 	applicabilityArchLinux
+	applicabilityVoid
 )
 
 var schemaNodesByType map[reflect.Type]*schemaNode
@@ -350,6 +351,8 @@ func yamlSchemaBlock(schema *schemaNode, yamlName string) (string, schemaBlock, 
 
 func yamlRepeatedName(name string) string {
 	switch name {
+	case "binary":
+		return "binaries"
 	case "target":
 		return "targets"
 	case "package":
@@ -511,6 +514,8 @@ func applicabilityBit(name string) applicabilityMask {
 		return applicabilityDeb
 	case "rpm":
 		return applicabilityRPM
+	case "void":
+		return applicabilityVoid
 	case "archlinux":
 		return applicabilityArchLinux
 	default:

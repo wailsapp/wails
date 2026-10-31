@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/wake"
+	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
@@ -31,7 +31,7 @@ func TestRunManifestPipelineMarksRenderedFailure(t *testing.T) {
 
 	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
 	require.Error(t, err)
-	assert.True(t, wake.IsReported(err), "execution failure was rendered by Pulse and must not be printed again by the CLI")
+	assert.True(t, report.IsReported(err), "execution failure was rendered by Pulse and must not be printed again by the CLI")
 }
 
 func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
@@ -39,7 +39,7 @@ func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
 
 	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
 	require.Error(t, err)
-	assert.False(t, wake.IsReported(err), "errors raised before Pulse starts still need the CLI error printer")
+	assert.False(t, report.IsReported(err), "errors raised before Pulse starts still need the CLI error printer")
 }
 
 func TestRebaseGeneratedOverlayRejectsReplacementOutsideStaging(t *testing.T) {
@@ -131,18 +131,18 @@ func TestResolvedPlanCompilersSkipsMalformedCompileNodesAndSortsTargets(t *testi
 		},
 		"windows": {
 			Kind: pipeline.CompileApplication,
-			Spec: pipeline.CompileSpec{TargetOS: "windows", TargetArch: "amd64", Tags: []string{"release"}},
+			Spec: pipeline.CompileSpec{Output: ".wails/bin/app.exe", TargetOS: "windows", TargetArch: "amd64", Tags: []string{"release"}},
 		},
 		"linux": {
 			Kind: pipeline.CompileApplication,
-			Spec: pipeline.CompileSpec{TargetOS: "linux", TargetArch: "arm64", Obfuscated: true, GarbleArgs: []string{"-tiny"}},
+			Spec: pipeline.CompileSpec{Output: ".wails/bin/app", TargetOS: "linux", TargetArch: "arm64", Obfuscated: true, GarbleArgs: []string{"-tiny"}},
 		},
 		"frontend": {Kind: pipeline.BuildFrontend},
 	}}
 
 	assert.Equal(t, []manifestPlanCompiler{
-		{Target: "linux/arm64", Obfuscated: true, GarbleArgs: []string{"-tiny"}},
-		{Target: "windows/amd64", Tags: []string{"release"}},
+		{Binary: "app", Package: ".", Target: "linux/arm64", Obfuscated: true, GarbleArgs: []string{"-tiny"}},
+		{Binary: "app.exe", Package: ".", Target: "windows/amd64", Tags: []string{"release"}},
 	}, resolvedPlanCompilers(plan))
 }
 

@@ -56,21 +56,8 @@ func encodeConfigYAML(config Config, header string) ([]byte, error) {
 	root.HeadComment = header
 	yamlSet(root, "version", yamlInt(3))
 
-	project := yamlMap()
-	yamlSetOptionalStrings(project, "supported_platforms", config.Project.SupportedPlatforms, false)
-	yamlSetString(project, "name", config.Project.Name)
-	yamlSetString(project, "product_name", config.Project.ProductName)
-	yamlSetString(project, "identifier", config.Project.Identifier)
-	yamlSetString(project, "version", config.Project.Version)
-	yamlSetString(project, "binary_name", config.Project.BinaryName)
-	yamlSet(project, "build_number", yamlInt(config.Project.BuildNumber))
-	yamlSetOptionalString(project, "company", config.Project.CompanyName)
-	yamlSetOptionalString(project, "description", config.Project.Description)
-	yamlSetOptionalString(project, "copyright", config.Project.Copyright)
-	yamlSetOptionalString(project, "comments", config.Project.Comments)
-	yamlSetOptionalString(project, "icon", config.Project.Icon)
-	yamlSet(root, "project", project)
-
+	yamlSet(root, "project", encodeYAMLProject(config.Project))
+	encodeYAMLBinaries(root, config.Binaries)
 	frontend := yamlMap()
 	yamlSet(frontend, "disabled", yamlBool(config.Frontend.Disabled))
 	yamlSetString(frontend, "directory", config.Frontend.Directory)
@@ -146,7 +133,7 @@ func encodeConfigYAML(config Config, header string) ([]byte, error) {
 	packages := yamlMap()
 	for _, item := range []struct{ platform, format string }{
 		{"windows", "nsis"}, {"windows", "msix"}, {"darwin", "dmg"},
-		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"},
+		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"}, {"linux", "void"},
 	} {
 		value, err := ResolvePackageFormat(config.Package, item.platform, item.format)
 		if err != nil {
@@ -242,6 +229,52 @@ func encodeConfigYAML(config Config, header string) ([]byte, error) {
 	return marshalYAML(root)
 }
 
+func encodeYAMLProject(project Project) *yaml.Node {
+	result := yamlMap()
+	yamlSetOptionalStrings(result, "supported_platforms", project.SupportedPlatforms, false)
+	yamlSetString(result, "name", project.Name)
+	yamlSetString(result, "product_name", project.ProductName)
+	yamlSetString(result, "identifier", project.Identifier)
+	yamlSetOptionalString(result, "version", project.Version)
+	yamlSetString(result, "binary_name", project.BinaryName)
+	yamlSetOptionalString(result, "package", project.Package)
+	yamlSetOptionalString(result, "kind", project.Kind)
+	yamlSetOptionalString(result, "version_file", project.VersionFile)
+	yamlSetOptionalString(result, "version_symbol", project.VersionSymbol)
+	yamlSetOptionalString(result, "commit_symbol", project.CommitSymbol)
+	if project.UPXLevel != 0 {
+		yamlSet(result, "upx_level", yamlInt(project.UPXLevel))
+	}
+	yamlSet(result, "build_number", yamlInt(project.BuildNumber))
+	yamlSetOptionalString(result, "company", project.CompanyName)
+	yamlSetOptionalString(result, "description", project.Description)
+	yamlSetOptionalString(result, "copyright", project.Copyright)
+	yamlSetOptionalString(result, "comments", project.Comments)
+	yamlSetOptionalString(result, "icon", project.Icon)
+	return result
+}
+
+func encodeYAMLBinaries(root *yaml.Node, binaries []Binary) {
+	if len(binaries) > 0 {
+		result := yamlMap()
+		for _, binary := range binaries {
+			body := yamlMap()
+			yamlSetString(body, "package", binary.Package)
+			yamlSetOptionalString(body, "kind", binary.Kind)
+			yamlSetOptionalStrings(body, "tags", binary.Tags, false)
+			yamlSetOptionalStrings(body, "ldflags", binary.LinkerFlags, false)
+			yamlSetOptionalStrings(body, "compiler_flags", binary.CompilerFlags, false)
+			yamlSetOptionalStringMap(body, "environment", binary.Environment)
+			yamlSetOptionalString(body, "commit_symbol", binary.CommitSymbol)
+			if binary.UPXLevel != 0 {
+				yamlSet(body, "upx_level", yamlInt(binary.UPXLevel))
+			}
+			yamlSet(result, binary.Name, body)
+		}
+		yamlSet(root, "binaries", result)
+	}
+}
+
 func encodeYAMLPlatform(name string, platform Platform, signing SigningPlatform) *yaml.Node {
 	if !platformConfigured(platform) && signing == (SigningPlatform{}) {
 		return nil
@@ -259,7 +292,7 @@ func encodeYAMLPlatform(name string, platform Platform, signing SigningPlatform)
 		yamlSetOptionalString(result, "identifier", platform.Identifier)
 	}
 	for _, entry := range []struct{ key, value string }{
-		{"minimum_version", platform.MinimumVersion}, {"icon", platform.Icon}, {"manifest", platform.Manifest},
+		{"microphone_usage_description", platform.MicrophoneUsageDescription}, {"minimum_version", platform.MinimumVersion}, {"icon", platform.Icon}, {"manifest", platform.Manifest},
 		{"assets_car", platform.AssetsCar}, {"info_plist", platform.InfoPlist}, {"publisher", platform.Publisher},
 		{"desktop_entry", platform.DesktopEntry}, {"company", platform.CompanyName}, {"comments", platform.Comments},
 		{"cf_bundle_icon_name", platform.CFBundleIconName}, {"version_name", platform.VersionName},
@@ -337,6 +370,16 @@ func encodeYAMLPackage(format string, value PackageFormat) *yaml.Node {
 		return nil
 	}
 	result := yamlMap()
+	if len(value.Defines) > 0 {
+		yamlSetOptionalStringMap(result, "defines", value.Defines)
+	}
+	if value.UpdateInfo != "" {
+		yamlSetString(result, "update_info", value.UpdateInfo)
+	}
+	if value.Checksum {
+		yamlSet(result, "checksum", yamlBool(true))
+	}
+
 	for _, entry := range []struct{ key, value string }{
 		{"template", value.Template}, {"install_scope", value.InstallScope}, {"publisher", value.Publisher}, {"manifest", value.Manifest},
 		{"background", value.Background}, {"volume_icon", value.VolumeIcon}, {"file_icon", value.FileIcon}, {"icon", value.Icon},

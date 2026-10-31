@@ -164,6 +164,7 @@ func TestDisabledFrontendStillTracksGoSourcesInFrontendDirectory(t *testing.T) {
 	config := testConfig(t)
 	config.Frontend.Disabled = true
 	require.NoError(t, os.WriteFile(filepath.Join(config.Root, "go.mod"), []byte("module example.com/disabled\n"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(config.Root, "main.go"), []byte("package main\nimport _ \"example.com/disabled/frontend\"\nfunc main() {}\n"), 0600))
 	directory := filepath.Join(config.Root, config.Frontend.Directory)
 	require.NoError(t, os.MkdirAll(directory, 0700))
 	source := filepath.Join(directory, "helper.go")

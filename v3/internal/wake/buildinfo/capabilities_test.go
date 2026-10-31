@@ -101,7 +101,7 @@ func TestRegistryOwnsOutputHostAndToolchainRules(t *testing.T) {
 
 	msix, _ := LookupFormat("msix")
 	assert.True(t, msix.SupportsHost("windows"))
-	assert.False(t, msix.SupportsHost("linux"))
+	assert.True(t, msix.SupportsHost("linux"))
 	deb, _ := LookupFormat("deb")
 	assert.True(t, deb.SupportsHost("windows"))
 	assert.True(t, deb.SupportsHost("darwin"))

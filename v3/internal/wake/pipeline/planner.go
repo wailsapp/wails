@@ -15,6 +15,10 @@ import (
 )
 
 func PlanBuild(config manifest.Config, request Request) (Plan, error) {
+	config, err := resolveBuildConfig(config, request)
+	if err != nil {
+		return Plan{}, err
+	}
 	if request.Verb == "" {
 		request.Verb = "build"
 	}
@@ -155,6 +159,13 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		err := fmt.Errorf("toolchain %q is not supported for target %s", targetSettings.Toolchain, target)
 		return Plan{}, manifest.AnnotateValidationError(err, config.Origins, `targets[`+strconv.Quote(target)+`].toolchain`)
 	}
+	if config.Project.Kind == "cli" || config.Project.Kind == "server" {
+		capability.Runnable = runnableBinary
+		capability.RunnableSuffix = ""
+		if request.TargetOS == "windows" {
+			capability.RunnableSuffix = ".exe"
+		}
+	}
 	platformSettings := platformConfig(config.Targets, request.TargetOS)
 	associations := associationsForPlatform(config.Associations, request.TargetOS)
 	protocols := protocolsForPlatform(config.Protocols, request.TargetOS)
@@ -233,16 +244,10 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			cachePolicy = CacheNever
 		}
 		return add(Node{Key: NodeKey("publish:" + strings.TrimPrefix(string(source), "package:")), Kind: PublishArtifact, Label: "Publish " + filepath.Base(destination), Scope: node.Scope, Dependencies: []NodeKey{source},
-			Spec: PublishSpec{Source: node.Output, Destination: destination}, Output: destination,
+			Spec: PublishSpec{Source: publishSource(node), Destination: destination}, Output: destination,
 			Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 128}, EstimateMS: 25, Artifact: node.Artifact})
 	}
 
-	var install NodeKey
-	if !config.Frontend.Disabled {
-		install = add(Node{Key: "frontend:install", Kind: InstallFrontendDependencies, Label: "Install frontend dependencies", Scope: ProjectScope, Dependencies: projectHookDeps,
-			Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand, Arguments: append([]string(nil), config.Frontend.Install...), Environment: cloneStringMap(config.Frontend.Environment)},
-			Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1, MemoryMB: 512}, EstimateMS: 1800})
-	}
 	var tags []string
 	if request.Development {
 		tags = appendUnique(tags, config.Dev.Tags...)
@@ -282,39 +287,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	for index := range localInputs {
 		localRoots[index] = localInputs[index].Root
 	}
-	var frontend NodeKey
-	if !config.Frontend.Disabled {
-		bindingsOut := filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.Bindings.OutputDirectory))
-		bindingInputs := []InputSpec{
-			{Label: "go-binding-api", Root: ".", SemanticGo: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
-			{Label: "go-module", Files: goMetadataFiles(config.Root)},
-		}
-		for _, input := range localInputs {
-			bindingInputs = append(bindingInputs, InputSpec{Label: "go-binding-local-api", Root: input.Root, SemanticGo: true, IncludeNames: append([]string(nil), input.IncludeNames...), IncludeExtensions: append([]string(nil), input.IncludeExtensions...), ExcludeDirs: append([]string(nil), input.ExcludeDirs...), ExcludeSuffixes: append([]string(nil), input.ExcludeSuffixes...), UseGitIgnore: input.UseGitIgnore})
-		}
-		bindings := add(Node{Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: projectHookDeps,
-			Spec:   BindingsSpec{Config: config.Frontend.Bindings, Tags: tags, Obfuscated: obfuscated},
-			Inputs: bindingInputs,
-			Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
-		frontendDeps := []NodeKey{install, bindings}
-		frontendOut := frontendOutputPath(config.Frontend.Directory, config.Frontend.OutputDirectory)
-		frontendExclude := filepath.ToSlash(filepath.Clean(config.Frontend.OutputDirectory))
-		if frontendExclude == config.Frontend.Directory || strings.HasPrefix(frontendExclude, config.Frontend.Directory+"/") {
-			frontendExclude = strings.TrimPrefix(strings.TrimPrefix(frontendExclude, config.Frontend.Directory), "/")
-		}
-		frontendInputs := []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, frontendExclude}}}
-		if request.Development {
-			// The persistent frontend Dev process owns source changes through HMR.
-			// The finite frontend Node only bootstraps an embeddable output for Go;
-			// keeping source out of its Action Key prevents a later backend edit from
-			// rebuilding the frontend merely because HMR already handled a UI edit.
-			frontendInputs = []InputSpec{{Label: "frontend-dev-bootstrap", Files: frontendInstallFiles(config)}}
-		}
-		frontend = add(Node{Key: "frontend:build", Kind: BuildFrontend, Label: "Build frontend", Scope: ProjectScope, Dependencies: frontendDeps,
-			Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Arguments: append([]string(nil), config.Frontend.Build...), Output: config.Frontend.OutputDirectory, Production: !request.Development, Environment: cloneStringMap(config.Frontend.Environment)},
-			Inputs: frontendInputs,
-			Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2, MemoryMB: 1024}, EstimateMS: 900})
-	}
+	frontend := frontendStages{config: config, request: request, tags: tags, obfuscated: obfuscated, localInputs: localInputs, dependencies: projectHookDeps, add: add}.plan()
 	var assets NodeKey
 	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" {
 		assets = add(platformAssetsNode(config, request, target, assetsOut, projectHookDeps))
@@ -349,6 +322,9 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if targetSettings.GarbleArgs != nil {
 		garbleArgs = append([]string(nil), targetSettings.GarbleArgs...)
 	}
+	if config.Project.CommitSymbol != "" {
+		linkerFlags = append(linkerFlags, "-X", config.Project.CommitSymbol+"="+config.Project.Revision)
+	}
 	garbleArgs = append(garbleArgs, request.GarbleArgs...)
 	environment := cloneStringMap(config.Build.Environment)
 	if targetSettings.Environment != nil {
@@ -380,7 +356,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			}
 		}
 		compileKey := add(Node{Key: NodeKey("target:" + compileTargetName + ":compile"), Kind: CompileApplication, Label: "Compile " + compileTargetName, Scope: TargetScope, Dependencies: compileDeps,
-			Spec:   CompileSpec{TargetOS: compileTarget.OS, TargetArch: compileTarget.Arch, Output: compileOutput, Assets: assetsOut, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Tags: append([]string(nil), tags...), LinkerFlags: append([]string(nil), linkerFlags...), CompilerFlags: append([]string(nil), compilerFlags...), GarbleArgs: append([]string(nil), garbleArgs...), LocalRoots: append([]string(nil), localRoots...), Production: !request.Development, Obfuscated: obfuscated, TrimPath: trimPath, Strip: strip, VCSInfo: config.Build.VCSInfo && !request.Development, Toolchain: targetSettings.Toolchain, Environment: cloneStringMap(environment)},
+			Spec:   CompileSpec{Package: config.Project.Package, Console: config.Project.Kind == "cli" || config.Project.Kind == "server", UPXLevel: executableUPXLevel(config.Project.UPXLevel, request.Development, request.TargetOS), TargetOS: compileTarget.OS, TargetArch: compileTarget.Arch, Output: compileOutput, Assets: assetsOut, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Tags: append([]string(nil), tags...), LinkerFlags: append([]string(nil), linkerFlags...), CompilerFlags: append([]string(nil), compilerFlags...), GarbleArgs: append([]string(nil), garbleArgs...), LocalRoots: append([]string(nil), localRoots...), Production: !request.Development, Obfuscated: obfuscated, TrimPath: trimPath, Strip: strip, VCSInfo: config.Build.VCSInfo && !request.Development, Toolchain: targetSettings.Toolchain, Environment: cloneStringMap(environment)},
 			Inputs: compileInputs,
 			Output: compileOutput, Cache: CacheArtifact, Claims: ResourceClaims{CPU: max(1, runtime.GOMAXPROCS(0)/2), MemoryMB: 2048}, EstimateMS: 1500, Artifact: ArtifactIdentity{Kind: ArtifactBinary, Target: Target{OS: compileTarget.OS, Arch: compileTarget.Arch}}})
 		compileRoots = append(compileRoots, compileKey)
@@ -398,6 +374,13 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		buildDependencies = []NodeKey{merge}
 	}
 	lastBuild := buildDependencies[len(buildDependencies)-1]
+	companionRoots, companions, err := planCompanions(&plan, config, request, compileTargets, generatedRoot)
+	if err != nil {
+		return Plan{}, err
+	}
+	buildDependencies = appendUniqueKeys(buildDependencies, companionRoots...)
+	applyPrimaryExecutable(&plan, config, compileTargets)
+
 	buildScopeOutput := plan.Nodes[lastBuild].Output
 	if len(buildDependencies) > 1 {
 		buildScopeOutput = packageScopeOutput(nodeOutputs(plan, buildDependencies))
@@ -425,7 +408,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			cachePolicy = CacheNever
 		}
 		lastRunnable = add(Node{Key: NodeKey("assemble:" + target), Kind: AssembleApplication, Label: "Assemble " + target + " application", Scope: TargetScope, Dependencies: assemblyDependencies,
-			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: "app", Binary: binaryOut, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: packageConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: "app", Binary: binaryOut, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: packageConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
 			Inputs: []InputSpec{{Label: "compiled-application", Files: []string{binaryOut, assetsOut}}}, Output: output, Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, "app")}, EstimateMS: 500, Artifact: ArtifactIdentity{Kind: ArtifactBundle, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: "app"}})
 	}
 
@@ -452,7 +435,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 				plan.Roots = []NodeKey{afterBuild}
 				plan.Artifacts = []NodeKey{lastRunnable}
 			}
-			return plan, plan.Validate(config.Root)
+			return finalizeTargetPlan(plan, config, request, multiTarget)
 		}
 		input := plan.Nodes[lastRunnable].Output
 		identity := plan.Nodes[lastRunnable].Artifact
@@ -462,7 +445,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if beforeSign != "" {
 			beforeSignDeps = []NodeKey{lastRunnable, beforeSign}
 		}
-		signed := add(Node{Key: NodeKey(string(lastRunnable) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: TargetScope, Dependencies: appendUniqueKeys(nil, beforeSignDeps...), Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: plan.Nodes[lastRunnable].Artifact.DisplayKind(), Input: input, Config: signingPlatformForPlan(config.Signing, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
+		signed := add(Node{Key: NodeKey(string(lastRunnable) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: TargetScope, Dependencies: appendUniqueKeys(nil, beforeSignDeps...), Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: plan.Nodes[lastRunnable].Artifact.DisplayKind(), Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
 		afterSign := hookNode(manifest.AfterSign, TargetScope, plan.Nodes[signed].Output, []NodeKey{signed})
 		if !request.Development {
 			destination := finalBinaryOut
@@ -484,7 +467,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			plan.Roots = []NodeKey{afterSign}
 			plan.Artifacts = []NodeKey{signed}
 		}
-		return plan, plan.Validate(config.Root)
+		return finalizeTargetPlan(plan, config, request, multiTarget)
 	}
 	packageDependencies := buildDependencies
 	if capability.Runnable == runnableApp {
@@ -549,9 +532,14 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if format == "dmg" || format == "ipa" {
 			packageBinary = plan.Nodes[lastRunnable].Output
 		}
+		nodeOutput := output
+		if format == "appimage" && (pkgConfig.UpdateInfo != "" || pkgConfig.Checksum) {
+			nodeOutput = filepath.ToSlash(filepath.Join(filepath.Dir(output), "appimage"))
+			output = filepath.ToSlash(filepath.Join(nodeOutput, filepath.Base(output)))
+		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
-			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
-			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: output, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
+			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: nodeOutput, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
 		packageRoots = append(packageRoots, pkg)
 		finalOutputs[pkg] = finalOutput
 	}
@@ -575,7 +563,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			}
 			identity := plan.Nodes[artifact].Artifact
 			identity.Signed, identity.Notarized = true, config.Signing.Darwin.Notarize
-			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: identity.Format, Input: input, Config: signingPlatformForPlan(config.Signing, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
+			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: identity.Format, Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
 			signed = append(signed, signedKey)
 			finalOutputs[signedKey] = signedPublicationPath(finalOutputs[artifact], request.TargetOS)
 		}
@@ -606,7 +594,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			plan.Roots = []NodeKey{terminalHook}
 		}
 	}
-	return plan, plan.Validate(config.Root)
+	return finalizeTargetPlan(plan, config, request, multiTarget)
 }
 
 func nodeOutputs(plan Plan, keys []NodeKey) []string {
@@ -754,7 +742,7 @@ func platformAssetsNode(config manifest.Config, request Request, target, output 
 	project, targetSettings := effectiveTarget(config, request.TargetOS, request.TargetArch)
 	platformSettings := platformConfig(config.Targets, request.TargetOS)
 	return Node{Key: NodeKey("target:" + target + ":assets"), Kind: GeneratePlatformAssets, Label: "Generate " + request.TargetOS + " assets", Scope: TargetScope, Dependencies: dependencies,
-		Spec:   AssetsSpec{TargetSDK: platformSettings.TargetSDK, BackgroundModes: append([]string(nil), platformSettings.BackgroundModes...), TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Capabilities: platformSettings.Capabilities, Project: project, Associations: associationsForPlatform(config.Associations, request.TargetOS), Protocols: protocolsForPlatform(config.Protocols, request.TargetOS)},
+		Spec:   AssetsSpec{MicrophoneUsageDescription: platformSettings.MicrophoneUsageDescription, TargetSDK: platformSettings.TargetSDK, BackgroundModes: append([]string(nil), platformSettings.BackgroundModes...), TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Capabilities: platformSettings.Capabilities, Project: project, Associations: associationsForPlatform(config.Associations, request.TargetOS), Protocols: protocolsForPlatform(config.Protocols, request.TargetOS)},
 		Inputs: assetInputs(config), Output: output, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "legacy-command-adapter"}, EstimateMS: 250}
 }
 
@@ -1138,10 +1126,13 @@ func signingPlatform(s manifest.Signing, os string) manifest.SigningPlatform {
 	}
 }
 
-func signingPlatformForPlan(signing manifest.Signing, platform, assets string) manifest.SigningPlatform {
-	result := signingPlatform(signing, platform)
+func signingPlatformForPlan(config manifest.Config, platform, assets string) manifest.SigningPlatform {
+	result := signingPlatform(config.Signing, platform)
 	if result.Entitlements != "" {
 		result.Entitlements = filepath.ToSlash(filepath.Join(assets, "signing", "entitlements"+filepath.Ext(result.Entitlements)))
+	}
+	if platform == "darwin" && result.Entitlements == "" && config.Targets.Darwin.MicrophoneUsageDescription != "" {
+		result.Entitlements = filepath.ToSlash(filepath.Join(assets, "signing", "entitlements.plist"))
 	}
 	if result.ProvisioningProfile != "" {
 		result.ProvisioningProfile = filepath.ToSlash(filepath.Join(assets, "signing", "provisioning-profile"+filepath.Ext(result.ProvisioningProfile)))
@@ -1184,10 +1175,10 @@ func max(a, b int) int {
 	return b
 }
 
-// Keep Windows extensions intact so Explorer and package installers recognise
+// Keep platform extensions intact so Finder, Explorer and package installers recognise
 // published signed artifacts. Private staging paths retain their own identity.
 func signedPublicationPath(path, targetOS string) string {
-	if targetOS == "windows" {
+	if targetOS == "windows" || targetOS == "darwin" {
 		extension := filepath.Ext(path)
 		return strings.TrimSuffix(path, extension) + ".signed" + extension
 	}

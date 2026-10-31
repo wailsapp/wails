@@ -33,9 +33,11 @@ $env:WAILS_EXP_USE_WAKE = '1'
 
 The variable is a presence-based opt-in: even an empty value or `false` enables
 it. Unset it (`unset WAILS_EXP_USE_WAKE` in Bash/Zsh, or
-`Remove-Item Env:WAILS_EXP_USE_WAKE` in PowerShell) to return to Taskfile routing.
+`Remove-Item Env:WAILS_EXP_USE_WAKE` in PowerShell) to disable the experiment. Once `wails.yaml` is active, commands require
+re-enabling Wake and never fall back to Taskfiles.
 Without the variable, YAML build/dev routing and YAML project generation are
 disabled, and `migrate`, `config` and `eject` commands are unavailable.
+Projects that have not migrated continue through the separate embedded Task runtime.
 
 ## Configure a project
 
@@ -82,6 +84,97 @@ a profile:
 ```bash
 wails3 build --targets linux/amd64 --formats deb,rpm
 ```
+
+## Build several executables
+
+The project defines the primary program. Set `project.package` to its Go package
+(default `.`) and `project.kind` to `gui`, `cli` or `server` (default `gui`).
+Additional programs use named entries under `binaries`:
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+binaries:
+  notes-tool:
+    package: cmd/notes-tool
+    kind: cli
+    tags: [tools]
+    ldflags: [-X, main.Mode=release]
+    environment:
+      CGO_ENABLED: "0"
+profiles:
+  release:
+    targets:
+      linux/amd64: {}
+```
+
+Each program gets its own compilation and cache inputs. Imported project
+packages and embedded files are tracked; an edit to an independent program
+does not rebuild the others. Additional executables are supported on desktop
+and included in the default app bundles and installers. User-owned replacement
+package files control their own contents.
+
+```bash
+wails3 build --binaries notes,notes-tool --jobs 4
+wails3 build --binaries notes-tool --skip-frontend --skip-bindings
+```
+
+A named profile is a complete request; use these selection overrides with an
+anonymous build. `--jobs` bounds execution workers. Selecting only CLI/server
+programs omits frontend work.
+
+To read a version without running application code, configure both
+`project.version_file` and `project.version_symbol`. The file must contain a
+static Go string declaration. The literal `project.version` can then be omitted.
+Set `commit_symbol: main.Commit` on the project or a named binary to inject the
+repository revision into that executable's string variable. Missing repository
+metadata is an error when commit injection is requested.
+
+`upx_level: 1` through `9` optionally compresses release Linux and Windows
+executables; zero disables it. UPX must be installed. Development and macOS
+builds omit compression. A compilation or compression failure preserves the
+previous published program.
+
+## Native package adapters
+
+Windows MSIX archives are created directly in Go; creating an unsigned package
+does not require the Windows SDK or Docker. Windows signing still requires a
+Windows host and its signing tools. NSIS uses the external NSIS compiler and
+accepts literal definitions through `packages.nsis.defines`.
+
+Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain
+the external linuxdeploy and GTK plugin boundary. Set
+`packages.appimage.update_info` to request a zsync file and
+`packages.appimage.checksum: true` for a SHA256 file. Sidecars are restored from
+the package cache and listed in the artifact receipt alongside the AppImage.
+
+macOS app bundles include companion programs. Set
+`darwin.microphone_usage_description` to add the usage text and, when no custom
+entitlements file is supplied, the audio-input entitlement. Custom plist and
+entitlements sources remain unchanged. Signing and notarization use the
+existing Apple tools and credentials on macOS; notarization requires a real
+notary profile. Signed outputs retain their platform extension, for example
+`notes.signed.app` and `notes.signed.dmg`.
+
+## Development controls
+
+During `wails3 dev`, enter a command followed by Enter:
+
+| Command | Action |
+| --- | --- |
+| `r` | Force a rebuild and restart, including an unchanged backend. |
+| `b` | Regenerate bindings and rebuild. |
+| `f` | Restart the frontend. |
+| `c` | Clear the terminal. |
+| `q` | Stop the session and its child processes. |
+| `h` | Show controls. |
+
+Failed builds keep the current application running. Controls require an
+interactive terminal; piped input does not change session behaviour.
 
 ## Inspect work before running it
 

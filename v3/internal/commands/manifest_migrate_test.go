@@ -18,8 +18,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	wakeast "github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	wakeast "github.com/wailsapp/wails/v3/internal/wake/migration/taskfile/ast"
 )
 
 func TestMigrationDraftIsInactiveAndNonDestructive(t *testing.T) {

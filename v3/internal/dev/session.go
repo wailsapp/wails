@@ -20,6 +20,7 @@ import (
 )
 
 type Options struct {
+	Controls        <-chan string
 	Host            string
 	Profile, Target string
 	Plan, Secure    bool
@@ -32,6 +33,7 @@ type BuildResult struct {
 	Results map[pipeline.NodeKey]pipeline.Result
 }
 type rebuild struct {
+	force      bool
 	generation uint64
 	loaded     *manifest.Loaded
 	args       []string
@@ -62,6 +64,7 @@ type WatchSet interface {
 
 // Operations adapts Wails build and host tools; Run owns their lifetime.
 type Operations struct {
+	GenerateBindings  func(context.Context, *manifest.Loaded) error
 	ValidateTarget    func(string, string) error
 	Getwd             func() (string, error)
 	Load              func(string, string) (*manifest.Loaded, error)
@@ -225,7 +228,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 		}
 		buildWG.Wait()
 	}()
-	startRebuild := func() {
+	startRebuild := func(force, bindings bool) {
 		if cancelBuild != nil {
 			cancelBuild()
 		}
@@ -233,6 +236,9 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 		output.Status(generation, "build", "started", "Rebuilding")
 		current := generation
 		buildCtx, cancel := context.WithCancel(sessionCtx)
+		if force {
+			buildCtx = WithForcedRebuild(buildCtx)
+		}
 		cancelBuild = cancel
 		buildWG.Add(1)
 		go func() {
@@ -246,24 +252,44 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 				}
 				return
 			}
-			nextLoaded, loadErr := ops.Load(root, "")
-			var run BuildResult
-			var nextArgs []string
-			if loadErr == nil {
-				nextArgs, loadErr = applicationArguments(nextLoaded.Config, goos, goarch, options.Args)
-			}
-			if loadErr == nil {
-				run, loadErr = ops.Build(WithGeneration(buildCtx, current), nextLoaded, goos, goarch, frontendURL, port)
-			}
-			result := rebuild{generation: current, loaded: nextLoaded, args: nextArgs, run: run, err: loadErr}
+			result := (rebuildTask{generation: current, force: force, bindings: bindings, root: root, target: pipeline.Target{OS: goos, Arch: goarch}, frontendURL: frontendURL, port: port, args: options.Args, operations: ops}).run(buildCtx)
 			select {
 			case results <- result:
 			case <-sessionCtx.Done():
 			}
 		}()
 	}
+
+	controls := options.Controls
+	controller := sessionControls{Output: output, Rebuild: startRebuild, RestartFrontend: func() error {
+		next, restartErr := restartSessionFrontend(sessionCtx, frontend, loaded.Config, frontendEndpoint{root: root, host: host, port: port, url: frontendURL}, ops)
+		frontend = next
+		if next == nil {
+			stopSession()
+		}
+		return restartErr
+	}}
+	if controls != nil {
+		output.Status(0, "session", "controls", devControlsHelp)
+	}
 	for {
 		select {
+
+		case command, ok := <-controls:
+			if !ok {
+				controls = nil
+				continue
+			}
+			quit, controlErr := controller.handle(command)
+			if controlErr != nil {
+				if sessionCtx.Err() != nil {
+					return controlErr
+				}
+				output.Failure(generation, "session", "control", controlErr, "Current app is still running.")
+			}
+			if quit {
+				return nil
+			}
 		case <-sessionCtx.Done():
 			if timer != nil {
 				timer.Stop()
@@ -316,7 +342,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 			timerC = timer.C
 		case <-timerC:
 			timerC = nil
-			startRebuild()
+			startRebuild(false, false)
 		case result := <-results:
 			if result.generation != generation {
 				continue
@@ -341,7 +367,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 
 			frontendChanged := FrontendSessionChanged(loaded.Config, nextLoaded.Config)
 			binaryChanged := ops.BackendChanged(result.run, goos, goarch)
-			backendChanged := binaryChanged || !equalStrings(appArgs, result.args)
+			backendChanged := result.force || binaryChanged || !equalStrings(appArgs, result.args)
 			oldFrontend := frontend
 			var nextFrontend Process
 			if frontendChanged {

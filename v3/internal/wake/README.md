@@ -1,14 +1,16 @@
 # Wails build engine
 
-`internal/wake` contains two separate systems:
-
-- the experimental YAML build engine, enabled by `WAILS_EXP_USE_WAKE` and selected by an active project-root `wails.yaml`;
-- the temporary Go-native Taskfile runner for legacy compatibility.
+`internal/wake` is the experimental native YAML build engine, enabled by
+`WAILS_EXP_USE_WAKE` and selected by an active project-root `wails.yaml`.
+It never executes Taskfiles. Migration is one-way from legacy declarations
+into reviewed YAML; the migration parser cannot run shell commands or expand
+templates. Unmigrated projects use the separate embedded Task runtime.
 
 Set `WAILS_EXP_USE_WAKE` to opt into the YAML CLI, project generation and setup
 writer. Presence enables it, including an empty value, `0` or `false`. When
-unset, build/dev/package/sign use Taskfiles, init generates legacy build assets,
-and setup retains its legacy YAML/Taskfile writers without modifying YAML.
+unset, unmigrated projects retain their embedded Task builds and legacy
+project generation. Migrated projects fail with an opt-in diagnostic; they
+cannot return to Taskfile execution by removing the flag.
 
 The former `WAILS_USE_WAKE` variable is ignored. Only `WAILS_EXP_USE_WAKE`
 enables the experimental YAML CLI.
@@ -16,8 +18,8 @@ enables the experimental YAML CLI.
 ## Native YAML projects
 
 With the experiment enabled, the presence of `wails.yaml` is the cutover marker. Wails then ignores
-all Taskfiles, including local overrides, and an invalid manifest fails without
-falling back to legacy execution.
+all Taskfiles, including local overrides. Invalid manifests and an unset
+experimental flag fail without falling back to legacy execution.
 
 The canonical workflows are:
 
@@ -93,7 +95,7 @@ When the YAML experiment is disabled or no active `wails.yaml` exists,
 `build`, `package`, `sign` and `task` use the embedded Task runtime. Root task
 customisations, CLI variables, task selection and Task flags retain their
 existing behavior. No environment variable selects the old native Taskfile
-executor. Its implementation remains internal for compatibility tests.
+executor; it has been removed.
 
 ## Verification
 
