@@ -151,9 +151,8 @@ func humanSize(n int64) string {
 }
 
 // writePhaseBarLocked renders a single-line stacked horizontal bar showing
-// where the build's cpu time went, grouped by phase. Phases are inferred from
-// task-name prefixes (a coarse heuristic, but the prefix conventions in wake
-// Taskfiles are stable enough to make this useful at a glance).
+// where the build's step time went, grouped by phase. Phases are inferred from
+// step-name prefixes.
 //
 // The bar reads:
 //
@@ -288,17 +287,14 @@ func classifyPhase(name string) int {
 }
 
 func (r *Reporter) writeVerdictLocked(dur time.Duration, ok bool) {
-	// Sum the per-step durations to get "cpu time". For parallel builds the
-	// ratio of cpu/wall is the speedup; for serial builds it equals 1 and we
-	// hide the redundant detail.
-	var cpu time.Duration
+	// Step durations include I/O waits and overlap when work runs in parallel.
+	var stepTime time.Duration
 	for _, c := range r.completed {
-		cpu += c.duration
+		stepTime += c.duration
 	}
-	speedup := ""
-	if dur > 0 && cpu > dur+150*time.Millisecond {
-		factor := float64(cpu) / float64(dur)
-		speedup = "  " + r.s.faint(fmt.Sprintf("%s cpu · %.1f× speedup", fmtDur(cpu), factor))
+	workSummary := ""
+	if dur > 0 && stepTime > dur+150*time.Millisecond {
+		workSummary = "  " + r.s.faint(fmt.Sprintf("%s summed step time", fmtDur(stepTime)))
 	}
 
 	var headline, durTail string
@@ -306,12 +302,12 @@ func (r *Reporter) writeVerdictLocked(dur time.Duration, ok bool) {
 		headline = fmt.Sprintf("  %s  %s",
 			r.s.fg(Success, GlyphOK),
 			r.s.bold(r.s.fg(Success, "build succeeded")))
-		durTail = "    " + r.s.faint(fmtDur(dur)) + speedup
+		durTail = "    " + r.s.faint(fmtDur(dur)) + workSummary
 	} else {
 		headline = fmt.Sprintf("  %s  %s",
 			r.s.fg(Failure, GlyphFail),
 			r.s.bold(r.s.fg(Failure, "build failed")))
-		durTail = "    " + r.s.faint("after "+fmtDur(dur)) + speedup
+		durTail = "    " + r.s.faint("after "+fmtDur(dur)) + workSummary
 	}
 
 	// Counts ride at the right edge of the verdict line — saves a whole
