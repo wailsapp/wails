@@ -1808,6 +1808,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w.parentHWND = 0
 			}
 
+			// DefWindowProc has destroyed the HWND. Release the controller,
+			// webview and environment references, as the recovery path does
+			// before rebuilding; otherwise every closed window leaks them.
+			if w.chromium != nil {
+				w.chromium.Close()
+			}
+
 			windowsApp := globalApplication.impl.(*windowsApp)
 			windowsApp.unregisterWindow(w)
 
