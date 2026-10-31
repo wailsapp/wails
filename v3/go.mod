@@ -23,7 +23,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
-	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/sys v0.48.0
 	golang.org/x/term v0.46.0
 	golang.org/x/tools v0.49.0
