@@ -25,6 +25,8 @@ jobs:
           dnf install -y git tar gzip gcc clang pkgconf-pkg-config gtk4-devel webkitgtk6.0-devel
           gtk3-devel webkit2gtk4.1-devel libX11-devel xorg-x11-server-Xvfb xdotool dbus-daemon weston
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Trust checkout for Git metadata in container
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/setup-go@v5
