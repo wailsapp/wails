@@ -974,7 +974,7 @@ func packageInputs(root, platform, format string, f manifest.PackageFormat) []In
 		switch format {
 		case "appimage":
 			resources = appendNonempty(resources, f.Icon, f.DesktopEntry)
-		case "deb", "rpm", "archlinux":
+		case "deb", "rpm", "archlinux", "void":
 			resources = appendNonempty(resources, f.PreInstall, f.PostInstall, f.PreRemove, f.PostRemove)
 		}
 	}
