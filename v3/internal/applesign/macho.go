@@ -167,14 +167,32 @@ func signThin(ctx context.Context, source io.ReaderAt, size int64, out *os.File,
 	// The reserved CMS region keeps load commands stable while a timestamp
 	// service returns a variable-sized token. It is outside the signed pages.
 	dirSize := directorySize(limit, 12, o, components)
-	signatureSize := 12 + 8*(len(components)+2) + dirSize + 8
+	signatureSize, err := blobIndexSize(len(components) + 2)
+	if err != nil {
+		return CodeIdentity{}, err
+	}
+	for _, n := range []int{dirSize, 8} {
+		signatureSize, err = addBlobSize(signatureSize, n)
+		if err != nil {
+			return CodeIdentity{}, err
+		}
+	}
 	for _, c := range components {
-		signatureSize += len(c.data)
+		signatureSize, err = addBlobSize(signatureSize, len(c.data))
+		if err != nil {
+			return CodeIdentity{}, err
+		}
 	}
 	if o.SignCMS != nil {
-		signatureSize += 128 << 10
+		signatureSize, err = addBlobSize(signatureSize, 128<<10)
+		if err != nil {
+			return CodeIdentity{}, err
+		}
 	}
-	signatureSize = (signatureSize + 15) &^ 15
+	signatureSize, err = addBlobSize(signatureSize, (-signatureSize)&15)
+	if err != nil {
+		return CodeIdentity{}, err
+	}
 	le := binary.LittleEndian
 	le.PutUint32(m.header[m.signatureCommand+8:], uint32(limit))
 	le.PutUint32(m.header[m.signatureCommand+12:], uint32(signatureSize))

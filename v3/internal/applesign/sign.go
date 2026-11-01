@@ -26,7 +26,7 @@ type Options struct {
 	// A nil callback selects an ad-hoc signature. Key loading, certificate policy
 	// and timestamp validation belong to the shared signing-identity layer.
 	SignCMS                         func(context.Context, []byte) ([]byte, error)
-	requirement                     func(string) []byte
+	requirement                     func(string) ([]byte, error)
 	info, resources, representation []byte
 }
 

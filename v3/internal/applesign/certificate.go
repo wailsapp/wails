@@ -41,7 +41,7 @@ func SigningOptions(identity codesignature.Identity, timestamp codesignature.Opt
 	// SHA-1 is required by the certificate-hash requirement operand. It is not
 	// used for executable pages, resource seals, or the CMS signature.
 	leafHash := sha1.Sum(identity.Certificate.Raw)
-	o.requirement = func(identifier string) []byte {
+	o.requirement = func(identifier string) ([]byte, error) {
 		return designatedRequirement(identifier, o.TeamID, developerID, leafHash[:])
 	}
 	o.SignCMS = func(ctx context.Context, directory []byte) ([]byte, error) {
@@ -85,7 +85,13 @@ func conjunction(left, right []byte) []byte { return append(append(word(6), left
 
 // Requirements are prefix expressions with network-order words and padded
 // byte strings, as specified by Apple's public requirement format declarations.
-func designatedRequirement(identifier, team string, developerID bool, leafHash []byte) []byte {
+func designatedRequirement(identifier, team string, developerID bool, leafHash []byte) ([]byte, error) {
+	if err := validateOptions(Options{Identifier: identifier, TeamID: team}); err != nil {
+		return nil, err
+	}
+	if !developerID && len(leafHash) != sha1.Size {
+		return nil, errors.New("certificate requirement needs a SHA-1 certificate hash")
+	}
 	expr := append(word(2), requirementData([]byte(identifier))...)
 	if developerID {
 		expr = conjunction(expr, word(15)) // generic Apple trust anchor
@@ -111,6 +117,9 @@ func designatedRequirement(identifier, team string, developerID bool, leafHash [
 		anchor = append(anchor, requirementData(leafHash)...)
 		expr = conjunction(expr, anchor)
 	}
-	requirement := wrap(0xfade0c00, append(word(1), expr...))
+	requirement, err := wrap(0xfade0c00, append(word(1), expr...))
+	if err != nil {
+		return nil, err
+	}
 	return superblob(0xfade0c01, []component{{3, requirement}})
 }

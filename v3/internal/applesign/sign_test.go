@@ -241,36 +241,47 @@ func TestDMGSigningKeepsPayloadAndSealsTrailer(t *testing.T) {
 }
 
 func TestSigningFailureLeavesInputAndExistingOutput(t *testing.T) {
-	work := t.TempDir()
-	input, output := filepath.Join(work, "input"), filepath.Join(work, "output")
-	before := fixture(t, "arm64.macho")
-	writeTest(t, input, before)
-	o := Options{Identifier: "org.wails.probe", SignCMS: func(context.Context, []byte) ([]byte, error) { return nil, errors.New("test signer failure") }}
-	if _, err := SignMachO(context.Background(), input, output, o); err == nil {
-		t.Fatal("signer failure ignored")
-	}
-	if _, err := os.Stat(output); !os.IsNotExist(err) {
-		t.Fatal("partial output retained")
-	}
-	writeTest(t, output, []byte("existing"))
-	if _, err := SignMachO(context.Background(), input, output, o); err == nil {
-		t.Fatal("overwrote output")
-	}
-	got, _ := os.ReadFile(output)
-	if string(got) != "existing" {
-		t.Fatal("existing output changed")
-	}
-	if _, err := SignMachO(context.Background(), input, input, o); err == nil {
-		t.Fatal("accepted input alias")
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	if _, err := SignMachO(ctx, input, filepath.Join(work, "cancelled"), o); !errors.Is(err, context.Canceled) {
-		t.Fatal(err)
-	}
-	got, _ = os.ReadFile(input)
-	if !bytes.Equal(before, got) {
-		t.Fatal("failed signing modified input")
+	for _, test := range []struct {
+		name   string
+		signer func(context.Context, []byte) ([]byte, error)
+	}{
+		{"callback failure", func(context.Context, []byte) ([]byte, error) { return nil, errors.New("test signer failure") }},
+		{"empty CMS", func(context.Context, []byte) ([]byte, error) { return nil, nil }},
+		{"oversized CMS", func(context.Context, []byte) ([]byte, error) { return make([]byte, (128<<10)+1), nil }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			work := t.TempDir()
+			input, output := filepath.Join(work, "input"), filepath.Join(work, "output")
+			before := fixture(t, "arm64.macho")
+			writeTest(t, input, before)
+			o := Options{Identifier: "org.wails.probe", SignCMS: test.signer}
+			if _, err := SignMachO(context.Background(), input, output, o); err == nil {
+				t.Fatal("signer failure ignored")
+			}
+			if _, err := os.Stat(output); !os.IsNotExist(err) {
+				t.Fatal("partial output retained")
+			}
+			writeTest(t, output, []byte("existing"))
+			if _, err := SignMachO(context.Background(), input, output, o); err == nil {
+				t.Fatal("overwrote output")
+			}
+			got, _ := os.ReadFile(output)
+			if string(got) != "existing" {
+				t.Fatal("existing output changed")
+			}
+			if _, err := SignMachO(context.Background(), input, input, o); err == nil {
+				t.Fatal("accepted input alias")
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			if _, err := SignMachO(ctx, input, filepath.Join(work, "cancelled"), o); !errors.Is(err, context.Canceled) {
+				t.Fatal(err)
+			}
+			got, _ = os.ReadFile(input)
+			if !bytes.Equal(before, got) {
+				t.Fatal("failed signing modified input")
+			}
+		})
 	}
 }
 
@@ -401,7 +412,10 @@ func TestCertificateBackedFormats(t *testing.T) {
 }
 
 func TestDeveloperIDRequirementMatchesNativeCompiler(t *testing.T) {
-	got := designatedRequirement("org.wails.probe", "TESTTEAM01", true, nil)
+	got, err := designatedRequirement("org.wails.probe", "TESTTEAM01", true, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// The single requirement begins after the one-entry requirements superblob.
 	if !bytes.Equal(got[20:], fixture(t, "developerid.req")) {
 		t.Fatalf("requirement does not match native csreq: %x", got[20:])

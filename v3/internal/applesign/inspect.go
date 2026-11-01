@@ -71,7 +71,7 @@ func inspectBlob(r io.ReaderAt, size int64, cpu uint32) (CodeIdentity, error) {
 	}
 	be := binary.BigEndian
 	length, count := int64(be.Uint32(header[4:])), int(be.Uint32(header[8:]))
-	if be.Uint32(header[:]) != 0xfade0cc0 || length > size || length > 64<<20 || count > 64 || length < int64(12+8*count) {
+	if be.Uint32(header[:]) != 0xfade0cc0 || length > size || length > maxSignatureBlobSize || count > maxSignatureComponents || length < int64(12+8*count) {
 		return zero, errors.New("invalid embedded signature bounds")
 	}
 	data := make([]byte, length)

@@ -14,45 +14,87 @@ type component struct {
 	data []byte
 }
 
-func wrap(magic uint32, data []byte) []byte {
-	result := make([]byte, 8+len(data))
-	binary.BigEndian.PutUint32(result, magic)
-	binary.BigEndian.PutUint32(result[4:], uint32(len(result)))
-	copy(result[8:], data)
-	return result
+// Match the limits accepted by Inspect; these also keep uint32 format lengths
+// and host int allocations representable on both 32-bit and 64-bit hosts.
+const maxSignatureBlobSize = 64 << 20
+const maxSignatureComponents = 64
+
+func addBlobSize(size, extra int) (int, error) {
+	if size < 0 || size > maxSignatureBlobSize || extra < 0 || extra > maxSignatureBlobSize-size {
+		return 0, errors.New("signature blob exceeds 64 MiB")
+	}
+	return size + extra, nil
 }
 
-func superblob(magic uint32, parts []component) []byte {
-	size := 12 + 8*len(parts)
+func blobIndexSize(count int) (int, error) {
+	if count < 0 || count > maxSignatureComponents {
+		return 0, errors.New("signature blob exceeds 64 components")
+	}
+	return 12 + 8*count, nil
+}
+
+func wrap(magic uint32, data []byte) ([]byte, error) {
+	size, err := addBlobSize(8, len(data))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]byte, size)
+	binary.BigEndian.PutUint32(result, magic)
+	binary.BigEndian.PutUint32(result[4:], uint32(size))
+	copy(result[8:], data)
+	return result, nil
+}
+
+func superblob(magic uint32, parts []component) ([]byte, error) {
+	header, err := blobIndexSize(len(parts))
+	if err != nil {
+		return nil, err
+	}
+	size := header
 	for _, p := range parts {
-		size += len(p.data)
+		size, err = addBlobSize(size, len(p.data))
+		if err != nil {
+			return nil, err
+		}
 	}
 	result := make([]byte, size)
 	be := binary.BigEndian
 	be.PutUint32(result, magic)
 	be.PutUint32(result[4:], uint32(size))
 	be.PutUint32(result[8:], uint32(len(parts)))
-	offset := 12 + 8*len(parts)
+	offset := header
 	for i, p := range parts {
 		be.PutUint32(result[12+8*i:], p.slot)
 		be.PutUint32(result[16+8*i:], uint32(offset))
 		copy(result[offset:], p.data)
 		offset += len(p.data)
 	}
-	return result
+	return result, nil
 }
 
 func signatureComponents(o Options) ([]component, error) {
-	parts := []component{{2, superblob(0xfade0c01, nil)}}
+	requirements, err := superblob(0xfade0c01, nil)
 	if o.requirement != nil {
-		parts[0].data = o.requirement(o.Identifier)
+		requirements, err = o.requirement(o.Identifier)
 	}
+	if err != nil {
+		return nil, err
+	}
+	parts := []component{{2, requirements}}
 	if len(o.Entitlements) != 0 {
 		der, err := derEntitlements(o.Entitlements)
 		if err != nil {
 			return nil, err
 		}
-		parts = append(parts, component{5, wrap(0xfade7171, o.Entitlements)}, component{7, wrap(0xfade7172, der)})
+		xmlBlob, err := wrap(0xfade7171, o.Entitlements)
+		if err != nil {
+			return nil, err
+		}
+		derBlob, err := wrap(0xfade7172, der)
+		if err != nil {
+			return nil, err
+		}
+		parts = append(parts, component{5, xmlBlob}, component{7, derBlob})
 	}
 	return parts, nil
 }
@@ -159,6 +201,9 @@ func codeDirectory(ctx context.Context, r io.ReaderAt, limit int64, page uint8, 
 }
 
 func signatureBlob(ctx context.Context, directory []byte, parts []component, o Options) ([]byte, error) {
+	if len(parts) > maxSignatureComponents-2 {
+		return nil, errors.New("signature blob exceeds 64 components")
+	}
 	var cms []byte
 	if o.SignCMS != nil {
 		var err error
@@ -173,6 +218,10 @@ func signatureBlob(ctx context.Context, directory []byte, parts []component, o O
 	all := make([]component, 0, len(parts)+2)
 	all = append(all, component{0, directory})
 	all = append(all, parts...)
-	all = append(all, component{65536, wrap(0xfade0b01, cms)})
-	return superblob(0xfade0cc0, all), nil
+	cmsBlob, err := wrap(0xfade0b01, cms)
+	if err != nil {
+		return nil, err
+	}
+	all = append(all, component{65536, cmsBlob})
+	return superblob(0xfade0cc0, all)
 }
