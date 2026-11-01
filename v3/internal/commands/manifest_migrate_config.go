@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"gopkg.in/yaml.v3"
 )
@@ -59,8 +60,9 @@ type legacyBuildConfiguration struct {
 			GitIgnore        *bool    `yaml:"git_ignore"`
 		} `yaml:"ignore"`
 		Executes []struct {
-			Command string `yaml:"cmd"`
-			Type    string `yaml:"type"`
+			Command    string `yaml:"cmd"`
+			Type       string `yaml:"type"`
+			ExitPolicy string `yaml:"exit_policy"`
 		} `yaml:"executes"`
 	} `yaml:"dev_mode"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
@@ -144,6 +146,9 @@ func applyLegacyBuildConfiguration(root string, report *MigrationReport, doc *ma
 		doc.Dev.Exclude = append(append([]string(nil), legacy.DevMode.Ignore.Directories...), legacy.DevMode.Ignore.Files...)
 	}
 	for _, execute := range legacy.DevMode.Executes {
+		if execute.ExitPolicy != "" && (execute.ExitPolicy != "shutdown" || execute.Type != "primary" || strings.TrimSpace(execute.Command) != "wails3 task run") {
+			blockMigration(report, "unsupported-dev-exit-policy", "build/config.yml", "", "dev exit policy is not representable by Wake's session shutdown: "+execute.ExitPolicy)
+		}
 		if !legacyDevCommand(execute.Command) {
 			blockMigration(report, "unsupported-dev-command", "build/config.yml", "", "dev command is not representable in config-only YAML; keep using Taskfiles: "+execute.Command)
 		}
@@ -176,7 +181,16 @@ func applyLegacyFrontendConfiguration(root, taskPackageManager string, report *M
 	if outputInfo, statErr := os.Stat(filepath.Join(frontend, "dist")); statErr == nil && !outputInfo.IsDir() {
 		blockMigration(report, "frontend-output", "frontend/dist", "", "frontend output path is not a directory")
 	} else if errors.Is(statErr, fs.ErrNotExist) {
-		blockMigration(report, "frontend-output", "frontend", "", "frontend/dist was not found; confirm the frontend build output directory")
+		stock, err := legacyStockFrontendOutput(root, report)
+		if err != nil {
+			return err
+		}
+		if _, err := os.Lstat(filepath.Join(frontend, "dist")); !errors.Is(err, fs.ErrNotExist) {
+			stock = false
+		}
+		if !stock {
+			blockMigration(report, "frontend-output", "frontend", "", "frontend/dist was not found; confirm the frontend build output directory")
+		}
 	} else if statErr != nil {
 		return statErr
 	}
@@ -268,6 +282,68 @@ func applyLegacyFrontendConfiguration(root, taskPackageManager string, report *M
 		return statErr
 	}
 	return nil
+}
+
+// An unbuilt stock Vite frontend has no dist yet. Compare owned template inputs
+// rather than executing JavaScript or guessing the output of a custom config.
+func legacyStockFrontendOutput(root string, report *MigrationReport) (bool, error) {
+	frontend := filepath.Join(root, "frontend")
+	data, err := os.ReadFile(filepath.Join(frontend, "package.json"))
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	var metadata struct {
+		Scripts map[string]string `json:"scripts"`
+	}
+	if json.Unmarshal(data, &metadata) != nil || metadata.Scripts["prebuild"] != "" || metadata.Scripts["postbuild"] != "" {
+		return false, nil
+	}
+	var configName string
+	var config []byte
+	for _, extension := range []string{"js", "ts", "mjs", "mts", "cjs", "cts"} {
+		name := "vite.config." + extension
+		path := filepath.Join(frontend, name)
+		info, err := os.Lstat(path)
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return false, err
+		}
+		if configName != "" || !info.Mode().IsRegular() {
+			return false, nil
+		}
+		config, err = os.ReadFile(path)
+		if err != nil {
+			return false, err
+		}
+		configName = name
+	}
+	if configName == "" {
+		return false, nil
+	}
+	for _, template := range templates.GetDefaultTemplates() {
+		prefix := template.Name + "/frontend/"
+		stockConfig, err := fs.ReadFile(template.FS, prefix+configName)
+		if err != nil || !bytes.Equal(bytes.ReplaceAll(config, []byte("\r\n"), []byte("\n")), stockConfig) {
+			continue
+		}
+		stockPackage, err := fs.ReadFile(template.FS, prefix+"package.json.tmpl")
+		if err != nil {
+			continue
+		}
+		var stock struct {
+			Scripts map[string]string `json:"scripts"`
+		}
+		if json.Unmarshal(stockPackage, &stock) == nil && metadata.Scripts["build"] == stock.Scripts["build"] && stock.Scripts["build"] != "" {
+			recordMigrationSource(report, root, filepath.Join(frontend, configName))
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func applyConventionalLegacyAssets(root string, report *MigrationReport, doc *manifest.Document) error {
