@@ -28,6 +28,17 @@ _/
 
 ## [Unreleased]
 
+## v3.2.0-nightly.20261101 - 2026-11-01
+
+## Added
+- add experimental CGO-free macOS and Linux backends in [PR](https://github.com/wailsapp/wails/pull/6521) by @taliesin-ai
+- native YAML builds, portable packaging and signing in [PR](https://github.com/wailsapp/wails/pull/6531) by @taliesin-ai
+
+## Fixed
+- Fix assorted v3 nightly build issues and clean up dependencies in [PR](https://github.com/wailsapp/wails/pull/6519) by @taliesin-ai
+- repair v3 release validation and fixture classification in [PR](https://github.com/wailsapp/wails/pull/6533) by @taliesin-ai
+- resolve cross-platform release validation failures in [PR](https://github.com/wailsapp/wails/pull/6538) by @taliesin-ai
+
 ## v3.1.0 - 2026-11-01
 
 ## Added
