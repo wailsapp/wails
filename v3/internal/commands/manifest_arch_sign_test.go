@@ -17,6 +17,10 @@ func TestArchSignaturePipelineWithIndependentGPGVerification(t *testing.T) {
 	if err != nil {
 		t.Skip("gpg is needed for independent detached signature verification")
 	}
+	gpgv, err := exec.LookPath("gpgv")
+	if err != nil {
+		t.Skip("gpgv is needed for independent detached signature verification")
+	}
 	root := executableFixture(t)
 	t.Chdir(root)
 	t.Setenv("GOFLAGS", "-buildvcs=false")
@@ -48,13 +52,10 @@ func TestArchSignaturePipelineWithIndependentGPGVerification(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keyring := "gpg"
-	if err := os.Mkdir(keyring, 0700); err != nil {
-		t.Fatal(err)
-	}
-	output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--import", filepath.Base(publicKey)).CombinedOutput()
+	keyring := "public.gpg"
+	output, err := exec.Command(gpg, "--batch", "--dearmor", "--output", keyring, filepath.Base(publicKey)).CombinedOutput()
 	if err != nil {
-		t.Fatalf("import fixture public key: %s, %v", output, err)
+		t.Fatalf("decode fixture public key: %s, %v", output, err)
 	}
 	verify := func(path string, valid bool) {
 		t.Helper()
@@ -62,7 +63,7 @@ func TestArchSignaturePipelineWithIndependentGPGVerification(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--verify", filepath.ToSlash(filepath.Join("bin", filepath.Base(signature))), filepath.ToSlash(relative)).CombinedOutput()
+		output, err := exec.Command(gpgv, "--homedir", ".", "--keyring", "./"+keyring, filepath.ToSlash(filepath.Join("bin", filepath.Base(signature))), filepath.ToSlash(relative)).CombinedOutput()
 		if (err == nil) != valid {
 			t.Fatalf("GPG verification expected valid=%v: %s, %v", valid, output, err)
 		}
