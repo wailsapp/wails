@@ -1,5 +1,4 @@
-// Package appimage prepares and publishes AppImages using native filesystem/ELF
-// operations and an explicit linuxdeploy tool boundary.
+// Package appimage stages Linux application runtimes and publishes type-2 AppImages.
 package appimage
 
 import (
@@ -34,6 +33,8 @@ type Options struct {
 	Binaries                                                                 []Binary
 	LibraryDirs                                                              []string
 	RuntimeRoot                                                              string
+	RuntimePath                                                              string
+	GTKVersion                                                               int
 	// UpdateInfo is passed to linuxdeploy's AppImage plugin; it must emit a zsync sidecar.
 	UpdateInfo string
 	WebKit     bool
@@ -422,7 +423,7 @@ func verify(filename, arch string) error {
 		return err
 	}
 	if string(header[:4]) != "\x7fELF" || string(header[8:11]) != "AI\x02" {
-		return fmt.Errorf("linuxdeploy did not produce a type-2 AppImage")
+		return fmt.Errorf("invalid type-2 AppImage")
 	}
 	image, err := elf.Open(filename)
 	if err != nil {

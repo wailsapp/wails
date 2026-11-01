@@ -145,7 +145,7 @@ require (
 	github.com/zalando/go-keyring v0.2.6
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/crypto v0.57.0
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/image v0.45.0
 	golang.org/x/mod v0.41.0
