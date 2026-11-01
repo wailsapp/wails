@@ -16,6 +16,11 @@ tool calls remain deferred. Existing projects keep using Taskfiles until you
 explicitly activate a reviewed migration.
 @end
 
+New to Wake? Start with the [getting-started tutorial](/experimental/wake/).
+It covers the experiment's limits, every project and build setup screen, a first
+local build, and a reviewed migration. This page covers individual build,
+packaging and configuration workflows in more detail.
+
 ## Enable YAML builds
 
 Set `WAILS_EXP_USE_WAKE` in every terminal that runs the experimental commands.

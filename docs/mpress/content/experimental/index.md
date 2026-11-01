@@ -37,7 +37,7 @@ The most useful feedback is concrete: what you ran, what you expected, what actu
 ## Current experiments
 
 @container{display="grid" columns="2" gap="1rem"}
-@linkcard{title="Wake" href="/experimental/wake/" description="An alternative, Wails-aware build runner for your existing Taskfiles. Faster incremental builds, structured output, parallel by default."}
+@linkcard{title="Wake" href="/experimental/wake/" description="Try the native YAML build system: create a project, follow setup screen by screen, build and package it, or review a one-way migration from Taskfiles."}
 @linkcard{title="CGO-free builds" href="/experimental/#cgo-free-builds-purego" description="Build macOS and Linux apps with CGO_ENABLED=0: no C toolchain, cross-compile without Docker. Enabled with WAILS_PUREGO=1 or the purego build tag."}
 @linkcard{title="LLM Control (MCP)" href="/guides/mcp-service/" description="A built-in Model Context Protocol server that lets LLM agents inspect, test, and drive a running Wails app — no user code required, enabled with a build tag."}
 @end
