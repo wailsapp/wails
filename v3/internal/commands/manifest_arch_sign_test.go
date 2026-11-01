@@ -48,17 +48,21 @@ func TestArchSignaturePipelineWithIndependentGPGVerification(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keyring := t.TempDir()
-	if err := os.Chmod(keyring, 0700); err != nil {
+	keyring := "gpg"
+	if err := os.Mkdir(keyring, 0700); err != nil {
 		t.Fatal(err)
 	}
-	output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--import", publicKey).CombinedOutput()
+	output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--import", filepath.Base(publicKey)).CombinedOutput()
 	if err != nil {
 		t.Fatalf("import fixture public key: %s, %v", output, err)
 	}
 	verify := func(path string, valid bool) {
 		t.Helper()
-		output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--verify", signature, path).CombinedOutput()
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		output, err := exec.Command(gpg, "--batch", "--homedir", keyring, "--verify", filepath.ToSlash(filepath.Join("bin", filepath.Base(signature))), filepath.ToSlash(relative)).CombinedOutput()
 		if (err == nil) != valid {
 			t.Fatalf("GPG verification expected valid=%v: %s, %v", valid, output, err)
 		}
