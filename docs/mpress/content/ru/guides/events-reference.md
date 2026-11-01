@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 Полный список доступных событий можно найти в исходном коде Wails:
 
-- События фронтенда: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- События бэкенда: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- События фронтенда: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- События бэкенда: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 Всегда сверяйтесь с этими файлами, чтобы получить актуальные сведения о названиях и доступности событий.
 
