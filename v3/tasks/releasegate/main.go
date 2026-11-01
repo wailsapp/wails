@@ -65,7 +65,7 @@ import (
 const (
 	marker = "<!-- weekly-release-status -->"
 	// OWNER REVIEW: everything that is not shipped code. Anything else counts.
-	defaultShippedAlertIgnore = `^(v3/examples/|v2/examples/|website/|docs/|v2/website/|\.github/)|(^|/)examples?/`
+	defaultShippedAlertIgnore = `^(v2/internal/staticanalysis/test/|v3/examples/|v2/examples/|website/|docs/|v2/website/|\.github/)|(^|/)examples?/`
 )
 
 type config struct {
