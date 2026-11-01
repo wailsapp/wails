@@ -344,7 +344,7 @@ func legacyStockFrontendOutput(root string, report *MigrationReport) (bool, erro
 	for _, template := range templates.GetDefaultTemplates() {
 		prefix := template.Name + "/frontend/"
 		stockConfig, err := fs.ReadFile(template.FS, prefix+configName)
-		if err != nil || !bytes.Equal(bytes.ReplaceAll(config, []byte("\r\n"), []byte("\n")), stockConfig) {
+		if err != nil || !bytes.Equal(bytes.ReplaceAll(config, []byte("\r\n"), []byte("\n")), bytes.ReplaceAll(stockConfig, []byte("\r\n"), []byte("\n"))) {
 			continue
 		}
 		stockPackage, err := fs.ReadFile(template.FS, prefix+"package.json.tmpl")

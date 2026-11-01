@@ -372,7 +372,7 @@ func Install(options *flags.Init) error {
 	if buildInfo.Development {
 		var relativePath string
 		// Check if the project directory and LocalModulePath are in the same drive
-		if filepath.VolumeName(wd) != filepath.VolumeName(debug.LocalModulePath) {
+		if !strings.EqualFold(filepath.VolumeName(projectDir), filepath.VolumeName(debug.LocalModulePath)) {
 			relativePath = debug.LocalModulePath
 		} else {
 			relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)

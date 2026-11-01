@@ -71,7 +71,10 @@ profiles:
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			root := t.TempDir()
+			root, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
 			t.Chdir(root)
 			require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(test.yaml), 0o644))
 			require.NoError(t, os.WriteFile(filepath.Join(root, "release.pfx"), []byte("certificate"), 0o644))

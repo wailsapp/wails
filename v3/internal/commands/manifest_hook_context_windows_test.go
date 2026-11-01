@@ -3,8 +3,8 @@ package commands
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,5 +31,9 @@ func TestProtectHookContextPathUsesCurrentUserOnlyDACL(t *testing.T) {
 	assert.Equal(t, uint16(1), dacl.AceCount)
 	user, err := windows.GetCurrentProcessToken().GetTokenUser()
 	require.NoError(t, err)
-	assert.True(t, strings.Contains(descriptor.String(), user.User.Sid.String()))
+	var ace *windows.ACCESS_ALLOWED_ACE
+	require.NoError(t, windows.GetAce(dacl, 0, &ace))
+	assert.Equal(t, uint8(windows.ACCESS_ALLOWED_ACE_TYPE), ace.Header.AceType)
+	sid := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+	assert.True(t, sid.Equals(user.User.Sid))
 }

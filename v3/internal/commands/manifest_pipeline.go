@@ -1107,10 +1107,17 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
+	compileRoot := h.root
+	if s.TargetOS == "windows" && !s.Console {
+		compileRoot, err = filepath.EvalSymlinks(h.root)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
 	var result string
 	err = producePathTransactional(output, ".compile-output-*", func(staged string) error {
 		var runErr error
-		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
+		result, runErr = runManifestCommand(ctx, compileRoot, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
 		if runErr == nil {
 			runErr = h.compressExecutable(ctx, s, staged, &result)
 		}

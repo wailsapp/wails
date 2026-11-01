@@ -135,6 +135,7 @@ func replaceMigrationTaskText(t *testing.T, path, before, after string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	data = []byte(strings.ReplaceAll(string(data), "\r\n", "\n"))
 	if !strings.Contains(string(data), before) {
 		t.Fatalf("fixture %s does not contain %q", path, before)
 	}
