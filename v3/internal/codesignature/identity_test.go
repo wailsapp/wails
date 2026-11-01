@@ -71,3 +71,17 @@ func TestPFXAuthenticatedContentsAndWorkBounds(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkDecodePFX(b *testing.B) {
+	data, err := os.ReadFile("testdata/modern.pfx")
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		if _, err := DecodePFX(data, "fixture-only"); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

@@ -242,26 +242,37 @@ func contentTypes(files []string) []byte {
 }
 
 func writeFootprint(archive *zip.Writer, name string, data []byte, level int) error {
+	header, compressed, err := EncodeFootprint(name, data, level)
+	if err != nil {
+		return err
+	}
+	writer, err := archive.CreateRaw(header)
+	if err != nil {
+		return err
+	}
+	_, err = writer.Write(compressed)
+	return err
+}
+
+// EncodeFootprint prepares a small MSIX metadata record without a data descriptor.
+// Signing also uses it, adjusting the ZIP creator version for the signature.
+func EncodeFootprint(name string, data []byte, level int) (*zip.FileHeader, []byte, error) {
 	if level == 0 {
 		level = 4
 	}
 	var compressed bytes.Buffer
 	compressor, err := flate.NewWriter(&compressed, level)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	if _, err = compressor.Write(data); err != nil {
-		return err
+	if _, err := compressor.Write(data); err != nil {
+		return nil, nil, err
 	}
-	if err = compressor.Close(); err != nil {
-		return err
+	if err := compressor.Close(); err != nil {
+		return nil, nil, err
 	}
-	writer, err := archive.CreateRaw(&zip.FileHeader{Name: name, Method: zip.Deflate, Flags: 0x800, ReaderVersion: 20, CreatorVersion: 20, ModifiedDate: 33, CRC32: crc32.ChecksumIEEE(data), CompressedSize64: uint64(compressed.Len()), UncompressedSize64: uint64(len(data))})
-	if err != nil {
-		return err
-	}
-	_, err = writer.Write(compressed.Bytes())
-	return err
+	header := &zip.FileHeader{Name: name, Method: zip.Deflate, Flags: 0x800, ReaderVersion: 20, CreatorVersion: 20, ModifiedDate: 33, CRC32: crc32.ChecksumIEEE(data), CompressedSize64: uint64(compressed.Len()), UncompressedSize64: uint64(len(data))}
+	return header, compressed.Bytes(), nil
 }
 
 type contextReader struct {
