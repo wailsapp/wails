@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:20:20Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "2e274cb14e9589f31197b4470c7a84f80bcc55311764851456c366e884ae9688",
-      "machineHash": "2e274cb14e9589f31197b4470c7a84f80bcc55311764851456c366e884ae9688",
-      "machineText": "要在引导下配置桌面应用，请在启用选择性加入功能后运行`wails3 setup`。[Wake 设置流程](/getting-started/setup/#configure-a-wake-project)会检查应用类型、构建后端、目标、软件包格式和必需工具，然后保存`setup`配置文件。它还支持为预构建可执行文件准备命令，而无需将`--skip-build`设为永久项目设置。",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "4af2f4c7b973e19c161a9631487be1a510b0551178768d60d8e283512e1a97ff",
+      "machineHash": "4af2f4c7b973e19c161a9631487be1a510b0551178768d60d8e283512e1a97ff",
+      "machineText": "要在浏览器中创建并配置项目，请在启用选择加入功能后运行`wails3 init -ui`，并按照[Wake 教程](/experimental/wake/)操作。项目选项保存在`wails.yaml`中；要更改现有项目，请编辑该文件。`wails3 setup`用于配置共享首选项、工具和签名凭据。",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:33:09Z"
+      "updatedAt": "2026-11-01T05:55:31Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

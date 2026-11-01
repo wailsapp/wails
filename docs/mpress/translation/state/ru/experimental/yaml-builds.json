@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:20:47Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "8a168f44ced5a59400512ee4be2252363191bd2bb99b9d1ece61531d87ef17bf",
-      "machineHash": "8a168f44ced5a59400512ee4be2252363191bd2bb99b9d1ece61531d87ef17bf",
-      "machineText": "Чтобы выполнить пошаговую настройку настольного приложения, запустите `wails3 setup`, включив экспериментальную функцию. В процессе [настройки Wake](/getting-started/setup/#configure-a-wake-project) проверяются тип приложения, серверная часть сборки, целевые платформы, форматы пакетов и необходимые инструменты, после чего сохраняется профиль `setup`. Также можно подготовить команду для предварительно собранных исполняемых файлов, не задавая `--skip-build` как постоянный параметр проекта.",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "b8c73024f85ac23d77130614bc80ef999947a8d36bc0a87af2f8949bd5dc4847",
+      "machineHash": "b8c73024f85ac23d77130614bc80ef999947a8d36bc0a87af2f8949bd5dc4847",
+      "machineText": "Чтобы создать и настроить проект в браузере, запустите `wails3 init -ui` с включённой экспериментальной функцией и следуйте [руководству по Wake](/experimental/wake/). Параметры проекта хранятся в `wails.yaml`; чтобы изменить существующий проект, отредактируйте этот файл. `wails3 setup` задаёт общие настройки, инструменты и учётные данные для подписи.",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:33:50Z"
+      "updatedAt": "2026-11-01T05:55:48Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

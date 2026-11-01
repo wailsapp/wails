@@ -35,7 +35,7 @@ Projetos que ainda não foram migrados continuam usando o runtime Task integrado
 
 ## Configurar um projeto
 
-Para obter uma configuração guiada de desktop, execute `wails3 setup` com a opção habilitada. O [fluxo de configuração do Wake](/getting-started/setup/#configure-a-wake-project) analisa o tipo de aplicação, o backend de compilação, os destinos, os formatos de pacote e as ferramentas necessárias e, em seguida, salva um perfil `setup`. Ele também permite preparar um comando para executáveis pré-compilados sem tornar `--skip-build` uma configuração permanente do projeto.
+Para criar e configurar um projeto no navegador, execute `wails3 init -ui` com a opção habilitada e siga o [tutorial do Wake](/experimental/wake/). As escolhas do projeto ficam em `wails.yaml`; edite esse arquivo para alterar um projeto existente. `wails3 setup` configura preferências compartilhadas, ferramentas e credenciais de assinatura.
 
 Com a adesão habilitada, adicione `wails.yaml` à raiz do projeto. A presença desse arquivo seleciona o sistema de build nativo e faz o Wails ignorar todos os Taskfiles desse projeto. Mantenha a adesão habilitada para todos os comandos abaixo. A modeline do esquema habilita o preenchimento automático e a validação em linha em editores compatíveis com servidores de linguagem YAML.
 

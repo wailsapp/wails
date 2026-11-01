@@ -34,7 +34,7 @@ $env:WAILS_EXP_USE_WAKE = '1'
 
 ## 配置项目
 
-要在引导下配置桌面应用，请在启用选择性加入功能后运行`wails3 setup`。[Wake 设置流程](/getting-started/setup/#configure-a-wake-project)会检查应用类型、构建后端、目标、软件包格式和必需工具，然后保存`setup`配置文件。它还支持为预构建可执行文件准备命令，而无需将`--skip-build`设为永久项目设置。
+要在浏览器中创建并配置项目，请在启用选择加入功能后运行`wails3 init -ui`，并按照[Wake 教程](/experimental/wake/)操作。项目选项保存在`wails.yaml`中；要更改现有项目，请编辑该文件。`wails3 setup`用于配置共享首选项、工具和签名凭据。
 
 选择启用后，在项目根目录添加`wails.yaml`。该文件的存在会选用原生构建系统，并使 Wails 忽略此项目中的所有 Taskfile。运行以下所有命令时都应保持选择启用状态。模式 modeline 可在支持 YAML 语言服务器的编辑器中启用补全和行内验证。
 

@@ -34,7 +34,7 @@ Tanpa variabel tersebut, perutean build/dev YAML dan pembuatan proyek YAML dinon
 
 ## Mengonfigurasi proyek
 
-Untuk konfigurasi desktop terpandu, jalankan `wails3 setup` dengan fitur pilihan tersebut diaktifkan. Alur penyiapan [Wake](/getting-started/setup/#configure-a-wake-project) meninjau jenis aplikasi, backend build, target, format paket, dan alat yang diperlukan, lalu menyimpan profil `setup`. Alur ini juga mendukung penyiapan perintah untuk executable siap pakai tanpa menjadikan `--skip-build` sebagai pengaturan proyek permanen.
+Untuk membuat dan mengonfigurasi proyek di browser, jalankan `wails3 init -ui` dengan opsi keikutsertaan diaktifkan, lalu ikuti [tutorial Wake](/experimental/wake/). Pilihan proyek tersimpan di `wails.yaml`; edit file tersebut untuk mengubah proyek yang sudah ada. `wails3 setup` mengonfigurasi preferensi bersama, alat, dan kredensial penandatanganan.
 
 Setelah pilihan ikut serta diaktifkan, tambahkan `wails.yaml` di akar proyek. Keberadaan file tersebut memilih sistem build native dan membuat Wails mengabaikan setiap Taskfile dalam proyek itu. Pertahankan pilihan ikut serta tetap aktif untuk semua perintah di bawah ini. Modeline skema mengaktifkan pelengkapan dan validasi sebaris di editor yang mendukung server bahasa YAML.
 

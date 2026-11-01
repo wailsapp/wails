@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:20:42Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "492dbc5096e58a3678236200ae30373b20a0117ce808580a666037c33df9e1e3",
-      "machineHash": "492dbc5096e58a3678236200ae30373b20a0117ce808580a666037c33df9e1e3",
-      "machineText": "안내에 따라 데스크톱 구성을 설정하려면 옵트인을 활성화한 상태에서 `wails3 setup`을 실행하세요. [Wake 설정 흐름](/getting-started/setup/#configure-a-wake-project)에서는 애플리케이션 종류, 빌드 백엔드, 대상, 패키지 형식 및 필수 도구를 검토한 후 `setup` 프로필을 저장합니다. 또한 `--skip-build`을 영구 프로젝트 설정으로 지정하지 않고도 미리 빌드된 실행 파일용 명령을 준비할 수 있습니다.",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "ce74436b5d69cc3df106edd88c2b249670227d15c9a3c5bc06f4ccf43c8aad9c",
+      "machineHash": "ce74436b5d69cc3df106edd88c2b249670227d15c9a3c5bc06f4ccf43c8aad9c",
+      "machineText": "브라우저에서 프로젝트를 생성하고 구성하려면 옵트인을 활성화한 상태로 `wails3 init -ui`을 실행한 후 [Wake 튜토리얼](/experimental/wake/)을 따르세요. 프로젝트 설정은 `wails.yaml`에 저장됩니다. 기존 프로젝트를 변경하려면 이 파일을 편집하세요. `wails3 setup`은 공유 환경설정, 도구, 서명 자격 증명을 구성합니다.",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:33:46Z"
+      "updatedAt": "2026-11-01T05:55:45Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

@@ -46,7 +46,7 @@ Projects that have not migrated continue through the separate embedded Task runt
 
 ## Configure a project
 
-For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow](/getting-started/setup/#configure-a-wake-project) reviews application kind, build backend, targets, package formats and required tools, then saves a `setup` profile. It also supports preparing a command for prebuilt executables without making `--skip-build` a permanent project setting.
+To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and follow the [Wake tutorial](/experimental/wake/). Project choices live in `wails.yaml`; edit that file to change an existing project. `wails3 setup` configures shared preferences, tools and signing credentials.
 
 With the opt-in enabled, add `wails.yaml` at the project root. Its presence
 selects the native build system and makes Wails ignore every Taskfile in that

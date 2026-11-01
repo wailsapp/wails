@@ -33,7 +33,7 @@ Die Variable aktiviert die Funktion allein durch ihre Existenz: Selbst ein leere
 
 ## Ein Projekt konfigurieren
 
-Führen Sie für eine geführte Desktop-Konfiguration bei aktivierter Opt-in-Option `wails3 setup` aus. Der [Wake-Einrichtungsassistent](/getting-started/setup/#configure-a-wake-project) prüft Anwendungstyp, Build-Backend, Zielplattformen, Paketformate und erforderliche Werkzeuge und speichert anschließend ein `setup`-Profil. Er kann außerdem einen Befehl für vorgefertigte ausführbare Dateien vorbereiten, ohne `--skip-build` als dauerhafte Projekteinstellung festzulegen.
+Um ein Projekt im Browser zu erstellen und zu konfigurieren, führen Sie bei aktivierter Opt-in-Option `wails3 init -ui` aus und folgen Sie dem [Wake-Tutorial](/experimental/wake/). Die Projekteinstellungen befinden sich in `wails.yaml`. Bearbeiten Sie diese Datei, um ein vorhandenes Projekt zu ändern. Mit `wails3 setup` konfigurieren Sie gemeinsame Einstellungen, Werkzeuge und Anmeldedaten für die Signierung.
 
 Fügen Sie bei aktivierter Opt-in-Option im Projektstamm `wails.yaml` hinzu. Das Vorhandensein dieser Datei wählt das native Build-System aus und bewirkt, dass Wails sämtliche Taskfiles in diesem Projekt ignoriert. Lassen Sie die Opt-in-Option für alle folgenden Befehle aktiviert. Die Schema-Modeline ermöglicht in Editoren mit Unterstützung für YAML-Sprachserver die Vervollständigung und Inline-Validierung.
 

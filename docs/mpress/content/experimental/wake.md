@@ -1,6 +1,6 @@
 ---
 title: "Wake"
-description: "Create your first Wake project, follow the setup wizard, build and run it, and migrate an existing Taskfile project."
+description: "Create your first Wake project, follow the project creation wizard, build and run it, and migrate an existing Taskfile project."
 slug: "experimental/wake"
 sourcePath: "experimental/wake.md"
 ---
@@ -51,11 +51,11 @@ for your computer. Start from a directory where you want the new project folder
 to be created. You also need a browser for the wizard.
 
 Use a CLI and framework revision that include this preview. Installing the
-stable `v3.0.0` CLI does not add the Wake setup screens described here. The
+stable `v3.0.0` CLI does not add the Wake project creation screens described here. The
 following commands pin the preview from [PR #6531](https://github.com/wailsapp/wails/pull/6531):
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
+go install github.com/wailsapp/wails/v3/cmd/wails3@b1daf95f3
 wails3 version
 ```
 
@@ -91,78 +91,40 @@ Run the project creation wizard:
 wails3 init -ui
 ```
 
-The browser opens a project wizard. This creates source files; the separate
-`wails3 setup` wizard below configures how to build them.
+The browser opens a project wizard. With Wake enabled, it collects the source
+and build choices in one flow. Nothing is created until the final **Create
+Project** button. `wails3 setup` is a separate wizard for global preferences,
+tools and signing credentials; it does not configure this project's Wake profile.
 
 | Screen | Choose for this tutorial | What happens next |
 | --- | --- | --- |
 | **Project — Create a Wails project** | Enter `wake-demo`, then **Continue**. | The project will be created in a new `wake-demo` folder under the displayed directory. |
 | **Framework — Choose a framework** | Select **Vanilla**, then **Continue**. | You get a small frontend without a framework-specific learning step. |
 | **Language — Language Preference** | Select **JavaScript**, then **Continue**. | The TypeScript-only **Bindings** screen is skipped. |
-| **Details — Project details** | Use product name `Wake Demo`, bundle identifier `com.example.wakedemo`, and version `0.1.0`. Click **Create Project**. | With Wake enabled, the details are written to `wails.yaml`. |
+| **Details — Project details** | Use product name `Wake Demo`, bundle identifier `com.example.wakedemo`, and version `0.1.0`. Click **Continue**. | Your metadata stays in the wizard while you choose the build settings. |
 
 Do not use **Use global defaults** for this lesson: it skips the framework and
 language choices. If you choose TypeScript in another project, the **Bindings**
 screen lets you choose interfaces or classes for generated Go data bindings.
 
-Return to the terminal and wait for project creation to finish. Then run:
+## Choose the build settings before creation
 
-```sh
-cd wake-demo
-go get github.com/wailsapp/wails/v3@0243da963
-```
-
-You should now have `main.go`, a Go module, a `frontend` directory and a native
-`wails.yaml`. The built-in template uses Wake directly; you do not need to
-migrate this new project. A community template can have custom legacy tasks
-and may instead require the migration review described below.
-
-## Configure the build, screen by screen
-
-From inside `wake-demo`, run:
-
-```sh
-wails3 setup
-```
-
-The browser now shows **WAKE SETUP**. If it shows the general setup flow,
-check that `WAILS_EXP_USE_WAKE` is set in the terminal that launched the command
-and that you are running the preview CLI.
-
-The screenshots below show this walkthrough on Linux. Your host target and
-required tools will differ on Windows or macOS.
-
-### Project — only when metadata is missing
-
-For the application you just created, this screen is **skipped**: `init` already
-wrote the metadata. That is expected.
-
-When configuring an existing Go source directory without a native manifest or
-legacy build configuration, **About your project** asks for the product name,
-project name, application identifier, version, company and description. These
-values stay in the wizard until **Save**. Setup does not create application
-source files. If it finds Taskfiles or legacy metadata, follow migration first.
+Continue in the same browser window. The screenshots below show this walkthrough
+on Linux. Your host target and required tools will differ on Windows or macOS.
 
 ### Application — What are you building?
 
-Choose **Desktop application**. Leave **Package existing binaries** unchecked
-and choose **Standard backend**. Click **Continue**.
+Keep **Desktop application** and choose **Standard backend**. Click **Continue**.
 
-![Application screen with Desktop application and Standard backend selected, and prebuilt packaging off.](/assets/screenshots/wake/application.png)
+![Application screen in the project creation wizard with Desktop application and Standard backend selected.](/assets/screenshots/wake/application.png)
 
-- **Desktop application** builds a GUI with a web frontend.
-- **Command-line application** and **Server** describe programs without a
-  desktop window. Changing this selection does not rewrite your application
-  source; use a source project that matches the chosen kind.
-- **Pure Go (experimental)** is a separate opt-in. It removes the C compiler
-  requirement for supported desktop compilation, provided your dependencies
-  also build without CGo. It does not remove target runtime libraries or all
-  packaging and signing tools.
-- **Package existing binaries** prepares a command using `--skip-build`.
-  It requires binaries you already built; leave it off for a new project.
+This lesson creates a GUI with a web frontend. **Pure Go (experimental)** is a
+separate opt-in. It removes the C compiler requirement for supported desktop
+compilation, provided your dependencies also build without CGo. It does not
+remove target runtime libraries or all packaging and signing tools.
 
 The backend is a **project-wide setting**. Other profiles that inherit those
-settings can change behaviour when you change it here.
+settings use the selected backend too.
 
 ### Targets — Where should it run?
 
@@ -177,7 +139,7 @@ Target names combine an operating system and CPU architecture: for example,
 machine; it does not make that executable runnable on your current computer.
 
 Leave additional architectures, macOS universal builds and experimental mobile
-targets for a later pass through setup.
+targets for later. You can add them to `wails.yaml` after the first local build.
 
 ### Packages — Choose release outputs
 
@@ -188,11 +150,20 @@ Click **Continue**.
 
 With no additional formats selected, Wake produces the target's default output:
 a desktop executable, or a macOS application bundle for a macOS GUI. This is
-enough to check the application locally. Selecting formats later adds
-distribution outputs such as DMG, MSIX, NSIS, DEB or AppImage where supported.
+enough to check the application locally. Selecting formats adds distribution
+outputs such as DMG, MSIX, NSIS, DEB or AppImage where supported.
 
 Signing is optional for this first local build. A successful unsigned build
-does not mean the application is ready for public distribution.
+does not mean the application is ready for public distribution. For a signed
+project, configure reusable credentials with `wails3 setup` before creation, or
+configure signing in `wails.yaml` afterwards. The creation wizard uses your
+configured credentials; it does not change your global signing preferences.
+
+Wake can use configured certificate files outside the project without copying
+private keys or passwords into `wails.yaml`. Explicit project signing settings
+take precedence. Follow the [setup signing guidance](/getting-started/setup/)
+and [packaging and signing guide](/experimental/yaml-builds/#package-and-sign-for-distribution)
+before preparing a public release. Mobile signing is configured in YAML.
 
 ### Tools — Tools for your build
 
@@ -209,47 +180,42 @@ or a supported container toolchain.
 Resolve rows marked **Not ready**, **Needs configuration** or **Update needed**
 before trying the local build. Use the displayed instructions where available,
 or the [platform installation guide](/getting-started/installation/), then click
-**Recheck**. You may need to restart setup if an installation changed the
-terminal's `PATH`. When the host requirements are ready, click **Continue**.
+**Recheck requirements**. If an installation changed the terminal's `PATH`,
+restart `wails3 init -ui` from an updated terminal and repeat your selections.
 
-The wizard can save a valid configuration even when this computer lacks tools.
-That is useful for CI configuration, but for this tutorial you want a build
-that can run here.
+The wizard can create a valid project even when this computer lacks tools or
+signing credentials. That is useful for CI configuration, but for this tutorial
+you want a build that can run here. Invalid configuration must be corrected
+before creation.
 
-### Signing — only when selected
+### Create the project
 
-This screen is **skipped** because you left signing off. On a later run, enabling
-**Sign release outputs** shows the existing signing controls for the desktop
-platforms you selected. **Set up signing later** turns signing off for the saved
-setup profile. Mobile signing is configured in YAML rather than these controls.
+Check your choices: desktop application, standard backend, your host target,
+and signing disabled. On **Tools**, click **Create Project** and wait for
+**Project choices accepted**. Return to the terminal and wait for the CLI to
+finish creating the project; the browser confirmation only accepts your choices.
 
-Signing defaults live in your user settings. Wake can use configured certificate
-files outside the project without copying private keys or passwords into
-`wails.yaml`. Explicit project signing settings take precedence. Follow the
-[setup signing guidance](/getting-started/setup/) and
-[packaging and signing guide](/experimental/yaml-builds/#package-and-sign-for-distribution)
-before preparing a public release.
+![Project choices accepted screen showing the planned application path and commands to use after creation succeeds.](/assets/screenshots/wake/save.png)
 
-### Save — Save your build configuration
-
-Check the summary: desktop application, standard backend, source build, your
-host target, and signing disabled. Click **Save wails.yaml**.
-
-![Save screen summarising the GUI application, standard backend, source build and unsigned linux/amd64 target.](/assets/screenshots/wake/save.png)
-
-You should see **Build configuration saved**, the path to your manifest, and:
+The wizard creates the source and saves the target, package and signing choices
+under `profiles.setup` in `wails.yaml`. It also sets the application kind,
+frontend enablement and project-wide backend. You can close the browser and
+return to the terminal. Wait for project creation to finish, then run:
 
 ```sh
-wails3 build setup
+cd wake-demo
+go get github.com/wailsapp/wails/v3@b1daf95f3
 ```
 
-Click **Finish** and return to the terminal. Setup has saved the target and
-package choices under `profiles.setup`. It also updates the application kind,
-frontend enablement and backend settings. Existing frontend commands, companion
-programs, hooks and unrelated configuration are preserved.
+You should now have `main.go`, a Go module, a `frontend` directory and a native
+`wails.yaml`. The built-in template uses Wake directly; you do not need to
+migrate this new project. A community template can have custom legacy tasks
+and may instead require the migration review described below.
 
-The profile name matters: `wails3 build setup` uses those saved selections.
-Plain `wails3 build` does not automatically select the `setup` profile.
+The completion screen shows `wails3 build setup` and `wails3 dev`. The profile
+name matters: `wails3 build setup` uses the selections you just saved. Plain
+`wails3 build` does not automatically select the `setup` profile. The profile
+name does not mean you need to run `wails3 setup`.
 
 ## Build and run your first application
 
@@ -293,11 +259,12 @@ Generated `.wails/` working files are not your configuration source.
 | Sign a release | Portable exported-key signing for Windows, macOS and DEB/RPM/Arch; native identity stores remain available. | Each identity, format and host has limits. AppImage and Void have no built-in signing flow. |
 | Notarise a macOS app | Team API-key submission and ticket stapling, or a macOS keychain profile. | A suitable Developer ID signature and timestamp are still required. Go-generated test signatures passing native checks is not proof of Apple accepting your release. |
 | Build several programs | A GUI, CLI or server primary program plus named companion programs. | Declare companion packages and kinds in YAML. The wizard does not generate their source. |
-| Package files built elsewhere | `wails3 build setup --skip-build`. | Supply matching executable names and architectures in `build.output`. This flag is a one-time command choice, not a permanent setup setting. |
+| Package files built elsewhere | `wails3 build setup --skip-build`. | Supply matching executable names and architectures in `build.output`. This flag is a one-time command choice, not a permanent profile setting. |
 | Add release automation | Named profiles, bounded lifecycle hooks, caching and parallel package work. | Use literal YAML and declared project-owned scripts. Arbitrary Taskfile behaviour is not a Wake extension mechanism. |
 
-Reopen `wails3 setup` to change the `setup` profile. Other named profiles and
-advanced settings are edited in `wails.yaml`. Use the
+Edit `profiles.setup`, other named profiles and advanced settings in
+`wails.yaml`. Use `wails3 setup` to change shared preferences and credentials.
+Use the
 [YAML build guide](/experimental/yaml-builds/) for complete examples and package
 requirements. GUI applications still need the destination's system libraries;
 Pure Go does not turn them into completely static applications.
@@ -394,8 +361,9 @@ your custom release behaviour. Run your project tests. Check each migrated
 profile explicitly, for example `wails3 config check release` and
 `wails3 build release` when the draft contains a `release` profile.
 
-You can now run `wails3 setup` to add or replace the dedicated `setup` profile.
-It does not automatically select or edit an existing `release` profile.
+Edit the migrated profiles directly in `wails.yaml`. `wails3 init -ui` creates
+new projects; `wails3 setup` manages global preferences. Neither is an editor
+for an existing project's release profile.
 
 ### If you need to stop the experiment
 
@@ -413,9 +381,9 @@ recovery much easier.
 
 | Symptom | First check |
 | --- | --- |
-| Setup shows the general wizard | Set `WAILS_EXP_USE_WAKE` in the launching terminal and check which `wails3` executable is on `PATH`. |
-| Setup asks for migration | You opened a legacy project or a community template with legacy configuration. Review migration before activation. |
-| A saved build reports missing tools | Save records intent. Return to **Tools**, fix the host requirements and recheck. |
+| Project creation skips Application, Targets, Packages and Tools | Set `WAILS_EXP_USE_WAKE` in the launching terminal and check which `wails3` executable is on `PATH`. Global `wails3 setup` always keeps its preferences flow. |
+| A community template needs migration | Review its legacy configuration with the migration commands before activation. |
+| A saved build reports missing tools | Creating a project records intent. Install the reported host requirements before building; creation does not install every selected tool. |
 | A cross-built executable will not start here | Run it on the selected operating system and architecture; use the host target for local development. |
 | Prebuilt mode cannot find a binary | Check the [prebuilt filenames and paths](/experimental/yaml-builds/#use-prebuilt-desktop-executables), including multi-target subdirectories. |
 | A manifest change fails | Run `wails3 config check` for the relevant profile and follow the field diagnostic. Wake does not fall back to Taskfiles. |

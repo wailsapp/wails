@@ -19,9 +19,9 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup
 ```
 
-向导会在浏览器中打开，引导你检查依赖项、设置项目默认值，并选择是否配置跨平台构建。上述说明使用默认设置流程；实验性的 Wake 项目流程将在下文介绍。
+该向导会在浏览器中打开，引导你完成依赖项检查、全局项目默认设置、可选的跨平台工具和签名凭据配置。这些首选项可在多个项目中复用。
 
-然后就可以创建第一个项目了：
+之后即可开始创建你的第一个项目：
 
 ```bash
 wails3 init -n myapp -t vanilla
@@ -30,53 +30,24 @@ cd myapp && wails3 dev
 
 ## 功能说明
 
-- **检查依赖项** - 验证 Go、npm 和平台工具链
-- **配置默认值** - 作者信息、Bundle ID 前缀和首选模板
-- **跨平台构建** - 可选的 Docker 设置，用于从任意宿主系统构建
-- **代码签名** - 适用于 macOS、Windows 和 Linux 的可选设置
+- **检查依赖项** - 验证 Go、npm 和平台工具
+- **配置默认值** - 作者信息、捆绑包 ID 前缀、首选模板
+- **跨平台构建** - 可选的 Docker 设置，用于从任意主机进行构建
+- **代码签名** - macOS、Windows 和 Linux 的可选设置
 
-配置将保存到`$XDG_CONFIG_HOME/wails/defaults.yaml`，并以`~/.config/wails/defaults.yaml`作为后备位置，供`wails3 init`使用。此配置独立于项目的`build/config.yml`。
+配置会保存到`$XDG_CONFIG_HOME/wails/defaults.yaml`；如果不可用，则回退到`~/.config/wails/defaults.yaml`，并由`wails3 init`使用。此配置独立于项目的`build/config.yml`。
 
-## 配置 Wake 项目
+## 创建 Wake 项目
 
-如需构建一个完整的首个应用，请按照[Wake 入门教程](/experimental/wake/)操作。
-该教程将引导你完成项目创建和各个设置界面，说明此实验功能的预期行为，并介绍如何从现有构建迁移。
+启用 Wake 实验性功能后，`wails3 init -ui`会收集项目专属的构建选项，并在项目创建成功时将其保存到`wails.yaml`。按照[Wake 入门教程](/experimental/wake/)操作，在创建桌面项目时选择构建后端、目标平台和软件包格式。`wails3 setup`仍用于管理全局首选项。
 
-在项目目录中启用[Wake 实验性功能](/experimental/yaml-builds/#enable-yaml-builds)并运行设置：
+现有 Wake 项目在`wails.yaml`中配置。使用[YAML 构建指南](/experimental/yaml-builds/)更改其配置文件和打包设置。现有 Taskfile 项目必须先完成[经过审核的单向迁移](/experimental/wake/#migrate-an-existing-project)，才能使用 Wake；设置过程不会转换或执行其 Taskfile。
 
-```bash
-export WAILS_EXP_USE_WAKE=1
-wails3 setup
-```
+## 复用签名首选项
 
-在 PowerShell 中：
+已签名的 Wake 构建会从用户级默认值中补充缺失的签名设置，包括项目外部的证书文件。项目中的显式设置优先。私钥、密码和全局凭据路径不会复制到`wails.yaml`中。
 
-```powershell
-$env:WAILS_EXP_USE_WAKE = '1'
-wails3 setup
-```
-
-这会打开以项目为中心的流程：
-
-1. **项目** — 如果不存在原生清单，则输入项目元数据。
-2. **应用程序** — 选择 GUI、CLI 或服务器、构建后端，或者已构建的可执行文件。纯 Go 是一个需要明确选择的实验性选项。
-3. **目标** — 选择操作系统和体系结构。iOS 和 Android 仍处于实验阶段；请在 YAML 中配置其签名设置。
-4. **软件包** — 选择软件包格式以及是否对其签名。
-5. **工具** — 查看所选构建和打包路径的要求。
-6. **签名** — 如果选择了签名，则使用现有签名控件进行配置。
-7. **保存** — 写入项目配置并显示要运行的命令。
-
-工具要求取决于你的选择。纯 Go 桌面编译不需要 Docker 或 C 编译器。CGo 交叉构建需要兼容的编译器和目标库，或者受支持的容器工具链。NSIS 仍需要`makensis`；跨宿主系统构建 GUI AppImage 时，需要提供 Linux 运行时目录树。导出的签名身份可以使用 Wails 的 Go 签名器，而原生钥匙串或证书存储中的身份仍需使用平台工具。请参阅[打包和签名要求](/experimental/yaml-builds/#package-and-sign-for-distribution)。
-
-使用已构建的可执行文件会跳过 Go 编译、前端安装和构建、绑定生成以及 UPX。仍然需要所选的打包和签名工具，以及有效的输入二进制文件。请参阅[预构建输入路径](/experimental/yaml-builds/#use-prebuilt-desktop-executables)。此选项仅适用于保存后显示的命令，并不是永久的 YAML 构建设置。
-
-保存操作会写入`wails.yaml`，更新应用程序类型、前端启用状态和所选后端设置，并替换专用的`profiles.setup`目标、软件包和签名选项。其他配置文件、前端命令、配套可执行文件、钩子和不相关的项目设置均会保留。后端设置适用于整个项目，因此继承这些设置的其他配置文件也会使用所选后端。新项目的元数据会一直保留在向导中，直到执行保存操作。系统会报告缺失的工具，以便你在构建前安装；保存有效配置不会安装工具或运行构建。
-
-签名构建会从用户级默认值中沿用项目缺少的签名设置，包括项目外部的证书文件。显式的项目设置优先。设置过程不会将私钥、密码或全局凭据路径复制到`wails.yaml`。对于全局配置的 Windows 和 Linux 密钥，请通过现有凭据存储或`WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`提供密码。对于加密的 Apple 身份，请将`darwin.signing.credential`设置为包含其密码的环境变量名称。
-
-保存的配置文件通过`wails3 build setup`运行；选择已构建的可执行文件时还会添加`--skip-build`。
-
-运行显示的命令时，请保持启用 Wake。如果未设置该标志，启用的`wails.yaml`绝不会回退到 Taskfile。设置过程不会转换现有 Taskfile 或旧版元数据：使用 Wake 配置这些项目之前，请先执行[已审核的迁移流程](/experimental/yaml-builds/#migrate-an-existing-project)。
+对于全局配置的 Windows 和 Linux 密钥，请通过现有凭据存储或`WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`提供密码。对于加密的 Apple 身份，请将`darwin.signing.credential`设置为包含其密码的环境变量名称。
 
 ## 子命令
 
@@ -89,4 +60,4 @@ wails3 entitlements # Configure macOS entitlements
 
 1. 运行`wails3 doctor`以诊断问题
 2. 按照[手动安装步骤](/getting-started/installation/#platform-specific-dependencies)操作
-3. 提交[问题报告](https://github.com/wailsapp/wails/issues/4904)，并附上`wails3 doctor`的输出
+3. 提交[问题报告](https://github.com/wailsapp/wails/issues/4904)，并附上`wails3 doctor`输出

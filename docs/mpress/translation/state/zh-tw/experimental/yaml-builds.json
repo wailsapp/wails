@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:20:23Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "815bfc99ef67fd3e05967eea72e631254e1de7a6982a3bddd3ed5e9a20d16698",
-      "machineHash": "815bfc99ef67fd3e05967eea72e631254e1de7a6982a3bddd3ed5e9a20d16698",
-      "machineText": "若要使用引導式桌面設定，請在啟用選用功能後執行`wails3 setup`。[Wake 設定流程](/getting-started/setup/#configure-a-wake-project)會檢查應用程式類型、建置後端、目標、套件格式及必要工具，然後儲存`setup`設定檔。它也支援為預先建置的執行檔準備命令，而不會將`--skip-build`設為永久的專案設定。",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "4fbbffbe0fa19c5734f03c638ceaf3a44795e4acd299fcac586d9981a00a7ece",
+      "machineHash": "4fbbffbe0fa19c5734f03c638ceaf3a44795e4acd299fcac586d9981a00a7ece",
+      "machineText": "若要在瀏覽器中建立及設定專案，請在啟用選擇加入功能的情況下執行`wails3 init -ui`，並依照[Wake 教學課程](/experimental/wake/)操作。專案選項儲存在`wails.yaml`中；若要變更現有專案，請編輯該檔案。`wails3 setup`用於設定共用偏好設定、工具及簽署認證。",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:33:05Z"
+      "updatedAt": "2026-11-01T05:55:32Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

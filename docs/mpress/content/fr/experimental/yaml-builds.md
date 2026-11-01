@@ -33,7 +33,7 @@ L’activation dépend de la présence de la variable : même une valeur vide o
 
 ## Configurer un projet
 
-Pour une configuration guidée d’une application de bureau, exécutez `wails3 setup` après avoir activé l’option. Le [processus de configuration de Wake](/getting-started/setup/#configure-a-wake-project) passe en revue le type d’application, le moteur de build, les cibles, les formats de paquet et les outils requis, puis enregistre un profil `setup`. Il permet également de préparer une commande pour des exécutables précompilés sans faire de `--skip-build` un paramètre permanent du projet.
+Pour créer et configurer un projet dans le navigateur, exécutez `wails3 init -ui` après avoir activé l’option, puis suivez le [tutoriel Wake](/experimental/wake/). Les choix propres au projet sont enregistrés dans `wails.yaml` ; modifiez ce fichier pour changer un projet existant. `wails3 setup` permet de configurer les préférences partagées, les outils et les identifiants de signature.
 
 Une fois l’activation effectuée, ajoutez `wails.yaml` à la racine du projet. Sa présence sélectionne le système de build natif et conduit Wails à ignorer tous les Taskfiles de ce projet. Maintenez l’activation pour toutes les commandes ci-dessous. La modeline du schéma active la complétion et la validation à la volée dans les éditeurs prenant en charge un serveur de langage YAML.
 

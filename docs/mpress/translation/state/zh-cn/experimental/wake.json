@@ -16,7 +16,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "a0002-title-01": {
       "sourceHash": "c2339e6b069d455134586a6a037b400f70964f5b4405251af646b5584ed094d6",
@@ -28,103 +28,103 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T05:28:34Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0001-text-01": {
       "sourceHash": "faebced2e1f322f7d6e78a0a35e7a1493a97b2fd2aff7ac03600fd441485af21",
-      "targetHash": "60f5645dab9199d7f089b7d2c8c526c965cdebb8831343a5ac5e1b70344f1228",
-      "machineHash": "60f5645dab9199d7f089b7d2c8c526c965cdebb8831343a5ac5e1b70344f1228",
-      "machineText": "Wake 是 Wails 的实验性构建系统。一个`wails.yaml`用于描述应用程序、前端、目标平台、软件包和签名设置。Wake 使用该配置规划并运行构建、缓存未更改的工作，并报告生成的文件。",
+      "targetHash": "74f3bb8f2758ed7add30ce5051ab8080b4a9f8ca4422015509ab7514e329dc79",
+      "machineHash": "74f3bb8f2758ed7add30ce5051ab8080b4a9f8ca4422015509ab7514e329dc79",
+      "machineText": "Wake 是 Wails 的实验性构建系统。一个`wails.yaml`用于描述应用、前端、目标平台、软件包和签名设置。Wake 使用该配置规划并运行构建、缓存未发生变化的工作，并报告生成的文件。",
       "status": "machine-translated",
       "sourcePreview": "Wake is Wails' experimental build system. One `wails.yaml` describes your application, frontend, tar…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0002-text-01": {
       "sourceHash": "4f0db72c5e538a7cc659e5ad672c8fd07ead2b485c15523236a0ddc28b22c718",
-      "targetHash": "200dafc7c472da64069dc886a0480831a8b5ff53484a15ff790391e07fe1cc50",
-      "machineHash": "200dafc7c472da64069dc886a0480831a8b5ff53484a15ff790391e07fe1cc50",
-      "machineText": "在本教程中，你将创建一个小型桌面应用程序，在浏览器中配置它，为当前计算机构建它，并以开发模式运行它。首先使用一个本地目标和未签名构建。首次构建成功后，再添加交叉编译和分发。",
+      "targetHash": "e6997330194bec27dd0bf24d41b083de36267717604af01ef54f5b8a00eaae5a",
+      "machineHash": "e6997330194bec27dd0bf24d41b083de36267717604af01ef54f5b8a00eaae5a",
+      "machineText": "在本教程中，你将创建一个小型桌面应用，在浏览器中配置它，为自己的计算机构建它，并以开发模式运行它。先从一个本地目标和未签名构建开始。首次构建成功后，再添加交叉编译和分发配置。",
       "status": "machine-translated",
       "sourcePreview": "In this tutorial, you will create a small desktop application, configure it in the browser, build it…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0003-text-01": {
       "sourceHash": "e13a357d5a858289aaf9ad5a84888fd3c89f5b4fbf9cef378b3dac24c631e557",
-      "targetHash": "b1ffef8024bc83e10e988659f563cf7a9bda7dec36304a568e9f2de7e2d2f386",
-      "machineHash": "b1ffef8024bc83e10e988659f563cf7a9bda7dec36304a568e9f2de7e2d2f386",
-      "machineText": "已有应用程序？请转到[迁移现有项目](#migrate-an-existing-project)。有关各个字段和高级工作流的信息，请参阅[YAML 构建指南](/experimental/yaml-builds/)和[清单参考](/reference/wails-yaml-fields/)。",
+      "targetHash": "e0d781f615b59fd317ae3464c42fe468d00f6f467b811003b62e1f19727fd240",
+      "machineHash": "e0d781f615b59fd317ae3464c42fe468d00f6f467b811003b62e1f19727fd240",
+      "machineText": "已经有应用了？请转到[迁移现有项目](#migrate-an-existing-project)。有关各个字段和高级工作流，请参阅[YAML 构建指南](/experimental/yaml-builds/)和[清单参考](/reference/wails-yaml-fields/)。",
       "status": "machine-translated",
       "sourcePreview": "Already have an application? Go to [Migrate an existing project](#migrate-an-existing-project). For …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0004-heading-01": {
       "sourceHash": "863cbd894853d26c52ae0fdbe73acd90ffa54a545052ecd227ded2b7df4d52e0",
-      "targetHash": "bad82d5cb350d71fb77ef2d1b24dd20f4ad3fe8fa48f361206655bd21ad2e2cb",
-      "machineHash": "bad82d5cb350d71fb77ef2d1b24dd20f4ad3fe8fa48f361206655bd21ad2e2cb",
-      "machineText": "实验功能的预期情况",
+      "targetHash": "f1439e69472613c8629f58984f59cdac0645f706592e78b51e3f04b388bded37",
+      "machineHash": "f1439e69472613c8629f58984f59cdac0645f706592e78b51e3f04b388bded37",
+      "machineText": "这项实验有哪些注意事项",
       "status": "machine-translated",
       "sourcePreview": "What to expect from the experiment",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0005-text-01": {
       "sourceHash": "a087cb41f11c8d9f2c42fc91d9419f0345cb9fa3b5f3e66265ad987d9e4ac902",
-      "targetHash": "5d498cded778055e8e22ce8ffc193846b3f55d8959521cd42cc3ecf1fc8e8163",
-      "machineHash": "5d498cded778055e8e22ce8ffc193846b3f55d8959521cd42cc3ecf1fc8e8163",
-      "machineText": "Wake 需要选择启用，其配置、命令和行为可能会随预览版本而变化。它尚不具备稳定构建系统所提供的兼容性保证。请保留项目中已知可以正常工作的修订版本，并记录你测试的 CLI 和框架版本。分发软件包前，请先在目标系统上进行测试。",
+      "targetHash": "f54f217caf17765b42654fbb45b471955b5eaeac3e65451eab980b64584ee1ad",
+      "machineHash": "f54f217caf17765b42654fbb45b471955b5eaeac3e65451eab980b64584ee1ad",
+      "machineText": "Wake 需要主动启用，其配置、命令和行为可能会在不同预览版之间发生变化。它尚不具备稳定构建系统所提供的兼容性保证。请保留项目中已知可正常工作的修订版本，并记录所测试的 CLI 和框架版本。分发软件包之前，请先在目标系统上进行测试。",
       "status": "machine-translated",
       "sourcePreview": "Wake is opt-in and its configuration, commands and behaviour may change between preview builds. It d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0006-text-01": {
       "sourceHash": "a71bc239c3f14ece41c06a33bd1d294dfed8a9649166bf680bfa094100f3a983",
-      "targetHash": "6a61e4126013f929eb4ff6c85bd01c3f8841dd472f5f27ca42978967808c444b",
-      "machineHash": "6a61e4126013f929eb4ff6c85bd01c3f8841dd472f5f27ca42978967808c444b",
-      "machineText": "Wake 和**纯 Go**后端是两个独立选项。启用 Wake 不会自动启用纯 Go。本教程使用标准后端，因此 macOS 和 Linux GUI 构建仍需要各自通常使用的原生开发工具。",
+      "targetHash": "601c3a7203f31eb6b36298f98bc0382a77f1625fbe3f5c8f2c91b037a5a55d56",
+      "machineHash": "601c3a7203f31eb6b36298f98bc0382a77f1625fbe3f5c8f2c91b037a5a55d56",
+      "machineText": "Wake 和**纯 Go**后端是两个相互独立的选项。启用 Wake 不会自动启用纯 Go。本教程使用标准后端，因此在 macOS 和 Linux 上构建 GUI 时，仍需要各自通常使用的原生开发工具。",
       "status": "machine-translated",
       "sourcePreview": "Wake and the **Pure Go** backend are separate choices. Enabling Wake does not automatically enable P…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0007-text-01": {
       "sourceHash": "692ed0ee94704ac759c043cdc4f590d6a1c786e38e63f576aca78408ac50213d",
-      "targetHash": "30b6571f300b04dce0322470fc7729df07a66367697837124b2891398a491639",
-      "machineHash": "30b6571f300b04dce0322470fc7729df07a66367697837124b2891398a491639",
-      "machineText": "向导会检查要求并保存配置。保存并不等同于构建，也不能证明每个所选目标都已准备就绪。缺少的工具或凭据可以稍后补充，例如在 CI 主机上补充。无效的目标与软件包组合必须在保存前更正。",
+      "targetHash": "dc9815543a2f830e9c7386a405d1f9a1b20d38ab9dfd888bef4d8023e4f69313",
+      "machineHash": "dc9815543a2f830e9c7386a405d1f9a1b20d38ab9dfd888bef4d8023e4f69313",
+      "machineText": "向导会检查要求并保存配置。保存并不等同于构建，也不能证明每个选定目标都已准备就绪。缺少的工具或凭据可以稍后补充，例如在 CI 主机上补充。无效的目标与软件包组合必须在保存前更正。",
       "status": "machine-translated",
       "sourcePreview": "The wizard checks requirements and saves configuration. Saving is not a build, and it is not proof t…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0008-text-01": {
       "sourceHash": "b75db35ef5a3993b68b3bd27e64cdd250db6403a5535967c18b7a527f24a8c68",
-      "targetHash": "bee8bef2f56bdcd1ad9ce183f1ae536bcf394856cebc3011dc636694fc7b11e2",
-      "machineHash": "bee8bef2f56bdcd1ad9ce183f1ae536bcf394856cebc3011dc636694fc7b11e2",
-      "machineText": "迁移是**单向的**。Wake 不会执行 Taskfile、展开 Task 模板，也不会将 YAML 转换回 Taskfile。尚未迁移的项目仍使用独立的旧版 Task 运行时。有效的`wails.yaml`绝不会静默回退到该运行时。",
+      "targetHash": "ef4f36d8e7212c8a4aef09e1833e5e4c2f777efae360a20727d1283d46b78ae4",
+      "machineHash": "ef4f36d8e7212c8a4aef09e1833e5e4c2f777efae360a20727d1283d46b78ae4",
+      "machineText": "迁移是**单向的**。Wake 不会执行 Taskfile、展开 Task 模板，也不会将 YAML 转换回 Taskfile。尚未迁移的项目仍使用单独的旧版 Task 运行时。启用的`wails.yaml`绝不会静默回退到该运行时。",
       "status": "machine-translated",
       "sourcePreview": "Migration is **one-way**. Wake does not execute Taskfiles, expand Task templates, or translate YAML …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0009-heading-01": {
       "sourceHash": "74e492d5d0df0babb6b2dce8690ab0041564fafa87e3007502c04d218c4a1e30",
@@ -136,43 +136,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0010-text-01": {
       "sourceHash": "06fcb16617cd280fe07746de9058e2f51acd4083cb9397833030b746d9a20895",
-      "targetHash": "efe7a3666642c182c74d57633d06fb29b1610b51c7d12e2c5a2dff43e7b8c82c",
-      "machineHash": "efe7a3666642c182c74d57633d06fb29b1610b51c7d12e2c5a2dff43e7b8c82c",
-      "machineText": "你需要安装 Go、供入门前端使用的 Node.js 和 npm，以及适用于当前计算机的[平台依赖项](/getting-started/installation/#platform-specific-dependencies)。请从希望在其中创建新项目文件夹的目录开始。你还需要使用浏览器运行向导。",
+      "targetHash": "02d26531ee18e338200898a0c5699c32982ad6ad0abc0f73b33aca08bf70db65",
+      "machineHash": "02d26531ee18e338200898a0c5699c32982ad6ad0abc0f73b33aca08bf70db65",
+      "machineText": "你需要安装 Go、供初始前端使用且包含 npm 的 Node.js，以及适用于当前计算机的[平台依赖项](/getting-started/installation/#platform-specific-dependencies)。请从你希望在其中创建新项目文件夹的目录开始操作。使用向导还需要浏览器。",
       "status": "machine-translated",
       "sourcePreview": "You need Go, Node.js with npm for the starter frontend, and the [platform dependencies](/getting-sta…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0011-text-01": {
-      "sourceHash": "5b25ebf0f3741250fbcee3d6f17bf8e9bb7586f490135c9871596b719075f32a",
-      "targetHash": "4af320c1836d506f51832cbd529b58881002894b97bd4b17fb244e8d372cc111",
-      "machineHash": "4af320c1836d506f51832cbd529b58881002894b97bd4b17fb244e8d372cc111",
-      "machineText": "请使用包含此预览功能的 CLI 和框架修订版本。安装稳定版`v3.0.0` CLI 不会添加此处所述的 Wake 设置界面。以下命令将预览版本固定到[PR #6531](https://github.com/wailsapp/wails/pull/6531)：",
+      "sourceHash": "595ac4eb2e6edbdfa87b61a066fdf2023749ba7550c21a3c0c6d1780ed8b0a38",
+      "targetHash": "47cea619e156a575e01b1910b46c86ce2d71a30477afe3a3e72c5fe590244d65",
+      "machineHash": "47cea619e156a575e01b1910b46c86ce2d71a30477afe3a3e72c5fe590244d65",
+      "machineText": "请使用包含此预览功能的 CLI 和框架修订版本。安装稳定版`v3.0.0` CLI 不会添加此处介绍的 Wake 项目创建界面。以下命令固定使用[PR #6531](https://github.com/wailsapp/wails/pull/6531)中的预览版本：",
       "status": "machine-translated",
       "sourcePreview": "Use a CLI and framework revision that include this preview. Installing the stable `v3.0.0` CLI does …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0012-text-01": {
       "sourceHash": "ac7de44b429e0b2fdf7190e21f36b2db7f1c9174597f6fb6af86bf515f5b16fe",
-      "targetHash": "250f5efcf970159f73566e5d3341512a4a476c51d6abfad8fa8170933157a8d9",
-      "machineHash": "250f5efcf970159f73566e5d3341512a4a476c51d6abfad8fa8170933157a8d9",
-      "machineText": "确保 Go 可执行文件目录位于`PATH`中；[安装指南](/getting-started/installation/)对此进行了说明。在本教程稍后的步骤中，你会将应用程序的 Go 依赖项固定到同一修订版本。测试较新的预览版本时，请同时更新两个修订版本参数。",
+      "targetHash": "afcfea91dba39c1332233cb1560ed6584406eabfc3d9338030e96800bfe09da8",
+      "machineHash": "afcfea91dba39c1332233cb1560ed6584406eabfc3d9338030e96800bfe09da8",
+      "machineText": "请确保 Go 可执行文件目录位于`PATH`中；[安装指南](/getting-started/installation/)对此有详细说明。稍后在本教程中，你会将应用的 Go 依赖项固定到同一修订版本。测试更新的预览版时，请同时更新两个修订版本参数。",
       "status": "machine-translated",
       "sourcePreview": "Make sure the Go executable directory is on `PATH`; the [installation guide](/getting-started/instal…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0013-heading-01": {
       "sourceHash": "d2b8dcfda8bcd05a723f9b1b531ae6e19f1ef00110ee93d9b349cb886411913a",
@@ -184,7 +184,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0014-text-01": {
       "sourceHash": "47941a9c0f109636f471a8a98286ed8fb9dceff8995bb944bcaf463974e8f189",
@@ -196,7 +196,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0015-text-01": {
       "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
@@ -208,31 +208,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0016-text-01": {
       "sourceHash": "c834cf955e5dd667f4016074ba4e9cc0eca1240faeb696608993cdc3d36a354e",
-      "targetHash": "d0853e13d3161f019355e8ce83326a9f232ebb402678d873cb67165037b9e769",
-      "machineHash": "d0853e13d3161f019355e8ce83326a9f232ebb402678d873cb67165037b9e769",
-      "machineText": "在本教程的其余步骤中，请保持此终端打开。任何运行 Wake 命令的新终端或 CI 作业都需要重新设置该变量。只要该变量**存在**，Wake 就会启用：将其设为`false`或空字符串并不会禁用 Wake。旧名称`WAILS_USE_WAKE`会被忽略。",
+      "targetHash": "ecd988d2da8a6b7d912bed999dfe4ff8c6799a8e7af59706cbc11928155135ce",
+      "machineHash": "ecd988d2da8a6b7d912bed999dfe4ff8c6799a8e7af59706cbc11928155135ce",
+      "machineText": "在本教程剩余的操作过程中，请保持此终端处于打开状态。任何运行 Wake 命令的新终端或 CI 作业都需要重新设置该变量。Wake 根据变量是否**存在**来决定是否启用：将其设置为`false`或空字符串并不会禁用 Wake。旧名称`WAILS_USE_WAKE`会被忽略。",
       "status": "machine-translated",
       "sourcePreview": "Keep this terminal open for the rest of the tutorial. Set the variable again in any new terminal or …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0017-heading-01": {
       "sourceHash": "895aec84e96ab7f4a34698069cd8f68d3524cf3ce7e3fb8213a9b513aacd2fee",
-      "targetHash": "fe508bc1be2e9140227df1071328bd8143bef8ae7bd96db769f74d79d7ee2c86",
-      "machineHash": "fe508bc1be2e9140227df1071328bd8143bef8ae7bd96db769f74d79d7ee2c86",
-      "machineText": "创建应用程序",
+      "targetHash": "98fc221b10e87c214c6888b51bb8b8d4a237292b006164a322449317abd7d9ae",
+      "machineHash": "98fc221b10e87c214c6888b51bb8b8d4a237292b006164a322449317abd7d9ae",
+      "machineText": "创建应用",
       "status": "machine-translated",
       "sourcePreview": "Create the application",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0018-text-01": {
       "sourceHash": "eb4a8aebb3d11bf0d0828a40afada7ac2856da35a3657273320bb7f3a6868faf",
@@ -244,19 +244,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0019-text-01": {
-      "sourceHash": "24799792c9f94f90ce32984e6911e72655762b16bf1e91d52fc61b5d0e8a2c15",
-      "targetHash": "bbd6085b4bfb9f492ef7388f227d8a18710f7a34d18f504760ab572d03ff90f9",
-      "machineHash": "bbd6085b4bfb9f492ef7388f227d8a18710f7a34d18f504760ab572d03ff90f9",
-      "machineText": "浏览器会打开项目向导。此操作会创建源文件；下方单独的`wails3 setup`向导用于配置如何构建这些文件。",
+      "sourceHash": "190fd2a3e7d2f5664fd768f4c3849d471a6d39c41f89df7d4b2bf3fa34802e7a",
+      "targetHash": "e4f93a08c250e20b25885673a1b7a45e4707aead4a85926e0f0dd85f8e440f15",
+      "machineHash": "e4f93a08c250e20b25885673a1b7a45e4707aead4a85926e0f0dd85f8e440f15",
+      "machineText": "浏览器会打开项目向导。启用 Wake 后，该向导会在同一个流程中收集源代码和构建选项。只有最后点击**创建项目**按钮后，才会创建内容。`wails3 setup`是另一个用于配置全局偏好、工具和签名凭据的向导；它不会配置此项目的 Wake 配置文件。",
       "status": "machine-translated",
-      "sourcePreview": "The browser opens a project wizard. This creates source files; the separate `wails3 setup` wizard be…",
+      "sourcePreview": "The browser opens a project wizard. With Wake enabled, it collects the source and build choices in o…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0020-cell-01": {
       "sourceHash": "6e56137e21d3222a2e3135fc3458286fc3fb6b2e2c679e9ae28db268fe982af7",
@@ -268,7 +268,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0021-cell-01": {
       "sourceHash": "0505e08ad3c53fd4906584e292a2f5ed5ab631622e87022915ce9f771b8c3dd7",
@@ -280,7 +280,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0022-cell-01": {
       "sourceHash": "8f9b77e6e0b4eebac0a0786b761ecfaf5782fd7223b1fb34ae6c6bbe2fd63a9b",
@@ -292,7 +292,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0023-cell-01": {
       "sourceHash": "544c87a4cf968f0b61304027944842221f3b8672859589ea7703ce5edcc09743",
@@ -304,7 +304,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0024-cell-01": {
       "sourceHash": "776ee83185fd799204146fd7e81dfe7e9e46f558888845dfe65eb9eb28b15f87",
@@ -316,7 +316,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0025-cell-01": {
       "sourceHash": "d53072f536fd540ba196811812a08f969efdc0c77dcf0320e678df9a7cdbd815",
@@ -328,7 +328,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0026-cell-01": {
       "sourceHash": "f4f51741e8662a7995cd9fb1eda1b141d001136b548a1c2deb2c84e33a7d9236",
@@ -340,31 +340,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0027-cell-01": {
       "sourceHash": "3cc0e592eef74238b00f62e75754eb63b4e33718f4053d4c37ebaa746e739b56",
-      "targetHash": "b36b4965148f2d2d601788b3b34b5ece9eebbfc97e6fc2c8e200ca87989dd0d5",
-      "machineHash": "b36b4965148f2d2d601788b3b34b5ece9eebbfc97e6fc2c8e200ca87989dd0d5",
-      "machineText": "选择**Vanilla**，然后点击**继续**。",
+      "targetHash": "1941e86a226bcb34cef53158202f9ea852c49fa713ed8722f4b857a2d3894494",
+      "machineHash": "1941e86a226bcb34cef53158202f9ea852c49fa713ed8722f4b857a2d3894494",
+      "machineText": "选择**原生**，然后点击**继续**。",
       "status": "machine-translated",
       "sourcePreview": "Select **Vanilla**, then **Continue**.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0028-cell-01": {
       "sourceHash": "4c3334f2971155dec278ea179138f86c247125228993949d43382782326a089d",
-      "targetHash": "4937f2ac408f8bd7d09a4d629b6309dbdef6ff6c483c0b6407b89b687bbbb997",
-      "machineHash": "4937f2ac408f8bd7d09a4d629b6309dbdef6ff6c483c0b6407b89b687bbbb997",
-      "machineText": "你将获得一个小型前端，无需专门学习某个框架。",
+      "targetHash": "64f5969a39e34889c09b225be5e8d934b432412d6957ab30b7fca809d9a72914",
+      "machineHash": "64f5969a39e34889c09b225be5e8d934b432412d6957ab30b7fca809d9a72914",
+      "machineText": "你将获得一个小型前端，无需学习特定框架。",
       "status": "machine-translated",
       "sourcePreview": "You get a small frontend without a framework-specific learning step.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0029-cell-01": {
       "sourceHash": "ca27442df8a2d612bc31bddc50a976a4d44a88fde2750a51c44a46263d2d4355",
@@ -376,7 +376,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0030-cell-01": {
       "sourceHash": "3ee785b094e4b38aff58c636158ae1e8b0c5e54bea9eac67dbed441e6f1b96a9",
@@ -388,19 +388,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0031-cell-01": {
       "sourceHash": "10640fa19ec1eb3a6a116258d8bdc061c088c5936b2ca5d44585acb989b22358",
-      "targetHash": "8a57bd9a1214c89b632f351bfa040f716bab06cee66ae8c6f0b0800bd63ad88c",
-      "machineHash": "8a57bd9a1214c89b632f351bfa040f716bab06cee66ae8c6f0b0800bd63ad88c",
-      "machineText": "仅适用于 TypeScript 的**绑定**界面将被跳过。",
+      "targetHash": "005a2e717a3209779eaa842a38fbe6302421879709343678a8fa11e841bc967c",
+      "machineHash": "005a2e717a3209779eaa842a38fbe6302421879709343678a8fa11e841bc967c",
+      "machineText": "仅适用于 TypeScript 的**绑定**界面会被跳过。",
       "status": "machine-translated",
       "sourcePreview": "The TypeScript-only **Bindings** screen is skipped.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0032-cell-01": {
       "sourceHash": "a838384a7215c4ede8b5924d7118db313181538cd49f996fa9841db5a102e45c",
@@ -412,249 +412,129 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0033-cell-01": {
-      "sourceHash": "093b2588c2e2a8b9e2fb0b5dfd92be600caceb00e9a27bb342052df5f0e64611",
-      "targetHash": "7dcfaf7e4c8d4d76b84f3e84b28bd8dff3bc5294959a54b17d03115e85bcf324",
-      "machineHash": "7dcfaf7e4c8d4d76b84f3e84b28bd8dff3bc5294959a54b17d03115e85bcf324",
-      "machineText": "将产品名称设为`Wake Demo`，捆绑包标识符设为`com.example.wakedemo`，版本设为`0.1.0`。点击**创建项目**。",
+      "sourceHash": "83b7312243c8753945428bb795ebe2e4f38c3a109ca65f0d247795f450908fe1",
+      "targetHash": "86cca3e327d9e42536fe604ea398ee850ce8ad6ec99c018fd34111745c6166ac",
+      "machineHash": "86cca3e327d9e42536fe604ea398ee850ce8ad6ec99c018fd34111745c6166ac",
+      "machineText": "产品名称使用`Wake Demo`，捆绑包标识符使用`com.example.wakedemo`，版本使用`0.1.0`。点击**继续**。",
       "status": "machine-translated",
       "sourcePreview": "Use product name `Wake Demo`, bundle identifier `com.example.wakedemo`, and version `0.1.0`. Click *…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0034-cell-01": {
-      "sourceHash": "1436315bbcdabb715e9d23c61f1425fde7eafc2b3ad99993a3a13dec78ab37f3",
-      "targetHash": "922ae0683aea13c28d97d67e773a881b6652018b912bdd12206d492a4fdf4b9f",
-      "machineHash": "922ae0683aea13c28d97d67e773a881b6652018b912bdd12206d492a4fdf4b9f",
-      "machineText": "启用 Wake 后，详细信息将写入`wails.yaml`。",
+      "sourceHash": "5482ed10c969dcf90cc151fc1ec3e9164a1847c8f555331082de2d4c44ff5ee5",
+      "targetHash": "e987715a765196eb936bf03e3986f29289af110d7849886c065788a1578b558d",
+      "machineHash": "e987715a765196eb936bf03e3986f29289af110d7849886c065788a1578b558d",
+      "machineText": "选择构建设置时，你的元数据会保留在向导中。",
       "status": "machine-translated",
-      "sourcePreview": "With Wake enabled, the details are written to `wails.yaml`.",
+      "sourcePreview": "Your metadata stays in the wizard while you choose the build settings.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0035-text-01": {
       "sourceHash": "b46f43cda65fcab772571af87d6749add4c991aee22c3c0607891b17d1b33c0b",
-      "targetHash": "7d3a67c9198db1583f118d9d69b903e8c5d0f73d03840051fdf1f62cc26c2f3b",
-      "machineHash": "7d3a67c9198db1583f118d9d69b903e8c5d0f73d03840051fdf1f62cc26c2f3b",
-      "machineText": "本教程中不要使用**使用全局默认值**，因为它会跳过框架和语言选择。如果你在其他项目中选择 TypeScript，可以在**绑定**界面中为生成的 Go 数据绑定选择使用接口或类。",
+      "targetHash": "5caf4f9a3d760ffbe07879141d85268e41dc659aff4c152920af65abd309d67c",
+      "machineHash": "5caf4f9a3d760ffbe07879141d85268e41dc659aff4c152920af65abd309d67c",
+      "machineText": "本教程中不要使用**使用全局默认值**：它会跳过框架和语言选项。如果在其他项目中选择 TypeScript，可以在**绑定**界面中选择使用接口或类来生成 Go 数据绑定。",
       "status": "machine-translated",
       "sourcePreview": "Do not use **Use global defaults** for this lesson: it skips the framework and language choices. If …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0036-text-01": {
-      "sourceHash": "f40045f501c533374d4d8816579fbc596d54f52314a585565a9f305ab1956c6e",
-      "targetHash": "1245b1a3a87886cf2f6bc0fbf08b63d16fe7d3c58d9663cc3ff08cedd072d0bc",
-      "machineHash": "1245b1a3a87886cf2f6bc0fbf08b63d16fe7d3c58d9663cc3ff08cedd072d0bc",
-      "machineText": "返回终端并等待项目创建完成。然后运行：",
+    "b0036-heading-01": {
+      "sourceHash": "fab7f6f95f742688fb0a77ed6266244ed277f4f1086ed3857e0e1465aff9e8b8",
+      "targetHash": "2ebd2cc2c11f04a2bc20d317a6ae979429cad421b95959615efd84baba59a23a",
+      "machineHash": "2ebd2cc2c11f04a2bc20d317a6ae979429cad421b95959615efd84baba59a23a",
+      "machineText": "创建前选择构建设置",
       "status": "machine-translated",
-      "sourcePreview": "Return to the terminal and wait for project creation to finish. Then run:",
+      "sourcePreview": "Choose the build settings before creation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0037-text-01": {
-      "sourceHash": "0dac4df2632f8797436ca8fd0be001536765c817085e1eded7adc4fa9df7b079",
-      "targetHash": "20b50413f69e99b4ec364fe7757723e22c1d2fda06da82861d12f661dcf1d18f",
-      "machineHash": "20b50413f69e99b4ec364fe7757723e22c1d2fda06da82861d12f661dcf1d18f",
-      "machineText": "现在应当已有`main.go`、一个 Go 模块、一个`frontend`目录和一个原生`wails.yaml`。内置模板直接使用 Wake，因此无需迁移这个新项目。社区模板可能包含自定义旧版任务，此时可能需要按下文所述进行迁移审查。",
+      "sourceHash": "56a0599dcc3303e4cd195082b464a88454ae0f492051556015727bc1dacd027b",
+      "targetHash": "f1017b60ba54b6f002ff1ed8e63a547eda3fd01f514b96175d29b7d9e091ea82",
+      "machineHash": "f1017b60ba54b6f002ff1ed8e63a547eda3fd01f514b96175d29b7d9e091ea82",
+      "machineText": "继续在同一浏览器窗口中操作。以下屏幕截图展示了在 Linux 上完成此流程的情况。在 Windows 或 macOS 上，主机目标和所需工具会有所不同。",
       "status": "machine-translated",
-      "sourcePreview": "You should now have `main.go`, a Go module, a `frontend` directory and a native `wails.yaml`. The bu…",
+      "sourcePreview": "Continue in the same browser window. The screenshots below show this walkthrough on Linux. Your host…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "b0038-heading-01": {
-      "sourceHash": "edeb1d2d148030f80e230ee51ef22ad0c98a5adf70fbef6539cd756c48561720",
-      "targetHash": "102ed81909abdde07a4dc6e8c4149c3ebf26a28a8b497e93f11c3aa304804b98",
-      "machineHash": "102ed81909abdde07a4dc6e8c4149c3ebf26a28a8b497e93f11c3aa304804b98",
-      "machineText": "逐个界面配置构建",
-      "status": "machine-translated",
-      "sourcePreview": "Configure the build, screen by screen",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0039-text-01": {
-      "sourceHash": "d627728323f80e9a57cbe61724697563e44d1e1e86cca01ff98363dc86eb1832",
-      "targetHash": "1a19da9db46674ab9c7ca0bfce942e662ebfb8c00c30054407827ab38a8cf72e",
-      "machineHash": "1a19da9db46674ab9c7ca0bfce942e662ebfb8c00c30054407827ab38a8cf72e",
-      "machineText": "在`wake-demo`内运行：",
-      "status": "machine-translated",
-      "sourcePreview": "From inside `wake-demo`, run:",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0040-text-01": {
-      "sourceHash": "58b0a4d24098aaf9849cdc06aea1af60cb2dabc0fe5fece3ae7fb2e3c4193f6f",
-      "targetHash": "daf0c82a00e1f3dc39eff49f5d60577aad01cc373e4dc2b843189f6c13b852a1",
-      "machineHash": "daf0c82a00e1f3dc39eff49f5d60577aad01cc373e4dc2b843189f6c13b852a1",
-      "machineText": "浏览器现在会显示**WAKE 设置**。如果显示的是常规设置流程，请检查启动该命令的终端中是否设置了`WAILS_EXP_USE_WAKE`，并确认你运行的是预览版 CLI。",
-      "status": "machine-translated",
-      "sourcePreview": "The browser now shows **WAKE SETUP**. If it shows the general setup flow, check that `WAILS_EXP_USE_…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0041-text-01": {
-      "sourceHash": "67ff5c71ff9f25fb5e23a3949d9139d7e4cdef13087fc9241445c47c84eb747b",
-      "targetHash": "9c85223141e819e574eb5c4ee00ad3270a02229efd007e61156a96e816ae2ef5",
-      "machineHash": "9c85223141e819e574eb5c4ee00ad3270a02229efd007e61156a96e816ae2ef5",
-      "machineText": "以下屏幕截图展示了在 Linux 上完成此演练的过程。在 Windows 或 macOS 上，主机目标和所需工具会有所不同。",
-      "status": "machine-translated",
-      "sourcePreview": "The screenshots below show this walkthrough on Linux. Your host target and required tools will diffe…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0042-heading-01": {
-      "sourceHash": "0cfd13cffc1f466672a4bc8ae9441d696151dcb9c26f73bd789b325e46df5897",
-      "targetHash": "14eefe3dc7461979b5be7b37524db17bd5e0637675fc084a92383af8379c8bab",
-      "machineHash": "14eefe3dc7461979b5be7b37524db17bd5e0637675fc084a92383af8379c8bab",
-      "machineText": "项目 — 仅在缺少元数据时显示",
-      "status": "machine-translated",
-      "sourcePreview": "Project — only when metadata is missing",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0043-text-01": {
-      "sourceHash": "ca2a1f1df5dc45e837027bd9a622ff11ff011d49dc8db796fde4cf872b527b22",
-      "targetHash": "22e016a815b1664fd058e05b3a5cec19f6fee1c1bcfa58bc6046545fe4c70d1e",
-      "machineHash": "22e016a815b1664fd058e05b3a5cec19f6fee1c1bcfa58bc6046545fe4c70d1e",
-      "machineText": "对于刚刚创建的应用程序，此界面会被**跳过**：`init`已经写入元数据。这是预期行为。",
-      "status": "machine-translated",
-      "sourcePreview": "For the application you just created, this screen is **skipped**: `init` already wrote the metadata.…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0044-text-01": {
-      "sourceHash": "3ad2d5234fabc9feaabd813c00eca1f18f020f5f0a28cce22a8007f54abd8677",
-      "targetHash": "9d101d84be9355956c853d996f2f9d0ffbbf3dd2c722b04d5e3a9d841861ee60",
-      "machineHash": "9d101d84be9355956c853d996f2f9d0ffbbf3dd2c722b04d5e3a9d841861ee60",
-      "machineText": "配置不含原生清单或旧版构建配置的现有 Go 源代码目录时，**关于你的项目**界面会要求填写产品名称、项目名称、应用程序标识符、版本、公司和说明。这些值会保留在向导中，直到点击**保存**。设置过程不会创建应用程序源文件。如果发现 Taskfile 或旧版元数据，请先完成迁移。",
-      "status": "machine-translated",
-      "sourcePreview": "When configuring an existing Go source directory without a native manifest or legacy build configura…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0045-heading-01": {
       "sourceHash": "d1c319134bafb88b4a804f6e53473fd76b7617adf144cfe43b1e234fb6711424",
-      "targetHash": "9ffb892947e60a37ec595b3d0c3a9925f0ca071b2cfec006722bc085e61a0ecd",
-      "machineHash": "9ffb892947e60a37ec595b3d0c3a9925f0ca071b2cfec006722bc085e61a0ecd",
-      "machineText": "应用程序 — 你要构建什么？",
+      "targetHash": "c6d5076feb518e5d053b679e5b1a649045adcf9079a71dec9e20b3acfe813ed1",
+      "machineHash": "c6d5076feb518e5d053b679e5b1a649045adcf9079a71dec9e20b3acfe813ed1",
+      "machineText": "应用 — 你要构建什么？",
       "status": "machine-translated",
       "sourcePreview": "Application — What are you building?",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0046-text-01": {
-      "sourceHash": "4e4f637d79c3cf2f3ee5624c505eac41fb71cd3b7aefa49352b432301f1e4f9f",
-      "targetHash": "6559bf6e400c852c00c1d912d27dfc08af2ddaaa2f30b0897981406420496e53",
-      "machineHash": "6559bf6e400c852c00c1d912d27dfc08af2ddaaa2f30b0897981406420496e53",
-      "machineText": "选择**桌面应用程序**。不要勾选**打包现有二进制文件**，并选择**标准后端**。点击**继续**。",
+    "b0039-text-01": {
+      "sourceHash": "e5bc43a180634fd17a727664736523106c09443636ed3fb9d1fb21fb81946b15",
+      "targetHash": "adc239da2658c21167a5bef0cb0bed9beb7ee93667a9aa82ff3a405f8e38c80e",
+      "machineHash": "adc239da2658c21167a5bef0cb0bed9beb7ee93667a9aa82ff3a405f8e38c80e",
+      "machineText": "保留**桌面应用**并选择**标准后端**。点击**继续**。",
       "status": "machine-translated",
-      "sourcePreview": "Choose **Desktop application**. Leave **Package existing binaries** unchecked and choose **Standard …",
+      "sourcePreview": "Keep **Desktop application** and choose **Standard backend**. Click **Continue**.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0047-text-01": {
-      "sourceHash": "2d67e8e2182f9a3b734b128780a9d0fcb7043718917141772db794f62bc13478",
-      "targetHash": "66420301eeb481045a7f43a182b1b11969cb8361c9802fec5f1108feb283c326",
-      "machineHash": "66420301eeb481045a7f43a182b1b11969cb8361c9802fec5f1108feb283c326",
-      "machineText": "![应用程序界面，其中已选择“桌面应用程序”和“标准后端”，并已关闭预构建打包。](/assets/screenshots/wake/application.png)",
+    "b0040-text-01": {
+      "sourceHash": "20e8cd5e38e4c814d467374e0ae0d37fb78a646eeed9d52396956e990712b5f7",
+      "targetHash": "a7b5f1509d741a55d074bb3a1dca2bd1a5b6e29cf23c90300a2e04ec8c298299",
+      "machineHash": "a7b5f1509d741a55d074bb3a1dca2bd1a5b6e29cf23c90300a2e04ec8c298299",
+      "machineText": "![项目创建向导中的“应用”界面，其中已选择“桌面应用”和“标准后端”。](/assets/screenshots/wake/application.png)",
       "status": "machine-translated",
-      "sourcePreview": "![Application screen with Desktop application and Standard backend selected, and prebuilt packaging …",
+      "sourcePreview": "![Application screen in the project creation wizard with Desktop application and Standard backend se…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0048-text-01": {
-      "sourceHash": "22771be207e8d84321b286a95b2b296cf53e49f849ef61d9b9f83de65f381b0b",
-      "targetHash": "1cb2b3a1172f4a8951107044a5d983bdc1861650a97f819e0424a630651133a6",
-      "machineHash": "1cb2b3a1172f4a8951107044a5d983bdc1861650a97f819e0424a630651133a6",
-      "machineText": "**桌面应用程序**会构建一个使用 Web 前端的 GUI。",
+    "b0041-text-01": {
+      "sourceHash": "ac387b514188f0b029340231d792aaad4929db11dd2dc18be2bcdd3846235733",
+      "targetHash": "d641e438f71eac61c0c6338455038d95f4edf6959c8d8386f2fddaf191c6f5a2",
+      "machineHash": "d641e438f71eac61c0c6338455038d95f4edf6959c8d8386f2fddaf191c6f5a2",
+      "machineText": "本教程会创建一个使用 Web 前端的 GUI。\u003cstrong\u003e纯 Go（实验性）\u003c/strong\u003e是一个单独的主动启用选项。对于受支持的桌面编译，只要依赖项也能在不使用 CGo 的情况下构建，它就可以免除 C 编译器要求。但它不会移除目标运行时库，也不会消除所有打包和签名工具要求。",
       "status": "machine-translated",
-      "sourcePreview": "**Desktop application** builds a GUI with a web frontend.",
+      "sourcePreview": "This lesson creates a GUI with a web frontend. **Pure Go (experimental)** is a separate opt-in. It r…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0049-text-01": {
-      "sourceHash": "e2d81e757086c57f11e18772aa0c40db143ed7196ffa8589d25960c0a0c610af",
-      "targetHash": "5c01e73a566bf31b44c60e2e7e22a0a142abeca8f95c99e62385008245744f99",
-      "machineHash": "5c01e73a566bf31b44c60e2e7e22a0a142abeca8f95c99e62385008245744f99",
-      "machineText": "**命令行应用程序**和**服务器**用于描述不含桌面窗口的程序。更改此选项不会重写应用程序源代码；请使用与所选类型匹配的源代码项目。",
+    "b0042-text-01": {
+      "sourceHash": "811a43affc6ac2e9569d53f0197b85f9dc750fe228fd0bdd5ae13199d71e3684",
+      "targetHash": "a611a62be47c419bb45450dc00dc6e96dde2db7a1ad844e27ece6342d84d8e41",
+      "machineHash": "a611a62be47c419bb45450dc00dc6e96dde2db7a1ad844e27ece6342d84d8e41",
+      "machineText": "后端是一个**项目级设置**。继承这些设置的其他配置文件也会使用所选后端。",
       "status": "machine-translated",
-      "sourcePreview": "**Command-line application** and **Server** describe programs without a desktop window. Changing thi…",
+      "sourcePreview": "The backend is a **project-wide setting**. Other profiles that inherit those settings use the select…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0050-text-01": {
-      "sourceHash": "cf0234ca3df221442e3e3d0b0b2fab04a3085cb5b455e853dbc7fcd1af693210",
-      "targetHash": "2b781e991e951086232915956c95255ab2a200a49e8c59f8b1995eca457b8e5d",
-      "machineHash": "2b781e991e951086232915956c95255ab2a200a49e8c59f8b1995eca457b8e5d",
-      "machineText": "\u003cstrong\u003e纯 Go（实验性）\u003c/strong\u003e是一个需要单独选择启用的选项。只要依赖项也能在不使用 CGo 的情况下构建，它就能让受支持的桌面编译不再需要 C 编译器。但它不会消除目标运行时库，也不会消除所有打包和签名工具。",
-      "status": "machine-translated",
-      "sourcePreview": "**Pure Go (experimental)** is a separate opt-in. It removes the C compiler requirement for supported…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0051-text-01": {
-      "sourceHash": "da75e25ec02797b32b303226e3ac97d9bd5003f318e3af01f3b7932665864a47",
-      "targetHash": "f714241f03150386ef186b7b19881f34f5a9a631a2e34d0d627ed6f02eda2304",
-      "machineHash": "f714241f03150386ef186b7b19881f34f5a9a631a2e34d0d627ed6f02eda2304",
-      "machineText": "**打包现有二进制文件**会准备一条使用`--skip-build`的命令。\n  它需要你已经构建好的二进制文件；对于新项目，请不要启用此选项。",
-      "status": "machine-translated",
-      "sourcePreview": "**Package existing binaries** prepares a command using `--skip-build`. It requires binaries you alre…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0052-text-01": {
-      "sourceHash": "782a06beff4e0fc579c79ad8b52c3adad06360af567d273f0fe1c884ea4e6a63",
-      "targetHash": "c4b5a3973a7a5cd6be21681d8a3653ead3316978d05ca6867c907b45c13b1147",
-      "machineHash": "c4b5a3973a7a5cd6be21681d8a3653ead3316978d05ca6867c907b45c13b1147",
-      "machineText": "后端是一个**项目级设置**。更改此处的设置时，继承这些设置的其他配置文件的行为也可能发生变化。",
-      "status": "machine-translated",
-      "sourcePreview": "The backend is a **project-wide setting**. Other profiles that inherit those settings can change beh…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0053-heading-01": {
+    "b0043-heading-01": {
       "sourceHash": "c53070f0accfde6ebda3247ee0a73274e8e576e8a955966fbbc0832e9c3e49a1",
       "targetHash": "f31dd9b83135ba92574e3358a1e7af9f0a2d77dc87abb5a839ba156f6449f601",
       "machineHash": "f31dd9b83135ba92574e3358a1e7af9f0a2d77dc87abb5a839ba156f6449f601",
@@ -664,117 +544,129 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0054-text-01": {
+    "b0044-text-01": {
       "sourceHash": "7b9118eeafa225b0b9000740f3364bf13bea1ee89357951160a4fe92a117db08",
-      "targetHash": "db5cff67d692be1be21432031170fb35771d746e097e996b700aed1af632c37a",
-      "machineHash": "db5cff67d692be1be21432031170fb35771d746e097e996b700aed1af632c37a",
-      "machineText": "只保留当前所用计算机对应的目标，然后单击**继续**。\n向导最初会选中宿主操作系统和体系结构。",
+      "targetHash": "8b7a31232cc84c6e93ede6343a5461427cafffacb27cc99f4511382666e9fb6a",
+      "machineHash": "8b7a31232cc84c6e93ede6343a5461427cafffacb27cc99f4511382666e9fb6a",
+      "machineText": "仅保留与你当前所用计算机对应的目标，然后点击**继续**。向导最初会选中主机的操作系统和架构。",
       "status": "machine-translated",
       "sourcePreview": "Keep only the target for the computer you are using, then click **Continue**. The wizard initially s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0055-text-01": {
+    "b0045-text-01": {
       "sourceHash": "d3c142fd6ac66facd89a58fd2db01edbc83546da98cd417a3a45ac699fcb2e41",
-      "targetHash": "1ed0e8326145cfd93e454413ab95cbf7c276df93d0477089c525f5c992e83b08",
-      "machineHash": "1ed0e8326145cfd93e454413ab95cbf7c276df93d0477089c525f5c992e83b08",
-      "machineText": "![“目标”屏幕，其中仅选中了教程宿主机对应的 linux/amd64。](/assets/screenshots/wake/targets.png)",
+      "targetHash": "48a505196fbfb09033e9c4b5e794582614ab46f9df5eca1721513c004dfeb3f3",
+      "machineHash": "48a505196fbfb09033e9c4b5e794582614ab46f9df5eca1721513c004dfeb3f3",
+      "machineText": "![“目标”界面，其中仅选择了教程主机对应的 linux/amd64。](/assets/screenshots/wake/targets.png)",
       "status": "machine-translated",
       "sourcePreview": "![Targets screen with only linux/amd64 selected for the tutorial host.](/assets/screenshots/wake/tar…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0056-text-01": {
+    "b0046-text-01": {
       "sourceHash": "cdf7a40066b1bbcae7bd377b403d86dcde09ea3d76c22fbba86d79290c3e43b2",
-      "targetHash": "1d02e3c5875494d52df5eb754c5135e39a4f7389e68a0188022fff601f7cf65d",
-      "machineHash": "1d02e3c5875494d52df5eb754c5135e39a4f7389e68a0188022fff601f7cf65d",
-      "machineText": "目标名称由操作系统和 CPU 体系结构组成，例如`windows/amd64`、Apple Silicon Mac 对应的`darwin/arm64`或`linux/amd64`。\n`darwin`表示 macOS。选择其他目标会请求生成适用于该计算机的可执行文件；这不会让该可执行文件能够在当前计算机上运行。",
+      "targetHash": "58fb7d2471ab085e902f1ac35c02a28cbb607cb6543b270fb9556684f18e7159",
+      "machineHash": "58fb7d2471ab085e902f1ac35c02a28cbb607cb6543b270fb9556684f18e7159",
+      "machineText": "目标名称由操作系统和 CPU 架构组合而成，例如`windows/amd64`、适用于 Apple 芯片 Mac 的`darwin/arm64`，或`linux/amd64`。`darwin`表示 macOS。选择其他目标会请求生成适用于对应计算机的可执行文件；这并不会使该可执行文件能够在当前计算机上运行。",
       "status": "machine-translated",
       "sourcePreview": "Target names combine an operating system and CPU architecture: for example, `windows/amd64`, `darwin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0057-text-01": {
-      "sourceHash": "fe8791aade4a0a4bbd83414043ea690a32937ffb35502a1417d94769dd1a2c85",
-      "targetHash": "0e9b528c95835494f05bc5239a908f3832dc9a5ca019cc27c1c21c99728e1be9",
-      "machineHash": "0e9b528c95835494f05bc5239a908f3832dc9a5ca019cc27c1c21c99728e1be9",
-      "machineText": "其他体系结构、macOS 通用构建和实验性移动目标可留到以后再次运行设置时处理。",
+    "b0047-text-01": {
+      "sourceHash": "ab7435c956c602681c61e98dd12d9fbc6b8e654274afa6c32ee2c93c9b59aa67",
+      "targetHash": "3b80079ffaa062d581f71eb1bf8094b079a80f41f51512ef4a03ff7ca2f3a907",
+      "machineHash": "3b80079ffaa062d581f71eb1bf8094b079a80f41f51512ef4a03ff7ca2f3a907",
+      "machineText": "暂时不要选择其他架构、macOS 通用构建和实验性移动端目标。首次本地构建成功后，可以将它们添加到`wails.yaml`中。",
       "status": "machine-translated",
-      "sourcePreview": "Leave additional architectures, macOS universal builds and experimental mobile targets for a later p…",
+      "sourcePreview": "Leave additional architectures, macOS universal builds and experimental mobile targets for later. Yo…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0058-heading-01": {
+    "b0048-heading-01": {
       "sourceHash": "b4957542684c0e4314729c581f5a1caccde6b49578814530f832453e748e922d",
-      "targetHash": "653130a707f14f5ac6eccdfc5f8dd70d16bd9a49fa1d29df285d20c9dc6141df",
-      "machineHash": "653130a707f14f5ac6eccdfc5f8dd70d16bd9a49fa1d29df285d20c9dc6141df",
-      "machineText": "软件包 — 选择发布产物",
+      "targetHash": "e3082bc22069e39aa5548965fbccd70f4c7ff8b44e351befe314776f75343be9",
+      "machineHash": "e3082bc22069e39aa5548965fbccd70f4c7ff8b44e351befe314776f75343be9",
+      "machineText": "软件包 — 选择发布输出",
       "status": "machine-translated",
       "sourcePreview": "Packages — Choose release outputs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0059-text-01": {
+    "b0049-text-01": {
       "sourceHash": "d43dea1655a7049ce2c28f3b9ab6007333be6de512289d911342b33649634491",
-      "targetHash": "07d433993e2d34c22e4806f1e0f64539c7f44533f824c681d3394a36eda64012",
-      "machineHash": "07d433993e2d34c22e4806f1e0f64539c7f44533f824c681d3394a36eda64012",
-      "machineText": "不要选中任何软件包格式复选框，并保持关闭**对发布产物签名**。\n单击**继续**。",
+      "targetHash": "c54bdc5f9190652809b02b2c467d7002369a117327d1657c83a984f1c29f6c44",
+      "machineHash": "c54bdc5f9190652809b02b2c467d7002369a117327d1657c83a984f1c29f6c44",
+      "machineText": "不要勾选任何软件包格式复选框，并关闭**为发布输出签名**。点击**继续**。",
       "status": "machine-translated",
       "sourcePreview": "Leave the package format boxes unchecked and **Sign release outputs** off. Click **Continue**.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0060-text-01": {
+    "b0050-text-01": {
       "sourceHash": "231d13f8baae8fedf2713999c8de6e5d3eb42acda295d763343d5a655074349f",
-      "targetHash": "1c0e2345679dc2a3d7d29806df333a8d4cbea645850f275e4c50fec1ff136abd",
-      "machineHash": "1c0e2345679dc2a3d7d29806df333a8d4cbea645850f275e4c50fec1ff136abd",
-      "machineText": "![“软件包”屏幕，其中未选择其他 Linux 软件包格式，并且已关闭签名。](/assets/screenshots/wake/packages.png)",
+      "targetHash": "67a8c880a4e8a327ad012d0dd1199dfd18d5a17e51d103ba74a0bce6efe88770",
+      "machineHash": "67a8c880a4e8a327ad012d0dd1199dfd18d5a17e51d103ba74a0bce6efe88770",
+      "machineText": "![“软件包”界面，其中未选择任何其他 Linux 软件包格式，并已关闭签名。](/assets/screenshots/wake/packages.png)",
       "status": "machine-translated",
       "sourcePreview": "![Packages screen with no additional Linux package formats selected and signing off.](/assets/screen…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0061-text-01": {
-      "sourceHash": "87a391dd4cb0399c49ee5a48d51f914cc19eae938245fd81b743ab9df1527f99",
-      "targetHash": "40e4d30820145b3204893280f0586e5792077be2d68dcac5e2a23154fe06a6a9",
-      "machineHash": "40e4d30820145b3204893280f0586e5792077be2d68dcac5e2a23154fe06a6a9",
-      "machineText": "未选择其他格式时，Wake 会生成该目标的默认产物：桌面可执行文件；对于 macOS GUI，则生成 macOS 应用程序包。这足以在本地检查应用程序。以后选择格式后，可在受支持的平台上添加 DMG、MSIX、NSIS、DEB 或 AppImage 等分发产物。",
+    "b0051-text-01": {
+      "sourceHash": "ba63c632b4796fc0c5bcfa848dab23d9104aa125834b199bb9216569b7097475",
+      "targetHash": "6785f952af060b34b72c1d3d97be1153d62f70eb9607b97adfa2b64526520fb0",
+      "machineHash": "6785f952af060b34b72c1d3d97be1153d62f70eb9607b97adfa2b64526520fb0",
+      "machineText": "如果不选择其他格式，Wake 会生成目标平台的默认输出：桌面可执行文件；对于 macOS GUI，则生成 macOS 应用程序包。这足以在本地检查应用程序。选择其他格式后，还会在受支持的平台上生成 DMG、MSIX、NSIS、DEB 或 AppImage 等分发产物。",
       "status": "machine-translated",
       "sourcePreview": "With no additional formats selected, Wake produces the target's default output: a desktop executable…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0062-text-01": {
-      "sourceHash": "ca6b30313db89b4b9e35a7fde8c7687da7abe0dcb8a20f0386ff558e76033e7c",
-      "targetHash": "15d863aaf4ba4edfcf7f944d5b25482bb585e8486d10471fe10f773b247d2131",
-      "machineHash": "15d863aaf4ba4edfcf7f944d5b25482bb585e8486d10471fe10f773b247d2131",
-      "machineText": "首次进行本地构建时，签名是可选的。未签名的构建成功并不表示应用程序已可公开分发。",
+    "b0052-text-01": {
+      "sourceHash": "eaadf8a0193471159dcf7586f28ef6397b55a4c2dd9c5b35c9c1a36d3ba8f209",
+      "targetHash": "7215388e5e80542ca6a7ad3afb6701d22e5ec17ef210efa0eac4444aaf9dfcd5",
+      "machineHash": "7215388e5e80542ca6a7ad3afb6701d22e5ec17ef210efa0eac4444aaf9dfcd5",
+      "machineText": "首次在本地构建时可以不签名。未签名构建成功并不意味着应用程序已可公开分发。对于需要签名的项目，请在创建前使用`wails3 setup`配置可复用的凭据，或者之后在`wails.yaml`中配置签名。创建向导会使用已配置的凭据，但不会更改全局签名偏好设置。",
       "status": "machine-translated",
       "sourcePreview": "Signing is optional for this first local build. A successful unsigned build does not mean the applic…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0063-heading-01": {
+    "b0053-text-01": {
+      "sourceHash": "3e51c95e901a04a41f5796294225430b520df5f7c3b169e3079ec8ca35831b61",
+      "targetHash": "daabc42a6733058cb17d27ea7273c0b01bec7f1d44f20169fc580c8d3cd58505",
+      "machineHash": "daabc42a6733058cb17d27ea7273c0b01bec7f1d44f20169fc580c8d3cd58505",
+      "machineText": "Wake 可以使用项目外部已配置的证书文件，而无需将私钥或密码复制到`wails.yaml`中。显式的项目签名设置优先。在准备公开发布前，请遵循[签名设置指南](/getting-started/setup/)和[打包与签名指南](/experimental/yaml-builds/#package-and-sign-for-distribution)。移动端签名在 YAML 中配置。",
+      "status": "machine-translated",
+      "sourcePreview": "Wake can use configured certificate files outside the project without copying private keys or passwo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T05:55:44Z"
+    },
+    "b0054-heading-01": {
       "sourceHash": "d2a5d669a61021c631f688884f8d1a16eacaa9b9b3f9210aac874c44e9d901b6",
       "targetHash": "18a83a47553a6fff31628aada6f42750af9b328dfbdc6df0e683c8ec4167f436",
       "machineHash": "18a83a47553a6fff31628aada6f42750af9b328dfbdc6df0e683c8ec4167f436",
@@ -784,177 +676,141 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0064-text-01": {
+    "b0055-text-01": {
       "sourceHash": "60f835f13a87c19b6b4ceb833bf542bf7f46b77ab69ddc026021d65de0717381",
-      "targetHash": "83ad9e3702bff4608eeb21eedd1e737c46241759ee4ae391a98a9cad91ff6e72",
-      "machineHash": "83ad9e3702bff4608eeb21eedd1e737c46241759ee4ae391a98a9cad91ff6e72",
-      "machineText": "阅读所选项目的要求。该列表来自 Wake 的构建计划，并非要求在每个平台上安装所有工具。",
+      "targetHash": "4ae13fccb93269831333774ed4c3f78e3e01bb7771b52201a178dc1884d0033a",
+      "machineHash": "4ae13fccb93269831333774ed4c3f78e3e01bb7771b52201a178dc1884d0033a",
+      "machineText": "查看所选配置的要求。此列表来自 Wake 的构建计划，并非要求在每个平台上安装所有工具。",
       "status": "machine-translated",
       "sourcePreview": "Read the requirements for your selections. The list comes from Wake's build plan; it is not a reques…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0065-text-01": {
+    "b0056-text-01": {
       "sourceHash": "fa5b51c2f06db842ce3b12e7f28809b056596a29b0cadfd6c28912a1f04d7e3d",
-      "targetHash": "1d06c6626b6a220169e1c470e833bdf57421fe5f6afd168d8da6bbd4cf86addc",
-      "machineHash": "1d06c6626b6a220169e1c470e833bdf57421fe5f6afd168d8da6bbd4cf86addc",
-      "machineText": "![“工具”屏幕，显示已为本地 Linux 源代码构建解析的要求。](/assets/screenshots/wake/tools.png)",
+      "targetHash": "ac04938fa80cba833fb9e9a6956ab7ce1b58fb44a62e0a01ceb8eac703d71902",
+      "machineHash": "ac04938fa80cba833fb9e9a6956ab7ce1b58fb44a62e0a01ceb8eac703d71902",
+      "machineText": "![“工具”屏幕，显示针对本地 Linux 源码构建解析出的要求。](/assets/screenshots/wake/tools.png)",
       "status": "machine-translated",
       "sourcePreview": "![Tools screen showing the requirements resolved for the local Linux source build.](/assets/screensh…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0066-text-01": {
+    "b0057-text-01": {
       "sourceHash": "f86493e6940487cfc121c57f603f00396cf8c648629dd1c2bab905b98cfc1ccd",
-      "targetHash": "667244bc59460461891f12896da361058dfc1e4a9f06dfeaeb1ef5f17e44eb77",
-      "machineHash": "667244bc59460461891f12896da361058dfc1e4a9f06dfeaeb1ef5f17e44eb77",
-      "machineText": "在本教程中，预计需要 Go、前端工具，以及宿主机标准 GUI 后端所需的原生开发工具。Docker 并非普遍要求。使用 CGo 进行交叉构建时，可能需要编译器和目标库，或受支持的容器工具链。",
+      "targetHash": "11c6d8df0916793ed87dbc2de070eb2431f9ce159152f5aadc61f9de5ca51c8e",
+      "machineHash": "11c6d8df0916793ed87dbc2de070eb2431f9ce159152f5aadc61f9de5ca51c8e",
+      "machineText": "在本教程中，通常需要 Go、前端工具，以及主机标准 GUI 后端所需的原生开发工具。Docker 并非一概必需。使用 CGo 进行交叉构建时，可能需要编译器和目标库，或受支持的容器工具链。",
       "status": "machine-translated",
       "sourcePreview": "For this lesson, expect Go and the frontend tools, plus the native development tools required by you…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0067-text-01": {
-      "sourceHash": "5b02f1983ab49abf49c9bcd2f395557e56b3f981cbd96473169c3c2d898d04a6",
-      "targetHash": "e05b542603be3fe3d5fcfd397c6fb462faa5a483660936e3d492f222d9bf2c31",
-      "machineHash": "e05b542603be3fe3d5fcfd397c6fb462faa5a483660936e3d492f222d9bf2c31",
-      "machineText": "尝试本地构建前，请处理标记为**未就绪**、**需要配置**或**需要更新**的行。使用界面上提供的说明（如有）或[平台安装指南](/getting-started/installation/)，然后单击**重新检查**。如果安装更改了终端的`PATH`，可能需要重新启动设置。宿主机要求就绪后，单击**继续**。",
+    "b0058-text-01": {
+      "sourceHash": "333d40078cbe8b2256ad5f14e07f8764da06f6f48d425831b36fc8a763014270",
+      "targetHash": "d8f6be8236964c3949fa935a567d38e4b771fb5a4485035b611bd3e422436578",
+      "machineHash": "d8f6be8236964c3949fa935a567d38e4b771fb5a4485035b611bd3e422436578",
+      "machineText": "尝试本地构建前，请解决标记为**未就绪**、**需要配置**或**需要更新**的项目。请使用屏幕上显示的说明（如有）或参阅[平台安装指南](/getting-started/installation/)，然后点击**重新检查要求**。如果安装过程更改了终端的`PATH`，请从已更新的终端重新启动`wails3 init -ui`，并再次完成选择。",
       "status": "machine-translated",
       "sourcePreview": "Resolve rows marked **Not ready**, **Needs configuration** or **Update needed** before trying the lo…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0068-text-01": {
-      "sourceHash": "d1a9cb61c56f0e59e68a439e1380a75b36e92d99ebaab21bbc30d85c83a439c7",
-      "targetHash": "4296d875224a651649f1f2696b20eb520e5111fe4f29e7e550e946f07514de2f",
-      "machineHash": "4296d875224a651649f1f2696b20eb520e5111fe4f29e7e550e946f07514de2f",
-      "machineText": "即使此计算机缺少工具，向导也可以保存有效配置。这对 CI 配置很有用，但在本教程中，你需要的是能够在此计算机上运行的构建。",
+    "b0059-text-01": {
+      "sourceHash": "83683df24567d2ca3624075c261a1e8ff4428a5f9d13e04f3b1c5a9476dab8f8",
+      "targetHash": "f52b0b4e998c558215beae484c58c23e1e5c7bc6966b523835d03dd8b92b018d",
+      "machineHash": "f52b0b4e998c558215beae484c58c23e1e5c7bc6966b523835d03dd8b92b018d",
+      "machineText": "即使这台计算机缺少工具或签名凭据，向导仍可创建有效的项目。这对配置 CI 很有用，但本教程需要能够在本机运行的构建。必须在创建前更正无效配置。",
       "status": "machine-translated",
-      "sourcePreview": "The wizard can save a valid configuration even when this computer lacks tools. That is useful for CI…",
+      "sourcePreview": "The wizard can create a valid project even when this computer lacks tools or signing credentials. Th…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0069-heading-01": {
-      "sourceHash": "be211ec92e68a2e6c03533a45a60058fcd40dbcf115f08b37aced07d63808607",
-      "targetHash": "7e2887df39ca71a3721bc4cef8b0cc14d5a190f5f6f3db1bb129ace6bd34ad35",
-      "machineHash": "7e2887df39ca71a3721bc4cef8b0cc14d5a190f5f6f3db1bb129ace6bd34ad35",
-      "machineText": "签名 — 仅在选中时显示",
+    "b0060-heading-01": {
+      "sourceHash": "25c173f6ced6f99ec77add8c3bc15df61b51db04149b136bd84933cb4648ff7a",
+      "targetHash": "43d7d2b51d75fa42d80c78b14b15b4adf4bb68483603b60972dc07ab76705ad9",
+      "machineHash": "43d7d2b51d75fa42d80c78b14b15b4adf4bb68483603b60972dc07ab76705ad9",
+      "machineText": "创建项目",
       "status": "machine-translated",
-      "sourcePreview": "Signing — only when selected",
+      "sourcePreview": "Create the project",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0070-text-01": {
-      "sourceHash": "5f8f357e06df5b3e0c9f12c1cd1ddb961cb6ae9bdb34bf3fa72bf7e543dd3ea8",
-      "targetHash": "1c9468294310b7c9ac32de1ef175f6a8616825467a986feed600aed5c4cd960f",
-      "machineHash": "1c9468294310b7c9ac32de1ef175f6a8616825467a986feed600aed5c4cd960f",
-      "machineText": "由于你保持关闭签名，此屏幕将被**跳过**。以后再次运行时，启用**对发布产物签名**会显示所选桌面平台现有的签名控件。**稍后设置签名**会在保存的设置配置文件中关闭签名。移动端签名通过 YAML 配置，而不使用这些控件。",
+    "b0061-text-01": {
+      "sourceHash": "089e548dfbb2919f2828b8a2bbec1eef85599e58b1deaaf58273b79394309ad0",
+      "targetHash": "abdf7d3691066b1f4f6e1a03d8b927d3ddd3f836f1a5804bab073b36897ea3a0",
+      "machineHash": "abdf7d3691066b1f4f6e1a03d8b927d3ddd3f836f1a5804bab073b36897ea3a0",
+      "machineText": "检查你的选择：桌面应用程序、标准后端、当前主机对应的目标平台，并禁用签名。在**工具**页面上，点击**创建项目**，等待出现**已接受项目选择**。返回终端，等待 CLI 完成项目创建；浏览器中的确认操作只会接受你的选择。",
       "status": "machine-translated",
-      "sourcePreview": "This screen is **skipped** because you left signing off. On a later run, enabling **Sign release out…",
+      "sourcePreview": "Check your choices: desktop application, standard backend, your host target, and signing disabled. O…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:57:14Z"
     },
-    "b0071-text-01": {
-      "sourceHash": "faa883362f1b3f47a3e12d6b1a96b2033a867a5b80dc557acd9df7e721b526c8",
-      "targetHash": "8ca85481a8304c3c9b10c75132d27dc7860f1de0a08c93c0c51fe2d17062d577",
-      "machineHash": "8ca85481a8304c3c9b10c75132d27dc7860f1de0a08c93c0c51fe2d17062d577",
-      "machineText": "签名默认值保存在用户设置中。Wake 可以使用项目外已配置的证书文件，而无需将私钥或密码复制到`wails.yaml`中。显式的项目签名设置优先。准备公开发布前，请遵循[设置签名指南](/getting-started/setup/)和[打包与签名指南](/experimental/yaml-builds/#package-and-sign-for-distribution)。",
+    "b0062-text-01": {
+      "sourceHash": "86aacf14d019a8b3e1b8d5544c5330497a4bf9cc211aaa10f2e8e01369facd1c",
+      "targetHash": "e9f3df8830bac261d1b4161426294483ee9f9cbf4c5250df0c8eeece74310b90",
+      "machineHash": "e9f3df8830bac261d1b4161426294483ee9f9cbf4c5250df0c8eeece74310b90",
+      "machineText": "![“已接受项目选择”屏幕，其中显示计划使用的应用程序路径，以及创建成功后要使用的命令。](/assets/screenshots/wake/save.png)",
       "status": "machine-translated",
-      "sourcePreview": "Signing defaults live in your user settings. Wake can use configured certificate files outside the p…",
+      "sourcePreview": "![Project choices accepted screen showing the planned application path and commands to use after cre…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:57:14Z"
     },
-    "b0072-heading-01": {
-      "sourceHash": "d9799853a3402ea4ea0689f043c9c77acaf2113d3a2c1fe0d68f204d81c9c7f2",
-      "targetHash": "9565b1fc1e93b3a0c68ef4be972343e74bd697c37689fe78b2dfb98a57c34d23",
-      "machineHash": "9565b1fc1e93b3a0c68ef4be972343e74bd697c37689fe78b2dfb98a57c34d23",
-      "machineText": "保存 — 保存构建配置",
+    "b0063-text-01": {
+      "sourceHash": "5d6a5fbfb2909dadeca4fba4c9cf41778ee3a430993a419b79ae80ec0ad352a2",
+      "targetHash": "07d5c0569cbb22fc66cbd026480d9ae9b375cdc182d3be49e7d7b16339d1b6c5",
+      "machineHash": "07d5c0569cbb22fc66cbd026480d9ae9b375cdc182d3be49e7d7b16339d1b6c5",
+      "machineText": "向导会创建源代码，并将目标平台、软件包和签名选项保存在`wails.yaml`的`profiles.setup`下。它还会设置应用程序类型、是否启用前端以及项目级后端。你可以关闭浏览器并返回终端。等待项目创建完成，然后运行：",
       "status": "machine-translated",
-      "sourcePreview": "Save — Save your build configuration",
+      "sourcePreview": "The wizard creates the source and saves the target, package and signing choices under `profiles.setu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0073-text-01": {
-      "sourceHash": "f4a66d0b86adf006daf23209367131088bcb892465d5221cf6c207e78a2ef290",
-      "targetHash": "3b1b98b23a06779d224384c7b459bd52f80f378e0460ec100d0eb37e64ec39d9",
-      "machineHash": "3b1b98b23a06779d224384c7b459bd52f80f378e0460ec100d0eb37e64ec39d9",
-      "machineText": "检查摘要：桌面应用程序、标准后端、源代码构建、宿主机目标，以及已禁用签名。单击**保存 wails.yaml**。",
+    "b0064-text-01": {
+      "sourceHash": "0dac4df2632f8797436ca8fd0be001536765c817085e1eded7adc4fa9df7b079",
+      "targetHash": "3d413d7ba3684391aa52b061325d3d46e83dfcd18eb2a88b983842dc973187f8",
+      "machineHash": "3d413d7ba3684391aa52b061325d3d46e83dfcd18eb2a88b983842dc973187f8",
+      "machineText": "现在应当已有`main.go`、一个 Go 模块、一个`frontend`目录和一个原生`wails.yaml`。内置模板直接使用 Wake；无需迁移这个新项目。社区模板可能包含自定义旧版任务，因此可能需要执行下文所述的迁移审查。",
       "status": "machine-translated",
-      "sourcePreview": "Check the summary: desktop application, standard backend, source build, your host target, and signin…",
+      "sourcePreview": "You should now have `main.go`, a Go module, a `frontend` directory and a native `wails.yaml`. The bu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0074-text-01": {
-      "sourceHash": "5e4b2a0c6790b799dd07196245c08cdb699e2e6348157b8e9d9add5d70f742ed",
-      "targetHash": "5764e040dabe64507e207da3e247cb6a2cde72e5435a4d7c5c62be7c68612f06",
-      "machineHash": "5764e040dabe64507e207da3e247cb6a2cde72e5435a4d7c5c62be7c68612f06",
-      "machineText": "![“保存”屏幕，汇总了 GUI 应用程序、标准后端、源代码构建和未签名的 linux/amd64 目标。](/assets/screenshots/wake/save.png)",
+    "b0065-text-01": {
+      "sourceHash": "198c81f9344497805cff609214e513995a6e091cb9907694ae060df441c88f93",
+      "targetHash": "444859ba22f2826779aa76b2e5fc88fc62a79cde4d3291030f35acd9877e8d55",
+      "machineHash": "444859ba22f2826779aa76b2e5fc88fc62a79cde4d3291030f35acd9877e8d55",
+      "machineText": "完成页面会显示`wails3 build setup`和`wails3 dev`。配置文件名称很重要：`wails3 build setup`会使用你刚才保存的选项。仅使用`wails3 build`不会自动选择`setup`配置文件。该配置文件名称并不表示你需要运行`wails3 setup`。",
       "status": "machine-translated",
-      "sourcePreview": "![Save screen summarising the GUI application, standard backend, source build and unsigned linux/amd…",
+      "sourcePreview": "The completion screen shows `wails3 build setup` and `wails3 dev`. The profile name matters: `wails3…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0075-text-01": {
-      "sourceHash": "eb70cd72707bc157b75024d9a56778a5037c3e59fe3dabef9d13dd685e3ecc21",
-      "targetHash": "d462482e82aaf4962d0eaa0ea2e559c03f4321be299db4b7d299aa97180294f4",
-      "machineHash": "d462482e82aaf4962d0eaa0ea2e559c03f4321be299db4b7d299aa97180294f4",
-      "machineText": "你应当会看到**构建配置已保存**、清单文件的路径，以及：",
-      "status": "machine-translated",
-      "sourcePreview": "You should see **Build configuration saved**, the path to your manifest, and:",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0076-text-01": {
-      "sourceHash": "558d445c75dcedf00d2e3204bb99158f9c4acb1119ef7ddad8f530b20bf24c8f",
-      "targetHash": "a1689a838d9093a3fe897c0b6bc60fcb25917d9c606a3f5241330ce76e9980c4",
-      "machineHash": "a1689a838d9093a3fe897c0b6bc60fcb25917d9c606a3f5241330ce76e9980c4",
-      "machineText": "单击**完成**并返回终端。设置已将目标和软件包选项保存到`profiles.setup`下。此外，它还会更新应用程序类型、前端启用状态和后端设置。现有的前端命令、配套程序、钩子和无关配置会予以保留。",
-      "status": "machine-translated",
-      "sourcePreview": "Click **Finish** and return to the terminal. Setup has saved the target and package choices under `p…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0077-text-01": {
-      "sourceHash": "976938d22dd9926958efc63f3860594fe324b892dd682098bf67e840e60f3382",
-      "targetHash": "2b1634da1d29803c6add72b246a845a59d4e2e6a0535bcb7232f068facddc283",
-      "machineHash": "2b1634da1d29803c6add72b246a845a59d4e2e6a0535bcb7232f068facddc283",
-      "machineText": "配置文件名称很重要：`wails3 build setup`会使用这些已保存的选项。仅使用`wails3 build`不会自动选择`setup`配置文件。",
-      "status": "machine-translated",
-      "sourcePreview": "The profile name matters: `wails3 build setup` uses those saved selections. Plain `wails3 build` doe…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
-    },
-    "b0078-heading-01": {
+    "b0066-heading-01": {
       "sourceHash": "25879dfe5933593f0e50901fe9309b753e08f3cfe7e6c3ce517b1c7db25b9b04",
       "targetHash": "e8e2f2d8a00f1d8d913dd499abd651bf2b4bb0cd1b439cc06e81d0784b65d02e",
       "machineHash": "e8e2f2d8a00f1d8d913dd499abd651bf2b4bb0cd1b439cc06e81d0784b65d02e",
@@ -964,9 +820,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0079-text-01": {
+    "b0067-text-01": {
       "sourceHash": "1aa17bcf650f7e8671856af3e3cc3ae7746c69340ecef10eb368a41276970d86",
       "targetHash": "d34c5b58ec7f6faafb1ee0fcfe025e41dc0575f377f34f5438fa1e597ad5f5b7",
       "machineHash": "d34c5b58ec7f6faafb1ee0fcfe025e41dc0575f377f34f5438fa1e597ad5f5b7",
@@ -976,21 +832,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0080-text-01": {
+    "b0068-text-01": {
       "sourceHash": "1764781bef265d9b79b7ca7de88dd3b515e6c0e6caa217f3ada9a16d021c30d0",
-      "targetHash": "b221340889af07cc001436501b100b53615f41ad84052bd37374e5772db1d407",
-      "machineHash": "b221340889af07cc001436501b100b53615f41ad84052bd37374e5772db1d407",
-      "machineText": "首次构建会安装前端依赖项、生成绑定并编译应用程序。后续构建可以复用未发生变化的工作。等待出现**构建成功**，并查看 CLI 输出的路径。默认输出目录为`bin`；macOS GUI 会被组装成`.app`包。",
+      "targetHash": "e132cf9aad868f2c1735c0453b053d733310bac84569afcaa93f715b413fabf5",
+      "machineHash": "e132cf9aad868f2c1735c0453b053d733310bac84569afcaa93f715b413fabf5",
+      "machineText": "首次构建会安装前端依赖项、生成绑定并编译应用程序。后续构建可以复用未发生变化的工作。等待出现**构建成功**，并查看 CLI 输出的路径。默认输出目录是`bin`；macOS GUI 会组装成`.app`包。",
       "status": "machine-translated",
       "sourcePreview": "The first build installs frontend dependencies, generates bindings and compiles the application. Lat…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0081-text-01": {
+    "b0069-text-01": {
       "sourceHash": "8b364d3c87156dd83880b27180f396e9f22a965503f022842f4dbb4559d20f8f",
       "targetHash": "9ee8a2ab9c9af3d912522ebebf271b1ebc96bf954ea4720523e1fd037196baae",
       "machineHash": "9ee8a2ab9c9af3d912522ebebf271b1ebc96bf954ea4720523e1fd037196baae",
@@ -1000,45 +856,45 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0082-text-01": {
+    "b0070-text-01": {
       "sourceHash": "ee8076070e5225e53b577517cafe89c520b13a4585d851cfdd071e576cad03e6",
-      "targetHash": "816a4eaa9ac6baf5d3d3520ef30679e8e6770814caa8348b6fdba82b232ca7d1",
-      "machineHash": "816a4eaa9ac6baf5d3d3520ef30679e8e6770814caa8348b6fdba82b232ca7d1",
-      "machineText": "你应当会看到初始应用程序窗口。输入你的姓名并试用问候功能。在`frontend/index.html`中更改姓名输入框的占位文本并保存文件；前端应会刷新。编辑`greetservice.go`中的问候语，以触发 Go 重新构建。完成后，在终端中按**Ctrl+C**。",
+      "targetHash": "163e625dea78f1b4ad198b0a97ee96a868217662890f0b1e1246ffa744c1aae0",
+      "machineHash": "163e625dea78f1b4ad198b0a97ee96a868217662890f0b1e1246ffa744c1aae0",
+      "machineText": "此时应看到入门应用程序窗口。输入你的姓名并试用问候功能。在`frontend/index.html`中更改姓名输入框的占位文本并保存文件；前端应会刷新。编辑`greetservice.go`中的问候语，以触发一次 Go 重新构建。完成后，在终端中按**Ctrl+C**。",
       "status": "machine-translated",
       "sourcePreview": "You should see the starter application window. Enter your name and try its greeting. Change the name…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0083-text-01": {
+    "b0071-text-01": {
       "sourceHash": "51b4143f7cbe5dc1095ab905671ee1792c3c129cb3235bf0a19676166de5c690",
-      "targetHash": "ee7c950195209520ab275298c7f396ae4ca5eeba7457c9ea6e1af6fd0e67a56b",
-      "machineHash": "ee7c950195209520ab275298c7f396ae4ca5eeba7457c9ea6e1af6fd0e67a56b",
-      "machineText": "开发是宿主机上的本地工作流。发布配置文件可以包含多个交叉构建目标，而不会改变哪台计算机能够运行开发窗口。要在本地构建并启动生产版应用程序，请使用`wails3 run`；请参阅[运行命令参考](/reference/wails-yaml-run/)。",
+      "targetHash": "32942f17f1bfb7718e9934340b560791fce8d128fe5586063cc4c4b8491fd9c4",
+      "machineHash": "32942f17f1bfb7718e9934340b560791fce8d128fe5586063cc4c4b8491fd9c4",
+      "machineText": "开发是一种在本地主机上进行的工作流。发布配置文件可以包含多个交叉构建目标，而不会改变哪台计算机能够运行开发窗口。要在本地构建并启动生产版应用程序，请使用`wails3 run`；请参阅[运行命令参考](/reference/wails-yaml-run/)。",
       "status": "machine-translated",
       "sourcePreview": "Development is a local host workflow. A release profile can contain several cross-build targets with…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0084-text-01": {
+    "b0072-text-01": {
       "sourceHash": "0facac5930a964c49d0734413981e1a8470745f9b93c16104328ecad2d756667",
-      "targetHash": "e286b58b61fa71e424db8aa0a89defec278aa196389f73de90249ae9b2e54a10",
-      "machineHash": "e286b58b61fa71e424db8aa0a89defec278aa196389f73de90249ae9b2e54a10",
-      "machineText": "现在，你已经拥有一个源代码项目、一个经过审查的构建配置文件，以及一个可正常工作的本地开发循环。将源代码和`wails.yaml`提交到版本控制。生成的`.wails/`工作文件并非配置源。",
+      "targetHash": "f0df8f0a51aadd9b2ed3d9b7099b82e2561f65447fc83016eac8b4705b4fdcc1",
+      "machineHash": "f0df8f0a51aadd9b2ed3d9b7099b82e2561f65447fc83016eac8b4705b4fdcc1",
+      "machineText": "你现在已经有了源代码项目、经过审查的构建配置文件，以及可用的本地开发循环。请将源代码和`wails.yaml`提交到版本控制系统。生成的`.wails/`工作文件并非配置源。",
       "status": "machine-translated",
       "sourcePreview": "You now have a source project, a reviewed build profile and a working local development loop. Commit…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0085-heading-01": {
+    "b0073-heading-01": {
       "sourceHash": "05c7efd0a4c9879c1ebf75377b4eea981db8708aa7158ddc13bfb2c0aa9b779b",
       "targetHash": "490b466a8ae2b27b13f33cb77be389d0be49d17e7494859aa9030a6369afddfc",
       "machineHash": "490b466a8ae2b27b13f33cb77be389d0be49d17e7494859aa9030a6369afddfc",
@@ -1048,9 +904,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0086-cell-01": {
+    "b0074-cell-01": {
       "sourceHash": "cdbf6975e8a35b0d03558be6822dfae166482c24fb86b0433f60e8167f5c91e4",
       "targetHash": "57060c88a36bf3d073db72f91153d060b56ca2ee56d1b0291c8e2794cc998865",
       "machineHash": "57060c88a36bf3d073db72f91153d060b56ca2ee56d1b0291c8e2794cc998865",
@@ -1060,9 +916,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0087-cell-01": {
+    "b0075-cell-01": {
       "sourceHash": "837023af09c576fa10ead2a261590e7814990dcb10a5cc9c20356ca8a7112e40",
       "targetHash": "84a68728751d239abd5660da98007898fc1a6439097d3100239a800870c75518",
       "machineHash": "84a68728751d239abd5660da98007898fc1a6439097d3100239a800870c75518",
@@ -1072,21 +928,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0088-cell-01": {
+    "b0076-cell-01": {
       "sourceHash": "b377cd72237b7de58e470fc0c18b30499c2096c32494c4c99dc77bb33aa94a32",
-      "targetHash": "41bfe5a270e5d077420ec7cc02b06266dbdc428a36128709fe795fd429f7a261",
-      "machineHash": "41bfe5a270e5d077420ec7cc02b06266dbdc428a36128709fe795fd429f7a261",
-      "machineText": "首先要检查的内容",
+      "targetHash": "80e3e3592b6d5b5f131827206fc7effdb0e434cfcf9067fdefb5e95f4b022d5f",
+      "machineHash": "80e3e3592b6d5b5f131827206fc7effdb0e434cfcf9067fdefb5e95f4b022d5f",
+      "machineText": "首先要检查的事项",
       "status": "machine-translated",
       "sourcePreview": "What to check first",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0089-cell-01": {
+    "b0077-cell-01": {
       "sourceHash": "6748d28d19370ac36e00459f65ceb5acf244170d0d870995ca1d3ab84db3d8eb",
       "targetHash": "c4919249da6ad987caefde2e0a45b6a89c85e18a4a7d1744627d59a440ed65d8",
       "machineHash": "c4919249da6ad987caefde2e0a45b6a89c85e18a4a7d1744627d59a440ed65d8",
@@ -1096,57 +952,57 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0090-cell-01": {
+    "b0078-cell-01": {
       "sourceHash": "75b4c662fdd3436b4790bf005a91ad63d396b3dd65c3261cfd944ba1ab702588",
-      "targetHash": "64992b170c8838a8414b54a59437cc7bc4df8c8076e42f0f967453d4501926dc",
-      "machineHash": "64992b170c8838a8414b54a59437cc7bc4df8c8076e42f0f967453d4501926dc",
-      "machineText": "Windows、macOS 和 Linux 目标，包括两种 macOS 体系结构和通用产物。",
+      "targetHash": "a43e1b17286e62458590c2fbfeb6bf309904b2fd54b3bd2e4ca9c105bc10fb38",
+      "machineHash": "a43e1b17286e62458590c2fbfeb6bf309904b2fd54b3bd2e4ca9c105bc10fb38",
+      "machineText": "Windows、macOS 和 Linux 目标平台，包括两种 macOS 架构和通用输出。",
       "status": "machine-translated",
       "sourcePreview": "Windows, macOS and Linux targets, including both macOS architectures and universal output.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0091-cell-01": {
+    "b0079-cell-01": {
       "sourceHash": "5d1c0121bf2b1296413c0aa672917e69f457ed4204536aef88b4128935ed6f24",
-      "targetHash": "49c2a6633c052249bca401c4a4711b5dd485da5c7806c97932ab2158b52fa26c",
-      "machineHash": "49c2a6633c052249bca401c4a4711b5dd485da5c7806c97932ab2158b52fa26c",
-      "machineText": "纯 Go 和 CGo 的编译器要求不同。请在目标操作系统和体系结构上进行测试。",
+      "targetHash": "4ccb46243a82a723fd7015c23f07c414de82988bffbb6355438ba926f9fe045b",
+      "machineHash": "4ccb46243a82a723fd7015c23f07c414de82988bffbb6355438ba926f9fe045b",
+      "machineText": "纯 Go 和 CGo 的编译器要求不同。请在目标操作系统和架构上测试。",
       "status": "machine-translated",
       "sourcePreview": "Pure Go and CGo have different compiler requirements. Test on the destination OS and architecture.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0092-cell-01": {
+    "b0080-cell-01": {
       "sourceHash": "709b6b52260c039aee702481217d7f5cc406e9ac8a82f6ddfe9b73550f5dab73",
-      "targetHash": "39e55e59c8b574f60001dd7e0b2690c1c4eae65e00ef520e739e507b4b0a9879",
-      "machineHash": "39e55e59c8b574f60001dd7e0b2690c1c4eae65e00ef520e739e507b4b0a9879",
-      "machineText": "创建安装程序或软件包",
+      "targetHash": "f65ff33a7145570853f57cebac3ee1e28c02830f5257df4d982950f2463961e2",
+      "machineHash": "f65ff33a7145570853f57cebac3ee1e28c02830f5257df4d982950f2463961e2",
+      "machineText": "制作安装程序或软件包",
       "status": "machine-translated",
       "sourcePreview": "Make installers or packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0093-cell-01": {
+    "b0081-cell-01": {
       "sourceHash": "79ef497ad69a530b0fa62afce066d5b8b11bb294f92c8582643c9e0e672c98b6",
-      "targetHash": "6e8d5136919e42b70e5e9a75ea5a94b98ce6901a059b6e10df90ef7c059575f3",
-      "machineHash": "6e8d5136919e42b70e5e9a75ea5a94b98ce6901a059b6e10df90ef7c059575f3",
-      "machineText": "MSIX、NSIS、macOS 应用程序/DMG、DEB、RPM、Arch、Void 和 AppImage。",
+      "targetHash": "972ec23039f3613b7d8449b087df1bcb72e45ffea2e7683b44cb96a3f769007b",
+      "machineHash": "972ec23039f3613b7d8449b087df1bcb72e45ffea2e7683b44cb96a3f769007b",
+      "machineText": "MSIX、NSIS、macOS app/DMG、DEB、RPM、Arch、Void 和 AppImage。",
       "status": "machine-translated",
       "sourcePreview": "MSIX, NSIS, macOS app/DMG, DEB, RPM, Arch, Void and AppImage.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0094-cell-01": {
+    "b0082-cell-01": {
       "sourceHash": "3c6a84c413cf8ab81ad7ff5ddc1d31a38282666215d1c22b8c31174a8ae0f5f3",
       "targetHash": "0cc5fa11901f2ded87fa7ed7a150c9c52a476c345929b9f48bdd3df4cc45f7b7",
       "machineHash": "0cc5fa11901f2ded87fa7ed7a150c9c52a476c345929b9f48bdd3df4cc45f7b7",
@@ -1156,21 +1012,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0095-cell-01": {
+    "b0083-cell-01": {
       "sourceHash": "8bf2800752891ae2155dab2a6e3189cbb8960068f09a3dedd123ff9b8ae588c7",
-      "targetHash": "28fdee33fe5d4968c9174b586d8194f79e826140d409fdc3f9600f7ecc3f1f6e",
-      "machineHash": "28fdee33fe5d4968c9174b586d8194f79e826140d409fdc3f9600f7ecc3f1f6e",
-      "machineText": "对发布版本签名",
+      "targetHash": "f3b6444a5f77f80b0e23701296d803f7984aa253293ac26d8c6ce397ec060daa",
+      "machineHash": "f3b6444a5f77f80b0e23701296d803f7984aa253293ac26d8c6ce397ec060daa",
+      "machineText": "为发布产物签名",
       "status": "machine-translated",
       "sourcePreview": "Sign a release",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0096-cell-01": {
+    "b0084-cell-01": {
       "sourceHash": "6813d7c822d92924a1425bca12c96c86fd4432c35ce7b38e7a76db97daf4aaed",
       "targetHash": "8c60a212d9d03436f5b4eb3fb17b644b1a6a925fa808d1ea5c1917fa07fbe3f3",
       "machineHash": "8c60a212d9d03436f5b4eb3fb17b644b1a6a925fa808d1ea5c1917fa07fbe3f3",
@@ -1180,21 +1036,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0097-cell-01": {
+    "b0085-cell-01": {
       "sourceHash": "f8985acc3aa1498b9e885a0f55ddf8bdaa5aed7f710bf42c3436020f1cb8092f",
-      "targetHash": "dbc8072d68502bc4bdbb94353b01a25dd1044c0a581065dfd977152ef5ad1d52",
-      "machineHash": "dbc8072d68502bc4bdbb94353b01a25dd1044c0a581065dfd977152ef5ad1d52",
-      "machineText": "每种身份、格式和宿主机都有其限制。AppImage 和 Void 没有内置签名流程。",
+      "targetHash": "bfd3fc862359cb78ed3e65dd18d0e6dd5302d18680b57859eaa091c2148cf7d4",
+      "machineHash": "bfd3fc862359cb78ed3e65dd18d0e6dd5302d18680b57859eaa091c2148cf7d4",
+      "machineText": "每种身份、格式和主机都有各自的限制。AppImage 和 Void 没有内置签名流程。",
       "status": "machine-translated",
       "sourcePreview": "Each identity, format and host has limits. AppImage and Void have no built-in signing flow.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0098-cell-01": {
+    "b0086-cell-01": {
       "sourceHash": "ef6c53c3d466ea115fde97f6f477e10825c67c02db78f3c044e7f9cb2d833349",
       "targetHash": "f6f29a7026417132b64886b709d243bce21851705c470834ac0ef0a220302f13",
       "machineHash": "f6f29a7026417132b64886b709d243bce21851705c470834ac0ef0a220302f13",
@@ -1204,9 +1060,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0099-cell-01": {
+    "b0087-cell-01": {
       "sourceHash": "4ed57a347945bec37c3cb2f2e2a2fa18ab81beccc125c335b684d7875d625a7f",
       "targetHash": "77be7e0fc6b83c91734ace55d2fb8b6345131ef88a054652a704bace2b203407",
       "machineHash": "77be7e0fc6b83c91734ace55d2fb8b6345131ef88a054652a704bace2b203407",
@@ -1216,21 +1072,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0100-cell-01": {
+    "b0088-cell-01": {
       "sourceHash": "f14e8eb0bc362b8fa739f4fa94103e61b548b346c8a29192bf2b3b39b4e1fdab",
-      "targetHash": "4426d376e68746c328702af4029b4fffd9b3d80f20cd7eefb66d53248cea2311",
-      "machineHash": "4426d376e68746c328702af4029b4fffd9b3d80f20cd7eefb66d53248cea2311",
-      "machineText": "仍然需要适当的 Developer ID 签名和时间戳。由 Go 生成的测试签名通过原生检查，并不能证明 Apple 会接受你的发布版本。",
+      "targetHash": "6cc93512cf87f5d8228be61d88f9dceb8a4224905035bcbc14efac402c776156",
+      "machineHash": "6cc93512cf87f5d8228be61d88f9dceb8a4224905035bcbc14efac402c776156",
+      "machineText": "仍需适用的 Developer ID 签名和时间戳。由 Go 生成的测试签名通过原生检查，并不能证明 Apple 会接受你的发布产物。",
       "status": "machine-translated",
       "sourcePreview": "A suitable Developer ID signature and timestamp are still required. Go-generated test signatures pas…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0101-cell-01": {
+    "b0089-cell-01": {
       "sourceHash": "6c36a117c3c19848f51c0bd61dbbeb70ca128c725854518f2d2f59be38c11705",
       "targetHash": "9e5f5223b6abab21d244889c016432c29eca08fd38bb8181280bfc335f994e3e",
       "machineHash": "9e5f5223b6abab21d244889c016432c29eca08fd38bb8181280bfc335f994e3e",
@@ -1240,33 +1096,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0102-cell-01": {
+    "b0090-cell-01": {
       "sourceHash": "61ff360cbd823384c44774090e58e300c0b7da32f534d14ae90a0e2ff1430691",
-      "targetHash": "b97a474f35524c7486177e4d9274d68ef3794b0f65e2bef08d2b2a857a7cb07f",
-      "machineHash": "b97a474f35524c7486177e4d9274d68ef3794b0f65e2bef08d2b2a857a7cb07f",
-      "machineText": "一个 GUI、CLI 或服务器主程序，以及具名配套程序。",
+      "targetHash": "8e8b243738d91fb51d92b86d3ec70f74e782598482f36ebe6243944b2b72fe29",
+      "machineHash": "8e8b243738d91fb51d92b86d3ec70f74e782598482f36ebe6243944b2b72fe29",
+      "machineText": "一个 GUI、CLI 或服务器主程序，以及具名的配套程序。",
       "status": "machine-translated",
       "sourcePreview": "A GUI, CLI or server primary program plus named companion programs.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0103-cell-01": {
+    "b0091-cell-01": {
       "sourceHash": "472d66570cd1d76cbc58230dc873b4779e8314b39e12840a7860212189596653",
-      "targetHash": "6e57bfeaafe2029290a715e2087c29375815b8559765eb1b8185221fec44fd2e",
-      "machineHash": "6e57bfeaafe2029290a715e2087c29375815b8559765eb1b8185221fec44fd2e",
-      "machineText": "在 YAML 中声明配套程序的软件包和类型。向导不会生成它们的源代码。",
+      "targetHash": "95092f1730a5357cbd1e19acbaf94e1872dd8ab80feb91c6a6977b6899be9cd8",
+      "machineHash": "95092f1730a5357cbd1e19acbaf94e1872dd8ab80feb91c6a6977b6899be9cd8",
+      "machineText": "在 YAML 中声明配套程序的软件包和类型。向导不会生成其源代码。",
       "status": "machine-translated",
       "sourcePreview": "Declare companion packages and kinds in YAML. The wizard does not generate their source.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0104-cell-01": {
+    "b0092-cell-01": {
       "sourceHash": "636ff467d045549525c6b325959a7c247c543bde5e0d46b97fb79d431d815363",
       "targetHash": "f65917ce6c29506d3d164b94112213104c7d5cf0f0a8cc8cd7356c66487db584",
       "machineHash": "f65917ce6c29506d3d164b94112213104c7d5cf0f0a8cc8cd7356c66487db584",
@@ -1276,9 +1132,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0105-cell-01": {
+    "b0093-cell-01": {
       "sourceHash": "f4a0f3a9a779ee7ee63f10fcefa392a9b876e6599aa9fdcc8ed77340e024749e",
       "targetHash": "f4a0f3a9a779ee7ee63f10fcefa392a9b876e6599aa9fdcc8ed77340e024749e",
       "machineHash": "08d7a7d31418607793efecb90bbcc8fb09384a95cd2cdda852f8470e13bf8a61",
@@ -1288,21 +1144,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0106-cell-01": {
-      "sourceHash": "9a547f9c7c318d04eb276cfb8d02eb68c4c3e84618c89a2e7c9cee6b1c25bcb9",
-      "targetHash": "10015d92a3276caf8c43505ff57595b1bee0357e19a09fba50548db9fc934414",
-      "machineHash": "10015d92a3276caf8c43505ff57595b1bee0357e19a09fba50548db9fc934414",
-      "machineText": "在`build.output`中提供匹配的可执行文件名和架构。此标志仅供单次命令选择使用，并非永久设置。",
+    "b0094-cell-01": {
+      "sourceHash": "cbc6edd387d64e9d6d3c93e46e2d38b2d5a63a7b11da1b17d64db32edd91a539",
+      "targetHash": "986a8b2c83c2b522815d4a016d883f044b9450f447beb4f109f517b48911b332",
+      "machineHash": "986a8b2c83c2b522815d4a016d883f044b9450f447beb4f109f517b48911b332",
+      "machineText": "在`build.output`中提供匹配的可执行文件名称和架构。此标志是一次性的命令选项，并非永久的配置文件设置。",
       "status": "machine-translated",
       "sourcePreview": "Supply matching executable names and architectures in `build.output`. This flag is a one-time comman…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0107-cell-01": {
+    "b0095-cell-01": {
       "sourceHash": "d71317a40e5bf33833e45d37d54b8229d7ab0cc32f461120bbc2fb895e076715",
       "targetHash": "6f0a923f7e1715a775f47d1f9615dbd8f4b29501e28db6acd1ba45a3a988b2d4",
       "machineHash": "6f0a923f7e1715a775f47d1f9615dbd8f4b29501e28db6acd1ba45a3a988b2d4",
@@ -1312,57 +1168,57 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0108-cell-01": {
+    "b0096-cell-01": {
       "sourceHash": "6110c8cbccad0a9a6905408c3c16abae79f9f73ca878ee6e99da3c1d887933e1",
-      "targetHash": "18c1b9726477a8dbc19b28ff0754b3ee2c0dc321b7f0b99c87345d5f5cd23e38",
-      "machineHash": "18c1b9726477a8dbc19b28ff0754b3ee2c0dc321b7f0b99c87345d5f5cd23e38",
-      "machineText": "命名配置、受限的生命周期钩子、缓存和并行打包任务。",
+      "targetHash": "281646accedf3b79881d92b722d1ffeb96170d34a17f04d50886dfe0230f104d",
+      "machineHash": "281646accedf3b79881d92b722d1ffeb96170d34a17f04d50886dfe0230f104d",
+      "machineText": "具名配置文件、范围受限的生命周期钩子、缓存和并行打包工作。",
       "status": "machine-translated",
       "sourcePreview": "Named profiles, bounded lifecycle hooks, caching and parallel package work.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0109-cell-01": {
+    "b0097-cell-01": {
       "sourceHash": "8b1ad4aed93ce90fbc84846df534f3a33e946e0ab9fd057c07a8739444a7d651",
-      "targetHash": "ed069b11ab8f6be3e4df63d59e7290071ff63434a40275f9bf171118fb51f870",
-      "machineHash": "ed069b11ab8f6be3e4df63d59e7290071ff63434a40275f9bf171118fb51f870",
-      "machineText": "使用字面量 YAML 和声明的项目自有脚本。任意 Taskfile 行为并不是 Wake 的扩展机制。",
+      "targetHash": "cf2f3db9862261e10fb79dad41643e630a446ee22d61a8b284566c56881082d2",
+      "machineHash": "cf2f3db9862261e10fb79dad41643e630a446ee22d61a8b284566c56881082d2",
+      "machineText": "使用字面量 YAML 和已声明的项目自有脚本。任意 Taskfile 行为并非 Wake 的扩展机制。",
       "status": "machine-translated",
       "sourcePreview": "Use literal YAML and declared project-owned scripts. Arbitrary Taskfile behaviour is not a Wake exte…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0110-text-01": {
-      "sourceHash": "58656eb7669af719716ac8edaeade8b43e0d75c5cbef44e0b28269b0eabd7bc5",
-      "targetHash": "f223c57d1bb2e9a298956447664a8984227be303db12cbd8689b2ef8615b743f",
-      "machineHash": "f223c57d1bb2e9a298956447664a8984227be303db12cbd8689b2ef8615b743f",
-      "machineText": "重新打开`wails3 setup`可更改`setup`配置。其他命名配置和高级设置需在`wails.yaml`中编辑。有关完整示例和软件包要求，请参阅[YAML 构建指南](/experimental/yaml-builds/)。GUI 应用程序仍需要目标平台的系统库；Pure Go 并不能使其成为完全静态的应用程序。",
+    "b0098-text-01": {
+      "sourceHash": "d548daa22c0a7950648b54b6c21c32c3125e83fcdeffdf5aa6978607af787324",
+      "targetHash": "cefddbb917393aa3c218133f1d03d8e2b5bc4b41c96bf4b36b7f3fcac15e3457",
+      "machineHash": "cefddbb917393aa3c218133f1d03d8e2b5bc4b41c96bf4b36b7f3fcac15e3457",
+      "machineText": "在`wails.yaml`中编辑`profiles.setup`、其他具名配置文件和高级设置。使用`wails3 setup`更改共享偏好设置和凭据。有关完整示例和软件包要求，请参阅[YAML 构建指南](/experimental/yaml-builds/)。GUI 应用程序仍然需要目标平台的系统库；使用纯 Go 并不会使它们成为完全静态的应用程序。",
       "status": "machine-translated",
-      "sourcePreview": "Reopen `wails3 setup` to change the `setup` profile. Other named profiles and advanced settings are …",
+      "sourcePreview": "Edit `profiles.setup`, other named profiles and advanced settings in `wails.yaml`. Use `wails3 setup…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0111-text-01": {
+    "b0099-text-01": {
       "sourceHash": "143a2be1f20940665441114f6267e59248f1ba6560be05545dfd6d9d460fc275",
-      "targetHash": "54ffcf418d18a6db2c6afed17c7e57c74cab83269eb3b387470b09526456cfc0",
-      "machineHash": "54ffcf418d18a6db2c6afed17c7e57c74cab83269eb3b387470b09526456cfc0",
-      "machineText": "iOS 和 Android 仍处于实验阶段，需要各自的平台 SDK 和 CGo，不在本篇首个桌面应用教程的范围内。该向导无法让移动端构建在任意主机之间移植。",
+      "targetHash": "b1b00fca3c3afa9ffaa673057313809e05ea1eebbb45c2188f52fd8999049bff",
+      "machineHash": "b1b00fca3c3afa9ffaa673057313809e05ea1eebbb45c2188f52fd8999049bff",
+      "machineText": "iOS 和 Android 仍处于实验阶段，需要各自的平台 SDK 和 CGo，不在本桌面入门教程的范围内。向导无法让移动端构建在任意主机之间移植。",
       "status": "machine-translated",
       "sourcePreview": "iOS and Android remain experimental, need their platform SDKs and CGo, and are outside this first de…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0112-heading-01": {
+    "b0100-heading-01": {
       "sourceHash": "391ff241dbd12b1515fc1bb2839545855c219145a62076327fbb7dc4acabe618",
       "targetHash": "e6ad54cf4a59fe33001404f9934f2ecedd45fcd4acf659e6861a34dcc425f0b2",
       "machineHash": "e6ad54cf4a59fe33001404f9934f2ecedd45fcd4acf659e6861a34dcc425f0b2",
@@ -1372,45 +1228,45 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0113-text-01": {
+    "b0101-text-01": {
       "sourceHash": "1eedc005c31db637637f1dadae9fd6faedb575281b1035b039de29c9f52e0764",
-      "targetHash": "6d7d71d7ad4ed16095c8a82e84d7862a7cfbeb128873dde32def5632fe65ee67",
-      "machineHash": "6d7d71d7ad4ed16095c8a82e84d7862a7cfbeb128873dde32def5632fe65ee67",
-      "machineText": "请在可正常工作的**Wails v3**项目的单独分支或工作副本上操作。这是构建配置迁移，并非从 Wails v2升级。请保留现有构建产物和测试，以便在激活后比较行为。",
+      "targetHash": "0d90bcba2ae1161249782056e7d0878bd679341c7c9edace522292f5047a81cb",
+      "machineHash": "0d90bcba2ae1161249782056e7d0878bd679341c7c9edace522292f5047a81cb",
+      "machineText": "请在当前**Wails v3**项目工作树的单独分支或副本中操作。这是构建配置迁移，而不是从 Wails v2升级。请保留现有的构建结果和测试，以便在激活后比较行为。",
       "status": "machine-translated",
       "sourcePreview": "Work on a separate branch or copy of a working **Wails v3** project. This is a build-configuration m…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0114-text-01": {
+    "b0102-text-01": {
       "sourceHash": "2b04bfe22531e38afddcbcc1f7d3018a6a595bbd87dc8b0c059640c8d5a65f2f",
-      "targetHash": "680b0f0d8bdf99ca4567f455aaf43f531c5e2e9bb832c401223cade946eb0191",
-      "machineHash": "680b0f0d8bdf99ca4567f455aaf43f531c5e2e9bb832c401223cade946eb0191",
-      "machineText": "使用当前内置旧版模板生成的新项目，即使尚未构建其前端，也可以进行迁移。Wake 无需执行 Taskfile 或求值自定义表达式，即可识别这些模板的标准任务选择器和开发生命周期。",
+      "targetHash": "18447cfae47ed546a141bec5768be1f7437713113ccbdb7fb7a8efc24dfbaff8",
+      "machineHash": "18447cfae47ed546a141bec5768be1f7437713113ccbdb7fb7a8efc24dfbaff8",
+      "machineText": "使用当前内置旧版模板生成的新项目，可以在构建其前端之前进行迁移。Wake 无需执行 Taskfile 或求值自定义表达式，即可识别其标准任务选择器和开发生命周期。",
       "status": "machine-translated",
       "sourcePreview": "Fresh projects generated from the current built-in legacy templates can be migrated before their fro…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T05:28:34Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0115-text-01": {
+    "b0103-text-01": {
       "sourceHash": "638c3bdf43c68e99f2000e04abffc1810a6317756edf3f62c1c38dae12985fad",
-      "targetHash": "e6057ff660ec25c0d0b887eb1a3778959d1d04333971764aedb81495844b8739",
-      "machineHash": "e6057ff660ec25c0d0b887eb1a3778959d1d04333971764aedb81495844b8739",
-      "machineText": "自定义任务、变量覆盖和开发策略仍需审查。如果分析无法表示你的项目，请继续使用旧版构建，并报告诊断信息。不要为了让激活通过而移除所需的行为。上面的新项目教程不需要迁移。",
+      "targetHash": "b9daf8a92f78e5c3add331df2183958f9cf9336f249864c9c62567ad499aa0b0",
+      "machineHash": "b9daf8a92f78e5c3add331df2183958f9cf9336f249864c9c62567ad499aa0b0",
+      "machineText": "自定义任务、变量覆盖和开发策略仍需审查。如果分析无法表示你的项目，请继续使用旧版构建并报告诊断信息。不要仅仅为了通过激活而移除你所需的行为。上面的新项目教程无需迁移。",
       "status": "machine-translated",
       "sourcePreview": "Custom tasks, variable overrides and development policies still require review. If analysis cannot r…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T05:28:34Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0116-heading-01": {
+    "b0104-heading-01": {
       "sourceHash": "3cccaaf063a2738607afa567ccfb7abc6c4237df88728d379deb1569bd25bd25",
       "targetHash": "5deee6397b1fa03d38ff3023e6f8651d918dd99246a9b1f4d456febea47cfdc5",
       "machineHash": "5deee6397b1fa03d38ff3023e6f8651d918dd99246a9b1f4d456febea47cfdc5",
@@ -1420,81 +1276,81 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0117-text-01": {
+    "b0105-text-01": {
       "sourceHash": "e82fc5aa46adaf8a1db3d894284c76d497fc2e5b32d0da071ed6bf1b0293fdb4",
-      "targetHash": "80b0ad94fd349d43e95697930c3002657bb6bb6c79e77b256c798b3ff1a90fa3",
-      "machineHash": "80b0ad94fd349d43e95697930c3002657bb6bb6c79e77b256c798b3ff1a90fa3",
-      "machineText": "启用 Wake，并使用本页开头所述的预览版 CLI。在现有项目根目录中运行：",
+      "targetHash": "f1d3da15a10c8d4f9e16b4220a9df7b8bfa81d10e2fb61293e3f90ab9a8254d1",
+      "machineHash": "f1d3da15a10c8d4f9e16b4220a9df7b8bfa81d10e2fb61293e3f90ab9a8254d1",
+      "machineText": "启用 Wake，并使用本页开头所述的预览版 CLI。在现有项目的根目录中运行：",
       "status": "machine-translated",
       "sourcePreview": "Enable Wake and use the preview CLI from the start of this page. From the existing project root, run…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0118-text-01": {
+    "b0106-text-01": {
       "sourceHash": "87ef1ee5e673a4cefacbfd43375d498e782ac727815f517a2f0e16b103f4ee14",
-      "targetHash": "e9070fee3a1dda37772c841ad482456783d1b4f4b42b5a1194e53caed9154ed6",
-      "machineHash": "e9070fee3a1dda37772c841ad482456783d1b4f4b42b5a1194e53caed9154ed6",
-      "machineText": "阅读报告中列出的受支持设置和阻碍项。分析器会读取旧版声明，但不会执行其中的命令。试运行不会创建活动清单。若需要机器可读的诊断信息，请使用`wails3 migrate --json`；如果还希望避免写入草稿，请使用`--dry-run --json`。",
+      "targetHash": "7b425348dd91cd44a5246676f516402196bc089525f5cfb7a144de167cbc5db4",
+      "machineHash": "7b425348dd91cd44a5246676f516402196bc089525f5cfb7a144de167cbc5db4",
+      "machineText": "阅读报告中列出的受支持设置和阻碍项。分析器会读取旧版声明，但不会执行其中的命令。试运行不会创建活动清单。如需机器可读的诊断信息，请使用`wails3 migrate --json`；如果还希望避免写入草稿，请使用`--dry-run --json`。",
       "status": "machine-translated",
       "sourcePreview": "Read the reported supported settings and blockers. The analyser reads legacy declarations; it does n…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0119-heading-01": {
+    "b0107-heading-01": {
       "sourceHash": "852ceed3434c62f88bf0e15d1fb70042ae314e1bf17eba4ce483b39ca7b50da4",
-      "targetHash": "645d468dc136dc0ea384463afcc7d3a7767c34646702b10cab0854f641cfff50",
-      "machineHash": "645d468dc136dc0ea384463afcc7d3a7767c34646702b10cab0854f641cfff50",
-      "machineText": "2. 创建并审查未激活的方案",
+      "targetHash": "d4cc43fc48de130503cd4d04320ddb6405afe1f1e8ad656b4f9211abe9ffb1f7",
+      "machineHash": "d4cc43fc48de130503cd4d04320ddb6405afe1f1e8ad656b4f9211abe9ffb1f7",
+      "machineText": "2. 创建并审查非活动提案",
       "status": "machine-translated",
       "sourcePreview": "2. Create and review the inactive proposal",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0120-text-01": {
+    "b0108-text-01": {
       "sourceHash": "a2831c3fb0b1df91164e6a6ddbb342e5f9c8c5073d6c2bde671218d5fc96326c",
-      "targetHash": "f51be9f3afe1267c7fb4f2fb719e7ebbbd415e1841ecdc0f2312145a594f0f50",
-      "machineHash": "f51be9f3afe1267c7fb4f2fb719e7ebbbd415e1841ecdc0f2312145a594f0f50",
-      "machineText": "这会创建\u003cstrong\u003e`wails.migrated.yaml`\u003c/strong\u003e，而不是`wails.yaml`。请将它与现有 Taskfile 和`build/config.yml`一并检查。检查项目元数据、前端命令、目标架构、软件包内容、资源和签名设置。请将密钥保存在环境变量或凭据存储中。",
+      "targetHash": "7322db65b39d3ded58df21ae29c7c3d78300115bd5288776cc6bab530b8cddcb",
+      "machineHash": "7322db65b39d3ded58df21ae29c7c3d78300115bd5288776cc6bab530b8cddcb",
+      "machineText": "这会创建\u003cstrong\u003e`wails.migrated.yaml`\u003c/strong\u003e，而不是`wails.yaml`。请将它与现有 Taskfile 和`build/config.yml`对照检查。检查项目元数据、前端命令、目标架构、软件包内容、资源和签名设置。请将机密信息保存在环境变量或凭据存储中。",
       "status": "machine-translated",
       "sourcePreview": "This creates **`wails.migrated.yaml`**, not `wails.yaml`. Inspect it alongside your existing Taskfil…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0121-text-01": {
+    "b0109-text-01": {
       "sourceHash": "fe2aa5c0a38408091feabd7e904fc7707e1e3c14009f8b82cc91f51e7db91ac5",
-      "targetHash": "d99de13c28553c97caaa23ffab09763f075a1080845aac59b66049941d771843",
-      "machineHash": "d99de13c28553c97caaa23ffab09763f075a1080845aac59b66049941d771843",
-      "machineText": "已知的内置任务可以映射到原生设置。调用项目自有脚本、行为保守且不带参数的生命周期任务可以转换为钩子。其他可达的自定义任务行为属于阻碍项；Wake 不会静默丢弃这些行为，也不会将 Task 作为后备方式来运行它们。",
+      "targetHash": "1e6fdca83b5ece83dd9d3b975e3de88616070fd860e01a605c69af7df2c1d54b",
+      "machineHash": "1e6fdca83b5ece83dd9d3b975e3de88616070fd860e01a605c69af7df2c1d54b",
+      "machineText": "已知的内置任务可以映射到原生设置。保守且不带参数、调用项目自有脚本的生命周期任务可以转换为钩子。其他可达的自定义任务行为会构成阻碍项；Wake 不会静默丢弃这些行为，也不会回退到通过 Task 运行它们。",
       "status": "machine-translated",
       "sourcePreview": "Known built-in tasks can be mapped to native settings. Conservative, argument-free lifecycle tasks t…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0122-text-01": {
+    "b0110-text-01": {
       "sourceHash": "5d188374e7a8fc769d3c3834e749363194ac062c6b012f5833c73bb9d2acba16",
-      "targetHash": "f7b80cdc1bc2e9ce5e8611654a5c8ed8d40ed6ee9f5bdea295d04768d07ba76c",
-      "machineHash": "f7b80cdc1bc2e9ce5e8611654a5c8ed8d40ed6ee9f5bdea295d04768d07ba76c",
-      "machineText": "如果草稿已存在，迁移不会覆盖你审查过的编辑。若要有意替换或重新生成草稿，请先保留副本。不要为了绕过激活检查而将存在阻碍项的草稿重命名为`wails.yaml`。请减少或替换不受支持的旧版行为，并在激活前重新运行分析。如果项目目前还无法表示，请继续使用其旧版构建并报告这一缺口。",
+      "targetHash": "4eccc548fa9d05c9cf5e24388ad518ad86ce8f165b2ea20d95a71480a270b8cb",
+      "machineHash": "4eccc548fa9d05c9cf5e24388ad518ad86ce8f165b2ea20d95a71480a270b8cb",
+      "machineText": "如果草稿已存在，迁移不会覆盖你审查后所做的编辑。若要有意替换或重新生成草稿，请先保留副本。不要将存在阻碍项的草稿重命名为`wails.yaml`来绕过激活检查。减少或替换不受支持的旧版行为，并在激活前重新运行分析。如果项目目前还无法表示，请继续使用其旧版构建并报告这一缺口。",
       "status": "machine-translated",
       "sourcePreview": "If a draft already exists, migration does not overwrite your reviewed edits. Keep a copy before deli…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0123-heading-01": {
+    "b0111-heading-01": {
       "sourceHash": "73cfcf00e138521ca8e0553a9dcedb689a9af8383d799cff8816d1b52e6ba5be",
       "targetHash": "8118cc9e8afa270f4fff82172a0ad2d8e77d459de82ec6045af8c498731ea90b",
       "machineHash": "8118cc9e8afa270f4fff82172a0ad2d8e77d459de82ec6045af8c498731ea90b",
@@ -1504,9 +1360,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0124-text-01": {
+    "b0112-text-01": {
       "sourceHash": "f297bf4d0d715b41d1e6ea9d622611d3e7e5cce23f4e08eca85134618a1dc7cc",
       "targetHash": "df1ab725e86a4ee1c85d924755e935703cbfae2647ac4c9d18ceed5a1f14d50e",
       "machineHash": "df1ab725e86a4ee1c85d924755e935703cbfae2647ac4c9d18ceed5a1f14d50e",
@@ -1516,33 +1372,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0125-text-01": {
+    "b0113-text-01": {
       "sourceHash": "feb47e0275592f02ea18d37c85a7bc45284833b07bcc9691caa2a9ed0dd5feb1",
-      "targetHash": "31450c7636f56418113459b8037445ded9109a09083957dc4b1a890988fe3e80",
-      "machineHash": "31450c7636f56418113459b8037445ded9109a09083957dc4b1a890988fe3e80",
-      "machineText": "第一条命令会检查激活过程，但不会正式激活。第二条命令会重新检查旧版声明并验证草稿，然后以原子方式创建`wails.yaml`；激活成功后会移除未激活的`wails.migrated.yaml`。Taskfile、`build/config.yml`、脚本和资源均不会受到影响。从此以后，活动清单将控制 Wake 构建。旧文件不会作为第二个配置来源。",
+      "targetHash": "df6c81c45e5f72b4288b24c71ae8be3090414a3deb04bc093be29062a1cb01d3",
+      "machineHash": "df6c81c45e5f72b4288b24c71ae8be3090414a3deb04bc093be29062a1cb01d3",
+      "machineText": "第一条命令检查能否激活，但不会正式激活。第二条命令会重新检查旧版声明并验证草稿，然后以原子方式创建`wails.yaml`；激活成功后会删除非活动的`wails.migrated.yaml`。它不会改动 Taskfile、`build/config.yml`、脚本和资源。自此以后，Wake 构建由活动清单控制。旧文件不会成为第二个配置来源。",
       "status": "machine-translated",
       "sourcePreview": "The first command checks activation without publishing it. The second rechecks the legacy declaratio…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0126-text-01": {
+    "b0114-text-01": {
       "sourceHash": "1b870375ab32146535981fe6d90c5d840cd52a503bffea31d0abec517b7141c2",
-      "targetHash": "ad707f19db6af2376ee37c6a671c2f6272695edbf4a59ff55327eb7da345ee73",
-      "machineHash": "ad707f19db6af2376ee37c6a671c2f6272695edbf4a59ff55327eb7da345ee73",
-      "machineText": "某些较旧的项目已经包含仅存储元数据的`wails.yaml`，其中有顶层`info:`部分。尽管它不是原生 Wake 清单，但仍占用了激活目标位置。请在激活前保留该旧版文件并有意将其移走；迁移工具不会替你覆盖或重命名它。",
+      "targetHash": "bb521b75014b84d9bdb095428eb4a534b0de58cd66e415ad40c0898bdd27d0ba",
+      "machineHash": "bb521b75014b84d9bdb095428eb4a534b0de58cd66e415ad40c0898bdd27d0ba",
+      "machineText": "一些较旧的项目已经有一个仅含元数据的`wails.yaml`，其中包含顶层`info:`部分。尽管它不是原生 Wake 清单，但仍占用了激活目标位置。激活前，请保留该旧版文件并有意将其移走；迁移器不会替你覆盖或重命名它。",
       "status": "machine-translated",
       "sourcePreview": "Some older projects already have a metadata-only `wails.yaml` with a top-level `info:` section. Alth…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0127-heading-01": {
+    "b0115-heading-01": {
       "sourceHash": "f6a005de278ed89396870cad73823650a3cee6633801e9b601dc850e5e4ef37f",
       "targetHash": "a73d76abe8ad08be9475b8d4bc28dedbfc9be717940bd4e6d9019b0d02b272b8",
       "machineHash": "a73d76abe8ad08be9475b8d4bc28dedbfc9be717940bd4e6d9019b0d02b272b8",
@@ -1552,33 +1408,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0128-text-01": {
+    "b0116-text-01": {
       "sourceHash": "78d9133e4779785186cca06c328d49e9961c2528ef8e44568052ec63111484e8",
-      "targetHash": "8e8b7a84c39b699a033e5f3d23553ef55b97dc343a517ef2212f1192afb160f9",
-      "machineHash": "8e8b7a84c39b699a033e5f3d23553ef55b97dc343a517ef2212f1192afb160f9",
-      "machineText": "将应用程序和软件包内容与先前的构建进行比较，包括你的自定义发布行为。运行项目测试。显式检查每个已迁移的配置；例如，当草稿包含`release`配置时，请检查`wails3 config check release`和`wails3 build release`。",
+      "targetHash": "c70c175b6840f70effb33683d0f576220c1a6d05d906b6baa9dd688f05f1aaf5",
+      "machineHash": "c70c175b6840f70effb33683d0f576220c1a6d05d906b6baa9dd688f05f1aaf5",
+      "machineText": "将应用程序和软件包内容与之前的构建进行比较，包括你的自定义发布行为。运行项目测试。显式检查每个已迁移的配置文件；例如，当草稿包含`release`配置文件时，检查`wails3 config check release`和`wails3 build release`。",
       "status": "machine-translated",
       "sourcePreview": "Compare the application and package contents with the previous build, including your custom release …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0129-text-01": {
-      "sourceHash": "f3b1a59c68f8eb5568cadb0377ebcd3841d6f1084a49bb6895d9a9274539d98b",
-      "targetHash": "f83ea17c7215884a4de07261e989ee7db77068633d4ebd06f05fd9fe78c574cf",
-      "machineHash": "f83ea17c7215884a4de07261e989ee7db77068633d4ebd06f05fd9fe78c574cf",
-      "machineText": "现在可以运行`wails3 setup`，以添加或替换专用的`setup`配置。它不会自动选择或编辑现有的`release`配置。",
+    "b0117-text-01": {
+      "sourceHash": "b2e52ea4be42f0bfa530cc9c4f8e87205944a27d5a28935946b02a264812c7bb",
+      "targetHash": "03d9c4dcaa866e46baf2cab2e144dac2fde5bf1505ac069a732cac188b9d344b",
+      "machineHash": "03d9c4dcaa866e46baf2cab2e144dac2fde5bf1505ac069a732cac188b9d344b",
+      "machineText": "直接在`wails.yaml`中编辑迁移后的配置文件。`wails3 init -ui`用于创建新项目；`wails3 setup`用于管理全局偏好设置。两者都不能用于编辑现有项目的发布配置文件。",
       "status": "machine-translated",
-      "sourcePreview": "You can now run `wails3 setup` to add or replace the dedicated `setup` profile. It does not automati…",
+      "sourcePreview": "Edit the migrated profiles directly in `wails.yaml`. `wails3 init -ui` creates new projects; `wails3…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0130-heading-01": {
+    "b0118-heading-01": {
       "sourceHash": "d79dc2dcfffe62b17cef144cef8134f3e0fb2a77fbecbe7d9a7638a009fa1444",
       "targetHash": "3fd042ae371de19f9c834f3ce7ef94e7bc3346bd7fc0ff798a97bc134586f1d5",
       "machineHash": "3fd042ae371de19f9c834f3ce7ef94e7bc3346bd7fc0ff798a97bc134586f1d5",
@@ -1588,33 +1444,33 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0131-text-01": {
+    "b0119-text-01": {
       "sourceHash": "96dba827ea705dbac52cb4f38e3029a578e0d0d3ed68e515a5dfbedde8bce588",
-      "targetHash": "7e3a99b47c7df86b314e7186a78ae2fd09a6d2c4b9d9aefd76e35f4d457101f0",
-      "machineHash": "7e3a99b47c7df86b314e7186a78ae2fd09a6d2c4b9d9aefd76e35f4d457101f0",
-      "machineText": "取消设置`WAILS_EXP_USE_WAKE`会禁用自愿启用功能，但活动的`wails.yaml`仍会阻止自动路由到 Taskfile。无效的 YAML 也会导致程序报错并停止。没有反向迁移命令。",
+      "targetHash": "9d4d620d372e4b4280fd3cd1a55d87ce85d27218e7926cf121177968387d5d99",
+      "machineHash": "9d4d620d372e4b4280fd3cd1a55d87ce85d27218e7926cf121177968387d5d99",
+      "machineText": "取消设置`WAILS_EXP_USE_WAKE`会禁用选择加入，但活动的`wails.yaml`仍会阻止自动路由到 Taskfile。无效的 YAML 也会导致操作报错并停止。没有反向迁移命令。",
       "status": "machine-translated",
       "sourcePreview": "Unsetting `WAILS_EXP_USE_WAKE` disables the opt-in, but an active `wails.yaml` still blocks automati…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0132-text-01": {
+    "b0120-text-01": {
       "sourceHash": "bce5e9d2b1a9be3686fc0d957e27584a61c5c7a1e58025ccc05e7c091a58345d",
-      "targetHash": "93a9d6e69313a0ff72f1a7c34319ee2132a08c5d3cad798911ecc704a2943180",
-      "machineHash": "93a9d6e69313a0ff72f1a7c34319ee2132a08c5d3cad798911ecc704a2943180",
-      "machineText": "若要返回旧工作流，请在版本控制中恢复迁移前的完整项目修订版本，包括恢复为不存在活动清单的状态，并使用与其兼容的 CLI 和依赖项。在此之前，请保留仍需使用的所有新源代码更改。使用单独的试验分支会让这种有意恢复容易得多。",
+      "targetHash": "3e020763b597fd2fcc7c866c19c001d3df58e69ccd472b37c1d450d6f06dec3c",
+      "machineHash": "3e020763b597fd2fcc7c866c19c001d3df58e69ccd472b37c1d450d6f06dec3c",
+      "machineText": "要恢复旧工作流，请在版本控制中还原迁移前的完整项目修订版本，包括恢复到不存在活动清单的状态，并使用与其兼容的 CLI 和依赖项。在此之前，请保留你需要的所有新源代码更改。使用单独的试验分支可大幅简化这种有意执行的恢复操作。",
       "status": "machine-translated",
       "sourcePreview": "To return to the old workflow, restore the complete pre-migration project revision in version contro…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0133-heading-01": {
+    "b0121-heading-01": {
       "sourceHash": "32369f20ead928a46c487513dd203afdfd47013a7d19285458faf9d10582c74c",
       "targetHash": "39d8db63065e602b69b254a860b1a0f70092f0e1356268c99b6d35272fc99c08",
       "machineHash": "39d8db63065e602b69b254a860b1a0f70092f0e1356268c99b6d35272fc99c08",
@@ -1624,9 +1480,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0134-cell-01": {
+    "b0122-cell-01": {
       "sourceHash": "a6527b2eb4a96dd41fbc735c8c1cc1bd698317358a7e9693e5afb731ebb82dd8",
       "targetHash": "7e6f41473ceaf75a6082caebceb5668a7cbe8413d8496f884fa70db00ee183b1",
       "machineHash": "7e6f41473ceaf75a6082caebceb5668a7cbe8413d8496f884fa70db00ee183b1",
@@ -1636,9 +1492,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0135-cell-01": {
+    "b0123-cell-01": {
       "sourceHash": "2b97151e589ed86eabeff6f10984bae9b5bafc47ae29824db7c040da370d1d80",
       "targetHash": "9acdab6be9a971358da4591d9a52f3fe114093640f86bbedde6b4c2bd427a78e",
       "machineHash": "9acdab6be9a971358da4591d9a52f3fe114093640f86bbedde6b4c2bd427a78e",
@@ -1648,57 +1504,57 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0136-cell-01": {
-      "sourceHash": "b719aadc1e499c72bad0ea2f93010512263444fb915cacdf3ea32315b2135e22",
-      "targetHash": "049396cbeb7ed01f32a87f1f7cca97069f87739b736f2238374b1fca57b877c3",
-      "machineHash": "049396cbeb7ed01f32a87f1f7cca97069f87739b736f2238374b1fca57b877c3",
-      "machineText": "设置过程显示通用向导",
+    "b0124-cell-01": {
+      "sourceHash": "d96195155a2d2268feed01100f12f1941ae53cfba8c7ed2aa59c9e8b7ac20943",
+      "targetHash": "7ecf64545aa77d433536036a0d37b64e789c2df89088f10f53e2aab7b1a30b1e",
+      "machineHash": "7ecf64545aa77d433536036a0d37b64e789c2df89088f10f53e2aab7b1a30b1e",
+      "machineText": "创建项目时跳过了 Application、Targets、Packages 和 Tools",
       "status": "machine-translated",
-      "sourcePreview": "Setup shows the general wizard",
+      "sourcePreview": "Project creation skips Application, Targets, Packages and Tools",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0137-cell-01": {
-      "sourceHash": "830453bbe187d6c38466df94c2c9433b3abe02dcbe9c6d47f637a9cd7a670d46",
-      "targetHash": "0d26f164a239885c5e1c13ef05d0bdede8b40a5c3f02fe668e2a50abd50eaffe",
-      "machineHash": "0d26f164a239885c5e1c13ef05d0bdede8b40a5c3f02fe668e2a50abd50eaffe",
-      "machineText": "在启动程序的终端中设置`WAILS_EXP_USE_WAKE`，并检查`PATH`中使用的是哪个`wails3`可执行文件。",
+    "b0125-cell-01": {
+      "sourceHash": "4e704daf099504dcf4e0863e0aa04cf482b88b78a0397c6478a9c1f6acaa118e",
+      "targetHash": "9c4e8f0a21d5d36fc5e2919cfe91e509e09b17ef05dc604e00e6192ec0f37f3c",
+      "machineHash": "9c4e8f0a21d5d36fc5e2919cfe91e509e09b17ef05dc604e00e6192ec0f37f3c",
+      "machineText": "在启动命令的终端中设置`WAILS_EXP_USE_WAKE`，并检查`PATH`中使用的是哪个`wails3`可执行文件。全局`wails3 setup`始终保留其偏好设置流程。",
       "status": "machine-translated",
-      "sourcePreview": "Set `WAILS_EXP_USE_WAKE` in the launching terminal and check which `wails3` executable is on `PATH`.",
+      "sourcePreview": "Set `WAILS_EXP_USE_WAKE` in the launching terminal and check which `wails3` executable is on `PATH`.…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0138-cell-01": {
-      "sourceHash": "83c259beec4c691c6cb5e7a3fbc64175aa4eaa4177207a441cfe9cdfa96e733b",
-      "targetHash": "ce6c747378175a1c59e9e789a7d18c032b0c95cf6e752021aafc3319922ac7ef",
-      "machineHash": "ce6c747378175a1c59e9e789a7d18c032b0c95cf6e752021aafc3319922ac7ef",
-      "machineText": "设置过程要求迁移",
+    "b0126-cell-01": {
+      "sourceHash": "d862ad02ce05f6874e56f43847d405f5a64f5e2418b2371b0c75cd7ff85c4d8a",
+      "targetHash": "b06707d01be1902fff1921f30a78ca5f5f02452108421cee16337971d622653c",
+      "machineHash": "b06707d01be1902fff1921f30a78ca5f5f02452108421cee16337971d622653c",
+      "machineText": "社区模板需要迁移",
       "status": "machine-translated",
-      "sourcePreview": "Setup asks for migration",
+      "sourcePreview": "A community template needs migration",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0139-cell-01": {
-      "sourceHash": "a4c79b9cd3e543922960ed80957bf93766f5d38366f7942f8f30412fb35af69f",
-      "targetHash": "d4f30ed17fe4d8482bcac31527cfda82ecc53583eac481e5cee9e0aa292f64e2",
-      "machineHash": "d4f30ed17fe4d8482bcac31527cfda82ecc53583eac481e5cee9e0aa292f64e2",
-      "machineText": "你打开了旧版项目或使用旧版配置的社区模板。请在激活前审查迁移。",
+    "b0127-cell-01": {
+      "sourceHash": "ee4473e21c6ff63660106e563a9215825dab735a09c7fceec50c3340ca648ab2",
+      "targetHash": "b995fe9672982ab24add0bde9968b56dcd8dde55c86d674a5ef39440f818266c",
+      "machineHash": "b995fe9672982ab24add0bde9968b56dcd8dde55c86d674a5ef39440f818266c",
+      "machineText": "激活前，使用迁移命令审查其旧版配置。",
       "status": "machine-translated",
-      "sourcePreview": "You opened a legacy project or a community template with legacy configuration. Review migration befo…",
+      "sourcePreview": "Review its legacy configuration with the migration commands before activation.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0140-cell-01": {
+    "b0128-cell-01": {
       "sourceHash": "c1b2f1c8e0b8d59f7e5a48bf2c02ca2766adc9fbca62c86bd65a54ef3b37087b",
       "targetHash": "90a7d702c9548592034978e46a0e9f2215197524164d80cb551c548b8e879eca",
       "machineHash": "90a7d702c9548592034978e46a0e9f2215197524164d80cb551c548b8e879eca",
@@ -1708,21 +1564,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0141-cell-01": {
-      "sourceHash": "4c05fd15b02c85d40c4dc1de7fb49b9c1aff67140a9c2dddeefa6fffc9a9eb48",
-      "targetHash": "2c4812fc1da40b9a93ace0295e92df2190bb70f1edb17800867908f19f9dbede",
-      "machineHash": "2c4812fc1da40b9a93ace0295e92df2190bb70f1edb17800867908f19f9dbede",
-      "machineText": "保存操作只记录意图。返回**工具**，修复主机要求后重新检查。",
+    "b0129-cell-01": {
+      "sourceHash": "cd8299d45dccb1d2fe9e672f85466795f3ccae60d0f218bb3b13fd61d402b0d6",
+      "targetHash": "fb5f6386871ace8d88a296ec75af55bddf38adbda6ae18c985a123ad98f3dfcf",
+      "machineHash": "fb5f6386871ace8d88a296ec75af55bddf38adbda6ae18c985a123ad98f3dfcf",
+      "machineText": "创建项目只会记录意图。请在构建前安装报告中列出的宿主机要求；创建过程不会安装所有选定的工具。",
       "status": "machine-translated",
-      "sourcePreview": "Save records intent. Return to **Tools**, fix the host requirements and recheck.",
+      "sourcePreview": "Creating a project records intent. Install the reported host requirements before building; creation …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0142-cell-01": {
+    "b0130-cell-01": {
       "sourceHash": "b63e896b3ce61dc85b23ee7993f5920198b544e827ddc4564e3d2310d9446020",
       "targetHash": "f2b31eb90c0b390e19290c470c1eb424c35817c458764131a4356c8fba931b3d",
       "machineHash": "f2b31eb90c0b390e19290c470c1eb424c35817c458764131a4356c8fba931b3d",
@@ -1732,21 +1588,21 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0143-cell-01": {
+    "b0131-cell-01": {
       "sourceHash": "24d18de4e92ba1afed81534e76f76f8829df455fa7115bb6fed983cbc24bf04d",
-      "targetHash": "eef844e219e48197fc98619734d10c54ae7e72e2e4d3033ed974b6faea81b421",
-      "machineHash": "eef844e219e48197fc98619734d10c54ae7e72e2e4d3033ed974b6faea81b421",
-      "machineText": "请在所选操作系统和架构上运行它；本地开发时请使用主机目标。",
+      "targetHash": "5be23093f5c0299d637389f7e4eecad1be3a32bfc3226857dfa58b2c65884fd1",
+      "machineHash": "5be23093f5c0299d637389f7e4eecad1be3a32bfc3226857dfa58b2c65884fd1",
+      "machineText": "请在选定的操作系统和架构上运行它；本地开发请使用宿主机目标。",
       "status": "machine-translated",
       "sourcePreview": "Run it on the selected operating system and architecture; use the host target for local development.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0144-cell-01": {
+    "b0132-cell-01": {
       "sourceHash": "9ebd62cfa1dd050de50943eee5b38d968be484fbcd8fdb2ccd27093953277d97",
       "targetHash": "402550aff8a69eb8b4e2417fed405c17f77304e737cc8a23a2e6392d4e6a6882",
       "machineHash": "402550aff8a69eb8b4e2417fed405c17f77304e737cc8a23a2e6392d4e6a6882",
@@ -1756,9 +1612,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0145-cell-01": {
+    "b0133-cell-01": {
       "sourceHash": "0c0123bcf6cb1b20f05b51f9b2dadd7360e23efd02e7eba8f45104176351e219",
       "targetHash": "2344670eb14791e3bc92add3fb36159665e93d24faf4ef45144da89abcaa1e3c",
       "machineHash": "2344670eb14791e3bc92add3fb36159665e93d24faf4ef45144da89abcaa1e3c",
@@ -1768,9 +1624,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0146-cell-01": {
+    "b0134-cell-01": {
       "sourceHash": "4f9bb6109a0d9071a08c1e1746599ada4956f9b0e7d466f3f3f33e942cda6afd",
       "targetHash": "644cd54a93ecfdec2f912347dd36122e7ccff66cf537534ef2a2a390e28b7c0b",
       "machineHash": "644cd54a93ecfdec2f912347dd36122e7ccff66cf537534ef2a2a390e28b7c0b",
@@ -1780,55 +1636,55 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0147-cell-01": {
+    "b0135-cell-01": {
       "sourceHash": "8f6dcb212a1f1da9efc8879c9e67355cfc3d927e1a717fcba372db531f56941d",
-      "targetHash": "d1889a150d21cafe7caf1c8ae3a60100bb8ccc285c359fc5c726caa32bbaef01",
-      "machineHash": "d1889a150d21cafe7caf1c8ae3a60100bb8ccc285c359fc5c726caa32bbaef01",
-      "machineText": "针对相关配置运行`wails3 config check`，并按照字段诊断信息操作。Wake 不会回退到 Taskfile。",
+      "targetHash": "ba3233e8fef859cff169fce2472aa980dc0c5f1fbaef28f2036b06a41824acd6",
+      "machineHash": "ba3233e8fef859cff169fce2472aa980dc0c5f1fbaef28f2036b06a41824acd6",
+      "machineText": "针对相关配置文件运行`wails3 config check`，并按照字段诊断信息处理。Wake 不会回退到 Taskfile。",
       "status": "machine-translated",
       "sourcePreview": "Run `wails3 config check` for the relevant profile and follow the field diagnostic. Wake does not fa…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0148-text-01": {
+    "b0136-text-01": {
       "sourceHash": "27d1b350d7a2641e210301b86b828d386935245986fa649a7bf5befe40634cbb",
-      "targetHash": "a38a0bebf8fab6ffa05ef33b801ab94fa7716b51954ada24fa7f252789618a32",
-      "machineHash": "a38a0bebf8fab6ffa05ef33b801ab94fa7716b51954ada24fa7f252789618a32",
-      "machineText": "运行构建前，先使用`wails3 build setup --plan --json`检查它。\n`wails3 config check`会验证配置，而`wails3 eject`会写入一个非活动的`wails.ejected.yaml`快照，而不会更改活动清单。\n分享命令输出前请先检查内容：项目路径和凭据位置可能会暴露你的本地环境。",
+      "targetHash": "49554f85e94a0a44126ea080af5f29a34dbc47bce4a5bbb595ed94351a32ddea",
+      "machineHash": "49554f85e94a0a44126ea080af5f29a34dbc47bce4a5bbb595ed94351a32ddea",
+      "machineText": "运行构建前，使用`wails3 build setup --plan --json`检查它。`wails3 config check`会验证配置，而`wails3 eject`会写入非活动的`wails.ejected.yaml`快照，而不更改活动清单。分享命令输出前请先审查：项目路径和凭据位置可能会暴露你的本地环境信息。",
       "status": "machine-translated",
       "sourcePreview": "Inspect a build before running it with `wails3 build setup --plan --json`. `wails3 config check` val…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T05:01:05Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
-    "b0149-text-01": {
+    "b0137-text-01": {
       "sourceHash": "f0feca01458c24141f5945938da64d3de1449ef3fb8b75231b10b41a90935093",
-      "targetHash": "ca17eafe1c055094716635d035c525ee80df0722861460c2d23634aaa7bc04ff",
-      "machineHash": "ca17eafe1c055094716635d035c525ee80df0722861460c2d23634aaa7bc04ff",
-      "machineText": "请在[实验讨论区](https://github.com/wailsapp/wails/discussions/categories/experiments)分享反馈，或[提交可重现的错误](https://github.com/wailsapp/wails/issues)。请提供 CLI 和框架修订版本、主机操作系统/架构、所选目标、确切命令、是否选择了 Pure Go，以及相关诊断信息。请说明故障发生在编译、打包、签名还是应用程序运行阶段。请附上已移除密钥的最小清单，并在有帮助时提供`wails3 doctor`输出。",
+      "targetHash": "d9fdf002ebe6361309f87e06b29c565d971d37c03ebbada7360aa76d94c193d0",
+      "machineHash": "d9fdf002ebe6361309f87e06b29c565d971d37c03ebbada7360aa76d94c193d0",
+      "machineText": "请在[实验讨论区](https://github.com/wailsapp/wails/discussions/categories/experiments)分享反馈，或[提交可复现的错误](https://github.com/wailsapp/wails/issues)。请提供 CLI 和框架修订版本、宿主机操作系统/架构、所选目标、确切命令、是否选择了 Pure Go，以及相关诊断信息。说明失败发生在编译、打包、签名还是运行应用程序阶段。请附上已移除机密信息的最小清单，并在有帮助时提供`wails3 doctor`输出。",
       "status": "machine-translated",
       "sourcePreview": "Share feedback in [Experiments Discussions](https://github.com/wailsapp/wails/discussions/categories…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "fm-description": {
-      "sourceHash": "d44bc6d3ba97fb42267df3362429897762958c975bf8af09b18c89ddac706c1d",
-      "targetHash": "e711d078f29f6a145404534a70e3e1107ce9df64618d96b81d122797d31773cc",
-      "machineHash": "e711d078f29f6a145404534a70e3e1107ce9df64618d96b81d122797d31773cc",
-      "machineText": "创建你的第一个 Wake 项目，按照设置向导完成配置、构建并运行项目，以及迁移现有的 Taskfile 项目。",
+      "sourceHash": "97d65860af00ffd71b156a67908f10def34114cdc252c78e72353c2aac04c667",
+      "targetHash": "f04c1be0cbcdc35965c405a05d1aa1eaaac87c5ef2720fa39e05f5ac1849e729",
+      "machineHash": "f04c1be0cbcdc35965c405a05d1aa1eaaac87c5ef2720fa39e05f5ac1849e729",
+      "machineText": "创建第一个 Wake 项目，按照项目创建向导完成配置、构建和运行，并迁移现有的 Taskfile 项目。",
       "status": "machine-translated",
-      "sourcePreview": "Create your first Wake project, follow the setup wizard, build and run it, and migrate an existing T…",
+      "sourcePreview": "Create your first Wake project, follow the project creation wizard, build and run it, and migrate an…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     },
     "fm-title": {
       "sourceHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
@@ -1840,7 +1696,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:56:36Z"
+      "updatedAt": "2026-11-01T05:55:44Z"
     }
   }
 }

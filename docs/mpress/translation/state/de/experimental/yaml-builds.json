@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:21:09Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "d8d5a0b0b6a528148d7e61fe69e44427d61ea7c92d67c6c94c8439ecca7c4aff",
-      "machineHash": "d8d5a0b0b6a528148d7e61fe69e44427d61ea7c92d67c6c94c8439ecca7c4aff",
-      "machineText": "Führen Sie für eine geführte Desktop-Konfiguration bei aktivierter Opt-in-Option `wails3 setup` aus. Der [Wake-Einrichtungsassistent](/getting-started/setup/#configure-a-wake-project) prüft Anwendungstyp, Build-Backend, Zielplattformen, Paketformate und erforderliche Werkzeuge und speichert anschließend ein `setup`-Profil. Er kann außerdem einen Befehl für vorgefertigte ausführbare Dateien vorbereiten, ohne `--skip-build` als dauerhafte Projekteinstellung festzulegen.",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "7efceed36c4200b30721c4d12db40454d507641e83c8754497acc8440f156a7e",
+      "machineHash": "7efceed36c4200b30721c4d12db40454d507641e83c8754497acc8440f156a7e",
+      "machineText": "Um ein Projekt im Browser zu erstellen und zu konfigurieren, führen Sie bei aktivierter Opt-in-Option `wails3 init -ui` aus und folgen Sie dem [Wake-Tutorial](/experimental/wake/). Die Projekteinstellungen befinden sich in `wails.yaml`. Bearbeiten Sie diese Datei, um ein vorhandenes Projekt zu ändern. Mit `wails3 setup` konfigurieren Sie gemeinsame Einstellungen, Werkzeuge und Anmeldedaten für die Signierung.",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:34:28Z"
+      "updatedAt": "2026-11-01T05:56:03Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

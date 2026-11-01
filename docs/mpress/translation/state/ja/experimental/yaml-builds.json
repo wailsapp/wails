@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:20:26Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "d95cdb674e44ecdcd8c763c555ecd579d17dd7acdcbafc5f80209173a6f87233",
-      "machineHash": "d95cdb674e44ecdcd8c763c555ecd579d17dd7acdcbafc5f80209173a6f87233",
-      "machineText": "デスクトップ向け設定を対話形式で行うには、オプトインを有効にして `wails3 setup` を実行します。[Wake のセットアップフロー](/getting-started/setup/#configure-a-wake-project)では、アプリケーションの種類、ビルドバックエンド、ターゲット、パッケージ形式、必要なツールを確認した後、`setup` プロファイルを保存します。また、`--skip-build` を永続的なプロジェクト設定にすることなく、ビルド済み実行ファイル用のコマンドを準備することもできます。",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "9fe1e6f6bcd02ed0e22e9e1211742dcde460fc3130f20ae1e242731d2a1cbbe3",
+      "machineHash": "9fe1e6f6bcd02ed0e22e9e1211742dcde460fc3130f20ae1e242731d2a1cbbe3",
+      "machineText": "ブラウザーでプロジェクトを作成して構成するには、オプトインを有効にして `wails3 init -ui` を実行し、[Wake チュートリアル](/experimental/wake/)に従ってください。プロジェクトの選択内容は `wails.yaml` に保存されます。既存のプロジェクトを変更するには、このファイルを編集してください。`wails3 setup` では、共有設定、ツール、署名用の認証情報を構成します。",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:33:14Z"
+      "updatedAt": "2026-11-01T05:55:33Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

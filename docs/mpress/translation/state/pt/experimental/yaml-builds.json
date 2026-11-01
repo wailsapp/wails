@@ -103,16 +103,16 @@
       "updatedAt": "2026-10-31T23:21:01Z"
     },
     "b0008-text-01": {
-      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
-      "targetHash": "5035a0068afa3f1ca20a073fe94a76a6862c06dd1cfb916677d8d802ef218dc9",
-      "machineHash": "5035a0068afa3f1ca20a073fe94a76a6862c06dd1cfb916677d8d802ef218dc9",
-      "machineText": "Para obter uma configuração guiada de desktop, execute `wails3 setup` com a opção habilitada. O [fluxo de configuração do Wake](/getting-started/setup/#configure-a-wake-project) analisa o tipo de aplicação, o backend de compilação, os destinos, os formatos de pacote e as ferramentas necessárias e, em seguida, salva um perfil `setup`. Ele também permite preparar um comando para executáveis pré-compilados sem tornar `--skip-build` uma configuração permanente do projeto.",
+      "sourceHash": "3d3d306f41c49bac416f674c1380d45418dc7879735880957bf98adc44e98a04",
+      "targetHash": "6c8af7e8eb0e091cb8354424da807c8cda9f63aa3f1d338776526dd9db378843",
+      "machineHash": "6c8af7e8eb0e091cb8354424da807c8cda9f63aa3f1d338776526dd9db378843",
+      "machineText": "Para criar e configurar um projeto no navegador, execute `wails3 init -ui` com a opção habilitada e siga o [tutorial do Wake](/experimental/wake/). As escolhas do projeto ficam em `wails.yaml`; edite esse arquivo para alterar um projeto existente. `wails3 setup` configura preferências compartilhadas, ferramentas e credenciais de assinatura.",
       "status": "machine-translated",
-      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "sourcePreview": "To create and configure a project in the browser, run `wails3 init -ui` with the opt-in enabled and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T04:34:21Z"
+      "updatedAt": "2026-11-01T05:55:58Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",

@@ -33,7 +33,7 @@ $env:WAILS_EXP_USE_WAKE = '1'
 
 ## 設定專案
 
-若要使用引導式桌面設定，請在啟用選用功能後執行`wails3 setup`。[Wake 設定流程](/getting-started/setup/#configure-a-wake-project)會檢查應用程式類型、建置後端、目標、套件格式及必要工具，然後儲存`setup`設定檔。它也支援為預先建置的執行檔準備命令，而不會將`--skip-build`設為永久的專案設定。
+若要在瀏覽器中建立及設定專案，請在啟用選擇加入功能的情況下執行`wails3 init -ui`，並依照[Wake 教學課程](/experimental/wake/)操作。專案選項儲存在`wails.yaml`中；若要變更現有專案，請編輯該檔案。`wails3 setup`用於設定共用偏好設定、工具及簽署認證。
 
 啟用選擇加入功能後，請在專案根目錄新增`wails.yaml`。此檔案的存在會選用原生建置系統，並使 Wails 忽略該專案中的所有 Taskfile。執行下列所有命令時，請保持選擇加入功能已啟用。結構描述 modeline 可在支援 YAML 語言伺服器的編輯器中啟用自動完成和行內驗證。
 
