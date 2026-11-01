@@ -10,8 +10,8 @@ async function loadSource(name) {
   });
   return import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`);
 }
-const { toggleWakeTarget, toggleWakeFormat, selectWakeBackend, wakeSteps, wakeSigningPlatforms } = await loadSource('wake');
-const { getWizardBootstrap, checkWakeRequirements, saveWakeSetup } = await loadSource('api');
+const { toggleWakeTarget, toggleWakeFormat, selectWakeBackend, initSteps, initWakeConfig } = await loadSource('wake');
+const { getWizardBootstrap, checkWakeRequirements, createProject } = await loadSource('api');
 const base = () => ({ applicationType: 'gui', backend: 'cgo', experimentalPureGo: false, prebuilt: false, sign: false, targets: [{ os: 'linux', arch: 'amd64', formats: ['deb'] }] });
 
 function mockAPI(t, handler) {
@@ -42,72 +42,73 @@ test('only an explicit backend choice enables purego and switching back clears i
   assert.equal(selectWakeBackend(experimental, 'cgo').experimentalPureGo, false);
 });
 
-test('existing metadata and unsigned flows skip only their own setup pages', () => {
-  assert.deepEqual(wakeSteps(true, false), ['Application', 'Targets', 'Packages', 'Tools', 'Save']);
-  assert.deepEqual(wakeSteps(false, true), ['Project', 'Application', 'Targets', 'Packages', 'Tools', 'Signing', 'Save']);
+test('init creates only after Wake choices; flag-off flow ends at details', () => {
+  assert.deepEqual(initSteps(false, true), ['project', 'framework', 'language', 'details', 'Application', 'Targets', 'Packages', 'Tools']);
+  assert.deepEqual(initSteps(true, false), ['project', 'framework', 'language', 'bindings', 'details']);
 });
 
-test('server state selects Wake without probing blanket legacy or Docker dependencies', async (t) => {
+test('setup remains global even with Wake enabled and never requests project routes', async (t) => {
   const calls = [];
   mockAPI(t, (url) => {
     calls.push(url);
     if (url === '/api/init') return { body: null };
     if (url === '/api/state') return { body: { wakeEnabled: true } };
-    if (url === '/api/wake/setup') return { body: { enabled: true, config: base() } };
-    assert.fail(`Unexpected request ${url}`);
+    assert.fail(`Global setup requested ${url}`);
   });
-  assert.equal((await getWizardBootstrap()).wake.enabled, true);
-  assert.deepEqual(calls.sort(), ['/api/init', '/api/state', '/api/wake/setup']);
+  assert.equal((await getWizardBootstrap()).init, null);
+  assert.deepEqual(calls.sort(), ['/api/init', '/api/state']);
 });
 
-test('flag-off and init mode preserve legacy routing', async (t) => {
-  let init = null, enabled = false;
+test('init owns Wake choices and requires server-provided options', async (t) => {
+  let init = { mode: 'init', wakeEnabled: true, wakeSetup: { enabled: true, config: base() } };
   mockAPI(t, (url) => {
     if (url === '/api/init') return { body: init };
-    if (url === '/api/state') return { body: { wakeEnabled: enabled } };
-    assert.fail(`Legacy/init flow requested ${url}`);
+    if (url === '/api/state') return { body: { wakeEnabled: true } };
+    assert.fail(`Init requested ${url}`);
   });
-  assert.equal((await getWizardBootstrap()).wake, null);
-  init = { mode: 'init' }; enabled = true;
-  const loaded = await getWizardBootstrap();
-  assert.equal(loaded.wake, null);
-  assert.deepEqual(loaded.init, init);
+  assert.deepEqual((await getWizardBootstrap()).init, init);
+  init = { mode: 'init', wakeEnabled: true };
+  await assert.rejects(getWizardBootstrap(), /options are unavailable/);
 });
 
-test('failed mode detection cannot fall back to the legacy flow', async (t) => {
-  mockAPI(t, (url) => url === '/api/state' ? { status: 500, body: { error: 'bad project' } } : { body: null });
+test('failed mode detection cannot fall back to global setup', async (t) => {
+  mockAPI(t, (url) => url === '/api/state' ? { status: 500, body: { error: 'bad request' } } : { body: null });
   await assert.rejects(getWizardBootstrap(), /Could not load wizard state/);
 });
 
-test('requirements and atomic save send exact choices including one-time prebuilt and signing', async (t) => {
-  const selected = { ...base(), applicationType: 'server', prebuilt: true, sign: true };
+test('preview sends current metadata and only final creation submits choices', async (t) => {
+  const form = { mode: 'init', projectName: 'demo', productName: 'Demo', productIdentifier: 'com.example.demo', productCompany: 'Example', productDescription: 'Demo project', productVersion: '1.0.0', productCopyright: '', productComments: '', useInterfaces: true };
+  const selected = initWakeConfig(form, { ...base(), sign: true, prebuilt: true }, false);
+  assert.equal(selected.prebuilt, false);
+  assert.deepEqual(selected.project.bindings, { typescript: false, interfaces: false });
+  assert.equal(selected.project.info.productName, 'Demo');
   const calls = [];
   mockAPI(t, (url, options) => {
-    assert.equal(options.method, 'POST');
-    assert.deepEqual(JSON.parse(options.body), selected);
     calls.push(url);
-    return { body: url.endsWith('/requirements') ? { requirements: [], errors: [], warnings: [], command: 'package --skip-build' } : { path: '/project/wails.yaml', config: selected, command: 'package --skip-build' } };
+    assert.equal(options.method, 'POST');
+    const sent = JSON.parse(options.body);
+    if (url.endsWith('/requirements')) { assert.deepEqual(sent, selected); return { body: { requirements: [], errors: [], warnings: [], command: 'wails3 build setup' } }; }
+    assert.equal(url, '/api/init/create');
+    assert.deepEqual(sent.wake, selected);
+    return { body: { success: true } };
   });
-  assert.equal((await checkWakeRequirements(selected)).command, 'package --skip-build');
-  assert.equal((await saveWakeSetup(selected)).config.sign, true);
-  assert.deepEqual(calls, ['/api/wake/setup/requirements', '/api/wake/setup']);
+  await checkWakeRequirements(selected);
+  assert.deepEqual(calls, ['/api/wake/setup/requirements']);
+  assert.equal((await createProject({ ...form, wake: selected })).success, true);
+  assert.deepEqual(calls, ['/api/wake/setup/requirements', '/api/init/create']);
 });
 
-test('rejected save surfaces the server error without claiming success', async (t) => {
-  mockAPI(t, () => ({ status: 400, body: { error: 'Invalid target selection' } }));
-  await assert.rejects(saveWakeSetup(base()), /Invalid target selection/);
+test('rejected creation preserves backend diagnostics', async (t) => {
+  mockAPI(t, () => ({ status: 400, text: 'Invalid target selection\n' }));
+  await assert.rejects(createProject({ wake: base() }), /Invalid target selection/);
 });
 
-test('signing tabs follow selected targets, retaining order and removing duplicate architectures', () => {
-  assert.deepEqual(wakeSigningPlatforms([{ os: 'windows', arch: 'amd64' }, { os: 'windows', arch: 'arm64' }, { os: 'linux', arch: 'amd64' }]), ['windows', 'linux']);
-});
-
-test('plain-text backend validation errors retain the diagnostic', async (t) => {
+test('plain-text preview errors retain the diagnostic', async (t) => {
   mockAPI(t, () => ({ status: 400, text: 'invalid project metadata\n' }));
-  await assert.rejects(saveWakeSetup(base()), /invalid project metadata/);
+  await assert.rejects(checkWakeRequirements(base()), /invalid project metadata/);
 });
 
-test('selecting iOS sends the device destination displayed by the initial control', () => {
+test('new iOS selection includes the displayed device destination', () => {
   const selected = toggleWakeTarget(base(), { os: 'ios', arch: 'arm64', formats: ['ipa'] });
   assert.equal(selected.targets[1].destination, 'device');
 });

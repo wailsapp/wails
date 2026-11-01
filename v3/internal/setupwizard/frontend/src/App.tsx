@@ -1,12 +1,11 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData, WakeSetupState } from './types';
+import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
 import { checkDependencies, checkMobileDependencies, installDependency, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, complete, getWizardBootstrap } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
 import InitFlow from './components/InitFlow';
-import WakeSetupFlow from './components/WakeSetupFlow';
 
 type OOBEStep =
   | 'splash'
@@ -2265,7 +2264,6 @@ export default function App() {
   // Init mode (wails3 init -ui): undefined = still detecting, null = setup mode.
   const [initData, setInitData] = useState<InitData | null | undefined>(undefined);
   const [initDetectError, setInitDetectError] = useState(false);
-  const [wakeSetup, setWakeSetup] = useState<WakeSetupState | null>(null);
 
   const navigateTo = (newStep: OOBEStep) => {
     setStepHistory(prev => [...prev, step]);
@@ -2313,10 +2311,9 @@ export default function App() {
     let cancelled = false;
     const detect = (attempt = 0) => {
       getWizardBootstrap()
-        .then(({ init, state, wake }) => {
+        .then(({ init, state }) => {
           if (cancelled) return;
           setSystem(state.system);
-          setWakeSetup(wake);
           setInitData(init);
         })
         .catch(() => {
@@ -2601,16 +2598,6 @@ export default function App() {
   // Project init wizard (wails3 init -ui).
   if (initData && initData.mode === 'init') {
     return <InitFlow data={initData} theme={theme} toggleTheme={toggleTheme} />;
-  }
-
-  if (wakeSetup?.enabled) {
-    return (
-      <ThemeContext.Provider value={{ theme, toggleTheme }}>
-        <WakeSetupFlow initial={wakeSetup} sidebar={(progress) => (
-          <Sidebar currentStep="splash" dockerStatus={null} buildingDocker={false} progress={progress} />
-        )} />
-      </ThemeContext.Provider>
-    );
   }
 
   return (

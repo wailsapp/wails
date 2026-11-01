@@ -134,6 +134,9 @@ export interface InitTemplate {
 }
 
 export interface InitData {
+  wakeEnabled?: boolean;
+  wakeSetup?: WakeSetupState;
+  wake?: WakeSetupConfig;
   buildConfigFile: string;
   mode: string;
   projectName: string;
@@ -230,11 +233,5 @@ export interface WakeRequirements {
   requirements: DependencyStatus[];
   errors: string[];
   warnings: string[];
-  command: string;
-}
-
-export interface WakeSetupResult {
-  path: string;
-  config: WakeSetupConfig;
   command: string;
 }

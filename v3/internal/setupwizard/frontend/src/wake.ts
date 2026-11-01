@@ -1,4 +1,4 @@
-import type { WakeSetupConfig, WakeTarget } from './types';
+import type { InitData, WakeSetupConfig, WakeTarget } from './types';
 
 export function targetKey(target: Pick<WakeTarget, 'os' | 'arch'>): string {
   return `${target.os}/${target.arch}`;
@@ -28,11 +28,13 @@ export function selectWakeBackend(config: WakeSetupConfig, backend: WakeSetupCon
   return { ...config, backend, experimentalPureGo: backend === 'purego' };
 }
 
-export function wakeSteps(hasManifest: boolean, sign: boolean): string[] {
-  return [...(hasManifest ? [] : ['Project']), 'Application', 'Targets', 'Packages', 'Tools', ...(sign ? ['Signing'] : []), 'Save'];
+export function initSteps(typescript: boolean, wakeEnabled: boolean): string[] {
+  return ['project', 'framework', 'language', ...(typescript ? ['bindings'] : []), 'details', ...(wakeEnabled ? ['Application', 'Targets', 'Packages', 'Tools'] : [])];
 }
 
-export function wakeSigningPlatforms(targets: WakeTarget[]): ('darwin' | 'windows' | 'linux')[] {
-  const platforms = targets.map((target) => target.os).filter((os): os is 'darwin' | 'windows' | 'linux' => os === 'darwin' || os === 'windows' || os === 'linux');
-  return [...new Set(platforms)];
+export function initWakeConfig(form: InitData, config: WakeSetupConfig, typescript: boolean): WakeSetupConfig {
+  return { ...config, prebuilt: false, project: {
+    info: { projectName: form.projectName, productName: form.productName, productIdentifier: form.productIdentifier, companyName: form.productCompany, description: form.productDescription, version: form.productVersion, copyright: form.productCopyright, comments: form.productComments },
+    bindings: { typescript, interfaces: typescript && form.useInterfaces },
+  } };
 }

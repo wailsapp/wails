@@ -4,9 +4,9 @@ import { selectWakeBackend, targetKey, toggleWakeFormat, toggleWakeTarget } from
 
 const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500';
 
-function Choice({ checked, onChange, label, children, name }: { checked: boolean; onChange: () => void; label: string; children?: ReactNode; name?: string }) {
-  return <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${checked ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-700'}`}>
-    <input type={name ? 'radio' : 'checkbox'} name={name} checked={checked} onChange={onChange} className="mt-1 accent-red-500" />
+function Choice({ checked, onChange, label, children, name, disabled }: { checked: boolean; onChange: () => void; label: string; children?: ReactNode; name?: string; disabled?: boolean }) {
+  return <label className={`flex items-start gap-3 rounded-lg border p-3 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${checked ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-700'}`}>
+    <input type={name ? 'radio' : 'checkbox'} name={name} checked={checked} onChange={onChange} disabled={disabled} className="mt-1 accent-red-500" />
     <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}{children && <span className="block mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">{children}</span>}</span>
   </label>;
 }
@@ -14,22 +14,13 @@ function Choice({ checked, onChange, label, children, name }: { checked: boolean
 export default function WakeSetupChoices({ step, config, initial, update }: {
   step: string; config: WakeSetupConfig; initial: WakeSetupState; update: (config: WakeSetupConfig) => void;
 }) {
-  if (step === 'Project' && config.project) {
-    return <div className="grid grid-cols-2 gap-4">
-      {([['productName', 'Product name'], ['projectName', 'Project name'], ['productIdentifier', 'Application identifier'], ['version', 'Version'], ['companyName', 'Company'], ['description', 'Description']] as const).map(([key, label]) => <label key={key} className="text-sm text-gray-700 dark:text-gray-300">
-        {label}<input className={`${inputClass} mt-1`} value={config.project?.info[key] || ''} onChange={(event) => update({ ...config, project: { ...config.project!, info: { ...config.project!.info, [key]: event.target.value } } })} />
-      </label>)}
-      <p className="col-span-2 text-sm text-gray-500">A new wails.yaml will be created only when you choose Save. Existing files are kept.</p>
-    </div>;
-  }
   if (step === 'Application') {
     return <>
       <fieldset className="space-y-2"><legend className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Application type</legend>
-        {([['gui', 'Desktop application', 'A window and web frontend.'], ['cli', 'Command-line application', 'A terminal program without a webview.'], ['server', 'Server', 'A service without a desktop window.']] as const).map(([kind, label, detail]) => <Choice key={kind} name="kind" checked={config.applicationType === kind} label={label} onChange={() => update({ ...config, applicationType: kind })}>{detail}</Choice>)}
+        {([['gui', 'Desktop application', 'A window and web frontend.'], ['cli', 'Command-line application', 'Not available with the selected frontend template.'], ['server', 'Server', 'Not available with the selected frontend template.']] as const).map(([kind, label, detail]) => <Choice key={kind} name="kind" disabled={kind !== 'gui'} checked={config.applicationType === kind} label={label} onChange={() => update({ ...config, applicationType: kind })}>{detail}</Choice>)}
       </fieldset>
-      <Choice checked={config.prebuilt} onChange={() => update({ ...config, prebuilt: !config.prebuilt })} label="Package existing binaries">Skip compilation for the command shown at the end. Existing binaries are required.</Choice>
       <fieldset className="space-y-2"><legend className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Build backend</legend>
-        <p className="text-xs text-gray-500 dark:text-gray-400">This changes the project build backend. Other profiles that inherit build settings may use it too.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Choose the build backend for your new project.</p>
         <Choice name="backend" checked={config.backend === 'cgo'} label="Standard backend" onChange={() => update(selectWakeBackend(config, 'cgo'))}>{config.applicationType === 'gui' ? 'CGO where the platform requires it; the tool check resolves the compiler.' : 'Go builds without a GUI compiler requirement.'}</Choice>
         <Choice name="backend" checked={config.backend === 'purego'} label="Pure Go (experimental)" onChange={() => update(selectWakeBackend(config, 'purego'))}>Explicitly enable the experimental Pure Go backend. Linux GUI applications still need GTK and WebKit at runtime.</Choice>
       </fieldset>
@@ -49,7 +40,7 @@ export default function WakeSetupChoices({ step, config, initial, update }: {
         {target.formats.length === 0 && <p className="mt-3 text-xs text-gray-500">Use the platform's default output without an additional package.</p>}
         {target.os === 'ios' && <label className="block mt-3 text-sm text-gray-700 dark:text-gray-300">Destination<select className={`${inputClass} mt-1`} value={target.destination || 'device'} onChange={(event) => update({ ...config, targets: config.targets.map((item) => targetKey(item) === targetKey(target) ? { ...item, destination: event.target.value as 'device' | 'simulator' } : item) })}><option value="device">Device</option><option value="simulator">Simulator</option></select></label>}
       </fieldset>)}
-      <Choice checked={config.sign} onChange={() => update({ ...config, sign: !config.sign })} label="Sign release outputs">Configure signing credentials after checking tools. Signing is enabled for the selected targets.</Choice>
+      <Choice checked={config.sign} onChange={() => update({ ...config, sign: !config.sign })} label="Sign release outputs">Use your configured signing credentials. Manage global credentials with wails3 setup; project-specific and mobile signing can be configured in wails.yaml.</Choice>
     </>;
   }
   return null;

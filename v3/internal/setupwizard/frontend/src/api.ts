@@ -199,7 +199,12 @@ export async function createProject(data: import('./types').InitData): Promise<{
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return response.json();
+  const body = await response.text();
+  let result;
+  try { result = JSON.parse(body); }
+  catch { throw new Error(body.trim() || `Project creation failed (HTTP ${response.status})`); }
+  if (!response.ok) throw new Error(result.error || `Project creation failed (HTTP ${response.status})`);
+  return result;
 }
 
 export async function createGPGKey(data: {
@@ -260,21 +265,12 @@ async function wakeRequest<T>(path: string, config?: import('./types').WakeSetup
   return result;
 }
 
-export function getWakeSetup(): Promise<import('./types').WakeSetupState> {
-  return wakeRequest('');
-}
-
 export function checkWakeRequirements(config: import('./types').WakeSetupConfig): Promise<import('./types').WakeRequirements> {
   return wakeRequest('/requirements', config);
 }
 
-export function saveWakeSetup(config: import('./types').WakeSetupConfig): Promise<import('./types').WakeSetupResult> {
-  return wakeRequest('', config);
-}
-
 export async function getWizardBootstrap() {
   const [init, state] = await Promise.all([getInit(), getState()]);
-  const wake = !init && state.wakeEnabled ? await getWakeSetup() : null;
-  if (wake && !wake.enabled) throw new Error('Wake setup is unavailable for this session.');
-  return { init, state, wake };
+  if (init?.wakeEnabled && !init.wakeSetup?.enabled) throw new Error('Wake project options are unavailable for this init session.');
+  return { init, state };
 }
