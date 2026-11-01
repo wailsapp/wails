@@ -60,7 +60,10 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `darwin.microphone_usage_description` | `string` | no |  | `"value"` | `darwin` | macOS microphone permission text; generates the audio-input entitlement unless a user-owned entitlement file is configured. |
 | `darwin.minimum_version` | `string` | no |  | `"12.0"` | `windows,darwin,linux,ios` | Minimum supported operating-system version. |
 | `darwin.notarization` | `object` | no |  | `{}` | `darwin` | macOS notarization settings. |
+| `darwin.notarization.api_key` | `string` | no |  | `"signing/AuthKey.p8"` |  | Project-relative App Store Connect team API private-key .p8 file. Uses the portable Notary API instead of notarytool; requires key_id and issuer_id. |
 | `darwin.notarization.credential` | `string` | no |  | `"release-notary"` |  | Name of the Apple notarytool keychain profile used for notarisation. |
+| `darwin.notarization.issuer_id` | `string` | no |  | `"00000000-0000-0000-0000-000000000000"` |  | App Store Connect team issuer ID for API notarization. |
+| `darwin.notarization.key_id` | `string` | no |  | `"ABCDEFGHIJ"` |  | App Store Connect team API key ID belonging to api_key. |
 | `darwin.product_name` | `string` | no |  | `"value"` | `windows,darwin,linux` | Human-readable product name. |
 | `darwin.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
 | `darwin.signing.certificate` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |

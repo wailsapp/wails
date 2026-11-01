@@ -334,9 +334,38 @@ not make two filesystem renames atomic to concurrent readers.
 macOS app bundles include companion programs. Set
 `darwin.microphone_usage_description` to add the usage text and, when no custom
 entitlements file is supplied, the audio-input entitlement. Custom plist and
-entitlements sources remain unchanged. Signing and notarisation use the
-existing Apple tools and credentials on macOS; notarization requires a real
-notary profile. Signed outputs retain their platform extension, for example
+entitlements sources remain unchanged. Signing and ticket stapling still use
+Apple tools on macOS. Notarization submission can use an existing notary
+keychain profile, or App Store Connect team API credentials:
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+darwin:
+  signing:
+    identity: "Developer ID Application: Example"
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+API mode submits, uploads and polls from Go without `notarytool`. Set all three
+fields and omit `credential`; keep the private key out of version control.
+The key is read only at signing time and is not copied to generated assets or
+cached. This mode supports team API keys and archives up to 5 GiB; multipart
+uploads and individual API keys are not implemented. Rejections retain the
+submission ID and save Apple's diagnostic log to a private temporary file whose
+path is reported in the error. A cancelled or rejected submission does not
+replace previously published output. Acceptance must complete before Wake
+invokes `xcrun stapler`, so API mode alone does not remove the macOS host
+requirement for a complete signed release.
+
+Signed outputs retain their platform extension, for example
 `notes.signed.app` and `notes.signed.dmg`.
 
 ## Development controls

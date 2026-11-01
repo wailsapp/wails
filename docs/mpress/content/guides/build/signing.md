@@ -756,6 +756,9 @@ wails3 tool sign [flags]
 | `--hardened-runtime` | Enable hardened runtime (default: true) |
 | `--notarize` | Submit for notarization |
 | `--keychain-profile` | Keychain profile for notarization |
+| `--notary-key` | App Store Connect team API private-key `.p8` file; uses the Go Notary API client |
+| `--notary-key-id` | Team API key ID; required with `--notary-key` |
+| `--notary-issuer-id` | Team issuer ID; required with `--notary-key` |
 
 **Windows-Specific Flags:**\
 

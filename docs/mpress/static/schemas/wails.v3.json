@@ -257,8 +257,20 @@
         "notarization": {
           "additionalProperties": false,
           "properties": {
+            "api_key": {
+              "description": "Project-relative App Store Connect team API private-key .p8 file. Uses the portable Notary API instead of notarytool; requires key_id and issuer_id.",
+              "type": "string"
+            },
             "credential": {
               "description": "Name of the Apple notarytool keychain profile used for notarisation.",
+              "type": "string"
+            },
+            "issuer_id": {
+              "description": "App Store Connect team issuer ID for API notarization.",
+              "type": "string"
+            },
+            "key_id": {
+              "description": "App Store Connect team API key ID belonging to api_key.",
               "type": "string"
             }
           },

@@ -155,6 +155,9 @@ type manifestSigning struct {
 
 type manifestNotarization struct {
 	Credential *string `manifest:"credential,optional"`
+	APIKey     *string `manifest:"api_key,optional"`
+	KeyID      *string `manifest:"key_id,optional"`
+	IssuerID   *string `manifest:"issuer_id,optional"`
 }
 
 type manifestRun struct {
@@ -532,6 +535,9 @@ func applyPlatform(doc *Document, name string, raw *manifestPlatform) {
 		signing.Enabled = true
 		signing.Notarize = true
 		setString(&signing.NotarizationCredential, raw.Notarization.Credential)
+		setString(&signing.NotarizationKey, raw.Notarization.APIKey)
+		setString(&signing.NotarizationKeyID, raw.Notarization.KeyID)
+		setString(&signing.NotarizationIssuerID, raw.Notarization.IssuerID)
 	}
 }
 

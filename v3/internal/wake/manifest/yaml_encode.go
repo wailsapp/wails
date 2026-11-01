@@ -329,6 +329,9 @@ func encodeYAMLPlatform(name string, platform Platform, signing SigningPlatform)
 	if signing.Notarize && platformBlockAllowed(name, "notarization") {
 		node := yamlMap()
 		yamlSetOptionalString(node, "credential", signing.NotarizationCredential)
+		yamlSetOptionalString(node, "api_key", signing.NotarizationKey)
+		yamlSetOptionalString(node, "key_id", signing.NotarizationKeyID)
+		yamlSetOptionalString(node, "issuer_id", signing.NotarizationIssuerID)
 		yamlSet(result, "notarization", node)
 	}
 	return result

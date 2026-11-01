@@ -581,7 +581,10 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			return hostConfigurationField("sign", err)
 		}
 		if spec.Config.Notarize {
-			if spec.Config.NotarizationCredential == "" {
+			if err := manifest.ValidateNotarization(spec.Config); err != nil {
+				return err
+			}
+			if spec.Config.NotarizationCredential == "" && spec.Config.NotarizationKey == "" {
 				return hostConfigurationField("notarization.credential", fmt.Errorf("notarization requires signing.darwin.notarization credential"))
 			}
 			if err := requireHostTools(host, "darwin notarization", "xcrun"); err != nil {

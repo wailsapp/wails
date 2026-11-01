@@ -127,6 +127,9 @@ func signMacOSDiskImage(options *flags.Sign) error {
 	if !options.Notarize {
 		return nil
 	}
+	if usesNotaryAPI(options) {
+		return notarizeMacOSWithAPI(context.Background(), options)
+	}
 	if options.KeychainProfile == "" {
 		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
 	}
@@ -244,6 +247,9 @@ func signMacOSBinary(options *flags.Sign) error {
 }
 
 func notarizeMacOSApp(options *flags.Sign) error {
+	if usesNotaryAPI(options) {
+		return notarizeMacOSWithAPI(context.Background(), options)
+	}
 	if options.KeychainProfile == "" {
 		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
 	}

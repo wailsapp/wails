@@ -106,6 +106,9 @@ func UpdateSigningPlatform(start, platform string, signing SigningPlatform) erro
 		if signing.Notarize {
 			notarizationBody := yamlEnsureMap(platformBody, "notarization")
 			yamlUpdateOptionalString(notarizationBody, "credential", signing.NotarizationCredential)
+			yamlUpdateOptionalString(notarizationBody, "api_key", signing.NotarizationKey)
+			yamlUpdateOptionalString(notarizationBody, "key_id", signing.NotarizationKeyID)
+			yamlUpdateOptionalString(notarizationBody, "issuer_id", signing.NotarizationIssuerID)
 		} else {
 			yamlRemove(platformBody, "notarization")
 		}

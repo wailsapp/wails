@@ -384,6 +384,9 @@ type SigningPlatform struct {
 	Notarize               bool   `json:"notarize"`
 	Credential             string `json:"credential,omitempty"`
 	NotarizationCredential string `json:"notarization_credential,omitempty"`
+	NotarizationKey        string `json:"notarization_key,omitempty"`
+	NotarizationKeyID      string `json:"notarization_key_id,omitempty"`
+	NotarizationIssuerID   string `json:"notarization_issuer_id,omitempty"`
 }
 
 type Association struct {

@@ -196,6 +196,9 @@ func validateProject(project Project) error {
 }
 
 func validateConfig(config Config) error {
+	if err := ValidateNotarization(config.Signing.Darwin); err != nil {
+		return err
+	}
 	if err := validateExecutables(config); err != nil {
 		return err
 	}
@@ -205,6 +208,9 @@ func validateConfig(config Config) error {
 	paths, err := newProjectPathValidator(config.Root)
 	if err != nil {
 		return fmt.Errorf("resolve project root: %w", err)
+	}
+	if err := paths.validate("darwin.notarization.api_key", config.Signing.Darwin.NotarizationKey, false); err != nil {
+		return err
 	}
 	if config.Project.BinaryName == "" {
 		return fieldValidationError("project.binary_name", "project name does not produce a value")

@@ -40,6 +40,14 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 }
 
 func platformSigningMetadata(path, name string) (signingFieldMetadata, bool) {
+	switch path {
+	case "darwin.notarization.api_key":
+		return signingFieldMetadata{"Project-relative App Store Connect team API private-key .p8 file. Uses the portable Notary API instead of notarytool; requires key_id and issuer_id.", `"signing/AuthKey.p8"`}, true
+	case "darwin.notarization.key_id":
+		return signingFieldMetadata{"App Store Connect team API key ID belonging to api_key.", `"ABCDEFGHIJ"`}, true
+	case "darwin.notarization.issuer_id":
+		return signingFieldMetadata{"App Store Connect team issuer ID for API notarization.", `"00000000-0000-0000-0000-000000000000"`}, true
+	}
 	if path == "darwin.notarization.credential" {
 		return signingFieldMetadata{"Name of the Apple notarytool keychain profile used for notarisation.", `"release-notary"`}, true
 	}

@@ -2871,6 +2871,10 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("signing.%s.entitlements: %w", s.TargetOS, err)
 	}
+	notaryKey, err := existingOptionalPathInsideProject(h.root, s.Config.NotarizationKey)
+	if err != nil {
+		return pipeline.RunResult{}, fmt.Errorf("darwin.notarization.api_key: %w", err)
+	}
 	err = produceNamedPathTransactional(output, ".sign-output-*", filepath.Base(input), func(staged string) error {
 		if err := copyManifestPath(input, staged); err != nil {
 			return err
@@ -2880,7 +2884,16 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 				return err
 			}
 		}
-		return manifestSign(&flags.Sign{Input: staged, Certificate: certificate, Password: password, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.NotarizationCredential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
+		options := &flags.Sign{Input: staged, Certificate: certificate, Password: password, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.NotarizationCredential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")}
+		if s.Config.Notarize && notaryKey != "" {
+			options.Notarize, options.HardenedRuntime = false, true
+			if err := manifestSign(options); err != nil {
+				return err
+			}
+			options.NotaryKey, options.NotaryKeyID, options.NotaryIssuerID = notaryKey, s.Config.NotarizationKeyID, s.Config.NotarizationIssuerID
+			return notarizeMacOSWithAPI(ctx, options)
+		}
+		return manifestSign(options)
 	})
 	return pipeline.RunResult{}, err
 }
