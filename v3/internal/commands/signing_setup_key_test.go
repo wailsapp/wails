@@ -12,7 +12,6 @@ func TestGeneratedSigningKeysRoundTrip(t *testing.T) {
 	for _, test := range []struct{ name, password string }{{"plaintext", ""}, {"encrypted", "test-only-setup-passphrase"}} {
 		t.Run(test.name, func(t *testing.T) {
 			root := t.TempDir()
-			t.Chdir(root)
 			privateKey, publicKey := filepath.Join(root, "private.asc"), filepath.Join(root, "public.asc")
 			if err := generatePGPKeyForSetup("Signing setup fixture", "fixture@example.invalid", test.password, privateKey, publicKey); err != nil {
 				t.Fatal(err)
@@ -45,10 +44,14 @@ func TestGeneratedSigningKeysRoundTrip(t *testing.T) {
 			gpgv, gpgvErr := exec.LookPath("gpgv")
 			if gpgErr == nil && gpgvErr == nil {
 				keyring := filepath.Join(root, "public.gpg")
-				if output, err := exec.Command(gpg, "--batch", "--dearmor", "--output", filepath.Base(keyring), filepath.Base(publicKey)).CombinedOutput(); err != nil {
+				dearmor := exec.Command(gpg, "--batch", "--dearmor", "--output", filepath.Base(keyring), filepath.Base(publicKey))
+				dearmor.Dir = root
+				if output, err := dearmor.CombinedOutput(); err != nil {
 					t.Fatalf("decode exported public key: %s, %v", output, err)
 				}
-				output, err := exec.Command(gpgv, "--homedir", ".", "--keyring", "./"+filepath.Base(keyring), filepath.Base(input)+".sig", filepath.Base(input)).CombinedOutput()
+				verify := exec.Command(gpgv, "--homedir", ".", "--keyring", "./"+filepath.Base(keyring), filepath.Base(input)+".sig", filepath.Base(input))
+				verify.Dir = root
+				output, err := verify.CombinedOutput()
 				if err != nil {
 					t.Fatalf("independent generated-key signature verification: %s, %v", output, err)
 				}
