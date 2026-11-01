@@ -39,6 +39,9 @@ cd myapp && wails3 dev
 
 ## 設定 Wake 專案
 
+若要建立完整的第一個應用程式，請依照[Wake 入門教學](/experimental/wake/)操作。
+該教學將逐步說明專案建立流程與各個設定畫面、解釋此實驗功能的預期行為，並涵蓋從現有建置遷移的方式。
+
 在專案目錄中執行設定，並[啟用 Wake 實驗性功能](/experimental/yaml-builds/#enable-yaml-builds)：
 
 ```bash

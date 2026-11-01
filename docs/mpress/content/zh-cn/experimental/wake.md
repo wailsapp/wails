@@ -1,115 +1,286 @@
 ---
 title: "Wake"
-description: "一个了解 Wails 的实验性构建运行器，可运行现有 Taskfile，并默认提供更快的增量构建、结构化输出和并行执行。"
+description: "创建你的第一个 Wake 项目，按照设置向导完成配置、构建并运行项目，以及迁移现有的 Taskfile 项目。"
 slug: "experimental/wake"
 sourcePath: "experimental/wake.md"
 ---
 
-@note{type="caution" title="实验性功能"}
-Wake 需通过 `WAILS_USE_WAKE=true` 主动启用，<strong>并非</strong>默认运行器。 未设置该变量时，`wails3 build / package / sign / task` 的行为与以前完全相同。 功能覆盖范围和行为可能会随版本而变化。
+Wake 是 Wails 的实验性构建系统。一个`wails.yaml`用于描述应用程序、前端、目标平台、软件包和签名设置。Wake 使用该配置规划并运行构建、缓存未更改的工作，并报告生成的文件。
 
+在本教程中，你将创建一个小型桌面应用程序，在浏览器中配置它，为当前计算机构建它，并以开发模式运行它。首先使用一个本地目标和未签名构建。首次构建成功后，再添加交叉编译和分发。
+
+已有应用程序？请转到[迁移现有项目](#heading-6)。有关各个字段和高级工作流的信息，请参阅[YAML 构建指南](/experimental/yaml-builds/)和[清单参考](/reference/wails-yaml-fields/)。
+
+## 实验功能的预期情况
+
+@note{type="caution" title="使用测试项目或单独的分支"}
+Wake 需要选择启用，其配置、命令和行为可能会随预览版本而变化。它尚不具备稳定构建系统所提供的兼容性保证。请保留项目中已知可以正常工作的修订版本，并记录你测试的 CLI 和框架版本。分发软件包前，请先在目标系统上进行测试。
 @end
 
-Wake 是用于 `wails3` 的<strong>实验性替代构建运行器</strong>。它读取项目中已有的 同一个 `Taskfile.yml`，支持相同的 task、dep、var、 template、include 和平台命名空间语法，并通过一个 了解 Wails 的执行器运行它，而不是使用通用的 [Task](https://taskfile.dev) 运行时。
+Wake 和**纯 Go**后端是两个独立选项。启用 Wake 不会自动启用纯 Go。本教程使用标准后端，因此 macOS 和 Linux GUI 构建仍需要各自通常使用的原生开发工具。
 
-目标不是取代 Task，而是提供一个专为 Wails 项目的实际构建方式而设计的运行器，其语义、输出和默认设置 与 `wails3` CLI 的其余部分保持一致。**如果你始终只使用 Wake， 则无需更改 Taskfile。**
+向导会检查要求并保存配置。保存并不等同于构建，也不能证明每个所选目标都已准备就绪。缺少的工具或凭据可以稍后补充，例如在 CI 主机上补充。无效的目标与软件包组合必须在保存前更正。
 
-## 存在的原因
+迁移是**单向的**。Wake 不会执行 Taskfile、展开 Task 模板，也不会将 YAML 转换回 Taskfile。尚未迁移的项目仍使用独立的旧版 Task 运行时。有效的`wails.yaml`绝不会静默回退到该运行时。
 
-Wake 和 Task 运行时都已编译到 `wails3` 中，两者都不需要 单独安装二进制文件。区别在于 Wake **理解该领域**。 通用运行器只会按照指定顺序执行 Taskfile 中列出的步骤。 Wake 知道 Wails 构建的实际<em>构成</em>：前端产物包 会嵌入二进制文件，二进制文件会打包成平台特定的 制品，同时还会生成图标和绑定；Wake 会利用这些知识 以通用运行器无法做到的方式优化构建。
+## 开始之前
 
-- **它只执行构建实际需要的工作。** Wake 会自行跟踪每个步骤的实际输入和输出。对于 Go 构建，输入包括模块图以及依赖步骤的输出，因此当相关内容均未更改时，它会完全跳过编译器和链接器，而不是重新运行它们。只有当 Taskfile 预先明确列出要监视的具体文件时，通用运行器才能跳过某个步骤；Wake 则会根据自己已有的构建信息推导出来。对于无操作的重新构建，耗时大约为 **~20 ms（Wake），而 Task 约为 ~316 ms**。冷构建的实际耗时相同，因为主要时间都花在 `npm install`、Vite 和 Go 编译器上。
+你需要安装 Go、供入门前端使用的 Node.js 和 npm，以及适用于当前计算机的[平台依赖项](/getting-started/installation/#platform-specific-dependencies)。请从希望在其中创建新项目文件夹的目录开始。你还需要使用浏览器运行向导。
 
-- **它知道哪些步骤可以同时运行。** Wake 了解哪些步骤相互独立，因此默认并行运行这些步骤，并在结果行中报告由此获得的加速幅度。如果同级步骤交错的输出会干扰问题调查，可使用 `WAKE_SERIAL=true` 退出并行执行。
+请使用包含此预览功能的 CLI 和框架修订版本。安装稳定版`v3.0.0` CLI 不会添加此处所述的 Wake 设置界面。以下命令将预览版本固定到[PR #6531](https://github.com/wailsapp/wails/pull/6531)：
 
-- **由 wails3 控制的结构化输出。** Wake 通过 wails3 自带的报告器呈现输出：每个计划步骤占一行、实时显示状态、结束时按颜色分类列出各阶段耗时，并在故障面板中提供可点击的 `file:line` 链接。`NO_COLOR` 和非 TTY 环境（CI 日志）会妥善降级。
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+wails3 version
+```
 
-- **内置其中，因此可以随 Wails 一同发展。** Wake 是 `wails3` 的一部分，而不是第三方工具，因此可以直接在其上叠加新的构建能力，无需等待另一个项目实现这些功能。这也为原生运行跨平台脚本和工具创造了条件；目前，Taskfile 会调用 `wails3` 二进制文件来运行它们（每次调用都会生成一个进程）。将这项工作移至进程内可减少开销，也意味着未来还会有更多提速空间。
+确保 Go 可执行文件目录位于`PATH`中；[安装指南](/getting-started/installation/)对此进行了说明。在本教程稍后的步骤中，你会将应用程序的 Go 依赖项固定到同一修订版本。测试较新的预览版本时，请同时更新两个修订版本参数。
 
-## 启用 Wake
+### 在终端中启用 Wake
 
-Wake 完全由 `WAILS_USE_WAKE=true` 环境变量控制。 未设置该变量（或将其设置为 `true` 以外的任何值）时，每条 `wails3` 命令 都会与以前一样使用内嵌的 Task 运行时。
+在 Bash 或 Zsh 中：
 
 ```bash
-# Default: Task runtime, no Wake involvement
-wails3 build
-
-# Opt in: Wake drives build / package / sign / task <name>
-WAILS_USE_WAKE=true wails3 build
-WAILS_USE_WAKE=true wails3 package
-WAILS_USE_WAKE=true wails3 task <some-task-name>
+export WAILS_EXP_USE_WAKE=1
 ```
 
-此标志适用于 `wails3 build`、`wails3 package`、`wails3 sign` 和 `wails3 task <name>`。`wails3 dev` 目前<strong>不</strong>受影响，开发模式的监视器 仍使用自己的流水线。
+在 PowerShell 中：
 
-@note{type="tip" title="启用 Wake 是安全的"}
-如果 Wake 遇到尚未实现的 Taskfile 功能，它会在进程内将整个 运行过程交给内嵌的 Task 运行时，无需安装外部 `task` 二进制文件。最坏的结果也只是得到与未启用该标志时 完全相同的行为。
+```powershell
+$env:WAILS_EXP_USE_WAKE = '1'
+```
 
-@end
+在本教程的其余步骤中，请保持此终端打开。任何运行 Wake 命令的新终端或 CI 作业都需要重新设置该变量。只要该变量**存在**，Wake 就会启用：将其设为`false`或空字符串并不会禁用 Wake。旧名称`WAILS_USE_WAKE`会被忽略。
 
-## 分层本地覆盖
+## 创建应用程序
 
-Wake 支持<strong>基础 Taskfile 加本地覆盖</strong>。在 `Taskfile.yml` 旁放置一个文件，其中的定义将优先采用：
+运行项目创建向导：
 
-| 文件 | 用途 | 优先级 |
+```sh
+wails3 init -ui
+```
+
+浏览器会打开项目向导。此操作会创建源文件；下方单独的`wails3 setup`向导用于配置如何构建这些文件。
+
+| 界面 | 本教程中的选择 | 接下来会发生什么 |
 | --- | --- | --- |
-| `Taskfile.yml` | 基础文件，已提交 | 最低 |
-| `Taskfile.override.yml` / `.yaml` | 已提交、适用于整个团队的覆盖文件 | 中等 |
-| `Taskfile.local.yml` / `.yaml` | 个人文件，通常被 Git 忽略 | 最高 |
+| **项目 — 创建 Wails 项目** | 输入`wake-demo`，然后点击**继续**。 | 项目将在所显示目录下的新`wake-demo`文件夹中创建。 |
+| **框架 — 选择框架** | 选择**Vanilla**，然后点击**继续**。 | 你将获得一个小型前端，无需专门学习某个框架。 |
+| **语言 — 语言偏好** | 选择**JavaScript**，然后点击**继续**。 | 仅适用于 TypeScript 的**绑定**界面将被跳过。 |
+| **详细信息 — 项目详细信息** | 将产品名称设为`Wake Demo`，捆绑包标识符设为`com.example.wakedemo`，版本设为`0.1.0`。点击**创建项目**。 | 启用 Wake 后，详细信息将写入`wails.yaml`。 |
 
-**合并语义（以本地定义为准）：**
+本教程中不要使用**使用全局默认值**，因为它会跳过框架和语言选择。如果你在其他项目中选择 TypeScript，可以在**绑定**界面中为生成的 Go 数据绑定选择使用接口或类。
 
-- 具有<strong>相同名称</strong>的任务会覆盖基础任务。当覆盖定义提供列表字段（`cmds`、`deps`、`sources`、`generates`、`platforms`、`status`、`preconditions`、`aliases`）时，这些字段会<strong>替换</strong>基础定义中的对应字段；覆盖定义中省略的字段则保留基础定义中的值。
-- `env` 和 `vars` 会<strong>按键合并</strong>，发生冲突时以覆盖定义为准。
-- 如果某个任务<strong>仅</strong>存在于覆盖文件中，则会<strong>添加</strong>该任务。
+返回终端并等待项目创建完成。然后运行：
 
-例如，如果已提交的 `Taskfile.yml` 使用开发标志进行构建，而你的 计算机应始终执行生产构建：
-
-```yaml
-# Taskfile.local.yml (git-ignored, yours)
-tasks:
-  build:
-    cmds:
-      - go build -tags production -o bin/app .
-  smoke:
-    cmds:
-      - ./bin/app --selftest
+```sh
+cd wake-demo
+go get github.com/wailsapp/wails/v3@44e449c91
 ```
 
-现在，`build` 会运行你的生产命令，并且 `smoke` 可供使用，而无需 更改已提交的 Taskfile。
+现在应当已有`main.go`、一个 Go 模块、一个`frontend`目录和一个原生`wails.yaml`。内置模板直接使用 Wake，因此无需迁移这个新项目。社区模板可能包含自定义旧版任务，此时可能需要按下文所述进行迁移审查。
 
-@note{type="note" title="信任模型"}
-覆盖文件会被自动发现并应用，不会显示提示。这不会授予任何 新能力：Taskfile 本就可以运行任意 shell 命令，因此覆盖文件 无法执行任何通过编辑 `Taskfile.yml` 所不能执行的操作。已提交的 `Taskfile.override.*` 会出现在 PR 差异中；`Taskfile.local.*` 则在 你自己的计算机上创建。格式错误的覆盖文件会中止运行，而不会被 静默跳过。要获得确定性的 CI 构建，请设置 `WAILS_NO_OVERRIDES=true`， 以完全跳过覆盖文件发现。
+## 逐个界面配置构建
 
+在`wake-demo`内运行：
+
+```sh
+wails3 setup
+```
+
+浏览器现在会显示**WAKE 设置**。如果显示的是常规设置流程，请检查启动该命令的终端中是否设置了`WAILS_EXP_USE_WAKE`，并确认你运行的是预览版 CLI。
+
+以下屏幕截图展示了在 Linux 上完成此演练的过程。在 Windows 或 macOS 上，主机目标和所需工具会有所不同。
+
+### 项目 — 仅在缺少元数据时显示
+
+对于刚刚创建的应用程序，此界面会被**跳过**：`init`已经写入元数据。这是预期行为。
+
+配置不含原生清单或旧版构建配置的现有 Go 源代码目录时，**关于你的项目**界面会要求填写产品名称、项目名称、应用程序标识符、版本、公司和说明。这些值会保留在向导中，直到点击**保存**。设置过程不会创建应用程序源文件。如果发现 Taskfile 或旧版元数据，请先完成迁移。
+
+### 应用程序 — 你要构建什么？
+
+选择**桌面应用程序**。不要勾选**打包现有二进制文件**，并选择**标准后端**。点击**继续**。
+
+![应用程序界面，其中已选择“桌面应用程序”和“标准后端”，并已关闭预构建打包。](/assets/screenshots/wake/application.png)
+
+- **桌面应用程序**会构建一个使用 Web 前端的 GUI。
+- **命令行应用程序**和**服务器**用于描述不含桌面窗口的程序。更改此选项不会重写应用程序源代码；请使用与所选类型匹配的源代码项目。
+- <strong>纯 Go（实验性）</strong>是一个需要单独选择启用的选项。只要依赖项也能在不使用 CGo 的情况下构建，它就能让受支持的桌面编译不再需要 C 编译器。但它不会消除目标运行时库，也不会消除所有打包和签名工具。
+- **打包现有二进制文件**会准备一条使用`--skip-build`的命令。
+  它需要你已经构建好的二进制文件；对于新项目，请不要启用此选项。
+
+后端是一个**项目级设置**。更改此处的设置时，继承这些设置的其他配置文件的行为也可能发生变化。
+
+### 目标 — 应在哪里运行？
+
+只保留当前所用计算机对应的目标，然后单击**继续**。
+向导最初会选中宿主操作系统和体系结构。
+
+![“目标”屏幕，其中仅选中了教程宿主机对应的 linux/amd64。](/assets/screenshots/wake/targets.png)
+
+目标名称由操作系统和 CPU 体系结构组成，例如`windows/amd64`、Apple Silicon Mac 对应的`darwin/arm64`或`linux/amd64`。
+`darwin`表示 macOS。选择其他目标会请求生成适用于该计算机的可执行文件；这不会让该可执行文件能够在当前计算机上运行。
+
+其他体系结构、macOS 通用构建和实验性移动目标可留到以后再次运行设置时处理。
+
+### 软件包 — 选择发布产物
+
+不要选中任何软件包格式复选框，并保持关闭**对发布产物签名**。
+单击**继续**。
+
+![“软件包”屏幕，其中未选择其他 Linux 软件包格式，并且已关闭签名。](/assets/screenshots/wake/packages.png)
+
+未选择其他格式时，Wake 会生成该目标的默认产物：桌面可执行文件；对于 macOS GUI，则生成 macOS 应用程序包。这足以在本地检查应用程序。以后选择格式后，可在受支持的平台上添加 DMG、MSIX、NSIS、DEB 或 AppImage 等分发产物。
+
+首次进行本地构建时，签名是可选的。未签名的构建成功并不表示应用程序已可公开分发。
+
+### 工具 — 构建所需的工具
+
+阅读所选项目的要求。该列表来自 Wake 的构建计划，并非要求在每个平台上安装所有工具。
+
+![“工具”屏幕，显示已为本地 Linux 源代码构建解析的要求。](/assets/screenshots/wake/tools.png)
+
+在本教程中，预计需要 Go、前端工具，以及宿主机标准 GUI 后端所需的原生开发工具。Docker 并非普遍要求。使用 CGo 进行交叉构建时，可能需要编译器和目标库，或受支持的容器工具链。
+
+尝试本地构建前，请处理标记为**未就绪**、**需要配置**或**需要更新**的行。使用界面上提供的说明（如有）或[平台安装指南](/getting-started/installation/)，然后单击**重新检查**。如果安装更改了终端的`PATH`，可能需要重新启动设置。宿主机要求就绪后，单击**继续**。
+
+即使此计算机缺少工具，向导也可以保存有效配置。这对 CI 配置很有用，但在本教程中，你需要的是能够在此计算机上运行的构建。
+
+### 签名 — 仅在选中时显示
+
+由于你保持关闭签名，此屏幕将被**跳过**。以后再次运行时，启用**对发布产物签名**会显示所选桌面平台现有的签名控件。**稍后设置签名**会在保存的设置配置文件中关闭签名。移动端签名通过 YAML 配置，而不使用这些控件。
+
+签名默认值保存在用户设置中。Wake 可以使用项目外已配置的证书文件，而无需将私钥或密码复制到`wails.yaml`中。显式的项目签名设置优先。准备公开发布前，请遵循[设置签名指南](/getting-started/setup/)和[打包与签名指南](/experimental/yaml-builds/#package-and-sign-for-distribution)。
+
+### 保存 — 保存构建配置
+
+检查摘要：桌面应用程序、标准后端、源代码构建、宿主机目标，以及已禁用签名。单击**保存 wails.yaml**。
+
+![“保存”屏幕，汇总了 GUI 应用程序、标准后端、源代码构建和未签名的 linux/amd64 目标。](/assets/screenshots/wake/save.png)
+
+你应当会看到**构建配置已保存**、清单文件的路径，以及：
+
+```sh
+wails3 build setup
+```
+
+单击**完成**并返回终端。设置已将目标和软件包选项保存到`profiles.setup`下。此外，它还会更新应用程序类型、前端启用状态和后端设置。现有的前端命令、配套程序、钩子和无关配置会予以保留。
+
+配置文件名称很重要：`wails3 build setup`会使用这些已保存的选项。仅使用`wails3 build`不会自动选择`setup`配置文件。
+
+## 构建并运行你的第一个应用程序
+
+运行向导显示的命令：
+
+```sh
+wails3 build setup
+```
+
+首次构建会安装前端依赖项、生成绑定并编译应用程序。后续构建可以复用未发生变化的工作。等待出现**构建成功**，并查看 CLI 输出的路径。默认输出目录为`bin`；macOS GUI 会被组装成`.app`包。
+
+在你自己的计算机上启动开发模式：
+
+```sh
+wails3 dev
+```
+
+你应当会看到初始应用程序窗口。输入你的姓名并试用问候功能。在`frontend/index.html`中更改姓名输入框的占位文本并保存文件；前端应会刷新。编辑`greetservice.go`中的问候语，以触发 Go 重新构建。完成后，在终端中按**Ctrl+C**。
+
+开发是宿主机上的本地工作流。发布配置文件可以包含多个交叉构建目标，而不会改变哪台计算机能够运行开发窗口。要在本地构建并启动生产版应用程序，请使用`wails3 run`；请参阅[运行命令参考](/reference/wails-yaml-run/)。
+
+现在，你已经拥有一个源代码项目、一个经过审查的构建配置文件，以及一个可正常工作的本地开发循环。将源代码和`wails.yaml`提交到版本控制。生成的`.wails/`工作文件并非配置源。
+
+## 接下来可以做什么
+
+| 目标 | Wake 支持 | 首先要检查的内容 |
+| --- | --- | --- |
+| 为其他桌面平台构建 | Windows、macOS 和 Linux 目标，包括两种 macOS 体系结构和通用产物。 | 纯 Go 和 CGo 的编译器要求不同。请在目标操作系统和体系结构上进行测试。 |
+| 创建安装程序或软件包 | MSIX、NSIS、macOS 应用程序/DMG、DEB、RPM、Arch、Void 和 AppImage。 | NSIS 需要`makensis`。AppImage 需要目标运行时；GUI 交叉打包还需要提供 Linux 运行时目录树。 |
+| 对发布版本签名 | Windows、macOS 和 DEB/RPM/Arch 支持使用导出密钥进行可移植签名；仍可使用原生身份存储。 | 每种身份、格式和宿主机都有其限制。AppImage 和 Void 没有内置签名流程。 |
+| 对 macOS 应用程序进行公证 | 使用团队 API 密钥提交并装订票据，或使用 macOS 钥匙串配置文件。 | 仍然需要适当的 Developer ID 签名和时间戳。由 Go 生成的测试签名通过原生检查，并不能证明 Apple 会接受你的发布版本。 |
+| 构建多个程序 | 一个 GUI、CLI 或服务器主程序，以及具名配套程序。 | 在 YAML 中声明配套程序的软件包和类型。向导不会生成它们的源代码。 |
+| 打包在其他位置构建的文件 | `wails3 build setup --skip-build`. | 在`build.output`中提供匹配的可执行文件名和架构。此标志仅供单次命令选择使用，并非永久设置。 |
+| 添加发布自动化 | 命名配置、受限的生命周期钩子、缓存和并行打包任务。 | 使用字面量 YAML 和声明的项目自有脚本。任意 Taskfile 行为并不是 Wake 的扩展机制。 |
+
+重新打开`wails3 setup`可更改`setup`配置。其他命名配置和高级设置需在`wails.yaml`中编辑。有关完整示例和软件包要求，请参阅[YAML 构建指南](/experimental/yaml-builds/)。GUI 应用程序仍需要目标平台的系统库；Pure Go 并不能使其成为完全静态的应用程序。
+
+iOS 和 Android 仍处于实验阶段，需要各自的平台 SDK 和 CGo，不在本篇首个桌面应用教程的范围内。该向导无法让移动端构建在任意主机之间移植。
+
+## 迁移现有项目
+
+请在可正常工作的**Wails v3**项目的单独分支或工作副本上操作。这是构建配置迁移，并非从 Wails v2升级。请保留现有构建产物和测试，以便在激活后比较行为。
+
+@note{type="caution" title="迁移覆盖范围尚不完整"}
+即使项目是使用当前标准旧版模板生成的，固定版本的预览版也可能报告阻碍项。已知示例包括动态选择的任务，以及旧版构建配置中无法识别的`exit_policy`字段。不要仅仅为了通过激活检查而移除所需行为。如果分析无法表示你的项目，请继续使用旧版构建并报告诊断信息。上面的新项目教程不需要迁移。
 @end
 
-## 自动回退
+### 1. 在不更改当前构建的情况下进行分析
 
-如果 Wake 遇到尚未实现的 Taskfile 功能，它会将整个运行过程 交给内嵌的 Task 运行时。目前，以下情况会触发回退：
+启用 Wake，并使用本页开头所述的预览版 CLI。在现有项目根目录中运行：
 
-- Taskfile 级别的 `dotenv`
-- 除 `interleaved` 以外的 `output` 模式
-- 一个 `requires` 块
-- `interval`（Taskfile 或任务级别）
-- 除 `always` 以外的 `run` 模式
-- 任务中的 `short`
-- 任务中的`defer`
+```sh
+wails3 migrate --dry-run
+```
 
-## 环境变量
+阅读报告中列出的受支持设置和阻碍项。分析器会读取旧版声明，但不会执行其中的命令。试运行不会创建活动清单。若需要机器可读的诊断信息，请使用`wails3 migrate --json`；如果还希望避免写入草稿，请使用`--dry-run --json`。
 
-| 变量 | 作用 |
+### 2. 创建并审查未激活的方案
+
+```sh
+wails3 migrate
+```
+
+这会创建<strong>`wails.migrated.yaml`</strong>，而不是`wails.yaml`。请将它与现有 Taskfile 和`build/config.yml`一并检查。检查项目元数据、前端命令、目标架构、软件包内容、资源和签名设置。请将密钥保存在环境变量或凭据存储中。
+
+已知的内置任务可以映射到原生设置。调用项目自有脚本、行为保守且不带参数的生命周期任务可以转换为钩子。其他可达的自定义任务行为属于阻碍项；Wake 不会静默丢弃这些行为，也不会将 Task 作为后备方式来运行它们。
+
+如果草稿已存在，迁移不会覆盖你审查过的编辑。若要有意替换或重新生成草稿，请先保留副本。不要为了绕过激活检查而将存在阻碍项的草稿重命名为`wails.yaml`。请减少或替换不受支持的旧版行为，并在激活前重新运行分析。如果项目目前还无法表示，请继续使用其旧版构建并报告这一缺口。
+
+### 3. 显式激活
+
+审查草稿并解决阻碍项后，运行：
+
+```sh
+wails3 migrate --activate --dry-run
+wails3 migrate --activate
+```
+
+第一条命令会检查激活过程，但不会正式激活。第二条命令会重新检查旧版声明并验证草稿，然后以原子方式创建`wails.yaml`；激活成功后会移除未激活的`wails.migrated.yaml`。Taskfile、`build/config.yml`、脚本和资源均不会受到影响。从此以后，活动清单将控制 Wake 构建。旧文件不会作为第二个配置来源。
+
+某些较旧的项目已经包含仅存储元数据的`wails.yaml`，其中有顶层`info:`部分。尽管它不是原生 Wake 清单，但仍占用了激活目标位置。请在激活前保留该旧版文件并有意将其移走；迁移工具不会替你覆盖或重命名它。
+
+### 4. 验证迁移后的应用程序
+
+```sh
+wails3 config check
+wails3 build
+wails3 dev
+```
+
+将应用程序和软件包内容与先前的构建进行比较，包括你的自定义发布行为。运行项目测试。显式检查每个已迁移的配置；例如，当草稿包含`release`配置时，请检查`wails3 config check release`和`wails3 build release`。
+
+现在可以运行`wails3 setup`，以添加或替换专用的`setup`配置。它不会自动选择或编辑现有的`release`配置。
+
+### 如果需要停止实验
+
+取消设置`WAILS_EXP_USE_WAKE`会禁用自愿启用功能，但活动的`wails.yaml`仍会阻止自动路由到 Taskfile。无效的 YAML 也会导致程序报错并停止。没有反向迁移命令。
+
+若要返回旧工作流，请在版本控制中恢复迁移前的完整项目修订版本，包括恢复为不存在活动清单的状态，并使用与其兼容的 CLI 和依赖项。在此之前，请保留仍需使用的所有新源代码更改。使用单独的试验分支会让这种有意恢复容易得多。
+
+## 诊断问题并提供反馈
+
+| 症状 | 首先检查 |
 | --- | --- |
-| `WAILS_USE_WAKE` | 设为`true`时，为可路由的`wails3`动词启用 Wake；设为其他任何值时，使用 Task 运行时 |
-| `WAILS_NO_OVERRIDES` | `true`跳过`Taskfile.local.*`/`.override.*`发现过程（实现确定性构建） |
-| `WAKE_VERBOSE` | 实时流式输出子进程的 stdout/stderr，而不是捕获后仅在失败时显示 |
-| `WAKE_SILENT` | 完全禁止任务输出 |
-| `WAKE_SERIAL` | `true`禁用并行`deps:`扇出（默认启用并行） |
-| `WAKE_FORCE` | `true`绕过所有缓存，以进行真正的全新重建 |
-| `WAKE_DEBUG` | 记录解析器内部信息（DAG、依赖项、变量引用、执行路由） |
-| `WAKE_NOTICE` | 设为`off`可隐藏每次运行时显示的“wake (experimental)”通知 |
+| 设置过程显示通用向导 | 在启动程序的终端中设置`WAILS_EXP_USE_WAKE`，并检查`PATH`中使用的是哪个`wails3`可执行文件。 |
+| 设置过程要求迁移 | 你打开了旧版项目或使用旧版配置的社区模板。请在激活前审查迁移。 |
+| 已保存的构建报告缺少工具 | 保存操作只记录意图。返回**工具**，修复主机要求后重新检查。 |
+| 交叉构建的可执行文件无法在此处启动 | 请在所选操作系统和架构上运行它；本地开发时请使用主机目标。 |
+| 预构建模式找不到二进制文件 | 检查[预构建文件的名称和路径](/experimental/yaml-builds/#use-prebuilt-desktop-executables)，包括多目标子目录。 |
+| 清单更改失败 | 针对相关配置运行`wails3 config check`，并按照字段诊断信息操作。Wake 不会回退到 Taskfile。 |
 
-构建缓存位于`.wake/cache.json`中（Task 使用`.task/`）。
+运行构建前，先使用`wails3 build setup --plan --json`检查它。
+`wails3 config check`会验证配置，而`wails3 eject`会写入一个非活动的`wails.ejected.yaml`快照，而不会更改活动清单。
+分享命令输出前请先检查内容：项目路径和凭据位置可能会暴露你的本地环境。
 
-## 反馈
-
-Wake 是一项实验性功能，它未来的发展方向取决于您的反馈。如果您进行了尝试，我们很想知道它是否更快、更清晰，以及是否有任何功能出现故障——最有用的报告会说明您运行了什么、预期结果是什么，以及实际发生了什么。请在[Wake 反馈讨论](https://github.com/wailsapp/wails/discussions/5679)中告诉我们。
+请在[实验讨论区](https://github.com/wailsapp/wails/discussions/categories/experiments)分享反馈，或[提交可重现的错误](https://github.com/wailsapp/wails/issues)。请提供 CLI 和框架修订版本、主机操作系统/架构、所选目标、确切命令、是否选择了 Pure Go，以及相关诊断信息。请说明故障发生在编译、打包、签名还是应用程序运行阶段。请附上已移除密钥的最小清单，并在有帮助时提供`wails3 doctor`输出。

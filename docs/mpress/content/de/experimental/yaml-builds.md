@@ -12,6 +12,9 @@ sidebar:
 Die erste akzeptierte Version unterstützt ausschließlich literale Konfiguration. Dieses Experiment dient außerdem als Prototyp für zeitlich begrenzte Lebenszyklus-Hooks, damit deren Gestaltung vor einem Vorschlag für eine Veröffentlichung bewertet werden kann. Benutzerdefinierte Phasen, YAML-Ausdrücke und typisierte Wails-Toolaufrufe bleiben vorerst zurückgestellt. Bestehende Projekte verwenden weiterhin Taskfiles, bis Sie eine geprüfte Migration ausdrücklich aktivieren.
 @end
 
+Neu bei Wake? Beginnen Sie mit dem [Tutorial für den Einstieg](/experimental/wake/).
+Es behandelt die Grenzen des Experiments, sämtliche Bildschirme zur Projekt- und Build-Konfiguration, einen ersten lokalen Build und eine geprüfte Migration. Diese Seite beschreibt die einzelnen Workflows für Build, Paketierung und Konfiguration ausführlicher.
+
 ## YAML-Builds aktivieren
 
 Setzen Sie `WAILS_EXP_USE_WAKE` in jedem Terminal, in dem Sie die experimentellen Befehle ausführen. Für Bash oder Zsh:

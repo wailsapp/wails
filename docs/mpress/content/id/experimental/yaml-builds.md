@@ -12,6 +12,9 @@ sidebar:
 Rilis pertama yang diterima hanya mendukung konfigurasi literal. Eksperimen ini juga membuat purwarupa hook siklus hidup berbatas agar bentuknya dapat dievaluasi sebelum diusulkan untuk dirilis. Tahap kustom, ekspresi YAML, dan pemanggilan alat Wails bertipe masih ditangguhkan. Proyek yang sudah ada tetap menggunakan Taskfile sampai Anda secara eksplisit mengaktifkan migrasi yang telah ditinjau.
 @end
 
+Baru mengenal Wake? Mulailah dengan [tutorial memulai](/experimental/wake/).
+Tutorial tersebut membahas batasan eksperimen, setiap layar penyiapan proyek dan build, build lokal pertama, serta migrasi yang telah ditinjau. Halaman ini membahas alur kerja build, pengemasan, dan konfigurasi secara terpisah dengan lebih terperinci.
+
 ## Mengaktifkan build YAML
 
 Tetapkan `WAILS_EXP_USE_WAKE` di setiap terminal yang menjalankan perintah eksperimental. Untuk Bash atau Zsh:

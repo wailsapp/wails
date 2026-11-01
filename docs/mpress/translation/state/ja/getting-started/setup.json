@@ -151,6 +151,18 @@
       "updatedAt": "2026-11-01T04:32:41Z"
     },
     "b0012-text-01": {
+      "sourceHash": "9eb9ec3ec033987fbc46f6f16ab8eb30bfbd899865ff187791b73e1055c5aab2",
+      "targetHash": "6ca84a30ddbc1d84f1b177cef91087cb82e6c63d72aa9572a077c62ea3661cda",
+      "machineHash": "6ca84a30ddbc1d84f1b177cef91087cb82e6c63d72aa9572a077c62ea3661cda",
+      "machineText": "最初のアプリケーションを一通り作成するには、[Wake 入門チュートリアル](/experimental/wake/)に従ってください。\nこのチュートリアルでは、プロジェクトの作成と各セットアップ画面を順に説明し、この実験で想定される動作と既存のビルドからの移行について解説します。",
+      "status": "machine-translated",
+      "sourcePreview": "For a complete first application, follow the [Wake getting-started tutorial](/experimental/wake/). I…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:56:44Z"
+    },
+    "b0013-text-01": {
       "sourceHash": "6ed4639d11b7d11cd8bf63a5cde63597246d6a5e68f1130f6965f2ccf67cb133",
       "targetHash": "e6d68f7200809094c89f1a4bec1eb9ce3be0c665300e5e40123bf3bc47c0bee2",
       "machineHash": "e6d68f7200809094c89f1a4bec1eb9ce3be0c665300e5e40123bf3bc47c0bee2",
@@ -162,7 +174,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0013-text-01": {
+    "b0014-text-01": {
       "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
       "targetHash": "25917d81b35ac21cfb5c526c553756d6a28630846287b61bfe11ffa0801e4062",
       "machineHash": "25917d81b35ac21cfb5c526c553756d6a28630846287b61bfe11ffa0801e4062",
@@ -174,7 +186,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0014-text-01": {
+    "b0015-text-01": {
       "sourceHash": "d7bc9890bccead74a7f76a6806e463062856cd60bef5776a7dc67f87de00ec0b",
       "targetHash": "16099e5218d5498bbda427605a22f31560c2b78acdc582f22fce2dfcd0d83238",
       "machineHash": "16099e5218d5498bbda427605a22f31560c2b78acdc582f22fce2dfcd0d83238",
@@ -186,7 +198,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0015-text-01": {
+    "b0016-text-01": {
       "sourceHash": "ade3c05a20e913fa6786e5613f38eef7ea63d8b4b134a76f77a22370bc08bd43",
       "targetHash": "f5f10dedfd705510c871aa0838227ecca5691be57273a97c8758ca36090b8f68",
       "machineHash": "f5f10dedfd705510c871aa0838227ecca5691be57273a97c8758ca36090b8f68",
@@ -198,7 +210,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0016-text-01": {
+    "b0017-text-01": {
       "sourceHash": "e5d50fd4b31be9ca3f52d39cf225451d3315db93e85fe4e78c517ca6b41cfe76",
       "targetHash": "75da590ba306f25e7842e021a4fc28f490103522a37ac110632855a769d8f706",
       "machineHash": "75da590ba306f25e7842e021a4fc28f490103522a37ac110632855a769d8f706",
@@ -210,7 +222,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0017-text-01": {
+    "b0018-text-01": {
       "sourceHash": "7afea9d36bb1e8062e7f24fed251a82344e7ff6dc4e5a2e7d0535eb18d13b635",
       "targetHash": "5a5858c6830cd134d81b6fbecf7d3d665efe33e963fd243a1c7a5e1e88f97f96",
       "machineHash": "5a5858c6830cd134d81b6fbecf7d3d665efe33e963fd243a1c7a5e1e88f97f96",
@@ -222,7 +234,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:35:02Z"
     },
-    "b0018-text-01": {
+    "b0019-text-01": {
       "sourceHash": "94654d330c07cac0a4e89d525ea6c5b81263313a4ee8e7a0fd799ae7bf1b4290",
       "targetHash": "6b2f37ea43a00a288d463141ee728f3290cb859eb7406fa95d0972f9f298992e",
       "machineHash": "6b2f37ea43a00a288d463141ee728f3290cb859eb7406fa95d0972f9f298992e",
@@ -234,7 +246,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0019-text-01": {
+    "b0020-text-01": {
       "sourceHash": "e988f0b209dd94198100858c0559e5ff09829d8f63fcd9536b847b623088f7d2",
       "targetHash": "c861df938af105eba85488eba6a3d8e3f16e68b71ff2df69798658193b6a28cd",
       "machineHash": "c861df938af105eba85488eba6a3d8e3f16e68b71ff2df69798658193b6a28cd",
@@ -246,7 +258,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0020-text-01": {
+    "b0021-text-01": {
       "sourceHash": "53a18af7d731f523e7d8a9fb7d52ac1371f90f41e86607e2c4b4f3b116c1d602",
       "targetHash": "8aa6b00ae477ecd4c65e2e9ae35dfd1eeb9b41b23d1178851d792f4c4571d9da",
       "machineHash": "8aa6b00ae477ecd4c65e2e9ae35dfd1eeb9b41b23d1178851d792f4c4571d9da",
@@ -258,7 +270,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0021-text-01": {
+    "b0022-text-01": {
       "sourceHash": "e1555aa7f014340daa80362aea064ff31501ac79c5d4519ad11150346a02bab2",
       "targetHash": "c220dd9b09ce02f1caa0244b8785d53dad17464dd342f8c4be5481cef74c125b",
       "machineHash": "c220dd9b09ce02f1caa0244b8785d53dad17464dd342f8c4be5481cef74c125b",
@@ -270,7 +282,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0022-text-01": {
+    "b0023-text-01": {
       "sourceHash": "af1bb0a5cfec9876a5c35f8d0522d0b7bbf8fdddc3423924ad0e19a4e6ed6e39",
       "targetHash": "5c7f697f6238d24e8b35ba0f064c67386787a3a89fe565b86fa5a31a866e7583",
       "machineHash": "5c7f697f6238d24e8b35ba0f064c67386787a3a89fe565b86fa5a31a866e7583",
@@ -282,7 +294,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0023-text-01": {
+    "b0024-text-01": {
       "sourceHash": "3dbafaa86a03319a0d445882a22bf2b406d8239770802cf4b2eff1fc8d1bbf56",
       "targetHash": "97ca3ce76a041a928e0b8aece1c42e82326ab7c99866a42450ddd51fd3df3555",
       "machineHash": "97ca3ce76a041a928e0b8aece1c42e82326ab7c99866a42450ddd51fd3df3555",
@@ -294,7 +306,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0024-text-01": {
+    "b0025-text-01": {
       "sourceHash": "e7c34c988bb0846076960b42148c7f5db27403c4d06aabbe2ae60ba7bbd443f6",
       "targetHash": "aa4661dba226ae75d2e294314ec55080c6c70c912a3ee88b9b84efc057076bf9",
       "machineHash": "aa4661dba226ae75d2e294314ec55080c6c70c912a3ee88b9b84efc057076bf9",
@@ -306,7 +318,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:35:02Z"
     },
-    "b0025-text-01": {
+    "b0026-text-01": {
       "sourceHash": "943687736330ac03a58a097f0fd3585dcc01f33502cf6ec0ce109d71f3009e05",
       "targetHash": "ccd356cb8f8c8eeaa925c055bb60dfdd3e2eed6578bb8255c38049cb4222c3da",
       "machineHash": "ccd356cb8f8c8eeaa925c055bb60dfdd3e2eed6578bb8255c38049cb4222c3da",
@@ -318,7 +330,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0026-text-01": {
+    "b0027-text-01": {
       "sourceHash": "028b4fd5ad213f20c9bc9ad054603ba885d81eb7ee6e67496cc08d1bd40bc1b6",
       "targetHash": "da8098703329994077c1eeeff8ef52e3856869dbf7036a67f26de7f9630eec4c",
       "machineHash": "da8098703329994077c1eeeff8ef52e3856869dbf7036a67f26de7f9630eec4c",
@@ -330,7 +342,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0027-text-01": {
+    "b0028-text-01": {
       "sourceHash": "850a22d3962641555a4a0e59c0bce935232ebdd03aaf5ab6037148e36a44a2fe",
       "targetHash": "574b1314bccf7cfe9224b5e17a71494a257df45c76255b743e34d11e04f0eb53",
       "machineHash": "574b1314bccf7cfe9224b5e17a71494a257df45c76255b743e34d11e04f0eb53",
@@ -342,7 +354,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0028-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "2e86523123e6c0749b6ceeb90a1697d83e3904b13b053fb502766db91d16e59b",
       "targetHash": "c2814f41fc11a0601d854663fdbcf259bd8f41d1bcc6de7a12c9cea014fb70e3",
       "machineHash": "c2814f41fc11a0601d854663fdbcf259bd8f41d1bcc6de7a12c9cea014fb70e3",
@@ -354,7 +366,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0029-heading-01": {
+    "b0030-heading-01": {
       "sourceHash": "297f28312e37c5b3da144525b88d6b9f7197d1d7b974f7c73bca0773973f1109",
       "targetHash": "44e1084abb71e197b0a10a340013fcbb1d01af990d2aebae618208c32cc83140",
       "machineHash": "44e1084abb71e197b0a10a340013fcbb1d01af990d2aebae618208c32cc83140",
@@ -366,7 +378,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0030-text-01": {
+    "b0031-text-01": {
       "sourceHash": "c5e883fddd4b1f43b67ab1c6acb50919cb786a1c6eacff0945a11b45b87a23aa",
       "targetHash": "f9f0b541b32add2019ee3730d45deff320b892cb1be64e5f1fdebafd3b97c893",
       "machineHash": "f9f0b541b32add2019ee3730d45deff320b892cb1be64e5f1fdebafd3b97c893",
@@ -378,7 +390,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0031-text-01": {
+    "b0032-text-01": {
       "sourceHash": "3dc3fb44021210401e5733d71c50f3098bc15b9177859948522f920ad0962ad3",
       "targetHash": "d7335a1ec540eb86c4c03eae3a5274d47c497d5cc633061f3d802f66519ea40d",
       "machineHash": "d7335a1ec540eb86c4c03eae3a5274d47c497d5cc633061f3d802f66519ea40d",
@@ -390,7 +402,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-01T04:32:41Z"
     },
-    "b0032-text-01": {
+    "b0033-text-01": {
       "sourceHash": "e39eb32d658ebf44563b4a4e06c531c8117cf81e2f7c625703f3f254b2ce7dfb",
       "targetHash": "d6c7b90c1305bea8baffc2e63dd17112dd2da87ed091a362d078af2a9c1d5923",
       "machineHash": "d6c7b90c1305bea8baffc2e63dd17112dd2da87ed091a362d078af2a9c1d5923",

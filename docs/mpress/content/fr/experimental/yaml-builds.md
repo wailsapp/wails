@@ -12,6 +12,9 @@ sidebar:
 La première version acceptée prend uniquement en charge la configuration littérale. Cette expérimentation propose également un prototype de hooks de cycle de vie à durée limitée, afin que leur forme puisse être évaluée avant qu’ils ne soient proposés pour une version publiée. Les étapes personnalisées, les expressions YAML et les appels typés aux outils Wails restent différés. Les projets existants continuent d’utiliser les Taskfiles jusqu’à ce que vous activiez explicitement une migration révisée.
 @end
 
+Vous découvrez Wake ? Commencez par le [tutoriel de prise en main](/experimental/wake/).
+Il présente les limites de l’expérimentation, tous les écrans de configuration du projet et de la compilation, une première compilation locale ainsi qu’une migration révisée. Cette page décrit plus en détail les différents workflows de compilation, de création de paquet et de configuration.
+
 ## Activer les builds YAML
 
 Définissez `WAILS_EXP_USE_WAKE` dans chaque terminal qui exécute les commandes expérimentales. Pour Bash ou Zsh :

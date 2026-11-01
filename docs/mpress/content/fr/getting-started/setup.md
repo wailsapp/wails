@@ -39,6 +39,9 @@ La configuration est enregistrée dans `$XDG_CONFIG_HOME/wails/defaults.yaml`, a
 
 ## Configurer un projet Wake
 
+Pour créer une première application complète, suivez le [tutoriel de prise en main de Wake](/experimental/wake/).
+Il vous guide tout au long de la création du projet et de chaque écran de configuration, explique ce que vous pouvez attendre de cette fonctionnalité expérimentale et aborde la migration depuis une configuration de build existante.
+
 Depuis le répertoire de votre projet, lancez la configuration en ayant [activé la fonctionnalité expérimentale Wake](/experimental/yaml-builds/#enable-yaml-builds) :
 
 ```bash

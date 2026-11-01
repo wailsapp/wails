@@ -39,6 +39,10 @@ A configuração é salva em `$XDG_CONFIG_HOME/wails/defaults.yaml`, com `~/.con
 
 ## Configurar um projeto Wake
 
+Para criar um primeiro aplicativo completo, siga o [tutorial de introdução ao Wake](/experimental/wake/).
+Ele orienta você na criação do projeto e em cada tela de configuração, explica o que esperar
+do recurso experimental e aborda a migração de uma compilação existente.
+
 Execute a configuração no diretório do projeto com o [experimento Wake ativado](/experimental/yaml-builds/#enable-yaml-builds):
 
 ```bash

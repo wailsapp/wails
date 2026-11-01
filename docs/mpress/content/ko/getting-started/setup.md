@@ -39,6 +39,9 @@ cd myapp && wails3 dev
 
 ## Wake 프로젝트 구성
 
+완전한 첫 번째 애플리케이션을 만들려면 [Wake 시작하기 튜토리얼](/experimental/wake/)을 따라 진행하세요.
+이 튜토리얼에서는 프로젝트 생성 과정과 각 설정 화면을 단계별로 안내하고, 실험 기능에서 예상할 수 있는 사항을 설명하며, 기존 빌드에서 마이그레이션하는 방법을 다룹니다.
+
 프로젝트 디렉터리에서 [Wake 실험 기능을 활성화](/experimental/yaml-builds/#enable-yaml-builds)한 상태로 설정을 실행하세요.
 
 ```bash

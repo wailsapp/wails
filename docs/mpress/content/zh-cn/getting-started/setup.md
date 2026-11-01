@@ -39,6 +39,9 @@ cd myapp && wails3 dev
 
 ## 配置 Wake 项目
 
+如需构建一个完整的首个应用，请按照[Wake 入门教程](/experimental/wake/)操作。
+该教程将引导你完成项目创建和各个设置界面，说明此实验功能的预期行为，并介绍如何从现有构建迁移。
+
 在项目目录中启用[Wake 实验性功能](/experimental/yaml-builds/#enable-yaml-builds)并运行设置：
 
 ```bash
