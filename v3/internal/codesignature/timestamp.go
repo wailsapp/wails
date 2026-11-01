@@ -164,6 +164,9 @@ func verifyTimestamp(token, digest []byte, nonce *big.Int, roots *x509.CertPool,
 	}
 	critical := false
 	for _, extension := range certificate.Extensions {
+		if extension.Id.Equal(asn1.ObjectIdentifier{2, 5, 29, 15}) && certificate.KeyUsage&(x509.KeyUsageDigitalSignature|x509.KeyUsageContentCommitment) == 0 {
+			return errors.New("timestamp certificate key usage does not permit signatures")
+		}
 		if extension.Id.Equal(asn1.ObjectIdentifier{2, 5, 29, 37}) {
 			critical = extension.Critical
 		}

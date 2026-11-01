@@ -32,13 +32,16 @@ func fixtureIdentity(t testing.TB) Identity {
 	return id
 }
 func timestampIdentity(t *testing.T) (Identity, *x509.CertPool) {
+	return timestampIdentityWithUsage(t, x509.KeyUsageDigitalSignature)
+}
+func timestampIdentityWithUsage(t *testing.T, usage x509.KeyUsage) (Identity, *x509.CertPool) {
 	t.Helper()
 	id := fixtureIdentity(t)
 	eku, err := asn1.Marshal([]asn1.ObjectIdentifier{{1, 3, 6, 1, 5, 5, 7, 3, 8}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	template := &x509.Certificate{SerialNumber: big.NewInt(5), Subject: pkix.Name{CommonName: "Owned test timestamp authority"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtraExtensions: []pkix.Extension{{Id: asn1.ObjectIdentifier{2, 5, 29, 37}, Critical: true, Value: eku}}}
+	template := &x509.Certificate{SerialNumber: big.NewInt(5), Subject: pkix.Name{CommonName: "Owned test timestamp authority"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour), KeyUsage: usage, ExtraExtensions: []pkix.Extension{{Id: asn1.ObjectIdentifier{2, 5, 29, 37}, Critical: true, Value: eku}}}
 	der, err := x509.CreateCertificate(rand.Reader, template, template, id.Signer.Public(), id.Signer)
 	if err != nil {
 		t.Fatal(err)
@@ -197,5 +200,19 @@ func TestTimestampHTTPRejectsFakeAndRedirects(t *testing.T) {
 				t.Fatal("invalid timestamp accepted")
 			}
 		})
+	}
+}
+
+func TestTimestampCertificateKeyUsage(t *testing.T) {
+	digest := sha256.Sum256([]byte("signature"))
+	nonce := big.NewInt(42)
+	now := time.Now()
+	for _, usage := range []x509.KeyUsage{x509.KeyUsageKeyEncipherment, x509.KeyUsageContentCommitment} {
+		id, roots := timestampIdentityWithUsage(t, usage)
+		token := timestampToken(t, id, digest[:], nonce, now, nil)
+		err := verifyTimestamp(token, digest[:], nonce, roots, now)
+		if (err == nil) != (usage == x509.KeyUsageContentCommitment) {
+			t.Fatalf("key usage %v: %v", usage, err)
+		}
 	}
 }
