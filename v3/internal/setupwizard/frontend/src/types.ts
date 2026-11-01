@@ -157,7 +157,6 @@ export interface DarwinSigningStatus {
   hasNotarization: boolean;
   teamID?: string;
   configSource?: string;
-  rcodesignAvailable: boolean;
 }
 
 export interface WindowsSigningStatus {
@@ -166,7 +165,6 @@ export interface WindowsSigningStatus {
   hasSignTool: boolean;
   timestampServer?: string;
   configSource?: string;
-  osslsigncodeAvailable: boolean;
   opensslAvailable: boolean;
 }
 

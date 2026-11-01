@@ -54,7 +54,7 @@ wails3 setup
 
 This writes a shared signing configuration to `~/.config/wails/defaults.yaml` that is **honored at sign time on every platform** (see [Configuration precedence](#configuration-precedence)). Its signing step:
 
-- Detects which signing tools are installed for the platform you want to target — **from any host** — and shows the install command for your OS (e.g. `brew install gnupg`, `sudo apt install osslsigncode`, `winget install GnuPG.Gpg4win`).
+- Shows setup tools for generating or exporting certificates and keys, such as OpenSSL and GnuPG. Exported Apple and Windows identities use the built-in signer; Windows certificate-store/provider identities and MSI packages require Windows SignTool.
 - On macOS, lists Developer ID certificates from your keychain.
 - For Linux, lists your GPG keys and can **generate and export** a new one.
 - For Windows, can **generate a self-signed certificate** (for testing) via OpenSSL.

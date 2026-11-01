@@ -2074,9 +2074,6 @@ type darwinSigningStatus struct {
 	HasNotarization bool     `json:"hasNotarization"`
 	TeamID          string   `json:"teamID,omitempty"`
 	ConfigSource    string   `json:"configSource,omitempty"`
-	// RcodesignAvailable reports whether the `rcodesign` tool is installed —
-	// the way to sign macOS apps from a non-macOS host.
-	RcodesignAvailable bool `json:"rcodesignAvailable"`
 }
 
 type windowsSigningStatus struct {
@@ -2085,9 +2082,6 @@ type windowsSigningStatus struct {
 	HasSignTool     bool   `json:"hasSignTool"`
 	TimestampServer string `json:"timestampServer,omitempty"`
 	ConfigSource    string `json:"configSource,omitempty"`
-	// OsslsigncodeAvailable reports whether `osslsigncode` is installed — the
-	// cross-platform way to Authenticode-sign Windows binaries from macOS/Linux.
-	OsslsigncodeAvailable bool `json:"osslsigncodeAvailable"`
 	// OpensslAvailable gates the "generate self-signed certificate" option.
 	OpensslAvailable bool `json:"opensslAvailable"`
 }
@@ -2125,7 +2119,12 @@ func checkSigningStatus() signingStatusResponse {
 func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 	status := darwinSigningStatus{}
 
-	if cfg.Signing.Darwin.Identity != "" {
+	if cfg.Signing.Darwin.P12Path != "" {
+		status.HasIdentity = true
+		status.Identity = "Exported PKCS#12 certificate"
+		status.TeamID = cfg.Signing.Darwin.TeamID
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Darwin.Identity != "" {
 		status.HasIdentity = true
 		status.Identity = cfg.Signing.Darwin.Identity
 		status.TeamID = cfg.Signing.Darwin.TeamID
@@ -2145,8 +2144,6 @@ func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 			status.ConfigSource = "keychain"
 		}
 	}
-
-	status.RcodesignAvailable = toolAvailable("rcodesign")
 
 	return status
 }
@@ -2178,7 +2175,6 @@ func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
 		status.HasSignTool = err == nil
 	}
 
-	status.OsslsigncodeAvailable = toolAvailable("osslsigncode")
 	status.OpensslAvailable = toolAvailable("openssl")
 
 	return status

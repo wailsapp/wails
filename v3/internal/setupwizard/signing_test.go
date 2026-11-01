@@ -58,3 +58,19 @@ func TestGPGFieldClean(t *testing.T) {
 		}
 	}
 }
+
+func TestSigningStatusRecognizesExportedIdentitiesWithoutTools(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
+	var config GlobalDefaults
+	config.Signing.Darwin.P12Path = "developer-id.p12"
+	config.Signing.Darwin.TeamID = "EXAMPLETEAM"
+	config.Signing.Windows.CertificatePath = "publisher.pfx"
+	darwin := checkDarwinSigningStatus(config)
+	if !darwin.HasIdentity || darwin.ConfigSource != "defaults.yaml" || darwin.TeamID != "EXAMPLETEAM" {
+		t.Fatalf("exported Apple identity not recognized: %+v", darwin)
+	}
+	windows := checkWindowsSigningStatus(config)
+	if !windows.HasCertificate || windows.CertificateType != "file" || windows.HasSignTool || windows.OpensslAvailable {
+		t.Fatalf("exported Windows identity depends on external tools: %+v", windows)
+	}
+}
