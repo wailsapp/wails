@@ -49,10 +49,27 @@ separation. These tests do **not** validate a real Apple account or production
 upload. Benchmarks for JWT signing and streamed archive hashing use no external
 libraries.
 
-Apple's published Notary API does not document ticket download or stapling
-endpoints. Its custom workflow still uses `xcrun stapler` after acceptance.
-Gatekeeper can find tickets online; stapling supports offline verification.
-Portable submission therefore does not imply portable signing or stapling.
+Ticket retrieval and stapling belong to the separate
+[`notaryticket`](../notaryticket) package, which follows Apple's observed ticket
+protocol. Gatekeeper can find tickets online; stapling supports offline
+verification. This client remains responsible for submission, status and logs.
+
+## Live acceptance
+
+On 2026-11-01, a stdlib Go arm64 application signed with Developer ID, hardened
+runtime and a secure timestamp completed the live workflow from Linux: the
+Wails archive writer created the ZIP, this client submitted and uploaded it,
+polled Apple's `Accepted` result and retrieved the diagnostic log, and the Go
+ticket package verified and stapled the returned ticket. The resulting bundle
+passed macOS `codesign --verify --strict --deep`, `stapler validate` and
+Gatekeeper assessment with `source=Notarized Developer ID`.
+
+Code-signature generation for this acceptance test used native `codesign`.
+The initial account-agreement rejection exercised the fixed guidance above.
+A separate tiny compiler-fixture app was rejected by Apple despite passing
+native signature checks; its signed bytes were unchanged by copying and ZIP
+creation. Both outcomes are retained in the test evidence, and generated
+signing fixtures are not treated as proof of notarization acceptance.
 
 ## Protocol sources
 
