@@ -15,6 +15,7 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"golang.org/x/image/draw"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,6 +33,8 @@ type MSIXOptions struct {
 	ExecutableName        string `json:"executableName"`
 	ExecutablePath        string `json:"executablePath"`
 	OutputPath            string `json:"outputPath"`
+	AppxManifest          string `json:"appxManifest,omitempty"`
+	IconPath              string `json:"iconPath,omitempty"`
 	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
 	UseMakeAppx           bool   `json:"useMakeAppx"`
 }
@@ -40,7 +43,7 @@ type MSIXOptions struct {
 func ToolMSIX(options *flags.ToolMSIX) error {
 	DisableFooter = true
 
-	if runtime.GOOS != "windows" {
+	if manifestHostOS != "windows" {
 		return fmt.Errorf("MSIX packaging is only supported on Windows")
 	}
 
@@ -78,6 +81,8 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		ExecutableName:        options.ExecutableName,
 		ExecutablePath:        options.ExecutablePath,
 		OutputPath:            options.OutputPath,
+		AppxManifest:          options.AppxManifest,
+		IconPath:              options.IconPath,
 		UseMsixPackagingTool:  options.UseMsixPackagingTool,
 		UseMakeAppx:           options.UseMakeAppx,
 	}
@@ -348,12 +353,22 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 
 	// Generate the AppxManifest.xml file
 	manifestPath := filepath.Join(outputDir, "AppxManifest.xml")
-	if err := generateAppxManifest(options, manifestPath); err != nil {
-		return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+	if options.AppxManifest != "" {
+		if err := copyFile(options.AppxManifest, manifestPath, 0644); err != nil {
+			return fmt.Errorf("error copying AppxManifest.xml: %w", err)
+		}
+	} else {
+		if err := generateAppxManifest(options, manifestPath); err != nil {
+			return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+		}
 	}
 
 	// Copy the executable
-	executableDest := filepath.Join(outputDir, filepath.Base(options.ExecutableName))
+	executableName := options.ExecutableName
+	if executableName == "" {
+		executableName = filepath.Base(options.ExecutablePath)
+	}
+	executableDest := filepath.Join(outputDir, filepath.Base(executableName))
 	if err := copyFile(options.ExecutablePath, executableDest, 0644); err != nil {
 		return fmt.Errorf("error copying executable: %w", err)
 	}
@@ -362,7 +377,19 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 	// This would include DLLs, resources, etc.
 	// For now, we'll just copy the executable
 
-	// Generate placeholder assets
+	iconData, err := buildAssets.ReadFile("build_assets/appicon.png")
+	if options.IconPath != "" {
+		iconData, err = os.ReadFile(options.IconPath)
+	}
+	if err != nil {
+		return fmt.Errorf("read MSIX icon: %w", err)
+	}
+	icon, _, err := image.Decode(bytes.NewReader(iconData))
+	if err != nil {
+		return fmt.Errorf("decode MSIX icon: %w", err)
+	}
+
+	// Generate correctly sized assets from the application's icon.
 	assets := []string{
 		"Square150x150Logo.png",
 		"Square44x44Logo.png",
@@ -376,11 +403,35 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 		assets = append(assets, "FileIcon.png")
 	}
 
-	// Generate placeholder assets
+	dimensions := map[string]image.Point{
+		"Square150x150Logo.png": {150, 150}, "Square44x44Logo.png": {44, 44},
+		"Wide310x150Logo.png": {310, 150}, "SplashScreen.png": {620, 300},
+		"StoreLogo.png": {50, 50}, "FileIcon.png": {44, 44},
+	}
 	for _, asset := range assets {
 		assetPath := filepath.Join(assetsDir, asset)
-		if err := generatePlaceholderImage(assetPath); err != nil {
-			return fmt.Errorf("error generating placeholder image %s: %w", asset, err)
+		size := dimensions[asset]
+		canvas := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
+		bounds := icon.Bounds()
+		width, height := size.X, size.X*bounds.Dy()/bounds.Dx()
+		if height > size.Y {
+			height = size.Y
+			width = size.Y * bounds.Dx() / bounds.Dy()
+		}
+		width, height = max(1, width), max(1, height)
+		x, y := (size.X-width)/2, (size.Y-height)/2
+		draw.CatmullRom.Scale(canvas, image.Rect(x, y, x+width, y+height), icon, bounds, draw.Over, nil)
+		file, err := os.Create(assetPath)
+		if err != nil {
+			return err
+		}
+		encodeErr := png.Encode(file, canvas)
+		closeErr := file.Close()
+		if encodeErr != nil {
+			return fmt.Errorf("encode MSIX icon %s: %w", asset, encodeErr)
+		}
+		if closeErr != nil {
+			return closeErr
 		}
 	}
 

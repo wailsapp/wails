@@ -93,6 +93,28 @@ func TestBuildDMGOptionsDefaults(t *testing.T) {
 	}
 }
 
+func TestToolPackageCreatesDMGWithoutHostTools(t *testing.T) {
+	root := t.TempDir()
+	app := filepath.Join(root, "Example.app", "Contents", "MacOS")
+	if err := os.MkdirAll(app, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(app, "Example"), []byte("payload"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", t.TempDir())
+	if err := toolPackage(&flags.ToolPackage{Format: "dmg", ExecutableName: "Example", Out: root}); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join(root, "Example.dmg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) < 512 || string(data[len(data)-512:len(data)-508]) != "koly" {
+		t.Fatal("output is missing the UDIF disk-image trailer")
+	}
+}
+
 func TestToolPackage(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -271,29 +293,5 @@ func TestBuildDMGPreservesPreviousOutput(t *testing.T) {
 				t.Errorf("staging files retained: %v", entries)
 			}
 		})
-	}
-}
-
-func TestBuildDMGNative(t *testing.T) {
-	root := t.TempDir()
-	app := filepath.Join(root, "Example.app")
-	if err := os.Mkdir(app, 0700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(app, "content.txt"), []byte("example app"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	output := filepath.Join(root, "Example.dmg")
-	opts := dmg.DefaultOptions(app, output)
-	opts.Backend = dmg.BackendNative
-	if err := buildDMG(opts, dmg.Build); err != nil {
-		t.Fatal(err)
-	}
-	data, err := os.ReadFile(output)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(data) < 512 || string(data[len(data)-512:len(data)-508]) != "koly" {
-		t.Fatal("output lacks a UDIF trailer")
 	}
 }

@@ -204,7 +204,7 @@ func (x *xlib) pageOrigin(top uint64) (int32, int32) {
 
 // menuBarOffset is menuBarHeight, or E2E_MENUBAR_HEIGHT when it is set.
 func menuBarOffset() int32 {
-	if v, err := strconv.Atoi(os.Getenv("E2E_MENUBAR_HEIGHT")); err == nil && v >= 0 {
+	if v, err := strconv.ParseInt(os.Getenv("E2E_MENUBAR_HEIGHT"), 10, 32); err == nil && v >= 0 {
 		return int32(v)
 	}
 	return menuBarHeight

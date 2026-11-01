@@ -65,12 +65,19 @@ func TestFindReportsMissingWindow(t *testing.T) {
 }
 
 func TestMenuBarOffsetOverride(t *testing.T) {
-	t.Setenv("E2E_MENUBAR_HEIGHT", "41")
-	if got := menuBarOffset(); got != 41 {
-		t.Errorf("menuBarOffset with E2E_MENUBAR_HEIGHT=41 = %d", got)
-	}
-	t.Setenv("E2E_MENUBAR_HEIGHT", "not a number")
-	if got := menuBarOffset(); got != menuBarHeight {
-		t.Errorf("menuBarOffset with a bad value = %d, want %d", got, menuBarHeight)
+	for _, test := range []struct {
+		value string
+		want  int32
+	}{
+		{"41", 41}, {"0", 0}, {"2147483647", 2147483647},
+		{"2147483648", menuBarHeight}, {"4294967296", menuBarHeight},
+		{"-1", menuBarHeight}, {"", menuBarHeight}, {"not a number", menuBarHeight},
+	} {
+		t.Run(test.value, func(t *testing.T) {
+			t.Setenv("E2E_MENUBAR_HEIGHT", test.value)
+			if got := menuBarOffset(); got != test.want {
+				t.Errorf("menuBarOffset(%q) = %d, want %d", test.value, got, test.want)
+			}
+		})
 	}
 }

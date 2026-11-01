@@ -209,6 +209,12 @@
           link: "/experimental/"
         - label: "Wake"
           link: "/experimental/wake/"
+        - label: "Сборки YAML"
+          link: "/experimental/yaml-builds/"
+        - label: "Поля манифеста YAML"
+          link: "/reference/wails-yaml-fields/"
+        - label: "Конфигурация запуска YAML"
+          link: "/reference/wails-yaml-run/"
         - label: "Управление с помощью LLM (MCP)"
           link: "/guides/mcp-service/"
 - label: "Основные концепции"
@@ -231,7 +237,7 @@
       link: "/reference/overview/"
     - label: "Приложение"
       link: "/reference/application/"
-    - label: "Окна"
+    - label: "Windows"
       collapsed: true
       items:
         - label: "API окон"
@@ -269,7 +275,7 @@
       link: "/faq/"
     - label: "Файлы syso в macOS"
       link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
+    - label: "Окна"
       collapsed: true
       items:
         - label: "Проблемы с RDP"

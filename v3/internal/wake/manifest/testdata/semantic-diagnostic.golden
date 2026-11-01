@@ -1,0 +1,5 @@
+<manifest>:2:30
+2 |       linux/amd64: {formats: [aab]}
+  |                              ^^^^^
+profiles["release"].targets["linux/amd64"].formats: format "aab" is not a production format for linux/amd64
+Hint: select only production formats supported by this target

@@ -1,115 +1,254 @@
 ---
 title: "Wake"
-description: "一個可感知 Wails 的實驗性建置執行器，能以更快的增量建置、結構化輸出及預設平行執行來執行您現有的 Taskfile。"
+description: "建立您的第一個 Wake 專案、依照專案建立精靈操作、建置並執行專案，以及移轉現有的 Taskfile 專案。"
 slug: "experimental/wake"
 sourcePath: "experimental/wake.md"
 ---
 
-@note{type="caution" title="實驗性功能"}
-Wake 必須透過 `WAILS_USE_WAKE=true` 主動啟用，<strong>並非</strong>預設執行器。 未設定此變數時，`wails3 build / package / sign / task` 的行為與以往完全相同。 各版本之間的功能涵蓋範圍與行為可能有所變更。
+Wake 是 Wails 的實驗性建置系統。只需一個`wails.yaml`即可描述您的應用程式、前端、目標平台、套件與簽署設定。Wake 會使用該設定規劃及執行建置、快取未變更的工作，並回報產生的檔案。
 
+在本教學中，您將建立一個小型桌面應用程式、在瀏覽器中進行設定、針對自己的電腦建置，並以開發模式執行。請先使用單一本機目標及未簽署的建置。第一次建置成功後，再加入交叉編譯與發佈功能。
+
+已經有應用程式了嗎？請前往[移轉現有專案](#heading-7)。
+如需個別欄位及進階工作流程的說明，請參閱[YAML 建置指南](/experimental/yaml-builds/)與[資訊清單參考](/reference/wails-yaml-fields/)。
+
+## 這項實驗的預期情況
+
+@note{type="caution" title="使用測試專案或獨立分支"}
+Wake 必須選擇啟用，其設定、命令與行為可能會隨預覽版本而變更。目前它尚未具備穩定建置系統的相容性保證。請保留專案中已知可正常運作的修訂版本，並記錄您所測試的 CLI 與框架版本。發佈套件前，請先在套件的目標系統上測試。
 @end
 
-Wake 是 `wails3` 的<strong>實驗性替代建置執行器</strong>。它會讀取專案已有的相同 `Taskfile.yml`，支援相同的 task、dep、var、template、include 與平台命名空間語法，並透過可感知 Wails 的執行器來執行，而不是使用通用的 [Task](https://taskfile.dev) 執行階段。
+Wake 與**純 Go**後端是彼此獨立的選項。啟用 Wake 不會自動啟用純 Go。本教學使用標準後端，因此 macOS 與 Linux GUI 建置仍需要各自通常使用的原生開發工具。
 
-其目標並非取代 Task，而是提供一個專為 Wails 專案實際建置方式打造的執行器，其語意、輸出與預設值皆與 `wails3` CLI 的其餘部分一致。**如果您始終只使用 Wake，便不必變更 Taskfile。**
+精靈會檢查需求並儲存設定。儲存不等同於建置，也不能證明每個選定的目標都已就緒。缺少的工具或認證資訊可以稍後處理，例如在 CI 主機上處理。無效的目標與套件組合必須先修正才能儲存。
 
-## 存在理由
+移轉是**單向的**。Wake 不會執行 Taskfile、展開 Task 範本，也不會將 YAML 轉回 Taskfile。尚未移轉的專案仍使用獨立的舊版 Task 執行階段。啟用中的`wails.yaml`絕不會在未告知的情況下回退使用該執行階段。
 
-Wake 與 Task 執行階段都已編譯至 `wails3` 中，兩者都不需要另行安裝二進位檔。差別在於 Wake **瞭解其領域**。通用執行器會按照 Taskfile 指定的順序執行其中列出的所有步驟。Wake 知道 Wails 建置實際上<em>是</em>什麼：前端套件會嵌入二進位檔，二進位檔會封裝成平台專用成品，圖示與繫結也會一併產生；它會運用這些知識，以通用執行器無法採用的方式最佳化建置。
+## 開始之前
 
-- <strong>它只會執行建置實際需要的工作。</strong>Wake 會自行追蹤每個步驟的實際輸入與輸出。對 Go 建置而言，這包括模組圖及其相依步驟的輸出，因此在沒有任何相關變更時，它會完全略過編譯器與連結器，而不會重新執行。只有當 Taskfile 預先明確列出要監控的確切檔案時，通用執行器才能略過某個步驟；Wake 則會根據它對建置已有的瞭解自行判斷。在沒有任何工作可做的重新建置中，耗時約為 **~20 ms（Wake），相較之下 Task 約為 ~316 ms**。冷建置的實際耗時相同，因為主要時間都花在 `npm install`、Vite 與 Go 編譯器上。
+您的電腦需要安裝 Go、供入門前端使用且包含 npm 的 Node.js，以及[平台相依項目](/getting-started/installation/#platform-specific-dependencies)。請從您希望建立新專案資料夾的目錄開始。您也需要瀏覽器來使用精靈。
 
-- <strong>它知道哪些工作可以同時執行。</strong>由於 Wake 瞭解哪些步驟彼此獨立，因此預設會平行執行這些步驟，結果行也會回報由此獲得的加速幅度。若同層步驟交錯的輸出會干擾問題調查，可使用 `WAKE_SERIAL=true` 停用此行為。
+請使用包含此預覽功能的 CLI 與框架修訂版本。安裝穩定版`v3.0.0` CLI 並不會加入此處所述的 Wake 專案建立畫面。下列命令會將預覽版本固定為[PR #6531](https://github.com/wailsapp/wails/pull/6531)中的版本：
 
-- <strong>由 wails3 控制的結構化輸出。</strong>Wake 透過 wails3 自己的報告器呈現輸出：每個規劃步驟各占一列、即時顯示狀態、最後提供以色彩區分的階段細目，並在失敗面板中提供可點選的 `file:line` 連結。`NO_COLOR` 與非 TTY 環境（CI 記錄）也能妥善降級。
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@b1daf95f3
+wails3 version
+```
 
-- <strong>內建於其中，因此能隨 Wails 一同發展。</strong>由於 Wake 是`wails3`的一部分，而非第三方工具，因此可以直接疊加新的建置功能，不必等待其他專案實作。這也為未來以原生方式執行跨平台指令碼與工具創造了可能性；目前 Taskfile 在這些情況下會呼叫`wails3`二進位檔，且每次呼叫都會產生一個程序。將這些工作移至同一程序內可降低額外負擔，也表示未來還能進一步加速。
+請確認 Go 可執行檔目錄位於`PATH`中；[安裝指南](/getting-started/installation/)對此有所說明。在本教學稍後的步驟中，您會將應用程式的 Go 相依項目固定為相同的修訂版本。測試較新的預覽版本時，請同時更新兩個修訂版本引數。
 
-## 啟用 Wake
+### 在終端機中啟用 Wake
 
-Wake 完全由 `WAILS_USE_WAKE=true` 環境變數控管。 若未設定此變數（或將其設為 `true` 以外的任何值），每個 `wails3` 命令都會與以往完全相同，使用內嵌的 Task 執行階段。
+在 Bash 或 Zsh 中：
 
 ```bash
-# Default: Task runtime, no Wake involvement
-wails3 build
-
-# Opt in: Wake drives build / package / sign / task <name>
-WAILS_USE_WAKE=true wails3 build
-WAILS_USE_WAKE=true wails3 package
-WAILS_USE_WAKE=true wails3 task <some-task-name>
+export WAILS_EXP_USE_WAKE=1
 ```
 
-此旗標涵蓋 `wails3 build`、`wails3 package`、`wails3 sign` 與 `wails3 task <name>`。`wails3 dev` 目前<strong>尚未</strong>受到影響，開發監看程式仍使用自己的管線。
+在 PowerShell 中：
 
-@note{type="tip" title="啟用 Wake 是安全的"}
-如果 Wake 遇到尚未實作的 Taskfile 功能，便會在同一程序內將整次執行交給內嵌的 Task 執行階段，不需要安裝外部 `task` 二進位檔。最壞的情況下，您得到的行為也會與未使用此旗標時完全相同。
+```powershell
+$env:WAILS_EXP_USE_WAKE = '1'
+```
 
-@end
+在本教學後續過程中，請保持此終端機開啟。任何執行 Wake 命令的新終端機或 CI 作業都必須重新設定此變數。只要該變數**存在**就會啟用 Wake：將其設為`false`或空字串並不會停用 Wake。舊的`WAILS_USE_WAKE`名稱會被忽略。
 
-## 分層本機覆寫
+## 建立應用程式
 
-Wake 支援<strong>基礎 Taskfile 加上本機覆寫</strong>。將檔案放在 `Taskfile.yml` 旁，其定義便會優先套用：
+執行專案建立精靈：
 
-| 檔案 | 用途 | 優先順序 |
+```sh
+wails3 init -ui
+```
+
+瀏覽器會開啟專案精靈。啟用 Wake 後，它會在同一個流程中收集原始碼與建置選項。按下最後的**建立專案**按鈕前，不會建立任何內容。`wails3 setup`是另一個用於設定全域偏好、工具與簽署認證資訊的精靈；它不會設定此專案的 Wake 設定檔。
+
+| 畫面 | 本教學的選擇 | 接下來的結果 |
 | --- | --- | --- |
-| `Taskfile.yml` | 基礎檔案，已提交 | 最低 |
-| `Taskfile.override.yml` / `.yaml` | 已提交、全團隊共用的覆寫 | 中等 |
-| `Taskfile.local.yml` / `.yaml` | 個人使用，通常由 Git 忽略 | 最高 |
+| **專案 — 建立 Wails 專案** | 輸入`wake-demo`，然後按**繼續**。 | 專案會建立在顯示目錄下新建的`wake-demo`資料夾中。 |
+| **框架 — 選擇框架** | 選取**Vanilla**，然後按**繼續**。 | 您會取得一個小型前端，不必先學習特定框架。 |
+| **語言 — 語言偏好設定** | 選取**JavaScript**，然後按**繼續**。 | 系統會略過僅供 TypeScript 使用的**繫結**畫面。 |
+| **詳細資料 — 專案詳細資料** | 產品名稱使用`Wake Demo`、套件組合識別碼使用`com.example.wakedemo`，版本使用`0.1.0`。按一下**繼續**。 | 選擇建置設定期間，您的中繼資料會保留在精靈中。 |
 
-**合併語意（以本機定義為準）：**
+本教學請勿使用**使用全域預設值**，因為它會略過框架與語言選項。如果您在其他專案中選擇 TypeScript，便可在**繫結**畫面中選擇要為產生的 Go 資料繫結使用介面或類別。
 
-- <strong>同名</strong>的 task 會覆寫基礎 task。當覆寫檔提供清單欄位（`cmds`、`deps`、`sources`、`generates`、`platforms`、`status`、`preconditions`、`aliases`）時，這些欄位會<strong>取代</strong>基礎定義；覆寫檔省略的欄位則會保留基礎定義中的值。
-- `env` 與 `vars` 會<strong>逐一依鍵合併</strong>，發生衝突時以覆寫值為準。
-- 如果某個 task <strong>只</strong>存在於覆寫檔中，便會予以<strong>新增</strong>。
+## 建立前選擇建置設定
 
-例如，如果已提交的 `Taskfile.yml` 使用開發旗標進行建置，但您的機器應一律進行正式環境建置：
+請在同一個瀏覽器視窗中繼續操作。下方螢幕擷取畫面顯示的是在 Linux 上執行本操作流程的情況。在 Windows 或 macOS 上，您的主機目標與所需工具會有所不同。
 
-```yaml
-# Taskfile.local.yml (git-ignored, yours)
-tasks:
-  build:
-    cmds:
-      - go build -tags production -o bin/app .
-  smoke:
-    cmds:
-      - ./bin/app --selftest
+### 應用程式 — 您要建置什麼？
+
+保留**桌面應用程式**，並選擇**標準後端**。按一下**繼續**。
+
+![專案建立精靈中的應用程式畫面，已選取桌面應用程式與標準後端。](/assets/screenshots/wake/application.png)
+
+本教學會建立一個具有 Web 前端的 GUI。<strong>純 Go（實驗性）</strong>是另一個必須另行選擇啟用的功能。若您的相依項目也能在不使用 CGo 的情況下建置，它便能免除受支援桌面編譯目標對 C 編譯器的需求。但它不會免除目標執行階段程式庫，也不會免除所有封裝與簽署工具。
+
+後端是**整個專案共用的設定**。繼承這些設定的其他設定檔也會使用所選後端。
+
+### 目標 — 應在哪裡執行？
+
+只保留目前所用電腦的目標，然後按一下**繼續**。精靈一開始會選取主機的作業系統與架構。
+
+![目標畫面，針對本教學的主機僅選取 linux/amd64。](/assets/screenshots/wake/targets.png)
+
+目標名稱由作業系統與 CPU 架構組成，例如`windows/amd64`、適用於 Apple Silicon Mac 的`darwin/arm64`，或`linux/amd64`。`darwin`表示 macOS。選取其他目標會要求為該機器產生可執行檔；這不會讓該可執行檔能在您目前的電腦上執行。
+
+額外架構、macOS 通用建置及實驗性行動裝置目標請留待稍後處理。第一次本機建置完成後，您可以將它們加入`wails.yaml`。
+
+### 套件 — 選擇發行輸出
+
+不要勾選任何套件格式方塊，並關閉**簽署發行輸出**。按一下**繼續**。
+
+![套件畫面，未選取額外的 Linux 套件格式，且簽署已關閉。](/assets/screenshots/wake/packages.png)
+
+若未選取其他格式，Wake 會產生目標平台的預設輸出：桌面可執行檔；若是 macOS GUI，則為 macOS 應用程式套件。這足以在本機檢查應用程式。選取格式後，還會在支援的平台上加入 DMG、MSIX、NSIS、DEB 或 AppImage 等發行輸出。
+
+第一次在本機建置時，簽署並非必要。未簽署的建置成功，不代表應用程式已可公開發行。若專案需要簽署，請在建立專案前使用`wails3 setup`設定可重複使用的認證資料，或在建立後於`wails.yaml`中設定簽署。建立精靈會使用您已設定的認證資料；不會變更您的全域簽署偏好設定。
+
+Wake 可以使用專案外部已設定的憑證檔案，而不會將私密金鑰或密碼複製到`wails.yaml`中。明確的專案簽署設定具有較高優先順序。準備公開發行前，請遵循[設定簽署指引](/getting-started/setup/)以及[封裝與簽署指南](/experimental/yaml-builds/#package-and-sign-for-distribution)。行動平台簽署需在 YAML 中設定。
+
+### 工具 — 建置所需的工具
+
+請閱讀所選項目的需求。此清單來自 Wake 的建置計畫；並非要求您在每個平台上安裝所有工具。
+
+![「工具」畫面，顯示針對本機 Linux 原始碼建置解析出的需求。](/assets/screenshots/wake/tools.png)
+
+在本教學中，您需要 Go、前端工具，以及主機標準 GUI 後端所需的原生開發工具。Docker 並非一律必要。使用 CGo 進行跨平台建置時，可能需要編譯器與目標平台程式庫，或受支援的容器工具鏈。
+
+嘗試本機建置前，請先處理標示為**尚未就緒**、**需要設定**或**需要更新**的項目。請使用畫面上提供的指示，或參閱[平台安裝指南](/getting-started/installation/)，然後按一下**重新檢查需求**。若安裝程序變更了終端機的`PATH`，請從已更新的終端機重新啟動`wails3 init -ui`，並再次進行選擇。
+
+即使這台電腦缺少工具或簽署認證資料，精靈仍可建立有效的專案。這對 CI 設定很有用，但在本教學中，您需要能在此電腦上執行的建置。無效的設定必須在建立專案前修正。
+
+### 建立專案
+
+確認您的選擇：桌面應用程式、標準後端、您的主機目標，且已停用簽署。在**工具**中，按一下**建立專案**，並等待出現**已接受專案選擇**。返回終端機，等待 CLI 完成建立專案；瀏覽器中的確認只會接受您的選擇。
+
+![「已接受專案選擇」畫面，顯示規劃的應用程式路徑，以及建立成功後要使用的命令。](/assets/screenshots/wake/save.png)
+
+精靈會建立原始碼，並將目標平台、套件與簽署選項儲存在`wails.yaml`的`profiles.setup`下。它也會設定應用程式類型、是否啟用前端，以及整個專案使用的後端。您可以關閉瀏覽器並返回終端機。等待專案建立完成後，執行：
+
+```sh
+cd wake-demo
+go get github.com/wailsapp/wails/v3@b1daf95f3
 ```
 
-現在，`build` 會執行您的正式環境命令，且 `smoke` 可供使用，而不必變更已提交的 Taskfile。
+現在您應該已有`main.go`、一個 Go 模組、一個`frontend`目錄，以及原生`wails.yaml`。內建範本直接使用 Wake；您不需要移轉這個新專案。社群範本可能包含自訂的舊版工作，因此可能需要改為進行下述移轉審查。
 
-@note{type="note" title="信任模型"}
-系統會自動探索並套用覆寫檔，不會顯示提示。這不會授予任何新能力：Taskfile 本來就能執行任意 shell 命令，因此覆寫檔能做的事不會超出直接編輯 `Taskfile.yml` 所能做到的範圍。已提交的 `Taskfile.override.*` 會出現在 PR 差異中；`Taskfile.local.*` 則是在您自己的機器上建立。格式錯誤的覆寫檔會中止執行，而不會遭到無聲略過。若要進行確定性 CI 建置，請設定 `WAILS_NO_OVERRIDES=true`，以完全略過覆寫檔探索。
+完成畫面會顯示`wails3 build setup`和`wails3 dev`。設定檔名稱很重要：`wails3 build setup`會使用您剛儲存的選項。單獨使用`wails3 build`並不會自動選取`setup`設定檔。設定檔名稱並不表示您需要執行`wails3 setup`。
 
+## 建置並執行您的第一個應用程式
+
+執行精靈顯示的命令：
+
+```sh
+wails3 build setup
+```
+
+第一次建置會安裝前端相依套件、產生繫結並編譯應用程式。後續建置可以重複使用未變更的成果。請等待畫面顯示**建置成功**，並查看 CLI 印出的輸出路徑。預設輸出目錄為`bin`；macOS GUI 會組裝成`.app`套件。
+
+在您自己的電腦上啟動開發模式：
+
+```sh
+wails3 dev
+```
+
+您應該會看到入門應用程式視窗。輸入您的姓名並試用問候功能。變更`frontend/index.html`中姓名輸入欄位的預留位置文字並儲存檔案；前端應會重新整理。編輯`greetservice.go`中的問候語，以觸發 Go 重新建置。完成後，在終端機中按**Ctrl+C**。
+
+開發是在本機主機上進行的工作流程。發行設定檔可以包含多個跨平台建置目標，而不會改變可執行開發視窗的電腦。若要在本機建置並啟動正式版應用程式，請使用`wails3 run`；詳情請參閱[執行參考](/reference/wails-yaml-run/)。
+
+現在您已有原始碼專案、經審查的建置設定檔，以及可用的本機開發迴圈。請將原始碼和`wails.yaml`提交至版本控制。產生的`.wails/`工作檔案並非您的設定來源。
+
+## 接下來可以進行的工作
+
+| 目標 | Wake 支援 | 首先要檢查的項目 |
+| --- | --- | --- |
+| 為其他桌面平台建置 | Windows、macOS 和 Linux 目標平台，包括兩種 macOS 架構與通用輸出。 | 純 Go 與 CGo 的編譯器需求不同。請在目的地作業系統與架構上測試。 |
+| 製作安裝程式或套件 | MSIX、NSIS、macOS app/DMG、DEB、RPM、Arch、Void 和 AppImage。 | NSIS 需要`makensis`。AppImage 需要目標執行階段；GUI 跨平台封裝還需要提供 Linux 執行階段目錄樹。 |
+| 簽署發行版本 | Windows、macOS 和 DEB/RPM/Arch 可使用可攜式匯出金鑰進行簽署；原生身分識別儲存區仍可使用。 | 每種身分識別、格式與主機都有其限制。AppImage 和 Void 沒有內建簽署流程。 |
+| 公證 macOS 應用程式 | 使用團隊 API 金鑰提交並裝訂票證，或使用 macOS 鑰匙圈設定檔。 | 仍然需要適當的 Developer ID 簽章與時間戳記。由 Go 產生的測試簽章通過原生檢查，並不能證明 Apple 會接受您的發行版本。 |
+| 建置多個程式 | 一個 GUI、CLI 或伺服器主程式，以及具名的隨附程式。 | 請在 YAML 中宣告隨附套件與類型。精靈不會產生其原始碼。 |
+| 封裝在其他位置建置的檔案 | `wails3 build setup --skip-build`. | 請在`build.output`中提供相符的可執行檔名稱與架構。此旗標是一次性的命令選項，不是永久的設定檔設定。 |
+| 加入發行自動化 | 具名設定檔、受限制的生命週期掛鉤、快取，以及平行套件工作。 | 請使用常值 YAML 與已宣告且由專案擁有的指令碼。任意 Taskfile 行為並非 Wake 的擴充機制。 |
+
+請在`wails.yaml`中編輯`profiles.setup`、其他具名設定檔與進階設定。使用`wails3 setup`變更共用偏好設定與認證資料。如需完整範例與套件需求，請參閱[YAML 建置指南](/experimental/yaml-builds/)。GUI 應用程式仍需要目的地的系統程式庫；使用純 Go 並不會使其成為完全靜態的應用程式。
+
+iOS 和 Android 仍屬實驗性功能，需要各自的平台 SDK 與 CGo，且不在這篇第一個桌面應用程式教學的範圍內。精靈不會讓行動平台建置可在任意主機間移植。
+
+## 移轉現有專案
+
+請在已簽出之**Wails v3**專案的獨立分支或工作複本上操作。這是建置設定移轉，並非從 Wails v2升級。請保留現有的建置結果與測試，以便在啟用後比較行為。
+
+@note{type="note" title="從經審查的移轉開始"}
+從目前內建舊版範本產生的新專案，可以在建置其前端之前進行移轉。Wake 無須執行 Taskfile 或評估自訂運算式，即可辨識這些範本的標準任務選擇器與開發生命週期。
+
+自訂任務、變數覆寫及開發原則仍須審查。如果分析無法表示您的專案，請讓專案繼續使用舊版建置，並回報診斷資訊。請勿為了讓啟用程序通過而移除您需要的行為。上方的新專案教學課程不需要移轉。
 @end
 
-## 自動回退
+### 1. 在不變更目前作用中建置的情況下進行分析
 
-如果 Wake 遇到尚未實作的 Taskfile 功能，便會將整次執行交給內嵌的 Task 執行階段。目前下列項目會觸發此回退機制：
+啟用 Wake，並使用本頁開頭所述的預覽版 CLI。在現有專案根目錄中執行：
 
-- Taskfile 層級的 `dotenv`
-- `interleaved` 以外的 `output` 模式
-- `requires` 區塊
-- `interval`（Taskfile 或 task 層級）
-- `always` 以外的 `run` 模式
-- task 中的 `short`
-- 工作中的`defer`
+```sh
+wails3 migrate --dry-run
+```
 
-## 環境變數
+閱讀回報的支援設定與阻礙項目。分析器會讀取舊版宣告，但不會執行其中的命令。試執行不會建立作用中的資訊清單。若要取得機器可讀的診斷資訊，請使用`wails3 migrate --json`；如果也不想寫入草稿，請使用`--dry-run --json`。
 
-| 變數 | 效果 |
+### 2. 建立並審查非作用中的提案
+
+```sh
+wails3 migrate
+```
+
+這會建立<strong>`wails.migrated.yaml`</strong>，而不是`wails.yaml`。請將其與現有的 Taskfile 及`build/config.yml`一併檢查。檢查專案中繼資料、前端命令、目標架構、套件內容、資產及簽署設定。請將祕密資訊存放於環境變數或認證資料存放區中。
+
+已知的內建任務可以對應至原生設定。採取保守做法、不帶引數，且呼叫專案自有指令碼的生命週期任務，可以轉換為掛鉤。其他可到達的自訂任務行為會構成阻礙；Wake 不會悄悄捨棄這些行為，也不會將其交由 Task 執行作為備援。
+
+如果草稿已存在，移轉程序不會覆寫您審查過的編輯內容。在刻意取代或重新產生草稿之前，請先保留副本。請勿將受阻的草稿重新命名為`wails.yaml`，藉此略過啟用檢查。請減少或取代不支援的舊版行為，並在啟用前重新執行分析。如果目前仍無法表示該專案，請讓專案繼續使用舊版建置，並回報此缺口。
+
+### 3. 明確啟用
+
+審查草稿並解決阻礙項目後，請執行：
+
+```sh
+wails3 migrate --activate --dry-run
+wails3 migrate --activate
+```
+
+第一個命令會檢查啟用程序，但不會發布變更。第二個命令會重新檢查舊版宣告並驗證草稿，然後以不可分割的方式建立`wails.yaml`；啟用成功後會移除非作用中的`wails.migrated.yaml`。Taskfile、`build/config.yml`、指令碼及資產都不會受到變更。從此時起，作用中的資訊清單會控制 Wake 建置。舊檔案並非第二個設定來源。
+
+有些較舊的專案已有僅包含中繼資料的`wails.yaml`，其中含有頂層`info:`區段。雖然它不是原生 Wake 資訊清單，仍占用了啟用目的地。請保留該舊版檔案，並在啟用前刻意將其移走；移轉工具不會替您覆寫或重新命名該檔案。
+
+### 4. 驗證移轉後的應用程式
+
+```sh
+wails3 config check
+wails3 build
+wails3 dev
+```
+
+將應用程式及套件內容與先前的建置進行比較，包括您的自訂發布行為。執行專案測試。請明確檢查每個已移轉的設定檔；例如，當草稿包含`release`設定檔時，請檢查`wails3 config check release`和`wails3 build release`。
+
+請直接在`wails.yaml`中編輯已移轉的設定檔。`wails3 init -ui`用於建立新專案；`wails3 setup`用於管理全域偏好設定。兩者都不能用來編輯現有專案的發布設定檔。
+
+### 如果需要停止實驗
+
+取消設定`WAILS_EXP_USE_WAKE`會停用選擇加入功能，但作用中的`wails.yaml`仍會阻止自動路由至 Taskfile。無效的 YAML 也會導致程序停止並顯示錯誤。目前沒有反向移轉命令。
+
+若要返回舊工作流程，請從版本控制還原移轉前的完整專案修訂版本，包括恢復為不存在作用中資訊清單的狀態，並使用與其相容的 CLI 和相依項目。在此之前，請保留您需要的任何新原始碼變更。使用獨立的試驗分支，能讓這項刻意執行的復原工作容易許多。
+
+## 診斷問題並提供意見回饋
+
+| 徵兆 | 第一項檢查 |
 | --- | --- |
-| `WAILS_USE_WAKE` | 設為`true`時，會為可路由的`wails3`動詞啟用 Wake；設為其他值時則使用 Task 執行階段 |
-| `WAILS_NO_OVERRIDES` | `true`會略過`Taskfile.local.*`／`.override.*`探索（確保建置結果可重現） |
-| `WAKE_VERBOSE` | 即時串流子行程的 stdout/stderr，而非擷取後僅在失敗時顯示 |
-| `WAKE_SILENT` | 完全隱藏工作輸出 |
-| `WAKE_SERIAL` | `true`會停用`deps:`的平行分派（預設為平行執行） |
-| `WAKE_FORCE` | `true`會略過所有快取，以執行真正徹底的重新建置 |
-| `WAKE_DEBUG` | 記錄解析器內部資訊（DAG、相依項目、變數參照、執行路由） |
-| `WAKE_NOTICE` | 設為`off`可隱藏每次執行時的「wake (experimental)」通知 |
+| 建立專案時略過「應用程式」、「目標」、「套件」及「工具」 | 在啟動用的終端機中設定`WAILS_EXP_USE_WAKE`，並檢查`PATH`上使用的是哪一個`wails3`可執行檔。全域`wails3 setup`一律保留其偏好設定流程。 |
+| 社群範本需要移轉 | 啟用前，請使用移轉命令審查其舊版設定。 |
+| 已儲存的建置回報缺少工具 | 建立專案只會記錄意圖。請在建置前安裝所回報的主機需求；建立程序不會安裝每個選取的工具。 |
+| 交叉建置的可執行檔無法在此處啟動 | 請在所選的作業系統和架構上執行該檔案；本機開發請使用主機目標。 |
+| 預先建置模式找不到二進位檔 | 檢查[預先建置的檔案名稱與路徑](/experimental/yaml-builds/#use-prebuilt-desktop-executables)，包括多目標子目錄。 |
+| 資訊清單變更失敗 | 針對相關設定檔執行`wails3 config check`，並依照欄位診斷處理。Wake 不會退回使用 Taskfile。 |
 
-建置快取位於`.wake/cache.json`（Task 使用`.task/`）。
+執行建置前，先使用`wails3 build setup --plan --json`檢查建置內容。`wails3 config check`會驗證設定，而`wails3 eject`會寫入非作用中的`wails.ejected.yaml`快照，而不變更作用中的資訊清單。分享命令輸出前請先審查內容：專案路徑和認證資料位置可能會暴露您的本機環境。
 
-## 意見回饋
-
-Wake 是一項實驗，而您的意見回饋將決定其未來方向。如果您試用了 Wake，我們很希望知道它是否更快、更清楚，以及是否有任何功能發生問題——最有幫助的報告會說明您執行了什麼、預期結果為何，以及實際發生的情況。請到[Wake 意見回饋討論](https://github.com/wailsapp/wails/discussions/5679)告訴我們。
+請在[實驗討論區](https://github.com/wailsapp/wails/discussions/categories/experiments)分享意見回饋，或[提交可重現的錯誤](https://github.com/wailsapp/wails/issues)。請附上您的 CLI 和框架修訂版本、主機作業系統／架構、所選目標、確切命令、是否選取 Pure Go，以及相關診斷資訊。請說明失敗發生於編譯、封裝、簽署或執行應用程式的哪個階段。視需要附上已移除祕密資訊的最小資訊清單及`wails3 doctor`輸出。
