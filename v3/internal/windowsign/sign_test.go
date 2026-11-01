@@ -560,14 +560,13 @@ func TestNativeDeflateTrailer(t *testing.T) {
 	if err := writer.Flush(); err != nil {
 		t.Fatal(err)
 	}
+	// Flush leaves a byte-aligned stream without a final block. Snapshot it
+	// before Close so the fixture does not depend on Go's choice of terminator.
+	data := bytes.Clone(compressed.Bytes())
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	data := compressed.Bytes()
-	if !bytes.HasSuffix(data, []byte{1, 0, 0, 255, 255}) {
-		t.Fatal("unexpected Go DEFLATE terminator")
-	}
-	data = append(bytes.Clone(data[:len(data)-5]), 3, 0)
+	data = append(data, 3, 0)
 	var archive bytes.Buffer
 	zipWriter := zip.NewWriter(&archive)
 	entry, err := zipWriter.CreateRaw(&zip.FileHeader{Name: "payload", Method: zip.Deflate, CompressedSize64: uint64(len(data)), UncompressedSize64: uint64(len(payload)), CRC32: crc32.ChecksumIEEE(payload)})
