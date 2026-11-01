@@ -219,6 +219,7 @@ type SystemInfo struct {
 
 // WizardState represents the complete wizard state
 type WizardState struct {
+	WakeEnabled  bool               `json:"wakeEnabled"`
 	Dependencies []DependencyStatus `json:"dependencies"`
 	System       SystemInfo         `json:"system"`
 	StartTime    time.Time          `json:"startTime"`
@@ -226,6 +227,7 @@ type WizardState struct {
 
 // Wizard is the setup wizard server
 type Wizard struct {
+	wakeMu          sync.Mutex
 	server          *http.Server
 	origin          string
 	state           WizardState
@@ -321,6 +323,8 @@ func (w *Wizard) Run() error {
 func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
 	mux.HandleFunc("/api/state", w.handleState)
+	mux.HandleFunc("/api/wake/setup", w.handleWakeSetup)
+	mux.HandleFunc("/api/wake/setup/requirements", w.handleWakeRequirements)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
 	mux.HandleFunc("/api/dependencies/mobile", w.handleCheckMobileDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
@@ -458,7 +462,9 @@ func (w *Wizard) handleState(rw http.ResponseWriter, r *http.Request) {
 	defer w.stateMu.RUnlock()
 
 	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(w.state)
+	state := w.state
+	state.WakeEnabled = features.WakeEnabled()
+	json.NewEncoder(rw).Encode(state)
 }
 
 func (w *Wizard) handleCheckDependencies(rw http.ResponseWriter, r *http.Request) {
