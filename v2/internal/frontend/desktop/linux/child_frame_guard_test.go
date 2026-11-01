@@ -32,6 +32,17 @@ for (const mainFrame of [false, true]) {
   assert.throws(() => Object.defineProperty(window, 'webkit', {value: {}}));
  }
 }
+// Same-origin script already has the parent's origin authority. The guard
+// deliberately does not promise isolation from parent-window access.
+const parentMessages = [];
+const parent = {webkit: {messageHandlers: {external: {postMessage(m) {parentMessages.push(m)}}}}};
+const child = {window: null, top: parent, webkit: parent.webkit};
+child.window = child;
+vm.runInNewContext(guard, child);
+child.webkit.messageHandlers.external.postMessage('own-child-bridge');
+assert.equal(parentMessages.length, 0);
+child.top.webkit.messageHandlers.external.postMessage('trusted-parent-bridge');
+assert.deepEqual(parentMessages, ['trusted-parent-bridge']);
 `
 	if output, err := exec.Command(node, "-e", script).CombinedOutput(); err != nil {
 		t.Fatalf("bridge admission: %v\n%s", err, output)

@@ -2,7 +2,9 @@
   "use strict";
   if (window === window.top) return;
   // WebKitGTK does not expose the sender frame to the native callback.
-  // Child frames must not enter the privileged v2 IPC channel.
+  // Block direct child-frame access to the privileged v2 IPC channel.
+  // Same-origin children can still access the trusted parent bridge; they
+  // share its origin authority, unlike cross-origin or opaque sandbox frames.
   var blocked = Object.freeze({ postMessage: function () {} });
   var handlers = Object.freeze({ external: blocked });
   var guarded = Object.freeze({ messageHandlers: handlers });
