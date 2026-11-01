@@ -148,12 +148,9 @@ func verifyTimestamp(token, digest []byte, nonce *big.Int, roots *x509.CertPool,
 		return err
 	}
 	var certificate *x509.Certificate
-	intermediates := x509.NewCertPool()
 	for _, candidate := range certificates {
 		if bytes.Equal(candidate.RawIssuer, signer.Signer.Issuer.FullBytes) && candidate.SerialNumber.Cmp(signer.Signer.Serial) == 0 {
 			certificate = candidate
-		} else {
-			intermediates.AddCert(candidate)
 		}
 	}
 	if certificate == nil {
@@ -174,7 +171,7 @@ func verifyTimestamp(token, digest []byte, nonce *big.Int, roots *x509.CertPool,
 	if !critical {
 		return errors.New("timestamp certificate extended key usage is not critical")
 	}
-	if _, err := certificate.Verify(x509.VerifyOptions{Roots: roots, Intermediates: intermediates, CurrentTime: info.Time, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageTimeStamping}}); err != nil {
+	if err := verifyTimestampChain(certificate, certificates, roots, info.Time); err != nil {
 		return fmt.Errorf("untrusted timestamp certificate: %w", err)
 	}
 	if err := verifyTimestampAttributes(signer, certificate, content); err != nil {
