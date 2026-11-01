@@ -140,8 +140,8 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `linux.minimum_version` | `string` | no |  | `"12.0"` | `windows,darwin,linux,ios` | Minimum supported operating-system version. |
 | `linux.product_name` | `string` | no |  | `"value"` | `windows,darwin,linux` | Human-readable product name. |
 | `linux.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
-| `linux.signing.certificate` | `string` | no |  | `"signing/private-key.asc"` |  | Arch: project-relative exported armored PGP private-key file. DEB/RPM: PGP key identifier passed to the external signing tool. |
-| `linux.signing.credential` | `string` | no |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch: optional environment variable containing the private-key passphrase; omit for an unencrypted key. |
+| `linux.signing.certificate` | `string` | no |  | `"signing/private-key.asc"` |  | Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer. |
+| `linux.signing.credential` | `string` | no |  | `"LINUX_SIGNING_PASSPHRASE"` |  | Optional environment variable containing the exported private-key passphrase; omit for an unencrypted key. |
 | `linux.signing.entitlements` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `linux.signing.identity` | `string` | no |  | `"builder"` |  | DEB signing role; defaults to builder. Not used by the Arch detached signer. |
 | `linux.signing.key_alias` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |

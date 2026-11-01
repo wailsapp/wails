@@ -29,6 +29,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/installerbuild"
+	"github.com/wailsapp/wails/v3/internal/packagesign"
 	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
 	"github.com/wailsapp/wails/v3/internal/term"
@@ -2811,6 +2812,11 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	}
 	if s.TargetOS == "linux" && s.Format == "archlinux" {
 		return h.signArch(ctx, s)
+	}
+	if s.TargetOS == "linux" && (s.Format == "deb" || s.Format == "rpm") {
+		if key, isFile := packagesign.KeyFile(h.root, s.Config.Certificate); isFile {
+			return h.signLinuxPackage(ctx, s, key)
+		}
 	}
 	input := filepath.Join(h.root, s.Input)
 	output := filepath.Join(h.root, s.Input+".signed")

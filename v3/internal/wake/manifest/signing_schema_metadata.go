@@ -7,7 +7,7 @@ type signingFieldMetadata struct{ description, example string }
 var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	"certificate": {
 		"windows": {"Project-relative PFX signing certificate file; alternatively configure thumbprint.", `"signing/windows.pfx"`},
-		"linux":   {"Arch: project-relative exported armored PGP private-key file. DEB/RPM: PGP key identifier passed to the external signing tool.", `"signing/private-key.asc"`},
+		"linux":   {"Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer.", `"signing/private-key.asc"`},
 		"android": {"Project-relative Android signing keystore file.", `"signing/upload.jks"`},
 	},
 	"identity": {
@@ -18,7 +18,7 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	},
 	"credential": {
 		"windows": {"Name of the environment variable containing the PFX certificate password; never the password itself.", `"WINDOWS_SIGNING_PASSWORD"`},
-		"linux":   {"Arch: optional environment variable containing the private-key passphrase; omit for an unencrypted key.", `"ARCH_SIGNING_PASSPHRASE"`},
+		"linux":   {"Optional environment variable containing the exported private-key passphrase; omit for an unencrypted key.", `"LINUX_SIGNING_PASSPHRASE"`},
 		"android": {"Name of the environment variable containing the keystore password; never the password itself.", `"ANDROID_SIGNING_PASSWORD"`},
 	},
 	"entitlements": {

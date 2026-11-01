@@ -15,6 +15,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
+	"github.com/wailsapp/wails/v3/internal/packagesign"
 )
 
 // resolveSigningDefaults fills in any signing options not supplied via flags from
@@ -400,6 +401,9 @@ func signWindowsBuiltin(options *flags.Sign, password string) error {
 }
 
 func signDEB(options *flags.Sign) error {
+	if key, isFile := packagesign.KeyFile("", options.PGPKey); isFile {
+		return signExportedPackage(options, "deb", key)
+	}
 	if options.PGPKey == "" {
 		return fmt.Errorf("no PGP signing key found for DEB signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}
@@ -460,6 +464,9 @@ func signDEBWithGPG(options *flags.Sign, password, role string) error {
 }
 
 func signRPM(options *flags.Sign) error {
+	if key, isFile := packagesign.KeyFile("", options.PGPKey); isFile {
+		return signExportedPackage(options, "rpm", key)
+	}
 	if options.PGPKey == "" {
 		return fmt.Errorf("no PGP signing key found for RPM signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}

@@ -244,7 +244,7 @@ removes that metadata because it invalidates signed bundles.
 | Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Windows host and signing tools. |
 | Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Windows host and signing tools. |
 | macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | macOS with Apple tools and credentials. |
-| Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned. |
+| Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | Exported OpenPGP keys use the native DEB/RPM/Arch signer. Legacy DEB/RPM key IDs require external tools. Void output is unsigned. |
 | Linux AppImage | Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin. | No built-in AppImage signing flow. |
 
 For signed DMGs, Wake normally signs a private copy of the application before
@@ -281,6 +281,20 @@ Arch packages preserve prereleases in native package metadata, for example
 Void dependencies accept bare package names such as `gtk4`, normalised to
 `gtk4>=0`; explicit version comparisons and complete `name-version_revision`
 values are preserved. Use Void package names rather than library filenames.
+
+DEB, RPM and Arch signing can use exported armored or binary OpenPGP private
+keys on any supported desktop host, without GnuPG, `dpkg-sig` or `rpmsign`.
+Configure `linux.signing.certificate` with the key file and `credential` with
+the name of its passphrase environment variable. DEB and RPM embed signatures;
+Arch publishes a detached signature. Private keys are read only by the signing
+step and are not copied into package assets or reusable cache artifacts.
+
+Existing DEB/RPM configurations containing a bare GnuPG key identifier keep
+their external signer. To remove that dependency, export the secret key and
+configure its path instead. Use a path such as `./signing/release.asc`; missing,
+unreadable or invalid key files fail rather than falling back to a keyring.
+DEB signatures retain the `dpkg-sig` package-signature format; this does not
+replace signing an apt repository's release metadata.
 
 To create an Arch package and detached signature, use an exported armored PGP
 private-key file and optionally name a passphrase environment variable:

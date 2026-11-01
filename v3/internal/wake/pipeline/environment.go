@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wailsapp/wails/v3/internal/packagesign"
 	"github.com/wailsapp/wails/v3/internal/wake/buildinfo"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
@@ -623,7 +624,14 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 		return hostConfigurationField("sign", requireHostTools(host, operation, tool))
 	case "linux":
 		if spec.Config.Certificate == "" {
-			return hostConfigurationField("certificate", fmt.Errorf("linux signing requires signing.linux.certificate as the PGP key identifier"))
+			return hostConfigurationField("certificate", fmt.Errorf("linux signing requires signing.linux.certificate as an exported PGP key file or legacy PGP key identifier"))
+		}
+		_, keyFile := packagesign.KeyFile("", spec.Config.Certificate)
+		if keyFile && (spec.Format == "deb" || spec.Format == "rpm" || spec.Format == "archlinux") {
+			if spec.Config.Credential != "" && !host.hasCredential(spec.Config.Credential) {
+				return hostConfigurationField("credential", fmt.Errorf("Linux signing credential %q is unavailable", spec.Config.Credential))
+			}
+			return nil
 		}
 		switch spec.Format {
 		case "deb":

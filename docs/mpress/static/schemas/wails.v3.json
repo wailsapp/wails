@@ -713,11 +713,11 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Arch: project-relative exported armored PGP private-key file. DEB/RPM: PGP key identifier passed to the external signing tool.",
+              "description": "Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer.",
               "type": "string"
             },
             "credential": {
-              "description": "Arch: optional environment variable containing the private-key passphrase; omit for an unencrypted key.",
+              "description": "Optional environment variable containing the exported private-key passphrase; omit for an unencrypted key.",
               "type": "string"
             },
             "entitlements": {

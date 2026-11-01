@@ -14,7 +14,7 @@ func TestSigningReferenceUsesPlatformSpecificExamples(t *testing.T) {
 	for path, expected := range map[string]string{
 		"linux.signing.certificate":      `"signing/private-key.asc"`,
 		"linux.signing.identity":         `"builder"`,
-		"linux.signing.credential":       `"ARCH_SIGNING_PASSPHRASE"`,
+		"linux.signing.credential":       `"LINUX_SIGNING_PASSPHRASE"`,
 		"android.signing.certificate":    `"signing/upload.jks"`,
 		"android.signing.identity":       `"upload"`,
 		"windows.signing.certificate":    `"signing/windows.pfx"`,
@@ -25,7 +25,7 @@ func TestSigningReferenceUsesPlatformSpecificExamples(t *testing.T) {
 		}
 	}
 	if !strings.Contains(fields["linux.signing.certificate"].Description, "armored") || !strings.Contains(fields["linux.signing.credential"].Description, "environment variable") {
-		t.Fatal("Arch signing key/passphrase contract is missing")
+		t.Fatal("Linux signing key/passphrase contract is missing")
 	}
 	if !strings.Contains(fields["android.signing.entitlements"].Description, "Not used") {
 		t.Fatal("Apple entitlements were documented as an Android signing input")

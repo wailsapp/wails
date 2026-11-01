@@ -30,8 +30,8 @@ func TestDMGSignsBeforeCompressionUnlessHooksNeedUnsignedImage(t *testing.T) {
 			if (spec.BundleSigning != nil) != wantEarly {
 				t.Fatalf("bundle signing with hook %q: %v", phase, spec.BundleSigning)
 			}
-			if wantEarly && packaging.Cache != CacheNever {
-				t.Fatal("signed DMG entered reusable artifact cache")
+			if wantEarly && (packaging.Cache != CacheNever || packaging.Claims.Exclusive != "sign") {
+				t.Fatal("signed DMG needs uncached, exclusive signing")
 			}
 			signer := plan.Nodes["package:darwin/arm64:dmg:sign"].Spec.(SignSpec)
 			if signer.BundleSigned != wantEarly {

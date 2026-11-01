@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/packagesign"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"golang.org/x/mod/modfile"
 )
@@ -416,7 +417,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		}
 		lastRunnable = add(Node{Key: NodeKey("assemble:" + target), Kind: AssembleApplication, Label: "Assemble " + target + " application", Scope: TargetScope, Dependencies: assemblyDependencies,
 			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: "app", Binary: binaryOut, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: packageConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
-			Inputs: []InputSpec{{Label: "compiled-application", Files: []string{binaryOut, assetsOut}}}, Output: output, Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, "app")}, EstimateMS: 500, Artifact: ArtifactIdentity{Kind: ArtifactBundle, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: "app"}})
+			Inputs: []InputSpec{{Label: "compiled-application", Files: []string{binaryOut, assetsOut}}}, Output: output, Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, "app", false)}, EstimateMS: 500, Artifact: ArtifactIdentity{Kind: ArtifactBundle, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: "app"}})
 	}
 
 	formats := append([]string(nil), request.Formats...)
@@ -541,7 +542,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
 			Spec:   PackageSpec{BundleSigning: bundleSigning, Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
-			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: nodeOutput, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
+			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: nodeOutput, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format, bundleSigning != nil)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
 		packageRoots = append(packageRoots, pkg)
 		finalOutputs[pkg] = finalOutput
 	}
@@ -1133,6 +1134,11 @@ func signingPlatform(s manifest.Signing, os string) manifest.SigningPlatform {
 
 func signingPlatformForPlan(config manifest.Config, platform, assets string) manifest.SigningPlatform {
 	result := signingPlatform(config.Signing, platform)
+	if platform == "linux" {
+		if key, isFile := packagesign.KeyFile(config.Root, result.Certificate); isFile {
+			result.Certificate = key
+		}
+	}
 	if result.Entitlements != "" {
 		result.Entitlements = filepath.ToSlash(filepath.Join(assets, "signing", "entitlements"+filepath.Ext(result.Entitlements)))
 	}
@@ -1163,7 +1169,10 @@ func runnableOutput(c manifest.Config, os, arch string, capability targetCapabil
 	}
 	return filepath.ToSlash(filepath.Join(directory, c.Project.BinaryName) + capability.RunnableSuffix)
 }
-func packageExclusive(platform, format string) string {
+func packageExclusive(platform, format string, signing bool) string {
+	if signing {
+		return "sign"
+	}
 	if platform == "darwin" && (format == "app" || format == "dmg") {
 		// DMG assembly materialises the same .app bundle as the app format.
 		return "darwin-app-bundle"

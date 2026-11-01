@@ -352,6 +352,14 @@ Windows executables can be signed from any platform. The same Taskfile configura
 
 Linux packages (DEB and RPM) are signed using PGP/GPG keys. Unlike Windows and macOS code signing, Linux package signing proves the package came from a trusted source rather than that the code is trusted by the OS.
 
+An exported armored or binary private-key file uses the native Go signer on
+Windows, macOS and Linux. Signing an existing DEB or RPM preserves its package
+contents without unpacking or recompression and requires no GnuPG, `dpkg-sig`
+or `rpmsign` installation. Arch packages use the same key loader to write a
+detached signature. GnuPG is still useful for generating/exporting keys and
+independently verifying signatures. Legacy DEB/RPM configurations that specify
+a keyring identity instead of a key file retain their external signing tools.
+
 ### Prerequisites
 
 - PGP key pair (can be generated with Wails)
