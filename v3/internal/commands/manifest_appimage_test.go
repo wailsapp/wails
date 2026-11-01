@@ -133,7 +133,10 @@ packages:
 func TestAppImageRuntimeIdentityIncludesGUICompanion(t *testing.T) {
 	previous := manifestAppImageIdentity
 	t.Cleanup(func() { manifestAppImageIdentity = previous })
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, path := range []string{"linux-root", "runtime"} {
 		if err := os.MkdirAll(filepath.Join(root, path), 0755); err != nil {
 			t.Fatal(err)

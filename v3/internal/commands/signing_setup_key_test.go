@@ -47,7 +47,7 @@ func TestGeneratedSigningKeysRoundTrip(t *testing.T) {
 				if output, err := exec.Command(gpg, "--batch", "--dearmor", "--output", keyring, publicKey).CombinedOutput(); err != nil {
 					t.Fatalf("decode exported public key: %s, %v", output, err)
 				}
-				output, err := exec.Command(gpgv, "--homedir", root, "--keyring", keyring, input+".sig", input).CombinedOutput()
+				output, err := exec.Command(gpgv, "--homedir", root, "--keyring", filepath.Base(keyring), input+".sig", input).CombinedOutput()
 				if err != nil {
 					t.Fatalf("independent generated-key signature verification: %s, %v", output, err)
 				}
