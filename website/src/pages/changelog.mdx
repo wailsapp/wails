@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Linux: child frames (iframes) embedded in the application window can no longer post to the privileged `window.webkit.messageHandlers.external` IPC bridge. WebKitGTK does not tell the native message handler which frame sent a message, so the bridge could be reached from cross-origin or sandboxed frames and the `OriginValidator` check ran against the top-level page rather than the calling frame. A guard script is now injected into every frame at document start and neutralises the bridge in non-top frames. Same-origin child frames still share their parent's origin and retain access to its bridge, so applications that embed untrusted same-origin content should not rely on this boundary. Affects Linux builds of v2.17.0 and earlier. Tracked as GHSA-r5j2-ghh9-2jqw
+
 ## v2.17.0 - 2026-10-18
 
 ### Security
