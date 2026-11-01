@@ -30,7 +30,7 @@ Você precisa do Go, do Node.js com npm para o frontend inicial e das [dependên
 Use revisões da CLI e do framework que incluam esta prévia. Instalar a CLI `v3.0.0` estável não adiciona as telas de configuração do Wake descritas aqui. Os comandos a seguir fixam a prévia da [PR nº 6531](https://github.com/wailsapp/wails/pull/6531):
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ Volte ao terminal e aguarde a conclusão da criação do projeto. Em seguida, ex
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 Agora você deve ter `main.go`, um módulo Go, um diretório `frontend` e um `wails.yaml` nativo. O modelo integrado usa o Wake diretamente; não é necessário migrar esse novo projeto. Um modelo da comunidade pode ter tarefas legadas personalizadas e, nesse caso, talvez exija a revisão de migração descrita abaixo.
@@ -253,8 +253,17 @@ iOS e Android continuam experimentais, exigem os respectivos SDKs de plataforma 
 
 Trabalhe em uma ramificação separada ou em uma cópia de uma árvore de trabalho funcional de um projeto **Wails v3**. Esta é uma migração da configuração de compilação, não uma atualização do Wails v2. Preserve o resultado da compilação existente e os testes para poder comparar o comportamento após a ativação.
 
-@note{type="caution" title="A cobertura da migração está incompleta"}
-A prévia fixada pode informar bloqueios até mesmo para um projeto gerado com os modelos legados padrão atuais. Exemplos conhecidos incluem tarefas selecionadas dinamicamente e um campo `exit_policy` não reconhecido na configuração de compilação legada. Não remova comportamentos necessários apenas para permitir que a ativação seja concluída. Se a análise não conseguir representar seu projeto, mantenha-o na compilação legada e informe os diagnósticos. O tutorial de novo projeto acima não requer migração.
+@note{type="note" title="Comece com uma migração revisada"}
+Projetos novos gerados com os modelos legados integrados atuais podem ser
+migrados antes da compilação do frontend. O Wake reconhece os seletores de tarefas
+padrão e o ciclo de vida de desenvolvimento desses projetos sem executar Taskfiles
+nem avaliar expressões personalizadas.
+
+Tarefas personalizadas, substituições de variáveis e políticas de desenvolvimento
+ainda exigem revisão. Se a análise não conseguir representar seu projeto, mantenha-o
+no sistema de compilação legado e informe os diagnósticos. Não remova comportamentos
+necessários apenas para que a ativação seja aprovada. O tutorial acima para novos
+projetos não requer migração.
 @end
 
 ### 1. Analisar sem alterar a compilação ativa

@@ -30,7 +30,7 @@ Wake 和**純 Go**後端是兩個獨立選項。啟用 Wake 不會自動啟用�
 請使用包含此預覽功能的 CLI 和框架修訂版本。安裝穩定版`v3.0.0` CLI 並不會加入此處所述的 Wake 設定畫面。以下命令會固定使用[PR #6531](https://github.com/wailsapp/wails/pull/6531)中的預覽版本：
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ wails3 init -ui
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 現在您應該已有`main.go`、一個 Go 模組、一個`frontend`目錄和一個原生`wails.yaml`。內建範本會直接使用 Wake；您不需要移轉這個新專案。社群範本可能包含自訂的舊版工作，因而可能需要改為進行下文所述的移轉審查。
@@ -212,8 +212,10 @@ iOS 與 Android 仍處於實驗階段，需要各自的平台 SDK 與 CGo，且�
 
 請在可正常運作的**Wails v3**專案的獨立分支或工作副本上操作。這是建置組態移轉，不是從 Wails v2升級。請保留現有的建置結果與測試，以便在啟用後比較行為。
 
-@note{type="caution" title="移轉涵蓋範圍尚不完整"}
-即使專案是由目前的標準舊版範本產生，固定版本的預覽版仍可能回報阻礙因素。已知範例包括動態選取的任務，以及舊版建置組態中無法辨識的`exit_policy`欄位。不要只為了通過啟用檢查而移除所需的行為。如果分析無法表示你的專案，請繼續使用舊版建置並回報診斷資訊。上述新專案教學不需要移轉。
+@note{type="note" title="從經過審查的移轉開始"}
+使用目前內建舊版範本產生的新專案，可在建置前端之前進行移轉。Wake 無須執行 Taskfile 或評估自訂運算式，即可識別其標準工作選擇器和開發生命週期。
+
+自訂工作、變數覆寫和開發原則仍需審查。如果分析無法呈現您的專案，請繼續使用舊版建置並回報診斷資訊。請勿為了讓啟用通過而移除所需的行為。上述新專案教學課程不需要移轉。
 @end
 
 ### 1. 在不變更作用中建置的情況下進行分析

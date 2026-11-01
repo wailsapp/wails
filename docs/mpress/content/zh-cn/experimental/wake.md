@@ -30,7 +30,7 @@ Wake 和**纯 Go**后端是两个独立选项。启用 Wake 不会自动启用�
 请使用包含此预览功能的 CLI 和框架修订版本。安装稳定版`v3.0.0` CLI 不会添加此处所述的 Wake 设置界面。以下命令将预览版本固定到[PR #6531](https://github.com/wailsapp/wails/pull/6531)：
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ wails3 init -ui
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 现在应当已有`main.go`、一个 Go 模块、一个`frontend`目录和一个原生`wails.yaml`。内置模板直接使用 Wake，因此无需迁移这个新项目。社区模板可能包含自定义旧版任务，此时可能需要按下文所述进行迁移审查。
@@ -211,8 +211,10 @@ iOS 和 Android 仍处于实验阶段，需要各自的平台 SDK 和 CGo，不�
 
 请在可正常工作的**Wails v3**项目的单独分支或工作副本上操作。这是构建配置迁移，并非从 Wails v2升级。请保留现有构建产物和测试，以便在激活后比较行为。
 
-@note{type="caution" title="迁移覆盖范围尚不完整"}
-即使项目是使用当前标准旧版模板生成的，固定版本的预览版也可能报告阻碍项。已知示例包括动态选择的任务，以及旧版构建配置中无法识别的`exit_policy`字段。不要仅仅为了通过激活检查而移除所需行为。如果分析无法表示你的项目，请继续使用旧版构建并报告诊断信息。上面的新项目教程不需要迁移。
+@note{type="note" title="从经过审查的迁移开始"}
+使用当前内置旧版模板生成的新项目，即使尚未构建其前端，也可以进行迁移。Wake 无需执行 Taskfile 或求值自定义表达式，即可识别这些模板的标准任务选择器和开发生命周期。
+
+自定义任务、变量覆盖和开发策略仍需审查。如果分析无法表示你的项目，请继续使用旧版构建，并报告诊断信息。不要为了让激活通过而移除所需的行为。上面的新项目教程不需要迁移。
 @end
 
 ### 1. 在不更改当前构建的情况下进行分析

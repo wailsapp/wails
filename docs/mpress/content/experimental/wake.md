@@ -55,7 +55,7 @@ stable `v3.0.0` CLI does not add the Wake setup screens described here. The
 following commands pin the preview from [PR #6531](https://github.com/wailsapp/wails/pull/6531):
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -109,7 +109,7 @@ Return to the terminal and wait for project creation to finish. Then run:
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 You should now have `main.go`, a Go module, a `frontend` directory and a native
@@ -312,13 +312,16 @@ Work on a separate branch or copy of a working **Wails v3** project. This is a
 build-configuration migration, not an upgrade from Wails v2. Keep your existing
 build result and tests so you can compare behaviour after activation.
 
-@note{type="caution" title="Migration coverage is incomplete"}
-The pinned preview can report blockers even for a project generated from the
-current stock legacy templates. Known examples include dynamically selected
-tasks and an unrecognised `exit_policy` field in legacy build configuration.
-Do not remove behaviour you need just to make activation pass. If analysis
-cannot represent your project, leave it on the legacy build and report the
-diagnostics. The new-project tutorial above does not need migration.
+@note{type="note" title="Start with a reviewed migration"}
+Fresh projects generated from the current built-in legacy templates can be
+migrated before their frontend has been built. Wake recognises their stock task
+selectors and development lifecycle without executing Taskfiles or evaluating
+custom expressions.
+
+Custom tasks, variable overrides and development policies still require review.
+If analysis cannot represent your project, leave it on the legacy build and
+report the diagnostics. Do not remove behaviour you need just to make activation
+pass. The new-project tutorial above does not need migration.
 @end
 
 ### 1. Analyse without changing the active build

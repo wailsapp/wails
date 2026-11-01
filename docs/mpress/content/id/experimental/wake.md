@@ -30,7 +30,7 @@ Anda memerlukan Go, Node.js beserta npm untuk frontend awal, serta [dependensi p
 Gunakan revisi CLI dan framework yang menyertakan pratinjau ini. Menginstal CLI `v3.0.0` stabil tidak menambahkan layar penyiapan Wake yang dijelaskan di sini. Perintah berikut menyematkan pratinjau dari [PR #6531](https://github.com/wailsapp/wails/pull/6531):
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ Kembali ke terminal dan tunggu hingga pembuatan proyek selesai. Kemudian jalanka
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 Sekarang Anda seharusnya memiliki `main.go`, sebuah modul Go, direktori `frontend`, dan `wails.yaml` native. Templat bawaan menggunakan Wake secara langsung; Anda tidak perlu memigrasikan proyek baru ini. Templat komunitas dapat memiliki task lama kustom sehingga mungkin memerlukan peninjauan migrasi yang dijelaskan di bawah.
@@ -213,8 +213,10 @@ iOS dan Android masih bersifat eksperimental, memerlukan SDK platform masing-mas
 
 Kerjakan di branch terpisah atau salinan dari working copy proyek **Wails v3** yang berfungsi. Ini adalah migrasi konfigurasi build, bukan upgrade dari Wails v2. Pertahankan hasil build dan pengujian yang ada agar Anda dapat membandingkan perilakunya setelah aktivasi.
 
-@note{type="caution" title="Cakupan migrasi belum lengkap"}
-Pratinjau yang versinya dipatok dapat melaporkan penghambat bahkan untuk proyek yang dibuat dari templat lama standar saat ini. Contoh yang diketahui mencakup task yang dipilih secara dinamis dan field `exit_policy` yang tidak dikenali dalam konfigurasi build lama. Jangan hapus perilaku yang Anda perlukan hanya agar aktivasi berhasil. Jika analisis tidak dapat merepresentasikan proyek Anda, pertahankan build lama dan laporkan diagnostiknya. Tutorial proyek baru di atas tidak memerlukan migrasi.
+@note{type="note" title="Mulai dengan migrasi yang telah ditinjau"}
+Proyek baru yang dihasilkan dari templat lama bawaan saat ini dapat dimigrasikan sebelum frontend-nya dibangun. Wake mengenali pemilih tugas standar dan siklus hidup pengembangannya tanpa menjalankan Taskfile atau mengevaluasi ekspresi khusus.
+
+Tugas khusus, penggantian nilai variabel, dan kebijakan pengembangan tetap perlu ditinjau. Jika analisis tidak dapat merepresentasikan proyek Anda, tetap gunakan sistem build lama dan laporkan hasil diagnostiknya. Jangan hapus perilaku yang Anda perlukan hanya agar aktivasi berhasil. Tutorial proyek baru di atas tidak memerlukan migrasi.
 @end
 
 ### 1. Analisis tanpa mengubah build aktif

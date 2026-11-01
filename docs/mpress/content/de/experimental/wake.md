@@ -30,7 +30,7 @@ Du benötigst Go, Node.js mit npm für das Starter-Frontend und die [Plattformab
 Verwende eine CLI- und Framework-Revision, die diese Vorschau enthält. Durch die Installation der stabilen `v3.0.0`-CLI werden die hier beschriebenen Wake-Einrichtungsseiten nicht hinzugefügt. Die folgenden Befehle fixieren die Vorschau aus [PR Nr. 6531](https://github.com/wailsapp/wails/pull/6531):
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ Kehre zum Terminal zurück und warte, bis die Projekterstellung abgeschlossen is
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 Du solltest nun über `main.go`, ein Go-Modul, ein `frontend`-Verzeichnis und eine native `wails.yaml` verfügen. Die integrierte Vorlage verwendet Wake direkt; du musst dieses neue Projekt nicht migrieren. Eine Community-Vorlage kann eigene alte Tasks enthalten und stattdessen die weiter unten beschriebene Migrationsprüfung erfordern.
@@ -212,8 +212,10 @@ iOS und Android sind weiterhin experimentell, benötigen ihre Plattform-SDKs und
 
 Arbeiten Sie in einem separaten Branch oder mit einer Kopie eines funktionsfähigen **Wails-v3**Projekts. Dies ist eine Migration der Build-Konfiguration und kein Upgrade von Wails v2. Bewahren Sie das Ergebnis Ihres vorhandenen Builds und Ihre Tests auf, damit Sie das Verhalten nach der Aktivierung vergleichen können.
 
-@note{type="caution" title="Die Migration deckt noch nicht alle Fälle ab"}
-Die angeheftete Vorschauversion kann selbst bei einem Projekt Blocker melden, das aus den aktuellen unveränderten Legacy-Vorlagen generiert wurde. Bekannte Beispiele sind dynamisch ausgewählte Tasks und ein nicht erkanntes Feld `exit_policy` in der Legacy-Build-Konfiguration. Entfernen Sie kein benötigtes Verhalten, nur damit die Aktivierung erfolgreich ist. Wenn die Analyse Ihr Projekt nicht abbilden kann, verwenden Sie weiterhin den Legacy-Build und melden Sie die Diagnosedaten. Für das obige Tutorial zu neuen Projekten ist keine Migration erforderlich.
+@note{type="note" title="Mit einer geprüften Migration beginnen"}
+Neue Projekte, die mit den aktuellen integrierten Legacy-Vorlagen erzeugt wurden, können migriert werden, bevor ihr Frontend gebaut wurde. Wake erkennt deren unveränderte Task-Selektoren und Entwicklungslebenszyklus, ohne Taskfiles auszuführen oder benutzerdefinierte Ausdrücke auszuwerten.
+
+Benutzerdefinierte Tasks, Variablenüberschreibungen und Entwicklungsrichtlinien müssen weiterhin geprüft werden. Wenn die Analyse Ihr Projekt nicht abbilden kann, verwenden Sie dafür weiterhin das Legacy-Buildsystem und melden Sie die Diagnoseergebnisse. Entfernen Sie keine benötigte Funktionalität, nur damit die Aktivierung erfolgreich ist. Für das obige Tutorial zu neuen Projekten ist keine Migration erforderlich.
 @end
 
 ### 1. Analysieren, ohne den aktiven Build zu ändern

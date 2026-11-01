@@ -30,7 +30,7 @@ Vous avez besoin de Go, de Node.js avec npm pour le frontend de démarrage, ains
 Utilisez des révisions de l’interface en ligne de commande et du framework qui incluent cette préversion. L’installation de l’interface en ligne de commande `v3.0.0` stable n’ajoute pas les écrans de configuration de Wake décrits ici. Les commandes suivantes épinglent la préversion provenant de la [PR nº 6531](https://github.com/wailsapp/wails/pull/6531) :
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@44e449c91
+go install github.com/wailsapp/wails/v3/cmd/wails3@0243da963
 wails3 version
 ```
 
@@ -75,7 +75,7 @@ Revenez au terminal et attendez la fin de la création du projet. Exécutez ensu
 
 ```sh
 cd wake-demo
-go get github.com/wailsapp/wails/v3@44e449c91
+go get github.com/wailsapp/wails/v3@0243da963
 ```
 
 Vous devriez maintenant disposer de `main.go`, d’un module Go, d’un répertoire `frontend` et d’un fichier `wails.yaml` natif. Le modèle intégré utilise directement Wake ; vous n’avez pas besoin de migrer ce nouveau projet. Un modèle communautaire peut contenir d’anciennes tâches personnalisées et nécessiter à la place l’examen de migration décrit ci-dessous.
@@ -213,8 +213,10 @@ iOS et Android restent expérimentaux, nécessitent leurs SDK de plateforme ains
 
 Travaillez dans une branche distincte ou sur une copie d’un projet **Wails v3** fonctionnel. Il s’agit d’une migration de la configuration de compilation, et non d’une mise à niveau depuis Wails v2. Conservez le résultat de compilation et les tests existants afin de pouvoir comparer le comportement après l’activation.
 
-@note{type="caution" title="La couverture de la migration est incomplète"}
-La préversion épinglée peut signaler des blocages même pour un projet généré à partir des modèles historiques standard actuels. Parmi les exemples connus figurent les tâches sélectionnées dynamiquement et un champ `exit_policy` non reconnu dans l’ancienne configuration de compilation. Ne supprimez pas un comportement dont vous avez besoin dans le seul but de réussir l’activation. Si l’analyse ne peut pas représenter votre projet, conservez son système de compilation historique et signalez les diagnostics. Le tutoriel ci-dessus consacré aux nouveaux projets ne nécessite aucune migration.
+@note{type="note" title="Commencer par une migration révisée"}
+Les nouveaux projets générés à partir des modèles hérités intégrés actuels peuvent être migrés avant la compilation de leur frontend. Wake reconnaît leurs sélecteurs de tâches standard et leur cycle de développement sans exécuter de fichiers Taskfile ni évaluer d’expressions personnalisées.
+
+Les tâches personnalisées, les substitutions de variables et les stratégies de développement doivent toujours être révisées. Si l’analyse ne peut pas représenter votre projet, conservez le système de compilation hérité et transmettez les diagnostics. Ne supprimez pas un comportement dont vous avez besoin uniquement pour permettre l’activation. Le tutoriel ci-dessus consacré aux nouveaux projets ne nécessite aucune migration.
 @end
 
 ### 1. Analyser sans modifier la compilation active
