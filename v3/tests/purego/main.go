@@ -44,10 +44,9 @@ func main() {
 					return
 				}
 				defer file.Close()
-				io.Copy(w, file)
+				writeBinaryResponse(w, file)
 			case "/echo":
-				w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
-				io.Copy(w, r.Body)
+				writeBinaryResponse(w, r.Body)
 			case "/stream":
 				w.Header().Set("Content-Type", "text/plain")
 				io.WriteString(w, "ready\n")
