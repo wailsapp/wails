@@ -2,11 +2,13 @@ package setupwizard
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,10 +28,23 @@ type WailsConfig struct {
 }
 
 func (w *Wizard) handleLegacyWailsConfig(rw http.ResponseWriter, r *http.Request) {
+	configPath, err := findLegacyWailsConfig()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if configPath != "" {
+		data, err := os.ReadFile(configPath)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if !manifest.IsLegacyMetadata(data) {
+			http.Error(rw, "This project uses Wake. Set WAILS_EXP_USE_WAKE=1 to configure wails.yaml.", http.StatusConflict)
+			return
+		}
+	}
 	rw.Header().Set("Content-Type", "application/json")
-
-	// Find wails.yaml in current directory or parent directories
-	configPath := findLegacyWailsConfig()
 
 	switch r.Method {
 	case http.MethodGet:
@@ -81,16 +96,18 @@ func (w *Wizard) handleLegacyWailsConfig(rw http.ResponseWriter, r *http.Request
 	}
 }
 
-func findLegacyWailsConfig() string {
+func findLegacyWailsConfig() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		return ""
+		return "", err
 	}
 
 	for {
 		configPath := filepath.Join(dir, "wails.yaml")
-		if _, err := os.Stat(configPath); err == nil {
-			return configPath
+		if _, err := os.Lstat(configPath); err == nil {
+			return configPath, nil
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return "", err
 		}
 
 		parent := filepath.Dir(dir)
@@ -100,7 +117,7 @@ func findLegacyWailsConfig() string {
 		dir = parent
 	}
 
-	return ""
+	return "", nil
 }
 
 // Update only the wizard-owned metadata, retaining custom YAML and comments.
@@ -110,6 +127,9 @@ func mergeLegacyProjectInfo(path string, info WailsConfigInfo) ([]byte, error) {
 	if err == nil {
 		if err := yaml.Unmarshal(data, &document); err != nil {
 			return nil, err
+		}
+		if len(document.Content) != 0 && !manifest.IsLegacyMetadata(data) {
+			return nil, fmt.Errorf("cannot edit native wails.yaml as legacy setup metadata")
 		}
 	} else if !os.IsNotExist(err) {
 		return nil, err

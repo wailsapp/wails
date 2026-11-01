@@ -66,7 +66,7 @@ func discoverNativeWithOperations(start string, absolute func(string) (string, e
 			if readErr != nil {
 				return "", "", readErr
 			}
-			if !legacyWailsYAML(contents) {
+			if !IsLegacyMetadata(contents) {
 				return current, candidate, nil
 			}
 		} else if !errors.Is(statErr, fs.ErrNotExist) {
@@ -86,10 +86,10 @@ func discoverNativeWithOperations(start string, absolute func(string) (string, e
 	}
 }
 
-// legacyWailsYAML identifies the old setup metadata file by its unambiguous
+// IsLegacyMetadata identifies the old setup metadata file by its unambiguous
 // top-level info section. Everything else is treated as a native candidate so
 // malformed native manifests fail loudly instead of silently running Taskfiles.
-func legacyWailsYAML(contents []byte) bool {
+func IsLegacyMetadata(contents []byte) bool {
 	var document yaml.Node
 	if err := yaml.Unmarshal(contents, &document); err != nil || len(document.Content) != 1 || document.Content[0].Kind != yaml.MappingNode {
 		return false
