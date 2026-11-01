@@ -93,7 +93,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-Perintah kedua menggabungkan kedua arsitektur macOS dan membuat DMG tanpa tanda tangan menggunakan Go. Perintah ini dapat dijalankan pada host desktop apa pun yang didukung. Penandatanganan kode dan notarisasi Apple tetap merupakan operasi macOS yang terpisah.
+Perintah kedua menggabungkan kedua arsitektur macOS dan membuat DMG tanpa tanda tangan menggunakan Go. Perintah ini dapat dijalankan pada host desktop apa pun yang didukung.
 
 Mode hasil resolusi dipilih secara independen untuk setiap executable. `build.environment.CGO_ENABLED` yang dideklarasikan, lingkungan target, atau lingkungan biner menggantikan nilai terminal yang menjalankan perintah. Jika tidak, tag `purego` yang dipilih secara eksplisit, program CLI/server, atau target Windows menggunakan `0` secara default; program GUI macOS dan Linux menggunakan `1` secara default. `--plan --json` melaporkan compiler, mode CGo, dan tag hasil resolusi untuk setiap executable. Kompilasi silang membuat file target; menjalankan target desktop yang tidak kompatibel tetap memerlukan host yang sesuai.
 

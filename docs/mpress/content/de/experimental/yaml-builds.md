@@ -92,7 +92,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-Der zweite Befehl kombiniert beide macOS-Architekturen und erstellt mit Go ein unsigniertes DMG. Er kann auf jedem unterstützten Desktop-Host ausgeführt werden. Codesignierung und Apple-Notarisierung bleiben separate macOS-Vorgänge.
+Der zweite Befehl kombiniert beide macOS-Architekturen und erstellt mit Go ein unsigniertes DMG. Er kann auf jedem unterstützten Desktop-Host ausgeführt werden.
 
 Der aufgelöste Modus wird für jede Programmdatei unabhängig ausgewählt. Ein deklariertes `build.environment.CGO_ENABLED`, eine Zielumgebung oder eine Binärdateiumgebung überschreibt den Wert des aufrufenden Terminals. Andernfalls verwenden ein ausdrücklich ausgewähltes `purego`-Tag, ein CLI-/Serverprogramm oder ein Windows-Ziel standardmäßig `0`; macOS- und Linux-GUI-Programme verwenden standardmäßig `1`. `--plan --json` meldet für jede Programmdatei den aufgelösten Compiler, den CGo-Modus und die Tags. Die Kreuzkompilierung erstellt Zieldateien; zum Ausführen eines inkompatiblen Desktop-Ziels ist weiterhin der entsprechende Host erforderlich.
 

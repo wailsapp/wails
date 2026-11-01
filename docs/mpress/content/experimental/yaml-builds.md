@@ -113,8 +113,7 @@ wails3 build --targets darwin/universal --formats dmg
 ```
 
 The second command combines both macOS architectures and creates an unsigned
-DMG using Go. It can run on any supported desktop host. Code signing and Apple
-notarisation remain separate macOS operations.
+DMG using Go. It can run on any supported desktop host.
 
 The resolved mode is selected independently for each executable. A declared
 `build.environment.CGO_ENABLED`, target environment or binary environment

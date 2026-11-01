@@ -92,7 +92,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-두 번째 명령은 두 macOS 아키텍처를 결합하고 Go를 사용해 서명되지 않은 DMG를 생성합니다. 지원되는 모든 데스크톱 호스트에서 실행할 수 있습니다. 코드 서명과 Apple 공증은 여전히 별도의 macOS 작업입니다.
+두 번째 명령은 두 macOS 아키텍처를 결합하고 Go를 사용해 서명되지 않은 DMG를 생성합니다. 지원되는 모든 데스크톱 호스트에서 실행할 수 있습니다.
 
 확정 모드는 실행 파일마다 독립적으로 선택됩니다. 선언된 `build.environment.CGO_ENABLED`, 대상 환경 또는 바이너리 환경은 명령을 호출한 터미널의 값을 재정의합니다. 그렇지 않으면 명시적으로 선택한 `purego` 태그, CLI/서버 프로그램 또는 Windows 대상에는 기본적으로 `0`이 사용되고, macOS 및 Linux GUI 프로그램에는 기본적으로 `1`이 사용됩니다. `--plan --json`은 각 실행 파일에 대해 확정된 컴파일러, CGo 모드 및 태그를 보고합니다. 교차 컴파일은 대상 파일을 생성하지만, 호환되지 않는 데스크톱 대상을 실행하려면 여전히 적절한 호스트가 필요합니다.
 

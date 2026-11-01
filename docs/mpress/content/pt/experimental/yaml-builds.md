@@ -94,7 +94,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-O segundo comando combina as duas arquiteturas do macOS e cria um DMG não assinado usando Go. Ele pode ser executado em qualquer host desktop compatível. A assinatura de código e a notarização da Apple continuam sendo operações separadas no macOS.
+O segundo comando combina as duas arquiteturas do macOS e cria um DMG não assinado usando Go. Ele pode ser executado em qualquer host desktop compatível.
 
 O modo resultante é selecionado de forma independente para cada executável. Um `build.environment.CGO_ENABLED` declarado, o ambiente do alvo ou o ambiente do binário substitui o valor do terminal que invocou o comando. Caso contrário, uma tag `purego` selecionada explicitamente, um programa CLI/servidor ou um alvo Windows usa `0` por padrão; programas com GUI no macOS e no Linux usam `1` por padrão. `--plan --json` informa o compilador, o modo CGo e as tags resultantes de cada executável. A compilação cruzada cria arquivos para o alvo; a execução de um alvo desktop incompatível ainda exige o host apropriado.
 

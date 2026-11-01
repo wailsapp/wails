@@ -93,7 +93,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-第二条命令会合并两种 macOS 架构，并使用 Go 创建未签名的 DMG。它可以在任何受支持的桌面宿主机上运行。代码签名和 Apple 公证仍需作为单独的 macOS 操作执行。
+第二条命令会合并两种 macOS 架构，并使用 Go 创建未签名的 DMG。它可以在任何受支持的桌面宿主机上运行。
 
 系统会分别为每个可执行文件选择解析后的模式。声明的`build.environment.CGO_ENABLED`、目标环境或二进制文件环境会覆盖调用命令的终端中的值。否则，显式选择的`purego`标签、CLI/服务器程序或 Windows 目标默认为`0`；macOS 和 Linux GUI 程序默认为`1`。`--plan --json`会报告每个可执行文件解析后的编译器、CGo 模式和标签。交叉编译会创建目标文件；运行不兼容的桌面目标仍需使用相应的宿主机。
 
