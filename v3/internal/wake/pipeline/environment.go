@@ -574,26 +574,7 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 	}
 	switch spec.TargetOS {
 	case "darwin":
-		if host.os != "darwin" {
-			return hostConfigurationField("sign", fmt.Errorf("%s requires a darwin host", operation))
-		}
-		if spec.Config.Identity == "" {
-			return hostConfigurationField("identity", fmt.Errorf("darwin signing requires signing.darwin.identity"))
-		}
-		if err := requireHostTools(host, operation, "codesign"); err != nil {
-			return hostConfigurationField("sign", err)
-		}
-		if spec.Config.Notarize {
-			if err := manifest.ValidateNotarization(spec.Config); err != nil {
-				return err
-			}
-			if spec.Config.NotarizationCredential == "" && spec.Config.NotarizationKey == "" {
-				return hostConfigurationField("notarization.credential", fmt.Errorf("notarization requires signing.darwin.notarization credential"))
-			}
-			if err := requireHostTools(host, "darwin notarization", "xcrun"); err != nil {
-				return hostConfigurationField("sign", err)
-			}
-		}
+		return validateDarwinSigningHost(spec, host)
 	case "ios":
 		if host.os != "darwin" {
 			return hostConfigurationField("sign", fmt.Errorf("%s requires a darwin host", operation))

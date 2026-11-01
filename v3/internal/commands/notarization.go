@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/bundlearchive"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/notaryservice"
+	"github.com/wailsapp/wails/v3/internal/notaryticket"
 )
 
 type notaryClient interface {
@@ -25,12 +26,20 @@ var newNotaryClient = func(credentials notaryservice.Credentials) (notaryClient,
 	return notaryservice.New(credentials, nil)
 }
 
-var stapleNotarization = func(ctx context.Context, input string) error {
-	output, err := exec.CommandContext(ctx, "xcrun", "stapler", "staple", input).CombinedOutput()
+var stapleNotarization = staplePortableNotarization
+
+func staplePortableNotarization(ctx context.Context, input string) error {
+	digests, err := notaryticket.Digests(input)
 	if err != nil {
-		return fmt.Errorf("staple notarization ticket: %w: %s", err, output)
+		return fmt.Errorf("inspect notarization ticket target: %w", err)
 	}
-	return nil
+	ticket, err := (notaryticket.Client{}).Fetch(ctx, digests)
+	if err != nil {
+		return err
+	}
+	return produceNamedPathTransactional(input, ".notary-staple-*", filepath.Base(input), func(staged string) error {
+		return notaryticket.Staple(ctx, input, staged, ticket)
+	})
 }
 
 func usesNotaryAPI(options *flags.Sign) bool {
@@ -48,7 +57,7 @@ func notarizeMacOSWithAPI(ctx context.Context, options *flags.Sign) error {
 		return err
 	}
 	archive := options.Input
-	if filepath.Ext(options.Input) == ".app" {
+	if strings.EqualFold(filepath.Ext(options.Input), ".app") {
 		directory, err := os.MkdirTemp("", "wails-notary-upload-*")
 		if err != nil {
 			return err
@@ -107,4 +116,15 @@ func rejectedNotarization(ctx context.Context, client notaryClient, id, status s
 		return fmt.Errorf("notarization submission %s was %s; cannot save complete log", id, status)
 	}
 	return fmt.Errorf("notarization submission %s was %s; log saved to %s", id, status, file.Name())
+}
+
+func submitNotarizationProfile(ctx context.Context, path, profile string) error {
+	output, err := runManifestCommand(ctx, filepath.Dir(path), nil, "xcrun", "notarytool", "submit", path, "--keychain-profile", profile, "--wait")
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if err != nil {
+		return fmt.Errorf("notarization failed: %w: %s", err, output)
+	}
+	return nil
 }

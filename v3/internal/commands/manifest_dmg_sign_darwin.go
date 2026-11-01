@@ -22,6 +22,20 @@ func prepareManifestDMGForSigning(ctx context.Context, input, identity, entitlem
 	if identity == "" {
 		return fmt.Errorf("sign DMG application: identity is required")
 	}
+	return prepareManifestDMGWithSigner(ctx, input, func(app string) error {
+		signArgs := []string{"--force", "--deep", "--sign", identity}
+		if entitlements != "" {
+			signArgs = append(signArgs, "--entitlements", entitlements)
+		}
+		if hardenedRuntime {
+			signArgs = append(signArgs, "--options", "runtime")
+		}
+		signArgs = append(signArgs, app)
+		return runDMGSigningCommand(ctx, filepath.Dir(input), "sign DMG application", "codesign", signArgs...)
+	})
+}
+
+func prepareManifestDMGWithSigner(ctx context.Context, input string, signApplication func(string) error) error {
 	workspace, err := os.MkdirTemp(filepath.Dir(input), ".dmg-content-sign-*")
 	if err != nil {
 		return fmt.Errorf("create DMG signing workspace: %w", err)
@@ -68,16 +82,8 @@ func prepareManifestDMGForSigning(ctx context.Context, input, identity, entitlem
 	if !appInfo.IsDir() {
 		return fmt.Errorf("application in DMG is not a bundle directory: %s", app)
 	}
-	signArgs := []string{"--force", "--deep", "--sign", identity}
-	if entitlements != "" {
-		signArgs = append(signArgs, "--entitlements", entitlements)
-	}
-	if hardenedRuntime {
-		signArgs = append(signArgs, "--options", "runtime")
-	}
-	signArgs = append(signArgs, app)
-	if err := runDMGSigningCommand(ctx, workspace, "sign DMG application", "codesign", signArgs...); err != nil {
-		return err
+	if err := signApplication(app); err != nil {
+		return fmt.Errorf("sign DMG application: %w", err)
 	}
 	if err := runDMGSigningCommand(ctx, workspace, "detach signed DMG", "hdiutil", "detach", mountpoint); err != nil {
 		return err

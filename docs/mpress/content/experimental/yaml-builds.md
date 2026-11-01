@@ -243,7 +243,7 @@ removes that metadata because it invalidates signed bundles.
 | --- | --- | --- |
 | Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Windows host and signing tools. |
 | Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Windows host and signing tools. |
-| macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | macOS with Apple tools and credentials. |
+| macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | Go signing with an exported RSA PKCS#12 identity, or ad-hoc signing; keychain identities retain macOS tools. API-key notarization and ticket stapling run in Go. |
 | Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | Exported OpenPGP keys use the native DEB/RPM/Arch signer. Legacy DEB/RPM key IDs require external tools. Void output is unsigned. |
 | Linux AppImage | Windows, macOS or Linux; Go deployment and SquashFS writer, plus a target AppImage runtime. GUI cross-packaging requires a supplied Linux runtime tree. | No built-in AppImage signing flow. |
 
@@ -253,7 +253,27 @@ expanding and recompressing the DMG with `hdiutil`. Signing runs on every reques
 the signed package is not reused from the build cache. Projects with
 `after_package` or `before_sign` hooks retain the original package-then-sign
 flow, including `hdiutil`, so edits those hooks make to the unsigned image are
-preserved. Apple signing and notarization still require their platform tools.
+preserved. That hook-compatible image-editing path requires macOS and `hdiutil`.
+
+For portable Apple signing, set `darwin.signing.identity: "-"` for an ad-hoc
+signature, or use `darwin.signing.certificate` for an exported RSA PKCS#12
+identity. `darwin.signing.credential` names its password environment variable.
+Certificate signatures use the shared Go PFX/CMS implementation; no private key
+is exported from a keychain automatically. Thin and universal executables,
+nested app bundles, frameworks and DMGs have passed Apple's strict native
+signature checks, including tamper rejection, using generated test identities.
+
+For notarization, an exported Developer ID identity also needs a compatible
+RFC 3161 `darwin.signing.timestamp_server`. The shared verifier accepts its
+supported SHA-2 timestamp profiles and rejects unsupported legacy algorithms.
+An ad-hoc signature cannot be notarized. Native certificate-format validation
+is separate from real Developer ID trust and Apple's acceptance of a submission.
+
+The Go stapler authenticates Apple's ticket signature and verifies that it
+covers every architecture before attaching it to a private copy. It uses the
+observed ticket-delivery protocol, which Apple does not publish as a supported
+API. It does not replace Gatekeeper's current revocation checks. App and signed
+DMG outputs have passed native `stapler validate` and strict signature checks.
 
 Windows MSIX archives are created directly in Go; creating an unsigned package
 does not require the Windows SDK or Docker. Windows signing still requires a
@@ -356,8 +376,10 @@ not make two filesystem renames atomic to concurrent readers.
 macOS app bundles include companion programs. Set
 `darwin.microphone_usage_description` to add the usage text and, when no custom
 entitlements file is supplied, the audio-input entitlement. Custom plist and
-entitlements sources remain unchanged. Signing and ticket stapling still use
-Apple tools on macOS. Notarization submission can use an existing notary
+entitlements sources remain unchanged. An exported RSA PKCS#12 identity uses
+Go signing on every desktop host; `identity: "-"` selects portable ad-hoc
+signing. Keychain identities continue to use `codesign` on macOS. Ticket
+stapling runs in Go. Notarization submission can use an existing macOS notary
 keychain profile, or App Store Connect team API credentials:
 
 ```yaml
@@ -369,7 +391,9 @@ project:
   version: 1.0.0
 darwin:
   signing:
-    identity: "Developer ID Application: Example"
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
   notarization:
     api_key: signing/AuthKey.p8
     key_id: ABCDEFGHIJ
@@ -383,9 +407,17 @@ cached. This mode supports team API keys and archives up to 5 GiB; multipart
 uploads and individual API keys are not implemented. Rejections retain the
 submission ID and save Apple's diagnostic log to a private temporary file whose
 path is reported in the error. A cancelled or rejected submission does not
-replace previously published output. Acceptance must complete before Wake
-invokes `xcrun stapler`, so API mode alone does not remove the macOS host
-requirement for a complete signed release.
+replace previously published output. After acceptance, Wake retrieves and
+verifies Apple's ticket and staples it in Go. With an exported identity and
+team API credentials, signing, submission and stapling can run on Linux,
+Windows or macOS. Keychain profiles still require macOS and `notarytool`.
+
+Portable certificate signing supports RSA identities in AES/PBKDF2 or legacy
+3DES PKCS#12 files. RC2-encrypted exports must be re-exported with a supported
+cipher. Notarized portable signatures require an explicit SHA-2 RFC 3161
+timestamp service; the Go verifier rejects legacy SHA-1 timestamp signatures.
+The ticket service follows Apple's observed protocol and pins Apple Root G3;
+Gatekeeper remains the authority for distribution trust and revocation.
 
 Signed outputs retain their platform extension, for example
 `notes.signed.app` and `notes.signed.dmg`.

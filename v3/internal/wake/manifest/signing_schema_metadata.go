@@ -6,17 +6,19 @@ type signingFieldMetadata struct{ description, example string }
 
 var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	"certificate": {
+		"darwin":  {"Project-relative exported PKCS#12 identity for portable Go signing; omit to use a macOS keychain identity or ad-hoc signing.", `"signing/developer-id.p12"`},
 		"windows": {"Project-relative PFX signing certificate file; alternatively configure thumbprint.", `"signing/windows.pfx"`},
 		"linux":   {"Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer.", `"signing/private-key.asc"`},
 		"android": {"Project-relative Android signing keystore file.", `"signing/upload.jks"`},
 	},
 	"identity": {
-		"darwin":  {"macOS code-signing identity from the keychain; use - for ad-hoc signing.", `"Developer ID Application: Example"`},
+		"darwin":  {"macOS code-signing identity from the keychain; use - for portable ad-hoc signing, or configure an exported certificate.", `"Developer ID Application: Example"`},
 		"ios":     {"Apple code-signing identity from the macOS keychain.", `"Apple Development: Example"`},
 		"linux":   {"DEB signing role; defaults to builder. Not used by the Arch detached signer.", `"builder"`},
 		"android": {"Android signing key alias when key_alias is omitted.", `"upload"`},
 	},
 	"credential": {
+		"darwin":  {"Name of the environment variable containing the exported PKCS#12 identity password; never the password itself.", `"APPLE_SIGNING_PASSWORD"`},
 		"windows": {"Name of the environment variable containing the PFX certificate password; never the password itself.", `"WINDOWS_SIGNING_PASSWORD"`},
 		"linux":   {"Optional environment variable containing the exported private-key passphrase; omit for an unencrypted key.", `"LINUX_SIGNING_PASSPHRASE"`},
 		"android": {"Name of the environment variable containing the keystore password; never the password itself.", `"ANDROID_SIGNING_PASSWORD"`},
@@ -32,6 +34,7 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 		"windows": {"Thumbprint of a certificate in the Windows certificate store.", `"0123456789ABCDEF"`},
 	},
 	"timestamp_server": {
+		"darwin":  {"RFC 3161 timestamp URL for portable certificate signing; required for notarized certificate signatures.", `"https://timestamp.example.com"`},
 		"windows": {"URL of the Windows signing timestamp service.", `"https://timestamp.example.com"`},
 	},
 	"key_alias": {

@@ -284,11 +284,11 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Not used by this platform's signing operation.",
+              "description": "Project-relative exported PKCS#12 identity for portable Go signing; omit to use a macOS keychain identity or ad-hoc signing.",
               "type": "string"
             },
             "credential": {
-              "description": "Not used by this platform's signing operation.",
+              "description": "Name of the environment variable containing the exported PKCS#12 identity password; never the password itself.",
               "type": "string"
             },
             "entitlements": {
@@ -296,7 +296,7 @@
               "type": "string"
             },
             "identity": {
-              "description": "macOS code-signing identity from the keychain; use - for ad-hoc signing.",
+              "description": "macOS code-signing identity from the keychain; use - for portable ad-hoc signing, or configure an exported certificate.",
               "type": "string"
             },
             "key_alias": {
@@ -312,7 +312,7 @@
               "type": "string"
             },
             "timestamp_server": {
-              "description": "Not used by this platform's signing operation.",
+              "description": "RFC 3161 timestamp URL for portable certificate signing; required for notarized certificate signatures.",
               "type": "string"
             }
           },

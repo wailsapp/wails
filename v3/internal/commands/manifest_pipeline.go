@@ -2813,6 +2813,9 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 			return h.signLinuxPackage(ctx, s, key)
 		}
 	}
+	if s.TargetOS == "darwin" && (s.Config.Certificate != "" || s.Config.Identity == "-") {
+		return h.signApplePackage(ctx, s)
+	}
 	input := filepath.Join(h.root, s.Input)
 	output := filepath.Join(h.root, s.Input+".signed")
 	if s.TargetOS == "ios" {

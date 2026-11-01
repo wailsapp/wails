@@ -3,10 +3,10 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
 func (h *manifestHandler) packageDMG(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
@@ -30,11 +30,16 @@ func (h *manifestHandler) packageDMG(ctx context.Context, s pipeline.PackageSpec
 		return pipeline.RunResult{}, fmt.Errorf("stage DMG application bundle: %w", err)
 	}
 	if s.BundleSigning != nil {
-		entitlements, err := existingOptionalArtifactPathInsideProject(h.root, s.BundleSigning.Entitlements)
+		signOptions, err := h.appleSignFlags(pipeline.SignSpec{Config: *s.BundleSigning}, stagedApp)
 		if err != nil {
 			return pipeline.RunResult{}, err
 		}
-		if err := manifestSign(&flags.Sign{Input: stagedApp, Identity: s.BundleSigning.Identity, Entitlements: entitlements, HardenedRuntime: s.BundleSigning.Notarize}); err != nil {
+		if portableAppleSigning(signOptions) {
+			err = signPortableApple(ctx, signOptions)
+		} else {
+			err = manifestSign(signOptions)
+		}
+		if err != nil {
 			return pipeline.RunResult{}, fmt.Errorf("sign staged DMG application: %w", err)
 		}
 	}

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -86,6 +87,16 @@ func TestSignMacOSDiskImageSignsNotarizesAndStaples(t *testing.T) {
 	}
 	t.Setenv("PATH", tools)
 	t.Setenv("SIGN_RECORD", record)
+	previousStaple := stapleNotarization
+	t.Cleanup(func() { stapleNotarization = previousStaple })
+	stapled := false
+	stapleNotarization = func(ctx context.Context, path string) error {
+		if path != input {
+			t.Fatal("wrong ticket target", path)
+		}
+		stapled = true
+		return nil
+	}
 	if err := Sign(&flags.Sign{Input: input, Identity: "Developer ID Application: Example", Notarize: true, KeychainProfile: "release"}); err != nil {
 		t.Fatal(err)
 	}
@@ -94,10 +105,12 @@ func TestSignMacOSDiskImageSignsNotarizesAndStaples(t *testing.T) {
 		t.Fatal(err)
 	}
 	commands := string(data)
+	if !stapled || strings.Contains(commands, "stapler") {
+		t.Fatal("portable stapling was not selected", commands)
+	}
 	for _, expected := range []string{
 		"codesign --force --sign Developer ID Application: Example " + input,
 		"xcrun notarytool submit " + input + " --keychain-profile release --wait",
-		"xcrun stapler staple " + input,
 	} {
 		if !strings.Contains(commands, expected) {
 			t.Errorf("commands %q do not contain %q", commands, expected)

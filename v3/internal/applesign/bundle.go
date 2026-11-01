@@ -184,7 +184,7 @@ func signBundleCopy(ctx context.Context, root string, o Options, depth int) ([]C
 	if depth > 16 {
 		return nil, errors.New("nested bundle depth exceeds 16")
 	}
-	if strings.HasSuffix(root, ".framework") {
+	if strings.EqualFold(filepath.Ext(root), ".framework") {
 		return signFrameworkCopy(ctx, root, o, depth)
 	}
 	entries, err := os.ReadDir(root)
@@ -243,7 +243,9 @@ func signBundleLayout(ctx context.Context, contents, infoPath, executables strin
 		}
 		if entry.IsDir() {
 			if nestedLocation(name) && strings.Contains(entry.Name(), ".") {
-				if !strings.HasSuffix(entry.Name(), ".app") && !strings.HasSuffix(entry.Name(), ".xpc") && !strings.HasSuffix(entry.Name(), ".bundle") && !strings.HasSuffix(entry.Name(), ".appex") && !strings.HasSuffix(entry.Name(), ".framework") {
+				switch strings.ToLower(filepath.Ext(entry.Name())) {
+				case ".app", ".xpc", ".bundle", ".appex", ".framework":
+				default:
 					return fmt.Errorf("unsupported nested code bundle %s", name)
 				}
 				ids, err := signBundleCopy(ctx, path, o, depth+1)

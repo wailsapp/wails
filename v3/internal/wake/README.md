@@ -82,8 +82,11 @@ the target desktop libraries and headers; Zig alone does not provide those.
 
 macOS application assembly, universal binary merging and DMG creation run on
 all desktop hosts. DMGs use the existing Go image writer when macOS tools are
-unavailable. Signing and notarisation retain their separate host and credential
-requirements. AppImage deployment, SquashFS writing and zsync generation run in
+unavailable. Ad-hoc and exported-PKCS#12 Apple signatures use Go; keychain identities
+retain macOS codesign. Team API keys use the Go Notary client, and authenticated
+tickets are attached in Go. Notarytool profiles and DMG-editing hooks retain
+their macOS tool requirements. Developer ID distribution still needs a valid
+identity and a compatible secure timestamp. AppImage deployment, SquashFS writing and zsync generation run in
 Go on all desktop hosts, using a pinned target AppImage runtime. Cross-host GUI
 packaging requires a supplied Linux runtime tree with GTK/WebKit libraries,
 compiled schemas and module caches. Pure-Go GUI runtime profiles follow each

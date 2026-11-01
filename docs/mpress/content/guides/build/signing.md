@@ -20,13 +20,14 @@ This matrix shows what you can sign from each source platform:
 | Target Format | From Windows | From macOS | From Linux |
 | --- | :---: | :---: | :---: |
 | Windows EXE/MSI | ✅ | ✅ | ✅ |
-| macOS .app bundle | ❌ | ✅ | ❌ |
-| macOS notarization | ❌ | ✅ | ❌ |
+| macOS .app / Mach-O / DMG, exported identity | ✅ | ✅ | ✅ |
+| macOS notarization, team API credentials | ✅ | ✅ | ✅ |
+| macOS keychain identity or notary profile | ❌ | ✅ | ❌ |
 | Linux DEB | ✅ | ✅ | ✅ |
 | Linux RPM | ✅ | ✅ | ✅ |
 
 @note{type="tip"}
-Windows and Linux packages can be signed from **any platform**. macOS signing requires a Mac due to Apple's tooling requirements.
+Exported Apple identities and team API credentials enable portable signing and notarization. macOS keychain identities and notary profiles require a Mac. Format-specific restrictions are described below.
 
 @end
 
@@ -37,10 +38,10 @@ Wails automatically selects the best available signing backend:
 | Platform | Native Backend | Cross-Platform Backend |
 | --- | --- | --- |
 | Windows | `signtool.exe` (Windows SDK) | Built-in |
-| macOS | `codesign` (Xcode) | Not available |
+| macOS | `codesign` for keychain identities | Built-in for exported PKCS#12 identities or ad-hoc signing |
 | Linux | N/A | Built-in |
 
-When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.
+The credential type selects the Apple signing backend on every host. Exported identities use Go; macOS keychain identities use `codesign`. Ticket retrieval, verification and stapling use Go.
 
 ## Quick Start
 
@@ -167,7 +168,47 @@ wails3 signing
 
 - Apple Developer Account ($99/year)
 - Developer ID Application certificate
-- Xcode Command Line Tools installed
+- For a macOS keychain identity: Xcode Command Line Tools installed
+- For portable signing: an exported RSA PKCS#12 identity; no Apple signing tools are required
+
+### Portable signing with Wake
+
+Wake reads `wails.yaml` directly. It does not execute Taskfiles. Configure an
+exported Developer ID identity and App Store Connect team API key:
+
+```yaml
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+`credential` names the environment variable holding the certificate password.
+Keep both private-key files outside version control. Enable signing and
+notarization in the release profile described in the
+[YAML build guide](../../experimental/yaml-builds.md).
+
+The portable signer supports 64-bit Intel and Apple Silicon Mach-O files,
+universal binaries, canonical app bundles with nested code, frameworks and
+UDIF DMGs below 4 GiB. It rejects unsupported layouts before publishing an
+output. Ad-hoc signing uses `identity: "-"` and cannot be notarized. PKCS#12
+identities may use AES/PBKDF2 or legacy 3DES encryption; RC2 exports require
+re-exporting with a supported cipher.
+
+Portable notarized signatures require an explicit SHA-2 RFC 3161 timestamp
+service. Legacy SHA-1 timestamp signatures are rejected. Team API submission
+supports single uploads up to 5 GiB; individual API keys and multipart uploads
+are not supported. Ticket verification and stapling use Apple's observed
+service protocol with a pinned Apple Root G3, without `xcrun stapler`.
+Gatekeeper remains the authority for distribution trust and revocation.
+
+The following sections describe the existing macOS keychain workflow used by
+legacy projects and by Wake configurations that select a keychain identity.
 
 ### Signing Identities
 
@@ -667,7 +708,7 @@ jobs:
 ```
 
 @note{type="note"}
-Using a Linux runner for cross-platform signing simplifies CI/CD by eliminating the need for separate Windows runners. macOS still requires a macOS runner for signing due to Apple's native tooling requirements.
+Using a Linux runner for cross-platform signing simplifies CI/CD by eliminating the need for separate Windows runners. Apple keychain identities and notary profiles require a macOS runner. Exported identities and team API credentials support the portable Wake workflow above.
 
 @end
 

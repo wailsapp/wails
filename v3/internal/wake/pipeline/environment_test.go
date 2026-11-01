@@ -321,7 +321,7 @@ func TestHostResolutionRejectsUnavailableSigningAndNotarization(t *testing.T) {
 	config.Selected.Name = "release"
 	config.Selected.Targets = []manifest.ProfileTarget{{Target: "darwin/arm64", Formats: []string{"dmg"}, Sign: true, Notarize: true}}
 	_, err = PlanBuildForHost(config, Request{Verb: "build"}, testHost("darwin", "arm64", "hdiutil", "codesign", "xcrun"))
-	assert.ErrorContains(t, err, "notarization requires signing.darwin.notarization credential")
+	assert.ErrorContains(t, err, "notarization requires a keychain profile or team API key")
 }
 
 func TestHostResolutionValidatesFormatSpecificSigningRequirements(t *testing.T) {
@@ -445,7 +445,7 @@ func TestSigningHostValidationCoversEveryPlatformContract(t *testing.T) {
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("darwin", "arm64")), "codesign")
-	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign")), "xcrun")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", BundleSigned: true, Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign")), "xcrun")
 	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "app", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign", "xcrun")))
 
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")

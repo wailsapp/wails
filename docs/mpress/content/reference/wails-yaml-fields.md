@@ -66,14 +66,14 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `darwin.notarization.key_id` | `string` | no |  | `"ABCDEFGHIJ"` |  | App Store Connect team API key ID belonging to api_key. |
 | `darwin.product_name` | `string` | no |  | `"value"` | `windows,darwin,linux` | Human-readable product name. |
 | `darwin.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
-| `darwin.signing.certificate` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
-| `darwin.signing.credential` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `darwin.signing.certificate` | `string` | no |  | `"signing/developer-id.p12"` |  | Project-relative exported PKCS#12 identity for portable Go signing; omit to use a macOS keychain identity or ad-hoc signing. |
+| `darwin.signing.credential` | `string` | no |  | `"APPLE_SIGNING_PASSWORD"` |  | Name of the environment variable containing the exported PKCS#12 identity password; never the password itself. |
 | `darwin.signing.entitlements` | `string` | no |  | `"signing/entitlements.plist"` |  | Project-relative Apple entitlements file. |
-| `darwin.signing.identity` | `string` | no |  | `"Developer ID Application: Example"` |  | macOS code-signing identity from the keychain; use - for ad-hoc signing. |
+| `darwin.signing.identity` | `string` | no |  | `"Developer ID Application: Example"` |  | macOS code-signing identity from the keychain; use - for portable ad-hoc signing, or configure an exported certificate. |
 | `darwin.signing.key_alias` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `darwin.signing.provisioning_profile` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `darwin.signing.thumbprint` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
-| `darwin.signing.timestamp_server` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `darwin.signing.timestamp_server` | `string` | no |  | `"https://timestamp.example.com"` |  | RFC 3161 timestamp URL for portable certificate signing; required for notarized certificate signatures. |
 | `dev` | `object` | no |  | `{}` |  | Development build and watcher settings. |
 | `dev.args` | `list(string)` | no |  | `["value"]` |  | Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list. |
 | `dev.debounce_ms` | `integer` | no | `250` | `250` |  | Delay used to coalesce development file changes. |
