@@ -378,21 +378,28 @@ type Signing struct {
 	Android SigningPlatform `json:"android"`
 }
 
+// GlobalSigningPaths records exact paths resolved from user-level defaults.
+// It is runtime provenance, never manifest input or serialized configuration.
+type GlobalSigningPaths struct {
+	Certificate, Entitlements, NotarizationKey string
+}
+
 type SigningPlatform struct {
-	Enabled                bool   `json:"enabled"`
-	Identity               string `json:"identity,omitempty"`
-	Certificate            string `json:"certificate,omitempty"`
-	Thumbprint             string `json:"thumbprint,omitempty"`
-	TimestampServer        string `json:"timestamp_server,omitempty"`
-	Entitlements           string `json:"entitlements,omitempty"`
-	ProvisioningProfile    string `json:"provisioning_profile,omitempty"`
-	KeyAlias               string `json:"key_alias,omitempty"`
-	Notarize               bool   `json:"notarize"`
-	Credential             string `json:"credential,omitempty"`
-	NotarizationCredential string `json:"notarization_credential,omitempty"`
-	NotarizationKey        string `json:"notarization_key,omitempty"`
-	NotarizationKeyID      string `json:"notarization_key_id,omitempty"`
-	NotarizationIssuerID   string `json:"notarization_issuer_id,omitempty"`
+	GlobalPaths            GlobalSigningPaths `json:"-" yaml:"-"`
+	Enabled                bool               `json:"enabled"`
+	Identity               string             `json:"identity,omitempty"`
+	Certificate            string             `json:"certificate,omitempty"`
+	Thumbprint             string             `json:"thumbprint,omitempty"`
+	TimestampServer        string             `json:"timestamp_server,omitempty"`
+	Entitlements           string             `json:"entitlements,omitempty"`
+	ProvisioningProfile    string             `json:"provisioning_profile,omitempty"`
+	KeyAlias               string             `json:"key_alias,omitempty"`
+	Notarize               bool               `json:"notarize"`
+	Credential             string             `json:"credential,omitempty"`
+	NotarizationCredential string             `json:"notarization_credential,omitempty"`
+	NotarizationKey        string             `json:"notarization_key,omitempty"`
+	NotarizationKeyID      string             `json:"notarization_key_id,omitempty"`
+	NotarizationIssuerID   string             `json:"notarization_issuer_id,omitempty"`
 }
 
 type Association struct {

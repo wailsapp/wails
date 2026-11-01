@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/signingconfig"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
@@ -14,11 +15,11 @@ func (h *manifestHandler) signWindowsPackage(ctx context.Context, spec pipeline.
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	certificate, err := existingOptionalPathInsideProject(h.root, spec.Config.Certificate)
+	certificate, err := signingconfig.ResolvePath(h.root, spec.Config, "certificate", spec.Config.Certificate)
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("windows.signing.certificate: %w", err)
 	}
-	password, err := windowsSigningPassword(spec.Config.Credential, h.environment)
+	password, err := manifestSigningPassword(spec.Config, "windows", h.environment)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}

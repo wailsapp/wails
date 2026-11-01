@@ -7,12 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/signingconfig"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
 func (h *manifestHandler) appleSignFlags(signing pipeline.SignSpec, input string) (*flags.Sign, error) {
 	config := signing.Config
-	certificate, err := existingOptionalPathInsideProject(h.root, config.Certificate)
+	certificate, err := signingconfig.ResolvePath(h.root, config, "certificate", config.Certificate)
 	if err != nil {
 		return nil, fmt.Errorf("darwin.signing.certificate: %w", err)
 	}
@@ -40,7 +41,7 @@ func (h *manifestHandler) signApplePackage(ctx context.Context, spec pipeline.Si
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	notaryKey, err := existingOptionalPathInsideProject(h.root, spec.Config.NotarizationKey)
+	notaryKey, err := signingconfig.ResolvePath(h.root, spec.Config, "notarization_key", spec.Config.NotarizationKey)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}

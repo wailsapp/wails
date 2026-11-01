@@ -33,6 +33,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/packagesign"
 	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
+	"github.com/wailsapp/wails/v3/internal/signingconfig"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
@@ -215,6 +216,22 @@ func resolveManifestPlanWithOperations(options manifestRunOptions, operations ma
 	if loaded.Config.Root != "" {
 		root = loaded.Config.Root
 	}
+	var signingTargets []string
+	if options.Verb == "sign" && loaded.Config.Selected.Name == "" {
+		for _, target := range options.Targets {
+			signingTargets = append(signingTargets, target.OS)
+		}
+		if len(signingTargets) == 0 {
+			signingTargets = []string{chooseString(options.TargetOS != "", options.TargetOS, runtime.GOOS)}
+		}
+	}
+	resolved, err := signingconfig.ApplyDefaults(loaded.Config, signingTargets...)
+	if err != nil {
+		return "", nil, pipeline.Plan{}, err
+	}
+	loadedCopy := *loaded
+	loadedCopy.Config = resolved
+	loaded = &loadedCopy
 	environment := environmentValues(mergeEnvironment(os.Environ(), options.Environment))
 	plan, err := operations.plan(loaded.Config, pipeline.Request{SkipBuild: options.SkipBuild, CGOEnabled: environment["CGO_ENABLED"], CC: environment["CC"], Binaries: options.Binaries, SkipFrontend: options.SkipFrontend, SkipBindings: options.SkipBindings, Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, GarbleArgs: options.GarbleArgs, Obfuscated: options.Obfuscated})
 	if err != nil {
@@ -1658,7 +1675,7 @@ func (h *manifestHandler) applyUserSigningInputs(assetsRoot, targetOS string) er
 		if input.source == "" {
 			continue
 		}
-		source, err := existingPathInsideProject(h.root, input.source)
+		source, err := signingconfig.ResolvePath(h.root, *signing, input.field, input.source)
 		if err != nil {
 			return fmt.Errorf("signing.%s.%s: %w", targetOS, input.field, err)
 		}
@@ -2813,7 +2830,11 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		return h.signArch(ctx, s)
 	}
 	if s.TargetOS == "linux" && (s.Format == "deb" || s.Format == "rpm") {
-		if key, isFile := packagesign.KeyFile(h.root, s.Config.Certificate); isFile {
+		if _, isFile := packagesign.KeyFile(h.root, s.Config.Certificate); isFile {
+			key, err := signingconfig.ResolvePath(h.root, s.Config, "certificate", s.Config.Certificate)
+			if err != nil {
+				return pipeline.RunResult{}, err
+			}
 			return h.signLinuxPackage(ctx, s, key)
 		}
 	}
@@ -2857,7 +2878,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	certificate := s.Config.Certificate
 	if s.TargetOS != "linux" {
 		var err error
-		certificate, err = existingOptionalPathInsideProject(h.root, s.Config.Certificate)
+		certificate, err = signingconfig.ResolvePath(h.root, s.Config, "certificate", s.Config.Certificate)
 		if err != nil {
 			return pipeline.RunResult{}, fmt.Errorf("signing.%s.certificate: %w", s.TargetOS, err)
 		}
@@ -2866,7 +2887,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("signing.%s.entitlements: %w", s.TargetOS, err)
 	}
-	notaryKey, err := existingOptionalPathInsideProject(h.root, s.Config.NotarizationKey)
+	notaryKey, err := signingconfig.ResolvePath(h.root, s.Config, "notarization_key", s.Config.NotarizationKey)
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("darwin.notarization.api_key: %w", err)
 	}

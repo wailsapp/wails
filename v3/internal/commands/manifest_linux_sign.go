@@ -2,8 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -27,9 +25,9 @@ func signExportedPackage(options *flags.Sign, format, key string) error {
 }
 
 func (h *manifestHandler) signLinuxPackage(ctx context.Context, spec pipeline.SignSpec, key string) (pipeline.RunResult, error) {
-	password := environmentValues(mergeEnvironment(os.Environ(), h.environment))[spec.Config.Credential]
-	if spec.Config.Credential != "" && password == "" {
-		return pipeline.RunResult{}, fmt.Errorf("Linux signing credential %s is empty", spec.Config.Credential)
+	password, err := manifestSigningPassword(spec.Config, "linux", h.environment)
+	if err != nil {
+		return pipeline.RunResult{}, err
 	}
 	input, err := existingArtifactPathInsideProject(h.root, spec.Input)
 	if err != nil {
