@@ -29,6 +29,10 @@ response is 403. The upload uses the S3 acceleration endpoint. Redirects and
 cookies are disabled; neither the Apple bearer token nor S3 credentials are
 forwarded to the temporary log URL. Response errors omit remote bodies and
 signed URLs. API responses are limited to 1 MiB and log downloads to 16 MiB.
+For Apple's specific missing-or-expired-agreements error, the client adds a fixed
+instruction for the Account Holder to review agreements in the developer account.
+It never displays the server's error title, detail, or supplied links; unknown
+API errors and S3 errors retain the generic HTTP status message.
 
 The client supports a single S3 PUT, capped at **5 GiB**. Larger archives are
 rejected before creating a submission. Multipart and automatic POST/PUT retries

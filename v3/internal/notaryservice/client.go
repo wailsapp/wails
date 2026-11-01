@@ -159,7 +159,23 @@ func (c *Client) response(request *http.Request, operation string, limit int64) 
 	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, &HTTPError{Operation: operation, StatusCode: response.StatusCode}
+		httpError := &HTTPError{Operation: operation, StatusCode: response.StatusCode}
+		if operation == "notary API" && response.StatusCode == http.StatusForbidden {
+			data, readError := io.ReadAll(io.LimitReader(response.Body, maxResponseBytes+1))
+			var failure struct {
+				Errors []struct {
+					Code string `json:"code"`
+				} `json:"errors"`
+			}
+			if readError == nil && len(data) <= maxResponseBytes && json.Unmarshal(data, &failure) == nil {
+				for _, item := range failure.Errors {
+					if item.Code == "FORBIDDEN.REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED" {
+						return nil, fmt.Errorf("%w: required Apple agreements are missing or expired; the Account Holder must review the agreements at https://developer.apple.com/account/ before retrying", httpError)
+					}
+				}
+			}
+		}
+		return nil, httpError
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
 	if err != nil {

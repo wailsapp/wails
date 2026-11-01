@@ -354,6 +354,71 @@ func TestStatusHTTPErrorAndMalformedResponse(t *testing.T) {
 	}
 }
 
+func TestAgreementErrorUsesOnlyFixedLocalGuidance(t *testing.T) {
+	const code = "FORBIDDEN.REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED"
+	const guidance = "notary API: HTTP 403: required Apple agreements are missing or expired; the Account Holder must review the agreements at https://developer.apple.com/account/ before retrying"
+	for _, test := range []struct {
+		name, operation, code string
+		status                int
+		alter                 func(string) string
+		wantGuidance          bool
+	}{
+		{name: "recognized", operation: "notary API", code: code, status: 403, wantGuidance: true},
+		{name: "unknown", operation: "notary API", code: "FORBIDDEN.UNKNOWN secret-code", status: 403},
+		{name: "partial match", operation: "notary API", code: code + ".secret", status: 403},
+		{name: "wrong status", operation: "notary API", code: code, status: 500},
+		{name: "upload", operation: "notarization upload", code: code, status: 403},
+		{name: "log download", operation: "notarization log", code: code, status: 403},
+		{name: "malformed", operation: "notary API", code: code, status: 403, alter: func(body string) string { return body + "secret trailing content" }},
+		{name: "oversized", operation: "notary API", code: code, status: 403, alter: func(body string) string { return body + strings.Repeat(" ", maxResponseBytes) }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			client, _ := localClient(t, func(w http.ResponseWriter, r *http.Request) {
+				// A hostile body may echo the actual bearer token or suggest a
+				// credential-stealing URL. None of these fields may be retained.
+				body, err := json.Marshal(map[string]any{"errors": []map[string]string{{
+					"code": test.code, "title": "secret-title", "detail": r.Header.Get("Authorization") + " secret-key",
+					"url": "https://attacker.invalid/?credential=secret-token",
+				}}})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				data := string(body)
+				if test.alter != nil {
+					data = test.alter(data)
+				}
+				w.WriteHeader(test.status)
+				fmt.Fprint(w, data)
+			})
+			var err error
+			if test.operation == "notary API" {
+				_, err = client.Status(context.Background(), testID)
+			} else {
+				request, requestError := http.NewRequest(http.MethodGet, "https://download.invalid/artifact", nil)
+				if requestError != nil {
+					t.Fatal(requestError)
+				}
+				_, err = client.response(request, test.operation, maxResponseBytes)
+			}
+			var responseError *HTTPError
+			if !errors.As(err, &responseError) || responseError.StatusCode != test.status || responseError.Operation != test.operation {
+				t.Fatalf("HTTP error identity lost: %v", err)
+			}
+			want := fmt.Sprintf("%s: HTTP %d", test.operation, test.status)
+			if test.wantGuidance {
+				want = guidance
+			}
+			if err.Error() != want {
+				t.Fatalf("unexpected error text: %q", err.Error())
+			}
+			if strings.Contains(fmt.Sprintf("%+v", err), "secret") || strings.Contains(fmt.Sprintf("%+v", responseError), "Bearer") {
+				t.Fatal("remote error content retained")
+			}
+		})
+	}
+}
+
 func TestInvalidIDAndCanceledSubmissionDoNotSendRequests(t *testing.T) {
 	var calls atomic.Int32
 	client, _ := localClient(t, func(w http.ResponseWriter, r *http.Request) { calls.Add(1) })
