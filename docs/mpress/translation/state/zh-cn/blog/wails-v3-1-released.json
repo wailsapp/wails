@@ -127,16 +127,16 @@
       "updatedAt": "2026-11-01T10:24:40Z"
     },
     "b0008-text-01": {
-      "sourceHash": "571d6f9f9e13de2d8eb5eb0803443674b139c6abf6264817a9e7048e4588d752",
-      "targetHash": "4da475ba3f3f9e35d3fa90cb4e8291fcc7b33ea4433c2577267108c7ea4d8e32",
-      "machineHash": "4da475ba3f3f9e35d3fa90cb4e8291fcc7b33ea4433c2577267108c7ea4d8e32",
-      "machineText": "也可以直接使用 Go：",
+      "sourceHash": "209cd8e6075c8f467fbf13ed8e1883fff74256993b613a678f5fe92ca57525ae",
+      "targetHash": "cad82fa09d1ae870596b24e52ed64b5810e6c07a72bff622969e74ac664de20d",
+      "machineHash": "cad82fa09d1ae870596b24e52ed64b5810e6c07a72bff622969e74ac664de20d",
+      "machineText": "构建前端资源后，还可以直接使用 Go 构建：",
       "status": "machine-translated",
-      "sourcePreview": "Or use Go directly:",
+      "sourcePreview": "After building your frontend assets, you can also build directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:40Z"
+      "updatedAt": "2026-11-01T11:06:35Z"
     },
     "b0009-text-01": {
       "sourceHash": "029ee21c0d0b9f8429ce9db7d6bc05e0b788d1d55333c1a3e236b76de8ef95c3",
@@ -427,16 +427,16 @@
       "updatedAt": "2026-11-01T10:24:40Z"
     },
     "b0033-text-01": {
-      "sourceHash": "ac79aa8f8f7c5f694d80ae0a7374f552118abea0cb2b1c96316a5414f85c25b4",
-      "targetHash": "d5d98fb6b644db807b6d7e5d21220c9853109e4f5a1b17c7284e8c07770854be",
-      "machineHash": "d5d98fb6b644db807b6d7e5d21220c9853109e4f5a1b17c7284e8c07770854be",
-      "machineText": "\u003cstrong\u003eGo 事件回调会保持顺序。\u003c/strong\u003e监听器按照事件发出顺序串行运行，并在锁的保护下创建事件钩子快照，以避免数据竞争。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)",
+      "sourceHash": "a5a04a339a184e5904dcf6c3f0eb2e327ac5a61d8c7e13d902dc1dc13eaf465f",
+      "targetHash": "37b28614178f14f96e9ec232c32757897b6364c4afcb723fcadabd207be9e1e5",
+      "machineHash": "37b28614178f14f96e9ec232c32757897b6364c4afcb723fcadabd207be9e1e5",
+      "machineText": "**Go 事件回调会为每个监听器保持顺序。** 每个监听器都按事件发出顺序串行运行；不同监听器可以并发运行，而并发发出的事件没有确定的顺序。事件钩子会在锁的保护下生成快照，以避免数据竞争。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)",
       "status": "machine-translated",
-      "sourcePreview": "**Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are s…",
+      "sourcePreview": "**Go event callbacks keep their order per listener.** Each listener runs serially in emit order; dif…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:40Z"
+      "updatedAt": "2026-11-01T11:06:35Z"
     },
     "b0034-text-01": {
       "sourceHash": "e2aa55d4408658de01345ce2e27bc3d5b2ec2c5b29ec06a39b1675e2606f011a",

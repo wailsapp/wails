@@ -26,10 +26,10 @@ purego를 사용하면 Go에서 C 코드로 연결하는 일반적인 브리지�
 WAILS_PUREGO=1 wails3 build
 ```
 
-또는 Go를 직접 사용하세요.
+프런트엔드 애셋을 빌드한 후에는 Go로 직접 빌드할 수도 있습니다.
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 macOS 백엔드는 AppKit과 WebKit을 사용하며, Linux에서는 GTK4/WebKitGTK 6.0 및 GTK3를 지원합니다. 사용자에게는 여전히 네이티브 런타임 라이브러리가 필요하며, 패키징과 서명에는 별도의 요구 사항이 있습니다. 피드백을 수집하는 동안에는 CGo가 계속 기본값으로 유지됩니다.
@@ -97,7 +97,7 @@ Apple 공증은 팀 API 키를 사용해 Go에서 처리됩니다. Linux에서 �
 
 - **혼합 DPI 디스플레이에서도 창이 올바른 위치에 배치됩니다.** 이제 디스플레이 배율이 서로 다른 macOS 및 Linux 구성에서도 화면 경계와 위치가 올바르게 처리됩니다. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **Linux 트레이 및 테마 감지가 더 안정적으로 작동합니다.** 앱 시작 후 생성된 트레이가 더 이상 누락되지 않고 툴팁이 채워지며, 다크 모드 감지는 시작 시점부터 데스크톱의 화면 표시 설정을 읽습니다.
-- **Go 이벤트 콜백의 순서가 유지됩니다.** 리스너는 이벤트 발생 순서대로 직렬 실행되며, 데이터 경합을 방지하도록 잠금 상태에서 이벤트 훅의 스냅샷을 생성합니다. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Go 이벤트 콜백은 리스너별로 순서를 유지합니다.** 각 리스너는 이벤트가 발생한 순서대로 직렬 실행됩니다. 서로 다른 리스너는 동시에 실행될 수 있으며, 동시에 발생한 이벤트의 순서는 정의되지 않습니다. 데이터 경합을 방지하기 위해 잠금 상태에서 이벤트 훅의 스냅샷을 생성합니다. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **빌드 캐싱이 실제 프로젝트의 더 다양한 사례를 처리합니다.** 이제 따옴표로 감싸거나 이스케이프한 공백 때문에 Go 출력 캐시가 누락되지 않으며, 파일 손상을 방지하도록 동시 캐시 저장을 직렬화합니다. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **애셋 제공 과정에서 불필요한 작업이 줄었습니다.** 알려진 파일 확장자는 MIME 유형 감지를 건너뛰며, 디버그 로깅이 비활성화된 경우 더 이상 폐기될 메시지를 미리 준비하지 않습니다. 두 변경 사항 모두 요청 처리 경로의 작업량을 줄입니다. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **MSIX 패키징에서 바이너리 크기만 한 버퍼를 사용하지 않습니다.** 이제 실행 파일 전체를 메모리로 읽는 대신 패키지에 스트리밍합니다. 이전에는 대표적인 16 MiB 파일을 복사할 때 작업당 약 16.8 MB가 할당되었습니다. [#6472](https://github.com/wailsapp/wails/pull/6472)

@@ -26,10 +26,10 @@ Agora você pode compilar e fazer compilação cruzada de aplicações desktop s
 WAILS_PUREGO=1 wails3 build
 ```
 
-Ou usar o Go diretamente:
+Depois de compilar os assets do frontend, você também pode compilar diretamente com Go:
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 O backend do macOS usa AppKit e WebKit; o Linux é compatível com GTK4/WebKitGTK 6.0 e GTK3. Os usuários ainda precisam das bibliotecas nativas de runtime, e o empacotamento e a assinatura têm requisitos próprios. O CGo continua sendo o padrão enquanto coletamos feedback.
@@ -76,14 +76,14 @@ Compilação, empacotamento e assinatura têm requisitos diferentes. Veja o que 
 | Assinar aplicações Apple e DMGs com uma identidade exportada | ✓ | ✓ | ✓ | Identidade RSA PKCS#12 exportada; consulte a observação sobre validação abaixo |
 | Assinar pacotes DEB, RPM e Arch | ✓ | ✓ | ✓ | Chave OpenPGP exportada |
 | Enviar para notarização da Apple e anexar tíquetes | ✓ | ✓ | ✓ | Chave de API da equipe Apple e uma aplicação devidamente assinada |
-| Usar o `codesign` da Apple ou perfis das chaves | – | ✓ | – | macOS e a identidade de assinatura apropriada |
+| Usar o `codesign` da Apple ou perfis do Keychain | – | ✓ | – | macOS e a identidade de assinatura apropriada |
 @end
 
 As compilações com CGo ainda precisam de uma cadeia de ferramentas C. Hooks personalizados que modificam DMGs exigem macOS e `hdiutil`.
 
 ### Assinatura e notarização
 
-O Wake permite assinar pacotes para Windows, Apple e Linux, incluindo assinaturas ad hoc da Apple. A assinatura multiplataforma usa identidades exportadas; identidades do repositório de certificados e das chaves ainda exigem ferramentas nativas. Credenciais no nível do usuário mantêm as chaves privadas fora da configuração do projeto. A assinatura de AppImage e Void ainda não está incluída.
+O Wake permite assinar pacotes para Windows, Apple e Linux, incluindo assinaturas ad hoc da Apple. A assinatura multiplataforma usa identidades exportadas; identidades do repositório de certificados e do Keychain ainda exigem ferramentas nativas. Credenciais no nível do usuário mantêm as chaves privadas fora da configuração do projeto. A assinatura de AppImage e Void ainda não está incluída.
 
 A notarização da Apple funciona por meio do Go com uma chave de API da equipe. Testamos o envio e a anexação de tíquetes no Linux, e o Gatekeeper aceitou o resultado. Essa aplicação foi assinada usando o [`codesign`](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html) da Apple; ainda não verificamos se a Apple aceita as assinaturas de Developer ID geradas pelo Go do Wake.
 
@@ -97,7 +97,7 @@ A migração é compatível com todos os nove modelos integrados. Ela é unidire
 
 - **As janelas são posicionadas corretamente em telas com diferentes DPIs.** Os limites e as posições das telas agora são processados corretamente em configurações de macOS e Linux com diferentes escalas de exibição. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **A bandeja e a detecção de tema no Linux funcionam de forma mais confiável.** Ícones da bandeja criados após a inicialização da aplicação não são mais descartados, as dicas de ferramenta são preenchidas e a detecção do modo escuro lê a configuração de aparência do ambiente de desktop desde a inicialização.
-- **Os callbacks de eventos do Go mantêm sua ordem.** Os listeners são executados em série, na ordem de emissão, e um snapshot dos hooks de eventos é criado sob um lock para evitar uma condição de corrida de dados. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Os callbacks de eventos do Go mantêm a ordem para cada listener.** Cada listener é executado de forma serial na ordem de emissão; listeners diferentes podem ser executados simultaneamente, e emissões simultâneas não têm uma ordem definida. Os hooks de eventos são copiados sob um bloqueio para evitar uma condição de corrida de dados. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **O cache de compilação funciona com mais projetos reais.** Espaços entre aspas ou escapados não causam mais falhas de cache nas saídas do Go, e os salvamentos simultâneos no cache são serializados para evitar arquivos corrompidos. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **O fornecimento de ativos realiza menos trabalho desnecessário.** Extensões de arquivo conhecidas dispensam a detecção de MIME, e o registro de depuração desativado não prepara mais mensagens que seriam descartadas. Ambas as alterações reduzem o trabalho no caminho da requisição. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **O empacotamento MSIX evita buffers do tamanho dos binários.** Os executáveis são transmitidos para o pacote em vez de serem lidos integralmente na memória. Anteriormente, uma cópia representativa de 16 MiB alocava cerca de 16.8 MB por operação. [#6472](https://github.com/wailsapp/wails/pull/6472)

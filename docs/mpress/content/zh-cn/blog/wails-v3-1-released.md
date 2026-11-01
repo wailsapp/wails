@@ -26,10 +26,10 @@ Wails v3.1.0开启了每周功能发布，让你能够定期获得新功能。�
 WAILS_PUREGO=1 wails3 build
 ```
 
-也可以直接使用 Go：
+构建前端资源后，还可以直接使用 Go 构建：
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 macOS 后端使用 AppKit 和 WebKit；Linux 支持 GTK4/WebKitGTK 6.0和 GTK3。用户仍需安装原生运行时库，打包和签名也各有额外要求。在我们收集反馈期间，CGo 仍是默认选项。
@@ -97,7 +97,7 @@ Wake 支持 Windows、Apple 和 Linux 软件包签名，包括 Apple 临时签�
 
 - <strong>窗口现在能在混合 DPI 显示器上正确定位。</strong>在采用不同显示缩放比例的 macOS 和 Linux 配置中，屏幕边界和位置现在均能得到正确处理。[#6346](https://github.com/wailsapp/wails/pull/6346)
 - <strong>Linux 托盘和主题检测更加可靠。</strong>应用启动后创建的托盘不再丢失，工具提示会正确填充，深色模式检测也会从启动时起读取桌面的外观设置。
-- <strong>Go 事件回调会保持顺序。</strong>监听器按照事件发出顺序串行运行，并在锁的保护下创建事件钩子快照，以避免数据竞争。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Go 事件回调会为每个监听器保持顺序。** 每个监听器都按事件发出顺序串行运行；不同监听器可以并发运行，而并发发出的事件没有确定的顺序。事件钩子会在锁的保护下生成快照，以避免数据竞争。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)
 - <strong>构建缓存可处理更多实际项目。</strong>带引号或转义的空格不再导致 Go 输出缓存未命中，并发缓存保存操作也会串行执行，以防文件损坏。[#6495](https://github.com/wailsapp/wails/pull/6495)、[#6488](https://github.com/wailsapp/wails/pull/6488)
 - <strong>资源服务减少了不必要的工作。</strong>对于已知文件扩展名，不再探测 MIME 类型；禁用调试日志后，也不再预先生成最终会被丢弃的消息。两项变更都减少了请求处理路径上的工作量。[#6414](https://github.com/wailsapp/wails/pull/6414)、[#6420](https://github.com/wailsapp/wails/pull/6420)
 - <strong>MSIX 打包不再使用与二进制文件等大的缓冲区。</strong>可执行文件会以流式方式写入软件包，而不再整体读入内存。此前，复制一个具有代表性的16 MiB 文件，每次操作约会分配16.8 MB 内存。[#6472](https://github.com/wailsapp/wails/pull/6472)

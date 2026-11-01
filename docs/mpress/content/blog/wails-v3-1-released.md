@@ -26,10 +26,10 @@ You can now build and cross-compile desktop apps without a C compiler:
 WAILS_PUREGO=1 wails3 build
 ```
 
-Or use Go directly:
+After building your frontend assets, you can also build directly with Go:
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 The macOS backend uses AppKit and WebKit; Linux supports GTK4/WebKitGTK 6.0 and GTK3. Users still need native runtime libraries, and packaging and signing have separate requirements. CGo remains the default while we gather feedback.
@@ -97,7 +97,7 @@ Migration supports all nine built-in templates. It’s one-way: activating `wail
 
 - **Windows land where they should on mixed-DPI displays.** Screen bounds and positions are now handled correctly on macOS and Linux setups with different display scales. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **Linux tray and theme detection work more reliably.** Trays created after the app starts are no longer dropped, tooltips are populated, and dark-mode detection reads the desktop’s appearance setting from startup.
-- **Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are snapshotted under a lock to avoid a data race. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Go event callbacks keep their order per listener.** Each listener runs serially in emit order; different listeners can run concurrently, and concurrent emits have no defined order. Event hooks are snapshotted under a lock to avoid a data race. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **Build caching handles more real-world projects.** Quoted or escaped spaces no longer cause Go output cache misses, and concurrent cache saves are serialised to prevent corrupted files. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **Asset serving does less unnecessary work.** Known file extensions skip MIME sniffing, and disabled debug logging no longer prepares messages that will be discarded. Both changes reduce work on the request path. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **MSIX packaging avoids binary-sized buffers.** Executables are streamed into the package instead of being read entirely into memory. A representative 16 MiB copy previously allocated about 16.8 MB per operation. [#6472](https://github.com/wailsapp/wails/pull/6472)

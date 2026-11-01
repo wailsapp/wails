@@ -127,16 +127,16 @@
       "updatedAt": "2026-11-01T10:23:51Z"
     },
     "b0008-text-01": {
-      "sourceHash": "571d6f9f9e13de2d8eb5eb0803443674b139c6abf6264817a9e7048e4588d752",
-      "targetHash": "a2e807a48f0863ac6e8a8805381d947b315f2deac8c8570f3acc1da224d1ef86",
-      "machineHash": "a2e807a48f0863ac6e8a8805381d947b315f2deac8c8570f3acc1da224d1ef86",
-      "machineText": "Ou usar o Go diretamente:",
+      "sourceHash": "209cd8e6075c8f467fbf13ed8e1883fff74256993b613a678f5fe92ca57525ae",
+      "targetHash": "8bccf2c03c55c44e6ac6fd03c75a8b6b9c7a4f098e2c7f6dd63d429556c0d84e",
+      "machineHash": "8bccf2c03c55c44e6ac6fd03c75a8b6b9c7a4f098e2c7f6dd63d429556c0d84e",
+      "machineText": "Depois de compilar os assets do frontend, você também pode compilar diretamente com Go:",
       "status": "machine-translated",
-      "sourcePreview": "Or use Go directly:",
+      "sourcePreview": "After building your frontend assets, you can also build directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:23:51Z"
+      "updatedAt": "2026-11-01T11:06:23Z"
     },
     "b0009-text-01": {
       "sourceHash": "029ee21c0d0b9f8429ce9db7d6bc05e0b788d1d55333c1a3e236b76de8ef95c3",
@@ -296,10 +296,10 @@
     },
     "b0022-text-01": {
       "sourceHash": "b1b0c1409504ae23a07292ae265b05ed659e375acecf7a83e0cac9add5d710ed",
-      "targetHash": "7c31ec1887c59e7a86394397fb202d48df4906a02c5624aedcde71fcbe1c8ccd",
+      "targetHash": "8e1a2818c781ea99d6576d7b9a73981c65429e336a2f2bab4cdf1b98855f28c6",
       "machineHash": "7c31ec1887c59e7a86394397fb202d48df4906a02c5624aedcde71fcbe1c8ccd",
       "machineText": "| Operação | Host Windows | Host macOS | Host Linux | Requisitos |\n| Compilar aplicações desktop com purego | ✓ | ✓ | ✓ | Go e o backend experimental purego para destinos macOS/Linux |\n| Criar pacotes MSIX | ✓ | ✓ | ✓ | Aplicação compilada; o Windows SDK não é necessário |\n| Criar instaladores NSIS | ✓ | ✓ | ✓ | Aplicação compilada e `makensis` |\n| Criar aplicações macOS e DMGs | ✓ | ✓ | ✓ | Aplicação compilada; o Go cuida da criação do pacote |\n| Criar pacotes DEB, RPM, Arch e Void | ✓ | ✓ | ✓ | Aplicação compilada |\n| Criar AppImages | ✓ | ✓ | ✓ | Runtime AppImage do destino; árvore do runtime de GUI do Linux para empacotamento cruzado |\n| Assinar pacotes Windows com uma identidade exportada | ✓ | ✓ | ✓ | Certificado RSA PFX exportado e chave privada |\n| Assinar aplicações Apple e DMGs com uma identidade exportada | ✓ | ✓ | ✓ | Identidade RSA PKCS#12 exportada; consulte a observação sobre validação abaixo |\n| Assinar pacotes DEB, RPM e Arch | ✓ | ✓ | ✓ | Chave OpenPGP exportada |\n| Enviar para notarização da Apple e anexar tíquetes | ✓ | ✓ | ✓ | Chave de API da equipe Apple e uma aplicação devidamente assinada |\n| Usar o `codesign` da Apple ou perfis das chaves | – | ✓ | – | macOS e a identidade de assinatura apropriada |",
-      "status": "machine-translated",
+      "status": "manual",
       "sourcePreview": "| Operation | Windows host | macOS host | Linux host | What you need | | Compile desktop apps with p…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -332,10 +332,10 @@
     },
     "b0025-text-01": {
       "sourceHash": "e812ceef102e642adfe0f9916e5ad560c9b47441cd8879468432f919a452ffed",
-      "targetHash": "e7552e77c58bbdeff1fe784bee5716c0aada0d7597b375d275ea03dc9277fcaf",
+      "targetHash": "850dac7600af93ec59c5e6e307ddb3d61e03433c8b516fb409d9f12a2ae0470c",
       "machineHash": "e7552e77c58bbdeff1fe784bee5716c0aada0d7597b375d275ea03dc9277fcaf",
       "machineText": "O Wake permite assinar pacotes para Windows, Apple e Linux, incluindo assinaturas ad hoc da Apple. A assinatura multiplataforma usa identidades exportadas; identidades do repositório de certificados e das chaves ainda exigem ferramentas nativas. Credenciais no nível do usuário mantêm as chaves privadas fora da configuração do projeto. A assinatura de AppImage e Void ainda não está incluída.",
-      "status": "machine-translated",
+      "status": "manual",
       "sourcePreview": "Wake supports Windows, Apple and Linux package signing, including ad-hoc Apple signatures. Cross-pla…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -427,16 +427,16 @@
       "updatedAt": "2026-11-01T10:23:51Z"
     },
     "b0033-text-01": {
-      "sourceHash": "ac79aa8f8f7c5f694d80ae0a7374f552118abea0cb2b1c96316a5414f85c25b4",
-      "targetHash": "aa424e50c8dd6d14c7032dc13a39bd57f9024beb2774a4b509dae1f0500ff06b",
-      "machineHash": "aa424e50c8dd6d14c7032dc13a39bd57f9024beb2774a4b509dae1f0500ff06b",
-      "machineText": "**Os callbacks de eventos do Go mantêm sua ordem.** Os listeners são executados em série, na ordem de emissão, e um snapshot dos hooks de eventos é criado sob um lock para evitar uma condição de corrida de dados. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
+      "sourceHash": "a5a04a339a184e5904dcf6c3f0eb2e327ac5a61d8c7e13d902dc1dc13eaf465f",
+      "targetHash": "b5782a61534f6c1cfa9aa4320c3623796316e16d61a04a5a464d41055e46a7b4",
+      "machineHash": "b5782a61534f6c1cfa9aa4320c3623796316e16d61a04a5a464d41055e46a7b4",
+      "machineText": "**Os callbacks de eventos do Go mantêm a ordem para cada listener.** Cada listener é executado de forma serial na ordem de emissão; listeners diferentes podem ser executados simultaneamente, e emissões simultâneas não têm uma ordem definida. Os hooks de eventos são copiados sob um bloqueio para evitar uma condição de corrida de dados. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
       "status": "machine-translated",
-      "sourcePreview": "**Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are s…",
+      "sourcePreview": "**Go event callbacks keep their order per listener.** Each listener runs serially in emit order; dif…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:23:51Z"
+      "updatedAt": "2026-11-01T11:06:23Z"
     },
     "b0034-text-01": {
       "sourceHash": "e2aa55d4408658de01345ce2e27bc3d5b2ec2c5b29ec06a39b1675e2606f011a",

@@ -26,10 +26,10 @@ Du kannst Desktop-Anwendungen jetzt ohne C-Compiler bauen und kreuzkompilieren:
 WAILS_PUREGO=1 wails3 build
 ```
 
-Alternativ kannst du Go direkt verwenden:
+Nachdem Sie Ihre Frontend-Assets erstellt haben, können Sie auch direkt mit Go bauen:
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 Das macOS-Backend verwendet AppKit und WebKit; unter Linux werden GTK4/WebKitGTK 6.0 und GTK3 unterstützt. Benutzer benötigen weiterhin native Laufzeitbibliotheken, und für das Paketieren und Signieren gelten separate Anforderungen. CGo bleibt der Standard, während wir Feedback sammeln.
@@ -97,7 +97,7 @@ Die Migration unterstützt alle neun integrierten Vorlagen. Sie ist unumkehrbar:
 
 - **Fenster erscheinen auf Displays mit gemischten DPI-Werten an der richtigen Stelle.** Bildschirmgrenzen und Positionen werden jetzt auf macOS- und Linux-Systemen mit unterschiedlichen Anzeigeskalierungen korrekt verarbeitet. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **Linux-Infobereich und Theme-Erkennung funktionieren zuverlässiger.** Nach dem Anwendungsstart erstellte Symbole für den Infobereich gehen nicht mehr verloren, Tooltips werden befüllt und die Erkennung des Dunkelmodus liest die Darstellungseinstellung des Desktops bereits beim Start aus.
-- **Go-Event-Callbacks behalten ihre Reihenfolge bei.** Listener werden seriell in der Reihenfolge der Auslösung ausgeführt, und Event-Hooks werden unter einer Sperre als Momentaufnahme erfasst, um ein Datenrennen zu vermeiden. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Go-Event-Callbacks behalten für jeden Listener ihre Reihenfolge bei.** Jeder Listener wird seriell in der Reihenfolge der Auslösung ausgeführt; verschiedene Listener können gleichzeitig ausgeführt werden, und für gleichzeitige Auslösungen ist keine Reihenfolge festgelegt. Event-Hooks werden unter einer Sperre als Snapshot erfasst, um ein Datenrennen zu vermeiden. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **Der Build-Cache unterstützt mehr reale Projekte.** Leerzeichen in Anführungszeichen oder mit Escape-Zeichen führen nicht mehr zu Fehltreffern im Go-Ausgabe-Cache, und gleichzeitige Cache-Speichervorgänge werden serialisiert, um beschädigte Dateien zu verhindern. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **Die Asset-Bereitstellung führt weniger unnötige Arbeit aus.** Bei bekannten Dateiendungen wird die MIME-Erkennung übersprungen, und bei deaktivierter Debug-Protokollierung werden keine Nachrichten mehr vorbereitet, die anschließend verworfen würden. Beide Änderungen reduzieren den Arbeitsaufwand im Anfragepfad. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **Die MSIX-Paketierung vermeidet Puffer in der Größe der Binärdatei.** Ausführbare Dateien werden in das Paket gestreamt, statt vollständig in den Arbeitsspeicher eingelesen zu werden. Beim Kopieren einer repräsentativen Datei mit 16 MiB wurden zuvor etwa 16.8 MB pro Vorgang reserviert. [#6472](https://github.com/wailsapp/wails/pull/6472)

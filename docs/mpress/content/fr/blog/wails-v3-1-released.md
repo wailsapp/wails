@@ -26,10 +26,10 @@ Vous pouvez désormais compiler et effectuer une compilation croisée d’applic
 WAILS_PUREGO=1 wails3 build
 ```
 
-Vous pouvez aussi utiliser Go directement :
+Après avoir généré les ressources de votre frontend, vous pouvez également compiler directement avec Go :
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 Le backend macOS utilise AppKit et WebKit ; Linux prend en charge GTK4/WebKitGTK 6.0 et GTK3. Les utilisateurs ont toujours besoin des bibliothèques d’exécution natives, tandis que l’empaquetage et la signature ont leurs propres prérequis. CGo reste utilisé par défaut pendant que nous recueillons vos retours.
@@ -97,7 +97,7 @@ La migration prend en charge les neuf modèles intégrés. Elle est irréversibl
 
 - **Les fenêtres s’affichent au bon endroit sur les écrans à densités de pixels différentes.** Les limites et les positions des écrans sont désormais correctement gérées sur les configurations macOS et Linux dont les écrans utilisent des facteurs d’échelle différents. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **La zone de notification et la détection du thème fonctionnent plus fiablement sous Linux.** Les icônes de zone de notification créées après le démarrage de l’application ne sont plus ignorées, les infobulles sont renseignées et la détection du mode sombre lit dès le démarrage le paramètre d’apparence du bureau.
-- **Les fonctions de rappel d’événements Go conservent leur ordre.** Les écouteurs s’exécutent en série dans l’ordre d’émission, et un instantané des hooks d’événements est créé sous verrou afin d’éviter une concurrence d’accès aux données. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Les fonctions de rappel des événements Go conservent leur ordre pour chaque écouteur.** Chaque écouteur s’exécute séquentiellement dans l’ordre d’émission ; différents écouteurs peuvent s’exécuter simultanément, tandis que l’ordre des émissions simultanées n’est pas défini. Les hooks d’événement sont instantanés sous verrou afin d’éviter une situation de compétition sur les données. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **Le cache de compilation prend en charge davantage de projets réels.** Les espaces entre guillemets ou échappés n’entraînent plus d’échecs de correspondance dans le cache des sorties Go, et les enregistrements simultanés du cache sont sérialisés afin d’éviter la corruption des fichiers. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **Le service des ressources effectue moins de travail inutile.** La détection du type MIME est ignorée pour les extensions de fichiers connues, et lorsque la journalisation de débogage est désactivée, les messages destinés à être supprimés ne sont plus préparés. Ces deux changements réduisent le travail effectué sur le chemin de traitement des requêtes. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **L’empaquetage MSIX évite les tampons de la taille des fichiers binaires.** Les exécutables sont écrits dans le paquet sous forme de flux au lieu d’être entièrement chargés en mémoire. Auparavant, la copie d’un fichier représentatif de 16 Mio allouait environ 16.8 Mo par opération. [#6472](https://github.com/wailsapp/wails/pull/6472)

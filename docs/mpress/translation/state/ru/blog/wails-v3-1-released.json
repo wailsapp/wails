@@ -127,16 +127,16 @@
       "updatedAt": "2026-11-01T10:24:19Z"
     },
     "b0008-text-01": {
-      "sourceHash": "571d6f9f9e13de2d8eb5eb0803443674b139c6abf6264817a9e7048e4588d752",
-      "targetHash": "c6e23090799469d9cdc87a70582a40ced725da7a0283a3f16809290f8a86a5a9",
-      "machineHash": "c6e23090799469d9cdc87a70582a40ced725da7a0283a3f16809290f8a86a5a9",
-      "machineText": "Или использовать Go напрямую:",
+      "sourceHash": "209cd8e6075c8f467fbf13ed8e1883fff74256993b613a678f5fe92ca57525ae",
+      "targetHash": "cab27a880087651e6ef0c7d20662b3cba220c3e40bf8f33ee05dfe3df150d34c",
+      "machineHash": "cab27a880087651e6ef0c7d20662b3cba220c3e40bf8f33ee05dfe3df150d34c",
+      "machineText": "После сборки ресурсов фронтенда можно также выполнить сборку напрямую с помощью Go:",
       "status": "machine-translated",
-      "sourcePreview": "Or use Go directly:",
+      "sourcePreview": "After building your frontend assets, you can also build directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:19Z"
+      "updatedAt": "2026-11-01T11:06:28Z"
     },
     "b0009-text-01": {
       "sourceHash": "029ee21c0d0b9f8429ce9db7d6bc05e0b788d1d55333c1a3e236b76de8ef95c3",
@@ -427,16 +427,16 @@
       "updatedAt": "2026-11-01T10:24:19Z"
     },
     "b0033-text-01": {
-      "sourceHash": "ac79aa8f8f7c5f694d80ae0a7374f552118abea0cb2b1c96316a5414f85c25b4",
-      "targetHash": "7aa5ada318f74c5d33a1f4cc0b0b9b678c2ad9558b0f99701884896dd1a1a93b",
-      "machineHash": "7aa5ada318f74c5d33a1f4cc0b0b9b678c2ad9558b0f99701884896dd1a1a93b",
-      "machineText": "**Обратные вызовы событий Go сохраняют порядок.** Обработчики выполняются последовательно в порядке отправки событий, а снимок хуков событий создаётся под блокировкой, чтобы избежать гонки данных. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
+      "sourceHash": "a5a04a339a184e5904dcf6c3f0eb2e327ac5a61d8c7e13d902dc1dc13eaf465f",
+      "targetHash": "b69771a34e647423f141a2419883dc308686717272d8bde6e154894b5df199b1",
+      "machineHash": "b69771a34e647423f141a2419883dc308686717272d8bde6e154894b5df199b1",
+      "machineText": "**Обратные вызовы событий Go сохраняют порядок для каждого слушателя.** Каждый слушатель выполняет обратные вызовы последовательно в порядке генерации событий; разные слушатели могут работать параллельно, а порядок одновременно генерируемых событий не определён. Список обработчиков событий фиксируется под блокировкой, чтобы избежать гонки данных. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
       "status": "machine-translated",
-      "sourcePreview": "**Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are s…",
+      "sourcePreview": "**Go event callbacks keep their order per listener.** Each listener runs serially in emit order; dif…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:19Z"
+      "updatedAt": "2026-11-01T11:06:28Z"
     },
     "b0034-text-01": {
       "sourceHash": "e2aa55d4408658de01345ce2e27bc3d5b2ec2c5b29ec06a39b1675e2606f011a",

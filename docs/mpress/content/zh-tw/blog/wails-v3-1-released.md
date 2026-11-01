@@ -26,10 +26,10 @@ Purego 讓 Go 不必透過 CGo（Go 通常用來銜接 C 程式碼的橋樑）�
 WAILS_PUREGO=1 wails3 build
 ```
 
-或者直接使用 Go：
+建置前端資產後，你也可以直接使用 Go 建置：
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 macOS 後端使用 AppKit 與 WebKit；Linux 支援 GTK4/WebKitGTK 6.0 及 GTK3。使用者仍需安裝原生執行階段程式庫，而封裝與簽署也各有個別需求。在我們收集意見回饋期間，CGo 仍是預設選項。
@@ -97,7 +97,7 @@ Apple 公證可使用團隊 API 金鑰透過 Go 完成。我們已在 Linux 上�
 
 - **視窗會正確出現在混合 DPI 顯示器上。** 在顯示縮放比例不同的 macOS 與 Linux 設定中，現在能正確處理螢幕邊界及位置。[#6346](https://github.com/wailsapp/wails/pull/6346)
 - **Linux 系統匣與佈景主題偵測更加可靠。** 應用程式啟動後建立的系統匣不再被遺漏，工具提示也會正確填入內容，而且深色模式偵測會從啟動時起讀取桌面的外觀設定。
-- **Go 事件回呼會維持順序。** 接聽程式會依發出順序逐一執行，而事件掛鉤會在鎖定狀態下建立快照，以避免資料競爭。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Go 事件回呼會依各接聽器維持順序。** 每個接聽器都會依事件發出順序循序執行；不同的接聽器可以並行執行，而並行發出的事件則沒有明確定義的順序。事件掛鉤會在鎖定期間建立快照，以避免資料競爭。[#6275](https://github.com/wailsapp/wails/pull/6275)、[#6276](https://github.com/wailsapp/wails/pull/6276)
 - **建置快取能處理更多實際專案。** 加上引號或跳脫處理的空格不再造成 Go 輸出快取未命中，並行快取儲存也會循序執行，以防止檔案損毀。[#6495](https://github.com/wailsapp/wails/pull/6495)、[#6488](https://github.com/wailsapp/wails/pull/6488)
 - **提供資產時會減少不必要的工作。** 已知的副檔名會略過 MIME 探測，而停用偵錯記錄後，也不再準備最終會被捨棄的訊息。這兩項變更都能減少請求路徑上的工作量。[#6414](https://github.com/wailsapp/wails/pull/6414)、[#6420](https://github.com/wailsapp/wails/pull/6420)
 - **MSIX 封裝不再使用與二進位檔等大的緩衝區。** 可執行檔會以串流方式寫入套件，而不是完整讀入記憶體。先前複製一個具代表性的 16 MiB 檔案時，每次作業約會配置 16.8 MB。[#6472](https://github.com/wailsapp/wails/pull/6472)

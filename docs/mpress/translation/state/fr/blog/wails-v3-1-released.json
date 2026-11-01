@@ -127,16 +127,16 @@
       "updatedAt": "2026-11-01T10:23:33Z"
     },
     "b0008-text-01": {
-      "sourceHash": "571d6f9f9e13de2d8eb5eb0803443674b139c6abf6264817a9e7048e4588d752",
-      "targetHash": "4c60a6c801f517cf86558b15581cfe32aac0bd923bc2a56694a31b4132850b61",
-      "machineHash": "4c60a6c801f517cf86558b15581cfe32aac0bd923bc2a56694a31b4132850b61",
-      "machineText": "Vous pouvez aussi utiliser Go directement :",
+      "sourceHash": "209cd8e6075c8f467fbf13ed8e1883fff74256993b613a678f5fe92ca57525ae",
+      "targetHash": "4478a8fc4a2d9654f30bd53ecbb53f6ce68c5e779246882a9e20c7944392ba0e",
+      "machineHash": "4478a8fc4a2d9654f30bd53ecbb53f6ce68c5e779246882a9e20c7944392ba0e",
+      "machineText": "Après avoir généré les ressources de votre frontend, vous pouvez également compiler directement avec Go :",
       "status": "machine-translated",
-      "sourcePreview": "Or use Go directly:",
+      "sourcePreview": "After building your frontend assets, you can also build directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:23:33Z"
+      "updatedAt": "2026-11-01T11:06:25Z"
     },
     "b0009-text-01": {
       "sourceHash": "029ee21c0d0b9f8429ce9db7d6bc05e0b788d1d55333c1a3e236b76de8ef95c3",
@@ -427,16 +427,16 @@
       "updatedAt": "2026-11-01T10:23:33Z"
     },
     "b0033-text-01": {
-      "sourceHash": "ac79aa8f8f7c5f694d80ae0a7374f552118abea0cb2b1c96316a5414f85c25b4",
-      "targetHash": "895ac9c3fb9f318ecfe873be60121d4b6ce05b6c11eb5b2be3f5cdc3d0ecda79",
-      "machineHash": "895ac9c3fb9f318ecfe873be60121d4b6ce05b6c11eb5b2be3f5cdc3d0ecda79",
-      "machineText": "**Les fonctions de rappel d’événements Go conservent leur ordre.** Les écouteurs s’exécutent en série dans l’ordre d’émission, et un instantané des hooks d’événements est créé sous verrou afin d’éviter une concurrence d’accès aux données. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
+      "sourceHash": "a5a04a339a184e5904dcf6c3f0eb2e327ac5a61d8c7e13d902dc1dc13eaf465f",
+      "targetHash": "9278f207849a7fe7f1f8ad03b5debfb805a716afc66947101911febca1162f49",
+      "machineHash": "9278f207849a7fe7f1f8ad03b5debfb805a716afc66947101911febca1162f49",
+      "machineText": "**Les fonctions de rappel des événements Go conservent leur ordre pour chaque écouteur.** Chaque écouteur s’exécute séquentiellement dans l’ordre d’émission ; différents écouteurs peuvent s’exécuter simultanément, tandis que l’ordre des émissions simultanées n’est pas défini. Les hooks d’événement sont instantanés sous verrou afin d’éviter une situation de compétition sur les données. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
       "status": "machine-translated",
-      "sourcePreview": "**Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are s…",
+      "sourcePreview": "**Go event callbacks keep their order per listener.** Each listener runs serially in emit order; dif…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:23:33Z"
+      "updatedAt": "2026-11-01T11:06:25Z"
     },
     "b0034-text-01": {
       "sourceHash": "e2aa55d4408658de01345ce2e27bc3d5b2ec2c5b29ec06a39b1675e2606f011a",

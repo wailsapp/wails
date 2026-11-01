@@ -26,10 +26,10 @@ Kini Anda dapat membangun dan melakukan kompilasi silang aplikasi desktop tanpa 
 WAILS_PUREGO=1 wails3 build
 ```
 
-Atau gunakan Go secara langsung:
+Setelah membangun aset frontend, Anda juga dapat membangun secara langsung dengan Go:
 
 ```sh
-CGO_ENABLED=0 go build -tags purego .
+CGO_ENABLED=0 go build -tags purego,production .
 ```
 
 Backend macOS menggunakan AppKit dan WebKit; Linux mendukung GTK4/WebKitGTK 6.0 dan GTK3. Pengguna tetap memerlukan pustaka runtime native, sedangkan pengemasan dan penandatanganan memiliki persyaratan tersendiri. CGo tetap menjadi pilihan default selama kami mengumpulkan masukan.
@@ -97,7 +97,7 @@ Migrasi mendukung kesembilan templat bawaan. Proses ini satu arah: mengaktifkan 
 
 - **Jendela ditempatkan sebagaimana mestinya pada layar dengan DPI campuran.** Batas dan posisi layar kini ditangani dengan benar pada konfigurasi macOS dan Linux yang menggunakan skala tampilan berbeda. [#6346](https://github.com/wailsapp/wails/pull/6346)
 - **Baki sistem dan deteksi tema di Linux bekerja lebih andal.** Baki sistem yang dibuat setelah aplikasi dimulai tidak lagi diabaikan, tooltip kini terisi, dan deteksi mode gelap membaca pengaturan tampilan desktop sejak aplikasi dimulai.
-- **Callback peristiwa Go mempertahankan urutannya.** Listener dijalankan secara berurutan sesuai urutan emisi, dan snapshot hook peristiwa dibuat saat berada di bawah lock untuk menghindari data race. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
+- **Callback event Go mempertahankan urutannya untuk setiap listener.** Setiap listener berjalan secara serial sesuai urutan emit; listener yang berbeda dapat berjalan secara bersamaan, sedangkan emit yang dilakukan secara bersamaan tidak memiliki urutan yang ditentukan. Hook event disalin sebagai snapshot saat berada di bawah lock untuk menghindari data race. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)
 - **Cache build menangani lebih banyak proyek dunia nyata.** Spasi yang diapit tanda kutip atau di-escape tidak lagi menyebabkan cache miss pada output Go, dan penyimpanan cache secara bersamaan kini diserialkan untuk mencegah kerusakan berkas. [#6495](https://github.com/wailsapp/wails/pull/6495), [#6488](https://github.com/wailsapp/wails/pull/6488)
 - **Penyajian aset mengurangi pekerjaan yang tidak perlu.** Ekstensi berkas yang dikenali melewati deteksi MIME, dan pencatatan debug yang dinonaktifkan tidak lagi menyiapkan pesan yang nantinya dibuang. Kedua perubahan ini mengurangi pekerjaan pada jalur permintaan. [#6414](https://github.com/wailsapp/wails/pull/6414), [#6420](https://github.com/wailsapp/wails/pull/6420)
 - **Pengemasan MSIX menghindari buffer sebesar berkas biner.** Berkas executable dialirkan ke dalam paket, bukan dibaca seluruhnya ke memori. Sebelumnya, penyalinan representatif sebesar 16 MiB mengalokasikan sekitar 16.8 MB per operasi. [#6472](https://github.com/wailsapp/wails/pull/6472)

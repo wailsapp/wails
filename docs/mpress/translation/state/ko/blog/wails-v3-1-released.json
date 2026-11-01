@@ -127,16 +127,16 @@
       "updatedAt": "2026-11-01T10:24:40Z"
     },
     "b0008-text-01": {
-      "sourceHash": "571d6f9f9e13de2d8eb5eb0803443674b139c6abf6264817a9e7048e4588d752",
-      "targetHash": "92bb5a94d7886d74233942365b66b850c79349fed09a395eefba743d7b1436a0",
-      "machineHash": "92bb5a94d7886d74233942365b66b850c79349fed09a395eefba743d7b1436a0",
-      "machineText": "또는 Go를 직접 사용하세요.",
+      "sourceHash": "209cd8e6075c8f467fbf13ed8e1883fff74256993b613a678f5fe92ca57525ae",
+      "targetHash": "46ba6eaa177dbb796cdf61d3564bb14c1fdd9efbd0411c4d00e4ee07595eec0b",
+      "machineHash": "46ba6eaa177dbb796cdf61d3564bb14c1fdd9efbd0411c4d00e4ee07595eec0b",
+      "machineText": "프런트엔드 애셋을 빌드한 후에는 Go로 직접 빌드할 수도 있습니다.",
       "status": "machine-translated",
-      "sourcePreview": "Or use Go directly:",
+      "sourcePreview": "After building your frontend assets, you can also build directly with Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:40Z"
+      "updatedAt": "2026-11-01T11:06:29Z"
     },
     "b0009-text-01": {
       "sourceHash": "029ee21c0d0b9f8429ce9db7d6bc05e0b788d1d55333c1a3e236b76de8ef95c3",
@@ -427,16 +427,16 @@
       "updatedAt": "2026-11-01T10:24:40Z"
     },
     "b0033-text-01": {
-      "sourceHash": "ac79aa8f8f7c5f694d80ae0a7374f552118abea0cb2b1c96316a5414f85c25b4",
-      "targetHash": "05c84cac0447bbab832517a8a1fed3b249d0afdd0914510ca19710879141f089",
-      "machineHash": "05c84cac0447bbab832517a8a1fed3b249d0afdd0914510ca19710879141f089",
-      "machineText": "**Go 이벤트 콜백의 순서가 유지됩니다.** 리스너는 이벤트 발생 순서대로 직렬 실행되며, 데이터 경합을 방지하도록 잠금 상태에서 이벤트 훅의 스냅샷을 생성합니다. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
+      "sourceHash": "a5a04a339a184e5904dcf6c3f0eb2e327ac5a61d8c7e13d902dc1dc13eaf465f",
+      "targetHash": "28efe2a8d4891b5d6ff3d80e2c459720e8088f66da9b2f9a791ced602455f0dc",
+      "machineHash": "28efe2a8d4891b5d6ff3d80e2c459720e8088f66da9b2f9a791ced602455f0dc",
+      "machineText": "**Go 이벤트 콜백은 리스너별로 순서를 유지합니다.** 각 리스너는 이벤트가 발생한 순서대로 직렬 실행됩니다. 서로 다른 리스너는 동시에 실행될 수 있으며, 동시에 발생한 이벤트의 순서는 정의되지 않습니다. 데이터 경합을 방지하기 위해 잠금 상태에서 이벤트 훅의 스냅샷을 생성합니다. [#6275](https://github.com/wailsapp/wails/pull/6275), [#6276](https://github.com/wailsapp/wails/pull/6276)",
       "status": "machine-translated",
-      "sourcePreview": "**Go event callbacks keep their order.** Listeners run serially in emit order, and event hooks are s…",
+      "sourcePreview": "**Go event callbacks keep their order per listener.** Each listener runs serially in emit order; dif…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-01T10:24:40Z"
+      "updatedAt": "2026-11-01T11:06:29Z"
     },
     "b0034-text-01": {
       "sourceHash": "e2aa55d4408658de01345ce2e27bc3d5b2ec2c5b29ec06a39b1675e2606f011a",
