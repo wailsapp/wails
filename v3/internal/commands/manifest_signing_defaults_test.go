@@ -240,3 +240,46 @@ func TestGlobalSigningDefaultsFollowCompleteProfileIntent(t *testing.T) {
 		t.Fatal("anonymous sign omitted signer")
 	}
 }
+
+func TestGlobalSigningDoesNotReadUnusedNotarizationKey(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("PATH", t.TempDir())
+	root := t.TempDir()
+	keyPath := filepath.Join(t.TempDir(), "fixture.p12")
+	for path, fixture := range map[string]string{keyPath: "../codesignature/testdata/modern.pfx", filepath.Join(root, "program"): "../applesign/testdata/arm64.macho"} {
+		data, err := os.ReadFile(fixture)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, data, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	global := defaults.Default()
+	global.Signing.Darwin.P12Path = keyPath
+	global.Signing.Darwin.APIKeyPath = filepath.Join(t.TempDir(), "not-needed.p8")
+	global.Signing.Darwin.APIKeyID = "unused-key-id"
+	global.Signing.Darwin.APIIssuerID = "unused-issuer"
+	if err := defaults.Save(global); err != nil {
+		t.Fatal(err)
+	}
+	config := manifest.Config{Root: root}
+	config.Signing.Darwin.Credential = "APPLE_TEST_PASSWORD"
+	resolved, err := signingconfig.ApplyDefaults(config, "darwin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := &manifestHandler{root: root, environment: []string{"APPLE_TEST_PASSWORD=fixture-only"}}
+	if _, err := handler.sign(t.Context(), pipeline.SignSpec{TargetOS: "darwin", Format: "binary", Input: "program", Config: resolved.Signing.Darwin}); err != nil {
+		t.Fatal("sign-only operation used unrelated notarization defaults", err)
+	}
+	assertAppleSignedArtifact(t, filepath.Join(root, "program.signed"))
+	config.Selected = manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "darwin/arm64", Sign: true, Notarize: true}}}
+	resolved, err = signingconfig.ApplyDefaults(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resolved.Signing.Darwin.NotarizationKey != global.Signing.Darwin.APIKeyPath {
+		t.Fatal("notarized profile lost global API key")
+	}
+}

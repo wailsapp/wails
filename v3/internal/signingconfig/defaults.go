@@ -74,7 +74,11 @@ func apply(config manifest.Config, requested map[string]bool, global defaults.Si
 			if err := fillPath(&signing.Entitlements, &signing.GlobalPaths.Entitlements, global.Darwin.Entitlements); err != nil {
 				return config, err
 			}
-			if signing.NotarizationCredential == "" && signing.NotarizationKey == "" && signing.NotarizationKeyID == "" && signing.NotarizationIssuerID == "" {
+			notarize := signing.Notarize
+			for _, target := range config.Selected.Targets {
+				notarize = notarize || (strings.HasPrefix(target.Target, "darwin/") && target.Notarize)
+			}
+			if notarize && signing.NotarizationCredential == "" && signing.NotarizationKey == "" && signing.NotarizationKeyID == "" && signing.NotarizationIssuerID == "" {
 				signing.NotarizationCredential = global.Darwin.KeychainProfile
 				if signing.NotarizationCredential == "" {
 					if err := fillPath(&signing.NotarizationKey, &signing.GlobalPaths.NotarizationKey, global.Darwin.APIKeyPath); err != nil {
