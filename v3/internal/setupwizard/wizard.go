@@ -226,7 +226,6 @@ type WizardState struct {
 
 // Wizard is the setup wizard server
 type Wizard struct {
-	wakeMu          sync.Mutex
 	server          *http.Server
 	origin          string
 	state           WizardState

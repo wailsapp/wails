@@ -6,11 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
-	"runtime"
-	"slices"
-	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/wake/buildinfo"
@@ -63,125 +58,31 @@ func wakeSetupCommand(c WakeSetupConfig) string {
 	return command
 }
 
-func wakeSetupProject() (string, *manifest.Loaded, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", nil, err
-	}
-	root, _, err := manifest.Discover(cwd)
-	if err == nil {
-		loaded, err := manifest.Load(root, "")
-		return root, loaded, err
-	}
-	if !errors.Is(err, manifest.ErrNotFound) {
-		return cwd, nil, err
-	}
-	root = cwd
-	for dir := cwd; ; dir = filepath.Dir(dir) {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			root = dir
-			break
-		}
-		if filepath.Dir(dir) == dir {
-			break
-		}
-	}
-	for _, name := range []string{manifest.Filename, "Taskfile.yml", "Taskfile.yaml", "taskfile.yml", "taskfile.yaml"} {
-		if _, err := os.Lstat(filepath.Join(root, name)); err == nil {
-			return root, nil, fmt.Errorf("%s already exists; review wails3 migrate before activating Wake setup", name)
-		} else if !errors.Is(err, os.ErrNotExist) {
-			return root, nil, err
-		}
-	}
-	return root, nil, nil
-}
-
-func wakeSetupDefaults(root string, loaded *manifest.Loaded) WakeSetupConfig {
-	c := WakeSetupConfig{ApplicationType: "gui", Backend: "cgo", Targets: []WakeSetupTarget{{OS: runtime.GOOS, Arch: runtime.GOARCH, Formats: []string{}}}}
-	if loaded == nil {
-		defaults, _ := LoadGlobalDefaults()
-		name := filepath.Base(root)
-		metadata := ProjectConfigState{Info: ProjectMetadataState{ProjectName: name, ProductName: name, ProductIdentifier: defaults.GenerateProductIdentifier(name), Version: defaults.Project.DefaultVersion, CompanyName: defaults.Author.Company, Description: defaults.GenerateDescription(name), Copyright: defaults.GenerateCopyright()}, Bindings: &BindingState{TypeScript: true, Interfaces: defaults.Project.UseInterfaces}}
-		if metadata.Info.Version == "" {
-			metadata.Info.Version = "0.1.0"
-		}
-		c.Project = &metadata
-		return c
-	}
-	config := loaded.Config
-	c.ApplicationType = config.Project.Kind
-	if c.ApplicationType == "" {
-		c.ApplicationType = "gui"
-	}
-	if slices.Contains(config.Build.Go.Tags, "purego") || config.Build.Environment["CGO_ENABLED"] == "0" {
-		c.Backend = "purego"
-		c.ExperimentalPureGo = true
-	}
-	metadata := projectConfigStateFromConfig(config)
-	c.Project = &metadata
-	if profile, ok := config.Profiles["setup"]; ok {
-		c.Targets = nil
-		for _, target := range profile.Targets {
-			platform, arch, _ := strings.Cut(target.Target, "/")
-			c.Targets = append(c.Targets, WakeSetupTarget{platform, arch, append([]string{}, target.Formats...), target.Destination})
-			c.Sign = c.Sign || target.Sign
-		}
-	}
-	return c
-}
-
 func (w *Wizard) handleWakeSetup(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
-	if r.Method == http.MethodGet {
-		response := wakeSetupResponse{Enabled: features.WakeEnabled(), HostOS: runtime.GOOS, HostArch: runtime.GOARCH, Catalog: []wakeSetupCatalogEntry{}}
-		if response.Enabled {
-			root, loaded, err := wakeSetupProject()
-			response.ProjectRoot = root
-			response.Config = wakeSetupDefaults(root, loaded)
-			if loaded != nil && err == nil {
-				backend, backendErr := wakeExistingBackend(loaded.Config, response.Config.Targets)
-				if backendErr != nil {
-					err = backendErr
-				} else {
-					response.Config.Backend = backend
-					response.Config.ExperimentalPureGo = backend == "purego"
-				}
-			}
-			if loaded != nil {
-				response.ManifestPath = loaded.Path
-			}
-			if err != nil {
-				response.Error = err.Error()
-			}
-			for _, capability := range buildinfo.TargetCapabilities() {
-				entry := wakeSetupCatalogEntry{OS: capability.Target.OS, Arch: capability.Target.Arch, Formats: []string{}, Experimental: capability.Target.OS == "ios" || capability.Target.OS == "android"}
-				for _, format := range buildinfo.FormatCapabilities() {
-					if capability.SupportsFormat(format.Name, false) {
-						entry.Formats = append(entry.Formats, format.Name)
-					}
-				}
-				response.Catalog = append(response.Catalog, entry)
+	if r.Method != http.MethodGet {
+		http.Error(rw, "Project build choices are saved by wails3 init -ui", http.StatusForbidden)
+		return
+	}
+	if w.initData == nil || !features.WakeEnabled() {
+		_ = json.NewEncoder(rw).Encode(wakeSetupResponse{Catalog: []wakeSetupCatalogEntry{}})
+		return
+	}
+	_ = json.NewEncoder(rw).Encode(w.initData.WakeSetup)
+}
+
+func wakeSetupCatalog() []wakeSetupCatalogEntry {
+	catalog := []wakeSetupCatalogEntry{}
+	for _, capability := range buildinfo.TargetCapabilities() {
+		entry := wakeSetupCatalogEntry{OS: capability.Target.OS, Arch: capability.Target.Arch, Formats: []string{}, Experimental: capability.Target.OS == "ios" || capability.Target.OS == "android"}
+		for _, format := range buildinfo.FormatCapabilities() {
+			if capability.SupportsFormat(format.Name, false) {
+				entry.Formats = append(entry.Formats, format.Name)
 			}
 		}
-		_ = json.NewEncoder(rw).Encode(response)
-		return
+		catalog = append(catalog, entry)
 	}
-	var config WakeSetupConfig
-	if !w.decodeWakeSetup(rw, r, &config) {
-		return
-	}
-	w.wakeMu.Lock()
-	defer w.wakeMu.Unlock()
-	root, initial, state, _, err := prepareWakeSetup(config)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err := manifest.WriteSetup(root, initial, state); err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-	_ = json.NewEncoder(rw).Encode(map[string]any{"path": filepath.Join(root, manifest.Filename), "config": config, "command": wakeSetupCommand(config)})
+	return catalog
 }
 
 func (w *Wizard) decodeWakeSetup(rw http.ResponseWriter, r *http.Request, config *WakeSetupConfig) bool {
@@ -189,8 +90,8 @@ func (w *Wizard) decodeWakeSetup(rw http.ResponseWriter, r *http.Request, config
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 		return false
 	}
-	if !features.WakeEnabled() {
-		http.Error(rw, "Wake setup requires WAILS_EXP_USE_WAKE", http.StatusForbidden)
+	if w.initData == nil || !features.WakeEnabled() {
+		http.Error(rw, "Wake project choices require wails3 init -ui with WAILS_EXP_USE_WAKE", http.StatusForbidden)
 		return false
 	}
 	if !w.isWizardOrigin(r) {
@@ -211,11 +112,7 @@ func (w *Wizard) decodeWakeSetup(rw http.ResponseWriter, r *http.Request, config
 	return true
 }
 
-func prepareWakeSetup(c WakeSetupConfig) (string, *manifest.InitialState, manifest.SetupState, manifest.Config, error) {
-	root, loaded, err := wakeSetupProject()
-	if err != nil {
-		return root, nil, manifest.SetupState{}, manifest.Config{}, err
-	}
+func prepareWakeSetupAt(c WakeSetupConfig, root string, loaded *manifest.Loaded) (string, *manifest.InitialState, manifest.SetupState, manifest.Config, error) {
 	if c.Backend != "cgo" && c.Backend != "purego" {
 		return root, nil, manifest.SetupState{}, manifest.Config{}, errors.New("backend must be cgo or purego")
 	}
@@ -300,49 +197,4 @@ func wakeSigningPlatform(s manifest.Signing, platform string) manifest.SigningPl
 	default:
 		return s.Android
 	}
-}
-
-func wakeExistingBackend(config manifest.Config, targets []WakeSetupTarget) (string, error) {
-	modes := map[string]bool{}
-	platforms := map[string]manifest.Platform{"windows": config.Targets.Windows, "darwin": config.Targets.Darwin, "linux": config.Targets.Linux, "ios": config.Targets.IOS, "android": config.Targets.Android}
-	for _, target := range targets {
-		platform := platforms[target.OS]
-		var settings manifest.Target
-		switch target.Arch {
-		case "amd64":
-			settings = platform.AMD64
-		case "arm64":
-			settings = platform.ARM64
-		case "universal":
-			settings = platform.Universal
-		}
-		environment := config.Build.Environment
-		if settings.Environment != nil {
-			environment = settings.Environment
-		}
-		mode := environment["CGO_ENABLED"]
-		if mode != "" && mode != "0" && mode != "1" {
-			return "", fmt.Errorf("target %s/%s has invalid CGO_ENABLED", target.OS, target.Arch)
-		}
-		pureGo := slices.Contains(config.Build.Go.Tags, "purego") || slices.Contains(settings.Tags, "purego")
-		if pureGo && mode == "1" {
-			return "", fmt.Errorf("target %s/%s combines purego with CGO_ENABLED=1; resolve this backend conflict in YAML", target.OS, target.Arch)
-		}
-		gui := config.Project.Kind == "" || config.Project.Kind == "gui"
-		if mode == "0" && gui && (target.OS == "linux" || target.OS == "darwin") {
-			pureGo = true
-		}
-		backend := "cgo"
-		if pureGo {
-			backend = "purego"
-		}
-		modes[backend] = true
-	}
-	if len(modes) > 1 {
-		return "", errors.New("selected targets use mixed standard and experimental pure Go backends; configure a single backend in YAML before using setup")
-	}
-	if modes["purego"] {
-		return "purego", nil
-	}
-	return "cgo", nil
 }

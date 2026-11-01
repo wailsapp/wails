@@ -121,7 +121,7 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 // global defaults + the available templates, and writes the user's choices back
 // into options. options.ProjectName is left empty if the user closes the wizard
 // without creating.
-func runInitWizard(options *flags.Init) error {
+func runInitWizard(options *flags.Init) (*setupwizard.WakeSetupConfig, error) {
 	globalDefaults, err := defaults.Load()
 	if err != nil {
 		// Don't apply on a load failure — that could reset fields (e.g. flip
@@ -140,7 +140,7 @@ func runInitWizard(options *flags.Init) error {
 
 	var initTemplates []setupwizard.InitTemplate
 	for _, t := range templates.GetDefaultTemplates() {
-		initTemplates = append(initTemplates, setupwizard.InitTemplate{Name: t.Name, Description: t.Description})
+		initTemplates = append(initTemplates, setupwizard.InitTemplate{Name: t.Name, Description: t.Description, TypeScript: templates.IsTypescript(t.Name)})
 	}
 
 	defaultTemplate := globalDefaults.GetTemplateName()
@@ -176,12 +176,12 @@ func runInitWizard(options *flags.Init) error {
 
 	result, err := setupwizard.NewInitWizard(data).RunInit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if result == nil {
 		// User closed the wizard without creating; signal via empty name.
 		options.ProjectName = ""
-		return nil
+		return nil, nil
 	}
 
 	options.ProjectName = result.ProjectName
@@ -194,10 +194,14 @@ func runInitWizard(options *flags.Init) error {
 	options.ProductCopyright = result.ProductCopyright
 	options.ProductComments = result.ProductComments
 	options.UseInterfaces = result.UseInterfaces
-	return nil
+	return result.Wake, nil
 }
 
 func Init(options *flags.Init) error {
+	return initWithWizard(options, runInitWizard)
+}
+
+func initWithWizard(options *flags.Init, runWizard func(*flags.Init) (*setupwizard.WakeSetupConfig, error)) error {
 	if options.List {
 		term.Header("Available templates")
 		return printTemplates()
@@ -211,8 +215,11 @@ func Init(options *flags.Init) error {
 	// Interactive UI: collect the project name, template and config values in the
 	// browser wizard, then fall through to the normal scaffolding below. Runs
 	// before the project-name check because the wizard is where the name is set.
+	var wakeConfig *setupwizard.WakeSetupConfig
 	if options.UI {
-		if err := runInitWizard(options); err != nil {
+		var err error
+		wakeConfig, err = runWizard(options)
+		if err != nil {
 			return err
 		}
 		if options.ProjectName == "" {
@@ -275,6 +282,12 @@ func Init(options *flags.Init) error {
 	// neither file receive the new minimal manifest.
 	if err := initialiseTemplateBuildManifest(options); err != nil {
 		return err
+	}
+	if wakeConfig != nil {
+		if err := setupwizard.ApplyWakeInit(options.ProjectDir, *wakeConfig); err != nil {
+			return err
+		}
+		fmt.Println("Build profile saved. Run: wails3 build setup")
 	}
 
 	// Initialize git repository if URL is provided

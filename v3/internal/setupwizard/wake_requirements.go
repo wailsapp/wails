@@ -27,7 +27,10 @@ func (w *Wizard) handleWakeRequirements(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 	response := wakeRequirementsResponse{Requirements: []DependencyStatus{}, Errors: []string{}, Warnings: []string{}, Command: wakeSetupCommand(selected)}
-	_, _, _, config, err := prepareWakeSetup(selected)
+	previewRoot, _, _, config, err := w.prepareInitWake(selected)
+	if previewRoot != "" {
+		defer os.RemoveAll(previewRoot)
+	}
 	if err == nil {
 		config, err = signingconfig.ApplyDefaults(config)
 	}
