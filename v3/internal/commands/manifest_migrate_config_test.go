@@ -196,3 +196,44 @@ func TestLegacyMigrationMissingOutputDoesNotGuessCustomConfiguration(t *testing.
 		})
 	}
 }
+
+func TestLegacyMigrationDevRoles(t *testing.T) {
+	for _, test := range []struct {
+		command string
+		roles   []string
+	}{
+		{"go mod tidy", []string{"blocking"}},
+		{"wails3 build DEV=true", []string{"blocking"}},
+		{"wails3 task build", []string{"blocking"}},
+		{"wails3 task common:install:frontend:deps", []string{"once", "blocking"}},
+		{"wails3 task common:dev:frontend", []string{"background"}},
+		{"wails3 task run", []string{"primary"}},
+	} {
+		for _, role := range []string{"", "blocking", "once", "background", "primary", "custom"} {
+			t.Run(test.command+"/"+role, func(t *testing.T) {
+				root := t.TempDir()
+				raw := []byte("dev_mode:\n  executes:\n    - cmd: " + test.command + "\n      type: " + role + "\n")
+				writeMigrationConfigFixture(t, root, "build/config.yml", raw)
+				report := MigrationReport{Complete: true, Sources: map[string]string{}}
+				doc := manifest.NewDocument(manifest.Project{Name: "app"})
+				if err := applyLegacyBuildConfiguration(root, &report, &doc); err != nil {
+					t.Fatal(err)
+				}
+				supported := false
+				for _, expected := range test.roles {
+					supported = supported || role == expected
+				}
+				if report.Complete != supported {
+					t.Fatalf("command %q role %q: complete=%v diagnostics=%+v", test.command, role, report.Complete, report.Diagnostics)
+				}
+				if !supported && (len(report.Diagnostics) != 1 || report.Diagnostics[0].Code != "unsupported-dev-role") {
+					t.Fatalf("unexpected diagnostics: %+v", report.Diagnostics)
+				}
+				after, err := os.ReadFile(filepath.Join(root, "build/config.yml"))
+				if err != nil || string(after) != string(raw) {
+					t.Fatalf("source changed: %v", err)
+				}
+			})
+		}
+	}
+}

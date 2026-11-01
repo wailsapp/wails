@@ -151,6 +151,8 @@ func applyLegacyBuildConfiguration(root string, report *MigrationReport, doc *ma
 		}
 		if !legacyDevCommand(execute.Command) {
 			blockMigration(report, "unsupported-dev-command", "build/config.yml", "", "dev command is not representable in config-only YAML; keep using Taskfiles: "+execute.Command)
+		} else if !legacyDevRole(execute.Command, execute.Type) {
+			blockMigration(report, "unsupported-dev-role", "build/config.yml", "", fmt.Sprintf("dev command %q with type %q does not match Wake's lifecycle", execute.Command, execute.Type))
 		}
 	}
 	for _, association := range legacy.FileAssociations {
@@ -160,6 +162,20 @@ func applyLegacyBuildConfiguration(root string, report *MigrationReport, doc *ma
 		doc.Protocols = append(doc.Protocols, manifest.Protocol{Scheme: protocol.Scheme, Description: protocol.Description})
 	}
 	return nil
+}
+
+func legacyDevRole(command, role string) bool {
+	switch strings.TrimSpace(command) {
+	case "go mod tidy", "wails3 build DEV=true", "wails3 task build":
+		return role == "blocking"
+	case "wails3 task common:install:frontend:deps":
+		return role == "once" || role == "blocking"
+	case "wails3 task common:dev:frontend":
+		return role == "background"
+	case "wails3 task run":
+		return role == "primary"
+	}
+	return false
 }
 
 func applyLegacyFrontendConfiguration(root, taskPackageManager string, report *MigrationReport, doc *manifest.Document) error {
