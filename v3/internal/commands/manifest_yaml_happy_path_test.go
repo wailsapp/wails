@@ -1282,6 +1282,9 @@ printf binary > "$output"
 			t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("GO_LOG", log)
 			t.Setenv("CGO_ENABLED", "")
+			t.Setenv("CGO_CFLAGS", "")
+			t.Setenv("CGO_LDFLAGS", "")
+			t.Setenv("MACOSX_DEPLOYMENT_TARGET", "")
 
 			_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), node)
 			require.NoError(t, err)

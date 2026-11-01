@@ -24,6 +24,7 @@ func TestExperimentalTemplateInstallsWithLegacyTaskfilesWhenDisabled(t *testing.
 				require.NoError(t, os.WriteFile(filepath.Join(template, "Taskfile.yaml"), []byte("version: '3'\n# keep custom tasks\n"), 0644))
 			}
 			options := &flags.Init{TemplateName: template, ProjectName: "portable", ProjectDir: t.TempDir(), ModulePath: "example.com/portable", SkipGoModTidy: true}
+			t.Cleanup(func() { require.NoError(t, os.Chdir(root)) })
 			require.NoError(t, Install(options))
 			dir := options.ProjectDir
 			if custom {

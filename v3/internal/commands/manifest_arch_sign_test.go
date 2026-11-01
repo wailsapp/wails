@@ -22,28 +22,8 @@ func TestArchSignaturePipelineWithIndependentGPGVerification(t *testing.T) {
 	t.Setenv("GOFLAGS", "-buildvcs=false")
 	t.Setenv("ARCH_TEST_PASSWORD", "test-only-arch-passphrase")
 	privateKey, publicKey := filepath.Join(root, "signing.asc"), filepath.Join(root, "public.asc")
-	keyHome := t.TempDir()
-	if err := os.Chmod(keyHome, 0700); err != nil {
+	if err := generatePGPKeyForSetup("Wake signing fixture", "fixture@example.invalid", "test-only-arch-passphrase", privateKey, publicKey); err != nil {
 		t.Fatal(err)
-	}
-	if gpgconf, err := exec.LookPath("gpgconf"); err == nil {
-		t.Cleanup(func() { exec.Command(gpgconf, "--homedir", keyHome, "--kill", "gpg-agent").Run() })
-	}
-	keyCommand := func(args ...string) []byte {
-		t.Helper()
-		command := append([]string{"--batch", "--pinentry-mode", "loopback", "--passphrase", "test-only-arch-passphrase", "--homedir", keyHome}, args...)
-		output, err := exec.Command(gpg, command...).CombinedOutput()
-		if err != nil {
-			t.Fatalf("fixture key command: %s, %v", output, err)
-		}
-		return output
-	}
-	keyCommand("--quick-generate-key", "Wake signing fixture <fixture@example.invalid>", "rsa2048", "sign", "0")
-	for path, mode := range map[string]string{privateKey: "--export-secret-keys", publicKey: "--export"} {
-		key := keyCommand("--armor", mode, "fixture@example.invalid")
-		if err := os.WriteFile(path, key, 0600); err != nil {
-			t.Fatal(err)
-		}
 	}
 	manifestPath := filepath.Join(root, "wails.yaml")
 	data, err := os.ReadFile(manifestPath)

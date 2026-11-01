@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
@@ -45,7 +46,7 @@ func TestAssociatedPublicationRollsBackBothFilesAfterSecondRenameFails(t *testin
 					t.Fatalf("%s: %q, %v", file, data, err)
 				}
 				info, err := os.Stat(path)
-				if err != nil || info.Mode().Perm() != 0640 {
+				if err != nil || (runtime.GOOS != "windows" && info.Mode().Perm() != 0640) {
 					t.Fatalf("%s permissions: %v, %v", file, info, err)
 				}
 			}

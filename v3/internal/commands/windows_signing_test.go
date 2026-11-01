@@ -20,7 +20,10 @@ import (
 
 func commandSigningFixture(t *testing.T) (string, string) {
 	t.Helper()
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	cert, err := os.ReadFile("../codesignature/testdata/modern.pfx")
 	if err != nil {
 		t.Fatal(err)
