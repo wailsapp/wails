@@ -144,7 +144,9 @@ func BenchmarkCopyReplacement(b *testing.B) {
 			root := b.TempDir()
 			source := filepath.Join(root, "source")
 			destination := filepath.Join(root, "destination")
-			require.NoError(b, os.WriteFile(source, bytes.Repeat([]byte{0xa5}, size), 0o755))
+			if err := os.WriteFile(source, bytes.Repeat([]byte{0xa5}, size), 0o755); err != nil {
+				b.Fatal(err)
+			}
 			b.ReportAllocs()
 			b.SetBytes(int64(size))
 			b.ResetTimer()
@@ -161,8 +163,12 @@ func BenchmarkCopyReplacement(b *testing.B) {
 		destination := filepath.Join(root, "destination")
 		for index := range 500 {
 			path := filepath.Join(source, fmt.Sprintf("dir-%02d", index%20), fmt.Sprintf("file-%03d", index))
-			require.NoError(b, os.MkdirAll(filepath.Dir(path), 0o755))
-			require.NoError(b, os.WriteFile(path, bytes.Repeat([]byte{byte(index)}, 1024), 0o644))
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				b.Fatal(err)
+			}
+			if err := os.WriteFile(path, bytes.Repeat([]byte{byte(index)}, 1024), 0o644); err != nil {
+				b.Fatal(err)
+			}
 		}
 		b.ReportAllocs()
 		b.ResetTimer()

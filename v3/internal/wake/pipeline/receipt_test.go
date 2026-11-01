@@ -378,11 +378,15 @@ func (entry receiptDirEntry) Info() (fs.FileInfo, error) { return nil, entry.inf
 
 func BenchmarkWriteArtifactReceipt(b *testing.B) {
 	root := b.TempDir()
-	require.NoError(b, os.MkdirAll(filepath.Join(root, "bin"), 0o755))
+	if err := os.MkdirAll(filepath.Join(root, "bin"), 0o755); err != nil {
+		b.Fatal(err)
+	}
 	artifacts := make([]ArtifactReference, 100)
 	for index := range artifacts {
 		path := filepath.ToSlash(filepath.Join("bin", fmt.Sprintf("artifact-%03d", index)))
-		require.NoError(b, os.WriteFile(filepath.Join(root, filepath.FromSlash(path)), bytes.Repeat([]byte{byte(index)}, 4096), 0o644))
+		if err := os.WriteFile(filepath.Join(root, filepath.FromSlash(path)), bytes.Repeat([]byte{byte(index)}, 4096), 0o644); err != nil {
+			b.Fatal(err)
+		}
 		artifacts[index] = ArtifactReference{Key: NodeKey(fmt.Sprintf("target:%03d", index)), Path: path, Identity: ArtifactIdentity{Kind: ArtifactBinary, Target: Target{OS: "linux", Arch: "amd64"}}}
 	}
 	b.ReportAllocs()

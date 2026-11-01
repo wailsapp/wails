@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 func BenchmarkSharedSemanticAndContentSnapshot(b *testing.B) {
@@ -16,24 +14,38 @@ func BenchmarkSharedSemanticAndContentSnapshot(b *testing.B) {
 	stableTime := time.Now().Add(-metadataFastPathWindow - time.Second)
 	for packageIndex := range 100 {
 		directory := filepath.Join(root, fmt.Sprintf("package-%03d", packageIndex))
-		require.NoError(b, os.MkdirAll(directory, 0o755))
+		if err := os.MkdirAll(directory, 0o755); err != nil {
+			b.Fatal(err)
+		}
 		for fileIndex := range 10 {
 			path := filepath.Join(directory, fmt.Sprintf("source-%02d.go", fileIndex))
 			source := fmt.Appendf(nil, "package package%03d\n\nfunc value%02d() int { return %d }\n", packageIndex, fileIndex, fileIndex)
-			require.NoError(b, os.WriteFile(path, source, 0o644))
-			require.NoError(b, os.Chtimes(path, stableTime, stableTime))
+			if err := os.WriteFile(path, source, 0o644); err != nil {
+				b.Fatal(err)
+			}
+			if err := os.Chtimes(path, stableTime, stableTime); err != nil {
+				b.Fatal(err)
+			}
 		}
 	}
 	store, err := OpenCache(root)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	store.BeginObservationSession()
 	options := SnapshotOptions{Label: "local-source", Root: root, IncludeNames: []string{"go.mod", "go.sum"}, IncludeExtensions: []string{".go"}, ExcludeSuffixes: []string{"_test.go"}}
 	store.InvalidateObservations()
 	_, err = store.SnapshotGoAPI(options)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	_, err = store.Snapshot(options)
-	require.NoError(b, err)
-	require.NoError(b, store.Save())
+	if err != nil {
+		b.Fatal(err)
+	}
+	if err := store.Save(); err != nil {
+		b.Fatal(err)
+	}
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -51,15 +63,23 @@ func BenchmarkSharedSemanticAndContentSnapshot(b *testing.B) {
 func BenchmarkArtifactCacheLifecycle(b *testing.B) {
 	root := b.TempDir()
 	b.Setenv("XDG_CACHE_HOME", filepath.Join(root, "machine-cache"))
-	require.NoError(b, os.MkdirAll(filepath.Join(root, "bin"), 0o755))
+	if err := os.MkdirAll(filepath.Join(root, "bin"), 0o755); err != nil {
+		b.Fatal(err)
+	}
 	output := filepath.Join("bin", "app")
 	source := filepath.Join(root, output)
 	payload := bytes.Repeat([]byte{0xa5}, 1<<20)
-	require.NoError(b, os.WriteFile(source, payload, 0o755))
+	if err := os.WriteFile(source, payload, 0o755); err != nil {
+		b.Fatal(err)
+	}
 	store, err := OpenCache(root)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	digest, err := store.RecordAction("build", output)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	b.Run("lookup-hit", func(b *testing.B) {
 		b.ReportAllocs()

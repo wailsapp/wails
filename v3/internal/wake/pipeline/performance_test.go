@@ -41,7 +41,9 @@ func BenchmarkPlanSingleTarget(b *testing.B) {
 
 func BenchmarkPlanValidation1000Nodes(b *testing.B) {
 	plan := syntheticPlan(1000)
-	require.NoError(b, plan.Validate("."))
+	if err := plan.Validate("."); err != nil {
+		b.Fatal(err)
+	}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {
@@ -54,7 +56,9 @@ func BenchmarkPlanValidation1000Nodes(b *testing.B) {
 func BenchmarkInspectColdPlan(b *testing.B) {
 	config := performanceConfig(b)
 	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	executor := Executor{Handler: &fakeHandler{root: config.Root}}
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -114,12 +118,16 @@ func TestConcurrentPlanConstructionIsDeterministic(t *testing.T) {
 func BenchmarkWarmNoopExecutor(b *testing.B) {
 	config := performanceConfig(b)
 	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	handler := &fakeHandler{root: config.Root}
 	executor := Executor{Handler: handler}
 	options := ExecuteOptions{Root: config.Root, Reporter: report.Nop{}}
 	_, err = executor.Execute(context.Background(), plan, options)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	b.ResetTimer()
 	for range b.N {
 		if _, err := executor.Execute(context.Background(), plan, options); err != nil {
@@ -131,12 +139,16 @@ func BenchmarkWarmNoopExecutor(b *testing.B) {
 func BenchmarkWarmNoopMultiTargetExecutor(b *testing.B) {
 	config := performanceConfig(b)
 	plan, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "windows", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}})
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	handler := &fakeHandler{root: config.Root}
 	executor := Executor{Handler: handler}
 	options := ExecuteOptions{Root: config.Root, Reporter: report.Nop{}}
 	_, err = executor.Execute(context.Background(), plan, options)
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	b.ResetTimer()
 	for range b.N {
 		if _, err := executor.Execute(context.Background(), plan, options); err != nil {

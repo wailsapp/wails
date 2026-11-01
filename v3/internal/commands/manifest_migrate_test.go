@@ -1005,7 +1005,9 @@ func migrationDiagnosticCodes(report MigrationReport) []string {
 
 func BenchmarkAnalyseMigration(b *testing.B) {
 	root, err := filepath.Abs(filepath.Join("..", "..", "examples", "badge"))
-	require.NoError(b, err)
+	if err != nil {
+		b.Fatal(err)
+	}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {

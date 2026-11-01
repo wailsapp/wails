@@ -56,7 +56,9 @@ func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
 func BenchmarkNativeManifestRouting(b *testing.B) {
 	b.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := b.TempDir()
-	require.NoError(b, manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}))
+	if err := manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}); err != nil {
+		b.Fatal(err)
+	}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
@@ -69,14 +71,18 @@ func BenchmarkNativeManifestRouting(b *testing.B) {
 
 func BenchmarkEjectCommand(b *testing.B) {
 	root := b.TempDir()
-	require.NoError(b, manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}))
+	if err := manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}); err != nil {
+		b.Fatal(err)
+	}
 	operations := ejectOperations{
 		getwd:   func() (string, error) { return root, nil },
 		write:   manifest.Eject,
 		version: "3.0.0",
 		output:  io.Discard,
 	}
-	require.NoError(b, ejectWithOperations(&EjectOptions{Force: true}, nil, operations))
+	if err := ejectWithOperations(&EjectOptions{Force: true}, nil, operations); err != nil {
+		b.Fatal(err)
+	}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
