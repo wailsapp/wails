@@ -243,6 +243,7 @@ func printMigrationJSON(report MigrationReport) {
 type migrationTaskNode struct {
 	key, prefix, path, name string
 	task                    *wakeast.Task
+	stockContext            bool
 }
 
 type migrationReachability struct {
@@ -260,14 +261,14 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 	visited := map[string]bool{}
 	ancestors := map[string]bool{}
 	var includeIssues []MigrationDiagnostic
-	var load func(string, string) error
-	load = func(path, prefix string) error {
+	var load func(string, string, bool) error
+	load = func(path, prefix string, inheritedStockContext bool) error {
 		path = filepath.Clean(path)
 		if ancestors[path] {
 			includeIssues = append(includeIssues, MigrationDiagnostic{Severity: "warning", Code: "cyclic-include", File: path, Message: "Taskfile include cycle cannot be proven equivalent"})
 			return nil
 		}
-		visitKey := path + "\x00" + prefix
+		visitKey := path + "\x00" + prefix + "\x00" + strconv.FormatBool(inheritedStockContext)
 		if visited[visitKey] {
 			return nil
 		}
@@ -279,9 +280,10 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 		if err != nil {
 			return err
 		}
+		stockContext := inheritedStockContext && len(tf.Unsupported) == 0 && tf.Run == "" && tf.Interval == "" && stockMigrationVariables(rootTask, path, tf.Vars)
 		for name, task := range tf.Tasks {
 			key := prefix + name
-			nodes[key] = append(nodes[key], migrationTaskNode{key: key, prefix: prefix, path: path, name: name, task: task})
+			nodes[key] = append(nodes[key], migrationTaskNode{key: key, prefix: prefix, path: path, name: name, task: task, stockContext: stockContext})
 		}
 		includeNames := make([]string, 0, len(tf.Includes))
 		for name := range tf.Includes {
@@ -304,13 +306,15 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 			if err != nil {
 				return err
 			}
-			if err := load(included, prefix+name+":"); err != nil {
+			include := tf.Includes[name]
+			includeContext := stockContext && include.Dir == "" && len(include.Vars) == 0 && len(include.Unsupported) == 0
+			if err := load(included, prefix+name+":", includeContext); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	if err := load(rootTask, ""); err != nil {
+	if err := load(rootTask, "", true); err != nil {
 		return migrationReachability{}, err
 	}
 	// Conventional local/override files are merged at the root namespace even
@@ -318,7 +322,7 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 	for _, path := range files {
 		path = filepath.Clean(path)
 		if !loadedPaths[path] {
-			if err := load(path, ""); err != nil {
+			if err := load(path, "", true); err != nil {
 				return migrationReachability{}, err
 			}
 		}
@@ -360,8 +364,10 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 			}
 			result.reachable[node.path][node.name] = true
 			for _, reference := range migrationTaskReferences(node.task) {
-				if strings.Contains(reference, "{{") {
-					if node.prefix == "" && recognizedRootTask(node.name, node.task) {
+				references := []string{reference}
+				stockSelector := strings.Contains(reference, "{{")
+				if stockSelector {
+					if node.prefix == "" && node.stockContext && recognizedRootTask(node.name, node.task) {
 						suffix := ":" + node.name
 						for candidate := range nodes {
 							if strings.HasSuffix(candidate, suffix) {
@@ -370,18 +376,23 @@ func analyseTaskReachability(rootTask string, files []string) (migrationReachabi
 						}
 						continue
 					}
-					addIssue(node, "dynamic-task-reference", "reachable task selects another task dynamically and cannot be proven equivalent")
-					continue
+					references = stockDynamicTaskTargets(rootTask, node, reference)
+					if len(references) == 0 {
+						addIssue(node, "dynamic-task-reference", "reachable task selects another task dynamically and cannot be proven equivalent")
+						continue
+					}
 				}
-				candidate := reference
-				if len(nodes[candidate]) == 0 && node.prefix != "" {
-					candidate = node.prefix + reference
+				for _, reference := range references {
+					candidate := reference
+					if node.prefix != "" && (stockSelector || len(nodes[candidate]) == 0) {
+						candidate = node.prefix + reference
+					}
+					if len(nodes[candidate]) == 0 {
+						addIssue(node, "unresolved-task-reference", "reachable task refers to missing task "+reference)
+						continue
+					}
+					queue = append(queue, candidate)
 				}
-				if len(nodes[candidate]) == 0 {
-					addIssue(node, "unresolved-task-reference", "reachable task refers to missing task "+reference)
-					continue
-				}
-				queue = append(queue, candidate)
 			}
 		}
 	}
@@ -419,6 +430,87 @@ func resolveMigrationInclude(taskfile string, include *wakeast.Include) (string,
 		}
 	}
 	return "", fs.ErrNotExist
+}
+
+// Only root variables translated by migration and unchanged platform defaults
+// may supply inputs to a stock selector. Custom variable evaluation stays blocked.
+func stockMigrationVariables(rootTask, path string, variables map[string]*wakeast.Var) bool {
+	rel, err := filepath.Rel(filepath.Dir(rootTask), path)
+	if err != nil {
+		return false
+	}
+	role := taskfileRole(rel)
+	if role != "root" {
+		if len(variables) == 0 {
+			return true
+		}
+		for _, stock := range stockTaskfileVariants(role) {
+			if reflect.DeepEqual(variables, stock.Vars) {
+				return true
+			}
+		}
+		return false
+	}
+	for name, value := range variables {
+		if value == nil || !value.Literal {
+			return false
+		}
+		switch name {
+		case "APP_NAME", "BIN_DIR", "VITE_PORT", "PACKAGE_MANAGER":
+			if !strings.Contains(value.Static, "{{") {
+				continue
+			}
+		}
+		if name == "PACKAGE_MANAGER" && value.Static == `{{.PACKAGE_MANAGER | default "npm"}}` ||
+			name == "VITE_PORT" && value.Static == `{{.WAILS_VITE_PORT | default 9245}}` ||
+			name == "GOOS" && value.Static == `{{.GOOS | default OS}}` {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// Stock selectors have a finite set of branches. Traverse all of them without
+// evaluating Taskfile expressions, and only after matching the entire stock task.
+func stockDynamicTaskTargets(rootTask string, node migrationTaskNode, reference string) []string {
+	rel, err := filepath.Rel(filepath.Dir(rootTask), node.path)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return nil
+	}
+	if !node.stockContext {
+		return nil
+	}
+	role := taskfileRole(rel)
+	matched := false
+	for _, stock := range stockTaskVariants(role) {
+		if expected, ok := stock[node.name]; ok && reflect.DeepEqual(node.task, expected) {
+			matched = true
+			break
+		}
+	}
+	if !matched {
+		return nil
+	}
+	switch reference {
+	case "install:frontend:deps:{{.PACKAGE_MANAGER}}":
+		return []string{"install:frontend:deps:npm", "install:frontend:deps:pnpm", "install:frontend:deps:yarn", "install:frontend:deps:bun"}
+	case "frontend:run:{{.PACKAGE_MANAGER}}":
+		return []string{"frontend:run:npm", "frontend:run:pnpm", "frontend:run:yarn", "frontend:run:bun"}
+	case "frontend:dev:{{.PACKAGE_MANAGER}}":
+		return []string{"frontend:dev:npm", "frontend:dev:pnpm", "frontend:dev:yarn", "frontend:dev:bun"}
+	case `{{if and (ne OS "windows") (eq .CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}`,
+		`{{if or (eq OS "darwin") (has "purego" (splitList "," (.EXTRA_TAGS | default "")))}}build:native{{else}}build:docker{{end}}`,
+		`{{if or (ne .CGO_ENABLED "1") (and (eq OS "linux") (eq .HAS_CC "true") (eq .TARGET_ARCH ARCH))}}build:native{{else}}build:docker{{end}}`:
+		return []string{"build:native", "build:docker"}
+	case `{{if eq (.FORMAT | default "nsis") "msix"}}create:msix:package{{else}}create:nsis:installer{{end}}`:
+		return []string{"create:msix:package", "create:nsis:installer"}
+	case `{{if eq OS "darwin"}}build:universal:lipo:native{{else}}build:universal:lipo:go{{end}}`:
+		return []string{"build:universal:lipo:native", "build:universal:lipo:go"}
+	case `{{if eq OS "darwin"}}codesign:adhoc{{else}}codesign:skip{{end}}`:
+		return []string{"codesign:adhoc", "codesign:skip"}
+	}
+	return nil
 }
 
 func migrationTaskReferences(task *wakeast.Task) []string {
@@ -767,11 +859,11 @@ func containsString(values []string, want string) bool {
 }
 
 func legacyDevCommand(command string) bool {
-	command = strings.TrimSpace(command)
-	if command == "go mod tidy" || command == "wails3 build DEV=true" {
+	switch strings.TrimSpace(command) {
+	case "go mod tidy", "wails3 build DEV=true", "wails3 task common:install:frontend:deps", "wails3 task common:dev:frontend", "wails3 task build", "wails3 task run":
 		return true
 	}
-	return strings.HasPrefix(command, "wails3 task common:install:frontend:deps") || strings.HasPrefix(command, "wails3 task common:dev:frontend") || strings.HasPrefix(command, "wails3 task build") || strings.HasPrefix(command, "wails3 task run")
+	return false
 }
 
 func discoverTaskfiles(root string) ([]string, error) {
@@ -858,10 +950,18 @@ type canonicalDiff struct {
 
 var stockVariantCache = struct {
 	sync.Mutex
-	values map[string][]map[string]*wakeast.Task
-}{values: make(map[string][]map[string]*wakeast.Task, 6)}
+	values map[string][]*wakeast.Taskfile
+}{values: make(map[string][]*wakeast.Taskfile, 6)}
 
 func stockTaskVariants(role string) []map[string]*wakeast.Task {
+	var result []map[string]*wakeast.Task
+	for _, variant := range stockTaskfileVariants(role) {
+		result = append(result, variant.Tasks)
+	}
+	return result
+}
+
+func stockTaskfileVariants(role string) []*wakeast.Taskfile {
 	stockVariantCache.Lock()
 	variants, ok := stockVariantCache.values[role]
 	stockVariantCache.Unlock()
@@ -879,7 +979,7 @@ func stockTaskVariants(role string) []map[string]*wakeast.Task {
 	return variants
 }
 
-func loadStockTaskVariants(role string) []map[string]*wakeast.Task {
+func loadStockTaskVariants(role string) []*wakeast.Taskfile {
 	if role == "root" || role == "unknown" {
 		return nil
 	}
@@ -888,7 +988,7 @@ func loadStockTaskVariants(role string) []map[string]*wakeast.Task {
 		if err != nil {
 			return nil
 		}
-		var result []map[string]*wakeast.Task
+		var result []*wakeast.Taskfile
 		for _, typescript := range []bool{false, true} {
 			for _, useInterfaces := range []bool{false, true} {
 				config := BuildConfig{
@@ -903,7 +1003,7 @@ func loadStockTaskVariants(role string) []map[string]*wakeast.Task {
 				if err := tmpl.Execute(&rendered, config); err != nil {
 					return nil
 				}
-				if tasks := parseStockTasks(rendered.Bytes()); tasks != nil {
+				if tasks := parseStockTaskfile(rendered.Bytes()); tasks != nil {
 					result = append(result, tasks)
 				}
 			}
@@ -914,13 +1014,20 @@ func loadStockTaskVariants(role string) []map[string]*wakeast.Task {
 	if err != nil {
 		return nil
 	}
-	if tasks := parseStockTasks(data); tasks != nil {
-		return []map[string]*wakeast.Task{tasks}
+	if tasks := parseStockTaskfile(data); tasks != nil {
+		return []*wakeast.Taskfile{tasks}
 	}
 	return nil
 }
 
 func parseStockTasks(data []byte) map[string]*wakeast.Task {
+	if tf := parseStockTaskfile(data); tf != nil {
+		return tf.Tasks
+	}
+	return nil
+}
+
+func parseStockTaskfile(data []byte) *wakeast.Taskfile {
 	tmp, err := os.CreateTemp("", "wails-stock-taskfile-*.yml")
 	if err != nil {
 		return nil
@@ -938,7 +1045,7 @@ func parseStockTasks(data []byte) map[string]*wakeast.Task {
 	if err != nil {
 		return nil
 	}
-	return tf.Tasks
+	return tf
 }
 
 func closestCanonical(actual map[string]*wakeast.Task, variants []map[string]*wakeast.Task) canonicalDiff {
@@ -1073,12 +1180,15 @@ func recognizedRootTask(name string, task *wakeast.Task) bool {
 	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 || len(task.Env) > 0 || len(task.Vars) > 0 || task.Dir != "" || len(task.Precondition) > 0 || len(task.Status) > 0 || len(task.Defer) > 0 {
 		return false
 	}
+	if !rootTaskDefinitionSupported(task.Definition) {
+		return false
+	}
 	command := task.Cmds[0]
 	if command == nil || len(command.Vars) > 0 || command.IgnoreError || command.For != nil {
 		return false
 	}
 	if name == "dev" {
-		return strings.HasPrefix(strings.TrimSpace(command.Cmd), "wails3 dev ") && command.Task == ""
+		return command.Task == "" && (strings.TrimSpace(command.Cmd) == "wails3 dev -config ./build/config.yml" || strings.TrimSpace(command.Cmd) == "wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}")
 	}
 	refs := map[string]string{
 		"setup:docker": "common:setup:docker", "build:server": "common:build:server",
@@ -1088,7 +1198,41 @@ func recognizedRootTask(name string, task *wakeast.Task) bool {
 		return command.Task == expected && command.Cmd == ""
 	}
 	if name == "build" || name == "package" || name == "run" {
-		return command.Cmd == "" && strings.HasSuffix(command.Task, ":"+name) && strings.Contains(command.Task, "{{")
+		return command.Cmd == "" && (command.Task == "{{OS}}:"+name || command.Task == "{{.GOOS}}:"+name)
+	}
+	return false
+}
+
+// Root dispatchers have a small contract; unknown execution fields must not
+// disappear merely because the declaration reader does not interpret them.
+func rootTaskDefinitionSupported(definition any) bool {
+	if definition == nil {
+		return true
+	}
+	fields, ok := definition.(map[string]any)
+	if !ok {
+		return false
+	}
+	for key := range fields {
+		switch key {
+		case "summary", "desc", "cmds":
+		default:
+			return false
+		}
+	}
+	commands, ok := fields["cmds"].([]any)
+	if !ok || len(commands) != 1 {
+		return false
+	}
+	switch command := commands[0].(type) {
+	case string:
+		return true
+	case map[string]any:
+		if len(command) == 1 {
+			_, task := command["task"]
+			_, cmd := command["cmd"]
+			return task || cmd
+		}
 	}
 	return false
 }

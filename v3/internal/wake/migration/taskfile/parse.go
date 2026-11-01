@@ -71,6 +71,15 @@ func Parse(path string) (*ast.Taskfile, error) {
 			tf.Interval = val.Value
 		case "requires":
 			tf.Requires = parseRequires(val)
+		default:
+			if tf.Unsupported == nil {
+				tf.Unsupported = make(map[string]any)
+			}
+			var value any
+			if err := val.Decode(&value); err != nil {
+				return nil, err
+			}
+			tf.Unsupported[key] = value
 		}
 	}
 
@@ -116,6 +125,14 @@ func parseIncludes(node *yaml.Node) (map[string]*ast.Include, error) {
 					inc.Internal = v.Value == "true"
 				case "aliases":
 					inc.Aliases = parseStringList(v)
+				case "vars":
+					var err error
+					inc.Vars, err = parseVars(v)
+					if err != nil {
+						return nil, err
+					}
+				default:
+					inc.Unsupported = append(inc.Unsupported, k)
 				}
 			}
 		}
@@ -132,7 +149,10 @@ func parseVars(node *yaml.Node) (map[string]*ast.Var, error) {
 	for i := 0; i < len(node.Content); i += 2 {
 		name := node.Content[i].Value
 		val := node.Content[i+1]
-		vr := &ast.Var{}
+		vr := &ast.Var{Literal: val.Kind == yaml.ScalarNode}
+		if err := val.Decode(&vr.Definition); err != nil {
+			return nil, err
+		}
 
 		if val.Kind == yaml.ScalarNode {
 			vr.Static = val.Value
@@ -178,6 +198,9 @@ func parseTask(name string, node *yaml.Node) (*ast.Task, error) {
 		return nil, fmt.Errorf("invalid task mapping for %q", name)
 	}
 	task := &ast.Task{Name: name}
+	if err := node.Decode(&task.Definition); err != nil {
+		return nil, err
+	}
 	for i := 0; i < len(node.Content); i += 2 {
 		key := node.Content[i].Value
 		val := node.Content[i+1]

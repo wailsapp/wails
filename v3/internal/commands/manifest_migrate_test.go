@@ -688,7 +688,7 @@ func TestMigrationDiscoversDirectoryIncludesAndPropagatesOverrideErrors(t *testi
 func TestMigrationClassifiesRootAndUnknownTaskfilesAndRecordsPackageManager(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(root, "tools"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\nvars:\n  PACKAGE_MANAGER: pnpm\nincludes:\n  custom: tools/custom.yml\ntasks:\n  build:\n    cmds:\n      - task: '{{.PLATFORM}}:build'\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\nvars:\n  PACKAGE_MANAGER: pnpm\nincludes:\n  custom: tools/custom.yml\ntasks:\n  build:\n    cmds:\n      - task: '{{OS}}:build'\n"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "tools", "custom.yml"), []byte("version: '3'\ntasks:\n  utility:\n    cmds: ['echo utility']\n"), 0o644))
 
 	report, _, err := analyseMigration(root)
@@ -1084,7 +1084,7 @@ func TestMigrationCanonicalAndClassificationHelpersCoverEveryProjectShape(t *tes
 	assert.False(t, recognizedRootTask("build", &wakeast.Task{Cmds: []*wakeast.Cmd{nil}}))
 	assert.True(t, recognizedRootTask("dev", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "wails3 dev -config ./build/config.yml"}}}))
 	assert.True(t, recognizedRootTask("setup:docker", &wakeast.Task{Cmds: []*wakeast.Cmd{{Task: "common:setup:docker"}}}))
-	assert.True(t, recognizedRootTask("build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Task: "{{.PLATFORM}}:build"}}}))
+	assert.False(t, recognizedRootTask("build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Task: "{{.PLATFORM}}:build"}}}))
 	assert.False(t, recognizedRootTask("custom", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "echo custom"}}}))
 
 	references := migrationTaskReferences(&wakeast.Task{

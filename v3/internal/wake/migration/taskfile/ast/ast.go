@@ -8,15 +8,16 @@ type Taskfile struct {
 	// Env is the Taskfile-level `env:` block: environment variables that are
 	// added to every task's subprocess environment, overridden by task-local
 	// `env:` on per-task collisions. Empty when the Taskfile declares no env.
-	Env      map[string]string
-	Shopt    []string
-	Silent   bool
-	Location string
-	Dotenv   []string
-	Output   string
-	Run      string
-	Requires *Requires
-	Interval string
+	Env         map[string]string
+	Shopt       []string
+	Silent      bool
+	Location    string
+	Dotenv      []string
+	Output      string
+	Run         string
+	Requires    *Requires
+	Interval    string
+	Unsupported map[string]any
 }
 
 type Requires struct {
@@ -24,22 +25,28 @@ type Requires struct {
 }
 
 type Include struct {
-	Taskfile string
-	Dir      string
-	Optional bool
-	Internal bool
-	Aliases  []string
-	Resolved *Taskfile
+	Taskfile    string
+	Dir         string
+	Optional    bool
+	Internal    bool
+	Aliases     []string
+	Resolved    *Taskfile
+	Vars        map[string]*Var
+	Unsupported []string
 }
 
 type Var struct {
-	Static string
-	Shell  string
-	Ref    string
-	Value  string
+	Literal    bool
+	Definition any
+	Static     string
+	Shell      string
+	Ref        string
+	Value      string
 }
 
 type Task struct {
+	// Definition preserves fields the analyser does not interpret for exact stock comparison.
+	Definition   any
 	Name         string
 	Summary      string
 	Desc         string
