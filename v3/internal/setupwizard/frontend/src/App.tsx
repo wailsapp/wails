@@ -1,11 +1,12 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
-import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit, complete } from './api';
+import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData, WakeSetupState } from './types';
+import { checkDependencies, checkMobileDependencies, installDependency, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, complete, getWizardBootstrap } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
 import InitFlow from './components/InitFlow';
+import WakeSetupFlow from './components/WakeSetupFlow';
 
 type OOBEStep =
   | 'splash'
@@ -92,18 +93,19 @@ const pageVariants = {
 
 
 // Sidebar with progress steps (1:4 ratio - sidebar is 20% of total width)
-function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
+function Sidebar({ currentStep, dockerStatus, buildingDocker, progress }: {
   currentStep: OOBEStep;
   dockerStatus: DockerStatus | null;
   buildingDocker: boolean;
+  progress?: { labels: string[]; index: number };
 }) {
   const { theme, toggleTheme } = useTheme();
-  const currentStage = getWizardStage(currentStep);
-  const currentIndex = getStageIndex(currentStage);
+  const currentStage = progress ? String(progress.index) : getWizardStage(currentStep);
+  const currentIndex = progress ? progress.index + 1 : getStageIndex(getWizardStage(currentStep));
   const [showBugOverlay, setShowBugOverlay] = useState(false);
   const [bugReportUrl, setBugReportUrl] = useState('');
 
-  const stages = [
+  const stages = progress ? progress.labels.map((label, index) => ({ key: String(index), label })) : [
     { key: 'welcome' as const, label: 'Welcome' },
     { key: 'dependencies' as const, label: 'Dependencies' },
     { key: 'platform' as const, label: 'Platform' },
@@ -2263,6 +2265,7 @@ export default function App() {
   // Init mode (wails3 init -ui): undefined = still detecting, null = setup mode.
   const [initData, setInitData] = useState<InitData | null | undefined>(undefined);
   const [initDetectError, setInitDetectError] = useState(false);
+  const [wakeSetup, setWakeSetup] = useState<WakeSetupState | null>(null);
 
   const navigateTo = (newStep: OOBEStep) => {
     setStepHistory(prev => [...prev, step]);
@@ -2309,8 +2312,13 @@ export default function App() {
     // failures, then surface an error rather than silently picking the wrong flow.
     let cancelled = false;
     const detect = (attempt = 0) => {
-      getInit()
-        .then((d) => { if (!cancelled) setInitData(d); })
+      getWizardBootstrap()
+        .then(({ init, state, wake }) => {
+          if (cancelled) return;
+          setSystem(state.system);
+          setWakeSetup(wake);
+          setInitData(init);
+        })
         .catch(() => {
           if (cancelled) return;
           if (attempt < 4) setTimeout(() => detect(attempt + 1), 300);
@@ -2319,10 +2327,6 @@ export default function App() {
     };
     detect();
     return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    init();
   }, []);
 
   useEffect(() => {
@@ -2340,11 +2344,6 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canGoBack, step]);
-
-  const init = async () => {
-    const state = await getState();
-    setSystem(state.system);
-  };
 
   const handleSplashNext = async () => {
     navigateTo('checking');
@@ -2602,6 +2601,16 @@ export default function App() {
   // Project init wizard (wails3 init -ui).
   if (initData && initData.mode === 'init') {
     return <InitFlow data={initData} theme={theme} toggleTheme={toggleTheme} />;
+  }
+
+  if (wakeSetup?.enabled) {
+    return (
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <WakeSetupFlow initial={wakeSetup} sidebar={(progress) => (
+          <Sidebar currentStep="splash" dockerStatus={null} buildingDocker={false} progress={progress} />
+        )} />
+      </ThemeContext.Provider>
+    );
   }
 
   return (

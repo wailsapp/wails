@@ -4,6 +4,7 @@ const API_BASE = '/api';
 
 export async function getState(): Promise<WizardState> {
   const response = await fetch(`${API_BASE}/state`);
+  if (!response.ok) throw new Error(`Could not load wizard state (HTTP ${response.status})`);
   return response.json();
 }
 
@@ -188,6 +189,7 @@ export async function cancelNotarization(): Promise<{ success: boolean }> {
 
 export async function getInit(): Promise<import('./types').InitData | null> {
   const response = await fetch(`${API_BASE}/init`);
+  if (!response.ok) throw new Error(`Could not detect wizard mode (HTTP ${response.status})`);
   return response.json();
 }
 
@@ -240,4 +242,39 @@ export async function createWindowsCert(data: {
 export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
   const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
   return response.json();
+}
+
+async function wakeRequest<T>(path: string, config?: import('./types').WakeSetupConfig): Promise<T> {
+  const response = await fetch(`${API_BASE}/wake/setup${path}`, config === undefined ? undefined : {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+  const body = await response.text();
+  let result;
+  try { result = JSON.parse(body); }
+  catch {
+    throw new Error(!response.ok && body.trim() ? body.trim() : `Unexpected Wake setup response (HTTP ${response.status})`);
+  }
+  if (!response.ok) throw new Error(typeof result?.error === 'string' ? result.error : typeof result === 'string' ? result : `Wake setup request failed (HTTP ${response.status})`);
+  return result;
+}
+
+export function getWakeSetup(): Promise<import('./types').WakeSetupState> {
+  return wakeRequest('');
+}
+
+export function checkWakeRequirements(config: import('./types').WakeSetupConfig): Promise<import('./types').WakeRequirements> {
+  return wakeRequest('/requirements', config);
+}
+
+export function saveWakeSetup(config: import('./types').WakeSetupConfig): Promise<import('./types').WakeSetupResult> {
+  return wakeRequest('', config);
+}
+
+export async function getWizardBootstrap() {
+  const [init, state] = await Promise.all([getInit(), getState()]);
+  const wake = !init && state.wakeEnabled ? await getWakeSetup() : null;
+  if (wake && !wake.enabled) throw new Error('Wake setup is unavailable for this session.');
+  return { init, state, wake };
 }

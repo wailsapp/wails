@@ -117,13 +117,16 @@ function ToolStatus({ toolKey, available, host }: { toolKey: string; available: 
 }
 
 interface Props {
+  platforms?: Platform[];
+  wakeMode?: boolean;
+  mobileSigning?: boolean;
   onNext: () => void;
   onSkip: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
 }
 
-export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props) {
+export default function SigningStep({ onNext, onSkip, onBack, canGoBack, platforms = ['darwin', 'windows', 'linux'], wakeMode = false, mobileSigning = false }: Props) {
   const [status, setStatus] = useState<SigningStatus | null>(null);
   const [config, setConfig] = useState<SigningDefaults | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,7 +136,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [rechecking, setRechecking] = useState(false);
   const [authorName, setAuthorName] = useState('');
   const [authorEmail, setAuthorEmail] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('darwin');
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(platforms[0] || 'darwin');
   // 'status' | 'identity' | 'notarize'
   const [configStep, setConfigStep] = useState<'status' | 'identity' | 'notarize'>('status');
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -598,12 +601,9 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   };
 
   const getOverallStatus = () => {
-    if (!status) return { configured: 0, total: 3 };
-    let configured = 0;
-    if (status.darwin.hasIdentity) configured++;
-    if (status.windows.hasCertificate) configured++;
-    if (status.linux.hasGpgKey) configured++;
-    return { configured, total: 3 };
+    if (!status) return { configured: 0, total: platforms.length };
+    const configured = { darwin: status.darwin.hasIdentity, windows: status.windows.hasCertificate, linux: status.linux.hasGpgKey };
+    return { configured: platforms.filter((platform) => configured[platform]).length, total: platforms.length };
   };
 
   const overallStatus = getOverallStatus();
@@ -670,29 +670,24 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
               </button>
             </div>
             <div className="flex gap-2 mb-6" role="tablist">
-              <PlatformTab
-                platform="darwin"
-                label="macOS"
-                isActive={selectedPlatform === 'darwin'}
-                hasConfig={status?.darwin.hasIdentity}
-                onClick={() => { setSelectedPlatform('darwin'); setConfigStep('status'); }}
-              />
-              <PlatformTab
-                platform="windows"
-                label="Windows"
-                isActive={selectedPlatform === 'windows'}
-                hasConfig={status?.windows.hasCertificate}
-                onClick={() => { setSelectedPlatform('windows'); setConfigStep('status'); }}
-              />
-              <PlatformTab
-                platform="linux"
-                label="Linux"
-                isActive={selectedPlatform === 'linux'}
-                hasConfig={status?.linux.hasGpgKey}
-                onClick={() => { setSelectedPlatform('linux'); setConfigStep('status'); }}
-              />
+              {platforms.map((platform) => <PlatformTab
+                key={platform}
+                platform={platform}
+                label={{ darwin: 'macOS', windows: 'Windows', linux: 'Linux' }[platform]}
+                isActive={selectedPlatform === platform}
+                hasConfig={platform === 'darwin' ? status?.darwin.hasIdentity : platform === 'windows' ? status?.windows.hasCertificate : status?.linux.hasGpgKey}
+                onClick={() => { setSelectedPlatform(platform); setConfigStep('status'); }}
+              />)}
             </div>
 
+            {wakeMode && (
+              <div className="mb-5 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-blue-800 dark:text-blue-200">
+                {selectedPlatform === 'windows' && <p>Protected PFX files need the environment variable named by windows.signing.credential. Existing global certificates can use WAILS_WINDOWS_CERT_PASSWORD. Creating a test certificate here does not store its password.</p>}
+                {selectedPlatform === 'linux' && <p>Protected exported keys need the environment variable named by linux.signing.credential. Existing global signing can use WAILS_PGP_PASSWORD.</p>}
+                {selectedPlatform === 'darwin' && <p>Exported P12 identities need darwin.signing.credential to name the password environment variable. Set it before running the build; this page does not save an Apple certificate password.</p>}
+                {mobileSigning && <p className="mt-2">Selected mobile targets also need their existing ios.signing or android.signing settings in wails.yaml; these tabs configure desktop credentials.</p>}
+              </div>
+            )}
             <AnimatePresence mode="wait">
               {configStep === 'notarize' ? (
                 <motion.div
