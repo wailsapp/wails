@@ -124,10 +124,8 @@ func (e Executor) inspectNode(ctx context.Context, store executorCache, node Nod
 	if node.Cache == CacheNever {
 		return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
 	}
-	for _, dependency := range node.Dependencies {
-		if operations[dependency].Decision == "run" || (operations[dependency].Decision == "restore" && slices.Contains(node.OrderOnlyDependencies, dependency)) {
-			return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
-		}
+	if inspectionNeedsDependencies(node, operations) {
+		return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
 	}
 	identity, err := e.Handler.Identity(ctx, node)
 	if err != nil {
@@ -159,6 +157,24 @@ func (e Executor) inspectNode(ctx context.Context, store executorCache, node Nod
 		return operation, Result{Key: node.Key, Status: status, Artifact: artifact, Output: node.Output}, nil
 	}
 	return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
+}
+
+// Inspection cannot calculate identities that read dependency files until those
+// files exist. Execution can still reuse the node after restoring its inputs.
+func inspectionNeedsDependencies(node Node, operations map[NodeKey]OperationInspection) bool {
+	spec, isPackage := node.Spec.(PackageSpec)
+	readsExecutable := isPackage && spec.Format == "appimage"
+	for _, dependency := range node.Dependencies {
+		switch operations[dependency].Decision {
+		case "run":
+			return true
+		case "restore":
+			if readsExecutable || slices.Contains(node.OrderOnlyDependencies, dependency) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions) (map[NodeKey]Result, error) {

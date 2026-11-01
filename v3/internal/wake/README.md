@@ -83,8 +83,12 @@ the target desktop libraries and headers; Zig alone does not provide those.
 macOS application assembly, universal binary merging and DMG creation run on
 all desktop hosts. DMGs use the existing Go image writer when macOS tools are
 unavailable. Signing and notarisation retain their separate host and credential
-requirements. AppImage deployment currently requires a matching Linux host;
-it still needs a portable dependency and image-building path.
+requirements. AppImage deployment, SquashFS writing and zsync generation run in
+Go on all desktop hosts, using a pinned target AppImage runtime. Cross-host GUI
+packaging requires a supplied Linux runtime tree with GTK/WebKit libraries,
+compiled schemas and module caches. Pure-Go GUI runtime profiles follow each
+executable's GTK tags, including companions. Selected runtime content is hashed
+for cache invalidation; the entire Linux root is never snapshotted.
 
 ### Development sessions
 

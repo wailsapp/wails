@@ -641,7 +641,7 @@ func applyPackage(packages *Packages, raw PackageFormat) error {
 	case "dmg":
 		packages.Darwin.DMG = DMGPackage{Template: raw.Template, Background: raw.Background, VolumeIcon: raw.VolumeIcon, FileIcon: raw.FileIcon, Files: cloneStringMapValue(raw.Files), WindowWidth: raw.WindowWidth, WindowHeight: raw.WindowHeight}
 	case "appimage":
-		packages.Linux.AppImage = AppImagePackage{UpdateInfo: raw.UpdateInfo, Checksum: raw.Checksum, Icon: raw.Icon, DesktopEntry: raw.DesktopEntry, Categories: append([]string(nil), raw.Categories...)}
+		packages.Linux.AppImage = AppImagePackage{RuntimeRoot: raw.RuntimeRoot, RuntimePath: raw.RuntimePath, GTKVersion: raw.GTKVersion, UpdateInfo: raw.UpdateInfo, Checksum: raw.Checksum, Icon: raw.Icon, DesktopEntry: raw.DesktopEntry, Categories: append([]string(nil), raw.Categories...)}
 	case "deb", "rpm", "archlinux", "void":
 		value := LinuxPackage{Template: raw.Template, Maintainer: raw.Maintainer, Section: raw.Section, Dependencies: slices.Clone(raw.Dependencies), PreInstall: raw.PreInstall, PostInstall: raw.PostInstall, PreRemove: raw.PreRemove, PostRemove: raw.PostRemove}
 		switch raw.Format {
@@ -689,7 +689,7 @@ func ResolvePackageFormat(packages Packages, platform, format string) (PackageFo
 		return PackageFormat{Template: value.Template, Background: value.Background, VolumeIcon: value.VolumeIcon, FileIcon: value.FileIcon, Files: cloneStringMapValue(value.Files), WindowWidth: value.WindowWidth, WindowHeight: value.WindowHeight}, nil
 	case "linux/appimage":
 		value := packages.Linux.AppImage
-		return PackageFormat{UpdateInfo: value.UpdateInfo, Checksum: value.Checksum, Icon: value.Icon, DesktopEntry: value.DesktopEntry, Categories: append([]string(nil), value.Categories...)}, nil
+		return PackageFormat{RuntimeRoot: value.RuntimeRoot, RuntimePath: value.RuntimePath, GTKVersion: value.GTKVersion, UpdateInfo: value.UpdateInfo, Checksum: value.Checksum, Icon: value.Icon, DesktopEntry: value.DesktopEntry, Categories: append([]string(nil), value.Categories...)}, nil
 	case "linux/deb", "linux/rpm", "linux/archlinux", "linux/void":
 		var value LinuxPackage
 		switch format {
@@ -847,7 +847,7 @@ func packageAttributeAllowed(format, name string) bool {
 }
 
 func packageConfigured(format PackageFormat) bool {
-	return len(format.Defines) > 0 || format.UpdateInfo != "" || format.Checksum || format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || format.Dependencies != nil || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
+	return format.RuntimeRoot != "" || format.RuntimePath != "" || format.GTKVersion != 0 || len(format.Defines) > 0 || format.UpdateInfo != "" || format.Checksum || format.Template != "" || format.InstallScope != "" || format.Publisher != "" || format.Manifest != "" || format.Background != "" || format.VolumeIcon != "" || format.FileIcon != "" || len(format.Files) > 0 || format.WindowWidth != 0 || format.WindowHeight != 0 || format.Icon != "" || format.DesktopEntry != "" || len(format.Categories) > 0 || format.Maintainer != "" || format.Section != "" || format.Dependencies != nil || format.PreInstall != "" || format.PostInstall != "" || format.PreRemove != "" || format.PostRemove != ""
 }
 
 func platformConfigured(platform Platform) bool {

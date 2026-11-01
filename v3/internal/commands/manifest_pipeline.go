@@ -417,8 +417,8 @@ var manifestLipo = ToolLipo
 var manifestToolPackage = toolPackage
 var manifestSign = Sign
 var manifestPrepareDMGForSigning = prepareManifestDMGForSigning
-var manifestAppImageCreate = appimage.Create
-var manifestAppImageTools = appimage.Options.PrepareTools
+var manifestAppImageCreate = appimage.CreateNative
+var manifestAppImageIdentity = appimage.Options.RuntimeIdentity
 var manifestDockerImageIdentity = func(ctx context.Context, runtime, image string) (string, error) {
 	output, err := exec.CommandContext(ctx, runtime, "image", "inspect", "--format", "{{.Id}}", image).Output()
 	if err != nil {
@@ -514,6 +514,16 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 		if err != nil {
 			return "", err
 		}
+		if spec.Format == "appimage" {
+			options, err := h.appImageOptions(spec)
+			if err != nil {
+				return "", err
+			}
+			externalIdentity, err = manifestAppImageIdentity(options, ctx)
+			if err != nil {
+				return "", fmt.Errorf("AppImage runtime identity: %w", err)
+			}
+		}
 		paths, err := h.packageToolPaths(ctx, spec)
 		if err != nil {
 			return "", err
@@ -551,17 +561,6 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 }
 
 func (h *manifestHandler) packageToolPaths(ctx context.Context, spec pipeline.PackageSpec) ([]string, error) {
-	if spec.Format == "appimage" {
-		resolved, err := manifestAppImageTools(appimage.Options{Root: h.root, Arch: spec.TargetArch, CacheDir: filepath.Join(h.root, ".wails", "tools", "appimage")}, ctx)
-		if err != nil {
-			return nil, err
-		}
-		paths := []string{resolved.LinuxDeploy}
-		if resolved.AppRun != "" {
-			paths = append(paths, resolved.AppRun)
-		}
-		return paths, nil
-	}
 	if spec.Format != "nsis" {
 		return nil, nil
 	}
@@ -2227,15 +2226,11 @@ func (h *manifestHandler) packageAppImage(ctx context.Context, s pipeline.Packag
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	binaries := []appimage.Binary{{Name: s.Project.BinaryName, Path: filepath.Join(h.root, s.Binary)}}
-	for _, companion := range s.Companions {
-		binaries = append(binaries, appimage.Binary{Name: companion.Name, Path: filepath.Join(h.root, companion.Path)})
+	options, err := h.appImageOptions(s)
+	if err != nil {
+		return pipeline.RunResult{}, err
 	}
-	options := appimage.Options{Root: h.root, Name: s.Project.BinaryName, Arch: s.TargetArch, Output: filepath.Join(h.root, s.Output), Icon: icon, DesktopFile: desktop, WorkDir: buildDir, CacheDir: filepath.Join(h.root, ".wails", "tools", "appimage"), Binaries: binaries, GTKPlugin: gtkPlugin, WebKit: s.Project.Kind != "cli" && s.Project.Kind != "server", UpdateInfo: s.Config.UpdateInfo, Env: map[string]string{"VERSION": s.Project.Version}, Runner: func(ctx context.Context, command appimage.Command) error {
-		env := declaredEnvironment(h.environment, command.Env)
-		_, err := runManifestCommand(ctx, command.Directory, env, command.Program, command.Args...)
-		return err
-	}}
+	options.DesktopFile, options.Icon, options.WorkDir = desktop, icon, buildDir
 	if err := manifestAppImageCreate(ctx, options); err != nil {
 		return pipeline.RunResult{}, err
 	}

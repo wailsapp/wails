@@ -160,6 +160,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `packages["format"].desktop_entry` | `string` | no |  | `"assets/app.desktop"` | `appimage` | User-owned Linux desktop-entry file. |
 | `packages["format"].file_icon` | `string` | no |  | `"assets/file.icns"` | `dmg` | User-owned DMG file icon. |
 | `packages["format"].files` | `map(string)` | no |  | `{License.pdf: LICENSE.pdf}` | `dmg` | User-owned files copied into the DMG, keyed by destination name. |
+| `packages["format"].gtk_version` | `integer` | no |  | `1` | `appimage` | GTK runtime profile: 3 or 4. Defaults to the GUI executable build tags, including companions; imported CGo libraries must agree. |
 | `packages["format"].icon` | `string` | no |  | `"assets/appicon.png"` | `appimage` | Project-relative user-owned icon file. |
 | `packages["format"].install_scope` | `string` | no |  | `"user"` | `nsis` | NSIS installation scope. |
 | `packages["format"].maintainer` | `string` | no |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | Native Linux package maintainer. |
@@ -169,9 +170,11 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `packages["format"].pre_install` | `string` | no |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | Project-relative Linux pre-install script. |
 | `packages["format"].pre_remove` | `string` | no |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | Project-relative Linux pre-remove script. |
 | `packages["format"].publisher` | `string` | no |  | `"CN=Example"` | `msix` | Windows package publisher identity. |
+| `packages["format"].runtime_path` | `string` | no |  | `"value"` | `appimage` | Project-relative AppImage type-2 runtime ELF; defaults to the pinned, checksum-verified target runtime download. |
+| `packages["format"].runtime_root` | `string` | no |  | `"value"` | `appimage` | Project-relative target Linux root filesystem containing GTK/WebKit libraries and compiled resource caches; defaults to the Linux host root. |
 | `packages["format"].section` | `string` | no |  | `"utils"` | `deb,rpm,archlinux,void` | Linux package repository section. |
 | `packages["format"].template` | `string` | no |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | Complete user-owned package template replacement. |
-| `packages["format"].update_info` | `string` | no |  | `"value"` | `appimage` | AppImage update-information string; requires a matching zsync sidecar from linuxdeploy. |
+| `packages["format"].update_info` | `string` | no |  | `"value"` | `appimage` | AppImage update-information string; generates a matching zsync sidecar in Go. |
 | `packages["format"].volume_icon` | `string` | no |  | `"assets/volume.icns"` | `dmg` | User-owned DMG volume icon. |
 | `packages["format"].window_height` | `integer` | no |  | `1` | `dmg` | DMG Finder window height in pixels. |
 | `packages["format"].window_width` | `integer` | no |  | `1` | `dmg` | DMG Finder window width in pixels. |

@@ -275,6 +275,7 @@ type AssetsSpec struct {
 	Protocols                       []manifest.Protocol
 }
 type PackageSpec struct {
+	GTKVersion                                           int
 	BundleSigning                                        *manifest.SigningPlatform
 	Companions                                           []NamedBinary
 	Development                                          bool

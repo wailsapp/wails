@@ -10,6 +10,7 @@ import (
 
 func TestExhaustiveProductionCapabilityMatrix(t *testing.T) {
 	base := testConfig(t)
+	base.Package.Linux.AppImage.RuntimeRoot = "target-linux-root"
 	formats := []string{""}
 	for _, format := range buildinfo.FormatCapabilities() {
 		formats = append(formats, format.Name)

@@ -38,36 +38,30 @@ func fixtureELF(arch string, image bool) []byte {
 
 func configureNativeAppImageFixture(t *testing.T, root string, spec *pipeline.PackageSpec) {
 	t.Helper()
-	if runtime.GOOS != "linux" || runtime.GOARCH != spec.TargetArch {
-		t.Skip("AppImage requires a matching Linux host")
-	}
 	spec.Project.Kind = "cli"
 	if err := os.WriteFile(filepath.Join(root, spec.Binary), fixtureELF(spec.TargetArch, false), 0755); err != nil {
 		t.Fatal(err)
 	}
-	tools := t.TempDir()
-	if err := os.WriteFile(filepath.Join(tools, "linuxdeploy"), []byte("external tool fixture"), 0755); err != nil {
-		t.Fatal(err)
-	}
-	previous, previousTools := manifestAppImageCreate, manifestAppImageTools
-	t.Cleanup(func() { manifestAppImageCreate, manifestAppImageTools = previous, previousTools })
-	manifestAppImageTools = func(appimage.Options, context.Context) (appimage.Tools, error) {
-		return appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy")}, nil
+	previous, previousIdentity := manifestAppImageCreate, manifestAppImageIdentity
+	t.Cleanup(func() { manifestAppImageCreate, manifestAppImageIdentity = previous, previousIdentity })
+	manifestAppImageIdentity = func(appimage.Options, context.Context) (string, error) {
+		return "runtime fixture", nil
 	}
 	manifestAppImageCreate = func(ctx context.Context, options appimage.Options) error {
-		options.Tools = appimage.Tools{LinuxDeploy: filepath.Join(tools, "linuxdeploy")}
-		options.Runner = func(ctx context.Context, command appimage.Command) error {
-			image := fixtureELF(options.Arch, true)
-			output := filepath.Join(command.Directory, command.Env["OUTPUT"])
-			if err := os.WriteFile(output, image, 0755); err != nil {
-				return err
-			}
-			if options.UpdateInfo != "" {
-				return os.WriteFile(output+".zsync", []byte(fmt.Sprintf("zsync: 0.6.2\nFilename: %s\nLength: %d\nSHA-1: %x\n\n", filepath.Base(output), len(image), sha1.Sum(image))), 0644)
-			}
-			return nil
+		if err := ctx.Err(); err != nil {
+			return err
 		}
-		return appimage.Create(ctx, options)
+		image := fixtureELF(options.Arch, true)
+		if err := os.MkdirAll(filepath.Dir(options.Output), 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(options.Output, image, 0755); err != nil {
+			return err
+		}
+		if options.UpdateInfo != "" {
+			return os.WriteFile(options.Output+".zsync", []byte(fmt.Sprintf("zsync: 0.6.2\nFilename: %s\nLength: %d\nSHA-1: %x\n\n", filepath.Base(options.Output), len(image), sha1.Sum(image))), 0644)
+		}
+		return nil
 	}
 }
 
@@ -85,9 +79,6 @@ func (h appImageIntegrationHandler) Run(ctx context.Context, node pipeline.Node)
 }
 
 func TestAppImageSidecarsAreRestoredAndCollected(t *testing.T) {
-	if runtime.GOOS != "linux" {
-		t.Skip("Linux AppImage adapter")
-	}
 	root := executableFixture(t)
 	source := `version: 3
 project: {name: image, product_name: Image, identifier: com.example.image, version: 1.0.0, kind: cli}
@@ -139,20 +130,39 @@ packages:
 	}
 }
 
-func TestAppImageToolIdentityIncludesOnlyExternalOverrides(t *testing.T) {
-	previous := manifestAppImageTools
-	t.Cleanup(func() { manifestAppImageTools = previous })
-	resolved := appimage.Tools{LinuxDeploy: "linuxdeploy"}
-	manifestAppImageTools = func(appimage.Options, context.Context) (appimage.Tools, error) { return resolved, nil }
-	handler := &manifestHandler{root: t.TempDir()}
-	spec := pipeline.PackageSpec{Format: "appimage", TargetArch: "amd64"}
-	paths, err := handler.packageToolPaths(t.Context(), spec)
-	if err != nil || len(paths) != 1 || paths[0] != "linuxdeploy" {
-		t.Fatalf("default tool identity: %q, %v", paths, err)
+func TestAppImageRuntimeIdentityIncludesGUICompanion(t *testing.T) {
+	previous := manifestAppImageIdentity
+	t.Cleanup(func() { manifestAppImageIdentity = previous })
+	root := t.TempDir()
+	for _, path := range []string{"linux-root", "runtime"} {
+		if err := os.MkdirAll(filepath.Join(root, path), 0755); err != nil {
+			t.Fatal(err)
+		}
 	}
-	resolved.AppRun = "custom-AppRun"
-	paths, err = handler.packageToolPaths(t.Context(), spec)
-	if err != nil || len(paths) != 2 || paths[1] != "custom-AppRun" {
-		t.Fatalf("custom launcher identity: %q, %v", paths, err)
+	fingerprint := "first"
+	manifestAppImageIdentity = func(options appimage.Options, ctx context.Context) (string, error) {
+		if !options.WebKit || options.GTKVersion != 3 || len(options.Binaries) != 2 || options.RuntimeRoot != filepath.Join(root, "linux-root") || options.RuntimePath != filepath.Join(root, "runtime") {
+			t.Fatalf("lost runtime options: %+v", options)
+		}
+		return fingerprint, nil
+	}
+	handler := &manifestHandler{root: root}
+	spec := pipeline.PackageSpec{Format: "appimage", TargetArch: "amd64", GTKVersion: 3,
+		Project: manifest.Project{Kind: "cli", BinaryName: "cli"}, Binary: "bin/cli",
+		Companions: []pipeline.NamedBinary{{Name: "gui", Path: "bin/gui", Kind: "gui"}},
+		Config:     manifest.PackageFormat{RuntimeRoot: "linux-root", RuntimePath: "runtime"}}
+	node := pipeline.Node{Kind: pipeline.PackageArtifact, Spec: spec}
+	first, err := handler.Identity(t.Context(), node)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fingerprint = "changed content"
+	second, err := handler.Identity(t.Context(), node)
+	if err != nil || first == second {
+		t.Fatal("runtime content change did not invalidate package", err)
+	}
+	paths, err := handler.packageToolPaths(t.Context(), spec)
+	if err != nil || len(paths) != 0 {
+		t.Fatal("native AppImage unexpectedly requires external tools", paths, err)
 	}
 }

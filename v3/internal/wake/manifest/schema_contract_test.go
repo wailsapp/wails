@@ -490,6 +490,7 @@ func TestEjectionCoversEveryPackageSchemaField(t *testing.T) {
 		t.Run(format, func(t *testing.T) {
 			doc := defaults(project)
 			raw := PackageFormat{
+				RuntimeRoot: "linux-root", RuntimePath: "runtime", GTKVersion: 3,
 				Defines: map[string]string{"EXAMPLE": "value"}, UpdateInfo: "zsync|https://example.test/app.zsync", Checksum: true,
 				Format: format, InstallScope: "user", Publisher: "CN=Publisher", Manifest: "manifest",
 				Background: "background", VolumeIcon: "volume", FileIcon: "file", Files: map[string]string{"License": "LICENSE"},

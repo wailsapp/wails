@@ -176,11 +176,11 @@ func TestIndependentLinuxPackageBranchesRunConcurrently(t *testing.T) {
 	assert.Equal(t, 3, handler.maximum(), "all independent Linux package adapters should overlap")
 }
 
-func TestAppImageIsProcessIsolatedAndDarwinBundleAdaptersRemainExclusive(t *testing.T) {
+func TestAppImageCanRunConcurrentlyAndDarwinBundleAdaptersRemainExclusive(t *testing.T) {
 	linux := performanceConfig(t)
 	linuxPlan, err := PlanBuild(linux, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"appimage", "deb"}})
 	require.NoError(t, err)
-	assert.Empty(t, linuxPlan.Nodes["package:linux/amd64:appimage"].Claims.Exclusive, "AppImage runs through an isolated CLI subprocess")
+	assert.Empty(t, linuxPlan.Nodes["package:linux/amd64:appimage"].Claims.Exclusive, "AppImage uses independent native staging")
 	assert.Empty(t, linuxPlan.Nodes["package:linux/amd64:deb"].Claims.Exclusive)
 
 	darwin := performanceConfig(t)

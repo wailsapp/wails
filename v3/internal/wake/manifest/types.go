@@ -319,6 +319,9 @@ type DMGPackage struct {
 }
 
 type AppImagePackage struct {
+	RuntimeRoot  string   `json:"runtime_root,omitempty"`
+	RuntimePath  string   `json:"runtime_path,omitempty"`
+	GTKVersion   int      `json:"gtk_version,omitempty"`
 	UpdateInfo   string   `json:"update_info,omitempty"`
 	Checksum     bool     `json:"checksum,omitempty"`
 	Icon         string   `json:"icon,omitempty"`
@@ -338,6 +341,9 @@ type LinuxPackage struct {
 }
 
 type PackageFormat struct {
+	RuntimeRoot  string            `manifest:"runtime_root,optional" formats:"appimage" path:"true" json:"runtime_root,omitempty"`
+	RuntimePath  string            `manifest:"runtime_path,optional" formats:"appimage" path:"true" json:"runtime_path,omitempty"`
+	GTKVersion   int               `manifest:"gtk_version,optional" formats:"appimage" json:"gtk_version,omitempty"`
 	Defines      map[string]string `manifest:"defines,optional" formats:"nsis" json:"defines,omitempty"`
 	UpdateInfo   string            `manifest:"update_info,optional" formats:"appimage" json:"update_info,omitempty"`
 	Checksum     bool              `manifest:"checksum,optional" formats:"appimage" json:"checksum,omitempty"`

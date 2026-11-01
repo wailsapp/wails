@@ -134,7 +134,10 @@ func nonempty(values ...string) []string {
 var schemaAttributeDescriptions = map[string]string{
 	"microphone_usage_description": "macOS microphone permission text; generates the audio-input entitlement unless a user-owned entitlement file is configured.",
 	"defines":                      "Literal custom NSIS preprocessor definitions; Wails-owned names are reserved.",
-	"update_info":                  "AppImage update-information string; requires a matching zsync sidecar from linuxdeploy.",
+	"runtime_root":                 "Project-relative target Linux root filesystem containing GTK/WebKit libraries and compiled resource caches; defaults to the Linux host root.",
+	"runtime_path":                 "Project-relative AppImage type-2 runtime ELF; defaults to the pinned, checksum-verified target runtime download.",
+	"gtk_version":                  "GTK runtime profile: 3 or 4. Defaults to the GUI executable build tags, including companions; imported CGo libraries must agree.",
+	"update_info":                  "AppImage update-information string; generates a matching zsync sidecar in Go.",
 	"checksum":                     "Publish a SHA-256 checksum alongside the AppImage.",
 	"package":                      "Project-relative directory containing one Go main package.",
 	"kind":                         "Executable kind: gui, cli or server; companions default to cli.",

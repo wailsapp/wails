@@ -690,6 +690,9 @@ func validateRegistrationPlatforms(field string, platforms []string) error {
 }
 
 func validatePackageOptions(paths *projectPathValidator, name string, format PackageFormat) error {
+	if format.GTKVersion != 0 && format.GTKVersion != 3 && format.GTKVersion != 4 {
+		return fieldValidationError(packageManifestField(name)+".gtk_version", "must be 3 or 4 when specified")
+	}
 	manifestField := packageManifestField(name)
 	if format.Format != "" {
 		_, expected, _ := strings.Cut(name, ".")

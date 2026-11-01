@@ -330,6 +330,9 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 			if !capability.SupportsHost(host.os) {
 				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires a %s host", operation, requiredHostName(capability.Hosts)))
 			}
+			if spec.Format == "appimage" && spec.GTKVersion != 0 && spec.Config.RuntimeRoot == "" && (host.os != "linux" || host.arch != spec.TargetArch) {
+				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires packages.appimage.runtime_root containing the target Linux GTK/WebKit runtime", operation))
+			}
 			for index := range int(capability.ToolCount) {
 				if err := requireHostTools(host, operation, capability.RequiredTool(index)); err != nil {
 					return Plan{}, annotateHostConfigurationError(config, node, err)

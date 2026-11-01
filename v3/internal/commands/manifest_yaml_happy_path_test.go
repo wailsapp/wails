@@ -4,6 +4,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/appimage"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
@@ -969,6 +971,11 @@ profiles:
 }
 
 func TestYAMLPlanIdentityCoversEveryPortableStage(t *testing.T) {
+	// AppImage identity reads executable imports after dependencies materialize;
+	// this test only inspects planned nodes. Runtime content is covered separately.
+	previous := manifestAppImageIdentity
+	t.Cleanup(func() { manifestAppImageIdentity = previous })
+	manifestAppImageIdentity = func(appimage.Options, context.Context) (string, error) { return "runtime fixture", nil }
 	root := t.TempDir()
 	t.Chdir(root)
 	yaml := `version: 3

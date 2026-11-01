@@ -783,12 +783,24 @@
               "description": "User-owned Linux desktop-entry file.",
               "type": "string"
             },
+            "gtk_version": {
+              "description": "GTK runtime profile: 3 or 4. Defaults to the GUI executable build tags, including companions; imported CGo libraries must agree.",
+              "type": "integer"
+            },
             "icon": {
               "description": "Project-relative user-owned icon file.",
               "type": "string"
             },
+            "runtime_path": {
+              "description": "Project-relative AppImage type-2 runtime ELF; defaults to the pinned, checksum-verified target runtime download.",
+              "type": "string"
+            },
+            "runtime_root": {
+              "description": "Project-relative target Linux root filesystem containing GTK/WebKit libraries and compiled resource caches; defaults to the Linux host root.",
+              "type": "string"
+            },
             "update_info": {
-              "description": "AppImage update-information string; requires a matching zsync sidecar from linuxdeploy.",
+              "description": "AppImage update-information string; generates a matching zsync sidecar in Go.",
               "type": "string"
             }
           },

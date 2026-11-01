@@ -245,7 +245,7 @@ removes that metadata because it invalidates signed bundles.
 | Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Windows host and signing tools. |
 | macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | macOS with Apple tools and credentials. |
 | Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | Exported OpenPGP keys use the native DEB/RPM/Arch signer. Legacy DEB/RPM key IDs require external tools. Void output is unsigned. |
-| Linux AppImage | Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin. | No built-in AppImage signing flow. |
+| Linux AppImage | Windows, macOS or Linux; Go deployment and SquashFS writer, plus a target AppImage runtime. GUI cross-packaging requires a supplied Linux runtime tree. | No built-in AppImage signing flow. |
 
 For signed DMGs, Wake normally signs a private copy of the application before
 the Go writer compresses the image, then signs the image. This avoids mounting,
@@ -266,15 +266,37 @@ executable is a CLI or server. A GUI primary or companion retains WebView2.
 Custom NSIS scripts retain the bootstrapper for compatibility with their own
 runtime-installation logic.
 
-Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain
-the external linuxdeploy and GTK plugin boundary. Set
-`packages.appimage.update_info` to request a zsync file and
+Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. Wake assembles
+AppImages directly in Go, including GTK/WebKit deployment, SquashFS compression
+and zsync generation. It does not invoke linuxdeploy, the GTK plugin, appimagetool
+or mksquashfs. A pinned, checksum-verified AppImage type-2 runtime is downloaded
+for the target architecture; `packages.appimage.runtime_path` selects a
+project-relative runtime ELF instead.
+
+On Linux, the default library source is the host root filesystem. To package a
+GUI for another architecture or from Windows/macOS, set
+`packages.appimage.runtime_root` to a project-relative target Linux root tree
+containing its libraries, compiled schemas and module caches. This is the whole
+root layout, including `usr/`, rather than the `usr/` directory itself. Supply a
+runtime from the oldest Linux distribution you intend to support. Wake reads
+ELF imports and explicit GTK/WebKit profiles without executing target programs.
+It bundles the selected closure, not glibc or the dynamic loader. Library and
+resource content hashes invalidate the package cache after runtime updates.
+
+Pure-Go GUI builds are supported. Wake selects GTK 3 for GUI executables built
+with `gtk3`, and GTK 4 otherwise, including GUI companions of a CLI/server.
+All GUI executables in an image must use one GTK version. For prebuilt binaries,
+`packages.appimage.gtk_version` can explicitly select `3` or `4`; imported CGo
+libraries must agree with that choice.
+
+Set `packages.appimage.update_info` to request a zsync file and
 `packages.appimage.checksum: true` for a SHA256 file. Sidecars are restored from
 the package cache and listed in the artifact receipt alongside the AppImage.
-AppImage packaging currently requires Linux and a matching host/target
-architecture. Its GTK detection does not discover libraries loaded dynamically
-by a pure-Go GUI, so this adapter does not yet support pure-Go GUI deployment.
-Use one of the Linux package-manager formats for that build mode.
+Windows and macOS packaging have been verified with a supplied GTK/WebKit tree;
+the resulting pure-Go GUI images passed runtime checks on Linux. In one matched
+CGo GUI build, the native path took 8.77 seconds versus 26.19 seconds for
+linuxdeploy. The native gzip image was 133 MiB versus 114 MiB with the old zstd
+path, so this measures the whole packaging path rather than compression alone.
 
 Arch packages preserve prereleases in native package metadata, for example
 `1.2.3-beta.2` becomes `1.2.3beta.2-1`, which sorts before the final release.

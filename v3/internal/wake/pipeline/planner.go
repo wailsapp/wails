@@ -530,6 +530,13 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if beforePackage != "" {
 			packageDeps = appendUniqueKeys(packageDeps, beforePackage)
 		}
+		gtkVersion := 0
+		if format == "appimage" {
+			gtkVersion, err = appImageGTKVersion(plan, pkgConfig.GTKVersion)
+			if err != nil {
+				return Plan{}, err
+			}
+		}
 		packageCache, bundleSigning := packageSigningPolicy(config, request, format, assetsOut)
 		packageBinary := binaryOut
 		if format == "dmg" || format == "ipa" {
@@ -541,7 +548,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			output = filepath.ToSlash(filepath.Join(nodeOutput, filepath.Base(output)))
 		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
-			Spec:   PackageSpec{BundleSigning: bundleSigning, Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Spec:   PackageSpec{GTKVersion: gtkVersion, BundleSigning: bundleSigning, Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
 			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: nodeOutput, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format, bundleSigning != nil)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
 		packageRoots = append(packageRoots, pkg)
 		finalOutputs[pkg] = finalOutput

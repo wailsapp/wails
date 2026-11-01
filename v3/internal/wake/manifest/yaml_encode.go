@@ -379,6 +379,9 @@ func encodeYAMLPackage(format string, value PackageFormat) *yaml.Node {
 	if value.UpdateInfo != "" {
 		yamlSetString(result, "update_info", value.UpdateInfo)
 	}
+	if value.GTKVersion != 0 {
+		yamlSet(result, "gtk_version", yamlInt(value.GTKVersion))
+	}
 	if value.Checksum {
 		yamlSet(result, "checksum", yamlBool(true))
 	}
@@ -386,6 +389,7 @@ func encodeYAMLPackage(format string, value PackageFormat) *yaml.Node {
 	for _, entry := range []struct{ key, value string }{
 		{"template", value.Template}, {"install_scope", value.InstallScope}, {"publisher", value.Publisher}, {"manifest", value.Manifest},
 		{"background", value.Background}, {"volume_icon", value.VolumeIcon}, {"file_icon", value.FileIcon}, {"icon", value.Icon},
+		{"runtime_root", value.RuntimeRoot}, {"runtime_path", value.RuntimePath},
 		{"desktop_entry", value.DesktopEntry}, {"maintainer", value.Maintainer}, {"section", value.Section},
 		{"pre_install", value.PreInstall}, {"post_install", value.PostInstall}, {"pre_remove", value.PreRemove}, {"post_remove", value.PostRemove},
 	} {
