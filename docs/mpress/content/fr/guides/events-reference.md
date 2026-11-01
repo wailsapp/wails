@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 La liste complète des événements disponibles se trouve dans le code source de Wails :
 
-- Événements frontend : [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- Événements backend : [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- Événements frontend : [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Événements backend : [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 Consultez toujours ces fichiers pour connaître les noms d’événements et leur disponibilité les plus récents.
 

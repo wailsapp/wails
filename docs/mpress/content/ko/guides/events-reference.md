@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 사용 가능한 이벤트의 전체 목록은 Wails 소스 코드에서 확인할 수 있습니다:
 
-- 프런트엔드 이벤트: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- 백엔드 이벤트: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- 프런트엔드 이벤트: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- 백엔드 이벤트: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 최신 이벤트 이름과 사용 가능 여부는 항상 이 파일들을 참조하세요.
 
