@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -2901,21 +2902,28 @@ func runManifestCommand(ctx context.Context, dir string, extraEnv []string, name
 }
 
 func runManifestCommandWithEnvironment(ctx context.Context, dir string, environment []string, name string, args ...string) (string, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	cmd := exec.Command(name, args...)
 	cmd.Dir = dir
 	cmd.Env = environment
-	configureManifestProcess(cmd)
-	cmd.Cancel = func() error {
-		if cmd.Process == nil {
-			return os.ErrProcessDone
-		}
-		return killManifestProcess(cmd.Process)
-	}
 	cmd.WaitDelay = 5 * time.Second
 	var output bytes.Buffer
 	cmd.Stdout = &output
 	cmd.Stderr = &output
-	err := cmd.Run()
+	cleanup, err := startManifestOwnedProcess(cmd)
+	if err != nil {
+		return "", err
+	}
+	cleanup = sync.OnceFunc(cleanup)
+	defer cleanup()
+	stop := context.AfterFunc(ctx, cleanup)
+	defer stop()
+	err = cmd.Wait()
+	if ctx.Err() != nil {
+		err = ctx.Err()
+	}
 	return strings.TrimSpace(output.String()), err
 }
 
