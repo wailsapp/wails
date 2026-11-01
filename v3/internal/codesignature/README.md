@@ -27,5 +27,8 @@ RSA/certificate generator and OpenSSL's PFX writer. They contain no real signing
 credentials. Their password is `fixture-only`; subject is
 `CN=Wails Portable Signing Test Only`, serial 20261101, validity 2020–2120.
 The modern fixture uses OpenSSL's PBES2/AES defaults and SHA-256 MAC; the legacy
-fixture explicitly selects `PBE-SHA1-3DES` for both certificates and private keys.
+3DES fixture explicitly selects `PBE-SHA1-3DES` for both certificates and private keys.
+The RC2 fixture uses OpenSSL `-legacy` defaults to prove that the unsupported
+encryption sentinel is returned only after MAC verification; bad passwords and
+tampered data cannot select a native fallback.
 Tests and benchmarks require only the standard library.

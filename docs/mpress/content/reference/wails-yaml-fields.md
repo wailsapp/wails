@@ -237,11 +237,11 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `windows.product_name` | `string` | no |  | `"value"` | `windows,darwin,linux` | Human-readable product name. |
 | `windows.publisher` | `string` | no |  | `"CN=Example"` | `windows` | Windows package publisher identity. |
 | `windows.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
-| `windows.signing.certificate` | `string` | no |  | `"signing/windows.pfx"` |  | Project-relative PFX signing certificate file; alternatively configure thumbprint. |
+| `windows.signing.certificate` | `string` | no |  | `"signing/windows.pfx"` |  | Project-relative exported RSA PFX identity for portable PE/MSIX signing on any desktop host. AES/PBKDF2 and 3DES supported; native Windows SignTool handles RC2 exports. Alternatively configure thumbprint. |
 | `windows.signing.credential` | `string` | no |  | `"WINDOWS_SIGNING_PASSWORD"` |  | Name of the environment variable containing the PFX certificate password; never the password itself. |
 | `windows.signing.entitlements` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `windows.signing.identity` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `windows.signing.key_alias` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `windows.signing.provisioning_profile` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
-| `windows.signing.thumbprint` | `string` | no |  | `"0123456789ABCDEF"` |  | Thumbprint of a certificate in the Windows certificate store. |
-| `windows.signing.timestamp_server` | `string` | no |  | `"https://timestamp.example.com"` |  | URL of the Windows signing timestamp service. |
+| `windows.signing.thumbprint` | `string` | no |  | `"0123456789ABCDEF"` |  | Thumbprint of a certificate in the Windows certificate store; requires Windows with SignTool. |
+| `windows.signing.timestamp_server` | `string` | no |  | `"https://timestamp.example.com"` |  | RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified. |

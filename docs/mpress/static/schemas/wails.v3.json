@@ -1411,7 +1411,7 @@
           "additionalProperties": false,
           "properties": {
             "certificate": {
-              "description": "Project-relative PFX signing certificate file; alternatively configure thumbprint.",
+              "description": "Project-relative exported RSA PFX identity for portable PE/MSIX signing on any desktop host. AES/PBKDF2 and 3DES supported; native Windows SignTool handles RC2 exports. Alternatively configure thumbprint.",
               "type": "string"
             },
             "credential": {
@@ -1435,11 +1435,11 @@
               "type": "string"
             },
             "thumbprint": {
-              "description": "Thumbprint of a certificate in the Windows certificate store.",
+              "description": "Thumbprint of a certificate in the Windows certificate store; requires Windows with SignTool.",
               "type": "string"
             },
             "timestamp_server": {
-              "description": "URL of the Windows signing timestamp service.",
+              "description": "RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified.",
               "type": "string"
             }
           },

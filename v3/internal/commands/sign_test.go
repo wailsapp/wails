@@ -66,6 +66,11 @@ func TestResolveSigningDefaults(t *testing.T) {
 	if explicit.Certificate != "/explicit/cert.pfx" {
 		t.Errorf("flag Certificate overridden by config: %q", explicit.Certificate)
 	}
+	explicitStore := &flags.Sign{Input: "app.exe", Thumbprint: "explicit-thumbprint"}
+	resolveSigningDefaults(explicitStore)
+	if explicitStore.Certificate != "" || explicitStore.Thumbprint != "explicit-thumbprint" {
+		t.Fatal("default PFX overrode explicit certificate-store identity")
+	}
 }
 
 func TestSignMacOSDiskImageSignsNotarizesAndStaples(t *testing.T) {

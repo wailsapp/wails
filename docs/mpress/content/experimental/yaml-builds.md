@@ -241,8 +241,8 @@ removes that metadata because it invalidates signed bundles.
 
 | Output | Creation hosts and tools | Signing |
 | --- | --- | --- |
-| Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Windows host and signing tools. |
-| Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Windows host and signing tools. |
+| Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Go signing with an exported RSA PFX on any desktop host; certificate-store/provider identities require Windows SignTool. |
+| Windows NSIS installer | Windows, macOS or Linux; host-native `makensis` required. | Go PE signing with an exported RSA PFX on any desktop host; certificate-store/provider identities require Windows SignTool. |
 | macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | Go signing with an exported RSA PKCS#12 identity, or ad-hoc signing; keychain identities retain macOS tools. API-key notarization and ticket stapling run in Go. |
 | Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | Exported OpenPGP keys use the native DEB/RPM/Arch signer. Legacy DEB/RPM key IDs require external tools. Void output is unsigned. |
 | Linux AppImage | Windows, macOS or Linux; Go deployment and SquashFS writer, plus a target AppImage runtime. GUI cross-packaging requires a supplied Linux runtime tree. | No built-in AppImage signing flow. |
@@ -276,8 +276,16 @@ API. It does not replace Gatekeeper's current revocation checks. App and signed
 DMG outputs have passed native `stapler validate` and strict signature checks.
 
 Windows MSIX archives are created directly in Go; creating an unsigned package
-does not require the Windows SDK or Docker. Windows signing still requires a
-Windows host and its signing tools. NSIS uses the external NSIS compiler and
+does not require the Windows SDK or Docker. Exported RSA PFX identities sign
+Windows executables and individual MSIX packages directly in Go on every desktop
+host. Set `windows.signing.certificate` to the project-relative PFX and
+`windows.signing.credential` to its password environment variable. AES/PBKDF2 and
+legacy 3DES exports are supported; RC2 exports require re-exporting or the native
+Windows SignTool fallback. Certificate-store/provider identities and MSI signing
+require Windows SignTool. The default timestamp service is DigiCert; timestamps
+are verified before publishing signed output. See the
+[signing guide](/guides/build/signing/#cross-platform-signing) for format limits.
+NSIS uses the external NSIS compiler and
 accepts literal definitions through `packages.nsis.defines`. On macOS, Wails
 supplies a UTF-8 locale only to the NSIS compiler child when its inherited
 locale is not UTF-8; terminal and application environments are unchanged.

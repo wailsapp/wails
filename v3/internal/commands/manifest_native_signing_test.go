@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -96,11 +97,16 @@ profiles:
 
 			var received flags.Sign
 			previousSign := manifestSign
+			previousWindowsSign := manifestWindowsSign
+			manifestWindowsSign = func(_ context.Context, options *flags.Sign) error { return manifestSign(options) }
 			manifestSign = func(options *flags.Sign) error {
 				received = *options
+				if options.Output != "" {
+					return copyManifestPath(options.Input, options.Output)
+				}
 				return nil
 			}
-			t.Cleanup(func() { manifestSign = previousSign })
+			t.Cleanup(func() { manifestSign = previousSign; manifestWindowsSign = previousWindowsSign })
 			handler := &manifestHandler{root: root, config: loaded.Config}
 			if spec.Config.Entitlements != "" {
 				assetsRoot := filepath.Dir(filepath.Dir(filepath.Join(root, spec.Config.Entitlements)))
@@ -112,8 +118,13 @@ profiles:
 			_, err = handler.Run(t.Context(), signNode)
 			require.NoError(t, err)
 			assert.True(t, spec.Config.Enabled)
-			assert.NotEqual(t, input, received.Input, "signing must operate on a private staged copy")
-			assert.Contains(t, received.Input, string(filepath.Separator)+".sign-output-")
+			if test.platform == "windows" {
+				assert.Equal(t, input, received.Input)
+				assert.Equal(t, input+".signed", received.Output)
+			} else {
+				assert.NotEqual(t, input, received.Input, "signing must operate on a private staged copy")
+				assert.Contains(t, received.Input, string(filepath.Separator)+".sign-output-")
+			}
 			assert.Equal(t, spec.Config.Identity, received.Identity)
 			expectedCertificate := spec.Config.Certificate
 			if expectedCertificate != "" {

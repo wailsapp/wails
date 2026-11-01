@@ -19,7 +19,8 @@ This matrix shows what you can sign from each source platform:
 
 | Target Format | From Windows | From macOS | From Linux |
 | --- | :---: | :---: | :---: |
-| Windows EXE/MSI | ✅ | ✅ | ✅ |
+| Windows EXE/DLL/MSIX/APPX, exported PFX | ✅ | ✅ | ✅ |
+| Windows MSI or certificate-store/provider identity | ✅ | ❌ | ❌ |
 | macOS .app / Mach-O / DMG, exported identity | ✅ | ✅ | ✅ |
 | macOS notarization, team API credentials | ✅ | ✅ | ✅ |
 | macOS keychain identity or notary profile | ❌ | ✅ | ❌ |
@@ -37,7 +38,7 @@ Wails automatically selects the best available signing backend:
 
 | Platform | Native Backend | Cross-Platform Backend |
 | --- | --- | --- |
-| Windows | `signtool.exe` (Windows SDK) | Built-in |
+| Windows | `signtool.exe` for store/provider identities, MSI or legacy RC2 PFX | Built-in for exported RSA PFX and PE/MSIX |
 | macOS | `codesign` for keychain identities | Built-in for exported PKCS#12 identities or ad-hoc signing |
 | Linux | N/A | Built-in |
 
@@ -191,7 +192,7 @@ darwin:
 `credential` names the environment variable holding the certificate password.
 Keep both private-key files outside version control. Enable signing and
 notarization in the release profile described in the
-[YAML build guide](../../experimental/yaml-builds.md).
+[YAML build guide](/experimental/yaml-builds/).
 
 The portable signer supports 64-bit Intel and Apple Silicon Mach-O files,
 universal binaries, canonical app bundles with nested code, frameworks and
@@ -330,8 +331,8 @@ Notarization typically takes 1-2 minutes. The ticket is automatically stapled to
 ### Prerequisites
 
 - Code signing certificate (from DigiCert, Sectigo, etc.)
-- For native signing on Windows: Windows SDK installed (for `signtool.exe`)
-- For cross-platform signing from macOS/Linux: [`osslsigncode`](https://github.com/mtrojnar/osslsigncode) (the `wails3 setup` signing step shows the host-specific install command)
+- For portable signing: an exported RSA PFX identity encrypted with AES/PBKDF2 or legacy 3DES; no external signing tools are required
+- For certificate-store/provider identities, MSI packages or legacy RC2 PFX: Windows with the Windows SDK signing tools on `PATH`
 
 ### Generating a self-signed certificate (testing)
 
@@ -379,15 +380,48 @@ wails3 task windows:sign:installer # Build and sign NSIS installer
 
 ### Cross-Platform Signing
 
-Windows executables can be signed from any platform. The same Taskfile configuration and commands work on macOS and Linux.
+Exported RSA PFX identities sign EXE/DLL files, NSIS installer executables and
+individual MSIX/APPX packages using Go on Windows, macOS and Linux. Existing
+signatures can be replaced. Signing stages the output and publishes it only
+after signing and timestamp verification succeed, preserving the original on
+failure. Use `--output` to write a separate signed file.
+
+Wake reads these settings directly from `wails.yaml`:
+
+```yaml
+windows:
+  signing:
+    certificate: signing/windows.pfx
+    credential: WINDOWS_SIGNING_PASSWORD
+    timestamp_server: http://timestamp.digicert.com
+```
+
+`credential` names the password environment variable, never the password itself.
+Enable `sign: true` for the release target; see the
+[YAML build guide](/experimental/yaml-builds/). Wake does not invoke
+Taskfiles. Legacy projects can continue using the Taskfile configuration above.
+
+The portable profile uses RSA/SHA-256 and validates RFC 3161 timestamps,
+including the timestamp signer's trusted certificate chain. The default service
+is DigiCert. MSIX Publisher must match the signing certificate subject; package
+bundles and archives of 4 GiB or more are unsupported. PFX files are limited to
+16 MiB. Other certificate algorithms and RC2 encryption are rejected. Re-export
+an RC2 PFX using AES or 3DES for portable signing; on Windows an authenticated
+RC2 PFX uses SignTool instead. A bad password or damaged PFX never triggers that
+fallback.
+
+Certificate-store, hardware-token and provider-backed keys retain the native
+Windows SignTool workflow using `thumbprint`. MSI signing also requires
+SignTool on Windows. These workflows do not become portable by configuring
+an exported certificate.
 
 ### Supported Windows Formats
 
 | Format | Extension | Notes |
 | --- | --- | --- |
-| Executables | .exe | Standard PE signing |
-| Installers | .msi | Windows Installer packages |
-| App Packages | .msix, .appx | Modern Windows apps |
+| Executables and libraries | .exe, .dll | Portable PE signing, including NSIS installers |
+| Installers | .msi | Windows SignTool required |
+| App Packages | .msix, .appx | Portable individual package signing; no bundles |
 
 ## Linux Package Signing
 

@@ -35,6 +35,10 @@ var (
 	oidSHA256         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
 )
 
+// ErrUnsupportedPFXEncryption identifies an authenticated PFX encryption profile
+// that a platform signer may support. Authentication failures never wrap it.
+var ErrUnsupportedPFXEncryption = errors.New("unsupported PFX encryption profile")
+
 type contentInfo struct {
 	Type    asn1.ObjectIdentifier
 	Content asn1.RawValue `asn1:"optional,explicit,tag:0"`
@@ -330,7 +334,7 @@ func (d *pfxDecoder) decrypt(value encryptedValue) ([]byte, error) {
 	case value.Algorithm.Algorithm.Equal(oidTripleDES):
 		block, iv, err = d.tripleDES(value.Algorithm.Parameters.FullBytes)
 	default:
-		return nil, fmt.Errorf("unsupported PFX encryption %s; re-export using AES or 3DES (RC2 is not supported)", value.Algorithm.Algorithm)
+		return nil, fmt.Errorf("%w: %s; re-export using AES or 3DES (RC2 is not supported)", ErrUnsupportedPFXEncryption, value.Algorithm.Algorithm)
 	}
 	if err != nil {
 		return nil, err

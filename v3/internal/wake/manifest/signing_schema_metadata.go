@@ -7,7 +7,7 @@ type signingFieldMetadata struct{ description, example string }
 var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	"certificate": {
 		"darwin":  {"Project-relative exported PKCS#12 identity for portable Go signing; omit to use a macOS keychain identity or ad-hoc signing.", `"signing/developer-id.p12"`},
-		"windows": {"Project-relative PFX signing certificate file; alternatively configure thumbprint.", `"signing/windows.pfx"`},
+		"windows": {"Project-relative exported RSA PFX identity for portable PE/MSIX signing on any desktop host. AES/PBKDF2 and 3DES supported; native Windows SignTool handles RC2 exports. Alternatively configure thumbprint.", `"signing/windows.pfx"`},
 		"linux":   {"Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer.", `"signing/private-key.asc"`},
 		"android": {"Project-relative Android signing keystore file.", `"signing/upload.jks"`},
 	},
@@ -31,11 +31,11 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 		"ios": {"Project-relative Apple provisioning profile.", `"signing/app.mobileprovision"`},
 	},
 	"thumbprint": {
-		"windows": {"Thumbprint of a certificate in the Windows certificate store.", `"0123456789ABCDEF"`},
+		"windows": {"Thumbprint of a certificate in the Windows certificate store; requires Windows with SignTool.", `"0123456789ABCDEF"`},
 	},
 	"timestamp_server": {
 		"darwin":  {"RFC 3161 timestamp URL for portable certificate signing; required for notarized certificate signatures.", `"https://timestamp.example.com"`},
-		"windows": {"URL of the Windows signing timestamp service.", `"https://timestamp.example.com"`},
+		"windows": {"RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified.", `"https://timestamp.example.com"`},
 	},
 	"key_alias": {
 		"android": {"Alias of the Android signing key.", `"upload"`},

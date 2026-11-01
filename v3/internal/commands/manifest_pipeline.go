@@ -2806,6 +2806,9 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	if !s.Config.Enabled {
 		return pipeline.RunResult{}, fmt.Errorf("signing is not enabled for %s", s.TargetOS)
 	}
+	if s.TargetOS == "windows" {
+		return h.signWindowsPackage(ctx, s)
+	}
 	if s.TargetOS == "linux" && s.Format == "archlinux" {
 		return h.signArch(ctx, s)
 	}
@@ -2851,13 +2854,6 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		})
 		return pipeline.RunResult{Detail: detail}, err
 	}
-	password := ""
-	if s.TargetOS == "windows" && s.Config.Credential != "" {
-		password = os.Getenv(s.Config.Credential)
-		if password == "" {
-			return pipeline.RunResult{}, fmt.Errorf("windows signing password environment variable %s is empty", s.Config.Credential)
-		}
-	}
 	certificate := s.Config.Certificate
 	if s.TargetOS != "linux" {
 		var err error
@@ -2883,7 +2879,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 				return err
 			}
 		}
-		options := &flags.Sign{Input: staged, Certificate: certificate, Password: password, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.NotarizationCredential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")}
+		options := &flags.Sign{Input: staged, Certificate: certificate, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.NotarizationCredential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")}
 		if s.Config.Notarize && notaryKey != "" {
 			options.Notarize, options.HardenedRuntime = false, true
 			if err := manifestSign(options); err != nil {

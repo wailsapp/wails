@@ -58,7 +58,7 @@ func resolveSigningDefaults(options *flags.Sign) {
 			}
 		}
 	}
-	if !appleInput && options.Certificate == "" && cfg.Signing.Windows.CertificatePath != "" {
+	if !appleInput && options.Certificate == "" && options.Thumbprint == "" && cfg.Signing.Windows.CertificatePath != "" {
 		options.Certificate = cfg.Signing.Windows.CertificatePath
 	}
 	if !appleInput && options.Thumbprint == "" && cfg.Signing.Windows.Thumbprint != "" {
@@ -106,7 +106,7 @@ func Sign(options *flags.Sign) error {
 	}
 
 	// macOS binary or Windows executable
-	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
+	if ext == ".exe" || ext == ".dll" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
 		return signWindows(options)
 	}
 
@@ -306,112 +306,11 @@ func notarizeMacOSApp(ctx context.Context, options *flags.Sign) error {
 }
 
 func signWindows(options *flags.Sign) error {
-	// Get password from keychain if not provided
 	password := options.Password
 	if password == "" && options.Certificate != "" {
-		var err error
-		password, err = keychain.Get(keychain.KeyWindowsCertPassword)
-		if err != nil {
-			pterm.Warning.Printfln("Could not get password from keychain: %v", err)
-			// Continue without password - might work for some certificates
-		}
+		password, _ = keychain.Get(keychain.KeyWindowsCertPassword)
 	}
-
-	if options.Verbose {
-		pterm.Info.Printfln("Signing Windows executable: %s", options.Input)
-	}
-
-	// Try native signtool first on Windows
-	if runtime.GOOS == "windows" {
-		if _, err := findSigntool(); err == nil {
-			// A present signer rejected this request. Preserve its diagnostic;
-			// an unrelated fallback must not hide a bad password or certificate.
-			return signWindowsNative(options, password)
-		}
-	}
-
-	// Use built-in signing (works cross-platform)
-	return signWindowsBuiltin(options, password)
-}
-
-func signWindowsNative(options *flags.Sign, password string) error {
-	// Find signtool.exe
-	signtool, err := findSigntool()
-	if err != nil {
-		return err
-	}
-
-	args := []string{"sign"}
-
-	if options.Certificate != "" {
-		args = append(args, "/f", options.Certificate)
-		if password != "" {
-			args = append(args, "/p", password)
-		}
-	} else if options.Thumbprint != "" {
-		args = append(args, "/sha1", options.Thumbprint)
-	} else {
-		return fmt.Errorf("either --certificate or --thumbprint is required")
-	}
-
-	// Add timestamp server
-	timestamp := options.Timestamp
-	if timestamp == "" {
-		timestamp = "http://timestamp.digicert.com"
-	}
-	args = append(args, "/tr", timestamp, "/td", "SHA256", "/fd", "SHA256")
-
-	args = append(args, options.Input)
-
-	cmd := exec.Command(signtool, args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		detail := strings.TrimSpace(string(output))
-		if password != "" {
-			detail = strings.ReplaceAll(detail, password, "<redacted>")
-		}
-		return fmt.Errorf("signtool failed: %s: %w", detail, err)
-	}
-
-	pterm.Success.Printfln("Signed: %s", options.Input)
-	return nil
-}
-
-func findSigntool() (string, error) {
-	// Check if signtool is in PATH
-	path, err := exec.LookPath("signtool.exe")
-	if err == nil {
-		return path, nil
-	}
-
-	// Common Windows SDK locations
-	sdkPaths := []string{
-		`C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe`,
-		`C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe`,
-		`C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe`,
-	}
-
-	for _, p := range sdkPaths {
-		if _, err := os.Stat(p); err == nil {
-			return p, nil
-		}
-	}
-
-	return "", fmt.Errorf("signtool.exe not found")
-}
-
-func signWindowsBuiltin(options *flags.Sign, password string) error {
-	// This would use a Go library for Authenticode signing
-	// For now, we'll return an error indicating it needs implementation
-	// In a full implementation, you'd use something like:
-	// - github.com/AkarinLiu/osslsigncode-go
-	// - or implement PE signing directly
-
-	if options.Certificate == "" {
-		return fmt.Errorf("--certificate is required for cross-platform signing")
-	}
-
-	return fmt.Errorf("built-in Windows signing not yet implemented - please use signtool.exe on Windows, or install osslsigncode")
+	return signWindowsWithPassword(context.Background(), options, password)
 }
 
 func signDEB(options *flags.Sign) error {

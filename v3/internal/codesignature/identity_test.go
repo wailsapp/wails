@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/asn1"
+	"errors"
 	"os"
 	"testing"
 )
@@ -83,5 +84,22 @@ func BenchmarkDecodePFX(b *testing.B) {
 		if _, err := DecodePFX(data, "fixture-only"); err != nil {
 			b.Fatal(err)
 		}
+	}
+}
+
+func TestUnsupportedPFXEncryptionRequiresValidIntegrity(t *testing.T) {
+	data, err := os.ReadFile("testdata/legacy-rc2.pfx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := DecodePFX(data, "fixture-only"); !errors.Is(err, ErrUnsupportedPFXEncryption) {
+		t.Fatalf("RC2 classification: %v", err)
+	}
+	if _, err := DecodePFX(data, "wrong"); err == nil || errors.Is(err, ErrUnsupportedPFXEncryption) {
+		t.Fatalf("wrong password allowed fallback: %v", err)
+	}
+	data[len(data)-50] ^= 1
+	if _, err := DecodePFX(data, "fixture-only"); err == nil || errors.Is(err, ErrUnsupportedPFXEncryption) {
+		t.Fatalf("tampering allowed fallback: %v", err)
 	}
 }

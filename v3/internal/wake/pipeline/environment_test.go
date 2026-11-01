@@ -452,7 +452,7 @@ func TestSigningHostValidationCoversEveryPlatformContract(t *testing.T) {
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
 	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("darwin", "arm64", "codesign")))
 
-	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Certificate: "app.pfx"}}, testHost("linux", "amd64", "signtool.exe")), "requires a windows host")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Certificate: "app.pfx"}}, testHost("linux", "amd64")))
 	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Thumbprint: "abc"}}, testHost("windows", "amd64", "signtool.exe")))
 
 	android := manifest.SigningPlatform{Enabled: true, Certificate: "upload.jks", KeyAlias: "upload", Credential: "ANDROID_PASSWORD"}

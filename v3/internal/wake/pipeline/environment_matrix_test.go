@@ -81,7 +81,7 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 	}
 	switch target.Target.OS {
 	case "windows":
-		return host.OS == "windows"
+		return format != "msi" || host.OS == "windows"
 	case "darwin", "ios":
 		return host.OS == "darwin"
 	case "android":

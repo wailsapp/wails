@@ -584,13 +584,7 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 		}
 		return hostConfigurationField("sign", requireHostTools(host, operation, "codesign"))
 	case "windows":
-		if host.os != "windows" {
-			return hostConfigurationField("sign", fmt.Errorf("%s requires a windows host", operation))
-		}
-		if spec.Config.Certificate == "" && spec.Config.Thumbprint == "" {
-			return hostConfigurationField("certificate", fmt.Errorf("windows signing requires certificate or thumbprint"))
-		}
-		return hostConfigurationField("sign", requireHostTools(host, operation, "signtool.exe"))
+		return validateWindowsSigningHost(spec, host)
 	case "android":
 		if spec.Config.Certificate == "" {
 			return hostConfigurationField("certificate", fmt.Errorf("android signing requires certificate, key_alias, and credential"))
