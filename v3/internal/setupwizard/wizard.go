@@ -25,7 +25,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 //go:embed frontend/dist/*
@@ -322,6 +321,7 @@ func (w *Wizard) Run() error {
 
 func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
+	mux.HandleFunc("/api/", http.NotFound)
 	mux.HandleFunc("/api/state", w.handleState)
 	mux.HandleFunc("/api/wake/setup", w.handleWakeSetup)
 	mux.HandleFunc("/api/wake/setup/requirements", w.handleWakeRequirements)
@@ -333,7 +333,6 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
 	mux.HandleFunc("/api/docker/logs", w.handleDockerLogs)
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
-	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/signing", w.handleSigning)
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
@@ -485,99 +484,6 @@ func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.R
 	deps := w.checkMobileDependencies(q.Get("ios") == "true", q.Get("android") == "true")
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(deps)
-}
-
-func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
-	if !features.WakeEnabled() {
-		w.handleLegacyWailsConfig(rw, r)
-		return
-	}
-
-	rw.Header().Set("Content-Type", "application/json")
-
-	// Find the active Manifest in the current project.
-	configPath := findWailsConfig()
-
-	switch r.Method {
-	case http.MethodGet:
-		if configPath == "" {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		loaded, err := manifest.Load(configPath, "")
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(projectConfigStateFromConfig(loaded.Config))
-
-	case http.MethodPost:
-		var state ProjectConfigState
-		if err := json.NewDecoder(r.Body).Decode(&state); err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		root, err := os.Getwd()
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		existing := manifest.Project{}
-		if configPath != "" {
-			root = filepath.Dir(configPath)
-			loaded, loadErr := manifest.Load(configPath, "")
-			if loadErr != nil {
-				http.Error(rw, loadErr.Error(), http.StatusBadRequest)
-				return
-			}
-			existing = loaded.Config.Project
-		}
-		initial, stateErr := state.ManifestState(existing)
-		if stateErr != nil {
-			http.Error(rw, stateErr.Error(), http.StatusBadRequest)
-			return
-		}
-		if configPath == "" {
-			candidate := filepath.Join(root, manifest.Filename)
-			if _, statErr := os.Stat(candidate); statErr == nil {
-				http.Error(rw, "legacy wails.yaml already exists; migrate or rename it before creating a native build manifest", http.StatusConflict)
-				return
-			} else if !os.IsNotExist(statErr) {
-				http.Error(rw, statErr.Error(), http.StatusInternalServerError)
-				return
-			}
-			err = manifest.WriteInitial(root, initial)
-		} else if state.Bindings != nil {
-			err = manifest.UpdateInitialState(root, initial)
-		} else {
-			err = manifest.UpdateProjectMetadata(root, initial.Project)
-		}
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		configPath = filepath.Join(root, manifest.Filename)
-
-		json.NewEncoder(rw).Encode(map[string]string{"status": "saved", "path": configPath})
-
-	default:
-		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func findWailsConfig() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		return ""
-	}
-	_, configPath, err := manifest.Discover(dir)
-	if err != nil {
-		return ""
-	}
-	return configPath
 }
 
 func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
