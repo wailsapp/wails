@@ -275,6 +275,7 @@ type AssetsSpec struct {
 	Protocols                       []manifest.Protocol
 }
 type PackageSpec struct {
+	BundleSigning                                        *manifest.SigningPlatform
 	Companions                                           []NamedBinary
 	Development                                          bool
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
@@ -289,6 +290,7 @@ type PackageSpec struct {
 	Protocols                                            []manifest.Protocol
 }
 type SignSpec struct {
+	BundleSigned                        bool
 	TargetOS, TargetArch, Format, Input string
 	Config                              manifest.SigningPlatform
 }

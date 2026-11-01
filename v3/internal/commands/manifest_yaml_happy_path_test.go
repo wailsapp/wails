@@ -1048,7 +1048,7 @@ profiles:
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte(iosPackagingToolFixture), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "go"), []byte("#!/bin/sh\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf archive > \"$output\"\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "codesign"), []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$CODESIGN_RECORD\"\n"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "zip"), []byte("#!/bin/sh\noutput=$2\nprintf ipa > \"$output\"\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "zip"), []byte("#!/bin/sh\necho unexpected external zip >&2\nexit 99\n"), 0o755))
 	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("CODESIGN_RECORD", codesignRecord)
 	handler := &manifestHandler{root: root, config: loaded.Config}

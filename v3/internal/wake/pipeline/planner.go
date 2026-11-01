@@ -529,12 +529,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if beforePackage != "" {
 			packageDeps = appendUniqueKeys(packageDeps, beforePackage)
 		}
-		packageCache := CacheArtifact
-		if request.TargetOS == "ios" {
-			// iOS bundle assembly invokes codesign, including ad-hoc simulator
-			// signing, so its result must never enter the reusable artifact cache.
-			packageCache = CacheNever
-		}
+		packageCache, bundleSigning := packageSigningPolicy(config, request, format, assetsOut)
 		packageBinary := binaryOut
 		if format == "dmg" || format == "ipa" {
 			packageBinary = plan.Nodes[lastRunnable].Output
@@ -545,7 +540,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			output = filepath.ToSlash(filepath.Join(nodeOutput, filepath.Base(output)))
 		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
-			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Spec:   PackageSpec{BundleSigning: bundleSigning, Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Companions: append([]NamedBinary(nil), companions...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
 			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: nodeOutput, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
 		packageRoots = append(packageRoots, pkg)
 		finalOutputs[pkg] = finalOutput
@@ -572,7 +567,8 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			identity.Signed, identity.Notarized = true, config.Signing.Darwin.Notarize
 			format := identity.Format
 			output, publication, identity := signingOutputs(input, finalOutputs[artifact], identity)
-			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: output, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
+			bundleSigned := plan.Nodes[artifact].Spec.(PackageSpec).BundleSigning != nil
+			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{BundleSigned: bundleSigned, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Input: input, Config: signingPlatformForPlan(config, request.TargetOS, assetsOut)}, Output: output, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
 			signed = append(signed, signedKey)
 			finalOutputs[signedKey] = publication
 		}

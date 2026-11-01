@@ -233,6 +233,12 @@ targets only; it does not apply to development sessions or mobile packaging.
 
 Unsigned package creation has a different host/tool requirement from signing:
 
+IPA payloads and macOS notarization ZIPs are written in Go, retaining bundle
+paths, executable permissions and relative symlinks. Neither operation needs
+an external `zip` or `ditto` executable. These archives contain the application
+files rather than Finder metadata or resource forks; macOS signing already
+removes that metadata because it invalidates signed bundles.
+
 | Output | Creation hosts and tools | Signing |
 | --- | --- | --- |
 | Windows MSIX | Windows, macOS or Linux; Go writer, no Windows SDK required. | Windows host and signing tools. |
@@ -240,6 +246,14 @@ Unsigned package creation has a different host/tool requirement from signing:
 | macOS app and DMG | Windows, macOS or Linux; Go assembly, universal-binary merge and portable DMG writer. | macOS with Apple tools and credentials. |
 | Linux DEB, RPM, Arch and Void | Windows, macOS or Linux; native Go package writers. | DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned. |
 | Linux AppImage | Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin. | No built-in AppImage signing flow. |
+
+For signed DMGs, Wake normally signs a private copy of the application before
+the Go writer compresses the image, then signs the image. This avoids mounting,
+expanding and recompressing the DMG with `hdiutil`. Signing runs on every request;
+the signed package is not reused from the build cache. Projects with
+`after_package` or `before_sign` hooks retain the original package-then-sign
+flow, including `hdiutil`, so edits those hooks make to the unsigned image are
+preserved. Apple signing and notarization still require their platform tools.
 
 Windows MSIX archives are created directly in Go; creating an unsigned package
 does not require the Windows SDK or Docker. Windows signing still requires a

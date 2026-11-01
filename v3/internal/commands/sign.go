@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/bundlearchive"
 	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
@@ -250,13 +251,15 @@ func notarizeMacOSApp(options *flags.Sign) error {
 		pterm.Info.Println("Submitting for notarization...")
 	}
 
-	// Create a zip for notarization
-	zipPath := options.Input + ".zip"
-	zipCmd := exec.Command("ditto", "-c", "-k", "--keepParent", options.Input, zipPath)
-	if err := zipCmd.Run(); err != nil {
+	archiveDir, err := os.MkdirTemp("", "wails-notarization-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(archiveDir)
+	zipPath := filepath.Join(archiveDir, "application.zip")
+	if err := bundlearchive.Create(context.Background(), zipPath, options.Input); err != nil {
 		return fmt.Errorf("failed to create zip for notarization: %w", err)
 	}
-	defer os.Remove(zipPath)
 
 	// Submit for notarization
 	args := []string{

@@ -25,6 +25,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/appimage"
 	"github.com/wailsapp/wails/v3/internal/artifactsum"
 	"github.com/wailsapp/wails/v3/internal/buildmeta"
+	"github.com/wailsapp/wails/v3/internal/bundlearchive"
 	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/installerbuild"
@@ -2053,29 +2054,7 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		}
 		return h.packageApp(ctx, s)
 	case "dmg":
-		options, err := h.dmgOptions(s)
-		if err != nil {
-			return pipeline.RunResult{}, err
-		}
-		outputDirectory := filepath.Join(h.packageWorkspace(s), "output")
-		if err := removeGenerated(outputDirectory); err != nil {
-			return pipeline.RunResult{}, err
-		}
-		if err := os.MkdirAll(outputDirectory, 0o755); err != nil {
-			return pipeline.RunResult{}, err
-		}
-		appBundle, err := existingArtifactPathInsideProject(h.root, s.Binary)
-		if err != nil {
-			return pipeline.RunResult{}, fmt.Errorf("DMG application bundle: %w", err)
-		}
-		if err := copyManifestPath(appBundle, filepath.Join(outputDirectory, s.Project.BinaryName+".app")); err != nil {
-			return pipeline.RunResult{}, fmt.Errorf("stage DMG application bundle: %w", err)
-		}
-		options.Out = outputDirectory
-		if err := manifestToolPackage(options); err != nil {
-			return pipeline.RunResult{}, err
-		}
-		return pipeline.RunResult{}, findAndMovePackage(outputDirectory, s.Project.BinaryName, "dmg", filepath.Join(h.root, s.Output))
+		return h.packageDMG(ctx, s)
 	case "appimage":
 		return h.packageAppImage(ctx, s)
 	case "void":
@@ -2814,9 +2793,8 @@ func (h *manifestHandler) packageIPA(ctx context.Context, s pipeline.PackageSpec
 		return pipeline.RunResult{}, err
 	}
 	generatedOutput := filepath.Join(staged, "artifact.ipa")
-	zipOutput, err := runManifestCommand(ctx, staged, nil, "zip", "-qry", generatedOutput, "Payload")
-	if err != nil {
-		return pipeline.RunResult{Detail: zipOutput}, err
+	if err := bundlearchive.Create(ctx, generatedOutput, payload); err != nil {
+		return pipeline.RunResult{}, err
 	}
 	if err := replacePathTransactional(staged, workspace); err != nil {
 		return pipeline.RunResult{}, err
@@ -2824,7 +2802,7 @@ func (h *manifestHandler) packageIPA(ctx context.Context, s pipeline.PackageSpec
 	if err := copyPathTransactional(filepath.Join(workspace, "artifact.ipa"), filepath.Join(h.root, s.Output), ".ipa-output-*"); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	return pipeline.RunResult{Detail: zipOutput}, nil
+	return pipeline.RunResult{}, nil
 }
 
 func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeline.RunResult, error) {
@@ -2891,7 +2869,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		if err := copyManifestPath(input, staged); err != nil {
 			return err
 		}
-		if s.TargetOS == "darwin" && s.Format == "dmg" {
+		if s.TargetOS == "darwin" && s.Format == "dmg" && !s.BundleSigned {
 			if err := manifestPrepareDMGForSigning(ctx, staged, s.Config.Identity, entitlements, s.Config.Notarize); err != nil {
 				return err
 			}

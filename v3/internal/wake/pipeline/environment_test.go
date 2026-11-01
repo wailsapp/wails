@@ -446,7 +446,7 @@ func TestSigningHostValidationCoversEveryPlatformContract(t *testing.T) {
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("darwin", "arm64")), "codesign")
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign")), "xcrun")
-	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "app", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign", "xcrun")), "ditto")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "app", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign", "xcrun")))
 
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
 	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")

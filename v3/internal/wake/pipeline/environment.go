@@ -586,11 +586,6 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			if err := requireHostTools(host, "darwin notarization", "xcrun"); err != nil {
 				return hostConfigurationField("sign", err)
 			}
-			if spec.Format == "app" {
-				if err := requireHostTools(host, "darwin app notarization", "ditto"); err != nil {
-					return hostConfigurationField("sign", err)
-				}
-			}
 		}
 	case "ios":
 		if host.os != "darwin" {

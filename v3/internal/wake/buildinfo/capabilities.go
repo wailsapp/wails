@@ -162,7 +162,7 @@ var formatRegistry = [...]FormatCapability{
 	{Name: "rpm", Platform: "linux", Production: true, Hosts: HostAny, style: outputRPM},
 	{Name: "void", Platform: "linux", Production: true, Hosts: HostAny, style: outputVoid},
 	{Name: "archlinux", Platform: "linux", Production: true, Hosts: HostAny, style: outputArchLinux},
-	{Name: "ipa", Platform: "ios", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"xcrun", "codesign", "zip"}, ToolCount: 3, RequiredDestination: "device", suffix: ".ipa"},
+	{Name: "ipa", Platform: "ios", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"xcrun", "codesign"}, ToolCount: 2, RequiredDestination: "device", suffix: ".ipa"},
 	{Name: "aab", Platform: "android", Production: true, Hosts: HostAny, RequiredTools: [3]string{"java"}, ToolCount: 1, suffix: ".aab"},
 	{Name: "apk", Platform: "android", Development: true, Hosts: HostAny, RequiredTools: [3]string{"java"}, ToolCount: 1, suffix: ".apk"},
 }
