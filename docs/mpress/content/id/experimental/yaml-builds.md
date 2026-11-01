@@ -31,6 +31,8 @@ Tanpa variabel tersebut, perutean build/dev YAML dan pembuatan proyek YAML dinon
 
 ## Mengonfigurasi proyek
 
+Untuk konfigurasi desktop terpandu, jalankan `wails3 setup` dengan fitur pilihan tersebut diaktifkan. Alur penyiapan [Wake](/getting-started/setup/#configure-a-wake-project) meninjau jenis aplikasi, backend build, target, format paket, dan alat yang diperlukan, lalu menyimpan profil `setup`. Alur ini juga mendukung penyiapan perintah untuk executable siap pakai tanpa menjadikan `--skip-build` sebagai pengaturan proyek permanen.
+
 Setelah pilihan ikut serta diaktifkan, tambahkan `wails.yaml` di akar proyek. Keberadaan file tersebut memilih sistem build native dan membuat Wails mengabaikan setiap Taskfile dalam proyek itu. Pertahankan pilihan ikut serta tetap aktif untuk semua perintah di bawah ini. Modeline skema mengaktifkan pelengkapan dan validasi sebaris di editor yang mendukung server bahasa YAML.
 
 ```yaml
@@ -160,19 +162,40 @@ Mode ini melewatkan instalasi/build frontend, binding, kompilasi Go, UPX, serta 
 
 Pembuatan paket tanpa tanda tangan memiliki persyaratan host/alat yang berbeda dari penandatanganan:
 
+Payload IPA dan ZIP notarisasi macOS ditulis dengan Go, dengan mempertahankan jalur bundle, izin executable, dan symlink relatif. Kedua operasi tersebut tidak memerlukan executable `zip` atau `ditto` eksternal. Arsip ini berisi file aplikasi, bukan metadata Finder atau resource fork; penandatanganan macOS memang sudah menghapus metadata tersebut karena metadata itu membuat bundle yang ditandatangani menjadi tidak valid.
+
 | Output | Host dan alat pembuatan | Penandatanganan |
 | --- | --- | --- |
-| MSIX Windows | Windows, macOS, atau Linux; penulis Go, tidak memerlukan Windows SDK. | Host Windows dan alat penandatanganan. |
-| Penginstal NSIS Windows | Windows, macOS, atau Linux; memerlukan `makensis` native host. | Host Windows dan alat penandatanganan. |
-| Aplikasi macOS dan DMG | Windows, macOS, atau Linux; penyusunan dengan Go, penggabungan biner universal, dan penulis DMG portabel. | macOS dengan alat dan kredensial Apple. |
-| DEB, RPM, Arch, dan Void Linux | Windows, macOS, atau Linux; penulis paket Go native. | DEB/RPM menggunakan alat penandatanganan eksternalnya; Arch menggunakan penanda tangan Go di bawah ini. Output Void tidak ditandatangani. |
-| AppImage Linux | Host Linux dan arsitektur target yang cocok; linuxdeploy eksternal dan plugin deployment GTK. | Tidak ada alur bawaan untuk menandatangani AppImage. |
+| MSIX Windows | Windows, macOS, atau Linux; penulis Go, tidak memerlukan Windows SDK. | Penandatanganan dengan Go menggunakan PFX RSA yang diekspor pada host desktop apa pun; identitas dari penyimpanan sertifikat/penyedia memerlukan Windows SignTool. |
+| Penginstal NSIS Windows | Windows, macOS, atau Linux; memerlukan `makensis` native host. | Penandatanganan PE dengan Go menggunakan PFX RSA yang diekspor pada host desktop apa pun; identitas dari penyimpanan sertifikat/penyedia memerlukan Windows SignTool. |
+| Aplikasi macOS dan DMG | Windows, macOS, atau Linux; penyusunan dengan Go, penggabungan biner universal, dan penulis DMG portabel. | Penandatanganan dengan Go menggunakan identitas PKCS#12 RSA yang diekspor, atau penandatanganan ad hoc; identitas keychain tetap menggunakan alat macOS. Notarisasi dengan kunci API dan penempelan tiket dijalankan dengan Go. |
+| DEB, RPM, Arch, dan Void Linux | Windows, macOS, atau Linux; penulis paket Go native. | Kunci OpenPGP yang diekspor menggunakan penanda tangan bawaan DEB/RPM/Arch. ID kunci DEB/RPM lama memerlukan alat eksternal. Output Void tidak ditandatangani. |
+| AppImage Linux | Windows, macOS, atau Linux; deployment dengan Go dan penulis SquashFS, ditambah runtime AppImage target. Pemaketan silang GUI memerlukan pohon runtime Linux yang disediakan. | Tidak ada alur bawaan untuk menandatangani AppImage. |
 
-Arsip MSIX Windows dibuat langsung di Go; pembuatan paket yang tidak ditandatangani tidak memerlukan Windows SDK atau Docker. Penandatanganan Windows tetap memerlukan host Windows beserta alat penandatanganannya. NSIS menggunakan compiler NSIS eksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails memberikan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale yang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah. Penginstal NSIS standar menghilangkan bootstrapper WebView2 jika setiap executable dalam paket merupakan CLI atau server. Executable utama atau pendamping yang memiliki GUI tetap menyertakan WebView2. Skrip NSIS khusus tetap menyertakan bootstrapper demi kompatibilitas dengan logika penginstalan runtime-nya sendiri.
+Untuk DMG yang ditandatangani, Wake biasanya menandatangani salinan privat aplikasi sebelum penulis Go mengompresi image, lalu menandatangani image tersebut. Ini menghindari pemasangan, perluasan, dan pengompresian ulang DMG dengan `hdiutil`. Penandatanganan dijalankan pada setiap permintaan; paket yang ditandatangani tidak digunakan kembali dari cache build. Proyek dengan hook `after_package` atau `before_sign` mempertahankan alur asli berupa pemaketan lalu penandatanganan, termasuk `hdiutil`, sehingga perubahan yang dibuat hook tersebut pada image tanpa tanda tangan tetap dipertahankan. Jalur pengeditan image yang kompatibel dengan hook ini memerlukan macOS dan `hdiutil`.
 
-Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. AppImage tetap menggunakan batas integrasi dengan linuxdeploy eksternal dan plugin GTK. Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. File sidecar dipulihkan dari cache paket dan dicantumkan dalam tanda terima artefak bersama AppImage. Saat ini, pemaketan AppImage memerlukan Linux serta arsitektur host dan target yang cocok. Deteksi GTK-nya tidak menemukan pustaka yang dimuat secara dinamis oleh GUI Go murni, sehingga adaptor ini belum mendukung deployment GUI Go murni. Gunakan salah satu format pengelola paket Linux untuk mode build tersebut.
+Untuk penandatanganan Apple portabel, tetapkan `darwin.signing.identity: "-"` untuk tanda tangan ad hoc, atau gunakan `darwin.signing.certificate` untuk identitas PKCS#12 RSA yang diekspor. `darwin.signing.credential` menentukan nama variabel lingkungan kata sandinya. Tanda tangan sertifikat menggunakan implementasi PFX/CMS Go bersama; tidak ada kunci privat yang diekspor secara otomatis dari keychain. Executable tipis dan universal, bundle aplikasi bertingkat, framework, serta DMG telah lolos pemeriksaan tanda tangan native Apple yang ketat, termasuk penolakan terhadap manipulasi, menggunakan identitas pengujian yang dibuat.
+
+Untuk notarisasi, identitas Developer ID yang diekspor juga memerlukan 3161 `darwin.signing.timestamp_server` RFC yang kompatibel. Verifikator bersama menerima profil stempel waktu SHA-2 yang didukungnya dan menolak algoritma lama yang tidak didukung. Tanda tangan ad hoc tidak dapat dinotarisasi. Validasi format sertifikat native terpisah dari kepercayaan Developer ID yang sebenarnya dan penerimaan kiriman oleh Apple.
+
+Penempel Go mengautentikasi tanda tangan tiket Apple dan memverifikasi bahwa tiket tersebut mencakup setiap arsitektur sebelum menempelkannya ke salinan privat. Penempel ini menggunakan protokol pengiriman tiket yang diamati, yang tidak dipublikasikan Apple sebagai API yang didukung. Ini tidak menggantikan pemeriksaan pencabutan terkini oleh Gatekeeper. Output aplikasi dan DMG yang ditandatangani telah lolos pemeriksaan native `stapler validate` dan pemeriksaan tanda tangan yang ketat.
+
+Arsip MSIX Windows dibuat langsung dengan Go; pembuatan paket tanpa tanda tangan tidak memerlukan Windows SDK maupun Docker. Identitas RSA PFX yang diekspor menandatangani berkas executable Windows dan setiap paket MSIX secara langsung dengan Go pada semua host desktop. Tetapkan `windows.signing.certificate` ke PFX yang lokasinya relatif terhadap proyek dan `windows.signing.credential` ke variabel lingkungan yang memuat kata sandinya. Ekspor AES/PBKDF2 dan 3DES lama didukung; ekspor RC2 harus diekspor ulang atau menggunakan Windows SignTool native sebagai fallback. Identitas dari penyimpanan/penyedia sertifikat dan penandatanganan MSI memerlukan Windows SignTool. Layanan stempel waktu default adalah DigiCert; stempel waktu diverifikasi sebelum output yang ditandatangani dipublikasikan. Lihat [panduan penandatanganan](/guides/build/signing/) untuk mengetahui batasan format.
+NSIS menggunakan compiler NSIS eksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails memberikan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale yang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah. Installer NSIS bawaan tidak menyertakan bootstrapper WebView2 jika semua executable yang dikemas merupakan CLI atau server. Executable utama atau pendamping yang memiliki GUI tetap menyertakan WebView2. Skrip NSIS khusus tetap menyertakan bootstrapper demi kompatibilitas dengan logika instalasi runtime miliknya sendiri.
+
+Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. Wake merakit AppImage secara langsung dengan Go, termasuk deployment GTK/WebKit, kompresi SquashFS, dan pembuatan zsync. Wake tidak menjalankan linuxdeploy, plugin GTK, appimagetool, ataupun mksquashfs. Runtime AppImage tipe-2 yang versinya dipatok dan checksum-nya diverifikasi diunduh untuk arsitektur target; `packages.appimage.runtime_path` digunakan untuk memilih ELF runtime yang jalurnya relatif terhadap proyek.
+
+Di Linux, sumber pustaka default adalah sistem file root host. Untuk memaketkan GUI bagi arsitektur lain atau dari Windows/macOS, tetapkan `packages.appimage.runtime_root` ke pohon root Linux target yang jalurnya relatif terhadap proyek dan berisi pustaka, skema terkompilasi, serta cache modulnya. Nilai ini harus berupa seluruh tata letak root, termasuk `usr/`, bukan direktori `usr/` itu sendiri. Sediakan runtime dari distribusi Linux tertua yang ingin Anda dukung. Wake membaca impor ELF dan profil GTK/WebKit eksplisit tanpa menjalankan program target. Wake membundel closure yang dipilih, bukan glibc atau loader dinamis. Hash konten pustaka dan resource membatalkan cache paket setelah runtime diperbarui.
+
+Build GUI Go murni didukung. Wake memilih GTK 3 untuk executable GUI yang dibuat dengan `gtk3`, dan GTK 4 untuk executable lainnya, termasuk executable GUI pendamping CLI/server. Semua executable GUI dalam satu image harus menggunakan versi GTK yang sama. Untuk biner siap pakai, `packages.appimage.gtk_version` dapat secara eksplisit memilih `3` atau `4`; pustaka CGo yang diimpor harus sesuai dengan pilihan tersebut.
+
+Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. Sidecar dipulihkan dari cache paket dan dicantumkan dalam tanda terima artefak bersama AppImage. Pemaketan di Windows dan macOS telah diverifikasi dengan pohon GTK/WebKit yang disediakan; image GUI Go murni yang dihasilkan lolos pemeriksaan runtime di Linux. Dalam satu build GUI CGo yang sebanding, jalur native memerlukan 8.77 detik dibandingkan 26.19 detik untuk linuxdeploy. Image gzip native berukuran 133 MiB dibandingkan 114 MiB dengan jalur zstd lama, sehingga pengukuran ini mencakup seluruh jalur pemaketan, bukan hanya kompresi.
 
 Paket Arch mempertahankan prarilis dalam metadata paket native. Misalnya, `1.2.3-beta.2` menjadi `1.2.3beta.2-1`, yang diurutkan sebelum rilis final. Dependensi Void menerima nama paket tanpa keterangan tambahan seperti `gtk4`, yang dinormalisasi menjadi `gtk4>=0`; perbandingan versi eksplisit dan nilai `name-version_revision` lengkap dipertahankan. Gunakan nama paket Void, bukan nama file pustaka.
+
+Penandatanganan DEB, RPM, dan Arch dapat menggunakan kunci privat OpenPGP armored atau biner yang diekspor pada host desktop apa pun yang didukung, tanpa GnuPG, `dpkg-sig`, atau `rpmsign`. Konfigurasikan `linux.signing.certificate` dengan file kunci dan `credential` dengan nama variabel lingkungan frasa sandinya. DEB dan RPM menyematkan tanda tangan; Arch menerbitkan tanda tangan terpisah. Kunci privat hanya dibaca pada langkah penandatanganan dan tidak disalin ke aset paket maupun artefak cache yang dapat digunakan kembali.
+
+Konfigurasi DEB/RPM yang sudah ada dan memuat pengidentifikasi kunci GnuPG polos tetap menggunakan penanda tangan eksternal. Untuk menghapus dependensi tersebut, ekspor kunci rahasia dan konfigurasikan jalurnya sebagai gantinya. Gunakan jalur seperti `./signing/release.asc`; file kunci yang tidak ada, tidak dapat dibaca, atau tidak valid akan menyebabkan kegagalan, bukan fallback ke keyring. Tanda tangan DEB tetap menggunakan format tanda tangan paket `dpkg-sig`; ini tidak menggantikan penandatanganan metadata rilis repositori apt.
 
 Untuk membuat paket Arch dan tanda tangan terpisah, gunakan file kunci privat PGP berformat armored yang telah diekspor dan, jika perlu, tentukan nama variabel lingkungan untuk frasa sandi:
 
@@ -200,7 +223,32 @@ profiles:
 
 Tetapkan variabel lingkungan bernama tersebut melalui lingkungan lokal atau penyimpanan rahasia CI Anda, lalu jalankan `wails3 build release`. Hilangkan `credential` untuk kunci yang tidak dienkripsi. Penanda tangan Go berjalan di setiap host desktop yang didukung dan tidak memerlukan GPG. Penanda tangan ini menerbitkan `.pkg.tar.zst` asli dan file `.pkg.tar.zst.sig` di lokasi yang sama; keduanya dicatat secara terpisah dalam tanda terima artefak. Isi kunci tidak ditempatkan di area staging atau disimpan dalam cache build. Tanda tangan dan penerbitannya tidak pernah digunakan kembali dari cache. Jika penandatanganan gagal, pasangan yang diterbitkan sebelumnya tetap dipertahankan. Jika penginstalan salah satu file gagal, penerbitan akan mengembalikan kedua file ke keadaan sebelumnya. Hal ini tidak membuat dua operasi penggantian nama pada sistem file menjadi atomik bagi pembaca konkuren.
 
-Bundel aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika tidak ada file entitlement khusus yang diberikan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Penandatanganan dan notarisasi menggunakan alat serta kredensial Apple yang sudah ada di macOS; notarisasi memerlukan profil notaris yang nyata. Output yang ditandatangani mempertahankan ekstensi platformnya, misalnya `notes.signed.app` dan `notes.signed.dmg`.
+Bundle aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika tidak ada file entitlement khusus yang disediakan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Identitas PKCS#12 RSA yang diekspor menggunakan penandatanganan Go pada setiap host desktop; `identity: "-"` memilih penandatanganan ad hoc portabel. Identitas keychain tetap menggunakan `codesign` di macOS. Penempelan tiket dijalankan dengan Go. Pengiriman notarisasi dapat menggunakan profil keychain notaris macOS yang sudah ada, atau kredensial API tim App Store Connect:
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+Mode API mengirimkan, mengunggah, dan melakukan polling dari Go tanpa `notarytool`. Tetapkan ketiga kolom dan hilangkan `credential`; jangan simpan kunci privat dalam kontrol versi. Kunci hanya dibaca pada saat penandatanganan dan tidak disalin ke aset yang dihasilkan ataupun cache. Mode ini mendukung kunci API tim dan arsip hingga 5 GiB; unggahan multipart dan kunci API individual belum diimplementasikan. Kiriman yang ditolak tetap menyimpan ID kiriman dan menyimpan log diagnostik Apple ke file sementara privat yang jalurnya dilaporkan dalam pesan kesalahan. Kiriman yang dibatalkan atau ditolak tidak menggantikan output yang sebelumnya telah dipublikasikan. Setelah diterima, Wake mengambil dan memverifikasi tiket Apple, lalu menempelkannya dengan Go. Dengan identitas yang diekspor dan kredensial API tim, penandatanganan, pengiriman, serta penempelan dapat dijalankan di Linux, Windows, atau macOS. Profil keychain tetap memerlukan macOS dan `notarytool`.
+
+Penandatanganan sertifikat portabel mendukung identitas RSA dalam file PKCS#12 AES/PBKDF2 atau 3DES lama. Ekspor yang dienkripsi dengan RC2 harus diekspor ulang menggunakan cipher yang didukung. Tanda tangan portabel yang dinotarisasi memerlukan layanan stempel waktu SHA-2 RFC 3161 yang ditentukan secara eksplisit; verifikator Go menolak tanda tangan stempel waktu SHA-1 lama. Layanan tiket mengikuti protokol Apple yang diamati dan menyematkan Apple Root G3; Gatekeeper tetap menjadi otoritas untuk kepercayaan distribusi dan pencabutan.
+
+Output yang ditandatangani tetap mempertahankan ekstensi platformnya, misalnya
+`notes.signed.app` dan `notes.signed.dmg`.
 
 ## Kontrol pengembangan
 

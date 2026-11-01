@@ -30,6 +30,8 @@ $env:WAILS_EXP_USE_WAKE = '1'
 
 ## 프로젝트 구성
 
+안내에 따라 데스크톱 구성을 설정하려면 옵트인을 활성화한 상태에서 `wails3 setup`을 실행하세요. [Wake 설정 흐름](/getting-started/setup/#configure-a-wake-project)에서는 애플리케이션 종류, 빌드 백엔드, 대상, 패키지 형식 및 필수 도구를 검토한 후 `setup` 프로필을 저장합니다. 또한 `--skip-build`을 영구 프로젝트 설정으로 지정하지 않고도 미리 빌드된 실행 파일용 명령을 준비할 수 있습니다.
+
 참여 설정을 활성화한 상태에서 프로젝트 루트에 `wails.yaml`을 추가합니다. 이 파일이 있으면 네이티브 빌드 시스템이 선택되고 Wails는 해당 프로젝트의 모든 Taskfile을 무시합니다. 아래의 모든 명령을 실행할 때 참여 설정을 유지하십시오. 스키마 모델라인을 사용하면 YAML 언어 서버를 지원하는 편집기에서 자동 완성과 인라인 유효성 검사를 사용할 수 있습니다.
 
 ```yaml
@@ -92,7 +94,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-두 번째 명령은 두 macOS 아키텍처를 결합하고 Go를 사용해 서명되지 않은 DMG를 생성합니다. 지원되는 모든 데스크톱 호스트에서 실행할 수 있습니다.
+두 번째 명령은 두 macOS 아키텍처를 결합하고 Go를 사용하여 서명되지 않은 DMG를 생성합니다. 지원되는 모든 데스크톱 호스트에서 실행할 수 있습니다.
 
 확정 모드는 실행 파일마다 독립적으로 선택됩니다. 선언된 `build.environment.CGO_ENABLED`, 대상 환경 또는 바이너리 환경은 명령을 호출한 터미널의 값을 재정의합니다. 그렇지 않으면 명시적으로 선택한 `purego` 태그, CLI/서버 프로그램 또는 Windows 대상에는 기본적으로 `0`이 사용되고, macOS 및 Linux GUI 프로그램에는 기본적으로 `1`이 사용됩니다. `--plan --json`은 각 실행 파일에 대해 확정된 컴파일러, CGo 모드 및 태그를 보고합니다. 교차 컴파일은 대상 파일을 생성하지만, 호환되지 않는 데스크톱 대상을 실행하려면 여전히 적절한 호스트가 필요합니다.
 
@@ -159,19 +161,40 @@ Wake는 파일 형식과 대상 아키텍처를 검증하고, 실행 파일을 �
 
 서명되지 않은 패키지를 생성할 때의 호스트/도구 요구 사항은 서명할 때와 다릅니다:
 
+IPA 페이로드와 macOS 공증용 ZIP은 번들 경로, 실행 권한 및 상대 심볼릭 링크를 유지하면서 Go로 작성됩니다. 어느 작업에도 외부 `zip` 또는 `ditto` 실행 파일이 필요하지 않습니다. 이러한 아카이브에는 Finder 메타데이터나 리소스 포크가 아닌 애플리케이션 파일이 포함됩니다. 해당 메타데이터는 서명된 번들을 무효화하므로 macOS 서명 과정에서 이미 제거됩니다.
+
 | 출력 | 생성 호스트 및 도구 | 서명 |
 | --- | --- | --- |
-| Windows MSIX | Windows, macOS 또는 Linux. Go 작성기를 사용하며 Windows SDK는 필요하지 않습니다. | Windows 호스트 및 서명 도구. |
-| Windows NSIS 설치 프로그램 | Windows, macOS 또는 Linux. 호스트 네이티브 `makensis`이 필요합니다. | Windows 호스트 및 서명 도구. |
-| macOS 앱 및 DMG | Windows, macOS 또는 Linux. Go 기반 조립, 유니버설 바이너리 병합 및 이식 가능한 DMG 작성기를 사용합니다. | Apple 도구와 자격 증명이 있는 macOS. |
-| Linux DEB, RPM, Arch 및 Void | Windows, macOS 또는 Linux. 네이티브 Go 패키지 작성기를 사용합니다. | DEB/RPM은 각각 외부 서명 도구를 사용하고, Arch는 아래의 Go 서명기를 사용합니다. Void 출력은 서명되지 않습니다. |
-| Linux AppImage | Linux 호스트와 대상 아키텍처가 일치해야 하며, 외부 linuxdeploy 및 GTK 배포 플러그인이 필요합니다. | AppImage 서명을 위한 기본 제공 흐름은 없습니다. |
+| Windows MSIX | Windows, macOS 또는 Linux. Go 작성기를 사용하며 Windows SDK는 필요하지 않습니다. | 지원되는 모든 데스크톱 호스트에서 내보낸 RSA PFX를 사용하여 Go로 서명합니다. 인증서 저장소/공급자 ID에는 Windows SignTool이 필요합니다. |
+| Windows NSIS 설치 프로그램 | Windows, macOS 또는 Linux. 호스트 네이티브 `makensis`이 필요합니다. | 지원되는 모든 데스크톱 호스트에서 내보낸 RSA PFX를 사용하여 Go로 PE에 서명합니다. 인증서 저장소/공급자 ID에는 Windows SignTool이 필요합니다. |
+| macOS 앱 및 DMG | Windows, macOS 또는 Linux. Go 기반 조립, 유니버설 바이너리 병합 및 이식 가능한 DMG 작성기를 사용합니다. | 내보낸 RSA PKCS#12 ID를 사용한 Go 서명 또는 임시 서명을 지원합니다. 키체인 ID에는 계속 macOS 도구를 사용합니다. API 키 공증과 티켓 스테이플링은 Go에서 실행됩니다. |
+| Linux DEB, RPM, Arch 및 Void | Windows, macOS 또는 Linux. 네이티브 Go 패키지 작성기를 사용합니다. | 내보낸 OpenPGP 키에는 네이티브 DEB/RPM/Arch 서명기를 사용합니다. 레거시 DEB/RPM 키 ID에는 외부 도구가 필요합니다. Void 출력은 서명되지 않습니다. |
+| Linux AppImage | Windows, macOS 또는 Linux를 지원합니다. Go 배포 도구와 SquashFS 작성기 및 대상 AppImage 런타임을 사용합니다. GUI 교차 패키징에는 제공된 Linux 런타임 트리가 필요합니다. | AppImage 서명을 위한 기본 제공 흐름은 없습니다. |
 
-Windows MSIX 아카이브는 Go에서 직접 생성되므로 서명되지 않은 패키지를 만드는 데 Windows SDK나 Docker가 필요하지 않습니다. Windows에서 서명하려면 여전히 Windows 호스트와 해당 서명 도구가 필요합니다. NSIS는 외부 NSIS 컴파일러를 사용하며 `packages.nsis.defines`을 통해 리터럴 정의를 받습니다. macOS에서 Wails는 상속된 로캘이 UTF-8이 아닐 때만 NSIS 컴파일러 자식 프로세스에 UTF-8 로캘을 제공합니다. 터미널 및 애플리케이션 환경은 변경되지 않습니다. 패키징된 모든 실행 파일이 CLI 또는 서버이면 기본 NSIS 설치 프로그램에서 WebView2 부트스트래퍼를 제외합니다. 기본 실행 파일이나 보조 실행 파일 중 GUI가 있으면 WebView2를 유지합니다. 사용자 정의 NSIS 스크립트는 자체 런타임 설치 로직과의 호환성을 위해 부트스트래퍼를 유지합니다.
+서명된 DMG의 경우 일반적으로 Wake가 애플리케이션의 비공개 복사본에 서명한 후 Go 작성기가 이미지를 압축하고, 이어서 이미지에 서명합니다. 따라서 `hdiutil`을 사용하여 DMG를 마운트하고 확장한 뒤 다시 압축할 필요가 없습니다. 서명은 요청할 때마다 실행되며, 서명된 패키지는 빌드 캐시에서 재사용되지 않습니다. `after_package` 또는 `before_sign` 훅이 있는 프로젝트는 `hdiutil`을 포함하여 기존의 패키징 후 서명 흐름을 유지하므로, 해당 훅이 서명되지 않은 이미지에 적용한 변경 사항도 보존됩니다. 이 훅 호환 이미지 편집 경로에는 macOS와 `hdiutil`이 필요합니다.
 
-Linux는 AppImage, DEB, RPM, Arch Linux 및 Void 패키지를 지원합니다. AppImage는 외부 linuxdeploy 및 GTK 플러그인 경계를 유지합니다. zsync 파일을 요청하려면 `packages.appimage.update_info`을 설정하고, SHA256 파일을 요청하려면 `packages.appimage.checksum: true`을 설정합니다. 사이드카는 패키지 캐시에서 복원되며 아티팩트 영수증에 AppImage와 함께 기재됩니다. 현재 AppImage를 패키징하려면 Linux가 필요하며 호스트와 대상 아키텍처가 일치해야 합니다. GTK 감지 기능은 순수 Go GUI가 동적으로 로드한 라이브러리를 찾지 못하므로 이 어댑터는 아직 순수 Go GUI 배포를 지원하지 않습니다. 해당 빌드 모드에는 Linux 패키지 관리자 형식 중 하나를 사용하십시오.
+이식 가능한 Apple 서명을 사용하려면 임시 서명용으로 `darwin.signing.identity: "-"`을 설정하거나, 내보낸 RSA PKCS#12 ID용으로 `darwin.signing.certificate`을 사용하세요. `darwin.signing.credential`에는 암호가 저장된 환경 변수의 이름을 지정합니다. 인증서 서명에는 공유 Go PFX/CMS 구현을 사용하며, 키체인에서 개인 키를 자동으로 내보내지 않습니다. 생성된 테스트 ID를 사용한 검증에서 씬 실행 파일과 유니버설 실행 파일, 중첩된 앱 번들, 프레임워크 및 DMG가 변조 거부를 포함한 Apple의 엄격한 네이티브 서명 검사를 통과했습니다.
+
+공증하려면 내보낸 Developer ID ID에 호환되는 RFC 3161 `darwin.signing.timestamp_server`도 필요합니다. 공유 검증기는 지원되는 SHA-2 타임스탬프 프로필을 허용하고 지원되지 않는 레거시 알고리즘은 거부합니다. 임시 서명은 공증할 수 없습니다. 네이티브 인증서 형식 검증은 실제 Developer ID 신뢰 및 Apple의 제출 승인과 별개입니다.
+
+Go 스테이플러는 비공개 복사본에 티켓을 첨부하기 전에 Apple의 티켓 서명을 인증하고 티켓이 모든 아키텍처를 포괄하는지 확인합니다. 이 도구는 Apple이 지원 API로 공개하지 않은, 관찰을 통해 파악된 티켓 전달 프로토콜을 사용합니다. Gatekeeper의 현재 해지 검사를 대체하지는 않습니다. 앱 및 서명된 DMG 출력은 네이티브 `stapler validate` 검사와 엄격한 서명 검사를 통과했습니다.
+
+Windows MSIX 아카이브는 Go에서 직접 생성되며, 서명되지 않은 패키지를 만드는 데 Windows SDK나 Docker가 필요하지 않습니다. 내보낸 RSA PFX ID를 사용하면 모든 데스크톱 호스트에서 Windows 실행 파일과 개별 MSIX 패키지를 Go로 직접 서명할 수 있습니다. 프로젝트 상대 경로의 PFX는 `windows.signing.certificate`에, 해당 암호가 저장된 환경 변수는 `windows.signing.credential`에 설정하십시오. AES/PBKDF2 및 레거시 3DES 내보내기를 지원합니다. RC2 내보내기는 다시 내보내거나 네이티브 Windows SignTool로 대체해야 합니다. 인증서 저장소/공급자 ID 및 MSI 서명에는 Windows SignTool이 필요합니다. 기본 타임스탬프 서비스는 DigiCert이며, 서명된 출력을 게시하기 전에 타임스탬프를 검증합니다. 형식 제한은 [서명 가이드](/guides/build/signing/)를 참조하십시오.
+NSIS는 외부 NSIS 컴파일러를 사용하며 `packages.nsis.defines`을 통해 리터럴 정의를 받습니다. macOS에서 상속된 로캘이 UTF-8이 아니면 Wails는 NSIS 컴파일러 자식 프로세스에만 UTF-8 로캘을 제공합니다. 터미널 및 애플리케이션 환경은 변경되지 않습니다. 패키지된 모든 실행 파일이 CLI 또는 서버이면 기본 NSIS 설치 프로그램에서 WebView2 부트스트래퍼를 제외합니다. 기본 또는 보조 GUI가 있으면 WebView2를 유지합니다. 사용자 지정 NSIS 스크립트는 자체 런타임 설치 로직과의 호환성을 위해 부트스트래퍼를 유지합니다.
+
+Linux는 AppImage, DEB, RPM, Arch Linux 및 Void 패키지를 지원합니다. Wake는 GTK/WebKit 배포, SquashFS 압축 및 zsync 생성을 포함하여 AppImage를 Go에서 직접 조립합니다. linuxdeploy, GTK 플러그인, appimagetool 또는 mksquashfs를 호출하지 않습니다. 고정된 버전의 체크섬 검증된 AppImage type-2 런타임을 대상 아키텍처용으로 다운로드합니다. 대신 `packages.appimage.runtime_path`을 사용하여 프로젝트 기준 상대 경로의 런타임 ELF를 선택할 수 있습니다.
+
+Linux에서는 기본 라이브러리 소스로 호스트 루트 파일 시스템을 사용합니다. 다른 아키텍처용 GUI를 패키징하거나 Windows/macOS에서 패키징하려면 라이브러리, 컴파일된 스키마 및 모듈 캐시가 포함된 대상 Linux 루트 트리의 프로젝트 기준 상대 경로를 `packages.appimage.runtime_root`에 설정하세요. 이는 `usr/` 디렉터리 자체가 아니라 `usr/`을 포함한 전체 루트 레이아웃입니다. 지원하려는 Linux 배포판 중 가장 오래된 배포판의 런타임을 제공하세요. Wake는 대상 프로그램을 실행하지 않고 ELF 임포트와 명시적인 GTK/WebKit 프로필을 읽습니다. 선택된 종속성 클로저를 번들로 포함하지만 glibc나 동적 로더는 포함하지 않습니다. 런타임이 업데이트되면 라이브러리 및 리소스 콘텐츠 해시로 인해 패키지 캐시가 무효화됩니다.
+
+순수 Go GUI 빌드를 지원합니다. Wake는 `gtk3`로 빌드된 GUI 실행 파일에는 GTK 3을 선택하고, 그 외에는 CLI/서버의 GUI 보조 실행 파일을 포함하여 GTK 4을 선택합니다. 이미지에 포함된 모든 GUI 실행 파일은 하나의 GTK 버전을 사용해야 합니다. 미리 빌드된 바이너리의 경우 `packages.appimage.gtk_version`을 사용하여 `3` 또는 `4`을 명시적으로 선택할 수 있으며, 임포트된 CGo 라이브러리도 이 선택과 일치해야 합니다.
+
+zsync 파일을 요청하려면 `packages.appimage.update_info`을 설정하고, SHA256 파일을 요청하려면 `packages.appimage.checksum: true`을 설정하세요. 사이드카는 패키지 캐시에서 복원되며 아티팩트 영수증에 AppImage와 함께 나열됩니다. 제공된 GTK/WebKit 트리를 사용하는 Windows 및 macOS 패키징이 검증되었으며, 그 결과 생성된 순수 Go GUI 이미지는 Linux에서 런타임 검사를 통과했습니다. 조건을 맞춘 한 CGo GUI 빌드에서 네이티브 경로는 8.77초, linuxdeploy는 26.19초가 걸렸습니다. 네이티브 gzip 이미지는 133 MiB였고 기존 zstd 경로에서는 114 MiB였으므로, 이 결과는 압축만이 아니라 전체 패키징 경로를 측정한 것입니다.
 
 Arch 패키지는 시험판 정보를 네이티브 패키지 메타데이터에 보존합니다. 예를 들어 `1.2.3-beta.2`은 `1.2.3beta.2-1`이 되며, 최종 릴리스보다 앞에 정렬됩니다. Void 종속성에는 `gtk4` 같은 단순 패키지 이름을 사용할 수 있으며, 이는 `gtk4>=0`으로 정규화됩니다. 명시적인 버전 비교와 완전한 `name-version_revision` 값은 그대로 보존됩니다. 라이브러리 파일 이름이 아닌 Void 패키지 이름을 사용하십시오.
+
+지원되는 모든 데스크톱 호스트에서 GnuPG, `dpkg-sig` 또는 `rpmsign` 없이도 내보낸 ASCII-armored 또는 바이너리 OpenPGP 개인 키를 사용하여 DEB, RPM 및 Arch 패키지에 서명할 수 있습니다. `linux.signing.certificate`에는 키 파일을 설정하고 `credential`에는 해당 암호가 저장된 환경 변수의 이름을 설정하세요. DEB와 RPM에는 서명이 내장되며, Arch는 분리된 서명을 게시합니다. 개인 키는 서명 단계에서만 읽으며 패키지 자산이나 재사용 가능한 캐시 아티팩트에 복사되지 않습니다.
+
+GnuPG 키 식별자만 포함된 기존 DEB/RPM 구성에서는 계속 외부 서명기를 사용합니다. 이 종속성을 제거하려면 비밀 키를 내보내고 해당 경로를 대신 구성하세요. `./signing/release.asc` 같은 경로를 사용하세요. 키 파일이 없거나 읽을 수 없거나 유효하지 않으면 키링으로 대체하지 않고 실패합니다. DEB 서명은 `dpkg-sig` 패키지 서명 형식을 유지합니다. 이는 apt 저장소의 릴리스 메타데이터 서명을 대체하지 않습니다.
 
 Arch 패키지와 분리 서명을 만들려면 내보낸 ASCII-armored PGP 개인 키 파일을 사용하고, 선택적으로 암호 환경 변수의 이름을 지정하십시오.
 
@@ -199,7 +222,32 @@ profiles:
 
 로컬 환경이나 CI 비밀 저장소에서 지정된 환경 변수를 설정한 후 `wails3 build release`을 실행하십시오. 암호화되지 않은 키에는 `credential`을 생략하십시오. Go 서명기는 지원되는 모든 데스크톱 호스트에서 실행되며 GPG가 필요하지 않습니다. 원본 `.pkg.tar.zst`과 같은 디렉터리의 `.pkg.tar.zst.sig`을 게시하며, 두 파일은 아티팩트 영수증에 각각 기록됩니다. 키 내용은 빌드 캐시에 스테이징되거나 저장되지 않습니다. 서명과 해당 게시 결과는 캐시에서 절대 재사용되지 않습니다. 서명에 실패하면 이전에 게시된 파일 쌍이 보존되며, 어느 한 파일의 설치에 실패하면 게시 과정에서 두 파일을 모두 롤백합니다. 그렇다고 해서 동시 읽기 작업에 대해 두 파일 시스템 이름 변경이 원자적으로 처리되는 것은 아닙니다.
 
-macOS 앱 번들에는 보조 프로그램이 포함됩니다. 사용 안내 문구를 추가하고 사용자 정의 entitlement 파일이 제공되지 않은 경우 오디오 입력 entitlement도 추가하려면 `darwin.microphone_usage_description`을 설정하십시오. 사용자 정의 plist 및 entitlement 소스는 변경되지 않습니다. 서명과 공증에는 macOS의 기존 Apple 도구와 자격 증명을 사용합니다. 공증에는 실제 공증 프로필이 필요합니다. 서명된 출력은 `notes.signed.app` 및 `notes.signed.dmg`과 같은 플랫폼 확장자를 유지합니다.
+macOS 앱 번들에는 보조 프로그램이 포함됩니다. 사용 목적 설명을 추가하고, 사용자 지정 엔타이틀먼트 파일을 제공하지 않은 경우 오디오 입력 엔타이틀먼트도 추가하려면 `darwin.microphone_usage_description`을 설정하세요. 사용자 지정 plist 및 엔타이틀먼트 소스는 변경되지 않습니다. 내보낸 RSA PKCS#12 ID는 지원되는 모든 데스크톱 호스트에서 Go 서명을 사용하며, `identity: "-"`은 이식 가능한 임시 서명을 선택합니다. 키체인 ID는 계속 macOS에서 `codesign`을 사용합니다. 티켓 스테이플링은 Go에서 실행됩니다. 공증 제출에는 기존 macOS 공증 키체인 프로필이나 App Store Connect 팀 API 자격 증명을 사용할 수 있습니다.
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+API 모드는 `notarytool` 없이 Go에서 제출, 업로드 및 폴링을 수행합니다. 세 필드를 모두 설정하고 `credential`은 생략하세요. 개인 키는 버전 관리에 포함하지 마세요. 키는 서명 시에만 읽으며 생성된 자산에 복사하거나 캐시하지 않습니다. 이 모드는 팀 API 키와 최대 5 GiB의 아카이브를 지원합니다. 멀티파트 업로드와 개별 API 키는 구현되어 있지 않습니다. 거부된 경우 제출 ID를 유지하고 Apple의 진단 로그를 비공개 임시 파일에 저장하며, 오류에 해당 파일 경로가 표시됩니다. 취소되거나 거부된 제출은 이전에 게시된 출력을 대체하지 않습니다. 승인되면 Wake가 Apple의 티켓을 가져와 검증한 뒤 Go에서 스테이플링합니다. 내보낸 ID와 팀 API 자격 증명을 사용하면 Linux, Windows 또는 macOS에서 서명, 제출 및 스테이플링을 실행할 수 있습니다. 키체인 프로필에는 여전히 macOS와 `notarytool`이 필요합니다.
+
+이식 가능한 인증서 서명은 AES/PBKDF2 또는 레거시 3DES PKCS#12 파일의 RSA ID를 지원합니다. RC2로 암호화해 내보낸 파일은 지원되는 암호화 방식으로 다시 내보내야 합니다. 공증된 이식 가능 서명에는 명시적인 SHA-2 RFC 3161 타임스탬프 서비스가 필요합니다. Go 검증기는 레거시 SHA-1 타임스탬프 서명을 거부합니다. 티켓 서비스는 관찰을 통해 파악된 Apple 프로토콜을 따르며 Apple Root G3를 고정하여 사용합니다. 배포 신뢰 및 해지에 대한 최종 판단 권한은 Gatekeeper에 있습니다.
+
+서명된 출력 파일은 플랫폼별 확장자를 그대로 유지합니다. 예를 들면
+`notes.signed.app` 및 `notes.signed.dmg`입니다.
 
 ## 개발 제어 기능
 

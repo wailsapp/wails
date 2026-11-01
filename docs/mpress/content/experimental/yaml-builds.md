@@ -41,6 +41,8 @@ Projects that have not migrated continue through the separate embedded Task runt
 
 ## Configure a project
 
+For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow](/getting-started/setup/#configure-a-wake-project) reviews application kind, build backend, targets, package formats and required tools, then saves a `setup` profile. It also supports preparing a command for prebuilt executables without making `--skip-build` a permanent project setting.
+
 With the opt-in enabled, add `wails.yaml` at the project root. Its presence
 selects the native build system and makes Wails ignore every Taskfile in that
 project. Keep the opt-in set for all commands below. The schema modeline enables
@@ -283,7 +285,7 @@ legacy 3DES exports are supported; RC2 exports require re-exporting or the nativ
 Windows SignTool fallback. Certificate-store/provider identities and MSI signing
 require Windows SignTool. The default timestamp service is DigiCert; timestamps
 are verified before publishing signed output. See the
-[signing guide](/guides/build/signing/#cross-platform-signing) for format limits.
+[signing guide](/guides/build/signing/) for format limits.
 NSIS uses the external NSIS compiler and
 accepts literal definitions through `packages.nsis.defines`. On macOS, Wails
 supplies a UTF-8 locale only to the NSIS compiler child when its inherited

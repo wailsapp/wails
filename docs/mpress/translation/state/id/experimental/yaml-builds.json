@@ -91,6 +91,18 @@
       "updatedAt": "2026-10-31T23:21:07Z"
     },
     "b0007-text-01": {
+      "sourceHash": "5b7f7e2e55185eaf6d349445ed538258c28c67a170f136338e1660c84fdf9aa8",
+      "targetHash": "50855034645604cb016a12ff7c05d208ecdb6fbab9f9257e09d9457a89042199",
+      "machineHash": "50855034645604cb016a12ff7c05d208ecdb6fbab9f9257e09d9457a89042199",
+      "machineText": "Untuk konfigurasi desktop terpandu, jalankan `wails3 setup` dengan fitur pilihan tersebut diaktifkan. Alur penyiapan [Wake](/getting-started/setup/#configure-a-wake-project) meninjau jenis aplikasi, backend build, target, format paket, dan alat yang diperlukan, lalu menyimpan profil `setup`. Alur ini juga mendukung penyiapan perintah untuk executable siap pakai tanpa menjadikan `--skip-build` sebagai pengaturan proyek permanen.",
+      "status": "machine-translated",
+      "sourcePreview": "For a guided desktop configuration, run `wails3 setup` with the opt-in enabled. The [Wake setup flow…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0008-text-01": {
       "sourceHash": "2b7d77207a8df3a2024014a5d4aae5880f3cf148122f52f5f3dea9f0e1bd1501",
       "targetHash": "c02e1a371d4131d457072994bdf4fd7e1bc95f6acd3b25620a7bb5d3f9460068",
       "machineHash": "c02e1a371d4131d457072994bdf4fd7e1bc95f6acd3b25620a7bb5d3f9460068",
@@ -102,7 +114,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0008-text-01": {
+    "b0009-text-01": {
       "sourceHash": "5789fe5b9585e418536f48e0506d7820c994f805f11f50ce3a6cabe01b7ac419",
       "targetHash": "8e50b6187b094bc4858b379dba7956480619f3e088d3a0e1ca3c2477ff7d2e9b",
       "machineHash": "8e50b6187b094bc4858b379dba7956480619f3e088d3a0e1ca3c2477ff7d2e9b",
@@ -114,7 +126,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0009-text-01": {
+    "b0010-text-01": {
       "sourceHash": "c48a5bc44ed52fe432717c3f814d5d1eb4a03ec066a4ddfb841531c161daad78",
       "targetHash": "5e046c9ee6c60ef1a3ef27409405bc667795ebeb378d1d587ddd05f30f4d0f93",
       "machineHash": "5e046c9ee6c60ef1a3ef27409405bc667795ebeb378d1d587ddd05f30f4d0f93",
@@ -126,7 +138,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0010-heading-01": {
+    "b0011-heading-01": {
       "sourceHash": "84f60202f588d3c9c47bae03f85b04554a4ea8309b99176ac1a92a33951283af",
       "targetHash": "4473024c46c05fd64f862058502b59fab919cb5edc7c8ff3822913e70aebb5fa",
       "machineHash": "4473024c46c05fd64f862058502b59fab919cb5edc7c8ff3822913e70aebb5fa",
@@ -138,7 +150,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0011-text-01": {
+    "b0012-text-01": {
       "sourceHash": "dbb783123b9bb5698ef4b897a618fd10534dcab041a44a789cad4b336e9da37f",
       "targetHash": "cd58b2c08bda92b62434bb1c7ba5cf5c8478645527baf68a69005970d5b63d38",
       "machineHash": "cd58b2c08bda92b62434bb1c7ba5cf5c8478645527baf68a69005970d5b63d38",
@@ -150,19 +162,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0012-text-01": {
-      "sourceHash": "8a6136eee54bd7cb507dc846278c5eeeac019c93324cf15fa390985e7e2bf1f1",
-      "targetHash": "b4a57a3970d08b7b4a79202924fec32d3c65a63373a038fc07bb7ca4c2aefd26",
-      "machineHash": "b4a57a3970d08b7b4a79202924fec32d3c65a63373a038fc07bb7ca4c2aefd26",
-      "machineText": "Perintah kedua menggabungkan kedua arsitektur macOS dan membuat DMG tanpa tanda tangan menggunakan Go. Perintah ini dapat dijalankan pada host desktop apa pun yang didukung. Penandatanganan kode dan notarisasi Apple tetap merupakan operasi macOS yang terpisah.",
+    "b0013-text-01": {
+      "sourceHash": "f87e6f519ae28e5cf553f41e8b38d478774ce3bd97059808ec969fb4c31ba1f1",
+      "targetHash": "6668ace158d6edc855b8c7bf8a3fc9ca134972ecf624f1a4466d8408590ed58a",
+      "machineHash": "6668ace158d6edc855b8c7bf8a3fc9ca134972ecf624f1a4466d8408590ed58a",
+      "machineText": "Perintah kedua menggabungkan kedua arsitektur macOS dan membuat DMG tanpa tanda tangan menggunakan Go. Perintah ini dapat dijalankan pada host desktop apa pun yang didukung.",
       "status": "machine-translated",
       "sourcePreview": "The second command combines both macOS architectures and creates an unsigned DMG using Go. It can ru…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0013-text-01": {
+    "b0014-text-01": {
       "sourceHash": "2221cd9350d90239b313ce556cfec27c020b4bbd00a53821685a1f649707a4b5",
       "targetHash": "a2399cb4307c5e142e874d093c5cf7032dc63c66a91e1fa3d28a06d1e408f1d8",
       "machineHash": "a2399cb4307c5e142e874d093c5cf7032dc63c66a91e1fa3d28a06d1e408f1d8",
@@ -174,7 +186,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0014-text-01": {
+    "b0015-text-01": {
       "sourceHash": "be67c57d0c07639fcc0a29b9636bd7ecb203730ce7934d5b51ccd1d0d8e84d9a",
       "targetHash": "7e084b1f4d9cf4163504d7e844abba9038c3844b409365da40ec2324e65c3375",
       "machineHash": "7e084b1f4d9cf4163504d7e844abba9038c3844b409365da40ec2324e65c3375",
@@ -186,7 +198,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0015-text-01": {
+    "b0016-text-01": {
       "sourceHash": "be0ca9f721a3441e4efdcafda7ab4b7dae8c487d0a12a2c921888b70f72ff839",
       "targetHash": "40c30cd8bc2e961e9bb5b05f78026a39cb83e2290f534d56abbdab00f25e1245",
       "machineHash": "40c30cd8bc2e961e9bb5b05f78026a39cb83e2290f534d56abbdab00f25e1245",
@@ -198,7 +210,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0016-heading-01": {
+    "b0017-heading-01": {
       "sourceHash": "2052e625337e7c382c3d9522c490642cfde34af9bc8e0a221dec69a53d08bfee",
       "targetHash": "592faf22c6b6a6af88b58837bf0e4694f64a37d6737cacd8aa4255192b20619e",
       "machineHash": "592faf22c6b6a6af88b58837bf0e4694f64a37d6737cacd8aa4255192b20619e",
@@ -210,7 +222,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0017-text-01": {
+    "b0018-text-01": {
       "sourceHash": "bf8f85b4deeb906ecea88730802788bb12fe8a821fda60bf34ca55f1995c8f1d",
       "targetHash": "21014c109cc3fe293bf90291042b4bfa77409f967438fbebf66d3bffea9e7643",
       "machineHash": "21014c109cc3fe293bf90291042b4bfa77409f967438fbebf66d3bffea9e7643",
@@ -222,7 +234,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0018-text-01": {
+    "b0019-text-01": {
       "sourceHash": "addf5918d8c4fb4ede22dc4c2735f19f4ad14c5db21ae5488571b8b2e1063a3f",
       "targetHash": "c2c4943c4c6e677a93c272d8ee0edd32a054a2948622b0428bbc9e91ad6caef0",
       "machineHash": "c2c4943c4c6e677a93c272d8ee0edd32a054a2948622b0428bbc9e91ad6caef0",
@@ -234,7 +246,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0019-text-01": {
+    "b0020-text-01": {
       "sourceHash": "9815499a6284eddc98a8a11b39b13679b0a4654db44a40b698c2721d8321ff96",
       "targetHash": "9ee6796a2bf963449fc77254c17b0dd9f722e71f7202f2e99f9660b92475be77",
       "machineHash": "9ee6796a2bf963449fc77254c17b0dd9f722e71f7202f2e99f9660b92475be77",
@@ -246,7 +258,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0020-text-01": {
+    "b0021-text-01": {
       "sourceHash": "9e44f1d1e97ff6b67d1a4b52216ea7a6d6f574e05bb50bd0af78750532ca76b7",
       "targetHash": "e6b1896c4039ab8ad06303f3e2c8117c1c9e336ad7432a4365c39daa3687ab85",
       "machineHash": "e6b1896c4039ab8ad06303f3e2c8117c1c9e336ad7432a4365c39daa3687ab85",
@@ -258,7 +270,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0021-text-01": {
+    "b0022-text-01": {
       "sourceHash": "e649671eb97f11b638f8c16275bbba79100b90c3eff3934b406dd0767fe7e8da",
       "targetHash": "a9a995a0fccb7baf7456345604d2eb6e57c15181f1a0df01e2e55c5af61b0566",
       "machineHash": "a9a995a0fccb7baf7456345604d2eb6e57c15181f1a0df01e2e55c5af61b0566",
@@ -270,7 +282,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0022-heading-01": {
+    "b0023-heading-01": {
       "sourceHash": "76e87e97fb52c3b2e6cf9e2db727b7eab07d2d2cebcfa789fa91da44fd696ee5",
       "targetHash": "727690d579a27f67d5a21655484a055f47e3cfdbd946782d4789ff00637ccc5c",
       "machineHash": "727690d579a27f67d5a21655484a055f47e3cfdbd946782d4789ff00637ccc5c",
@@ -282,7 +294,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0023-heading-01": {
+    "b0024-heading-01": {
       "sourceHash": "91949300d18aefff2dbcd6897b23c1513c167f1d142818d9b361085306d6b4a9",
       "targetHash": "0d6e367b9daa248d4c0c88753bb1fae5f2b462a5686b6266f235be9e4895b217",
       "machineHash": "0d6e367b9daa248d4c0c88753bb1fae5f2b462a5686b6266f235be9e4895b217",
@@ -294,7 +306,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0024-text-01": {
+    "b0025-text-01": {
       "sourceHash": "6fc3c5c0941b5feac437e83506b686bbe02a5dbe1784a0c7e8df999c5ad84eb2",
       "targetHash": "2f722b1210c2d5b7ede845ff59b0c838c5db7e92fdba7997ea65da85e7afdba9",
       "machineHash": "2f722b1210c2d5b7ede845ff59b0c838c5db7e92fdba7997ea65da85e7afdba9",
@@ -306,7 +318,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0025-text-01": {
+    "b0026-text-01": {
       "sourceHash": "7be35e75db871f2fe82f41f0f48f7785de3f7ca975bc5b335432c2df68dc673a",
       "targetHash": "ce1550ddb01e4d52d97bf39213f5d49145ca4d6e7e2c2b7cd45d543d847ddb2e",
       "machineHash": "ce1550ddb01e4d52d97bf39213f5d49145ca4d6e7e2c2b7cd45d543d847ddb2e",
@@ -318,7 +330,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:39Z"
     },
-    "b0026-text-01": {
+    "b0027-text-01": {
       "sourceHash": "327430600b6a536b632ebe9f3de19c3ec2467256f8631b3b908deedcf0f80308",
       "targetHash": "096bd2c611992a111f5ef70315875f4d878e2e39d916842a3812ba791fe57f5f",
       "machineHash": "096bd2c611992a111f5ef70315875f4d878e2e39d916842a3812ba791fe57f5f",
@@ -330,7 +342,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0027-text-01": {
+    "b0028-text-01": {
       "sourceHash": "fa03f76b0fad60f21e26e0e9f55286e83d8885124c60baaba3a98088ac14f6b0",
       "targetHash": "26e95d8e4b8af1c047e340ca579191c1d04d6bd64a7c8772bcb4e6968367b07e",
       "machineHash": "26e95d8e4b8af1c047e340ca579191c1d04d6bd64a7c8772bcb4e6968367b07e",
@@ -342,7 +354,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0028-text-01": {
+    "b0029-text-01": {
       "sourceHash": "3df17e599fe2f35a677d9f885bda5ac7526ebb03527a067f3ee2668fbc5077a8",
       "targetHash": "1f4781bb59e2553a24d7e94721d0c3a7a5843b5c56223219c78b67dcf186d9f4",
       "machineHash": "1f4781bb59e2553a24d7e94721d0c3a7a5843b5c56223219c78b67dcf186d9f4",
@@ -354,7 +366,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0029-text-01": {
+    "b0030-text-01": {
       "sourceHash": "707168e8197382e3eecbd904fe532621a7d13c28311680d0b898eebb6747dc6f",
       "targetHash": "dd8449c3d4f4603981b3e2ba79ad063637e83bd853a6af30ffb559a2675494c2",
       "machineHash": "dd8449c3d4f4603981b3e2ba79ad063637e83bd853a6af30ffb559a2675494c2",
@@ -366,7 +378,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0030-cell-01": {
+    "b0031-text-01": {
+      "sourceHash": "5b91d3d924ff83f196e827bfa11bcbfe4eb52391947a2195d0de70337f5a9794",
+      "targetHash": "49943c0b9a903c26407438dfade3ab6f68f68ca998929ef450ccd8d1adae8484",
+      "machineHash": "49943c0b9a903c26407438dfade3ab6f68f68ca998929ef450ccd8d1adae8484",
+      "machineText": "Payload IPA dan ZIP notarisasi macOS ditulis dengan Go, dengan mempertahankan jalur bundle, izin executable, dan symlink relatif. Kedua operasi tersebut tidak memerlukan executable `zip` atau `ditto` eksternal. Arsip ini berisi file aplikasi, bukan metadata Finder atau resource fork; penandatanganan macOS memang sudah menghapus metadata tersebut karena metadata itu membuat bundle yang ditandatangani menjadi tidak valid.",
+      "status": "machine-translated",
+      "sourcePreview": "IPA payloads and macOS notarization ZIPs are written in Go, retaining bundle paths, executable permi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0032-cell-01": {
       "sourceHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
       "targetHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
       "machineHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4",
@@ -378,7 +402,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0031-cell-01": {
+    "b0033-cell-01": {
       "sourceHash": "96a18d5fe6b52c58d95e17dd521ed383de51f36592f90b8cd77e26480ab53e9e",
       "targetHash": "1830a8da114d5e455afac8bad44b22bd8853cde4f8702b7ef6b4d9786e4b3f39",
       "machineHash": "1830a8da114d5e455afac8bad44b22bd8853cde4f8702b7ef6b4d9786e4b3f39",
@@ -390,7 +414,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0032-cell-01": {
+    "b0034-cell-01": {
       "sourceHash": "4f75100c085ab3ef312f498514694695fb83873cd41de6e73a9255885b9a08d3",
       "targetHash": "5fe20a1c0ce052a59bbe8c2e8d4eeb75f0fe79a9781be46eb7f11bf923e00a25",
       "machineHash": "5fe20a1c0ce052a59bbe8c2e8d4eeb75f0fe79a9781be46eb7f11bf923e00a25",
@@ -402,7 +426,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0033-cell-01": {
+    "b0035-cell-01": {
       "sourceHash": "9f5c05a33c4d722bf5fb56dccb3756a0d12cf3fd677d1dc0a275ce0c93dfda66",
       "targetHash": "1c63607d081bb8f52952221a7c3e6c55eec22995048e2612fe37b5d3bd4a5289",
       "machineHash": "1c63607d081bb8f52952221a7c3e6c55eec22995048e2612fe37b5d3bd4a5289",
@@ -414,7 +438,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0034-cell-01": {
+    "b0036-cell-01": {
       "sourceHash": "a40d94c3b164ef46e467619ef48d79a252cffa007314e21178635818e4fbea03",
       "targetHash": "5f39a64ef8a5f0faba110218a4fb495f49b886fa3fea6cf340f5a55793922f38",
       "machineHash": "5f39a64ef8a5f0faba110218a4fb495f49b886fa3fea6cf340f5a55793922f38",
@@ -426,19 +450,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0035-cell-01": {
-      "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
-      "targetHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
-      "machineHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
-      "machineText": "Host Windows dan alat penandatanganan.",
+    "b0037-cell-01": {
+      "sourceHash": "d45c37a757cdefdd279e3c4c79256f3cc723333c2eaf0456eeeaf8f39558ee1a",
+      "targetHash": "3d015923bf58edd05700a414dfc72c7131652a17ba75ca8f5a6f03a67c508eb8",
+      "machineHash": "3d015923bf58edd05700a414dfc72c7131652a17ba75ca8f5a6f03a67c508eb8",
+      "machineText": "Penandatanganan dengan Go menggunakan PFX RSA yang diekspor pada host desktop apa pun; identitas dari penyimpanan sertifikat/penyedia memerlukan Windows SignTool.",
       "status": "machine-translated",
-      "sourcePreview": "Windows host and signing tools.",
+      "sourcePreview": "Go signing with an exported RSA PFX on any desktop host; certificate-store/provider identities requi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0036-cell-01": {
+    "b0038-cell-01": {
       "sourceHash": "7252704eccc82d7b68b94d9af526782aae7585afe4fa17924ccf522af84ad985",
       "targetHash": "9f4144a6b5782b6bf4cabc92d50927ae1ca8f601f8e51967cae83555f80ad834",
       "machineHash": "9f4144a6b5782b6bf4cabc92d50927ae1ca8f601f8e51967cae83555f80ad834",
@@ -450,7 +474,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0037-cell-01": {
+    "b0039-cell-01": {
       "sourceHash": "9d3724853dd0e3545eae4e23d347152ce2b20408983478d466b20b757fa32b82",
       "targetHash": "68040028b2e0e8761f217d789516e8092b42ba1ac891e0de26d24cb7942ac440",
       "machineHash": "68040028b2e0e8761f217d789516e8092b42ba1ac891e0de26d24cb7942ac440",
@@ -462,19 +486,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0038-cell-01": {
-      "sourceHash": "55360333f8424e1d1659bff37590a0bb52873381132a76a1811e920cb7175369",
-      "targetHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
-      "machineHash": "82e32637b50a0640c6e5b3a87631744b5d1b02a4d74debde792036a7b899aa39",
-      "machineText": "Host Windows dan alat penandatanganan.",
+    "b0040-cell-01": {
+      "sourceHash": "855da7b130b43c9123208680f724dfb31f0075cd49ffb9a09920083128470738",
+      "targetHash": "0a946606ccb7c7555a47fc4bdcf4631d9471fc5bc15979bd9540d2aacae1f6b5",
+      "machineHash": "0a946606ccb7c7555a47fc4bdcf4631d9471fc5bc15979bd9540d2aacae1f6b5",
+      "machineText": "Penandatanganan PE dengan Go menggunakan PFX RSA yang diekspor pada host desktop apa pun; identitas dari penyimpanan sertifikat/penyedia memerlukan Windows SignTool.",
       "status": "machine-translated",
-      "sourcePreview": "Windows host and signing tools.",
+      "sourcePreview": "Go PE signing with an exported RSA PFX on any desktop host; certificate-store/provider identities re…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0039-cell-01": {
+    "b0041-cell-01": {
       "sourceHash": "a41c5f4d85a579c940bb2041d1069a4b36f3beb4e91467b0949b89e53aa07bec",
       "targetHash": "62ccc331fac04f2329b1b70da605364e1759cc577f4152a509c73a410bab0859",
       "machineHash": "62ccc331fac04f2329b1b70da605364e1759cc577f4152a509c73a410bab0859",
@@ -486,7 +510,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0040-cell-01": {
+    "b0042-cell-01": {
       "sourceHash": "522e2a8d6893e8559f1b2ff110227445a503e899eb8d414a339b467f88b138c0",
       "targetHash": "189e8cb5af69c9b30146f7006c07750b61fbcaab46fceb13c2bf01d508155589",
       "machineHash": "189e8cb5af69c9b30146f7006c07750b61fbcaab46fceb13c2bf01d508155589",
@@ -498,19 +522,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0041-cell-01": {
-      "sourceHash": "b6a740e22d2146b269cee16f25c415ac496fb32c9f2421599ebd6f437234e055",
-      "targetHash": "06be449d2a9724dace95e4a207ec05cc40a35b56a8c9c76ca293b2ed77d65e56",
-      "machineHash": "06be449d2a9724dace95e4a207ec05cc40a35b56a8c9c76ca293b2ed77d65e56",
-      "machineText": "macOS dengan alat dan kredensial Apple.",
+    "b0043-cell-01": {
+      "sourceHash": "3c2def42226b4d09ba4e03d68cd26d8bc6613358e2d5d0e06784c1c73405cca9",
+      "targetHash": "36a482330903e22d7d4031e2b6c2578c5920f4cfb0b19a8cd781dba76f4c6567",
+      "machineHash": "36a482330903e22d7d4031e2b6c2578c5920f4cfb0b19a8cd781dba76f4c6567",
+      "machineText": "Penandatanganan dengan Go menggunakan identitas PKCS#12 RSA yang diekspor, atau penandatanganan ad hoc; identitas keychain tetap menggunakan alat macOS. Notarisasi dengan kunci API dan penempelan tiket dijalankan dengan Go.",
       "status": "machine-translated",
-      "sourcePreview": "macOS with Apple tools and credentials.",
+      "sourcePreview": "Go signing with an exported RSA PKCS#12 identity, or ad-hoc signing; keychain identities retain macO…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0042-cell-01": {
+    "b0044-cell-01": {
       "sourceHash": "f1d4c9e8cefe70483cc6ab160c5ac51f2ef8a87b5fae3dea9e52bd42f04f7939",
       "targetHash": "d4a3f27803ad6bb1036f514af038357a444bbbbfc314dc71afd726074a3c4d43",
       "machineHash": "d4a3f27803ad6bb1036f514af038357a444bbbbfc314dc71afd726074a3c4d43",
@@ -522,7 +546,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0043-cell-01": {
+    "b0045-cell-01": {
       "sourceHash": "558d9e79347e39523130ac03a8fc215621add42103ac69a900da052c81f2ae15",
       "targetHash": "3991af1b4e61423b746ccc4e1edead0c301a4d695fef4347cd873102fcba825a",
       "machineHash": "3991af1b4e61423b746ccc4e1edead0c301a4d695fef4347cd873102fcba825a",
@@ -534,19 +558,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0044-cell-01": {
-      "sourceHash": "aba93fd5e803a97c7b5bf1e5793672cff0c0a02e369185fadda1454f4fef38b6",
-      "targetHash": "3fb969d9c2c5a9a67d620a3371a20cf354c2e36efb3f462bf953a34794b40d00",
-      "machineHash": "3fb969d9c2c5a9a67d620a3371a20cf354c2e36efb3f462bf953a34794b40d00",
-      "machineText": "DEB/RPM menggunakan alat penandatanganan eksternalnya; Arch menggunakan penanda tangan Go di bawah ini. Output Void tidak ditandatangani.",
+    "b0046-cell-01": {
+      "sourceHash": "7fa1dfc83f15b00cbc91b54491b6ff06aa2faca19f69c42f557ffbac861bb679",
+      "targetHash": "8fa9326ba6cbf33bbff260acf57b313c5201bbcd0f60b949189f23558c0238b6",
+      "machineHash": "8fa9326ba6cbf33bbff260acf57b313c5201bbcd0f60b949189f23558c0238b6",
+      "machineText": "Kunci OpenPGP yang diekspor menggunakan penanda tangan bawaan DEB/RPM/Arch. ID kunci DEB/RPM lama memerlukan alat eksternal. Output Void tidak ditandatangani.",
       "status": "machine-translated",
-      "sourcePreview": "DEB/RPM use their external signing tools; Arch uses the Go signer below. Void output is unsigned.",
+      "sourcePreview": "Exported OpenPGP keys use the native DEB/RPM/Arch signer. Legacy DEB/RPM key IDs require external to…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0045-cell-01": {
+    "b0047-cell-01": {
       "sourceHash": "869ed18033ca2a490561629f6c1c8af844141fbf168f68b391f425a19460e0ba",
       "targetHash": "2cda79d3184d58304c5acdf02df90d7d5212bdea9ed01dfc4a176652907cd25f",
       "machineHash": "2cda79d3184d58304c5acdf02df90d7d5212bdea9ed01dfc4a176652907cd25f",
@@ -558,19 +582,19 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0046-cell-01": {
-      "sourceHash": "95fc52c4b6f2ca1d6119306875bdeeac831b61da0150945bb78e478a9332997a",
-      "targetHash": "aab1a7ac560dc21bdf80bfc6c265b22a449a8d496fe4e895a0238ce0c7756a90",
-      "machineHash": "aab1a7ac560dc21bdf80bfc6c265b22a449a8d496fe4e895a0238ce0c7756a90",
-      "machineText": "Host Linux dan arsitektur target yang cocok; linuxdeploy eksternal dan plugin deployment GTK.",
+    "b0048-cell-01": {
+      "sourceHash": "56ad9d4317b2c6d164aca3affd048b79123407087e1cf233440c61763f31b18a",
+      "targetHash": "254c209ef1865ef5d9d6ca5e9eab6b91607c15b532938a65a59e22f25ae02b90",
+      "machineHash": "254c209ef1865ef5d9d6ca5e9eab6b91607c15b532938a65a59e22f25ae02b90",
+      "machineText": "Windows, macOS, atau Linux; deployment dengan Go dan penulis SquashFS, ditambah runtime AppImage target. Pemaketan silang GUI memerlukan pohon runtime Linux yang disediakan.",
       "status": "machine-translated",
-      "sourcePreview": "Matching Linux host and target architecture; external linuxdeploy and GTK deployment plugin.",
+      "sourcePreview": "Windows, macOS or Linux; Go deployment and SquashFS writer, plus a target AppImage runtime. GUI cros…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0047-cell-01": {
+    "b0049-cell-01": {
       "sourceHash": "d3dc0b0795be03eddf75791619e6b58445e94207297a51047981a7145807636b",
       "targetHash": "dcc815e4496c0262fe64ff44fbf6fb081f693ebdd8d100a792e060b2ad776cd2",
       "machineHash": "dcc815e4496c0262fe64ff44fbf6fb081f693ebdd8d100a792e060b2ad776cd2",
@@ -582,31 +606,115 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0048-text-01": {
-      "sourceHash": "69f9a5d3682d44266663e4618e1c16182b40fc38cce881e3540a7a934b965699",
-      "targetHash": "23aa5ce1be7859f5b2b32088e24f413c24da42338dde5e61499cee6ae5182026",
-      "machineHash": "23aa5ce1be7859f5b2b32088e24f413c24da42338dde5e61499cee6ae5182026",
-      "machineText": "Arsip MSIX Windows dibuat langsung di Go; pembuatan paket yang tidak ditandatangani tidak memerlukan Windows SDK atau Docker. Penandatanganan Windows tetap memerlukan host Windows beserta alat penandatanganannya. NSIS menggunakan compiler NSIS eksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails memberikan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale yang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah. Penginstal NSIS standar menghilangkan bootstrapper WebView2 jika setiap executable dalam paket merupakan CLI atau server. Executable utama atau pendamping yang memiliki GUI tetap menyertakan WebView2. Skrip NSIS khusus tetap menyertakan bootstrapper demi kompatibilitas dengan logika penginstalan runtime-nya sendiri.",
+    "b0050-text-01": {
+      "sourceHash": "3606c5adcbb3bc799a2ed490e59011251c3e67fec232f3397c91fc870e8fb9c3",
+      "targetHash": "ad763b0d740362ca0f110a1fddf92677715a74d9576bbbe623d892d5f46cc872",
+      "machineHash": "ad763b0d740362ca0f110a1fddf92677715a74d9576bbbe623d892d5f46cc872",
+      "machineText": "Untuk DMG yang ditandatangani, Wake biasanya menandatangani salinan privat aplikasi sebelum penulis Go mengompresi image, lalu menandatangani image tersebut. Ini menghindari pemasangan, perluasan, dan pengompresian ulang DMG dengan `hdiutil`. Penandatanganan dijalankan pada setiap permintaan; paket yang ditandatangani tidak digunakan kembali dari cache build. Proyek dengan hook `after_package` atau `before_sign` mempertahankan alur asli berupa pemaketan lalu penandatanganan, termasuk `hdiutil`, sehingga perubahan yang dibuat hook tersebut pada image tanpa tanda tangan tetap dipertahankan. Jalur pengeditan image yang kompatibel dengan hook ini memerlukan macOS dan `hdiutil`.",
+      "status": "machine-translated",
+      "sourcePreview": "For signed DMGs, Wake normally signs a private copy of the application before the Go writer compress…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0051-text-01": {
+      "sourceHash": "8dce3da1f9da10e05228d0dcbd2a3b588e490c342c56cebf12bac9bcdb69de3d",
+      "targetHash": "c96a1de19cf11b5df5f908f03666dc96b735ff49903bf4f2dafb79f8f373dde6",
+      "machineHash": "c96a1de19cf11b5df5f908f03666dc96b735ff49903bf4f2dafb79f8f373dde6",
+      "machineText": "Untuk penandatanganan Apple portabel, tetapkan `darwin.signing.identity: \"-\"` untuk tanda tangan ad hoc, atau gunakan `darwin.signing.certificate` untuk identitas PKCS#12 RSA yang diekspor. `darwin.signing.credential` menentukan nama variabel lingkungan kata sandinya. Tanda tangan sertifikat menggunakan implementasi PFX/CMS Go bersama; tidak ada kunci privat yang diekspor secara otomatis dari keychain. Executable tipis dan universal, bundle aplikasi bertingkat, framework, serta DMG telah lolos pemeriksaan tanda tangan native Apple yang ketat, termasuk penolakan terhadap manipulasi, menggunakan identitas pengujian yang dibuat.",
+      "status": "machine-translated",
+      "sourcePreview": "For portable Apple signing, set `darwin.signing.identity: \"-\"` for an ad-hoc signature, or use `darw…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0052-text-01": {
+      "sourceHash": "7859d241e4f12cfb9537ee267ac380eedbebfbf3e97491484d718e392847c406",
+      "targetHash": "bdc3c5c26e9604f9f94e719e1067b01f4cd44b68cf3a9a4596dc92d8860a35fe",
+      "machineHash": "bdc3c5c26e9604f9f94e719e1067b01f4cd44b68cf3a9a4596dc92d8860a35fe",
+      "machineText": "Untuk notarisasi, identitas Developer ID yang diekspor juga memerlukan 3161 `darwin.signing.timestamp_server` RFC yang kompatibel. Verifikator bersama menerima profil stempel waktu SHA-2 yang didukungnya dan menolak algoritma lama yang tidak didukung. Tanda tangan ad hoc tidak dapat dinotarisasi. Validasi format sertifikat native terpisah dari kepercayaan Developer ID yang sebenarnya dan penerimaan kiriman oleh Apple.",
+      "status": "machine-translated",
+      "sourcePreview": "For notarization, an exported Developer ID identity also needs a compatible RFC 3161 `darwin.signing…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0053-text-01": {
+      "sourceHash": "4a78320bd224d2b2570cc9153ecacc53611951d63c9f2e701a5536df88bbbc61",
+      "targetHash": "dd745a0fd636fa442cf53f1844f847c719362e295e62ea7a1c8e04ffdb3d1bbc",
+      "machineHash": "dd745a0fd636fa442cf53f1844f847c719362e295e62ea7a1c8e04ffdb3d1bbc",
+      "machineText": "Penempel Go mengautentikasi tanda tangan tiket Apple dan memverifikasi bahwa tiket tersebut mencakup setiap arsitektur sebelum menempelkannya ke salinan privat. Penempel ini menggunakan protokol pengiriman tiket yang diamati, yang tidak dipublikasikan Apple sebagai API yang didukung. Ini tidak menggantikan pemeriksaan pencabutan terkini oleh Gatekeeper. Output aplikasi dan DMG yang ditandatangani telah lolos pemeriksaan native `stapler validate` dan pemeriksaan tanda tangan yang ketat.",
+      "status": "machine-translated",
+      "sourcePreview": "The Go stapler authenticates Apple's ticket signature and verifies that it covers every architecture…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0054-text-01": {
+      "sourceHash": "f358651f05ea5359ebef718a8c9217b0e38a0d4b1c3e601d4243163f43eb34c5",
+      "targetHash": "208918609a2c8f7b158542abb1185b4f336379ca9682796a82dd303c4f409f7b",
+      "machineHash": "208918609a2c8f7b158542abb1185b4f336379ca9682796a82dd303c4f409f7b",
+      "machineText": "Arsip MSIX Windows dibuat langsung dengan Go; pembuatan paket tanpa tanda tangan tidak memerlukan Windows SDK maupun Docker. Identitas RSA PFX yang diekspor menandatangani berkas executable Windows dan setiap paket MSIX secara langsung dengan Go pada semua host desktop. Tetapkan `windows.signing.certificate` ke PFX yang lokasinya relatif terhadap proyek dan `windows.signing.credential` ke variabel lingkungan yang memuat kata sandinya. Ekspor AES/PBKDF2 dan 3DES lama didukung; ekspor RC2 harus diekspor ulang atau menggunakan Windows SignTool native sebagai fallback. Identitas dari penyimpanan/penyedia sertifikat dan penandatanganan MSI memerlukan Windows SignTool. Layanan stempel waktu default adalah DigiCert; stempel waktu diverifikasi sebelum output yang ditandatangani dipublikasikan. Lihat [panduan penandatanganan](/guides/build/signing/) untuk mengetahui batasan format.\nNSIS menggunakan compiler NSIS eksternal dan menerima definisi literal melalui `packages.nsis.defines`. Di macOS, Wails memberikan locale UTF-8 hanya kepada proses turunan compiler NSIS jika locale yang diwarisinya bukan UTF-8; lingkungan terminal dan aplikasi tidak berubah. Installer NSIS bawaan tidak menyertakan bootstrapper WebView2 jika semua executable yang dikemas merupakan CLI atau server. Executable utama atau pendamping yang memiliki GUI tetap menyertakan WebView2. Skrip NSIS khusus tetap menyertakan bootstrapper demi kompatibilitas dengan logika instalasi runtime miliknya sendiri.",
       "status": "machine-translated",
       "sourcePreview": "Windows MSIX archives are created directly in Go; creating an unsigned package does not require the …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:39:22Z"
     },
-    "b0049-text-01": {
-      "sourceHash": "5d7cef63606aa728eaa683f15b25456fc23542855febfaee5e1d9d4c6df411dc",
-      "targetHash": "ed4b6d77ce241f7be1d76b219c75b190e9915730d80d193ac5aae1a095604dc9",
-      "machineHash": "ed4b6d77ce241f7be1d76b219c75b190e9915730d80d193ac5aae1a095604dc9",
-      "machineText": "Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. AppImage tetap menggunakan batas integrasi dengan linuxdeploy eksternal dan plugin GTK. Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. File sidecar dipulihkan dari cache paket dan dicantumkan dalam tanda terima artefak bersama AppImage. Saat ini, pemaketan AppImage memerlukan Linux serta arsitektur host dan target yang cocok. Deteksi GTK-nya tidak menemukan pustaka yang dimuat secara dinamis oleh GUI Go murni, sehingga adaptor ini belum mendukung deployment GUI Go murni. Gunakan salah satu format pengelola paket Linux untuk mode build tersebut.",
+    "b0055-text-01": {
+      "sourceHash": "049e86019917d742320fe434abbde25f54b9f5f8237b05411b7f15d74706e512",
+      "targetHash": "af764ab4f350c51f610b31fd5afff0de83b51e06eafb1ae8638fc8d920e29355",
+      "machineHash": "af764ab4f350c51f610b31fd5afff0de83b51e06eafb1ae8638fc8d920e29355",
+      "machineText": "Linux mendukung paket AppImage, DEB, RPM, Arch Linux, dan Void. Wake merakit AppImage secara langsung dengan Go, termasuk deployment GTK/WebKit, kompresi SquashFS, dan pembuatan zsync. Wake tidak menjalankan linuxdeploy, plugin GTK, appimagetool, ataupun mksquashfs. Runtime AppImage tipe-2 yang versinya dipatok dan checksum-nya diverifikasi diunduh untuk arsitektur target; `packages.appimage.runtime_path` digunakan untuk memilih ELF runtime yang jalurnya relatif terhadap proyek.",
       "status": "machine-translated",
-      "sourcePreview": "Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. AppImages retain the external linux…",
+      "sourcePreview": "Linux supports AppImage, DEB, RPM, Arch Linux and Void packages. Wake assembles AppImages directly i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0050-text-01": {
+    "b0056-text-01": {
+      "sourceHash": "ae604f3d69618f1e71abd0b23a73a6a6776bb1f1ae5f0036389ff097e9400124",
+      "targetHash": "e29bc0452dd9d5f6cc638f4d5214be6f8a28863cdf0eae1c44d05979948867ae",
+      "machineHash": "e29bc0452dd9d5f6cc638f4d5214be6f8a28863cdf0eae1c44d05979948867ae",
+      "machineText": "Di Linux, sumber pustaka default adalah sistem file root host. Untuk memaketkan GUI bagi arsitektur lain atau dari Windows/macOS, tetapkan `packages.appimage.runtime_root` ke pohon root Linux target yang jalurnya relatif terhadap proyek dan berisi pustaka, skema terkompilasi, serta cache modulnya. Nilai ini harus berupa seluruh tata letak root, termasuk `usr/`, bukan direktori `usr/` itu sendiri. Sediakan runtime dari distribusi Linux tertua yang ingin Anda dukung. Wake membaca impor ELF dan profil GTK/WebKit eksplisit tanpa menjalankan program target. Wake membundel closure yang dipilih, bukan glibc atau loader dinamis. Hash konten pustaka dan resource membatalkan cache paket setelah runtime diperbarui.",
+      "status": "machine-translated",
+      "sourcePreview": "On Linux, the default library source is the host root filesystem. To package a GUI for another archi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0057-text-01": {
+      "sourceHash": "83ff33bb7e934ed9b0045efbe78287d7752fd7da2fd4686f5344c560a4bdd084",
+      "targetHash": "8cf348ea3f3f979889c0f6c45c469ebcab97a06f2df836e289c98c07d596496f",
+      "machineHash": "8cf348ea3f3f979889c0f6c45c469ebcab97a06f2df836e289c98c07d596496f",
+      "machineText": "Build GUI Go murni didukung. Wake memilih GTK 3 untuk executable GUI yang dibuat dengan `gtk3`, dan GTK 4 untuk executable lainnya, termasuk executable GUI pendamping CLI/server. Semua executable GUI dalam satu image harus menggunakan versi GTK yang sama. Untuk biner siap pakai, `packages.appimage.gtk_version` dapat secara eksplisit memilih `3` atau `4`; pustaka CGo yang diimpor harus sesuai dengan pilihan tersebut.",
+      "status": "machine-translated",
+      "sourcePreview": "Pure-Go GUI builds are supported. Wake selects GTK 3 for GUI executables built with `gtk3`, and GTK …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0058-text-01": {
+      "sourceHash": "37eefed75c67795e91b9308b3acfe717bcc81bf40b2ef5c3ffa1bc9449e93d5f",
+      "targetHash": "a83f6ddd3d02c40040ca6762f5ca620a6757f0cb8cb0e876e05e93f8f0ba4b1f",
+      "machineHash": "a83f6ddd3d02c40040ca6762f5ca620a6757f0cb8cb0e876e05e93f8f0ba4b1f",
+      "machineText": "Tetapkan `packages.appimage.update_info` untuk meminta file zsync dan `packages.appimage.checksum: true` untuk file SHA256. Sidecar dipulihkan dari cache paket dan dicantumkan dalam tanda terima artefak bersama AppImage. Pemaketan di Windows dan macOS telah diverifikasi dengan pohon GTK/WebKit yang disediakan; image GUI Go murni yang dihasilkan lolos pemeriksaan runtime di Linux. Dalam satu build GUI CGo yang sebanding, jalur native memerlukan 8.77 detik dibandingkan 26.19 detik untuk linuxdeploy. Image gzip native berukuran 133 MiB dibandingkan 114 MiB dengan jalur zstd lama, sehingga pengukuran ini mencakup seluruh jalur pemaketan, bukan hanya kompresi.",
+      "status": "machine-translated",
+      "sourcePreview": "Set `packages.appimage.update_info` to request a zsync file and `packages.appimage.checksum: true` f…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0059-text-01": {
       "sourceHash": "a1f799d1b5a7af1b502fecd1f019a0c81fa8e9b36c55e50f9e212db66ed4e82c",
       "targetHash": "7661e84fe9ee69fd90969a9e8600fadc76f77d1778c809f7797230c42459c684",
       "machineHash": "7661e84fe9ee69fd90969a9e8600fadc76f77d1778c809f7797230c42459c684",
@@ -618,7 +726,31 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0051-text-01": {
+    "b0060-text-01": {
+      "sourceHash": "2067fa204b9397bee5099b7360e9a13b515629e0cc9614d0c6116bb81075a722",
+      "targetHash": "9c83bcec44e5555aa9da7770507c77640f9f48b38a98e2d2b1fd84b80def4efd",
+      "machineHash": "9c83bcec44e5555aa9da7770507c77640f9f48b38a98e2d2b1fd84b80def4efd",
+      "machineText": "Penandatanganan DEB, RPM, dan Arch dapat menggunakan kunci privat OpenPGP armored atau biner yang diekspor pada host desktop apa pun yang didukung, tanpa GnuPG, `dpkg-sig`, atau `rpmsign`. Konfigurasikan `linux.signing.certificate` dengan file kunci dan `credential` dengan nama variabel lingkungan frasa sandinya. DEB dan RPM menyematkan tanda tangan; Arch menerbitkan tanda tangan terpisah. Kunci privat hanya dibaca pada langkah penandatanganan dan tidak disalin ke aset paket maupun artefak cache yang dapat digunakan kembali.",
+      "status": "machine-translated",
+      "sourcePreview": "DEB, RPM and Arch signing can use exported armored or binary OpenPGP private keys on any supported d…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0061-text-01": {
+      "sourceHash": "2f80154a413abfff21e5797fad57c9ca811472653f4957420dd32a9adb7f6b70",
+      "targetHash": "a825fb76c4a6479f0d1da520c53e367054045748083f4af2ed02486a33007b76",
+      "machineHash": "a825fb76c4a6479f0d1da520c53e367054045748083f4af2ed02486a33007b76",
+      "machineText": "Konfigurasi DEB/RPM yang sudah ada dan memuat pengidentifikasi kunci GnuPG polos tetap menggunakan penanda tangan eksternal. Untuk menghapus dependensi tersebut, ekspor kunci rahasia dan konfigurasikan jalurnya sebagai gantinya. Gunakan jalur seperti `./signing/release.asc`; file kunci yang tidak ada, tidak dapat dibaca, atau tidak valid akan menyebabkan kegagalan, bukan fallback ke keyring. Tanda tangan DEB tetap menggunakan format tanda tangan paket `dpkg-sig`; ini tidak menggantikan penandatanganan metadata rilis repositori apt.",
+      "status": "machine-translated",
+      "sourcePreview": "Existing DEB/RPM configurations containing a bare GnuPG key identifier keep their external signer. T…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0062-text-01": {
       "sourceHash": "0e09095d765b5190ee6aaf743e177eaa49d9dc1e50bc6877105cd3ce72771ed5",
       "targetHash": "441689baf1558b313e46d941f7b95b8263251d8b880e3df4b6a623193bc1ef50",
       "machineHash": "441689baf1558b313e46d941f7b95b8263251d8b880e3df4b6a623193bc1ef50",
@@ -630,7 +762,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0052-text-01": {
+    "b0063-text-01": {
       "sourceHash": "704f658453c7b1cad30561999877190bf0f77b24da12855554f62c32bf99da2b",
       "targetHash": "2d641284f7c68bd021c694b5e65a76cd03d499ef0e8409660bd26bd589fc4e2e",
       "machineHash": "2d641284f7c68bd021c694b5e65a76cd03d499ef0e8409660bd26bd589fc4e2e",
@@ -642,19 +774,55 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0053-text-01": {
-      "sourceHash": "4ce189198de7ebfe8b0d03a510a71259552abcb52899dd94efcf321ffb11540f",
-      "targetHash": "bf2b5fb4090337975767d19b8f3134bcd2881424512b7dad72213e4ffa2a42e1",
-      "machineHash": "bf2b5fb4090337975767d19b8f3134bcd2881424512b7dad72213e4ffa2a42e1",
-      "machineText": "Bundel aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika tidak ada file entitlement khusus yang diberikan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Penandatanganan dan notarisasi menggunakan alat serta kredensial Apple yang sudah ada di macOS; notarisasi memerlukan profil notaris yang nyata. Output yang ditandatangani mempertahankan ekstensi platformnya, misalnya `notes.signed.app` dan `notes.signed.dmg`.",
+    "b0064-text-01": {
+      "sourceHash": "fec1eeffb57832e527f353a5b9c231c542373d97fb7e57c255b8f2d07d2e284f",
+      "targetHash": "722e59fbc3f9836d561fb383f493d7ca900329cb1ac5107dc07727a361a1a373",
+      "machineHash": "722e59fbc3f9836d561fb383f493d7ca900329cb1ac5107dc07727a361a1a373",
+      "machineText": "Bundle aplikasi macOS menyertakan program pendamping. Tetapkan `darwin.microphone_usage_description` untuk menambahkan teks penggunaan dan, jika tidak ada file entitlement khusus yang disediakan, entitlement input audio. Sumber plist dan entitlement khusus tetap tidak berubah. Identitas PKCS#12 RSA yang diekspor menggunakan penandatanganan Go pada setiap host desktop; `identity: \"-\"` memilih penandatanganan ad hoc portabel. Identitas keychain tetap menggunakan `codesign` di macOS. Penempelan tiket dijalankan dengan Go. Pengiriman notarisasi dapat menggunakan profil keychain notaris macOS yang sudah ada, atau kredensial API tim App Store Connect:",
       "status": "machine-translated",
       "sourcePreview": "macOS app bundles include companion programs. Set `darwin.microphone_usage_description` to add the u…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-31T23:21:07Z"
+      "updatedAt": "2026-11-01T04:34:28Z"
     },
-    "b0054-heading-01": {
+    "b0065-text-01": {
+      "sourceHash": "2b268b7d83a26619d8dbe9a168e6bc70672680d8660a75c40391cf6f240821c3",
+      "targetHash": "76247f7645dd70ea63cbefdea3c4b8ff2ba94f5d7264432136566512f8374987",
+      "machineHash": "76247f7645dd70ea63cbefdea3c4b8ff2ba94f5d7264432136566512f8374987",
+      "machineText": "Mode API mengirimkan, mengunggah, dan melakukan polling dari Go tanpa `notarytool`. Tetapkan ketiga kolom dan hilangkan `credential`; jangan simpan kunci privat dalam kontrol versi. Kunci hanya dibaca pada saat penandatanganan dan tidak disalin ke aset yang dihasilkan ataupun cache. Mode ini mendukung kunci API tim dan arsip hingga 5 GiB; unggahan multipart dan kunci API individual belum diimplementasikan. Kiriman yang ditolak tetap menyimpan ID kiriman dan menyimpan log diagnostik Apple ke file sementara privat yang jalurnya dilaporkan dalam pesan kesalahan. Kiriman yang dibatalkan atau ditolak tidak menggantikan output yang sebelumnya telah dipublikasikan. Setelah diterima, Wake mengambil dan memverifikasi tiket Apple, lalu menempelkannya dengan Go. Dengan identitas yang diekspor dan kredensial API tim, penandatanganan, pengiriman, serta penempelan dapat dijalankan di Linux, Windows, atau macOS. Profil keychain tetap memerlukan macOS dan `notarytool`.",
+      "status": "machine-translated",
+      "sourcePreview": "API mode submits, uploads and polls from Go without `notarytool`. Set all three fields and omit `cre…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0066-text-01": {
+      "sourceHash": "ec3c1d7db13ffbd40600d8f27e569f1a57f4f9c7b5e7ff977edd9b489501c666",
+      "targetHash": "8890f422155cfbd1a53ef7727dc70363153f05f199b79f686234079dbcbfafc9",
+      "machineHash": "8890f422155cfbd1a53ef7727dc70363153f05f199b79f686234079dbcbfafc9",
+      "machineText": "Penandatanganan sertifikat portabel mendukung identitas RSA dalam file PKCS#12 AES/PBKDF2 atau 3DES lama. Ekspor yang dienkripsi dengan RC2 harus diekspor ulang menggunakan cipher yang didukung. Tanda tangan portabel yang dinotarisasi memerlukan layanan stempel waktu SHA-2 RFC 3161 yang ditentukan secara eksplisit; verifikator Go menolak tanda tangan stempel waktu SHA-1 lama. Layanan tiket mengikuti protokol Apple yang diamati dan menyematkan Apple Root G3; Gatekeeper tetap menjadi otoritas untuk kepercayaan distribusi dan pencabutan.",
+      "status": "machine-translated",
+      "sourcePreview": "Portable certificate signing supports RSA identities in AES/PBKDF2 or legacy 3DES PKCS#12 files. RC2…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0067-text-01": {
+      "sourceHash": "2a1e4d142d34e5ab0e0ff1a5965215d7cb7bc79c96e64f04a7941871eac592f4",
+      "targetHash": "3fe7518b984488d9a5366148da1c8ee9ab50826049c6a37aaf38168712795170",
+      "machineHash": "3fe7518b984488d9a5366148da1c8ee9ab50826049c6a37aaf38168712795170",
+      "machineText": "Output yang ditandatangani tetap mempertahankan ekstensi platformnya, misalnya\n`notes.signed.app` dan `notes.signed.dmg`.",
+      "status": "machine-translated",
+      "sourcePreview": "Signed outputs retain their platform extension, for example `notes.signed.app` and `notes.signed.dmg…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:28Z"
+    },
+    "b0068-heading-01": {
       "sourceHash": "3c47edf354269c8a13572aeb933f90deec93cf85f632db7004f3eb5f0cbae224",
       "targetHash": "a156db324189714cdfb00be9ffcee016ca0c113e7e04ea6f020bfcb6cc7abd11",
       "machineHash": "a156db324189714cdfb00be9ffcee016ca0c113e7e04ea6f020bfcb6cc7abd11",
@@ -666,7 +834,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0055-text-01": {
+    "b0069-text-01": {
       "sourceHash": "a011a59f57c1cb68dd46ecec895e68904030c1127aba9e8b583d5558e52ef34a",
       "targetHash": "7d63c51b66fba77114602cf80457d0c0fd11a8c9d0feb4ebd97c9d5410d7d16d",
       "machineHash": "7d63c51b66fba77114602cf80457d0c0fd11a8c9d0feb4ebd97c9d5410d7d16d",
@@ -678,7 +846,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0056-cell-01": {
+    "b0070-cell-01": {
       "sourceHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c",
       "targetHash": "557a2bac0589671e00f4939704425798f807dab8c93dc3addbecae69bd98666b",
       "machineHash": "557a2bac0589671e00f4939704425798f807dab8c93dc3addbecae69bd98666b",
@@ -690,7 +858,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0057-cell-01": {
+    "b0071-cell-01": {
       "sourceHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6",
       "targetHash": "5b3062c5bcc9c7bd60a1f957a437dfaaffa014b7e7f2c6fd1265b1d7e9d1a724",
       "machineHash": "5b3062c5bcc9c7bd60a1f957a437dfaaffa014b7e7f2c6fd1265b1d7e9d1a724",
@@ -702,7 +870,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0058-cell-01": {
+    "b0072-cell-01": {
       "sourceHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
       "targetHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
       "machineHash": "17d8babc286fdb52b73f5abc1e79553d6e0bfde3f0261bf4653c54ac5943782a",
@@ -714,7 +882,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0059-cell-01": {
+    "b0073-cell-01": {
       "sourceHash": "523854e094232949a66ba339e806d93540fe1d76148a2a2c3c2d50e1596e5640",
       "targetHash": "922df7cc428929b0f42092805dcc810b256c8abbcc054326e10827db507bdf72",
       "machineHash": "922df7cc428929b0f42092805dcc810b256c8abbcc054326e10827db507bdf72",
@@ -726,7 +894,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0060-cell-01": {
+    "b0074-cell-01": {
       "sourceHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
       "targetHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
       "machineHash": "068b84ef59a6dc851f20f71f0629b56d0c06d68b2b13392abf8f006c4e76b2b3",
@@ -738,7 +906,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0061-cell-01": {
+    "b0075-cell-01": {
       "sourceHash": "b986d19825ee26ad251ae3340fb8e2678809148879290d6af25a297ed3e14c06",
       "targetHash": "327eb499ba09cefdc46e80b05676238b7c1669c83a83f70b0c7ac1b871bbcf6e",
       "machineHash": "327eb499ba09cefdc46e80b05676238b7c1669c83a83f70b0c7ac1b871bbcf6e",
@@ -750,7 +918,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0062-cell-01": {
+    "b0076-cell-01": {
       "sourceHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
       "targetHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
       "machineHash": "78da81df22bee2f6ef36a26fee9f5a4bff5ae8d02662f852e00e47ca47444447",
@@ -762,7 +930,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0063-cell-01": {
+    "b0077-cell-01": {
       "sourceHash": "d720082578a66f8f57245808ec6a28fab735a52b45946ad3cc3bc67b467b9653",
       "targetHash": "d2939d4be03f9d4691e88f7f4527121791a1b5808ac1f9c4b133d6060e477bdd",
       "machineHash": "d2939d4be03f9d4691e88f7f4527121791a1b5808ac1f9c4b133d6060e477bdd",
@@ -774,7 +942,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0064-cell-01": {
+    "b0078-cell-01": {
       "sourceHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
       "targetHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
       "machineHash": "fe1be6400567026db37f6553b68e5a1d280c5c6e996d0c54582e1eab8dabe2e2",
@@ -786,7 +954,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0065-cell-01": {
+    "b0079-cell-01": {
       "sourceHash": "22ec5d506bc373f6d2e56716743b3b0b268f1ab3c17aae92f5d9040f51939cb8",
       "targetHash": "0a0e28262fb97931532a33fdb7d9a188952706629b97c60c579698ccb6d2c68c",
       "machineHash": "0a0e28262fb97931532a33fdb7d9a188952706629b97c60c579698ccb6d2c68c",
@@ -798,7 +966,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0066-cell-01": {
+    "b0080-cell-01": {
       "sourceHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
       "targetHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
       "machineHash": "79bcfda23fd97f22e51dcd0f1d181d94eaa8fe453592ba10d4a6d6c1bebc2659",
@@ -810,7 +978,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0067-cell-01": {
+    "b0081-cell-01": {
       "sourceHash": "cc73e262d30473b46380386a01f53168c0029f277e14897d5322d8968ea736d1",
       "targetHash": "a8c7c5598dc3fe29b84afd1017ee87d32891afc9bd9e1efb6f4718b284bc65e3",
       "machineHash": "a8c7c5598dc3fe29b84afd1017ee87d32891afc9bd9e1efb6f4718b284bc65e3",
@@ -822,7 +990,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0068-cell-01": {
+    "b0082-cell-01": {
       "sourceHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
       "targetHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
       "machineHash": "b9bbf36ef6031632b38a4a224cf5b75e7bf16ff31dd01f943b29e6ad7ae84de7",
@@ -834,7 +1002,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0069-cell-01": {
+    "b0083-cell-01": {
       "sourceHash": "c987906121e403aef5e189d81bc2bfbb6f2dd9714c4d6a1e549e1cf3ac60c603",
       "targetHash": "1852ee576b13b15c5787d11f0463208753dbe892337271f3483221ca14d4ebab",
       "machineHash": "1852ee576b13b15c5787d11f0463208753dbe892337271f3483221ca14d4ebab",
@@ -846,7 +1014,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0070-text-01": {
+    "b0084-text-01": {
       "sourceHash": "911cc158f6be95f0897492f9c190424420584b41d627e72677e8876004274f92",
       "targetHash": "1b55775abc2408592bb5d3d42f72b097b90a2ca14367d58b10253c35d27c60a8",
       "machineHash": "1b55775abc2408592bb5d3d42f72b097b90a2ca14367d58b10253c35d27c60a8",
@@ -858,7 +1026,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0071-heading-01": {
+    "b0085-heading-01": {
       "sourceHash": "9af1b890d971c5f094709524b04bb3eec300e2d664595b0a5f1108308abaf948",
       "targetHash": "437ae93a8f6cc90696cb00ceab77d441387af5518272ce20459ae7d93983d9aa",
       "machineHash": "437ae93a8f6cc90696cb00ceab77d441387af5518272ce20459ae7d93983d9aa",
@@ -870,7 +1038,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0072-text-01": {
+    "b0086-text-01": {
       "sourceHash": "18fd75c7c8d901824e0ce01d11243cf94b817b6e8eecd68c19ff764d16eb135a",
       "targetHash": "484acd7aff21a9f8ef5d35236e1dad1c772080fdda21ceb8ed844acc7031066a",
       "machineHash": "484acd7aff21a9f8ef5d35236e1dad1c772080fdda21ceb8ed844acc7031066a",
@@ -882,7 +1050,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0073-heading-01": {
+    "b0087-heading-01": {
       "sourceHash": "8794e6408e37792c01a6ba137d2d37a7236e6a86e5dbc4a3c4883c8f974f474e",
       "targetHash": "0a3715b4957b84889a859b0be83052f36b95eea2f3d00109de751e362638e363",
       "machineHash": "0a3715b4957b84889a859b0be83052f36b95eea2f3d00109de751e362638e363",
@@ -894,7 +1062,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0074-text-01": {
+    "b0088-text-01": {
       "sourceHash": "7227be62b57650f04560a5087aaf3ac0f3d7f7395a57f87c10afd0c35adac305",
       "targetHash": "90082e3cb163b82c14498c2af0e25bb9ce35096d3bef683fc1185fd0e753c5d3",
       "machineHash": "90082e3cb163b82c14498c2af0e25bb9ce35096d3bef683fc1185fd0e753c5d3",
@@ -906,7 +1074,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0075-text-01": {
+    "b0089-text-01": {
       "sourceHash": "372aa4e026f284362ca487a7c7fba397e935c758aea24724b339652d57e46d24",
       "targetHash": "2c84213abaadef6917c351f7f0c121e8d9d787c0f4a35c33a2a00ecdf523ea27",
       "machineHash": "2c84213abaadef6917c351f7f0c121e8d9d787c0f4a35c33a2a00ecdf523ea27",
@@ -918,7 +1086,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0076-heading-01": {
+    "b0090-heading-01": {
       "sourceHash": "12448bd4b73db79862be5374f3ad0277af8e2541edaf641866da221502ab7ff1",
       "targetHash": "c6381d874c7978daa3f55efcd73784c34d7e8a4e89c56bbb683fa3c685e41722",
       "machineHash": "c6381d874c7978daa3f55efcd73784c34d7e8a4e89c56bbb683fa3c685e41722",
@@ -930,7 +1098,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0077-text-01": {
+    "b0091-text-01": {
       "sourceHash": "2690d985e8763b02fc5b4cead626d4dcafca82772d4be81a8f888853953e89cc",
       "targetHash": "833adc71c5d2ee7a475b0a0de86bca9aa44f6ec81582a9c386df0f34587ae4a1",
       "machineHash": "833adc71c5d2ee7a475b0a0de86bca9aa44f6ec81582a9c386df0f34587ae4a1",
@@ -942,7 +1110,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0078-heading-01": {
+    "b0092-heading-01": {
       "sourceHash": "d5b9acbb02c276184569f4f7770cf628a8763a48ea88c0345dbc18257f0e8618",
       "targetHash": "4f9516cc6dfb6858126251ff62855a45911da4470aaba07cd19d2f47002966e3",
       "machineHash": "4f9516cc6dfb6858126251ff62855a45911da4470aaba07cd19d2f47002966e3",
@@ -954,7 +1122,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0079-text-01": {
+    "b0093-text-01": {
       "sourceHash": "c628c6b63404c420e8e4456d9cc7b9b9feaef79e38d748a28e884fcf57f70035",
       "targetHash": "5bb61026d223c218def661c2822607e9636faaf93f0c203a98f70a5183eda2ba",
       "machineHash": "5bb61026d223c218def661c2822607e9636faaf93f0c203a98f70a5183eda2ba",
@@ -966,7 +1134,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0080-text-01": {
+    "b0094-text-01": {
       "sourceHash": "b2f77afc81e69752f694f54716889014ad9b462578fc6655727fcc423c5d3654",
       "targetHash": "7fd1d8b267895c78e788a5061d33215bbe27002261549870b1a9f1708b262090",
       "machineHash": "7fd1d8b267895c78e788a5061d33215bbe27002261549870b1a9f1708b262090",
@@ -978,7 +1146,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0081-text-01": {
+    "b0095-text-01": {
       "sourceHash": "9886beab4065f92f7c525c44b95fce94040cf936318a014ba277fbd5eb29acce",
       "targetHash": "6da067d1cc4ba1181b49599b1e6bbf68ddb50f0f0154ecc23ffc25af9b067bf3",
       "machineHash": "6da067d1cc4ba1181b49599b1e6bbf68ddb50f0f0154ecc23ffc25af9b067bf3",
@@ -990,7 +1158,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0082-text-01": {
+    "b0096-text-01": {
       "sourceHash": "d22fe66aeb183007b3727d3129e3abd951342e3c4d0743242e77da26844106e5",
       "targetHash": "f4c9d3f84d5f32b6a876a5313087bf0351fc6990f99fea3f516d0bcc5613fd7f",
       "machineHash": "f4c9d3f84d5f32b6a876a5313087bf0351fc6990f99fea3f516d0bcc5613fd7f",
@@ -1002,7 +1170,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0083-heading-01": {
+    "b0097-heading-01": {
       "sourceHash": "558c2173a537c0f6d30ff4a937bc564c9600d5bec08d8079fdc637b17b620104",
       "targetHash": "3a049d4f942aef14ccafb9843ded2f22488394eec3ab831cc6ff19b63e85739a",
       "machineHash": "3a049d4f942aef14ccafb9843ded2f22488394eec3ab831cc6ff19b63e85739a",
@@ -1014,7 +1182,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0084-text-01": {
+    "b0098-text-01": {
       "sourceHash": "48c054d2beed84b71f101603cc38306ceb5e8de72c1c8896f9f9f8ba5be25baa",
       "targetHash": "2dd0e75b617419e5a6df33dbfa9245fe0caade4d59ddb515e6c31b489a66a58d",
       "machineHash": "2dd0e75b617419e5a6df33dbfa9245fe0caade4d59ddb515e6c31b489a66a58d",
@@ -1026,7 +1194,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0085-text-01": {
+    "b0099-text-01": {
       "sourceHash": "22dac4dc8a943d3ce01460b0f526ff07c5d0e20058ed4af7721310d3abb70f9d",
       "targetHash": "f2413491071463aec0e8eed4720678acb133321d569efac1d0302f02a1e3fe10",
       "machineHash": "f2413491071463aec0e8eed4720678acb133321d569efac1d0302f02a1e3fe10",
@@ -1038,7 +1206,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0086-text-01": {
+    "b0100-text-01": {
       "sourceHash": "8f4a86c5dfee1cd78734b2d7639fe624f4bbd808c0d6d4547a6596d302658dfc",
       "targetHash": "2756cae1c87210aa7976db81c0b52c19aa556975ee5f367b357b7900f2363102",
       "machineHash": "2756cae1c87210aa7976db81c0b52c19aa556975ee5f367b357b7900f2363102",
@@ -1050,7 +1218,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0087-text-01": {
+    "b0101-text-01": {
       "sourceHash": "3075b7ad1cdf0b4c638f2ed35a0c7dc67c4582c60da8133a764f673a2c485ad3",
       "targetHash": "52baeec413fa7cabe48f31eea501653183408d82596cef981ebab2bc551574c3",
       "machineHash": "52baeec413fa7cabe48f31eea501653183408d82596cef981ebab2bc551574c3",
@@ -1062,7 +1230,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0088-text-01": {
+    "b0102-text-01": {
       "sourceHash": "2a803b9716c233972e758e12b247e07ec8933835cbe3e02dabd57672738687c8",
       "targetHash": "2f24f91a90c588a7a1427291bf7054156157bfd57cc5ab7d0d4b94f1a535f015",
       "machineHash": "2f24f91a90c588a7a1427291bf7054156157bfd57cc5ab7d0d4b94f1a535f015",
@@ -1074,7 +1242,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0089-text-01": {
+    "b0103-text-01": {
       "sourceHash": "6208c3c8a8583f46263266ab47582c7c6f92d435245e29f915df032f5c00af48",
       "targetHash": "47fce1f99bd740583a872e48bf5cba17ab834856529866a127928de83e8d329f",
       "machineHash": "47fce1f99bd740583a872e48bf5cba17ab834856529866a127928de83e8d329f",
@@ -1086,7 +1254,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0090-text-01": {
+    "b0104-text-01": {
       "sourceHash": "f4a8952a42698fbb794f96cd26a5fb18ca33701eef3e8f843a3997215ed7edb5",
       "targetHash": "16f8d2e6b9329d7bce955e807bd0371b204f4d2884407417bb9674a22a293ef1",
       "machineHash": "16f8d2e6b9329d7bce955e807bd0371b204f4d2884407417bb9674a22a293ef1",
@@ -1098,7 +1266,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0091-heading-01": {
+    "b0105-heading-01": {
       "sourceHash": "391ff241dbd12b1515fc1bb2839545855c219145a62076327fbb7dc4acabe618",
       "targetHash": "af9712180bf22e3b48f9eee6106ed11b656a324d63330748d6feae8f612da0a4",
       "machineHash": "af9712180bf22e3b48f9eee6106ed11b656a324d63330748d6feae8f612da0a4",
@@ -1110,7 +1278,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0092-text-01": {
+    "b0106-text-01": {
       "sourceHash": "aa7375fec3c1401ddf6c840280256dbcfe2bf7d0f63262ca2b4b16929921aca4",
       "targetHash": "61fc543ba836a6064158202c1e7597df405f254c028ecc4a42fc3135a5d29bcd",
       "machineHash": "61fc543ba836a6064158202c1e7597df405f254c028ecc4a42fc3135a5d29bcd",
@@ -1122,7 +1290,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0093-text-01": {
+    "b0107-text-01": {
       "sourceHash": "a0a69a7f9d5137d1b87da7b174c920a4451956e24c37f016b801e9de6580140f",
       "targetHash": "1dbc017e3e8838bc22ab8da35c9e7a40bd4acd1350f0b1ea528f9cd1b0d84e09",
       "machineHash": "1dbc017e3e8838bc22ab8da35c9e7a40bd4acd1350f0b1ea528f9cd1b0d84e09",
@@ -1134,7 +1302,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0094-text-01": {
+    "b0108-text-01": {
       "sourceHash": "b8b0b2b4752f11221757fed4226686b98ff1989ae601381a46a04b3e6c5289d0",
       "targetHash": "beb23aa4bfa2f4bf9e240d96bb64bf20f5deff7663a93086b70fa8a976308113",
       "machineHash": "beb23aa4bfa2f4bf9e240d96bb64bf20f5deff7663a93086b70fa8a976308113",
@@ -1146,7 +1314,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0095-heading-01": {
+    "b0109-heading-01": {
       "sourceHash": "38fcb62bb21edaea8e1a19907be5ed12eb3be9596db673f00a25f8f58c1a226a",
       "targetHash": "d7bc200bb36d5030531d289c38eea327cdbb50fe164285f5297008b8b50690ed",
       "machineHash": "d7bc200bb36d5030531d289c38eea327cdbb50fe164285f5297008b8b50690ed",
@@ -1158,7 +1326,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0096-text-01": {
+    "b0110-text-01": {
       "sourceHash": "7258fd780164131dccac2ad0061b7a098ee694ae23273703cb858b6f6c6f0cfe",
       "targetHash": "16b7f1625ee1bb6c19e38c1009d5f63f388ea872943cbec59f2c6212bfad80ed",
       "machineHash": "16b7f1625ee1bb6c19e38c1009d5f63f388ea872943cbec59f2c6212bfad80ed",
@@ -1170,7 +1338,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0097-text-01": {
+    "b0111-text-01": {
       "sourceHash": "586fcba4ad5121ee547afb4f8967603677cf0a376a73971a9142757306d4f7ab",
       "targetHash": "dcb24cc1b92ddd2508e12dffa42d563d25d2cfe35ffc054b509889fdd5d5da39",
       "machineHash": "dcb24cc1b92ddd2508e12dffa42d563d25d2cfe35ffc054b509889fdd5d5da39",
@@ -1182,7 +1350,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0098-heading-01": {
+    "b0112-heading-01": {
       "sourceHash": "103f67987ac91bcf9406eeccfba026f5997678164c426bee4f90a3d237dadb6d",
       "targetHash": "4ff0a44c33bbe1a30d7cf0955e96a653a26000266e062834d375baee3cd674b5",
       "machineHash": "4ff0a44c33bbe1a30d7cf0955e96a653a26000266e062834d375baee3cd674b5",
@@ -1194,7 +1362,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0099-text-01": {
+    "b0113-text-01": {
       "sourceHash": "bad7397de917d117fa06e49c96058289eb1c4f825e6e9b14ffefaee21a7714bf",
       "targetHash": "0603a2ebb38baa136d6bd4cd990a3417597d3e3792f53a1f72ca5b42822d31a6",
       "machineHash": "0603a2ebb38baa136d6bd4cd990a3417597d3e3792f53a1f72ca5b42822d31a6",
@@ -1206,7 +1374,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0100-text-01": {
+    "b0114-text-01": {
       "sourceHash": "bda0bf3d3fb6e110ddf56782749ca114319c2ec6da511cc1514e49f281d7b33d",
       "targetHash": "6f4b0a7e9b38235f92480492d5b7ee0e4cb4a5cd0024cbcb7e0ce420b118c45a",
       "machineHash": "6f4b0a7e9b38235f92480492d5b7ee0e4cb4a5cd0024cbcb7e0ce420b118c45a",
@@ -1218,7 +1386,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-31T23:21:07Z"
     },
-    "b0101-text-01": {
+    "b0115-text-01": {
       "sourceHash": "21dce0b0af92732cb96ea69c3f12feaa1453cc9f4c305098ef4c49108836cd16",
       "targetHash": "96a4bcb000d161f61bddceb04d5fdffab411df95880c68a50a4b8e72791c143c",
       "machineHash": "96a4bcb000d161f61bddceb04d5fdffab411df95880c68a50a4b8e72791c143c",

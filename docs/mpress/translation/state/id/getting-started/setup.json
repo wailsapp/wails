@@ -16,19 +16,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0001-text-01": {
       "sourceHash": "8da6e8c26907f251de7b6b38094ec54e804bd4afa48d25e98ab8f8a080a8ca91",
-      "targetHash": "3401ea106d659bfeb2ffcf2544c673466473abef784022bc085bd9c025c4057e",
-      "machineHash": "3401ea106d659bfeb2ffcf2544c673466473abef784022bc085bd9c025c4057e",
-      "machineText": "Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika mengalami masalah, harap [laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) dan ikuti [langkah-langkah penginstalan manual](/getting-started/installation/#platform-specific-dependencies) sebagai gantinya.",
+      "targetHash": "455883679649b3b6c11fdb9dd87c15e12d24b8e5ece25fba400592e0be159704",
+      "machineHash": "455883679649b3b6c11fdb9dd87c15e12d24b8e5ece25fba400592e0be159704",
+      "machineText": "Wizard penyiapan masih baru dan terutama telah diuji di Linux. Jika mengalami masalah, silakan [laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) dan ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies) sebagai gantinya.",
       "status": "machine-translated",
       "sourcePreview": "The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them]…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0002-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
@@ -40,19 +40,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0003-text-01": {
-      "sourceHash": "0b9a096ac2a40921133d39f6674f025ffd4050b1929a7f843a0b97096b776c3e",
-      "targetHash": "ab70c22f61c7ce4a49941c65e6b2dfed462ccef827b3a7451d9d5bfe1aaf6c6c",
-      "machineHash": "ab70c22f61c7ce4a49941c65e6b2dfed462ccef827b3a7451d9d5bfe1aaf6c6c",
-      "machineText": "Wizard akan terbuka di browser dan memandu Anda memeriksa dependensi, menentukan nilai default proyek, serta menyiapkan build lintas platform secara opsional.",
+      "sourceHash": "659b03264ab883a1bcdd39c51bd3fea504286a1f0d09a93c3ba74637511553be",
+      "targetHash": "5fb460474d11261b44b4d1587e53cc3606cc2632430578f6c9f76dfd0b1920f8",
+      "machineHash": "5fb460474d11261b44b4d1587e53cc3606cc2632430578f6c9f76dfd0b1920f8",
+      "machineText": "Wizard terbuka di browser dan memandu Anda memeriksa dependensi, menetapkan nilai default proyek, serta menyiapkan build lintas platform secara opsional. Petunjuk di atas menggunakan alur penyiapan default; alur eksperimental untuk proyek Wake dijelaskan di bawah ini.",
       "status": "machine-translated",
       "sourcePreview": "The wizard opens in your browser and guides you through dependency checks, project defaults, and opt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0004-text-01": {
       "sourceHash": "0dc45ab265211b0fee1327dc80a8260ebc349c5a88b9bd0ac5ef88c03a505048",
@@ -64,7 +64,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0005-heading-01": {
       "sourceHash": "dae0d007aae197e3eaa934901cc3c3e418d4bfb5987ab9f77408cdc101e76537",
@@ -76,7 +76,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0006-text-01": {
       "sourceHash": "afa8a5194d83f6a18d116c7c86bd14fc0d420e8e2f02c6b79be11c24ef491582",
@@ -88,7 +88,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0007-text-01": {
       "sourceHash": "d5aaae377aec1c048544f05ebd0ea39fb562c8c39b64505f5bf9aa804b6bca99",
@@ -100,19 +100,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0008-text-01": {
       "sourceHash": "ea58ff89b531bf2dd5b73a57d47d2879d7e4986ad917dacb987ff8a802a98b89",
-      "targetHash": "06b7ab14e981dba21ffcca1cf65f427ff2c7555a4c8d304b9c2025483ccc1d56",
-      "machineHash": "06b7ab14e981dba21ffcca1cf65f427ff2c7555a4c8d304b9c2025483ccc1d56",
-      "machineText": "**Build lintas platform** - Penyiapan Docker opsional untuk menjalankan build dari host apa pun",
+      "targetHash": "ca449e0158bb4ad1e36e44219eab1cb5c2b5bd642f60df12180b427f2902ad17",
+      "machineHash": "ca449e0158bb4ad1e36e44219eab1cb5c2b5bd642f60df12180b427f2902ad17",
+      "machineText": "**Build lintas platform** - Penyiapan Docker opsional untuk melakukan build dari host mana pun",
       "status": "machine-translated",
       "sourcePreview": "**Cross-platform builds** - Optional Docker setup for building from any host",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0009-text-01": {
       "sourceHash": "03bda1d4026185d72abbd7d76142757969441e612fe20cff69eba2809bc177aa",
@@ -124,21 +124,225 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0010-text-01": {
       "sourceHash": "b81d143cb9fe216aa851623912eddb68788521025f2b235f4dc49018dbc1a674",
-      "targetHash": "2f121a91515baf07498cebebd7d549840720e6fcffefe93087c89be8862f4495",
-      "machineHash": "2f121a91515baf07498cebebd7d549840720e6fcffefe93087c89be8862f4495",
-      "machineText": "Konfigurasi disimpan di `$XDG_CONFIG_HOME/wails/defaults.yaml`, dengan `~/.config/wails/defaults.yaml` sebagai alternatif, dan digunakan oleh `wails3 init`. Konfigurasi ini terpisah dari `build/config.yml` milik proyek.",
+      "targetHash": "17533c3297c72ec9a9ff9077c8c905f1f06afa24f9ab0b7a67f63a11e21b8917",
+      "machineHash": "17533c3297c72ec9a9ff9077c8c905f1f06afa24f9ab0b7a67f63a11e21b8917",
+      "machineText": "Konfigurasi disimpan ke `$XDG_CONFIG_HOME/wails/defaults.yaml`, dengan `~/.config/wails/defaults.yaml` sebagai alternatif, dan digunakan oleh `wails3 init`. Konfigurasi ini terpisah dari `build/config.yml` milik proyek.",
       "status": "machine-translated",
       "sourcePreview": "Configuration is saved to `$XDG_CONFIG_HOME/wails/defaults.yaml`, falling back to `~/.config/wails/d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "b0011-heading-01": {
+      "sourceHash": "16ec765b80cf26d1edd20c5efcae32cdb4e6fbe08b5fc3b6bb97e888441ba89d",
+      "targetHash": "2d7eccc33936e9cd9f31f3ba3e6ecc76ec788a00d78aa7e1e5b222af468ddef7",
+      "machineHash": "2d7eccc33936e9cd9f31f3ba3e6ecc76ec788a00d78aa7e1e5b222af468ddef7",
+      "machineText": "Mengonfigurasi proyek Wake",
+      "status": "machine-translated",
+      "sourcePreview": "Configure a Wake project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "6ed4639d11b7d11cd8bf63a5cde63597246d6a5e68f1130f6965f2ccf67cb133",
+      "targetHash": "e1a1c9356dc2e5b8734cebf5c2b1765af23173fd0743900ddac89301248dba9a",
+      "machineHash": "e1a1c9356dc2e5b8734cebf5c2b1765af23173fd0743900ddac89301248dba9a",
+      "machineText": "Jalankan penyiapan dari direktori proyek dengan [eksperimen Wake diaktifkan](/experimental/yaml-builds/#enable-yaml-builds):",
+      "status": "machine-translated",
+      "sourcePreview": "Run setup from your project directory with the [Wake experiment enabled](/experimental/yaml-builds/#…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
+      "targetHash": "3c06c9076a5bfb43c5ea95e7877885679e885b24c58ecda74f704cfeea43594d",
+      "machineHash": "3c06c9076a5bfb43c5ea95e7877885679e885b24c58ecda74f704cfeea43594d",
+      "machineText": "Di PowerShell:",
+      "status": "machine-translated",
+      "sourcePreview": "In PowerShell:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "d7bc9890bccead74a7f76a6806e463062856cd60bef5776a7dc67f87de00ec0b",
+      "targetHash": "ca488f312da4f1556e91aab916a4f02d50a919dd2ee84c48f536812c723ad187",
+      "machineHash": "ca488f312da4f1556e91aab916a4f02d50a919dd2ee84c48f536812c723ad187",
+      "machineText": "Tindakan ini membuka alur yang berfokus pada proyek:",
+      "status": "machine-translated",
+      "sourcePreview": "This opens a project-focused flow:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "ade3c05a20e913fa6786e5613f38eef7ea63d8b4b134a76f77a22370bc08bd43",
+      "targetHash": "4017009fe26fc825e0a2d49342b638122593ebe9ab6ee360dd1b8ee21b44669f",
+      "machineHash": "4017009fe26fc825e0a2d49342b638122593ebe9ab6ee360dd1b8ee21b44669f",
+      "machineText": "**Proyek** — masukkan metadata proyek jika tidak ada manifes native.",
+      "status": "machine-translated",
+      "sourcePreview": "**Project** — enter project metadata when no native manifest exists.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "e5d50fd4b31be9ca3f52d39cf225451d3315db93e85fe4e78c517ca6b41cfe76",
+      "targetHash": "5e73890dbabfc725c3abd43d9d31adf665a970744ac7d1105487adb4a5dd1905",
+      "machineHash": "5e73890dbabfc725c3abd43d9d31adf665a970744ac7d1105487adb4a5dd1905",
+      "machineText": "**Aplikasi** — pilih GUI, CLI, atau server; backend build; atau berkas executable yang sudah di-build. Go murni merupakan pilihan eksperimental yang harus dipilih secara eksplisit.",
+      "status": "machine-translated",
+      "sourcePreview": "**Application** — choose GUI, CLI or server, a build backend, or already-built executables. Pure Go …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0017-text-01": {
+      "sourceHash": "7afea9d36bb1e8062e7f24fed251a82344e7ff6dc4e5a2e7d0535eb18d13b635",
+      "targetHash": "9207fe23a864e51d1cd535b87f8ee7fbb2c22b960b6fbe5b457ba5710dd5abe4",
+      "machineHash": "9207fe23a864e51d1cd535b87f8ee7fbb2c22b960b6fbe5b457ba5710dd5abe4",
+      "machineText": "**Target** — pilih sistem operasi dan arsitektur. iOS dan Android tetap bersifat eksperimental; konfigurasikan pengaturan penandatanganannya dalam YAML.",
+      "status": "machine-translated",
+      "sourcePreview": "**Targets** — select operating systems and architectures. iOS and Android remain experimental; confi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:12Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "94654d330c07cac0a4e89d525ea6c5b81263313a4ee8e7a0fd799ae7bf1b4290",
+      "targetHash": "ac84ee27e87d0ccd461267b2c8d5bb3386f8635d8a3ac517589b995f596f7d42",
+      "machineHash": "ac84ee27e87d0ccd461267b2c8d5bb3386f8635d8a3ac517589b995f596f7d42",
+      "machineText": "**Paket** — pilih format paket dan apakah paket tersebut akan ditandatangani.",
+      "status": "machine-translated",
+      "sourcePreview": "**Packages** — choose package formats and whether to sign them.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0019-text-01": {
+      "sourceHash": "e988f0b209dd94198100858c0559e5ff09829d8f63fcd9536b847b623088f7d2",
+      "targetHash": "2543894af859c9256ca67a81bece7dd1b4dee6f3d17eed4e90d285fe0683496d",
+      "machineHash": "2543894af859c9256ca67a81bece7dd1b4dee6f3d17eed4e90d285fe0683496d",
+      "machineText": "**Alat** — tinjau persyaratan untuk jalur build dan pemaketan yang dipilih.",
+      "status": "machine-translated",
+      "sourcePreview": "**Tools** — review requirements for the selected build and packaging path.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0020-text-01": {
+      "sourceHash": "53a18af7d731f523e7d8a9fb7d52ac1371f90f41e86607e2c4b4f3b116c1d602",
+      "targetHash": "b6f522caf4f96bde4d2980ad7a88c1db7c5d3c21f77306fa0132b9dbc5bf20bf",
+      "machineHash": "b6f522caf4f96bde4d2980ad7a88c1db7c5d3c21f77306fa0132b9dbc5bf20bf",
+      "machineText": "**Penandatanganan** — jika dipilih, konfigurasikan penandatanganan menggunakan kontrol penandatanganan yang sudah ada.",
+      "status": "machine-translated",
+      "sourcePreview": "**Signing** — configure signing when selected, using the existing signing controls.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0021-text-01": {
+      "sourceHash": "e1555aa7f014340daa80362aea064ff31501ac79c5d4519ad11150346a02bab2",
+      "targetHash": "2a11f22dbc3a295006d2c960da5f422fdb625185e3604aae4eb05e1586dda2f9",
+      "machineHash": "2a11f22dbc3a295006d2c960da5f422fdb625185e3604aae4eb05e1586dda2f9",
+      "machineText": "**Simpan** — tulis konfigurasi proyek dan tampilkan perintah yang harus dijalankan.",
+      "status": "machine-translated",
+      "sourcePreview": "**Save** — write the project configuration and show the command to run.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0022-text-01": {
+      "sourceHash": "af1bb0a5cfec9876a5c35f8d0522d0b7bbf8fdddc3423924ad0e19a4e6ed6e39",
+      "targetHash": "fac0e0eb663b9e3bd1f85d42c496f3c02c630ca561de12f49cd117729aceaafd",
+      "machineHash": "fac0e0eb663b9e3bd1f85d42c496f3c02c630ca561de12f49cd117729aceaafd",
+      "machineText": "Persyaratan alat bergantung pada pilihan Anda. Kompilasi desktop dengan Go murni tidak memerlukan Docker atau compiler C. Build lintas target dengan CGo memerlukan compiler dan pustaka target yang kompatibel, atau toolchain container yang didukung. NSIS tetap memerlukan `makensis`; AppImage GUI yang di-build lintas host memerlukan pohon runtime Linux yang disediakan. Identitas penandatanganan yang diekspor dapat menggunakan penanda tangan Go milik Wails, sedangkan identitas dari keychain atau penyimpanan sertifikat native tetap menggunakan alat platform. Lihat [persyaratan pemaketan dan penandatanganan](/experimental/yaml-builds/#package-and-sign-for-distribution).",
+      "status": "machine-translated",
+      "sourcePreview": "Tool requirements depend on your choices. Pure-Go desktop compilation does not need Docker or a C co…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0023-text-01": {
+      "sourceHash": "3dbafaa86a03319a0d445882a22bf2b406d8239770802cf4b2eff1fc8d1bbf56",
+      "targetHash": "673dd4df1d9b6beb3faeb9c567d924f45ffa0279fb84780fe3f3751288d5b47e",
+      "machineHash": "673dd4df1d9b6beb3faeb9c567d924f45ffa0279fb84780fe3f3751288d5b47e",
+      "machineText": "Berkas executable yang sudah di-build melewati kompilasi Go, instalasi dan build frontend, binding, serta UPX. Berkas tersebut tetap memerlukan alat pemaketan dan penandatanganan yang dipilih serta berkas biner input yang valid. Lihat [jalur input hasil build sebelumnya](/experimental/yaml-builds/#use-prebuilt-desktop-executables). Pilihan ini berlaku untuk perintah yang ditampilkan setelah penyimpanan; pilihan ini bukan pengaturan build YAML permanen.",
+      "status": "machine-translated",
+      "sourcePreview": "Already-built executables skip Go compilation, frontend installation/builds, bindings and UPX. They …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "e7c34c988bb0846076960b42148c7f5db27403c4d06aabbe2ae60ba7bbd443f6",
+      "targetHash": "e11ae3abeeed517e5497790db606265e414fe4cc268ac16ce30a67a90673df25",
+      "machineHash": "e11ae3abeeed517e5497790db606265e414fe4cc268ac16ce30a67a90673df25",
+      "machineText": "Simpan menulis `wails.yaml`, memperbarui jenis aplikasi, pengaktifan frontend, dan pengaturan backend yang dipilih, serta mengganti pilihan target/paket/penandatanganan khusus `profiles.setup`. Profil lain, perintah frontend, executable pendamping, hook, dan pengaturan proyek lain yang tidak terkait tetap dipertahankan. Pengaturan backend berlaku untuk seluruh proyek, sehingga profil lain yang mewarisinya juga menggunakan backend yang dipilih. Metadata proyek baru tetap berada di wizard hingga Anda memilih Simpan. Alat yang belum tersedia akan dilaporkan agar Anda dapat menginstalnya sebelum melakukan build; menyimpan konfigurasi yang valid tidak menginstal alat atau menjalankan build.",
+      "status": "machine-translated",
+      "sourcePreview": "Save writes `wails.yaml`, updates the application kind, frontend enablement and selected backend set…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:12Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "943687736330ac03a58a097f0fd3585dcc01f33502cf6ec0ce109d71f3009e05",
+      "targetHash": "edf43f895e4c89d7171709f25da4c567d9d6544de2128035bcd0dce2b1800ec3",
+      "machineHash": "edf43f895e4c89d7171709f25da4c567d9d6544de2128035bcd0dce2b1800ec3",
+      "machineText": "Build yang ditandatangani menggunakan kembali pengaturan penandatanganan yang tidak tersedia dari nilai default tingkat pengguna, termasuk berkas sertifikat di luar proyek. Pengaturan proyek yang ditentukan secara eksplisit diprioritaskan. Penyiapan tidak menyalin kunci privat, kata sandi, atau jalur kredensial global ke `wails.yaml`. Untuk kunci Windows dan Linux yang dikonfigurasi secara global, berikan kata sandi melalui penyimpanan kredensial yang ada atau `WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`. Untuk identitas Apple terenkripsi, tetapkan `darwin.signing.credential` ke nama variabel lingkungan yang berisi kata sandinya.",
+      "status": "machine-translated",
+      "sourcePreview": "Signed builds reuse missing signing settings from your user-level defaults, including certificate fi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "028b4fd5ad213f20c9bc9ad054603ba885d81eb7ee6e67496cc08d1bd40bc1b6",
+      "targetHash": "dee54940144becbfeef3b84983208feab9c211b819184096bac73983d13f8c7e",
+      "machineHash": "dee54940144becbfeef3b84983208feab9c211b819184096bac73983d13f8c7e",
+      "machineText": "Profil yang disimpan dijalankan dengan `wails3 build setup`; opsi berkas yang sudah di-build menambahkan `--skip-build`.",
+      "status": "machine-translated",
+      "sourcePreview": "The saved profile runs with `wails3 build setup`; the already-built option adds `--skip-build`.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "850a22d3962641555a4a0e59c0bce935232ebdd03aaf5ab6037148e36a44a2fe",
+      "targetHash": "4e73d8fd5f97bd12cae870aa7346eabb09f77e0962803d30a617b79be487fe7f",
+      "machineHash": "4e73d8fd5f97bd12cae870aa7346eabb09f77e0962803d30a617b79be487fe7f",
+      "machineText": "Pastikan Wake tetap aktif saat menjalankan perintah yang ditampilkan. `wails.yaml` yang aktif tidak pernah beralih ke Taskfile sebagai alternatif ketika flag tidak ditetapkan. Penyiapan tidak mengonversi Taskfile yang sudah ada atau metadata lama: gunakan [alur kerja migrasi yang telah ditinjau](/experimental/yaml-builds/#migrate-an-existing-project) sebelum mengonfigurasi proyek tersebut dengan Wake.",
+      "status": "machine-translated",
+      "sourcePreview": "Keep Wake enabled when running the displayed command. An active `wails.yaml` never falls back to Tas…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:34:07Z"
+    },
+    "b0028-heading-01": {
       "sourceHash": "2e86523123e6c0749b6ceeb90a1697d83e3904b13b053fb502766db91d16e59b",
       "targetHash": "1ea376e794dc3798b5a13eae57ea6d5ba679908811357b36958906c122c7e69d",
       "machineHash": "1ea376e794dc3798b5a13eae57ea6d5ba679908811357b36958906c122c7e69d",
@@ -148,9 +352,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
-    "b0012-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "297f28312e37c5b3da144525b88d6b9f7197d1d7b974f7c73bca0773973f1109",
       "targetHash": "64492533aaeed5e65707b47d85b8c3e7f60ec7cffa3cafd962ed9f4d1111d511",
       "machineHash": "64492533aaeed5e65707b47d85b8c3e7f60ec7cffa3cafd962ed9f4d1111d511",
@@ -160,9 +364,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
-    "b0013-text-01": {
+    "b0030-text-01": {
       "sourceHash": "c5e883fddd4b1f43b67ab1c6acb50919cb786a1c6eacff0945a11b45b87a23aa",
       "targetHash": "08bf74248ba80bae57dc0459d64e1fe22b98da6e75e2f413f328f268931a4fd9",
       "machineHash": "08bf74248ba80bae57dc0459d64e1fe22b98da6e75e2f413f328f268931a4fd9",
@@ -172,31 +376,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
-    "b0014-text-01": {
+    "b0031-text-01": {
       "sourceHash": "3dc3fb44021210401e5733d71c50f3098bc15b9177859948522f920ad0962ad3",
-      "targetHash": "d6690ed51802d2ddf6e867e118587a48b961b5c643a59edfd882306856d8ed7f",
-      "machineHash": "d6690ed51802d2ddf6e867e118587a48b961b5c643a59edfd882306856d8ed7f",
-      "machineText": "Ikuti [langkah-langkah penginstalan manual](/getting-started/installation/#platform-specific-dependencies)",
+      "targetHash": "259cbd736c343f357238f4c6517aec7b30e7f8f8a43bdf09801e0814cef66a1a",
+      "machineHash": "259cbd736c343f357238f4c6517aec7b30e7f8f8a43bdf09801e0814cef66a1a",
+      "machineText": "Ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies)",
       "status": "machine-translated",
       "sourcePreview": "Follow the [manual installation steps](/getting-started/installation/#platform-specific-dependencies…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
-    "b0015-text-01": {
+    "b0032-text-01": {
       "sourceHash": "e39eb32d658ebf44563b4a4e06c531c8117cf81e2f7c625703f3f254b2ce7dfb",
-      "targetHash": "65a190ad2584b6d252b9ca598caf53b0bcdb2858078525b421d3ae13b4ebae52",
-      "machineHash": "65a190ad2584b6d252b9ca598caf53b0bcdb2858078525b421d3ae13b4ebae52",
-      "machineText": "[Laporkan masalah](https://github.com/wailsapp/wails/issues/4904) dengan menyertakan output `wails3 doctor`",
+      "targetHash": "b18f21f651a33813904ce5b37ac42339eb3c0cb0fea7fecfd77c561866d23329",
+      "machineHash": "b18f21f651a33813904ce5b37ac42339eb3c0cb0fea7fecfd77c561866d23329",
+      "machineText": "[Laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) beserta output `wails3 doctor` Anda",
       "status": "machine-translated",
       "sourcePreview": "[Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     },
     "fm-title": {
       "sourceHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1",
@@ -208,7 +412,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:19Z"
+      "updatedAt": "2026-11-01T04:34:07Z"
     }
   }
 }

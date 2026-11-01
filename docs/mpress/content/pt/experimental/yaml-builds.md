@@ -32,6 +32,8 @@ Projetos que ainda não foram migrados continuam usando o runtime Task integrado
 
 ## Configurar um projeto
 
+Para obter uma configuração guiada de desktop, execute `wails3 setup` com a opção habilitada. O [fluxo de configuração do Wake](/getting-started/setup/#configure-a-wake-project) analisa o tipo de aplicação, o backend de compilação, os destinos, os formatos de pacote e as ferramentas necessárias e, em seguida, salva um perfil `setup`. Ele também permite preparar um comando para executáveis pré-compilados sem tornar `--skip-build` uma configuração permanente do projeto.
+
 Com a adesão habilitada, adicione `wails.yaml` à raiz do projeto. A presença desse arquivo seleciona o sistema de build nativo e faz o Wails ignorar todos os Taskfiles desse projeto. Mantenha a adesão habilitada para todos os comandos abaixo. A modeline do esquema habilita o preenchimento automático e a validação em linha em editores compatíveis com servidores de linguagem YAML.
 
 ```yaml
@@ -94,7 +96,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-O segundo comando combina as duas arquiteturas do macOS e cria um DMG não assinado usando Go. Ele pode ser executado em qualquer host desktop compatível.
+O segundo comando combina as duas arquiteturas do macOS e cria um DMG não assinado usando Go. Ele pode ser executado em qualquer host de desktop compatível.
 
 O modo resultante é selecionado de forma independente para cada executável. Um `build.environment.CGO_ENABLED` declarado, o ambiente do alvo ou o ambiente do binário substitui o valor do terminal que invocou o comando. Caso contrário, uma tag `purego` selecionada explicitamente, um programa CLI/servidor ou um alvo Windows usa `0` por padrão; programas com GUI no macOS e no Linux usam `1` por padrão. `--plan --json` informa o compilador, o modo CGo e as tags resultantes de cada executável. A compilação cruzada cria arquivos para o alvo; a execução de um alvo desktop incompatível ainda exige o host apropriado.
 
@@ -161,19 +163,40 @@ Esse modo ignora a instalação e os builds do frontend, os bindings, a compila�
 
 A criação de pacotes não assinados tem requisitos de host e ferramentas diferentes dos requisitos de assinatura:
 
+Os payloads de IPA e os ZIPs de notarização do macOS são gravados em Go, preservando os caminhos dos bundles, as permissões dos executáveis e os links simbólicos relativos. Nenhuma das operações precisa de um executável `zip` ou `ditto` externo. Esses arquivos contêm os arquivos da aplicação, não os metadados do Finder nem os resource forks; a assinatura do macOS já remove esses metadados porque eles invalidam bundles assinados.
+
 | Saída | Hosts e ferramentas de criação | Assinatura |
 | --- | --- | --- |
-| MSIX do Windows | Windows, macOS ou Linux; gerador em Go, sem necessidade do SDK do Windows. | Host Windows e ferramentas de assinatura. |
-| Instalador NSIS do Windows | Windows, macOS ou Linux; exige `makensis` nativo do host. | Host Windows e ferramentas de assinatura. |
-| Aplicativo e DMG do macOS | Windows, macOS ou Linux; montagem em Go, mesclagem de binários universais e gerador portátil de DMG. | macOS com ferramentas e credenciais da Apple. |
-| DEB, RPM, Arch e Void para Linux | Windows, macOS ou Linux; geradores nativos de pacotes em Go. | DEB/RPM usam suas ferramentas externas de assinatura; o Arch usa o assinador em Go abaixo. A saída do Void não é assinada. |
-| AppImage do Linux | Host Linux e arquitetura de destino correspondentes; linuxdeploy externo e plugin de implantação do GTK. | Não há fluxo integrado de assinatura de AppImage. |
+| MSIX do Windows | Windows, macOS ou Linux; gerador em Go, sem necessidade do SDK do Windows. | Assinatura em Go com um PFX RSA exportado em qualquer host de desktop; identidades do repositório de certificados ou de provedores exigem o Windows SignTool. |
+| Instalador NSIS do Windows | Windows, macOS ou Linux; exige `makensis` nativo do host. | Assinatura de PE em Go com um PFX RSA exportado em qualquer host de desktop; identidades do repositório de certificados ou de provedores exigem o Windows SignTool. |
+| Aplicativo e DMG do macOS | Windows, macOS ou Linux; montagem em Go, mesclagem de binários universais e gerador portátil de DMG. | Assinatura em Go com uma identidade RSA PKCS#12 exportada ou assinatura ad hoc; identidades do keychain continuam usando as ferramentas do macOS. A notarização por chave de API e o grampeamento do ticket são executados em Go. |
+| DEB, RPM, Arch e Void para Linux | Windows, macOS ou Linux; geradores nativos de pacotes em Go. | Chaves OpenPGP exportadas usam o assinador nativo de DEB/RPM/Arch. IDs de chave legados de DEB/RPM exigem ferramentas externas. A saída para Void não é assinada. |
+| AppImage do Linux | Windows, macOS ou Linux; implantação e gravador de SquashFS em Go, além de um runtime AppImage para o destino. O empacotamento cruzado de aplicações com interface gráfica exige uma árvore de runtime Linux fornecida. | Não há fluxo integrado de assinatura de AppImage. |
 
-Os arquivos MSIX do Windows são criados diretamente em Go; a criação de um pacote não assinado não exige o SDK do Windows nem o Docker. A assinatura no Windows ainda exige um host Windows e suas ferramentas de assinatura. O NSIS usa o compilador NSIS externo e aceita definições literais por meio de `packages.nsis.defines`. No macOS, o Wails fornece uma localidade UTF-8 somente ao processo filho do compilador NSIS quando a localidade herdada não é UTF-8; os ambientes do terminal e do aplicativo permanecem inalterados. O instalador NSIS padrão omite o bootstrapper do WebView2 quando todos os executáveis empacotados são ferramentas de linha de comando ou servidores. Um executável principal ou complementar com interface gráfica mantém o WebView2. Scripts NSIS personalizados mantêm o bootstrapper para preservar a compatibilidade com sua própria lógica de instalação do runtime.
+Para DMGs assinados, o Wake normalmente assina uma cópia privada da aplicação antes que o gravador em Go compacte a imagem e, em seguida, assina a imagem. Isso evita montar, expandir e compactar novamente o DMG com `hdiutil`. A assinatura é executada a cada solicitação; o pacote assinado não é reutilizado do cache de compilação. Projetos com hooks `after_package` ou `before_sign` mantêm o fluxo original de primeiro empacotar e depois assinar, incluindo `hdiutil`, para preservar as alterações feitas por esses hooks na imagem não assinada. Esse caminho de edição de imagens compatível com hooks exige macOS e `hdiutil`.
 
-O Linux oferece suporte a pacotes AppImage, DEB, RPM, Arch Linux e Void. Os AppImages mantêm o limite externo do linuxdeploy e do plugin GTK. Defina `packages.appimage.update_info` para solicitar um arquivo zsync e `packages.appimage.checksum: true` para solicitar um arquivo SHA256. Os arquivos auxiliares são restaurados do cache de pacotes e relacionados no recibo de artefatos junto com o AppImage. Atualmente, o empacotamento de AppImage exige Linux e correspondência entre as arquiteturas do host e do destino. A detecção do GTK não encontra bibliotecas carregadas dinamicamente por uma interface gráfica implementada inteiramente em Go; portanto, este adaptador ainda não oferece suporte à implantação desse tipo de interface. Use um dos formatos de gerenciador de pacotes do Linux para esse modo de compilação.
+Para assinatura portátil da Apple, defina `darwin.signing.identity: "-"` para uma assinatura ad hoc ou use `darwin.signing.certificate` para uma identidade RSA PKCS#12 exportada. `darwin.signing.credential` especifica a variável de ambiente que contém a senha. As assinaturas com certificado usam a implementação compartilhada de PFX/CMS em Go; nenhuma chave privada é exportada automaticamente de um keychain. Executáveis de arquitetura única e universais, bundles de aplicações aninhados, frameworks e DMGs passaram pelas verificações nativas rigorosas de assinatura da Apple, incluindo a rejeição de adulterações, usando identidades de teste geradas.
+
+Para a notarização, uma identidade Developer ID exportada também precisa de um serviço de carimbo de data e hora RFC 3161 `darwin.signing.timestamp_server` compatível. O verificador compartilhado aceita os perfis de carimbo de data e hora SHA-2 compatíveis e rejeita algoritmos legados não compatíveis. Uma assinatura ad hoc não pode ser notarizada. A validação nativa do formato do certificado é distinta da confiança real no Developer ID e da aceitação de um envio pela Apple.
+
+O grampeador em Go autentica a assinatura do ticket da Apple e verifica se ele abrange todas as arquiteturas antes de anexá-lo a uma cópia privada. Ele usa o protocolo de entrega de tickets observado, que a Apple não publica como uma API compatível. Ele não substitui as verificações atuais de revogação do Gatekeeper. As saídas de aplicações e DMGs assinados passaram pelas verificações nativas `stapler validate` e pelas verificações rigorosas de assinatura.
+
+Os arquivos MSIX do Windows são criados diretamente em Go; a criação de um pacote não assinado não requer o Windows SDK nem o Docker. Identidades RSA PFX exportadas assinam executáveis do Windows e pacotes MSIX individuais diretamente em Go em qualquer sistema desktop. Defina `windows.signing.certificate` como o PFX relativo ao projeto e `windows.signing.credential` como a variável de ambiente que contém sua senha. Há suporte a exportações AES/PBKDF2 e a exportações legadas 3DES; exportações RC2 exigem uma nova exportação ou o uso alternativo do Windows SignTool nativo. Identidades de repositório/provedor de certificados e a assinatura de MSI exigem o Windows SignTool. O serviço de carimbo de data e hora padrão é o DigiCert; os carimbos são verificados antes da publicação da saída assinada. Consulte o [guia de assinatura](/guides/build/signing/) para conhecer as limitações de formato.
+O NSIS usa o compilador NSIS externo e aceita definições literais por meio de `packages.nsis.defines`. No macOS, o Wails fornece uma localidade UTF-8 somente ao processo filho do compilador NSIS quando a localidade herdada não é UTF-8; os ambientes do terminal e do aplicativo permanecem inalterados. O instalador NSIS padrão omite o bootstrapper do WebView2 quando todos os executáveis incluídos no pacote são ferramentas de CLI ou servidores. Um executável principal ou complementar com GUI mantém o WebView2. Scripts NSIS personalizados mantêm o bootstrapper para preservar a compatibilidade com sua própria lógica de instalação do runtime.
+
+O Linux oferece suporte a pacotes AppImage, DEB, RPM, Arch Linux e Void. O Wake monta AppImages diretamente em Go, incluindo a implantação de GTK/WebKit, a compactação SquashFS e a geração de zsync. Ele não invoca linuxdeploy, o plugin GTK, appimagetool nem mksquashfs. Um runtime AppImage tipo 2 fixado e verificado por soma de verificação é baixado para a arquitetura de destino; `packages.appimage.runtime_path` seleciona, em vez disso, um ELF de runtime relativo ao projeto.
+
+No Linux, a origem padrão das bibliotecas é o sistema de arquivos raiz do host. Para empacotar uma aplicação com interface gráfica para outra arquitetura ou a partir do Windows/macOS, defina `packages.appimage.runtime_root` como uma árvore raiz do Linux de destino, relativa ao projeto, que contenha suas bibliotecas, seus esquemas compilados e seus caches de módulos. Trata-se de todo o layout da raiz, incluindo `usr/`, e não do próprio diretório `usr/`. Forneça um runtime da distribuição Linux mais antiga à qual você pretende oferecer suporte. O Wake lê as importações ELF e os perfis explícitos de GTK/WebKit sem executar programas do destino. Ele inclui o conjunto selecionado de dependências, mas não a glibc nem o carregador dinâmico. Os hashes do conteúdo das bibliotecas e dos recursos invalidam o cache de pacotes após atualizações do runtime.
+
+Compilações de aplicações com interface gráfica exclusivamente em Go são compatíveis. O Wake seleciona GTK 3 para executáveis com interface gráfica compilados com `gtk3` e GTK 4 nos demais casos, inclusive para executáveis complementares com interface gráfica de uma CLI ou de um servidor. Todos os executáveis com interface gráfica de uma imagem devem usar a mesma versão do GTK. Para binários pré-compilados, `packages.appimage.gtk_version` pode selecionar explicitamente `3` ou `4`; as bibliotecas CGo importadas devem ser compatíveis com essa escolha.
+
+Defina `packages.appimage.update_info` para solicitar um arquivo zsync e `packages.appimage.checksum: true` para solicitar um arquivo SHA256. Os arquivos auxiliares são restaurados do cache de pacotes e relacionados no recibo de artefatos junto com a AppImage. O empacotamento no Windows e no macOS foi verificado com uma árvore GTK/WebKit fornecida; as imagens resultantes de aplicações com interface gráfica exclusivamente em Go passaram nas verificações de runtime no Linux. Em uma compilação CGo equivalente de uma aplicação com interface gráfica, o caminho nativo levou 8.77 segundos, em comparação com 26.19 segundos do linuxdeploy. A imagem gzip nativa tinha 133 MiB, em comparação com 114 MiB do caminho zstd antigo; portanto, essa medição abrange todo o caminho de empacotamento, não apenas a compactação.
 
 Os pacotes Arch preservam versões de pré-lançamento nos metadados nativos do pacote; por exemplo, `1.2.3-beta.2` se torna `1.2.3beta.2-1`, que é ordenado antes da versão final. As dependências do Void aceitam nomes de pacotes simples, como `gtk4`, normalizados para `gtk4>=0`; comparações explícitas de versão e valores `name-version_revision` completos são preservados. Use nomes de pacotes do Void, não nomes de arquivos de biblioteca.
+
+A assinatura de DEB, RPM e Arch pode usar chaves privadas OpenPGP exportadas em formato ASCII armor ou binário em qualquer host de desktop compatível, sem GnuPG, `dpkg-sig` nem `rpmsign`. Configure `linux.signing.certificate` com o arquivo da chave e `credential` com o nome da variável de ambiente que contém sua frase secreta. DEB e RPM incorporam assinaturas; Arch publica uma assinatura separada. As chaves privadas são lidas somente pela etapa de assinatura e não são copiadas para os ativos do pacote nem para artefatos reutilizáveis do cache.
+
+Configurações existentes de DEB/RPM que contenham apenas um identificador de chave GnuPG continuam usando o assinador externo. Para remover essa dependência, exporte a chave secreta e configure seu caminho. Use um caminho como `./signing/release.asc`; arquivos de chave ausentes, ilegíveis ou inválidos causam uma falha, em vez de recorrer a um keyring. As assinaturas DEB mantêm o formato de assinatura de pacote `dpkg-sig`; isso não substitui a assinatura dos metadados de versão de um repositório apt.
 
 Para criar um pacote Arch e uma assinatura separada, use um arquivo exportado de chave privada PGP em formato ASCII Armor e, opcionalmente, indique o nome de uma variável de ambiente que contenha a frase secreta:
 
@@ -201,7 +224,32 @@ profiles:
 
 Defina a variável de ambiente indicada no seu ambiente local ou no repositório de segredos da CI e execute `wails3 build release`. Omita `credential` se a chave não estiver criptografada. O assinador em Go é executado em todos os hosts de desktop compatíveis e não exige GPG. Ele publica o `.pkg.tar.zst` original e um arquivo `.pkg.tar.zst.sig` no mesmo diretório; ambos são registrados separadamente no recibo de artefatos. O conteúdo da chave não é preparado nem armazenado no cache de compilação. As assinaturas e sua publicação nunca são reutilizadas do cache. Se a assinatura falhar, o par publicado anteriormente será preservado; se a instalação de qualquer um dos arquivos falhar, a publicação reverterá os dois. Isso não torna atômicas para leitores simultâneos duas operações de renomeação no sistema de arquivos.
 
-Os pacotes de aplicativos do macOS incluem programas complementares. Defina `darwin.microphone_usage_description` para adicionar o texto de uso e, quando nenhum arquivo de direitos personalizado for fornecido, o direito de entrada de áudio. As fontes personalizadas de plist e de direitos permanecem inalteradas. A assinatura e a notarização usam as ferramentas e credenciais existentes da Apple no macOS; a notarização exige um perfil de notário real. As saídas assinadas mantêm a extensão da plataforma, por exemplo, `notes.signed.app` e `notes.signed.dmg`.
+Os bundles de aplicações do macOS incluem programas complementares. Defina `darwin.microphone_usage_description` para adicionar o texto de uso e, quando nenhum arquivo personalizado de entitlements for fornecido, o entitlement de entrada de áudio. As fontes personalizadas de plist e entitlements permanecem inalteradas. Uma identidade RSA PKCS#12 exportada usa a assinatura em Go em qualquer host de desktop; `identity: "-"` seleciona a assinatura ad hoc portátil. Identidades do keychain continuam usando `codesign` no macOS. O grampeamento do ticket é executado em Go. O envio para notarização pode usar um perfil existente do keychain de notarização do macOS ou credenciais de API da equipe no App Store Connect:
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+O modo de API envia, faz o upload e consulta o status a partir do Go, sem `notarytool`. Defina os três campos e omita `credential`; mantenha a chave privada fora do controle de versão. A chave é lida somente no momento da assinatura e não é copiada para os ativos gerados nem para o cache. Esse modo é compatível com chaves de API de equipe e arquivos de até 5 GiB; uploads multipartes e chaves de API individuais não estão implementados. Em caso de rejeição, o ID do envio é preservado, e o log de diagnóstico da Apple é salvo em um arquivo temporário privado cujo caminho é informado no erro. Um envio cancelado ou rejeitado não substitui uma saída publicada anteriormente. Após a aceitação, o Wake obtém e verifica o ticket da Apple e o grampeia em Go. Com uma identidade exportada e credenciais de API de equipe, a assinatura, o envio e o grampeamento podem ser executados no Linux, Windows ou macOS. Perfis do keychain ainda exigem macOS e `notarytool`.
+
+A assinatura portátil com certificado é compatível com identidades RSA em arquivos PKCS#12 com AES/PBKDF2 ou 3DES legado. Exportações criptografadas com RC2 devem ser reexportadas com uma cifra compatível. Assinaturas portáteis notarizadas exigem um serviço explícito de carimbo de data e hora SHA-2 RFC 3161; o verificador em Go rejeita assinaturas de carimbo de data e hora SHA-1 legadas. O serviço de tickets segue o protocolo observado da Apple e fixa o Apple Root G3; o Gatekeeper continua sendo a autoridade para confiança na distribuição e revogação.
+
+As saídas assinadas mantêm a extensão da respectiva plataforma, por exemplo,
+`notes.signed.app` e `notes.signed.dmg`.
 
 ## Controles de desenvolvimento
 

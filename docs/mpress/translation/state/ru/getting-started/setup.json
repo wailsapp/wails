@@ -16,19 +16,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0001-text-01": {
       "sourceHash": "8da6e8c26907f251de7b6b38094ec54e804bd4afa48d25e98ab8f8a080a8ca91",
-      "targetHash": "c7bd6a14b0f7aaabf61b7c1d1d10c35624356f1b56ed6044dd0524b4545e2467",
-      "machineHash": "c7bd6a14b0f7aaabf61b7c1d1d10c35624356f1b56ed6044dd0524b4545e2467",
-      "machineText": "Мастер настройки появился недавно и в основном протестирован в Linux. Если у вас возникнут проблемы, [сообщите о них](https://github.com/wailsapp/wails/issues/4904) и вместо мастера выполните [инструкции по установке вручную](/getting-started/installation/#platform-specific-dependencies).",
+      "targetHash": "6d0cd3f9b7e16f8b91a54a3df3c7939b9acc177258f9afd86cdc4bd68a018b67",
+      "machineHash": "6d0cd3f9b7e16f8b91a54a3df3c7939b9acc177258f9afd86cdc4bd68a018b67",
+      "machineText": "Мастер настройки — новая функция, протестированная преимущественно в Linux. Если у вас возникнут проблемы, [сообщите о них](https://github.com/wailsapp/wails/issues/4904) и вместо мастера выполните [установку вручную](/getting-started/installation/#platform-specific-dependencies).",
       "status": "machine-translated",
       "sourcePreview": "The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them]…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0002-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
@@ -40,19 +40,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0003-text-01": {
-      "sourceHash": "0b9a096ac2a40921133d39f6674f025ffd4050b1929a7f843a0b97096b776c3e",
-      "targetHash": "f3d6fb553544b2bf2c05f7dc977e738609306ed136ac7c63f78d9208e777fa9d",
-      "machineHash": "f3d6fb553544b2bf2c05f7dc977e738609306ed136ac7c63f78d9208e777fa9d",
-      "machineText": "Мастер открывается в браузере и помогает проверить зависимости, задать параметры проекта по умолчанию и при необходимости настроить кроссплатформенную сборку.",
+      "sourceHash": "659b03264ab883a1bcdd39c51bd3fea504286a1f0d09a93c3ba74637511553be",
+      "targetHash": "9c5c30b7dcfb6c057c5023fb5eacf06d1e0a5d488c1a7bf982fcfe15a7b5b7b4",
+      "machineHash": "9c5c30b7dcfb6c057c5023fb5eacf06d1e0a5d488c1a7bf982fcfe15a7b5b7b4",
+      "machineText": "Мастер открывается в браузере и помогает проверить зависимости, задать параметры проекта по умолчанию и при необходимости настроить кроссплатформенную сборку. В приведённых выше инструкциях используется стандартный процесс настройки; экспериментальный процесс для проектов Wake описан ниже.",
       "status": "machine-translated",
       "sourcePreview": "The wizard opens in your browser and guides you through dependency checks, project defaults, and opt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0004-text-01": {
       "sourceHash": "0dc45ab265211b0fee1327dc80a8260ebc349c5a88b9bd0ac5ef88c03a505048",
@@ -64,7 +64,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0005-heading-01": {
       "sourceHash": "dae0d007aae197e3eaa934901cc3c3e418d4bfb5987ab9f77408cdc101e76537",
@@ -76,43 +76,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0006-text-01": {
       "sourceHash": "afa8a5194d83f6a18d116c7c86bd14fc0d420e8e2f02c6b79be11c24ef491582",
-      "targetHash": "04f10c481aa1097112d9c2e351082c29c8fc796f0f4bb75c316fbd1e9ea89718",
-      "machineHash": "04f10c481aa1097112d9c2e351082c29c8fc796f0f4bb75c316fbd1e9ea89718",
-      "machineText": "**Проверка зависимостей** — проверяет Go, npm и инструменты для целевой платформы",
+      "targetHash": "32d41ab268369131e36100d18ec93d32c30ea3fbe97249850a88971cf780d723",
+      "machineHash": "32d41ab268369131e36100d18ec93d32c30ea3fbe97249850a88971cf780d723",
+      "machineText": "**Проверка зависимостей** — проверяет Go, npm и инструменты платформы",
       "status": "machine-translated",
       "sourcePreview": "**Checks dependencies** - Verifies Go, npm, and platform tooling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0007-text-01": {
       "sourceHash": "d5aaae377aec1c048544f05ebd0ea39fb562c8c39b64505f5bf9aa804b6bca99",
-      "targetHash": "5f44aadf3e2a5db89ba44f5db611872df738deecc973fecabb5f0a23f15b8ba9",
-      "machineHash": "5f44aadf3e2a5db89ba44f5db611872df738deecc973fecabb5f0a23f15b8ba9",
-      "machineText": "**Настройка параметров по умолчанию** — сведения об авторе, префикс идентификатора пакета и предпочтительные шаблоны",
+      "targetHash": "f568a0c13fc7dcf02ea32126a2242bb92b0db2716a567d03220362cb5fc9650e",
+      "machineHash": "f568a0c13fc7dcf02ea32126a2242bb92b0db2716a567d03220362cb5fc9650e",
+      "machineText": "**Настройка значений по умолчанию** — сведения об авторе, префикс идентификатора пакета и предпочтительные шаблоны",
       "status": "machine-translated",
       "sourcePreview": "**Configures defaults** - Author info, bundle ID prefix, preferred templates",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0008-text-01": {
       "sourceHash": "ea58ff89b531bf2dd5b73a57d47d2879d7e4986ad917dacb987ff8a802a98b89",
-      "targetHash": "8ce59e8ae137892a91a8eb2a12013d2dfdf2c070f6167b4acb087b7bcbd56cd7",
-      "machineHash": "8ce59e8ae137892a91a8eb2a12013d2dfdf2c070f6167b4acb087b7bcbd56cd7",
-      "machineText": "**Кроссплатформенная сборка** — необязательная настройка Docker для сборки на любой хост-системе",
+      "targetHash": "eef977b88a0469f202add3046817d5ea9a64703181c52e4b5e50d33b2d4e3f56",
+      "machineHash": "eef977b88a0469f202add3046817d5ea9a64703181c52e4b5e50d33b2d4e3f56",
+      "machineText": "**Кроссплатформенные сборки** — необязательная настройка Docker для сборки на любой хост-системе",
       "status": "machine-translated",
       "sourcePreview": "**Cross-platform builds** - Optional Docker setup for building from any host",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0009-text-01": {
       "sourceHash": "03bda1d4026185d72abbd7d76142757969441e612fe20cff69eba2809bc177aa",
@@ -124,21 +124,225 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0010-text-01": {
       "sourceHash": "b81d143cb9fe216aa851623912eddb68788521025f2b235f4dc49018dbc1a674",
-      "targetHash": "b78e51a4a16b8cb3136462ea20d0cec629985c426866658624f981b62bcf1c23",
-      "machineHash": "b78e51a4a16b8cb3136462ea20d0cec629985c426866658624f981b62bcf1c23",
-      "machineText": "Конфигурация сохраняется в `$XDG_CONFIG_HOME/wails/defaults.yaml`, а при невозможности — в `~/.config/wails/defaults.yaml`, и используется командой `wails3 init`. Она не связана с файлом `build/config.yml` проекта.",
+      "targetHash": "643ae093d27f15b9cae539124c8feb990e98db27a6bf9b626bd60d2a9a41b2d4",
+      "machineHash": "643ae093d27f15b9cae539124c8feb990e98db27a6bf9b626bd60d2a9a41b2d4",
+      "machineText": "Конфигурация сохраняется в `$XDG_CONFIG_HOME/wails/defaults.yaml`, а если это невозможно — в `~/.config/wails/defaults.yaml`, и используется командой `wails3 init`. Она не связана с файлом `build/config.yml` проекта.",
       "status": "machine-translated",
       "sourcePreview": "Configuration is saved to `$XDG_CONFIG_HOME/wails/defaults.yaml`, falling back to `~/.config/wails/d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "b0011-heading-01": {
+      "sourceHash": "16ec765b80cf26d1edd20c5efcae32cdb4e6fbe08b5fc3b6bb97e888441ba89d",
+      "targetHash": "a52ff16223b90c795b623d9b11243cc5036b0426d1610a9c9d2631f3b24dba8b",
+      "machineHash": "a52ff16223b90c795b623d9b11243cc5036b0426d1610a9c9d2631f3b24dba8b",
+      "machineText": "Настройка проекта Wake",
+      "status": "machine-translated",
+      "sourcePreview": "Configure a Wake project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "6ed4639d11b7d11cd8bf63a5cde63597246d6a5e68f1130f6965f2ccf67cb133",
+      "targetHash": "ce691a30825adaa21fd88983970dbb1805932af64fb8120b488069bd8e027654",
+      "machineHash": "ce691a30825adaa21fd88983970dbb1805932af64fb8120b488069bd8e027654",
+      "machineText": "Запустите настройку из каталога проекта, [включив экспериментальную функцию Wake](/experimental/yaml-builds/#enable-yaml-builds):",
+      "status": "machine-translated",
+      "sourcePreview": "Run setup from your project directory with the [Wake experiment enabled](/experimental/yaml-builds/#…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
+      "targetHash": "2ceb803d5f843cf4f7e01b06bf4dc1d8bd2a44efc30ccb5fa4f16ff79c730b94",
+      "machineHash": "2ceb803d5f843cf4f7e01b06bf4dc1d8bd2a44efc30ccb5fa4f16ff79c730b94",
+      "machineText": "В PowerShell:",
+      "status": "machine-translated",
+      "sourcePreview": "In PowerShell:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "d7bc9890bccead74a7f76a6806e463062856cd60bef5776a7dc67f87de00ec0b",
+      "targetHash": "4876a0a11a8be1abd5c4ab2572c03412e1fffc4c73626859442c4b9d7f3c505c",
+      "machineHash": "4876a0a11a8be1abd5c4ab2572c03412e1fffc4c73626859442c4b9d7f3c505c",
+      "machineText": "Откроется процесс настройки проекта:",
+      "status": "machine-translated",
+      "sourcePreview": "This opens a project-focused flow:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "ade3c05a20e913fa6786e5613f38eef7ea63d8b4b134a76f77a22370bc08bd43",
+      "targetHash": "7d9b875f6072b1060401d60c77f53e05532ab6e856d72a6d144b4e23f000ae76",
+      "machineHash": "7d9b875f6072b1060401d60c77f53e05532ab6e856d72a6d144b4e23f000ae76",
+      "machineText": "**Проект** — укажите метаданные проекта, если собственный манифест отсутствует.",
+      "status": "machine-translated",
+      "sourcePreview": "**Project** — enter project metadata when no native manifest exists.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "e5d50fd4b31be9ca3f52d39cf225451d3315db93e85fe4e78c517ca6b41cfe76",
+      "targetHash": "5fdad37a670581415784a2c1631ba7b98969f74c079330c3a8aacac807954842",
+      "machineHash": "5fdad37a670581415784a2c1631ba7b98969f74c079330c3a8aacac807954842",
+      "machineText": "**Приложение** — выберите GUI-приложение, CLI-приложение или сервер, серверную часть сборки либо уже собранные исполняемые файлы. Использование только Go — отдельный экспериментальный вариант.",
+      "status": "machine-translated",
+      "sourcePreview": "**Application** — choose GUI, CLI or server, a build backend, or already-built executables. Pure Go …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0017-text-01": {
+      "sourceHash": "7afea9d36bb1e8062e7f24fed251a82344e7ff6dc4e5a2e7d0535eb18d13b635",
+      "targetHash": "004b73ffb364bd9c92fd93c85a4fda7bada8d8943aaa63cd1644a268b3028a51",
+      "machineHash": "004b73ffb364bd9c92fd93c85a4fda7bada8d8943aaa63cd1644a268b3028a51",
+      "machineText": "**Целевые платформы** — выберите операционные системы и архитектуры. Поддержка iOS и Android по-прежнему экспериментальная; настройте параметры подписывания для них в YAML.",
+      "status": "machine-translated",
+      "sourcePreview": "**Targets** — select operating systems and architectures. iOS and Android remain experimental; confi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:06Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "94654d330c07cac0a4e89d525ea6c5b81263313a4ee8e7a0fd799ae7bf1b4290",
+      "targetHash": "fafb830bd762d51f6deb5df92ef830e3dcb8bd1d0d240f0c335a2d05650f3d96",
+      "machineHash": "fafb830bd762d51f6deb5df92ef830e3dcb8bd1d0d240f0c335a2d05650f3d96",
+      "machineText": "**Пакеты** — выберите форматы пакетов и укажите, нужно ли их подписывать.",
+      "status": "machine-translated",
+      "sourcePreview": "**Packages** — choose package formats and whether to sign them.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0019-text-01": {
+      "sourceHash": "e988f0b209dd94198100858c0559e5ff09829d8f63fcd9536b847b623088f7d2",
+      "targetHash": "655134482d84df19f15f56b5cc35e8bd202a8d0e90eaf5d8ecf3b6eaa6ca9d4a",
+      "machineHash": "655134482d84df19f15f56b5cc35e8bd202a8d0e90eaf5d8ecf3b6eaa6ca9d4a",
+      "machineText": "**Инструменты** — проверьте требования для выбранного процесса сборки и упаковки.",
+      "status": "machine-translated",
+      "sourcePreview": "**Tools** — review requirements for the selected build and packaging path.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0020-text-01": {
+      "sourceHash": "53a18af7d731f523e7d8a9fb7d52ac1371f90f41e86607e2c4b4f3b116c1d602",
+      "targetHash": "562c1b7c5c23f5037e0f4a0a55dad5de1a8758bc2d3f0bbae576c2195da6d2ca",
+      "machineHash": "562c1b7c5c23f5037e0f4a0a55dad5de1a8758bc2d3f0bbae576c2195da6d2ca",
+      "machineText": "**Подписание** — если подписание выбрано, настройте его с помощью существующих элементов управления.",
+      "status": "machine-translated",
+      "sourcePreview": "**Signing** — configure signing when selected, using the existing signing controls.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0021-text-01": {
+      "sourceHash": "e1555aa7f014340daa80362aea064ff31501ac79c5d4519ad11150346a02bab2",
+      "targetHash": "fd91bf3b345844ba71f16f1bfa8c280095675af085538bdd356118c8617ce6f6",
+      "machineHash": "fd91bf3b345844ba71f16f1bfa8c280095675af085538bdd356118c8617ce6f6",
+      "machineText": "**Сохранение** — запишите конфигурацию проекта и отобразите команду для запуска.",
+      "status": "machine-translated",
+      "sourcePreview": "**Save** — write the project configuration and show the command to run.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0022-text-01": {
+      "sourceHash": "af1bb0a5cfec9876a5c35f8d0522d0b7bbf8fdddc3423924ad0e19a4e6ed6e39",
+      "targetHash": "2c99609d20a279513f79de3bcf30db3179e5a51df75038cd729856c7ad979181",
+      "machineHash": "2c99609d20a279513f79de3bcf30db3179e5a51df75038cd729856c7ad979181",
+      "machineText": "Требования к инструментам зависят от выбранных параметров. Для компиляции настольного приложения исключительно на Go не нужны Docker и компилятор C. Для кросс-компиляции с CGo требуются совместимый компилятор и библиотеки целевой платформы либо поддерживаемый контейнерный набор инструментов. Для NSIS по-прежнему требуется `makensis`; для сборки GUI-приложений AppImage на хост-системе другой платформы необходимо предоставить дерево среды выполнения Linux. Для экспортированных удостоверений подписания можно использовать средства подписания Wails, реализованные на Go, а удостоверения из системного хранилища ключей или сертификатов по-прежнему требуют инструментов соответствующей платформы. См. [требования к упаковке и подписанию](/experimental/yaml-builds/#package-and-sign-for-distribution).",
+      "status": "machine-translated",
+      "sourcePreview": "Tool requirements depend on your choices. Pure-Go desktop compilation does not need Docker or a C co…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0023-text-01": {
+      "sourceHash": "3dbafaa86a03319a0d445882a22bf2b406d8239770802cf4b2eff1fc8d1bbf56",
+      "targetHash": "9ed12c2ce8df0ebfa6b5b085c3c1f90f40f8d51b118417e4068ce6c3dd699282",
+      "machineHash": "9ed12c2ce8df0ebfa6b5b085c3c1f90f40f8d51b118417e4068ce6c3dd699282",
+      "machineText": "При использовании уже собранных исполняемых файлов пропускаются компиляция Go, установка и сборка фронтенда, создание привязок и обработка UPX. При этом по-прежнему требуются выбранные инструменты упаковки и подписания, а также корректные входные двоичные файлы. См. [пути к предварительно собранным входным файлам](/experimental/yaml-builds/#use-prebuilt-desktop-executables). Этот выбор применяется к команде, отображаемой после сохранения, и не является постоянным параметром сборки YAML.",
+      "status": "machine-translated",
+      "sourcePreview": "Already-built executables skip Go compilation, frontend installation/builds, bindings and UPX. They …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "e7c34c988bb0846076960b42148c7f5db27403c4d06aabbe2ae60ba7bbd443f6",
+      "targetHash": "4c4b2d00c334fd5055b3e0a876a0b0c4e242beeeaf20dda54291addd8f92966b",
+      "machineHash": "4c4b2d00c334fd5055b3e0a876a0b0c4e242beeeaf20dda54291addd8f92966b",
+      "machineText": "При сохранении записывается `wails.yaml`, обновляются тип приложения, включение фронтенда и выбранные параметры бэкенда, а отдельный набор целевых платформ, пакетов и параметров подписывания `profiles.setup` заменяется. Остальные профили, команды фронтенда, вспомогательные исполняемые файлы, хуки и не связанные с этим параметры проекта сохраняются. Параметры бэкенда действуют на весь проект, поэтому выбранный бэкенд также используется другими профилями, которые наследуют эти параметры. Новые метаданные проекта остаются в мастере до сохранения. Мастер сообщает об отсутствующих инструментах, чтобы вы могли установить их перед сборкой; сохранение корректной конфигурации не устанавливает инструменты и не запускает сборку.",
+      "status": "machine-translated",
+      "sourcePreview": "Save writes `wails.yaml`, updates the application kind, frontend enablement and selected backend set…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:06Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "943687736330ac03a58a097f0fd3585dcc01f33502cf6ec0ce109d71f3009e05",
+      "targetHash": "f5a1f9f388a069549737a8f795549f72595f89bda88c52c3c0926a8812e87edb",
+      "machineHash": "f5a1f9f388a069549737a8f795549f72595f89bda88c52c3c0926a8812e87edb",
+      "machineText": "Если в подписываемой сборке отсутствуют параметры подписания, используются значения по умолчанию уровня пользователя, включая файлы сертификатов за пределами проекта. Явно заданные параметры проекта имеют приоритет. Мастер настройки не копирует закрытые ключи, пароли или глобальные пути к учётным данным в `wails.yaml`. Пароль для глобально настроенных ключей Windows и Linux передавайте через существующее хранилище учётных данных либо через `WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`. Для зашифрованного удостоверения Apple задайте в `darwin.signing.credential` имя переменной среды, содержащей его пароль.",
+      "status": "machine-translated",
+      "sourcePreview": "Signed builds reuse missing signing settings from your user-level defaults, including certificate fi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "028b4fd5ad213f20c9bc9ad054603ba885d81eb7ee6e67496cc08d1bd40bc1b6",
+      "targetHash": "7b1a171aef96cb8c154336ef54deff173a76279a057d60d9eb365bb6b21de505",
+      "machineHash": "7b1a171aef96cb8c154336ef54deff173a76279a057d60d9eb365bb6b21de505",
+      "machineText": "Сохранённый профиль запускается с параметром `wails3 build setup`; при выборе уже собранных файлов добавляется `--skip-build`.",
+      "status": "machine-translated",
+      "sourcePreview": "The saved profile runs with `wails3 build setup`; the already-built option adds `--skip-build`.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "850a22d3962641555a4a0e59c0bce935232ebdd03aaf5ab6037148e36a44a2fe",
+      "targetHash": "93d90a82c9b97780528a8db0d7b5f3bfdef0e0b95379aa1e827ebc43c1c30349",
+      "machineHash": "93d90a82c9b97780528a8db0d7b5f3bfdef0e0b95379aa1e827ebc43c1c30349",
+      "machineText": "Не отключайте Wake при выполнении отображаемой команды. При активном `wails.yaml` отсутствие флага никогда не приводит к использованию Taskfiles. Мастер настройки не преобразует существующие Taskfiles или устаревшие метаданные: прежде чем настраивать такие проекты с помощью Wake, выполните [проверенную процедуру миграции](/experimental/yaml-builds/#migrate-an-existing-project).",
+      "status": "machine-translated",
+      "sourcePreview": "Keep Wake enabled when running the displayed command. An active `wails.yaml` never falls back to Tas…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:24Z"
+    },
+    "b0028-heading-01": {
       "sourceHash": "2e86523123e6c0749b6ceeb90a1697d83e3904b13b053fb502766db91d16e59b",
       "targetHash": "cb85869710a33d99a040cd4b83fb241359867148e4bf09d8c75777a85351c6b7",
       "machineHash": "cb85869710a33d99a040cd4b83fb241359867148e4bf09d8c75777a85351c6b7",
@@ -148,9 +352,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
-    "b0012-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "297f28312e37c5b3da144525b88d6b9f7197d1d7b974f7c73bca0773973f1109",
       "targetHash": "30c2e7a8c63df53308d38e271cd146eca2dbc729d388750f0c440471134d3e2e",
       "machineHash": "30c2e7a8c63df53308d38e271cd146eca2dbc729d388750f0c440471134d3e2e",
@@ -160,9 +364,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
-    "b0013-text-01": {
+    "b0030-text-01": {
       "sourceHash": "c5e883fddd4b1f43b67ab1c6acb50919cb786a1c6eacff0945a11b45b87a23aa",
       "targetHash": "ff5b5fc4e35fcb9f677dcb569337f92393cf4001731262b2022fef8cb83edf59",
       "machineHash": "ff5b5fc4e35fcb9f677dcb569337f92393cf4001731262b2022fef8cb83edf59",
@@ -172,31 +376,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
-    "b0014-text-01": {
+    "b0031-text-01": {
       "sourceHash": "3dc3fb44021210401e5733d71c50f3098bc15b9177859948522f920ad0962ad3",
-      "targetHash": "e9862f277d359da2c7e691a019fcae253b11cba72c1d38064148daf95455a682",
-      "machineHash": "e9862f277d359da2c7e691a019fcae253b11cba72c1d38064148daf95455a682",
-      "machineText": "Выполните [инструкции по установке вручную](/getting-started/installation/#platform-specific-dependencies)",
+      "targetHash": "c9d54c8f62eda1cd7e84f47ae9dde92ca0fb8789a778870238bbb9f83f1d3f7c",
+      "machineHash": "c9d54c8f62eda1cd7e84f47ae9dde92ca0fb8789a778870238bbb9f83f1d3f7c",
+      "machineText": "Выполните [установку вручную](/getting-started/installation/#platform-specific-dependencies)",
       "status": "machine-translated",
       "sourcePreview": "Follow the [manual installation steps](/getting-started/installation/#platform-specific-dependencies…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
-    "b0015-text-01": {
+    "b0032-text-01": {
       "sourceHash": "e39eb32d658ebf44563b4a4e06c531c8117cf81e2f7c625703f3f254b2ce7dfb",
-      "targetHash": "dd52e522964404551b09ddd0228ab40913a08ef708b1839c1d701c3c70b6553c",
-      "machineHash": "dd52e522964404551b09ddd0228ab40913a08ef708b1839c1d701c3c70b6553c",
-      "machineText": "[Сообщите о проблеме](https://github.com/wailsapp/wails/issues/4904) и приложите вывод команды `wails3 doctor`",
+      "targetHash": "7d425388c2a8481d3d970a7c842f13fce451cd93a575f560b5e77e6e4ab34644",
+      "machineHash": "7d425388c2a8481d3d970a7c842f13fce451cd93a575f560b5e77e6e4ab34644",
+      "machineText": "[Сообщите о проблеме](https://github.com/wailsapp/wails/issues/4904), приложив вывод `wails3 doctor`",
       "status": "machine-translated",
       "sourcePreview": "[Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     },
     "fm-title": {
       "sourceHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1",
@@ -208,7 +412,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:18Z"
+      "updatedAt": "2026-11-01T04:33:24Z"
     }
   }
 }

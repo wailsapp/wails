@@ -16,19 +16,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0001-text-01": {
       "sourceHash": "8da6e8c26907f251de7b6b38094ec54e804bd4afa48d25e98ab8f8a080a8ca91",
-      "targetHash": "28ca5a31b679a4cf76dd6a0931d58ed739e0be3962b3182c21a0a335e7380070",
-      "machineHash": "28ca5a31b679a4cf76dd6a0931d58ed739e0be3962b3182c21a0a335e7380070",
-      "machineText": "设置向导是新增功能，目前主要在 Linux 上进行了测试。如果遇到问题，请[报告问题](https://github.com/wailsapp/wails/issues/4904)，并改为按照[手动安装步骤](/getting-started/installation/#platform-specific-dependencies)操作。",
+      "targetHash": "733d84c6cd4b67143613dc8c60cecdd481ea1d1bf0a28cd676d2818b59a15072",
+      "machineHash": "733d84c6cd4b67143613dc8c60cecdd481ea1d1bf0a28cd676d2818b59a15072",
+      "machineText": "设置向导是一项新功能，目前主要在 Linux 上进行了测试。如果遇到问题，请[报告问题](https://github.com/wailsapp/wails/issues/4904)，并改用[手动安装步骤](/getting-started/installation/#platform-specific-dependencies)。",
       "status": "machine-translated",
       "sourcePreview": "The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them]…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0002-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
@@ -40,31 +40,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0003-text-01": {
-      "sourceHash": "0b9a096ac2a40921133d39f6674f025ffd4050b1929a7f843a0b97096b776c3e",
-      "targetHash": "e343a1dc08368105523fc4aed548414a0f633b1a5749cb8c1346391e445ce1de",
-      "machineHash": "e343a1dc08368105523fc4aed548414a0f633b1a5749cb8c1346391e445ce1de",
-      "machineText": "向导会在浏览器中打开，引导你完成依赖项检查、项目默认设置和可选的跨平台构建设置。",
+      "sourceHash": "659b03264ab883a1bcdd39c51bd3fea504286a1f0d09a93c3ba74637511553be",
+      "targetHash": "a9ab801ae4e6fbf8f287138290fc8c08f71964d986684d7bd421e021e83d29a4",
+      "machineHash": "a9ab801ae4e6fbf8f287138290fc8c08f71964d986684d7bd421e021e83d29a4",
+      "machineText": "向导会在浏览器中打开，引导你检查依赖项、设置项目默认值，并选择是否配置跨平台构建。上述说明使用默认设置流程；实验性的 Wake 项目流程将在下文介绍。",
       "status": "machine-translated",
       "sourcePreview": "The wizard opens in your browser and guides you through dependency checks, project defaults, and opt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0004-text-01": {
       "sourceHash": "0dc45ab265211b0fee1327dc80a8260ebc349c5a88b9bd0ac5ef88c03a505048",
-      "targetHash": "e77e123a86ac603a04af1f2df46b0b9bd22b8e2edfc443863d635699b412f338",
-      "machineHash": "e77e123a86ac603a04af1f2df46b0b9bd22b8e2edfc443863d635699b412f338",
-      "machineText": "之后，就可以创建你的第一个项目了：",
+      "targetHash": "befce85c83d7da0e52a74b7c733e7978b78ce25f89721180fb5bb938c2099550",
+      "machineHash": "befce85c83d7da0e52a74b7c733e7978b78ce25f89721180fb5bb938c2099550",
+      "machineText": "然后就可以创建第一个项目了：",
       "status": "machine-translated",
       "sourcePreview": "Then you're ready for your first project:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0005-heading-01": {
       "sourceHash": "dae0d007aae197e3eaa934901cc3c3e418d4bfb5987ab9f77408cdc101e76537",
@@ -76,7 +76,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0006-text-01": {
       "sourceHash": "afa8a5194d83f6a18d116c7c86bd14fc0d420e8e2f02c6b79be11c24ef491582",
@@ -88,31 +88,31 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0007-text-01": {
       "sourceHash": "d5aaae377aec1c048544f05ebd0ea39fb562c8c39b64505f5bf9aa804b6bca99",
-      "targetHash": "1da9979f3c366b5a0ae405f3a91693ec14708a690b79d6965e85d34702a90245",
-      "machineHash": "1da9979f3c366b5a0ae405f3a91693ec14708a690b79d6965e85d34702a90245",
-      "machineText": "**配置默认设置** - 作者信息、Bundle ID 前缀和首选模板",
+      "targetHash": "6d6d2d63d0a39517247a2ec5ea4499218b84335a6f1ace53f93610f02ce9e18e",
+      "machineHash": "6d6d2d63d0a39517247a2ec5ea4499218b84335a6f1ace53f93610f02ce9e18e",
+      "machineText": "**配置默认值** - 作者信息、Bundle ID 前缀和首选模板",
       "status": "machine-translated",
       "sourcePreview": "**Configures defaults** - Author info, bundle ID prefix, preferred templates",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0008-text-01": {
       "sourceHash": "ea58ff89b531bf2dd5b73a57d47d2879d7e4986ad917dacb987ff8a802a98b89",
-      "targetHash": "5cacf4c7b016135df1a29a636eb66105e20eb0daac609028b636fc6a310d3a06",
-      "machineHash": "5cacf4c7b016135df1a29a636eb66105e20eb0daac609028b636fc6a310d3a06",
-      "machineText": "**跨平台构建** - 可选的 Docker 设置，用于从任意主机进行构建",
+      "targetHash": "0e54e9dd223f3e27b5657517c2b2f51033544a8ef85927bf0e7fd25fda995468",
+      "machineHash": "0e54e9dd223f3e27b5657517c2b2f51033544a8ef85927bf0e7fd25fda995468",
+      "machineText": "**跨平台构建** - 可选的 Docker 设置，用于从任意宿主系统构建",
       "status": "machine-translated",
       "sourcePreview": "**Cross-platform builds** - Optional Docker setup for building from any host",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0009-text-01": {
       "sourceHash": "03bda1d4026185d72abbd7d76142757969441e612fe20cff69eba2809bc177aa",
@@ -124,21 +124,225 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0010-text-01": {
       "sourceHash": "b81d143cb9fe216aa851623912eddb68788521025f2b235f4dc49018dbc1a674",
-      "targetHash": "6bca26a84771253f5b4e26ceddea7e3b4e98da0e4a4d03dc308bd7e3992d6491",
-      "machineHash": "6bca26a84771253f5b4e26ceddea7e3b4e98da0e4a4d03dc308bd7e3992d6491",
-      "machineText": "配置会保存到`$XDG_CONFIG_HOME/wails/defaults.yaml`，并以`~/.config/wails/defaults.yaml`作为后备位置，供`wails3 init`使用。此配置与项目的`build/config.yml`相互独立。",
+      "targetHash": "11a33615f699c4f30ac27cb3ac6df88a48d40ce6aa81cfb6cd4c60896251c659",
+      "machineHash": "11a33615f699c4f30ac27cb3ac6df88a48d40ce6aa81cfb6cd4c60896251c659",
+      "machineText": "配置将保存到`$XDG_CONFIG_HOME/wails/defaults.yaml`，并以`~/.config/wails/defaults.yaml`作为后备位置，供`wails3 init`使用。此配置独立于项目的`build/config.yml`。",
       "status": "machine-translated",
       "sourcePreview": "Configuration is saved to `$XDG_CONFIG_HOME/wails/defaults.yaml`, falling back to `~/.config/wails/d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "b0011-heading-01": {
+      "sourceHash": "16ec765b80cf26d1edd20c5efcae32cdb4e6fbe08b5fc3b6bb97e888441ba89d",
+      "targetHash": "7ba729e5d1094de11aadbf8a4534db6098ab770e5f0fd94c7446176ac723ea11",
+      "machineHash": "7ba729e5d1094de11aadbf8a4534db6098ab770e5f0fd94c7446176ac723ea11",
+      "machineText": "配置 Wake 项目",
+      "status": "machine-translated",
+      "sourcePreview": "Configure a Wake project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "6ed4639d11b7d11cd8bf63a5cde63597246d6a5e68f1130f6965f2ccf67cb133",
+      "targetHash": "0ce7bc40a31914ac8e96af94af002d1791ae8a35960eb8e88f88932e6e6b8c00",
+      "machineHash": "0ce7bc40a31914ac8e96af94af002d1791ae8a35960eb8e88f88932e6e6b8c00",
+      "machineText": "在项目目录中启用[Wake 实验性功能](/experimental/yaml-builds/#enable-yaml-builds)并运行设置：",
+      "status": "machine-translated",
+      "sourcePreview": "Run setup from your project directory with the [Wake experiment enabled](/experimental/yaml-builds/#…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
+      "targetHash": "710db93d0faa7a2968907c3df53736290d70134bf276d7822ff258fa82e918d9",
+      "machineHash": "710db93d0faa7a2968907c3df53736290d70134bf276d7822ff258fa82e918d9",
+      "machineText": "在 PowerShell 中：",
+      "status": "machine-translated",
+      "sourcePreview": "In PowerShell:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "d7bc9890bccead74a7f76a6806e463062856cd60bef5776a7dc67f87de00ec0b",
+      "targetHash": "0b685395e7649c894635863c74d639749386089038b52cc30e065ac03f5bceb8",
+      "machineHash": "0b685395e7649c894635863c74d639749386089038b52cc30e065ac03f5bceb8",
+      "machineText": "这会打开以项目为中心的流程：",
+      "status": "machine-translated",
+      "sourcePreview": "This opens a project-focused flow:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "ade3c05a20e913fa6786e5613f38eef7ea63d8b4b134a76f77a22370bc08bd43",
+      "targetHash": "cb23239e0cdea32eb86b38b85ca85883edaa6de8a95aac7291748b729116f22c",
+      "machineHash": "cb23239e0cdea32eb86b38b85ca85883edaa6de8a95aac7291748b729116f22c",
+      "machineText": "**项目** — 如果不存在原生清单，则输入项目元数据。",
+      "status": "machine-translated",
+      "sourcePreview": "**Project** — enter project metadata when no native manifest exists.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "e5d50fd4b31be9ca3f52d39cf225451d3315db93e85fe4e78c517ca6b41cfe76",
+      "targetHash": "47ed65599a7592c30c44215d1919ed85b85c4ac0895d8902f63343f549ef2455",
+      "machineHash": "47ed65599a7592c30c44215d1919ed85b85c4ac0895d8902f63343f549ef2455",
+      "machineText": "**应用程序** — 选择 GUI、CLI 或服务器、构建后端，或者已构建的可执行文件。纯 Go 是一个需要明确选择的实验性选项。",
+      "status": "machine-translated",
+      "sourcePreview": "**Application** — choose GUI, CLI or server, a build backend, or already-built executables. Pure Go …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0017-text-01": {
+      "sourceHash": "7afea9d36bb1e8062e7f24fed251a82344e7ff6dc4e5a2e7d0535eb18d13b635",
+      "targetHash": "123aef1b8f69eeaf2d5b311c17c5f7f2383e5c87fa7495a365fb6b93d58ac607",
+      "machineHash": "123aef1b8f69eeaf2d5b311c17c5f7f2383e5c87fa7495a365fb6b93d58ac607",
+      "machineText": "**目标** — 选择操作系统和体系结构。iOS 和 Android 仍处于实验阶段；请在 YAML 中配置其签名设置。",
+      "status": "machine-translated",
+      "sourcePreview": "**Targets** — select operating systems and architectures. iOS and Android remain experimental; confi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:00Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "94654d330c07cac0a4e89d525ea6c5b81263313a4ee8e7a0fd799ae7bf1b4290",
+      "targetHash": "3d9c166d5de19d1b105db24264c624ba8cd8848f0063f589613c58273670e84e",
+      "machineHash": "3d9c166d5de19d1b105db24264c624ba8cd8848f0063f589613c58273670e84e",
+      "machineText": "**软件包** — 选择软件包格式以及是否对其签名。",
+      "status": "machine-translated",
+      "sourcePreview": "**Packages** — choose package formats and whether to sign them.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0019-text-01": {
+      "sourceHash": "e988f0b209dd94198100858c0559e5ff09829d8f63fcd9536b847b623088f7d2",
+      "targetHash": "d950e67b80a2146ae6c1b58ef4e21a902d37618e3a5fcbc28c80ad334937931b",
+      "machineHash": "d950e67b80a2146ae6c1b58ef4e21a902d37618e3a5fcbc28c80ad334937931b",
+      "machineText": "**工具** — 查看所选构建和打包路径的要求。",
+      "status": "machine-translated",
+      "sourcePreview": "**Tools** — review requirements for the selected build and packaging path.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0020-text-01": {
+      "sourceHash": "53a18af7d731f523e7d8a9fb7d52ac1371f90f41e86607e2c4b4f3b116c1d602",
+      "targetHash": "ede5755b471915bb887e1de0f56183e8ccb34c53e3ca2d5d64ef670f50604b74",
+      "machineHash": "ede5755b471915bb887e1de0f56183e8ccb34c53e3ca2d5d64ef670f50604b74",
+      "machineText": "**签名** — 如果选择了签名，则使用现有签名控件进行配置。",
+      "status": "machine-translated",
+      "sourcePreview": "**Signing** — configure signing when selected, using the existing signing controls.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0021-text-01": {
+      "sourceHash": "e1555aa7f014340daa80362aea064ff31501ac79c5d4519ad11150346a02bab2",
+      "targetHash": "df60eabe27b2501446611772bee145abcba7169c5578438b18724bb770b54284",
+      "machineHash": "df60eabe27b2501446611772bee145abcba7169c5578438b18724bb770b54284",
+      "machineText": "**保存** — 写入项目配置并显示要运行的命令。",
+      "status": "machine-translated",
+      "sourcePreview": "**Save** — write the project configuration and show the command to run.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0022-text-01": {
+      "sourceHash": "af1bb0a5cfec9876a5c35f8d0522d0b7bbf8fdddc3423924ad0e19a4e6ed6e39",
+      "targetHash": "a09a99fb0b23a3ca8d7646d9a73791740ca037e0a90e7c0994dd224a03524198",
+      "machineHash": "a09a99fb0b23a3ca8d7646d9a73791740ca037e0a90e7c0994dd224a03524198",
+      "machineText": "工具要求取决于你的选择。纯 Go 桌面编译不需要 Docker 或 C 编译器。CGo 交叉构建需要兼容的编译器和目标库，或者受支持的容器工具链。NSIS 仍需要`makensis`；跨宿主系统构建 GUI AppImage 时，需要提供 Linux 运行时目录树。导出的签名身份可以使用 Wails 的 Go 签名器，而原生钥匙串或证书存储中的身份仍需使用平台工具。请参阅[打包和签名要求](/experimental/yaml-builds/#package-and-sign-for-distribution)。",
+      "status": "machine-translated",
+      "sourcePreview": "Tool requirements depend on your choices. Pure-Go desktop compilation does not need Docker or a C co…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0023-text-01": {
+      "sourceHash": "3dbafaa86a03319a0d445882a22bf2b406d8239770802cf4b2eff1fc8d1bbf56",
+      "targetHash": "c7b46ec9bbd27c37359295b202ca50806e3b6ab81668ef06d7234d2b621579bf",
+      "machineHash": "c7b46ec9bbd27c37359295b202ca50806e3b6ab81668ef06d7234d2b621579bf",
+      "machineText": "使用已构建的可执行文件会跳过 Go 编译、前端安装和构建、绑定生成以及 UPX。仍然需要所选的打包和签名工具，以及有效的输入二进制文件。请参阅[预构建输入路径](/experimental/yaml-builds/#use-prebuilt-desktop-executables)。此选项仅适用于保存后显示的命令，并不是永久的 YAML 构建设置。",
+      "status": "machine-translated",
+      "sourcePreview": "Already-built executables skip Go compilation, frontend installation/builds, bindings and UPX. They …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "e7c34c988bb0846076960b42148c7f5db27403c4d06aabbe2ae60ba7bbd443f6",
+      "targetHash": "f416e60636876f835aa89a109b12bc8f06891300b5276d452336653baddad327",
+      "machineHash": "f416e60636876f835aa89a109b12bc8f06891300b5276d452336653baddad327",
+      "machineText": "保存操作会写入`wails.yaml`，更新应用程序类型、前端启用状态和所选后端设置，并替换专用的`profiles.setup`目标、软件包和签名选项。其他配置文件、前端命令、配套可执行文件、钩子和不相关的项目设置均会保留。后端设置适用于整个项目，因此继承这些设置的其他配置文件也会使用所选后端。新项目的元数据会一直保留在向导中，直到执行保存操作。系统会报告缺失的工具，以便你在构建前安装；保存有效配置不会安装工具或运行构建。",
+      "status": "machine-translated",
+      "sourcePreview": "Save writes `wails.yaml`, updates the application kind, frontend enablement and selected backend set…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:00Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "943687736330ac03a58a097f0fd3585dcc01f33502cf6ec0ce109d71f3009e05",
+      "targetHash": "e9d8fbb57dbd5ef0b992dd895c86fb955ac4bffd905bcda718e44a3100272afe",
+      "machineHash": "e9d8fbb57dbd5ef0b992dd895c86fb955ac4bffd905bcda718e44a3100272afe",
+      "machineText": "签名构建会从用户级默认值中沿用项目缺少的签名设置，包括项目外部的证书文件。显式的项目设置优先。设置过程不会将私钥、密码或全局凭据路径复制到`wails.yaml`。对于全局配置的 Windows 和 Linux 密钥，请通过现有凭据存储或`WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`提供密码。对于加密的 Apple 身份，请将`darwin.signing.credential`设置为包含其密码的环境变量名称。",
+      "status": "machine-translated",
+      "sourcePreview": "Signed builds reuse missing signing settings from your user-level defaults, including certificate fi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "028b4fd5ad213f20c9bc9ad054603ba885d81eb7ee6e67496cc08d1bd40bc1b6",
+      "targetHash": "ac1d053ba9fcb19c9b30a7a897d7445fb7669baa711b1702a104dda123972fb1",
+      "machineHash": "ac1d053ba9fcb19c9b30a7a897d7445fb7669baa711b1702a104dda123972fb1",
+      "machineText": "保存的配置文件通过`wails3 build setup`运行；选择已构建的可执行文件时还会添加`--skip-build`。",
+      "status": "machine-translated",
+      "sourcePreview": "The saved profile runs with `wails3 build setup`; the already-built option adds `--skip-build`.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "850a22d3962641555a4a0e59c0bce935232ebdd03aaf5ab6037148e36a44a2fe",
+      "targetHash": "12e4bd8e8b623effa5a58950d9b929a3253c95ff504776af0c3cfaf7cbd3c967",
+      "machineHash": "12e4bd8e8b623effa5a58950d9b929a3253c95ff504776af0c3cfaf7cbd3c967",
+      "machineText": "运行显示的命令时，请保持启用 Wake。如果未设置该标志，启用的`wails.yaml`绝不会回退到 Taskfile。设置过程不会转换现有 Taskfile 或旧版元数据：使用 Wake 配置这些项目之前，请先执行[已审核的迁移流程](/experimental/yaml-builds/#migrate-an-existing-project)。",
+      "status": "machine-translated",
+      "sourcePreview": "Keep Wake enabled when running the displayed command. An active `wails.yaml` never falls back to Tas…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:32:40Z"
+    },
+    "b0028-heading-01": {
       "sourceHash": "2e86523123e6c0749b6ceeb90a1697d83e3904b13b053fb502766db91d16e59b",
       "targetHash": "ec186a377bb2213c5af0155dd69c90efd29b6e57f5c8b5100049c9c735ef1993",
       "machineHash": "ec186a377bb2213c5af0155dd69c90efd29b6e57f5c8b5100049c9c735ef1993",
@@ -148,9 +352,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
-    "b0012-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "297f28312e37c5b3da144525b88d6b9f7197d1d7b974f7c73bca0773973f1109",
       "targetHash": "9120faff1e16144fc3d2387f56489214aeab6336a702406adc8761203a124752",
       "machineHash": "9120faff1e16144fc3d2387f56489214aeab6336a702406adc8761203a124752",
@@ -160,9 +364,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
-    "b0013-text-01": {
+    "b0030-text-01": {
       "sourceHash": "c5e883fddd4b1f43b67ab1c6acb50919cb786a1c6eacff0945a11b45b87a23aa",
       "targetHash": "3bccee328708bba250e74396a385afb6c445e770716d960959e0ffe253f0deba",
       "machineHash": "3bccee328708bba250e74396a385afb6c445e770716d960959e0ffe253f0deba",
@@ -172,9 +376,9 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
-    "b0014-text-01": {
+    "b0031-text-01": {
       "sourceHash": "3dc3fb44021210401e5733d71c50f3098bc15b9177859948522f920ad0962ad3",
       "targetHash": "1cd692b9de7e9b5b558cfcc4577dbb6bc85bd74789e67de48653c6f4c0964cc5",
       "machineHash": "1cd692b9de7e9b5b558cfcc4577dbb6bc85bd74789e67de48653c6f4c0964cc5",
@@ -184,19 +388,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
-    "b0015-text-01": {
+    "b0032-text-01": {
       "sourceHash": "e39eb32d658ebf44563b4a4e06c531c8117cf81e2f7c625703f3f254b2ce7dfb",
-      "targetHash": "804e233ee1346c607ee6e6381663598f8a73d4f37f73cd5f0851df6c4951f4f9",
-      "machineHash": "804e233ee1346c607ee6e6381663598f8a73d4f37f73cd5f0851df6c4951f4f9",
-      "machineText": "提交[问题报告](https://github.com/wailsapp/wails/issues/4904)时，请附上`wails3 doctor`的输出",
+      "targetHash": "e78aec988be665b57982a9e3b1e87eb7df111e2d595e716642a4408816b62620",
+      "machineHash": "e78aec988be665b57982a9e3b1e87eb7df111e2d595e716642a4408816b62620",
+      "machineText": "提交[问题报告](https://github.com/wailsapp/wails/issues/4904)，并附上`wails3 doctor`的输出",
       "status": "machine-translated",
       "sourcePreview": "[Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     },
     "fm-title": {
       "sourceHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1",
@@ -208,7 +412,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:08Z"
+      "updatedAt": "2026-11-01T04:32:40Z"
     }
   }
 }

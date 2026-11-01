@@ -16,19 +16,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0001-text-01": {
       "sourceHash": "8da6e8c26907f251de7b6b38094ec54e804bd4afa48d25e98ab8f8a080a8ca91",
-      "targetHash": "dde88d26c9e879221aac88df8a47fc9e5106da493a6d7271c94c4e30375c78b3",
-      "machineHash": "dde88d26c9e879221aac88df8a47fc9e5106da493a6d7271c94c4e30375c78b3",
-      "machineText": "설정 마법사는 새로 도입되었으며 주로 Linux에서 테스트되었습니다. 문제가 발생하면 [문제를 보고](https://github.com/wailsapp/wails/issues/4904)하고, 대신 [수동 설치 단계](/getting-started/installation/#platform-specific-dependencies)를 따르세요.",
+      "targetHash": "7fbb597ab04772e2e5c11ef4883e10cc4193a91e7de0b40611479ade6ae6c5c5",
+      "machineHash": "7fbb597ab04772e2e5c11ef4883e10cc4193a91e7de0b40611479ade6ae6c5c5",
+      "machineText": "설정 마법사는 새 기능이며 주로 Linux에서 테스트되었습니다. 문제가 발생하면 [문제를 보고](https://github.com/wailsapp/wails/issues/4904)하고 대신 [수동 설치 단계](/getting-started/installation/#platform-specific-dependencies)를 따르세요.",
       "status": "machine-translated",
       "sourcePreview": "The setup wizard is new and primarily tested on Linux. If you encounter issues, please [report them]…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0002-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
@@ -40,19 +40,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0003-text-01": {
-      "sourceHash": "0b9a096ac2a40921133d39f6674f025ffd4050b1929a7f843a0b97096b776c3e",
-      "targetHash": "59288b0f3d2f320a8fd7a3b1ffd5207cca469849d6b2d09545c0e3013f233fb8",
-      "machineHash": "59288b0f3d2f320a8fd7a3b1ffd5207cca469849d6b2d09545c0e3013f233fb8",
-      "machineText": "마법사는 브라우저에서 열리며 종속성 확인, 프로젝트 기본값 지정, 선택적 크로스 플랫폼 빌드 설정 과정을 안내합니다.",
+      "sourceHash": "659b03264ab883a1bcdd39c51bd3fea504286a1f0d09a93c3ba74637511553be",
+      "targetHash": "b5e3a62b442d8939d4f79a6dc385f43be826e2229da8b98bcb5907057d20add3",
+      "machineHash": "b5e3a62b442d8939d4f79a6dc385f43be826e2229da8b98bcb5907057d20add3",
+      "machineText": "마법사는 브라우저에서 열리며 종속성 검사, 프로젝트 기본값 설정, 선택적 크로스 플랫폼 빌드 설정 과정을 안내합니다. 위 지침에서는 기본 설정 흐름을 사용하며, 실험적인 Wake 프로젝트 흐름은 아래에서 설명합니다.",
       "status": "machine-translated",
       "sourcePreview": "The wizard opens in your browser and guides you through dependency checks, project defaults, and opt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0004-text-01": {
       "sourceHash": "0dc45ab265211b0fee1327dc80a8260ebc349c5a88b9bd0ac5ef88c03a505048",
@@ -64,93 +64,297 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0005-heading-01": {
       "sourceHash": "dae0d007aae197e3eaa934901cc3c3e418d4bfb5987ab9f77408cdc101e76537",
-      "targetHash": "bc4bb57b266c38459d98c92500d60151dbd613182a1d9cc9c4cd547451ee65d9",
-      "machineHash": "bc4bb57b266c38459d98c92500d60151dbd613182a1d9cc9c4cd547451ee65d9",
-      "machineText": "주요 기능",
+      "targetHash": "52ae823237cd239747f29b838648abff5fd783ff64641252116b29a842933916",
+      "machineHash": "52ae823237cd239747f29b838648abff5fd783ff64641252116b29a842933916",
+      "machineText": "수행하는 작업",
       "status": "machine-translated",
       "sourcePreview": "What It Does",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0006-text-01": {
       "sourceHash": "afa8a5194d83f6a18d116c7c86bd14fc0d420e8e2f02c6b79be11c24ef491582",
-      "targetHash": "801d4edf910e28c6cbd1ffcf59c854afd8a818a59b319e951d55e4219b4f8243",
-      "machineHash": "801d4edf910e28c6cbd1ffcf59c854afd8a818a59b319e951d55e4219b4f8243",
-      "machineText": "**종속성 확인** - Go, npm 및 플랫폼 도구를 확인합니다",
+      "targetHash": "0b9714b19ef2f57bff3593b8f1f3d6489d1ad3a18f1b1bcc2e708d8a83612a01",
+      "machineHash": "0b9714b19ef2f57bff3593b8f1f3d6489d1ad3a18f1b1bcc2e708d8a83612a01",
+      "machineText": "**종속성 검사** - Go, npm 및 플랫폼 도구를 확인합니다.",
       "status": "machine-translated",
       "sourcePreview": "**Checks dependencies** - Verifies Go, npm, and platform tooling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0007-text-01": {
       "sourceHash": "d5aaae377aec1c048544f05ebd0ea39fb562c8c39b64505f5bf9aa804b6bca99",
-      "targetHash": "22347037e432fe50d31a37079b0e29ea08d1088b4dc304a88af165fafdea933e",
-      "machineHash": "22347037e432fe50d31a37079b0e29ea08d1088b4dc304a88af165fafdea933e",
-      "machineText": "**기본값 구성** - 작성자 정보, 번들 ID 접두사, 선호 템플릿",
+      "targetHash": "f7c3b8dd4b08efa43365a562775db4b3d7dbc1072b8c4e5c9aeeb758f8bf73e8",
+      "machineHash": "f7c3b8dd4b08efa43365a562775db4b3d7dbc1072b8c4e5c9aeeb758f8bf73e8",
+      "machineText": "**기본값 구성** - 작성자 정보, 번들 ID 접두사, 선호 템플릿을 설정합니다.",
       "status": "machine-translated",
       "sourcePreview": "**Configures defaults** - Author info, bundle ID prefix, preferred templates",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0008-text-01": {
       "sourceHash": "ea58ff89b531bf2dd5b73a57d47d2879d7e4986ad917dacb987ff8a802a98b89",
-      "targetHash": "8675336f6d8365872d2826cdbf8d68ad87ab3fbbd376bf2bc9b4417ef667fe24",
-      "machineHash": "8675336f6d8365872d2826cdbf8d68ad87ab3fbbd376bf2bc9b4417ef667fe24",
-      "machineText": "**크로스 플랫폼 빌드** - 어떤 호스트에서든 빌드할 수 있도록 선택적으로 Docker를 설정합니다",
+      "targetHash": "2075e0d721f190c0c7a7e9e9cbbe79f3d37a4c244c087c1062962f8c25dbc440",
+      "machineHash": "2075e0d721f190c0c7a7e9e9cbbe79f3d37a4c244c087c1062962f8c25dbc440",
+      "machineText": "**크로스 플랫폼 빌드** - 어느 호스트에서나 빌드할 수 있도록 Docker를 선택적으로 설정합니다.",
       "status": "machine-translated",
       "sourcePreview": "**Cross-platform builds** - Optional Docker setup for building from any host",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0009-text-01": {
       "sourceHash": "03bda1d4026185d72abbd7d76142757969441e612fe20cff69eba2809bc177aa",
-      "targetHash": "2d6b9d3fd27738183a0ed9470f180a159d71742894ef727be91ca362d3737b90",
-      "machineHash": "2d6b9d3fd27738183a0ed9470f180a159d71742894ef727be91ca362d3737b90",
-      "machineText": "**코드 서명** - macOS, Windows 및 Linux용 선택적 설정",
+      "targetHash": "1c00f368095447266838c4171ad0a05570d2db74acf9737b2c63cf0413634b63",
+      "machineHash": "1c00f368095447266838c4171ad0a05570d2db74acf9737b2c63cf0413634b63",
+      "machineText": "**코드 서명** - macOS, Windows 및 Linux용으로 선택적으로 설정합니다.",
       "status": "machine-translated",
       "sourcePreview": "**Code signing** - Optional setup for macOS, Windows, and Linux",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0010-text-01": {
       "sourceHash": "b81d143cb9fe216aa851623912eddb68788521025f2b235f4dc49018dbc1a674",
-      "targetHash": "730671cd67c01ebd42602881af4c313fff215f0efaab261d5478dc5fa16d344e",
-      "machineHash": "730671cd67c01ebd42602881af4c313fff215f0efaab261d5478dc5fa16d344e",
-      "machineText": "구성은 `$XDG_CONFIG_HOME/wails/defaults.yaml`에 저장되며, 사용할 수 없으면 `~/.config/wails/defaults.yaml`에 저장됩니다. 이 구성은 `wails3 init`에서 사용됩니다. 프로젝트의 `build/config.yml`와는 별개입니다.",
+      "targetHash": "860dcd1c3f1921effac9a23ec184c819d4f79a8b11444fa5db4fbb5dcf1f1aeb",
+      "machineHash": "860dcd1c3f1921effac9a23ec184c819d4f79a8b11444fa5db4fbb5dcf1f1aeb",
+      "machineText": "구성은 `$XDG_CONFIG_HOME/wails/defaults.yaml`에 저장되며, 사용할 수 없으면 `~/.config/wails/defaults.yaml`을 사용하고, `wails3 init`에서 이 구성을 사용합니다. 이는 프로젝트의 `build/config.yml`과 별개입니다.",
       "status": "machine-translated",
       "sourcePreview": "Configuration is saved to `$XDG_CONFIG_HOME/wails/defaults.yaml`, falling back to `~/.config/wails/d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "b0011-heading-01": {
+      "sourceHash": "16ec765b80cf26d1edd20c5efcae32cdb4e6fbe08b5fc3b6bb97e888441ba89d",
+      "targetHash": "9c142ca4e75a9543fa89b84310270a41a0f9764037068923a1313ae779692897",
+      "machineHash": "9c142ca4e75a9543fa89b84310270a41a0f9764037068923a1313ae779692897",
+      "machineText": "Wake 프로젝트 구성",
+      "status": "machine-translated",
+      "sourcePreview": "Configure a Wake project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "6ed4639d11b7d11cd8bf63a5cde63597246d6a5e68f1130f6965f2ccf67cb133",
+      "targetHash": "360a574c0b7bdb0fe700f264d5f8249f254c3e58f5ad214697d95643ceaf2ca6",
+      "machineHash": "360a574c0b7bdb0fe700f264d5f8249f254c3e58f5ad214697d95643ceaf2ca6",
+      "machineText": "프로젝트 디렉터리에서 [Wake 실험 기능을 활성화](/experimental/yaml-builds/#enable-yaml-builds)한 상태로 설정을 실행하세요.",
+      "status": "machine-translated",
+      "sourcePreview": "Run setup from your project directory with the [Wake experiment enabled](/experimental/yaml-builds/#…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
+      "targetHash": "42ee2eb7f5afe16fbca5991d159713d7ae60ec9e476f715b51060fafa272f773",
+      "machineHash": "42ee2eb7f5afe16fbca5991d159713d7ae60ec9e476f715b51060fafa272f773",
+      "machineText": "PowerShell에서는 다음과 같이 실행합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "In PowerShell:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "d7bc9890bccead74a7f76a6806e463062856cd60bef5776a7dc67f87de00ec0b",
+      "targetHash": "876e97993f388c4aa71265d01671a3728da9264e54adec6589196999e4b65214",
+      "machineHash": "876e97993f388c4aa71265d01671a3728da9264e54adec6589196999e4b65214",
+      "machineText": "그러면 프로젝트에 초점을 맞춘 다음 흐름이 열립니다.",
+      "status": "machine-translated",
+      "sourcePreview": "This opens a project-focused flow:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "ade3c05a20e913fa6786e5613f38eef7ea63d8b4b134a76f77a22370bc08bd43",
+      "targetHash": "8c91e690a3c9696d01cb7d5321cec9b4d615e35fecb54bc113d7d2b78593ecc0",
+      "machineHash": "8c91e690a3c9696d01cb7d5321cec9b4d615e35fecb54bc113d7d2b78593ecc0",
+      "machineText": "**프로젝트** — 네이티브 매니페스트가 없으면 프로젝트 메타데이터를 입력합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Project** — enter project metadata when no native manifest exists.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "e5d50fd4b31be9ca3f52d39cf225451d3315db93e85fe4e78c517ca6b41cfe76",
+      "targetHash": "bde366cf1ad07d6d26d6ce6dc49390c92b8d20ede456123b81260595f5e30b7d",
+      "machineHash": "bde366cf1ad07d6d26d6ce6dc49390c92b8d20ede456123b81260595f5e30b7d",
+      "machineText": "**애플리케이션** — GUI, CLI 또는 서버와 빌드 백엔드를 선택하거나 이미 빌드된 실행 파일을 사용합니다. Pure Go는 명시적으로 선택해야 하는 실험적 옵션입니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Application** — choose GUI, CLI or server, a build backend, or already-built executables. Pure Go …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0017-text-01": {
+      "sourceHash": "7afea9d36bb1e8062e7f24fed251a82344e7ff6dc4e5a2e7d0535eb18d13b635",
+      "targetHash": "84fd9ddb4d5d565e2e35096fb027a71bd682a510b975cf885454cfbb12639988",
+      "machineHash": "84fd9ddb4d5d565e2e35096fb027a71bd682a510b975cf885454cfbb12639988",
+      "machineText": "**대상** — 운영 체제와 아키텍처를 선택합니다. iOS와 Android는 여전히 실험적 기능이며, 서명 설정은 YAML에서 구성합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Targets** — select operating systems and architectures. iOS and Android remain experimental; confi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:05Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "94654d330c07cac0a4e89d525ea6c5b81263313a4ee8e7a0fd799ae7bf1b4290",
+      "targetHash": "5592df7a48c85e635b7e1748f078ea7b2b04f13bae31a5dc78a0ff1254264433",
+      "machineHash": "5592df7a48c85e635b7e1748f078ea7b2b04f13bae31a5dc78a0ff1254264433",
+      "machineText": "**패키지** — 패키지 형식과 서명 여부를 선택합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Packages** — choose package formats and whether to sign them.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0019-text-01": {
+      "sourceHash": "e988f0b209dd94198100858c0559e5ff09829d8f63fcd9536b847b623088f7d2",
+      "targetHash": "892e2d2ffba9d6552ff62f76741901b537215ea045cbf5e7516a4c68f1b476cf",
+      "machineHash": "892e2d2ffba9d6552ff62f76741901b537215ea045cbf5e7516a4c68f1b476cf",
+      "machineText": "**도구** — 선택한 빌드 및 패키징 경로의 요구 사항을 검토합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Tools** — review requirements for the selected build and packaging path.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0020-text-01": {
+      "sourceHash": "53a18af7d731f523e7d8a9fb7d52ac1371f90f41e86607e2c4b4f3b116c1d602",
+      "targetHash": "4a38e3249ed43368fd8b7723fc6d6be325dbeb8c45f9ff0463b5c582942fca99",
+      "machineHash": "4a38e3249ed43368fd8b7723fc6d6be325dbeb8c45f9ff0463b5c582942fca99",
+      "machineText": "**서명** — 서명을 선택한 경우 기존 서명 제어 기능을 사용하여 구성합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Signing** — configure signing when selected, using the existing signing controls.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0021-text-01": {
+      "sourceHash": "e1555aa7f014340daa80362aea064ff31501ac79c5d4519ad11150346a02bab2",
+      "targetHash": "3e30532e189cddf6f669f2755adaa66dcbfdbb91ed3cd2fdc51383a50d41bc35",
+      "machineHash": "3e30532e189cddf6f669f2755adaa66dcbfdbb91ed3cd2fdc51383a50d41bc35",
+      "machineText": "**저장** — 프로젝트 구성을 기록하고 실행할 명령을 표시합니다.",
+      "status": "machine-translated",
+      "sourcePreview": "**Save** — write the project configuration and show the command to run.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0022-text-01": {
+      "sourceHash": "af1bb0a5cfec9876a5c35f8d0522d0b7bbf8fdddc3423924ad0e19a4e6ed6e39",
+      "targetHash": "2b4dacc76ad7385059f66878840c287c11a78b1496ec542b5dba13d4dd440e7f",
+      "machineHash": "2b4dacc76ad7385059f66878840c287c11a78b1496ec542b5dba13d4dd440e7f",
+      "machineText": "필요한 도구는 선택 사항에 따라 달라집니다. Pure Go 데스크톱 컴파일에는 Docker나 C 컴파일러가 필요하지 않습니다. CGo 크로스 빌드에는 호환되는 컴파일러와 대상 라이브러리 또는 지원되는 컨테이너 도구 체인이 필요합니다. NSIS에는 여전히 `makensis`이 필요하며, 호스트와 다른 플랫폼용 GUI AppImage에는 제공된 Linux 런타임 트리가 필요합니다. 내보낸 서명 ID에는 Wails의 Go 서명 도구를 사용할 수 있지만, 네이티브 키 체인이나 인증서 저장소의 ID에는 플랫폼 도구가 계속 필요합니다. [패키징 및 서명 요구 사항](/experimental/yaml-builds/#package-and-sign-for-distribution)을 참조하세요.",
+      "status": "machine-translated",
+      "sourcePreview": "Tool requirements depend on your choices. Pure-Go desktop compilation does not need Docker or a C co…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0023-text-01": {
+      "sourceHash": "3dbafaa86a03319a0d445882a22bf2b406d8239770802cf4b2eff1fc8d1bbf56",
+      "targetHash": "68046074ce6fcb4499ba2e753d2cd42838bcb8804a83024aa340cecb1c1bbbdd",
+      "machineHash": "68046074ce6fcb4499ba2e753d2cd42838bcb8804a83024aa340cecb1c1bbbdd",
+      "machineText": "이미 빌드된 실행 파일을 사용하면 Go 컴파일, 프런트엔드 설치 및 빌드, 바인딩, UPX를 건너뜁니다. 그래도 선택한 패키징 및 서명 도구와 유효한 입력 바이너리는 필요합니다. [사전 빌드된 입력 경로](/experimental/yaml-builds/#use-prebuilt-desktop-executables)를 참조하세요. 이 선택 사항은 저장 후 표시되는 명령에 적용되며 영구적인 YAML 빌드 설정이 아닙니다.",
+      "status": "machine-translated",
+      "sourcePreview": "Already-built executables skip Go compilation, frontend installation/builds, bindings and UPX. They …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0024-text-01": {
+      "sourceHash": "e7c34c988bb0846076960b42148c7f5db27403c4d06aabbe2ae60ba7bbd443f6",
+      "targetHash": "0c585275ef2192c897c08e3e60c77b4b1959c6ef61f4252d86de9c1c99e88c6f",
+      "machineHash": "0c585275ef2192c897c08e3e60c77b4b1959c6ef61f4252d86de9c1c99e88c6f",
+      "machineText": "저장하면 `wails.yaml`에 기록하고, 애플리케이션 종류, 프런트엔드 활성화 여부 및 선택한 백엔드 설정을 업데이트하며, 전용 `profiles.setup` 대상/패키지/서명 선택 항목을 교체합니다. 다른 프로필, 프런트엔드 명령, 보조 실행 파일, 훅 및 관련 없는 프로젝트 설정은 그대로 유지됩니다. 백엔드 설정은 프로젝트 전체에 적용되므로 이를 상속하는 다른 프로필도 선택한 백엔드를 사용합니다. 새 프로젝트 메타데이터는 저장할 때까지 마법사에만 유지됩니다. 누락된 도구가 있으면 빌드 전에 설치할 수 있도록 알려 줍니다. 유효한 구성을 저장해도 도구를 설치하거나 빌드를 실행하지는 않습니다.",
+      "status": "machine-translated",
+      "sourcePreview": "Save writes `wails.yaml`, updates the application kind, frontend enablement and selected backend set…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:35:05Z"
+    },
+    "b0025-text-01": {
+      "sourceHash": "943687736330ac03a58a097f0fd3585dcc01f33502cf6ec0ce109d71f3009e05",
+      "targetHash": "61080e561be9f55a723553d8c892f1d56ca9401c328511531fcc3166f6c1d736",
+      "machineHash": "61080e561be9f55a723553d8c892f1d56ca9401c328511531fcc3166f6c1d736",
+      "machineText": "서명된 빌드는 프로젝트 외부의 인증서 파일을 포함하여 누락된 서명 설정을 사용자 수준 기본값에서 재사용합니다. 명시적인 프로젝트 설정이 우선합니다. 설정 과정에서는 개인 키, 비밀번호 또는 전역 자격 증명 경로를 `wails.yaml`에 복사하지 않습니다. 전역으로 구성된 Windows 및 Linux 키의 비밀번호는 기존 자격 증명 저장소 또는 `WAILS_WINDOWS_CERT_PASSWORD` / `WAILS_PGP_PASSWORD`을 통해 제공하세요. 암호화된 Apple ID의 경우 비밀번호가 들어 있는 환경 변수의 이름을 `darwin.signing.credential`에 설정하세요.",
+      "status": "machine-translated",
+      "sourcePreview": "Signed builds reuse missing signing settings from your user-level defaults, including certificate fi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0026-text-01": {
+      "sourceHash": "028b4fd5ad213f20c9bc9ad054603ba885d81eb7ee6e67496cc08d1bd40bc1b6",
+      "targetHash": "61d3b472c63e1500286bb12de4d438e0528254d30847a1c1456362fe20577846",
+      "machineHash": "61d3b472c63e1500286bb12de4d438e0528254d30847a1c1456362fe20577846",
+      "machineText": "저장된 프로필은 `wails3 build setup`과 함께 실행되며, 이미 빌드된 실행 파일 옵션을 선택하면 `--skip-build`이 추가됩니다.",
+      "status": "machine-translated",
+      "sourcePreview": "The saved profile runs with `wails3 build setup`; the already-built option adds `--skip-build`.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0027-text-01": {
+      "sourceHash": "850a22d3962641555a4a0e59c0bce935232ebdd03aaf5ab6037148e36a44a2fe",
+      "targetHash": "df2ebcd3cc0e100969fd389a9f6d283ffc20426c7ef1f66000d19bf9f9d085dd",
+      "machineHash": "df2ebcd3cc0e100969fd389a9f6d283ffc20426c7ef1f66000d19bf9f9d085dd",
+      "machineText": "표시된 명령을 실행할 때 Wake를 계속 활성화해 두세요. 활성 `wails.yaml`은 플래그가 설정되지 않은 경우에도 절대 Taskfile로 대체 실행되지 않습니다. 설정 과정에서는 기존 Taskfile이나 레거시 메타데이터를 변환하지 않습니다. 이러한 프로젝트를 Wake로 구성하기 전에 [검토된 마이그레이션 워크플로](/experimental/yaml-builds/#migrate-an-existing-project)를 사용하세요.",
+      "status": "machine-translated",
+      "sourcePreview": "Keep Wake enabled when running the displayed command. An active `wails.yaml` never falls back to Tas…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-01T04:33:21Z"
+    },
+    "b0028-heading-01": {
       "sourceHash": "2e86523123e6c0749b6ceeb90a1697d83e3904b13b053fb502766db91d16e59b",
-      "targetHash": "657aca15a10b7e6c4e41147c936530757044d20bb47ee8df3df19e8a2943c974",
-      "machineHash": "657aca15a10b7e6c4e41147c936530757044d20bb47ee8df3df19e8a2943c974",
-      "machineText": "하위 명령어",
+      "targetHash": "ee1206bc55a9fd6d4f7382784befa982b8f9dd4302e923dc0e9bffae32977f11",
+      "machineHash": "ee1206bc55a9fd6d4f7382784befa982b8f9dd4302e923dc0e9bffae32977f11",
+      "machineText": "하위 명령",
       "status": "machine-translated",
       "sourcePreview": "Sub-Commands",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
-    "b0012-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "297f28312e37c5b3da144525b88d6b9f7197d1d7b974f7c73bca0773973f1109",
       "targetHash": "df7d4b615fbb90552e7b914c1fe974f459adfafb8644f64146e8b0a6dd55b4eb",
       "machineHash": "df7d4b615fbb90552e7b914c1fe974f459adfafb8644f64146e8b0a6dd55b4eb",
@@ -160,43 +364,43 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
-    "b0013-text-01": {
+    "b0030-text-01": {
       "sourceHash": "c5e883fddd4b1f43b67ab1c6acb50919cb786a1c6eacff0945a11b45b87a23aa",
-      "targetHash": "8012309a292d858e4f5c60cb8ea1c988d804cd7b151fc937e7abdad03bc1a786",
-      "machineHash": "8012309a292d858e4f5c60cb8ea1c988d804cd7b151fc937e7abdad03bc1a786",
-      "machineText": "문제를 진단하려면 `wails3 doctor`을 실행하세요",
+      "targetHash": "8b593d175390828907efda7cb833ffb6c0e177ba549f33b4ebc46a006cb27a2b",
+      "machineHash": "8b593d175390828907efda7cb833ffb6c0e177ba549f33b4ebc46a006cb27a2b",
+      "machineText": "문제를 진단하려면 `wails3 doctor`을 실행하세요.",
       "status": "machine-translated",
       "sourcePreview": "Run `wails3 doctor` to diagnose problems",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
-    "b0014-text-01": {
+    "b0031-text-01": {
       "sourceHash": "3dc3fb44021210401e5733d71c50f3098bc15b9177859948522f920ad0962ad3",
-      "targetHash": "4d05be4472d15911c0f7aaec65c7d3c7364340bfbbe132870cae7c4680ae86ce",
-      "machineHash": "4d05be4472d15911c0f7aaec65c7d3c7364340bfbbe132870cae7c4680ae86ce",
-      "machineText": "[수동 설치 단계](/getting-started/installation/#platform-specific-dependencies)를 따르세요",
+      "targetHash": "87ee4b73ce5df9ab28adaefd3c213619fd629639647839f9d18d5d67f0a524b8",
+      "machineHash": "87ee4b73ce5df9ab28adaefd3c213619fd629639647839f9d18d5d67f0a524b8",
+      "machineText": "[수동 설치 단계](/getting-started/installation/#platform-specific-dependencies)를 따르세요.",
       "status": "machine-translated",
       "sourcePreview": "Follow the [manual installation steps](/getting-started/installation/#platform-specific-dependencies…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
-    "b0015-text-01": {
+    "b0032-text-01": {
       "sourceHash": "e39eb32d658ebf44563b4a4e06c531c8117cf81e2f7c625703f3f254b2ce7dfb",
-      "targetHash": "3756092596c65cb699896d0820dac92e15b404b350da5a1b64c5af07e390f409",
-      "machineHash": "3756092596c65cb699896d0820dac92e15b404b350da5a1b64c5af07e390f409",
-      "machineText": "`wails3 doctor` 출력을 첨부하여 [문제를 보고하세요](https://github.com/wailsapp/wails/issues/4904)",
+      "targetHash": "3d334c56d1013305f86da1eda56f95021b144aefd11526ef4e00227ad3792747",
+      "machineHash": "3d334c56d1013305f86da1eda56f95021b144aefd11526ef4e00227ad3792747",
+      "machineText": "`wails3 doctor` 출력을 첨부하여 [문제를 보고하세요](https://github.com/wailsapp/wails/issues/4904).",
       "status": "machine-translated",
       "sourcePreview": "[Report the issue](https://github.com/wailsapp/wails/issues/4904) with your `wails3 doctor` output",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     },
     "fm-title": {
       "sourceHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1",
@@ -208,7 +412,7 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:39:05Z"
+      "updatedAt": "2026-11-01T04:33:21Z"
     }
   }
 }

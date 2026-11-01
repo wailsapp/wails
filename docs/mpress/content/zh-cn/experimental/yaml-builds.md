@@ -31,6 +31,8 @@ $env:WAILS_EXP_USE_WAKE = '1'
 
 ## 配置项目
 
+要在引导下配置桌面应用，请在启用选择性加入功能后运行`wails3 setup`。[Wake 设置流程](/getting-started/setup/#configure-a-wake-project)会检查应用类型、构建后端、目标、软件包格式和必需工具，然后保存`setup`配置文件。它还支持为预构建可执行文件准备命令，而无需将`--skip-build`设为永久项目设置。
+
 选择启用后，在项目根目录添加`wails.yaml`。该文件的存在会选用原生构建系统，并使 Wails 忽略此项目中的所有 Taskfile。运行以下所有命令时都应保持选择启用状态。模式 modeline 可在支持 YAML 语言服务器的编辑器中启用补全和行内验证。
 
 ```yaml
@@ -93,7 +95,7 @@ wails3 build --targets windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwi
 wails3 build --targets darwin/universal --formats dmg
 ```
 
-第二条命令会合并两种 macOS 架构，并使用 Go 创建未签名的 DMG。它可以在任何受支持的桌面宿主机上运行。
+第二条命令会合并两种 macOS 架构，并使用 Go 创建未签名的 DMG。它可以在任何受支持的桌面主机上运行。
 
 系统会分别为每个可执行文件选择解析后的模式。声明的`build.environment.CGO_ENABLED`、目标环境或二进制文件环境会覆盖调用命令的终端中的值。否则，显式选择的`purego`标签、CLI/服务器程序或 Windows 目标默认为`0`；macOS 和 Linux GUI 程序默认为`1`。`--plan --json`会报告每个可执行文件解析后的编译器、CGo 模式和标签。交叉编译会创建目标文件；运行不兼容的桌面目标仍需使用相应的宿主机。
 
@@ -160,19 +162,40 @@ Wake 会验证文件类型和目标架构，将可执行文件复制到其生成
 
 创建未签名包与进行签名对宿主机和工具的要求不同：
 
+IPA 有效负载和用于 macOS 公证的 ZIP 均由 Go 写入，并保留 bundle 路径、可执行权限和相对符号链接。这两项操作都不需要外部`zip`或`ditto`可执行文件。这些归档包含应用程序文件，而非 Finder 元数据或资源分支；macOS 签名本身就会移除这些元数据，因为它们会导致已签名的 bundle 失效。
+
 | 输出 | 创建所需的宿主机和工具 | 签名 |
 | --- | --- | --- |
-| Windows MSIX | Windows、macOS 或 Linux；使用 Go 写入器，无需 Windows SDK。 | Windows 宿主机和签名工具。 |
-| Windows NSIS 安装程序 | Windows、macOS 或 Linux；需要宿主机原生的`makensis`。 | Windows 宿主机和签名工具。 |
-| macOS 应用程序和 DMG | Windows、macOS 或 Linux；使用 Go 进行组装、通用二进制文件合并，并通过可移植 DMG 写入器生成 DMG。 | 需要配备 Apple 工具和凭据的 macOS。 |
-| Linux DEB、RPM、Arch 和 Void | Windows、macOS 或 Linux；使用原生 Go 包写入器。 | DEB/RPM 使用各自的外部签名工具；Arch 使用下文所述的 Go 签名器。Void 输出不签名。 |
-| Linux AppImage | Linux 主机与目标架构相同；需要外部 linuxdeploy 和 GTK 部署插件。 | 没有内置的 AppImage 签名流程。 |
+| Windows MSIX | Windows、macOS 或 Linux；使用 Go 写入器，无需 Windows SDK。 | 可在任何桌面主机上使用导出的 RSA PFX 通过 Go 签名；证书存储区/提供程序身份需要 Windows SignTool。 |
+| Windows NSIS 安装程序 | Windows、macOS 或 Linux；需要宿主机原生的`makensis`。 | 可在任何桌面主机上使用导出的 RSA PFX 通过 Go 为 PE 签名；证书存储区/提供程序身份需要 Windows SignTool。 |
+| macOS 应用程序和 DMG | Windows、macOS 或 Linux；使用 Go 进行组装、通用二进制文件合并，并通过可移植 DMG 写入器生成 DMG。 | 使用导出的 RSA PKCS#12身份通过 Go 签名，或进行临时签名；钥匙串身份仍使用 macOS 工具。API 密钥公证和票据装订通过 Go 运行。 |
+| Linux DEB、RPM、Arch 和 Void | Windows、macOS 或 Linux；使用原生 Go 包写入器。 | 导出的 OpenPGP 密钥使用原生 DEB/RPM/Arch 签名器。旧版 DEB/RPM 密钥 ID 需要外部工具。Void 输出不签名。 |
+| Linux AppImage | Windows、macOS 或 Linux；通过 Go 部署并写入 SquashFS，另需目标 AppImage 运行时。跨平台打包 GUI 需要提供 Linux 运行时根目录树。 | 没有内置的 AppImage 签名流程。 |
 
-Windows MSIX 归档直接使用 Go 创建；创建未签名的软件包不需要 Windows SDK 或 Docker。Windows 签名仍需要 Windows 主机及其签名工具。NSIS 使用外部 NSIS 编译器，并通过`packages.nsis.defines`接受字面量定义。在 macOS 上，仅当 NSIS 编译器继承的区域设置不是 UTF-8 时，Wails 才会为该编译器子进程提供 UTF-8 区域设置；终端和应用程序环境不会改变。当打包的所有可执行文件都是 CLI 或服务器程序时，标准 NSIS 安装程序会省略 WebView2 引导程序。若主程序或伴随程序包含 GUI，则会保留 WebView2。自定义 NSIS 脚本会保留引导程序，以便与其自身的运行时安装逻辑兼容。
+对于已签名的 DMG，Wake 通常先为应用程序的私有副本签名，再由 Go 写入器压缩映像，最后为映像签名。这样可避免使用`hdiutil`挂载、展开并重新压缩 DMG。每次请求都会执行签名；不会复用构建缓存中的已签名软件包。具有`after_package`或`before_sign`钩子的项目仍沿用原有的先打包后签名流程，包括`hdiutil`，因此这些钩子对未签名映像所做的修改会得到保留。这个兼容钩子的映像编辑路径需要 macOS 和`hdiutil`。
 
-Linux 支持 AppImage、DEB、RPM、Arch Linux 和 Void 软件包。AppImage 仍以外部 linuxdeploy 和 GTK 插件为边界。设置`packages.appimage.update_info`可请求生成 zsync 文件，设置`packages.appimage.checksum: true`可请求生成 SHA256 文件。伴随文件会从软件包缓存中恢复，并与 AppImage 一同列入产物收据。目前，AppImage 打包要求使用 Linux，并且主机与目标架构必须相同。其 GTK 检测无法发现纯 Go GUI 动态加载的库，因此此适配器尚不支持部署纯 Go GUI。对于这种构建模式，请使用一种 Linux 软件包管理器格式。
+要进行可移植的 Apple 签名，请设置`darwin.signing.identity: "-"`以使用临时签名，或使用`darwin.signing.certificate`指定导出的 RSA PKCS#12身份。`darwin.signing.credential`指定其密码环境变量的名称。证书签名使用共享的 Go PFX/CMS 实现；不会自动从钥匙串导出私钥。使用生成的测试身份时，瘦可执行文件和通用可执行文件、嵌套 app bundle、框架及 DMG 均已通过 Apple 严格的原生签名检查，包括篡改拒绝检查。
+
+进行公证时，导出的 Developer ID 身份还需要兼容 RFC 3161 的`darwin.signing.timestamp_server`。共享验证器接受其支持的 SHA-2时间戳配置，并拒绝不受支持的旧版算法。临时签名无法通过公证。原生证书格式验证与真正的 Developer ID 信任及 Apple 是否接受提交相互独立。
+
+Go 装订器会验证 Apple 票据签名，并确认其涵盖所有架构，然后再将票据附加到私有副本。它使用观测到的票据交付协议，而 Apple 并未将该协议作为受支持的 API 发布。它不能取代 Gatekeeper 当前的吊销检查。App 和已签名的 DMG 输出均已通过原生`stapler validate`检查及严格签名检查。
+
+Windows MSIX 归档直接使用 Go 创建；创建未签名的软件包无需 Windows SDK 或 Docker。导出的 RSA PFX 身份可在任何桌面主机上直接使用 Go 对 Windows 可执行文件和各个 MSIX 软件包进行签名。将 `windows.signing.certificate` 设置为项目相对路径下的 PFX，并将 `windows.signing.credential` 设置为其密码环境变量。支持 AES/PBKDF2 和旧版 3DES 导出；RC2 导出需要重新导出，或回退到原生 Windows SignTool。证书存储区/提供程序身份和 MSI 签名需要 Windows SignTool。默认时间戳服务为 DigiCert；发布已签名的输出前会验证时间戳。有关格式限制，请参阅[签名指南](/guides/build/signing/)。
+NSIS 使用外部 NSIS 编译器，并通过 `packages.nsis.defines` 接受字面量定义。在 macOS 上，如果 NSIS 编译器继承的区域设置不是 UTF-8，Wails 只会为该编译器子进程提供 UTF-8 区域设置；终端和应用程序环境不会改变。当所有打包的可执行文件都是 CLI 或服务器时，标准 NSIS 安装程序会省略 WebView2 引导程序。若主可执行文件或配套可执行文件是 GUI，则会保留 WebView2。自定义 NSIS 脚本会保留该引导程序，以兼容其自身的运行时安装逻辑。
+
+Linux 支持 AppImage、DEB、RPM、Arch Linux 和 Void 软件包。Wake 直接通过 Go 组装 AppImage，包括部署 GTK/WebKit、压缩 SquashFS 和生成 zsync。它不会调用 linuxdeploy、GTK 插件、appimagetool 或 mksquashfs。系统会为目标架构下载固定版本且经过校验和验证的 AppImage 类型 2运行时；也可通过`packages.appimage.runtime_path`改为选择相对于项目的运行时 ELF。
+
+在 Linux 上，默认库来源是主机的根文件系统。要为其他架构打包 GUI，或从 Windows/macOS 打包 GUI，请将`packages.appimage.runtime_root`设为相对于项目的目标 Linux 根目录树，其中应包含相应的库、已编译 schema 和模块缓存。这里指完整的根目录布局（包括`usr/`），而不是`usr/`目录本身。请提供来自计划支持的最旧 Linux 发行版的运行时。Wake 无需执行目标程序即可读取 ELF 导入及显式 GTK/WebKit 配置文件。它会捆绑选定的依赖闭包，但不包括 glibc 或动态加载器。运行时更新后，库和资源的内容哈希会使软件包缓存失效。
+
+支持纯 Go GUI 构建。对于使用`gtk3`构建的 GUI 可执行文件，Wake 选择 GTK 3；其他情况则选择 GTK 4，包括 CLI/服务器的 GUI 伴随程序。同一映像中的所有 GUI 可执行文件必须使用同一 GTK 版本。对于预构建二进制文件，可通过`packages.appimage.gtk_version`明确选择`3`或`4`；导入的 CGo 库必须与此选择一致。
+
+设置`packages.appimage.update_info`可请求生成 zsync 文件，设置`packages.appimage.checksum: true`可请求生成 SHA256 文件。Sidecar 文件会从软件包缓存恢复，并与 AppImage 一同列入制品收据。使用提供的 GTK/WebKit 目录树时，已验证可在 Windows 和 macOS 上进行打包；生成的纯 Go GUI 映像通过了 Linux 上的运行时检查。在一次条件匹配的 CGo GUI 构建中，原生路径耗时8.77秒，而 linuxdeploy 耗时26.19秒。原生 gzip 映像为133 MiB，而旧 zstd 路径生成的映像为114 MiB，因此这里衡量的是整个打包路径，而不仅仅是压缩。
 
 Arch 软件包会在原生软件包元数据中保留预发布版本，例如`1.2.3-beta.2`会变为`1.2.3beta.2-1`，其排序位置位于最终版本之前。Void 依赖项接受诸如`gtk4`的裸软件包名称，并将其规范化为`gtk4>=0`；显式版本比较和完整的`name-version_revision`值会予以保留。请使用 Void 软件包名称，而不是库文件名。
+
+在任何受支持的桌面主机上，DEB、RPM 和 Arch 签名均可使用导出的 ASCII 装甲格式或二进制 OpenPGP 私钥，而无需 GnuPG、`dpkg-sig`或`rpmsign`。通过`linux.signing.certificate`配置密钥文件，并通过`credential`配置其密码短语环境变量的名称。DEB 和 RPM 会嵌入签名；Arch 则发布分离式签名。私钥仅由签名步骤读取，不会复制到软件包资源或可复用的缓存制品中。
+
+包含裸 GnuPG 密钥标识符的现有 DEB/RPM 配置会继续使用外部签名器。要消除此依赖，请导出私钥并改为配置其路径。请使用类似`./signing/release.asc`的路径；如果密钥文件缺失、不可读或无效，操作将失败，而不会回退到密钥环。DEB 签名继续使用`dpkg-sig`软件包签名格式；这不能取代对 apt 仓库发布元数据的签名。
 
 要创建 Arch 软件包及其分离式签名，请使用导出的 ASCII 封装 PGP 私钥文件，并可选择指定一个口令环境变量：
 
@@ -200,7 +223,32 @@ profiles:
 
 通过本地环境或 CI 密钥存储区设置指定的环境变量，然后运行`wails3 build release`。如果密钥未加密，请省略`credential`。Go 签名器可在所有受支持的桌面主机上运行，且不需要 GPG。它会发布原始`.pkg.tar.zst`及同目录下的`.pkg.tar.zst.sig`；两者会分别记录在产物收据中。密钥内容不会暂存或存入构建缓存。签名及其发布结果绝不会从缓存中复用。签名失败时会保留之前发布的一对文件；如果安装任一文件失败，发布过程会回滚这两个文件。这并不能使两次文件系统重命名对并发读取者呈现原子性。
 
-macOS 应用程序包包含伴随程序。设置`darwin.microphone_usage_description`可添加用途说明，并在未提供自定义权利文件时添加音频输入权利。自定义 plist 和权利源文件保持不变。签名和公证在 macOS 上使用现有的 Apple 工具与凭据；公证需要真实的公证配置文件。签名后的输出会保留其平台扩展名，例如`notes.signed.app`和`notes.signed.dmg`。
+macOS app bundle 包含伴随程序。设置`darwin.microphone_usage_description`可添加用途说明文本；若未提供自定义 entitlements 文件，还会添加音频输入 entitlement。自定义 plist 和 entitlements 源文件保持不变。导出的 RSA PKCS#12身份可在任何桌面主机上使用 Go 签名；`identity: "-"`用于选择可移植的临时签名。钥匙串身份在 macOS 上继续使用`codesign`。票据装订通过 Go 运行。公证提交可以使用现有的 macOS 公证钥匙串配置文件，也可以使用 App Store Connect 团队 API 凭据：
+
+```yaml
+version: 3
+project:
+  name: notes
+  product_name: Notes
+  identifier: com.example.notes
+  version: 1.0.0
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+API 模式通过 Go 提交、上传和轮询，无需`notarytool`。请设置全部三个字段并省略`credential`；不要将私钥纳入版本控制。仅在签名时读取密钥，且不会将其复制到生成的资源或缓存中。此模式支持团队 API 密钥和最大5 GiB 的归档；尚未实现分段上传和个人 API 密钥。提交被拒绝时会保留提交 ID，并将 Apple 的诊断日志保存到私有临时文件，错误中会报告该文件的路径。提交被取消或拒绝时，不会替换此前发布的输出。Apple 接受提交后，Wake 会检索并验证其票据，再通过 Go 进行装订。使用导出的身份和团队 API 凭据时，可在 Linux、Windows 或 macOS 上完成签名、提交和装订。钥匙串配置文件仍需要 macOS 和`notarytool`。
+
+可移植证书签名支持采用 AES/PBKDF2 或旧版3DES 加密的 PKCS#12文件中的 RSA 身份。使用 RC2 加密的导出文件必须以受支持的密码重新导出。用于公证的可移植签名需要明确指定 SHA-2 RFC 3161时间戳服务；Go 验证器会拒绝旧版 SHA-1时间戳签名。票据服务遵循观测到的 Apple 协议，并固定信任 Apple Root G3；Gatekeeper 仍是分发信任和吊销的最终判定方。
+
+签名后的输出文件会保留其平台扩展名，例如
+`notes.signed.app` 和 `notes.signed.dmg`。
 
 ## 开发控制命令
 
