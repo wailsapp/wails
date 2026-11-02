@@ -56,6 +56,9 @@ type windowsApp struct {
 
 	// Restart taskbar flag
 	restartingTaskbar atomic.Bool
+
+	// Last used icon from SetIcon, if any
+	currentIcon w32.HICON
 }
 
 func (m *windowsApp) isDarkMode() bool {
@@ -126,7 +129,47 @@ func (m *windowsApp) show() {
 func (m *windowsApp) on(_ uint) {
 }
 
-func (m *windowsApp) setIcon(_ []byte) {
+func (m *windowsApp) setIcon(icon []byte) {
+	InvokeAsync(func() {
+		hIcon, err := w32.CreateLargeHIconFromImage(icon)
+		if err != nil {
+			m.parent.error("unable to create icon: %w", err)
+			return
+		}
+
+		previousIcon := m.currentIcon
+		m.currentIcon = hIcon
+
+		m.windowMapLock.Lock()
+		windows := make([]*windowsWebviewWindow, 0, len(m.windowMap))
+		for _, window := range m.windowMap {
+			windows = append(windows, window)
+		}
+		m.windowMapLock.Unlock()
+
+		for _, window := range windows {
+			m.applyIcon(window, hIcon)
+		}
+
+		if previousIcon != 0 {
+			w32.DestroyIcon(previousIcon)
+		}
+	})
+}
+
+func (m *windowsApp) applyIcon(window *windowsWebviewWindow, icon w32.HICON) {
+	iconDisabled := window.parent.options.Windows.DisableIcon
+
+	if !iconDisabled {
+		window.setIcon(icon)
+		return
+	}
+
+	// This is a dumb workaround to prevent windows adding the icon back, when DisableIcon is set to true
+	style := w32.GetWindowLong(window.hwnd, w32.GWL_STYLE)
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style&^w32.WS_SYSMENU))
+	window.setIcon(icon)
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style))
 }
 
 func (m *windowsApp) name() string {
@@ -202,6 +245,13 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+
+	// Release icons, if any
+	if m.currentIcon != 0 {
+		w32.DestroyIcon(m.currentIcon)
+		m.currentIcon = 0
+	}
+
 	// destroy the main thread window
 	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
