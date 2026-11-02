@@ -267,7 +267,7 @@ API가 사용 중단될 때는 다음 정책을 적용합니다.
 ### API 관련 질문
 
 1. **이 참조 문서 확인** - 전체 API 문서
-2. **예제 확인** - [GitHub 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **예제 확인** - [GitHub 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Discord 검색** - [Discord 서버](https://discord.gg/JDdSxwjhGf)
 4. **커뮤니티에 질문** - Discord #help 채널
 
@@ -284,7 +284,7 @@ API가 사용 중단될 때는 다음 정책을 적용합니다.
 - [튜토리얼](/tutorials/overview/) - 실제 애플리케이션을 만들며 배워 보세요
 - [가이드](/guides/architecture/) - 일반적인 시나리오를 위한 작업 중심 가이드
 - [기능](/features/windows/basics/) - 기능별 문서
-- [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub에서 제공하는 실행 가능한 코드 예제
+- [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - GitHub에서 제공하는 실행 가능한 코드 예제
 
 ---
 

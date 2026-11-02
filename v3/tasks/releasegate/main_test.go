@@ -257,6 +257,24 @@ func TestGate_Dependabot(t *testing.T) {
 	}
 }
 
+// Static-analysis fixture modules describe sample input, not shipped dependencies.
+func TestGate_StaticAnalysisFixtures(t *testing.T) {
+	for _, path := range []string{"v2/internal/staticanalysis/test/standard/go.mod", "v2/internal/staticanalysis/go.mod", "v2/go.mod", "v3/go.mod"} {
+		t.Run(path, func(t *testing.T) {
+			g := newGate(t)
+			g.set("repos/wailsapp/wails/dependabot/alerts", dep(path, "high"))
+			_, code := g.run()
+			want := 1
+			if path == "v2/internal/staticanalysis/test/standard/go.mod" {
+				want = 0
+			}
+			if code != want {
+				t.Fatalf("gate exit = %d, want %d", code, want)
+			}
+		})
+	}
+}
+
 // An alert without a manifest path cannot be proven to be outside shipped
 // code, so it counts. (The shell version's `read` collapsed the empty field
 // and shifted the severity out of place, silently dropping such alerts.)

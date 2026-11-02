@@ -10,18 +10,16 @@ vars:
   #
   # Password is stored securely in system keychain. Run: wails3 setup signing
 
-  # Docker image for cross-compilation (used when building on non-Linux or no CC available)
+  # Docker image for cross-compiling cgo builds (not needed with -tags purego).
   CROSS_IMAGE: wails-cross
 
 tasks:
   build:
     summary: Builds the application for Linux
     cmds:
-      # Linux requires CGO - use Docker when:
-      # 1. Cross-compiling from non-Linux, OR
-      # 2. No C compiler is available, OR
-      # 3. Target architecture differs from host architecture (cross-arch compilation)
-      - task: '{{if and (eq OS "linux") (eq .HAS_CC "true") (eq .TARGET_ARCH ARCH)}}build:native{{else}}build:docker{{end}}'
+      # The experimental CGO-free backend (-tags purego, or WAILS_PUREGO=1) uses
+      # the Go toolchain directly on every host and architecture.
+      - task: '{{if or (ne .CGO_ENABLED "1") (and (eq OS "linux") (eq .HAS_CC "true") (eq .TARGET_ARCH ARCH))}}build:native{{else}}build:docker{{end}}'
         vars:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
@@ -29,11 +27,13 @@ tasks:
           EXTRA_TAGS: '{{.EXTRA_TAGS}}'
           OBFUSCATED: '{{.OBFUSCATED}}'
           GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          CGO_ENABLED: '{{.CGO_ENABLED}}'
     vars:
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
       # Determine target architecture (defaults to host ARCH if not specified)
       TARGET_ARCH: '{{.ARCH | default ARCH}}'
+      CGO_ENABLED: '{{.CGO_ENABLED | default (ternary "0" "1" (has "purego" (splitList "," (.EXTRA_TAGS | default ""))))}}'
       # Check if a C compiler is available (gcc or clang) — cross-platform via wails3 tool
       HAS_CC:
         sh: 'wails3 tool has "gcc|clang"'
@@ -64,7 +64,7 @@ tasks:
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: linux
-      CGO_ENABLED: 1
+      CGO_ENABLED: '{{.CGO_ENABLED | default (ternary "0" "1" (has "purego" (splitList "," (.EXTRA_TAGS | default ""))))}}'
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:

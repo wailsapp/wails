@@ -3,11 +3,12 @@
 package fileexplorer
 
 import (
+	"context"
 	"fmt"
 	"syscall"
 )
 
-func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
+func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string, []string, error) {
 	return "explorer.exe", []string{}, nil
 }
 

@@ -492,4 +492,4 @@ unsub()
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

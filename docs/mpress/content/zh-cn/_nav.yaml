@@ -209,6 +209,12 @@
           link: "/experimental/"
         - label: "Wake"
           link: "/experimental/wake/"
+        - label: "YAML 构建"
+          link: "/experimental/yaml-builds/"
+        - label: "YAML 清单字段"
+          link: "/reference/wails-yaml-fields/"
+        - label: "YAML 运行配置"
+          link: "/reference/wails-yaml-run/"
         - label: "LLM 控制（MCP）"
           link: "/guides/mcp-service/"
 - label: "核心概念"
@@ -231,7 +237,7 @@
       link: "/reference/overview/"
     - label: "应用"
       link: "/reference/application/"
-    - label: "窗口"
+    - label: "Windows"
       collapsed: true
       items:
         - label: "窗口 API"
@@ -269,7 +275,7 @@
       link: "/faq/"
     - label: "macOS 上的 Syso 文件"
       link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
+    - label: "窗口"
       collapsed: true
       items:
         - label: "RDP 问题"

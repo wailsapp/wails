@@ -1,3 +1,4 @@
+// @vitest-environment node
 import * as util from "node:util";
 import { describe, it, beforeEach, afterEach, assert, expect, vi } from "vitest";
 import { CancelError, CancellablePromise, CancelledRejectionError } from "./cancellable";
@@ -245,7 +246,7 @@ const onabort = vi.fn().mockName("abort");
 
 const abortPatterns = [
     ["never", "standalone", (test) => {
-        const signal = new AbortSignal();
+        const signal = AbortSignal.any([]);
         signal.addEventListener('abort', onabort, { capture: true });
         return test(signal);
     }],

@@ -8,14 +8,28 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/tint"
-	"github.com/mattn/go-colorable"
-	"github.com/mattn/go-isatty"
+	"golang.org/x/sys/windows"
 )
 
 func DefaultLogger(level slog.Leveler) *slog.Logger {
-	return slog.New(tint.NewHandler(colorable.NewColorable(os.Stderr), &tint.Options{
+	return slog.New(tint.NewHandler(os.Stderr, &tint.Options{
 		TimeFormat: time.StampMilli,
-		NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
+		NoColor:    !enableConsoleColors(os.Stderr),
 		Level:      level,
 	}))
+}
+
+func enableConsoleColors(file *os.File) bool {
+	handle := windows.Handle(file.Fd())
+	var mode uint32
+	if err := windows.GetConsoleMode(handle, &mode); err != nil {
+		// Files, pipes and invalid handles do not accept console modes.
+		return false
+	}
+	// Preserve existing flags and enable processed output as required for VT.
+	colorMode := mode | windows.ENABLE_PROCESSED_OUTPUT | windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING
+	if colorMode == mode {
+		return true
+	}
+	return windows.SetConsoleMode(handle, colorMode) == nil
 }

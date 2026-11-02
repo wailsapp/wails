@@ -128,9 +128,9 @@ func (t *RequestTracker) Wrap(r Request) Request {
 	header.Del(RequestIDHeader)
 	t.mu.Lock()
 	entry := t.byToken[token]
-	ctx, release := context.WithCancel(t.ctx)
+	var ctx context.Context
+	var release context.CancelFunc
 	if entry != nil && entry.persistent {
-		release()
 		entry.active++
 		ctx, release = context.WithCancel(entry.ctx)
 		cancel := release
@@ -145,11 +145,13 @@ func (t *RequestTracker) Wrap(r Request) Request {
 		}
 	} else if entry != nil && !entry.claimed {
 		entry.claimed = true
-		release()
 		ctx = entry.ctx
 		release = func() { t.mu.Lock(); defer t.mu.Unlock(); t.remove(entry) }
-	} else if token != "" {
-		release()
+	} else {
+		ctx, release = context.WithCancel(t.ctx)
+		if token != "" {
+			release()
+		}
 	}
 	t.mu.Unlock()
 	return &contextRequest{Request: r, ctx: ctx, release: release}

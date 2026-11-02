@@ -816,4 +816,4 @@ Der Fehler wird protokolliert und die Anwendung wird nicht gestartet.
 
 ---
 
-**Fragen zum Lebenszyklus?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) an.
+**Fragen zum Lebenszyklus?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.

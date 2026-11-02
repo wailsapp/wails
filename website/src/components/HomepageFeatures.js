@@ -1,5 +1,4 @@
 import React from 'react';
-import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
 
 import ThemedImage from '@theme/ThemedImage';
@@ -35,7 +34,7 @@ function Feature({lightImage, darkImage, title, description}) {
   }
 
   return (
-      <div className={clsx('col col--4')}>
+      <div className="col col--4">
         <div className="text--center">
           <ThemedImage
               style={imageStyle}

@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
+git clone --branch master https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,7 +228,7 @@ go test ./... -race
 
 ## Mengembangkan Dokumentasi
 
-Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal CLI Wails atau dependensi pembangunan desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh executable dengan versi yang telah ditetapkan, melakukan instalasi, melihat pratinjau langsung, menjalankan validasi, dan mengikuti alur kerja PR untuk cabang rilis.
+Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal CLI Wails atau dependensi pembangunan desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh executable dengan versi yang telah ditetapkan, melakukan instalasi, melihat pratinjau langsung, menjalankan validasi, dan mengikuti alur kerja PR untuk cabang `master`.
 
 Markdown bahasa Inggris berada di `docs/mpress/content/`; terjemahan berada di direktori bahasa. Dari root repositori, `mpress dev` menyajikan pratinjau di `http://127.0.0.1:3000`. Hentikan dengan Ctrl+C sebelum menjalankan perintah validasi dalam panduan.
 

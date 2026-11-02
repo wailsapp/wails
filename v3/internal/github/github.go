@@ -2,53 +2,61 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/charmbracelet/glamour/styles"
 	"io"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
-
-	"github.com/charmbracelet/glamour"
+	"time"
 )
 
-func GetReleaseNotes(tagVersion string, noColour bool) string {
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
+// ErrNoStableRelease means the available tags contain no stable release.
+var ErrNoStableRelease = errors.New("no release tag found")
+
+const requestTimeout = 15 * time.Second
+
+func getWithTimeout(endpoint string) (*http.Response, error) {
+	// Preserve configured transport/redirect behavior without mutating the shared client.
+	client := *http.DefaultClient
+	if client.Timeout <= 0 || client.Timeout > requestTimeout {
+		client.Timeout = requestTimeout
+	}
+	return client.Get(endpoint)
+}
+
+// GetReleaseNotes fetches release Markdown, including its version heading.
+func GetReleaseNotes(tagVersion string) (string, error) {
+	resp, err := getWithTimeout("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return "", errors.New("No release notes found")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Unable to retrieve release notes: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
 	}
 
-	data := map[string]interface{}{}
+	var data struct {
+		Body *string `json:"body"`
+	}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
 	}
 
-	if data["body"] == nil {
-		return "No release notes found"
+	if data.Body == nil {
+		return "", errors.New("No release notes found")
 	}
 
-	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
-	var renderer *glamour.TermRenderer
-
-	if noColour {
-		renderer, err = glamour.NewTermRenderer(glamour.WithStyles(styles.NoTTYStyleConfig))
-	} else {
-		renderer, err = glamour.NewTermRenderer(glamour.WithAutoStyle())
-	}
-	if err != nil {
-		return result
-	}
-	result, err = renderer.Render(result)
-	if err != nil {
-		return err.Error()
-	}
-	return result
+	return "# Release Notes for " + tagVersion + "\n" + *data.Body, nil
 }
 
 // GetVersionTags gets the v3 release tags of the Wails repo, sorted in
@@ -58,17 +66,18 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 	result := []*SemanticVersion{}
 
 	for page := 1; page <= 10; page++ {
-		resp, err := http.Get(fmt.Sprintf("https://api.github.com/repos/wailsapp/wails/tags?per_page=100&page=%d", page))
+		resp, err := getWithTimeout(fmt.Sprintf("https://api.github.com/repos/wailsapp/wails/tags?per_page=100&page=%d", page))
 		if err != nil {
 			return result, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return result, fmt.Errorf("GitHub tags request failed: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
 		}
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return result, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return result, fmt.Errorf("GitHub tags API returned HTTP %d", resp.StatusCode)
 		}
 
 		data := []map[string]interface{}{}
@@ -90,7 +99,7 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 			}
 			result = append(result, semver)
 		}
-		if len(data) < 100 {
+		if len(data) < 100 && !strings.Contains(resp.Header.Get("Link"), `rel="next"`) {
 			break
 		}
 	}
@@ -113,7 +122,7 @@ func GetLatestStableRelease() (result *SemanticVersion, err error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no release tag found")
+	return nil, ErrNoStableRelease
 }
 
 // GetLatestNightly gets the newest nightly pre-release (vX.Y.0-nightly.DATE).
@@ -147,8 +156,9 @@ func GetLatestPreRelease() (result *SemanticVersion, err error) {
 
 // IsValidTag returns true if the given string is a valid tag
 func IsValidTag(tagVersion string) (bool, error) {
-	if tagVersion[0] == 'v' {
-		tagVersion = tagVersion[1:]
+	tagVersion = strings.TrimPrefix(tagVersion, "v")
+	if tagVersion == "" {
+		return false, nil
 	}
 	tags, err := GetVersionTags()
 	if err != nil {

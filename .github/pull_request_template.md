@@ -11,6 +11,7 @@
   The feedback guide for v3 is here: https://wails.io/feedback/
 
 - For a bug fix, link the bug issue where one exists. For an enhancement implementation, link the accepted WEP PR.
+- **DO NOT EDIT or recreate `v3/UNRELEASED_CHANGELOG.md`.** Release notes are generated from merged PRs at release time. Describe the user-visible change clearly in the PR title and description.
 - Please fill in the checklists.
 
 -->
@@ -48,7 +49,7 @@ Please paste the output of `wails doctor`. If you are unable to run this command
 # Checklist:
 
 - [ ] (v2 only) I have updated `website/src/pages/changelog.mdx` with details of this PR (v3 changelog entries are added automatically)
-- [ ] (v3 only) My PR title and description explain the user-visible change; I have left generated changelog entries to automation (except explicitly scoped changelog maintenance)
+- [ ] (v3 only) My PR title and description explain the user-visible change; I have left generated changelog entries to release automation and have not recreated `v3/UNRELEASED_CHANGELOG.md`
 - [ ] My code follows the general coding style of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas

@@ -230,11 +230,11 @@ v3帶來多視窗支援、更簡潔的服務型 API、內建更新程式、彈�
 
 ### 如何貢獻？
 
-請參閱[貢獻指南](/contributing/)。隨時歡迎提交錯誤修正；新增功能及公開行為的變更須透過[WEP（Wails 增強提案）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)草案 PR 提交。您可選擇在 Discord 或 GitHub Discussions 上進行非正式討論，但並非必要。
+請參閱[貢獻指南](/contributing/)。隨時歡迎提交錯誤修正；新增功能及公開行為的變更須透過[WEP（Wails 增強提案）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)草案 PR 提交。您可選擇在 Discord 或 GitHub Discussions 上進行非正式討論，但並非必要。
 
 ### 可以在哪裡找到範例？
 
-此儲存庫隨附超過60個可執行的範例，涵蓋視窗、對話方塊、事件、系統匣、服務等內容：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+此儲存庫隨附超過60個可執行的範例，涵蓋視窗、對話方塊、事件、系統匣、服務等內容：[v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
 
 ## 還有其他問題嗎？
 

@@ -705,4 +705,4 @@ The bridge is secure by default:
 
 ---
 
-**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).
+**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).

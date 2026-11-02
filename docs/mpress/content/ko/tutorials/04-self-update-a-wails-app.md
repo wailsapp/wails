@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 다음 단계
 
 - [업데이터 가이드](/guides/updater/)에서 전체 API 레퍼런스, 모든 이벤트와 구성 옵션, 헬퍼 모드의 교체 메커니즘을 확인할 수 있습니다.
-- 복제할 수 있는 완전한 실행 예제는 [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)에서 확인하세요.
+- 복제할 수 있는 완전한 실행 예제는 [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)에서 확인하세요.
 - 테스트 대상 저장소 [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)에서 권장 릴리스 자산 레이아웃을 확인할 수 있습니다.
 
 ## 프로덕션에서 주의할 사항

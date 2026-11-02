@@ -149,7 +149,7 @@ go build -tags gtk3 -o myapp .
 ### Bekannte Unterschiede zu GTK4
 
 - **Dateidialoge**: GTK4 verwendet standardmäßig `xdg-desktop-portal` für Dateidialoge. Daher verhalten sich einige Dialogoptionen, etwa das Standardverzeichnis und die Anzeige benutzerdefinierter Filter, anders als unter GTK3. Weitere Informationen finden Sie unter [Dialogreferenz – Verhalten von Dialogen unter Linux](/reference/dialogs/#linux-dialog-behavior).
-- **Menüstil**: GTK4 unterstützt eine Option `LinuxMenuStylePrimaryMenu`, die gemäß den GNOME HIG eine Hamburger-Schaltfläche (☰) in der Kopfleiste anzeigt. Diese Option hat keine Auswirkungen auf `-tags gtk3`-Builds. Siehe [Window API – Linux MenuStyle](/reference/window/#linux).
+- **Menüstil**: GTK4 unterstützt eine Option `LinuxMenuStylePrimaryMenu`, die gemäß den GNOME HIG eine Hamburger-Schaltfläche (☰) in der Kopfleiste anzeigt. Diese Option hat keine Auswirkungen auf `-tags gtk3`-Builds. Siehe [Window API – Linux MenuStyle](/de/reference/window/#linux).
 - **DPI-Skalierung**: GTK4 verwendet `gdk_monitor_get_scale` (GTK 4.14+) zur Unterstützung gebrochener Skalierungsfaktoren.
 
 ### Build überprüfen

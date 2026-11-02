@@ -365,7 +365,7 @@ Sie haben jetzt eine Wails-App, die:
 ## Nächste Schritte
 
 - Der [Updater-Leitfaden](/guides/updater/) enthält die vollständige API-Referenz, sämtliche Ereignisse und Konfigurationsoptionen sowie die Austauschmechanik des Hilfsmodus.
-- Ein vollständiges, funktionsfähiges Beispiel zum Klonen finden Sie unter [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater).
+- Ein vollständiges, funktionsfähiges Beispiel zum Klonen finden Sie unter [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater).
 - Das Test-Zielrepository [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) zeigt die empfohlene Struktur der Release-Assets.
 
 ## Wichtige Punkte für den Produktivbetrieb

@@ -162,12 +162,14 @@ func TestReleaseBodiesByKind(t *testing.T) {
 	}
 }
 
-func gitIn(t *testing.T, dir string, args ...string) {
+func gitIn(t *testing.T, dir string, args ...string) string {
 	t.Helper()
 	cmd := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=t", "-c", "user.email=t@t"}, args...)...)
-	if out, err := cmd.CombinedOutput(); err != nil {
+	out, err := cmd.CombinedOutput()
+	if err != nil {
 		t.Fatalf("git %v: %v\n%s", args, err, out)
 	}
+	return string(out)
 }
 
 func TestTagListingAndMonotonic(t *testing.T) {
@@ -213,7 +215,7 @@ func dryRun(t *testing.T, current string, opts releaseOptions, withChangelog boo
 			t.Fatal(err)
 		}
 	}
-	must(os.WriteFile(filepath.Join(root, "v3", "UNRELEASED_CHANGELOG.md"), []byte(content), 0o644))
+	must(os.WriteFile(filepath.Join(root, "v3", "release_changelog.md"), []byte(content), 0o644))
 	vdir := filepath.Join(root, "v3", "internal", "version")
 	must(os.MkdirAll(vdir, 0o755))
 	must(os.WriteFile(filepath.Join(vdir, "version.txt"), []byte(current), 0o644))

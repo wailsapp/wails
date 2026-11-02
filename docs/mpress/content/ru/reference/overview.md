@@ -267,7 +267,7 @@ Wails v3 следует правилам семантического верси
 ### Вопросы об API
 
 1. **Ознакомьтесь с этим справочником** — полная документация по API
-2. **Посмотрите примеры** — [примеры на GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **Посмотрите примеры** — [примеры на GitHub](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Выполните поиск в Discord** — [сервер Discord](https://discord.gg/JDdSxwjhGf)
 4. **Задайте вопрос сообществу** — канал #help в Discord
 
@@ -284,7 +284,7 @@ Wails v3 следует правилам семантического верси
 - [Учебные материалы](/tutorials/overview/) — учитесь, создавая реальные приложения
 - [Практические руководства](/guides/architecture/) — ориентированные на задачи руководства для распространённых сценариев
 - [Возможности](/features/windows/basics/) — документация по каждой возможности
-- [Примеры](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — рабочие примеры кода на GitHub
+- [Примеры](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) — рабочие примеры кода на GitHub
 
 ---
 

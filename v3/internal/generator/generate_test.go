@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"github.com/wailsapp/wails/v3/internal/generator/render"
@@ -265,9 +265,7 @@ func (comparer *outputComparer) Close() error {
 		return nil
 	}
 
-	if diff := cmp.Diff(want, got); diff != "" {
-		comparer.t.Errorf("Output file '%s' mismatch (-want +got):\n%s", comparer.path, diff)
-	} else {
+	if assert.Equal(comparer.t, want, got, "Output file '%s' mismatch", comparer.path) {
 		// On success, delete got file.
 		comparer.got.Close()
 		if err := os.Remove(comparer.got.Name()); err != nil {

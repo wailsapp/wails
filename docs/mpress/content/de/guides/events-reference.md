@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 Die vollständige Liste der verfügbaren Ereignisse finden Sie im Wails-Quellcode:
 
-- Frontend-Ereignisse: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- Backend-Ereignisse: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- Frontend-Ereignisse: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Backend-Ereignisse: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 Die aktuellsten Ereignisnamen und Angaben zu ihrer Verfügbarkeit finden Sie stets in diesen Dateien.
 

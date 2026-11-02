@@ -18,9 +18,9 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
-	"github.com/jaypipes/ghw"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/git"
+	"github.com/wailsapp/wails/v3/internal/hostinfo"
 	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -169,17 +169,15 @@ func collectSystemInfo() (SystemReport, bool, error) {
 		Extras:       platformExtras,
 	}
 
-	cpus, _ := ghw.CPU()
-	if cpus != nil && len(cpus.Processors) > 0 {
-		system.CPU = cpus.Processors[0].Model
+	cpus, _ := hostinfo.Processors()
+	if len(cpus) > 0 {
+		system.CPU = cpus[0].Model
 	}
 
-	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
-	if gpu != nil && len(gpu.GraphicsCards) > 0 {
-		card := gpu.GraphicsCards[0]
-		if card.DeviceInfo != nil {
-			system.GPU = fmt.Sprintf("%s (%s)", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name)
-		}
+	cards, _ := hostinfo.Graphics()
+	if len(cards) > 0 {
+		card := cards[0]
+		system.GPU = fmt.Sprintf("%s (%s)", card.Name, card.Vendor)
 	} else if runtime.GOOS == "darwin" {
 		cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
 		output, err := cmd.Output()
@@ -192,9 +190,9 @@ func collectSystemInfo() (SystemReport, bool, error) {
 		}
 	}
 
-	memory, _ := ghw.Memory()
-	if memory != nil {
-		system.Memory = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
+	memory, memoryErr := hostinfo.Memory()
+	if memoryErr == nil {
+		system.Memory = strconv.Itoa(int(memory/1024/1024/1024)) + "GB"
 	} else if runtime.GOOS == "darwin" {
 		cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
 		output, err := cmd.Output()

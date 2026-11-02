@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && !private_mac_apis
+//go:build darwin && !ios && !server && !private_mac_apis && !purego
 
 package application
 

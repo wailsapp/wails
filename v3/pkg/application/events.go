@@ -96,6 +96,27 @@ type eventListener struct {
 	callback func(*CustomEvent) // Function to call with emitted event data
 	counter  int                // The number of times this callback may be called. -1 = infinite
 	delete   bool               // Flag to indicate that this listener should be deleted
+	// inbox delivers events to callback one at a time, in emit order.
+	inbox *mailbox.Mailbox[*CustomEvent]
+	// removed drops queued events once the listener is unsubscribed.
+	removed atomic.Bool
+}
+
+func newEventListener(callback func(*CustomEvent), counter int) *eventListener {
+	listener := &eventListener{
+		callback: callback,
+		counter:  counter,
+	}
+	listener.inbox = mailbox.New(listener.deliver)
+	return listener
+}
+
+func (l *eventListener) deliver(event *CustomEvent) {
+	if l.removed.Load() || event.IsCancelled() {
+		return
+	}
+	defer handlePanic()
+	l.callback(event)
 }
 
 // EventProcessor handles custom events
@@ -164,10 +185,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		}
 	}
 
-	go func() {
-		defer handlePanic()
-		e.dispatchEventToListeners(thisEvent)
-	}()
+	e.dispatchEventToListeners(thisEvent)
 	e.frontendEvents.Send(thisEvent)
 
 	return nil
@@ -180,17 +198,16 @@ func (e *EventProcessor) Off(eventName string) {
 func (e *EventProcessor) OffAll() {
 	e.notifyLock.Lock()
 	defer e.notifyLock.Unlock()
+	for _, listeners := range e.listeners {
+		removeListeners(listeners)
+	}
 	e.listeners = make(map[string][]*eventListener)
 }
 
 // registerListener provides a means of subscribing to events of type "eventName"
 func (e *EventProcessor) registerListener(eventName string, callback func(*CustomEvent), counter int) func() {
 	// Create new eventListener
-	thisListener := &eventListener{
-		callback: callback,
-		counter:  counter,
-		delete:   false,
-	}
+	thisListener := newEventListener(callback, counter)
 	e.notifyLock.Lock()
 	// Append the new listener to the listeners slice
 	e.listeners[eventName] = append(e.listeners[eventName], thisListener)
@@ -199,6 +216,7 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 		e.notifyLock.Lock()
 		defer e.notifyLock.Unlock()
 
+		thisListener.remove()
 		if _, ok := e.listeners[eventName]; !ok {
 			return
 		}
@@ -235,7 +253,20 @@ func (e *EventProcessor) RegisterHook(eventName string, callback func(*CustomEve
 func (e *EventProcessor) unRegisterListener(eventName string) {
 	e.notifyLock.Lock()
 	defer e.notifyLock.Unlock()
+	removeListeners(e.listeners[eventName])
 	delete(e.listeners, eventName)
+}
+
+func removeListeners(listeners []*eventListener) {
+	for _, listener := range listeners {
+		listener.remove()
+	}
+}
+
+// remove stops delivery and frees queued events even if a callback is stuck.
+func (l *eventListener) remove() {
+	l.removed.Store(true)
+	l.inbox.Discard()
 }
 
 // dispatchEventToListeners calls all registered listeners event name
@@ -252,18 +283,12 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 	// We have a dirty flag to indicate that there are items to delete
 	itemsToDelete := false
 
-	// Callback in goroutine
+	// Queue under the lock so every listener receives events in emit order
 	for _, listener := range listeners {
 		if listener.counter > 0 {
 			listener.counter--
 		}
-		go func() {
-			if event.IsCancelled() {
-				return
-			}
-			defer handlePanic()
-			listener.callback(event)
-		}()
+		listener.inbox.Send(event)
 
 		if listener.counter == 0 {
 			listener.delete = true

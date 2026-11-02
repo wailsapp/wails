@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@wailsio/runtime": [
+        "../../../internal/runtime/desktop/@wailsio/runtime/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "main.js",
+    "bindings/**/*.js",
+    "../../../internal/runtime/desktop/@wailsio/runtime/src/global.d.ts"
+  ]
+}

@@ -492,4 +492,4 @@ unsub()
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

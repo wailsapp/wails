@@ -16,6 +16,16 @@ type linuxMenuItem struct {
 	isHidden   bool
 }
 
+// menuItemIdAttribute names the GMenuItem attribute that carries a Wails item
+// id into the GMenu model. Both GTK backends set it on every native item.
+const menuItemIdAttribute = "wails-item-id"
+
+// radioItemTarget is the value a radio group's action state holds when the
+// item with this id is the selected one.
+func radioItemTarget(itemId uint) string {
+	return fmt.Sprintf("%d", itemId)
+}
+
 func (l linuxMenuItem) setTooltip(tooltip string) {
 	InvokeSync(func() {
 		menuItemSetToolTip(l.native, tooltip)
@@ -43,6 +53,13 @@ func (l linuxMenuItem) unBlockSignal() {
 func (l linuxMenuItem) setLabel(s string) {
 	InvokeSync(func() {
 		menuItemSetLabel(l.native, s)
+		// GMenu copied this item when it was appended, so the change above
+		// reaches only the original. Replace the model's copy to show it.
+		// A hidden item is not in the model; it gets the new label when it is
+		// shown again, because that reinserts the original.
+		if l.menuItem != nil && l.parentMenu != nilPointer && !l.isHidden {
+			menuModelReplaceItem(l.parentMenu, l.native, l.menuItem.id)
+		}
 	})
 }
 
@@ -72,11 +89,16 @@ func (l *linuxMenuItem) setHidden(hidden bool) {
 	l.isHidden = hidden
 }
 
+// setAccelerator binds the shortcut to the action; nil removes the binding.
 func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
-	if accelerator == nil || l.menuItem == nil {
+	if l.menuItem == nil {
 		return
 	}
 	InvokeSync(func() {
+		if accelerator == nil {
+			clearMenuItemAccelerator(l.menuItem.id)
+			return
+		}
 		setMenuItemAccelerator(l.menuItem.id, accelerator)
 	})
 }
@@ -93,6 +115,7 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	default:
 		panic(fmt.Sprintf("Unknown menu type for newMenuItemImpl: %v", item.itemType))
 	}
+	menuItemSetIdAttribute(result.native, item.id)
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)
 	}
@@ -105,6 +128,7 @@ func newCheckMenuItemImpl(item *MenuItem) *linuxMenuItem {
 		menuItem: item,
 		native:   menuCheckItemNewWithId(item.label, item.bitmap, item.id, item.checked),
 	}
+	menuItemSetIdAttribute(result.native, item.id)
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)
 	}
@@ -117,6 +141,7 @@ func newRadioMenuItemImpl(item *MenuItem, groupId uint, checkedId uint) *linuxMe
 		menuItem: item,
 		native:   menuRadioItemNewWithGroup(item.label, item.id, groupId, checkedId),
 	}
+	menuItemSetIdAttribute(result.native, item.id)
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)
 	}

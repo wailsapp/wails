@@ -19,6 +19,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
+
+	// A clear error, not hundreds, when no native backend is selected.
+	_ "github.com/wailsapp/wails/v3/internal/buildguard"
 )
 
 //go:embed assets/*
@@ -1006,6 +1009,15 @@ func (a *App) SetIcon(icon []byte) {
 	if a.impl != nil {
 		a.impl.setIcon(icon)
 	}
+}
+
+// platformAppReady reports whether the platform application exists yet. It is
+// the condition dispatchOnMainThread needs in order to run work rather than
+// queue it for Run to replay.
+func (a *App) platformAppReady() bool {
+	a.earlyDispatchLock.Lock()
+	defer a.earlyDispatchLock.Unlock()
+	return a.impl != nil
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {

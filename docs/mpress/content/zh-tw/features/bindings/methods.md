@@ -740,4 +740,4 @@ app.loadTodos()
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。

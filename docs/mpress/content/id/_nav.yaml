@@ -209,6 +209,12 @@
           link: "/experimental/"
         - label: "Wake"
           link: "/experimental/wake/"
+        - label: "Build YAML"
+          link: "/experimental/yaml-builds/"
+        - label: "Kolom manifes YAML"
+          link: "/reference/wails-yaml-fields/"
+        - label: "Konfigurasi eksekusi YAML"
+          link: "/reference/wails-yaml-run/"
         - label: "Kontrol LLM (MCP)"
           link: "/guides/mcp-service/"
 - label: "Konsep Inti"
@@ -231,7 +237,7 @@
       link: "/reference/overview/"
     - label: "Aplikasi"
       link: "/reference/application/"
-    - label: "Jendela"
+    - label: "Windows"
       collapsed: true
       items:
         - label: "API Jendela"
@@ -269,7 +275,7 @@
       link: "/faq/"
     - label: "File Syso di macOS"
       link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
+    - label: "Jendela"
       collapsed: true
       items:
         - label: "Masalah RDP"
