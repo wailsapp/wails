@@ -28,6 +28,11 @@ _/
 
 ## [Unreleased]
 
+## v3.2.0-nightly.20261102 - 2026-11-02
+
+## Changed
+- DisableOverscroll instead of DisableBounce in [PR](https://github.com/wailsapp/wails/pull/6077) by @lethusang
+
 ## v3.2.0-nightly.20261101 - 2026-11-01
 
 ## Added
