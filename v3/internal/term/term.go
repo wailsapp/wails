@@ -30,7 +30,7 @@ type Spinner struct {
 }
 
 func (s Spinner) Logger() config.Logger {
-	return config.DefaultPtermLogger(s.spinner)
+	return DefaultPtermLogger(s.spinner)
 }
 
 func StartSpinner(text string) Spinner {

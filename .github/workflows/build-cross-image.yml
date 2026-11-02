@@ -134,7 +134,7 @@ jobs:
             expected: "PE32.*x86-64"
           - os: windows
             arch: arm64
-            expected: "PE32.*Aarch64"
+            expected: "PE32.*(Aarch64|ARM64)"
           # Linux - both archs via Docker
           - os: linux
             arch: amd64

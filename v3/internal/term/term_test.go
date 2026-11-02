@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/pterm/pterm"
 )
 
@@ -43,5 +44,52 @@ func TestLiteralAndFormattedMessages(t *testing.T) {
 				t.Errorf("zero-argument format = %q", got)
 			}
 		})
+	}
+}
+
+func TestRenderTableAlignsDisplayWidths(t *testing.T) {
+	rows := [][]string{
+		{"Name", "VALUE"},
+		{"é", "VALUE"},
+		{"界界界", "VALUE"},
+		{"e\u0301", "VALUE"},
+		{"\x1b[31mred\x1b[0m", "VALUE"},
+		nil,
+		{},
+	}
+	lines := strings.Split(strings.TrimSuffix(RenderTable(rows), "\n"), "\n")
+	if len(lines) != 5 {
+		t.Fatalf("rendered %d lines, want 5", len(lines))
+	}
+	for i, line := range lines {
+		prefix, value, found := strings.Cut(line, "VALUE")
+		if !found || value != "" {
+			t.Errorf("row %d value changed: %q", i, line)
+		}
+		if width := lipgloss.Width(prefix); width != 10 {
+			t.Errorf("row %d value starts after %d columns, want 10: %q", i, width, line)
+		}
+	}
+}
+
+func TestDisplayWidth(t *testing.T) {
+	for _, tc := range []struct {
+		text string
+		want int
+	}{
+		{"", 0},
+		{"plain", 5},
+		{"é", 1},
+		{"e\u0301", 1},
+		{"界界", 4},
+		{"👩‍💻", 2},
+		{"\x1b[31mred\x1b[0m", 3},
+		{"wide界\nx", 6},
+		{"\n", 0},
+		{"long\nshorter\n", 7},
+	} {
+		if got := displayWidth(tc.text); got != tc.want {
+			t.Errorf("displayWidth(%q) = %d, want %d", tc.text, got, tc.want)
+		}
 	}
 }

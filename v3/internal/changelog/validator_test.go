@@ -435,3 +435,37 @@ func TestValidationResult_GetValidationSummary(t *testing.T) {
 		})
 	}
 }
+
+func TestBulletWhitespaceValidation(t *testing.T) {
+	validator := NewValidator()
+	for _, tc := range []struct {
+		line, field string
+	}{
+		{"- \t preserve application behavior", ""},
+		{"*\fpreserve application behavior", ""},
+		{"-\rpreserve application behavior", ""},
+		{"- \u00a0preserve application behavior", ""},
+		{"-\u00a0preserve application behavior", "bullet_point"},
+		{"-\vpreserve application behavior", "bullet_point"},
+		{"-  \u00a0TODO preserve application behavior", "bullet_content"},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			result := validator.ValidateContent("## Fixed\n" + tc.line + "\n")
+			if tc.field == "" {
+				if !result.Valid {
+					t.Errorf("valid bullet rejected: %+v", result)
+				}
+				return
+			}
+			if result.Valid || len(result.Errors) != 1 {
+				t.Fatalf("want one %s error, got %+v", tc.field, result)
+			}
+			if got := result.Errors[0]; got.Field != tc.field || got.Line != 2 {
+				t.Errorf("diagnostic changed: %+v", got)
+			}
+			if tc.field == "bullet_content" && !strings.Contains(result.Errors[0].Message, "'TODO preserve application behavior'") {
+				t.Errorf("bullet content not trimmed: %s", result.Errors[0].Message)
+			}
+		})
+	}
+}

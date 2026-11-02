@@ -537,6 +537,15 @@ func (r *Reporter) BuildEnd(dur time.Duration, ok bool) {
 	r.renderSummaryLocked(dur, ok)
 }
 
+// BuildCanceled removes the live build without turning expected generation
+// cancellation into a failed-build summary.
+func (r *Reporter) BuildCanceled(_ time.Duration) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.stopTickerLocked()
+	r.region.close()
+}
+
 // Debug renders one diagnostic line. We rely on the existing termui-style
 // "BADGE subject → arrow  k=v" layout; it reads well above the pinned region.
 func (r *Reporter) Debug(d report.DebugLine) {

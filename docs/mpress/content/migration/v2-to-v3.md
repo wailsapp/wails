@@ -677,7 +677,7 @@ wails3 generate bindings
 - [Documentation](/quick-start/why-wails/)
 - [Discord Community](https://discord.gg/JDdSxwjhGf)
 - [GitHub Issues](https://github.com/wailsapp/wails/issues)
-- [Examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+- [Examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 ### Common Questions
 
@@ -713,7 +713,7 @@ Learn the new bindings system.
 📖 Examples
 See complete v3 examples.
 
-[View Examples →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+[View Examples →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
 @end
 

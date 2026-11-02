@@ -652,6 +652,6 @@ Antes de publicar uma versão que o atualizador instalará:
 
 ## Veja também
 
-- Exemplo executável: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
+- Exemplo executável: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - Repositório de demonstração para testes: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Como permitir que um aplicativo Wails atualize a si próprio](/tutorials/04-self-update-a-wails-app/)

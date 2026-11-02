@@ -34,4 +34,4 @@ Contribuições da comunidade são bem-vindas. Se quiser ajudar com esses objeti
 
 ## Feedback e atualizações
 
-Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um pull request de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
+Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um pull request de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).

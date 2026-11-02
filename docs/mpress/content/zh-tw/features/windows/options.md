@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions` 沒有 `Parent` 欄位——若要建立父視窗／模態視窗關係，請使用 `parentWindow.AttachModal(childWindow)`。它也沒有 `Assets` 欄位——資產設定位於 `application.Options`（`Assets AssetOptions`）中。
 
-完整原始碼：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go)。
+完整原始碼：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go)。
 
 ## 核心選項
 
@@ -1271,4 +1271,4 @@ func main() {
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

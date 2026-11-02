@@ -11,7 +11,7 @@ Wails v3 releases on a **clock, not on features**. After the `v3.0.0` baseline:
 
 | Release | Tag | Cadence | GitHub release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when `UNRELEASED_CHANGELOG.md` has content | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when merged PRs in the tested release range produce user-visible notes | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
 | Weekly | `v3.<next>.0` | automated, Sunday 20:00 Australia/Sydney **(day unconfirmed)** | normal release, Latest | same version, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | rare, manual | normal release, Latest | same version, dist-tag `latest` |
 | Major | `v4.0.0` | only for breaking changes | normal release | `latest` |
@@ -62,7 +62,7 @@ Weeklies are cut from `master`, but **not from its tip**: the workflow picks the
 
 ## How to cut a release
 
-Release rights are limited to the project Lead (see the governance document). Contributors never tag or publish; they add entries to `v3/UNRELEASED_CHANGELOG.md`.
+Release rights are limited to the project Lead (see the governance document). Contributors never tag or publish; they describe user-visible changes in PR titles or a `## Release notes` description section. Release automation generates notes from merged PRs in the exact tested commit range; `v3/UNRELEASED_CHANGELOG.md` has been removed.
 
 Everything runs from **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
@@ -85,7 +85,7 @@ The **weekly** (never the nightly) refuses to tag while any of these exist:
 
 1. open issues or pull requests labelled `P0` or `release-blocker`;
 2. open issues labelled `regression` created since the last weekly;
-3. open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high severity, and any open secret-scanning alert, **only for shipped code**. Alerts located solely under `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` or any `examples/` directory are ignored (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **owner to review**);
+3. open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high severity, and any open secret-scanning alert, **only for shipped code**. Alerts located solely under `v2/internal/staticanalysis/test/` (static-analysis fixtures), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` or any `examples/` directory are ignored (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **owner to review**);
 4. repository security advisories still in `triage`.
 
 **Who can set a blocker.** A label counts only if its most recent `labeled` event (with no later `unlabeled`) was made by a member of the `wailsapp/maintainers` team or a collaborator with `maintain`/`admin` permission. The same label applied by anyone else is ignored and logged, so outsiders cannot block or unblock a release. The auto-applied `high-priority` label is deliberately **not** used. Bot accounts such as `taliesin-ai` pass the allowlist if they hold `maintain`; this is intended, and the triage agent may apply blocker labels with evidence.

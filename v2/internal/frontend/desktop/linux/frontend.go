@@ -216,6 +216,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		if err != nil {
 			log.Fatal(err)
 		}
+		assets.ExpectedWebViewHost = result.startURL.Host
 		result.assets = assets
 
 		go result.startRequestProcessor()

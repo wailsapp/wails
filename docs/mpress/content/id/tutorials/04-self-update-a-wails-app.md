@@ -365,7 +365,7 @@ Kini Anda memiliki aplikasi Wails yang:
 ## Langkah berikutnya
 
 - [Panduan Updater](/guides/updater/) berisi referensi API lengkap, seluruh event, semua opsi konfigurasi, dan mekanisme penggantian dalam mode helper.
-- Lihat [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) untuk contoh lengkap yang berfungsi dan dapat Anda klona.
+- Lihat [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater) untuk contoh lengkap yang berfungsi dan dapat Anda klona.
 - Repositori target pengujian [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) menunjukkan tata letak aset rilis yang direkomendasikan.
 
 ## Hal-hal yang perlu diperhatikan dalam produksi

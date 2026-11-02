@@ -175,3 +175,71 @@ func TestRetryTransportBodyRecreationFailure(t *testing.T) {
 		t.Errorf("error = %v, attempts = %d; want recreation error and 1", err, calls)
 	}
 }
+
+func TestRetryTransportRespectsIdempotency(t *testing.T) {
+	failure := errors.New("connection reset by peer")
+	for _, tc := range []struct {
+		name, method, key string
+		marker, stream    bool
+		wantCalls         int
+	}{
+		{"get", http.MethodGet, "", false, false, 2},
+		{"default_get", "", "", false, false, 2},
+		{"head", http.MethodHead, "", false, false, 2},
+		{"options", http.MethodOptions, "", false, false, 2},
+		{"trace", http.MethodTrace, "", false, false, 2},
+		{"put", http.MethodPut, "", false, false, 2},
+		{"delete", http.MethodDelete, "", false, false, 2},
+		{"post", http.MethodPost, "", false, false, 1},
+		{"patch", http.MethodPatch, "", false, false, 1},
+		{"custom", "CUSTOM", "", false, false, 1},
+		{"post_key", http.MethodPost, "Idempotency-Key", false, false, 2},
+		{"post_compat_key", http.MethodPost, "X-Idempotency-Key", false, false, 2},
+		{"post_marker", http.MethodPost, "Idempotency-Key", true, false, 2},
+		{"post_stream", http.MethodPost, "Idempotency-Key", false, true, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request, err := http.NewRequest(tc.method, "http://localhost/action", strings.NewReader("payload"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			request.Method = tc.method
+			if tc.key != "" {
+				request.Header[tc.key] = []string{"operation-42"}
+				if tc.marker {
+					request.Header[tc.key] = nil
+				}
+			}
+			if tc.stream {
+				request.GetBody = nil
+			}
+			calls := 0
+			transport := &retryTransport{maxRetries: 3, base: retryTestTransport(func(req *http.Request) (*http.Response, error) {
+				calls++
+				body, err := io.ReadAll(req.Body)
+				_ = req.Body.Close()
+				if err != nil {
+					return nil, err
+				}
+				if string(body) != "payload" {
+					t.Errorf("attempt %d body=%q", calls, body)
+				}
+				if calls == 1 {
+					return nil, failure
+				}
+				return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody}, nil
+			})}
+			response, err := transport.RoundTrip(request)
+			if calls != tc.wantCalls {
+				t.Errorf("attempts=%d, want %d", calls, tc.wantCalls)
+			}
+			if tc.wantCalls == 1 {
+				if !errors.Is(err, failure) || response != nil {
+					t.Errorf("response=%v, error=%v, want original failure", response, err)
+				}
+			} else if err != nil || response == nil || response.StatusCode != http.StatusOK {
+				t.Errorf("retry response=%v, error=%v", response, err)
+			}
+		})
+	}
+}

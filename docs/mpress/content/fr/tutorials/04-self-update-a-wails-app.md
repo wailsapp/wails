@@ -365,7 +365,7 @@ Vous disposez maintenant d’une application Wails qui :
 ## Étapes suivantes
 
 - Le [guide du programme de mise à jour](/guides/updater/) contient la référence complète de l’API, tous les événements, toutes les options de configuration et le fonctionnement du remplacement en mode auxiliaire.
-- Consultez [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) pour obtenir un exemple fonctionnel complet que vous pouvez cloner.
+- Consultez [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater) pour obtenir un exemple fonctionnel complet que vous pouvez cloner.
 - Le dépôt cible de test [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) présente l’organisation recommandée des artefacts de version.
 
 ## Points à surveiller en production

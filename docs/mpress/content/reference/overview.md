@@ -267,7 +267,7 @@ Experimental APIs are marked in documentation.
 ### API Questions
 
 1. **Check this reference** - Complete API documentation
-2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Search Discord** - [Discord server](https://discord.gg/JDdSxwjhGf)
 4. **Ask the community** - Discord #help channel
 
@@ -284,7 +284,7 @@ Found a bug or inconsistency?
 - [Tutorials](/tutorials/overview/) - Learn by building real applications
 - [Guides](/guides/architecture/) - Task-oriented guides for common scenarios
 - [Features](/features/windows/basics/) - Feature-by-feature documentation
-- [Examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Working code examples on GitHub
+- [Examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - Working code examples on GitHub
 
 ---
 

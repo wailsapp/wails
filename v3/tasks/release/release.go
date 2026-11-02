@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -33,7 +34,7 @@ const (
 )
 
 var (
-	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
+	unreleasedChangelogFile = "../../release_changelog.md"
 )
 
 type releaseOptions struct {
@@ -46,10 +47,10 @@ type releaseOptions struct {
 	// version's shape, otherwise nightly).
 	channel string
 	// tagOnly cuts the release from the checked-out commit (typically a
-	// detached, CI-verified master commit older than HEAD): only the version
+	// detached, CI-verified master commit older than HEAD): only release
 	// metadata is committed, the branch is NOT pushed (it would not be a
-	// fast-forward) and the changelog is left alone. The caller syncs the
-	// version files back to the branch afterwards.
+	// fast-forward) and the caller syncs version metadata and the new changelog
+	// section back to the branch afterwards.
 	tagOnly bool
 }
 
@@ -62,59 +63,7 @@ func checkError(err error) {
 	}
 }
 
-// getUnreleasedChangelogTemplate returns the template content for UNRELEASED_CHANGELOG.md
-func getUnreleasedChangelogTemplate() string {
-	return `# Unreleased Changes
-
-<!--
-AUTO-GENERATED FILE: do not edit in ordinary contribution PRs.
-
-The Auto Changelog (v3) workflow generates entries after PRs merge.
-Describe the user-visible change in the PR title and description instead.
-Release tooling moves staged entries into docs/mpress/content/changelog.md
-and resets this file. Do not delete or reset it by hand.
-
-For changes to this automation or explicitly requested release-note corrections,
-follow the changelog ownership policy in AGENTS.md and preserve existing entries.
--->
-
-## Added
-<!-- New features, capabilities, or enhancements -->
-
-## Changed
-<!-- Changes in existing functionality -->
-
-## Fixed
-<!-- Bug fixes -->
-
-## Deprecated
-<!-- Soon-to-be removed features -->
-
-## Removed
-<!-- Features removed in this release -->
-
-## Security
-<!-- Security-related changes -->
-
----
-`
-}
-
-// clearUnreleasedChangelog clears the UNRELEASED_CHANGELOG.md file and resets it with the template
-func clearUnreleasedChangelog() error {
-	template := getUnreleasedChangelogTemplate()
-
-	// Write the template back to the file
-	err := os.WriteFile(unreleasedChangelogFile, []byte(template), 0o644)
-	if err != nil {
-		return fmt.Errorf("failed to reset UNRELEASED_CHANGELOG.md: %w", err)
-	}
-
-	fmt.Printf("Successfully reset %s with template content\n", unreleasedChangelogFile)
-	return nil
-}
-
-// extractChangelogContent extracts the actual changelog content from UNRELEASED_CHANGELOG.md
+// extractChangelogContent extracts the actual changelog content from release_changelog.md
 // It returns the content between the section headers and the example section
 func extractChangelogContent() (string, error) {
 	content, err := os.ReadFile(unreleasedChangelogFile)
@@ -217,7 +166,7 @@ func extractChangelogContent() (string, error) {
 	return strings.Join(result, "\n"), nil
 }
 
-// hasUnreleasedContent checks if UNRELEASED_CHANGELOG.md has actual content beyond the template
+// hasUnreleasedContent checks if release_changelog.md has actual content beyond the template
 func hasUnreleasedContent() (bool, error) {
 	content, err := extractChangelogContent()
 	if err != nil {
@@ -642,12 +591,6 @@ func main() {
 				os.Exit(1)
 			}
 			os.Exit(0)
-		case "--reset-changelog":
-			if err := handleResetChangelog(); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			os.Exit(0)
 		case "--create-release-notes":
 			releaseNotesPath := "../../release_notes.md"
 			if len(args) > 1 && strings.TrimSpace(args[1]) != "" {
@@ -697,20 +640,13 @@ func handleExtractChangelog() error {
 	return nil
 }
 
-func handleResetChangelog() error {
-	if err := clearUnreleasedChangelog(); err != nil {
-		return fmt.Errorf("Error: Failed to reset changelog: %w", err)
-	}
-	return nil
-}
-
 func handleCreateReleaseNotes(targetPath string) error {
 	changelogContent, err := extractChangelogContent()
 	if err != nil {
 		return fmt.Errorf("Error: Failed to extract unreleased changelog content: %w", err)
 	}
 	if strings.TrimSpace(changelogContent) == "" {
-		return errors.New("Error: No changelog content found in UNRELEASED_CHANGELOG.md")
+		return errors.New("Error: No changelog content found in release_changelog.md")
 	}
 	if err := os.WriteFile(targetPath, []byte(changelogContent), 0o644); err != nil {
 		return fmt.Errorf("Error: Failed to write release notes to %s: %w", targetPath, err)
@@ -727,7 +663,7 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 	branch := fs.String("branch", defaultReleaseBranch, "git branch to push release changes to")
 	target := fs.String("target", defaultReleaseTarget, "target reference for the GitHub release (usually the same as branch)")
 	channel := fs.String("channel", "auto", "release cadence: auto, nightly (patch bump) or weekly (minor bump, patch 0)")
-	tagOnly := fs.Bool("tag-only", false, "commit version metadata, push only the tag (for releasing a detached, CI-verified commit); changelog untouched")
+	tagOnly := fs.Bool("tag-only", false, "commit release metadata and changelog, push only the tag (for releasing a detached, CI-verified commit)")
 	versionFlag := fs.String("version", "", "explicit release version (overrides automatic increment)")
 
 	if err := fs.Parse(args); err != nil {
@@ -755,6 +691,46 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 	}, nil
 }
 
+// validateGeneratedChangelog refuses stale notes before any release mutation.
+func validateGeneratedChangelog(repoDir, target string) error {
+	var receipt struct {
+		Target      string `json:"target"`
+		Repository  string `json:"repository"`
+		NotesSHA256 string `json:"notes_sha256"`
+	}
+	data, err := os.ReadFile(filepath.Join(repoDir, "v3", "release_changelog.json"))
+	if err != nil {
+		return fmt.Errorf("generate release notes and provenance before releasing: %w", err)
+	}
+	if err := json.Unmarshal(data, &receipt); err != nil {
+		return fmt.Errorf("invalid release-note provenance: %w", err)
+	}
+	git := newGitRunner(repoDir)
+	head, err := git.runCapture("rev-parse", "--verify", "HEAD^{commit}")
+	if err != nil {
+		return err
+	}
+	source, err := git.runCapture("rev-parse", "--verify", "--end-of-options", target+"^{commit}")
+	if err != nil {
+		return err
+	}
+	repo, err := resolveRepoSlug(repoDir)
+	if err != nil {
+		return err
+	}
+	if receipt.Target != head || receipt.Target != source || receipt.Repository != repo {
+		return errors.New("release-note provenance does not match the checked-out repository and release target")
+	}
+	notes, err := os.ReadFile(unreleasedChangelogFile)
+	if err != nil {
+		return err
+	}
+	if fmt.Sprintf("%x", sha256.Sum256(notes)) != receipt.NotesSHA256 {
+		return errors.New("generated release notes differ from their provenance; regenerate them")
+	}
+	return nil
+}
+
 func runRelease(opts releaseOptions) error {
 	fmt.Println("🚀 Starting release workflow")
 
@@ -764,13 +740,19 @@ func runRelease(opts releaseOptions) error {
 	}
 	repoDir := filepath.Clean(filepath.Join(releaseDir, "..", "..", ".."))
 
+	if !opts.dryRun {
+		if err := validateGeneratedChangelog(repoDir, opts.target); err != nil {
+			return err
+		}
+	}
+
 	changelogContent, err := extractChangelogContent()
 	if err != nil {
 		return fmt.Errorf("failed to extract unreleased changelog content: %w", err)
 	}
 	changelogContent = strings.TrimSpace(changelogContent)
 	if changelogContent == "" && strings.TrimSpace(opts.version) == "" && opts.channel != kindWeekly {
-		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
+		fmt.Println("ℹ️  release_changelog.md has no unreleased entries. Skipping release.")
 		writeGitHubOutput("release_skipped", "true")
 		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")
 		writeGitHubOutput("release_outcome", "skipped")
@@ -779,7 +761,7 @@ func runRelease(opts releaseOptions) error {
 
 	// Resolve the repository and validate the token BEFORE touching any
 	// files: discovering a dead token after the version bump and changelog
-	// reset have been written (and committed) would leave local side effects
+	// update have been written (and committed) would leave local side effects
 	// even though nothing was pushed — both in CI and when run locally.
 	// Dry runs never push, so they need no token at all.
 	var repoSlug, token string
@@ -832,7 +814,7 @@ func runRelease(opts releaseOptions) error {
 	}
 	fmt.Printf("🏷️  Release kind: %s (prerelease=%t, make_latest=%s, npm tag=%s)\n", policy.Kind, policy.Prerelease, policy.MakeLatest, policy.NPMTag)
 
-	if opts.tagOnly || (policy.Kind == kindWeekly && changelogContent == "") {
+	if policy.Kind == kindWeekly && changelogContent == "" {
 		prev := highestReleaseTag(repoDir)
 		if prev == "" {
 			prev = "the previous release"
@@ -851,10 +833,8 @@ func runRelease(opts releaseOptions) error {
 		if err := syncRuntimePackageVersion(repoDir, newVersion); err != nil {
 			return err
 		}
-		if !opts.tagOnly {
-			if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
-				return err
-			}
+		if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
+			return err
 		}
 	}
 
@@ -888,9 +868,7 @@ func runRelease(opts releaseOptions) error {
 		runtimePackageJSON,
 		runtimePackageLock,
 	}
-	if !opts.tagOnly {
-		filesToAdd = append(filesToAdd, "docs/mpress/content/changelog.md", "v3/UNRELEASED_CHANGELOG.md")
-	}
+	filesToAdd = append(filesToAdd, "docs/mpress/content/changelog.md")
 	if err := git.add(filesToAdd...); err != nil {
 		return fmt.Errorf("failed to stage release files: %w", err)
 	}
@@ -941,7 +919,7 @@ func runRelease(opts releaseOptions) error {
 // selectAPIToken picks the token used for git pushes and the GitHub REST
 // API, validating it against the API BEFORE anything is pushed. Discovering
 // a dead token after the version bump and tag have been pushed leaves a
-// half-released state (a tag with no GitHub release and a reset changelog),
+// half-released state (a tag with no GitHub release and an updated changelog),
 // which is exactly what happened when WAILS_REPO_TOKEN expired: git
 // operations still succeeded via the checkout step's persisted credentials,
 // then the release API call failed with 401.
@@ -1033,12 +1011,6 @@ func applyChangelogUpdates(newVersion, changelogContent string) error {
 	}
 	fmt.Println("📝 Updated docs changelog with new release entry.")
 
-	if err := safeFileOperation(unreleasedChangelogFile, func() error {
-		return clearUnreleasedChangelog()
-	}); err != nil {
-		return fmt.Errorf("failed to reset %s: %w", unreleasedChangelogFile, err)
-	}
-	fmt.Printf("🧹 Reset %s to template.\n", unreleasedChangelogFile)
 	return nil
 }
 

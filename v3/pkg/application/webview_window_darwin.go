@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -366,6 +366,16 @@ void windowSetTabbingMode(void* nsWindow, int mode) {
 		[window setTabbingMode:mode];
 	}
 #endif
+}
+
+// Install a script that runs at document start in every frame of the window's
+// webview (the asset-request body shim, darwin_body_fetch_shim.go).
+void windowAddDocumentStartScript(void* nsWindow, const char* source) {
+	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
+	WKUserScript* script = [[WKUserScript alloc] initWithSource:[NSString stringWithUTF8String:source]
+		injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
+	[window.webView.configuration.userContentController addUserScript:script];
+	[script release];
 }
 
 // Load URL in NSWindow
@@ -1153,7 +1163,6 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
-	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -1162,20 +1171,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-type macosWebviewWindow struct {
-	nsWindow unsafe.Pointer
-	parent   *WebviewWindow
-}
-
-func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	accelerator, err := parseAccelerator(acceleratorString)
-	if err != nil {
-		globalApplication.error("unable to parse accelerator: %w", err)
-		return
-	}
-	w.parent.processKeyBinding(accelerator.String())
-}
+// macosWindowNative is empty: the cgo backend keeps a window's native state
+// in its Objective-C classes.
+type macosWindowNative struct{}
 
 func (w *macosWebviewWindow) getBorderSizes() *LRTB {
 	return &LRTB{}
@@ -1224,14 +1222,6 @@ func (w *macosWebviewWindow) getZoom() float64 {
 	return float64(C.windowZoomGet(w.nsWindow))
 }
 
-func (w *macosWebviewWindow) setZoom(zoom float64) {
-	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
-	if !ok {
-		return
-	}
-	C.windowZoomSet(w.nsWindow, C.double(zoom))
-}
-
 func (w *macosWebviewWindow) setFrameless(frameless bool) {
 	C.windowSetFrameless(w.nsWindow, C.bool(frameless), C.bool(w.parent.options.Mac.CornerType == MacWindowCornerTypeSquare), C.double(w.parent.options.Mac.CornerRadius))
 	if frameless {
@@ -1270,14 +1260,6 @@ func (w *macosWebviewWindow) hide() {
 	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	animated, duration := w.notchAnimation()
 	C.windowHide(w.nsWindow, C.bool(animated), C.double(duration))
-}
-
-func (w *macosWebviewWindow) notchAnimation() (bool, float64) {
-	if w.parent.notchWindow == nil {
-		return false, 0
-	}
-	return w.parent.notchWindow.animated,
-		float64(w.parent.notchWindow.animationSpeed) / float64(time.Second)
 }
 
 func (w *macosWebviewWindow) notchConfiguration() (int, int, string) {
@@ -1394,10 +1376,6 @@ func (w *macosWebviewWindow) isFullscreen() bool {
 	return w.syncMainThreadReturningBool(func() bool {
 		return bool(C.windowIsFullscreen(w.nsWindow))
 	})
-}
-
-func (w *macosWebviewWindow) isNormal() bool {
-	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
 func (w *macosWebviewWindow) isVisible() bool {
@@ -1665,6 +1643,9 @@ func (w *macosWebviewWindow) run() {
 			C.int(notchContentHeight),
 			cNotchScreenID,
 		)
+		bodyShim := C.CString(darwinBodyFetchShimJS)
+		C.windowAddDocumentStartScript(w.nsWindow, bodyShim)
+		C.free(unsafe.Pointer(bodyShim))
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
 		}
@@ -1941,13 +1922,6 @@ func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
 }
 
-func (w *macosWebviewWindow) applyWindowButtonStates() {
-	states := effectiveMacWindowButtonStates(w.parent.options)
-	w.setMinimiseButtonState(states.minimise)
-	w.setCloseButtonState(states.close)
-	w.setMaximiseButtonState(states.zoom)
-}
-
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 	return bool(C.isIgnoreMouseEvents(w.nsWindow))
 }
@@ -1995,8 +1969,7 @@ func (w *macosWebviewWindow) delete() {
 func (w *macosWebviewWindow) redo() {
 }
 
-func (w *macosWebviewWindow) showMenuBar()    {}
-func (w *macosWebviewWindow) hideMenuBar()    {}
-func (w *macosWebviewWindow) toggleMenuBar()  {}
-func (w *macosWebviewWindow) setMenu(_ *Menu) {}
-func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS
+// setNativeZoom sets the WKWebView magnification.
+func (w *macosWebviewWindow) setNativeZoom(zoom float64) {
+	C.windowZoomSet(w.nsWindow, C.double(zoom))
+}

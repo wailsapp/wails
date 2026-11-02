@@ -267,7 +267,7 @@ API eksperimental ditandai dalam dokumentasi.
 ### Pertanyaan tentang API
 
 1. **Lihat referensi ini** - Dokumentasi API lengkap
-2. **Lihat contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **Lihat contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Cari di Discord** - [Server Discord](https://discord.gg/JDdSxwjhGf)
 4. **Tanyakan kepada komunitas** - Kanal #help di Discord
 
@@ -284,7 +284,7 @@ Menemukan bug atau inkonsistensi?
 - [Tutorial](/tutorials/overview/) - Belajar dengan membangun aplikasi nyata
 - [Panduan](/guides/architecture/) - Panduan berorientasi tugas untuk skenario umum
 - [Fitur](/features/windows/basics/) - Dokumentasi untuk setiap fitur
-- [Contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Contoh kode siap pakai di GitHub
+- [Contoh](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - Contoh kode siap pakai di GitHub
 
 ---
 

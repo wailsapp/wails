@@ -626,6 +626,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 window.SetAlwaysOnTop(true)
 ```
 
+### SetMenu()
+
+Sets the window's menu bar on Windows and Linux, replacing the one it shows.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Parameters:**
+- `menu` - The menu to show, or `nil` to remove the menu bar
+
+Passing `nil` removes the bar: the window shows no menu, not even the application menu, and the removed menu's accelerators stop working in that window. Called before the window starts, the window is created without a menu bar.
+
+**Platform support:**
+- **Windows**: Full support
+- **Linux**: Full support
+- **macOS**: No effect, because the menu bar belongs to the application. Use `app.Menu.Set` instead.
+
+**Example:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
+```
+
 ### Print()
 
 Opens the native print dialog for the window content.

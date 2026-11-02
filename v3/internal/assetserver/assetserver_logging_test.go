@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -67,5 +68,81 @@ func TestAssetServerRequestDebugLogging(t *testing.T) {
 	}
 	if _, ok := record["duration"].(float64); !ok {
 		t.Error("debug log omitted request duration")
+	}
+}
+
+type requestLogContextKey struct{}
+
+type requestContextLogHandler struct {
+	slog.Handler
+	contexts []context.Context
+	levels   []slog.Level
+}
+
+func (h *requestContextLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return ctx.Value(requestLogContextKey{}) == "trace-42" && h.Handler.Enabled(ctx, level)
+}
+
+func (h *requestContextLogHandler) Handle(ctx context.Context, record slog.Record) error {
+	h.contexts = append(h.contexts, ctx)
+	h.levels = append(h.levels, record.Level)
+	return h.Handler.Handle(ctx, record)
+}
+
+func TestAssetRequestLogsPreserveContext(t *testing.T) {
+	for _, writeFailure := range []bool{false, true} {
+		name := "debug"
+		if writeFailure {
+			name = "debug_and_write_error"
+		}
+		t.Run(name, func(t *testing.T) {
+			logger := &requestContextLogHandler{Handler: slog.NewJSONHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelDebug})}
+			server, err := NewAssetServer(&Options{Logger: slog.New(logger), Handler: http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				if writeFailure {
+					_, _ = io.WriteString(w, "response")
+					return
+				}
+				w.WriteHeader(http.StatusAccepted)
+			})})
+			if err != nil {
+				t.Fatal(err)
+			}
+			var response http.ResponseWriter = httptest.NewRecorder()
+			if writeFailure {
+				response = &failingWriter{ResponseWriter: response, failOn: 1}
+			}
+			request := httptest.NewRequest(http.MethodGet, "/asset.txt", nil)
+			request = request.WithContext(context.WithValue(request.Context(), requestLogContextKey{}, "trace-42"))
+			server.ServeHTTP(response, request)
+			want := []slog.Level{slog.LevelDebug}
+			if writeFailure {
+				want = append(want, slog.LevelError)
+			}
+			if len(logger.contexts) != len(want) {
+				t.Fatalf("logged levels=%v, want %v", logger.levels, want)
+			}
+			for i, ctx := range logger.contexts {
+				if ctx.Value(requestLogContextKey{}) != "trace-42" || logger.levels[i] != want[i] {
+					t.Errorf("record %d: context=%v, level=%v", i, ctx, logger.levels[i])
+				}
+			}
+		})
+	}
+}
+
+func TestAssetLogHelpersPreserveContext(t *testing.T) {
+	handler := &requestContextLogHandler{Handler: slog.NewJSONHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelDebug})}
+	ctx := context.WithValue(context.Background(), requestLogContextKey{}, "trace-42")
+	ctx = contextWithLogger(ctx, slog.New(handler))
+	logInfo(ctx, "asset info")
+	logError(ctx, "asset error")
+	want := []slog.Level{slog.LevelInfo, slog.LevelError}
+	if len(handler.contexts) != len(want) {
+		t.Fatalf("logged levels=%v, want %v", handler.levels, want)
+	}
+	for i, ctx := range handler.contexts {
+		if ctx.Value(requestLogContextKey{}) != "trace-42" || handler.levels[i] != want[i] {
+			t.Errorf("record %d lost context or level", i)
+		}
 	}
 }

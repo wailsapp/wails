@@ -1147,6 +1147,42 @@
       "updatedAt": "2026-10-25T22:06:53Z"
     },
     "nav-label-096": {
+      "sourceHash": "8fbd70bc69b96e30471d254a8ebb4900e4b9494f66f14e96c3f6b155272f778a",
+      "targetHash": "5c0dac2603dc21307a21935c797d858f90e3ad8d7ff02d938e965bf8350769fb",
+      "machineHash": "5c0dac2603dc21307a21935c797d858f90e3ad8d7ff02d938e965bf8350769fb",
+      "machineText": "Сборки YAML",
+      "status": "machine-translated",
+      "sourcePreview": "YAML builds",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T13:38:02Z"
+    },
+    "nav-label-097": {
+      "sourceHash": "830f99d18035380c1a090d83b1ad76776638e0e0beba7a9e671edb35e8fc3627",
+      "targetHash": "ed768515ca507381596a7d9fd9ecb5a54e256ab5f704857269513500bbc9c3d8",
+      "machineHash": "ed768515ca507381596a7d9fd9ecb5a54e256ab5f704857269513500bbc9c3d8",
+      "machineText": "Поля манифеста YAML",
+      "status": "machine-translated",
+      "sourcePreview": "YAML manifest fields",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T13:38:02Z"
+    },
+    "nav-label-098": {
+      "sourceHash": "81d55d64671d142c66dfe58197d582364dc0c10862dcc7abc256ec5ac3a3d80d",
+      "targetHash": "98e44409fe1f02149c700f7a8affeab505d16caa598c2e77801b983d9dd0d42b",
+      "machineHash": "98e44409fe1f02149c700f7a8affeab505d16caa598c2e77801b983d9dd0d42b",
+      "machineText": "Конфигурация запуска YAML",
+      "status": "machine-translated",
+      "sourcePreview": "YAML run configuration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-31T13:38:02Z"
+    },
+    "nav-label-099": {
       "sourceHash": "b2f079f515a5ba58e698ec213646afd77145d0dd8e6c062ef24166ccf959d0f0",
       "targetHash": "7d156d40dca7219ed6e8abedf36d309e33b3fec27aaf37f3c305a9075b218736",
       "machineHash": "7d156d40dca7219ed6e8abedf36d309e33b3fec27aaf37f3c305a9075b218736",
@@ -1158,7 +1194,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-097": {
+    "nav-label-100": {
       "sourceHash": "6116686315702983b1d201a2553fbc3bd88b76920edf6839fe178bd8b46914a9",
       "targetHash": "8d6c8f04e9cdba5d5ce99cda39df51f47e62a5a1ab53dadfd304ee47f013f147",
       "machineHash": "8d6c8f04e9cdba5d5ce99cda39df51f47e62a5a1ab53dadfd304ee47f013f147",
@@ -1170,7 +1206,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-098": {
+    "nav-label-101": {
       "sourceHash": "f961439f4e929895396b6c5b8bad62869c1ca735a4afd5c9088ff83540b82cb3",
       "targetHash": "8a6bde5a7871bf60a3e600920c47cc015e374332e83dcb977939ee074a196412",
       "machineHash": "8a6bde5a7871bf60a3e600920c47cc015e374332e83dcb977939ee074a196412",
@@ -1182,7 +1218,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-099": {
+    "nav-label-102": {
       "sourceHash": "876ddcb5dcafa0e5b4526c47e75f7bc8d4c21d3299d9b0b5e1f6c14814bdf86b",
       "targetHash": "116d222e5442bffa851c24e6c126bde56d105845b4b8faf7b933c1e1ad52a303",
       "machineHash": "116d222e5442bffa851c24e6c126bde56d105845b4b8faf7b933c1e1ad52a303",
@@ -1194,7 +1230,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-100": {
+    "nav-label-103": {
       "sourceHash": "f8154c283df440230b6bc21a1bd332f01cd723574d9ad08c834fbbb7b48e997b",
       "targetHash": "342fff471980d43b72040d8a4be37ed44bf3ce54485326dc3b0445e50f02acb2",
       "machineHash": "342fff471980d43b72040d8a4be37ed44bf3ce54485326dc3b0445e50f02acb2",
@@ -1206,7 +1242,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-101": {
+    "nav-label-104": {
       "sourceHash": "4b0aa96433f5cecb5aa372a73b552f5bf641df1c3559494a907ddf205ce3322b",
       "targetHash": "60d78e8284c51496f5b22d65a852c6e8814f2db33a10844889fd515347859889",
       "machineHash": "60d78e8284c51496f5b22d65a852c6e8814f2db33a10844889fd515347859889",
@@ -1218,7 +1254,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-102": {
+    "nav-label-105": {
       "sourceHash": "03807dddbbe552a6c217638f9399ada41ffe1bb899e9eea760dd596179de953b",
       "targetHash": "08fdfac34a4baba7b00c60e591ef69d84922179b1f1d200841b1ee8b3c5d6dcf",
       "machineHash": "08fdfac34a4baba7b00c60e591ef69d84922179b1f1d200841b1ee8b3c5d6dcf",
@@ -1230,7 +1266,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-103": {
+    "nav-label-106": {
       "sourceHash": "0b40234a6136f15dedcace3b83580ce8c12f511d2344edcc03075f2dc1852e3d",
       "targetHash": "67117dd698f5669fcc677df8781de3d6dae4ba11ed41f55e04ea20fdf573a8b5",
       "machineHash": "67117dd698f5669fcc677df8781de3d6dae4ba11ed41f55e04ea20fdf573a8b5",
@@ -1242,7 +1278,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-104": {
+    "nav-label-107": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "bd3a5be11e2addf798446041ad39fab69972bca7d796cab3100c4ac44b75dadc",
       "machineHash": "bd3a5be11e2addf798446041ad39fab69972bca7d796cab3100c4ac44b75dadc",
@@ -1254,7 +1290,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-105": {
+    "nav-label-108": {
       "sourceHash": "e7ad522ea327e5ba95534ef8355038ef7f7b86328c7cf9175886f60464c40d28",
       "targetHash": "26b855cc1660a365f859c871146d407adc04b7bb2476e523f43443bd9f3de6d5",
       "machineHash": "26b855cc1660a365f859c871146d407adc04b7bb2476e523f43443bd9f3de6d5",
@@ -1266,211 +1302,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-106": {
-      "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "targetHash": "1e1bd9e6df89b17604b5a033b418ecc68975e543da2ef25685f5f7f654092646",
-      "machineHash": "1e1bd9e6df89b17604b5a033b418ecc68975e543da2ef25685f5f7f654092646",
-      "machineText": "Окна",
-      "status": "machine-translated",
-      "sourcePreview": "Windows",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-107": {
-      "sourceHash": "483e6268a2d39801bd47330372e5e02d8fcfd33424ef05d37fe1710ec8565a61",
-      "targetHash": "46851ad678b441d10bc5d28d4757dfd74294623a150f5e0f24557a0804e36e5d",
-      "machineHash": "46851ad678b441d10bc5d28d4757dfd74294623a150f5e0f24557a0804e36e5d",
-      "machineText": "API окон",
-      "status": "machine-translated",
-      "sourcePreview": "Window API",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-108": {
-      "sourceHash": "9f20bba02f3ee86773c1662f256bc3e99d6ffb8d714a63dab032cc7ab1d2125c",
-      "targetHash": "edefc7439aed7447abd465127554fea55d5b14bb94527e4732e8de2f9bccb01a",
-      "machineHash": "edefc7439aed7447abd465127554fea55d5b14bb94527e4732e8de2f9bccb01a",
-      "machineText": "Параметры окон",
-      "status": "machine-translated",
-      "sourcePreview": "Window Options",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
     "nav-label-109": {
-      "sourceHash": "93534e3e8a8dccfdd5aacfa441553783e6c5be860d7309c9c965b042a9ab1b77",
-      "targetHash": "122f7176502656be29238539a0ab2ec556d57fb4fe533ebc3bfea292520a407d",
-      "machineHash": "122f7176502656be29238539a0ab2ec556d57fb4fe533ebc3bfea292520a407d",
-      "machineText": "Меню",
-      "status": "machine-translated",
-      "sourcePreview": "Menus",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-110": {
-      "sourceHash": "8d53b271b6d9a5054279598eb6ee03ad64c96b0fec5fccb7c30818fd8c2dd42a",
-      "targetHash": "51005215458fb9c66f8bed6a48b9b6b8438cc1276ebecb37fb7d0d092d433c22",
-      "machineHash": "51005215458fb9c66f8bed6a48b9b6b8438cc1276ebecb37fb7d0d092d433c22",
-      "machineText": "API меню",
-      "status": "machine-translated",
-      "sourcePreview": "Menu API",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-111": {
-      "sourceHash": "3e9fd87a78f87240868d6a05b0e975c03588497632361ee133168e868a671761",
-      "targetHash": "7bb8967023701a0bfac2310736c3cb6f902a0bfc806be345c342c7585eb61dfd",
-      "machineHash": "7bb8967023701a0bfac2310736c3cb6f902a0bfc806be345c342c7585eb61dfd",
-      "machineText": "Справочник по меню",
-      "status": "machine-translated",
-      "sourcePreview": "Menu Reference",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-112": {
-      "sourceHash": "8d14f6e72de8f18ab1ee5c5330f00653c0c3ce099e63024454f80af97e72d333",
-      "targetHash": "210d9860bdff421167d4397da354093962626ddf6129b6550875cfbfa911587d",
-      "machineHash": "210d9860bdff421167d4397da354093962626ddf6129b6550875cfbfa911587d",
-      "machineText": "События",
-      "status": "machine-translated",
-      "sourcePreview": "Events",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-113": {
-      "sourceHash": "3059d304c8d5b2ffb18462e7672d5577c8298062e0c8a0737fbf2f469250cd6c",
-      "targetHash": "602e5c99fe6cedd514c820a861569cbd2e72978fbc8dc5d1dab6f9626d2cdf9a",
-      "machineHash": "602e5c99fe6cedd514c820a861569cbd2e72978fbc8dc5d1dab6f9626d2cdf9a",
-      "machineText": "Диалоговые окна",
-      "status": "machine-translated",
-      "sourcePreview": "Dialogs",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-114": {
-      "sourceHash": "c1e4d0f05c738bbb4eff7b92c70977e97bdd6c23e8de2e65b47a4043f07d971d",
-      "targetHash": "da4bb1f458de762416bb669af208b5eab75098333e49a49c6953d8ba50cb2889",
-      "machineHash": "da4bb1f458de762416bb669af208b5eab75098333e49a49c6953d8ba50cb2889",
-      "machineText": "Среда выполнения фронтенда",
-      "status": "machine-translated",
-      "sourcePreview": "Frontend Runtime",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-115": {
-      "sourceHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
-      "targetHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
-      "machineHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
-      "machineText": "CLI",
-      "status": "machine-translated",
-      "sourcePreview": "CLI",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-116": {
-      "sourceHash": "d6da4a7d0085ffa6d87d4beaaef5b2fc43b5d7c2637045641b09edc5f8b92a5c",
-      "targetHash": "86c240d9fc5046c0ac401b14fd728363107695812e583a42b832a5f593579b4f",
-      "machineHash": "86c240d9fc5046c0ac401b14fd728363107695812e583a42b832a5f593579b4f",
-      "machineText": "Обзор команд",
-      "status": "machine-translated",
-      "sourcePreview": "Command Overview",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-117": {
-      "sourceHash": "40562bccc40299f0ec75415d43a05343aa61889444f15c0d1696a39de1b8c1b8",
-      "targetHash": "f528ad750aedab3f8d24d43fde39c1f126fe39caee8bdd5186d65ac1d8e1c088",
-      "machineHash": "f528ad750aedab3f8d24d43fde39c1f126fe39caee8bdd5186d65ac1d8e1c088",
-      "machineText": "Флаги и примеры",
-      "status": "machine-translated",
-      "sourcePreview": "Flags \u0026 Examples",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-118": {
-      "sourceHash": "e804995b2dfc0f9b6f573fe41fe69fc7dabf9032ad5dcab4a376e6fa7f91d11c",
-      "targetHash": "ae5fefe48419c83709763023ef09ca17fe67cc9814568f7abfabbd80487a1537",
-      "machineHash": "ae5fefe48419c83709763023ef09ca17fe67cc9814568f7abfabbd80487a1537",
-      "machineText": "Протокол манифеста обновления",
-      "status": "machine-translated",
-      "sourcePreview": "Update Manifest Protocol",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-119": {
-      "sourceHash": "367468814c86045c87c1f28e30a37b9b9d16b9610d71bfa375995e3b0a087c37",
-      "targetHash": "313703a7b6a41c728d009dd2b36bcd73870fc913d3983178a062aae69832aa3e",
-      "machineHash": "313703a7b6a41c728d009dd2b36bcd73870fc913d3983178a062aae69832aa3e",
-      "machineText": "API мобильных платформ (экспериментальная функция)",
-      "status": "machine-translated",
-      "sourcePreview": "Mobile API (Experimental)",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-120": {
-      "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
-      "targetHash": "5459b46531e6fd1013e548c671bd44e5d051a1bc0de002720ceadc95699a5443",
-      "machineHash": "5459b46531e6fd1013e548c671bd44e5d051a1bc0de002720ceadc95699a5443",
-      "machineText": "Устранение неполадок",
-      "status": "machine-translated",
-      "sourcePreview": "Troubleshooting",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-121": {
-      "sourceHash": "a3d458e1bd1eda066018d8db2dd5537c9e742f02f68401457c01553e77f57403",
-      "targetHash": "eab4596889345a5731468051a0a4d189b08712699ac23866a93fdd450b14290e",
-      "machineHash": "eab4596889345a5731468051a0a4d189b08712699ac23866a93fdd450b14290e",
-      "machineText": "Часто задаваемые вопросы",
-      "status": "machine-translated",
-      "sourcePreview": "Frequently Asked Questions",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-122": {
-      "sourceHash": "1b8555b5a34b1cedc935ed6bb65d97a04aa9fcb3cb0337867bc6f82ae63dd379",
-      "targetHash": "b878c61d21bd9175b5eb5a446dcb5e4df445981034282ff79409223df3157bbd",
-      "machineHash": "b878c61d21bd9175b5eb5a446dcb5e4df445981034282ff79409223df3157bbd",
-      "machineText": "Файлы syso в macOS",
-      "status": "machine-translated",
-      "sourcePreview": "Syso files on macOS",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:53Z"
-    },
-    "nav-label-123": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
@@ -1482,7 +1314,211 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
+    "nav-label-110": {
+      "sourceHash": "483e6268a2d39801bd47330372e5e02d8fcfd33424ef05d37fe1710ec8565a61",
+      "targetHash": "46851ad678b441d10bc5d28d4757dfd74294623a150f5e0f24557a0804e36e5d",
+      "machineHash": "46851ad678b441d10bc5d28d4757dfd74294623a150f5e0f24557a0804e36e5d",
+      "machineText": "API окон",
+      "status": "machine-translated",
+      "sourcePreview": "Window API",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-111": {
+      "sourceHash": "9f20bba02f3ee86773c1662f256bc3e99d6ffb8d714a63dab032cc7ab1d2125c",
+      "targetHash": "edefc7439aed7447abd465127554fea55d5b14bb94527e4732e8de2f9bccb01a",
+      "machineHash": "edefc7439aed7447abd465127554fea55d5b14bb94527e4732e8de2f9bccb01a",
+      "machineText": "Параметры окон",
+      "status": "machine-translated",
+      "sourcePreview": "Window Options",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-112": {
+      "sourceHash": "93534e3e8a8dccfdd5aacfa441553783e6c5be860d7309c9c965b042a9ab1b77",
+      "targetHash": "122f7176502656be29238539a0ab2ec556d57fb4fe533ebc3bfea292520a407d",
+      "machineHash": "122f7176502656be29238539a0ab2ec556d57fb4fe533ebc3bfea292520a407d",
+      "machineText": "Меню",
+      "status": "machine-translated",
+      "sourcePreview": "Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-113": {
+      "sourceHash": "8d53b271b6d9a5054279598eb6ee03ad64c96b0fec5fccb7c30818fd8c2dd42a",
+      "targetHash": "51005215458fb9c66f8bed6a48b9b6b8438cc1276ebecb37fb7d0d092d433c22",
+      "machineHash": "51005215458fb9c66f8bed6a48b9b6b8438cc1276ebecb37fb7d0d092d433c22",
+      "machineText": "API меню",
+      "status": "machine-translated",
+      "sourcePreview": "Menu API",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-114": {
+      "sourceHash": "3e9fd87a78f87240868d6a05b0e975c03588497632361ee133168e868a671761",
+      "targetHash": "7bb8967023701a0bfac2310736c3cb6f902a0bfc806be345c342c7585eb61dfd",
+      "machineHash": "7bb8967023701a0bfac2310736c3cb6f902a0bfc806be345c342c7585eb61dfd",
+      "machineText": "Справочник по меню",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-115": {
+      "sourceHash": "8d14f6e72de8f18ab1ee5c5330f00653c0c3ce099e63024454f80af97e72d333",
+      "targetHash": "210d9860bdff421167d4397da354093962626ddf6129b6550875cfbfa911587d",
+      "machineHash": "210d9860bdff421167d4397da354093962626ddf6129b6550875cfbfa911587d",
+      "machineText": "События",
+      "status": "machine-translated",
+      "sourcePreview": "Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-116": {
+      "sourceHash": "3059d304c8d5b2ffb18462e7672d5577c8298062e0c8a0737fbf2f469250cd6c",
+      "targetHash": "602e5c99fe6cedd514c820a861569cbd2e72978fbc8dc5d1dab6f9626d2cdf9a",
+      "machineHash": "602e5c99fe6cedd514c820a861569cbd2e72978fbc8dc5d1dab6f9626d2cdf9a",
+      "machineText": "Диалоговые окна",
+      "status": "machine-translated",
+      "sourcePreview": "Dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-117": {
+      "sourceHash": "c1e4d0f05c738bbb4eff7b92c70977e97bdd6c23e8de2e65b47a4043f07d971d",
+      "targetHash": "da4bb1f458de762416bb669af208b5eab75098333e49a49c6953d8ba50cb2889",
+      "machineHash": "da4bb1f458de762416bb669af208b5eab75098333e49a49c6953d8ba50cb2889",
+      "machineText": "Среда выполнения фронтенда",
+      "status": "machine-translated",
+      "sourcePreview": "Frontend Runtime",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-118": {
+      "sourceHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
+      "targetHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
+      "machineHash": "e759793341ff3757eaa76e814db0170ec13b6b0a988a742d9a81240c505f48ec",
+      "machineText": "CLI",
+      "status": "machine-translated",
+      "sourcePreview": "CLI",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-119": {
+      "sourceHash": "d6da4a7d0085ffa6d87d4beaaef5b2fc43b5d7c2637045641b09edc5f8b92a5c",
+      "targetHash": "86c240d9fc5046c0ac401b14fd728363107695812e583a42b832a5f593579b4f",
+      "machineHash": "86c240d9fc5046c0ac401b14fd728363107695812e583a42b832a5f593579b4f",
+      "machineText": "Обзор команд",
+      "status": "machine-translated",
+      "sourcePreview": "Command Overview",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-120": {
+      "sourceHash": "40562bccc40299f0ec75415d43a05343aa61889444f15c0d1696a39de1b8c1b8",
+      "targetHash": "f528ad750aedab3f8d24d43fde39c1f126fe39caee8bdd5186d65ac1d8e1c088",
+      "machineHash": "f528ad750aedab3f8d24d43fde39c1f126fe39caee8bdd5186d65ac1d8e1c088",
+      "machineText": "Флаги и примеры",
+      "status": "machine-translated",
+      "sourcePreview": "Flags \u0026 Examples",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-121": {
+      "sourceHash": "e804995b2dfc0f9b6f573fe41fe69fc7dabf9032ad5dcab4a376e6fa7f91d11c",
+      "targetHash": "ae5fefe48419c83709763023ef09ca17fe67cc9814568f7abfabbd80487a1537",
+      "machineHash": "ae5fefe48419c83709763023ef09ca17fe67cc9814568f7abfabbd80487a1537",
+      "machineText": "Протокол манифеста обновления",
+      "status": "machine-translated",
+      "sourcePreview": "Update Manifest Protocol",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-122": {
+      "sourceHash": "367468814c86045c87c1f28e30a37b9b9d16b9610d71bfa375995e3b0a087c37",
+      "targetHash": "313703a7b6a41c728d009dd2b36bcd73870fc913d3983178a062aae69832aa3e",
+      "machineHash": "313703a7b6a41c728d009dd2b36bcd73870fc913d3983178a062aae69832aa3e",
+      "machineText": "API мобильных платформ (экспериментальная функция)",
+      "status": "machine-translated",
+      "sourcePreview": "Mobile API (Experimental)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-123": {
+      "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
+      "targetHash": "5459b46531e6fd1013e548c671bd44e5d051a1bc0de002720ceadc95699a5443",
+      "machineHash": "5459b46531e6fd1013e548c671bd44e5d051a1bc0de002720ceadc95699a5443",
+      "machineText": "Устранение неполадок",
+      "status": "machine-translated",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
     "nav-label-124": {
+      "sourceHash": "a3d458e1bd1eda066018d8db2dd5537c9e742f02f68401457c01553e77f57403",
+      "targetHash": "eab4596889345a5731468051a0a4d189b08712699ac23866a93fdd450b14290e",
+      "machineHash": "eab4596889345a5731468051a0a4d189b08712699ac23866a93fdd450b14290e",
+      "machineText": "Часто задаваемые вопросы",
+      "status": "machine-translated",
+      "sourcePreview": "Frequently Asked Questions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-125": {
+      "sourceHash": "1b8555b5a34b1cedc935ed6bb65d97a04aa9fcb3cb0337867bc6f82ae63dd379",
+      "targetHash": "b878c61d21bd9175b5eb5a446dcb5e4df445981034282ff79409223df3157bbd",
+      "machineHash": "b878c61d21bd9175b5eb5a446dcb5e4df445981034282ff79409223df3157bbd",
+      "machineText": "Файлы syso в macOS",
+      "status": "machine-translated",
+      "sourcePreview": "Syso files on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-126": {
+      "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "targetHash": "1e1bd9e6df89b17604b5a033b418ecc68975e543da2ef25685f5f7f654092646",
+      "machineHash": "1e1bd9e6df89b17604b5a033b418ecc68975e543da2ef25685f5f7f654092646",
+      "machineText": "Окна",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:06:53Z"
+    },
+    "nav-label-127": {
       "sourceHash": "47da8cd60766afd3189cbfbb42e6208adfd0bc74e125e0e604f5ee0771f32d0f",
       "targetHash": "2acfd409f7bacc7b1561f7bb1ef9c8a4867d74bfbcd76ae2be37c03738491d3f",
       "machineHash": "2acfd409f7bacc7b1561f7bb1ef9c8a4867d74bfbcd76ae2be37c03738491d3f",
@@ -1494,7 +1530,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-125": {
+    "nav-label-128": {
       "sourceHash": "2b18598c711f43c293b07a684a115fcccd7f616dc451c5a1e29779792e3c1ed3",
       "targetHash": "25a0be9abc82717e03d587578ebb79a48718794dda63646ce468e79b0f431e02",
       "machineHash": "25a0be9abc82717e03d587578ebb79a48718794dda63646ce468e79b0f431e02",
@@ -1506,7 +1542,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-126": {
+    "nav-label-129": {
       "sourceHash": "4e3965015413af7b4baebb161dfec53b1e8c822f6e71cbd1a96acf3eb62efab6",
       "targetHash": "f1d0578c957320cf0e9588faa3803de7c2867d8cb8aa2596af57d01cdf01c62a",
       "machineHash": "f1d0578c957320cf0e9588faa3803de7c2867d8cb8aa2596af57d01cdf01c62a",
@@ -1518,7 +1554,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-127": {
+    "nav-label-130": {
       "sourceHash": "c205924de0fe636ccdde4ed616fef66f75b78e98b03620637965c033fd161141",
       "targetHash": "b123be6f8236801a70650fcaf5218da12b896992d2e963bf27f5cd0488299a50",
       "machineHash": "b123be6f8236801a70650fcaf5218da12b896992d2e963bf27f5cd0488299a50",
@@ -1530,7 +1566,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-128": {
+    "nav-label-131": {
       "sourceHash": "ba5dbb45f3a3c74da07e5a493cd1d37b3f7eb17bf1921a9c968540e6fa32d6cd",
       "targetHash": "ecbd1cc940156ffdbf49c95f9d977f2330a636f92d4332dfbddf58ba49d49282",
       "machineHash": "ecbd1cc940156ffdbf49c95f9d977f2330a636f92d4332dfbddf58ba49d49282",
@@ -1542,7 +1578,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-129": {
+    "nav-label-132": {
       "sourceHash": "0610a163a65541f8c43c179843d71a0e9783d157cb5041f9eb09bcf6a2c4b5af",
       "targetHash": "21b327b661e3ba9501f2ff5c88d2c2b9c10d48cd9deaea6ad51f11ac6156fe69",
       "machineHash": "21b327b661e3ba9501f2ff5c88d2c2b9c10d48cd9deaea6ad51f11ac6156fe69",
@@ -1554,7 +1590,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-130": {
+    "nav-label-133": {
       "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
       "targetHash": "b5b75c376dc8f5e6c4964a53314266b1ce3590d4be0506425a47896f2fd1cbdf",
       "machineHash": "b5b75c376dc8f5e6c4964a53314266b1ce3590d4be0506425a47896f2fd1cbdf",
@@ -1566,7 +1602,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-131": {
+    "nav-label-134": {
       "sourceHash": "a0bb08b1f7873e1619b1bc37732e31d371fb84a2706b9b1237ff69cc9d67df82",
       "targetHash": "a1376f5c30d2144659742eb343fe67358c13255bc4124bd40b52213faf5a038c",
       "machineHash": "a1376f5c30d2144659742eb343fe67358c13255bc4124bd40b52213faf5a038c",
@@ -1578,7 +1614,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-132": {
+    "nav-label-135": {
       "sourceHash": "676fd6f3e611cf6c64ed7423b30d4fa0812266a097836d7d9bee174c22ead2ca",
       "targetHash": "8ecf143a24617171b9faec99afdbd889c3093c4dad0f493bbf17c036834b1b52",
       "machineHash": "8ecf143a24617171b9faec99afdbd889c3093c4dad0f493bbf17c036834b1b52",
@@ -1590,7 +1626,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-133": {
+    "nav-label-136": {
       "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
       "targetHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
       "machineHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
@@ -1602,7 +1638,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-134": {
+    "nav-label-137": {
       "sourceHash": "9024c197d84940e47ff6aa631b7711c4cbff4e7fb2fe1a574a3592b662983a0d",
       "targetHash": "da2ab76991a2ebd55696013382cc1609d3c675cedf86d12b7aeec07078a6f355",
       "machineHash": "da2ab76991a2ebd55696013382cc1609d3c675cedf86d12b7aeec07078a6f355",
@@ -1614,7 +1650,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-135": {
+    "nav-label-138": {
       "sourceHash": "56b564b75c7fdb488865f2198ec362f9c0f5c0b631b28c15eb387b43029f28dc",
       "targetHash": "8c0f4c6dfae1b203f4f6f4ce4476c2dbf2077d91a6ab12ad290bb66328e8081c",
       "machineHash": "8c0f4c6dfae1b203f4f6f4ce4476c2dbf2077d91a6ab12ad290bb66328e8081c",
@@ -1626,7 +1662,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-136": {
+    "nav-label-139": {
       "sourceHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
       "targetHash": "2f2bfeb36e9391547f60be34bc2cc74bfb6a9c513137328a72804ec3f9acb8ce",
       "machineHash": "2f2bfeb36e9391547f60be34bc2cc74bfb6a9c513137328a72804ec3f9acb8ce",
@@ -1638,7 +1674,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-137": {
+    "nav-label-140": {
       "sourceHash": "9a15dc9c62db5943b6f133495878c7cbd7e8ab5dab86c87c4eebd595613c748e",
       "targetHash": "f69cb271f1e4d573b0dba1568b13298606b947d4e0bc3f682a412ad000735c66",
       "machineHash": "f69cb271f1e4d573b0dba1568b13298606b947d4e0bc3f682a412ad000735c66",
@@ -1650,7 +1686,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-138": {
+    "nav-label-141": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "bd3a5be11e2addf798446041ad39fab69972bca7d796cab3100c4ac44b75dadc",
       "machineHash": "bd3a5be11e2addf798446041ad39fab69972bca7d796cab3100c4ac44b75dadc",
@@ -1662,7 +1698,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-139": {
+    "nav-label-142": {
       "sourceHash": "98e33b0f3104fcf1b812ba2c679c0f15a94f583559b731d6580df2d8307d3edf",
       "targetHash": "39c4b42c8d1130725166e1dcc4c1b156bfe6771f760ecbd30c80cc38d7996cd0",
       "machineHash": "39c4b42c8d1130725166e1dcc4c1b156bfe6771f760ecbd30c80cc38d7996cd0",
@@ -1674,7 +1710,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-140": {
+    "nav-label-143": {
       "sourceHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b",
       "targetHash": "f45edf00685108531375b7875b42e916577dd4ab50d98241a55ee13ecda997ad",
       "machineHash": "f45edf00685108531375b7875b42e916577dd4ab50d98241a55ee13ecda997ad",
@@ -1686,7 +1722,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-141": {
+    "nav-label-144": {
       "sourceHash": "561b17edc33d80fa40813252d0c44c05d4e009e6c15bbf86cabe5b7a5193fa97",
       "targetHash": "a9d8fa6044586d313b1446c3d1e7683f9d08fbe0355cfe1123e255be6ab9ae9f",
       "machineHash": "a9d8fa6044586d313b1446c3d1e7683f9d08fbe0355cfe1123e255be6ab9ae9f",
@@ -1698,7 +1734,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-142": {
+    "nav-label-145": {
       "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
       "targetHash": "225077c6d4791e693ff47d24e846cfc3198da287d2b8e77fd2bba435183f0d54",
       "machineHash": "225077c6d4791e693ff47d24e846cfc3198da287d2b8e77fd2bba435183f0d54",
@@ -1710,7 +1746,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-143": {
+    "nav-label-146": {
       "sourceHash": "ead07c84baac57a9542f388a07a2a5209456ce790b04251bc9bd7d179ea85cb1",
       "targetHash": "294819e57f37a5a6ed9bdbfe66a763d8ac3afbc0b772b94a3d2b7175b469780b",
       "machineHash": "294819e57f37a5a6ed9bdbfe66a763d8ac3afbc0b772b94a3d2b7175b469780b",
@@ -1722,7 +1758,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-144": {
+    "nav-label-147": {
       "sourceHash": "fd6e874f43f84791735073557ac711f75fc46b06a1d54009727d9f7017aee043",
       "targetHash": "e52cda40e4c74eb5dcb13c2105d94f576b8db49895b602a315a2fadcaae4c380",
       "machineHash": "e52cda40e4c74eb5dcb13c2105d94f576b8db49895b602a315a2fadcaae4c380",
@@ -1734,7 +1770,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-10-25T22:06:53Z"
     },
-    "nav-label-145": {
+    "nav-label-148": {
       "sourceHash": "2a6b24ad287220345e96eb8021fe29d42b0785766c8df658827e7251da2d36dc",
       "targetHash": "0fbb938e627e446b79009f7b9107dc0736e632e07ef2d0b0f1f52bbfd940874a",
       "machineHash": "0fbb938e627e446b79009f7b9107dc0736e632e07ef2d0b0f1f52bbfd940874a",

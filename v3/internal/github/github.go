@@ -4,34 +4,44 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/charmbracelet/glamour/styles"
 	"io"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
-
-	"github.com/charmbracelet/glamour"
+	"time"
 )
 
 // ErrNoStableRelease means the available tags contain no stable release.
 var ErrNoStableRelease = errors.New("no release tag found")
 
-func GetReleaseNotes(tagVersion string, noColour bool) string {
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
+const requestTimeout = 15 * time.Second
+
+func getWithTimeout(endpoint string) (*http.Response, error) {
+	// Preserve configured transport/redirect behavior without mutating the shared client.
+	client := *http.DefaultClient
+	if client.Timeout <= 0 || client.Timeout > requestTimeout {
+		client.Timeout = requestTimeout
+	}
+	return client.Get(endpoint)
+}
+
+// GetReleaseNotes fetches release Markdown, including its version heading.
+func GetReleaseNotes(tagVersion string) (string, error) {
+	resp, err := getWithTimeout("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
-		return "No release notes found"
+		return "", errors.New("No release notes found")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Sprintf("Unable to retrieve release notes: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
+		return "", fmt.Errorf("Unable to retrieve release notes: HTTP %d (%s)", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
 	}
 
 	var data struct {
@@ -39,29 +49,14 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 	}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return "Unable to retrieve release notes. Please check your network connection"
+		return "", errors.New("Unable to retrieve release notes. Please check your network connection")
 	}
 
 	if data.Body == nil {
-		return "No release notes found"
+		return "", errors.New("No release notes found")
 	}
 
-	result := "# Release Notes for " + tagVersion + "\n" + *data.Body
-	var renderer *glamour.TermRenderer
-
-	if noColour {
-		renderer, err = glamour.NewTermRenderer(glamour.WithStyles(styles.NoTTYStyleConfig))
-	} else {
-		renderer, err = glamour.NewTermRenderer(glamour.WithAutoStyle())
-	}
-	if err != nil {
-		return result
-	}
-	result, err = renderer.Render(result)
-	if err != nil {
-		return err.Error()
-	}
-	return result
+	return "# Release Notes for " + tagVersion + "\n" + *data.Body, nil
 }
 
 // GetVersionTags gets the v3 release tags of the Wails repo, sorted in
@@ -71,7 +66,7 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 	result := []*SemanticVersion{}
 
 	for page := 1; page <= 10; page++ {
-		resp, err := http.Get(fmt.Sprintf("https://api.github.com/repos/wailsapp/wails/tags?per_page=100&page=%d", page))
+		resp, err := getWithTimeout(fmt.Sprintf("https://api.github.com/repos/wailsapp/wails/tags?per_page=100&page=%d", page))
 		if err != nil {
 			return result, err
 		}
@@ -104,7 +99,7 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 			}
 			result = append(result, semver)
 		}
-		if len(data) < 100 {
+		if len(data) < 100 && !strings.Contains(resp.Header.Get("Link"), `rel="next"`) {
 			break
 		}
 	}
@@ -161,8 +156,9 @@ func GetLatestPreRelease() (result *SemanticVersion, err error) {
 
 // IsValidTag returns true if the given string is a valid tag
 func IsValidTag(tagVersion string) (bool, error) {
-	if tagVersion[0] == 'v' {
-		tagVersion = tagVersion[1:]
+	tagVersion = strings.TrimPrefix(tagVersion, "v")
+	if tagVersion == "" {
+		return false, nil
 	}
 	tags, err := GetVersionTags()
 	if err != nil {

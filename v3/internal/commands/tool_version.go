@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"math/big"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/github"
@@ -18,18 +17,23 @@ type ToolVersionOptions struct {
 
 // bumpPrerelease increments the final numeric prerelease identifier.
 func bumpPrerelease(prerelease string) string {
-	parts := strings.Split(prerelease, ".")
-	lastPart := parts[len(parts)-1]
+	start := strings.LastIndexByte(prerelease, '.') + 1
+	lastPart := prerelease[start:]
 	if lastPart == "" || strings.Trim(lastPart, "0123456789") != "" {
 		return prerelease
 	}
 
-	// Prerelease identifiers have no machine-integer size limit.
-	var num big.Int
-	num.SetString(lastPart, 10)
-	num.Add(&num, big.NewInt(1))
-	parts[len(parts)-1] = num.String()
-	return strings.Join(parts, ".")
+	// Increment decimal digits directly, without imposing a machine-integer limit.
+	// Strip leading zeroes to preserve the previous integer formatter's behavior.
+	digits := []byte(strings.TrimLeft(lastPart, "0"))
+	for i := len(digits) - 1; i >= 0; i-- {
+		if digits[i] != '9' {
+			digits[i]++
+			return prerelease[:start] + string(digits)
+		}
+		digits[i] = '0'
+	}
+	return prerelease[:start] + "1" + string(digits)
 }
 
 // ToolVersion bumps a semantic version based on the provided flags

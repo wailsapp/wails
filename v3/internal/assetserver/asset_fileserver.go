@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -144,7 +145,7 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 		return nil
 	}
 
-	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+	rw.Header().Set(HeaderContentLength, strconv.FormatInt(statInfo.Size(), 10))
 	if req.Method == http.MethodHead {
 		rw.WriteHeader(http.StatusOK)
 		return nil

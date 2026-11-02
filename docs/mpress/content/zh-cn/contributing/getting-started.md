@@ -143,7 +143,7 @@ git push origin fix/issue-123-window-crash
 [WEP（增强功能）]
 @steps
 ### 编写 WEP
-- 阅读[WEP（Wails 增强提案）流程](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
+- 阅读[WEP（Wails 增强提案）流程](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)
 - 将 WEP 模板复制到`v3/wep/proposals/<name>/proposal.md`
 - 创建一个标题为`[WEP] <title>`且仅包含 WEP 的草稿 PR
 - 等待维护者作出决定后再实施

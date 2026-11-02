@@ -688,4 +688,4 @@ Padrões comuns de menus e práticas recomendadas.
 
 ---
 
-**Tem dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/menu).
+**Tem dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu).

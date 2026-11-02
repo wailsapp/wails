@@ -14,8 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jackmordaunt/icns/v2"
-	"github.com/leaanthony/winicon"
+	"github.com/wailsapp/wails/v3/internal/iconfile"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"howett.net/plist"
 )
@@ -157,7 +156,7 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 	}
 
 	var output bytes.Buffer
-	if err := icns.Encode(&output, srcImg); err != nil {
+	if err := iconfile.EncodeMac(&output, srcImg); err != nil {
 		return err
 	}
 	return os.WriteFile(options.MacFilename, output.Bytes(), 0644)
@@ -315,7 +314,7 @@ func generateWindowsIcon(iconData []byte, sizes []int, options *IconsOptions) er
 
 	var output bytes.Buffer
 
-	err := winicon.GenerateIcon(bytes.NewBuffer(iconData), &output, sizes)
+	err := iconfile.Encode(&output, bytes.NewReader(iconData), sizes)
 	if err != nil {
 		return err
 	}

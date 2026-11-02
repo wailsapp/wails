@@ -3,11 +3,13 @@ package s
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -78,5 +80,101 @@ func TestDownloadHTTPStatus(t *testing.T) {
 				t.Errorf("destination=%q, want %q; read error=%v", data, tc.want, readErr)
 			}
 		})
+	}
+}
+
+func TestDownloadInterruptedPreservesTarget(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "100")
+		_, _ = io.WriteString(w, "partial")
+	}))
+	t.Cleanup(server.Close)
+	for _, existing := range []bool{false, true} {
+		t.Run(fmt.Sprintf("existing=%t", existing), func(t *testing.T) {
+			dir := t.TempDir()
+			target := filepath.Join(dir, "tool")
+			if existing {
+				if err := os.WriteFile(target, []byte("original"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			cmd := exec.Command(os.Args[0], "-test.run=^TestDownloadProcess$")
+			cmd.Env = append(os.Environ(), "WAILS_TEST_DOWNLOAD_PROCESS=1", "WAILS_TEST_DOWNLOAD_URL="+server.URL, "WAILS_TEST_DOWNLOAD_TARGET="+target)
+			output, err := cmd.CombinedOutput()
+			if err == nil || cmd.ProcessState == nil || cmd.ProcessState.ExitCode() != 1 {
+				t.Fatalf("expected failed download: %v: %s", err, output)
+			}
+			if !strings.Contains(string(output), "unexpected EOF") {
+				t.Fatalf("missing transfer failure: %s", output)
+			}
+			data, err := os.ReadFile(target)
+			if existing {
+				if err != nil || string(data) != "original" {
+					t.Errorf("existing target=%q, error=%v", data, err)
+				}
+			} else if !errors.Is(err, os.ErrNotExist) {
+				t.Errorf("partial target remains: %q, error=%v", data, err)
+			}
+			leftovers, err := filepath.Glob(filepath.Join(dir, ".wails-download-*"))
+			if err != nil || len(leftovers) != 0 {
+				t.Errorf("staging leftovers=%v, error=%v", leftovers, err)
+			}
+		})
+	}
+}
+
+func TestDownloadPublishFailureCleansStaging(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = io.WriteString(w, "complete") }))
+	t.Cleanup(server.Close)
+	dir := t.TempDir()
+	target := filepath.Join(dir, "directory")
+	if err := os.Mkdir(target, 0700); err != nil {
+		t.Fatal(err)
+	}
+	marker := filepath.Join(target, "existing")
+	if err := os.WriteFile(marker, []byte("original"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := downloadFile(server.URL, target); err == nil {
+		t.Fatal("expected directory replacement to fail")
+	}
+	data, err := os.ReadFile(marker)
+	if err != nil || string(data) != "original" {
+		t.Fatalf("existing contents=%q, error=%v", data, err)
+	}
+	leftovers, err := filepath.Glob(filepath.Join(dir, ".wails-download-*"))
+	if err != nil || len(leftovers) != 0 {
+		t.Fatalf("staging leftovers=%v, error=%v", leftovers, err)
+	}
+}
+
+func TestDownloadReplacementPermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix permission bits")
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = io.WriteString(w, "complete") }))
+	t.Cleanup(server.Close)
+	for _, mode := range []os.FileMode{0600, 0755} {
+		target := filepath.Join(t.TempDir(), "tool")
+		if err := os.WriteFile(target, []byte("original"), mode); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(target, mode); err != nil {
+			t.Fatal(err)
+		}
+		if err := downloadFile(server.URL, target); err != nil {
+			t.Fatal(err)
+		}
+		info, err := os.Stat(target)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if info.Mode().Perm() != mode {
+			t.Errorf("mode=%o, want %o", info.Mode().Perm(), mode)
+		}
+		data, err := os.ReadFile(target)
+		if err != nil || string(data) != "complete" {
+			t.Fatalf("replacement=%q, error=%v", data, err)
+		}
 	}
 }

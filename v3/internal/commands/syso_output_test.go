@@ -1,12 +1,43 @@
 package commands
 
 import (
+	"bytes"
 	"debug/pe"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/wailsapp/wails/v3/internal/iconfile"
 )
+
+func TestGenerateSysoWithGeneratedIcon(t *testing.T) {
+	previous := DisableFooter
+	t.Cleanup(func() { DisableFooter = previous })
+	options := sysoTestOptions(t)
+	artwork, err := buildAssets.ReadFile("build_assets/appicon.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var icon bytes.Buffer
+	if err := iconfile.Encode(&icon, bytes.NewReader(artwork), []int{16, 256, 48, 16}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(options.Icon, icon.Bytes(), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := GenerateSyso(options); err != nil {
+		t.Fatal(err)
+	}
+	object, err := pe.Open(options.Out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer object.Close()
+	if object.Machine != pe.IMAGE_FILE_MACHINE_AMD64 {
+		t.Errorf("COFF machine = %#x, want amd64", object.Machine)
+	}
+}
 
 func sysoTestOptions(t *testing.T) *SysoOptions {
 	t.Helper()

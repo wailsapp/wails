@@ -9,7 +9,7 @@ image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
 ---
 
-@video{src="/assets/videos/wails-v3-release-clean-av1.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 출시 영상 — 전체 화면으로 보는 것을 권장합니다" width="1920" height="1080"}
+@video{src="/assets/videos/wails-v3-release-clean-av1.mp4, /assets/videos/wails-v3-release-clean-h264.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 출시 영상 — 전체 화면으로 보는 것을 권장합니다" width="1920" height="1080"}
 
 ## 드디어 출시되었습니다!
 

@@ -758,4 +758,4 @@ Verstehen Sie den Bridge-Mechanismus.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.

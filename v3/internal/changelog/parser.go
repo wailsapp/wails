@@ -95,8 +95,8 @@ func (p *Parser) ParseContent(reader io.Reader) (*ChangelogEntry, error) {
 		}
 
 		// Parse bullet points
-		if matches := p.bulletRegex.FindStringSubmatch(line); len(matches) > 1 {
-			content := strings.TrimSpace(matches[1])
+		if p.bulletRegex.MatchString(line) {
+			content := strings.TrimSpace(line[1:])
 			if content == "" {
 				continue
 			}

@@ -705,4 +705,4 @@ func TestGreetService(t *testing.T) {
 
 ---
 
-<strong>對橋接器有疑問嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。
+<strong>對橋接器有疑問嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。

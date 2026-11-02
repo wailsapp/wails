@@ -758,4 +758,4 @@ Pahami mekanisme jembatan.
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).
