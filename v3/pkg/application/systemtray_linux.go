@@ -248,6 +248,30 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.refreshLocked()
 }
 
+// refreshSystemTrayMenus rebuilds the dbusmenu layout of every tray showing
+// menu. That layout is built from the Menu by setMenu, separately from the
+// native menu Menu.Update rebuilds, so without this a tray never shows changes
+// made with Menu.Update.
+func refreshSystemTrayMenus(menu *Menu) {
+	app := globalApplication
+	if app == nil {
+		return
+	}
+	InvokeSync(func() {
+		app.systemTraysLock.Lock()
+		var trays []*linuxSystemTray
+		for _, tray := range app.systemTrays {
+			if impl, ok := tray.impl.(*linuxSystemTray); ok && tray.menu == menu {
+				trays = append(trays, impl)
+			}
+		}
+		app.systemTraysLock.Unlock()
+		for _, tray := range trays {
+			tray.setMenu(menu)
+		}
+	})
+}
+
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
 	_, _, currentScreen := getMousePosition()
 	if currentScreen == nil {

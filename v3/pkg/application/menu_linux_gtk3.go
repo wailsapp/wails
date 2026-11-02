@@ -43,6 +43,8 @@ func (m *linuxMenu) update() {
 	if m.menu == nil {
 		return
 	}
+	defer refreshSystemTrayMenus(m.menu)
+
 	m.processMenu(m.menu)
 	refreshGTK3MenuViews(m.menu)
 }
