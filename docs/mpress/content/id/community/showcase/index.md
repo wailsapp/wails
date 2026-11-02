@@ -48,6 +48,7 @@ Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Tangkapan layar Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Tangkapan layar Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Tangkapan layar MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Zentro screenshot" loading="lazy"><span>Zentro</span></a>
 </div>
 
 ## Cara menambahkan proyek saya ke showcase
