@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## См. также
 
-- Готовый к запуску пример: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
+- Готовый к запуску пример: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - Репозиторий с тестовой демонстрацией: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Учебное руководство: [Добавление самообновления в приложение Wails](/tutorials/04-self-update-a-wails-app/)

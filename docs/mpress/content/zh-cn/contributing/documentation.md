@@ -24,15 +24,15 @@ Wails v3使用**M-Press**将 Markdown 转换为此文档站点。你可以修正
 
 ### 下载可执行文件
 
-打开[最新的 M-Press 稳定版](https://github.com/leaanthony/mpress/releases/latest)发布页面，或在下面下载对应的压缩包。ARM64 包括 Apple Silicon；AMD64 是 Intel/AMD PC 常用的架构。
+打开[最新的 M-Press 稳定版](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)发布页面，或在下面下载对应的压缩包。ARM64 包括 Apple Silicon；AMD64 是 Intel/AMD PC 常用的架构。
 
 | 计算机 | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-从同一个发布版本下载[checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt)。在下载目录中，计算压缩包的 SHA-256 哈希值，并将其与`checksums.txt`中该文件名所在行的值进行比较：
+从同一个发布版本下载[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)。在下载目录中，计算压缩包的 SHA-256 哈希值，并将其与`checksums.txt`中该文件名所在行的值进行比较：
 
 @tabs
 [macOS]
@@ -101,7 +101,7 @@ mpress version
 如果你已在使用 Go，也可以改为自行构建最新的稳定版。请查看其`go.mod`以了解所需的工具链；Go 的自动工具链选择功能可能会下载该工具链。本轮文档更新所使用的版本要求 Go 1.26.10或更高版本。
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 mpress version
 ```
 

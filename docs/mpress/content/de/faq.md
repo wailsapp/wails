@@ -230,11 +230,11 @@ Ja. Die CLIs sind separate Binärdateien (`wails` und `wails3`), und die Module 
 
 ### Wie kann ich beitragen?
 
-Lesen Sie den [Leitfaden für Beiträge](/contributing/). Fehlerbehebungen sind jederzeit willkommen. Für neue Funktionen und Änderungen am öffentlichen Verhalten ist ein PR mit einem Entwurf für einen [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) erforderlich. Informelle Diskussionen auf Discord oder in GitHub Discussions sind optional.
+Lesen Sie den [Leitfaden für Beiträge](/contributing/). Fehlerbehebungen sind jederzeit willkommen. Für neue Funktionen und Änderungen am öffentlichen Verhalten ist ein PR mit einem Entwurf für einen [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) erforderlich. Informelle Diskussionen auf Discord oder in GitHub Discussions sind optional.
 
 ### Wo finde ich Beispiele?
 
-Das Repository enthält mehr als 60 ausführbare Beispiele zu Fenstern, Dialogen, Events, der Taskleiste, Services und weiteren Themen: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+Das Repository enthält mehr als 60 ausführbare Beispiele zu Fenstern, Dialogen, Events, der Taskleiste, Services und weiteren Themen: [v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
 
 ## Noch Fragen?
 

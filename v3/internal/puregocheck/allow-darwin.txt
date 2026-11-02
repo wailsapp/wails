@@ -1,0 +1,4 @@
+# Purego functions that are intentionally empty although their cgo twin is
+# not. One name per line (Type.method or func), with the reason.
+# macosSystemTray.cacheMenu: the purego pre-click monitor reads s.nsMenu directly, so there is no controller-side menu cache (cgo caches it on the ObjC controller).
+macosSystemTray.cacheMenu

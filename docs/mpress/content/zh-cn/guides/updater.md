@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 另请参阅
 
-- 可运行示例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
+- 可运行示例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - 测试演示仓库：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - 教程：[为 Wails 应用添加自更新](/tutorials/04-self-update-a-wails-app/)

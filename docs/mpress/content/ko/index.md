@@ -177,7 +177,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ---
 ▣ 데스크톱 및 모바일
-- Windows, macOS, Linux, iOS, Android
+- Windows, macOS, Linux, iOS 및 Android
 - 동일한 코드베이스, 재작성 불필요
 - 모든 플랫폼에서 네이티브 WebView 사용
 - 열린 포트 및 localhost 서버 없음
@@ -187,7 +187,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 다음 단계
 
-다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
+다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
 
 @note{type="info" title="Wails v3.0.0"}
 Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다.

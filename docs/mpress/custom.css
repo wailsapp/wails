@@ -443,3 +443,12 @@ html[data-theme="light"] .docs-page .mpress-admonition-danger { --notice: hsl(33
   border: 0;
   border-radius: 0;
 }
+
+/* Give blog screenshots and comparison tables room on larger screens. */
+.blog-article-page .blog-article-main {
+  box-sizing: border-box;
+  width: min(100%, 916px);
+  padding-inline: clamp(1rem, 3vw, 3rem);
+}
+.blog-article-page .blog-article { max-width: 820px; }
+.blog-article-page .blog-article-body > p { max-width: none; }

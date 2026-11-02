@@ -36,25 +36,6 @@ const TOOL_INFO: Record<string, {
       windows: 'winget install GnuPG.Gpg4win',
     },
   },
-  rcodesign: {
-    label: 'rcodesign (apple-codesign)',
-    desc: 'Signs & notarizes macOS apps from Linux/Windows using a .p12 + App Store Connect API key.',
-    link: `${SIGNING_DOCS}/#macos-code-signing`,
-    install: {
-      darwin: 'brew install rcodesign',
-      linux: 'cargo install apple-codesign',
-      windows: 'cargo install apple-codesign',
-    },
-  },
-  osslsigncode: {
-    label: 'osslsigncode',
-    desc: 'Authenticode-signs Windows binaries from macOS/Linux.',
-    link: `${SIGNING_DOCS}/#windows-code-signing`,
-    install: {
-      darwin: 'brew install osslsigncode',
-      linux: 'sudo apt install osslsigncode',
-    },
-  },
   openssl: {
     label: 'OpenSSL',
     desc: 'Needed to generate a self-signed test certificate.',
@@ -67,7 +48,7 @@ const TOOL_INFO: Record<string, {
   },
   signtool: {
     label: 'signtool (Windows SDK)',
-    desc: 'Native Authenticode signing tool, ships with the Windows SDK.',
+    desc: 'Required on Windows for certificate-store/provider identities, MSI packages and legacy RC2 PFX exports.',
     link: `${SIGNING_DOCS}/#windows-code-signing`,
     install: {
       windows: 'winget install Microsoft.WindowsSDK',
@@ -136,13 +117,16 @@ function ToolStatus({ toolKey, available, host }: { toolKey: string; available: 
 }
 
 interface Props {
+  platforms?: Platform[];
+  wakeMode?: boolean;
+  mobileSigning?: boolean;
   onNext: () => void;
   onSkip: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
 }
 
-export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props) {
+export default function SigningStep({ onNext, onSkip, onBack, canGoBack, platforms = ['darwin', 'windows', 'linux'], wakeMode = false, mobileSigning = false }: Props) {
   const [status, setStatus] = useState<SigningStatus | null>(null);
   const [config, setConfig] = useState<SigningDefaults | null>(null);
   const [loading, setLoading] = useState(true);
@@ -152,7 +136,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [rechecking, setRechecking] = useState(false);
   const [authorName, setAuthorName] = useState('');
   const [authorEmail, setAuthorEmail] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('darwin');
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(platforms[0] || 'darwin');
   // 'status' | 'identity' | 'notarize'
   const [configStep, setConfigStep] = useState<'status' | 'identity' | 'notarize'>('status');
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -220,16 +204,11 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm">
               <p className="text-amber-800 dark:text-amber-200 font-medium mb-1">Signing macOS from {hostOS === 'linux' ? 'Linux' : 'Windows'}</p>
               <p className="text-amber-700 dark:text-amber-300 text-xs">
-                Use <a href="https://github.com/indygreg/apple-platform-rs/tree/main/apple-codesign"
-                   target="_blank" rel="noopener noreferrer"
-                   className="underline hover:no-underline">rcodesign</a> with a .p12 certificate exported from a Mac
-                (or via the Apple Developer portal).
+                Use an exported RSA .p12 certificate with AES or 3DES encryption.
+                Wails signs it directly; no external signing tool is required.
+                Notarization uses an App Store Connect team API key.
               </p>
             </div>
-          )}
-
-          {!isOnMac && (
-            <ToolStatus toolKey="rcodesign" available={status?.darwin.rcodesignAvailable ?? false} host={hostOS} />
           )}
 
           <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300">
@@ -403,11 +382,13 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
       const winHost = hostOS === 'windows';
       return (
         <div className="space-y-4">
-          {/* Tooling needed to actually run the signing on this host */}
-          {winHost ? (
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300">
+            Wails signs EXE/DLL files and individual MSIX/APPX packages directly on every desktop platform
+            using an exported RSA PFX with AES or 3DES encryption. Certificate-store/provider identities,
+            MSI packages and legacy RC2 exports require Windows SignTool.
+          </div>
+          {winHost && !config.windows?.certificatePath && config.windows?.thumbprint && (
             <ToolStatus toolKey="signtool" available={status?.windows.hasSignTool ?? false} host={hostOS} />
-          ) : (
-            <ToolStatus toolKey="osslsigncode" available={status?.windows.osslsigncodeAvailable ?? false} host={hostOS} />
           )}
 
           {/* Generate a self-signed certificate (testing/internal only) */}
@@ -586,19 +567,17 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
             configured={windows.hasCertificate}
             value={windows.hasCertificate ? `Type: ${windows.certificateType}` : 'Not configured'}
           />
-          {/* Signing backend depends on the host: signtool is Windows-native;
-              osslsigncode is the cross-platform signer used from macOS/Linux. */}
-          {hostOS === 'windows' ? (
+          {windows.certificateType === 'store' || windows.certificateType?.startsWith('cloud:') ? (
             <StatusRow
-              label="SignTool"
-              configured={windows.hasSignTool}
-              value={windows.hasSignTool ? 'Available' : 'Not found (Windows SDK required)'}
+              label="Native signing"
+              configured={hostOS === 'windows' && windows.hasSignTool}
+              value={hostOS !== 'windows' ? 'Requires Windows with SignTool' : windows.hasSignTool ? 'SignTool available' : 'Install the Windows SDK signing tools'}
             />
           ) : (
             <StatusRow
-              label="osslsigncode"
-              configured={windows.osslsigncodeAvailable}
-              value={windows.osslsigncodeAvailable ? 'Available' : 'Not found (needed to sign from ' + (hostOS === 'darwin' ? 'macOS' : 'Linux') + ')'}
+              label="Exported PFX signing"
+              configured={true}
+              value="Built in for RSA AES/3DES PFX; no external signing tool required"
             />
           )}
         </div>
@@ -622,12 +601,9 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   };
 
   const getOverallStatus = () => {
-    if (!status) return { configured: 0, total: 3 };
-    let configured = 0;
-    if (status.darwin.hasIdentity) configured++;
-    if (status.windows.hasCertificate) configured++;
-    if (status.linux.hasGpgKey) configured++;
-    return { configured, total: 3 };
+    if (!status) return { configured: 0, total: platforms.length };
+    const configured = { darwin: status.darwin.hasIdentity, windows: status.windows.hasCertificate, linux: status.linux.hasGpgKey };
+    return { configured: platforms.filter((platform) => configured[platform]).length, total: platforms.length };
   };
 
   const overallStatus = getOverallStatus();
@@ -694,29 +670,24 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
               </button>
             </div>
             <div className="flex gap-2 mb-6" role="tablist">
-              <PlatformTab
-                platform="darwin"
-                label="macOS"
-                isActive={selectedPlatform === 'darwin'}
-                hasConfig={status?.darwin.hasIdentity}
-                onClick={() => { setSelectedPlatform('darwin'); setConfigStep('status'); }}
-              />
-              <PlatformTab
-                platform="windows"
-                label="Windows"
-                isActive={selectedPlatform === 'windows'}
-                hasConfig={status?.windows.hasCertificate}
-                onClick={() => { setSelectedPlatform('windows'); setConfigStep('status'); }}
-              />
-              <PlatformTab
-                platform="linux"
-                label="Linux"
-                isActive={selectedPlatform === 'linux'}
-                hasConfig={status?.linux.hasGpgKey}
-                onClick={() => { setSelectedPlatform('linux'); setConfigStep('status'); }}
-              />
+              {platforms.map((platform) => <PlatformTab
+                key={platform}
+                platform={platform}
+                label={{ darwin: 'macOS', windows: 'Windows', linux: 'Linux' }[platform]}
+                isActive={selectedPlatform === platform}
+                hasConfig={platform === 'darwin' ? status?.darwin.hasIdentity : platform === 'windows' ? status?.windows.hasCertificate : status?.linux.hasGpgKey}
+                onClick={() => { setSelectedPlatform(platform); setConfigStep('status'); }}
+              />)}
             </div>
 
+            {wakeMode && (
+              <div className="mb-5 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-blue-800 dark:text-blue-200">
+                {selectedPlatform === 'windows' && <p>Protected PFX files need the environment variable named by windows.signing.credential. Existing global certificates can use WAILS_WINDOWS_CERT_PASSWORD. Creating a test certificate here does not store its password.</p>}
+                {selectedPlatform === 'linux' && <p>Protected exported keys need the environment variable named by linux.signing.credential. Existing global signing can use WAILS_PGP_PASSWORD.</p>}
+                {selectedPlatform === 'darwin' && <p>Exported P12 identities need darwin.signing.credential to name the password environment variable. Set it before running the build; this page does not save an Apple certificate password.</p>}
+                {mobileSigning && <p className="mt-2">Selected mobile targets also need their existing ios.signing or android.signing settings in wails.yaml; these tabs configure desktop credentials.</p>}
+              </div>
+            )}
             <AnimatePresence mode="wait">
               {configStep === 'notarize' ? (
                 <motion.div
@@ -1183,8 +1154,8 @@ function GPGKeySetup({ defaultName, defaultEmail, onCreated, startOpen }: {
         <p>GPG key created{done.keyID !== 'created' ? <> — ID <code className="font-mono">{done.keyID}</code></> : ''} and selected.</p>
         {done.keyPath && (
           <p className="text-xs">
-            Exported to <code className="font-mono break-all">{done.keyPath}</code>. Builds sign with this
-            file — set it as <code className="font-mono">PGP_KEY</code> in <code className="font-mono">build/linux/Taskfile.yml</code> (or run <code className="font-mono">wails3 setup signing</code> in your project).
+            Exported to <code className="font-mono break-all">{done.keyPath}</code>. This file is now used by
+            your global signing defaults. To configure a project-specific override, run <code className="font-mono">wails3 setup signing</code> from that project.
           </p>
         )}
       </div>

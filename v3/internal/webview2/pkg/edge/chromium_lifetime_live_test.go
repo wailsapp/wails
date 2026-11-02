@@ -103,18 +103,18 @@ func eventHandlers(e *Chromium) map[string]unsafe.Pointer {
 	}
 }
 
-func handlerAddrs(e *Chromium) map[string]comAddr {
-	addrs := map[string]comAddr{}
+func handlerAddrs(e *Chromium) map[string]comRef {
+	addrs := map[string]comRef{}
 	for name, p := range eventHandlers(e) {
-		addrs[name] = comAddr(uintptr(p))
+		addrs[name] = newComRef(p)
 	}
 	return addrs
 }
 
-func liveRefs(addrs map[string]comAddr) (total uint32, held map[string]uint32) {
+func liveRefs(addrs map[string]comRef) (total uint32, held map[string]uint32) {
 	held = map[string]uint32{}
 	for name, addr := range addrs {
-		if n := handlerRefCount(unsafe.Pointer(uintptr(addr))); n != 0 {
+		if n := addr.refs(); n != 0 {
 			held[name] = n
 			total += n
 		}
@@ -136,7 +136,7 @@ func checkNoStrayReferences(t *testing.T, queries, releases uint64) {
 // it before the completion is delivered, as the embed timeout does.
 //
 //go:noinline
-func startAbandonedController(t *testing.T, env *ICoreWebView2Environment, hwnd uintptr) (comAddr, weak.Pointer[Chromium]) {
+func startAbandonedController(t *testing.T, env *ICoreWebView2Environment, hwnd uintptr) (comRef, weak.Pointer[Chromium]) {
 	e := NewChromium()
 	e.hwnd = hwnd
 	if err := env.CreateCoreWebView2Controller(hwnd, e.controllerCompleted); err != nil {
@@ -147,7 +147,7 @@ func startAbandonedController(t *testing.T, env *ICoreWebView2Environment, hwnd 
 		t.Fatal("WebView2 did not AddRef the pending completion handler")
 	}
 	e.ShuttingDown()
-	return comAddr(uintptr(handler)), weak.Make(e)
+	return newComRef(handler), weak.Make(e)
 }
 
 func TestLiveDelayedControllerCallbackAfterAbandon(t *testing.T) {
@@ -161,7 +161,7 @@ func TestLiveDelayedControllerCallbackAfterAbandon(t *testing.T) {
 	if instance.Value() == nil {
 		t.Fatal("abandoned Chromium was collected while its completion was pending")
 	}
-	if !pumpUntil(30*time.Second, func() bool { return handlerRefCount(unsafe.Pointer(uintptr(handler))) == 0 }) {
+	if !pumpUntil(30*time.Second, func() bool { return handler.refs() == 0 }) {
 		t.Fatal("WebView2 did not deliver and release the late completion")
 	}
 	if !waitCollected(instance) {
@@ -174,7 +174,7 @@ func TestLiveDelayedControllerCallbackAfterAbandon(t *testing.T) {
 // closes it the way a failed or torn down instance is closed.
 //
 //go:noinline
-func embedAndClose(t *testing.T, hwnd uintptr) (map[string]comAddr, weak.Pointer[Chromium], weak.Pointer[hostWindow]) {
+func embedAndClose(t *testing.T, hwnd uintptr) (map[string]comRef, weak.Pointer[Chromium], weak.Pointer[hostWindow]) {
 	w := &hostWindow{}
 	e := embedLive(t, hwnd)
 	e.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { w.events++ }
@@ -210,7 +210,7 @@ func TestLiveClosedChromiumReleasesHandlers(t *testing.T) {
 // before embedding its replacement into the same window.
 //
 //go:noinline
-func replaceChromium(t *testing.T, hwnd uintptr) (*Chromium, map[string]comAddr, weak.Pointer[Chromium], weak.Pointer[hostWindow]) {
+func replaceChromium(t *testing.T, hwnd uintptr) (*Chromium, map[string]comRef, weak.Pointer[Chromium], weak.Pointer[hostWindow]) {
 	w := &hostWindow{}
 	previous := embedLive(t, hwnd)
 	previous.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { w.events++ }
@@ -250,7 +250,7 @@ func TestLiveReplacementReleasesAbandonedHandlers(t *testing.T) {
 // controller.
 //
 //go:noinline
-func embedAndDestroyWindow(t *testing.T, hwnd uintptr) (map[string]comAddr, weak.Pointer[Chromium]) {
+func embedAndDestroyWindow(t *testing.T, hwnd uintptr) (map[string]comRef, weak.Pointer[Chromium]) {
 	e := embedLive(t, hwnd)
 	addrs := handlerAddrs(e)
 	e.ShuttingDown()

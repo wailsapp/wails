@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,9 +11,11 @@ import (
 	"time"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/bundlearchive"
 	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
+	"github.com/wailsapp/wails/v3/internal/packagesign"
 )
 
 // resolveSigningDefaults fills in any signing options not supplied via flags from
@@ -20,6 +23,7 @@ import (
 // configuration written by `wails3 setup` take effect at sign time for every
 // platform — flags (and therefore project Taskfile vars) still win when present.
 func resolveSigningDefaults(options *flags.Sign) {
+	explicitAppleIdentity := options.Identity != ""
 	cfg, err := defaults.Load()
 	if err != nil {
 		return
@@ -29,21 +33,38 @@ func resolveSigningDefaults(options *flags.Sign) {
 	if options.Identity == "" && cfg.Signing.Darwin.Identity != "" {
 		options.Identity = cfg.Signing.Darwin.Identity
 	}
-	if options.KeychainProfile == "" && cfg.Signing.Darwin.KeychainProfile != "" {
+	if options.KeychainProfile == "" && !usesNotaryAPI(options) && cfg.Signing.Darwin.KeychainProfile != "" {
 		options.KeychainProfile = cfg.Signing.Darwin.KeychainProfile
 	}
 	if options.Entitlements == "" && cfg.Signing.Darwin.Entitlements != "" {
 		options.Entitlements = cfg.Signing.Darwin.Entitlements
 	}
 
-	// Windows
-	if options.Certificate == "" && cfg.Signing.Windows.CertificatePath != "" {
+	// Windows defaults apply only to non-Apple inputs.
+	appleInput := appleSigningInput(options.Input)
+	if appleInput {
+		if options.Certificate == "" && !explicitAppleIdentity {
+			options.Certificate = cfg.Signing.Darwin.P12Path
+		}
+		if options.KeychainProfile == "" {
+			if options.NotaryKey == "" {
+				options.NotaryKey = cfg.Signing.Darwin.APIKeyPath
+			}
+			if options.NotaryKeyID == "" {
+				options.NotaryKeyID = cfg.Signing.Darwin.APIKeyID
+			}
+			if options.NotaryIssuerID == "" {
+				options.NotaryIssuerID = cfg.Signing.Darwin.APIIssuerID
+			}
+		}
+	}
+	if !appleInput && options.Certificate == "" && options.Thumbprint == "" && cfg.Signing.Windows.CertificatePath != "" {
 		options.Certificate = cfg.Signing.Windows.CertificatePath
 	}
-	if options.Thumbprint == "" && cfg.Signing.Windows.Thumbprint != "" {
+	if !appleInput && options.Thumbprint == "" && cfg.Signing.Windows.Thumbprint != "" {
 		options.Thumbprint = cfg.Signing.Windows.Thumbprint
 	}
-	if options.Timestamp == "" && cfg.Signing.Windows.TimestampServer != "" {
+	if !appleInput && options.Timestamp == "" && cfg.Signing.Windows.TimestampServer != "" {
 		options.Timestamp = cfg.Signing.Windows.TimestampServer
 	}
 
@@ -77,12 +98,15 @@ func Sign(options *flags.Sign) error {
 	ext := strings.ToLower(filepath.Ext(options.Input))
 
 	// macOS app bundle (directory)
-	if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
+	if info.IsDir() && appleBundleInput(options.Input) {
 		return signMacOSApp(options)
+	}
+	if ext == ".dmg" {
+		return signMacOSDiskImage(options)
 	}
 
 	// macOS binary or Windows executable
-	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
+	if ext == ".exe" || ext == ".dll" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
 		return signWindows(options)
 	}
 
@@ -93,17 +117,62 @@ func Sign(options *flags.Sign) error {
 	if ext == ".rpm" {
 		return signRPM(options)
 	}
+	if strings.HasSuffix(strings.ToLower(options.Input), ".pkg.tar.zst") {
+		return signArchPackage(context.Background(), options.Input, options.PGPKey, options.PGPPassword)
+	}
 
 	// macOS binary (no extension typically)
-	if runtime.GOOS == "darwin" && options.Identity != "" {
+	if appleSigningInput(options.Input) || runtime.GOOS == "darwin" && options.Identity != "" {
 		return signMacOSBinary(options)
 	}
 
 	return fmt.Errorf("unsupported file type: %s", ext)
 }
 
+func signMacOSDiskImage(options *flags.Sign) error {
+	resolveSigningDefaults(options)
+	if portableAppleSigning(options) {
+		return signPortableApple(context.Background(), options)
+	}
+	if options.Identity == "" {
+		return fmt.Errorf("--identity is required for macOS disk image signing (set via `wails3 setup` or --identity flag)")
+	}
+	args := []string{"--force", "--sign", options.Identity, options.Input}
+	cmd := exec.Command("codesign", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("codesign disk image failed: %w", err)
+	}
+	pterm.Success.Printfln("Signed: %s", options.Input)
+	if !options.Notarize {
+		return nil
+	}
+	return notarizeMacOSDiskImage(context.Background(), options)
+}
+
+func notarizeMacOSDiskImage(ctx context.Context, options *flags.Sign) error {
+	if usesNotaryAPI(options) {
+		return notarizeMacOSWithAPI(ctx, options)
+	}
+	if options.KeychainProfile == "" {
+		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
+	}
+	if err := submitNotarizationProfile(ctx, options.Input, options.KeychainProfile); err != nil {
+		return err
+	}
+	if err := stapleNotarization(ctx, options.Input); err != nil {
+		return fmt.Errorf("disk image stapling failed: %w", err)
+	}
+	pterm.Success.Println("Notarization complete and ticket stapled")
+	return nil
+}
+
 func signMacOSApp(options *flags.Sign) error {
 	resolveSigningDefaults(options)
+	if portableAppleSigning(options) {
+		return signPortableApple(context.Background(), options)
+	}
 	if options.Identity == "" {
 		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
@@ -156,7 +225,7 @@ func signMacOSApp(options *flags.Sign) error {
 
 	// Notarize if requested
 	if options.Notarize {
-		return notarizeMacOSApp(options)
+		return notarizeMacOSApp(context.Background(), options)
 	}
 
 	return nil
@@ -164,6 +233,9 @@ func signMacOSApp(options *flags.Sign) error {
 
 func signMacOSBinary(options *flags.Sign) error {
 	resolveSigningDefaults(options)
+	if portableAppleSigning(options) {
+		return signPortableApple(context.Background(), options)
+	}
 	if options.Identity == "" {
 		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
@@ -199,7 +271,10 @@ func signMacOSBinary(options *flags.Sign) error {
 	return nil
 }
 
-func notarizeMacOSApp(options *flags.Sign) error {
+func notarizeMacOSApp(ctx context.Context, options *flags.Sign) error {
+	if usesNotaryAPI(options) {
+		return notarizeMacOSWithAPI(ctx, options)
+	}
 	if options.KeychainProfile == "" {
 		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
 	}
@@ -208,36 +283,21 @@ func notarizeMacOSApp(options *flags.Sign) error {
 		pterm.Info.Println("Submitting for notarization...")
 	}
 
-	// Create a zip for notarization
-	zipPath := options.Input + ".zip"
-	zipCmd := exec.Command("ditto", "-c", "-k", "--keepParent", options.Input, zipPath)
-	if err := zipCmd.Run(); err != nil {
+	archiveDir, err := os.MkdirTemp("", "wails-notarization-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(archiveDir)
+	zipPath := filepath.Join(archiveDir, "application.zip")
+	if err := bundlearchive.Create(ctx, zipPath, options.Input); err != nil {
 		return fmt.Errorf("failed to create zip for notarization: %w", err)
 	}
-	defer os.Remove(zipPath)
 
-	// Submit for notarization
-	args := []string{
-		"notarytool", "submit",
-		zipPath,
-		"--keychain-profile", options.KeychainProfile,
-		"--wait",
+	if err := submitNotarizationProfile(ctx, zipPath, options.KeychainProfile); err != nil {
+		return err
 	}
 
-	cmd := exec.Command("xcrun", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("notarization failed: %w", err)
-	}
-
-	// Staple the ticket
-	stapleCmd := exec.Command("xcrun", "stapler", "staple", options.Input)
-	stapleCmd.Stdout = os.Stdout
-	stapleCmd.Stderr = os.Stderr
-
-	if err := stapleCmd.Run(); err != nil {
+	if err := stapleNotarization(ctx, options.Input); err != nil {
 		return fmt.Errorf("stapling failed: %w", err)
 	}
 
@@ -246,117 +306,19 @@ func notarizeMacOSApp(options *flags.Sign) error {
 }
 
 func signWindows(options *flags.Sign) error {
-	// Get password from keychain if not provided
 	password := options.Password
 	if password == "" && options.Certificate != "" {
-		var err error
-		password, err = keychain.Get(keychain.KeyWindowsCertPassword)
-		if err != nil {
-			pterm.Warning.Printfln("Could not get password from keychain: %v", err)
-			// Continue without password - might work for some certificates
-		}
+		password, _ = keychain.Get(keychain.KeyWindowsCertPassword)
 	}
-
-	if options.Verbose {
-		pterm.Info.Printfln("Signing Windows executable: %s", options.Input)
-	}
-
-	// Try native signtool first on Windows
-	if runtime.GOOS == "windows" {
-		err := signWindowsNative(options, password)
-		if err == nil {
-			return nil
-		}
-		if options.Verbose {
-			pterm.Warning.Printfln("Native signing failed, trying built-in: %v", err)
-		}
-	}
-
-	// Use built-in signing (works cross-platform)
-	return signWindowsBuiltin(options, password)
-}
-
-func signWindowsNative(options *flags.Sign, password string) error {
-	// Find signtool.exe
-	signtool, err := findSigntool()
-	if err != nil {
-		return err
-	}
-
-	args := []string{"sign"}
-
-	if options.Certificate != "" {
-		args = append(args, "/f", options.Certificate)
-		if password != "" {
-			args = append(args, "/p", password)
-		}
-	} else if options.Thumbprint != "" {
-		args = append(args, "/sha1", options.Thumbprint)
-	} else {
-		return fmt.Errorf("either --certificate or --thumbprint is required")
-	}
-
-	// Add timestamp server
-	timestamp := options.Timestamp
-	if timestamp == "" {
-		timestamp = "http://timestamp.digicert.com"
-	}
-	args = append(args, "/tr", timestamp, "/td", "SHA256", "/fd", "SHA256")
-
-	args = append(args, options.Input)
-
-	cmd := exec.Command(signtool, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("signtool failed: %w", err)
-	}
-
-	pterm.Success.Printfln("Signed: %s", options.Input)
-	return nil
-}
-
-func findSigntool() (string, error) {
-	// Check if signtool is in PATH
-	path, err := exec.LookPath("signtool.exe")
-	if err == nil {
-		return path, nil
-	}
-
-	// Common Windows SDK locations
-	sdkPaths := []string{
-		`C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe`,
-		`C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe`,
-		`C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe`,
-	}
-
-	for _, p := range sdkPaths {
-		if _, err := os.Stat(p); err == nil {
-			return p, nil
-		}
-	}
-
-	return "", fmt.Errorf("signtool.exe not found")
-}
-
-func signWindowsBuiltin(options *flags.Sign, password string) error {
-	// This would use a Go library for Authenticode signing
-	// For now, we'll return an error indicating it needs implementation
-	// In a full implementation, you'd use something like:
-	// - github.com/AkarinLiu/osslsigncode-go
-	// - or implement PE signing directly
-
-	if options.Certificate == "" {
-		return fmt.Errorf("--certificate is required for cross-platform signing")
-	}
-
-	return fmt.Errorf("built-in Windows signing not yet implemented - please use signtool.exe on Windows, or install osslsigncode")
+	return signWindowsWithPassword(context.Background(), options, password)
 }
 
 func signDEB(options *flags.Sign) error {
+	if key, isFile := packagesign.KeyFile("", options.PGPKey); isFile {
+		return signExportedPackage(options, "deb", key)
+	}
 	if options.PGPKey == "" {
-		return fmt.Errorf("no PGP signing key found for DEB signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
+		return fmt.Errorf("no PGP signing key found for DEB signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided
@@ -415,8 +377,11 @@ func signDEBWithGPG(options *flags.Sign, password, role string) error {
 }
 
 func signRPM(options *flags.Sign) error {
+	if key, isFile := packagesign.KeyFile("", options.PGPKey); isFile {
+		return signExportedPackage(options, "rpm", key)
+	}
 	if options.PGPKey == "" {
-		return fmt.Errorf("no PGP signing key found for RPM signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
+		return fmt.Errorf("no PGP signing key found for RPM signing — configure linux.signing in wails.yaml, pass --pgp-key, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided

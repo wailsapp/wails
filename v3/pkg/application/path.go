@@ -1,6 +1,6 @@
 package application
 
-import "github.com/adrg/xdg"
+import "github.com/wailsapp/wails/v3/internal/userpaths"
 
 type PathType int
 
@@ -68,21 +68,23 @@ const (
 	PathPublicShare
 )
 
+var resolvedPaths = userpaths.Resolve()
+
 var paths = map[PathType]string{
-	PathHome:        xdg.Home,
-	PathDataHome:    xdg.DataHome,
-	PathConfigHome:  xdg.ConfigHome,
-	PathStateHome:   xdg.StateHome,
-	PathCacheHome:   xdg.CacheHome,
-	PathRuntimeDir:  xdg.RuntimeDir,
-	PathDesktop:     xdg.UserDirs.Desktop,
-	PathDownload:    xdg.UserDirs.Download,
-	PathDocuments:   xdg.UserDirs.Documents,
-	PathMusic:       xdg.UserDirs.Music,
-	PathPictures:    xdg.UserDirs.Pictures,
-	PathVideos:      xdg.UserDirs.Videos,
-	PathTemplates:   xdg.UserDirs.Templates,
-	PathPublicShare: xdg.UserDirs.PublicShare,
+	PathHome:        resolvedPaths.Home,
+	PathDataHome:    resolvedPaths.DataHome,
+	PathConfigHome:  resolvedPaths.ConfigHome,
+	PathStateHome:   resolvedPaths.StateHome,
+	PathCacheHome:   resolvedPaths.CacheHome,
+	PathRuntimeDir:  resolvedPaths.RuntimeDir,
+	PathDesktop:     resolvedPaths.Desktop,
+	PathDownload:    resolvedPaths.Download,
+	PathDocuments:   resolvedPaths.Documents,
+	PathMusic:       resolvedPaths.Music,
+	PathPictures:    resolvedPaths.Pictures,
+	PathVideos:      resolvedPaths.Videos,
+	PathTemplates:   resolvedPaths.Templates,
+	PathPublicShare: resolvedPaths.PublicShare,
 }
 
 type PathTypes int
@@ -116,10 +118,10 @@ const (
 )
 
 var pathdirs = map[PathTypes][]string{
-	PathsDataDirs:        xdg.DataDirs,
-	PathsConfigDirs:      xdg.ConfigDirs,
-	PathsFontDirs:        xdg.FontDirs,
-	PathsApplicationDirs: xdg.ApplicationDirs,
+	PathsDataDirs:        resolvedPaths.DataDirs,
+	PathsConfigDirs:      resolvedPaths.ConfigDirs,
+	PathsFontDirs:        resolvedPaths.FontDirs,
+	PathsApplicationDirs: resolvedPaths.ApplicationDirs,
 }
 
 // Path returns the path for the given selector

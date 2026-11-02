@@ -348,4 +348,4 @@ func main() {
 
 ## 例
 
-[examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) ディレクトリには、ほかにも例が用意されています。ぜひ確認してください！
+[examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ディレクトリには、ほかにも例が用意されています。ぜひ確認してください！

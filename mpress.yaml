@@ -23,6 +23,7 @@ site:
   logoLight: "assets/wails-logo-horizontal-light.svg"
   logoDark: "assets/wails-logo-horizontal-dark.svg"
   favicon: "favicon.svg"
+  socialImage: "assets/wails-social-card.png"
 social:
   github: "https://github.com/wailsapp/wails"
   discord: "https://discord.gg/JDdSxwjhGf"

@@ -143,7 +143,7 @@ Traitez les commentaires de révision et mettez à jour votre pull request si n�
 [WEP (amélioration)]
 @steps
 ### Rédiger une WEP
-- Consultez le [processus WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
+- Consultez le [processus WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)
 - Copiez le modèle de WEP dans `v3/wep/proposals/<name>/proposal.md`
 - Ouvrez une pull request en brouillon intitulée `[WEP] <title>` et contenant uniquement la WEP
 - Attendez la décision d’un responsable de maintenance avant de commencer l’implémentation

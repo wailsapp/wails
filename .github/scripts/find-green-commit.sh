@@ -4,6 +4,10 @@
 #   find-green-commit.sh            print the newest green SHA since the last weekly tag
 #   find-green-commit.sh --check S  exit 0 if commit S is green, 1 otherwise (prints why)
 #
+# Release-bookkeeping commits (the auto-changelog entry pushed after every merge,
+# version bumps, runtime publishes) never run CI themselves. --check therefore
+# judges the newest real change at or before S, and the weekly scan skips them.
+#
 # master does not run the PR workflows on push, so a merged commit usually has no
 # check-runs of its own. For each candidate we therefore look at the commit's own
 # check-runs first and fall back to the check-runs of the pull request head that
@@ -51,8 +55,28 @@ commit_green() {
   return 1
 }
 
+# 0 = release bookkeeping that runs no CI of its own; 1 = a real change.
+is_bookkeeping() {
+  case "$(git log -1 --format=%s "$1")" in
+    "chore(v3): bump to"*|*"[skip ci]"*|"Publish @wailsio/runtime"*|*"chore(v3): sync version"*|"chore(changelog): auto-add entry"*)
+      return 0 ;;
+  esac
+  return 1
+}
+
 if [ "${1:-}" = "--check" ]; then
-  commit_green "${2:?sha required}"
+  sha="$(git rev-parse "${2:?sha required}")"
+  n=0
+  while is_bookkeeping "$sha"; do
+    n=$((n + 1))
+    if [ "$n" -gt "$MAX_SCAN" ] || ! git rev-parse -q --verify "$sha^" >/dev/null; then
+      echo "  $sha: no change found behind bookkeeping commits" >&2
+      exit 1
+    fi
+    echo "  $sha is release bookkeeping; checking its parent" >&2
+    sha="$(git rev-parse "$sha^")"
+  done
+  commit_green "$sha"
   exit $?
 fi
 
@@ -65,11 +89,10 @@ echo "Scanning first-parent commits in $range (max $MAX_SCAN)" >&2
 n=0
 for sha in $(git rev-list --first-parent "$range"); do
   n=$((n + 1)); [ "$n" -gt "$MAX_SCAN" ] && break
-  subject="$(git log -1 --format=%s "$sha")"
-  case "$subject" in
-    "chore(v3): bump to"*|*"[skip ci]"*|"Publish @wailsio/runtime"*|*"chore(v3): sync version"*)
-      echo "  skip release-bookkeeping commit $sha ($subject)" >&2; continue ;;
-  esac
+  if is_bookkeeping "$sha"; then
+    echo "  skip release-bookkeeping commit $sha ($(git log -1 --format=%s "$sha"))" >&2
+    continue
+  fi
   if commit_green "$sha"; then
     echo "$sha"
     exit 0

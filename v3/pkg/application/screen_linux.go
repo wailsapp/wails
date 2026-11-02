@@ -31,7 +31,11 @@ func (a *linuxApp) processAndCacheScreens() error {
 	if !hasPrimary && len(screens) > 0 {
 		screens[0].IsPrimary = true
 	}
-	return a.parent.Screen.LayoutScreens(screens)
+	// GDK reports monitor geometry and work areas in logical coordinates, which
+	// getScreenByIndex carries into Bounds and WorkArea as they are (scaling them
+	// separately into the Physical* rectangles). They are in DIP space already,
+	// so there is no device-pixel layout to rebuild.
+	return a.parent.Screen.layoutDIPScreens(screens)
 }
 
 func (a *linuxApp) getPrimaryScreen() (*Screen, error) {

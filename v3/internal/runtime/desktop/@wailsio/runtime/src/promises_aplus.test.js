@@ -1,3 +1,4 @@
+// @vitest-environment node
 import * as util from "util";
 import * as V from "vitest";
 import { CancellablePromise } from "./cancellable";

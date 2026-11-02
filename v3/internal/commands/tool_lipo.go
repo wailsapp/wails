@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/konoui/lipo/pkg/lipo"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/universalbinary"
 )
 
 func ToolLipo(options *flags.Lipo) error {
@@ -18,12 +18,7 @@ func ToolLipo(options *flags.Lipo) error {
 		return fmt.Errorf("output file is required (-output)")
 	}
 
-	l := lipo.New(
-		lipo.WithInputs(options.Inputs...),
-		lipo.WithOutput(options.Output),
-	)
-
-	if err := l.Create(); err != nil {
+	if err := universalbinary.Create(options.Output, options.Inputs); err != nil {
 		return fmt.Errorf("failed to create universal binary: %w", err)
 	}
 

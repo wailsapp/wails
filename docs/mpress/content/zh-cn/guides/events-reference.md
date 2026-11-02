@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 可用事件的完整列表可在 Wails 源代码中找到：
 
-- 前端事件：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- 后端事件：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- 前端事件：[`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- 后端事件：[`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 请始终参阅这些文件，以获取最新的事件名称及其可用性信息。
 

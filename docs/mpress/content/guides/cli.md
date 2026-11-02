@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
+Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile. Setting `WAILS_PUREGO=1` adds the `purego` tag to `build`, `package` and `dev` without a flag; see [CGO-free builds](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 This is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. Any CLI variables passed to `build` are forwarded to the underlying task. You can customise the build process by editing the `Taskfile.yml` file.
@@ -132,6 +135,14 @@ The stock packaging tasks accept `ARCH` to select the target architecture:
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-tags` | Additional Go build tags (comma-separated), forwarded as `EXTRA_TAGS` |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` and `OUTPUT` only affect a custom Taskfile that explicitly reads those variables; they do not override the stock package version or filename.
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | Input PNG file | Required |
 | `-windowsfilename` | Windows output filename |  |
 | `-macfilename` | macOS output filename |  |
-| `-sizes` | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-sizes` | Icon sizes from 1 to 256 pixels (comma-separated; zeros ignored) | `256,128,64,48,32,16` |
 | `-example` | Generate example icon | `false` |
 | `-iconcomposerinput` | Input Icon Composer file (`.icon`) |  |
 | `-macassetdir` | Output directory for Mac assets (Assets.car + icns) |  |
+
+At least one nonzero size is required.
 
 #### Icon Composer (macOS)
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Generates the pre-built version of the runtime.
+Exports the pre-built runtime embedded in the CLI as `runtime.js` (production) and `runtime-debug.js` (debug). It works from an installed CLI without access to the Wails source tree, including builds made with `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,12 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Copies files.
+Copies one source file to one destination file. Existing files are overwritten
+and keep their current permissions. New files use the source permissions, subject
+to the system umask on Unix. Parent directories must already exist.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`

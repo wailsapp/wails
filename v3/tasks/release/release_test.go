@@ -150,7 +150,7 @@ func TestRunRelease_EmptyChangelogSkipsAutomaticRelease(t *testing.T) {
 	cleanup, projectRoot := setupTestEnvironment(t)
 	defer cleanup()
 
-	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	unreleasedFile := filepath.Join(projectRoot, "v3", "release_changelog.md")
 	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
 		t.Fatalf("Failed to create unreleased changelog: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestRunRelease_ExplicitVersionContinuesWithEmptyChangelog(t *testing.T) {
 	cleanup, projectRoot := setupTestEnvironment(t)
 	defer cleanup()
 
-	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	unreleasedFile := filepath.Join(projectRoot, "v3", "release_changelog.md")
 	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
 		t.Fatalf("Failed to create unreleased changelog: %v", err)
 	}
@@ -950,70 +950,6 @@ func TestHasUnreleasedContent_WithMixedContent(t *testing.T) {
 	}
 }
 
-// Integration test for the complete cleanup workflow
-func TestCleanupWorkflow_Integration(t *testing.T) {
-	cleanup, _ := setupTestEnvironment(t)
-	defer cleanup()
-
-	// Create a changelog file with actual content
-	testContent := `# Unreleased Changes
-
-## Added
-- Add comprehensive changelog processing system
-- Add validation for Keep a Changelog format compliance
-
-## Fixed
-- Fix parsing issues with various markdown bullet styles
-- Fix validation edge cases for empty content sections`
-
-	err := os.WriteFile(unreleasedChangelogFile, []byte(testContent), 0o644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-
-	// Step 1: Check that file has content
-	hasContent, err := hasUnreleasedContent()
-	if err != nil {
-		t.Fatalf("hasUnreleasedContent() failed: %v", err)
-	}
-	if !hasContent {
-		t.Fatal("Expected file to have content")
-	}
-
-	// Step 2: Perform safe cleanup operation
-	err = safeFileOperation(unreleasedChangelogFile, func() error {
-		return clearUnreleasedChangelog()
-	})
-	if err != nil {
-		t.Fatalf("Safe cleanup operation failed: %v", err)
-	}
-
-	// Step 3: Verify file was reset to template
-	content, err := os.ReadFile(unreleasedChangelogFile)
-	if err != nil {
-		t.Fatalf("Failed to read file after cleanup: %v", err)
-	}
-
-	template := getUnreleasedChangelogTemplate()
-	if string(content) != template {
-		t.Error("File was not properly reset to template")
-	}
-
-	// Step 4: Verify original content is gone
-	if strings.Contains(string(content), "Add comprehensive changelog processing system") {
-		t.Error("Original content still present after cleanup")
-	}
-
-	// Step 5: Verify file no longer has content
-	hasContentAfter, err := hasUnreleasedContent()
-	if err != nil {
-		t.Fatalf("hasUnreleasedContent() failed after cleanup: %v", err)
-	}
-	if hasContentAfter {
-		t.Error("File should not have content after cleanup")
-	}
-}
-
 func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	cleanup, projectRoot := setupTestEnvironment(t)
 	defer cleanup()
@@ -1056,7 +992,7 @@ title = "Changelog"
 		t.Fatalf("Failed to create changelog file: %v", err)
 	}
 
-	// Create UNRELEASED_CHANGELOG.md with mixed content
+	// Create release_changelog.md with mixed content
 	unreleasedContent := `# Unreleased Changes
 
 ## Added
@@ -1078,8 +1014,8 @@ title = "Changelog"
 ## Security
 <!-- No security updates -->
 `
-	// The script expects the file at ../../UNRELEASED_CHANGELOG.md relative to release dir
-	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	// The script expects the file at ../../release_changelog.md relative to release dir
+	unreleasedFile := filepath.Join(projectRoot, "v3", "release_changelog.md")
 	err = os.WriteFile(unreleasedFile, []byte(unreleasedContent), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create unreleased changelog: %v", err)
@@ -1354,7 +1290,40 @@ func TestReleasePublishesMarkdownChangelog(t *testing.T) {
 		t.Fatalf("Invalid published Markdown: %s", data)
 	}
 	remaining, err := os.ReadFile(unreleasedChangelogFile)
-	if err != nil || strings.Contains(string(remaining), "- A fix") {
-		t.Fatalf("Unreleased changelog was not reset: %s, %v", remaining, err)
+	if err != nil || string(remaining) != "## Fixed\n- A fix\n" {
+		t.Fatalf("Release-local input must remain available for inspection: %s, %v", remaining, err)
 	}
+}
+
+// getUnreleasedChangelogTemplate returns the template content for release_changelog.md
+func getUnreleasedChangelogTemplate() string {
+	return `# Unreleased Changes
+
+<!--
+AUTO-GENERATED FILE: do not edit.
+
+Generated at release time from merged PRs in the tested commit range.
+This temporary input is ignored by Git and is never committed.
+-->
+
+## Added
+<!-- New features, capabilities, or enhancements -->
+
+## Changed
+<!-- Changes in existing functionality -->
+
+## Fixed
+<!-- Bug fixes -->
+
+## Deprecated
+<!-- Soon-to-be removed features -->
+
+## Removed
+<!-- Features removed in this release -->
+
+## Security
+<!-- Security-related changes -->
+
+---
+`
 }

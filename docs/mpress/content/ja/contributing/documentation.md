@@ -24,15 +24,15 @@ M-Press がインストールされている場合、コマンドはそれを使
 
 ### 実行ファイルをダウンロードする
 
-[最新の安定版 M-Press リリース](https://github.com/leaanthony/mpress/releases/latest)を開くか、以下から対応するアーカイブをダウンロードしてください。ARM64 には Apple Silicon が含まれます。AMD64 は、一般的な Intel/AMD PC のアーキテクチャです。
+[最新の安定版 M-Press リリース](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)を開くか、以下から対応するアーカイブをダウンロードしてください。ARM64 には Apple Silicon が含まれます。AMD64 は、一般的な Intel/AMD PC のアーキテクチャです。
 
 | コンピューター | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
-| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz) |
-| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz) |
-| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip) |
+| macOS | [mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz) | [mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz) |
+| Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
+| Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-同じリリースから[checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt)をダウンロードしてください。ダウンロード先のディレクトリでアーカイブの SHA-256 ハッシュを計算し、`checksums.txt`内の該当ファイル名の行と比較します。
+同じリリースから[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)をダウンロードしてください。ダウンロード先のディレクトリでアーカイブの SHA-256 ハッシュを計算し、`checksums.txt`内の該当ファイル名の行と比較します。
 
 @tabs
 [macOS]
@@ -101,7 +101,7 @@ ARM64 の場合は、`mpress-windows-arm64.zip` に置き換えてください�
 すでに Go を使用している場合は、代わりに最新の安定版リリースをビルドできます。必要なツールチェーンについては、そのリリースの`go.mod`を確認してください。Go のツールチェーン自動選択機能によって、そのツールチェーンがダウンロードされる場合があります。このドキュメント更新で使用したリリースには、Go 1.26.10以降が必要です。
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@latest
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.27
 mpress version
 ```
 

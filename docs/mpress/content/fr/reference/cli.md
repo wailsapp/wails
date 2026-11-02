@@ -118,4 +118,4 @@ Dans cette version, l’analyseur de la CLI expose `signing` et `entitlements` a
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

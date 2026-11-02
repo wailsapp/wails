@@ -31,6 +31,65 @@ v3/
 
 ## Available Commands
 
+### Linux purego parity and binding generation
+
+The purego backend is opt-in with the `purego` tag (experimental). Both
+GTK4/WebKitGTK 6.0 and the `gtk3` variant build with `CGO_ENABLED=0`, including
+Linux arm64 cross-compilation. Without the tag, `CGO_ENABLED=1` builds the cgo
+reference backend.
+
+From `v3/`, with the GTK/WebKit runtime libraries installed:
+
+```bash
+CGO_ENABLED=0 go test -tags purego ./internal/assetserver/webview ./pkg/application ./internal/puregogen
+CGO_ENABLED=0 go test -tags purego,gtk3 ./internal/assetserver/webview ./pkg/application
+CGO_ENABLED=0 GOARCH=arm64 go build -tags purego ./cmd/wails3 ./pkg/application
+CGO_ENABLED=0 GOARCH=arm64 go build -tags purego,gtk3 ./cmd/wails3 ./pkg/application
+CGO_ENABLED=0 go build -tags purego -o /tmp/wails-parity ./tests/purego
+xvfb-run -a dbus-run-session -- /tmp/wails-parity
+```
+
+The native probe exercises asset serving, binary POSTs, the JavaScript-to-Go
+bridge, request cancellation, clipboard transfer, zoom, menus, screen lookup,
+and window visibility. Set `WAILS_TEST_DIALOGS=1` inside an isolated X server
+with `xdotool` installed to test message-dialog callbacks and file-dialog
+cancellation. Run it with `purego,gtk3`, and with
+`CGO_ENABLED=1` and no tag (or `gtk3`) for the cgo reference, as well. Tests that synthesize X11 shortcuts need
+an isolated X server and `xdotool`; a Wayland session's Xwayland server may not
+deliver synthetic global shortcuts.
+
+Regeneration needs Clang, pkg-config, a C compiler, and both sets of development
+headers. Application builds use the checked-in output:
+
+```bash
+go run ./internal/puregogen -manifest internal/puregogen/gtk4.json -out pkg/application/linux_purego_generated.go
+go run ./internal/puregogen -cgo-manifest internal/puregogen/gtk3.json
+```
+
+Add `-check` to either command to detect drift. GTK4 signatures come from Clang's
+header AST; the manifest selects symbols, libraries, optional symbols, and string
+conversions. GTK3 generation uses `go tool cgo` only to extract ABI declarations
+and rewrites the reference Go source. Its output imports neither `C` nor
+`runtime/cgo`. Custom C helpers have explicit Go implementations; adding a new
+helper requires porting and testing its behavior. Integer handles and callback
+data must remain integers so the garbage collector cannot mistake them for
+pointers. Native pointer arguments need typed pointers or generated wrappers
+that keep Go memory alive throughout the foreign call.
+
+The generated layouts target Linux amd64 and arm64 (LP64). CI checks both
+architectures compile, compares the native probe with the CGo reference on X11,
+and runs purego under headless Weston. These checks do not replace testing on
+physical ARM64 systems, desktop portals, multiple monitors, and GPU drivers.
+
+The GTK3 probe currently reproduces the reference backend's submenu-rebuild
+warnings ([#6231](https://github.com/wailsapp/wails/issues/6231)). A newly created
+menu must also be initialized before calling `SetMenu`
+([#6232](https://github.com/wailsapp/wails/issues/6232)). Keep these existing
+behaviors separate from migration regressions when comparing logs.
+
+Implementation lineage: [#2388](https://github.com/wailsapp/wails/issues/2388) and
+[#5715](https://github.com/wailsapp/wails/pull/5715).
+
 ### 🚀 Complete Cross-Platform Testing
 ```bash
 # Build all examples for ALL platforms (macOS + Windows + Linux)

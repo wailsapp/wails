@@ -1,0 +1,12 @@
+version: "3"
+
+vars:
+  APP_NAME: Customised
+
+tasks:
+  build:
+    cmds:
+      - task: preflight
+  preflight:
+    cmds:
+      - ./scripts/preflight

@@ -230,11 +230,11 @@ v3에서는 다중 창 지원, 더 깔끔한 서비스 기반 API, 내장 업데
 
 ### 어떻게 기여할 수 있나요?
 
-[기여 가이드](/contributing/)를 참고하세요. 버그 수정은 언제든 환영합니다. 새로운 기능과 공개 동작 변경은 [WEP(Wails 개선 제안)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) 초안 PR을 통해 진행합니다. Discord 또는 GitHub Discussions에서의 비공식 논의는 선택 사항입니다.
+[기여 가이드](/contributing/)를 참고하세요. 버그 수정은 언제든 환영합니다. 새로운 기능과 공개 동작 변경은 [WEP(Wails 개선 제안)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) 초안 PR을 통해 진행합니다. Discord 또는 GitHub Discussions에서의 비공식 논의는 선택 사항입니다.
 
 ### 예제는 어디에서 찾을 수 있나요?
 
-저장소에는 창, 대화 상자, 이벤트, 시스템 트레이, 서비스 등을 다루는 실행 가능한 예제가 60개 넘게 포함되어 있습니다: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+저장소에는 창, 대화 상자, 이벤트, 시스템 트레이, 서비스 등을 다루는 실행 가능한 예제가 60개 넘게 포함되어 있습니다: [v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
 
 ## 아직 궁금한 점이 있나요?
 

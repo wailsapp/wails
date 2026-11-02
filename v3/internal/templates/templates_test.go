@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -9,6 +10,28 @@ import (
 	"testing/fstest"
 	texttemplate "text/template"
 )
+
+func BenchmarkCommonModuleTemplate(b *testing.B) {
+	source, err := templates.ReadFile("_common/go.mod.tmpl")
+	if err != nil {
+		b.Fatal(err)
+	}
+	data := map[string]string{
+		"ModulePath": "example.com/project", "WailsVersion": "v3.0.0-dev",
+		"LocalModulePath": "../wails/",
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		module, err := texttemplate.New("go.mod").Parse(string(source))
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := module.Execute(io.Discard, data); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
 
 // --- parseTemplate ---
 
@@ -186,6 +209,7 @@ func TestStripUnsafe_CleanString_Unchanged(t *testing.T) {
 // --- GenerateTemplate ---
 
 func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	dir := t.TempDir()
 	opts := &BaseTemplate{
 		Name:    "MyTemplate",
@@ -206,7 +230,6 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		"main.go.tmpl",
 		"go.mod.tmpl",
 		"greetservice.go",
-		"Taskfile.tmpl.yml",
 		"gitignore.tmpl",
 		filepath.Join("frontend", "index.html"),
 	}
@@ -214,6 +237,11 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		path := filepath.Join(outDir, f)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected file %s to exist: %v", f, err)
+		}
+	}
+	for _, filename := range []string{"wails.tmpl.toml", "wails.tmpl.yaml", "Taskfile.tmpl.yml"} {
+		if _, err := os.Stat(filepath.Join(outDir, filename)); !os.IsNotExist(err) {
+			t.Errorf("generated reusable template must not contain %s", filename)
 		}
 	}
 }

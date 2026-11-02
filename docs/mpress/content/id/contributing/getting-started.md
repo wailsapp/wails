@@ -143,7 +143,7 @@ Tanggapi komentar tinjauan dan perbarui PR Anda sesuai kebutuhan.
 [WEP (Peningkatan)]
 @steps
 ### Tulis WEP
-- Baca proses [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
+- Baca proses [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)
 - Salin templat WEP ke `v3/wep/proposals/<name>/proposal.md`
 - Buka draf PR berjudul `[WEP] <title>` yang hanya berisi WEP
 - Tunggu keputusan maintainer sebelum mulai mengimplementasikannya

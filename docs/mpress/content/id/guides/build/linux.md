@@ -149,7 +149,7 @@ go build -tags gtk3 -o myapp .
 ### Perbedaan yang Diketahui dari GTK4
 
 - **Dialog file**: GTK4 menggunakan `xdg-desktop-portal` untuk dialog file (secara default), sehingga beberapa opsi dialog (seperti direktori default dan tampilan filter khusus) berperilaku berbeda dari GTK3. Lihat [Referensi Dialog - Perilaku Dialog Linux](/reference/dialogs/#linux-dialog-behavior) untuk detail selengkapnya.
-- **Gaya menu**: GTK4 mendukung opsi `LinuxMenuStylePrimaryMenu` yang menampilkan tombol hamburger (☰) di bilah header sesuai dengan GNOME HIG. Opsi ini tidak berpengaruh pada build `-tags gtk3`. Lihat [API Window - Linux MenuStyle](/reference/window/#linux).
+- **Gaya menu**: GTK4 mendukung opsi `LinuxMenuStylePrimaryMenu` yang menampilkan tombol hamburger (☰) di bilah header sesuai dengan GNOME HIG. Opsi ini tidak berpengaruh pada build `-tags gtk3`. Lihat [API Window - Linux MenuStyle](/id/reference/window/#linux).
 - **Penskalaan DPI**: GTK4 menggunakan `gdk_monitor_get_scale` (GTK 4.14+) untuk mendukung penskalaan fraksional.
 
 ### Memeriksa Build Anda

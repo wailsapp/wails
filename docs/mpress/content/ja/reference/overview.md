@@ -267,7 +267,7 @@ API が非推奨になる場合：
 ### API に関する質問
 
 1. **このリファレンスを確認** - 完全な API ドキュメント
-2. **サンプルを確認** - [GitHub のサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
+2. **サンプルを確認** - [GitHub のサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 3. **Discord を検索** - [Discord サーバー](https://discord.gg/JDdSxwjhGf)
 4. **コミュニティに質問** - Discord の #help チャンネル
 
@@ -284,7 +284,7 @@ API が非推奨になる場合：
 - [チュートリアル](/tutorials/overview/) - 実際のアプリケーションを構築しながら学ぶ
 - [ガイド](/guides/architecture/) - 一般的なシナリオに対応するタスク指向のガイド
 - [機能](/features/windows/basics/) - 機能別のドキュメント
-- [サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub 上の動作するコードサンプル
+- [サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - GitHub 上の動作するコードサンプル
 
 ---
 

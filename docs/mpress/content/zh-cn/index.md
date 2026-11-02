@@ -187,7 +187,7 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 后续步骤
 
-接下来：[构建一个完整的应用](/tutorials/03-notes-vanilla/)、浏览[示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)，或查看[API 参考](/reference/application/)。要从 v2 迁移？请参阅[升级指南](/migration/v2-to-v3/)。
+接下来：[构建一个完整的应用](/tutorials/03-notes-vanilla/)、浏览[示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)，或查看[API 参考](/reference/application/)。要从 v2 迁移？请参阅[升级指南](/migration/v2-to-v3/)。
 
 @note{type="info" title="Wails v3.0.0"}
 Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版本。 Android 和 iOS 支持仍处于实验阶段，不在稳定桌面版的兼容性保证范围内。

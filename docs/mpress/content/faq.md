@@ -230,11 +230,11 @@ Yes. The CLIs are separate binaries (`wails` and `wails3`) and the modules have 
 
 ### How do I contribute?
 
-See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) draft PR. Informal discussion on Discord or GitHub Discussions is optional.
+See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) draft PR. Informal discussion on Discord or GitHub Discussions is optional.
 
 ### Where can I find examples?
 
-The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, services and more: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
+The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, services and more: [v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
 
 ## Still Have Questions?
 

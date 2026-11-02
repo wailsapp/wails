@@ -217,7 +217,7 @@ that spans lines -->
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a temporary file
 			tmpDir := t.TempDir()
-			tmpFile := filepath.Join(tmpDir, "UNRELEASED_CHANGELOG.md")
+			tmpFile := filepath.Join(tmpDir, "release_changelog.md")
 			err := os.WriteFile(tmpFile, []byte(tt.content), 0644)
 			if err != nil {
 				t.Fatalf("Failed to create test file: %v", err)
@@ -247,10 +247,10 @@ that spans lines -->
 // TestCreateReleaseNotes tests the --create-release-notes functionality
 func TestCreateReleaseNotes(t *testing.T) {
 	tests := []struct {
-		name            string
+		name             string
 		changelogContent string
-		expectSuccess   bool
-		expectedNotes   string
+		expectSuccess    bool
+		expectedNotes    string
 	}{
 		{
 			name: "Valid changelog creates release notes",
@@ -295,9 +295,9 @@ func TestCreateReleaseNotes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create temporary directory
 			tmpDir := t.TempDir()
-			
-			// Create UNRELEASED_CHANGELOG.md
-			changelogPath := filepath.Join(tmpDir, "UNRELEASED_CHANGELOG.md")
+
+			// Create release_changelog.md
+			changelogPath := filepath.Join(tmpDir, "release_changelog.md")
 			err := os.WriteFile(changelogPath, []byte(tt.changelogContent), 0644)
 			if err != nil {
 				t.Fatalf("Failed to create changelog file: %v", err)
@@ -386,7 +386,7 @@ func TestHasUnreleasedContent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create temporary file
 			tmpDir := t.TempDir()
-			tmpFile := filepath.Join(tmpDir, "UNRELEASED_CHANGELOG.md")
+			tmpFile := filepath.Join(tmpDir, "release_changelog.md")
 			err := os.WriteFile(tmpFile, []byte(tt.content), 0644)
 			if err != nil {
 				t.Fatalf("Failed to create test file: %v", err)
@@ -425,7 +425,7 @@ func TestVersionIncrement(t *testing.T) {
 			expectedNext:   "v3.0.0-alpha.16",
 		},
 		{
-			name:           "Beta version increment", 
+			name:           "Beta version increment",
 			currentVersion: "v3.0.0-beta.5",
 			expectedNext:   "v3.0.0-beta.6",
 		},
@@ -452,48 +452,5 @@ func TestVersionIncrement(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-// TestClearUnreleasedChangelog tests the changelog reset functionality
-func TestClearUnreleasedChangelog(t *testing.T) {
-	// Create temporary file
-	tmpDir := t.TempDir()
-	tmpFile := filepath.Join(tmpDir, "UNRELEASED_CHANGELOG.md")
-	
-	// Write some content
-	err := os.WriteFile(tmpFile, []byte("Some content"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-
-	// Save original path
-	originalPath := unreleasedChangelogFile
-	unreleasedChangelogFile = tmpFile
-	defer func() {
-		unreleasedChangelogFile = originalPath
-	}()
-
-	// Clear the changelog
-	err = clearUnreleasedChangelog()
-	if err != nil {
-		t.Fatalf("clearUnreleasedChangelog() error = %v", err)
-	}
-
-	// Read the file
-	content, err := os.ReadFile(tmpFile)
-	if err != nil {
-		t.Fatalf("Failed to read cleared file: %v", err)
-	}
-
-	// Check it contains the template
-	if !strings.Contains(string(content), "# Unreleased Changes") {
-		t.Error("Cleared file doesn't contain template header")
-	}
-	if !strings.Contains(string(content), "## Added") {
-		t.Error("Cleared file doesn't contain Added section")
-	}
-	if !strings.Contains(string(content), "AUTO-GENERATED FILE: do not edit") {
-		t.Error("Cleared file does not identify generated changelog ownership")
 	}
 }
