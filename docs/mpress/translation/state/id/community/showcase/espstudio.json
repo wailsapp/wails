@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "8309aa955c1624430091",
   "sourceFile": "community/showcase/espstudio.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0002-text-01": {
-      "sourceHash": "1957f19e0f89b1c4d7dd8effdb6f69b003fdd8e171192de67d7f56e5bf24bde3",
-      "targetHash": "06069b7b83feee09686b8014c99b671dabcc743b46d227edb9ef0435b7198605",
-      "machineHash": "06069b7b83feee09686b8014c99b671dabcc743b46d227edb9ef0435b7198605",
-      "machineText": "[ESP Studio](https://github.com/torabian/esp-studio) - Perangkat lunak lintas platform untuk desktop,\\\ncloud, dan sistem tertanam guna mengendalikan perangkat ESP/Arduino serta membangun\\\nalur kerja IOT dan sistem kontrol yang kompleks",
+      "sourceHash": "32a0cc0e2710fb0ddbc42d3e19b4d0004f71953a3c9365a90dc47e14ac6df67a",
+      "targetHash": "50bcf329c243f25a69761ff094e78a04da1847aebc7374c6693ccd90a4ce9acf",
+      "machineHash": "50bcf329c243f25a69761ff094e78a04da1847aebc7374c6693ccd90a4ce9acf",
+      "machineText": "[ESP Studio](https://github.com/torabian/esp-studio) - Perangkat lunak lintas platform untuk desktop, cloud, dan sistem tertanam guna mengendalikan perangkat ESP/Arduino serta membangun alur kerja IOT dan sistem kontrol yang kompleks",
       "status": "final",
-      "sourcePreview": "[ESP Studio](https://github.com/torabian/esp-studio) - Cross platform, Desktop,\\ Cloud, and Embedded…",
+      "sourcePreview": "[ESP Studio](https://github.com/torabian/esp-studio) - Cross platform, Desktop, Cloud, and Embedded …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
       "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
       "targetHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
       "machineHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/espstudio.mpd",
+    "sourceHash": "f3058f982aa50ff4930f7eb15efd366f889470e5b8be85c8a867074a80ee8620",
+    "targetHash": "57280d313bce2ca327ad7861fbfebb1d7a43ac1b106ac57c3d2d11e35ee7ea3b",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+        "targetHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+        "machineHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+        "machineText": "![ESP Studio](/assets/showcase-images/esp-studio.png)",
+        "status": "final",
+        "sourcePreview": "![ESP Studio](/assets/showcase-images/esp-studio.png)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "1957f19e0f89b1c4d7dd8effdb6f69b003fdd8e171192de67d7f56e5bf24bde3",
+        "targetHash": "06069b7b83feee09686b8014c99b671dabcc743b46d227edb9ef0435b7198605",
+        "machineHash": "06069b7b83feee09686b8014c99b671dabcc743b46d227edb9ef0435b7198605",
+        "machineText": "[ESP Studio](https://github.com/torabian/esp-studio) - Perangkat lunak lintas platform untuk desktop,\\\ncloud, dan sistem tertanam guna mengendalikan perangkat ESP/Arduino serta membangun\\\nalur kerja IOT dan sistem kontrol yang kompleks",
+        "status": "final",
+        "sourcePreview": "[ESP Studio](https://github.com/torabian/esp-studio) - Cross platform, Desktop,\\ Cloud, and Embedded…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+        "targetHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+        "machineHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+        "machineText": "ESP Studio",
+        "status": "final",
+        "sourcePreview": "ESP Studio",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      }
     }
   }
 }

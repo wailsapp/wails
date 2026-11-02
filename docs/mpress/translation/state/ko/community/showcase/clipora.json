@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "0ba070a854ed1a65c85e",
+  "sourceFile": "community/showcase/clipora.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "b0c71c5e45915f35c286a930d7774da5873d7ba1a2b36c491b1e8605b50f3e2b",
+      "targetHash": "7dcd87e7a42e607b7272c561742c54cf0e0dda2240a80b9750189ef45c84aad6",
+      "status": "adopted",
+      "sourcePreview": "![Clipora screenshot](/assets/showcase-images/clipora_1.png)",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2eafe6e14066e0ff9b9804a2c073709c0b05875eaf89aa53f8ba4bd72c73cefd",
+      "targetHash": "64c6d9fc6b35c407b76401ee1e276fd6599ea9bd6742768dd12c12ced40a0c07",
+      "status": "adopted",
+      "sourcePreview": "Cross-platform desktop clipboard manager. Automatically records what you copy, with history search, …",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0003-text-01": {
+      "sourceHash": "a9d6b5f5702d024c1701e6f11e60a482f7f423388e111b481dc0ccc794991407",
+      "targetHash": "af566caf1a1ed830b67c9ee6b387196d636323e15d472adcc57732bb06c5794e",
+      "status": "adopted",
+      "sourcePreview": "[Website](https://www.194nb.com/) | [View on GitHub](https://github.com/wolves-aman/clipora)",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "fm-description": {
+      "sourceHash": "f8588ede0d2ed5bc275fe52331388cf08fca7de4a487e73c00b7b06b28622ff1",
+      "targetHash": "b13ea3431418a772ad447ea86b89965d89b1227196352076f1fe9f20c26af888",
+      "status": "adopted",
+      "sourcePreview": "Clipboard history and quick paste",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "fm-title": {
+      "sourceHash": "5141b7ab1cfd833f4ebb2088967464cf149358fb8059c00e6c00312b1c8405de",
+      "targetHash": "5141b7ab1cfd833f4ebb2088967464cf149358fb8059c00e6c00312b1c8405de",
+      "status": "adopted",
+      "sourcePreview": "Clipora",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    }
+  }
+}

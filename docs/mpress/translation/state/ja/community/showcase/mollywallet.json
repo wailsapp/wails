@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "5f724385ad4dd83aa31a",
   "sourceFile": "community/showcase/mollywallet.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:32Z"
     },
     "b0002-text-01": {
-      "sourceHash": "3dac986c0f5076a4654ee15ce01d3b9e27c1850d3a94b52158fb6c61342b7249",
-      "targetHash": "c1a94d90fa74e61ea9ab650790ce8741b650625dc39fa952d028f62f2dd99a26",
-      "machineHash": "c1a94d90fa74e61ea9ab650790ce8741b650625dc39fa952d028f62f2dd99a26",
-      "machineText": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) は、Constellation Network の公式\\\n$DAG ウォレットです。ユーザーは、$DAG トランザクションの生成に限らず、\\\nさまざまな方法で Hypergraph Network を操作できます。",
+      "sourceHash": "b166242bb17263900508bf2d05a42344a39a4436621f181a5f86694da5edcc4f",
+      "targetHash": "e214487364909ecf5c867d573de2126218b5f69aadba6aa08c84419606083ca6",
+      "machineHash": "e214487364909ecf5c867d573de2126218b5f69aadba6aa08c84419606083ca6",
+      "machineText": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) は、Constellation Network の公式 $DAG ウォレットです。ユーザーは、$DAG トランザクションの生成に限らず、 さまざまな方法で Hypergraph Network を操作できます。",
       "status": "final",
-      "sourcePreview": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) the official\\ $DAG wallet of the Con…",
+      "sourcePreview": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) the official $DAG wallet of the Cons…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:32Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
       "machineHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:32Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
       "targetHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
       "machineHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/mollywallet.mpd",
+    "sourceHash": "527f11d69137303db7244fc757c5c575d32374cb328c020d085ca167c9c4a29f",
+    "targetHash": "a4c67e26270a98a04459111747ce94de982c55fbdcbf9ca6a6e03b06d3ffcbb9",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+        "targetHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+        "machineHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+        "machineText": "![Molly Wallet](/assets/showcase-images/mollywallet.webp)",
+        "status": "final",
+        "sourcePreview": "![Molly Wallet](/assets/showcase-images/mollywallet.webp)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:32Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "3dac986c0f5076a4654ee15ce01d3b9e27c1850d3a94b52158fb6c61342b7249",
+        "targetHash": "c1a94d90fa74e61ea9ab650790ce8741b650625dc39fa952d028f62f2dd99a26",
+        "machineHash": "c1a94d90fa74e61ea9ab650790ce8741b650625dc39fa952d028f62f2dd99a26",
+        "machineText": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) は、Constellation Network の公式\\\n$DAG ウォレットです。ユーザーは、$DAG トランザクションの生成に限らず、\\\nさまざまな方法で Hypergraph Network を操作できます。",
+        "status": "final",
+        "sourcePreview": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) the official\\ $DAG wallet of the Con…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:32Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+        "machineHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+        "machineText": "Wails で構築されたデスクトップアプリケーション",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:32Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+        "targetHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+        "machineHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+        "machineText": "Molley Wallet",
+        "status": "final",
+        "sourcePreview": "Molley Wallet",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:32Z"
+      }
     }
   }
 }

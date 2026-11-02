@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "41585e3f481d83cb5d34",
   "sourceFile": "concepts/index.md",
   "sourceLanguage": "en",
@@ -17,7 +18,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:44Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "0d0a8c6df3ace225e9a8e34274e5c1c1116d1db8319aa5357a8448e8a9ad732f",
       "targetHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
       "machineHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
@@ -28,6 +29,38 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "concepts/index.mpd",
+    "sourceHash": "2ccc493875bbfb2eb2cef20bd433b26b05f8c36a254dfa94884a4be007c7e054",
+    "targetHash": "91970df20651d0ab78473dcf867f15c21f3004a4713648b80e242d8c828b15bc",
+    "previousSegments": {
+      "b0001-heading-01": {
+        "sourceHash": "0d0a8c6df3ace225e9a8e34274e5c1c1116d1db8319aa5357a8448e8a9ad732f",
+        "targetHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
+        "machineHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
+        "machineText": "Основные понятия",
+        "status": "final",
+        "sourcePreview": "Concepts",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:44Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "0d0a8c6df3ace225e9a8e34274e5c1c1116d1db8319aa5357a8448e8a9ad732f",
+        "targetHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
+        "machineHash": "9d3de8f5ed2fcd5b07ee2fd1b56412d09f3f39dbbf732eac751e4f379b51b5c3",
+        "machineText": "Основные понятия",
+        "status": "final",
+        "sourcePreview": "Concepts",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:44Z"
+      }
     }
   }
 }

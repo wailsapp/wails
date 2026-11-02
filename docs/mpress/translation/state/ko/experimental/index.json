@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "1e0660103626d5085806",
   "sourceFile": "experimental/index.md",
   "sourceLanguage": "en",
@@ -8,278 +9,869 @@
     "a0001-title-01": {
       "sourceHash": "8ef96ab50e072723f09bf791c4bfb210f7f5b1ae6c11b8b097deeac891d8d7aa",
       "targetHash": "c505594370bbf93db81c428fc43c18034cdb4b3cb209e7d1477fb84ac97b054f",
-      "machineHash": "c505594370bbf93db81c428fc43c18034cdb4b3cb209e7d1477fb84ac97b054f",
-      "machineText": "실험이 있는 곳",
-      "status": "final",
-      "sourcePreview": "Here be experiments",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Here be experiments"
     },
     "a0003-description-01": {
       "sourceHash": "e3243a34a3b1661eb504ba5a27569e2ed71bf05f9bf3a5df8c7589deffbe0125",
       "targetHash": "52be0373490c058fbe027dc83481888c9b893d00cee3629443eae5319b762633",
-      "machineHash": "52be0373490c058fbe027dc83481888c9b893d00cee3629443eae5319b762633",
-      "machineText": "사용 중인 실험의 스레드를 찾아 어떻게 작동했는지, 무엇이 제대로 작동하지 않았는지 또는 무엇이 부족한지 알려 주세요.",
-      "status": "final",
-      "sourcePreview": "Find the thread for the experiment you're using and tell us how it worked out, what broke, or what's…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Find the thread for the experiment you're using and tell us how it worked out, what broke, or what's…"
     },
     "a0003-title-01": {
       "sourceHash": "60725a89a5aa08c85142841e6f8ed97ea71de57d2c98ea5703573962b20072c5",
       "targetHash": "82e02bd07996f694bda7ad06756f73d68b85620fd920af2b816128183148afd4",
-      "machineHash": "82e02bd07996f694bda7ad06756f73d68b85620fd920af2b816128183148afd4",
-      "machineText": "실험 토론",
-      "status": "final",
-      "sourcePreview": "Experiments Discussions",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Experiments Discussions"
     },
     "a0005-description-01": {
-      "sourceHash": "b410e595f09fac4d43dd77aa3dad128afd57496283d47266885ee2a5aa95d636",
+      "sourceHash": "2e83adfe3e4f59b2a53f27258a4ee2b19ee1f28ca7aeec8b5c74cea27bf4cc09",
       "targetHash": "387ac83aba30fcc2cb036e01496db171fc91cc7a5d2e116ab773360a8ddf5f44",
-      "machineHash": "387ac83aba30fcc2cb036e01496db171fc91cc7a5d2e116ab773360a8ddf5f44",
-      "machineText": "기존 Taskfile을 위한 Wails 인식형 대체 빌드 러너입니다. 증분 빌드가 더 빠르고 구조화된 출력을 제공하며 기본적으로 병렬로 실행됩니다.",
-      "status": "final",
-      "sourcePreview": "An alternative, Wails-aware build runner for your existing Taskfiles. Faster incremental builds, str…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Try the native YAML build system: create and configure a project in one wizard, build and package it…"
     },
     "a0005-title-01": {
       "sourceHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
       "targetHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
-      "machineHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
-      "machineText": "Wake",
-      "status": "final",
-      "sourcePreview": "Wake",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Wake"
     },
     "a0006-description-01": {
-      "sourceHash": "a25526bc37a6233757d3d7c73cf18c79b9221c8380eb49a173ba28283d87ce0c",
+      "sourceHash": "8dac96d711566d34807912b1653f335f16334c1169df6fc3f5ace265839276ce",
       "targetHash": "4abe3d6afd01ecf578cb41e7a8d857135f11303e3d34efe0604905966ea79f0f",
-      "machineHash": "4abe3d6afd01ecf578cb41e7a8d857135f11303e3d34efe0604905966ea79f0f",
-      "machineText": "LLM 에이전트가 실행 중인 Wails 앱을 검사하고 테스트하며 조작할 수 있게 해 주는 내장 Model Context Protocol 서버입니다. 사용자 코드가 필요하지 않으며 빌드 태그로 활성화합니다.",
-      "status": "final",
-      "sourcePreview": "A built-in Model Context Protocol server that lets LLM agents inspect, test, and drive a running Wai…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Build macOS and Linux apps with CGO_ENABLED=0: no C toolchain, cross-compile without Docker. Enabled…"
     },
     "a0006-title-01": {
-      "sourceHash": "b2f079f515a5ba58e698ec213646afd77145d0dd8e6c062ef24166ccf959d0f0",
+      "sourceHash": "d761300a14a9527962dbbf24b7a1b63bf67a147934c592768ed7854e8ff6cf2a",
       "targetHash": "eaa1ea036cb62bc2b6580f1dfe320901caadaae44a831ec883b136bd8b1c39e1",
-      "machineHash": "eaa1ea036cb62bc2b6580f1dfe320901caadaae44a831ec883b136bd8b1c39e1",
-      "machineText": "LLM 제어(MCP)",
-      "status": "final",
-      "sourcePreview": "LLM Control (MCP)",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "CGO-free builds"
+    },
+    "a0007-description-01": {
+      "sourceHash": "a25526bc37a6233757d3d7c73cf18c79b9221c8380eb49a173ba28283d87ce0c",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "A built-in Model Context Protocol server that lets LLM agents inspect, test, and drive a running Wai…"
+    },
+    "a0007-title-01": {
+      "sourceHash": "b2f079f515a5ba58e698ec213646afd77145d0dd8e6c062ef24166ccf959d0f0",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "LLM Control (MCP)"
+    },
+    "a0008-title-01": {
+      "sourceHash": "05cb8356ed20106729705523b2b2e84e310c8f400a2759593093589c15e9b0d3",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Experimental Feature"
     },
     "b0001-text-01": {
-      "sourceHash": "4411b2d477f635f8cb1e8ec1f9fec7905f1939f3c24365d33fe305f5d4327a8e",
-      "targetHash": "f0914f8c1d375d34e92ea9701736c4c8e8521eea1c90995a524e8dd69738f72a",
-      "machineHash": "f0914f8c1d375d34e92ea9701736c4c8e8521eea1c90995a524e8dd69738f72a",
-      "machineText": "이 섹션의 모든 항목은 말 그대로 실험입니다. 여기에 있는 기능은\\\n명시적으로 활성화해야 하며 기본적으로 비활성화되어 있습니다. 릴리스가 바뀌면 형태나 이름이 바뀌거나\\\n완전히 제거될 수도 있습니다. 이러한 변화에 대응할 준비가 되어 있지 않다면\\\n핵심 기능을 이 실험들에 의존하여 구축하지 마세요.",
-      "status": "final",
-      "sourcePreview": "Everything in this section is, by definition, an experiment. Features here are\\ opt-in, off by defau…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "1d8efe36f1bf3dfc9620c681d2bdf7a405a6e11575e440994f8caa3441305c2f",
+      "targetHash": "5c61c8c6a725103cb3750aba904fe4748867019c4a4f6d4484a8df28bae9a52b",
+      "status": "migration-review",
+      "sourcePreview": "Everything in this section is, by definition, an experiment. Features here are opt-in, off by defaul…"
     },
     "b0002-heading-01": {
       "sourceHash": "338b0fd20d9611d9131d9cd9758fab344042b9234e17e39e139c3fec152504ff",
       "targetHash": "9b29c53912fcee9106a849c17b0ddafdc09b22c781ef244a632f418121cffc80",
-      "machineHash": "9b29c53912fcee9106a849c17b0ddafdc09b22c781ef244a632f418121cffc80",
-      "machineText": "\"실험적\"이라는 말의 의미",
-      "status": "final",
-      "sourcePreview": "What \"Experimental\" means",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "What \"Experimental\" means"
     },
     "b0003-text-01": {
-      "sourceHash": "3c91298071708809485a263f45cda29c9475c8a61c4d9d32ff191ffe6985eb93",
-      "targetHash": "1d0bade5a4ed385471f69acf3c9e4ba0040b634d5a561ceadcab0dc2231c5125",
-      "machineHash": "1d0bade5a4ed385471f69acf3c9e4ba0040b634d5a561ceadcab0dc2231c5125",
-      "machineText": "Wails는 실험을 공개적으로 제공합니다. 실험은 일찍 사용자에게 제공할 만큼\\\n가능성이 있다고 판단했지만, 아직 완전히 도입하기로\\\n확정하지 않은 아이디어입니다. 이를 공개하는 _이유는_ Wails에서 영구적으로 지원하는 기능으로 채택할지 결정하기 전에\\\n실제 사용 사례에서 배우고자 하기 때문입니다.",
-      "status": "final",
-      "sourcePreview": "Wails ships experiments in the open. An experiment is an idea we think is\\ promising enough to put i…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "1031c0d1858a9f2a5527673666ab8d2a18c1341e6b92da2d386f48198cf44598",
+      "targetHash": "be50eb040e5c2f5f1011d37de9e2777e4d062032eb917f4579f05befb3be3bda",
+      "status": "migration-review",
+      "sourcePreview": "Wails ships experiments in the open. An experiment is an idea we think is promising enough to put in…"
     },
     "b0004-text-01": {
       "sourceHash": "631afd4f53361159932cd8500f4b4d60b30159f2dfec1d194e980c1d1f9edae7",
       "targetHash": "51afdad610e85f2081acc7b529fcb546e5e2327118b12e10433e2fcfd7a69a61",
-      "machineHash": "51afdad610e85f2081acc7b529fcb546e5e2327118b12e10433e2fcfd7a69a61",
-      "machineText": "따라서 이 섹션의 모든 항목에는 다음과 같은 특성이 있습니다:",
-      "status": "final",
-      "sourcePreview": "That means a few things are true of everything in this section:",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "That means a few things are true of everything in this section:"
     },
     "b0005-text-01": {
-      "sourceHash": "4dffc47772234a71e550a4efdaa3f82ebf3d336ad2b38bcca1a1c17ee0f2b629",
-      "targetHash": "1d77f31bcf53364adc9a5a4385c9df62842ceb128110a66a55cf713a74b0bc94",
-      "machineHash": "1d77f31bcf53364adc9a5a4385c9df62842ceb128110a66a55cf713a74b0bc94",
-      "machineText": "*명시적으로 활성화해야 합니다.* 실험은 `wails3`의 기본 동작을 절대로 변경하지 않습니다. 사용자가 의도적으로 활성화해야 하며(일반적으로 환경 변수나 빌드 플래그 사용), 비활성화된 상태에서는 기존 워크플로가 전혀 바뀌지 않습니다.",
-      "status": "final",
-      "sourcePreview": "*It's opt-in.* Experiments never change the default behaviour of `wails3`. You turn them on delibera…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "3465de9c2f16762e0fe906601a2d952bb8cb25e9a63069adc0122be1af001a56",
+      "targetHash": "a6d4d529bfc569ae7a885ecfd1693e26f7d9c6d2b952afb552a871f3129ba938",
+      "status": "migration-review",
+      "sourcePreview": "**It's opt-in.** Experiments never change the default behaviour of `wails3`. You turn them on delibe…"
     },
     "b0006-text-01": {
-      "sourceHash": "3dd8deadc8cb00d7857646d9296e212687934e079c79346d70f69490facaa4de",
-      "targetHash": "22cb53f4f6d8f4d8351440eb32809c695a33d1c731353e34d33982820e7bc557",
-      "machineHash": "22cb53f4f6d8f4d8351440eb32809c695a33d1c731353e34d33982820e7bc557",
-      "machineText": "*존속하지 않을 수도 있습니다.* 일부 실험은 안정화된 기능으로 발전합니다. 반면 알아볼 수 없을 정도로 재설계되거나 폐기되는 실험도 있습니다. 이미 확신하는 것만 출시하기보다는 공개적으로 시도하고 빠르게 배우고자 합니다.",
-      "status": "final",
-      "sourcePreview": "*It might not survive.* Some experiments graduate into stable features. Others get reworked beyond r…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "10e5edfbf6251124598252f311b68c96d1cc7838bc2c04ff88658008afbc77b1",
+      "targetHash": "b52ebd566cfc92920e38896f09d7f6cfbb576d1b4e4d670042ad5bf09260d0ac",
+      "status": "migration-review",
+      "sourcePreview": "**It might not survive.** Some experiments graduate into stable features. Others get reworked beyond…"
     },
     "b0007-text-01": {
-      "sourceHash": "c6b52061e9288c7c33a6ba88e3617c3f9626ff84c6d47cdbf1a373d406a48fa6",
-      "targetHash": "01b918e4a7ed747b7a4a0150b51d8a0d0a1b232f64953cfb8c291965a18cd52a",
-      "machineHash": "01b918e4a7ed747b7a4a0150b51d8a0d0a1b232f64953cfb8c291965a18cd52a",
-      "machineText": "*API가 확정된 상태가 아닙니다.* 실험이 구체화되는 동안 릴리스 사이에 이름, 플래그, 기본값 및 동작이 달라질 수 있습니다. 변경 사항은 릴리스 노트에서 명시하지만, 안정화된 기능에 적용되는 안정성 보장까지 기대해서는 안 됩니다.",
-      "status": "final",
-      "sourcePreview": "*The API isn't frozen.* Names, flags, defaults and behaviour can shift between releases while an exp…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "b5beeb57a82f6b817370d0fb9cb7b67295f032e3986dc5b16d4b7f4cd8b8a347",
+      "targetHash": "5336aae7f46b68048103a7b7974e8a21e0d399de22aad3494f4ebd01c3140ba0",
+      "status": "migration-review",
+      "sourcePreview": "**The API isn't frozen.** Names, flags, defaults and behaviour can shift between releases while an e…"
     },
     "b0008-heading-01": {
       "sourceHash": "998a1b4c575e74574eb555eacb984fc7026be6ff141ecd197387d5b396433eea",
       "targetHash": "1d3eae5e732db8532ea4d06f1ac11df3b8fbaef89ada45aad31efd8d5b3517fc",
-      "machineHash": "1d3eae5e732db8532ea4d06f1ac11df3b8fbaef89ada45aad31efd8d5b3517fc",
-      "machineText": "여러분의 피드백을 기다립니다",
-      "status": "final",
-      "sourcePreview": "We want your feedback",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "We want your feedback"
     },
     "b0009-text-01": {
-      "sourceHash": "d90109f48642042502bdb7f1aca92d86cf7df2dcba5585a885e0363715a0103d",
-      "targetHash": "40923da48b6736bb6d360fdf4bebdb95fd7e91bb980f19a2f32aaa9d44b6212f",
-      "machineHash": "40923da48b6736bb6d360fdf4bebdb95fd7e91bb980f19a2f32aaa9d44b6212f",
-      "machineText": "이 부분이 중요합니다. 실험의 존속 여부는 실험을 실제로 사용하는\\\n사람들에게서 어떤 의견을 듣느냐에 달려 있습니다. 이러한 실험을 사용해 보셨다면 다음 사항을 꼭 알려 주세요:",
-      "status": "final",
-      "sourcePreview": "This is the important part. Experiments live or die by what we hear back from\\ people actually using…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "27eafd80d78739ac5394c4e74fa36a036befab4dce38993c6ba8f663c34f51bf",
+      "targetHash": "e1ae304718429f6ad7e7f6496b97672677206b83ecb86b796c6245d0ee483ff3",
+      "status": "migration-review",
+      "sourcePreview": "This is the important part. Experiments live or die by what we hear back from people actually using …"
     },
     "b0010-text-01": {
       "sourceHash": "87bfe8e886d9870c17e38fa610fc41c4fc70c0846def1e600b1a71f1803e29c7",
       "targetHash": "97e5bb37e5f62f8c2469a4ef618c200cf565600bf67dd99481e75714d809e5b9",
-      "machineHash": "97e5bb37e5f62f8c2469a4ef618c200cf565600bf67dd99481e75714d809e5b9",
-      "machineText": "프로젝트에서 제대로 작동했나요? 어디에서 문제가 발생했나요?",
-      "status": "final",
-      "sourcePreview": "Did it work for your project? Where did it fall down?",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Did it work for your project? Where did it fall down?"
     },
     "b0011-text-01": {
       "sourceHash": "d2cb33f24dd8093b80c5fd961a4c79131248ce849898fad804a690657e021975",
       "targetHash": "7623d8abfc7527505964a4c962260c23a58ba8d3afa75e7d8fb4d4eabb3b2f38",
-      "machineHash": "7623d8abfc7527505964a4c962260c23a58ba8d3afa75e7d8fb4d4eabb3b2f38",
-      "machineText": "더 빠르거나 명확하거나 편리했나요? 아니면 전환할 가치가 없었나요?",
-      "status": "final",
-      "sourcePreview": "Was it faster / clearer / nicer — or not worth the switch?",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Was it faster / clearer / nicer — or not worth the switch?"
     },
     "b0012-text-01": {
       "sourceHash": "61f9f66c841f37e9a1d9bc0450ec3c339198fe620ca5b88cf7dcb69ab9b503c1",
       "targetHash": "fa936bafd6dbc45e55c8a329a75c9a8f3f4ef0261b9b39d8eeb2e5b7c8dba3cb",
-      "machineHash": "fa936bafd6dbc45e55c8a329a75c9a8f3f4ef0261b9b39d8eeb2e5b7c8dba3cb",
-      "machineText": "기본적으로 사용하려면 어떤 조건이 충족되어야 하나요?",
-      "status": "final",
-      "sourcePreview": "What would have to be true for you to use it by default?",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "What would have to be true for you to use it by default?"
     },
     "b0013-text-01": {
-      "sourceHash": "bf0d6a396a5a64d0e06454fe6d952f967464ffe2d7ed0a1c15c0d452bca47c92",
-      "targetHash": "cf3386df93ffba6a15677307827b2d33bcf5814b104f4da426d8c0367c9fe6fd",
-      "machineHash": "cf3386df93ffba6a15677307827b2d33bcf5814b104f4da426d8c0367c9fe6fd",
-      "machineText": "가장 유용한 피드백은 구체적인 내용입니다. 무엇을 실행했고, 어떤 결과를 예상했으며,\\\n실제로 어떤 일이 일어났는지 알려 주세요. 각 실험에는 GitHub Discussions의 *Experiments*\\\n카테고리에 별도의 스레드가 있습니다:",
-      "status": "final",
-      "sourcePreview": "The most useful feedback is concrete: what you ran, what you expected, what\\ actually happened. Each…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "sourceHash": "785f626808102b3071509396fd1c4341abf9f3ac4ffa323ade72de3da764a37b",
+      "targetHash": "610447be38496c2ec55c0b4d2db9965e4c2e29656a9e4b468386b636426b5253",
+      "status": "migration-review",
+      "sourcePreview": "The most useful feedback is concrete: what you ran, what you expected, what actually happened. Each …"
     },
     "b0014-heading-01": {
       "sourceHash": "1706bcfcfd6f7621b48e32daba9abd29c8e83065f1947fab96fba5a6b561099c",
       "targetHash": "cde0d4b0796a91bd69b2eb57d1462427c6557b1424e229804e8adccf3c0e2024",
-      "machineHash": "cde0d4b0796a91bd69b2eb57d1462427c6557b1424e229804e8adccf3c0e2024",
-      "machineText": "현재 진행 중인 실험",
-      "status": "final",
-      "sourcePreview": "Current experiments",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Current experiments"
     },
-    "fm-description-01": {
+    "b0015-heading-01": {
+      "sourceHash": "211d0c929ba5f33a5d04cbb49a5c4cfd809cbf9e7ef792182b14aa7870667ea5",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "CGO-free builds (purego)"
+    },
+    "b0016-text-01": {
+      "sourceHash": "f1cab01a4e3f893ca2290d21d48bda9ae0282348509f7d6d0ea98ab499a5812c",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The CGO-free backend is opt-in behind the `purego` build tag (or `WAILS_PUREGO=1`) and is **not** th…"
+    },
+    "b0017-heading-01": {
+      "sourceHash": "1f36becc3aa7c8a8893bc0688d52b8bef91dae5528528706003bc4f45e409f96",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "What it is"
+    },
+    "b0018-text-01": {
+      "sourceHash": "60558e7bb5aefb6be9d8817811d8d43d60650c0339262c571264c9eee6fb626f",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "On macOS and Linux, Wails normally talks to the system's UI libraries (AppKit and WKWebView on macOS…"
+    },
+    "b0019-text-01": {
+      "sourceHash": "10ceecd63f9f889f9898fceaa957db4ce2505065f7507e94ea4fd02543f6b86c",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The public application API is unchanged. Select the backend when building; application code does not…"
+    },
+    "b0020-text-01": {
+      "sourceHash": "91dfa110349e5b4d0f8bcba53f3aa3202068d606a2106cb6378d7da5c87fda74",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "What you gain:"
+    },
+    "b0021-text-01": {
+      "sourceHash": "6811f66fe6710e7f2b8f7a5d10a800c999a7372505531910c9eab2345404a293",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "**No C toolchain for Go compilation.** The Go build does not need Xcode command line tools, `gcc`, o…"
+    },
+    "b0022-text-01": {
+      "sourceHash": "616fe3d8d5b74830568b973a1eb9e515329d4c7c466794c9bf6e746436502f46",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "**Cross-compiling without Docker.** Build a macOS or Linux binary from any OS with plain `go build`."
+    },
+    "b0023-text-01": {
+      "sourceHash": "99f83a41564a21ee775957fa1d01057f60c60502c0f1ada2ee91e3fedc9fc618",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Windows already builds without cgo and is unaffected."
+    },
+    "b0024-heading-01": {
+      "sourceHash": "3d8bcedb793069391475302f4128c860d2060500b9d26c07623568c336f1c3d1",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Before enabling it"
+    },
+    "b0025-text-01": {
+      "sourceHash": "631f1584eb7ddb8905bbd63c974ba46f27963318ccc232a8bbde9a8485a93364",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Use a CLI and framework version that both include this experiment. Updating only the CLI does not ad…"
+    },
+    "b0026-text-01": {
+      "sourceHash": "96da1a737968a20bdefbacc477bee84f42d564a9cb3b4cb250b9f8704fa61de4",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Both commands track the moving `master` branch. For reproducible builds, use the same tested commit …"
+    },
+    "b0027-text-01": {
+      "sourceHash": "40e54739e4cf74ac3016cb2b2d673c1c7fae81339c81419846d6d20a7739c28a",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The experimental macOS and Linux backends support `amd64` and `arm64`. Cross-compilation creates an …"
+    },
+    "b0028-heading-01": {
+      "sourceHash": "5fe33bf4814026357c87c2f329d288f8708a6fb508eecaf230dbf67edd438953",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Using it"
+    },
+    "b0029-text-01": {
+      "sourceHash": "1de4fb7ac5658a1f37eb895e8d191edbba51c10bf9d942a29586a9334335c851",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Pick one of these ways to select the backend."
+    },
+    "b0030-heading-01": {
+      "sourceHash": "7f2407c9a154015b7bb4576efbef5cb585372701682bfc9944024193dca30cb7",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "With the Wails CLI"
+    },
+    "b0031-text-01": {
+      "sourceHash": "956034981ff69e518cb6cbf959953be28456ba4fdbc78d366cd74fefdf2fdf88",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "In a project generated with this version of the CLI, `build`, `package` and `dev` use the experiment…"
+    },
+    "b0032-text-01": {
+      "sourceHash": "d989748f55716a9dcceab7e7bdfcea39c17adc4a7fca625480d504280c51527e",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "In PowerShell:"
+    },
+    "b0033-text-01": {
+      "sourceHash": "0696a6af3f25d7a4d7d00a751d53c9570ada5c9b188aee88a32685194057601e",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The CLI recognises `1`, `true`, `on` and `yes`, ignoring case and surrounding whitespace. An empty v…"
+    },
+    "b0034-text-01": {
+      "sourceHash": "5eca3ec2a06bd2e00ff0fb41a6cb4ac0b10b42b2b73cac69b9cdf94d4b563dab",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Or pass the tag to a single build or packaging command:"
+    },
+    "b0035-text-01": {
+      "sourceHash": "70b819fd7e56df8ee0c0b4a93ab9a7c51388f0551a813a38093be7e369ab6039",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "With the tag set, the updated stock Taskfiles build with `CGO_ENABLED=0` using the host's Go toolcha…"
+    },
+    "b0036-text-01": {
+      "sourceHash": "ab051bc173fe7c9cfe640fd56218cbda502f34ebf44f1b6e67089d8f9e9b85f5",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Older projects keep their existing Taskfiles. Compare custom build tasks with the updated templates,…"
+    },
+    "b0037-heading-01": {
+      "sourceHash": "df566078bdd05df1bbdc904355a1c8c02dd05785389c6d3d48849fd70376efd9",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "With plain Go"
+    },
+    "b0038-text-01": {
+      "sourceHash": "0d1b902f254b61b8464c825078794e624bc905f2237a96337831b46e7f8506e0",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Build your frontend first so any assets referenced by `go:embed` exist, then compile the application…"
+    },
+    "b0039-text-01": {
+      "sourceHash": "6fe2ba10eb9a334c17fef89e9786e36b8066b132f63383bfd6c89ac28aaf4ea1",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "`CGO_ENABLED=1 go build -tags purego` works too: the backend is the same, cgo just stays available t…"
+    },
+    "b0040-text-01": {
+      "sourceHash": "5e4564755f24f343b22f84ead54f0255b36f3c008ca680fa0172acbdc45a1e05",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "For a cross-build, also set `GOOS` and `GOARCH`:"
+    },
+    "b0041-text-01": {
+      "sourceHash": "b0bb5a609ff3bc43ad73e21b5b6fd206ae6c22b12e98daa07aadba2d9e63b2d6",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "On Linux, select the GTK3 stack with `-tags purego,gtk3,production`."
+    },
+    "b0042-text-01": {
+      "sourceHash": "a9c871b63110c8ac78ab78228775cea9a729a010e853eeaf598c26e0f9737774",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "To return to the default backend, remove the `purego` tag and unset `WAILS_PUREGO` (`unset WAILS_PUR…"
+    },
+    "b0043-text-01": {
+      "sourceHash": "bdfba57b9afca5bdbd37a25a8980b7c55aa16b96572c02470c60d25dd9bbc393",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "If you build with `CGO_ENABLED=0` but forget the tag, the build stops with one error that names the …"
+    },
+    "b0044-heading-01": {
+      "sourceHash": "e543e80b09cb9169f03ce80584feb4926ebd391a7b1fe4fa80458335baa8ca5e",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Runtime requirements"
+    },
+    "b0045-text-01": {
+      "sourceHash": "125381441a8a33a2f18934b7f4a7a03a8ef40449ec0c4dacf5ca7c471a67b6f7",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The app loads the system libraries when it starts, so the target machine needs them installed, just …"
+    },
+    "b0046-cell-01": {
+      "sourceHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Platform"
+    },
+    "b0047-cell-01": {
+      "sourceHash": "62ef6fd92ee145d9f000697f85abd4c680d9754e96c988ec7fe2b1072240df92",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Libraries"
+    },
+    "b0048-cell-01": {
+      "sourceHash": "96c4a40c87e6921a8c40da7cf2f45a5a896ab932550233d952b3e09e0f3d3bd3",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Oldest supported"
+    },
+    "b0049-cell-01": {
+      "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "macOS"
+    },
+    "b0050-cell-01": {
+      "sourceHash": "e64109ddbac5003589bfa1ca7be38e28671dd651d940cf5c5f06ea5a4e5f2ff8",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "AppKit, WebKit (part of the OS)"
+    },
+    "b0051-cell-01": {
+      "sourceHash": "ebe3e4ad82f2b68ad286c885e9e13fdb441ff266f742ac53685486c50030cdda",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Same as the cgo backend"
+    },
+    "b0052-cell-01": {
+      "sourceHash": "af84a497abbf806ee4078d88a7a7d03a969d75a8c2ff3dc0f3741ea5b9f52eea",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Linux (default)"
+    },
+    "b0053-cell-01": {
+      "sourceHash": "11737e2e943a42bf06834bcdd8d3db674fcf3c8de19ff2623e90a7f1f6908c8a",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "GTK 4, WebKitGTK 6.0"
+    },
+    "b0054-cell-01": {
+      "sourceHash": "4fee588b6693baddf4c4787c09dcbc757c35de761a20c1debeff6b78dd11bb8f",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "GTK 4.8, WebKitGTK 2.40 (Debian 12)"
+    },
+    "b0055-cell-01": {
+      "sourceHash": "30707db3dc815cc2feabf7682b3f8f001517dd69af7103298996541fdaaf8cce",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Linux (`gtk3`)"
+    },
+    "b0056-cell-01": {
+      "sourceHash": "948625af27d86892aa6c404fd026fc65d80c8a5e0387cedf74b259f8819b8398",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "GTK 3, WebKit2GTK 4.1"
+    },
+    "b0057-cell-01": {
+      "sourceHash": "ecfaf76f0e729685eaa25260aa7d6724d8ecb0a5df41c8fe47a306b8d64d1431",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "GTK 3.24, WebKit2GTK 2.36 (Ubuntu 22.04)"
+    },
+    "b0058-text-01": {
+      "sourceHash": "ab47161f54ee90047e3455a07899a963676ebfee673cc5195a117423fe50a5a9",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Functions newer than these floors are looked up when the app starts and used only when the installed…"
+    },
+    "b0059-text-01": {
+      "sourceHash": "e82337b26fa6294d9c41b17dffcf26163239f3ffc8fc29222d0795ec7a23a862",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The app still uses native UI libraries and may dynamically link system libraries such as Linux's lib…"
+    },
+    "b0060-heading-01": {
+      "sourceHash": "68a1a8991e03227adad0a8fee94ee988d75d8877bd99f602ffddacb369e15774",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Packaging and signing"
+    },
+    "b0061-text-01": {
+      "sourceHash": "57756cac819fcd99515be3a415ccbb0f60749be834f97f95b1f4b25549dfc567",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The backend removes the C toolchain requirement from compilation. Each package format keeps its own …"
+    },
+    "b0062-text-01": {
+      "sourceHash": "a8351460b34d36527c39ea8124358bb17cdc00176222237f0ca0beff0c7a11ab",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Cross-built macOS applications still need the appropriate signing and notarisation before distributi…"
+    },
+    "b0063-heading-01": {
+      "sourceHash": "68e1ca575295bb5604fea711b5d2eff44006ce4bd985481083a76b71fce0daef",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Validation"
+    },
+    "b0064-text-01": {
+      "sourceHash": "1fe4d8e47cd0b7ab3419d33c35fff92b613dceeaa97b6125115ed7639dba1753",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Generated-binding checks and `puregocheck` inspect native symbols, optional-version guards and backe…"
+    },
+    "b0065-text-01": {
+      "sourceHash": "e9544e574b8780002721a24ef9c395480391fa3ce3bda33aa9aec0255ecda6a8",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "The [backend test guide](https://github.com/wailsapp/wails/blob/master/v3/TESTING.md) describes the …"
+    },
+    "b0066-heading-01": {
+      "sourceHash": "f11f4e56128f96e10f26995a18b1c817cc173ca5c01a98ca476b029dedb20fbd",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Known differences"
+    },
+    "b0067-text-01": {
+      "sourceHash": "a5614e39f758612a539e1541ac8dcaafe800f73c5a9244645ea687497335d001",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "**Menu accelerators on Linux use application-level registration.** Avoid assigning conflicting accel…"
+    },
+    "b0068-text-01": {
+      "sourceHash": "399774f13fde307bcc89a0efbdc93b3fa4d65313f6ef161544a3baf159dfc7c8",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "**macOS open and save panels** run in a separate system process, as they do with cgo; the tests chec…"
+    },
+    "b0069-text-01": {
+      "sourceHash": "af87c7a6a8e61d1df55e474817fc559052f60f1edaf2edbd93b21816f168bf8b",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Found something else? Please tell us."
+    },
+    "b0070-heading-01": {
+      "sourceHash": "aac77df347205252b074d45aff7891debdba0ff1466cc0c351416d1662bb71ab",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Feedback"
+    },
+    "b0071-text-01": {
+      "sourceHash": "9d9c94dd3e03a7d6b72db3c0a0a1f1ac02ff30ab1da394721a87511dc313e524",
+      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "migration-review",
+      "sourcePreview": "Tell us how it went in the **CGO-free builds** thread under [Experiments](https://github.com/wailsap…"
+    },
+    "fm-description": {
       "sourceHash": "f97527b4cd4a0a2d5c1fb0f771d723237eefe0145dd1fb005bb5d197f23d49bf",
       "targetHash": "67e8bbd1175472450764d7877d89395ec9055db88e4059fb6c2d48c56a1751a2",
-      "machineHash": "67e8bbd1175472450764d7877d89395ec9055db88e4059fb6c2d48c56a1751a2",
-      "machineText": "Wails v3에서 진행 중인 실험을 소개합니다. 각 실험이 무엇이고 왜 존재하는지, 피드백을 제공하는 방법을 설명합니다.",
-      "status": "final",
-      "sourcePreview": "A home for in-progress experiments in Wails v3 — what they are, why they exist, and how to give feed…",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "A home for in-progress experiments in Wails v3 — what they are, why they exist, and how to give feed…"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "d31e0c5db7250e84d3015b5b0b0668ecc15d52d66bcb78ad3da431f1306c3bad",
       "targetHash": "cbdfc85af972e51e985bb6fe211cad3e00dd7e49307573b41296a65a065fdef4",
-      "machineHash": "cbdfc85af972e51e985bb6fe211cad3e00dd7e49307573b41296a65a065fdef4",
-      "machineText": "실험적 기능",
-      "status": "final",
-      "sourcePreview": "Experimental Features",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:37Z"
+      "status": "migration-review",
+      "sourcePreview": "Experimental Features"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "experimental/index.mpd",
+    "sourceHash": "36b0c2f6344899343df5b6e6db52b9c8435d7cc098f47b467618574327ed9840",
+    "targetHash": "a9afed4c0eac86131c8a5c9b2c49cb38d2585b665699b186091331fc60dd00e8",
+    "previousSegments": {
+      "a0001-title-01": {
+        "sourceHash": "8ef96ab50e072723f09bf791c4bfb210f7f5b1ae6c11b8b097deeac891d8d7aa",
+        "targetHash": "c505594370bbf93db81c428fc43c18034cdb4b3cb209e7d1477fb84ac97b054f",
+        "machineHash": "c505594370bbf93db81c428fc43c18034cdb4b3cb209e7d1477fb84ac97b054f",
+        "machineText": "실험이 있는 곳",
+        "status": "final",
+        "sourcePreview": "Here be experiments",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0003-description-01": {
+        "sourceHash": "e3243a34a3b1661eb504ba5a27569e2ed71bf05f9bf3a5df8c7589deffbe0125",
+        "targetHash": "52be0373490c058fbe027dc83481888c9b893d00cee3629443eae5319b762633",
+        "machineHash": "52be0373490c058fbe027dc83481888c9b893d00cee3629443eae5319b762633",
+        "machineText": "사용 중인 실험의 스레드를 찾아 어떻게 작동했는지, 무엇이 제대로 작동하지 않았는지 또는 무엇이 부족한지 알려 주세요.",
+        "status": "final",
+        "sourcePreview": "Find the thread for the experiment you're using and tell us how it worked out, what broke, or what's…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0003-title-01": {
+        "sourceHash": "60725a89a5aa08c85142841e6f8ed97ea71de57d2c98ea5703573962b20072c5",
+        "targetHash": "82e02bd07996f694bda7ad06756f73d68b85620fd920af2b816128183148afd4",
+        "machineHash": "82e02bd07996f694bda7ad06756f73d68b85620fd920af2b816128183148afd4",
+        "machineText": "실험 토론",
+        "status": "final",
+        "sourcePreview": "Experiments Discussions",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0005-description-01": {
+        "sourceHash": "b410e595f09fac4d43dd77aa3dad128afd57496283d47266885ee2a5aa95d636",
+        "targetHash": "387ac83aba30fcc2cb036e01496db171fc91cc7a5d2e116ab773360a8ddf5f44",
+        "machineHash": "387ac83aba30fcc2cb036e01496db171fc91cc7a5d2e116ab773360a8ddf5f44",
+        "machineText": "기존 Taskfile을 위한 Wails 인식형 대체 빌드 러너입니다. 증분 빌드가 더 빠르고 구조화된 출력을 제공하며 기본적으로 병렬로 실행됩니다.",
+        "status": "final",
+        "sourcePreview": "An alternative, Wails-aware build runner for your existing Taskfiles. Faster incremental builds, str…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0005-title-01": {
+        "sourceHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
+        "targetHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
+        "machineHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b",
+        "machineText": "Wake",
+        "status": "final",
+        "sourcePreview": "Wake",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0006-description-01": {
+        "sourceHash": "a25526bc37a6233757d3d7c73cf18c79b9221c8380eb49a173ba28283d87ce0c",
+        "targetHash": "4abe3d6afd01ecf578cb41e7a8d857135f11303e3d34efe0604905966ea79f0f",
+        "machineHash": "4abe3d6afd01ecf578cb41e7a8d857135f11303e3d34efe0604905966ea79f0f",
+        "machineText": "LLM 에이전트가 실행 중인 Wails 앱을 검사하고 테스트하며 조작할 수 있게 해 주는 내장 Model Context Protocol 서버입니다. 사용자 코드가 필요하지 않으며 빌드 태그로 활성화합니다.",
+        "status": "final",
+        "sourcePreview": "A built-in Model Context Protocol server that lets LLM agents inspect, test, and drive a running Wai…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "a0006-title-01": {
+        "sourceHash": "b2f079f515a5ba58e698ec213646afd77145d0dd8e6c062ef24166ccf959d0f0",
+        "targetHash": "eaa1ea036cb62bc2b6580f1dfe320901caadaae44a831ec883b136bd8b1c39e1",
+        "machineHash": "eaa1ea036cb62bc2b6580f1dfe320901caadaae44a831ec883b136bd8b1c39e1",
+        "machineText": "LLM 제어(MCP)",
+        "status": "final",
+        "sourcePreview": "LLM Control (MCP)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0001-text-01": {
+        "sourceHash": "4411b2d477f635f8cb1e8ec1f9fec7905f1939f3c24365d33fe305f5d4327a8e",
+        "targetHash": "f0914f8c1d375d34e92ea9701736c4c8e8521eea1c90995a524e8dd69738f72a",
+        "machineHash": "f0914f8c1d375d34e92ea9701736c4c8e8521eea1c90995a524e8dd69738f72a",
+        "machineText": "이 섹션의 모든 항목은 말 그대로 실험입니다. 여기에 있는 기능은\\\n명시적으로 활성화해야 하며 기본적으로 비활성화되어 있습니다. 릴리스가 바뀌면 형태나 이름이 바뀌거나\\\n완전히 제거될 수도 있습니다. 이러한 변화에 대응할 준비가 되어 있지 않다면\\\n핵심 기능을 이 실험들에 의존하여 구축하지 마세요.",
+        "status": "final",
+        "sourcePreview": "Everything in this section is, by definition, an experiment. Features here are\\ opt-in, off by defau…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0002-heading-01": {
+        "sourceHash": "338b0fd20d9611d9131d9cd9758fab344042b9234e17e39e139c3fec152504ff",
+        "targetHash": "9b29c53912fcee9106a849c17b0ddafdc09b22c781ef244a632f418121cffc80",
+        "machineHash": "9b29c53912fcee9106a849c17b0ddafdc09b22c781ef244a632f418121cffc80",
+        "machineText": "\"실험적\"이라는 말의 의미",
+        "status": "final",
+        "sourcePreview": "What \"Experimental\" means",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0003-text-01": {
+        "sourceHash": "3c91298071708809485a263f45cda29c9475c8a61c4d9d32ff191ffe6985eb93",
+        "targetHash": "1d0bade5a4ed385471f69acf3c9e4ba0040b634d5a561ceadcab0dc2231c5125",
+        "machineHash": "1d0bade5a4ed385471f69acf3c9e4ba0040b634d5a561ceadcab0dc2231c5125",
+        "machineText": "Wails는 실험을 공개적으로 제공합니다. 실험은 일찍 사용자에게 제공할 만큼\\\n가능성이 있다고 판단했지만, 아직 완전히 도입하기로\\\n확정하지 않은 아이디어입니다. 이를 공개하는 _이유는_ Wails에서 영구적으로 지원하는 기능으로 채택할지 결정하기 전에\\\n실제 사용 사례에서 배우고자 하기 때문입니다.",
+        "status": "final",
+        "sourcePreview": "Wails ships experiments in the open. An experiment is an idea we think is\\ promising enough to put i…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0004-text-01": {
+        "sourceHash": "631afd4f53361159932cd8500f4b4d60b30159f2dfec1d194e980c1d1f9edae7",
+        "targetHash": "51afdad610e85f2081acc7b529fcb546e5e2327118b12e10433e2fcfd7a69a61",
+        "machineHash": "51afdad610e85f2081acc7b529fcb546e5e2327118b12e10433e2fcfd7a69a61",
+        "machineText": "따라서 이 섹션의 모든 항목에는 다음과 같은 특성이 있습니다:",
+        "status": "final",
+        "sourcePreview": "That means a few things are true of everything in this section:",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0005-text-01": {
+        "sourceHash": "4dffc47772234a71e550a4efdaa3f82ebf3d336ad2b38bcca1a1c17ee0f2b629",
+        "targetHash": "1d77f31bcf53364adc9a5a4385c9df62842ceb128110a66a55cf713a74b0bc94",
+        "machineHash": "1d77f31bcf53364adc9a5a4385c9df62842ceb128110a66a55cf713a74b0bc94",
+        "machineText": "*명시적으로 활성화해야 합니다.* 실험은 `wails3`의 기본 동작을 절대로 변경하지 않습니다. 사용자가 의도적으로 활성화해야 하며(일반적으로 환경 변수나 빌드 플래그 사용), 비활성화된 상태에서는 기존 워크플로가 전혀 바뀌지 않습니다.",
+        "status": "final",
+        "sourcePreview": "*It's opt-in.* Experiments never change the default behaviour of `wails3`. You turn them on delibera…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0006-text-01": {
+        "sourceHash": "3dd8deadc8cb00d7857646d9296e212687934e079c79346d70f69490facaa4de",
+        "targetHash": "22cb53f4f6d8f4d8351440eb32809c695a33d1c731353e34d33982820e7bc557",
+        "machineHash": "22cb53f4f6d8f4d8351440eb32809c695a33d1c731353e34d33982820e7bc557",
+        "machineText": "*존속하지 않을 수도 있습니다.* 일부 실험은 안정화된 기능으로 발전합니다. 반면 알아볼 수 없을 정도로 재설계되거나 폐기되는 실험도 있습니다. 이미 확신하는 것만 출시하기보다는 공개적으로 시도하고 빠르게 배우고자 합니다.",
+        "status": "final",
+        "sourcePreview": "*It might not survive.* Some experiments graduate into stable features. Others get reworked beyond r…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0007-text-01": {
+        "sourceHash": "c6b52061e9288c7c33a6ba88e3617c3f9626ff84c6d47cdbf1a373d406a48fa6",
+        "targetHash": "01b918e4a7ed747b7a4a0150b51d8a0d0a1b232f64953cfb8c291965a18cd52a",
+        "machineHash": "01b918e4a7ed747b7a4a0150b51d8a0d0a1b232f64953cfb8c291965a18cd52a",
+        "machineText": "*API가 확정된 상태가 아닙니다.* 실험이 구체화되는 동안 릴리스 사이에 이름, 플래그, 기본값 및 동작이 달라질 수 있습니다. 변경 사항은 릴리스 노트에서 명시하지만, 안정화된 기능에 적용되는 안정성 보장까지 기대해서는 안 됩니다.",
+        "status": "final",
+        "sourcePreview": "*The API isn't frozen.* Names, flags, defaults and behaviour can shift between releases while an exp…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0008-heading-01": {
+        "sourceHash": "998a1b4c575e74574eb555eacb984fc7026be6ff141ecd197387d5b396433eea",
+        "targetHash": "1d3eae5e732db8532ea4d06f1ac11df3b8fbaef89ada45aad31efd8d5b3517fc",
+        "machineHash": "1d3eae5e732db8532ea4d06f1ac11df3b8fbaef89ada45aad31efd8d5b3517fc",
+        "machineText": "여러분의 피드백을 기다립니다",
+        "status": "final",
+        "sourcePreview": "We want your feedback",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0009-text-01": {
+        "sourceHash": "d90109f48642042502bdb7f1aca92d86cf7df2dcba5585a885e0363715a0103d",
+        "targetHash": "40923da48b6736bb6d360fdf4bebdb95fd7e91bb980f19a2f32aaa9d44b6212f",
+        "machineHash": "40923da48b6736bb6d360fdf4bebdb95fd7e91bb980f19a2f32aaa9d44b6212f",
+        "machineText": "이 부분이 중요합니다. 실험의 존속 여부는 실험을 실제로 사용하는\\\n사람들에게서 어떤 의견을 듣느냐에 달려 있습니다. 이러한 실험을 사용해 보셨다면 다음 사항을 꼭 알려 주세요:",
+        "status": "final",
+        "sourcePreview": "This is the important part. Experiments live or die by what we hear back from\\ people actually using…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0010-text-01": {
+        "sourceHash": "87bfe8e886d9870c17e38fa610fc41c4fc70c0846def1e600b1a71f1803e29c7",
+        "targetHash": "97e5bb37e5f62f8c2469a4ef618c200cf565600bf67dd99481e75714d809e5b9",
+        "machineHash": "97e5bb37e5f62f8c2469a4ef618c200cf565600bf67dd99481e75714d809e5b9",
+        "machineText": "프로젝트에서 제대로 작동했나요? 어디에서 문제가 발생했나요?",
+        "status": "final",
+        "sourcePreview": "Did it work for your project? Where did it fall down?",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0011-text-01": {
+        "sourceHash": "d2cb33f24dd8093b80c5fd961a4c79131248ce849898fad804a690657e021975",
+        "targetHash": "7623d8abfc7527505964a4c962260c23a58ba8d3afa75e7d8fb4d4eabb3b2f38",
+        "machineHash": "7623d8abfc7527505964a4c962260c23a58ba8d3afa75e7d8fb4d4eabb3b2f38",
+        "machineText": "더 빠르거나 명확하거나 편리했나요? 아니면 전환할 가치가 없었나요?",
+        "status": "final",
+        "sourcePreview": "Was it faster / clearer / nicer — or not worth the switch?",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0012-text-01": {
+        "sourceHash": "61f9f66c841f37e9a1d9bc0450ec3c339198fe620ca5b88cf7dcb69ab9b503c1",
+        "targetHash": "fa936bafd6dbc45e55c8a329a75c9a8f3f4ef0261b9b39d8eeb2e5b7c8dba3cb",
+        "machineHash": "fa936bafd6dbc45e55c8a329a75c9a8f3f4ef0261b9b39d8eeb2e5b7c8dba3cb",
+        "machineText": "기본적으로 사용하려면 어떤 조건이 충족되어야 하나요?",
+        "status": "final",
+        "sourcePreview": "What would have to be true for you to use it by default?",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0013-text-01": {
+        "sourceHash": "bf0d6a396a5a64d0e06454fe6d952f967464ffe2d7ed0a1c15c0d452bca47c92",
+        "targetHash": "cf3386df93ffba6a15677307827b2d33bcf5814b104f4da426d8c0367c9fe6fd",
+        "machineHash": "cf3386df93ffba6a15677307827b2d33bcf5814b104f4da426d8c0367c9fe6fd",
+        "machineText": "가장 유용한 피드백은 구체적인 내용입니다. 무엇을 실행했고, 어떤 결과를 예상했으며,\\\n실제로 어떤 일이 일어났는지 알려 주세요. 각 실험에는 GitHub Discussions의 *Experiments*\\\n카테고리에 별도의 스레드가 있습니다:",
+        "status": "final",
+        "sourcePreview": "The most useful feedback is concrete: what you ran, what you expected, what\\ actually happened. Each…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "b0014-heading-01": {
+        "sourceHash": "1706bcfcfd6f7621b48e32daba9abd29c8e83065f1947fab96fba5a6b561099c",
+        "targetHash": "cde0d4b0796a91bd69b2eb57d1462427c6557b1424e229804e8adccf3c0e2024",
+        "machineHash": "cde0d4b0796a91bd69b2eb57d1462427c6557b1424e229804e8adccf3c0e2024",
+        "machineText": "현재 진행 중인 실험",
+        "status": "final",
+        "sourcePreview": "Current experiments",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "f97527b4cd4a0a2d5c1fb0f771d723237eefe0145dd1fb005bb5d197f23d49bf",
+        "targetHash": "67e8bbd1175472450764d7877d89395ec9055db88e4059fb6c2d48c56a1751a2",
+        "machineHash": "67e8bbd1175472450764d7877d89395ec9055db88e4059fb6c2d48c56a1751a2",
+        "machineText": "Wails v3에서 진행 중인 실험을 소개합니다. 각 실험이 무엇이고 왜 존재하는지, 피드백을 제공하는 방법을 설명합니다.",
+        "status": "final",
+        "sourcePreview": "A home for in-progress experiments in Wails v3 — what they are, why they exist, and how to give feed…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "d31e0c5db7250e84d3015b5b0b0668ecc15d52d66bcb78ad3da431f1306c3bad",
+        "targetHash": "cbdfc85af972e51e985bb6fe211cad3e00dd7e49307573b41296a65a065fdef4",
+        "machineHash": "cbdfc85af972e51e985bb6fe211cad3e00dd7e49307573b41296a65a065fdef4",
+        "machineText": "실험적 기능",
+        "status": "final",
+        "sourcePreview": "Experimental Features",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:37Z"
+      }
+    },
+    "reviewReasons": {
+      "a0001-title-01": "current-layout-mismatch",
+      "a0003-description-01": "current-layout-mismatch",
+      "a0003-title-01": "current-layout-mismatch",
+      "a0005-description-01": "current-layout-mismatch",
+      "a0005-title-01": "current-layout-mismatch",
+      "a0006-description-01": "current-layout-mismatch",
+      "a0006-title-01": "current-layout-mismatch",
+      "a0007-description-01": "current-layout-mismatch",
+      "a0007-title-01": "current-layout-mismatch",
+      "a0008-title-01": "current-layout-mismatch",
+      "b0001-text-01": "current-layout-mismatch",
+      "b0002-heading-01": "current-layout-mismatch",
+      "b0003-text-01": "current-layout-mismatch",
+      "b0004-text-01": "current-layout-mismatch",
+      "b0005-text-01": "current-layout-mismatch",
+      "b0006-text-01": "current-layout-mismatch",
+      "b0007-text-01": "current-layout-mismatch",
+      "b0008-heading-01": "current-layout-mismatch",
+      "b0009-text-01": "current-layout-mismatch",
+      "b0010-text-01": "current-layout-mismatch",
+      "b0011-text-01": "current-layout-mismatch",
+      "b0012-text-01": "current-layout-mismatch",
+      "b0013-text-01": "current-layout-mismatch",
+      "b0014-heading-01": "current-layout-mismatch",
+      "b0015-heading-01": "current-layout-mismatch",
+      "b0016-text-01": "current-layout-mismatch",
+      "b0017-heading-01": "current-layout-mismatch",
+      "b0018-text-01": "current-layout-mismatch",
+      "b0019-text-01": "current-layout-mismatch",
+      "b0020-text-01": "current-layout-mismatch",
+      "b0021-text-01": "current-layout-mismatch",
+      "b0022-text-01": "current-layout-mismatch",
+      "b0023-text-01": "current-layout-mismatch",
+      "b0024-heading-01": "current-layout-mismatch",
+      "b0025-text-01": "current-layout-mismatch",
+      "b0026-text-01": "current-layout-mismatch",
+      "b0027-text-01": "current-layout-mismatch",
+      "b0028-heading-01": "current-layout-mismatch",
+      "b0029-text-01": "current-layout-mismatch",
+      "b0030-heading-01": "current-layout-mismatch",
+      "b0031-text-01": "current-layout-mismatch",
+      "b0032-text-01": "current-layout-mismatch",
+      "b0033-text-01": "current-layout-mismatch",
+      "b0034-text-01": "current-layout-mismatch",
+      "b0035-text-01": "current-layout-mismatch",
+      "b0036-text-01": "current-layout-mismatch",
+      "b0037-heading-01": "current-layout-mismatch",
+      "b0038-text-01": "current-layout-mismatch",
+      "b0039-text-01": "current-layout-mismatch",
+      "b0040-text-01": "current-layout-mismatch",
+      "b0041-text-01": "current-layout-mismatch",
+      "b0042-text-01": "current-layout-mismatch",
+      "b0043-text-01": "current-layout-mismatch",
+      "b0044-heading-01": "current-layout-mismatch",
+      "b0045-text-01": "current-layout-mismatch",
+      "b0046-cell-01": "current-layout-mismatch",
+      "b0047-cell-01": "current-layout-mismatch",
+      "b0048-cell-01": "current-layout-mismatch",
+      "b0049-cell-01": "current-layout-mismatch",
+      "b0050-cell-01": "current-layout-mismatch",
+      "b0051-cell-01": "current-layout-mismatch",
+      "b0052-cell-01": "current-layout-mismatch",
+      "b0053-cell-01": "current-layout-mismatch",
+      "b0054-cell-01": "current-layout-mismatch",
+      "b0055-cell-01": "current-layout-mismatch",
+      "b0056-cell-01": "current-layout-mismatch",
+      "b0057-cell-01": "current-layout-mismatch",
+      "b0058-text-01": "current-layout-mismatch",
+      "b0059-text-01": "current-layout-mismatch",
+      "b0060-heading-01": "current-layout-mismatch",
+      "b0061-text-01": "current-layout-mismatch",
+      "b0062-text-01": "current-layout-mismatch",
+      "b0063-heading-01": "current-layout-mismatch",
+      "b0064-text-01": "current-layout-mismatch",
+      "b0065-text-01": "current-layout-mismatch",
+      "b0066-heading-01": "current-layout-mismatch",
+      "b0067-text-01": "current-layout-mismatch",
+      "b0068-text-01": "current-layout-mismatch",
+      "b0069-text-01": "current-layout-mismatch",
+      "b0070-heading-01": "current-layout-mismatch",
+      "b0071-text-01": "current-layout-mismatch",
+      "fm-description": "current-layout-mismatch",
+      "fm-title": "current-layout-mismatch"
     }
   }
 }

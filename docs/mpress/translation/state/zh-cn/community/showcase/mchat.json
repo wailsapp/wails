@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "18a86a878d05e2b8c5c4",
   "sourceFile": "community/showcase/mchat.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:48Z"
     },
     "b0002-text-01": {
-      "sourceHash": "e7e7bd37e73bd112196fabaa4082e0c710b0163b1add1c35113386474bab1212",
+      "sourceHash": "14371be17d80b183ae1fbdd6dafc6fbde521995a187dd585c13a6393581c055a",
       "targetHash": "fbd017fd192edb7333a8c78d0b81d805ddfa033269d59269c57b4773e5c84574",
       "machineHash": "fbd017fd192edb7333a8c78d0b81d805ddfa033269d59269c57b4773e5c84574",
       "machineText": "[官方网站](https://marcio199226.github.io/mchat-site/public/) 完全匿名的端到端加密聊天。",
       "status": "final",
-      "sourcePreview": "[Official page](https://marcio199226.github.io/mchat-site/public/) Fully\\ anonymous end2end encrypte…",
+      "sourcePreview": "[Official page](https://marcio199226.github.io/mchat-site/public/) Fully anonymous end2end encrypted…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:48Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
       "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:48Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
       "targetHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
       "machineHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/mchat.mpd",
+    "sourceHash": "08adaebed86bee9238aeacdac962c398b1239cf40dfce666d46ddfbd5e0771be",
+    "targetHash": "83757279cd03df525deafbd70f9db0997333fdd17c3672077d299ea968dcb3b4",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "82a390bf5d60f934bf0500fc11cf9a6c822c7f0d14fd0920f306b089908b433c",
+        "targetHash": "82a390bf5d60f934bf0500fc11cf9a6c822c7f0d14fd0920f306b089908b433c",
+        "machineHash": "82a390bf5d60f934bf0500fc11cf9a6c822c7f0d14fd0920f306b089908b433c",
+        "machineText": "![Mchat](/assets/showcase-images/mchat.png)",
+        "status": "final",
+        "sourcePreview": "![Mchat](/assets/showcase-images/mchat.png)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:48Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "e7e7bd37e73bd112196fabaa4082e0c710b0163b1add1c35113386474bab1212",
+        "targetHash": "fbd017fd192edb7333a8c78d0b81d805ddfa033269d59269c57b4773e5c84574",
+        "machineHash": "fbd017fd192edb7333a8c78d0b81d805ddfa033269d59269c57b4773e5c84574",
+        "machineText": "[官方网站](https://marcio199226.github.io/mchat-site/public/) 完全匿名的端到端加密聊天。",
+        "status": "final",
+        "sourcePreview": "[Official page](https://marcio199226.github.io/mchat-site/public/) Fully\\ anonymous end2end encrypte…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:48Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+        "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+        "machineText": "使用 Wails 构建的桌面应用程序",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:48Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
+        "targetHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
+        "machineHash": "e6832e5c7f18f61d612d6219d15d5f91687e36e7ae5f5599504de82f876c38fb",
+        "machineText": "Mchat",
+        "status": "final",
+        "sourcePreview": "Mchat",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:48Z"
+      }
     }
   }
 }
