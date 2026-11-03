@@ -45,6 +45,9 @@ func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
 // ignoreMouse lets pointer input pass through the window to whatever is below
 // it. GTK4 has no gdk_window_set_pass_through: an empty input region on the
 // window's surface does the same, and no region restores the default.
+// Verified on X11 with server-side decorations (Xvfb, openbox). A window with
+// client-side decorations and a shadow has its input region set by GtkWindow
+// too, which may replace this one when the window is next resized: untested.
 func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
 	if w.window == nilPointer {
 		return
