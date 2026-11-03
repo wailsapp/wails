@@ -77,8 +77,6 @@ jobs:
     env:
       # The CI container cannot create WebKit's nested user namespaces.
       WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
-      GOCOVERDIR: ${{ github.workspace }}/coverage
-      E2E_EVIDENCE_DIR: ${{ github.workspace }}/evidence
     steps:
       - name: Install dependencies
         working-directory: /
@@ -107,7 +105,10 @@ jobs:
         env:
           LANE: ${{ matrix.lane.lane }}
           TAGS: ${{ matrix.lane.tags }}
+        # In a job container github.workspace is the runner's path, not the
+        # mounted one: the output paths come from GITHUB_WORKSPACE.
         run: |
+          export GOCOVERDIR="$GITHUB_WORKSPACE/coverage" E2E_EVIDENCE_DIR="$GITHUB_WORKSPACE/evidence"
           mkdir -p "$E2E_EVIDENCE_DIR"
           tests/purego/e2e/run-linux.sh "$LANE" "$TAGS" | grep -vE '^[A-Za-z0-9+/=]{1,76}$'
       - name: Upload coverage and evidence

@@ -70,7 +70,9 @@ if [ -n "${GOCOVERDIR-}" ]; then
 	mkdir -p "$GOCOVERDIR"
 	cover=(-cover -covermode=atomic)
 fi
-go build "${cover[@]}" -tags "$tags" -o "$probe" ./tests/purego/e2e
+# CI containers check the repository out as another user, so git refuses to
+# report VCS status: the probe needs no VCS stamp.
+go build -buildvcs=false "${cover[@]}" -tags "$tags" -o "$probe" ./tests/purego/e2e
 export E2E_PROBE=$probe
 echo "e2e lane $lane, tags '$tags', screen $screen"
 exec xvfb-run -a -s "-screen 0 $screen" dbus-run-session -- "$0" --inside
