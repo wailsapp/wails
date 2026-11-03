@@ -121,4 +121,10 @@ amd64, both stacks):
   cgo parity run of the same probe, and the e2e probe (`tests/purego/e2e`,
   real input through XTEST).
 - Visual scenarios (`tests/purego/visual`) with screenshots as evidence.
+
+In CI, the `E2E input probe (v3)` workflow runs the e2e probe on several
+distros, including the floors (Debian 12 for GTK4, Ubuntu 22.04 for GTK3),
+and in the configurations that change how input arrives: HiDPI, keyboard
+layouts, lock keys, a window manager and the accessibility bus. See
+`tests/purego/e2e/lanes.json` and the e2e section of `TESTING.md`.
 - Every example under `v3/examples` vets in purego GTK4, purego GTK3 and cgo.

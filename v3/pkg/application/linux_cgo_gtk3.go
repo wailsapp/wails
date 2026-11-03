@@ -1926,6 +1926,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	// Set up the window close event
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-in-event"), C.handleFocusEvent, winID)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)

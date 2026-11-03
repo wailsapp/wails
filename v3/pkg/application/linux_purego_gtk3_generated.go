@@ -1289,6 +1289,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), _Cfpvar_fp_handleDeleteEvent, winID)
+	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("focus-in-event"), _Cfpvar_fp_handleFocusEvent, winID)
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), _Cfpvar_fp_handleFocusEvent, winID)
 	_Cfunc_signal_connect(wv, c.String("load-changed"), _Cfpvar_fp_handleLoadChanged, winID)
 	_Cfunc_signal_connect(wv, c.String("permission-request"), _Cfpvar_fp_handlePermissionRequest, winID)

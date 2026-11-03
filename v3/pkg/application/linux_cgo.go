@@ -230,6 +230,14 @@ func lookupActionName(itemId uint) (string, bool) {
 	return name, ok
 }
 
+// lookupRadioGroup returns the group action of a radio item.
+func lookupRadioGroup(itemId uint) (string, bool) {
+	menuItemIdsMutex.RLock()
+	defer menuItemIdsMutex.RUnlock()
+	group, ok := menuItemRadioGroups[itemId]
+	return group, ok
+}
+
 //export menuActionActivated
 func menuActionActivated(id C.guint) {
 	menuItemActivatedByID(uint(id))
@@ -341,6 +349,7 @@ func menuItemNew(label string, bitmap []byte) pointer {
 func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	cAction := C.CString(actionName)
 	defer C.free(unsafe.Pointer(cAction))
@@ -384,6 +393,7 @@ func menuCheckItemNew(label string, bitmap []byte) pointer {
 func menuCheckItemNewWithId(label string, bitmap []byte, itemId uint, checked bool) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	cAction := C.CString(actionName)
 	defer C.free(unsafe.Pointer(cAction))
@@ -526,6 +536,7 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	cAction := C.CString(actionName)
 	defer C.free(unsafe.Pointer(cAction))
@@ -544,6 +555,7 @@ func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 }
 
 func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedId uint) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old group keeps no shortcut for it
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
 
@@ -618,7 +630,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	}
 
 	// Look up the action name for this menu item
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -651,7 +663,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 // clearMenuItemAccelerator removes every accelerator GTK holds for the item's
 // action.
 func clearMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -1107,7 +1119,7 @@ func windowAttachMenuBar(window, vbox, menu pointer, menuStyle LinuxMenuStyle) p
 // unregisterMenuItemAccelerator removes the accelerator registered for the
 // item's action, so the action no longer fires from the keyboard.
 func unregisterMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}

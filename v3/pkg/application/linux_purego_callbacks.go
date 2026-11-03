@@ -1089,15 +1089,6 @@ var onFileChooserButtonClickedPtr = purego.NewCallback(func(button, data uintptr
 	return 0
 })
 
-// onFileChooserFileActivated accepts the chooser on a double-click or Enter,
-// as GtkFileChooserDialog does through its default response.
-var onFileChooserFileActivatedPtr = purego.NewCallback(func(chooser, data uintptr) uintptr {
-	if state := loadFileChooser(data); state != nil {
-		state.respond(true)
-	}
-	return 0
-})
-
 // onFileChooserDestroyed covers every way the window can disappear without a
 // close-request: a parent destroying it, or GTK destroying it for another
 // reason. Without it the wait loop would never finish.
@@ -1226,7 +1217,6 @@ func showFileChooserDialog(window pointer, allowMultiple, createFolders bool, cu
 	g_object_set_data(acceptButton, fileChooserAcceptKey, 1)
 	signalConnect(cancelButton, "clicked", onFileChooserButtonClickedPtr, handle)
 	signalConnect(acceptButton, "clicked", onFileChooserButtonClickedPtr, handle)
-	signalConnect(chooser, "file-activated", onFileChooserFileActivatedPtr, handle)
 
 	buttons := gtk_box_new(gtkOrientationHorizontal, 6)
 	gtk_widget_set_halign(buttons, gtkAlignEnd)
@@ -1252,6 +1242,11 @@ func showFileChooserDialog(window pointer, allowMultiple, createFolders bool, cu
 		gtk_window_set_transient_for(dialog, parent)
 	}
 	gtk_window_set_child(dialog, content)
+	// GTK before 4.10 (the only GTK this chooser is built for) has no
+	// "file-activated" signal on the widget: activating a file - Return in the
+	// location field, a double click - activates the window's default widget.
+	// Without one, only a click on the accept button answered the dialog.
+	gtk_window_set_default_widget(dialog, acceptButton)
 
 	signalConnect(dialog, "close-request", onFileChooserCloseRequestPtr, handle)
 	signalConnect(dialog, "destroy", onFileChooserDestroyedPtr, handle)

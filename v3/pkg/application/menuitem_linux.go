@@ -26,6 +26,20 @@ func radioItemTarget(itemId uint) string {
 	return fmt.Sprintf("%d", itemId)
 }
 
+// acceleratorAction names the action an item's accelerator activates. A
+// radio item has no action of its own: its group's stateful action does the
+// work, so the accelerator activates that action with the item's target, the
+// detailed name "radio_group_N::<target>".
+func acceleratorAction(itemId uint) (string, bool) {
+	if name, ok := lookupActionName(itemId); ok {
+		return name, true
+	}
+	if group, ok := lookupRadioGroup(itemId); ok {
+		return group + "::" + radioItemTarget(itemId), true
+	}
+	return "", false
+}
+
 func (l linuxMenuItem) setTooltip(tooltip string) {
 	InvokeSync(func() {
 		menuItemSetToolTip(l.native, tooltip)

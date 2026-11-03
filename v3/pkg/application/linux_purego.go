@@ -156,6 +156,14 @@ func lookupActionName(itemId uint) (string, bool) {
 	return name, ok
 }
 
+// lookupRadioGroup returns the group action of a radio item.
+func lookupRadioGroup(itemId uint) (string, bool) {
+	menuItemsLock.RLock()
+	defer menuItemsLock.RUnlock()
+	group, ok := menuItemRadioGroups[itemId]
+	return group, ok
+}
+
 func menuActionActivated(id uint) {
 	menuItemActivatedByID(id)
 }
@@ -252,6 +260,7 @@ func menuItemNew(label string, bitmap []byte) pointer {
 }
 
 func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createMenuItem(label, actionName, itemId)
 
@@ -283,6 +292,7 @@ func menuCheckItemNew(label string, bitmap []byte) pointer {
 }
 
 func menuCheckItemNewWithId(label string, bitmap []byte, itemId uint, checked bool) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createCheckMenuItem(label, actionName, itemId, checked)
 
@@ -375,6 +385,7 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 }
 
 func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createCheckMenuItem(label, actionName, itemId, checked)
 
@@ -385,6 +396,7 @@ func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 }
 
 func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedId uint) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old group keeps no shortcut for it
 	actionName := fmt.Sprintf("radio_group_%d", groupId)
 	targetValue := fmt.Sprintf("%d", itemId)
 	initialValue := fmt.Sprintf("%d", checkedId)
@@ -447,7 +459,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	}
 
 	// Look up the action name for this menu item
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -475,7 +487,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 // clearMenuItemAccelerator removes every accelerator GTK holds for the item's
 // action.
 func clearMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -819,9 +831,12 @@ func windowAttachMenuBar(window, vbox, menu pointer, menuStyle LinuxMenuStyle) p
 }
 
 // unregisterMenuItemAccelerator removes the accelerator registered for the
-// item's action, so the action no longer fires from the keyboard.
+// item's action, so the action no longer fires from the keyboard. Menu.Update
+// rebuilds every item with a new action, and calls this first: the previous
+// action stays in the application's action group, and with its accelerator
+// it went on firing the item on the old shortcut after SetAccelerator.
 func unregisterMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}

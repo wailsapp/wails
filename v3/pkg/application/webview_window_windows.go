@@ -138,6 +138,22 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 		w.removeMenu()
 		return
 	}
+	w.replaceMenu(menu, true)
+}
+
+// refreshMenu rebuilds the window's menu bar from menu, which Menu.Update has
+// just processed: items added, removed or hidden, and changed accelerators,
+// reach the bar only through a rebuild.
+func (w *windowsWebviewWindow) refreshMenu(menu *Menu) {
+	if w.menu == nil || w.menu.menuData != menu || w.parent.options.Windows.DisableMenu {
+		return
+	}
+	w.replaceMenu(menu, false)
+}
+
+// replaceMenu gives the window a menu bar built from menu, first processing
+// menu (Menu.Update) when update is set.
+func (w *windowsWebviewWindow) replaceMenu(menu *Menu, update bool) {
 	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
 	// allocated while building it, and the submenu handles detached for hidden
 	// rows. Win32Menu.Update frees those, but only for the same object, and
@@ -152,7 +168,9 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 			previousImpls[item] = item.impl
 		}
 	}
-	menu.Update()
+	if update {
+		menu.Update()
+	}
 
 	replacement := NewApplicationMenu(w, menu)
 	if !w32.SetMenu(w.hwnd, replacement.menu) {
@@ -167,10 +185,13 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 
 	// Only once the window has been given the new menu: destroying one that is
 	// still assigned to a window leaves it pointing at a freed handle. Its
-	// accelerators go too, except those the replacement still holds.
+	// accelerators go too - all of them, by item, as an item kept in the
+	// replacement may have a new accelerator (SetAccelerator) - and the
+	// replacement's are bound again.
 	if previous != nil {
-		w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, replacement))
+		w.parent.removeMenuBindingsTo(previous.menuMapping)
 		previous.Destroy()
+		replacement.bindAccelerators()
 	}
 
 	// Set menu background if theme is active

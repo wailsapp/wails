@@ -36,6 +36,30 @@ func (kbm *KeyBindingManager) removeMenuBinding(item *MenuItem) {
 	}
 }
 
+// removeMenuBindingsTo unregisters every accelerator bound to one of items;
+// see WebviewWindow.removeMenuBindingsTo.
+func (kbm *KeyBindingManager) removeMenuBindingsTo(items map[int]*MenuItem) {
+	kbm.app.keyBindingsLock.Lock()
+	defer kbm.app.keyBindingsLock.Unlock()
+	removeBindingsTo(kbm.menuBindings, items)
+}
+
+// removeBindingsTo deletes the bindings whose item is one of items.
+func removeBindingsTo(bindings map[string]*MenuItem, items map[int]*MenuItem) {
+	if len(items) == 0 {
+		return
+	}
+	set := make(map[*MenuItem]bool, len(items))
+	for _, item := range items {
+		set[item] = true
+	}
+	for key, item := range bindings {
+		if set[item] {
+			delete(bindings, key)
+		}
+	}
+}
+
 // Remove removes a key binding
 func (kbm *KeyBindingManager) Remove(accelerator string) {
 	kbm.app.keyBindingsLock.Lock()
@@ -55,7 +79,7 @@ func (kbm *KeyBindingManager) Process(accelerator string, window Window) bool {
 		callback(window)
 		return true
 	}
-	if item != nil && !suppressesApplicationMenuItem(window, kbm.app.applicationMenu, item) {
+	if item != nil && item.Enabled() && !suppressesApplicationMenuItem(window, kbm.app.applicationMenu, item) {
 		item.handleClick()
 		return true
 	}
