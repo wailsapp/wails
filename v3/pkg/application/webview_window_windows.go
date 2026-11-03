@@ -1030,8 +1030,20 @@ func (w *windowsWebviewWindow) reload() {
 	w.execJS("window.location.reload();")
 }
 
+// forceReload reloads the page bypassing the cache, as the other platforms
+// do. WebView2 has no such method; the DevTools protocol's Page.reload does.
 func (w *windowsWebviewWindow) forceReload() {
-	// noop
+	if w.chromium == nil {
+		return
+	}
+	err := w.chromium.CallDevTools("Page.reload", `{"ignoreCache":true}`, func(_ string, err error) {
+		if err != nil {
+			w.reload()
+		}
+	})
+	if err != nil {
+		w.reload()
+	}
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
