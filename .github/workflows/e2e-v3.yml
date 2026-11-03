@@ -128,7 +128,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        backend: [purego, cgo]
+        # macOS runners are scarce org-wide: pull requests run purego only.
+        backend: ${{ fromJSON(github.event_name == 'pull_request' && '["purego"]' || '["purego","cgo"]') }}
     defaults:
       run:
         working-directory: v3
@@ -170,11 +171,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: amd64
-            runner: windows-2025
-          - arch: arm64
-            runner: windows-11-arm
+        # Pull requests run amd64; the nightly adds arm64.
+        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"amd64","runner":"windows-2025"}]' || '[{"arch":"amd64","runner":"windows-2025"},{"arch":"arm64","runner":"windows-11-arm"}]') }}
     defaults:
       run:
         working-directory: v3

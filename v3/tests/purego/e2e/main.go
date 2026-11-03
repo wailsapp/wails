@@ -284,6 +284,18 @@ var scenarios = []scenario{
 		if err := awaitNone("rebound-action"); err != nil {
 			return fmt.Errorf("old accelerator: %w", err)
 		}
+		if runtime.GOOS == "darwin" {
+			return nil // the menu is the application's, not the window's
+		}
+		// Setting the menu the window already shows (the old way to make it
+		// pick up changes) keeps it working.
+		p.main.SetMenu(p.menu)
+		if err := press(p.d, title, "cmdorctrl+shift+o"); err != nil {
+			return err
+		}
+		if err := await("rebound-action", 5*time.Second); err != nil {
+			return fmt.Errorf("after SetMenu with the same menu: %w", err)
+		}
 		return nil
 	}},
 	{name: "menu-navigate", os: "linux,windows", run: func(p *probe) error {
