@@ -13,6 +13,14 @@ Android and iOS support remains experimental and is outside the stable desktop c
 Installation, migration, platform support, and feature documentation are in
 [`docs/`](../docs/) and published at [v3.wails.io](https://v3.wails.io/).
 
+## Server event delivery
+
+Builds using the `server` tag deliver events through the server's WebSocket
+broadcaster, without installing the native IPC fallback. Creating a
+`WebviewWindow` in server mode does not queue native JavaScript or park native
+event payloads. Native builds retain pre-runtime event delivery and flush queued
+JavaScript when the window runtime becomes ready.
+
 ## Stargazers over time
 
 <a href="https://github.com/wailsapp/wails/stargazers">
