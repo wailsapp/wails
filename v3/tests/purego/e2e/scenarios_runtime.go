@@ -462,6 +462,9 @@ func runtimeFileDialogs(p *probe, start func(string, any)) error {
 		return err
 	}
 	_, cancels := p.d.(dialogCanceller)
+	// A lane that skips open-file cannot type a path (Caps Lock changes the
+	// letters): it cancels this dialog with Escape instead of choosing.
+	escapes := !cancels && list("E2E_SKIP")["open-file"]
 
 	// Open, several files allowed: the result is a list.
 	start("dialog-open", dir)
@@ -470,6 +473,10 @@ func runtimeFileDialogs(p *probe, start func(string, any)) error {
 	switch {
 	case cancels:
 		err = p.d.(dialogCanceller).cancelDialog()
+	case escapes:
+		if err = waitFocus(p.d, "E2E rt open"); err == nil {
+			err = p.d.key("escape")
+		}
 	default:
 		if c, ok := p.d.(fileChooser); ok {
 			err = c.chooseFile("E2E rt open", want)
@@ -490,7 +497,7 @@ func runtimeFileDialogs(p *probe, start func(string, any)) error {
 			return fmt.Errorf("dialog-open returned %s: %w", got, err)
 		}
 	}
-	if cancels {
+	if cancels || escapes {
 		if len(paths) != 0 {
 			return fmt.Errorf("cancelled dialog-open returned %s", got)
 		}
