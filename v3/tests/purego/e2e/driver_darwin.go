@@ -380,7 +380,16 @@ func keyTarget(app objc.ID) (objc.ID, error) {
 			return w, nil
 		}
 	}
-	return 0, errors.New("no key, modal or main window to send keys to")
+	// A process that has not been activated (seen on a VM's first launch,
+	// just after a context menu closes) can have no key or main window: use
+	// the frontmost visible one, which postKeys then sends to directly.
+	windows := send(app, "orderedWindows")
+	for i := uint(0); i < call[uint](windows, "count"); i++ {
+		if w := windows.Send(sel("objectAtIndex:"), i); call[bool](w, "isVisible") {
+			return w, nil
+		}
+	}
+	return 0, errors.New("no key, modal, main or visible window to send keys to")
 }
 
 // keyEvent builds a key event with +[NSEvent keyEventWithType:...], which sets
