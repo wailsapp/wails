@@ -12,6 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -177,9 +178,13 @@ func (w *windowsWebviewWindow) replaceMenu(menu *Menu, update bool) {
 		}
 	}
 	if update {
-		w.replacingMenu = true
-		menu.Update()
-		w.replacingMenu = false
+		func() {
+			// Deferred: a panic in Update recovered higher up must not leave
+			// this window's bar refusing every later refresh.
+			w.replacingMenu = true
+			defer func() { w.replacingMenu = false }()
+			menu.Update()
+		}()
 	}
 
 	replacement := NewApplicationMenu(w, menu)
@@ -3040,6 +3045,24 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 
 	accKey := acc.String()
 	globalApplication.debug("Processing key binding", "vkey", vkey, "acc", accKey)
+
+	// Punctuation keys are reported by virtual key (OEM_PLUS), which no
+	// accelerator written with the character (CmdOrCtrl+plus, CmdOrCtrl+-,
+	// CmdOrCtrl+/) ever matched. Try what the key types on the active layout.
+	if strings.HasPrefix(acc.Key, "oem_") {
+		unshifted := rune(w32.MapVirtualKey(vkey, w32.MAPVK_VK_TO_CHAR) & 0x7FFF) // the high bit marks a dead key
+		typing := keyState
+		for _, k := range []int{w32.VK_CONTROL, w32.VK_LCONTROL, w32.VK_RCONTROL, w32.VK_MENU, w32.VK_LMENU, w32.VK_RMENU} {
+			typing[k] = 0 // the character as typed, not a control character
+		}
+		shifted, _ := w32.ToUnicodeNoState(vkey, 0, &typing)
+		for _, candidate := range punctuationAcceleratorCandidates(acc.Modifiers, unicode.ToLower(unshifted), shifted, acc.Key) {
+			if w.parent.processKeyBinding(candidate) {
+				return true
+			}
+		}
+		return false
+	}
 
 	// Process the key binding
 	if w.parent.processKeyBinding(accKey) {

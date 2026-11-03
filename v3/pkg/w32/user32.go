@@ -133,6 +133,7 @@ var (
 	procGetKeyboardState              = moduser32.NewProc("GetKeyboardState")
 	procMapVirtualKey                 = moduser32.NewProc("MapVirtualKeyW")
 	procMapVirtualKeyEx               = moduser32.NewProc("MapVirtualKeyExW")
+	procToUnicode                     = moduser32.NewProc("ToUnicode")
 	procGetAsyncKeyState              = moduser32.NewProc("GetAsyncKeyState")
 	procToAscii                       = moduser32.NewProc("ToAscii")
 	procSwapMouseButton               = moduser32.NewProc("SwapMouseButton")
@@ -1277,6 +1278,20 @@ func MapVirtualKeyEx(uCode, uMapType uint, dwhkl HKL) uint {
 		uintptr(uMapType),
 		uintptr(dwhkl))
 	return uint(ret)
+}
+
+// ToUnicodeNoState returns the character the key produces with keyState
+// held, on the active layout, without changing the keyboard state (flag 0x4,
+// Windows 10 1607 and later): a pending dead key is left for the next key.
+// It reports false when the key produces no single character.
+func ToUnicodeNoState(vKey, scanCode uint, keyState *[256]byte) (rune, bool) {
+	var buf [4]uint16
+	n, _, _ := procToUnicode.Call(uintptr(vKey), uintptr(scanCode), uintptr(unsafe.Pointer(&keyState[0])),
+		uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)), 0x4)
+	if int32(n) != 1 {
+		return 0, false
+	}
+	return rune(buf[0]), true
 }
 
 func MapVirtualKey(uCode uint, uMapType uint) uint {

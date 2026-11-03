@@ -168,7 +168,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		}
 
 		thisText := item.Label()
-		if item.accelerator != nil && item.callback != nil {
+		if item.accelerator != nil && item.callback != nil && !item.Hidden() {
 			if w.parentWindow != nil {
 				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
 			} else {
