@@ -1372,9 +1372,7 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 const zoomInFactor = 1.10
 
 func (w *linuxWebviewWindow) reload() {
-	uri := _Cfunc_CString("wails://")
-	_Cfunc_webkit_web_view_load_uri(w.webKitWebView(), uri)
-	_Cfunc_free(unsafe.Pointer(uri))
+	_Cfunc_webkit_web_view_reload(w.webKitWebView())
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {

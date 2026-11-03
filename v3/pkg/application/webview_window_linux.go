@@ -600,7 +600,11 @@ func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 }
 
 func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
-	w.ignoreMouse(w.ignoreMouseEvents)
+	// The requested state, not the stored one: passing the field (never
+	// updated) made SetIgnoreMouseEvents(true) a no-op and IsIgnoreMouseEvents
+	// report the window's initial option forever.
+	w.ignoreMouseEvents = ignore
+	w.ignoreMouse(ignore)
 }
 
 func (w *linuxWebviewWindow) show() {

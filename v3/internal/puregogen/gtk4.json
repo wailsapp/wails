@@ -1182,6 +1182,10 @@
       ]
     },
     {
+      "name": "webkit_web_view_reload",
+      "library": "libWebKit"
+    },
+    {
       "name": "webkit_web_view_load_uri",
       "library": "libWebKit",
       "strings": [

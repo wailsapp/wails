@@ -1385,10 +1385,10 @@ func (w *linuxWebviewWindow) setZoom(zoom float64) {
 	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.gdouble(zoom))
 }
 
+// reload reloads the current page. (It used to load "wails://", the app's
+// root, so a page at another route or with a query came back as the root.)
 func (w *linuxWebviewWindow) reload() {
-	uri := C.CString("wails://")
-	C.webkit_web_view_load_uri(w.webKitWebView(), uri)
-	C.free(unsafe.Pointer(uri))
+	C.webkit_web_view_reload(w.webKitWebView())
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {

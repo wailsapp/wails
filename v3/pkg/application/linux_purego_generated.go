@@ -258,6 +258,7 @@ var (
 	_native_webkit_web_view_get_zoom_level                              func(uintptr) float64
 	_native_webkit_web_view_load_alternate_html                         func(uintptr, string, string, string)
 	_native_webkit_web_view_load_uri                                    func(uintptr, string)
+	_native_webkit_web_view_reload                                      func(uintptr)
 	_native_webkit_web_view_set_background_color                        func(uintptr, uintptr)
 	_native_webkit_web_view_set_settings                                func(uintptr, uintptr)
 	_native_webkit_web_view_set_zoom_level                              func(uintptr, float64)
@@ -519,6 +520,7 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_webkit_web_view_get_zoom_level, libWebKit, "webkit_web_view_get_zoom_level")
 	register(&_native_webkit_web_view_load_alternate_html, libWebKit, "webkit_web_view_load_alternate_html")
 	register(&_native_webkit_web_view_load_uri, libWebKit, "webkit_web_view_load_uri")
+	register(&_native_webkit_web_view_reload, libWebKit, "webkit_web_view_reload")
 	register(&_native_webkit_web_view_set_background_color, libWebKit, "webkit_web_view_set_background_color")
 	register(&_native_webkit_web_view_set_settings, libWebKit, "webkit_web_view_set_settings")
 	register(&_native_webkit_web_view_set_zoom_level, libWebKit, "webkit_web_view_set_zoom_level")
@@ -1793,6 +1795,11 @@ func webkit_web_view_load_alternate_html(p0 uintptr, p1 string, p2 string, p3 st
 //go:uintptrescapes
 func webkit_web_view_load_uri(p0 uintptr, p1 string) {
 	_native_webkit_web_view_load_uri(p0, p1)
+}
+
+//go:uintptrescapes
+func webkit_web_view_reload(p0 uintptr) {
+	_native_webkit_web_view_reload(p0)
 }
 
 //go:uintptrescapes

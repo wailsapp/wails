@@ -2023,10 +2023,10 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 
 const zoomInFactor = 1.10
 
+// reload reloads the current page. (It used to load "wails://", the app's
+// root, so a page at another route or with a query came back as the root.)
 func (w *linuxWebviewWindow) reload() {
-	uri := C.CString("wails://")
-	C.webkit_web_view_load_uri(w.webKitWebView(), uri)
-	C.free(unsafe.Pointer(uri))
+	C.webkit_web_view_reload(w.webKitWebView())
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
