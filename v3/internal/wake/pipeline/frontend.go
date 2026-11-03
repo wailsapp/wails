@@ -36,7 +36,13 @@ func (stages frontendStages) plan() NodeKey {
 		}
 		var bindings NodeKey
 		if !stages.request.SkipBindings {
-			bindings = stages.add(Node{Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: stages.dependencies,
+			var required []string
+			if stages.obfuscated {
+				// The generator writes stable binding IDs beside the main package,
+				// outside the cached bindings directory.
+				required = []string{filepath.ToSlash(filepath.Join(filepath.Clean(stages.config.Project.Package), "wails_obfuscated.gen.go"))}
+			}
+			bindings = stages.add(Node{RequiredFiles: required, Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: stages.dependencies,
 				Spec:   BindingsSpec{Package: stages.config.Project.Package, Config: stages.config.Frontend.Bindings, Tags: primaryBuildTags(stages.config, stages.tags), Obfuscated: stages.obfuscated},
 				Inputs: bindingInputs,
 				Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
