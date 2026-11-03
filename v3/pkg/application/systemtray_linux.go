@@ -353,6 +353,13 @@ func (s *linuxSystemTray) run() {
 		globalApplication.error("systray error: failed to connect to DBus: %w\n", err)
 		return
 	}
+	// Until the tray publishes it below, the connection is run's to close.
+	published := false
+	defer func() {
+		if !published {
+			_ = conn.Close()
+		}
+	}()
 	err = notifier.ExportStatusNotifierItem(conn, itemPath, s)
 	if err != nil {
 		globalApplication.error("systray error: failed to export status notifier item: %w\n", err)
@@ -385,9 +392,17 @@ func (s *linuxSystemTray) run() {
 	// them under, so a setter racing with the run()-side wiring never
 	// observes a half-initialised pair.
 	s.itemMapLock.Lock()
+	select {
+	case <-s.quitChan:
+		// Destroyed while connecting: destroy found no connection to close.
+		s.itemMapLock.Unlock()
+		return
+	default:
+	}
 	s.conn = conn
 	s.props = props
 	s.menuProps = menuProps
+	published = true
 	s.itemMapLock.Unlock()
 
 	node := introspect.Node{

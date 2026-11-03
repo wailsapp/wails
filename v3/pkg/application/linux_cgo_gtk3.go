@@ -1633,16 +1633,6 @@ func (w *linuxWebviewWindow) windowShow() {
 	C.gtk_widget_show_all(w.gtkWidget())
 }
 
-func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
-	var enable C.int
-	if ignore {
-		enable = 1
-	}
-	gdkWindow := (*C.GdkWindow)(window)
-	C.gdk_window_set_pass_through(gdkWindow, enable)
-	C.webkit_web_view_set_editable((*C.WebKitWebView)(webview), C.gboolean(enable))
-}
-
 func (w *linuxWebviewWindow) webKitWebView() *C.WebKitWebView {
 	return (*C.WebKitWebView)(w.webview)
 }
@@ -2049,12 +2039,31 @@ func (w *linuxWebviewWindow) position() (int, int) {
 	return int(x), int(y)
 }
 
+// ignoreMouse lets pointer input pass through the window to whatever is below
+// it: an empty input shape on its GdkWindow, and none to restore the default.
+// (gtk_widget_set_events has no effect on a realized widget, and
+// gdk_window_set_pass_through none on a toplevel.) A GdkWindow exists only
+// once the window is realized: one asked to ignore input before that is
+// realized now.
 func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
-	if ignore {
-		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
-	} else {
-		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ALL_EVENTS_MASK)
+	widget := (*C.GtkWidget)(unsafe.Pointer(w.window))
+	gdkWindow := C.gtk_widget_get_window(widget)
+	if gdkWindow == nil {
+		if !ignore {
+			return
+		}
+		C.gtk_widget_realize(widget)
+		if gdkWindow = C.gtk_widget_get_window(widget); gdkWindow == nil {
+			return
+		}
 	}
+	if !ignore {
+		C.gdk_window_input_shape_combine_region(gdkWindow, nil, 0, 0)
+		return
+	}
+	region := C.cairo_region_create()
+	C.gdk_window_input_shape_combine_region(gdkWindow, region, 0, 0)
+	C.cairo_region_destroy(region)
 }
 
 // FIXME Change this to reflect mouse button!

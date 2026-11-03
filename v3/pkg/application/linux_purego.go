@@ -773,6 +773,29 @@ func widgetIsVisible(widget pointer) bool {
 	return gtk_widget_is_visible(uintptr(widget)) != 0
 }
 
+// windowSetPassThrough gives the window's surface an empty input region when
+// ignore is set, and the default one otherwise. A surface exists only once the
+// window is realized: one asked to ignore input before that is realized now.
+func windowSetPassThrough(window pointer, ignore bool) {
+	surface := gtk_native_get_surface(uintptr(window))
+	if surface == 0 {
+		if !ignore {
+			return
+		}
+		gtk_widget_realize(uintptr(window))
+		if surface = gtk_native_get_surface(uintptr(window)); surface == 0 {
+			return
+		}
+	}
+	if !ignore {
+		gdk_surface_set_input_region(surface, 0)
+		return
+	}
+	region := cairo_region_create()
+	gdk_surface_set_input_region(surface, region)
+	cairo_region_destroy(region)
+}
+
 func (w *linuxWebviewWindow) maximise() {
 	gtk_window_maximize(uintptr(w.window))
 }

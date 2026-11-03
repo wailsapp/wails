@@ -229,7 +229,28 @@ func windowAPI(p *probe) error {
 	if !w.IsIgnoreMouseEvents() {
 		return fmt.Errorf("IsIgnoreMouseEvents() after SetIgnoreMouseEvents(true)")
 	}
+	// A click on a window that ignores the mouse goes to whatever is below
+	// it. Only where the driver's clicks are the OS's own pointer input: the
+	// macOS driver posts its events to the window itself.
+	physicalPointer := runtime.GOOS != "darwin"
+	if physicalPointer {
+		drain()
+		if err := p.d.click(apiTitle, 100, 100); err != nil {
+			return err
+		}
+		if err := awaitNone("click api"); err != nil {
+			return fmt.Errorf("SetIgnoreMouseEvents(true): the window still took a click (%w)", err)
+		}
+	}
 	w.SetIgnoreMouseEvents(false)
+	if physicalPointer {
+		if err := p.d.click(apiTitle, 100, 100); err != nil {
+			return err
+		}
+		if err := await("click api", 5*time.Second); err != nil {
+			return fmt.Errorf("SetIgnoreMouseEvents(false): %w", err)
+		}
+	}
 	w.SetAlwaysOnTop(true)
 	w.SetAlwaysOnTop(false)
 	w.SetBackgroundColour(application.RGBA{Red: 30, Green: 41, Blue: 59, Alpha: 255})

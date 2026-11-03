@@ -64,6 +64,7 @@ const w = new URLSearchParams(location.search).get('w') || 'main';
 const report = (path, params) => fetch(path + '?' + new URLSearchParams({w, ...params}));
 document.addEventListener('input', (e) => report('/input', {id: e.target.id, v: e.target.value}));
 document.addEventListener('mousemove', (e) => report('/mouse', {x: e.clientX, y: e.clientY}));
+document.addEventListener('mousedown', () => report('/click', {}));
 Events.On('e2e-ping', (e) => report('/event', {v: JSON.stringify(e.data)}));
 report('/ready', {dpr: devicePixelRatio});
 </script></body></html>`
@@ -839,6 +840,8 @@ func assets(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/input":
 		emit("input " + win + " " + q.Get("id") + "=" + q.Get("v"))
+	case "/click":
+		emit("click " + win)
 	case "/event":
 		emit("event " + win + " " + q.Get("v"))
 	case "/rt":
