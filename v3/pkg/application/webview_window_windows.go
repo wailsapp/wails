@@ -128,6 +128,11 @@ type windowsWebviewWindow struct {
 
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
+
+	// replacingMenu is set while replaceMenu runs Menu.Update, so the
+	// refresh that triggers (refreshWindowMenus) leaves this window alone.
+	// Only the main thread reads or writes it.
+	replacingMenu bool
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -145,7 +150,10 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 // just processed: items added, removed or hidden, and changed accelerators,
 // reach the bar only through a rebuild.
 func (w *windowsWebviewWindow) refreshMenu(menu *Menu) {
-	if w.menu == nil || w.menu.menuData != menu || w.parent.options.Windows.DisableMenu {
+	// A window replacing its menu calls Menu.Update itself, and goes on to
+	// build the bar: rebuilding it here too would destroy the menu it is
+	// replacing twice.
+	if w.replacingMenu || w.menu == nil || w.menu.menuData != menu || w.parent.options.Windows.DisableMenu {
 		return
 	}
 	w.replaceMenu(menu, false)
@@ -169,7 +177,9 @@ func (w *windowsWebviewWindow) replaceMenu(menu *Menu, update bool) {
 		}
 	}
 	if update {
+		w.replacingMenu = true
 		menu.Update()
+		w.replacingMenu = false
 	}
 
 	replacement := NewApplicationMenu(w, menu)
