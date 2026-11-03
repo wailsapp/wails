@@ -330,7 +330,7 @@ var scenarios = []scenario{
 		// way to observe the open menu, and the keys below need it open.
 		time.Sleep(time.Second)
 		shot("menu-navigate")
-		for _, k := range menuNavigateKeys {
+		for _, k := range menuNavigateKeys(p.app) {
 			if err := p.d.key(k); err != nil {
 				return err
 			}

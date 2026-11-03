@@ -77,7 +77,9 @@ func menuRoles(p *probe) error {
 	}
 	// Reload last: the page loads again and says so. (On macOS, menu items
 	// on Cmd+Shift+letter stop firing after a reload while the page has
-	// focus; open, so nothing runs after this scenario.)
+	// focus, but only for the driver's posted key events: with a hardware
+	// keyboard (a VM's VNC input) they fire after one or two reloads, in the
+	// page and in a text field. So nothing runs after this scenario.)
 	drain()
 	if err := press(p.d, title, "cmdorctrl+r"); err != nil {
 		return err

@@ -59,11 +59,12 @@ const (
 )
 
 // input is the Win32 INPUT structure: a type and a union whose largest
-// member, MOUSEINPUT, is 32 bytes on 64-bit Windows.
+// member is MOUSEINPUT. Declaring the union as that member gives it the
+// right size and alignment on 32- and 64-bit Windows (28 and 40 bytes in
+// all), which SendInput checks.
 type input struct {
 	typ uint32
-	_   uint32
-	u   [4]uint64
+	u   mouseInput
 }
 
 type keybdInput struct {
@@ -123,20 +124,26 @@ func keyUp(vk uint16) error {
 	return sendInput(keyInput(vk, 0, flags))
 }
 
+// layoutShift is the shift state VkKeyScanW reports a character needs, in
+// its result's high byte.
+type layoutShift struct{ shift, ctrl, alt bool }
+
 // vkFor returns the virtual-key code for a chord key name, from the
 // layout-independent table or, for a printable character, from the active
-// keyboard layout.
-func vkFor(key string) (uint16, error) {
+// keyboard layout, with the modifiers the layout needs for that character
+// ("/" is Shift+7 on a German keyboard).
+func vkFor(key string) (uint16, layoutShift, error) {
 	if vk, ok := windowsVirtualKey(key); ok {
-		return vk, nil
+		return vk, layoutShift{}, nil
 	}
 	if r := []rune(key); len(r) == 1 {
 		res, _, _ := procVkKeyScanW.Call(uintptr(r[0]))
 		if int16(res) != -1 {
-			return uint16(res & 0xFF), nil
+			state := res >> 8
+			return uint16(res & 0xFF), layoutShift{shift: state&1 != 0, ctrl: state&2 != 0, alt: state&4 != 0}, nil
 		}
 	}
-	return 0, fmt.Errorf("no virtual key for %q on this keyboard layout", key)
+	return 0, layoutShift{}, fmt.Errorf("no virtual key for %q on this keyboard layout", key)
 }
 
 type winDriver struct {
@@ -190,7 +197,7 @@ func (d *winDriver) key(chordText string) error {
 	if err != nil {
 		return err
 	}
-	vk, err := vkFor(c.key)
+	vk, needs, err := vkFor(c.key)
 	if err != nil {
 		return err
 	}
@@ -198,7 +205,7 @@ func (d *winDriver) key(chordText string) error {
 	for _, m := range []struct {
 		on bool
 		vk uint16
-	}{{c.ctrl, vkControl}, {c.shift, vkShift}, {c.alt, vkMenu}, {c.cmd, vkLWin}} {
+	}{{c.ctrl || needs.ctrl, vkControl}, {c.shift || needs.shift, vkShift}, {c.alt || needs.alt, vkMenu}, {c.cmd, vkLWin}} {
 		if m.on {
 			mods = append(mods, m.vk)
 		}

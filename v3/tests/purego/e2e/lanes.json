@@ -52,7 +52,7 @@
   "lane": "default",
   "cgo": false,
   "pr": false,
-  "known": "GTK 4.24 (Arch, Tumbleweed): the menu bar and context-menu popovers do not open under Xvfb, with or without a window manager or GL renderer (GTK 4.22 is fine). Under investigation."
+  "known": ""
  },
  {
   "name": "tumbleweed amd64 gtk4 default",
@@ -63,7 +63,7 @@
   "lane": "default",
   "cgo": false,
   "pr": false,
-  "known": "GTK 4.24 (Arch, Tumbleweed): the menu bar and context-menu popovers do not open under Xvfb, with or without a window manager or GL renderer (GTK 4.22 is fine). Under investigation."
+  "known": ""
  },
  {
   "name": "ubuntu-24.04 arm64 gtk4 default",
