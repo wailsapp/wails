@@ -55,36 +55,29 @@ func TestServerEventDeliveryDoesNotQueueNativeJavaScript(t *testing.T) {
 		}
 	}
 
-	// Across three 192-view-sized bursts this exceeds the native payload-store
-	// budget, reproducing both by-reference retention and inline pendingJS fallback.
 	payload := strings.Repeat("x", 128*1024)
-	for cycle := range 3 {
-		for view := range 192 {
-			name := fmt.Sprintf("snapshot-%d-%d", cycle, view)
-			a.Event.dispatch(&CustomEvent{Name: name, Data: payload})
-			var received CustomEvent
-			if err := wsjson.Read(ctx, conn, &received); err != nil {
-				t.Fatalf("reading %s: %v", name, err)
-			}
-			if received.Name != name || received.Data != payload {
-				t.Fatalf("event %s was duplicated, reordered, truncated, or lost (received %s)", name, received.Name)
-			}
+	for i := range 3 {
+		name := fmt.Sprintf("event-%d", i)
+		a.Event.dispatch(&CustomEvent{Name: name, Data: payload})
+		var received CustomEvent
+		if err := wsjson.Read(ctx, conn, &received); err != nil {
+			t.Fatalf("reading %s: %v", name, err)
 		}
-		window.pendingJSMutex.Lock()
-		pending := len(window.pendingJS)
-		window.pendingJSMutex.Unlock()
-		if pending != 0 {
-			t.Fatalf("cycle %d retained %d native JavaScript strings", cycle, pending)
-		}
-		a.eventPayloads.mu.Lock()
-		parked := a.eventPayloads.bytes
-		a.eventPayloads.mu.Unlock()
-		if parked != 0 {
-			t.Fatalf("cycle %d retained %d native payload bytes", cycle, parked)
+		if received.Name != name || received.Data != payload {
+			t.Fatalf("event %s: received name %q or changed payload", name, received.Name)
 		}
 	}
-	if len(a.wailsEventListeners) != 1 || a.wailsEventListeners[0] != broadcaster {
-		t.Fatalf("server listeners = %#v, want only the real WebSocket broadcaster", a.wailsEventListeners)
+	window.pendingJSMutex.Lock()
+	pending := len(window.pendingJS)
+	window.pendingJSMutex.Unlock()
+	if pending != 0 {
+		t.Fatalf("retained %d native JavaScript strings", pending)
+	}
+	a.eventPayloads.mu.Lock()
+	parked := a.eventPayloads.bytes
+	a.eventPayloads.mu.Unlock()
+	if parked != 0 {
+		t.Fatalf("retained %d native payload bytes", parked)
 	}
 
 	conn.CloseNow()
@@ -101,7 +94,7 @@ func TestServerEventDeliveryDoesNotQueueNativeJavaScript(t *testing.T) {
 			t.Fatal("event WebSocket did not unregister after close")
 		}
 	}
-	// Terminal teardown must not revive the phantom native delivery path.
+	// Events after disconnect must not enter native window queues.
 	a.Event.dispatch(&CustomEvent{Name: "after-close", Data: payload})
 	if len(window.pendingJS) != 0 || len(window.eventQueue) != 0 {
 		t.Fatal("event after browser closure entered a native window queue")

@@ -105,9 +105,7 @@ func New(appOptions Options) *App {
 	if eventTransport, ok := transport.(WailsEventListener); ok {
 		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
 	} else if !isServerBuild {
-		// Native windows need IPC, including events emitted before runtime readiness.
-		// Server mode installs its WebSocket broadcaster in serverApp.run instead;
-		// a native IPC listener would queue JavaScript in windows that never become ready.
+		// Server mode registers its WebSocket broadcaster in serverApp.run.
 		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
 			app: result,
 		})
