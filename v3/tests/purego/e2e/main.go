@@ -124,6 +124,26 @@ func await(name string, timeout time.Duration) error {
 	}
 }
 
+// awaitLatest waits for the signal want, remembering the last signal that
+// starts with prefix, so a failure can say what arrived instead.
+func awaitLatest(want, prefix string, timeout time.Duration) error {
+	deadline := time.After(timeout)
+	last := "nothing"
+	for {
+		select {
+		case got := <-signals:
+			if got == want {
+				return nil
+			}
+			if strings.HasPrefix(got, prefix) {
+				last = fmt.Sprintf("%q", got)
+			}
+		case <-deadline:
+			return fmt.Errorf("no %q within %s; last %s", want, timeout, last)
+		}
+	}
+}
+
 // awaitNone fails if the named signal arrives within quiet.
 func awaitNone(name string) error {
 	if await(name, quiet) == nil {
@@ -173,6 +193,7 @@ type probe struct {
 	beta     *application.MenuItem
 	disabled *application.MenuItem
 	rebound  *application.MenuItem
+	hidden   *application.MenuItem
 }
 
 type scenario struct {
@@ -355,7 +376,7 @@ var scenarios = []scenario{
 		); err != nil {
 			return err
 		}
-		if err := await("input main dst="+text, 5*time.Second); err != nil {
+		if err := awaitLatest("input main dst="+text, "input main dst=", 5*time.Second); err != nil {
 			return err
 		}
 		// Return in a textarea is a new line: no menu, binding or dialog
@@ -368,7 +389,7 @@ var scenarios = []scenario{
 		); err != nil {
 			return err
 		}
-		return await("input main area=one\ntwo", 5*time.Second)
+		return awaitLatest("input main area=one\ntwo", "input main area=", 5*time.Second)
 	}},
 	{name: "edit-copy-paste", run: func(p *probe) error {
 		// The Edit menu binds Ctrl+A/C/V/X/Z (Cmd on macOS). Those shortcuts must
@@ -864,7 +885,12 @@ func main() {
 		OnClick(func(*application.Context) { emit("disabled-action") })
 	p.rebound = actions.Add("Rebound").SetAccelerator("CmdOrCtrl+Shift+E").
 		OnClick(func(*application.Context) { emit("rebound-action") })
+	p.hidden = actions.Add("Hidden").SetAccelerator("CmdOrCtrl+Shift+L").
+		OnClick(func(*application.Context) { emit("hidden-action") })
 	p.menu.AddRole(application.EditMenu)
+	// The View role: Reload, Zoom In/Out, Actual Size, full screen. (Not the
+	// Window role: its Minimise takes CmdOrCtrl+M, the Action item's.)
+	p.menu.AddRole(application.ViewMenu)
 
 	p.app = application.New(application.Options{
 		Name:   "E2E probe",

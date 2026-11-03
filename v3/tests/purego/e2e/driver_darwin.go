@@ -181,8 +181,17 @@ func chordStroke(c chord) (keyStroke, error) {
 		s.chars = string(base - 'a' + 1)
 	case c.shift && unicode.IsLetter(base):
 		s.chars = string(unicode.ToUpper(base))
+		s.ignoring = s.chars
 	case c.shift && shiftedOf[base] != 0:
 		s.chars = string(shiftedOf[base])
+		s.ignoring = s.chars
+	}
+	// A real keyboard reports Shift's effect in both: AppKit's
+	// charactersIgnoringModifiers ignores every modifier except Shift, and
+	// menu key equivalents ("+" for Zoom In) match on it. (Control's effect
+	// is ignored: ctrl+l is "\x0c" ignoring to "l".)
+	if c.ctrl && c.shift && unicode.IsLetter(base) {
+		s.ignoring = string(unicode.ToUpper(base))
 	}
 	return s, nil
 }
@@ -202,7 +211,8 @@ func typeStroke(r rune) keyStroke {
 		base = baseOfShifted[r]
 		flags = flagShift
 	}
-	return keyStroke{code: keyCodes[base], flags: flags, chars: string(r), ignoring: string(base)}
+	// Shift's effect shows in charactersIgnoringModifiers too (see chordStroke).
+	return keyStroke{code: keyCodes[base], flags: flags, chars: string(r), ignoring: string(r)}
 }
 
 // contentToWindow converts a point in web content coordinates (points, origin
