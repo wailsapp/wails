@@ -1587,6 +1587,8 @@ var (
 	xSendEvent            func(uintptr, uintptr, int32, int64, uintptr) int32
 	xInternAtom           func(uintptr, string, int32) uintptr
 	xDefaultRootWindow    func(uintptr) uintptr
+	xQueryTree            func(uintptr, uintptr, uintptr, uintptr, uintptr, uintptr) int32
+	xFree                 func(uintptr) int32
 	gdkX11DisplayType     uint64
 )
 
@@ -1604,6 +1606,8 @@ func resolveX11Funcs() {
 		reg(&xSendEvent, "XSendEvent")
 		reg(&xInternAtom, "XInternAtom")
 		reg(&xDefaultRootWindow, "XDefaultRootWindow")
+		reg(&xQueryTree, "XQueryTree")
+		reg(&xFree, "XFree")
 	})
 }
 
@@ -1644,6 +1648,33 @@ func windowMoveX11(window uintptr, x, y int) {
 	}
 }
 
+// x11FrameWindow returns the window manager's frame around w: its ancestor
+// that is a child of the root. XMoveWindow on a window a window manager has
+// reparented places the frame at the point (NorthWest gravity), so the
+// position read back must be the frame's too, as gtk_window_get_position
+// reports it on GTK3. With no window manager the window is its own frame.
+func x11FrameWindow(xdisplay, w uintptr) uintptr {
+	if xQueryTree == nil {
+		return w
+	}
+	for depth := 0; depth < 16; depth++ {
+		var root, parent, children uintptr
+		var count uint32
+		if xQueryTree(xdisplay, w, uintptr(unsafe.Pointer(&root)), uintptr(unsafe.Pointer(&parent)),
+			uintptr(unsafe.Pointer(&children)), uintptr(unsafe.Pointer(&count))) == 0 {
+			return w
+		}
+		if children != 0 && xFree != nil {
+			xFree(children)
+		}
+		if parent == 0 || parent == root {
+			return w
+		}
+		w = parent
+	}
+	return w
+}
+
 func windowGetPositionX11(window uintptr) (int, int) {
 	xdisplay, xwindow, ok := x11WindowForGtkWindow(window)
 	if !ok || xTranslateCoordinates == nil || xDefaultRootWindow == nil {
@@ -1652,7 +1683,7 @@ func windowGetPositionX11(window uintptr) (int, int) {
 	root := xDefaultRootWindow(xdisplay)
 	var absX, absY int32
 	var child uintptr
-	if xTranslateCoordinates(xdisplay, xwindow, root, 0, 0,
+	if xTranslateCoordinates(xdisplay, x11FrameWindow(xdisplay, xwindow), root, 0, 0,
 		uintptr(unsafe.Pointer(&absX)), uintptr(unsafe.Pointer(&absY)),
 		uintptr(unsafe.Pointer(&child))) != 0 {
 		return int(absX), int(absY)
