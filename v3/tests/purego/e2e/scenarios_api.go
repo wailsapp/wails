@@ -23,6 +23,9 @@ func init() {
 	scenarios = append(scenarios,
 		scenario{name: "menu-api", run: menuAPI},
 		scenario{name: "window-api", run: windowAPI},
+		scenario{name: "runtime-api", run: runtimeAPI},
+		scenario{name: "second-instance", run: secondInstance},
+		scenario{name: "tray", os: "linux", run: trayHost},
 		// Last: it reloads the page (see menuRoles).
 		scenario{name: "menu-roles", run: menuRoles},
 	)

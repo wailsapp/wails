@@ -97,8 +97,13 @@ Implementation lineage: [#2388](https://github.com/wailsapp/wails/issues/2388) a
 bindings, menu accelerators (checkbox, radio, disabled and re-bound items),
 keyboard menu navigation, context menus, typed text, Edit-menu shortcuts,
 window focus and close events, Go-to-JavaScript events, message dialogs and
-the open and save dialogs. It builds with either backend, so it also checks
-cgo and purego behave the same. The `E2E input probe (v3)` workflow
+the open and save dialogs. It also drives the app the other ways apps are
+driven: the role menus' own shortcuts, menus changed at run time, the Go
+window API, the page calling the JavaScript runtime (window methods, events,
+clipboard, screens, bound calls with cancellation, streams and dialogs), a
+second copy handing over to the first, and on Linux the tray icon, with the
+probe playing the desktop panel on the session bus. It builds with either
+backend, so it also checks cgo and purego behave the same. The `E2E input probe (v3)` workflow
 (`.github/workflows/e2e-v3.yml`) runs it on every platform; the Linux lanes
 are listed in `tests/purego/e2e/lanes.json` and cover Fedora, Debian 12 (the
 GTK4 floor), Debian 13, Ubuntu 22.04 (the GTK3 floor) and 24.04 (amd64 and

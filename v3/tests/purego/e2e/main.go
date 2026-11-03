@@ -841,6 +841,11 @@ func assets(w http.ResponseWriter, r *http.Request) {
 		emit("input " + win + " " + q.Get("id") + "=" + q.Get("v"))
 	case "/event":
 		emit("event " + win + " " + q.Get("v"))
+	case "/rt":
+		emit("rt " + q.Get("step") + " " + q.Get("r") + " " + q.Get("v"))
+	case "/runtime":
+		w.Header().Set("Content-Type", "text/html")
+		io.WriteString(w, runtimePage)
 	case "/ready":
 		if v, err := strconv.ParseFloat(q.Get("dpr"), 64); err == nil {
 			dpr.Store(win, v)
@@ -862,6 +867,12 @@ func assets(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	if os.Getenv(secondInstanceEnv) != "" {
+		// The copy secondInstance starts: New hands over and exits.
+		application.New(application.Options{Name: "E2E probe", SingleInstance: singleInstance()})
+		fmt.Println("E2E second instance: New returned; the first copy was not found")
+		exit(4)
+	}
 	d, err := newDriver()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "E2E driver:", err)
@@ -898,8 +909,13 @@ func main() {
 		KeyBindings: map[string]func(window application.Window){
 			"CmdOrCtrl+Shift+K": func(w application.Window) { emit("keybinding " + w.Name()) },
 		},
-		Mac: application.MacOptions{ActivationPolicy: application.ActivationPolicyRegular},
+		Mac:            application.MacOptions{ActivationPolicy: application.ActivationPolicyRegular},
+		Services:       services,
+		SingleInstance: singleInstance(),
 	})
+	for _, setup := range setups {
+		setup(p)
+	}
 	if runtime.GOOS == "darwin" {
 		p.app.Menu.Set(p.menu)
 	}
