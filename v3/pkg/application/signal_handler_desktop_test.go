@@ -26,9 +26,20 @@ func TestDefaultSignalHandler(t *testing.T) {
 	for _, sig := range []syscall.Signal{syscall.SIGINT, syscall.SIGTERM} {
 		for _, disabled := range []string{"false", "true"} {
 			t.Run(sig.String()+"/disabled="+disabled, func(t *testing.T) {
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-				cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestDefaultSignalHandlerProcess$")
+				// Bound the child by the test's own deadline rather than a fixed
+				// timeout, which a slow machine can use up starting the child.
+				// The child times out first and prints its goroutines; the
+				// context stops one that cannot.
+				args := []string{"-test.run=^TestDefaultSignalHandlerProcess$"}
+				ctx := context.Background()
+				if deadline, ok := t.Deadline(); ok {
+					left := time.Until(deadline)
+					var cancel context.CancelFunc
+					ctx, cancel = context.WithTimeout(ctx, left*9/10)
+					defer cancel()
+					args = append(args, "-test.timeout="+(left*8/10).String())
+				}
+				cmd := exec.CommandContext(ctx, os.Args[0], args...)
 				cmd.Env = append(os.Environ(), "WAILS_TEST_SIGNAL="+sig.String(), "WAILS_TEST_SIGNAL_DISABLED="+disabled)
 				output, err := cmd.CombinedOutput()
 				if disabled == "false" {
@@ -74,9 +85,6 @@ func TestDefaultSignalHandlerProcess(t *testing.T) {
 	if err := syscall.Kill(os.Getpid(), sig); err != nil {
 		t.Fatal(err)
 	}
-	select {
-	case <-impl.quit:
-	case <-time.After(5 * time.Second):
-		t.Fatal("signal did not call App.Quit")
-	}
+	// Bounded by the -test.timeout TestDefaultSignalHandler passes.
+	<-impl.quit
 }
