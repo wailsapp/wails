@@ -106,7 +106,29 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 	return d
 }
 
+// dialogsCanBeShown reports whether there is a platform application to raise a
+// dialog from. Before App.Run publishes one, main-thread work is queued for Run
+// to replay - and the goroutine asking for the dialog is often the one that is
+// going to call Run, so waiting for that work can never return. A dialog asked
+// for that early does nothing at all instead of parking the process.
+func dialogsCanBeShown(what string) bool {
+	app := globalApplication
+	if app == nil {
+		return false
+	}
+	if app.platformAppReady() {
+		return true
+	}
+	app.handleWarning(what + " was called before the application started, so no dialog was shown.")
+	return false
+}
+
+// Show displays the dialog. It does nothing if called before the application
+// has started, because there is no application to display it over.
 func (d *MessageDialog) Show() {
+	if !dialogsCanBeShown("MessageDialog.Show") {
+		return
+	}
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
@@ -259,7 +281,13 @@ func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct {
 	return d
 }
 
+// PromptForSingleSelection displays the dialog and returns the chosen path. It
+// returns an empty path if called before the application has started, because
+// there is no application to display it over.
 func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error) {
+	if !dialogsCanBeShown("OpenFileDialog.PromptForSingleSelection") {
+		return "", nil
+	}
 	d.allowsMultipleSelection = false
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -284,7 +312,13 @@ func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileD
 	return d
 }
 
+// PromptForMultipleSelection displays the dialog and returns the chosen paths.
+// It returns no paths if called before the application has started, because
+// there is no application to display it over.
 func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
+	if !dialogsCanBeShown("OpenFileDialog.PromptForMultipleSelection") {
+		return nil, nil
+	}
 	d.allowsMultipleSelection = true
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -458,7 +492,13 @@ func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStru
 	return d
 }
 
+// PromptForSingleSelection displays the dialog and returns the chosen path. It
+// returns an empty path if called before the application has started, because
+// there is no application to display it over.
 func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error) {
+	if !dialogsCanBeShown("SaveFileDialog.PromptForSingleSelection") {
+		return "", nil
+	}
 	if d.impl == nil {
 		d.impl = newSaveFileDialogImpl(d)
 	}

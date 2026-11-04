@@ -55,10 +55,13 @@ func (s *windowsSystemTray) openMenu() {
 	}
 	// Get the system tray bounds
 	trayBounds, err := s.bounds()
-	if err != nil {
-		return
-	}
-	if trayBounds == nil {
+	if err != nil || trayBounds == nil {
+		// Shell_NotifyIconGetRect can fail while the icon lives in the
+		// overflow flyout; fall back to the cursor instead of dropping
+		// the menu silently.
+		if x, y, ok := w32.GetCursorPos(); ok {
+			s.menu.ShowAt(x, y)
+		}
 		return
 	}
 
@@ -350,7 +353,7 @@ func (s *windowsSystemTray) updateIcon() {
 		// last-error is 0 that is panic(nil), which on Go 1.21+ surfaces as
 		// "panic called with nil argument" and crashes the host app.
 		//
-		// Match the other NIM_MODIFY callers (Show/Hide/setTooltip): log and
+		// Match the other NIM_MODIFY callers (Show/Hide/updateTooltip): log and
 		// return. Roll back currentIcon so the next updateIcon retries once the
 		// icon is registered again; keep the old handle (do not release it).
 		globalApplication.warning("ShellNotifyIcon NIM_MODIFY failed in updateIcon (icon not registered): %v", syscall.GetLastError())
@@ -460,7 +463,10 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			if s.parent.clickHandler != nil {
 				s.parent.clickHandler()
 			}
-		case w32.WM_RBUTTONUP:
+		case w32.WM_RBUTTONUP, w32.WM_CONTEXTMENU:
+			// NOTIFYICON_VERSION_4 delivers a right-click as WM_CONTEXTMENU,
+			// not WM_RBUTTONUP (see NOTIFYICONDATAW docs); without this case
+			// the tray menu never opens on Windows.
 			if s.parent.rightClickHandler != nil {
 				s.parent.rightClickHandler()
 			}
@@ -498,6 +504,12 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 }
 
 func (s *windowsSystemTray) updateMenu(menu *Menu) {
+	if s.menu != nil && menu != nil {
+		// Rebuild in place rather than destroying the popup: it may be open.
+		s.menu.menuData = menu
+		s.menu.requestUpdate()
+		return
+	}
 	if s.menu != nil {
 		s.menu.Destroy()
 	}
@@ -506,14 +518,48 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 	s.menu.onMenuClose = s.parent.onMenuClose
 }
 
-func (s *windowsSystemTray) setTooltip(tooltip string) {
+// refreshSystemTrayMenus rebuilds every tray popup built from menu. The tray
+// popup is a separate Win32Menu from the one Menu.Update rebuilds, so without
+// this a tray never shows changes made with Menu.Update (#4719).
+func refreshSystemTrayMenus(menu *Menu) {
+	if globalApplication == nil {
+		return
+	}
+	app, ok := globalApplication.impl.(*windowsApp)
+	if !ok || app == nil {
+		return
+	}
+	InvokeSync(func() {
+		app.systrayMapLock.RLock()
+		var popups []*Win32Menu
+		for _, tray := range app.systrayMap {
+			if tray.menu != nil && tray.menu.menuData == menu {
+				popups = append(popups, tray.menu)
+			}
+		}
+		app.systrayMapLock.RUnlock()
+		for _, popup := range popups {
+			popup.requestUpdate()
+		}
+	})
+}
+
+// setTooltip and setLabel both show SystemTray.tooltipOrLabel rather than their
+// argument: an explicit tooltip wins, and clearing it falls back to the label. The
+// value is read when the dispatched call runs, so rapid SetLabel/SetTooltip calls
+// cannot leave an older value on the icon.
+func (s *windowsSystemTray) setTooltip(string) { s.updateTooltip() }
+
+func (s *windowsSystemTray) setLabel(string) { s.updateTooltip() }
+
+func (s *windowsSystemTray) updateTooltip() {
 	// Create a new NOTIFYICONDATA structure
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_TIP | w32.NIF_SHOWTIP
 
 	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
 	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
-	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(tooltip, 127))
+	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(s.parent.tooltipOrLabel(), 127))
 	if err != nil {
 		return
 	}
@@ -527,8 +573,6 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 }
 
 // ---- Unsupported ----
-func (s *windowsSystemTray) setLabel(label string) {}
-
 func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
 	// Unsupported - do nothing
 }
@@ -624,8 +668,9 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 
 	s.updateIcon()
 
-	if s.parent.tooltip != "" {
-		s.setTooltip(s.parent.tooltip)
+	// A label set before Run has to reach the tooltip too, see updateTooltip.
+	if s.parent.tooltipOrLabel() != "" {
+		s.updateTooltip()
 	}
 
 	return nid, nil

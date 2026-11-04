@@ -8,8 +8,7 @@ sourcePath: "getting-started/installation.md"
 ## Supported Platforms
 
 - Windows AMD64/ARM64
-- macOS 10.15+ AMD64 (Can deploy to macOS 10.13+)
-- macOS 11.0+ ARM64
+- macOS AMD64/ARM64. The generated build tasks target macOS 12.0 or later; this is the deployment target of the standard build, not a claim that every custom build configuration supports older systems.
 - Ubuntu 24.04 AMD64/ARM64 (other Linux may work too!)
 
 ## Dependencies
@@ -22,7 +21,9 @@ After installing the Wails CLI, you can run `wails3 setup` to automatically chec
 @end
 
 @tabs
-[Go (At least 1.24)]
+[Go (At least 1.26)]
+Wails v3 selects a Go 1.26 or later toolchain. An older Go launcher may download it automatically with `GOTOOLCHAIN=auto`; otherwise install it explicitly. The starter module’s lower Go declaration does not override the Wails dependency.
+
 Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
 Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
@@ -72,7 +73,7 @@ Linux requires the standard `gcc` build tools plus `gtk4` and `webkitgtk-6.0`. R
 To install the Wails CLI using Go Modules, run the following commands:
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 If you would like to install the latest development version, run the following commands:

@@ -9,7 +9,7 @@ import (
 	"go/types"
 	"iter"
 
-	"golang.org/x/exp/typeparams"
+	"github.com/wailsapp/wails/v3/internal/typeconstraints"
 )
 
 // Cached interface types.
@@ -49,14 +49,11 @@ const (
 // If typ is invalid or has an empty type set, termlist returns the empty sequence.
 // If typ has an empty term list
 // then termlist returns a sequence with just one element: the type itself.
-//
-// TODO: replace with new term set API once Go 1.25 is out.
-// See go.dev/issue/61013
-func termlist(typ types.Type) iter.Seq[*typeparams.Term] {
-	terms, err := typeparams.NormalTerms(types.Unalias(typ))
-	return func(yield func(*typeparams.Term) bool) {
+func termlist(typ types.Type) iter.Seq[*types.Term] {
+	terms, err := typeconstraints.Terms(types.Unalias(typ))
+	return func(yield func(*types.Term) bool) {
 		if err == nil && len(terms) == 0 {
-			yield(typeparams.NewTerm(false, typ))
+			yield(types.NewTerm(false, typ))
 		} else {
 			for _, term := range terms {
 				if !yield(term) {

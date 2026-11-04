@@ -21,24 +21,24 @@ Cette version dépasse tout ce que j’avais imaginé. J’espère que son utili
 
 ## Qu’*est*-ce que Wails ?
 
-Si vous ne connaissez pas Wails, il s’agit d’un projet qui permet aux programmeurs Go de créer des interfaces riches pour leurs programmes Go à l’aide de technologies web familières. C’est une alternative légère à Electron, écrite en Go. Vous trouverez bien plus d’informations sur le [site officiel](https://wails.io/docs/introduction).
+Si vous ne connaissez pas Wails, il s’agit d’un projet qui permet aux programmeurs Go de créer des interfaces riches pour leurs programmes Go à l’aide de technologies web familières. C’est une alternative légère à Electron, écrite en Go. Vous trouverez bien plus d’informations sur le [site officiel](https://v2.wails.io/docs/introduction).
 
 ## Quoi de neuf ?
 
 La version v2 constitue une avancée majeure pour le projet et résout de nombreuses difficultés rencontrées avec la v1. Si vous n’avez lu aucun des billets de blog consacrés aux versions bêta pour [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) ou [Linux](/blog/wails-v2-beta-for-linux/), je vous encourage à le faire, car ils présentent plus en détail tous les changements majeurs. En résumé :
 
 - Composant WebView2 pour Windows, compatible avec les normes web modernes et doté de fonctionnalités de débogage.
-- [Thèmes sombre et clair](https://wails.io/docs/reference/options#theme), ainsi que [thèmes personnalisés](https://wails.io/docs/reference/options#customtheme) sous Windows.
+- [Thèmes sombre et clair](https://v2.wails.io/docs/reference/options#theme), ainsi que [thèmes personnalisés](https://v2.wails.io/docs/reference/options#customtheme) sous Windows.
 - Windows ne nécessite désormais plus CGO.
 - Prise en charge immédiate des modèles de projet Svelte, Vue, React, Preact, Lit et Vanilla.
 - Intégration de [Vite](https://vitejs.dev/), qui fournit un environnement de développement avec rechargement à chaud pour votre application.
-- [Menus](https://wails.io/docs/guides/application-development#application-menu) et [boîtes de dialogue](https://wails.io/docs/reference/runtime/dialog) natifs pour les applications.
-- Effets natifs de translucidité des fenêtres pour [Windows](https://wails.io/docs/reference/options#windowistranslucent) et [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Prise en charge des arrière-plans Mica et Acrylic.
-- Générez facilement un [programme d’installation NSIS](https://wails.io/docs/guides/windows-installer) pour les déploiements sous Windows.
-- Une riche [bibliothèque d’exécution](https://wails.io/docs/reference/runtime/intro) qui fournit des méthodes utilitaires pour manipuler les fenêtres et gérer les événements, les boîtes de dialogue, les menus et la journalisation.
-- Prise en charge de l’[obfuscation](https://wails.io/docs/guides/obfuscated) de votre application avec [garble](https://github.com/burrowers/garble).
+- [Menus](https://v2.wails.io/docs/guides/application-development#application-menu) et [boîtes de dialogue](https://v2.wails.io/docs/reference/runtime/dialog) natifs pour les applications.
+- Effets natifs de translucidité des fenêtres pour [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) et [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Prise en charge des arrière-plans Mica et Acrylic.
+- Générez facilement un [programme d’installation NSIS](https://v2.wails.io/docs/guides/windows-installer) pour les déploiements sous Windows.
+- Une riche [bibliothèque d’exécution](https://v2.wails.io/docs/reference/runtime/intro) qui fournit des méthodes utilitaires pour manipuler les fenêtres et gérer les événements, les boîtes de dialogue, les menus et la journalisation.
+- Prise en charge de l’[obfuscation](https://v2.wails.io/docs/guides/obfuscated) de votre application avec [garble](https://github.com/burrowers/garble).
 - Prise en charge de la compression de votre application avec [UPX](https://upx.github.io/).
-- Génération automatique de code TypeScript à partir des structures Go. Plus d’informations [ici](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Génération automatique de code TypeScript à partir des structures Go. Plus d’informations [ici](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - Il n’est pas nécessaire de distribuer de bibliothèque ni de DLL supplémentaire avec votre application, quelle que soit la plateforme.
 - Il n’est pas nécessaire d’incorporer les ressources du frontend. Développez simplement votre application comme n’importe quelle autre application web.
 

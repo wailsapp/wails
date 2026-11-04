@@ -142,7 +142,9 @@ type UAHDRAWMENUITEM struct {
 }
 
 type UAHMENUITEM struct {
-	Position int
+	// Position is a C int (4 bytes). A Go int (8 bytes) on 64-bit read four
+	// bytes of Umim into the position and shifted every field after it.
+	Position int32
 	Umim     UAHMENUITEMMETRICS
 	Umpm     UAHMENUPOPUPMETRICS
 }
@@ -270,7 +272,30 @@ var (
 	menuIsOpen       bool = false // Track if a dropdown menu is open
 )
 
-func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
+// menuBarImpl is the real window-procedure logic; tests replace it to check
+// that MenuBarWndProc contains a failure.
+var menuBarImpl = menuBarWndProc
+
+// MenuBarWndProc draws the themed menu bar. It runs inside the window
+// procedure, where a panic would take the whole app down (#6311), so any
+// failure here is contained and the message is left to Windows' default
+// drawing.
+func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (handled bool, result LRESULT) {
+	switch msg {
+	case WM_UAHDRAWMENU, WM_UAHDRAWMENUITEM, WM_UAHMEASUREMENUITEM:
+		if lParam == 0 {
+			return false, 0
+		}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			handled, result = false, 0
+		}
+	}()
+	return menuBarImpl(hwnd, msg, wParam, lParam, theme)
+}
+
+func menuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
 	// Only proceed if we have a theme (either for dark or light mode)
 	if theme == nil {
 		return false, 0
@@ -366,13 +391,15 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 
 					if GetMenuItemInfo(menuBarInfo.Menu, uint32(i), true, &mii) {
 						// Draw the text
+						textColor := *theme.TitleBarText
 						if i == currentHoverItem {
-							SetTextColor(udm.Hdc, COLORREF(*theme.MenuHoverText))
-						} else {
-							SetTextColor(udm.Hdc, COLORREF(*theme.TitleBarText))
+							textColor = *theme.MenuHoverText
 						}
-						SetBkMode(udm.Hdc, TRANSPARENT)
-						DrawText(udm.Hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+						// Leave the item undrawn when the DC rejects the text
+						// style: SetBkMode would panic on an unusable DC.
+						if TrySetTextColor(udm.Hdc, COLORREF(textColor)) && TrySetBkMode(udm.Hdc, TRANSPARENT) {
+							DrawText(udm.Hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+						}
 					}
 				}
 			}
@@ -408,9 +435,9 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 				text := (*uint16)(unsafe.Pointer(dis.ItemData))
 				if text != nil {
 					// Set text color and draw
-					SetTextColor(dis.HDC, COLORREF(textColor))
-					SetBkMode(dis.HDC, TRANSPARENT)
-					DrawText(dis.HDC, (*[256]uint16)(unsafe.Pointer(text))[:], -1, &dis.RcItem, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+					if TrySetTextColor(dis.HDC, COLORREF(textColor)) && TrySetBkMode(dis.HDC, TRANSPARENT) {
+						DrawText(dis.HDC, (*[256]uint16)(unsafe.Pointer(text))[:], -1, &dis.RcItem, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+					}
 				}
 			}
 
@@ -431,6 +458,19 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 			FMask:      MIIM_STRING | MIIM_SUBMENU,
 			DwTypeData: &menuString[0],
 			Cch:        uint32(len(menuString) - 1),
+		}
+
+		// The device context to draw on. Some Windows builds hand over an
+		// unusable UAHMENU.hdc here (#6311: SetTextColor failed and the
+		// panic took the app down), so fall back to the draw struct's own
+		// DC, and leave the item to Windows' default drawing when neither
+		// is usable: an unthemed menu item, never a crash.
+		hdc := udmi.UM.Hdc
+		if !IsValidDC(hdc) {
+			hdc = udmi.DIS.HDC
+		}
+		if !IsValidDC(hdc) {
+			return false, 0
 		}
 
 		if !GetMenuItemInfo(udmi.UM.Hmenu, uint32(udmi.UAMI.Position), true, &mii) {
@@ -479,12 +519,13 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 
 		// Fill background
 		if bgBrush != 0 {
-			FillRect(udmi.UM.Hdc, &udmi.DIS.RcItem, bgBrush)
+			FillRect(hdc, &udmi.DIS.RcItem, bgBrush)
 		}
 
 		// Draw text
-		SetTextColor(udmi.UM.Hdc, COLORREF(textColor))
-		SetBkMode(udmi.UM.Hdc, TRANSPARENT)
+		if !TrySetTextColor(hdc, COLORREF(textColor)) || !TrySetBkMode(hdc, TRANSPARENT) {
+			return false, 0
+		}
 
 		// When maximized/fullscreen and menubar item, use the same font settings as drawMenuBarText
 		if isMaximized && isMenuBarItem {
@@ -502,16 +543,16 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 
 			hFont := CreateFontIndirect(&menuFont)
 			if hFont != 0 {
-				oldFont := SelectObject(udmi.UM.Hdc, HGDIOBJ(hFont))
-				DrawText(udmi.UM.Hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
-				SelectObject(udmi.UM.Hdc, oldFont)
+				oldFont := SelectObject(hdc, HGDIOBJ(hFont))
+				DrawText(hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
+				SelectObject(hdc, oldFont)
 				DeleteObject(HGDIOBJ(hFont))
 			} else {
-				DrawText(udmi.UM.Hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
+				DrawText(hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
 			}
 			return true, 4 // CDRF_SKIPDEFAULT
 		} else {
-			DrawText(udmi.UM.Hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
+			DrawText(hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
 		}
 
 		// Return appropriate value based on whether we're in maximized/fullscreen
@@ -948,8 +989,9 @@ func drawMenuBarText(hwnd HWND, hdc HDC, menuBarInfo *MENUBARINFO, theme *MenuBa
 	}
 
 	// Set text color and background mode
-	SetTextColor(hdc, COLORREF(*theme.TitleBarText))
-	SetBkMode(hdc, TRANSPARENT)
+	if !TrySetTextColor(hdc, COLORREF(*theme.TitleBarText)) || !TrySetBkMode(hdc, TRANSPARENT) {
+		return
+	}
 
 	// Get the window rect for coordinate conversion
 	winRect := GetWindowRect(hwnd)
@@ -983,9 +1025,9 @@ func drawMenuBarText(hwnd HWND, hdc HDC, menuBarInfo *MENUBARINFO, theme *MenuBa
 		if GetMenuItemInfo(hmenu, uint32(i), true, &mii) {
 			// Set text color based on hover state
 			if i == currentHoverItem {
-				SetTextColor(hdc, COLORREF(*theme.MenuHoverText))
+				TrySetTextColor(hdc, COLORREF(*theme.MenuHoverText))
 			} else {
-				SetTextColor(hdc, COLORREF(*theme.TitleBarText))
+				TrySetTextColor(hdc, COLORREF(*theme.TitleBarText))
 			}
 			// Draw the text
 			DrawText(hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)

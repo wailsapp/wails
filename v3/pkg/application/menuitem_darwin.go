@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -11,6 +11,18 @@ package application
 #include "application_darwin.h"
 
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
+
+static void* newMenuSectionHeader(char *label) {
+	NSMenuItem *item = nil;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+	if (@available(macOS 14.0, *)) {
+		// Match the owning reference returned by newMenuItem for rebuild/destroy.
+		item = [[NSMenuItem sectionHeaderWithTitle:[NSString stringWithUTF8String:label]] retain];
+	}
+#endif
+	free(label);
+	return item;
+}
 
 // Create menu item
 void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip, char* selector) {
@@ -354,11 +366,9 @@ import (
 	"unsafe"
 )
 
-type macosMenuItem struct {
-	menuItem *MenuItem
-
-	nsMenuItem unsafe.Pointer
-}
+// macosMenuItemNative is empty: the cgo backend reads an item's state back
+// from its NSMenuItem.
+type macosMenuItemNative struct{}
 
 func (m macosMenuItem) setTooltip(tooltip string) {
 	C.setMenuItemTooltip(m.nsMenuItem, C.CString(tooltip))
@@ -397,19 +407,13 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
-// destroy releases the owning +1 from [MenuItem new]. Idempotent: both a
-// menu rebuild (processMenu) and MenuItem.Destroy() may call it.
-func (m *macosMenuItem) destroy() {
-	if m.nsMenuItem == nil {
-		return
-	}
-	C.destroyMenuItem(m.nsMenuItem)
-	m.nsMenuItem = nil
-}
-
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	result := &macosMenuItem{
 		menuItem: item,
+	}
+	if item.itemType == sectionHeader {
+		result.nsMenuItem = C.newMenuSectionHeader(C.CString(item.label))
+		return result
 	}
 
 	selector := getSelectorForRole(item.role)
@@ -433,4 +437,9 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		result.setAccelerator(item.accelerator)
 	}
 	return result
+}
+
+// destroyNSMenuItem releases the NSMenuItem.
+func (m *macosMenuItem) destroyNSMenuItem() {
+	C.destroyMenuItem(m.nsMenuItem)
 }

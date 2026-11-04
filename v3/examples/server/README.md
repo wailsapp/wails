@@ -73,8 +73,8 @@ app := application.New(application.Options{
     Server: application.ServerOptions{
         Host: "localhost",  // Use "0.0.0.0" for all interfaces
         Port: 8080,
-        // Same-origin WebSockets are allowed automatically. Add only trusted
-        // cross-origin frontend hosts when needed.
+        // Same-origin WebSocket and runtime requests are allowed automatically.
+        // Add only trusted cross-origin frontend hosts when needed.
         WebSocketOriginPatterns: []string{"https://app.example.com"},
     },
 

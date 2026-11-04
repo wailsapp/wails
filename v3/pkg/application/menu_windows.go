@@ -44,6 +44,8 @@ func newMenuImpl(menu *Menu) *windowsMenu {
 }
 
 func (w *windowsMenu) update() {
+	defer refreshSystemTrayMenus(w.menu)
+
 	// Stage the rebuild into a fresh HMENU and fresh mapping, only swapping
 	// the old state out once processMenu returns successfully. See
 	// Win32Menu.Update for the item.impl caveat on the failure path.
@@ -108,7 +110,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 				if w.parentWindow != nil {
 					w.parentWindow.parent.removeMenuBinding(item.accelerator)
 				} else {
-					globalApplication.KeyBinding.Remove(item.accelerator.String())
+					globalApplication.KeyBinding.removeMenuBinding(item)
 				}
 			}
 		}
@@ -145,9 +147,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 			if w.parentWindow != nil {
 				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
 			} else {
-				globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
-					item.handleClick()
-				})
+				globalApplication.KeyBinding.addMenuBinding(item)
 			}
 			thisText = thisText + "\t" + item.accelerator.String()
 		}

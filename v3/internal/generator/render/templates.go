@@ -40,3 +40,5 @@ func init() {
 
 	Newline = builder.String()
 }
+
+var tmplEventNames = template.Must(template.New("eventnames.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/eventnames.tmpl"))

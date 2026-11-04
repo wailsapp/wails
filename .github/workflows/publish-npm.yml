@@ -10,19 +10,36 @@ on:
       # it must trigger a publish.
       - 'v3/internal/version/version.txt'
       - '.github/workflows/publish-npm.yml'
+    # Publishing is driven by the release tag so the package is built from
+    # exactly the released commit (a weekly is cut from an older green SHA, not
+    # master HEAD). Runtime version == Wails version == version.txt at the tag.
+    # NOTE: tags pushed with github.token do not trigger workflows; the release
+    # tool needs WAILS_REPO_TOKEN for this to fire.
+    tags: ['v3.*']
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or branch to build and publish (default master)'
+        required: false
+        default: 'master'
+        type: string
+      dist_tag:
+        description: 'Override the npm dist-tag (default: derived from the version shape)'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
   group: publish-npm-v3
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   detect:
     name: Detect committed changes
-    if: github.repository == 'wailsapp/wails' && github.event_name != 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails' && github.event_name == 'push' && github.ref_type == 'branch'
     permissions:
       contents: read
     outputs:
@@ -65,7 +82,7 @@ jobs:
     if: >-
       github.repository == 'wailsapp/wails'
       && !failure() && !cancelled()
-      && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
+      && (github.event_name == 'workflow_dispatch' || github.ref_type == 'tag' || needs.detect.outputs.changed == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -77,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: 'master'
+          ref: ${{ github.ref_type == 'tag' && github.ref || inputs.ref || 'master' }}
           persist-credentials: false
 
       - name: Configure git
@@ -90,6 +107,13 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          cache: true
+          cache-dependency-path: 'v3/go.sum'
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -184,8 +208,27 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Resolve npm dist-tag
+        id: dist-tag
+        # Same policy function the release tool uses for the GitHub flags:
+        # weekly (vX.Y.0) and hotfix (vX.Y.N) -> latest, nightly (vX.Y.0-nightly.DATE) -> nightly, pre-GA -> latest.
+        env:
+          OVERRIDE: ${{ inputs.dist_tag }}
+          VERSION: ${{ steps.bump-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -n "$OVERRIDE" ]; then
+            TAG="$OVERRIDE"
+          else
+            TAG="$(cd v3/tasks/release && GOWORK=off go run release.go --print-policy "v${VERSION}" | sed -n 's/^npm_tag=//p')"
+          fi
+          [ -n "$TAG" ] || { echo "::error::could not resolve npm dist-tag"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "::notice::@wailsio/runtime@${VERSION} will be published with dist-tag '${TAG}'"
+
       - name: Commit regenerated runtime + version bump
         id: commit-runtime
+        if: github.ref_type != 'tag' && (inputs.ref == '' || inputs.ref == 'master')
         # Commit ALL regenerated tracked files back to master, not just the
         # version bump: the bundled runtime (internal/assetserver/bundledassets),
         # generated events (v3/pkg/events/events.go) and TypeDoc output all come
@@ -204,7 +247,7 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Push regenerated runtime + version bump
-        if: steps.commit-runtime.outputs.changed == 'true'
+        if: github.ref_type != 'tag' && (inputs.ref == '' || inputs.ref == 'master') && steps.commit-runtime.outputs.changed == 'true'
         env:
           WAILS_PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
         run: |
@@ -228,9 +271,11 @@ jobs:
         # short-lived publish credential. Provenance is attached automatically.
         # Requires a Trusted Publisher to be configured for @wailsio/runtime on
         # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
-        if: steps.already-published.outputs.published != 'true'
+        # Branch pushes only regenerate and commit bundles; the publish itself
+        # happens from the release tag (or a manual dispatch).
+        if: steps.already-published.outputs.published != 'true' && (github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        # --tag latest: v3 ships prereleases as the default dist-tag, matching
-        # the templates' "@wailsio/runtime": "latest" pin. npm >= 11 requires an
-        # explicit --tag to publish a prerelease as latest.
-        run: npm publish --access public --tag latest
+        # Dist-tag comes from the release policy (see the Resolve step). npm >= 11
+        # requires an explicit --tag to publish a prerelease as latest, which is
+        # still how pre-GA (-beta.N) versions are published.
+        run: npm publish --access public --tag "${{ steps.dist-tag.outputs.tag }}"

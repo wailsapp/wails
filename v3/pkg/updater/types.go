@@ -67,8 +67,10 @@ type Artifact struct {
 //
 // Signature verification always uses Config.PublicKey as the trust root. The
 // release source has no say in which key authenticates it — that is the entire
-// point of pinning a key out-of-band at build time. Releases that ship a
-// Signature without a configured Config.PublicKey fail closed.
+// point of pinning a key out-of-band at build time. When Config.PublicKey is
+// configured the signature is mandatory: a release that carries no signature
+// (digest-only, or no Verification at all) is rejected, and so is a release
+// that ships a Signature without a configured Config.PublicKey.
 type Verification struct {
 	DigestAlgo    string `json:"digestAlgo,omitempty"`    // "sha256", "sha512"
 	Digest        []byte `json:"digest,omitempty"`        // raw digest bytes

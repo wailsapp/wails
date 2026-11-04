@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_9Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_8Vtbl
 	AddIsDefaultDownloadDialogOpenChanged    ComProc
 	RemoveIsDefaultDownloadDialogOpenChanged ComProc
 	GetIsDefaultDownloadDialogOpen           ComProc

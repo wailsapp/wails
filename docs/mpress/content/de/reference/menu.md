@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **Bewährte Vorgehensweise:** Gruppieren Sie zusammengehörige Menüeinträge mit Trennlinien.
 
+### AddSectionHeader()
+
+Fügt unter **macOS 14 und neuer** eine native, nicht interaktive Abschnittsüberschrift hinzu. Unter älteren macOS-Versionen und auf allen anderen Plattformen (einschließlich Server-Builds) bleibt der Aufruf ohne Wirkung: Es wird kein Platzhaltereintrag eingefügt.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+Verwenden Sie Überschriften, um Gruppen in Taskleisten-, Kontext- oder Anwendungsmenüs zu beschriften:
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+Überschriften verwenden das standardmäßige Erscheinungsbild von AppKit für Abschnittsüberschriften. Rufen Sie nach dem Neuaufbau eines bereits angezeigten Menüs wie bei anderen strukturellen Änderungen `menu.Update()` auf. Das Beispiel `systray-menu` zeigt eine Überschrift, die mit `os.Hostname()` ermittelt wird.
+
+Ausgelassene Überschriften trennen keine Optionsgruppen. Verwenden Sie `AddSeparator()`, wenn Gruppen auf jeder Plattform getrennt bleiben müssen.
+
 ### AddCheckbox()
 
 Fügt einen Menüeintrag mit umschaltbarem Häkchen hinzu.

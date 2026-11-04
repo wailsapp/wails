@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2ProcessFailedEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ProcessFailedEventArgs2Vtbl
 	GetFailureSourceModulePath ComProc
 }
 

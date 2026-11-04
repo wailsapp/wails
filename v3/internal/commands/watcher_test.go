@@ -53,21 +53,22 @@ func TestEnsurePrimaryExitPolicy(t *testing.T) {
 }
 
 func TestFrontendReadiness(t *testing.T) {
-	for _, tc := range []struct{ name, frontendURL string }{
-		{"default", "http://localhost:9245"},
-		{"custom port", "http://localhost:17321"},
-		{"secure", "https://localhost:17322"},
-		{"IPv6", "http://[::1]:17323"},
-		{"HTTP default port", "http://localhost"},
-		{"path and query", "http://localhost:5173/health?ready=true"},
-		{"HTTPS default port", "https://localhost"},
+	for _, tc := range []struct{ name, frontendURL, tcp string }{
+		{"default", "http://localhost:9245", "localhost:9245"},
+		{"custom port", "http://localhost:17321", "localhost:17321"},
+		{"secure", "https://localhost:17322", "localhost:17322"},
+		{"IPv6", "http://[::1]:17323", "[::1]:17323"},
+		{"HTTP default port", "http://localhost", "localhost:80"},
+		{"path and query", "http://localhost:5173/health?ready=true", "localhost:5173"},
+		{"HTTPS default port", "https://localhost", "localhost:443"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := engine.Config{ExecStruct: []process.Execute{{Cmd: "wails3 task common:dev:frontend", Type: process.Background}}}
 			require.NoError(t, applyFrontendReadiness(&config, tc.frontendURL))
 			require.NotNil(t, config.ExecStruct[0].Readiness)
-			assert.Equal(t, tc.frontendURL, config.ExecStruct[0].Readiness.HTTP)
-			assert.Empty(t, config.ExecStruct[0].Readiness.TCP)
+			// TCP, not HTTP: the HTTP probe sends no Accept header and Vite answers 404 (#6209).
+			assert.Equal(t, tc.tcp, config.ExecStruct[0].Readiness.TCP)
+			assert.Empty(t, config.ExecStruct[0].Readiness.HTTP)
 			assert.Equal(t, "60s", config.ExecStruct[0].Readiness.Timeout)
 		})
 	}
@@ -81,6 +82,7 @@ func TestFrontendReadiness(t *testing.T) {
 			{Cmd: "wails3 task common:dev:frontend", Type: process.Primary},
 		}}
 		require.NoError(t, applyFrontendReadiness(&config, "http://localhost:9245"))
+		require.NoError(t, applyFrontendReadiness(&config, "custom frontend URL"))
 		assert.Same(t, explicit, config.ExecStruct[0].Readiness)
 		for _, step := range config.ExecStruct[1:] {
 			assert.Nil(t, step.Readiness)

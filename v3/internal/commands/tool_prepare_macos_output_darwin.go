@@ -2,12 +2,30 @@ package commands
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"golang.org/x/sys/unix"
 )
+
+func macOSDirectoryHasFileProviderMetadata(path string) (bool, error) {
+	for _, attribute := range []string{
+		"com.apple.file-provider-domain-id",
+		"com.apple.fileprovider.fpfs#P",
+		"com.apple.fileprovider.detached#B",
+	} {
+		_, err := unix.Getxattr(path, attribute, nil)
+		if err == nil {
+			return true, nil
+		}
+		if !errors.Is(err, unix.ENOATTR) && !errors.Is(err, unix.ENOTSUP) {
+			return false, fmt.Errorf("read file provider metadata on %s: %w", path, err)
+		}
+	}
+	return false, nil
+}
 
 func lockMacOSOutput(path string) (func(), error) {
 	lockDir := filepath.Join(os.TempDir(), "wails-macos-output-locks")

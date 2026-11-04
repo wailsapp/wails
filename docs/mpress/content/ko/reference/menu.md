@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **권장 사항:** 구분선을 사용하여 관련 메뉴 항목을 그룹화하세요.
 
+### AddSectionHeader()
+
+**macOS 14 이상** 에서 상호 작용이 불가능한 네이티브 섹션 제목을 추가합니다. 이전 macOS 버전과 다른 모든 플랫폼(서버 빌드 포함)에서는 아무 작업도 수행하지 않으며 자리 표시자 항목도 삽입하지 않습니다.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+트레이, 컨텍스트 또는 애플리케이션 메뉴에서 그룹에 레이블을 붙이려면 제목을 사용하세요:
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+제목은 AppKit의 표준 섹션 제목 모양을 사용합니다. 이미 표시된 메뉴를 다시 구성한 후에는 다른 구조 변경과 마찬가지로 `menu.Update()`를 호출하세요. `os.Hostname()`으로 얻은 제목은 `systray-menu` 예제를 참고하세요.
+
+생략된 제목은 라디오 그룹을 나누지 않습니다. 모든 플랫폼에서 그룹을 분리해 두어야 할 때는 `AddSeparator()`를 사용하세요.
+
 ### AddCheckbox()
 
 선택 여부를 전환할 수 있는 메뉴 항목을 추가합니다.

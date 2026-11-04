@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_11Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_10Vtbl
 	CallDevToolsProtocolMethodForSession ComProc
 	AddContextMenuRequested              ComProc
 	RemoveContextMenuRequested           ComProc

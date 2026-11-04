@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2SettingsVtbl
 	GetUserAgent ComProc
 	PutUserAgent ComProc
 }

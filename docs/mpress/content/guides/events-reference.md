@@ -385,7 +385,7 @@ Run the binding generator:
 wails3 generate bindings
 ```
 
-This creates TypeScript files in your frontend directory with typed event creators and data interfaces.
+This creates TypeScript files in your frontend directory with typed event data definitions, plus a `bindings/events` module that exports one constant per registered event name that is a compile-time constant discoverable by the generator (for example `user:login` becomes `UserLogin`).
 
 #### 3. Use Typed Events in Frontend
 
@@ -394,11 +394,11 @@ import { Events } from '@wailsio/runtime'
 import { UserLogin, MonitorStats } from './bindings/events'
 
 // Type-safe event emission with autocomplete
-Events.Emit(UserLogin({
+Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 // Type-safe event listening
 Events.On(UserLogin, (event) => {
@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 The complete list of available events can be found in the Wails source code:
 
-- Frontend events: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- Backend events: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+- Frontend events: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Backend events: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 Always refer to these files for the most up-to-date event names and availability.
 

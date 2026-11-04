@@ -669,4 +669,4 @@ app := application.New(application.Options{
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_8Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_7Vtbl
 	AddIsMutedChanged                   ComProc
 	RemoveIsMutedChanged                ComProc
 	GetIsMuted                          ComProc

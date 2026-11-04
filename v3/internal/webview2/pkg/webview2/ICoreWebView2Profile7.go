@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile7Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile6Vtbl
 	AddBrowserExtension  ComProc
 	GetBrowserExtensions ComProc
 }

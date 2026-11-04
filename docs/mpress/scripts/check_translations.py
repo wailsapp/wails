@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Require complete translations and locally audit their protected structure."""
+"""Require complete translations and audit their protected structure.
+
+Missing, empty or orphaned translation files always fail. Audit findings mean a
+translation is stale or damaged relative to its English source; they are
+reported as warnings so an English-only edit does not block a pull request
+while the translation sync workflow catches up. Pass --strict to fail on them.
+"""
 
 import argparse
 import hashlib
@@ -61,18 +67,22 @@ def accepted_finding(content, language, finding, exceptions):
     return False
 
 
+class AuditError(Exception):
+    """The audit itself failed, so its results cannot be trusted."""
+
+
 def audit_language(mpress, repository, content, language, exceptions):
     result = subprocess.run([mpress, "translate", "audit", "--lang", language, "--json"],
                             cwd=repository, text=True, capture_output=True)
     try:
         report = json.loads(result.stdout)
     except json.JSONDecodeError:
-        return [f"{language}: translation audit failed: {result.stderr.strip()}"]
+        raise AuditError(f"{language}: translation audit failed: {result.stderr.strip()}")
     findings = report.get("findings", [])
     if report.get("language") != language or not report.get("files") or not report.get("segments"):
-        return [f"{language}: incomplete translation audit report"]
+        raise AuditError(f"{language}: incomplete translation audit report")
     if result.returncode and not findings:
-        return [f"{language}: translation audit failed without findings"]
+        raise AuditError(f"{language}: translation audit failed without findings")
     return [f"{language}/{item['file']} {item.get('segment', '')}: {item['code']}: {item['message']}"
             for item in findings
             if item["file"] not in AUDIT_EXCLUDED_FILES
@@ -82,15 +92,29 @@ def audit_language(mpress, repository, content, language, exceptions):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mpress", default="mpress", help="path to the M-Press CLI")
+    parser.add_argument("--strict", action="store_true",
+                        help="fail on translation audit findings instead of warning")
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[3]
     content = repository / "docs/mpress/content"
     exception_path = repository / "docs/mpress/translation/audit-exceptions.json"
     exceptions = json.loads(exception_path.read_text(encoding="utf-8"))
     errors = check_coverage(content)
+    findings = []
     for language in LANGUAGES:
-        errors.extend(audit_language(args.mpress, repository, content, language, exceptions))
-    print(json.dumps({"languages": list(LANGUAGES), "errors": errors}, indent=2, ensure_ascii=False))
+        try:
+            findings.extend(audit_language(args.mpress, repository, content, language, exceptions))
+        except AuditError as error:
+            errors.append(str(error))
+    if args.strict:
+        errors.extend(findings)
+        findings = []
+    print(json.dumps({"languages": list(LANGUAGES), "errors": errors, "warnings": findings},
+                     indent=2, ensure_ascii=False))
+    if findings:
+        print(f"::warning title=Stale translations::{len(findings)} translation audit "
+              "finding(s); see the warnings list above. The translation sync workflow "
+              "will update them.", file=sys.stderr)
     return bool(errors)
 
 

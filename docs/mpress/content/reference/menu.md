@@ -98,6 +98,33 @@ menu.Add("Select All")
 
 **Best practice:** Use separators to group related menu items.
 
+### AddSectionHeader()
+
+Adds a native, non-interactive section heading on **macOS 14 and later**.
+On older macOS versions and all other platforms (including server builds),
+this is a no-op: no placeholder item is inserted.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+Use headings to label groups in tray, context or application menus:
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+Headings use AppKit's standard section-header appearance. Call `menu.Update()`
+after rebuilding an already displayed menu, as with other structural changes.
+See the `systray-menu` example for a heading obtained from `os.Hostname()`.
+
+Omitted headings do not split radio groups. Use `AddSeparator()` when radio
+groups must remain separate on every platform.
+
 ### AddCheckbox()
 
 Adds a checkable menu item.

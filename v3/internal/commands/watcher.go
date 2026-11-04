@@ -1,11 +1,15 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
+	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 
 	"github.com/atterpac/refresh/engine"
@@ -68,7 +72,24 @@ func Watcher(options *WatcherOptions) error {
 	if err != nil {
 		return err
 	}
-	if err := watcherEngine.Start(); err != nil {
+	return runWatcherEngine(watcherEngine, devconfig.Config.EnablePause)
+}
+
+// runWatcherEngine runs the engine until it exits or a shutdown signal arrives.
+// The engine's Start only traps SIGINT and SIGTERM, so the watcher owns signal
+// handling and uses Run, which shuts every process group down when ctx is done.
+func runWatcherEngine(watcherEngine *engine.Engine, enablePause bool) error {
+	ctx, stop := signal.NotifyContext(context.Background(), shutdownSignals...)
+	defer stop()
+	if enablePause {
+		trapPauseSignal(ctx, watcherEngine)
+	}
+
+	err := watcherEngine.Run(ctx)
+	if ctx.Err() != nil {
+		slog.Warn("graceful exit requested", "cause", context.Cause(ctx))
+	}
+	if err != nil {
 		if isInterruptError(err) {
 			slog.Warn("graceful exit requested", "signal", os.Interrupt)
 			return nil
@@ -76,6 +97,28 @@ func Watcher(options *WatcherOptions) error {
 		return err
 	}
 	return nil
+}
+
+// frontendTCPTarget converts the dev server URL into a host:port address.
+//
+// The readiness gate deliberately uses a TCP probe rather than an HTTP one:
+// the HTTP probe sends no Accept header and requires exactly 200, which dev
+// servers such as Vite answer with 404 (see #6209). "Port accepts connections"
+// is all the gate needs to hold the primary process back until the frontend
+// is listening.
+func frontendTCPTarget(frontendURL string) (string, error) {
+	u, err := url.Parse(frontendURL)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.Fragment != "" {
+		return "", fmt.Errorf("frontend URL %q must be an absolute HTTP(S) URL without a fragment", frontendURL)
+	}
+	port := u.Port()
+	if port == "" {
+		port = "80"
+		if u.Scheme == "https" {
+			port = "443"
+		}
+	}
+	return net.JoinHostPort(u.Hostname(), port), nil
 }
 
 // Standard projects get startup ordering without rewriting their Taskfiles.
@@ -89,7 +132,11 @@ func applyFrontendReadiness(config *engine.Config, frontendURL string) error {
 		if step.Type != process.Background || step.Readiness != nil || len(step.Command) != 0 || strings.Join(strings.Fields(step.Cmd), " ") != "wails3 task common:dev:frontend" {
 			continue
 		}
-		step.Readiness = &process.Readiness{HTTP: frontendURL, Timeout: "60s"}
+		tcpTarget, err := frontendTCPTarget(frontendURL)
+		if err != nil {
+			return fmt.Errorf("invalid frontend readiness: %w", err)
+		}
+		step.Readiness = &process.Readiness{TCP: tcpTarget, Timeout: "60s"}
 		if err := step.Validate(); err != nil {
 			return fmt.Errorf("invalid frontend readiness: %w", err)
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2NavigationStartingEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NavigationStartingEventArgs2Vtbl
 	GetNavigationKind ComProc
 }
 

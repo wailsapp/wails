@@ -1,15 +1,15 @@
 ---
 title: "Benutzerdefinierte Vorlagen erstellen"
-description: "So erstellen Sie eigene Projektvorlagen für Wails v3, passen sie an und hosten sie"
+description: "Eigene Wails-v3-Projektvorlagen erstellen, anpassen und hosten"
 slug: "guides/advanced/custom-templates"
 sourcePath: "guides/advanced/custom-templates.md"
 ---
 
-Wails wird mit mehreren integrierten Vorlagen ausgeliefert. Sie können jedoch eigene Vorlagen erstellen und mit der Community teilen. Eine benutzerdefinierte Vorlage ist lediglich ein Git-Repository. Sobald es öffentlich gehostet wird, kann jeder mit einem einzigen Befehl daraus ein Projektgerüst erstellen.
+Wails enthält mehrere integrierte Vorlagen. Du kannst jedoch auch eigene Vorlagen erstellen und mit der Community teilen. Eine benutzerdefinierte Vorlage ist lediglich ein Git-Repository. Sobald es öffentlich gehostet wird, kann jeder daraus mit einem einzigen Befehl ein Projekt erzeugen.
 
-## Vorlagengerüst erstellen
+## Vorlagengerüst erzeugen
 
-Der Befehl `wails3 generate template` erstellt ein Verzeichnis mit einer direkt anpassbaren Vorlage:
+Der Befehl `wails3 generate template` erzeugt ein anpassungsbereites Vorlagenverzeichnis:
 
 ```bash
 wails3 generate template -name MyTemplate
@@ -21,11 +21,11 @@ Alle Optionen:
 | --- | --- | --- |
 | `-name` | Vorlagenname (erforderlich) | — |
 | `-author` | Name des Autors | — |
-| `-description` | In der CLI angezeigte Kurzbeschreibung | — |
+| `-description` | Kurze, in der CLI angezeigte Beschreibung | — |
 | `-helpurl` | URL zur Dokumentation dieser Vorlage | — |
-| `-version` | Ursprüngliche Version | `v0.0.1` |
-| `-frontend` | Ein vorhandenes Frontend-Verzeichnis in die Vorlage kopieren | — |
-| `-dir` | Speicherort für das Vorlagenverzeichnis | Aktuelles Verzeichnis |
+| `-version` | Ausgangsversion | `v0.0.1` |
+| `-frontend` | Vorhandenes Frontend-Verzeichnis in die Vorlage kopieren | — |
+| `-dir` | Speicherort des Vorlagenverzeichnisses | Aktuelles Verzeichnis |
 
 Beispiel mit allen Optionen:
 
@@ -39,7 +39,7 @@ wails3 generate template \
   -frontend ./my-existing-frontend
 ```
 
-Das erstellte Verzeichnis sieht wie folgt aus:
+Das erzeugte Verzeichnis sieht wie folgt aus:
 
 ```
 MyTemplate/
@@ -56,13 +56,13 @@ MyTemplate/
 ```
 
 @note{type="tip" title="NEXTSTEPS.md lesen"}
-Die erstellte Datei `NEXTSTEPS.md` enthält ausführliche Anleitungen zu allen Teilen der Vorlage. Lesen Sie sie vor der Anpassung. Löschen Sie sie vor der Veröffentlichung – sie darf nicht in Projekten enthalten sein, die aus Ihrer Vorlage erstellt werden.
+Die erzeugte Datei `NEXTSTEPS.md` enthält ausführliche Anleitungen zu allen Bestandteilen der Vorlage. Lies sie vor der Anpassung. Lösche sie vor der Veröffentlichung – sie darf nicht in Projekten enthalten sein, die aus deiner Vorlage erstellt werden.
 
 @end
 
 ## Vorlagenmetadaten konfigurieren
 
-Öffnen Sie `template.yaml`, um die Metadaten Ihrer Vorlage festzulegen:
+Öffne `template.yaml`, um die Metadaten deiner Vorlage festzulegen:
 
 ```yaml
 # yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
@@ -75,41 +75,41 @@ version: v1.0.0
 wailsVersion: 3
 ```
 
-Das Feld `wailsVersion` ist **erforderlich** und muss `3` sein. Der Kommentar `# yaml-language-server` am Anfang der Datei aktiviert die automatische Vervollständigung und Inline-Validierung in VS Code (mit der [YAML-Erweiterung](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)) und in JetBrains-IDEs. Sie können ihn beibehalten oder entfernen; zur Laufzeit hat er keine Auswirkungen.
+Das Feld `wailsVersion` ist **erforderlich** und muss den Wert `3` haben. Der Kommentar `# yaml-language-server` am Anfang aktiviert die automatische Vervollständigung und Inline-Validierung in VS Code (mit der [YAML-Erweiterung](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)) sowie in JetBrains-IDEs. Du kannst ihn beibehalten oder entfernen; zur Laufzeit hat er keine Wirkung.
 
 ## Vorlage anpassen
 
 ### Frontend
 
-Das Verzeichnis `frontend/` wird unverändert in jedes Projekt kopiert, das aus Ihrer Vorlage erstellt wird. Ersetzen Sie den Platzhalterinhalt durch Ihr tatsächliches Frontend:
+Das Verzeichnis `frontend/` wird unverändert in jedes Projekt kopiert, das aus deiner Vorlage erstellt wird. Ersetze den Platzhalterinhalt durch dein tatsächliches Frontend:
 
 @tabs
-[Neu beginnen]
+[Von Grund auf beginnen]
 ```bash
 cd MyTemplate/frontend
 npm create vite@latest .
 ```
 
-Folgen Sie den Eingabeaufforderungen und installieren Sie anschließend die Abhängigkeiten:
+Folge den Eingabeaufforderungen und installiere anschließend die Abhängigkeiten:
 
 ```bash
 npm install
 ```
 
 [Vorhandenes Projekt verwenden]
-Übergeben Sie beim Erstellen der Vorlage `-frontend`, um ein vorhandenes Frontend in einem Schritt zu kopieren:
+Übergib beim Erzeugen der Vorlage `-frontend`, um ein vorhandenes Frontend in einem Schritt zu kopieren:
 
 ```bash
 wails3 generate template -name MyTemplate -frontend ./my-app/frontend
 ```
 
-Alternativ können Sie es anschließend manuell in das Verzeichnis `frontend/` kopieren.
+Alternativ kannst du es anschließend manuell in das Verzeichnis `frontend/` kopieren.
 
 @end
 
 ### Build-Tasks
 
-`Taskfile.tmpl.yml` definiert den Build-Ablauf. Passen Sie die Tasks `install:frontend:deps` und `build:frontend` an Ihre Frontend-Toolchain an:
+`Taskfile.tmpl.yml` definiert den Build-Ablauf. Passe die Tasks `install:frontend:deps` und `build:frontend` an deine Frontend-Toolchain an:
 
 ```yaml
 tasks:
@@ -129,11 +129,11 @@ tasks:
 
 Die Datei `main.go.tmpl` ist der Einstiegspunkt der Anwendung. Beim Erstellen eines Projekts wird sie von der Template-Engine von Wails verarbeitet. Vorlagenvariablen wie `{{.ProductName}}` werden dabei durch die vom Benutzer angegebenen Werte ersetzt.
 
-Um sie als echte Go-Datei mit IDE-Unterstützung zu bearbeiten, benennen Sie sie vorübergehend in `main.go` um, nehmen Sie Ihre Änderungen vor und benennen Sie sie vor dem Commit wieder in `main.go.tmpl` um.
+Um sie als reguläre Go-Datei mit IDE-Unterstützung zu bearbeiten, benenne sie vorübergehend in `main.go` um, nimm deine Änderungen vor und benenne sie vor dem Commit wieder in `main.go.tmpl` um.
 
 #### Vorlagenvariablen
 
-Diese Variablen sind in jeder `.tmpl`-Datei verfügbar:
+In jeder `.tmpl`-Datei sind folgende Variablen verfügbar:
 
 | Variable | Beschreibung | Beispiel |
 | --- | --- | --- |
@@ -142,8 +142,8 @@ Diese Variablen sind in jeder `.tmpl`-Datei verfügbar:
 | `{{.ProductName}}` | Anzeigename des Produkts | `"My Application"` |
 | `{{.ProductDescription}}` | Produktbeschreibung | `"An awesome application"` |
 | `{{.ProductVersion}}` | Produktversion | `"1.0.0"` |
-| `{{.ProductCompany}}` | Unternehmens- oder Autorenname | `"My Company Ltd"` |
-| `{{.ProductCopyright}}` | Copyright-Vermerk | `"Copyright 2024 My Company Ltd"` |
+| `{{.ProductCompany}}` | Name des Unternehmens/Autors | `"My Company Ltd"` |
+| `{{.ProductCopyright}}` | Copyright-Zeichenfolge | `"Copyright 2024 My Company Ltd"` |
 | `{{.ProductComments}}` | Zusätzliche Produktkommentare | `"Built with Wails"` |
 | `{{.ProductIdentifier}}` | Produktkennung im Reverse-DNS-Format | `"com.mycompany.myapp"` |
 | `{{.ModulePath}}` | Go-Modulpfad | `"github.com/you/myapp"` |
@@ -153,7 +153,7 @@ Diese Variablen sind in jeder `.tmpl`-Datei verfügbar:
 | `{{.Cls}}` | Literales `}}` – innerhalb von Vorlagen maskieren | `}}` |
 
 @note{type="tip"}
-Jede Datei in deiner Vorlage kann eine `.tmpl`-Datei sein – einschließlich HTML-, JSON- und YAML-Dateien. Dateien ohne das Suffix `.tmpl` werden unverändert kopiert.
+Jede Datei in deiner Vorlage kann eine `.tmpl`-Datei sein, einschließlich HTML-, JSON- und YAML-Dateien. Dateien ohne das Suffix `.tmpl` werden unverändert kopiert.
 
 @end
 
@@ -165,7 +165,7 @@ Teste die Vorlage vor der Veröffentlichung, indem du ein Projekt aus einem loka
 wails3 init -n testproject -t /path/to/MyTemplate
 ```
 
-Prüfe anschließend, ob das Projekt funktioniert:
+Überprüfe anschließend, ob das Projekt funktioniert:
 
 ```bash
 cd testproject
@@ -176,15 +176,15 @@ wails3 build  # production binary
 Prüfe Folgendes:
 
 - Hot Reload des Frontends funktioniert
-- Änderungen am Go-Code erstellen die App neu und starten sie erneut
+- Änderungen am Go-Code erstellen die Anwendung neu und starten sie erneut
 - Die Produktionsbinärdatei in `bin/` wird ordnungsgemäß ausgeführt
 
 ## Auf GitHub veröffentlichen
 
 @steps
-### **Erstelle ein öffentliches GitHub-Repository** für deine Vorlage. Das Stammverzeichnis des Repositorys muss `template.yaml` enthalten.
-### **Lösche `NEXTSTEPS.md`** – diese Datei enthält Hinweise für Vorlagenautoren und darf nicht in Projekten enthalten sein, die Benutzer aus deiner Vorlage erstellen.
-### **Committe und pushe** den Inhalt des Vorlagenverzeichnisses als Stammverzeichnis des Repositorys:
+### **Erstellen Sie ein öffentliches GitHub-Repository** für Ihre Vorlage. Das Stammverzeichnis des Repositorys muss `template.yaml` enthalten.
+### **Löschen Sie `NEXTSTEPS.md`** – diese Datei dient Vorlagenautoren als Anleitung und darf nicht in Projekten enthalten sein, die Benutzer aus Ihrer Vorlage erstellen.
+### **Committen und pushen Sie** den Inhalt des Vorlagenverzeichnisses als Stammverzeichnis des Repositorys:
 ```bash
 git init
 git add .
@@ -193,7 +193,7 @@ git remote add origin https://github.com/yourname/my-template.git
 git push -u origin main
 ```
 
-### **Erstelle ein Release-Tag** gemäß der semantischen Versionierung:
+### **Kennzeichnen Sie ein Release mit einem Tag** und verwenden Sie dabei semantische Versionierung:
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
@@ -201,7 +201,7 @@ git push origin v1.0.0
 
 @end
 
-Benutzer können nun Projekte aus deiner Vorlage erstellen:
+Benutzer können nun Projekte aus Ihrer Vorlage erstellen:
 
 ```bash
 # Latest commit on the default branch
@@ -211,18 +211,20 @@ wails3 init -n myapp -t https://github.com/yourname/my-template
 wails3 init -n myapp -t https://github.com/yourname/my-template@v1.0.0
 ```
 
-@note{type="caution" title="Warnung vor Drittanbieter-Vorlagen"}
-Wenn ein Benutzer eine Remote-Vorlage installiert, zeigt Wails eine Warnung an, die darauf hinweist, dass die Vorlage Code eines Drittanbieters enthält und das Wails-Projekt keine Verantwortung für deren Inhalt übernimmt. Benutzer müssen ausdrücklich bestätigen, bevor das Projekt erstellt wird.
+@note{type="caution" title="Warnung zu Drittanbieter-Vorlagen"}
+Wenn ein Benutzer eine Remote-Vorlage installiert, zeigt Wails eine Warnung an. Sie weist darauf hin, dass die Vorlage Code eines Drittanbieters enthält und das Wails-Projekt keine Verantwortung für deren Inhalt übernimmt. Benutzer müssen ausdrücklich zustimmen, bevor das Projekt erstellt wird.
 
-Als Vorlagenautor bist du für die Sicherheit und Korrektheit des gesamten Codes in deiner Vorlage verantwortlich.
+Als Vorlagenautor sind Sie für die Sicherheit und Korrektheit des gesamten Codes in Ihrer Vorlage verantwortlich.
+
+Vorlagen sind Code. `Taskfile.yml`-Tasks sind beliebige Shell-Befehle. `wails3 dev`, `wails3 build` und `wails3 package` führen sie sowie alle von ihnen aufgerufenen `package.json`-Skripte mit den Berechtigungen des Benutzers aus. Prüfen Sie `Taskfile.yml`, das Verzeichnis `build/` und `frontend/package.json` einer Remote-Vorlage, bevor Sie einen dieser Befehle ausführen.
 
 @end
 
-## Bewährte Verfahren
+## Bewährte Vorgehensweisen
 
-- **Verfasse eine verständliche `README.md`** – sie wird Benutzern angezeigt, nachdem sie ein Projekt erstellt haben. Erkläre, wie das Projekt ausgeführt, gebaut und angepasst wird.
-- **Fülle `helpurl`** aus – verlinke dein Repository oder eine eigene Dokumentation. Benutzer sehen den Link in der Vorlagenliste der Wails CLI.
-- **Fixiere die Versionen der Frontend-Abhängigkeiten** in `package.json`, damit Aktualisierungen vorgelagerter Projekte Installationen nicht beeinträchtigen.
-- **Teste vor dem Tagging** – erstelle ein neues Projekt aus dem getaggten Release, bevor du es der Community ankündigst.
-- **Behalte `wailsVersion: 3`** bei – dieses Feld teilt Wails mit, auf welche Hauptversion die Vorlage ausgerichtet ist. Ändere es nicht.
-- **Aktualisiere regelmäßig** – halte die Abhängigkeiten aktuell und teste mit neuen Wails-Releases.
+- **Verfassen Sie eine verständliche `README.md`** – sie wird Benutzern angezeigt, nachdem sie ein Projekt erstellt haben. Erklären Sie, wie das Projekt ausgeführt, gebaut und angepasst wird.
+- **Füllen Sie `helpurl` aus** – verlinken Sie auf Ihr Repository oder eine eigene Dokumentation. Benutzer sehen den Link in der Vorlagenliste der Wails CLI.
+- **Fixieren Sie die Versionen der Frontend-Abhängigkeiten** in `package.json`, um fehlerhafte Installationen aufgrund von Upstream-Aktualisierungen zu vermeiden.
+- **Testen Sie vor dem Tagging** – erstellen Sie ein neues Projekt aus dem getaggten Release, bevor Sie es der Community ankündigen.
+- **Behalten Sie `wailsVersion: 3` bei** – dieses Feld teilt Wails mit, für welche Hauptversion die Vorlage vorgesehen ist. Ändern Sie es nicht.
+- **Aktualisieren Sie regelmäßig** – halten Sie die Abhängigkeiten aktuell und testen Sie mit neuen Wails-Releases.

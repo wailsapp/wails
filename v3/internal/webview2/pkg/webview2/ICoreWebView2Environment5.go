@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment4Vtbl
 	AddBrowserProcessExited    ComProc
 	RemoveBrowserProcessExited ComProc
 }

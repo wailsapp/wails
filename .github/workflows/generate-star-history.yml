@@ -37,7 +37,7 @@ jobs:
 
   publish-star-history:
     name: Publish Star History
-    if: github.event_name == 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails'
     needs: generate-star-history
     runs-on: ubuntu-latest
     permissions:
@@ -45,7 +45,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Publishing is restricted to an explicitly dispatched run.
           persist-credentials: false
 
       - name: Download generated image

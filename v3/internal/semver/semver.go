@@ -26,6 +26,9 @@ func NewVersion(s string) (*Version, error) {
 	meta := ""
 	if idx := strings.Index(s, "+"); idx != -1 {
 		meta = s[idx+1:]
+		if meta == "" {
+			return nil, fmt.Errorf("invalid semver metadata: empty identifier")
+		}
 		s = s[:idx]
 	}
 
@@ -33,25 +36,29 @@ func NewVersion(s string) (*Version, error) {
 	pre := ""
 	if idx := strings.Index(s, "-"); idx != -1 {
 		pre = s[idx+1:]
+		if pre == "" {
+			return nil, fmt.Errorf("invalid semver prerelease: empty identifier")
+		}
 		s = s[:idx]
 	}
 
-	parts := strings.SplitN(s, ".", 3)
-	if len(parts) != 3 {
+	majorPart, rest, _ := strings.Cut(s, ".")
+	minorPart, patchPart, ok := strings.Cut(rest, ".")
+	if !ok {
 		return nil, fmt.Errorf("invalid semver %q: expected MAJOR.MINOR.PATCH", s)
 	}
 
-	major, err := strconv.ParseUint(parts[0], 10, 64)
+	major, err := strconv.ParseUint(majorPart, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("invalid semver major %q: %w", parts[0], err)
+		return nil, fmt.Errorf("invalid semver major %q: %w", majorPart, err)
 	}
-	minor, err := strconv.ParseUint(parts[1], 10, 64)
+	minor, err := strconv.ParseUint(minorPart, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("invalid semver minor %q: %w", parts[1], err)
+		return nil, fmt.Errorf("invalid semver minor %q: %w", minorPart, err)
 	}
-	patch, err := strconv.ParseUint(parts[2], 10, 64)
+	patch, err := strconv.ParseUint(patchPart, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("invalid semver patch %q: %w", parts[2], err)
+		return nil, fmt.Errorf("invalid semver patch %q: %w", patchPart, err)
 	}
 
 	return &Version{
@@ -65,14 +72,34 @@ func NewVersion(s string) (*Version, error) {
 
 // String returns the canonical string representation.
 func (v *Version) String() string {
-	s := fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+	var buffer [64]byte
+	text := strconv.AppendUint(buffer[:0], v.Major, 10)
+	text = append(text, '.')
+	text = strconv.AppendUint(text, v.Minor, 10)
+	text = append(text, '.')
+	text = strconv.AppendUint(text, v.Patch, 10)
+	if v.Prerelease == "" && v.Metadata == "" {
+		return string(text)
+	}
+	size := len(text) + len(v.Prerelease) + len(v.Metadata)
 	if v.Prerelease != "" {
-		s += "-" + v.Prerelease
+		size++
 	}
 	if v.Metadata != "" {
-		s += "+" + v.Metadata
+		size++
 	}
-	return s
+	var output strings.Builder
+	output.Grow(size)
+	output.Write(text)
+	if v.Prerelease != "" {
+		output.WriteByte('-')
+		output.WriteString(v.Prerelease)
+	}
+	if v.Metadata != "" {
+		output.WriteByte('+')
+		output.WriteString(v.Metadata)
+	}
+	return output.String()
 }
 
 // compare returns -1, 0, or 1 depending on whether v is less than, equal to,
@@ -105,27 +132,49 @@ func (v *Version) compare(other *Version) int {
 // alphanumeric identifiers compared lexically, numeric < alphanumeric,
 // longer wins when all shorter identifiers are equal.
 func comparePrerelease(a, b string) int {
-	as := strings.Split(a, ".")
-	bs := strings.Split(b, ".")
-	for i := 0; i < len(as) && i < len(bs); i++ {
-		ai, aErr := strconv.ParseUint(as[i], 10, 64)
-		bi, bErr := strconv.ParseUint(bs[i], 10, 64)
+	for {
+		ai, aRest, aMore := strings.Cut(a, ".")
+		bi, bRest, bMore := strings.Cut(b, ".")
+		aNumeric := isNumericIdentifier(ai)
+		bNumeric := isNumericIdentifier(bi)
 		switch {
-		case aErr == nil && bErr == nil:
-			if c := cmpUint(ai, bi); c != 0 {
+		case aNumeric && bNumeric:
+			// Compare decimal strings without imposing an integer size limit.
+			ai, bi = strings.TrimLeft(ai, "0"), strings.TrimLeft(bi, "0")
+			if c := cmpUint(uint64(len(ai)), uint64(len(bi))); c != 0 {
 				return c
 			}
-		case aErr == nil:
+		case aNumeric:
 			return -1 // numeric < alphanumeric
-		case bErr == nil:
+		case bNumeric:
 			return 1
-		default:
-			if c := strings.Compare(as[i], bs[i]); c != 0 {
-				return c
+		}
+		if c := strings.Compare(ai, bi); c != 0 {
+			return c
+		}
+		if !aMore {
+			if bMore {
+				return -1
 			}
+			return 0
+		}
+		if !bMore {
+			return 1
+		}
+		a, b = aRest, bRest
+	}
+}
+
+func isNumericIdentifier(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
 		}
 	}
-	return cmpUint(uint64(len(as)), uint64(len(bs)))
+	return true
 }
 
 func cmpUint(a, b uint64) int {
@@ -158,4 +207,3 @@ func (v *Version) Equal(other *Version) bool {
 func (v *Version) GreaterThanOrEqual(other *Version) bool {
 	return v.compare(other) >= 0
 }
-

@@ -22,6 +22,11 @@ func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
 	return nil, unsupportedError
 }
 
+// NewSelectMultipleFoldersDialog is only available on Windows.
+func NewSelectMultipleFoldersDialog(config DialogConfig) (OpenMultipleFilesDialog, error) {
+	return nil, unsupportedError
+}
+
 // TODO doc
 func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
 	return nil, unsupportedError

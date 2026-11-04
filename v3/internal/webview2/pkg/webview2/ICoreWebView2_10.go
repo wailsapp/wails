@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_10Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_9Vtbl
 	AddBasicAuthenticationRequested    ComProc
 	RemoveBasicAuthenticationRequested ComProc
 }

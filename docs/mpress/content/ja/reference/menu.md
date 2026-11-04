@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **ベストプラクティス：** 関連するメニュー項目をグループ化するには、セパレーターを使用します。
 
+### AddSectionHeader()
+
+**macOS 14 以降**で、ネイティブで操作できないセクション見出しを追加します。古いバージョンの macOS とその他すべてのプラットフォーム（サーバービルドを含む）では何もせず、代わりの項目も挿入しません。
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+トレイメニュー、コンテキストメニュー、アプリケーションメニューでグループにラベルを付けるには、見出しを使用します：
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+見出しは AppKit の標準的なセクション見出しの外観を使用します。表示中のメニューを再構築した後は、他の構造変更と同様に `menu.Update()` を呼び出してください。`os.Hostname()` で取得した見出しの例は `systray-menu` サンプルを参照してください。
+
+省略された見出しはラジオグループを分割しません。すべてのプラットフォームでグループを分離する必要がある場合は、`AddSeparator()` を使用してください。
+
 ### AddCheckbox()
 
 チェック可能なメニュー項目を追加します。

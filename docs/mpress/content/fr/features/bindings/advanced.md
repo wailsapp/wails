@@ -7,11 +7,11 @@ sourcePath: "features/bindings/advanced.md"
 
 Ce guide présente des techniques avancées pour personnaliser et optimiser le processus de génération des liaisons dans Wails v3.
 
-## Personnalisation du code généré à l’aide de directives
+## Personnaliser le code généré avec des directives
 
-### Injection de code personnalisé
+### Injecter du code personnalisé
 
-La directive `//wails:inject` permet d’injecter du code JavaScript/TypeScript personnalisé dans les liaisons générées :
+La directive `//wails:inject` vous permet d’injecter du code JavaScript/TypeScript personnalisé dans les liaisons générées :
 
 ```go
 //wails:inject console.log("Hello from Wails!");
@@ -31,20 +31,20 @@ Vous pouvez également utiliser l’injection conditionnelle pour cibler des for
 //wails:inject t*:console.log("Hello TS!");  // TypeScript only
 ```
 
-### Inclusion de fichiers supplémentaires
+### Inclure des fichiers supplémentaires
 
-La directive `//wails:include` permet d’inclure des fichiers supplémentaires avec les liaisons générées :
+La directive `//wails:include` vous permet d’inclure des fichiers supplémentaires avec les liaisons générées :
 
 ```go
 //wails:include js/*.js
 package mypackage
 ```
 
-Cette directive s’utilise généralement dans les commentaires de documentation du paquet pour inclure des fichiers JavaScript/TypeScript supplémentaires avec les liaisons générées.
+Cette directive s’utilise généralement dans les commentaires de documentation du paquet afin d’inclure des fichiers JavaScript/TypeScript supplémentaires avec les liaisons générées.
 
-### Marquage des types et méthodes internes
+### Marquer des types et des méthodes comme internes
 
-La directive `//wails:internal` marque un type ou une méthode comme interne afin d’empêcher son exportation vers l’interface utilisateur :
+La directive `//wails:internal` empêche l’exportation d’un type ou d’une méthode dans les liaisons JavaScript/TypeScript générées :
 
 ```go
 //wails:internal
@@ -56,22 +56,22 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-Cette directive est utile pour les types et méthodes utilisés uniquement en interne par votre code Go et qui ne devraient pas être exposés à l’interface utilisateur.
+Cela contrôle le SDK généré, et non l’accès à l’exécution. Dans les builds normaux, les méthodes exportées d’un service Go peuvent toujours être enregistrées et appelées par l’intermédiaire de l’environnement d’exécution, même si elles sont absentes du SDK généré. Gardez les opérations privées non exportées ou placez-les sur un type non lié, et appliquez les contrôles d’autorisation dans les méthodes exposées.
 
-### Exclusion de méthodes
+### Ignorer des méthodes
 
-La directive `//wails:ignore` exclut complètement une méthode lors de la génération des liaisons :
+La directive `//wails:ignore` ignore complètement une méthode lors de la génération des liaisons :
 
 ```go
 //wails:ignore
 func (s *MyService) IgnoredMethod() {}
 ```
 
-Son fonctionnement est similaire à celui de `//wails:internal`, mais elle exclut complètement la méthode au lieu de la marquer comme interne.
+Cela omet le wrapper généré. Comme `//wails:internal`, cette directive ne constitue pas une barrière de contrôle d’accès pour les méthodes exportées d’un service Go.
 
 ### Identifiants de méthode personnalisés
 
-La directive `//wails:id` définit un identifiant personnalisé pour une méthode et remplace l’identifiant par défaut fondé sur un hachage :
+La directive `//wails:id` spécifie un identifiant personnalisé pour une méthode et remplace l’identifiant par défaut fondé sur un hachage :
 
 ```go
 //wails:id 42
@@ -80,11 +80,11 @@ func (s *MyService) CustomIDMethod() {}
 
 Cela peut être utile pour préserver la compatibilité lors de la refactorisation du code.
 
-## Utilisation de types complexes
+## Utiliser des types complexes
 
 ### Structures imbriquées
 
-Le générateur de liaisons prend automatiquement en charge les structures imbriquées :
+Le générateur de liaisons gère automatiquement les structures imbriquées :
 
 ```go
 type Address struct {
@@ -116,7 +116,7 @@ Le code JavaScript/TypeScript généré comprendra des classes pour `Person` et 
 
 ### Maps et slices
 
-Les maps et les slices sont également prises en charge automatiquement :
+Les maps et les slices sont également gérées automatiquement :
 
 ```go
 type Person struct {
@@ -137,7 +137,7 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-En JavaScript, les maps sont représentées par des objets et les slices par des tableaux. En TypeScript, elles sont respectivement représentées par `Record<K, V>` et `T[]`.
+En JavaScript, les maps sont représentées par des objets et les slices par des tableaux. En TypeScript, les maps sont représentées par `Record<K, V>` et les slices par `T[]`.
 
 ### Types génériques
 
@@ -190,7 +190,7 @@ Le générateur de liaisons peut générer des interfaces TypeScript plutôt que
 wails3 generate bindings -ts -i
 ```
 
-Des interfaces TypeScript seront ainsi générées pour tous les modèles :
+Cela générera des interfaces TypeScript pour tous les modèles :
 
 ```typescript
 export interface Person {
@@ -200,17 +200,17 @@ export interface Person {
 }
 ```
 
-## Optimisation de la génération des liaisons
+## Optimiser la génération des liaisons
 
-### Utilisation des noms plutôt que des identifiants
+### Utiliser des noms plutôt que des identifiants
 
-Par défaut, le générateur de liaisons utilise des identifiants fondés sur un hachage pour les appels de méthodes. Utilisez l’option `-names` pour employer les noms à la place :
+Par défaut, le générateur de liaisons utilise des identifiants fondés sur un hachage pour les appels de méthodes. Vous pouvez utiliser l’option `-names` pour employer des noms à la place :
 
 ```bash
 wails3 generate bindings -names
 ```
 
-Le code généré appellera ainsi la méthode liée par son nom **entièrement qualifié** (`<package>.<Service>.<Method>`) et utilisera les noms de paramètres positionnels `$0`, `$1`, … :
+Cela générera du code qui appelle la méthode liée par son nom **pleinement qualifié** (`<package>.<Service>.<Method>`) et utilise les noms de paramètres positionnels `$0`, `$1`, … :
 
 ```javascript
 export function Greet($0) {
@@ -219,21 +219,21 @@ export function Greet($0) {
 }
 ```
 
-Cela peut rendre le code généré plus lisible et plus facile à déboguer, mais il peut être légèrement moins efficace.
+Cela peut rendre le code généré plus lisible et plus facile à déboguer, mais aussi légèrement moins efficace.
 
-### Intégration de l’environnement d’exécution
+### Regrouper l’environnement d’exécution
 
-Par défaut, le code généré importe l’environnement d’exécution de Wails depuis le paquet npm `@wailsio/runtime`. Utilisez l’option `-b` pour l’intégrer au code généré :
+Par défaut, le code généré importe l’environnement d’exécution Wails depuis le paquet npm `@wailsio/runtime`. Vous pouvez utiliser l’option `-b` pour regrouper l’environnement d’exécution avec le code généré :
 
 ```bash
 wails3 generate bindings -b
 ```
 
-Le code de l’environnement d’exécution sera ainsi inclus directement dans les fichiers générés, ce qui évite d’avoir besoin du paquet npm.
+Cela inclura directement le code de l’environnement d’exécution dans les fichiers générés, supprimant ainsi la nécessité du paquet npm.
 
-### Désactivation des fichiers d’index
+### Désactiver les fichiers d’index
 
-Si vous n’avez pas besoin des fichiers d’index, utilisez l’option `-noindex` pour désactiver leur génération :
+Si vous n’avez pas besoin des fichiers d’index, vous pouvez utiliser l’option `-noindex` pour désactiver leur génération :
 
 ```bash
 wails3 generate bindings -noindex
@@ -245,7 +245,7 @@ Cela peut être utile si vous préférez importer les services et les modèles d
 
 ### Service d’authentification
 
-Voici un exemple de service d’authentification utilisant des directives personnalisées :
+Voici un exemple de service d’authentification avec des directives personnalisées :
 
 ```go
 package auth
@@ -293,7 +293,7 @@ func (s *AuthService) validateCredentials(username, password string) bool {
 
 ### Service de traitement des données
 
-Voici un exemple de service de traitement des données utilisant des types génériques :
+Voici un exemple de service de traitement des données avec des types génériques :
 
 ```go
 package data
@@ -324,7 +324,7 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 
 ### Injection conditionnelle de code
 
-Voici un exemple d’injection conditionnelle de code adaptée à différents formats de sortie :
+Voici un exemple d’injection conditionnelle de code pour différents formats de sortie :
 
 ```go
 //wails:inject j*:/**

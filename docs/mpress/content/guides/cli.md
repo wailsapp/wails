@@ -1,9 +1,11 @@
 ---
-title: "CLI Reference"
-description: "Complete reference for the Wails CLI commands"
+title: "CLI Flags and Examples"
+description: "Look up flags and usage examples for individual Wails CLI commands"
 slug: "guides/cli"
 sourcePath: "guides/cli.md"
 ---
+
+Use this reference when you already know which command you need. To browse commands by purpose, start with the [CLI Command Overview](/reference/cli/).
 
 The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.
 
@@ -80,7 +82,7 @@ This is equivalent to running `wails3 task dev` and runs the `dev` task in the p
 
 ### `build`
 
-Builds a debug version of your application. It defaults to building for the current platform and architecture.
+Builds a production version with the generated Taskfiles. Use `wails3 dev` for hot reload, or pass `DEV=true` for a development build. It defaults to building for the current platform and architecture.
 
 ```bash
 wails3 build [flags] [CLI variables...]
@@ -95,7 +97,7 @@ wails3 build [flags] [CLI variables...]
 You can pass CLI variables to customize the build:
 
 ```bash
-wails3 build PLATFORM=linux CONFIG=production
+wails3 build GOOS=linux
 ```
 
 Use the `-tags` flag to pass custom Go build tags:
@@ -109,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
+Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile. Setting `WAILS_PUREGO=1` adds the `purego` tag to `build`, `package` and `dev` without a flag; see [CGO-free builds](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 This is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. Any CLI variables passed to `build` are forwarded to the underlying task. You can customise the build process by editing the `Taskfile.yml` file.
@@ -126,11 +131,21 @@ Creates platform-specific packages for distribution.
 wails3 package [CLI variables...]
 ```
 
-You can pass CLI variables to customize the packaging:
+The stock packaging tasks accept `ARCH` to select the target architecture:
 
 ```bash
-wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+wails3 package ARCH=amd64
 ```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-tags` | Additional Go build tags (comma-separated), forwarded as `EXTRA_TAGS` |  |
+
+```bash
+wails3 package -tags purego
+```
+
+`VERSION` and `OUTPUT` only affect a custom Taskfile that explicitly reads those variables; they do not override the stock package version or filename.
 
 #### Package Types
 
@@ -147,6 +162,8 @@ This is equivalent to `wails3 task package` which runs the `package` task in the
 
 @end
 
+The stock build tasks read `GOOS`, `ARCH` and `DEV`; `PLATFORM` and `CONFIG` in a custom task below are user-defined examples.
+
 ### `task`
 
 Runs tasks defined in your project's Taskfile.yml. This is an embedded version of [Taskfile](https://taskfile.dev) that allows you to define and run custom build, test, and deployment tasks.
@@ -160,7 +177,7 @@ wails3 task [taskname] [CLI variables...] [flags]
 You can pass variables to tasks in the format `KEY=VALUE`:
 
 ```bash
-wails3 task build PLATFORM=linux CONFIG=production
+wails3 task build GOOS=linux
 wails3 task deploy ENV=staging VERSION=1.2.3
 ```
 
@@ -210,7 +227,7 @@ wails3 task
 wails3 task test
 
 # Run a task with variables
-wails3 task build PLATFORM=windows ARCH=amd64
+wails3 task build GOOS=windows ARCH=amd64
 
 # List all available tasks
 wails3 task --list
@@ -326,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | Input PNG file | Required |
 | `-windowsfilename` | Windows output filename |  |
 | `-macfilename` | macOS output filename |  |
-| `-sizes` | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-sizes` | Icon sizes from 1 to 256 pixels (comma-separated; zeros ignored) | `256,128,64,48,32,16` |
 | `-example` | Generate example icon | `false` |
 | `-iconcomposerinput` | Input Icon Composer file (`.icon`) |  |
 | `-macassetdir` | Output directory for Mac assets (Assets.car + icns) |  |
+
+At least one nonzero size is required.
 
 #### Icon Composer (macOS)
 
@@ -395,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Generates the pre-built version of the runtime.
+Exports the pre-built runtime embedded in the CLI as `runtime.js` (production) and `runtime-debug.js` (debug). It works from an installed CLI without access to the Wails source tree, including builds made with `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -507,10 +527,12 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Copies files.
+Copies one source file to one destination file. Existing files are overwritten
+and keep their current permissions. New files use the source permissions, subject
+to the system umask on Unix. Parent directories must already exist.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -547,7 +569,7 @@ Example usage:
 wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
 wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
 wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
-wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
+wails3 tool version -v v3.1.0-alpha.5 -prerelease # Output: v3.1.0-alpha.6
 ```
 
 ### `tool package`

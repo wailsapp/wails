@@ -6,11 +6,11 @@ echo "======================================================"
 # Save current directory
 ORIGINAL_DIR=$(pwd)
 
-# Go to v3 root (where UNRELEASED_CHANGELOG.md should be)
+# Go to v3 root (where release_changelog.md should be)
 cd ../..
 
-# Create a test UNRELEASED_CHANGELOG.md
-cat > UNRELEASED_CHANGELOG.md << 'EOF'
+# Create a test release_changelog.md
+cat > release_changelog.md << 'EOF'
 # Unreleased Changes
 
 <!-- 
@@ -106,9 +106,9 @@ fi
 cd ../..
 rm -f release_notes.md
 
-# Restore original UNRELEASED_CHANGELOG.md if it exists
-if [ -f "UNRELEASED_CHANGELOG.md.backup" ]; then
-    mv UNRELEASED_CHANGELOG.md.backup UNRELEASED_CHANGELOG.md
+# Restore original release_changelog.md if it exists
+if [ -f "release_changelog.md.backup" ]; then
+    mv release_changelog.md.backup release_changelog.md
 fi
 
 cd "$ORIGINAL_DIR"

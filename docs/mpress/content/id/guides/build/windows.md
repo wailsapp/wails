@@ -1,6 +1,6 @@
 ---
 title: "Pemaketan Windows"
-description: "Paketkan aplikasi Wails Anda untuk didistribusikan di Windows"
+description: "Kemas aplikasi Wails Anda untuk didistribusikan di Windows"
 slug: "guides/build/windows"
 sourcePath: "guides/build/windows.md"
 ---
@@ -13,17 +13,17 @@ Format pemaketan default membuat penginstal NSIS:
 wails3 package GOOS=windows
 ```
 
-Ini menjalankan `wails3 task windows:package`, yang:
+Perintah ini menjalankan `wails3 task windows:package`, yang:
 
-1. Membangun aplikasi
-2. Menghasilkan bootstrapper WebView2
+1. Mem-build aplikasi
+2. Membuat bootstrapper WebView2
 3. Membuat penginstal NSIS
 
-Keluaran: `build/windows/nsis/<AppName>-installer.exe`
+Keluaran: `bin/<AppName>-<arch>-installer.exe`. Skrip sumber NSIS tetap berada di `build/windows/nsis/`.
 
 ### Paket MSIX
 
-Untuk distribusi melalui Microsoft Store atau deployment Windows modern:
+Untuk distribusi melalui Microsoft Store atau penerapan Windows modern:
 
 ```bash
 wails3 package GOOS=windows FORMAT=msix
@@ -32,17 +32,17 @@ wails3 package GOOS=windows FORMAT=msix
 Keluaran: `bin/<AppName>-<arch>.msix`
 
 @note{type="note"}
-MSIX memerlukan `makeappx.exe` (Windows SDK) atau perangkat MSIX mandiri. Taskfile Windows menyediakan tugas penginstalan sebagai `wails3 task install:msix:tools`.
+MSIX memerlukan `makeappx.exe` (Windows SDK) atau alat MSIX mandiri. Taskfile Windows menyediakan tugas instalasi sebagai `wails3 task install:msix:tools`.
 
 @end
 
 ## Menyesuaikan Penginstal
 
-Konfigurasi NSIS terdapat di `build/windows/nsis/project.nsi`. Edit file ini untuk menyesuaikan:
+Konfigurasi NSIS berada di `build/windows/nsis/project.nsi`. Edit file ini untuk menyesuaikan:
 
-- Antarmuka pengguna dan branding penginstal
-- Direktori penginstalan
-- Pintasan menu Mulai dan desktop
+- Antarmuka pengguna dan pencitraan merek penginstal
+- Direktori instalasi
+- Pintasan menu Start dan desktop
 - Asosiasi file
 - Perjanjian lisensi
 
@@ -54,7 +54,7 @@ Metadata aplikasi berasal dari `build/windows/info.json`:
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -90,12 +90,12 @@ vars:
 Simpan kata sandi sertifikat Anda dengan aman:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
-Lihat [Menandatangani Aplikasi](/guides/build/signing/) untuk detailnya.
+Lihat [Menandatangani Aplikasi](/guides/build/signing/) untuk detail selengkapnya.
 
-## Membangun untuk ARM
+## Mem-build untuk ARM
 
 ```bash
 wails3 build GOOS=windows GOARCH=arm64
@@ -121,4 +121,4 @@ File executable Anda belum ditandatangani. Lihat [Penandatanganan Kode](#penanda
 
 ### WebView2 tidak ditemukan
 
-Penginstal menyertakan bootstrapper WebView2 yang mengunduh runtime jika diperlukan. Jika Anda memerlukan penginstalan offline, unduh Evergreen Standalone Installer dari Microsoft.
+Penginstal menyertakan bootstrapper WebView2 yang mengunduh runtime jika diperlukan. Jika Anda memerlukan instalasi offline, unduh Evergreen Standalone Installer dari Microsoft.

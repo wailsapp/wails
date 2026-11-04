@@ -1,1137 +1,1114 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "2fe8f9de33a7ad45a694",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "46116fc9eb138a9196eb",
   "sourceFile": "contributing/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
   "segments": {
-    "a0002-title-01": {
-      "sourceHash": "afe7d0c6210e7cfd254b1ec3c867917e129db04ae815db8e8258aefac0cf31d5",
-      "targetHash": "5aef6d970e75ecde7d80931aece3935c54331b80672859abe32775ae999bd64f",
-      "machineHash": "5aef6d970e75ecde7d80931aece3935c54331b80672859abe32775ae999bd64f",
-      "machineText": "◆ GitHub-Repository",
-      "status": "final",
-      "sourcePreview": "◆ GitHub Repository",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
-    },
-    "a0003-title-01": {
-      "sourceHash": "f724918091e1c58cc2e9814990656f181abbf4e1bf28dfc761950b452a630946",
-      "targetHash": "d006ad364da3f05d0ef3a88565a759c935ac510a69a43dbd99e9e118a0979f82",
-      "machineHash": "d006ad364da3f05d0ef3a88565a759c935ac510a69a43dbd99e9e118a0979f82",
-      "machineText": "◆ Discord-Community",
-      "status": "final",
-      "sourcePreview": "◆ Discord Community",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
-    },
-    "a0004-title-01": {
-      "sourceHash": "cd6b799bdccfb257f6f2ecadac72c8a32bb99289a908f85f03119129c4833c12",
-      "targetHash": "fdea6e5044467442719d63f3e726fbdce1671adbf89950cfba31fc984b1d86fa",
-      "machineHash": "fdea6e5044467442719d63f3e726fbdce1671adbf89950cfba31fc984b1d86fa",
-      "machineText": "📖 Dokumentation",
-      "status": "final",
-      "sourcePreview": "📖 Documentation",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
-    },
     "b0001-heading-01": {
       "sourceHash": "def334750bae3475b0cdd26c71662be12620ce2fbb1add8464685f92d4e11524",
       "targetHash": "c11b6ccecd24f74d6ac6b0b233fb775813693fd721783e108b3ad08f2ec3529f",
       "machineHash": "c11b6ccecd24f74d6ac6b0b233fb775813693fd721783e108b3ad08f2ec3529f",
       "machineText": "Willkommen, Mitwirkende!",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Welcome Contributors!",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0002-text-01": {
       "sourceHash": "18d6388468d107173130ac11741d3601e2dc662021715fbfbae43f935703709d",
-      "targetHash": "620a94d70a0868a4b25e7459c6ad2131f57e33f33dcf1b0d13ab042ae64012fd",
-      "machineHash": "620a94d70a0868a4b25e7459c6ad2131f57e33f33dcf1b0d13ab042ae64012fd",
-      "machineText": "Wir freuen uns über Beiträge zu Wails! Ob Sie Fehler beheben, Funktionen hinzufügen oder die Dokumentation verbessern – Ihre Hilfe ist willkommen.",
-      "status": "final",
+      "targetHash": "3000b0f9966d306c59e7aded3d816fba26e03a46d0bf63ea966c841132d17ff6",
+      "machineHash": "3000b0f9966d306c59e7aded3d816fba26e03a46d0bf63ea966c841132d17ff6",
+      "machineText": "Wir freuen uns über Beiträge zu Wails! Ob du Fehler behebst, Funktionen hinzufügst oder die Dokumentation verbesserst – deine Hilfe ist willkommen.",
+      "status": "machine-translated",
       "sourcePreview": "We welcome contributions to Wails! Whether you're fixing bugs, adding features, or improving documen…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0003-heading-01": {
       "sourceHash": "da8acb7235fa07d39e62a2fb51232c8001a8a7705abb8763bd0a24692493a544",
       "targetHash": "1e92a8f99a3bbdab88429de65601dbb296b3d341fbd0f89e63eb177736d163d8",
       "machineHash": "1e92a8f99a3bbdab88429de65601dbb296b3d341fbd0f89e63eb177736d163d8",
       "machineText": "Möglichkeiten zur Mitwirkung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Ways to Contribute",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0004-heading-01": {
       "sourceHash": "5d9a91892f922b379614d933b23e81ad26569789c068549b4dc11a4ff73f08f5",
       "targetHash": "0012c230f79885a6895bca9310f341f3c435572406c6ab85e6c05b3b3425cf85",
       "machineHash": "0012c230f79885a6895bca9310f341f3c435572406c6ab85e6c05b3b3425cf85",
       "machineText": "1. Probleme melden",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "1. Report Issues",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0005-text-01": {
       "sourceHash": "154e8a06521e615a1c118846e0001042bd7902054ef55378b49906482a9d2b75",
-      "targetHash": "f6ea3b2e51960cb10fe7181aa028f00d33156aa708409b73571cede8544f6784",
-      "machineHash": "f6ea3b2e51960cb10fe7181aa028f00d33156aa708409b73571cede8544f6784",
-      "machineText": "Einen Fehler gefunden? [Erstellen Sie einen Issue](https://github.com/wailsapp/wails/issues/new) mit folgenden Angaben:",
-      "status": "final",
+      "targetHash": "706393767040217c4253194bc1b63baad68af24c3d0de6fd452a83ca062aa41c",
+      "machineHash": "706393767040217c4253194bc1b63baad68af24c3d0de6fd452a83ca062aa41c",
+      "machineText": "Du hast einen Fehler gefunden? [Erstelle ein Issue](https://github.com/wailsapp/wails/issues/new) mit folgenden Angaben:",
+      "status": "machine-translated",
       "sourcePreview": "Found a bug? [Open an issue](https://github.com/wailsapp/wails/issues/new) with:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0006-text-01": {
       "sourceHash": "3afcede8ab726f6b48d0ecb5f953a42da1bb2464eb8c9ce9015d1256d47f00dc",
       "targetHash": "cea65a9f663fe8c5d098530e3488857cfb413401afe5b4c271b31874a14feccc",
       "machineHash": "cea65a9f663fe8c5d098530e3488857cfb413401afe5b4c271b31874a14feccc",
       "machineText": "Klare Beschreibung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Clear description",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0007-text-01": {
       "sourceHash": "99dc3ff99df0e3169c705eb00cd99b210f876e4492e781106bf70ab17f4e2e18",
       "targetHash": "3c46edfbd1ebd6b5888ec4f8004d7f3b7c3d07a7a83cb234bd70fc8229a5e23d",
       "machineHash": "3c46edfbd1ebd6b5888ec4f8004d7f3b7c3d07a7a83cb234bd70fc8229a5e23d",
       "machineText": "Schritte zum Reproduzieren",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Steps to reproduce",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0008-text-01": {
       "sourceHash": "86b76a8cba8b054074a1ad6963d822fd857c5f52f9fe3469fee0942a8fa60322",
       "targetHash": "88a7b3bf0f162cede4fec5a26f43445e63bcfee55996a7d527d033ffc98ecaa3",
       "machineHash": "88a7b3bf0f162cede4fec5a26f43445e63bcfee55996a7d527d033ffc98ecaa3",
       "machineText": "Erwartetes und tatsächliches Verhalten",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Expected vs actual behaviour",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0009-text-01": {
       "sourceHash": "b120922cdf69ede3a79e12d827e030ee15053cbf5c9522180b7a4638447f6f11",
       "targetHash": "d3230dab2854d5ba0f73d3c621bcf9aff4ee193a0192d0face3fd106592ec327",
       "machineHash": "d3230dab2854d5ba0f73d3c621bcf9aff4ee193a0192d0face3fd106592ec327",
       "machineText": "Systeminformationen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "System information",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0010-text-01": {
       "sourceHash": "c338a6fe01b24df983b7d5f61921eccad07eed495914c266301d4cfebae60202",
       "targetHash": "4197c4abe96ccd8dcb8714a5e9de0ed36d0ce9810a34aabf89591cc3980e0f17",
       "machineHash": "4197c4abe96ccd8dcb8714a5e9de0ed36d0ce9810a34aabf89591cc3980e0f17",
       "machineText": "Codebeispiele",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Code samples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0011-heading-01": {
       "sourceHash": "1b2749603dc4988d85f5738f78f34436369dd4df74f82420d42431ac0ef578eb",
       "targetHash": "2972d1f8ad7020d58235ce8682dcbbebf1da87932bc544802c166e53e584bdd7",
       "machineHash": "2972d1f8ad7020d58235ce8682dcbbebf1da87932bc544802c166e53e584bdd7",
       "machineText": "2. Dokumentation verbessern",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "2. Improve Documentation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0012-text-01": {
-      "sourceHash": "14b8779bcf4b0875b713ef3ff2a559cb2070896fb7b32d730860a150d0010e2c",
-      "targetHash": "046a06d2097642b49789015597d1cf1b04030783fd9ece798e87cb4e100cfb1e",
-      "machineHash": "046a06d2097642b49789015597d1cf1b04030783fd9ece798e87cb4e100cfb1e",
-      "machineText": "PRs mit Korrekturen sind auch ohne vorherigen Issue oder fehlgeschlagenen Codetest willkommen.\nFolgen Sie der Anleitung [Dokumentation korrigieren](/contributing/documentation/), um eine Änderung mit M-Press in der Vorschau anzuzeigen und zu validieren.",
-      "status": "final",
-      "sourcePreview": "Correction PRs are welcome without a prior issue or a failing code test. Follow [Correct the documen…",
+      "sourceHash": "263e0d2c0563b6bb474d40a04e16e841d8eb607c7883754fcbc4d0216f0d55a8",
+      "targetHash": "36eb49dc2deab136fbc9c778f8937303bf8045b2bebc5fb0a39e6ba369752ab5",
+      "machineHash": "36eb49dc2deab136fbc9c778f8937303bf8045b2bebc5fb0a39e6ba369752ab5",
+      "machineText": "Korrektur-PRs sind auch ohne vorheriges Issue oder fehlgeschlagenen Codetest willkommen.  \nInformationen zu Downloads, zur Installation unter macOS/Linux/Windows, zur Live-Vorschau und zum Einreichen deiner Änderung findest du unter [Dokumentation mit M-Press schreiben](/contributing/documentation/).",
+      "status": "machine-translated",
+      "sourcePreview": "Correction PRs are welcome without a prior issue or a failing code test. Follow [Write documentation…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0013-text-01": {
       "sourceHash": "366469a9d2a69fab3e0259afb1acb6bc32a2c558b72c61d04c0488571dd2539b",
-      "targetHash": "12ff08b1753ff46f432324afd66239f0d1bb6a6e1effad96b783d83986b7980d",
-      "machineHash": "12ff08b1753ff46f432324afd66239f0d1bb6a6e1effad96b783d83986b7980d",
-      "machineText": "Verbesserungen der Dokumentation sind jederzeit willkommen:",
-      "status": "final",
+      "targetHash": "b783c76c11f5675c581d04f69935ba689b442c294dda39679021f04c4c0a7b82",
+      "machineHash": "b783c76c11f5675c581d04f69935ba689b442c294dda39679021f04c4c0a7b82",
+      "machineText": "Verbesserungen an der Dokumentation sind jederzeit willkommen:",
+      "status": "machine-translated",
       "sourcePreview": "Documentation improvements are always welcome:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0014-text-01": {
       "sourceHash": "e2a125f88b0bbd07b768b721ca27a93658bb3021fbfadc9b1cd1ff91ef96ddab",
       "targetHash": "18111d2bd871093060c4ffbd79f0491f82587e6bb698dbb1fc221194224103d8",
       "machineHash": "18111d2bd871093060c4ffbd79f0491f82587e6bb698dbb1fc221194224103d8",
       "machineText": "Tippfehler und Fehler beheben",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Fix typos and errors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0015-text-01": {
       "sourceHash": "a6d718a3066b128b98cbf77561e56a74986e143f86f109d0be26eb91d7e2c632",
       "targetHash": "7307f39c29f32498f55f7290b82caedb5c94cd3c18fbdb7cc4856254f10cbad9",
       "machineHash": "7307f39c29f32498f55f7290b82caedb5c94cd3c18fbdb7cc4856254f10cbad9",
       "machineText": "Beispiele hinzufügen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add examples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0016-text-01": {
       "sourceHash": "676088c297dadea57cb04c10c695a146ab3c94c03e5fcee7544b36ed008e262a",
-      "targetHash": "1c151bdbd557e878501079e55eb88f77b253cf471e0c761a44eb5512d7cbccfd",
-      "machineHash": "1c151bdbd557e878501079e55eb88f77b253cf471e0c761a44eb5512d7cbccfd",
-      "machineText": "Erklärungen verdeutlichen",
-      "status": "final",
+      "targetHash": "38d7f116f5085ea202054201e9c2799056c024f05cd92cf7d080b7b6788fb1a5",
+      "machineHash": "38d7f116f5085ea202054201e9c2799056c024f05cd92cf7d080b7b6788fb1a5",
+      "machineText": "Erklärungen präzisieren",
+      "status": "machine-translated",
       "sourcePreview": "Clarify explanations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0017-text-01": {
       "sourceHash": "b437495654095ad731b4f7ea4caa90413900a90397d68e633b32f9c8246c1914",
       "targetHash": "341d11f24b928e5d3dddde151b3bd3d59644304986c19d4ef2528a9fd0f88bfc",
       "machineHash": "341d11f24b928e5d3dddde151b3bd3d59644304986c19d4ef2528a9fd0f88bfc",
       "machineText": "Inhalte übersetzen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Translate content",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0018-heading-01": {
       "sourceHash": "c98fdbb6df4ec65208b8afd2efca5d77ffd3839a5bb2cf3474a4e07a48600253",
-      "targetHash": "19b1dff79f9b59b357afa33a4f3484793f0c34cb2d33ab0d13b8b60d5a212c2c",
-      "machineHash": "19b1dff79f9b59b357afa33a4f3484793f0c34cb2d33ab0d13b8b60d5a212c2c",
-      "machineText": "3. Code beitragen",
-      "status": "final",
+      "targetHash": "973a6936ed74035927c7750481ed7fba8352aca0c43f76ab2ccbb2699556fd66",
+      "machineHash": "973a6936ed74035927c7750481ed7fba8352aca0c43f76ab2ccbb2699556fd66",
+      "machineText": "3. Code einreichen",
+      "status": "machine-translated",
       "sourcePreview": "3. Submit Code",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0019-text-01": {
       "sourceHash": "598ab3a84ede27890fb19b2e57efcd833298a028e2a4b433deaf04cbefa6b1cf",
-      "targetHash": "17c6f4d3adf21f70a3aadc11b4a7e808b737b102a9933a40071a2f71305ae8d7",
-      "machineHash": "17c6f4d3adf21f70a3aadc11b4a7e808b737b102a9933a40071a2f71305ae8d7",
-      "machineText": "Tragen Sie Code über Pull Requests bei:",
-      "status": "final",
+      "targetHash": "838e5ce88a228235884b6ca3ef5228901f79520ef933ec8d6a15e65ad5e0eac4",
+      "machineHash": "838e5ce88a228235884b6ca3ef5228901f79520ef933ec8d6a15e65ad5e0eac4",
+      "machineText": "Reiche Code über Pull Requests ein:",
+      "status": "machine-translated",
       "sourcePreview": "Contribute code through pull requests:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0020-text-01": {
       "sourceHash": "263a2d6d2c735e8001613f11f20b319420cb22605419390ba62f32ecf0001eac",
       "targetHash": "49a2bddfb6f3681d6288d0986948828034d11aa244a847cc8f4b5e24eaa28808",
       "machineHash": "49a2bddfb6f3681d6288d0986948828034d11aa244a847cc8f4b5e24eaa28808",
       "machineText": "Fehlerbehebungen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Bug fixes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0021-text-01": {
       "sourceHash": "77c26dac9096fb7b7d616645201d8c86e117d0ba96554e634da4711d390e9377",
       "targetHash": "fca282d5bc2a658e51996cf5505d1bb1ff10c75b82f012360af0687c24993684",
       "machineHash": "fca282d5bc2a658e51996cf5505d1bb1ff10c75b82f012360af0687c24993684",
       "machineText": "Neue Funktionen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "New features",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0022-text-01": {
       "sourceHash": "dee24bc03c17b46507a760b4cc3dff81411a7d966f65fabfbcfd3d4fada6067d",
       "targetHash": "5c1a00dcea2cb8f28feea9ed3060508fdfbb5d1decfae1a24f9afec57b85949c",
       "machineHash": "5c1a00dcea2cb8f28feea9ed3060508fdfbb5d1decfae1a24f9afec57b85949c",
       "machineText": "Leistungsverbesserungen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Performance improvements",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0023-text-01": {
       "sourceHash": "e5c9d7030bada2fe792ad7e4a26ca44379a73f3fe16805ac1359e46759a1571a",
       "targetHash": "e5c9d7030bada2fe792ad7e4a26ca44379a73f3fe16805ac1359e46759a1571a",
       "machineHash": "e5c9d7030bada2fe792ad7e4a26ca44379a73f3fe16805ac1359e46759a1571a",
       "machineText": "Tests",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Tests",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0024-heading-01": {
       "sourceHash": "402f98d3d42687dcc997cae04f4c73f6bb4a492f6c0c2b1551f502cd2d7700a8",
-      "targetHash": "885424ea9d01e968012f32a60aba2e93ce7cfd1d007ebd9ad3f3f600777e14d1",
-      "machineHash": "885424ea9d01e968012f32a60aba2e93ce7cfd1d007ebd9ad3f3f600777e14d1",
-      "machineText": "4. Verbesserung vorschlagen (WEP)",
-      "status": "final",
+      "targetHash": "af5fe17cfcd954abf726b6901206d1bf9c880bd7eaa6a17d8246a23abefe7792",
+      "machineHash": "af5fe17cfcd954abf726b6901206d1bf9c880bd7eaa6a17d8246a23abefe7792",
+      "machineText": "4. Eine Erweiterung vorschlagen (WEP)",
+      "status": "machine-translated",
       "sourcePreview": "4. Propose an Enhancement (WEP)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0025-text-01": {
       "sourceHash": "c3fd98cc74b4c9443e7d414620ff621cf569bab4ae0e2c13fa0112138138bf68",
-      "targetHash": "d8fcd256c43ab3a5855b30cb8b2b02a565fce6eeaf91e01cc3466a707afbbed9",
-      "machineHash": "d8fcd256c43ab3a5855b30cb8b2b02a565fce6eeaf91e01cc3466a707afbbed9",
-      "machineText": "Neue Funktionen und Änderungen am öffentlichen Verhalten durchlaufen den Prozess für Wails Enhancement Proposals (WEP). Er hält die Funktionsentwicklung transparent und stellt sicher, dass es für jeden angenommenen Vorschlag eine für die Implementierung zuständige Person gibt. Erstellen Sie keinen Issue für einen Funktionswunsch.",
-      "status": "final",
+      "targetHash": "509acbbcdbdead0c8aadb776f8a30730d37f4c9513f917664f2fab10f07d4850",
+      "machineHash": "509acbbcdbdead0c8aadb776f8a30730d37f4c9513f917664f2fab10f07d4850",
+      "machineText": "Für neue Funktionen und Änderungen am öffentlichen Verhalten gilt der Prozess für Wails Enhancement Proposals (WEPs). Er macht die Funktionsentwicklung transparent und stellt sicher, dass jeder angenommene Vorschlag von jemandem implementiert wird. Erstelle kein Issue für einen Funktionswunsch.",
+      "status": "machine-translated",
       "sourcePreview": "New functionality and changes to public behaviour use the Wails Enhancement Proposal (WEP) process. …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0026-text-01": {
       "sourceHash": "f07b08c1b5b17042c2d4aecd301e2d4680ad3d36b47ea9030234bfb65fd98122",
-      "targetHash": "3994c4f5ae59cd3025b4a1ad218433be69fe0211b4f8c3577c716d3002fabfdb",
-      "machineHash": "3994c4f5ae59cd3025b4a1ad218433be69fe0211b4f8c3577c716d3002fabfdb",
-      "machineText": "Optional können Sie Ihre Idee in der Kategorie [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) der GitHub Discussions oder auf [Discord](https://discord.gg/JDdSxwjhGf) vorstellen, um das Interesse auszuloten.",
-      "status": "final",
+      "targetHash": "ed706e2e172051da885fe631ec6ad9492f33b604febd5db38ddad1ecbfc53938",
+      "machineHash": "ed706e2e172051da885fe631ec6ad9492f33b604febd5db38ddad1ecbfc53938",
+      "machineText": "Du kannst deine Idee optional in der Kategorie [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) in GitHub Discussions oder auf [Discord](https://discord.gg/JDdSxwjhGf) vorstellen, um das Interesse daran einzuschätzen.",
+      "status": "machine-translated",
       "sourcePreview": "Optionally float your idea in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0027-text-01": {
-      "sourceHash": "a91da38322c5b2fbad419d7cd34a5ba4b6f9a3c6b71ec166f59e57e3ff0b25a5",
-      "targetHash": "b5969706959948f88d6384ba75bfa75286eba67403d7899549522d7a24852405",
-      "machineHash": "b5969706959948f88d6384ba75bfa75286eba67403d7899549522d7a24852405",
-      "machineText": "Kopieren Sie [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) nach `v3/wep/proposals/\u003cproposal name\u003e/proposal.md` und füllen Sie jeden Abschnitt aus.",
-      "status": "final",
-      "sourcePreview": "Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md…",
+      "sourceHash": "9b91e520eea1c83710e626752e8ab8190718ce1c7ce04eb5af48c73dd146768a",
+      "targetHash": "b7271915b55739ef220b07a5fad9161c27b46d6ce9cbbacb62d429b33466da6b",
+      "machineHash": "b7271915b55739ef220b07a5fad9161c27b46d6ce9cbbacb62d429b33466da6b",
+      "machineText": "Kopiere [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) nach `v3/wep/proposals/\u003cproposal name\u003e/proposal.md` und fülle jeden Abschnitt aus.",
+      "status": "machine-translated",
+      "sourcePreview": "Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TE…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0028-text-01": {
       "sourceHash": "431b794cfd088b4de5d716a8c98fd3e4fbf833c86fa0767c4fdb20c1e12ad1c4",
-      "targetHash": "ba7fc1d7d6a859205a8392f2da353bb8592ce228158a481dbe21080b071fe343",
-      "machineHash": "ba7fc1d7d6a859205a8392f2da353bb8592ce228158a481dbe21080b071fe343",
-      "machineText": "Erstellen Sie einen als Entwurf markierten Pull Request mit dem Titel `[WEP] \u003ctitle\u003e`, der ausschließlich den Vorschlag enthält. Der PR ist der offizielle Ort für dessen Diskussion.",
-      "status": "final",
+      "targetHash": "337223d124852ff11c41c065b281afa079ac891c220dce4180f7ce64218c2af2",
+      "machineHash": "337223d124852ff11c41c065b281afa079ac891c220dce4180f7ce64218c2af2",
+      "machineText": "Erstelle einen als Entwurf markierten Pull Request mit dem Titel `[WEP] \u003ctitle\u003e`, der ausschließlich den Vorschlag enthält. Der PR ist der offizielle Ort für dessen Diskussion.",
+      "status": "machine-translated",
       "sourcePreview": "Open a draft pull request titled `[WEP] \u003ctitle\u003e` containing only the proposal. The PR is the officia…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0029-text-01": {
       "sourceHash": "5aaedd82fb2370022bc489bab4d9a6cfd0ab2d5594ea4b8278d3e5ee48ce3a64",
-      "targetHash": "5043b84e41ddf5655a78def68bcf091fa3c92111b12e184b984787f13a5883e7",
-      "machineHash": "5043b84e41ddf5655a78def68bcf091fa3c92111b12e184b984787f13a5883e7",
-      "machineText": "Holen Sie Feedback und Unterstützung ein (Kommentare und „Daumen hoch“-Reaktionen im PR). Planen Sie mindestens zwei Wochen für die Diskussion ein und einigen Sie sich darauf, wer den Vorschlag implementiert.",
-      "status": "final",
+      "targetHash": "00a62ad74f9c679e16a657232702ac92bf3249123276e39765b68f1b28a573d8",
+      "machineHash": "00a62ad74f9c679e16a657232702ac92bf3249123276e39765b68f1b28a573d8",
+      "machineText": "Hole Feedback und Unterstützung ein (Kommentare und „Daumen hoch“-Reaktionen im PR). Plane mindestens zwei Wochen für die Diskussion ein und einigt euch darauf, wer den Vorschlag implementiert.",
+      "status": "machine-translated",
       "sourcePreview": "Gather feedback and support (comments and thumbs-up reactions on the PR). Allow at least two weeks f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0030-text-01": {
       "sourceHash": "3fe3b1ce7afbc73d0c0405d853ec05c21816b1edb9e73d44dceb4f898acedfd6",
-      "targetHash": "b696013630ceca13d6fecc89dbeee7d2dfc141394f8a460c000a138716d9d15c",
-      "machineHash": "b696013630ceca13d6fecc89dbeee7d2dfc141394f8a460c000a138716d9d15c",
-      "machineText": "Markieren Sie den PR als bereit zur Überprüfung. Die Maintainer treffen die endgültige Entscheidung: Angenommene Vorschläge erhalten eine WEP-Nummer und werden zusammengeführt.",
-      "status": "final",
+      "targetHash": "e79cf6ed32f6138acda5d87325729ee37e88b7c78d49a4005af2a1d2fe992010",
+      "machineHash": "e79cf6ed32f6138acda5d87325729ee37e88b7c78d49a4005af2a1d2fe992010",
+      "machineText": "Markiere den PR als bereit zur Überprüfung. Die Maintainer treffen die endgültige Entscheidung: Angenommene Vorschläge erhalten eine WEP-Nummer und werden zusammengeführt.",
+      "status": "machine-translated",
       "sourcePreview": "Mark the PR ready for review. The maintainers make the final decision: accepted proposals are assign…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0031-text-01": {
-      "sourceHash": "196c52d96853f594194569ea24d80c6307f705c32adf6c5f13b5833e697167d7",
-      "targetHash": "7e8f2ec1750eb77d5a4b6560da42533f8bbf2cf9e6229cc9d1182dfdecdf5eef",
-      "machineHash": "7e8f2ec1750eb77d5a4b6560da42533f8bbf2cf9e6229cc9d1182dfdecdf5eef",
-      "machineText": "Der vollständige Prozess ist in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) dokumentiert.",
-      "status": "final",
-      "sourcePreview": "The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master…",
+      "sourceHash": "f7b1f8fe5caa60e12c9a39002eea12627ea180898361db349ee0ae49b131e94d",
+      "targetHash": "a42880de8f08a89c97b516126d83ff08ecd0f17bab8553b417ab0c6a6fe672ed",
+      "machineHash": "a42880de8f08a89c97b516126d83ff08ecd0f17bab8553b417ab0c6a6fe672ed",
+      "machineText": "Der vollständige Prozess ist in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) dokumentiert.",
+      "status": "machine-translated",
+      "sourcePreview": "The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releas…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0032-heading-01": {
       "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
       "targetHash": "232c9caabcc362e9aed69a156811652b2a3bb01652709d6f9b5071c649ce2006",
       "machineHash": "232c9caabcc362e9aed69a156811652b2a3bb01652709d6f9b5071c649ce2006",
       "machineText": "Erste Schritte",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Getting Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0033-heading-01": {
       "sourceHash": "e0599f553b7d048594198b7bdcd6c0a9909272945966c2ea30c13dc7d38730c7",
       "targetHash": "febc636fc28408769533325b46d539e0e291ab77b400aecb29bb83fa7c81a626",
       "machineHash": "febc636fc28408769533325b46d539e0e291ab77b400aecb29bb83fa7c81a626",
       "machineText": "Fork erstellen und klonen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Fork and Clone",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0034-heading-01": {
       "sourceHash": "176bee11b8262886d0f3a361e49425df465f8793fcc1c16533fcac9589e1b4a9",
       "targetHash": "0b213ad0688746c626e1e85a708384641e7b885ce9cddc818092cd164048db4d",
       "machineHash": "0b213ad0688746c626e1e85a708384641e7b885ce9cddc818092cd164048db4d",
       "machineText": "Aus dem Quellcode erstellen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build from Source",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0035-heading-01": {
       "sourceHash": "8cbbac76c84a2410d3bdbfbbbc9a8fbb9fac1f8e4b4b3447fe94d0eedcdc87f9",
       "targetHash": "2565272e9b14c0e551c46f1f1ccf94c1a316fbfe8868b189df501a96ceeb7200",
       "machineHash": "2565272e9b14c0e551c46f1f1ccf94c1a316fbfe8868b189df501a96ceeb7200",
       "machineText": "Tests ausführen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run Tests",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0036-text-01": {
-      "sourceHash": "a13a52157f1bc98f5a28c92e4b1f3f87ce7a7a5a55ebaad57252f79212889527",
-      "targetHash": "56ec7a77a92648c1efff1573ed33b4d15aac51c9b0b40be54a5238cd350d9e3a",
-      "machineHash": "56ec7a77a92648c1efff1573ed33b4d15aac51c9b0b40be54a5238cd350d9e3a",
-      "machineText": "Tests sind Bestandteil der Änderung und keine abschließende oberflächliche Prüfung. Platzieren Sie Unit-Tests neben dem Code, den sie prüfen, und verwenden Sie bevorzugt tabellengesteuerte Tests, wenn ein Verhalten mit mehreren Eingaben oder Grenzfällen geprüft wird. Benennen Sie jeden Testfall so, dass bei einem Fehlschlag das Szenario erkennbar ist.",
-      "status": "final",
-      "sourcePreview": "Tests are part of the change, not a final smoke check. Keep unit tests next to\\ the code they exerci…",
+      "sourceHash": "e9d93851b51072e22e1666903f3c1b5b4ec309f3e25a18634074eec8abe905ca",
+      "targetHash": "09a2f7974f176a9fc3f7dcb8bf7a6809316b8c74b476f9fb3bf6aafd08e5178b",
+      "machineHash": "09a2f7974f176a9fc3f7dcb8bf7a6809316b8c74b476f9fb3bf6aafd08e5178b",
+      "machineText": "Tests sind Bestandteil der Änderung und keine abschließende oberflächliche Prüfung. Platziere Unit-Tests neben dem getesteten Code und bevorzuge tabellengesteuerte Tests, wenn ein Verhalten mit mehreren Eingaben oder Grenzfällen geprüft wird. Benenne jeden Testfall so, dass ein Fehlschlag das jeweilige Szenario erkennen lässt.",
+      "status": "machine-translated",
+      "sourcePreview": "Tests are part of the change, not a final smoke check. Keep unit tests next to the code they exercis…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0037-text-01": {
-      "sourceHash": "7ab71f5d91165d2790635a5721dbedac1ba75f404238258279574184f06823b1",
-      "targetHash": "7f4929f453e47b1236f61676dd9f151b508f2f9cb5100360a4f124ecbf7d7f2b",
-      "machineHash": "7f4929f453e47b1236f61676dd9f151b508f2f9cb5100360a4f124ecbf7d7f2b",
-      "machineText": "Neue und geänderte Logik sollte vollständig abgedeckt sein. Streben Sie für den durch Ihren PR hinzugefügten oder geänderten Code eine Go-Anweisungsabdeckung von 100 % an; betrachten Sie einen prozentualen Wert für das gesamte Repository nicht als Ersatz für das Testen der Änderung. Eine Lücke kann gerechtfertigt sein – beispielsweise bei einem nur unter einem bestimmten Betriebssystem auftretenden Fehlerpfad oder einer Bedingung, die sich ohne echte Hardware nicht praktikabel reproduzieren lässt. Erläutern Sie in der PR-Beschreibung jedoch die Lücke und warum sie sich nicht mit vertretbarem Aufwand testen lässt.",
-      "status": "final",
-      "sourcePreview": "New and changed logic should be fully covered. Aim for 100% Go statement\\ coverage of the code your …",
+      "sourceHash": "dce8ce0e50c54a4c78613c23c2fbddd33c16daa7ee592a21d02d2f536103ea8b",
+      "targetHash": "f9a2b7e4564e9454e2e6f4c6a5a60357ad98023b5dc669b29da3863538e208a6",
+      "machineHash": "f9a2b7e4564e9454e2e6f4c6a5a60357ad98023b5dc669b29da3863538e208a6",
+      "machineText": "Neue und geänderte Logik sollte vollständig abgedeckt sein. Strebe für den von deinem PR hinzugefügten oder geänderten Code eine Go-Anweisungsabdeckung von 100 % an. Betrachte einen repositoryweiten Prozentsatz nicht als Ersatz für das Testen der Änderung. Eine Lücke kann gerechtfertigt sein – beispielsweise bei einem betriebssystemspezifischen Fehlerpfad oder einer Bedingung, die sich ohne echte Hardware nicht praktikabel reproduzieren lässt. Erläutere dann aber in der PR-Beschreibung die Lücke und warum sie sich nicht mit vertretbarem Aufwand testen lässt.",
+      "status": "machine-translated",
+      "sourcePreview": "New and changed logic should be fully covered. Aim for 100% Go statement coverage of the code your P…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0038-text-01": {
-      "sourceHash": "6f9a59770489bf7089750f6eeb99069bd7f43709c2e60b62b32e205c3303792f",
-      "targetHash": "5c3ea0623e95501eb971e4458f32f9505ed9a838dc69b3c6bf531e84ded1a455",
-      "machineHash": "5c3ea0623e95501eb971e4458f32f9505ed9a838dc69b3c6bf531e84ded1a455",
-      "machineText": "Informationen zu Integrations-Test-Suites, Race Detection und den vollständigen CI-äquivalenten Befehlen finden Sie unter [Tests und kontinuierliche Integration](/contributing/testing-ci/).",
-      "status": "final",
-      "sourcePreview": "For integration suites, race detection, and the full CI-equivalent commands,\\ see [Testing \u0026 Continu…",
+      "sourceHash": "d727ba4ebc04687600121d7eae759db9549ffd4479313794aaf4cd5992759a4f",
+      "targetHash": "117967b8a20a073d0a9d40d9dd7124ec9e672c8779e8b8d4952609d76ac710a6",
+      "machineHash": "117967b8a20a073d0a9d40d9dd7124ec9e672c8779e8b8d4952609d76ac710a6",
+      "machineText": "Informationen zu Integrations-Testreihen, Race Detection und den vollständigen CI-äquivalenten Befehlen findest du unter [Tests und Continuous Integration](/contributing/testing-ci/).",
+      "status": "machine-translated",
+      "sourcePreview": "For integration suites, race detection, and the full CI-equivalent commands, see [Testing \u0026 Continuo…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0039-heading-01": {
       "sourceHash": "d1a20a9a8f7f5706fb6d207a83468e6cd243d751368889b4be54102e7d91465e",
       "targetHash": "9cc3463ad3554a64bee1a591949800731eb5bde38ea08a0dad14654c3f52aaca",
       "machineHash": "9cc3463ad3554a64bee1a591949800731eb5bde38ea08a0dad14654c3f52aaca",
       "machineText": "Änderungen vornehmen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Making Changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0040-heading-01": {
       "sourceHash": "f210fa996bb553ec572b26597f6f5e76e7165419e164b3b53b1f542628b73c17",
       "targetHash": "e3af73eb50aa025e604c0c3726ec16a22972f48410dab89e643a61631bda8179",
       "machineHash": "e3af73eb50aa025e604c0c3726ec16a22972f48410dab89e643a61631bda8179",
       "machineText": "Branch erstellen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Create a Branch",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0041-heading-01": {
       "sourceHash": "d0dd77f1204fc720015c474738f64ab6eb91e4d50c88c9cc462c0022bb635e0b",
       "targetHash": "9cc3463ad3554a64bee1a591949800731eb5bde38ea08a0dad14654c3f52aaca",
       "machineHash": "9cc3463ad3554a64bee1a591949800731eb5bde38ea08a0dad14654c3f52aaca",
       "machineText": "Änderungen vornehmen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Make Your Changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0042-text-01": {
-      "sourceHash": "abc6fd2bcc9a5af0f44c6f4f04f7af36004e197b26ebd47b42714c2f828fb2a7",
-      "targetHash": "f4e48462a8a8a4cd06bc7b4e75cd3da1468b27bbeee4d085eb055e7aa4bd2600",
-      "machineHash": "f4e48462a8a8a4cd06bc7b4e75cd3da1468b27bbeee4d085eb055e7aa4bd2600",
-      "machineText": "*Code schreiben* und dabei die Go-Konventionen einhalten",
-      "status": "final",
-      "sourcePreview": "*Write code* following Go conventions",
+      "sourceHash": "1a2cb5757272d040a4c0d9bf62018335ee8e761e1370e3b4efa15e11e7fb5268",
+      "targetHash": "857d4c3f142a0bd17dec847268b683ec7e8fb09b1f0b50630bbf76453d2bd8a4",
+      "machineHash": "857d4c3f142a0bd17dec847268b683ec7e8fb09b1f0b50630bbf76453d2bd8a4",
+      "machineText": "**Schreibe Code** gemäß den Go-Konventionen",
+      "status": "machine-translated",
+      "sourcePreview": "**Write code** following Go conventions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0043-text-01": {
-      "sourceHash": "c7370500aa609277726b75bc097f98704b171a3a056161479e2cd0fc3581a1f9",
-      "targetHash": "28c441ba8b3111c7de2314e15d86b3d94c43fb054c640a27f694e45d1934e6b4",
-      "machineHash": "28c441ba8b3111c7de2314e15d86b3d94c43fb054c640a27f694e45d1934e6b4",
-      "machineText": "Für neue Funktionen *Tests hinzufügen*",
-      "status": "final",
-      "sourcePreview": "*Add tests* for new functionality",
+      "sourceHash": "085574708a8ba04fa444dd3ea71cb98d809325dfe33e5071fb8a0a7572d4d3bb",
+      "targetHash": "b0c7387b8bc82d6b1f163dcd61f7c2e3e51399ff61cb2ad0b41be9ab2740fc07",
+      "machineHash": "b0c7387b8bc82d6b1f163dcd61f7c2e3e51399ff61cb2ad0b41be9ab2740fc07",
+      "machineText": "**Füge Tests** für neue Funktionen hinzu",
+      "status": "machine-translated",
+      "sourcePreview": "**Add tests** for new functionality",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0044-text-01": {
-      "sourceHash": "a83fe00e7f9cd47a4e2d8a60d155d1a912acc675ec723bea2b2b573934e1e9bc",
-      "targetHash": "48a4a337290065e41fa1a50b9895eca4bc06e4b4e4b21076271bf61370ee4c3f",
-      "machineHash": "48a4a337290065e41fa1a50b9895eca4bc06e4b4e4b21076271bf61370ee4c3f",
-      "machineText": "Bei Bedarf die *Dokumentation aktualisieren*",
-      "status": "final",
-      "sourcePreview": "*Update documentation* if needed",
+      "sourceHash": "5640499067d4f6d551278e8d442ea32af1488f22d41abe11834ff19c289bd834",
+      "targetHash": "74e959fcffa1e1693d02d937c2d935335af05cf28d99e0cec65d61026f702072",
+      "machineHash": "74e959fcffa1e1693d02d937c2d935335af05cf28d99e0cec65d61026f702072",
+      "machineText": "**Aktualisiere bei Bedarf die Dokumentation**",
+      "status": "machine-translated",
+      "sourcePreview": "**Update documentation** if needed",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0045-text-01": {
-      "sourceHash": "c63134acd55cb932ea44b5b5091b2c6ebeed81550612f7d518a40d786a27e8e3",
-      "targetHash": "225f82c60f7ee9a414fcf640632d7cca33de073b12471770b56cc3f217d31f80",
-      "machineHash": "225f82c60f7ee9a414fcf640632d7cca33de073b12471770b56cc3f217d31f80",
-      "machineText": "*Tests ausführen*, um sicherzustellen, dass nichts beschädigt wird",
-      "status": "final",
-      "sourcePreview": "*Run tests* to ensure nothing breaks",
+      "sourceHash": "0693a9ec18f1cde55ec09a1b1b8def67295546a5aa70d9a6e3d589e759e9f729",
+      "targetHash": "dda37f3235b7ba8e51ce5735b86ea9f1c5da991c896083f71f15b8bf84da23f0",
+      "machineHash": "dda37f3235b7ba8e51ce5735b86ea9f1c5da991c896083f71f15b8bf84da23f0",
+      "machineText": "**Führe Tests aus**, um sicherzustellen, dass nichts beeinträchtigt wird",
+      "status": "machine-translated",
+      "sourcePreview": "**Run tests** to ensure nothing breaks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0046-text-01": {
-      "sourceHash": "b114cf10b97e8fa212967b0a823d39186a8dae3194f2eec7becd23ba284b4fc9",
-      "targetHash": "6369583defb376e4ae5a0e894f116259fe05bb830eae2405e235c9058c36f15c",
-      "machineHash": "6369583defb376e4ae5a0e894f116259fe05bb830eae2405e235c9058c36f15c",
-      "machineText": "*Änderungen committen* und klare Meldungen verwenden",
-      "status": "final",
-      "sourcePreview": "*Commit changes* with clear messages",
+      "sourceHash": "d7f381d38e0e0aa40e5d340b37230236dcf27e849f9b6ca522332c2c249cd002",
+      "targetHash": "36309383ec14e0929784fa264413cb9e5ced4e1f1526010710ddd6cc9fd7bb9d",
+      "machineHash": "36309383ec14e0929784fa264413cb9e5ced4e1f1526010710ddd6cc9fd7bb9d",
+      "machineText": "**Committe Änderungen** mit klaren Meldungen",
+      "status": "machine-translated",
+      "sourcePreview": "**Commit changes** with clear messages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0047-heading-01": {
       "sourceHash": "87861c2fb9093b20e54750b792eea8aac186566f6cab97e4c616687ac960bdeb",
       "targetHash": "25ef1bd851d565d0dfa2a18599bf0bf29c3b774d1c3d85961713c3169ccabc47",
       "machineHash": "25ef1bd851d565d0dfa2a18599bf0bf29c3b774d1c3d85961713c3169ccabc47",
       "machineText": "Commit-Richtlinien",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Commit Guidelines",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0048-heading-01": {
       "sourceHash": "54524810690959e5d114d572f6a840704517a99cb006caf52ca0bdd0c3151750",
       "targetHash": "e2161a4b99517c3d98ee7589d57cfba75b44e78a5f2dc0094da54fa4b749dc8f",
       "machineHash": "e2161a4b99517c3d98ee7589d57cfba75b44e78a5f2dc0094da54fa4b749dc8f",
       "machineText": "Pull Request einreichen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Submit Pull Request",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0049-heading-01": {
       "sourceHash": "4e6b52ad252428551fab8251fd1600106b20722a72a05b9d4203a3d4eae26bd7",
-      "targetHash": "4e306f5cf3ee857945ae235075abf5a0575a6f0ced0640eae5ceb161bedb4960",
-      "machineHash": "4e306f5cf3ee857945ae235075abf5a0575a6f0ced0640eae5ceb161bedb4960",
-      "machineText": "Pull-Request-Richtlinien",
-      "status": "final",
+      "targetHash": "24a52e295b756e2f6cb915f7109aa56e1324e8bf916cdf3ff9b22f4693abb4e5",
+      "machineHash": "24a52e295b756e2f6cb915f7109aa56e1324e8bf916cdf3ff9b22f4693abb4e5",
+      "machineText": "Richtlinien für Pull Requests",
+      "status": "machine-translated",
       "sourcePreview": "Pull Request Guidelines",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0050-heading-01": {
       "sourceHash": "4cf45f4ef2a5a531e1317645ab2e33f574c9c5e093dce143fecc5e761785721e",
       "targetHash": "7c80f772e144421cd35a66a2c7ad3b0e65bde5065394d4fa3ee7b7d7d00fc976",
       "machineHash": "7c80f772e144421cd35a66a2c7ad3b0e65bde5065394d4fa3ee7b7d7d00fc976",
       "machineText": "Gute PR-Beschreibung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Good PR Description",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0051-heading-01": {
       "sourceHash": "3d85b6bad18378036bd76e2d5b3798289566636a2fa306acda13a46cc09f4e12",
       "targetHash": "c76bbd7910f5c068c0b3a731505bc883c5b375df470915041cececcde9b22e07",
       "machineHash": "c76bbd7910f5c068c0b3a731505bc883c5b375df470915041cececcde9b22e07",
       "machineText": "PR-Checkliste",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "PR Checklist",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0052-text-01": {
-      "sourceHash": "fac09bde3ab6caa49a416723baec38a10bb7b297898a9032eb6fc5348ee8b1c4",
-      "targetHash": "7766e0d37185a4db086abe005aaeced7b00703aeb1d66192a93c779ad7b44a19",
-      "machineHash": "7766e0d37185a4db086abe005aaeced7b00703aeb1d66192a93c779ad7b44a19",
-      "machineText": "Code entspricht den Go-Konventionen",
-      "status": "final",
-      "sourcePreview": "Code follows Go conventions",
+      "sourceHash": "9fdf52be0a9e845b854b18ba74e04ee898274c6f6e60adf2dd971ae766f1151f",
+      "targetHash": "aaa1f0cbf62b6851acbe577adb8d9f687d9f12496ae31bd85c4aebf38f49e01d",
+      "machineHash": "aaa1f0cbf62b6851acbe577adb8d9f687d9f12496ae31bd85c4aebf38f49e01d",
+      "machineText": "[ ] Code entspricht den Go-Konventionen",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Code follows Go conventions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0053-text-01": {
-      "sourceHash": "4ee55cfdeb0319611c8639c05ea420e09f09d8c53a5a2e2630f8e77d0cfb170a",
-      "targetHash": "9f066ec4f4dfd83d119f6057624b33589b37959c8c5f079666a0307a6708cb5c",
-      "machineHash": "9f066ec4f4dfd83d119f6057624b33589b37959c8c5f079666a0307a6708cb5c",
-      "machineText": "Tests hinzugefügt oder aktualisiert",
-      "status": "final",
-      "sourcePreview": "Tests added/updated",
+      "sourceHash": "1a073666e945af9b5340b24fd23a3e520ee0db282b9d884911c6a0da06017d08",
+      "targetHash": "ef14e530a5b042701da43e6b1d98987e7b144651930bf0574252a0a6737587a2",
+      "machineHash": "ef14e530a5b042701da43e6b1d98987e7b144651930bf0574252a0a6737587a2",
+      "machineText": "[ ] Tests hinzugefügt/aktualisiert",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Tests added/updated",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0054-text-01": {
-      "sourceHash": "7de8f5542545c3475a097921a41526dc09739fea1ad5e1a3784d7783e50155a5",
-      "targetHash": "3a1bd277e85b24ed2b21b0a590f0638bc598f0d75c9fcdf51aba245a2d4a4444",
-      "machineHash": "3a1bd277e85b24ed2b21b0a590f0638bc598f0d75c9fcdf51aba245a2d4a4444",
-      "machineText": "Dokumentation aktualisiert",
-      "status": "final",
-      "sourcePreview": "Documentation updated",
+      "sourceHash": "71894570009d0ceb9d92c3ce24c344a2349f1b25b85d8ef0deec9988ea0d54c2",
+      "targetHash": "46e407bee26f2dd678349ce9b3e4cc46444b8783cd15b7c079ed30f6cfc5f2bf",
+      "machineHash": "46e407bee26f2dd678349ce9b3e4cc46444b8783cd15b7c079ed30f6cfc5f2bf",
+      "machineText": "[ ] Dokumentation aktualisiert",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Documentation updated",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0055-text-01": {
-      "sourceHash": "ba3142973db71b8ac1b7f7c57196e6f29c962192152a757f53556bf5045420f5",
-      "targetHash": "271828a467bcbae3045678f313e91d5d1707f4b5d2b9998e27617a86db3db415",
-      "machineHash": "271828a467bcbae3045678f313e91d5d1707f4b5d2b9998e27617a86db3db415",
-      "machineText": "Alle Tests erfolgreich",
-      "status": "final",
-      "sourcePreview": "All tests passing",
+      "sourceHash": "1cda82ed3678e801be014eaf0bf33adc5f1743b4399ddb4c315d46d9dc937ab8",
+      "targetHash": "bb13273fa85e6045ede3708c65eb8078fb601b7df785a54f52079c342741fc80",
+      "machineHash": "bb13273fa85e6045ede3708c65eb8078fb601b7df785a54f52079c342741fc80",
+      "machineText": "[ ] Alle Tests erfolgreich",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] All tests passing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0056-text-01": {
-      "sourceHash": "e6460f01a4d5ffd403ad3c6b0854c42ebb4907081fb97509721cf30619dbbdbc",
-      "targetHash": "f1465d6580505ab13ffbb7b1c79059c976b73431859683a63d9318cec013a9d4",
-      "machineHash": "f1465d6580505ab13ffbb7b1c79059c976b73431859683a63d9318cec013a9d4",
-      "machineText": "Keine Breaking Changes (oder dokumentiert)",
-      "status": "final",
-      "sourcePreview": "No breaking changes (or documented)",
+      "sourceHash": "f3b511b593728a7c25398fa1c8267e79d526a4d806c5d7b7769b6a607c84370a",
+      "targetHash": "90c9557c8e104bd35d40b833524933c2c872c1abc00573b7101438c8efc515a3",
+      "machineHash": "90c9557c8e104bd35d40b833524933c2c872c1abc00573b7101438c8efc515a3",
+      "machineText": "[ ] Keine inkompatiblen Änderungen (oder diese sind dokumentiert)",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] No breaking changes (or documented)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0057-text-01": {
-      "sourceHash": "22f6fa20f7ab9ee406a56c9d45402a1193c650fbd4813ff73bbe4331664fbf69",
-      "targetHash": "c84db295d0a62c47ca6bd9aa2d4ab0971f485cafdf1c411d0ec1c1247a9717df",
-      "machineHash": "c84db295d0a62c47ca6bd9aa2d4ab0971f485cafdf1c411d0ec1c1247a9717df",
-      "machineText": "Commit-Meldungen sind klar",
-      "status": "final",
-      "sourcePreview": "Commit messages clear",
+      "sourceHash": "9ff15a5b5c90d3281af4c292791ea660c6b6c15588a7e280d55f0ab9a5d99385",
+      "targetHash": "ec533610ef29d6a5ce4449768fe92765fe481461a2a61ca29a62ff3e7d40ea5f",
+      "machineHash": "ec533610ef29d6a5ce4449768fe92765fe481461a2a61ca29a62ff3e7d40ea5f",
+      "machineText": "[ ] Klare Commit-Meldungen",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Commit messages clear",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0058-heading-01": {
       "sourceHash": "b0dec2d1fd0c96f775136e60b7d094155141670c45fd748f9cf3d210d3e763ba",
       "targetHash": "75d79f70b229a36d0b4075d2d6ac4ef28158f4955544fc044af14c401b272661",
       "machineHash": "75d79f70b229a36d0b4075d2d6ac4ef28158f4955544fc044af14c401b272661",
       "machineText": "Code-Richtlinien",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Code Guidelines",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0059-heading-01": {
       "sourceHash": "43ebd299f2aff29cc0f3e31a1a19f02bcd0b5a8295cf268bd00dd9a34136a260",
       "targetHash": "620971afa4e1a0edcc6fa88efe285536d6b4a7f93393c02b761c0a27c81f6700",
       "machineHash": "620971afa4e1a0edcc6fa88efe285536d6b4a7f93393c02b761c0a27c81f6700",
       "machineText": "Go-Codestil",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Go Code Style",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0060-heading-01": {
       "sourceHash": "e806a291cfc3e61f83b98d344ee57e3e8933cccece4fb45e1481f1f560e70eb1",
       "targetHash": "e5c9d7030bada2fe792ad7e4a26ca44379a73f3fe16805ac1359e46759a1571a",
       "machineHash": "e5c9d7030bada2fe792ad7e4a26ca44379a73f3fe16805ac1359e46759a1571a",
       "machineText": "Tests",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Testing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0061-heading-01": {
       "sourceHash": "c205924de0fe636ccdde4ed616fef66f75b78e98b03620637965c033fd161141",
       "targetHash": "c2ec0b49f5bf46cb66c556a4cfec1c55606d9e255113917525d9f44bc88d2ffa",
       "machineHash": "c2ec0b49f5bf46cb66c556a4cfec1c55606d9e255113917525d9f44bc88d2ffa",
       "machineText": "Dokumentation",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Documentation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0062-heading-01": {
       "sourceHash": "95e14b84f247db7464f8db0fba480c417d4b14c0deadfeebd6906dd1ef89254b",
-      "targetHash": "5e9eb7c78e7dc1f12a2fa1623b567be03d6cff0f7d7791bb67d06262553833f6",
-      "machineHash": "5e9eb7c78e7dc1f12a2fa1623b567be03d6cff0f7d7791bb67d06262553833f6",
-      "machineText": "Dokumentation verfassen",
-      "status": "final",
+      "targetHash": "3c4d6138fc834e279b3006853bd41565658f655219c249e373da6756e36ed0ff",
+      "machineHash": "3c4d6138fc834e279b3006853bd41565658f655219c249e373da6756e36ed0ff",
+      "machineText": "Dokumentation schreiben",
+      "status": "machine-translated",
       "sourcePreview": "Writing Docs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0063-text-01": {
-      "sourceHash": "5a05e1b86f9f30db0889ac44dbcdb9278b34cf3225c276e5acb7c83f69f1a78d",
-      "targetHash": "ec0396ffc2e88743715b884650c3a65d49254dac11e2b13afa7809232bac5f9e",
-      "machineHash": "ec0396ffc2e88743715b884650c3a65d49254dac11e2b13afa7809232bac5f9e",
-      "machineText": "Die Dokumentation verwendet M-Press. Bearbeite die `.md`-Dateien unter\n`docs/mpress/content/` und führe anschließend die Vorschau und Validierung aus dem Stammverzeichnis des Repositorys aus:",
+      "sourceHash": "39cf30b78c704d18b9dfc3d2731cbeae90a0b79c6b816c29dcbf594b869ac69a",
+      "targetHash": "39872fce45b372b9c5d240a57a016b75ef0368867e643d01c88ec4a90b7d2dee",
+      "machineHash": "39872fce45b372b9c5d240a57a016b75ef0368867e643d01c88ec4a90b7d2dee",
+      "machineText": "Den vollständigen Dokumentationsworkflow findest du unter [Dokumentation mit M-Press schreiben](/contributing/documentation/). Er behandelt die festgelegte Version, Installationsoptionen für die ausführbare Datei und Go, bearbeitbare Quelldateien, Navigation, Übersetzungsprüfungen und das Einreichen eines PRs für `master`.",
       "status": "machine-translated",
-      "sourcePreview": "Documentation uses M-Press. Edit the `.md` files under `docs/mpress/content/`, then preview and val…",
+      "sourcePreview": "Follow [Write documentation with M-Press](/contributing/documentation/) for the complete documentati…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0064-heading-01": {
+    "b0064-text-01": {
+      "sourceHash": "5641dde2318a20f3527d0dc7e71c5be5435c6c52f154b442e46372cf074447bb",
+      "targetHash": "44c4688a378225ee952a7d5e219db8f804ea434abde031941292263400356aa5",
+      "machineHash": "44c4688a378225ee952a7d5e219db8f804ea434abde031941292263400356aa5",
+      "machineText": "Für reine Dokumentationsarbeiten müssen weder eine Wails-Anwendung erstellt noch Plattformabhängigkeiten installiert werden. M-Press zeigt vom Stammverzeichnis des Repositorys aus mit `mpress dev` eine Vorschau der bestehenden Website an.",
+      "status": "machine-translated",
+      "sourcePreview": "Documentation-only work needs no Wails application build or platform dependencies. M-Press previews …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:08:12Z"
+    },
+    "b0065-heading-01": {
       "sourceHash": "00f14a56d7780404d590f6cf78cfddc3467fe34e843d33d26ac666f394bfbd75",
       "targetHash": "48e1d06a36c1a618cea069fd7be4ecbcefe1250b0a9b699504370f9fa64c6de5",
       "machineHash": "48e1d06a36c1a618cea069fd7be4ecbcefe1250b0a9b699504370f9fa64c6de5",
       "machineText": "Dokumentationsstil",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Documentation Style",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0065-text-01": {
+    "b0066-text-01": {
       "sourceHash": "3892481ec77ed58ae079e40d34c338f6b243937d594d0d40ad81ffdab9630675",
       "targetHash": "2d9ea75bd79fd5a6cabff70881c832e4ee82dc725d1618f5cf17200c016d8c5f",
       "machineHash": "2d9ea75bd79fd5a6cabff70881c832e4ee82dc725d1618f5cf17200c016d8c5f",
       "machineText": "Verwende internationale englische Rechtschreibung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Use International English spelling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0066-text-01": {
+    "b0067-text-01": {
       "sourceHash": "d6f65d0a3cb8fa9f1e28836a726d30965214a137b282a8a061af47a801fb968e",
       "targetHash": "27444b9fc9242d46eb4ddb51cf9a684bae1ea31c96fb13fd339738cd56aea0db",
       "machineHash": "27444b9fc9242d46eb4ddb51cf9a684bae1ea31c96fb13fd339738cd56aea0db",
       "machineText": "Beginne mit dem Problem",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Start with the problem",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0067-text-01": {
+    "b0068-text-01": {
       "sourceHash": "420454d7f35e922e427604caa0f656cc483f2f609d6f6aa47e1d54e4ac70afd4",
       "targetHash": "4983eef4165385c65ff7396aa6e07766b8179519d49b4437ae84d3271bdc03e3",
       "machineHash": "4983eef4165385c65ff7396aa6e07766b8179519d49b4437ae84d3271bdc03e3",
       "machineText": "Stelle funktionsfähige Beispiele bereit",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Provide working examples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0068-text-01": {
+    "b0069-text-01": {
       "sourceHash": "8d36c867031212de911b227c2203e3df269d5df311336ab3145ab8c8365267ec",
       "targetHash": "d0c365de4a46141127d9b6c26ee3fcb7c84f9ad53f2dc664be6aaa2042b8672b",
       "machineHash": "d0c365de4a46141127d9b6c26ee3fcb7c84f9ad53f2dc664be6aaa2042b8672b",
       "machineText": "Füge Hinweise zur Fehlerbehebung hinzu",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Include troubleshooting",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0069-text-01": {
+    "b0070-text-01": {
       "sourceHash": "47c5342b6907a76d173b2edc44025a29da25f6c48ddaf82860d989d0ec0d92ec",
       "targetHash": "067b686a82330efb7e92939938168d8d1d2d67844ad527344874fd3a39d14ca4",
       "machineHash": "067b686a82330efb7e92939938168d8d1d2d67844ad527344874fd3a39d14ca4",
       "machineText": "Verweise auf verwandte Inhalte",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Cross-reference related content",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0070-heading-01": {
+    "b0071-heading-01": {
       "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
       "targetHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
       "machineHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
       "machineText": "Community",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Community",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0071-heading-01": {
+    "b0072-heading-01": {
       "sourceHash": "c349345d8b4816a442f7826cc5bcc69628075dc2de6771adc1fce02b1fd940b9",
       "targetHash": "8dade51e687671436cb5afc397e8a44de6fdeca29caa5166522ff00df6bd1a35",
       "machineHash": "8dade51e687671436cb5afc397e8a44de6fdeca29caa5166522ff00df6bd1a35",
       "machineText": "Hilfe erhalten",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Help",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
-    },
-    "b0072-text-01": {
-      "sourceHash": "977d6aeaf4125bd7d57386f87e9c4a3fc97b98174c507ab66dfb389aeee8dafc",
-      "targetHash": "3dcffa7704c33ac747400ff068e3776a1bb7269d6416aad2db912ad120d3f3e5",
-      "machineHash": "3dcffa7704c33ac747400ff068e3776a1bb7269d6416aad2db912ad120d3f3e5",
-      "machineText": "*Discord:* [Tritt unserer Community bei](https://discord.gg/JDdSxwjhGf)",
-      "status": "final",
-      "sourcePreview": "*Discord:* [Join our community](https://discord.gg/JDdSxwjhGf)",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0073-text-01": {
-      "sourceHash": "f1c54fda0fbd5c6786aa49c8c18efa453eb29e39dfd36ada829279091e701571",
-      "targetHash": "e9341372dd75b13af596118d54dff41b53602ed30f8ceaef6b7ed95b3a931e8a",
-      "machineHash": "e9341372dd75b13af596118d54dff41b53602ed30f8ceaef6b7ed95b3a931e8a",
-      "machineText": "*GitHub Discussions:* Stelle Fragen",
-      "status": "final",
-      "sourcePreview": "*GitHub Discussions:* Ask questions",
+      "sourceHash": "e9bd4a3f8691174bb42ad243e4302c98ed1b5f325117779986d26bb37124c12b",
+      "targetHash": "5b9fdf5212c3e2cf59e3886fb0fd1835a87b4d47e62e579d85dae134a874715c",
+      "machineHash": "5b9fdf5212c3e2cf59e3886fb0fd1835a87b4d47e62e579d85dae134a874715c",
+      "machineText": "**Discord:** [Tritt unserer Community bei](https://discord.gg/JDdSxwjhGf)",
+      "status": "machine-translated",
+      "sourcePreview": "**Discord:** [Join our community](https://discord.gg/JDdSxwjhGf)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0074-text-01": {
-      "sourceHash": "391e9d60e8e90af2be2ddf1e438aafd51e5e93cb80dfd8a979639bee1b7dc638",
-      "targetHash": "840df66732b06bec1a9f7c8a8b1c3b38f9cbbe04c12b4b13f9db19c841a50885",
-      "machineHash": "840df66732b06bec1a9f7c8a8b1c3b38f9cbbe04c12b4b13f9db19c841a50885",
-      "machineText": "*GitHub Issues:* Melde Fehler",
-      "status": "final",
-      "sourcePreview": "*GitHub Issues:* Report bugs",
+      "sourceHash": "5663dddf21461bc0e4e77872f97761b89cba0a11a1a78703464aa41ac6d412e1",
+      "targetHash": "ea2c8149b9e83f669af56820528533310aefd91a56b309593a014fbaf25bf5fb",
+      "machineHash": "ea2c8149b9e83f669af56820528533310aefd91a56b309593a014fbaf25bf5fb",
+      "machineText": "**GitHub Discussions:** Stelle Fragen",
+      "status": "machine-translated",
+      "sourcePreview": "**GitHub Discussions:** Ask questions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0075-heading-01": {
+    "b0075-text-01": {
+      "sourceHash": "32540e83034a7c1a50e9a6858af6ef0894a657499082780f35aa1cacdaae5913",
+      "targetHash": "7d7a763cfff76670a1b9e7e9ab1f45c9780c2c90ca01cfe901ef344ebf08378e",
+      "machineHash": "7d7a763cfff76670a1b9e7e9ab1f45c9780c2c90ca01cfe901ef344ebf08378e",
+      "machineText": "**GitHub Issues:** Melde Fehler",
+      "status": "machine-translated",
+      "sourcePreview": "**GitHub Issues:** Report bugs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:08:12Z"
+    },
+    "b0076-heading-01": {
       "sourceHash": "b8e4367c23d7a5b16358293245d19d517cebb22ccd3029163559b044fceac797",
       "targetHash": "a14fd3f9f38588b572461da1cf6ce37b0d3c383daffbca19220e0a80000de4c6",
       "machineHash": "a14fd3f9f38588b572461da1cf6ce37b0d3c383daffbca19220e0a80000de4c6",
       "machineText": "Verhaltenskodex",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Code of Conduct",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0076-text-01": {
+    "b0077-text-01": {
       "sourceHash": "562f136476cc4036aa7e1c89c1a1bc4bb5dedb117036473ca50e4add7a2243f0",
-      "targetHash": "81bfd74bd62ceb9340017db279359bb056d8de4c974c90304b8a6f89378241ac",
-      "machineHash": "81bfd74bd62ceb9340017db279359bb056d8de4c974c90304b8a6f89378241ac",
-      "machineText": "Sei respektvoll, inklusiv und professionell. Wir alle sind hier, um gemeinsam großartige Software zu entwickeln. Weitere Einzelheiten findest du im [Verhaltenskodex](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md).",
-      "status": "final",
+      "targetHash": "8d3003277e46a329dfc9644f49c6d26522ea2a24e5fc423828d7bb989eb95985",
+      "machineHash": "8d3003277e46a329dfc9644f49c6d26522ea2a24e5fc423828d7bb989eb95985",
+      "machineText": "Sei respektvoll, inklusiv und professionell. Wir sind alle hier, um gemeinsam großartige Software zu entwickeln. Einzelheiten findest du im [Verhaltenskodex](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md).",
+      "status": "machine-translated",
       "sourcePreview": "Be respectful, inclusive, and professional. We're all here to build great software together. See the…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0077-heading-01": {
+    "b0078-heading-01": {
       "sourceHash": "22466b5a68ad045ff73e3f9c7b0f9edd3fe66651d18efe3b7cfc943acb667093",
       "targetHash": "a78738556001f2ae08400af0a19752e07c36f49cb2591f5b1559a237b617243f",
       "machineHash": "a78738556001f2ae08400af0a19752e07c36f49cb2591f5b1559a237b617243f",
       "machineText": "Anerkennung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Recognition",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0078-text-01": {
+    "b0079-text-01": {
       "sourceHash": "4ce4e482c998897268893dec87336e926cde30c042c854087deec7994019ceaa",
       "targetHash": "5f0ea2c00daaac97d2fe8a4f0732542e54e4c0f80e353e56970dffddb43c2922",
       "machineHash": "5f0ea2c00daaac97d2fe8a4f0732542e54e4c0f80e353e56970dffddb43c2922",
       "machineText": "Mitwirkende werden hier gewürdigt:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Contributors are recognised in:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0079-text-01": {
+    "b0080-text-01": {
       "sourceHash": "1254829bd9996472de64de2e8c130a27d2a3841c0209bfeefcad382cd3609ace",
       "targetHash": "f8237b88233a81443b92d8addaefa0ec183eac074a403005538b94a7048d7867",
       "machineHash": "f8237b88233a81443b92d8addaefa0ec183eac074a403005538b94a7048d7867",
       "machineText": "Versionshinweise",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Release notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0080-text-01": {
+    "b0081-text-01": {
       "sourceHash": "ee3d84de463253d9694e6171354254ff3dd33ddc5709872be06c57bf2c992b0d",
       "targetHash": "55f3811a90a92840a4f3306852069c3ffb35d8df478bb764501a13c36f027b49",
       "machineHash": "55f3811a90a92840a4f3306852069c3ffb35d8df478bb764501a13c36f027b49",
       "machineText": "Liste der Mitwirkenden",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Contributors list",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0081-text-01": {
+    "b0082-text-01": {
       "sourceHash": "22a44b7c918cc33df5be42600329df47ffa75a6cea21ad4cea32be7378847ca5",
       "targetHash": "80ca6115e4c611ea6c3911f42c461764cdf68c090427a9633b3a4b34ccf5df8c",
       "machineHash": "80ca6115e4c611ea6c3911f42c461764cdf68c090427a9633b3a4b34ccf5df8c",
       "machineText": "GitHub Insights",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "GitHub insights",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0082-text-01": {
+    "b0083-text-01": {
       "sourceHash": "9603196313f27222d8f52962e724e201b5db7eae11bd8f1c3db5e26c124640e0",
       "targetHash": "7e92f9eced33b32a078f89cfaec4987b2525065557db7a4f8f483f358606e0af",
       "machineHash": "7e92f9eced33b32a078f89cfaec4987b2525065557db7a4f8f483f358606e0af",
       "machineText": "Vielen Dank für deinen Beitrag zu Wails! 🎉",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Thank you for contributing to Wails! 🎉",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0083-heading-01": {
+    "b0084-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineText": "Nächste Schritte",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
-    },
-    "b0084-text-01": {
-      "sourceHash": "a4c66d4ad94665d5a2cd7bb1ca42022baf22a1c4643016d00c7a259e03c8ca93",
-      "targetHash": "8b8b5bd8b0ae29d84f240bb6b9bf858be71af4d42d93c2e99fc254b36973fb9e",
-      "machineHash": "8b8b5bd8b0ae29d84f240bb6b9bf858be71af4d42d93c2e99fc254b36973fb9e",
-      "machineText": "Besuche das Wails-Repository.",
-      "status": "final",
-      "sourcePreview": "Visit the Wails repository.",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0085-text-01": {
-      "sourceHash": "2b0cb202959406eb3a2004ea9d3a55bf8c0f38a56c6a437ed595685a56917dda",
-      "targetHash": "cf4bfdee9dc25516d45e1adf6ba90e52d6a9c6e1b0581ff03edc528916662dc3",
-      "machineHash": "cf4bfdee9dc25516d45e1adf6ba90e52d6a9c6e1b0581ff03edc528916662dc3",
-      "machineText": "[Auf GitHub ansehen →](https://github.com/wailsapp/wails)",
-      "status": "final",
-      "sourcePreview": "[View on GitHub →](https://github.com/wailsapp/wails)",
+      "sourceHash": "8ac08354c4606f7273dd8aa6916aa476342b322ad624cfb3acee8d5d79f08a43",
+      "targetHash": "1293ddf7a04bbded0bb2cb781c5d41ed9d208ab58470270eb2e221b4d22f61ae",
+      "machineHash": "1293ddf7a04bbded0bb2cb781c5d41ed9d208ab58470270eb2e221b4d22f61ae",
+      "machineText": "◆ GitHub-Repository\nBesuchen Sie das Wails-Repository.",
+      "status": "machine-translated",
+      "sourcePreview": "◆ GitHub Repository Visit the Wails repository.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0086-text-01": {
-      "sourceHash": "dfeac48c32cc5a24f5a8310cfb54e5a6432e014d5d3753275ef35ebb7b28c955",
-      "targetHash": "6ddb801db0c9712adc4be6520b787b1f60d6bb6998c0755fc543e3c65d8a0840",
-      "machineHash": "6ddb801db0c9712adc4be6520b787b1f60d6bb6998c0755fc543e3c65d8a0840",
-      "machineText": "Tritt der Community bei.",
-      "status": "final",
-      "sourcePreview": "Join the community.",
+      "sourceHash": "0be57cfd37982682cb166995c1f26b4fd844ad96ee9de39f9424475f129c6280",
+      "targetHash": "f45e42b4745052f408c2fd6142faa822ba1af9611eb74579967c0959cc72ce1d",
+      "machineHash": "f45e42b4745052f408c2fd6142faa822ba1af9611eb74579967c0959cc72ce1d",
+      "machineText": "◆ Discord-Community\nTreten Sie der Community bei.",
+      "status": "machine-translated",
+      "sourcePreview": "◆ Discord Community Join the community.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
     "b0087-text-01": {
-      "sourceHash": "fb577af9cce48081d2d80ea625e6d16bb658248dd999ddb4c51593f9b84ba457",
-      "targetHash": "58a5c864e0dfe09ccd91ca7131dc21f241c9e2f77dd858099672d1fb9ad0e76a",
-      "machineHash": "58a5c864e0dfe09ccd91ca7131dc21f241c9e2f77dd858099672d1fb9ad0e76a",
-      "machineText": "[Discord beitreten →](https://discord.gg/JDdSxwjhGf)",
-      "status": "final",
-      "sourcePreview": "[Join Discord →](https://discord.gg/JDdSxwjhGf)",
+      "sourceHash": "70c2f2d482b9274f98a5be9a0ab3263667ad79143f3afc8f554243362ff62f17",
+      "targetHash": "213a0a6ff46483d39804f85c0c0aa04ad39f5740e3d33637939c6a88bfdfe4e3",
+      "machineHash": "213a0a6ff46483d39804f85c0c0aa04ad39f5740e3d33637939c6a88bfdfe4e3",
+      "machineText": "📖 Dokumentation\nLesen Sie die Dokumentation.",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Documentation Read the docs.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0088-text-01": {
-      "sourceHash": "b8eabd0401d46ea4485cf83312f9bbbd2bb8edae4acd8f3cb7111341118a6f73",
-      "targetHash": "6ef55f424471e5a0136c8320bbc0d67bbb3a287a662f812f9739797c85d5b3aa",
-      "machineHash": "6ef55f424471e5a0136c8320bbc0d67bbb3a287a662f812f9739797c85d5b3aa",
-      "machineText": "Lies die Dokumentation.",
-      "status": "final",
-      "sourcePreview": "Read the docs.",
+    "c0001-line-001-01": {
+      "sourceHash": "8aafef7af83b7310abb9beb4a6df350736862667f4d3ebd35d74333e375e490b",
+      "targetHash": "85f879e4b9bd193999d95a46f8f8a2b999099a58dd2e427c8b965f4537307b55",
+      "machineHash": "85f879e4b9bd193999d95a46f8f8a2b999099a58dd2e427c8b965f4537307b55",
+      "machineText": "Auf GitHub ansehen →",
+      "status": "machine-translated",
+      "sourcePreview": "View on GitHub →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "b0089-text-01": {
-      "sourceHash": "601b73ba8f289b0c713820bc1e568a6e583805f31a99b8c4e10ecd3269aecc9d",
-      "targetHash": "0f47d7fdf9a96bca32d1050db7ff006a019b13345a1f9f2eeed9809b5cd67a06",
-      "machineHash": "0f47d7fdf9a96bca32d1050db7ff006a019b13345a1f9f2eeed9809b5cd67a06",
-      "machineText": "[Dokumentation durchsuchen →](/quick-start/why-wails/)",
-      "status": "final",
-      "sourcePreview": "[Browse Docs →](/quick-start/why-wails/)",
+    "c0001-line-002-01": {
+      "sourceHash": "82a323d3439797532858cae79991a8423bc2e89c83aa26b1a00339af0fd53104",
+      "targetHash": "0d5c84753d340dd52b8bd054aef1e27f27f21b3d954d79c305a9ee809f6f7808",
+      "machineHash": "0d5c84753d340dd52b8bd054aef1e27f27f21b3d954d79c305a9ee809f6f7808",
+      "machineText": "Discord beitreten →",
+      "status": "machine-translated",
+      "sourcePreview": "Join Discord →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "fm-description-01": {
+    "c0001-line-003-01": {
+      "sourceHash": "0de68e9ca7e5f82202ed788593097a141ae8438ccb61400c92e1f532ef5d1564",
+      "targetHash": "97f0a5c18f34c0b6a49786daf4f8d0bc8dae60a258274104aac338828b144c8a",
+      "machineHash": "97f0a5c18f34c0b6a49786daf4f8d0bc8dae60a258274104aac338828b144c8a",
+      "machineText": "Dokumentation durchsuchen →",
+      "status": "machine-translated",
+      "sourcePreview": "Browse Docs →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:08:12Z"
+    },
+    "fm-description": {
       "sourceHash": "8f151e17ed693ffb7af1e66203290edc214017319480b98deecdd307aea3a41c",
       "targetHash": "54ced11bbd6c02d041d202f9f6989d6ae4a7dd5b4d71ed68ad9cd2ea9c3ad2e3",
       "machineHash": "54ced11bbd6c02d041d202f9f6989d6ae4a7dd5b4d71ed68ad9cd2ea9c3ad2e3",
       "machineText": "Zu Wails beitragen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Contribute to Wails",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "2b18598c711f43c293b07a684a115fcccd7f616dc451c5a1e29779792e3c1ed3",
       "targetHash": "f7b322faf0701db429e4d3a5a6ec1e1491bce399a2be8ab3e429ad97c372f221",
       "machineHash": "f7b322faf0701db429e4d3a5a6ec1e1491bce399a2be8ab3e429ad97c372f221",
       "machineText": "Mitwirken",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Contributing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-16T14:59:47Z"
+      "updatedAt": "2026-10-25T22:08:12Z"
     }
   }
 }

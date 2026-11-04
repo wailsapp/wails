@@ -1,35 +1,35 @@
 ---
 title: "笔记"
-description: "构建一个支持文件操作和原生对话框的笔记应用"
+description: "构建一款支持文件操作和原生对话框的笔记应用"
 slug: "tutorials/03-notes-vanilla"
 sourcePath: "tutorials/03-notes-vanilla.md"
 ---
 
-在本教程中，你将使用 Wails v3 构建一个笔记应用，演示文件操作、原生对话框和现代桌面应用模式。
+在本教程中，你将使用 Wails v3 构建一款笔记应用，演示文件操作、原生对话框和现代桌面应用模式。
 
 ![笔记应用截图](/assets/notes-app.png)
 
-## 你将构建的内容
+## 你将构建什么
 
-- 一个功能完整的笔记应用，支持创建、编辑和删除笔记
-- 用于导入和导出笔记的原生文件保存和打开对话框
-- 输入时使用防抖自动保存，减少不必要的更新
+- 一款具备创建、编辑和删除功能的完整笔记应用
+- 用于导入和导出笔记的原生文件保存/打开对话框
+- 输入时通过防抖自动保存，减少不必要的更新
 - 仿 Apple Notes 的专业双栏布局（侧边栏 + 编辑器）
 
-## 你将学到的内容
+## 你将学到什么
 
 - 在 Wails 中使用原生文件对话框（`SaveFileDialog`、`OpenFileDialog`、`InfoDialog`）
 - 使用 JSON 文件持久化数据
 - 实现防抖自动保存模式
 - 使用现代 CSS 构建专业的桌面用户界面
-- 将 Go 结构体正确序列化为 JSON
+- 正确序列化 Go 结构体为 JSON
 
 ## 项目设置
 
 @steps
 ### 创建新的 Wails 项目
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
@@ -171,10 +171,10 @@ func generateID() string {
 }
 ```
 
-**这里的工作原理：**
+**这里实现了以下内容：**
 
-- **Note 结构体**：使用小写 JSON 标签定义数据结构，以便正确序列化
-- **CRUD 操作**：使用 GetAll、Create、Update 和 Delete 管理内存中的笔记
+- **Note 结构体**：使用 JSON 标签（小写）定义数据结构，以便正确序列化
+- **CRUD 操作**：通过 GetAll、Create、Update 和 Delete 管理内存中的笔记
 - **文件对话框**：使用`application.Get().Dialog.SaveFile()`和`application.Get().Dialog.OpenFile()`访问原生对话框
 - **信息对话框**：使用`application.Get().Dialog.Info()`显示成功消息
 - **ID 生成**：简单的基于时间戳的 ID 生成器
@@ -226,11 +226,11 @@ func main() {
 }
 ```
 
-**这里的工作原理：**
+**这里实现了以下内容：**
 
-- 将`NotesService`注册到应用中
-- 创建尺寸为（1000x700）的窗口，仿照 Apple Notes
-- 设置正确的 macOS 行为，以便在最后一个窗口关闭时退出应用
+- 向应用注册`NotesService`
+- 创建一个尺寸为（1000x700）的窗口，仿照 Apple Notes
+- 配置正确的 macOS 行为，使应用在最后一个窗口关闭时退出
 
 ### 创建 HTML 结构
 替换`frontend/index.html`：
@@ -282,11 +282,11 @@ func main() {
 </html>
 ```
 
-**这里的工作原理：**
+**这里实现了以下内容：**
 
-- **双栏布局**：侧边栏用于显示笔记列表，主区域用于编辑
+- **双栏布局**：侧边栏用于显示笔记列表，主区域用于显示编辑器
 - **空状态**：未选择笔记时显示
-- **Wails 运行时**：必须在模块脚本之前加载
+- **Wails 运行时**：必须先于模块脚本加载
 
 ### 添加 CSS 样式
 替换`frontend/public/style.css`：
@@ -471,11 +471,11 @@ body {
 }
 ```
 
-**这里的工作原理：**
+**这里实现了以下内容：**
 
-- 采用简洁排版和配色的 Apple 风格设计
-- 使用 Flexbox 实现响应式侧边栏和编辑器布局
-- 使用蓝色背景突出显示当前笔记
+- 采用简洁字体和配色的 Apple 风格设计
+- 使用 Flexbox 布局实现可响应调整的侧边栏和编辑器
+- 以蓝色背景突出显示当前笔记
 - 平滑的悬停过渡效果
 
 ### 实现 JavaScript 逻辑
@@ -615,13 +615,13 @@ document.getElementById('load-btn').addEventListener('click', async () => {
 loadNotes()
 ```
 
-**这里的工作原理：**
+**这里实现了以下内容：**
 
-- **自动保存**：500毫秒的防抖可避免输入时过度调用后端
+- **自动保存**：500ms 防抖可避免输入时过度调用后端
 - **属性访问**：使用与 Go JSON 标签匹配的小写属性名（`.id`、`.title`）
 - **焦点管理**：创建新笔记时自动聚焦并选中标题
 - **无需确认即可删除**：浏览器的`confirm()`在 Wails WebView 中不起作用
-- **文件操作**：通过原生对话框保存和加载文件，并进行适当的错误处理
+- **文件操作**：通过原生对话框处理保存和加载，并进行妥善的错误处理
 
 ### 运行应用
 ```bash
@@ -630,12 +630,12 @@ wails3 dev
 
 应用启动后，你可以：
 
-- 单击“+ New Note”创建笔记
-- 编辑标题和内容（在500毫秒后自动保存）
+- 单击“+ 新建笔记”创建笔记
+- 编辑标题和内容（500ms 后自动保存）
 - 单击侧边栏中的笔记进行切换
-- 单击“Delete”删除当前笔记
-- 单击“Save”将笔记导出为 JSON
-- 单击“Load”导入之前保存的笔记
+- 单击“删除”移除当前笔记
+- 单击“保存”将笔记导出为 JSON
+- 单击“加载”导入之前保存的笔记
 
 @end
 
@@ -643,7 +643,7 @@ wails3 dev
 
 ### 文件和消息对话框
 
-Wails v3 中<strong>没有</strong>包级对话框构造函数——每个对话框都通过`app.Dialog`管理器创建。在服务中，通过`application.Get()`获取应用（它会返回正在运行的`*application.App`）：
+在 Wails v3 中，**没有**包级别的对话框构造函数——每个对话框都通过`app.Dialog`管理器创建。在服务中，通过`application.Get()`获取应用（它会返回正在运行的`*application.App`）：
 
 ```go
 // Correct — manager-based dialogs.
@@ -654,7 +654,7 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-对应的方法是用于消息对话框的`app.Dialog.Info() / Question() / Warning() / Error()`，以及用于文件对话框的`app.Dialog.OpenFile() / SaveFile()`（还有`*WithOptions`变体）。
+对应的方法是：消息对话框使用`app.Dialog.Info() / Question() / Warning() / Error()`，文件对话框使用`app.Dialog.OpenFile() / SaveFile()`（以及`*WithOptions`变体）。
 
 ### JSON 标签映射
 
@@ -674,7 +674,7 @@ const noteId = note.ID // Would be undefined
 
 ### 防抖自动保存
 
-500毫秒的防抖可减少不必要的后端调用：
+500ms 防抖可减少不必要的后端调用：
 
 ```javascript
 let updateTimeout
@@ -690,7 +690,7 @@ function scheduleUpdate() {
 ## 后续步骤
 
 - 添加分类或标签来整理笔记
-- 实现搜索和筛选功能
+- 实现搜索和筛选
 - 使用所见即所得编辑器添加富文本编辑功能
 - 将笔记同步到云存储
 - 为常用操作添加键盘快捷键

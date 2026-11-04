@@ -216,6 +216,8 @@ When a user installs a remote template, Wails displays a warning explaining that
 
 As a template author you are responsible for the security and correctness of all code in your template.
 
+Templates are code. `Taskfile.yml` tasks are arbitrary shell commands, and `wails3 dev`, `wails3 build` and `wails3 package` run them, along with any `package.json` scripts they invoke, with your user's permissions. Review `Taskfile.yml`, the `build/` directory and `frontend/package.json` of a remote template before running any of these commands.
+
 @end
 
 ## Best practices

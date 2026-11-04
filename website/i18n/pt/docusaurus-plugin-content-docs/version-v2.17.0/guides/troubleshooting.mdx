@@ -1,0 +1,368 @@
+# Resolução de Problemas
+
+Uma variedade de dicas de solução de problemas.
+
+## O comando `wail` parece estar faltando?
+
+Se o sistema está relatando que o comando `wails` está faltando, verifique se você seguiu o guia de instalação do Go corretamente. Normalmente, isso significa que o diretório `go/bin` no diretório inicial do seu usuário não está na variável `PATH` ambiente. Você normalmente também precisará fechar e reabrir qualquer prompt de comando aberto para que as alterações no ambiente feitas pelo instalador sejam refletidas no prompt de comando.
+
+## Meu aplicativo está exibindo uma tela branca/em branco
+
+Verifique se sua aplicação inclui os conteúdos do diretório correto. No seu arquivo `main.go`, você terá algo semelhante ao seguinte código:
+
+```go
+//go:embed all:frontend/dist
+var assets embed.FS
+```
+
+Verifique que `frontend/dist` contém os ativos da aplicação.
+
+### Mac
+
+Se isso acontecer no Mac, tente adicionar o seguinte ao seu `Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+</dict>
+```
+
+Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
+
+## Aplicativo Mac inválido
+
+Se a sua aplicação construída se parece com isso no buscador:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={
+      require("@site/static/img/troubleshooting/invalid_mac_app.png").default
+    }
+  />
+</p>
+```
+
+é provável que o `info.plist` do seu aplicativo seja inválido. Atualize o arquivo em `build/<yourapp>.app/Contents/info.plist` e verifique se os dados são válidos, verifique se o nome binário está correto. Para persistir nas alterações, copie o arquivo de volta para o diretório `build/darwin`.
+
+## Meu aplicativo não está exibindo o ícone correto no Windows Explorer
+
+Se seu aplicativo não estiver exibindo o ícone correto, tente excluir o arquivo `IconCache.db` oculto localizado na pasta Diretório `C:\Users\&#060;seu nome de usuário&#062;\AppData\Local`. Isto irá forçar o Windows a reconstruir o cache de ícones.
+
+Reference: https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
+
+## Não é possível chamar o método backend no frontend com argumentos variados
+
+Se você tem um método de backend definido com parâmetros variadicos, por exemplo:
+
+```go
+func (a *App) TestFunc(msg string, args ...interface{}) error {
+    // Code
+}
+```
+
+chamar esse método a partir do frontend como isso irá falhar:
+
+```js
+var msg = "Hello: ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, ...args)
+  .then((result) => {
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+Gambiarra:
+
+```js
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    //without the 3 dots
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+Credit: https://github.com/wailsapp/wails/issues/1186
+
+## Estou recebendo erros de proxy ao tentar instalar o Wails
+
+Se você estiver recebendo erros como este:
+
+```
+"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+```
+
+é provavelmente porque o Proxy oficial Go está sendo bloqueado (usuários na China relataram isto). A solução é configurar o proxy manualmente, por exemplo:
+
+```
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+
+Reference: https://github.com/wailsapp/wails/issues/1233
+
+## O TypeScript gerado não tem os tipos corretos
+
+Às vezes, o TypeScript gerado não tem os tipos corretos. Para mitigar isso, é possível especificar quais tipos devem ser gerados usando a tag de struct `ts_type`. Para mais detalhes do, leia [isto](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+
+## Quando navego longe do `index.html`, não consigo chamar métodos no frontend
+
+Se você navegar do `index.html` para um novo arquivo html, o contexto será perdido. Isso pode ser corrigido adicionando as seguintes importações para a seção `<head>` de qualquer nova página que você navegar:
+
+```html
+<head>
+  <script src="/wails/ipc.js"></script>
+  <script src="/wails/runtime.js"></script>
+</head>
+```
+
+Reference: https://github.com/wailsapp/wails/discussions/1512
+
+## Eu recebo `muitos arquivos abertos` erros no meu Mac quando eu rodo `wails`
+
+Por padrão, o macOS só permitirá que você abra um máximo de 256 arquivos. Isso pode afetar o comando `wails dev`. Este limite pode ser aumentado em execução: `ulimit -n 1024` no terminal.
+
+FSNotify é [procurando mudar para os fsevents](https://github.com/fsnotify/fsnotify/issues/11) da Apple para Mac. Se isso não estiver concluído em breve, criaremos nossa própria implementação, monitorada [aqui](https://github.com/wailsapp/wails/issues/1733).
+
+## Meu aplicativo para Mac me dá erros estranhos de compilação
+
+Alguns usuários relataram ver erros de compilação como os seguintes:
+
+```shell
+# github.com/wailsapp/wails/v2/internal/frontend/desktop/darwin
+In file included from ../../pkg/mod/github.com/wailsapp/wails/v2@v2.0.0-beta.44.2/internal/frontend/desktop/darwin/callbacks.go:9:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:12:
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSBundle.h:91:143: error: function does not return NSString
+- (NSAttributedString *)localizedAttributedStringForKey:(NSString *)key value:(nullable NSString *)value table:(nullable NSString *)tableName NS_FORMAT_ARGUMENT(1) NS_REFINED_FOR_SWIFT API_AVAILABLE(macos(12.0), ios(15.0), watchos(8.0), tvos(15.0));
+                                                         ~~~~~~~~~~~~~~                                                                       ^                  ~
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSObjCRuntime.h:103:48: note: expanded from macro 'NS_FORMAT_ARGUMENT'
+        #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
+```
+
+Isto é _normalmente_ devido a uma incompatibilidade com a versão do sistema operacional que você está executando e a versão das Ferramentas de Comando XCode instalada. Se você vir um erro como este, tente atualizar suas Ferramentas de Linha de Comando XCode para a versão mais recente.
+
+Se reinstalar as Ferramentas de Comando Xcode ainda falhar, você pode verificar o caminho onde o kit de ferramentas está usando:
+
+`xcode-select -p`
+
+Se `/Applications/Xcode.app/Contents/Developer` for exibido, rode `sudo xcode-select --switch /Library/Developer/CommandLineTools`
+
+Fontes: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+
+## My application won't compile on Mac
+
+Se você estiver recebendo erros como este:
+
+```shell
+l1@m2 GoEasyDesigner % go build -tags dev -gcflags "all=-N -l"
+/Users/l1/sdk/go1.20.5/pkg/tool/darwin_arm64/link: running clang failed: exit status 1
+Undefined symbols for architecture arm64:
+  "_OBJC_CLASS_$_UTType", referenced from:
+      objc-class-ref in 000016.o
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+Ensure you have the latest SDK installed. If so and you're still experiencing this issue, try the following:
+
+```shell
+export CGO_LDFLAGS="-framework UniformTypeIdentifiers" && go build -tags dev -gcflags "all=-N -l"
+```
+
+Sources: https://github.com/wailsapp/wails/pull/2925#issuecomment-1726828562
+
+
+--
+
+## Não foi possível iniciar o serviço: A versão do host "x.x.x não coincide com a versão binária "x.x.x"
+
+É preferível adicionar `frontend/node_modules` e `frontend/package-lock.json` ao seu `.gitignore`. Caso contrário, ao abrir o repositório em outra máquina que pode ter diferentes versões do Node instaladas, talvez você não seja capaz de executar seu aplicativo.
+
+Se isso acontecer, simplesmente exclua `frontend/node_modules` e `frontend/pacote-lock. soa` e corra os seus wails `constroem` ou `wails dev` comando.
+
+## Processo de compilação travado em "Gerando vinculações"
+
+Processo de geração de Bindings executa sua aplicação em um modo especial. Se o aplicativo, intencionalmente ou não intencionalmente, contém um laço infinito (ou seja, não sair após `wails.Run()` terminado), isto pode levar a construção do processo travado na geração do palco de amarras. Por favor, certifique-se de que seu código sai corretamente.
+
+## Aplicação Mac pisca branco na inicialização
+
+Isto é devido ao plano de fundo padrão do webview ser branco. Se você quiser usar a cor de fundo da janela, você pode tornar o plano de fundo do webview transparente usando a seguinte configuração:
+
+```go
+    err := wails.Run(&options.App{
+        Title:  "macflash",
+        Width:  1024,
+        Height: 768,
+        // Other settings
+        Mac: &mac.Options{
+            WebviewIsTransparent: true,
+        },
+    })
+```
+
+## I get a "Microsoft Edge can't read or write to its data directory" error when running my program as admin on Windows
+
+You set your program to require admin permissions and it worked great! Unfortunately, some users are seeing a "Microsoft Edge can't read or write to its data directory" error when running it.
+
+When a Windows machine has two local accounts:
+
+- Alice, an admin
+- Bob, a regular user
+
+Bob sees a UAC prompt when running your program. Bob enters Alice's admin credentials into this prompt. The app launches with admin permissions under Alice's account.
+
+Wails instructs WebView2 to store user data at the specified `WebviewUserDataPath`. It defaults to `%APPDATA%\[BinaryName.exe]`.
+
+Because the application is running under Alice's account, `%APPDATA%\[BinaryName.exe]` resolves to `C:\Users\Alice\AppData\Roaming\[BinaryName.exe]`.
+
+WebView2 [creates some child processes under Bob's logged-in account instead of Alice's admin account](https://github.com/MicrosoftEdge/WebView2Feedback/issues/932#issue-807464179). Since Bob cannot access `C:\Users\Alice\AppData\Roaming\[BinaryName.exe]`, the "Microsoft Edge can't read or write to its data directory" error is shown.
+
+Possible solution #1:
+
+Refactor your application to work without constant admin permissions. If you just need to perform a small set of admin tasks (such as running an updater), you can run your application with the minimum permissions and then use the `runas` command to run these tasks with admin permissions as needed:
+
+```go
+//go:build windows
+
+package sample
+
+import (
+    "golang.org/x/sys/windows"
+    "syscall"
+)
+
+// Calling RunAs("C:\path\to\my\updater.exe") shows Bob a UAC prompt. Bob enters Alice's admin credentials. The updater launches with admin permissions under Alice's account.
+func RunAs(path string) error {
+    verbPtr, _ := syscall.UTF16PtrFromString("runas")
+    exePtr, _ := syscall.UTF16PtrFromString(path)
+    cwdPtr, _ := syscall.UTF16PtrFromString("")
+    argPtr, _ := syscall.UTF16PtrFromString("")
+
+    var showCmd int32 = 1 //SW_NORMAL
+
+    err := windows.ShellExecute(0, verbPtr, exePtr, argPtr, cwdPtr, showCmd)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+```
+
+Possible solution #2:
+
+Run your application with extended permissions. If you absolutely must run with constant admin permissions, WebView2 will function correctly if you use a data directory accessible by both users and you also launch your app with the `SeBackupPrivilege`, `SeDebugPrivilege`, and `SeRestorePrivilege` permissions. Here's an example:
+
+```go
+package main
+
+import (
+    "embed"
+    "os"
+    "runtime"
+
+    "github.com/fourcorelabs/wintoken"
+    "github.com/hectane/go-acl"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+const (
+    fixedTokenKey = "SAMPLE_RANDOM_KEY"
+    fixedTokenVal = "with-fixed-token"
+    webviewDir    = "C:\\ProgramData\\Sample"
+)
+
+func runWithFixedToken() {
+    println("Re-launching self")
+    token, err := wintoken.OpenProcessToken(0, wintoken.TokenPrimary) //pass 0 for own process
+    if err != nil {
+        panic(err)
+    }
+    defer token.Close()
+
+    token.EnableTokenPrivileges([]string{
+        "SeBackupPrivilege",
+        "SeDebugPrivilege",
+        "SeRestorePrivilege",
+    })
+
+    cmd := exec.Command(os.Args[0])
+    cmd.Args = os.Args
+    cmd.Env = os.Environ()
+    cmd.Env = append(cmd.Env, fmt.Sprintf("%v=%v", fixedTokenKey, fixedTokenVal))
+    cmd.Stdin = os.Stdin
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    cmd.SysProcAttr = &syscall.SysProcAttr{Token: syscall.Token(token.Token())}
+    if err := cmd.Run(); err != nil {
+        println("Error after launching self:", err)
+        os.Exit(1)
+    }
+    println("Clean self launch :)")
+    os.Exit(0)
+}
+
+func main() {
+    if runtime.GOOS == "windows" && os.Getenv(fixedTokenKey) != fixedTokenVal {
+        runWithFixedToken()
+    }
+
+    println("Setting data dir to", webviewDir)
+    if err := os.MkdirAll(webviewDir, os.ModePerm); err != nil {
+        println("Failed creating dir:", err)
+    }
+    if err := acl.Chmod(webviewDir, 0777); err != nil {
+        println("Failed setting ACL on dir:", err)
+    }
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "sample-data-dir",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewUserDataPath: webviewDir,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+If you use a data directory accessible by both users but not the extended privileges, you will receive a WebView2 `80010108 The object invoked has disconnected from its clients` error.
+
+Possible future solution #3: [run WebView2 using an in-memory mode if implemented](https://github.com/MicrosoftEdge/WebView2Feedback/issues/3637#issuecomment-1728300982).
+
+## WebView2 installation succeeded, but the wails doctor command shows that it is not installed
+
+If you have installed WebView2, but the `wails doctor` command shows that it is not installed, it is likely that the WebView2 runtime installed was for a different architecture. You can download the correct runtime from [here](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+
+Source: https://github.com/wailsapp/wails/issues/2917
+
+## WebVie2wProcess failed with kind
+
+If your Windows app generates this kind of error, you can check out what the error means [here](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2processfailedkind?view=webview2-winrt-1.0.2045.28).
+

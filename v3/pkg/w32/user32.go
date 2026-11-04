@@ -1347,9 +1347,11 @@ func DestroyIcon(icon HICON) bool {
 }
 
 func MonitorFromPoint(x, y int, dwFlags uint32) HMONITOR {
+	// The API takes a POINT by value, which is passed as a single 64-bit
+	// argument (x in the low 32 bits, y in the high 32 bits).
+	pt := uint64(uint32(int32(x))) | uint64(uint32(int32(y)))<<32
 	ret, _, _ := procMonitorFromPoint.Call(
-		uintptr(x),
-		uintptr(y),
+		uintptr(pt),
 		uintptr(dwFlags),
 	)
 	return HMONITOR(ret)

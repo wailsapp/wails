@@ -161,7 +161,10 @@ func init() {
 				}
 			}
 
-			windows.FreeLibrary(localUXTheme)
+			// Keep the module loaded for the process lifetime: the package-level
+			// function pointers above remain in use after init (e.g.
+			// AllowDarkModeForWindow is called later from applyDarkMode), so
+			// freeing it here would leave them pointing into unmapped memory.
 		}
 	}
 }

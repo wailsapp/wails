@@ -5,7 +5,7 @@ slug: "getting-started/your-first-app"
 sourcePath: "getting-started/your-first-app.md"
 ---
 
-Este guia mostra como criar seu primeiro aplicativo com Wails v3, desde a configuração do projeto até a compilação e o fluxo de trabalho de desenvolvimento.
+Este guia mostra como criar seu primeiro aplicativo Wails v3, abordando a configuração do projeto, a compilação e o fluxo de trabalho de desenvolvimento.
 
 <br/>
 
@@ -16,10 +16,10 @@ Este guia mostra como criar seu primeiro aplicativo com Wails v3, desde a config
 Abra o terminal e execute o seguinte comando para criar um novo projeto Wails:
 
 ```bash
-wails3 init -n myfirstapp
+wails3 init -n myfirstapp -t vanilla-js
 ```
 
-Esse comando cria um novo diretório chamado `myfirstapp` com todos os arquivos necessários.
+Esta lição seleciona explicitamente o modelo JavaScript Vanilla. O modelo básico `vanilla` usa TypeScript. O comando cria `myfirstapp` com todos os arquivos necessários.
 
    <video src="/assets/wails_init.mp4" controls></video>
 
@@ -27,7 +27,7 @@ Esse comando cria um novo diretório chamado `myfirstapp` com todos os arquivos 
 Acesse o diretório `myfirstapp`. Você encontrará vários arquivos e diretórios:
 
 @filetree
-- build/           Contém os arquivos usados pelo processo de compilação
+- build/           Contém arquivos usados pelo processo de compilação
   - appicon.png  Ícone do aplicativo
   - config.yml   Configuração de compilação
   - Taskfile.yml Build tasks
@@ -53,7 +53,8 @@ Acesse o diretório `myfirstapp`. Você encontrará vários arquivos e diretóri
       - wails_tools.nsh               Scripts auxiliares do NSIS
 - frontend/        Arquivos do frontend do aplicativo
   - index.html   Arquivo HTML principal
-  - main.js      Arquivo JavaScript principal
+  - src/         Código-fonte do frontend
+    - main.js    Arquivo JavaScript principal
   - package.json NPM package configuration
   - public/      Recursos estáticos
   - Inter Font License.txt Font license
@@ -61,7 +62,7 @@ Acesse o diretório `myfirstapp`. Você encontrará vários arquivos e diretóri
 - README.md       Documentação do projeto
 - Taskfile.yml    Tarefas do projeto
 - go.mod          Arquivo de módulo Go
-- go.sum          Somas de verificação dos módulos Go
+- go.sum          Somas de verificação do módulo Go
 - greetservice.go Greeting service
 - main.go         Código principal do aplicativo
 @end
@@ -69,7 +70,7 @@ Acesse o diretório `myfirstapp`. Você encontrará vários arquivos e diretóri
 Reserve um momento para explorar esses arquivos e se familiarizar com a estrutura.
 
 @note{type="info"}
-Embora o Wails v3 use [Task](https://taskfile.dev/) como sistema de compilação padrão, nada impede que você use `make` ou qualquer outro sistema de compilação alternativo.
+Embora o Wails v3 use o [Task](https://taskfile.dev/) como sistema de compilação padrão, nada impede que você use o `make` ou qualquer outro sistema de compilação alternativo.
 
 @end
 
@@ -80,7 +81,7 @@ Para compilar seu aplicativo, execute:
 wails3 build
 ```
 
-Esse comando compila uma versão de depuração do aplicativo e a salva em um novo diretório `bin`.
+Com os Taskfiles gerados, esse comando cria uma compilação de produção em `bin`. Use `wails3 dev` para o modo de desenvolvimento ou `wails3 build DEV=true` para criar explicitamente uma compilação de desenvolvimento.
 
 @note{type="info"}
 `wails3 build` é uma forma abreviada de `wails3 task build` e executará a tarefa `build` em `Taskfile.yml`.
@@ -109,15 +110,15 @@ bin\myfirstapp.exe
 
 @end
 
-Você verá uma interface simples, que será o ponto de partida do seu aplicativo. Como essa é a versão de depuração, você também verá logs na janela do console. Isso é útil para fins de depuração.
+Você verá a interface inicial. Uma compilação de produção não garante o comportamento do inspetor nem do console de desenvolvimento; use o modo de desenvolvimento ao depurar.
 
 ### Modo de desenvolvimento
-Também podemos executar o aplicativo no modo de desenvolvimento. Esse modo permite alterar o código do frontend e ver as mudanças refletidas no aplicativo em execução sem precisar recompilar o aplicativo inteiro.
+Também podemos executar o aplicativo no modo de desenvolvimento. Esse modo permite alterar o código do frontend e ver as alterações refletidas no aplicativo em execução sem precisar recompilar o aplicativo inteiro.
 
 1. Abra uma nova janela do terminal.
 2. Execute `wails3 dev`. O aplicativo será compilado e executado no modo de depuração.
 3. Abra `frontend/index.html` no editor de sua preferência.
-4. Edite o código e substitua `Please enter your name below` por `Please enter your name below!!!`.
+4. Altere o `placeholder="Your name"` do campo de entrada de nome para `placeholder="Your full name"` e salve o arquivo.
 5. Salve o arquivo.
 
 Essa alteração será refletida imediatamente no aplicativo.
@@ -125,15 +126,15 @@ Essa alteração será refletida imediatamente no aplicativo.
 Qualquer alteração no código do backend acionará uma nova compilação:
 
 1. Abra `greetservice.go`.
-2. Na linha que contém `return "Hello " + name + "!"`, substitua-o por `return "Hello there " + name + "!"`.
+2. Substitua a linha que contém `return "Hello " + name + "!"` por `return "Hello there " + name + "!"`.
 3. Salve o arquivo.
 
-O aplicativo será atualizado em questão de segundos.
+O aplicativo será atualizado em poucos segundos.
 
      <video src="/assets/wails_dev.mp4" controls></video>
 
 ### Como empacotar seu aplicativo
-Quando o aplicativo estiver pronto para distribuição, você poderá criar pacotes específicos para cada plataforma:
+Quando seu aplicativo estiver pronto para distribuição, você poderá criar pacotes específicos para cada plataforma:
 
 @tabs{sync-key="platform"}
 [Mac]
@@ -170,10 +171,10 @@ wails3 task linux:create:aur       # Arch Linux package
 
 @end
 
-Para obter informações mais detalhadas sobre as opções e a configuração de empacotamento, consulte nosso [Guia de compilação e empacotamento](/guides/build/building/).
+Para obter informações mais detalhadas sobre as opções e configurações de empacotamento, consulte nosso [Guia de compilação e empacotamento](/guides/build/building/).
 
 ### Como configurar o controle de versão e o nome do módulo
-Seu projeto é criado com o nome de módulo provisório `changeme`. Recomendamos atualizá-lo para corresponder à URL do seu repositório:
+Seu projeto é criado com o nome de módulo provisório `changeme`. Recomendamos atualizá-lo para que corresponda à URL do seu repositório:
 
 1. Crie um novo repositório no GitHub (ou no serviço de hospedagem Git de sua preferência)
 2. Inicialize o Git no diretório do projeto:
@@ -183,12 +184,12 @@ Seu projeto é criado com o nome de módulo provisório `changeme`. Recomendamos
   git commit -m "Initial commit"
   ```
 
-3. Defina seu repositório remoto (substitua pela URL do seu repositório):
+3. Configure o repositório remoto (substitua pela URL do seu repositório):
   ```bash
   git remote add origin https://github.com/username/myfirstapp.git
   ```
 
-4. Atualize o nome do módulo em `go.mod` para corresponder à URL do seu repositório:
+4. Atualize o nome do módulo em `go.mod` para que corresponda à URL do seu repositório:
   ```bash
   go mod edit -module github.com/username/myfirstapp
   ```
@@ -199,13 +200,13 @@ Seu projeto é criado com o nome de módulo provisório `changeme`. Recomendamos
   ```
 
 
-Isso garante que o nome do seu módulo Go siga as convenções de nomenclatura de módulos do Go e facilita o compartilhamento do código.
+Isso garante que o nome do módulo Go esteja de acordo com as convenções de nomenclatura de módulos do Go e facilita o compartilhamento do código.
 
 @note{type="tip" title="Dica profissional"}
-Você pode automatizar todas as etapas de inicialização usando a opção `-git` ao criar seu projeto:
+Você pode automatizar todas as etapas de inicialização usando a opção `-git` ao criar o projeto:
 
 ```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
+wails3 init -n myfirstapp -t vanilla-js -git github.com/username/myfirstapp
 ```
 
 Há suporte para vários formatos de URL do Git:
@@ -221,10 +222,10 @@ Há suporte para vários formatos de URL do Git:
 
 ## Parabéns!
 
-Você acabou de criar, desenvolver e empacotar seu primeiro aplicativo Wails. Isso é apenas o começo do que você pode fazer com o Wails v3.
+Você acabou de criar, desenvolver e empacotar seu primeiro aplicativo Wails. Este é apenas o começo do que você pode alcançar com o Wails v3.
 
-## Próximas etapas
+## Próximos passos
 
-Se você está começando a usar o Wails, recomendamos que leia a seguir nossos Tutoriais, que oferecem um guia prático sobre os diversos recursos do Wails. O primeiro tutorial é [Como criar um serviço](/tutorials/01-creating-a-service/).
+Se você está começando a usar o Wails, recomendamos que leia nossos Tutoriais em seguida. Eles oferecem um guia prático sobre os diversos recursos do Wails. O primeiro tutorial é [Como criar um serviço](/tutorials/01-creating-a-service/).
 
-Se você tem mais experiência, consulte o [Guia de compilação e empacotamento](/guides/build/building/) para obter informações mais detalhadas sobre como usar o Wails.
+Se você é um usuário mais avançado, consulte o [Guia de compilação e empacotamento](/guides/build/building/) para obter informações mais detalhadas sobre como usar o Wails.

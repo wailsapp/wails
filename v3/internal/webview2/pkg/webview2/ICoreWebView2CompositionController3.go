@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2CompositionController3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionController2Vtbl
 	DragEnter ComProc
 	DragLeave ComProc
 	DragOver  ComProc

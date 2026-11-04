@@ -23,6 +23,13 @@ type Config struct {
 	// here is to bind verification to a value the application developer set
 	// at build time and the release feed cannot influence.
 	//
+	// Setting it makes signatures mandatory (fail closed): a release whose
+	// Verification carries no signature — a digest-only block, or no
+	// Verification at all — is rejected, as is a release that carries a
+	// Signature but no configured key. This is what protects against a
+	// compromised or proxied distribution channel: an attacker cannot strip
+	// the signature to downgrade to digest-only mode.
+	//
 	// When unset, releases that carry only a Digest still install (the digest
 	// is checked against the streaming hash), but any release that carries a
 	// Signature is rejected. Strongly recommended for any app whose

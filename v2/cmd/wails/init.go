@@ -15,6 +15,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/git"
@@ -167,6 +168,9 @@ func initProject(f *flags.Init) error {
 	}
 
 	if quiet {
+		if remote {
+			pterm.Warning.Println(remoteTemplateWarning(options.TargetDir))
+		}
 		return nil
 	}
 
@@ -200,7 +204,7 @@ func initProject(f *flags.Init) error {
 	}
 
 	if remote {
-		pterm.Warning.Println("NOTE: You have created a project using a remote template. The Wails project takes no responsibility for 3rd party templates. Only use remote templates that you trust.")
+		pterm.Warning.Println(remoteTemplateWarning(options.TargetDir))
 	}
 
 	pterm.Println("")
@@ -208,6 +212,41 @@ func initProject(f *flags.Init) error {
 	pterm.Println("")
 
 	return nil
+}
+
+// remoteTemplateWarning returns the warning shown after a project has been
+// created from a remote template. Templates are code: the commands in
+// wails.json and the template's own scripts run on `wails build` / `wails dev`.
+func remoteTemplateWarning(projectDir string) string {
+	var sb strings.Builder
+	sb.WriteString("NOTE: You have created a project using a remote template. The Wails project takes no responsibility for 3rd party templates. Only use remote templates that you trust.\n")
+	sb.WriteString("Templates are code: the frontend commands in wails.json, and any scripts they call (e.g. package.json scripts), run on your machine during `wails build` and `wails dev`.\n")
+	sb.WriteString("Review wails.json and the frontend scripts before building.")
+
+	projectConfig, err := project.Load(projectDir)
+	if err != nil {
+		return sb.String()
+	}
+	commands := []struct{ key, value string }{
+		{"frontend:install", projectConfig.InstallCommand},
+		{"frontend:build", projectConfig.BuildCommand},
+		{"frontend:dev", projectConfig.DevCommand},
+		{"frontend:dev:install", projectConfig.DevInstallCommand},
+		{"frontend:dev:build", projectConfig.DevBuildCommand},
+		{"frontend:dev:watcher", projectConfig.DevWatcherCommand},
+	}
+	header := false
+	for _, command := range commands {
+		if command.value == "" {
+			continue
+		}
+		if !header {
+			sb.WriteString(fmt.Sprintf("\nCommands in wails.json (run from '%s'):", projectConfig.FrontendDir))
+			header = true
+		}
+		sb.WriteString(fmt.Sprintf("\n  %s: %s", command.key, command.value))
+	}
+	return sb.String()
 }
 
 func initGit(options *templates.Options) error {

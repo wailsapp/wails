@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile5Vtbl
 	GetIsPasswordAutosaveEnabled ComProc
 	PutIsPasswordAutosaveEnabled ComProc
 	GetIsGeneralAutofillEnabled  ComProc

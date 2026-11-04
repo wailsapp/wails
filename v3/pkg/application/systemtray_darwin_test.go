@@ -99,3 +99,22 @@ func TestCoerceStatusItemEventType_MacOS27Regression(t *testing.T) {
 		})
 	}
 }
+
+func TestSystrayMenuDisplayedCallback(t *testing.T) {
+	first, second := NewMenu(), NewMenu()
+	tray := &macosSystemTray{id: 4719, menu: first}
+	systemTrayMap[tray.id] = tray
+	defer delete(systemTrayMap, tray.id)
+
+	systrayMenuDisplayedCallback(4719, 1)
+	if !first.displayed.Load() {
+		t.Fatal("open did not mark the tray menu displayed")
+	}
+
+	// SetMenu while open: the close must clear the menu that was shown.
+	tray.menu = second
+	systrayMenuDisplayedCallback(4719, 0)
+	if first.displayed.Load() || second.displayed.Load() {
+		t.Fatal("close left a menu marked displayed")
+	}
+}

@@ -1,13 +1,13 @@
 ---
 title: "Упаковка для Windows"
-description: "Упакуйте приложение Wails для распространения в Windows"
+description: "Упаковка приложения Wails для распространения в Windows"
 slug: "guides/build/windows"
 sourcePath: "guides/build/windows.md"
 ---
 
 ## Установщик NSIS
 
-Формат упаковки по умолчанию создаёт установщик NSIS:
+При использовании формата упаковки по умолчанию создаётся установщик NSIS:
 
 ```bash
 wails3 package GOOS=windows
@@ -19,7 +19,7 @@ wails3 package GOOS=windows
 2. Создаёт загрузчик WebView2
 3. Создаёт установщик NSIS
 
-Результат: `build/windows/nsis/<AppName>-installer.exe`
+Результат: `bin/<AppName>-<arch>-installer.exe`. Исходные сценарии NSIS остаются в каталоге `build/windows/nsis/`.
 
 ### Пакет MSIX
 
@@ -38,7 +38,7 @@ wails3 package GOOS=windows FORMAT=msix
 
 ## Настройка установщика
 
-Конфигурация NSIS находится в `build/windows/nsis/project.nsi`. Отредактируйте этот файл, чтобы настроить:
+Конфигурация NSIS находится в файле `build/windows/nsis/project.nsi`. Измените этот файл, чтобы настроить:
 
 - Интерфейс и фирменное оформление установщика
 - Каталог установки
@@ -54,7 +54,7 @@ wails3 package GOOS=windows FORMAT=msix
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -90,7 +90,7 @@ vars:
 Храните пароль сертификата в безопасном месте:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 Подробности см. в разделе [«Подписание приложений»](/guides/build/signing/).
@@ -117,8 +117,8 @@ winget install NSIS.NSIS
 
 ### Предупреждение SmartScreen
 
-Исполняемый файл не подписан. См. раздел [«Подписание кода»](#--1) выше.
+Ваш исполняемый файл не подписан. См. раздел [«Подписание кода»](#--1) выше.
 
-### Отсутствует WebView2
+### Компонент WebView2 отсутствует
 
-Установщик содержит загрузчик WebView2, который при необходимости скачивает среду выполнения. Для автономной установки скачайте Evergreen Standalone Installer с сайта Microsoft.
+Установщик содержит загрузчик WebView2, который при необходимости скачивает среду выполнения. Если требуется автономная установка, скачайте Evergreen Standalone Installer с сайта Microsoft.

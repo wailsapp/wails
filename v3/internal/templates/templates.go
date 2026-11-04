@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/s"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -19,8 +20,8 @@ import (
 	"errors"
 
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/debug"
+	"github.com/wailsapp/wails/v3/internal/git"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -124,6 +125,19 @@ type TemplateOptions struct {
 	UseTypescript   bool
 	UseInterfaces   bool
 	WailsVersion    string
+	// RuntimeVersion is the @wailsio/runtime version pinned in generated
+	// package.json files (lockstep with the CLI; "latest" for dev builds).
+	RuntimeVersion string
+}
+
+// RuntimeVersionFor returns the npm version of @wailsio/runtime matching the
+// given Wails CLI version (identical, without the leading "v").
+func RuntimeVersionFor(wailsVersion string) string {
+	v := strings.TrimPrefix(strings.TrimSpace(wailsVersion), "v")
+	if v == "" || v == strings.TrimPrefix(version.DevVersion, "v") {
+		return "latest"
+	}
+	return v
 }
 
 type FileAssociation struct {
@@ -264,20 +278,47 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	return result, nil
 }
 
+// splitTemplateURI splits a remote template value of the form url[@tag].
+// The tag follows the last '@' and is only recognised when the text before it
+// already names a repository path (a '/' after the scheme for URLs, or a ':'
+// for scp-like addresses), so userinfo in URLs such as git@github.com:user/repo
+// or ssh://git@host/repo is kept as part of the URL, while tags such as
+// release/1.0 may still contain '/'.
+func splitTemplateURI(uri string) (url, tag string) {
+	i := strings.LastIndex(uri, "@")
+	if i < 0 || i == len(uri)-1 {
+		return uri, ""
+	}
+	prefix := uri[:i]
+	hasPath := strings.Contains(prefix, ":")
+	if _, rest, ok := strings.Cut(prefix, "://"); ok {
+		hasPath = strings.Contains(rest, "/")
+	}
+	if !hasPath {
+		return uri, ""
+	}
+	return prefix, uri[i+1:]
+}
+
 // gitclone clones uri into a temporary directory and returns its path.
+// The URL is validated before anything is created or cloned.
 func gitclone(uri string) (string, error) {
+	url, tag := splitTemplateURI(uri)
+
+	if err := git.ValidateRemoteURL(url); err != nil {
+		return "", err
+	}
+
 	dirname, err := os.MkdirTemp("", "wails-template-*")
 	if err != nil {
 		return "", err
 	}
 
-	parts := strings.SplitN(uri, "@", 2)
-	url, tag := parts[0], ""
-	if len(parts) > 1 {
-		tag = parts[1]
+	if err := git.CloneRemote(url, dirname, tag); err != nil {
+		os.RemoveAll(dirname)
+		return "", err
 	}
-
-	return dirname, git.Clone(url, dirname, tag)
+	return dirname, nil
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {
@@ -331,7 +372,7 @@ func Install(options *flags.Init) error {
 	if buildInfo.Development {
 		var relativePath string
 		// Check if the project directory and LocalModulePath are in the same drive
-		if filepath.VolumeName(wd) != filepath.VolumeName(debug.LocalModulePath) {
+		if !strings.EqualFold(filepath.VolumeName(projectDir), filepath.VolumeName(debug.LocalModulePath)) {
 			relativePath = debug.LocalModulePath
 		} else {
 			relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)
@@ -350,6 +391,7 @@ func Install(options *flags.Init) error {
 		UseTypescript:   UseTypescript,
 		UseInterfaces:   options.UseInterfaces,
 		WailsVersion:    version.String(),
+		RuntimeVersion:  RuntimeVersionFor(version.String()),
 		Opn:             "{{",
 		Cls:             "}}",
 	}
@@ -375,6 +417,9 @@ func Install(options *flags.Init) error {
 		}
 		if template == nil {
 			template, err = getRemoteTemplate(options.TemplateName)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -460,49 +505,49 @@ func Install(options *flags.Init) error {
 	case sourceLocal, sourceRemote:
 		publisher := fmt.Sprintf("CN=%s", options.ProductCompany)
 		data := struct {
-		TemplateOptions
-		Dir                   string
-		Name                  string
-		BinaryName            string
-		ProductName           string
-		ProductDescription    string
-		ProductVersion        string
-		ProductCompany        string
-		ProductCopyright      string
-		ProductComments       string
-		ProductIdentifier     string
-		Publisher             string
-		ProcessorArchitecture string
-		ExecutableName        string
-		ExecutablePath        string
-		OutputPath            string
-		CertificatePath       string
-		FileAssociations      []FileAssociation
-		Protocols             []ProtocolConfig
-		Silent                bool
-		Typescript            bool
-	}{
-		Name:                  options.ProjectName,
-		BinaryName:            NormalizeBinaryName(options.ProjectName),
-		Silent:                true,
-		ProductCompany:        options.ProductCompany,
-		ProductName:           options.ProductName,
-		ProductDescription:    options.ProductDescription,
-		ProductVersion:        options.ProductVersion,
-		ProductIdentifier:     options.ProductIdentifier,
-		ProductCopyright:      options.ProductCopyright,
-		ProductComments:       options.ProductComments,
-		Publisher:             publisher,
-		ProcessorArchitecture: "x64",
-		ExecutableName:        options.ProjectName,
-		ExecutablePath:        options.ProjectName,
-		OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
-		CertificatePath:       "",
-		FileAssociations:      []FileAssociation{},
-		Protocols:             []ProtocolConfig{},
-		Typescript:            templateData.UseTypescript,
-		TemplateOptions:       templateData,
-	}
+			TemplateOptions
+			Dir                   string
+			Name                  string
+			BinaryName            string
+			ProductName           string
+			ProductDescription    string
+			ProductVersion        string
+			ProductCompany        string
+			ProductCopyright      string
+			ProductComments       string
+			ProductIdentifier     string
+			Publisher             string
+			ProcessorArchitecture string
+			ExecutableName        string
+			ExecutablePath        string
+			OutputPath            string
+			CertificatePath       string
+			FileAssociations      []FileAssociation
+			Protocols             []ProtocolConfig
+			Silent                bool
+			Typescript            bool
+		}{
+			Name:                  options.ProjectName,
+			BinaryName:            NormalizeBinaryName(options.ProjectName),
+			Silent:                true,
+			ProductCompany:        options.ProductCompany,
+			ProductName:           options.ProductName,
+			ProductDescription:    options.ProductDescription,
+			ProductVersion:        options.ProductVersion,
+			ProductIdentifier:     options.ProductIdentifier,
+			ProductCopyright:      options.ProductCopyright,
+			ProductComments:       options.ProductComments,
+			Publisher:             publisher,
+			ProcessorArchitecture: "x64",
+			ExecutableName:        options.ProjectName,
+			ExecutablePath:        options.ProjectName,
+			OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
+			CertificatePath:       "",
+			FileAssociations:      []FileAssociation{},
+			Protocols:             []ProtocolConfig{},
+			Typescript:            templateData.UseTypescript,
+			TemplateOptions:       templateData,
+		}
 		// If options.ProjectDir does not exist, create it
 		if _, err := os.Stat(options.ProjectDir); os.IsNotExist(err) {
 			err = os.Mkdir(options.ProjectDir, 0755)
@@ -517,6 +562,30 @@ func Install(options *flags.Init) error {
 
 		if template.tempDir != "" {
 			s.RMDIR(template.tempDir)
+		}
+	}
+	if !features.WakeEnabled() {
+		// Local templates generated under the experiment also need a legacy
+		// entry point. Never replace a template author's existing Taskfile.
+		hasTaskfile := false
+		for _, name := range []string{"Taskfile.yml", "Taskfile.yaml", "Taskfile.dist.yml", "Taskfile.dist.yaml"} {
+			_, err := os.Stat(filepath.Join(options.ProjectDir, name))
+			if err == nil {
+				hasTaskfile = true
+				break
+			}
+			if !os.IsNotExist(err) {
+				return err
+			}
+		}
+		if !hasTaskfile {
+			legacy, err := fs.Sub(templates, "_legacy")
+			if err != nil {
+				return err
+			}
+			if err := gosod.New(legacy).Extract(options.ProjectDir, templateData); err != nil {
+				return err
+			}
 		}
 	}
 	if !options.SkipGoModTidy {
@@ -556,7 +625,7 @@ func GenerateTemplate(options *BaseTemplate) error {
 		return err
 	}
 
-	// Copy the common files (Go backend, Taskfile, go.mod, etc.) verbatim.
+	// Copy the common files (Go backend, module metadata, etc.) verbatim.
 	// These files contain template variables like {{.ProjectName}} that must be
 	// preserved so they are expanded when users later run `wails init -t <template>`.
 	commonFS, err := fs.Sub(templates, "_common")
@@ -565,6 +634,16 @@ func GenerateTemplate(options *BaseTemplate) error {
 	}
 	if err = os.CopyFS(outDir, commonFS); err != nil {
 		return err
+	}
+
+	if !features.WakeEnabled() {
+		legacy, err := fs.Sub(templates, "_legacy")
+		if err != nil {
+			return err
+		}
+		if err := os.CopyFS(outDir, legacy); err != nil {
+			return err
+		}
 	}
 
 	// Replace the placeholder frontend directory with the real frontend content.

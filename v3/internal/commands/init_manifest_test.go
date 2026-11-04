@@ -1,0 +1,327 @@
+package commands
+
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/templates"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
+)
+
+func TestInitBuiltInTemplatesCreateOnlyWailsYAML(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	templateNames := make([]string, 0, len(templates.GetDefaultTemplates()))
+	for _, template := range templates.GetDefaultTemplates() {
+		templateNames = append(templateNames, template.Name)
+	}
+	sort.Strings(templateNames)
+	require.NotEmpty(t, templateNames)
+
+	for _, templateName := range templateNames {
+		t.Run(templateName, func(t *testing.T) {
+			defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+			require.NoError(t, os.Chdir(originalDirectory))
+			options := &flags.Init{
+				TemplateName:      templateName,
+				ProjectName:       "YAML Only",
+				ProjectDir:        filepath.Join(t.TempDir(), "project"),
+				ModulePath:        "example.com/yaml-only",
+				ProductName:       "YAML Only",
+				ProductIdentifier: "com.example.yamlonly",
+				ProductVersion:    "0.1.0",
+				SkipGoModTidy:     true,
+			}
+			require.NoError(t, Init(options))
+			root := options.ProjectDir
+
+			assert.FileExists(t, filepath.Join(root, manifest.Filename))
+			assert.NoFileExists(t, filepath.Join(root, "wails.toml"))
+			assert.NoFileExists(t, filepath.Join(root, "Taskfile.yml"))
+			assert.NoFileExists(t, filepath.Join(root, "Taskfile.yaml"))
+
+			loaded, err := manifest.Load(root, "")
+			require.NoError(t, err)
+			assert.Equal(t, "YAML_Only", loaded.Config.Project.Name)
+			assert.Equal(t, "bin", loaded.Config.Build.OutputDirectory)
+			assert.Equal(t, "frontend/dist", loaded.Config.Frontend.OutputDirectory)
+			_, err = pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+			require.NoError(t, err)
+
+			nested := filepath.Join(root, "frontend", "src")
+			require.NoError(t, os.MkdirAll(nested, 0o755))
+			nestedLoad, err := manifest.Load(nested, "")
+			require.NoError(t, err)
+			assert.Equal(t, root, nestedLoad.Config.Root)
+		})
+	}
+}
+
+func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	options := &flags.Init{
+		TemplateName:       "vanilla",
+		ProjectName:        "Wizard Project",
+		ProjectDir:         filepath.Join(t.TempDir(), "project"),
+		ModulePath:         "example.com/wizard-project",
+		ProductName:        "Wizard Product",
+		ProductCompany:     "Acme Limited",
+		ProductIdentifier:  "com.example.wizard",
+		ProductDescription: "Created through the setup wizard",
+		ProductVersion:     "2.3.4",
+		ProductCopyright:   "Copyright 2026 Acme Limited",
+		ProductComments:    "Internal preview",
+		SkipGoModTidy:      true,
+	}
+
+	require.NoError(t, Init(options))
+	loaded, err := manifest.Load(options.ProjectDir, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Wizard_Project", loaded.Config.Project.Name)
+	assert.Equal(t, "Wizard Product", loaded.Config.Project.ProductName)
+	assert.Equal(t, "Acme Limited", loaded.Config.Project.CompanyName)
+	assert.Equal(t, "com.example.wizard", loaded.Config.Project.Identifier)
+	assert.Equal(t, "Created through the setup wizard", loaded.Config.Project.Description)
+	assert.Equal(t, "2.3.4", loaded.Config.Project.Version)
+	assert.Equal(t, "Copyright 2026 Acme Limited", loaded.Config.Project.Copyright)
+	assert.Equal(t, "Internal preview", loaded.Config.Project.Comments)
+}
+
+func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	tests := []struct {
+		name          string
+		template      string
+		useInterfaces bool
+		typescript    bool
+		interfaces    bool
+	}{
+		{name: "typescript interfaces", template: "vanilla", useInterfaces: true, typescript: true, interfaces: true},
+		{name: "typescript classes", template: "vanilla", useInterfaces: false, typescript: true, interfaces: false},
+		{name: "javascript has no interface bindings", template: "vanilla-js", useInterfaces: true, typescript: false, interfaces: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+			require.NoError(t, os.Chdir(originalDirectory))
+			options := &flags.Init{
+				TemplateName:      test.template,
+				ProjectName:       "Binding Choice",
+				ProjectDir:        t.TempDir(),
+				ModulePath:        "example.com/binding-choice",
+				ProductName:       "Binding Choice",
+				ProductIdentifier: "com.example.bindingchoice",
+				ProductVersion:    "0.1.0",
+				UseInterfaces:     test.useInterfaces,
+				SkipGoModTidy:     true,
+			}
+
+			require.NoError(t, Init(options))
+			loaded, err := manifest.Load(options.ProjectDir, "")
+			require.NoError(t, err)
+			assert.Equal(t, test.typescript, loaded.Config.Frontend.Bindings.TypeScript)
+			assert.Equal(t, test.interfaces, loaded.Config.Frontend.Bindings.Interfaces)
+		})
+	}
+}
+
+func TestInitUpdatesTemplateManifestWithWizardStateAndPreservesIntent(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	templateRoot := filepath.Join(t.TempDir(), "custom-ts")
+	require.NoError(t, os.MkdirAll(templateRoot, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "template.yaml"), []byte(`name: Custom
+shortname: custom
+author: Test
+description: Custom YAML template
+version: v0.0.1
+wailsVersion: 3
+typescript: true
+`), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "gitignore"), []byte("bin\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, manifest.Filename), []byte(`version: 3
+# Template-owned project comment.
+project:
+  name: template
+  product_name: Template
+  identifier: com.example.template
+  version: 9.9.9
+  company: Template Company
+  description: Template description
+  copyright: Template copyright
+  comments: Template comments
+frontend:
+  directory: frontend
+  install: [npm, install]
+  build: [npm, run, build]
+  dev: [npm, run, dev]
+  output: frontend/dist
+  bindings:
+    typescript: true
+    interfaces: true
+build:
+  output: artifacts
+  tags: [template-owned]`), 0o640))
+
+	options := &flags.Init{
+		TemplateName:       templateRoot,
+		ProjectName:        "Wizard Project",
+		ProjectDir:         t.TempDir(),
+		ModulePath:         "example.com/wizard-project",
+		ProductName:        "Wizard Product",
+		ProductCompany:     "",
+		ProductIdentifier:  "com.example.wizard",
+		ProductDescription: "",
+		ProductVersion:     "2.3.4",
+		ProductCopyright:   "",
+		ProductComments:    "",
+		UseInterfaces:      false,
+		SkipGoModTidy:      true,
+	}
+
+	require.NoError(t, Init(options))
+	loaded, err := manifest.Load(options.ProjectDir, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Wizard_Project", loaded.Config.Project.Name)
+	assert.Equal(t, "Wizard Product", loaded.Config.Project.ProductName)
+	assert.Equal(t, "com.example.wizard", loaded.Config.Project.Identifier)
+	assert.Equal(t, "2.3.4", loaded.Config.Project.Version)
+	assert.Empty(t, loaded.Config.Project.CompanyName)
+	assert.Empty(t, loaded.Config.Project.Description)
+	assert.Empty(t, loaded.Config.Project.Copyright)
+	assert.Empty(t, loaded.Config.Project.Comments)
+	assert.True(t, loaded.Config.Frontend.Bindings.TypeScript)
+	assert.False(t, loaded.Config.Frontend.Bindings.Interfaces)
+	assert.Equal(t, "artifacts", loaded.Config.Build.OutputDirectory)
+	assert.Equal(t, []string{"template-owned"}, loaded.Config.Build.Go.Tags)
+	assert.Contains(t, string(loaded.Raw), "# Template-owned project comment.")
+}
+
+func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	parent := t.TempDir()
+	require.NoError(t, manifest.WriteMinimal(parent, manifest.Project{
+		Name: "parent", ProductName: "Parent", Identifier: "com.example.parent", Version: "1.0.0",
+	}))
+	options := &flags.Init{
+		TemplateName:      "vanilla",
+		ProjectName:       "Child",
+		ProjectDir:        filepath.Join(parent, "projects"),
+		ModulePath:        "example.com/child",
+		ProductName:       "Child",
+		ProductIdentifier: "com.example.child",
+		ProductVersion:    "0.1.0",
+		SkipGoModTidy:     true,
+	}
+	require.NoError(t, Init(options))
+	childManifest := filepath.Join(options.ProjectDir, manifest.Filename)
+	assert.FileExists(t, childManifest)
+	loaded, err := manifest.Load(options.ProjectDir, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Child", loaded.Config.Project.Name)
+}
+
+func TestCommunityTemplateWithFullyMigratableTaskfileActivatesYAMLAndPreservesLegacySource(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	root := t.TempDir()
+	legacy := []byte("version: '3'\nvars:\n  APP_NAME: custom-binary\ntasks: {}\n")
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), legacy, 0o600))
+	options := &flags.Init{ProjectDir: root, ProjectName: "Community", ProductName: "Community App", ProductIdentifier: "com.example.community", ProductVersion: "2.0.0", Quiet: true}
+
+	require.NoError(t, initialiseTemplateBuildManifest(options))
+	assert.FileExists(t, filepath.Join(root, manifest.Filename))
+	assert.NoFileExists(t, filepath.Join(root, manifest.MigratedFilename))
+	loaded, err := manifest.Load(root, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Community", loaded.Config.Project.Name)
+	assert.Equal(t, "custom-binary", loaded.Config.Project.BinaryName)
+	actual, err := os.ReadFile(filepath.Join(root, "Taskfile.yml"))
+	require.NoError(t, err)
+	assert.Equal(t, legacy, actual)
+	info, err := os.Stat(filepath.Join(root, "Taskfile.yml"))
+	require.NoError(t, err)
+	if runtime.GOOS != "windows" {
+		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	}
+	assert.NoFileExists(t, filepath.Join(root, ".wails", "migration-report.json"))
+}
+
+func TestCommunityTemplateWithCustomTaskWritesOnlyInactiveDraft(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	root := t.TempDir()
+	legacy := []byte("version: '3'\ntasks:\n  build:\n    cmds:\n      - task: bespoke\n  bespoke:\n    cmds: ['echo custom']\n")
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), legacy, 0o640))
+	options := &flags.Init{ProjectDir: root, ProjectName: "Community", ProductName: "Community App", ProductIdentifier: "com.example.community", ProductVersion: "2.0.0", Quiet: true}
+
+	require.NoError(t, initialiseTemplateBuildManifest(options))
+	assert.NoFileExists(t, filepath.Join(root, manifest.Filename))
+	assert.FileExists(t, filepath.Join(root, manifest.MigratedFilename))
+	draft, err := os.ReadFile(filepath.Join(root, manifest.MigratedFilename))
+	require.NoError(t, err)
+	assert.Contains(t, string(draft), "# BLOCKED: Taskfile.yml [bespoke]")
+	actual, err := os.ReadFile(filepath.Join(root, "Taskfile.yml"))
+	require.NoError(t, err)
+	assert.Equal(t, legacy, actual)
+	info, err := os.Stat(filepath.Join(root, "Taskfile.yml"))
+	require.NoError(t, err)
+	if runtime.GOOS != "windows" {
+		assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
+	}
+	assert.NoFileExists(t, filepath.Join(root, ".wails", "migration-report.json"))
+}
+
+func TestInitWithoutExperimentCreatesLegacyTaskfiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	for _, template := range templates.GetDefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			t.Chdir(t.TempDir())
+			options := &flags.Init{
+				TemplateName: template.Name, ProjectName: "Legacy App", ProjectDir: filepath.Join(t.TempDir(), "project"),
+				ModulePath: "example.com/legacy", ProductName: "Legacy App", ProductIdentifier: "com.example.legacy",
+				ProductVersion: "1.2.3", SkipGoModTidy: true,
+			}
+			require.NoError(t, Init(options))
+			require.NoFileExists(t, filepath.Join(options.ProjectDir, "wails.yaml"))
+			require.NoFileExists(t, filepath.Join(options.ProjectDir, "wails.migrated.yaml"))
+			for _, name := range []string{"Taskfile.yml", "build/config.yml", "build/Taskfile.yml", "build/darwin/Taskfile.yml", "build/windows/Taskfile.yml", "build/linux/Taskfile.yml"} {
+				require.FileExists(t, filepath.Join(options.ProjectDir, name))
+			}
+			data, err := os.ReadFile(filepath.Join(options.ProjectDir, "Taskfile.yml"))
+			require.NoError(t, err)
+			require.Contains(t, string(data), `APP_NAME: "legacy-app"`)
+		})
+	}
+}

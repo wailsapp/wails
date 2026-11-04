@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_20Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_19Vtbl
 	GetFrameId ComProc
 }
 

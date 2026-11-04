@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings9Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings8Vtbl
 	GetIsNonClientRegionSupportEnabled ComProc
 	PutIsNonClientRegionSupportEnabled ComProc
 }

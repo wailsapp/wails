@@ -71,19 +71,23 @@ type keepaliveOwner struct {
 type cancellationCommand struct {
 	method string
 	params any
+	// optional marks a best-effort command. A failure is logged but the session
+	// is still usable, so the remaining commands run instead of the session
+	// being reported as unconfigured.
+	optional bool
 }
 
 func (c *windowsRequestCancellation) enableSession(session string, done func(error)) {
 	commands := []cancellationCommand{
-		{"Network.enable", struct{}{}},
-		{"Runtime.enable", struct{}{}},
-		{"Runtime.addBinding", map[string]string{"name": keepaliveBinding}},
+		{method: "Network.enable", params: struct{}{}},
+		{method: "Runtime.enable", params: struct{}{}},
+		{method: "Runtime.addBinding", params: map[string]string{"name": keepaliveBinding}},
 	}
 	if session == "" {
 		commands = append(commands,
-			cancellationCommand{"Page.enable", struct{}{}},
-			cancellationCommand{"Page.addScriptToEvaluateOnNewDocument", map[string]string{"source": requestKeepaliveScript}},
-			cancellationCommand{"Fetch.enable", map[string]any{"patterns": []map[string]string{
+			cancellationCommand{method: "Page.enable", params: struct{}{}},
+			cancellationCommand{method: "Page.addScriptToEvaluateOnNewDocument", params: map[string]string{"source": requestKeepaliveScript}},
+			cancellationCommand{method: "Fetch.enable", params: map[string]any{"patterns": []map[string]string{
 				{"urlPattern": "http://wails.localhost/*", "requestStage": "Request"},
 				{"urlPattern": "http://wails.localhost:*/*", "requestStage": "Request"},
 			}}},
@@ -91,9 +95,17 @@ func (c *windowsRequestCancellation) enableSession(session string, done func(err
 	} else {
 		// WebView2 intercepts worker requests on the root Fetch session. Only the
 		// worker's Network domain must be enabled to observe its terminal events.
-		commands = append(commands, cancellationCommand{"Runtime.evaluate", map[string]string{"expression": requestKeepaliveScript}})
+		commands = append(commands,
+			cancellationCommand{method: "Runtime.evaluate", params: map[string]string{"expression": requestKeepaliveScript}},
+			// The worker is paused here, before its first script runs, which is
+			// the only moment a Worker it creates can be redirected away from the
+			// nested worker script request WebView2 cannot serve (wails#6128).
+			// Best-effort: a rejected evaluation only skips the redirect and must
+			// not report the session as unconfigured.
+			cancellationCommand{method: "Runtime.evaluate", params: map[string]string{"expression": workerForwardingScript}, optional: true},
+		)
 	}
-	commands = append(commands, cancellationCommand{"Target.setAutoAttach", map[string]any{"autoAttach": true, "waitForDebuggerOnStart": true, "flatten": true}})
+	commands = append(commands, cancellationCommand{method: "Target.setAutoAttach", params: map[string]any{"autoAttach": true, "waitForDebuggerOnStart": true, "flatten": true}})
 	c.configure(session, commands, done)
 }
 
@@ -104,8 +116,13 @@ func (c *windowsRequestCancellation) configure(session string, commands []cancel
 	}
 	c.call(session, commands[0].method, commands[0].params, func(err error) {
 		if err != nil {
-			done(err)
-			return
+			if !commands[0].optional {
+				done(err)
+				return
+			}
+			// A best-effort command failed; the session is still usable, so keep
+			// configuring it instead of reporting it as failed.
+			globalApplication.error("Windows request cancellation (%s): %v", commands[0].method, err)
 		}
 		c.configure(session, commands[1:], done)
 	})

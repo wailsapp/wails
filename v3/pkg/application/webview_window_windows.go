@@ -86,7 +86,10 @@ type windowsWebviewWindow struct {
 	contentProtectionApplied bool
 
 	focusingChromium bool
-	onceDo           sync.Once
+	// focusHandoff records that focus was deliberately moved from the WebView
+	// to the host window by tabbing out of the page (#3783).
+	focusHandoff focusHandoff
+	onceDo       sync.Once
 
 	// Window move debouncer
 	moveDebouncer func(func())
@@ -131,10 +134,8 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
-	// A nil menu means "no menu", which is what macOS makes of it. Update
-	// dereferences its receiver once the application is running, so without
-	// this the call panicked rather than doing nothing (#6104).
 	if menu == nil {
+		w.removeMenu()
 		return
 	}
 	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
@@ -165,8 +166,10 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	w.menu = replacement
 
 	// Only once the window has been given the new menu: destroying one that is
-	// still assigned to a window leaves it pointing at a freed handle.
+	// still assigned to a window leaves it pointing at a freed handle. Its
+	// accelerators go too, except those the replacement still holds.
 	if previous != nil {
+		w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, replacement))
 		previous.Destroy()
 	}
 
@@ -194,6 +197,47 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 		// Log warning about menubar visibility issue
 		globalApplication.debug("Warning: Menubars may be invisible when using translucent backgrounds with Mica/Acrylic/Tabbed effects", "window", w.parent.id)
 	}
+}
+
+// removeMenu takes the menu bar off the window (SetMenu(nil)): the window
+// shows no bar, and the removed menu's accelerators stop working in it.
+func (w *windowsWebviewWindow) removeMenu() {
+	previous := w.menu
+	if previous == nil {
+		return
+	}
+	// The window must let go of the menu before it is destroyed: one still
+	// assigned to a window leaves it pointing at a freed handle.
+	if !w32.SetMenu(w.hwnd, 0) {
+		return
+	}
+	previous.takeRuntimeBitmaps()
+	w.menu = nil
+	w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, nil))
+	previous.Destroy()
+	w32.DrawMenuBar(w.hwnd)
+	// The client area grows by the bar's height: resize the webview into it.
+	if w.chromium != nil {
+		w.chromium.Resize()
+	}
+}
+
+// itemsOnlyIn returns the items of menu that replacement (which may be nil)
+// does not also hold.
+func itemsOnlyIn(menu, replacement *Win32Menu) []*MenuItem {
+	kept := make(map[*MenuItem]bool)
+	if replacement != nil {
+		for _, item := range replacement.menuMapping {
+			kept[item] = true
+		}
+	}
+	var items []*MenuItem
+	for _, item := range menu.menuMapping {
+		if !kept[item] {
+			items = append(items, item)
+		}
+	}
+	return items
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -523,7 +567,7 @@ func (w *windowsWebviewWindow) run() {
 			w.menu = NewApplicationMenu(w, userMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
-		} else if options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		} else if options.UseApplicationMenu && !w.parent.menuRemoved && globalApplication.applicationMenu != nil {
 			// Use the global application menu if opted in
 			globalApplication.applicationMenu.Update()
 			w.menu = NewApplicationMenu(w, globalApplication.applicationMenu)
@@ -630,6 +674,12 @@ func (w *windowsWebviewWindow) run() {
 		w.disableIcon()
 	}
 
+	// Apply last used custom icon to new windows, if any
+	windowsApp := globalApplication.impl.(*windowsApp)
+	if windowsApp.currentIcon != 0 {
+		windowsApp.applyIcon(w, windowsApp.currentIcon)
+	}
+
 	// Process the theme
 	switch options.Windows.Theme {
 	case SystemDefault:
@@ -701,11 +751,14 @@ func (w *windowsWebviewWindow) center() {
 }
 
 func (w *windowsWebviewWindow) disableSizeConstraints() {
+	// Startup fullscreen bypasses the public Fullscreen method, so save here too.
+	w.parent.saveSizeConstraintOptions()
 	w.setMaxSize(0, 0)
 	w.setMinSize(0, 0)
 }
 
 func (w *windowsWebviewWindow) enableSizeConstraints() {
+	w.parent.restoreSavedSizeConstraintOptions()
 	options := w.parent.options
 	if options.MinWidth > 0 || options.MinHeight > 0 {
 		w.setMinSize(options.MinWidth, options.MinHeight)
@@ -986,8 +1039,9 @@ func (w *windowsWebviewWindow) getZoom() float64 {
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1.0 {
-		zoom = 1.0
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	w.chromium.PutZoomFactor(zoom)
 }
@@ -1189,6 +1243,35 @@ func (w *windowsWebviewWindow) focus() {
 	w.focusingChromium = true
 	w.chromium.Focus()
 	w.focusingChromium = false
+}
+
+// restoreWebviewFocus moves focus back into the WebView when the window is
+// activated (Alt+Tab, taskbar, title bar click). Windows restores focus to the
+// WebView's child HWND on activation without the host receiving WM_SETFOCUS,
+// so the WebView controller is never told and the page stays unfocused.
+func (w *windowsWebviewWindow) restoreWebviewFocus() {
+	if !w.focusHandoff.shouldRestoreWebview() || w.isDisabled() || w.isMinimised() {
+		return
+	}
+	if w.chromium == nil || w.chromium.GetController() == nil {
+		return
+	}
+	w.focusingChromium = true
+	w.chromium.Focus()
+	w.focusingChromium = false
+}
+
+// moveFocusRequested handles the user tabbing out of the WebView. WebView2
+// would otherwise wrap focus inside the page, trapping the keyboard there
+// (#3783). Focus is handed to the native window; the next Tab re-enters.
+func (w *windowsWebviewWindow) moveFocusRequested(reason edge.COREWEBVIEW2_MOVE_FOCUS_REASON) bool {
+	next := reason == edge.COREWEBVIEW2_MOVE_FOCUS_REASON_NEXT
+	previous := reason == edge.COREWEBVIEW2_MOVE_FOCUS_REASON_PREVIOUS
+	if !w.focusHandoff.tabOut(next, previous) {
+		return false
+	}
+	w32.SetFocus(w.hwnd)
+	return true
 }
 
 // printStyle takes a windows style and prints it in a human-readable format
@@ -1692,14 +1775,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
+			// Re-activating the window should return focus to the WebView.
+			w.focusHandoff.reset()
 			w.parent.emit(events.Windows.WindowInactive)
 		}
-		if wparam == w32.WA_ACTIVE {
+		if int(wparam&0xffff) == w32.WA_ACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
+			w.restoreWebviewFocus()
 			w.parent.emit(events.Windows.WindowActive)
 		}
-		if wparam == w32.WA_CLICKACTIVE {
+		if int(wparam&0xffff) == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
+			w.restoreWebviewFocus()
 			w.parent.emit(events.Windows.WindowClickActive)
 		}
 		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
@@ -1742,6 +1829,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 1
 		}
 	case w32.WM_KILLFOCUS:
+		// The host no longer owns focus, including when the user clicks the page.
+		w.focusHandoff.reset()
 		if w.focusingChromium {
 			return 0
 		}
@@ -1763,7 +1852,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowEndResize)
 		}
 	case w32.WM_SETFOCUS:
-		w.focus()
+		if w.focusHandoff.shouldRestoreWebview() {
+			w.focus()
+		}
 		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
@@ -1833,6 +1924,24 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SYSKEYUP:
 		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_KEYDOWN:
+		if wparam == w32.VK_TAB && w.chromium != nil && w.chromium.IsReady() {
+			// Focus is on the host window after tabbing out of the WebView;
+			// Tab / Shift+Tab re-enters it at the first / last element.
+			// Plain Tab re-entry takes precedence over user-defined Tab bindings;
+			// Ctrl+Tab remains available to shortcuts.
+			shift := int(w32.GetKeyState(w32.VK_SHIFT))&0x8000 != 0
+			ctrl := int(w32.GetKeyState(w32.VK_CONTROL))&0x8000 != 0
+			if previous, ok := w.focusHandoff.tabIn(shift, ctrl); ok {
+				var reason edge.COREWEBVIEW2_MOVE_FOCUS_REASON = edge.COREWEBVIEW2_MOVE_FOCUS_REASON_NEXT
+				if previous {
+					reason = edge.COREWEBVIEW2_MOVE_FOCUS_REASON_PREVIOUS
+				}
+				w.focusingChromium = true
+				w.chromium.MoveFocus(reason)
+				w.focusingChromium = false
+				return 0
+			}
+		}
 		w.parent.emit(events.Windows.WindowKeyDown)
 		w.processKeyBinding(uint(wparam))
 	case w32.WM_KEYUP:
@@ -2397,10 +2506,7 @@ func (w *windowsWebviewWindow) processRequest(
 		if err != nil {
 			globalApplication.fatal("error setting WindowId header: %w", err)
 		}
-		err = reqHeaders.Release()
-		if err != nil {
-			globalApplication.fatal("error releasing headers: %w", err)
-		}
+		reqHeaders.Release()
 	}
 
 	if globalApplication.assets == nil {
@@ -2529,6 +2635,7 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	chromium.NavigationStartingCallback = w.navigationStarting
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
+	chromium.MoveFocusRequestedCallback = w.moveFocusRequested
 	chromium.ProcessFailedCallback = w.processFailed
 
 	if recovering {
@@ -2928,12 +3035,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			return
 		}
 
-		defer func() {
-			err = objs.Release()
-			if err != nil {
-				globalApplication.error("error releasing objects: %w", err)
-			}
-		}()
+		defer objs.Release()
 
 		count, err := objs.GetCount()
 		if err != nil {

@@ -19,6 +19,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
+
+	// A clear error, not hundreds, when no native backend is selected.
+	_ "github.com/wailsapp/wails/v3/internal/buildguard"
 )
 
 //go:embed assets/*
@@ -263,6 +266,10 @@ type windowMessage struct {
 	windowId   uint
 	message    string
 	originInfo *OriginInfo
+	// childFrame is true when the platform reports that the message was posted
+	// by a child frame (iframe) rather than the window's main frame. Platforms
+	// that cannot identify the posting frame leave it false.
+	childFrame bool
 }
 
 type OriginInfo struct {
@@ -461,6 +468,9 @@ type App struct {
 
 	// platform app
 	impl platformApp
+	// earlyDispatch holds main-thread work sent before Run created impl; Run hands it on once impl exists.
+	earlyDispatchLock sync.Mutex
+	earlyDispatch     []func()
 
 	// The main application menu (private - use app.Menu.GetApplicationMenu/SetApplicationMenu)
 	applicationMenu *Menu
@@ -661,7 +671,14 @@ func (a *App) Run() error {
 		return err
 	}
 
-	a.impl = newPlatformApp(a)
+	// Built outside earlyDispatchLock: construction can call back into dispatch (an ErrorHandler, a window
+	// procedure interceptor), which would wait on the lock. Work sent meanwhile still queues.
+	impl := newPlatformApp(a)
+	a.earlyDispatchLock.Lock()
+	a.impl = impl
+	early := a.earlyDispatch
+	a.earlyDispatch = nil
+	a.earlyDispatchLock.Unlock()
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -754,6 +771,17 @@ func (a *App) Run() error {
 			}()
 		}
 		a.pendingRun = nil
+
+		// Work sent before Run is replayed once startup is done, from another goroutine: on desktop it is posted to
+		// the native loop, so it runs after activation, and in server mode it cannot hold up startup.
+		if len(early) > 0 {
+			go func() {
+				defer handlePanic()
+				for _, fn := range early {
+					a.dispatchOnMainThread(fn)
+				}
+			}()
+		}
 
 		// set the application menu
 		if runtime.GOOS == "darwin" {
@@ -859,6 +887,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		// Reserved framework messages are only accepted from the main frame
+		if event.childFrame {
+			a.debug("handleWindowMessage: Ignoring wails message from child frame", "message", event.message)
+			return
+		}
 		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
@@ -978,7 +1011,24 @@ func (a *App) SetIcon(icon []byte) {
 	}
 }
 
+// platformAppReady reports whether the platform application exists yet. It is
+// the condition dispatchOnMainThread needs in order to run work rather than
+// queue it for Run to replay.
+func (a *App) platformAppReady() bool {
+	a.earlyDispatchLock.Lock()
+	defer a.earlyDispatchLock.Unlock()
+	return a.impl != nil
+}
+
 func (a *App) dispatchOnMainThread(fn func()) {
+	// Before Run there is no main loop to run fn on, so it waits for one.
+	a.earlyDispatchLock.Lock()
+	if a.impl == nil {
+		a.earlyDispatch = append(a.earlyDispatch, fn)
+		a.earlyDispatchLock.Unlock()
+		return
+	}
+	a.earlyDispatchLock.Unlock()
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
 		fn()

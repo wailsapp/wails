@@ -998,10 +998,20 @@ func serveAssetForAndroid(app *App, method string, path string) ([]byte, error) 
 	}
 
 	// For runtime calls, return the body even for error responses so the
-	// JavaScript side can see the error message.
+	// JavaScript side can see the error message. Error responses from the
+	// asset handler are plain text (from the errs package), but the JS
+	// runtime JSON.parse()s every runtime response, so a non-200 body must be
+	// wrapped in the same {"ok":false,"error":"..."} envelope used by the
+	// JavascriptInterface bridge (handleRuntimeCallForAndroid); otherwise the
+	// frontend throws a SyntaxError instead of surfacing the error.
 	if isRuntimeCall {
 		if result.StatusCode != http.StatusOK {
 			androidDebugLogf("[serveAsset] runtime call returned status %d: %s", result.StatusCode, string(body))
+			envelope, err := json.Marshal(map[string]any{"ok": false, "error": strings.TrimSpace(string(body))})
+			if err != nil {
+				return body, nil
+			}
+			return envelope, nil
 		}
 		return body, nil
 	}
@@ -1161,4 +1171,17 @@ func getMimeTypeForPath(path string) string {
 
 func endsWith(s, suffix string) bool {
 	return len(s) >= len(suffix) && s[len(s)-len(suffix):] == suffix
+}
+
+//export Java_com_wails_app_WailsBridge_nativeConfigureDev
+func Java_com_wails_app_WailsBridge_nativeConfigureDev(env *C.JNIEnv, obj C.jobject, url, ready, token C.jstring) {
+	convert := func(value C.jstring) string {
+		p := C.jstringToC(env, value)
+		if p == nil {
+			return ""
+		}
+		defer C.releaseJString(env, value, p)
+		return C.GoString(p)
+	}
+	configureDevRuntime(convert(url), convert(ready), convert(token))
 }

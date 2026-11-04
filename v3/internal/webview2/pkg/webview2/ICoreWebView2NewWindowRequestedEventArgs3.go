@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2NewWindowRequestedEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NewWindowRequestedEventArgs2Vtbl
 	GetOriginalSourceFrameInfo ComProc
 }
 

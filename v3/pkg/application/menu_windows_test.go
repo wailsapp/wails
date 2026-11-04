@@ -56,10 +56,10 @@ func withTestApplication(t *testing.T) {
 	t.Cleanup(func() { globalApplication = previous })
 }
 
-// A nil menu means "no menu", which is what macOS makes of it. Menu.Update
+// SetMenu(nil) on a window with no menu does nothing. Menu.Update
 // dereferences its receiver once the application is running, so this used to
-// panic rather than do nothing (#6104).
-func TestWindowsSetMenuIgnoresANilMenu(t *testing.T) {
+// panic (#6104).
+func TestWindowsSetMenuNilWithoutAMenu(t *testing.T) {
 	withTestApplication(t)
 
 	w := &windowsWebviewWindow{parent: &WebviewWindow{}}
@@ -67,6 +67,102 @@ func TestWindowsSetMenuIgnoresANilMenu(t *testing.T) {
 
 	if w.menu != nil {
 		t.Fatalf("a nil menu left one on the window: %#v", w.menu)
+	}
+}
+
+// SetMenu(nil) removes the window's menu bar: the window has no HMENU, the
+// removed one is freed, and its accelerators no longer fire in the window
+// (pg-ifz).
+func TestWindowsSetMenuNilRemovesTheMenu(t *testing.T) {
+	withTestApplication(t)
+
+	w := newTestMenuWindow(t)
+	w.parent.menuBindings = map[string]*MenuItem{}
+
+	menu := NewMenu()
+	menu.Add("Action").SetAccelerator("Ctrl+M").OnClick(func(*Context) {})
+	w.setMenu(menu)
+	if w.menu == nil || w32.GetMenu(w.hwnd) == 0 {
+		t.Fatal("setMenu put no menu on the window")
+	}
+	if len(w.parent.menuBindings) != 1 {
+		t.Fatalf("menu bindings after setMenu = %v, want the accelerator", w.parent.menuBindings)
+	}
+	removed := w.menu.menu
+
+	w.setMenu(nil)
+
+	if w.menu != nil {
+		t.Error("SetMenu(nil) kept the window's menu")
+	}
+	if got := w32.GetMenu(w.hwnd); got != 0 {
+		t.Errorf("window still shows HMENU %v after SetMenu(nil)", got)
+	}
+	if w32.IsMenu(removed) {
+		t.Error("the removed menu's HMENU is still live, so it leaked")
+	}
+	if len(w.parent.menuBindings) != 0 {
+		t.Errorf("removed menu kept accelerators %v", w.parent.menuBindings)
+	}
+
+	// The bar comes back with the next SetMenu.
+	w.setMenu(menu)
+	if w.menu == nil || w32.GetMenu(w.hwnd) == 0 {
+		t.Error("setMenu after SetMenu(nil) put no menu on the window")
+	}
+}
+
+// If the window cannot let go of its menu, SetMenu(nil) keeps it rather than
+// destroying a menu the window still shows.
+func TestWindowsSetMenuNilKeepsTheMenuOnFailure(t *testing.T) {
+	withTestApplication(t)
+
+	w := newTestMenuWindow(t)
+	w.parent.menuBindings = map[string]*MenuItem{}
+	menu := NewMenu()
+	menu.Add("Action").SetAccelerator("Ctrl+M").OnClick(func(*Context) {})
+	w.setMenu(menu)
+	kept := w.menu
+
+	hwnd := w.hwnd
+	w.hwnd = 0
+	w.setMenu(nil)
+	w.hwnd = hwnd
+
+	if w.menu != kept || !w32.IsMenu(kept.menu) {
+		t.Fatal("a failed SetMenu(nil) dropped or destroyed the window's menu")
+	}
+	if len(w.parent.menuBindings) != 1 {
+		t.Errorf("a failed SetMenu(nil) dropped the accelerators: %v", w.parent.menuBindings)
+	}
+}
+
+// Replacing a menu drops the accelerators only the old menu held, and keeps
+// those the replacement still uses.
+func TestWindowsSetMenuDropsReplacedAccelerators(t *testing.T) {
+	withTestApplication(t)
+
+	w := newTestMenuWindow(t)
+	w.parent.menuBindings = map[string]*MenuItem{}
+
+	shared := NewMenu()
+	kept := shared.Add("Kept").SetAccelerator("Ctrl+K").OnClick(func(*Context) {})
+	first := NewMenu()
+	gone := first.Add("Gone").SetAccelerator("Ctrl+G").OnClick(func(*Context) {})
+	first.Append(shared)
+	w.setMenu(first)
+
+	w.setMenu(shared)
+
+	bound := map[*MenuItem]bool{}
+	for _, item := range w.parent.menuBindings {
+		bound[item] = true
+	}
+	if bound[gone] {
+		t.Error("the replaced menu's accelerator still fires")
+	}
+	if !bound[kept] {
+		t.Errorf("menu bindings = %v, want the shared item's accelerator kept", w.parent.menuBindings)
 	}
 }
 
