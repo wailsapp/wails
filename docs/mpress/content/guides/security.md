@@ -95,25 +95,40 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### Encrypt Sensitive Data
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+Use a fresh nonce for every message encrypted with a given key. On the Go toolchain required by Wails v3, `NewGCMWithRandomNonce` generates and prefixes the nonce automatically. Store the returned bytes intact; `decrypt` reads the nonce from that prefix. Keep the key separate from the ciphertext.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+Use a suitable randomly generated AES key and respect the AEAD's per-key message limit. See the [Go cipher reference](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
 
 ### Secure Storage
 
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### Use HTTPS
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### Verify Certificates
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## File Operations
 
-### Validate Paths
+### Confine File Access
+
+Accept a path relative to an application-controlled directory. `os.OpenRoot` confines filesystem resolution to that directory, including symlinks. Rejecting `..` or checking a string prefix alone does not provide this boundary.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+For example, call `readFile(appDataDir, "notes/today.json")`. Choose `appDataDir` in trusted backend code; do not let the frontend supply the allowed root. A root limits filesystem traversal, not which files the user is authorised to read within it.
 
 ## Rate Limiting
 

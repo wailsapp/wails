@@ -1,2157 +1,2158 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "578760abe0205664ca56",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "209c67f99726560672b1",
   "sourceFile": "tutorials/02-todo-vanilla.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
-    "a0002-title-01": {
-      "sourceHash": "a74e2763376aee02f19270835b0fd4575894f343fb1240765812ef7cdee2d661",
-      "targetHash": "857c7c2820c1392e5802ecf3caca8cea5ce5f228b72cd3c5a97c10386eb659a9",
-      "machineHash": "857c7c2820c1392e5802ecf3caca8cea5ce5f228b72cd3c5a97c10386eb659a9",
-      "machineText": "產生專案",
-      "status": "final",
-      "sourcePreview": "Generate the project",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0003-title-01": {
-      "sourceHash": "1f8811b7dfa09ae416060d6647b207c182d7158b7456eee2e86d81e6e651d66d",
-      "targetHash": "16e47a77487916c9a0dcc6723182d4e1f4301ed3ee80b794db45cc681a2ef87c",
-      "machineHash": "16e47a77487916c9a0dcc6723182d4e1f4301ed3ee80b794db45cc681a2ef87c",
-      "machineText": "建立待辦事項服務",
-      "status": "final",
-      "sourcePreview": "Create the TODO service",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0004-title-01": {
-      "sourceHash": "5ed9e5c348091bab8a0d19991b5713e4f356c793764f4d54bc59d3ad3aee3766",
-      "targetHash": "177c37bf684f0fc046ecdb91ab1808d5e1e89ed4915c4c21ab4d520037003d6f",
-      "machineHash": "177c37bf684f0fc046ecdb91ab1808d5e1e89ed4915c4c21ab4d520037003d6f",
-      "machineText": "更新 main.go",
-      "status": "final",
-      "sourcePreview": "Update main.go",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0005-title-01": {
-      "sourceHash": "a36728c4f2f09d6bc8f52315668934b1ffdd4ee186ac1a9ce035460026e35282",
-      "targetHash": "b2168de64252beec863f87a0180ae320ded6556b8dd33fa83fecb218691c47fa",
-      "machineHash": "b2168de64252beec863f87a0180ae320ded6556b8dd33fa83fecb218691c47fa",
-      "machineText": "建立前端 UI",
-      "status": "final",
-      "sourcePreview": "Create the frontend UI",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0006-title-01": {
-      "sourceHash": "7bb4698fc8e5eb2adbcc0cd6a61ec25d210c772ac6e22c7ddf8201f1ea48a357",
-      "targetHash": "870d41d58dd96a2f1f49b444221975d023b28ec6231284947f591a394a0d308b",
-      "machineHash": "870d41d58dd96a2f1f49b444221975d023b28ec6231284947f591a394a0d308b",
-      "machineText": "更新 HTML",
-      "status": "final",
-      "sourcePreview": "Update the HTML",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0007-title-01": {
-      "sourceHash": "9a01d988c234e3b597127cb314a55441660333d88e80e32cc587fb3b69b4b462",
-      "targetHash": "e7ad4b725ee69fb60bcc446e84d1704530494ed0c11e85b518c53bd0e897102e",
-      "machineHash": "e7ad4b725ee69fb60bcc446e84d1704530494ed0c11e85b518c53bd0e897102e",
-      "machineText": "設定應用程式樣式",
-      "status": "final",
-      "sourcePreview": "Style the app",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "a0008-title-01": {
-      "sourceHash": "472feada8e7eba95a3020a03ae9c7f5341647d6565b66bdc1e7def3ec4e0d89b",
-      "targetHash": "f0df1a8ae4d0e3d16d4d8f1fcb9403f46be570d255a8cc4da2d5441b182ce73e",
-      "machineHash": "f0df1a8ae4d0e3d16d4d8f1fcb9403f46be570d255a8cc4da2d5441b182ce73e",
-      "machineText": "執行應用程式",
-      "status": "final",
-      "sourcePreview": "Run the app",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
     "b0001-text-01": {
       "sourceHash": "4b446e59a20e15f73d838ea2649aa2010ead53ff925b509eb6896d57b694b30e",
-      "targetHash": "155906acad72d6570eb863181293482756863a9d8d37f0a822c03bc7d9e930b3",
-      "machineHash": "155906acad72d6570eb863181293482756863a9d8d37f0a822c03bc7d9e930b3",
-      "machineText": "在本教學中，你將建置一個功能完整的待辦事項清單應用程式。這比 QR 碼服務教學更進一步，你將學會如何管理狀態、處理多項操作，以及打造完善的使用者介面。",
-      "status": "final",
+      "targetHash": "d5078add571c139d4e0475230725cc0533122c857acb99684672f6c83cc20223",
+      "machineHash": "d5078add571c139d4e0475230725cc0533122c857acb99684672f6c83cc20223",
+      "machineText": "在本教學中，你將建置功能完整的待辦事項清單應用程式。這比 QR Code Service 教學更進一步，你將學會如何管理狀態、處理多項操作，以及建立精緻的使用者介面。",
+      "status": "machine-translated",
       "sourcePreview": "In this tutorial, you'll build a fully functional TODO list application. This is a step up from the …",
-      "provider": "codex",
-      "model": "gpt-6-astra",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "b0002-text-01": {
-      "sourceHash": "0d1ee82cf3e356b42697a6ff67e593acd0a816214cf292a8200d02fd28f79c08",
-      "targetHash": "14b2c2709444bd92c960a34022196164e5134852e77f8138f8c68b5079d6473b",
-      "machineHash": "14b2c2709444bd92c960a34022196164e5134852e77f8138f8c68b5079d6473b",
-      "machineText": "*你將建置：*",
-      "status": "final",
-      "sourcePreview": "*What you'll build:*",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "10216c6bd153c0defc6b5e52ad79162cc3021b6a69388bb91935229775b7338b",
+      "targetHash": "b2ba33ca9a2e673d4855af8697cb96dffd3632c11ca4cc0b06e8efa55be258c7",
+      "machineHash": "b2ba33ca9a2e673d4855af8697cb96dffd3632c11ca4cc0b06e8efa55be258c7",
+      "machineText": "**你將建置：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll build:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0003-text-01": {
       "sourceHash": "29f66c658061ad70dab1bf8f5d7814b60d793bbe77f7bdf1b8411ed2461bc423",
       "targetHash": "92b0f1f3c82655caa5e557dcc577db60a4d89fe8a08d43de724f4f643582d2cd",
       "machineHash": "92b0f1f3c82655caa5e557dcc577db60a4d89fe8a08d43de724f4f643582d2cd",
       "machineText": "具備新增、完成及刪除功能的完整待辦事項應用程式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "A complete TODO app with add, complete, and delete functionality",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0004-text-01": {
       "sourceHash": "b9b131a62941a93924b280f8bf60293b6f87dea1a5df9897aaac3f60bd4ab591",
       "targetHash": "3750b695354acea3cef59066bda889b28fce3b9a4cc1400a1642613dca2d66f7",
       "machineHash": "3750b695354acea3cef59066bda889b28fce3b9a4cc1400a1642613dca2d66f7",
       "machineText": "執行緒安全的狀態管理（對桌面應用程式很重要）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Thread-safe state management (important for desktop apps)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0005-text-01": {
       "sourceHash": "297d9518500ad65390e7f9b5424d8d7461b5581c4c3d0d28c2236a053286821b",
       "targetHash": "5f62798cc5edfc3c6fa17d56f50a8212fc7b97cd660ca42a08a04b608d61404b",
       "machineHash": "5f62798cc5edfc3c6fa17d56f50a8212fc7b97cd660ca42a08a04b608d61404b",
       "machineText": "現代化的玻璃擬態 UI 設計",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Modern, glassmorphic UI design",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0006-text-01": {
       "sourceHash": "6eeb5da5b7f7be1b23fdb94957d1810178bd148fc7dd1b8193e02ce578526255",
       "targetHash": "3bed5f53ae71d28bdd943a3bd7d9e7e6a8aacf15d1c17bb99b647022ebe27d4f",
       "machineHash": "3bed5f53ae71d28bdd943a3bd7d9e7e6a8aacf15d1c17bb99b647022ebe27d4f",
       "machineText": "全部使用原生 JavaScript，無須任何框架",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "All using vanilla JavaScript - no frameworks required",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0007-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "bdce9fae58967e4d689aadcc353cb94fb5218cc9498bb98eeea0e99410466581",
-      "machineHash": "bdce9fae58967e4d689aadcc353cb94fb5218cc9498bb98eeea0e99410466581",
-      "machineText": "*你將學會：*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "bdeefb99aede9c8bfe9c7e8916f4c7831c83cde58cc3d6303ad50090a15b84dd",
+      "machineHash": "bdeefb99aede9c8bfe9c7e8916f4c7831c83cde58cc3d6303ad50090a15b84dd",
+      "machineText": "**你將學會：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0008-text-01": {
       "sourceHash": "8a1db555da54c7c5fd03449aa4c7ac3a0dab3ae12a043168fe763884bf7a2a91",
       "targetHash": "3c7e10a6fad26bcc4ecebaeca4fff1631068be487559f8c42c0dd00fdf9f5684",
       "machineHash": "3c7e10a6fad26bcc4ecebaeca4fff1631068be487559f8c42c0dd00fdf9f5684",
       "machineText": "CRUD 操作（建立、讀取、更新、刪除）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "CRUD operations (Create, Read, Update, Delete)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0009-text-01": {
       "sourceHash": "4d547a526714ce1a780a25ad43df147a869923a79db7a2dcb40513e2be6cbfa7",
       "targetHash": "bb09fa5b1ba8a880500ee815c5a5a33172bf43bb07d27c20ffd4dc7f651b18e0",
       "machineHash": "bb09fa5b1ba8a880500ee815c5a5a33172bf43bb07d27c20ffd4dc7f651b18e0",
       "machineText": "在 Go 中安全地管理可變狀態",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Managing mutable state safely in Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0010-text-01": {
       "sourceHash": "de14eac212f8972002d16273a2c054823fded0161d3eb677494a57bce4392f6b",
-      "targetHash": "4041370b8cd93641a75491393f2b413c4bb3836e7c5d03d874753b7ab427e132",
-      "machineHash": "4041370b8cd93641a75491393f2b413c4bb3836e7c5d03d874753b7ab427e132",
-      "machineText": "處理及驗證使用者輸入",
-      "status": "final",
+      "targetHash": "66bd0eda1f251d319bbe0b66220217c5a256b58a6a714e8dae0b08370b88e3e1",
+      "machineHash": "66bd0eda1f251d319bbe0b66220217c5a256b58a6a714e8dae0b08370b88e3e1",
+      "machineText": "處理使用者輸入與驗證",
+      "status": "machine-translated",
       "sourcePreview": "Handling user input and validation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0011-text-01": {
       "sourceHash": "f9324a0bce0a95e049c4dc04ba3a684a1c621a028f81a1cb5f6cd69af6a75ee8",
-      "targetHash": "682b8b0f46bee66623e8e9333293fc2556d89fd153936d688b035b4b044b2640",
-      "machineHash": "682b8b0f46bee66623e8e9333293fc2556d89fd153936d688b035b4b044b2640",
-      "machineText": "建置具備原生應用程式體驗的響應式 UI",
-      "status": "final",
+      "targetHash": "9ce1fd45431854250b4de0cb068d498c10c8a35b16dad944a5c982312dc3b6d0",
+      "machineHash": "9ce1fd45431854250b4de0cb068d498c10c8a35b16dad944a5c982312dc3b6d0",
+      "machineText": "建置具有原生應用程式體驗的響應式 UI",
+      "status": "machine-translated",
       "sourcePreview": "Building responsive UIs that feel native",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0012-text-01": {
       "sourceHash": "3732ee15574164790be071e8756ceee29bef82ee64cfd6240ec62e0d3ba80d9b",
       "targetHash": "23ed21d199e214a5f48bd35326c93d7d535f6d3a54d6efd9adfc1a24431ac8b7",
       "machineHash": "23ed21d199e214a5f48bd35326c93d7d535f6d3a54d6efd9adfc1a24431ac8b7",
       "machineText": "![待辦事項清單應用程式](/assets/todo-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![TODO List Application](/assets/todo-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0013-text-01": {
-      "sourceHash": "7d4f97fc7138791dd61357b8c99304a397f5b0147909d669423c1347fa155352",
-      "targetHash": "0b1249643d9159b4d8292652cccba33b32f50704de7cdf0ddaa25f490a58ef5a",
-      "machineHash": "0b1249643d9159b4d8292652cccba33b32f50704de7cdf0ddaa25f490a58ef5a",
-      "machineText": "*完成所需時間：*20分鐘",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* 20 minutes",
+      "sourceHash": "df63df29de55e67336c9ae1b9a2fe7c722bbae210a282d330811a77e3ebb057c",
+      "targetHash": "632fd297481b6c8c5669fdaa47289690460e45d6dfc76b6cd3427314fb83b8c1",
+      "machineHash": "632fd297481b6c8c5669fdaa47289690460e45d6dfc76b6cd3427314fb83b8c1",
+      "machineText": "\u003cstrong\u003e完成所需時間：\u003c/strong\u003e20 分鐘",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** 20 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0014-heading-01": {
       "sourceHash": "7345268efb35d4552755a8144266ca64ddd8d9968375742bc86e1b265153768c",
       "targetHash": "181ad3312ed1ba7b008dab4cd4ce15e07d49c5b5d467c02c7ace5af234fa7b15",
       "machineHash": "181ad3312ed1ba7b008dab4cd4ce15e07d49c5b5d467c02c7ace5af234fa7b15",
       "machineText": "建立專案",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Create Your Project",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0015-text-01": {
+    "b0015-heading-01": {
+      "sourceHash": "a74e2763376aee02f19270835b0fd4575894f343fb1240765812ef7cdee2d661",
+      "targetHash": "857c7c2820c1392e5802ecf3caca8cea5ce5f228b72cd3c5a97c10386eb659a9",
+      "machineHash": "857c7c2820c1392e5802ecf3caca8cea5ce5f228b72cd3c5a97c10386eb659a9",
+      "machineText": "產生專案",
+      "status": "machine-translated",
+      "sourcePreview": "Generate the project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0016-text-01": {
       "sourceHash": "85a23193f034f41e8b9b139d0efbdf9700634a6408b3bd57e77269853a652d62",
-      "targetHash": "f7ad3fdee0a2593705b50f2069e4d8391f077c87a0d3ac81ebaf171a62b26045",
-      "machineHash": "f7ad3fdee0a2593705b50f2069e4d8391f077c87a0d3ac81ebaf171a62b26045",
-      "machineText": "首先，建立新的 Wails 專案。我們將使用預設的原生 JavaScript 範本，作為簡潔的起點：",
-      "status": "final",
+      "targetHash": "14a0c13450c88480387286b5f7d3dda0f5ea326ba805dce147d344cadf73130f",
+      "machineHash": "14a0c13450c88480387286b5f7d3dda0f5ea326ba805dce147d344cadf73130f",
+      "machineText": "首先，建立新的 Wails 專案。我們將使用預設的原生範本，以便從乾淨的基礎開始：",
+      "status": "machine-translated",
       "sourcePreview": "First, create a new Wails project. We'll use the default vanilla template which gives us a clean sta…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0016-text-01": {
+    "b0017-text-01": {
       "sourceHash": "bb0d69fcd8593b14dc19201d226c3d227aa6505d73797953e05e28199e9e8e7b",
-      "targetHash": "eb8073a6bb73fff62f1ea9a689b8d317d3f4a6b5c0233339d3c68e0bed5bf4a8",
-      "machineHash": "eb8073a6bb73fff62f1ea9a689b8d317d3f4a6b5c0233339d3c68e0bed5bf4a8",
-      "machineText": "這會建立具備基本結構的新專案：Go 後端位於根目錄，前端程式碼則位於`frontend/`目錄。",
-      "status": "final",
+      "targetHash": "7f26e84c38b645a7c54eb8fe8291b0709245a86981a13ac4072cf40e9909f1b4",
+      "machineHash": "7f26e84c38b645a7c54eb8fe8291b0709245a86981a13ac4072cf40e9909f1b4",
+      "machineText": "這會建立具備基本結構的新專案：Go 後端位於根目錄，前端程式碼位於`frontend/`目錄中。",
+      "status": "machine-translated",
       "sourcePreview": "This creates a new project with the basic structure: Go backend in the root, frontend code in the `f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0017-text-01": {
+    "b0018-heading-01": {
+      "sourceHash": "1f8811b7dfa09ae416060d6647b207c182d7158b7456eee2e86d81e6e651d66d",
+      "targetHash": "16e47a77487916c9a0dcc6723182d4e1f4301ed3ee80b794db45cc681a2ef87c",
+      "machineHash": "16e47a77487916c9a0dcc6723182d4e1f4301ed3ee80b794db45cc681a2ef87c",
+      "machineText": "建立待辦事項服務",
+      "status": "machine-translated",
+      "sourcePreview": "Create the TODO service",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0019-text-01": {
       "sourceHash": "a3d0df0bc751cd2ee4e6bf76a5989f051316b1627ccada63bd67bd7e81eb6ba8",
-      "targetHash": "a2cab3c73ae311d5555269cfbd5ee99f3cc8f08b451b3b420b8f4594da32a99b",
-      "machineHash": "a2cab3c73ae311d5555269cfbd5ee99f3cc8f08b451b3b420b8f4594da32a99b",
-      "machineText": "待辦事項服務將管理應用程式狀態，並提供執行 CRUD 操作的方法。Web 伺服器的每個要求彼此隔離，但桌面應用程式可能同時執行多項操作，因此我們需要以執行緒安全的方式管理狀態。",
-      "status": "final",
+      "targetHash": "ed4975747f0d9d775634e849e8e910f0003444ed4793428ad4ab5d6b1c148c52",
+      "machineHash": "ed4975747f0d9d775634e849e8e910f0003444ed4793428ad4ab5d6b1c148c52",
+      "machineText": "待辦事項服務將管理應用程式狀態，並提供 CRUD 操作的方法。網頁伺服器的各個請求彼此隔離，但桌面應用程式可能同時執行多項操作，因此我們需要執行緒安全的狀態管理。",
+      "status": "machine-translated",
       "sourcePreview": "The TODO service will manage our application state and provide methods for CRUD operations. Unlike a…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0018-text-01": {
+    "b0020-text-01": {
       "sourceHash": "7c4082dc8f7aa815cbeb8e0be783d378730dc8f4ee1778de64a4ed32fefda8aa",
       "targetHash": "640243df0bfe9d3453cf680b4532ffc59cdb49012a0a03ff289eaa1a46ee8df4",
       "machineHash": "640243df0bfe9d3453cf680b4532ffc59cdb49012a0a03ff289eaa1a46ee8df4",
       "machineText": "刪除`greetservice.go`，並建立新檔案`todoservice.go`：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Delete `greetservice.go` and create a new file `todoservice.go`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "b0019-text-01": {
-      "sourceHash": "f034dac0b327a822efe287aeda4a8926301abb2162aa256e29c977dc724477b8",
-      "targetHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineText": "*這裡的運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening here:*",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
-    },
-    "b0020-text-01": {
-      "sourceHash": "67c4785b9ed312d0daccb165f1718660b5d768122db055ebf51afa5453f6fbef",
-      "targetHash": "06ab08c0cfeef70633a7f405bf8aa4412072b6b69e2a0c67399461a327d1a249",
-      "machineHash": "06ab08c0cfeef70633a7f405bf8aa4412072b6b69e2a0c67399461a327d1a249",
-      "machineText": "*`Todo`結構：*",
-      "status": "final",
-      "sourcePreview": "*The `Todo` struct:*",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
     "b0021-text-01": {
+      "sourceHash": "404e490316ca009ab03493d264fcaf5fcb44b7b5fdd93732ea39ba75d63886ba",
+      "targetHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineText": "**這裡的運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening here:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0022-text-01": {
+      "sourceHash": "5949ba2019bb874567e2d9b9e7033b7f59db6a6b1e7bb2cb8bad84771ffda7d9",
+      "targetHash": "f57b5abe9f8d13e5d539d8ff2ec2f15f6804335e4f672a3bf4dc0b3264368aa8",
+      "machineHash": "f57b5abe9f8d13e5d539d8ff2ec2f15f6804335e4f672a3bf4dc0b3264368aa8",
+      "machineText": "**`Todo`結構：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The `Todo` struct:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0023-text-01": {
       "sourceHash": "3f8704e4df324ca9623dd055e54bd67a6ef586abb202f8d52efd781642b12e1f",
-      "targetHash": "bc5b67de687f7cdc4b5fc715a10695e719cf943e7fa83f5275190bb3e947eea1",
-      "machineHash": "bc5b67de687f7cdc4b5fc715a10695e719cf943e7fa83f5275190bb3e947eea1",
-      "machineText": "使用 ID、Title 和 Completed 欄位定義資料結構",
-      "status": "final",
+      "targetHash": "4faa24297e22b3552ac8b448123bbd3fb6afd3794150443ca3066f0dafb5b313",
+      "machineHash": "4faa24297e22b3552ac8b448123bbd3fb6afd3794150443ca3066f0dafb5b313",
+      "machineText": "以 ID、Title 和 Completed 欄位定義資料的結構",
+      "status": "machine-translated",
       "sourcePreview": "Defines the shape of our data with ID, Title, and Completed fields",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0022-text-01": {
+    "b0024-text-01": {
       "sourceHash": "a83d9684b06f75a037973b53d6eeaf81785a4afd80626d9b1ccf7ccd2b3c0aed",
-      "targetHash": "2c52070ef7e9efa5319a762d89cde63f83296e93e35cf43c5a35fcdc0301fda4",
-      "machineHash": "2c52070ef7e9efa5319a762d89cde63f83296e93e35cf43c5a35fcdc0301fda4",
-      "machineText": "`json:`標記會告訴 Go 如何將此結構轉換成供前端使用的 JSON",
-      "status": "final",
+      "targetHash": "9ca396791cbb56df83d78ffc586a52851a815529a369c1cc403d55b901a7f162",
+      "machineHash": "9ca396791cbb56df83d78ffc586a52851a815529a369c1cc403d55b901a7f162",
+      "machineText": "`json:`標籤會指示 Go 如何將此結構轉換成提供給前端的 JSON",
+      "status": "machine-translated",
       "sourcePreview": "`json:` tags tell Go how to convert this struct to JSON for the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0023-text-01": {
+    "b0025-text-01": {
       "sourceHash": "991042b6547b3d0630e0a84bf6add49824b3f029d85848c63a2ead90706c8521",
       "targetHash": "12a54cd8b4ec2b8966de0468fc06f286fbc85041bfb682a7f7d3569d35feaf53",
       "machineHash": "12a54cd8b4ec2b8966de0468fc06f286fbc85041bfb682a7f7d3569d35feaf53",
       "machineText": "每個欄位都會匯出（以大寫字母開頭），讓繫結產生器能夠識別",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Each field is exported (capitalized) so the bindings generator can see it",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0024-text-01": {
-      "sourceHash": "d9a77441cfae3dea729c23582b2ae09ebeadf929d3940aa991d46c92d8ec1efd",
-      "targetHash": "f5b16f068b2fcdd0d6c9443d2a8b42e3491b3dea7e8813c4056183b48fa96f1a",
-      "machineHash": "f5b16f068b2fcdd0d6c9443d2a8b42e3491b3dea7e8813c4056183b48fa96f1a",
-      "machineText": "*`TodoService`結構：*",
-      "status": "final",
-      "sourcePreview": "*The `TodoService` struct:*",
+    "b0026-text-01": {
+      "sourceHash": "06b2ec3fe0c7ca13b064679a052e30b8f17efbb2ed4ffbce99097bdb3377af29",
+      "targetHash": "789ece6e769f1b5d487a8c2a694452493d907bc4db4309c9eea0c635ce1685a5",
+      "machineHash": "789ece6e769f1b5d487a8c2a694452493d907bc4db4309c9eea0c635ce1685a5",
+      "machineText": "**`TodoService`結構：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The `TodoService` struct:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0025-text-01": {
+    "b0027-text-01": {
       "sourceHash": "d40029e86ce1dc6a0dd4ae0ac2b7b4b34f421868f2ed0f73f2e9c181be49669b",
-      "targetHash": "1da0347ae8d2a11391c5152143d375a3aa7c10cfa2d859422db720077ab498eb",
-      "machineHash": "1da0347ae8d2a11391c5152143d375a3aa7c10cfa2d859422db720077ab498eb",
-      "machineText": "`todos []Todo`—儲存所有待辦事項的切片",
-      "status": "final",
+      "targetHash": "66625d5b7c1863205864dd1fb0e0310363d7204fca5540d1c6c65ca1985313ab",
+      "machineHash": "66625d5b7c1863205864dd1fb0e0310363d7204fca5540d1c6c65ca1985313ab",
+      "machineText": "`todos []Todo`— 儲存所有待辦事項的切片",
+      "status": "machine-translated",
       "sourcePreview": "`todos []Todo` - a slice holding all our TODO items",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0026-text-01": {
+    "b0028-text-01": {
       "sourceHash": "a2ba1efe46eb0307db3c18a1ab3fdc6cc9049ac66e4d01900c54a46325eb0a3d",
-      "targetHash": "f1b47121e265655a78ea69e7b144198d9c2244698251d1df1d84b4ef06a52f29",
-      "machineHash": "f1b47121e265655a78ea69e7b144198d9c2244698251d1df1d84b4ef06a52f29",
-      "machineText": "`nextID int`—追蹤下一個要指派的 ID（模擬自動遞增）",
-      "status": "final",
+      "targetHash": "db77a28cd277719dffe56ae8d8d6e1fc24e029a168a53f882c14816c2ea0e859",
+      "machineHash": "db77a28cd277719dffe56ae8d8d6e1fc24e029a168a53f882c14816c2ea0e859",
+      "machineText": "`nextID int`— 追蹤下一個要指派的 ID（模擬自動遞增）",
+      "status": "machine-translated",
       "sourcePreview": "`nextID int` - tracks the next ID to assign (simulates auto-increment)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0027-text-01": {
+    "b0029-text-01": {
       "sourceHash": "f871353ba8e2a4306d79b72d4e55a4e93e15fd078be8f3ccd5bc6a230a5e1738",
-      "targetHash": "aaeaa7d79b5550afdef52e33f118ca0d4a6344bfbb60f46a371e8621b1dc2453",
-      "machineHash": "aaeaa7d79b5550afdef52e33f118ca0d4a6344bfbb60f46a371e8621b1dc2453",
-      "machineText": "`mu sync.RWMutex`—用於執行緒安全存取的讀寫互斥鎖",
-      "status": "final",
+      "targetHash": "c5cce14a8d21d4e7bae11fd77aba79c2971626cae5ff69a0d9fcce8bd4a1f81a",
+      "machineHash": "c5cce14a8d21d4e7bae11fd77aba79c2971626cae5ff69a0d9fcce8bd4a1f81a",
+      "machineText": "`mu sync.RWMutex`— 用於執行緒安全存取的讀寫互斥鎖",
+      "status": "machine-translated",
       "sourcePreview": "`mu sync.RWMutex` - a read/write mutex for thread-safe access",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0028-text-01": {
-      "sourceHash": "3d8c2caf4deb9fe05d7539ea7a2aa726ef7d397924b9108936154f940912afae",
-      "targetHash": "9f5261f31c5699e39df1b654759274facb35d8c83c918f27917ee3b009e744c7",
-      "machineHash": "9f5261f31c5699e39df1b654759274facb35d8c83c918f27917ee3b009e744c7",
-      "machineText": "*使用`sync.RWMutex`確保執行緒安全：*",
-      "status": "final",
-      "sourcePreview": "*Thread safety with `sync.RWMutex`:*",
+    "b0030-text-01": {
+      "sourceHash": "46538f8c21fa66a176daa1b8f555965fea20847132af2b3d44d86608fb69e21f",
+      "targetHash": "f00a2b23b436cfd91b322bc68c8df5e6032c3dc642fe5fce281dbacb0f68e470",
+      "machineHash": "f00a2b23b436cfd91b322bc68c8df5e6032c3dc642fe5fce281dbacb0f68e470",
+      "machineText": "**使用`sync.RWMutex`確保執行緒安全：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Thread safety with `sync.RWMutex`:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0029-text-01": {
+    "b0031-text-01": {
       "sourceHash": "63312ab7a65dbdd47982f52997c2835816b1cefaad6e9b35d0e7fa5ca42a688e",
-      "targetHash": "4a5c1cd80b1bbca8f6e8eb51bdf80857e0fd08393d7a7a088830e5240d246660",
-      "machineHash": "4a5c1cd80b1bbca8f6e8eb51bdf80857e0fd08393d7a7a088830e5240d246660",
-      "machineText": "桌面應用程式可能會從 UI 同時執行多項操作",
-      "status": "final",
+      "targetHash": "613bb38764ab35d8b378373be19bd84ed5b7779367bb0718f35763ba825a808d",
+      "machineHash": "613bb38764ab35d8b378373be19bd84ed5b7779367bb0718f35763ba825a808d",
+      "machineText": "桌面應用程式的 UI 可能同時發起多項操作",
+      "status": "machine-translated",
       "sourcePreview": "Desktop apps can have multiple concurrent operations from the UI",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0030-text-01": {
+    "b0032-text-01": {
       "sourceHash": "6218679729098ba0eee8e99a72d1e3cf89b19bce26c25c51c20b2190ed96e818",
-      "targetHash": "c6155d9fb61170eff77a5568ab4f8a3f09c731d3c782bd343fff69d49c7eeca3",
-      "machineHash": "c6155d9fb61170eff77a5568ab4f8a3f09c731d3c782bd343fff69d49c7eeca3",
-      "machineText": "`RLock()`允許多個讀取者同時存取（例如同時多次呼叫`GetAll`）",
-      "status": "final",
+      "targetHash": "2c73612750c64bbf8f4ba4c9d4a71b472bebf2eae93b5c3ebd7b2314b6f80f88",
+      "machineHash": "2c73612750c64bbf8f4ba4c9d4a71b472bebf2eae93b5c3ebd7b2314b6f80f88",
+      "machineText": "`RLock()`允許多個讀取者同時存取（例如多次呼叫`GetAll`）",
+      "status": "machine-translated",
       "sourcePreview": "`RLock()` allows multiple readers at once (e.g., multiple `GetAll` calls)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0031-text-01": {
+    "b0033-text-01": {
       "sourceHash": "1dba24be42ef2ea4afd24516a5cc1a4f4778f0d137af613ca37e78e8c52aa5b8",
-      "targetHash": "a26ffcfef4110e7491a872940bacc6ac342ef418b4c4138163fba7e0a388174f",
-      "machineHash": "a26ffcfef4110e7491a872940bacc6ac342ef418b4c4138163fba7e0a388174f",
-      "machineText": "`Lock()`為寫入操作提供獨佔存取權（例如`Add`、`Toggle`、`Delete`）",
-      "status": "final",
+      "targetHash": "f9ac09bc1255736c1394c73c1ed60f725ff0cdfd9564cd73750467adfdc4b89d",
+      "machineHash": "f9ac09bc1255736c1394c73c1ed60f725ff0cdfd9564cd73750467adfdc4b89d",
+      "machineText": "`Lock()`提供寫入時的獨占存取權（例如`Add`、`Toggle`、`Delete`）",
+      "status": "machine-translated",
       "sourcePreview": "`Lock()` gives exclusive access for writes (e.g., `Add`, `Toggle`, `Delete`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0032-text-01": {
+    "b0034-text-01": {
       "sourceHash": "11acde5b8f733143dfbe7c129a04642e289cafd1be0515e7c5bd3e56afff46a5",
-      "targetHash": "3b3fcd9ac5e8acacb9a36e3d633dfd338083646c82f2dff0547069528176d685",
-      "machineHash": "3b3fcd9ac5e8acacb9a36e3d633dfd338083646c82f2dff0547069528176d685",
-      "machineText": "即使函式提早傳回或發生 panic，`defer`也能確保鎖定解除",
-      "status": "final",
+      "targetHash": "047503f7f2980ddc0970308d5bb6c0e2c3ac513e6dad770736f49cf8859c30d8",
+      "machineHash": "047503f7f2980ddc0970308d5bb6c0e2c3ac513e6dad770736f49cf8859c30d8",
+      "machineText": "即使函式提前傳回或發生 panic，`defer`也能確保鎖定被解除",
+      "status": "machine-translated",
       "sourcePreview": "`defer` ensures locks are released even if the function returns early or panics",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0033-text-01": {
-      "sourceHash": "f5f9d10925b9c09a9154faea0909b3b8f69d7eb84b9e4646dccd85fd7167cc9c",
-      "targetHash": "e489c5f77a2edc986879d3175581fff096886ed193bf32b04721e741523124a2",
-      "machineHash": "e489c5f77a2edc986879d3175581fff096886ed193bf32b04721e741523124a2",
-      "machineText": "*方法：*",
-      "status": "final",
-      "sourcePreview": "*The methods:*",
+    "b0035-text-01": {
+      "sourceHash": "89ddbf305358702e0b702e47baebc18c4b08cf6fa3fbd4edf2270699cb3821c6",
+      "targetHash": "0526ce07467ce443b09164a84830d85c0ddeecb863f7ec486f570ff61a736345",
+      "machineHash": "0526ce07467ce443b09164a84830d85c0ddeecb863f7ec486f570ff61a736345",
+      "machineText": "**方法：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The methods:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0034-text-01": {
+    "b0036-text-01": {
       "sourceHash": "41bb40132947b48522573eb2e4d248863e9dec3fa1292d5f5f78a811462d4830",
-      "targetHash": "248e4a4bd626d7429acd7a17b45ee3b45a18d4c5f4134dbafb7fe01cb89bd082",
-      "machineHash": "248e4a4bd626d7429acd7a17b45ee3b45a18d4c5f4134dbafb7fe01cb89bd082",
-      "machineText": "`GetAll()`—傳回所有待辦事項（因為不會修改資料，所以使用讀取鎖定）",
-      "status": "final",
+      "targetHash": "0eaa3b80ab297bc6a7925544168d57caf7b5c97b72802012e3a1b0ad3bcad4c3",
+      "machineHash": "0eaa3b80ab297bc6a7925544168d57caf7b5c97b72802012e3a1b0ad3bcad4c3",
+      "machineText": "`GetAll()`— 傳回所有待辦事項（因為不會修改資料，所以使用讀取鎖定）",
+      "status": "machine-translated",
       "sourcePreview": "`GetAll()` - Returns all todos (uses read lock since we're not modifying data)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0035-text-01": {
+    "b0037-text-01": {
       "sourceHash": "ec4dc990995348b09964e518b9ed03136da1bc64ded79b2dceec1acb45cbe596",
-      "targetHash": "1d83074e872381b61df6c80512a2ac8bcf5fe2487985c6e234687f072d61c203",
-      "machineHash": "1d83074e872381b61df6c80512a2ac8bcf5fe2487985c6e234687f072d61c203",
-      "machineText": "`Add(title)`—建立新的待辦事項、驗證輸入並遞增 ID",
-      "status": "final",
+      "targetHash": "6a5047228f8f19b4ca1a87ed13010dbb1e1ee2153c2048912f21e155ef803c9a",
+      "machineHash": "6a5047228f8f19b4ca1a87ed13010dbb1e1ee2153c2048912f21e155ef803c9a",
+      "machineText": "`Add(title)`— 建立新的待辦事項、驗證輸入，並遞增 ID",
+      "status": "machine-translated",
       "sourcePreview": "`Add(title)` - Creates a new todo, validates input, increments ID",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0036-text-01": {
+    "b0038-text-01": {
       "sourceHash": "446c66213bc7972837039d01b11a8f4f7c57568d5f8106a6309711a59b9ac4b7",
-      "targetHash": "87bcc38d05f802a91a79f18f773db7de4d960fe7f7e70b5f8cc423cdbbcc6183",
-      "machineHash": "87bcc38d05f802a91a79f18f773db7de4d960fe7f7e70b5f8cc423cdbbcc6183",
-      "machineText": "`Toggle(id)`—切換待辦事項的完成狀態",
-      "status": "final",
+      "targetHash": "04665042fe09786c897e18566b88bb7e9beca243764961c1433b6a01302ae97a",
+      "machineHash": "04665042fe09786c897e18566b88bb7e9beca243764961c1433b6a01302ae97a",
+      "machineText": "`Toggle(id)`— 切換待辦事項的完成狀態",
+      "status": "machine-translated",
       "sourcePreview": "`Toggle(id)` - Flips the completed status of a todo",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0037-text-01": {
+    "b0039-text-01": {
       "sourceHash": "16c8e5c3e062672ade5ddad9655a585fe3aec9635e492f50b280e99b179b1d94",
-      "targetHash": "9bbfe9141072242782d5aa1b5cfd4809750a18d1ef4d02947591e2dd6f52c37c",
-      "machineHash": "9bbfe9141072242782d5aa1b5cfd4809750a18d1ef4d02947591e2dd6f52c37c",
-      "machineText": "`Delete(id)`—從切片中移除待辦事項",
-      "status": "final",
+      "targetHash": "269fc2d5dad0b586afc3028821a653b89f90e1f20434397fa36dc103cb95e4ea",
+      "machineHash": "269fc2d5dad0b586afc3028821a653b89f90e1f20434397fa36dc103cb95e4ea",
+      "machineText": "`Delete(id)`— 從切片中移除待辦事項",
+      "status": "machine-translated",
       "sourcePreview": "`Delete(id)` - Removes a todo from the slice",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0038-text-01": {
-      "sourceHash": "5baabb2a47d97e668dbc8249d8f24e5d8f3b72eccc71dedf527d807d705f009c",
-      "targetHash": "c8986c2ca2a3eaad1f0a29afc610bd38de1761ccf703acbd19c7fee9294a637c",
-      "machineHash": "c8986c2ca2a3eaad1f0a29afc610bd38de1761ccf703acbd19c7fee9294a637c",
-      "machineText": "*錯誤處理：*",
-      "status": "final",
-      "sourcePreview": "*Error handling:*",
+    "b0040-text-01": {
+      "sourceHash": "730421fc4edc19022024dddda11c4ff4a4554e3e3aa4737109f62e5c096e2504",
+      "targetHash": "27e1053a1f066edd4e9d6848067e890a30c0a2c607826824b7cb314bce265235",
+      "machineHash": "27e1053a1f066edd4e9d6848067e890a30c0a2c607826824b7cb314bce265235",
+      "machineText": "**錯誤處理：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Error handling:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0039-text-01": {
+    "b0041-text-01": {
       "sourceHash": "efb5d35b6af3a75ef38a7f16becd140660e891f3e4273713908dab07d15a9851",
-      "targetHash": "5dbc4e83eef0aeb0ad080da15dc0db1abe87e2721515fac49871322f695ed1cb",
-      "machineHash": "5dbc4e83eef0aeb0ad080da15dc0db1abe87e2721515fac49871322f695ed1cb",
-      "machineText": "依照 Go 慣例，我們將`error`作為最後一個值傳回",
-      "status": "final",
+      "targetHash": "6a71c78f37db5c5cade41c68f827929235a1d26badade1633d1ea5f508325838",
+      "machineHash": "6a71c78f37db5c5cade41c68f827929235a1d26badade1633d1ea5f508325838",
+      "machineText": "我們遵循 Go 慣例，將`error`作為最後一個傳回值",
+      "status": "machine-translated",
       "sourcePreview": "We return `error` as the last value following Go conventions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0040-text-01": {
+    "b0042-text-01": {
       "sourceHash": "b5624c1bbf179473fa06db684e0a27e1cb98f8f467ca2467f2e36521781154c0",
       "targetHash": "4bccff402e4e5b1e4121b1911af30210900923382eea3b660b54825b6b94f92e",
       "machineHash": "4bccff402e4e5b1e4121b1911af30210900923382eea3b660b54825b6b94f92e",
       "machineText": "空白標題會遭到拒絕",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Empty titles are rejected",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0041-text-01": {
+    "b0043-text-01": {
       "sourceHash": "318f3bc20aeaf397d38235b042e3a19da9ab3a15d3dd830305e4f1a2f67ec3ff",
       "targetHash": "9753dc0e53087fd20ddcf75bf41c7092bd5ed287870a3e79abb59c1e0f4ef85d",
       "machineHash": "9753dc0e53087fd20ddcf75bf41c7092bd5ed287870a3e79abb59c1e0f4ef85d",
       "machineText": "對不存在的待辦事項執行操作時會傳回錯誤",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Operations on non-existent todos return errors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0042-text-01": {
+    "b0044-text-01": {
       "sourceHash": "19c8f2a52b0ce0fb1892084c670dd0689cb40f4ea7c865187b499c111bda1e24",
-      "targetHash": "12eb12970c2451cfe198e22c00255804403aaad0aec92061eb29e87115aa6a03",
-      "machineHash": "12eb12970c2451cfe198e22c00255804403aaad0aec92061eb29e87115aa6a03",
-      "machineText": "這些錯誤會在前端成為 JavaScript 例外狀況",
-      "status": "final",
+      "targetHash": "0eaa7124f666cc2802aea7efc350ccda6dd7f081d26add2c99b6e30ca46b1954",
+      "machineHash": "0eaa7124f666cc2802aea7efc350ccda6dd7f081d26add2c99b6e30ca46b1954",
+      "machineText": "這些錯誤會在前端成為 JavaScript 例外",
+      "status": "machine-translated",
       "sourcePreview": "These errors become JavaScript exceptions in the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0043-text-01": {
+    "b0045-heading-01": {
+      "sourceHash": "5ed9e5c348091bab8a0d19991b5713e4f356c793764f4d54bc59d3ad3aee3766",
+      "targetHash": "177c37bf684f0fc046ecdb91ab1808d5e1e89ed4915c4c21ab4d520037003d6f",
+      "machineHash": "177c37bf684f0fc046ecdb91ab1808d5e1e89ed4915c4c21ab4d520037003d6f",
+      "machineText": "更新 main.go",
+      "status": "machine-translated",
+      "sourcePreview": "Update main.go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0046-text-01": {
       "sourceHash": "bd2cd61bee4c3a15de37804df62e8e4d1a26436188f1a7df1f77209f9c0c12df",
       "targetHash": "610cd713623d06fce1c73ef530baf6279150ae525df97019c06aaf6138709d66",
       "machineHash": "610cd713623d06fce1c73ef530baf6279150ae525df97019c06aaf6138709d66",
       "machineText": "向 Wails 應用程式註冊待辦事項服務。在`main.go`中找到`Services`區段，並以 TodoService 取代 GreetService：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Register the TODO service with your Wails application. Find the `Services` section in `main.go` and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0044-text-01": {
-      "sourceHash": "f034dac0b327a822efe287aeda4a8926301abb2162aa256e29c977dc724477b8",
-      "targetHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineText": "*這裡的運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening here:*",
+    "b0047-text-01": {
+      "sourceHash": "404e490316ca009ab03493d264fcaf5fcb44b7b5fdd93732ea39ba75d63886ba",
+      "targetHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineText": "**這裡的運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening here:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0045-text-01": {
+    "b0048-text-01": {
       "sourceHash": "402b6802fd6a65ae5599eee46bb86d3dfecdd62b804b49657cae8dee66b8f131",
-      "targetHash": "172f5ce050af008f459973a20d459701eafa0531293cb3a159fd95142948ee44",
-      "machineHash": "172f5ce050af008f459973a20d459701eafa0531293cb3a159fd95142948ee44",
-      "machineText": "我們會移除預設的 GreetService，改為加入 TodoService",
-      "status": "final",
+      "targetHash": "4fec6749b1ab16925a1998be6a60c897e10943c10db9857163f7d6bb3b94b8b8",
+      "machineHash": "4fec6749b1ab16925a1998be6a60c897e10943c10db9857163f7d6bb3b94b8b8",
+      "machineText": "我們將移除預設的 GreetService，改為加入 TodoService",
+      "status": "machine-translated",
       "sourcePreview": "We're removing the default GreetService and adding our TodoService instead",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0046-text-01": {
+    "b0049-text-01": {
       "sourceHash": "995214fae2ad55ffe607c8d499fb17755891f57a09a0d557ec8a7e654d05cac0",
-      "targetHash": "7d71ea8b83d5a44862aa40ec24ec236fffce820e98663767ab79626500d794b7",
-      "machineHash": "7d71ea8b83d5a44862aa40ec24ec236fffce820e98663767ab79626500d794b7",
-      "machineText": "`application.NewService()`會包裝我們的服務，讓 Wails 能夠管理它",
-      "status": "final",
+      "targetHash": "16ee9871a40882951a384119c98352131e633c02eca3f5dfd142e3cee0b9752a",
+      "machineHash": "16ee9871a40882951a384119c98352131e633c02eca3f5dfd142e3cee0b9752a",
+      "machineText": "`application.NewService()`會包裝服務，讓 Wails 能夠管理它",
+      "status": "machine-translated",
       "sourcePreview": "`application.NewService()` wraps our service so Wails can manage it",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0047-text-01": {
+    "b0050-text-01": {
       "sourceHash": "b6bc45dafb32ac609e5aaf0a99742932d2debd3300bd24e550c2b615e48200f5",
       "targetHash": "b8d723ac686793cf918ebadf73cae11f3e2124f0cf2e96ab3f0723c2a0352f3c",
       "machineHash": "b8d723ac686793cf918ebadf73cae11f3e2124f0cf2e96ab3f0723c2a0352f3c",
       "machineText": "Wails 會自動為此服務上的所有公開方法產生 JavaScript 繫結",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails will automatically generate JavaScript bindings for all public methods on this service",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0048-text-01": {
+    "b0051-heading-01": {
+      "sourceHash": "a36728c4f2f09d6bc8f52315668934b1ffdd4ee186ac1a9ce035460026e35282",
+      "targetHash": "b2168de64252beec863f87a0180ae320ded6556b8dd33fa83fecb218691c47fa",
+      "machineHash": "b2168de64252beec863f87a0180ae320ded6556b8dd33fa83fecb218691c47fa",
+      "machineText": "建立前端 UI",
+      "status": "machine-translated",
+      "sourcePreview": "Create the frontend UI",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0052-text-01": {
       "sourceHash": "2868f479e67c0bd7fceb9f3f95c00127a5c175ff893d61759869acc5b196e606",
       "targetHash": "c56180028c608b4a303ddeed2308b427e000b24824cc741b0dbb1d250dfce66d",
       "machineHash": "c56180028c608b4a303ddeed2308b427e000b24824cc741b0dbb1d250dfce66d",
       "machineText": "現在來建置前端。我們會在這裡呼叫 Go 方法並顯示 UI。為了保持簡單並直接呈現繫結的運作方式，我們將使用原生 JavaScript。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Now let's build the frontend. This is where we'll call our Go methods and display the UI. We're usin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0049-text-01": {
+    "b0053-text-01": {
       "sourceHash": "e3c2e36cd930819d18e3c9705c4fe2d73c22e6c35c80c493081e9aaf77f12aed",
       "targetHash": "f8751bbc9d3ca10bba65cc7999979eaf6a4d9680c2d77b510e8921c5785b8458",
       "machineHash": "f8751bbc9d3ca10bba65cc7999979eaf6a4d9680c2d77b510e8921c5785b8458",
       "machineText": "取代`frontend/src/main.js`：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Replace `frontend/src/main.js`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0050-text-01": {
-      "sourceHash": "f034dac0b327a822efe287aeda4a8926301abb2162aa256e29c977dc724477b8",
-      "targetHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineText": "*這裡的運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening here:*",
+    "b0054-text-01": {
+      "sourceHash": "404e490316ca009ab03493d264fcaf5fcb44b7b5fdd93732ea39ba75d63886ba",
+      "targetHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineText": "**這裡的運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening here:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0051-text-01": {
-      "sourceHash": "5d6bbf682a409153be7130298985e8c45c511fc3264436a0007ea748b3a0101d",
-      "targetHash": "ef3f7b94de63f29a004427481e431075954bbde8b5ebc437f8c2fa471814cfcc",
-      "machineHash": "ef3f7b94de63f29a004427481e431075954bbde8b5ebc437f8c2fa471814cfcc",
-      "machineText": "*匯入繫結：*",
-      "status": "final",
-      "sourcePreview": "*Importing the bindings:*",
+    "b0055-text-01": {
+      "sourceHash": "7e10c3321c3f6338915a7d96bfa2c8ad4e627e280ad25b7014732afd716515da",
+      "targetHash": "e05a300a5fffdfe5131c87254fdfa701e2547c5fbe84a241cbbb7678187b47a1",
+      "machineHash": "e05a300a5fffdfe5131c87254fdfa701e2547c5fbe84a241cbbb7678187b47a1",
+      "machineText": "**匯入繫結：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Importing the bindings:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0052-text-01": {
+    "b0056-text-01": {
       "sourceHash": "3a1f355839aa42156da7412ef2b75e2417824099ab8f054de8b598a9f834579e",
-      "targetHash": "649bcaa0d25fa2d1afb66cf0792d02b8abb4d98af5c71b9d5cf73aa6ac77adfd",
-      "machineHash": "649bcaa0d25fa2d1afb66cf0792d02b8abb4d98af5c71b9d5cf73aa6ac77adfd",
-      "machineText": "`import {TodoService} from \"../bindings/changeme\"`—匯入自動產生的 Go 繫結",
-      "status": "final",
+      "targetHash": "fa221bfc4ddd58029a6a9ab0472819f7729d65c185a77ffdde99c68df35bbddc",
+      "machineHash": "fa221bfc4ddd58029a6a9ab0472819f7729d65c185a77ffdde99c68df35bbddc",
+      "machineText": "`import {TodoService} from \"../bindings/changeme\"`— 匯入自動產生的 Go 繫結",
+      "status": "machine-translated",
       "sourcePreview": "`import {TodoService} from \"../bindings/changeme\"` - brings in the auto-generated Go bindings",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0053-text-01": {
+    "b0057-text-01": {
       "sourceHash": "6066cf6ea7197dae83cb515bb7e5b94ab49f2a6725e8d64da6ea3a5f67f8c03b",
-      "targetHash": "408af5552ba6f954a7584d753fd0fea063164a7065cd47433afbde31a94d6986",
-      "machineHash": "408af5552ba6f954a7584d753fd0fea063164a7065cd47433afbde31a94d6986",
-      "machineText": "請注意：`changeme`會是`go.mod`中的實際模組名稱",
-      "status": "final",
+      "targetHash": "22a7b49655fdc4e33288bd89c8317dadb658719756b8aeae36970d8264a445c5",
+      "machineHash": "22a7b49655fdc4e33288bd89c8317dadb658719756b8aeae36970d8264a445c5",
+      "machineText": "請注意：`changeme`會是`go.mod`中實際的模組名稱",
+      "status": "machine-translated",
       "sourcePreview": "Note: `changeme` will be your actual module name from `go.mod`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0054-text-01": {
-      "sourceHash": "610d1d5683f299fc4f65dfb93061c6455decf32c1b7976c7880f48cedc9295ab",
-      "targetHash": "574dc0300235daaa3651219ecf906769f074898e29220e928c504c692dfc1719",
-      "machineHash": "574dc0300235daaa3651219ecf906769f074898e29220e928c504c692dfc1719",
-      "machineText": "*`loadTodos()`函式：*",
-      "status": "final",
-      "sourcePreview": "*The `loadTodos()` function:*",
+    "b0058-text-01": {
+      "sourceHash": "c8be44e68917216a64eb4b9285f3ce3894b8a56cccad7875f90bb98d4c8440e1",
+      "targetHash": "833c8418cc68d2afe3d79b39e575fbb4814745f477c966bb23441ceebf19f4c4",
+      "machineHash": "833c8418cc68d2afe3d79b39e575fbb4814745f477c966bb23441ceebf19f4c4",
+      "machineText": "**`loadTodos()`函式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The `loadTodos()` function:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0055-text-01": {
+    "b0059-text-01": {
       "sourceHash": "1556eae9d27665d1aa0158b3e2e762707c22b1d45f598c72008dc0be6cb85671",
       "targetHash": "ec2d57383812f06ecc31b3ad7a28c7d3d9901361d9716c195477f37f4c357792",
       "machineHash": "ec2d57383812f06ecc31b3ad7a28c7d3d9901361d9716c195477f37f4c357792",
       "machineText": "呼叫`TodoService.GetAll()`，從 Go 取得所有待辦事項",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Calls `TodoService.GetAll()` to fetch all todos from Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0056-text-01": {
+    "b0060-text-01": {
       "sourceHash": "60ac622f99effeacc12aefb0ba5b248c32dbbea42b2a51ce277678a8da4562a2",
-      "targetHash": "93dabe25985486e6d8c077894740812e91ac3f478dda6c8c8d57ca723516ca97",
-      "machineHash": "93dabe25985486e6d8c077894740812e91ac3f478dda6c8c8d57ca723516ca97",
-      "machineText": "使用範本字面值為每個待辦事項建置 HTML",
-      "status": "final",
+      "targetHash": "4794a1fc95081b57b0ee54a71c280cbb9bfde713d2bca4a28da542af56d5ba8f",
+      "machineHash": "4794a1fc95081b57b0ee54a71c280cbb9bfde713d2bca4a28da542af56d5ba8f",
+      "machineText": "使用範本字面值為每個待辦事項建構 HTML",
+      "status": "machine-translated",
       "sourcePreview": "Builds HTML for each todo using template literals",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0057-text-01": {
+    "b0061-text-01": {
       "sourceHash": "483843b8200b09eb85d7de4ed1673ac754f1249f3014b0df3586b299ec674a7b",
-      "targetHash": "fbda17c98f6a22ea861d9dee41733d1a450ef935c83b27ca6d4cc4e97e3680b4",
-      "machineHash": "fbda17c98f6a22ea861d9dee41733d1a450ef935c83b27ca6d4cc4e97e3680b4",
-      "machineText": "動態新增或移除`completed`類別，以套用樣式",
-      "status": "final",
+      "targetHash": "d806f92ef434b870420edefa22996a4e5e4d94a1ae937d03cc8c3c3a25249897",
+      "machineHash": "d806f92ef434b870420edefa22996a4e5e4d94a1ae937d03cc8c3c3a25249897",
+      "machineText": "動態新增或移除用於設定樣式的`completed`類別",
+      "status": "machine-translated",
       "sourcePreview": "Dynamically adds/removes the `completed` class for styling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0058-text-01": {
+    "b0062-text-01": {
       "sourceHash": "596b09e0ef7b9ecd88b3068c37f7a56fd95e53c25a14d6310d92626faa2f387f",
-      "targetHash": "f3ad5128985894571f4da4ee22ba1c08e57786cb60f31dd73a0f33a0d15ef4a4",
-      "machineHash": "f3ad5128985894571f4da4ee22ba1c08e57786cb60f31dd73a0f33a0d15ef4a4",
-      "machineText": "使用`onclick`屬性將按鈕連結至我們的函式",
-      "status": "final",
+      "targetHash": "d45db6411c10edfacd24a8e25c9b3b3921bb46dd6f82f7686a2e4799df15c683",
+      "machineHash": "d45db6411c10edfacd24a8e25c9b3b3921bb46dd6f82f7686a2e4799df15c683",
+      "machineText": "使用`onclick`屬性將按鈕連結至函式",
+      "status": "machine-translated",
       "sourcePreview": "Uses `onclick` attributes to connect buttons to our functions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0059-text-01": {
+    "b0063-text-01": {
       "sourceHash": "9973f9819ec6c1a66f69c5011ce3188462b42212c3e7adbd5c557b1a41038de8",
-      "targetHash": "5391312f7505d8415125fce30bd5fd5983d0b8e4e41bac0a7d1dd5db8c9e546e",
-      "machineHash": "5391312f7505d8415125fce30bd5fd5983d0b8e4e41bac0a7d1dd5db8c9e546e",
-      "machineText": "將所有 HTML 串接起來並注入 DOM",
-      "status": "final",
+      "targetHash": "6958ede2cf9ad0e2d50c971dd931149ba018e481582bb6b0e7ca7e887fa1ce7c",
+      "machineHash": "6958ede2cf9ad0e2d50c971dd931149ba018e481582bb6b0e7ca7e887fa1ce7c",
+      "machineText": "將所有 HTML 串接在一起並插入 DOM",
+      "status": "machine-translated",
       "sourcePreview": "Joins all the HTML together and injects it into the DOM",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0060-text-01": {
-      "sourceHash": "a25718ea479deda20b248720a3aa8738357c0d1b5fa6ef8f6d2754c6d065a384",
-      "targetHash": "e39c2f99a9479cca50bf0a357de64fb9aeaf4123ace87b5065daca63a1594169",
-      "machineHash": "e39c2f99a9479cca50bf0a357de64fb9aeaf4123ace87b5065daca63a1594169",
-      "machineText": "*CRUD 函式：*",
-      "status": "final",
-      "sourcePreview": "*The CRUD functions:*",
+    "b0064-text-01": {
+      "sourceHash": "2b15e22f080bd2698569b040d96ee6af5cc25045abd018ad4c3db08139b9f586",
+      "targetHash": "b6029ab48a7d8638bfb12049c0d1d7de0613d437f3d36c7152a2aa59ac50e109",
+      "machineHash": "b6029ab48a7d8638bfb12049c0d1d7de0613d437f3d36c7152a2aa59ac50e109",
+      "machineText": "**CRUD 函式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The CRUD functions:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0061-text-01": {
+    "b0065-text-01": {
       "sourceHash": "6caeed9a94eb2b71693a5783bcc708046ad398b216f31a9f5ba10c1f3f797b45",
-      "targetHash": "b776b0bbfe243e46c6ff475bfc464aa8ac8e7e4a92d620600d61eb74fc882f10",
-      "machineHash": "b776b0bbfe243e46c6ff475bfc464aa8ac8e7e4a92d620600d61eb74fc882f10",
-      "machineText": "`addTodo()`—驗證輸入、呼叫 Go 的`Add`方法，然後重新整理清單",
-      "status": "final",
+      "targetHash": "cf2a7cd8afbee75ff26731a457d1023dd8e5a31f8e6ae49cd8576819b58dc1bb",
+      "machineHash": "cf2a7cd8afbee75ff26731a457d1023dd8e5a31f8e6ae49cd8576819b58dc1bb",
+      "machineText": "`addTodo()`— 驗證輸入、呼叫 Go 的`Add`方法，並重新整理清單",
+      "status": "machine-translated",
       "sourcePreview": "`addTodo()` - Validates input, calls the Go `Add` method, refreshes the list",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0062-text-01": {
+    "b0066-text-01": {
       "sourceHash": "b8c0bf717c522a4590c49ee20caeba6fd08ecacbc7d2175dc44ab45aead72fd6",
-      "targetHash": "eb3edc44627674c93b2f96ae37bb0c5cb4a2fa6521396693d6bd784bfcf37178",
-      "machineHash": "eb3edc44627674c93b2f96ae37bb0c5cb4a2fa6521396693d6bd784bfcf37178",
-      "machineText": "`toggleTodo(id)`—呼叫 Go 的`Toggle`方法，然後重新整理清單",
-      "status": "final",
+      "targetHash": "5afde7dbb9b4f9413ed1554dbd4599e0ad67c086a9624514c01ebac91b769351",
+      "machineHash": "5afde7dbb9b4f9413ed1554dbd4599e0ad67c086a9624514c01ebac91b769351",
+      "machineText": "`toggleTodo(id)`— 呼叫 Go 的`Toggle`方法，並重新整理清單",
+      "status": "machine-translated",
       "sourcePreview": "`toggleTodo(id)` - Calls Go's `Toggle` method, refreshes the list",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0063-text-01": {
+    "b0067-text-01": {
       "sourceHash": "a9f74282bf68286ef3a2e07a5302b4cf25fac95f7d58a90afb40dd2bc7c7d73e",
-      "targetHash": "1395e1c39c140757962edd11432fd0cb2c538f1f5de79191b456f0c9b203dcf0",
-      "machineHash": "1395e1c39c140757962edd11432fd0cb2c538f1f5de79191b456f0c9b203dcf0",
-      "machineText": "`deleteTodo(id)`—呼叫 Go 的`Delete`方法，然後重新整理清單",
-      "status": "final",
+      "targetHash": "e9d62ae9849ed4263f9dc0d81b7f96034f83a20c2aba8c1862a6b0de5b7cb87d",
+      "machineHash": "e9d62ae9849ed4263f9dc0d81b7f96034f83a20c2aba8c1862a6b0de5b7cb87d",
+      "machineText": "`deleteTodo(id)`— 呼叫 Go 的`Delete`方法，並重新整理清單",
+      "status": "machine-translated",
       "sourcePreview": "`deleteTodo(id)` - Calls Go's `Delete` method, refreshes the list",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0064-text-01": {
+    "b0068-text-01": {
       "sourceHash": "995ef765f5b6f58838d04d1732d33bd2fabe080af765dc2e06dad76ac906483b",
-      "targetHash": "db739937dec9521ff653cb8100bc25e71d4eedaa09bf50efde947fee42d5cfc6",
-      "machineHash": "db739937dec9521ff653cb8100bc25e71d4eedaa09bf50efde947fee42d5cfc6",
-      "machineText": "由於 Go 呼叫會傳回 Promise，因此所有函式都是非同步函式",
-      "status": "final",
+      "targetHash": "5b9199aa5e6587b5a3d5214096d76c4ab1d1ea6de760282b54225035c8fd3653",
+      "machineHash": "5b9199aa5e6587b5a3d5214096d76c4ab1d1ea6de760282b54225035c8fd3653",
+      "machineText": "因為 Go 呼叫會傳回 Promise，所以所有函式都是非同步函式",
+      "status": "machine-translated",
       "sourcePreview": "All functions are async because Go calls return Promises",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0065-text-01": {
-      "sourceHash": "3f5074440dd77615ee1d83ce4d549dc80b0c44d4720890ad02b610a1f34cab8d",
-      "targetHash": "4b575351f89cfafd623400e9f9638a24683f9ccd941cdc747ccfcd28cd132b23",
-      "machineHash": "4b575351f89cfafd623400e9f9638a24683f9ccd941cdc747ccfcd28cd132b23",
-      "machineText": "*為何要附加至 window：*",
-      "status": "final",
-      "sourcePreview": "*Why attach to window:*",
+    "b0069-text-01": {
+      "sourceHash": "b6e1bb39a1ddb676f95bc11643ca3d2ace12786299a8fa7823bdbba98d968533",
+      "targetHash": "e3bc8507710adea4699d8550b52a6f588479e37779715ba910f9699e95952519",
+      "machineHash": "e3bc8507710adea4699d8550b52a6f588479e37779715ba910f9699e95952519",
+      "machineText": "**為何要附加至 window：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why attach to window:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0066-text-01": {
+    "b0070-text-01": {
       "sourceHash": "23b27db3fa6c97b132d61c30bc93793e63ccb62b97c6d0bf4a22b784367a7af7",
-      "targetHash": "cf78dedbe2fafdd446094b3e750913a85f1288cf396aba0eec21580222bfd616",
-      "machineHash": "cf78dedbe2fafdd446094b3e750913a85f1288cf396aba0eec21580222bfd616",
-      "machineText": "`window.addTodo = ...`讓 HTML 的`onclick`屬性能夠存取這些函式",
-      "status": "final",
+      "targetHash": "74aedf090e0d1e0cdd2aea24ee075731ab94cbc13f2b84a379cb89398f010548",
+      "machineHash": "74aedf090e0d1e0cdd2aea24ee075731ab94cbc13f2b84a379cb89398f010548",
+      "machineText": "`window.addTodo = ...`可讓 HTML 的`onclick`屬性存取這些函式",
+      "status": "machine-translated",
       "sourcePreview": "`window.addTodo = ...` makes functions accessible from HTML `onclick` attributes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0067-text-01": {
+    "b0071-text-01": {
       "sourceHash": "43d03491a4bc7428689fd673d135e97a6999e3bcdc552df45169848dfced7f3c",
-      "targetHash": "a7111824d1bd8bc6e7c57c4c88dea8e716e0dcf3c80da6498b086945293fede2",
-      "machineHash": "a7111824d1bd8bc6e7c57c4c88dea8e716e0dcf3c80da6498b086945293fede2",
-      "machineText": "這是原生 JavaScript 的簡單模式（框架會以不同方式處理）",
-      "status": "final",
+      "targetHash": "bedd84a10b1597362536c63e0ea6323f5e75bdf0705c6190ebb073f517160f2b",
+      "machineHash": "bedd84a10b1597362536c63e0ea6323f5e75bdf0705c6190ebb073f517160f2b",
+      "machineText": "這是原生 JavaScript 的一種簡單模式（框架的處理方式不同）",
+      "status": "machine-translated",
       "sourcePreview": "This is a simple pattern for vanilla JS (frameworks handle this differently)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0068-text-01": {
+    "b0072-text-01": {
       "sourceHash": "ba3e03263e6e4d37d22083eac43e2b83b19d5b4975520242d58e9e05deb1497c",
       "targetHash": "ccf1db172160d4f9828aa6d965859917f63a609d04df00eb7f9a69fb42437797",
       "machineHash": "ccf1db172160d4f9828aa6d965859917f63a609d04df00eb7f9a69fb42437797",
       "machineText": "在正式環境中，你可以改用適當的事件委派",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "In production, you might use proper event delegation instead",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0069-text-01": {
-      "sourceHash": "bd5feb4c99836b2b592f01dad8b0987728d69dad16ab09d6a9f89cc4744436af",
-      "targetHash": "78731cc604e4c0f1822ff4a22ebb7f280df23c1bef1fa1c0453ed319426c8248",
-      "machineHash": "78731cc604e4c0f1822ff4a22ebb7f280df23c1bef1fa1c0453ed319426c8248",
-      "machineText": "*重新整理模式：*",
-      "status": "final",
-      "sourcePreview": "*The refresh pattern:*",
+    "b0073-text-01": {
+      "sourceHash": "c28c94d46829abee5f7dad41f5da1bb3abfc2188fe3f130e25483b7ede6a46bd",
+      "targetHash": "376a9defef2a52ab3d978c61e6067687c648612f7827f243a37049a9cd89d365",
+      "machineHash": "376a9defef2a52ab3d978c61e6067687c648612f7827f243a37049a9cd89d365",
+      "machineText": "**重新整理模式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The refresh pattern:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0070-text-01": {
+    "b0074-text-01": {
       "sourceHash": "44a8434461b5c85b925370a942b45c06039043af54e4ebcfd12455eb992544a5",
-      "targetHash": "4b04414682f83dd2281c4b2771730be8d470735f27a03d5ca91bd3cad83ffad0",
-      "machineHash": "4b04414682f83dd2281c4b2771730be8d470735f27a03d5ca91bd3cad83ffad0",
-      "machineText": "每次變更（新增、切換或刪除）後，我們都會再次呼叫`loadTodos()`",
-      "status": "final",
+      "targetHash": "221c9d69919999fe5020ee3981d091ca417c1065eee0916af5d6d835c479dd34",
+      "machineHash": "221c9d69919999fe5020ee3981d091ca417c1065eee0916af5d6d835c479dd34",
+      "machineText": "每次變更（新增、切換或刪除）之後，我們都會再次呼叫`loadTodos()`",
+      "status": "machine-translated",
       "sourcePreview": "After each mutation (add/toggle/delete), we call `loadTodos()` again",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0071-text-01": {
+    "b0075-text-01": {
       "sourceHash": "686f2cab2421651b9978c2986b7ac80f50db6e8a67fa76d9756456701f239c4a",
       "targetHash": "b2585ff9d6fba8eb548af3d0376df3bd7d882aad83aa21a93af775fbbcfbd55b",
       "machineHash": "b2585ff9d6fba8eb548af3d0376df3bd7d882aad83aa21a93af775fbbcfbd55b",
       "machineText": "這可確保 UI 與 Go 狀態保持同步",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This ensures the UI stays in sync with the Go state",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0072-text-01": {
+    "b0076-text-01": {
       "sourceHash": "65fc1383dcaa6a895f63c10454763e6c1d4cdbbdef6093a0c8b4365165b523eb",
-      "targetHash": "bc67fecc23d34a52e9e5135838a5e3f192b8e5f9320cfd268b01a56338235fa6",
-      "machineHash": "bc67fecc23d34a52e9e5135838a5e3f192b8e5f9320cfd268b01a56338235fa6",
-      "machineText": "替代方案：讓 Go 方法傳回新狀態，以免再次呼叫",
-      "status": "final",
+      "targetHash": "4e8a03ef32ae611acc769934a3ea8d1123d2a8089a8f5d527f14fbdac88875e1",
+      "machineHash": "4e8a03ef32ae611acc769934a3ea8d1123d2a8089a8f5d527f14fbdac88875e1",
+      "machineText": "替代方式：讓 Go 方法傳回新狀態，以避免第二次呼叫",
+      "status": "machine-translated",
       "sourcePreview": "Alternative: Have Go methods return the new state to avoid the second call",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0073-text-01": {
+    "b0077-heading-01": {
+      "sourceHash": "7bb4698fc8e5eb2adbcc0cd6a61ec25d210c772ac6e22c7ddf8201f1ea48a357",
+      "targetHash": "870d41d58dd96a2f1f49b444221975d023b28ec6231284947f591a394a0d308b",
+      "machineHash": "870d41d58dd96a2f1f49b444221975d023b28ec6231284947f591a394a0d308b",
+      "machineText": "更新 HTML",
+      "status": "machine-translated",
+      "sourcePreview": "Update the HTML",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0078-text-01": {
       "sourceHash": "156f867b489c6ee66269ed31bce2aa39441e76d236121f18364fe22caa478bbd",
-      "targetHash": "8fb07e0c66a7c45fa0b2cc5beabdd7f07a2ad2b4744a445d9c51772159a55503",
-      "machineHash": "8fb07e0c66a7c45fa0b2cc5beabdd7f07a2ad2b4744a445d9c51772159a55503",
-      "machineText": "HTML 為 TODO 應用程式提供結構。它簡潔且具語意；真正發揮作用的是 JavaScript 和 CSS。",
-      "status": "final",
+      "targetHash": "2f8486c0cb9bc78451b9440874e116eac017891aded6b37f1f2fb0b171265ab7",
+      "machineHash": "2f8486c0cb9bc78451b9440874e116eac017891aded6b37f1f2fb0b171265ab7",
+      "machineText": "HTML 為 TODO 應用程式提供結構。它簡潔且具語意，真正的效果則由 JavaScript 和 CSS 實現。",
+      "status": "machine-translated",
       "sourcePreview": "The HTML provides the structure for our TODO app. It's minimal and semantic - the magic happens in t…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0074-text-01": {
+    "b0079-text-01": {
       "sourceHash": "d1dc032e83c024aa16ace53dc84fa26ed6693f6be57afc0df0a2240d661d8318",
-      "targetHash": "09026bc9a0837f42520b3531d7cf324849377aac277b29fad9e559bd95250906",
-      "machineHash": "09026bc9a0837f42520b3531d7cf324849377aac277b29fad9e559bd95250906",
-      "machineText": "取代`frontend/index.html`：",
-      "status": "final",
+      "targetHash": "57f92b5ead2175929d2e0399d40ec233cdb0377e73bfb5df788737584035c6fe",
+      "machineHash": "57f92b5ead2175929d2e0399d40ec233cdb0377e73bfb5df788737584035c6fe",
+      "machineText": "取代 `frontend/index.html`：",
+      "status": "machine-translated",
       "sourcePreview": "Replace `frontend/index.html`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0075-text-01": {
-      "sourceHash": "f034dac0b327a822efe287aeda4a8926301abb2162aa256e29c977dc724477b8",
-      "targetHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineText": "*這裡的運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening here:*",
+    "b0080-text-01": {
+      "sourceHash": "404e490316ca009ab03493d264fcaf5fcb44b7b5fdd93732ea39ba75d63886ba",
+      "targetHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineText": "**這裡的運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening here:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0076-text-01": {
-      "sourceHash": "5a698cc0740dcb56efc65b1bc18035597d42083c9442e8a154f1272cfbf7a642",
-      "targetHash": "a667fe60f3640d6c6bf6d0f6f3fb3098a1ce64e36dde48a7881d0704386ade44",
-      "machineHash": "a667fe60f3640d6c6bf6d0f6f3fb3098a1ce64e36dde48a7881d0704386ade44",
-      "machineText": "*結構：*",
-      "status": "final",
-      "sourcePreview": "*The structure:*",
+    "b0081-text-01": {
+      "sourceHash": "b0928b4cc5d1c247655df7e8033e35e788df8a3739829a1e186c825658025831",
+      "targetHash": "76a9c3cac5d232dfcb00301ec06a99ce51e330a7d032c728998bb1e29ff8f0a0",
+      "machineHash": "76a9c3cac5d232dfcb00301ec06a99ce51e330a7d032c728998bb1e29ff8f0a0",
+      "machineText": "**結構：**",
+      "status": "machine-translated",
+      "sourcePreview": "**The structure:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0077-text-01": {
+    "b0082-text-01": {
       "sourceHash": "ed6f3eae5990d482c953008636825bbb9737fff5d9b03f5caf2e2a61d2e395f7",
-      "targetHash": "3a9a2a3f8be8618de0f1de847097ab1f86bbc4af5775d80715b12975a2f09182",
-      "machineHash": "3a9a2a3f8be8618de0f1de847097ab1f86bbc4af5775d80715b12975a2f09182",
-      "machineText": "`container`－讓應用程式置中並限制寬度",
-      "status": "final",
+      "targetHash": "47e8e25ca175797e51388deaeaa4e9e930d5223c4ca4907d2f3e058ad75af348",
+      "machineHash": "47e8e25ca175797e51388deaeaa4e9e930d5223c4ca4907d2f3e058ad75af348",
+      "machineText": "`container` - 將應用程式置中並限制寬度",
+      "status": "machine-translated",
       "sourcePreview": "`container` - centers our app and constrains the width",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0078-text-01": {
+    "b0083-text-01": {
       "sourceHash": "e2917ffd8f7a006fe37fe36e19412c3bac0515fd44352f0b05d595443bdcc641",
-      "targetHash": "1eddcfb20e9bfb6f8941c88c3860ba843fd2a7a5f80085589635e92b2b41f5a6",
-      "machineHash": "1eddcfb20e9bfb6f8941c88c3860ba843fd2a7a5f80085589635e92b2b41f5a6",
-      "machineText": "`card`－容納所有內容的主要白色卡片",
-      "status": "final",
+      "targetHash": "63fc92813a7ba1f7204d7a0d4103e11977c06c00f5350f55505210bc3dfdecf6",
+      "machineHash": "63fc92813a7ba1f7204d7a0d4103e11977c06c00f5350f55505210bc3dfdecf6",
+      "machineText": "`card` - 容納所有內容的主要白色卡片",
+      "status": "machine-translated",
       "sourcePreview": "`card` - the main white card holding everything",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0079-text-01": {
+    "b0084-text-01": {
       "sourceHash": "2066a2b81299bf4f439b022111413c18d387507978a3c7fe6c4db0ab0d63f286",
-      "targetHash": "123c989ea2d69bf510f332039afb0095c648010e9615fd73ce51bd2d25b198ac",
-      "machineHash": "123c989ea2d69bf510f332039afb0095c648010e9615fd73ce51bd2d25b198ac",
-      "machineText": "`input-box`－輸入欄位與「新增」按鈕的彈性容器",
-      "status": "final",
+      "targetHash": "8dd97949f497326904552a5d2018290f0fb9ca7c1ac82301e8d5da86ef415659",
+      "machineHash": "8dd97949f497326904552a5d2018290f0fb9ca7c1ac82301e8d5da86ef415659",
+      "machineText": "`input-box` - 容納輸入欄位和「新增」按鈕的 flex 容器",
+      "status": "machine-translated",
       "sourcePreview": "`input-box` - flex container for the input and Add button",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0080-text-01": {
+    "b0085-text-01": {
       "sourceHash": "d7f2a71a641bf2cd8d6e8556c53456c7c7f9030cc8c27bc11ab3c3f6ac859855",
-      "targetHash": "8375e12ee2774c8c92df659f559e75b21ced4e5b72d4ea44d8373888101f28ce",
-      "machineHash": "8375e12ee2774c8c92df659f559e75b21ced4e5b72d4ea44d8373888101f28ce",
-      "machineText": "`todo-list`－JavaScript 將個別待辦事項插入此處",
-      "status": "final",
+      "targetHash": "27b2af98166a6d2e4a50e9f3412ffa05efc3d8961167df8de3e09e33201913ff",
+      "machineHash": "27b2af98166a6d2e4a50e9f3412ffa05efc3d8961167df8de3e09e33201913ff",
+      "machineText": "`todo-list` - JavaScript 將個別待辦事項插入此處",
+      "status": "machine-translated",
       "sourcePreview": "`todo-list` - where individual todos will be injected by JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0081-text-01": {
-      "sourceHash": "3ffd5a8cd55fe11f07c6cf8cd1c6515fb5d6acde1cb784024e67b5003d8572ff",
-      "targetHash": "19c1f792e80fd45aa346010e131169d83be1062c3a58c6d28a46555b9c3e9025",
-      "machineHash": "19c1f792e80fd45aa346010e131169d83be1062c3a58c6d28a46555b9c3e9025",
-      "machineText": "*事件處理：*",
-      "status": "final",
-      "sourcePreview": "*Event handling:*",
+    "b0086-text-01": {
+      "sourceHash": "d04bddc7a53fe214a502bde945227bca3c368d0474962afa5228635ca1114df3",
+      "targetHash": "fc10b30cf92c8ab0d31594ec9ba5acaf4e55125b025c2235fc4349e83a992c6e",
+      "machineHash": "fc10b30cf92c8ab0d31594ec9ba5acaf4e55125b025c2235fc4349e83a992c6e",
+      "machineText": "**事件處理：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Event handling:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0082-text-01": {
+    "b0087-text-01": {
       "sourceHash": "35f3fc0aec69c1bb491646506a50ad5b07c6ab198552c4f5a95eaddf40b160f9",
-      "targetHash": "db9c86996995089d8c385e6d963f28a1aba3b6ec2732e0662fd00b39b5b30024",
-      "machineHash": "db9c86996995089d8c385e6d963f28a1aba3b6ec2732e0662fd00b39b5b30024",
-      "machineText": "`onkeypress=\"if(event.key==='Enter') addTodo()\"`－按下 Enter 時新增待辦事項",
-      "status": "final",
+      "targetHash": "c66c0ca0544833a0914eaf6261a18bc785450a1ba78fe4f7df87c252dc8437f3",
+      "machineHash": "c66c0ca0544833a0914eaf6261a18bc785450a1ba78fe4f7df87c252dc8437f3",
+      "machineText": "`onkeypress=\"if(event.key==='Enter') addTodo()\"` - 按下 Enter 時新增待辦事項",
+      "status": "machine-translated",
       "sourcePreview": "`onkeypress=\"if(event.key==='Enter') addTodo()\"` - add todo when Enter is pressed",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0083-text-01": {
+    "b0088-text-01": {
       "sourceHash": "3d214410a4d18beba4fc3ef06b13322d4a0afce25685499e0dd8b5dd6a0fffc5",
-      "targetHash": "c205cda92e36adcce3f0661878c6ac2137df105ab51bfdb1fea0db4f7dcce9ca",
-      "machineHash": "c205cda92e36adcce3f0661878c6ac2137df105ab51bfdb1fea0db4f7dcce9ca",
-      "machineText": "`onclick=\"addTodo()\"`－按一下按鈕時新增待辦事項",
-      "status": "final",
+      "targetHash": "628ff443a2fcc20920fe0557528716d531a093e3e75a870c01741bf13fc84a02",
+      "machineHash": "628ff443a2fcc20920fe0557528716d531a093e3e75a870c01741bf13fc84a02",
+      "machineText": "`onclick=\"addTodo()\"` - 按一下按鈕時新增待辦事項",
+      "status": "machine-translated",
       "sourcePreview": "`onclick=\"addTodo()\"` - add todo when button is clicked",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0084-text-01": {
+    "b0089-text-01": {
       "sourceHash": "15900b0710c7d27c7f8e2b99ae2b6fd66714963d43265915704e0f9fb63a319f",
-      "targetHash": "b7c944500d733855de01ff7957bc75a3fa803c48e1bc243ec1a37f2906b81fe0",
-      "machineHash": "b7c944500d733855de01ff7957bc75a3fa803c48e1bc243ec1a37f2906b81fe0",
-      "machineText": "行內事件處理常式很適合簡單的原生 JavaScript 應用程式",
-      "status": "final",
+      "targetHash": "07de2a19142146e6d06711a296c5a1df12b36bf549ec60de00b655b1057b7f5b",
+      "machineHash": "07de2a19142146e6d06711a296c5a1df12b36bf549ec60de00b655b1057b7f5b",
+      "machineText": "對於簡單的原生 JavaScript 應用程式，行內事件處理常式相當實用",
+      "status": "machine-translated",
       "sourcePreview": "Inline event handlers work well for simple vanilla JS apps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0085-text-01": {
-      "sourceHash": "ea4c1d3d7565ec5380846ba6213d8ec3654a0188bb0ab3a9dfd45541d24486e8",
-      "targetHash": "119756c84ecdba2ba9d553785e77d66a0a7a780936b50d82f296865f7e282d8b",
-      "machineHash": "119756c84ecdba2ba9d553785e77d66a0a7a780936b50d82f296865f7e282d8b",
-      "machineText": "*模組指令碼：*",
-      "status": "final",
-      "sourcePreview": "*Module script:*",
+    "b0090-text-01": {
+      "sourceHash": "6da867e02d0b65245e0694eeba4497af86f465542164b7f9baf8200a23426da1",
+      "targetHash": "2d0e9201eb962147a264cd4598ded198b2f55bc459afc6aaeecf07db6d80548f",
+      "machineHash": "2d0e9201eb962147a264cd4598ded198b2f55bc459afc6aaeecf07db6d80548f",
+      "machineText": "**模組指令碼：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Module script:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0086-text-01": {
+    "b0091-text-01": {
       "sourceHash": "53479a0f11096b5473f7c30c700ae43893f8d20b0b640907a3a4965eecfd3e41",
-      "targetHash": "e0fad1fd7bf081d83acff8439a824fc7b94b355e2b7adbd59c99561018c3e28e",
-      "machineHash": "e0fad1fd7bf081d83acff8439a824fc7b94b355e2b7adbd59c99561018c3e28e",
-      "machineText": "`\u003cscript type=\"module\"\u003e`讓我們能使用 ES6 匯入",
-      "status": "final",
+      "targetHash": "961eb31b702095b18b631531b5eb3e62c3403dbe5737f3376d063603c1abcd76",
+      "machineHash": "961eb31b702095b18b631531b5eb3e62c3403dbe5737f3376d063603c1abcd76",
+      "machineText": "`\u003cscript type=\"module\"\u003e`讓我們可以使用 ES6 import",
+      "status": "machine-translated",
       "sourcePreview": "`\u003cscript type=\"module\"\u003e` lets us use ES6 imports",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0087-text-01": {
+    "b0092-text-01": {
       "sourceHash": "86ccd56a5c94c6f9358840ad268fa0c50daf656df9b15cb87294e28dcd3c8cd6",
       "targetHash": "2eb9c4212a0541b11b72cca40aa9da5b069cafd26dd963be0df070cb7e04fc51",
       "machineHash": "2eb9c4212a0541b11b72cca40aa9da5b069cafd26dd963be0df070cb7e04fc51",
       "machineText": "我們的`main.js`檔案可以匯入繫結並使用現代 JavaScript",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Our `main.js` file can import the bindings and use modern JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0088-text-01": {
+    "b0093-heading-01": {
+      "sourceHash": "9a01d988c234e3b597127cb314a55441660333d88e80e32cc587fb3b69b4b462",
+      "targetHash": "e7ad4b725ee69fb60bcc446e84d1704530494ed0c11e85b518c53bd0e897102e",
+      "machineHash": "e7ad4b725ee69fb60bcc446e84d1704530494ed0c11e85b518c53bd0e897102e",
+      "machineText": "設定應用程式樣式",
+      "status": "machine-translated",
+      "sourcePreview": "Style the app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0094-text-01": {
       "sourceHash": "7cc1350c6d9fb86c69bf0aeaef956974af6badff875800b5e9c5911656bb7845",
-      "targetHash": "89c2288e112cca11669819a84b883aa2f8d6ab20d037eb4b49db26883deaee49",
-      "machineHash": "89c2288e112cca11669819a84b883aa2f8d6ab20d037eb4b49db26883deaee49",
-      "machineText": "CSS 以流暢的轉場效果打造現代玻璃擬態設計。我們希望呈現精緻的質感，讓這個應用程式用起來令人愉快。",
-      "status": "final",
+      "targetHash": "92f6f5b1cc1dd4c68103b037c6398d78b0d60c1e7102db374a7d26c906cd54bd",
+      "machineHash": "92f6f5b1cc1dd4c68103b037c6398d78b0d60c1e7102db374a7d26c906cd54bd",
+      "machineText": "CSS 透過流暢的轉場效果，打造現代化的玻璃擬態設計。我們希望營造精緻的使用感受，讓這個應用程式用起來令人愉快。",
+      "status": "machine-translated",
       "sourcePreview": "The CSS creates a modern, glassmorphic design with smooth transitions. We're going for a polished fe…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0089-text-01": {
+    "b0095-text-01": {
       "sourceHash": "1658cc7e47ee04c082764d84cb51b3fc372506fead1758d0c61c091c8da4bb54",
-      "targetHash": "62cae91081f4b1d6c78a6877bd160f8b8560ab6e3fcfdda4d701ed7fc76a3d6a",
-      "machineHash": "62cae91081f4b1d6c78a6877bd160f8b8560ab6e3fcfdda4d701ed7fc76a3d6a",
-      "machineText": "取代`frontend/public/style.css`：",
-      "status": "final",
+      "targetHash": "bd900e211c4d1800be159ccb69ce4a8212dd037961234d47a5617dc2f195a72d",
+      "machineHash": "bd900e211c4d1800be159ccb69ce4a8212dd037961234d47a5617dc2f195a72d",
+      "machineText": "取代 `frontend/public/style.css`：",
+      "status": "machine-translated",
       "sourcePreview": "Replace `frontend/public/style.css`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0090-text-01": {
-      "sourceHash": "f034dac0b327a822efe287aeda4a8926301abb2162aa256e29c977dc724477b8",
-      "targetHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineHash": "7b1543d1ca2e227e80a0ab3d44d501d30da00b46bef5056fa4c4c46c9e4a34f6",
-      "machineText": "*這裡的運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening here:*",
+    "b0096-text-01": {
+      "sourceHash": "404e490316ca009ab03493d264fcaf5fcb44b7b5fdd93732ea39ba75d63886ba",
+      "targetHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineHash": "82e95cb9561a85cec4a778f401d5ae20a54ac9867ccc02876ec702ad8b3415b2",
+      "machineText": "**這裡的運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening here:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0091-text-01": {
-      "sourceHash": "56ce036d7cb966ea1e50ca2593db64af4fafa75b08c1e15164b184da59b6f34f",
-      "targetHash": "f6bf88c9b0fb891ae8b3373f5543c77f4ecba51868d632c8846d7c5891379dfe",
-      "machineHash": "f6bf88c9b0fb891ae8b3373f5543c77f4ecba51868d632c8846d7c5891379dfe",
-      "machineText": "*玻璃擬態設計：*",
-      "status": "final",
-      "sourcePreview": "*Glassmorphic design:*",
+    "b0097-text-01": {
+      "sourceHash": "859999e995b7901de1b8235a2096bd514e30900b5d49ffcc57066073e4a7f6e4",
+      "targetHash": "03bcff87702d4977f903dcbaf8297704545568bdac9d176882a3689bb372305d",
+      "machineHash": "03bcff87702d4977f903dcbaf8297704545568bdac9d176882a3689bb372305d",
+      "machineText": "**玻璃擬態設計：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Glassmorphic design:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0092-text-01": {
+    "b0098-text-01": {
       "sourceHash": "dd406e47ab184867b2ae8c0aac1e4ea90f52b8b6166382db4cf0a4014a6dab46",
-      "targetHash": "2e8182020d150feab4d2ab43bbddd64e36d3b39699e06390e7eaf622c891108a",
-      "machineHash": "2e8182020d150feab4d2ab43bbddd64e36d3b39699e06390e7eaf622c891108a",
-      "machineText": "`background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)`－紫色漸層背景",
-      "status": "final",
+      "targetHash": "07465ef9de536429273696a120a46e2e0871ac45a68813aa20c0d22812b66fb3",
+      "machineHash": "07465ef9de536429273696a120a46e2e0871ac45a68813aa20c0d22812b66fb3",
+      "machineText": "`background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - 紫色漸層背景",
+      "status": "machine-translated",
       "sourcePreview": "`background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - purple gradient background",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0093-text-01": {
+    "b0099-text-01": {
       "sourceHash": "3821d8df91cabae55bf481603909abe03e79b8aa1be86959d9869d3fdb7cfeec",
-      "targetHash": "836c071d7d393b5e0090de10667d4d86bf7506e518f7aa46e2b5b650929f46c1",
-      "machineHash": "836c071d7d393b5e0090de10667d4d86bf7506e518f7aa46e2b5b650929f46c1",
-      "machineText": "`backdrop-filter: blur(10px)`－在卡片上建立毛玻璃效果",
-      "status": "final",
+      "targetHash": "c7ad7f732aba43ef15b23c439cbbac058a7e64bc675e9e9400e9bcea16972de2",
+      "machineHash": "c7ad7f732aba43ef15b23c439cbbac058a7e64bc675e9e9400e9bcea16972de2",
+      "machineText": "`backdrop-filter: blur(10px)` - 在卡片上呈現毛玻璃效果",
+      "status": "machine-translated",
       "sourcePreview": "`backdrop-filter: blur(10px)` - creates the frosted glass effect on the card",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0094-text-01": {
+    "b0100-text-01": {
       "sourceHash": "2d0484965b003ebe8aa110684e93c354aabaee1040794d0e01e43f42e75566dd",
-      "targetHash": "ba65277e0309ed45b968bd986057a0916434798b9e0842c45e9fea7f170832c0",
-      "machineHash": "ba65277e0309ed45b968bd986057a0916434798b9e0842c45e9fea7f170832c0",
-      "machineText": "`rgba(255, 255, 255, 0.95)`－以半透明白色呈現玻璃效果",
-      "status": "final",
+      "targetHash": "6bd6afe62fe631f70925d7cf40b40994df0c328479cb3cc81b9f105738aa8e3a",
+      "machineHash": "6bd6afe62fe631f70925d7cf40b40994df0c328479cb3cc81b9f105738aa8e3a",
+      "machineText": "`rgba(255, 255, 255, 0.95)` - 以半透明白色呈現玻璃效果",
+      "status": "machine-translated",
       "sourcePreview": "`rgba(255, 255, 255, 0.95)` - semi-transparent white for the glass effect",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0095-text-01": {
-      "sourceHash": "f65478e1124537c642d9a1597bcf910f4aea09be6c94823603feb4db7f87120b",
-      "targetHash": "500fe8b76a68196e05167df9ba5ec8c7a2fa55ce1150111541d97b568e6928f4",
-      "machineHash": "500fe8b76a68196e05167df9ba5ec8c7a2fa55ce1150111541d97b568e6928f4",
-      "machineText": "*自訂核取方塊樣式：*",
-      "status": "final",
-      "sourcePreview": "*Custom checkbox styling:*",
+    "b0101-text-01": {
+      "sourceHash": "7048b600cbd6a3ab14f13be81ad0daf884cae592d96ca76c00b4bec588b91243",
+      "targetHash": "d44ed0b999f8dbf967d39962ec7f3a954021f3763bfceda42ec6e7c4067ea006",
+      "machineHash": "d44ed0b999f8dbf967d39962ec7f3a954021f3763bfceda42ec6e7c4067ea006",
+      "machineText": "**自訂核取方塊樣式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Custom checkbox styling:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0096-text-01": {
+    "b0102-text-01": {
       "sourceHash": "1b284d498d3ec411954256ea1b77ca1a218827b863d5ef69aea5f7f855783d90",
       "targetHash": "63dd62e4c05843af1aa581792549b6afd62551afb56427a266a1e02a848826eb",
       "machineHash": "63dd62e4c05843af1aa581792549b6afd62551afb56427a266a1e02a848826eb",
       "machineText": "`appearance: none`會移除瀏覽器預設的核取方塊",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`appearance: none` removes the default browser checkbox",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0097-text-01": {
+    "b0103-text-01": {
       "sourceHash": "efa7abefea51694efb909055fcd5ee8cb8bdedaae7ef3739bf4921c21e9dafbf",
-      "targetHash": "ea84b55b25e0a11a00550dfa77fd0f1ccec5f57caecc97569b4474e5036c84cf",
-      "machineHash": "ea84b55b25e0a11a00550dfa77fd0f1ccec5f57caecc97569b4474e5036c84cf",
-      "machineText": "我們使用`::after`建立帶有勾選記號的自訂圓角方塊",
-      "status": "final",
+      "targetHash": "92959c85586a0c1b75ec9bf4f867f57a6ebc5f5bddbdc050bda8a933e5f994eb",
+      "machineHash": "92959c85586a0c1b75ec9bf4f867f57a6ebc5f5bddbdc050bda8a933e5f994eb",
+      "machineText": "我們使用`::after`建立帶有勾號的自訂圓角方塊",
+      "status": "machine-translated",
       "sourcePreview": "We create a custom rounded square with a checkmark using `::after`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0098-text-01": {
+    "b0104-text-01": {
       "sourceHash": "b4a435b2021c78d4704b03466552e1c5814b60387cdb92f4002bded9212af74f",
-      "targetHash": "395068cf28ab7336e5ebb35173d7a78d2f7f2028007296e1157fad2223fe3e79",
-      "machineHash": "395068cf28ab7336e5ebb35173d7a78d2f7f2028007296e1157fad2223fe3e79",
-      "machineText": "當`checked`時，會使用 Unicode 字元 ✓ 顯示勾選記號",
-      "status": "final",
+      "targetHash": "d0db627b60da63aff35d25b20331b143bcd9103e9b94da9ba74fce972608ab4a",
+      "machineHash": "d0db627b60da63aff35d25b20331b143bcd9103e9b94da9ba74fce972608ab4a",
+      "machineText": "當`checked`時，會使用 ✓ Unicode 字元顯示勾號",
+      "status": "machine-translated",
       "sourcePreview": "The checkmark appears when `checked` using a ✓ unicode character",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0099-text-01": {
-      "sourceHash": "a268ff70726e60436880ebcd316169a90db227bec95fee8ecf5bfd1c094f6b80",
-      "targetHash": "2d6842e72a0d1e5b10ccff606f5aeef7458f016a0ce699377d6509c6f92266ce",
-      "machineHash": "2d6842e72a0d1e5b10ccff606f5aeef7458f016a0ce699377d6509c6f92266ce",
-      "machineText": "*游標停留互動：*",
-      "status": "final",
-      "sourcePreview": "*Hover interactions:*",
+    "b0105-text-01": {
+      "sourceHash": "747a5a6a144897255b822232e1d34c1fabfa958bc00a42d85cdfe892cb21b5d0",
+      "targetHash": "f889d254cbaeaf7ca93485341e11cbc26773a2d3401114d225a9e1e71ccaca18",
+      "machineHash": "f889d254cbaeaf7ca93485341e11cbc26773a2d3401114d225a9e1e71ccaca18",
+      "machineText": "**游標停留互動：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Hover interactions:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0100-text-01": {
+    "b0106-text-01": {
       "sourceHash": "dcaa55b0ac49b2c1e14a53fe35819bdac78c2ad1f04bb07e4ea66734b8c4198d",
       "targetHash": "0920336071f41f46655c827b392d82d4d9c05e1784d102fb4117b17e7fcbef16",
       "machineHash": "0920336071f41f46655c827b392d82d4d9c05e1784d102fb4117b17e7fcbef16",
       "machineText": "游標停留時，待辦事項會向右滑動（`transform: translateX(4px)`）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Todos slide right on hover (`transform: translateX(4px)`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0101-text-01": {
+    "b0107-text-01": {
       "sourceHash": "e9edba0c91a39e0da724025a776117265bc9790d5f9bc57c0ff477cd51a8128d",
       "targetHash": "7a81563982679357b683b7957d7325764d88d37deaa692430885e6c6b1e62f38",
       "machineHash": "7a81563982679357b683b7957d7325764d88d37deaa692430885e6c6b1e62f38",
       "machineText": "刪除按鈕會保持隱藏，直到游標停留時才顯示（`opacity: 0` → `opacity: 1`）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Delete button is hidden until hover (`opacity: 0` → `opacity: 1`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0102-text-01": {
+    "b0108-text-01": {
       "sourceHash": "3251e5073e482a26956e1943c0527954bfed40aad391e43728279a0d2e1d643b",
-      "targetHash": "874a6eba1ffae8284e1f077f05a5dbcbdb7f031afbcddbc45114bb6c0447f8a4",
-      "machineHash": "874a6eba1ffae8284e1f077f05a5dbcbdb7f031afbcddbc45114bb6c0447f8a4",
-      "machineText": "游標停留時，按鈕會稍微放大，以提供觸覺般的回饋",
-      "status": "final",
+      "targetHash": "decfa53bbdded2fae65392cb127dcbc10ed3ef2aa9ee42b9d90e7f31d17df2f1",
+      "machineHash": "decfa53bbdded2fae65392cb127dcbc10ed3ef2aa9ee42b9d90e7f31d17df2f1",
+      "machineText": "游標停留時，按鈕會稍微放大以提供觸覺般的回饋",
+      "status": "machine-translated",
       "sourcePreview": "Buttons scale up slightly on hover for tactile feedback",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0103-text-01": {
-      "sourceHash": "3b40abc6ef6720cdccfa49a8355ad16535294de8a3baded9e01f15ff1a34f6b4",
-      "targetHash": "5dd8077c7babebb98142ace3cf64c375c07a1bb0d89d4cf6496e2c50231ff52f",
-      "machineHash": "5dd8077c7babebb98142ace3cf64c375c07a1bb0d89d4cf6496e2c50231ff52f",
-      "machineText": "*空白狀態：*",
-      "status": "final",
-      "sourcePreview": "*Empty state:*",
+    "b0109-text-01": {
+      "sourceHash": "e5c0d421a2acab64f4b0e28e19668cd863ff0a6d5b9af07205a94637b26cfa87",
+      "targetHash": "defb83dad38a9320b5442ae02d8546d76adeb71e9ec97c6e9a331a2608cacf39",
+      "machineHash": "defb83dad38a9320b5442ae02d8546d76adeb71e9ec97c6e9a331a2608cacf39",
+      "machineText": "**空白狀態：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Empty state:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0104-text-01": {
+    "b0110-text-01": {
       "sourceHash": "9631e029c26f01164974359b04ab514ef8c4d3e7ffac95ddcee7fa120e4b93f1",
       "targetHash": "fea95fd7f3fb83297cf1c9f7bd73cb87b524dac1e3b74cd4e40c6e944f63267c",
       "machineHash": "fea95fd7f3fb83297cf1c9f7bd73cb87b524dac1e3b74cd4e40c6e944f63267c",
       "machineText": "沒有待辦事項時，`#todo-list:empty::before`會顯示訊息",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`#todo-list:empty::before` shows a message when there are no todos",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0105-text-01": {
+    "b0111-text-01": {
       "sourceHash": "cfc18cdb4c7439405e2cc0373fa9c9ae9aa443374271c3db18b0ac335542f590",
       "targetHash": "42a8f7b9dc9206c8e8a2d85c71fc4277e4920c53e4f3cbfb0d8dc7fb2e5aec99",
       "machineHash": "42a8f7b9dc9206c8e8a2d85c71fc4277e4920c53e4f3cbfb0d8dc7fb2e5aec99",
       "machineText": "僅使用 CSS 的解決方案，不需要 JavaScript",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "CSS-only solution - no JavaScript needed",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0106-text-01": {
+    "b0112-heading-01": {
+      "sourceHash": "472feada8e7eba95a3020a03ae9c7f5341647d6565b66bdc1e7def3ec4e0d89b",
+      "targetHash": "f0df1a8ae4d0e3d16d4d8f1fcb9403f46be570d255a8cc4da2d5441b182ce73e",
+      "machineHash": "f0df1a8ae4d0e3d16d4d8f1fcb9403f46be570d255a8cc4da2d5441b182ce73e",
+      "machineText": "執行應用程式",
+      "status": "machine-translated",
+      "sourcePreview": "Run the app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:51:45Z"
+    },
+    "b0113-text-01": {
       "sourceHash": "047dde6252cbad692482a240be38e6925dd0163112d29689916b63e7f73ef07e",
-      "targetHash": "12cef93aababe236a6e7f146b7cad3f187c611e6e6d0814d84549e73feced7e3",
-      "machineHash": "12cef93aababe236a6e7f146b7cad3f187c611e6e6d0814d84549e73feced7e3",
-      "machineText": "來看看實際效果！執行開發伺服器：",
-      "status": "final",
+      "targetHash": "6e00247dc59e15507929950702e296041a375ab3726f98b6c760bbd7f4838ea9",
+      "machineHash": "6e00247dc59e15507929950702e296041a375ab3726f98b6c760bbd7f4838ea9",
+      "machineText": "來看看實際運作效果！執行開發伺服器：",
+      "status": "machine-translated",
       "sourcePreview": "Let's see it in action! Run the development server:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0107-text-01": {
+    "b0114-text-01": {
       "sourceHash": "cf919b986cdc33f5fb1a4edbd1e9e4ff10680824147fa2a9ee503b069a13d777",
       "targetHash": "ba06366c7ffaaf8868cb98b41235498d2f44280735de8f2ecdb0e3c16d028aaf",
       "machineHash": "ba06366c7ffaaf8868cb98b41235498d2f44280735de8f2ecdb0e3c16d028aaf",
       "machineText": "應用程式會完成編譯並開啟。試著操作看看：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The app will compile and open. Try it out:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0108-text-01": {
+    "b0115-text-01": {
       "sourceHash": "4f7f89e945745643d1c756b9df2b4f78a662dd0d997d860eef7fcc54b07550af",
-      "targetHash": "72a8d7619f6d289478e77573ede0a2e1f2ca9c942718a7ee71f720f382d69c6b",
-      "machineHash": "72a8d7619f6d289478e77573ede0a2e1f2ca9c942718a7ee71f720f382d69c6b",
-      "machineText": "輸入待辦事項，然後按 Enter 或按一下「新增」",
-      "status": "final",
+      "targetHash": "0b5c5f7291183ce4b304c4f8d5614261def430069c0a63fe5a68aaf2bb9a4ec9",
+      "machineHash": "0b5c5f7291183ce4b304c4f8d5614261def430069c0a63fe5a68aaf2bb9a4ec9",
+      "machineText": "輸入待辦事項，然後按下 Enter 或按一下「新增」",
+      "status": "machine-translated",
       "sourcePreview": "Type a todo and press Enter or click Add",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0109-text-01": {
+    "b0116-text-01": {
       "sourceHash": "d7e423267d5d9c0ac2fae2c56d492f7431fd5db96b3efd1de1bbc2367a3803e2",
       "targetHash": "d145c9600ee9ff910c6056c8f65d5ba0dac79cadece1ef2142a07bb46f17b351",
       "machineHash": "d145c9600ee9ff910c6056c8f65d5ba0dac79cadece1ef2142a07bb46f17b351",
       "machineText": "按一下核取方塊，將待辦事項標示為已完成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Click the checkbox to mark it complete",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0110-text-01": {
+    "b0117-text-01": {
       "sourceHash": "07325757dfefc19ffd16c07e8d61be99dfbddf16ca987c5710d07fde4783766a",
-      "targetHash": "75600f5f4a275bdf58ab9dcf4adbc6774144c2ae43eead7da390f9515ec9302d",
-      "machineHash": "75600f5f4a275bdf58ab9dcf4adbc6774144c2ae43eead7da390f9515ec9302d",
-      "machineText": "將游標移至待辦事項上，查看刪除按鈕出現",
-      "status": "final",
+      "targetHash": "206fe1e24edf20bce4774c47d877575701e7bc6ed3cf0be43ba89124332a264e",
+      "machineHash": "206fe1e24edf20bce4774c47d877575701e7bc6ed3cf0be43ba89124332a264e",
+      "machineText": "將游標停留在待辦事項上，查看刪除按鈕出現",
+      "status": "machine-translated",
       "sourcePreview": "Hover over a todo to see the delete button appear",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0111-text-01": {
+    "b0118-text-01": {
       "sourceHash": "f4bbf0bd7032a0a125f358bd9f1a49b720bbcf397251769ba7c43413f8dd6575",
-      "targetHash": "c6a3c7cfbaea9a9cfcbf713f33bd9657eeeae024f1cad69a4a1616fae9ccb6c6",
-      "machineHash": "c6a3c7cfbaea9a9cfcbf713f33bd9657eeeae024f1cad69a4a1616fae9ccb6c6",
-      "machineText": "請注意 UI 會立即更新，這表示重新整理模式正在運作",
-      "status": "final",
+      "targetHash": "bb7495b922af9a49074922b0c0dd82a0f061af7f23bc7d1d47c74a24af65a8ab",
+      "machineHash": "bb7495b922af9a49074922b0c0dd82a0f061af7f23bc7d1d47c74a24af65a8ab",
+      "machineText": "請注意 UI 會立即更新，這表示我們的重新整理模式正在運作",
+      "status": "machine-translated",
       "sourcePreview": "Notice how the UI updates instantly - that's our refresh pattern working",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0112-text-01": {
-      "sourceHash": "12043e2ad3b91bcfe955e250a66b7ab39dde53f18605903d438b383fa03ba2c0",
-      "targetHash": "666eb09c6bebcc8ac17f2c64f77eee2015c04b14145bf35fe06dd7178fd04ae9",
-      "machineHash": "666eb09c6bebcc8ac17f2c64f77eee2015c04b14145bf35fe06dd7178fd04ae9",
-      "machineText": "*運作方式：*",
-      "status": "final",
-      "sourcePreview": "*What's happening:*",
+    "b0119-text-01": {
+      "sourceHash": "dfbf02e8a3c9145eb76ddf9bea712d1f1225dcd7691a8b970cd0a32d40cad169",
+      "targetHash": "07a0c7a0419bd069187fcdc596cdd0b0100ef48563ef52a5a2e16cf6bc76471e",
+      "machineHash": "07a0c7a0419bd069187fcdc596cdd0b0100ef48563ef52a5a2e16cf6bc76471e",
+      "machineText": "**運作方式：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What's happening:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0113-text-01": {
+    "b0120-text-01": {
       "sourceHash": "2abc527e2569ce37055c1d23133bc01e3e939ace7db7edcb91fa4a139af86c10",
-      "targetHash": "d10728dde0c768efd7fa465fb8491ba121823384fc79da47f7118bcf6b351c1d",
-      "machineHash": "d10728dde0c768efd7fa465fb8491ba121823384fc79da47f7118bcf6b351c1d",
-      "machineText": "Wails 已自動為你的 TodoService 方法產生繫結",
-      "status": "final",
+      "targetHash": "501ff291d02672937bb174e8ca1569cc2380687a453f7bb372145b1798859687",
+      "machineHash": "501ff291d02672937bb174e8ca1569cc2380687a453f7bb372145b1798859687",
+      "machineText": "Wails 已自動為 TodoService 方法產生繫結",
+      "status": "machine-translated",
       "sourcePreview": "Wails automatically generated bindings for your TodoService methods",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0114-text-01": {
+    "b0121-text-01": {
       "sourceHash": "8f4744c675c5245d740ff105ffaf5a77444dd53174c3c747db9c004740fce89b",
-      "targetHash": "831efc66f1d5e3182252b37d993f461c818c0ed59ab504156cbd699022f84e37",
-      "machineHash": "831efc66f1d5e3182252b37d993f461c818c0ed59ab504156cbd699022f84e37",
-      "machineText": "開發模式包含熱重新載入功能；試著修改 CSS，並觀察畫面更新",
-      "status": "final",
+      "targetHash": "fb72228d76844d6495e5adad92b6b237531a320ab41cb22f557232cdd1215d6b",
+      "machineHash": "fb72228d76844d6495e5adad92b6b237531a320ab41cb22f557232cdd1215d6b",
+      "machineText": "開發模式包含熱重新載入功能；試著修改 CSS，觀察畫面更新",
+      "status": "machine-translated",
       "sourcePreview": "Dev mode includes hot reload - try changing the CSS and watch it update",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0115-text-01": {
+    "b0122-text-01": {
       "sourceHash": "89ea54c6fef4e54f200653da8c3344b19759d8def2dc34415d24158b5df59950",
-      "targetHash": "dbb09dcabaeeb33f6c27fa52d5d965e6d8828700f96e57cd6723efb38ab72726",
-      "machineHash": "dbb09dcabaeeb33f6c27fa52d5d965e6d8828700f96e57cd6723efb38ab72726",
-      "machineText": "你的 Go 程式碼以原生方式執行，不需要轉譯或直譯",
-      "status": "final",
+      "targetHash": "daae9eb395a65c885e16080a71bffbb2357651db537080b3d06ab2fda40f9e13",
+      "machineHash": "daae9eb395a65c885e16080a71bffbb2357651db537080b3d06ab2fda40f9e13",
+      "machineText": "Go 程式碼以原生方式執行，不需要轉譯或直譯",
+      "status": "machine-translated",
       "sourcePreview": "Your Go code is running natively - no translation or interpretation needed",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0116-heading-01": {
+    "b0123-heading-01": {
       "sourceHash": "c1879525c75cb5c2f2f3bcd2db2554aeca020ede722bdbe6949b8f5f51d885d2",
       "targetHash": "1af1db99223c59eac4ab5c27944b8e925b8515b8bf86e13bb665d573829ab419",
       "machineHash": "1af1db99223c59eac4ab5c27944b8e925b8515b8bf86e13bb665d573829ab419",
       "machineText": "運作方式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How It Works",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0117-heading-01": {
+    "b0124-heading-01": {
       "sourceHash": "c628cc54f31960687baf9430aae85c8f5068f656b11924b870dae5e51d6a98be",
       "targetHash": "d753b2254f13a9d9e6d6f2f04aad0db56448fe22e6f7ed540c3843f0cc5d5cd9",
       "machineHash": "d753b2254f13a9d9e6d6f2f04aad0db56448fe22e6f7ed540c3843f0cc5d5cd9",
       "machineText": "執行緒安全的狀態管理",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Thread-Safe State Management",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0118-text-01": {
+    "b0125-text-01": {
       "sourceHash": "789affac6abbdf717bdb6c7f970be2f4930eb6978493738e68bea919efa784bc",
-      "targetHash": "275ffd0a46d36f560f0120b25df6d4468e18d0085a87daf1ba53a6fd12868b57",
-      "machineHash": "275ffd0a46d36f560f0120b25df6d4468e18d0085a87daf1ba53a6fd12868b57",
-      "machineText": "`sync.RWMutex`可提供安全的並行存取：",
-      "status": "final",
+      "targetHash": "2cee4e4d1c87e9ae0c56fdaf92ee3af8350e3170efc3d4bf6b74d28d876de242",
+      "machineHash": "2cee4e4d1c87e9ae0c56fdaf92ee3af8350e3170efc3d4bf6b74d28d876de242",
+      "machineText": "`sync.RWMutex`提供安全的並行存取：",
+      "status": "machine-translated",
       "sourcePreview": "The `sync.RWMutex` provides safe concurrent access:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0119-text-01": {
-      "sourceHash": "e459415d39217c3328bd75693a9e2405d8986a218576c470b6a90c0797e08d5e",
-      "targetHash": "8315960a1b873e878270388a2b663f896e541cc7b5660ccbfb5a583f90cf8b29",
-      "machineHash": "8315960a1b873e878270388a2b663f896e541cc7b5660ccbfb5a583f90cf8b29",
-      "machineText": "*這點為何重要：*",
-      "status": "final",
-      "sourcePreview": "*Why this matters:*",
+    "b0126-text-01": {
+      "sourceHash": "9f42406954cbbefc959b543201d5c357518b05b05c775ef6882271e262bf836b",
+      "targetHash": "f5f34158ccea4e96912319b6fdc3282d452f4f5f1a736c0f5bac8631661f2730",
+      "machineHash": "f5f34158ccea4e96912319b6fdc3282d452f4f5f1a736c0f5bac8631661f2730",
+      "machineText": "**為何這很重要：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this matters:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0120-text-01": {
+    "b0127-text-01": {
       "sourceHash": "049b1ce678604cdebf81e225af18d790d07714e35414f01f85f0fd722816d088",
-      "targetHash": "7f05f0ce93d5b85be49e5ed9190f74cc8c7a89551b5931b46a11981aa3128383",
-      "machineHash": "7f05f0ce93d5b85be49e5ed9190f74cc8c7a89551b5931b46a11981aa3128383",
-      "machineText": "多個前端呼叫可能同時發生",
-      "status": "final",
+      "targetHash": "fa26dc0c7cc5760afcd05ee293c6e614f30d8fc65196c18c70f45b46636f13fa",
+      "machineHash": "fa26dc0c7cc5760afcd05ee293c6e614f30d8fc65196c18c70f45b46636f13fa",
+      "machineText": "前端可能同時發出多個呼叫",
+      "status": "machine-translated",
       "sourcePreview": "Multiple frontend calls can happen concurrently",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0121-text-01": {
+    "b0128-text-01": {
       "sourceHash": "e05a565e0849c29e32dc2bff5a9aad73377de60ffd0982b61be6cbd445a77cf7",
-      "targetHash": "cd327233c2b6a74835d87691247ffcd035bf2897678653533ff5b0b14e143ad6",
-      "machineHash": "cd327233c2b6a74835d87691247ffcd035bf2897678653533ff5b0b14e143ad6",
-      "machineText": "讀取作業不會互相阻塞",
-      "status": "final",
+      "targetHash": "11baae584e24e585a05e2c42f56240338bfb2e23b0af8f2786f101631dbbab36",
+      "machineHash": "11baae584e24e585a05e2c42f56240338bfb2e23b0af8f2786f101631dbbab36",
+      "machineText": "讀取作業不會彼此阻塞",
+      "status": "machine-translated",
       "sourcePreview": "Read operations don't block each other",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0122-text-01": {
+    "b0129-text-01": {
       "sourceHash": "3b41c8ee5b2940d64c066adf6679576a7d175b4d056bd8b31d15dbb8ce549922",
       "targetHash": "5b5be7c6f4a22d2569c31c5404c331f352751f72f2a6888e42a3e418365044c0",
       "machineHash": "5b5be7c6f4a22d2569c31c5404c331f352751f72f2a6888e42a3e418365044c0",
       "machineText": "寫入作業會取得獨佔存取權",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Write operations get exclusive access",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0123-text-01": {
+    "b0130-text-01": {
       "sourceHash": "5d743196781afc94594cf0ab4580979c5383f49afe674e038b67827ae43da484",
-      "targetHash": "d48053090199ac38fe5d6e91bdfae87a41882fb315e8d33ea923d62a81827d47",
-      "machineHash": "d48053090199ac38fe5d6e91bdfae87a41882fb315e8d33ea923d62a81827d47",
-      "machineText": "`defer`可確保鎖定一律會被釋放",
-      "status": "final",
+      "targetHash": "d8f803b4428ac4c2c8cf7862feae41b8f82c200959192ced512aed446f6bab5d",
+      "machineHash": "d8f803b4428ac4c2c8cf7862feae41b8f82c200959192ced512aed446f6bab5d",
+      "machineText": "`defer`可確保鎖定一律會解除",
+      "status": "machine-translated",
       "sourcePreview": "`defer` ensures locks are always released",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0124-heading-01": {
+    "b0131-heading-01": {
       "sourceHash": "753215f79dc6dc9e57e2a85d48ba1ce46b079e3a585f2a3494b4652ab786eb94",
       "targetHash": "cd5936112c74194854c4108dc463953542faaaf12b97701dd9e3329aab83c5b7",
       "machineHash": "cd5936112c74194854c4108dc463953542faaaf12b97701dd9e3329aab83c5b7",
       "machineText": "錯誤處理",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Error Handling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0125-text-01": {
+    "b0132-text-01": {
       "sourceHash": "9a7999b6992009db26eeb06ce6e404d898fb5db1d0e5fc0e0c7abdb3893ac541",
-      "targetHash": "6429b994b77166758fb24e7ce610e8aa5c41c0bb42fab3660a590a9e179e1b1a",
-      "machineHash": "6429b994b77166758fb24e7ce610e8aa5c41c0bb42fab3660a590a9e179e1b1a",
-      "machineText": "服務會針對無效作業傳回錯誤：",
-      "status": "final",
+      "targetHash": "358af3039267d80ff88b5ce8e6b0765db222efaa3c987187bdf2e98ceaa1e129",
+      "machineHash": "358af3039267d80ff88b5ce8e6b0765db222efaa3c987187bdf2e98ceaa1e129",
+      "machineText": "遇到無效作業時，服務會傳回錯誤：",
+      "status": "machine-translated",
       "sourcePreview": "The service returns errors for invalid operations:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0126-text-01": {
+    "b0133-text-01": {
       "sourceHash": "16f6414f4994770e5e19b0ec2ae2406e8be59415279cba60e3665afb7f1d45d1",
-      "targetHash": "44c50da0a459d57cb20c30ebde8b0db692dbe96aeb31356fc6a12ba0cde10a1c",
-      "machineHash": "44c50da0a459d57cb20c30ebde8b0db692dbe96aeb31356fc6a12ba0cde10a1c",
-      "machineText": "你可以在前端攔截這些錯誤：",
-      "status": "final",
+      "targetHash": "0176756bec908d594e5e949add6eeaa77c3fb80b7480c75afd9de1f4a2ea13d4",
+      "machineHash": "0176756bec908d594e5e949add6eeaa77c3fb80b7480c75afd9de1f4a2ea13d4",
+      "machineText": "在前端中，可以攔截這些錯誤：",
+      "status": "machine-translated",
       "sourcePreview": "In the frontend, you can catch these:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0127-heading-01": {
+    "b0134-heading-01": {
       "sourceHash": "ee84957ccf7c7cdc38d31603c19c295b75f350d88a8c01ea15bfa2cddf715245",
       "targetHash": "d176e6cae40cc8a70b98050f3f02b30f2038ab96f0c6e8bfb981b5664c4b02b0",
       "machineHash": "d176e6cae40cc8a70b98050f3f02b30f2038ab96f0c6e8bfb981b5664c4b02b0",
       "machineText": "狀態同步",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "State Synchronization",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0128-text-01": {
+    "b0135-text-01": {
       "sourceHash": "1ab3b5485150472e6f4d3a056463839dabdd4ed1c9c191d6c193d909e28c9262",
       "targetHash": "b7eced952d3af4fb421142635004c85c8f730fc034df0406ae99d460b69befe7",
       "machineHash": "b7eced952d3af4fb421142635004c85c8f730fc034df0406ae99d460b69befe7",
       "machineText": "每次變更後，我們都會重新載入完整清單：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "After each mutation, we reload the full list:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0129-text-01": {
-      "sourceHash": "97722704583b896879956d62adf49c0f8df7a2e578ffa593aaf3ccc8842c66fd",
-      "targetHash": "df6b20b8c4ad0b9e68a665758d071c3ea9e844dc12c867403b0338fe2382255c",
-      "machineHash": "df6b20b8c4ad0b9e68a665758d071c3ea9e844dc12c867403b0338fe2382255c",
-      "machineText": "*替代作法：*讓每個方法傳回更新後的清單，以免再次呼叫。",
-      "status": "final",
-      "sourcePreview": "*Alternative approach:* Return the updated list from each method to avoid the second call.",
+    "b0136-text-01": {
+      "sourceHash": "35eed022fdef9f03750a3db615d03e20b8ea14803ee06b5ee3302bbec89c1644",
+      "targetHash": "d75d9670d4ffb9664c2937559ee2ab8c63ebc9711ff2854da28bb4aa4fac4ecc",
+      "machineHash": "d75d9670d4ffb9664c2937559ee2ab8c63ebc9711ff2854da28bb4aa4fac4ecc",
+      "machineText": "\u003cstrong\u003e替代方法：\u003c/strong\u003e讓每個方法傳回更新後的清單，以避免第二次呼叫。",
+      "status": "machine-translated",
+      "sourcePreview": "**Alternative approach:** Return the updated list from each method to avoid the second call.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0130-heading-01": {
+    "b0137-heading-01": {
       "sourceHash": "ea2b517e4f01690aa8f3e0802f273c7be98fce6faf15fe311f1fa6c5acbd7fbb",
-      "targetHash": "a089364b3109b6ae6ff159df96b4e6170dd7db894be12f7c13763df8240dcbe6",
-      "machineHash": "a089364b3109b6ae6ff159df96b4e6170dd7db894be12f7c13763df8240dcbe6",
-      "machineText": "強化功能",
-      "status": "final",
+      "targetHash": "f6c63935f868d86dfd9b085706781674667735a1b356a40dad59e0557f609a42",
+      "machineHash": "f6c63935f868d86dfd9b085706781674667735a1b356a40dad59e0557f609a42",
+      "machineText": "增強功能",
+      "status": "machine-translated",
       "sourcePreview": "Enhancements",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0131-heading-01": {
+    "b0138-heading-01": {
       "sourceHash": "0abb4428076691d91bf3c9de2a0a1f3d7da94b8f4d6fac99f2e86b632c502c8a",
       "targetHash": "67d0dd1c99e40a69949e5d5199df40ac05503e782bc6401fb311ea82ce3df41c",
       "machineHash": "67d0dd1c99e40a69949e5d5199df40ac05503e782bc6401fb311ea82ce3df41c",
       "machineText": "新增統計資料",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add Statistics",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0132-text-01": {
+    "b0139-text-01": {
       "sourceHash": "7d9a353b2d46557d7279a50bf1c911090875a490fa7b6d2a4d65d47d43be215c",
       "targetHash": "db5de1ae6b929bbc38e87af9cc3c7956f7da0799eaa443ed32384295c6bd237b",
       "machineHash": "db5de1ae6b929bbc38e87af9cc3c7956f7da0799eaa443ed32384295c6bd237b",
       "machineText": "將以下內容新增至`todoservice.go`：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add this to `todoservice.go`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0133-text-01": {
+    "b0140-text-01": {
       "sourceHash": "9561a0f66565ece97046b825a874ed2442c8ca2f3180290707118b18c7fba049",
-      "targetHash": "1dff154793164e3983fc988b6ab7a5a20cde258e250068d059e18d20ad05180a",
-      "machineHash": "1dff154793164e3983fc988b6ab7a5a20cde258e250068d059e18d20ad05180a",
-      "machineText": "在前端顯示：",
-      "status": "final",
+      "targetHash": "3e40372e49a0b785177c1229a0a555bc783f9eabb62f5722353d7938827d08cb",
+      "machineHash": "3e40372e49a0b785177c1229a0a555bc783f9eabb62f5722353d7938827d08cb",
+      "machineText": "顯示於前端：",
+      "status": "machine-translated",
       "sourcePreview": "Display in the frontend:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0134-heading-01": {
+    "b0141-heading-01": {
       "sourceHash": "d541cdb6dcff5345c94333e977bf30cda9dec4f8dfed85a76e1207107b572367",
       "targetHash": "0f0a2710e3832a14b716d93acce8392bc2c795a6c39c2e9026526b6cb34b1b02",
       "machineHash": "0f0a2710e3832a14b716d93acce8392bc2c795a6c39c2e9026526b6cb34b1b02",
       "machineText": "新增「清除已完成項目」",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add \"Clear Completed\"",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0135-heading-01": {
+    "b0142-heading-01": {
       "sourceHash": "3447fdb93136319788c27cedd704008dfee86f034c90bd510eb20917b091a6cc",
-      "targetHash": "6fa074871b82562e043904466ecb7c93fbc248f3e9c6dd12f57ea3f8e6891e1d",
-      "machineHash": "6fa074871b82562e043904466ecb7c93fbc248f3e9c6dd12f57ea3f8e6891e1d",
-      "machineText": "新增持久化功能",
-      "status": "final",
+      "targetHash": "68cd4603294c181a274a022fe6cbde38d14a2f069943deb19c195abf849fcb85",
+      "machineHash": "68cd4603294c181a274a022fe6cbde38d14a2f069943deb19c195abf849fcb85",
+      "machineText": "新增持久化",
+      "status": "machine-translated",
       "sourcePreview": "Add Persistence",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0136-text-01": {
+    "b0143-text-01": {
       "sourceHash": "3eafb3f812930d76f51b3d67b2f1d1d01ac2d65603b5b14698d3406e41830461",
-      "targetHash": "32a84618ff52d7e7156cb2554e2fb96b3a2e29a41a0564edff3c917aaf722cc7",
-      "machineHash": "32a84618ff52d7e7156cb2554e2fb96b3a2e29a41a0564edff3c917aaf722cc7",
-      "machineText": "對於正式環境應用程式，請使用最適合應用程式的儲存方案新增持久化功能，例如 SQLite、PostgreSQL 或託管服務。",
-      "status": "final",
+      "targetHash": "35f5455d54e1bace7e6f0578402cd6185d0d22a9c2f7d65323dc2ca150f5b027",
+      "machineHash": "35f5455d54e1bace7e6f0578402cd6185d0d22a9c2f7d65323dc2ca150f5b027",
+      "machineText": "對於正式環境應用程式，請使用最適合應用程式的儲存解決方案新增持久化功能，例如 SQLite、PostgreSQL 或代管服務。",
+      "status": "machine-translated",
       "sourcePreview": "For production apps, add persistence using the storage solution that best fits your application, suc…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0137-heading-01": {
+    "b0144-heading-01": {
       "sourceHash": "7030aeaea548acfd16a1a0d08836f91cac706c2fa42de0e171ef13e02c10326a",
-      "targetHash": "c6477c3350638ecef7e53598d0d2c5287263b378e0c9c01b63f7fc563e8e6838",
-      "machineHash": "c6477c3350638ecef7e53598d0d2c5287263b378e0c9c01b63f7fc563e8e6838",
-      "machineText": "建置正式版本",
-      "status": "final",
+      "targetHash": "67697d2d6f910beb5163a151bf22efbb4125a3d530d5c984015d6193ccb13e54",
+      "machineHash": "67697d2d6f910beb5163a151bf22efbb4125a3d530d5c984015d6193ccb13e54",
+      "machineText": "建置正式環境版本",
+      "status": "machine-translated",
       "sourcePreview": "Build for Production",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0138-text-01": {
+    "b0145-text-01": {
       "sourceHash": "c635f018758668795835b1575cb99c3912a44899073dda7f30fc2a8cc95a8ce8",
-      "targetHash": "55312a06aec23e6d1ed669f22d0025963b574eea35a88ba86ac976c49b80b456",
-      "machineHash": "55312a06aec23e6d1ed669f22d0025963b574eea35a88ba86ac976c49b80b456",
-      "machineText": "準備好發佈 TODO 應用程式時，請建置正式版本：",
-      "status": "final",
+      "targetHash": "bdc59827b665eb23915e74a41863fce43b28b2a5afbd241d5753ffa25ada7005",
+      "machineHash": "bdc59827b665eb23915e74a41863fce43b28b2a5afbd241d5753ffa25ada7005",
+      "machineText": "準備好散布 TODO 應用程式時，請建置正式環境版本：",
+      "status": "machine-translated",
       "sourcePreview": "When you're ready to distribute your TODO app, build it for production:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0139-text-01": {
+    "b0146-text-01": {
       "sourceHash": "d386f3f90bd844c069aafd08f90069e2ec64d432d37a8abd9e97d46771dd9341",
       "targetHash": "95d5eb2d4913336d08b1b4ee396b2016da703c9a918b93cbd24483c04f69a046",
       "machineHash": "95d5eb2d4913336d08b1b4ee396b2016da703c9a918b93cbd24483c04f69a046",
       "machineText": "這會在`bin/`中建立最佳化的原生可執行檔：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This creates an optimized native executable in `bin/`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0140-text-01": {
+    "b0147-text-01": {
       "sourceHash": "77be417c69f0f0b8ebbfb7d5ea0ada8634eb23319c9ae963f7cee1f945000072",
       "targetHash": "5289fa423a9a757f855331bb66417839a1845adcd527ef5f88deea59fa1d0676",
       "machineHash": "5289fa423a9a757f855331bb66417839a1845adcd527ef5f88deea59fa1d0676",
       "machineText": "以最佳化設定編譯 Go 程式碼",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Compiles your Go code with optimizations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0141-text-01": {
+    "b0148-text-01": {
       "sourceHash": "d4a03c21af2b10ae1e7aae1db81d209d0b3bff4262e052df196a1567dbca48ea",
-      "targetHash": "182264dcaf9568f31a5d3a2d038cb102c02904bdb99981d5365d4baecb0a3e52",
-      "machineHash": "182264dcaf9568f31a5d3a2d038cb102c02904bdb99981d5365d4baecb0a3e52",
-      "machineText": "建置正式環境使用的前端",
-      "status": "final",
+      "targetHash": "1b25e3351784de49060aa5a70269f7d6bc067ae361bacb527203c684d7cd428b",
+      "machineHash": "1b25e3351784de49060aa5a70269f7d6bc067ae361bacb527203c684d7cd428b",
+      "machineText": "建置前端的正式環境版本",
+      "status": "machine-translated",
       "sourcePreview": "Builds your frontend for production",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0142-text-01": {
+    "b0149-text-01": {
       "sourceHash": "38fe755a890a2dea48dc76ae9743a81c46ac4baff7071184e4955e8179bfd181",
       "targetHash": "7da9769685d9ee3303187232bcb80c195df41595b9802ea99e68607105c2401d",
       "machineHash": "7da9769685d9ee3303187232bcb80c195df41595b9802ea99e68607105c2401d",
       "machineText": "將所有內容封裝成單一可執行檔",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Bundles everything into a single executable",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0143-text-01": {
+    "b0150-text-01": {
       "sourceHash": "0bec1d68764fcb2fcc8d34859d1a0ae995f3e51381f604d0c2146d9c36cbe9f4",
-      "targetHash": "4abe428a2a72f84793dc0a481e4b8faefe69a0c147461d6466b1609f27c9ba48",
-      "machineHash": "4abe428a2a72f84793dc0a481e4b8faefe69a0c147461d6466b1609f27c9ba48",
-      "machineText": "產生的應用程式通常為10-20MB（相較之下，Electron 應用程式為150MB 以上）",
-      "status": "final",
+      "targetHash": "469a1683e91b271f9cd838abddc012ce05dcd294ce0132f6688fb689950da119",
+      "machineHash": "469a1683e91b271f9cd838abddc012ce05dcd294ce0132f6688fb689950da119",
+      "machineText": "產生的應用程式通常為10-20MB（相較之下，Electron 為150MB 以上）",
+      "status": "machine-translated",
       "sourcePreview": "The resulting app is typically 10-20MB (compare to Electron's 150MB+)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0144-text-01": {
+    "b0151-text-01": {
       "sourceHash": "e163bbda2572d007308ddf0dce926b83ac3561d8f19f18ee196e20b0a483dbe1",
-      "targetHash": "a8f91a12a9035feb626aa3e350d643d10f691adb1c2d09d540d4b669fae9995e",
-      "machineHash": "a8f91a12a9035feb626aa3e350d643d10f691adb1c2d09d540d4b669fae9995e",
-      "machineText": "你可以直接執行該可執行檔，無須執行階段，也不必啟動任何伺服器。這是真正的原生應用程式。",
-      "status": "final",
+      "targetHash": "4ea361d28173445dd9007ee12ba482d803378a0d7e912c1ae7ea4070bdc0f242",
+      "machineHash": "4ea361d28173445dd9007ee12ba482d803378a0d7e912c1ae7ea4070bdc0f242",
+      "machineText": "可以直接執行可執行檔，不需要執行階段，也不需要啟動任何伺服器。這是一個真正的原生應用程式。",
+      "status": "machine-translated",
       "sourcePreview": "You can run the executable directly - no runtime needed, no servers to start. It's a true native app…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0145-heading-01": {
+    "b0152-heading-01": {
       "sourceHash": "ce0ecb62ab5a1a94c1577d2ad88a74b5d40a625f468f09b03898d325fc17fb5d",
-      "targetHash": "f15073c0a4d3f31d8807679353dde54fc1bf5edc27f5b209e18b7d5e558d66e6",
-      "machineHash": "f15073c0a4d3f31d8807679353dde54fc1bf5edc27f5b209e18b7d5e558d66e6",
-      "machineText": "你建置的成果",
-      "status": "final",
+      "targetHash": "87a8b14856cdbe68a078bd84e4d46750a7b5896d7c11af2e7e2cdcd28c4b72bc",
+      "machineHash": "87a8b14856cdbe68a078bd84e4d46750a7b5896d7c11af2e7e2cdcd28c4b72bc",
+      "machineText": "完成的成果",
+      "status": "machine-translated",
       "sourcePreview": "What You Built",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0146-text-01": {
+    "b0153-text-01": {
       "sourceHash": "49ea44246a4303c55b287c698b7f291e9d29a61ce506acf92321adfa4528536c",
       "targetHash": "b4189957335dc93bc5083e37141067ae4bebc18feb85c2bfd26469af35861ead",
       "machineHash": "b4189957335dc93bc5083e37141067ae4bebc18feb85c2bfd26469af35861ead",
       "machineText": "你剛剛建置了一個完整的 TODO 應用程式，其中包含：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "You just built a complete TODO application with:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0147-text-01": {
-      "sourceHash": "c92fa73201b64e92091fb70e7e9887a87364a5af392d74191472f154b3a3dc3c",
-      "targetHash": "40771891ea45ea83d4b4f2dddd08bbdc6f35ceba622a9fedbe38568bc38a2faf",
-      "machineHash": "40771891ea45ea83d4b4f2dddd08bbdc6f35ceba622a9fedbe38568bc38a2faf",
-      "machineText": "*完整的 CRUD 實作：*",
-      "status": "final",
-      "sourcePreview": "*Full CRUD implementation:*",
+    "b0154-text-01": {
+      "sourceHash": "2d992edabd5b08cb3b5113028d9c7d4fdd113c50bcb2adbb51702690ff40823b",
+      "targetHash": "4ed22b963ca0cb25c6e33daeadac9200c5951f27b1c98d9eb110e1d37d347ea3",
+      "machineHash": "4ed22b963ca0cb25c6e33daeadac9200c5951f27b1c98d9eb110e1d37d347ea3",
+      "machineText": "**完整的 CRUD 實作：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Full CRUD implementation:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0148-text-01": {
+    "b0155-text-01": {
       "sourceHash": "03d4156721cf8fc6502e7fdeb2de585bfa511dd13155ac4cd16e2db32aacabd3",
-      "targetHash": "f2bc7527af43b7ce815bc01600d9c929989e6aa7a47c21c27eb2324e95c18dc9",
-      "machineHash": "f2bc7527af43b7ce815bc01600d9c929989e6aa7a47c21c27eb2324e95c18dc9",
-      "machineText": "建立具備建立、讀取、更新及刪除作業的服務",
-      "status": "final",
+      "targetHash": "79cccbf4315c1afc46fc7fc467991605b5e9546b566d93f8febacd529b3e7f4a",
+      "machineHash": "79cccbf4315c1afc46fc7fc467991605b5e9546b566d93f8febacd529b3e7f4a",
+      "machineText": "建立具有建立、讀取、更新及刪除作業的服務",
+      "status": "machine-translated",
       "sourcePreview": "Created a service with Create, Read, Update, and Delete operations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0149-text-01": {
+    "b0156-text-01": {
       "sourceHash": "ab74964a5fada59a8cc0888f0323ddc35aaedda97778bf69c0d6c182e44948d5",
-      "targetHash": "5c80dc173b46804df9b5efb600f10cf323e7659a2a90e90895c1dc05d5f5bab1",
-      "machineHash": "5c80dc173b46804df9b5efb600f10cf323e7659a2a90e90895c1dc05d5f5bab1",
-      "machineText": "加入輸入驗證與錯誤處理",
-      "status": "final",
+      "targetHash": "059cfec1681b63aa6df34fded147c6a51e228ee87e1a6c5d39c7c59c68462652",
+      "machineHash": "059cfec1681b63aa6df34fded147c6a51e228ee87e1a6c5d39c7c59c68462652",
+      "machineText": "新增輸入驗證及錯誤處理",
+      "status": "machine-translated",
       "sourcePreview": "Added input validation and error handling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0150-text-01": {
+    "b0157-text-01": {
       "sourceHash": "c191fba962ba72ef4940a21d2223148efbeb25d2d7a8c318609fc2ea10d3f396",
-      "targetHash": "af04abb17b085255ad14692c64de2d27e806986250efc147e7530ae8ef52cddf",
-      "machineHash": "af04abb17b085255ad14692c64de2d27e806986250efc147e7530ae8ef52cddf",
-      "machineText": "了解 Go 錯誤如何轉換為 JavaScript 例外狀況",
-      "status": "final",
+      "targetHash": "0b913b45b795e48a928710361bb7ff58f467bd2f59c7fff7fce627a89a596bed",
+      "machineHash": "0b913b45b795e48a928710361bb7ff58f467bd2f59c7fff7fce627a89a596bed",
+      "machineText": "瞭解 Go 錯誤如何轉換為 JavaScript 例外狀況",
+      "status": "machine-translated",
       "sourcePreview": "Learned how Go errors become JavaScript exceptions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0151-text-01": {
-      "sourceHash": "48b507d068e637fb4944e1d2d264178c2a0104c7fe44ca0347fa9e804b1cb492",
-      "targetHash": "49dac4d96af2261c7e5f66e873fe8bd96995206e2776548807f9d0765d54c0af",
-      "machineHash": "49dac4d96af2261c7e5f66e873fe8bd96995206e2776548807f9d0765d54c0af",
-      "machineText": "*執行緒安全的狀態管理：*",
-      "status": "final",
-      "sourcePreview": "*Thread-safe state management:*",
+    "b0158-text-01": {
+      "sourceHash": "d31fc106d97488fdc9a7eb098014f2098ea857b4d3cca14958a058bf0d67c048",
+      "targetHash": "628d944cf0579a7e904db7251f2640df5f9d000196db2fc5401a034e7b04011c",
+      "machineHash": "628d944cf0579a7e904db7251f2640df5f9d000196db2fc5401a034e7b04011c",
+      "machineText": "**執行緒安全的狀態管理：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Thread-safe state management:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0152-text-01": {
+    "b0159-text-01": {
       "sourceHash": "18c3355a7f9e72efe5088c996f3c9c35d9826957044fc1a61f74b8267d462231",
       "targetHash": "5f8657d6a4633cf0424d873fbf072683edea66bd370b3b35a51e8366d99016e9",
       "machineHash": "5f8657d6a4633cf0424d873fbf072683edea66bd370b3b35a51e8366d99016e9",
       "machineText": "使用`sync.RWMutex`安全地處理並行存取",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Used `sync.RWMutex` to handle concurrent access safely",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0153-text-01": {
+    "b0160-text-01": {
       "sourceHash": "34d61305d9d46f3c5a6063c005b887090ed3bc890c0335e2244b1f04ec5b209a",
-      "targetHash": "c010a150a62dd50a4b22dc1b8e62d7426c523e85a2560e0c28028e712fc8d053",
-      "machineHash": "c010a150a62dd50a4b22dc1b8e62d7426c523e85a2560e0c28028e712fc8d053",
-      "machineText": "了解讀取鎖定（RLock）與寫入鎖定（Lock）之間的差異",
-      "status": "final",
+      "targetHash": "b12f8abb42345b123d08b356c271449f25cf34d2e888c195a6be07c960b95efa",
+      "machineHash": "b12f8abb42345b123d08b356c271449f25cf34d2e888c195a6be07c960b95efa",
+      "machineText": "瞭解讀取鎖定（RLock）與寫入鎖定（Lock）之間的差異",
+      "status": "machine-translated",
       "sourcePreview": "Understood the difference between read locks (RLock) and write locks (Lock)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0154-text-01": {
+    "b0161-text-01": {
       "sourceHash": "ef087dedcd0eb21a866fb375f565d7b1fc3b5e99d5d1878b712d842bffe9193c",
-      "targetHash": "6b59c4b5478e987ae3f01cf26c3c8aeb83251e53b81fda14c08913586ea951c1",
-      "machineHash": "6b59c4b5478e987ae3f01cf26c3c8aeb83251e53b81fda14c08913586ea951c1",
-      "machineText": "了解`defer`如何藉由保證執行清理來防止死結",
-      "status": "final",
+      "targetHash": "9dd81571377565c9085f2646f72cfd717ccdd20be5c79d79c536498923efaee1",
+      "machineHash": "9dd81571377565c9085f2646f72cfd717ccdd20be5c79d79c536498923efaee1",
+      "machineText": "瞭解`defer`如何藉由保證執行清理來防止死結",
+      "status": "machine-translated",
       "sourcePreview": "Saw how `defer` prevents deadlocks by guaranteeing cleanup",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0155-text-01": {
-      "sourceHash": "31622918b7293b0d9e041b1b35d95124448199382595abc7856d66c6bdf5f6ca",
-      "targetHash": "709a269b0df8f840575d1c99aaef6cd1f90dbb721a1d4137ba279b0f7d8801aa",
-      "machineHash": "709a269b0df8f840575d1c99aaef6cd1f90dbb721a1d4137ba279b0f7d8801aa",
-      "machineText": "*現代且精緻的使用者介面：*",
-      "status": "final",
-      "sourcePreview": "*Modern, polished UI:*",
+    "b0162-text-01": {
+      "sourceHash": "c3ec44ef588e9e92508fd01e11ee354e622893a13af145117e89cd6471cd84d3",
+      "targetHash": "71864b4cb5e839fa57edd2b3960ca5ec707c82f2f8ef71be5a0bd06c53c82d6c",
+      "machineHash": "71864b4cb5e839fa57edd2b3960ca5ec707c82f2f8ef71be5a0bd06c53c82d6c",
+      "machineText": "**現代化且精緻的 UI：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Modern, polished UI:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0156-text-01": {
+    "b0163-text-01": {
       "sourceHash": "7a82e40c8b03d80019049eceeb8bbac97a5c2de5c1a017a5b75b6f263016d771",
-      "targetHash": "99bcbf3e555b5c6c1175280f9687148af0d372ad23c12b3b723b3bbd4446356b",
-      "machineHash": "99bcbf3e555b5c6c1175280f9687148af0d372ad23c12b3b723b3bbd4446356b",
-      "machineText": "運用漸層與模糊效果建置玻璃擬態介面",
-      "status": "final",
+      "targetHash": "eae237e5a28d22d478e0544eac5ffd8c2d9cc3b7cca469ef0593bbb681f2cdbb",
+      "machineHash": "eae237e5a28d22d478e0544eac5ffd8c2d9cc3b7cca469ef0593bbb681f2cdbb",
+      "machineText": "使用漸層和模糊效果建置玻璃擬態介面",
+      "status": "machine-translated",
       "sourcePreview": "Built a glassmorphic interface with gradients and blur effects",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0157-text-01": {
+    "b0164-text-01": {
       "sourceHash": "65f7cfce4debea1e8bcba9415ee512a2f6313fbe5dea6a449bd86f0824cfd0e9",
-      "targetHash": "b643772f63104c8802c2c8e044bf0c018610d3c1398a632220387baf63e72144",
-      "machineHash": "b643772f63104c8802c2c8e044bf0c018610d3c1398a632220387baf63e72144",
-      "machineText": "不使用任何框架，自訂核取方塊的樣式",
-      "status": "final",
+      "targetHash": "d5bc6b69b48f5f5534cdccbee54a16defd96756eee3aa6af8a93cf5c8aee53b2",
+      "machineHash": "d5bc6b69b48f5f5534cdccbee54a16defd96756eee3aa6af8a93cf5c8aee53b2",
+      "machineText": "不使用任何框架，建立自訂樣式的核取方塊",
+      "status": "machine-translated",
       "sourcePreview": "Created custom-styled checkboxes without any framework",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0158-text-01": {
+    "b0165-text-01": {
       "sourceHash": "cf9d084470d91519743ed5170ead2c2c8dfea84afdef8f07c0bd1765dbc23da3",
-      "targetHash": "23f4809df2ce9c382bc94770416d16bc8e9f299f16d321389658afac0ae8d55d",
-      "machineHash": "23f4809df2ce9c382bc94770416d16bc8e9f299f16d321389658afac0ae8d55d",
-      "machineText": "加入游標暫留互動與轉場效果，營造原生操作體驗",
-      "status": "final",
+      "targetHash": "0573ef7ffa6686b66e378fb8330069ba23126e0da351293a4486f5e0e2bd45bd",
+      "machineHash": "0573ef7ffa6686b66e378fb8330069ba23126e0da351293a4486f5e0e2bd45bd",
+      "machineText": "新增游標停留互動及轉場效果，營造原生使用感受",
+      "status": "machine-translated",
       "sourcePreview": "Added hover interactions and transitions for a native feel",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0159-text-01": {
+    "b0166-text-01": {
       "sourceHash": "e89caf5312ec831dcc9c2e4fccd14242ed4a1ee1300af6f49178f87797343ec5",
-      "targetHash": "5a2d75d20d85f1c9f3259163c4525d02d2e8bd08e834479d2bdc0f678f824dd7",
-      "machineHash": "5a2d75d20d85f1c9f3259163c4525d02d2e8bd08e834479d2bdc0f678f824dd7",
-      "machineText": "僅使用 CSS 實作空白狀態",
-      "status": "final",
+      "targetHash": "73ced7b6dee73e38672d4f15e87d1674903bbf34292fda8a874ba060db914687",
+      "machineHash": "73ced7b6dee73e38672d4f15e87d1674903bbf34292fda8a874ba060db914687",
+      "machineText": "使用純 CSS 實作了空白狀態",
+      "status": "machine-translated",
       "sourcePreview": "Implemented an empty state with pure CSS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0160-text-01": {
-      "sourceHash": "5cb5f2ddbef6c83dd0e7a115bf76730110a83d78ae4a9f310eae1aa69e89d27d",
-      "targetHash": "1ce0ce9cf9cd546a03b6ddd35c586b4228ece3a948c4c91cc57bbdf842bf1881",
-      "machineHash": "1ce0ce9cf9cd546a03b6ddd35c586b4228ece3a948c4c91cc57bbdf842bf1881",
-      "machineText": "*Wails 基礎知識：*",
-      "status": "final",
-      "sourcePreview": "*Wails fundamentals:*",
+    "b0167-text-01": {
+      "sourceHash": "2582599359c4b7d0588b56cb1d5c9f23a22a800593205bc5cca5e54e1f8fa122",
+      "targetHash": "d8f232e633c632412e5c7bea65bb5385e37e731728426875869860a4acedcf37",
+      "machineHash": "d8f232e633c632412e5c7bea65bb5385e37e731728426875869860a4acedcf37",
+      "machineText": "**Wails 基礎知識：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Wails fundamentals:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0161-text-01": {
+    "b0168-text-01": {
       "sourceHash": "94977804ffddedfa51f86c3272f3240d460bc31f3042d57fdf5eddb39bcd23e5",
       "targetHash": "137d183bd078fe8dd41cf20cd5f061bea786ad9d514dbdce92908616b1193c05",
       "machineHash": "137d183bd078fe8dd41cf20cd5f061bea786ad9d514dbdce92908616b1193c05",
       "machineText": "服務註冊與自動產生繫結",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Service registration and automatic binding generation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0162-text-01": {
+    "b0169-text-01": {
       "sourceHash": "a7c5f2fddb58d767ddb65b1e5945e350c2987ae533c45fd5cc6b64abd71cf201",
       "targetHash": "93874eaafe7f69b7bcffbfd2c77ae4f005bd70041cc42543833b7f4c7178abf1",
       "machineHash": "93874eaafe7f69b7bcffbfd2c77ae4f005bd70041cc42543833b7f4c7178abf1",
       "machineText": "使用 async/await 從 JavaScript 呼叫 Go 方法",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Calling Go methods from JavaScript with async/await",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0163-text-01": {
+    "b0170-text-01": {
       "sourceHash": "610c9cb3e811977a37d4c13f5980c0c6f8c4a8d57910bd378593391d0d1edcbf",
       "targetHash": "c23b7d243f17cae762fab062e13c2388298291a479e5f8809b0cf6c0b74e15f7",
       "machineHash": "c23b7d243f17cae762fab062e13c2388298291a479e5f8809b0cf6c0b74e15f7",
       "machineText": "在 Go 與前端之間同步狀態",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "State synchronization between Go and the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0164-text-01": {
+    "b0171-text-01": {
       "sourceHash": "69ca7d070cbf999a89555eb3d5cae4297aabbb394f0058d61761352955b76978",
-      "targetHash": "f57c7c820b613df732e440c67d062c14d7a85f263d48ec2a537ed18ebff255da",
-      "machineHash": "f57c7c820b613df732e440c67d062c14d7a85f263d48ec2a537ed18ebff255da",
-      "machineText": "建置與封裝原生桌面應用程式",
-      "status": "final",
+      "targetHash": "e8f01b2243d541cac577a16f61612eaebf5168f314314dfc89a5fb9794cea79b",
+      "machineHash": "e8f01b2243d541cac577a16f61612eaebf5168f314314dfc89a5fb9794cea79b",
+      "machineText": "建置及封裝原生桌面應用程式",
+      "status": "machine-translated",
       "sourcePreview": "Building and packaging a native desktop app",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0165-heading-01": {
+    "b0172-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
       "machineHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
       "machineText": "後續步驟",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0166-text-01": {
+    "b0173-text-01": {
       "sourceHash": "40cf59b2ece48ac30a45efa8a6f20dad596c0deb7317622549b5832ceb40e96c",
-      "targetHash": "4ef8fc4803526db0a84573e6779f6b990a48f2d362137b98effdf00004764e98",
-      "machineHash": "4ef8fc4803526db0a84573e6779f6b990a48f2d362137b98effdf00004764e98",
-      "machineText": "了解 CRUD 作業與狀態管理後，可以嘗試：",
-      "status": "final",
+      "targetHash": "2ddf0ed210bad2a4a81bd67a228d11efd7926b8aaa7188ff06688a263b2e03d0",
+      "machineHash": "2ddf0ed210bad2a4a81bd67a228d11efd7926b8aaa7188ff06688a263b2e03d0",
+      "machineText": "現在您已了解 CRUD 操作與狀態管理，請嘗試：",
+      "status": "machine-translated",
       "sourcePreview": "Now that you understand CRUD operations and state management, try:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0167-text-01": {
-      "sourceHash": "6829bbf533f66ec83cf77a00bf92eaddb7ea07aa28f0fa08552b12691a7c65f4",
-      "targetHash": "6a16f84bb4cbcaa5469d7bb1777799b09d3bc342dd6ed9b0ea2a3950e0ccbc83",
-      "machineHash": "6a16f84bb4cbcaa5469d7bb1777799b09d3bc342dd6ed9b0ea2a3950e0ccbc83",
-      "machineText": "*加入持久化：*使用 SQLite 或其他儲存方案，讓待辦事項在應用程式重新啟動後仍然保留",
-      "status": "final",
-      "sourcePreview": "*Add persistence:* Make todos survive app restarts with SQLite or another storage solution",
+    "b0174-text-01": {
+      "sourceHash": "6f5dcf708626846ea7535ff65fe7c2b6983cb335aac3ec6d1602436911c0665f",
+      "targetHash": "f87b52e8660637e1c26ae414b399099d8cdf9792ee6c8a61df246bb4dc7b70c3",
+      "machineHash": "f87b52e8660637e1c26ae414b399099d8cdf9792ee6c8a61df246bb4dc7b70c3",
+      "machineText": "\u003cstrong\u003e加入持久化：\u003c/strong\u003e使用 SQLite 或其他儲存方案，讓待辦事項在應用程式重新啟動後仍能保留",
+      "status": "machine-translated",
+      "sourcePreview": "**Add persistence:** Make todos survive app restarts with SQLite or another storage solution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0168-text-01": {
-      "sourceHash": "c00c77e4ac7efbffa9b7f638bf9e9011b4731f4615dd6b005966fad84086f266",
-      "targetHash": "bb1abfcf3f4d470f4f3f41bed32e3fc3420d45304bc388b3e1cecb188a7aaec0",
-      "machineHash": "bb1abfcf3f4d470f4f3f41bed32e3fc3420d45304bc388b3e1cecb188a7aaec0",
-      "machineText": "*加入更多功能：*篩選（全部／進行中／已完成）、編輯現有待辦事項、批次作業",
-      "status": "final",
-      "sourcePreview": "*Add more features:* Filtering (all/active/completed), editing existing todos, bulk operations",
+    "b0175-text-01": {
+      "sourceHash": "a814cd4bf3295a5a9b8687b55dacf6a58b726ee362a4472292fa138cbbd265fd",
+      "targetHash": "f2f79e01beb3e23651e8caf0d30c59f0cf8c872a67ee930933790181491a8cef",
+      "machineHash": "f2f79e01beb3e23651e8caf0d30c59f0cf8c872a67ee930933790181491a8cef",
+      "machineText": "\u003cstrong\u003e加入更多功能：\u003c/strong\u003e篩選（全部／進行中／已完成）、編輯現有的待辦事項，以及批次操作",
+      "status": "machine-translated",
+      "sourcePreview": "**Add more features:** Filtering (all/active/completed), editing existing todos, bulk operations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0169-text-01": {
-      "sourceHash": "d637169357e292dc0f7e3d174ae117b8fe4b1e7ff37475f82cdf1ecb8bfd937a",
-      "targetHash": "c01abb7a86f3b3475bef10945123af1f59fc4cf889538ce3e820ce8e75b74980",
-      "machineHash": "c01abb7a86f3b3475bef10945123af1f59fc4cf889538ce3e820ce8e75b74980",
-      "machineText": "*探索 Notes 教學課程：*了解[Notes](/tutorials/03-notes-vanilla/)中的檔案作業如何運作",
-      "status": "final",
-      "sourcePreview": "*Explore the Notes tutorial:* See how file operations work in [Notes](/tutorials/03-notes-vanilla/)",
+    "b0176-text-01": {
+      "sourceHash": "3acb352c635dff415daa55068ac8e463b6ef6376b81a3dca548a608e6421e43d",
+      "targetHash": "b85840624e4bc81b9e9a027ccc66d68d216307cc3f20d841df9ad95fb0b29524",
+      "machineHash": "b85840624e4bc81b9e9a027ccc66d68d216307cc3f20d841df9ad95fb0b29524",
+      "machineText": "\u003cstrong\u003e探索 Notes 教學：\u003c/strong\u003e了解 [Notes](/tutorials/03-notes-vanilla/) 中的檔案操作方式",
+      "status": "machine-translated",
+      "sourcePreview": "**Explore the Notes tutorial:** See how file operations work in [Notes](/tutorials/03-notes-vanilla/…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "b0170-text-01": {
-      "sourceHash": "7f1a76930d429f2f96dc10953bb6b7ba045e664aaac17a5dd9a9e0e58b1b8f60",
-      "targetHash": "2d3f22e6eb1fb2d4a44687f55e50c900819233c1a4494c4b9503413a9b24fca6",
-      "machineHash": "2d3f22e6eb1fb2d4a44687f55e50c900819233c1a4494c4b9503413a9b24fca6",
-      "machineText": "*打造實際的應用程式：*運用這些概念建置你自己的應用程式！",
-      "status": "final",
-      "sourcePreview": "*Build something real:* Take these concepts and build your own app!",
+    "b0177-text-01": {
+      "sourceHash": "a96f32168e840307fd9bbe3af4c114d2a8b4f353a2da0a650c3cdcafbf0d6227",
+      "targetHash": "f6cb3d9a5c119f4d96261b6baa731adca381d32bc3c48dc634bdb1a29590e924",
+      "machineHash": "f6cb3d9a5c119f4d96261b6baa731adca381d32bc3c48dc634bdb1a29590e924",
+      "machineText": "\u003cstrong\u003e打造實用的應用程式：\u003c/strong\u003e運用這些概念建置您自己的應用程式！",
+      "status": "machine-translated",
+      "sourcePreview": "**Build something real:** Take these concepts and build your own app!",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "9671fb198239e46d2c9a9469315f9d00c5e67ee98d2e4ad9cef3a08f9fc4f508",
       "targetHash": "f023218e59d84eb458cf67bac349b51c323381e17a2a52d76fc8b7752d87f1b5",
       "machineHash": "f023218e59d84eb458cf67bac349b51c323381e17a2a52d76fc8b7752d87f1b5",
       "machineText": "建置具備 CRUD 操作的完整待辦事項清單應用程式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build a complete TODO list application with CRUD operations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "1271e04b378be9c762fd564435abaed4af2ca64e9d33ff2ae4141bec3d1fe7d8",
       "targetHash": "fd81dc0d6ee2d7bfa6a7c1b68e147057ce83e9a976282e352dbe4e6741d4ded5",
       "machineHash": "fd81dc0d6ee2d7bfa6a7c1b68e147057ce83e9a976282e352dbe4e6741d4ded5",
       "machineText": "待辦事項清單",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "TODO List",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:55Z"
+      "updatedAt": "2026-10-25T21:51:45Z"
     }
   }
 }

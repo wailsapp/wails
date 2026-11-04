@@ -2,41 +2,62 @@
 
 package main
 
-/*
-#include <libproc.h>
-#include <sys/proc_info.h>
-#include <sys/resource.h>
-#include <stdlib.h>
-#include <string.h>
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"sync"
+	"unsafe"
 
-static int hp_listpids(int *buf, int count) {
-	return proc_listallpids((void *)buf, count * (int)sizeof(int));
+	"github.com/ebitengine/purego"
+)
+
+// libproc is reached through purego, so the harness builds with and without
+// cgo. Sizes and offsets are from <sys/proc_info.h> and <sys/resource.h>.
+const (
+	procPidTBSDInfo       = 3   // PROC_PIDTBSDINFO
+	procBSDInfoSize       = 136 // PROC_PIDTBSDINFO_SIZE
+	procBSDInfoNameAt     = 64  // offsetof(struct proc_bsdinfo, pbi_name)
+	procBSDInfoNameLen    = 32
+	rusageInfoCurrent     = 6   // RUSAGE_INFO_CURRENT (RUSAGE_INFO_V6)
+	rusageInfoSize        = 464 // sizeof(rusage_info_current)
+	rusagePhysFootprintAt = 72  // offsetof(rusage_info_current, ri_phys_footprint)
+)
+
+var (
+	libprocOnce     sync.Once
+	libprocErr      error
+	procListAllPids func(buf unsafe.Pointer, size int32) int32
+	procPidInfo     func(pid, flavor int32, arg uint64, buf unsafe.Pointer, size int32) int32
+	procPidRusage   func(pid, flavor int32, buf unsafe.Pointer) int32
+)
+
+func loadLibproc() error {
+	libprocOnce.Do(func() {
+		lib, err := purego.Dlopen("/usr/lib/libSystem.B.dylib", purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		if err != nil {
+			libprocErr = err
+			return
+		}
+		purego.RegisterLibFunc(&procListAllPids, lib, "proc_listallpids")
+		purego.RegisterLibFunc(&procPidInfo, lib, "proc_pidinfo")
+		purego.RegisterLibFunc(&procPidRusage, lib, "proc_pid_rusage")
+	})
+	return libprocErr
 }
 
-static int hp_name(int pid, char *out, int outlen) {
-	struct proc_bsdinfo bsd;
-	int r = proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &bsd, PROC_PIDTBSDINFO_SIZE);
-	if (r != (int)PROC_PIDTBSDINFO_SIZE) return -1;
-	strncpy(out, bsd.pbi_name, outlen - 1);
-	out[outlen - 1] = '\0';
-	return 0;
-}
-
-// ri_phys_footprint is what Activity Monitor shows and what jetsam acts on.
-// The harness's own RSS is not the signal; this is.
-static unsigned long long hp_footprint(int pid, int *ok) {
-	rusage_info_current ri;
-	if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (rusage_info_t *)&ri) != 0) {
-		*ok = 0;
-		return 0ULL;
+// processName is pbi_name from PROC_PIDTBSDINFO.
+func processName(pid int) (string, bool) {
+	var info [procBSDInfoSize]byte
+	if procPidInfo(int32(pid), procPidTBSDInfo, 0, unsafe.Pointer(&info[0]), procBSDInfoSize) != procBSDInfoSize {
+		return "", false
 	}
-	*ok = 1;
-	return (unsigned long long)ri.ri_phys_footprint;
+	name := info[procBSDInfoNameAt : procBSDInfoNameAt+procBSDInfoNameLen]
+	if end := bytes.IndexByte(name, 0); end >= 0 {
+		name = name[:end]
+	}
+	return string(name), true
 }
-*/
-import "C"
-
-import "fmt"
 
 const samplerSupported = true
 
@@ -50,9 +71,12 @@ const webContentProcName = "com.apple.WebKit.WebContent"
 // (Verified: 907 returned against 907 pids present.) Dividing by sizeof(int)
 // here would scan only a quarter of the table and could miss our own process.
 func webContentPids() ([]int, error) {
+	if err := loadLibproc(); err != nil {
+		return nil, err
+	}
 	const maxPids = 32768
-	buf := make([]C.int, maxPids)
-	n := int(C.hp_listpids(&buf[0], C.int(maxPids)))
+	buf := make([]int32, maxPids)
+	n := int(procListAllPids(unsafe.Pointer(&buf[0]), int32(maxPids*unsafe.Sizeof(buf[0]))))
 	if n <= 0 {
 		return nil, fmt.Errorf("proc_listallpids failed (returned %d)", n)
 	}
@@ -60,17 +84,13 @@ func webContentPids() ([]int, error) {
 		n = maxPids
 	}
 
-	name := make([]C.char, 64)
 	var out []int
 	for i := 0; i < n; i++ {
 		pid := int(buf[i])
 		if pid <= 0 {
 			continue
 		}
-		if C.hp_name(C.int(pid), &name[0], C.int(len(name))) != 0 {
-			continue
-		}
-		if C.GoString(&name[0]) == webContentProcName {
+		if name, ok := processName(pid); ok && name == webContentProcName {
 			out = append(out, pid)
 		}
 	}
@@ -80,10 +100,14 @@ func webContentPids() ([]int, error) {
 // footprint returns ri_phys_footprint for pid. ok=false means the process is
 // gone or unreadable — for a tracked WebContent pid that means it was replaced.
 func footprint(pid int) (uint64, bool) {
-	var ok C.int
-	v := C.hp_footprint(C.int(pid), &ok)
-	if ok == 0 {
+	// ri_phys_footprint is what Activity Monitor shows and what jetsam acts
+	// on. The harness's own RSS is not the signal; this is.
+	if loadLibproc() != nil {
 		return 0, false
 	}
-	return uint64(v), true
+	var info [rusageInfoSize]byte
+	if procPidRusage(int32(pid), rusageInfoCurrent, unsafe.Pointer(&info[0])) != 0 {
+		return 0, false
+	}
+	return binary.LittleEndian.Uint64(info[rusagePhysFootprintAt:]), true
 }

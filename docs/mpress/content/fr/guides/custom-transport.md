@@ -1,19 +1,19 @@
 ---
 title: "Création d’une couche de transport personnalisée"
-description: "Découvrez comment créer et personnaliser votre propre couche de transport IPC pour Wails v3"
+description: "Découvrez comment créer et personnaliser votre propre couche de transport IPC personnalisée pour Wails v3"
 slug: "guides/custom-transport"
 sourcePath: "guides/custom-transport.md"
 ---
 
-Wails v3 vous permet de fournir une couche de transport IPC personnalisée tout en conservant l’ensemble des liaisons générées et des communications par événements. Vous pouvez ainsi remplacer le transport par défaut fondé sur les requêtes HTTP Fetch par des WebSockets, des protocoles personnalisés ou tout autre mécanisme de transport.
+Wails v3 vous permet de fournir une couche de transport IPC personnalisée tout en conservant toutes les liaisons générées et la communication des événements. Vous pouvez ainsi remplacer le transport par défaut fondé sur les requêtes HTTP Fetch par des WebSockets, des protocoles personnalisés ou tout autre mécanisme de transport.
 
-## Vue d’ensemble
+## Présentation
 
-Par défaut, Wails utilise des requêtes HTTP Fetch envoyées par le frontend pour communiquer avec le backend via `/wails/runtime`. L’API de transport personnalisé vous permet de :
+Par défaut, Wails utilise les requêtes HTTP Fetch du frontend pour communiquer avec le backend via `/wails/runtime`. L’API de transport personnalisé vous permet de :
 
 - Remplacer le transport HTTP par des WebSockets, gRPC ou tout protocole personnalisé
 - Conserver une compatibilité totale avec la génération de code de Wails
-- Conserver toutes les liaisons, tous les événements et toutes les boîtes de dialogue existants, ainsi que les autres fonctionnalités de Wails
+- Conserver toutes les liaisons, tous les événements, toutes les boîtes de dialogue et les autres fonctionnalités existantes de Wails
 - Implémenter votre propre gestion des connexions, de l’authentification et des erreurs
 
 ## Architecture
@@ -35,81 +35,49 @@ Par défaut, Wails utilise des requêtes HTTP Fetch envoyées par le frontend po
 └─────────────────────────────────────────────────┘
 ```
 
-## Utilisation
+## Exécuter l’exemple WebSocket complet
 
-### 1. Implémenter l’interface de transport
+L’[exemple de transport WebSocket](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport) comprend les deux parties du protocole : les identifiants de requête et les réponses, la gestion du cycle de vie, le client JavaScript et la transmission des événements. Partez de ces fichiers plutôt que d’un transport qui implémente uniquement `Start` et `Stop`.
 
-Créez un transport personnalisé en implémentant l’interface `Transport` :
+Depuis une copie de travail du dépôt Wails dans laquelle les dépendances natives de la plateforme sont installées :
+
+```bash
+cd v3/examples/websocket-transport
+go run .
+```
+
+L’exemple ouvre une fenêtre native et démarre un point de terminaison WebSocket sur le port 9099. Utilisez-le dans un environnement local de développement fiable. Avant de déployer une variante accessible sur le réseau, restreignez l’écouteur, validez les origines et authentifiez les clients. La politique d’origine de l’exemple est permissive et ne constitue pas une politique de sécurité adaptée à la production.
+
+### Contrat du backend
+
+Un transport doit implémenter les trois méthodes requises. Dans l’exemple, `WebSocketTransport` implémente `Start`, `JSClient` et `Stop` ; `JSClient` fournit le shim JavaScript que Wails injecte dans la page. Ajoutez à votre implémentation une vérification de l’interface à la compilation :
 
 ```go
-package main
-
-import (
-    "context"
-    "github.com/wailsapp/wails/v3/pkg/application"
-)
-
-type MyCustomTransport struct {
-    // Your fields
-}
-
-func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
-    // Initialize your transport (WebSocket server, gRPC server, etc.)
-    // When you receive requests, call processor.HandleRuntimeCallWithIDs()
-    return nil
-}
-
-func (t *MyCustomTransport) Stop() error {
-    // Clean up your transport
-    return nil
-}
+var _ application.Transport = (*WebSocketTransport)(nil)
 ```
 
-### 2. Configurer votre application
-
-Transmettez votre transport personnalisé dans les options de l’application :
+Configurez l’application à l’aide du constructeur de l’exemple :
 
 ```go
-func main() {
-    app := application.New(application.Options{
-        Name: "My App",
-        Transport: &MyCustomTransport{},
-        // ... other options
-    })
-
-    err := app.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
+Transport: NewWebSocketTransport("127.0.0.1:9099"),
 ```
 
-### 3. Modifier le runtime du frontend
+Ce champ doit figurer dans `application.Options`, aux côtés des ressources et services habituels. Copiez les fichiers d’implémentation ainsi que l’appel du constructeur. `Start` reçoit le `MessageProcessor` ; `Stop` doit fermer les écouteurs, les connexions actives et les opérations en attente.
 
-Si vous utilisez un transport personnalisé, vous devrez modifier le runtime du frontend afin qu’il utilise votre transport au lieu de HTTP Fetch. Implémentez l’interface `RuntimeTransport` qui servira à traiter les requêtes :
+### Contrat du frontend
 
-```typescript
-const { setTransport } = await import('/wails/runtime.js');
+Dans l’exemple, `websocket-transport.js` implémente le transport du runtime, notamment la corrélation entre requêtes et réponses ainsi que le rejet des appels ayant échoué. Après avoir servi ce fichier depuis vos ressources, initialisez-le avant d’appeler les liaisons de services générées :
 
-class MyRuntimeTransport {
-  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // TODO: implement IPC call with your transport protocol
+```javascript
+import { setTransport } from '/wails/runtime.js'
+import { createWebSocketTransport } from '/websocket-transport.js'
 
-    return resp;
-  }
-}
-
-const myTransport = new MyRuntimeTransport();
-setTransport(myTransport);
+setTransport(createWebSocketTransport('ws://127.0.0.1:9099/wails/ws'))
 ```
 
-## Remarques
+Les liaisons de services générées restent inchangées. Si votre transport remplace le client, il doit prendre en charge les méthodes utilisées par votre application et préserver leur sémantique d’erreur. La transmission des événements nécessite le contrat facultatif de transport des événements ; une implémentation `Transport` arbitraire ne le fournit pas automatiquement. L’exemple WebSocket complet en propose une démonstration.
 
-- Le transport HTTP par défaut continue de fonctionner si aucun transport personnalisé n’est spécifié
-- Les liaisons générées restent inchangées : seule la couche de transport change
-- Les événements, les boîtes de dialogue, le presse-papiers et toutes les autres fonctionnalités de Wails fonctionnent de manière transparente
-- Vous êtes responsable de la gestion des erreurs, de la logique de reconnexion et de la sécurité de votre transport personnalisé
-- L’exemple WebSocket fourni est destiné à la démonstration et peut nécessiter un renforcement avant toute utilisation en production
+Pour les déploiements distants, utilisez TLS ainsi qu’une politique explicite d’authentification et de contrôle des origines. Un hébergement exclusivement dans un navigateur nécessite également de servir les ressources de l’application, comme décrit ci-dessous.
 
 ## Référence de l’API
 
@@ -127,7 +95,7 @@ type Transport interface {
 
 ### Interface AssetServerTransport (facultative)
 
-Pour les déploiements dans un navigateur, ou si vous souhaitez fournir à la fois les ressources et l’IPC par l’intermédiaire de votre transport personnalisé, implémentez l’interface `AssetServerTransport` :
+Pour les déploiements dans un navigateur, ou si vous souhaitez servir à la fois les ressources et l’IPC au moyen de votre transport personnalisé, implémentez l’interface `AssetServerTransport` :
 
 ```go
 type AssetServerTransport interface {
@@ -143,7 +111,7 @@ type AssetServerTransport interface {
 **Quand implémenter cette interface :**
 
 - Exécution de l’application dans un navigateur plutôt que dans une webview
-- Mise à disposition des ressources via HTTP parallèlement à votre transport IPC personnalisé
+- Distribution des ressources via HTTP parallèlement à votre transport IPC personnalisé
 - Création d’applications accessibles sur le réseau
 
 **Exemple d’implémentation :**
@@ -166,12 +134,12 @@ func (t *MyTransport) ServeAssets(assetHandler http.Handler) error {
 }
 ```
 
-Lorsque `ServeAssets()` est appelée, assetHandler fournit :
+Lorsque `ServeAssets()` est appelé, assetHandler fournit :
 
 - Toutes les ressources statiques (HTML, CSS, JS, images, etc.)
-- `/wails/runtime.js` — La bibliothèque du runtime de Wails
+- `/wails/runtime.js` - La bibliothèque du runtime Wails
 
 ## Voir aussi
 
-- `transport.go` — Interfaces et types fondamentaux du transport
-- `messageprocessor.go` — Le processeur de messages sous-jacent qui gère toutes les communications IPC de Wails
+- `transport.go` - Interfaces et types fondamentaux du transport
+- `messageprocessor.go` - Le processeur de messages sous-jacent qui gère toutes les communications IPC de Wails

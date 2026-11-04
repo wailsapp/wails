@@ -1,35 +1,35 @@
 ---
 title: "筆記"
-description: "建立具備檔案操作與原生對話方塊的筆記應用程式"
+description: "建置具備檔案操作與原生對話方塊的筆記應用程式"
 slug: "tutorials/03-notes-vanilla"
 sourcePath: "tutorials/03-notes-vanilla.md"
 ---
 
-在本教學中，您將使用 Wails v3建立一個示範檔案操作、原生對話方塊及現代桌面應用程式模式的筆記應用程式。
+在本教學中，你將使用 Wails v3建置一個筆記應用程式，示範檔案操作、原生對話方塊及現代桌面應用程式的設計模式。
 
-![筆記應用程式螢幕截圖](/assets/notes-app.png)
+![筆記應用程式螢幕擷取畫面](/assets/notes-app.png)
 
-## 您將建立的內容
+## 你將建置的內容
 
-- 具備建立、編輯及刪除功能的完整筆記應用程式
+- 具備建立、編輯與刪除功能的完整筆記應用程式
 - 用於匯入及匯出筆記的原生檔案儲存／開啟對話方塊
-- 輸入時使用防抖自動儲存，以減少不必要的更新
-- 仿照 Apple 備忘錄的專業雙欄版面配置（側邊欄 + 編輯器）
+- 輸入時自動儲存，並使用防彈跳機制減少不必要的更新
+- 仿照 Apple 備忘錄的專業雙欄版面配置（側邊欄＋編輯器）
 
-## 您將學到的內容
+## 你將學到的內容
 
 - 在 Wails 中使用原生檔案對話方塊（`SaveFileDialog`、`OpenFileDialog`、`InfoDialog`）
 - 使用 JSON 檔案持久保存資料
-- 實作防抖自動儲存模式
-- 使用現代 CSS 建立專業桌面使用者介面
-- 將 Go 結構正確序列化為 JSON
+- 實作採用防彈跳機制的自動儲存模式
+- 使用現代 CSS 建置專業的桌面使用者介面
+- 正確序列化 Go 結構的 JSON
 
 ## 專案設定
 
 @steps
 ### 建立新的 Wails 專案
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
@@ -171,13 +171,13 @@ func generateID() string {
 }
 ```
 
-**這裡的運作方式：**
+**這段程式碼的作用：**
 
-- **Note 結構**：使用 JSON 標籤（小寫）定義資料結構，以便正確序列化
-- **CRUD 操作**：使用 GetAll、Create、Update 及 Delete 管理記憶體中的筆記
-- **檔案對話方塊**：使用`application.Get().Dialog.SaveFile()`及`application.Get().Dialog.OpenFile()`存取原生對話方塊
+- **Note 結構**：使用小寫 JSON 標籤定義資料結構，以正確進行序列化
+- **CRUD 操作**：使用 GetAll、Create、Update 與 Delete 管理記憶體中的筆記
+- **檔案對話方塊**：使用`application.Get().Dialog.SaveFile()`與`application.Get().Dialog.OpenFile()`存取原生對話方塊
 - **資訊對話方塊**：使用`application.Get().Dialog.Info()`顯示成功訊息
-- **ID 產生**：簡易的時間戳記式 ID 產生器
+- **ID 產生**：簡單的時間戳記 ID 產生器
 
 ### 更新 main.go
 取代`main.go`的內容：
@@ -226,7 +226,7 @@ func main() {
 }
 ```
 
-**這裡的運作方式：**
+**這段程式碼的作用：**
 
 - 向應用程式註冊`NotesService`
 - 建立尺寸為（1000x700）的視窗，仿照 Apple 備忘錄
@@ -282,9 +282,9 @@ func main() {
 </html>
 ```
 
-**這裡的運作方式：**
+**這段程式碼的作用：**
 
-- **雙欄版面配置**：側邊欄顯示筆記清單，主要區域則用作編輯器
+- **雙欄版面配置**：側邊欄顯示筆記清單，主要區域則作為編輯器
 - **空白狀態**：未選取任何筆記時顯示
 - **Wails 執行階段**：必須在模組指令碼之前載入
 
@@ -471,12 +471,12 @@ body {
 }
 ```
 
-**這裡的運作方式：**
+**這段程式碼的作用：**
 
-- 採用簡潔字型排印與配色的 Apple 風格設計
-- 使用 Flexbox 為側邊欄與編輯器建立響應式版面配置
+- 採用簡潔字體排印與配色的 Apple 風格設計
+- 使用 Flexbox 配置可靈活調整的側邊欄與編輯器
 - 以藍色背景醒目標示目前的筆記
-- 平順的游標懸停轉場效果
+- 流暢的游標停留轉場效果
 
 ### 實作 JavaScript 邏輯
 取代`frontend/src/main.js`：
@@ -615,35 +615,35 @@ document.getElementById('load-btn').addEventListener('click', async () => {
 loadNotes()
 ```
 
-**這裡的運作方式：**
+**這段程式碼的作用：**
 
-- **自動儲存**：500毫秒的防抖可避免輸入時過度呼叫後端
+- **自動儲存**：500毫秒的防彈跳延遲可避免輸入時過度呼叫後端
 - **屬性存取**：使用與 Go JSON 標籤相符的小寫屬性名稱（`.id`、`.title`）
-- **焦點管理**：建立新筆記時，自動將焦點移至標題並選取標題
-- **不經確認即刪除**：瀏覽器的`confirm()`無法在 Wails WebView 中運作
-- **檔案操作**：原生對話方塊負責儲存／載入，並提供適當的錯誤處理
+- **焦點管理**：建立新筆記時，自動聚焦並選取標題
+- **不經確認直接刪除**：瀏覽器的`confirm()`無法在 Wails WebView 中運作
+- **檔案操作**：由原生對話方塊處理儲存與載入，並妥善處理錯誤
 
 ### 執行應用程式
 ```bash
 wails3 dev
 ```
 
-應用程式啟動後，您可以：
+應用程式啟動後，你可以：
 
 - 按一下「+ New Note」建立筆記
-- 編輯標題與內容（500毫秒後自動儲存）
+- 編輯標題與內容（於500毫秒後自動儲存）
 - 按一下側邊欄中的筆記以切換筆記
 - 按一下「Delete」移除目前的筆記
-- 按一下「Save」將筆記匯出為 JSON
-- 按一下「Load」匯入先前儲存的筆記
+- 按一下「Save」，將筆記匯出為 JSON
+- 按一下「Load」，匯入先前儲存的筆記
 
 @end
 
-## 重要概念
+## 核心概念
 
 ### 檔案與訊息對話方塊
 
-Wails v3中<strong>沒有</strong>套件層級的對話方塊建構函式；每個對話方塊都透過`app.Dialog`管理器建立。在服務中，請透過`application.Get()`取得應用程式（它會傳回執行中的`*application.App`）：
+在 Wails v3中，**沒有**套件層級的對話方塊建構函式；每個對話方塊都透過`app.Dialog`管理器建立。在服務中，請透過`application.Get()`取得應用程式（它會傳回正在執行的`*application.App`）：
 
 ```go
 // Correct — manager-based dialogs.
@@ -654,11 +654,11 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-對應的方法為用於訊息對話方塊的`app.Dialog.Info() / Question() / Warning() / Error()`，以及用於檔案對話方塊的`app.Dialog.OpenFile() / SaveFile()`（另有`*WithOptions`變體）。
+對應的方法是用於訊息對話方塊的`app.Dialog.Info() / Question() / Warning() / Error()`，以及用於檔案對話方塊的`app.Dialog.OpenFile() / SaveFile()`（另有`*WithOptions`變體）。
 
 ### JSON 標籤對應
 
-Go 結構的 JSON 標籤必須為小寫，才能與 JavaScript 屬性存取相符：
+Go 結構的 JSON 標籤必須使用小寫，才能與 JavaScript 屬性存取相符：
 
 ```go
 type Note struct {
@@ -672,9 +672,9 @@ const noteId = note.id // Correct
 const noteId = note.ID // Would be undefined
 ```
 
-### 防抖自動儲存
+### 防彈跳自動儲存
 
-500毫秒的防抖可減少不必要的後端呼叫：
+500毫秒的防彈跳延遲可減少不必要的後端呼叫：
 
 ```javascript
 let updateTimeout
@@ -689,7 +689,7 @@ function scheduleUpdate() {
 
 ## 後續步驟
 
-- 新增分類或標籤來整理筆記
+- 新增分類或標籤以整理筆記
 - 實作搜尋與篩選功能
 - 使用所見即所得編輯器新增富文字編輯功能
 - 將筆記同步至雲端儲存空間

@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
@@ -28,19 +28,19 @@ import (
 // They run on Windows CI via the //go:build windows constraint.
 
 func TestDestroyMenuReturnsTrueForValidHandle(t *testing.T) {
-	is := is.New(t)
+	is := require.New(t)
 	hmenu := w32.CreatePopupMenu()
 	is.True(hmenu != 0) // CreatePopupMenu returned a valid handle
 	is.True(w32.DestroyMenu(w32.HMENU(hmenu)))
 }
 
 func TestDestroyMenuReturnsFalseForZeroHandle(t *testing.T) {
-	is := is.New(t)
+	is := require.New(t)
 	is.Equal(w32.DestroyMenu(0), false)
 }
 
 func TestGetMenuItemCountPreservesFailureValue(t *testing.T) {
-	is := is.New(t)
+	is := require.New(t)
 	is.Equal(w32.GetMenuItemCount(0), -1)
 }
 
@@ -51,7 +51,7 @@ func TestGetMenuItemCountPreservesFailureValue(t *testing.T) {
 // process quota; post-fix, the delta stays near zero across thousands
 // of iterations.
 func TestMenuHandleLifecycleDoesNotLeak(t *testing.T) {
-	is := is.New(t)
+	is := require.New(t)
 	const iterations = 2000
 	const tolerance = 50 // allow small transient variance
 

@@ -12,7 +12,7 @@ sourcePath: "community/templates.md"
 
 <!-- TODO: Update this link -->
 
-此页面列出了由社区支持的模板。要构建自己的 模板，请参阅[模板](https://wails.io/docs/guides/templates) 指南。
+此页面列出了由社区支持的模板。要构建自己的 模板，请参阅[模板](https://v2.wails.io/docs/guides/templates) 指南。
 
 @note{type="tip" title="如何提交模板"}
 你可以点击底部的`Edit this page`来添加你的模板。

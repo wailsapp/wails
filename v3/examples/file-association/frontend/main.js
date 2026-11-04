@@ -1,4 +1,4 @@
-import {GreetService} from "./bindings/changeme";
+import {GreetService} from "./bindings/github.com/wailsapp/wails/v3/examples/file-association";
 import {Events} from "@wailsio/runtime";
 
 const resultElement = document.getElementById('result');

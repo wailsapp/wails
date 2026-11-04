@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "b0013302d5181d261339",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "d554ee2e8124a0987b78",
   "sourceFile": "tutorials/overview.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
@@ -10,624 +11,804 @@
       "targetHash": "c07d195c36c8a0501f3bdee0f8af6b10fde5195e4aa22d9c324d55a4c0eb73da",
       "machineHash": "c07d195c36c8a0501f3bdee0f8af6b10fde5195e4aa22d9c324d55a4c0eb73da",
       "machineText": "Baru mengenal Go?",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "New to Go?",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "b0001-text-01": {
-      "sourceHash": "d099b9877f100557539bd9b0e8252c6b91eb0e02b2905c5cd0513c559894a77b",
-      "targetHash": "d2a11b3710da1ad8a6577d61be4d6f4b169a0386aa05ced486969ab802550e03",
-      "machineHash": "d2a11b3710da1ad8a6577d61be4d6f4b169a0386aa05ced486969ab802550e03",
-      "machineText": "Tutorial langkah demi langkah yang mengajarkan konsep Wails melalui pembangunan aplikasi lengkap. Setiap tutorial menyertakan kode yang berfungsi, penjelasan, dan pola praktis.",
-      "status": "final",
-      "sourcePreview": "Step-by-step tutorials that teach Wails concepts by building complete applications. Each tutorial in…",
+      "sourceHash": "503050a46d0946a077228aafcd29200aae777663758ea5cef2f3da62fba4a5e9",
+      "targetHash": "9e9473641183e60c2baf7c5858ae4fb77ae1cbc5cb9e0934d7c655452f6bac7e",
+      "machineHash": "9e9473641183e60c2baf7c5858ae4fb77ae1cbc5cb9e0934d7c655452f6bac7e",
+      "machineText": "Pilih panduan langkah demi langkah jika Anda ingin mempelajari Wails dengan membangun sesuatu. Setiap panduan mengikuti satu proyek hingga menghasilkan sesuatu yang konkret.",
+      "status": "machine-translated",
+      "sourcePreview": "Choose a guided lesson when you want to learn Wails by building something. Each lesson follows one p…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "b0002-text-01": {
+      "sourceHash": "933b6f3da3cd526b1d63285cabb71ee3ed96f520e4179c70efed081ce03428e5",
+      "targetHash": "ed9601bb52b34e0718507b037f23f6b7ee17b2a02b2ff1d3f944024cb7c968d4",
+      "machineHash": "ed9601bb52b34e0718507b037f23f6b7ee17b2a02b2ff1d3f944024cb7c968d4",
+      "machineText": "Jika ini kunjungan pertama Anda, selesaikan terlebih dahulu [Instalasi](/quick-start/installation/) dan [Aplikasi Pertama Anda](/quick-start/first-app/).",
+      "status": "machine-translated",
+      "sourcePreview": "If this is your first visit, complete [Installation](/quick-start/installation/) and [Your First App…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0003-heading-01": {
+      "sourceHash": "b890073369bf78bcd7b48b8ee10fcc97d2cb821d7cde464bc738963f89a38fb9",
+      "targetHash": "b1af7d8a853038fd0d7a4085c79b36eb09c782e3e76d7ac2b924cc4d3ee2a5a8",
+      "machineHash": "b1af7d8a853038fd0d7a4085c79b36eb09c782e3e76d7ac2b924cc4d3ee2a5a8",
+      "machineText": "Pilih Tutorial",
+      "status": "machine-translated",
+      "sourcePreview": "Choose a Tutorial",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "33e7c189c9ae0c519bcb795c6d8c81c5668a2a2a43bcb2f6e04df8f1b99e02c9",
+      "targetHash": "214186cf51f7e33b919333756e91afc9cf79ed81b15261492440adacc1892d68",
+      "machineHash": "214186cf51f7e33b919333756e91afc9cf79ed81b15261492440adacc1892d68",
+      "machineText": "Setelah membuat aplikasi pertama, ikuti tutorial desktop dengan urutan berikut:",
+      "status": "machine-translated",
+      "sourcePreview": "After your first app, follow the desktop lessons in this order:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0005-cell-01": {
+      "sourceHash": "6e2b26d9de4033b952bd242f69b798420ee887151b937f394efc23252c78af74",
+      "targetHash": "c26982b1425da26a9637dd69da684a036c8b67a1ddf2c3d09b915a96e4b58037",
+      "machineHash": "c26982b1425da26a9637dd69da684a036c8b67a1ddf2c3d09b915a96e4b58037",
+      "machineText": "Tutorial",
+      "status": "machine-translated",
+      "sourcePreview": "Lesson",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0006-cell-01": {
+      "sourceHash": "4bbf919441bad514005f7240a47de86f1756716ee7838a177d11cf0680bcab4f",
+      "targetHash": "163dc15a05421a79c0b9d51ea65c821fd787c776df665e9d3189f023749d533b",
+      "machineHash": "163dc15a05421a79c0b9d51ea65c821fd787c776df665e9d3189f023749d533b",
+      "machineText": "Yang akan Anda praktikkan",
+      "status": "machine-translated",
+      "sourcePreview": "What you will practise",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0007-cell-01": {
+      "sourceHash": "9723f87f804780258eb4191538b5464321cf2d276b7a445369aab31c7bec73b3",
+      "targetHash": "a64a15c935a8a7bf22b721a94fc14f752ed52574a35db7f6f83e7675b57f8032",
+      "machineHash": "a64a15c935a8a7bf22b721a94fc14f752ed52574a35db7f6f83e7675b57f8032",
+      "machineText": "[Layanan kode QR](/tutorials/01-creating-a-service/)",
+      "status": "machine-translated",
+      "sourcePreview": "[QR code service](/tutorials/01-creating-a-service/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0008-cell-01": {
+      "sourceHash": "20a03b96f784be9bf98611d99b1f621e252d41f072eb9d709fba2d1d9b9165cc",
+      "targetHash": "334c017a87dbefee183d418a09fef150c1cf65e0a50742118f93da4e25581355",
+      "machineHash": "334c017a87dbefee183d418a09fef150c1cf65e0a50742118f93da4e25581355",
+      "machineText": "Mengekspos logika Go melalui layanan dan memanggilnya dari frontend",
+      "status": "machine-translated",
+      "sourcePreview": "Exposing Go logic through a service and calling it from the frontend",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0009-cell-01": {
+      "sourceHash": "7afc4d7a020dc11713707fe3b5eb99ede5aa072f09d0d3172cd3505cc384c95f",
+      "targetHash": "5a24b6ca95f892676c0be6951abb321ec3f8f8033799a7a3dc0078376e44ebf0",
+      "machineHash": "5a24b6ca95f892676c0be6951abb321ec3f8f8033799a7a3dc0078376e44ebf0",
+      "machineText": "[Daftar TODO](/tutorials/02-todo-vanilla/)",
+      "status": "machine-translated",
+      "sourcePreview": "[TODO list](/tutorials/02-todo-vanilla/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0010-cell-01": {
+      "sourceHash": "3396045c99ae1a43204daef4d7de9b104444fb2254dad27abb335b0e4fe1c7c5",
+      "targetHash": "d4a30fc798045583b909add97a5b31b4d4e884be023742f9f75d50657750df14",
+      "machineHash": "d4a30fc798045583b909add97a5b31b4d4e884be023742f9f75d50657750df14",
+      "machineText": "Membuat, memperbarui, dan menghapus data aplikasi",
+      "status": "machine-translated",
+      "sourcePreview": "Creating, updating and deleting application data",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0011-cell-01": {
+      "sourceHash": "8c03915b6c7af1a3fb5fc286f452251eafdc0aa6e6146d250afc198e68481a8a",
+      "targetHash": "2e19eeb20fc5b6ddecf4bd489ddd72aafcc17e5fa7ceae4865e89b2e02289d2a",
+      "machineHash": "2e19eeb20fc5b6ddecf4bd489ddd72aafcc17e5fa7ceae4865e89b2e02289d2a",
+      "machineText": "[Aplikasi catatan](/tutorials/03-notes-vanilla/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Notes app](/tutorials/03-notes-vanilla/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0012-cell-01": {
+      "sourceHash": "58b70fca29d8733779a265baccb68a34a50f049938eafe9900e0f30663a8c447",
+      "targetHash": "063856b0a461ea8332a8b30d7fa2c5462e213d3c864345e67cbc9c934ed78640",
+      "machineHash": "063856b0a461ea8332a8b30d7fa2c5462e213d3c864345e67cbc9c934ed78640",
+      "machineText": "Menggunakan dialog native dan menyimpan data ke file",
+      "status": "machine-translated",
+      "sourcePreview": "Using native dialogs and saving data to files",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0013-cell-01": {
+      "sourceHash": "e4a32f9acf5f431883eaf0e76a988a849b9031e99ee8f58a5afb7254bb098126",
+      "targetHash": "c0b2d1ffb549e0eff190b7a1c86ae1ec2efdb90e2a10a4eab599b8d4ee4fffcd",
+      "machineHash": "c0b2d1ffb549e0eff190b7a1c86ae1ec2efdb90e2a10a4eab599b8d4ee4fffcd",
+      "machineText": "[Aplikasi yang dapat memperbarui diri](/tutorials/04-self-update-a-wails-app/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Self-updating app](/tutorials/04-self-update-a-wails-app/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0014-cell-01": {
+      "sourceHash": "fa4412e6fdabb1af1ba2656f800fbfcd851eefd99ab23fb570fb8f30dc783e87",
+      "targetHash": "ad3da11a1754d7ced29f7639bc1d62589e89af0f93ad51369b91a58a8db7cb49",
+      "machineHash": "ad3da11a1754d7ced29f7639bc1d62589e89af0f93ad51369b91a58a8db7cb49",
+      "machineText": "Memeriksa dan menerapkan pembaruan dari GitHub Releases",
+      "status": "machine-translated",
+      "sourcePreview": "Checking and applying updates from GitHub Releases",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "48ef7a6792bc70c94d51a50c5d0fd77552f5fdcdb1d6289fa26182488f6f687c",
+      "targetHash": "e799b59e0d9cb855d9e99b69e27ae4f49fb7f4f971d6f585851cdb6c18e4bfc2",
+      "machineHash": "e799b59e0d9cb855d9e99b69e27ae4f49fb7f4f971d6f585851cdb6c18e4bfc2",
+      "machineText": "Untuk tutorial seluler opsional, ikuti [Aplikasi Seluler Pertama Anda](/guides/mobile/first-mobile-app/). Dukungan seluler masih bersifat eksperimental.",
+      "status": "machine-translated",
+      "sourcePreview": "For an optional mobile lesson, follow [Your First Mobile App](/guides/mobile/first-mobile-app/). Mob…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "67f04a2f487875940766c51bcbd719a11f04ae6a55ed1c020e3f77a128537994",
+      "targetHash": "54b4cb9763492c30f6792ac57520937e4dd4d9942c8450e480b52901677e0f7b",
+      "machineHash": "54b4cb9763492c30f6792ac57520937e4dd4d9942c8450e480b52901677e0f7b",
+      "machineText": "Jika Anda mengerjakan aplikasi yang sudah ada dan perlu menyelesaikan tugas tertentu, pilih [panduan praktis](/quick-start/next-steps/#features). Untuk mempelajari dasar-dasar desainnya, gunakan [Konsep Inti](/concepts/architecture/).",
+      "status": "machine-translated",
+      "sourcePreview": "If you're working on an existing app and need to complete a particular task, choose a [how-to guide]…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:56:16Z"
+    },
+    "b0017-text-01": {
       "sourceHash": "1696909fadc60b411a3b0ea768871fbaa9140f29bd1d653d55534b52d5f7f133",
       "targetHash": "9e0ee83493eaf804cfaaff113ee4c12875e21deeac76f63f0a875941a4ad244e",
       "machineHash": "9e0ee83493eaf804cfaaff113ee4c12875e21deeac76f63f0a875941a4ad244e",
       "machineText": "Selesaikan [Tur Go](https://go.dev/tour/) sebelum memulai tutorial.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Complete the [Go Tour](https://go.dev/tour/) before starting tutorials.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0003-heading-01": {
+    "b0018-heading-01": {
       "sourceHash": "fc74d619e575a0c09150578fdd93f597471579bb6fc8944b9bc49ab7915e18d0",
       "targetHash": "334de3aec7ccd8274d9752820f8dd4c7b1d6ac60223a8779d424a8d7bd1fd5cb",
       "machineHash": "334de3aec7ccd8274d9752820f8dd4c7b1d6ac60223a8779d424a8d7bd1fd5cb",
       "machineText": "Layanan Kode QR",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "QR Code Service",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0004-text-01": {
+    "b0019-text-01": {
       "sourceHash": "1210e44b556496d6ca36d2858c6bf1fb65da764aae438694002519f689150a6e",
       "targetHash": "bc58cd5338fe84f235475ea239f740ac2ba91d77f5ce13d79230065302c50fcb",
       "machineHash": "bc58cd5338fe84f235475ea239f740ac2ba91d77f5ce13d79230065302c50fcb",
       "machineText": "![Contoh Kode QR](/assets/qr1.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![QR Code Example](/assets/qr1.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0005-text-01": {
+    "b0020-text-01": {
       "sourceHash": "a40d43e3dee12461e162f15eac7d463e40eeb40d19ea4a37b0a1676df5df2fb1",
       "targetHash": "ba34a620d1a922553581c15dfc37acc44172c9bce2997934f9aeff0c08a9791f",
       "machineHash": "ba34a620d1a922553581c15dfc37acc44172c9bce2997934f9aeff0c08a9791f",
       "machineText": "Pelajari dasar-dasar layanan Wails dengan membangun generator kode QR. Tutorial ini memperkenalkan konsep inti untuk menata logika aplikasi Anda menjadi layanan yang dapat digunakan kembali.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn the fundamentals of Wails services by building a QR code generator. This tutorial introduces y…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0006-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineText": "*Yang akan Anda pelajari:*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0021-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineText": "**Yang akan Anda pelajari:**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0007-text-01": {
+    "b0022-text-01": {
       "sourceHash": "7c16e8824a41215bc3309ef64e1f95dd9b5388b672197a0df47db6d916ab2e05",
       "targetHash": "17804bb572935951df688fd3cc0d0e244641979c120b63f3744397241f45af5a",
       "machineHash": "17804bb572935951df688fd3cc0d0e244641979c120b63f3744397241f45af5a",
       "machineText": "Cara membuat dan menyusun layanan Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How to create and structure a Wails service",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0008-text-01": {
+    "b0023-text-01": {
       "sourceHash": "8eb7d839fa425ef7925c64d37481ad02ed9af51c6574e422d8e27cbc71124123",
       "targetHash": "ede94fa3f66c6d0da866a5d09792d2164c39dcb02cae76a10c217254fd714dbc",
       "machineHash": "ede94fa3f66c6d0da866a5d09792d2164c39dcb02cae76a10c217254fd714dbc",
       "machineText": "Mengelola dependensi Go eksternal",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Managing external Go dependencies",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0009-text-01": {
+    "b0024-text-01": {
       "sourceHash": "3572d612dea7575379cc28c59491901f3362ba1022bfd1eee4186f07e12c6629",
       "targetHash": "bdb2e3a5bda783db9eee45ca7ad1e85a3413641628815b3cbfc57085e7782508",
       "machineHash": "bdb2e3a5bda783db9eee45ca7ad1e85a3413641628815b3cbfc57085e7782508",
       "machineText": "Mengikat metode Go ke frontend Anda",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Binding Go methods to your frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0010-text-01": {
+    "b0025-text-01": {
       "sourceHash": "7b2bdeb0986ce28d22bbcb781fe2f604613f9d71b6fe16585e04d19438f42e16",
       "targetHash": "d1e05877e92a7dadad5708a90ebec894326aa46764e06422b3189348dcc6be95",
       "machineHash": "d1e05877e92a7dadad5708a90ebec894326aa46764e06422b3189348dcc6be95",
       "machineText": "Meneruskan data antara Go dan JavaScript",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Passing data between Go and JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0011-text-01": {
+    "b0026-text-01": {
       "sourceHash": "88f2a40f92ba599e2f689966403a1fd0917b7b202dcafb3bc523f6335f2ad89d",
       "targetHash": "762119fb0cdd3f1777fd27913cbcf8506a84ed7028dc4ff99ec0aa69d4a2a189",
       "machineHash": "762119fb0cdd3f1777fd27913cbcf8506a84ed7028dc4ff99ec0aa69d4a2a189",
       "machineText": "Menata kode agar mudah dipelihara",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Organizing code for maintainability",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0012-text-01": {
-      "sourceHash": "9701a7ef44dd7a250d20238d4001028aee724740aea578a73dfc659d4771cb46",
-      "targetHash": "3161c89fa77921fdd2256a533e004e75f716feff75ff84088b045db87c80aba1",
-      "machineHash": "3161c89fa77921fdd2256a533e004e75f716feff75ff84088b045db87c80aba1",
-      "machineText": "*Paling cocok untuk:* Pengguna Wails pemula yang ingin memahami arsitektur layanan",
-      "status": "final",
-      "sourcePreview": "*Best for:* First-time Wails users who want to understand the service architecture",
+    "b0027-text-01": {
+      "sourceHash": "c75ca524caae3afcf0abb8acdb4d537da77f86e0d3cc4093bb829c02bf6d4395",
+      "targetHash": "9de7bbcfb21ada177f772a7ed84efb5d2ea7019021bab16ec14fb237fef840ba",
+      "machineHash": "9de7bbcfb21ada177f772a7ed84efb5d2ea7019021bab16ec14fb237fef840ba",
+      "machineText": "**Paling cocok untuk:** Pengguna baru Wails yang ingin memahami arsitektur layanan",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** First-time Wails users who want to understand the service architecture",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0014-heading-01": {
+    "b0028-heading-01": {
       "sourceHash": "1271e04b378be9c762fd564435abaed4af2ca64e9d33ff2ae4141bec3d1fe7d8",
       "targetHash": "14d318726bc445820f67a038e9d1d45c6e4836df0dfc22412f675ce9549b9019",
       "machineHash": "14d318726bc445820f67a038e9d1d45c6e4836df0dfc22412f675ce9549b9019",
       "machineText": "Daftar TODO",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "TODO List",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0015-text-01": {
+    "b0029-text-01": {
       "sourceHash": "3732ee15574164790be071e8756ceee29bef82ee64cfd6240ec62e0d3ba80d9b",
       "targetHash": "86f8f7fd81899b1053f98fcb2fbac9c36bc28a6da328d9506ce452419de34d96",
       "machineHash": "86f8f7fd81899b1053f98fcb2fbac9c36bc28a6da328d9506ce452419de34d96",
       "machineText": "![Aplikasi Daftar TODO](/assets/todo-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![TODO List Application](/assets/todo-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0016-text-01": {
+    "b0030-text-01": {
       "sourceHash": "fb040d8d5b108b124f7efaced9a63df1db8b1e95df1cbf88c6082bbd14fcb2ae",
-      "targetHash": "886f6a109b247ac75c628c018ed45a3ec4b21bc15247154ebe1ff8b7f9517bef",
-      "machineHash": "886f6a109b247ac75c628c018ed45a3ec4b21bc15247154ebe1ff8b7f9517bef",
-      "machineText": "Bangun aplikasi daftar TODO yang lengkap dengan antarmuka modern dan menarik. Tutorial praktik ini mengajarkan pola-pola inti Wails melalui aplikasi praktis yang sesuai dengan penggunaan nyata menggunakan JavaScript murni.",
-      "status": "final",
+      "targetHash": "412d620b6a07e1a1ff29996399b6b59cf24a5953c7f0e58d8be7d175eb63d698",
+      "machineHash": "412d620b6a07e1a1ff29996399b6b59cf24a5953c7f0e58d8be7d175eb63d698",
+      "machineText": "Bangun aplikasi daftar TODO yang lengkap dengan antarmuka modern dan menarik. Tutorial praktik langsung ini mengajarkan pola-pola inti Wails melalui aplikasi praktis untuk penggunaan nyata dengan JavaScript murni.",
+      "status": "machine-translated",
       "sourcePreview": "Build a complete TODO list application with a beautiful, modern interface. This hands-on tutorial te…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0017-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineText": "*Yang akan Anda pelajari:*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0031-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineText": "**Yang akan Anda pelajari:**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0018-text-01": {
+    "b0032-text-01": {
       "sourceHash": "5627a3ad82cb4cd892c9b98c2cdc65b8359c4c41a282f491ffb5b818fc1fc9f0",
-      "targetHash": "aee153bdc412d2ff799b7a5bbf4af128771472a01065b6aa5b59862a7835858b",
-      "machineHash": "aee153bdc412d2ff799b7a5bbf4af128771472a01065b6aa5b59862a7835858b",
-      "machineText": "Arsitektur berbasis layanan dengan pengelolaan state yang aman untuk thread",
-      "status": "final",
+      "targetHash": "c72f24114d9c983f014750ec7e42a85c1c566375304eab2aebf6c111f63df00c",
+      "machineHash": "c72f24114d9c983f014750ec7e42a85c1c566375304eab2aebf6c111f63df00c",
+      "machineText": "Arsitektur berbasis layanan dengan pengelolaan state yang aman untuk konkurensi",
+      "status": "machine-translated",
       "sourcePreview": "Service-based architecture with thread-safe state management",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0019-text-01": {
+    "b0033-text-01": {
       "sourceHash": "8a1db555da54c7c5fd03449aa4c7ac3a0dab3ae12a043168fe763884bf7a2a91",
       "targetHash": "c58777aaa62d7497701388cbbd5e06454f7b3c3612fd6aab7701b507c60e325a",
       "machineHash": "c58777aaa62d7497701388cbbd5e06454f7b3c3612fd6aab7701b507c60e325a",
       "machineText": "Operasi CRUD (Buat, Baca, Perbarui, Hapus)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "CRUD operations (Create, Read, Update, Delete)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0020-text-01": {
+    "b0034-text-01": {
       "sourceHash": "460b51a30e07edfc68020bb97fef4a8a1cb0fbf933946e96dbde40144ce33acc",
-      "targetHash": "d5c8e48995e0a962d82a643c85db0af13d9ac00b11fb19ca3d674a13e5ed1301",
-      "machineHash": "d5c8e48995e0a962d82a643c85db0af13d9ac00b11fb19ca3d674a13e5ed1301",
-      "machineText": "Binding yang aman secara tipe antara Go dan JavaScript",
-      "status": "final",
+      "targetHash": "eaf7dc3bf9dfb502dbc70f26bd47f28fcf354e08679800c6cc7435452afcf4a6",
+      "machineHash": "eaf7dc3bf9dfb502dbc70f26bd47f28fcf354e08679800c6cc7435452afcf4a6",
+      "machineText": "Binding yang aman terhadap tipe antara Go dan JavaScript",
+      "status": "machine-translated",
       "sourcePreview": "Type-safe bindings between Go and JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0021-text-01": {
+    "b0035-text-01": {
       "sourceHash": "2b6fff550aec4ad6f16be054c45b13ad5484262fdd67312d9697758017bb4041",
       "targetHash": "ec59696b403f8d9cd3d2fc111776887a29fb5ae102f8f35091445e8ec6e2628c",
       "machineHash": "ec59696b403f8d9cd3d2fc111776887a29fb5ae102f8f35091445e8ec6e2628c",
       "machineText": "Membangun UI modern tanpa kerumitan framework",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building modern UIs without framework complexity",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0022-text-01": {
+    "b0036-text-01": {
       "sourceHash": "611ecbdbd4dd042caf41d83c329d95de8f005b648fd52db1bdea96ef0e81af27",
-      "targetHash": "f14e63a55649396201146d8a98dd737ce0429e203f6015b55f49f79797600550",
-      "machineHash": "f14e63a55649396201146d8a98dd737ce0429e203f6015b55f49f79797600550",
-      "machineText": "Pola penanganan error dan validasi yang tepat",
-      "status": "final",
+      "targetHash": "becacbd981f5155aa23d86aae3089b56729f4b588e6a6fa0899f3cbab3ffac78",
+      "machineHash": "becacbd981f5155aa23d86aae3089b56729f4b588e6a6fa0899f3cbab3ffac78",
+      "machineText": "Pola penanganan kesalahan dan validasi yang tepat",
+      "status": "machine-translated",
       "sourcePreview": "Proper error handling and validation patterns",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0023-text-01": {
-      "sourceHash": "15ea840695261cd625edd6864f3bfad312de2437219e4512c049cba8a99366db",
-      "targetHash": "22be5da60f70a6fc34a66e665bc9b25c1c0f0863bd30933c264475d009949f5b",
-      "machineHash": "22be5da60f70a6fc34a66e665bc9b25c1c0f0863bd30933c264475d009949f5b",
-      "machineText": "*Waktu penyelesaian:* ~20 menit",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~20 minutes",
+    "b0037-text-01": {
+      "sourceHash": "c5e9766ba75819a26249c6ebb75cae867afd09c3c0d844d5fb301189d84fec33",
+      "targetHash": "03d61242e5aa30b725f26e153cd1dc3236f497c94f2854ea5eb8d6c44c0ab72f",
+      "machineHash": "03d61242e5aa30b725f26e153cd1dc3236f497c94f2854ea5eb8d6c44c0ab72f",
+      "machineText": "**Waktu penyelesaian:** ~20 menit",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~20 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0024-text-01": {
-      "sourceHash": "312f0ff12c73348675994b24cb508e2a9cdfc58cfe8e0d7d1a8e9d9610039d8b",
-      "targetHash": "5f1f5b0bd0449c15a60ecd7f4dc264b7f1e02c484598ae93d78c08b5cccc4a68",
-      "machineHash": "5f1f5b0bd0449c15a60ecd7f4dc264b7f1e02c484598ae93d78c08b5cccc4a68",
-      "machineText": "*Paling cocok untuk:* Aplikasi Wails lengkap pertama Anda—ideal untuk memahami dasar-dasarnya sebelum menambahkan kerumitan framework",
-      "status": "final",
-      "sourcePreview": "*Best for:* Your first complete Wails application - perfect for understanding the fundamentals befor…",
+    "b0038-text-01": {
+      "sourceHash": "baf88f76e0cdfde1bddb15358235f47671486f5526ae3dfe14ad0eb132d3bd80",
+      "targetHash": "7a978a364214258e237b1feca492cdb7fb630d78ca3a5de88fde646cec1f4a3a",
+      "machineHash": "7a978a364214258e237b1feca492cdb7fb630d78ca3a5de88fde646cec1f4a3a",
+      "machineText": "**Paling cocok untuk:** Aplikasi Wails lengkap pertama Anda—ideal untuk memahami dasar-dasarnya sebelum menambahkan kerumitan framework",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Your first complete Wails application - perfect for understanding the fundamentals bef…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0026-heading-01": {
+    "b0039-heading-01": {
       "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
       "targetHash": "c8c88633c99e97419063c8f4db246f8ac9688af27448a035881f5086bd875c95",
       "machineHash": "c8c88633c99e97419063c8f4db246f8ac9688af27448a035881f5086bd875c95",
       "machineText": "Catatan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0027-text-01": {
+    "b0040-text-01": {
       "sourceHash": "5821b2b7606acf7052dd3731838ceed9b668b832786dface0aefa176f1cfd95d",
       "targetHash": "47111ffb06428234faa4da5e548cd4811b234516fa8d230931b649d91379d852",
       "machineHash": "47111ffb06428234faa4da5e548cd4811b234516fa8d230931b649d91379d852",
       "machineText": "![Aplikasi Catatan](/assets/notes-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![Notes Application](/assets/notes-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0028-text-01": {
+    "b0041-text-01": {
       "sourceHash": "51402fbd4d5d04cd153d52fb3b9f4576899a6e899899f3f0fc39b725875b3c6e",
       "targetHash": "57176d71eba39387e213d7c5b4b7f8c353b29a846f1db6a7b4462f892d8ef355",
       "machineHash": "57176d71eba39387e213d7c5b4b7f8c353b29a846f1db6a7b4462f892d8ef355",
       "machineText": "Bangun aplikasi bergaya Apple Notes dengan dialog file native dan fungsi penyimpanan otomatis. Tutorial ini mendemonstrasikan fitur khusus desktop seperti operasi file, dialog native, dan pola UI profesional.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build an Apple Notes-style application with native file dialogs and auto-save functionality. This tu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0029-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineText": "*Yang akan Anda pelajari:*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0042-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineText": "**Yang akan Anda pelajari:**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0030-text-01": {
+    "b0043-text-01": {
       "sourceHash": "b1ceaa304a6e1c046f38776a73c8d3a5ee50ae589438348f73a596459def164c",
       "targetHash": "9ddd4b759d38a1541ed5f46462e8172821350109b9bdfc9625ba054378fa265a",
       "machineHash": "9ddd4b759d38a1541ed5f46462e8172821350109b9bdfc9625ba054378fa265a",
       "machineText": "Dialog file native (Simpan, Buka, Info)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Native file dialogs (Save, Open, Info)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0031-text-01": {
+    "b0044-text-01": {
       "sourceHash": "cbdcf0e020cd686ffdcece64b84e845d8c435e5dee6e93dc2e56a8ef686edd84",
       "targetHash": "cfeac0b965a8504416ffc4850c911a5a62d6cd59d8dcbfc19262f6df799a65c0",
       "machineHash": "cfeac0b965a8504416ffc4850c911a5a62d6cd59d8dcbfc19262f6df799a65c0",
       "machineText": "Persistensi data berbasis JSON",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "JSON-based data persistence",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0032-text-01": {
+    "b0045-text-01": {
       "sourceHash": "31e0514bed6e96e08259921ee51f83cb6017a7d2597387cb37b82e152d1e9962",
       "targetHash": "dc313f2c03fa8ac2ae6887d7d009d29550775be02b45c6de6b354eb9c252a55f",
       "machineHash": "dc313f2c03fa8ac2ae6887d7d009d29550775be02b45c6de6b354eb9c252a55f",
       "machineText": "Pola penyimpanan otomatis dengan debounce",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Debounced auto-save patterns",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0033-text-01": {
+    "b0046-text-01": {
       "sourceHash": "1b5b7c23037915f385ea73fc3881c9520b40b6db8091fc48861aa81bd8ac55b1",
       "targetHash": "dc7c3b93b1a668f697a02e9e41f3ca50c4e11a8bb2379dcf017c3d6d662b6ed5",
       "machineHash": "dc7c3b93b1a668f697a02e9e41f3ca50c4e11a8bb2379dcf017c3d6d662b6ed5",
       "machineText": "Tata letak desktop dua kolom yang profesional",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Professional two-column desktop layouts",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0034-text-01": {
+    "b0047-text-01": {
       "sourceHash": "1006210335ba915c1e641118b0d20d5d51cd9dc1d45d85741cdabe4d19e87178",
       "targetHash": "e8f9da26babdf37edb7e9edbfa5e516a6fca9de1a252d9fcf38e8ccd5bee7973",
       "machineHash": "e8f9da26babdf37edb7e9edbfa5e516a6fca9de1a252d9fcf38e8ccd5bee7973",
       "machineText": "Menggunakan operasi sistem file di Go",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Working with file system operations in Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0035-text-01": {
-      "sourceHash": "c4970e4d90b39aca395e203fb4ea58dc260a9eb4326e8875ed6fb1d13d248e31",
-      "targetHash": "9b9927f5db830bfef30b546c06d1e2dd55b3744266f33c127efdb61383a52b20",
-      "machineHash": "9b9927f5db830bfef30b546c06d1e2dd55b3744266f33c127efdb61383a52b20",
-      "machineText": "*Waktu penyelesaian:* ~30 menit",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~30 minutes",
+    "b0048-text-01": {
+      "sourceHash": "597435c299f4f51558745a2bc126af1d8761f643f5419544ae4b29fdff9f66bc",
+      "targetHash": "98a1e48d48bb603450193f8e590ca8d6818d441b3f6ddea3322e6e698c6c5e42",
+      "machineHash": "98a1e48d48bb603450193f8e590ca8d6818d441b3f6ddea3322e6e698c6c5e42",
+      "machineText": "**Waktu penyelesaian:** ~30 menit",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~30 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0036-text-01": {
-      "sourceHash": "d130fb2e13252c5390a7e48472b535a68f5c5e0ca99b74e117b12f5fef17a312",
-      "targetHash": "383e858e78955a3677afc08fe9d0c167c263257e9e8c860772dffd71bd9a1264",
-      "machineHash": "383e858e78955a3677afc08fe9d0c167c263257e9e8c860772dffd71bd9a1264",
-      "machineText": "*Paling cocok untuk:* Mempelajari fitur khusus desktop seperti operasi file dan dialog native OS",
-      "status": "final",
-      "sourcePreview": "*Best for:* Learning desktop-specific features like file operations and native OS dialogs",
+    "b0049-text-01": {
+      "sourceHash": "f576b997546c68e85ec9c55dea9c7029b9583ddfd2c8567bc9de8db154c23b7a",
+      "targetHash": "9024991035c3cfdb8f9a06cd39a189065f96267d28c2653785148d3f18e9a764",
+      "machineHash": "9024991035c3cfdb8f9a06cd39a189065f96267d28c2653785148d3f18e9a764",
+      "machineText": "**Paling cocok untuk:** Mempelajari fitur khusus desktop seperti operasi file dan dialog native sistem operasi",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Learning desktop-specific features like file operations and native OS dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0038-heading-01": {
+    "b0050-heading-01": {
       "sourceHash": "c2c94159b4e50441dcacd96d22303d133dee92eb41289df5c2cf5f97e11ca90f",
-      "targetHash": "6a0db2d628d99b90c4047d3d1e5650dc48b9cceb1a9f771cc660df7e1ccfa175",
-      "machineHash": "6a0db2d628d99b90c4047d3d1e5650dc48b9cceb1a9f771cc660df7e1ccfa175",
-      "machineText": "Aplikasi Wails yang Memperbarui Diri Sendiri",
-      "status": "final",
+      "targetHash": "4fd1c63feec4d1288e52d5f812dc3d31f643b981fa17b91e62d9ba896bf75449",
+      "machineHash": "4fd1c63feec4d1288e52d5f812dc3d31f643b981fa17b91e62d9ba896bf75449",
+      "machineText": "Aplikasi Wails yang Dapat Memperbarui Diri",
+      "status": "machine-translated",
       "sourcePreview": "Self-Updating Wails App",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0039-text-01": {
+    "b0051-text-01": {
       "sourceHash": "cc6b8a6e15bf0992d9dae6b5537ddf9ac940e8cd448c50cec8c7b628440a2a83",
-      "targetHash": "dfbb0490b17133592795543e9a8645569501387a41352a43845b8a44d89fd6ca",
-      "machineHash": "dfbb0490b17133592795543e9a8645569501387a41352a43845b8a44d89fd6ca",
-      "machineText": "Tambahkan pembaruan mandiri dalam aplikasi ke aplikasi Wails mulai dari `wails3 init` baru hingga verifikasi rilis bertanda tangan dan penggantian biner dalam mode helper. Menggunakan GitHub Releases sebagai sumber pembaruan.",
-      "status": "final",
+      "targetHash": "21d1c75a1a9d6458f914e2ee6c993aa04ec459e9fcd51ad2f8e11e4a0964d177",
+      "machineHash": "21d1c75a1a9d6458f914e2ee6c993aa04ec459e9fcd51ad2f8e11e4a0964d177",
+      "machineText": "Tambahkan pembaruan mandiri dalam aplikasi ke aplikasi Wails mulai dari `wails3 init` baru, melalui verifikasi rilis bertanda tangan dan penggantian biner dalam mode helper. Menggunakan GitHub Releases sebagai sumber pembaruan.",
+      "status": "machine-translated",
       "sourcePreview": "Add in-app self-updates to a Wails application from a fresh `wails3 init` through signed release ver…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0040-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineHash": "ef10b203c036576c9b2c17143fa70cfbd48af86df0b0bb112b8bcffc1bd18e20",
-      "machineText": "*Yang akan Anda pelajari:*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0052-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineHash": "f34b968d49fc10296dff4fc943f90c58643d911c42ea8132e0780beefcfce16d",
+      "machineText": "**Yang akan Anda pelajari:**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0041-text-01": {
+    "b0053-text-01": {
       "sourceHash": "82d3c0f37a1146f7ffa1bc823999013fab864e37c64352a1c8568d1fd9542e4f",
-      "targetHash": "9553bd16879967804e8f7d286f6de9414135708d8a606a838d74becea75eb207",
-      "machineHash": "9553bd16879967804e8f7d286f6de9414135708d8a606a838d74becea75eb207",
-      "machineText": "Cara `app.Updater` diintegrasikan ke aplikasi Wails",
-      "status": "final",
+      "targetHash": "ebb754b3a0029a99ae42f9a4c72dc6f64775e25819acd76b58d4ceaee7ba804c",
+      "machineHash": "ebb754b3a0029a99ae42f9a4c72dc6f64775e25819acd76b58d4ceaee7ba804c",
+      "machineText": "Cara mengintegrasikan `app.Updater` ke aplikasi Wails",
+      "status": "machine-translated",
       "sourcePreview": "How `app.Updater` plugs into a Wails app",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0042-text-01": {
+    "b0054-text-01": {
       "sourceHash": "efcfb6ec33a13b52fb43cb2add80564bfc3cbdceddfa4bdedc03d0947e6f7ad0",
       "targetHash": "89b7b649fc81acbc274ea7c02408ec55d48d0421e76d1d1129806fe2b1944887",
       "machineHash": "89b7b649fc81acbc274ea7c02408ec55d48d0421e76d1d1129806fe2b1944887",
       "machineText": "Mengonfigurasi penyedia GitHub Releases",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configuring the GitHub Releases provider",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0043-text-01": {
+    "b0055-text-01": {
       "sourceHash": "bfd0d7d8ebf9b61e2dafce0c8e0c26e3bfd4ab779c806fdc0df20c8fecc74b89",
       "targetHash": "19b1e8e7895dbad3f328fa82055d2d120c9e24af284af191d06db38913813dab",
       "machineHash": "19b1e8e7895dbad3f328fa82055d2d120c9e24af284af191d06db38913813dab",
       "machineText": "Menerbitkan rilis dengan `SHA256SUMS` untuk verifikasi digest",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Publishing releases with `SHA256SUMS` for digest verification",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0044-text-01": {
+    "b0056-text-01": {
       "sourceHash": "373a1f4f1747af940d5a578e5fd8eee1a9ff65c323889f49353719f64a8941aa",
       "targetHash": "c4070da002a7a2c228d5bfb429575a3219273073349cb31a957258aa2a5dffaf",
       "machineHash": "c4070da002a7a2c228d5bfb429575a3219273073349cb31a957258aa2a5dffaf",
       "machineText": "Menambahkan penandatanganan Ed25519 agar tahan terhadap manipulasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Adding Ed25519 signing for tamper-resistance",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0045-text-01": {
+    "b0057-text-01": {
       "sourceHash": "31b5a0051acc3e557a40ce8fc3d7a786347ca27e4cd6d5d6691b186717698a22",
       "targetHash": "70b8aa6a243d62f1fa25b98768bc8080361971406140222d606e2e8ed512b373",
       "machineHash": "70b8aa6a243d62f1fa25b98768bc8080361971406140222d606e2e8ed512b373",
       "machineText": "Menyesuaikan jendela default melalui CSS, HTML khusus, atau BYO",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customising the default window via CSS, custom HTML, or BYO",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0046-text-01": {
+    "b0058-text-01": {
       "sourceHash": "1167a8bdeedd4b6285cb8e3ecd2856fa76e34f28160a1109b19d082117b23735",
-      "targetHash": "8954731fe1d6c12f008147bcf4ee1003f2b525fd223c6681c294ae7c361fc17e",
-      "machineHash": "8954731fe1d6c12f008147bcf4ee1003f2b525fd223c6681c294ae7c361fc17e",
-      "machineText": "Pemeriksaan latar belakang berkala dengan `CheckInterval`",
-      "status": "final",
+      "targetHash": "161a9140daf990f37825cb00ee0db1312a8faa12fa087e0912e3e63e0c1ec515",
+      "machineHash": "161a9140daf990f37825cb00ee0db1312a8faa12fa087e0912e3e63e0c1ec515",
+      "machineText": "Pemeriksaan berkala di latar belakang dengan `CheckInterval`",
+      "status": "machine-translated",
       "sourcePreview": "Periodic background checks with `CheckInterval`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0047-text-01": {
-      "sourceHash": "adbfae0ff507240b92727fd932cc0a1b5a7bdb2856a7e7a76c5c1496ea1e55fa",
-      "targetHash": "c2ad22b601de6d0a03c9016ded5d57873290a6bff9289ffb0c8c822aca73278c",
-      "machineHash": "c2ad22b601de6d0a03c9016ded5d57873290a6bff9289ffb0c8c822aca73278c",
-      "machineText": "*Waktu penyelesaian:* ~25 menit",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~25 minutes",
+    "b0059-text-01": {
+      "sourceHash": "463ca8f243d4e512e321b6a3fd64e8984321faed1e4575933aef68ef36a4d92e",
+      "targetHash": "6957600e8e02ee6af50f041262207a9e12ab1e95125d65fc9e19316979abee7d",
+      "machineHash": "6957600e8e02ee6af50f041262207a9e12ab1e95125d65fc9e19316979abee7d",
+      "machineText": "**Waktu penyelesaian:** ~25 menit",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~25 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "b0048-text-01": {
-      "sourceHash": "f5cb5f568dc6f38bb4c8f4e41ca08e1ae16e7b4dedba56ddc663788bf66e06f7",
-      "targetHash": "cd58c7ca655d0bd2b9d163aaed6e7b67f73d3ef8afc16829d6406d743fd222e1",
-      "machineHash": "cd58c7ca655d0bd2b9d163aaed6e7b67f73d3ef8afc16829d6406d743fd222e1",
-      "machineText": "*Paling cocok untuk:* Mendistribusikan aplikasi desktop yang dapat diperbarui—mencakup seluruh pipeline rilis, bukan hanya API",
-      "status": "final",
-      "sourcePreview": "*Best for:* Shipping an updateable desktop app — covers the full release pipeline, not just the API",
+    "b0060-text-01": {
+      "sourceHash": "f5aa45e810a4230b0a9afe4194fe566f6dda6f2a076baef81e1dfc8eb539496e",
+      "targetHash": "0476b98630fe62eae170ff4b026e5c487c167ae3529c358dd7d7ac3706cf4831",
+      "machineHash": "0476b98630fe62eae170ff4b026e5c487c167ae3529c358dd7d7ac3706cf4831",
+      "machineText": "**Paling cocok untuk:** Mendistribusikan aplikasi desktop yang dapat diperbarui—mencakup seluruh pipeline rilis, bukan hanya API",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Shipping an updateable desktop app — covers the full release pipeline, not just the AP…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "1352203cc0ec78d0d4362e1ce875381f2b021da26ae6d5808b2d75ed5ad249e1",
       "targetHash": "6c429cd46a7c284e73b0ef76952574ea5d363b859848ce655abbfe49758182e5",
       "machineHash": "6c429cd46a7c284e73b0ef76952574ea5d363b859848ce655abbfe49758182e5",
       "machineText": "Pelajari Wails dengan membangun aplikasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn Wails by building applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "8d9f66992dd4373c8f30f09a93b87aa0d9d341b8ec91e0bcbd4a4c744e41b3f9",
       "targetHash": "c26982b1425da26a9637dd69da684a036c8b67a1ddf2c3d09b915a96e4b58037",
       "machineHash": "c26982b1425da26a9637dd69da684a036c8b67a1ddf2c3d09b915a96e4b58037",
       "machineText": "Tutorial",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Tutorials",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "h0001-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineText": "Mulai",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "h0002-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineText": "Mulai",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "h0003-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineText": "Mulai",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     },
     "h0004-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineHash": "bc692f0398d9e6ef43af084a1dd92680e88106bd686bfde60b78d0d9b774b3b6",
       "machineText": "Mulai",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:32Z"
+      "updatedAt": "2026-10-26T00:56:16Z"
     }
   }
 }

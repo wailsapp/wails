@@ -5,21 +5,21 @@ slug: "tutorials/02-todo-vanilla"
 sourcePath: "tutorials/02-todo-vanilla.md"
 ---
 
-Neste tutorial, você criará um aplicativo de lista de tarefas totalmente funcional. Este tutorial é um avanço em relação ao tutorial do Serviço de Código QR: você aprenderá a gerenciar o estado, lidar com várias operações e criar uma interface do usuário refinada.
+Neste tutorial, você criará um aplicativo de lista de tarefas totalmente funcional. Este tutorial é um avanço em relação ao tutorial do Serviço de QR Code: você aprenderá a gerenciar o estado, lidar com várias operações e criar uma interface do usuário refinada.
 
 **O que você criará:**
 
-- Um aplicativo completo de lista de tarefas com funcionalidades para adicionar, concluir e excluir tarefas
+- Um aplicativo completo de lista de tarefas, com funcionalidades para adicionar, concluir e excluir tarefas
 - Gerenciamento de estado seguro para threads (importante para aplicativos desktop)
-- Design de interface moderno com efeito de vidro
-- Tudo usando JavaScript puro, sem precisar de frameworks
+- Design de interface moderno com efeito de vidro fosco
+- Tudo usando JavaScript puro, sem exigir frameworks
 
 **O que você aprenderá:**
 
 - Operações CRUD (criar, ler, atualizar e excluir)
-- Gerenciamento seguro de estado mutável em Go
-- Tratamento e validação da entrada do usuário
-- Criação de interfaces responsivas com aparência nativa
+- Como gerenciar estado mutável com segurança em Go
+- Como lidar com a entrada do usuário e sua validação
+- Como criar interfaces responsivas com aparência e comportamento nativos
 
 ![Aplicativo de lista de tarefas](/assets/todo-app.png)
 
@@ -29,19 +29,19 @@ Neste tutorial, você criará um aplicativo de lista de tarefas totalmente funci
 
 @steps
 ### Gere o projeto
-Primeiro, crie um novo projeto Wails. Usaremos o modelo padrão com JavaScript puro, que oferece um ponto de partida sem elementos desnecessários:
+Primeiro, crie um novo projeto Wails. Usaremos o template padrão com JavaScript puro, que oferece um ponto de partida limpo:
 
 ```bash
-wails3 init -n todo-app
+wails3 init -n todo-app -t vanilla-js
 cd todo-app
 ```
 
 Isso cria um novo projeto com a estrutura básica: o backend em Go na raiz e o código do frontend no diretório `frontend/`.
 
 ### Crie o serviço de tarefas
-O serviço de tarefas gerenciará o estado do nosso aplicativo e fornecerá métodos para operações CRUD. Diferentemente de um servidor web, no qual cada solicitação é isolada, os aplicativos desktop podem executar várias operações simultaneamente. Portanto, precisamos de um gerenciamento de estado seguro para threads.
+O serviço de tarefas gerenciará o estado do aplicativo e fornecerá métodos para operações CRUD. Diferentemente de um servidor web, no qual cada requisição é isolada, os aplicativos desktop podem ter várias operações simultâneas. Por isso, precisamos de um gerenciamento de estado seguro para threads.
 
-Exclua `greetservice.go` e crie um novo arquivo `todoservice.go`:
+Exclua `greetservice.go` e crie um novo arquivo chamado `todoservice.go`:
 
 ```go {title="todoservice.go"}
 package main
@@ -122,18 +122,18 @@ func (t *TodoService) Delete(id int) error {
 }
 ```
 
-**O que está acontecendo aqui:**
+**O que acontece aqui:**
 
 **A struct `Todo`:**
 
-- Define o formato dos nossos dados com os campos ID, Title e Completed
+- Define a estrutura dos dados com os campos ID, Title e Completed
 - As tags `json:` informam ao Go como converter essa struct em JSON para o frontend
-- Cada campo é exportado (começa com letra maiúscula) para que o gerador de bindings possa detectá-lo
+- Cada campo é exportado (começa com letra maiúscula) para que o gerador de bindings possa identificá-lo
 
 **A struct `TodoService`:**
 
-- `todos []Todo` — um slice que armazena todas as nossas tarefas
-- `nextID int` — controla o próximo ID a ser atribuído (simula o incremento automático)
+- `todos []Todo` — uma slice que armazena todas as tarefas
+- `nextID int` — controla o próximo ID a ser atribuído (simula incremento automático)
 - `mu sync.RWMutex` — um mutex de leitura e escrita para acesso seguro entre threads
 
 **Segurança entre threads com `sync.RWMutex`:**
@@ -141,24 +141,24 @@ func (t *TodoService) Delete(id int) error {
 - Aplicativos desktop podem receber várias operações simultâneas da interface do usuário
 - `RLock()` permite vários leitores ao mesmo tempo (por exemplo, várias chamadas a `GetAll`)
 - `Lock()` concede acesso exclusivo para gravações (por exemplo, `Add`, `Toggle` e `Delete`)
-- `defer` garante que os bloqueios sejam liberados mesmo que a função retorne antecipadamente ou entre em pânico
+- `defer` garante que os bloqueios sejam liberados mesmo se a função retornar antecipadamente ou ocorrer um panic
 
 **Os métodos:**
 
-- `GetAll()` — Retorna todas as tarefas (usa um bloqueio de leitura, pois não estamos modificando os dados)
-- `Add(title)` — Cria uma nova tarefa, valida a entrada e incrementa o ID
-- `Toggle(id)` — Alterna o status de conclusão de uma tarefa
-- `Delete(id)` — Remove uma tarefa do slice
+- `GetAll()` — retorna todas as tarefas (usa um bloqueio de leitura, pois não modifica os dados)
+- `Add(title)` — cria uma nova tarefa, valida a entrada e incrementa o ID
+- `Toggle(id)` — alterna o status de conclusão de uma tarefa
+- `Delete(id)` — remove uma tarefa da slice
 
 **Tratamento de erros:**
 
-- Retornamos `error` como o último valor, seguindo as convenções do Go
+- Retornamos `error` como último valor, seguindo as convenções do Go
 - Títulos vazios são rejeitados
 - Operações em tarefas inexistentes retornam erros
-- Esses erros se tornam exceções de JavaScript no frontend
+- Esses erros se tornam exceções JavaScript no frontend
 
 ### Atualize main.go
-Registre o serviço de tarefas no seu aplicativo Wails. Localize a seção `Services` em `main.go` e substitua GreetService pelo nosso TodoService:
+Registre o serviço de tarefas no aplicativo Wails. Localize a seção `Services` em `main.go` e substitua o GreetService pelo TodoService:
 
 ```go {title="main.go" highlight="5"}
 Services: []application.Service{
@@ -166,14 +166,14 @@ Services: []application.Service{
 },
 ```
 
-**O que está acontecendo aqui:**
+**O que acontece aqui:**
 
-- Estamos removendo o GreetService padrão e adicionando nosso TodoService no lugar dele
-- `application.NewService()` encapsula nosso serviço para que o Wails possa gerenciá-lo
+- Removemos o GreetService padrão e adicionamos o TodoService no lugar dele
+- `application.NewService()` encapsula o serviço para que o Wails possa gerenciá-lo
 - O Wails gerará automaticamente bindings JavaScript para todos os métodos públicos desse serviço
 
 ### Crie a interface do frontend
-Agora, vamos criar o frontend. É nele que chamaremos nossos métodos Go e exibiremos a interface do usuário. Usaremos JavaScript puro para simplificar e mostrar diretamente como os bindings funcionam.
+Agora, vamos criar o frontend. É nele que chamaremos os métodos Go e exibiremos a interface. Usaremos JavaScript puro para manter tudo simples e mostrar diretamente como os bindings funcionam.
 
 Substitua `frontend/src/main.js`:
 
@@ -220,7 +220,7 @@ window.deleteTodo = async (id) => {
 loadTodos();
 ```
 
-**O que está acontecendo aqui:**
+**O que acontece aqui:**
 
 **Importação dos bindings:**
 
@@ -230,23 +230,23 @@ loadTodos();
 **A função `loadTodos()`:**
 
 - Chama `TodoService.GetAll()` para buscar todas as tarefas no Go
-- Cria o HTML de cada tarefa usando template literals
-- Adiciona ou remove dinamicamente a classe `completed` para aplicar a estilização
+- Gera o HTML de cada tarefa usando template literals
+- Adiciona ou remove dinamicamente a classe `completed` para aplicar os estilos
 - Usa atributos `onclick` para conectar os botões às nossas funções
-- Concatena todo o HTML e o insere no DOM
+- Combina todo o HTML e o insere no DOM
 
 **As funções CRUD:**
 
-- `addTodo()` — Valida a entrada, chama o método Go `Add` e atualiza a lista
-- `toggleTodo(id)` — Chama o método `Toggle` do Go e atualiza a lista
-- `deleteTodo(id)` — Chama o método `Delete` do Go e atualiza a lista
+- `addTodo()` — valida a entrada, chama o método Go `Add` e atualiza a lista
+- `toggleTodo(id)` — chama o método `Toggle` do Go e atualiza a lista
+- `deleteTodo(id)` — chama o método `Delete` do Go e atualiza a lista
 - Todas as funções são assíncronas porque as chamadas ao Go retornam Promises
 
-**Por que anexar a window:**
+**Por que anexar ao window:**
 
-- `window.addTodo = ...` torna as funções acessíveis por meio dos atributos HTML `onclick`
-- Este é um padrão simples para JavaScript puro (os frameworks lidam com isso de outra forma)
-- Em produção, você pode optar por uma delegação de eventos adequada
+- `window.addTodo = ...` torna as funções acessíveis pelos atributos HTML `onclick`
+- Esse é um padrão simples para JavaScript puro (frameworks lidam com isso de outra forma)
+- Em produção, você pode usar uma delegação de eventos adequada
 
 **O padrão de atualização:**
 
@@ -255,7 +255,7 @@ loadTodos();
 - Alternativa: faça os métodos Go retornarem o novo estado para evitar a segunda chamada
 
 ### Atualize o HTML
-O HTML fornece a estrutura do nosso aplicativo de tarefas. Ele é mínimo e semântico — a mágica acontece no JavaScript e no CSS.
+O HTML fornece a estrutura do nosso aplicativo de tarefas. Ele é minimalista e semântico — a mágica acontece no JavaScript e no CSS.
 
 Substitua `frontend/index.html`:
 
@@ -288,28 +288,28 @@ Substitua `frontend/index.html`:
 </html>
 ```
 
-**O que acontece aqui:**
+**O que está acontecendo aqui:**
 
 **A estrutura:**
 
-- `container` — centraliza nosso aplicativo e limita sua largura
+- `container` — centraliza nosso aplicativo e limita a largura
 - `card` — o cartão branco principal que contém tudo
 - `input-box` — contêiner flexível para o campo de entrada e o botão Adicionar
-- `todo-list` — onde o JavaScript inserirá cada tarefa
+- `todo-list` — onde cada tarefa será inserida pelo JavaScript
 
 **Tratamento de eventos:**
 
-- `onkeypress="if(event.key==='Enter') addTodo()"` — adiciona uma tarefa quando Enter é pressionado
-- `onclick="addTodo()"` — adiciona uma tarefa quando o botão é clicado
-- Manipuladores de eventos inline funcionam bem em aplicativos simples feitos com JavaScript puro
+- `onkeypress="if(event.key==='Enter') addTodo()"` — adiciona uma tarefa ao pressionar Enter
+- `onclick="addTodo()"` — adiciona uma tarefa ao clicar no botão
+- Manipuladores de eventos inline funcionam bem em aplicativos simples com JavaScript puro
 
 **Script de módulo:**
 
-- `<script type="module">` permite usar importações ES6
+- `<script type="module">` permite usar importações do ES6
 - Nosso arquivo `main.js` pode importar os bindings e usar JavaScript moderno
 
 ### Estilize o aplicativo
-O CSS cria um design moderno de glassmorphism com transições suaves. Buscamos um acabamento refinado que torne agradável usar o aplicativo.
+O CSS cria um design moderno com efeito de vidro e transições suaves. O objetivo é proporcionar uma aparência refinada que torne o aplicativo agradável de usar.
 
 Substitua `frontend/public/style.css`:
 
@@ -497,13 +497,13 @@ h1 {
 }
 ```
 
-**O que acontece aqui:**
+**O que está acontecendo aqui:**
 
-**Design com glassmorphism:**
+**Design com efeito de vidro:**
 
-- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` — fundo com gradiente roxo
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` — plano de fundo com gradiente roxo
 - `backdrop-filter: blur(10px)` — cria o efeito de vidro fosco no cartão
-- `rgba(255, 255, 255, 0.95)` — branco semitransparente para produzir o efeito de vidro
+- `rgba(255, 255, 255, 0.95)` — branco semitransparente para o efeito de vidro
 
 **Estilização personalizada da caixa de seleção:**
 
@@ -511,19 +511,19 @@ h1 {
 - Criamos um quadrado arredondado personalizado com uma marca de seleção usando `::after`
 - A marca de seleção aparece quando `checked`, usando o caractere Unicode ✓
 
-**Interações ao passar o cursor:**
+**Interações ao passar o ponteiro:**
 
-- As tarefas deslizam para a direita quando o cursor passa sobre elas (`transform: translateX(4px)`)
-- O botão de exclusão fica oculto até que o cursor passe sobre a tarefa (`opacity: 0` → `opacity: 1`)
-- Os botões aumentam ligeiramente quando o cursor passa sobre eles, proporcionando uma resposta tátil
+- As tarefas deslizam para a direita ao passar o ponteiro (`transform: translateX(4px)`)
+- O botão de exclusão fica oculto até que o ponteiro seja posicionado sobre a tarefa (`opacity: 0` → `opacity: 1`)
+- Os botões aumentam ligeiramente ao passar o ponteiro para oferecer resposta tátil
 
 **Estado vazio:**
 
 - `#todo-list:empty::before` exibe uma mensagem quando não há tarefas
-- Solução apenas com CSS — não requer JavaScript
+- Solução feita apenas com CSS — não requer JavaScript
 
 ### Execute o aplicativo
-Vamos vê-lo em ação! Execute o servidor de desenvolvimento:
+Vamos vê-lo em funcionamento! Execute o servidor de desenvolvimento:
 
 ```bash
 wails3 dev
@@ -533,12 +533,12 @@ O aplicativo será compilado e aberto. Experimente:
 
 - Digite uma tarefa e pressione Enter ou clique em Adicionar
 - Clique na caixa de seleção para marcar a tarefa como concluída
-- Passe o cursor sobre uma tarefa para exibir o botão de exclusão
-- Observe como a interface é atualizada instantaneamente — é o nosso padrão de atualização em ação
+- Passe o ponteiro sobre uma tarefa para exibir o botão de exclusão
+- Observe como a interface é atualizada instantaneamente — esse é o nosso padrão de atualização em funcionamento
 
-**O que acontece:**
+**O que está acontecendo:**
 
-- O Wails gerou automaticamente bindings para os métodos do seu TodoService
+- O Wails gerou automaticamente os bindings para os métodos do TodoService
 - O modo de desenvolvimento inclui recarregamento automático — experimente alterar o CSS e veja a atualização
 - Seu código Go está sendo executado nativamente — não é necessário traduzi-lo nem interpretá-lo
 
@@ -548,7 +548,7 @@ O aplicativo será compilado e aberto. Experimente:
 
 ### Gerenciamento de estado seguro para concorrência
 
-O `sync.RWMutex` fornece acesso concorrente seguro:
+O `sync.RWMutex` permite acesso concorrente seguro:
 
 ```go
 func (t *TodoService) GetAll() []Todo {
@@ -568,7 +568,7 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 
 - Várias chamadas do frontend podem ocorrer simultaneamente
 - As operações de leitura não bloqueiam umas às outras
-- As operações de escrita obtêm acesso exclusivo
+- As operações de gravação obtêm acesso exclusivo
 - `defer` garante que os bloqueios sejam sempre liberados
 
 ### Tratamento de erros
@@ -657,7 +657,7 @@ async function loadTodos() {
 }
 ```
 
-### Adicione “Limpar concluídas”
+### Adicione "Limpar concluídas"
 
 ```go
 func (t *TodoService) ClearCompleted() int {
@@ -697,32 +697,32 @@ Isso cria um executável nativo otimizado em `bin/`:
 - Compila seu código Go com otimizações
 - Compila seu frontend para produção
 - Empacota tudo em um único executável
-- O aplicativo resultante normalmente ocupa 10-20 MB (em comparação com mais de 150 MB do Electron)
+- O aplicativo resultante normalmente tem 10-20 MB (em comparação com mais de 150 MB do Electron)
 
-Você pode executar o executável diretamente: não é necessário nenhum runtime nem iniciar servidores. É um aplicativo verdadeiramente nativo.
+Você pode executar o arquivo diretamente — não é necessário instalar um runtime nem iniciar servidores. É um aplicativo verdadeiramente nativo.
 
 ## O que você criou
 
-Você acaba de criar um aplicativo de tarefas completo com:
+Você acabou de criar um aplicativo de tarefas completo com:
 
 **Implementação completa de CRUD:**
 
-- Criação de um serviço com operações de criação, leitura, atualização e exclusão
-- Adição de validação de entrada e tratamento de erros
-- Compreensão de como os erros do Go se tornam exceções do JavaScript
+- Criou um serviço com operações de criação, leitura, atualização e exclusão
+- Adicionou validação de entrada e tratamento de erros
+- Aprendeu como erros do Go se tornam exceções do JavaScript
 
-**Gerenciamento de estado seguro para uso concorrente:**
+**Gerenciamento de estado seguro para concorrência:**
 
-- Uso de `sync.RWMutex` para gerenciar o acesso concorrente com segurança
-- Compreensão da diferença entre bloqueios de leitura (RLock) e de escrita (Lock)
-- Compreensão de como `defer` evita deadlocks ao garantir a liberação de recursos
+- Usou `sync.RWMutex` para processar o acesso concorrente com segurança
+- Entendeu a diferença entre bloqueios de leitura (RLock) e bloqueios de gravação (Lock)
+- Viu como `defer` evita deadlocks ao garantir a limpeza
 
 **Interface moderna e refinada:**
 
-- Criação de uma interface com efeito de vidro, gradientes e efeitos de desfoque
-- Criação de caixas de seleção com estilo personalizado sem usar nenhum framework
-- Adição de interações ao passar o cursor e transições para proporcionar a sensação de um aplicativo nativo
-- Implementação de um estado vazio usando apenas CSS
+- Criou uma interface com efeito de vidro, gradientes e efeitos de desfoque
+- Criou caixas de seleção com estilo personalizado sem usar nenhum framework
+- Adicionou interações ao passar o ponteiro e transições para proporcionar uma experiência nativa
+- Implementou um estado vazio usando apenas CSS
 
 **Fundamentos do Wails:**
 
@@ -731,11 +731,11 @@ Você acaba de criar um aplicativo de tarefas completo com:
 - Sincronização de estado entre o Go e o frontend
 - Compilação e empacotamento de um aplicativo desktop nativo
 
-## Próximas etapas
+## Próximos passos
 
 Agora que você entende as operações CRUD e o gerenciamento de estado, experimente:
 
-- **Adicione persistência:** Faça com que as tarefas persistam após a reinicialização do aplicativo usando SQLite ou outra solução de armazenamento
+- **Adicione persistência:** Faça com que as tarefas sejam preservadas após reiniciar o aplicativo usando SQLite ou outra solução de armazenamento
 - **Adicione mais recursos:** filtragem (todas/ativas/concluídas), edição de tarefas existentes e operações em massa
-- **Explore o tutorial do Notes:** Veja como as operações de arquivo funcionam em [Notes](/tutorials/03-notes-vanilla/)
-- **Crie algo de verdade:** Use esses conceitos para criar seu próprio aplicativo!
+- **Explore o tutorial de Notas:** Veja como as operações de arquivo funcionam em [Notas](/tutorials/03-notes-vanilla/)
+- **Crie algo de verdade:** Aplique esses conceitos e crie seu próprio aplicativo!

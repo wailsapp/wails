@@ -13,17 +13,17 @@ sourcePath: "guides/build/windows.md"
 wails3 package GOOS=windows
 ```
 
-이 명령은 `wails3 task windows:package`을 실행하여 다음 작업을 수행합니다:
+이 작업은 `wails3 task windows:package`을 실행하여 다음을 수행합니다:
 
 1. 애플리케이션 빌드
 2. WebView2 부트스트래퍼 생성
 3. NSIS 설치 프로그램 생성
 
-출력: `build/windows/nsis/<AppName>-installer.exe`
+출력: `bin/<AppName>-<arch>-installer.exe`. NSIS 소스 스크립트는 `build/windows/nsis/` 아래에 그대로 남습니다.
 
 ### MSIX 패키지
 
-Microsoft Store에 배포하거나 최신 Windows 배포 방식을 사용하려면 다음을 실행합니다:
+Microsoft Store 배포 또는 최신 Windows 배포의 경우:
 
 ```bash
 wails3 package GOOS=windows FORMAT=msix
@@ -54,7 +54,7 @@ NSIS 구성은 `build/windows/nsis/project.nsi`에 있습니다. 다음 항목�
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -66,7 +66,7 @@ NSIS 구성은 `build/windows/nsis/project.nsi`에 있습니다. 다음 항목�
 
 ## 코드 서명
 
-SmartScreen 경고가 표시되지 않도록 실행 파일과 설치 프로그램에 서명하세요:
+SmartScreen 경고를 방지하려면 실행 파일과 설치 프로그램에 서명하세요:
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -87,10 +87,10 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-인증서 암호를 안전하게 보관하세요:
+인증서 비밀번호를 안전하게 보관하세요:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 자세한 내용은 [애플리케이션 서명](/guides/build/signing/)을 참조하세요.
@@ -121,4 +121,4 @@ winget install NSIS.NSIS
 
 ### WebView2 누락
 
-설치 프로그램에는 필요할 때 런타임을 다운로드하는 WebView2 부트스트래퍼가 포함되어 있습니다. 오프라인 설치가 필요하면 Microsoft에서 Evergreen Standalone Installer를 다운로드하세요.
+설치 프로그램에는 필요할 때 런타임을 다운로드하는 WebView2 부트스트래퍼가 포함되어 있습니다. 오프라인 설치가 필요한 경우 Microsoft에서 Evergreen Standalone Installer를 다운로드하세요.

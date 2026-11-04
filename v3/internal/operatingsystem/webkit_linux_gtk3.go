@@ -1,4 +1,4 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && gtk3 && !android && !purego
 
 package operatingsystem
 
@@ -7,7 +7,6 @@ package operatingsystem
 #include <webkit2/webkit2.h>
 */
 import "C"
-import "fmt"
 
 type WebkitVersion struct {
 	Major uint
@@ -25,18 +24,4 @@ func GetWebkitVersion() WebkitVersion {
 		Minor: uint(minor),
 		Micro: uint(micro),
 	}
-}
-
-func (v WebkitVersion) String() string {
-	return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Micro)
-}
-
-func (v WebkitVersion) IsAtLeast(major int, minor int, micro int) bool {
-	if v.Major != uint(major) {
-		return v.Major > uint(major)
-	}
-	if v.Minor != uint(minor) {
-		return v.Minor > uint(minor)
-	}
-	return v.Micro >= uint(micro)
 }

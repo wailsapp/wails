@@ -455,7 +455,7 @@ jobs:
           node-version: '20'
 
       - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Install Task
         uses: arduino/setup-task@v2

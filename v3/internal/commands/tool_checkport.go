@@ -42,13 +42,8 @@ func ToolCheckPort(options *ToolCheckPortOptions) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		if options.Port == 0 {
-			return fmt.Errorf("please use the -p flag to specify a port")
-		}
-		if !isPortOpen(options.Host, options.Port) {
-			return fmt.Errorf("port %d is not open on %s", options.Port, options.Host)
-		}
+	} else if options.Port == 0 {
+		return fmt.Errorf("please use the -p flag to specify a port")
 	}
 	if !isPortOpen(options.Host, options.Port) {
 		return fmt.Errorf("port %d is not open on %s", options.Port, options.Host)

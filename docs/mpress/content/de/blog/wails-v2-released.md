@@ -21,24 +21,24 @@ Dieses Release übertrifft alles, was ich je erwartet hatte. Ich hoffe, es berei
 
 ## Was *ist* Wails?
 
-Falls Sie Wails noch nicht kennen: Mit diesem Projekt können Go-Programmierer mithilfe vertrauter Webtechnologien funktionsreiche Frontends für ihre Go-Programme erstellen. Es ist eine schlanke, auf Go basierende Alternative zu Electron. Viele weitere Informationen finden Sie auf der [offiziellen Website](https://wails.io/docs/introduction).
+Falls Sie Wails noch nicht kennen: Mit diesem Projekt können Go-Programmierer mithilfe vertrauter Webtechnologien funktionsreiche Frontends für ihre Go-Programme erstellen. Es ist eine schlanke, auf Go basierende Alternative zu Electron. Viele weitere Informationen finden Sie auf der [offiziellen Website](https://v2.wails.io/docs/introduction).
 
 ## Was ist neu?
 
 Das v2-Release ist ein gewaltiger Fortschritt für das Projekt und behebt viele der Schwachstellen von v1. Falls Sie noch keinen der Blogbeiträge zu den Beta-Releases für [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) oder [Linux](/blog/wails-v2-beta-for-linux/) gelesen haben, empfehle ich Ihnen, dies nachzuholen, da dort alle wichtigen Änderungen ausführlicher behandelt werden. Zusammengefasst:
 
 - WebView2-Komponente für Windows mit Unterstützung moderner Webstandards und Debugging-Funktionen.
-- [Dunkles/helles Design](https://wails.io/docs/reference/options#theme) und [benutzerdefinierte Designs](https://wails.io/docs/reference/options#customtheme) unter Windows.
+- [Dunkles/helles Design](https://v2.wails.io/docs/reference/options#theme) und [benutzerdefinierte Designs](https://v2.wails.io/docs/reference/options#customtheme) unter Windows.
 - Unter Windows ist CGO jetzt nicht mehr erforderlich.
 - Integrierte Unterstützung für Projektvorlagen mit Svelte, Vue, React, Preact, Lit und Vanilla.
 - [Vite](https://vitejs.dev/)-Integration für eine Entwicklungsumgebung mit Hot Reload für Ihre Anwendung.
-- Native [Menüs](https://wails.io/docs/guides/application-development#application-menu) und [Dialoge](https://wails.io/docs/reference/runtime/dialog) für Anwendungen.
-- Native Transparenzeffekte für Fenster unter [Windows](https://wails.io/docs/reference/options#windowistranslucent) und [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Unterstützung für Mica- und Acrylic-Hintergründe.
-- Einfache Erstellung eines [NSIS-Installationsprogramms](https://wails.io/docs/guides/windows-installer) für die Bereitstellung unter Windows.
-- Eine umfangreiche [Laufzeitbibliothek](https://wails.io/docs/reference/runtime/intro) mit Hilfsmethoden zur Fenstersteuerung sowie für Ereignisse, Dialoge, Menüs und Protokollierung.
-- Unterstützung für die [Verschleierung](https://wails.io/docs/guides/obfuscated) Ihrer Anwendung mit [garble](https://github.com/burrowers/garble).
+- Native [Menüs](https://v2.wails.io/docs/guides/application-development#application-menu) und [Dialoge](https://v2.wails.io/docs/reference/runtime/dialog) für Anwendungen.
+- Native Transparenzeffekte für Fenster unter [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) und [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Unterstützung für Mica- und Acrylic-Hintergründe.
+- Einfache Erstellung eines [NSIS-Installationsprogramms](https://v2.wails.io/docs/guides/windows-installer) für die Bereitstellung unter Windows.
+- Eine umfangreiche [Laufzeitbibliothek](https://v2.wails.io/docs/reference/runtime/intro) mit Hilfsmethoden zur Fenstersteuerung sowie für Ereignisse, Dialoge, Menüs und Protokollierung.
+- Unterstützung für die [Verschleierung](https://v2.wails.io/docs/guides/obfuscated) Ihrer Anwendung mit [garble](https://github.com/burrowers/garble).
 - Unterstützung für die Komprimierung Ihrer Anwendung mit [UPX](https://upx.github.io/).
-- Automatische TypeScript-Generierung für Go-Strukturen. Weitere Informationen finden Sie [hier](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Automatische TypeScript-Generierung für Go-Strukturen. Weitere Informationen finden Sie [hier](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - Mit Ihrer Anwendung müssen auf keiner Plattform zusätzliche Bibliotheken oder DLLs ausgeliefert werden.
 - Frontend-Assets müssen nicht gebündelt werden. Entwickeln Sie Ihre Anwendung einfach wie jede andere Webanwendung.
 

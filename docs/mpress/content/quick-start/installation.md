@@ -9,8 +9,8 @@ sourcePath: "quick-start/installation.md"
 
 @note{type="tip" title="TL;DR - Experienced Developers"}
 ```bash
-# Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+# Install Go 1.26+, then:
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -22,7 +22,7 @@ Or manually verify with `wails3 doctor`. [Skip to First App →](/quick-start/fi
 
 @steps
 ### Install Go (Required)
-Wails requires Go 1.25 or later.
+Wails v3 requires a Go 1.26 or later build toolchain. Install a current Go 1.26 patch release. An older Go launcher may download a suitable toolchain automatically when `GOTOOLCHAIN=auto`; with automatic downloads disabled, install the required toolchain yourself. The starter project’s own `go.mod` declaration does not lower the Wails dependency’s requirement.
 
 @tabs{sync-key="os"}
 [Windows]
@@ -31,7 +31,7 @@ Download the Windows installer from **[go.dev/dl](https://go.dev/dl/)** and run 
 **Verify installation:**
 
 ```powershell
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 ```
 
 **Check PATH:**
@@ -56,7 +56,7 @@ brew install go
 **Verify installation:**
 
 ```bash
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 echo $PATH | grep go/bin  # Should show ~/go/bin
 ```
 
@@ -73,7 +73,7 @@ Download the Linux tarball from **[go.dev/dl](https://go.dev/dl/)**, then:
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 **Option 2: Package Manager**
@@ -197,7 +197,7 @@ If your target distribution does not yet ship WebKitGTK 6.0 (e.g. Ubuntu 22.04 L
 
 ### Install Wails CLI
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 This installs the `wails3` command to `~/go/bin` (or `%USERPROFILE%\go\bin` on Windows).
@@ -222,7 +222,7 @@ wails3 doctor
 **Expected output (or similar):**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -244,8 +244,8 @@ Wails (v3.0.0-dev)  Wails Doctor
 # Build Environment
 
 ┌─────────────┬─────────────────┐
-| Wails CLI   | Your installed version |
-| Go Version  | go1.25.0        |
+| Wails CLI   | v3.0.0          |
+| Go Version  | go1.26.0        |
 └─────────────┴─────────────────┘
 
 # Dependencies
@@ -399,7 +399,7 @@ xcode-select --install
 
 #### Go version too old
 
-Wails v3 requires Go 1.25+. If you have an older version:
+Wails v3 requires Go 1.26+. If you have an older version:
 
 @tabs{sync-key="os"}
 [Windows/macOS]
@@ -410,7 +410,7 @@ Download the latest tarball from [go.dev/dl](https://go.dev/dl/), then:
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 @end
@@ -422,7 +422,7 @@ Want to use the absolute latest code from the main development branch? This give
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

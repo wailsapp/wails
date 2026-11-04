@@ -1,7 +1,6 @@
 package term
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
@@ -31,7 +30,7 @@ type Spinner struct {
 }
 
 func (s Spinner) Logger() config.Logger {
-	return config.DefaultPtermLogger(s.spinner)
+	return DefaultPtermLogger(s.spinner)
 }
 
 func StartSpinner(text string) Spinner {
@@ -52,10 +51,10 @@ func StopSpinner(s Spinner) {
 	}
 }
 
-func output(input any, printer pterm.PrefixPrinter, args ...any) {
+func output(input any, printer pterm.PrefixPrinter) {
 	switch v := input.(type) {
 	case string:
-		printer.Printfln(input.(string), args...)
+		printer.Println(v)
 	case error:
 		printer.Println(v.Error())
 	default:
@@ -63,12 +62,20 @@ func output(input any, printer pterm.PrefixPrinter, args ...any) {
 	}
 }
 
+func outputf(input any, printer pterm.PrefixPrinter, args ...any) {
+	if format, ok := input.(string); ok {
+		printer.Printfln(format, args...)
+		return
+	}
+	output(input, printer)
+}
+
 func Info(input any) {
 	output(input, pterm.Info)
 }
 
 func Infof(input any, args ...interface{}) {
-	output(input, pterm.Info, args...)
+	outputf(input, pterm.Info, args...)
 }
 
 func Warning(input any) {
@@ -76,7 +83,7 @@ func Warning(input any) {
 }
 
 func Warningf(input any, args ...any) {
-	output(input, pterm.Warning, args...)
+	outputf(input, pterm.Warning, args...)
 }
 
 func Error(input any) {
@@ -129,5 +136,5 @@ func Hyperlink(url, text string) string {
 	// ANSI escape code to reset text formatting
 	resetFormat := "\x1b[0m"
 
-	return fmt.Sprintf("%s%s%s%s%s%s%s", linkStart, url, "\x1b\\", underlineStart, text, resetFormat, linkEnd)
+	return linkStart + url + "\x1b\\" + underlineStart + text + resetFormat + linkEnd
 }

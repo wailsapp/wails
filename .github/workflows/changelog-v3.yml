@@ -2,7 +2,7 @@ name: Changelog Validation (v3)
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ master, 'releases/**' ]
     paths:
       - 'docs/mpress/content/changelog.md'
   # No workflow_dispatch trigger: a manual run executes in the default

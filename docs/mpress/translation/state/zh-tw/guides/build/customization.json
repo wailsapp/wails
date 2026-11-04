@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "4871add8ab1865610117",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "274d6eae3435b847dabd",
   "sourceFile": "guides/build/customization.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
@@ -10,984 +11,996 @@
       "targetHash": "e2b00b7517a8ee88a5f97fe4789c0fb33ce13c2f384157cd7c0503d48f9be2d5",
       "machineHash": "e2b00b7517a8ee88a5f97fe4789c0fb33ce13c2f384157cd7c0503d48f9be2d5",
       "machineText": "學習 Taskfile",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learning Taskfile",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0001-heading-01": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "8087fbdb553ec8ea13e18c821be0b436f01b1a9857fd25797d8a6726535ce1ed",
       "machineHash": "8087fbdb553ec8ea13e18c821be0b436f01b1a9857fd25797d8a6726535ce1ed",
       "machineText": "概觀",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Overview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0002-text-01": {
-      "sourceHash": "ce0f16812631ef35078b773b11074825b7fc944669537827b32ea3fe5a40250c",
-      "targetHash": "8d56d2509d7dbdcdc567a9ee52d475ea877c818f6b524dcbfd92be0b9c0af921",
-      "machineHash": "8d56d2509d7dbdcdc567a9ee52d475ea877c818f6b524dcbfd92be0b9c0af921",
-      "machineText": "Wails 建置系統是一套靈活且強大的工具，旨在簡化 Wails 應用程式的建置流程。它採用工作執行器[Task](https://taskfile.dev)，讓您能輕鬆定義及執行工作。雖然 v3 建置系統是預設選項，但 Wails 鼓勵「自備工具」的做法，讓開發人員可依需求自訂建置流程。",
-      "status": "final",
-      "sourcePreview": "The Wails build system is a flexible and powerful tool designed to streamline\\ the build process for…",
+      "sourceHash": "e6c3fee9e825f1b135a039f0c6d09912fb7c44a37fe70ef63e2f56fdf7994665",
+      "targetHash": "b26483cbc98c730994104bb314a277432aae2002a0c299d74a311b0fde5700e4",
+      "machineHash": "b26483cbc98c730994104bb314a277432aae2002a0c299d74a311b0fde5700e4",
+      "machineText": "Wails 建置系統是一套靈活且強大的工具，旨在簡化 Wails 應用程式的建置流程。它採用任務執行器[Task](https://taskfile.dev)，讓您能輕鬆定義及執行任務。雖然v3建置系統是預設選項，但 Wails 鼓勵「自備工具」的做法，讓開發人員可視需要自訂建置流程。",
+      "status": "machine-translated",
+      "sourcePreview": "The Wails build system is a flexible and powerful tool designed to streamline the build process for …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0003-text-01": {
-      "sourceHash": "46bbbff2ab601518b1774835984ab7642c50a4e40a0adfbfaa88ea7cabdb0fd8",
-      "targetHash": "fd3c9e29f18887c2a0cf26507ba09f7186c8915e2e4a7501e2ebdf7b52daaffb",
-      "machineHash": "fd3c9e29f18887c2a0cf26507ba09f7186c8915e2e4a7501e2ebdf7b52daaffb",
-      "machineText": "如需進一步瞭解 Task 的使用方式，請參閱[官方文件](https://taskfile.dev/usage/)。",
-      "status": "final",
-      "sourcePreview": "Learn more about how to use Task in the\\ [official documentation](https://taskfile.dev/usage/).",
+      "sourceHash": "37b8b55c2e06d5261ba030e408e286d89bf83cb376f01de5a6ca6c83accf0ae3",
+      "targetHash": "2b87d26138655c302916a03124f51043ee652ddb33c2f763eb132091d63b108d",
+      "machineHash": "2b87d26138655c302916a03124f51043ee652ddb33c2f763eb132091d63b108d",
+      "machineText": "如需進一步瞭解 Task 的用法，請參閱[官方文件](https://taskfile.dev/usage/)。",
+      "status": "machine-translated",
+      "sourcePreview": "Learn more about how to use Task in the [official documentation](https://taskfile.dev/usage/).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0004-heading-01": {
       "sourceHash": "9a83da7afc41e21e38ea74f2e5d8161105ebc5ad84bc51f538b80e316b7217da",
       "targetHash": "c7335afd136a8fe87aff5a526b4a371578dbda77755b79607456d7f3e29d0768",
       "machineHash": "c7335afd136a8fe87aff5a526b4a371578dbda77755b79607456d7f3e29d0768",
       "machineText": "Task：建置系統的核心",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Task: The Heart of the Build System",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0005-text-01": {
-      "sourceHash": "93cb0a127ee6aef76a8bd9ac61877dfdcedbb85271ac5ec24896e717748e2bf6",
-      "targetHash": "0b0d02a08e4704e913de4a56737e354ee342d924d00ee91d212418e0235a2871",
-      "machineHash": "0b0d02a08e4704e913de4a56737e354ee342d924d00ee91d212418e0235a2871",
-      "machineText": "[Task](https://taskfile.dev) 是以 Go 編寫的現代化 Make 替代方案。它使用 YAML 檔案定義工作及其相依性。在 Wails 建置系統中，[Task](https://taskfile.dev)負責協調建置流程，是其中的核心。",
-      "status": "final",
-      "sourcePreview": "[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It\\ uses a YAML file to…",
+      "sourceHash": "35770ec882f654bb69d63dd7463bcbb0eb03ed16c076baa38823f345fa207133",
+      "targetHash": "a35ca37fc1fb619df859621ee99e0c9f84572fcfd3ca485944a724414e729570",
+      "machineHash": "a35ca37fc1fb619df859621ee99e0c9f84572fcfd3ca485944a724414e729570",
+      "machineText": "[Task](https://taskfile.dev)是以 Go 撰寫的現代化 Make 替代方案。它使用 YAML 檔案定義任務及其相依性。在 Wails 建置系統中，[Task](https://taskfile.dev)負責統籌建置流程，扮演核心角色。",
+      "status": "machine-translated",
+      "sourcePreview": "[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It uses a YAML file to …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0006-text-01": {
-      "sourceHash": "e9cbd956cad12e73cd9488f1e86bef5e4344acf2475f0826a97b4b6ac1523f3d",
-      "targetHash": "607444a5f643e00d52d9aac7fdabda106cbd138b5730ff2424431bd47dc9172f",
-      "machineHash": "607444a5f643e00d52d9aac7fdabda106cbd138b5730ff2424431bd47dc9172f",
-      "machineText": "主要的`Taskfile.yml`位於專案根目錄，而平台專屬工作則定義於`build/\u003cplatform\u003e/Taskfile.yml`檔案中。`build`目錄中的共用`Taskfile.yml`檔案包含各平台共用的工作。",
-      "status": "final",
-      "sourcePreview": "The main `Taskfile.yml` is located in the project root, while platform-specific\\ tasks are defined i…",
+      "sourceHash": "069ae69462a4eb2b9710c9d1671405dc1d0a29f64552c3f7c742ba7f8571b78d",
+      "targetHash": "71fce467d99ce5560f1919fcdd0e06ee26d8222d4d44f449f178a07c102ab885",
+      "machineHash": "71fce467d99ce5560f1919fcdd0e06ee26d8222d4d44f449f178a07c102ab885",
+      "machineText": "主要的`Taskfile.yml`位於專案根目錄，而各平台專屬的任務則定義於`build/\u003cplatform\u003e/Taskfile.yml`檔案中。`build`目錄內的共用`Taskfile.yml`檔案包含各平台共享的通用任務。",
+      "status": "machine-translated",
+      "sourcePreview": "The main `Taskfile.yml` is located in the project root, while platform-specific tasks are defined in…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0008-heading-01": {
+    "b0007-heading-01": {
       "sourceHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "targetHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "machineHash": "cd2d359855d0301ce190f1ec3b4c572ea690c83747f6df61c9340720e3d2425e",
       "machineText": "Taskfile.yml",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Taskfile.yml",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0009-text-01": {
-      "sourceHash": "df6f57b4140adb3c219b9c4fff586c49a1e360b871d9290c52967f57b69ce130",
-      "targetHash": "aded017ad42d935b363292870ec7c10be16c5aafcf671e61eb7e60e355aa0ebd",
-      "machineHash": "aded017ad42d935b363292870ec7c10be16c5aafcf671e61eb7e60e355aa0ebd",
-      "machineText": "專案根目錄中的`Taskfile.yml`檔案是建置系統的主要進入點，其中定義了工作及其相依性。以下是預設的`Taskfile.yml`檔案：",
-      "status": "final",
+    "b0008-text-01": {
+      "sourceHash": "6a990ba20cfb0b60f0b96d597c5b02bb32d830f376738b36c65038743b14cf36",
+      "targetHash": "eb09bd1d83bbef39cc86f658bfb5d589e2704eafbdc5b80c5df4eb2d544e054b",
+      "machineHash": "eb09bd1d83bbef39cc86f658bfb5d589e2704eafbdc5b80c5df4eb2d544e054b",
+      "machineText": "專案根目錄中的`Taskfile.yml`檔案是建置系統的主要進入點，其中定義了任務及其相依性。以下是預設的`Taskfile.yml`檔案：",
+      "status": "machine-translated",
       "sourcePreview": "The `Taskfile.yml` file in the project root is the main entry point for the build system. It defines…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0010-heading-01": {
+    "b0009-heading-01": {
       "sourceHash": "fe190ae3e7bd74987f99a669c7980ae058e94b16b70536eddc366d7e42b47500",
       "targetHash": "5cd36d13daffbc065f1b99dc44c3b126592f01b237b149ede9e0ee6758d00834",
       "machineHash": "5cd36d13daffbc065f1b99dc44c3b126592f01b237b149ede9e0ee6758d00834",
       "machineText": "平台專屬 Taskfile",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Platform-Specific Taskfiles",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0011-text-01": {
-      "sourceHash": "913b7d0e970b293e6b90f25e7db601f3367375c18fbd55271893a0bdc81f07cb",
-      "targetHash": "f0ecb8ab0f0b14cf64570b0a8625c68ffb9bf684a64fc524987f540adf7e9361",
-      "machineHash": "f0ecb8ab0f0b14cf64570b0a8625c68ffb9bf684a64fc524987f540adf7e9361",
-      "machineText": "每個平台都有自己的 Taskfile，位於`build`目錄下的平台目錄中。這些檔案定義該平台的核心工作。每個 Taskfile 都會納入`build/Taskfile.yml`檔案中的共用工作。",
-      "status": "final",
+    "b0010-text-01": {
+      "sourceHash": "531a1a62baab5906a4f2394abcac3bdb5305aacd14b765fff0bb2b71804a8d62",
+      "targetHash": "572bd3a63eb1cf383f089a7b24e090b7dc37a72b18e1dc03d97ebe57bf5f255a",
+      "machineHash": "572bd3a63eb1cf383f089a7b24e090b7dc37a72b18e1dc03d97ebe57bf5f255a",
+      "machineText": "每個平台都有自己的 Taskfile，位於`build`目錄下的各平台目錄中。這些檔案定義該平台的核心任務。每個 Taskfile 都會納入`build/Taskfile.yml`檔案中的通用任務。",
+      "status": "machine-translated",
       "sourcePreview": "Each platform has its own Taskfile, located in the platform directories beneath the `build` director…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0012-heading-01": {
+    "b0011-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineText": "Windows",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Windows",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0013-text-01": {
+    "b0012-text-01": {
       "sourceHash": "ed386d8949b81cc1d5436c7d549c8e2365b0b81bc13fd59aec79036c052fb58c",
       "targetHash": "721eec9246c7aaf8ef7dca2ef8369c060332a889785229ee03fae2687cf357f5",
       "machineHash": "721eec9246c7aaf8ef7dca2ef8369c060332a889785229ee03fae2687cf357f5",
       "machineText": "位置：`build/windows/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/windows/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0014-text-01": {
-      "sourceHash": "745bc3883f99961f01d8041441edacf026229d18d456bd737d09bf02b905cc8b",
-      "targetHash": "d0c1de80247160a6710c8080a69f700ed1c2e0232b5ab08107de999837eede45",
-      "machineHash": "d0c1de80247160a6710c8080a69f700ed1c2e0232b5ab08107de999837eede45",
-      "machineText": "Windows 專屬 Taskfile 包含在 Windows 上建置、封裝及執行應用程式的工作。主要功能包括：",
-      "status": "final",
-      "sourcePreview": "The Windows-specific Taskfile includes tasks for building, packaging, and\\ running the application o…",
+    "b0013-text-01": {
+      "sourceHash": "9c27d78088b4c2495874d4834bbdbd36e639f6411de4b827112818cd4f276d89",
+      "targetHash": "50ed966ca965a23ca62fa9e49e8e5d85d022af148d75d8bda2743c932ee9cb6f",
+      "machineHash": "50ed966ca965a23ca62fa9e49e8e5d85d022af148d75d8bda2743c932ee9cb6f",
+      "machineText": "Windows 專屬 Taskfile 包含在 Windows 上建置、封裝及執行應用程式的任務。主要功能包括：",
+      "status": "machine-translated",
+      "sourcePreview": "The Windows-specific Taskfile includes tasks for building, packaging, and running the application on…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0015-text-01": {
+    "b0014-text-01": {
       "sourceHash": "74d264c2e0b02553a76b62c002714f285821077f91a0b5faa333719ad991c9f3",
       "targetHash": "c2dcfb5741b490a99a4abaddb22090622890464d796b5b518abc1eabc2f140eb",
       "machineHash": "c2dcfb5741b490a99a4abaddb22090622890464d796b5b518abc1eabc2f140eb",
       "machineText": "使用選用的正式環境旗標進行建置",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building with optional production flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0016-text-01": {
+    "b0015-text-01": {
       "sourceHash": "b7d6eaccb35bc9af6d77753f5f200b8d232afe7bcc226c487778e320aef68895",
       "targetHash": "14706c8fd9c65c8a737e463e13c1bf128a3abc2ca3423ba6720985e51627be43",
       "machineHash": "14706c8fd9c65c8a737e463e13c1bf128a3abc2ca3423ba6720985e51627be43",
       "machineText": "產生`.ico`圖示檔案",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.ico` icon file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0017-text-01": {
+    "b0016-text-01": {
       "sourceHash": "486fe6026d8d396964ff90d77bde3acf36d11229ba972db961b432503370a405",
       "targetHash": "29945723286db7e2962de826ea03e6e13cba9c803cc5b404d6318810b3cfb2be",
       "machineHash": "29945723286db7e2962de826ea03e6e13cba9c803cc5b404d6318810b3cfb2be",
       "machineText": "產生 Windows `.syso`檔案",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating Windows `.syso` file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0018-text-01": {
+    "b0017-text-01": {
       "sourceHash": "09daaa67a7d5f7b2c85098dfb28628d3d4fc34393f3ce4b9acfe9222bd7297f3",
       "targetHash": "708284f1dc78dc3c7331874f76f9414dba85e515a2d51c7de2dc2315a0073e70",
       "machineHash": "708284f1dc78dc3c7331874f76f9414dba85e515a2d51c7de2dc2315a0073e70",
       "machineText": "建立用於封裝的 NSIS 安裝程式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating an NSIS installer for packaging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0019-heading-01": {
+    "b0018-heading-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineText": "Linux",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Linux",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0020-text-01": {
+    "b0019-text-01": {
       "sourceHash": "92c159d6e590e850f22667229e82a0f3d37b6e9494cd6ddd734c77e76dc53fa0",
       "targetHash": "0a6b06c047d29d6b775100082283dc59887640278d3c642c99a40ed241734beb",
       "machineHash": "0a6b06c047d29d6b775100082283dc59887640278d3c642c99a40ed241734beb",
       "machineText": "位置：`build/linux/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/linux/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0021-text-01": {
-      "sourceHash": "9e847dfcf294f5ab5d39eaec871254bc1529265b334c2588d85e90f2ea435b6c",
-      "targetHash": "93c2f7577b8f076e0b402a8410d94c76c23f566c8a8c8605b01581e87ff1bf35",
-      "machineHash": "93c2f7577b8f076e0b402a8410d94c76c23f566c8a8c8605b01581e87ff1bf35",
-      "machineText": "Linux 專屬 Taskfile 包含在 Linux 上建置、封裝及執行應用程式的工作。主要功能包括：",
-      "status": "final",
-      "sourcePreview": "The Linux-specific Taskfile includes tasks for building, packaging, and running\\ the application on …",
+    "b0020-text-01": {
+      "sourceHash": "ad2c094c401ce05e28bbc90a881020d05e1696dd9cdf7c250d491309d5168dc1",
+      "targetHash": "83fd176df2eecff24ba18b8fba4aaa72e1b070aa127986c30c4dce873a333cd6",
+      "machineHash": "83fd176df2eecff24ba18b8fba4aaa72e1b070aa127986c30c4dce873a333cd6",
+      "machineText": "Linux 專屬 Taskfile 包含在 Linux 上建置、封裝及執行應用程式的任務。主要功能包括：",
+      "status": "machine-translated",
+      "sourcePreview": "The Linux-specific Taskfile includes tasks for building, packaging, and running the application on L…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0022-text-01": {
+    "b0021-text-01": {
       "sourceHash": "74d264c2e0b02553a76b62c002714f285821077f91a0b5faa333719ad991c9f3",
       "targetHash": "c2dcfb5741b490a99a4abaddb22090622890464d796b5b518abc1eabc2f140eb",
       "machineHash": "c2dcfb5741b490a99a4abaddb22090622890464d796b5b518abc1eabc2f140eb",
       "machineText": "使用選用的正式環境旗標進行建置",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building with optional production flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0023-text-01": {
+    "b0022-text-01": {
       "sourceHash": "306e07b532890a5f0d5d39e7d8800a09fc7fb30fde199a91bcef5ebb490527a4",
       "targetHash": "b2387516a2de69cc4f10ea2c494357c0346110dd33cd41605408388e11d6cad6",
       "machineHash": "b2387516a2de69cc4f10ea2c494357c0346110dd33cd41605408388e11d6cad6",
       "machineText": "建立 AppImage、deb、rpm 及 Arch Linux 套件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating an AppImage, deb, rpm, and Arch Linux packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0024-text-01": {
+    "b0023-text-01": {
       "sourceHash": "281156e1b4b25e612701862935740baa5a0313f93147ccf626d2558018b38fe7",
-      "targetHash": "ab7832e6bf437bcb9899db42ca00538b13b80e601f572c01770ccba5dd35416e",
-      "machineHash": "ab7832e6bf437bcb9899db42ca00538b13b80e601f572c01770ccba5dd35416e",
-      "machineText": "產生供 Linux 應用程式使用的`.desktop`檔案",
-      "status": "final",
+      "targetHash": "ed57124738fd5d82a2908e9d03562338a1c6947abb55fc0e3037854eed801d02",
+      "machineHash": "ed57124738fd5d82a2908e9d03562338a1c6947abb55fc0e3037854eed801d02",
+      "machineText": "為 Linux 應用程式產生`.desktop`檔案",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.desktop` file for Linux applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0025-heading-01": {
+    "b0024-heading-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineText": "macOS",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "macOS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0026-text-01": {
+    "b0025-text-01": {
       "sourceHash": "4eb2150e917d60a3b2047c8ba03ba600639f4587cea56c56569381fd8905cb86",
       "targetHash": "72b2d9a799f57527696ae47100d4aa53a3d12a805e6cafe441e27e2c4cd2ef2a",
       "machineHash": "72b2d9a799f57527696ae47100d4aa53a3d12a805e6cafe441e27e2c4cd2ef2a",
       "machineText": "位置：`build/darwin/Taskfile.yml`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Location: `build/darwin/Taskfile.yml`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0027-text-01": {
-      "sourceHash": "6135f1561d1f10c31c420849a095ef41d8b22b3f79287899834ee0256f0941a1",
-      "targetHash": "ba693425931cbed3381c1748e598055ab9219d6934e2fcacde22760ceae9d3b3",
-      "machineHash": "ba693425931cbed3381c1748e598055ab9219d6934e2fcacde22760ceae9d3b3",
-      "machineText": "macOS 專屬 Taskfile 包含在 macOS 上建置、封裝及執行應用程式的工作。主要功能包括：",
-      "status": "final",
-      "sourcePreview": "The macOS-specific Taskfile includes tasks for building, packaging, and running\\ the application on …",
+    "b0026-text-01": {
+      "sourceHash": "6d8fff6f36c685d353c66e34ec90042b7ee3cc9e358812fcd18c339ee9b0384b",
+      "targetHash": "ff9cd062b99f679f748a6f1da977bd5a9ca30e7b870f8153d1ba77107d717703",
+      "machineHash": "ff9cd062b99f679f748a6f1da977bd5a9ca30e7b870f8153d1ba77107d717703",
+      "machineText": "macOS 專屬 Taskfile 包含在 macOS 上建置、封裝及執行應用程式的任務。主要功能包括：",
+      "status": "machine-translated",
+      "sourcePreview": "The macOS-specific Taskfile includes tasks for building, packaging, and running the application on m…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0028-text-01": {
+    "b0027-text-01": {
       "sourceHash": "58c1d488723d9ca8cb0e362c936502ac486998cc9b700e58f265f86cd5c38ecb",
-      "targetHash": "94a9abc82b27bdec0a13fe59c3e1ec957e3b70f89a4c088bdf60d46fa6071c4e",
-      "machineHash": "94a9abc82b27bdec0a13fe59c3e1ec957e3b70f89a4c088bdf60d46fa6071c4e",
-      "machineText": "為 amd64、arm64 及通用（兩者）架構建置二進位檔",
-      "status": "final",
+      "targetHash": "8e06a9b7e57b896590dff1d6d68f3e22f76e6c6215b646b22dd22e7d534dc3d3",
+      "machineHash": "8e06a9b7e57b896590dff1d6d68f3e22f76e6c6215b646b22dd22e7d534dc3d3",
+      "machineText": "建置適用於 amd64、arm64 及通用（兩者皆支援）架構的二進位檔",
+      "status": "machine-translated",
       "sourcePreview": "Building binaries for amd64, arm64 and universal (both) architectures",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0029-text-01": {
+    "b0028-text-01": {
       "sourceHash": "1e5b61c6320839e5752e04d02c14b8f734f4e2f684415507adddc2f1dcae64d8",
       "targetHash": "8d46aa76bc5751c7995748e7b25f880e4eb6d6df3e07b395aaf8e9c7eb0cf69a",
       "machineHash": "8d46aa76bc5751c7995748e7b25f880e4eb6d6df3e07b395aaf8e9c7eb0cf69a",
       "machineText": "產生`.icns`圖示檔案",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating `.icns` icon file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0030-text-01": {
+    "b0029-text-01": {
       "sourceHash": "0fb45d5b1ebe9e5afbec05ec46fddf388f7085241c4f8f6117a85c7cd85317a1",
-      "targetHash": "40395dab51646b5bf4890779d449d0b576d83e0c89a8427c8a09824235880d99",
-      "machineHash": "40395dab51646b5bf4890779d449d0b576d83e0c89a8427c8a09824235880d99",
-      "machineText": "建立用於散佈的`.app`套件組合",
-      "status": "final",
+      "targetHash": "1919743d52f1e4e26bda74d230bdc5eae8a6054373b3da8433da44fe5227fde9",
+      "machineHash": "1919743d52f1e4e26bda74d230bdc5eae8a6054373b3da8433da44fe5227fde9",
+      "machineText": "建立用於發佈的`.app`套件組合",
+      "status": "machine-translated",
       "sourcePreview": "Creating an `.app` bundle for distributing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0031-text-01": {
+    "b0030-text-01": {
       "sourceHash": "e22ea510ea11354931f89a763d40ed86ba5aac72f37fc80c56962417d67ca3c0",
       "targetHash": "841bcee43606e6c928fc3911cc2cdc022f4827cc5dd92119669792e199492748",
       "machineHash": "841bcee43606e6c928fc3911cc2cdc022f4827cc5dd92119669792e199492748",
       "machineText": "對`.app`套件組合進行臨時簽署",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Ad-hoc signing `.app` bundles",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0032-text-01": {
+    "b0031-text-01": {
       "sourceHash": "f1364f32cda3752b4954b386507984b136f7dbaaa220d63e4d6a93c79cff3e7e",
-      "targetHash": "6fb2ac55749b9b34a0d62ffb3f179f38515fbc331816cc023d98e34cd0103d97",
-      "machineHash": "6fb2ac55749b9b34a0d62ffb3f179f38515fbc331816cc023d98e34cd0103d97",
-      "machineText": "設定 macOS 專屬建置旗標和環境變數",
-      "status": "final",
+      "targetHash": "46137e7cb9d4aaa88c3c6921f8e242c95c349453a100d4b15b92069f9def0e0a",
+      "machineHash": "46137e7cb9d4aaa88c3c6921f8e242c95c349453a100d4b15b92069f9def0e0a",
+      "machineText": "設定 macOS 專屬的建置旗標與環境變數",
+      "status": "machine-translated",
       "sourcePreview": "Setting macOS-specific build flags and environment variables",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0033-heading-01": {
+    "b0032-heading-01": {
       "sourceHash": "acf1f0cdf26e29d3702c401357408abc7598ab2e5aba5f859abd2c84ec33cfe3",
-      "targetHash": "1b719f4c35b083dbf7961ad282887a4ca727909dbec4cf8bc9c03f409ac42786",
-      "machineHash": "1b719f4c35b083dbf7961ad282887a4ca727909dbec4cf8bc9c03f409ac42786",
-      "machineText": "工作執行與命令別名",
-      "status": "final",
+      "targetHash": "e6ee478c38b04308268dcf3ce74716cce3c9e3b02cbc898e59cdee1b181a9554",
+      "machineHash": "e6ee478c38b04308268dcf3ce74716cce3c9e3b02cbc898e59cdee1b181a9554",
+      "machineText": "執行任務與命令別名",
+      "status": "machine-translated",
       "sourcePreview": "Task Execution and Command Aliases",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0034-text-01": {
-      "sourceHash": "d9f2e268da73d1cacaa351bae1dafed379d3bd188374f0618b2fe22c03975f86",
-      "targetHash": "b2626494b38da9070833d7747fd34cbe145732c8c81968b5446f6ba5d9d2c531",
-      "machineHash": "b2626494b38da9070833d7747fd34cbe145732c8c81968b5446f6ba5d9d2c531",
-      "machineText": "`wails3 task`命令是[Taskfile](https://taskfile.dev)的內嵌版本，可執行`Taskfile.yml`中定義的工作。",
-      "status": "final",
+    "b0033-text-01": {
+      "sourceHash": "fb5be2e69f032bbd7207998853d51bb9d0fbae01bbf278f923b8158a116e1de9",
+      "targetHash": "13f6640510e06121cf1c64d1c53aa7e5d525903f27bbfb4bb37f4367dd2ef179",
+      "machineHash": "13f6640510e06121cf1c64d1c53aa7e5d525903f27bbfb4bb37f4367dd2ef179",
+      "machineText": "`wails3 task`命令是[Taskfile](https://taskfile.dev)的內嵌版本，用於執行您在`Taskfile.yml`中定義的任務。",
+      "status": "machine-translated",
       "sourcePreview": "The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0035-text-01": {
-      "sourceHash": "ba32345db61a2de5dc789b9574b87b411b405ec353e3976c2e31e874a40fd46c",
-      "targetHash": "9a81fb742dd8cf5658dead87ec78d8d1f1b5497bffef3906b43739745b8edfa9",
-      "machineHash": "9a81fb742dd8cf5658dead87ec78d8d1f1b5497bffef3906b43739745b8edfa9",
-      "machineText": "`wails3 build`和`wails3 package`命令分別是`wails3 task build`和`wails3 task package`的別名。執行這些命令時，Wails 會在內部將其轉換為適當的工作執行命令：",
-      "status": "final",
-      "sourcePreview": "The `wails3 build` and `wails3 package` commands are aliases for\\ `wails3 task build` and `wails3 ta…",
+    "b0034-text-01": {
+      "sourceHash": "48579049c14ded03da96df7d21e9b23d09f6e440a1b92338a7fa96f7aedf95d1",
+      "targetHash": "7ce7c43fab50999da918961a4be69b1dd820fd27a28890f82d1793fe9de822ee",
+      "machineHash": "7ce7c43fab50999da918961a4be69b1dd820fd27a28890f82d1793fe9de822ee",
+      "machineText": "`wails3 build`和`wails3 package`命令分別是`wails3 task build`和`wails3 task package`的別名。執行這些命令時，Wails 會在內部將其轉換為對應的任務執行命令：",
+      "status": "machine-translated",
+      "sourcePreview": "The `wails3 build` and `wails3 package` commands are aliases for `wails3 task build` and `wails3 tas…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0036-text-01": {
+    "b0035-text-01": {
       "sourceHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "targetHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "machineHash": "32ad8a2bb699934f82d22d48db1d419d1a1978fd131f2806f3e38b122af2a4e6",
       "machineText": "`wails3 build` → `wails3 task build`",
-      "status": "final",
+      "status": "protected",
       "sourcePreview": "`wails3 build` → `wails3 task build`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0037-text-01": {
+    "b0036-text-01": {
       "sourceHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "targetHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "machineHash": "1f4a45e29ebe5bc5a413ee5e9bb58cea48b605d7666c01ae35fb8a5c8e166fe4",
       "machineText": "`wails3 package` → `wails3 task package`",
-      "status": "final",
+      "status": "protected",
       "sourcePreview": "`wails3 package` → `wails3 task package`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0038-heading-01": {
+    "b0037-heading-01": {
       "sourceHash": "51214ddc1c980c6812d38e01c62fa138a13bae657496acb15b9e92f8b791cb84",
-      "targetHash": "c4ce2e07016cf0c49154c41706d125f6c09a5738838d692d9fcb728459bb6408",
-      "machineHash": "c4ce2e07016cf0c49154c41706d125f6c09a5738838d692d9fcb728459bb6408",
-      "machineText": "將參數傳遞給工作",
-      "status": "final",
+      "targetHash": "781a3a618510faf8c1afc891ec30e538732130be319b68ebad428d67fbadd105",
+      "machineHash": "781a3a618510faf8c1afc891ec30e538732130be319b68ebad428d67fbadd105",
+      "machineText": "將參數傳遞給任務",
+      "status": "machine-translated",
       "sourcePreview": "Passing Parameters to Tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0039-text-01": {
+    "b0038-text-01": {
       "sourceHash": "511ed991362cb984e73b04f9e634a66507ee4a399bce1a048d7e8dc51c6d01bb",
-      "targetHash": "99798469cdd51a899c0a5fce75a03014bea670cd7cc4548306c8922e1098f4f4",
-      "machineHash": "99798469cdd51a899c0a5fce75a03014bea670cd7cc4548306c8922e1098f4f4",
-      "machineText": "您可以使用`KEY=VALUE`格式將 CLI 變數傳遞給工作。這些變數會透過別名命令轉送：",
-      "status": "final",
+      "targetHash": "d8df79ac67b7b5f6bb6477586d8bb1f2fe4256346e7df7b7eab4cc8176072679",
+      "machineHash": "d8df79ac67b7b5f6bb6477586d8bb1f2fe4256346e7df7b7eab4cc8176072679",
+      "machineText": "您可以使用`KEY=VALUE`格式將 CLI 變數傳遞給任務。這些變數會透過別名命令轉送：",
+      "status": "machine-translated",
       "sourcePreview": "You can pass CLI variables to tasks using the `KEY=VALUE` format. These variables are forwarded thro…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "b0040-text-01": {
-      "sourceHash": "f08b6b352e634cf6419646756b233a3894b79da42ad034f07db2cfa5de37002a",
-      "targetHash": "c086e9db609a4d0778b629c9950055d63ebd1a1555c7aa1ace01a43c3339d29a",
-      "machineHash": "c086e9db609a4d0778b629c9950055d63ebd1a1555c7aa1ace01a43c3339d29a",
-      "machineText": "在`Taskfile.yml`中，您可以使用 Go 範本語法存取這些變數：",
-      "status": "final",
-      "sourcePreview": "In your `Taskfile.yml`, you can access these variables using Go template syntax:",
+    "b0039-text-01": {
+      "sourceHash": "a461406b5802d15ed55e2e5d3a85409fc0f5fdd40f88f273d5ea44231e2dce2e",
+      "targetHash": "4f4b502e6c67e9a4612a5e9157fc904741cfbb498ad2a03527c52fffff863895",
+      "machineHash": "4f4b502e6c67e9a4612a5e9157fc904741cfbb498ad2a03527c52fffff863895",
+      "machineText": "內建任務會使用`GOOS`、`ARCH`和`DEV`。`VERSION`、`OUTPUT`、`PLATFORM`或`CONFIG`等變數，只有在您自己的 Taskfile 讀取它們時才會影響任務。以下是自訂 Taskfile 的範例，並非 Wails 內建的建置任務：",
+      "status": "machine-translated",
+      "sourcePreview": "The stock tasks use `GOOS`, `ARCH` and `DEV`. Variables such as `VERSION`, `OUTPUT`, `PLATFORM` or `…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
+    },
+    "b0040-text-01": {
+      "sourceHash": "029db3a60bb29f013588d43c15ff8041801ca2b4e66870eddbca83844a0d5b1c",
+      "targetHash": "edfdbf0911681bfc34c78ce090572f725403e8885f1d7bbf24cd23fb690a5bdc",
+      "machineHash": "edfdbf0911681bfc34c78ce090572f725403e8885f1d7bbf24cd23fb690a5bdc",
+      "machineText": "如果您的自訂封裝工作會讀取`VERSION`和`OUTPUT`，則可用相同方式傳入這些變數：",
+      "status": "machine-translated",
+      "sourcePreview": "If your custom packaging task reads `VERSION` and `OUTPUT`, you can pass them in the same way:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:41Z"
     },
     "b0041-heading-01": {
       "sourceHash": "0a94aaa389e207b362737f68c55d1ce2e6d41dfb95711b39d2d672bdaca7176a",
       "targetHash": "1e8842f9772be822469c02a1ecb5a6a7ef0ae1c6dab5acef817abc783de67ee9",
       "machineHash": "1e8842f9772be822469c02a1ecb5a6a7ef0ae1c6dab5acef817abc783de67ee9",
       "machineText": "通用建置流程",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Common Build Process",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0042-text-01": {
       "sourceHash": "b26f34513c7b7600869764e89047a44c06e83afc79bf6823eba51986ad757c98",
-      "targetHash": "c22816cd3dc6a89840fc0bdce92079de2cd25074dd6fff2b0bfc5dcaa1fa66ec",
-      "machineHash": "c22816cd3dc6a89840fc0bdce92079de2cd25074dd6fff2b0bfc5dcaa1fa66ec",
-      "machineText": "在所有平台上，建置流程通常包含以下步驟：",
-      "status": "final",
+      "targetHash": "721032a51ccf56e18f5a971f8414f5ea315b4382b7612cb1e5d236b78804c95f",
+      "machineHash": "721032a51ccf56e18f5a971f8414f5ea315b4382b7612cb1e5d236b78804c95f",
+      "machineText": "在所有平台上，建置流程通常包含下列步驟：",
+      "status": "machine-translated",
       "sourcePreview": "Across all platforms, the build process typically includes the following steps:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0043-text-01": {
       "sourceHash": "58a3a520cb5f5e984cb0b1588f53358bc8a3ba51aeaee71b1653e150a327db71",
       "targetHash": "9d19a4eafd63f8887fc343bd5ebbb923c845adfe4a1fc83cc864b9fd4b28e1fe",
       "machineHash": "9d19a4eafd63f8887fc343bd5ebbb923c845adfe4a1fc83cc864b9fd4b28e1fe",
       "machineText": "整理 Go 模組",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Tidying Go modules",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0044-text-01": {
       "sourceHash": "fbaaed40e5c7f78aa5ac7c884e2a5f030eb65585113ac5852ccf6e532d08be9a",
       "targetHash": "1527ed75654278b6c2835738511271af80be5d0ae91aa669cd15f2a19791a2d1",
       "machineHash": "1527ed75654278b6c2835738511271af80be5d0ae91aa669cd15f2a19791a2d1",
       "machineText": "建置前端",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Building the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0045-text-01": {
       "sourceHash": "5146220beb30d3eada17edb64e0a89e96a661b9075dfab0ac7b0a76d6ebe7d62",
       "targetHash": "9e78e7bef4a919bc2716e5558ed5bb19f93ac19590e85f6275c1c101633bfc31",
       "machineHash": "9e78e7bef4a919bc2716e5558ed5bb19f93ac19590e85f6275c1c101633bfc31",
       "machineText": "產生圖示",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generating icons",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0046-text-01": {
       "sourceHash": "e9e6f4ebac8dba174dfb89abc31c2f8e65126900f1ea67fc22faf373cfaaf6bb",
       "targetHash": "e3fb4c49ed9806e055146eb94aaa68669fd79d9945a5f4f1c8227d2cf9ec126f",
       "machineHash": "e3fb4c49ed9806e055146eb94aaa68669fd79d9945a5f4f1c8227d2cf9ec126f",
       "machineText": "使用平台專屬旗標編譯 Go 程式碼",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Compiling the Go code with platform-specific flags",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0047-text-01": {
       "sourceHash": "a8a1ce49040d52002ea38be67084c6b132c927575c76097288aeccc1d09ec342",
       "targetHash": "3261126969c318196e697b3329d71347cff1d99825793f3533753c00f18f65c3",
       "machineHash": "3261126969c318196e697b3329d71347cff1d99825793f3533753c00f18f65c3",
       "machineText": "封裝應用程式（依平台而異）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Packaging the application (platform-specific)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0048-heading-01": {
       "sourceHash": "64c418cbf722340e3d515f047c347fbcfac11cc7c62b2f144f88fec1a28dc680",
       "targetHash": "d5b6cfe80df3c1834ea9436a325b51e3fc8dffadca9ec58073a58676111758b8",
       "machineHash": "d5b6cfe80df3c1834ea9436a325b51e3fc8dffadca9ec58073a58676111758b8",
       "machineText": "自訂建置流程",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customising the Build Process",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0049-text-01": {
-      "sourceHash": "a70f8d8990bcdf7020e76b3c073b5fb7285c13154cf51b226e043511c7983c1c",
-      "targetHash": "dd4591369fbb83207034a4ef198f3e08732ad59e6dbb0d538d129b3799d58695",
-      "machineHash": "dd4591369fbb83207034a4ef198f3e08732ad59e6dbb0d538d129b3799d58695",
-      "machineText": "雖然 v3 建置系統提供穩健的預設組態，您仍可輕鬆自訂，以符合專案需求。修改`Taskfile.yml`及平台專屬 Taskfile 後，您可以：",
-      "status": "final",
-      "sourcePreview": "While the v3 build system provides a solid default configuration, you can easily\\ customise it to fi…",
+      "sourceHash": "3fe8980f1ecc04dfb5ec5214f95b147043f2b3ef8617ed6b1f6a1e038428539e",
+      "targetHash": "9fc0a9d6d63f16cd0b5e2762e184d833418c3ebae9a6395c0e58a896b6df0b89",
+      "machineHash": "9fc0a9d6d63f16cd0b5e2762e184d833418c3ebae9a6395c0e58a896b6df0b89",
+      "machineText": "雖然v3建置系統提供穩健的預設設定，但您可以輕鬆加以自訂，以符合專案需求。修改`Taskfile.yml`和平台專屬 Taskfile 後，您可以：",
+      "status": "machine-translated",
+      "sourcePreview": "While the v3 build system provides a solid default configuration, you can easily customise it to fit…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0050-text-01": {
       "sourceHash": "3a4267b073ebfe35e8c6f85a1b63a62f3e6d35a66d662bd2f62c637c076d248b",
-      "targetHash": "5bf87dd9072b2c4004922c26fa4d514e8e58a59fd625698b758a0facd6e9fe9b",
-      "machineHash": "5bf87dd9072b2c4004922c26fa4d514e8e58a59fd625698b758a0facd6e9fe9b",
-      "machineText": "新增工作",
-      "status": "final",
+      "targetHash": "54bff0c846494033ea551933fb43801edaa68fd8f104984edd7a9a733450b829",
+      "machineHash": "54bff0c846494033ea551933fb43801edaa68fd8f104984edd7a9a733450b829",
+      "machineText": "新增任務",
+      "status": "machine-translated",
       "sourcePreview": "Add new tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0051-text-01": {
       "sourceHash": "12d52e81a68a216a623932890e0efd1b014d3a91c3091cb15d908195f0c776e3",
-      "targetHash": "92eb3416f305bf008a19b0030d5b2f46b66d2439491a5cba26dfce9130737849",
-      "machineHash": "92eb3416f305bf008a19b0030d5b2f46b66d2439491a5cba26dfce9130737849",
-      "machineText": "修改現有工作",
-      "status": "final",
+      "targetHash": "669f2a8b563da428bf20076d1949880f2c0781c435feafb3b392a4ac8caea1a1",
+      "machineHash": "669f2a8b563da428bf20076d1949880f2c0781c435feafb3b392a4ac8caea1a1",
+      "machineText": "修改現有任務",
+      "status": "machine-translated",
       "sourcePreview": "Modify existing tasks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0052-text-01": {
       "sourceHash": "086bbe31ecec0e5cc52f6a569b10adad2e2ef87437bde0a232a5f7552c83a782",
-      "targetHash": "6e21e47a12fed5487a5ea494a365681d2c7310b8710fa76aa265bcd3be0c70e0",
-      "machineHash": "6e21e47a12fed5487a5ea494a365681d2c7310b8710fa76aa265bcd3be0c70e0",
-      "machineText": "變更工作執行順序",
-      "status": "final",
+      "targetHash": "54681cfa40ba6a8f376f07a573eca782ed39e32cf18b4a5fb8f07f692537f889",
+      "machineHash": "54681cfa40ba6a8f376f07a573eca782ed39e32cf18b4a5fb8f07f692537f889",
+      "machineText": "變更任務執行順序",
+      "status": "machine-translated",
       "sourcePreview": "Change the order of task execution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0053-text-01": {
       "sourceHash": "916293cceb0ae2a42d8ea44cfd79d8a8478eabf529f07e597a7715d86bfad5a5",
       "targetHash": "87a28178bd1de7ab27b8b8f654cff3926ed7c4b1bcda9a4d1c19cee47a273a05",
       "machineHash": "87a28178bd1de7ab27b8b8f654cff3926ed7c4b1bcda9a4d1c19cee47a273a05",
       "machineText": "與其他工具及指令碼整合",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Integrate with other tools and scripts",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0054-text-01": {
-      "sourceHash": "27a0ba18b8342650cd4c0b13867260757d62a8e87501ccd26df3bde2d142848c",
-      "targetHash": "358f6ecd9f0244edae3971cb1fdc4d44efa0f9e26fd74e3348ac74d8a84a5edc",
-      "machineHash": "358f6ecd9f0244edae3971cb1fdc4d44efa0f9e26fd74e3348ac74d8a84a5edc",
-      "machineText": "這種靈活性讓您能依特定需求調整建置流程，同時仍可受益於 Wails 建置系統所提供的架構。",
-      "status": "final",
-      "sourcePreview": "This flexibility allows you to tailor the build process to your specific\\ requirements while still b…",
+      "sourceHash": "1998df2f1673ca6759d7e7b8810e9f2151f52c287b0ae16b4c1850852112c8cf",
+      "targetHash": "15882dae8f5e2b08eda1f3c3c11bf983a9e9b2a2250ee57b02a971b32d07bc26",
+      "machineHash": "15882dae8f5e2b08eda1f3c3c11bf983a9e9b2a2250ee57b02a971b32d07bc26",
+      "machineText": "這種靈活性讓您能依具體需求調整建置流程，同時繼續受益於 Wails 建置系統所提供的架構。",
+      "status": "machine-translated",
+      "sourcePreview": "This flexibility allows you to tailor the build process to your specific requirements while still be…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0055-text-01": {
-      "sourceHash": "9f7e2a865b68e87e6cde3182663882d1f0395c15413b5b5451af1aab2caf2a6b",
-      "targetHash": "acd3bea9b50de8612bcab15be1d37110fdbbfaf191ea48f12dbee45a8c629a82",
-      "machineHash": "acd3bea9b50de8612bcab15be1d37110fdbbfaf191ea48f12dbee45a8c629a82",
-      "machineText": "強烈建議閱讀[Taskfile](https://taskfile.dev)文件，以瞭解如何有效使用 Taskfile。執行`wails3 task --version`即可查詢 Wails CLI 內嵌的 Taskfile 版本。",
-      "status": "final",
-      "sourcePreview": "We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to\\ understand how to…",
+      "sourceHash": "14b30b9a27b87a3aee1347763f559cdf847d9098095fdda3be70ab42fbb97018",
+      "targetHash": "4b84354cecdaee18b30ed7a66f72ccfbf6a6af40359409343dc46603bbee06b6",
+      "machineHash": "4b84354cecdaee18b30ed7a66f72ccfbf6a6af40359409343dc46603bbee06b6",
+      "machineText": "強烈建議閱讀[Taskfile](https://taskfile.dev)文件，以瞭解如何有效運用 Taskfile。執行`wails3 task --version`即可查詢 Wails CLI 內嵌的 Taskfile 版本。",
+      "status": "machine-translated",
+      "sourcePreview": "We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to understand how to …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0056-heading-01": {
       "sourceHash": "cf175c1f6951a898ec7478fdf6c897892743d3b0744566b8760cdb397cff7666",
       "targetHash": "dfc57faa8e534da632828d8e023cfe8a107fe8d03c8a1c50d14ccf9861382fc1",
       "machineHash": "dfc57faa8e534da632828d8e023cfe8a107fe8d03c8a1c50d14ccf9861382fc1",
       "machineText": "開發模式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Development Mode",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0057-text-01": {
-      "sourceHash": "c55fbb88cfb146ea3da2f92e499e8c40ec70313b921065ef247a5d0c63942d48",
-      "targetHash": "00d39ef9778e3a643b77c801ed7c5e4efe90fb92ae1d5616ee1fdf09c09cf7df",
-      "machineHash": "00d39ef9778e3a643b77c801ed7c5e4efe90fb92ae1d5616ee1fdf09c09cf7df",
-      "machineText": "Wails 建置系統包含功能強大的開發模式，可提供即時重新載入及熱模組替換，進而改善開發體驗。使用`wails3 dev`命令即可啟用此模式。",
-      "status": "final",
-      "sourcePreview": "The Wails build system includes a powerful development mode that enhances the\\ developer experience …",
+      "sourceHash": "cb2e0bdba776effd2374430700b0aa825fe5e42b7e08a7712acf974faa6a8e94",
+      "targetHash": "e2a3609a4b06e0ab11265dc6fbd8fa88b26c8bbec932e0715b52bfa61fa8435c",
+      "machineHash": "e2a3609a4b06e0ab11265dc6fbd8fa88b26c8bbec932e0715b52bfa61fa8435c",
+      "machineText": "Wails 建置系統包含功能強大的開發模式，可提供即時重新載入與熱模組替換，改善開發人員體驗。使用`wails3 dev`命令即可啟用此模式。",
+      "status": "machine-translated",
+      "sourcePreview": "The Wails build system includes a powerful development mode that enhances the developer experience b…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0058-heading-01": {
       "sourceHash": "c1879525c75cb5c2f2f3bcd2db2554aeca020ede722bdbe6949b8f5f51d885d2",
       "targetHash": "1af1db99223c59eac4ab5c27944b8e925b8515b8bf86e13bb665d573829ab419",
       "machineHash": "1af1db99223c59eac4ab5c27944b8e925b8515b8bf86e13bb665d573829ab419",
       "machineText": "運作方式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How It Works",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0059-text-01": {
       "sourceHash": "7a1202db99de09390756401f9446ead216e8543627e6e1ab779dcfc52dd87879",
-      "targetHash": "7b69e8c533b5e31bb6293eb5185840bf4a585296fb17358d3cc3f46afdfe26b0",
-      "machineHash": "7b69e8c533b5e31bb6293eb5185840bf4a585296fb17358d3cc3f46afdfe26b0",
-      "machineText": "執行`wails3 dev`時，會進行以下流程：",
-      "status": "final",
+      "targetHash": "93232c75c76698abddcfc85eed1f0dda9d819d5f0b86646fb80efe42efcc176d",
+      "machineHash": "93232c75c76698abddcfc85eed1f0dda9d819d5f0b86646fb80efe42efcc176d",
+      "machineText": "執行`wails3 dev`時，會進行下列流程：",
+      "status": "machine-translated",
       "sourcePreview": "When you run `wails3 dev`, the following process occurs:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0060-text-01": {
       "sourceHash": "a74024d290ff052d7ad97081750a59fb8e40093faf8b17cb74b73b463ac5a330",
-      "targetHash": "15233df875da2398b7bc21b16b9ab1ab62d53c6491d75cee5e4f402c63f4487a",
-      "machineHash": "15233df875da2398b7bc21b16b9ab1ab62d53c6491d75cee5e4f402c63f4487a",
-      "machineText": "此命令會檢查可用的連接埠；若未指定，預設為9245。",
-      "status": "final",
+      "targetHash": "45354e0e66fb3c1213c79fd5adf582b5d77aaab17903b12328e2fe7184113a1d",
+      "machineHash": "45354e0e66fb3c1213c79fd5adf582b5d77aaab17903b12328e2fe7184113a1d",
+      "machineText": "命令會檢查可用的連接埠；若未指定，預設使用9245。",
+      "status": "machine-translated",
       "sourcePreview": "The command checks for an available port, defaulting to 9245 if not specified.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0061-text-01": {
       "sourceHash": "7d75d7733ca5a226e30ed40f9d630a53f0917d319c21e8d997b61382fd379e40",
-      "targetHash": "fa637ae1b86a14ccdaaeafa5565a7fdcefec85be7a83c65c300b991e3686bc5c",
-      "machineHash": "fa637ae1b86a14ccdaaeafa5565a7fdcefec85be7a83c65c300b991e3686bc5c",
-      "machineText": "它會為前端開發伺服器（Vite）設定環境變數。",
-      "status": "final",
+      "targetHash": "aaa3e220fa4e48e062efd7b38ef77dc077a8f203106224cf9d55fff674f229db",
+      "machineHash": "aaa3e220fa4e48e062efd7b38ef77dc077a8f203106224cf9d55fff674f229db",
+      "machineText": "設定前端開發伺服器（Vite）的環境變數。",
+      "status": "machine-translated",
       "sourcePreview": "It sets up the environment variables for the frontend dev server (Vite).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0062-text-01": {
       "sourceHash": "262dda4449fbce4e9c00d41f840148d0884ca84a0e3d36cf6cc3211cabdf975d",
-      "targetHash": "7d255fa0f55c397c7000d177c2db637b72ea02befdf1dad50ef5de1031eecc88",
-      "machineHash": "7d255fa0f55c397c7000d177c2db637b72ea02befdf1dad50ef5de1031eecc88",
-      "machineText": "它會使用[refresh](https://github.com/atterpac/refresh)程式庫啟動檔案監看器。",
-      "status": "final",
+      "targetHash": "b3b18b17bca38cb3bcef1429fb50283bd372c07f91a99ab5dbdb9e3166a98943",
+      "machineHash": "b3b18b17bca38cb3bcef1429fb50283bd372c07f91a99ab5dbdb9e3166a98943",
+      "machineText": "使用[refresh](https://github.com/atterpac/refresh)程式庫啟動檔案監看器。",
+      "status": "machine-translated",
       "sourcePreview": "It starts the file watcher using the [refresh](https://github.com/atterpac/refresh) library.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0063-text-01": {
-      "sourceHash": "3af0348e74b83446024686c6ded01cc9269aac53201e675f9ef9e15ee844e73b",
-      "targetHash": "2db2ed6c341c747fa92b3598b1c16c03d13575a752ae5fad2db2b8844ba2dbba",
-      "machineHash": "2db2ed6c341c747fa92b3598b1c16c03d13575a752ae5fad2db2b8844ba2dbba",
-      "machineText": "[refresh](https://github.com/atterpac/refresh)程式庫負責監控檔案變更並觸發重新建置。它使用`./build/config.yml`檔案中`dev_mode`鍵下定義的組態。您可以將它設定為忽略特定目錄和檔案、決定要監看哪些檔案，以及偵測到變更時要採取哪些動作。預設組態已相當實用，但您可以依需求自由自訂。",
-      "status": "final",
-      "sourcePreview": "The [refresh](https://github.com/atterpac/refresh) library is responsible for\\ monitoring file chang…",
+      "sourceHash": "f4478159ce56afa7816161cb144ec6c0d1cc3d5e3beaa26dbbcc6c34e64e411a",
+      "targetHash": "9629b8b436db451ed1ddd47c5c69855b95e36f9b17c4b7661ad644416d2a6f5e",
+      "machineHash": "9629b8b436db451ed1ddd47c5c69855b95e36f9b17c4b7661ad644416d2a6f5e",
+      "machineText": "[refresh](https://github.com/atterpac/refresh)程式庫負責監控檔案變更並觸發重新建置。它使用`./build/config.yml`檔案中`dev_mode`鍵下定義的設定。您可以將其設定為忽略特定目錄與檔案、決定要監看的檔案，以及偵測到變更時要採取的動作。預設設定已相當實用，但您仍可依需求自行調整。",
+      "status": "machine-translated",
+      "sourcePreview": "The [refresh](https://github.com/atterpac/refresh) library is responsible for monitoring file change…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0064-heading-01": {
       "sourceHash": "b332c3492d5eb10a118eb6d8b0dcd689bc2477ce2ae16b303753b942b54377bc",
-      "targetHash": "2eac478bbd56d5bebf9977cf95856d6434d92af854a77adcebe038a1a9b5d753",
-      "machineHash": "2eac478bbd56d5bebf9977cf95856d6434d92af854a77adcebe038a1a9b5d753",
-      "machineText": "組態",
-      "status": "final",
+      "targetHash": "0d8619aae051ae343ea983e969d29b7bd7a618eb1b25a6c87c133c5e3ee25264",
+      "machineHash": "0d8619aae051ae343ea983e969d29b7bd7a618eb1b25a6c87c133c5e3ee25264",
+      "machineText": "設定",
+      "status": "machine-translated",
       "sourcePreview": "Configuration",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0065-text-01": {
       "sourceHash": "fe7d1a093789a186d2098b82b076b5e266005d61453435bef430a83f6453e3c9",
       "targetHash": "065fa14312481a9ba05f3bf9c0ac1caf9db60d23016ed507ec8eab2310393d60",
       "machineHash": "065fa14312481a9ba05f3bf9c0ac1caf9db60d23016ed507ec8eab2310393d60",
       "machineText": "以下是其結構範例：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Here's an example of its structure:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0066-text-01": {
       "sourceHash": "01f251a4e332213134fb784cc2d1852985334f6aa6ee6f4a908e5eab4a34b8cf",
-      "targetHash": "06d118ab214564b373db0074723761ceda5273478e79a4df476957bfce1b3ca8",
-      "machineHash": "06d118ab214564b373db0074723761ceda5273478e79a4df476957bfce1b3ca8",
-      "machineText": "此組態檔可讓您：",
-      "status": "final",
+      "targetHash": "70905221646255b4dc554e6977f816b2422c472f3796345ec606c0bc36b4a285",
+      "machineHash": "70905221646255b4dc554e6977f816b2422c472f3796345ec606c0bc36b4a285",
+      "machineText": "此設定檔可讓您：",
+      "status": "machine-translated",
       "sourcePreview": "This configuration file allows you to:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0067-text-01": {
       "sourceHash": "f42062d3e669e285a02dad9fe667b7bf3939f35b3bbffcda5cceb934694be4e6",
       "targetHash": "c1a2829cf160acad81b2a0231645050120c82c55c643bbf558c7b544795022d0",
       "machineHash": "c1a2829cf160acad81b2a0231645050120c82c55c643bbf558c7b544795022d0",
       "machineText": "設定檔案監看的根路徑",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Set the root path for file watching",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0068-text-01": {
       "sourceHash": "ce3615b198951f85f7f04d110d7c452ca6f82d9328f1b0c8652d2e535c71df6f",
       "targetHash": "f77d24ba51701575e1e9618d1bba86f5f26bcb41b9e03b5f38d7207814a9dbfb",
       "machineHash": "f77d24ba51701575e1e9618d1bba86f5f26bcb41b9e03b5f38d7207814a9dbfb",
       "machineText": "設定記錄層級",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configure logging level",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0069-text-01": {
       "sourceHash": "3c06b94c2b5c68986931a23822e96e09a7d68a7fd7848d410c66d904d1c0359f",
       "targetHash": "283076d90c5381f481851857c487403fca4748b870cbf44bcda46b7e835b6a32",
       "machineHash": "283076d90c5381f481851857c487403fca4748b870cbf44bcda46b7e835b6a32",
       "machineText": "設定檔案變更事件的防彈跳時間",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Set a debounce time for file change events",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0070-text-01": {
       "sourceHash": "d0adcd4a417ba6dcbaaf56a46fbc709e265b365b2d512572b80e79f4cd13972e",
       "targetHash": "c01d2b298932f11a2d43413d47886d09a79a50f705a2ce362bd43b091c1b50af",
       "machineHash": "c01d2b298932f11a2d43413d47886d09a79a50f705a2ce362bd43b091c1b50af",
       "machineText": "忽略特定目錄、檔案或副檔名",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Ignore specific directories, files, or file extensions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0071-text-01": {
       "sourceHash": "ce267fbdfe8ff2437625452af797ac2116f706d83d470b51905b42c0287ada94",
       "targetHash": "3148ef250432c8e1083c54f887c80d6cd0d2d8c0a6c61c2eff8e4e8df7831542",
       "machineHash": "3148ef250432c8e1083c54f887c80d6cd0d2d8c0a6c61c2eff8e4e8df7831542",
       "machineText": "定義檔案變更時要執行的命令",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Define commands to execute on file changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0072-heading-01": {
       "sourceHash": "51e6ae960458582fed16eb75fed913a900332dd2cac81f5fd977a1e12abfe2a9",
       "targetHash": "15ba092048979a1dd86debdc0fa04341d43d263806ce9ba6e881ccac264fd407",
       "machineHash": "15ba092048979a1dd86debdc0fa04341d43d263806ce9ba6e881ccac264fd407",
       "machineText": "自訂開發模式",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customising Development Mode",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0073-text-01": {
       "sourceHash": "1219195dcb46760e55ff0100ea27e5dee43a4cc3853247cf9dc98127627bf772",
       "targetHash": "89fba4872856e2c17175196c2f1a0d8c1db58f1f4af128c5293caf7e7ff03ba6",
       "machineHash": "89fba4872856e2c17175196c2f1a0d8c1db58f1f4af128c5293caf7e7ff03ba6",
       "machineText": "您可以修改`config.yml`檔案中的這些值，自訂開發模式的使用體驗。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "You can customise the development mode experience by modifying these values in the `config.yml` file…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0074-text-01": {
       "sourceHash": "3664db4b055e7aa00d0531d777891f0fb410344058c5a6dee8698658846b4e4e",
-      "targetHash": "b0c9fd6484e27c0795478285f56ed3c454d96bc071a3d825f9cefaf123cab66d",
-      "machineHash": "b0c9fd6484e27c0795478285f56ed3c454d96bc071a3d825f9cefaf123cab66d",
-      "machineText": "自訂方式包括：",
-      "status": "final",
+      "targetHash": "17b6de87a34ed62d46cb96ca350578838912353a2218d54052e72704b6eb4af8",
+      "machineHash": "17b6de87a34ed62d46cb96ca350578838912353a2218d54052e72704b6eb4af8",
+      "machineText": "可採用的自訂方式包括：",
+      "status": "machine-translated",
       "sourcePreview": "Some ways to customise include:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0075-text-01": {
       "sourceHash": "aba5d94f96aa234dae5641895db69c571900f8f6649fc21630b5f3e65c5fb5ef",
-      "targetHash": "0ca8c15404042cbb7edc62b10bfc8c6f25fd4a2c454ed6b44f052441d6dc5c2d",
-      "machineHash": "0ca8c15404042cbb7edc62b10bfc8c6f25fd4a2c454ed6b44f052441d6dc5c2d",
-      "machineText": "變更要監看的目錄或檔案",
-      "status": "final",
+      "targetHash": "1620382e050815c5bae61cf380935107a44f241cb7ac98f7e80a2eb643b28c0f",
+      "machineHash": "1620382e050815c5bae61cf380935107a44f241cb7ac98f7e80a2eb643b28c0f",
+      "machineText": "變更要監看變更的目錄或檔案",
+      "status": "machine-translated",
       "sourcePreview": "Changing the watched directories or files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0076-text-01": {
       "sourceHash": "aa09fd18436561b722a91eec8430c6eee982a5c608e500a71643b0604a196aeb",
-      "targetHash": "7604f2ecc73571b277f49fbf506a7b0aaa3da6f7995ead204f69ffeff6d7f7ca",
-      "machineHash": "7604f2ecc73571b277f49fbf506a7b0aaa3da6f7995ead204f69ffeff6d7f7ca",
-      "machineText": "調整防彈跳時間，以控制系統回應變更的速度",
-      "status": "final",
+      "targetHash": "342fb883d8cb3deb21326641b998e4fdb5a4188eb9ece764f83b3eb5af5224e6",
+      "machineHash": "342fb883d8cb3deb21326641b998e4fdb5a4188eb9ece764f83b3eb5af5224e6",
+      "machineText": "調整防抖時間，以控制系統回應變更的速度",
+      "status": "machine-translated",
       "sourcePreview": "Adjusting the debounce time to control how quickly the system responds to changes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0077-text-01": {
       "sourceHash": "ec5f3400bde8d7c4fd45155455f52863a8dd8f0443797d8699b63ab671cc2460",
-      "targetHash": "16ac227269caceee5ba7fc46a9834b2a4f880b3a984ea10a0590641b3dfffe38",
-      "machineHash": "16ac227269caceee5ba7fc46a9834b2a4f880b3a984ea10a0590641b3dfffe38",
-      "machineText": "新增或修改執行命令，以符合專案需求",
-      "status": "final",
+      "targetHash": "345a53b71be5e6cda10d153ea660e6cd3d15358bcbf23b2d5705d3c0543c14cf",
+      "machineHash": "345a53b71be5e6cda10d153ea660e6cd3d15358bcbf23b2d5705d3c0543c14cf",
+      "machineText": "新增或修改執行指令，以符合專案需求",
+      "status": "machine-translated",
       "sourcePreview": "Adding or modifying the execute commands to fit your project's needs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0078-heading-01": {
       "sourceHash": "9619462c96a9508c2ea7e96a3ef128fc533433191e9985846d90c5e152bc3e48",
       "targetHash": "ea63dfab996b0827807a7f15466f6b640d74ff70954dc380835478141b5042e9",
       "machineHash": "ea63dfab996b0827807a7f15466f6b640d74ff70954dc380835478141b5042e9",
       "machineText": "使用瀏覽器進行開發",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Using a browser for development",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0079-text-01": {
-      "sourceHash": "4c59a6661cdd68947e0e9c091af1e85125b4f38bdd0233ef0b2266aff98020e7",
-      "targetHash": "6e879dd868448142a60d521fa4e63e93b763acbd73460b46797871392951bb1f",
-      "machineHash": "6e879dd868448142a60d521fa4e63e93b763acbd73460b46797871392951bb1f",
-      "machineText": "雖然 Wails v2 完整支援使用瀏覽器進行開發，但這造成了許多混淆。能在瀏覽器中運作的應用程式不一定能在桌面應用程式中運作，因為 WebView 並不提供所有瀏覽器 API。",
-      "status": "final",
-      "sourcePreview": "Whilst Wails v2 fully supported the use of a browser for development, it caused a lot\\ of confusion.…",
+      "sourceHash": "a31c25d0831ad27ff845f00fe9c39b6533c19073418d81cb6b33e9f18c165c58",
+      "targetHash": "a9c27380116f71ece9007c4dad6420c4977389f09146af9ec49e7b9e2c7bb2ae",
+      "machineHash": "a9c27380116f71ece9007c4dad6420c4977389f09146af9ec49e7b9e2c7bb2ae",
+      "machineText": "雖然 Wails v2完全支援使用瀏覽器進行開發，但這造成了許多混淆。能在瀏覽器中運作的應用程式不一定能在桌面應用程式中運作，因為 WebView 並未提供所有瀏覽器 API。",
+      "status": "machine-translated",
+      "sourcePreview": "Whilst Wails v2 fully supported the use of a browser for development, it caused a lot of confusion. …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
     "b0080-text-01": {
-      "sourceHash": "1498879a9e0dfe884bcc8fde13c15dc09e254bd7f1a368d2a4a516214128d3c1",
-      "targetHash": "6ec7a40bf669f3a79098909288da67f88806c1c760554582ab0d15e8268deb65",
-      "machineHash": "6ec7a40bf669f3a79098909288da67f88806c1c760554582ab0d15e8268deb65",
-      "machineText": "進行以 UI 為主的開發工作時，v3 仍可讓您彈性地使用瀏覽器：在開發模式下存取`http://localhost:9245`所示的 Vite URL。這可讓您在調整樣式和版面配置時使用功能強大的瀏覽器開發工具。請注意，在此模式下，Go 繫結_無法運作_。準備測試繫結和事件等功能時，只需切換至桌面檢視，即可確保一切在生產環境中正常運作。",
-      "status": "final",
-      "sourcePreview": "For UI-focused development work, you still have the flexibility to use a browser\\ in v3, by accessin…",
+      "sourceHash": "2bcdeb4744660a24281e1b1e30f0dd3dc0cb95685e6abc09ede09608f75d6dd5",
+      "targetHash": "b1b1b0b96f726fce36c8a15c7f341743ca898250de2a956f29bcb89362d09f99",
+      "machineHash": "b1b1b0b96f726fce36c8a15c7f341743ca898250de2a956f29bcb89362d09f99",
+      "machineText": "進行以 UI 為主的開發工作時，您仍可在v3中靈活使用瀏覽器：在開發模式下存取位於`http://localhost:9245`的 Vite URL。這樣一來，您在處理樣式和版面配置時便可使用功能強大的瀏覽器開發工具。請注意，在此模式下，Go 繫結*將無法運作*。準備測試繫結和事件等功能時，只需切換至桌面檢視，即可確保所有功能在生產環境中正常運作。",
+      "status": "machine-translated",
+      "sourcePreview": "For UI-focused development work, you still have the flexibility to use a browser in v3, by accessing…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "3c9e626ef709fad9d658a0888ff476be5c283a1041d5d0f442ea8c40cec4ac9a",
       "targetHash": "e3a0dfd71ad064b717afbd19d44f66e8ca4190e5d0af6c11f28f5085cda8cea7",
       "machineHash": "e3a0dfd71ad064b717afbd19d44f66e8ca4190e5d0af6c11f28f5085cda8cea7",
       "machineText": "使用 Task 和 Taskfile.yml 自訂建置流程",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customize your build process using Task and Taskfile.yml",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "94bab8d21806172860c9a902d5561a0519e6165f3a7731d9df6c847829e44a44",
       "targetHash": "274fac784cd3a3ed1d99bdf00b102b1537b572aca62278d68ae97a57a237e2a4",
       "machineHash": "274fac784cd3a3ed1d99bdf00b102b1537b572aca62278d68ae97a57a237e2a4",
       "machineText": "自訂建置",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build Customization",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:54Z"
+      "updatedAt": "2026-10-25T21:40:21Z"
     }
   }
 }

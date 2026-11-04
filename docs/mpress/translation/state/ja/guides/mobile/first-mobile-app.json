@@ -1,1461 +1,1426 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "bc4ad8cfc0d630199ed2",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "8bbdf1aad4c4c3891782",
   "sourceFile": "guides/mobile/first-mobile-app.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
   "segments": {
-    "a0002-label-01": {
-      "sourceHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
-      "targetHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
-      "machineHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
-      "machineText": "iOS Simulator",
-      "status": "final",
-      "sourcePreview": "iOS Simulator",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0004-title-01": {
-      "sourceHash": "4b91eeaed5f1ed3cf012b1ec9d6f7a3c67fb63d4b5dfbbd5f1dd256220285226",
-      "targetHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
-      "machineHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
-      "machineText": "アプリを起動する",
-      "status": "final",
-      "sourcePreview": "Launch the app",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0006-title-01": {
-      "sourceHash": "5878aa582e99edd93eeeb54aebd4ffc370ec788b19f6cddd049f885a3a8a751e",
-      "targetHash": "6f1a1b0506c57c7ae6729c0d72a0dc73e8fc7d049253fdce1adae518caa8ae3c",
-      "machineHash": "6f1a1b0506c57c7ae6729c0d72a0dc73e8fc7d049253fdce1adae518caa8ae3c",
-      "machineText": "ログをリアルタイム表示する",
-      "status": "final",
-      "sourcePreview": "Stream logs",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
     "a0007-title-01": {
-      "sourceHash": "d046c896dd79c8fbfb6839a45b3a02c5e976e69683eab14d1fccd9ff83cf70b8",
-      "targetHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
-      "machineHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
-      "machineText": "WebView を調査する",
-      "status": "final",
-      "sourcePreview": "Inspect the WebView",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0008-title-01": {
-      "sourceHash": "ca908fd1a6561cb5b52ce09c8a4213cdb35e6f2cfa44600539ac3ce4065939ec",
-      "targetHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
-      "machineHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
-      "machineText": "変更を加える",
-      "status": "final",
-      "sourcePreview": "Make a change",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0009-label-01": {
-      "sourceHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
-      "targetHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
-      "machineHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
-      "machineText": "Android Emulator",
-      "status": "final",
-      "sourcePreview": "Android Emulator",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0011-title-01": {
-      "sourceHash": "941b58b253152e44b77a15b27ae8a613c2b6acd5c457a52d12c54b18ac73c036",
-      "targetHash": "49e76475b605c7f84c79939a4955d618c5fb423255291aca5cbcac70124c6642",
-      "machineHash": "49e76475b605c7f84c79939a4955d618c5fb423255291aca5cbcac70124c6642",
-      "machineText": "Android コマンドラインツールをインストールする",
-      "status": "final",
-      "sourcePreview": "Install the Android command-line tools",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0012-title-01": {
-      "sourceHash": "dfc1961fc9819e93c1d4dfd29373f93589be3a2f2f9de787a5d04d7e38137914",
-      "targetHash": "d70c8f7c538e8bf7aee839f02079d3ab192cd936e6a9d71284fc588cb26bc222",
-      "machineHash": "d70c8f7c538e8bf7aee839f02079d3ab192cd936e6a9d71284fc588cb26bc222",
-      "machineText": "SDK コンポーネントをインストールする",
-      "status": "final",
-      "sourcePreview": "Install SDK components",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0013-title-01": {
-      "sourceHash": "d195f0b36061ce81aa5a8eb82f323a1c0678fbb55da845e47976de471eb743d3",
-      "targetHash": "e3fea4b8ecc5420e9dc7493abd3ba33a09bb735b237ccb5d5d6bf47cb3f2e315",
-      "machineHash": "e3fea4b8ecc5420e9dc7493abd3ba33a09bb735b237ccb5d5d6bf47cb3f2e315",
-      "machineText": "エミュレーターを作成する",
-      "status": "final",
-      "sourcePreview": "Create an emulator",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0014-title-01": {
-      "sourceHash": "72855b173f7c8e7e05bd69e657b3a8a2ecb29d5750c45912a314116597ce8540",
-      "targetHash": "0eb3d198d934c376d7cab30287f8ddb161d269563d80656ba73cb1eadc55283a",
-      "machineHash": "0eb3d198d934c376d7cab30287f8ddb161d269563d80656ba73cb1eadc55283a",
-      "machineText": "環境変数を設定する",
-      "status": "final",
-      "sourcePreview": "Set environment variables",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0015-title-01": {
-      "sourceHash": "3a39eef944c6cbe37583edaa4c7edf6809c69a06eba417814167ad9af548f87a",
-      "targetHash": "f4a72c725af58e0eefccc05f69714baad481ca81c5808a8f9ed7b6f5b515d2c4",
-      "machineHash": "f4a72c725af58e0eefccc05f69714baad481ca81c5808a8f9ed7b6f5b515d2c4",
-      "machineText": "JDK をインストールする",
-      "status": "final",
-      "sourcePreview": "Install a JDK",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0017-title-01": {
-      "sourceHash": "4b91eeaed5f1ed3cf012b1ec9d6f7a3c67fb63d4b5dfbbd5f1dd256220285226",
-      "targetHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
-      "machineHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
-      "machineText": "アプリを起動する",
-      "status": "final",
-      "sourcePreview": "Launch the app",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0019-title-01": {
-      "sourceHash": "5878aa582e99edd93eeeb54aebd4ffc370ec788b19f6cddd049f885a3a8a751e",
-      "targetHash": "6f1a1b0506c57c7ae6729c0d72a0dc73e8fc7d049253fdce1adae518caa8ae3c",
-      "machineHash": "6f1a1b0506c57c7ae6729c0d72a0dc73e8fc7d049253fdce1adae518caa8ae3c",
-      "machineText": "ログをリアルタイム表示する",
-      "status": "final",
-      "sourcePreview": "Stream logs",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0020-title-01": {
-      "sourceHash": "d046c896dd79c8fbfb6839a45b3a02c5e976e69683eab14d1fccd9ff83cf70b8",
-      "targetHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
-      "machineHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
-      "machineText": "WebView を調査する",
-      "status": "final",
-      "sourcePreview": "Inspect the WebView",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0021-title-01": {
-      "sourceHash": "ca908fd1a6561cb5b52ce09c8a4213cdb35e6f2cfa44600539ac3ce4065939ec",
-      "targetHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
-      "machineHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
-      "machineText": "変更を加える",
-      "status": "final",
-      "sourcePreview": "Make a change",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0022-title-01": {
       "sourceHash": "646cb5bdafedf8cd772d70d40f6e0aec281c6685336958f9fef289c894c19ad4",
-      "targetHash": "8eda8936809a3a8c104fb6f3d4bd8c78fae2396ee0c341d07bc3bc7610590f21",
-      "machineHash": "8eda8936809a3a8c104fb6f3d4bd8c78fae2396ee0c341d07bc3bc7610590f21",
-      "machineText": "ネイティブ機能 API とイベントの命名規則",
-      "status": "final",
+      "targetHash": "59f3237f526cfe8d74126038eb5319898284419ed2cb1d0aa56278351734e830",
+      "machineHash": "59f3237f526cfe8d74126038eb5319898284419ed2cb1d0aa56278351734e830",
+      "machineText": "ネイティブ機能の API とイベントの命名規則",
+      "status": "machine-translated",
       "sourcePreview": "Native feature API \u0026 event naming",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0024-label-01": {
-      "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "machineText": "iOS",
-      "status": "final",
-      "sourcePreview": "iOS",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0026-label-01": {
-      "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "machineText": "Android",
-      "status": "final",
-      "sourcePreview": "Android",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0029-title-01": {
-      "sourceHash": "19b370348f9e0133386720012febdf6c6622e8e523d1df2f2d9c8a1543d81c4c",
-      "targetHash": "2900bd897d16ff4274fd61783c201fd4e79cacf4c2015cc5d34dab77793409a9",
-      "machineHash": "2900bd897d16ff4274fd61783c201fd4e79cacf4c2015cc5d34dab77793409a9",
-      "machineText": "iOS ガイド",
-      "status": "final",
-      "sourcePreview": "iOS Guide",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0030-title-01": {
-      "sourceHash": "c5123703226572aa9a4aca818d0d50d1385dfbbce557cb9b089b3f1e7f67419f",
-      "targetHash": "70016d42b9cc20cda19ddab24e1558c2f73e0f7bfe755a872e670bff719ca9b8",
-      "machineHash": "70016d42b9cc20cda19ddab24e1558c2f73e0f7bfe755a872e670bff719ca9b8",
-      "machineText": "Android ガイド",
-      "status": "final",
-      "sourcePreview": "Android Guide",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "a0031-title-01": {
-      "sourceHash": "f887e3bd233f1dd012dbaff247a13b70b6164716819444ae0b49426126a4a91c",
-      "targetHash": "03b811081732e2d838012b8ed659fba746b392a52e17fc7dfe685ffe0e4c2e26",
-      "machineHash": "03b811081732e2d838012b8ed659fba746b392a52e17fc7dfe685ffe0e4c2e26",
-      "machineText": "📖 Kitchen Sink のソース",
-      "status": "final",
-      "sourcePreview": "📖 Kitchen Sink source",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0001-text-01": {
-      "sourceHash": "d8a878ee26e6122b25b4c56b6fff7ea6cfa35beaa276cc53fbae7dc7bf6a7175",
-      "targetHash": "d5bf494cc3d0b942219787dba6896c5eced62c82c8181042b918d9a3d62be2cf",
-      "machineHash": "d5bf494cc3d0b942219787dba6896c5eced62c82c8181042b918d9a3d62be2cf",
-      "machineText": "このガイドでは、標準的な Wails デスクトップアプリを iOS Simulator または Android Emulator 上で実行します。*Go コードを変更する必要はありません。*すべてのターゲットで同じ `main.go` をビルドします。",
-      "status": "final",
-      "sourcePreview": "This guide takes a standard Wails desktop app and runs it on iOS Simulator or Android Emulator. *You…",
+      "sourceHash": "c0ff78f723ddb669bdcdfad28fa6ae8b9be0651c3de3125152ea769d373440d1",
+      "targetHash": "c727fa6589e97c79882ea26a62d644d1ad66f6ceda2911b883320d4fc04642f7",
+      "machineHash": "c727fa6589e97c79882ea26a62d644d1ad66f6ceda2911b883320d4fc04642f7",
+      "machineText": "このガイドでは、標準的な Wails デスクトップアプリを iOS Simulator または Android Emulator 上で実行します。**Go コードを変更する必要はありません。** 同じ `main.go` からすべてのターゲット向けにビルドできます。",
+      "status": "machine-translated",
+      "sourcePreview": "This guide takes a standard Wails desktop app and runs it on iOS Simulator or Android Emulator. **Yo…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0002-text-01": {
-      "sourceHash": "16c3f67af4cc782cd720fc5878c8798ec67ad4651cb7f43bd54a0e0bc04edd61",
-      "targetHash": "7fd2e983579ca66499750047148ae1071e0d3c4402b5fb75d26bc633cbbbc2bf",
-      "machineHash": "7fd2e983579ca66499750047148ae1071e0d3c4402b5fb75d26bc633cbbbc2bf",
-      "machineText": "*所要時間：*15～30 分（大部分は初回実行時のツールチェーンのインストールにかかる時間です）",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* 15–30 minutes (most of that is toolchain installation on first run)",
+      "sourceHash": "91259a6950fceb9d52b00c03a7e5048048e71c48b8f820c5904be9e056f5899c",
+      "targetHash": "f6c325f8dabc2618fc1864b3ed2f7449d3fffca9491cd61a0301e9d5d370b896",
+      "machineHash": "f6c325f8dabc2618fc1864b3ed2f7449d3fffca9491cd61a0301e9d5d370b896",
+      "machineText": "**所要時間:** 15～30 分（その大半は初回実行時のツールチェーンのインストールにかかります）",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** 15–30 minutes (most of that is toolchain installation on first run)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0003-heading-01": {
       "sourceHash": "90b996dd52ad1a3a1b09370ec23bead6825628a8bac16edde72801ddc25c033b",
       "targetHash": "a9e134d860682dfafec04940e5b9d01fdae435e9e219ff2d3f9b3c2972433206",
       "machineHash": "a9e134d860682dfafec04940e5b9d01fdae435e9e219ff2d3f9b3c2972433206",
       "machineText": "デスクトッププロジェクトから始める",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Start from a desktop project",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0004-text-01": {
       "sourceHash": "70e5cdd7f5fc5bd9118d97ab6b20b05bf6f94803c5ab8be1e0578b4973255f19",
-      "targetHash": "ed88094a9195390307c82ef7971ed44b9873068f1f00af14e8340cbceb412842",
-      "machineHash": "ed88094a9195390307c82ef7971ed44b9873068f1f00af14e8340cbceb412842",
-      "machineText": "まだプロジェクトがない場合は、新規作成します：",
-      "status": "final",
+      "targetHash": "11aee5cd0b2a13d62137aabdc0f00b8ba32f5d80809024f057adcc4faa865140",
+      "machineHash": "11aee5cd0b2a13d62137aabdc0f00b8ba32f5d80809024f057adcc4faa865140",
+      "machineText": "まだプロジェクトがない場合は、新規作成します。",
+      "status": "machine-translated",
       "sourcePreview": "If you don't have one yet, create a fresh project:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0005-text-01": {
       "sourceHash": "f1d95efeda52ef384e3596ddce09b95d59c13dac10d968961f23e87816d9f1e0",
-      "targetHash": "151ee845537072032f88b99172fa8a8bf6d3b43249bc12aa61e2574b734f0ec3",
-      "machineHash": "151ee845537072032f88b99172fa8a8bf6d3b43249bc12aa61e2574b734f0ec3",
-      "machineText": "まず、デスクトップアプリが動作することを確認します：",
-      "status": "final",
+      "targetHash": "5a70490b14ab6964257c616b695653471c4d205dea4699b70d1acda6c8627456",
+      "machineHash": "5a70490b14ab6964257c616b695653471c4d205dea4699b70d1acda6c8627456",
+      "machineText": "まず、デスクトップアプリが動作することを確認します。",
+      "status": "machine-translated",
       "sourcePreview": "Confirm the desktop app works first:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0006-text-01": {
       "sourceHash": "1dab8bd0a9bd6e5a53234c7257fc1849f8c9ad9f080431af8a57d6a4c18049b4",
-      "targetHash": "aca79acb4d433f1ff6c5cf6cb8ee8d17e06ecc5a04aa21f4fcb3317442ad18dd",
-      "machineHash": "aca79acb4d433f1ff6c5cf6cb8ee8d17e06ecc5a04aa21f4fcb3317442ad18dd",
-      "machineText": "アプリが開いたら終了し、次に進みます。デスクトップで動作するものはすべてモバイルでも動作します。このガイドでは、`main.go`にも Go コードにも手を加える必要はありません。",
-      "status": "final",
+      "targetHash": "d463c5274371b2e961b8287b7b330b6a51baea1561e70f8b0dc127cb7fb710fe",
+      "machineHash": "d463c5274371b2e961b8287b7b330b6a51baea1561e70f8b0dc127cb7fb710fe",
+      "machineText": "アプリが開いたら終了し、次へ進みます。デスクトップで動作するものはすべてモバイルでも動作します。このガイドでは、`main.go` にも Go コードにも手を加える必要はありません。",
+      "status": "machine-translated",
       "sourcePreview": "Once it opens, quit and move on. Everything that runs on desktop also runs on mobile — you won't nee…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0008-heading-01": {
+    "b0007-heading-01": {
       "sourceHash": "2fe9f533373fa65063997796df531b23fc6bfe730bd03f3977385bcbe318ad28",
       "targetHash": "51db1bdb533e3f70a35ae283be7291fabfe30d1a471d12abbede7c22ba5db06f",
       "machineHash": "51db1bdb533e3f70a35ae283be7291fabfe30d1a471d12abbede7c22ba5db06f",
       "machineText": "プラットフォームを選択する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Choose your platform",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0009-heading-01": {
+    "b0008-heading-01": {
       "sourceHash": "e0cdd07f6a270b8269217510822daa4ace573309134278f75f5e16ed59a3583b",
       "targetHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
       "machineHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
       "machineText": "要件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Requirements",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "cb079b214a73dc6ab5d2d5765cddfdbc50e2e9de287734ecf8f37abb34cf5b4e",
+      "targetHash": "35cc885236d543e2e1534eab6183650e276f610df288d025065f391c0248c6ff",
+      "machineHash": "35cc885236d543e2e1534eab6183650e276f610df288d025065f391c0248c6ff",
+      "machineText": "**macOS**（iOS 向けビルドは macOS でのみ行えます）",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS** (iOS builds are macOS-only)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0010-text-01": {
-      "sourceHash": "f97dd4905121ed9125727abbc06668610514aa68fb459d1203557b98ed713a91",
-      "targetHash": "93a02339b8aba26fed8eba4b3de705f31dc482289f5b4e6194a07dccd2497cfe",
-      "machineHash": "93a02339b8aba26fed8eba4b3de705f31dc482289f5b4e6194a07dccd2497cfe",
-      "machineText": "*macOS*（iOS のビルドは macOS でのみ行えます）",
-      "status": "final",
-      "sourcePreview": "*macOS* (iOS builds are macOS-only)",
+      "sourceHash": "197b9b00ed4493c9525828784de76020b8f5c9f02ed04fc61885b77c72249567",
+      "targetHash": "47e41531263b6a252ff85c970f388d05378bff9d1773d257a989c3fc4da333c7",
+      "machineHash": "47e41531263b6a252ff85c970f388d05378bff9d1773d257a989c3fc4da333c7",
+      "machineText": "**完全版の Xcode** — コマンドラインツールだけでは不十分です。App Store からインストールした後、次を実行します。",
+      "status": "machine-translated",
+      "sourcePreview": "**Full Xcode** — not just command-line tools. Install from the App Store, then:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0011-text-01": {
-      "sourceHash": "5b8aa231a1852870460d4dee2dd12bf17852970760d4ca0b33b72b4fef6eacee",
-      "targetHash": "173d7f79b270a4f459aebd08ebfd4f54ac10d4fa6b8847c11cb4770ce7ebae8c",
-      "machineHash": "173d7f79b270a4f459aebd08ebfd4f54ac10d4fa6b8847c11cb4770ce7ebae8c",
-      "machineText": "*完全版の Xcode* — コマンドラインツールだけでは不十分です。App Store からインストールしてから、次を実行します：",
-      "status": "final",
-      "sourcePreview": "*Full Xcode* — not just command-line tools. Install from the App Store, then:",
+      "sourceHash": "4a9cbc1daffbf2acfd23c362268b5d9846c971f8d35429a23e0e236a616e8f60",
+      "targetHash": "75e32b3d454c544ef6e8e8752fa581ddea49c9e45aca20431e0bd5795fc2a0c8",
+      "machineHash": "75e32b3d454c544ef6e8e8752fa581ddea49c9e45aca20431e0bd5795fc2a0c8",
+      "machineText": "**Go 1.26 以降**と **npm**（`wails3 init` を実行済みであれば、すでにインストールされています）",
+      "status": "machine-translated",
+      "sourcePreview": "**Go 1.26+** and **npm** (already installed if you ran `wails3 init`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0012-text-01": {
-      "sourceHash": "7499be918b07e932aa39ba1cb66df6a330f28e17377d19c34275eec6e7a95c08",
-      "targetHash": "7dbe609c741e8bf6666d36132c18efd50e9cbce9a6ee29a6486ab51023a2153e",
-      "machineHash": "7dbe609c741e8bf6666d36132c18efd50e9cbce9a6ee29a6486ab51023a2153e",
-      "machineText": "*Go 1.25 以降*と *npm*（`wails3 init`を実行済みであれば、すでにインストールされています）",
-      "status": "final",
-      "sourcePreview": "*Go 1.25+* and *npm* (already installed if you ran `wails3 init`)",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "b0013-text-01": {
       "sourceHash": "3137505494cb00282aec4c946ba827edd676ebebd36766854d53110860e85e76",
-      "targetHash": "7cde1f1c88c620dd269da70c9f7095c79a3cd6f7eb574be6889f007d106142c9",
-      "machineHash": "7cde1f1c88c620dd269da70c9f7095c79a3cd6f7eb574be6889f007d106142c9",
-      "machineText": "確認するには `wails3 doctor` を実行します。検出された iOS SDK の一覧が表示されます。",
-      "status": "final",
+      "targetHash": "3d7803b640ccfb56883300fec1dc4a831cdd0890bee45d0b15e1b3200657c3a9",
+      "machineHash": "3d7803b640ccfb56883300fec1dc4a831cdd0890bee45d0b15e1b3200657c3a9",
+      "machineText": "確認のため `wails3 doctor` を実行します。検出された iOS SDK の一覧が表示されます。",
+      "status": "machine-translated",
       "sourcePreview": "Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0014-heading-01": {
+    "b0013-heading-01": {
       "sourceHash": "4c35949659b9faf67e664da1021ea282fb4ceab33b8330eba55908682dd63fed",
       "targetHash": "ec5516dc3c3a073b47f26d240a6819207223bae0a7d1c9f2654b4cce6fa04315",
       "machineHash": "ec5516dc3c3a073b47f26d240a6819207223bae0a7d1c9f2654b4cce6fa04315",
       "machineText": "Simulator 上で実行する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run on the Simulator",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0014-heading-01": {
+      "sourceHash": "4b91eeaed5f1ed3cf012b1ec9d6f7a3c67fb63d4b5dfbbd5f1dd256220285226",
+      "targetHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
+      "machineHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
+      "machineText": "アプリを起動する",
+      "status": "machine-translated",
+      "sourcePreview": "Launch the app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0015-text-01": {
       "sourceHash": "b4d3ad704a16fb6dcca260c84708fcd494abda99849f326e06b39f435c4fbbd2",
-      "targetHash": "b09e86830ebc4c517be2960cf31e05913d44b0a61bf4fbf22b65a60f69afb441",
-      "machineHash": "b09e86830ebc4c517be2960cf31e05913d44b0a61bf4fbf22b65a60f69afb441",
-      "machineText": "これだけです。アプリがビルドされ、Simulator がまだ起動していなければ起動し、その上でアプリが起動します。",
-      "status": "final",
+      "targetHash": "bbd9c437317cdcdbfa682e26bfcd80809954a7092777f48a5a2acb414a9d2330",
+      "machineHash": "bbd9c437317cdcdbfa682e26bfcd80809954a7092777f48a5a2acb414a9d2330",
+      "machineText": "これだけです。アプリがビルドされ、起動中の Simulator がなければ起動し、その上でアプリが起動します。",
+      "status": "machine-translated",
       "sourcePreview": "That's it — this builds your app, boots a simulator if one isn't already running, and launches it.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0016-text-01": {
       "sourceHash": "8dfd35fe580231221fa64915a5da8c15869524361d1e5e713d29e876f8d9ee48",
       "targetHash": "77ab310276a9f5a39f799bb4b3820918bae09d4af05514a3bc8f7828d86a6941",
       "machineHash": "77ab310276a9f5a39f799bb4b3820918bae09d4af05514a3bc8f7828d86a6941",
       "machineText": "初回実行には数分かかります（iOS 用の Wails フレームワークをコンパイルしてキャッシュするためです）。2 回目以降は大幅に速くなります。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The first run takes a few minutes (it's compiling and caching the Wails framework for iOS). Every ru…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0017-text-01": {
       "sourceHash": "97a6515d66be5f8f6c1ba32a974052e44a881fcdf67c8993d86177b0c2065f34",
-      "targetHash": "8d9fbe699f518895c6ab9a775dbba0bfca0e3ee53c8f1e42e1855ba559df4372",
-      "machineHash": "8d9fbe699f518895c6ab9a775dbba0bfca0e3ee53c8f1e42e1855ba559df4372",
-      "machineText": "起動すると、変更を加えていないデスクトップアプリが iOS Simulator 上で動作します。`main.go`もフロントエンドも同じです：",
-      "status": "final",
+      "targetHash": "43b91ef674eacc9930cc0be5be0b4117c7a9aaeea21802aaee1df0a4a9536e74",
+      "machineHash": "43b91ef674eacc9930cc0be5be0b4117c7a9aaeea21802aaee1df0a4a9536e74",
+      "machineText": "起動すると、変更していないデスクトップアプリが iOS Simulator 上で動作します。`main.go` もフロントエンドも同じです。",
+      "status": "machine-translated",
       "sourcePreview": "When it launches, your unmodified desktop app is running on the iOS Simulator — same `main.go`, same…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0018-text-01": {
       "sourceHash": "a7a5f9b3b3035d7a945cd4cfe5c94bb066430f8889755fcd9358f78236b89394",
       "targetHash": "dfa4bcc30eb1772256d0f1bbd6ac3418bdfa0cd4aa29bc9642c75beaf30d30c7",
       "machineHash": "dfa4bcc30eb1772256d0f1bbd6ac3418bdfa0cd4aa29bc9642c75beaf30d30c7",
       "machineText": "![iOS Simulator 上で動作するデフォルトの Wails アプリ](/assets/ios-simulator-first-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![A default Wails app running on the iOS Simulator](/assets/ios-simulator-first-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0019-text-01": {
+    "b0019-heading-01": {
+      "sourceHash": "5878aa582e99edd93eeeb54aebd4ffc370ec788b19f6cddd049f885a3a8a751e",
+      "targetHash": "cd0f6a3a0e9fcda263391ec4c0af79b72ce424cf3bc28080309802ad22f248c6",
+      "machineHash": "cd0f6a3a0e9fcda263391ec4c0af79b72ce424cf3bc28080309802ad22f248c6",
+      "machineText": "ログをストリーミングする",
+      "status": "machine-translated",
+      "sourcePreview": "Stream logs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0020-text-01": {
       "sourceHash": "f28ef77be79d5664b9b91194974552da7c6bc6599409109312a1c4d4bf118ee1",
-      "targetHash": "4f06d0e31794bf727907da3a8641cb3f6d5c2b3b629cbe4acb35d2617f8606dd",
-      "machineHash": "4f06d0e31794bf727907da3a8641cb3f6d5c2b3b629cbe4acb35d2617f8606dd",
-      "machineText": "別のターミナルで次を実行します：",
-      "status": "final",
+      "targetHash": "2bbe3539e2946cc5c39f51cfb37f18877102d78a9a3b1e660654951e03a13a94",
+      "machineHash": "2bbe3539e2946cc5c39f51cfb37f18877102d78a9a3b1e660654951e03a13a94",
+      "machineText": "別のターミナルで次を実行します。",
+      "status": "machine-translated",
       "sourcePreview": "In a separate terminal:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0020-text-01": {
+    "b0021-text-01": {
       "sourceHash": "d652322f9a51bbd24584fbe2a6256d9e3b3edfcdbe86ff39313e6c97dc85eaf6",
-      "targetHash": "844363354716d153627ce5e41c3816336cfc255224fd3b3ab0c27535aae7e2dd",
-      "machineHash": "844363354716d153627ce5e41c3816336cfc255224fd3b3ab0c27535aae7e2dd",
-      "machineText": "Simulator のログをアプリに絞り込み、リアルタイムで表示します。`fmt.Println`と `log.Println` の出力がここに表示されます。",
-      "status": "final",
+      "targetHash": "5d5f0c166b3307bb1a97b54555cf5d1e3f3607367ec354428f6479a5cf860472",
+      "machineHash": "5d5f0c166b3307bb1a97b54555cf5d1e3f3607367ec354428f6479a5cf860472",
+      "machineText": "Simulator のログをアプリに絞り込み、継続的に表示します。`fmt.Println` と `log.Println` の出力がここに表示されます。",
+      "status": "machine-translated",
       "sourcePreview": "This tails the simulator log, filtered to your app. `fmt.Println` and `log.Println` output appears h…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0021-text-01": {
-      "sourceHash": "01c6485b32395d67a186eecf4bb8254d11b7808ba626f45df2ac7f087536efd2",
-      "targetHash": "dee16835472b6a427caa1d0ae2471efaa84c8d4afade9e0c4096b3619a13a2a5",
-      "machineHash": "dee16835472b6a427caa1d0ae2471efaa84c8d4afade9e0c4096b3619a13a2a5",
-      "machineText": "Safari で *開発 → Simulator → アプリ*を選択します。コンソール、デバッガー、ネットワークパネルなど、Web インスペクタの全機能を使用できます。",
-      "status": "final",
-      "sourcePreview": "In Safari: *Develop → Simulator → your app*. The full Web Inspector works — console, debugger, netwo…",
+    "b0022-heading-01": {
+      "sourceHash": "d046c896dd79c8fbfb6839a45b3a02c5e976e69683eab14d1fccd9ff83cf70b8",
+      "targetHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
+      "machineHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
+      "machineText": "WebView を調査する",
+      "status": "machine-translated",
+      "sourcePreview": "Inspect the WebView",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0022-text-01": {
+    "b0023-text-01": {
+      "sourceHash": "157574040484724f8b7c2f06768fb7d0214693b8955cc70dc15a977b619e26c0",
+      "targetHash": "3717c85ccfae426dc350a802ced2e8605c5707696081e0306d74894eda140a34",
+      "machineHash": "3717c85ccfae426dc350a802ced2e8605c5707696081e0306d74894eda140a34",
+      "machineText": "Safari で **開発 → Simulator → 対象のアプリ** を選択します。コンソール、デバッガー、ネットワークパネルなど、Web Inspector の全機能を使用できます。",
+      "status": "machine-translated",
+      "sourcePreview": "In Safari: **Develop → Simulator → your app**. The full Web Inspector works — console, debugger, net…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0024-heading-01": {
+      "sourceHash": "ca908fd1a6561cb5b52ce09c8a4213cdb35e6f2cfa44600539ac3ce4065939ec",
+      "targetHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
+      "machineHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
+      "machineText": "変更を加える",
+      "status": "machine-translated",
+      "sourcePreview": "Make a change",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0025-text-01": {
       "sourceHash": "e2956f8c76cad5fef36bcbf9d84b1f964e1771028fc2d627d0c383f1a7eea6e1",
-      "targetHash": "e7cee9eaba8058ebc9fef4721b07b627f7cce2ee61f97778649027fb33b59117",
-      "machineHash": "e7cee9eaba8058ebc9fef4721b07b627f7cce2ee61f97778649027fb33b59117",
-      "machineText": "任意のフロントエンドファイル（`frontend/src/main.js`、`index.html`など）を編集し、`wails3 task ios:run`を再実行します。Wails がフロントエンドを再ビルドし、アプリを再起動します。",
-      "status": "final",
+      "targetHash": "a959244493427fd555949a63a277a068d16092b61deaf9bc0abe13f4469bbf06",
+      "machineHash": "a959244493427fd555949a63a277a068d16092b61deaf9bc0abe13f4469bbf06",
+      "machineText": "任意のフロントエンドファイル（`frontend/src/main.js`、`index.html` など）を編集し、`wails3 task ios:run` を再実行します。Wails がフロントエンドを再ビルドし、アプリを再起動します。",
+      "status": "machine-translated",
       "sourcePreview": "Edit any frontend file (`frontend/src/main.js`, `index.html`, etc.) and re-run `wails3 task ios:run`…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0023-text-01": {
+    "b0026-text-01": {
       "sourceHash": "cf4b401ed9da1907e134eba80ee3b14faea80af2ae37f334d8997fe4a74c0c55",
-      "targetHash": "6f0c17ef4b26df23704bfe47d7de204b0a86f9ab88157cc1d37364118c3857e1",
-      "machineHash": "6f0c17ef4b26df23704bfe47d7de204b0a86f9ab88157cc1d37364118c3857e1",
-      "machineText": "Go コードを変更した場合も、`wails3 task ios:run`を再実行します。Go の再コンパイルは増分方式のため、変更されたパッケージだけが再ビルドされます。",
-      "status": "final",
+      "targetHash": "3136d9ace54773d69dce0335b03ea49722405e2cbecd8753dcfe64314d0e1521",
+      "machineHash": "3136d9ace54773d69dce0335b03ea49722405e2cbecd8753dcfe64314d0e1521",
+      "machineText": "Go のコードを変更した場合も、`wails3 task ios:run` を再実行します。Go の再コンパイルはインクリメンタルなので、変更されたパッケージだけが再ビルドされます。",
+      "status": "machine-translated",
       "sourcePreview": "For Go changes: also re-run `wails3 task ios:run`. Go recompilation is incremental, so only changed …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0024-heading-01": {
+    "b0027-heading-01": {
       "sourceHash": "8e0e88fed5117300b68afd5746b9b799a5b6ac3bfc467e39d799017e09041746",
       "targetHash": "8d8eb2ad6e57cedd782839f08948a7b35c31136e97b110e1fca2fab2e64cf4fd",
       "machineHash": "8d8eb2ad6e57cedd782839f08948a7b35c31136e97b110e1fca2fab2e64cf4fd",
       "machineText": "Xcode で開く（任意）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Open in Xcode (optional)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0025-text-01": {
+    "b0028-text-01": {
       "sourceHash": "85b79e6222d4af0549e5a1e28899468f4e5c220b60a605da74602d35f70ca4e7",
-      "targetHash": "ce29e34aa171e41f11f18d5bad31810ab5be71d7c5ef9251d28d30677c09f0e4",
-      "machineHash": "ce29e34aa171e41f11f18d5bad31810ab5be71d7c5ef9251d28d30677c09f0e4",
-      "machineText": "これにより、`build/ios/`が Xcode で開きます。Xcode は、実機へのデプロイ、高度なプロファイリング、プロビジョニングプロファイルの管理に使用できます。Wails はビルドのたびに Xcode プロジェクトを再生成するため、生成されたファイルを直接変更しないでください。",
-      "status": "final",
+      "targetHash": "63c9b732d2d299b906ad409e2ee7548a18fce5f5e43d9a4c1ada43d00635d95d",
+      "machineHash": "63c9b732d2d299b906ad409e2ee7548a18fce5f5e43d9a4c1ada43d00635d95d",
+      "machineText": "`build/ios/` が Xcode で開きます。Xcode を使用して、実機へのデプロイ、高度なプロファイリング、プロビジョニングプロファイルの管理を行えます。Wails はビルドのたびに Xcode プロジェクトを再生成するため、生成されたファイルを直接変更しないでください。",
+      "status": "machine-translated",
       "sourcePreview": "This opens `build/ios/` in Xcode. You can use Xcode for device deployment, advanced profiling, or ma…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0026-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "e0cdd07f6a270b8269217510822daa4ace573309134278f75f5e16ed59a3583b",
       "targetHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
       "machineHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
       "machineText": "要件",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Requirements",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0027-text-01": {
-      "sourceHash": "d4fc8fb832c37f16b35cfbe5db8a5ea5aa0b7e89b60b8d7a2d134bab84c035f7",
-      "targetHash": "7f6dc47f4d35f0615f6381bf5e6fd4722b25660bee554d76e0f3f53b1ad89114",
-      "machineHash": "7f6dc47f4d35f0615f6381bf5e6fd4722b25660bee554d76e0f3f53b1ad89114",
-      "machineText": "*Android SDK*、*NDK*、*JDK*が必要です。最も簡単な方法は Android Studio を使用することですが、コマンドラインツールも使用できます：",
-      "status": "final",
-      "sourcePreview": "You need the *Android SDK*, *NDK*, and a *JDK*. The easiest way is Android Studio, or the command-li…",
+    "b0030-text-01": {
+      "sourceHash": "dae72b0713e35f5b67153a9f788afdae8ad6a8b44cdba3a3b2a1b509073b799b",
+      "targetHash": "14e7c0c27fc10e906622cc1a83cbb0cf3e65790b91f96cb29cba59828baa4aee",
+      "machineHash": "14e7c0c27fc10e906622cc1a83cbb0cf3e65790b91f96cb29cba59828baa4aee",
+      "machineText": "**Android SDK**、**NDK**、**JDK** が必要です。最も簡単なのは Android Studio を使用する方法ですが、コマンドラインツールも使用できます。",
+      "status": "machine-translated",
+      "sourcePreview": "You need the **Android SDK**, **NDK**, and a **JDK**. The easiest way is Android Studio, or the comm…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0028-text-01": {
+    "b0031-heading-01": {
+      "sourceHash": "941b58b253152e44b77a15b27ae8a613c2b6acd5c457a52d12c54b18ac73c036",
+      "targetHash": "49e76475b605c7f84c79939a4955d618c5fb423255291aca5cbcac70124c6642",
+      "machineHash": "49e76475b605c7f84c79939a4955d618c5fb423255291aca5cbcac70124c6642",
+      "machineText": "Android コマンドラインツールをインストールする",
+      "status": "machine-translated",
+      "sourcePreview": "Install the Android command-line tools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0032-text-01": {
       "sourceHash": "5b65059f89660950070bb7293a2abd46f74498769e288164a27c07e6a4b334d5",
-      "targetHash": "21511c180725b4cc68f089661e427b2bccd4a4713078836610a6143348576e8e",
-      "machineHash": "21511c180725b4cc68f089661e427b2bccd4a4713078836610a6143348576e8e",
-      "machineText": "[developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only)からダウンロードし、`~/android-sdk/cmdline-tools/latest/`に展開します。",
-      "status": "final",
+      "targetHash": "331f957f8393b183ba1a8b2107ebace3d78ac1cd3135d6f8ecfd540c749e531e",
+      "machineHash": "331f957f8393b183ba1a8b2107ebace3d78ac1cd3135d6f8ecfd540c749e531e",
+      "machineText": "[developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only) からダウンロードし、`~/android-sdk/cmdline-tools/latest/` に展開します。",
+      "status": "machine-translated",
       "sourcePreview": "Download from [developer.android.com/studio#command-line-tools-only](https://developer.android.com/s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0029-text-01": {
+    "b0033-heading-01": {
+      "sourceHash": "dfc1961fc9819e93c1d4dfd29373f93589be3a2f2f9de787a5d04d7e38137914",
+      "targetHash": "d70c8f7c538e8bf7aee839f02079d3ab192cd936e6a9d71284fc588cb26bc222",
+      "machineHash": "d70c8f7c538e8bf7aee839f02079d3ab192cd936e6a9d71284fc588cb26bc222",
+      "machineText": "SDK コンポーネントをインストールする",
+      "status": "machine-translated",
+      "sourcePreview": "Install SDK components",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0034-heading-01": {
+      "sourceHash": "d195f0b36061ce81aa5a8eb82f323a1c0678fbb55da845e47976de471eb743d3",
+      "targetHash": "e3fea4b8ecc5420e9dc7493abd3ba33a09bb735b237ccb5d5d6bf47cb3f2e315",
+      "machineHash": "e3fea4b8ecc5420e9dc7493abd3ba33a09bb735b237ccb5d5d6bf47cb3f2e315",
+      "machineText": "エミュレーターを作成する",
+      "status": "machine-translated",
+      "sourcePreview": "Create an emulator",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0035-heading-01": {
+      "sourceHash": "72855b173f7c8e7e05bd69e657b3a8a2ecb29d5750c45912a314116597ce8540",
+      "targetHash": "0eb3d198d934c376d7cab30287f8ddb161d269563d80656ba73cb1eadc55283a",
+      "machineHash": "0eb3d198d934c376d7cab30287f8ddb161d269563d80656ba73cb1eadc55283a",
+      "machineText": "環境変数を設定する",
+      "status": "machine-translated",
+      "sourcePreview": "Set environment variables",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0036-text-01": {
       "sourceHash": "89ff629128391e8540d53b252b979dab19cca1228739695f7ba6c7c82ca10ad5",
-      "targetHash": "2fc3e978f5d50d72088c14056800105b30a61caf3cee3b94122245ecf0c1f4e3",
-      "machineHash": "2fc3e978f5d50d72088c14056800105b30a61caf3cee3b94122245ecf0c1f4e3",
-      "machineText": "`~/.zshrc`または `~/.bashrc` に追加します：",
-      "status": "final",
+      "targetHash": "df1828f920cb7fe77166d49c11815a9f9765c9c55ffcf71d776af40b272a78cf",
+      "machineHash": "df1828f920cb7fe77166d49c11815a9f9765c9c55ffcf71d776af40b272a78cf",
+      "machineText": "`~/.zshrc` または `~/.bashrc` に追加します。",
+      "status": "machine-translated",
       "sourcePreview": "Add to `~/.zshrc` or `~/.bashrc`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0030-text-01": {
+    "b0037-text-01": {
       "sourceHash": "ff3c382cfdd0ba8c5e8dd37cd77a64f72e3cda4999cdfb7cd3488b501da3967c",
-      "targetHash": "5d9a6171e596065f4931762a97d14ebbf9129d1508b9a6cc14ef409e41393e7d",
-      "machineHash": "5d9a6171e596065f4931762a97d14ebbf9129d1508b9a6cc14ef409e41393e7d",
-      "machineText": "再読み込みします：`source ~/.zshrc`",
-      "status": "final",
+      "targetHash": "ee56ecd625a7a800cd0ed1dbec5c013e8a61e8706fba814d574b9f6bc190238c",
+      "machineHash": "ee56ecd625a7a800cd0ed1dbec5c013e8a61e8706fba814d574b9f6bc190238c",
+      "machineText": "再読み込みします: `source ~/.zshrc`",
+      "status": "machine-translated",
       "sourcePreview": "Reload: `source ~/.zshrc`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0031-text-01": {
+    "b0038-heading-01": {
+      "sourceHash": "3a39eef944c6cbe37583edaa4c7edf6809c69a06eba417814167ad9af548f87a",
+      "targetHash": "f4a72c725af58e0eefccc05f69714baad481ca81c5808a8f9ed7b6f5b515d2c4",
+      "machineHash": "f4a72c725af58e0eefccc05f69714baad481ca81c5808a8f9ed7b6f5b515d2c4",
+      "machineText": "JDK をインストールする",
+      "status": "machine-translated",
+      "sourcePreview": "Install a JDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0039-text-01": {
       "sourceHash": "da3dfe676018a49db4422488a351fda2cb5fcd3a6a6bc48bbc471bfdc4e2a8ec",
-      "targetHash": "178070cb7acb74492c4de9d8e9155836add327b7e6b6116f4eb11fd5a4998e6b",
-      "machineHash": "178070cb7acb74492c4de9d8e9155836add327b7e6b6116f4eb11fd5a4998e6b",
-      "machineText": "必要なものがすべて検出されることを確認するため、`wails3 doctor`を実行します。",
-      "status": "final",
+      "targetHash": "c83bbf595f4b59b51eab4083cdf1bde9002937a6062785d79ff6e586c2ce559b",
+      "machineHash": "c83bbf595f4b59b51eab4083cdf1bde9002937a6062785d79ff6e586c2ce559b",
+      "machineText": "`wails3 doctor` を実行し、すべて検出されることを確認します。",
+      "status": "machine-translated",
       "sourcePreview": "Run `wails3 doctor` to confirm everything is found.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0032-heading-01": {
+    "b0040-heading-01": {
       "sourceHash": "68c498857df74142c680f8d8e42dcc49b10be8c528d054666e072dcb7f2c8096",
       "targetHash": "401af4d24ea3a1fd4a3b823f10eb91422544eb37dd38b680550930790fa1ec6d",
       "machineHash": "401af4d24ea3a1fd4a3b823f10eb91422544eb37dd38b680550930790fa1ec6d",
       "machineText": "Emulator 上で実行する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run on the Emulator",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0033-text-01": {
+    "b0041-heading-01": {
+      "sourceHash": "4b91eeaed5f1ed3cf012b1ec9d6f7a3c67fb63d4b5dfbbd5f1dd256220285226",
+      "targetHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
+      "machineHash": "e2bf0a46bc292b1adb2d8ab8d50317bc21ee2f0264f04c8dec04112065bb0cd9",
+      "machineText": "アプリを起動する",
+      "status": "machine-translated",
+      "sourcePreview": "Launch the app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0042-text-01": {
       "sourceHash": "94d23c3ffa218117b80ef7238bfde56514275a6a62f2686df81278baaeff868b",
-      "targetHash": "9e74d7414bfb8e5de9521c03bfbb53b03d9e3fad2ebff1d6b96600f81b039bb1",
-      "machineHash": "9e74d7414bfb8e5de9521c03bfbb53b03d9e3fad2ebff1d6b96600f81b039bb1",
-      "machineText": "初回実行時には、次の処理が行われます：",
-      "status": "final",
+      "targetHash": "94573a5433bf4e2e18c10445fd46c573cb849a58108173d12a470a3566b046aa",
+      "machineHash": "94573a5433bf4e2e18c10445fd46c573cb849a58108173d12a470a3566b046aa",
+      "machineText": "初回実行時には、次の処理が行われます。",
+      "status": "machine-translated",
       "sourcePreview": "On first run this:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0034-text-01": {
+    "b0043-text-01": {
       "sourceHash": "40b47173944556d93672f4df2ef260f69a9791d556280b66bc6af3337b5e8e3f",
-      "targetHash": "13e885801a098d060894efb52f8b2c9545feb789799db66b7d09fdcf81b03578",
-      "machineHash": "13e885801a098d060894efb52f8b2c9545feb789799db66b7d09fdcf81b03578",
-      "machineText": "実行中のエミュレーターがなければ起動する",
-      "status": "final",
+      "targetHash": "0c28e48c84ab7c6c479b76427de9ead4dd344b0f73d9c858f460413d0d2a659c",
+      "machineHash": "0c28e48c84ab7c6c479b76427de9ead4dd344b0f73d9c858f460413d0d2a659c",
+      "machineText": "起動中のエミュレーターがなければ起動する",
+      "status": "machine-translated",
       "sourcePreview": "Boots the emulator if none is running",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0035-text-01": {
+    "b0044-text-01": {
       "sourceHash": "18d1cef0d39f7ba10fd80ca51a351087bc6645ccd7bd35a1d48e46be29884c26",
       "targetHash": "91c59e768426c2ee3383d5a58e9f42cb406bf007aba90560ab43b4491f92a3d5",
       "machineHash": "91c59e768426c2ee3383d5a58e9f42cb406bf007aba90560ab43b4491f92a3d5",
       "machineText": "バインディングを生成し、フロントエンドをビルドする",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Generates bindings and builds the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0036-text-01": {
+    "b0045-text-01": {
       "sourceHash": "96e53b34b092a25b451f7163ce2c90c07eb03ad7f39ce98ee59f179c03ea14e1",
-      "targetHash": "174aacafcf9529235eef72a4f0bf9f4501273c1b015c3771e3c72e9b5c3a0dac",
-      "machineHash": "174aacafcf9529235eef72a4f0bf9f4501273c1b015c3771e3c72e9b5c3a0dac",
-      "machineText": "NDK クロスコンパイラーを使用して Go コードをコンパイルし、`libwails.so` を生成する",
-      "status": "final",
+      "targetHash": "c5eee6549824e1da8aee245a46a38e25c5ee1b3539be909d6000e6d952279b48",
+      "machineHash": "c5eee6549824e1da8aee245a46a38e25c5ee1b3539be909d6000e6d952279b48",
+      "machineText": "NDK クロスコンパイラーを使用して、Go コードを `libwails.so` にコンパイルする",
+      "status": "machine-translated",
       "sourcePreview": "Compiles your Go code to `libwails.so` via the NDK cross-compiler",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0037-text-01": {
+    "b0046-text-01": {
       "sourceHash": "7aaf0301564367c6be5bc3308c6d8053dea6dca89116d2b9b12dd19e992de4d1",
-      "targetHash": "a5b8774e3c69b49432e80af7d125eab846e80a0b426b4031b537ac802a66b6b1",
-      "machineHash": "a5b8774e3c69b49432e80af7d125eab846e80a0b426b4031b537ac802a66b6b1",
-      "machineText": "Gradle でデバッグ APK を組み立てる",
-      "status": "final",
+      "targetHash": "5bb9cd321a1dbb306a695e3462e33f1508a0f8961bacde49db3d338d3ea5eef2",
+      "machineHash": "5bb9cd321a1dbb306a695e3462e33f1508a0f8961bacde49db3d338d3ea5eef2",
+      "machineText": "Gradle でデバッグ APK を作成する",
+      "status": "machine-translated",
       "sourcePreview": "Assembles a debug APK with Gradle",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0038-text-01": {
+    "b0047-text-01": {
       "sourceHash": "c9a7a0a1a8a76aa795e8883af4e120f6100bfcda0fa5c41d6a48a029d67d8efc",
-      "targetHash": "95fc8b7c9814064b1d418674699d2fff90490d7148abde9c4f9b5f6de0f86e67",
-      "machineHash": "95fc8b7c9814064b1d418674699d2fff90490d7148abde9c4f9b5f6de0f86e67",
-      "machineText": "エミュレーターにインストールして起動する",
-      "status": "final",
+      "targetHash": "5f929cd9681cfdcdeb75e0f28ecd8f1416a82ff46ebd27afaaacda70869cbafb",
+      "machineHash": "5f929cd9681cfdcdeb75e0f28ecd8f1416a82ff46ebd27afaaacda70869cbafb",
+      "machineText": "APK をエミュレーターにインストールして起動する",
+      "status": "machine-translated",
       "sourcePreview": "Installs and launches it on the emulator",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0039-text-01": {
+    "b0048-text-01": {
       "sourceHash": "f7b24e5fc303a95e538f3b32dbd58f12131091df9d8a57b04c7f175d19816145",
-      "targetHash": "2b5369b5603af1ec300f095d48cd69d3415b16ab515dd72c5e9591120ee47a86",
-      "machineHash": "2b5369b5603af1ec300f095d48cd69d3415b16ab515dd72c5e9591120ee47a86",
-      "machineText": "初回ビルドでは Gradle をダウンロードし、NDK ツールチェーンをコンパイルするため、5～10 分かかります。2 回目以降は増分ビルドとなり、1 分以内で完了します。",
-      "status": "final",
+      "targetHash": "0cee3c6bad7c9a5ed2d65229d6e6c22ebf5b7bf0ea2b0bc28bd2ceadf7e7ea1c",
+      "machineHash": "0cee3c6bad7c9a5ed2d65229d6e6c22ebf5b7bf0ea2b0bc28bd2ceadf7e7ea1c",
+      "machineText": "初回ビルドでは Gradle をダウンロードし、NDK ツールチェーンをコンパイルするため、5～10 分かかります。2 回目以降はインクリメンタルビルドとなり、1 分未満で完了します。",
+      "status": "machine-translated",
       "sourcePreview": "The first build downloads Gradle and compiles the NDK toolchain — expect 5–10 minutes. Subsequent bu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0040-text-01": {
+    "b0049-heading-01": {
+      "sourceHash": "5878aa582e99edd93eeeb54aebd4ffc370ec788b19f6cddd049f885a3a8a751e",
+      "targetHash": "cd0f6a3a0e9fcda263391ec4c0af79b72ce424cf3bc28080309802ad22f248c6",
+      "machineHash": "cd0f6a3a0e9fcda263391ec4c0af79b72ce424cf3bc28080309802ad22f248c6",
+      "machineText": "ログをストリーミングする",
+      "status": "machine-translated",
+      "sourcePreview": "Stream logs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0050-text-01": {
       "sourceHash": "f28ef77be79d5664b9b91194974552da7c6bc6599409109312a1c4d4bf118ee1",
-      "targetHash": "4f06d0e31794bf727907da3a8641cb3f6d5c2b3b629cbe4acb35d2617f8606dd",
-      "machineHash": "4f06d0e31794bf727907da3a8641cb3f6d5c2b3b629cbe4acb35d2617f8606dd",
-      "machineText": "別のターミナルで次を実行します：",
-      "status": "final",
+      "targetHash": "2bbe3539e2946cc5c39f51cfb37f18877102d78a9a3b1e660654951e03a13a94",
+      "machineHash": "2bbe3539e2946cc5c39f51cfb37f18877102d78a9a3b1e660654951e03a13a94",
+      "machineText": "別のターミナルで次を実行します。",
+      "status": "machine-translated",
       "sourcePreview": "In a separate terminal:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0041-text-01": {
+    "b0051-text-01": {
       "sourceHash": "730742333c05bf7192ca78b01d64796c7e4b5d9e109617ba907786ca3ec087b0",
-      "targetHash": "8945988c4b7d6edfac63e277a5ef25777768b848b8d05aa59ff104ec8c2591b8",
-      "machineHash": "8945988c4b7d6edfac63e277a5ef25777768b848b8d05aa59ff104ec8c2591b8",
-      "machineText": "アプリに絞り込んで `adb logcat` を実行します。`fmt.Println` の出力がここに表示されます。",
-      "status": "final",
+      "targetHash": "66962ff75ee13b317a2dfff8e76bdf1a80ba39dfdb743ad0e40334ff7f700ee9",
+      "machineHash": "66962ff75ee13b317a2dfff8e76bdf1a80ba39dfdb743ad0e40334ff7f700ee9",
+      "machineText": "`adb logcat` を実行し、出力をアプリに絞り込みます。`fmt.Println` の出力がここに表示されます。",
+      "status": "machine-translated",
       "sourcePreview": "This runs `adb logcat` filtered to your app. `fmt.Println` output appears here.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0042-text-01": {
-      "sourceHash": "1e85590e68c6faa459314655202a86faea93c6a1a8487c932b343d376a97b415",
-      "targetHash": "741686117169d17299cd1fe352d7739ba3f49c7eae702d7fee72f36861f6a831",
-      "machineHash": "741686117169d17299cd1fe352d7739ba3f49c7eae702d7fee72f36861f6a831",
-      "machineText": "Chrome を開き、`chrome://inspect`に移動します。アプリの WebView が *Remote Target* の下に表示されます。*inspect*をクリックして DevTools を開きます。",
-      "status": "final",
-      "sourcePreview": "Open Chrome and navigate to `chrome://inspect`. Your app's WebView appears under *Remote Target* — c…",
+    "b0052-heading-01": {
+      "sourceHash": "d046c896dd79c8fbfb6839a45b3a02c5e976e69683eab14d1fccd9ff83cf70b8",
+      "targetHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
+      "machineHash": "107d4744ceac4deefdc6ae6c2626e3550b441cadf6a83615bdb43f2b23c08eba",
+      "machineText": "WebView を調査する",
+      "status": "machine-translated",
+      "sourcePreview": "Inspect the WebView",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0043-text-01": {
+    "b0053-text-01": {
+      "sourceHash": "ae8ec0f25a098059e11a8e45f969baf1b6f478dc5fbb082d19f6e7515b7c1559",
+      "targetHash": "8c1a78c20a8a91ae71eafcf6e88b5f0d0e5296c943796251cb20b417be39352a",
+      "machineHash": "8c1a78c20a8a91ae71eafcf6e88b5f0d0e5296c943796251cb20b417be39352a",
+      "machineText": "Chrome を開き、`chrome://inspect` に移動します。アプリの WebView が **Remote Target** の下に表示されます。**inspect** をクリックして DevTools を開きます。",
+      "status": "machine-translated",
+      "sourcePreview": "Open Chrome and navigate to `chrome://inspect`. Your app's WebView appears under **Remote Target** —…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0054-heading-01": {
+      "sourceHash": "ca908fd1a6561cb5b52ce09c8a4213cdb35e6f2cfa44600539ac3ce4065939ec",
+      "targetHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
+      "machineHash": "1b4ec9fb0da715305281313b4d5d63c6eee4c4fe9980bd850d62d7e11765a5d9",
+      "machineText": "変更を加える",
+      "status": "machine-translated",
+      "sourcePreview": "Make a change",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "b0055-text-01": {
       "sourceHash": "c3b54e2ccf06506bdacf6a989c28fdefa0ed478356d6234238626bb5b2d6a172",
-      "targetHash": "763c77f1b312b5c93a7193289a35d118c095abea7d3fe8bd0b84d184562f4057",
-      "machineHash": "763c77f1b312b5c93a7193289a35d118c095abea7d3fe8bd0b84d184562f4057",
-      "machineText": "任意のファイルを編集し、`wails3 task android:run`を再実行します。Gradle の増分ビルドにより、変更されたコードだけが再コンパイルされます。",
-      "status": "final",
+      "targetHash": "808ff31e8ae0f3c6be1cb0762600538b6e7a73466549dd2923c0a3d4d0a9f81a",
+      "machineHash": "808ff31e8ae0f3c6be1cb0762600538b6e7a73466549dd2923c0a3d4d0a9f81a",
+      "machineText": "任意のファイルを編集し、`wails3 task android:run` を再実行します。Gradle のインクリメンタルビルドにより、変更されたコードだけが再コンパイルされます。",
+      "status": "machine-translated",
       "sourcePreview": "Edit any file and re-run `wails3 task android:run`. Gradle's incremental build means only changed co…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0045-heading-01": {
+    "b0056-heading-01": {
       "sourceHash": "d50a64ca8f7945fc8ba961eb1e9414487c3289bd1b8702df1e755133b59a3ff7",
       "targetHash": "b9b57fd3336734d0f29939d792ec78886ab88fe90664c9d61f784d9c95a36682",
       "machineHash": "b9b57fd3336734d0f29939d792ec78886ab88fe90664c9d61f784d9c95a36682",
       "machineText": "実行された処理を理解する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Understanding what happened",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0046-text-01": {
+    "b0057-text-01": {
       "sourceHash": "0b9acda023fbb4c52b4b73abca4743e85df0aa7dc783f13d14c65b433f4153fd",
-      "targetHash": "37ebf45f13fd0af22c13fb10184f370748b8563e46d37521502122ce33059a4d",
-      "machineHash": "37ebf45f13fd0af22c13fb10184f370748b8563e46d37521502122ce33059a4d",
-      "machineText": "`main.go`には一切変更が加えられていません。すべての処理は Wails が行いました：",
-      "status": "final",
+      "targetHash": "81ebf7c4353dbff75cca33d34364467173061ceec275ddec294bcc514b6a5754",
+      "machineHash": "81ebf7c4353dbff75cca33d34364467173061ceec275ddec294bcc514b6a5754",
+      "machineText": "`main.go` はまったく変更されていません。すべて Wails が処理しました。",
+      "status": "machine-translated",
       "sourcePreview": "Your `main.go` didn't change at all. Wails handled everything:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0047-text-01": {
-      "sourceHash": "d52b08ec3a6cc96070eeb58d80012e312eb3df3b5db2ea2a3d01c260dd207625",
-      "targetHash": "78d8fbc926782ac73897914f9862c9576b5519b56e98d2c6601ea3fff0799fbb",
-      "machineHash": "78d8fbc926782ac73897914f9862c9576b5519b56e98d2c6601ea3fff0799fbb",
-      "machineText": "*ビルドシステム* — プロジェクト内の`Taskfile.yml`には、プラットフォーム固有のツールチェーンを実行する`ios:*`タスクと`android:*`タスクが含まれています。",
-      "status": "final",
-      "sourcePreview": "*Build system* — `Taskfile.yml` in your project contains `ios:*` and `android:*` tasks that drive th…",
+    "b0058-text-01": {
+      "sourceHash": "376e4030eaee076b38351a313b3c951fa9fcf971fef351524d4aba17f8cc3e3c",
+      "targetHash": "8773e0f81cd0f5bba190d52f2efa9f538b14236e49f91a3a897a0397bd831787",
+      "machineHash": "8773e0f81cd0f5bba190d52f2efa9f538b14236e49f91a3a897a0397bd831787",
+      "machineText": "**ビルドシステム** — プロジェクト内の `Taskfile.yml` には、プラットフォーム固有のツールチェーンを動かす `ios:*` タスクと `android:*` タスクが含まれています。",
+      "status": "machine-translated",
+      "sourcePreview": "**Build system** — `Taskfile.yml` in your project contains `ios:*` and `android:*` tasks that drive …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0048-text-01": {
-      "sourceHash": "3e29fd68239070ea3b456d4820fc7a4351dcd961f5a2c94d1549504fb79e693a",
-      "targetHash": "df87d2f90457b80a570b4210ca06547ab16c2f45ddd4ded9d6e8d7ea85a8bfb3",
-      "machineHash": "df87d2f90457b80a570b4210ca06547ab16c2f45ddd4ded9d6e8d7ea85a8bfb3",
-      "machineText": "*Go のクロスコンパイル* — 適切な`GOARCH`と sysroot を使用した`GOOS=ios`または`GOOS=android`。",
-      "status": "final",
-      "sourcePreview": "*Go cross-compilation* — `GOOS=ios` or `GOOS=android` with the appropriate `GOARCH` and sysroot.",
+    "b0059-text-01": {
+      "sourceHash": "1a183872ed285c85029c29f670fec4d42636fbc2a52ec01a2e30caf01babc197",
+      "targetHash": "7e341c450c6f8981a1260a580c4bea5707e19337aadc902fdf05b3e5d4664b00",
+      "machineHash": "7e341c450c6f8981a1260a580c4bea5707e19337aadc902fdf05b3e5d4664b00",
+      "machineText": "**Go のクロスコンパイル** — 適切な `GOARCH` と sysroot を指定した `GOOS=ios` または `GOOS=android` を使用します。",
+      "status": "machine-translated",
+      "sourcePreview": "**Go cross-compilation** — `GOOS=ios` or `GOOS=android` with the appropriate `GOARCH` and sysroot.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0049-text-01": {
-      "sourceHash": "ce55039b1abd9febe484ee308f62ad3a13c099e8875a354a63ce96336c2b0d2f",
-      "targetHash": "03df13eb11ad8f196b7764d47f6701d2ea41553208708842fd4b53dc6ce31c20",
-      "machineHash": "03df13eb11ad8f196b7764d47f6701d2ea41553208708842fd4b53dc6ce31c20",
-      "machineText": "*ネイティブホスト* — コンパイル済みの Go コードを組み込み、WebView をホストする、生成済みの Xcode プロジェクト（iOS）または Gradle プロジェクト（Android）。",
-      "status": "final",
-      "sourcePreview": "*Native host* — a generated Xcode project (iOS) or Gradle project (Android) that embeds your compile…",
+    "b0060-text-01": {
+      "sourceHash": "0133b78d20f517683b1a661e1b14ecb2631be493f8bf1e22282b9a44ebfb7d39",
+      "targetHash": "cd32fbafa317f650fd240ffdfd6bb9b241c896f8a9746427c692bca83082fee1",
+      "machineHash": "cd32fbafa317f650fd240ffdfd6bb9b241c896f8a9746427c692bca83082fee1",
+      "machineText": "**ネイティブホスト** — コンパイル済みの Go コードを組み込み、WebView をホストする、生成済みの Xcode プロジェクト（iOS）または Gradle プロジェクト（Android）です。",
+      "status": "machine-translated",
+      "sourcePreview": "**Native host** — a generated Xcode project (iOS) or Gradle project (Android) that embeds your compi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0050-text-01": {
-      "sourceHash": "7b0e20180338a32eb9a90256c3c1b7ee912207ef2a37af0be719a776850d94d8",
-      "targetHash": "faf88dac20d0ffd164cbbb3d2f81b2de6bf0df0ea0094b132478b690810ae270",
-      "machineHash": "faf88dac20d0ffd164cbbb3d2f81b2de6bf0df0ea0094b132478b690810ae270",
-      "machineText": "*アセットの配信* — `frontend/dist/`は Go バイナリに埋め込まれ、同じプロセス内から配信されます。localhost サーバーは不要です。",
-      "status": "final",
-      "sourcePreview": "*Asset serving* — your `frontend/dist/` is embedded in the Go binary and served in-process. No local…",
+    "b0061-text-01": {
+      "sourceHash": "252b0bb76be297de960ebdb53483d6ccc3c82dffa0bc576a2a7938400dd72a43",
+      "targetHash": "9a817c1167a0cb96c2bea7c2c9a148e8b896e9e922cf0f752f947a352f84a3bf",
+      "machineHash": "9a817c1167a0cb96c2bea7c2c9a148e8b896e9e922cf0f752f947a352f84a3bf",
+      "machineText": "**アセットの配信** — `frontend/dist/` は Go バイナリに埋め込まれ、同じプロセス内から配信されます。localhost サーバーは不要です。",
+      "status": "machine-translated",
+      "sourcePreview": "**Asset serving** — your `frontend/dist/` is embedded in the Go binary and served in-process. No loc…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0052-heading-01": {
+    "b0062-heading-01": {
       "sourceHash": "e59efc2a161f9db6295bd6fb49212d8cdef2dff7528013ed2f93bf9ddcc2858d",
       "targetHash": "532ff26aac7d01fb984feda6870997c1d0d0a2ea2d97d1f9f48d742fc8aef29a",
       "machineHash": "532ff26aac7d01fb984feda6870997c1d0d0a2ea2d97d1f9f48d742fc8aef29a",
       "machineText": "アプリをモバイル対応にする",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Make your app mobile-aware",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0053-text-01": {
+    "b0063-text-01": {
       "sourceHash": "2804e9ca0e7e561090c98249a3c6811e0e54632e48c7f0493074d5a2cdd578a6",
-      "targetHash": "517bc8231e6ab160f1da11e58d48ee5365ef2b127be648888e69517317ef9ef4",
-      "machineHash": "517bc8231e6ab160f1da11e58d48ee5365ef2b127be648888e69517317ef9ef4",
-      "machineText": "アプリはすでに動作しますが、スマートフォンの画面ではデスクトップアプリのように見えます。少し変更するだけで、見栄えは大きく改善します。",
-      "status": "final",
+      "targetHash": "989bf1f207b9207abbbf2f51f6dbe13fdb808a44c5c48d613c5669d92b969faf",
+      "machineHash": "989bf1f207b9207abbbf2f51f6dbe13fdb808a44c5c48d613c5669d92b969faf",
+      "machineText": "アプリはすでに動作しますが、スマートフォンの画面ではデスクトップアプリのように見えます。わずかな変更でも、見栄えと使いやすさは大きく向上します。",
+      "status": "machine-translated",
       "sourcePreview": "Your app already works, but it looks like a desktop app on a phone screen. A few small changes make …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0054-heading-01": {
+    "b0064-heading-01": {
       "sourceHash": "4ac5106d5df8f5f082b7c46133c754eb1c4494de46f336a543655e17a30b5b38",
       "targetHash": "65b4789ecb61e0fc964645663cdcd44273d4fc5f29ededbf133ea3514adc1aeb",
       "machineHash": "65b4789ecb61e0fc964645663cdcd44273d4fc5f29ededbf133ea3514adc1aeb",
       "machineText": "レスポンシブ CSS",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Responsive CSS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0055-text-01": {
+    "b0065-text-01": {
       "sourceHash": "4f00b7d3b5523100f2bfea400a9efb2ccb9d2ea90899d425bdd7142eb3457a1f",
-      "targetHash": "6e74e3d6cb466c6291fde490f85f0799fa331b18bccc3a35217eeac88a8d62bf",
-      "machineHash": "6e74e3d6cb466c6291fde490f85f0799fa331b18bccc3a35217eeac88a8d62bf",
-      "machineText": "モバイル画面は幅が狭く、入力方法も異なります。`frontend/public/style.css`（または同等のファイル）で次のように設定します。",
-      "status": "final",
+      "targetHash": "08d1aab372d76fcd39f2e504f523612e45aa2486d0d4614f394786184ed935cd",
+      "machineHash": "08d1aab372d76fcd39f2e504f523612e45aa2486d0d4614f394786184ed935cd",
+      "machineText": "モバイル画面は幅が狭く、異なる入力パターンを使用します。`frontend/public/style.css`（または同等のファイル）で次のようにします。",
+      "status": "machine-translated",
       "sourcePreview": "Mobile screens are narrower and use different input patterns. In `frontend/public/style.css` (or equ…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0056-heading-01": {
+    "b0066-heading-01": {
       "sourceHash": "46162c319ca2371b4b0ec5c39bc80fc0b3146a9bef692d6dbdbc540791fd6ed6",
       "targetHash": "63dabad92eb31ebf66fc5f275aa2f87bdbcf0d128d6b12a4fb38f92dddfcd6ab",
       "machineHash": "63dabad92eb31ebf66fc5f275aa2f87bdbcf0d128d6b12a4fb38f92dddfcd6ab",
       "machineText": "Go でプラットフォームを検出する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Detect the platform in Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0057-text-01": {
+    "b0067-text-01": {
       "sourceHash": "60f1dae9ce5d954a0f6a6aa59555923d9d251744c0262c615eefd0905960ed60",
-      "targetHash": "2ee59983d918329dd48a5afda9dbdfa9a8bb25bbf296779274cd1dfe3c935163",
-      "machineHash": "2ee59983d918329dd48a5afda9dbdfa9a8bb25bbf296779274cd1dfe3c935163",
-      "machineText": "ビルドタグを使用すると、共有コードを煩雑にせずにプラットフォーム固有の動作を追加できます。",
-      "status": "final",
+      "targetHash": "7e98072d0ce2fe4f13b13e85071fa57f4704f4c8e10ba485943fe547cb9e9913",
+      "machineHash": "7e98072d0ce2fe4f13b13e85071fa57f4704f4c8e10ba485943fe547cb9e9913",
+      "machineText": "ビルドタグを使用すれば、共有コードを煩雑にすることなく、プラットフォーム固有の動作を追加できます。",
+      "status": "machine-translated",
       "sourcePreview": "Use build tags to add platform-specific behaviour without cluttering shared code.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0058-text-01": {
+    "b0068-text-01": {
       "sourceHash": "7c5ff42fb5192c98388a11d62085fd3b23697e3034cbf0b051c6223c048bc976",
-      "targetHash": "005f638dbec9cd6f5b0727ecd13d81931a61e24c5085645231e09d7753573d6e",
-      "machineHash": "005f638dbec9cd6f5b0727ecd13d81931a61e24c5085645231e09d7753573d6e",
-      "machineText": "iOS 専用コード用に`mobile_ios.go`を作成します。",
-      "status": "final",
+      "targetHash": "190d60b7dc923a326772b1ef47633dc74e82d9d482ffab45ada8c088a0d7a76c",
+      "machineHash": "190d60b7dc923a326772b1ef47633dc74e82d9d482ffab45ada8c088a0d7a76c",
+      "machineText": "iOS 専用コード用の `mobile_ios.go` を作成します。",
+      "status": "machine-translated",
       "sourcePreview": "Create `mobile_ios.go` for iOS-only code:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0059-text-01": {
+    "b0069-text-01": {
       "sourceHash": "3f3f89df1457e0e5ab7dd2206f28379102409f9d84196108ce2af2e7c65f2471",
-      "targetHash": "96107008875223f2365a42bc0b1f5a6166fd2a1ebaf686f47c7179596e28d29b",
-      "machineHash": "96107008875223f2365a42bc0b1f5a6166fd2a1ebaf686f47c7179596e28d29b",
-      "machineText": "Android 専用コード用に`mobile_android.go`を作成します。",
-      "status": "final",
+      "targetHash": "f4833a3a77d439e68e5e352bd5443366aea3b246f548f727b62d2315ffe60484",
+      "machineHash": "f4833a3a77d439e68e5e352bd5443366aea3b246f548f727b62d2315ffe60484",
+      "machineText": "Android 専用コード用の `mobile_android.go` を作成します。",
+      "status": "machine-translated",
       "sourcePreview": "Create `mobile_android.go` for Android-only code:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0060-text-01": {
+    "b0070-text-01": {
       "sourceHash": "23d87a83cf550781f2d02c748d4d097128b12eaaee86a05f26144dea3d8d71bd",
-      "targetHash": "26f8571f2553461e6d0a9a4ead895ade6821808d3c2a195e7bc0ccde4c6830a3",
-      "machineHash": "26f8571f2553461e6d0a9a4ead895ade6821808d3c2a195e7bc0ccde4c6830a3",
-      "machineText": "デスクトップでも共有コードをコンパイルできるように、スタブとして`mobile_desktop.go`を作成します。",
-      "status": "final",
+      "targetHash": "e3eb0a23f904feaa21f5e46263ae73635a694bf45892b8bbfd8c9f56a12e83a3",
+      "machineHash": "e3eb0a23f904feaa21f5e46263ae73635a694bf45892b8bbfd8c9f56a12e83a3",
+      "machineText": "デスクトップでも共有コードをコンパイルできるように、スタブとして `mobile_desktop.go` を作成します。",
+      "status": "machine-translated",
       "sourcePreview": "Create `mobile_desktop.go` as a stub so the shared code compiles on desktop too:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0061-heading-01": {
+    "b0071-heading-01": {
       "sourceHash": "276694a9f6a583252dcee9625bca22bb90f3263ebb6ad3f037edd65d2850e5a6",
       "targetHash": "aed1a8eccbcb1d709ef62eb7d3d310b1189ef5e3ead39a229314d7fe5d3f35a1",
       "machineHash": "aed1a8eccbcb1d709ef62eb7d3d310b1189ef5e3ead39a229314d7fe5d3f35a1",
       "machineText": "JavaScript でプラットフォームを検出し、モバイル専用 UI を制御する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Detect the platform in JavaScript and gate mobile-only UI",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0062-text-01": {
+    "b0072-text-01": {
       "sourceHash": "daf98017010cb0595f06e1797dc32ce19caa960583c4cc2fe338581d3dcb7c6c",
-      "targetHash": "9115aa95c5ef5dd4f32512883c8d739ef6edbcb70af982ed0ed1c4b92751f2ca",
-      "machineHash": "9115aa95c5ef5dd4f32512883c8d739ef6edbcb70af982ed0ed1c4b92751f2ca",
-      "machineText": "`IOS.*`と`Android.*`のランタイムオブジェクトは、それぞれ対応するプラットフォームにのみ存在します。デスクトップで呼び出すと例外がスローされます。Kitchen Sink で使用されている適切なパターンは、プラットフォームを一度だけ検出し、モバイル専用コントロールを完全に非表示にすることです。",
-      "status": "final",
+      "targetHash": "88435f983e3944714253909efea9a225f8b783ae23291d29bcf474afd1d60c39",
+      "machineHash": "88435f983e3944714253909efea9a225f8b783ae23291d29bcf474afd1d60c39",
+      "machineText": "`IOS.*` と `Android.*` のランタイムオブジェクトは、それぞれに対応するプラットフォームにのみ存在します。デスクトップで呼び出すと例外が発生します。Kitchen Sink で採用されている正しいパターンは、プラットフォームを一度だけ検出し、モバイル専用のコントロールを完全に非表示にすることです。",
+      "status": "machine-translated",
       "sourcePreview": "The `IOS.*` and `Android.*` runtime objects only exist on their respective platforms. Calling them o…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0063-text-01": {
+    "b0073-text-01": {
       "sourceHash": "c1947dd5e20c4c4e14e111691a318ae8e39aebb812e260be190350382f8173c7",
-      "targetHash": "e5480579658f8f8a3c3941b74fc1f7fdb70984b413b1f5ad85a1da9f05943a6f",
-      "machineHash": "e5480579658f8f8a3c3941b74fc1f7fdb70984b413b1f5ad85a1da9f05943a6f",
-      "machineText": "次に、HTML では次のように記述します。",
-      "status": "final",
+      "targetHash": "f4390bb88988df2383fbd383f29feab61903b9eea320f017259b0020ac804de6",
+      "machineHash": "f4390bb88988df2383fbd383f29feab61903b9eea320f017259b0020ac804de6",
+      "machineText": "次に、HTML では次のようにします。",
+      "status": "machine-translated",
       "sourcePreview": "Then in your HTML:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0064-text-01": {
+    "b0074-text-01": {
       "sourceHash": "ad333dc8f1123fd7028c99212e55f9e573c5ed1d45e9cd90e35225404837dea5",
-      "targetHash": "26c84cb96c6696bcfbda9422b2464559810dde89b531abd6634ade19564f647b",
-      "machineHash": "26c84cb96c6696bcfbda9422b2464559810dde89b531abd6634ade19564f647b",
-      "machineText": "この方法なら、モバイル専用ボタンはデスクトップでは一切レンダリングされず、個々の呼び出しを毎回`if (isMobile)`チェックで保護する必要もありません。",
-      "status": "final",
+      "targetHash": "49964265f1aafa9127109e4cb669622bf1ee7ef3f292da1c79f67bb853a4865a",
+      "machineHash": "49964265f1aafa9127109e4cb669622bf1ee7ef3f292da1c79f67bb853a4865a",
+      "machineText": "これにより、モバイル専用ボタンがデスクトップでレンダリングされることはなく、個々の呼び出しを毎回 `if (isMobile)` チェックで保護する必要もありません。",
+      "status": "machine-translated",
       "sourcePreview": "This way mobile-only buttons are never rendered on desktop, and you never need to guard every indivi…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0065-text-01": {
+    "b0075-text-01": {
       "sourceHash": "d487e0c3bb02cc41fd24a697b3089cd5b0cb64b2ce7a03cc0b755bba7267df8c",
-      "targetHash": "d064f789036e8762baff9ce74a36d4b3c2be194efcab4bd55a4bc504d257f3dc",
-      "machineHash": "d064f789036e8762baff9ce74a36d4b3c2be194efcab4bd55a4bc504d257f3dc",
-      "machineText": "Go 側では、ビルドタグ付きのスタブと組み合わせ、必要なプラットフォームでのみイベントハンドラーが登録されるようにします。",
-      "status": "final",
+      "targetHash": "f55c2a6fd09c63ab069592e29b67a452f4e4513e3204920d5f4a04a6b3ebca2a",
+      "machineHash": "f55c2a6fd09c63ab069592e29b67a452f4e4513e3204920d5f4a04a6b3ebca2a",
+      "machineText": "Go 側では、これをビルドタグ付きのスタブと組み合わせ、必要なプラットフォームでのみイベントハンドラーが登録されるようにします。",
+      "status": "machine-translated",
       "sourcePreview": "On the Go side, pair this with a build-tag stub so the event handlers are only registered on the pla…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0066-text-01": {
-      "sourceHash": "cd67da4c9f110672fac921605e0b820d4cacfbcafbddce53dc507f85a6a10ddd",
-      "targetHash": "fa0cfc4e730fa178191bee0f07b43f5f06986757a40eab7138f6fd15d22a8ffc",
-      "machineHash": "fa0cfc4e730fa178191bee0f07b43f5f06986757a40eab7138f6fd15d22a8ffc",
-      "machineText": "これは[Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。",
-      "status": "final",
-      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/exampl…",
+    "b0076-text-01": {
+      "sourceHash": "f32778828203c13433c7e6792f98a09bcb39684bd0ba74aca861ba6cbf356424",
+      "targetHash": "f547d4d63d34e88cfd6ccc29b59632b00e2dade260ed5268b370021a82a73984",
+      "machineHash": "f547d4d63d34e88cfd6ccc29b59632b00e2dade260ed5268b370021a82a73984",
+      "machineText": "これは [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。",
+      "status": "machine-translated",
+      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0067-text-01": {
+    "b0077-text-01": {
       "sourceHash": "983f281e045f68e6ef9eed8c0a1d3429a0365fa56853ce026da552f88866a5dc",
       "targetHash": "f89da37b28c860c697e7a2fd465c23744b111deb83cb317fe58549416bd7431d",
       "machineHash": "f89da37b28c860c697e7a2fd465c23744b111deb83cb317fe58549416bd7431d",
       "machineText": "知っておくべき規則が 2 つあります。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Two conventions are worth knowing:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0068-text-01": {
-      "sourceHash": "c9b4253c40042a4a46b920abbc1064390f12618ae54417a28f403d00a3c6c599",
-      "targetHash": "0fcdccb4a30d161e96ba9daf94757723d8bbf84a56564481c4582381cbd6a9b2",
-      "machineHash": "0fcdccb4a30d161e96ba9daf94757723d8bbf84a56564481c4582381cbd6a9b2",
-      "machineText": "*Go 側のネイティブ機能ではプラットフォームマネージャーを使用します。*`application.IOS.*`と`application.Android.*`のシングルトン経由で呼び出します。たとえば、`application.IOS.Haptic(\"medium\")`や`application.Android.Share(payload)`です。各マネージャーは対応するプラットフォームにのみ存在するため、その呼び出しは`//go:build ios`ファイルまたは`//go:build android`ファイルに記述します。",
-      "status": "final",
-      "sourcePreview": "*Go-side native features use platform managers.* Call them through the `application.IOS.*` and `appl…",
+    "b0078-text-01": {
+      "sourceHash": "37d9aeb910955dc6c058427233ae4792f8e3b92cfb5263fddc7f4447028e4993",
+      "targetHash": "2582fa70483b65450824490ad77f4259fdfc26e8a7f05fa0529c82b53c15f139",
+      "machineHash": "2582fa70483b65450824490ad77f4259fdfc26e8a7f05fa0529c82b53c15f139",
+      "machineText": "**Go 側のネイティブ機能では、プラットフォームマネージャーを使用します。** `application.IOS.*` と `application.Android.*` のシングルトンを介して呼び出します。たとえば、`application.IOS.Haptic(\"medium\")` や `application.Android.Share(payload)` です。各マネージャーは対応するプラットフォームにのみ存在するため、その呼び出しは `//go:build ios` / `//go:build android` ファイルに記述します。",
+      "status": "machine-translated",
+      "sourcePreview": "**Go-side native features use platform managers.** Call them through the `application.IOS.*` and `ap…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0069-text-01": {
-      "sourceHash": "bc4410d308e178b612b07df0649aee9bc61287f1a3cd37fffee50c704f4a7aeb",
-      "targetHash": "847e0ce53fca9b5e4739ccb76eb7656c32f26375aa7572817c65442f57ecd217",
-      "machineHash": "847e0ce53fca9b5e4739ccb76eb7656c32f26375aa7572817c65442f57ecd217",
-      "machineText": "*イベントは到達範囲に応じて名前空間で分けられます。*両方のプラットフォームが認識するイベントには`common:*`プレフィックスを使用します（`common:haptic`、`common:location`など）。一方、一方のプラットフォームだけが生成または処理できるイベントには`ios:*`または`android:*`を使用します（例：`ios:backgroundTask`、`android:foregroundService`）。ほぼすべてのモバイル機能は共通しているため、フロントエンドでは`common:*`配下でイベントごとに 1 つのリスナーを維持します。",
-      "status": "final",
-      "sourcePreview": "*Events are namespaced by reach.* Anything both platforms understand uses the `common:*` prefix (`co…",
+    "b0079-text-01": {
+      "sourceHash": "c0d60d5f3a52353a2af9ddbbb87170734d383285383bdb3256fe7bb6b5e3b3e1",
+      "targetHash": "0771389ae1235eab21843d9ba06a952d5ee20952f56ab80ba644967ae7eb2412",
+      "machineHash": "0771389ae1235eab21843d9ba06a952d5ee20952f56ab80ba644967ae7eb2412",
+      "machineText": "**イベントには、対象範囲に応じた名前空間を使用します。** 両方のプラットフォームが認識するイベントには `common:*` プレフィックス（`common:haptic`、`common:location`、…）を使用します。一方、一方のプラットフォームでしか生成または処理できないイベントには `ios:*` または `android:*` を使用します（例：`ios:backgroundTask`、`android:foregroundService`）。ほぼすべてのモバイル機能は共通しているため、フロントエンドでは `common:*` の下でイベントごとに 1 つのリスナーを保持します。",
+      "status": "machine-translated",
+      "sourcePreview": "**Events are namespaced by reach.** Anything both platforms understand uses the `common:*` prefix (`…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0070-heading-01": {
+    "b0080-heading-01": {
       "sourceHash": "765232ab72ae7cc27e2a256349c6b2106d0888fcf280b53c8b915ea2660e6b4a",
       "targetHash": "07fd163fa6f9e44baf498d2c46509724d4b277b104a7b010dfae4ffcf43efc25",
       "machineHash": "07fd163fa6f9e44baf498d2c46509724d4b277b104a7b010dfae4ffcf43efc25",
       "machineText": "触覚フィードバックを追加する（iOS）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add haptic feedback (iOS)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0071-heading-01": {
+    "b0081-heading-01": {
       "sourceHash": "1d4de6f1ef7c79bf9626916536d4ef19a26831e3da36c6e9779bf042efa37f24",
       "targetHash": "ebce3fc13e2ec1a540e11833270412eeebc364fd69769acc73046c689c21fa7c",
       "machineHash": "ebce3fc13e2ec1a540e11833270412eeebc364fd69769acc73046c689c21fa7c",
       "machineText": "バイブレーションを追加する（Android）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Add vibration (Android)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0073-heading-01": {
+    "b0082-heading-01": {
       "sourceHash": "f54b5f6fc3f4de4b40e851a8d3b3e7f81f8d406b6e10fbabdbeba5e4f0ae008a",
-      "targetHash": "3564d27a916d01cc10665688013fb0a62884e0093cd233c6a91719ddbef9e51b",
-      "machineHash": "3564d27a916d01cc10665688013fb0a62884e0093cd233c6a91719ddbef9e51b",
-      "machineText": "本番向けにビルドする",
-      "status": "final",
+      "targetHash": "6a16e96192b9d79ac09a86ce6be2276377721bc0ddde4beb53c981139d7fdbdf",
+      "machineHash": "6a16e96192b9d79ac09a86ce6be2276377721bc0ddde4beb53c981139d7fdbdf",
+      "machineText": "本番環境向けにビルドする",
+      "status": "machine-translated",
       "sourcePreview": "Build for production",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0074-text-01": {
-      "sourceHash": "ae0c57bed8542edc9d7db775acc1310ffbfefe64796213f1a1880d0b211a5cfb",
-      "targetHash": "61c0d803ff27406f9b48b504bb1bf0661220f3fee42d4cef38ecdaf7ea885ea4",
-      "machineHash": "61c0d803ff27406f9b48b504bb1bf0661220f3fee42d4cef38ecdaf7ea885ea4",
-      "machineText": "*シミュレーター向けビルド*（シミュレーターでのテスト用。署名は不要）：",
-      "status": "final",
-      "sourcePreview": "*Simulator build* (for testing on simulator, no signing needed):",
+    "b0083-text-01": {
+      "sourceHash": "6a713ade8b03d0173e0a115c44664a1a421a4fd63eb4cfd88b2c1894704d1fd3",
+      "targetHash": "db1ce95f592f6b6ec5efd9c42d073eb30c24a0e9a443f9d069b7627206bfbbee",
+      "machineHash": "db1ce95f592f6b6ec5efd9c42d073eb30c24a0e9a443f9d069b7627206bfbbee",
+      "machineText": "**シミュレーター用ビルド**（シミュレーターでのテスト用。署名は不要）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Simulator build** (for testing on simulator, no signing needed):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0075-text-01": {
-      "sourceHash": "af9c735055230501c320d1d0cba3722fed0621d81730336a2cf2780347b28a0b",
-      "targetHash": "1775539e1ff1399ee93eb4d60a7f5534bb0e76851b45181a9d4266566141547e",
-      "machineHash": "1775539e1ff1399ee93eb4d60a7f5534bb0e76851b45181a9d4266566141547e",
-      "machineText": "*実機向けビルド*（署名 ID とプロビジョニングプロファイルが必要）：",
-      "status": "final",
-      "sourcePreview": "*Device build* (requires a signing identity and provisioning profile):",
+    "b0084-text-01": {
+      "sourceHash": "40c75de6eecb109bced45852fbc9ade3dcc3f0de3977506dcf9f0e261fa9b223",
+      "targetHash": "636ea6ed0eeb9b02933d698743df3fa711b11f7d35589fc09616a8808ed0a3c8",
+      "machineHash": "636ea6ed0eeb9b02933d698743df3fa711b11f7d35589fc09616a8808ed0a3c8",
+      "machineText": "**デバイス用ビルド**（署名 ID とプロビジョニングプロファイルが必要）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Device build** (requires a signing identity and provisioning profile):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0076-text-01": {
-      "sourceHash": "0e1f078c52ad57b126a417bc1d313d207295ffeeba1630593347fb56460e92d2",
-      "targetHash": "466e093b7adeb90376f16f97872672910d2d7e97a4f9ef4cc3f8fb57386a9717",
-      "machineHash": "466e093b7adeb90376f16f97872672910d2d7e97a4f9ef4cc3f8fb57386a9717",
-      "machineText": "*配布用 IPA*（App Store または TestFlight 用）：",
-      "status": "final",
-      "sourcePreview": "*Distribution IPA* (for App Store or TestFlight):",
+    "b0085-text-01": {
+      "sourceHash": "5ff1cf244e4ca5ff531071a6cfd05dbd271aaa46c42871e55f27e46567a3365a",
+      "targetHash": "ed1b382265c1d5e11fc330ff661a88d2dd0fe83e5f20a80e16eba62ddbac8724",
+      "machineHash": "ed1b382265c1d5e11fc330ff661a88d2dd0fe83e5f20a80e16eba62ddbac8724",
+      "machineText": "**配布用 IPA**（App Store または TestFlight 用）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Distribution IPA** (for App Store or TestFlight):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0077-text-01": {
+    "b0086-text-01": {
       "sourceHash": "12850e5d5ad546c6f55cdd53420a55e8227bf81f4521aa2736ab8ea4505c3a62",
-      "targetHash": "59691bb5009bc612111e639ed4bf098758b9d864d446cf5cdc7e70fc42567578",
-      "machineHash": "59691bb5009bc612111e639ed4bf098758b9d864d446cf5cdc7e70fc42567578",
-      "machineText": "App Store Connect にアップロードする場合は、`wails3 task ios:xcode`を使用し、署名とアーカイブを Xcode に管理させます。証明書、プロファイル、公証に伴う複雑な処理は Xcode が自動的に行います。",
-      "status": "final",
+      "targetHash": "560bc09859ab92e30ec64df68dc285719488de3a04bf9ea6a1f23947ddb1d8a2",
+      "machineHash": "560bc09859ab92e30ec64df68dc285719488de3a04bf9ea6a1f23947ddb1d8a2",
+      "machineText": "App Store Connect にアップロードする場合は、`wails3 task ios:xcode` を使用し、署名とアーカイブは Xcode に管理させます。証明書、プロファイル、公証に関する複雑な処理が自動的に行われます。",
+      "status": "machine-translated",
       "sourcePreview": "For App Store Connect uploads, use `wails3 task ios:xcode` and let Xcode manage signing and archivin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0078-text-01": {
-      "sourceHash": "14432056f0149f15f648064333494977c579494caa9d3f732bb0d32222ca659c",
-      "targetHash": "ba5ebf02667e9848fd6aff6180182552f30a5ff0281569690ad71b574dda283b",
-      "machineHash": "ba5ebf02667e9848fd6aff6180182552f30a5ff0281569690ad71b574dda283b",
-      "machineText": "*デバッグ APK*（Android のデバッグ用キーストアで署名され、直接インストール可能）：",
-      "status": "final",
-      "sourcePreview": "*Debug APK* (signed with the Android debug keystore, installs directly):",
+    "b0087-text-01": {
+      "sourceHash": "b59e1bccc03c649fc946d57bf27081ae7958bfddd132a29d78397df3285d2f1f",
+      "targetHash": "54eaf5511452ae2825afcae503c612e889721e0c1cd62a746e1978febd9f26bf",
+      "machineHash": "54eaf5511452ae2825afcae503c612e889721e0c1cd62a746e1978febd9f26bf",
+      "machineText": "**デバッグ APK**（Android のデバッグ用キーストアで署名され、直接インストール可能）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Debug APK** (signed with the Android debug keystore, installs directly):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0079-text-01": {
-      "sourceHash": "f3b99e83342c1a8ce9977815a3316bba3253caf22786d88d6bfa16d53c99f967",
-      "targetHash": "ccab09319d4fa7839b5ea69843177ba8a8c4e07e4500ac399b9a26b445fc0225",
-      "machineHash": "ccab09319d4fa7839b5ea69843177ba8a8c4e07e4500ac399b9a26b445fc0225",
-      "machineText": "*リリース APK*（独自のキーストアで署名）：",
-      "status": "final",
-      "sourcePreview": "*Release APK* (signed with your own keystore):",
+    "b0088-text-01": {
+      "sourceHash": "141342f21bc3b7088793bce5aecd991cdedc78fce27c86c84acc1725d4d97271",
+      "targetHash": "df1c6e505b92be78c4f9c528195dcdae602474cb4a0261fa1ce95d97b1be61d6",
+      "machineHash": "df1c6e505b92be78c4f9c528195dcdae602474cb4a0261fa1ce95d97b1be61d6",
+      "machineText": "**リリース APK**（独自のキーストアで署名）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Release APK** (signed with your own keystore):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0080-text-01": {
-      "sourceHash": "c7d02297309bcc021a53686b50e145d0d26f988ae317fee810a9f1d4857849d9",
-      "targetHash": "d85c23f6d49222d41d0d6e32eaab83586ee1eee005a2c6542cafe6cf2c5dec6f",
-      "machineHash": "d85c23f6d49222d41d0d6e32eaab83586ee1eee005a2c6542cafe6cf2c5dec6f",
-      "machineText": "*ユニバーサル APK*（arm64 と x86_64 を 1 つのファイルに収録）：",
-      "status": "final",
-      "sourcePreview": "*Universal APK* (arm64 + x86_64 in one file):",
+    "b0089-text-01": {
+      "sourceHash": "f1c37ef6868a2df34ea3509223e085b352e2a20ebf2d729308d6722e57079bbc",
+      "targetHash": "4cf33382f3b0b6c13faa73c5463095b37f02ac3a417e8ebc2612378d63979a96",
+      "machineHash": "4cf33382f3b0b6c13faa73c5463095b37f02ac3a417e8ebc2612378d63979a96",
+      "machineText": "**ユニバーサル APK**（arm64 と x86_64 を 1 つのファイルに収録）：",
+      "status": "machine-translated",
+      "sourcePreview": "**Universal APK** (arm64 + x86_64 in one file):",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0081-text-01": {
-      "sourceHash": "615e4aad5711a411f9bc866fd6f8d91be70e97d1fc4fdc3d46e797f9c43acc22",
-      "targetHash": "59f038bb47a7598f8b15ecf594d9540b7ef8b68648f3a562a22fbcadd4fad06a",
-      "machineHash": "59f038bb47a7598f8b15ecf594d9540b7ef8b68648f3a562a22fbcadd4fad06a",
-      "machineText": "Play Store にアップロードする場合は、APK ではなく`.aab`（Android App Bundle）を生成します。Android Studio で`build/android/`を開き、*Build → Generate Signed Bundle / APK*を使用します。",
-      "status": "final",
+    "b0090-text-01": {
+      "sourceHash": "e4b75d8bcdaf45638b91a06754ee214ad0cc0869e667f8250a90cddb5da3cf2d",
+      "targetHash": "a9179a726e03e45be63d25197432ddc30776796787cf0e709385530b6b640252",
+      "machineHash": "a9179a726e03e45be63d25197432ddc30776796787cf0e709385530b6b640252",
+      "machineText": "Play Store にアップロードする場合は、APK ではなく `.aab`（Android App Bundle）を生成します。Android Studio で `build/android/` を開き、**Build → Generate Signed Bundle / APK** を使用してください。",
+      "status": "machine-translated",
       "sourcePreview": "For Play Store uploads, produce an `.aab` (Android App Bundle) instead of an APK — open `build/andro…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0083-heading-01": {
+    "b0091-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "7a259e9a8eba32089dbab8bca80bf11ef4b871e684f2d6979009a95512acb728",
       "machineHash": "7a259e9a8eba32089dbab8bca80bf11ef4b871e684f2d6979009a95512acb728",
       "machineText": "トラブルシューティング",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Troubleshooting",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0084-heading-01": {
+    "b0092-heading-01": {
       "sourceHash": "9079c50b76f620d1c1225395fc0415633634e05d00c211f993329294e65aae4c",
-      "targetHash": "d63b4e90b2ce5146bc757ea5d8392d9b719f1694045750fa0a8cea486ed4f001",
-      "machineHash": "d63b4e90b2ce5146bc757ea5d8392d9b719f1694045750fa0a8cea486ed4f001",
-      "machineText": "`wails3 task ios:run`が「no iOS SDKs found」で失敗する",
-      "status": "final",
+      "targetHash": "000e512998a42e2ceb8de2104d0e465bf98ba96feadb1735dde146a5af68bb9d",
+      "machineHash": "000e512998a42e2ceb8de2104d0e465bf98ba96feadb1735dde146a5af68bb9d",
+      "machineText": "`wails3 task ios:run` が「no iOS SDKs found」で失敗する",
+      "status": "machine-translated",
       "sourcePreview": "`wails3 task ios:run` fails with \"no iOS SDKs found\"",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0085-text-01": {
+    "b0093-text-01": {
       "sourceHash": "d1705fb110c913c11492eaae93559e0fa250ffa41e80207e5e5a1b26e4657035",
       "targetHash": "794f2d319c63bb5c724497425d74d610f144098709cf972911455722d88491d6",
       "machineHash": "794f2d319c63bb5c724497425d74d610f144098709cf972911455722d88491d6",
       "machineText": "完全版の Xcode をインストールし、選択しておく必要があります。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Full Xcode must be installed and selected:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0086-heading-01": {
+    "b0094-heading-01": {
       "sourceHash": "9eea322f852717c16434fadd91729352a8e92a3d0bcebcd665ee96d17548350f",
-      "targetHash": "0e2fa152cca0e9f896da7817baf1633a6d6d617130eac03e0249bc6e3c0793e5",
-      "machineHash": "0e2fa152cca0e9f896da7817baf1633a6d6d617130eac03e0249bc6e3c0793e5",
-      "machineText": "`wails3 task android:run`が「SDK not found」で失敗する",
-      "status": "final",
+      "targetHash": "b498414f9d20f5fc6803d93aa3e8c1e4af50b739b91cbbe471f0fe61b2517319",
+      "machineHash": "b498414f9d20f5fc6803d93aa3e8c1e4af50b739b91cbbe471f0fe61b2517319",
+      "machineText": "`wails3 task android:run` が「SDK not found」で失敗する",
+      "status": "machine-translated",
       "sourcePreview": "`wails3 task android:run` fails with \"SDK not found\"",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0087-text-01": {
+    "b0095-text-01": {
       "sourceHash": "b5d8868bf05e9287c8147fb0360317e73d538430ff863b653a0a963bab3e32c7",
-      "targetHash": "a9affd7922fb4f33d89a47fe821847ec33bebe1de3734ed84ec5c188adea4ef0",
-      "machineHash": "a9affd7922fb4f33d89a47fe821847ec33bebe1de3734ed84ec5c188adea4ef0",
-      "machineText": "`ANDROID_HOME`が設定され、エクスポートされていることを確認します。次のコマンドで検証してください。",
-      "status": "final",
+      "targetHash": "966872362493ddeae59716fc5a7de4043983455a12c6d743288f3db078a53d51",
+      "machineHash": "966872362493ddeae59716fc5a7de4043983455a12c6d743288f3db078a53d51",
+      "machineText": "`ANDROID_HOME` が設定され、export されていることを確認してください。次のコマンドで確認できます。",
+      "status": "machine-translated",
       "sourcePreview": "Ensure `ANDROID_HOME` is set and exported. Verify with:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0088-heading-01": {
+    "b0096-heading-01": {
       "sourceHash": "18f9033c118ea025f02c70b4178f03658e07bea65d26d85221c1a0b9d2926f7f",
       "targetHash": "77c25303d8d24fc63eb03fadb09afdabc6a71d7d1ea4c73f681e80541acef401",
       "machineHash": "77c25303d8d24fc63eb03fadb09afdabc6a71d7d1ea4c73f681e80541acef401",
       "machineText": "シミュレーターが起動しない",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Simulator doesn't boot",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0089-text-01": {
+    "b0097-text-01": {
       "sourceHash": "4d359b94a17246f26130b03ca7ab2e539d498e2d849ea6ba847ca180faf37a9b",
-      "targetHash": "4b171467a00442655aac8f0a9377899070fe0ea0b68822d9845bf148048b053d",
-      "machineHash": "4b171467a00442655aac8f0a9377899070fe0ea0b68822d9845bf148048b053d",
-      "machineText": "利用可能なシミュレーターを一覧表示し、いずれかを手動で起動します。",
-      "status": "final",
+      "targetHash": "071138ad7d6b5257be5e02f42146dde6a818019e7a65494db43f977ef59392f3",
+      "machineHash": "071138ad7d6b5257be5e02f42146dde6a818019e7a65494db43f977ef59392f3",
+      "machineText": "利用可能なシミュレーターを一覧表示し、手動で起動します。",
+      "status": "machine-translated",
       "sourcePreview": "List available simulators and boot one manually:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0090-heading-01": {
+    "b0098-heading-01": {
       "sourceHash": "5fa7164a351435c8377c814039f43231088a372df94631805dc6fc23618af12d",
-      "targetHash": "2c17bf0fb76e5abc899c0e2ead3e20d29364989098ce85de288e58812e7cb02c",
-      "machineHash": "2c17bf0fb76e5abc899c0e2ead3e20d29364989098ce85de288e58812e7cb02c",
-      "machineText": "`chrome://inspect`にターゲットが表示されない",
-      "status": "final",
+      "targetHash": "4834387a6329d7ae12df18452b41e8ca38782ae64dfbeee633ee56d9ece5ef6d",
+      "machineHash": "4834387a6329d7ae12df18452b41e8ca38782ae64dfbeee633ee56d9ece5ef6d",
+      "machineText": "`chrome://inspect` にターゲットが表示されない",
+      "status": "machine-translated",
       "sourcePreview": "`chrome://inspect` shows no targets",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0091-text-01": {
+    "b0099-text-01": {
       "sourceHash": "ca314c9cd6b6a6b23d71b9919a5dbc382fa783ade61cffc8e7a229c5ef41dea7",
-      "targetHash": "c0bbff396268f6750281b9cffe7fda108996a3417d7fc610cf4327f7dedd6122",
-      "machineHash": "c0bbff396268f6750281b9cffe7fda108996a3417d7fc610cf4327f7dedd6122",
-      "machineText": "WebView はデバッグモードである必要があります（`android:run`ではデフォルトです）。本番ビルドではなく、デバッグビルドを実行していることを確認してください。また、`adb devices`でエミュレーターが接続済みと表示されていることも確認します。",
-      "status": "final",
+      "targetHash": "5fe874266c33c6a8a2c465cb6165a1fa3e3b7554801f0d5a83537cdaf05a108a",
+      "machineHash": "5fe874266c33c6a8a2c465cb6165a1fa3e3b7554801f0d5a83537cdaf05a108a",
+      "machineText": "WebView はデバッグモードである必要があります（`android:run` ではデフォルト）。本番用ビルドではなく、デバッグビルドを実行していることを確認してください。また、`adb devices` でエミュレーターが接続済みと表示されることも確認してください。",
+      "status": "machine-translated",
       "sourcePreview": "The WebView must be in debug mode (the default for `android:run`). Make sure you're running a debug …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0092-heading-01": {
+    "b0100-heading-01": {
       "sourceHash": "7b81d5b2bdb4d652047c081c022e03a1c832c4af80dfa817cebe97f7ad1f3651",
       "targetHash": "32e764c0ef14a63add2c49588e9b2934728ad1652ae2e6555d1a32ae7d88e787",
       "machineHash": "32e764c0ef14a63add2c49588e9b2934728ad1652ae2e6555d1a32ae7d88e787",
       "machineText": "セーフエリアのインセットが適用されない",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Safe area insets not applied",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0093-text-01": {
+    "b0101-text-01": {
       "sourceHash": "78a46766f8fa5b1e28526a69dbb4a8de8d0e511903db05b960931fa1c349faec",
       "targetHash": "df199c3f20c83d50b9fdf3ecbfc5d6f2098d156bcd965e75ce23c728c89ef688",
       "machineHash": "df199c3f20c83d50b9fdf3ecbfc5d6f2098d156bcd965e75ce23c728c89ef688",
       "machineText": "HTML に viewport メタタグが含まれていることを確認してください。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Make sure your HTML includes the viewport meta tag:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0095-heading-01": {
+    "b0102-heading-01": {
       "sourceHash": "1859dcd21b342501f277f28a224bea9ce95064bc9ba024f9b04c1d7fd053edf4",
       "targetHash": "bf07dae9c73b4e4c3826c5b59d323b2ed681e6ad7dbe215a182224ccdc612086",
       "machineHash": "bf07dae9c73b4e4c3826c5b59d323b2ed681e6ad7dbe215a182224ccdc612086",
       "machineText": "Kitchen Sink を試す",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Explore the Kitchen Sink",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0096-text-01": {
-      "sourceHash": "49b83124fd2135e27e2391851a701553db585f2bfe1c37681e02e3297196a53f",
-      "targetHash": "dde749f553ff6a6ee49d6ff7ff46d76743e7f8f180c6c0d9deeb014ecf99cfd7",
-      "machineHash": "dde749f553ff6a6ee49d6ff7ff46d76743e7f8f180c6c0d9deeb014ecf99cfd7",
-      "machineText": "最初のアプリが動作したら、ほかに何ができるかを学ぶには、*Kitchen Sink* のサンプルを試すのが最も近道です。これは、単一のコードベースから iOS、Android、デスクトップで動作する完全な Wails アプリで、触覚フィードバック、位置情報、生体認証、ローカル通知、セキュアストレージなどを網羅しています。",
-      "status": "final",
-      "sourcePreview": "Once your first app is running, the *Kitchen Sink* example is the fastest way to learn what else is …",
+    "b0103-text-01": {
+      "sourceHash": "5ce2c33d8617681d45693222fcb4e01f396f6a8831022c8c248d3b68aa1f0c15",
+      "targetHash": "a636190de9a0413c889b0df12cc71b20df88d926914ccd3cad3e13c6cc30e6a5",
+      "machineHash": "a636190de9a0413c889b0df12cc71b20df88d926914ccd3cad3e13c6cc30e6a5",
+      "machineText": "最初のアプリが動作したら、ほかに何ができるかを学ぶには **Kitchen Sink** サンプルが最も手早い方法です。これは単一のコードベースから iOS、Android、デスクトップで動作する完全な Wails アプリで、触覚フィードバック、位置情報、生体認証、ローカル通知、セキュアストレージなどを網羅しています。",
+      "status": "machine-translated",
+      "sourcePreview": "Once your first app is running, the **Kitchen Sink** example is the fastest way to learn what else i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0097-text-01": {
-      "sourceHash": "8fccc324b48962e2150e0b687d1d54911bdf233e4b75c1dea797a399f56a0633",
-      "targetHash": "fd5a1f18be256dc2cf7de730e2837ffdd4ad29841cc9e8fcdc2019912c1c8ec2",
-      "machineHash": "fd5a1f18be256dc2cf7de730e2837ffdd4ad29841cc9e8fcdc2019912c1c8ec2",
-      "machineText": "[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) でソースを参照してください。特に `native_features_ios.go` ファイルと `native_features_android.go` ファイルは、プラットフォーム固有の機能をコピー＆ペーストで実装する際の出発点として役立ちます。",
-      "status": "final",
-      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/example…",
+    "b0104-text-01": {
+      "sourceHash": "6c23f4d999b2e5f60a998b61984b6ed022ced0850ada9306b24e4ca554d9f48e",
+      "targetHash": "4fc8ac32626d296d333920ea6ca6962f3344375e289e9166a4bc89b834267424",
+      "machineHash": "4fc8ac32626d296d333920ea6ca6962f3344375e289e9166a4bc89b834267424",
+      "machineText": "ソースは [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) で確認できます。特に `native_features_ios.go` と `native_features_android.go` の各ファイルは、プラットフォーム固有機能を実装する際にコピー＆ペーストして使える出発点として役立ちます。",
+      "status": "machine-translated",
+      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0098-heading-01": {
+    "b0105-heading-01": {
       "sourceHash": "eaf380e7f60489b7d687971d73fa8687ed68ef0aa7cc9a38310c146b06538067",
       "targetHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
       "machineHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
       "machineText": "次のステップ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "What's next",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0099-text-01": {
-      "sourceHash": "8abaa77734321112869f945b0a48ddeedc1252e0ec3828c731efb9e074244e2e",
-      "targetHash": "e4b015ae64b24fe9aae8610fc7412b3050027bbdab37e1a4ab5435492cb00ed5",
-      "machineHash": "e4b015ae64b24fe9aae8610fc7412b3050027bbdab37e1a4ab5435492cb00ed5",
-      "machineText": "完全なリファレンス：設定オプション、ネイティブタブ、WKWebView の機能・設定の有効／無効を切り替える項目、実機向けビルド、署名。",
-      "status": "final",
-      "sourcePreview": "Full reference: configuration options, native tabs, WKWebView toggles, device builds, signing.",
-      "provider": "codex",
-      "model": "gpt-6-astra",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
-    },
-    "b0100-text-01": {
-      "sourceHash": "8f2e78edec66165b66f2e23f96c731c58da10a94cb89a07bed9e3d302d2b031f",
-      "targetHash": "0120eda7a6dbd97199709ff286a8b4ac93d1ace95e26ca31475cc90f23534728",
-      "machineHash": "0120eda7a6dbd97199709ff286a8b4ac93d1ace95e26ca31475cc90f23534728",
-      "machineText": "[iOS ガイド →](/guides/mobile/ios/)",
-      "status": "final",
-      "sourcePreview": "[iOS Guide →](/guides/mobile/ios/)",
+    "b0106-text-01": {
+      "sourceHash": "8d529d1018ed3e70e51dc3be494cbc71cd7f3c5dac28be7e189130e460b64655",
+      "targetHash": "26c91371b42184e8c408ec7d73ca45d0b2871ba117d2b72c9df96dacec740075",
+      "machineHash": "26c91371b42184e8c408ec7d73ca45d0b2871ba117d2b72c9df96dacec740075",
+      "machineText": "iOS ガイド\n完全なリファレンス：設定オプション、ネイティブタブ、WKWebView の切り替え、デバイス用ビルド、署名。",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide Full reference: configuration options, native tabs, WKWebView toggles, device builds, sign…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0101-text-01": {
-      "sourceHash": "5af92237ea9f52de2e4884c4374735d8e8b065e132bcba6d56c30cbc3178e0f0",
-      "targetHash": "34d075c0d788250053096730e43c663b460c299d248f131e80e51519c5c5744c",
-      "machineHash": "34d075c0d788250053096730e43c663b460c299d248f131e80e51519c5c5744c",
-      "machineText": "完全なリファレンス：設定、トースト、Play Store 向けパッケージング、NDK の詳細。",
-      "status": "final",
-      "sourcePreview": "Full reference: configuration, toasts, Play Store packaging, NDK details.",
+    "b0107-text-01": {
+      "sourceHash": "8b2cd884847095919d5fd7089d33e6a67cdc017cc23de14aaf1a809424104986",
+      "targetHash": "244c9a95efde087c7db2b9147478c4b7f193d0f185957ef1d79fd3195111040b",
+      "machineHash": "244c9a95efde087c7db2b9147478c4b7f193d0f185957ef1d79fd3195111040b",
+      "machineText": "Android ガイド\n完全なリファレンス：設定、トースト、Play Store 向けパッケージング、NDK の詳細。",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide Full reference: configuration, toasts, Play Store packaging, NDK details.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0102-text-01": {
-      "sourceHash": "bf55a9cf586cf6de0925f1fca3f27650952237c086b09d8b96ba2a21dbf6e761",
-      "targetHash": "ea6f4a2d2c8a22ace298d10b7746278ee5c28ff8670641cd91fcaac19e969411",
-      "machineHash": "ea6f4a2d2c8a22ace298d10b7746278ee5c28ff8670641cd91fcaac19e969411",
-      "machineText": "[Android ガイド →](/guides/mobile/android/)",
-      "status": "final",
-      "sourcePreview": "[Android Guide →](/guides/mobile/android/)",
+    "b0108-text-01": {
+      "sourceHash": "ae334b3a961a0ba7af8767acd2749d2af20ad98b314a4cbfbd19d23bf29a5eda",
+      "targetHash": "f799ee0d1864eac2438d5a609f3621d2f7900ed733de261da32066cabc8c56a3",
+      "machineHash": "f799ee0d1864eac2438d5a609f3621d2f7900ed733de261da32066cabc8c56a3",
+      "machineText": "📖 Kitchen Sink のソース\n触覚フィードバック、位置情報、生体認証、通知、セキュアストレージを、1 つの実行可能なアプリですべて確認できます。",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Kitchen Sink source Haptics, geolocation, biometrics, notifications, secure storage — all in one r…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0103-text-01": {
-      "sourceHash": "fd33d88652687b2987a8bf891c8a956bdfda078d960ef8c1140c01f2fd6e9b2a",
-      "targetHash": "6b7b5455775878b52c3ec54e05e57af0a5573e9491fe293091f64b2195161eeb",
-      "machineHash": "6b7b5455775878b52c3ec54e05e57af0a5573e9491fe293091f64b2195161eeb",
-      "machineText": "触覚フィードバック、位置情報、生体認証、通知、セキュアストレージを、実行可能な 1 つのアプリにまとめています。",
-      "status": "final",
-      "sourcePreview": "Haptics, geolocation, biometrics, notifications, secure storage — all in one runnable app.",
+    "c0011-line-001-01": {
+      "sourceHash": "34daca5a9aa8e78d48ab6082f734a26aaec1812e5a4337d884d60878af511668",
+      "targetHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
+      "machineHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
+      "machineText": "iOS ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "b0104-text-01": {
-      "sourceHash": "9648ee4164d68e55509aa2f459f35f2eb5b63d0ac0eacce54fe2fc3718dd9cd2",
-      "targetHash": "d49b413eb37ddbb4c4bd9259f2d0a256b79dc8a614b1301fe760a76f20d06835",
-      "machineHash": "d49b413eb37ddbb4c4bd9259f2d0a256b79dc8a614b1301fe760a76f20d06835",
-      "machineText": "[GitHub で表示 →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)",
-      "status": "final",
-      "sourcePreview": "[View on GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)",
+    "c0011-line-002-01": {
+      "sourceHash": "80e07f62422e02cc78b77256282b2c23766531cfe59ea540847a051e5faab8d6",
+      "targetHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
+      "machineHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
+      "machineText": "Android ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "fm-description-01": {
+    "c0011-line-003-01": {
+      "sourceHash": "8aafef7af83b7310abb9beb4a6df350736862667f4d3ebd35d74333e375e490b",
+      "targetHash": "3f0953ee17945a1be620f225ce6daf5939e2dc474cb646a217c107912e4c5087",
+      "machineHash": "3f0953ee17945a1be620f225ce6daf5939e2dc474cb646a217c107912e4c5087",
+      "machineText": "GitHub で表示 →",
+      "status": "machine-translated",
+      "sourcePreview": "View on GitHub →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "fm-description": {
       "sourceHash": "592dfea64fbd5c8b50cb5ccb66cda70c8087e541491394d2272a001de0edfaee",
       "targetHash": "449d46ce03f2e9d08d2d4586daff1c64c9f85bbeeadbcae5ed672fccb89b2fed",
       "machineHash": "449d46ce03f2e9d08d2d4586daff1c64c9f85bbeeadbcae5ed672fccb89b2fed",
       "machineText": "Wails アプリを数分で iOS Simulator または Android Emulator 上で実行する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Run your Wails app on iOS Simulator or Android Emulator in minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "28717d456559f80ea067717b57decec4934b3a9cd6e2ba7d9e15fdb79cd088bd",
       "targetHash": "5dc2c99a17c7bc1f2c4fffe10d25a3d510e74691d17c90f99a9ea3fcac1a5133",
       "machineHash": "5dc2c99a17c7bc1f2c4fffe10d25a3d510e74691d17c90f99a9ea3fcac1a5133",
       "machineText": "初めてのモバイルアプリ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Your First Mobile App",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "tab0001-label-001": {
+      "sourceHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
+      "targetHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
+      "machineHash": "7e9ac7a6ef5e0c3df39effe6bf12cdcb47fc398f3c7ce73fed02c4f70b5db063",
+      "machineText": "iOS Simulator",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Simulator",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "tab0003-label-002": {
+      "sourceHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
+      "targetHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
+      "machineHash": "41e48f98eff3ecec6145b8dca47ad375a815efaa33daee81cfdc340fb020d224",
+      "machineText": "Android Emulator",
+      "status": "machine-translated",
+      "sourcePreview": "Android Emulator",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "tab0008-label-004": {
+      "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineText": "iOS",
+      "status": "machine-translated",
+      "sourcePreview": "iOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
+    },
+    "tab0009-label-005": {
+      "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineText": "Android",
+      "status": "machine-translated",
+      "sourcePreview": "Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T22:09:12Z"
     }
   }
 }
