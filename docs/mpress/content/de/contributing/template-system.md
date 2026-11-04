@@ -1,19 +1,19 @@
 ---
 title: "Vorlagensystem"
-description: "Wie Wails v3 neue Projekte erzeugt, wie Vorlagen organisiert sind und wie Sie eigene Vorlagen erstellen."
+description: "Wie Wails v3 neue Projekte einrichtet, wie Vorlagen organisiert sind und wie Sie eigene Vorlagen erstellen."
 slug: "contributing/template-system"
 sourcePath: "contributing/template-system.md"
 ---
 
-Wails enthält ein **Vorlagensystem**, mit dem `wails3 init` ein sofort ausführbares Projekt erzeugen kann. Für eine bewusst klein gehaltene Auswahl an Frameworks sind Vorlagen integriert (Vanilla, React, Vue, Svelte). Jedes andere Framework lässt sich verwenden, indem Sie [Ihr eigenes Frontend einbinden](/guides/dev/frontend-frameworks/) oder eine [benutzerdefinierte Vorlage](/guides/advanced/custom-templates/) veröffentlichen.
+Wails enthält ein **Vorlagensystem**, mit dem `wails3 init` ein sofort ausführbares Projekt erzeugen kann. Für eine bewusst kleine Auswahl an Frameworks sind Vorlagen integriert (Vanilla, React, Vue, Svelte). Jedes andere Framework lässt sich verwenden, indem Sie [Ihr eigenes Frontend mitbringen](/guides/dev/frontend-frameworks/) oder eine [benutzerdefinierte Vorlage](/guides/advanced/custom-templates/) veröffentlichen.
 
 Diese Seite behandelt:
 
 1. Verzeichnisstruktur der Vorlagen
-2. Auswahl und Verarbeitung von Vorlagen durch die CLI
+2. Wie die CLI Vorlagen auswählt und rendert
 3. Schrittweises Erstellen einer neuen Vorlage
 4. Aktualisieren oder Überschreiben vorhandener Vorlagen
-5. Fehlerbehebung und bewährte Verfahren
+5. Fehlerbehebung und bewährte Vorgehensweisen
 
 ---
 
@@ -22,7 +22,7 @@ Diese Seite behandelt:
 ```
 v3/internal/templates/
 ├── _common/        # Files copied into EVERY project (Taskfile.yml, build/, etc.)
-├── base/           # Backend-only "plain Go" base layer (frontend/ + NEXTSTEPS.md)
+├── base/           # Minimal frontend skeleton (frontend/ + NEXTSTEPS.md)
 ├── ios/            # iOS bootstrapper
 ├── vanilla/        vanilla-js/   # TypeScript (default) + JavaScript variant
 ├── react/          react-js/     # TypeScript (default) + JavaScript variant
@@ -31,21 +31,23 @@ v3/internal/templates/
 └── templates.go    # Registry + Install/Get APIs (no auto-registration via embed)
 ```
 
-- **`_common/`** — allgemeiner Vorlagencode (Taskfile, Verzeichnis `build/` und gemeinsam genutzte Infrastruktur), der in jedes Projekt eingebunden wird.
-- **`base/`** — der Go-Teil, auf dem jede Vorlage basiert. Hinweis: `base/` selbst enthält **keine** `template.json`; diese Datei befindet sich in der jeweiligen Framework-spezifischen Vorlage.
-- **Framework-Ordner** — enthalten das Frontend (`frontend/`), die Framework-Konfiguration und eine `template.json` mit den Metadaten der Vorlage.
+- **`_common/`** – universelles Grundgerüst (Taskfile, Verzeichnis `build/` und gemeinsam genutzte Infrastruktur), das in jedes Projekt eingebunden wird.
+- **`base/`** – ein minimales Frontend-Grundgerüst für benutzerdefinierte Vorlagen, keine automatische Backend-Schicht. Beim regulären Erstellen der Arbeitskopie wird `_common/` mit der ausgewählten Framework-Vorlage überlagert.
+- **Framework-Ordner** – enthalten das Frontend (`frontend/`), die Framework-Konfiguration und eine Datei `template.yaml`, die die Metadaten der Vorlage beschreibt.
 - Die Ordnernamen entsprechen der **Vorlagen-ID**, die Sie an die CLI übergeben (`wails3 init -t react`).
-- **Sprachkonvention:** TypeScript ist die Standardsprache und verwendet den Namen ohne Suffix (`react`). Eine JavaScript-Variante erhält, sofern vorhanden, das Suffix `-js` (`react-js`). Integrierte Vorlagen deklarieren ihre Sprache in `template.yaml` explizit mit `typescript: true|false`. Community-Vorlagen können weiterhin das veraltete Suffix `-ts` verwenden, das als Ausweichlösung berücksichtigt wird.
+- **Sprachkonvention:** TypeScript ist die Standardeinstellung und verwendet den Namen ohne Suffix (`react`). Eine JavaScript-Variante erhält, sofern vorhanden, das Suffix `-js` (`react-js`). Integrierte Vorlagen deklarieren ihre Sprache in `template.yaml` explizit mit `typescript: true|false`. Community-Vorlagen dürfen weiterhin das bisherige Suffix `-ts` verwenden, das als Fallback berücksichtigt wird.
 
 > Das gesamte Verzeichnis `internal/templates/` wird in die CLI-Binärdatei kompiliert
 >
-> und zwar über `//go:embed *`, sodass Benutzer Projekte offline erzeugen können.
+> über `//go:embed *`, sodass Benutzer Projekte offline einrichten können.
 
 ---
 
-## 2. Verwendung von Vorlagen durch `wails3 init`
+Der Loader akzeptiert außerdem ältere `template.json`-Metadaten. Neue integrierte Vorlagen verwenden YAML einschließlich der expliziten Einstellung `typescript`.
 
-Aufrufkette (ohne `cmd/wails3/init.go` — die CLI wird direkt in `cmd/wails3/main.go` verdrahtet):
+## 2. Wie `wails3 init` Vorlagen verwendet
+
+Aufrufkette (kein `cmd/wails3/init.go` – die CLI wird direkt in `cmd/wails3/main.go` verdrahtet):
 
 ```
 cmd/wails3/main.go             (clir wiring)
@@ -64,13 +66,13 @@ gosod.New(template.FS).Extract(options.ProjectDir, data)   // file extraction
 go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 ```
 
-Es gibt keine API für `Template.Load()` / `Template.CopyTo()` / `Template.Validate()` — `gosod` (`github.com/leaanthony/gosod`) übernimmt die Extraktion aus der eingebetteten `fs.FS`.
+Es gibt keine API `Template.Load()` / `Template.CopyTo()` / `Template.Validate()`. Das Erstellen der Arbeitskopie übernimmt `gosod` (`github.com/leaanthony/gosod`) anhand von `fs.FS`, das in die Binärdatei eingebettet ist.
 
-### Optionen für `wails3 init`
+### Flags für `wails3 init`
 
 Definiert in `internal/flags/init.go`:
 
-| Option | Zweck | Standardwert |
+| Flag | Zweck | Standardwert |
 | --- | --- | --- |
 | `-p` | Paketname | `main` |
 | `-t` | Name einer integrierten Vorlage, lokaler Pfad oder URL | `vanilla` |
@@ -78,36 +80,36 @@ Definiert in `internal/flags/init.go`:
 | `-d` | Projektverzeichnis | `.` |
 | `-q` | Konsolenausgabe unterdrücken | false |
 | `-l` | Vorlagen auflisten | false |
-| `-skipgomodtidy` | Ausführung von `go mod tidy` nach der Extraktion überspringen | false |
+| `-skipgomodtidy` | Ausführen von `go mod tidy` nach dem Erstellen der Arbeitskopie überspringen | false |
 | `-git` | URL des zu initialisierenden Git-Repositorys | (leer) |
-| `-mod` | Go-Modulpfad (wird aus `-git` abgeleitet, falls nicht festgelegt) | (leer) |
-| `-s` | Warnung bei Verwendung entfernter Vorlagen überspringen | false |
-| `-productname` / `-productdescription` / `-productversion` / `-productcompany` / `-productcopyright` / `-productcomments` / `-productidentifier` | In die generierten Build-Assets eingebettete Metadaten | sinnvolle Standardwerte |
+| `-mod` | Go-Modulpfad (wird aus `-git` abgeleitet, wenn nicht festgelegt) | (leer) |
+| `-s` | Warnung bei der Verwendung entfernter Vorlagen überspringen | false |
+| `-productname` / `-productdescription` / `-productversion` / `-productcompany` / `-productcopyright` / `-productcomments` / `-productidentifier` | In die generierten Build-Artefakte eingebettete Metadaten | sinnvolle Standardwerte |
 
-Es gibt **keinen** langen Alias `-list` (nur `-l`) und keine vorlagenspezifische `--help`.
+Es gibt keinen langen Alias `-list` (nur `-l`) und kein templatespezifisches `--help`.
 
 ### Ersetzungen
 
-Platzhalter sind standardmäßige Go-Vorlagenanweisungen — das vorangestellte `.` ist Teil des Feldzugriffs:
+Platzhalter sind reguläre Go-Vorlagendirektiven – der vorangestellte Teil `.` gehört zum Feldzugriff:
 
 | Platzhalter | Beispiel | Quelle |
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Flag `-n` / Verzeichnisname |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Flag `-mod` oder aus `-git` abgeleitet |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Einkompilierte Konstante aus `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Einkompilierte Konstante aus `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Metadaten zum Build-Zeitpunkt | entsprechende `-product*`-Flags |
 
-Wenn Sie einen neuen Platzhalter benötigen, fügen Sie den Vorlagendaten in `internal/templates/templates.go` ein Feld und in `internal/flags/init.go` ein passendes Feld/Flag hinzu (oder setzen Sie es aus `internal/commands/init.go`).
+Wenn Sie einen neuen Platzhalter benötigen, fügen Sie den Vorlagendaten in `internal/templates/templates.go` ein Feld und in `internal/flags/init.go` ein entsprechendes Feld beziehungsweise Flag hinzu (oder legen Sie es über `internal/commands/init.go` fest).
 
 ### Hook nach dem Kopieren
 
-Nachdem `gosod` das Entpacken der Vorlage abgeschlossen hat, führt die CLI Folgendes aus:
+Nachdem `gosod` das Erstellen der Arbeitskopie aus der Vorlage abgeschlossen hat, führt die CLI Folgendes aus:
 
 ```
 go mod tidy
 ```
 
-sofern Sie nicht `-skipgomodtidy` übergeben. Einen Schritt `task deps` gibt es nicht.
+sofern Sie nicht `-skipgomodtidy` übergeben. Es gibt keinen Schritt `task deps`.
 
 ---
 
@@ -121,7 +123,7 @@ sofern Sie nicht `-skipgomodtidy` übergeben. Einen Schritt `task deps` gibt es 
 internal/templates/solid/
 ```
 
-Der Ordnername entspricht der Vorlagen-ID. Verwenden Sie dafür **kebab-case**.
+Der Ordnername entspricht der Vorlagen-ID. Verwenden Sie **Kebab-Case**.
 
 ### 3.2 Minimaler Dateisatz
 
@@ -135,18 +137,18 @@ solid/
 └── ...              # Any extra Go files the template wants to inject
 ```
 
-Kopieren Sie zunächst `react` und entfernen Sie nicht benötigte Dateien. Vergessen Sie nicht, eine `template.yaml` zu erstellen – setzen Sie für eine TypeScript-Vorlage `typescript: true`. `base/` ist der einzige Ordner ohne eine solche Datei.
+Kopiere zunächst `react` und entferne nicht benötigte Dateien. Vergiss nicht, eine `template.yaml` zu erstellen — setze für ein TypeScript-Template `typescript: true`; `base/` ist der einzige Ordner ohne eine solche Datei.
 
 ### 3.3 Platzhalter aktualisieren
 
-Suchen und ersetzen Sie wörtliche Beispielwerte durch Go-Vorlagendirektiven, zum Beispiel:
+Suche nach den literalen Beispielwerten und ersetze sie durch Go-Template-Direktiven, zum Beispiel:
 
 - `myapp` → `{{.ProjectName}}`
 - `github.com/you/myapp` → `{{.ModulePath}}`
 
 ### 3.4 Einbinden
 
-Da `templates.go` das eingebettete Dateisystem bei der Initialisierung durchläuft, genügt es in der Regel, unter `internal/templates/<id>/` einen neuen Ordner anzulegen – ein manueller Registrierungsaufruf ist nicht erforderlich. Wenn Sie zusätzliche Logik benötigen, etwa eine benutzerdefinierte Validierung oder Schritte nach dem Kopieren, fügen Sie diese zu `templates.Install` in `internal/templates/templates.go` hinzu.
+Da `templates.go` das eingebettete Dateisystem bei der Initialisierung durchläuft, genügt es normalerweise, unter `internal/templates/<id>/` einen neuen Ordner abzulegen — ein manueller Registrierungsaufruf ist nicht erforderlich. Wenn du zusätzliche Logik benötigst, etwa eine benutzerdefinierte Validierung oder Schritte nach dem Kopieren, füge sie in `templates.Install` in `internal/templates/templates.go` ein.
 
 ### 3.5 Testen
 
@@ -156,68 +158,68 @@ cd demo
 wails3 dev
 ```
 
-Stellen Sie Folgendes sicher:
+Stelle Folgendes sicher:
 
 - Der Entwicklungsserver startet auf dem in `WAILS_VITE_PORT` veröffentlichten Port
-- Die generierten Bindings werden unter `frontend/bindings/...` angelegt
+- Die generierten Bindings erscheinen unter `frontend/bindings/...`
 - Hot Reload funktioniert
 
 ---
 
-## 4. Vorhandene Vorlagen ändern
+## 4. Vorhandene Templates ändern
 
-1. Bearbeiten Sie die Dateien unter `internal/templates/<id>/`.
-2. Erstellen Sie die CLI neu (`cd v3 && go build -o ../wails3 ./cmd/wails3`); die Direktive `//go:embed *` übernimmt die neuen Inhalte.
-3. Aktualisieren Sie alle **Abhängigkeitsversionen** in `frontend/package.json` und `Taskfile.yml`.
-4. Aktualisieren Sie die Beschreibung der Vorlage in `template.json`, wenn sich ihr Verhalten ändert.
+1. Bearbeite die Dateien unter `internal/templates/<id>/`.
+2. Erstelle die CLI neu (`cd v3 && go build -o ../wails3 ./cmd/wails3`); die Direktive `//go:embed *` übernimmt die neuen Inhalte.
+3. Aktualisiere alle **Abhängigkeitsversionen** in `frontend/package.json` und `Taskfile.yml`.
+4. Aktualisiere die Beschreibung in `template.yaml` des Templates, wenn sich dessen Verhalten ändert.
 
 ### Häufige Anpassungen
 
 | Aufgabe | Ort |
 | --- | --- |
-| Port des Entwicklungsservers ändern | `frontend/vite.config.ts` – `WAILS_VITE_PORT` auslesen |
+| Port des Entwicklungsservers ändern | `frontend/vite.config.ts` — `WAILS_VITE_PORT` auslesen |
 | Umgebungsvariablen hinzufügen | `build/Taskfile.yml` oder `frontend/.env` |
 | JS-Paketmanager ersetzen | In `build/Taskfile.yml` `npm` durch `pnpm`/`bun` ersetzen |
 
 ---
 
-## 5. Tipps zum Erstellen von Vorlagen
+## 5. Tipps zum Erstellen von Templates
 
-- **Frontend generisch halten** – vermeiden Sie Verweise auf Wails-spezifische globale Variablen; `/wails/runtime.js` wird zur Laufzeit vom Asset-Server bereitgestellt.
-- **Keine kompilierten Artefakte** – schließen Sie `node_modules`, `dist` und `.DS_Store` aus dem eingebetteten Verzeichnis aus (oder tragen Sie sie in `.gitignore` ein, damit sie nie committet werden).
-- **Voraussetzungen dokumentieren** – dokumentieren Sie die Node-Version, zusätzliche CLI-Werkzeuge usw. in `template.json` oder `NEXTSTEPS.md`.
-- **Breaking Changes vermeiden** – wenn die Überarbeitung umfangreich ist, erstellen Sie eine neue Vorlagen-ID, statt eine vorhandene Vorlage zu verändern.
+- **Frontend generisch halten** — vermeide Verweise auf Wails-spezifische globale Variablen; `/wails/runtime.js` wird zur Laufzeit vom Asset-Server bereitgestellt.
+- **Keine kompilierten Artefakte** — schließe `node_modules`, `dist` und `.DS_Store` aus dem eingebetteten Verzeichnis aus (oder trage sie in `.gitignore` ein, damit sie nie committet werden).
+- **Voraussetzungen dokumentieren** — dokumentiere die Node-Version, zusätzliche CLI-Werkzeuge usw. in `template.yaml` oder `NEXTSTEPS.md`.
+- **Inkompatible Änderungen vermeiden** — wenn die Überarbeitung umfangreich ist, erstelle eine neue Template-ID, statt eine vorhandene zu verändern.
 
 ---
 
 ## 6. Fehlerbehebung
 
-| Symptom | Ursache | Behebung |
+| Symptom | Ursache | Lösung |
 | --- | --- | --- |
-| `unknown template name` | Tippfehler in `-t` oder Vorlage nicht eingebettet | Führe `wails3 init -l` aus, um die verfügbaren Vorlagen aufzulisten |
-| Platzhalter werden nicht ersetzt | `{{ProjectName}}` statt `{{.ProjectName}}` verwendet | Füge das führende `.` hinzu (Feldzugriff in Go-Vorlagen) |
-| Entwicklungsserver öffnet eine leere Seite | Vite-Konfiguration liest `WAILS_VITE_PORT` nicht ein | Überprüfe deine `vite.config.ts` |
-| Frontend-Build für die Produktionsumgebung schlägt fehl | Vite-Pfad `base` vergessen | Setze `base: "./"` in `vite.config.ts` |
+| `unknown template name` | Tippfehler in `-t` oder Template nicht eingebettet | Führe `wails3 init -l` aus, um die verfügbaren Templates aufzulisten |
+| Platzhalter werden nicht ersetzt | `{{ProjectName}}` statt `{{.ProjectName}}` verwendet | Füge das vorangestellte `.` hinzu (Feldzugriff in Go-Templates) |
+| Der Entwicklungsserver öffnet eine leere Seite | Die Vite-Konfiguration liest `WAILS_VITE_PORT` nicht aus | Überprüfe deine `vite.config.ts` |
+| Das Frontend kann für die Produktion nicht gebaut werden | Vite-Pfad `base` vergessen | Setze `base: "./"` in `vite.config.ts` |
 
 ---
 
 ## 7. Übersicht der wichtigsten Quelldateien
 
-| Datei | Aufgabe |
+| Datei | Zuständigkeit |
 | --- | --- |
-| `internal/templates/templates.go` | Bettet das Vorlagen-Dateisystem ein und stellt `Install(options *flags.Init) error`, `GetDefaultTemplates()` und `ValidTemplateName(name)` bereit |
-| `internal/templates/<id>/**` | Eigentlicher Vorlageninhalt |
-| `internal/commands/init.go` | CLI-Anbindung: Wählt die Vorlage aus, füllt die Metadaten aus und ruft `templates.Install` auf |
-| `internal/commands/generate_template.go` | `wails3 generate template` — Dienstprogramm, um ein aktives Projekt wieder als Vorlage zu *exportieren* (praktisch für Aktualisierungen) |
+| `internal/templates/templates.go` | Bettet das Template-Dateisystem ein und stellt `Install(options *flags.Init) error`, `GetDefaultTemplates()` und `ValidTemplateName(name)` bereit |
+| `internal/templates/<id>/**` | Eigentliche Template-Inhalte |
+| `internal/commands/init.go` | CLI-Verknüpfung: wählt das Template aus, trägt Metadaten ein und ruft `templates.Install` auf |
+| `internal/commands/generate_template.go` | `wails3 generate template` — Hilfsprogramm, um ein aktives Projekt wieder als Template zu *exportieren* (praktisch für Aktualisierungen) |
 | `internal/flags/init.go` | Flag-Definitionen für `wails3 init` |
 
 ---
 
 ## 8. Zusammenfassung
 
-- Vorlagen befinden sich in **`internal/templates/`** und werden über `//go:embed *` in die CLI eingebettet.
-- `wails3 init -t <id>` extrahiert die Vorlage mithilfe von `gosod` und führt `go mod tidy` aus (mit `-skipgomodtidy` überspringbar).
-- Zum Erstellen einer Vorlage musst du lediglich **einen Ordner anlegen**, Dateien sowie eine `template.json` hinzufügen und Platzhalter im Stil von `{{.ProjectName}}` verwenden.
+- Templates befinden sich in **`internal/templates/`** und werden über `//go:embed *` in die CLI eingebettet.
+- `wails3 init -t <id>` extrahiert das Template über `gosod` und führt `go mod tidy` aus; mit `-skipgomodtidy` lässt sich dieser Schritt überspringen.
+- Um ein Template zu erstellen, musst du lediglich **einen Ordner anlegen**, Dateien sowie eine `template.yaml` hinzufügen und Platzhalter im Stil von `{{.ProjectName}}` verwenden.
 - Das System ist **erweiterbar** und **eigenständig** — ideal, um benutzerdefinierte Stacks mit deinem Team oder der Community zu teilen.
 
-Viel Spaß beim Erstellen von Vorlagen!
+Viel Freude beim Erstellen von Templates!

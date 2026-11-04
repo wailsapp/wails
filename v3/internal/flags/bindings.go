@@ -2,12 +2,13 @@ package flags
 
 import (
 	"errors"
-	"slices"
 	"strings"
 	"unicode/utf8"
 )
 
 type GenerateBindingsOptions struct {
+	PackageDirectory string `name:"dir" description:"Directory used to load Go packages (defaults to the working directory)"`
+
 	BuildFlagsString  string `name:"f" description:"A list of additional space-separated Go build flags. Flags (or parts of them) can be wrapped in single or double quotes to include spaces"`
 	OutputDirectory   string `name:"d" description:"The output directory" default:"frontend/bindings"`
 	ModelsFilename    string `name:"models" description:"File name for exported JS/TS models (excluding the extension)" default:"models"`
@@ -91,8 +92,8 @@ func (options *GenerateBindingsOptions) BuildFlags() (flags []string, err error)
 			str = str[closingQuote+quoteSize:]
 		}
 
-		// append a clone of the flag to the result, then reuse buffer space
-		flags = append(flags, string(slices.Clone(flag)))
+		// Convert to a string before reusing the buffer for the next flag.
+		flags = append(flags, string(flag))
 		flag = flag[:0]
 	}
 

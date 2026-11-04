@@ -12,7 +12,7 @@ Halaman ini mungkin sudah tidak mutakhir untuk Wails v3.
 
 <!-- TODO: Update this link -->
 
-Halaman ini berisi daftar templat yang didukung komunitas. Untuk membuat templat Anda sendiri, lihat panduan [Templat](https://wails.io/docs/guides/templates).
+Halaman ini berisi daftar templat yang didukung komunitas. Untuk membuat templat Anda sendiri, lihat panduan [Templat](https://v2.wails.io/docs/guides/templates).
 
 @note{type="tip" title="Cara Mengirimkan Templat"}
 Anda dapat mengeklik `Edit this page` di bagian bawah untuk menyertakan templat Anda.

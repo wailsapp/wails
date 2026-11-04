@@ -1,22 +1,22 @@
 ---
 title: "全局快捷键"
-description: "注册系统级键盘快捷键，即使应用未获得焦点也能触发"
+description: "注册系统级键盘快捷键，即使应用程序未获得焦点也能触发"
 slug: "features/keyboard/global-shortcuts"
 sourcePath: "features/keyboard/global-shortcuts.md"
 ---
 
-全局快捷键是系统级键盘快捷键。只要 Wails 应用仍在运行，无论当前哪个应用获得焦点，它们都能触发。它们非常适合用于显示/隐藏热键、快速捕获工具、媒体控制，以及用户希望能从任何位置访问的其他功能。
+只要 Wails 应用程序仍在运行，无论当前哪个应用程序获得焦点，全局快捷键都能触发。它们非常适合用于显示/隐藏热键、快速捕获工具、媒体控制，以及用户希望能从任何位置访问的其他功能。
 
 @note{type="info" title="全局快捷键与按键绑定"}
-[按键绑定](/features/keyboard/shortcuts/)（`app.KeyBinding`）仅在应用的某个窗口获得焦点时触发。全局快捷键（`app.GlobalShortcut`）可在整个系统范围内触发，即使应用在后台运行也是如此。请根据需要选择。
+[按键绑定](/features/keyboard/shortcuts/)（`app.KeyBinding`）仅在应用程序的某个窗口获得焦点时触发。全局快捷键（`app.GlobalShortcut`）可在系统范围内触发，即使应用程序处于后台也是如此。请根据需要选择。
 
 @end
 
-全局快捷键直接基于各平台的原生功能实现，不会引入任何第三方依赖。
+全局快捷键直接基于各平台的原生功能实现，不会添加任何第三方依赖项。
 
 ## 访问全局快捷键管理器
 
-可通过应用实例的`GlobalShortcut`属性访问该管理器：
+可通过应用程序实例的`GlobalShortcut`属性访问该管理器：
 
 ```go
 app := application.New(application.Options{
@@ -28,7 +28,7 @@ globalShortcuts := app.GlobalShortcut
 
 ## 注册快捷键
 
-`Register`接收一个快捷键组合和一个回调。每当按下该快捷键时，回调都会在其自身的 goroutine 中运行。
+`Register`接受一个加速键和一个回调。每当按下该快捷键时，回调都会在自己的 goroutine 中运行。
 
 ```go
 err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
@@ -41,16 +41,16 @@ if err != nil {
 }
 ```
 
-可以在调用`app.Run`之前注册快捷键。应用启动时，系统会自动完成与操作系统的绑定。
+可以在调用`app.Run`之前注册快捷键。应用程序启动时，系统会自动与操作系统建立绑定。
 
-@note{type="tip" title="在回调中操作 UI"}
-回调不在主线程上运行。如果回调需要与窗口或其他 UI 交互，窗口方法会替你处理线程调度；但对于自定义的主线程操作，请使用`application.InvokeSync`将其包装起来。
+@note{type="tip" title="从回调中操作 UI"}
+回调在主线程之外运行。如果回调需要与窗口或其他 UI 交互，窗口方法会代为处理；但对于自定义的主线程任务，请使用`application.InvokeSync`将其包装起来。
 
 @end
 
-### 快捷键组合格式
+### 加速键格式
 
-全局快捷键使用与菜单快捷键和按键绑定相同的快捷键组合格式：
+全局快捷键使用与菜单加速键和按键绑定相同的加速键格式：
 
 ```go
 "CmdOrCtrl+Shift+G"  // Command on macOS, Control elsewhere
@@ -60,7 +60,7 @@ if err != nil {
 "Ctrl+Shift+F5"      // Function keys are supported
 ```
 
-`CmdOrCtrl`在 macOS 上解析为 Command，在 Windows 和 Linux 上解析为 Control，便于定义跨平台快捷键。
+`CmdOrCtrl`在 macOS 上解析为 Command，在 Windows 和 Linux 上解析为 Control，因此很适合定义跨平台快捷键。
 
 ## 管理快捷键
 
@@ -80,15 +80,15 @@ app.GlobalShortcut.Unregister("Ctrl+Shift+G")
 app.GlobalShortcut.UnregisterAll()
 ```
 
-应用退出时会自动释放所有已注册的快捷键，因此无需手动清理。
+应用程序退出时会自动释放所有已注册的快捷键，因此无需手动清理。
 
 ## 重复注册同一快捷键时会发生什么
 
 这里有两种不同的情况，Wails 会以不同方式处理。
 
-### 同一应用重复注册快捷键
+### 同一应用程序重复注册快捷键
 
-这种情况由 Wails 自行处理，在所有平台上的行为都相同。第二次调用`Register`会返回错误，并保留原有绑定（“报错并保留”）。这样可以确保行为可预测，并显式指出错误，而不会悄然替换仍可用的快捷键。
+这种情况由 Wails 自行处理，并且在所有平台上的行为都相同。第二次调用`Register`会返回错误，同时保留原有绑定（“报错并保留”）。这样既可确保行为可预测，也会明确暴露错误，而不是悄然替换一个正常工作的快捷键。
 
 ```go
 app.GlobalShortcut.Register("Ctrl+Shift+G", showWindow)        // ok
@@ -96,18 +96,18 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 // showWindow is still the active callback for this shortcut.
 ```
 
-如果要更改快捷键的回调，请先对其调用`Unregister`，然后再次调用`Register`进行注册。
+如果要更改快捷键的回调，请先对其调用`Unregister`，然后再次调用`Register`。
 
-### 快捷键已被另一个应用占用
+### 快捷键已被另一个应用程序占用
 
 这种情况由操作系统决定，因此结果因平台而异：
 
-| 平台 | 快捷键被另一个应用占用时的行为 |
+| 平台 | 快捷键被另一个应用程序占用时的行为 |
 | --- | --- |
-| **macOS** | 注册成功。macOS 允许多个应用注册同一热键，因此你的回调会与现有占用方的回调并存，而不会被拒绝。 |
-| **Windows** | 注册失败，`Register`返回错误。最先注册该快捷键的应用会继续占用它。 |
+| **macOS** | 注册成功。macOS 允许多个应用程序注册同一热键，因此系统会将你的回调与现有占用者并列添加，而不会拒绝注册。 |
+| **Windows** | 注册失败，`Register`返回错误。最先注册该快捷键的应用程序继续保有它。 |
 | **Linux (X11)** | 注册失败，`Register`返回错误，因为 X 服务器会拒绝再次抓取同一组合键。 |
-| **Linux (Wayland)** | 由合成器协调。通常会通过桌面的全局快捷键对话框要求用户批准或选择绑定。 |
+| **Linux (Wayland)** | 由合成器进行仲裁。通常会要求用户通过桌面的全局快捷键对话框批准或选择绑定。 |
 
 鉴于这些差异，请始终检查`Register`返回的错误，并在无法占用快捷键时提供备用快捷键或向用户反馈。
 
@@ -115,24 +115,24 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 
 @tabs
 [macOS]
-全局快捷键使用 Carbon Event Manager 的热键 API。这是 macOS 上实现系统级热键的标准机制，无需辅助功能权限。
+全局快捷键使用 Carbon Event Manager 的热键 API。这是 macOS 上实现系统级热键的标准机制，不需要辅助功能权限。
 
-热键绑定到物理按键位置，因此在非 QWERTY 键盘布局上，快捷键会映射到标准 ANSI/QWERTY 布局中相应位置的按键。
+字母快捷键会感知键盘布局。Carbon API 绑定的是物理按键位置，因此 Wails 会将字母转换为当前键盘布局中能够输入该字母的按键（通过`UCKeyTranslate`）。因此，在 AZERTY、QWERTZ、Dvorak 及类似布局上，`Cmd+A`会落到标有**A**的按键，而不是 QWERTY 布局中的对应位置。数字、标点符号和命名按键（方向键、功能键等）使用其固定的物理位置。注册快捷键时会确定绑定；如果在应用程序运行期间切换键盘布局，已有的字母快捷键仍会保留最初绑定的物理按键。
 
-@note{type="caution" title="隐藏快捷键与`ApplicationShouldTerminateAfterLastWindowClosed`"}
-在 macOS 上，`window.Hide()`使用`orderOut:`，这会使窗口不可见。AppKit 会将最后一个不可见窗口视为已关闭，因此，如果设置了`Mac.ApplicationShouldTerminateAfterLastWindowClosed: true`，并使用全局快捷键隐藏唯一的窗口，应用将退出，而不是继续在后台运行。依赖隐藏/显示热键时，请不要设置该选项（默认即为未设置），这样窗口便可隐藏，并在之后重新调出。
+@note{type="caution" title="隐藏快捷键与 `ApplicationShouldTerminateAfterLastWindowClosed`"}
+在 macOS 上，`window.Hide()`使用`orderOut:`，这会使窗口不可见。AppKit 会将最后一个不可见窗口视为已关闭，因此，如果设置了`Mac.ApplicationShouldTerminateAfterLastWindowClosed: true`，并使用全局快捷键隐藏唯一的窗口，应用程序将会退出，而不是继续在后台运行。依赖显示/隐藏热键时，请不要设置该选项（默认即为未设置），这样便可隐藏窗口，并在之后再次将其调出。
 
 @end
 
 [Windows]
-全局快捷键使用 Win32 `RegisterHotKey` API。系统会抑制自动重复，因此按住组合键只会触发一次回调，而不会反复触发。
+全局快捷键使用 Win32 `RegisterHotKey` API。系统会抑制自动重复，因此按住按键只会触发一次回调，而不会反复触发。
 
-如果组合键已被另一个应用占用，注册就会失败，因此请为默认快捷键优先选择不太常见的组合键。
+如果组合键已被另一个应用程序占用，注册将会失败，因此默认快捷键应优先选用不太常见的组合键。
 
 [Linux]
-在<strong>X11</strong>会话中，Wails 直接从 X 服务器获取快捷键，因此请求的加速键会完全按照指定方式绑定。
+在**X11**会话中，Wails 直接从 X 服务器抓取快捷键，因此请求的加速键会完全按指定内容绑定。
 
-在<strong>Wayland</strong>会话中，按照其设计，应用程序无法直接获取按键。Wails 改用 XDG Desktop Portal 的`org.freedesktop.portal.GlobalShortcuts`接口。使用该门户时，传入的加速键只是一个<em>首选</em>触发键，最终的按键组合由合成器（最终由用户）决定。快捷键激活时，回调仍会触发，但无法保证实际按键与请求的按键完全一致，并且`IsRegistered`/`GetAll`报告的是请求的按键，而不是合成器绑定的按键。
+按照设计，在**Wayland**会话中，应用程序无法直接抓取按键。Wails 转而使用 XDG Desktop Portal 的`org.freedesktop.portal.GlobalShortcuts`接口。使用该门户时，传入的加速键只是一个*首选*触发键，最终组合键由合成器（归根结底由用户）决定。激活快捷键时仍会触发回调，但不能保证实际按键与你请求的按键完全一致，并且`IsRegistered`/`GetAll`报告的是你请求的内容，而不是合成器实际绑定的内容。
 
 该门户要求桌面环境实现全局快捷键门户（例如较新版本的 GNOME 或 KDE Plasma）。
 
@@ -177,7 +177,7 @@ func main() {
 }
 ```
 
-@note{type="danger" title="避免使用关键系统快捷键"}
-某些按键组合由操作系统或桌面环境保留，应用程序无法占用。请选择不易发生冲突的默认组合，并始终处理`Register`返回的错误。
+@note{type="danger" title="避开关键系统快捷键"}
+某些组合键由操作系统或桌面环境保留，应用程序无法占用。请选择不太可能发生冲突的默认组合键，并始终处理`Register`返回的错误。
 
 @end

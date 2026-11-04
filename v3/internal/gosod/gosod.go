@@ -117,7 +117,7 @@ func (t *TemplateDir) resolveTarget(path, targetDir string, data any) string {
 	if data == nil {
 		return result
 	}
-	tmpl, err := template.New("p").Parse(result)
+	tmpl, err := template.New("p").Parse(path)
 	if err != nil {
 		return result
 	}
@@ -125,7 +125,7 @@ func (t *TemplateDir) resolveTarget(path, targetDir string, data any) string {
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return result
 	}
-	return buf.String()
+	return filepath.Join(targetDir, buf.String())
 }
 
 func (t *TemplateDir) createDirs(targetDir string, data any) error {
@@ -140,7 +140,11 @@ func (t *TemplateDir) createDirs(targetDir string, data any) error {
 
 func (t *TemplateDir) processTemplates(targetDir string, data interface{}) error {
 	for _, srcPath := range t.templateFiles {
-		tmpl, err := template.ParseFS(t.fs, srcPath)
+		content, err := fs.ReadFile(t.fs, srcPath)
+		if err != nil {
+			return err
+		}
+		tmpl, err := template.New(filepath.Base(srcPath)).Parse(string(content))
 		if err != nil {
 			return err
 		}

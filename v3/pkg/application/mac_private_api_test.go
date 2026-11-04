@@ -10,8 +10,10 @@ import (
 	"testing"
 )
 
-// Only this translation unit may contain private macOS selectors and keys.
+// Only these translation units may contain private macOS selectors and keys:
+// the cgo bridge and its CGO-free (purego) counterpart.
 const privateMacAPIFile = "mac_private_api_darwin.go"
+const privateMacAPIPuregoFile = "mac_private_api_darwin_purego.go"
 
 var privateMacAPIReferences = []*regexp.Regexp{
 	regexp.MustCompile(`@"(?:drawsBackground|backgroundColor|developerExtrasEnabled|groupSpacing|groupIdentifier|groupName)"`),
@@ -36,7 +38,7 @@ func TestPrivateMacAPIsAreIsolated(t *testing.T) {
 		if strings.HasSuffix(path, "_test.go") || strings.Contains(filepath.ToSlash(path), "/testdata/") {
 			return nil
 		}
-		if filepath.Clean(path) == filepath.Join("..", "..", "pkg", "application", privateMacAPIFile) {
+		if allowed := filepath.Join("..", "..", "pkg", "application"); filepath.Clean(path) == filepath.Join(allowed, privateMacAPIFile) || filepath.Clean(path) == filepath.Join(allowed, privateMacAPIPuregoFile) {
 			return nil
 		}
 		contents, err := os.ReadFile(path)

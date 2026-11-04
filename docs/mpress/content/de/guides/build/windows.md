@@ -13,13 +13,13 @@ Das standardmäßige Paketformat erstellt ein NSIS-Installationsprogramm:
 wails3 package GOOS=windows
 ```
 
-Dadurch wird `wails3 task windows:package` ausgeführt. Der Vorgang:
+Dadurch wird `wails3 task windows:package` ausgeführt. Dieser Task:
 
 1. Erstellt die Anwendung
 2. Generiert den WebView2-Bootstrapper
 3. Erstellt ein NSIS-Installationsprogramm
 
-Ausgabe: `build/windows/nsis/<AppName>-installer.exe`
+Ausgabe: `bin/<AppName>-<arch>-installer.exe`. Die NSIS-Quellskripte verbleiben unter `build/windows/nsis/`.
 
 ### MSIX-Paket
 
@@ -32,7 +32,7 @@ wails3 package GOOS=windows FORMAT=msix
 Ausgabe: `bin/<AppName>-<arch>.msix`
 
 @note{type="note"}
-MSIX erfordert entweder `makeappx.exe` (Windows SDK) oder die eigenständigen MSIX-Werkzeuge. Das Windows-Taskfile stellt die Installationsaufgabe als `wails3 task install:msix:tools` bereit.
+MSIX erfordert entweder `makeappx.exe` (Windows SDK) oder die eigenständigen MSIX-Tools. Das Windows-Taskfile stellt den Installationstask als `wails3 task install:msix:tools` bereit.
 
 @end
 
@@ -54,7 +54,7 @@ Die Anwendungsmetadaten stammen aus `build/windows/info.json`:
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -87,10 +87,10 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-Bewahren Sie das Kennwort für Ihr Zertifikat sicher auf:
+Speichern Sie das Passwort Ihres Zertifikats sicher:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 Weitere Informationen finden Sie unter [Anwendungen signieren](/guides/build/signing/).
@@ -117,8 +117,8 @@ winget install NSIS.NSIS
 
 ### SmartScreen-Warnung
 
-Ihre ausführbare Datei ist nicht signiert. Lesen Sie den obigen Abschnitt [Codesignierung](#codesignierung).
+Ihre ausführbare Datei ist nicht signiert. Siehe oben unter [Codesignierung](#codesignierung).
 
 ### WebView2 fehlt
 
-Das Installationsprogramm enthält einen WebView2-Bootstrapper, der die Laufzeitumgebung bei Bedarf herunterlädt. Wenn Sie eine Offlineinstallation benötigen, laden Sie den Evergreen Standalone Installer von Microsoft herunter.
+Das Installationsprogramm enthält einen WebView2-Bootstrapper, der die Runtime bei Bedarf herunterlädt. Wenn Sie eine Offlineinstallation benötigen, laden Sie den Evergreen Standalone Installer von Microsoft herunter.

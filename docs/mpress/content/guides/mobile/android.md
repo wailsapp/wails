@@ -23,7 +23,7 @@ The same `main.go` builds for desktop and Android. The Go code is compiled as a 
 
 - The **Android SDK** with platform-tools, an SDK platform (API 35), build-tools and the **NDK** (26.3.x) — `wails3 doctor` shows what it finds
 - A **JDK** (e.g. OpenJDK 21) for Gradle; set `JAVA_HOME` if `java` is not on your `PATH`
-- Go 1.25+ and npm
+- Go 1.26+ and npm
 - `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) pointing at the SDK
 
 Install the SDK pieces with the command-line tools:

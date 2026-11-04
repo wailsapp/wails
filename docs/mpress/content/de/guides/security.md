@@ -1,13 +1,13 @@
 ---
 title: "Bewährte Sicherheitspraktiken"
-description: "Sichern Sie Ihre Wails-Anwendung ab"
+description: "Schützen Sie Ihre Wails-Anwendung"
 slug: "guides/security"
 sourcePath: "guides/security.md"
 ---
 
-## Übersicht
+## Überblick
 
-Sicherheit ist für Desktopanwendungen von entscheidender Bedeutung. Befolgen Sie diese Praktiken, um Ihre Anwendung zu schützen.
+Sicherheit ist für Desktopanwendungen unverzichtbar. Befolgen Sie diese Praktiken, um Ihre Anwendung zu schützen.
 
 ## Eingabevalidierung
 
@@ -95,25 +95,40 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### Sensible Daten verschlüsseln
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+Verwenden Sie für jede Nachricht, die mit einem bestimmten Schlüssel verschlüsselt wird, einen neuen Nonce. In der von Wails benötigten Go-Toolchain v3 erzeugt `NewGCMWithRandomNonce` den Nonce automatisch und stellt ihn den Daten voran. Speichern Sie die zurückgegebenen Bytes unverändert; `decrypt` liest den Nonce aus diesem Präfix. Bewahren Sie den Schlüssel getrennt vom Chiffretext auf.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+Verwenden Sie einen geeigneten, zufällig erzeugten AES-Schlüssel und beachten Sie die maximale Anzahl von Nachrichten pro Schlüssel für das AEAD-Verfahren. Weitere Informationen finden Sie in der [Go-Referenz zu Chiffrierverfahren](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
 
 ### Sichere Speicherung
 
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### HTTPS verwenden
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### Zertifikate überprüfen
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## Dateioperationen
 
-### Pfade validieren
+### Dateizugriff beschränken
+
+Akzeptieren Sie einen Pfad relativ zu einem von der Anwendung kontrollierten Verzeichnis. `os.OpenRoot` beschränkt die Auflösung von Dateisystempfaden einschließlich symbolischer Links auf dieses Verzeichnis. Allein das Zurückweisen von `..` oder das Prüfen eines Zeichenkettenpräfixes stellt diese Begrenzung nicht sicher.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+Rufen Sie beispielsweise `readFile(appDataDir, "notes/today.json")` auf. Legen Sie `appDataDir` in vertrauenswürdigem Backend-Code fest; lassen Sie nicht zu, dass das Frontend das zulässige Stammverzeichnis vorgibt. Ein Stammverzeichnis beschränkt die Navigation im Dateisystem, nicht jedoch, welche darin enthaltenen Dateien der Benutzer lesen darf.
 
 ## Ratenbegrenzung
 
@@ -221,24 +253,24 @@ func (r *RateLimiter) Allow(key string) bool {
 
 ## Bewährte Praktiken
 
-### ✅ Das tun
+### ✅ Empfohlen
 
 - Alle Eingaben validieren
 - HTTPS für Netzwerkaufrufe verwenden
 - Sensible Daten verschlüsseln
-- Sicheres Passwort-Hashing verwenden
+- Sichere Passwort-Hashverfahren verwenden
 - Ratenbegrenzung implementieren
 - Abhängigkeiten aktuell halten
 - Sicherheitsereignisse protokollieren
-- Schlüsselbünde des Betriebssystems verwenden
+- Schlüsselbunde des Betriebssystems verwenden
 
-### ❌ Das nicht tun
+### ❌ Nicht empfohlen
 
 - Benutzereingaben nicht vertrauen
 - Passwörter nicht im Klartext speichern
 - Geheimnisse nicht fest im Code hinterlegen
-- Die Zertifikatsprüfung nicht überspringen
-- Keine sensiblen Daten in Protokollen offenlegen
+- Zertifikatsprüfung nicht überspringen
+- Sensible Daten nicht in Protokollen offenlegen
 - Keine schwache Verschlüsselung verwenden
 - Sicherheitsupdates nicht ignorieren
 
@@ -257,5 +289,5 @@ func (r *RateLimiter) Allow(key string) bool {
 
 ## Nächste Schritte
 
-- [Architektur](/guides/architecture/) – Anwendungarchitekturmuster
+- [Architektur](/guides/architecture/) – Architekturmuster für Anwendungen
 - [Bewährte Praktiken](/features/bindings/best-practices/) – Bewährte Praktiken für Bindings

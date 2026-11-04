@@ -1,27 +1,27 @@
 ---
-title: "Création de paquets Windows"
-description: "Créez un paquet de votre application Wails pour la distribuer sous Windows"
+title: "Création de packages Windows"
+description: "Créez un package de votre application Wails pour la distribuer sous Windows"
 slug: "guides/build/windows"
 sourcePath: "guides/build/windows.md"
 ---
 
 ## Programme d’installation NSIS
 
-Le format de paquet par défaut crée un programme d’installation NSIS :
+Le format de package par défaut crée un programme d’installation NSIS :
 
 ```bash
 wails3 package GOOS=windows
 ```
 
-Cette opération exécute `wails3 task windows:package`, qui :
+Cette commande exécute `wails3 task windows:package`, qui :
 
 1. Compile l’application
-2. Génère le programme d’amorçage de WebView2
+2. Génère le programme d’amorçage WebView2
 3. Crée un programme d’installation NSIS
 
-Sortie : `build/windows/nsis/<AppName>-installer.exe`
+Sortie : `bin/<AppName>-<arch>-installer.exe`. Les scripts sources NSIS restent dans `build/windows/nsis/`.
 
-### Paquet MSIX
+### Package MSIX
 
 Pour une distribution via le Microsoft Store ou un déploiement Windows moderne :
 
@@ -38,7 +38,7 @@ MSIX nécessite soit `makeappx.exe` (Windows SDK), soit les outils MSIX autonome
 
 ## Personnalisation du programme d’installation
 
-La configuration de NSIS se trouve dans `build/windows/nsis/project.nsi`. Modifiez ce fichier pour personnaliser :
+La configuration NSIS se trouve dans `build/windows/nsis/project.nsi`. Modifiez ce fichier pour personnaliser :
 
 - L’interface utilisateur et l’identité visuelle du programme d’installation
 - Le répertoire d’installation
@@ -54,7 +54,7 @@ Les métadonnées de l’application proviennent de `build/windows/info.json` :
     "file_version": "1.0.0"
   },
   "info": {
-    "0000": {
+    "0409": {
       "ProductVersion": "1.0.0",
       "CompanyName": "My Company",
       "FileDescription": "My Application",
@@ -90,7 +90,7 @@ vars:
 Stockez le mot de passe de votre certificat de manière sécurisée :
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 Pour plus de détails, consultez [Signature des applications](/guides/build/signing/).
@@ -102,7 +102,7 @@ wails3 build GOOS=windows GOARCH=arm64
 wails3 package GOOS=windows GOARCH=arm64
 ```
 
-## Résolution des problèmes
+## Dépannage
 
 ### makensis introuvable
 
@@ -121,4 +121,4 @@ Votre exécutable n’est pas signé. Consultez la section [Signature du code](#
 
 ### WebView2 manquant
 
-Le programme d’installation comprend un programme d’amorçage de WebView2 qui télécharge l’environnement d’exécution si nécessaire. Si vous devez effectuer une installation hors ligne, téléchargez Evergreen Standalone Installer auprès de Microsoft.
+Le programme d’installation inclut un programme d’amorçage WebView2 qui télécharge le runtime si nécessaire. Si vous avez besoin d’une installation hors ligne, téléchargez Evergreen Standalone Installer auprès de Microsoft.

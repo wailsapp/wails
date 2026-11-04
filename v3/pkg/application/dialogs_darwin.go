@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -346,46 +346,6 @@ var (
 	mutex     = &sync.Mutex{}
 )
 
-func addDialogCallback(callback dialogResultCallback) int {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	// Find the first free integer key
-	var id int
-	for {
-		if _, exists := callbacks[id]; !exists {
-			break
-		}
-		id++
-	}
-
-	// Save the function in the map using the integer key
-	callbacks[id] = callback
-
-	// Return the key
-	return id
-}
-
-func removeDialogCallback(id int) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	delete(callbacks, id)
-}
-
-//export dialogCallback
-func dialogCallback(id C.int, buttonPressed C.int) {
-	mutex.Lock()
-	callback, exists := callbacks[int(id)]
-	mutex.Unlock()
-
-	if !exists {
-		return
-	}
-
-	// Call the function with the button number
-	callback(int(buttonPressed)) // Replace nil with the actual slice of buttons
-}
-
 func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
 	var iconData unsafe.Pointer
 	if icon != nil {
@@ -475,20 +435,8 @@ func (m *macosDialog) show() {
 
 }
 
-func newDialogImpl(d *MessageDialog) *macosDialog {
-	return &macosDialog{
-		dialog: d,
-	}
-}
-
 type macosOpenFileDialog struct {
 	dialog *OpenFileDialogStruct
-}
-
-func newOpenFileDialogImpl(d *OpenFileDialogStruct) *macosOpenFileDialog {
-	return &macosOpenFileDialog{
-		dialog: d,
-	}
 }
 
 func toCString(s string) *C.char {
@@ -572,12 +520,6 @@ type macosSaveFileDialog struct {
 	dialog *SaveFileDialogStruct
 }
 
-func newSaveFileDialogImpl(d *SaveFileDialogStruct) *macosSaveFileDialog {
-	return &macosSaveFileDialog{
-		dialog: d,
-	}
-}
-
 func (m *macosSaveFileDialog) show() (chan string, error) {
 	saveFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
@@ -616,4 +558,11 @@ func saveFileDialogCallback(cid C.uint, cpath *C.char) {
 	} else {
 		panic("No channel found for save file dialog")
 	}
+}
+
+// dialogCallback is the //export entry point invoked when a native dialog closes.
+//
+//export dialogCallback
+func dialogCallback(id C.int, buttonPressed C.int) {
+	handleDialogCallback(int(id), int(buttonPressed))
 }

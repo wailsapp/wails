@@ -1,0 +1,460 @@
+// Package taskfile reads legacy build declarations for one-way migration.
+// It does not execute commands, expand templates or evaluate shell variables.
+package taskfile
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/wailsapp/wails/v3/internal/wake/migration/taskfile/ast"
+	"gopkg.in/yaml.v3"
+)
+
+func Parse(path string) (*ast.Taskfile, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("wake: read %s: %w", path, err)
+	}
+
+	var raw yaml.Node
+	if err := yaml.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("wake: parse %s: %w", path, err)
+	}
+
+	if len(raw.Content) == 0 {
+		return nil, fmt.Errorf("wake: empty Taskfile: %s", path)
+	}
+
+	tf := &ast.Taskfile{Location: path}
+	root := raw.Content[0]
+	if root.Kind != yaml.MappingNode {
+		return nil, fmt.Errorf("migration expects a Taskfile mapping in %s", path)
+	}
+
+	for i := 0; i < len(root.Content); i += 2 {
+		key := root.Content[i].Value
+		val := root.Content[i+1]
+		switch key {
+		case "version":
+			tf.Version = val.Value
+		case "includes":
+			tf.Includes, err = parseIncludes(val)
+			if err != nil {
+				return nil, err
+			}
+		case "vars":
+			tf.Vars, err = parseVars(val)
+			if err != nil {
+				return nil, err
+			}
+		case "env":
+			tf.Env, err = parseEnv(val)
+			if err != nil {
+				return nil, err
+			}
+		case "tasks":
+			tf.Tasks, err = parseTasks(val)
+			if err != nil {
+				return nil, err
+			}
+		case "shopt":
+			tf.Shopt = parseStringList(val)
+		case "silent":
+			tf.Silent = val.Value == "true"
+		case "dotenv":
+			tf.Dotenv = parseStringList(val)
+		case "output":
+			tf.Output = val.Value
+		case "run":
+			tf.Run = val.Value
+		case "interval":
+			tf.Interval = val.Value
+		case "requires":
+			tf.Requires = parseRequires(val)
+		default:
+			if tf.Unsupported == nil {
+				tf.Unsupported = make(map[string]any)
+			}
+			var value any
+			if err := val.Decode(&value); err != nil {
+				return nil, err
+			}
+			tf.Unsupported[key] = value
+		}
+	}
+
+	if tf.Version != "3" {
+		return nil, fmt.Errorf("wake: unsupported Taskfile version %q in %s (only v3 supported)", tf.Version, path)
+	}
+
+	// Normalise an absent task map for migration analysis.
+	if tf.Tasks == nil {
+		tf.Tasks = make(map[string]*ast.Task)
+	}
+
+	return tf, nil
+}
+
+func parseIncludes(node *yaml.Node) (map[string]*ast.Include, error) {
+	if node.Kind != yaml.MappingNode && node.Tag != "!!null" {
+		return nil, fmt.Errorf("invalid includes mapping")
+	}
+	includes := make(map[string]*ast.Include)
+	for i := 0; i < len(node.Content); i += 2 {
+		name := node.Content[i].Value
+		inc := &ast.Include{}
+		val := node.Content[i+1]
+
+		if val.Kind == yaml.ScalarNode {
+			inc.Taskfile = val.Value
+		} else {
+			if val.Kind != yaml.MappingNode {
+				return nil, fmt.Errorf("invalid include mapping")
+			}
+			for j := 0; j < len(val.Content); j += 2 {
+				k := val.Content[j].Value
+				v := val.Content[j+1]
+				switch k {
+				case "taskfile":
+					inc.Taskfile = v.Value
+				case "dir":
+					inc.Dir = v.Value
+				case "optional":
+					inc.Optional = v.Value == "true"
+				case "internal":
+					inc.Internal = v.Value == "true"
+				case "aliases":
+					inc.Aliases = parseStringList(v)
+				case "vars":
+					var err error
+					inc.Vars, err = parseVars(v)
+					if err != nil {
+						return nil, err
+					}
+				default:
+					inc.Unsupported = append(inc.Unsupported, k)
+				}
+			}
+		}
+		includes[name] = inc
+	}
+	return includes, nil
+}
+
+func parseVars(node *yaml.Node) (map[string]*ast.Var, error) {
+	if node.Kind != yaml.MappingNode && node.Tag != "!!null" {
+		return nil, fmt.Errorf("invalid vars mapping")
+	}
+	vars := make(map[string]*ast.Var)
+	for i := 0; i < len(node.Content); i += 2 {
+		name := node.Content[i].Value
+		val := node.Content[i+1]
+		vr := &ast.Var{Literal: val.Kind == yaml.ScalarNode}
+		if err := val.Decode(&vr.Definition); err != nil {
+			return nil, err
+		}
+
+		if val.Kind == yaml.ScalarNode {
+			vr.Static = val.Value
+		} else if val.Kind == yaml.MappingNode {
+			for j := 0; j < len(val.Content); j += 2 {
+				k := val.Content[j].Value
+				v := val.Content[j+1]
+				switch k {
+				case "sh":
+					vr.Shell = v.Value
+				case "ref":
+					vr.Ref = v.Value
+				default:
+					vr.Static = v.Value
+				}
+			}
+		} else {
+			vr.Static = val.Value
+		}
+		vars[name] = vr
+	}
+	return vars, nil
+}
+
+func parseTasks(node *yaml.Node) (map[string]*ast.Task, error) {
+	if node.Kind != yaml.MappingNode && node.Tag != "!!null" {
+		return nil, fmt.Errorf("invalid tasks mapping")
+	}
+	tasks := make(map[string]*ast.Task)
+	for i := 0; i < len(node.Content); i += 2 {
+		name := node.Content[i].Value
+		task, err := parseTask(name, node.Content[i+1])
+		if err != nil {
+			return nil, err
+		}
+		tasks[name] = task
+	}
+	return tasks, nil
+}
+
+func parseTask(name string, node *yaml.Node) (*ast.Task, error) {
+	if node.Kind != yaml.MappingNode && node.Tag != "!!null" {
+		return nil, fmt.Errorf("invalid task mapping for %q", name)
+	}
+	task := &ast.Task{Name: name}
+	if err := node.Decode(&task.Definition); err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(node.Content); i += 2 {
+		key := node.Content[i].Value
+		val := node.Content[i+1]
+		switch key {
+		case "summary":
+			task.Summary = val.Value
+		case "desc":
+			task.Desc = val.Value
+		case "aliases":
+			task.Aliases = parseStringList(val)
+		case "label":
+			task.Label = val.Value
+		case "dir":
+			task.Dir = val.Value
+		case "silent":
+			task.Silent = val.Value == "true"
+		case "internal":
+			task.Internal = val.Value == "true"
+		case "interactive":
+			task.Interactive = val.Value == "true"
+		case "prompt":
+			task.Prompt = val.Value
+		case "vars":
+			vars, err := parseVars(val)
+			if err != nil {
+				return nil, err
+			}
+			task.Vars = vars
+		case "deps":
+			deps, err := parseDeps(val)
+			if err != nil {
+				return nil, err
+			}
+			task.Deps = deps
+		case "cmds":
+			cmds, err := parseCmds(val)
+			if err != nil {
+				return nil, err
+			}
+			task.Cmds = cmds
+		case "platforms":
+			task.Platforms = parseStringList(val)
+		case "sources":
+			task.Sources = parseStringList(val)
+		case "generates":
+			task.Generates = parseStringList(val)
+		case "status":
+			task.Status = parseStringList(val)
+		case "preconditions":
+			preconds, err := parsePreconditions(val)
+			if err != nil {
+				return nil, err
+			}
+			task.Precondition = preconds
+		case "env":
+			env, err := parseEnv(val)
+			if err != nil {
+				return nil, err
+			}
+			task.Env = env
+		case "method":
+			task.Method = val.Value
+		case "run":
+			task.Run = val.Value
+		case "short":
+			task.Short = val.Value
+		case "defer":
+			task.Defer = parseStringList(val)
+		case "interval":
+			task.Interval = val.Value
+		}
+	}
+	return task, nil
+}
+
+func parseDeps(node *yaml.Node) ([]*ast.Dep, error) {
+	var deps []*ast.Dep
+	for _, item := range node.Content {
+		dep := &ast.Dep{}
+		if item.Kind == yaml.ScalarNode {
+			dep.Task = item.Value
+		} else {
+			for i := 0; i < len(item.Content); i += 2 {
+				k := item.Content[i].Value
+				v := item.Content[i+1]
+				switch k {
+				case "task":
+					dep.Task = v.Value
+				case "silent":
+					dep.Silent = v.Value == "true"
+				case "vars":
+					vars, err := parseVars(v)
+					if err != nil {
+						return nil, err
+					}
+					dep.Vars = vars
+				}
+			}
+		}
+		deps = append(deps, dep)
+	}
+	return deps, nil
+}
+
+func parseCmds(node *yaml.Node) ([]*ast.Cmd, error) {
+	var cmds []*ast.Cmd
+	for _, item := range node.Content {
+		cmd := &ast.Cmd{}
+		if item.Kind == yaml.ScalarNode {
+			cmd.Cmd = item.Value
+		} else if item.Kind == yaml.MappingNode {
+			hasStruct := false
+			for i := 0; i < len(item.Content); i += 2 {
+				k := item.Content[i].Value
+				v := item.Content[i+1]
+				switch k {
+				case "cmd":
+					cmd.Cmd = v.Value
+					hasStruct = true
+				case "task":
+					cmd.Task = v.Value
+					hasStruct = true
+				case "for":
+					forLoop, err := parseFor(v)
+					if err != nil {
+						return nil, err
+					}
+					cmd.For = forLoop
+					hasStruct = true
+				case "silent":
+					cmd.Silent = v.Value == "true"
+				case "ignore_error":
+					cmd.IgnoreError = v.Value == "true"
+				case "platforms":
+					cmd.Platforms = parseStringList(v)
+				case "vars":
+					vars, err := parseVars(v)
+					if err != nil {
+						return nil, err
+					}
+					cmd.Vars = vars
+				}
+			}
+			if !hasStruct && cmd.Cmd == "" && cmd.Task == "" && cmd.For == nil {
+				cmd.Cmd = item.Content[0].Value
+			}
+		}
+		cmds = append(cmds, cmd)
+	}
+	return cmds, nil
+}
+
+func parseFor(node *yaml.Node) (*ast.ForLoop, error) {
+	fl := &ast.ForLoop{}
+	switch node.Kind {
+	case yaml.ScalarNode:
+		// `for: someVar` — the loop iterates the value of `someVar`,
+		// space-split at execution time. The variable name lands in
+		// ForLoop.Var; runForLoop knows how to expand it.
+		fl.Var = node.Value
+	case yaml.SequenceNode:
+		// `for: [a, b, c]` — inline item list.
+		for _, it := range node.Content {
+			fl.Items = append(fl.Items, it.Value)
+		}
+	case yaml.MappingNode:
+		// `for: { var: …, task: …, vars: … }` — the explicit mapping form.
+		// Also accepts a nested `items:` list inside the mapping; previously
+		// this was silently dropped.
+		for i := 0; i < len(node.Content); i += 2 {
+			k := node.Content[i].Value
+			v := node.Content[i+1]
+			switch k {
+			case "var":
+				fl.Var = v.Value
+			case "items":
+				if v.Kind == yaml.SequenceNode {
+					for _, it := range v.Content {
+						fl.Items = append(fl.Items, it.Value)
+					}
+				}
+			case "task":
+				fl.Task = v.Value
+			case "vars":
+				vars, err := parseVars(v)
+				if err != nil {
+					return nil, err
+				}
+				fl.Vars = vars
+			}
+		}
+	}
+	return fl, nil
+}
+
+func parsePreconditions(node *yaml.Node) ([]*ast.Precondition, error) {
+	var preconds []*ast.Precondition
+	for _, item := range node.Content {
+		pc := &ast.Precondition{}
+		for i := 0; i < len(item.Content); i += 2 {
+			k := item.Content[i].Value
+			v := item.Content[i+1]
+			switch k {
+			case "sh":
+				pc.Sh = v.Value
+			case "msg":
+				pc.Msg = v.Value
+			}
+		}
+		preconds = append(preconds, pc)
+	}
+	return preconds, nil
+}
+
+func parseRequires(node *yaml.Node) *ast.Requires {
+	req := &ast.Requires{}
+	for i := 0; i < len(node.Content); i += 2 {
+		k := node.Content[i].Value
+		v := node.Content[i+1]
+		switch k {
+		case "preconditions":
+			req.Preconditions = parseStringList(v)
+		}
+	}
+	return req
+}
+
+func parseEnv(node *yaml.Node) (map[string]string, error) {
+	if node.Kind != yaml.MappingNode && node.Tag != "!!null" {
+		return nil, fmt.Errorf("invalid env mapping")
+	}
+	env := make(map[string]string)
+	for i := 0; i < len(node.Content); i += 2 {
+		k := node.Content[i].Value
+		v := node.Content[i+1]
+		env[k] = v.Value
+	}
+	return env, nil
+}
+
+func parseStringList(node *yaml.Node) []string {
+	var list []string
+	for _, item := range node.Content {
+		if item.Kind == yaml.ScalarNode {
+			list = append(list, item.Value)
+		} else if item.Kind == yaml.MappingNode && len(item.Content) >= 2 {
+			key := item.Content[0].Value
+			val := item.Content[1].Value
+			if key == "exclude" {
+				list = append(list, "exclude: "+val)
+			} else {
+				list = append(list, val)
+			}
+		}
+	}
+	return list
+}

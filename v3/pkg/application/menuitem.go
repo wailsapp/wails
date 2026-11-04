@@ -293,8 +293,40 @@ func (m *MenuItem) GetAccelerator() string {
 	return m.accelerator.String()
 }
 
+// RemoveAccelerator removes the item's keyboard shortcut. The native item and
+// the window key bindings drop it at once, so the shortcut stops working
+// without a menu rebuild.
 func (m *MenuItem) RemoveAccelerator() {
+	old := m.accelerator
 	m.accelerator = nil
+	if m.impl != nil {
+		m.impl.setAccelerator(nil)
+	}
+	if old != nil {
+		unbindWindowAccelerator(m, old)
+	}
+}
+
+// unbindWindowAccelerator drops item's entry for a from the menu bindings of
+// every window. An entry for a different item under the same chord is kept.
+func unbindWindowAccelerator(item *MenuItem, a *accelerator) {
+	if globalApplication == nil || globalApplication.Window == nil {
+		return
+	}
+	for _, window := range globalApplication.Window.GetAll() {
+		if webviewWindow, ok := window.(*WebviewWindow); ok {
+			webviewWindow.unbindMenuItem(a.String(), item)
+		}
+	}
+}
+
+// unbindMenuItem deletes the menu binding for key if item owns it.
+func (w *WebviewWindow) unbindMenuItem(key string, item *MenuItem) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	if w.menuBindings[key] == item {
+		delete(w.menuBindings, key)
+	}
 }
 
 func (m *MenuItem) SetTooltip(s string) *MenuItem {
@@ -334,7 +366,20 @@ func (m *MenuItem) SetBitmap(bitmap []byte) *MenuItem {
 	return m
 }
 
+// SetChecked sets the item's checked state. Checking a radio item unchecks the
+// other items in its group, as clicking it does.
 func (m *MenuItem) SetChecked(checked bool) *MenuItem {
+	if checked && m.itemType == radio {
+		for _, member := range m.radioGroupMembers {
+			if member == m || !member.checked {
+				continue
+			}
+			member.checked = false
+			if member.impl != nil {
+				member.impl.setChecked(false)
+			}
+		}
+	}
 	m.checked = checked
 	if m.impl != nil {
 		m.impl.setChecked(m.checked)

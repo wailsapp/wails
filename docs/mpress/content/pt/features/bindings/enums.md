@@ -525,4 +525,4 @@ Padrões de projeto para vinculação.
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de vinculação](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de vinculação](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).

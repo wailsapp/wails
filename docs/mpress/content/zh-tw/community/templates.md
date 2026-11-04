@@ -12,7 +12,7 @@ sourcePath: "community/templates.md"
 
 <!-- TODO: Update this link -->
 
-此頁面列出由社群支援的範本。若要建立自己的範本，請參閱[範本](https://wails.io/docs/guides/templates)指南。
+此頁面列出由社群支援的範本。若要建立自己的範本，請參閱[範本](https://v2.wails.io/docs/guides/templates)指南。
 
 @note{type="tip" title="如何提交範本"}
 您可以按一下底部的`Edit this page`，以加入您的範本。

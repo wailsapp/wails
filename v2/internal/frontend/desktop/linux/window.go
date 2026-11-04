@@ -85,6 +85,13 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 	C.gtk_container_add(result.asGTKContainer(), result.vbox)
 
 	result.contentManager = unsafe.Pointer(C.webkit_user_content_manager_new())
+	// Install before page scripts in every frame, including cross-origin frames.
+	guardSource := C.CString(childFrameGuardJS)
+	guard := C.webkit_user_script_new(guardSource, C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES, C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, nil, nil)
+	C.webkit_user_content_manager_add_script(result.cWebKitUserContentManager(), guard)
+	C.webkit_user_script_unref(guard)
+	C.free(unsafe.Pointer(guardSource))
+
 	external := C.CString("external")
 	defer C.free(unsafe.Pointer(external))
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)

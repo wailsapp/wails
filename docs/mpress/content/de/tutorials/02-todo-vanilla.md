@@ -1,27 +1,27 @@
 ---
 title: "TODO-Liste"
-description: "Erstellen Sie eine vollständige TODO-Listenanwendung mit CRUD-Operationen"
+description: "Erstellen Sie eine vollständige TODO-Listen-Anwendung mit CRUD-Operationen"
 slug: "tutorials/02-todo-vanilla"
 sourcePath: "tutorials/02-todo-vanilla.md"
 ---
 
-In diesem Tutorial erstellen Sie eine voll funktionsfähige TODO-Listenanwendung. Es baut auf dem Tutorial zum QR-Code-Dienst auf: Sie lernen, Zustand zu verwalten, mehrere Operationen zu verarbeiten und eine ansprechende Benutzeroberfläche zu erstellen.
+In diesem Tutorial erstellen Sie eine voll funktionsfähige TODO-Listen-Anwendung. Es baut auf dem Tutorial zum QR-Code-Dienst auf: Sie lernen, wie Sie Zustand verwalten, mehrere Operationen verarbeiten und eine ausgereifte Benutzeroberfläche erstellen.
 
 **Was Sie erstellen:**
 
-- Eine vollständige TODO-App mit Funktionen zum Hinzufügen, Abschließen und Löschen
+- Eine vollständige TODO-App mit Funktionen zum Hinzufügen, Erledigen und Löschen
 - Threadsichere Zustandsverwaltung (wichtig für Desktop-Apps)
-- Modernes, glasmorphes UI-Design
+- Modernes Benutzeroberflächendesign im Glassmorphismus-Stil
 - Alles mit Vanilla JavaScript – keine Frameworks erforderlich
 
 **Was Sie lernen:**
 
 - CRUD-Operationen (Erstellen, Lesen, Aktualisieren, Löschen)
-- Veränderlichen Zustand in Go sicher verwalten
-- Benutzereingaben verarbeiten und validieren
-- Responsive Benutzeroberflächen erstellen, die sich nativ anfühlen
+- Sichere Verwaltung veränderlichen Zustands in Go
+- Verarbeiten und Validieren von Benutzereingaben
+- Erstellen responsiver Benutzeroberflächen, die sich wie native Anwendungen anfühlen
 
-![TODO-Listenanwendung](/assets/todo-app.png)
+![TODO-Listen-Anwendung](/assets/todo-app.png)
 
 **Benötigte Zeit:** 20 Minuten
 
@@ -29,17 +29,17 @@ In diesem Tutorial erstellen Sie eine voll funktionsfähige TODO-Listenanwendung
 
 @steps
 ### Projekt generieren
-Erstellen Sie zunächst ein neues Wails-Projekt. Wir verwenden die standardmäßige Vanilla-Vorlage, die uns einen aufgeräumten Ausgangspunkt bietet:
+Erstellen Sie zunächst ein neues Wails-Projekt. Wir verwenden die standardmäßige Vanilla-Vorlage, die uns einen übersichtlichen Ausgangspunkt bietet:
 
 ```bash
-wails3 init -n todo-app
+wails3 init -n todo-app -t vanilla-js
 cd todo-app
 ```
 
-Dadurch entsteht ein neues Projekt mit der grundlegenden Struktur: Das Go-Backend liegt im Stammverzeichnis, der Frontend-Code im Verzeichnis `frontend/`.
+Dadurch wird ein neues Projekt mit der grundlegenden Struktur erstellt: das Go-Backend im Stammverzeichnis und der Frontend-Code im Verzeichnis `frontend/`.
 
 ### TODO-Dienst erstellen
-Der TODO-Dienst verwaltet den Zustand unserer Anwendung und stellt Methoden für CRUD-Operationen bereit. Anders als bei einem Webserver, bei dem jede Anfrage isoliert ist, können in Desktop-Apps mehrere Operationen gleichzeitig ausgeführt werden. Daher benötigen wir eine threadsichere Zustandsverwaltung.
+Der TODO-Dienst verwaltet den Zustand unserer Anwendung und stellt Methoden für CRUD-Operationen bereit. Anders als bei einem Webserver, auf dem jede Anfrage isoliert ist, können in Desktop-Apps mehrere Operationen gleichzeitig ausgeführt werden. Daher benötigen wir eine threadsichere Zustandsverwaltung.
 
 Löschen Sie `greetservice.go` und erstellen Sie die neue Datei `todoservice.go`:
 
@@ -128,26 +128,26 @@ func (t *TodoService) Delete(id int) error {
 
 - Definiert die Struktur unserer Daten mit den Feldern ID, Title und Completed
 - `json:`-Tags geben Go vor, wie diese Struktur für das Frontend in JSON konvertiert wird
-- Jedes Feld wird exportiert (beginnt mit einem Großbuchstaben), damit der Bindings-Generator es erkennen kann
+- Jedes Feld ist exportiert (beginnt mit einem Großbuchstaben), damit der Bindings-Generator es erkennen kann
 
 **Die Struktur `TodoService`:**
 
 - `todos []Todo` – ein Slice, das alle unsere TODO-Einträge enthält
-- `nextID int` – verwaltet die nächste zu vergebende ID (simuliert Auto-Inkrementierung)
+- `nextID int` – speichert die nächste zu vergebende ID (simuliert die automatische Inkrementierung)
 - `mu sync.RWMutex` – ein Lese-/Schreib-Mutex für threadsicheren Zugriff
 
 **Threadsicherheit mit `sync.RWMutex`:**
 
-- Desktop-Apps können mehrere gleichzeitige Operationen über die Benutzeroberfläche ausführen
+- In Desktop-Apps können über die Benutzeroberfläche mehrere Operationen gleichzeitig ausgeführt werden
 - `RLock()` ermöglicht mehrere gleichzeitige Lesezugriffe (z. B. mehrere Aufrufe von `GetAll`)
-- `Lock()` gewährt exklusiven Schreibzugriff (z. B. für `Add`, `Toggle` und `Delete`)
-- `defer` stellt sicher, dass Sperren auch dann freigegeben werden, wenn die Funktion vorzeitig zurückkehrt oder eine Panic auftritt
+- `Lock()` gewährt exklusiven Zugriff für Schreibvorgänge (z. B. `Add`, `Toggle`, `Delete`)
+- `defer` stellt sicher, dass Sperren selbst dann aufgehoben werden, wenn die Funktion vorzeitig zurückkehrt oder eine Panic auslöst
 
 **Die Methoden:**
 
 - `GetAll()` – gibt alle TODO-Einträge zurück (verwendet eine Lesesperre, da keine Daten geändert werden)
 - `Add(title)` – erstellt einen neuen TODO-Eintrag, validiert die Eingabe und erhöht die ID
-- `Toggle(id)` – kehrt den Abschlussstatus eines TODO-Eintrags um
+- `Toggle(id)` – kehrt den Erledigt-Status eines TODO-Eintrags um
 - `Delete(id)` – entfernt einen TODO-Eintrag aus dem Slice
 
 **Fehlerbehandlung:**
@@ -173,7 +173,7 @@ Services: []application.Service{
 - Wails generiert automatisch JavaScript-Bindings für alle öffentlichen Methoden dieses Dienstes
 
 ### Frontend-Benutzeroberfläche erstellen
-Erstellen wir nun das Frontend. Hier rufen wir unsere Go-Methoden auf und stellen die Benutzeroberfläche dar. Wir verwenden Vanilla JavaScript, um alles einfach zu halten und Ihnen direkt zu zeigen, wie die Bindings funktionieren.
+Erstellen wir nun das Frontend. Hier rufen wir unsere Go-Methoden auf und zeigen die Benutzeroberfläche an. Wir verwenden Vanilla JavaScript, um alles einfach zu halten und Ihnen unmittelbar zu zeigen, wie die Bindings funktionieren.
 
 Ersetzen Sie `frontend/src/main.js`:
 
@@ -232,7 +232,7 @@ loadTodos();
 - Ruft `TodoService.GetAll()` auf, um alle TODO-Einträge aus Go abzurufen
 - Erstellt mithilfe von Template-Literalen HTML für jeden TODO-Eintrag
 - Fügt die Klasse `completed` für die Formatierung dynamisch hinzu oder entfernt sie
-- Verwendet `onclick`-Attribute, um Schaltflächen mit unseren Funktionen zu verknüpfen
+- Verwendet `onclick`-Attribute, um Schaltflächen mit unseren Funktionen zu verbinden
 - Fügt das gesamte HTML zusammen und bindet es in das DOM ein
 
 **Die CRUD-Funktionen:**
@@ -244,15 +244,15 @@ loadTodos();
 
 **Warum an window anhängen:**
 
-- `window.addTodo = ...` macht Funktionen über `onclick`-Attribute im HTML zugänglich
-- Dies ist ein einfaches Muster für Vanilla JS (Frameworks handhaben dies anders).
-- In der Produktion könnten Sie stattdessen eine geeignete Ereignisdelegation verwenden.
+- `window.addTodo = ...` macht Funktionen über HTML-Attribute vom Typ `onclick` zugänglich
+- Dies ist ein einfaches Muster für Vanilla JavaScript (Frameworks handhaben dies anders)
+- In einer Produktionsanwendung könnten Sie stattdessen eine geeignete Ereignisdelegation verwenden
 
 **Das Aktualisierungsmuster:**
 
-- Nach jeder Änderung (Hinzufügen/Umschalten/Löschen) rufen wir `loadTodos()` erneut auf.
-- Dadurch bleibt die Benutzeroberfläche mit dem Go-Zustand synchron.
-- Alternative: Lassen Sie die Go-Methoden den neuen Zustand zurückgeben, um den zweiten Aufruf zu vermeiden.
+- Nach jeder Änderung (Hinzufügen/Umschalten/Löschen) rufen wir `loadTodos()` erneut auf
+- Dadurch bleibt die Benutzeroberfläche mit dem Go-Zustand synchronisiert
+- Alternative: Lassen Sie die Go-Methoden den neuen Zustand zurückgeben, um den zweiten Aufruf zu vermeiden
 
 ### HTML aktualisieren
 Das HTML stellt die Struktur unserer TODO-App bereit. Es ist minimalistisch und semantisch – die eigentliche Funktionalität steckt in JavaScript und CSS.
@@ -288,28 +288,28 @@ Ersetzen Sie `frontend/index.html`:
 </html>
 ```
 
-**Was hier geschieht:**
+**Was geschieht hier?**
 
 **Die Struktur:**
 
 - `container` – zentriert unsere App und begrenzt ihre Breite
-- `card` – die weiße Hauptkarte, die alle Inhalte enthält
+- `card` – die weiße Hauptkarte, die alle Elemente enthält
 - `input-box` – Flex-Container für das Eingabefeld und die Schaltfläche „Hinzufügen“
-- `todo-list` – hier fügt JavaScript die einzelnen Todos ein
+- `todo-list` – hier fügt JavaScript die einzelnen TODO-Einträge ein
 
 **Ereignisbehandlung:**
 
-- `onkeypress="if(event.key==='Enter') addTodo()"` – fügt beim Drücken der Eingabetaste ein Todo hinzu
-- `onclick="addTodo()"` – fügt beim Klicken auf die Schaltfläche ein Todo hinzu
-- Inline-Ereignishandler eignen sich gut für einfache Vanilla-JS-Apps.
+- `onkeypress="if(event.key==='Enter') addTodo()"` – fügt beim Drücken der Eingabetaste einen TODO-Eintrag hinzu
+- `onclick="addTodo()"` – fügt beim Anklicken der Schaltfläche einen TODO-Eintrag hinzu
+- Inline-Ereignishandler eignen sich gut für einfache Apps mit Vanilla JavaScript
 
 **Modulskript:**
 
-- `<script type="module">` ermöglicht die Verwendung von ES6-Importen.
-- Unsere Datei `main.js` kann die Bindings importieren und modernes JavaScript verwenden.
+- Mit `<script type="module">` können wir ES6-Importe verwenden
+- Unsere Datei `main.js` kann die Bindings importieren und modernes JavaScript verwenden
 
 ### App gestalten
-Das CSS erzeugt ein modernes Glassmorphism-Design mit fließenden Übergängen. Unser Ziel ist eine hochwertige Anmutung, die eine angenehme Nutzung der App ermöglicht.
+Das CSS erzeugt ein modernes Glassmorphism-Design mit fließenden Übergängen. Das ausgereifte Erscheinungsbild soll dafür sorgen, dass die App angenehm zu bedienen ist.
 
 Ersetzen Sie `frontend/public/style.css`:
 
@@ -497,29 +497,29 @@ h1 {
 }
 ```
 
-**Was hier geschieht:**
+**Was geschieht hier?**
 
 **Glassmorphism-Design:**
 
 - `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` – violetter Farbverlauf im Hintergrund
-- `backdrop-filter: blur(10px)` – erzeugt den Milchglaseffekt auf der Karte
+- `backdrop-filter: blur(10px)` – erzeugt den Milchglaseffekt der Karte
 - `rgba(255, 255, 255, 0.95)` – halbtransparentes Weiß für den Glaseffekt
 
-**Benutzerdefinierte Gestaltung des Kontrollkästchens:**
+**Benutzerdefinierte Gestaltung der Kontrollkästchen:**
 
-- `appearance: none` entfernt das standardmäßige Kontrollkästchen des Browsers.
-- Mit `::after` erstellen wir ein benutzerdefiniertes abgerundetes Quadrat mit einem Häkchen.
-- Das Häkchen erscheint bei `checked` als Unicode-Zeichen ✓.
+- `appearance: none` entfernt das standardmäßige Kontrollkästchen des Browsers
+- Mit `::after` erstellen wir ein eigenes abgerundetes Quadrat mit Häkchen
+- Bei `checked` erscheint das Häkchen als Unicode-Zeichen ✓
 
-**Interaktionen beim Darüberfahren:**
+**Hover-Interaktionen:**
 
-- Todos verschieben sich beim Darüberfahren nach rechts (`transform: translateX(4px)`).
-- Die Schaltfläche zum Löschen bleibt bis zum Darüberfahren ausgeblendet (`opacity: 0` → `opacity: 1`).
-- Schaltflächen werden beim Darüberfahren leicht vergrößert, um eine taktile Rückmeldung zu geben.
+- TODO-Einträge gleiten beim Daraufzeigen nach rechts (`transform: translateX(4px)`)
+- Die Löschschaltfläche bleibt bis zum Daraufzeigen ausgeblendet (`opacity: 0` → `opacity: 1`)
+- Schaltflächen werden beim Daraufzeigen für eine spürbare Rückmeldung leicht vergrößert
 
 **Leerzustand:**
 
-- `#todo-list:empty::before` zeigt eine Meldung an, wenn keine Todos vorhanden sind.
+- `#todo-list:empty::before` zeigt eine Meldung an, wenn keine TODO-Einträge vorhanden sind
 - Reine CSS-Lösung – kein JavaScript erforderlich
 
 ### App ausführen
@@ -531,16 +531,16 @@ wails3 dev
 
 Die App wird kompiliert und geöffnet. Probieren Sie sie aus:
 
-- Geben Sie ein Todo ein und drücken Sie die Eingabetaste oder klicken Sie auf „Hinzufügen“.
-- Klicken Sie auf das Kontrollkästchen, um das Todo als erledigt zu markieren.
-- Fahren Sie mit der Maus über ein Todo, damit die Schaltfläche zum Löschen erscheint.
-- Die Benutzeroberfläche wird sofort aktualisiert – hier ist unser Aktualisierungsmuster am Werk.
+- Geben Sie einen TODO-Eintrag ein und drücken Sie die Eingabetaste oder klicken Sie auf „Hinzufügen“
+- Klicken Sie auf das Kontrollkästchen, um den Eintrag als erledigt zu markieren
+- Zeigen Sie auf einen TODO-Eintrag, damit die Löschschaltfläche erscheint
+- Beachten Sie, wie die Benutzeroberfläche sofort aktualisiert wird – hier arbeitet unser Aktualisierungsmuster
 
-**Was geschieht:**
+**Was geschieht hier?**
 
-- Wails hat automatisch Bindings für Ihre TodoService-Methoden generiert.
-- Der Entwicklungsmodus umfasst Hot Reload – ändern Sie das CSS und beobachten Sie die Aktualisierung.
-- Ihr Go-Code wird nativ ausgeführt – eine Übersetzung oder Interpretation ist nicht erforderlich.
+- Wails hat automatisch Bindings für die Methoden Ihres TodoService generiert
+- Der Entwicklungsmodus unterstützt Hot Reload – ändern Sie das CSS und beobachten Sie die Aktualisierung
+- Ihr Go-Code wird nativ ausgeführt – eine Übersetzung oder Interpretation ist nicht erforderlich
 
 @end
 
@@ -564,12 +564,12 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 }
 ```
 
-**Warum dies wichtig ist:**
+**Warum ist das wichtig?**
 
-- Mehrere Frontend-Aufrufe können gleichzeitig erfolgen.
-- Leseoperationen blockieren einander nicht.
-- Schreiboperationen erhalten exklusiven Zugriff.
-- `defer` stellt sicher, dass Sperren immer freigegeben werden.
+- Mehrere Aufrufe aus dem Frontend können gleichzeitig erfolgen
+- Leseoperationen blockieren einander nicht
+- Schreiboperationen erhalten exklusiven Zugriff
+- `defer` stellt sicher, dass Sperren immer freigegeben werden
 
 ### Fehlerbehandlung
 
@@ -584,7 +584,7 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 }
 ```
 
-Im Frontend können Sie diese Fehler abfangen:
+Im Frontend können Sie diese abfangen:
 
 ```javascript
 try {
@@ -605,7 +605,7 @@ window.addTodo = async () => {
 }
 ```
 
-**Alternativer Ansatz:** Geben Sie aus jeder Methode die aktualisierte Liste zurück, um den zweiten Aufruf zu vermeiden.
+**Alternative Vorgehensweise:** Geben Sie aus jeder Methode die aktualisierte Liste zurück, um den zweiten Aufruf zu vermeiden.
 
 ## Erweiterungen
 
@@ -682,11 +682,11 @@ func (t *TodoService) ClearCompleted() int {
 
 ### Persistenz hinzufügen
 
-Fügen Sie für Produktions-Apps Persistenz mit der Speicherlösung hinzu, die am besten zu Ihrer Anwendung passt, beispielsweise SQLite, PostgreSQL oder einem gehosteten Dienst.
+Fügen Sie für Produktions-Apps Persistenz mit der Speicherlösung hinzu, die am besten zu Ihrer Anwendung passt, beispielsweise SQLite, PostgreSQL oder ein gehosteter Dienst.
 
-## Für die Produktion erstellen
+## Für den Produktionseinsatz bauen
 
-Wenn du deine TODO-App veröffentlichen möchtest, erstelle sie für den Produktivbetrieb:
+Wenn Sie Ihre TODO-App verteilen möchten, bauen Sie sie für den Produktionseinsatz:
 
 ```bash
 wails3 build
@@ -694,16 +694,16 @@ wails3 build
 
 Dadurch wird eine optimierte native ausführbare Datei in `bin/` erstellt:
 
-- Kompiliert deinen Go-Code mit Optimierungen
-- Erstellt dein Frontend für den Produktivbetrieb
+- Kompiliert Ihren Go-Code mit Optimierungen
+- Baut Ihr Frontend für den Produktionseinsatz
 - Bündelt alles in einer einzigen ausführbaren Datei
-- Die resultierende App ist normalerweise 10-20 MB groß (im Vergleich zu über 150 MB bei Electron)
+- Die resultierende App ist üblicherweise 10-20 MB groß (im Vergleich zu 150 MB oder mehr bei Electron)
 
-Du kannst die ausführbare Datei direkt starten – ohne erforderliche Laufzeitumgebung und ohne zu startende Server. Es handelt sich um eine echte native Anwendung.
+Sie können die ausführbare Datei direkt starten – es ist keine Laufzeitumgebung erforderlich und es müssen keine Server gestartet werden. Es handelt sich um eine echte native Anwendung.
 
-## Was du erstellt hast
+## Was Sie erstellt haben
 
-Du hast gerade eine vollständige TODO-Anwendung mit folgenden Funktionen erstellt:
+Sie haben gerade eine vollständige TODO-Anwendung mit folgenden Funktionen erstellt:
 
 **Vollständige CRUD-Implementierung:**
 
@@ -719,23 +719,23 @@ Du hast gerade eine vollständige TODO-Anwendung mit folgenden Funktionen erstel
 
 **Moderne, ausgereifte Benutzeroberfläche:**
 
-- Eine Benutzeroberfläche im Glassmorphism-Stil mit Farbverläufen und Weichzeichnungseffekten erstellt
+- Eine Glassmorphism-Oberfläche mit Farbverläufen und Weichzeichnungseffekten erstellt
 - Individuell gestaltete Kontrollkästchen ohne Framework erstellt
 - Hover-Interaktionen und Übergänge für ein natives Bediengefühl hinzugefügt
-- Einen Leerzustand ausschließlich mit CSS implementiert
+- Einen leeren Zustand ausschließlich mit CSS implementiert
 
-**Grundlagen von Wails:**
+**Wails-Grundlagen:**
 
 - Dienstregistrierung und automatische Generierung von Bindings
 - Aufrufen von Go-Methoden aus JavaScript mit async/await
-- Zustandssynchronisierung zwischen Go und dem Frontend
+- Synchronisierung des Zustands zwischen Go und dem Frontend
 - Erstellen und Paketieren einer nativen Desktop-App
 
 ## Nächste Schritte
 
-Nachdem du CRUD-Operationen und Zustandsverwaltung verstanden hast, probiere Folgendes aus:
+Nachdem Sie nun CRUD-Operationen und Zustandsverwaltung kennen, können Sie Folgendes ausprobieren:
 
-- **Persistenz hinzufügen:** Sorge mit SQLite oder einer anderen Speicherlösung dafür, dass TODOs auch nach einem Neustart der App erhalten bleiben
-- **Weitere Funktionen hinzufügen:** Filterung (alle/aktive/abgeschlossene), Bearbeitung vorhandener TODOs und Massenoperationen
-- **Das Notes-Tutorial erkunden:** Erfahre unter [Notes](/tutorials/03-notes-vanilla/), wie Dateioperationen funktionieren
-- **Etwas Reales entwickeln:** Nutze diese Konzepte und entwickle deine eigene App!
+- **Persistenz hinzufügen:** Sorgen Sie mit SQLite oder einer anderen Speicherlösung dafür, dass die Aufgaben auch nach einem Neustart der App erhalten bleiben.
+- **Weitere Funktionen hinzufügen:** Filterung (alle/aktive/erledigte Aufgaben), Bearbeitung vorhandener Aufgaben und Massenoperationen
+- **Das Notes-Tutorial erkunden:** Erfahren Sie unter [Notes](/tutorials/03-notes-vanilla/), wie Dateioperationen funktionieren.
+- **Etwas Eigenes entwickeln:** Nutzen Sie diese Konzepte, um Ihre eigene App zu entwickeln!

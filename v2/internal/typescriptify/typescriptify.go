@@ -115,7 +115,7 @@ type TypeScriptify struct {
 
 	// throwaway, used when converting
 	alreadyConverted     map[string]bool
-	alreadyConvertedName map[string]bool
+	alreadyConvertedName map[string]bool // true for enums, false for structs
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
@@ -539,6 +539,10 @@ func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []e
 	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+	if _, found := t.alreadyConvertedName[entityName]; found {
+		return "", fmt.Errorf("TypeScript name %q is used by multiple types", entityName)
+	}
+	t.alreadyConvertedName[entityName] = true
 	result := "enum " + entityName + " {\n"
 
 	for _, val := range elements {
@@ -648,10 +652,13 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 
 	// Generic instantiations that differ only by pointer arguments share the
 	// same TypeScript name, so emit the entity only once.
-	if t.alreadyConvertedName[entityName] {
+	if isEnum, found := t.alreadyConvertedName[entityName]; found {
+		if isEnum {
+			return "", fmt.Errorf("TypeScript name %q is used by multiple types", entityName)
+		}
 		return "", nil
 	}
-	t.alreadyConvertedName[entityName] = true
+	t.alreadyConvertedName[entityName] = false
 
 	if typeClashWithReservedKeyword(entityName) {
 		warnAboutTypesClash(entityName)

@@ -1,18 +1,18 @@
 ---
-title: "Binding-System"
-description: "Wie das Binding-System JavaScript-/TypeScript-Code erfasst, verarbeitet und generiert"
+title: "Bindungssystem"
+description: "Wie das Bindungssystem JavaScript-/TypeScript-Code erfasst, verarbeitet und generiert"
 slug: "contributing/architecture/bindings"
 sourcePath: "contributing/architecture/bindings.md"
 ---
 
-Dieser Leitfaden erläutert die interne Funktionsweise des Wails-Binding-Systems und bietet Entwicklern Einblicke in die Mechanismen der automatischen Codegenerierung.
+Dieser Leitfaden erläutert die interne Funktionsweise des Wails-Bindungssystems und vermittelt Entwicklern Einblicke in die Mechanismen der automatischen Codegenerierung.
 
-## Architekturüberblick
+## Architekturübersicht
 
-Das Wails-Binding-System besteht aus drei Hauptkomponenten:
+Das Wails-Bindungssystem besteht aus drei Hauptkomponenten:
 
 1. **Erfassung**: Analysiert Go-Code, um Informationen über Services, Modelle und andere Deklarationen zu extrahieren
-2. **Konfiguration**: Verwaltet Einstellungen und Optionen für die Binding-Generierung
+2. **Konfiguration**: Verwaltet Einstellungen und Optionen für die Bindungsgenerierung
 3. **Rendering**: Generiert anhand der erfassten Informationen JavaScript-/TypeScript-Code
 
 @filetree
@@ -28,8 +28,8 @@ Der Erfassungsprozess analysiert Go-Pakete und extrahiert Informationen über Se
 
 ### Hauptkomponenten
 
-- **Collector**: Verwaltet Paketinformationen und speichert erfasste Daten im Cache
-- **Package**: Repräsentiert ein analysiertes Go-Paket und speichert erfasste Services, Modelle und Direktiven
+- **Collector**: Verwaltet Paketinformationen und speichert erfasste Daten zwischen
+- **Package**: Repräsentiert ein analysiertes Go-Paket und speichert die erfassten Services, Modelle und Direktiven
 - **Service**: Erfasst Informationen über Service-Typen und deren Methoden
 - **Model**: Erfasst detaillierte Informationen über Modelltypen, einschließlich Feldern, Werten und Typparametern
 - **Directive**: Analysiert und interpretiert `//wails:`-Direktiven im Go-Quellcode
@@ -37,7 +37,7 @@ Der Erfassungsprozess analysiert Go-Pakete und extrahiert Informationen über Se
 ### Erfassungsablauf
 
 1. Der Collector durchsucht die im Projekt angegebenen Go-Pakete
-2. Er identifiziert Service-Typen (Structs mit Methoden, die dem Frontend bereitgestellt werden)
+2. Er identifiziert Service-Typen (Structs mit Methoden, die dem Frontend zugänglich gemacht werden)
 3. Für jeden Service erfasst er Informationen über dessen Methoden
 4. Er identifiziert Modelltypen (Structs, die in Service-Methoden als Parameter oder Rückgabewerte verwendet werden)
 5. Für jedes Modell erfasst er Informationen über dessen Felder und Typparameter
@@ -49,7 +49,7 @@ Der Renderingprozess generiert anhand der erfassten Informationen JavaScript-/Ty
 
 ### Hauptkomponenten
 
-- **Renderer**: Koordiniert das Rendering von Service-, Modell- und Indexdateien
+- **Renderer**: Steuert das Rendering von Service-, Modell- und Indexdateien
 - **Module**: Repräsentiert ein einzelnes generiertes JavaScript-/TypeScript-Modul
 - **Templates**: Für die Codegenerierung verwendete Textvorlagen
 
@@ -62,7 +62,7 @@ Der Renderingprozess generiert anhand der erfassten Informationen JavaScript-/Ty
 
 ## Typzuordnung
 
-Einer der wichtigsten Aspekte des Binding-Systems ist die Zuordnung von Go-Typen zu JavaScript-/TypeScript-Typen. Die folgende Übersicht fasst die Zuordnungen zusammen:
+Einer der wichtigsten Aspekte des Bindungssystems ist die Zuordnung von Go-Typen zu JavaScript-/TypeScript-Typen. Die folgende Übersicht fasst diese Zuordnung zusammen:
 
 | Go-Typ | JavaScript-Typ | TypeScript-Typ |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ Einer der wichtigsten Aspekte des Binding-Systems ist die Zuordnung von Go-Typen
 | `[]byte` | `Uint8Array` | `Uint8Array` |
 | `[]T` | `Array<T>` | `T[]` |
 | `map[string]V` | `Object` | `{ [_: string]: V }` |
-| `map[K]V` (nicht als Zeichenfolge vorliegendes `K`) | `Object` | `{ [_ in K]?: V }` |
+| `map[K]V` (`K` ohne Zeichenfolgen) | `Object` | `{ [_ in K]?: V }` |
 | `struct` | `Object` | Benutzerdefinierte Klasse |
 | `interface{}` | `any` | `any` |
 | `*T` | `T \| null` | `T \| null` |
@@ -81,21 +81,23 @@ Einer der wichtigsten Aspekte des Binding-Systems ist die Zuordnung von Go-Typen
 
 ## Direktivensystem
 
-Das Bindungssystem unterstützt mehrere Direktiven, mit denen Sie den generierten Code anpassen können. Diese Direktiven werden Ihrem Go-Code als Kommentare hinzugefügt.
+Das Bindungssystem unterstützt mehrere Direktiven, mit denen sich der generierte Code anpassen lässt. Fügen Sie diese Direktiven als Kommentare in Ihren Go-Code ein.
 
 ### Verfügbare Direktiven
 
 - `//wails:inject`: Fügt benutzerdefinierten JavaScript-/TypeScript-Code in die generierten Bindungen ein
-- `//wails:include`: Fügt den generierten Bindungen zusätzliche Dateien hinzu
-- `//wails:internal`: Kennzeichnet einen Typ oder eine Methode als intern und verhindert so den Export an das Frontend
+- `//wails:include`: Nimmt zusätzliche Dateien in die generierten Bindungen auf
+- `//wails:internal`: Unterdrückt Exporte im generierten SDK; verhindert jedoch nicht den Laufzeitaufruf exportierter Go-Methoden
 - `//wails:ignore`: Ignoriert eine Methode bei der Bindungsgenerierung vollständig
 - `//wails:id`: Legt eine benutzerdefinierte ID für eine Methode fest und überschreibt damit die standardmäßige hashbasierte ID
 
+Diese Direktiven steuern den generierten Code. Bei normalen Builds berücksichtigt die Laufzeitregistrierung weiterhin exportierte Dienstmethoden. Verwenden Sie für private Operationen nicht exportierte Methoden oder nicht gebundene Typen und erzwingen Sie die Autorisierung in offengelegten Methoden.
+
 ### Verarbeitung von Direktiven
 
-1. Während der Erfassungsphase identifiziert und analysiert der Collector die Direktiven im Go-Code
-2. Die Direktiven werden zusammen mit den zugehörigen Deklarationen (Diensten, Methoden, Modellen usw.) gespeichert
-3. Während der Renderingphase wendet der Renderer die Direktiven an, um den generierten Code anzupassen
+1. Während der Erfassungsphase erkennt und analysiert der Collector Direktiven im Go-Code
+2. Die Direktiven werden zusammen mit den zugehörigen Deklarationen (Dienste, Methoden, Modelle usw.) gespeichert
+3. Während der Rendering-Phase wendet der Renderer die Direktiven an, um den generierten Code anzupassen
 
 ## Erweiterte Funktionen
 
@@ -109,13 +111,13 @@ Das Bindungssystem unterstützt die bedingte Codegenerierung mit einem zweistell
 
 Dabei gilt:
 
-- `<language>` kann folgende Werte haben:
+- `<language>` kann folgende Werte annehmen:
   - `*` – JavaScript und TypeScript
   - `j` – nur JavaScript
   - `t` – nur TypeScript
 
 
-- `<style>` kann folgende Werte haben:
+- `<style>` kann folgende Werte annehmen:
   - `*` – Klassen und Schnittstellen
   - `c` – nur Klassen
   - `i` – nur Schnittstellen
@@ -130,25 +132,25 @@ Beispiel:
 
 ### Benutzerdefinierte Methoden-IDs
 
-Standardmäßig werden Methoden durch eine hashbasierte ID identifiziert. Sie können jedoch mit der Direktive `//wails:id` eine benutzerdefinierte ID festlegen:
+Standardmäßig werden Methoden durch eine Hash-basierte ID identifiziert. Sie können jedoch mit der Direktive `//wails:id` eine benutzerdefinierte ID angeben:
 
 ```go
 //wails:id 42
 func (s *Service) CustomIDMethod() {}
 ```
 
-Dies kann nützlich sein, um beim Refactoring von Code die Kompatibilität zu erhalten.
+Dies kann hilfreich sein, um bei der Umstrukturierung von Code die Kompatibilität aufrechtzuerhalten.
 
-## Überlegungen zur Leistung
+## Leistungsaspekte
 
-Der Bindungsgenerator ist auf Effizienz ausgelegt. Beachten Sie dennoch Folgendes:
+Der Bindungsgenerator ist auf Effizienz ausgelegt. Beachten Sie jedoch Folgendes:
 
-1. Der erste Durchlauf ist langsamer, da zunächst ein Cache der zu durchsuchenden Pakete aufgebaut wird
+1. Der erste Durchlauf ist langsamer, da dabei ein Cache der zu durchsuchenden Pakete aufgebaut wird
 2. Nachfolgende Durchläufe sind schneller, da sie die zwischengespeicherten Informationen verwenden
 3. Der Generator verarbeitet alle Pakete im Projekt, was bei großen Projekten zeitaufwendig sein kann
-4. Mit dem Flag `-clean` können Sie das Ausgabeverzeichnis vor der Generierung bereinigen
+4. Mit dem Flag `-clean` können Sie das Ausgabeverzeichnis vor der Generierung leeren
 
-## Fehlersuche
+## Fehlerbehebung
 
 Wenn bei der Bindungsgenerierung Probleme auftreten, können Sie mit dem Flag `-v` die Debug-Ausgabe aktivieren:
 
@@ -156,4 +158,4 @@ Wenn bei der Bindungsgenerierung Probleme auftreten, können Sie mit dem Flag `-
 wails3 generate bindings -v
 ```
 
-Dadurch erhalten Sie detaillierte Informationen zum Erfassungs- und Renderingprozess, mit denen sich die Ursache des Problems ermitteln lässt.
+Dadurch erhalten Sie detaillierte Informationen zum Erfassungs- und Rendering-Prozess, die helfen können, die Ursache des Problems zu ermitteln.

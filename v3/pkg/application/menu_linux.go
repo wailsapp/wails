@@ -21,6 +21,8 @@ func (m *linuxMenu) run() {
 }
 
 func (m *linuxMenu) update() {
+	defer refreshSystemTrayMenus(m.menu)
+
 	m.processMenu(m.menu)
 }
 

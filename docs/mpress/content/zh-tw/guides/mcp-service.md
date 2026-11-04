@@ -12,7 +12,7 @@ sourcePath: "guides/mcp-service.md"
 
 Wails v3 內建[模型上下文協定](https://modelcontextprotocol.io)（MCP）伺服器，讓 LLM 代理（例如 Claude Code、IDE 助理或任何 MCP 用戶端）能檢查、測試及操控<strong>執行中</strong>的 Wails 應用程式。
 
-若要自動化專案生命週期，請使用獨立的`wails3 mcp` CLI 伺服器。它可讓代理檢查及初始化專案、執行診斷、啟動建置與開發工作、產生繫結、執行具名的 Taskfile 工作，以及擷取有界限的工作輸出。CLI 伺服器預設僅限存取目前目錄，且不會開放任意 Shell 指令執行功能。如需傳輸、驗證及工具的詳細資訊，請參閱[CLI MCP 文件](/guides/cli/#mcp)。
+若要自動化專案生命週期，請使用獨立的`wails3 mcp` CLI 伺服器。它可讓代理檢查及初始化專案、執行診斷、啟動建置與開發工作、產生繫結、執行具名的 Taskfile 工作，以及擷取有界限的工作輸出。CLI 伺服器預設僅限存取目前目錄，且不會開放任意 Shell 指令執行功能。如需傳輸、驗證及工具的詳細資訊，請參閱[CLI MCP 文件](/zh-tw/guides/cli/#mcp)。
 
 啟用後，連線至您應用程式的代理可以：
 
@@ -246,7 +246,7 @@ MCP 伺服器可讓您以程式完整控制應用程式。任何能夠存取其�
 
 ## 範例應用程式
 
-[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp)提供了展示所有工具的完整遊樂場應用程式。  
+[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mcp)提供了展示所有工具的完整遊樂場應用程式。
 其中包括：
 
 - 附有遞增／重設按鈕的計數器
