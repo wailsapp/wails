@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 var (
@@ -75,13 +76,13 @@ func StatusIconTri(status string) string {
 
 func RenderTable(rows [][]string) string {
 	var b strings.Builder
-	maxKeyLen := 0
+	maxKeyWidth := 0
 	for _, row := range rows {
 		if len(row) == 0 {
 			continue
 		}
-		if len(row[0]) > maxKeyLen {
-			maxKeyLen = len(row[0])
+		if width := displayWidth(row[0]); width > maxKeyWidth {
+			maxKeyWidth = width
 		}
 	}
 
@@ -89,7 +90,7 @@ func RenderTable(rows [][]string) string {
 		if len(row) == 0 {
 			continue
 		}
-		key := MutedStyle.Render(padRight(row[0], maxKeyLen))
+		key := MutedStyle.Render(padRight(row[0], maxKeyWidth))
 		val := ""
 		if len(row) > 1 {
 			val = row[1]
@@ -101,8 +102,17 @@ func RenderTable(rows [][]string) string {
 }
 
 func padRight(s string, length int) string {
-	for len(s) < length {
-		s += " "
+	padding := length - displayWidth(s)
+	if padding <= 0 {
+		return s
 	}
-	return s
+	return s + strings.Repeat(" ", padding)
+}
+
+func displayWidth(s string) int {
+	width := 0
+	for line := range strings.SplitSeq(s, "\n") {
+		width = max(width, ansi.StringWidth(line))
+	}
+	return width
 }

@@ -11,15 +11,18 @@ import (
 
 func TestNewVersion_Valid(t *testing.T) {
 	cases := []struct {
-		input             string
+		input               string
 		major, minor, patch uint64
-		pre, meta         string
+		pre, meta           string
 	}{
 		{"1.2.3", 1, 2, 3, "", ""},
 		{"v1.2.3", 1, 2, 3, "", ""},
 		{"0.0.0", 0, 0, 0, "", ""},
 		{"10.20.30", 10, 20, 30, "", ""},
+		{"18446744073709551615.18446744073709551615.18446744073709551615", ^uint64(0), ^uint64(0), ^uint64(0), "", ""},
 		{"1.2.3-alpha", 1, 2, 3, "alpha", ""},
+		{"1.2.3--", 1, 2, 3, "-", ""},
+		{"1.2.3+001", 1, 2, 3, "", "001"},
 		{"1.2.3-alpha.1", 1, 2, 3, "alpha.1", ""},
 		{"1.2.3+build.1", 1, 2, 3, "", "build.1"},
 		{"1.2.3-beta.2+exp.sha", 1, 2, 3, "beta.2", "exp.sha"},
@@ -63,8 +66,18 @@ func TestNewVersion_Invalid(t *testing.T) {
 		{"1.x.2", "minor"},
 		// bad patch
 		{"1.2.x", "patch"},
-		// SplitN(s, ".", 3) makes parts[2]="3.4" which is non-numeric → patch error
+		// Extra core components remain part of the invalid patch field.
 		{"1.2.3.4", "patch"},
+		{"1.2.3-", "prerelease"},
+		{"1.2.3+", "metadata"},
+		{"1.2.3-+build", "prerelease"},
+		{"1.2.3-beta+", "metadata"},
+		{".1.2", "major"},
+		{"1..2", "minor"},
+		{"1.2.", "patch"},
+		{"18446744073709551616.1.2", "major"},
+		{"1.18446744073709551616.2", "minor"},
+		{"1.2.18446744073709551616", "patch"},
 	}
 	for _, tc := range cases {
 		tc := tc
@@ -99,6 +112,8 @@ func TestString(t *testing.T) {
 		{"1.2.3-beta+exp", "1.2.3-beta+exp"},
 		// v-prefix stripped
 		{"v4.5.6", "4.5.6"},
+		{"18446744073709551615.18446744073709551615.18446744073709551615", "18446744073709551615.18446744073709551615.18446744073709551615"},
+		{"3.1.0-beta+" + strings.Repeat("metadata", 32), "3.1.0-beta+" + strings.Repeat("metadata", 32)},
 	}
 	for _, tc := range cases {
 		tc := tc
@@ -209,6 +224,13 @@ func TestComparePrerelease(t *testing.T) {
 		want int // -1, 0, 1
 	}
 	cases := []tc{
+		{"", "", 0},
+		{"alpha", "alpha.", -1},
+		{"alpha.", "alpha", 1},
+		{"alpha..1", "alpha..2", -1},
+		{"alpha.001", "alpha.1", 0},
+		{"alpha.000", "alpha.0", 0},
+		{"alpha.1.0", "alpha.01", 1},
 		// numeric vs numeric, same → continue to next identifier
 		{"1.2", "1.3", -1},
 		{"1.3", "1.2", 1},
@@ -231,8 +253,8 @@ func TestComparePrerelease(t *testing.T) {
 		{"alpha.1", "alpha.1", 0},
 
 		// longer wins when prefix equal
-		{"alpha", "alpha.1", -1},  // shorter < longer
-		{"alpha.1", "alpha", 1},   // longer > shorter
+		{"alpha", "alpha.1", -1}, // shorter < longer
+		{"alpha.1", "alpha", 1},  // longer > shorter
 
 		// numeric longer wins
 		{"1", "1.1", -1},
@@ -276,6 +298,10 @@ func TestVersionOrdering(t *testing.T) {
 		"1.0.0-beta",
 		"1.0.0-beta.2",
 		"1.0.0-beta.11",
+		"1.0.0-beta.18446744073709551615",
+		"1.0.0-beta.18446744073709551616",
+		"1.0.0-beta.99999999999999999999",
+		"1.0.0-beta.100000000000000000000",
 		"1.0.0-rc.1",
 		"1.0.0",
 	}
@@ -315,5 +341,45 @@ func TestCmpUintEqual(t *testing.T) {
 	b := mustParse(t, "3.3.3")
 	if got := a.compare(b); got != 0 {
 		t.Errorf("compare identical versions = %d, want 0", got)
+	}
+}
+
+func TestCompareLargeNumericPrerelease(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want int
+	}{
+		// Numeric identifiers have no uint64 size limit.
+		{"18446744073709551615", "18446744073709551616", -1},
+		{"99999999999999999999", "100000000000000000000", -1},
+		{"100000000000000000000", "99999999999999999999", 1},
+		{"18446744073709551616", "18446744073709551616", 0},
+		{"18446744073709551616", "0a", -1},
+		{"0a", "18446744073709551616", 1},
+		{"beta.99999999999999999999", "beta.100000000000000000000", -1},
+		{"18446744073709551616", "18446744073709551616.1", -1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.a+"_vs_"+tc.b, func(t *testing.T) {
+			a := mustParse(t, "1.0.0-"+tc.a)
+			b := mustParse(t, "1.0.0-"+tc.b)
+			if got := a.compare(b); got != tc.want {
+				t.Errorf("compare(%s, %s) = %d, want %d", a, b, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestNumericIdentifierCompatibility(t *testing.T) {
+	inputs := []string{"", "0123456789", strings.Repeat("1234567890", 128), "0001", "-1", "+1", "1.0", "١٢", "１２", "1a", "a1"}
+	for value := 0; value < 256; value++ {
+		one := string([]byte{byte(value)})
+		inputs = append(inputs, one, "12"+one+"34", one+"12", "12"+one)
+	}
+	for _, input := range inputs {
+		want := input != "" && strings.Trim(input, "0123456789") == ""
+		if got := isNumericIdentifier(input); got != want {
+			t.Errorf("numeric(%q)=%t, want %t", input, got, want)
+		}
 	}
 }

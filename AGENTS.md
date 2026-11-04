@@ -1,4 +1,56 @@
-# AI Agent Instructions for Wails v3
+# AI Agent Instructions for Wails
+
+## Repository intent and layout
+
+This repository contains multiple generations of Wails and the supporting project sites:
+
+- [`v2/`](v2/AGENTS.md) is the maintained Wails v2 codebase and release line.
+- [`v3/`](v3/AGENTS.md) is the Wails v3 codebase, CLI, runtime, platform integrations, examples, and tests.
+- [`docs/`](docs/AGENTS.md) is the current M-Press documentation source for Wails v3.
+- [`website/`](website/AGENTS.md) is the Docusaurus website, including the v2 documentation and versioned historical documentation.
+- [`scripts/`](scripts/AGENTS.md) and [`tools/`](tools/AGENTS.md) contain repository automation and supporting utilities.
+- [`assets/`](assets/AGENTS.md) contains shared artwork and other repository-wide static assets.
+
+Work in the smallest owning directory. Keep v2 and v3 code, documentation, and release assumptions separate unless a task explicitly spans both versions. The root Taskfile delegates to these areas; check the task file in the owning directory for its available commands.
+
+The root is the source of repository-wide policy. A deeper `AGENTS.md` may add constraints for its subtree but does not override these instructions. Preserve existing project conventions and avoid unrelated changes.
+
+## Wails release policy
+
+For Wails release planning and issue/PR triage:
+
+- v3.1.0 contains features only.
+- Prioritise bugs by severity and release their fixes as nightly patch updates; keep them outside the v3.1.0 milestone/project.
+- Triage issue and PR content rather than inferring priority or release placement from missing labels.
+- GitHub Issues and pull requests are the authoritative trackers. Search for existing items before filing, link implementation work to its tracker, and do not create a parallel local issue list.
+
+## Working boundaries
+
+- Keep changes within the requested product/version scope. Do not backport or forward-port between v2 and v3 by assumption; identify compatibility and release intent first.
+- Treat generated files according to the owning project's build workflow. When a workflow requires generated artifacts to be committed, update all coupled outputs together.
+- Do not edit generated website output or dependency caches as source content. Edit the source and regenerate only when the task requires it.
+- Store AI-generated planning documents in `history/`, not at the repository root.
+- Do not push unless the user gives explicit manual confirmation.
+- Use the `taliesin-ai` identity for commits. Before committing, run `coderabbit --plain` as required by this repository's contribution policy.
+
+## Changelog ownership
+
+- v3 release notes are generated at release time from merged PRs whose merge commits are in the tested Git range. Do not edit or recreate `v3/UNRELEASED_CHANGELOG.md`; it has been removed.
+- Describe the user-visible change in the PR title. An optional `## Release notes` section in the PR description overrides that summary. Conventional title types choose the category; `changelog:added|changed|fixed|deprecated|removed|security` labels override it, and `skip-changelog` excludes a PR. Internal-only title types are excluded unless explicitly categorized.
+- `v3/scripts/generate-release-changelog.py` writes ignored release-local notes and a provenance receipt. It reads GitHub metadata only; it does not use external reviewers or models. Nightlies start at the nearest reachable v3 release tag; stable releases start at the nearest reachable stable v3 tag. Bootstrap requires an explicit `--since` ancestor.
+- Release tooling consumes those notes for the GitHub release and the versioned section of `docs/mpress/content/changelog.md`. Keep the published release history intact. Weekly synchronization inserts only the tagged release section and preserves newer entries.
+- Changelog automation maintenance and explicitly requested release-note corrections are exceptions to generated-file ownership: change the owning generator/workflow and coupled output together and run the release/changelog tests.
+- v2 retains its separate contributor workflow in `website/src/pages/changelog.mdx`.
+
+## Wails MCP tools for agents
+
+Wails v3 provides two separate MCP servers. Prefer their connected tools for the tasks they support; if they are unavailable, use the documented CLI and Taskfile commands. Use a CLI built from the checkout you intend to test, rather than assuming an installed release includes local changes.
+
+**Project lifecycle:** launch `wails3 mcp --stdio --root /absolute/path/to/app` through an MCP client. It can inspect projects, run diagnostics, list tasks, start builds/development jobs, and generate bindings. Relevant tools include `wails_project_inspect`, `wails_project_doctor`, `wails_project_task_list`, `wails_project_build`, `wails_project_dev_start`, `wails_project_generate_bindings` and `wails_project_task_run`. Builds return job IDs: use `wails_job_status` to check completion, output and exit status; a job starting is not a successful build. Use `wails_job_stop` for jobs this server started.
+
+The project server is confined to its configured root. Mutating and process-control tools require the session token supplied in the MCP initialization instructions; HTTP transport also requires bearer authentication. A token does not grant permission for actions outside the user's request. See [CLI MCP documentation](docs/mpress/content/guides/cli.md#mcp) and `v3/internal/commands/mcp.go`.
+
+**Running application:** `WAILS_MCP=1 wails3 dev` enables the experimental in-app server. Connect using the endpoint printed by the application (normally `http://127.0.0.1:9099/mcp`). Its tools inspect windows/DOM, interact with the UI, call bound methods and observe events; they do not replace the project build tools. `screenshot_dom` is a structural DOM snapshot, not a pixel screenshot. Keep the `mcp` build tag out of shipped builds. See [application MCP documentation](docs/mpress/content/guides/mcp-service.md).
 
 ## Issue Tracking with GitHub
 
@@ -78,7 +130,7 @@ Some subsystems have a dedicated internals page written for agents. Read the rel
 before changing that code — several of its decisions look arbitrary until you know which
 measured bug they prevent.
 
-- **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
+- **Streams** (`v3/pkg/application/stream*.go`, `v3/internal/runtime/.../stream.ts`):
   `docs/mpress/content/guides/advanced/streams-internals.md`. Covers the held-poll
   design, the buffer constants and how to pick them, session and connection lifecycle,
   transport selection, and what is unfinished. To convert an existing WebSocket

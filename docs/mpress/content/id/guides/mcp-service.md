@@ -12,7 +12,7 @@ Server MCP bawaan masih bersifat eksperimental dan API-nya dapat berubah dalam r
 
 Wails v3 memiliki server [Model Context Protocol](https://modelcontextprotocol.io) (MCP) bawaan yang memungkinkan agen LLM—Claude Code, asisten IDE, atau klien MCP apa pun—memeriksa, menguji, dan mengendalikan aplikasi Wails yang **sedang berjalan**.
 
-Untuk otomatisasi siklus hidup proyek, gunakan server CLI `wails3 mcp` yang terpisah. Server ini memungkinkan agen memeriksa dan menginisialisasi proyek, menjalankan diagnostik, memulai build dan tugas pengembangan, menghasilkan binding, menjalankan tugas Taskfile bernama, serta mengambil keluaran tugas dalam batas tertentu. Secara default, server CLI dibatasi pada direktori saat ini dan tidak menyediakan eksekusi shell arbitrer. Lihat [dokumentasi MCP CLI](/guides/cli/#mcp) untuk detail transpor, autentikasi, dan alat.
+Untuk otomatisasi siklus hidup proyek, gunakan server CLI `wails3 mcp` yang terpisah. Server ini memungkinkan agen memeriksa dan menginisialisasi proyek, menjalankan diagnostik, memulai build dan tugas pengembangan, menghasilkan binding, menjalankan tugas Taskfile bernama, serta mengambil keluaran tugas dalam batas tertentu. Secara default, server CLI dibatasi pada direktori saat ini dan tidak menyediakan eksekusi shell arbitrer. Lihat [dokumentasi MCP CLI](/id/guides/cli/#mcp) untuk detail transpor, autentikasi, dan alat.
 
 Jika diaktifkan, agen yang terhubung ke aplikasi Anda dapat:
 
@@ -246,7 +246,7 @@ Server MCP memberikan kendali terprogram penuh atas aplikasi Anda. Siapa pun yan
 
 ## Aplikasi contoh
 
-Aplikasi playground lengkap yang mendemonstrasikan semua alat tersedia di [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Aplikasi ini mencakup:
+Aplikasi playground lengkap yang mendemonstrasikan semua alat tersedia di [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mcp). Aplikasi ini mencakup:
 
 - Penghitung dengan tombol untuk menaikkan nilai dan mereset
 - Input nama dengan metode terikat Greet, Add, dan Shout

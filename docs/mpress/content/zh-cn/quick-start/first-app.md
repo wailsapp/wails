@@ -1,6 +1,6 @@
 ---
 title: "你的第一个应用"
-description: "在 10 分钟内构建一个可运行的 Wails 应用"
+description: "在10分钟内构建一个可运行的 Wails 应用"
 slug: "quick-start/first-app"
 sourcePath: "quick-start/first-app.md"
 ---
@@ -12,26 +12,21 @@ sourcePath: "quick-start/first-app.md"
 - 类型安全的绑定
 - 开发期间热重载
 
-<strong>完成所需时间：</strong>10 分钟
-
-@note{type="tip" title="Windows 11 用户性能提示"}
-建议使用[开发驱动器](https://learn.microsoft.com/en-us/windows/dev-drive/)存储项目。开发驱动器针对开发者工作负载进行了优化，与普通 NTFS 驱动器相比，可将构建速度和磁盘访问速度显著提升，最高可达 30%。
-
-@end
+<strong>完成所需时间：</strong>10分钟
 
 ## 创建项目
 
 @steps
 ### 生成项目
 ```bash
-wails3 init -n myapp
+wails3 init -n myapp -t vanilla-js
 cd myapp
 ```
 
-这将使用默认的 Vanilla + Vite 模板（HTML/CSS/TypeScript，使用 Vite 打包器）创建一个新项目。
+本教程明确选择 JavaScript 版 Vanilla + Vite，以便下方源文件与你生成的项目一致。基础`vanilla`模板使用 TypeScript。
 
 @note{type="tip" title="其他模板"}
-可根据偏好的框架尝试 `-t react`、`-t vue` 或 `-t svelte`。这些模板默认使用 TypeScript；如需纯 JavaScript，请使用 `-t vanilla-js` 或 `-t react-js`。 运行 `wails3 init -l` 可查看所有可用模板，也可以 [使用自己的前端框架](/guides/dev/frontend-frameworks/)。
+你可以根据偏好的框架尝试`-t react`、`-t vue`或`-t svelte`。这些模板默认使用 TypeScript；如需纯 JavaScript，请使用`-t vanilla-js`或`-t react-js`。运行`wails3 init -l`可查看所有可用模板，也可以[使用你自己的前端框架](/guides/dev/frontend-frameworks/)。
 
 @end
 
@@ -43,12 +38,12 @@ myapp/
 ├── frontend/            # Your UI code
 │   ├── index.html       # HTML entry point
 │   ├── src/
-│   │   └── main.ts      # Frontend TypeScript
+│   │   └── main.js      # Frontend JavaScript
 │   ├── public/
 │   │   └── style.css    # Styles
 │   ├── package.json     # Frontend dependencies
-│   ├── tsconfig.json    # TypeScript configuration
-│   └── vite.config.ts   # Vite bundler config
+│   ├── tsconfig.json    # Editor and JavaScript tooling configuration
+│   └── vite.config.js   # Vite bundler config
 ├── build/               # Build configuration
 └── Taskfile.yml         # Build tasks
 ```
@@ -67,50 +62,51 @@ wails3 dev
 
 @end
 
+@note{type="tip" title="面向 Windows 11用户的性能提示"}
+建议使用[Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)存储项目。Dev Drive 针对开发者工作负载进行了优化，与普通 NTFS 驱动器相比，最多可将构建速度和磁盘访问速度提高30%。
+
+@end
+
 ## 工作原理
 
-下面来了解实现这一功能的代码。
+下面来了解实现此功能的代码。
 
 ### Go 后端
 
-打开 `greetservice.go`：
+打开`greetservice.go`：
 
 ```go {title="greetservice.go"}
 package main
 
-import (
-	"fmt"
-)
-
 type GreetService struct{}
 
 func (g *GreetService) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+	return "Hello " + name + "!"
 }
 ```
 
-**核心概念：**
+**关键概念：**
 
 1. **服务**——包含导出方法的 Go 结构体
-2. **导出方法**——`Greet`以大写字母开头，因此前端可以调用它
+2. **导出方法**——`Greet`以大写字母开头，因此可供前端调用
 3. **简单逻辑**——接收姓名并返回问候语
-4. **类型安全**——输入和输出类型均有明确定义
+4. **类型安全**——定义了输入和输出类型
 
 @note{type="tip" title="了解服务和绑定"}
-<strong>服务</strong>是独立的 Go 模块，用于向前端公开功能。它们就是普通的 Go 结构体，包含导出方法，并注册在应用配置的 `Services` 字段中。
+**服务**是自包含的 Go 模块，用于向前端公开功能。它们就是具有导出方法的普通 Go 结构体，需要在应用配置的`Services`字段中注册。
 
-<strong>绑定</strong>是自动生成的 TypeScript/JavaScript SDK，前端通过它调用这些服务。运行 `wails3 dev` 或 `wails3 build` 时，Wails 会分析已注册的服务，并在 `frontend/bindings/` 中生成类型安全的绑定。
+**绑定**是自动生成的 TypeScript/JavaScript SDK，使前端能够调用这些服务。运行`wails3 dev`或`wails3 build`时，Wails 会分析已注册的服务，并在`frontend/bindings/`中生成类型安全的绑定。
 
-可以将服务视为后端 API，将绑定视为与该 API 通信的客户端库。
+可以将服务视为后端 API，将绑定视为与其通信的客户端库。
 
 @end
 
 ### 注册服务
 
-打开 `main.go`，找到服务注册代码：
+打开`main.go`并找到服务注册代码：
 
 ```go {title="main.go" highlight="4-6"}
-err := application.New(application.Options{
+app := application.New(application.Options{
     Name: "myapp",
     Services: []application.Service{
         application.NewService(&GreetService{}),
@@ -119,18 +115,17 @@ err := application.New(application.Options{
 })
 ```
 
-这会向 Wails 注册 `GreetService`，使其所有导出方法都可供前端调用。
+这会向 Wails 注册`GreetService`，使其所有导出方法都可供前端调用。
 
 ### 前端
 
-打开 `frontend/src/main.js`：
+打开`frontend/src/main.js`：
 
 ```javascript {title="frontend/src/main.js"}
 import {GreetService} from "../bindings/changeme";
 
-window.greet = async () => {
+window.doGreet = async () => {
     const nameElement = document.getElementById('name');
-    const resultElement = document.getElementById('result');
 
     const name = nameElement.value;
     if (!name) {
@@ -139,22 +134,24 @@ window.greet = async () => {
 
     try {
         const result = await GreetService.Greet(name);
-        resultElement.innerText = result;
+        showToast(result);
     } catch (err) {
         console.error(err);
     }
 };
 ```
 
-**核心概念：**
+这个简化的处理函数将替换初始项目中的`window.doGreet`；请保留现有的`showToast`辅助函数及其他启动代码。生成的 HTML 按钮会调用`doGreet`，而`showToast`会显示其结果。导入路径遵循 Go 模块名称（除非已覆盖，否则为`changeme`）。
 
-1. **自动生成的绑定**——`GreetService`从生成的代码中导入
-2. **类型安全调用**——方法名称和签名与 Go 代码一致
-3. **默认异步**——所有 Go 调用都会返回 Promise
+**关键概念：**
+
+1. **自动生成的绑定**——从生成的代码中导入`GreetService`
+2. **类型安全的调用**——方法名称和签名与你的 Go 代码一致
+3. **默认异步**——所有 Go 调用都返回 Promise
 4. **错误处理**——来自 Go 的错误会在 try/catch 中被捕获
 
-@note{type="info" title="绑定在哪里？"}
-生成的绑定位于 `frontend/bindings/` 中。运行 `wails3 dev` 或 `wails3 build` 时会自动创建这些绑定。
+@note{type="info" title="绑定位于何处？"}
+生成的绑定位于`frontend/bindings/`中。运行`wails3 dev`或`wails3 build`时会自动创建这些绑定。
 
 **切勿手动编辑这些文件**——每次构建时都会重新生成它们。
 
@@ -162,19 +159,19 @@ window.greet = async () => {
 
 ## 自定义应用
 
-下面添加一项新功能，以了解整个工作流程。
+下面添加一项新功能，以了解开发工作流。
 
 ### 添加“批量问候”功能
 
 @steps
 ### 向 GreetService 添加方法
-将以下内容添加到 `greetservice.go`：
+将以下内容添加到`greetservice.go`：
 
 ```go {title="greetservice.go"}
 func (g *GreetService) GreetMany(names []string) []string {
     greetings := make([]string, len(names))
     for i, name := range names {
-        greetings[i] = fmt.Sprintf("Hello %s!", name)
+        greetings[i] = "Hello " + name + "!"
     }
     return greetings
 }
@@ -184,12 +181,12 @@ func (g *GreetService) GreetMany(names []string) []string {
 保存文件后，`wails3 dev`会自动重新构建 Go 代码并重启应用。
 
 @note{type="info" title="自动重新构建"}
-更改 Go 代码会触发自动重新构建和重启。更改前端代码会进行热重载，无需重启。
+Go 代码的更改会触发自动重新构建和重启。前端更改则会热重载，无需重启。
 
 @end
 
-### 在前端中使用该功能
-将以下内容添加到 `frontend/src/main.js`：
+### 在前端中使用
+将以下内容添加到`frontend/src/main.js`：
 
 ```javascript {title="frontend/src/main.js"}
 window.greetMany = async () => {
@@ -199,7 +196,7 @@ window.greetMany = async () => {
 };
 ```
 
-打开浏览器控制台并调用 `greetMany()`——你将看到问候语数组。
+打开浏览器控制台并调用`greetMany()`——你将看到问候语数组。
 
 @end
 
@@ -213,30 +210,30 @@ wails3 build
 
 **此操作会：**
 
-- 启用优化编译 Go 代码
-- 为生产环境构建前端（压缩代码）
-- 在 `bin/` 中创建原生可执行文件
+- 启用优化来编译 Go 代码
+- 为生产环境构建前端（已压缩）
+- 在`bin/`中创建原生可执行文件
 
 @tabs{sync-key="os"}
 [Windows]
 **输出：**`bin/myapp.exe`
 
-双击即可运行。无需安装依赖项（WebView2 是 Windows 的一部分）。
+双击即可运行。无需安装依赖项（WebView2 是 Windows 的组成部分）。
 
 [macOS]
 **输出：**`bin/myapp.app`
 
-拖入“应用程序”文件夹，或双击运行。
+将其拖入 Applications 文件夹，或双击运行。
 
 [Linux]
 **输出：**`bin/myapp`
 
-使用`./bin/myapp`运行，或为应用程序启动器创建一个`.desktop`文件。
+使用`./bin/myapp`运行，或为应用启动器创建`.desktop`文件。
 
 @end
 
 @note{type="tip" title="跨平台构建"}
-想为其他平台构建吗？请参阅[跨平台构建 →](/guides/build/cross-platform/)
+想为其他平台构建应用？请参阅[跨平台构建 →](/guides/build/cross-platform/)
 
 @end
 
@@ -252,20 +249,20 @@ wails3 build
 
 - 创建包含导出方法的 Go 结构体
 - 使用`application.NewService()`注册
-- 方法自动可供前端使用
+- 方法自动在前端可用
 
 **绑定**
 
-- 自动生成 TypeScript 定义
+- 自动生成的 TypeScript 定义
 - 类型安全的函数调用
 - 默认异步（Promise）
 
 **开发工作流**
 
 - `wails3 dev`用于热重载
-- Go 代码发生更改时自动重新构建并重启
-- 前端代码发生更改时立即热重载
+- Go 代码更改后自动重新构建并重启
+- 前端更改会立即热重载
 
 ---
 
-<strong>有问题？</strong>加入[Discord](https://discord.gg/JDdSxwjhGf)并向社区提问。
+<strong>有疑问？</strong>加入[Discord](https://discord.gg/JDdSxwjhGf)并向社区提问。

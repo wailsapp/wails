@@ -1,21 +1,21 @@
 ---
 title: "Build-Anpassung"
-description: "Passen Sie Ihren Build-Prozess mit Task und Taskfile.yml an"
+description: "Passe deinen Build-Prozess mit Task und Taskfile.yml an"
 slug: "guides/build/customization"
 sourcePath: "guides/build/customization.md"
 ---
 
 ## Übersicht
 
-Das Wails-Build-System ist ein flexibles und leistungsfähiges Werkzeug, das den Build-Prozess für Ihre Wails-Anwendungen vereinfacht. Es nutzt [Task](https://taskfile.dev), einen Task-Runner, mit dem Sie Tasks einfach definieren und ausführen können. Obwohl das v3-Build-System standardmäßig verwendet wird, unterstützt Wails den Ansatz, eigene Werkzeuge einzusetzen, sodass Entwickler ihren Build-Prozess nach Bedarf anpassen können.
+Das Wails-Build-System ist ein flexibles und leistungsfähiges Werkzeug, das den Build-Prozess für deine Wails-Anwendungen vereinfacht. Es nutzt [Task](https://taskfile.dev), einen Task-Runner, mit dem du Aufgaben einfach definieren und ausführen kannst. Das v3-Build-System ist zwar die Standardeinstellung, Wails verfolgt jedoch den Ansatz „Bring your own tooling“, sodass Entwickler ihren Build-Prozess nach Bedarf anpassen können.
 
-Weitere Informationen zur Verwendung von Task finden Sie in der [offiziellen Dokumentation](https://taskfile.dev/usage/).
+Weitere Informationen zur Verwendung von Task findest du in der [offiziellen Dokumentation](https://taskfile.dev/usage/).
 
 ## Task: Das Herzstück des Build-Systems
 
-[Task](https://taskfile.dev) ist eine moderne, in Go geschriebene Alternative zu Make. Task verwendet eine YAML-Datei, um Tasks und deren Abhängigkeiten zu definieren. Im Wails-Build-System spielt [Task](https://taskfile.dev) eine zentrale Rolle bei der Orchestrierung des Build-Prozesses.
+[Task](https://taskfile.dev) ist eine moderne, in Go geschriebene Alternative zu Make. Es verwendet eine YAML-Datei, um Aufgaben und ihre Abhängigkeiten zu definieren. Im Wails-Build-System spielt [Task](https://taskfile.dev) eine zentrale Rolle bei der Orchestrierung des Build-Prozesses.
 
-Die zentrale `Taskfile.yml` befindet sich im Stammverzeichnis des Projekts, während plattformspezifische Tasks in `build/<platform>/Taskfile.yml`-Dateien definiert sind. Eine gemeinsame `Taskfile.yml`-Datei im Verzeichnis `build` enthält allgemeine Tasks, die von allen Plattformen gemeinsam genutzt werden.
+Die zentrale `Taskfile.yml` befindet sich im Projektstammverzeichnis, während plattformspezifische Aufgaben in `build/<platform>/Taskfile.yml`-Dateien definiert sind. Eine gemeinsame `Taskfile.yml`-Datei im Verzeichnis `build` enthält plattformübergreifend verwendete Aufgaben.
 
 @filetree
 
@@ -30,7 +30,7 @@ Die zentrale `Taskfile.yml` befindet sich im Stammverzeichnis des Projekts, wäh
 
 ## Taskfile.yml
 
-Die Datei `Taskfile.yml` im Stammverzeichnis des Projekts ist der Haupteinstiegspunkt des Build-Systems. Sie definiert die Tasks und deren Abhängigkeiten. Dies ist die standardmäßige `Taskfile.yml`-Datei:
+Die Datei `Taskfile.yml` im Projektstammverzeichnis ist der Haupteinstiegspunkt des Build-Systems. Sie definiert die Aufgaben und ihre Abhängigkeiten. Dies ist die standardmäßige `Taskfile.yml`-Datei:
 
 ```yaml
 version: '3'
@@ -72,64 +72,61 @@ tasks:
 
 ## Plattformspezifische Taskfiles
 
-Jede Plattform verfügt über ein eigenes Taskfile in den Plattformverzeichnissen unterhalb des Verzeichnisses `build`. Diese Dateien definieren die zentralen Tasks für die jeweilige Plattform. Jedes Taskfile bindet die allgemeinen Tasks aus der Datei `build/Taskfile.yml` ein.
+Jede Plattform verfügt über ein eigenes Taskfile, das sich in den Plattformverzeichnissen unterhalb des Verzeichnisses `build` befindet. Diese Dateien definieren die Kernaufgaben für die jeweilige Plattform. Jedes Taskfile bindet gemeinsame Aufgaben aus der Datei `build/Taskfile.yml` ein.
 
 ### Windows
 
 Speicherort: `build/windows/Taskfile.yml`
 
-Das Windows-spezifische Taskfile enthält Tasks zum Erstellen, Paketieren und Ausführen der Anwendung unter Windows. Zu den wichtigsten Funktionen gehören:
+Das Windows-spezifische Taskfile enthält Aufgaben zum Erstellen, Paketieren und Ausführen der Anwendung unter Windows. Zu den wichtigsten Funktionen gehören:
 
 - Erstellen mit optionalen Produktions-Flags
-- Generieren der Symboldatei `.ico`
-- Generieren der Windows-Datei `.syso`
+- Erzeugen der `.ico`-Symboldatei
+- Erzeugen der Windows-Datei `.syso`
 - Erstellen eines NSIS-Installationsprogramms zur Paketierung
 
 ### Linux
 
 Speicherort: `build/linux/Taskfile.yml`
 
-Das Linux-spezifische Taskfile enthält Tasks zum Erstellen, Paketieren und Ausführen der Anwendung unter Linux. Zu den wichtigsten Funktionen gehören:
+Das Linux-spezifische Taskfile enthält Aufgaben zum Erstellen, Paketieren und Ausführen der Anwendung unter Linux. Zu den wichtigsten Funktionen gehören:
 
 - Erstellen mit optionalen Produktions-Flags
 - Erstellen eines AppImage sowie von deb-, rpm- und Arch-Linux-Paketen
-- Generieren der Datei `.desktop` für Linux-Anwendungen
+- Erzeugen der Datei `.desktop` für Linux-Anwendungen
 
 ### macOS
 
 Speicherort: `build/darwin/Taskfile.yml`
 
-Das macOS-spezifische Taskfile enthält Tasks zum Erstellen, Paketieren und Ausführen der Anwendung unter macOS. Zu den wichtigsten Funktionen gehören:
+Das macOS-spezifische Taskfile enthält Aufgaben zum Erstellen, Paketieren und Ausführen der Anwendung unter macOS. Zu den wichtigsten Funktionen gehören:
 
 - Erstellen von Binärdateien für die Architekturen amd64, arm64 und universal (beide)
-- Generieren der Symboldatei `.icns`
-- Erstellen eines `.app`-Bundles für die Verteilung
+- Erzeugen der `.icns`-Symboldatei
+- Erstellen eines `.app`-Bundles für die Distribution
 - Ad-hoc-Signieren von `.app`-Bundles
 - Festlegen macOS-spezifischer Build-Flags und Umgebungsvariablen
 
 ## Task-Ausführung und Befehlsaliase
 
-Der Befehl `wails3 task` ist eine eingebettete Version von [Taskfile](https://taskfile.dev), die die in Ihrer `Taskfile.yml` definierten Tasks ausführt.
+Der Befehl `wails3 task` ist eine eingebettete Version von [Taskfile](https://taskfile.dev), die die in deiner `Taskfile.yml` definierten Aufgaben ausführt.
 
-Die Befehle `wails3 build` und `wails3 package` sind Aliase für `wails3 task build` beziehungsweise `wails3 task package`. Wenn Sie diese Befehle ausführen, übersetzt Wails sie intern in die entsprechende Task-Ausführung:
+Die Befehle `wails3 build` und `wails3 package` sind Aliase für `wails3 task build` beziehungsweise `wails3 task package`. Wenn du diese Befehle ausführst, übersetzt Wails sie intern in die entsprechende Task-Ausführung:
 
 - `wails3 build` → `wails3 task build`
 - `wails3 package` → `wails3 task package`
 
 ### Parameter an Tasks übergeben
 
-Sie können CLI-Variablen im Format `KEY=VALUE` an Tasks übergeben. Diese Variablen werden über die Aliasbefehle weitergeleitet:
+Du kannst Tasks CLI-Variablen im Format `KEY=VALUE` übergeben. Diese Variablen werden über die Aliasbefehle weitergeleitet:
 
 ```bash
 # These are equivalent:
-wails3 build PLATFORM=linux CONFIG=production
-wails3 task build PLATFORM=linux CONFIG=production
-
-# Package with custom version:
-wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+wails3 build GOOS=linux
+wails3 task build GOOS=linux
 ```
 
-In Ihrer `Taskfile.yml` können Sie mit der Go-Template-Syntax auf diese Variablen zugreifen:
+Die Standard-Tasks verwenden `GOOS`, `ARCH` und `DEV`. Variablen wie `VERSION`, `OUTPUT`, `PLATFORM` oder `CONFIG` wirken sich nur dann auf einen Task aus, wenn dein eigenes Taskfile sie ausliest. Das folgende Beispiel zeigt ein benutzerdefiniertes Taskfile und nicht den standardmäßigen Wails-Build-Task:
 
 ```yaml
 tasks:
@@ -139,49 +136,55 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+Wenn Ihre benutzerdefinierte Paketierungs-Task `VERSION` und `OUTPUT` ausliest, können Sie beide auf dieselbe Weise übergeben:
+
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
 ## Allgemeiner Build-Prozess
 
 Der Build-Prozess umfasst auf allen Plattformen üblicherweise die folgenden Schritte:
 
 1. Bereinigen der Go-Module
 2. Erstellen des Frontends
-3. Generieren von Symbolen
+3. Erzeugen von Symbolen
 4. Kompilieren des Go-Codes mit plattformspezifischen Flags
 5. Paketieren der Anwendung (plattformspezifisch)
 
 ## Build-Prozess anpassen
 
-Das v3-Build-System bietet zwar eine solide Standardkonfiguration, lässt sich jedoch problemlos an die Anforderungen Ihres Projekts anpassen. Durch Änderungen an der `Taskfile.yml` und den plattformspezifischen Taskfiles können Sie:
+Das v3-Build-System bietet zwar eine solide Standardkonfiguration, du kannst es jedoch problemlos an die Anforderungen deines Projekts anpassen. Durch Änderungen an `Taskfile.yml` und den plattformspezifischen Taskfiles kannst du:
 
 - Neue Tasks hinzufügen
 - Vorhandene Tasks ändern
-- Die Reihenfolge der Task-Ausführung ändern
+- Die Ausführungsreihenfolge der Tasks ändern
 - Andere Werkzeuge und Skripte integrieren
 
-Dank dieser Flexibilität können Sie den Build-Prozess auf Ihre spezifischen Anforderungen zuschneiden und zugleich von der Struktur des Wails-Build-Systems profitieren.
+Dank dieser Flexibilität kannst du den Build-Prozess an deine konkreten Anforderungen anpassen und zugleich von der Struktur des Wails-Build-Systems profitieren.
 
 @note{type="tip" title="Taskfile kennenlernen"}
-Wir empfehlen nachdrücklich, die [Taskfile](https://taskfile.dev)-Dokumentation zu lesen, um zu erfahren, wie Sie Taskfile effektiv einsetzen. Mit `wails3 task --version` können Sie ermitteln, welche Version von Taskfile in die Wails CLI eingebettet ist.
+Wir empfehlen ausdrücklich, die Dokumentation zu [Taskfile](https://taskfile.dev) zu lesen, um zu verstehen, wie du Taskfile effektiv verwendest. Mit `wails3 task --version` kannst du ermitteln, welche Taskfile-Version in die Wails-CLI eingebettet ist.
 
 @end
 
 ## Entwicklungsmodus
 
-Das Wails-Build-System umfasst einen leistungsfähigen Entwicklungsmodus, der durch automatisches Neuladen und Hot Module Replacement für eine bessere Entwicklungserfahrung sorgt. Dieser Modus wird mit dem Befehl `wails3 dev` aktiviert.
+Das Wails-Build-System bietet einen leistungsfähigen Entwicklungsmodus, der durch Live-Neuladen und Hot Module Replacement die Entwicklung verbessert. Du aktivierst diesen Modus mit dem Befehl `wails3 dev`.
 
 ### Funktionsweise
 
-Wenn Sie `wails3 dev` ausführen, läuft der folgende Prozess ab:
+Wenn du `wails3 dev` ausführst, läuft der folgende Prozess ab:
 
-1. Der Befehl sucht nach einem verfügbaren Port und verwendet standardmäßig 9245, wenn keiner angegeben wurde.
+1. Der Befehl sucht nach einem verfügbaren Port. Wenn keiner angegeben ist, verwendet er standardmäßig 9245.
 2. Er richtet die Umgebungsvariablen für den Frontend-Entwicklungsserver (Vite) ein.
 3. Er startet die Dateiüberwachung mit der Bibliothek [refresh](https://github.com/atterpac/refresh).
 
-Die Bibliothek [refresh](https://github.com/atterpac/refresh) überwacht Dateiänderungen und löst neue Builds aus. Sie verwendet die Konfiguration unter dem Schlüssel `dev_mode` in der Datei `./build/config.yml`. Sie können festlegen, welche Verzeichnisse und Dateien die Bibliothek ignoriert, welche Dateien sie überwacht und welche Aktionen sie bei erkannten Änderungen ausführt. Die Standardkonfiguration funktioniert recht gut, Sie können sie aber jederzeit an Ihre Anforderungen anpassen.
+Die Bibliothek [refresh](https://github.com/atterpac/refresh) überwacht Dateiänderungen und löst erneute Builds aus. Sie verwendet die Konfiguration, die in der Datei `./build/config.yml` unter dem Schlüssel `dev_mode` definiert ist. Du kannst sie so konfigurieren, dass sie bestimmte Verzeichnisse und Dateien ignoriert, festlegt, welche Dateien überwacht werden, und bestimmt, welche Aktionen bei erkannten Änderungen ausgeführt werden. Die Standardkonfiguration funktioniert recht gut, du kannst sie jedoch an deine Anforderungen anpassen.
 
 ### Konfiguration
 
-Hier sehen Sie ein Beispiel für ihre Struktur:
+Hier ist ein Beispiel für ihre Struktur:
 
 ```yaml
 dev_mode:
@@ -214,7 +217,7 @@ dev_mode:
       type: primary
 ```
 
-Mit dieser Konfigurationsdatei können Sie:
+Mit dieser Konfigurationsdatei kannst du:
 
 - Den Stammpfad für die Dateiüberwachung festlegen
 - Die Protokollierungsstufe konfigurieren
@@ -226,15 +229,14 @@ Mit dieser Konfigurationsdatei können Sie:
 
 Sie können den Entwicklungsmodus anpassen, indem Sie diese Werte in der Datei `config.yml` ändern.
 
-Zu den Anpassungsmöglichkeiten gehören:
+Mögliche Anpassungen sind beispielsweise:
 
-1. Die überwachten Verzeichnisse oder Dateien ändern
+1. Überwachte Verzeichnisse oder Dateien ändern
 2. Die Entprellzeit anpassen, um zu steuern, wie schnell das System auf Änderungen reagiert
-3. Die auszuführenden Befehle ergänzen oder ändern, um sie an die Anforderungen Ihres Projekts anzupassen
+3. Ausführungsbefehle hinzufügen oder ändern, um sie an die Anforderungen Ihres Projekts anzupassen
 
-### Einen Browser für die Entwicklung verwenden
+### Browser für die Entwicklung verwenden
 
-Wails v2 unterstützte zwar vollständig die Verwendung eines Browsers für die Entwicklung, dies führte jedoch häufig zu Verwirrung. Anwendungen, die im Browser funktionierten, funktionierten nicht zwangsläufig auch als Desktopanwendung, da in Webviews nicht alle Browser-APIs verfügbar sind.
+Wails v2 unterstützte zwar uneingeschränkt die Verwendung eines Browsers für die Entwicklung, dies sorgte jedoch häufig für Verwirrung. Anwendungen, die im Browser funktionierten, mussten nicht zwangsläufig auch in der Desktop-Anwendung funktionieren, da nicht alle Browser-APIs in Webviews verfügbar sind.
 
-Für Entwicklungsarbeiten mit Schwerpunkt auf der Benutzeroberfläche können Sie auch in v3 weiterhin einen Browser verwenden, indem Sie im Entwicklungsmodus die Vite-URL unter `http://localhost:9245` aufrufen. Dadurch stehen Ihnen beim Arbeiten an Styling und Layout leistungsfähige Browser-Entwicklungswerkzeuge zur Verfügung. Beachten Sie, dass Go-Bindings in diesem Modus *nicht funktionieren*.  
-Wenn Sie Funktionen wie Bindings und Ereignisse testen möchten, wechseln Sie einfach zur Desktopansicht, um sicherzustellen, dass in der Produktionsumgebung alles einwandfrei funktioniert.
+Bei Entwicklungsarbeiten mit Schwerpunkt auf der Benutzeroberfläche können Sie weiterhin flexibel einen Browser in v3 verwenden, indem Sie im Entwicklungsmodus die Vite-URL unter `http://localhost:9245` aufrufen. So können Sie beim Arbeiten an Styling und Layout die leistungsstarken Browser-Entwicklungswerkzeuge nutzen. Beachten Sie, dass Go-Bindings in diesem Modus *nicht funktionieren*. Wenn Sie Funktionen wie Bindings und Ereignisse testen möchten, wechseln Sie einfach zur Desktop-Ansicht, um sicherzustellen, dass in der Produktionsumgebung alles einwandfrei funktioniert.

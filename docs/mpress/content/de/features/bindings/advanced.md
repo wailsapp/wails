@@ -24,7 +24,7 @@ func (s *MyService) Greet(name string) string {
 
 Dadurch wird der angegebene Code in die generierte JavaScript-/TypeScript-Datei für den Dienst `MyService` injiziert.
 
-Mit bedingter Injektion können Sie auch bestimmte Ausgabeformate ansprechen:
+Sie können auch eine bedingte Injektion verwenden, um bestimmte Ausgabeformate anzusprechen:
 
 ```go
 //wails:inject j*:console.log("Hello JS!");  // JavaScript only
@@ -44,7 +44,7 @@ Diese Direktive wird üblicherweise in Dokumentationskommentaren eines Pakets ve
 
 ### Interne Typen und Methoden kennzeichnen
 
-Die Direktive `//wails:internal` kennzeichnet einen Typ oder eine Methode als intern und verhindert dadurch den Export an das Frontend:
+Die Direktive `//wails:internal` unterdrückt den Export eines Typs oder einer Methode in den generierten JavaScript-/TypeScript-Bindings:
 
 ```go
 //wails:internal
@@ -56,7 +56,7 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-Dies ist für Typen und Methoden nützlich, die nur intern von Ihrem Go-Code verwendet werden und nicht für das Frontend verfügbar sein sollen.
+Dies steuert das generierte SDK, nicht den Laufzeitzugriff. In normalen Builds können exportierte Go-Dienstmethoden weiterhin registriert und über die Laufzeit aufgerufen werden, selbst wenn sie im generierten SDK fehlen. Lassen Sie private Operationen nicht exportiert oder definieren Sie sie auf einem nicht gebundenen Typ und erzwingen Sie die Autorisierung innerhalb offengelegter Methoden.
 
 ### Methoden ignorieren
 
@@ -67,18 +67,18 @@ Die Direktive `//wails:ignore` ignoriert eine Methode bei der Binding-Generierun
 func (s *MyService) IgnoredMethod() {}
 ```
 
-Dies ähnelt `//wails:internal`, ignoriert die Methode jedoch vollständig, statt sie als intern zu kennzeichnen.
+Dadurch wird der generierte Wrapper ausgelassen. Wie `//wails:internal` stellt dies keine Zugriffskontrollgrenze für exportierte Go-Dienstmethoden dar.
 
 ### Benutzerdefinierte Methoden-IDs
 
-Die Direktive `//wails:id` legt eine benutzerdefinierte ID für eine Methode fest und überschreibt damit die standardmäßige hashbasierte ID:
+Die Direktive `//wails:id` legt eine benutzerdefinierte ID für eine Methode fest und überschreibt damit die standardmäßige Hash-basierte ID:
 
 ```go
 //wails:id 42
 func (s *MyService) CustomIDMethod() {}
 ```
 
-Dies kann beim Refactoring von Code helfen, die Kompatibilität zu erhalten.
+Dies kann beim Refactoring von Code hilfreich sein, um die Kompatibilität beizubehalten.
 
 ## Mit komplexen Typen arbeiten
 
@@ -112,7 +112,7 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-Der generierte JavaScript-/TypeScript-Code enthält Klassen für `Person` und `Address`.
+Der generierte JavaScript-/TypeScript-Code enthält Klassen sowohl für `Person` als auch für `Address`.
 
 ### Maps und Slices
 
@@ -204,13 +204,13 @@ export interface Person {
 
 ### Namen anstelle von IDs verwenden
 
-Standardmäßig verwendet der Binding-Generator hashbasierte IDs für Methodenaufrufe. Mit dem Flag `-names` können Sie stattdessen Namen verwenden:
+Standardmäßig verwendet der Binding-Generator Hash-basierte IDs für Methodenaufrufe. Mit dem Flag `-names` können Sie stattdessen Namen verwenden:
 
 ```bash
 wails3 generate bindings -names
 ```
 
-Dadurch wird Code generiert, der die gebundene Methode über ihren **vollständig qualifizierten** Namen (`<package>.<Service>.<Method>`) aufruft und die positionsbezogenen Parameternamen `$0`, `$1`, … verwendet:
+Dadurch wird Code generiert, der die gebundene Methode über ihren **vollqualifizierten** Namen (`<package>.<Service>.<Method>`) aufruft und die positionsbasierten Parameternamen `$0`, `$1`, … verwendet:
 
 ```javascript
 export function Greet($0) {
@@ -219,17 +219,17 @@ export function Greet($0) {
 }
 ```
 
-Dies kann den generierten Code lesbarer und leichter zu debuggen machen, aber möglicherweise ist er geringfügig weniger effizient.
+Dadurch kann der generierte Code lesbarer und leichter zu debuggen sein, allerdings möglicherweise auf Kosten einer geringfügig niedrigeren Effizienz.
 
-### Runtime bündeln
+### Laufzeit bündeln
 
-Standardmäßig importiert der generierte Code die Wails-Runtime aus dem npm-Paket `@wailsio/runtime`. Mit dem Flag `-b` können Sie die Runtime mit dem generierten Code bündeln:
+Standardmäßig importiert der generierte Code die Wails-Laufzeit aus dem npm-Paket `@wailsio/runtime`. Mit dem Flag `-b` können Sie die Laufzeit zusammen mit dem generierten Code bündeln:
 
 ```bash
 wails3 generate bindings -b
 ```
 
-Dadurch wird der Runtime-Code direkt in die generierten Dateien eingebunden, sodass das npm-Paket nicht mehr benötigt wird.
+Dadurch wird der Laufzeitcode direkt in die generierten Dateien eingebunden, sodass das npm-Paket nicht mehr benötigt wird.
 
 ### Indexdateien deaktivieren
 
@@ -239,13 +239,13 @@ Wenn Sie die Indexdateien nicht benötigen, können Sie ihre Generierung mit dem
 wails3 generate bindings -noindex
 ```
 
-Dies kann nützlich sein, wenn Sie Dienste und Modelle lieber direkt aus den jeweiligen Dateien importieren.
+Dies kann hilfreich sein, wenn Sie Dienste und Modelle lieber direkt aus ihren jeweiligen Dateien importieren.
 
 ## Praxisbeispiele
 
 ### Authentifizierungsdienst
 
-Hier sehen Sie ein Beispiel für einen Authentifizierungsdienst mit benutzerdefinierten Direktiven:
+Das folgende Beispiel zeigt einen Authentifizierungsdienst mit benutzerdefinierten Direktiven:
 
 ```go
 package auth
@@ -293,7 +293,7 @@ func (s *AuthService) validateCredentials(username, password string) bool {
 
 ### Datenverarbeitungsdienst
 
-Hier sehen Sie ein Beispiel für einen Datenverarbeitungsdienst mit generischen Typen:
+Das folgende Beispiel zeigt einen Datenverarbeitungsdienst mit generischen Typen:
 
 ```go
 package data
@@ -324,7 +324,7 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 
 ### Bedingte Code-Injektion
 
-Hier sehen Sie ein Beispiel für die bedingte Code-Injektion für unterschiedliche Ausgabeformate:
+Das folgende Beispiel zeigt eine bedingte Code-Injektion für verschiedene Ausgabeformate:
 
 ```go
 //wails:inject j*:/**
@@ -338,4 +338,4 @@ Hier sehen Sie ein Beispiel für die bedingte Code-Injektion für unterschiedlic
 type Service struct{}
 ```
 
-Dadurch wird für die JavaScript- und TypeScript-Ausgabe jeweils unterschiedlicher Code eingefügt, der passende Typannotationen für die jeweilige Sprache bereitstellt.
+Dadurch wird für JavaScript- und TypeScript-Ausgaben jeweils unterschiedlicher Code injiziert, der die passenden Typannotationen für die jeweilige Sprache bereitstellt.

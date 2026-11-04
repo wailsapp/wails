@@ -1,333 +1,466 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "c190d527d870d7b4db2c",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "a3cfe79e912417e309dc",
   "sourceFile": "credits.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
     "b0001-text-01": {
-      "sourceHash": "1d6b41aa3768f92ff9ac7a89168938d0559b662fcb18b438a3d1be6d52ab8889",
-      "targetHash": "d3329df83b8522a9093387056b6983d309f7c7afb8b58601b22b53013d16b545",
-      "machineHash": "d3329df83b8522a9093387056b6983d309f7c7afb8b58601b22b53013d16b545",
-      "machineText": "[Lea Anthony](https://github.com/leaanthony)－專案負責人、首席開發者",
-      "status": "final",
-      "sourcePreview": "[Lea Anthony](https://github.com/leaanthony) - Project owner, lead developer",
+      "sourceHash": "26c69d55504bd4e2e8406681bc3e994cd19b3e007dfcd2ff0bdd78f24584f86d",
+      "targetHash": "b52cbfc8afb924293b809354864da9c577d80e07d75f95b7e1a3151c1c1228cd",
+      "machineHash": "b52cbfc8afb924293b809354864da9c577d80e07d75f95b7e1a3151c1c1228cd",
+      "machineText": "Wails 由維護者與貢獻者社群共同打造。無論目前是否仍參與本專案，所有協助建置 Wails 的人都值得肯定。",
+      "status": "machine-translated",
+      "sourcePreview": "Wails is built by its maintainers and a community of contributors. The people who helped build it de…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0002-text-01": {
-      "sourceHash": "88435ac8b3863d457781f2b87672fb8973da91dce6fd32a00894b34218f3f090",
-      "targetHash": "c4b51c25083c3e063544c994d9704a20758b269d388ab2120d0e6734d3603aff",
-      "machineHash": "c4b51c25083c3e063544c994d9704a20758b269d388ab2120d0e6734d3603aff",
-      "machineText": "[Stffabi](https://github.com/stffabi)－技術負責人、開發者與維護者",
-      "status": "final",
-      "sourcePreview": "[Stffabi](https://github.com/stffabi) - Technical lead, developer and maintainer",
+      "sourceHash": "569317f079d5a1f78e5f8906d08d5353f0528383a62810e7ac7717cc537efafb",
+      "targetHash": "7a5863a466d21ef70888dec209e8ccf4adf7675cf3617dc320c56c62f530fc82",
+      "machineHash": "7a5863a466d21ef70888dec209e8ccf4adf7675cf3617dc320c56c62f530fc82",
+      "machineText": "**維護者**",
+      "status": "machine-translated",
+      "sourcePreview": "**Maintainers**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0003-text-01": {
-      "sourceHash": "3fce65436ecb75d20241a6d085391bdb539543c40f30ecf0161f0c903b87c322",
-      "targetHash": "e507f30a7a6f854b03dcb383d034b57ec8b18271207b8ee2c0cc9898405de7bf",
-      "machineHash": "e507f30a7a6f854b03dcb383d034b57ec8b18271207b8ee2c0cc9898405de7bf",
-      "machineText": "[Travis McLane](https://github.com/tmclane)－跨平台編譯工作、macOS 測試",
-      "status": "final",
-      "sourcePreview": "[Travis McLane](https://github.com/tmclane) - Cross-compilation work, MacOS testing",
+      "sourceHash": "281b44a2481cd5e8afa41ab5022ff93ec4663b175f46c21d5e13b17349863441",
+      "targetHash": "841fa151d8417a1ab1f4c723b3d2dce3edb23dc6aaca77288c55ade7b06d0771",
+      "machineHash": "841fa151d8417a1ab1f4c723b3d2dce3edb23dc6aaca77288c55ade7b06d0771",
+      "machineText": "[Lea Anthony](https://github.com/leaanthony) — 專案負責人暨首席開發者",
+      "status": "machine-translated",
+      "sourcePreview": "[Lea Anthony](https://github.com/leaanthony) — Project owner and lead developer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0004-text-01": {
-      "sourceHash": "c0eaaec9ef069d995d704c0f1beb9f4064960eb8e22b8f0a14f41ad49a8f8dc5",
-      "targetHash": "e477dba69477ecde32f161e3c3b5ae934fcc3b08f037e351abb5a1b56823149d",
-      "machineHash": "e477dba69477ecde32f161e3c3b5ae934fcc3b08f037e351abb5a1b56823149d",
-      "machineText": "[Atterpac](https://github.com/atterpac)－開發者、支援高手、主力貢獻者",
-      "status": "final",
-      "sourcePreview": "[Atterpac](https://github.com/atterpac) - Developer, support guru, powerhouse",
+      "sourceHash": "4a2e5439e6501dcb466f54ae98664ef7417569356eff8031b47f147b0ed85495",
+      "targetHash": "7e97f07fc9dd17aab7f69a9d05828d213ea33622d7e05a9b0e62eb1cc811cffc",
+      "machineHash": "7e97f07fc9dd17aab7f69a9d05828d213ea33622d7e05a9b0e62eb1cc811cffc",
+      "machineText": "[Atterpac](https://github.com/atterpac) — 維護者；負責開發工具、桌面整合與社群支援",
+      "status": "machine-translated",
+      "sourcePreview": "[Atterpac](https://github.com/atterpac) — Maintainer; development tooling, desktop integration and c…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0005-text-01": {
-      "sourceHash": "98d8cbaa46960b039625c258635bed651d6f7232a0992610cf17cb2e821b9109",
-      "targetHash": "81d9b089fa096162ca3343c4e0985fe695fe96ad469a4fff53e0d3a83a591428",
-      "machineHash": "81d9b089fa096162ca3343c4e0985fe695fe96ad469a4fff53e0d3a83a591428",
-      "machineText": "[Simon Thomas](mailto:enquiries@wails.io)－成長駭客",
-      "status": "final",
-      "sourcePreview": "[Simon Thomas](mailto:enquiries@wails.io) - Growth Hacker",
+      "sourceHash": "cc918cd9a6176acd0e43c5230e962aa51e50469d98e7fdbe3635fbc927e3eccb",
+      "targetHash": "45ab0f0db75c0f6a4f7a21bea0b6f6ff4dd73e68fbf9b1ccf98217f16918259a",
+      "machineHash": "45ab0f0db75c0f6a4f7a21bea0b6f6ff4dd73e68fbf9b1ccf98217f16918259a",
+      "machineText": "如需協助，請使用[社群支援管道](/community/links/#support-channels)。以下致謝肯定本專案歷年來收到的貢獻。",
+      "status": "machine-translated",
+      "sourcePreview": "For help, use the [community support channels](/community/links/#support-channels). The acknowledgem…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0006-text-01": {
-      "sourceHash": "3f1dc072ab090cd4842e1f29845c22f06797b89b858cd334d1f5f8cc594d0db8",
-      "targetHash": "e112ba2279420a9721395362604639fbff0ecac2a501da494860caa039d913fe",
-      "machineHash": "e112ba2279420a9721395362604639fbff0ecac2a501da494860caa039d913fe",
-      "machineText": "[Lyimmi](https://github.com/Lyimmi)－所有 Linux 相關事務",
-      "status": "final",
-      "sourcePreview": "[Lyimmi](https://github.com/Lyimmi) - All things Linux",
+      "sourceHash": "55baa034d2fd5f1dda19e01caeba608670fa618ee473ff23e764e9a45b67f957",
+      "targetHash": "e383431f5832d8e4fe2bdf54a261d15729d4f848e35223fcfc621cbdbde60e7a",
+      "machineHash": "e383431f5832d8e4fe2bdf54a261d15729d4f848e35223fcfc621cbdbde60e7a",
+      "machineText": "**感謝你協助打造 Wails v3**",
+      "status": "machine-translated",
+      "sourcePreview": "**Thanks for building Wails v3**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "b0007-text-01": {
-      "sourceHash": "84c0ec7b2f607a3c78e59dd13e96609de92b9329d14d93637469762af9cc7718",
-      "targetHash": "0d61bf07c5ebb711ce744e9c43bf451a08afc4f5e05c01aab06b37a4f0b520f0",
-      "machineHash": "0d61bf07c5ebb711ce744e9c43bf451a08afc4f5e05c01aab06b37a4f0b520f0",
-      "machineText": "[fbbdev](https://github.com/fbbdev)－繫結產生器高手與核心貢獻者",
-      "status": "final",
-      "sourcePreview": "[fbbdev](https://github.com/fbbdev) - Bindings Generator guru \u0026 core contributor",
+      "sourceHash": "63722a08498b4fe408234f527e0396e6dbe9f33b9cb2391495d9932d7e35539b",
+      "targetHash": "f234386dccb7bbbfceeaabc5d7cb93a9c3ce79e039c7808d9e9df03a20db02e8",
+      "machineHash": "f234386dccb7bbbfceeaabc5d7cb93a9c3ce79e039c7808d9e9df03a20db02e8",
+      "machineText": "特別感謝[Fabio Massaioli (fbbdev)](https://github.com/fbbdev)建立靜態原始碼分析器與繫結產生器，為v3產生的 JavaScript 和 TypeScript 繫結提供支援，並感謝他在執行階段與服務 API 方面的工作。",
+      "status": "machine-translated",
+      "sourcePreview": "Special thanks to [Fabio Massaioli (fbbdev)](https://github.com/fbbdev) for creating the static sour…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0008-heading-01": {
+    "b0008-text-01": {
+      "sourceHash": "67a80bfc80c5a5b846e961b97447ba1d34876f276220e692a6c83008f95cdc5f",
+      "targetHash": "60462e0a4e6ccc1ea299554080925c5d5ad26e8499fc675e1ee7d8f1321c7e9e",
+      "machineHash": "60462e0a4e6ccc1ea299554080925c5d5ad26e8499fc675e1ee7d8f1321c7e9e",
+      "machineText": "也感謝：",
+      "status": "machine-translated",
+      "sourcePreview": "Thank you also to:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "215d23f35a0bc7f5552c5a7c545fa783c1be840ee8ef7c59ff876348e06e2696",
+      "targetHash": "b500cf8f71946854c030b102734a22af04fd24df088437ae6e79ceef73730104",
+      "machineHash": "b500cf8f71946854c030b102734a22af04fd24df088437ae6e79ceef73730104",
+      "machineText": "[Travis McLane](https://github.com/tmclane) — 早期在 Linux 與原生平台方面的大量工作，以及交叉編譯和 macOS 測試",
+      "status": "machine-translated",
+      "sourcePreview": "[Travis McLane](https://github.com/tmclane) — Extensive early Linux and native platform work, cross-…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "b252b1f3ffc00a1b7e25529d1bd5643f20eb9d03853a4f53882ee93e67df633d",
+      "targetHash": "f69facdfffbc1abba51a4116b1ed26423ed5dc663efe5b4b68d3ccf1f89b633f",
+      "machineHash": "f69facdfffbc1abba51a4116b1ed26423ed5dc663efe5b4b68d3ccf1f89b633f",
+      "machineText": "[Stffabi](https://github.com/stffabi) — 資產伺服器，以及原生 Windows 與 macOS 的基礎架構",
+      "status": "machine-translated",
+      "sourcePreview": "[Stffabi](https://github.com/stffabi) — Asset server and native Windows and macOS foundations",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0011-text-01": {
+      "sourceHash": "cacd2798ecbc81174f022b105b688ba21d3e8db2591919937b5ae90e4cf49a0e",
+      "targetHash": "31e073f87bb2ae923adbc7a70c7afd1212fb371a07866d883632e379b7979d39",
+      "machineHash": "31e073f87bb2ae923adbc7a70c7afd1212fb371a07866d883632e379b7979d39",
+      "machineText": "[Zach Botterman (popaprozac)](https://github.com/popaprozac) — 通知、Dock 整合、強制回應視窗與桌面服務",
+      "status": "machine-translated",
+      "sourcePreview": "[Zach Botterman (popaprozac)](https://github.com/popaprozac) — Notifications, Dock integration, moda…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "93aa2bc2b22cee35f81baabcb111bd0a3acdcc56c357ef6cfef73df2c4f3e0e9",
+      "targetHash": "29e9ee1d44b624e042e526a8243edcb5a287f7a7b727a2acd51f56782bc4fd3d",
+      "machineHash": "29e9ee1d44b624e042e526a8243edcb5a287f7a7b727a2acd51f56782bc4fd3d",
+      "machineText": "[Ian VanSchooten (IanVS)](https://github.com/IanVS) — 型別化事件，以及執行階段與選單的改進",
+      "status": "machine-translated",
+      "sourcePreview": "[Ian VanSchooten (IanVS)](https://github.com/IanVS) — Typed events, runtime and menu improvements",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "a9831ad62063293962a62dd243630b8fa770bd7a6f6ce3712532fcb83fde8bba",
+      "targetHash": "36c1fc0ae570c3935769246b92c596b0925217191cbbc29d2a7384100c621331",
+      "machineHash": "36c1fc0ae570c3935769246b92c596b0925217191cbbc29d2a7384100c621331",
+      "machineText": "[Lyimmi](https://github.com/Lyimmi) — Linux 相關貢獻",
+      "status": "machine-translated",
+      "sourcePreview": "[Lyimmi](https://github.com/Lyimmi) — Linux contributions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "f58f0217cbe04864463a6b6808b255d2645f0a7050a2c290bb8e8cc0ba5a12c3",
+      "targetHash": "1931e39ed81d6b1bee915ed8cf7baa4f0364e7dcdd7e57388db0f21b2f418ccb",
+      "machineHash": "1931e39ed81d6b1bee915ed8cf7baa4f0364e7dcdd7e57388db0f21b2f418ccb",
+      "machineText": "[mortenolsrud](https://github.com/mortenolsrud) — Android 與 iOS 修正、封裝及行動平台整合",
+      "status": "machine-translated",
+      "sourcePreview": "[mortenolsrud](https://github.com/mortenolsrud) — Android and iOS fixes, packaging and mobile integr…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "616ee2fc078a0887c797ccb5f94f6e81da60942d981ca48456214dc665cf03a5",
+      "targetHash": "2240f466209fe6588a4f99a3049a395ada24e2dc678a236696adca0c9d384564",
+      "machineHash": "2240f466209fe6588a4f99a3049a395ada24e2dc678a236696adca0c9d384564",
+      "machineText": "[Andraz Vrhovec](https://github.com/overlordtm) — Linux 應用程式識別資訊與單一執行個體行為",
+      "status": "machine-translated",
+      "sourcePreview": "[Andraz Vrhovec](https://github.com/overlordtm) — Linux application identity and single-instance beh…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "03d79d37c8c6f5877acd72d14b62455bdd13c7e42c04c1655092cde977375d46",
+      "targetHash": "87b6a92525f6f0fe199d0a9a7c2bfef87de72ca95b033e1401fe8caaa0bf6e62",
+      "machineHash": "87b6a92525f6f0fe199d0a9a7c2bfef87de72ca95b033e1401fe8caaa0bf6e62",
+      "machineText": "[Julian Storer](https://github.com/julianstorer) — macOS 焦點處理、鍵盤快速鍵與桌面行為",
+      "status": "machine-translated",
+      "sourcePreview": "[Julian Storer](https://github.com/julianstorer) — macOS focus, keyboard accelerators and desktop be…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0017-text-01": {
+      "sourceHash": "8781bbb31ef9e61653f8a7cff1b7e55db7366df588b12b2f76bad345af187a3e",
+      "targetHash": "a38f7e66854b545bdd35af08fccfed9f5901b72132aa737dca611c38c5fde015",
+      "machineHash": "a38f7e66854b545bdd35af08fccfed9f5901b72132aa737dca611c38c5fde015",
+      "machineText": "[Simon Thomas](mailto:enquiries@wails.io) — 成長與社群工作",
+      "status": "machine-translated",
+      "sourcePreview": "[Simon Thomas](mailto:enquiries@wails.io) — Growth and community work",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "28748b77ad8310da4756270a07af704e5397b438e3bb637cd3ecea407dbf7bc5",
+      "targetHash": "6e63c6a149aeb34e6cb76d513ce34cc6fdf730d1b164d0c2bc612cc756e47fa6",
+      "machineHash": "6e63c6a149aeb34e6cb76d513ce34cc6fdf730d1b164d0c2bc612cc756e47fa6",
+      "machineText": "這裡僅列出部分貢獻，並非完整名單。感謝每一位貢獻程式碼、審查變更、測試版本、翻譯文件或協助其他使用者的人。",
+      "status": "machine-translated",
+      "sourcePreview": "This is a selection of contributions, not an exhaustive list. Thank you to everyone who has contribu…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:47:30Z"
+    },
+    "b0019-heading-01": {
       "sourceHash": "2a428eee422c441be8852a0fdf2d19bc962b79b37680a7dbc1ec07f6dbf36fd8",
       "targetHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineText": "贊助者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Sponsors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0009-text-01": {
+    "b0020-text-01": {
       "sourceHash": "f3b1589bffe45a2fbbe42fdf22bbddb98a42f9c923746fe121adf15e674deabd",
       "targetHash": "3b189aeb8a1af9a548ff4a3fd2e6430744f9eb3eed6ff96fce8a4ba3157cd01a",
       "machineHash": "3b189aeb8a1af9a548ff4a3fd2e6430744f9eb3eed6ff96fce8a4ba3157cd01a",
       "machineText": "特別感謝：",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Special thanks:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0010-heading-01": {
+    "b0021-heading-01": {
       "sourceHash": "350ad433c42fe8cecdb38439f33947ea04c43fe819455772fd3c03b85c389f16",
       "targetHash": "7bf136d816f01294c1c890b26ec1c3bedd4aa9812fc82472c21f02c3fb1fc249",
       "machineHash": "7bf136d816f01294c1c890b26ec1c3bedd4aa9812fc82472c21f02c3fb1fc249",
       "machineText": "貢獻者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Contributors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0011-heading-01": {
+    "b0022-heading-01": {
       "sourceHash": "5a7856c61e91d39a2b78012555abad1b29f6f8fd30b42251d1b142929ee30ce8",
       "targetHash": "d8e35bedeac7845773bcc74736365f8564e88fa6efe408eb89eb150fbf99cc43",
       "machineHash": "d8e35bedeac7845773bcc74736365f8564e88fa6efe408eb89eb150fbf99cc43",
       "machineText": "特別致謝",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Special Mentions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0012-text-01": {
+    "b0023-text-01": {
       "sourceHash": "608a3587f280c068707cbea2987ba7d52dc5abce3d4acf0e1e31e287284d8beb",
-      "targetHash": "0b5379fea5dc1ac33b516576ac30fc6d40c1f7cb915b5ad994d50364c33d5938",
-      "machineHash": "0b5379fea5dc1ac33b516576ac30fc6d40c1f7cb915b5ad994d50364c33d5938",
-      "machineText": "[John Chadwick](https://github.com/jchv)－他在[go-webview2](https://github.com/jchv/go-webview2)和[go-winloader](https://github.com/jchv/go-winloader)上的傑出成果，讓 Windows 版本得以實現。",
-      "status": "final",
+      "targetHash": "cb6ad93662ea3b238ec7a78f3c9854bff45c77a7616544bb4642d3d0cd398284",
+      "machineHash": "cb6ad93662ea3b238ec7a78f3c9854bff45c77a7616544bb4642d3d0cd398284",
+      "machineText": "[John Chadwick](https://github.com/jchv) — 他在[go-webview2](https://github.com/jchv/go-webview2)與[go-winloader](https://github.com/jchv/go-winloader)方面的傑出工作，讓 Windows 版本得以實現。",
+      "status": "machine-translated",
       "sourcePreview": "[John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0013-text-01": {
+    "b0024-text-01": {
       "sourceHash": "5e5258e5fc9dcc2b274380ce4a3d98c1d7012e07c402914a62c334ae0ffa3c26",
-      "targetHash": "7999ea1abbb5dcc2a79847d1a287054c15c28e3728d91d98e7f061d35177b683",
-      "machineHash": "7999ea1abbb5dcc2a79847d1a287054c15c28e3728d91d98e7f061d35177b683",
-      "machineText": "[Tad Vizbaras](https://github.com/tadvi)－他的 winc 專案是 Wails 邁向純 Go 實作之路的第一步。",
-      "status": "final",
+      "targetHash": "8bf468b9fa20624a06a6687421f1a7a7c32cae3a23137f3f7ce00032f6aa338f",
+      "machineHash": "8bf468b9fa20624a06a6687421f1a7a7c32cae3a23137f3f7ce00032f6aa338f",
+      "machineText": "[Tad Vizbaras](https://github.com/tadvi) — 他的 winc 專案是 Wails 邁向純 Go 實作的第一步。",
+      "status": "machine-translated",
       "sourcePreview": "[Tad Vizbaras](https://github.com/tadvi) - His winc project was the first step down the path to a pu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0014-text-01": {
+    "b0025-text-01": {
       "sourceHash": "aaa3faecb046978efd7d039a266b0994b82fa9b8b0e2c53fc5935f89d02c3f63",
-      "targetHash": "d2f7f09a956de6ddc1fedbc24826a9b518a358694399e78a1461bec1d1261984",
-      "machineHash": "d2f7f09a956de6ddc1fedbc24826a9b518a358694399e78a1461bec1d1261984",
-      "machineText": "[Mat Ryer](https://github.com/matryer)－感謝他的建議、支持與幽默交流。",
-      "status": "final",
+      "targetHash": "b20dcfe922eca6a9b49c9544cffe82e75a81659c0021cec14050baeddbcfaef5",
+      "machineHash": "b20dcfe922eca6a9b49c9544cffe82e75a81659c0021cec14050baeddbcfaef5",
+      "machineText": "[Mat Ryer](https://github.com/matryer) — 感謝他的建議、支援與幽默交流。",
+      "status": "machine-translated",
       "sourcePreview": "[Mat Ryer](https://github.com/matryer) - For advice, support and bants.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0015-text-01": {
+    "b0026-text-01": {
       "sourceHash": "2de6590d2de9d4d18e4678e12c358869c0ff08b6a78bea6ccaa5a7feb7d5fc4d",
-      "targetHash": "7ea244a6a5e60199812d51df96f026d5bf9ad1c77f5af6be51434af4aea7ccdf",
-      "machineHash": "7ea244a6a5e60199812d51df96f026d5bf9ad1c77f5af6be51434af4aea7ccdf",
-      "machineText": "[Byron Chris](https://github.com/bh90210)－感謝他長期以來對本專案的貢獻。",
-      "status": "final",
+      "targetHash": "db41d8cbb118099970f342e0e318e5623d7f1b43bc8460516b7c3446cf5591a0",
+      "machineHash": "db41d8cbb118099970f342e0e318e5623d7f1b43bc8460516b7c3446cf5591a0",
+      "machineText": "[Byron Chris](https://github.com/bh90210) — 感謝他長期以來對本專案的貢獻。",
+      "status": "machine-translated",
       "sourcePreview": "[Byron Chris](https://github.com/bh90210) - For his long term contributions to this project.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0016-text-01": {
+    "b0027-text-01": {
       "sourceHash": "c453e94545ad7d8e975334064796d71e8908574216cca13e67a50c571fda7927",
-      "targetHash": "6fc5ac4e7fac507cafc471861f16bfcff59b67351c45b899dca5a6223757c629",
-      "machineHash": "6fc5ac4e7fac507cafc471861f16bfcff59b67351c45b899dca5a6223757c629",
-      "machineText": "[Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot)－他的支持與意見回饋極其寶貴。",
-      "status": "final",
+      "targetHash": "2addaef6e081397a983bfbd6cadf6862d5815c4acf59c9b3340ee121fd26f784",
+      "machineHash": "2addaef6e081397a983bfbd6cadf6862d5815c4acf59c9b3340ee121fd26f784",
+      "machineText": "[Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) — 他的支援與意見回饋極其寶貴。",
+      "status": "machine-translated",
       "sourcePreview": "[Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been invaluable…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0017-text-01": {
+    "b0028-text-01": {
       "sourceHash": "df876f919f3929e2e3d170c90ec4ed4dce396d12c1eed33f40624bd3dd91dbb7",
-      "targetHash": "df57c79785a8ef8ea27051922463c0c991a2142284588b498ac1247a346b78c6",
-      "machineHash": "df57c79785a8ef8ea27051922463c0c991a2142284588b498ac1247a346b78c6",
-      "machineText": "[Justen Walker](https://github.com/justenwalker/)－感謝他協助處理棘手的 COM 問題，讓 v2 得以順利完成。",
-      "status": "final",
+      "targetHash": "db43761978f0ac1ef47f5c94f5f585f1ea90fe3fe5696dcba12ab18bee5bd94f",
+      "machineHash": "db43761978f0ac1ef47f5c94f5f585f1ea90fe3fe5696dcba12ab18bee5bd94f",
+      "machineText": "[Justen Walker](https://github.com/justenwalker/) — 感謝他協助處理棘手的 COM 問題，讓v2順利完成。",
+      "status": "machine-translated",
       "sourcePreview": "[Justen Walker](https://github.com/justenwalker/) - For helping wrangle COM issues which got v2 over…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0018-text-01": {
+    "b0029-text-01": {
       "sourceHash": "9296a5f5264820dcd191b1b2cd760ca3f96af1f4c59fdf499b9d7d01990cae4b",
-      "targetHash": "53390354c2e1b079d975a784c518c4dc519c7a7b3c3fcd82a0e2ddb84b8a4a68",
-      "machineHash": "53390354c2e1b079d975a784c518c4dc519c7a7b3c3fcd82a0e2ddb84b8a4a68",
-      "machineText": "[Wang, Chi](https://github.com/patr0nus/)－DeskGap 專案對 Wails v2 的發展方向產生了重大影響。",
-      "status": "final",
+      "targetHash": "31669dd3207389dd5ed87a3cb80f7eb12582b58b4dec837318f9db318c69b58e",
+      "machineHash": "31669dd3207389dd5ed87a3cb80f7eb12582b58b4dec837318f9db318c69b58e",
+      "machineText": "[Wang, Chi](https://github.com/patr0nus/) — DeskGap 專案對 Wails v2的發展方向影響深遠。",
+      "status": "machine-translated",
       "sourcePreview": "[Wang, Chi](https://github.com/patr0nus/) - The DeskGap project was a huge influence on the directio…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "b0019-text-01": {
+    "b0030-text-01": {
       "sourceHash": "9e340dd0fc38a3feead8d1aab4b40e52c46b49e4b3bf103dc7fff846a35355e6",
-      "targetHash": "11392550b8533045983fe00fa83f2394308e83674b0f570a84e7a504f352fd87",
-      "machineHash": "11392550b8533045983fe00fa83f2394308e83674b0f570a84e7a504f352fd87",
-      "machineText": "[Serge Zaitsev](https://github.com/zserge)－雖然 Wails 並未使用 Webview 專案，但它仍是靈感來源。",
-      "status": "final",
+      "targetHash": "5f6a6d994cf2c47b8e0c0458c7320e630bd0a375c63123bfe8f4480e0dd083f7",
+      "machineHash": "5f6a6d994cf2c47b8e0c0458c7320e630bd0a375c63123bfe8f4480e0dd083f7",
+      "machineText": "[Serge Zaitsev](https://github.com/zserge) — 儘管 Wails 並未使用 Webview 專案，它仍是靈感來源。",
+      "status": "machine-translated",
       "sourcePreview": "[Serge Zaitsev](https://github.com/zserge) - Whilst Wails does not use the Webview project, it is st…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "5896ca0f07e971b9ce3ebd6128193a924f8a4d99c5abc9955b2fdecd10e237e0",
       "targetHash": "ba34c2d03ef1e3c4b685aecc99f4125760a4b8edbaf028107dbe6e4476d0f2dd",
       "machineHash": "ba34c2d03ef1e3c4b685aecc99f4125760a4b8edbaf028107dbe6e4476d0f2dd",
       "machineText": "感謝 Wails 背後的貢獻者與專案",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Acknowledge the contributors and projects behind Wails",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "2a6b24ad287220345e96eb8021fe29d42b0785766c8df658827e7251da2d36dc",
       "targetHash": "2a23604c0c7b67f5494315dbeb7b05aee519f654da6cf5970a9251ad8d12946d",
       "machineHash": "2a23604c0c7b67f5494315dbeb7b05aee519f654da6cf5970a9251ad8d12946d",
       "machineText": "致謝",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Credits",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0001-text-001": {
       "sourceHash": "2a428eee422c441be8852a0fdf2d19bc962b79b37680a7dbc1ec07f6dbf36fd8",
       "targetHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineText": "贊助者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Sponsors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0001-text-002": {
       "sourceHash": "2a428eee422c441be8852a0fdf2d19bc962b79b37680a7dbc1ec07f6dbf36fd8",
       "targetHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineHash": "3d0f17214d6eb232ec005b272a8477ace0e6dfd848242fdb9797c06c6aab1b20",
       "machineText": "贊助者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Sponsors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0002-text-001": {
       "sourceHash": "492cae23f6e556f3257ab78f90c944edf6d51da7b02d8893729acfb8dd6bbd32",
       "targetHash": "492cae23f6e556f3257ab78f90c944edf6d51da7b02d8893729acfb8dd6bbd32",
       "machineHash": "492cae23f6e556f3257ab78f90c944edf6d51da7b02d8893729acfb8dd6bbd32",
       "machineText": "JetBrains",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "JetBrains",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0002-text-002": {
       "sourceHash": "4bb155c98443176095d16697d0382b056c513642cedb879306f71649b19f2e92",
       "targetHash": "4bb155c98443176095d16697d0382b056c513642cedb879306f71649b19f2e92",
       "machineHash": "4bb155c98443176095d16697d0382b056c513642cedb879306f71649b19f2e92",
       "machineText": "ZSA",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "ZSA",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0003-text-001": {
       "sourceHash": "95fb350bbd737426e31f5283e21708614d1e9bfcc13fe9c0f708e0ef6a9154cc",
       "targetHash": "36fb36a1edb8577c6efddd592ab8520809caeb8dd7affda80eb4ec06abc92e7d",
       "machineHash": "36fb36a1edb8577c6efddd592ab8520809caeb8dd7affda80eb4ec06abc92e7d",
       "machineText": "Wails 貢獻者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails contributors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     },
     "h0003-text-002": {
       "sourceHash": "95fb350bbd737426e31f5283e21708614d1e9bfcc13fe9c0f708e0ef6a9154cc",
       "targetHash": "36fb36a1edb8577c6efddd592ab8520809caeb8dd7affda80eb4ec06abc92e7d",
       "machineHash": "36fb36a1edb8577c6efddd592ab8520809caeb8dd7affda80eb4ec06abc92e7d",
       "machineText": "Wails 貢獻者",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails contributors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:53Z"
+      "updatedAt": "2026-10-25T21:47:30Z"
     }
   }
 }

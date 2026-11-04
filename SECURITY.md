@@ -5,8 +5,9 @@
 | Version | Supported          |
 | ------- | ------------------ |
 | 2.x.x   | :white_check_mark: |
-| 3.0.x-beta    | :white_check_mark: |
-| 3.0.x-alpha   | :x:                |
+| 3.0.x   | :white_check_mark: |
+| 3.0.0-beta.x | :x:           |
+| 3.0.0-alpha.x | :x:          |
 
 ## Scope
 

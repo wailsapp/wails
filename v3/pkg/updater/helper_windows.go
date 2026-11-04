@@ -124,7 +124,16 @@ func copyFileExec(src, dst string) (err error) {
 // and let the stale .old file be cleaned up later — best-effort delete here,
 // and a sweep in maybeCleanReplacedAsides on the next helper run takes care
 // of any leftovers once the kernel has finally released them.
+//
+// The payload is re-checked immediately before the target is disturbed, for
+// the same reason as the Unix path: neither branch below can tell a populated
+// payload from a hollow one, and both are irreversible without the backup. A
+// refusal wraps errNotInstallable.
 func replaceTarget(target, newPath string) error {
+	if err := validatePayloadForTarget(newPath, target); err != nil {
+		return err
+	}
+
 	// Best-effort first try: if nothing's actually holding it, a normal
 	// remove + rename is cleaner (no .old file left behind).
 	if err := os.RemoveAll(target); err == nil {

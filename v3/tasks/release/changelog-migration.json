@@ -1,0 +1,12 @@
+{
+  "repository": "wailsapp/wails",
+  "entries": [
+    {
+      "number": 6519,
+      "section": "Fixed",
+      "title": "Fix assorted v3 nightly build issues and clean up dependencies",
+      "author": "taliesin-ai",
+      "merge_commit": "bcbdad031244721348db4388a5172bc62265cc25"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ O servidor MCP integrado é experimental, e a API pode mudar em versões futuras
 
 O Wails v3 tem um servidor integrado do [Model Context Protocol](https://modelcontextprotocol.io) (MCP) que permite que agentes de LLM — Claude Code, assistentes de IDE ou qualquer cliente MCP — inspecionem, testem e controlem um aplicativo Wails **em execução**.
 
-Para automatizar o ciclo de vida do projeto, use o servidor de CLI `wails3 mcp` separado. Ele permite que agentes inspecionem e inicializem projetos, executem diagnósticos, iniciem builds e tarefas de desenvolvimento, gerem bindings, executem tarefas nomeadas do Taskfile e obtenham uma quantidade limitada da saída das tarefas. Por padrão, o servidor de CLI fica restrito ao diretório atual e não permite a execução arbitrária de comandos do shell. Consulte a [documentação do MCP da CLI](/guides/cli/#mcp) para obter detalhes sobre transporte, autenticação e ferramentas.
+Para automatizar o ciclo de vida do projeto, use o servidor de CLI `wails3 mcp` separado. Ele permite que agentes inspecionem e inicializem projetos, executem diagnósticos, iniciem builds e tarefas de desenvolvimento, gerem bindings, executem tarefas nomeadas do Taskfile e obtenham uma quantidade limitada da saída das tarefas. Por padrão, o servidor de CLI fica restrito ao diretório atual e não permite a execução arbitrária de comandos do shell. Consulte a [documentação do MCP da CLI](/pt/guides/cli/#mcp) para obter detalhes sobre transporte, autenticação e ferramentas.
 
 Quando esse recurso está habilitado, um agente conectado ao seu aplicativo pode:
 
@@ -246,7 +246,7 @@ O servidor MCP oferece controle programático total sobre a sua aplicação. Qua
 
 ## Aplicação de exemplo
 
-Uma aplicação playground completa que demonstra todas as ferramentas está disponível em [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp). Ela inclui:
+Uma aplicação playground completa que demonstra todas as ferramentas está disponível em [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mcp). Ela inclui:
 
 - Contador com botões para incrementar e redefinir
 - Campo de nome com os métodos vinculados Greet, Add e Shout

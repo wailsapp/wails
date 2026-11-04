@@ -5,48 +5,48 @@ echo ======================================================
 REM Save current directory
 set ORIGINAL_DIR=%CD%
 
-REM Go to v3 root (where UNRELEASED_CHANGELOG.md should be)
+REM Go to v3 root (where release_changelog.md should be)
 cd ..\..
 
-REM Backup existing UNRELEASED_CHANGELOG.md if it exists
-if exist UNRELEASED_CHANGELOG.md (
-    copy UNRELEASED_CHANGELOG.md UNRELEASED_CHANGELOG.md.backup > nul
+REM Backup existing release_changelog.md if it exists
+if exist release_changelog.md (
+    copy release_changelog.md release_changelog.md.backup > nul
 )
 
-REM Create a test UNRELEASED_CHANGELOG.md
-echo # Unreleased Changes > UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- >> UNRELEASED_CHANGELOG.md
-echo This file is used to collect changelog entries for the next v3 alpha release. >> UNRELEASED_CHANGELOG.md
-echo --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Added >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- New features, capabilities, or enhancements --^> >> UNRELEASED_CHANGELOG.md
-echo - Add Windows dark theme support for menus and menubar >> UNRELEASED_CHANGELOG.md
-echo - Add `--create-release-notes` flag to release script >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Changed >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Changes in existing functionality --^> >> UNRELEASED_CHANGELOG.md
-echo - Update Go version to 1.23 in workflow >> UNRELEASED_CHANGELOG.md
-echo - Improve error handling in release process >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Fixed >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Bug fixes --^> >> UNRELEASED_CHANGELOG.md
-echo - Fix nightly release workflow changelog extraction >> UNRELEASED_CHANGELOG.md
-echo - Fix Go cache configuration in GitHub Actions >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Deprecated >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Soon-to-be removed features --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Removed >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Features removed in this release --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ## Security >> UNRELEASED_CHANGELOG.md
-echo ^<^!-- Security-related changes --^> >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo --- >> UNRELEASED_CHANGELOG.md
-echo. >> UNRELEASED_CHANGELOG.md
-echo ### Example Entries: >> UNRELEASED_CHANGELOG.md
+REM Create a test release_changelog.md
+echo # Unreleased Changes > release_changelog.md
+echo. >> release_changelog.md
+echo ^<^!-- >> release_changelog.md
+echo This file is used to collect changelog entries for the next v3 alpha release. >> release_changelog.md
+echo --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Added >> release_changelog.md
+echo ^<^!-- New features, capabilities, or enhancements --^> >> release_changelog.md
+echo - Add Windows dark theme support for menus and menubar >> release_changelog.md
+echo - Add `--create-release-notes` flag to release script >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Changed >> release_changelog.md
+echo ^<^!-- Changes in existing functionality --^> >> release_changelog.md
+echo - Update Go version to 1.23 in workflow >> release_changelog.md
+echo - Improve error handling in release process >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Fixed >> release_changelog.md
+echo ^<^!-- Bug fixes --^> >> release_changelog.md
+echo - Fix nightly release workflow changelog extraction >> release_changelog.md
+echo - Fix Go cache configuration in GitHub Actions >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Deprecated >> release_changelog.md
+echo ^<^!-- Soon-to-be removed features --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Removed >> release_changelog.md
+echo ^<^!-- Features removed in this release --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo ## Security >> release_changelog.md
+echo ^<^!-- Security-related changes --^> >> release_changelog.md
+echo. >> release_changelog.md
+echo --- >> release_changelog.md
+echo. >> release_changelog.md
+echo ### Example Entries: >> release_changelog.md
 
 echo.
 echo Test 1: Running with valid content
@@ -103,9 +103,9 @@ REM Clean up
 cd ..\..
 if exist release_notes.md del release_notes.md
 
-REM Restore original UNRELEASED_CHANGELOG.md if it exists
-if exist UNRELEASED_CHANGELOG.md.backup (
-    move /Y UNRELEASED_CHANGELOG.md.backup UNRELEASED_CHANGELOG.md > nul
+REM Restore original release_changelog.md if it exists
+if exist release_changelog.md.backup (
+    move /Y release_changelog.md.backup release_changelog.md > nul
 )
 
 cd %ORIGINAL_DIR%

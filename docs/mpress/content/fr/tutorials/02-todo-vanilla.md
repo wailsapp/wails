@@ -5,13 +5,13 @@ slug: "tutorials/02-todo-vanilla"
 sourcePath: "tutorials/02-todo-vanilla.md"
 ---
 
-Dans ce tutoriel, vous allez créer une application de liste de tâches entièrement fonctionnelle. Ce projet va plus loin que le tutoriel sur le service de codes QR : vous apprendrez à gérer l’état, à traiter plusieurs opérations et à créer une interface utilisateur soignée.
+Dans ce tutoriel, vous allez créer une application de liste de tâches entièrement fonctionnelle. Ce tutoriel va plus loin que celui consacré au service de codes QR : vous apprendrez à gérer l’état, à traiter plusieurs opérations et à créer une interface utilisateur soignée.
 
 **Ce que vous allez créer :**
 
-- Une application complète de liste de tâches permettant d’ajouter, de terminer et de supprimer des tâches
+- Une application complète de liste de tâches permettant d’ajouter, d’achever et de supprimer des tâches
 - Une gestion de l’état sûre pour les accès concurrents (importante pour les applications de bureau)
-- Une interface utilisateur moderne au design glassmorphique
+- Une interface moderne au design glassmorphique
 - Le tout en JavaScript natif, sans framework
 
 **Ce que vous allez apprendre :**
@@ -19,29 +19,29 @@ Dans ce tutoriel, vous allez créer une application de liste de tâches entière
 - Les opérations CRUD (création, lecture, mise à jour et suppression)
 - La gestion sûre d’un état mutable en Go
 - Le traitement et la validation des saisies utilisateur
-- La création d’interfaces utilisateur réactives à l’apparence native
+- La création d’interfaces utilisateur réactives offrant une expérience native
 
 ![Application de liste de tâches](/assets/todo-app.png)
 
-**Durée nécessaire :** 20 minutes
+**Temps nécessaire :** 20 minutes
 
 ## Créez votre projet
 
 @steps
 ### Générez le projet
-Commencez par créer un projet Wails. Nous utiliserons le modèle JavaScript natif par défaut, qui nous offre une base de départ épurée :
+Commencez par créer un projet Wails. Nous utiliserons le modèle JavaScript natif par défaut, qui fournit une base propre :
 
 ```bash
-wails3 init -n todo-app
+wails3 init -n todo-app -t vanilla-js
 cd todo-app
 ```
 
 Cette commande crée un projet avec la structure de base : le backend Go à la racine et le code frontend dans le répertoire `frontend/`.
 
-### Créez le service de gestion des tâches
-Le service de gestion des tâches gérera l’état de notre application et fournira les méthodes nécessaires aux opérations CRUD. Contrairement à un serveur web, où chaque requête est isolée, une application de bureau peut exécuter plusieurs opérations simultanément. Nous devons donc gérer l’état de façon sûre pour les accès concurrents.
+### Créez le service TODO
+Le service TODO gérera l’état de notre application et fournira les méthodes nécessaires aux opérations CRUD. Contrairement à un serveur web, où chaque requête est isolée, une application de bureau peut exécuter plusieurs opérations simultanément. Nous devons donc assurer une gestion de l’état sûre pour les accès concurrents.
 
-Supprimez `greetservice.go` et créez un fichier `todoservice.go` :
+Supprimez `greetservice.go` et créez un fichier nommé `todoservice.go` :
 
 ```go {title="todoservice.go"}
 package main
@@ -122,43 +122,43 @@ func (t *TodoService) Delete(id int) error {
 }
 ```
 
-**Voici ce qui se passe :**
+**Fonctionnement :**
 
 **La structure `Todo` :**
 
-- Elle définit la forme de nos données avec les champs ID, Title et Completed
+- Définit la forme de nos données avec les champs ID, Title et Completed
 - Les balises `json:` indiquent à Go comment convertir cette structure en JSON pour le frontend
 - Chaque champ est exporté (son nom commence par une majuscule) afin que le générateur de liaisons puisse le détecter
 
 **La structure `TodoService` :**
 
-- `todos []Todo` : un slice contenant toutes nos tâches
-- `nextID int` : conserve le prochain ID à attribuer (simule l’auto-incrémentation)
-- `mu sync.RWMutex` : un mutex en lecture-écriture garantissant un accès sûr entre threads
+- `todos []Todo` : une tranche contenant toutes nos tâches
+- `nextID int` : conserve le prochain ID à attribuer (simule une auto-incrémentation)
+- `mu sync.RWMutex` : un mutex en lecture-écriture garantissant des accès concurrents sûrs
 
-**Accès sûr entre threads avec `sync.RWMutex` :**
+**Sécurité des accès concurrents avec `sync.RWMutex` :**
 
 - L’interface utilisateur d’une application de bureau peut lancer plusieurs opérations simultanément
 - `RLock()` autorise plusieurs lecteurs simultanés (par exemple, plusieurs appels à `GetAll`)
-- `Lock()` accorde un accès exclusif pour les écritures (par exemple, `Add`, `Toggle` et `Delete`)
-- `defer` garantit la libération des verrous même si la fonction se termine prématurément ou provoque une panique
+- `Lock()` accorde un accès exclusif aux écritures (par exemple, `Add`, `Toggle` et `Delete`)
+- `defer` garantit la libération des verrous même si la fonction se termine prématurément ou déclenche une panique
 
 **Les méthodes :**
 
-- `GetAll()` : renvoie toutes les tâches (utilise un verrou en lecture, car les données ne sont pas modifiées)
+- `GetAll()` : renvoie toutes les tâches (utilise un verrou de lecture puisque les données ne sont pas modifiées)
 - `Add(title)` : crée une tâche, valide la saisie et incrémente l’ID
 - `Toggle(id)` : inverse l’état d’achèvement d’une tâche
-- `Delete(id)` : supprime une tâche du slice
+- `Delete(id)` : supprime une tâche de la tranche
 
 **Gestion des erreurs :**
 
 - Conformément aux conventions de Go, nous renvoyons `error` en dernière valeur
-- Les titres vides sont rejetés
+- Les titres vides sont refusés
 - Les opérations portant sur des tâches inexistantes renvoient des erreurs
 - Ces erreurs deviennent des exceptions JavaScript dans le frontend
 
 ### Mettez à jour main.go
-Enregistrez le service de gestion des tâches auprès de votre application Wails. Repérez la section `Services` dans `main.go` et remplacez GreetService par notre TodoService :
+Enregistrez le service TODO auprès de votre application Wails. Dans `main.go`, repérez la section `Services` et remplacez GreetService par notre TodoService :
 
 ```go {title="main.go" highlight="5"}
 Services: []application.Service{
@@ -166,14 +166,14 @@ Services: []application.Service{
 },
 ```
 
-**Voici ce qui se passe :**
+**Fonctionnement :**
 
 - Nous supprimons le GreetService par défaut et ajoutons notre TodoService à la place
 - `application.NewService()` encapsule notre service afin que Wails puisse le gérer
-- Wails générera automatiquement des liaisons JavaScript pour toutes les méthodes publiques de ce service
+- Wails générera automatiquement les liaisons JavaScript de toutes les méthodes publiques de ce service
 
-### Créez l’interface utilisateur du frontend
-Créons maintenant le frontend. C’est ici que nous appellerons nos méthodes Go et afficherons l’interface utilisateur. Nous utilisons du JavaScript natif pour rester simples et vous montrer directement le fonctionnement des liaisons.
+### Créez l’interface utilisateur frontend
+Créons maintenant le frontend. C’est ici que nous appellerons nos méthodes Go et afficherons l’interface utilisateur. Nous utilisons JavaScript natif pour rester simples et vous montrer directement le fonctionnement des liaisons.
 
 Remplacez `frontend/src/main.js` :
 
@@ -220,20 +220,20 @@ window.deleteTodo = async (id) => {
 loadTodos();
 ```
 
-**Voici ce qui se passe :**
+**Fonctionnement :**
 
 **Importation des liaisons :**
 
 - `import {TodoService} from "../bindings/changeme"` : importe les liaisons Go générées automatiquement
-- Remarque : `changeme` correspondra au véritable nom de votre module indiqué dans `go.mod`
+- Remarque : `changeme` correspondra au véritable nom de votre module défini dans `go.mod`
 
 **La fonction `loadTodos()` :**
 
-- Elle appelle `TodoService.GetAll()` pour récupérer toutes les tâches depuis Go
-- Elle génère le HTML de chaque tâche à l’aide de littéraux de gabarit
-- Elle ajoute ou retire dynamiquement la classe `completed` pour appliquer le style
-- Elle utilise les attributs `onclick` pour relier les boutons à nos fonctions
-- Elle assemble tout le HTML et l’injecte dans le DOM
+- Appelle `TodoService.GetAll()` pour récupérer toutes les tâches depuis Go
+- Génère le HTML de chaque tâche à l’aide de littéraux de gabarit
+- Ajoute ou supprime dynamiquement la classe `completed` pour appliquer le style
+- Utilise les attributs `onclick` pour relier les boutons à nos fonctions
+- Concatène tout le HTML et l’insère dans le DOM
 
 **Les fonctions CRUD :**
 
@@ -242,22 +242,22 @@ loadTodos();
 - `deleteTodo(id)` : appelle la méthode Go `Delete` et actualise la liste
 - Toutes les fonctions sont asynchrones, car les appels à Go renvoient des promesses
 
-**Pourquoi les rattacher à window ?**
+**Pourquoi les associer à window :**
 
 - `window.addTodo = ...` rend les fonctions accessibles depuis les attributs HTML `onclick`
-- Il s’agit d’un modèle simple pour JavaScript sans framework (les frameworks procèdent différemment).
-- En production, vous pourriez plutôt utiliser une véritable délégation d’événements.
+- Il s’agit d’un modèle simple pour JavaScript natif (les frameworks gèrent cela différemment)
+- En production, vous pourriez utiliser à la place une véritable délégation d’événements
 
 **Le modèle d’actualisation :**
 
-- Après chaque modification (ajout, basculement ou suppression), nous rappelons `loadTodos()`.
-- Cela garantit que l’interface utilisateur reste synchronisée avec l’état Go.
-- Autre possibilité : faites en sorte que les méthodes Go renvoient le nouvel état afin d’éviter le second appel.
+- Après chaque modification (ajout, basculement ou suppression), nous appelons de nouveau `loadTodos()`
+- Cela garantit que l’interface utilisateur reste synchronisée avec l’état Go
+- Autre possibilité : faire renvoyer le nouvel état par les méthodes Go afin d’éviter le second appel
 
-### Mettre à jour le HTML
-Le HTML fournit la structure de notre application de gestion des tâches. Il est minimaliste et sémantique : toute la magie opère dans le JavaScript et le CSS.
+### Mettez à jour le HTML
+Le HTML fournit la structure de notre application de tâches. Il est minimaliste et sémantique : toute la magie opère dans le JavaScript et le CSS.
 
-Remplacez `frontend/index.html` :
+Remplacez `frontend/index.html` :
 
 ```html {title="frontend/index.html"}
 <!DOCTYPE html>
@@ -288,30 +288,30 @@ Remplacez `frontend/index.html` :
 </html>
 ```
 
-**Voici ce qui se passe :**
+**Voici ce qui se passe :**
 
-**La structure :**
+**La structure :**
 
-- `container` : centre notre application et en limite la largeur
-- `card` : la carte blanche principale qui contient tous les éléments
-- `input-box` : conteneur flexible pour le champ de saisie et le bouton Ajouter
-- `todo-list` : emplacement où JavaScript insérera les différentes tâches
+- `container` : centre notre application et en limite la largeur
+- `card` : la carte blanche principale qui contient tous les éléments
+- `input-box` : conteneur flexible pour le champ de saisie et le bouton Ajouter
+- `todo-list` : emplacement où JavaScript insérera chaque tâche
 
-**Gestion des événements :**
+**Gestion des événements :**
 
-- `onkeypress="if(event.key==='Enter') addTodo()"` : ajoute une tâche lorsque vous appuyez sur Entrée
-- `onclick="addTodo()"` : ajoute une tâche lorsque vous cliquez sur le bouton
-- Les gestionnaires d’événements en ligne conviennent bien aux applications simples en JavaScript sans framework.
+- `onkeypress="if(event.key==='Enter') addTodo()"` : ajoute une tâche lorsque vous appuyez sur Entrée
+- `onclick="addTodo()"` : ajoute une tâche lorsque vous cliquez sur le bouton
+- Les gestionnaires d’événements en ligne conviennent bien aux applications simples en JavaScript natif
 
-**Script de module :**
+**Script de module :**
 
-- `<script type="module">` nous permet d’utiliser les imports ES6.
-- Notre fichier `main.js` peut importer les liaisons et utiliser les fonctionnalités modernes de JavaScript.
+- `<script type="module">` nous permet d’utiliser les imports ES6
+- Notre fichier `main.js` peut importer les bindings et utiliser du JavaScript moderne
 
 ### Mettre en forme l’application
-Le CSS crée un design moderne en verre dépoli avec des transitions fluides. Nous visons un rendu soigné qui rend l’application agréable à utiliser.
+Le CSS crée un design moderne inspiré du verre dépoli, avec des transitions fluides. L’objectif est d’obtenir une finition soignée qui rende l’application agréable à utiliser.
 
-Remplacez `frontend/public/style.css` :
+Remplacez `frontend/public/style.css` :
 
 ```css {title="frontend/public/style.css"}
 :root {
@@ -497,50 +497,50 @@ h1 {
 }
 ```
 
-**Voici ce qui se passe :**
+**Voici ce qui se passe :**
 
-**Design en verre dépoli :**
+**Design inspiré du verre dépoli :**
 
-- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` : arrière-plan avec un dégradé violet
-- `backdrop-filter: blur(10px)` : crée l’effet de verre dépoli sur la carte
-- `rgba(255, 255, 255, 0.95)` : blanc semi-transparent pour l’effet de verre
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` : arrière-plan avec un dégradé violet
+- `backdrop-filter: blur(10px)` : crée l’effet de verre dépoli sur la carte
+- `rgba(255, 255, 255, 0.95)` : blanc semi-transparent pour produire l’effet de verre
 
-**Style personnalisé de la case à cocher :**
+**Style personnalisé des cases à cocher :**
 
-- `appearance: none` supprime la case à cocher par défaut du navigateur.
-- Nous créons un carré arrondi personnalisé avec une coche à l’aide de `::after`.
-- La coche apparaît lorsque la case est cochée (`checked`), à l’aide du caractère Unicode ✓.
+- `appearance: none` supprime l’apparence par défaut de la case à cocher du navigateur
+- Nous créons un carré arrondi personnalisé avec une coche à l’aide de `::after`
+- La coche apparaît lorsque `checked`, grâce au caractère Unicode ✓
 
-**Interactions au survol :**
+**Interactions au survol :**
 
-- Les tâches glissent vers la droite au survol (`transform: translateX(4px)`).
-- Le bouton de suppression reste masqué jusqu’au survol (`opacity: 0` → `opacity: 1`).
-- Les boutons s’agrandissent légèrement au survol pour fournir un retour tactile.
+- Les tâches se décalent vers la droite au survol (`transform: translateX(4px)`)
+- Le bouton de suppression reste masqué jusqu’au survol (`opacity: 0` → `opacity: 1`)
+- Les boutons s’agrandissent légèrement au survol pour fournir un retour tactile
 
-**État vide :**
+**État vide :**
 
-- `#todo-list:empty::before` affiche un message lorsqu’il n’y a aucune tâche.
-- Solution uniquement en CSS : aucun JavaScript n’est nécessaire.
+- `#todo-list:empty::before` affiche un message lorsqu’il n’y a aucune tâche
+- Solution entièrement en CSS : aucun JavaScript nécessaire
 
 ### Exécuter l’application
-Voyons-la en action ! Lancez le serveur de développement :
+Voyons-la fonctionner ! Lancez le serveur de développement :
 
 ```bash
 wails3 dev
 ```
 
-L’application sera compilée puis s’ouvrira. Essayez-la :
+L’application sera compilée et s’ouvrira. Essayez-la :
 
-- Saisissez une tâche, puis appuyez sur Entrée ou cliquez sur Ajouter.
-- Cliquez sur la case à cocher pour marquer la tâche comme terminée.
-- Survolez une tâche pour faire apparaître le bouton de suppression.
-- Remarquez que l’interface utilisateur s’actualise instantanément : c’est notre modèle d’actualisation qui entre en jeu.
+- Saisissez une tâche, puis appuyez sur Entrée ou cliquez sur Ajouter
+- Cliquez sur la case à cocher pour marquer la tâche comme terminée
+- Survolez une tâche pour faire apparaître le bouton de suppression
+- Remarquez que l’interface se met à jour instantanément : notre modèle d’actualisation fonctionne
 
-**Voici ce qui se passe :**
+**Voici ce qui se passe :**
 
-- Wails a généré automatiquement les liaisons pour les méthodes de votre TodoService.
-- Le mode développement inclut le rechargement à chaud : essayez de modifier le CSS et observez la mise à jour.
-- Votre code Go s’exécute de manière native : aucune traduction ni interprétation n’est nécessaire.
+- Wails a généré automatiquement les bindings des méthodes de votre TodoService
+- Le mode développement inclut le rechargement à chaud : modifiez le CSS et observez la mise à jour
+- Votre code Go s’exécute nativement : aucune traduction ni interprétation n’est nécessaire
 
 @end
 
@@ -548,7 +548,7 @@ L’application sera compilée puis s’ouvrira. Essayez-la :
 
 ### Gestion de l’état sûre pour les accès concurrents
 
-Le `sync.RWMutex` permet un accès concurrent sécurisé :
+Le `sync.RWMutex` permet un accès concurrent sécurisé :
 
 ```go
 func (t *TodoService) GetAll() []Todo {
@@ -564,16 +564,16 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 }
 ```
 
-**Pourquoi est-ce important ?**
+**Pourquoi est-ce important ?**
 
-- Plusieurs appels depuis le frontend peuvent avoir lieu simultanément.
-- Les opérations de lecture ne se bloquent pas entre elles.
-- Les opérations d’écriture bénéficient d’un accès exclusif.
-- `defer` garantit que les verrous sont toujours libérés.
+- Plusieurs appels du frontend peuvent avoir lieu simultanément
+- Les opérations de lecture ne se bloquent pas mutuellement
+- Les opérations d’écriture bénéficient d’un accès exclusif
+- `defer` garantit que les verrous sont toujours libérés
 
 ### Gestion des erreurs
 
-Le service renvoie des erreurs pour les opérations non valides :
+Le service renvoie des erreurs pour les opérations non valides :
 
 ```go
 func (t *TodoService) Add(title string) (*Todo, error) {
@@ -584,7 +584,7 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 }
 ```
 
-Dans le frontend, vous pouvez intercepter ces erreurs :
+Dans le frontend, vous pouvez intercepter ces erreurs :
 
 ```javascript
 try {
@@ -596,7 +596,7 @@ try {
 
 ### Synchronisation de l’état
 
-Après chaque modification, nous rechargeons la liste complète :
+Après chaque modification, nous rechargeons la liste complète :
 
 ```javascript
 window.addTodo = async () => {
@@ -605,13 +605,13 @@ window.addTodo = async () => {
 }
 ```
 
-**Autre approche :** renvoyez la liste mise à jour depuis chaque méthode afin d’éviter le second appel.
+**Autre approche :** renvoyez la liste mise à jour depuis chaque méthode afin d’éviter le second appel.
 
 ## Améliorations
 
 ### Ajouter des statistiques
 
-Ajoutez ceci à `todoservice.go` :
+Ajoutez ceci à `todoservice.go` :
 
 ```go
 type TodoStats struct {
@@ -640,7 +640,7 @@ func (t *TodoService) GetStats() TodoStats {
 }
 ```
 
-Affichez-les dans le frontend :
+Affichez-les dans le frontend :
 
 ```javascript
 async function loadTodos() {
@@ -657,7 +657,7 @@ async function loadTodos() {
 }
 ```
 
-### Ajouter « Effacer les tâches terminées »
+### Ajouter « Effacer les tâches terminées »
 
 ```go
 func (t *TodoService) ClearCompleted() int {
@@ -682,47 +682,47 @@ func (t *TodoService) ClearCompleted() int {
 
 ### Ajouter la persistance
 
-Pour les applications de production, ajoutez la persistance à l’aide de la solution de stockage la mieux adaptée à votre application, telle que SQLite, PostgreSQL ou un service hébergé.
+Pour les applications en production, ajoutez la persistance à l’aide de la solution de stockage la mieux adaptée à votre application, telle que SQLite, PostgreSQL ou un service hébergé.
 
 ## Compiler pour la production
 
-Lorsque vous êtes prêt à distribuer votre application TODO, compilez-la pour la production :
+Lorsque vous êtes prêt à distribuer votre application de tâches, compilez-la pour la production :
 
 ```bash
 wails3 build
 ```
 
-Cette opération crée un exécutable natif optimisé dans `bin/` :
+Cette commande crée un exécutable natif optimisé dans `bin/` :
 
 - Compile votre code Go avec des optimisations
 - Compile votre frontend pour la production
-- Regroupe tout dans un seul exécutable
-- L’application obtenue occupe généralement 10-20 Mo (contre plus de 150 Mo pour Electron)
+- Regroupe tous les éléments dans un seul exécutable
+- L’application obtenue occupe généralement 10-20 Mo, contre plus de 150 Mo pour Electron
 
-Vous pouvez exécuter directement le fichier exécutable : aucun environnement d’exécution n’est nécessaire et vous n’avez aucun serveur à démarrer. Il s’agit d’une véritable application native.
+Vous pouvez exécuter directement le fichier : aucun environnement d’exécution n’est nécessaire et aucun serveur ne doit être démarré. Il s’agit d’une véritable application native.
 
 ## Ce que vous avez créé
 
-Vous venez de créer une application TODO complète avec :
+Vous venez de créer une application de tâches complète avec :
 
-**Implémentation CRUD complète :**
+**Implémentation CRUD complète :**
 
 - Création d’un service avec des opérations de création, de lecture, de mise à jour et de suppression
 - Ajout de la validation des entrées et de la gestion des erreurs
-- Compréhension de la façon dont les erreurs Go deviennent des exceptions JavaScript
+- Découverte de la conversion des erreurs Go en exceptions JavaScript
 
-**Gestion de l’état sûre pour les accès concurrents :**
+**Gestion de l’état sûre pour les accès concurrents :**
 
 - Utilisation de `sync.RWMutex` pour gérer les accès concurrents en toute sécurité
 - Compréhension de la différence entre les verrous en lecture (RLock) et les verrous en écriture (Lock)
-- Observation de la façon dont `defer` évite les interblocages en garantissant le nettoyage
+- Observation de la manière dont `defer` évite les interblocages en garantissant le nettoyage
 
-**Interface utilisateur moderne et soignée :**
+**Interface moderne et soignée :**
 
-- Création d’une interface de style verre dépoli avec des dégradés et des effets de flou
+- Création d’une interface inspirée du verre dépoli, avec des dégradés et des effets de flou
 - Création de cases à cocher au style personnalisé sans aucun framework
-- Ajout d’interactions au survol et de transitions pour donner une apparence native
-- Implémentation d’un état vide en CSS pur
+- Ajout d’interactions au survol et de transitions pour une sensation d’application native
+- Implémentation d’un état vide entièrement en CSS
 
 **Principes fondamentaux de Wails :**
 
@@ -733,9 +733,9 @@ Vous venez de créer une application TODO complète avec :
 
 ## Étapes suivantes
 
-Maintenant que vous comprenez les opérations CRUD et la gestion de l’état, essayez ce qui suit :
+Maintenant que vous maîtrisez les opérations CRUD et la gestion de l’état, essayez ceci :
 
 - **Ajoutez la persistance :** conservez les tâches après le redémarrage de l’application avec SQLite ou une autre solution de stockage
-- **Ajoutez d’autres fonctionnalités :** filtrage (toutes/actives/terminées), modification des tâches existantes et opérations groupées
-- **Découvrez le tutoriel Notes :** voyez comment fonctionnent les opérations sur les fichiers dans le tutoriel [Notes](/tutorials/03-notes-vanilla/)
+- **Ajoutez d’autres fonctionnalités :** filtrage (toutes/actives/terminées), modification des tâches existantes et opérations par lots
+- **Explorez le tutoriel Notes :** découvrez le fonctionnement des opérations sur les fichiers dans [Notes](/tutorials/03-notes-vanilla/)
 - **Créez une véritable application :** mettez ces concepts en pratique pour créer votre propre application !

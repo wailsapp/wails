@@ -5,7 +5,7 @@ slug: "quick-start/first-app"
 sourcePath: "quick-start/first-app.md"
 ---
 
-Wir erstellen eine einfache Begrüßungsanwendung, die die grundlegenden Konzepte von Wails veranschaulicht:
+Wir erstellen eine einfache Begrüßungsanwendung, die die zentralen Konzepte von Wails veranschaulicht:
 
 - Go-Backend zur Verwaltung der Logik
 - Frontend, das Go-Funktionen aufruft
@@ -14,24 +14,19 @@ Wir erstellen eine einfache Begrüßungsanwendung, die die grundlegenden Konzept
 
 **Benötigte Zeit:** 10 Minuten
 
-@note{type="tip" title="Performance-Tipp für Benutzer von Windows 11"}
-Erwägen Sie, Ihre Projekte auf einem [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) zu speichern. Dev Drives sind für Entwicklungs-Workloads optimiert und können die Build-Zeiten und Datenträgerzugriffe gegenüber regulären NTFS-Laufwerken um bis zu 30 % verbessern.
-
-@end
-
 ## Projekt erstellen
 
 @steps
 ### Projekt generieren
 ```bash
-wails3 init -n myapp
+wails3 init -n myapp -t vanilla-js
 cd myapp
 ```
 
-Dadurch wird ein neues Projekt mit der Standardvorlage Vanilla + Vite erstellt (HTML/CSS/TypeScript mit dem Vite-Bundler).
+In dieser Lektion wird ausdrücklich Vanilla + Vite mit JavaScript ausgewählt, damit die nachfolgenden Quelldateien Ihrem generierten Projekt entsprechen. Die einfache Vorlage `vanilla` verwendet TypeScript.
 
-@note{type="tip" title="Weitere Vorlagen"}
-Verwenden Sie `-t react`, `-t vue` oder `-t svelte` für Ihr bevorzugtes Framework. Diese verwenden standardmäßig TypeScript. Für reines JavaScript verwenden Sie `-t vanilla-js` oder `-t react-js`. Führen Sie `wails3 init -l` aus, um alle verfügbaren Vorlagen anzuzeigen, oder [verwenden Sie Ihr eigenes Frontend-Framework](/guides/dev/frontend-frameworks/).
+@note{type="tip" title="Andere Vorlagen"}
+Probieren Sie `-t react`, `-t vue` oder `-t svelte` für Ihr bevorzugtes Framework aus. Diese verwenden standardmäßig TypeScript. Für reines JavaScript verwenden Sie `-t vanilla-js` oder `-t react-js`. Führen Sie `wails3 init -l` aus, um alle verfügbaren Vorlagen anzuzeigen, oder [verwenden Sie Ihr eigenes Frontend-Framework](/guides/dev/frontend-frameworks/).
 
 @end
 
@@ -43,12 +38,12 @@ myapp/
 ├── frontend/            # Your UI code
 │   ├── index.html       # HTML entry point
 │   ├── src/
-│   │   └── main.ts      # Frontend TypeScript
+│   │   └── main.js      # Frontend JavaScript
 │   ├── public/
 │   │   └── style.css    # Styles
 │   ├── package.json     # Frontend dependencies
-│   ├── tsconfig.json    # TypeScript configuration
-│   └── vite.config.ts   # Vite bundler config
+│   ├── tsconfig.json    # Editor and JavaScript tooling configuration
+│   └── vite.config.js   # Vite bundler config
 ├── build/               # Build configuration
 └── Taskfile.yml         # Build tasks
 ```
@@ -59,17 +54,22 @@ wails3 dev
 ```
 
 @note{type="info" title="Erster Start"}
-Der erste Start kann länger als erwartet dauern, da dabei Frontend-Abhängigkeiten installiert, Bindings generiert und weitere Schritte ausgeführt werden. Nachfolgende Starts sind deutlich schneller.
+Der erste Start kann länger als erwartet dauern, da dabei unter anderem Frontend-Abhängigkeiten installiert und Bindings generiert werden. Nachfolgende Starts sind deutlich schneller.
 
 @end
 
-Die App öffnet sich mit einer Begrüßungsoberfläche. Geben Sie Ihren Namen ein und klicken Sie auf „Greet“. Das Go-Backend verarbeitet Ihre Eingabe und gibt eine Begrüßung zurück.
+Die App wird mit einer Begrüßungsoberfläche geöffnet. Geben Sie Ihren Namen ein und klicken Sie auf „Greet“ – das Go-Backend verarbeitet Ihre Eingabe und gibt eine Begrüßung zurück.
+
+@end
+
+@note{type="tip" title="Leistungstipp für Benutzer von Windows 11"}
+Erwägen Sie, Ihre Projekte auf einem [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) zu speichern. Dev Drives sind für Entwicklungs-Workloads optimiert und können die Build-Zeiten sowie die Geschwindigkeit von Festplattenzugriffen gegenüber regulären NTFS-Laufwerken um bis zu 30 % verbessern.
 
 @end
 
 ## Funktionsweise
 
-Sehen wir uns den Code an, der diese Funktion ermöglicht.
+Sehen wir uns den Code an, der dies ermöglicht.
 
 ### Das Go-Backend
 
@@ -78,26 +78,22 @@ Sehen wir uns den Code an, der diese Funktion ermöglicht.
 ```go {title="greetservice.go"}
 package main
 
-import (
-	"fmt"
-)
-
 type GreetService struct{}
 
 func (g *GreetService) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+	return "Hello " + name + "!"
 }
 ```
 
-**Wichtige Konzepte:**
+**Zentrale Konzepte:**
 
-1. **Service** – eine Go-Struktur mit exportierten Methoden
+1. **Service** – ein Go-Struct mit exportierten Methoden
 2. **Exportierte Methode** – `Greet` beginnt mit einem Großbuchstaben und ist dadurch für das Frontend verfügbar
 3. **Einfache Logik** – nimmt einen Namen entgegen und gibt eine Begrüßung zurück
 4. **Typsicherheit** – Ein- und Ausgabetypen sind definiert
 
 @note{type="tip" title="Services und Bindings verstehen"}
-**Services** sind eigenständige Go-Module, die dem Frontend Funktionen bereitstellen. Es handelt sich um reguläre Go-Strukturen mit exportierten Methoden, die Sie im Feld `Services` Ihrer Anwendungskonfiguration registrieren.
+**Services** sind eigenständige Go-Module, die Ihrem Frontend Funktionen bereitstellen. Es handelt sich lediglich um reguläre Go-Structs mit exportierten Methoden, die Sie im Feld `Services` Ihrer Anwendungskonfiguration registrieren.
 
 **Bindings** sind das automatisch generierte TypeScript-/JavaScript-SDK, über das Ihr Frontend diese Services aufrufen kann. Wenn Sie `wails3 dev` oder `wails3 build` ausführen, analysiert Wails Ihre registrierten Services und generiert typsichere Bindings in `frontend/bindings/`.
 
@@ -110,7 +106,7 @@ Betrachten Sie Services als Ihre Backend-API und Bindings als die Clientbiblioth
 Öffnen Sie `main.go` und suchen Sie die Service-Registrierung:
 
 ```go {title="main.go" highlight="4-6"}
-err := application.New(application.Options{
+app := application.New(application.Options{
     Name: "myapp",
     Services: []application.Service{
         application.NewService(&GreetService{}),
@@ -119,7 +115,7 @@ err := application.New(application.Options{
 })
 ```
 
-Dadurch wird `GreetService` bei Wails registriert, sodass alle exportierten Methoden für das Frontend verfügbar sind.
+Dadurch wird Ihr `GreetService` bei Wails registriert, sodass alle exportierten Methoden für das Frontend verfügbar sind.
 
 ### Das Frontend
 
@@ -128,9 +124,8 @@ Dadurch wird `GreetService` bei Wails registriert, sodass alle exportierten Meth
 ```javascript {title="frontend/src/main.js"}
 import {GreetService} from "../bindings/changeme";
 
-window.greet = async () => {
+window.doGreet = async () => {
     const nameElement = document.getElementById('name');
-    const resultElement = document.getElementById('result');
 
     const name = nameElement.value;
     if (!name) {
@@ -139,16 +134,18 @@ window.greet = async () => {
 
     try {
         const result = await GreetService.Greet(name);
-        resultElement.innerText = result;
+        showToast(result);
     } catch (err) {
         console.error(err);
     }
 };
 ```
 
-**Wichtige Konzepte:**
+Dieser vereinfachte Handler ersetzt `window.doGreet` aus dem Starterprojekt. Behalten Sie die vorhandene Hilfsfunktion `showToast` und den übrigen Startcode bei. Der generierte HTML-Button ruft `doGreet` auf, und `showToast` macht das Ergebnis sichtbar. Der Importpfad folgt dem Namen des Go-Moduls (`changeme`, sofern nicht überschrieben).
 
-1. **Automatisch generierte Bindings** – `GreetService` wird aus dem generierten Code importiert
+**Zentrale Konzepte:**
+
+1. **Automatisch generierte Bindings** – `GreetService` wird aus generiertem Code importiert
 2. **Typsichere Aufrufe** – Methodennamen und Signaturen entsprechen Ihrem Go-Code
 3. **Standardmäßig asynchron** – alle Go-Aufrufe geben Promises zurück
 4. **Fehlerbehandlung** – Fehler aus Go werden mit try/catch abgefangen
@@ -162,7 +159,7 @@ Die generierten Bindings befinden sich in `frontend/bindings/`. Sie werden autom
 
 ## App anpassen
 
-Fügen wir eine neue Funktion hinzu, um den Arbeitsablauf nachzuvollziehen.
+Fügen wir eine neue Funktion hinzu, um den Arbeitsablauf kennenzulernen.
 
 ### Funktion „Greet Many“ hinzufügen
 
@@ -174,7 +171,7 @@ Fügen Sie Folgendes zu `greetservice.go` hinzu:
 func (g *GreetService) GreetMany(names []string) []string {
     greetings := make([]string, len(names))
     for i, name := range names {
-        greetings[i] = fmt.Sprintf("Hello %s!", name)
+        greetings[i] = "Hello " + name + "!"
     }
     return greetings
 }
@@ -183,8 +180,8 @@ func (g *GreetService) GreetMany(names []string) []string {
 ### Die App wird automatisch neu gebaut
 Speichern Sie die Datei. `wails3 dev` baut Ihren Go-Code automatisch neu und startet die App neu.
 
-@note{type="info" title="Automatischer Neuaufbau"}
-Änderungen am Go-Code lösen automatisch einen Neuaufbau und Neustart aus. Änderungen am Frontend werden ohne Neustart per Hot Reload geladen.
+@note{type="info" title="Automatischer Neubau"}
+Änderungen am Go-Code lösen automatisch einen Neubau und Neustart aus. Frontend-Änderungen werden ohne Neustart per Hot Reload geladen.
 
 @end
 
@@ -199,11 +196,11 @@ window.greetMany = async () => {
 };
 ```
 
-Öffnen Sie die Browserkonsole und rufen Sie `greetMany()` auf. Daraufhin wird das Array mit den Begrüßungen angezeigt.
+Öffnen Sie die Browserkonsole und rufen Sie `greetMany()` auf – daraufhin sehen Sie das Array mit den Begrüßungen.
 
 @end
 
-## Für den Produktiveinsatz bauen
+## Für die Produktion bauen
 
 Wenn Sie Ihre App verteilen möchten:
 
@@ -211,36 +208,36 @@ Wenn Sie Ihre App verteilen möchten:
 wails3 build
 ```
 
-**Das geschieht dabei:**
+**Dabei geschieht Folgendes:**
 
 - Kompiliert den Go-Code mit Optimierungen
-- Baut das Frontend für den Produktiveinsatz (minifiziert)
+- Baut das Frontend für die Produktion (minifiziert)
 - Erstellt eine native ausführbare Datei in `bin/`
 
 @tabs{sync-key="os"}
 [Windows]
 **Ausgabe:** `bin/myapp.exe`
 
-Zum Ausführen doppelklicken. Es sind keine Abhängigkeiten erforderlich (WebView2 ist Bestandteil von Windows).
+Starten Sie die App mit einem Doppelklick. Es sind keine Abhängigkeiten erforderlich (WebView2 ist Bestandteil von Windows).
 
 [macOS]
 **Ausgabe:** `bin/myapp.app`
 
-In den Ordner „Programme“ ziehen oder zum Ausführen doppelklicken.
+Ziehen Sie die App in den Ordner „Programme“ oder starten Sie sie mit einem Doppelklick.
 
 [Linux]
 **Ausgabe:** `bin/myapp`
 
-Mit `./bin/myapp` ausführen oder eine `.desktop`-Datei für den Anwendungsstarter erstellen.
+Führen Sie die App mit `./bin/myapp` aus oder erstellen Sie eine `.desktop`-Datei für Ihren Anwendungsstarter.
 
 @end
 
 @note{type="tip" title="Plattformübergreifende Builds"}
-Möchten Sie für andere Plattformen bauen? Siehe [Plattformübergreifende Builds →](/guides/build/cross-platform/)
+Möchten Sie für andere Plattformen bauen? Weitere Informationen finden Sie unter [Plattformübergreifende Builds →](/guides/build/cross-platform/)
 
 @end
 
-## Was wir gelernt haben
+## Was Sie gelernt haben
 
 **Projektstruktur**
 
@@ -250,7 +247,7 @@ Möchten Sie für andere Plattformen bauen? Siehe [Plattformübergreifende Build
 
 **Services**
 
-- Go-Structs mit exportierten Methoden erstellen
+- Go-Strukturen mit exportierten Methoden erstellen
 - Mit `application.NewService()` registrieren
 - Methoden sind automatisch im Frontend verfügbar
 
@@ -268,4 +265,4 @@ Möchten Sie für andere Plattformen bauen? Siehe [Plattformübergreifende Build
 
 ---
 
-**Fragen?** Treten Sie [Discord](https://discord.gg/JDdSxwjhGf) bei und fragen Sie die Community.
+**Fragen?** Tritt [Discord](https://discord.gg/JDdSxwjhGf) bei und frage die Community.

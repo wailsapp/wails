@@ -1,345 +1,346 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "d87f4d3581e7b1f19839",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "1d5e3c1b753c04b4a4f8",
   "sourceFile": "status.md",
   "sourceLanguage": "en",
   "targetLanguage": "pt",
   "segments": {
     "b0001-heading-01": {
-      "sourceHash": "210487be97a46bf423bb5674bc2fc57e60a1e6361398538b6c3589271990da40",
-      "targetHash": "90cce1dfd1109778668ed801f2702415e6d5ac6b8ad96f8c3d7907c67da58719",
-      "machineHash": "90cce1dfd1109778668ed801f2702415e6d5ac6b8ad96f8c3d7907c67da58719",
-      "machineText": "Status atual: Beta",
-      "status": "final",
-      "sourcePreview": "Current Status: Beta",
+      "sourceHash": "d68af8fd2a5c4b897fa0fddbd54815180f178ba39ae898687349342258d227d2",
+      "targetHash": "72e05a815502b430fc3efca773526e32ddf7cbfdf8743b29cfc7a45e83abfdfc",
+      "machineHash": "72e05a815502b430fc3efca773526e32ddf7cbfdf8743b29cfc7a45e83abfdfc",
+      "machineText": "Wails v3.0.0 — Estável",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3.0.0 — Stable",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0002-text-01": {
       "sourceHash": "8f6b8e3af3d7e931f066a927d79b0f900f06c3cb9c84a9d9e09d73056469e07f",
-      "targetHash": "0747fffaeeb1427e21305927c8218f046f5312323aabd139f1cd345f5133b199",
-      "machineHash": "0747fffaeeb1427e21305927c8218f046f5312323aabd139f1cd345f5133b199",
-      "machineText": "Consulte o [Registro de alterações](/changelog/) para ver o status mais recente.",
-      "status": "final",
+      "targetHash": "fe65a383150a4c2f95ed29ccfaf06561d1a44057ec5df348f3a84f35fde2b515",
+      "machineHash": "fe65a383150a4c2f95ed29ccfaf06561d1a44057ec5df348f3a84f35fde2b515",
+      "machineText": "Consulte o [registro de alterações](/changelog/) para ver o status mais recente.",
+      "status": "machine-translated",
       "sourcePreview": "Check out the [Changelog](/changelog/) for the latest status.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0003-text-01": {
-      "sourceHash": "5861aa2da0fb909eb8e435ccc3c9351f363c130404f22de4df0510a43c5415b4",
-      "targetHash": "019a73b812fdfa6d80e3eb086ed0cc3057242a55f9afcff91db36b4300e320ba",
-      "machineHash": "019a73b812fdfa6d80e3eb086ed0cc3057242a55f9afcff91db36b4300e320ba",
-      "machineText": "Nosso objetivo é chegar a uma versão v3.0 estável. Este roteiro descreve as principais funcionalidades e melhorias que precisamos implementar antes da versão final. Este é um documento dinâmico e pode ser atualizado à medida que as prioridades mudarem ou surgirem novas informações.",
-      "status": "final",
-      "sourcePreview": "Our goal is to reach a stable v3.0 release. This roadmap outlines the key features\\ and improvements…",
+      "sourceHash": "708f73ec31d2b49e6915fe082b5e0b06367f78b202252faf5438f11a7bd6ceb6",
+      "targetHash": "905c31682e731afd944024272878619e24a3dd66cf6d1468e5c476b6032a0b2f",
+      "machineHash": "905c31682e731afd944024272878619e24a3dd66cf6d1468e5c476b6032a0b2f",
+      "machineText": "Esta documentação abrange o Wails v3.0.0. Após o v3.0.0, correções e melhorias são disponibilizadas em versões semanais, com prévias nightly datadas entre elas e hotfixes para problemas urgentes. Consulte a [política de lançamentos](/contributing/release-policy/).",
+      "status": "machine-translated",
+      "sourcePreview": "This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-26T08:50:46Z"
     },
     "b0004-heading-01": {
-      "sourceHash": "23ca3640b0d793d6a86b65a5d3950afc858de288a1e0f5e9d3f8d4c386634973",
-      "targetHash": "7c4d1921d8ea2a5b2a677b15a1cebcc1803ca7c5c34431afdd3eb6ab7f4cf8ee",
-      "machineHash": "7c4d1921d8ea2a5b2a677b15a1cebcc1803ca7c5c34431afdd3eb6ab7f4cf8ee",
-      "machineText": "Compromisso de compatibilidade da versão Beta",
-      "status": "final",
-      "sourcePreview": "Beta Compatibility Promise",
+      "sourceHash": "01a154329233e99f7f4ca0bc0aca16d4f4be071adfe5fb60e9b163dd5cb2c41c",
+      "targetHash": "82913da899fd8af6093d6cd9f96e27c36a33e4db2e38f55121d5ef0b807e6f50",
+      "machineHash": "82913da899fd8af6093d6cd9f96e27c36a33e4db2e38f55121d5ef0b807e6f50",
+      "machineText": "Compatibilidade com desktops",
+      "status": "machine-translated",
+      "sourcePreview": "Desktop Compatibility",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0005-text-01": {
-      "sourceHash": "2921bdc415d945f561bdfe0bdc0769a93f59286aa3727225e72e06cfbacfd0d1",
-      "targetHash": "43e98fc97d14d3ad4f859a94ecaa0dd61905855f9e91fb10758fc56c5e416580",
-      "machineHash": "43e98fc97d14d3ad4f859a94ecaa0dd61905855f9e91fb10758fc56c5e416580",
-      "machineText": "O contrato da versão Beta da v3 abrange aplicativos para desktop:",
-      "status": "final",
-      "sourcePreview": "The v3 Beta contract covers desktop applications:",
+      "sourceHash": "e597f0a7684e8f7547dee48615c60b9c78204096a36fbd9ffe33d028c26fb312",
+      "targetHash": "2c988df67472dbf2a5b71e506a64fd459de4eca731f6db0f873dd2c70e313a62",
+      "machineHash": "2c988df67472dbf2a5b71e506a64fd459de4eca731f6db0f873dd2c70e313a62",
+      "machineText": "O contrato de compatibilidade do v3.0.0 abrange aplicativos para desktop:",
+      "status": "machine-translated",
+      "sourcePreview": "The v3.0.0 compatibility contract covers desktop applications:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0006-cell-01": {
       "sourceHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
       "targetHash": "5d7325dd007ccc28def0e4ba780259263991da78d5673fdce5fa667fa2daf57f",
       "machineHash": "5d7325dd007ccc28def0e4ba780259263991da78d5673fdce5fa667fa2daf57f",
       "machineText": "Plataforma",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Platform",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0007-cell-01": {
       "sourceHash": "e21d16727f5b16d0cde62489c57d5f4c2793c7eeede493166de04949fa7d8e31",
-      "targetHash": "b1f0b743c3d857704cc545120f6100c12af012ed6e43b5f6b956c298fee50320",
-      "machineHash": "b1f0b743c3d857704cc545120f6100c12af012ed6e43b5f6b956c298fee50320",
-      "machineText": "Arquiteturas compatíveis",
-      "status": "final",
+      "targetHash": "24a7aac5751535651d9c84b24c96f86702ecdee07d3f0a1aaef6897ca1d4bc4f",
+      "machineHash": "24a7aac5751535651d9c84b24c96f86702ecdee07d3f0a1aaef6897ca1d4bc4f",
+      "machineText": "Destinos compatíveis",
+      "status": "machine-translated",
       "sourcePreview": "Supported targets",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0008-cell-01": {
       "sourceHash": "b421c2d5dba5b7baa191109f904a1a4026931f9eabaaedeb524d61a9de8038d1",
       "targetHash": "9a04cf3e7530a05e5ebfe3d052861d288ecc6c87528c48cfa1a27f9d230a43d2",
       "machineHash": "9a04cf3e7530a05e5ebfe3d052861d288ecc6c87528c48cfa1a27f9d230a43d2",
       "machineText": "Requisitos e observações",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Requirements and notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0009-cell-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineText": "Windows",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Windows",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0010-cell-01": {
       "sourceHash": "b87c9b2f3cdf3115f4d76686cd352ddcf36b406cda4dd785bafa975421772882",
       "targetHash": "5f5c3958d6aa8d3126c41469091ced96c30f124e868993f8180322ae9f44bb8b",
       "machineHash": "5f5c3958d6aa8d3126c41469091ced96c30f124e868993f8180322ae9f44bb8b",
       "machineText": "amd64 e arm64",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "amd64 and arm64",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0011-cell-01": {
       "sourceHash": "9bfc5303e6558796874562bcebe306e0e69343f527b6b2e721ab74ed98fbaa97",
       "targetHash": "ea8708fc8dbb3261c60cf8cd8992eeaa581ed5fdc7351f1eff61394f161c8625",
       "machineHash": "ea8708fc8dbb3261c60cf8cd8992eeaa581ed5fdc7351f1eff61394f161c8625",
       "machineText": "Runtime do WebView2",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "WebView2 runtime",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0012-cell-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineText": "macOS",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "macOS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0013-cell-01": {
       "sourceHash": "5d6e5e03f8611704f0865a7cd4f7133d9e479e22dc61d5ff620df0c2df33986e",
       "targetHash": "d8308dcab0ca8827d533237f272624069797357558bc2aa512e11592d17eac1f",
       "machineHash": "d8308dcab0ca8827d533237f272624069797357558bc2aa512e11592d17eac1f",
       "machineText": "Intel e Apple Silicon",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Intel and Apple Silicon",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0014-cell-01": {
       "sourceHash": "2113d8baed9cb44f58a168369e9e128fa3554f41e49d90773c06722ac4cd013d",
       "targetHash": "5acf7518f472f7770843f56cc6fffde1a182f95ff8f2785fd845b552116f08d6",
       "machineHash": "5acf7518f472f7770843f56cc6fffde1a182f95ff8f2785fd845b552116f08d6",
       "machineText": "As versões do macOS e do WebKit documentadas no guia de instalação",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The macOS and WebKit versions documented in the installation guide",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0015-cell-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineText": "Linux",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Linux",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0016-cell-01": {
       "sourceHash": "b87c9b2f3cdf3115f4d76686cd352ddcf36b406cda4dd785bafa975421772882",
       "targetHash": "5f5c3958d6aa8d3126c41469091ced96c30f124e868993f8180322ae9f44bb8b",
       "machineHash": "5f5c3958d6aa8d3126c41469091ced96c30f124e868993f8180322ae9f44bb8b",
       "machineText": "amd64 e arm64",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "amd64 and arm64",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0017-cell-01": {
       "sourceHash": "4f60eba9082f56a90f399bb9b8a85202f05e707389fd88ef025308e2a1086131",
-      "targetHash": "9691f7160b59e3eba68a8d750a2ce9260052fd87b54147c26d2df8ff5fbbb151",
-      "machineHash": "9691f7160b59e3eba68a8d750a2ce9260052fd87b54147c26d2df8ff5fbbb151",
-      "machineText": "GTK4 + WebKitGTK 6.0 por padrão; GTK3 + WebKit2GTK 4.1 continua sendo uma opção legada com `-tags gtk3` durante toda a série v3.0.x e é removida na v3.1",
-      "status": "final",
+      "targetHash": "1e05244791c71fb738d45332461f0ef4ac62afd3ce2166ce5afb24ad58751f61",
+      "machineHash": "1e05244791c71fb738d45332461f0ef4ac62afd3ce2166ce5afb24ad58751f61",
+      "machineText": "GTK4 + WebKitGTK 6.0 por padrão; GTK3 + WebKit2GTK 4.1 continua sendo uma opção legada `-tags gtk3` durante a série v3.0.x e é removida no v3.1",
+      "status": "machine-translated",
       "sourcePreview": "GTK4 + WebKitGTK 6.0 by default; GTK3 + WebKit2GTK 4.1 remains a `-tags gtk3` legacy option through …",
-      "provider": "codex",
-      "model": "gpt-6-astra",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
-    },
-    "b0018-text-01": {
-      "sourceHash": "9288f94e4cba5b839f7eeae52d388e056c979071035fc293cfd903c25d59a486",
-      "targetHash": "539e6d3aa55a73b6637ed251fbf25707696179ab506b6d0e39da34e7c7d01b5d",
-      "machineHash": "539e6d3aa55a73b6637ed251fbf25707696179ab506b6d0e39da34e7c7d01b5d",
-      "machineText": "Todos os destinos exigem Go 1.25 ou posterior para o desenvolvimento. O suporte a Android e iOS é experimental e não impede o lançamento da versão Beta para desktop. As APIs Beta buscam estabilidade, mas defeitos de pré-lançamento e alterações anunciadas explicitamente ainda podem ser corrigidos antes da v3.0.0.",
-      "status": "final",
-      "sourcePreview": "All targets require Go 1.25 or later for development. Android and iOS support\\ is experimental and d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
+    },
+    "b0018-text-01": {
+      "sourceHash": "8fbdd2427e630e82f603b23588f28106196db80e4e1491cafb98faeab9333a9e",
+      "targetHash": "c52c11b106e60d824584abf0e5ba8e43d6d7dcbd2d9c23a4b7a558b48a05806d",
+      "machineHash": "c52c11b106e60d824584abf0e5ba8e43d6d7dcbd2d9c23a4b7a558b48a05806d",
+      "machineText": "Todos os destinos exigem Go 1.26 ou posterior para desenvolvimento. O suporte a Android e iOS continua experimental e está fora do contrato de compatibilidade estável para desktops.",
+      "status": "machine-translated",
+      "sourcePreview": "All targets require Go 1.26 or later for development. Android and iOS support remains experimental a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0019-heading-01": {
       "sourceHash": "7aad44b6e5937d7791a08b63d897581eee3f061ffec55566fa1dcff2a5e15b31",
       "targetHash": "1d74e353bff1e2711f187e35439f2623c66a6eb5f1123a27c6f00021f06cb851",
       "machineHash": "1d74e353bff1e2711f187e35439f2623c66a6eb5f1123a27c6f00021f06cb851",
       "machineText": "Como você pode contribuir",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How You Can Contribute",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0020-text-01": {
-      "sourceHash": "16cee8e35ce9c3b0b4d64e27855e8392b7df4905563e43384969e723531bb1dd",
-      "targetHash": "62eb45ca0cd1f664b9e8dcbcb93bc72c99ed8b4727d0c122d1beb4a225c91f5c",
-      "machineHash": "62eb45ca0cd1f664b9e8dcbcb93bc72c99ed8b4727d0c122d1beb4a225c91f5c",
-      "machineText": "Teste a versão Beta mais recente e relate bugs reproduzíveis",
-      "status": "final",
-      "sourcePreview": "Test the latest beta release and report reproducible bugs",
+      "sourceHash": "457a36c7d5d4ec83796f77576f0bf5ba2c9920f3e42cff7c6910f7b9da2b934d",
+      "targetHash": "0d9c39cb4bb1a7b13b28a17d16248cd5009d8f015aa899bc66427e6e169eda2b",
+      "machineHash": "0d9c39cb4bb1a7b13b28a17d16248cd5009d8f015aa899bc66427e6e169eda2b",
+      "machineText": "Teste o Wails v3.0.0 e relate bugs reproduzíveis",
+      "status": "machine-translated",
+      "sourcePreview": "Test Wails v3.0.0 and report reproducible bugs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0021-text-01": {
       "sourceHash": "0e4eec0c458965442ebfbe318d49b9b26cd51722903a6fe59fe83128fec2bc0a",
-      "targetHash": "b6d72ee5aca58d7f6cdecc998671fbcc3814114ae25f77233dcdec95c6c8bde2",
-      "machineHash": "b6d72ee5aca58d7f6cdecc998671fbcc3814114ae25f77233dcdec95c6c8bde2",
-      "machineText": "Contribua para a documentação e os exemplos",
-      "status": "final",
+      "targetHash": "9df5d4cfd25793fbc34896370777970e0896b2388a2162356dd4c394c3d6b561",
+      "machineHash": "9df5d4cfd25793fbc34896370777970e0896b2388a2162356dd4c394c3d6b561",
+      "machineText": "Contribua com a documentação e os exemplos",
+      "status": "machine-translated",
       "sourcePreview": "Contribute to documentation and examples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0022-text-01": {
       "sourceHash": "b438452cc51af77575889a3495693eee51e8635473e4c46cf4274d43bf33caeb",
       "targetHash": "dc06317e8caedecc6507fccdc54885402da2286c2bc6f0cac3e0fbabf4d9b971",
       "machineHash": "dc06317e8caedecc6507fccdc54885402da2286c2bc6f0cac3e0fbabf4d9b971",
       "machineText": "Participe das discussões e dê feedback sobre os rascunhos de WEPs",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Participate in discussions and provide feedback on draft WEPs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0023-text-01": {
       "sourceHash": "e5f9df917f6da44a7080e594cfbfad7e9a94d4bb3ce4c5e3068947164ce2bdf7",
-      "targetHash": "7c8dad896ba6a6abb31eda303772c8b8508a7119449717adf9026dbc094222f9",
-      "machineHash": "7c8dad896ba6a6abb31eda303772c8b8508a7119449717adf9026dbc094222f9",
-      "machineText": "Envie pull requests para correções de bugs, documentação ou WEPs aprovadas",
-      "status": "final",
+      "targetHash": "84bec505d93926ef2bb851b8b910dcbc83fa01a6dbcc3aa5f8cfef485e013501",
+      "machineHash": "84bec505d93926ef2bb851b8b910dcbc83fa01a6dbcc3aa5f8cfef485e013501",
+      "machineText": "Envie pull requests para correções de bugs, documentação ou WEPs aceitas",
+      "status": "machine-translated",
       "sourcePreview": "Submit pull requests for bug fixes, documentation, or accepted WEPs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0024-text-01": {
-      "sourceHash": "9c466dd00ff31df7601049a90c7ccbb4d4e13903ed4347a0f473e6226fd8d3f1",
-      "targetHash": "f58ea4365e59142a90662613455d68c9076e2d9d1824d21d177985d9410913ad",
-      "machineHash": "f58ea4365e59142a90662613455d68c9076e2d9d1824d21d177985d9410913ad",
-      "machineText": "Agradecemos as contribuições da comunidade. Se quiser ajudar com esses objetivos, participe das discussões da comunidade. Propostas de novas funcionalidades devem ser apresentadas em um PR de WEP, não em uma issue de solicitação de funcionalidade.",
-      "status": "final",
-      "sourcePreview": "We welcome contributions from the community. If you'd like to help with these\\ objectives, join the …",
+      "sourceHash": "e92c7b00c2abe61a416dce029adaa6ccba2c247024fe7af65aa09cebed506169",
+      "targetHash": "7d1b4d262f0a05dc6e6c1a85f257fc398863924652e0f2a33fdc60efc72e2d14",
+      "machineHash": "7d1b4d262f0a05dc6e6c1a85f257fc398863924652e0f2a33fdc60efc72e2d14",
+      "machineText": "Contribuições da comunidade são bem-vindas. Se quiser ajudar com esses objetivos, participe das discussões da comunidade. Propostas de novas funcionalidades devem ser apresentadas em um pull request de WEP, não em uma issue de solicitação de funcionalidade.",
+      "status": "machine-translated",
+      "sourcePreview": "We welcome contributions from the community. If you'd like to help with these objectives, join the c…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0025-heading-01": {
       "sourceHash": "6c3e0eaaa8e946603ac99786a02daa312c5d15bf61eaf83efad4247690c35f50",
       "targetHash": "d74c095520da2d86cff3de4102bca3cec0087451e58016a1526b85fc5276b610",
       "machineHash": "d74c095520da2d86cff3de4102bca3cec0087451e58016a1526b85fc5276b610",
       "machineText": "Feedback e atualizações",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Feedback and Updates",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0026-text-01": {
-      "sourceHash": "87fd2863fcb31cedb012e48413bc21b4f2b06df029f3e134caf260955cfa796e",
-      "targetHash": "e69fde6956e52d0acb931c0ff8ed48a614427e5f0df02a23d467a0db64f87525",
-      "machineHash": "e69fde6956e52d0acb931c0ff8ed48a614427e5f0df02a23d467a0db64f87525",
-      "machineText": "Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um PR de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).",
-      "status": "final",
-      "sourcePreview": "This roadmap is subject to change based on community feedback and project\\ priorities. We'll update …",
+      "sourceHash": "f5fb6eabe7d16c4cb37fb8f490deddb04ec949479ba108341e5939b2b41df138",
+      "targetHash": "8fcd9d06876e08e1ed533deda3f8ef6dd971fd7229f4123adee82fbdb3577a19",
+      "machineHash": "8fcd9d06876e08e1ed533deda3f8ef6dd971fd7229f4123adee82fbdb3577a19",
+      "machineText": "Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um pull request de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).",
+      "status": "machine-translated",
+      "sourcePreview": "This roadmap is subject to change based on community feedback and project priorities. We'll update i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "acbf6f4923696d9bc59f9c891419bb098d49bd9b30e1ecf24ef15e3f1474b434",
       "targetHash": "940b9c890d9bc37e4000d14aa3914db610e3cb805878925b71582c24abd9de8c",
       "machineHash": "940b9c890d9bc37e4000d14aa3914db610e3cb805878925b71582c24abd9de8c",
       "machineText": "Status do projeto Wails v3, funcionalidades planejadas e como contribuir",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails v3 project status, planned features, and how to contribute",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "92375f997ffe65ab7f04eeda8cb2d7f69ebea949a06132afd53c83fff276ef54",
       "targetHash": "25b68cfb7748939ca96fc4786f2713d9d75d33c653cfc25c34eb695f6791b13f",
       "machineHash": "25b68cfb7748939ca96fc4786f2713d9d75d33c653cfc25c34eb695f6791b13f",
       "machineText": "Roteiro",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Roadmap",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:43Z"
+      "updatedAt": "2026-10-25T21:50:44Z"
     }
   }
 }

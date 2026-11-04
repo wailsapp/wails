@@ -7,7 +7,7 @@ sourcePath: "guides/security.md"
 
 ## Ikhtisar
 
-Keamanan sangat penting untuk aplikasi desktop. Ikuti praktik berikut untuk menjaga keamanan aplikasi Anda.
+Keamanan sangat penting bagi aplikasi desktop. Ikuti praktik berikut untuk menjaga keamanan aplikasi Anda.
 
 ## Validasi Input
 
@@ -69,7 +69,7 @@ func verifyPassword(hash, password string) bool {
 }
 ```
 
-### Manajemen Sesi
+### Pengelolaan Sesi
 
 ```go
 type Session struct {
@@ -95,25 +95,40 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### Enkripsi Data Sensitif
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+Gunakan nonce baru untuk setiap pesan yang dienkripsi dengan kunci tertentu. Pada toolchain Go yang diwajibkan oleh Wails v3, `NewGCMWithRandomNonce` membuat nonce dan menambahkannya sebagai prefiks secara otomatis. Simpan byte yang dikembalikan secara utuh; `decrypt` membaca nonce dari prefiks tersebut. Simpan kunci secara terpisah dari teks sandi.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+Gunakan kunci AES acak yang sesuai dan patuhi batas jumlah pesan per kunci pada AEAD. Lihat [referensi cipher Go](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
 
 ### Penyimpanan Aman
 
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### Gunakan HTTPS
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### Verifikasi Sertifikat
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## Operasi File
 
-### Validasi Jalur File
+### Batasi Akses File
+
+Terima path yang relatif terhadap direktori yang dikendalikan aplikasi. `os.OpenRoot` membatasi resolusi sistem file pada direktori tersebut, termasuk untuk symlink. Menolak `..` atau hanya memeriksa prefiks string tidak memberikan batasan ini.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+Misalnya, panggil `readFile(appDataDir, "notes/today.json")`. Pilih `appDataDir` dalam kode backend tepercaya; jangan biarkan frontend menentukan root yang diizinkan. Root membatasi penelusuran sistem file, bukan menentukan file mana di dalamnya yang boleh dibaca oleh pengguna.
 
 ## Pembatasan Laju
 
@@ -237,8 +269,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - Jangan percayai input pengguna
 - Jangan simpan kata sandi sebagai teks biasa
 - Jangan tanamkan rahasia langsung dalam kode
-- Jangan lewatkan verifikasi sertifikat
-- Jangan tampilkan data sensitif dalam log
+- Jangan lewati verifikasi sertifikat
+- Jangan ungkapkan data sensitif dalam log
 - Jangan gunakan enkripsi yang lemah
 - Jangan abaikan pembaruan keamanan
 
@@ -249,7 +281,7 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] Data sensitif telah dienkripsi
 - [ ] HTTPS digunakan untuk semua panggilan jaringan
 - [ ] Pembatasan laju telah diterapkan
-- [ ] Jalur file telah divalidasi
+- [ ] Path file telah divalidasi
 - [ ] Dependensi telah diperbarui
 - [ ] Pencatatan log keamanan telah diaktifkan
 - [ ] Pesan kesalahan tidak membocorkan informasi

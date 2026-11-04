@@ -5,7 +5,7 @@ package w32_test
 import (
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
@@ -21,7 +21,7 @@ import (
 // This test fails on the pre-fix code, where every call returns 0. It runs on
 // Windows CI via the //go:build windows constraint.
 func TestGetStockObjectReturnsValidHandle(t *testing.T) {
-	i := is.New(t)
+	i := require.New(t)
 
 	for _, tc := range []struct {
 		name   string
@@ -33,7 +33,7 @@ func TestGetStockObjectReturnsValidHandle(t *testing.T) {
 		{"WHITE_BRUSH", w32.WHITE_BRUSH},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			i := is.New(t)
+			i := require.New(t)
 			// Stock objects are always available; a 0 handle means the wrapper
 			// called the wrong export.
 			i.True(w32.GetStockObject(tc.object) != 0)

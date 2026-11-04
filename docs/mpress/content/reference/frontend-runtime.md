@@ -41,7 +41,7 @@ Some projects will not use a Javascript bundler and may prefer to use a pre-buil
 wails3 generate runtime
 ```
 
-The command will output a `runtime.js` (and `runtime.debug.js`) file in the current directory. This file is an ES module that can be imported by your application scripts just like the npm package, but the API is also exported to the global window object, so for simpler applications you can use it as follows:
+The command will output a `runtime.js` (and `runtime-debug.js`) file in the current directory. This file is an ES module that can be imported by your application scripts just like the npm package, but the API is also exported to the global window object, so for simpler applications you can use it as follows:
 
 ```html
 <html>
@@ -90,9 +90,11 @@ import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
+
+The argument is the generated bindings directory, relative to the Vite project. Generate bindings before building the frontend.
 
 ### Benefits
 
@@ -134,10 +136,10 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## API Reference
@@ -150,15 +152,14 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### Events
 
-Event system for communication between Go and JavaScript.
+Event system for communication between Go and JavaScript. Generated event exports such as `UserUpdated` are string constants, not payload factories. The generator augments `CustomEvents` to map registered event names to payload types. The types below (`WailsEventName`, `WailsEventCallback`, `WailsEventData`) are exported by the Events module.
 
 #### On()
 
 Register a callback for an event.
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Returns:** Unsubscribe function
@@ -189,8 +190,7 @@ Events.On(UserLogin, (event) => {
 Register a callback that runs only once.
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Example:**
@@ -208,8 +208,8 @@ Events.Once('app-ready', () => {
 Emit an event to Go backend or other windows.
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
 **Returns:** Promise that resolves to `true` if the event was cancelled, `false` otherwise
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')

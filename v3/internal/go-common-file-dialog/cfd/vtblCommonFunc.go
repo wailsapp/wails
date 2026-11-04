@@ -11,18 +11,10 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func hresultToError(hr uintptr) error {
-	if hr < 0 {
-		return ole.NewError(hr)
-	}
-	return nil
-}
-
 func (vtbl *iUnknownVtbl) release(objPtr unsafe.Pointer) error {
-	ret, _, _ := syscall.SyscallN(vtbl.Release,
-		uintptr(objPtr),
-		0)
-	return hresultToError(ret)
+	// Release returns a reference count and has no HRESULT failure result.
+	syscall.SyscallN(vtbl.Release, uintptr(objPtr))
+	return nil
 }
 
 func (vtbl *iModalWindowVtbl) show(objPtr unsafe.Pointer, hwnd uintptr) error {

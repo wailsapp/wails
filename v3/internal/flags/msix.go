@@ -19,6 +19,8 @@ type ToolMSIX struct {
 	ExecutableName string `name:"name" description:"Name of the executable in the package" default:""`
 	ExecutablePath string `name:"executable" description:"Path to the executable file to package" default:""`
 	OutputPath     string `name:"out" description:"Path where the MSIX package will be saved" default:""`
+	AppxManifest   string `name:"manifest" description:"Path to a user-owned AppxManifest.xml" default:""`
+	IconPath       string `name:"icon" description:"Source image for MSIX application icons" default:""`
 
 	// Tool selection
 	UseMsixPackagingTool bool `name:"use-msix-tool" description:"Use the Microsoft MSIX Packaging Tool for packaging" default:"false"`

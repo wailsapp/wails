@@ -32,19 +32,60 @@ type retryTransport struct {
 func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	var err error
+	ctx := req.Context()
+	hasBody := req.Body != nil && req.Body != http.NoBody
 	for i := 0; i < t.maxRetries; i++ {
+		if err := ctx.Err(); err != nil {
+			if i == 0 && req.Body != nil {
+				_ = req.Body.Close()
+			}
+			return nil, err
+		}
+		if i > 0 && hasBody {
+			body, bodyErr := req.GetBody()
+			if bodyErr != nil {
+				return nil, bodyErr
+			}
+			req = req.Clone(ctx)
+			req.Body = body
+		}
 		resp, err = t.base.RoundTrip(req)
 		if err == nil {
 			return resp, nil
 		}
 		// Only retry on connection errors (e.g., connection refused)
-		if isConnectionError(err) && i < t.maxRetries-1 {
-			time.Sleep(t.delay)
+		if isConnectionError(err) && i < t.maxRetries-1 && isIdempotentRequest(req) {
+			if hasBody && req.GetBody == nil {
+				break
+			}
+			timer := time.NewTimer(t.delay)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return nil, ctx.Err()
+			case <-timer.C:
+			}
 			continue
 		}
 		break
 	}
 	return resp, err
+}
+
+// Body replayability does not establish that repeating an operation is safe.
+func isIdempotentRequest(req *http.Request) bool {
+	if _, ok := req.Header["Idempotency-Key"]; ok {
+		return true
+	}
+	if _, ok := req.Header["X-Idempotency-Key"]; ok {
+		return true
+	}
+	switch req.Method {
+	case "", http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace, http.MethodPut, http.MethodDelete:
+		return true
+	default:
+		return false
+	}
 }
 
 // isConnectionError checks if the error is a connection-related error that may be transient.

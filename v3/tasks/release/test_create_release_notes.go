@@ -109,7 +109,7 @@ Example content here`,
 		fmt.Println("-" + strings.Repeat("-", 40))
 
 		// Create test changelog
-		changelogPath := filepath.Join(tmpDir, "UNRELEASED_CHANGELOG.md")
+		changelogPath := filepath.Join(tmpDir, "release_changelog.md")
 		err = os.WriteFile(changelogPath, []byte(tc.content), 0644)
 		if err != nil {
 			fmt.Printf("❌ Failed to write test changelog: %v\n", err)

@@ -93,7 +93,7 @@ throughput sparkline shows completions over a rolling ~10 s window.
 ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ✓  build succeeded    3.6s  11.6s cpu · 3.2× speedup
+  ✓  build succeeded    3.6s  11.6s summed step time
 
   11 ran  •  1 cached
 
@@ -110,9 +110,9 @@ throughput sparkline shows completions over a rolling ~10 s window.
 
 The summary tells the build's story: verdict, headline counts, where time
 went, and which step was the bottleneck. The verdict line shows wall-clock
-duration plus, when meaningfully different, cumulative CPU time and the
-parallel speedup ratio — `3.2×` immediately tells you the worker pool earned
-its keep. The bar chart is sorted descending and capped at 5 rows. For a
+duration plus, when meaningfully different, summed step time. Step durations
+include I/O waits and overlap, so they do not measure CPU usage or establish
+a speedup against a serial run. The bar chart is sorted descending and capped at 5 rows. For a
 serial build the slowest step *is* the critical path; for a parallel build
 it's the bottleneck — both are the most actionable single answer to "what
 should I look at next?".

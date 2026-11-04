@@ -1,20 +1,20 @@
 ---
 title: "Membuat Lapisan Transport Kustom"
-description: "Pelajari cara membuat dan menyesuaikan lapisan transport IPC kustom Anda sendiri untuk Wails v3"
+description: "Pelajari cara membuat dan menyesuaikan lapisan transport IPC kustom Wails v3 Anda sendiri"
 slug: "guides/custom-transport"
 sourcePath: "guides/custom-transport.md"
 ---
 
 Wails v3 memungkinkan Anda menyediakan lapisan transport IPC kustom sambil tetap mempertahankan semua binding yang dihasilkan dan komunikasi peristiwa. Dengan demikian, Anda dapat mengganti transport default berbasis HTTP fetch dengan WebSocket, protokol kustom, atau mekanisme transport lainnya.
 
-## Ringkasan
+## Gambaran Umum
 
 Secara default, Wails menggunakan permintaan HTTP fetch dari frontend untuk berkomunikasi dengan backend melalui `/wails/runtime`. API transport kustom memungkinkan Anda untuk:
 
 - Mengganti transport HTTP dengan WebSocket, gRPC, atau protokol kustom apa pun
 - Mempertahankan kompatibilitas penuh dengan pembuatan kode Wails
 - Mempertahankan semua binding, peristiwa, dialog, dan fitur Wails lainnya yang sudah ada
-- Mengimplementasikan sendiri pengelolaan koneksi, autentikasi, dan penanganan kesalahan
+- Mengimplementasikan pengelolaan koneksi, autentikasi, dan penanganan kesalahan Anda sendiri
 
 ## Arsitektur
 
@@ -35,81 +35,49 @@ Secara default, Wails menggunakan permintaan HTTP fetch dari frontend untuk berk
 └─────────────────────────────────────────────────┘
 ```
 
-## Penggunaan
+## Menjalankan contoh WebSocket lengkap
 
-### 1. Implementasikan Antarmuka Transport
+[Contoh transport WebSocket](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport) mencakup kedua sisi protokol: ID permintaan dan respons, pengelolaan siklus hidup, klien JavaScript, serta pengiriman peristiwa. Mulailah dari file-file tersebut, bukan dari transport yang hanya mengimplementasikan `Start` dan `Stop`.
 
-Buat transport kustom dengan mengimplementasikan antarmuka `Transport`:
+Dari working tree repositori Wails yang telah dilengkapi dependensi platform native:
+
+```bash
+cd v3/examples/websocket-transport
+go run .
+```
+
+Contoh tersebut membuka jendela native dan memulai endpoint WebSocket pada port 9099. Gunakan contoh ini di lingkungan pengembangan lokal tepercaya. Sebelum menerapkan varian yang dapat diakses melalui jaringan, batasi listener, validasi origin, dan autentikasi klien. Kebijakan origin pada contoh bersifat permisif dan bukan merupakan kebijakan keamanan untuk produksi.
+
+### Kontrak backend
+
+Transport harus mengimplementasikan ketiga metode wajib. `WebSocketTransport` dalam contoh mengimplementasikan `Start`, `JSClient`, dan `Stop`; `JSClient` menyediakan shim JavaScript yang disuntikkan Wails ke dalam halaman. Sertakan pemeriksaan antarmuka pada waktu kompilasi dalam implementasi Anda:
 
 ```go
-package main
-
-import (
-    "context"
-    "github.com/wailsapp/wails/v3/pkg/application"
-)
-
-type MyCustomTransport struct {
-    // Your fields
-}
-
-func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
-    // Initialize your transport (WebSocket server, gRPC server, etc.)
-    // When you receive requests, call processor.HandleRuntimeCallWithIDs()
-    return nil
-}
-
-func (t *MyCustomTransport) Stop() error {
-    // Clean up your transport
-    return nil
-}
+var _ application.Transport = (*WebSocketTransport)(nil)
 ```
 
-### 2. Konfigurasikan Aplikasi Anda
-
-Teruskan transport kustom Anda ke opsi aplikasi:
+Konfigurasikan aplikasi menggunakan konstruktor dari contoh:
 
 ```go
-func main() {
-    app := application.New(application.Options{
-        Name: "My App",
-        Transport: &MyCustomTransport{},
-        // ... other options
-    })
-
-    err := app.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
+Transport: NewWebSocketTransport("127.0.0.1:9099"),
 ```
 
-### 3. Ubah Runtime Frontend
+Field ini berada di `application.Options`, bersama aset dan layanan biasa. Salin file implementasi beserta pemanggilan konstruktornya. `Start` menerima `MessageProcessor`; `Stop` harus menutup listener, koneksi aktif, dan pekerjaan yang tertunda.
 
-Jika menggunakan transport kustom, Anda perlu mengubah runtime frontend agar menggunakan transport Anda sebagai pengganti HTTP fetch. Implementasikan antarmuka `RuntimeTransport` yang akan digunakan untuk menangani permintaan:
+### Kontrak frontend
 
-```typescript
-const { setTransport } = await import('/wails/runtime.js');
+`websocket-transport.js` dalam contoh mengimplementasikan transport runtime, termasuk korelasi permintaan/respons dan penolakan panggilan yang gagal. Setelah menyajikan file tersebut dari aset Anda, inisialisasikan transport sebelum memanggil binding layanan yang dihasilkan:
 
-class MyRuntimeTransport {
-  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // TODO: implement IPC call with your transport protocol
+```javascript
+import { setTransport } from '/wails/runtime.js'
+import { createWebSocketTransport } from '/websocket-transport.js'
 
-    return resp;
-  }
-}
-
-const myTransport = new MyRuntimeTransport();
-setTransport(myTransport);
+setTransport(createWebSocketTransport('ws://127.0.0.1:9099/wails/ws'))
 ```
 
-## Catatan
+Binding layanan yang dihasilkan tetap tidak berubah. Jika transport Anda menggantikan klien, transport tersebut harus membawa metode yang digunakan aplikasi Anda dan mempertahankan semantik kesalahannya. Pengiriman peristiwa memerlukan kontrak transport peristiwa opsional; kontrak ini tidak disediakan secara otomatis oleh implementasi `Transport` sembarang. Contoh WebSocket lengkap mendemonstrasikannya.
 
-- Transport HTTP default tetap berfungsi jika tidak ada transport kustom yang ditentukan
-- Binding yang dihasilkan tetap tidak berubah—hanya lapisan transport yang berubah
-- Peristiwa, dialog, papan klip, dan semua fitur Wails lainnya berfungsi secara transparan
-- Anda bertanggung jawab atas penanganan kesalahan, logika penyambungan ulang, dan keamanan dalam transport kustom Anda
-- Contoh WebSocket yang disediakan ditujukan untuk demonstrasi dan mungkin perlu diperkuat agar layak digunakan dalam produksi
+Untuk deployment jarak jauh, gunakan TLS serta kebijakan autentikasi dan origin yang eksplisit. Hosting khusus browser juga mengharuskan aset aplikasi disajikan seperti yang dijelaskan di bawah ini.
 
 ## Referensi API
 
@@ -127,7 +95,7 @@ type Transport interface {
 
 ### Antarmuka AssetServerTransport (Opsional)
 
-Untuk deployment berbasis browser atau jika Anda ingin menyajikan aset dan IPC melalui transport kustom Anda, implementasikan antarmuka `AssetServerTransport`:
+Untuk deployment berbasis browser, atau jika Anda ingin menyajikan aset dan IPC melalui transport kustom yang sama, implementasikan antarmuka `AssetServerTransport`:
 
 ```go
 type AssetServerTransport interface {
@@ -140,9 +108,9 @@ type AssetServerTransport interface {
 }
 ```
 
-**Kapan antarmuka ini perlu diimplementasikan:**
+**Kapan harus mengimplementasikan antarmuka ini:**
 
-- Menjalankan aplikasi di browser sebagai pengganti webview
+- Menjalankan aplikasi di browser, bukan di webview
 - Menyajikan aset melalui HTTP bersama transport IPC kustom Anda
 - Membangun aplikasi yang dapat diakses melalui jaringan
 
@@ -166,7 +134,7 @@ func (t *MyTransport) ServeAssets(assetHandler http.Handler) error {
 }
 ```
 
-Saat `ServeAssets()` dipanggil, assetHandler menyediakan:
+Ketika `ServeAssets()` dipanggil, assetHandler menyediakan:
 
 - Semua aset statis (HTML, CSS, JS, gambar, dan sebagainya)
 - `/wails/runtime.js` - Pustaka runtime Wails

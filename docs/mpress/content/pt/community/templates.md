@@ -12,7 +12,7 @@ Esta página pode estar desatualizada para o Wails v3.
 
 <!-- TODO: Update this link -->
 
-Esta página apresenta uma lista de templates mantidos pela comunidade. Para criar seu próprio template, consulte o guia de [Templates](https://wails.io/docs/guides/templates).
+Esta página apresenta uma lista de templates mantidos pela comunidade. Para criar seu próprio template, consulte o guia de [Templates](https://v2.wails.io/docs/guides/templates).
 
 @note{type="tip" title="Como enviar um template"}
 Você pode clicar em `Edit this page` na parte inferior para incluir seus templates.
