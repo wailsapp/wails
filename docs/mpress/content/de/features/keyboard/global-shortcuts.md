@@ -5,10 +5,10 @@ slug: "features/keyboard/global-shortcuts"
 sourcePath: "features/keyboard/global-shortcuts.md"
 ---
 
-Globale Tastenkürzel sind systemweite Tastenkombinationen, die unabhängig davon ausgelöst werden, welche Anwendung gerade den Fokus hat, solange Ihre Wails-Anwendung ausgeführt wird. Sie eignen sich ideal für Tastenkürzel zum Ein- und Ausblenden, Werkzeuge zur Schnellerfassung, Mediensteuerungen und andere Funktionen, auf die Benutzer von überall aus zugreifen möchten.
+Globale Tastenkürzel sind systemweite Tastenkombinationen, die unabhängig davon ausgelöst werden, welche Anwendung gerade fokussiert ist, solange Ihre Wails-Anwendung läuft. Sie eignen sich ideal zum Ein- und Ausblenden, für Schnellerfassungstools, zur Mediensteuerung und für andere Funktionen, auf die Benutzer von überall zugreifen möchten.
 
 @note{type="info" title="Globale Tastenkürzel und Tastenbelegungen"}
-[Tastenbelegungen](/features/keyboard/shortcuts/) (`app.KeyBinding`) werden nur ausgelöst, solange eines Ihrer Anwendungsfenster den Fokus hat. Globale Tastenkürzel (`app.GlobalShortcut`) werden systemweit ausgelöst, auch wenn Ihre Anwendung im Hintergrund ausgeführt wird. Verwenden Sie die Variante, die Ihren Anforderungen entspricht.
+[Tastenbelegungen](/features/keyboard/shortcuts/) (`app.KeyBinding`) werden nur ausgelöst, während eines Ihrer Anwendungsfenster fokussiert ist. Globale Tastenkürzel (`app.GlobalShortcut`) werden systemweit ausgelöst, auch wenn Ihre Anwendung im Hintergrund ausgeführt wird. Verwenden Sie die Variante, die Ihren Anforderungen entspricht.
 
 @end
 
@@ -28,7 +28,7 @@ globalShortcuts := app.GlobalShortcut
 
 ## Ein Tastenkürzel registrieren
 
-`Register` erwartet einen Accelerator und einen Callback. Der Callback wird bei jedem Drücken des Tastenkürzels in einer eigenen Goroutine ausgeführt.
+`Register` erwartet einen Accelerator und einen Callback. Der Callback wird bei jeder Betätigung des Tastenkürzels in einer eigenen Goroutine ausgeführt.
 
 ```go
 err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
@@ -44,7 +44,7 @@ if err != nil {
 Sie können Tastenkürzel registrieren, bevor Sie `app.Run` aufrufen. Die Bindung an das Betriebssystem erfolgt dann automatisch beim Start der Anwendung.
 
 @note{type="tip" title="Aus einem Callback auf die Benutzeroberfläche zugreifen"}
-Callbacks werden außerhalb des Hauptthreads ausgeführt. Wenn Ihr Callback mit Fenstern oder anderen Teilen der Benutzeroberfläche interagieren muss, übernehmen die Fenstermethoden dies für Sie. Benutzerdefinierte Arbeiten im Hauptthread müssen Sie jedoch mit `application.InvokeSync` umschließen.
+Callbacks werden außerhalb des Haupt-Threads ausgeführt. Wenn Ihr Callback mit Fenstern oder anderen Elementen der Benutzeroberfläche interagieren muss, übernehmen die Fenstermethoden dies für Sie. Benutzerdefinierte Arbeiten im Haupt-Thread müssen Sie jedoch mit `application.InvokeSync` umschließen.
 
 @end
 
@@ -60,7 +60,7 @@ Globale Tastenkürzel verwenden dasselbe Accelerator-Format wie Menü-Accelerato
 "Ctrl+Shift+F5"      // Function keys are supported
 ```
 
-`CmdOrCtrl` wird unter macOS zu Command und unter Windows und Linux zu Control aufgelöst, was plattformübergreifende Tastenkürzel vereinfacht.
+`CmdOrCtrl` wird unter macOS zu Command und unter Windows und Linux zu Control aufgelöst. Dadurch lassen sich plattformübergreifende Tastenkürzel bequem definieren.
 
 ## Tastenkürzel verwalten
 
@@ -88,7 +88,7 @@ Es gibt zwei unterschiedliche Fälle, die Wails verschieden behandelt.
 
 ### Dieselbe Anwendung registriert ein Tastenkürzel zweimal
 
-Wails löst diesen Fall selbst auf und verhält sich dabei auf jeder Plattform identisch. Der zweite Aufruf von `Register` gibt einen Fehler zurück, und die ursprüngliche Bindung bleibt bestehen („Fehler melden und beibehalten“). Dadurch bleibt das Verhalten vorhersehbar und der Fehler wird sichtbar, statt ein funktionierendes Tastenkürzel unbemerkt zu ersetzen.
+Wails löst diesen Fall selbst auf; das Verhalten ist auf allen Plattformen identisch. Der zweite Aufruf von `Register` gibt einen Fehler zurück, und die ursprüngliche Bindung bleibt bestehen („Fehler melden und beibehalten“). So bleibt das Verhalten vorhersehbar und der Fehler wird sichtbar, statt ein funktionierendes Tastenkürzel stillschweigend zu ersetzen.
 
 ```go
 app.GlobalShortcut.Register("Ctrl+Shift+G", showWindow)        // ok
@@ -96,43 +96,43 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 // showWindow is still the active callback for this shortcut.
 ```
 
-Wenn Sie den Callback eines Tastenkürzels ändern möchten, führen Sie dafür zuerst `Unregister` und anschließend erneut `Register` aus.
+Wenn Sie den Callback eines Tastenkürzels ändern möchten, heben Sie seine Registrierung zunächst mit `Unregister` auf und registrieren Sie es anschließend erneut mit `Register`.
 
 ### Eine andere Anwendung besitzt das Tastenkürzel bereits
 
-Darüber entscheidet das Betriebssystem, weshalb das Ergebnis plattformspezifisch ist:
+Dies entscheidet das Betriebssystem, daher ist das Ergebnis plattformspezifisch:
 
 | Plattform | Verhalten, wenn eine andere Anwendung das Tastenkürzel besitzt |
 | --- | --- |
-| **macOS** | Die Registrierung ist erfolgreich. macOS erlaubt mehreren Anwendungen, dasselbe Tastenkürzel zu registrieren. Ihr Callback wird daher zusätzlich zum bereits vorhandenen Besitzer registriert und nicht abgelehnt. |
-| **Windows** | Die Registrierung schlägt fehl und `Register` gibt einen Fehler zurück. Die Anwendung, die das Tastenkürzel zuerst registriert hat, behält es. |
-| **Linux (X11)** | Die Registrierung schlägt fehl und `Register` gibt einen Fehler zurück, weil der X-Server einen zweiten Grab derselben Tastenkombination ablehnt. |
-| **Linux (Wayland)** | Der Compositor entscheidet. Üblicherweise wird der Benutzer aufgefordert, die Bindung im Dialog für globale Tastenkürzel der Desktop-Umgebung zu genehmigen oder auszuwählen. |
+| **macOS** | Die Registrierung ist erfolgreich. macOS erlaubt mehreren Anwendungen, denselben Hotkey zu registrieren. Ihr Callback wird daher zusätzlich zum vorhandenen Besitzer hinzugefügt und nicht abgelehnt. |
+| **Windows** | Die Registrierung schlägt fehl, und `Register` gibt einen Fehler zurück. Die Anwendung, die das Tastenkürzel zuerst registriert hat, behält es. |
+| **Linux (X11)** | Die Registrierung schlägt fehl, und `Register` gibt einen Fehler zurück, da der X-Server ein zweites Grab derselben Kombination ablehnt. |
+| **Linux (Wayland)** | Der Compositor entscheidet. Üblicherweise wird der Benutzer im Dialog für globale Tastenkürzel der Desktop-Umgebung aufgefordert, die Bindung zu genehmigen oder auszuwählen. |
 
-Prüfen Sie wegen dieser Unterschiede stets den von `Register` zurückgegebenen Fehler. Stellen Sie außerdem ein alternatives Tastenkürzel bereit oder informieren Sie den Benutzer, wenn ein Tastenkürzel nicht beansprucht werden kann.
+Prüfen Sie aufgrund dieser Unterschiede stets den von `Register` zurückgegebenen Fehler. Stellen Sie außerdem ein alternatives Tastenkürzel bereit oder informieren Sie den Benutzer, wenn ein Tastenkürzel nicht beansprucht werden kann.
 
 ## Plattformspezifische Hinweise
 
 @tabs
 [macOS]
-Globale Tastenkürzel verwenden die Hotkey-API des Carbon Event Managers. Dies ist der Standardmechanismus für systemweite Tastenkürzel unter macOS und erfordert keine Bedienungshilfen-Berechtigung.
+Globale Tastenkürzel verwenden die Hotkey-API des Carbon Event Manager. Dies ist unter macOS der Standardmechanismus für systemweite Hotkeys und erfordert keine Bedienungshilfen-Berechtigung.
 
-Hotkeys werden an physische Tastenpositionen gebunden. Bei Tastaturlayouts, die nicht QWERTY entsprechen, wird ein Tastenkürzel daher der Taste an der entsprechenden Position im standardmäßigen ANSI/QWERTY-Layout zugeordnet.
+Tastenkürzel mit Buchstaben berücksichtigen das Tastaturlayout. Die Carbon-API bindet an physische Tastenpositionen. Daher übersetzt Wails einen Buchstaben in die Taste, die ihn im aktiven Tastaturlayout erzeugt (über `UCKeyTranslate`). `Cmd+A` liegt deshalb bei AZERTY-, QWERTZ-, Dvorak- und ähnlichen Layouts auf der mit **A** beschrifteten Taste und nicht auf der QWERTY-Position. Ziffern, Satzzeichen und benannte Tasten (Pfeiltasten, Funktionstasten usw.) verwenden ihre feste physische Position. Die Bindung wird bei der Registrierung des Tastenkürzels aufgelöst. Wenn Sie das Tastaturlayout bei laufender Anwendung wechseln, behalten vorhandene Tastenkürzel mit Buchstaben die physische Taste, an die sie ursprünglich gebunden wurden.
 
 @note{type="caution" title="Tastenkürzel zum Ausblenden und `ApplicationShouldTerminateAfterLastWindowClosed`"}
-`window.Hide()` verwendet unter macOS `orderOut:`, wodurch das Fenster unsichtbar wird. AppKit behandelt das letzte unsichtbare Fenster als geschlossen. Wenn Sie daher `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` festlegen und Ihr einziges Fenster mit einem globalen Tastenkürzel ausblenden, wird die Anwendung beendet, statt im Hintergrund weiterzulaufen. Lassen Sie diese Option deaktiviert (Standardeinstellung), wenn Sie ein Tastenkürzel zum Ein- und Ausblenden verwenden, damit das Fenster ausgeblendet und später wieder aufgerufen werden kann.
+`window.Hide()` verwendet unter macOS `orderOut:`, wodurch das Fenster unsichtbar wird. AppKit behandelt das letzte unsichtbare Fenster als geschlossen. Wenn Sie daher `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` festlegen und Ihr einziges Fenster mit einem globalen Tastenkürzel ausblenden, wird die Anwendung beendet, statt im Hintergrund weiterzulaufen. Lassen Sie diese Option unverändert (Standardeinstellung), wenn Sie einen Hotkey zum Ein- und Ausblenden verwenden. Dann kann das Fenster ausgeblendet und später wieder aufgerufen werden.
 
 @end
 
 [Windows]
-Globale Tastenkürzel verwenden die Win32-API `RegisterHotKey`. Die automatische Tastenwiederholung wird unterdrückt, sodass der Callback beim Gedrückthalten der Tasten nur einmal und nicht wiederholt ausgelöst wird.
+Globale Tastenkürzel verwenden die Win32-API `RegisterHotKey`. Die automatische Tastenwiederholung wird unterdrückt. Wenn Sie die Tasten gedrückt halten, wird der Callback daher nur einmal und nicht wiederholt ausgelöst.
 
-Die Registrierung schlägt fehl, wenn eine andere Anwendung die Tastenkombination bereits besitzt. Bevorzugen Sie daher für die Standardbelegung weniger gebräuchliche Kombinationen.
+Die Registrierung schlägt fehl, wenn eine andere Anwendung die Kombination bereits besitzt. Bevorzugen Sie daher weniger gebräuchliche Kombinationen als Standardwerte.
 
 [Linux]
-In **X11**-Sitzungen registriert Wails das Tastenkürzel direkt beim X-Server, sodass der angeforderte Tastaturbeschleuniger genau wie angegeben gebunden wird.
+In **X11**-Sitzungen greift Wails das Tastenkürzel direkt vom X-Server ab. Der angeforderte Accelerator wird daher genau wie angegeben gebunden.
 
-In **Wayland**-Sitzungen können Anwendungen grundsätzlich keine Tasten direkt registrieren. Wails verwendet stattdessen die `org.freedesktop.portal.GlobalShortcuts`-Schnittstelle des XDG Desktop Portal. Beim Portal ist der übergebene Tastaturbeschleuniger ein *bevorzugter* Auslöser; der Compositor und letztlich der Benutzer legen die endgültige Tastenkombination fest. Ihr Callback wird weiterhin ausgeführt, wenn das Tastenkürzel aktiviert wird. Es ist jedoch nicht garantiert, dass die tatsächlichen Tasten Ihrer Anforderung entsprechen, und `IsRegistered`/`GetAll` melden die von Ihnen angeforderte statt der vom Compositor gebundenen Kombination.
+In **Wayland**-Sitzungen kann eine Anwendung konzeptbedingt nicht direkt auf Tasten zugreifen. Wails verwendet stattdessen die Schnittstelle `org.freedesktop.portal.GlobalShortcuts` des XDG Desktop Portal. Beim Portal ist der übergebene Accelerator ein *bevorzugter* Auslöser; der Compositor und letztlich der Benutzer bestimmen die endgültige Tastenkombination. Ihr Callback wird weiterhin ausgelöst, wenn das Tastenkürzel aktiviert wird. Es ist jedoch nicht garantiert, dass die tatsächlichen Tasten Ihrer Anforderung entsprechen, und `IsRegistered`/`GetAll` geben Ihre Anforderung zurück, nicht die vom Compositor eingerichtete Bindung.
 
 Das Portal erfordert eine Desktop-Umgebung, die das Portal für globale Tastenkürzel implementiert, beispielsweise eine aktuelle Version von GNOME oder KDE Plasma.
 
@@ -178,6 +178,6 @@ func main() {
 ```
 
 @note{type="danger" title="Kritische Systemtastenkürzel vermeiden"}
-Einige Tastenkombinationen sind dem Betriebssystem oder der Desktop-Umgebung vorbehalten und können nicht von Anwendungen registriert werden. Wählen Sie Standardeinstellungen, bei denen Konflikte unwahrscheinlich sind, und behandeln Sie immer den von `Register` zurückgegebenen Fehler.
+Einige Kombinationen sind vom Betriebssystem oder von der Desktop-Umgebung reserviert und können von Anwendungen nicht beansprucht werden. Wählen Sie Standardwerte, bei denen Konflikte unwahrscheinlich sind, und behandeln Sie stets den Fehler von `Register`.
 
 @end

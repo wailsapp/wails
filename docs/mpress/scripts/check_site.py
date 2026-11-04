@@ -7,8 +7,25 @@ from pathlib import Path
 import json
 import sys
 from urllib.parse import unquote, urljoin, urlsplit
+from xml.etree import ElementTree
 
 from check_translations import LANGUAGES
+
+
+def site_url():
+    """Return site.baseURL from mpress.yaml, which sets every canonical URL."""
+    config = Path(__file__).resolve().parents[1] / "mpress.yaml"
+    for line in config.read_text(encoding="utf-8").splitlines():
+        key, _, value = line.strip().partition(":")
+        if key == "baseURL":
+            return value.strip().strip("\"'").rstrip("/")
+    raise SystemExit("site.baseURL is missing from " + str(config))
+
+
+SITE_URL = site_url()
+# Absolute links to the site's own pages: the current host, and v3.wails.io,
+# which redirects to the same path after the move to wails.io.
+SITE_HOSTS = {urlsplit(SITE_URL).netloc, "v3.wails.io"}
 
 
 class Page(HTMLParser):
@@ -77,7 +94,7 @@ def check_page(page, site, repository, errors):
         errors.append(relative + ": Markdown code fence was displayed as prose")
     if relative == "404.html":
         return
-    expected = "https://v3.wails.io" + route(page.path, site)
+    expected = SITE_URL + route(page.path, site)
     if page.canonical != expected:
         errors.append(relative + ": incorrect canonical " + page.canonical)
     if page.source:
@@ -87,10 +104,10 @@ def check_page(page, site, repository, errors):
 
 
 def check_links(page, site, pages, aliases, errors):
-    current = "https://v3.wails.io" + route(page.path, site)
+    current = SITE_URL + route(page.path, site)
     for link in page.links:
         target = urlsplit(urljoin(current, link))
-        if target.scheme not in {"http", "https"} or target.netloc != "v3.wails.io":
+        if target.scheme not in {"http", "https"} or target.netloc not in SITE_HOSTS:
             continue
         path = unquote(target.path)
         path = aliases.get(path, path)
@@ -137,6 +154,26 @@ def check_knowledge_assets(site, errors):
         errors.append("Invalid knowledge manifest: " + str(exc))
 
 
+def check_rss_feed(site, pages, errors):
+    expected = {page.canonical for path, page in pages.items()
+                if page.lang == "en" and path.relative_to(site).parts[0] == "blog"
+                and path != site / "blog/index.html"}
+    try:
+        channel = ElementTree.parse(site / "blog/rss.xml").getroot().find("channel")
+        if channel is None or not channel.findtext("title", "").strip():
+            raise ValueError("missing channel title")
+        items = channel.findall("item")
+        links = [item.findtext("link", "") for item in items]
+        if set(links) != expected or len(links) != len(expected):
+            errors.append("RSS items do not match published English blog posts")
+        for item in items:
+            for field in ["title", "link", "guid", "description", "pubDate"]:
+                if not item.findtext(field, "").strip():
+                    errors.append("RSS item is missing " + field)
+    except (OSError, ElementTree.ParseError, ValueError) as exc:
+        errors.append("Invalid blog RSS feed: " + str(exc))
+
+
 def main():
     site = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/mpress/site").resolve()
     repository = Path(__file__).resolve().parents[3]
@@ -159,6 +196,7 @@ def main():
         if not (site / name).is_file():
             errors.append("Missing generated asset: " + name)
     check_knowledge_assets(site, errors)
+    check_rss_feed(site, pages, errors)
     for source, target in aliases.items():
         if not (site / target.lstrip("/") / "index.html").is_file():
             errors.append("Redirect target is missing: " + source + " -> " + target)

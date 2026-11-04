@@ -1,13 +1,13 @@
 name: GTK3 Menu Regression v3
 
 on:
-  pull_request:
-    branches: [master]
-    paths:
-      - 'v3/pkg/application/**'
-      - 'v3/go.mod'
-      - 'v3/go.sum'
-      - '.github/workflows/gtk3-menu-test-v3.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable commit to test
+        required: true
+        type: string
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: v3/go.mod

@@ -1,633 +1,814 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "b0013302d5181d261339",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "d554ee2e8124a0987b78",
   "sourceFile": "tutorials/overview.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
   "segments": {
     "a0001-title-01": {
       "sourceHash": "3ee6714533934c2d5492110285d833fd5afbde68e90a6018e7fdcb27d2f288d7",
-      "targetHash": "b7882338296aeae89b760c3ea879c8cdd30b119a3572cbddc59f717c2bcfcb5b",
-      "machineHash": "b7882338296aeae89b760c3ea879c8cdd30b119a3572cbddc59f717c2bcfcb5b",
-      "machineText": "Go は初めてですか？",
-      "status": "final",
+      "targetHash": "d453c7646d373282ad9d2219a59bc0305682fed7db3795dc760610a577c77526",
+      "machineHash": "d453c7646d373282ad9d2219a59bc0305682fed7db3795dc760610a577c77526",
+      "machineText": "Go を初めて使う場合",
+      "status": "machine-translated",
       "sourcePreview": "New to Go?",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "b0001-text-01": {
-      "sourceHash": "d099b9877f100557539bd9b0e8252c6b91eb0e02b2905c5cd0513c559894a77b",
-      "targetHash": "ec5cf76a405c752b1c2ba5508e9cff495974498dc0ba6dae3de91fb3ac720594",
-      "machineHash": "ec5cf76a405c752b1c2ba5508e9cff495974498dc0ba6dae3de91fb3ac720594",
-      "machineText": "完全なアプリケーションを構築しながら Wails の概念を学べる、ステップ形式のチュートリアルです。各チュートリアルには、動作するコード、解説、実践的なパターンが含まれています。",
-      "status": "final",
-      "sourcePreview": "Step-by-step tutorials that teach Wails concepts by building complete applications. Each tutorial in…",
+      "sourceHash": "503050a46d0946a077228aafcd29200aae777663758ea5cef2f3da62fba4a5e9",
+      "targetHash": "ffb2124823dff04a44e6eaa32cf9dcce4d8dabd540b8a5a9637fc7836528b5f1",
+      "machineHash": "ffb2124823dff04a44e6eaa32cf9dcce4d8dabd540b8a5a9637fc7836528b5f1",
+      "machineText": "実際に何かを構築しながら Wails を学びたい場合は、ガイド付きレッスンを選んでください。各レッスンでは、1 つのプロジェクトを進めて具体的な成果物を完成させます。",
+      "status": "machine-translated",
+      "sourcePreview": "Choose a guided lesson when you want to learn Wails by building something. Each lesson follows one p…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "b0002-text-01": {
+      "sourceHash": "933b6f3da3cd526b1d63285cabb71ee3ed96f520e4179c70efed081ce03428e5",
+      "targetHash": "24e0233da49dd0a8dee0726205e525954de80be3e796054dc1a7487b55c5c438",
+      "machineHash": "24e0233da49dd0a8dee0726205e525954de80be3e796054dc1a7487b55c5c438",
+      "machineText": "初めてアクセスした場合は、まず[インストール](/quick-start/installation/)と[最初のアプリ](/quick-start/first-app/)を完了してください。",
+      "status": "machine-translated",
+      "sourcePreview": "If this is your first visit, complete [Installation](/quick-start/installation/) and [Your First App…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0003-heading-01": {
+      "sourceHash": "b890073369bf78bcd7b48b8ee10fcc97d2cb821d7cde464bc738963f89a38fb9",
+      "targetHash": "686d2fd3af55a26f39f484c456d2ea33a5912fc161975495f7571cb10552664b",
+      "machineHash": "686d2fd3af55a26f39f484c456d2ea33a5912fc161975495f7571cb10552664b",
+      "machineText": "チュートリアルを選ぶ",
+      "status": "machine-translated",
+      "sourcePreview": "Choose a Tutorial",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "33e7c189c9ae0c519bcb795c6d8c81c5668a2a2a43bcb2f6e04df8f1b99e02c9",
+      "targetHash": "640e84218ec633ab7688df05657aef1afad6055da8f584cbcf9ca97c1b3b1d10",
+      "machineHash": "640e84218ec633ab7688df05657aef1afad6055da8f584cbcf9ca97c1b3b1d10",
+      "machineText": "最初のアプリを完成させたら、次の順序でデスクトップ向けレッスンを進めてください。",
+      "status": "machine-translated",
+      "sourcePreview": "After your first app, follow the desktop lessons in this order:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0005-cell-01": {
+      "sourceHash": "6e2b26d9de4033b952bd242f69b798420ee887151b937f394efc23252c78af74",
+      "targetHash": "44fec08e8b5461ecf893c06c814c9540dd149210e7c84bdb00e074649c251dfa",
+      "machineHash": "44fec08e8b5461ecf893c06c814c9540dd149210e7c84bdb00e074649c251dfa",
+      "machineText": "レッスン",
+      "status": "machine-translated",
+      "sourcePreview": "Lesson",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0006-cell-01": {
+      "sourceHash": "4bbf919441bad514005f7240a47de86f1756716ee7838a177d11cf0680bcab4f",
+      "targetHash": "867a357ea24f3ffce1f470ef27271ba705ed3f589a6c887e80f74262179db60a",
+      "machineHash": "867a357ea24f3ffce1f470ef27271ba705ed3f589a6c887e80f74262179db60a",
+      "machineText": "学習内容",
+      "status": "machine-translated",
+      "sourcePreview": "What you will practise",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0007-cell-01": {
+      "sourceHash": "9723f87f804780258eb4191538b5464321cf2d276b7a445369aab31c7bec73b3",
+      "targetHash": "edbb849d46518353a6471bbc1ecf4396e140232ed4b68976db2f10e8f8b80513",
+      "machineHash": "edbb849d46518353a6471bbc1ecf4396e140232ed4b68976db2f10e8f8b80513",
+      "machineText": "[QR コードサービス](/tutorials/01-creating-a-service/)",
+      "status": "machine-translated",
+      "sourcePreview": "[QR code service](/tutorials/01-creating-a-service/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0008-cell-01": {
+      "sourceHash": "20a03b96f784be9bf98611d99b1f621e252d41f072eb9d709fba2d1d9b9165cc",
+      "targetHash": "d8229673257469814f98eb7bcb54c3c051ae2994982ca47ee8724b5ea8951c5b",
+      "machineHash": "d8229673257469814f98eb7bcb54c3c051ae2994982ca47ee8724b5ea8951c5b",
+      "machineText": "Go のロジックをサービスとして公開し、フロントエンドから呼び出す",
+      "status": "machine-translated",
+      "sourcePreview": "Exposing Go logic through a service and calling it from the frontend",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0009-cell-01": {
+      "sourceHash": "7afc4d7a020dc11713707fe3b5eb99ede5aa072f09d0d3172cd3505cc384c95f",
+      "targetHash": "bbff44dd2e99f5e3f0f5a770ccbbbc4cf5114354496380bc7474881214c78bf2",
+      "machineHash": "bbff44dd2e99f5e3f0f5a770ccbbbc4cf5114354496380bc7474881214c78bf2",
+      "machineText": "[TODO リスト](/tutorials/02-todo-vanilla/)",
+      "status": "machine-translated",
+      "sourcePreview": "[TODO list](/tutorials/02-todo-vanilla/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0010-cell-01": {
+      "sourceHash": "3396045c99ae1a43204daef4d7de9b104444fb2254dad27abb335b0e4fe1c7c5",
+      "targetHash": "4bc7cd494856588cda8518d63d32a850ad04e4e950d2e7ce706dd62f2cc0995a",
+      "machineHash": "4bc7cd494856588cda8518d63d32a850ad04e4e950d2e7ce706dd62f2cc0995a",
+      "machineText": "アプリケーションデータを作成、更新、削除する",
+      "status": "machine-translated",
+      "sourcePreview": "Creating, updating and deleting application data",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0011-cell-01": {
+      "sourceHash": "8c03915b6c7af1a3fb5fc286f452251eafdc0aa6e6146d250afc198e68481a8a",
+      "targetHash": "1b62839b5f4041a154c86f66eab9a63e56ba877d3ef1211cf518565901f902ec",
+      "machineHash": "1b62839b5f4041a154c86f66eab9a63e56ba877d3ef1211cf518565901f902ec",
+      "machineText": "[メモアプリ](/tutorials/03-notes-vanilla/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Notes app](/tutorials/03-notes-vanilla/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0012-cell-01": {
+      "sourceHash": "58b70fca29d8733779a265baccb68a34a50f049938eafe9900e0f30663a8c447",
+      "targetHash": "1eb6a1a040dd971acfcda27e9bffe5e8f4277f99fd12d0d33fdac6c306a24acb",
+      "machineHash": "1eb6a1a040dd971acfcda27e9bffe5e8f4277f99fd12d0d33fdac6c306a24acb",
+      "machineText": "ネイティブダイアログを使用し、データをファイルに保存する",
+      "status": "machine-translated",
+      "sourcePreview": "Using native dialogs and saving data to files",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0013-cell-01": {
+      "sourceHash": "e4a32f9acf5f431883eaf0e76a988a849b9031e99ee8f58a5afb7254bb098126",
+      "targetHash": "d2ed4da5ac2060081656ec4a392f077178f6712551a0b2654899df1c4db91efe",
+      "machineHash": "d2ed4da5ac2060081656ec4a392f077178f6712551a0b2654899df1c4db91efe",
+      "machineText": "[自己更新アプリ](/tutorials/04-self-update-a-wails-app/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Self-updating app](/tutorials/04-self-update-a-wails-app/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0014-cell-01": {
+      "sourceHash": "fa4412e6fdabb1af1ba2656f800fbfcd851eefd99ab23fb570fb8f30dc783e87",
+      "targetHash": "0680b9496d138fd1be023f79d68134e129c96723ef2ef3a7d5a07ce57de1034e",
+      "machineHash": "0680b9496d138fd1be023f79d68134e129c96723ef2ef3a7d5a07ce57de1034e",
+      "machineText": "GitHub Releases から更新を確認して適用する",
+      "status": "machine-translated",
+      "sourcePreview": "Checking and applying updates from GitHub Releases",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "48ef7a6792bc70c94d51a50c5d0fd77552f5fdcdb1d6289fa26182488f6f687c",
+      "targetHash": "00925cb6f4f8c0733bacd09662dc291a883d4f93abbb24b662da886862ddb85a",
+      "machineHash": "00925cb6f4f8c0733bacd09662dc291a883d4f93abbb24b662da886862ddb85a",
+      "machineText": "任意のモバイル向けレッスンとして、[最初のモバイルアプリ](/guides/mobile/first-mobile-app/)を進めることもできます。モバイル対応は試験的な機能です。",
+      "status": "machine-translated",
+      "sourcePreview": "For an optional mobile lesson, follow [Your First Mobile App](/guides/mobile/first-mobile-app/). Mob…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0016-text-01": {
+      "sourceHash": "67f04a2f487875940766c51bcbd719a11f04ae6a55ed1c020e3f77a128537994",
+      "targetHash": "0a8b66d8a7dd22c109f3840e208b652c900045cd2d088ef88cd1001a2417f771",
+      "machineHash": "0a8b66d8a7dd22c109f3840e208b652c900045cd2d088ef88cd1001a2417f771",
+      "machineText": "既存のアプリで特定のタスクを完了する必要がある場合は、代わりに[ハウツーガイド](/quick-start/next-steps/#features)を選んでください。設計の背景については、[コアコンセプト](/concepts/architecture/)を参照してください。",
+      "status": "machine-translated",
+      "sourcePreview": "If you're working on an existing app and need to complete a particular task, choose a [how-to guide]…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-26T00:55:42Z"
+    },
+    "b0017-text-01": {
       "sourceHash": "1696909fadc60b411a3b0ea768871fbaa9140f29bd1d653d55534b52d5f7f133",
-      "targetHash": "dfadfb846d14883cd8d207e9a141e92d12348f910355422367eebc3acba660c7",
-      "machineHash": "dfadfb846d14883cd8d207e9a141e92d12348f910355422367eebc3acba660c7",
-      "machineText": "チュートリアルを始める前に、[Go Tour](https://go.dev/tour/) を完了してください。",
-      "status": "final",
+      "targetHash": "0b41d9577bbde61f24aca87f7a67223f1de7105334bced8de1bcada8745f9306",
+      "machineHash": "0b41d9577bbde61f24aca87f7a67223f1de7105334bced8de1bcada8745f9306",
+      "machineText": "チュートリアルを始める前に、[Go Tour](https://go.dev/tour/)を完了してください。",
+      "status": "machine-translated",
       "sourcePreview": "Complete the [Go Tour](https://go.dev/tour/) before starting tutorials.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0003-heading-01": {
+    "b0018-heading-01": {
       "sourceHash": "fc74d619e575a0c09150578fdd93f597471579bb6fc8944b9bc49ab7915e18d0",
       "targetHash": "64f8801ce52e6cb96b02552e813f7c988ec621c81348ef562e20b1c8c5620488",
       "machineHash": "64f8801ce52e6cb96b02552e813f7c988ec621c81348ef562e20b1c8c5620488",
       "machineText": "QR コードサービス",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "QR Code Service",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0004-text-01": {
+    "b0019-text-01": {
       "sourceHash": "1210e44b556496d6ca36d2858c6bf1fb65da764aae438694002519f689150a6e",
-      "targetHash": "ede0ac17a6c20210d843cbe0611630b748ece301c9a61c60d4eeca8dd4c1a341",
-      "machineHash": "ede0ac17a6c20210d843cbe0611630b748ece301c9a61c60d4eeca8dd4c1a341",
-      "machineText": "![QR コードの例](/assets/qr1.png)",
-      "status": "final",
+      "targetHash": "b9d9d58a5e0f2d3c634703a7769dad2cd3c9d6529436277ca8fb80cf47913e39",
+      "machineHash": "b9d9d58a5e0f2d3c634703a7769dad2cd3c9d6529436277ca8fb80cf47913e39",
+      "machineText": "![QR コードのサンプル](/assets/qr1.png)",
+      "status": "machine-translated",
       "sourcePreview": "![QR Code Example](/assets/qr1.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0005-text-01": {
+    "b0020-text-01": {
       "sourceHash": "a40d43e3dee12461e162f15eac7d463e40eeb40d19ea4a37b0a1676df5df2fb1",
-      "targetHash": "cbe9eb366c6152a7df8e6b437075e74843590332286816b2923d33dacce4ab54",
-      "machineHash": "cbe9eb366c6152a7df8e6b437075e74843590332286816b2923d33dacce4ab54",
-      "machineText": "QR コードジェネレーターを構築しながら、Wails サービスの基礎を学びます。このチュートリアルでは、アプリケーションロジックを再利用可能なサービスとして整理するための中核的な概念を紹介します。",
-      "status": "final",
+      "targetHash": "fe27ee831d0bcac5a3b290f672cbc0da1da5fb18aea917e6e84839c0abe7efcb",
+      "machineHash": "fe27ee831d0bcac5a3b290f672cbc0da1da5fb18aea917e6e84839c0abe7efcb",
+      "machineText": "QR コードジェネレーターを構築しながら、Wails サービスの基礎を学びます。このチュートリアルでは、アプリケーションロジックを再利用可能なサービスとして整理するためのコアコンセプトを紹介します。",
+      "status": "machine-translated",
       "sourcePreview": "Learn the fundamentals of Wails services by building a QR code generator. This tutorial introduces y…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0006-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineText": "*学習内容：*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0021-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineText": "**学習内容：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0007-text-01": {
+    "b0022-text-01": {
       "sourceHash": "7c16e8824a41215bc3309ef64e1f95dd9b5388b672197a0df47db6d916ab2e05",
-      "targetHash": "fa117615c4738dae27f86b7057130f4733eda712f203bcf60f1bf6b0d1a8bb8a",
-      "machineHash": "fa117615c4738dae27f86b7057130f4733eda712f203bcf60f1bf6b0d1a8bb8a",
-      "machineText": "Wails サービスの作成方法と構成方法",
-      "status": "final",
+      "targetHash": "51ac7d3dda8bdfb101f0f4bb09d3a59ea5848973143ea16f9963b737eb7afd9e",
+      "machineHash": "51ac7d3dda8bdfb101f0f4bb09d3a59ea5848973143ea16f9963b737eb7afd9e",
+      "machineText": "Wails サービスを作成して構成する方法",
+      "status": "machine-translated",
       "sourcePreview": "How to create and structure a Wails service",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0008-text-01": {
+    "b0023-text-01": {
       "sourceHash": "8eb7d839fa425ef7925c64d37481ad02ed9af51c6574e422d8e27cbc71124123",
       "targetHash": "21968422948cf941a20ec7f390d6f43e47bb2b507e05b3dd553afd82645b55cc",
       "machineHash": "21968422948cf941a20ec7f390d6f43e47bb2b507e05b3dd553afd82645b55cc",
       "machineText": "外部 Go 依存関係の管理",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Managing external Go dependencies",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0009-text-01": {
+    "b0024-text-01": {
       "sourceHash": "3572d612dea7575379cc28c59491901f3362ba1022bfd1eee4186f07e12c6629",
       "targetHash": "53ae41fb24d50876e0c885252f8bb146f2dfe7daf3a22bb0de9c50e15da4e247",
       "machineHash": "53ae41fb24d50876e0c885252f8bb146f2dfe7daf3a22bb0de9c50e15da4e247",
       "machineText": "Go メソッドをフロントエンドにバインドする方法",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Binding Go methods to your frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0010-text-01": {
+    "b0025-text-01": {
       "sourceHash": "7b2bdeb0986ce28d22bbcb781fe2f604613f9d71b6fe16585e04d19438f42e16",
       "targetHash": "03732af8b283161dd453815f7031fc1f8279499e2edde758e21098b2ee25b7ba",
       "machineHash": "03732af8b283161dd453815f7031fc1f8279499e2edde758e21098b2ee25b7ba",
       "machineText": "Go と JavaScript の間でデータを受け渡す方法",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Passing data between Go and JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0011-text-01": {
+    "b0026-text-01": {
       "sourceHash": "88f2a40f92ba599e2f689966403a1fd0917b7b202dcafb3bc523f6335f2ad89d",
-      "targetHash": "9ecedea55a71d530e027ee988f7f65550bde18edf865913e3c8446e30cdf2880",
-      "machineHash": "9ecedea55a71d530e027ee988f7f65550bde18edf865913e3c8446e30cdf2880",
-      "machineText": "保守しやすいコードの整理方法",
-      "status": "final",
+      "targetHash": "eec869bca0fd76f5c0253faa94fd8d0c5a268bcc649ab0962245ad7fed0b1d98",
+      "machineHash": "eec869bca0fd76f5c0253faa94fd8d0c5a268bcc649ab0962245ad7fed0b1d98",
+      "machineText": "保守性を高めるコード構成",
+      "status": "machine-translated",
       "sourcePreview": "Organizing code for maintainability",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0012-text-01": {
-      "sourceHash": "9701a7ef44dd7a250d20238d4001028aee724740aea578a73dfc659d4771cb46",
-      "targetHash": "08febabdb1ccb6d84f597e646af75dfdaebf823aa17b6cf993882801a24f4ed7",
-      "machineHash": "08febabdb1ccb6d84f597e646af75dfdaebf823aa17b6cf993882801a24f4ed7",
-      "machineText": "*対象者：*サービスアーキテクチャを理解したい、Wails を初めて使う方",
-      "status": "final",
-      "sourcePreview": "*Best for:* First-time Wails users who want to understand the service architecture",
+    "b0027-text-01": {
+      "sourceHash": "c75ca524caae3afcf0abb8acdb4d537da77f86e0d3cc4093bb829c02bf6d4395",
+      "targetHash": "f9cc3476d26f5e5ee457e7a20561f99930e6becaf7aca3631097cd552eb5a901",
+      "machineHash": "f9cc3476d26f5e5ee457e7a20561f99930e6becaf7aca3631097cd552eb5a901",
+      "machineText": "\u003cstrong\u003e対象：\u003c/strong\u003eサービスアーキテクチャを理解したい、Wails を初めて使う方",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** First-time Wails users who want to understand the service architecture",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0014-heading-01": {
+    "b0028-heading-01": {
       "sourceHash": "1271e04b378be9c762fd564435abaed4af2ca64e9d33ff2ae4141bec3d1fe7d8",
       "targetHash": "cb1fc4e6ecec4d66ea18327545b6305e55247cd4e220276e0fe65dea978e0819",
       "machineHash": "cb1fc4e6ecec4d66ea18327545b6305e55247cd4e220276e0fe65dea978e0819",
       "machineText": "TODO リスト",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "TODO List",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0015-text-01": {
+    "b0029-text-01": {
       "sourceHash": "3732ee15574164790be071e8756ceee29bef82ee64cfd6240ec62e0d3ba80d9b",
       "targetHash": "1135517e12b71ea8120955af4b658fbb7a1b844a4e04751a4ef5c8ca740f8e3f",
       "machineHash": "1135517e12b71ea8120955af4b658fbb7a1b844a4e04751a4ef5c8ca740f8e3f",
       "machineText": "![TODO リストアプリケーション](/assets/todo-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![TODO List Application](/assets/todo-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0016-text-01": {
+    "b0030-text-01": {
       "sourceHash": "fb040d8d5b108b124f7efaced9a63df1db8b1e95df1cbf88c6082bbd14fcb2ae",
-      "targetHash": "14e5edbd95d09088b681df3ec2fb0d46bfdf74eb5d2d56cd1264a0955da1dc1c",
-      "machineHash": "14e5edbd95d09088b681df3ec2fb0d46bfdf74eb5d2d56cd1264a0955da1dc1c",
-      "machineText": "美しくモダンなインターフェースを備えた、完全な TODO リストアプリケーションを構築します。この実践的なチュートリアルでは、素の JavaScript を使用した実用的なアプリケーションを通して、Wails の中核的なパターンを学びます。",
-      "status": "final",
+      "targetHash": "3534c0146f708cfb120eba9c1aa41e091c4c716174026edc1d7d44f584efaa2a",
+      "machineHash": "3534c0146f708cfb120eba9c1aa41e091c4c716174026edc1d7d44f584efaa2a",
+      "machineText": "美しくモダンなインターフェースを備えた、完全な TODO リストアプリケーションを構築します。この実践的なチュートリアルでは、バニラ JavaScript を使用した実用的なアプリケーションを通じて、Wails の主要なパターンを学びます。",
+      "status": "machine-translated",
       "sourcePreview": "Build a complete TODO list application with a beautiful, modern interface. This hands-on tutorial te…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0017-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineText": "*学習内容：*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0031-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineText": "**学習内容：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0018-text-01": {
+    "b0032-text-01": {
       "sourceHash": "5627a3ad82cb4cd892c9b98c2cdc65b8359c4c41a282f491ffb5b818fc1fc9f0",
       "targetHash": "8f430768d084c8684a3f703d1761ab6e8122eae6386ee74df7f6c278204508c4",
       "machineHash": "8f430768d084c8684a3f703d1761ab6e8122eae6386ee74df7f6c278204508c4",
       "machineText": "スレッドセーフな状態管理を備えたサービスベースのアーキテクチャ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Service-based architecture with thread-safe state management",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0019-text-01": {
+    "b0033-text-01": {
       "sourceHash": "8a1db555da54c7c5fd03449aa4c7ac3a0dab3ae12a043168fe763884bf7a2a91",
       "targetHash": "9e45d8cef414ae918b0d6a86c2befe979d77c20be813a62462f20830eeafd095",
       "machineHash": "9e45d8cef414ae918b0d6a86c2befe979d77c20be813a62462f20830eeafd095",
       "machineText": "CRUD 操作（作成、読み取り、更新、削除）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "CRUD operations (Create, Read, Update, Delete)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0020-text-01": {
+    "b0034-text-01": {
       "sourceHash": "460b51a30e07edfc68020bb97fef4a8a1cb0fbf933946e96dbde40144ce33acc",
       "targetHash": "11aa3f097ba795fe136f1e4252e5989c15f32a7a3c11e25f134531f9826af4a4",
       "machineHash": "11aa3f097ba795fe136f1e4252e5989c15f32a7a3c11e25f134531f9826af4a4",
       "machineText": "Go と JavaScript 間の型安全なバインディング",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Type-safe bindings between Go and JavaScript",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0021-text-01": {
+    "b0035-text-01": {
       "sourceHash": "2b6fff550aec4ad6f16be054c45b13ad5484262fdd67312d9697758017bb4041",
-      "targetHash": "24572ad8ff7f35e6b3dc361ee7bfc43bf401cd46693246b75e4c5bd3602f0366",
-      "machineHash": "24572ad8ff7f35e6b3dc361ee7bfc43bf401cd46693246b75e4c5bd3602f0366",
-      "machineText": "フレームワークの複雑さを伴わないモダンな UI の構築",
-      "status": "final",
+      "targetHash": "9d8f49a138cec90468abbcf4369dd00e59b6d14736fc1ded2d4b37af33ae3787",
+      "machineHash": "9d8f49a138cec90468abbcf4369dd00e59b6d14736fc1ded2d4b37af33ae3787",
+      "machineText": "フレームワークによる複雑さを増やさずにモダンな UI を構築する方法",
+      "status": "machine-translated",
       "sourcePreview": "Building modern UIs without framework complexity",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0022-text-01": {
+    "b0036-text-01": {
       "sourceHash": "611ecbdbd4dd042caf41d83c329d95de8f005b648fd52db1bdea96ef0e81af27",
       "targetHash": "c3c86c7ee91dbc6ba90a5534c45424b21fe2a441f27fa7c146ac2887ae1e8fdd",
       "machineHash": "c3c86c7ee91dbc6ba90a5534c45424b21fe2a441f27fa7c146ac2887ae1e8fdd",
       "machineText": "適切なエラー処理と検証のパターン",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Proper error handling and validation patterns",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0023-text-01": {
-      "sourceHash": "15ea840695261cd625edd6864f3bfad312de2437219e4512c049cba8a99366db",
-      "targetHash": "1594a57c288e5202a35404ac6959c8514982d9231197b35dab7f2c2c9cbc4c89",
-      "machineHash": "1594a57c288e5202a35404ac6959c8514982d9231197b35dab7f2c2c9cbc4c89",
-      "machineText": "*所要時間：*約20分",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~20 minutes",
+    "b0037-text-01": {
+      "sourceHash": "c5e9766ba75819a26249c6ebb75cae867afd09c3c0d844d5fb301189d84fec33",
+      "targetHash": "b0415e46132806d3fb90440454d1cec3c430b6d933fa6ef83827f816c71130fa",
+      "machineHash": "b0415e46132806d3fb90440454d1cec3c430b6d933fa6ef83827f816c71130fa",
+      "machineText": "\u003cstrong\u003e所要時間：\u003c/strong\u003e約20分",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~20 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0024-text-01": {
-      "sourceHash": "312f0ff12c73348675994b24cb508e2a9cdfc58cfe8e0d7d1a8e9d9610039d8b",
-      "targetHash": "e731cd68bf36af5db26df2ebe3fa1d171c0d84b979614af8ff79186bb3f46d5e",
-      "machineHash": "e731cd68bf36af5db26df2ebe3fa1d171c0d84b979614af8ff79186bb3f46d5e",
-      "machineText": "*対象者：*初めて完全な Wails アプリケーションを構築する方。フレームワークによる複雑さを加える前に、基礎を理解するのに最適です",
-      "status": "final",
-      "sourcePreview": "*Best for:* Your first complete Wails application - perfect for understanding the fundamentals befor…",
+    "b0038-text-01": {
+      "sourceHash": "baf88f76e0cdfde1bddb15358235f47671486f5526ae3dfe14ad0eb132d3bd80",
+      "targetHash": "808762197e4123c06c99d48d2ba369c63c038847901938e23e0cc68bf317bae3",
+      "machineHash": "808762197e4123c06c99d48d2ba369c63c038847901938e23e0cc68bf317bae3",
+      "machineText": "\u003cstrong\u003e対象：\u003c/strong\u003e初めて完全な Wails アプリケーションを構築する方。フレームワークによる複雑さを加える前に、基礎を理解するのに最適です",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Your first complete Wails application - perfect for understanding the fundamentals bef…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0026-heading-01": {
+    "b0039-heading-01": {
       "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
       "targetHash": "99fa5c96e07ec49d52fb7da88d13cbe24a791fbc26775be2549708d75c4a3fa1",
       "machineHash": "99fa5c96e07ec49d52fb7da88d13cbe24a791fbc26775be2549708d75c4a3fa1",
       "machineText": "メモ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0027-text-01": {
+    "b0040-text-01": {
       "sourceHash": "5821b2b7606acf7052dd3731838ceed9b668b832786dface0aefa176f1cfd95d",
       "targetHash": "9d272181591bdf25e5685b4b6e93b5be891dce0ea8e489fc94ea7b97ea1525fe",
       "machineHash": "9d272181591bdf25e5685b4b6e93b5be891dce0ea8e489fc94ea7b97ea1525fe",
       "machineText": "![メモアプリケーション](/assets/notes-app.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![Notes Application](/assets/notes-app.png)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0028-text-01": {
+    "b0041-text-01": {
       "sourceHash": "51402fbd4d5d04cd153d52fb3b9f4576899a6e899899f3f0fc39b725875b3c6e",
-      "targetHash": "edfa3a56d94c13f859a99ca03d4e2d7090c199825694479c8d3c2f6f6289bd67",
-      "machineHash": "edfa3a56d94c13f859a99ca03d4e2d7090c199825694479c8d3c2f6f6289bd67",
-      "machineText": "ネイティブのファイルダイアログと自動保存機能を備えた、Apple Notes 風のアプリケーションを構築します。このチュートリアルでは、ファイル操作、ネイティブダイアログ、プロフェッショナルな UI パターンなど、デスクトップ固有の機能を説明します。",
-      "status": "final",
+      "targetHash": "de4646bdd6652b60528c3e809401ccae8abebe5937cd66e5398ffebd2b313807",
+      "machineHash": "de4646bdd6652b60528c3e809401ccae8abebe5937cd66e5398ffebd2b313807",
+      "machineText": "ネイティブのファイルダイアログと自動保存機能を備えた、Apple Notes 風のアプリケーションを構築します。このチュートリアルでは、ファイル操作、ネイティブダイアログ、プロフェッショナルな UI パターンなど、デスクトップ固有の機能を紹介します。",
+      "status": "machine-translated",
       "sourcePreview": "Build an Apple Notes-style application with native file dialogs and auto-save functionality. This tu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0029-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineText": "*学習内容：*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0042-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineText": "**学習内容：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0030-text-01": {
+    "b0043-text-01": {
       "sourceHash": "b1ceaa304a6e1c046f38776a73c8d3a5ee50ae589438348f73a596459def164c",
       "targetHash": "e479e4fee32c36a146e987c093413b53f6ed8eccb88f651ea5134c232570fc79",
       "machineHash": "e479e4fee32c36a146e987c093413b53f6ed8eccb88f651ea5134c232570fc79",
       "machineText": "ネイティブのファイルダイアログ（保存、開く、情報）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Native file dialogs (Save, Open, Info)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0031-text-01": {
+    "b0044-text-01": {
       "sourceHash": "cbdcf0e020cd686ffdcece64b84e845d8c435e5dee6e93dc2e56a8ef686edd84",
       "targetHash": "9e4f24ae34c93871a0704f5dbbd33b9541e8377ebba3c5049114da994df6141f",
       "machineHash": "9e4f24ae34c93871a0704f5dbbd33b9541e8377ebba3c5049114da994df6141f",
       "machineText": "JSON ベースのデータ永続化",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "JSON-based data persistence",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0032-text-01": {
+    "b0045-text-01": {
       "sourceHash": "31e0514bed6e96e08259921ee51f83cb6017a7d2597387cb37b82e152d1e9962",
       "targetHash": "ba103a674eb38377f4a4a9c960ca3458fc45bd8ff7fdcd111f32a2c557495c30",
       "machineHash": "ba103a674eb38377f4a4a9c960ca3458fc45bd8ff7fdcd111f32a2c557495c30",
       "machineText": "デバウンスを使用した自動保存パターン",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Debounced auto-save patterns",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0033-text-01": {
+    "b0046-text-01": {
       "sourceHash": "1b5b7c23037915f385ea73fc3881c9520b40b6db8091fc48861aa81bd8ac55b1",
       "targetHash": "cf78845dafe987900bfbb201417ae13381e1e791edeb39f7c54e6ce7de7291f7",
       "machineHash": "cf78845dafe987900bfbb201417ae13381e1e791edeb39f7c54e6ce7de7291f7",
       "machineText": "プロフェッショナルな 2 カラムのデスクトップレイアウト",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Professional two-column desktop layouts",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0034-text-01": {
+    "b0047-text-01": {
       "sourceHash": "1006210335ba915c1e641118b0d20d5d51cd9dc1d45d85741cdabe4d19e87178",
       "targetHash": "c3faa0ff3b2698b5d9e8fda79e853a0b70dea21673046051714a38c862fdb4ae",
       "machineHash": "c3faa0ff3b2698b5d9e8fda79e853a0b70dea21673046051714a38c862fdb4ae",
       "machineText": "Go でファイルシステム操作を扱う方法",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Working with file system operations in Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0035-text-01": {
-      "sourceHash": "c4970e4d90b39aca395e203fb4ea58dc260a9eb4326e8875ed6fb1d13d248e31",
-      "targetHash": "b3dbf144765ef17bd2b2f8b2811005a390588283864d0a312476ae20f21fc388",
-      "machineHash": "b3dbf144765ef17bd2b2f8b2811005a390588283864d0a312476ae20f21fc388",
-      "machineText": "*所要時間：*約30分",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~30 minutes",
+    "b0048-text-01": {
+      "sourceHash": "597435c299f4f51558745a2bc126af1d8761f643f5419544ae4b29fdff9f66bc",
+      "targetHash": "acb292d3521e96d5798af529b39b53961a303a05f93b1b376b2217dbc2906810",
+      "machineHash": "acb292d3521e96d5798af529b39b53961a303a05f93b1b376b2217dbc2906810",
+      "machineText": "\u003cstrong\u003e所要時間：\u003c/strong\u003e約30分",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~30 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0036-text-01": {
-      "sourceHash": "d130fb2e13252c5390a7e48472b535a68f5c5e0ca99b74e117b12f5fef17a312",
-      "targetHash": "809c4647bf964704225cab57a78b335750fdf3ab6067abf86a03e95f8a905491",
-      "machineHash": "809c4647bf964704225cab57a78b335750fdf3ab6067abf86a03e95f8a905491",
-      "machineText": "*対象者：*ファイル操作やネイティブ OS ダイアログなど、デスクトップ固有の機能を学びたい方",
-      "status": "final",
-      "sourcePreview": "*Best for:* Learning desktop-specific features like file operations and native OS dialogs",
+    "b0049-text-01": {
+      "sourceHash": "f576b997546c68e85ec9c55dea9c7029b9583ddfd2c8567bc9de8db154c23b7a",
+      "targetHash": "f3cabfb7086613bc83254c37fe6cf797e6df46a9553c65deca9f30f4d78efe88",
+      "machineHash": "f3cabfb7086613bc83254c37fe6cf797e6df46a9553c65deca9f30f4d78efe88",
+      "machineText": "\u003cstrong\u003e対象：\u003c/strong\u003eファイル操作や OS ネイティブのダイアログなど、デスクトップ固有の機能を学びたい方",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Learning desktop-specific features like file operations and native OS dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0038-heading-01": {
+    "b0050-heading-01": {
       "sourceHash": "c2c94159b4e50441dcacd96d22303d133dee92eb41289df5c2cf5f97e11ca90f",
-      "targetHash": "dd049c1985d4f9523e468d6566bcf2ebcad2dc7fe2835df44851ef04849ad447",
-      "machineHash": "dd049c1985d4f9523e468d6566bcf2ebcad2dc7fe2835df44851ef04849ad447",
-      "machineText": "自己更新対応 Wails アプリ",
-      "status": "final",
+      "targetHash": "2919238d815feb4c0a43152a140a867f801dd44e6edd95a6d39fbf820d449860",
+      "machineHash": "2919238d815feb4c0a43152a140a867f801dd44e6edd95a6d39fbf820d449860",
+      "machineText": "自己更新する Wails アプリ",
+      "status": "machine-translated",
       "sourcePreview": "Self-Updating Wails App",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0039-text-01": {
+    "b0051-text-01": {
       "sourceHash": "cc6b8a6e15bf0992d9dae6b5537ddf9ac940e8cd448c50cec8c7b628440a2a83",
-      "targetHash": "1e7423319b7d1c9577c5b31188b7d69c1e37751103a0648acbd2a95a34e3ee4c",
-      "machineHash": "1e7423319b7d1c9577c5b31188b7d69c1e37751103a0648acbd2a95a34e3ee4c",
-      "machineText": "新規の `wails3 init` から始め、署名済みリリースの検証とヘルパーモードによるバイナリの入れ替えまで、Wails アプリケーションにアプリ内自己更新機能を追加します。更新元として GitHub Releases を使用します。",
-      "status": "final",
+      "targetHash": "956bacc4a2711a5d4d9bc30dc52ec03de807e92d7db561fdf1497e7b79ac8abf",
+      "machineHash": "956bacc4a2711a5d4d9bc30dc52ec03de807e92d7db561fdf1497e7b79ac8abf",
+      "machineText": "新しい`wails3 init`から始めて、署名付きリリースの検証とヘルパーモードによるバイナリの入れ替えを実装し、Wails アプリケーションにアプリ内自己更新機能を追加します。更新元には GitHub Releases を使用します。",
+      "status": "machine-translated",
       "sourcePreview": "Add in-app self-updates to a Wails application from a fresh `wails3 init` through signed release ver…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0040-text-01": {
-      "sourceHash": "98eb7131f0716c87d63b4923878ef32ac637371cdaeff0d31c268531f3e93c94",
-      "targetHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineHash": "e3fb765a8fcb5fab6bd68e648363ddbf1e53ae0475b9cac6727e300c6a598e58",
-      "machineText": "*学習内容：*",
-      "status": "final",
-      "sourcePreview": "*What you'll learn:*",
+    "b0052-text-01": {
+      "sourceHash": "e03ab1f0e062992b9ccf5daac55a89c3572257541fb7e013ff95973213b7fbab",
+      "targetHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineHash": "949594c798b8e3c1af950bdc8754a15a0113abede4fd74902ed3a380deb95133",
+      "machineText": "**学習内容：**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you'll learn:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0041-text-01": {
+    "b0053-text-01": {
       "sourceHash": "82d3c0f37a1146f7ffa1bc823999013fab864e37c64352a1c8568d1fd9542e4f",
-      "targetHash": "d618bc131638565c9ca6ff69ae368be1b70436414e6e5a366ca6ba6e9c8a5588",
-      "machineHash": "d618bc131638565c9ca6ff69ae368be1b70436414e6e5a366ca6ba6e9c8a5588",
-      "machineText": "`app.Updater` を Wails アプリに組み込む方法",
-      "status": "final",
+      "targetHash": "abbabb50c822c57cb8fc341587c9bdae2be10aa08ffb42c2e7ae2ad74d50f054",
+      "machineHash": "abbabb50c822c57cb8fc341587c9bdae2be10aa08ffb42c2e7ae2ad74d50f054",
+      "machineText": "`app.Updater`を Wails アプリに組み込む方法",
+      "status": "machine-translated",
       "sourcePreview": "How `app.Updater` plugs into a Wails app",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0042-text-01": {
+    "b0054-text-01": {
       "sourceHash": "efcfb6ec33a13b52fb43cb2add80564bfc3cbdceddfa4bdedc03d0947e6f7ad0",
       "targetHash": "ac0d761b0da9544d76e497f8fa69a0ed7f47c7371731cca4e5f942b467108f91",
       "machineHash": "ac0d761b0da9544d76e497f8fa69a0ed7f47c7371731cca4e5f942b467108f91",
       "machineText": "GitHub Releases プロバイダーの設定",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configuring the GitHub Releases provider",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0043-text-01": {
+    "b0055-text-01": {
       "sourceHash": "bfd0d7d8ebf9b61e2dafce0c8e0c26e3bfd4ab779c806fdc0df20c8fecc74b89",
-      "targetHash": "859622d2f2d7b4f0aeaeaebf237e679b539f20f37712b5e64a95286385b5dde5",
-      "machineHash": "859622d2f2d7b4f0aeaeaebf237e679b539f20f37712b5e64a95286385b5dde5",
-      "machineText": "ダイジェスト検証用の `SHA256SUMS` を使用してリリースを公開する方法",
-      "status": "final",
+      "targetHash": "352dea5075801158bdcd6623b9dc582ebe97a80a422b5481b6af85a7da93da96",
+      "machineHash": "352dea5075801158bdcd6623b9dc582ebe97a80a422b5481b6af85a7da93da96",
+      "machineText": "ダイジェスト検証用の`SHA256SUMS`を使用してリリースを公開する方法",
+      "status": "machine-translated",
       "sourcePreview": "Publishing releases with `SHA256SUMS` for digest verification",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0044-text-01": {
+    "b0056-text-01": {
       "sourceHash": "373a1f4f1747af940d5a578e5fd8eee1a9ff65c323889f49353719f64a8941aa",
-      "targetHash": "479bb011d64fe66218828957310256659bec52dba9d0468ee619f5f870cb2afe",
-      "machineHash": "479bb011d64fe66218828957310256659bec52dba9d0468ee619f5f870cb2afe",
-      "machineText": "改ざん耐性を確保するための Ed25519 署名の追加",
-      "status": "final",
+      "targetHash": "c8847161ccca12f4d611ea61e569cbf86a28627d248cbc9c578fdb1c7c98d093",
+      "machineHash": "c8847161ccca12f4d611ea61e569cbf86a28627d248cbc9c578fdb1c7c98d093",
+      "machineText": "改ざん耐性を高める Ed25519 署名の追加",
+      "status": "machine-translated",
       "sourcePreview": "Adding Ed25519 signing for tamper-resistance",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0045-text-01": {
+    "b0057-text-01": {
       "sourceHash": "31b5a0051acc3e557a40ce8fc3d7a786347ca27e4cd6d5d6691b186717698a22",
-      "targetHash": "4cfadcff6e8692cb5115838876723b6de33d941958104d411607fd2853a1a550",
-      "machineHash": "4cfadcff6e8692cb5115838876723b6de33d941958104d411607fd2853a1a550",
-      "machineText": "CSS、カスタム HTML、または BYO を使用したデフォルトウィンドウのカスタマイズ",
-      "status": "final",
+      "targetHash": "9a624f715a31cd326e389fb4d5109098dad6c32751d04b420abb6d13ef24a6cb",
+      "machineHash": "9a624f715a31cd326e389fb4d5109098dad6c32751d04b420abb6d13ef24a6cb",
+      "machineText": "CSS、カスタム HTML、または BYO を使用してデフォルトウィンドウをカスタマイズする方法",
+      "status": "machine-translated",
       "sourcePreview": "Customising the default window via CSS, custom HTML, or BYO",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0046-text-01": {
+    "b0058-text-01": {
       "sourceHash": "1167a8bdeedd4b6285cb8e3ecd2856fa76e34f28160a1109b19d082117b23735",
-      "targetHash": "68ea0bd5007701c6c1240d5ba7a2f09a916af2e20e1f77e970d9021821d0325e",
-      "machineHash": "68ea0bd5007701c6c1240d5ba7a2f09a916af2e20e1f77e970d9021821d0325e",
-      "machineText": "`CheckInterval` を使用した定期的なバックグラウンドチェック",
-      "status": "final",
+      "targetHash": "bc15b72f8e70a11ce32c9f5e2411a66412ba2b9d0a9e0f38ed096828d4dda38b",
+      "machineHash": "bc15b72f8e70a11ce32c9f5e2411a66412ba2b9d0a9e0f38ed096828d4dda38b",
+      "machineText": "`CheckInterval`を使用した定期的なバックグラウンド確認",
+      "status": "machine-translated",
       "sourcePreview": "Periodic background checks with `CheckInterval`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0047-text-01": {
-      "sourceHash": "adbfae0ff507240b92727fd932cc0a1b5a7bdb2856a7e7a76c5c1496ea1e55fa",
-      "targetHash": "c50ac49ad1ff95a00a325c8be9151410575f02b5f17ef38fdc0a2274706af428",
-      "machineHash": "c50ac49ad1ff95a00a325c8be9151410575f02b5f17ef38fdc0a2274706af428",
-      "machineText": "*所要時間：*約25分",
-      "status": "final",
-      "sourcePreview": "*Time to complete:* ~25 minutes",
+    "b0059-text-01": {
+      "sourceHash": "463ca8f243d4e512e321b6a3fd64e8984321faed1e4575933aef68ef36a4d92e",
+      "targetHash": "b0c5cb8e6b1540a1f4c6d8c12735bdc8889523743d59e9f286aebc43fc52a9cd",
+      "machineHash": "b0c5cb8e6b1540a1f4c6d8c12735bdc8889523743d59e9f286aebc43fc52a9cd",
+      "machineText": "\u003cstrong\u003e所要時間：\u003c/strong\u003e約25分",
+      "status": "machine-translated",
+      "sourcePreview": "**Time to complete:** ~25 minutes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "b0048-text-01": {
-      "sourceHash": "f5cb5f568dc6f38bb4c8f4e41ca08e1ae16e7b4dedba56ddc663788bf66e06f7",
-      "targetHash": "a2adc1a8604443359aece28cb010bf98bebd3fd0e414826d3d1fc023a7e903a9",
-      "machineHash": "a2adc1a8604443359aece28cb010bf98bebd3fd0e414826d3d1fc023a7e903a9",
-      "machineText": "*対象者：*更新可能なデスクトップアプリをリリースする方。API だけでなく、リリースパイプライン全体を扱います",
-      "status": "final",
-      "sourcePreview": "*Best for:* Shipping an updateable desktop app — covers the full release pipeline, not just the API",
+    "b0060-text-01": {
+      "sourceHash": "f5aa45e810a4230b0a9afe4194fe566f6dda6f2a076baef81e1dfc8eb539496e",
+      "targetHash": "c79ab72788b1cbd0df0f8486f55b46b5971de294c05a7d24dc83bf717082a9a4",
+      "machineHash": "c79ab72788b1cbd0df0f8486f55b46b5971de294c05a7d24dc83bf717082a9a4",
+      "machineText": "\u003cstrong\u003e対象：\u003c/strong\u003e更新可能なデスクトップアプリをリリースしたい方。API だけでなく、リリースパイプライン全体を扱います",
+      "status": "machine-translated",
+      "sourcePreview": "**Best for:** Shipping an updateable desktop app — covers the full release pipeline, not just the AP…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "1352203cc0ec78d0d4362e1ce875381f2b021da26ae6d5808b2d75ed5ad249e1",
       "targetHash": "e4c1290f5394c07055d36e91955fc041b0ead5fd58f451f7525afe2f31735604",
       "machineHash": "e4c1290f5394c07055d36e91955fc041b0ead5fd58f451f7525afe2f31735604",
       "machineText": "アプリケーションを構築しながら Wails を学ぶ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn Wails by building applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "8d9f66992dd4373c8f30f09a93b87aa0d9d341b8ec91e0bcbd4a4c744e41b3f9",
       "targetHash": "c5974713b068bae37aa0770555c8cd64a5cb525d94fd74f6d22a2e9a5d94eec1",
       "machineHash": "c5974713b068bae37aa0770555c8cd64a5cb525d94fd74f6d22a2e9a5d94eec1",
       "machineText": "チュートリアル",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Tutorials",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "h0001-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineText": "始める",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "h0002-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineText": "始める",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "h0003-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineText": "始める",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     },
     "h0004-text-001": {
       "sourceHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb",
       "targetHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineHash": "3de40840c0079d3e174e76461224fc1d2b259eebb1dffe0783245c286949b0d2",
       "machineText": "始める",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Get Started",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:35Z"
+      "updatedAt": "2026-10-26T00:55:42Z"
     }
   }
 }

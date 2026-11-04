@@ -1,15 +1,15 @@
 ---
 title: "建立自訂範本"
-description: "如何產生、自訂及託管您自己的 Wails v3 專案範本"
+description: "如何產生、自訂及託管您自己的 Wails v3專案範本"
 slug: "guides/advanced/custom-templates"
 sourcePath: "guides/advanced/custom-templates.md"
 ---
 
-Wails 隨附一組內建範本，但您也可以建立自己的範本並與社群分享。自訂範本其實就是一個 Git 儲存庫——公開託管後，任何人都能使用一行指令，以它為基礎建立專案骨架。
+Wails 隨附一組內建範本，但您也可以建立自己的範本，並與社群分享。自訂範本其實就是 Git 儲存庫；只要將其公開託管，任何人都能使用一行命令，透過該範本建立專案骨架。
 
 ## 產生範本骨架
 
-`wails3 generate template` 指令會產生可立即開始自訂的範本目錄：
+`wails3 generate template`命令會產生一個可直接自訂的範本目錄：
 
 ```bash
 wails3 generate template -name MyTemplate
@@ -56,13 +56,13 @@ MyTemplate/
 ```
 
 @note{type="tip" title="閱讀 NEXTSTEPS.md"}
-產生的 `NEXTSTEPS.md` 包含範本各部分的詳細指引。請先閱讀，再開始自訂。發布前請將其刪除——使用您的範本建立的專案中不得出現此檔案。
+產生的`NEXTSTEPS.md`包含範本各部分的詳細指引。請先閱讀，再進行自訂。發布前請將其刪除；使用者透過您的範本建立的專案中不得包含此檔案。
 
 @end
 
 ## 設定範本中繼資料
 
-開啟 `template.yaml`，設定範本的中繼資料：
+開啟`template.yaml`，設定範本的中繼資料：
 
 ```yaml
 # yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
@@ -75,16 +75,16 @@ version: v1.0.0
 wailsVersion: 3
 ```
 
-`wailsVersion` 欄位為<strong>必填</strong>，且必須是 `3`。頂端的 `# yaml-language-server` 註解可在 VS Code（搭配[YAML 擴充功能](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)）與 JetBrains IDE 中啟用自動完成和行內驗證。您可以保留或移除該註解；它不會影響執行階段。
+`wailsVersion`欄位為**必填**，且必須是`3`。頂端的`# yaml-language-server`註解可在 VS Code（搭配[YAML 擴充功能](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)）及 JetBrains IDE 中啟用自動完成與行內驗證；您可以保留或移除該註解，它不會影響執行階段。
 
 ## 自訂範本
 
 ### 前端
 
-`frontend/` 目錄會原封不動地複製到使用您範本建立的每個專案中。請將預留內容替換為實際的前端：
+`frontend/`目錄會原封不動地複製到透過您的範本建立的每個專案中。請以實際的前端內容取代預留內容：
 
 @tabs
-[從零開始]
+[從頭開始]
 ```bash
 cd MyTemplate/frontend
 npm create vite@latest .
@@ -97,19 +97,19 @@ npm install
 ```
 
 [使用現有專案]
-產生範本時傳入 `-frontend`，即可一步將現有前端複製進去：
+產生範本時傳入`-frontend`，即可一次完成現有前端的複製：
 
 ```bash
 wails3 generate template -name MyTemplate -frontend ./my-app/frontend
 ```
 
-您也可以稍後手動將其複製到 `frontend/` 目錄中。
+或者，之後再手動將其複製到`frontend/`目錄中。
 
 @end
 
 ### 建置工作
 
-`Taskfile.tmpl.yml` 定義建置工作流程。請更新 `install:frontend:deps` 與 `build:frontend` 工作，使其符合您的前端工具鏈：
+`Taskfile.tmpl.yml`定義建置工作流程。請更新`install:frontend:deps`和`build:frontend`工作，使其符合您的前端工具鏈：
 
 ```yaml
 tasks:
@@ -127,13 +127,13 @@ tasks:
 
 ### Go 應用程式
 
-`main.go.tmpl` 檔案是應用程式進入點。建立專案時，Wails 的範本引擎會處理此檔案，並將 `{{.ProductName}}` 等範本變數替換為使用者提供的值。
+`main.go.tmpl`檔案是應用程式進入點。建立專案時，Wails 的範本引擎會處理此檔案，並以使用者提供的值取代`{{.ProductName}}`等範本變數。
 
-若要將其當作真正的 Go 檔案編輯（並獲得 IDE 支援），請暫時將它重新命名為 `main.go`，完成變更後，再於提交前將它重新命名回 `main.go.tmpl`。
+若要將其視為真正的 Go 檔案進行編輯（並獲得 IDE 支援），請暫時將其重新命名為`main.go`，完成變更後，再於提交前將其改回`main.go.tmpl`。
 
 #### 範本變數
 
-任何 `.tmpl` 檔案中都可使用以下變數：
+任何`.tmpl`檔案都可使用下列變數：
 
 | 變數 | 說明 | 範例 |
 | --- | --- | --- |
@@ -147,25 +147,25 @@ tasks:
 | `{{.ProductComments}}` | 其他產品註解 | `"Built with Wails"` |
 | `{{.ProductIdentifier}}` | 反向 DNS 產品識別碼 | `"com.mycompany.myapp"` |
 | `{{.ModulePath}}` | Go 模組路徑 | `"github.com/you/myapp"` |
-| `{{.WailsVersion}}` | 用來建立專案的 Wails 版本 | `"3.0.0"` |
-| `{{.Typescript}}` | 如果範本名稱以`-ts`結尾，則為`true` | `true` |
-| `{{.Opn}}` | 常值`{{` — 在範本內進行逸出 | `{{` |
-| `{{.Cls}}` | 常值`}}` — 在範本內進行逸出 | `}}` |
+| `{{.WailsVersion}}` | 建立專案時使用的 Wails 版本 | `"3.0.0"` |
+| `{{.Typescript}}` | 若範本名稱以`-ts`結尾，則為`true` | `true` |
+| `{{.Opn}}` | 常值`{{`——請在範本內跳脫 | `{{` |
+| `{{.Cls}}` | 常值`}}`——請在範本內跳脫 | `}}` |
 
 @note{type="tip"}
-範本中的任何檔案都可以是`.tmpl`檔案，包括 HTML、JSON 和 YAML 檔案。沒有`.tmpl`副檔名的檔案會原樣複製。
+範本中的任何檔案都可以是`.tmpl`檔案，包括 HTML、JSON 和 YAML 檔案。沒有`.tmpl`副檔名的檔案會原封不動地複製。
 
 @end
 
 ## 在本機測試範本
 
-發布前，請從本機路徑建立專案以測試範本：
+發布前，請使用本機路徑透過範本建立專案，以測試該範本：
 
 ```bash
 wails3 init -n testproject -t /path/to/MyTemplate
 ```
 
-接著確認專案能正常運作：
+然後確認專案可正常運作：
 
 ```bash
 cd testproject
@@ -175,16 +175,16 @@ wails3 build  # production binary
 
 請檢查：
 
-- 前端熱重新載入功能正常
+- 前端熱重新載入可正常運作
 - 變更 Go 程式碼後，應用程式會重新建置並重新啟動
-- `bin/`中的正式環境二進位檔能正確執行
+- `bin/`中的正式環境二進位檔可正常執行
 
 ## 發布至 GitHub
 
 @steps
-### **為範本建立公開的 GitHub 儲存庫**。儲存庫根目錄必須包含 `template.yaml`。
-### **刪除 `NEXTSTEPS.md`** — 此檔案是提供給範本作者的指引，不得出現在使用者以您的範本建立的專案中。
-### **提交並推送**範本目錄的內容，作為儲存庫根目錄的內容：
+### **為範本建立公開的 GitHub 儲存庫**。儲存庫根目錄必須包含`template.yaml`。
+### **刪除`NEXTSTEPS.md`**——此檔案是提供給範本作者的指引，不得出現在使用者透過您的範本建立的專案中。
+### **提交並推送**範本目錄的內容，將其作為儲存庫根目錄：
 ```bash
 git init
 git add .
@@ -193,7 +193,7 @@ git remote add origin https://github.com/yourname/my-template.git
 git push -u origin main
 ```
 
-### **使用語意化版本控制標記發行版本**：
+### **使用語意化版本控制為版本加上標籤**：
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
@@ -201,7 +201,7 @@ git push origin v1.0.0
 
 @end
 
-使用者現在可以從您的範本建立專案：
+使用者現在可以透過您的範本建立專案：
 
 ```bash
 # Latest commit on the default branch
@@ -212,17 +212,19 @@ wails3 init -n myapp -t https://github.com/yourname/my-template@v1.0.0
 ```
 
 @note{type="caution" title="第三方範本警告"}
-使用者安裝遠端範本時，Wails 會顯示警告，說明該範本是第三方程式碼，且 Wails 專案不對其內容承擔任何責任。使用者必須明確確認，系統才會建立專案。
+當使用者安裝遠端範本時，Wails 會顯示警告，說明該範本是第三方程式碼，且 Wails 專案不對其內容承擔任何責任。建立專案前，使用者必須明確確認。
 
-身為範本作者，您須對範本中所有程式碼的安全性與正確性負責。
+身為範本作者，您必須對範本中所有程式碼的安全性與正確性負責。
+
+範本就是程式碼。`Taskfile.yml`工作是任意的 shell 命令，而`wails3 dev`、`wails3 build`和`wails3 package`會以使用者的權限執行這些命令，以及它們所叫用的任何`package.json`指令碼。執行其中任何命令前，請先檢查遠端範本的`Taskfile.yml`、`build/`目錄及`frontend/package.json`。
 
 @end
 
 ## 最佳實務
 
-- **撰寫清楚的`README.md`** — 使用者建立專案後會看到此內容。請說明如何執行、建置及自訂專案。
-- **填寫`helpurl`** — 請連結至您的儲存庫或專屬文件。使用者會在 Wails CLI 範本清單中看到此資訊。
-- **固定前端相依套件的版本** — 在`package.json`中固定版本，以免上游更新導致安裝失敗。
-- **加上標籤前先進行測試** — 向社群公布前，請從已加上標籤的發行版本建立全新專案。
-- **保留`wailsVersion: 3`** — 此欄位會告知 Wails 該範本的目標主要版本。請勿變更。
-- **定期更新** — 讓相依套件保持最新，並針對新版 Wails 進行測試。
+- **撰寫清楚的`README.md`**——使用者建立專案後會看到此內容。請說明如何執行、建置及自訂專案。
+- **填寫`helpurl`**——連結至您的儲存庫或專用文件。使用者會在 Wails CLI 範本清單中看到它。
+- **在`package.json`中鎖定前端相依套件版本**，以免上游更新導致安裝失敗。
+- **加上標籤前先進行測試**——向社群公告前，請先從已加上標籤的版本建立全新專案。
+- **保留`wailsVersion: 3`**——此欄位會告知 Wails 該範本的目標主要版本。請勿變更。
+- **定期更新**——讓相依套件保持最新，並針對新版 Wails 進行測試。

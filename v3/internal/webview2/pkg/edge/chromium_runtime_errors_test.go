@@ -4,7 +4,6 @@ package edge
 
 import (
 	"testing"
-	"unsafe"
 )
 
 // Runtime COM failures after startup must be logged and survived, never routed
@@ -53,8 +52,8 @@ func TestSetBackgroundColourSurvivesCOMFailure(t *testing.T) {
 	}}
 	controller := &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
 		_IUnknownVtbl: _IUnknownVtbl{
-			QueryInterface: NewComProc(func(_, _, ppvObject uintptr) uintptr {
-				*(**ICoreWebView2Controller2)(unsafe.Pointer(ppvObject)) = controller2
+			QueryInterface: NewComProc(func(_, _ uintptr, ppvObject **ICoreWebView2Controller2) uintptr {
+				*ppvObject = controller2
 				return 0
 			}),
 		},

@@ -5,7 +5,24 @@ slug: "tutorials/overview"
 sourcePath: "tutorials/overview.md"
 ---
 
-Step-by-step tutorials that teach Wails concepts by building complete applications. Each tutorial includes working code, explanations, and practical patterns.
+Choose a guided lesson when you want to learn Wails by building something. Each lesson follows one project towards a concrete result.
+
+If this is your first visit, complete [Installation](/quick-start/installation/) and [Your First App](/quick-start/first-app/) first.
+
+## Choose a Tutorial
+
+After your first app, follow the desktop lessons in this order:
+
+| Lesson | What you will practise |
+| --- | --- |
+| [QR code service](/tutorials/01-creating-a-service/) | Exposing Go logic through a service and calling it from the frontend |
+| [TODO list](/tutorials/02-todo-vanilla/) | Creating, updating and deleting application data |
+| [Notes app](/tutorials/03-notes-vanilla/) | Using native dialogs and saving data to files |
+| [Self-updating app](/tutorials/04-self-update-a-wails-app/) | Checking and applying updates from GitHub Releases |
+
+For an optional mobile lesson, follow [Your First Mobile App](/guides/mobile/first-mobile-app/). Mobile support is experimental.
+
+If you're working on an existing app and need to complete a particular task, choose a [how-to guide](/quick-start/next-steps/#features) instead. For design background, use [Core Concepts](/concepts/architecture/).
 
 @note{type="tip" title="New to Go?"}
 Complete the [Go Tour](https://go.dev/tour/) before starting tutorials.

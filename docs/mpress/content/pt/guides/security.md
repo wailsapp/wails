@@ -95,25 +95,40 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### Criptografe dados confidenciais
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+Use um nonce novo para cada mensagem criptografada com determinada chave. Na cadeia de ferramentas do Go exigida pelo Wails v3, `NewGCMWithRandomNonce` gera o nonce e o adiciona como prefixo automaticamente. Armazene os bytes retornados sem alterações; `decrypt` lê o nonce desse prefixo. Mantenha a chave separada do texto cifrado.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+Use uma chave AES adequada, gerada aleatoriamente, e respeite o limite de mensagens por chave do AEAD. Consulte a [referência de cifras do Go](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
 
 ### Armazenamento seguro
 
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### Use HTTPS
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### Verifique os certificados
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## Operações com arquivos
 
-### Valide os caminhos
+### Restrinja o acesso a arquivos
+
+Aceite um caminho relativo a um diretório controlado pelo aplicativo. `os.OpenRoot` restringe a resolução do sistema de arquivos a esse diretório, inclusive para links simbólicos. Rejeitar `..` ou verificar apenas o prefixo de uma string não estabelece esse limite.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+Por exemplo, chame `readFile(appDataDir, "notes/today.json")`. Escolha `appDataDir` em código de backend confiável; não permita que o frontend forneça a raiz autorizada. Uma raiz limita a navegação pelo sistema de arquivos, mas não determina quais arquivos dentro dela o usuário está autorizado a ler.
 
 ## Limitação de taxa
 
@@ -224,19 +256,19 @@ func (r *RateLimiter) Allow(key string) bool {
 ### ✅ Faça
 
 - Valide todas as entradas
-- Use HTTPS em chamadas de rede
+- Use HTTPS nas chamadas de rede
 - Criptografe dados confidenciais
-- Use hashing seguro de senhas
+- Use hash seguro para senhas
 - Implemente a limitação de taxa
 - Mantenha as dependências atualizadas
 - Registre eventos de segurança
-- Use os cofres de credenciais do sistema operacional
+- Use os cofres de chaves do sistema operacional
 
 ### ❌ Não faça
 
-- Não confie nas entradas fornecidas pelo usuário
+- Não confie nas entradas do usuário
 - Não armazene senhas em texto simples
-- Não insira segredos diretamente no código
+- Não codifique segredos diretamente no código
 - Não ignore a verificação de certificados
 - Não exponha dados confidenciais nos logs
 - Não use criptografia fraca
@@ -244,16 +276,16 @@ func (r *RateLimiter) Allow(key string) bool {
 
 ## Lista de verificação de segurança
 
-- [ ] Todas as entradas fornecidas pelo usuário estão validadas
-- [ ] As senhas estão protegidas por hash com bcrypt
-- [ ] Os dados confidenciais estão criptografados
-- [ ] HTTPS é usado em todas as chamadas de rede
-- [ ] A limitação de taxa está implementada
-- [ ] Os caminhos de arquivos estão validados
-- [ ] As dependências estão atualizadas
-- [ ] O registro de eventos de segurança está habilitado
+- [ ] Todas as entradas do usuário foram validadas
+- [ ] Senhas protegidas com hash bcrypt
+- [ ] Dados confidenciais criptografados
+- [ ] HTTPS usado em todas as chamadas de rede
+- [ ] Limitação de taxa implementada
+- [ ] Caminhos de arquivos validados
+- [ ] Dependências atualizadas
+- [ ] Registro de eventos de segurança habilitado
 - [ ] As mensagens de erro não expõem informações
-- [ ] O código foi revisado em busca de vulnerabilidades
+- [ ] Código revisado em busca de vulnerabilidades
 
 ## Próximas etapas
 

@@ -49,6 +49,7 @@ afterEach(() => {
 
 describe("WailsSocket protocol handling", () => {
     it("can close while its open request is under backpressure", async () => {
+        vi.useFakeTimers();
         const poll = deferred();
         let openPosts = 0;
         let closePosts = 0;
@@ -69,14 +70,27 @@ describe("WailsSocket protocol handling", () => {
 
         const { WailsSocket } = await import("./stream");
         const socket = new WailsSocket("test");
-        await vi.waitFor(() => expect(openPosts).toBeGreaterThanOrEqual(2), { interval: 1, timeout: 100 });
+        try {
+            await vi.advanceTimersByTimeAsync(0);
+            expect(openPosts).toBe(1);
+            await vi.advanceTimersByTimeAsync(1);
+            expect(openPosts).toBe(2);
 
-        socket.close();
-        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
-        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
-    });
+            socket.close();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(closePosts).toBe(1);
+            expect(socket.readyState).toBe(WailsSocket.CLOSED);
+            await vi.advanceTimersByTimeAsync(10_000);
+            expect(openPosts).toBe(2);
+            expect(closePosts).toBe(1);
+        } finally {
+            socket.close();
+            await vi.advanceTimersByTimeAsync(0);
+        }
+    }, 1_000);
 
     it("can close while its open request is stalled", async () => {
+        vi.useFakeTimers();
         const poll = deferred();
         let openPosts = 0;
         let openAborts = 0;
@@ -105,13 +119,24 @@ describe("WailsSocket protocol handling", () => {
 
         const { WailsSocket } = await import("./stream");
         const socket = new WailsSocket("test");
-        await vi.waitFor(() => expect(openPosts).toBe(1), { interval: 1, timeout: 100 });
+        try {
+            await vi.advanceTimersByTimeAsync(0);
+            expect(openPosts).toBe(1);
 
-        socket.close();
-        await vi.waitFor(() => expect(openAborts).toBe(1), { interval: 1, timeout: 100 });
-        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
-        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
-    });
+            socket.close();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(openAborts).toBe(1);
+            expect(closePosts).toBe(1);
+            expect(socket.readyState).toBe(WailsSocket.CLOSED);
+            await vi.advanceTimersByTimeAsync(10_000);
+            expect(openPosts).toBe(1);
+            expect(openAborts).toBe(1);
+            expect(closePosts).toBe(1);
+        } finally {
+            socket.close();
+            await vi.advanceTimersByTimeAsync(0);
+        }
+    }, 1_000);
 
     it("advances the page generation across a reload", async () => {
         const generations = [];

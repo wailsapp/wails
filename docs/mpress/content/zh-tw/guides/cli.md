@@ -1,11 +1,13 @@
 ---
-title: "CLI 參考資料"
-description: "Wails CLI 命令的完整參考資料"
+title: "CLI 旗標與範例"
+description: "查詢各個 Wails CLI 命令的旗標與使用範例"
 slug: "guides/cli"
 sourcePath: "guides/cli.md"
 ---
 
-Wails CLI 提供一套完整的命令，協助您開發、建置及維護 Wails 應用程式。
+當您已知道需要使用哪個命令時，請參閱本參考資料。若要依用途瀏覽命令，請先參閱[CLI 命令概觀](/reference/cli/)。
+
+Wails CLI 提供一套完整的命令，可協助您開發、建置及維護 Wails 應用程式。
 
 ## 核心命令
 
@@ -15,7 +17,7 @@ Wails CLI 提供一套完整的命令，協助您開發、建置及維護 Wails 
 
 ### `init`
 
-初始化新的 Wails 專案。在初始化期間，會執行`go mod tidy`命令，將專案套件更新至最新狀態。您可以對`init`命令使用`-skipgomodtidy`旗標來略過此步驟。
+初始化新的 Wails 專案。在初始化期間，會執行`go mod tidy`命令，將專案套件更新至最新狀態。若要略過此步驟，請搭配`init`命令使用`-skipgomodtidy`旗標。
 
 ```bash
 wails3 init [flags]
@@ -50,7 +52,7 @@ wails3 init [flags]
 - Git 通訊協定：`git://github.com/username/project`
 - 檔案系統：`file:///path/to/project.git`
 
-提供此旗標後，系統將：
+提供此旗標時，將會：
 
 1. 在專案目錄中初始化 Git 儲存庫
 2. 將指定的 URL 設為遠端 origin
@@ -59,7 +61,7 @@ wails3 init [flags]
 
 ### `dev`
 
-以開發模式執行應用程式。您可以即時檢視前端程式碼，並在執行中的應用程式內看到所做的變更，而無須重新建置整個應用程式。系統也會偵測 Go 程式碼的變更，並自動重新建置及啟動應用程式。
+以開發模式執行應用程式。您可以即時預覽前端程式碼，並在不必重新建置整個應用程式的情況下，直接在執行中的應用程式看到變更。系統也會偵測 Go 程式碼的變更，並自動重新建置及重新啟動應用程式。
 
 ```bash
 wails3 dev [flags]
@@ -80,7 +82,7 @@ wails3 dev [flags]
 
 ### `build`
 
-建置應用程式的偵錯版本。預設會針對目前的平台及架構進行建置。
+使用產生的 Taskfile 建置正式版本。若要使用熱重新載入，請使用`wails3 dev`；若要建立開發版本，則傳入`DEV=true`。預設會針對目前的平台與架構進行建置。
 
 ```bash
 wails3 build [flags] [CLI variables...]
@@ -90,15 +92,15 @@ wails3 build [flags] [CLI variables...]
 
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
-| `-tags` | 額外的 Go 建置標籤（以逗號分隔） |  |
+| `-tags` | 其他 Go 建置標籤（以逗號分隔） |  |
 
 您可以傳入 CLI 變數來自訂建置：
 
 ```bash
-wails3 build PLATFORM=linux CONFIG=production
+wails3 build GOOS=linux
 ```
 
-使用`-tags`旗標傳入自訂的 Go 建置標籤：
+使用`-tags`旗標傳入自訂 Go 建置標籤：
 
 ```bash
 # Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
@@ -114,23 +116,25 @@ wails3 build -tags gtk3,customtag
 標籤會以`EXTRA_TAGS`形式轉送至底層 Taskfile。
 
 @note{type="info"}
-這等同於執行`wails3 task build`，它會執行專案主要 Taskfile 中的`build`任務。傳給`build`的所有 CLI 變數都會轉送至底層任務。您可以編輯`Taskfile.yml`檔案來自訂建置流程。
+這相當於執行`wails3 task build`，而該命令會執行專案主要 Taskfile 中的`build`工作。傳給`build`的任何 CLI 變數都會轉送至底層工作。您可以編輯`Taskfile.yml`檔案來自訂建置流程。
 
 @end
 
 ### `package`
 
-建立供散發使用的平台專屬套件。
+建立供散布使用的平台專用套件。
 
 ```bash
 wails3 package [CLI variables...]
 ```
 
-您可以傳入 CLI 變數來自訂封裝：
+內建封裝工作接受`ARCH`，用於選取目標架構：
 
 ```bash
-wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+wails3 package ARCH=amd64
 ```
+
+`VERSION`和`OUTPUT`只會影響明確讀取這些變數的自訂 Taskfile；它們不會覆寫內建封裝的版本或檔案名稱。
 
 #### 套件類型
 
@@ -143,13 +147,15 @@ wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
 | Linux | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
 
 @note{type="info"}
-這等同於`wails3 task package`，它會執行專案主要 Taskfile 中的`package`任務。傳給`package`的所有 CLI 變數都會轉送至底層任務。您可以編輯`Taskfile.yml`檔案來自訂封裝流程。
+這等同於執行`wails3 task package`，後者會執行專案主要 Taskfile 中的`package`任務。傳遞給`package`的所有 CLI 變數都會轉交給底層任務。您可以編輯`Taskfile.yml`檔案來自訂封裝流程。
 
 @end
 
+內建的建置任務會讀取`GOOS`、`ARCH`和`DEV`；下方自訂任務中的`PLATFORM`和`CONFIG`則是使用者定義的範例。
+
 ### `task`
 
-執行專案 Taskfile.yml 中定義的任務。這是[Taskfile](https://taskfile.dev)的內嵌版本，可讓您定義並執行自訂的建置、測試與部署任務。
+執行專案 Taskfile.yml 中定義的任務。這是[Taskfile](https://taskfile.dev)的內嵌版本，可讓您定義並執行自訂的建置、測試及部署任務。
 
 ```bash
 wails3 task [taskname] [CLI variables...] [flags]
@@ -157,10 +163,10 @@ wails3 task [taskname] [CLI variables...] [flags]
 
 #### CLI 變數
 
-您可以使用`KEY=VALUE`格式將變數傳給任務：
+您可以使用`KEY=VALUE`格式將變數傳遞給任務：
 
 ```bash
-wails3 task build PLATFORM=linux CONFIG=production
+wails3 task build GOOS=linux
 wails3 task deploy ENV=staging VERSION=1.2.3
 ```
 
@@ -187,17 +193,17 @@ tasks:
 | `-f` | 即使任務已是最新狀態，仍強制執行 | `false` |
 | `-w` | 為指定任務啟用監看模式 | `false` |
 | `-v` | 啟用詳細輸出模式 | `false` |
-| `-version` | 顯示 Task 版本 | `false` |
-| `-s` | 停用命令回顯 | `false` |
+| `-version` | 輸出 Task 版本 | `false` |
+| `-s` | 停用指令回顯 | `false` |
 | `-p` | 平行執行任務 | `false` |
-| `-dry` | 編譯並顯示任務，但不執行 | `false` |
+| `-dry` | 編譯並輸出任務，但不執行 | `false` |
 | `-summary` | 顯示任務摘要 | `false` |
-| `-x` | 直接傳回任務的結束代碼 | `false` |
+| `-x` | 直接傳回任務的結束狀態碼 | `false` |
 | `-dir` | 設定執行目錄 |  |
 | `-taskfile` | 選擇要執行的 Taskfile |  |
 | `-output` | 設定輸出樣式：[interleaved|group|prefixed] |  |
 | `-c` | 彩色輸出（預設啟用） | `true` |
-| `-C` | 限制可同時執行的工作數量 |  |
+| `-C` | 限制可同時執行的任務數量 |  |
 | `-interval` | 監看變更的間隔（秒） |  |
 
 #### 範例
@@ -210,7 +216,7 @@ wails3 task
 wails3 task test
 
 # Run a task with variables
-wails3 task build PLATFORM=windows ARCH=amd64
+wails3 task build GOOS=windows ARCH=amd64
 
 # List all available tasks
 wails3 task --list
@@ -224,30 +230,30 @@ wails3 task -w dev
 
 ### `mcp`
 
-啟動 Wails 專案 MCP 伺服器，以便透過代理程式協助管理專案。此伺服器與編譯至執行中應用程式內的 MCP 伺服器不同：`wails3 mcp`管理專案檔案和生命週期命令，而應用程式 MCP 伺服器則控制執行中的 WebView。
+啟動 Wails 專案 MCP 伺服器，以便透過代理程式協助管理專案。此伺服器不同於編譯至執行中應用程式內的 MCP 伺服器：`wails3 mcp`負責管理專案檔案與生命週期指令，而應用程式 MCP 伺服器則控制執行中的 WebView。
 
 ```bash
 wails3 mcp [flags]
 ```
 
-傳輸方式會自動選取：
+系統會自動選擇傳輸方式：
 
-- 當 MCP 主機以管線連接的標準輸入／輸出啟動 Wails 時，伺服器會使用<strong>stdio</strong>。
-- 在終端機中以互動方式執行時，伺服器會在`127.0.0.1`上使用<strong>Streamable HTTP</strong>，並向作業系統要求一個可用的連接埠。
+- 當 MCP 主機透過管線化的 stdin/stdout 啟動 Wails 時，伺服器會使用**stdio**。
+- 在終端機中以互動方式執行時，伺服器會在`127.0.0.1`上使用**Streamable HTTP**，並要求作業系統提供可用的連接埠。
 
-使用`--stdio`或`--http`明確選取傳輸方式。在 HTTP 模式下，使用`--port 0`選擇可用的迴路連接埠。
+使用`--stdio`或`--http`明確選擇傳輸方式。在 HTTP 模式中，使用`--port 0`選擇可用的迴送連接埠。
 
 #### MCP 旗標
 
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
-| `--root` | 允許的專案根目錄。位於其外的路徑和符號連結會遭拒絕。 | 目前目錄 |
-| `--token` | 供變更資料與控制程序的工具使用的工作階段／Bearer 權杖。若未設定，則改用`WAILS_MCP_TOKEN`。 | 安全地產生 |
+| `--root` | 允許的專案根目錄。位於其外部的路徑與符號連結都會遭到拒絕。 | 目前目錄 |
+| `--token` | 供變更資料及程序控制工具使用的工作階段／Bearer 權杖。若未設定，則改用`WAILS_MCP_TOKEN`。 | 以安全方式產生 |
 | `--stdio` | 強制使用 stdio 傳輸。 | 自動 |
 | `--http` | 強制使用 Streamable HTTP 傳輸。 | 自動 |
-| `--port` | HTTP 連接埠；`0`會選取本機回送位址上可用的連接埠。 | `0` |
+| `--port` | HTTP 連接埠；`0`會選擇可用的回送連接埠。 | `0` |
 
-在 HTTP 模式下，Wails 會將端點和 Bearer 權杖輸出至 stderr。在 stdio 模式下，權杖會包含在 MCP 初始化指示中。伺服器不會提供任意 Shell 執行功能。遠端範本和 Git 遠端儲存庫必須透過工具的`allowExternal`輸入明確核准。
+在 HTTP 模式下，Wails 會將端點與持有者權杖輸出至 stderr。在 stdio 模式下，權杖會包含在 MCP 初始化指示中。伺服器不提供任意 Shell 命令執行功能。遠端範本與 Git 遠端儲存庫必須透過工具的`allowExternal`輸入明確核准。
 
 ### `doctor`
 
@@ -259,11 +265,11 @@ wails3 doctor
 
 ## 產生命令
 
-產生命令可協助建立繫結、圖示和建置檔案等各種專案資產。所有產生命令都使用基礎命令：`wails3 generate <command>`。
+產生命令可協助建立繫結、圖示與建置檔案等各種專案資產。所有產生命令都使用基礎命令：`wails3 generate <command>`。
 
 ### `generate bindings`
 
-為 Go 程式碼產生繫結和模型。
+為您的 Go 程式碼產生繫結與模型。
 
 ```bash
 wails3 generate bindings [flags] [patterns...]
@@ -273,16 +279,16 @@ wails3 generate bindings [flags] [patterns...]
 
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
-| `-f` | 其他 Go 建置旗標 |  |
+| `-f` | 額外的 Go 建置旗標 |  |
 | `-d` | 輸出目錄 | `frontend/bindings` |
 | `-models` | 模型檔案名稱 | `models` |
 | `-index` | 索引檔案名稱 | `index` |
 | `-ts` | 產生 TypeScript | `false` |
-| `-i` | 使用 TypeScript 介面 | `false` |
+| `-i` | 使用 TS 介面 | `false` |
 | `-b` | 使用隨附的執行階段 | `false` |
 | `-names` | 使用名稱而非 ID | `false` |
 | `-noindex` | 略過索引檔案 | `false` |
-| `-noevents` | 略過產生事件相關繫結 | `false` |
+| `-noevents` | 略過產生事件相關的繫結 | `false` |
 | `-dry` | 試執行 | `false` |
 | `-silent` | 靜默模式 | `false` |
 | `-v` | 偵錯輸出 | `false` |
@@ -324,31 +330,31 @@ wails3 generate icons [flags]
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
 | `-input` | 輸入 PNG 檔案 | 必填 |
-| `-windowsfilename` | Windows 輸出檔名 |  |
-| `-macfilename` | macOS 輸出檔名 |  |
-| `-sizes` | 圖示大小（以逗號分隔） | `256,128,64,48,32,16` |
+| `-windowsfilename` | Windows 輸出檔案名稱 |  |
+| `-macfilename` | macOS 輸出檔案名稱 |  |
+| `-sizes` | 圖示尺寸（以逗號分隔） | `256,128,64,48,32,16` |
 | `-example` | 產生範例圖示 | `false` |
 | `-iconcomposerinput` | 輸入 Icon Composer 檔案（`.icon`） |  |
 | `-macassetdir` | Mac 資產的輸出目錄（Assets.car + icns） |  |
 
 #### Icon Composer（macOS）
 
-在 macOS 26+ 上，您可以使用 Icon Composer `.icon` 檔案產生 `Assets.car` 和 `icons.icns`：
+在 macOS 26+ 上，您可以使用 Icon Composer 的`.icon`檔案產生`Assets.car`和`icons.icns`：
 
 ```bash
 wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
 ```
 
-這會使用 Apple 的 `actool` 命令編譯 `.icon` 檔案。需要安裝 Xcode，且 `actool` 版本須為 26 或更新版本。
+此操作會使用 Apple 的`actool`命令編譯`.icon`檔案。需要安裝 Xcode，且`actool`版本須為26或更新版本。
 
-使用 Icon Composer 時，請將 `build/config.yml` 中的 `cfBundleIconName` 設為與 `.icon` 檔名（不含副檔名）相同：
+使用 Icon Composer 時，請在`build/config.yml`中設定`cfBundleIconName`，使其與`.icon`檔案名稱（不含副檔名）相符：
 
 ```yaml
 info:
   cfBundleIconName: "appicon"
 ```
 
-若未設定且 `Assets.car` 存在，則預設為 `"appicon"`。
+若未設定且`Assets.car`存在，則預設為`"appicon"`。
 
 ### `generate syso`
 
@@ -419,7 +425,7 @@ wails3 generate webview2bootstrapper [flags]
 
 ### `generate template`
 
-建立新專案範本目錄的初始架構。
+建立新專案範本目錄的骨架。
 
 ```bash
 wails3 generate template [flags]
@@ -437,7 +443,7 @@ wails3 generate appimage [flags]
 
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
-| `-binary` | 二進位檔的路徑 | 必填 |
+| `-binary` | 二進位檔案的路徑 | 必填 |
 | `-icon` | 圖示檔案的路徑 | 必填 |
 | `-desktop` | .desktop 檔案的路徑 | 必填 |
 | `-builddir` | 建置目錄 | 暫存目錄 |
@@ -472,11 +478,11 @@ wails3 service init [flags]
 
 ## 工具命令
 
-工具命令提供開發與偵錯用的公用工具。所有工具命令都使用基礎命令：`wails3 tool <command>`。
+工具命令提供開發與偵錯用的公用程式。所有工具命令都使用基礎命令：`wails3 tool <command>`。
 
 ### `tool checkport`
 
-檢查連接埠是否開啟。適合用來測試 vite 是否正在執行。
+檢查連接埠是否開放。適合用來測試 vite 是否正在執行。
 
 ```bash
 wails3 tool checkport [flags]
@@ -534,20 +540,20 @@ wails3 tool version [flags]
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
 | `-v` | 要遞增的目前版本 |  |
-| `-major` | 提升主要版本 | `false` |
-| `-minor` | 提升次要版本 | `false` |
-| `-patch` | 提升修補版本 | `false` |
-| `-prerelease` | 提升預發行版本（例如從 alpha.5 提升至 alpha.6） | `false` |
+| `-major` | 遞增主要版本 | `false` |
+| `-minor` | 遞增次要版本 | `false` |
+| `-patch` | 遞增修補版本 | `false` |
+| `-prerelease` | 遞增預發行版本（例如，從 alpha.5 遞增至 alpha.6） | `false` |
 
-此命令遵循以下優先順序：主要版本 > 次要版本 > 修補版本 > 預發行版本。若輸入版本含有「v」前綴，則會予以保留，並同時保留所有預發行和中繼資料組成部分。
+此命令遵循以下優先順序：主要版本 > 次要版本 > 修補版本 > 預發行版本。如果輸入版本含有「v」前置字元，命令會予以保留，也會保留所有預發行和中繼資料組成部分。
 
-用法範例：
+使用範例：
 
 ```bash
 wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
 wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
 wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
-wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
+wails3 tool version -v v3.1.0-alpha.5 -prerelease # Output: v3.1.0-alpha.6
 ```
 
 ### `tool package`
@@ -583,7 +589,7 @@ wails3 tool lipo [flags]
 
 ### `tool capabilities`
 
-檢查系統的建置能力（Linux 上是否有 GTK4/GTK3 可用）。
+檢查系統的建置能力（Linux 上是否可使用 GTK4/GTK3）。
 
 ```bash
 wails3 tool capabilities
@@ -591,7 +597,7 @@ wails3 tool capabilities
 
 ### `tool docker-mounts`
 
-產生用於交叉編譯的 Docker 磁碟區掛載旗標。輸出 Go 模組快取的 `-v` 旗標，以及 `go.mod` 中所有本機 `replace` 指示詞的對應旗標，以供 Taskfile 的 `docker run` 命令使用。
+產生用於交叉編譯的 Docker 磁碟區掛載旗標。輸出 Go 模組快取以及 `go.mod` 中任何本機 `replace` 指示詞所需的 `-v` 旗標，以供 Taskfile 的 `docker run` 命令使用。
 
 ```bash
 wails3 tool docker-mounts
@@ -599,9 +605,9 @@ wails3 tool docker-mounts
 
 ### `tool has`
 
-檢查工具或功能是否可用，並將 `true` 或 `false` 輸出至標準輸出。此命令設計用於 Taskfile 的 `sh:` 變數，可作為 `command -v` 的跨平台替代方案。
+檢查工具或功能是否可用，並將 `true` 或 `false` 輸出至標準輸出。此命令專為 Taskfile 的 `sh:` 變數而設計，可作為 `command -v` 的跨平台替代方案。
 
-使用 `|` 檢查多個替代項目中是否有任何一個可用。
+使用 `|` 檢查多個替代項目中是否有任一項可用。
 
 ```bash
 wails3 tool has <tool>
@@ -633,7 +639,7 @@ vars:
 
 @end
 
-`wails3 tool has gcc|clang` 的向後相容別名。檢查 PATH 中是否有 `gcc` 或 `clang` 可用，並輸出 `true` 或 `false`。
+`wails3 tool has gcc|clang` 的向後相容別名。檢查 PATH 中是否可使用 `gcc` 或 `clang`，並輸出 `true` 或 `false`。
 
 ```bash
 wails3 tool has-cc
@@ -641,7 +647,7 @@ wails3 tool has-cc
 
 ## 更新命令
 
-更新命令可協助管理及更新專案資產。所有更新命令都使用以下基礎命令：`wails3 update <command>`。
+更新命令可協助管理及更新專案資產。所有更新命令都使用基礎命令：`wails3 update <command>`。
 
 ### `update cli`
 
@@ -659,7 +665,7 @@ wails3 update cli [flags]
 | `-version` | 更新至指定版本 |  |
 | `-nocolour` | 停用彩色輸出 | `false` |
 
-update cli 命令可讓你更新 Wails CLI 安裝。預設會更新至最新穩定版本。 你可以使用 `-pre` 旗標更新至最新預發行版本，或使用 `-version` 旗標指定特定版本。
+update cli 命令可讓你更新 Wails CLI 安裝。預設會更新至最新穩定版本。你可以使用 `-pre` 旗標更新至最新預發行版本，或使用 `-version` 旗標指定特定版本。
 
 更新後，請記得更新專案的 go.mod 檔案，以使用相同版本：
 
@@ -692,7 +698,7 @@ wails3 update build-assets [flags]
 
 ## 公用程式命令
 
-公用程式命令提供常見工作所需的便利捷徑。請直接搭配基礎命令使用這些命令：`wails3 <command>`。
+公用程式命令為常見工作提供便利的捷徑。請直接搭配基本命令使用這些命令：`wails3 <command>`。
 
 ### `docs`
 
@@ -714,7 +720,7 @@ wails3 releasenotes [flags]
 
 | 旗標 | 說明 | 預設值 |
 | --- | --- | --- |
-| `-v` | 要顯示其版本資訊的版本 |  |
+| `-v` | 要顯示版本資訊的版本 |  |
 | `-n` | 停用彩色輸出 | `false` |
 
 ### `version`

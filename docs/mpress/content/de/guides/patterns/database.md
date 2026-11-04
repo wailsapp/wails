@@ -6,10 +6,10 @@ sourcePath: "guides/patterns/database.md"
 ---
 
 @note{type="info"}
-Diese Seite ist ein Platzhalter. Vollständige Inhalte zur Datenbankintegration folgen in Kürze.
+Diese Seite ist ein Platzhalter. Ausführliche Inhalte zur Datenbankintegration folgen in Kürze.
 
 @end
 
-Wails-v3-Anwendungen sind Go-Anwendungen. Daher können Sie jeden standardmäßigen Go-Datenbanktreiber – einschließlich [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx) und [MySQL](https://github.com/go-sql-driver/mysql) – in Ihren gebundenen Diensten verwenden.
+Wails-v3Anwendungen sind Go-Anwendungen. Daher können Sie in Ihren gebundenen Diensten jeden standardmäßigen Go-Datenbanktreiber verwenden, darunter [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx) und [MySQL](https://github.com/go-sql-driver/mysql).
 
-Ein funktionsfähiges Beispiel finden Sie im [TODO-Tutorial](/tutorials/02-todo-vanilla/). Es zeigt, wie Sie einer vollständigen Anwendung SQLite-Persistenz hinzufügen.
+Das [TODO-Tutorial](/tutorials/02-todo-vanilla/) zeigt einen gebundenen Dienst mit In-Memory-Speicherung; SQLite-Persistenz wird darin nicht implementiert. Informationen zur dateibasierten Persistenz finden Sie im [Notes-Tutorial](/tutorials/03-notes-vanilla/). Datenbankspezifische Verbindungsverwaltung, Migrationen und Transaktionen werden in diesem Platzhalter nicht behandelt.

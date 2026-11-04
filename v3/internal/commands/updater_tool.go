@@ -89,7 +89,7 @@ func UpdaterGenKey(options *UpdaterGenKeyOptions) error {
 		}
 	}
 	privPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privDER})
-	if err := os.WriteFile(options.Out, privPEM, 0o600); err != nil {
+	if err := writeUpdaterPrivateKey(options.Out, privPEM); err != nil {
 		return err
 	}
 	pubPEM := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER})
@@ -113,6 +113,27 @@ func UpdaterGenKey(options *UpdaterGenKeyOptions) error {
 	pterm.Println("")
 	pterm.Warning.Println("Anyone with the private key can sign updates for your users. Store it like a code-signing certificate: CI secret store or password manager, never in the repository.")
 	return nil
+}
+
+// Restrict permissions before writing: os.WriteFile keeps an existing file's mode.
+func writeUpdaterPrivateKey(path string, data []byte) (err error) {
+	key, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0o600)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := key.Close(); err == nil {
+			err = closeErr
+		}
+	}()
+	if err := key.Chmod(0o600); err != nil {
+		return err
+	}
+	if err := key.Truncate(0); err != nil {
+		return err
+	}
+	_, err = key.Write(data)
+	return err
 }
 
 // --- sign ---

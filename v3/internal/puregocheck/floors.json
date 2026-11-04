@@ -1,0 +1,16 @@
+{
+  "_comment": "Oldest library version the purego backend supports, per GIR namespace. A function newer than this must be registered as optional and guarded at every call (versions.go). Debian 12 for the GTK4 + WebKitGTK 6.0 path (the oldest distro shipping webkitgtk-6.0), Ubuntu 22.04 for the GTK3 legacy path. Confirmed by Lea, 2026-10-28.",
+  "GLib-2.0": "2.74",
+  "GObject-2.0": "2.74",
+  "Gio-2.0": "2.74",
+  "Gtk-4.0": "4.8",
+  "Gdk-4.0": "4.8",
+  "GdkX11-4.0": "4.8",
+  "WebKit-6.0": "2.40",
+  "JavaScriptCore-6.0": "2.40",
+  "Soup-3.0": "3.2",
+  "Gtk-3.0": "3.24",
+  "Gdk-3.0": "3.24",
+  "WebKit2-4.1": "2.36",
+  "JavaScriptCore-4.1": "2.36"
+}

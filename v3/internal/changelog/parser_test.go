@@ -466,3 +466,34 @@ func TestFormatForRelease_EmptyEntry(t *testing.T) {
 		t.Errorf("FormatForRelease() for empty entry should return empty string, got: %s", result)
 	}
 }
+
+func TestParseBulletWhitespace(t *testing.T) {
+	parser := NewParser()
+	for _, tc := range []struct {
+		line, want string
+	}{
+		{"- \t Preserve application behavior", "Preserve application behavior"},
+		{"*\fPreserve application behavior", "Preserve application behavior"},
+		{"-\rPreserve application behavior", "Preserve application behavior"},
+		{"- \u00a0Preserve application behavior", "Preserve application behavior"},
+		{"-\u00a0Preserve application behavior", ""},
+		{"-\vPreserve application behavior", ""},
+		{"  *   Preserve Unicode ✨  ", "Preserve Unicode ✨"},
+	} {
+		t.Run(tc.line, func(t *testing.T) {
+			entry, err := parser.ParseContent(strings.NewReader("## Fixed\n" + tc.line + "\n"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want == "" {
+				if len(entry.Fixed) != 0 {
+					t.Errorf("malformed bullet accepted: %q", entry.Fixed)
+				}
+				return
+			}
+			if len(entry.Fixed) != 1 || entry.Fixed[0] != tc.want {
+				t.Errorf("parsed bullets = %q, want [%q]", entry.Fixed, tc.want)
+			}
+		})
+	}
+}

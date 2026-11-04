@@ -21,24 +21,24 @@ sourcePath: "blog/wails-v2-released.md"
 
 ## Wails<em>是</em>什麼？
 
-如果你不熟悉 Wails，它是一個讓 Go 程式設計師能使用熟悉的 Web 技術，為 Go 程式打造功能豐富前端的專案。它是以 Go 打造的輕量級 Electron 替代方案。如需更多資訊，請造訪[官方網站](https://wails.io/docs/introduction)。
+如果你不熟悉 Wails，它是一個讓 Go 程式設計師能使用熟悉的 Web 技術，為 Go 程式打造功能豐富前端的專案。它是以 Go 打造的輕量級 Electron 替代方案。如需更多資訊，請造訪[官方網站](https://v2.wails.io/docs/introduction)。
 
 ## 有哪些新功能？
 
 v2 版本是本專案的一次重大躍進，解決了 v1 的許多痛點。如果你尚未閱讀關於[macOS](/blog/wails-v2-beta-for-mac/)、[Windows](/blog/wails-v2-beta-for-windows/)或[Linux](/blog/wails-v2-beta-for-linux/) Beta 版的任何部落格文章，建議你閱讀；其中更詳細地介紹了所有主要變更。摘要如下：
 
 - Windows 採用 Webview2 元件，支援現代 Web 標準與偵錯功能。
-- Windows 支援[深色／淺色佈景主題](https://wails.io/docs/reference/options#theme)及[自訂佈景主題](https://wails.io/docs/reference/options#customtheme)。
+- Windows 支援[深色／淺色佈景主題](https://v2.wails.io/docs/reference/options#theme)及[自訂佈景主題](https://v2.wails.io/docs/reference/options#customtheme)。
 - Windows 現在不再需要 CGO。
 - 內建支援 Svelte、Vue、React、Preact、Lit 與 Vanilla 專案範本。
 - 整合[Vite](https://vitejs.dev/)，為你的應用程式提供支援熱重新載入的開發環境。
-- 原生應用程式[選單](https://wails.io/docs/guides/application-development#application-menu)與[對話方塊](https://wails.io/docs/reference/runtime/dialog)。
-- [Windows](https://wails.io/docs/reference/options#windowistranslucent)與[macOS](https://wails.io/docs/reference/options#windowistranslucent-1)的原生視窗半透明效果。支援 Mica 與 Acrylic 背景材質。
-- 可輕鬆產生用於 Windows 部署的[NSIS 安裝程式](https://wails.io/docs/guides/windows-installer)。
-- 功能豐富的[執行階段程式庫](https://wails.io/docs/reference/runtime/intro)，提供視窗操作、事件處理、對話方塊、選單與記錄等公用方法。
-- 支援使用[garble](https://github.com/burrowers/garble)對應用程式進行[混淆](https://wails.io/docs/guides/obfuscated)。
+- 原生應用程式[選單](https://v2.wails.io/docs/guides/application-development#application-menu)與[對話方塊](https://v2.wails.io/docs/reference/runtime/dialog)。
+- [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent)與[macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1)的原生視窗半透明效果。支援 Mica 與 Acrylic 背景材質。
+- 可輕鬆產生用於 Windows 部署的[NSIS 安裝程式](https://v2.wails.io/docs/guides/windows-installer)。
+- 功能豐富的[執行階段程式庫](https://v2.wails.io/docs/reference/runtime/intro)，提供視窗操作、事件處理、對話方塊、選單與記錄等公用方法。
+- 支援使用[garble](https://github.com/burrowers/garble)對應用程式進行[混淆](https://v2.wails.io/docs/guides/obfuscated)。
 - 支援使用[UPX](https://upx.github.io/)壓縮應用程式。
-- 可從 Go 結構自動產生 TypeScript。更多資訊請見[此處](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)。
+- 可從 Go 結構自動產生 TypeScript。更多資訊請見[此處](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods)。
 - 無論在哪個平台，都不需要隨應用程式附帶任何額外的程式庫或 DLL。
 - 不需要打包前端資產。只需像開發任何其他 Web 應用程式一樣開發即可。
 

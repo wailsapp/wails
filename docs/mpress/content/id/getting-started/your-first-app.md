@@ -13,18 +13,18 @@ Panduan ini menunjukkan cara membuat aplikasi Wails v3 pertama Anda, mulai dari 
 
 @steps
 ### Membuat Proyek Baru
-Buka terminal Anda, lalu jalankan perintah berikut untuk membuat proyek Wails baru:
+Buka terminal, lalu jalankan perintah berikut untuk membuat proyek Wails baru:
 
 ```bash
-wails3 init -n myfirstapp
+wails3 init -n myfirstapp -t vanilla-js
 ```
 
-Perintah ini membuat direktori baru bernama `myfirstapp` yang berisi semua file yang diperlukan.
+Pelajaran ini secara eksplisit memilih templat JavaScript Vanilla. Templat dasar `vanilla` menggunakan TypeScript. Perintah tersebut membuat `myfirstapp` beserta semua file yang diperlukan.
 
    <video src="/assets/wails_init.mp4" controls></video>
 
 ### Menjelajahi Struktur Proyek
-Buka direktori `myfirstapp`. Anda akan menemukan beberapa file dan folder:
+Buka direktori `myfirstapp`. Di dalamnya terdapat beberapa file dan folder:
 
 @filetree
 - build/           Berisi file yang digunakan oleh proses build
@@ -53,7 +53,8 @@ Buka direktori `myfirstapp`. Anda akan menemukan beberapa file dan folder:
       - wails_tools.nsh               Skrip pembantu NSIS
 - frontend/        File aplikasi frontend
   - index.html   File HTML utama
-  - main.js      File JavaScript utama
+  - src/         Kode sumber frontend
+    - main.js    File JavaScript utama
   - package.json NPM package configuration
   - public/      Aset statis
   - Inter Font License.txt Font license
@@ -73,23 +74,23 @@ Meskipun Wails v3 menggunakan [Task](https://taskfile.dev/) sebagai sistem build
 
 @end
 
-### Membuat Build Aplikasi Anda
-Untuk membuat build aplikasi Anda, jalankan:
+### Mem-build Aplikasi Anda
+Untuk mem-build aplikasi Anda, jalankan:
 
 ```bash
 wails3 build
 ```
 
-Perintah ini mengompilasi versi debug aplikasi Anda dan menyimpannya dalam direktori `bin` baru.
+Dengan Taskfile yang dihasilkan, perintah ini membuat build produksi di `bin`. Gunakan `wails3 dev` untuk mode pengembangan atau `wails3 build DEV=true` untuk membuat build pengembangan secara eksplisit.
 
 @note{type="info"}
-`wails3 build` adalah bentuk singkat dari `wails3 task build` dan akan menjalankan tugas `build` dalam `Taskfile.yml`.
+`wails3 build` adalah bentuk singkat dari `wails3 task build` dan akan menjalankan tugas `build` di `Taskfile.yml`.
 
 @end
 
      <video src="/assets/wails_build.mp4" controls></video>
 
-Setelah build selesai, Anda dapat menjalankannya seperti aplikasi biasa lainnya:
+Setelah selesai di-build, Anda dapat menjalankannya seperti aplikasi biasa:
 
 @tabs{sync-key="platform"}
 [Mac]
@@ -109,18 +110,18 @@ bin\myfirstapp.exe
 
 @end
 
-Anda akan melihat antarmuka pengguna sederhana yang menjadi titik awal aplikasi Anda. Karena ini adalah versi debug, Anda juga akan melihat log di jendela konsol. Log tersebut berguna untuk proses debug.
+Antarmuka awal akan ditampilkan. Build produksi tidak menjamin perilaku inspektur atau konsol pengembangan; gunakan mode pengembangan saat melakukan debug.
 
 ### Mode Pengembangan
-Anda juga dapat menjalankan aplikasi dalam mode pengembangan. Mode ini memungkinkan Anda mengubah kode frontend dan langsung melihat perubahan tersebut pada aplikasi yang sedang berjalan tanpa harus membuat ulang seluruh build aplikasi.
+Anda juga dapat menjalankan aplikasi dalam mode pengembangan. Dalam mode ini, Anda dapat mengubah kode frontend dan langsung melihat perubahan tersebut pada aplikasi yang sedang berjalan tanpa perlu mem-build ulang seluruh aplikasi.
 
 1. Buka jendela terminal baru.
 2. Jalankan `wails3 dev`. Aplikasi akan dikompilasi dan dijalankan dalam mode debug.
 3. Buka `frontend/index.html` di editor pilihan Anda.
-4. Edit kode tersebut dan ubah `Please enter your name below` menjadi `Please enter your name below!!!`.
+4. Ubah `placeholder="Your name"` pada input nama menjadi `placeholder="Your full name"`, lalu simpan file tersebut.
 5. Simpan file tersebut.
 
-Perubahan ini akan segera terlihat pada aplikasi Anda.
+Perubahan ini akan langsung terlihat pada aplikasi Anda.
 
 Setiap perubahan pada kode backend akan memicu build ulang:
 
@@ -133,7 +134,7 @@ Aplikasi akan diperbarui dalam hitungan detik.
      <video src="/assets/wails_dev.mp4" controls></video>
 
 ### Memaketkan Aplikasi Anda
-Setelah aplikasi siap didistribusikan, Anda dapat membuat paket khusus platform:
+Setelah aplikasi siap didistribusikan, Anda dapat membuat paket khusus untuk setiap platform:
 
 @tabs{sync-key="platform"}
 [Mac]
@@ -143,7 +144,7 @@ Untuk membuat bundel `.app`:
 wails3 package
 ```
 
-Tindakan ini akan membuat build produksi dan memaketkannya menjadi bundel `.app` dalam direktori `bin`.
+Perintah ini akan membuat build produksi dan memaketkannya sebagai bundel `.app` di direktori `bin`.
 
 [Windows]
 Untuk membuat penginstal NSIS:
@@ -152,7 +153,7 @@ Untuk membuat penginstal NSIS:
 wails3 package
 ```
 
-Tindakan ini akan membuat build produksi dan memaketkannya menjadi penginstal NSIS dalam direktori `bin`.
+Perintah ini akan membuat build produksi dan memaketkannya sebagai penginstal NSIS di direktori `bin`.
 
 [Linux]
 Wails mendukung beberapa format paket untuk distribusi Linux:
@@ -173,10 +174,10 @@ wails3 task linux:create:aur       # Arch Linux package
 Untuk informasi lebih terperinci tentang opsi dan konfigurasi pemaketan, lihat [Panduan Build dan Pemaketan](/guides/build/building/) kami.
 
 ### Menyiapkan Kontrol Versi dan Nama Modul
-Proyek Anda dibuat dengan nama modul sementara `changeme`. Sebaiknya perbarui nama ini agar sesuai dengan URL repositori Anda:
+Proyek Anda dibuat dengan nama modul sementara `changeme`. Sebaiknya perbarui nama tersebut agar sesuai dengan URL repositori Anda:
 
 1. Buat repositori baru di GitHub (atau layanan hosting Git pilihan Anda)
-2. Inisialisasi Git dalam direktori proyek Anda:
+2. Inisialisasi Git di direktori proyek Anda:
   ```bash
   git init
   git add .
@@ -188,7 +189,7 @@ Proyek Anda dibuat dengan nama modul sementara `changeme`. Sebaiknya perbarui na
   git remote add origin https://github.com/username/myfirstapp.git
   ```
 
-4. Perbarui nama modul dalam `go.mod` agar sesuai dengan URL repositori Anda:
+4. Perbarui nama modul di `go.mod` agar sesuai dengan URL repositori Anda:
   ```bash
   go mod edit -module github.com/username/myfirstapp
   ```
@@ -199,13 +200,13 @@ Proyek Anda dibuat dengan nama modul sementara `changeme`. Sebaiknya perbarui na
   ```
 
 
-Langkah ini memastikan nama modul Go Anda selaras dengan konvensi penamaan modul Go dan memudahkan Anda membagikan kode.
+Langkah ini memastikan nama modul Go Anda sesuai dengan konvensi penamaan modul Go dan memudahkan Anda membagikan kode.
 
-@note{type="tip" title="Kiat Profesional"}
+@note{type="tip" title="Tips Profesional"}
 Anda dapat mengotomatiskan semua langkah inisialisasi dengan menggunakan flag `-git` saat membuat proyek:
 
 ```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
+wails3 init -n myfirstapp -t vanilla-js -git github.com/username/myfirstapp
 ```
 
 Fitur ini mendukung berbagai format URL Git:
@@ -221,10 +222,10 @@ Fitur ini mendukung berbagai format URL Git:
 
 ## Selamat!
 
-Anda baru saja membuat, mengembangkan, dan memaketkan aplikasi Wails pertama Anda. Ini hanyalah awal dari berbagai hal yang dapat Anda capai dengan Wails v3.
+Anda baru saja membuat, mengembangkan, dan mengemas aplikasi Wails pertama Anda. Ini baru awal dari berbagai hal yang dapat Anda capai dengan Wails v3.
 
 ## Langkah Berikutnya
 
-Jika Anda baru mengenal Wails, kami menyarankan Anda membaca Tutorial kami selanjutnya, yang akan menjadi panduan praktis untuk mempelajari berbagai fitur Wails. Tutorial pertama adalah [Membuat Layanan](/tutorials/01-creating-a-service/).
+Jika Anda baru mengenal Wails, sebaiknya lanjutkan dengan membaca Tutorial kami, yang akan menjadi panduan praktis untuk mempelajari berbagai fitur Wails. Tutorial pertama adalah [Membuat Layanan](/tutorials/01-creating-a-service/).
 
-Jika Anda adalah pengguna yang lebih mahir, lihat [Panduan Build dan Pemaketan](/guides/build/building/) untuk mendapatkan informasi yang lebih mendetail tentang cara menggunakan Wails.
+Jika Anda adalah pengguna yang lebih mahir, lihat [Panduan Build dan Pengemasan](/guides/build/building/) untuk mendapatkan informasi lebih terperinci tentang cara menggunakan Wails.

@@ -32,7 +32,7 @@ In this tutorial, you'll build a fully functional TODO list application. This is
 First, create a new Wails project. We'll use the default vanilla template which gives us a clean starting point:
 
 ```bash
-wails3 init -n todo-app
+wails3 init -n todo-app -t vanilla-js
 cd todo-app
 ```
 

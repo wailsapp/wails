@@ -21,24 +21,24 @@ sourcePath: "blog/wails-v2-released.md"
 
 ## Что *такое* Wails?
 
-Если вы ещё не знакомы с Wails, этот проект позволяет программистам на Go создавать многофункциональные интерфейсы для своих программ на Go с помощью привычных веб-технологий. Это легковесная альтернатива Electron на Go. Гораздо больше информации можно найти на [официальном сайте](https://wails.io/docs/introduction).
+Если вы ещё не знакомы с Wails, этот проект позволяет программистам на Go создавать многофункциональные интерфейсы для своих программ на Go с помощью привычных веб-технологий. Это легковесная альтернатива Electron на Go. Гораздо больше информации можно найти на [официальном сайте](https://v2.wails.io/docs/introduction).
 
 ## Что нового?
 
 Выпуск v2 — огромный шаг вперёд для проекта, устраняющий многие недостатки v1. Если вы ещё не читали публикации о бета-версиях для [macOS](/blog/wails-v2-beta-for-mac/), [Windows](/blog/wails-v2-beta-for-windows/) или [Linux](/blog/wails-v2-beta-for-linux/), рекомендую это сделать: там подробнее описаны все основные изменения. Кратко:
 
 - Компонент Webview2 для Windows с поддержкой современных веб-стандартов и возможностей отладки.
-- [Тёмная и светлая темы](https://wails.io/docs/reference/options#theme), а также [пользовательские темы](https://wails.io/docs/reference/options#customtheme) в Windows.
+- [Тёмная и светлая темы](https://v2.wails.io/docs/reference/options#theme), а также [пользовательские темы](https://v2.wails.io/docs/reference/options#customtheme) в Windows.
 - В Windows больше не требуется CGO.
 - Встроенная поддержка шаблонов проектов Svelte, Vue, React, Preact, Lit и Vanilla.
 - Интеграция с [Vite](https://vitejs.dev/), обеспечивающая среду разработки приложения с горячей перезагрузкой.
-- Нативные [меню](https://wails.io/docs/guides/application-development#application-menu) и [диалоговые окна](https://wails.io/docs/reference/runtime/dialog) приложения.
-- Нативные эффекты прозрачности окон для [Windows](https://wails.io/docs/reference/options#windowistranslucent) и [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Поддержка фонов Mica и Acrylic.
-- Простое создание [установщика NSIS](https://wails.io/docs/guides/windows-installer) для развёртывания в Windows.
-- Многофункциональная [библиотека среды выполнения](https://wails.io/docs/reference/runtime/intro) со вспомогательными методами для управления окнами, обработки событий, диалоговых окон, меню и журналирования.
-- Поддержка [обфускации](https://wails.io/docs/guides/obfuscated) приложения с помощью [garble](https://github.com/burrowers/garble).
+- Нативные [меню](https://v2.wails.io/docs/guides/application-development#application-menu) и [диалоговые окна](https://v2.wails.io/docs/reference/runtime/dialog) приложения.
+- Нативные эффекты прозрачности окон для [Windows](https://v2.wails.io/docs/reference/options#windowistranslucent) и [macOS](https://v2.wails.io/docs/reference/options#windowistranslucent-1). Поддержка фонов Mica и Acrylic.
+- Простое создание [установщика NSIS](https://v2.wails.io/docs/guides/windows-installer) для развёртывания в Windows.
+- Многофункциональная [библиотека среды выполнения](https://v2.wails.io/docs/reference/runtime/intro) со вспомогательными методами для управления окнами, обработки событий, диалоговых окон, меню и журналирования.
+- Поддержка [обфускации](https://v2.wails.io/docs/guides/obfuscated) приложения с помощью [garble](https://github.com/burrowers/garble).
 - Поддержка сжатия приложения с помощью [UPX](https://upx.github.io/).
-- Автоматическое создание определений TypeScript для структур Go. Подробнее — [здесь](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
+- Автоматическое создание определений TypeScript для структур Go. Подробнее — [здесь](https://v2.wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - Вместе с приложением не требуется поставлять дополнительные библиотеки или DLL — ни на одной платформе.
 - Не требуется объединять ресурсы фронтенда в бандлы. Просто разрабатывайте приложение, как любое другое веб-приложение.
 
