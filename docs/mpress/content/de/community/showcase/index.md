@@ -27,6 +27,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 <a class="mpress-showcase-card" href="/community/showcase/minesweeper-xp/"><img src="/assets/showcase-images/minesweeper-xp.webp" alt="Screenshot von Minesweeper XP" loading="lazy"><span>Minesweeper XP</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/modalfilemanager/"><img src="/assets/showcase-images/modalfilemanager.webp" alt="Screenshot von Modal File Manager" loading="lazy"><span>Modal File Manager</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mollywallet/"><img src="/assets/showcase-images/mollywallet.webp" alt="Screenshot von Molly Wallet" loading="lazy"><span>Molly Wallet</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mygit/"><img src="/assets/showcase-images/mygit.webp" alt="Screenshot von MyGit" loading="lazy"><span>MyGit</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/october/"><img src="/assets/showcase-images/october.webp" alt="Screenshot von October" loading="lazy"><span>October</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/optimus/"><img src="/assets/showcase-images/optimus.webp" alt="Screenshot von Optimus" loading="lazy"><span>Optimus</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/portfall/"><img src="/assets/showcase-images/portfall.webp" alt="Screenshot von Portfall" loading="lazy"><span>Portfall</span></a>
