@@ -1,43 +1,21 @@
 name: Cross-Compile Test v3
 
 on:
-  pull_request_review:
-    types: [submitted]
-    branches:
-      - master
-    paths:
-      - 'v3/**'
-      - '.github/workflows/cross-compile-test-v3.yml'
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      pr_number:
-        description: 'PR number to test (optional, uses current branch if not specified)'
-        required: false
+      ref:
+        description: Immutable commit to test
+        required: true
         type: string
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  check_approval:
-    name: Check PR Approval
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved'
-    outputs:
-      approved: ${{ steps.check.outputs.approved }}
-    steps:
-      - name: Check if PR is approved or manual dispatch
-        id: check
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "Manual dispatch, proceeding with cross-compile tests"
-          else
-            echo "PR approved, proceeding with cross-compile tests"
-          fi
-          echo "approved=true" >> $GITHUB_OUTPUT
-
   cross_compile:
     name: Cross-Compile (${{ matrix.target_os }}/${{ matrix.target_arch }})
-    needs: check_approval
     runs-on: ${{ matrix.runner }}
-    if: needs.check_approval.outputs.approved == 'true'
     env:
       GOWORK: "off"
     strategy:
@@ -65,17 +43,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Checkout PR (if specified)
-        if: github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
-        run: gh pr checkout ${{ inputs.pr_number }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.27'
           cache: true
           cache-dependency-path: |
             v3/go.sum
@@ -88,6 +62,8 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
 
@@ -131,8 +107,8 @@ jobs:
       - run: |
           result="${{ needs.cross_compile.result }}"
           echo "Cross-compile result: $result"
-          if [[ $result == "success" || $result == "skipped" ]]; then
-            echo "Cross-compile tests passed (or were skipped)!"
+          if [[ $result == "success" ]]; then
+            echo "Cross-compile tests passed!"
             exit 0
           else
             echo "One or more cross-compile tests failed"

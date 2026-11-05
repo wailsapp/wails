@@ -64,7 +64,7 @@ contents:
 	for _, format := range formats {
 		t.Run(string(format.pkgType), func(t *testing.T) {
 			// Test file-based package creation
-			outputPath := filepath.Join(os.TempDir(), "test-package."+format.ext)
+			outputPath := filepath.Join(t.TempDir(), "test-package."+format.ext)
 			err := CreatePackageFromConfig(format.pkgType, configFile.Name(), outputPath)
 			if err != nil {
 				t.Errorf("CreatePackageFromConfig failed for %s: %v", format.pkgType, err)

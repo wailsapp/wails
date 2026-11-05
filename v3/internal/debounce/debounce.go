@@ -29,13 +29,17 @@ func (d *debouncer) add(f func()) {
 	}
 	d.generation++
 	gen := d.generation
-	d.timer = time.AfterFunc(d.after, func() {
-		d.mu.Lock()
-		if d.generation != gen {
-			d.mu.Unlock()
-			return
-		}
+	d.timer = time.AfterFunc(d.after, func() { d.fire(gen, f) })
+}
+
+func (d *debouncer) fire(generation uint64, f func()) {
+	d.mu.Lock()
+	if d.generation != generation {
 		d.mu.Unlock()
-		f()
-	})
+		return
+	}
+	// A completed timer retains its callback and anything that callback captures.
+	d.timer = nil
+	d.mu.Unlock()
+	f()
 }

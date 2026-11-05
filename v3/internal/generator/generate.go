@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -20,8 +21,9 @@ import (
 // Generator wraps all bookkeeping data structures that are needed
 // to generate bindings for a set of packages.
 type Generator struct {
-	options *flags.GenerateBindingsOptions
-	creator config.FileCreator
+	environment []string
+	options     *flags.GenerateBindingsOptions
+	creator     config.FileCreator
 
 	// serviceFiles maps service file paths to their type object.
 	// It is used for lower/upper-case collision detection.
@@ -71,6 +73,13 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 	}
 }
 
+// WithEnvironment provides an isolated Go package-loading environment. A nil
+// environment preserves the Go tool's normal process environment inheritance.
+func (generator *Generator) WithEnvironment(environment []string) *Generator {
+	generator.environment = slices.Clone(environment)
+	return generator
+}
+
 // Generate runs the binding generation process
 // for the packages specified by the given patterns.
 //
@@ -80,7 +89,7 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 // The stats result field is never nil.
 //
 // The error result field is nil in case of complete success (no warning).
-// Otherwise, it may either report errors that occured while loading
+// Otherwise, it may either report errors that occurred while loading
 // the initial set of packages, or errors returned by the static analyser,
 // or be an [ErrorReport] instance.
 //
@@ -124,13 +133,33 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}()
 
-	systemPaths, err := ResolveSystemPaths(buildFlags)
-	if err != nil {
-		return
+	// Package identities are their canonical import paths even when modules are
+	// replaced or vendored. Start with those identities so the normal Wails
+	// project path avoids four preliminary go/packages driver calls.
+	systemPaths := &config.SystemPaths{
+		ContextPackage:     "context",
+		TimePackage:        "time",
+		ApplicationPackage: config.WailsAppPkgPath,
+		InternalPackage:    config.WailsInternalPkgPath,
 	}
 
 	// Load initial packages.
-	pkgs, err := LoadPackages(buildFlags, patterns...)
+	loader := packageLoader{environment: generator.environment}
+	pkgs, err := loader.loadPackages(generator.options.PackageDirectory, buildFlags, patterns...)
+	if err == nil {
+		hasApplicationPackage := false
+		for _, pkg := range pkgs {
+			if pkg.PkgPath == config.WailsAppPkgPath {
+				hasApplicationPackage = true
+				break
+			}
+		}
+		if !hasApplicationPackage {
+			// Preserve the previous diagnostics for non-Wails package patterns.
+			// This slow fallback is not used by normal application builds.
+			systemPaths, err = loader.resolveSystemPaths(generator.options.PackageDirectory, buildFlags)
+		}
+	}
 
 	// Suppress package loading feedback.
 	lpkgMutex.Lock()

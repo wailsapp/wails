@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2NavigationCompletedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NavigationCompletedEventArgsVtbl
 	GetHttpStatusCode ComProc
 }
 

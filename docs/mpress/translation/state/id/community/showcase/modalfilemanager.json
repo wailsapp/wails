@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f823ce1a2e0d6c4f2552",
+  "sourceFile": "community/showcase/modalfilemanager.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "targetHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineText": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "status": "final",
+      "sourcePreview": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "06cd1a6c3ce63c22e1d8b0c9661be754cb24103592b1890d35702e0a559d6f3f",
+      "targetHash": "c3d2759a946cb0169da69553bbddeff2c03699bff5c636d346578597500ba564",
+      "machineHash": "c3d2759a946cb0169da69553bbddeff2c03699bff5c636d346578597500ba564",
+      "machineText": "[Modal File Manager](https://github.com/raguay/ModalFileManager) adalah pengelola berkas dua panel yang menggunakan teknologi web. Desain awal saya berbasis NW.js dan dapat ditemukan [di sini](https://github.com/raguay/ModalFileManager-NWjs). Versi ini menggunakan kode frontend berbasis Svelte yang sama (tetapi telah banyak dimodifikasi sejak beralih dari NW.js), sedangkan backend-nya merupakan implementasi [Wails 2](https://wails.io/). Dengan implementasi ini, saya tidak lagi menggunakan perintah baris perintah `rm`, `cp`, dan sebagainya, tetapi git harus terinstal pada sistem untuk mengunduh tema dan ekstensi. Aplikasi ini sepenuhnya dikembangkan menggunakan Go dan berjalan jauh lebih cepat daripada versi-versi sebelumnya.",
+      "status": "final",
+      "sourcePreview": "[Modal File Manager](https://github.com/raguay/ModalFileManager) is a dual pane\\ file manager using …",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "99ddc7fca550958f0a6fa1ab392be75c6d154ba33da7da797d3c3f31a0a5e549",
+      "targetHash": "1c62cff01c9f464ee97802bf9a117cc11821f5ddcb2c4284f30c06dc380c7eb0",
+      "machineHash": "1c62cff01c9f464ee97802bf9a117cc11821f5ddcb2c4284f30c06dc380c7eb0",
+      "machineText": "Pengelola berkas ini dirancang berdasarkan prinsip yang sama dengan Vim: tindakan papan ketik yang dikendalikan oleh status. Jumlah status tidak tetap, tetapi sangat mudah diprogram. Karena itu, konfigurasi papan ketik dalam jumlah tak terbatas dapat dibuat dan digunakan. Inilah perbedaan utamanya dibandingkan pengelola berkas lain. Tema dan ekstensi tersedia untuk diunduh dari GitHub.",
+      "status": "final",
+      "sourcePreview": "This file manager is designed around the same principle as Vim: a state\\ controlled keyboard actions…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "72ab292644c59a9254b9b454091491d89dff9f426a9c05d1a7b716758b57a72e",
+      "machineHash": "72ab292644c59a9254b9b454091491d89dff9f426a9c05d1a7b716758b57a72e",
+      "machineText": "Aplikasi desktop yang dibangun dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "targetHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineText": "Modal File Manager",
+      "status": "final",
+      "sourcePreview": "Modal File Manager",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "beac950f78189046d4c7",
+  "sourceFile": "blog/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ca8682fbf96dc8fe164259aaaf72388790201e4a7ded9b6bf2194868787a0742",
+      "targetHash": "be415d6bc44866d0498e8aece26b77ea2c2428d1f9c781d970ac39840f00835f",
+      "machineHash": "be415d6bc44866d0498e8aece26b77ea2c2428d1f9c781d970ac39840f00835f",
+      "machineText": "[Wails v3 bêta : une nouvelle base pour les applications de bureau en Go](/blog/wails-v3-beta/)",
+      "status": "final",
+      "sourcePreview": "[Wails v3 Beta: a new foundation for Go desktop applications](/blog/wails-v3-beta/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "547fc3564602f5550e9d2b297bb44633a2120106b350e3d3d5f14ead0af8be98",
+      "targetHash": "547fc3564602f5550e9d2b297bb44633a2120106b350e3d3d5f14ead0af8be98",
+      "machineHash": "547fc3564602f5550e9d2b297bb44633a2120106b350e3d3d5f14ead0af8be98",
+      "machineText": "[Article](/blog/wails-v2-released/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-released/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "ef499b047f439374c6627828329b46d1c5b33c78aef5a2c67b32943d6ea65749",
+      "targetHash": "ef499b047f439374c6627828329b46d1c5b33c78aef5a2c67b32943d6ea65749",
+      "machineHash": "ef499b047f439374c6627828329b46d1c5b33c78aef5a2c67b32943d6ea65749",
+      "machineText": "[Article](/blog/wails-v2-beta-for-windows/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-windows/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "0a4c85d06fefdc4dbac3df4ba26445fe659ac8b0f43171a9847811704eed4355",
+      "targetHash": "0a4c85d06fefdc4dbac3df4ba26445fe659ac8b0f43171a9847811704eed4355",
+      "machineHash": "0a4c85d06fefdc4dbac3df4ba26445fe659ac8b0f43171a9847811704eed4355",
+      "machineText": "[Article](/blog/wails-v2-beta-for-mac/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-mac/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "fe765b69bea94b54ea92ffea0ccbd984daa6d7ce03a71db4c9aac6a235bcbbdb",
+      "targetHash": "fe765b69bea94b54ea92ffea0ccbd984daa6d7ce03a71db4c9aac6a235bcbbdb",
+      "machineHash": "fe765b69bea94b54ea92ffea0ccbd984daa6d7ce03a71db4c9aac6a235bcbbdb",
+      "machineText": "[Article](/blog/wails-v2-beta-for-linux/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-linux/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "e11baa3cdb74761fba22784c5ba5919eaceb9b809d4a841067341f0c66b68aee",
+      "targetHash": "e11baa3cdb74761fba22784c5ba5919eaceb9b809d4a841067341f0c66b68aee",
+      "machineHash": "e11baa3cdb74761fba22784c5ba5919eaceb9b809d4a841067341f0c66b68aee",
+      "machineText": "[Article](/blog/the-road-to-wails-v3/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/the-road-to-wails-v3/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "36492130577cd7d5dbf8de13e5681ecc3f11c4c772d04f4320dc05a6c326713c",
+      "targetHash": "36492130577cd7d5dbf8de13e5681ecc3f11c4c772d04f4320dc05a6c326713c",
+      "machineHash": "36492130577cd7d5dbf8de13e5681ecc3f11c4c772d04f4320dc05a6c326713c",
+      "machineText": "[Article](/blog/2024-12-03-alpha10-and-new-release-strategy/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/2024-12-03-alpha10-and-new-release-strategy/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "a338b3b343646573fb89b80207c76989d89c11e9ab0bc28a5c7c1068df0f6909",
+      "targetHash": "4f7acfb8a983b399a438663598fce9051a01997554ad2fddd9e379457c409c6c",
+      "machineHash": "4f7acfb8a983b399a438663598fce9051a01997554ad2fddd9e379457c409c6c",
+      "machineText": "Actualités, versions et mises à jour du projet.",
+      "status": "final",
+      "sourcePreview": "News, releases, and project updates.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a",
+      "targetHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a",
+      "machineHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a",
+      "machineText": "Blog",
+      "status": "final",
+      "sourcePreview": "Blog",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  }
+}

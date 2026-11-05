@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment13Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment12Vtbl
 	GetProcessExtendedInfos ComProc
 }
 

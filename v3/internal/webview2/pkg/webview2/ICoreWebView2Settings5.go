@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings4Vtbl
 	GetIsPinchZoomEnabled ComProc
 	PutIsPinchZoomEnabled ComProc
 }

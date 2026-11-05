@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4bc85eb5a97009954582",
+  "sourceFile": "features/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
+      "targetHash": "9b2274d648272eee5f56622c17e52346b1ef727fc5bbc13aa520dca005197f47",
+      "machineHash": "9b2274d648272eee5f56622c17e52346b1ef727fc5bbc13aa520dca005197f47",
+      "machineText": "Recursos",
+      "status": "final",
+      "sourcePreview": "Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:41Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
+      "targetHash": "9b2274d648272eee5f56622c17e52346b1ef727fc5bbc13aa520dca005197f47",
+      "machineHash": "9b2274d648272eee5f56622c17e52346b1ef727fc5bbc13aa520dca005197f47",
+      "machineText": "Recursos",
+      "status": "final",
+      "sourcePreview": "Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:41Z"
+    }
+  }
+}

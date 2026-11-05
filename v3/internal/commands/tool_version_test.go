@@ -229,3 +229,48 @@ func TestToolVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestBumpPrerelease(t *testing.T) {
+	cases := []struct{ input, want string }{
+		{"", ""},
+		{"alpha", "alpha"},
+		{"0", "1"},
+		{"9", "10"},
+		{"alpha.5", "alpha.6"},
+		{"alpha.009", "alpha.10"},
+		{"alpha.000", "alpha.1"},
+		{"alpha.1299", "alpha.1300"},
+		{"alpha.", "alpha."},
+		{"alpha.１２", "alpha.１２"},
+		{"alpha.9beta", "alpha.9beta"},
+		{"alpha.-1", "alpha.-1"},
+		{"alpha.9223372036854775807", "alpha.9223372036854775808"},
+		{"alpha.18446744073709551616", "alpha.18446744073709551617"},
+		{"999999999999999999999999999999", "1000000000000000000000000000000"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.input, func(t *testing.T) {
+			if got := bumpPrerelease(tc.input); got != tc.want {
+				t.Errorf("bumpPrerelease(%q)=%q, want %q", tc.input, got, tc.want)
+			}
+		})
+	}
+}
+
+func BenchmarkBumpPrerelease(b *testing.B) {
+	for _, tc := range []struct{ name, input, want string }{
+		{"nightly", "nightly.123", "nightly.124"},
+		{"long_prefix", strings.Repeat("preview.", 32) + "123", strings.Repeat("preview.", 32) + "124"},
+		{"large_carry", "alpha." + strings.Repeat("9", 128), "alpha.1" + strings.Repeat("0", 128)},
+		{"nonnumeric", "alpha.preview", "alpha.preview"},
+	} {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				if got := bumpPrerelease(tc.input); got != tc.want {
+					b.Fatalf("got %q, want %q", got, tc.want)
+				}
+			}
+		})
+	}
+}

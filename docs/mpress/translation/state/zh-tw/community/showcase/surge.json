@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "79ceb4864966242788ef",
+  "sourceFile": "community/showcase/surge.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "0af05ee91a28062d2b28397a2a31a48e838b7764e9b2f9ee5f99225dd5e25c99",
+      "targetHash": "b860c02fa3405f174d055f4d4b67dcead26503803e6fa788cbed20cd0a45883c",
+      "machineHash": "b860c02fa3405f174d055f4d4b67dcead26503803e6fa788cbed20cd0a45883c",
+      "machineText": "![Surge 螢幕截圖](/assets/showcase-images/surge.png)",
+      "status": "final",
+      "sourcePreview": "![Surge Screenshot](/assets/showcase-images/surge.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "fddae11c6e8520c88e1862557a5fdda16a3a35e1d694ff5e1686eff194ea6282",
+      "targetHash": "6af9804ddd2904eeeaa2f2c5bc9c97ffc73cb0a834c4095c5b9085c34b1bba10",
+      "machineHash": "6af9804ddd2904eeeaa2f2c5bc9c97ffc73cb0a834c4095c5b9085c34b1bba10",
+      "machineText": "[Surge](https://getsurge.io/) 是一款點對點檔案分享應用程式，旨在運用\\\n區塊鏈技術實現 100% 匿名檔案傳輸。Surge 採用\\\n端對端加密，並具備去中心化與開放原始碼的特性。",
+      "status": "final",
+      "sourcePreview": "[Surge](https://getsurge.io/) is a p2p filesharing app designed to utilize\\ blockchain technologies …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "targetHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "machineHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "machineText": "Surge",
+      "status": "final",
+      "sourcePreview": "Surge",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

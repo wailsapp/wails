@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "34ab49b9a8f9c8fd0c32",
+  "sourceFile": "community/showcase/wombat.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "00e07135908631bd2923bd26e9899b8e5f9841fa1cf982a92dcfed204811d920",
+      "targetHash": "b9c16e6690f2ff3c62ea4c5578545ffb7ef3a6d445338cd455a05c2ae8754cdc",
+      "machineHash": "b9c16e6690f2ff3c62ea4c5578545ffb7ef3a6d445338cd455a05c2ae8754cdc",
+      "machineText": "![Снимок экрана Wombat](/assets/showcase-images/wombat.webp)",
+      "status": "final",
+      "sourcePreview": "![Wombat Screenshot](/assets/showcase-images/wombat.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "e0347409ce3ac33676f9d23a41c5f1881c019b68ec9723e6a4ff1b68586e26c0",
+      "targetHash": "346b105b9d4c2678ebdfb4c57c6a28143cb9c261d2fd2350edee01a2cf23fdfe",
+      "machineHash": "346b105b9d4c2678ebdfb4c57c6a28143cb9c261d2fd2350edee01a2cf23fdfe",
+      "machineText": "[Wombat](https://github.com/rogchap/wombat) — кроссплатформенный клиент gRPC.",
+      "status": "final",
+      "sourcePreview": "[Wombat](https://github.com/rogchap/wombat) is a cross platform gRPC client.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineText": "Настольное приложение, созданное с помощью Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "70768858858955a998d79f0838f5185ccc5f86261887cfc7492bcabc0c48cf54",
+      "targetHash": "70768858858955a998d79f0838f5185ccc5f86261887cfc7492bcabc0c48cf54",
+      "machineHash": "70768858858955a998d79f0838f5185ccc5f86261887cfc7492bcabc0c48cf54",
+      "machineText": "Wombat",
+      "status": "final",
+      "sourcePreview": "Wombat",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  }
+}

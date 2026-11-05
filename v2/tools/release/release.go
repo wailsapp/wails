@@ -15,6 +15,11 @@ import (
 
 const versionFile = "../../cmd/wails/internal/version.txt"
 
+// pnpm is pinned to the major that wrote website/pnpm-lock.yaml. An unpinned
+// npx pnpm resolves to the latest release, whose different settings and
+// supply-chain checks break the release run.
+const pnpm = "pnpm@10"
+
 func checkError(err error) {
 	if err != nil {
 		println(err.Error())
@@ -57,13 +62,13 @@ func runCommand(name string, arg ...string) {
 }
 
 func updateDocs(newVersion string) {
-	runCommand("npx", "-y", "pnpm", "install", "--no-frozen-lockfile")
+	runCommand("npx", "-y", pnpm, "install", "--frozen-lockfile")
 
 	s.ECHO("Generating new Docs for version: " + newVersion)
 
-	runCommand("npx", "pnpm", "run", "docusaurus", "docs:version", newVersion)
+	runCommand("npx", "-y", pnpm, "run", "docusaurus", "docs:version", newVersion)
 
-	runCommand("npx", "pnpm", "run", "write-translations")
+	runCommand("npx", "-y", pnpm, "run", "write-translations")
 
 	// Load the version list
 	versionsData, err := os.ReadFile("versions.json")
@@ -86,7 +91,7 @@ func updateDocs(newVersion string) {
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 	s.CD("..")
 
-	runCommand("npx", "pnpm", "run", "build")
+	runCommand("npx", "-y", pnpm, "run", "build")
 }
 
 func main() {

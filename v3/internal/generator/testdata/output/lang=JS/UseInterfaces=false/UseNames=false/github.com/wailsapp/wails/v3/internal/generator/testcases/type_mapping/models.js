@@ -343,5 +343,10 @@ const $$createType6 = $Create.Nullable($$createType5);
 const $$createType7 = $Create.Struct({
     "MapByteBool": $$createType3,
 });
-const $$createType8 = GenericType.createFrom($Create.Any);
+var $$createType8 = /** @type {(...args: any[]) => any} */(function $$initCreateType8(...args) {
+    if ($$createType8 === $$initCreateType8) {
+        $$createType8 = GenericType.createFrom($Create.Any);
+    }
+    return $$createType8(...args);
+});
 const $$createType9 = /** @type {(...args: any[]) => any} */(($$createParamT) => $Create.Array($$createParamT));

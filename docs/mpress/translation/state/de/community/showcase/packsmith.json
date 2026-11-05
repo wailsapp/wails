@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "340eea887f00d84772f2",
+  "sourceFile": "community/showcase/packsmith.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "932e896430131c38239abc49a8f4e4899372301dfb4f64fe3d7d170795a72319",
+      "targetHash": "afb528854fe1ca3e97f4e26029198325c89b2450b0761cbdd144209b522a5cf2",
+      "machineHash": "afb528854fe1ca3e97f4e26029198325c89b2450b0761cbdd144209b522a5cf2",
+      "machineText": "![Screenshot von Packsmith](/assets/showcase-images/packsmith-screenshot.webp)",
+      "status": "final",
+      "sourcePreview": "![Packsmith Screenshot](/assets/showcase-images/packsmith-screenshot.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "46111fe2df653c08911ac749296553db05a564dcbb66f435edc10fb54a9a04d6",
+      "targetHash": "1a62221d272a1de9c7bd3b665dbd86982a5d8ba60b7d52f25d5c4cd8fd3e15e8",
+      "machineHash": "1a62221d272a1de9c7bd3b665dbd86982a5d8ba60b7d52f25d5c4cd8fd3e15e8",
+      "machineText": "[Packsmith](https://github.com/sqot0/packsmith) ist eine Open-Source-Anwendung zur Verwaltung von Minecraft-Modpacks, mit der du Folgendes tun kannst:",
+      "status": "final",
+      "sourcePreview": "[Packsmith](https://github.com/sqot0/packsmith) is an open source application for managing Minecraft…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "c8d2da6e4bc3bd6772a232352afab58dff5e816586545baaedc78ac056775f98",
+      "targetHash": "c726e37163ce229f87965f06e293765d34234f30f05f756bb27f2a2e966f70c5",
+      "machineHash": "c726e37163ce229f87965f06e293765d34234f30f05f756bb27f2a2e966f70c5",
+      "machineText": "Modpacks mit den Mod-Loadern Forge, Fabric, Neoforge oder Quilt verwalten.",
+      "status": "final",
+      "sourcePreview": "Manage modpacks with Forge, Fabric, Neoforge, or Quilt mod loaders.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e0999c02823685af1b1606fdfd868135d19b912334c6c18a9be902458adf39b3",
+      "targetHash": "4d45ea84b909c46c494200cb85539cfed571ca4ba45fce52eb6c89addbb1a55c",
+      "machineHash": "4d45ea84b909c46c494200cb85539cfed571ca4ba45fce52eb6c89addbb1a55c",
+      "machineText": "Mods auf Modrinth und CurseForge suchen und herunterladen.",
+      "status": "final",
+      "sourcePreview": "Search and download mods from Modrinth and CurseForge.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "9123c223edc18ebff5904b418621e19b6b137bb04c6d177a500beaedffa67d2d",
+      "targetHash": "12a1c73d8cea666e5652d09786676753f3ccbb5a131b86ac3753a11731263851",
+      "machineHash": "12a1c73d8cea666e5652d09786676753f3ccbb5a131b86ac3753a11731263851",
+      "machineText": "Mods für Client und Server getrennt verwalten.",
+      "status": "final",
+      "sourcePreview": "Separate mods for client and server.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "6413845d8d0a9778a0fa6e580d48199159d444809792a4c143616400e52a0e5e",
+      "targetHash": "f19297d492979c3ff4dcf3b0423f490fce6816dfddbe16fe73aa69495be9a071",
+      "machineHash": "f19297d492979c3ff4dcf3b0423f490fce6816dfddbe16fe73aa69495be9a071",
+      "machineText": "Mods in deinem Modpack aktualisieren, ihre Version ändern oder sie löschen.",
+      "status": "final",
+      "sourcePreview": "Update, change versions, or delete mods from your modpack.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineText": "Eine mit Wails entwickelte Desktopanwendung",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "targetHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineText": "Packsmith",
+      "status": "final",
+      "sourcePreview": "Packsmith",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    }
+  }
+}

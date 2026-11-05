@@ -45,6 +45,12 @@ func androidBridgeString(method string) (string, bool) {
 	return "", false
 }
 
+func androidBridgeStringString(method string, arg string) (string, bool) {
+	return "", false
+}
+
+func androidBridgeVoid(method string) {}
+
 func androidBridgeVoidString(method string, arg string) {}
 
 func androidBridgeVoidInt(method string, v int) {}

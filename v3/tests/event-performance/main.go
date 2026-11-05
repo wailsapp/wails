@@ -386,12 +386,31 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 				case <-done:
 					return
 				case <-ticker.C:
-					seq := sc.nextSeq()
-					ev := &application.CustomEvent{
-						Name: "perf",
-						Data: perfPayload{Seq: seq, TMS: h.nowMS(), Pad: pad},
-					}
-					application.InvokeAsync(func() { win.DispatchWailsEvent(ev) })
+					// The sequence number must be taken inside the callback,
+					// at the moment DispatchWailsEvent is actually called.
+					// Taking it out here and deferring the dispatch would make
+					// seq order differ from call order by construction, and
+					// every reorder the JS side counted would be this loop's
+					// own race rather than anything the framework did.
+					// Acquired here, on the ticker goroutine, and released by
+					// the UI callback below. Locking inside the callback
+					// instead would put the UI thread behind a lock that a
+					// goroutine can be holding while it waits for queue
+					// capacity — and since the UI thread is the drainer, that
+					// wait could never be relieved. Handing the lock over means
+					// only this goroutine ever waits for it.
+					//
+					// sync.Mutex permits unlocking from a different goroutine.
+					sc.emitMu.Lock()
+					application.InvokeAsync(func() {
+						defer sc.emitMu.Unlock()
+						seq := sc.nextSeq()
+						ev := &application.CustomEvent{
+							Name: "perf",
+							Data: perfPayload{Seq: seq, TMS: h.nowMS(), Pad: pad},
+						}
+						win.DispatchWailsEvent(ev)
+					})
 				}
 			}
 		}()
@@ -421,6 +440,9 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 				n := int(credit)
 				credit -= float64(n)
 				for i := 0; i < n; i++ {
+					if sc.MixedSource {
+						sc.emitMu.Lock()
+					}
 					seq := sc.nextSeq()
 					body := pad
 					if seq%2 == 1 {
@@ -431,7 +453,14 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 						Data: perfPayload{Seq: seq, TMS: h.nowMS(), Pad: body},
 					}
 					t := time.Now()
-					win.DispatchWailsEvent(ev)
+					func() {
+						// A panic in dispatch must not leave emitMu held, or
+						// every later emit in this scenario would wedge.
+						if sc.MixedSource {
+							defer sc.emitMu.Unlock()
+						}
+						win.DispatchWailsEvent(ev)
+					}()
 					us := float64(time.Since(t).Nanoseconds()) / 1e3
 
 					h.mu.Lock()

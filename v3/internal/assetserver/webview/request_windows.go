@@ -121,9 +121,7 @@ func (r *request) Close() error {
 func (r *request) finishResponse() error {
 	var errs []error
 	if r.response != nil {
-		if err := r.response.Release(); err != nil {
-			errs = append(errs, err)
-		}
+		r.response.Release()
 		r.response = nil
 	}
 	if r.deferral != nil {
@@ -131,9 +129,7 @@ func (r *request) finishResponse() error {
 			errs = append(errs, err)
 		}
 
-		if err := r.deferral.Release(); err != nil {
-			errs = append(errs, err)
-		}
+		r.deferral.Release()
 		r.deferral = nil
 	}
 	return combineErrs(errs)
@@ -156,7 +152,8 @@ func (i *iStreamReleaseCloser) Close() error {
 		return nil
 	}
 	i.closed = true
-	return i.stream.Release()
+	i.stream.Release()
+	return nil
 }
 
 func getHeaders(req *edge.ICoreWebView2WebResourceRequest) (http.Header, error) {

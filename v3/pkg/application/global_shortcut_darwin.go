@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -54,6 +54,59 @@ static int unregisterHotKey(EventHotKeyRef ref) {
     }
     return (int)UnregisterEventHotKey(ref);
 }
+
+// scanLayoutForChar returns the first virtual key code that produces target
+// (a lower-case character) with no modifiers under the given Unicode keyboard
+// layout, or -1 if no key does.
+static int scanLayoutForChar(const UCKeyboardLayout *layout, unsigned short target) {
+    UInt32 kbdType = LMGetKbdType();
+    for (int code = 0; code < 128; code++) {
+        UInt32 deadKeyState = 0;
+        UniChar chars[4];
+        UniCharCount len = 0;
+        OSStatus status = UCKeyTranslate(layout, (UInt16)code, kUCKeyActionDown, 0,
+                                         kbdType, kUCKeyTranslateNoDeadKeysBit,
+                                         &deadKeyState, 4, &len, chars);
+        if (status == noErr && len == 1) {
+            UniChar c = chars[0];
+            if (c >= 'A' && c <= 'Z') c = (UniChar)(c - 'A' + 'a');
+            if (c == target) {
+                return code;
+            }
+        }
+    }
+    return -1;
+}
+
+// keyCodeForChar returns the virtual key code that produces target under the
+// *current* keyboard layout, or -1 if the active layout has no such key. This
+// lets a letter accelerator bind to the physical key labelled with that letter
+// on non-QWERTY layouts (AZERTY, QWERTZ, Dvorak, ...) rather than the fixed
+// ANSI/QWERTY position.
+static int keyCodeForChar(unsigned short target) {
+    TISInputSourceRef src = TISCopyCurrentKeyboardLayoutInputSource();
+    if (src == NULL) {
+        return -1;
+    }
+    CFDataRef data = (CFDataRef)TISGetInputSourceProperty(src, kTISPropertyUnicodeKeyLayoutData);
+    if (data == NULL) {
+        // Some input sources (for example IME-based ones) expose no Unicode
+        // layout data. Fall back to an ASCII-capable layout so letters resolve.
+        CFRelease(src);
+        src = TISCopyCurrentASCIICapableKeyboardLayoutInputSource();
+        if (src == NULL) {
+            return -1;
+        }
+        data = (CFDataRef)TISGetInputSourceProperty(src, kTISPropertyUnicodeKeyLayoutData);
+        if (data == NULL) {
+            CFRelease(src);
+            return -1;
+        }
+    }
+    int code = scanLayoutForChar((const UCKeyboardLayout *)CFDataGetBytePtr(data), target);
+    CFRelease(src);
+    return code;
+}
 */
 import "C"
 
@@ -88,9 +141,9 @@ func newGlobalShortcutImpl(manager *GlobalShortcutManager) globalShortcutImpl {
 }
 
 func (g *macosGlobalShortcuts) register(id int, accel *accelerator) error {
-	keyCode, ok := macKeyCodes[accel.Key]
-	if !ok {
-		return fmt.Errorf("key %q is not supported as a global shortcut on macOS", accel.Key)
+	keyCode, err := macKeyCodeFor(accel.Key)
+	if err != nil {
+		return err
 	}
 
 	var mods C.uint
@@ -132,16 +185,6 @@ func (g *macosGlobalShortcuts) unregister(id int) error {
 	return nil
 }
 
-func (g *macosGlobalShortcuts) unregisterAll() error {
-	var firstErr error
-	for id := range g.refs {
-		if err := g.unregister(id); err != nil && firstErr == nil {
-			firstErr = err
-		}
-	}
-	return firstErr
-}
-
 //export globalShortcutCallback
 func globalShortcutCallback(id C.int) {
 	if globalApplication != nil && globalApplication.GlobalShortcut != nil {
@@ -151,14 +194,10 @@ func globalShortcutCallback(id C.int) {
 
 // macKeyCodes maps Wails accelerator key names (already lower-cased by
 // parseAccelerator) to macOS hardware virtual key codes (kVK_* from Carbon's
-// HIToolbox/Events.h).
-//
-// NOTE: macOS hot keys are bound to *hardware* key codes, not characters, so
-// this table assumes a standard ANSI/QWERTY physical layout. On non-QWERTY
-// layouts the physical key in the QWERTY position is what triggers the
-// shortcut. This matches the behaviour of essentially every macOS global hot
-// key implementation; a layout-aware mapping (via UCKeyTranslate) could be
-// added later if required.
+// HIToolbox/Events.h). These are physical key positions in the standard
+// ANSI/QWERTY layout. Letters are normally resolved against the active layout
+// (see macKeyCodeFor); this table provides the positional codes for every other
+// key, and the fallback position for letters the active layout cannot produce.
 var macKeyCodes = map[string]int{
 	// Letters
 	"a": 0, "s": 1, "d": 2, "f": 3, "h": 4, "g": 5, "z": 6, "x": 7,
@@ -192,4 +231,9 @@ var macKeyCodes = map[string]int{
 	"f7": 98, "f8": 100, "f9": 101, "f10": 109, "f11": 103, "f12": 111,
 	"f13": 105, "f14": 107, "f15": 113, "f16": 106, "f17": 64, "f18": 79,
 	"f19": 80, "f20": 90,
+}
+
+// keyCodeForChar returns the virtual key code for a lowercase ASCII letter.
+func keyCodeForChar(target uint16) int {
+	return int(C.keyCodeForChar(C.ushort(target)))
 }

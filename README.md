@@ -32,7 +32,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -94,10 +94,10 @@ Wails has two active versions:
 
 | Version | Status | Install | Docs |
 |---|---|---|---|
-| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3 | Beta | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [v2.wails.io](https://v2.wails.io/) |
+| v3.0.0 | Stable | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [wails.io](https://wails.io/) |
 
-Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
+Full installation instructions are available for [v2](https://v2.wails.io/docs/gettingstarted/installation) and [v3](https://wails.io).
 
 ## Sponsors
 
@@ -107,6 +107,8 @@ This project is supported by these kind people / companies:
 ## Powered By
 
 [![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
+
+Thanks to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting Wails with AI code reviews.
 
 ## FAQ
 
@@ -129,18 +131,16 @@ This project is supported by these kind people / companies:
 
 ## Stargazers over time
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Wails star history chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Contributors
 
+To improve the v3 documentation, follow [Write documentation with M-Press](docs/mpress/content/contributing/documentation.md) for downloads, installation, preview and submitting a PR.
+
 The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+project have their own page [here](https://wails.io/credits/).
 
 ## License
 

@@ -1,4 +1,4 @@
-//go:build linux && cgo && gtk3 && !android
+//go:build linux && cgo && gtk3 && !android && !purego
 
 package webview
 
@@ -41,35 +41,6 @@ type responseWriter struct {
 	wErr error
 }
 
-func (rw *responseWriter) Code() int {
-	return rw.code
-}
-
-func (rw *responseWriter) Header() http.Header {
-	if rw.header == nil {
-		rw.header = http.Header{}
-	}
-	return rw.header
-}
-
-func (rw *responseWriter) Write(buf []byte) (int, error) {
-	if rw.finished {
-		return 0, errResponseFinished
-	}
-
-	rw.WriteHeader(http.StatusOK)
-	if rw.wErr != nil {
-		return 0, rw.wErr
-	}
-	return rw.w.Write(buf)
-}
-
-// Flush implements the http.Flusher interface.
-//
-// Write goes into the pipe WebKitGTK reads from, so nothing is buffered on
-// this side.
-func (rw *responseWriter) Flush() {}
-
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.code = code
 	if rw.wroteHeader || rw.finished {
@@ -86,7 +57,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 
 	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
 	// read FD is given to the InputStream and will be closed there.
-	// Furthermore we especially don't want to have the FD_CLOEXEC
 	rFD, w, err := pipe()
 	if err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to open pipe: %s", err))
@@ -101,21 +71,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
 		return
 	}
-}
-
-func (rw *responseWriter) Finish() error {
-	if !rw.wroteHeader {
-		rw.WriteHeader(http.StatusNotImplemented)
-	}
-
-	if rw.finished {
-		return nil
-	}
-	rw.finished = true
-	if rw.w != nil {
-		rw.w.Close()
-	}
-	return nil
 }
 
 func (rw *responseWriter) finishWithError(code int, err error) {
@@ -142,11 +97,13 @@ type nopCloser struct {
 	io.Writer
 }
 
-func (nopCloser) Close() error { return nil }
-
+// pipe creates the response body pipe with O_CLOEXEC on both ends. Without it, a
+// child process forked while a response is in flight (os/exec, a helper the app
+// spawns, ...) inherits the write end, and WebKit never sees EOF on the body
+// until that child exits, so fetch() stalls although the handler has returned.
 func pipe() (r int, w *os.File, err error) {
 	var p [2]int
-	e := syscall.Pipe2(p[0:], 0)
+	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	if e != nil {
 		return 0, nil, fmt.Errorf("pipe2: %s", e)
 	}

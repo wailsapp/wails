@@ -203,12 +203,17 @@ func TestMCPOriginAllowed(t *testing.T) {
 		allowed bool
 	}{
 		{"", true},
-		{"null", true},
+		{"null", false},
 		{"http://localhost:3000", true},
 		{"http://127.0.0.1:8080", true},
 		{"http://[::1]:0", true},
 		{"http://evil.com", false},
 		{"https://attacker.com", false},
+		{"file://localhost", false},
+		{"http://localhost/path", false},
+		{"http://user@localhost", false},
+		{"http://localhost?query", false},
+		{"http://localhost#fragment", false},
 	}
 	for _, tc := range cases {
 		req := httptest.NewRequest(http.MethodPost, "/mcp", nil)
@@ -273,5 +278,79 @@ func TestMCPEnvVarDefaults(t *testing.T) {
 	}
 	if mcpDefaultTimeout != 30*time.Second {
 		t.Errorf("unexpected default timeout: %v", mcpDefaultTimeout)
+	}
+}
+
+func TestMCPRejectsOpaqueOriginsBeforeToolDispatch(t *testing.T) {
+	for _, method := range []string{http.MethodOptions, http.MethodPost} {
+		t.Run(method, func(t *testing.T) {
+			m := newTestMCPServer()
+			called := false
+			m.tools = []*mcpTool{{Name: "probe", Handler: func(map[string]any) (any, error) { called = true; return nil, nil }}}
+			req := httptest.NewRequest(method, "/mcp", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"probe"}}`))
+			req.Header.Set("Origin", "null")
+			rec := httptest.NewRecorder()
+			m.handleMCP(rec, req)
+			if rec.Code != http.StatusForbidden || called {
+				t.Fatalf("status=%d, dispatched=%v", rec.Code, called)
+			}
+			if rec.Header().Get("Access-Control-Allow-Origin") != "" {
+				t.Fatal("rejected origin received CORS permission")
+			}
+		})
+	}
+}
+
+func TestMCPBearerAuthentication(t *testing.T) {
+	for _, tc := range []struct {
+		name, authorization string
+		want                int
+	}{
+		{"missing", "", http.StatusUnauthorized},
+		{"wrong", "Bearer wrong", http.StatusUnauthorized},
+		{"scheme", "Basic test-token", http.StatusUnauthorized},
+		{"valid", "Bearer test-token", http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := newTestMCPServer()
+			m.authToken = "test-token"
+			called := false
+			m.tools = []*mcpTool{{Name: "probe", Handler: func(map[string]any) (any, error) { called = true; return nil, nil }}}
+			req := httptest.NewRequest(http.MethodPost, "/mcp", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"probe"}}`))
+			req.Header.Set("Authorization", tc.authorization)
+			rec := httptest.NewRecorder()
+			m.handleMCP(rec, req)
+			if rec.Code != tc.want || called != (tc.want == http.StatusOK) {
+				t.Fatalf("status=%d, dispatched=%v", rec.Code, called)
+			}
+		})
+	}
+}
+
+func TestMCPAuthenticatedPreflight(t *testing.T) {
+	m := newTestMCPServer()
+	m.authToken = "test-token"
+	req := httptest.NewRequest(http.MethodOptions, "/mcp", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	rec := httptest.NewRecorder()
+	m.handleMCP(rec, req)
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status=%d", rec.Code)
+	}
+}
+
+func TestMCPBindRequiresTokenOutsideLoopback(t *testing.T) {
+	for _, host := range []string{"localhost", "127.0.0.1", "::1"} {
+		if err := validateMCPBind(host, ""); err != nil {
+			t.Errorf("%s: %v", host, err)
+		}
+	}
+	for _, host := range []string{"0.0.0.0", "::", "192.0.2.1", "example.com"} {
+		if err := validateMCPBind(host, ""); err == nil {
+			t.Errorf("%s allowed without token", host)
+		}
+		if err := validateMCPBind(host, "test-token"); err != nil {
+			t.Errorf("%s: %v", host, err)
+		}
 	}
 }

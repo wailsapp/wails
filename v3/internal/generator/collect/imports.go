@@ -176,10 +176,12 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
-			if _, isAlias := typ.(*types.Alias); isAlias {
+			if _, isAlias := typ.(*types.Alias); isAlias && !IsJSONv2CompatAlias(typ) {
 				// Aliased type might be needed during
 				// JS value creation and initialisation.
-				typ = types.Unalias(typ)
+				// Stop at aliases from encoding/json to encoding/json/v2
+				// so that they are handled like named types.
+				typ = UnaliasJSONv2Compat(typ)
 				break
 			}
 

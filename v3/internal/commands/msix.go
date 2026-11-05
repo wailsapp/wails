@@ -1,16 +1,22 @@
 package commands
 
 import (
+	"bytes"
 	"embed"
-	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"golang.org/x/image/draw"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed build_assets/windows/msix/*
@@ -18,25 +24,7 @@ var msixAssets embed.FS
 
 // MSIXOptions represents the configuration for MSIX packaging
 type MSIXOptions struct {
-	// Info from project config
-	Info struct {
-		CompanyName       string `json:"companyName"`
-		ProductName       string `json:"productName"`
-		ProductVersion    string `json:"version"`
-		ProductIdentifier string `json:"productIdentifier"`
-		Description       string `json:"description"`
-		Copyright         string `json:"copyright"`
-		Comments          string `json:"comments"`
-	}
-	// File associations
-	FileAssociations []struct {
-		Ext         string `json:"ext"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		IconName    string `json:"iconName"`
-		Role        string `json:"role"`
-		MimeType    string `json:"mimeType,omitempty"`
-	} `json:"fileAssociations"`
+	WailsConfig
 	// MSIX specific options
 	Publisher             string `json:"publisher"`
 	CertificatePath       string `json:"certificatePath"`
@@ -45,6 +33,8 @@ type MSIXOptions struct {
 	ExecutableName        string `json:"executableName"`
 	ExecutablePath        string `json:"executablePath"`
 	OutputPath            string `json:"outputPath"`
+	AppxManifest          string `json:"appxManifest,omitempty"`
+	IconPath              string `json:"iconPath,omitempty"`
 	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
 	UseMakeAppx           bool   `json:"useMakeAppx"`
 }
@@ -53,7 +43,7 @@ type MSIXOptions struct {
 func ToolMSIX(options *flags.ToolMSIX) error {
 	DisableFooter = true
 
-	if runtime.GOOS != "windows" {
+	if manifestHostOS != "windows" {
 		return fmt.Errorf("MSIX packaging is only supported on Windows")
 	}
 
@@ -65,7 +55,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 	// Load project configuration
 	configPath := options.ConfigPath
 	if configPath == "" {
-		configPath = "wails.json"
+		configPath = "build/config.yml"
 	}
 
 	// Read the config file
@@ -75,16 +65,15 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 	}
 
 	// Parse the config
-	var config struct {
-		Info             map[string]interface{}   `json:"info"`
-		FileAssociations []map[string]interface{} `json:"fileAssociations"`
-	}
-	if err := json.Unmarshal(configData, &config); err != nil {
+	var config WailsConfig
+	// YAML also accepts legacy JSON configuration files.
+	if err := yaml.Unmarshal(configData, &config); err != nil {
 		return fmt.Errorf("error parsing config file: %w", err)
 	}
 
 	// Create MSIX options
 	msixOptions := MSIXOptions{
+		WailsConfig:           config,
 		Publisher:             options.Publisher,
 		CertificatePath:       options.CertificatePath,
 		CertificatePassword:   options.CertificatePassword,
@@ -92,28 +81,10 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		ExecutableName:        options.ExecutableName,
 		ExecutablePath:        options.ExecutablePath,
 		OutputPath:            options.OutputPath,
+		AppxManifest:          options.AppxManifest,
+		IconPath:              options.IconPath,
 		UseMsixPackagingTool:  options.UseMsixPackagingTool,
 		UseMakeAppx:           options.UseMakeAppx,
-	}
-
-	// Copy info from config
-	infoBytes, err := json.Marshal(config.Info)
-	if err != nil {
-		return fmt.Errorf("error marshaling info: %w", err)
-	}
-	if err := json.Unmarshal(infoBytes, &msixOptions.Info); err != nil {
-		return fmt.Errorf("error unmarshaling info: %w", err)
-	}
-
-	// Copy file associations from config
-	if len(config.FileAssociations) > 0 {
-		faBytes, err := json.Marshal(config.FileAssociations)
-		if err != nil {
-			return fmt.Errorf("error marshaling file associations: %w", err)
-		}
-		if err := json.Unmarshal(faBytes, &msixOptions.FileAssociations); err != nil {
-			return fmt.Errorf("error unmarshaling file associations: %w", err)
-		}
 	}
 
 	// Validate options
@@ -134,39 +105,44 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 
 // checkMSIXTools checks if the required tools for MSIX packaging are installed
 func checkMSIXTools(options *flags.ToolMSIX) error {
-	// Check if MsixPackagingTool is installed if requested
+	// The Packaging Tool is opt-in; MakeAppx is the default.
 	if options.UseMsixPackagingTool {
-		cmd := exec.Command("powershell", "-Command", "Get-AppxPackage -Name Microsoft.MsixPackagingTool")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("Microsoft MSIX Packaging Tool is not installed. Please install it from the Microsoft Store")
+		if _, err := exec.LookPath("MsixPackagingTool.exe"); err != nil {
+			return fmt.Errorf("cannot find Microsoft MSIX Packaging Tool in PATH: %w", err)
 		}
+	} else if _, err := findWindowsSDKTool("MakeAppx.exe"); err != nil {
+		return err
 	}
-
-	// Check if MakeAppx is available if requested
-	if options.UseMakeAppx {
-		cmd := exec.Command("where", "MakeAppx.exe")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("MakeAppx.exe is not found in PATH. Please install the Windows SDK")
-		}
-	}
-
-	// If neither is specified, check for MakeAppx as the default
-	if !options.UseMsixPackagingTool && !options.UseMakeAppx {
-		cmd := exec.Command("where", "MakeAppx.exe")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("MakeAppx.exe is not found in PATH. Please install the Windows SDK")
-		}
-	}
-
-	// Check if signtool is available for signing
-	if options.CertificatePath != "" {
-		cmd := exec.Command("where", "signtool.exe")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("signtool.exe is not found in PATH. Please install the Windows SDK")
+	if options.CertificatePath != "" && !options.UseMsixPackagingTool {
+		if _, err := findWindowsSDKTool("signtool.exe"); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+// findWindowsSDKTool prefers PATH, then the Windows SDK's host-architecture tools.
+func findWindowsSDKTool(name string) (string, error) {
+	if path, err := exec.LookPath(name); err == nil {
+		return path, nil
+	}
+	root := os.Getenv("ProgramFiles(x86)")
+	if root == "" {
+		root = `C:\Program Files (x86)`
+	}
+	bin := filepath.Join(root, "Windows Kits", "10", "bin")
+	arch := archToMSIX(runtime.GOARCH)
+	matches, _ := filepath.Glob(filepath.Join(bin, "10.*"))
+	sort.Sort(sort.Reverse(sort.StringSlice(matches)))
+	matches = append(matches, bin)
+	for _, dir := range matches {
+		path := filepath.Join(dir, arch, name)
+		if info, err := os.Stat(path); err == nil && !info.IsDir() {
+			return path, nil
+		}
+	}
+	return "", fmt.Errorf("%s was not found in PATH or the Windows SDK; install the Windows SDK", name)
 }
 
 // validateMSIXOptions validates the MSIX options
@@ -203,6 +179,14 @@ func validateMSIXOptions(options *MSIXOptions) error {
 	// Set default processor architecture if not provided
 	if options.ProcessorArchitecture == "" {
 		options.ProcessorArchitecture = archToMSIX(runtime.GOARCH)
+	}
+
+	options.ProcessorArchitecture = archToMSIX(options.ProcessorArchitecture)
+	// Validate against the MSIX Identity schema after translating Go names.
+	switch options.ProcessorArchitecture {
+	case "x64", "x86", "arm", "arm64", "x86a64", "neutral":
+	default:
+		return fmt.Errorf("unsupported MSIX processor architecture %q: expected x64, x86, arm, arm64, x86a64, or neutral", options.ProcessorArchitecture)
 	}
 
 	// Set default publisher if not provided
@@ -269,7 +253,11 @@ func createMSIXWithMakeAppx(options *MSIXOptions) error {
 
 	// Create the MSIX package
 	fmt.Println("Creating MSIX package using MakeAppx.exe...")
-	cmd := exec.Command("MakeAppx.exe", "pack", "/d", tempDir, "/p", options.OutputPath)
+	makeAppx, err := findWindowsSDKTool("MakeAppx.exe")
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command(makeAppx, "pack", "/o", "/d", tempDir, "/p", options.OutputPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -288,7 +276,11 @@ func createMSIXWithMakeAppx(options *MSIXOptions) error {
 
 		signArgs = append(signArgs, options.OutputPath)
 
-		cmd = exec.Command("signtool.exe", signArgs...)
+		signTool, err := findWindowsSDKTool("signtool.exe")
+		if err != nil {
+			return err
+		}
+		cmd = exec.Command(signTool, signArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -298,6 +290,28 @@ func createMSIXWithMakeAppx(options *MSIXOptions) error {
 
 	fmt.Printf("MSIX package created successfully: %s\n", options.OutputPath)
 	return nil
+}
+
+// msixBuildConfig uses the same data contract as project build-asset generation.
+func msixBuildConfig(options *MSIXOptions) BuildConfig {
+	return BuildConfig{
+		BuildAssetsOptions: BuildAssetsOptions{
+			ProductName:           options.Info.ProductName,
+			ProductIdentifier:     options.Info.ProductIdentifier,
+			ProductVersion:        options.Info.Version,
+			ProductCompany:        options.Info.CompanyName,
+			ProductDescription:    options.Info.Description,
+			Publisher:             options.Publisher,
+			ProcessorArchitecture: options.ProcessorArchitecture,
+			BinaryName:            filepath.Base(options.ExecutableName),
+			ExecutableName:        filepath.Base(options.ExecutableName),
+			ExecutablePath:        options.ExecutablePath,
+			OutputPath:            options.OutputPath,
+			CertificatePath:       options.CertificatePath,
+		},
+		FileAssociations: options.FileAssociations,
+		Protocols:        options.Protocols,
+	}
 }
 
 // generateMSIXTemplate generates the MSIX template file for the Microsoft MSIX Packaging Tool
@@ -322,7 +336,7 @@ func generateMSIXTemplate(options *MSIXOptions, outputPath string) error {
 	defer file.Close()
 
 	// Execute the template
-	if err := tmpl.Execute(file, options); err != nil {
+	if err := tmpl.Execute(file, msixBuildConfig(options)); err != nil {
 		return fmt.Errorf("error executing template: %w", err)
 	}
 
@@ -339,13 +353,23 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 
 	// Generate the AppxManifest.xml file
 	manifestPath := filepath.Join(outputDir, "AppxManifest.xml")
-	if err := generateAppxManifest(options, manifestPath); err != nil {
-		return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+	if options.AppxManifest != "" {
+		if err := copyFile(options.AppxManifest, manifestPath, 0644); err != nil {
+			return fmt.Errorf("error copying AppxManifest.xml: %w", err)
+		}
+	} else {
+		if err := generateAppxManifest(options, manifestPath); err != nil {
+			return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+		}
 	}
 
 	// Copy the executable
-	executableDest := filepath.Join(outputDir, filepath.Base(options.ExecutablePath))
-	if err := copyFile(options.ExecutablePath, executableDest); err != nil {
+	executableName := options.ExecutableName
+	if executableName == "" {
+		executableName = filepath.Base(options.ExecutablePath)
+	}
+	executableDest := filepath.Join(outputDir, filepath.Base(executableName))
+	if err := copyFile(options.ExecutablePath, executableDest, 0644); err != nil {
 		return fmt.Errorf("error copying executable: %w", err)
 	}
 
@@ -353,7 +377,19 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 	// This would include DLLs, resources, etc.
 	// For now, we'll just copy the executable
 
-	// Generate placeholder assets
+	iconData, err := buildAssets.ReadFile("build_assets/appicon.png")
+	if options.IconPath != "" {
+		iconData, err = os.ReadFile(options.IconPath)
+	}
+	if err != nil {
+		return fmt.Errorf("read MSIX icon: %w", err)
+	}
+	icon, _, err := image.Decode(bytes.NewReader(iconData))
+	if err != nil {
+		return fmt.Errorf("decode MSIX icon: %w", err)
+	}
+
+	// Generate correctly sized assets from the application's icon.
 	assets := []string{
 		"Square150x150Logo.png",
 		"Square44x44Logo.png",
@@ -367,11 +403,35 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 		assets = append(assets, "FileIcon.png")
 	}
 
-	// Generate placeholder assets
+	dimensions := map[string]image.Point{
+		"Square150x150Logo.png": {150, 150}, "Square44x44Logo.png": {44, 44},
+		"Wide310x150Logo.png": {310, 150}, "SplashScreen.png": {620, 300},
+		"StoreLogo.png": {50, 50}, "FileIcon.png": {44, 44},
+	}
 	for _, asset := range assets {
 		assetPath := filepath.Join(assetsDir, asset)
-		if err := generatePlaceholderImage(assetPath); err != nil {
-			return fmt.Errorf("error generating placeholder image %s: %w", asset, err)
+		size := dimensions[asset]
+		canvas := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
+		bounds := icon.Bounds()
+		width, height := size.X, size.X*bounds.Dy()/bounds.Dx()
+		if height > size.Y {
+			height = size.Y
+			width = size.Y * bounds.Dx() / bounds.Dy()
+		}
+		width, height = max(1, width), max(1, height)
+		x, y := (size.X-width)/2, (size.Y-height)/2
+		draw.CatmullRom.Scale(canvas, image.Rect(x, y, x+width, y+height), icon, bounds, draw.Over, nil)
+		file, err := os.Create(assetPath)
+		if err != nil {
+			return err
+		}
+		encodeErr := png.Encode(file, canvas)
+		closeErr := file.Close()
+		if encodeErr != nil {
+			return fmt.Errorf("encode MSIX icon %s: %w", asset, encodeErr)
+		}
+		if closeErr != nil {
+			return closeErr
 		}
 	}
 
@@ -400,7 +460,7 @@ func generateAppxManifest(options *MSIXOptions, outputPath string) error {
 	defer file.Close()
 
 	// Execute the template
-	if err := tmpl.Execute(file, options); err != nil {
+	if err := tmpl.Execute(file, msixBuildConfig(options)); err != nil {
 		return fmt.Errorf("error executing template: %w", err)
 	}
 
@@ -409,32 +469,70 @@ func generateAppxManifest(options *MSIXOptions, outputPath string) error {
 
 // generatePlaceholderImage generates a placeholder image file
 func generatePlaceholderImage(outputPath string) error {
-	// For now, we'll create a simple 1x1 transparent PNG
-	// In a real implementation, we would generate proper icons based on the application icon
-
-	// Create a minimal valid PNG file (1x1 transparent pixel)
-	pngData := []byte{
-		0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-		0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-		0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-		0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-		0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-		0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+	// MakeAppx validates the dimensions of each manifest asset.
+	sizes := map[string]image.Point{
+		"Square150x150Logo.png": {150, 150},
+		"Square44x44Logo.png":   {44, 44},
+		"Wide310x150Logo.png":   {310, 150},
+		"SplashScreen.png":      {620, 300},
+		"StoreLogo.png":         {50, 50},
+		"FileIcon.png":          {44, 44},
 	}
-
-	return os.WriteFile(outputPath, pngData, 0644)
+	size, ok := sizes[filepath.Base(outputPath)]
+	if !ok {
+		return fmt.Errorf("unknown MSIX asset: %s", outputPath)
+	}
+	var data bytes.Buffer
+	if err := png.Encode(&data, image.NewNRGBA(image.Rect(0, 0, size.X, size.Y))); err != nil {
+		return err
+	}
+	return os.WriteFile(outputPath, data.Bytes(), 0644)
 }
 
-// copyFile copies a file from src to dst
-func copyFile(src, dst string) error {
-	// Read the source file
-	data, err := os.ReadFile(src)
+// copyFile streams src to dst, using mode when creating a destination.
+func copyFile(src, dst string, mode os.FileMode) (err error) {
+	source, err := os.Open(src)
 	if err != nil {
 		return err
 	}
+	defer source.Close()
+	sourceInfo, err := source.Stat()
+	if err != nil {
+		return err
+	}
+	if sourceInfo.IsDir() {
+		return fmt.Errorf("cannot copy directory %q", src)
+	}
 
-	// Write the destination file
-	return os.WriteFile(dst, data, 0644)
+	// A zero mode requests permissions from the same open file being copied.
+	if mode == 0 {
+		mode = sourceInfo.Mode().Perm()
+	}
+
+	// Check file identity before truncating, including symlink/hard-link aliases.
+	target, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE, mode)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := target.Close(); err == nil {
+			err = closeErr
+		}
+	}()
+	targetInfo, err := target.Stat()
+	if err != nil {
+		return err
+	}
+	if os.SameFile(sourceInfo, targetInfo) {
+		return nil
+	}
+	if targetInfo.Mode().IsRegular() {
+		if err := target.Truncate(0); err != nil {
+			return err
+		}
+	}
+	_, err = io.Copy(target, source)
+	return err
 }
 
 // InstallMSIXTools installs the required tools for MSIX packaging
@@ -456,8 +554,7 @@ func InstallMSIXTools() error {
 	// Check if Windows SDK is installed
 	fmt.Println("Checking for Windows SDK...")
 	sdkInstalled := false
-	cmd = exec.Command("where", "MakeAppx.exe")
-	if err := cmd.Run(); err == nil {
+	if _, err := findWindowsSDKTool("MakeAppx.exe"); err == nil {
 		sdkInstalled = true
 		fmt.Println("Windows SDK is already installed.")
 	}
@@ -476,10 +573,4 @@ func InstallMSIXTools() error {
 
 	fmt.Println("MSIX packaging tools installation initiated. Please complete the installation process in the opened windows.")
 	return nil
-}
-
-// init registers the MSIX command
-func init() {
-	// Register the MSIX command in the CLI
-	// This will be called by the CLI framework
 }

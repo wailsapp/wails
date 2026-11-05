@@ -360,10 +360,15 @@ func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
 	}
 }
 
+//export cancelURLRequest
+func cancelURLRequest(urlSchemeTask unsafe.Pointer) {
+	webview.CancelRequest(urlSchemeTask)
+}
+
 // HandleJSMessage handles messages from JavaScript
 //
 //export HandleJSMessage
-func HandleJSMessage(windowID C.uint, message *C.char) {
+func HandleJSMessage(windowID C.uint, message *C.char, isMainFrame C.bool) {
 	msg := C.GoString(message)
 	if msg == "" {
 		return
@@ -383,8 +388,9 @@ func HandleJSMessage(windowID C.uint, message *C.char) {
 	}
 
 	windowMessageBuffer <- &windowMessage{
-		windowId: uint(windowID),
-		message:  msg,
+		windowId:   uint(windowID),
+		message:    msg,
+		childFrame: !bool(isMainFrame),
 	}
 }
 

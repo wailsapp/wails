@@ -26,11 +26,11 @@ func _ICoreWebView2ProcessFailedEventHandlerIUnknownQueryInterface(this *ICoreWe
 }
 
 func _ICoreWebView2ProcessFailedEventHandlerIUnknownAddRef(this *ICoreWebView2ProcessFailedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2ProcessFailedEventHandlerIUnknownRelease(this *ICoreWebView2ProcessFailedEventHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2ProcessFailedEventHandlerInvoke(this *ICoreWebView2ProcessFailedEventHandler, sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs) uintptr {

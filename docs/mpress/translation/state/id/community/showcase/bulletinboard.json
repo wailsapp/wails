@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "78412c2a3c8910079a87",
+  "sourceFile": "community/showcase/bulletinboard.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "targetHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineText": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "status": "final",
+      "sourcePreview": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "101473fcfd92f30446c502de0bc357dbde219775d10357ce617a323129af3031",
+      "targetHash": "cbe503d9dabd1871f5f0cee33d4deb50e969a8bdc72ad556f2226e85c60d2f56",
+      "machineHash": "cbe503d9dabd1871f5f0cee33d4deb50e969a8bdc72ad556f2226e85c60d2f56",
+      "machineText": "Aplikasi [BulletinBoard](https://github.com/raguay/BulletinBoard) adalah papan pesan serbaguna untuk menampilkan pesan statis atau dialog guna memperoleh informasi dari pengguna untuk sebuah skrip. Aplikasi ini memiliki TUI untuk membuat dialog baru yang nantinya dapat digunakan untuk memperoleh informasi dari pengguna. Aplikasi ini dirancang agar tetap berjalan di sistem Anda, menampilkan informasi saat diperlukan, lalu menyembunyikan diri. Saya memiliki proses yang memantau sebuah berkas di sistem saya dan mengirimkan isinya ke BulletinBoard saat berkas tersebut berubah. Aplikasi ini sangat cocok dengan alur kerja saya. Tersedia juga [alur kerja Alfred](https://github.com/raguay/MyAlfred/blob/master/Alfred%205/EmailIt.alfredworkflow) untuk mengirimkan informasi ke program tersebut. Alur kerja ini juga digunakan untuk bekerja dengan [EmailIt](https://github.com/raguay/EmailIt).",
+      "status": "final",
+      "sourcePreview": "The [BulletinBoard](https://github.com/raguay/BulletinBoard) application is a\\ versital message boar…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "targetHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineText": "BulletinBoard",
+      "status": "final",
+      "sourcePreview": "BulletinBoard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

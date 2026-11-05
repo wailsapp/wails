@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2NewWindowRequestedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NewWindowRequestedEventArgsVtbl
 	GetName ComProc
 }
 

@@ -34,7 +34,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -95,10 +95,10 @@ Wails memiliki dua versi aktif:
 
 | Versi | Status | Instalasi | Dokumentasi |
 |---|---|---|---|
-| v2 | Stabil | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+| v2 | Stabil | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [v2.wails.io](https://v2.wails.io/) |
+| v3.0.0 | Stabil | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [wails.io](https://wails.io/) |
 
-Petunjuk instalasi lengkap tersedia untuk [v2](https://wails.io/docs/gettingstarted/installation) dan [v3](https://v3.wails.io).
+Petunjuk instalasi lengkap tersedia untuk [v2](https://v2.wails.io/docs/gettingstarted/installation) dan [v3](https://wails.io).
 
 ## Sponsor
 
@@ -130,18 +130,14 @@ Proyek ini didukung oleh orang-orang / perusahaan baik hati ini:
 
 ## Stargazers dari Waktu ke Waktu
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Kontributor
 
 Daftar kontributor sudah terlalu panjang untuk readme! Semua orang luar biasa yang telah berkontribusi pada
-proyek ini memiliki halaman mereka sendiri [di sini](https://wails.io/credits#contributors).
+proyek ini memiliki halaman mereka sendiri [di sini](https://wails.io/credits/).
 
 ## Lisensi
 

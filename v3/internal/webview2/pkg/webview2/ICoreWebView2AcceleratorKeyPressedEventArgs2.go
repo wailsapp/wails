@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2AcceleratorKeyPressedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 	GetIsBrowserAcceleratorKeyEnabled ComProc
 	PutIsBrowserAcceleratorKeyEnabled ComProc
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Controller2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ControllerVtbl
 	GetDefaultBackgroundColor ComProc
 	PutDefaultBackgroundColor ComProc
 }

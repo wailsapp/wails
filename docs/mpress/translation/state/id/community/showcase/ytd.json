@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "885d3bc140f310763904ea383920cd511e77bc2af898c0c039a5eff7401c4604",
+      "machineHash": "885d3bc140f310763904ea383920cd511e77bc2af898c0c039a5eff7401c4604",
+      "machineText": "![Tangkapan layar Ytd](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "4c898de34bc8bda389fe13efb983c301b56b9c7fc1d96769772e9379d467afa6",
+      "machineHash": "4c898de34bc8bda389fe13efb983c301b56b9c7fc1d96769772e9379d467afa6",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) adalah aplikasi untuk\\\nmengunduh lagu dari YouTube, membuat daftar putar offline, dan membagikannya kepada\\\nteman-teman Anda. Teman-teman Anda dapat memutar daftar putar tersebut atau mengunduhnya\\\nuntuk didengarkan secara offline. Aplikasi ini dilengkapi pemutar bawaan.",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    }
+  }
+}

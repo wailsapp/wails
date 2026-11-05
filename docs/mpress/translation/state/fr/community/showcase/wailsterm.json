@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "fe3243ae4816d1ecf421",
+  "sourceFile": "community/showcase/wailsterm.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8dcddece546de009d76773707b674c638dd60160f75536d34a45b1d285c7c5b4",
+      "targetHash": "37b60ffe2a12ac7ff6ae767e815a7405229a02544b1ce8ed0bc44aa9458678c4",
+      "machineHash": "37b60ffe2a12ac7ff6ae767e815a7405229a02544b1ce8ed0bc44aa9458678c4",
+      "machineText": "![Capture d’écran de WailsTerm](/assets/showcase-images/wailsterm.webp)",
+      "status": "final",
+      "sourcePreview": "![WailsTerm Screenshot](/assets/showcase-images/wailsterm.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad12595e14434cde4712fd1829c83e982f9ad6c2efa1ce476ed0a703e03e19ea",
+      "targetHash": "8025d30c84201f39f4ff7f017ddebbc2669b3481d366b18625c78e4c1e17cc0a",
+      "machineHash": "8025d30c84201f39f4ff7f017ddebbc2669b3481d366b18625c78e4c1e17cc0a",
+      "machineText": "[WailsTerm](https://github.com/rlshukhov/wailsterm) est une application de terminal simple et translucide\\\nreposant sur Wails et Xterm.js.",
+      "status": "final",
+      "sourcePreview": "[WailsTerm](https://github.com/rlshukhov/wailsterm) is a simple translucent\\ terminal app powered by…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "6b461d4d9a870292fb997fca8ca1724f8ae8190b6b44383393983657a797eb47",
+      "machineHash": "6b461d4d9a870292fb997fca8ca1724f8ae8190b6b44383393983657a797eb47",
+      "machineText": "Une application de bureau conçue avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "targetHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "machineHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "machineText": "WailsTerm",
+      "status": "final",
+      "sourcePreview": "WailsTerm",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    }
+  }
+}

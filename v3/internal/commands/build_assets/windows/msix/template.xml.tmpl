@@ -15,7 +15,7 @@
     <PackageInformation
         PackageName="{{.ProductName}}"
         PackageDisplayName="{{.ProductName}}"
-        PublisherName="CN={{.ProductCompany}}"
+        PublisherName="{{.Publisher | html}}"
         PublisherDisplayName="{{.ProductCompany}}"
         Version="{{.ProductVersion}}.0"
         PackageDescription="{{.ProductDescription}}">

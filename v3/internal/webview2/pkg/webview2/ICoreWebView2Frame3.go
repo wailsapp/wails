@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Frame3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Frame2Vtbl
 	AddPermissionRequested    ComProc
 	RemovePermissionRequested ComProc
 }

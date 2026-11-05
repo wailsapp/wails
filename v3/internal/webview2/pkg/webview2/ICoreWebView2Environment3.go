@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment2Vtbl
 	CreateCoreWebView2CompositionController ComProc
 	CreateCoreWebView2PointerInfo           ComProc
 }

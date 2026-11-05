@@ -161,7 +161,10 @@ func init() {
 				}
 			}
 
-			windows.FreeLibrary(localUXTheme)
+			// Keep the module loaded for the process lifetime: the package-level
+			// function pointers above remain in use after init (e.g.
+			// AllowDarkModeForWindow is called later from applyDarkMode), so
+			// freeing it here would leave them pointing into unmapped memory.
 		}
 	}
 }
@@ -276,6 +279,21 @@ func IsCurrentlyDarkMode() bool {
 		return false
 	}
 	return AppsUseLightTheme == 0
+}
+
+// IsSystemCurrentlyDarkMode reports whether Windows system surfaces use dark mode.
+func IsSystemCurrentlyDarkMode() bool {
+	key, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer key.Close()
+
+	systemUsesLightTheme, _, err := key.GetIntegerValue("SystemUsesLightTheme")
+	if err != nil {
+		return false
+	}
+	return systemUsesLightTheme == 0
 }
 
 type highContrast struct {

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_25Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_24Vtbl
 	AddSaveAsUIShowing    ComProc
 	RemoveSaveAsUIShowing ComProc
 	ShowSaveAsUI          ComProc

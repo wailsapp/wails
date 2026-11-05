@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -373,38 +374,38 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	tests := []struct {
-		name                string
-		createAssetsCar     bool
-		configIconName      string
-		expectedIconName    string
+		name                  string
+		createAssetsCar       bool
+		configIconName        string
+		expectedIconName      string
 		expectIconNameInPlist bool
 	}{
 		{
-			name:                "Assets.car exists, no config - should default to appicon",
-			createAssetsCar:     true,
-			configIconName:      "",
-			expectedIconName:    "appicon",
+			name:                  "Assets.car exists, no config - should default to appicon",
+			createAssetsCar:       true,
+			configIconName:        "",
+			expectedIconName:      "appicon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "Assets.car exists, config set - should use config",
-			createAssetsCar:     true,
-			configIconName:      "custom-icon",
-			expectedIconName:    "custom-icon",
+			name:                  "Assets.car exists, config set - should use config",
+			createAssetsCar:       true,
+			configIconName:        "custom-icon",
+			expectedIconName:      "custom-icon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "No Assets.car, no config - should not set",
-			createAssetsCar:     false,
-			configIconName:      "",
-			expectedIconName:    "",
+			name:                  "No Assets.car, no config - should not set",
+			createAssetsCar:       false,
+			configIconName:        "",
+			expectedIconName:      "",
 			expectIconNameInPlist: false,
 		},
 		{
-			name:                "No Assets.car, config set - should use config",
-			createAssetsCar:     false,
-			configIconName:      "config-icon",
-			expectedIconName:    "config-icon",
+			name:                  "No Assets.car, config set - should use config",
+			createAssetsCar:       false,
+			configIconName:        "config-icon",
+			expectedIconName:      "config-icon",
 			expectIconNameInPlist: true,
 		},
 	}
@@ -469,14 +470,14 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 
 			options := &UpdateBuildAssetsOptions{
 				Dir:               buildDir,
-				Name:               "TestApp",
-				ProductName:        "Test App",
-				ProductVersion:     "1.0.0",
-				ProductCompany:     "Test Company",
-				ProductIdentifier:  "com.test.app",
-				CFBundleIconName:   tt.configIconName,
-				Config:             configFile,
-				Silent:             true,
+				Name:              "TestApp",
+				ProductName:       "Test App",
+				ProductVersion:    "1.0.0",
+				ProductCompany:    "Test Company",
+				ProductIdentifier: "com.test.app",
+				CFBundleIconName:  tt.configIconName,
+				Config:            configFile,
+				Silent:            true,
 			}
 
 			err = UpdateBuildAssets(options)
@@ -848,7 +849,7 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 			name: "map with mixed content keeps real values and drops templates",
 			input: map[string]any{
 				"MixedMap": map[string]any{
-					"RealKey":    "RealValue",
+					"RealKey":     "RealValue",
 					"TemplateKey": "{{.Ext}}",
 				},
 			},
@@ -879,13 +880,13 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 			name: "nested originally empty containers are preserved",
 			input: map[string]any{
 				"Outer": map[string]any{
-					"InnerMap":  map[string]any{},
+					"InnerMap":   map[string]any{},
 					"InnerArray": []any{},
 				},
 			},
 			expected: map[string]any{
 				"Outer": map[string]any{
-					"InnerMap":  map[string]any{},
+					"InnerMap":   map[string]any{},
 					"InnerArray": []any{},
 				},
 			},
@@ -924,5 +925,49 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 				t.Errorf("sanitizePlistDict() got\n%v\nexpected\n%v", result, tt.expected)
 			}
 		})
+	}
+}
+
+// TestWindowsInfoJSONLanguage verifies that the rendered Windows info.json
+// uses language code 0409 (en-US) so Explorer shows version details.
+// See: https://github.com/wailsapp/wails/issues/6210
+func TestWindowsInfoJSONLanguage(t *testing.T) {
+	dir := t.TempDir()
+
+	err := GenerateBuildAssets(&BuildAssetsOptions{
+		Dir:                filepath.Join(dir, "build"),
+		Name:               "InfoJSONLangApp",
+		ProductName:        "InfoJSONLangApp",
+		ProductDescription: "A test application",
+		ProductVersion:     "1.0.0",
+		ProductCompany:     "Test Company",
+		ProductCopyright:   "© 2024 Test Company",
+		ProductComments:    "Test comments",
+		Silent:             true,
+	})
+	if err != nil {
+		t.Fatalf("GenerateBuildAssets failed: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(dir, "build", "windows", "info.json"))
+	if err != nil {
+		t.Fatalf("Failed to read rendered windows/info.json: %v", err)
+	}
+
+	var rendered struct {
+		Info map[string]map[string]string `json:"info"`
+	}
+	if err := json.Unmarshal(content, &rendered); err != nil {
+		t.Fatalf("Failed to parse rendered windows/info.json: %v", err)
+	}
+
+	if len(rendered.Info) != 1 {
+		t.Fatalf("Expected info to have exactly 1 language entry, got %d", len(rendered.Info))
+	}
+	if _, ok := rendered.Info["0409"]; !ok {
+		t.Errorf("Expected info to contain language key \"0409\"")
+	}
+	if _, ok := rendered.Info["0000"]; ok {
+		t.Errorf("Rendered info.json must not contain language key \"0000\" - Explorer hides version details for the neutral language")
 	}
 }

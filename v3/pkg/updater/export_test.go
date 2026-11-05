@@ -1,6 +1,9 @@
 package updater
 
-import "os/exec"
+import (
+	"os/exec"
+	"time"
+)
 
 // SetSelfExecutableForTest replaces the package-level selfExecutable
 // resolver for the duration of a test. Returns a restore function the
@@ -19,4 +22,12 @@ func SetNewDetachedCommandForTest(f func(path string) *exec.Cmd) (restore func()
 	prev := newDetachedCommand
 	newDetachedCommand = f
 	return func() { newDetachedCommand = prev }
+}
+
+// SetWaitForHelperReadyForTest replaces the helper readiness wait for the
+// duration of a test. Returns a restore function the caller should defer.
+func SetWaitForHelperReadyForTest(f func(path string, timeout time.Duration) error) (restore func()) {
+	prev := waitForHelperReady
+	waitForHelperReady = f
+	return func() { waitForHelperReady = prev }
 }

@@ -85,6 +85,8 @@ public class WailsBridge {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
+    private SharedPreferences cachedSecurePrefs;
+    private boolean securePrefsResolved = false;
 
     // Phase D state: sensor listeners, speech engine and keyboard watcher are
     // retained so they can be registered and torn down on demand.
@@ -102,6 +104,7 @@ public class WailsBridge {
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
+    private static native void nativeConfigureDev(String url, String ready, String token);
     private static native void nativeShutdown();
     private static native void nativeOnStart();
     private static native void nativeOnResume();
@@ -120,6 +123,22 @@ public class WailsBridge {
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
 
+    /** The private CLI launch protocol is accepted only by debug apps over adb loopback. */
+    public static String devServerURL(Activity activity) {
+        if ((activity.getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0) return null;
+        android.content.Intent intent = activity.getIntent();
+        String token = intent.getStringExtra("WAILS_INTERNAL_DEV_READY_TOKEN");
+        String server = intent.getStringExtra("FRONTEND_DEVSERVER_URL");
+        String ready = intent.getStringExtra("WAILS_INTERNAL_DEV_READY_URL");
+        return token != null && !token.isEmpty() && isDevLoopbackURL(server) && isDevLoopbackURL(ready) ? server : null;
+    }
+
+    private static boolean isDevLoopbackURL(String value) {
+        if (value == null) return false;
+        android.net.Uri uri = android.net.Uri.parse(value);
+        return "127.0.0.1".equals(uri.getHost()) && ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()));
+    }
+
     public WailsBridge(Activity activity) {
         this.activity = activity;
     }
@@ -132,6 +151,12 @@ public class WailsBridge {
             return;
         }
         try {
+            String server = devServerURL(activity);
+            if (server != null) {
+                nativeConfigureDev(server,
+                    activity.getIntent().getStringExtra("WAILS_INTERNAL_DEV_READY_URL"),
+                    activity.getIntent().getStringExtra("WAILS_INTERNAL_DEV_READY_TOKEN"));
+            }
             nativeInit(this);
             initialized = true;
             Log.i(TAG, "Wails bridge initialized");
@@ -623,6 +648,9 @@ public class WailsBridge {
                 JSONObject opts = new JSONObject(json);
                 String style = opts.optString("style", "default");
                 boolean hidden = opts.optBoolean("hidden", false);
+
+                String color = opts.has("color") ? opts.optString("color") : null;
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     WindowInsetsController c = activity.getWindow().getInsetsController();
                     if (c != null) {
@@ -644,6 +672,15 @@ public class WailsBridge {
                     if (hidden) vis |= View.SYSTEM_UI_FLAG_FULLSCREEN;
                     else vis &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
                     activity.getWindow().getDecorView().setSystemUiVisibility(vis);
+                }
+
+                // appicon color
+                if (color != null && !color.isEmpty()) {
+                    try {
+                        activity.getWindow().setStatusBarColor(android.graphics.Color.parseColor(color));
+                    } catch (IllegalArgumentException e) {
+                        Log.e(TAG, "setStatusBar: invalid color \"" + color + "\"", e);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "setStatusBar failed", e);
@@ -742,49 +779,107 @@ public class WailsBridge {
 
     /**
      * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
-     * the Android Keystore) on API 23+, falling back to plain prefs below that.
+     * the Android Keystore). Requires API 23+. Returns null if secure storage
+     * cannot be initialized — callers MUST check for null and report the error.
+     * The result is cached after the first call.
      */
     private SharedPreferences securePrefs() {
+        if (securePrefsResolved) {
+            return cachedSecurePrefs;
+        }
+        securePrefsResolved = true;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                MasterKey key = new MasterKey.Builder(activity)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                        .build();
-                return EncryptedSharedPreferences.create(activity, "wails_secure", key,
-                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+            MasterKey key = new MasterKey.Builder(activity)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            cachedSecurePrefs = EncryptedSharedPreferences.create(activity, "wails_secure", key,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+        } catch (Exception e) {
+            Log.e(TAG, "securePrefs initialization failed", e);
+        }
+        return cachedSecurePrefs;
+    }
+
+    /** Build a JSON error envelope, safely handling null messages. */
+    private String secureError(String msg) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("ok", false);
+            o.put("error", msg != null ? msg : "unknown error");
+            return o.toString();
+        } catch (Exception ignored) {
+            return "{\"ok\":false,\"error\":\"unknown error\"}";
+        }
+    }
+
+    /** Store a value in secure storage. json: {"key":"...","value":"..."}. Returns JSON envelope. */
+    public String secureSet(final String json) {
+        try {
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
             }
-        } catch (Exception e) {
-            Log.e(TAG, "securePrefs failed, using plain prefs", e);
-        }
-        return activity.getSharedPreferences("wails_secure_plain", Context.MODE_PRIVATE);
-    }
-
-    /** Store a value in secure storage. json: {"key","value"}. */
-    public void secureSet(final String json) {
-        try {
             JSONObject o = new JSONObject(json);
-            securePrefs().edit().putString(o.optString("key"), o.optString("value")).apply();
+            String k = o.optString("key", "");
+            if (k.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().putString(k, o.optString("value", "")).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureSet failed", e);
+            return secureError(e.getMessage());
         }
     }
 
-    /** Read a value from secure storage (empty if absent). */
+    /** Read a value from secure storage. Returns JSON envelope with found/value. */
     public String secureGet(final String key) {
         try {
-            return securePrefs().getString(key, "");
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            if (!prefs.contains(key)) {
+                return "{\"ok\":true,\"found\":false}";
+            }
+            String value = prefs.getString(key, "");
+            // JSON-encode value to prevent injection.
+            JSONObject result = new JSONObject();
+            result.put("ok", true);
+            result.put("found", true);
+            result.put("value", value);
+            return result.toString();
         } catch (Exception e) {
-            return "";
+            return secureError(e.getMessage());
         }
     }
 
-    /** Remove a value from secure storage. */
-    public void secureDelete(final String key) {
+    /** Remove a value from secure storage. Returns JSON envelope. */
+    public String secureDelete(final String key) {
         try {
-            securePrefs().edit().remove(key).apply();
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().remove(key).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureDelete failed", e);
+            return secureError(e.getMessage());
         }
     }
 

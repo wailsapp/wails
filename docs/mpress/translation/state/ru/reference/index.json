@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4e79d065c144e1493b4e",
+  "sourceFile": "reference/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "71bf90935fc231d20126e2087eeb583c6aa419fc3dd1b6847bfe376b9200eaa0",
+      "targetHash": "0a2f5a04fddd645236bb1b5f7b487499e4c1965d9ed822aa260bbd1c2637569e",
+      "machineHash": "0a2f5a04fddd645236bb1b5f7b487499e4c1965d9ed822aa260bbd1c2637569e",
+      "machineText": "Справочник",
+      "status": "final",
+      "sourcePreview": "Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "71bf90935fc231d20126e2087eeb583c6aa419fc3dd1b6847bfe376b9200eaa0",
+      "targetHash": "0a2f5a04fddd645236bb1b5f7b487499e4c1965d9ed822aa260bbd1c2637569e",
+      "machineHash": "0a2f5a04fddd645236bb1b5f7b487499e4c1965d9ed822aa260bbd1c2637569e",
+      "machineText": "Справочник",
+      "status": "final",
+      "sourcePreview": "Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    }
+  }
+}

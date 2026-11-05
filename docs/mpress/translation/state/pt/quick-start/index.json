@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4820647960e27385e339",
+  "sourceFile": "quick-start/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineText": "Início rápido",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineText": "Início rápido",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    }
+  }
+}

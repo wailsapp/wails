@@ -8,10 +8,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
-	"sync"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/appimage"
 	"github.com/wailsapp/wails/v3/internal/s"
 )
 
@@ -112,36 +113,15 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Download linuxdeploy and make it executable
 	s.CD(options.BuildDir)
 
-	// Download URLs using a map based on architecture
-	urls := map[string]string{
-		"linuxdeploy": fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch),
-		"AppRun":      fmt.Sprintf("https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-%s", arch),
-	}
-
-	// Download necessary files concurrently
+	linuxdeployPath := filepath.Join(options.BuildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
 	log(p, "Downloading AppImage tooling")
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	go func() {
-		linuxdeployPath := filepath.Join(options.BuildDir, filepath.Base(urls["linuxdeploy"]))
-		if !s.EXISTS(linuxdeployPath) {
-			s.DOWNLOAD(urls["linuxdeploy"], linuxdeployPath)
-		}
-		s.CHMOD(linuxdeployPath, 0755)
-		wg.Done()
-	}()
-
-	go func() {
-		target := filepath.Join(appDir, "AppRun")
-		if !s.EXISTS(target) {
-			s.DOWNLOAD(urls["AppRun"], target)
-		}
-		s.CHMOD(target, 0755)
-		wg.Done()
-	}()
-
-	wg.Wait()
+	if !s.EXISTS(linuxdeployPath) {
+		s.DOWNLOAD(fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch), linuxdeployPath)
+	}
+	s.CHMOD(linuxdeployPath, 0755)
+	if err := os.WriteFile(filepath.Join(appDir, "AppRun"), appimage.Launcher(filepath.Base(options.Binary)), 0755); err != nil {
+		return err
+	}
 
 	// Determine which GTK stack the binary links against by ldd'ing the
 	// source binary. We need this before searching for runtime files,
@@ -181,8 +161,22 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	if err != nil {
 		return err
 	}
-	s.CD(appDir)
+	// WebKit builds with the GPU process compiled in can start it on demand,
+	// and once relocated they look for it in the AppDir too.
 	for _, file := range files {
+		if filepath.Base(file) != "WebKitWebProcess" {
+			continue
+		}
+		if gpu := filepath.Join(filepath.Dir(file), "WebKitGPUProcess"); s.EXISTS(gpu) {
+			files = append(files, gpu)
+		}
+	}
+	s.CD(appDir)
+	var helperDirs []string
+	for _, file := range files {
+		if strings.HasPrefix(filepath.Base(file), "WebKit") && !slices.Contains(helperDirs, filepath.Dir(file)) {
+			helperDirs = append(helperDirs, filepath.Dir(file))
+		}
 		targetDir := filepath.Dir(file)
 		if targetDir[0] == '/' {
 			targetDir = targetDir[1:]
@@ -203,12 +197,12 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	// Run linuxdeploy to bundle the application
 	s.CD(options.BuildDir)
-	linuxdeployAppImage := filepath.Join(options.BuildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
 
 	// Quote the executable and --appdir args so `s.EXEC`'s shlex split
 	// keeps them as single tokens when the user-supplied paths contain
-	// spaces.
-	cmd := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q --output appimage --plugin gtk", linuxdeployAppImage, appDir)
+	// spaces. linuxdeploy runs twice: the bundled WebKit library has to be
+	// patched after it is deployed and before the AppImage is packed.
+	linuxdeploy := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q", linuxdeployPath, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 
 	// Force linuxdeploy's appimage plugin to write the AppImage to a known
@@ -226,10 +220,17 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		s.SETENV("NO_STRIP", "1")
 	}
 
-	output, err := s.EXEC(cmd)
+	output, err := s.EXEC(linuxdeploy + " --plugin gtk")
 	if err != nil {
 		fmt.Println(string(output))
 		return err
+	}
+	if err := relocateWebKitHelpers(appDir, helperDirs); err != nil {
+		return err
+	}
+	output, err = s.EXEC(linuxdeploy + " --output appimage")
+	if err != nil {
+		return fmt.Errorf("linuxdeploy failed: %w\n%s", err, commandOutputTail(string(output), 20))
 	}
 
 	// Move file to output directory
@@ -239,32 +240,44 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	return nil
 }
 
+func relocateWebKitHelpers(appDir string, helperDirs []string) error {
+	return appimage.RelocateWebKitHelpers(appDir, helperDirs)
+}
+
 func findGTKFiles(files []string) ([]string, error) {
+	return findGTKFilesInRoots([]string{"/usr/lib", "/usr/lib64", "/usr/libexec"}, files)
+}
+
+func findGTKFilesInRoots(roots []string, files []string) ([]string, error) {
 	notFound := []string{}
 	found := []string{}
-	err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			if os.IsPermission(err) {
+	// Distros install WebKit's helpers and injected bundle under these. Walking all of /usr also reaches /usr/local and
+	// /usr/src, where other projects' AppDirs and cross-built binaries would be bundled too.
+	for _, root := range roots {
+		err := filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
+			if err != nil {
+				if os.IsPermission(err) || (path == root && os.IsNotExist(err)) {
+					return nil
+				}
+				return err
+			}
+
+			if info.IsDir() {
 				return nil
 			}
-			return err
-		}
 
-		if info.IsDir() {
-			return nil
-		}
-
-		for _, fileName := range files {
-			if strings.HasSuffix(path, fileName) {
-				found = append(found, path)
-				break
+			for _, fileName := range files {
+				if strings.HasSuffix(path, fileName) {
+					found = append(found, path)
+					break
+				}
 			}
-		}
 
-		return nil
-	})
-	if err != nil {
-		return nil, err
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, fileName := range files {
 		fileFound := false
@@ -313,4 +326,12 @@ func hasRelrDynSections() bool {
 		}
 	}
 	return false
+}
+
+func commandOutputTail(output string, lines int) string {
+	items := strings.Split(strings.TrimSpace(output), "\n")
+	if len(items) > lines {
+		items = items[len(items)-lines:]
+	}
+	return strings.Join(items, "\n")
 }

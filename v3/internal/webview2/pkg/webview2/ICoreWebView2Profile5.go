@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile4Vtbl
 	GetCookieManager ComProc
 }
 

@@ -2,6 +2,8 @@
 
 package edge
 
+import "unsafe"
+
 type iCoreWebView2WebMessageReceivedEventHandlerVtbl struct {
 	_IUnknownVtbl
 	Invoke ComProc
@@ -17,11 +19,11 @@ func _ICoreWebView2WebMessageReceivedEventHandlerIUnknownQueryInterface(this *iC
 }
 
 func _ICoreWebView2WebMessageReceivedEventHandlerIUnknownAddRef(this *iCoreWebView2WebMessageReceivedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2WebMessageReceivedEventHandlerIUnknownRelease(this *iCoreWebView2WebMessageReceivedEventHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2WebMessageReceivedEventHandlerInvoke(this *iCoreWebView2WebMessageReceivedEventHandler, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs) uintptr {

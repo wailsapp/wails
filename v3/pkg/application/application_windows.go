@@ -26,6 +26,10 @@ var (
 	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
 )
 
+// taskbarRestartDebounce is how long TaskbarCreated broadcasts are ignored
+// after the first one, so one Explorer restart re-adds each tray icon once.
+const taskbarRestartDebounce = time.Second
+
 type windowsApp struct {
 	parent *App
 
@@ -46,11 +50,15 @@ type windowsApp struct {
 	focusedWindow w32.HWND
 
 	// system theme
-	isCurrentlyDarkMode bool
-	currentWindowID     uint
+	isCurrentlyDarkMode       bool
+	isSystemCurrentlyDarkMode bool
+	currentWindowID           uint
 
 	// Restart taskbar flag
 	restartingTaskbar atomic.Bool
+
+	// Last used icon from SetIcon, if any
+	currentIcon w32.HICON
 }
 
 func (m *windowsApp) isDarkMode() bool {
@@ -121,7 +129,47 @@ func (m *windowsApp) show() {
 func (m *windowsApp) on(_ uint) {
 }
 
-func (m *windowsApp) setIcon(_ []byte) {
+func (m *windowsApp) setIcon(icon []byte) {
+	InvokeAsync(func() {
+		hIcon, err := w32.CreateLargeHIconFromImage(icon)
+		if err != nil {
+			m.parent.error("unable to create icon: %w", err)
+			return
+		}
+
+		previousIcon := m.currentIcon
+		m.currentIcon = hIcon
+
+		m.windowMapLock.Lock()
+		windows := make([]*windowsWebviewWindow, 0, len(m.windowMap))
+		for _, window := range m.windowMap {
+			windows = append(windows, window)
+		}
+		m.windowMapLock.Unlock()
+
+		for _, window := range windows {
+			m.applyIcon(window, hIcon)
+		}
+
+		if previousIcon != 0 {
+			w32.DestroyIcon(previousIcon)
+		}
+	})
+}
+
+func (m *windowsApp) applyIcon(window *windowsWebviewWindow, icon w32.HICON) {
+	iconDisabled := window.parent.options.Windows.DisableIcon
+
+	if !iconDisabled {
+		window.setIcon(icon)
+		return
+	}
+
+	// This is a dumb workaround to prevent windows adding the icon back, when DisableIcon is set to true
+	style := w32.GetWindowLong(window.hwnd, w32.GWL_STYLE)
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style&^w32.WS_SYSMENU))
+	window.setIcon(icon)
+	w32.SetWindowLong(window.hwnd, w32.GWL_STYLE, uint32(style))
 }
 
 func (m *windowsApp) name() string {
@@ -197,6 +245,13 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+
+	// Release icons, if any
+	if m.currentIcon != 0 {
+		w32.DestroyIcon(m.currentIcon)
+		m.currentIcon = 0
+	}
+
 	// destroy the main thread window
 	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
@@ -223,6 +278,7 @@ func (m *windowsApp) init() {
 		panic(syscall.GetLastError())
 	}
 	m.isCurrentlyDarkMode = w32.IsCurrentlyDarkMode()
+	m.isSystemCurrentlyDarkMode = w32.IsSystemCurrentlyDarkMode()
 }
 
 func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) uintptr {
@@ -270,23 +326,28 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		}
 		m.restartingTaskbar.Store(true)
 		m.reshowSystrays()
-		go func() {
-			// 1 second debounce
-			time.Sleep(1000)
+		// Explorer broadcasts TaskbarCreated several times while it restarts.
+		// The flag filters the repeats, so it has to stay set for about as long
+		// as a restart takes - time.Sleep takes a Duration, and an untyped 1000
+		// is 1000ns, which cleared it again before the next broadcast arrived.
+		time.AfterFunc(taskbarRestartDebounce, func() {
 			m.restartingTaskbar.Store(false)
-		}()
+		})
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
 			isDarkMode := w32.IsCurrentlyDarkMode()
-			if isDarkMode != m.isCurrentlyDarkMode {
+			isSystemDarkMode := w32.IsSystemCurrentlyDarkMode()
+			if isDarkMode != m.isCurrentlyDarkMode || isSystemDarkMode != m.isSystemCurrentlyDarkMode {
+				m.isCurrentlyDarkMode = isDarkMode
+				m.isSystemCurrentlyDarkMode = isSystemDarkMode
+
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
 				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}
-				m.isCurrentlyDarkMode = isDarkMode
 			}
 		}
 		return 0

@@ -1,0 +1,245 @@
+---
+sidebar_position: 20
+---
+
+# Dogs API
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/tutorials/dogsapi/img.webp").default}
+    width="50%"
+    className="screenshot"
+  />
+</div>
+<br />
+```
+
+:::note
+
+이 튜토리얼은 [@tatadan](https://twitter.com/tatadan)에 의해 제공되었습니다. 그리고 [ Wails 예시 리포지토리](https://github.com/tataDan/wails-v2-examples)에서 예시를 확인할 수 있습니다.
+
+:::
+
+이 튜토리얼에서는 웹에서 개 사진을 검색한 다음 표시하는 애플리케이션을 개발할 것입니다.
+
+### 프로젝트 생성
+
+애플리케이션을 생성합니다. 터미널에 다음과 같이 입력합니다: `wails init -n dogs-api -t svelte`
+
+참고: 원하는 경우 선택적으로 이 명령의 끝에 `-ide vscode` 또는 `-ide goland`를 추가할 수 있습니다. IDE 지원을 추가합니다.
+
+이제 `cd dogs-api`를 만들고 프로젝트 파일 편집을 시작합니다.
+
+### 사용하지 않는 코드 제거
+
+사용하지 않는 몇가지 요소를 제거합니다.
+
+- `app.go`를 열고 다음 줄을 제거합니다.
+
+```go
+// Greet returns a greeting for the given name
+func (a *App) Greet(name string) string {
+    return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+- `frontend/src/App.svelte`를 열고 모든 줄을 삭제합니다.
+- `frontend/src/assets/images/logo-universal.png` 파일을 삭제합니다.
+
+### 우리만의 애플리케이션 생성하기
+
+이제 새로운 Go 코드를 추가합니다.
+
+함수 정의 앞에 다음 구조체 선언을 `app.go`에 추가합니다.
+
+```go
+type RandomImage struct {
+    Message string
+    Status  string
+}
+
+type AllBreeds struct {
+    Message map[string]map[string][]string
+    Status  string
+}
+
+type ImagesByBreed struct {
+    Message []string
+    Status  string
+}
+```
+
+`app.go`에 다음 함수를 추가합니다(함수 정의 뒤쪽에 존재):
+
+```go
+func (a *App) GetRandomImageUrl() string {
+    response, err := http.Get("https://dog.ceo/api/breeds/image/random")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    responseData, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var data RandomImage
+    json.Unmarshal(responseData, &data)
+
+    return data.Message
+}
+
+func (a *App) GetBreedList() []string {
+    var breeds []string
+
+    response, err := http.Get("https://dog.ceo/api/breeds/list/all")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    responseData, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var data AllBreeds
+    json.Unmarshal(responseData, &data)
+
+    for k := range data.Message {
+        breeds = append(breeds, k)
+    }
+
+    sort.Strings(breeds)
+
+    return breeds
+}
+
+func (a *App) GetImageUrlsByBreed(breed string) []string {
+
+    url := fmt.Sprintf("%s%s%s%s", "https://dog.ceo/api/", "breed/", breed, "/images")
+    response, err := http.Get(url)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    responseData, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var data ImagesByBreed
+    json.Unmarshal(responseData, &data)
+
+    return data.Message
+}
+```
+
+`app.go`의 `import` 섹션을 다음과 같이 수정합니다.
+
+```go
+import (
+    "context"
+    "fmt"
+    "encoding/json"
+    "io/ioutil"
+    "log"
+    "net/http"
+    "sort"
+)
+```
+
+`frontend/src/App.svelte`에 다음 줄을 추가합니다.
+
+<!-- prettier-ignore-start -->
+```html
+<script>
+  import { GetRandomImageUrl } from "../wailsjs/go/main/App.js";
+  import { GetBreedList } from "../wailsjs/go/main/App.js";
+  import { GetImageUrlsByBreed } from "../wailsjs/go/main/App.js";
+
+  let randomImageUrl = "";
+  let breeds = [];
+  let photos = [];
+  let selectedBreed;
+  let showRandomPhoto = false;
+  let showBreedPhotos = false;
+
+  function init() {
+    getBreedList();
+  }
+
+  init();
+
+  function getRandomImageUrl() {
+    showRandomPhoto = false;
+    showBreedPhotos = false;
+    GetRandomImageUrl().then((result) => (randomImageUrl = result));
+    showRandomPhoto = true;
+  }
+
+  function getBreedList() {
+    GetBreedList().then((result) => (breeds = result));
+  }
+
+  function getImageUrlsByBreed() {
+    init();
+    showRandomPhoto = false;
+    showBreedPhotos = false;
+    GetImageUrlsByBreed(selectedBreed).then((result) => (photos = result));
+    showBreedPhotos = true;
+  }
+</script>
+
+<h3>Dogs API</h3>
+<div>
+  <button class="btn" on:click={getRandomImageUrl}>
+    Fetch a dog randomly
+  </button>
+  Click on down arrow to select a breed
+  <select bind:value={selectedBreed}>
+    {#each breeds as breed}
+      <option value={breed}>
+        {breed}
+      </option>
+    {/each}
+  </select>
+  <button class="btn" on:click={getImageUrlsByBreed}>
+    Fetch by this breed
+  </button>
+</div>
+<br />
+{#if showRandomPhoto}
+  <img id="random-photo" src={randomImageUrl} alt="No dog found" />
+{/if}
+{#if showBreedPhotos}
+  {#each photos as photo}
+    <img id="breed-photos" src={photo} alt="No dog found" />
+  {/each}
+{/if}
+
+<style>
+  #random-photo {
+    width: 600px;
+    height: auto;
+  }
+
+  #breed-photos {
+    width: 300px;
+    height: auto;
+  }
+
+  .btn:focus {
+    border-width: 3px;
+  }
+</style>
+```
+<!-- prettier-ignore-end -->
+
+### 애플리케이션 테스트하기
+
+바인딩을 생성하고 애플리케이션을 테스트하려면 `wails dev`를 실행합니다.
+
+### 애플리케이션 컴파일하기
+
+응용 프로그램을 단일 바이너리로 컴파일하려면 `wails build`를 실행합니다.

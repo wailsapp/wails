@@ -64,16 +64,25 @@ func registerNativeFeatures(app *application.App) {
 		application.Android.Notify(payloadJSON(e.Data))
 	})
 	app.Event.On("common:secureSet", func(e *application.CustomEvent) {
-		application.Android.SecureSet(payloadJSON(e.Data))
+		if err := application.Android.SecureSet(eventString(e.Data, "key"), eventString(e.Data, "value")); err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+		}
 	})
 	app.Event.On("common:secureGet", func(e *application.CustomEvent) {
 		key := eventString(e.Data, "key")
+		value, found, err := application.Android.SecureGet(key)
+		if err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+			return
+		}
 		app.Event.Emit("common:secureValue", map[string]any{
-			"key": key, "value": application.Android.SecureGet(key),
+			"key": key, "value": value, "found": found,
 		})
 	})
 	app.Event.On("common:secureDelete", func(e *application.CustomEvent) {
-		application.Android.SecureDelete(eventString(e.Data, "key"))
+		if err := application.Android.SecureDelete(eventString(e.Data, "key")); err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+		}
 	})
 
 	// Phase D — sensors & hardware

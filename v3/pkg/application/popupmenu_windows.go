@@ -57,11 +57,20 @@ type Win32Menu struct {
 	onMenuOpen    func()
 	isShowing     atomic.Bool // guards against concurrent TrackPopupMenuEx calls
 
+	// updatePending records a rebuild requested while the popup was showing.
+	// See requestUpdate.
+	updatePending atomic.Bool
+	destroyed     bool
+
 	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
 	// buildMenu so they can be released when the menu is rebuilt or
 	// destroyed. DestroyMenu does not free bitmaps set via
 	// SetMenuItemBitmaps.
 	bitmaps []w32.HBITMAP
+
+	// detachedSubmenus owns submenu handles whose parent rows are hidden and
+	// therefore are not part of the menu tree destroyed by DestroyMenu.
+	detachedSubmenus detachedSubmenuSet
 }
 
 // releaseMenuBitmaps frees every HBITMAP in bitmaps and every runtime-
@@ -90,6 +99,23 @@ func (p *Win32Menu) freeBitmaps() {
 	p.bitmaps = nil
 }
 
+// takeRuntimeBitmaps moves the HBITMAP handles MenuItem.SetBitmap allocated
+// after the build off the item impls and into the menu's own list.
+//
+// It exists for the same reason Update does the equivalent inline: building a
+// menu reassigns item.impl, so any handle still hanging off the old impl
+// becomes unreachable through this menu's mapping and would never be freed.
+// A caller replacing one Win32Menu with another has to take them before the
+// new build, and can then Destroy the old one afterwards.
+func (p *Win32Menu) takeRuntimeBitmaps() {
+	for _, item := range p.menuMapping {
+		if impl, ok := item.impl.(*windowsMenuItem); ok && impl.bitmap != 0 {
+			p.bitmaps = append(p.bitmaps, impl.bitmap)
+			impl.bitmap = 0
+		}
+	}
+}
+
 func (p *Win32Menu) newMenu() w32.HMENU {
 	if p.isPopup {
 		return w32.NewPopupMenu()
@@ -110,6 +136,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
 		menuItemImpl.parent = inputMenu
+		menuItemImpl.detachedSubmenus = p.detachedSubmenus
 		item.impl = menuItemImpl
 
 		if item.Hidden() {
@@ -119,7 +146,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 					p.parentWindow.parent.removeMenuBinding(item.accelerator)
 				} else {
 					// Remove the global keybindings
-					globalApplication.KeyBinding.Remove(item.accelerator.String())
+					globalApplication.KeyBinding.removeMenuBinding(item)
 				}
 			}
 		}
@@ -171,19 +198,18 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		var menuText = item.Label()
 		if item.accelerator != nil {
 			menuText = menuText + "\t" + item.accelerator.String()
-			if item.callback != nil {
+			if !item.Hidden() && item.callback != nil {
 				if p.parentWindow != nil {
 					p.parentWindow.parent.addMenuBinding(item.accelerator, item)
 				} else {
-					globalApplication.KeyBinding.Add(item.accelerator.String(), func(w Window) {
-						item.handleClick()
-					})
+					globalApplication.KeyBinding.addMenuBinding(item)
 				}
 			}
 		}
 
 		// If the item is hidden, don't append
 		if item.Hidden() {
+			p.detachedSubmenus.add(menuItemImpl.submenu)
 			continue
 		}
 
@@ -191,8 +217,18 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		if !ok {
 			return fmt.Errorf("AppendMenu failed for %q: %v", menuText, syscall.GetLastError())
 		}
+		if item.submenu != nil {
+			// The append above passed the submenu HMENU as uIDNewItem, so this
+			// item currently has no command ID. Restore it, otherwise runtime
+			// updates to the submenu item itself are silently dropped.
+			if err := assignCommandID(parentMenu, menuItemImpl.id); err != nil {
+				return fmt.Errorf("assigning a command ID failed for %q: %w", menuText, err)
+			}
+		}
 		if item.bitmap != nil {
-			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			// Address the row by its command ID: itemID holds the child HMENU
+			// for submenu items, and SetMenuIcons looks up by MF_BYCOMMAND.
+			handles, err := w32.SetMenuIcons(parentMenu, menuItemImpl.id, item.bitmap, nil)
 			if err != nil {
 				return fmt.Errorf("SetMenuIcons failed for %q: %w", menuText, err)
 			}
@@ -224,6 +260,7 @@ func (p *Win32Menu) Update() {
 	oldCheckboxes := p.checkboxItems
 	oldRadios := p.radioGroups
 	oldBitmaps := p.bitmaps
+	oldDetachedSubmenus := p.detachedSubmenus
 
 	// Transfer runtime SetBitmap handles off the old impls now, before
 	// buildMenu reassigns item.impl and makes them unreachable via the
@@ -241,22 +278,26 @@ func (p *Win32Menu) Update() {
 	p.radioGroups = make(map[*MenuItem][]*RadioGroup)
 	p.currentMenuID = MenuItemMsgID
 	p.bitmaps = nil
+	p.detachedSubmenus = make(detachedSubmenuSet)
 
 	if err := p.buildMenu(newHMENU, p.menuData); err != nil {
 		globalApplication.error("menu rebuild failed, keeping previous menu: %v", err)
 		// Release bitmaps allocated during the partial build, destroy the
 		// partial HMENU, then restore the previous state.
 		p.freeBitmaps()
+		p.detachedSubmenus.destroyAll()
 		w32.DestroyMenu(newHMENU)
 		p.menu = oldHMENU
 		p.menuMapping = oldMapping
 		p.checkboxItems = oldCheckboxes
 		p.radioGroups = oldRadios
 		p.bitmaps = oldBitmaps
+		p.detachedSubmenus = oldDetachedSubmenus
 		return
 	}
 
 	// Success: release the previous menu's bitmaps and HMENU tree.
+	oldDetachedSubmenus.destroyAll()
 	if oldHMENU != 0 {
 		releaseMenuBitmaps(oldBitmaps, oldMapping)
 		w32.DestroyMenu(oldHMENU)
@@ -293,7 +334,16 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 	if !p.isShowing.CompareAndSwap(false, true) {
 		return
 	}
-	defer p.isShowing.Store(false)
+	defer func() {
+		p.isShowing.Store(false)
+		if p.updatePending.Swap(false) {
+			// TrackPopupMenuEx has already posted the WM_COMMAND for the
+			// clicked row, numbered against the current menuMapping. Post the
+			// rebuild behind it (from a goroutine, as InvokeAsync runs inline
+			// on the main thread) so that command is dispatched first.
+			go InvokeAsync(p.requestUpdate)
+		}
+	}()
 
 	w32.SetForegroundWindow(p.parent)
 
@@ -301,8 +351,9 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	// Get screen dimensions to determine menu positioning
-	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	// Get the dimensions of the monitor containing the menu position, which
+	// may differ from the monitor of the owner window.
+	monitor := w32.MonitorFromPoint(x, y, w32.MONITOR_DEFAULTTONEAREST)
 	var monitorInfo w32.MONITORINFO
 	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
 	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
@@ -369,8 +420,25 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 	return true
 }
 
+// requestUpdate rebuilds the menu from menuData, or defers the rebuild until
+// the popup closes if it is showing: TrackPopupMenuEx is still tracking the
+// current HMENU and Update would destroy it (#4719). Must run on the main
+// thread.
+func (p *Win32Menu) requestUpdate() {
+	if p.destroyed {
+		return
+	}
+	if p.isShowing.Load() {
+		p.updatePending.Store(true)
+		return
+	}
+	p.Update()
+}
+
 func (p *Win32Menu) Destroy() {
+	p.destroyed = true
 	p.freeBitmaps()
+	p.detachedSubmenus.destroyAll()
 	w32.DestroyMenu(p.menu)
 }
 

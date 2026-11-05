@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "45a1b5ec0292dd1fa1b0a70ff512a99336af91c044b86044f8c3a1225c8fee4f",
+      "machineHash": "45a1b5ec0292dd1fa1b0a70ff512a99336af91c044b86044f8c3a1225c8fee4f",
+      "machineText": "События приложения генерируются при изменениях жизненного цикла всего приложения, например при запуске, остановке и операциях управления окнами.",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "239ab06c56f24bf19eac865d7bbb7e548cd7fc3bf603c99e73cf2494fd236acb",
+      "machineHash": "239ab06c56f24bf19eac865d7bbb7e548cd7fc3bf603c99e73cf2494fd236acb",
+      "machineText": "Полная документация по событиям приложения доступна в руководстве [«Система событий»](/features/events/system/#application-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "784ad12fb7a2337d991ca4e9666ccc7829d9daa705a4137136c4a664cbb0c0e8",
+      "machineHash": "784ad12fb7a2337d991ca4e9666ccc7829d9daa705a4137136c4a664cbb0c0e8",
+      "machineText": "События уровня приложения, генерируемые Wails v3",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "b23e08c75072e24abb10e223334a4a965d55fe6c77dddbac2220377063e6da05",
+      "machineHash": "b23e08c75072e24abb10e223334a4a965d55fe6c77dddbac2220377063e6da05",
+      "machineText": "События приложения",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    }
+  }
+}

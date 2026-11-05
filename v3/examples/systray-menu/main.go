@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -54,6 +55,9 @@ func main() {
 	}
 
 	myMenu := app.NewMenu()
+	if hostname, err := os.Hostname(); err == nil {
+		myMenu.AddSectionHeader(hostname) // Native on macOS 14+; no-op elsewhere.
+	}
 	myMenu.Add("Wails").SetBitmap(logo).SetEnabled(false)
 	myMenu.Add("Hidden").SetHidden(true)
 

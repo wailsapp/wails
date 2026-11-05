@@ -16,10 +16,12 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
+
+	// A clear error, not hundreds, when no native backend is selected.
+	_ "github.com/wailsapp/wails/v3/internal/buildguard"
 )
 
 //go:embed assets/*
@@ -65,9 +67,6 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	// Set up signal handling (platform-specific)
-	result.setupSignalHandler(appOptions)
-
 	result.logStartup()
 	result.logPlatformInfo()
 
@@ -76,6 +75,11 @@ func New(appOptions Options) *App {
 	// The store owns a reaper goroutine; window close only drops that window's
 	// entries, so the store itself has to be shut down with the app.
 	result.OnShutdown(result.eventPayloads.close)
+
+	// Streams own session state and handler goroutines, so like the payload
+	// store they are shut down with the app rather than per window.
+	result.streams = newStreamManager(result)
+	result.OnShutdown(result.streams.close)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
@@ -123,9 +127,20 @@ func New(appOptions Options) *App {
 					result.serveEventPayload(rw, req)
 					return
 				}
+				// GoStream: the poll is held here for as long as the frontend
+				// has nothing to collect. Safe because every webview request
+				// gets its own goroutine (see the dispatchWorkers note in
+				// assetserver_webview.go).
+				if strings.HasPrefix(path, streamPath) {
+					result.serveStream(rw, req)
+					return
+				}
 				switch path {
 				case "/wails/runtime.js":
-					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					// The prelude, where there is one, picks the stream
+					// transport before any module body runs. It cannot be
+					// deferred to custom.js — see stream_prelude_server.go.
+					err := assetserver.ServeFile(rw, path, runtimeJSWithPrelude())
 					if err != nil {
 						result.fatal("unable to serve runtime.js: %w", err)
 					}
@@ -251,6 +266,10 @@ type windowMessage struct {
 	windowId   uint
 	message    string
 	originInfo *OriginInfo
+	// childFrame is true when the platform reports that the message was posted
+	// by a child frame (iframe) rather than the window's main frame. Platforms
+	// that cannot identify the posting frame leave it false.
+	childFrame bool
 }
 
 type OriginInfo struct {
@@ -360,6 +379,14 @@ func (r *webViewAssetRequest) Method() (string, error) {
 	return r.Request.Method()
 }
 
+// Context preserves native request cancellation through the header-injecting wrapper.
+func (r *webViewAssetRequest) Context() context.Context {
+	if contextual, ok := r.Request.(interface{ Context() context.Context }); ok {
+		return contextual.Context()
+	}
+	return nil
+}
+
 func (r *webViewAssetRequest) Header() (http.Header, error) {
 	h, err := r.Request.Header()
 	if err != nil {
@@ -441,6 +468,9 @@ type App struct {
 
 	// platform app
 	impl platformApp
+	// earlyDispatch holds main-thread work sent before Run created impl; Run hands it on once impl exists.
+	earlyDispatchLock sync.Mutex
+	earlyDispatch     []func()
 
 	// The main application menu (private - use app.Menu.GetApplicationMenu/SetApplicationMenu)
 	applicationMenu *Menu
@@ -457,7 +487,12 @@ type App struct {
 	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
 	// fetch from the webview, keeping them out of evaluateJavaScript source.
 	eventPayloads *eventPayloadStore
-	startURL      string
+
+	// streams holds registered stream handlers and the per-page sessions that
+	// carry their connections. See stream.go.
+	streams *streamManager
+
+	startURL string
 
 	// Hooks
 	windowCreatedCallbacks []func(window Window)
@@ -636,7 +671,14 @@ func (a *App) Run() error {
 		return err
 	}
 
-	a.impl = newPlatformApp(a)
+	// Built outside earlyDispatchLock: construction can call back into dispatch (an ErrorHandler, a window
+	// procedure interceptor), which would wait on the lock. Work sent meanwhile still queues.
+	impl := newPlatformApp(a)
+	a.earlyDispatchLock.Lock()
+	a.impl = impl
+	early := a.earlyDispatch
+	a.earlyDispatch = nil
+	a.earlyDispatchLock.Unlock()
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -730,6 +772,17 @@ func (a *App) Run() error {
 		}
 		a.pendingRun = nil
 
+		// Work sent before Run is replayed once startup is done, from another goroutine: on desktop it is posted to
+		// the native loop, so it runs after activation, and in server mode it cannot hold up startup.
+		if len(early) > 0 {
+			go func() {
+				defer handlePanic()
+				for _, fn := range early {
+					a.dispatchOnMainThread(fn)
+				}
+			}()
+		}
+
 		// set the application menu
 		if runtime.GOOS == "darwin" {
 			a.impl.setApplicationMenu(a.applicationMenu)
@@ -743,6 +796,9 @@ func (a *App) Run() error {
 	if err := startup(); err != nil {
 		return err
 	}
+	// Handle signals only after the application is ready to quit.
+	a.setupSignalHandler(a.options)
+
 	return a.impl.run()
 }
 
@@ -831,6 +887,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		// Reserved framework messages are only accepted from the main frame
+		if event.childFrame {
+			a.debug("handleWindowMessage: Ignoring wails message from child frame", "message", event.message)
+			return
+		}
 		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
@@ -857,7 +918,15 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		a.warning("Window #%d not found", event.WindowID)
+		// Post-removal lifecycle notifications are expected: the default
+		// WindowClosing listener removes the window from the manager, then
+		// AppKit (or the equivalent on other platforms) keeps posting
+		// windowWillClose / windowDidResignKey / etc. for the same window.
+		// On darwin hasListeners always returns true today, so those
+		// notifications are queued unconditionally and would warn here on
+		// every window close. The same applies to App.cleanup nilling the
+		// map during shutdown. None of these are bugs — just log them.
+		a.debug("Window event for unknown window", "windowID", event.WindowID, "eventID", event.EventID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
@@ -942,7 +1011,24 @@ func (a *App) SetIcon(icon []byte) {
 	}
 }
 
+// platformAppReady reports whether the platform application exists yet. It is
+// the condition dispatchOnMainThread needs in order to run work rather than
+// queue it for Run to replay.
+func (a *App) platformAppReady() bool {
+	a.earlyDispatchLock.Lock()
+	defer a.earlyDispatchLock.Unlock()
+	return a.impl != nil
+}
+
 func (a *App) dispatchOnMainThread(fn func()) {
+	// Before Run there is no main loop to run fn on, so it waits for one.
+	a.earlyDispatchLock.Lock()
+	if a.impl == nil {
+		a.earlyDispatch = append(a.earlyDispatch, fn)
+		a.earlyDispatchLock.Unlock()
+		return
+	}
+	a.earlyDispatchLock.Unlock()
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
 		fn()

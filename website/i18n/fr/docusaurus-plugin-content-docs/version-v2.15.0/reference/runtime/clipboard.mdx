@@ -1,0 +1,23 @@
+---
+sidebar_position: 8
+---
+
+# Clipboard
+
+Cette partie du runtime fournit un accès au presse-papiers du système d'exploitation.<br/> L'implémentation actuelle ne gère que le texte.
+
+### ClipboardGetText
+
+Cette méthode lit le texte actuellement stocké dans le presse-papiers.
+
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Retourne: une chaîne de caractères (si le presse papier est vide, il retournera une chaîne vide) ou une erreur.
+
+JS: `ClipboardGetText(): Promise<string>`<br/> Retourne : Un promise d'une chaine de caractères (si le presse papier est vide, il retournera une chaîne vide).
+
+### ClipboardSetText
+
+Cette méthode écrit du texte dans le presse-papiers.
+
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Retourne: Une erreur si il y en a une.
+
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Retourne: Un promise avec true si le texte a été écrit avec succès dans le presse papier, autrement il contiendra false.

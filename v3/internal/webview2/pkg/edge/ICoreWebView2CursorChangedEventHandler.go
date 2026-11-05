@@ -2,6 +2,8 @@
 
 package edge
 
+import "unsafe"
+
 type iCoreWebView2CursorChangedEventHandlerVtbl struct {
 	_IUnknownVtbl
 	Invoke ComProc
@@ -17,11 +19,11 @@ func iCoreWebView2CursorChangedEventHandlerIUnknownQueryInterface(this *iCoreWeb
 }
 
 func iCoreWebView2CursorChangedEventHandlerIUnknownAddRef(this *iCoreWebView2CursorChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func iCoreWebView2CursorChangedEventHandlerIUnknownRelease(this *iCoreWebView2CursorChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func iCoreWebView2CursorChangedEventHandlerInvoke(this *iCoreWebView2CursorChangedEventHandler, sender *ICoreWebView2CompositionController, args *IUnknown) uintptr {

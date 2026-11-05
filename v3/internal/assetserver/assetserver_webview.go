@@ -12,6 +12,40 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
 
+type requestContextResponseWriter struct {
+	webview.ResponseWriter
+	ctx context.Context
+}
+
+func (rw *requestContextResponseWriter) Write(buf []byte) (int, error) {
+	if rw.ctx.Err() != nil {
+		return len(buf), nil //nolint:nilerr // Response writes are intentionally discarded after cancellation.
+	}
+	return rw.ResponseWriter.Write(buf)
+}
+
+func (rw *requestContextResponseWriter) WriteHeader(code int) {
+	if rw.ctx.Err() == nil {
+		rw.ResponseWriter.WriteHeader(code)
+	}
+}
+
+func (rw *requestContextResponseWriter) Finish() error {
+	if rw.ctx.Err() != nil {
+		return nil //nolint:nilerr // Finishing a cancelled response is intentionally a no-op.
+	}
+	return rw.ResponseWriter.Finish()
+}
+
+func (rw *requestContextResponseWriter) Flush() {
+	if rw.ctx.Err() != nil {
+		return
+	}
+	if flusher, ok := rw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+}
+
 type assetServerWebView struct {
 	// ExpectedWebViewHost is checked against the Request Host of every WebViewRequest, other hosts won't be processed.
 	ExpectedWebViewHost string
@@ -81,7 +115,13 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	uri := "unknown"
 	var err error
 
-	wrw := r.Response()
+	ctx, cancel := webview.RequestContext(r)
+	defer cancel()
+
+	wrw := &requestContextResponseWriter{
+		ResponseWriter: r.Response(),
+		ctx:            ctx,
+	}
 	defer func() {
 		if err := wrw.Finish(); err != nil {
 			a.options.Logger.Error("Error finishing request.", "uri", uri, "error", err)
@@ -125,9 +165,6 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
@@ -141,9 +178,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	req.URL.Fragment = ""
 	req.URL.RawFragment = ""
 
-	if requestURL := req.URL; req.RequestURI == "" && requestURL != nil {
-		req.RequestURI = requestURL.String()
-	}
+	req.RequestURI = req.URL.RequestURI()
 
 	req.Header = header
 
@@ -152,12 +187,13 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 		req.RemoteAddr = "192.0.2.1:1234"
 	}
 
-	if req.RequestURI == "" && req.URL != nil {
-		req.RequestURI = req.URL.String()
-	}
-
 	if req.ContentLength == 0 {
-		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
+		if contentLength := req.Header.Get(HeaderContentLength); contentLength != "" {
+			req.ContentLength, _ = strconv.ParseInt(contentLength, 10, 64)
+		} else if body != http.NoBody {
+			// WebView2 doesn't send a Content-Length header, mark the length as unknown so the body isn't dropped
+			req.ContentLength = -1
+		}
 	} else {
 		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
 	}

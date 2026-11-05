@@ -256,7 +256,10 @@ func (wn *windowsNotifier) pushNow(options NotificationOptions, category *Notifi
 		return err
 	}
 
-	return wintoast.Push(wn.appName, doc, wintoast.PowershellFallback)
+	// Push through the WinRT API only. go-toast's PowerShell fallback renders
+	// the toast XML into a generated script and cannot deliver activation
+	// callbacks, so a WinRT failure is returned to the caller instead.
+	return wintoast.Push(wn.appName, doc)
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
@@ -666,8 +669,8 @@ func (wn *windowsNotifier) loadCategoriesFromRegistry() error {
 		return fmt.Errorf("failed to read categories from registry: %w", err)
 	}
 
-	categories := make(map[string]NotificationCategory)
-	if err := json.Unmarshal([]byte(data), &categories); err != nil {
+	categories, err := decodeCategories([]byte(data))
+	if err != nil {
 		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "312182e060a9be59072d",
+  "sourceFile": "features/events/custom.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7101896334776ea2527d0eb9ad7ad7dfc21a5ad407a6398fe9ec415375b3a7da",
+      "targetHash": "91bc830fc8a30b2270994b9cd47c7f2b5760499bee0e5203b9fc2db32d7f3775",
+      "machineHash": "91bc830fc8a30b2270994b9cd47c7f2b5760499bee0e5203b9fc2db32d7f3775",
+      "machineText": "Les événements personnalisés vous permettent d’envoyer des données entre votre backend Go et votre frontend à l’aide du système d’événements.",
+      "status": "final",
+      "sourcePreview": "Custom events let you send data between your Go backend and frontend using the event system.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad3a8e429939a4b24472033c630d7a7ae9374eadfc208d1ba95bb53fa6708fe0",
+      "targetHash": "930bf6cb5654328d1ba41b061b73e3715740166eba0a168df5715e41a4503ff6",
+      "machineHash": "930bf6cb5654328d1ba41b061b73e3715740166eba0a168df5715e41a4503ff6",
+      "machineText": "La documentation complète sur les événements personnalisés est disponible dans le guide [Système d’événements](/features/events/system/#custom-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of custom events is available in the [Event System](/features/events/system/#cust…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "b6806ad873c1c4fc4051dee73af18115f50bbf4038b85008af2bea878889f5dd",
+      "targetHash": "9a8ecac90d578eae85d6a6f28697a1aa2019709a3eedafd2f8bc3e37177d53b1",
+      "machineHash": "9a8ecac90d578eae85d6a6f28697a1aa2019709a3eedafd2f8bc3e37177d53b1",
+      "machineText": "Émettre et écouter vos propres événements dans Wails v3",
+      "status": "final",
+      "sourcePreview": "Emitting and listening to your own events in Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "dc46c41d4485638ccd949134dd26edf81a3f9f8be08411ff1caf3d2320e26c15",
+      "targetHash": "9f13bd534f4abd3fe2b7e7e3033819b7f40764e4c5bf9e5e9e8161a1dcddb591",
+      "machineHash": "9f13bd534f4abd3fe2b7e7e3033819b7f40764e4c5bf9e5e9e8161a1dcddb591",
+      "machineText": "Événements personnalisés",
+      "status": "final",
+      "sourcePreview": "Custom Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    }
+  }
+}

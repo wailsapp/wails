@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "98c76d90b11daefe65523c6c73e76bd32e7f5ee561609c12637a8570f4b0d91a",
+      "machineHash": "98c76d90b11daefe65523c6c73e76bd32e7f5ee561609c12637a8570f4b0d91a",
+      "machineText": "[LTools](https://github.com/lian-yang/ltools)는 uTools에서 영감을 받아 Wails v3로 구축된 플러그인 기반 크로스 플랫폼 데스크톱 도구 모음입니다. 모듈식 플러그인 아키텍처를 통해 개발자용 유틸리티를 하나의 통합 허브에서 제공합니다.",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "10744660bb4049cee08df7dc3a4fc8a511eb5f28e0e683d7bc28ae6c5d79a9e8",
+      "machineHash": "10744660bb4049cee08df7dc3a4fc8a511eb5f28e0e683d7bc28ae6c5d79a9e8",
+      "machineText": "Spotlight 스타일의 전역 검색 표시줄과 시스템 트레이 연동 기능을 제공하며, 클립보드 관리자, 주석 기능이 있는 스크린샷 도구, JSON 편집기, 계산기, 시스템 모니터 등의 플러그인이 기본으로 포함되어 있습니다. 확장 가능한 플러그인 시스템을 통해 새로운 도구를 추가할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "08e43096970a448e6f5f7c027e6d9bb6c6c8667cbb48db6d6a6f23da899d7b9c",
+      "machineHash": "08e43096970a448e6f5f7c027e6d9bb6c6c8667cbb48db6d6a6f23da899d7b9c",
+      "machineText": "Wails v3로 구축된 플러그인 기반 크로스 플랫폼 데스크톱 도구 모음",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

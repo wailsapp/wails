@@ -1,0 +1,16 @@
+terms:
+  - source: "Wails"
+    translations: {"zh-cn": "Wails", "zh-tw": "Wails", "ja": "Wails", "ko": "Wails", "ru": "Wails", "fr": "Wails", "pt": "Wails", "de": "Wails", "id": "Wails"}
+    note: "Product or technology name; preserve its spelling."
+  - source: "WebView2"
+    translations: {"zh-cn": "WebView2", "zh-tw": "WebView2", "ja": "WebView2", "ko": "WebView2", "ru": "WebView2", "fr": "WebView2", "pt": "WebView2", "de": "WebView2", "id": "WebView2"}
+    note: "Product or technology name; preserve its spelling."
+  - source: "WebKitGTK"
+    translations: {"zh-cn": "WebKitGTK", "zh-tw": "WebKitGTK", "ja": "WebKitGTK", "ko": "WebKitGTK", "ru": "WebKitGTK", "fr": "WebKitGTK", "pt": "WebKitGTK", "de": "WebKitGTK", "id": "WebKitGTK"}
+    note: "Product or technology name; preserve its spelling."
+  - source: "WKWebView"
+    translations: {"zh-cn": "WKWebView", "zh-tw": "WKWebView", "ja": "WKWebView", "ko": "WKWebView", "ru": "WKWebView", "fr": "WKWebView", "pt": "WKWebView", "de": "WKWebView", "id": "WKWebView"}
+    note: "Product or technology name; preserve its spelling."
+  - source: "M-Press"
+    translations: {"zh-cn": "M-Press", "zh-tw": "M-Press", "ja": "M-Press", "ko": "M-Press", "ru": "M-Press", "fr": "M-Press", "pt": "M-Press", "de": "M-Press", "id": "M-Press"}
+    note: "Product or technology name; preserve its spelling."

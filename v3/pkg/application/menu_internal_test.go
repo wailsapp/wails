@@ -230,6 +230,74 @@ func TestMenu_Clear(t *testing.T) {
 	}
 }
 
+func TestMenu_Clear_UnrenderedReleasesIDs(t *testing.T) {
+	menu := NewMenu()
+	item := menu.Add("First")
+
+	menu.Clear()
+	if getMenuItemByID(item.id) != nil {
+		t.Error("a menu that was never rendered should release cleared IDs immediately")
+	}
+}
+
+type stubMenuImpl struct{}
+
+func (stubMenuImpl) update() {}
+
+// A systray menu can be updated while it is open, so clicks can still arrive
+// for the cleared rows (#4719).
+func TestMenu_Clear_RenderedKeepsIDsForOneGeneration(t *testing.T) {
+	menu := NewMenu()
+	menu.impl = stubMenuImpl{}
+	gen0 := menu.Add("Gen 0")
+
+	menu.Clear()
+	gen1 := menu.Add("Gen 1")
+	if getMenuItemByID(gen0.id) != gen0 {
+		t.Fatal("cleared item should still resolve until the next Clear")
+	}
+
+	menu.Clear()
+	if getMenuItemByID(gen0.id) != nil {
+		t.Error("second Clear should release the first generation")
+	}
+	if getMenuItemByID(gen1.id) != gen1 {
+		t.Error("second Clear should keep the previous generation resolvable")
+	}
+
+	menu.Destroy()
+	if getMenuItemByID(gen1.id) != nil {
+		t.Error("Destroy should release retired IDs")
+	}
+}
+
+// While the menu is on screen it may be updated any number of times, and the
+// rows shown are still those of the first generation.
+func TestMenu_Clear_DisplayedKeepsAllIDs(t *testing.T) {
+	menu := NewMenu()
+	menu.impl = stubMenuImpl{}
+	defer menu.Destroy()
+	shown := menu.Add("Shown")
+
+	menu.displayed.Store(true)
+	menu.Clear()
+	menu.Add("Gen 1")
+	menu.Clear()
+	gen2 := menu.Add("Gen 2")
+	if getMenuItemByID(shown.id) != shown {
+		t.Fatal("Clear released the IDs of rows still on screen")
+	}
+
+	menu.displayed.Store(false)
+	menu.Clear()
+	if getMenuItemByID(shown.id) != nil {
+		t.Error("first Clear after close should release the earlier generations")
+	}
+	if getMenuItemByID(gen2.id) != gen2 {
+		t.Error("first Clear after close should keep the last generation resolvable")
+	}
+}
+
 func TestMenu_Append(t *testing.T) {
 	menu1 := NewMenu()
 	menu1.Add("Item 1")

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_19Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_18Vtbl
 	GetMemoryUsageTargetLevel ComProc
 	PutMemoryUsageTargetLevel ComProc
 }

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f3df2fe79f2e00919df3",
+  "sourceFile": "community/showcase/optimus.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "targetHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "machineHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "machineText": "![Optimus](/assets/showcase-images/optimus.webp)",
+      "status": "final",
+      "sourcePreview": "![Optimus](/assets/showcase-images/optimus.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "6b9aae2a0a94c87b1187e3e02d60ad7201582cfd09bcad3840848da3a376d926",
+      "targetHash": "b62429cc6afac1d8cdf4b57aead1295f85a08db172f28045603e43ec9b629119",
+      "machineHash": "b62429cc6afac1d8cdf4b57aead1295f85a08db172f28045603e43ec9b629119",
+      "machineText": "[Optimus](https://github.com/splode/optimus) est une application de bureau d’optimisation d’images. Elle permet de convertir et de compresser des images aux formats WebP, JPEG et PNG.",
+      "status": "final",
+      "sourcePreview": "[Optimus](https://github.com/splode/optimus) is a desktop image optimization\\ application. It suppor…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "targetHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "machineHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "machineText": "Optimus",
+      "status": "final",
+      "sourcePreview": "Optimus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  }
+}

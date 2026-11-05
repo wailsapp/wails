@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -21,12 +22,11 @@ var jsClient []byte
 // This implementation is provided as an example and is not production-ready.
 // You may need to add error handling, reconnection logic, authentication, etc.
 type WebSocketTransport struct {
-	addr     string
-	server   *http.Server
-	upgrader websocket.Upgrader
-	clients  map[*websocket.Conn]chan *WebSocketMessage
-	mu       sync.RWMutex
-	handler  *application.MessageProcessor
+	addr    string
+	server  *http.Server
+	clients map[*websocket.Conn]chan *WebSocketMessage
+	mu      sync.RWMutex
+	handler *application.MessageProcessor
 }
 
 // WebSocketTransportOption is a functional option for configuring WebSocketTransport
@@ -54,13 +54,7 @@ type WebSocketMessage struct {
 // Example: NewWebSocketTransport(":9099")
 func NewWebSocketTransport(addr string, opts ...WebSocketTransportOption) *WebSocketTransport {
 	t := &WebSocketTransport{
-		addr: addr,
-		upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				// In production, you should validate the origin
-				return true
-			},
-		},
+		addr:    addr,
 		clients: make(map[*websocket.Conn]chan *WebSocketMessage),
 	}
 
@@ -130,7 +124,7 @@ func (w *WebSocketTransport) Stop() error {
 
 	w.mu.Lock()
 	for conn := range w.clients {
-		conn.Close()
+		conn.CloseNow()
 	}
 	w.mu.Unlock()
 
@@ -139,11 +133,14 @@ func (w *WebSocketTransport) Stop() error {
 
 // handleWebSocket handles WebSocket connections
 func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Request) {
-	conn, err := w.upgrader.Upgrade(rw, r, nil)
+	// This example accepts all origins; production applications should restrict them.
+	conn, err := websocket.Accept(rw, r, &websocket.AcceptOptions{InsecureSkipVerify: true})
 	if err != nil {
 		log.Printf("WebSocket upgrade failed: %v", err)
 		return
 	}
+	// Preserve the previous transport's unlimited message size.
+	conn.SetReadLimit(-1)
 
 	w.mu.Lock()
 	messageChan := make(chan *WebSocketMessage, 100)
@@ -160,10 +157,10 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 			delete(w.clients, conn)
 		}
 		w.mu.Unlock()
-		conn.Close()
+		conn.CloseNow()
 	}()
 
-	// write responses in one place, as concurrent writeJSON is not allowed
+	// Keep queued responses and events in order.
 	go func() {
 		for {
 			select {
@@ -173,7 +170,7 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 				}
 
 				w.mu.RLock()
-				if err := conn.WriteJSON(msg); err != nil {
+				if err := wsjson.Write(ctx, conn, msg); err != nil {
 					log.Printf("[WebSocket] Failed to send message: %v", err)
 				} else {
 					if msg.Type == "response" {
@@ -188,9 +185,10 @@ func (w *WebSocketTransport) handleWebSocket(rw http.ResponseWriter, r *http.Req
 	// Read messages from client
 	for {
 		var msg WebSocketMessage
-		err := conn.ReadJSON(&msg)
+		err := wsjson.Read(ctx, conn, &msg)
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			status := websocket.CloseStatus(err)
+			if status != websocket.StatusGoingAway && status != websocket.StatusAbnormalClosure {
 				log.Printf("WebSocket read error: %v", err)
 			}
 			break
