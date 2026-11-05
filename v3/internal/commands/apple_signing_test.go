@@ -202,7 +202,11 @@ func init() {
 	if os.Getenv("WAILS_TEST_NOTARY_PROFILE_HELPER") != "1" {
 		return
 	}
-	if err := os.WriteFile(os.Getenv("WAILS_TEST_NOTARY_PROFILE_READY"), []byte(strings.Join(os.Args[1:], "\n")), 0600); err != nil {
+	ready := os.Getenv("WAILS_TEST_NOTARY_PROFILE_READY")
+	if err := os.WriteFile(ready+".tmp", []byte(strings.Join(os.Args[1:], "\n")), 0600); err != nil {
+		os.Exit(23)
+	}
+	if err := os.Rename(ready+".tmp", ready); err != nil {
 		os.Exit(23)
 	}
 	time.Sleep(time.Minute)
