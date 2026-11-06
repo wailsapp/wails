@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-26T00:51:21Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "4fc58c0a060e227c5bd4257ee7f1a3f09b892421a41d532d53f6f9cbf2087380",
-      "machineHash": "4fc58c0a060e227c5bd4257ee7f1a3f09b892421a41d532d53f6f9cbf2087380",
-      "machineText": "Quem contribui para a documentação pode usar o M-Press sem instalar a CLI do Wails nem as dependências de compilação para desktop. Consulte [Escrever documentação com o M-Press](/contributing/documentation/) para obter instruções sobre downloads dos executáveis com versões fixadas, instalação, visualização ao vivo, validação e fluxo de trabalho de PRs para branches de lançamento.",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "e2ed1e2f6bb2affbeaa2993d26129a6eee96e945a7e134157eb80c1cd0a54054",
+      "machineHash": "e2ed1e2f6bb2affbeaa2993d26129a6eee96e945a7e134157eb80c1cd0a54054",
+      "machineText": "Quem contribui para a documentação pode usar o M-Press sem instalar a CLI do Wails nem as dependências de compilação para desktop. Siga [Escrever documentação com o M-Press](/contributing/documentation/) para obter informações sobre downloads do executável com versão fixada, instalação, visualização ao vivo, validação e fluxo de trabalho de PR direcionado a `master`.",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:51:21Z"
+      "updatedAt": "2026-11-06T02:12:40Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

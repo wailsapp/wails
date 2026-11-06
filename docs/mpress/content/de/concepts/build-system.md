@@ -7,13 +7,13 @@ sourcePath: "concepts/build-system.md"
 
 ## Einheitliches Buildsystem
 
-Wails bietet ein **einheitliches Buildsystem**, das Go-Code kompiliert, Frontend-Assets bündelt, alles in eine einzige ausführbare Datei einbettet und plattformspezifische Builds verarbeitet – alles mit nur einem Befehl.
+Wails bietet ein **einheitliches Buildsystem**, das Go-Code kompiliert, Frontend-Assets bündelt, alles in eine einzelne ausführbare Datei einbettet und plattformspezifische Builds verarbeitet – alles mit einem einzigen Befehl.
 
 ```bash
 wails3 build
 ```
 
-**Ausgabe:** Native ausführbare Datei mit allen eingebetteten Komponenten.
+**Ausgabe:** Native ausführbare Datei, in die alles eingebettet ist.
 
 ## Überblick über den Buildprozess
 
@@ -23,7 +23,7 @@ wails3 build
 
 ### 1. Analysephase
 
-Wails durchsucht Ihren Go-Code, um Ihre Dienste zu erfassen:
+Wails durchsucht Ihren Go-Code, um Ihre Services zu erfassen:
 
 ```go
 type GreetService struct {
@@ -37,7 +37,7 @@ func (g *GreetService) Greet(name string) string {
 
 **Von Wails extrahierte Informationen:**
 
-- Dienstname: `GreetService`
+- Servicename: `GreetService`
 - Methodenname: `Greet`
 - Parametertypen: `string`
 - Rückgabetypen: `string`
@@ -80,7 +80,7 @@ vite build --outDir dist
 **Ablauf:**
 
 - JavaScript/TypeScript wird kompiliert
-- CSS wird verarbeitet und minifiziert
+- CSS wird verarbeitet und minimiert
 - Assets werden optimiert
 - Source Maps werden generiert (nur bei der Entwicklung)
 - Ausgabe nach `frontend/dist/`
@@ -104,7 +104,7 @@ go build -ldflags="-s -w" -o myapp.exe
 **Plattformspezifisch:**
 
 - Windows: `.exe` mit eingebettetem Symbol
-- macOS: Bundle-Struktur für `.app`
+- macOS: `.app`-Bundle-Struktur
 - Linux: ELF-Binärdatei
 
 #### Einbetten von Assets
@@ -116,11 +116,11 @@ Frontend-Assets werden in die Go-Binärdatei eingebettet:
 var assets embed.FS
 ```
 
-**Ergebnis:** Eine einzige ausführbare Datei, die alles enthält.
+**Ergebnis:** eine einzelne ausführbare Datei, die alles enthält.
 
 ### 4. Ausgabe
 
-**Eine einzige native Binärdatei:**
+**Einzelne native Binärdatei:**
 
 - Windows: `myapp.exe` (ca. 15 MB)
 - macOS: `myapp.app` (ca. 15 MB)
@@ -144,7 +144,7 @@ wails3 dev
 2. Kompiliert Go ohne Optimierungen
 3. Startet die Anwendung mit Verweis auf den Entwicklungsserver
 4. Aktiviert Hot Reload
-5. Bezieht Source Maps ein
+5. Schließt Source Maps ein
 
 **Merkmale:**
 
@@ -154,7 +154,7 @@ wails3 dev
 - **Source Maps** aktiviert
 - **Ausführliche Protokollierung**
 
-**Dateigröße:** Größer (~50 MB mit Debugsymbolen)
+**Dateigröße:** größer (ca. 50 MB mit Debugsymbolen)
 
 [Produktion (wails3 build)]
 **Für Größe und Leistung optimiert:**
@@ -165,7 +165,7 @@ wails3 build
 
 **Ablauf:**
 
-1. Erstellt das Frontend für die Produktion (minifiziert)
+1. Erstellt das Frontend für die Produktion (minimiert)
 2. Kompiliert Go mit Optimierungen
 3. Entfernt Debugsymbole
 4. Bettet Assets ein
@@ -173,17 +173,17 @@ wails3 build
 
 **Merkmale:**
 
-- **Optimierter Code** (minifiziert, Tree-Shaking angewendet)
+- **Optimierter Code** (minimiert, Tree Shaking angewendet)
 - **Eingebettete Assets** (keine externen Dateien)
 - **Debugsymbole entfernt**
-- **Keine Source-Maps**
+- **Keine Source Maps**
 - **Minimale Protokollierung**
 
-**Dateigröße:** Kleiner (~15 MB)
+**Dateigröße:** kleiner (ca. 15 MB)
 
 @end
 
-## Build-Befehle
+## Buildbefehle
 
 ### Einfacher Build
 
@@ -193,18 +193,18 @@ wails3 build
 
 **Ausgabe:** `bin/<APP_NAME>` (oder `bin/<APP_NAME>.exe` unter Windows). Das Verzeichnis `bin/` befindet sich im Projektstammverzeichnis.
 
-`wails3 build` ist ein schlanker Wrapper für `wails3 task build`. Das einzige zur Build-Zeit weitergereichte Flag ist `--tags`; es wird zur Taskfile-Variablen `EXTRA_TAGS`:
+`wails3 build` ist ein schlanker Wrapper für `wails3 task build`. Das einzige zur Buildzeit weitergereichte Flag ist `--tags`, das zur Taskfile-Variable `EXTRA_TAGS` wird:
 
 ```bash
 # Build with extra Go build tags
 wails3 build --tags "myfeature,gtk4"
 ```
 
-`wails3 build` unterstützt keine Flags namens `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags` oder `-package`. Cross-Kompilierung, Ausgabepfade, Symbole und Paketierung werden über das Taskfile des Projekts gesteuert (`Taskfile.yml` + `build/config.yml`).
+Für `wails3 build` gibt es keine Flags `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags` oder `-package`. Cross-Kompilierung, Ausgabepfade, Symbole und Paketierung werden über das Taskfile des Projekts gesteuert (`Taskfile.yml` + `build/config.yml`).
 
 ### Plattformübergreifende und plattformspezifische Builds
 
-Plattform-Builds stehen als Taskfile-Tasks unter den Namensräumen `darwin:`, `windows:` und `linux:` zur Verfügung (definiert in `build/Taskfile.<platform>.yml`). Beispiel:
+Plattform-Builds stehen als Taskfile-Tasks in den Namensräumen `darwin:` / `windows:` / `linux:` zur Verfügung (definiert in `build/Taskfile.<platform>.yml`). Beispiel:
 
 ```bash
 # macOS — universal binary
@@ -228,7 +228,7 @@ wails3 task --list
 
 ### Symbole und Paketierung
 
-Erzeugen Sie Plattformsymbole (`build/icons.icns`, `build/icon.ico` usw.) aus einer PNG-Quelldatei:
+Generieren Sie Plattformsymbole (`build/icons.icns`, `build/icon.ico` usw.) aus einer Quell-PNG-Datei:
 
 ```bash
 wails3 generate icons -input appicon.png
@@ -247,7 +247,7 @@ wails3 task darwin:package:universal
 
 ### Taskfile.yml
 
-Wails-3-Projekte verwenden [Taskfile](https://taskfile.dev/) zur Build-Orchestrierung. Das `Taskfile.yml` im Projektstamm bindet die plattformspezifischen Taskdateien aus `build/` ein:
+Wails-3-Projekte verwenden das [Taskfile](https://taskfile.dev/) zur Build-Orchestrierung. Das `Taskfile.yml` im Stammverzeichnis bindet plattformspezifische Task-Dateien aus `build/` ein:
 
 ```yaml
 # Taskfile.yml (excerpt — the real templates are richer)
@@ -276,7 +276,7 @@ wails3 task linux:create:appimage
 
 ### Projektkonfiguration: `build/config.yml`
 
-Die Projektmetadaten (Name, Kennung, Version, Info-Plist-Werte, NSIS-Einstellungen, `.desktop`-Felder, benutzerdefinierte Protokolle usw.) befinden sich in `build/config.yml`. Das Taskfile liest diese Datei beim Erzeugen von Symbolen, Manifesten, Installationsprogrammen und ähnlichen Artefakten. In Wails 3 gibt es **keine** Datei `build/build.json`.
+Projektmetadaten (Name, Kennung, Version, Info.plist-Werte, NSIS-Einstellungen, `.desktop`-Felder, benutzerdefinierte Protokolle usw.) befinden sich in `build/config.yml`. Das Taskfile liest diese Datei beim Generieren von Symbolen, Manifesten, Installationsprogrammen und Ähnlichem. In Wails 3 gibt es **keine** `build/build.json`-Datei.
 
 ```yaml
 # build/config.yml (illustrative)
@@ -288,9 +288,9 @@ info:
   productDescription: "An application built with Wails"
 ```
 
-Führen Sie `wails3 generate build-assets` (oder `wails3 update build-assets`) aus, um die plattformspezifischen Build-Assets anhand dieser Konfiguration zu aktualisieren.
+Führen Sie `wails3 generate build-assets` (oder `wails3 update build-assets`) aus, um die plattformspezifischen Build-Ressourcen anhand dieser Konfiguration zu aktualisieren.
 
-## Einbetten von Assets
+## Einbetten von Ressourcen
 
 ### Funktionsweise
 
@@ -323,18 +323,18 @@ func main() {
 **Zur Build-Zeit:**
 
 1. Frontend wird nach `frontend/dist/` gebaut
-2. Die Direktive `//go:embed` bindet Dateien ein
+2. Die `//go:embed`-Direktive bindet Dateien ein
 3. Dateien werden in die Binärdatei kompiliert
 4. Die Binärdatei enthält alles
 
 **Zur Laufzeit:**
 
 1. Anwendung startet
-2. Assets werden aus dem Arbeitsspeicher bereitgestellt
-3. Keine Festplatten-E/A für Assets
+2. Ressourcen werden aus dem Arbeitsspeicher bereitgestellt
+3. Keine Datenträger-E/A für Ressourcen
 4. Schnelles Laden
 
-### Benutzerdefinierte Assets
+### Benutzerdefinierte Ressourcen
 
 Betten Sie zusätzliche Dateien ein:
 
@@ -379,8 +379,8 @@ export default {
 
 **Ergebnisse:**
 
-- JavaScript minifiziert (~70 % kleiner)
-- CSS minifiziert (~60 % kleiner)
+- JavaScript minimiert (Reduzierung um ca. 70 %)
+- CSS minimiert (Reduzierung um ca. 60 %)
 - Bilder optimiert
 - Tree-Shaking angewendet
 
@@ -392,10 +392,10 @@ export default {
 -ldflags="-s -w"
 ```
 
-- `-s`: Symboltabelle entfernen (~10 % Größenreduzierung)
-- `-w`: DWARF-Debuginformationen entfernen (~20 % Größenreduzierung)
+- `-s`: Symboltabelle entfernen (Reduzierung um ca. 10 %)
+- `-w`: DWARF-Debuginformationen entfernen (Reduzierung um ca. 20 %)
 
-**Weitere Optimierungen:**
+**Zusätzliche Optimierungen:**
 
 ```bash
 -ldflags="-s -w -X main.version=1.0.0"
@@ -415,8 +415,8 @@ upx --best bin/myapp.exe
 
 **Ergebnisse:**
 
-- ~50 % Größenreduzierung
-- Etwas langsamerer Start (~100 ms)
+- Größenreduzierung um ca. 50 %
+- Etwas langsamerer Start (ca. 100 ms)
 - Für macOS nicht empfohlen (Probleme mit der Codesignierung)
 
 ## Plattformspezifische Builds
@@ -491,9 +491,9 @@ myapp.app/
 </plist>
 ```
 
-**Universelle Binärdatei:**
+**Universal Binary:**
 
-Das Taskfile für macOS enthält eine Aufgabe `darwin:build:universal` (sowie `darwin:package:universal`), die beide Architekturen erstellt und sie mit `wails3 tool lipo` zusammenführt:
+Das macOS-Taskfile stellt einen Task `darwin:build:universal` (sowie `darwin:package:universal`) bereit, der beide Architekturen baut und sie mit `wails3 tool lipo` kombiniert:
 
 ```bash
 wails3 task darwin:build:universal
@@ -543,7 +543,7 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 | Generierung der Bindings | &lt;1 s | TypeScript-Generierung |
 | Frontend-Build | 5-30 s | Abhängig von der Projektgröße |
 | Go-Kompilierung | 2-10 s | Abhängig von der Codegröße |
-| Einbetten von Assets | &lt;1 s | Einbetten des Frontends |
+| Einbetten von Ressourcen | &lt;1 s | Einbetten des Frontends |
 | **Gesamt** | **10-45 s** | Erster Build |
 | **Inkrementell** | **5-15 s** | Nachfolgende Builds |
 
@@ -567,7 +567,7 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 **3. Parallele Builds (mehrere Rechner/CI):**
 
-Die Cross-Kompilierung zwischen Linux, Windows und macOS erfolgt in v3 im Allgemeinen in einem Docker-`wails-cross`-Container oder auf dedizierten Runnern für die jeweilige Plattform – `wails3 build` selbst zielt auf das Hostbetriebssystem. Informationen zu den unterstützten Workflows finden Sie unter [Plattformübergreifende Builds](/guides/build/cross-platform/).
+Die Cross-Kompilierung zwischen Linux, Windows und macOS in v3 erfolgt im Allgemeinen in einem Docker-`wails-cross`-Container oder auf dedizierten Runnern für die jeweilige Plattform – `wails3 build` selbst ist auf das Hostbetriebssystem ausgerichtet. Informationen zu den unterstützten Workflows finden Sie unter [Plattformübergreifende Builds](/guides/build/cross-platform/).
 
 **4. Schnellere Tools verwenden:**
 
@@ -591,7 +591,7 @@ Die Cross-Kompilierung zwischen Linux, Windows und macOS erfolgt in v3 im Allgem
   ```
 
 
-2. **Fehler beim Frontend-Build**
+2. **Frontend-Build-Fehler**
   ```bash
   # Check frontend builds
   cd frontend
@@ -630,7 +630,7 @@ Die Cross-Kompilierung zwischen Linux, Windows und macOS erfolgt in v3 im Allgem
 
 ### Langsame Builds
 
-**Symptom:** Builds dauern >1 Minute
+**Symptom:** Builds dauern länger als 1 Minute
 
 **Lösungen:**
 
@@ -657,33 +657,33 @@ Die Cross-Kompilierung zwischen Linux, Windows und macOS erfolgt in v3 im Allgem
   ```
 
 
-## Bewährte Methoden
+## Bewährte Vorgehensweisen
 
 ### ✅ Empfohlen
 
 - **Während der Entwicklung `wails3 dev` verwenden** – Schnelle Iterationen
 - **Für Releases `wails3 build` verwenden** – Optimierte Ausgabe
-- **Builds versionieren** – Mit `-ldflags` die Version einbetten
+- **Builds versionieren** – Die Version mit `-ldflags` einbetten
 - **Builds auf den Zielplattformen testen** – Cross-Kompilierung ist nicht perfekt
 - **Frontend-Builds schnell halten** – Bundler-Konfiguration optimieren
 - **Build-Cache verwenden** – Beschleunigt nachfolgende Builds
 
 ### ❌ Nicht empfohlen
 
-- **Verzeichnis `build/` nicht committen** – Zu `.gitignore` hinzufügen
+- **Das Verzeichnis `build/` nicht committen** – Zu `.gitignore` hinzufügen
 - **Build-Tests nicht überspringen** – Vor dem Release immer testen
 - **Keine unnötigen Assets einbetten** – Binärdateien klein halten
-- **Keine Debug-Builds in der Produktion verwenden** – Optimierte Builds verwenden
-- **Code-Signierung nicht vergessen** – Für die Verteilung erforderlich
+- **Keine Debug-Builds für die Produktion verwenden** – Optimierte Builds verwenden
+- **Code-Signierung nicht vergessen** – Für die Distribution erforderlich
 
 ## Nächste Schritte
 
 **Anwendungen erstellen** – Ausführliche Anleitung zum Erstellen und Paketieren [Mehr erfahren →](/guides/build/building/)
 
-**Plattformübergreifende Builds** – Builds für alle Plattformen auf einem einzigen Rechner erstellen [Mehr erfahren →](/guides/build/cross-platform/)
+**Plattformübergreifende Builds** – Von einem Rechner aus für alle Plattformen erstellen [Mehr erfahren →](/guides/build/cross-platform/)
 
 **Installationsprogramme erstellen** – Installationsprogramme für Endbenutzer erstellen [Mehr erfahren →](/guides/installers/)
 
 ---
 
-**Fragen zum Erstellen von Builds?** Auf [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Build-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/build) ansehen.
+**Fragen zum Erstellen von Builds?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Build-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/build) an.

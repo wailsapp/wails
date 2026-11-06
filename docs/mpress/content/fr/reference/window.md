@@ -1,15 +1,15 @@
 ---
-title: "API des fenêtres"
-description: "Référence complète de l’API des fenêtres"
+title: "API Window"
+description: "Référence complète de l’API Window"
 slug: "reference/window"
 sourcePath: "reference/window.md"
 ---
 
 ## Vue d’ensemble
 
-L’API des fenêtres fournit des méthodes permettant de contrôler l’apparence, le comportement et le cycle de vie des fenêtres. Accédez-y à partir des instances de fenêtre ou du gestionnaire `app.Window`.
+L’API Window fournit des méthodes permettant de contrôler l’apparence, le comportement et le cycle de vie des fenêtres. Accédez-y par l’intermédiaire des instances de fenêtre ou du gestionnaire `app.Window`.
 
-`Window` est une interface implémentée par `*application.WebviewWindow`. Les signatures de méthodes ci-dessous appartiennent à `*WebviewWindow`. De nombreuses méthodes de modification renvoient `Window` afin de permettre le chaînage ; les valeurs de retour sont documentées pour chaque méthode.
+`Window` est une interface implémentée par `*application.WebviewWindow` ; les signatures de méthodes ci-dessous appartiennent à `*WebviewWindow`. De nombreuses méthodes de modification renvoient `Window` afin de permettre le chaînage ; les valeurs de retour sont documentées pour chaque méthode.
 
 **Opérations courantes :**
 
@@ -56,7 +56,7 @@ window.Show()
 
 **Cas d’utilisation :**
 
-- Applications de la zone de notification qui se masquent dans celle-ci
+- Applications de la zone de notification qui s’y réduisent
 - Assistants dans lesquels les fenêtres sont réutilisées
 - Masquage temporaire pendant des opérations
 
@@ -76,7 +76,7 @@ window.Close()
 
 **Remarque :** si un hook enregistré appelle `event.Cancel()`, la fermeture est empêchée.
 
-## Propriétés des fenêtres
+## Propriétés de la fenêtre
 
 ### SetTitle()
 
@@ -154,7 +154,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-Définit les dimensions minimales et maximales de la fenêtre. Ces deux méthodes renvoient le récepteur pour permettre le chaînage.
+Définit les dimensions minimales et maximales de la fenêtre. Les deux méthodes renvoient le récepteur pour permettre le chaînage.
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -225,7 +225,7 @@ window.Center()
 window.Show()
 ```
 
-**Remarque :** la fenêtre est centrée sur le moniteur principal. Pour les configurations à plusieurs moniteurs, consultez les API d’écran.
+**Remarque :** centre la fenêtre sur le moniteur principal. Pour les configurations à plusieurs moniteurs, consultez les API d’écran.
 
 ### Focus()
 
@@ -246,7 +246,7 @@ window.Focus()
 
 ### Minimise() / UnMinimise()
 
-Réduit la fenêtre dans la barre des tâches ou le Dock, ou la restaure. `Minimise()` renvoie le récepteur pour permettre le chaînage ; `UnMinimise()` ne renvoie rien.
+Réduit la fenêtre dans la barre des tâches ou le Dock, ou la restaure. `Minimise()` renvoie le récepteur pour permettre le chaînage ; `UnMinimise()` ne renvoie rien.
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-Agrandit la fenêtre pour qu’elle occupe tout l’écran ou lui rend sa taille précédente. `Maximise()` renvoie le récepteur pour permettre le chaînage ; `UnMaximise()` ne renvoie rien.
+Agrandit la fenêtre pour qu’elle occupe tout l’écran ou la restaure à sa taille précédente. `Maximise()` renvoie le récepteur pour permettre le chaînage ; `UnMaximise()` ne renvoie rien.
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-Accède à une URL précise dans la fenêtre. Renvoie le récepteur pour permettre le chaînage.
+Accède à une URL donnée dans la fenêtre. Renvoie le récepteur pour permettre le chaînage.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **Paramètres :**
 
-- `url` — URL à laquelle accéder (peut être `http://wails.localhost/` pour les ressources intégrées)
+- `url` - URL à laquelle accéder (peut être `http://wails.localhost/` pour les ressources intégrées)
 
 **Exemple :**
 
@@ -367,7 +367,7 @@ func (w *WebviewWindow) SetHTML(html string) Window
 
 **Paramètres :**
 
-- `html` — contenu HTML à afficher
+- `html` - Contenu HTML à afficher
 
 **Exemple :**
 
@@ -412,8 +412,8 @@ window.Reload()
 
 Wails fournit deux méthodes pour gérer les événements de fenêtre :
 
-- **OnWindowEvent()** — écoute les événements de fenêtre (sans pouvoir les empêcher).
-- **RegisterHook()** — intercepte les événements de fenêtre (et peut les empêcher en appelant `event.Cancel()`).
+- **OnWindowEvent()** — Écoute les événements de fenêtre sans pouvoir les empêcher.
+- **RegisterHook()** — Intercepte les événements de fenêtre et peut les empêcher en appelant `event.Cancel()`.
 
 ### OnWindowEvent()
 
@@ -449,15 +449,15 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 **Événements de fenêtre courants :**
 
-- `events.Common.WindowClosing` — la fenêtre est sur le point de se fermer
-- `events.Common.WindowFocus` — la fenêtre a obtenu le focus
-- `events.Common.WindowLostFocus` — la fenêtre a perdu le focus
-- `events.Common.WindowDidMove` — la fenêtre a été déplacée
-- `events.Common.WindowDidResize` — la fenêtre a été redimensionnée
-- `events.Common.WindowMinimise` — la fenêtre a été réduite
-- `events.Common.WindowMaximise` — la fenêtre a été agrandie
-- `events.Common.WindowFullscreen` — la fenêtre est passée en plein écran
-- `events.Common.WindowRuntimeReady` — l’environnement d’exécution intégré à la fenêtre a été initialisé
+- `events.Common.WindowClosing` — La fenêtre est sur le point de se fermer
+- `events.Common.WindowFocus` — La fenêtre a obtenu le focus
+- `events.Common.WindowLostFocus` — La fenêtre a perdu le focus
+- `events.Common.WindowDidMove` — La fenêtre a été déplacée
+- `events.Common.WindowDidResize` — La fenêtre a été redimensionnée
+- `events.Common.WindowMinimise` — La fenêtre a été réduite
+- `events.Common.WindowMaximise` — La fenêtre a été agrandie
+- `events.Common.WindowFullscreen` — La fenêtre est passée en plein écran
+- `events.Common.WindowRuntimeReady` — L’environnement d’exécution intégré à la fenêtre a été initialisé
 
 ### RegisterHook()
 
@@ -470,7 +470,7 @@ func (w *WebviewWindow) RegisterHook(
 ) func()
 ```
 
-**Exemple — empêcher la fermeture de la fenêtre :**
+**Exemple — Empêcher la fermeture de la fenêtre :**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -493,7 +493,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-**Exemple — enregistrer avant la fermeture :**
+**Exemple — Enregistrer avant la fermeture :**
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -529,8 +529,8 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 
 **Paramètres :**
 
-- `name` — nom de l’événement
-- `data` — données facultatives à envoyer avec l’événement
+- `name` — Nom de l’événement
+- `data` — Données facultatives à envoyer avec l’événement
 
 **Exemple :**
 
@@ -578,13 +578,13 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-Définit la couleur d’arrière-plan de la fenêtre (affichée avant le chargement du contenu). Renvoie le récepteur pour permettre le chaînage.
+Définit la couleur d’arrière-plan de la fenêtre, affichée avant le chargement du contenu. Renvoie le récepteur pour permettre le chaînage.
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA` est `application.RGBA{Red, Green, Blue, Alpha uint8}`. Utilisez les fonctions auxiliaires `application.NewRGB(r, g, b)` (alpha 255) ou `application.NewRGBA(r, g, b, a)`.
+`RGBA` est de type `application.RGBA{Red, Green, Blue, Alpha uint8}`. Utilisez les fonctions d’assistance `application.NewRGB(r, g, b)` (alpha 255) ou `application.NewRGBA(r, g, b, a)`.
 
 **Exemple :**
 
@@ -626,6 +626,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 window.SetAlwaysOnTop(true)
 ```
 
+### SetMenu()
+
+Définit la barre de menus de la fenêtre sous Windows et Linux, en remplaçant celle qui est affichée.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Paramètres :**
+- `menu` — Menu à afficher, ou `nil` pour supprimer la barre de menus
+
+Transmettre `nil` supprime la barre : la fenêtre n’affiche alors aucun menu, pas même celui de l’application, et les raccourcis clavier du menu supprimé cessent de fonctionner dans cette fenêtre. Si cette méthode est appelée avant le démarrage de la fenêtre, celle-ci est créée sans barre de menus.
+
+**Prise en charge par plateforme :**
+- **Windows** : prise en charge complète
+- **Linux** : prise en charge complète
+- **macOS** : aucun effet, car la barre de menus appartient à l’application. Utilisez plutôt `app.Menu.Set`.
+
+**Exemple :**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
+```
+
 ### Print()
 
 Ouvre la boîte de dialogue d’impression native pour le contenu de la fenêtre.
@@ -634,7 +659,7 @@ Ouvre la boîte de dialogue d’impression native pour le contenu de la fenêtre
 func (w *WebviewWindow) Print() error
 ```
 
-**Renvoie :** une erreur si l’impression échoue.
+**Valeur renvoyée :** une erreur si l’impression échoue.
 
 **Exemple :**
 
@@ -646,7 +671,7 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-Attache une seconde fenêtre en tant que fenêtre modale de type feuille.
+Attache une seconde fenêtre sous forme de feuille modale.
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
@@ -654,13 +679,13 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **Paramètres :**
 
-- `modalWindow` - Fenêtre à attacher en tant que fenêtre modale
+- `modalWindow` — Fenêtre à attacher comme fenêtre modale
 
-**Prise en charge selon la plateforme :**
+**Prise en charge par plateforme :**
 
 - **macOS** : prise en charge complète (affichage sous forme de feuille)
-- **Windows** : non pris en charge
-- **Linux** : non pris en charge
+- **Windows** : aucune prise en charge
+- **Linux** : aucune prise en charge
 
 **Exemple :**
 
@@ -669,7 +694,7 @@ modalWindow := app.Window.New()
 window.AttachModal(modalWindow)
 ```
 
-## Options propres à chaque plateforme
+## Options propres aux plateformes
 
 ### Linux
 
@@ -677,11 +702,11 @@ Sous Linux, les fenêtres prennent en charge les options propres à la plateform
 
 #### MenuStyle
 
-Contrôle le mode d’affichage du menu de l’application. Cette option est disponible dans la version GTK4 par défaut et est ignorée dans les anciennes versions `-tags gtk3`.
+Détermine le mode d’affichage du menu de l’application. Cette option est disponible avec la compilation GTK4 par défaut et est ignorée avec les anciennes compilations `-tags gtk3`.
 
 | Valeur | Description |
 | --- | --- |
-| `LinuxMenuStyleMenuBar` | Barre de menus classique sous la barre de titre (par défaut) |
+| `LinuxMenuStyleMenuBar` | Barre de menus traditionnelle sous la barre de titre (par défaut) |
 | `LinuxMenuStylePrimaryMenu` | Bouton du menu principal dans la barre d’en-tête (style GNOME) |
 
 **Exemple :**
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-**Remarque :** le style de menu principal affiche un bouton de menu hamburger (☰) dans la barre d’en-tête, conformément aux recommandations GNOME relatives aux interfaces humaines. Ce style est recommandé pour les applications GNOME modernes.
+**Remarque :** le style de menu principal affiche un bouton hamburger (☰) dans la barre d’en-tête, conformément aux directives d’interface utilisateur de GNOME. Ce style est recommandé pour les applications GNOME modernes.
 
 ## Exemple complet
 

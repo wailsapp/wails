@@ -1,17 +1,17 @@
 ---
-title: "System-Tray-Menüs"
-description: "Integriere den Infobereich der Taskleiste in deine Anwendung"
+title: "Infobereichsmenüs"
+description: "Integriere den Infobereich (Benachrichtigungsbereich) in deine Anwendung"
 slug: "features/menus/systray"
 sourcePath: "features/menus/systray.md"
 ---
 
-## System-Tray-Menüs
+## Infobereichsmenüs
 
-Wails bietet **einheitliche System-Tray-APIs**, die auf allen Plattformen funktionieren. Erstelle System-Tray-Symbole mit Menüs, verknüpfe Fenster und verarbeite Klicks mit nativem Plattformverhalten für Hintergrundanwendungen, Dienste und Dienstprogramme für den Schnellzugriff.
+Wails bietet **einheitliche Infobereichs-APIs**, die auf allen Plattformen funktionieren. Erstelle Infobereichssymbole mit Menüs, verknüpfe Fenster und verarbeite Klicks mit nativem Plattformverhalten für Hintergrundanwendungen, Dienste und Dienstprogramme mit Schnellzugriff.
 
-![Ein Wails-System-Tray-Menü, geöffnet über die macOS-Menüleiste](/assets/screenshots/systray-menu-macos.png)
+![Ein Wails-Infobereichsmenü, geöffnet über die macOS-Menüleiste](/assets/screenshots/systray-menu-macos.png)
 
-Unter macOS erscheint ein Wails-System-Tray-Element in der Menüleiste und öffnet ein natives Menü. Das Beispiel enthält deaktivierte Einträge, Kontrollkästchen, Optionsfelder, Untermenüs und Aktionseinträge.
+Unter macOS erscheint ein Wails-Infobereichselement in der Menüleiste und öffnet ein natives Menü. Das Beispiel enthält deaktivierte Einträge, Kontrollkästchen, Optionsfelder, Untermenüs und Aktionseinträge.
 
 ## Schnellstart
 
@@ -54,11 +54,11 @@ func main() {
 }
 ```
 
-**Ergebnis:** System-Tray-Symbol mit Menü auf allen Plattformen.
+**Ergebnis:** Infobereichssymbol mit Menü auf allen Plattformen.
 
-## System-Tray-Symbol erstellen
+## Infobereich erstellen
 
-### Einfaches System-Tray-Symbol
+### Einfacher Infobereich
 
 ```go
 // Create system tray
@@ -101,9 +101,9 @@ func main() {
 
 | Plattform | Größe | Format | Hinweise |
 | --- | --- | --- | --- |
-| **Windows** | 16x16 oder 32x32 | PNG, ICO | Infobereich der Taskleiste |
-| **macOS** | 18x18 bis 22x22 | PNG | Menüleiste, Vorlage empfohlen |
-| **Linux** | 22x22 bis 48x48 | PNG, SVG | Je nach Desktop-Umgebung |
+| **Windows** | 16x16 oder 32x32 | PNG, ICO | Benachrichtigungsbereich |
+| **macOS** | 18x18 bis 22x22 | PNG | Menüleiste, Vorlagensymbol empfohlen |
+| **Linux** | 22x22 bis 48x48 | PNG, SVG | Je nach Desktop-Umgebung unterschiedlich |
 
 ### Vorlagensymbole (macOS)
 
@@ -115,14 +115,14 @@ systray.SetTemplateIcon(iconBytes)
 
 **Richtlinien für Vorlagensymbole:**
 
-- Verwende ausschließlich Schwarz und transparente Farben
+- Verwende ausschließlich Schwarz und transparente Bereiche
 - Schwarz wird im dunklen Modus zu Weiß
 - Benenne die Datei mit dem Suffix `Template`: `iconTemplate.png`
-- [Gestaltungsrichtlinien](https://bjango.com/articles/designingmenubarextras/)
+- [Designleitfaden](https://bjango.com/articles/designingmenubarextras/)
 
 ## Menüs hinzufügen
 
-System-Tray-Menüs funktionieren wie Anwendungsmenüs:
+Infobereichsmenüs funktionieren wie Anwendungsmenüs:
 
 ```go
 menu := app.NewMenu()
@@ -149,11 +149,11 @@ menu.Add("Quit").OnClick(func(ctx *application.Context) {
 systray.SetMenu(menu)
 ```
 
-**Alle Menüeintragstypen** findest du in der [Menüreferenz](/features/menus/reference/).
+Siehe **Alle Menüeintragstypen** in der [Menüreferenz](/features/menus/reference/).
 
 ## Fenster verknüpfen
 
-Verknüpfe ein Fenster mit dem System-Tray-Symbol, damit es automatisch ein- und ausgeblendet wird:
+Verknüpfe ein Fenster mit dem Infobereichssymbol, um es automatisch ein- und auszublenden:
 
 ```go
 // Create window
@@ -170,9 +170,9 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 **Verhalten:**
 
 - Das Fenster ist anfangs ausgeblendet
-- **Linksklick auf das System-Tray-Symbol** → Sichtbarkeit des Fensters umschalten
-- **Rechtsklick auf das System-Tray-Symbol** → Menü anzeigen (sofern festgelegt)
-- Das Fenster wird in der Nähe des System-Tray-Symbols positioniert
+- **Linksklick auf das Infobereichssymbol** → Sichtbarkeit des Fensters umschalten
+- **Rechtsklick auf das Infobereichssymbol** → Menü anzeigen (falls festgelegt)
+- Das Fenster wird nahe dem Infobereichssymbol positioniert
 
 **Beispiel: Popup-Fenster**
 
@@ -191,13 +191,13 @@ systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
-`HideOnFocusLost` ist für System-Tray-Popups unter Windows und macOS sowie auf Linux-Desktops mit Fokus durch Klicken nützlich. Wails deaktiviert dieses Verhalten unter Linux in Umgebungen, in denen der Fokus der Maus folgt (darunter gängige Hyprland-, Sway- und i3- Konfigurationen). Andernfalls könnte das Popup beim Verlassen ausgeblendet werden, bevor es verwendet werden kann. `HideOnEscape` bleibt in diesen Umgebungen verfügbar.
+`HideOnFocusLost` eignet sich für Infobereichs-Popups unter Windows, macOS und Linux-Desktops, bei denen ein Klick den Fokus setzt. Wails deaktiviert dieses Verhalten in Linux-Umgebungen, in denen der Fokus dem Mauszeiger folgt (darunter gängige Konfigurationen mit Hyprland, Sway und i3). Andernfalls könnte das Popup beim Verlassen ausgeblendet werden, bevor es verwendet werden kann. `HideOnEscape` bleibt in diesen Umgebungen verfügbar.
 
-Die oben beschriebenen Verhaltensweisen für Links- und Rechtsklicks sind sinnvolle Standardwerte. Ein expliziter `OnClick`- oder `OnRightClick`-Handler ersetzt den jeweiligen Standardwert. Plattformprüfungen und Sonderfälle findest du in der [manuellen Systray-Testsuite](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) und im [Systray-Stresstestbeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
+Das oben beschriebene Verhalten für Links- und Rechtsklicks sind sinnvolle Standardwerte. Ein expliziter `OnClick`- oder `OnRightClick`-Handler ersetzt den jeweiligen Standardwert. Informationen zu Plattformprüfungen und Sonderfällen findest du in der [manuellen Systray-Testsuite](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) und im [Systray-Stressbeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
 
 ## Klick-Handler
 
-Verarbeite Klicks auf das System-Tray-Symbol:
+Verarbeite Klicks auf das Infobereichssymbol:
 
 ```go
 systray := app.SystemTray.New()
@@ -239,7 +239,7 @@ systray.OnMouseLeave(func() {
 
 ## Dynamische Aktualisierungen
 
-Aktualisiere System-Tray-Symbol und Menü dynamisch:
+Aktualisiere Infobereichssymbol und Menü dynamisch:
 
 ### Symbol ändern
 
@@ -278,13 +278,13 @@ pauseMenuItem.OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Update() immer aufrufen"}
-Rufe nach einer Änderung des Menüzustands **die Methode `menu.Update()`** auf. Weitere Informationen findest du in der [Menüreferenz](/features/menus/reference/#enabled-state).
+**Rufe nach einer Änderung des Menüzustands `menu.Update()`** auf. Siehe [Menüreferenz](/features/menus/reference/#enabled-state).
 
 @end
 
 ### Menü neu erstellen
 
-Erstellen Sie bei umfangreichen Änderungen das gesamte Menü neu:
+Erstelle bei größeren Änderungen das gesamte Menü neu:
 
 ```go
 func rebuildTrayMenu(status string) {
@@ -338,13 +338,13 @@ systray.SetIconPosition(application.NSImageRight)
 
 **Bewährte Vorgehensweisen:**
 
-- Vorlagensymbole verwenden (schwarz und transparent)
-- Beschriftungen kurz halten (3-5 Zeichen)
+- Verwende Vorlagensymbole (schwarz und transparent)
+- Halte Beschriftungen kurz (3-5 Zeichen)
 - 18x18 bis 22x22 Pixel für Retina-Displays
-- Sowohl im hellen als auch im dunklen Modus testen
+- Teste sowohl im hellen als auch im dunklen Modus
 
 [Windows]
-**Integration in den Infobereich:**
+**Integration in den Benachrichtigungsbereich:**
 
 ```go
 // Set tooltip (appears on hover)
@@ -364,30 +364,30 @@ systray.Hide()  // Hide tray icon
 - PNG- oder ICO-Format
 - Transparenter Hintergrund
 
-**Beschränkungen für Tooltips:**
+**Tooltip-Beschränkungen:**
 
 - Maximal 127 UTF-16-Zeichen
 - Längere Tooltips werden abgeschnitten
-- Für eine optimale Benutzererfahrung kurz halten
+- Für optimale Benutzerfreundlichkeit kurz halten
 
-**Plattformfunktionen:**
+**Plattformspezifische Funktionen:**
 
-- System-Tray-Symbol bleibt nach Neustarts von Windows Explorer erhalten
+- Das Tray-Symbol bleibt bei Neustarts des Windows Explorers erhalten
 - Die Methoden Show() und Hide() sind vollständig funktionsfähig
 - Korrekte Lebenszyklusverwaltung
 
-**Bewährte Vorgehensweisen:**
+**Bewährte Verfahren:**
 
-- Für Displays mit hoher Pixeldichte 32x32 verwenden
-- Tooltips auf weniger als 127 Zeichen beschränken
-- Auf verschiedenen Windows-Versionen testen
+- Für Displays mit hoher DPI 32x32 verwenden
+- Tooltips auf weniger als 127 Zeichen begrenzen
+- Unter verschiedenen Windows-Versionen testen
 - Den Überlauf des Infobereichs berücksichtigen
-- Show/Hide verwenden, um das Taskleistensymbol bedingt ein- oder auszublenden
+- Show/Hide verwenden, um das Tray-Symbol bedingt ein- oder auszublenden
 
 [Linux]
-**Integration in den Systembereich:**
+**System-Tray-Integration:**
 
-Verwendet die StatusNotifierItem-Spezifikation (in den meisten modernen Desktop-Umgebungen).
+Verwendet die StatusNotifierItem-Spezifikation (die meisten modernen Desktop-Umgebungen).
 
 ```go
 systray.SetIcon(iconBytes)
@@ -396,23 +396,23 @@ systray.SetLabel("My App")
 
 **Unterstützung für Desktop-Umgebungen:**
 
-- **GNOME**: Obere Leiste (mit Erweiterung)
-- **KDE Plasma**: Systembereich
+- **GNOME**: obere Leiste (mit Erweiterung)
+- **KDE Plasma**: System-Tray
 - **XFCE**: Infobereich
-- **Andere**: Unterschiedlich
+- **Andere**: unterschiedlich
 
-**Bewährte Vorgehensweisen:**
+**Bewährte Verfahren:**
 
 - 22x22 oder 24x24 Pixel verwenden
 - SVG-Symbole lassen sich besser skalieren
-- Auf den Ziel-Desktop-Umgebungen testen
+- In den Ziel-Desktop-Umgebungen testen
 - Eine Ausweichlösung für nicht unterstützte Desktop-Umgebungen bereitstellen
 
 @end
 
 ## Vollständiges Beispiel
 
-Hier sehen Sie eine produktionsreife Anwendung mit Taskleistensymbol:
+Hier ist eine produktionsreife Anwendung mit System-Tray:
 
 ```go
 package main
@@ -558,7 +558,7 @@ func (t *TrayApp) setStartAtLogin(enabled bool) {
 
 ## Sichtbarkeit steuern
 
-Blenden Sie das Taskleistensymbol dynamisch ein oder aus:
+Das Tray-Symbol dynamisch ein- oder ausblenden:
 
 ```go
 // Hide tray icon
@@ -574,17 +574,17 @@ Es gibt keinen `IsVisible()`-Getter. Verwalten Sie die Sichtbarkeit bei Bedarf i
 
 | Plattform | Hide() | Show() | Hinweise |
 | --- | --- | --- | --- |
-| **Windows** | ✅ | ✅ | Vollständig funktionsfähig – das Symbol wird im Infobereich ein- oder ausgeblendet |
-| **macOS** | ✅ | ✅ | Menüleistenelement wird ein- oder ausgeblendet |
+| **Windows** | ✅ | ✅ | Vollständig funktionsfähig – das Symbol erscheint im Infobereich bzw. verschwindet daraus |
+| **macOS** | ✅ | ✅ | Das Menüleistenelement wird ein- bzw. ausgeblendet |
 | **Linux** | ✅ | ✅ | Je nach Desktop-Umgebung unterschiedlich |
 
 **Anwendungsfälle:**
 
-- Taskleistensymbol entsprechend den Benutzereinstellungen vorübergehend ausblenden
-- Headless-Modus, in dem das Taskleistensymbol nur bei Bedarf erscheint
-- Sichtbarkeit abhängig vom Anwendungszustand umschalten
+- Das Tray-Symbol entsprechend den Benutzereinstellungen vorübergehend ausblenden
+- Headless-Modus, in dem das Tray-Symbol nur bei Bedarf erscheint
+- Die Sichtbarkeit abhängig vom Anwendungszustand umschalten
 
-**Beispiel – bedingte Sichtbarkeit des Taskleistensymbols:**
+**Beispiel – bedingte Sichtbarkeit des Tray-Symbols:**
 
 ```go
 func (t *TrayApp) setTrayVisibility(visible bool) {
@@ -608,7 +608,7 @@ func (t *TrayApp) checkForUpdates() {
 
 ## Bereinigung
 
-Zerstören Sie das Taskleistensymbol, wenn es nicht mehr benötigt wird:
+Das Tray-Symbol nach Gebrauch zerstören:
 
 ```go
 // In OnShutdown
@@ -621,28 +621,28 @@ app := application.New(application.Options{
 })
 ```
 
-**Wichtig:** Zerstören Sie beim Herunterfahren stets das Taskleistensymbol, um Ressourcen freizugeben.
+**Wichtig:** Zerstören Sie das System-Tray beim Beenden immer, um Ressourcen freizugeben.
 
-## Bewährte Vorgehensweisen
+## Bewährte Verfahren
 
 ### ✅ Empfohlen
 
-- **Vorlagensymbole unter macOS verwenden** – Passt sich dem Dunkelmodus an
-- **Beschriftungen kurz halten** – maximal 3-5 Zeichen
-- **Unter Windows Tooltips bereitstellen** – Hilft Benutzern, Ihre App zu erkennen
-- **Auf allen Plattformen testen** – Das Verhalten variiert
+- **Unter macOS Vorlagensymbole verwenden** – passt sich dem Dunkelmodus an
+- **Beschriftungen kurz halten** – höchstens 3-5 Zeichen
+- **Unter Windows Tooltips bereitstellen** – hilft Benutzern, Ihre App zu erkennen
+- **Auf allen Plattformen testen** – das Verhalten variiert
 - **Klicks angemessen behandeln** – Linksklick für die Hauptaktion, Rechtsklick für das Menü
-- **Symbol entsprechend dem Status aktualisieren** – Visuelles Feedback ist wichtig
-- **Beim Beenden zerstören** – Gibt Ressourcen frei
+- **Symbol entsprechend dem Status aktualisieren** – visuelles Feedback ist wichtig
+- **Beim Beenden zerstören** – gibt Ressourcen frei
 
 ### ❌ Nicht empfohlen
 
 - **Keine großen Symbole verwenden** – Plattformrichtlinien beachten
-- **Keine langen Beschriftungen verwenden** – Sie werden abgeschnitten
-- **Dunkelmodus nicht vergessen** – Im Dunkelmodus von Windows und macOS testen
-- **Klick-Handler nicht blockieren** – Schnell ausführen lassen
-- **menu.Update() nicht vergessen** – Nach einer Änderung des Menüzustands
-- **Tray-Unterstützung nicht voraussetzen** – Einige Linux-Desktop-Umgebungen unterstützen sie nicht
+- **Keine langen Beschriftungen verwenden** – sie werden abgeschnitten
+- **Dunkelmodus nicht vergessen** – unter Windows und macOS im Dunkelmodus testen
+- **Klick-Handler nicht blockieren** – kurz halten
+- **menu.Update() nicht vergessen** – nach Änderungen am Menüzustand
+- **Tray-Unterstützung nicht voraussetzen** – einige Linux-Desktop-Umgebungen unterstützen sie nicht
 
 ## Fehlerbehebung
 
@@ -656,7 +656,7 @@ app := application.New(application.Options{
 
 **Lösung:**
 
-Es gibt keine `SystemTraySupported()`-Hilfsfunktion. Erstellen Sie stattdessen das Tray, prüfen Sie die Plattform und stellen Sie bei fehlender Unterstützung eine sinnvolle Alternative bereit:
+Es gibt keine `SystemTraySupported()`-Hilfsfunktion. Erstellen Sie stattdessen das Tray, prüfen Sie die Plattform und stellen Sie bei fehlender Unterstützung eine geeignete Ausweichlösung bereit:
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -666,7 +666,7 @@ systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 ```
 
-### Symbol wird unter macOS falsch dargestellt
+### Symbol sieht unter macOS falsch aus
 
 **Ursache:** Es wird kein Vorlagensymbol verwendet
 
@@ -694,7 +694,7 @@ menu.Update()  // Add this!
 
 @cards{cols="2"}
 📖 Menüreferenz
-Vollständige Referenz zu Menüeintragstypen und -eigenschaften.
+Vollständige Referenz zu Menüelementtypen und -eigenschaften.
 
 [Mehr erfahren →](/features/menus/reference/)
 
@@ -712,7 +712,7 @@ Kontextmenüs für Rechtsklicks erstellen.
 
 ---
 📖 System-Tray-Beispiel
-Eine vollständige System-Tray-Anwendung erkunden.
+Eine vollständige Anwendung mit System-Tray erkunden.
 
 [Mehr erfahren →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)
 

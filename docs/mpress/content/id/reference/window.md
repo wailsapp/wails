@@ -1,15 +1,15 @@
 ---
-title: "API Jendela"
-description: "Referensi lengkap untuk API Jendela"
+title: "API Window"
+description: "Referensi lengkap untuk API Window"
 slug: "reference/window"
 sourcePath: "reference/window.md"
 ---
 
 ## Ikhtisar
 
-API Jendela menyediakan berbagai metode untuk mengontrol tampilan, perilaku, dan siklus hidup jendela. Akses API ini melalui instans jendela atau pengelola `app.Window`.
+API Window menyediakan metode untuk mengontrol tampilan, perilaku, dan siklus hidup jendela. Akses API ini melalui instans jendela atau pengelola `app.Window`.
 
-`Window` adalah antarmuka yang diimplementasikan oleh `*application.WebviewWindow`; tanda tangan metode di bawah ini terdapat pada `*WebviewWindow`. Banyak metode pengubah mengembalikan `Window` agar dapat dirangkai—nilai kembali didokumentasikan untuk setiap metode.
+`Window` adalah antarmuka yang diimplementasikan oleh `*application.WebviewWindow`; tanda tangan metode di bawah ini terdapat pada `*WebviewWindow`. Banyak metode pengubah mengembalikan `Window` agar dapat dirangkai—nilai kembalian didokumentasikan untuk setiap metode.
 
 **Operasi umum:**
 
@@ -23,7 +23,7 @@ API Jendela menyediakan berbagai metode untuk mengontrol tampilan, perilaku, dan
 
 ### Show()
 
-Menampilkan jendela. Jika sebelumnya disembunyikan, jendela akan terlihat. Mengembalikan penerima agar dapat dirangkai.
+Menampilkan jendela. Jika sebelumnya disembunyikan, jendela menjadi terlihat. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -88,7 +88,7 @@ func (w *WebviewWindow) SetTitle(title string) Window
 
 **Parameter:**
 
-- `title` - Judul jendela baru
+- `title` - Judul jendela yang baru
 
 **Contoh:**
 
@@ -225,7 +225,7 @@ window.Center()
 window.Show()
 ```
 
-**Catatan:** Jendela ditempatkan di tengah monitor utama. Untuk konfigurasi multi-monitor, lihat API layar.
+**Catatan:** Jendela ditempatkan di tengah monitor utama. Untuk konfigurasi beberapa monitor, lihat API layar.
 
 ### Focus()
 
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-Memaksimalkan jendela hingga memenuhi layar atau memulihkannya ke ukuran sebelumnya. `Maximise()` mengembalikan penerima agar dapat dirangkai; `UnMaximise()` tidak mengembalikan apa pun.
+Memaksimalkan jendela agar memenuhi layar atau memulihkannya ke ukuran sebelumnya. `Maximise()` mengembalikan penerima agar dapat dirangkai; `UnMaximise()` tidak mengembalikan apa pun.
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-Memasuki atau keluar dari mode layar penuh. `Fullscreen()` mengembalikan penerima agar dapat dirangkai.
+Masuk atau keluar dari mode layar penuh. `Fullscreen()` mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-Membuka URL tertentu di dalam jendela. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
+Membuka URL tertentu di dalam jendela. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **Parameter:**
 
-- `url` - URL yang akan dibuka (dapat berupa `http://wails.localhost/` untuk aset tersemat)
+- `url` - URL tujuan navigasi (dapat berupa `http://wails.localhost/` untuk aset tersemat)
 
 **Contoh:**
 
@@ -359,7 +359,7 @@ window.SetURL("https://wails.io")
 
 ### SetHTML()
 
-Mengatur konten jendela secara langsung dari string HTML. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
+Mengatur konten jendela secara langsung dari string HTML. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
@@ -406,14 +406,14 @@ func (w *WebviewWindow) Reload()
 window.Reload()
 ```
 
-**Catatan:** Berguna selama pengembangan atau ketika konten perlu dimuat ulang.
+**Catatan:** Berguna selama pengembangan atau ketika konten perlu disegarkan.
 
 ## Peristiwa Jendela
 
 Wails menyediakan dua metode untuk menangani peristiwa jendela:
 
-- **OnWindowEvent()** - Mendengarkan peristiwa jendela (tidak dapat mencegahnya).
-- **RegisterHook()** - Memasang hook pada peristiwa jendela (dapat mencegahnya dengan memanggil `event.Cancel()`).
+- **OnWindowEvent()** - Memantau peristiwa jendela (tidak dapat mencegahnya).
+- **RegisterHook()** - Mengaitkan hook ke peristiwa jendela (dapat mencegahnya dengan memanggil `event.Cancel()`).
 
 ### OnWindowEvent()
 
@@ -457,7 +457,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 - `events.Common.WindowMinimise` - Jendela diminimalkan
 - `events.Common.WindowMaximise` - Jendela dimaksimalkan
 - `events.Common.WindowFullscreen` - Jendela memasuki mode layar penuh
-- `events.Common.WindowRuntimeReady` - Runtime di dalam jendela diinisialisasi
+- `events.Common.WindowRuntimeReady` - Runtime dalam jendela telah diinisialisasi
 
 ### RegisterHook()
 
@@ -521,7 +521,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-Memancarkan peristiwa khusus ke frontend jendela. Mengembalikan `true` jika pemancaran dibatalkan oleh hook.
+Mengirimkan peristiwa khusus ke frontend jendela. Mengembalikan `true` jika pengiriman dibatalkan oleh hook.
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
@@ -553,7 +553,7 @@ Events.On('data-updated', (data) => {
 })
 ```
 
-## Metode Lainnya
+## Metode Lain
 
 ### SetEnabled()
 
@@ -578,7 +578,7 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-Mengatur warna latar belakang jendela (ditampilkan sebelum konten dimuat). Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
+Mengatur warna latar belakang jendela (ditampilkan sebelum konten dimuat). Mengembalikan receiver untuk perangkaian.
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-Mengatur apakah ukuran jendela dapat diubah oleh pengguna. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
+Mengontrol apakah ukuran jendela dapat diubah oleh pengguna. Mengembalikan receiver untuk perangkaian.
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -613,7 +613,7 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-Mengatur apakah jendela tetap berada di atas jendela lain. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
+Mengatur apakah jendela tetap berada di atas jendela lain. Mengembalikan receiver untuk perangkaian.
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -624,6 +624,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 ```go
 // Keep window on top
 window.SetAlwaysOnTop(true)
+```
+
+### SetMenu()
+
+Mengatur bilah menu jendela di Windows dan Linux, menggantikan bilah menu yang sedang ditampilkan.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Parameter:**
+- `menu` - Menu yang akan ditampilkan, atau `nil` untuk menghapus bilah menu
+
+Meneruskan `nil` akan menghapus bilah: jendela tidak menampilkan menu apa pun, termasuk menu aplikasi, dan akselerator dari menu yang dihapus berhenti berfungsi di jendela tersebut. Jika dipanggil sebelum jendela dimulai, jendela dibuat tanpa bilah menu.
+
+**Dukungan platform:**
+- **Windows**: Dukungan penuh
+- **Linux**: Dukungan penuh
+- **macOS**: Tidak berpengaruh karena bilah menu merupakan milik aplikasi. Gunakan `app.Menu.Set` sebagai gantinya.
+
+**Contoh:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
 ```
 
 ### Print()
@@ -646,7 +671,7 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-Melampirkan jendela kedua sebagai modal lembar.
+Melampirkan jendela kedua sebagai modal berbentuk sheet.
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
@@ -658,7 +683,7 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **Dukungan platform:**
 
-- **macOS**: Dukungan penuh (ditampilkan sebagai lembar)
+- **macOS**: Dukungan penuh (ditampilkan sebagai sheet)
 - **Windows**: Tidak didukung
 - **Linux**: Tidak didukung
 
@@ -682,7 +707,7 @@ Mengontrol cara menu aplikasi ditampilkan. Opsi ini tersedia pada build GTK4 def
 | Nilai | Deskripsi |
 | --- | --- |
 | `LinuxMenuStyleMenuBar` | Bilah menu tradisional di bawah bilah judul (default) |
-| `LinuxMenuStylePrimaryMenu` | Tombol menu utama pada bilah header (gaya GNOME) |
+| `LinuxMenuStylePrimaryMenu` | Tombol menu utama di bilah header (gaya GNOME) |
 
 **Contoh:**
 
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-**Catatan:** Gaya menu utama menampilkan tombol hamburger (☰) pada bilah header, sesuai dengan Panduan Antarmuka Manusia GNOME. Ini adalah gaya yang direkomendasikan untuk aplikasi GNOME modern.
+**Catatan:** Gaya menu utama menampilkan tombol hamburger (☰) di bilah header sesuai dengan Panduan Antarmuka Manusia GNOME. Gaya ini direkomendasikan untuk aplikasi GNOME modern.
 
 ## Contoh Lengkap
 

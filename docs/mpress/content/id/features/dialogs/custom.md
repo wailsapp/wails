@@ -1,13 +1,13 @@
 ---
-title: "Dialog khusus"
-description: "Buat dialog khusus di aplikasi Wails Anda"
+title: "Dialog kustom"
+description: "Buat dialog kustom di aplikasi Wails Anda"
 slug: "features/dialogs/custom"
 sourcePath: "features/dialogs/custom.md"
 ---
 
-## Dialog khusus
+## Dialog kustom
 
-Buat **jendela dialog khusus** menggunakan jendela Wails biasa dengan perilaku seperti dialog. Buat formulir khusus, validasi input yang kompleks, tampilan sesuai merek, dan konten kaya (gambar, video), sekaligus mempertahankan pola dialog yang familier.
+Buat **jendela dialog kustom** menggunakan jendela Wails biasa dengan perilaku seperti dialog. Buat formulir kustom, validasi input yang kompleks, tampilan sesuai merek, dan konten kaya (gambar, video), sekaligus mempertahankan pola dialog yang familier.
 
 ## Mulai Cepat
 
@@ -30,11 +30,11 @@ dialog.Show()
 dialog.Focus()
 ```
 
-**Selesai!** Antarmuka pengguna khusus dengan perilaku dialog.
+**Selesai!** Antarmuka kustom dengan perilaku dialog.
 
-## Membuat dialog khusus
+## Membuat dialog kustom
 
-### Dialog khusus dasar
+### Dialog kustom dasar
 
 ```go
 type Customdialog struct {
@@ -312,7 +312,7 @@ func processFiles(files []string) {
 }
 ```
 
-## Contoh lengkap
+## Contoh Lengkap
 
 ### Dialog login
 
@@ -454,7 +454,7 @@ func (sd *Settingsdialog) Cancel() {
 }
 ```
 
-### Dialog panduan langkah demi langkah
+### Dialog wizard
 
 ```go
 type Wizarddialog struct {
@@ -520,27 +520,27 @@ func (wd *Wizarddialog) Cancel() {
 }
 ```
 
-## Praktik terbaik
+## Praktik Terbaik
 
 ### ✅ Lakukan
 
-- **Gunakan opsi jendela yang sesuai** — AlwaysOnTop, Frameless, dan sebagainya.
-- **Tangani pembatalan** — Selalu sediakan cara untuk membatalkan
-- **Validasi input** — Periksa data sebelum menerimanya
-- **Berikan umpan balik** — Status pemuatan, kesalahan
-- **Gunakan event untuk komunikasi** — Pemisahan yang jelas
-- **Bersihkan sumber daya** — Tutup jendela, hapus listener
+- **Gunakan opsi jendela yang sesuai** - AlwaysOnTop, Frameless, dan sebagainya.
+- **Tangani pembatalan** - Selalu sediakan cara untuk membatalkan
+- **Validasi input** - Periksa data sebelum menerimanya
+- **Berikan umpan balik** - Status pemuatan dan kesalahan
+- **Gunakan event untuk komunikasi** - Pemisahan yang jelas
+- **Bersihkan sumber daya** - Tutup jendela dan hapus listener
 
 ### ❌ Jangan lakukan
 
-- **Jangan blokir thread utama** — Gunakan channel untuk hasil
-- **Jangan lupa menutup** — Kebocoran memori
-- **Jangan lewati validasi** — Selalu validasi input
-- **Jangan abaikan kesalahan** — Tangani semua kasus kesalahan
-- **Jangan membuatnya terlalu kompleks** — Pertahankan kesederhanaan dialog
-- **Jangan lupakan aksesibilitas** — Navigasi papan ketik
+- **Jangan memblokir thread utama** - Gunakan channel untuk hasil
+- **Jangan lupa menutup** - Dapat menyebabkan kebocoran memori
+- **Jangan melewatkan validasi** - Selalu validasi input
+- **Jangan mengabaikan kesalahan** - Tangani semua kasus kesalahan
+- **Jangan membuatnya terlalu kompleks** - Pertahankan kesederhanaan dialog
+- **Jangan melupakan aksesibilitas** - Navigasi papan ketik
 
-## Menata gaya dialog khusus
+## Menata tampilan dialog kustom
 
 ### Gaya dialog modern
 
@@ -594,7 +594,7 @@ button.secondary {
 }
 ```
 
-## Langkah berikutnya
+## Langkah Berikutnya
 
 @cards{cols="2"}
 ℹ Dialog pesan
@@ -604,7 +604,7 @@ Dialog informasi, peringatan, dan kesalahan standar.
 
 ---
 📖 Dialog file
-Membuka, menyimpan, dan memilih folder.
+Buka, simpan, dan pilih folder.
 
 [Pelajari Lebih Lanjut →](/features/dialogs/file/)
 
@@ -624,4 +624,4 @@ Gunakan event untuk komunikasi dialog.
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog khusus](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog kustom](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

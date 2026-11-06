@@ -1,15 +1,15 @@
 ---
 title: "多窗口"
-description: "多窗口应用的常用模式和最佳实践"
+description: "多窗口应用的模式和最佳实践"
 slug: "features/windows/multiple"
 sourcePath: "features/windows/multiple.md"
 ---
 
 ## 多窗口应用
 
-Wails v3 提供<strong>原生多窗口支持</strong>，可用于创建设置窗口、文档窗口、工具面板和检查器窗口。通过简单且一致的 API 跟踪窗口、实现窗口间通信并管理窗口的生命周期。
+Wails v3提供**原生多窗口支持**，可用于创建设置窗口、文档窗口、工具面板和检查器窗口。通过简单且一致的 API 跟踪窗口、实现窗口间通信并管理窗口生命周期。
 
-### 主窗口与设置窗口
+### 主窗口 + 设置窗口
 
 ```go
 package main
@@ -128,7 +128,7 @@ func (wm *WindowManager) Remove(name string) {
 
 ### 使用事件
 
-窗口通过事件系统通信：
+窗口通过事件系统进行通信：
 
 ```go
 // In main window - emit event
@@ -194,7 +194,7 @@ if targetWindow, ok := app.Window.GetByName("preview"); ok {
 
 ## 常用模式
 
-### 模式1：单例窗口
+### 模式 1：单例窗口
 
 确保一个窗口仅存在一个实例：
 
@@ -223,9 +223,9 @@ func ShowSettings(app *application.App) {
 }
 ```
 
-### 模式2：文档窗口
+### 模式 2：文档窗口
 
-同一窗口类型的多个实例：
+创建同一窗口类型的多个实例：
 
 ```go
 type DocumentWindow struct {
@@ -269,7 +269,7 @@ func OpenDocument(app *application.App, filePath string) {
 }
 ```
 
-### 模式3：工具面板
+### 模式 3：工具面板
 
 始终置顶的浮动窗口：
 
@@ -288,9 +288,9 @@ func CreateToolPalette(app *application.App) *application.WebviewWindow {
 }
 ```
 
-### 模式4：模态对话框（仅限 macOS）
+### 模式 4：模态对话框（仅限 macOS）
 
-阻止用户与父窗口交互的子窗口：
+阻止与父窗口交互的子窗口：
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -306,7 +306,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 }
 ```
 
-### 模式5：检查器/预览窗口
+### 模式 5：检查器/预览窗口
 
 同步更新的关联窗口：
 
@@ -359,8 +359,8 @@ parentWindow.AttachModal(childWindow)
 **行为：**
 
 - 子窗口保持在父窗口上方
-- 子窗口随父窗口一起移动
-- 子窗口阻止用户与父窗口交互
+- 子窗口随父窗口移动
+- 子窗口阻止与父窗口交互
 
 **平台支持：**
 
@@ -370,7 +370,7 @@ parentWindow.AttachModal(childWindow)
 
 ### 模态行为
 
-实现类似模态窗口的行为：
+创建类似模态窗口的行为：
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -388,7 +388,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 
 ### 创建回调
 
-在创建窗口时接收通知：
+在窗口创建时接收通知：
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -401,7 +401,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### 销毁回调
 
-在销毁窗口时执行清理：
+在窗口销毁时执行清理：
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -428,7 +428,7 @@ app := application.New(application.Options{
 })
 ```
 
-**用例：**
+**使用场景：**
 
 - 系统托盘应用
 - 后台服务
@@ -436,7 +436,7 @@ app := application.New(application.Options{
 
 ## 内存管理
 
-### 防止内存泄漏
+### 防止泄漏
 
 始终清理窗口引用：
 
@@ -461,7 +461,7 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-v3 中没有`window.Destroy()`。若要阻止窗口关闭，请使用`RegisterHook(events.Common.WindowClosing, ...)`并调用`event.Cancel()`。
+v3中没有`window.Destroy()`。要阻止关闭，请使用`RegisterHook(events.Common.WindowClosing, ...)`并调用`event.Cancel()`。
 
 ### 资源清理
 
@@ -604,7 +604,7 @@ func RestoreLayout(layout *WindowLayout) {
 
 ## 完整示例
 
-下面是一个可用于生产环境的多窗口应用程序：
+以下是一个可用于生产环境的多窗口应用：
 
 ```go
 package main
@@ -767,23 +767,23 @@ type WindowState struct {
 ### ✅ 应该做
 
 - **跟踪窗口**——保留引用以便访问
-- **销毁时清理资源**——防止内存泄漏
+- **销毁时执行清理**——防止内存泄漏
 - **使用事件进行通信**——实现解耦架构
 - **复用窗口**——不要创建重复窗口
-- **保存和恢复布局**——改善用户体验
-- **处理窗口关闭操作**——存在未保存的数据时，关闭前先请求确认
+- **保存/恢复布局**——改善用户体验
+- **处理窗口关闭**——存在未保存的数据时，在关闭前请求确认
 
 ### ❌ 不应该做
 
-- **不要创建无限数量的窗口**——会导致内存和性能问题
-- **不要忘记清理资源**——否则会导致内存泄漏
+- **不要无限制地创建窗口**——会导致内存和性能问题
+- **不要忘记清理**——否则会导致内存泄漏
 - **不要随意使用全局变量**——会导致线程安全问题
-- **不要阻塞窗口创建**——必要时以异步方式创建
+- **不要阻塞窗口创建**——必要时异步创建
 - **不要忽略平台差异**——在所有平台上进行测试
 
 ## 后续步骤
 
-- [窗口基础知识](/features/windows/basics/)——学习窗口管理的基础知识
+- [窗口基础](/features/windows/basics/)——了解窗口管理的基础知识
 - [窗口事件](/features/windows/events/)——处理窗口生命周期事件
 - [事件系统](/features/events/system/)——深入了解事件系统
 - [无边框窗口](/features/windows/frameless/)——创建自定义窗口装饰

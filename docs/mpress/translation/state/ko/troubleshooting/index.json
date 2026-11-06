@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "8e230aef279cb1b44146",
   "sourceFile": "troubleshooting/index.md",
   "sourceLanguage": "en",
@@ -17,7 +18,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:39Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
       "machineHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
@@ -28,6 +29,38 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:39Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "troubleshooting/index.mpd",
+    "sourceHash": "ec128e9cae0ee1c12a61494a792b4077f98b52e3b35149ffeb5959a131a38283",
+    "targetHash": "f524c107e2e8b769a0a94c191c7694c2fe573473b7c530e13cb98bdb2276ae45",
+    "previousSegments": {
+      "b0001-heading-01": {
+        "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
+        "targetHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
+        "machineHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
+        "machineText": "문제 해결",
+        "status": "final",
+        "sourcePreview": "Troubleshooting",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:39Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
+        "targetHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
+        "machineHash": "03f9fefc18ed6cfb33ec3e2448305750da83eeca4d8555c3e8ec6672ab70c627",
+        "machineText": "문제 해결",
+        "status": "final",
+        "sourcePreview": "Troubleshooting",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:39Z"
+      }
     }
   }
 }

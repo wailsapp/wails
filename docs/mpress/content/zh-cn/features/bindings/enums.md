@@ -1,22 +1,22 @@
 ---
 title: "枚举"
-description: "根据 Go 常量自动生成枚举"
+description: "从 Go 常量自动生成枚举"
 slug: "features/bindings/enums"
 sourcePath: "features/bindings/enums.md"
 ---
 
 ## 枚举绑定
 
-Wails v3 绑定生成器<strong>会自动检测 Go 常量类型，并生成 TypeScript 枚举或 JavaScript const 对象</strong>。无需注册，也无需配置——只需在 Go 中定义类型和常量，其余工作由生成器完成。
+Wails v3绑定生成器**会自动检测 Go 常量类型，并生成 TypeScript 枚举或 JavaScript const 对象**。无需注册，也无需配置——只需在 Go 中定义类型和常量，其余工作由生成器完成。
 
 @note{type="info"}
-与 Wails v2 不同，**无需调用`EnumBind`**，也无需手动注册枚举。生成器会自动从源代码中发现它们。
+与 Wails v2不同，<strong>无需调用`EnumBind`</strong>或手动注册枚举。生成器会自动从源代码中发现它们。
 
 @end
 
-## 快速开始
+## 快速入门
 
-**在 Go 中定义一个具名类型及其常量：**
+**在 Go 中定义一个带常量的命名类型：**
 
 ```go
 type Status string
@@ -62,11 +62,11 @@ const ticket = new Ticket({
 })
 ```
 
-<strong>就是这么简单！</strong>Go 和 JavaScript/TypeScript 中都会强制使用该枚举类型。
+<strong>就这么简单！</strong>Go 和 JavaScript/TypeScript 中都会强制使用该枚举类型。
 
 ## 定义枚举
 
-Wails 中的枚举是一个具有基础类型的<strong>具名类型</strong>，并配有该类型的<strong>const 声明</strong>。
+在 Wails 中，枚举是一个具有基础底层类型的**命名类型**，并带有该类型的**const 声明**。
 
 ### 字符串枚举
 
@@ -161,7 +161,7 @@ export enum Priority {
 
 ### 类型别名枚举
 
-Go 类型别名（`=`）同样有效，但生成的输出略有不同——它会生成类型定义和 const 对象，而不是原生 TypeScript `enum`：
+Go 类型别名（`=`）同样受支持，但生成的输出略有不同：生成类型定义和 const 对象，而不是原生 TypeScript `enum`：
 
 ```go
 // Age is an integer with some predefined values
@@ -237,15 +237,15 @@ export const Age = {
 ```
 
 @note{type="tip"}
-**具名类型**（`type Title string`）会生成带有`$zero`成员的原生 TypeScript `enum`声明。 **类型别名**（`type Age = int`）会生成不含`$zero`的`type` + `const`命名空间对。
+**命名类型**（`type Title string`）会生成带有`$zero`成员的原生 TypeScript `enum`声明。**类型别名**（`type Age = int`）会生成不含`$zero`的`type` + `const`命名空间组合。
 
 @end
 
 ## `$zero`值
 
-每个具名类型枚举都包含一个特殊的`$zero`成员，表示其基础类型的<strong>Go 零值</strong>：
+每个命名类型枚举都包含一个特殊的`$zero`成员，用于表示其底层类型的**Go 零值**：
 
-| 基础类型 | `$zero`值 |
+| 底层类型 | `$zero`值 |
 | --- | --- |
 | `string` | `""` |
 | `int`、`int8`、`int16`、`int32`、`int64` | `0` |
@@ -253,7 +253,7 @@ export const Age = {
 | `float32`、`float64` | `0` |
 | `bool` | `false` |
 
-当结构体字段使用枚举类型且未提供值时，构造函数会默认使用`$zero`：
+当结构体字段使用枚举类型且未提供值时，构造函数默认使用`$zero`：
 
 ```typescript
 export class Person {
@@ -268,11 +268,11 @@ export class Person {
 }
 ```
 
-这可确保生成类时进行类型安全的初始化——枚举字段绝不会是`undefined`。生成 TypeScript 接口时（使用`-i`），没有构造函数，字段仍可像往常一样缺省。
+这可确保生成类时进行类型安全的初始化——枚举字段绝不会是`undefined`。生成 TypeScript 接口时（使用`-i`），不会生成构造函数，字段可以像往常一样缺省。
 
 ## 在结构体中使用枚举
 
-当结构体字段采用枚举类型时，生成的代码会<strong>保留该类型</strong>，而不会回退为基本类型：
+当结构体字段为枚举类型时，生成的代码会**保留该类型**，而不会回退为基础类型：
 
 ```go
 type Person struct {
@@ -350,7 +350,7 @@ export enum Title {
 
 ## 枚举方法
 
-可以在 Go 中为枚举类型添加方法。这些方法不会影响绑定生成，但可提供实用的服务端功能：
+可以在 Go 中为枚举类型添加方法。这些方法不会影响绑定生成，但能提供实用的服务端功能：
 
 ```go
 type Title string
@@ -369,18 +369,18 @@ const (
 
 ## 注释和文档
 
-生成器会在生成的输出中将 Go 注释保留为 JSDoc：
+生成器会将 Go 注释保留为生成输出中的 JSDoc：
 
-- <strong>类型注释</strong>会成为枚举的文档注释
-- <strong>const 组注释</strong>会成为分节符
-- <strong>各个 const 的注释</strong>会成为成员文档注释
-- <strong>行内注释</strong>会尽可能予以保留
+- **类型注释**会成为枚举的文档注释
+- **常量组注释**会成为分节标记
+- **单个常量的注释**会成为成员文档注释
+- **行内注释**会尽可能保留
 
 因此，将鼠标悬停在枚举值上时，IDE 会显示相应文档。
 
-## 支持的基础类型
+## 支持的底层类型
 
-绑定生成器支持使用以下 Go 基础类型的枚举：
+绑定生成器支持使用以下 Go 底层类型的枚举：
 
 | Go 类型 | 可用作枚举 |
 | --- | :---: |
@@ -395,11 +395,11 @@ const (
 
 ## 限制
 
-生成枚举时<strong>不</strong>支持以下内容：
+枚举生成**不**支持以下情况：
 
-- **泛型类型** — 类型参数会导致无法检测常量
-- <strong>具有自定义`json.Marshaler`或`encoding.TextMarshaler`</strong>的类型 — 自定义序列化意味着生成的值可能与运行时行为不一致，因此生成器会跳过这些类型
-- **值无法静态求值或表示的常量** — 常量在其底层类型中必须具有已知且可表示的值。标准`iota`模式可以正常使用，因为编译器会将它们解析为具体值
+- **泛型类型**——类型参数会妨碍常量检测
+- <strong>具有自定义`json.Marshaler`或`encoding.TextMarshaler`</strong>的类型——自定义序列化意味着生成的值可能与运行时行为不一致，因此生成器会跳过这些类型
+- **值无法静态求值或表示的常量** — 常量的值必须已知，并且能够用其底层类型表示。标准`iota`模式可以正常工作，因为编译器会将其解析为具体值
 - **复数类型** — `complex64`和`complex128`不能作为枚举的底层类型
 
 ## 完整示例

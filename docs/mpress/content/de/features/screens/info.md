@@ -7,7 +7,7 @@ sourcePath: "features/screens/info.md"
 
 ## Bildschirminformationen
 
-Wails bietet eine **einheitliche Bildschirm-API**, die auf allen Plattformen funktioniert. Rufen Sie Bildschirminformationen ab, erkennen Sie mehrere Monitore, fragen Sie Bildschirmeigenschaften (Größe, Position, DPI) ab, ermitteln Sie das primäre Display und handhaben Sie die DPI-Skalierung mit einheitlichem Code.
+Wails bietet eine **einheitliche Bildschirm-API**, die auf allen Plattformen funktioniert. Rufen Sie Bildschirminformationen ab, erkennen Sie mehrere Monitore, fragen Sie Bildschirmeigenschaften wie Größe, Position und DPI ab, ermitteln Sie das primäre Display und handhaben Sie die DPI-Skalierung mit einheitlichem Code.
 
 ## Schnellstart
 
@@ -25,7 +25,7 @@ primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
-**Das war's!** Plattformübergreifende Bildschirminformationen.
+**Das ist alles!** Plattformübergreifende Bildschirminformationen.
 
 ## Bildschirminformationen abrufen
 
@@ -67,7 +67,7 @@ if err != nil {
 fmt.Printf("Window is on: %s\n", screen.Name)
 ```
 
-### Bildschirm nach ID
+### Bildschirm anhand der ID
 
 ```go
 screen := app.Screen.GetByID("screen-id")
@@ -100,7 +100,7 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-Lesen Sie Pixelgrößen über `screen.Size.Width` / `screen.Size.Height` aus – es gibt keine übergeordneten Felder `Width`/`Height`.
+Lesen Sie Pixelgrößen über `screen.Size.Width` / `screen.Size.Height` aus – `Width`/`Height`-Felder auf oberster Ebene gibt es nicht.
 
 ### Physische und logische Pixel
 
@@ -123,12 +123,12 @@ fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
 **Übliche Skalierungsfaktoren:**
 
 - `1.0` – Standard-DPI (96 DPI)
-- `1.25` – 125 % Skalierung (120 DPI)
-- `1.5` – 150 % Skalierung (144 DPI)
-- `2.0` – 200 % Skalierung (192 DPI) – Retina
-- `3.0` – 300 % Skalierung (288 DPI) – 4K/5K
+- `1.25` – Skalierung auf 125 % (120 DPI)
+- `1.5` – Skalierung auf 150 % (144 DPI)
+- `2.0` – Skalierung auf 200 % (192 DPI) – Retina
+- `3.0` – Skalierung auf 300 % (288 DPI) – 4K/5K
 
-## Fensterpositionierung
+## Fenster positionieren
 
 ### Auf dem Bildschirm zentrieren
 
@@ -404,18 +404,18 @@ func visualiseScreenLayout() string {
 
 ### ✅ Empfohlen
 
-- **Anzahl der Bildschirme prüfen** – Einzelne und mehrere Monitore berücksichtigen
+- **Bildschirmanzahl prüfen** – Einzelne und mehrere Monitore unterstützen
 - **Logische Pixel verwenden** – Wails handhabt DPI automatisch
-- **Fenster zentrieren** – Bessere Benutzerfreundlichkeit als feste Positionen
+- **Fenster zentrieren** – Bessere Benutzererfahrung als bei festen Positionen
 - **Positionen validieren** – Sicherstellen, dass Fenster sichtbar sind
-- **Bildschirmänderungen behandeln** – Monitore können hinzugefügt oder entfernt werden
+- **Bildschirmänderungen verarbeiten** – Monitore können hinzugefügt oder entfernt werden
 - **Mit unterschiedlichen DPI-Einstellungen testen** – 100 %, 125 %, 150 %, 200 %
 
 ### ❌ Nicht empfohlen
 
 - **Positionen nicht fest codieren** – Bildschirmabmessungen verwenden
-- **Nicht vom primären Bildschirm ausgehen** – Benutzer haben möglicherweise mehrere Bildschirme
-- **Skalierungsfaktor nicht ignorieren** – Wichtig für DPI-Bewusstsein
+- **Nicht von nur einem primären Bildschirm ausgehen** – Benutzer können mehrere Monitore haben
+- **Skalierungsfaktor nicht ignorieren** – Wichtig für die DPI-gerechte Darstellung
 - **Fenster nicht außerhalb des Bildschirms positionieren** – Koordinaten validieren
 - **Bildschirmänderungen nicht vergessen** – Laptops werden an Dockingstationen angeschlossen und davon getrennt
 - **Keine physischen Pixel verwenden** – Logische Pixel verwenden
@@ -431,16 +431,16 @@ func visualiseScreenLayout() string {
 
 ### Windows
 
-- Verschiedene DPI-Skalierungen (100 %, 125 %, 150 %, 200 %)
+- Unterschiedliche DPI-Skalierungen (100 %, 125 %, 150 %, 200 %)
 - Mehrere Displays sind üblich
 - Koordinatensystem: (0,0) oben links
-- DPI-Bewusstsein pro Monitor
+- Monitorabhängige DPI-Anpassung
 
 ### Linux
 
 - Je nach Desktop-Umgebung unterschiedlich
 - Unterschiede zwischen X11 und Wayland
-- Unterstützung für DPI-Skalierung variiert
+- Unterstützung der DPI-Skalierung variiert
 - Mehrere Displays werden unterstützt
 
 ## Nächste Schritte
@@ -453,7 +453,7 @@ Erfahren Sie mehr über die Fensterverwaltung.
 
 ---
 ⚙ Fensteroptionen
-Konfigurieren Sie das Erscheinungsbild des Fensters.
+Konfigurieren Sie das Erscheinungsbild von Fenstern.
 
 [Mehr erfahren →](/features/windows/options/)
 

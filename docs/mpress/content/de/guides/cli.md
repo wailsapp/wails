@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-Die Tags werden als `EXTRA_TAGS` an das zugrunde liegende Taskfile weitergegeben.
+Tags werden als `EXTRA_TAGS` an das zugrunde liegende Taskfile weitergeleitet. Durch das Setzen von `WAILS_PUREGO=1` wird das Tag `purego` ohne Flag zu `build`, `package` und `dev` hinzugefügt; siehe [CGO-freie Builds](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 Dies entspricht der Ausführung von `wails3 task build`, wodurch die Aufgabe `build` im Haupt-Taskfile des Projekts ausgeführt wird. Alle an `build` übergebenen CLI-Variablen werden an die zugrunde liegende Aufgabe weitergegeben. Sie können den Build-Prozess durch Bearbeiten der Datei `Taskfile.yml` anpassen.
@@ -132,6 +135,14 @@ Die mitgelieferten Paketierungs-Tasks akzeptieren `ARCH` zur Auswahl der Zielarc
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| Option | Beschreibung | Standardwert |
+|------|-------------|---------|
+| `-tags` | Zusätzliche Go-Build-Tags (durch Kommas getrennt), als `EXTRA_TAGS` weitergeleitet |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` und `OUTPUT` wirken sich nur auf ein benutzerdefiniertes Taskfile aus, das diese Variablen ausdrücklich ausliest; sie überschreiben weder die Paketversion noch den Dateinamen der mitgelieferten Paketierungs-Tasks.
@@ -180,7 +191,7 @@ tasks:
       - echo "Config: {{.CONFIG | default "debug"}}"
 ```
 
-#### Optionen
+#### Flags
 
 | Option | Beschreibung | Standardwert |
 | --- | --- | --- |
@@ -245,7 +256,7 @@ Verwenden Sie `--stdio` oder `--http`, um einen Transport explizit auszuwählen.
 
 #### MCP-Flags
 
-| Option | Beschreibung | Standardwert |
+| Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `--root` | Zulässiges Projektstammverzeichnis. Pfade und symbolische Links, die aus diesem Verzeichnis herausführen, werden abgelehnt. | Aktuelles Verzeichnis |
 | `--token` | Sitzungs-/Bearer-Token für verändernde Tools und Tools zur Prozesssteuerung. Fällt auf `WAILS_MCP_TOKEN` zurück. | Sicher generiert |
@@ -275,9 +286,9 @@ Generiert Bindings und Modelle für deinen Go-Code.
 wails3 generate bindings [flags] [patterns...]
 ```
 
-#### Optionen
+#### Flags
 
-| Flag | Beschreibung | Standardwert |
+| Option | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-f` | Zusätzliche Go-Build-Optionen |  |
 | `-d` | Ausgabeverzeichnis | `frontend/bindings` |
@@ -325,17 +336,19 @@ Generiert Anwendungssymbole.
 wails3 generate icons [flags]
 ```
 
-#### Flags
+#### Optionen
 
 | Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-input` | PNG-Eingabedatei | Erforderlich |
 | `-windowsfilename` | Windows-Ausgabedateiname |  |
 | `-macfilename` | macOS-Ausgabedateiname |  |
-| `-sizes` | Symbolgrößen (durch Kommas getrennt) | `256,128,64,48,32,16` |
+| `-sizes` | Symbolgrößen von 1 bis 256 Pixel (durch Kommas getrennt; Nullen werden ignoriert) | `256,128,64,48,32,16` |
 | `-example` | Beispielsymbol generieren | `false` |
 | `-iconcomposerinput` | Icon-Composer-Eingabedatei (`.icon`) |  |
 | `-macassetdir` | Ausgabeverzeichnis für Mac-Ressourcen (Assets.car + icns) |  |
+
+Mindestens eine Größe ungleich null ist erforderlich.
 
 #### Icon Composer (macOS)
 
@@ -364,9 +377,9 @@ Generiert eine Windows-.syso-Datei.
 wails3 generate syso [flags]
 ```
 
-#### Optionen
+#### Flags
 
-| Option | Beschreibung | Standardwert |
+| Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-manifest` | Pfad zur Manifestdatei | Erforderlich |
 | `-icon` | Pfad zur Symboldatei | Erforderlich |
@@ -382,7 +395,7 @@ Generiert eine Linux-.desktop-Datei.
 wails3 generate .desktop [flags]
 ```
 
-#### Flags
+#### Optionen
 
 | Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Generiert die vorgefertigte Version der Runtime.
+Exportiert die in die CLI eingebettete, vorab erstellte Runtime als `runtime.js` (Produktion) und `runtime-debug.js` (Debug). Dies funktioniert mit einer installierten CLI ohne Zugriff auf den Wails-Quellbaum, einschließlich Builds, die mit `-trimpath` erstellt wurden.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -439,9 +453,9 @@ Generiert ein Linux-AppImage.
 wails3 generate appimage [flags]
 ```
 
-#### Flags
+#### Optionen
 
-| Flag | Beschreibung | Standardwert |
+| Option | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-binary` | Pfad zur Binärdatei | Erforderlich |
 | `-icon` | Pfad zur Symboldatei | Erforderlich |
@@ -461,7 +475,7 @@ Initialisiert einen neuen Dienst.
 wails3 service init [flags]
 ```
 
-#### Flags
+#### Optionen
 
 | Option | Beschreibung | Standardwert |
 | --- | --- | --- |
@@ -490,7 +504,7 @@ wails3 tool checkport [flags]
 
 #### Optionen
 
-| Flag | Beschreibung | Standardwert |
+| Option | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-port` | Zu prüfender Port | `9245` |
 | `-host` | Zu prüfender Host | `localhost` |
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Kopiert Dateien.
+Kopiert eine Quelldatei in eine Zieldatei. Vorhandene Dateien werden überschrieben und behalten ihre aktuellen Berechtigungen. Neue Dateien übernehmen die Berechtigungen der Quelldatei, unter Unix vorbehaltlich der umask des Systems. Übergeordnete Verzeichnisse müssen bereits vorhanden sein.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -535,7 +549,7 @@ Erhöht anhand der angegebenen Flags eine semantische Version.
 wails3 tool version [flags]
 ```
 
-#### Optionen
+#### Flags
 
 | Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
@@ -566,7 +580,7 @@ wails3 tool package [flags]
 
 #### Optionen
 
-| Flag | Beschreibung | Standardwert |
+| Option | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-format` | Paketformat (deb, rpm, archlinux) | `deb` |
 | `-name` | Name der ausführbaren Datei | `myapp` |
@@ -659,7 +673,7 @@ wails3 update cli [flags]
 
 #### Optionen
 
-| Option | Beschreibung | Standardwert |
+| Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-pre` | Auf die neueste Vorabversion aktualisieren | `false` |
 | `-version` | Auf eine bestimmte Version aktualisieren |  |
@@ -681,9 +695,9 @@ Aktualisiert die Build-Ressourcen anhand der angegebenen Konfigurationsdatei.
 wails3 update build-assets [flags]
 ```
 
-#### Flags
+#### Optionen
 
-| Option | Beschreibung | Standardwert |
+| Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-config` | Pfad zur Konfigurationsdatei |  |
 | `-dir` | Ausgabeverzeichnis | `build` |
@@ -716,9 +730,9 @@ Zeigt die Versionshinweise für die aktuelle oder angegebene Version an.
 wails3 releasenotes [flags]
 ```
 
-#### Optionen
+#### Flags
 
-| Option | Beschreibung | Standardwert |
+| Flag | Beschreibung | Standardwert |
 | --- | --- | --- |
 | `-v` | Version, deren Versionshinweise angezeigt werden sollen |  |
 | `-n` | Farbausgabe deaktivieren | `false` |

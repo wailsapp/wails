@@ -7,7 +7,7 @@ sourcePath: "features/menus/application.md"
 
 ## 问题
 
-专业桌面应用程序需要菜单栏，例如“文件”“编辑”“视图”和“帮助”。但菜单在不同平台上的工作方式各不相同：
+专业桌面应用程序需要菜单栏——文件、编辑、视图、帮助。但菜单在各个平台上的工作方式不同：
 
 - **macOS**：位于屏幕顶部的全局菜单栏
 - **Windows**：位于窗口标题栏中的菜单栏
@@ -15,13 +15,13 @@ sourcePath: "features/menus/application.md"
 
 手动构建符合各平台惯例的菜单既繁琐又容易出错。
 
-## Wails 解决方案
+## Wails 的解决方案
 
-Wails 提供一个<strong>统一 API</strong>，可自动创建平台原生菜单。只需编写一次，即可在所有平台上获得原生行为。
+Wails 提供**统一 API**，可自动创建各平台的原生菜单。只需编写一次，即可在所有平台上获得原生行为。
 
-![macOS 上的 Wails 应用程序菜单，包含标准项、复选项、单选项和子菜单项](/assets/screenshots/application-menu-macos.png)
+![macOS 上的 Wails 应用程序菜单，包含标准菜单项、复选菜单项、单选菜单项和子菜单项](/assets/screenshots/application-menu-macos.png)
 
-在 macOS 上，应用程序菜单位于全局菜单栏中。此截图展示了由 Wails 菜单 API 渲染的原生菜单，其中包含禁用项、复选项、单选项和子菜单项。
+在 macOS 上，应用程序菜单位于全局菜单栏中。此截图展示了 Wails 菜单 API 渲染的原生菜单，其中包含禁用、复选、单选和子菜单项。
 
 ## 快速开始
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-<strong>就这么简单！</strong>现在，你已经拥有包含标准菜单项的平台原生菜单。`UseApplicationMenu`选项可确保 Windows 和 Linux 窗口无需额外代码即可显示菜单。
+<strong>就是这样！</strong>现在，你已经拥有包含标准菜单项的各平台原生菜单。`UseApplicationMenu`选项可确保 Windows 和 Linux 窗口无需额外代码即可显示该菜单。
 
 ## 创建菜单
 
@@ -93,7 +93,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### 设置菜单
 
-**推荐方法**——使用`UseApplicationMenu`确保跨平台一致性：
+**推荐方式**——使用`UseApplicationMenu`确保跨平台一致性：
 
 ```go
 // Set the application menu once
@@ -105,10 +105,10 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-此方法的行为如下：
+这种方式的效果如下：
 
-- 在<strong>macOS</strong>上：菜单显示在屏幕顶部（标准行为）
-- 在<strong>Windows/Linux</strong>上：每个启用`UseApplicationMenu: true`的窗口都会显示应用程序菜单
+- 在**macOS**上：菜单显示在屏幕顶部（标准行为）
+- 在**Windows/Linux**上：每个设置了`UseApplicationMenu: true`的窗口都会显示应用程序菜单
 
 **各平台的具体情况：**
 
@@ -120,7 +120,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 app.Menu.Set(menu)
 ```
 
-菜单显示在屏幕顶部，即使所有窗口都已关闭也会保留。由于所有应用程序都使用全局菜单，因此`UseApplicationMenu`选项在 macOS 上不起作用。
+菜单显示在屏幕顶部，即使所有窗口都已关闭，也会继续保留。由于所有应用程序都使用全局菜单，`UseApplicationMenu`选项在 macOS 上不起作用。
 
 [Windows]
 **每窗口菜单栏**：
@@ -152,12 +152,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-具体行为因桌面环境而异。某些桌面环境（如 Unity）支持全局菜单。
+行为因桌面环境而异。某些桌面环境（如 Unity）支持全局菜单。
 
 @end
 
 @note{type="tip" title="简化跨平台菜单"}
-使用`UseApplicationMenu: true`后，无需再编写如下平台特定代码：
+使用`UseApplicationMenu: true`后，无需再编写如下所示的特定于平台的代码：
 
 ```go
 // Old approach - no longer needed
@@ -178,9 +178,21 @@ if runtime.GOOS == "darwin" {
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**移除窗口的菜单栏：**
+
+传入`nil`可移除窗口的菜单栏：
+
+```go
+window.SetMenu(nil)
+```
+
+在 Windows 和 Linux 上，该窗口之后将不再显示任何菜单栏，即使它曾通过`UseApplicationMenu`选择使用应用程序菜单也不例外；被移除菜单的快捷键也会在该窗口中停止工作。在窗口启动前调用此方法，会创建一个没有菜单栏的窗口。之后调用`SetMenu(menu)`可恢复菜单栏。
+
+在 macOS 上，菜单栏属于应用程序而非某个窗口，因此`SetMenu`在那里不起作用。请使用`app.Menu.Set`更改应用程序菜单。
+
 ## 菜单角色
 
-Wails 提供<strong>预定义菜单角色</strong>，可自动创建符合各平台惯例的菜单结构。
+Wails 提供**预定义菜单角色**，可自动创建符合各平台惯例的菜单结构。
 
 ### 可用角色
 
@@ -213,18 +225,18 @@ menu.AddRole(application.HelpMenu)
 
 @tabs{sync-key="platform"}
 [macOS]
-**AppMenu**（包含应用名称）：
+**AppMenu**（包含应用程序名称）：
 
-- 关于 [应用名称]
+- 关于 [应用程序名称]
 - 偏好设置... (⌘,)
 - ---
 - 服务
 - ---
-- 隐藏 [应用名称] (⌘H)
-- 隐藏其他应用 (⌥⌘H)
+- 隐藏 [应用程序名称] (⌘H)
+- 隐藏其他应用程序 (⌥⌘H)
 - 全部显示
 - ---
-- 退出 [应用名称] (⌘Q)
+- 退出 [应用程序名称] (⌘Q)
 
 **FileMenu**：
 
@@ -252,7 +264,7 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**：
 
-- [应用名称]帮助
+- [应用程序名称] 帮助
 
 [Windows]
 **FileMenu**：
@@ -279,7 +291,7 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**：
 
-- 关于[应用名称]
+- 关于 [应用名称]
 
 [Linux]
 与 Windows 类似，但键盘快捷键可能因桌面环境而异。
@@ -288,7 +300,7 @@ menu.AddRole(application.HelpMenu)
 
 ### 自定义角色菜单
 
-`Menu.AddRole(role)`返回<strong>接收者</strong>菜单（顶级菜单），<strong>而不是</strong>该角色的子菜单。要向角色的子菜单添加项目，请使用`FindByRole`查找已插入的角色项目，然后对其调用`GetSubmenu()`：
+`Menu.AddRole(role)`返回**接收者**菜单（顶级菜单），**而不是**该角色的子菜单。要向角色的子菜单添加项目，请使用`FindByRole`查找已插入的角色项目，并对其调用`GetSubmenu()`：
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -300,7 +312,7 @@ fileMenu.Add("Export...").OnClick(handleExport)
 
 ## 自定义菜单
 
-为应用程序特有的功能创建自己的菜单：
+为应用特有的功能创建自定义菜单：
 
 ```go
 // Add a custom top-level menu
@@ -329,13 +341,13 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-**有关更多菜单项类型**，请参阅[菜单参考](/features/menus/reference/)。
+有关**更多菜单项类型**，请参阅[菜单参考](/features/menus/reference/)。
 
 ## 动态菜单
 
-根据应用程序状态更新菜单：
+根据应用状态更新菜单：
 
-### 启用/禁用项目
+### 启用/禁用菜单项
 
 ```go
 var saveMenuItem *application.MenuItem
@@ -358,7 +370,7 @@ func onDocumentChanged() {
 ```
 
 @note{type="caution" title="始终调用 menu.Update()"}
-更改菜单状态（启用/禁用、标签、选中状态）后，**始终调用`menu.Update()`**。这一点在会重建菜单的 Windows 上尤为重要。
+更改菜单状态（启用/禁用、标签或选中状态）后，**始终调用`menu.Update()`**。这一点在会重建菜单的 Windows 上尤其重要。
 
 详情请参阅[菜单参考](/features/menus/reference/#enabled-state)。
 
@@ -457,16 +469,16 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **菜单栏行为：**
 
-- 显示在<strong>屏幕顶部</strong>（全局）
+- 显示在**屏幕顶部**（全局）
 - 关闭所有窗口后仍然保留
-- 第一个菜单<strong>始终是应用程序菜单</strong>
-- 使用`menu.AddRole(application.AppMenu)`添加标准项目
+- 第一个菜单**始终是应用菜单**
+- 标准项目请使用`menu.AddRole(application.AppMenu)`
 
 **标准位置：**
 
-- **关于**：应用程序菜单
-- **偏好设置**：应用程序菜单 (⌘,)
-- **退出**：应用程序菜单 (⌘Q)
+- **关于**：应用菜单
+- **偏好设置**：应用菜单 (⌘,)
+- **退出**：应用菜单 (⌘Q)
 - **帮助**：帮助菜单
 
 **示例：**
@@ -484,9 +496,9 @@ if runtime.GOOS == "darwin" {
 
 **菜单栏行为：**
 
-- 显示在<strong>窗口标题栏</strong>中
+- 显示在**窗口标题栏**中
 - 每个窗口都有自己的菜单
-- 没有应用程序菜单
+- 没有应用菜单
 
 **标准位置：**
 
@@ -511,7 +523,7 @@ if runtime.GOOS == "windows" {
 - 某些桌面环境支持全局菜单（Unity、安装扩展的 GNOME）
 - 外观因桌面环境而异
 
-<strong>最佳实践：</strong>遵循 Windows 惯例，并在目标桌面环境中测试。
+<strong>最佳实践：</strong>遵循 Windows 惯例，并在目标桌面环境上进行测试。
 
 ## 完整示例
 
@@ -642,20 +654,20 @@ func showAbout(ctx *application.Context) {
 ### ✅ 应该做
 
 - 对标准菜单（文件、编辑等）**使用菜单角色**
-- 菜单结构应<strong>遵循平台惯例</strong>
-- 为常用操作<strong>添加键盘快捷键</strong>
-- 更改菜单状态后，**调用 menu.Update()**
+- 菜单结构应**遵循平台惯例**
+- 为常用操作**添加键盘快捷键**
+- 更改菜单状态后**调用 menu.Update()**
 - **在所有平台上进行测试**——行为会有所不同
-- **保持菜单层级简洁**——最多 2-3 层
+- **保持菜单层级简洁**——最多2-3层
 - **使用清晰的标签**——使用“保存项目”，而不是“保存”
 
 ### ❌ 不应该做
 
-- **不要硬编码特定平台的快捷键**——请使用 `CmdOrCtrl`
-- **不要在 macOS 的“文件”菜单中放置“退出”**——它应位于“应用程序”菜单中
-- **不要在 macOS 的“帮助”菜单中放置“关于”**——它应位于“应用程序”菜单中
+- **不要硬编码平台快捷键**——请使用`CmdOrCtrl`
+- **不要在 macOS 的文件菜单中放置“退出”**——它位于应用菜单中
+- **不要在 macOS 的帮助菜单中放置“关于”**——它位于应用菜单中
 - **不要忘记调用 menu.Update()**——否则菜单将无法正常工作
-- **不要嵌套得太深**——用户容易迷失
+- **不要嵌套过深**——这会让用户迷失
 - **不要使用行话**——确保标签对用户友好
 
 ## 后续步骤
@@ -680,7 +692,7 @@ func showAbout(ctx *application.Context) {
 
 ---
 📖 菜单模式
-常见的菜单模式和最佳实践。
+常用菜单模式和最佳实践。
 
 [了解更多 →](/guides/menus/)
 
@@ -688,4 +700,4 @@ func showAbout(ctx *application.Context) {
 
 ---
 
-<strong>有疑问？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[菜单示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[菜单示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。

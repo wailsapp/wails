@@ -1,15 +1,15 @@
 ---
 title: "Fenster-API"
-description: "Vollständige Referenz für die Fenster-API"
+description: "Vollständige Referenz zur Fenster-API"
 slug: "reference/window"
 sourcePath: "reference/window.md"
 ---
 
 ## Überblick
 
-Die Fenster-API stellt Methoden bereit, mit denen Sie Darstellung, Verhalten und Lebenszyklus von Fenstern steuern können. Der Zugriff erfolgt über Fensterinstanzen oder den Manager `app.Window`.
+Die Fenster-API stellt Methoden bereit, mit denen sich Darstellung, Verhalten und Lebenszyklus von Fenstern steuern lassen. Der Zugriff erfolgt über Fensterinstanzen oder den Manager `app.Window`.
 
-`Window` ist eine von `*application.WebviewWindow` implementierte Schnittstelle; die folgenden Methodensignaturen gehören zu `*WebviewWindow`. Viele verändernde Methoden geben für die Verkettung `Window` zurück. Die Rückgabewerte sind bei der jeweiligen Methode dokumentiert.
+`Window` ist eine Schnittstelle, die von `*application.WebviewWindow` implementiert wird; die folgenden Methodensignaturen gehören zu `*WebviewWindow`. Viele verändernde Methoden geben für Methodenverkettungen `Window` zurück. Die Rückgabewerte sind bei der jeweiligen Methode dokumentiert.
 
 **Häufige Vorgänge:**
 
@@ -23,7 +23,7 @@ Die Fenster-API stellt Methoden bereit, mit denen Sie Darstellung, Verhalten und
 
 ### Show()
 
-Zeigt das Fenster an. War das Fenster ausgeblendet, wird es wieder sichtbar. Gibt den Empfänger zur Verkettung zurück.
+Zeigt das Fenster an. War das Fenster ausgeblendet, wird es wieder sichtbar. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -38,7 +38,7 @@ window.Show()
 
 ### Hide()
 
-Blendet das Fenster aus, ohne es zu schließen. Das Fenster verbleibt im Speicher und kann erneut angezeigt werden. Gibt den Empfänger zur Verkettung zurück.
+Blendet das Fenster aus, ohne es zu schließen. Das Fenster verbleibt im Arbeitsspeicher und kann erneut angezeigt werden. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -56,7 +56,7 @@ window.Show()
 
 **Anwendungsfälle:**
 
-- Infobereich-Anwendungen, die Fenster in den Infobereich ausblenden
+- Infobereich-Anwendungen, die in den Infobereich ausgeblendet werden
 - Assistentenabläufe, in denen Fenster wiederverwendet werden
 - Vorübergehendes Ausblenden während Vorgängen
 
@@ -74,13 +74,13 @@ func (w *WebviewWindow) Close()
 window.Close()
 ```
 
-**Hinweis:** Wenn ein registrierter Hook `event.Cancel()` aufruft, wird das Schließen verhindert.
+**Hinweis:** Ruft ein registrierter Hook `event.Cancel()` auf, wird das Schließen verhindert.
 
 ## Fenstereigenschaften
 
 ### SetTitle()
 
-Legt den Text in der Titelleiste des Fensters fest. Gibt den Empfänger zur Verkettung zurück.
+Legt den Text der Fenstertitelleiste fest. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) SetTitle(title string) Window
@@ -120,7 +120,7 @@ if w, ok := app.Window.GetByName(name); ok {
 
 ### SetSize()
 
-Legt die Fensterabmessungen in Pixeln fest. Gibt den Empfänger zur Verkettung zurück.
+Legt die Fensterabmessungen in Pixeln fest. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) SetSize(width, height int) Window
@@ -154,7 +154,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-Legt die minimalen und maximalen Fensterabmessungen fest. Beide Methoden geben den Empfänger zur Verkettung zurück.
+Legt die minimalen und maximalen Fensterabmessungen fest. Beide Methoden geben für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -173,7 +173,7 @@ window.SetMaxSize(1920, 1080)
 
 ### SetPosition()
 
-Legt die Fensterposition relativ zur linken oberen Ecke des Bildschirms fest.
+Legt die Fensterposition relativ zur oberen linken Bildschirmecke fest.
 
 ```go
 func (w *WebviewWindow) SetPosition(x, y int)
@@ -225,11 +225,11 @@ window.Center()
 window.Show()
 ```
 
-**Hinweis:** Zentriert das Fenster auf dem primären Monitor. Informationen zu Konfigurationen mit mehreren Monitoren finden Sie in den Bildschirm-APIs.
+**Hinweis:** Das Fenster wird auf dem primären Monitor zentriert. Informationen zu Konfigurationen mit mehreren Monitoren finden Sie in den Bildschirm-APIs.
 
 ### Focus()
 
-Bringt das Fenster in den Vordergrund und weist ihm den Tastaturfokus zu.
+Bringt das Fenster in den Vordergrund und überträgt ihm den Tastaturfokus.
 
 ```go
 func (w *WebviewWindow) Focus()
@@ -246,7 +246,7 @@ window.Focus()
 
 ### Minimise() / UnMinimise()
 
-Minimiert das Fenster in die Taskleiste bzw. das Dock oder stellt es wieder her. `Minimise()` gibt den Empfänger zur Verkettung zurück; `UnMinimise()` gibt nichts zurück.
+Minimiert das Fenster in die Taskleiste bzw. das Dock oder stellt es wieder her. `Minimise()` gibt für Methodenverkettungen den Empfänger zurück; `UnMinimise()` gibt nichts zurück.
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-Maximiert das Fenster auf die volle Bildschirmgröße oder stellt seine vorherige Größe wieder her. `Maximise()` gibt den Empfänger zur Verkettung zurück; `UnMaximise()` gibt nichts zurück.
+Maximiert das Fenster auf die gesamte Bildschirmfläche oder stellt seine vorherige Größe wieder her. `Maximise()` gibt für Methodenverkettungen den Empfänger zurück; `UnMaximise()` gibt nichts zurück.
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-Aktiviert oder beendet den Vollbildmodus. `Fullscreen()` gibt den Empfänger zur Verkettung zurück.
+Aktiviert oder beendet den Vollbildmodus. `Fullscreen()` gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -305,7 +305,7 @@ window.UnFullscreen()
 window.ToggleFullscreen()
 ```
 
-Es gibt keine Methode `SetFullscreen(bool)`.
+Eine Methode `SetFullscreen(bool)` ist nicht vorhanden.
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-Navigiert innerhalb des Fensters zu einer bestimmten URL. Gibt den Empfänger zur Methodenverkettung zurück.
+Navigiert innerhalb des Fensters zu einer bestimmten URL. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -359,7 +359,7 @@ window.SetURL("https://wails.io")
 
 ### SetHTML()
 
-Legt den Fensterinhalt direkt aus einer HTML-Zeichenfolge fest. Gibt den Empfänger zur Methodenverkettung zurück.
+Legt den Fensterinhalt direkt aus einer HTML-Zeichenkette fest. Gibt für Methodenverkettungen den Empfänger zurück.
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
@@ -367,7 +367,7 @@ func (w *WebviewWindow) SetHTML(html string) Window
 
 **Parameter:**
 
-- `html` – anzuzeigender HTML-Inhalt
+- `html` – Anzuzeigender HTML-Inhalt
 
 **Beispiel:**
 
@@ -406,18 +406,18 @@ func (w *WebviewWindow) Reload()
 window.Reload()
 ```
 
-**Hinweis:** Nützlich während der Entwicklung oder wenn der Inhalt aktualisiert werden muss.
+**Hinweis:** Nützlich während der Entwicklung oder wenn Inhalte aktualisiert werden müssen.
 
 ## Fensterereignisse
 
-Wails bietet zwei Methoden zur Behandlung von Fensterereignissen:
+Wails bietet zwei Methoden zur Verarbeitung von Fensterereignissen:
 
-- **OnWindowEvent()** – Lauscht auf Fensterereignisse (kann sie nicht verhindern).
-- **RegisterHook()** – Bindet sich in Fensterereignisse ein (kann sie durch Aufrufen von `event.Cancel()` verhindern).
+- **OnWindowEvent()** – Lauscht auf Fensterereignisse, kann sie jedoch nicht verhindern.
+- **RegisterHook()** – Hakt sich in Fensterereignisse ein und kann sie durch Aufrufen von `event.Cancel()` verhindern.
 
 ### OnWindowEvent()
 
-Registriert einen Callback für Fensterereignisse. Gibt eine Funktion zum Abbestellen zurück.
+Registriert eine Callback-Funktion für Fensterereignisse. Gibt eine Funktion zum Abbestellen zurück.
 
 ```go
 func (w *WebviewWindow) OnWindowEvent(
@@ -521,7 +521,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-Sendet ein benutzerdefiniertes Ereignis an das Frontend des Fensters. Gibt `true` zurück, wenn das Senden durch einen Hook abgebrochen wurde.
+Sendet ein benutzerdefiniertes Ereignis an das Frontend des Fensters. Gibt `true` zurück, wenn ein Hook das Senden abgebrochen hat.
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
@@ -530,7 +530,7 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 **Parameter:**
 
 - `name` – Ereignisname
-- `data` – optionale Daten, die mit dem Ereignis gesendet werden sollen
+- `data` – Optionale Daten, die mit dem Ereignis gesendet werden
 
 **Beispiel:**
 
@@ -584,7 +584,7 @@ Legt die Hintergrundfarbe des Fensters fest, die vor dem Laden des Inhalts angez
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA` ist `application.RGBA{Red, Green, Blue, Alpha uint8}`. Verwenden Sie die Hilfsfunktionen `application.NewRGB(r, g, b)` (Alpha 255) oder `application.NewRGBA(r, g, b, a)`.
+`RGBA` ist vom Typ `application.RGBA{Red, Green, Blue, Alpha uint8}`. Verwenden Sie die Hilfsfunktionen `application.NewRGB(r, g, b)` (Alpha 255) oder `application.NewRGBA(r, g, b, a)`.
 
 **Beispiel:**
 
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-Steuert, ob der Benutzer die Fenstergröße ändern kann. Gibt den Empfänger zur Methodenverkettung zurück.
+Legt fest, ob der Benutzer die Fenstergröße ändern kann. Gibt den Empfänger zur Methodenverkettung zurück.
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -626,6 +626,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 window.SetAlwaysOnTop(true)
 ```
 
+### SetMenu()
+
+Legt unter Windows und Linux die Menüleiste des Fensters fest und ersetzt die aktuell angezeigte Menüleiste.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Parameter:**
+- `menu` – Das anzuzeigende Menü oder `nil`, um die Menüleiste zu entfernen
+
+Die Übergabe von `nil` entfernt die Leiste: Das Fenster zeigt kein Menü an, auch nicht das Anwendungsmenü, und die Tastenkürzel des entfernten Menüs funktionieren in diesem Fenster nicht mehr. Bei einem Aufruf vor dem Start des Fensters wird es ohne Menüleiste erstellt.
+
+**Plattformunterstützung:**
+- **Windows**: Vollständig unterstützt
+- **Linux**: Vollständig unterstützt
+- **macOS**: Keine Auswirkung, da die Menüleiste zur Anwendung gehört. Verwenden Sie stattdessen `app.Menu.Set`.
+
+**Beispiel:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
+```
+
 ### Print()
 
 Öffnet den nativen Druckdialog für den Fensterinhalt.
@@ -634,7 +659,7 @@ window.SetAlwaysOnTop(true)
 func (w *WebviewWindow) Print() error
 ```
 
-**Rückgabewert:** Fehler, wenn das Drucken fehlschlägt.
+**Rückgabewert:** Ein Fehler, wenn das Drucken fehlschlägt.
 
 **Beispiel:**
 
@@ -646,7 +671,7 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-Hängt ein zweites Fenster als modales Dialogfenster in Form eines Sheets an.
+Hängt ein zweites Fenster als modales Sheet an.
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
@@ -654,11 +679,11 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **Parameter:**
 
-- `modalWindow` – Das als modales Dialogfenster anzuhängende Fenster
+- `modalWindow` – Das Fenster, das als modales Fenster angehängt werden soll
 
 **Plattformunterstützung:**
 
-- **macOS**: Vollständig unterstützt (Darstellung als Sheet)
+- **macOS**: Vollständig unterstützt (wird als Sheet dargestellt)
 - **Windows**: Nicht unterstützt
 - **Linux**: Nicht unterstützt
 
@@ -677,11 +702,11 @@ Linux-Fenster unterstützen über `LinuxWindow` die folgenden plattformspezifisc
 
 #### MenuStyle
 
-Steuert die Darstellung des Anwendungsmenüs. Diese Option ist im standardmäßigen GTK4-Build verfügbar und wird in älteren `-tags gtk3`-Builds ignoriert.
+Steuert, wie das Anwendungsmenü angezeigt wird. Diese Option ist im standardmäßigen GTK4-Build verfügbar und wird bei älteren `-tags gtk3`-Builds ignoriert.
 
 | Wert | Beschreibung |
 | --- | --- |
-| `LinuxMenuStyleMenuBar` | Herkömmliche Menüleiste unterhalb der Titelleiste (Standard) |
+| `LinuxMenuStyleMenuBar` | Traditionelle Menüleiste unterhalb der Titelleiste (Standard) |
 | `LinuxMenuStylePrimaryMenu` | Primäre Menüschaltfläche in der Kopfleiste (GNOME-Stil) |
 
 **Beispiel:**
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-**Hinweis:** Beim primären Menüstil wird gemäß den GNOME Human Interface Guidelines eine Hamburger-Schaltfläche (☰) in der Kopfleiste angezeigt. Dieser Stil wird für moderne GNOME-Anwendungen empfohlen.
+**Hinweis:** Der primäre Menüstil zeigt gemäß den GNOME Human Interface Guidelines eine Hamburger-Schaltfläche (☰) in der Kopfleiste an. Dieser Stil wird für moderne GNOME-Anwendungen empfohlen.
 
 ## Vollständiges Beispiel
 

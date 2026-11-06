@@ -115,16 +115,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0010-cell-01": {
-      "sourceHash": "ee453293ba2b0158fe84d7cea2d0da443a72bf89371269f81d65d8431e1e3aa0",
-      "targetHash": "9521d5330db8620ab80815976d2d3372617419a565e53a0109a86a5deb8000de",
-      "machineHash": "9521d5330db8620ab80815976d2d3372617419a565e53a0109a86a5deb8000de",
-      "machineText": "automatique, quotidienne, uniquement lorsque `UNRELEASED_CHANGELOG.md` contient des éléments",
-      "status": "reviewed",
-      "sourcePreview": "automated, daily, only when `UNRELEASED_CHANGELOG.md` has content",
+      "sourceHash": "7e167ef239e8e3743ebd7e49c732171e2e5d5ccdd5f29b0faf380de15ef8d86e",
+      "targetHash": "8d1b9256b85b8790fe9ae9853e526382e9dd8d3dcedfb3fbb0756c386a71c9e8",
+      "machineHash": "8d1b9256b85b8790fe9ae9853e526382e9dd8d3dcedfb3fbb0756c386a71c9e8",
+      "machineText": "automatisée, quotidienne, uniquement lorsque les PR fusionnées dans la plage de publication testée produisent des notes visibles par les utilisateurs",
+      "status": "machine-translated",
+      "sourcePreview": "automated, daily, only when merged PRs in the tested release range produce user-visible notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:19Z"
     },
     "b0011-cell-01": {
       "sourceHash": "3ebf4c66f5f26704350b6ea1f1510b59d3f48f2f4323af34a77ff9c7f53c0176",
@@ -932,16 +932,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0086-text-01": {
-      "sourceHash": "e838c68cc47aed2cda32c3e583cef2b42153a393acee17582af7a064526922d3",
-      "targetHash": "bdb783fbf89e127b28c79b3b9a3a1e0ed0716918bccdbb0e5b20d1d92276f8a8",
-      "machineHash": "bdb783fbf89e127b28c79b3b9a3a1e0ed0716918bccdbb0e5b20d1d92276f8a8",
-      "machineText": "Les droits de publication sont réservés au responsable du projet (consultez le document de gouvernance). Les contributeurs ne créent jamais de tag et ne publient jamais ; ils ajoutent des entrées à `v3/UNRELEASED_CHANGELOG.md`.",
-      "status": "reviewed",
+      "sourceHash": "f63de58a409ea5859195d79ddf41b6c86bb98b4d7d9c46effc39873d6987e12a",
+      "targetHash": "8485566c1096bf18cad6fd6cd5b619d3272899e60d6ec885e51eee5945fe8cc5",
+      "machineHash": "8485566c1096bf18cad6fd6cd5b619d3272899e60d6ec885e51eee5945fe8cc5",
+      "machineText": "Les droits de publication sont réservés au responsable du projet (voir le document de gouvernance). Les contributeurs ne créent jamais de tag et ne publient jamais de version ; ils décrivent les changements visibles par les utilisateurs dans les titres des PR ou dans une section de description `## Release notes`. L’automatisation des publications génère les notes à partir des PR fusionnées dans la plage exacte de commits testée ; `v3/UNRELEASED_CHANGELOG.md` a été supprimé.",
+      "status": "machine-translated",
       "sourcePreview": "Release rights are limited to the project Lead (see the governance document). Contributors never tag…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:19Z"
     },
     "b0087-text-01": {
       "sourceHash": "387dc819de83611dded717da09e75e41de0e4e00cdc75d3bde2721a7f4c7237e",
@@ -1112,16 +1112,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0101-text-01": {
-      "sourceHash": "75197c10b52ce49da77047b51d02252b9af1df684f06c1876a3ce806a7065ff6",
-      "targetHash": "bca260a51af1f3b89b7adf335c7c3e6e5427b8b5ab622e190d047ac97b5c9a7a",
-      "machineHash": "4c9357fedc424256f6844c1e2f7e9497a5cd71c0e1758de66bc5e92e6475e688",
-      "machineText": "des alertes Dependabot ouvertes de gravité critique ou élevée, des alertes d’analyse du code ouvertes de gravité critique ou élevée, ainsi que toute alerte ouverte d’analyse des secrets, **uniquement pour le code distribué**. Les alertes situées exclusivement sous `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou dans tout répertoire `examples/` sont ignorées (`SHIPPED_ALERT_IGNORE` dans `.github/scripts/check-release-blockers.sh`, **à examiner par le responsable**) ;",
-      "status": "reviewed",
-      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or hig",
+      "sourceHash": "62b47b4238afd8b1b2292b0de411636878afd323b81131dd746f989356984979",
+      "targetHash": "9d68e4e085805d7f1c19eff43dc7d7c9d5cabb5494315c2d3a66080610bcf94b",
+      "machineHash": "9d68e4e085805d7f1c19eff43dc7d7c9d5cabb5494315c2d3a66080610bcf94b",
+      "machineText": "les alertes Dependabot ouvertes de gravité critique ou élevée, les alertes d’analyse de code ouvertes de gravité critique ou élevée et toute alerte ouverte d’analyse des secrets, **uniquement pour le code distribué**. Les alertes situées exclusivement sous `v2/internal/staticanalysis/test/` (jeux de données de test pour l’analyse statique), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou dans tout répertoire `examples/` sont ignorées (`SHIPPED_ALERT_IGNORE` dans `v3/tasks/releasegate/main.go`, **à examiner par le propriétaire**) ;",
+      "status": "machine-translated",
+      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:19Z"
     },
     "b0102-text-01": {
       "sourceHash": "1b385bd81a0263a3996e77d7af193864863b8545051d9ba54afb80eb1eeb1660",

@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:41Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "32a1464ea1a92e5fe0ce65ae926736552031fa438ccb0ccd4c612df0e4872060",
-      "machineHash": "32a1464ea1a92e5fe0ce65ae926736552031fa438ccb0ccd4c612df0e4872060",
-      "machineText": "문서 기여자는 Wails CLI 또는 데스크톱 빌드 종속성을 설치하지 않고도 M-Press를 사용할 수 있습니다. 고정된 버전의 실행 파일 다운로드, 설치, 실시간 미리 보기, 검증 및 릴리스 브랜치 PR 워크플로에 관한 내용은 [M-Press로 문서 작성하기](/contributing/documentation/)를 따르세요.",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "d52796a390275c97441849144d456865b15516574949cd652ee3955f815ac9e9",
+      "machineHash": "d52796a390275c97441849144d456865b15516574949cd652ee3955f815ac9e9",
+      "machineText": "문서 기여자는 Wails CLI나 데스크톱 빌드 종속성을 설치하지 않고도 M-Press를 사용할 수 있습니다. 고정 버전 실행 파일 다운로드, 설치, 실시간 미리 보기, 유효성 검사 및 `master`을 대상으로 하는 PR 워크플로는 [M-Press로 문서 작성하기](/contributing/documentation/)를 참조하세요.",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:41Z"
+      "updatedAt": "2026-11-06T02:12:34Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

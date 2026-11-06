@@ -1,15 +1,15 @@
 ---
 title: "Janelas sem moldura"
-description: "Crie elementos de janela personalizados com janelas sem moldura"
+description: "Crie uma decoração de janela personalizada com janelas sem moldura"
 slug: "features/windows/frameless"
 sourcePath: "features/windows/frameless.md"
 ---
 
 ## Janelas sem moldura
 
-O Wails oferece **suporte a janelas sem moldura**, com regiões de arraste baseadas em CSS e comportamento nativo da plataforma. Remova a barra de título nativa da plataforma para ter controle total sobre os elementos da janela, criar designs personalizados e proporcionar experiências de usuário únicas, mantendo funcionalidades essenciais como arrastar, redimensionar e usar os controles do sistema.
+O Wails oferece **suporte a janelas sem moldura** com regiões de arraste baseadas em CSS e comportamento nativo da plataforma. Remova a barra de título nativa da plataforma para ter controle total sobre a decoração da janela, criar designs personalizados e proporcionar experiências de usuário únicas, preservando funcionalidades essenciais como arrastar, redimensionar e usar os controles do sistema.
 
-![O aplicativo inicial TypeScript padrão do Wails v3 executado como uma janela sem moldura, com cantos nativos do macOS](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![O aplicativo inicial TypeScript padrão do Wails v3 executado como uma janela sem moldura com cantos nativos do macOS](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
 O exemplo acima é o aplicativo inicial TypeScript padrão do Wails v3 com `Frameless: true` habilitado.
 
@@ -47,7 +47,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-**Pronto!** Agora você tem uma barra de título personalizada.
+**É só isso!** Agora você tem uma barra de título personalizada.
 
 ## Como criar janelas sem moldura
 
@@ -64,7 +64,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Defina `Mac.CornerType` como `MacWindowCornerTypeSquare` para obter cantos retos. Essa configuração ignora `CornerRadius`:
+Defina `Mac.CornerType` como `MacWindowCornerTypeSquare` para usar cantos retos. Isso ignora `CornerRadius`:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -75,7 +75,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### Janela sem moldura básica
+### Janela básica sem moldura
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -95,7 +95,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **O que você precisa implementar:**
 
 - Área arrastável
-- Botões para fechar, minimizar e maximizar
+- Botões de fechar, minimizar e maximizar
 - Alças de redimensionamento (se a janela for redimensionável)
 
 ### Com plano de fundo transparente
@@ -208,43 +208,43 @@ document.querySelector('.maximize').addEventListener('click', () => Window.Maxim
 document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
-## Regiões não clientes nativas no Windows
+## Regiões não cliente nativas no Windows
 
-O Windows pode tratar partes de uma barra de título personalizada como áreas não clientes nativas. Assim, você pode desenhar a barra de título e seus botões com qualquer design em HTML/CSS, preservando o comportamento nativo do Windows: a área da barra de título arrasta a janela; o botão de maximização pode exibir os recursos Snap Assist/Snap Layouts do Windows 11; e os botões de minimizar, maximizar e fechar recebem a detecção nativa de regiões sob o ponteiro e o estado nativo do mouse.
+O Windows pode tratar partes de uma barra de título personalizada como áreas não cliente nativas. Assim, você pode desenhar a barra de título e os botões de legenda com qualquer design em HTML/CSS, preservando o comportamento nativo do Windows: a área da legenda arrasta a janela, o botão de maximizar pode exibir o 11 Snap Assist / Snap Layouts do Windows, e os botões de minimizar, maximizar e fechar recebem teste de clique e estado do mouse nativos.
 
-O vídeo abaixo mostra uma barra de título personalizada em HTML/CSS que usa a detecção nativa de regiões sob o ponteiro do Windows, incluindo os recursos Snap Assist/Snap Layouts do Windows 11 em um botão de maximização personalizado.
+O vídeo abaixo mostra uma barra de título personalizada em HTML/CSS usando o teste de clique nativo do Windows, incluindo o 11 Snap Assist / Snap Layouts do Windows em um botão de maximizar personalizado.
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 O Wails oferece suporte a dois mecanismos específicos do Windows:
 
-- `app-region` por meio do suporte nativo do WebView2 a regiões não clientes
+- `app-region` por meio do suporte nativo do WebView2 a regiões não cliente
 - `--wails-non-client-region` por meio do rastreamento do runtime do Wails para botões de legenda personalizados
 
 ### Como escolher um modo
 
 @note{type="caution" title="Experimental"}
-`WebView2CompositionHosting` altera internamente a forma como a janela hospeda o WebView2 e interage com ele. Em vez do controlador WebView2 padrão hospedado em HWND, o Wails usa a hospedagem por controlador de composição e encaminha explicitamente as entradas. Esse modo pode apresentar problemas de renderização, entrada, foco ou compatibilidade com o WebView2 Runtime. Habilite-o somente quando precisar do comportamento nativo de botões de legenda personalizados e teste cuidadosamente seu aplicativo nas versões do Windows e do WebView2 Runtime às quais você oferece suporte.
+`WebView2CompositionHosting` altera internamente a forma como a janela hospeda o WebView2 e interage com ele. Em vez do controlador WebView2 padrão hospedado por HWND, o Wails usa a hospedagem do controlador de composição e encaminha explicitamente as entradas. Esse modo pode apresentar problemas de renderização, entrada, foco ou compatibilidade com o WebView2 Runtime. Habilite-o apenas quando precisar do comportamento nativo em botões de legenda personalizados e teste cuidadosamente seu aplicativo nas versões do Windows e do WebView2 Runtime às quais você oferece suporte.
 
 @end
 
 Escolha de acordo com o que você precisa do Windows:
 
-- Use `NonClientRegionSupport` para permitir o arraste nativo simples do aplicativo com os recursos `app-region: drag` e `app-region: no-drag` do WebView2.
-- Use `WebView2CompositionHosting` quando quiser que seus botões personalizados de minimizar, maximizar e fechar se comportem como botões de legenda nativos do Windows.
+- Use `NonClientRegionSupport` para permitir o arraste nativo simples do aplicativo com `app-region: drag` e `app-region: no-drag` do WebView2.
+- Use `WebView2CompositionHosting` quando seus botões personalizados de minimizar, maximizar e fechar precisarem se comportar como botões nativos da legenda do Windows.
 - Habilite ambos quando a mesma janela precisar do suporte nativo do WebView2 a `app-region` e de regiões de botões de legenda personalizados gerenciadas pelo Wails.
 
-`NonClientRegionSupport` é a alternativa nativa e leve ao rastreamento de `--wails-draggable` do Wails. Você marca com CSS as áreas arrastáveis e não arrastáveis, o WebView2 determina quais pixels pertencem à barra de título e, durante a detecção de regiões sob o ponteiro, o Wails solicita ao WebView2 a região nativa.
+`NonClientRegionSupport` é a alternativa nativa e leve ao rastreamento `--wails-draggable` do Wails. Você marca as áreas arrastáveis e não arrastáveis com CSS, o WebView2 decide quais pixels pertencem à legenda e o Wails solicita ao WebView2 a região nativa durante o teste de clique.
 
-Atualmente, esse é todo o escopo deste modo. Ele não faz com que os botões personalizados de minimizar, maximizar ou fechar se comportem como botões de legenda nativos do Windows, nem habilita os recursos Snap Assist/Snap Layouts do Windows 11 para um botão de maximização personalizado. Use-o quando precisar do arraste nativo simples do aplicativo sem os mecanismos adicionais de `--wails-draggable`.
+Atualmente, esse é todo o escopo desse modo. Ele não faz com que botões personalizados de minimizar, maximizar ou fechar se comportem como botões nativos da legenda do Windows, nem habilita o 11 Snap Assist / Snap Layouts do Windows para um botão de maximizar personalizado. Use-o quando precisar do arraste nativo simples do aplicativo sem os mecanismos adicionais de `--wails-draggable`.
 
-`WebView2CompositionHosting` destina-se a botões personalizados da barra de título com comportamento nativo. O Wails rastreia retângulos do DOM marcados com `--wails-non-client-region`, mapeia-os para valores de detecção de regiões sob o ponteiro do Windows, como `HTMINBUTTON`, `HTMAXBUTTON` e `HTCLOSE`, e encaminha a entrada do mouse de volta para a superfície do WebView2 hospedada por composição. É isso que permite que um botão personalizado de maximização participe dos recursos Snap Assist/Snap Layouts do Windows 11, mantendo qualquer design visual que você escolher.
+`WebView2CompositionHosting` destina-se a botões de legenda personalizados com comportamento nativo. O Wails rastreia os retângulos do DOM marcados com `--wails-non-client-region`, mapeia-os para valores de teste de clique do Windows, como `HTMINBUTTON`, `HTMAXBUTTON` e `HTCLOSE`, e encaminha a entrada do mouse de volta à superfície do WebView2 hospedada por composição. Isso permite que um botão de maximizar personalizado participe do 11 Snap Assist / Snap Layouts do Windows, preservando qualquer design visual que você escolher.
 
-Em outras palavras: `NonClientRegionSupport` é o suporte nativo do WebView2 a regiões CSS. `WebView2CompositionHosting` significa que o Wails assume a responsabilidade pela composição controlada pelo host e pela detecção personalizada de regiões não clientes sob o ponteiro.
+Em outras palavras: `NonClientRegionSupport` é o suporte nativo do WebView2 a regiões CSS. Com `WebView2CompositionHosting`, o Wails assume a responsabilidade pela composição controlada pelo host e pelo teste de clique não cliente personalizado.
 
 ### app-region do WebView2
 
-Ative o suporte nativo do WebView2 a regiões não cliente para a janela:
+Habilite o suporte nativo do WebView2 a regiões não cliente para a janela:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -270,16 +270,16 @@ Em seguida, marque as áreas arrastáveis com a propriedade CSS `app-region`:
 }
 ```
 
-Use esse modo quando você precisar apenas do arraste nativo pela barra de título e os controles dessa barra forem tratados por cliques normais no frontend.
+Use essa opção quando precisar apenas do arraste nativo pela legenda e os controles da barra de título forem tratados por cliques normais no frontend.
 
-A limitação desse modo é que ele está restrito ao suporte do próprio WebView2 a regiões não cliente. Nas versões atuais do WebView2, isso significa apenas regiões arrastáveis e não arrastáveis. Ele não se destina a representar botões de legenda totalmente personalizados no frontend, com funções nativas distintas de minimizar, maximizar e fechar.
+A limitação desse modo é que ele está restrito ao próprio suporte do WebView2 a regiões não cliente. Nas versões atuais do WebView2, isso significa apenas regiões arrastáveis e não arrastáveis. Ele não se destina a representar botões de legenda totalmente personalizados no frontend com funções nativas distintas de minimizar, maximizar e fechar.
 
 ### Botões de legenda personalizados com comportamento nativo
 
-Para que botões personalizados de minimizar, maximizar e fechar se comportem como botões de legenda do sistema, ative a hospedagem por composição:
+Para que botões personalizados de minimizar, maximizar e fechar se comportem como botões de legenda do sistema, habilite a hospedagem por composição:
 
 @note{type="caution" title="Experimental"}
-`WebView2CompositionHosting` usa a hospedagem do controlador de composição do WebView2 com DirectComposition. Consulte [Escolha de um modo](#como-escolher-um-modo) antes de ativá-la.
+`WebView2CompositionHosting` usa a hospedagem do controlador de composição do WebView2 com DirectComposition. Consulte [Como escolher um modo](#como-escolher-um-modo) antes de habilitá-lo.
 
 @end
 
@@ -338,17 +338,17 @@ Em seguida, marque cada região do frontend com `--wails-non-client-region`:
 Valores de `--wails-non-client-region` compatíveis:
 
 - `caption` — área arrastável da barra de título
-- `minimize` — alvo de clique do botão nativo de minimizar
-- `maximize` — alvo de clique do botão nativo de maximizar, incluindo o comportamento do Snap Assist/Layouts de Ajuste do Windows 11 ao passar o ponteiro
-- `close` — alvo de clique do botão nativo de fechar
+- `minimize` — área de acionamento do botão nativo de minimizar
+- `maximize` — área de acionamento do botão nativo de maximizar, incluindo o comportamento de 11 do Windows ao passar o ponteiro sobre Snap Assist/Snap Layouts
+- `close` — área de acionamento do botão nativo de fechar
 
-O runtime do Wails observa alterações no DOM, nos estilos, no tamanho, na rolagem e na viewport e, em seguida, envia instantâneos das regiões para a janela nativa. A geometria das regiões é medida em pixels CSS e convertida em pixels físicos para a detecção de regiões sob o ponteiro do Windows.
+O runtime do Wails observa alterações no DOM, nos estilos, no tamanho, na rolagem e na viewport e, em seguida, envia capturas das regiões para a janela nativa. A geometria das regiões é medida em pixels CSS e convertida em pixels físicos para o teste de hit no Windows.
 
-O design visual permanece inteiramente sob seu controle. As regiões apenas informam ao Windows o significado de cada retângulo; a forma, o ícone, a cor, o espaçamento, o estilo ao passar o ponteiro e o layout dos botões continuam sendo definidos pelo seu frontend.
+O design visual continua inteiramente sob seu controle. As regiões apenas informam ao Windows o significado de cada retângulo; a forma, o ícone, a cor, o espaçamento, o estilo ao passar o ponteiro e o layout dos botões continuam sendo definidos pelo frontend.
 
-### Combinação dos dois modos
+### Combinando os dois
 
-Você pode ativar as duas opções quando quiser usar o suporte do WebView2 a `app-region` e regiões de botões da barra de título gerenciadas pelo Wails na mesma janela:
+Você pode ativar as duas opções quando quiser usar o suporte a `app-region` do WebView2 e as regiões de botões da barra de título gerenciadas pelo Wails na mesma janela:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -362,7 +362,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Botões do sistema
 
-### Implementação de fechar, minimizar e maximizar
+### Implementando fechar, minimizar e maximizar
 
 **No lado do Go:**
 
@@ -398,7 +398,7 @@ document.querySelector('.maximize').addEventListener('click', Maximise)
 document.querySelector('.close').addEventListener('click', Close)
 ```
 
-**Ou use os métodos do runtime:**
+**Ou use métodos do runtime:**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -408,9 +408,9 @@ document.querySelector('.maximize').addEventListener('click', () => Window.Maxim
 document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
-### Alternância do estado de maximização
+### Alternando o estado de maximização
 
-Acompanhe o estado de maximização para atualizar o ícone do botão:
+Acompanhe o estado de maximização para definir o ícone do botão:
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -513,7 +513,7 @@ body {
 }
 ```
 
-## Comportamento específico da plataforma
+## Comportamento específico de cada plataforma
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -531,9 +531,9 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Recursos:**
 
 - Sombra projetada automática
-- Suporte a Layouts de Ajuste (Windows 11)
-- Suporte ao Aero Snap
-- Dimensionamento de DPI
+- Suporte a Snap Layouts (Windows 11)
+- Suporte a Aero Snap
+- Escalonamento de DPI
 
 **Desativar decorações:**
 
@@ -550,9 +550,9 @@ Windows: application.WindowsWindow{
 window.SnapAssist()
 ```
 
-Isso aciona os Layouts de Ajuste por meio do atalho de teclado do Windows. Para usar um botão HTML personalizado de maximizar com Layouts de Ajuste nativos ao passar o ponteiro, use [Regiões não cliente nativas no Windows](#regies-no-clientes-nativas-no-windows).
+Isso aciona o Snap Layouts pelo caminho de teclas de atalho do Windows. Para usar um botão HTML personalizado de maximizar com o comportamento nativo do Snap Layouts ao passar o ponteiro, use [Regiões não cliente nativas no Windows](#regies-no-cliente-nativas-no-windows).
 
-**Altura personalizada da barra de título:** O Windows detecta automaticamente as regiões de arraste pelo CSS.
+**Altura personalizada da barra de título:** o Windows detecta automaticamente as regiões de arraste definidas no CSS.
 
 [macOS]
 **Janelas sem moldura no macOS:**
@@ -576,7 +576,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - Efeitos de vibrância
 - Barra de título transparente
 
-**Oculte completamente a barra de título** (use as variantes predefinidas exportadas pelo pacote `application` — não há nenhum campo `TitleBarStyle` nem uma constante `MacTitleBarStyleHidden`):
+**Oculte completamente a barra de título** (use as variantes predefinidas exportadas pelo pacote `application` — não existe um campo `TitleBarStyle` nem uma constante `MacTitleBarStyleHidden`):
 
 ```go
 Mac: application.MacWindow{
@@ -586,7 +586,7 @@ Mac: application.MacWindow{
 
 Outras predefinições incluem `MacTitleBarDefault`, `MacTitleBarHiddenInset` e `MacTitleBarHiddenInsetUnified`.
 
-**Barra de título invisível:** Permite arrastar a janela enquanto oculta a barra de título. Isso só tem efeito quando a janela não tem moldura ou usa `AppearsTransparent`:
+**Barra de título invisível:** permite arrastar a janela enquanto oculta a barra de título. Isso só entra em vigor quando a janela não tem moldura ou usa `AppearsTransparent`:
 
 ```go
 Mac: application.MacWindow{
@@ -607,16 +607,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 - Suporte básico a janelas sem moldura
 - Regiões de arraste em CSS
-- Varia de acordo com o ambiente de desktop
+- Varia conforme o ambiente de desktop
 
 **Observações sobre ambientes de desktop:**
 
-- **GNOME:** Bom suporte
-- **KDE Plasma:** Bom suporte
-- **XFCE:** Suporte básico
-- **Gerenciadores de janelas lado a lado:** Suporte limitado
+- **GNOME:** bom suporte
+- **KDE Plasma:** bom suporte
+- **XFCE:** suporte básico
+- **Gerenciadores de janelas em mosaico:** suporte limitado
 
-**Compositor necessário:** A transparência requer um compositor (a maioria dos ambientes de desktop modernos tem um).
+**Compositor obrigatório:** a transparência requer um compositor (a maioria dos ambientes de desktop modernos tem um).
 
 @end
 
@@ -723,7 +723,7 @@ body {
 }
 ```
 
-### Padrão 3: janela arredondada
+### Padrão 3: janela com cantos arredondados
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -977,7 +977,7 @@ async function updateMaximiseButton() {
 updateMaximiseButton()
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
@@ -986,21 +986,21 @@ updateMaximiseButton()
 - **Defina um tamanho mínimo** — evite layouts inutilizáveis
 - **Teste em todas as plataformas** — o comportamento varia
 - **Use CSS para as regiões de arraste** — é flexível e fácil de manter
-- **Forneça feedback visual** — estados de foco do ponteiro nos botões
+- **Forneça feedback visual** — estados dos botões ao passar o ponteiro
 
 ### ❌ Não faça
 
-- **Não se esqueça das alças de redimensionamento** — se a janela for redimensionável
+- **Não se esqueça das alças de redimensionamento** — se a janela puder ser redimensionada
 - **Não torne a janela inteira arrastável** — isso impede a interação
 - **Não se esqueça de desativar o arraste nos botões** — caso contrário, eles não funcionarão
-- **Não use áreas de arraste minúsculas** — são difíceis de agarrar
-- **Não se esqueça das diferenças entre plataformas** — teste minuciosamente
+- **Não use áreas de arraste muito pequenas** — são difíceis de selecionar
+- **Não se esqueça das diferenças entre plataformas** — teste cuidadosamente
 
 ## Solução de problemas
 
-### Não é possível arrastar a janela
+### A janela não pode ser arrastada
 
-**Causa:** `--wails-draggable: drag` ausente
+**Causa:** ausência de `--wails-draggable: drag`
 
 **Solução:**
 
@@ -1024,7 +1024,7 @@ updateMaximiseButton()
 
 ### Não é possível redimensionar a janela
 
-**Causa:** alças de redimensionamento ausentes
+**Causa:** ausência de alças de redimensionamento
 
 **Solução:**
 
@@ -1037,8 +1037,8 @@ body {
 ## Próximas etapas
 
 @cards{cols="2"}
-▣ Conceitos básicos de janelas
-Conheça os fundamentos do gerenciamento de janelas.
+▣ Conceitos básicos sobre janelas
+Aprenda os fundamentos do gerenciamento de janelas.
 
 [Saiba mais →](/features/windows/basics/)
 
@@ -1064,4 +1064,4 @@ Padrões para aplicativos com várias janelas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de janela sem moldura](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de janela sem moldura](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless).

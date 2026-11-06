@@ -1,12 +1,12 @@
 ---
-title: "概述"
+title: "概览"
 description: "探索使用 Wails 构建的应用程序"
 slug: "community/showcase"
 sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="了解如何添加你的项目"}
-请参阅 [如何将我的项目添加到作品展示中](#heading)部分。
+请参阅[如何将我的项目添加到展示列表](#heading)一节。
 
 @end
 
@@ -51,20 +51,20 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn 截图" loading="lazy"><span>Larvyn</span></a>
 </div>
 
-## 如何将我的项目添加到作品展示中
+## 如何将我的项目添加到展示列表
 
 @steps
-### 复刻该仓库。
+### 创建该仓库的复刻。
 ### 将图片添加到`docs/mpress/static/showcase-images`文件夹中。
-### 复制以下目录中的现有 `.md` 展示文件：
+### 复制以下文件夹中的现有`.md`展示文件：
 `docs/mpress/content/community/showcase`文件夹。
 
 ### 将复制的文件重命名为你的项目名称。（名称不应以
-`_`开头）
+以`_`开头）
 
 ### 更新该文件的标题、图片、链接和内容。
-### 将其添加到以下文件中的上述列表：
-`docs/mpress/content/community/showcase/index.md`。
+### 将其添加到上述列表中，该列表位于
+`docs/mpress/content/community/showcase/index.md`.
 
 ### 提交 PR。
 @end

@@ -7,7 +7,7 @@ sourcePath: "features/events/system.md"
 
 ## Sistema de eventos
 
-O Wails oferece um **sistema unificado de eventos** para comunicação pub/sub. Emita eventos de qualquer lugar e escute-os em qualquer lugar — do Go para o JavaScript, do JavaScript para o Go, de uma janela para outra — possibilitando uma arquitetura desacoplada com eventos tipados e hooks de ciclo de vida.
+O Wails oferece um **sistema de eventos unificado** para comunicação pub/sub. Emita eventos de qualquer lugar e escute-os em qualquer lugar — do Go para o JavaScript, do JavaScript para o Go e de uma janela para outra —, permitindo uma arquitetura desacoplada com eventos tipados e hooks de ciclo de vida.
 
 ## Início rápido
 
@@ -88,7 +88,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## Emissão de eventos
 
-### A partir do Go
+### No Go
 
 **Emissão básica:**
 
@@ -124,7 +124,7 @@ app.Event.Emit("items", []string{"a", "b", "c"})
 window.EmitEvent("window-specific-event", data)
 ```
 
-### A partir do JavaScript
+### No JavaScript
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -158,7 +158,7 @@ app.Event.On("user-updated", func(e *application.CustomEvent) {
 })
 ```
 
-**Vários handlers:**
+**Vários manipuladores:**
 
 ```go
 // All handlers will be called
@@ -166,6 +166,8 @@ app.Event.On("order-created", logOrder)
 app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
+
+**Ordem de entrega:** cada manipulador registrado com `On`, `Once` ou `OnMultiple` processa um evento por vez, portanto nunca é executado simultaneamente consigo mesmo e recebe chamadas sequenciais de `Emit` na ordem: se uma chamada de `Emit` retornar antes de a próxima ser feita, todos os manipuladores as receberão nessa ordem. Chamadas simultâneas de `Emit` provenientes de goroutines diferentes não têm uma ordem definida entre si. Manipuladores diferentes são executados de forma independente: um manipulador lento não atrasa os demais, e não há ordenação entre manipuladores. `Emit` nunca aguarda os manipuladores. Depois que um manipulador é removido, os eventos que ainda estiverem enfileirados para ele serão descartados.
 
 ### No JavaScript
 
@@ -188,7 +190,7 @@ const unsubscribe = Events.On("event-name", handleEvent)
 unsubscribe()
 ```
 
-**Vários handlers:**
+**Vários manipuladores:**
 
 ```javascript
 Events.On("data-updated", updateUI)
@@ -196,7 +198,7 @@ Events.On("data-updated", saveToCache)
 Events.On("data-updated", logChange)
 ```
 
-**Handlers executados uma única vez:**
+**Manipuladores de execução única:**
 
 ```javascript
 Events.Once("data-updated", updateVariable)
@@ -374,9 +376,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 | Recurso | Hooks | Listeners padrão |
 | --- | --- | --- |
-| Ordem de execução | Primeiro, na ordem de registro | Após os hooks, sem ordem garantida |
-| Bloqueio | Síncrono; bloqueia o próximo hook | Assíncrono, sem bloqueio |
-| Pode cancelar | Sim | Não (já propagado) |
+| Ordem de execução | Primeiro, na ordem de registro | Depois dos hooks, sem ordem garantida |
+| Bloqueio | Síncrono, bloqueia o próximo hook | Assíncrono, não bloqueante |
+| Pode cancelar | Sim | Não (já foi propagado) |
 | Caso de uso | Controle de fluxo, validação | Registro de logs, efeitos colaterais |
 
 ## Padrões de eventos
@@ -445,9 +447,9 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-**Observação:** Para solicitação/resposta, **os bindings são mais adequados**. Use eventos para notificações.
+**Observação:** para solicitação/resposta, **bindings são mais adequados**. Use eventos para notificações.
 
-### Padrão de broadcast
+### Padrão de transmissão
 
 ```go
 // Broadcast to all windows
@@ -582,25 +584,25 @@ document.getElementById('button').addEventListener('click', () => {
 })
 ```
 
-## Boas práticas
+## Práticas recomendadas
 
 ### ✅ Faça
 
 - **Use eventos para notificações** — Comunicação unidirecional
 - **Use bindings para solicitações** — Comunicação bidirecional
-- **Mantenha os nomes dos eventos consistentes** — Use kebab-case
+- **Mantenha os nomes de eventos consistentes** — Use kebab-case
 - **Documente os dados dos eventos** — Quais campos estão incluídos?
 - **Cancele a inscrição quando terminar** — Evite vazamentos de memória
 - **Use hooks para validação** — Controle o fluxo de eventos
 
 ### ❌ Não faça
 
-- **Não use eventos para RPC** — Use bindings em vez disso
-- **Não emita eventos com muita frequência** — Agrupe-os, se necessário
+- **Não use eventos para RPC** — Use bindings
+- **Não emita eventos com frequência excessiva** — Agrupe-os em lotes, se necessário
 - **Não bloqueie a execução nos manipuladores** — Mantenha-os rápidos
-- **Não se esqueça de cancelar a inscrição** — Esquecer de cancelá-la causa vazamentos de memória
+- **Não se esqueça de cancelar a inscrição** — Isso causa vazamentos de memória
 - **Não use eventos para grandes volumes de dados** — Use bindings
-- **Não crie ciclos de eventos** — A emite B, e B emite A
+- **Não crie loops de eventos** — A emite B, B emite A
 
 ## Próximas etapas
 
@@ -612,19 +614,19 @@ Saiba mais sobre padrões de eventos e geração de eventos com segurança de ti
 
 ---
 ◆ API de eventos
-Explore a API completa de eventos do aplicativo e das janelas.
+Explore a API completa de eventos da aplicação e das janelas.
 
 [Saiba mais →](/reference/events/)
 
 ---
 🚀 Bindings
-Use bindings para solicitações e respostas.
+Use bindings para solicitação/resposta.
 
 [Saiba mais →](/features/bindings/methods/)
 
 ---
 ▣ Eventos de janela
-Trate os eventos do ciclo de vida das janelas.
+Trate eventos do ciclo de vida das janelas.
 
 [Saiba mais →](/features/windows/events/)
 

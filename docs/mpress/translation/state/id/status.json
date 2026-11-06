@@ -307,16 +307,16 @@
       "updatedAt": "2026-10-25T21:50:48Z"
     },
     "b0026-text-01": {
-      "sourceHash": "f5fb6eabe7d16c4cb37fb8f490deddb04ec949479ba108341e5939b2b41df138",
-      "targetHash": "2e54aef5bc67d6ae80283373cabea31dad2ec07ef5aef2c573ec0b520ebb0610",
-      "machineHash": "2e54aef5bc67d6ae80283373cabea31dad2ec07ef5aef2c573ec0b520ebb0610",
-      "machineText": "Peta jalan ini dapat berubah berdasarkan masukan komunitas dan prioritas proyek. Kami akan memperbaruinya secara berkala untuk mencerminkan kemajuan dan perubahan arah. Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).",
+      "sourceHash": "48dfcf206977fbc4c3bcf4217220d4012ab514c1c8d27e085ffbb356fed6d09b",
+      "targetHash": "ff7fcb99d3f849a93d522a692dc85761b6b4f64bddc3f154f9de7403ec836c19",
+      "machineHash": "ff7fcb99d3f849a93d522a692dc85761b6b4f64bddc3f154f9de7403ec836c19",
+      "machineText": "Peta jalan ini dapat berubah berdasarkan masukan komunitas dan prioritas proyek. Kami akan memperbaruinya secara berkala untuk mencerminkan kemajuan dan perubahan arah. Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).",
       "status": "machine-translated",
       "sourcePreview": "This roadmap is subject to change based on community feedback and project priorities. We'll update i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:48Z"
+      "updatedAt": "2026-11-06T02:14:53Z"
     },
     "fm-description": {
       "sourceHash": "acbf6f4923696d9bc59f9c891419bb098d49bd9b30e1ecf24ef15e3f1474b434",

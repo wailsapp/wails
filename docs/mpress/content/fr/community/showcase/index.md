@@ -56,11 +56,11 @@ Consultez la section [Comment ajouter mon projet à la vitrine](#comment-ajouter
 @steps
 ### Créez un fork du dépôt.
 ### Ajoutez la ou les images dans le dossier `docs/mpress/static/showcase-images`.
-### Faites une copie d’un fichier `.md` existant de la vitrine dans le dossier
-`docs/mpress/content/community/showcase`.
+### Créez une copie d’un fichier de vitrine `.md` existant dans le
+dossier `docs/mpress/content/community/showcase`.
 
-### Renommez le fichier copié avec le nom de votre projet. (Le nom ne devrait pas commencer
-par `_`.)
+### Renommez le fichier copié en lui donnant le nom de votre projet. (Le nom ne doit pas commencer
+par `_`)
 
 ### Mettez à jour le titre, l’image, le lien et le contenu du fichier.
 ### Ajoutez-le à la liste ci-dessus dans

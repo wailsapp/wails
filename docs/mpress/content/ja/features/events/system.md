@@ -7,11 +7,11 @@ sourcePath: "features/events/system.md"
 
 ## イベントシステム
 
-Wails は、Pub/Sub 通信用の<strong>統合イベントシステム</strong>を提供します。Go から JavaScript、JavaScript から Go、ウィンドウ間など、どこからでもイベントを送出し、どこからでもリッスンできます。型付きイベントとライフサイクルフックにより、疎結合なアーキテクチャを実現できます。
+Wails は、Pub/Sub 通信用の**統合イベントシステム**を提供します。Go から JavaScript、JavaScript から Go、ウィンドウ間など、どこからでもイベントを発行し、どこからでもリッスンできます。これにより、型付きイベントとライフサイクルフックを備えた疎結合アーキテクチャを実現できます。
 
 ## クイックスタート
 
-**Go（送出）：**
+**Go（発行）：**
 
 ```go
 app.Event.Emit("user-logged-in", map[string]interface{}{
@@ -30,7 +30,7 @@ Events.On("user-logged-in", (event) => {
 })
 ```
 
-<strong>これだけです！</strong>言語間の Pub/Sub が実現します。
+**これだけです！** 言語間で Pub/Sub 通信を行えます。
 
 ## イベントの種類
 
@@ -86,17 +86,17 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-## イベントの送出
+## イベントの発行
 
 ### Go から
 
-**基本的な送出：**
+**基本的な発行：**
 
 ```go
 app.Event.Emit("event-name", data)
 ```
 
-**異なるデータ型を使用する場合：**
+**さまざまなデータ型を使用する場合：**
 
 ```go
 // String
@@ -118,7 +118,7 @@ app.Event.Emit("config", map[string]interface{}{
 app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
-**特定のウィンドウに送出する場合：**
+**特定のウィンドウに発行する場合：**
 
 ```go
 window.EmitEvent("window-specific-event", data)
@@ -167,6 +167,9 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
+**配信順序：** `On`、`Once`、または `OnMultiple` で登録された各ハンドラーは、一度に 1 つのイベントを処理します。そのため、同じハンドラーが自身と並行して実行されることはなく、連続する `Emit` 呼び出しを順番に受け取ります。ある `Emit` が完了してから次の呼び出しが行われた場合、すべてのハンドラーはその順序でイベントを受け取ります。
+異なる goroutine から `Emit` を並行して呼び出した場合、それらの間の順序は定義されません。各ハンドラーは独立して実行されます。処理の遅いハンドラーが他のハンドラーを遅延させることはなく、ハンドラー間の順序も保証されません。`Emit` はハンドラーの完了を待ちません。ハンドラーを削除すると、そのハンドラーのキューに残っているイベントは破棄されます。
+
 ### JavaScript で
 
 **基本的なリスナー：**
@@ -196,7 +199,7 @@ Events.On("data-updated", saveToCache)
 Events.On("data-updated", logChange)
 ```
 
-**1 回限りのハンドラー：**
+**一度だけ実行されるハンドラー：**
 
 ```javascript
 Events.Once("data-updated", updateVariable)
@@ -351,7 +354,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## イベントフック
 
-フックは標準リスナーより<strong>前に</strong>実行され、イベントを<strong>キャンセル</strong>できます：
+フックは標準リスナーより**前に**実行され、イベントを**キャンセル**できます：
 
 ```go
 // Hook - runs first, can cancel
@@ -374,9 +377,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 | 機能 | フック | 標準リスナー |
 | --- | --- | --- |
-| 実行順序 | 最初に登録順で実行 | フックの後に実行、順序は保証されない |
-| ブロッキング | 同期処理、次のフックをブロック | 非同期処理、ノンブロッキング |
-| キャンセル可能 | はい | いいえ（すでに伝播済み） |
+| 実行順序 | 最初に登録順で実行 | フックの後に実行、順序の保証なし |
+| ブロッキング | 同期実行、次のフックをブロック | 非同期実行、ノンブロッキング |
+| キャンセル可否 | 可 | 不可（すでに伝播済み） |
 | ユースケース | 制御フロー、検証 | ログ記録、副作用 |
 
 ## イベントパターン
@@ -445,7 +448,7 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-<strong>注：</strong>リクエスト／レスポンスには、**バインディングの方が適しています**。通知にはイベントを使用してください。
+**注：** リクエスト／レスポンスには、**バインディングの方が適しています**。通知にはイベントを使用してください。
 
 ### ブロードキャストパターン
 
@@ -586,18 +589,18 @@ document.getElementById('button').addEventListener('click', () => {
 
 ### ✅ 推奨事項
 
-- **通知にはイベントを使用する** — 一方向通信
-- **リクエストにはバインディングを使用する** — 双方向通信
-- **イベント名の一貫性を保つ** — kebab-case を使用する
-- **イベントデータを文書化する** — どのフィールドが含まれるか？
-- **不要になったら購読を解除する** — メモリリークを防止する
-- **検証にはフックを使用する** — イベントフローを制御する
+- **通知にはイベントを使用する** - 一方向通信
+- **リクエストにはバインディングを使用する** - 双方向通信
+- **イベント名に一貫性を持たせる** - kebab-case を使用する
+- **イベントデータを文書化する** - どのフィールドが含まれるかを明記する
+- **不要になったら購読を解除する** - メモリリークを防ぐ
+- **検証にはフックを使用する** - イベントフローを制御する
 
 ### ❌ 非推奨事項
 
-- **RPC にイベントを使用しない** — 代わりにバインディングを使用する
-- **頻繁にイベントを発行しない** - 必要に応じてまとめて処理する
-- **ハンドラー内で処理をブロックしない** - 高速に処理できるようにする
+- **RPC にイベントを使用しない** - 代わりにバインディングを使用する
+- **イベントを高頻度で発行しない** - 必要に応じてバッチ処理する
+- **ハンドラー内でブロックしない** - 高速に処理できるようにする
 - **購読解除を忘れない** - メモリリークの原因になる
 - **大きなデータにイベントを使用しない** - バインディングを使用する
 - **イベントループを作成しない** - A が B を発行し、B が A を発行する
@@ -612,7 +615,7 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 ◆ イベント API
-アプリケーションイベント API とウィンドウイベント API の全機能を確認します。
+アプリケーションとウィンドウのイベント API 全体を確認します。
 
 [詳しく見る →](/reference/events/)
 
@@ -632,4 +635,4 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[イベントのサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[イベントの例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events)を確認してください。

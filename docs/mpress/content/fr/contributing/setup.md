@@ -228,7 +228,7 @@ go test ./... -race
 
 ## Travailler sur la documentation
 
-Les personnes qui contribuent à la documentation peuvent utiliser M-Press sans installer la CLI Wails ni les dépendances de compilation des applications de bureau. Consultez [Rédiger la documentation avec M-Press](/contributing/documentation/) pour connaître la procédure de téléchargement des exécutables aux versions épinglées, d’installation, d’aperçu en direct, de validation et de création des PR destinées à `master`.
+Les personnes qui contribuent à la documentation peuvent utiliser M-Press sans installer la CLI Wails ni les dépendances nécessaires à la compilation d’applications de bureau. Suivez le guide [Rédiger de la documentation avec M-Press](/contributing/documentation/) pour télécharger et installer les exécutables aux versions épinglées, utiliser l’aperçu en direct, effectuer la validation et suivre le processus de création de PR ciblant `master`.
 
 Les fichiers Markdown en anglais se trouvent dans `docs/mpress/content/` ; les traductions se trouvent dans les répertoires propres à chaque langue. Depuis la racine du dépôt, `mpress dev` met l’aperçu à disposition à l’adresse `http://127.0.0.1:3000`. Arrêtez-le avec Ctrl+C avant d’exécuter les commandes de validation du guide.
 

@@ -1699,16 +1699,16 @@
       "updatedAt": "2026-10-25T21:32:12Z"
     },
     "b0142-text-01": {
-      "sourceHash": "cdcca6362b9c0fdd1bf3367aca99d126586d20c08809f87da4e4b85ebd6aa0a8",
-      "targetHash": "ada27b6fc46fe5a392050fcd28b1a65ce6221dec941fedcab2f41c3ca87c36d4",
-      "machineHash": "ada27b6fc46fe5a392050fcd28b1a65ce6221dec941fedcab2f41c3ca87c36d4",
-      "machineText": "\u003cstrong\u003e對橋接器有疑問嗎？\u003c/strong\u003e請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)。",
+      "sourceHash": "53fff8e43e34e04d43f2a4d36928a8f56cd64c8255926ac10e85297f74be32b2",
+      "targetHash": "4c0d152646bc89e3d1fd38a58a902eaf7497ef92193f6779160dca237b3b1392",
+      "machineHash": "4c0d152646bc89e3d1fd38a58a902eaf7497ef92193f6779160dca237b3b1392",
+      "machineText": "\u003cstrong\u003e對橋接有疑問嗎？\u003c/strong\u003e歡迎到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[綁定範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。",
       "status": "machine-translated",
       "sourcePreview": "**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [bindin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:32:12Z"
+      "updatedAt": "2026-11-06T02:12:43Z"
     },
     "d0001-label-0b16019f85688e8f": {
       "sourceHash": "7948f929a06290b44590a7042cc8cbf2b7fa270cba7c2c5209fc6c2d07bd0a18",

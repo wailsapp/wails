@@ -7,11 +7,11 @@ sourcePath: "features/menus/systray.md"
 
 ## Menus da bandeja do sistema
 
-O Wails fornece **APIs unificadas para a bandeja do sistema** que funcionam em todas as plataformas. Crie ícones de bandeja com menus, associe janelas e processe cliques com o comportamento nativo de cada plataforma para aplicativos em segundo plano, serviços e utilitários de acesso rápido.
+O Wails fornece **APIs unificadas para a bandeja do sistema** que funcionam em todas as plataformas. Crie ícones de bandeja com menus, associe janelas e processe cliques com o comportamento nativo da plataforma para aplicativos em segundo plano, serviços e utilitários de acesso rápido.
 
 ![Um menu da bandeja do sistema do Wails aberto pela barra de menus do macOS](/assets/screenshots/systray-menu-macos.png)
 
-No macOS, um item da bandeja do sistema do Wails aparece na barra de menus e abre um menu nativo. O exemplo inclui itens desabilitados, caixas de seleção, botões de opção, submenus e ações.
+No macOS, um item da bandeja do sistema do Wails aparece na barra de menus e abre um menu nativo. O exemplo inclui itens desabilitados, de caixa de seleção, de opção, de submenu e de ação.
 
 ## Início rápido
 
@@ -102,7 +102,7 @@ func main() {
 | Plataforma | Tamanho | Formato | Observações |
 | --- | --- | --- | --- |
 | **Windows** | 16x16 ou 32x32 | PNG, ICO | Área de notificação |
-| **macOS** | 18x18 a 22x22 | PNG | Barra de menus; recomenda-se usar um ícone de modelo |
+| **macOS** | 18x18 a 22x22 | PNG | Barra de menus; recomenda-se usar um modelo |
 | **Linux** | 22x22 a 48x48 | PNG, SVG | Varia conforme o ambiente de desktop |
 
 ### Ícones de modelo (macOS)
@@ -115,9 +115,9 @@ systray.SetTemplateIcon(iconBytes)
 
 **Diretrizes para ícones de modelo:**
 
-- Use apenas as cores preta e transparente
+- Use somente as cores preta e transparente
 - O preto se torna branco no modo escuro
-- Adicione o sufixo `Template` ao nome do arquivo: `iconTemplate.png`
+- Nomeie o arquivo com o sufixo `Template`: `iconTemplate.png`
 - [Guia de design](https://bjango.com/articles/designingmenubarextras/)
 
 ## Como adicionar menus
@@ -149,11 +149,11 @@ menu.Add("Quit").OnClick(func(ctx *application.Context) {
 systray.SetMenu(menu)
 ```
 
-Consulte **todos os tipos de item de menu** na [Referência de menus](/features/menus/reference/).
+Consulte a [Referência de menus](/features/menus/reference/) **para conhecer todos os tipos de item de menu**.
 
 ## Como associar janelas
 
-Associe uma janela ao ícone da bandeja para exibi-la e ocultá-la automaticamente:
+Associe uma janela ao ícone da bandeja para mostrá-la e ocultá-la automaticamente:
 
 ```go
 // Create window
@@ -169,9 +169,9 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 
 **Comportamento:**
 
-- A janela inicia oculta
+- A janela é iniciada oculta
 - **Clique com o botão esquerdo no ícone da bandeja** → Alterna a visibilidade da janela
-- **Clique com o botão direito no ícone da bandeja** → Exibe o menu (se configurado)
+- **Clique com o botão direito no ícone da bandeja** → Mostra o menu (se definido)
 - A janela é posicionada perto do ícone da bandeja
 
 **Exemplo: janela pop-up**
@@ -191,13 +191,13 @@ systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
-`HideOnFocusLost` é útil para pop-ups da bandeja no Windows, no macOS e em desktops Linux com foco ao clicar. O Wails desabilita esse comportamento em ambientes Linux que usam foco seguindo o mouse (incluindo configurações comuns do Hyprland, Sway e i3), nos quais afastar o ponteiro do pop-up poderia ocultá-lo antes que ele pudesse ser usado. `HideOnEscape` continua disponível nesses ambientes.
+`HideOnFocusLost` é útil para pop-ups da bandeja no Windows, no macOS e em ambientes de desktop Linux nos quais o clique define o foco. O Wails desabilita esse comportamento em ambientes Linux nos quais o foco acompanha o mouse (incluindo configurações comuns do Hyprland, Sway e i3), pois, caso contrário, sair do pop-up poderia ocultá-lo antes que ele pudesse ser usado. `HideOnEscape` continua disponível nesses ambientes.
 
-Os comportamentos de clique com os botões esquerdo e direito descritos acima são padrões inteligentes. Um manipulador `OnClick` ou `OnRightClick` explícito substitui o padrão correspondente. Para verificações de plataforma e casos extremos, consulte a [suíte manual da bandeja do sistema](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) e o [exemplo de teste de estresse da bandeja do sistema](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
+Os comportamentos de clique com os botões esquerdo e direito descritos acima são padrões inteligentes. Um manipulador `OnClick` ou `OnRightClick` explícito substitui o padrão correspondente. Para verificações de plataforma e casos extremos, consulte o [conjunto manual de testes da bandeja do sistema](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) e o [exemplo de teste de estresse da bandeja do sistema](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
 
 ## Manipuladores de clique
 
-Processe os cliques no ícone da bandeja:
+Processe cliques no ícone da bandeja:
 
 ```go
 systray := app.SystemTray.New()
@@ -278,11 +278,11 @@ pauseMenuItem.OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Sempre chame Update()"}
-Após alterar o estado do menu, **chame `menu.Update()`**. Consulte a [Referência de menus](/features/menus/reference/#enabled-state).
+Depois de alterar o estado do menu, **chame `menu.Update()`**. Consulte a [Referência de menus](/features/menus/reference/#enabled-state).
 
 @end
 
-### Reconstruir o menu
+### Recriar o menu
 
 Para alterações significativas, recrie o menu inteiro:
 
@@ -331,16 +331,16 @@ systray.SetIconPosition(application.NSImageRight)
 
 **Posições do ícone** (correspondentes a `NSImagePosition`):
 
-- `application.NSImageLeft` — Ícone à esquerda do rótulo.
-- `application.NSImageRight` — Ícone à direita do rótulo.
-- `application.NSImageOnly` — Somente o ícone, sem rótulo.
-- `application.NSImageNone` — Somente o rótulo, sem ícone.
+- `application.NSImageLeft` - Ícone à esquerda do rótulo.
+- `application.NSImageRight` - Ícone à direita do rótulo.
+- `application.NSImageOnly` - Somente o ícone, sem rótulo.
+- `application.NSImageNone` - Somente o rótulo, sem ícone.
 
 **Práticas recomendadas:**
 
 - Use ícones de modelo (preto + transparente)
 - Mantenha os rótulos curtos (3-5 caracteres)
-- De 18x18 a 22x22 pixels para telas Retina
+- 18x18 a 22x22 pixels para telas Retina
 - Teste nos modos claro e escuro
 
 [Windows]
@@ -358,31 +358,31 @@ systray.Show()  // Show tray icon
 systray.Hide()  // Hide tray icon
 ```
 
-**Requisitos do ícone:**
+**Requisitos dos ícones:**
 
 - 16x16 ou 32x32 pixels
 - Formato PNG ou ICO
 - Fundo transparente
 
-**Limites da dica de ferramenta:**
+**Limites das dicas de ferramenta:**
 
 - No máximo 127 caracteres UTF-16
 - Dicas de ferramenta mais longas serão truncadas
-- Seja conciso para oferecer a melhor experiência
+- Mantenha-o conciso para proporcionar a melhor experiência
 
 **Recursos da plataforma:**
 
 - O ícone da bandeja permanece após reinicializações do Windows Explorer
-- Métodos Show() e Hide() totalmente funcionais
+- Os métodos Show() e Hide() são totalmente funcionais
 - Gerenciamento adequado do ciclo de vida
 
 **Práticas recomendadas:**
 
-- Use 32x32 em telas com DPI alto
+- Use 32x32 para telas com DPI alto
 - Mantenha as dicas de ferramenta com menos de 127 caracteres
 - Teste em diferentes versões do Windows
 - Considere a área de estouro da área de notificação
-- Use Show/Hide para controlar condicionalmente a visibilidade do ícone da bandeja
+- Use Show/Hide para controlar condicionalmente a visibilidade do ícone na bandeja
 
 [Linux]
 **Integração com a bandeja do sistema:**
@@ -404,15 +404,15 @@ systray.SetLabel("My App")
 **Práticas recomendadas:**
 
 - Use 22x22 ou 24x24 pixels
-- Ícones SVG oferecem melhor redimensionamento
+- Ícones SVG se adaptam melhor à escala
 - Teste nos ambientes de desktop de destino
-- Forneça uma alternativa para ambientes de desktop não compatíveis
+- Forneça uma alternativa para ambientes de desktop incompatíveis
 
 @end
 
 ## Exemplo completo
 
-Veja um aplicativo de bandeja do sistema pronto para produção:
+Veja uma aplicação com bandeja do sistema pronta para produção:
 
 ```go
 package main
@@ -568,23 +568,23 @@ systray.Hide()
 systray.Show()
 ```
 
-Não há um método getter `IsVisible()` — se precisar dessa informação, controle a visibilidade no próprio estado do aplicativo.
+Não há um getter `IsVisible()` — se necessário, controle a visibilidade no próprio estado da aplicação.
 
 **Compatibilidade com plataformas:**
 
 | Plataforma | Hide() | Show() | Observações |
 | --- | --- | --- | --- |
-| **Windows** | ✅ | ✅ | Totalmente funcional — o ícone aparece/desaparece da área de notificação |
-| **macOS** | ✅ | ✅ | O item da barra de menus é exibido/ocultado |
+| **Windows** | ✅ | ✅ | Totalmente funcional — o ícone aparece ou desaparece da área de notificação |
+| **macOS** | ✅ | ✅ | O item da barra de menus é exibido ou ocultado |
 | **Linux** | ✅ | ✅ | Varia conforme o ambiente de desktop |
 
 **Casos de uso:**
 
-- Ocultar temporariamente o ícone da bandeja conforme a preferência do usuário
+- Ocultar temporariamente o ícone da bandeja de acordo com a preferência do usuário
 - Modo sem interface gráfica, com o ícone da bandeja aparecendo somente quando necessário
-- Alternar a visibilidade conforme o estado do aplicativo
+- Alternar a visibilidade de acordo com o estado da aplicação
 
-**Exemplo — Visibilidade condicional do ícone da bandeja:**
+**Exemplo — visibilidade condicional do ícone da bandeja:**
 
 ```go
 func (t *TrayApp) setTrayVisibility(visible bool) {
@@ -621,28 +621,28 @@ app := application.New(application.Options{
 })
 ```
 
-**Importante:** Sempre destrua a bandeja do sistema ao encerrar o aplicativo para liberar recursos.
+**Importante:** sempre destrua a bandeja do sistema ao encerrar a aplicação para liberar recursos.
 
 ## Práticas recomendadas
 
 ### ✅ Faça
 
-- **Use ícones de modelo no macOS** — Eles se adaptam ao modo escuro
-- **Mantenha os rótulos curtos** — No máximo 3-5 caracteres
-- **Forneça dicas de ferramenta no Windows** — Isso ajuda os usuários a identificar seu aplicativo
-- **Teste em todas as plataformas** — O comportamento varia
-- **Trate os cliques adequadamente** — Use o clique com o botão esquerdo para a ação principal e o clique com o botão direito para o menu
-- **Atualize o ícone para indicar o status** — O feedback visual é importante
-- **Destrua ao encerrar** — Libere os recursos
+- **Use ícones de modelo no macOS** — eles se adaptam ao modo escuro
+- **Mantenha os rótulos curtos** — no máximo 3-5 caracteres
+- **Forneça dicas de ferramenta no Windows** — elas ajudam os usuários a identificar sua aplicação
+- **Teste em todas as plataformas** — o comportamento varia
+- **Trate os cliques adequadamente** — clique com o botão esquerdo para a ação principal e com o botão direito para o menu
+- **Atualize o ícone para indicar o status** — o feedback visual é importante
+- **Destrua-o ao encerrar a aplicação** — libere os recursos
 
 ### ❌ Não faça
 
-- **Não use ícones grandes** — Siga as diretrizes da plataforma
-- **Não use rótulos longos** — Eles são truncados
-- **Não se esqueça do modo escuro** — Teste no modo escuro do Windows e do macOS
-- **Não bloqueie os manipuladores de clique** — Mantenha-os rápidos
-- **Não se esqueça de menu.Update()** — Após alterar o estado do menu
-- **Não presuma que haja suporte à bandeja do sistema** — Alguns ambientes de desktop Linux não oferecem suporte
+- **Não use ícones grandes** — siga as diretrizes da plataforma
+- **Não use rótulos longos** — eles são truncados
+- **Não se esqueça do modo escuro** — teste no modo escuro do Windows e do macOS
+- **Não bloqueie os manipuladores de clique** — mantenha-os rápidos
+- **Não se esqueça de menu.Update()** — chame-o após alterar o estado do menu
+- **Não pressuponha que há suporte à bandeja** — alguns ambientes de desktop Linux não oferecem esse suporte
 
 ## Solução de problemas
 
@@ -650,13 +650,13 @@ app := application.New(application.Options{
 
 **Possíveis causas:**
 
-1. Formato de ícone não compatível
+1. Formato de ícone incompatível
 2. Ícone grande ou pequeno demais
-3. Bandeja do sistema não compatível (Linux)
+3. Bandeja do sistema incompatível (Linux)
 
 **Solução:**
 
-Não há um auxiliar `SystemTraySupported()`; em vez disso, crie a bandeja, verifique a plataforma e forneça uma alternativa adequada:
+Não há um helper `SystemTraySupported()`; em vez disso, crie a bandeja, verifique a plataforma e reduza os recursos de forma controlada:
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -666,9 +666,9 @@ systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 ```
 
-### O ícone tem uma aparência incorreta no macOS
+### O ícone não é exibido corretamente no macOS
 
-**Causa:** O ícone de modelo não está sendo usado
+**Causa:** não foi usado um ícone de modelo
 
 **Solução:**
 
@@ -681,7 +681,7 @@ systray.SetTemplateIcon(iconBytes)
 
 ### O menu não é atualizado
 
-**Causa:** A chamada a `menu.Update()` foi esquecida
+**Causa:** a chamada a `menu.Update()` foi esquecida
 
 **Solução:**
 
@@ -699,8 +699,8 @@ Referência completa dos tipos e das propriedades dos itens de menu.
 [Saiba mais →](/features/menus/reference/)
 
 ---
-☰ Menus do aplicativo
-Crie barras de menus para o aplicativo.
+☰ Menus da aplicação
+Crie barras de menus para a aplicação.
 
 [Saiba mais →](/features/menus/application/)
 
@@ -712,7 +712,7 @@ Crie menus de contexto acionados com o botão direito.
 
 ---
 📖 Exemplo de bandeja do sistema
-Explore um aplicativo completo com bandeja do sistema.
+Explore uma aplicação completa com bandeja do sistema.
 
 [Saiba mais →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)
 

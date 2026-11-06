@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-**Selesai!** Anda kini memiliki jendela lintas platform.
+**Selesai!** Kini Anda memiliki jendela lintas platform.
 
 ## Membuat Jendela
 
@@ -53,7 +53,7 @@ window := app.Window.New()
 - Ukuran default (800x600)
 - Judul default (nama aplikasi)
 - WebView yang siap digunakan oleh frontend Anda
-- Tampilan native platform
+- Tampilan asli platform
 
 ### Jendela dengan Opsi
 
@@ -138,7 +138,7 @@ if window.IsVisible() {
 
 - Layar pembuka (tampilkan, lalu sembunyikan)
 - Jendela pengaturan (sembunyikan saat tidak diperlukan)
-- Jendela pop-up (tampilkan sesuai kebutuhan)
+- Jendela pop-up (tampilkan saat diminta)
 
 ### Posisi dan Ukuran
 
@@ -225,7 +225,7 @@ window.SetResizable(false)
 window.Close()
 ```
 
-Tidak ada metode `window.Destroy()` di v3 — gunakan `Close()` dan dengarkan dengan `OnWindowEvent` (tidak dapat membatalkan penutupan) atau pasang hook dengan `RegisterHook` (dapat memanggil `e.Cancel()` agar jendela tetap terbuka).
+Tidak ada metode `window.Destroy()` di v3 — gunakan `Close()` dan dengarkan dengan `OnWindowEvent` (tidak dapat dibatalkan) atau pasang hook dengan `RegisterHook` (dapat memanggil `e.Cancel()` agar jendela tetap terbuka).
 
 ## Menemukan Jendela
 
@@ -366,7 +366,7 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 ### Jendela Induk-Anak
 
-`WebviewWindowOptions` tidak memiliki bidang `Parent`. Buat jendela anak sebagai jendela biasa, lalu kaitkan ke induk sebagai lembar modal:
+`WebviewWindowOptions` tidak memiliki bidang `Parent`. Buat jendela anak sebagai jendela biasa, lalu kaitkan ke jendela induk sebagai modal lembar:
 
 ```go
 // Create child window
@@ -385,7 +385,7 @@ mainWindow.AttachModal(childWindow)
 
 **Dukungan platform:**
 
-- **macOS:** Dukungan penuh (ditampilkan sebagai lembar).
+- **macOS:** Dukungan penuh (ditampilkan sebagai sheet).
 - **Windows:** Tidak didukung.
 - **Linux:** Tidak didukung.
 
@@ -404,9 +404,9 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-Tidak ada `SetIcon` per jendela — ikon aplikasi ditetapkan pada aplikasi melalui `app.SetIcon([]byte)` (atau, untuk ikon jendela khusus Linux, melalui bidang `application.LinuxWindow.Icon` saat jendela dibuat).
+Tidak ada `SetIcon` per jendela — ikon aplikasi diatur pada aplikasi melalui `app.SetIcon([]byte)` (atau, untuk ikon jendela khusus Linux, melalui bidang `application.LinuxWindow.Icon` saat pembuatan jendela).
 
-**Snap Assist:** Menampilkan opsi tata letak snap Windows 11 melalui jalur pintasan sistem. Untuk tombol maksimalkan HTML khusus dengan Snap Layouts native saat penunjuk diarahkan ke atasnya, gunakan [Wilayah Nonklien Native di Windows](/features/windows/frameless/#native-non-client-regions-on-windows) sebagai gantinya.
+**Snap Assist:** Menampilkan opsi tata letak snap 11 Windows melalui jalur pintasan sistem. Untuk tombol maksimalkan HTML khusus dengan Snap Layouts native saat penunjuk diarahkan ke atasnya, gunakan [Wilayah Non-Klien Native di Windows](/features/windows/frameless/#native-non-client-regions-on-windows) sebagai gantinya.
 
 **Kedipan bilah tugas:** Berguna untuk notifikasi saat jendela diminimalkan.
 
@@ -428,18 +428,18 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Jenis latar belakang:**
 
 - `MacBackdropNormal` - Jendela standar
-- `MacBackdropTranslucent` - Latar belakang tembus cahaya; **memerlukan API privat** agar webview transparan.
-- `MacBackdropTransparent` - Sepenuhnya transparan; **memerlukan API privat** agar webview transparan.
-- `MacBackdropLiquidGlass` - Latar belakang kaca; **memerlukan API privat** agar webview transparan.
+- `MacBackdropTranslucent` - Latar belakang translusen; **memerlukan API privat** untuk transparansi webview.
+- `MacBackdropTransparent` - Sepenuhnya transparan; **memerlukan API privat** untuk transparansi webview.
+- `MacBackdropLiquidGlass` - Latar belakang kaca; **memerlukan API privat** untuk transparansi webview.
 
-Lakukan build dengan `-tags private_mac_apis` agar efek ini terlihat melalui webview. Tanpanya, webview tetap tidak transparan. `TitleBar.AppearsTransparent` sendiri menggunakan API publik. Lihat [API macOS Privat](/guides/build/private-macos-apis/).
+Lakukan build dengan `-tags private_mac_apis` agar efek ini terlihat melalui webview. Tanpanya, webview tetap opak. `TitleBar.AppearsTransparent` sendiri menggunakan API publik. Lihat [API macOS Privat](/guides/build/private-macos-apis/).
 
 **Perilaku koleksi:** Atur perilaku jendela di berbagai Space:
 
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Terlihat di semua Space
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat ditampilkan di atas aplikasi layar penuh
 
-**Layar penuh native:** Mode layar penuh macOS membuat Space (desktop virtual) baru.
+**Layar penuh native:** Mode layar penuh macOS membuat Space baru (desktop virtual).
 
 [Linux]
 **Fitur khusus Linux:**
@@ -462,9 +462,9 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **Pengelola jendela tiling (Hyprland, Sway, i3, dan sebagainya):**
 
-- `Minimise()` dan `Maximise()` mungkin tidak berfungsi sebagaimana mestinya — WM mengendalikan geometri jendela
-- Permintaan `SetSize()` dan `SetPosition()` hanya bersifat saran dan dapat diabaikan
-- `Fullscreen()` biasanya berfungsi sesuai harapan
+- `Minimise()` dan `Maximise()` mungkin tidak berfungsi seperti yang diharapkan — WM mengendalikan geometri jendela
+- Permintaan `SetSize()` dan `SetPosition()` hanya bersifat saran dan mungkin diabaikan
+- `Fullscreen()` biasanya berfungsi seperti yang diharapkan
 - Beberapa WM tidak mendukung mode selalu di atas
 
 @end
@@ -533,19 +533,19 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ Lakukan
 
-- **Beri nama pada jendela penting** — Agar lebih mudah ditemukan nanti
+- **Beri nama pada jendela penting** — Lebih mudah ditemukan nanti
 - **Tetapkan ukuran minimum** — Mencegah tata letak yang tidak dapat digunakan
-- **Posisikan jendela di tengah** — Memberikan pengalaman pengguna yang lebih baik daripada posisi acak
+- **Posisikan jendela di tengah** — Memberikan UX yang lebih baik daripada posisi acak
 - **Tangani peristiwa penutupan** — Mencegah kehilangan data
-- **Uji di semua platform** — Perilakunya berbeda-beda
+- **Uji di semua platform** — Perilakunya bervariasi
 - **Gunakan ukuran yang sesuai** — Pertimbangkan berbagai ukuran layar
 
 ### ❌ Jangan Lakukan
 
 - **Jangan membuat terlalu banyak jendela** — Membingungkan pengguna
 - **Jangan lupa menutup jendela** — Menyebabkan kebocoran memori
-- **Jangan menetapkan posisi secara hardcode** — Ukuran layar berbeda-beda
-- **Jangan abaikan perbedaan antarplatform** — Uji secara menyeluruh
+- **Jangan melakukan hardcode pada posisi** — Ukuran layar berbeda-beda
+- **Jangan mengabaikan perbedaan platform** — Lakukan pengujian secara menyeluruh
 - **Jangan memblokir thread UI** — Gunakan goroutine untuk operasi yang berlangsung lama
 
 ## Pemecahan Masalah
@@ -568,7 +568,7 @@ window.Focus()
 
 ### Ukuran Jendela Salah
 
-**Penyebab:** penskalaan DPI di Windows/Linux
+**Penyebab:** Penskalaan DPI di Windows/Linux
 
 **Solusi:**
 
@@ -580,7 +580,7 @@ window.SetSize(800, 600)
 
 ### Jendela Langsung Tertutup
 
-**Penyebab:** aplikasi berhenti ketika jendela terakhir ditutup
+**Penyebab:** Aplikasi berhenti saat jendela terakhir ditutup
 
 **Solusi:**
 
@@ -598,25 +598,25 @@ app := application.New(application.Options{
 ⚙ Opsi Jendela
 Referensi lengkap untuk semua opsi jendela.
 
-[Pelajari Selengkapnya →](/features/windows/options/)
+[Pelajari Lebih Lanjut →](/features/windows/options/)
 
 ---
 ▣ Beberapa Jendela
 Pola untuk aplikasi multijendela.
 
-[Pelajari Selengkapnya →](/features/windows/multiple/)
+[Pelajari Lebih Lanjut →](/features/windows/multiple/)
 
 ---
 ★ Jendela Tanpa Bingkai
-Buat bingkai jendela khusus.
+Buat dekorasi jendela khusus.
 
-[Pelajari Selengkapnya →](/features/windows/frameless/)
+[Pelajari Lebih Lanjut →](/features/windows/frameless/)
 
 ---
 🚀 Peristiwa Jendela
 Tangani peristiwa siklus hidup jendela.
 
-[Pelajari Selengkapnya →](/features/windows/events/)
+[Pelajari Lebih Lanjut →](/features/windows/events/)
 
 @end
 

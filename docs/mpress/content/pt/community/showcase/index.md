@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="Veja como adicionar seu projeto"}
-Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-projeto--vitrine).
+Consulte a seção [Como adicionar meu projeto à galeria](#como-adicionar-meu-projeto--galeria).
 
 @end
 
@@ -51,16 +51,16 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Captura de tela do Larvyn" loading="lazy"><span>Larvyn</span></a>
 </div>
 
-## Como adicionar meu projeto à vitrine
+## Como adicionar meu projeto à galeria
 
 @steps
 ### Crie um fork do repositório.
 ### Adicione as imagens à pasta `docs/mpress/static/showcase-images`.
-### Faça uma cópia de um arquivo `.md` existente da vitrine na pasta
-pasta `docs/mpress/content/community/showcase`.
+### Crie uma cópia de um arquivo `.md` existente da galeria em
+a pasta `docs/mpress/content/community/showcase`.
 
 ### Renomeie o arquivo copiado com o nome do seu projeto. (O nome não deve começar
-com `_`))
+com `_`)
 
 ### Atualize o título, a imagem, o link e o conteúdo do arquivo.
 ### Adicione-o à lista acima em

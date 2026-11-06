@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "d6a0fba96db935aefa28",
   "sourceFile": "community/index.md",
   "sourceLanguage": "en",
@@ -17,7 +18,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:24Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
       "targetHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
       "machineHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
@@ -28,6 +29,38 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/index.mpd",
+    "sourceHash": "9ece2dc384986d25ad05f0d21ccab2a74cc6abd6abfd4017045ad9e3c4b914a8",
+    "targetHash": "d18b2b3ab39d766aef440d8cfecb6bb79b07dff96cb44881b40ebccdd42e87c1",
+    "previousSegments": {
+      "b0001-heading-01": {
+        "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+        "targetHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
+        "machineHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
+        "machineText": "Communauté",
+        "status": "final",
+        "sourcePreview": "Community",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:24Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+        "targetHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
+        "machineHash": "07cc69527b392f720a82f1568fa8883a5c2bba84ef1ddf67ab9cf3c9a7889f5d",
+        "machineText": "Communauté",
+        "status": "final",
+        "sourcePreview": "Community",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:24Z"
+      }
     }
   }
 }

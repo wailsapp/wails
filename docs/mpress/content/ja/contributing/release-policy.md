@@ -11,7 +11,7 @@ Wails v3 は**機能ではなく、スケジュールに基づいて**リリー�
 
 | リリース | タグ | 頻度 | GitHub リリース | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| ナイトリー | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC の日付。同じ日に再実行した場合は `.N` を付加） | 自動、毎日。`UNRELEASED_CHANGELOG.md`に内容がある場合のみ | プレリリース。Latest には**しない** | `v`を除いた同じバージョン、dist-tag は `nightly` |
+| ナイトリー | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC の日付。同じ日に再実行した場合は `.N` を付加） | 自動、毎日、テスト対象のリリース範囲にマージ済み PR があり、ユーザー向けのリリースノートが生成される場合のみ | プレリリース。Latest には**しない** | `v`を除いた同じバージョン、dist-tag は `nightly` |
 | ウィークリー | `v3.<next>.0` | 自動、日曜日の 20:00（Australia/Sydney）**（曜日は未確定）** | 通常リリース、Latest | 同じバージョン、dist-tag は `latest` |
 | ホットフィックス | `v3.<current>.<N>`, `N > 0` | まれ、手動 | 通常リリース、Latest | 同じバージョン、dist-tag は `latest` |
 | メジャー | `v4.0.0` | 破壊的変更がある場合のみ | 通常リリース | `latest` |
@@ -62,7 +62,7 @@ CLI、Go モジュール、npm パッケージ `@wailsio/runtime` は、`v3/inte
 
 ## リリースの作成方法
 
-リリース権限はプロジェクト Lead に限定されています（ガバナンス文書を参照）。コントリビューターがタグ付けや公開を行うことはありません。コントリビューターは `v3/UNRELEASED_CHANGELOG.md` にエントリを追加します。
+リリース権限はプロジェクトリードに限定されます（ガバナンス文書を参照）。コントリビューターがタグ付けや公開を行うことはありません。ユーザー向けの変更内容は、PR のタイトルまたは `## Release notes` 説明セクションに記載します。リリース自動化は、厳密にテストされたコミット範囲内のマージ済み PR からリリースノートを生成します。`v3/UNRELEASED_CHANGELOG.md` は削除されました。
 
 すべての処理は **Nightly + Weekly Release v3**（`.github/workflows/nightly-release-v3.yml`）から実行されます。
 
@@ -85,7 +85,7 @@ CLI、Go モジュール、npm パッケージ `@wailsio/runtime` は、`v3/inte
 
 1. `P0`または`release-blocker`のラベルが付いた、未解決の issue または pull request。
 2. 前回の weekly 以降に作成され、`regression`のラベルが付いた未解決の issue。
-3. 重大度が critical または high の未解決の Dependabot アラート、重大度が critical または high の未解決の code-scanning アラート、および未解決の secret-scanning アラート。ただし、**出荷されるコードのみ**が対象です。`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`、または任意の`examples/`ディレクトリのみに存在するアラートは無視されます（`v3/tasks/releasegate/main.go`内の`SHIPPED_ALERT_IGNORE`。**オーナーによるレビューが必要**）。
+3. 重大度が critical または high の未解決の Dependabot アラート、重大度が critical または high の未解決のコードスキャンアラート、および未解決のシークレットスキャンアラート（**出荷されるコードのみ**）。`v2/internal/staticanalysis/test/`（静的解析用フィクスチャ）、`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`、または任意の `examples/` ディレクトリ内にのみ存在するアラートは無視されます（`v3/tasks/releasegate/main.go` 内の `SHIPPED_ALERT_IGNORE`。**オーナーによるレビューが必要**）。
 4. 依然として`triage`の状態にあるリポジトリセキュリティアドバイザリ。
 
 **ブロッカーを設定できるユーザー。** ラベルがブロッカーとして扱われるのは、そのラベルの最新の `labeled` イベント（後続の `unlabeled` がないもの）が、`wailsapp/maintainers` チームのメンバー、または `maintain`/`admin` 権限を持つコラボレーターによって実行された場合のみです。それ以外のユーザーが同じラベルを適用しても無視され、ログに記録されるため、外部ユーザーがリリースをブロックしたり、ブロックを解除したりすることはできません。自動適用される `high-priority` ラベルは、意図的に使用対象に**含めていません**。`taliesin-ai` などのボットアカウントは、`maintain` を保持していれば許可リストを通過します。これは意図した動作であり、トリアージエージェントは根拠を添えてブロッカーラベルを適用できます。

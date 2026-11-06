@@ -1,13 +1,13 @@
 ---
 title: "창 기본 사항"
-description: "Wails에서 애플리케이션 창 만들기 및 관리"
+description: "Wails에서 애플리케이션 창 만들기 및 관리하기"
 slug: "features/windows/basics"
 sourcePath: "features/windows/basics.md"
 ---
 
 ## 창 관리
 
-Wails는 모든 플랫폼에서 작동하는 <strong>통합 창 관리 API</strong>를 제공합니다. 창을 만들고 동작을 제어하며, 생성, 모양, 동작, 수명 주기를 완전히 제어하면서 여러 창을 관리할 수 있습니다.
+Wails는 모든 플랫폼에서 작동하는 **통합 창 관리 API**를 제공합니다. 창을 만들고 동작을 제어하며, 생성, 모양, 동작 및 수명 주기를 완전히 제어하면서 여러 창을 관리할 수 있습니다.
 
 ## 빠른 시작
 
@@ -48,16 +48,16 @@ func main() {
 window := app.Window.New()
 ```
 
-**생성되는 항목:**
+**제공되는 항목:**
 
 - 기본 크기(800x600)
 - 기본 제목(애플리케이션 이름)
-- 프런트엔드에 사용할 준비가 된 WebView
-- 플랫폼 고유의 모양
+- 프런트엔드에서 사용할 준비가 된 WebView
+- 플랫폼 네이티브 모양
 
-### 옵션을 지정한 창
+### 옵션이 있는 창
 
-사용자 지정 구성으로 창을 만드세요.
+사용자 지정 구성으로 창을 만듭니다.
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -76,18 +76,18 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**일반 옵션:**
+**일반적인 옵션:**
 
-| 옵션 | 유형 | 설명 |
+| 옵션 | 타입 | 설명 |
 | --- | --- | --- |
 | `Title` | `string` | 창 제목 |
 | `Width` | `int` | 창 너비(픽셀) |
 | `Height` | `int` | 창 높이(픽셀) |
 | `X` | `int` | X 위치(왼쪽 기준) |
 | `Y` | `int` | Y 위치(위쪽 기준) |
-| `AlwaysOnTop` | `bool` | 창을 다른 창보다 위에 유지 |
+| `AlwaysOnTop` | `bool` | 창을 다른 창 위에 유지 |
 | `Frameless` | `bool` | 제목 표시줄과 테두리 제거 |
-| `Hidden` | `bool` | 숨긴 상태로 시작 |
+| `Hidden` | `bool` | 숨겨진 상태로 시작 |
 | `MinWidth` | `int` | 최소 너비 |
 | `MinHeight` | `int` | 최소 높이 |
 | `MaxWidth` | `int` | 최대 너비 |
@@ -114,10 +114,10 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 **사용 사례:**
 
 - 여러 창(메인, 설정, 정보)
-- 코드의 여러 부분에서 창 찾기
+- 코드의 서로 다른 부분에서 창 찾기
 - 창 간 통신
 
-## 창 제어
+## 창 제어하기
 
 ### 표시 및 숨기기
 
@@ -136,9 +136,9 @@ if window.IsVisible() {
 
 **사용 사례:**
 
-- 스플래시 화면(표시한 다음 숨기기)
+- 스플래시 화면(표시한 후 숨기기)
 - 설정 창(필요하지 않을 때 숨기기)
-- 팝업 창(필요할 때 표시)
+- 팝업 창(필요할 때 표시하기)
 
 ### 위치 및 크기
 
@@ -161,8 +161,8 @@ x, y := window.Position()
 
 **좌표계:**
 
-- (0, 0)은 기본 화면의 왼쪽 위 모서리입니다.
-- X의 양의 방향은 오른쪽입니다.
+- (0, 0)은 기본 화면의 왼쪽 위입니다.
+- 양의 X 방향은 오른쪽입니다.
 - 양의 Y 방향은 아래쪽입니다.
 
 ### 창 상태
@@ -239,7 +239,7 @@ if window, ok := app.Window.GetByName("settings"); ok {
 
 ### ID로 찾기
 
-모든 창에는 고유한 ID가 있습니다:
+모든 창에는 고유 ID가 있습니다.
 
 ```go
 id := window.ID()
@@ -253,7 +253,7 @@ if found, ok := app.Window.GetByID(id); ok {
 
 ### 현재 창
 
-현재 포커스된 창을 가져옵니다:
+현재 포커스된 창을 가져옵니다.
 
 ```go
 current := app.Window.Current()
@@ -264,7 +264,7 @@ if current != nil {
 
 ### 모든 창
 
-모든 창을 가져옵니다:
+모든 창을 가져옵니다.
 
 ```go
 windows := app.Window.GetAll()
@@ -290,7 +290,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### 닫기
 
-창이 닫히지 않도록 하려면 `WindowClosing` 이벤트와 함께 `RegisterHook`을 사용하세요:
+창이 닫히지 않도록 하려면 `WindowClosing` 이벤트와 함께 `RegisterHook`을 사용하세요.
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**중요:** `RegisterHook`은 닫기 이벤트가 발생하기 전에 이를 가로챕니다. 창이 닫히지 않도록 하려면 `event.Cancel()`을 호출하세요. 이는 사용자가 시작한 닫기 동작(X 버튼 클릭)에 적용됩니다.
+**중요:** `RegisterHook`은 닫기 이벤트가 발생하기 전에 이를 가로챕니다. 창이 닫히지 않도록 하려면 `event.Cancel()`을 호출하세요. 이 방법은 사용자가 시작한 닫기 동작(X 버튼 클릭)에 적용됩니다.
 
 ### 소멸
 
-창이 닫힐 때 정리 작업을 수행하려면 `WindowClosing` 이벤트와 함께 `OnWindowEvent`을 사용하세요:
+창이 닫힐 때 정리 작업을 수행하려면 `WindowClosing` 이벤트와 함께 `OnWindowEvent`을 사용하세요.
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -346,7 +346,7 @@ settingsWindow.Show()
 
 ### 창 간 통신
 
-창은 이벤트를 통해 통신할 수 있습니다:
+창은 이벤트를 통해 통신할 수 있습니다.
 
 ```go
 // In main window
@@ -366,7 +366,7 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 ### 부모-자식 창
 
-`WebviewWindowOptions`에는 `Parent` 필드가 없습니다. 자식 창을 일반 창으로 만든 다음 시트 모달로 부모 창에 연결하세요:
+`WebviewWindowOptions`에는 `Parent` 필드가 없습니다. 자식 창을 일반 창으로 만든 후 시트 모달로 부모 창에 연결하세요.
 
 ```go
 // Create child window
@@ -381,7 +381,7 @@ mainWindow.AttachModal(childWindow)
 **동작:**
 
 - 자식 창은 부모 창 위에 유지됩니다.
-- 자식 창은 모달이므로 부모 창과의 상호 작용을 차단합니다.
+- 자식 창은 모달이므로 부모 창과 상호 작용할 수 없습니다.
 
 **플랫폼 지원:**
 
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-창별 `SetIcon`은 없습니다. 애플리케이션 아이콘은 `app.SetIcon([]byte)`을 통해 앱에 설정합니다. Linux 전용 창 아이콘의 경우에는 창을 생성할 때 `application.LinuxWindow.Icon` 필드를 사용합니다.
+창별 `SetIcon`은 없습니다. 애플리케이션 아이콘은 `app.SetIcon([]byte)`을 통해 앱에 설정합니다(또는 Linux 전용 창 아이콘의 경우 창을 생성할 때 `application.LinuxWindow.Icon` 필드에 설정합니다).
 
-**Snap Assist:** 시스템 바로 가기 경로를 통해 Windows 11 스냅 레이아웃 옵션을 표시합니다. 마우스를 올렸을 때 네이티브 Snap Layouts를 표시하는 사용자 지정 HTML 최대화 버튼을 사용하려면 대신 [Windows의 네이티브 비클라이언트 영역](/features/windows/frameless/#native-non-client-regions-on-windows)을 사용하세요.
+**Snap Assist:** 시스템 바로 가기 경로를 통해 Windows 11 스냅 레이아웃 옵션을 표시합니다. 마우스를 올렸을 때 기본 Snap Layouts가 나타나는 사용자 정의 HTML 최대화 버튼을 사용하려면 대신 [Windows의 네이티브 비클라이언트 영역](/features/windows/frameless/#native-non-client-regions-on-windows)을 사용하세요.
 
-**작업 표시줄 깜박임:** 창이 최소화되어 있을 때 알림을 표시하는 데 유용합니다.
+**작업 표시줄 깜박임:** 창이 최소화되었을 때 알림을 표시하는 데 유용합니다.
 
 [macOS]
 **macOS 전용 기능:**
@@ -425,21 +425,21 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**배경막 유형:**
+**배경 효과 유형:**
 
 - `MacBackdropNormal` - 표준 창
-- `MacBackdropTranslucent` - 반투명 배경. webview를 투명하게 하려면 **비공개 API가 필요합니다**.
-- `MacBackdropTransparent` - 완전히 투명한 배경. webview를 투명하게 하려면 **비공개 API가 필요합니다**.
-- `MacBackdropLiquidGlass` - 유리 효과 배경막. webview를 투명하게 하려면 **비공개 API가 필요합니다**.
+- `MacBackdropTranslucent` - 반투명 배경. 웹뷰를 투명하게 만들려면 **비공개 API가 필요합니다**.
+- `MacBackdropTransparent` - 완전히 투명한 배경. 웹뷰를 투명하게 만들려면 **비공개 API가 필요합니다**.
+- `MacBackdropLiquidGlass` - 유리 배경 효과. 웹뷰를 투명하게 만들려면 **비공개 API가 필요합니다**.
 
-이러한 효과가 webview를 통해 보이도록 하려면 `-tags private_mac_apis`을 사용하여 빌드하세요. 이를 사용하지 않으면 webview가 불투명하게 유지됩니다. `TitleBar.AppearsTransparent` 자체는 공개 API를 사용합니다. [비공개 macOS API](/guides/build/private-macos-apis/)를 참조하세요.
+이러한 효과가 웹뷰를 통해 보이게 하려면 `-tags private_mac_apis`을 사용하여 빌드하세요. 사용하지 않으면 웹뷰가 불투명하게 유지됩니다. `TitleBar.AppearsTransparent` 자체는 공개 API를 사용합니다. [비공개 macOS API](/guides/build/private-macos-apis/)를 참조하세요.
 
-**컬렉션 동작:** 여러 Space에서 창이 동작하는 방식을 제어합니다:
+**컬렉션 동작:** 여러 Space에서 창이 동작하는 방식을 제어합니다.
 
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` - 모든 Space에 표시
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` - 전체 화면 앱 위에 표시 가능
 
-**네이티브 전체 화면:** macOS의 전체 화면 모드는 새 Space(가상 데스크톱)를 만듭니다.
+**네이티브 전체 화면:** macOS의 전체 화면 모드는 새 Space(가상 데스크톱)를 생성합니다.
 
 [Linux]
 **Linux 전용 기능:**
@@ -462,10 +462,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **타일링 창 관리자(Hyprland, Sway, i3 등):**
 
-- `Minimise()` 및 `Maximise()`은 예상대로 작동하지 않을 수 있습니다. 창 관리자가 창의 위치와 크기를 제어하기 때문입니다.
-- `SetSize()` 및 `SetPosition()` 요청은 권고 사항이므로 무시될 수 있습니다
-- `Fullscreen()`은 일반적으로 예상대로 작동합니다
-- 일부 WM은 항상 위에 표시 기능을 지원하지 않습니다
+- 창 관리자가 창의 위치와 크기를 제어하므로 `Minimise()` 및 `Maximise()`이 예상대로 작동하지 않을 수 있습니다.
+- `SetSize()` 및 `SetPosition()` 요청은 권고 사항이므로 무시될 수 있습니다.
+- `Fullscreen()`은 일반적으로 예상대로 작동합니다.
+- 일부 창 관리자는 항상 위에 표시하는 기능을 지원하지 않습니다.
 
 @end
 
@@ -533,20 +533,20 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ 권장
 
-- **중요한 창에 이름을 지정하세요** - 나중에 더 쉽게 찾을 수 있습니다
-- **최소 크기를 설정하세요** - 사용할 수 없는 레이아웃을 방지합니다
-- **창을 가운데에 배치하세요** - 임의의 위치보다 사용자 경험이 좋습니다
-- **닫기 이벤트를 처리하세요** - 데이터 손실을 방지합니다
-- **모든 플랫폼에서 테스트하세요** - 동작이 플랫폼마다 다릅니다
-- **적절한 크기를 사용하세요** - 다양한 화면 크기를 고려하세요
+- **중요한 창에 이름을 지정하세요** - 나중에 더 쉽게 찾을 수 있습니다.
+- **최소 크기를 설정하세요** - 사용할 수 없는 레이아웃이 되는 것을 방지합니다.
+- **창을 중앙에 배치하세요** - 임의의 위치에 배치하는 것보다 사용자 경험이 좋습니다.
+- **닫기 이벤트를 처리하세요** - 데이터 손실을 방지합니다.
+- **모든 플랫폼에서 테스트하세요** - 동작이 플랫폼마다 다릅니다.
+- **적절한 크기를 사용하세요** - 다양한 화면 크기를 고려하세요.
 
 ### ❌ 비권장
 
-- **창을 너무 많이 만들지 마세요** - 사용자가 혼란스러울 수 있습니다
-- **창을 닫는 것을 잊지 마세요** - 메모리 누수가 발생합니다
-- **위치를 하드코딩하지 마세요** - 화면 크기가 서로 다릅니다
-- **플랫폼 간 차이를 무시하지 마세요** - 철저히 테스트하세요
-- **UI 스레드를 차단하지 마세요** - 오래 걸리는 작업에는 goroutine을 사용하세요
+- **창을 너무 많이 만들지 마세요** - 사용자가 혼란스러울 수 있습니다.
+- **창을 닫는 것을 잊지 마세요** - 메모리 누수가 발생합니다.
+- **위치를 하드코딩하지 마세요** - 화면 크기가 서로 다릅니다.
+- **플랫폼 간 차이를 무시하지 마세요** - 철저히 테스트하세요.
+- **UI 스레드를 차단하지 마세요** - 오래 걸리는 작업에는 goroutine을 사용하세요.
 
 ## 문제 해결
 
@@ -580,7 +580,7 @@ window.SetSize(800, 600)
 
 ### 창이 즉시 닫힘
 
-**원인:** 마지막 창이 닫히면 애플리케이션이 종료됨
+**원인:** 마지막 창이 닫힐 때 애플리케이션이 종료됨
 
 **해결 방법:**
 
@@ -596,19 +596,19 @@ app := application.New(application.Options{
 
 @cards{cols="2"}
 ⚙ 창 옵션
-모든 창 옵션에 대한 전체 참조 문서입니다.
+모든 창 옵션에 대한 전체 참고 자료입니다.
 
 [자세히 알아보기 →](/features/windows/options/)
 
 ---
-▣ 다중 창
+▣ 여러 창
 다중 창 애플리케이션을 위한 패턴입니다.
 
 [자세히 알아보기 →](/features/windows/multiple/)
 
 ---
-★ 프레임 없는 창
-사용자 정의 창 장식을 만듭니다.
+★ 프레임리스 창
+사용자 정의 창 프레임을 만듭니다.
 
 [자세히 알아보기 →](/features/windows/frameless/)
 
@@ -622,4 +622,4 @@ app := application.New(application.Options{
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [창 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [창 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.

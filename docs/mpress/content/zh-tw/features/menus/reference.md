@@ -7,13 +7,13 @@ sourcePath: "features/menus/reference.md"
 
 ## 選單參考
 
-選單項目類型、屬性與動態行為的完整參考。使用核取方塊、選項群組、分隔線與動態更新，建立專業且反應靈敏的選單。
+選單項目類型、屬性與動態行為的完整參考。使用核取方塊、單選群組、分隔線與動態更新，建立專業且回應迅速的選單。
 
 ## 選單項目類型
 
 ### 一般選單項目
 
-最常見的類型——顯示文字並觸發動作：
+最常見的類型，用於顯示文字並觸發動作：
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -26,7 +26,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### 核取方塊
 
-可切換勾選／未勾選狀態的選單項目：
+可切換選取／未選取狀態的選單項目：
 
 ```go
 checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
@@ -36,13 +36,13 @@ checkbox.OnClick(func(ctx *application.Context) {
 })
 ```
 
-<strong>適用於：</strong>布林設定、功能開關、檢視選項
+<strong>適用於：</strong>布林設定、功能切換、檢視選項
 
-<strong>重要：</strong>按一下後，勾選狀態會自動切換。
+<strong>重要：</strong>按一下時，選取狀態會自動切換。
 
-### 選項群組
+### 單選群組
 
-互斥選項——一次只能選取一個：
+互斥選項，只能選取其中一個：
 
 ```go
 menu.AddRadio("Small", true)   // true = initially selected
@@ -54,8 +54,8 @@ menu.AddRadio("Large", false)
 
 **群組運作方式：**
 
-- 相鄰的選項項目會自動形成群組
-- 選取其中一個項目時，會取消選取群組中的其他項目
+- 相鄰的單選項目會自動形成一個群組
+- 選取其中一項會取消選取群組中的其他項目
 - 使用分隔線或一般項目分隔不同群組
 
 **多個群組的範例：**
@@ -91,7 +91,7 @@ submenu.Add("Submenu Item 2")
 
 ### 分隔線
 
-選單項目之間的視覺分隔元素：
+選單項目之間的視覺分隔：
 
 ```go
 menu.Add("Item 1")
@@ -101,11 +101,11 @@ menu.Add("Item 2")
 
 <strong>適用於：</strong>在視覺上將相關項目分組
 
-<strong>最佳做法：</strong>不要在選單開頭或結尾放置分隔線。
+<strong>最佳實務：</strong>不要在選單開頭或結尾放置分隔線。
 
 ### 區段標題
 
-在 **macOS 14+** 上為一組選單項目提供原生、不可互動的標籤：
+在<strong>macOS 14+</strong>上，用於選單項目群組的原生、非互動式標籤：
 
 ```go
 menu.AddSectionHeader("Build server")
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` 使用 AppKit 標準的區段標題外觀。它不會傳回選單項目，也不會關聯動作。在較舊版本的 macOS、Windows、Linux、行動平台和伺服器建置中，呼叫不會執行任何操作，也不會插入任何列。
+`AddSectionHeader`採用 AppKit 的標準區段標題外觀。它不會傳回選單項目，也不會附加動作。在較舊的 macOS 版本、Windows、Linux、行動裝置與伺服器組建中，此呼叫不會執行任何操作，也不會插入任何列。
 
-可在系統匣選單、快顯選單或應用程式選單中使用它，為相關命令加上標籤。若要在所有平台上分隔單選群組，請使用 `AddSeparator()`，因為省略的標題不會分隔單選群組。方法簽章請參閱 [Menu API](/reference/menu#addsectionheader)，使用主機名稱作為標題的範例請參閱 `systray-menu`。
+可在系統匣、快顯選單或應用程式選單中使用它，為相關命令加上標籤。由於省略的標題不會中斷單選群組，請使用`AddSeparator()`在所有平台上分隔單選群組。方法簽章請參閱[選單 API](/reference/menu#addsectionheader)；以主機名稱作為標題的用法請參閱`systray-menu`範例。
 
 ## 選單項目屬性
 
@@ -149,7 +149,7 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 
 ### 啟用狀態
 
-控制選單項目是否可供互動：
+控制使用者是否可以與選單項目互動：
 
 ```go
 menuItem := menu.Add("Save")
@@ -164,9 +164,9 @@ isEnabled := menuItem.Enabled()
 ```
 
 @note{type="caution" title="Windows 選單行為"}
-在 Windows 上，選單狀態變更時必須重新建構。啟用或停用選單項目後<strong>一律呼叫`menu.Update()`</strong>，尤其是該項目建立時處於停用狀態的情況。
+在 Windows 上，選單狀態變更時必須重新建構選單。啟用或停用選單項目後，**一律呼叫`menu.Update()`**，尤其是該項目建立時處於停用狀態的情況。
 
-<strong>原因：</strong>Windows 選單更新時會從頭重新建構。如果未呼叫`Update()`，點擊處理常式將無法正常觸發。
+<strong>原因：</strong>Windows 選單在更新時會從頭重新建構。如果未呼叫`Update()`，點擊處理常式將無法正常觸發。
 
 @end
 
@@ -207,9 +207,9 @@ onDocumentChanged(func() {
 })
 ```
 
-### 勾選狀態
+### 選取狀態
 
-對於核取方塊和選項項目，可控制或查詢其勾選狀態：
+對於核取方塊與單選項目，可控制或查詢其選取狀態：
 
 ```go
 checkbox := menu.AddCheckbox("Feature", false)
@@ -220,7 +220,7 @@ menu.Update()
 isChecked := checkbox.Checked()
 ```
 
-<strong>自動切換：</strong>按一下核取方塊後，其狀態會自動切換。您不需要在點擊處理常式中呼叫`SetChecked()`。
+<strong>自動切換：</strong>按一下核取方塊時，其狀態會自動切換。您不需要在點擊處理常式中呼叫`SetChecked()`。
 
 **手動控制：**
 
@@ -234,9 +234,9 @@ func syncAutoSave(enabled bool) {
 }
 ```
 
-### 快速鍵（鍵盤快捷鍵）
+### 快速鍵（鍵盤快速鍵）
 
-為選單項目新增鍵盤快捷鍵：
+為選單項目新增鍵盤快速鍵：
 
 ```go
 saveMenuItem := menu.Add("Save")
@@ -248,11 +248,11 @@ quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 
 **快速鍵格式：**
 
-- `CmdOrCtrl`——在 macOS 上為 Cmd，在 Windows/Linux 上為 Ctrl
-- `Shift`、`Alt`、`Option`——輔助按鍵
-- `A-Z`、`0-9`——字母／數字鍵
-- `F1-F12`——功能鍵
-- `Enter`、`Space`、`Backspace`等——特殊按鍵
+- `CmdOrCtrl`－在 macOS 上為 Cmd，在 Windows/Linux 上為 Ctrl
+- `Shift`、`Alt`、`Option`－輔助按鍵
+- `A-Z`、`0-9`－字母／數字鍵
+- `F1-F12`－功能鍵
+- `Enter`、`Space`、`Backspace`等－特殊按鍵
 
 **範例：**
 
@@ -278,22 +278,22 @@ if runtime.GOOS == "darwin" {
 
 ### 工具提示
 
-為選單項目新增滑鼠懸停文字（各平台的支援情況不一）：
+為選單項目新增游標停留文字（平台支援情況各異）：
 
 ```go
 menuItem := menu.Add("Advanced Options")
 menuItem.SetTooltip("Configure advanced settings")
 ```
 
-**平台支援情況：**
+**平台支援：**
 
 - **Windows：**✅ 支援
-- **macOS：**❌ 不支援（工具提示並非選單的標準功能）
+- **macOS：**❌ 不支援（選單通常不使用工具提示）
 - **Linux：**⚠️ 視桌面環境而異
 
 ### 隱藏狀態
 
-隱藏選單項目而不移除：
+隱藏選單項目而不將其移除：
 
 ```go
 debugMenuItem := menu.Add("Debug Mode")
@@ -322,11 +322,11 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Context 提供：**
+**內容提供：**
 
 - `ctx.ClickedMenuItem()`－被按下的選單項目
-- 視窗上下文（若來自視窗選單）
-- 應用程式上下文
+- 視窗內容（若來自視窗選單）
+- 應用程式內容
 
 **範例：在處理常式中存取選單項目**
 
@@ -361,7 +361,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### 更新選單項目
 
-<strong>黃金準則：</strong>變更選單狀態後，一律呼叫`menu.Update()`。
+<strong>黃金法則：</strong>變更選單狀態後，一律呼叫`menu.Update()`。
 
 ```go
 // ✅ Correct
@@ -375,9 +375,9 @@ menuItem.SetEnabled(true)
 
 **這一點很重要的原因：**
 
-- <strong>Windows：</strong>選單會在更新時重新建構
-- <strong>macOS/Linux：</strong>重要性較低，但仍建議這麼做
-- <strong>按一下處理常式：</strong>若未呼叫 Update()，便無法正常觸發
+- <strong>Windows：</strong>更新時會重新建構選單
+- <strong>macOS/Linux：</strong>影響較小，但仍建議這麼做
+- <strong>點擊處理常式：</strong>若未呼叫 Update()，將無法正常觸發
 
 ### 重建選單
 
@@ -407,19 +407,19 @@ func rebuildFileMenu() {
 }
 ```
 
-**何時應重建：**
+**何時重建：**
 
-- 最近使用的檔案清單變更
-- 外掛程式選單變更
+- 最近使用的檔案清單發生變更
+- 外掛程式選單發生變更
 - 重大狀態轉換
 
-**何時應更新：**
+**何時更新：**
 
 - 啟用或停用項目
 - 變更標籤
 - 切換核取方塊
 
-### 內容相關選單
+### 依情境調整的選單
 
 根據應用程式狀態調整選單：
 
@@ -446,14 +446,14 @@ onUndoStackChanged(updateEditMenu)
 | 平台 | 位置 | 備註 |
 | --- | --- | --- |
 | **macOS** | 螢幕頂端 | 全域選單列 |
-| **Windows** | 視窗頂端 | 各視窗各自具備選單 |
-| **Linux** | 視窗頂端 | 通常各視窗各自具備選單 |
+| **Windows** | 視窗頂端 | 每個視窗各自的選單 |
+| **Linux** | 視窗頂端 | 通常每個視窗各自顯示 |
 
 ### 標準選單
 
 **macOS：**
 
-- 具備「應用程式」選單（顯示應用程式名稱）
+- 有「應用程式」選單（以應用程式名稱顯示）
 - 「偏好設定」位於「應用程式」選單中
 - 「結束」位於「應用程式」選單中
 
@@ -488,17 +488,17 @@ if runtime.GOOS == "darwin" {
 }
 ```
 
-### 快速鍵慣例
+### 快捷鍵慣例
 
 **macOS：**
 
-- 大多數快速鍵使用`Cmd+`
+- 大多數快捷鍵使用`Cmd+`
 - 「偏好設定」使用`Cmd+,`
 - 「結束」使用`Cmd+Q`
 
 **Windows：**
 
-- 大多數快速鍵使用`Ctrl+`
+- 大多數快捷鍵使用`Ctrl+`
 - 「偏好設定」使用`Ctrl+P`或`Ctrl+,`
 - 「結束」使用`Alt+F4`（或`Ctrl+Q`）
 
@@ -509,30 +509,30 @@ if runtime.GOOS == "darwin" {
 
 ## 最佳實務
 
-### ✅ 建議做法
+### ✅ 建議
 
-- 變更選單狀態後，**呼叫 menu.Update()**（尤其是在 Windows 上）
-- 對互斥選項<strong>使用選項群組</strong>
-- 對可切換的功能<strong>使用核取方塊</strong>
-- **為常用動作新增快速鍵**
-- **使用分隔線將相關項目分組**
-- **在所有平台上測試**——行為因平台而異
+- 變更選單狀態後（尤其是在 Windows 上），請**呼叫 menu.Update()**
+- 互斥選項請**使用選項按鈕群組**
+- 可切換的功能請**使用核取方塊**
+- 為常用操作**新增快捷鍵**
+- 使用分隔線將**相關項目分組**
+- **在所有平台上測試**——行為會因平台而異
 
 ### ❌ 請勿
 
-- **別忘了呼叫 menu.Update()**——否則點擊處理函式將無法正常運作
-- **請勿巢狀排列過深**——最多 2-3 層
-- **請勿以分隔線開頭或結尾**——這樣看起來不專業
-- **請勿在 macOS 上使用工具提示**——macOS 不支援此功能
-- **請勿寫死特定平台的快速鍵**——請使用 `CmdOrCtrl`
+- **不要忘記呼叫 menu.Update()**——否則點擊處理常式將無法正常運作
+- **不要巢狀得太深**——最多2-3層
+- **不要以分隔線開頭或結尾**——看起來不專業
+- **不要在 macOS 上使用工具提示**——不支援此功能
+- **不要寫死平台快捷鍵**——請使用`CmdOrCtrl`
 
 ## 疑難排解
 
 ### 選單項目沒有回應
 
-<strong>症狀：</strong>點擊處理函式未觸發
+<strong>症狀：</strong>點擊處理常式未觸發
 
-<strong>原因：</strong>啟用項目後忘了呼叫 `menu.Update()`
+<strong>原因：</strong>啟用項目後忘記呼叫`menu.Update()`
 
 **解決方法：**
 
@@ -554,14 +554,14 @@ menuItem.SetEnabled(true)
 menu.Update()
 ```
 
-### 快速鍵無法使用
+### 快捷鍵無法運作
 
-<strong>症狀：</strong>鍵盤快速鍵未觸發選單項目
+<strong>症狀：</strong>鍵盤快捷鍵未觸發選單項目
 
 **原因：**
 
-1. 快速鍵格式不正確
-2. 與系統快速鍵衝突
+1. 快捷鍵格式不正確
+2. 與系統快捷鍵衝突
 3. 視窗未取得焦點
 
 **解決方法：**
@@ -579,10 +579,10 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 ## 後續步驟
 
 - [應用程式選單](/features/menus/application/)——建立應用程式選單列
-- [內容選單](/features/menus/context/)——按一下滑鼠右鍵開啟的內容選單
+- [內容選單](/features/menus/context/)——滑鼠右鍵內容選單
 - [系統匣選單](/features/menus/systray/)——系統匣／選單列選單
-- [選單模式](/guides/menus/)——常見的選單模式與最佳實務
+- [選單模式](/guides/menus/)——常用選單模式與最佳實務
 
 ---
 
-<strong>有問題嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[選單範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[選單範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。

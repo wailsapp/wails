@@ -7,16 +7,16 @@ sourcePath: "features/bindings/enums.md"
 
 ## Liaisons d’énumérations
 
-Le générateur de liaisons de Wails v3 **détecte automatiquement les types de constantes Go et génère des énumérations TypeScript ou des objets const JavaScript**. Aucun enregistrement ni aucune configuration ne sont nécessaires : définissez simplement vos types et vos constantes en Go, et le générateur s’occupe du reste.
+Le générateur de liaisons v3 de Wails **détecte automatiquement les types de constantes Go et génère des énumérations TypeScript ou des objets constants JavaScript**. Aucun enregistrement ni aucune configuration ne sont nécessaires : définissez simplement vos types et vos constantes en Go, et le générateur s’occupe du reste.
 
 @note{type="info"}
-Contrairement à Wails v2, il n’est **pas nécessaire d’appeler `EnumBind`** ni d’enregistrer manuellement les énumérations. Le générateur les détecte automatiquement dans votre code source.
+Contrairement à Wails v2, il n’est **pas nécessaire d’appeler `EnumBind`** ni d’enregistrer manuellement les énumérations. Le générateur les découvre automatiquement dans votre code source.
 
 @end
 
 ## Démarrage rapide
 
-**Définissez en Go un type nommé avec des constantes :**
+**Définissez un type nommé avec des constantes en Go :**
 
 ```go
 type Status string
@@ -28,7 +28,7 @@ const (
 )
 ```
 
-**Utilisez le type dans une structure ou une méthode de service :**
+**Utilisez ce type dans une structure ou une méthode de service :**
 
 ```go
 type Ticket struct {
@@ -44,7 +44,7 @@ type Ticket struct {
 wails3 generate bindings
 ```
 
-La sortie du générateur indique le nombre d’énumérations avec celui des modèles :
+La sortie du générateur indique le nombre d’énumérations en plus de celui des modèles :
 
 ```
 3 Enums, 5 Models
@@ -66,7 +66,7 @@ const ticket = new Ticket({
 
 ## Définition des énumérations
 
-Dans Wails, une énumération est un **type nommé** dont le type sous-jacent est un type de base, associé à des **déclarations const** de ce type.
+Dans Wails, une énumération est un **type nommé** doté d’un type de base élémentaire, associé à des **déclarations de constantes** de ce type.
 
 ### Énumérations de chaînes
 
@@ -84,7 +84,7 @@ const (
 )
 ```
 
-**Code TypeScript généré :**
+**TypeScript généré :**
 
 ```typescript
 /**
@@ -107,7 +107,7 @@ export enum Title {
 }
 ```
 
-**Code JavaScript généré :**
+**JavaScript généré :**
 
 ```javascript
 /**
@@ -144,7 +144,7 @@ const (
 )
 ```
 
-**Code TypeScript généré :**
+**TypeScript généré :**
 
 ```typescript
 export enum Priority {
@@ -159,9 +159,9 @@ export enum Priority {
 }
 ```
 
-### Énumérations d’alias de type
+### Énumérations fondées sur des alias de type
 
-Les alias de type Go (`=`) fonctionnent également, mais produisent une sortie légèrement différente : une définition de type accompagnée d’un objet const, au lieu d’une `enum` TypeScript native :
+Les alias de type Go (`=`) fonctionnent également, mais produisent une sortie légèrement différente : une définition de type accompagnée d’un objet constant, plutôt qu’une déclaration `enum` TypeScript native :
 
 ```go
 // Age is an integer with some predefined values
@@ -178,7 +178,7 @@ const (
 )
 ```
 
-**Code TypeScript généré :**
+**TypeScript généré :**
 
 ```typescript
 /**
@@ -207,7 +207,7 @@ export const Age = {
 };
 ```
 
-**Code JavaScript généré :**
+**JavaScript généré :**
 
 ```javascript
 /**
@@ -237,15 +237,15 @@ export const Age = {
 ```
 
 @note{type="tip"}
-Les **types nommés** (`type Title string`) génèrent des déclarations `enum` TypeScript natives comportant un membre `$zero`. Les **alias de type** (`type Age = int`) génèrent une paire d’espaces de noms `type` + `const` sans `$zero`.
+Les **types nommés** (`type Title string`) génèrent des déclarations `enum` TypeScript natives comportant un membre `$zero`. Les **alias de type** (`type Age = int`) génèrent une paire espace de noms `type` + `const` sans `$zero`.
 
 @end
 
 ## La valeur `$zero`
 
-Chaque énumération de type nommé comprend un membre spécial `$zero` représentant la **valeur zéro de Go** pour le type sous-jacent :
+Chaque énumération fondée sur un type nommé comprend un membre spécial `$zero` représentant la **valeur zéro de Go** pour le type de base :
 
-| Type sous-jacent | Valeur `$zero` |
+| Type de base | Valeur `$zero` |
 | --- | --- |
 | `string` | `""` |
 | `int`, `int8`, `int16`, `int32`, `int64` | `0` |
@@ -253,7 +253,7 @@ Chaque énumération de type nommé comprend un membre spécial `$zero` représe
 | `float32`, `float64` | `0` |
 | `bool` | `false` |
 
-Lorsqu’un champ de structure utilise un type d’énumération et qu’aucune valeur n’est fournie, le constructeur utilise par défaut `$zero` :
+Lorsqu’un champ de structure utilise un type d’énumération et qu’aucune valeur n’est fournie, le constructeur utilise `$zero` par défaut :
 
 ```typescript
 export class Person {
@@ -268,7 +268,7 @@ export class Person {
 }
 ```
 
-Cela garantit une initialisation avec typage sûr lors de la génération de classes : les champs d’énumération ne valent jamais `undefined`. Lors de la génération d’interfaces TypeScript (avec `-i`), il n’existe aucun constructeur et les champs peuvent être absents, comme d’habitude.
+Cela garantit une initialisation avec contrôle de type lors de la génération de classes : les champs d’énumération ne valent jamais `undefined`. Lors de la génération d’interfaces TypeScript (avec `-i`), aucun constructeur n’est créé et les champs peuvent être absents, comme d’habitude.
 
 ## Utilisation des énumérations dans les structures
 
@@ -282,7 +282,7 @@ type Person struct {
 }
 ```
 
-**Code TypeScript généré :**
+**TypeScript généré :**
 
 ```typescript
 export class Person {
@@ -306,7 +306,7 @@ export class Person {
 }
 ```
 
-Le champ `Title` est typé `Title`, et non `string`. Votre IDE bénéficie ainsi de l’autocomplétion complète et de la vérification des types pour les valeurs d’énumération.
+Le champ `Title` est typé `Title`, et non `string`. Votre IDE peut ainsi proposer l’autocomplétion et vérifier intégralement le type des valeurs d’énumération.
 
 ## Énumérations provenant de paquets importés
 
@@ -376,13 +376,13 @@ Le générateur conserve les commentaires Go sous forme de JSDoc dans la sortie 
 - Les **commentaires de constantes individuelles** deviennent les commentaires de documentation des membres
 - Les **commentaires en fin de ligne** sont conservés lorsque cela est possible
 
-Votre IDE affiche ainsi la documentation des valeurs d’énumération lors de leur survol.
+Votre IDE affiche donc la documentation des valeurs d’énumération lorsque vous les survolez.
 
-## Types sous-jacents pris en charge
+## Types de base pris en charge
 
-Le générateur de liaisons prend en charge les énumérations reposant sur les types Go sous-jacents suivants :
+Le générateur de liaisons prend en charge les énumérations utilisant les types de base Go suivants :
 
-| Type Go | Compatible avec les énumérations |
+| Type Go | Utilisable comme énumération |
 | --- | :---: |
 | `string` | Oui |
 | `int`, `int8`, `int16`, `int32`, `int64` | Oui |
@@ -398,9 +398,9 @@ Le générateur de liaisons prend en charge les énumérations reposant sur les 
 Les éléments suivants ne sont **pas** pris en charge pour la génération d’énumérations :
 
 - **Types génériques** — Les paramètres de type empêchent la détection des constantes
-- **Types dotés d’une implémentation personnalisée de `json.Marshaler` ou `encoding.TextMarshaler`** — Une sérialisation personnalisée signifie que les valeurs générées peuvent ne pas correspondre au comportement à l’exécution ; le générateur ignore donc ces types
-- **Constantes dont les valeurs ne peuvent pas être évaluées statiquement ou représentées** — Les constantes doivent avoir des valeurs connues et représentables dans leur type sous-jacent. Les modèles `iota` standard fonctionnent correctement, car le compilateur les résout en valeurs concrètes
-- **Types de nombres complexes** — `complex64` et `complex128` ne peuvent pas servir de types sous-jacents aux énumérations
+- **Types dotés d’une implémentation personnalisée de `json.Marshaler` ou de `encoding.TextMarshaler`** — Avec une sérialisation personnalisée, les valeurs générées risquent de ne pas correspondre au comportement à l’exécution ; le générateur ignore donc ces types
+- **Constantes dont les valeurs ne peuvent pas être évaluées statiquement ou représentées** — Les constantes doivent avoir des valeurs connues et représentables dans leur type sous-jacent. Les constructions `iota` standard fonctionnent correctement, car le compilateur les résout en valeurs concrètes
+- **Types de nombres complexes** — `complex64` et `complex128` ne peuvent pas servir de types sous-jacents à une énumération
 
 ## Exemple complet
 
@@ -499,13 +499,13 @@ switch (bg.type) {
 
 @cards{cols="2"}
 📖 Modèles de données
-Structures, mappage des types et génération de modèles.
+Structures, correspondance des types et génération de modèles.
 
 [En savoir plus →](/features/bindings/models/)
 
 ---
 🚀 Liaison de méthodes
-Liez les méthodes Go au frontend.
+Liez des méthodes Go au frontend.
 
 [En savoir plus →](/features/bindings/methods/)
 

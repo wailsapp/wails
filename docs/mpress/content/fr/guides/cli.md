@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-Les balises sont transmises au Taskfile sous la forme `EXTRA_TAGS`.
+Les balises sont transmises au Taskfile sous la forme `EXTRA_TAGS`. Définir `WAILS_PUREGO=1` ajoute, sans indicateur, la balise `purego` à `build`, `package` et `dev` ; consultez [Compilations sans CGO](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 Cela revient à exécuter `wails3 task build`, qui lance la tâche `build` du Taskfile principal du projet. Toutes les variables de la CLI transmises à `build` sont transférées à la tâche sous-jacente. Vous pouvez personnaliser le processus de compilation en modifiant le fichier `Taskfile.yml`.
@@ -132,6 +135,14 @@ Les tâches de création de paquets standard acceptent `ARCH` pour sélectionner
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| Option | Description | Valeur par défaut |
+|------|-------------|---------|
+| `-tags` | Balises de compilation Go supplémentaires (séparées par des virgules), transmises sous la forme `EXTRA_TAGS` |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` et `OUTPUT` n’ont d’effet que sur un Taskfile personnalisé qui lit explicitement ces variables ; ils ne remplacent ni la version ni le nom de fichier du paquet standard.
@@ -308,13 +319,13 @@ wails3 generate build-assets [flags]
 | --- | --- | --- |
 | `-name` | Nom du projet |  |
 | `-dir` | Répertoire de sortie | `build` |
-| `-silent` | Masquer la sortie | `false` |
+| `-silent` | Supprimer la sortie | `false` |
 | `-company` | Nom de l’entreprise |  |
 | `-productname` | Nom du produit |  |
 | `-description` | Description du produit |  |
 | `-version` | Version du produit |  |
 | `-identifier` | Identifiant du produit | `com.wails.[name]` |
-| `-copyright` | Mention de copyright |  |
+| `-copyright` | Mention de droits d’auteur |  |
 | `-comments` | Commentaires du fichier |  |
 
 ### `generate icons`
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | Fichier PNG d’entrée | Obligatoire |
 | `-windowsfilename` | Nom du fichier de sortie Windows |  |
 | `-macfilename` | Nom du fichier de sortie macOS |  |
-| `-sizes` | Tailles d’icône (séparées par des virgules) | `256,128,64,48,32,16` |
+| `-sizes` | Tailles d’icône de 1 à 256 pixels (séparées par des virgules ; les zéros sont ignorés) | `256,128,64,48,32,16` |
 | `-example` | Générer une icône d’exemple | `false` |
 | `-iconcomposerinput` | Fichier Icon Composer d’entrée (`.icon`) |  |
 | `-macassetdir` | Répertoire de sortie des ressources Mac (Assets.car + icns) |  |
+
+Au moins une taille non nulle est requise.
 
 #### Icon Composer (macOS)
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Génère la version précompilée du runtime.
+Exporte le runtime précompilé intégré à la CLI sous la forme `runtime.js` (production) et `runtime-debug.js` (débogage). Cette commande fonctionne depuis une CLI installée sans accès à l’arborescence des sources de Wails, y compris pour les compilations effectuées avec `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Copie des fichiers.
+Copie un fichier source vers un fichier de destination. Les fichiers existants sont écrasés et conservent leurs autorisations actuelles. Les nouveaux fichiers utilisent les autorisations du fichier source, sous réserve de l’umask du système sous Unix. Les répertoires parents doivent déjà exister.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -687,13 +701,13 @@ wails3 update build-assets [flags]
 | --- | --- | --- |
 | `-config` | Chemin du fichier de configuration |  |
 | `-dir` | Répertoire de sortie | `build` |
-| `-silent` | Supprimer la sortie | `false` |
+| `-silent` | Masquer la sortie | `false` |
 | `-company` | Nom de l’entreprise |  |
 | `-productname` | Nom du produit |  |
 | `-description` | Description du produit |  |
 | `-version` | Version du produit |  |
 | `-identifier` | Identifiant du produit |  |
-| `-copyright` | Mention de droits d’auteur |  |
+| `-copyright` | Mention de copyright |  |
 | `-comments` | Commentaires du fichier |  |
 
 ## Commandes utilitaires
@@ -718,7 +732,7 @@ wails3 releasenotes [flags]
 
 #### Options
 
-| Option | Description | Valeur par défaut |
+| Indicateur | Description | Valeur par défaut |
 | --- | --- | --- |
 | `-v` | Version dont les notes de publication doivent être affichées |  |
 | `-n` | Désactiver la sortie en couleur | `false` |

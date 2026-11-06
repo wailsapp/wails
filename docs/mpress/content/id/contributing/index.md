@@ -52,7 +52,7 @@ Fungsionalitas baru dan perubahan pada perilaku publik menggunakan proses Wails 
 4. Kumpulkan masukan dan dukungan (komentar dan reaksi jempol pada PR). Berikan waktu setidaknya dua minggu untuk berdiskusi, lalu sepakati siapa yang akan mengimplementasikan proposal tersebut.
 5. Tandai PR sebagai siap ditinjau. Pengelola membuat keputusan akhir: proposal yang diterima akan diberi nomor WEP dan digabungkan.
 
-Proses lengkap didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
+Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
 
 ## Memulai
 

@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions` ne comporte aucun champ `Parent` — pour les relations parent/modale, utilisez `parentWindow.AttachModal(childWindow)`. Il ne comporte pas non plus de champ `Assets` — la configuration des ressources se trouve dans `application.Options` (`Assets AssetOptions`).
 
-Code source complet : [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go).
+Source complète : [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Options principales
 

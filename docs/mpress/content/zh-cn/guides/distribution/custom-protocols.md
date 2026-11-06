@@ -5,7 +5,7 @@ slug: "guides/distribution/custom-protocols"
 sourcePath: "guides/distribution/custom-protocols.md"
 ---
 
-自定义 URL 协议（也称为 URL 方案）允许用户点击使用自定义协议的链接（例如`myapp://action`或`myapp://open/document`）时启动您的应用程序。
+自定义 URL 协议（也称为 URL 方案）允许用户在点击使用自定义协议的链接（如`myapp://action`或`myapp://open/document`）时启动你的应用程序。
 
 ## 概述
 
@@ -14,15 +14,15 @@ sourcePath: "guides/distribution/custom-protocols.md"
 - **深层链接**：使用特定数据启动应用
 - **浏览器集成**：处理来自网页的链接
 - **电子邮件链接**：从电子邮件客户端打开应用
-- **应用间通信**：从其他应用程序启动应用
+- **应用间通信**：从其他应用程序启动
 
-**示例**：`myapp://open/document?id=123`会启动应用并打开文档123。
+**示例**：`myapp://open/document?id=123`会启动你的应用并打开文档123。
 
 ## 配置
 
 在应用程序选项中定义自定义协议：
 
-自定义协议在`build/config.yml`中声明（各平台的打包工具会在打包时使用这些声明，包括 Windows 上的 NSIS 宏、MSIX 清单、macOS 的`CFBundleURLTypes`以及 Linux 的`.desktop`/`xdg-mime`）。不存在`application.Protocol`类型，`application.Options`上也不存在`Protocols`字段。
+自定义协议在`build/config.yml`中声明（各平台的打包工具会在打包时读取该配置，包括 Windows 上的 NSIS 宏、MSIX 清单、macOS 的`CFBundleURLTypes`以及 Linux 的`.desktop`/`xdg-mime`）。不存在`application.Protocol`类型，`application.Options`上也没有`Protocols`字段。
 
 ```yaml
 # build/config.yml
@@ -92,7 +92,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *a
 
 ## URL 结构
 
-设计清晰且层次分明的 URL 结构：
+设计清晰的分层 URL 结构：
 
 ```
 myapp://action/resource?param=value
@@ -107,26 +107,26 @@ myapp://user/profile?username=john
 
 - 方案名称使用小写字母
 - 方案名称应简短易记
-- 对资源使用分层路径
+- 使用分层路径表示资源
 - 使用查询参数传递可选数据
 - 对特殊字符进行 URL 编码
 
 ## 平台注册
 
-各平台采用不同的方式注册自定义协议。
+各平台注册自定义协议的方式不同。
 
 @tabs{sync-key="platform"}
 [Windows]
 ### Windows NSIS 安装程序
 
-使用 NSIS 安装程序时，**Wails v3 会自动注册自定义协议**。
+使用 NSIS 安装程序时，**Wails v3会自动注册自定义协议**。
 
 #### 自动注册
 
 使用`wails3 build`构建应用程序时，NSIS 安装程序会：
 
-1. 自动注册`build/config.yml`的`protocols:`键下声明的所有协议
-2. 将协议与应用程序可执行文件关联
+1. 在`protocols:`项下自动注册`build/config.yml`中声明的所有协议
+2. 将协议与应用程序的可执行文件关联
 3. 设置正确的注册表项
 4. 卸载时移除协议关联
 
@@ -136,10 +136,10 @@ myapp://user/profile?username=john
 
 NSIS 模板包含内置宏：
 
-- `wails.associateCustomProtocols` - 在安装期间注册协议
-- `wails.unassociateCustomProtocols` - 在卸载期间移除协议
+- `wails.associateCustomProtocols` - 安装时注册协议
+- `wails.unassociateCustomProtocols` - 卸载时移除协议
 
-系统会根据您的`Protocols`配置自动调用这些宏。
+系统会根据你的`Protocols`配置自动调用这些宏。
 
 #### 手动配置注册表（高级）
 
@@ -183,18 +183,18 @@ start myapp://test/action
 </uap:Extension>
 ```
 
-#### 通用链接（网页到应用链接）
+#### 通用链接（从 Web 链接到应用）
 
-Windows 支持<strong>网页到应用链接</strong>，其工作方式与 macOS 上的通用链接类似。将应用程序部署为 MSIX 包时，可以启用 HTTPS 链接来直接启动应用。
+Windows 支持**从 Web 链接到应用**，其工作方式与 macOS 上的通用链接类似。将应用程序部署为 MSIX 包时，可以允许 HTTPS 链接直接启动应用。
 
 @note{type="note"}
-网页到应用链接需要手动配置清单。自定义协议方案会根据`build/config.yml`自动配置，但必须手动将关联域添加到 MSIX 清单中。
+从 Web 链接到应用需要手动配置清单。系统会根据`build/config.yml`自动配置自定义协议方案，但必须手动将关联域添加到 MSIX 清单中。
 
 @end
 
-要启用网页到应用链接，请参阅[Microsoft 网页到应用链接指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)。您需要：
+要启用从 Web 链接到应用，请参阅[Microsoft 的从 Web 链接到应用指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)。你需要：
 
-1. **手动将 App URI Handler 添加到 MSIX 清单**（`build/windows/msix/app_manifest.xml`）：
+1. **手动将 App URI Handler 添加到 MSIX 清单中**（`build/windows/msix/app_manifest.xml`）：
   ```xml
   <uap3:Extension Category="windows.appUriHandler">
     <uap3:AppUriHandler>
@@ -204,9 +204,9 @@ Windows 支持<strong>网页到应用链接</strong>，其工作方式与 macOS 
   ```
 
 
-2. <strong>在网站上配置`windows-app-web-link`：</strong>在`https://myawesomeapp.com/.well-known/windows-app-web-link`托管`windows-app-web-link`文件。此文件应包含应用的软件包信息及其处理的路径。
+2. <strong>在网站上配置`windows-app-web-link`：</strong>在`https://myawesomeapp.com/.well-known/windows-app-web-link`托管`windows-app-web-link`文件。该文件应包含应用的包信息及其处理的路径。
 
-当网页到应用链接启动您的应用程序时，您会收到与自定义协议方案相同的`ApplicationLaunchedWithUrl`事件。
+从 Web 链接到应用的链接启动应用程序时，你会收到与自定义协议方案相同的`ApplicationLaunchedWithUrl`事件。
 
 [macOS]
 ### Info.plist 配置
@@ -215,7 +215,7 @@ Windows 支持<strong>网页到应用链接</strong>，其工作方式与 macOS 
 
 #### 自动配置
 
-使用`wails3 build`构建时，Wails 会自动生成包含协议配置的`Info.plist`。
+使用`wails3 build`构建时，Wails 会自动生成包含你的协议的`Info.plist`。
 
 在`build/config.yml`中声明的协议会添加到：
 
@@ -247,16 +247,16 @@ open "myapp://test/action"
 
 #### 通用链接
 
-除自定义协议方案外，macOS 还支持<strong>通用链接</strong>，让常规 HTTPS 链接（例如`https://myawesomeapp.com/path`）也能启动应用。通用链接可在 Web 应用与桌面应用之间提供无缝的用户体验。
+除了自定义协议方案，macOS 还支持**通用链接**，让常规 HTTPS 链接（例如`https://myawesomeapp.com/path`）也能启动你的应用。通用链接可在 Web 应用和桌面应用之间提供无缝的用户体验。
 
 @note{type="caution"}
-通用链接要求使用有效的 Apple Developer 证书和配置描述文件对 macOS 应用进行<strong>代码签名</strong>。未签名或临时签名的构建无法打开通用链接。测试前，请确保应用已正确签名。
+通用链接要求使用有效的 Apple Developer 证书和配置描述文件对 macOS 应用进行**代码签名**。未签名或使用临时签名的构建无法打开通用链接。测试前请确保应用已正确签名。
 
 @end
 
-要启用通用链接，请按照[在应用中支持通用链接的 Apple 指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)操作。你需要：
+要启用通用链接，请参阅[Apple 关于在应用中支持通用链接的指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)。你需要：
 
-1. 在`entitlements.plist`中<strong>添加权利配置</strong>：
+1. **在`entitlements.plist`中添加授权**：
   ```xml
   <key>com.apple.developer.associated-domains</key>
   <array>
@@ -274,20 +274,20 @@ open "myapp://test/action"
   ```
 
 
-3. <strong>在网站上配置`apple-app-site-association`：</strong>在`https://myawesomeapp.com/.well-known/apple-app-site-association`托管一个`apple-app-site-association`文件。
+3. <strong>在网站上配置`apple-app-site-association`：</strong>在`https://myawesomeapp.com/.well-known/apple-app-site-association`托管`apple-app-site-association`文件。
 
 通用链接触发应用时，你会收到相同的`ApplicationLaunchedWithUrl`事件，因此其处理代码与自定义协议方案完全相同。
 
 [Linux]
 ### 桌面条目
 
-在 Linux 上，协议通过`.desktop`文件注册。
+在 Linux 上，通过`.desktop`文件注册协议。
 
 #### 自动配置
 
 使用`wails3 build`构建时，Wails 会生成包含协议处理程序的桌面条目文件。
 
-**已在 v3 中修复**：Linux 桌面模板现已正确包含协议处理配置。
+**已在v3**中修复：Linux 桌面模板现在已正确包含协议处理功能。
 
 生成的桌面文件包含：
 
@@ -328,7 +328,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## 完整示例
 
-下面是一个处理多种协议操作的完整示例：
+以下是处理多个协议操作的完整示例：
 
 ```go
 package main
@@ -583,7 +583,7 @@ xdg-open "myapp://test/action?id=123"
 
 ### HTML 测试
 
-创建一个测试用 HTML 页面：
+创建一个测试 HTML 页面：
 
 ```html
 <!DOCTYPE html>
@@ -615,8 +615,8 @@ xdg-open "myapp://test/action?id=123"
 
 **macOS：**
 
-- 使用`wails3 build`重新构建应用
-- 检查应用包中的`Info.plist`：`MyApp.app/Contents/Info.plist`
+- 使用`wails3 build`重新构建应用程序
+- 检查应用程序包中的`Info.plist`：`MyApp.app/Contents/Info.plist`
 - 重置 Launch Services：`/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
 
 **Linux：**
@@ -625,7 +625,7 @@ xdg-open "myapp://test/action?id=123"
 - 更新数据库：`update-desktop-database ~/.local/share/applications/`
 - 验证处理程序：`xdg-mime query default x-scheme-handler/myapp`
 
-### 应用无法启动
+### 应用程序未启动
 
 **检查日志：**
 
@@ -638,34 +638,34 @@ app := application.New(application.Options{
 
 **常见问题：**
 
-- 应用未安装在预期位置
-- 注册信息中的可执行文件路径与实际位置不一致
+- 应用程序未安装在预期位置
+- 注册信息中的可执行文件路径与实际位置不匹配
 - 权限问题
 
 ## 最佳实践
 
-### ✅ 推荐做法
+### ✅ 应该做
 
 - **使用描述性方案名称**——使用`mycompany-myapp`，而不是`mca`
-- **验证所有输入**——切勿信任来自外部来源的 URL
-- **妥善处理错误**——记录无效 URL，不要让应用崩溃
+- **验证所有输入**——绝不要信任来自外部来源的 URL
+- **妥善处理错误**——记录无效 URL，不要让应用程序崩溃
 - **向用户提供反馈**——显示触发了什么操作
-- **在所有平台上测试**——协议处理方式因平台而异
-- **记录 URL 结构**——为用户和集成人员提供帮助
+- **在所有平台上测试**——各平台的协议处理方式有所不同
+- **记录 URL 结构**——为用户和集成方提供帮助
 
-### ❌ 不要这样做
+### ❌ 不应该做
 
-- **不要使用常见的协议方案名称**——避免使用`http`、`file`、`app`等名称
+- **不要使用常见的方案名称**——避免使用`http`、`file`、`app`等
 - **不要将 URL 作为代码执行**——这会带来巨大的安全风险
-- **不要暴露敏感操作**——执行破坏性操作前必须要求用户确认
-- **不要假定协议在任何环境中都能正常工作**——应提供备用机制
+- **不要暴露敏感操作**——执行破坏性操作前须要求用户确认
+- **不要假定协议在所有环境中都能正常工作**——应提供备用机制
 - **不要忘记 URL 编码**——正确处理特殊字符
 
 ## 后续步骤
 
 - [Windows 打包](/guides/build/windows/)——了解 NSIS 安装程序选项
-- [文件关联](/guides/file-associations/)——使用你的应用打开文件
-- [单实例](/guides/single-instance/)——防止应用运行多个实例
+- [文件关联](/guides/file-associations/)——使用你的应用程序打开文件
+- [单实例](/guides/single-instance/)——防止运行多个应用程序实例
 
 ---
 

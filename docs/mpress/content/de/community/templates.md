@@ -1,52 +1,49 @@
 ---
 title: "Vorlagen"
-description: "Projektvorlagen und Starterkits für Wails"
+description: "Projektvorlagen und Starter-Kits für Wails"
 slug: "community/templates"
 sourcePath: "community/templates.md"
 ---
 
 @note{type="caution"}
-Diese Seite ist möglicherweise für Wails v3 veraltet.
+Diese Seite ist für Wails v3 möglicherweise veraltet.
 
 @end
 
 <!-- TODO: Update this link -->
 
-Diese Seite enthält eine Liste von Vorlagen, die von der Community unterstützt werden. Informationen zum Erstellen einer eigenen Vorlage finden Sie im Leitfaden zu [Vorlagen](https://v2.wails.io/docs/guides/templates).
+Diese Seite enthält eine Liste von Vorlagen, die von der Community unterstützt werden. Informationen zum Erstellen einer eigenen Vorlage finden Sie im Leitfaden [Vorlagen](https://v2.wails.io/docs/guides/templates).
 
-@note{type="tip" title="Vorlage einreichen"}
+@note{type="tip" title="Eine Vorlage einreichen"}
 Klicken Sie unten auf `Edit this page`, um Ihre Vorlagen hinzuzufügen.
 
 @end
 
-Führen Sie zur Verwendung dieser Vorlagen Folgendes aus:  
-`wails init -n "Your Project Name" -t [the link below[@version]]`
+Führen Sie zur Verwendung dieser Vorlagen `wails init -n "Your Project Name" -t [the link below[@version]]` aus.
 
-Wenn kein Versionssuffix angegeben ist, wird standardmäßig die Codevorlage des Hauptbranches verwendet.  
-Wenn ein Versionssuffix angegeben ist, wird die Codevorlage verwendet, die dem Tag dieser Version entspricht.
+Ist kein Versionssuffix angegeben, wird standardmäßig die Codevorlage des Hauptbranches verwendet. Ist ein Versionssuffix angegeben, wird die Codevorlage verwendet, die dem Tag dieser Version entspricht.
 
-Beispiel:  
-`wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
+Beispiel: `wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
 
 @note{type="danger" title="Achtung"}
-**Das Wails-Projekt wartet keine Vorlagen von 3. Parteien und übernimmt dafür weder Verantwortung noch Haftung!**
+**Das Wails-Projekt pflegt keine Vorlagen von Drittanbietern und übernimmt dafür weder Verantwortung noch Haftung!3**
 
-Wenn Sie bei einer Vorlage unsicher sind, prüfen Sie in `package.json` und `wails.json`, welche Skripte ausgeführt und welche Pakete installiert werden.
+Wenn Sie sich bei einer Vorlage unsicher sind, prüfen Sie anhand von `package.json` und `wails.json`, welche Skripte ausgeführt und welche Pakete installiert werden.
 
 @end
 
 ## Vue
 
 - [wails-template-vue](https://github.com/misitebao/wails-template-vue) – Wails-Vorlage auf Basis des Vue-Ökosystems (integriertes TypeScript, dunkles Theme, Internationalisierung, Single-Page-Routing, TailwindCSS)
-- [wails-template-quasar-js](https://github.com/sgosiaco/wails-template-quasar-js) – Eine Vorlage mit JavaScript und Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier)
-- [wails-template-quasar-ts](https://github.com/sgosiaco/wails-template-quasar-ts) – Eine Vorlage mit TypeScript und Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier, Composition API mit &lt;script setup&gt;)
-- [wails-template-naive](https://github.com/tk103331/wails-template-naive) – Wails-Vorlage auf Basis von Naive UI (eine Komponentenbibliothek für Vue 3)
-- [wails-template-nuxt](https://github.com/gornius/wails-template-nuxt) – Wails-Vorlage mit unverändertem Nuxt3 und TypeScript sowie automatischen Imports für die Wails-JavaScript-Laufzeit
-- [Wails-Tool-Template](https://github.com/xisuo67/Wails-Tool-Template) – Wails-Vorlage mit Vue+TypeScript+Vite+Element-plus (nach dem Vorbild von NetEase Cloud Music)
+- [wails-template-quasar-js](https://github.com/sgosiaco/wails-template-quasar-js) – Eine Vorlage mit JavaScript + Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier)
+- [wails-template-quasar-ts](https://github.com/sgosiaco/wails-template-quasar-ts) – Eine Vorlage mit TypeScript + Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier, Composition API mit &lt;script setup&gt;)
+- [wails-template-naive](https://github.com/tk103331/wails-template-naive) – Wails-Vorlage auf Basis von Naive UI (einer Komponentenbibliothek für Vue 3)
+- [wails-template-nuxt](https://github.com/gornius/wails-template-nuxt) – Wails-Vorlage mit unverändertem Nuxt3 und TypeScript sowie automatischen Imports für die Wails-JavaScript-Runtime
+- [Wails-Tool-Template](https://github.com/xisuo67/Wails-Tool-Template) – Wails-Vorlage mit Vue+TypeScript+Vite+Element-plus (im Stil von NetEase Cloud Music)
 
 ## Angular
 
-- [wails-template-angular](https://github.com/mateothegreat/wails-template-angular) – Angular 15+, voll ausgestattet und bereit für den Produktionseinsatz.
+- [wails-template-angular](https://github.com/mateothegreat/wails-template-angular) – Angular 15 mit umfangreicher Funktionalität und bereit für den Produktionseinsatz.
 - [wails-angular-template](https://github.com/TAINCER/wails-angular-template) – Angular mit TypeScript, Sass, Hot Reloading, Code-Splitting und i18n
 
 ## React
@@ -75,12 +72,12 @@ Wenn Sie bei einer Vorlage unsicher sind, prüfen Sie in `package.json` und `wai
 
 ## Elm
 
-- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) – Entwickeln Sie Ihre GUI-Anwendung mit funktionaler Programmierung und einer **flotten** Hot-Reload-Konfiguration :tada: :rocket:
+- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) – Entwickeln Sie Ihre GUI-App mit funktionaler Programmierung und einer **flotten** Hot-Reload-Konfiguration :tada: :rocket:
 - [wails-template-elm-tailwind](https://github.com/rnice01/wails-template-elm-tailwind) – Kombinieren Sie die Stärken :muscle: von Elm + Tailwind CSS + Wails! Hot Reloading wird unterstützt.
 
 ## HTMX
 
-- [wails-htmx-templ-chi-tailwind](https://github.com/PylotLight/wails-hmtx-templ-template) – Nutzen Sie eine einzigartige Kombination aus reinem htmx für Interaktivität und templ zum Erstellen von Komponenten und Formularen
+- [wails-htmx-templ-chi-tailwind](https://github.com/PylotLight/wails-hmtx-templ-template) – Verwenden Sie eine einzigartige Kombination aus reinem htmx für Interaktivität und templ zum Erstellen von Komponenten und Formularen
 
 ## Reines JavaScript (Vanilla)
 
@@ -88,4 +85,4 @@ Wenn Sie bei einer Vorlage unsicher sind, prüfen Sie in `package.json` und `wai
 
 ## Lit (Webkomponenten)
 
-- [wails-lit-shoelace-esbuild-template](https://github.com/Braincompiler/wails-lit-shoelace-esbuild-template) – Wails-Vorlage mit einem Frontend aus Lit und der Shoelace-Komponentenbibliothek sowie vorkonfiguriertem Prettier und TypeScript.
+- [wails-lit-shoelace-esbuild-template](https://github.com/Braincompiler/wails-lit-shoelace-esbuild-template) – Wails-Vorlage mit einem Frontend auf Basis von Lit, der Komponentenbibliothek Shoelace sowie vorkonfiguriertem Prettier und TypeScript.

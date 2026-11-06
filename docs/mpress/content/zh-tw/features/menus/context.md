@@ -1,29 +1,29 @@
 ---
-title: "內容選單"
-description: "為您的應用程式建立右鍵內容選單"
+title: "快顯功能表"
+description: "為應用程式建立滑鼠右鍵快顯功能表"
 slug: "features/menus/context"
 sourcePath: "features/menus/context.md"
 ---
 
 ## 問題
 
-使用者預期右鍵選單會提供依情境而定的動作。不同元素需要不同的選單：
+使用者預期按一下滑鼠右鍵時，會顯示包含情境相關操作的功能表。不同元素需要不同的功能表：
 
 - **文字**：剪下、複製、貼上
-- **影像**：儲存、複製、開啟
-- **自訂元素**：應用程式專屬動作
+- **圖片**：儲存、複製、開啟
+- **自訂元素**：應用程式專屬操作
 
-手動建立內容選單需要處理滑鼠事件、定位和平台差異。
+手動建置快顯功能表時，必須處理滑鼠事件、定位和平台差異。
 
 ## Wails 解決方案
 
-Wails 使用 CSS 屬性提供<strong>宣告式內容選單</strong>。您可以將選單與 HTML 元素建立關聯、傳遞資料並處理點擊事件，而且全都採用平台原生行為。
+Wails 使用 CSS 屬性提供**宣告式快顯功能表**。您可以將功能表與 HTML 元素建立關聯、傳遞資料及處理點擊事件，而且全都採用平台原生行為。
 
-![顯示在 macOS WebView 上方的 Wails 自訂內容選單](/assets/screenshots/context-menu-macos.png)
+![顯示在 macOS WebView 上方的 Wails 自訂快顯功能表](/assets/screenshots/context-menu-macos.png)
 
-選單是平台原生選單，而開啟選單的元素仍是 WebView 的一部分。這張 macOS 擷取畫面使用下方範例的自訂內容選單註冊方式。
+功能表是平台原生元件，而開啟它的元素仍屬於 WebView。此 macOS 畫面使用下方範例所註冊的自訂快顯功能表。
 
-## 快速入門
+## 快速開始
 
 **Go 程式碼：**
 
@@ -46,11 +46,11 @@ app.ContextMenu.Add("editor-menu", contextMenu)
 </textarea>
 ```
 
-<strong>就這麼簡單！</strong>在文字區域按一下滑鼠右鍵，就會顯示您的自訂選單。
+<strong>就這麼簡單！</strong>在文字區域按一下滑鼠右鍵，即會顯示自訂功能表。
 
-## 建立內容選單
+## 建立快顯功能表
 
-### 基本內容選單
+### 基本快顯功能表
 
 ```go
 // Create menu
@@ -73,9 +73,9 @@ contextMenu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(func(ctx *applica
 app.ContextMenu.Add("text-menu", contextMenu)
 ```
 
-<strong>選單 ID：</strong>必須是唯一值，用於將選單與 HTML 元素建立關聯。
+<strong>功能表 ID：</strong>必須是唯一值，用於將功能表與 HTML 元素建立關聯。
 
-### 使用子選單
+### 加入子功能表
 
 ```go
 contextMenu := app.ContextMenu.New()
@@ -95,7 +95,7 @@ exportMenu.Add("SVG").OnClick(exportSVG)
 app.ContextMenu.Add("image-menu", contextMenu)
 ```
 
-### 使用核取方塊和選項群組
+### 加入核取方塊和選項按鈕群組
 
 ```go
 contextMenu := app.ContextMenu.New()
@@ -116,11 +116,11 @@ contextMenu.AddRadio("Large", false).OnClick(handleSize)
 app.ContextMenu.Add("view-menu", contextMenu)
 ```
 
-如需瞭解<strong>所有選單項目類型</strong>，請參閱[選單參考](/features/menus/reference/)。
+如需瞭解**所有功能表項目類型**，請參閱[功能表參考](/features/menus/reference/)。
 
 ## 與 HTML 元素建立關聯
 
-使用 CSS 自訂屬性附加內容選單：
+使用 CSS 自訂屬性附加快顯功能表：
 
 ### 基本關聯
 
@@ -132,7 +132,7 @@ app.ContextMenu.Add("view-menu", contextMenu)
 
 **CSS 屬性：**`--custom-contextmenu: <menu-id>`
 
-### 使用情境資料
+### 搭配情境資料
 
 將資料從 HTML 傳遞至 Go：
 
@@ -156,7 +156,7 @@ app.ContextMenu.Add("file-menu", contextMenu)
 
 **CSS 屬性：**
 
-- `--custom-contextmenu: <menu-id>`－要顯示的選單
+- `--custom-contextmenu: <menu-id>`－要顯示的功能表
 - `--custom-contextmenu-data: <data>`－要傳遞給處理常式的資料
 
 ### 動態資料
@@ -175,7 +175,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </script>
 ```
 
-### 多個元素共用同一個選單
+### 多個元素共用同一個功能表
 
 ```html
 <div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-1">
@@ -191,7 +191,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </div>
 ```
 
-**共用一個選單，但每個元素使用不同的資料。**
+**共用一個功能表，但每個元素使用不同的資料。**
 
 ## 情境資料
 
@@ -206,7 +206,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-<strong>資料類型：</strong>一律為`string`。請視需要進行剖析。
+<strong>資料型別：</strong>一律為`string`。請視需要剖析。
 
 ### 傳遞複雜資料
 
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="安全性"}
-對於來自前端的情境資料，**一律要進行驗證**。使用者可以操控 CSS 屬性，因此請將這些資料視為不受信任的輸入。
+請務必驗證來自前端的**情境資料**。使用者可以操控 CSS 屬性，因此應將資料視為不受信任的輸入。
 
 @end
 
@@ -269,11 +269,11 @@ contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
 })
 ```
 
-## 預設內容選單
+## 預設快顯功能表
 
-WebView 為標準操作（複製、貼上、檢查）提供內建內容選單。請使用`--default-contextmenu`控制此選單：
+WebView 為標準操作（複製、貼上、檢查）提供內建快顯功能表。請使用`--default-contextmenu`控制它：
 
-### 隱藏預設選單
+### 隱藏預設功能表
 
 ```html
 <div style="--default-contextmenu: hide">
@@ -281,9 +281,9 @@ WebView 為標準操作（複製、貼上、檢查）提供內建內容選單。
 </div>
 ```
 
-<strong>使用情境：</strong>不適合顯示預設選單的自訂 UI 元素。
+<strong>使用情境：</strong>不適合顯示預設功能表的自訂 UI 元素。
 
-### 顯示預設選單
+### 顯示預設功能表
 
 ```html
 <div style="--default-contextmenu: show">
@@ -301,15 +301,15 @@ WebView 為標準操作（複製、貼上、檢查）提供內建內容選單。
 </div>
 ```
 
-<strong>預設行為。</strong>在下列情況顯示預設選單：
+<strong>預設行為。</strong>在下列情況顯示預設功能表：
 
 - 已選取文字
 - 位於文字輸入欄位中
 - 位於可編輯內容中（`contenteditable`）
 
-其他情況則隱藏預設選單。
+在其他情況下隱藏預設功能表。
 
-### 結合自訂選單與預設選單
+### 結合自訂與預設功能表
 
 ```html
 <!-- Custom menu + default menu -->
@@ -320,13 +320,13 @@ WebView 為標準操作（複製、貼上、檢查）提供內建內容選單。
 
 **行為：**
 
-1. 先顯示自訂選單
-2. 若自訂選單為空或找不到，則顯示預設選單
+1. 先顯示自訂功能表
+2. 如果自訂功能表是空的或找不到，則顯示預設功能表
 3. 兩者可以並存（視平台而定）
 
-## 動態內容選單
+## 動態快顯功能表
 
-根據應用程式狀態更新選單：
+根據應用程式狀態更新功能表：
 
 ### 啟用／停用項目
 
@@ -355,10 +355,10 @@ func onSelectionChanged(hasSelection bool) {
 }
 ```
 
-@note{type="caution" title="一律呼叫 Update()"}
-變更選單狀態後，**請呼叫`contextMenu.Update()`**。這在 Windows 上至關重要。
+@note{type="caution" title="務必呼叫 Update()"}
+變更功能表狀態後，**請呼叫`contextMenu.Update()`**。這在 Windows 上至關重要。
 
-詳情請參閱[選單參考](/features/menus/reference/#enabled-state)。
+如需詳細資訊，請參閱[功能表參考](/features/menus/reference/#enabled-state)。
 
 @end
 
@@ -377,9 +377,9 @@ playMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### 重建選單
+### 重建功能表
 
-若要進行重大變更，請重建整個選單：
+若要進行重大變更，請重建整個功能表：
 
 ```go
 func rebuildContextMenu(fileType string) {
@@ -410,51 +410,51 @@ func rebuildContextMenu(fileType string) {
 
 ## 平台行為
 
-快顯選單是<strong>平台原生元件</strong>：
+快顯功能表是**平台原生元件**：
 
 @tabs{sync-key="platform"}
 [macOS]
-**原生 macOS 快顯選單：**
+**macOS 原生快顯功能表：**
 
-- 系統動畫與轉場效果
-- 按右鍵 = Control+按一下（自動）
+- 系統動畫和轉場效果
+- 按一下滑鼠右鍵 = Control+Click（自動）
 - 配合系統外觀（淺色／深色）
-- 預設選單中的標準文字操作
-- 長選單採用原生捲動功能
+- 預設功能表中的標準文字操作
+- 長功能表使用原生捲動功能
 
 **macOS 慣例：**
 
-- 選單項目採用句首字母大寫格式
-- 會開啟對話方塊的項目使用刪節號（...）
+- 功能表項目使用句首大寫
+- 會開啟對話方塊的項目使用省略號（...）
 - 常用快速鍵：⌘C（複製）、⌘V（貼上）
 
 [Windows]
-**原生 Windows 快顯選單：**
+**Windows 原生快顯功能表：**
 
 - Windows 原生樣式
 - 配合 Windows 佈景主題
-- 預設選單中的標準 Windows 操作
-- 支援觸控與手寫筆輸入
+- 預設功能表中的標準 Windows 操作
+- 支援觸控和手寫筆輸入
 
 **Windows 慣例：**
 
-- 選單項目採用標題式大小寫
-- 會開啟對話方塊的項目使用刪節號（...）
+- 功能表項目使用標題式大小寫
+- 會開啟對話方塊的項目使用省略號（...）
 - 常用快速鍵：Ctrl+C（複製）、Ctrl+V（貼上）
 
 [Linux]
 **桌面環境整合：**
 
-- 配合桌面佈景主題（GTK、Qt 等）
-- 按右鍵的行為依循系統設定
+- 配合桌面佈景主題（GTK、Qt 等）調整
+- 按一下滑鼠右鍵的行為遵循系統設定
 - 預設選單內容會因環境而異
-- 位置配置依循桌面環境慣例
+- 位置配置遵循桌面環境慣例
 
 **Linux 注意事項：**
 
-- 在目標桌面環境上測試
+- 請在目標桌面環境上測試
 - GTK 與 Qt 的行為不同
-- 部分桌面環境會自訂快顯選單
+- 部分桌面環境會自訂快顯功能表
 
 @end
 
@@ -639,26 +639,26 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ 建議做法
 
-- **讓選單聚焦於必要功能** — 僅包含與該元素相關的動作
-- **驗證情境資料** — 將其視為不受信任的輸入
-- **使用明確的標籤** — 使用「刪除檔案」，不要只寫「刪除」
-- **呼叫 menu.Update()** — 變更選單狀態後
+- **讓選單聚焦** — 僅提供與該元素相關的動作
+- **驗證內容資料** — 將其視為不受信任的輸入
+- **使用清楚的標籤** — 使用「刪除檔案」，而非「刪除」
+- **呼叫 menu.Update()** — 變更選單狀態後呼叫
 - **在所有平台上測試** — 行為會因平台而異
-- **提供鍵盤快速鍵** — 用於常見操作
+- **提供鍵盤快速鍵** — 用於常用動作
 - **將相關項目分組** — 使用分隔線
 
-### ❌ 請勿這樣做
+### ❌ 避免做法
 
-- **不要信任情境資料** — 一律加以驗證
-- **不要讓選單過長** — 最多 7-10 個項目
-- **不要忘記呼叫 menu.Update()** — 否則選單無法正常運作
+- **不要信任內容資料** — 一律進行驗證
+- **選單不要過長** — 最多 7-10 個項目
+- **不要忘記呼叫 menu.Update()** — 否則選單將無法正常運作
 - **不要巢狀過深** — 最多 2 層
-- **不要使用術語** — 讓標籤淺顯易懂
-- **不要阻塞處理常式** — 讓其快速完成
+- **不要使用術語** — 標籤應淺顯易懂
+- **不要阻塞處理常式** — 讓它們快速完成
 
 ## 疑難排解
 
-### 快顯選單未出現
+### 未顯示快顯功能表
 
 **可能的原因：**
 
@@ -666,7 +666,7 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 2. CSS 屬性拼寫錯誤
 3. 執行階段尚未初始化
 
-**解決方法：**
+**解決方案：**
 
 ```go
 // Check menu is registered
@@ -678,21 +678,21 @@ app.ContextMenu.Add("my-menu", contextMenu)
 <div style="--custom-contextmenu: my-menu">
 ```
 
-### 未收到情境資料
+### 未收到內容資料
 
 **可能的原因：**
 
 1. 未設定 CSS 屬性
 2. 資料包含特殊字元
 
-**解決方法：**
+**解決方案：**
 
 ```html
 <!-- Escape quotes in JSON -->
 <div style="--custom-contextmenu-data: {&quot;id&quot;:123}">
 ```
 
-或者使用 JavaScript：
+或使用 JavaScript：
 
 ```javascript
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
@@ -700,9 +700,9 @@ element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 
 ### 選單項目沒有回應
 
-<strong>原因：</strong>啟用後忘記呼叫`menu.Update()`
+<strong>原因：</strong>啟用後忘記呼叫 `menu.Update()`
 
-**解決方法：**
+**解決方案：**
 
 ```go
 menuItem.SetEnabled(true)
@@ -712,7 +712,7 @@ contextMenu.Update()  // Add this!
 ## 後續步驟
 
 @cards{cols="2"}
-📖 選單參考資料
+📖 選單參考
 選單項目類型與屬性的完整參考資料。
 
 [深入瞭解 →](/features/menus/reference/)
@@ -725,7 +725,7 @@ contextMenu.Update()  // Add this!
 
 ---
 ★ 系統匣選單
-加入系統匣／選單列整合。
+新增系統匣／選單列整合。
 
 [深入瞭解 →](/features/menus/systray/)
 
@@ -739,4 +739,4 @@ contextMenu.Update()  // Add this!
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[內容選單範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus)。
+<strong>有問題嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[快顯功能表範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus)。

@@ -1,137 +1,474 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "d5629e2a8c20a01e2f42",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "ff6104fab6e834a5d102",
   "sourceFile": "community/media.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
   "segments": {
     "b0001-text-01": {
       "sourceHash": "f44d45fde1bf1bf95d39db032cb07f371489adfb19cf8de96822dd500a3df258",
-      "targetHash": "1190b1471c3b84623db61a5ffb6ab8a6028d157a5410697a89c4feba3b10c54c",
-      "status": "final",
-      "sourcePreview": "Use the official Wails assets when sharing a project built with Wails. The buttons below link to [wails.io](https://wails.io) and remain hosted by Wails, so you do not need to copy the image into your project.",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "targetHash": "b9392628db3c227a528b0ba85500f510dcf1ff881149111e5d5083063a23ff7a",
+      "machineHash": "b9392628db3c227a528b0ba85500f510dcf1ff881149111e5d5083063a23ff7a",
+      "machineText": "Verwenden Sie beim Teilen eines mit Wails erstellten Projekts die offiziellen Wails-Ressourcen. Die folgenden Schaltflächen verweisen auf [wails.io](https://wails.io) und werden weiterhin von Wails gehostet. Sie müssen das Bild daher nicht in Ihr Projekt kopieren.",
+      "status": "machine-translated",
+      "sourcePreview": "Use the official Wails assets when sharing a project built with Wails. The buttons below link to [wa…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
     "b0002-heading-01": {
       "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
-      "targetHash": "72941660f25e7600c6d60c5cc4350647b8bfbd5f78c3cbb4eac507ed836115a3",
-      "status": "final",
+      "targetHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineText": "Erstellt mit Wails",
+      "status": "machine-translated",
       "sourcePreview": "Built with Wails",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
     "b0003-text-01": {
       "sourceHash": "b92ac438b1db2ecd36b9e19cac9df14f2cbc0ee3ddf6a0ba08674644e6ceee2a",
-      "targetHash": "286c5514cd8c2a1d4ff00f6cfb9038e2f784723ff0eb1f5f213bfff23b470ae9",
-      "status": "final",
-      "sourcePreview": "Choose the version with sufficient contrast for its background. Each preview is the exact linked image that your visitors will see.",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "targetHash": "7d57c1aff3663b5cf69fb1945641f377100214f960adabe2245a3465bda6e117",
+      "machineHash": "7d57c1aff3663b5cf69fb1945641f377100214f960adabe2245a3465bda6e117",
+      "machineText": "Wählen Sie die Version, die einen ausreichenden Kontrast zum Hintergrund bietet. Jede Vorschau zeigt exakt das verlinkte Bild, das Ihre Besucher sehen werden.",
+      "status": "machine-translated",
+      "sourcePreview": "Choose the version with sufficient contrast for its background. Each preview is the exact linked ima…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
     "b0004-heading-01": {
       "sourceHash": "fa74b4ee4c0697ab127ac5b5ae4fc3af15c0275052e46570a805333a6185eb87",
       "targetHash": "a740960eea5f98392e0bca9860b0e92ad4742e3e8787fa265fdb9c69362a202c",
-      "status": "final",
+      "machineHash": "a740960eea5f98392e0bca9860b0e92ad4742e3e8787fa265fdb9c69362a202c",
+      "machineText": "Heller Hintergrund",
+      "status": "machine-translated",
       "sourcePreview": "Light background",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0005-text-01": {
-      "sourceHash": "850580ab7f4a27207b8e07c175acf6f989d75a07586fbb3c0b914181c14d875f",
-      "targetHash": "32f750b8378cedfb793b84268186e9e0e43e2d8e6175c343efcc39f053462fc4",
-      "status": "final",
-      "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-light\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
-    },
-    "b0006-heading-01": {
+    "b0005-heading-01": {
       "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
       "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
-      "status": "final",
+      "machineHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "machineText": "HTML",
+      "status": "machine-translated",
       "sourcePreview": "HTML",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0007-text-01": {
+    "b0006-text-01": {
       "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
-      "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
-      "status": "final",
+      "targetHash": "b3dfbb0607e7d8aa6c6c4b30cfaf66b357144ca26fe55add67003b47ff7fd60b",
+      "machineHash": "b3dfbb0607e7d8aa6c6c4b30cfaf66b357144ca26fe55add67003b47ff7fd60b",
+      "machineText": "Verwenden Sie für die kompakte Version `width=\"90\" height=\"24\"`.",
+      "status": "machine-translated",
       "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "b0007-heading-01": {
+      "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "machineHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "machineText": "Markdown",
+      "status": "machine-translated",
+      "sourcePreview": "Markdown",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
     "b0008-heading-01": {
-      "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
-      "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
-      "status": "final",
-      "sourcePreview": "Markdown",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
-    },
-    "b0009-heading-01": {
       "sourceHash": "b552a277da96cf5f72467f62d6a935a287ef763ceafb2b27cf56cc2f43124927",
       "targetHash": "33180f3eff1135909fcb7b3df9cb05f2f25edaa694538303a9d025acd6bd8395",
-      "status": "final",
+      "machineHash": "33180f3eff1135909fcb7b3df9cb05f2f25edaa694538303a9d025acd6bd8395",
+      "machineText": "Dunkler Hintergrund",
+      "status": "machine-translated",
       "sourcePreview": "Dark background",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0010-text-01": {
-      "sourceHash": "9b16ab4c5e89b9a01ceb2c8a09cdc2d54d1f76a9228d9fd79c7ed0d1ae8d2ce8",
-      "targetHash": "d4aa850e6b6ef68f38e1a9efbd87f4e629abcf9292d0fb908bda6fcb76bc690c",
-      "status": "final",
-      "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-dark\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
-    },
-    "b0011-heading-01": {
+    "b0009-heading-01": {
       "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
       "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
-      "status": "final",
+      "machineHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "machineText": "HTML",
+      "status": "machine-translated",
       "sourcePreview": "HTML",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0012-text-01": {
+    "b0010-text-01": {
       "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
-      "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
-      "status": "final",
+      "targetHash": "b3dfbb0607e7d8aa6c6c4b30cfaf66b357144ca26fe55add67003b47ff7fd60b",
+      "machineHash": "b3dfbb0607e7d8aa6c6c4b30cfaf66b357144ca26fe55add67003b47ff7fd60b",
+      "machineText": "Verwenden Sie für die kompakte Version `width=\"90\" height=\"24\"`.",
+      "status": "machine-translated",
       "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0013-heading-01": {
+    "b0011-heading-01": {
       "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
       "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
-      "status": "final",
+      "machineHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "machineText": "Markdown",
+      "status": "machine-translated",
       "sourcePreview": "Markdown",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "b0014-text-01": {
+    "b0012-text-01": {
       "sourceHash": "e34c0a94cc99cbfe05869a2f8899da53fbd7656d47b8a3fc2bd66f878f2c0f2a",
-      "targetHash": "54e75ced69ab2c9423f51413d19219311302ce216920bc95ca2f6163fb9c622b",
-      "status": "final",
-      "sourcePreview": "Markdown renders the image at its intrinsic `180` by `48` pixel size. Use the HTML version when you need to set a different display size. Keep the buttons at their original `15:4` proportions.",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "targetHash": "cf7ba7e500b8278eda00dcca6ee18f6a65645aaf3bdefe2c4e11f61a0731ebee",
+      "machineHash": "cf7ba7e500b8278eda00dcca6ee18f6a65645aaf3bdefe2c4e11f61a0731ebee",
+      "machineText": "Markdown stellt das Bild in seiner intrinsischen Größe von `180` × `48` Pixeln dar. Verwenden Sie die HTML-Version, wenn Sie eine andere Anzeigegröße festlegen müssen. Behalten Sie für die Schaltflächen das ursprüngliche Seitenverhältnis von `15:4` bei.",
+      "status": "machine-translated",
+      "sourcePreview": "Markdown renders the image at its intrinsic `180` by `48` pixel size. Use the HTML version when you …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "95facfb1b960a42d85d8334e58e34b6519246dc59cb5ce3dbc57542924572e9c",
-      "targetHash": "635fa68c4df41eaaa1ce5da0cfb9b54078598798dbf82a8af70120011130f593",
-      "status": "final",
+      "targetHash": "bfc407ab803d160551d093d6c9114473406f68a2b1c3f8cc03813a106a2654a5",
+      "machineHash": "bfc407ab803d160551d093d6c9114473406f68a2b1c3f8cc03813a106a2654a5",
+      "machineText": "Offizielle Wails-Schaltflächen mit Vorschauen sowie Einbettungscode für HTML und Markdown",
+      "status": "machine-translated",
       "sourcePreview": "Official Wails buttons with previews and HTML and Markdown embeds",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
       "targetHash": "0031e3624efbc466d4d85f667fb92b2910019df24b9e7729ceef729180d8836c",
-      "status": "final",
+      "machineHash": "0031e3624efbc466d4d85f667fb92b2910019df24b9e7729ceef729180d8836c",
+      "machineText": "Medien",
+      "status": "machine-translated",
       "sourcePreview": "Media",
-      "provider": "manual",
-      "updatedAt": "2026-09-14T12:01:23Z"
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-001": {
+      "sourceHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "targetHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "machineHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "machineText": "Standard (",
+      "status": "machine-translated",
+      "sourcePreview": "Standard (",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-002": {
+      "sourceHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "targetHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineText": " px):",
+      "status": "machine-translated",
+      "sourcePreview": "px):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-003": {
+      "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+      "targetHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineText": "Erstellt mit Wails",
+      "status": "machine-translated",
+      "sourcePreview": "Built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-004": {
+      "sourceHash": "9c80efcfffdf41d220490069a4e31c7ea637c9f3228c17e97a0f32460520eecf",
+      "targetHash": "fb8773239335f20292fa9a746feed402966674e7abd05df9faca9e5d885c9402",
+      "machineHash": "fb8773239335f20292fa9a746feed402966674e7abd05df9faca9e5d885c9402",
+      "machineText": "Kompakt (",
+      "status": "machine-translated",
+      "sourcePreview": "Compact (",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-005": {
+      "sourceHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "targetHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineText": " px):",
+      "status": "machine-translated",
+      "sourcePreview": "px):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0001-text-006": {
+      "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+      "targetHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineText": "Erstellt mit Wails",
+      "status": "machine-translated",
+      "sourcePreview": "Built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-001": {
+      "sourceHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "targetHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "machineHash": "6295512ed405a9fda2cc6ed31c1973e129010ef5bbbf7d28528ea166a025475c",
+      "machineText": "Standard (",
+      "status": "machine-translated",
+      "sourcePreview": "Standard (",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-002": {
+      "sourceHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "targetHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineText": " px):",
+      "status": "machine-translated",
+      "sourcePreview": "px):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-003": {
+      "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+      "targetHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineText": "Erstellt mit Wails",
+      "status": "machine-translated",
+      "sourcePreview": "Built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-004": {
+      "sourceHash": "9c80efcfffdf41d220490069a4e31c7ea637c9f3228c17e97a0f32460520eecf",
+      "targetHash": "fb8773239335f20292fa9a746feed402966674e7abd05df9faca9e5d885c9402",
+      "machineHash": "fb8773239335f20292fa9a746feed402966674e7abd05df9faca9e5d885c9402",
+      "machineText": "Kompakt (",
+      "status": "machine-translated",
+      "sourcePreview": "Compact (",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-005": {
+      "sourceHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "targetHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineHash": "50c6447367c3cf314f329f77e6092af9af48c9d60fa3a1336eeb968da7bca6a3",
+      "machineText": " px):",
+      "status": "machine-translated",
+      "sourcePreview": "px):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    },
+    "h0002-text-006": {
+      "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+      "targetHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineHash": "a08d78e01048fdda2a3634dea03601c75c9425d5d09b88b6fc946367a39d58ec",
+      "machineText": "Erstellt mit Wails",
+      "status": "machine-translated",
+      "sourcePreview": "Built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-02T23:53:06Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/media.mpd",
+    "sourceHash": "212c10b88313656333a34307c3d06b195fc4180b7b2ff734d1fa12946ba69ebb",
+    "targetHash": "81e5bdba35dd74edf6f3fcc1c9705a2a3a95fa1aa7ffc20f209e411b10235be8",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "f44d45fde1bf1bf95d39db032cb07f371489adfb19cf8de96822dd500a3df258",
+        "targetHash": "1190b1471c3b84623db61a5ffb6ab8a6028d157a5410697a89c4feba3b10c54c",
+        "status": "final",
+        "sourcePreview": "Use the official Wails assets when sharing a project built with Wails. The buttons below link to [wails.io](https://wails.io) and remain hosted by Wails, so you do not need to copy the image into your project.",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0002-heading-01": {
+        "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+        "targetHash": "72941660f25e7600c6d60c5cc4350647b8bfbd5f78c3cbb4eac507ed836115a3",
+        "status": "final",
+        "sourcePreview": "Built with Wails",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0003-text-01": {
+        "sourceHash": "b92ac438b1db2ecd36b9e19cac9df14f2cbc0ee3ddf6a0ba08674644e6ceee2a",
+        "targetHash": "286c5514cd8c2a1d4ff00f6cfb9038e2f784723ff0eb1f5f213bfff23b470ae9",
+        "status": "final",
+        "sourcePreview": "Choose the version with sufficient contrast for its background. Each preview is the exact linked image that your visitors will see.",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0004-heading-01": {
+        "sourceHash": "fa74b4ee4c0697ab127ac5b5ae4fc3af15c0275052e46570a805333a6185eb87",
+        "targetHash": "a740960eea5f98392e0bca9860b0e92ad4742e3e8787fa265fdb9c69362a202c",
+        "status": "final",
+        "sourcePreview": "Light background",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0005-text-01": {
+        "sourceHash": "850580ab7f4a27207b8e07c175acf6f989d75a07586fbb3c0b914181c14d875f",
+        "targetHash": "32f750b8378cedfb793b84268186e9e0e43e2d8e6175c343efcc39f053462fc4",
+        "status": "final",
+        "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-light\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0006-heading-01": {
+        "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+        "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+        "status": "final",
+        "sourcePreview": "HTML",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0007-text-01": {
+        "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
+        "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
+        "status": "final",
+        "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0008-heading-01": {
+        "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+        "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+        "status": "final",
+        "sourcePreview": "Markdown",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0009-heading-01": {
+        "sourceHash": "b552a277da96cf5f72467f62d6a935a287ef763ceafb2b27cf56cc2f43124927",
+        "targetHash": "33180f3eff1135909fcb7b3df9cb05f2f25edaa694538303a9d025acd6bd8395",
+        "status": "final",
+        "sourcePreview": "Dark background",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0010-text-01": {
+        "sourceHash": "9b16ab4c5e89b9a01ceb2c8a09cdc2d54d1f76a9228d9fd79c7ed0d1ae8d2ce8",
+        "targetHash": "d4aa850e6b6ef68f38e1a9efbd87f4e629abcf9292d0fb908bda6fcb76bc690c",
+        "status": "final",
+        "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-dark\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0011-heading-01": {
+        "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+        "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+        "status": "final",
+        "sourcePreview": "HTML",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0012-text-01": {
+        "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
+        "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
+        "status": "final",
+        "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0013-heading-01": {
+        "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+        "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+        "status": "final",
+        "sourcePreview": "Markdown",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "b0014-text-01": {
+        "sourceHash": "e34c0a94cc99cbfe05869a2f8899da53fbd7656d47b8a3fc2bd66f878f2c0f2a",
+        "targetHash": "54e75ced69ab2c9423f51413d19219311302ce216920bc95ca2f6163fb9c622b",
+        "status": "final",
+        "sourcePreview": "Markdown renders the image at its intrinsic `180` by `48` pixel size. Use the HTML version when you need to set a different display size. Keep the buttons at their original `15:4` proportions.",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "95facfb1b960a42d85d8334e58e34b6519246dc59cb5ce3dbc57542924572e9c",
+        "targetHash": "635fa68c4df41eaaa1ce5da0cfb9b54078598798dbf82a8af70120011130f593",
+        "status": "final",
+        "sourcePreview": "Official Wails buttons with previews and HTML and Markdown embeds",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
+        "targetHash": "0031e3624efbc466d4d85f667fb92b2910019df24b9e7729ceef729180d8836c",
+        "status": "final",
+        "sourcePreview": "Media",
+        "provider": "manual",
+        "updatedAt": "2026-09-14T12:01:23Z"
+      }
+    },
+    "reviewReasons": {
+      "b0005-heading-01": "unmapped-content",
+      "b0006-text-01": "unmapped-content",
+      "b0007-heading-01": "unmapped-content",
+      "b0009-heading-01": "unmapped-content",
+      "b0010-text-01": "unmapped-content",
+      "b0011-heading-01": "unmapped-content",
+      "h0001-text-001": "unmapped-content",
+      "h0001-text-002": "unmapped-content",
+      "h0001-text-004": "unmapped-content",
+      "h0001-text-005": "unmapped-content",
+      "h0002-text-001": "unmapped-content",
+      "h0002-text-002": "unmapped-content",
+      "h0002-text-004": "unmapped-content",
+      "h0002-text-005": "unmapped-content"
     }
   }
 }

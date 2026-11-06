@@ -1087,16 +1087,16 @@
       "updatedAt": "2026-10-25T21:30:56Z"
     },
     "b0091-text-01": {
-      "sourceHash": "a3719b1c3979aa5285745e3b5bd1009dd79c9903a006832d92ffa545a59184df",
-      "targetHash": "40a77bff44fae811a9d3f2316228377c31308dd69d25eda69f948433ac6dbbde",
-      "machineHash": "40a77bff44fae811a9d3f2316228377c31308dd69d25eda69f948433ac6dbbde",
-      "machineText": "**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [서비스 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)를 확인하세요.",
+      "sourceHash": "740c13d6bb10ebbe2029abb0525cc5e30dcf4d4cda3d1e54fb2cf51fda8ed4bb",
+      "targetHash": "15494769120e7408ecf41d31c65264afc2f30a3d36aef0d08d0acedf2e7503de",
+      "machineHash": "15494769120e7408ecf41d31c65264afc2f30a3d36aef0d08d0acedf2e7503de",
+      "machineText": "**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [서비스 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:30:56Z"
+      "updatedAt": "2026-11-06T02:13:32Z"
     },
     "fm-description": {
       "sourceHash": "4dc63666c7d12f2c1ee92ab1005120ff524f3366dbdb62daff18e37c0a867ac6",

@@ -7,7 +7,7 @@ sourcePath: "features/menus/application.md"
 
 ## Le problème
 
-Les applications de bureau professionnelles ont besoin de barres de menus — Fichier, Édition, Présentation, Aide. Toutefois, les menus fonctionnent différemment sur chaque plateforme :
+Les applications de bureau professionnelles ont besoin de barres de menus — Fichier, Édition, Affichage, Aide. Cependant, les menus fonctionnent différemment selon la plateforme :
 
 - **macOS** : barre de menus globale en haut de l’écran
 - **Windows** : barre de menus dans la barre de titre de la fenêtre
@@ -17,11 +17,11 @@ Créer manuellement des menus adaptés à chaque plateforme est fastidieux et so
 
 ## La solution Wails
 
-Wails fournit une **API unifiée** qui crée automatiquement des menus natifs adaptés à chaque plateforme. Écrivez le code une seule fois et bénéficiez d’un comportement natif sur toutes les plateformes.
+Wails fournit une **API unifiée** qui crée automatiquement des menus natifs pour chaque plateforme. Écrivez le code une seule fois et bénéficiez d’un comportement natif sur toutes les plateformes.
 
-![Menu d’une application Wails sous macOS avec des éléments standard, des cases à cocher, des boutons radio et des sous-menus](/assets/screenshots/application-menu-macos.png)
+![Menu d’une application Wails sous macOS comprenant des éléments standard, des cases à cocher, des boutons radio et des sous-menus](/assets/screenshots/application-menu-macos.png)
 
-Sous macOS, le menu de l’application se trouve dans la barre de menus globale. Cette capture montre le menu natif rendu par l’API de menus Wails, avec des éléments désactivés, des cases à cocher, des boutons radio et des sous-menus.
+Sous macOS, le menu de l’application figure dans la barre de menus globale. Cette capture montre le menu natif généré par l’API de menus de Wails, avec des éléments désactivés, des cases à cocher, des boutons radio et des sous-menus.
 
 ## Démarrage rapide
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-**C’est tout !** Vous disposez maintenant de menus natifs adaptés à chaque plateforme, avec des éléments standard. L’option `UseApplicationMenu` garantit que les fenêtres Windows et Linux affichent le menu sans code supplémentaire.
+**C’est tout !** Vous disposez maintenant de menus natifs comportant des éléments standard. L’option `UseApplicationMenu` garantit que les fenêtres Windows et Linux affichent le menu sans code supplémentaire.
 
 ## Création de menus
 
@@ -108,7 +108,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 Cette approche produit le comportement suivant :
 
 - Sous **macOS** : le menu apparaît en haut de l’écran (comportement standard)
-- Sous **Windows/Linux** : chaque fenêtre avec `UseApplicationMenu: true` affiche le menu de l’application
+- Sous **Windows/Linux** : chaque fenêtre dotée de `UseApplicationMenu: true` affiche le menu de l’application
 
 **Détails propres à chaque plateforme :**
 
@@ -120,7 +120,7 @@ Cette approche produit le comportement suivant :
 app.Menu.Set(menu)
 ```
 
-Le menu apparaît en haut de l’écran et reste affiché même lorsque toutes les fenêtres sont fermées. L’option `UseApplicationMenu` n’a aucun effet sous macOS, car toutes les applications utilisent le menu global.
+Le menu apparaît en haut de l’écran et reste présent même lorsque toutes les fenêtres sont fermées. L’option `UseApplicationMenu` n’a aucun effet sous macOS, car toutes les applications utilisent le menu global.
 
 [Windows]
 **Barre de menus propre à chaque fenêtre** :
@@ -136,7 +136,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Chaque fenêtre peut avoir son propre menu ou hériter du menu de l’application. Le menu apparaît dans la barre de titre de la fenêtre.
+Chaque fenêtre peut avoir son propre menu ou hériter de celui de l’application. Le menu apparaît dans la barre de titre de la fenêtre.
 
 [Linux]
 **Barre de menus propre à chaque fenêtre** (généralement) :
@@ -152,12 +152,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Le comportement varie selon l’environnement de bureau. Certains, comme Unity, prennent en charge les menus globaux.
+Le comportement varie selon l’environnement de bureau. Certains environnements, comme Unity, prennent en charge les menus globaux.
 
 @end
 
-@note{type="tip" title="Simplifiez les menus multiplateformes"}
-L’utilisation de `UseApplicationMenu: true` évite d’écrire du code propre à chaque plateforme, comme :
+@note{type="tip" title="Simplifier les menus multiplateformes"}
+L’utilisation de `UseApplicationMenu: true` évite d’avoir à écrire du code propre à chaque plateforme, tel que :
 
 ```go
 // Old approach - no longer needed
@@ -177,6 +177,18 @@ Si une fenêtre nécessite un menu différent de celui de l’application, défi
 ```go
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
+
+**Suppression de la barre de menus d’une fenêtre :**
+
+Transmettez `nil` pour supprimer la barre de menus d’une fenêtre :
+
+```go
+window.SetMenu(nil)
+```
+
+Sous Windows et Linux, la fenêtre n’affiche alors plus aucune barre de menus, pas même le menu de l’application qu’elle avait choisi d’utiliser avec `UseApplicationMenu`. Les raccourcis clavier du menu supprimé cessent également de fonctionner dans cette fenêtre. Un appel effectué avant le démarrage de la fenêtre crée celle-ci sans barre de menus. Un appel ultérieur à `SetMenu(menu)` rétablit une barre.
+
+Sous macOS, la barre de menus appartient à l’application et non à une fenêtre ; `SetMenu` n’y a donc aucun effet. Utilisez `app.Menu.Set` pour modifier le menu de l’application.
 
 ## Rôles de menu
 
@@ -209,7 +221,7 @@ menu.AddRole(application.WindowMenu)
 menu.AddRole(application.HelpMenu)
 ```
 
-**Résultat obtenu :**
+**Éléments obtenus :**
 
 @tabs{sync-key="platform"}
 [macOS]
@@ -258,7 +270,7 @@ menu.AddRole(application.HelpMenu)
 **FileMenu** :
 
 - Nouveau (Ctrl+N)
-- Ouvrir... (Ctrl+O)
+- Ouvrir… (Ctrl+O)
 - ---
 - Quitter (Alt+F4)
 
@@ -279,10 +291,10 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu** :
 
-- À propos de [Nom de l’application]
+- À propos de [App Name]
 
 [Linux]
-Similaire à Windows, mais les raccourcis clavier peuvent varier selon l’environnement de bureau.
+Comme sous Windows, mais les raccourcis clavier peuvent varier selon l’environnement de bureau.
 
 @end
 
@@ -329,11 +341,11 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-**Pour découvrir d’autres types d’éléments de menu**, consultez la [référence des menus](/features/menus/reference/).
+Pour découvrir **d’autres types d’éléments de menu**, consultez la [référence des menus](/features/menus/reference/).
 
 ## Menus dynamiques
 
-Mettez à jour les menus en fonction de l’état de l’application :
+Mettez à jour les menus selon l’état de l’application :
 
 ### Activer ou désactiver des éléments
 
@@ -358,9 +370,9 @@ func onDocumentChanged() {
 ```
 
 @note{type="caution" title="Toujours appeler menu.Update()"}
-Après avoir modifié l’état du menu (activation/désactivation, libellé ou état coché), **appelez toujours `menu.Update()`**. Cette étape est particulièrement importante sous Windows, où les menus sont reconstruits.
+Après avoir modifié l’état du menu (activation/désactivation, libellé ou état coché), **appelez toujours `menu.Update()`**. Cette opération est particulièrement essentielle sous Windows, où les menus sont reconstruits.
 
-Pour plus de détails, consultez la [référence des menus](/features/menus/reference/#enabled-state).
+Consultez la [référence des menus](/features/menus/reference/#enabled-state) pour plus de détails.
 
 @end
 
@@ -457,7 +469,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **Comportement de la barre de menus :**
 
-- S’affiche **en haut de l’écran** (barre globale)
+- Apparaît **en haut de l’écran** (globale)
 - Reste affichée lorsque toutes les fenêtres sont fermées
 - Le premier menu est **toujours le menu de l’application**
 - Utilisez `menu.AddRole(application.AppMenu)` pour les éléments standard
@@ -484,7 +496,7 @@ if runtime.GOOS == "darwin" {
 
 **Comportement de la barre de menus :**
 
-- S’affiche dans la **barre de titre de la fenêtre**
+- Apparaît dans la **barre de titre de la fenêtre**
 - Chaque fenêtre possède son propre menu
 - Aucun menu d’application
 
@@ -511,7 +523,7 @@ if runtime.GOOS == "windows" {
 - Certains environnements de bureau prennent en charge les menus globaux (Unity, GNOME avec une extension)
 - L’apparence varie selon l’environnement de bureau
 
-**Bonne pratique :** suivez les conventions de Windows et testez sur les environnements de bureau cibles.
+**Bonne pratique :** suivez les conventions de Windows et effectuez des tests sur les environnements de bureau ciblés.
 
 ## Exemple complet
 
@@ -649,13 +661,13 @@ func showAbout(ctx *application.Context) {
 - **Limitez la profondeur des menus** à 2-3 niveaux maximum
 - **Utilisez des libellés explicites** : « Enregistrer le projet » plutôt que « Enregistrer »
 
-### ❌ À éviter
+### ❌ À ne pas faire
 
 - **Ne codez pas en dur les raccourcis propres à chaque plateforme** : utilisez `CmdOrCtrl`
-- **Ne placez pas Quitter dans le menu Fichier sous macOS** : cette commande se trouve dans le menu de l’application
-- **Ne placez pas À propos dans le menu Aide sous macOS** : cette commande se trouve dans le menu de l’application
-- **N’oubliez pas d’appeler menu.Update()** : les menus ne fonctionneront pas correctement
-- **N’imbriquez pas trop profondément les menus** : les utilisateurs s’y perdent
+- **Ne placez pas Quitter dans le menu Fichier sous macOS** : cet élément se trouve dans le menu de l’application
+- **Ne placez pas À propos dans le menu Aide sous macOS** : cet élément se trouve dans le menu de l’application
+- **N’oubliez pas menu.Update()** : sans cet appel, les menus ne fonctionneront pas correctement
+- **N’imbriquez pas trop profondément les menus** : les utilisateurs s’y perdraient
 - **N’utilisez pas de jargon** : choisissez des libellés faciles à comprendre
 
 ## Étapes suivantes
@@ -674,7 +686,7 @@ Créez des menus contextuels accessibles par clic droit.
 
 ---
 ★ Menus de la zone de notification
-Ajoutez une intégration à la zone de notification ou à la barre des menus.
+Ajoutez une intégration à la zone de notification ou à la barre de menus.
 
 [En savoir plus →](/features/menus/systray/)
 

@@ -1,11 +1,11 @@
 ---
 title: "Wails の仕組み"
-description: "Wails のアーキテクチャと、ネイティブパフォーマンスを実現する仕組みを理解する"
+description: "Wails のアーキテクチャと、ネイティブ性能を実現する仕組みを理解する"
 slug: "concepts/architecture"
 sourcePath: "concepts/architecture.md"
 ---
 
-Wails は、**バックエンドに Go**、<strong>フロントエンドに Web 技術</strong>を使用してデスクトップアプリケーションを構築するためのフレームワークです。ただし Electron とは異なり、ブラウザーを同梱せず、<strong>オペレーティングシステムのネイティブ WebView</strong>を使用します。
+Wails は、**バックエンドに Go**、**フロントエンドに Web 技術**を使用してデスクトップアプリケーションを構築するためのフレームワークです。ただし Electron とは異なり、ブラウザーを同梱せず、**オペレーティングシステムのネイティブ WebView**を使用します。
 
 ```d2
 direction: left
@@ -22,11 +22,11 @@ Wails App: {
     shape: sequence_diagram
     backend."Serves Static Web App": 静的 Web アプリを配信
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via OS-native WebView": OS ネイティブの WebView でサイトをレンダリング
+    frontend."Render Site via OS-native WebView": OS ネイティブの WebView でサイトを描画
   }
   Regular Communication: 通常の通信 {
     shape: sequence_diagram
-    frontend."Make API-style call": API 形式で呼び出す
+    frontend."Make API-style call": API 形式の呼び出しを実行
     frontend -> backend.a: JSON
     backend.a."Service processes request": サービスがリクエストを処理
     backend.a -> os: システム API を呼び出す
@@ -42,25 +42,25 @@ Wails App: {
 
 | 項目 | Wails | Electron |
 | --- | --- | --- |
-| **ブラウザー** | OS が提供する WebView | 同梱の Chromium（約 100MB） |
+| **ブラウザー** | OS が提供する WebView | 同梱の Chromium（約100MB） |
 | **バックエンド** | Go（コンパイル済み） | Node.js（インタープリター実行） |
 | **通信** | インメモリブリッジ | IPC（プロセス間通信） |
-| **バンドルサイズ** | 約 15MB | 約 150MB |
-| **メモリ** | 約 10MB | 約 100MB 以上 |
-| **起動時間** | &lt;0.5s | 2-3s |
+| **バンドルサイズ** | 約15MB | 約150MB |
+| **メモリ** | 約10MB | 約100MB 以上 |
+| **起動時間** | &lt;0.5秒 | 2-3秒 |
 
 ## コアコンポーネント
 
 ### 1. ネイティブ WebView
 
-Wails は、オペレーティングシステムに組み込まれた Web レンダリングエンジンを使用します。
+Wails は、オペレーティングシステムに組み込まれた次の Web レンダリングエンジンを使用します。
 
 @tabs{sync-key="platform"}
 [Windows]
 **WebView2**（Microsoft Edge WebView2）
 
 - Chromium ベース（Edge ブラウザーと同じ）
-- Windows 10/11 にプリインストール済み
+- Windows 10/11にプリインストール済み
 - Windows Update による自動更新
 - 最新の Web 標準を完全にサポート
 
@@ -73,25 +73,25 @@ Wails は、オペレーティングシステムに組み込まれた Web レン
 - 最新の Web 標準を完全にサポート
 
 [Linux]
-**WebKitGTK**（WebKit の GTK 移植版）
+**WebKitGTK**（WebKit の GTK ポート）
 
-- パッケージマネージャーでインストール
+- パッケージマネージャー経由でインストール
 - GNOME Web（Epiphany）と同じエンジン
-- Web 標準を十分にサポート
+- Web 標準を幅広くサポート
 - 軽量で高性能
 
 @end
 
 **これが重要な理由：**
 
-- **ブラウザーを同梱しない** → アプリのサイズを縮小
+- **ブラウザーを同梱しない** → アプリのサイズを削減
 - **OS ネイティブ** → 統合性とパフォーマンスが向上
-- **自動更新** → OS の更新によってセキュリティパッチを適用
+- **自動更新** → OS の更新からセキュリティパッチを取得
 - **使い慣れたレンダリング** → システムブラウザーと同じ
 
 ### 2. Wails ブリッジ
 
-ブリッジは Wails の中核であり、Go と JavaScript の間の<strong>直接通信</strong>を可能にします。
+ブリッジは Wails の中核であり、Go と JavaScript の間の**直接通信**を可能にします。
 
 ```d2
 direction: down
@@ -133,18 +133,18 @@ Bridge.Decoder -> Frontend: "5. JS にデコード\nPromise が解決される"
 **仕組み：**
 
 1. **フロントエンドが Go メソッドを呼び出す**（自動生成されたバインディング経由）
-2. **ブリッジが呼び出しを** JSON にエンコードする（メソッド名と引数）
-3. **ルーターが登録済みサービス内から Go メソッドを見つける**
+2. **ブリッジが呼び出しを JSON にエンコードする**（メソッド名と引数）
+3. **ルーターが登録済みサービスから Go メソッドを見つける**
 4. **Go メソッドが実行され**、値を返す
-5. **ブリッジが結果をデコードし**、フロントエンドに返す
-6. JavaScript で<strong>結果を受け取って Promise が解決される</strong>
+5. **ブリッジが結果をデコードし**、フロントエンドへ返す
+6. JavaScript で**Promise が結果によって解決される**
 
 **パフォーマンス特性：**
 
 - **インメモリ**：ネットワークのオーバーヘッドも HTTP もなし
-- 可能な場合は<strong>ゼロコピー</strong>（大容量データ向け）
-- **デフォルトで非同期**：どちら側もブロックしない
-- **型安全**：TypeScript の型定義を自動生成
+- 可能な場合は**ゼロコピー**（大規模データ向け）
+- **デフォルトで非同期**：両側ともノンブロッキング
+- **型安全**：TypeScript 定義を自動生成
 
 ### 3. サービスシステム
 
@@ -175,10 +175,10 @@ app := application.New(application.Options{
 
 **サービスの検出：**
 
-- Wails は起動時に<strong>構造体をスキャンします</strong>
-- <strong>エクスポートされたメソッド</strong>をフロントエンドから呼び出せるようになります
-- TypeScript バインディング用に<strong>型情報</strong>が抽出されます
-- <strong>エラー処理</strong>は自動です（Go のエラー → JS の例外）
+- Wails は起動時に**構造体をスキャンします**
+- **エクスポートされたメソッド**はフロントエンドから呼び出せるようになります
+- TypeScript バインディング用に**型情報**が抽出されます
+- **エラー処理**は自動です（Go のエラー → JS の例外）
 
 **生成された TypeScript バインディング：**
 
@@ -188,18 +188,18 @@ export function Greet(name: string): Promise<string>
 export function GetTime(): Promise<Date>
 ```
 
-**サービスを使用する理由：**
+**サービスを使用する理由**
 
-- **型安全**：TypeScriptを完全にサポート
-- **自動検出**：メソッドを手動で登録する必要はありません
-- **体系的な整理**：関連する機能をグループ化
-- **テスト可能**：サービスは単なるGo構造体です
+- **型安全**：TypeScript を完全にサポート
+- **自動検出**：メソッドを手動で登録する必要がありません
+- **体系的**：関連する機能をグループ化できます
+- **テスト可能**：サービスは通常の Go 構造体です
 
-[サービスの詳細 →](/features/bindings/services/)
+[サービスの詳細を見る →](/features/bindings/services/)
 
 ### 4. イベントシステム
 
-イベントにより、コンポーネント間で<strong>パブリッシュ／サブスクライブ通信</strong>を行えます。
+イベントを使用すると、コンポーネント間で**パブリッシュ／サブスクライブ通信**を行えます。
 
 ```d2
 direction: left
@@ -215,11 +215,11 @@ Wails Event System: Wails イベントシステム {
     shape: sequence_diagram
     window1."Subscribe to 'data-updated' events": "'data-updated' イベントを購読"
     window2."Subscribe to 'data-updated' events": "'data-updated' イベントを購読"
-    backend.a."App Emit('data-updated', data)": "アプリが Emit('data-updated', data) を実行"
+    backend.a."App Emit('data-updated', data)": "App Emit('data-updated', data)"
     backend.a -> window1.a: JSON イベントバス
     backend.a -> window2: JSON イベントバス
-    window1.a."Subscriber processes On('data-updated', handler)": "購読側が On('data-updated', handler) で処理"
-    window2."Subscriber processes On('data-updated', handler)": "購読側が On('data-updated', handler) で処理"
+    window1.a."Subscriber processes On('data-updated', handler)": "サブスクライバーが On('data-updated', handler) を処理"
+    window2."Subscriber processes On('data-updated', handler)": "サブスクライバーが On('data-updated', handler) を処理"
   }
   backend.a.label: a
   window1.a.label: a
@@ -228,10 +228,10 @@ Wails Event System: Wails イベントシステム {
 
 **ユースケース：**
 
-- **ウィンドウ間通信**：あるウィンドウから別のウィンドウへ通知
-- **バックグラウンドタスク**：GoサービスからUIへ進捗を通知
-- **状態の同期**：複数のウィンドウを同期した状態に維持
-- **疎結合**：コンポーネント間の直接参照が不要
+- **ウィンドウ間通信**：あるウィンドウからほかのウィンドウに通知します
+- **バックグラウンドタスク**：Go サービスから UI に進捗を通知します
+- **状態の同期**：複数のウィンドウの同期を維持します
+- **疎結合**：コンポーネント間で直接参照する必要がありません
 
 **例：**
 
@@ -249,16 +249,16 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[イベントの詳細 →](/features/events/system/)
+[イベントの詳細を見る →](/features/events/system/)
 
 ## アプリケーションのライフサイクル
 
-ライフサイクルを理解すると、リソースを初期化するタイミングとクリーンアップするタイミングが分かります。
+ライフサイクルを理解すると、リソースを初期化するタイミングとクリーンアップするタイミングを把握できます。
 
 ```d2
 direction: down
 
-Start: アプリケーションの起動 {
+Start: アプリケーションの開始 {
   shape: oval
   style.fill: "#10B981"
 }
@@ -292,7 +292,7 @@ Run: イベントループ {
 }
 
 Shutdown: シャットダウン {
-  Cleanup: リソースを解放 {
+  Cleanup: リソースをクリーンアップ {
     shape: rectangle
   }
 
@@ -332,19 +332,19 @@ app := application.New(application.Options{
 })
 ```
 
-`application.Options`には`OnStartup`フィールドはありません。起動時の処理は、サービスの`ServiceStartup(ctx, options)`、`app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`で登録したコールバック、または単に`app.Run()`より前に配置します。
+`application.Options`には`OnStartup`フィールドがありません。起動時の処理は、サービスの`ServiceStartup(ctx, options)`、`app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`を介して登録したコールバック、または単に`app.Run()`より前に配置します。
 
-[ライフサイクルの詳細 →](/concepts/lifecycle/)
+[ライフサイクルの詳細を見る →](/concepts/lifecycle/)
 
 ## ビルドプロセス
 
-Wailsがアプリケーションをビルドする仕組みを見てみましょう。
+Wails がアプリケーションをビルドする仕組みは次のとおりです。
 
 ```d2
 direction: down
 
 Source: ソースコード {
-  Go: "Go コード\n(main.go, サービス)" {
+  Go: "Go コード\n(main.go、サービス)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -372,7 +372,7 @@ Build: ビルドプロセス {
     shape: rectangle
   }
 
-  Embed: アセットを埋め込む {
+  Embed: アセットを埋め込み {
     shape: rectangle
   }
 }
@@ -396,51 +396,51 @@ Build.Embed -> Output.Binary
 
 **ビルド手順：**
 
-1. **Goコードを解析**
-  - サービスを走査してエクスポート済みメソッドを検出
-  - パラメーターと戻り値の型を抽出
-  - メソッドシグネチャを生成
+1. **Go コードを解析**
+  - サービスをスキャンしてエクスポートされたメソッドを検出します
+  - パラメーターと戻り値の型を抽出します
+  - メソッドシグネチャを生成します
 
 
-2. **TypeScriptバインディングを生成**
-  - サービスごとに`.ts`ファイルを作成
-  - 完全な型定義を含める
-  - JSDocコメントを追加
+2. **TypeScript バインディングを生成**
+  - サービスごとに`.ts`ファイルを作成します
+  - 完全な型定義を含めます
+  - JSDoc コメントを追加します
 
 
 3. **フロントエンドをビルド**
-  - バンドラー（Vite、webpackなど）を実行
-  - ミニファイして最適化
-  - `frontend/dist/`に出力
+  - バンドラー（Vite、webpack など）を実行します
+  - ミニファイして最適化します
+  - `frontend/dist/`に出力します
 
 
-4. **Goをコンパイル**
-  - 最適化を有効にしてコンパイル（`-ldflags="-s -w"`）
-  - ビルドメタデータを含める
-  - プラットフォーム固有のコンパイルを実行
+4. **Go をコンパイル**
+  - 最適化を有効にしてコンパイルします（`-ldflags="-s -w"`）
+  - ビルドメタデータを含めます
+  - プラットフォーム固有のコンパイルを行います
 
 
-5. **アセットを埋め込む**
-  - フロントエンドファイルをGoバイナリに埋め込む
-  - アセットを圧縮
-  - 単一の実行可能ファイルを作成
+5. **アセットを埋め込み**
+  - フロントエンドファイルを Go バイナリに埋め込みます
+  - アセットを圧縮します
+  - 単一の実行可能ファイルを作成します
 
 
 <strong>結果：</strong>すべてが埋め込まれた単一のネイティブ実行可能ファイル。
 
-[ビルドの詳細 →](/guides/build/building/)
+[ビルドの詳細を見る →](/guides/build/building/)
 
 ## 開発環境と本番環境
 
-Wailsの動作は、開発環境と本番環境で異なります。
+Wails の動作は開発環境と本番環境で異なります。
 
 @tabs{sync-key="mode"}
 [開発環境（wails3 dev）]
-**特性：**
+**特徴：**
 
 - **ホットリロード**：フロントエンドの変更を即座に再読み込み
-- **ソースマップ**：元のソースコードを使用してデバッグ
-- **DevTools**：ブラウザーのDevToolsを使用可能
+- **ソースマップ**：元のソースコードでデバッグ可能
+- **DevTools**：ブラウザーの DevTools を利用可能
 - **ログ出力**：詳細なログ出力を有効化
 - **外部フロントエンド**：開発サーバー（Vite）から配信
 
@@ -471,18 +471,18 @@ WebView -> WailsApp: Go メソッドを呼び出す
 
 **利点：**
 
-- 変更結果を即座に確認
-- すべてのデバッグ機能を利用可能
-- 反復作業を高速化
+- 変更結果を即座に確認可能
+- 完全なデバッグ機能
+- より迅速な反復開発
 
 [本番環境（wails3 build）]
-**特性：**
+**特徴：**
 
 - **埋め込みアセット**：フロントエンドをバイナリに組み込み
-- **最適化済み**：ミニファイおよび圧縮済み
-- **DevToolsなし**：デフォルトで無効
+- **最適化済み**：縮小および圧縮済み
+- **DevTools なし**：デフォルトで無効
 - **最小限のログ出力**：エラーのみ
-- **単一ファイル**：すべてを1つの実行可能ファイルに格納
+- **単一ファイル**：すべてを1つの実行ファイルに格納
 
 **仕組み：**
 
@@ -512,8 +512,8 @@ WebView -> Binary.GoCode: Go メソッドを呼び出す
 
 **利点：**
 
-- 単一ファイルで配布
-- サイズを縮小（ミニファイ済み）
+- 単一ファイルで配布可能
+- より小さいサイズ（縮小済み）
 - パフォーマンスの向上
 - 外部依存関係なし
 
@@ -525,36 +525,36 @@ WebView -> Binary.GoCode: Go メソッドを呼び出す
 
 **メモリ領域：**
 
-1. **Goヒープ**
+1. **Go ヒープ**
   - サービスとアプリケーションの状態
-  - Goのガベージコレクターによって管理
-  - 単純なアプリでは通常5-10MB
+  - Go のガベージコレクターが管理
+  - 単純なアプリでは通常 5-10MB
 
 
-2. **WebViewのメモリ**
-  - DOM、JavaScriptヒープ、CSS
-  - WebViewのエンジンによって管理
-  - 単純なアプリでは通常10-20MB
+2. **WebView メモリ**
+  - DOM、JavaScript ヒープ、CSS
+  - WebView のエンジンが管理
+  - 単純なアプリでは通常 10-20MB
 
 
-3. **ブリッジのメモリ**
-  - 通信用のメッセージバッファ
+3. **ブリッジメモリ**
+  - 通信用のメッセージバッファー
   - 最小限のオーバーヘッド（<1MB）
   - 可能な場合は大容量データをゼロコピーで処理
 
 
 **最適化のヒント：**
 
-- **大容量データの転送を避ける**：IDを渡し、詳細は必要に応じて取得します
-- **更新にはイベントを使用する**：フロントエンドからポーリングしないでください
-- **大きなファイルをストリーミングする**：ファイル全体をメモリに読み込まないでください
-- **リスナーをクリーンアップする**：不要になったイベントリスナーは削除してください
+- **大容量データの転送を避ける**：ID を渡し、必要に応じて詳細を取得する
+- **更新にはイベントを使用する**：フロントエンドからポーリングしない
+- **大きなファイルはストリーミングする**：ファイル全体をメモリに読み込まない
+- **リスナーをクリーンアップする**：使用後はイベントリスナーを削除する
 
-[パフォーマンスについて詳しく見る →](/guides/performance/)
+[パフォーマンスの詳細 →](/guides/performance/)
 
 ## セキュリティモデル
 
-Wailsは、デフォルトで安全なアーキテクチャを提供します：
+Wails は、デフォルトで安全なアーキテクチャを提供します。
 
 ```d2
 direction: down
@@ -569,13 +569,13 @@ Bridge: Wails ブリッジ（検証） {
   style.fill: "#F59E0B"
 }
 
-Backend: バックエンド（信頼されている） {
+Backend: バックエンド（信頼済み） {
   shape: rectangle
   style.fill: "#10B981"
 }
 
 Frontend -> Bridge: メソッドを呼び出す
-Bridge -> Bridge: "検証：\n- メソッドは存在するか？\n- 型は正しいか？\n- アクセスは許可されているか？"
+Bridge -> Bridge: "検証：\n- メソッドが存在するか？\n- 型が正しいか？\n- アクセスが許可されているか？"
 Bridge -> Backend: 有効な場合に実行
 Backend -> Bridge: 結果を返す
 Bridge -> Frontend: レスポンスを送信
@@ -584,48 +584,48 @@ Bridge -> Frontend: レスポンスを送信
 **セキュリティ機能：**
 
 1. **メソッドの許可リスト**
-  - 呼び出せるのはエクスポートされたメソッドのみ
+  - エクスポートされたメソッドのみ呼び出し可能
   - 非公開メソッドにはアクセス不可
   - サービスの明示的な登録が必要
 
 
 2. **型の検証**
-  - 引数をGoの型と照合
+  - 引数を Go の型と照合
   - 無効な型を拒否
   - インジェクション攻撃を防止
 
 
-3. **eval()を使用しない**
-  - フロントエンドから任意のGoコードを実行することは不可
-  - 呼び出せるのは事前定義されたメソッドのみ
+3. **eval() なし**
+  - フロントエンドから任意の Go コードを実行することは不可能
+  - 事前定義されたメソッドのみ呼び出し可能
   - 動的なコード実行なし
 
 
 4. **コンテキストの分離**
   - 各ウィンドウが独自のコンテキストを保持
-  - サービスで呼び出し元のコンテキストを確認可能
-  - ウィンドウごとの権限設定が可能
+  - サービスは呼び出し元のコンテキストを確認可能
+  - ウィンドウごとに権限を設定可能
 
 
 **ベストプラクティス：**
 
-- Goで<strong>ユーザー入力を検証する</strong>（フロントエンドを信頼しないでください）
-- 認証と認可には<strong>コンテキストを使用する</strong>
-- ファイル操作の前に<strong>ファイルパスをサニタイズする</strong>
-- 高コストな処理を<strong>レート制限する</strong>
+- Go で**ユーザー入力を検証する**（フロントエンドを信頼しない）
+- 認証と認可には**コンテキストを使用する**
+- ファイル操作の前に**ファイルパスをサニタイズする**
+- 高コストな操作を**レート制限する**
 
-[セキュリティについて詳しく見る →](/guides/security/)
+[セキュリティの詳細 →](/guides/security/)
 
 ## 次のステップ
 
-**アプリケーションのライフサイクル** - 起動、終了、ライフサイクルフックについて理解します [詳しく見る →](/concepts/lifecycle/)
+**アプリケーションのライフサイクル** - 起動、終了、ライフサイクルフックについて理解する [詳細を見る →](/concepts/lifecycle/)
 
-**Goとフロントエンド間のブリッジ** - ブリッジの仕組みを詳しく掘り下げます [詳しく見る →](/concepts/bridge/)
+**Go とフロントエンドのブリッジ** - ブリッジの仕組みを詳しく理解する [詳細を見る →](/concepts/bridge/)
 
-**ビルドシステム** - Wailsがアプリケーションをビルドする仕組みを理解します [詳しく見る →](/concepts/build-system/)
+**ビルドシステム** - Wails がアプリケーションをビルドする仕組みを理解する [詳細を見る →](/concepts/build-system/)
 
-**構築を始める** - ここまでに学んだことをチュートリアルで実践します [チュートリアル →](/tutorials/03-notes-vanilla/)
+**開発を始める** - チュートリアルで学んだことを実践しましょう [チュートリアル →](/tutorials/03-notes-vanilla/)
 
 ---
 
-**アーキテクチャについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[APIリファレンス](/reference/overview/)を確認してください。
+**アーキテクチャについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[API リファレンス](/reference/overview/)を確認してください。

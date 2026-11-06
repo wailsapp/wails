@@ -60,33 +60,36 @@ description: "Wails v3 YAML 매니페스트의 생성된 필드, 유형, 기본�
 | `darwin.microphone_usage_description` | `string` | 아니요 |  | `"value"` | `darwin` | macOS 마이크 권한 설명 문구. 사용자 소유 entitlement 파일이 구성되어 있지 않으면 오디오 입력 entitlement를 생성합니다. |
 | `darwin.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전. |
 | `darwin.notarization` | `object` | 아니요 |  | `{}` | `darwin` | macOS 공증 설정. |
+| `darwin.notarization.api_key` | `string` | 아니요 |  | `"signing/AuthKey.p8"` |  | 프로젝트 상대 경로의 App Store Connect 팀 API 비공개 키 .p8 파일입니다. notarytool 대신 이식 가능한 Notary API를 사용하며 key_id와 issuer_id가 필요합니다. |
 | `darwin.notarization.credential` | `string` | 아니요 |  | `"release-notary"` |  | 공증에 사용하는 Apple notarytool 키체인 프로파일 이름. |
-| `darwin.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사용자가 읽을 수 있는 제품 이름. |
-| `darwin.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정. |
-| `darwin.signing.certificate` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `darwin.signing.credential` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `darwin.signing.entitlements` | `string` | 아니요 |  | `"signing/entitlements.plist"` |  | 프로젝트 기준 상대 경로로 지정한 Apple entitlement 파일. |
-| `darwin.signing.identity` | `string` | 아니요 |  | `"Developer ID Application: Example"` |  | 키체인에 있는 macOS 코드 서명 ID. 임시 서명에는 -를 사용합니다. |
+| `darwin.notarization.issuer_id` | `string` | 아니요 |  | `"00000000-0000-0000-0000-000000000000"` |  | API 공증에 사용할 App Store Connect 팀 발급자 ID입니다. |
+| `darwin.notarization.key_id` | `string` | 아니요 |  | `"ABCDEFGHIJ"` |  | api_key에 속하는 App Store Connect 팀 API 키 ID입니다. |
+| `darwin.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사람이 읽을 수 있는 제품 이름입니다. |
+| `darwin.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정입니다. |
+| `darwin.signing.certificate` | `string` | 아니요 |  | `"signing/developer-id.p12"` |  | 이식 가능한 Go 서명에 사용할, 프로젝트 상대 경로의 내보낸 PKCS#12 ID입니다. macOS 키체인 ID 또는 임시 서명을 사용하려면 생략하세요. |
+| `darwin.signing.credential` | `string` | 아니요 |  | `"APPLE_SIGNING_PASSWORD"` |  | 내보낸 PKCS#12 ID의 암호가 들어 있는 환경 변수의 이름입니다. 암호 자체를 지정해서는 안 됩니다. |
+| `darwin.signing.entitlements` | `string` | 아니요 |  | `"signing/entitlements.plist"` |  | 프로젝트 상대 경로로 지정하는 Apple entitlement 파일. |
+| `darwin.signing.identity` | `string` | 아니요 |  | `"Developer ID Application: Example"` |  | 키체인에 있는 macOS 코드 서명 ID입니다. 이식 가능한 임시 서명에는 -를 사용하고, 그렇지 않으면 내보낸 인증서를 구성하세요. |
 | `darwin.signing.key_alias` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `darwin.signing.provisioning_profile` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `darwin.signing.thumbprint` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `darwin.signing.timestamp_server` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `dev` | `object` | 아니요 |  | `{}` |  | 개발 빌드 및 감시자 설정. |
+| `darwin.signing.timestamp_server` | `string` | 아니요 |  | `"https://timestamp.example.com"` |  | 이식 가능한 인증서 서명에 사용할 RFC 3161 타임스탬프 URL입니다. 공증된 인증서 서명에 필요합니다. |
+| `dev` | `object` | 아니요 |  | `{}` |  | 개발 빌드 및 감시자 설정입니다. |
 | `dev.args` | `list(string)` | 아니요 |  | `["value"]` |  | 셸 확장 없이 전달되는 개발용 애플리케이션 인수. 데스크톱과 iOS에서 지원됩니다. Android에서는 빈 목록이어야 합니다. |
 | `dev.debounce_ms` | `integer` | 아니요 | `250` | `250` |  | 개발 중 발생하는 파일 변경을 하나로 병합하기 위한 지연 시간. |
 | `dev.exclude` | `list(string)` | 아니요 | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | 개발 감시자 제외 패턴. |
 | `dev.grace_period_ms` | `integer` | 아니요 | `1500` | `1500` |  | 개발 프로세스가 정상적으로 중지될 때까지 허용되는 시간. |
 | `dev.log_level` | `string` | 아니요 | `warn` | `"info"` |  | 개발 로그 상세 수준. |
-| `dev.tags` | `list(string)` | 아니요 | `[]` | `[]` |  | 추가 Go 빌드 태그. |
+| `dev.tags` | `list(string)` | 아니요 | `[]` | `[]` |  | 추가 Go 빌드 태그입니다. |
 | `dev.use_git_ignore` | `boolean` | 아니요 | `true` | `true` |  | 개발 감시자에 .gitignore 규칙을 적용합니다. |
 | `dev.watch` | `list(string)` | 아니요 | `["**/*.go","wails.yaml"]` | `["**/*.go", "wails.yaml"]` |  | 개발 감시 대상 포함 패턴. |
 | `file_associations` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 파일 연결 등록. |
-| `file_associations["association"].description` | `string` | 아니요 |  | `"value"` |  | 사람이 읽을 수 있는 설명. |
+| `file_associations["association"].description` | `string` | 아니요 |  | `"value"` |  | 사람이 읽을 수 있는 설명입니다. |
 | `file_associations["association"].extensions` | `list(string)` | 예 |  | `["example"]` |  | 애플리케이션에서 처리하는 파일 확장자. |
-| `file_associations["association"].icon` | `string` | 아니요 |  | `"assets/appicon.png"` |  | 프로젝트 기준 경로의 사용자 소유 아이콘 파일. |
+| `file_associations["association"].icon` | `string` | 아니요 |  | `"assets/appicon.png"` |  | 사용자가 소유하고 프로젝트를 기준으로 지정하는 상대 경로의 아이콘 파일입니다. |
 | `file_associations["association"].mime_type` | `string` | 아니요 |  | `"application/x-example"` |  | 파일 연결에 등록된 MIME 유형. |
 | `file_associations["association"].name` | `string` | 아니요 |  | `"value"` |  | 변경되지 않는 프로젝트 또는 등록 이름. |
-| `file_associations["association"].platforms` | `list(string)` | 아니요 |  | `["windows", "darwin", "linux"]` |  | 이 등록이 적용되는 플랫폼. |
+| `file_associations["association"].platforms` | `list(string)` | 아니요 |  | `["windows", "darwin", "linux"]` |  | 이 등록이 적용되는 플랫폼입니다. |
 | `file_associations["association"].role` | `string` | 아니요 |  | `"editor"` |  | 파일 연결에 대한 애플리케이션 역할. |
 | `frontend` | `object` | 아니요 |  | `{}` |  | 프런트엔드 명령, 출력 및 바인딩 설정. |
 | `frontend.bindings` | `object` | 아니요 |  | `{}` |  | 생성되는 프런트엔드 바인딩 설정. |
@@ -100,7 +103,7 @@ description: "Wails v3 YAML 매니페스트의 생성된 필드, 유형, 기본�
 | `frontend.dev` | `list(string)` | 아니요 | `["npm","run","dev"]` | `["npm","run","dev"]` |  | 프런트엔드 개발 서버 명령 및 인수. |
 | `frontend.directory` | `string` | 아니요 | `frontend` | `"frontend"` |  | 프로젝트 기준 프런트엔드 소스 디렉터리. |
 | `frontend.disabled` | `boolean` | 아니요 | `false` | `false` |  | Go 전용 프로젝트에서 프런트엔드 종속성 설치, 바인딩 생성 및 프런트엔드 빌드를 비활성화합니다. |
-| `frontend.environment` | `map(string)` | 아니요 | `{}` | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수. |
+| `frontend.environment` | `map(string)` | 아니요 | `{}` | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수입니다. |
 | `frontend.install` | `list(string)` | 아니요 | `["npm","install"]` | `["npm","install"]` |  | 프런트엔드 종속성 설치 명령 및 인수. |
 | `frontend.output` | `string` | 아니요 | `dist` | `"dist"` |  | 프로젝트 기준 출력 디렉터리. |
 | `hooks` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 빌드 수명 주기 훅. |
@@ -119,13 +122,13 @@ description: "Wails v3 YAML 매니페스트의 생성된 필드, 유형, 기본�
 | `ios.comments` | `string` | 아니요 |  | `"value"` | `ios,android` | 추가 패키지 메타데이터 설명. |
 | `ios.company` | `string` | 아니요 |  | `"value"` | `ios,android` | 회사 또는 조직 이름. |
 | `ios.display_name` | `string` | 아니요 |  | `"Example App"` | `ios,android` | 모바일 플랫폼에 표시되는 이름. |
-| `ios.icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 프로젝트 상대 경로로 지정하는 사용자 소유 아이콘 파일. |
+| `ios.icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 프로젝트 기준 경로의 사용자 소유 아이콘 파일. |
 | `ios.info_plist` | `string` | 아니요 |  | `"assets/Info.plist"` | `darwin,ios` | 사용자 소유 Apple Info.plist 파일. |
-| `ios.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전. |
+| `ios.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전입니다. |
 | `ios.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정. |
 | `ios.signing.certificate` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `ios.signing.credential` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `ios.signing.entitlements` | `string` | 아니요 |  | `"signing/entitlements.plist"` |  | 프로젝트 상대 경로로 지정하는 Apple entitlement 파일. |
+| `ios.signing.entitlements` | `string` | 아니요 |  | `"signing/entitlements.plist"` |  | 프로젝트 기준 상대 경로로 지정한 Apple entitlement 파일. |
 | `ios.signing.identity` | `string` | 아니요 |  | `"Apple Development: Example"` |  | macOS 키체인의 Apple 코드 서명 ID. |
 | `ios.signing.key_alias` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `ios.signing.provisioning_profile` | `string` | 아니요 |  | `"signing/app.mobileprovision"` |  | 프로젝트 상대 경로로 지정하는 Apple 프로비저닝 프로파일. |
@@ -137,11 +140,11 @@ description: "Wails v3 YAML 매니페스트의 생성된 필드, 유형, 기본�
 | `linux.desktop_entry` | `string` | 아니요 |  | `"assets/app.desktop"` | `linux` | 사용자 소유 Linux 데스크톱 항목 파일. |
 | `linux.icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 프로젝트 상대 경로로 지정하는 사용자 소유 아이콘 파일. |
 | `linux.identifier` | `string` | 아니요 |  | `"com.example.app"` | `windows,darwin,linux` | 역방향 도메인 형식의 애플리케이션 식별자. |
-| `linux.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전. |
-| `linux.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사람이 읽을 수 있는 제품 이름. |
+| `linux.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전입니다. |
+| `linux.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사용자에게 표시되는 제품 이름입니다. |
 | `linux.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정. |
-| `linux.signing.certificate` | `string` | 아니요 |  | `"signing/private-key.asc"` |  | Arch: 프로젝트 상대 경로로 지정하는 내보낸 ASCII-armored PGP 개인 키 파일. DEB/RPM: 외부 서명 도구에 전달되는 PGP 키 식별자. |
-| `linux.signing.credential` | `string` | 아니요 |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch: 개인 키 암호를 포함하는 선택적 환경 변수입니다. 암호화되지 않은 키에는 생략합니다. |
+| `linux.signing.certificate` | `string` | 아니요 |  | `"signing/private-key.asc"` |  | 네이티브 DEB, RPM 또는 Arch 서명에 사용할 내보낸 ASCII-armored 또는 바이너리 OpenPGP 비공개 키 파일입니다. 접두사 없는 GnuPG 키 식별자를 사용하면 외부 DEB/RPM 서명자가 유지됩니다. |
+| `linux.signing.credential` | `string` | 아니요 |  | `"LINUX_SIGNING_PASSPHRASE"` |  | 내보낸 비공개 키의 암호문이 들어 있는 선택적 환경 변수입니다. 암호화되지 않은 키에는 생략하세요. |
 | `linux.signing.entitlements` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `linux.signing.identity` | `string` | 아니요 |  | `"builder"` |  | DEB 서명 역할이며 기본값은 builder입니다. Arch 분리 서명 도구에서는 사용되지 않습니다. |
 | `linux.signing.key_alias` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
@@ -157,85 +160,88 @@ description: "Wails v3 YAML 매니페스트의 생성된 필드, 유형, 기본�
 | `packages["format"].desktop_entry` | `string` | 아니요 |  | `"assets/app.desktop"` | `appimage` | 사용자가 관리하는 Linux 데스크톱 항목 파일. |
 | `packages["format"].file_icon` | `string` | 아니요 |  | `"assets/file.icns"` | `dmg` | 사용자가 관리하는 DMG 파일 아이콘. |
 | `packages["format"].files` | `map(string)` | 아니요 |  | `{License.pdf: LICENSE.pdf}` | `dmg` | 대상 이름을 키로 사용하여 DMG에 복사되는 사용자 관리 파일. |
-| `packages["format"].icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `appimage` | 프로젝트 상대 경로로 지정하는 사용자 관리 아이콘 파일. |
+| `packages["format"].gtk_version` | `integer` | 아니요 |  | `1` | `appimage` | GTK 런타임 프로필: 3 또는 4. 컴패니언을 포함한 GUI 실행 파일의 빌드 태그가 기본값이며, 가져온 CGo 라이브러리도 이 설정과 일치해야 합니다. |
+| `packages["format"].icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `appimage` | 프로젝트 상대 경로로 지정하는 사용자 소유 아이콘 파일. |
 | `packages["format"].install_scope` | `string` | 아니요 |  | `"user"` | `nsis` | NSIS 설치 범위. |
 | `packages["format"].maintainer` | `string` | 아니요 |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | 네이티브 Linux 패키지 관리자. |
-| `packages["format"].manifest` | `string` | 아니요 |  | `"assets/manifest.xml"` | `msix` | 프로젝트 상대 경로로 지정하는 사용자 관리 플랫폼 또는 패키지 매니페스트. |
+| `packages["format"].manifest` | `string` | 아니요 |  | `"assets/manifest.xml"` | `msix` | 사용자가 소유하고 프로젝트를 기준으로 지정하는 상대 경로의 플랫폼 또는 패키지 매니페스트입니다. |
 | `packages["format"].post_install` | `string` | 아니요 |  | `"packaging/postinstall.sh"` | `deb,rpm,archlinux,void` | 프로젝트 상대 경로로 지정하는 Linux 설치 후 스크립트. |
 | `packages["format"].post_remove` | `string` | 아니요 |  | `"packaging/postremove.sh"` | `deb,rpm,archlinux,void` | 프로젝트 상대 경로로 지정하는 Linux 제거 후 스크립트. |
 | `packages["format"].pre_install` | `string` | 아니요 |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | 프로젝트 상대 경로로 지정하는 Linux 설치 전 스크립트. |
 | `packages["format"].pre_remove` | `string` | 아니요 |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | 프로젝트 상대 경로로 지정하는 Linux 제거 전 스크립트. |
 | `packages["format"].publisher` | `string` | 아니요 |  | `"CN=Example"` | `msix` | Windows 패키지 게시자 ID. |
+| `packages["format"].runtime_path` | `string` | 아니요 |  | `"value"` | `appimage` | 프로젝트 상대 경로의 AppImage type-2 런타임 ELF입니다. 기본적으로 고정된 버전의 대상 런타임을 다운로드하며 체크섬을 검증합니다. |
+| `packages["format"].runtime_root` | `string` | 아니요 |  | `"value"` | `appimage` | GTK/WebKit 라이브러리와 컴파일된 리소스 캐시가 들어 있는, 프로젝트 상대 경로의 대상 Linux 루트 파일 시스템입니다. 기본값은 Linux 호스트 루트입니다. |
 | `packages["format"].section` | `string` | 아니요 |  | `"utils"` | `deb,rpm,archlinux,void` | Linux 패키지 저장소 섹션. |
 | `packages["format"].template` | `string` | 아니요 |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | 사용자가 관리하는 전체 패키지 템플릿 대체 파일. |
-| `packages["format"].update_info` | `string` | 아니요 |  | `"value"` | `appimage` | AppImage 업데이트 정보 문자열. linuxdeploy에서 생성한 일치하는 zsync 사이드카 파일이 필요합니다. |
+| `packages["format"].update_info` | `string` | 아니요 |  | `"value"` | `appimage` | AppImage 업데이트 정보 문자열입니다. Go에서 이에 대응하는 zsync 사이드카를 생성합니다. |
 | `packages["format"].volume_icon` | `string` | 아니요 |  | `"assets/volume.icns"` | `dmg` | 사용자가 관리하는 DMG 볼륨 아이콘. |
 | `packages["format"].window_height` | `integer` | 아니요 |  | `1` | `dmg` | DMG Finder 창의 높이(픽셀). |
 | `packages["format"].window_width` | `integer` | 아니요 |  | `1` | `dmg` | DMG Finder 창의 너비(픽셀). |
 | `profiles` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 프로덕션 빌드 프로필. |
-| `profiles["profile"].targets` | `map(object)` | 예 |  | `{}` |  | 이름이 지정된 대상 재정의. |
+| `profiles["profile"].targets` | `map(object)` | 예 |  | `{}` |  | 이름이 지정된 대상별 재정의 설정입니다. |
 | `profiles["profile"].targets["target"].destination` | `string` | 아니요 |  | `"device"` |  | 모바일 빌드 대상. |
 | `profiles["profile"].targets["target"].formats` | `list(string)` | 아니요 |  | `["nsis"]` |  | 이 프로필 대상에 대해 생성되는 아티팩트 형식. |
 | `profiles["profile"].targets["target"].notarize` | `boolean` | 아니요 |  | `true` |  | 생성된 아티팩트를 공증합니다. |
 | `profiles["profile"].targets["target"].sign` | `boolean` | 아니요 |  | `true` |  | 생성된 아티팩트에 서명합니다. |
 | `project` | `object` | 예 |  | `{}` |  | 프로젝트 ID 및 메타데이터. |
 | `project.binary_name` | `string` | 아니요 | `$project.name.slug` | `"my-app"` |  | 네이티브 실행 파일의 기본 이름. |
-| `project.build_number` | `integer` | 아니요 | `1` | `1` |  | 플랫폼 빌드 번호. |
+| `project.build_number` | `integer` | 아니요 | `1` | `1` |  | 플랫폼 빌드 번호입니다. |
 | `project.comments` | `string` | 아니요 |  | `"value"` |  | 추가 패키지 메타데이터 설명. |
 | `project.commit_symbol` | `string` | 아니요 |  | `"value"` |  | 링커 플래그를 통해 애플리케이션의 Git 리비전을 받는 정규화된 Go 문자열 변수. |
 | `project.company` | `string` | 아니요 |  | `"value"` |  | 회사 또는 조직 이름. |
 | `project.copyright` | `string` | 아니요 |  | `"value"` |  | 아티팩트에 포함되는 저작권 고지. |
 | `project.description` | `string` | 아니요 |  | `"value"` |  | 사람이 읽을 수 있는 설명. |
 | `project.icon` | `string` | 아니요 |  | `"assets/appicon.png"` |  | 프로젝트 상대 경로로 지정하는 사용자 관리 아이콘 파일. |
-| `project.identifier` | `string` | 예 |  | `"com.example.app"` |  | 역방향 도메인 형식의 애플리케이션 식별자. |
+| `project.identifier` | `string` | 예 |  | `"com.example.app"` |  | 역방향 도메인 형식의 애플리케이션 식별자입니다. |
 | `project.kind` | `string` | 아니요 | `gui` | `"gui"` |  | 실행 파일 종류: gui, cli 또는 server. companion의 기본값은 cli입니다. |
 | `project.name` | `string` | 예 |  | `"value"` |  | 안정적으로 유지되는 프로젝트 또는 등록 이름입니다. |
 | `project.package` | `string` | 아니요 | `.` | `"."` |  | 하나의 Go main 패키지가 포함된 프로젝트 기준 상대 디렉터리입니다. |
-| `project.product_name` | `string` | 예 |  | `"value"` |  | 사람이 읽을 수 있는 제품 이름입니다. |
+| `project.product_name` | `string` | 예 |  | `"value"` |  | 사람이 읽을 수 있는 제품 이름. |
 | `project.supported_platforms` | `list(string)` | 아니요 |  | `["linux"]` |  | 이 프로젝트가 지원하는 플랫폼입니다. 비어 있으면 모든 플랫폼을 허용합니다. |
 | `project.upx_level` | `integer` | 아니요 | `0` | `0` |  | 선택적 UPX 압축 수준입니다. 0이면 비활성화되며, 1부터 9까지 지정할 수 있습니다. macOS 및 개발 환경에서는 건너뜁니다. |
 | `project.version` | `string` | 아니요 |  | `"value"` |  | 매니페스트 또는 애플리케이션 버전입니다. |
 | `project.version_file` | `string` | 아니요 |  | `"value"` |  | 애플리케이션 버전을 선언하는 Go 소스 파일입니다. version_symbol과 함께 사용합니다. |
 | `project.version_symbol` | `string` | 아니요 |  | `"value"` |  | 프로젝트 버전 리터럴 대신 사용하는 정적 Go 문자열 선언입니다. |
 | `protocols` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 사용자 정의 프로토콜 등록입니다. |
-| `protocols["scheme"].description` | `string` | 아니요 |  | `"value"` |  | 사람이 읽을 수 있는 설명입니다. |
-| `protocols["scheme"].platforms` | `list(string)` | 아니요 |  | `["windows", "darwin", "linux"]` |  | 이 등록이 적용되는 플랫폼입니다. |
+| `protocols["scheme"].description` | `string` | 아니요 |  | `"value"` |  | 사람이 읽을 수 있는 설명. |
+| `protocols["scheme"].platforms` | `list(string)` | 아니요 |  | `["windows", "darwin", "linux"]` |  | 이 등록이 적용되는 플랫폼. |
 | `run` | `object` | 아니요 |  | `{}` |  | 애플리케이션 실행 기본 설정입니다. |
 | `run.args` | `list(string)` | 아니요 |  | `["value"]` |  | 셸 확장 없이 전달되는 애플리케이션 인수입니다. |
-| `run.environment` | `map(string)` | 아니요 |  | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수입니다. |
+| `run.environment` | `map(string)` | 아니요 |  | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수. |
 | `run.tags` | `list(string)` | 아니요 |  | `["value"]` |  | 추가 Go 빌드 태그입니다. |
-| `targets` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 대상별 재정의 설정입니다. |
-| `targets["target"].build_number` | `integer` | 아니요 |  | `1` |  | 플랫폼 빌드 번호입니다. |
+| `targets` | `map(object)` | 아니요 |  | `{}` |  | 이름이 지정된 대상 재정의. |
+| `targets["target"].build_number` | `integer` | 아니요 |  | `1` |  | 플랫폼 빌드 번호. |
 | `targets["target"].compiler_flags` | `list(string)` | 아니요 |  | `["all=-l"]` |  | 추가 Go 컴파일러 플래그입니다. |
-| `targets["target"].dev` | `object` | 아니요 |  | `{}` |  | 개발 빌드 및 감시자 설정입니다. |
+| `targets["target"].dev` | `object` | 아니요 |  | `{}` |  | 개발 빌드 및 감시자 설정. |
 | `targets["target"].dev.args` | `list(string)` | 아니요 |  | `["value"]` |  | 셸 확장 없이 전달되는 개발용 애플리케이션 인수입니다. 데스크톱과 iOS에서 지원됩니다. Android에서는 빈 목록이어야 합니다. |
 | `targets["target"].environment` | `map(string)` | 아니요 |  | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수입니다. |
 | `targets["target"].garble_args` | `list(string)` | 아니요 |  | `["-literals"]` |  | garble에 전달되는 추가 인수입니다. |
 | `targets["target"].ldflags` | `list(string)` | 아니요 |  | `["-X example/build.version=1.0.0"]` |  | 추가 Go 링커 플래그입니다. |
-| `targets["target"].minimum_version` | `string` | 아니요 |  | `"12.0"` |  | 지원되는 최소 운영 체제 버전입니다. |
+| `targets["target"].minimum_version` | `string` | 아니요 |  | `"12.0"` |  | 지원되는 최소 운영 체제 버전. |
 | `targets["target"].obfuscated` | `boolean` | 아니요 |  | `true` |  | garble을 사용하여 Go 코드를 난독화합니다. |
 | `targets["target"].run` | `object` | 아니요 |  | `{}` |  | 애플리케이션 실행 기본 설정입니다. |
 | `targets["target"].run.args` | `list(string)` | 아니요 |  | `["value"]` |  | 셸 확장 없이 전달되는 애플리케이션 인수입니다. |
 | `targets["target"].run.environment` | `map(string)` | 아니요 |  | `{RELEASE: "true"}` |  | 이 작업에 추가되는 환경 변수입니다. |
 | `targets["target"].run.tags` | `list(string)` | 아니요 |  | `["value"]` |  | 추가 Go 빌드 태그입니다. |
-| `targets["target"].tags` | `list(string)` | 아니요 |  | `["value"]` |  | 추가 Go 빌드 태그입니다. |
+| `targets["target"].tags` | `list(string)` | 아니요 |  | `["value"]` |  | 추가 Go 빌드 태그. |
 | `targets["target"].toolchain` | `string` | 아니요 |  | `"auto"` |  | 이 대상의 컴파일러 도구 체인 정책입니다. |
 | `version` | `integer` | 예 |  | `3` |  | Wails 매니페스트 스키마 버전입니다. 반드시 첫 번째 필드여야 합니다. |
 | `windows` | `object` | 아니요 |  | `{}` |  | Windows 플랫폼 설정입니다. |
 | `windows.build_number` | `integer` | 아니요 |  | `1` | `windows,darwin,linux,ios` | 플랫폼 빌드 번호입니다. |
 | `windows.capabilities` | `list(string)` | 아니요 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 애플리케이션이 요청하는 네이티브 플랫폼 기능입니다. |
-| `windows.icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 사용자가 소유하고 프로젝트를 기준으로 지정하는 상대 경로의 아이콘 파일입니다. |
-| `windows.identifier` | `string` | 아니요 |  | `"com.example.app"` | `windows,darwin,linux` | 역방향 도메인 형식의 애플리케이션 식별자입니다. |
-| `windows.manifest` | `string` | 아니요 |  | `"assets/manifest.xml"` | `windows,android` | 사용자가 소유하고 프로젝트를 기준으로 지정하는 상대 경로의 플랫폼 또는 패키지 매니페스트입니다. |
-| `windows.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전입니다. |
-| `windows.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사용자에게 표시되는 제품 이름입니다. |
+| `windows.icon` | `string` | 아니요 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 프로젝트 상대 경로로 지정하는 사용자 관리 아이콘 파일. |
+| `windows.identifier` | `string` | 아니요 |  | `"com.example.app"` | `windows,darwin,linux` | 역방향 도메인 형식의 애플리케이션 식별자. |
+| `windows.manifest` | `string` | 아니요 |  | `"assets/manifest.xml"` | `windows,android` | 프로젝트 상대 경로로 지정하는 사용자 관리 플랫폼 또는 패키지 매니페스트. |
+| `windows.minimum_version` | `string` | 아니요 |  | `"12.0"` | `windows,darwin,linux,ios` | 지원되는 최소 운영 체제 버전. |
+| `windows.product_name` | `string` | 아니요 |  | `"value"` | `windows,darwin,linux` | 사용자가 읽을 수 있는 제품 이름. |
 | `windows.publisher` | `string` | 아니요 |  | `"CN=Example"` | `windows` | Windows 패키지 게시자 ID입니다. |
-| `windows.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정입니다. |
-| `windows.signing.certificate` | `string` | 아니요 |  | `"signing/windows.pfx"` |  | 프로젝트 기준 상대 경로로 지정한 PFX 서명 인증서 파일입니다. 또는 지문을 구성할 수 있습니다. |
+| `windows.signing` | `object` | 아니요 |  | `{}` |  | 플랫폼 서명 설정. |
+| `windows.signing.certificate` | `string` | 아니요 |  | `"signing/windows.pfx"` |  | 모든 데스크톱 호스트에서 이식 가능한 PE/MSIX 서명에 사용할, 프로젝트 상대 경로의 내보낸 RSA PFX ID입니다. AES/PBKDF2와 3DES를 지원하며, 네이티브 Windows SignTool은 RC2 내보내기를 처리합니다. 또는 지문을 구성할 수 있습니다. |
 | `windows.signing.credential` | `string` | 아니요 |  | `"WINDOWS_SIGNING_PASSWORD"` |  | PFX 인증서 암호가 들어 있는 환경 변수의 이름입니다. 암호 자체를 지정해서는 안 됩니다. |
 | `windows.signing.entitlements` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `windows.signing.identity` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `windows.signing.key_alias` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
 | `windows.signing.provisioning_profile` | `string` | 아니요 |  | `""` |  | 이 플랫폼의 서명 작업에서는 사용되지 않습니다. |
-| `windows.signing.thumbprint` | `string` | 아니요 |  | `"0123456789ABCDEF"` |  | Windows 인증서 저장소에 있는 인증서의 지문입니다. |
-| `windows.signing.timestamp_server` | `string` | 아니요 |  | `"https://timestamp.example.com"` |  | Windows 서명 타임스탬프 서비스의 URL입니다. |
+| `windows.signing.thumbprint` | `string` | 아니요 |  | `"0123456789ABCDEF"` |  | Windows 인증서 저장소에 있는 인증서의 지문입니다. SignTool이 설치된 Windows가 필요합니다. |
+| `windows.signing.timestamp_server` | `string` | 아니요 |  | `"https://timestamp.example.com"` |  | RFC 3161 타임스탬프 서비스 URL입니다. 기본값은 `http://timestamp.digicert.com`입니다. 타임스탬프 서명과 신뢰 체인을 검증합니다. |

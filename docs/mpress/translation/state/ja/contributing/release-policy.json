@@ -115,16 +115,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0010-cell-01": {
-      "sourceHash": "ee453293ba2b0158fe84d7cea2d0da443a72bf89371269f81d65d8431e1e3aa0",
-      "targetHash": "eb3891a46c01d906db8e759c964580cca1fe2666fcfa5ae800713456117dfd7a",
-      "machineHash": "eb3891a46c01d906db8e759c964580cca1fe2666fcfa5ae800713456117dfd7a",
-      "machineText": "自動、毎日。`UNRELEASED_CHANGELOG.md`に内容がある場合のみ",
-      "status": "reviewed",
-      "sourcePreview": "automated, daily, only when `UNRELEASED_CHANGELOG.md` has content",
+      "sourceHash": "7e167ef239e8e3743ebd7e49c732171e2e5d5ccdd5f29b0faf380de15ef8d86e",
+      "targetHash": "4409e100c71e5e255c9c6bc128eaf399a4537e901b5ab2e4b75a656eaf0cc67a",
+      "machineHash": "4409e100c71e5e255c9c6bc128eaf399a4537e901b5ab2e4b75a656eaf0cc67a",
+      "machineText": "自動、毎日、テスト対象のリリース範囲にマージ済み PR があり、ユーザー向けのリリースノートが生成される場合のみ",
+      "status": "machine-translated",
+      "sourcePreview": "automated, daily, only when merged PRs in the tested release range produce user-visible notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0011-cell-01": {
       "sourceHash": "3ebf4c66f5f26704350b6ea1f1510b59d3f48f2f4323af34a77ff9c7f53c0176",
@@ -932,16 +932,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0086-text-01": {
-      "sourceHash": "e838c68cc47aed2cda32c3e583cef2b42153a393acee17582af7a064526922d3",
-      "targetHash": "482fe351bf7f9484cd52fe254634e1c26c1db08270ca6cd49f34c4f2ed66f269",
-      "machineHash": "482fe351bf7f9484cd52fe254634e1c26c1db08270ca6cd49f34c4f2ed66f269",
-      "machineText": "リリース権限はプロジェクト Lead に限定されています（ガバナンス文書を参照）。コントリビューターがタグ付けや公開を行うことはありません。コントリビューターは `v3/UNRELEASED_CHANGELOG.md` にエントリを追加します。",
-      "status": "reviewed",
+      "sourceHash": "f63de58a409ea5859195d79ddf41b6c86bb98b4d7d9c46effc39873d6987e12a",
+      "targetHash": "2324054728a8001529fa528b99015e39204113a5ff31834863921a46607c897c",
+      "machineHash": "2324054728a8001529fa528b99015e39204113a5ff31834863921a46607c897c",
+      "machineText": "リリース権限はプロジェクトリードに限定されます（ガバナンス文書を参照）。コントリビューターがタグ付けや公開を行うことはありません。ユーザー向けの変更内容は、PR のタイトルまたは `## Release notes` 説明セクションに記載します。リリース自動化は、厳密にテストされたコミット範囲内のマージ済み PR からリリースノートを生成します。`v3/UNRELEASED_CHANGELOG.md` は削除されました。",
+      "status": "machine-translated",
       "sourcePreview": "Release rights are limited to the project Lead (see the governance document). Contributors never tag…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0087-text-01": {
       "sourceHash": "387dc819de83611dded717da09e75e41de0e4e00cdc75d3bde2721a7f4c7237e",
@@ -1112,16 +1112,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0101-text-01": {
-      "sourceHash": "75197c10b52ce49da77047b51d02252b9af1df684f06c1876a3ce806a7065ff6",
-      "targetHash": "ac37c2ece14571a1977ad3fedd62ce3f97014ac56765e0882f13eb6264e031a8",
-      "machineHash": "71c0550c3787142d080913ceda7d7db65206561868b7307a22d6c014b3210fc7",
-      "machineText": "重大度が critical または high の未解決の Dependabot アラート、重大度が critical または high の未解決の code-scanning アラート、および未解決の secret-scanning アラート。ただし、**出荷されるコードのみ**が対象です。`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`、または任意の`examples/`ディレクトリのみに存在するアラートは無視されます（`.github/scripts/check-release-blockers.sh`内の`SHIPPED_ALERT_IGNORE`。**オーナーによるレビューが必要**）。",
-      "status": "reviewed",
-      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or hig",
+      "sourceHash": "62b47b4238afd8b1b2292b0de411636878afd323b81131dd746f989356984979",
+      "targetHash": "037f197d7e82706ae81e39489a81a292a15e82987d3f126b2de14e3d4ffd289f",
+      "machineHash": "037f197d7e82706ae81e39489a81a292a15e82987d3f126b2de14e3d4ffd289f",
+      "machineText": "重大度が critical または high の未解決の Dependabot アラート、重大度が critical または high の未解決のコードスキャンアラート、および未解決のシークレットスキャンアラート（**出荷されるコードのみ**）。`v2/internal/staticanalysis/test/`（静的解析用フィクスチャ）、`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`、または任意の `examples/` ディレクトリ内にのみ存在するアラートは無視されます（`v3/tasks/releasegate/main.go` 内の `SHIPPED_ALERT_IGNORE`。**オーナーによるレビューが必要**）。",
+      "status": "machine-translated",
+      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0102-text-01": {
       "sourceHash": "1b385bd81a0263a3996e77d7af193864863b8545051d9ba54afb80eb1eeb1660",

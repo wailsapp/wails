@@ -7,7 +7,7 @@ sourcePath: "concepts/lifecycle.md"
 
 ## 瞭解應用程式生命週期
 
-桌面應用程式具有從啟動到關閉的生命週期。Wails v3 提供<strong>服務</strong>、<strong>事件</strong>和<strong>鉤子</strong>，以有效管理此生命週期。
+桌面應用程式具有從啟動到關閉的生命週期。Wails v3提供**服務**、**事件**和**鉤子**，以有效管理此生命週期。
 
 ## 生命週期階段
 
@@ -20,7 +20,7 @@ Start: 應用程式啟動 {
 }
 
 Init: 初始化 {
-  Parse: 解析選項 {
+  Parse: 剖析選項 {
     shape: rectangle
   }
   Register: 註冊服務 {
@@ -36,7 +36,7 @@ AppRun: app.Run() {
   style.fill: "#3B82F6"
 }
 
-ServiceStartup: 啟動服務 {
+ServiceStartup: 服務啟動 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
@@ -48,7 +48,7 @@ EventLoop: 事件迴圈 {
   Handle: 處理訊息 {
     shape: rectangle
   }
-  Update: 更新使用者介面 {
+  Update: 更新 UI {
     shape: rectangle
   }
 }
@@ -68,7 +68,7 @@ OnShutdown: OnShutdown 回呼 {
   style.fill: "#3B82F6"
 }
 
-ServiceShutdown: 關閉服務 {
+ServiceShutdown: 服務關閉 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
@@ -98,8 +98,8 @@ EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: 迴圈
 EventLoop.Process -> QuitSignal: 使用者結束應用程式
 QuitSignal -> ShouldQuit: 檢查是否允許？
-ShouldQuit -> EventLoop.Process: 已拒絕
-ShouldQuit -> OnShutdown: 已允許
+ShouldQuit -> EventLoop.Process: 拒絕
+ShouldQuit -> OnShutdown: 允許
 OnShutdown -> ServiceShutdown
 ServiceShutdown -> Cleanup.Close
 Cleanup.Close -> Cleanup.Release
@@ -123,7 +123,7 @@ app := application.New(application.Options{
 })
 ```
 
-**執行的作業：**
+**執行內容：**
 
 1. 剖析並驗證選項
 2. 註冊服務（但尚未啟動）
@@ -141,11 +141,11 @@ if err != nil {
 }
 ```
 
-**執行的作業：**
+**執行內容：**
 
 1. 依註冊順序啟動服務
-2. 啟用事件監聽器
-3. 此時可以建立視窗
+2. 啟用事件接聽程式
+3. 可以建立視窗
 4. 事件迴圈開始執行
 
 ### 3. 事件迴圈
@@ -153,9 +153,9 @@ if err != nil {
 應用程式會進入事件迴圈，並在其中度過大部分執行時間：
 
 - 處理作業系統事件（滑鼠、鍵盤和視窗事件）
-- 處理 Go 傳送至 JS 的訊息
-- 執行 JS 對 Go 的呼叫
-- 轉譯 UI 更新
+- 處理從 Go 傳至 JS 的訊息
+- 執行從 JS 傳至 Go 的呼叫
+- 算繪 UI 更新
 
 ### 4. 關閉
 
@@ -163,13 +163,13 @@ if err != nil {
 
 1. 檢查`ShouldQuit`回呼（若已設定）
 2. 執行`OnShutdown`回呼
-3. 依相反順序關閉服務
+3. 以相反順序關閉服務
 4. 關閉視窗
 5. 釋放資源
 
 ## 服務生命週期
 
-服務是 Wails v3 中管理生命週期的主要方式。服務透過介面提供啟動和關閉鉤子。如需完整的服務文件，請參閱[服務指南](/features/bindings/services/)。
+服務是管理 Wails v3生命週期的主要方式。服務透過介面提供啟動和關閉鉤子。如需完整的服務文件，請參閱[服務指南](/features/bindings/services/)。
 
 ### 建立服務
 
@@ -217,13 +217,13 @@ app := application.New(application.Options{
 **重點：**
 
 - 服務依註冊順序啟動
-- 服務依註冊的<strong>相反</strong>順序關閉
+- 服務依註冊的**相反**順序關閉
 - 如果服務的`ServiceStartup`傳回錯誤，應用程式便會中止
-- 關閉開始時，傳遞給`ServiceStartup`的`ctx`會被取消
+- 關閉開始時，傳入`ServiceStartup`的`ctx`會被取消
 
-### 使用應用程式上下文
+### 使用應用程式內容
 
-傳遞給`ServiceStartup`的 context 在應用程式的整個生命週期內都有效：
+傳入`ServiceStartup`的內容在應用程式的整個生命週期內都有效：
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -247,29 +247,29 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-您也可以從應用程式實例存取 context：
+您也可以從應用程式執行個體存取該內容：
 
 ```go
 app := application.Get()
 ctx := app.Context()
 ```
 
-## 應用程式層級的 Hook
+## 應用程式層級鉤子
 
-這些是`application.Options`中的便利回呼，可讓您掛接應用程式生命週期，而不必建立完整的服務。它們適用於簡單的清理工作、結束確認，或需要在關閉程序中的特定時點執行程式碼時。
+這些是`application.Options`中的便利回呼，無須建立完整服務即可掛接至應用程式生命週期。它們適合用於簡單的清理工作、結束確認，或需要在關閉程序的特定時間點執行程式碼時。
 
-若需要包含啟動邏輯、相依性注入或具狀態資源的較複雜生命週期管理，請改用[服務](#heading-2)。
+如需處理包含啟動邏輯、相依性插入或具狀態資源的較複雜生命週期管理，請改用[服務](#heading-2)。
 
 ### ShouldQuit
 
-每當收到結束要求時，都會呼叫`ShouldQuit`回呼，無論是使用者關閉最後一個視窗、按下 Cmd+Q（macOS）／Alt+F4（Windows），還是以程式方式呼叫`app.Quit()`。
+每當收到結束要求時，都會呼叫`ShouldQuit`回呼，無論是使用者關閉最後一個視窗、按下 Cmd+Q (macOS) / Alt+F4 (Windows)，還是以程式設計方式呼叫`app.Quit()`。
 
 **傳回值：**
 
-- 傳回`true`以允許繼續結束（應用程式將會關閉）
+- 傳回`true`以允許繼續結束（應用程式將關閉）
 - 傳回`false`以取消結束（應用程式會繼續執行）
 
-您可以在此攔截結束要求，並選擇是否阻止結束，例如提示使用者尚有未儲存的變更：
+您可以在此攔截結束要求，並選擇是否加以阻止，例如提示使用者尚有未儲存的變更：
 
 ```go
 app := application.New(application.Options{
@@ -310,12 +310,12 @@ app := application.New(application.Options{
 
 **不會呼叫 ShouldQuit 的情況：**
 
-- 處理程序遭到終止（SIGKILL、透過工作管理員強制結束）
+- 程序遭到終止（SIGKILL、工作管理員強制結束）
 - 直接呼叫`os.Exit()`
 
 ### OnShutdown
 
-確認應用程式即將結束時，會呼叫`OnShutdown`回呼（若已設定`ShouldQuit`，則會在其傳回`true`後呼叫）。請用它執行清理工作，例如儲存狀態、關閉資料庫連線或釋放資源。
+確認應用程式即將結束時，會呼叫`OnShutdown`回呼（若已設定`ShouldQuit`，則會在其傳回`true`之後呼叫）。請使用此回呼執行清理工作，例如儲存狀態、關閉資料庫連線或釋放資源。
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-您也可以在應用程式生命週期中的任何時點，以程式方式註冊其他關閉回呼：
+您也可以在應用程式生命週期中的任何時間，以程式設計方式註冊其他關閉回呼：
 
 ```go
 app.OnShutdown(func() {
@@ -337,19 +337,19 @@ app.OnShutdown(func() {
 })
 ```
 
-多個回呼會依註冊順序執行。關閉程序會封鎖，直到所有回呼執行完畢。
+多個回呼會依註冊順序執行。關閉程序會阻塞，直到所有回呼都執行完畢。
 
-<strong>重要：</strong>關閉回呼應快速完成（少於1秒）。作業系統可能會強制終止耗時過久仍未結束的應用程式，因而中斷清理工作並造成資料遺失。
+<strong>重要：</strong>關閉回呼應快速完成（少於1秒）。若應用程式結束耗時過久，作業系統可能會強制終止應用程式，因而中斷清理作業並造成資料遺失。
 
 ### PostShutdown
 
-所有關閉工作完成後、處理程序終止前，會呼叫`PostShutdown`回呼。此時已無法再使用應用程式實例——視窗已關閉、服務已停止，資源也已釋放。
+所有關閉工作完成後、程序終止前，會呼叫`PostShutdown`回呼。此時應用程式執行個體已無法使用——視窗已關閉、服務已停止，資源也已釋放。
 
 這主要適用於：
 
-- 必須在所有其他清理工作之後進行的最終記錄
+- 必須在所有其他清理作業完成後進行的最終記錄
 - 測試及偵錯關閉行為
-- `app.Run()`不會傳回的平台（此回呼可確保您的程式碼執行）
+- `app.Run()`不會返回的平台（此回呼可確保程式碼執行）
 
 ```go
 app := application.New(application.Options{
@@ -363,13 +363,13 @@ app := application.New(application.Options{
 })
 ```
 
-<strong>注意：</strong>請勿嘗試在`PostShutdown`中使用應用程式功能（視窗、對話方塊等），因為這些功能已無法使用。
+<strong>注意：</strong>請勿嘗試在`PostShutdown`中使用應用程式功能（視窗、對話方塊等），這些功能已無法使用。
 
-## 事件式生命週期
+## 以事件為基礎的生命週期
 
-Wails 提供事件系統，在應用程式中發生各種情況時通知您，例如視窗開啟、應用程式啟動、佈景主題變更等。您可以監聽這些事件以回應生命週期變更，而不會封鎖或攔截它們。
+當應用程式中發生各種情況時（例如視窗開啟、應用程式啟動及佈景主題變更等），Wails 會透過事件系統通知你。你可以監聽這些事件，以因應生命週期變更，而不會阻塞或攔截事件。
 
-對於視窗事件，需要攔截並取消動作（例如防止視窗關閉）時，也可以使用`RegisterHook`取代`OnWindowEvent`。請參閱下方的[視窗 Hook](#-hook-1)。
+對於視窗事件，你也可以使用`RegisterHook`取代`OnWindowEvent`來攔截及取消動作，例如阻止視窗關閉。請參閱下方的[視窗掛鉤](#heading-10)。
 
 如需事件系統的完整文件，請參閱[事件指南](/features/events/system/)。
 
@@ -383,7 +383,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *appli
 })
 ```
 
-此外也有平台特定事件可供使用：
+此外也提供平台特定事件：
 
 ```go
 // macOS
@@ -417,9 +417,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-### 視窗 Hook（可取消的事件）
+### 視窗掛鉤（可取消的事件）
 
-需要<strong>取消</strong>事件時，請使用`RegisterHook`，而非`OnWindowEvent`：
+需要**取消**事件時，請使用`RegisterHook`取代`OnWindowEvent`：
 
 ```go
 window := app.Window.New()
@@ -439,14 +439,14 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **OnWindowEvent 與 RegisterHook 的差異：**
 
-- `OnWindowEvent`：在事件發生時通知您（無法取消）
-- `RegisterHook`：讓您攔截事件，並視情況取消事件
+- `OnWindowEvent`：在事件發生時通知你（無法取消）
+- `RegisterHook`：讓你攔截事件，並可視情況取消事件
 
 ## 視窗生命週期
 
-視窗有自己的生命週期，從建立到銷毀。每個視窗都會獨立載入其前端內容，並可隨時顯示、隱藏或關閉。當使用者嘗試關閉視窗時，您可以使用`RegisterHook`攔截此操作，以提示使用者確認，或隱藏視窗而不將其銷毀。
+視窗具有自己的生命週期，從建立直到銷毀。每個視窗都會獨立載入其前端內容，並可隨時顯示、隱藏或關閉。當使用者嘗試關閉視窗時，你可以使用`RegisterHook`攔截此動作，要求使用者確認，或隱藏視窗而不將其銷毀。
 
-如需完整的視窗說明文件，請參閱[視窗指南](/features/windows/basics/)。
+如需完整的視窗文件，請參閱[視窗指南](/features/windows/basics/)。
 
 ```d2
 direction: down
@@ -492,8 +492,8 @@ End: 視窗已關閉 {
 Create -> Load
 Load -> Show
 Show -> Active.Events
-Active.Events -> Active.Events: 迴圈
-Active.Events -> CloseRequest: 使用者關閉視窗
+Active.Events -> Active.Events: 循環
+Active.Events -> CloseRequest: 使用者關閉
 CloseRequest -> Hook
 Hook -> Active.Events: 已取消
 Hook -> Destroy: 已允許
@@ -510,7 +510,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### 防止視窗關閉
+### 阻止視窗關閉
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -569,11 +569,11 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 | 平台 | 最後一個視窗關閉時的預設行為 |
 | --- | --- |
-| macOS | 應用程式繼續執行（選單列仍保留） |
+| macOS | 應用程式繼續執行（選單列仍會保留） |
 | Windows | 應用程式結束 |
 | Linux | 應用程式結束 |
 
-macOS 遵循原生平台慣例，即使沒有任何視窗，應用程式通常仍會在選單列中保持作用中。Windows 和 Linux 則預設會結束應用程式。
+macOS 遵循平台的原生慣例，即使沒有任何視窗，應用程式通常仍會在選單列中保持作用中。Windows 與 Linux 預設會結束應用程式。
 
 **讓所有平台都在最後一個視窗關閉時結束應用程式：**
 
@@ -636,7 +636,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### 模式2：組態服務
+### 模式2：設定服務
 
 ```go
 type ConfigService struct {
@@ -710,11 +710,11 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 | 掛鉤／介面 | 呼叫時機 | 可否取消？ | 用途 |
 | --- | --- | --- | --- |
-| `ServiceStartup` | 在`app.Run()`期間、事件迴圈開始前 | 否（傳回錯誤以中止） | 初始化 |
+| `ServiceStartup` | 在`app.Run()`期間、事件迴圈之前 | 否（傳回錯誤可中止） | 初始化 |
 | `ServiceShutdown` | 關閉期間，在`OnShutdown`之後 | 否 | 清理 |
 | `OnShutdown` | 確認結束時 | 否 | 應用程式清理 |
 | `ShouldQuit` | 要求結束時 | 是（傳回 false） | 確認結束 |
-| `RegisterHook(WindowClosing)` | 要求關閉視窗時 | 是（`e.Cancel()`） | 防止視窗關閉 |
+| `RegisterHook(WindowClosing)` | 要求關閉視窗時 | 是（`e.Cancel()`） | 阻止視窗關閉 |
 | `OnWindowEvent` | 事件發生時 | 否 | 回應事件 |
 | `OnApplicationEvent` | 事件發生時 | 否 | 回應事件 |
 
@@ -722,16 +722,16 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ### macOS
 
-- 即使沒有視窗，<strong>應用程式選單</strong>仍會保留
-- <strong>Cmd+Q</strong>會觸發結束（會經過`ShouldQuit`）
-- 除非隱藏，否則<strong>Dock 圖示</strong>會保留
+- **應用程式選單**即使沒有視窗也會持續存在
+- **Cmd+Q**會觸發結束程序（會經過`ShouldQuit`）
+- **Dock 圖示**除非隱藏，否則會持續顯示
 - 使用`ApplicationShouldTerminateAfterLastWindowClosed`控制結束行為
 
 ### Windows
 
-- 沒有視窗時，**不會有應用程式選單**
-- <strong>Alt+F4</strong>會關閉視窗（可使用`RegisterHook`阻止）
-- <strong>系統匣</strong>可讓應用程式繼續執行
+- **沒有視窗時，就沒有應用程式選單**
+- **Alt+F4**會關閉視窗（可使用`RegisterHook`阻止）
+- **系統匣**可讓應用程式持續執行
 
 ### Linux
 
@@ -748,7 +748,7 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 2. `OnShutdown`耗時過久
 3. 背景 goroutine 未停止
 
-**解決方案：**
+**解決方法：**
 
 ```go
 // 1. Check ShouldQuit logic
@@ -776,7 +776,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ### 問題：服務啟動失敗
 
-<strong>解決方案：</strong>傳回描述清楚的錯誤：
+<strong>解決方法：</strong>傳回具體描述問題的錯誤：
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -787,32 +787,32 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-系統會記錄錯誤，且應用程式不會啟動。
+系統會記錄該錯誤，且應用程式不會啟動。
 
 ## 最佳實務
 
-### 建議做法
+### 應採取的做法
 
-- **使用服務管理生命週期** — 服務提供適當的啟動與關閉掛鉤
-- **快速完成關閉** — 所有清理工作的目標時間應少於1秒
-- **使用 context 進行取消** — 正確停止背景工作
-- **處理啟動期間的錯誤** — 傳回錯誤以乾淨地中止啟動
-- **記錄生命週期事件** — 有助於偵錯
+- **使用服務管理生命週期**——服務提供適當的啟動與關閉掛鉤
+- **快速完成關閉程序**——所有清理工作應以在1秒內完成為目標
+- **使用 context 取消作業**——正確停止背景工作
+- **在啟動期間處理錯誤**——傳回錯誤以正常中止啟動
+- **記錄生命週期事件**——有助於偵錯
 
-### 避免事項
+### 不應採取的做法
 
-- **不要在服務啟動期間阻塞** — 快速完成初始化（少於2秒）
-- **不要在關閉期間顯示對話方塊** — 應用程式正在結束，使用者介面可能無法運作
-- **不要忽略 context** — 一律在 goroutine 中檢查`ctx.Done()`
-- **不要洩漏資源** — 一律實作`ServiceShutdown`
+- **不要在服務啟動期間阻塞**——快速完成初始化（在2秒內）
+- **不要在關閉期間顯示對話方塊**——應用程式正在結束，UI 可能無法運作
+- **不要忽略 context**——一律在 goroutine 中檢查`ctx.Done()`
+- **不要造成資源洩漏**——一律實作`ServiceShutdown`
 
 ## 後續步驟
 
-**服務** — 進一步瞭解服務系統 [深入瞭解 →](/features/bindings/services/)
+**服務**——深入瞭解服務系統 [深入瞭解 →](/features/bindings/services/)
 
-**事件系統** — 使用事件進行通訊 [深入瞭解 →](/features/events/system/)
+**事件系統**——使用事件進行通訊 [深入瞭解 →](/features/events/system/)
 
-**視窗管理** — 建立及管理視窗 [深入瞭解 →](/features/windows/basics/)
+**視窗管理**——建立及管理視窗 [深入瞭解 →](/features/windows/basics/)
 
 ---
 

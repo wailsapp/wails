@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:42Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "6cfd3a29b9ac2beaf8e9558cfad952ef1d2cf003363e17cb8b1fdce0063c08d8",
-      "machineHash": "6cfd3a29b9ac2beaf8e9558cfad952ef1d2cf003363e17cb8b1fdce0063c08d8",
-      "machineText": "文档贡献者无需安装 Wails CLI 或桌面构建依赖项即可使用 M-Press。有关固定版本可执行文件的下载、安装、实时预览、验证以及发布分支 PR 工作流，请参阅[使用 M-Press 编写文档](/contributing/documentation/)。",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "cd4f6379d8b450e80d0bf51d7ba9be155c23d685006fb7075721a8104a2969e5",
+      "machineHash": "cd4f6379d8b450e80d0bf51d7ba9be155c23d685006fb7075721a8104a2969e5",
+      "machineText": "文档贡献者无需安装 Wails CLI 或桌面应用构建依赖项即可使用 M-Press。请按照[使用 M-Press 编写文档](/contributing/documentation/)中的说明，获取固定版本的可执行文件下载、安装、实时预览、验证以及以`master`为目标的 PR 工作流。",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:42Z"
+      "updatedAt": "2026-11-06T02:12:52Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

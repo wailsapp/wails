@@ -5,17 +5,17 @@ slug: "whats-new"
 sourcePath: "whats-new.md"
 ---
 
-Wails v3 bringt gegenüber v2 wesentliche Änderungen mit sich. Die deklarative API für ein einzelnes Fenster wird durch einen flexibleren prozeduralen Ansatz ersetzt. Dieses neue API-Design verbessert die Lesbarkeit des Codes und vereinfacht die Entwicklung, insbesondere bei komplexen Anwendungen mit mehreren Fenstern.
+Wails v3 bringt gegenüber v2 erhebliche Änderungen mit sich. Die deklarative API für ein einzelnes Fenster wird durch einen flexibleren prozeduralen Ansatz ersetzt. Dieses neue API-Design verbessert die Lesbarkeit des Codes und vereinfacht die Entwicklung, insbesondere bei komplexen Anwendungen mit mehreren Fenstern.
 
-Wails v3 stellt eine bedeutende Weiterentwicklung beim Erstellen von Desktopanwendungen mit Go und Webtechnologien dar.
+Wails v3 stellt eine wesentliche Weiterentwicklung bei der Erstellung von Desktop-Anwendungen mit Go und Webtechnologien dar.
 
 ## Mehrere Fenster
 
-Mit Wails v3 können Sie mehrere Fenster innerhalb einer einzigen Anwendung erstellen und verwalten. Dadurch lassen sich komplexere und vielseitigere Benutzeroberflächen entwickeln, die über die Einschränkungen von Anwendungen mit nur einem Fenster hinausgehen.
+Wails v3 ermöglicht das Erstellen und Verwalten mehrerer Fenster innerhalb einer einzigen Anwendung. Mit dieser Funktion können Entwickler komplexere und vielseitigere Benutzeroberflächen entwerfen und die Einschränkungen von Anwendungen mit nur einem Fenster überwinden.
 
-Jedes Fenster kann unabhängig konfiguriert werden. Größe, Position, Inhalt und Verhalten lassen sich flexibel festlegen. So können Anwendungen separate Fenster für unterschiedliche Funktionen bereitstellen, etwa Hauptoberflächen, Einstellungsbereiche oder ergänzende Ansichten.
+Jedes Fenster kann unabhängig konfiguriert werden, sodass sich Größe, Position, Inhalt und Verhalten flexibel festlegen lassen. Dadurch können Anwendungen separate Fenster für verschiedene Funktionen bereitstellen, etwa Hauptoberflächen, Einstellungsbereiche oder zusätzliche Ansichten.
 
-Entwickler können diese Fenster programmgesteuert erstellen, bearbeiten und verwalten. Dadurch entstehen dynamische Benutzeroberflächen, die sich an die Anforderungen der Benutzer und den Zustand der Anwendung anpassen.
+Entwickler können diese Fenster programmgesteuert erstellen, bearbeiten und verwalten. So lassen sich dynamische Benutzeroberflächen umsetzen, die sich an die Anforderungen der Benutzer und den Zustand der Anwendung anpassen.
 
 @note{type="tip" title="Mehrere Fenster"}
 @details{title="Beispiel"}
@@ -68,19 +68,19 @@ func main() {
 
 @end
 
-## Systemleistenintegration
+## Integration in den Infobereich
 
-Wails v3 bietet umfassende Unterstützung für Funktionen der Systemleiste, sodass Ihre Anwendung dauerhaft auf dem Desktop des Benutzers verfügbar bleibt. Diese Funktion ist besonders für Anwendungen nützlich, die im Hintergrund ausgeführt werden müssen oder schnellen Zugriff auf zentrale Funktionen bieten sollen.
+Wails v3 bietet umfassende Unterstützung für Funktionen des Infobereichs, sodass Ihre Anwendung dauerhaft auf dem Desktop des Benutzers präsent sein kann. Diese Funktion ist besonders nützlich für Anwendungen, die im Hintergrund ausgeführt werden oder schnellen Zugriff auf wichtige Funktionen bieten müssen.
 
-Die Systemleistenintegration von Wails v3 bietet unter anderem folgende Hauptfunktionen:
+Die Integration von Wails v3 in den Infobereich bietet unter anderem folgende Hauptfunktionen:
 
-1. Fensterzuordnung: Sie können dem Symbol in der Systemleiste ein Fenster zuordnen. Bei der Aktivierung wird dieses Fenster relativ zur Position des Symbols zentriert und ermöglicht so einen schnellen Zugriff auf Ihre Anwendung.
+1. Fensteranbindung: Sie können dem Symbol im Infobereich ein Fenster zuordnen. Beim Aktivieren wird dieses Fenster relativ zur Position des Symbols zentriert und ermöglicht so einen schnellen Zugriff auf Ihre Anwendung.
 
-2. Umfassende Menüunterstützung: Erstellen Sie umfangreiche interaktive Menüs, auf die Benutzer direkt über das Symbol in der Systemleiste zugreifen können. So lassen sich schnelle Aktionen ausführen, ohne das vollständige Anwendungsfenster öffnen zu müssen.
+2. Umfassende Menüunterstützung: Erstellen Sie umfangreiche, interaktive Menüs, auf die Benutzer direkt über das Symbol im Infobereich zugreifen können. Damit lassen sich Aktionen schnell ausführen, ohne das vollständige Anwendungsfenster öffnen zu müssen.
 
-3. Adaptive Symboldarstellung: Die Unterstützung für Symbole im hellen und dunklen Modus stellt sicher, dass das Systemleistensymbol Ihrer Anwendung bei verschiedenen Systemdesigns sichtbar und ansprechend bleibt. Unter macOS werden außerdem Vorlagensymbole unterstützt.
+3. Adaptive Symboldarstellung: Die Unterstützung für Symbole im hellen und dunklen Modus stellt sicher, dass das Symbol Ihrer Anwendung im Infobereich bei unterschiedlichen Systemdesigns sichtbar und optisch ansprechend bleibt. Unter macOS werden außerdem Vorlagensymbole unterstützt.
 
-@note{type="tip" title="Systemleiste"}
+@note{type="tip" title="Infobereich"}
 @details{title="Beispiel"}
 ```go
 package main
@@ -148,9 +148,9 @@ func main() {
 
 ## Verbesserte Bindings-Generierung
 
-Wails v3 verbessert die Generierung von Bindings für Ihr Projekt erheblich. Bindings verbinden Ihr Go-Backend mit Ihrem Frontend und ermöglichen eine nahtlose Kommunikation zwischen beiden.
+Wails v3 verbessert erheblich, wie Bindings für Ihr Projekt generiert werden. Bindings sind das Bindeglied zwischen Ihrem Go-Backend und Ihrem Frontend und ermöglichen eine nahtlose Kommunikation zwischen beiden.
 
-Die Bindings werden jetzt mit einem leistungsfähigen statischen Analysewerkzeug generiert, das den Generierungsprozess grundlegend verbessert. Es erhöht die Geschwindigkeit und bewahrt die Codequalität, indem Kommentare und Parameternamen erhalten bleiben.
+Die Bindings werden jetzt mit einem leistungsfähigen statischen Analysator generiert, der den Generierungsprozess grundlegend verbessert. Er erhöht die Geschwindigkeit und bewahrt die Codequalität, indem Kommentare und Parameternamen erhalten bleiben.
 
 Die Generierung der Bindings wurde vereinfacht und erfordert nur noch einen einzigen Befehl: `wails3 generate bindings`.
 
@@ -189,9 +189,9 @@ export function GreetPerson($0) {
 
 ## Verbessertes Build-System
 
-Wails v3 führt ein flexibleres und transparenteres Build-System ein, das die Einschränkungen seines Vorgängers beseitigt. In v2 war der Build-Prozess weitgehend undurchsichtig und nur schwer anpassbar. Das konnte Entwickler frustrieren, die mehr Kontrolle über den Build-Prozess ihres Projekts benötigten.
+Wails v3 führt ein flexibleres und transparenteres Build-System ein, das die Einschränkungen seines Vorgängers behebt. In v2 war der Build-Prozess weitgehend undurchsichtig und schwer anzupassen, was für Entwickler frustrierend sein konnte, die mehr Kontrolle über den Build-Prozess ihres Projekts benötigten.
 
-Alle aufwendigen Aufgaben, die das Build-System von v2 übernahm, etwa das Generieren von Symbolen und das Erstellen von Manifesten, wurden der CLI als Werkzeugbefehle hinzugefügt. Zur Orchestrierung dieser Aufrufe haben wir [Taskfile](https://taskfile.dev) in die CLI integriert, um dieselbe Entwicklererfahrung wie in v2 zu bieten. Dieser Ansatz schafft jedoch die bestmögliche Balance zwischen Flexibilität und Benutzerfreundlichkeit, da Sie den Build-Prozess jetzt an Ihre Anforderungen anpassen können.
+Alle aufwendigen Aufgaben, die das Build-System von v2 übernommen hat, etwa die Generierung von Symbolen und die Erstellung von Manifesten, wurden der CLI als Werkzeugbefehle hinzugefügt. Zur Steuerung dieser Aufrufe haben wir [Taskfile](https://taskfile.dev) in die CLI integriert, um dieselbe Entwicklererfahrung wie mit v2 zu bieten. Dieser Ansatz schafft jedoch ein optimales Gleichgewicht zwischen Flexibilität und Benutzerfreundlichkeit, da Sie den Build-Prozess nun an Ihre Anforderungen anpassen können.
 
 Sie können sogar make verwenden, wenn Ihnen das lieber ist!
 
@@ -219,9 +219,9 @@ darwin:build:
 
 ## Verbesserte Ereignisse
 
-Wails löst jetzt Ereignisse für verschiedene Laufzeitvorgänge und Systemaktivitäten aus. Dadurch kann Ihre Anwendung in Echtzeit auf diese Ereignisse reagieren. Zusätzlich stehen plattformübergreifende (gemeinsame) Ereignisse zur Verfügung, sodass Sie einheitliche Methoden zur Ereignisbehandlung schreiben können, die unter verschiedenen Betriebssystemen funktionieren.
+Wails löst jetzt Ereignisse für verschiedene Laufzeitoperationen und Systemaktivitäten aus. Dadurch kann Ihre Anwendung in Echtzeit auf diese Ereignisse reagieren. Zusätzlich stehen plattformübergreifende (gemeinsame) Ereignisse zur Verfügung, sodass Sie einheitliche Methoden zur Ereignisbehandlung schreiben können, die unter verschiedenen Betriebssystemen funktionieren.
 
-Zur synchronen Behandlung bestimmter Ereignisse können Ereignis-Hooks registriert werden. Anders als bei der Methode `On` können Sie mit diesen Hooks das Ereignis bei Bedarf abbrechen. Ein typischer Anwendungsfall ist die Anzeige eines Bestätigungsdialogs, bevor ein Fenster geschlossen wird. Dadurch haben Sie mehr Kontrolle über den Ereignisablauf und die Benutzerführung.
+Für die synchrone Verarbeitung bestimmter Ereignisse können Event-Hooks registriert werden. Anders als bei der Methode `On` können Sie mit diesen Hooks das Ereignis bei Bedarf abbrechen. Ein typischer Anwendungsfall ist die Anzeige eines Bestätigungsdialogs vor dem Schließen eines Fensters. Dadurch erhalten Sie mehr Kontrolle über den Ereignisablauf und die Benutzererfahrung.
 
 @note{type="tip" title="Beispiel für die Ereignisbehandlung"}
 @details{title="Beispiel"}
@@ -303,7 +303,7 @@ func main() {
 
 ## Wails Markup Language (wml)
 
-Eine experimentelle Funktion zum Aufrufen von Laufzeitmethoden mit einfachem HTML, ähnlich wie [htmx](https://htmx.org).
+Eine experimentelle Funktion zum Aufrufen von Laufzeitmethoden mit einfachem HTML, ähnlich wie bei [htmx](https://htmx.org).
 
 @note{type="tip" title="Beispiel für wml"}
 @details{title="Beispiel"}
@@ -348,4 +348,4 @@ Eine experimentelle Funktion zum Aufrufen von Laufzeitmethoden mit einfachem HTM
 
 ## Beispiele
 
-Weitere Beispiele finden Sie im Verzeichnis [examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples). Sehen Sie sie sich an!
+Im Verzeichnis [examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) finden Sie weitere Beispiele. Sehen Sie sie sich an!

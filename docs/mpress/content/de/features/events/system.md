@@ -1,15 +1,15 @@
 ---
 title: "Ereignissystem"
-description: "Komponenten über das Ereignissystem miteinander kommunizieren lassen"
+description: "Kommunikation zwischen Komponenten mit dem Ereignissystem"
 slug: "features/events/system"
 sourcePath: "features/events/system.md"
 ---
 
 ## Ereignissystem
 
-Wails bietet ein **einheitliches Ereignissystem** für die Pub/Sub-Kommunikation. Lösen Sie Ereignisse überall aus und empfangen Sie sie überall – von Go zu JavaScript, von JavaScript zu Go und von Fenster zu Fenster. Dies ermöglicht eine entkoppelte Architektur mit typisierten Ereignissen und Lebenszyklus-Hooks.
+Wails bietet ein **einheitliches Ereignissystem** für die Pub/Sub-Kommunikation. Ereignisse lassen sich überall auslösen und überall empfangen – von Go zu JavaScript, von JavaScript zu Go und von Fenster zu Fenster. Dies ermöglicht eine entkoppelte Architektur mit typisierten Ereignissen und Lebenszyklus-Hooks.
 
-## Schnelleinstieg
+## Schnellstart
 
 **Go (auslösen):**
 
@@ -118,7 +118,7 @@ app.Event.Emit("config", map[string]interface{}{
 app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
-**Für ein bestimmtes Fenster:**
+**An ein bestimmtes Fenster:**
 
 ```go
 window.EmitEvent("window-specific-event", data)
@@ -166,6 +166,8 @@ app.Event.On("order-created", logOrder)
 app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
+
+**Zustellreihenfolge:** Jeder mit `On`, `Once` oder `OnMultiple` registrierte Handler verarbeitet jeweils nur ein Ereignis und wird daher nie gleichzeitig mit sich selbst ausgeführt. Aufeinanderfolgende `Emit`-Aufrufe empfängt er in der entsprechenden Reihenfolge: Wenn ein `Emit`-Aufruf beendet wird, bevor der nächste erfolgt, sehen alle Handler diese Aufrufe in dieser Reihenfolge. Für gleichzeitige `Emit`-Aufrufe aus verschiedenen Goroutinen ist untereinander keine Reihenfolge definiert. Verschiedene Handler werden unabhängig voneinander ausgeführt: Ein langsamer Handler verzögert die anderen nicht, und zwischen den Handlern besteht keine festgelegte Reihenfolge. `Emit` wartet niemals auf Handler. Nachdem ein Handler entfernt wurde, werden noch für ihn eingereihte Ereignisse verworfen.
 
 ### In JavaScript
 
@@ -377,7 +379,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 | Ausführungsreihenfolge | Zuerst, in Registrierungsreihenfolge | Nach den Hooks, keine garantierte Reihenfolge |
 | Blockierung | Synchron, blockiert den nächsten Hook | Asynchron, nicht blockierend |
 | Kann abbrechen | Ja | Nein (bereits weitergegeben) |
-| Anwendungsfall | Ablaufsteuerung, Validierung | Protokollierung, Seiteneffekte |
+| Anwendungsfall | Ablaufsteuerung, Validierung | Protokollierung, Nebeneffekte |
 
 ## Ereignismuster
 
@@ -582,49 +584,49 @@ document.getElementById('button').addEventListener('click', () => {
 })
 ```
 
-## Bewährte Vorgehensweisen
+## Bewährte Methoden
 
 ### ✅ Empfohlen
 
 - **Ereignisse für Benachrichtigungen verwenden** – unidirektionale Kommunikation
 - **Bindings für Anfragen verwenden** – bidirektionale Kommunikation
-- **Ereignisnamen konsistent halten** – kebab-case verwenden
-- **Ereignisdaten dokumentieren** – welche Felder sind enthalten?
-- **Nicht mehr benötigte Abonnements kündigen** – Speicherlecks vermeiden
-- **Hooks zur Validierung verwenden** – den Ereignisfluss steuern
+- **Ereignisnamen einheitlich halten** – kebab-case verwenden
+- **Ereignisdaten dokumentieren** – Welche Felder sind enthalten?
+- **Nach Gebrauch abmelden** – Speicherlecks vermeiden
+- **Hooks zur Validierung verwenden** – Ereignisfluss steuern
 
 ### ❌ Nicht empfohlen
 
 - **Ereignisse nicht für RPC verwenden** – stattdessen Bindings verwenden
-- **Nicht zu häufig auslösen** – bei Bedarf bündeln
-- **Handler nicht blockieren** – schnell ausführen
-- **Abmeldung nicht vergessen** – sonst drohen Speicherlecks
-- **Ereignisse nicht für große Datenmengen verwenden** – stattdessen Bindings verwenden
+- **Ereignisse nicht zu häufig auslösen** – bei Bedarf bündeln
+- **In Handlern nicht blockieren** – Handler schnell halten
+- **Abmeldung nicht vergessen** – sonst entstehen Speicherlecks
+- **Ereignisse nicht für große Datenmengen verwenden** – Bindings verwenden
 - **Keine Ereignisschleifen erzeugen** – A löst B aus, B löst A aus
 
 ## Nächste Schritte
 
 @cards{cols="2"}
 ★ Leitfaden zu Ereignissen
-Erfahren Sie mehr über Ereignismuster und die typsichere Ereignisgenerierung.
+Mehr über Ereignismuster und die typsichere Ereignisgenerierung erfahren.
 
 [Mehr erfahren →](/guides/events-reference/)
 
 ---
 ◆ Ereignis-API
-Entdecken Sie die vollständige API für Anwendungs- und Fensterereignisse.
+Die vollständige Ereignis-API für Anwendungen und Fenster erkunden.
 
 [Mehr erfahren →](/reference/events/)
 
 ---
 🚀 Bindings
-Verwenden Sie Bindings für Anfrage und Antwort.
+Bindings für Request/Response verwenden.
 
 [Mehr erfahren →](/features/bindings/methods/)
 
 ---
 ▣ Fensterereignisse
-Verarbeiten Sie Ereignisse im Lebenszyklus von Fenstern.
+Ereignisse des Fensterlebenszyklus verarbeiten.
 
 [Mehr erfahren →](/features/windows/events/)
 
@@ -632,4 +634,4 @@ Verarbeiten Sie Ereignisse im Lebenszyklus von Fenstern.
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Ereignisbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Event-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events) an.

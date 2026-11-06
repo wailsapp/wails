@@ -7,7 +7,7 @@ sourcePath: "features/clipboard/basics.md"
 
 ## 클립보드 작업
 
-Wails는 모든 플랫폼에서 작동하는 <strong>통합 클립보드 API</strong>를 제공합니다. 간단하고 일관된 메서드를 사용하여 Windows, macOS 및 Linux에서 텍스트를 복사하고 붙여넣을 수 있습니다.
+Wails는 모든 플랫폼에서 작동하는 **통합 클립보드 API**를 제공합니다. Windows, macOS, Linux에서 간단하고 일관된 메서드로 텍스트를 복사하고 붙여넣을 수 있습니다.
 
 ## 빠른 시작
 
@@ -57,7 +57,7 @@ import { CopyToClipboard } from './bindings/changeme/clipboardservice'
 await CopyToClipboard("Text to copy")
 ```
 
-### 피드백을 제공하는 복사
+### 피드백과 함께 복사
 
 ```go
 func copyWithFeedback(text string) {
@@ -112,7 +112,7 @@ const text = await PasteFromClipboard()
 console.log("Pasted:", text)
 ```
 
-### 유효성 검사를 포함한 붙여넣기
+### 유효성 검사와 함께 붙여넣기
 
 ```go
 func pasteText() (string, error) {
@@ -299,7 +299,7 @@ func (cm *ClipboardMonitor) checkClipboard() {
 }
 ```
 
-### 기록을 포함한 복사
+### 기록을 남기며 복사
 
 ```go
 type ClipboardHistory struct {
@@ -347,9 +347,9 @@ func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
 
 ## 프런트엔드 통합
 
-### 브라우저 클립보드 API 사용
+### 브라우저 Clipboard API 사용
 
-간단한 텍스트에는 브라우저의 클립보드 API를 사용할 수 있습니다:
+간단한 텍스트에는 브라우저의 Clipboard API를 사용할 수 있습니다:
 
 ```javascript
 // Copy
@@ -374,11 +374,11 @@ async function pasteText() {
 }
 ```
 
-**참고:** 브라우저 클립보드 API를 사용하려면 HTTPS 또는 localhost 환경과 사용자 권한이 필요합니다.
+**참고:** 브라우저 Clipboard API를 사용하려면 HTTPS 또는 localhost 환경과 사용자 권한이 필요합니다.
 
 ### Wails 클립보드 사용
 
-시스템 전역 클립보드에 접근하려면 다음을 사용합니다:
+시스템 전체의 클립보드에 접근하려면 다음과 같이 합니다:
 
 ```javascript
 import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -398,46 +398,46 @@ async function paste() {
 }
 ```
 
-## 권장 사례
+## 권장 사항
 
-### ✅ 권장 사항
+### ✅ 권장
 
-- **반환값 확인** - 실패를 적절하게 처리하세요
-- **피드백 제공** - 복사에 성공했음을 사용자에게 알리세요
-- **붙여넣은 텍스트 검증** - 형식과 크기를 확인하세요
-- **적절한 메서드 사용** - 브라우저 API와 Wails API 중에서 선택하세요
-- **빈 클립보드 처리** - 사용하기 전에 확인하세요
-- **앞뒤 공백 제거** - 붙여넣은 텍스트를 정리하세요
+- **반환값을 확인하세요** - 실패를 적절히 처리하세요
+- **피드백을 제공하세요** - 복사에 성공했음을 사용자에게 알리세요
+- **붙여넣은 텍스트의 유효성을 검사하세요** - 형식과 크기를 확인하세요
+- **적절한 메서드를 사용하세요** - 브라우저 API와 Wails API 중에서 선택하세요
+- **빈 클립보드를 처리하세요** - 사용하기 전에 확인하세요
+- **공백을 제거하세요** - 붙여넣은 텍스트를 정리하세요
 
-### ❌ 금지 사항
+### ❌ 금지
 
 - **실패를 무시하지 마세요** - 항상 성공 여부를 확인하세요
 - **민감한 데이터를 복사하지 마세요** - 클립보드는 공유됩니다
 - **형식을 단정하지 마세요** - 붙여넣은 데이터의 유효성을 검사하세요
 - **너무 자주 폴링하지 마세요** - 클립보드를 모니터링하는 경우에 해당합니다
 - **대용량 데이터를 복사하지 마세요** - 대신 파일을 사용하세요
-- **보안을 잊지 마세요** - 붙여넣은 콘텐츠를 정제하세요
+- **보안을 잊지 마세요** - 붙여넣은 콘텐츠를 무해화하세요
 
 ## 플랫폼별 차이점
 
 ### macOS
 
 - NSPasteboard 사용
-- 서식 있는 텍스트 지원(향후)
-- 시스템 전역 클립보드
+- 서식 있는 텍스트 지원(향후 예정)
+- 시스템 전체 클립보드
 - 클립보드 기록(시스템 기능)
 
 ### Windows
 
 - Windows Clipboard API 사용
-- 여러 형식 지원(향후)
-- 시스템 전역 클립보드
+- 여러 형식 지원(향후 예정)
+- 시스템 전체 클립보드
 - 클립보드 기록(Windows 10 이상)
 
 ### Linux
 
 - X11/Wayland 클립보드 사용
-- 기본 선택 영역 및 클립보드 선택 영역
+- 기본 선택 영역과 클립보드 선택 영역
 - 데스크톱 환경에 따라 다름
 - 클립보드 관리자가 필요할 수 있음
 
@@ -445,10 +445,10 @@ async function paste() {
 
 ### 현재 버전
 
-- **텍스트만 지원** - 이미지는 아직 지원되지 않습니다
+- **텍스트만 지원** - 이미지는 아직 지원하지 않습니다
 - **형식 감지 미지원** - 일반 텍스트만 지원합니다
-- **클립보드 이벤트 없음** - 변경 사항을 폴링해야 합니다
-- **클립보드 기록 없음** - 직접 구현해야 합니다
+- **클립보드 이벤트 미지원** - 변경 사항을 폴링해야 합니다
+- **클립보드 기록 미지원** - 직접 구현해야 합니다
 
 ### 향후 기능
 
@@ -473,8 +473,8 @@ JavaScript에서 Go 함수를 호출합니다.
 [자세히 알아보기 →](/features/events/system/)
 
 ---
-ℹ 대화 상자
-복사 및 붙여넣기 결과를 표시합니다.
+ℹ 다이얼로그
+복사/붙여넣기 피드백을 표시합니다.
 
 [자세히 알아보기 →](/features/dialogs/message/)
 
@@ -488,4 +488,4 @@ JavaScript에서 Go 함수를 호출합니다.
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [클립보드 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [클립보드 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.

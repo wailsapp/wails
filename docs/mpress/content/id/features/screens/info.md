@@ -100,9 +100,9 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-Baca ukuran piksel melalui `screen.Size.Width` / `screen.Size.Height` — tidak ada field `Width`/`Height` di tingkat teratas.
+Baca ukuran piksel melalui `screen.Size.Width` / `screen.Size.Height` — tidak ada bidang `Width`/`Height` di tingkat teratas.
 
-### Piksel Fisik vs. Logis
+### Piksel Fisik vs Logis
 
 ```go
 screen := app.Screen.GetPrimary()
@@ -143,7 +143,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-### Tempatkan di Layar Tertentu
+### Posisi pada Layar Tertentu
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
@@ -160,7 +160,7 @@ func moveToScreen(window *application.WebviewWindow, screenIndex int) {
 }
 ```
 
-### Tempatkan secara Relatif terhadap Layar
+### Posisi Relatif terhadap Layar
 
 ```go
 // Top-left corner
@@ -186,7 +186,7 @@ func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
 
 ## Dukungan Multi-Monitor
 
-### Deteksi Beberapa Monitor
+### Mendeteksi Beberapa Monitor
 
 ```go
 func hasMultipleMonitors() bool {
@@ -198,7 +198,7 @@ func getMonitorCount() int {
 }
 ```
 
-### Cantumkan Semua Monitor
+### Mencantumkan Semua Monitor
 
 ```go
 func listMonitors() {
@@ -220,7 +220,7 @@ func listMonitors() {
 }
 ```
 
-### Pilih Monitor
+### Memilih Monitor
 
 ```go
 func chooseMonitor() (*Screen, error) {
@@ -344,7 +344,7 @@ func (sm *ScreenMonitor) checkScreens() {
 }
 ```
 
-### Ukuran Jendela yang Memperhitungkan DPI
+### Pengaturan Ukuran Jendela yang Memperhitungkan DPI
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
@@ -404,20 +404,20 @@ func visualiseScreenLayout() string {
 
 ### ✅ Lakukan
 
-- **Periksa jumlah layar** - Tangani satu maupun beberapa monitor
+- **Periksa jumlah layar** - Tangani konfigurasi satu maupun beberapa monitor
 - **Gunakan piksel logis** - Wails menangani DPI secara otomatis
 - **Tengahkan jendela** - Memberikan pengalaman pengguna yang lebih baik daripada posisi tetap
 - **Validasi posisi** - Pastikan jendela terlihat
 - **Tangani perubahan layar** - Monitor dapat ditambahkan atau dilepas
 - **Uji pada DPI yang berbeda** - 100%, 125%, 150%, 200%
 
-### ❌ Jangan Lakukan
+### ❌ Jangan
 
-- **Jangan melakukan hardcode pada posisi** - Gunakan dimensi layar
-- **Jangan berasumsi layar utama selalu digunakan** - Pengguna mungkin memiliki beberapa layar
-- **Jangan mengabaikan faktor skala** - Penting untuk kesadaran DPI
-- **Jangan menempatkan jendela di luar layar** - Validasi koordinat
-- **Jangan melupakan perubahan layar** - Laptop dapat dipasang ke atau dilepas dari dok
+- **Jangan tetapkan posisi secara langsung dalam kode** - Gunakan dimensi layar
+- **Jangan berasumsi hanya ada layar utama** - Pengguna mungkin memiliki beberapa layar
+- **Jangan abaikan faktor skala** - Penting agar aplikasi memperhitungkan DPI
+- **Jangan tempatkan jendela di luar layar** - Validasi koordinat
+- **Jangan lupakan perubahan layar** - Laptop dapat dipasang ke atau dilepas dari dok
 - **Jangan gunakan piksel fisik** - Gunakan piksel logis
 
 ## Perbedaan Antarplatform
@@ -425,16 +425,16 @@ func visualiseScreenLayout() string {
 ### macOS
 
 - Layar Retina (faktor skala 2x)
-- Penggunaan beberapa layar lazim
-- Sistem koordinat: (0,0) di kiri bawah
+- Penggunaan beberapa layar umum dijumpai
+- Sistem koordinat: (0,0) berada di kiri bawah
 - Spaces (desktop virtual) memengaruhi penempatan
 
 ### Windows
 
 - Beragam penskalaan DPI (100%, 125%, 150%, 200%)
-- Penggunaan beberapa layar lazim
-- Sistem koordinat: (0,0) di kiri atas
-- Kesadaran DPI per monitor
+- Penggunaan beberapa layar umum dijumpai
+- Sistem koordinat: (0,0) berada di kiri atas
+- Dukungan DPI per monitor
 
 ### Linux
 
@@ -449,25 +449,25 @@ func visualiseScreenLayout() string {
 ▣ Jendela
 Pelajari pengelolaan jendela.
 
-[Pelajari Selengkapnya →](/features/windows/basics/)
+[Pelajari Lebih Lanjut →](/features/windows/basics/)
 
 ---
 ⚙ Opsi Jendela
 Konfigurasikan tampilan jendela.
 
-[Pelajari Selengkapnya →](/features/windows/options/)
+[Pelajari Lebih Lanjut →](/features/windows/options/)
 
 ---
 ◆ Beberapa Jendela
-Pola untuk beberapa jendela.
+Pola multi-jendela.
 
-[Pelajari Selengkapnya →](/features/windows/multiple/)
+[Pelajari Lebih Lanjut →](/features/windows/multiple/)
 
 ---
 🚀 Binding
 Panggil fungsi Go dari JavaScript.
 
-[Pelajari Selengkapnya →](/features/bindings/methods/)
+[Pelajari Lebih Lanjut →](/features/bindings/methods/)
 
 @end
 
