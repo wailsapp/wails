@@ -1,1102 +1,2194 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "2a16954f601420cb169e",
+  "pageKey": "a59ed50e73ba0ada11bc",
   "sourceFile": "features/menus/systray.md",
   "sourceLanguage": "en",
   "targetLanguage": "fr",
   "segments": {
     "a0001-title-01": {
       "sourceHash": "9b372f4db3ec07bbd08423e46d681358ffdf00eabda361fe381aae67950244b4",
-      "targetHash": "936c56eec58271a8fa2053ea367540184dded04b09c5dcabba97d91ebdfb571c",
-      "status": "migration-review",
-      "sourcePreview": "Always Call Update()"
+      "targetHash": "15be59ae66212d9cd28f6cd0128ca2d21ea98d83ffec6d08ae007857a99becef",
+      "machineHash": "15be59ae66212d9cd28f6cd0128ca2d21ea98d83ffec6d08ae007857a99becef",
+      "machineText": "Appelez toujours Update()",
+      "status": "machine-translated",
+      "sourcePreview": "Always Call Update()",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0001-heading-01": {
       "sourceHash": "a935c47caafb8484fd784f6881923058e75d3c0f3ae3a7a972fb6ed9deaaa98e",
       "targetHash": "ee9d0840ea09a2d0f18654b61985ee9443b528bad87c058874804c59f73d1ce3",
-      "status": "migration-review",
-      "sourcePreview": "System Tray Menus"
+      "machineHash": "ee9d0840ea09a2d0f18654b61985ee9443b528bad87c058874804c59f73d1ce3",
+      "machineText": "Menus de la zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "System Tray Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0002-text-01": {
       "sourceHash": "364be20379a5244add0a0055a6d26d71817b35a48ba2085c4d4840725364c43d",
       "targetHash": "ef9a08aa532c9e28f2d7b1bad30768067a4e8a73800958ab3f574e08f83be6cb",
-      "status": "migration-review",
-      "sourcePreview": "Wails provides **unified system tray APIs** that work across all platforms. Create tray icons with m…"
+      "machineHash": "ef9a08aa532c9e28f2d7b1bad30768067a4e8a73800958ab3f574e08f83be6cb",
+      "machineText": "Wails fournit des **API unifiées pour la zone de notification** qui fonctionnent sur toutes les plateformes. Créez des icônes avec des menus dans la zone de notification, associez-y des fenêtres et gérez les clics avec le comportement natif de chaque plateforme pour les applications en arrière-plan, les services et les utilitaires à accès rapide.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails provides **unified system tray APIs** that work across all platforms. Create tray icons with m…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0003-text-01": {
       "sourceHash": "c627a6c194ee3905e21a979bc371c00343b17619fab8c0f0feeefc9cd76c4e9a",
-      "targetHash": "f5e13ac75a3d9208be3cec484bf1efa77307ad4e4a8e59dfbb672c2d13330d59",
-      "status": "migration-review",
-      "sourcePreview": "![A Wails system tray menu, opened from the macOS menu bar](/assets/screenshots/systray-menu-macos.p…"
+      "targetHash": "17524f6f954ae3cac1d8ce678b099a9585b52db37a67c686900a386339b335bc",
+      "machineHash": "17524f6f954ae3cac1d8ce678b099a9585b52db37a67c686900a386339b335bc",
+      "machineText": "![Menu Wails de la zone de notification, ouvert depuis la barre des menus de macOS](/assets/screenshots/systray-menu-macos.png)",
+      "status": "machine-translated",
+      "sourcePreview": "![A Wails system tray menu, opened from the macOS menu bar](/assets/screenshots/systray-menu-macos.p…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0004-text-01": {
       "sourceHash": "9d637ee871c74b5d782dfae36525dd14da25779a22a6ba08af9eee109c14345c",
-      "targetHash": "baa4f526fd4f5ad18e87eb5e7f8f281a9713ca4bcee8a30ae7a41d91dbbf658d",
-      "status": "migration-review",
-      "sourcePreview": "On macOS, a Wails system tray item appears in the menu bar and opens a native menu. The example incl…"
+      "targetHash": "1b7d42fe3eef338db3761481a37feec8737a208e3db900795bdc501961a87e55",
+      "machineHash": "1b7d42fe3eef338db3761481a37feec8737a208e3db900795bdc501961a87e55",
+      "machineText": "Sous macOS, un élément Wails de la zone de notification apparaît dans la barre des menus et ouvre un menu natif. L’exemple comprend des éléments désactivés, des cases à cocher, des boutons radio, des sous-menus et des actions.",
+      "status": "machine-translated",
+      "sourcePreview": "On macOS, a Wails system tray item appears in the menu bar and opens a native menu. The example incl…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0005-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
       "targetHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
-      "status": "migration-review",
-      "sourcePreview": "Quick Start"
+      "machineHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
+      "machineText": "Démarrage rapide",
+      "status": "machine-translated",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0006-text-01": {
       "sourceHash": "9f8ebdf77c0a725710b07eb36b62af534b11f354c6097e2e0b69f09e5c25ab43",
       "targetHash": "c37bc6dc069121b30929bb1269a3f0ccb05db51a197e4f0caca84d523fec2814",
-      "status": "migration-review",
-      "sourcePreview": "**Result:** System tray icon with menu on all platforms."
+      "machineHash": "c37bc6dc069121b30929bb1269a3f0ccb05db51a197e4f0caca84d523fec2814",
+      "machineText": "**Résultat :** une icône avec un menu dans la zone de notification sur toutes les plateformes.",
+      "status": "machine-translated",
+      "sourcePreview": "**Result:** System tray icon with menu on all platforms.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0007-heading-01": {
       "sourceHash": "a6e2f3baa1c18d16e2b7d455f92d5d2f8165dbb401dfa9b7f63743ac0675ce52",
-      "targetHash": "aa1fc19d5edc11cab0f26ea540d122bae6a1c71d1a7a5f1cddb13b683db79095",
-      "status": "migration-review",
-      "sourcePreview": "Creating a System Tray"
+      "targetHash": "7d3bdd2a7d6bfe85084ab03a30450b5c300d0d59229dfb7d73157b4e00c49dc3",
+      "machineHash": "7d3bdd2a7d6bfe85084ab03a30450b5c300d0d59229dfb7d73157b4e00c49dc3",
+      "machineText": "Créer un élément de zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "Creating a System Tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0008-heading-01": {
       "sourceHash": "f60481c722eff6d0426f5720c2cfc42c7b302efc3bd37f6573691094fea17be0",
-      "targetHash": "b8754b5370da6101ff32720503f39af9847fd2d5272fb981790bae5165eb0543",
-      "status": "migration-review",
-      "sourcePreview": "Basic System Tray"
+      "targetHash": "810f8b0fbb79250921dde844ff456e6cad500d4a29f9822062874f883dd4beec",
+      "machineHash": "810f8b0fbb79250921dde844ff456e6cad500d4a29f9822062874f883dd4beec",
+      "machineText": "Élément de base",
+      "status": "machine-translated",
+      "sourcePreview": "Basic System Tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0009-heading-01": {
       "sourceHash": "8bea8f7f56db39317065953ea349e66209e71abc7ec259accc816f690f464609",
       "targetHash": "d81793292a5875ef187ac714e6a5eb2c57415a38209d0c98b5fae0eaf23af41e",
-      "status": "migration-review",
-      "sourcePreview": "With Icon"
+      "machineHash": "d81793292a5875ef187ac714e6a5eb2c57415a38209d0c98b5fae0eaf23af41e",
+      "machineText": "Avec une icône",
+      "status": "machine-translated",
+      "sourcePreview": "With Icon",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0010-text-01": {
       "sourceHash": "f92af36835c6ac9b2ac3d49b843dd738be85b8430ec16e80c175ed99467f9cc9",
-      "targetHash": "be112def0b63e5110763662e4832247c38f18520aaa55f9540a92f4d8798e272",
-      "status": "migration-review",
-      "sourcePreview": "Icons should be embedded:"
+      "targetHash": "07906ef348f1238ed1c2842769e02983739da26a3ce5952365a249456e668149",
+      "machineHash": "07906ef348f1238ed1c2842769e02983739da26a3ce5952365a249456e668149",
+      "machineText": "Les icônes doivent être intégrées :",
+      "status": "machine-translated",
+      "sourcePreview": "Icons should be embedded:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0011-text-01": {
       "sourceHash": "4483222426153ab1eab8011e4300250d85b39c40969a0734e66147519624c2f9",
       "targetHash": "cc731d86861c37e01cc2f857712f63b5dda90d437bb664db9d53bfe906784e36",
-      "status": "migration-review",
-      "sourcePreview": "**Icon requirements:**"
+      "machineHash": "cc731d86861c37e01cc2f857712f63b5dda90d437bb664db9d53bfe906784e36",
+      "machineText": "**Exigences relatives aux icônes :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Icon requirements:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0012-cell-01": {
       "sourceHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
       "targetHash": "5ee2ea8e63ba3870653856d9db7ee325ab001223fa6da8bcc18e3d79bb22e0b3",
-      "status": "migration-review",
-      "sourcePreview": "Platform"
+      "machineHash": "5ee2ea8e63ba3870653856d9db7ee325ab001223fa6da8bcc18e3d79bb22e0b3",
+      "machineText": "Plateforme",
+      "status": "machine-translated",
+      "sourcePreview": "Platform",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0013-cell-01": {
       "sourceHash": "1af851907331c0ed99e7c63b4e55df808bc5fc4c990a1cf80ca8c0f76daf1f3b",
       "targetHash": "77093e0c33ff0d374a636e1e52d4df7dcebdcf4507ddd407820c03a3c3216bd4",
-      "status": "migration-review",
-      "sourcePreview": "Size"
+      "machineHash": "77093e0c33ff0d374a636e1e52d4df7dcebdcf4507ddd407820c03a3c3216bd4",
+      "machineText": "Taille",
+      "status": "machine-translated",
+      "sourcePreview": "Size",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0014-cell-01": {
       "sourceHash": "2f343666aaa88c44430b12e6ab8a29591a069de76541125e83ff1b5acc367bf2",
       "targetHash": "2f343666aaa88c44430b12e6ab8a29591a069de76541125e83ff1b5acc367bf2",
-      "status": "migration-review",
-      "sourcePreview": "Format"
+      "machineHash": "2f343666aaa88c44430b12e6ab8a29591a069de76541125e83ff1b5acc367bf2",
+      "machineText": "Format",
+      "status": "machine-translated",
+      "sourcePreview": "Format",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0015-cell-01": {
       "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
       "targetHash": "10a90f3ced76b855d718eea0cdbdcd8da28cf6174c2ed22bc6b7320bae3222f8",
-      "status": "migration-review",
-      "sourcePreview": "Notes"
+      "machineHash": "10a90f3ced76b855d718eea0cdbdcd8da28cf6174c2ed22bc6b7320bae3222f8",
+      "machineText": "Remarques",
+      "status": "machine-translated",
+      "sourcePreview": "Notes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0016-cell-01": {
       "sourceHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
       "targetHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
-      "status": "migration-review",
-      "sourcePreview": "**Windows**"
+      "machineHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
+      "machineText": "**Windows**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0017-cell-01": {
       "sourceHash": "03afb9016a2a3b0b57eab764930df87e766e1e42b4433c715ae54b16ff68fa51",
       "targetHash": "7cf7372cf64da4773d001507cf71726e639d192be5c17cf992e123be2db3afff",
-      "status": "migration-review",
-      "sourcePreview": "16x16 or 32x32"
+      "machineHash": "7cf7372cf64da4773d001507cf71726e639d192be5c17cf992e123be2db3afff",
+      "machineText": "16x16 ou 32x32",
+      "status": "machine-translated",
+      "sourcePreview": "16x16 or 32x32",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0018-cell-01": {
       "sourceHash": "8fda5e6122ab5a6ef25f5506c8ba204a940d090990c06abe83bbe0b3ec421af2",
       "targetHash": "8fda5e6122ab5a6ef25f5506c8ba204a940d090990c06abe83bbe0b3ec421af2",
-      "status": "migration-review",
-      "sourcePreview": "PNG, ICO"
+      "machineHash": "8fda5e6122ab5a6ef25f5506c8ba204a940d090990c06abe83bbe0b3ec421af2",
+      "machineText": "PNG, ICO",
+      "status": "machine-translated",
+      "sourcePreview": "PNG, ICO",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0019-cell-01": {
       "sourceHash": "96ce1b046c885287ea0c9cc996f128fc2e19e05dffa491c62aa4d0355405e387",
       "targetHash": "345f74c3922eabb3b95259499ac4a4d19a2a9c3efccc90b512a93a415bdfabbd",
-      "status": "migration-review",
-      "sourcePreview": "Notification area"
+      "machineHash": "345f74c3922eabb3b95259499ac4a4d19a2a9c3efccc90b512a93a415bdfabbd",
+      "machineText": "Zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "Notification area",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0020-cell-01": {
       "sourceHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
       "targetHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
-      "status": "migration-review",
-      "sourcePreview": "**macOS**"
+      "machineHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
+      "machineText": "**macOS**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0021-cell-01": {
       "sourceHash": "420fec725946713e5e80a8bc182ae811bbbed58fbf6190d7f37d0636d72cb667",
       "targetHash": "44e559081386fb44787db6b300fb2b80833be0c41f92f53148975146c8c2ee75",
-      "status": "migration-review",
-      "sourcePreview": "18x18 to 22x22"
+      "machineHash": "44e559081386fb44787db6b300fb2b80833be0c41f92f53148975146c8c2ee75",
+      "machineText": "18x18 à 22x22",
+      "status": "machine-translated",
+      "sourcePreview": "18x18 to 22x22",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0022-cell-01": {
       "sourceHash": "796120837694d3f3f29259cfeb25091698c2a0aa87873658d840b4993ee889b3",
       "targetHash": "796120837694d3f3f29259cfeb25091698c2a0aa87873658d840b4993ee889b3",
-      "status": "migration-review",
-      "sourcePreview": "PNG"
+      "machineHash": "796120837694d3f3f29259cfeb25091698c2a0aa87873658d840b4993ee889b3",
+      "machineText": "PNG",
+      "status": "machine-translated",
+      "sourcePreview": "PNG",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0023-cell-01": {
       "sourceHash": "4d529b2eaf11c9cac99369372beab81795cbaa6408dd5dcbb3a36018d9d5a8d8",
-      "targetHash": "7767ab0aaff9004bf8156b0322a9f90a02e5edc2d1e564543f20bc30e26ec123",
-      "status": "migration-review",
-      "sourcePreview": "Menu bar, template recommended"
+      "targetHash": "ccf860951323a07616598836519122efb95b4209b8e87a5cf4f136416899a411",
+      "machineHash": "ccf860951323a07616598836519122efb95b4209b8e87a5cf4f136416899a411",
+      "machineText": "Barre des menus, icône modèle recommandée",
+      "status": "machine-translated",
+      "sourcePreview": "Menu bar, template recommended",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0024-cell-01": {
       "sourceHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
       "targetHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
-      "status": "migration-review",
-      "sourcePreview": "**Linux**"
+      "machineHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
+      "machineText": "**Linux**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0025-cell-01": {
       "sourceHash": "52ecd2edc56d613c36c861cc5d6760e0d142f0c9cd92ab8c41b32084ab687d8f",
       "targetHash": "c00ba33818a04674454b55961864f2a199251f242b68af1b305d4f78f5255d62",
-      "status": "migration-review",
-      "sourcePreview": "22x22 to 48x48"
+      "machineHash": "c00ba33818a04674454b55961864f2a199251f242b68af1b305d4f78f5255d62",
+      "machineText": "22x22 à 48x48",
+      "status": "machine-translated",
+      "sourcePreview": "22x22 to 48x48",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0026-cell-01": {
       "sourceHash": "f2b9b22827418842a4b799ceb5169368ad8b87735f8f1005f48abbe2abed6fc2",
       "targetHash": "f2b9b22827418842a4b799ceb5169368ad8b87735f8f1005f48abbe2abed6fc2",
-      "status": "migration-review",
-      "sourcePreview": "PNG, SVG"
+      "machineHash": "f2b9b22827418842a4b799ceb5169368ad8b87735f8f1005f48abbe2abed6fc2",
+      "machineText": "PNG, SVG",
+      "status": "machine-translated",
+      "sourcePreview": "PNG, SVG",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0027-cell-01": {
       "sourceHash": "4b40cef667cbec71facc2dc3aea7ceeaeb4d35e9d8a0107a1951d904166c033a",
       "targetHash": "e40a5be12f811c7f3828f3cdba069810a0153698703b9d5dd9a9df0f6f936c07",
-      "status": "migration-review",
-      "sourcePreview": "Varies by DE"
+      "machineHash": "e40a5be12f811c7f3828f3cdba069810a0153698703b9d5dd9a9df0f6f936c07",
+      "machineText": "Variable selon l’environnement de bureau",
+      "status": "machine-translated",
+      "sourcePreview": "Varies by DE",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0028-heading-01": {
       "sourceHash": "2e6690d5350dac25cdc4d1299daba9e3b168136c856d998709fcaa6e131bf760",
       "targetHash": "1e0613e59f2ed89aa788f8d0c8c30d7138833cb9205bbde59b3b0d2a3f31b673",
-      "status": "migration-review",
-      "sourcePreview": "Template Icons (macOS)"
+      "machineHash": "1e0613e59f2ed89aa788f8d0c8c30d7138833cb9205bbde59b3b0d2a3f31b673",
+      "machineText": "Icônes modèles (macOS)",
+      "status": "machine-translated",
+      "sourcePreview": "Template Icons (macOS)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0029-text-01": {
       "sourceHash": "a88398dc25e8921aa220ca3035d2a1367458d009607eb7f5c60d259b3bd6cce8",
-      "targetHash": "a4b72361210a2d35bd4651792f7fb8a5462e45050e72f07987f1669837f26fe0",
-      "status": "migration-review",
-      "sourcePreview": "Template icons adapt to light/dark mode automatically:"
+      "targetHash": "8cea69b3472c38f78d624e23723142ba108927c9ee3e61414d1e96b762485038",
+      "machineHash": "8cea69b3472c38f78d624e23723142ba108927c9ee3e61414d1e96b762485038",
+      "machineText": "Les icônes modèles s’adaptent automatiquement aux modes clair et sombre :",
+      "status": "machine-translated",
+      "sourcePreview": "Template icons adapt to light/dark mode automatically:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0030-text-01": {
       "sourceHash": "d8ffda859bff2420d78bb3a3c74952743b032f5ed9551d3fcb1cc12c9f955ebb",
-      "targetHash": "cf8835d2aa14bdf0058ad1a65855d96058c6960bcc79bc62a5b7348f754c19d7",
-      "status": "migration-review",
-      "sourcePreview": "**Template icon guidelines:**"
+      "targetHash": "f7a6321be2b528faea3d3b3e855cb5fa1ac9ace4bc9f84ff9a59ba493d4dfbaa",
+      "machineHash": "f7a6321be2b528faea3d3b3e855cb5fa1ac9ace4bc9f84ff9a59ba493d4dfbaa",
+      "machineText": "**Recommandations relatives aux icônes modèles :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Template icon guidelines:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0031-text-01": {
       "sourceHash": "800409e1577936f947ee402288a50f281c0c96e31404540f4a643f63ff3a952e",
-      "targetHash": "61c31371ac9b2be2ec48901fb086039c9cb0e4280c7fed0654cf8d36af3b3cc9",
-      "status": "migration-review",
-      "sourcePreview": "Use black and clear (transparent) colours only"
+      "targetHash": "accd51f0ab41f0189654da9c2cbe9ff644a0dd54ba040e24744854cf6a21f2be",
+      "machineHash": "accd51f0ab41f0189654da9c2cbe9ff644a0dd54ba040e24744854cf6a21f2be",
+      "machineText": "Utilisez uniquement du noir et des zones transparentes",
+      "status": "machine-translated",
+      "sourcePreview": "Use black and clear (transparent) colours only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0032-text-01": {
       "sourceHash": "c53264dc9ab05426975fc070d86ffd496ebbbd397ab3585809f718d27155fb65",
       "targetHash": "33050f9054966ed4a7cd7e0016f5399eac7d2bc75861aae0249a08f84f383084",
-      "status": "migration-review",
-      "sourcePreview": "Black becomes white in dark mode"
+      "machineHash": "33050f9054966ed4a7cd7e0016f5399eac7d2bc75861aae0249a08f84f383084",
+      "machineText": "Le noir devient blanc en mode sombre",
+      "status": "machine-translated",
+      "sourcePreview": "Black becomes white in dark mode",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0033-text-01": {
       "sourceHash": "be899f52aca50c0adcf645f74ef5ec4a8701c8e44157044a624ca1a7ee66478a",
-      "targetHash": "a0a42521ee5e79792ddb2290e15f96a96e2383804cf7a04703048403bcf979fd",
-      "status": "migration-review",
-      "sourcePreview": "Name file with `Template` suffix: `iconTemplate.png`"
+      "targetHash": "287a101ab14850d5e4202593a96092aa0ed654027801cb25e537aa167d5f743a",
+      "machineHash": "287a101ab14850d5e4202593a96092aa0ed654027801cb25e537aa167d5f743a",
+      "machineText": "Nommez le fichier avec le suffixe `Template` : `iconTemplate.png`",
+      "status": "machine-translated",
+      "sourcePreview": "Name file with `Template` suffix: `iconTemplate.png`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0034-text-01": {
       "sourceHash": "eb62cb53ec7ad3312e65b2f947871756d6f75a4cd6e229a8a7a09d15594f6d2c",
       "targetHash": "5bc939b298e86628f80d2e56527d6707f037493f9b6b09d5ec703455193b0f25",
-      "status": "migration-review",
-      "sourcePreview": "[Design guide](https://bjango.com/articles/designingmenubarextras/)"
+      "machineHash": "5bc939b298e86628f80d2e56527d6707f037493f9b6b09d5ec703455193b0f25",
+      "machineText": "[Guide de conception](https://bjango.com/articles/designingmenubarextras/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Design guide](https://bjango.com/articles/designingmenubarextras/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0035-heading-01": {
       "sourceHash": "057c57850ee8582b6570678f51b65016c87a527ddcc8f3db9783c22e2242b57d",
-      "targetHash": "119f8462350bd28c8913ce3db621117c340d80969b866f4a5e799e34c7d72471",
-      "status": "migration-review",
-      "sourcePreview": "Adding Menus"
+      "targetHash": "40d68d3e4b9fb8f76f7dab8df2df31d4f415acd12d1891bb2161963d645e3c47",
+      "machineHash": "40d68d3e4b9fb8f76f7dab8df2df31d4f415acd12d1891bb2161963d645e3c47",
+      "machineText": "Ajouter des menus",
+      "status": "machine-translated",
+      "sourcePreview": "Adding Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0036-text-01": {
       "sourceHash": "c589e989ac31da477482d7c409e8594e7a8e759a36947ed7ac67b15240183f72",
       "targetHash": "92238937278a788034bc23fc7d7ccc026efe90a023d1d6692c4916ded8b1345d",
-      "status": "migration-review",
-      "sourcePreview": "System tray menus work like application menus:"
+      "machineHash": "92238937278a788034bc23fc7d7ccc026efe90a023d1d6692c4916ded8b1345d",
+      "machineText": "Les menus de la zone de notification fonctionnent comme les menus de l’application :",
+      "status": "machine-translated",
+      "sourcePreview": "System tray menus work like application menus:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0037-text-01": {
       "sourceHash": "414b2fc8f73e463f296604622ecbf708fc003b964faef6f3fa578115450fd23f",
-      "targetHash": "95a8d0ba00f5db89b74818ab3f7b2bc6e26cca3ba035ef23a7ca384e9bd413e6",
-      "status": "migration-review",
-      "sourcePreview": "**For all menu item types**, see [Menu Reference](/features/menus/reference/)."
+      "targetHash": "099a1d96db0926082e31598edf6296aa00e9a1a9124421dca6204d0af85b0e15",
+      "machineHash": "099a1d96db0926082e31598edf6296aa00e9a1a9124421dca6204d0af85b0e15",
+      "machineText": "Pour découvrir **tous les types d’éléments de menu**, consultez la [référence des menus](/features/menus/reference/).",
+      "status": "machine-translated",
+      "sourcePreview": "**For all menu item types**, see [Menu Reference](/features/menus/reference/).",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0038-heading-01": {
       "sourceHash": "253b1272de8845a638906705edd0b73d63b834fbfdaeb62de01dfa069929b920",
-      "targetHash": "9e7bd21726ce16a36a33790e6b0c25746bd0e12e94bb80d9bac1a4bfe884bcc0",
-      "status": "migration-review",
-      "sourcePreview": "Attaching Windows"
+      "targetHash": "e5b1f0789e9c04cd3de1169827e416c40be587f788d11e1ca1d402443d285b98",
+      "machineHash": "e5b1f0789e9c04cd3de1169827e416c40be587f788d11e1ca1d402443d285b98",
+      "machineText": "Associer des fenêtres",
+      "status": "machine-translated",
+      "sourcePreview": "Attaching Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0039-text-01": {
       "sourceHash": "bed4864db6b902a766f13f5214000194e3faf66a304af609200432152e8effbe",
       "targetHash": "90c2ae90e25bf8e063323d303c07c092692e94a61526924b7eb35fdb85264a0d",
-      "status": "migration-review",
-      "sourcePreview": "Attach a window to the tray icon for automatic show/hide:"
+      "machineHash": "90c2ae90e25bf8e063323d303c07c092692e94a61526924b7eb35fdb85264a0d",
+      "machineText": "Associez une fenêtre à l’icône de la zone de notification pour l’afficher et la masquer automatiquement :",
+      "status": "machine-translated",
+      "sourcePreview": "Attach a window to the tray icon for automatic show/hide:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0040-text-01": {
       "sourceHash": "157f1f185566bef4c7664910de4a209dba18bd4dbf08c2fb4cca70289936f441",
       "targetHash": "9768ee83deae531ad7bccd40a171f3432243fc27a11080d2903039e31377b265",
-      "status": "migration-review",
-      "sourcePreview": "**Behaviour:**"
+      "machineHash": "9768ee83deae531ad7bccd40a171f3432243fc27a11080d2903039e31377b265",
+      "machineText": "**Comportement :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Behaviour:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0041-text-01": {
       "sourceHash": "0f08d4e3b15b1e8350f9014f1aaed8ab21288a26687daabb49afec4d06f76ebd",
-      "targetHash": "3c694e085f9b4fb6ec0626804b0ee760718caa2269f5d1f5f5c94e4799b367dc",
-      "status": "migration-review",
-      "sourcePreview": "Window starts hidden"
+      "targetHash": "764a61bc76dc6a3a7751ab3882b1d94b5d0b5c5e89edc615db935a60633e5a1a",
+      "machineHash": "764a61bc76dc6a3a7751ab3882b1d94b5d0b5c5e89edc615db935a60633e5a1a",
+      "machineText": "La fenêtre est masquée au démarrage",
+      "status": "machine-translated",
+      "sourcePreview": "Window starts hidden",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0042-text-01": {
       "sourceHash": "87d95f8adf23fbfc1760b59c614887e7a8e40e098c6eb43f615d15e969ca7c39",
-      "targetHash": "6c1a3ab37e8559731512a2fe8a3a12e8704a13d29d435f7f9150ebee0baa9a0c",
-      "status": "migration-review",
-      "sourcePreview": "**Left-click tray icon** → Toggle window visibility"
+      "targetHash": "16e4a8b915e8465f9361ad8a13a00d214a948340cfcf4f1029f470d983571d4e",
+      "machineHash": "16e4a8b915e8465f9361ad8a13a00d214a948340cfcf4f1029f470d983571d4e",
+      "machineText": "**Clic gauche sur l’icône de la zone de notification** → Basculer la visibilité de la fenêtre",
+      "status": "machine-translated",
+      "sourcePreview": "**Left-click tray icon** → Toggle window visibility",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0043-text-01": {
       "sourceHash": "fd63338cbd43be9d662aa7a1f0d065d270f499f8c17c2f55882d2c1b7214ec3e",
       "targetHash": "3041967c49abe363174a1f0f93c714116c85af540746a418df4de2642ab5e301",
-      "status": "migration-review",
-      "sourcePreview": "**Right-click tray icon** → Show menu (if set)"
+      "machineHash": "3041967c49abe363174a1f0f93c714116c85af540746a418df4de2642ab5e301",
+      "machineText": "**Clic droit sur l’icône de la zone de notification** → Afficher le menu, s’il est défini",
+      "status": "machine-translated",
+      "sourcePreview": "**Right-click tray icon** → Show menu (if set)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0044-text-01": {
       "sourceHash": "2f4c646d876cecd607cb390dc638096a668a06b08805444a886d849881362c6c",
       "targetHash": "ca74c04aed47c818c019788b245cae9d9f041faeaf902c6453ed22309254bac2",
-      "status": "migration-review",
-      "sourcePreview": "Window positioned near tray icon"
+      "machineHash": "ca74c04aed47c818c019788b245cae9d9f041faeaf902c6453ed22309254bac2",
+      "machineText": "La fenêtre est placée près de l’icône de la zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "Window positioned near tray icon",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0045-text-01": {
       "sourceHash": "0eee18f2984094bad5396e7a266e908f9637424153d3fd4e3ca99beda910ff8c",
       "targetHash": "789e74822d98237b171faf2c17e925b236df6a70373b8b783bce4d33c53073e2",
-      "status": "migration-review",
-      "sourcePreview": "**Example: Popup window**"
+      "machineHash": "789e74822d98237b171faf2c17e925b236df6a70373b8b783bce4d33c53073e2",
+      "machineText": "**Exemple : fenêtre contextuelle**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example: Popup window**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0046-text-01": {
       "sourceHash": "3effd9d154cc487db2a373531bf5203f51b05abdb1114b7e90233c698b2fce96",
-      "targetHash": "f4e0e58cf36e964095cd2fee8ba235f2aa9d8e53efb5e8effe7acf95c6ab33b5",
-      "status": "migration-review",
-      "sourcePreview": "`HideOnFocusLost` is useful for tray popups on Windows, macOS, and click-to-focus Linux desktops. Wa…"
+      "targetHash": "25aa997ac3235fd14a765bd7e3396622e8566cac9953ee3e8a0ddd58e56cef41",
+      "machineHash": "25aa997ac3235fd14a765bd7e3396622e8566cac9953ee3e8a0ddd58e56cef41",
+      "machineText": "`HideOnFocusLost` est utile pour les fenêtres contextuelles de la zone de notification sous Windows, macOS et les bureaux Linux où un clic donne le focus. Wails désactive ce comportement dans les environnements Linux où le focus suit la souris, notamment les configurations courantes avec Hyprland, Sway et i3, car la fenêtre contextuelle risquerait sinon d’être masquée dès que le pointeur la quitte, avant même de pouvoir être utilisée. `HideOnEscape` reste disponible dans ces environnements.",
+      "status": "machine-translated",
+      "sourcePreview": "`HideOnFocusLost` is useful for tray popups on Windows, macOS, and click-to-focus Linux desktops. Wa…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0047-text-01": {
       "sourceHash": "74dc810ff5425d92f9582529288bb1712bb8eb007d4d7bc47a0a722d1398e733",
-      "targetHash": "809f11c50cd2148a6ec32ba123faa94501d33c9e48caf323e18728819f07ab87",
-      "status": "migration-review",
-      "sourcePreview": "The left- and right-click behaviours above are smart defaults. An explicit `OnClick` or `OnRightClic…"
+      "targetHash": "93a97577fc405ae100295b797d0fe2b2c86f322cd1ff5ee1c020e94d49d0cab8",
+      "machineHash": "93a97577fc405ae100295b797d0fe2b2c86f322cd1ff5ee1c020e94d49d0cab8",
+      "machineText": "Les comportements de clic gauche et de clic droit décrits ci-dessus sont des valeurs par défaut intelligentes. Un gestionnaire `OnClick` ou `OnRightClick` explicite remplace la valeur par défaut correspondante. Pour les vérifications propres aux plateformes et les cas limites, consultez la [suite de tests manuels de la zone de notification](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) et l’[exemple de test de résistance de la zone de notification](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).",
+      "status": "machine-translated",
+      "sourcePreview": "The left- and right-click behaviours above are smart defaults. An explicit `OnClick` or `OnRightClic…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0048-heading-01": {
       "sourceHash": "bf438f528ba40f4fecb6be43437e00ccc01572b03e422b06204dd6dcb9d4fcb6",
       "targetHash": "6b3ce53fb0c446af8e7bedee3a86d82f7bc1370b76cf6dc82d79505724ae1114",
-      "status": "migration-review",
-      "sourcePreview": "Click Handlers"
+      "machineHash": "6b3ce53fb0c446af8e7bedee3a86d82f7bc1370b76cf6dc82d79505724ae1114",
+      "machineText": "Gestionnaires de clics",
+      "status": "machine-translated",
+      "sourcePreview": "Click Handlers",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0049-text-01": {
       "sourceHash": "d4dedeb5f29266a89184062c87ff3e97252ec110c285072e96bc045971d315ed",
       "targetHash": "72926eb071b7bc2256df8731907adb5bbe5fadc8b53145b65948e87700b48df6",
-      "status": "migration-review",
-      "sourcePreview": "Handle tray icon clicks:"
+      "machineHash": "72926eb071b7bc2256df8731907adb5bbe5fadc8b53145b65948e87700b48df6",
+      "machineText": "Gérez les clics sur l’icône de la zone de notification :",
+      "status": "machine-translated",
+      "sourcePreview": "Handle tray icon clicks:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0050-text-01": {
       "sourceHash": "5b6b58bc7aab0717cc23b489b8d09c223e68c10f02710cfc1e5ed16ebba194c6",
-      "targetHash": "82ef7efedd45fa74fb78bfd3b89dbc1797a7aaf1afbd2c9556526af362c6a864",
-      "status": "migration-review",
-      "sourcePreview": "**Platform support:**"
+      "targetHash": "111786282b6797f5ad93a887a3d789f2eeeacd25dca3c86106b6b7351022667c",
+      "machineHash": "111786282b6797f5ad93a887a3d789f2eeeacd25dca3c86106b6b7351022667c",
+      "machineText": "**Prise en charge par plateforme :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform support:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0051-cell-01": {
       "sourceHash": "4e1f49a9c8ae8a158434e647c0c410352d718984a4fcd144d26cca3c394caa02",
       "targetHash": "81c7cdb0866e35398825360600337945dfc562687e1d00f95303fcae0862eeb8",
-      "status": "migration-review",
-      "sourcePreview": "Event"
+      "machineHash": "81c7cdb0866e35398825360600337945dfc562687e1d00f95303fcae0862eeb8",
+      "machineText": "Événement",
+      "status": "machine-translated",
+      "sourcePreview": "Event",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0052-cell-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0053-cell-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0054-cell-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0055-cell-01": {
       "sourceHash": "a620ac8cbdf3c6abe12753ff7dda4648af8e81e18bc42915b64970cdfdb204ca",
       "targetHash": "a620ac8cbdf3c6abe12753ff7dda4648af8e81e18bc42915b64970cdfdb204ca",
-      "status": "migration-review",
-      "sourcePreview": "OnClick"
+      "machineHash": "a620ac8cbdf3c6abe12753ff7dda4648af8e81e18bc42915b64970cdfdb204ca",
+      "machineText": "OnClick",
+      "status": "machine-translated",
+      "sourcePreview": "OnClick",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0059-cell-01": {
       "sourceHash": "25c4c101ce0f37d75149d0d1ac51a3ca319cc73c54f25f8a97aea901b008eeba",
       "targetHash": "25c4c101ce0f37d75149d0d1ac51a3ca319cc73c54f25f8a97aea901b008eeba",
-      "status": "migration-review",
-      "sourcePreview": "OnRightClick"
+      "machineHash": "25c4c101ce0f37d75149d0d1ac51a3ca319cc73c54f25f8a97aea901b008eeba",
+      "machineText": "OnRightClick",
+      "status": "machine-translated",
+      "sourcePreview": "OnRightClick",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0063-cell-01": {
       "sourceHash": "1dbd889f64baaef68a9c463985423f8a079e842f8df8ec3d1233d45b59a049a0",
       "targetHash": "1dbd889f64baaef68a9c463985423f8a079e842f8df8ec3d1233d45b59a049a0",
-      "status": "migration-review",
-      "sourcePreview": "OnDoubleClick"
+      "machineHash": "1dbd889f64baaef68a9c463985423f8a079e842f8df8ec3d1233d45b59a049a0",
+      "machineText": "OnDoubleClick",
+      "status": "machine-translated",
+      "sourcePreview": "OnDoubleClick",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0066-cell-01": {
       "sourceHash": "aa4ebdd1af8153ec41d03ddd89bedc06725f884cb0270d22726e4784d278f91e",
       "targetHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
-      "status": "migration-review",
-      "sourcePreview": "⚠️ Varies"
+      "machineHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
+      "machineText": "⚠️ Variable",
+      "status": "machine-translated",
+      "sourcePreview": "⚠️ Varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0067-cell-01": {
       "sourceHash": "43dae48fcf409af206842499eb6ea0e5ccbd2ba545919debcf86467689e3e384",
       "targetHash": "43dae48fcf409af206842499eb6ea0e5ccbd2ba545919debcf86467689e3e384",
-      "status": "migration-review",
-      "sourcePreview": "OnMouseEnter"
+      "machineHash": "43dae48fcf409af206842499eb6ea0e5ccbd2ba545919debcf86467689e3e384",
+      "machineText": "OnMouseEnter",
+      "status": "machine-translated",
+      "sourcePreview": "OnMouseEnter",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0070-cell-01": {
       "sourceHash": "aa4ebdd1af8153ec41d03ddd89bedc06725f884cb0270d22726e4784d278f91e",
       "targetHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
-      "status": "migration-review",
-      "sourcePreview": "⚠️ Varies"
+      "machineHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
+      "machineText": "⚠️ Variable",
+      "status": "machine-translated",
+      "sourcePreview": "⚠️ Varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0071-cell-01": {
       "sourceHash": "4e2a066e172802e7ade76bba1a331dfa4277f193a3aa9780a285f3c056337e3d",
       "targetHash": "4e2a066e172802e7ade76bba1a331dfa4277f193a3aa9780a285f3c056337e3d",
-      "status": "migration-review",
-      "sourcePreview": "OnMouseLeave"
+      "machineHash": "4e2a066e172802e7ade76bba1a331dfa4277f193a3aa9780a285f3c056337e3d",
+      "machineText": "OnMouseLeave",
+      "status": "machine-translated",
+      "sourcePreview": "OnMouseLeave",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0074-cell-01": {
       "sourceHash": "aa4ebdd1af8153ec41d03ddd89bedc06725f884cb0270d22726e4784d278f91e",
       "targetHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
-      "status": "migration-review",
-      "sourcePreview": "⚠️ Varies"
+      "machineHash": "0ac244e45a6ad9f9663a96af91cfdcd62909700716bda535d4afe390052f4a6c",
+      "machineText": "⚠️ Variable",
+      "status": "machine-translated",
+      "sourcePreview": "⚠️ Varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0075-heading-01": {
       "sourceHash": "92096c2d8fb0cd4e2321e54417ef9b11a2962a41fd47b80689db568187d8e1af",
       "targetHash": "012d74a6bae0e35b9d0bedc54e99dcec9d3b80a1114b7e805b903bee9f7f56d2",
-      "status": "migration-review",
-      "sourcePreview": "Dynamic Updates"
+      "machineHash": "012d74a6bae0e35b9d0bedc54e99dcec9d3b80a1114b7e805b903bee9f7f56d2",
+      "machineText": "Mises à jour dynamiques",
+      "status": "machine-translated",
+      "sourcePreview": "Dynamic Updates",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0076-text-01": {
       "sourceHash": "d7cd93e8aab9f488402ba83a2d3897871109b479e0d5f2b3ede123fe1f8f0e75",
       "targetHash": "2e545b6e889528dbb77d669f937490bfc52654950e821ecae34b66e12d582950",
-      "status": "migration-review",
-      "sourcePreview": "Update tray icon and menu dynamically:"
+      "machineHash": "2e545b6e889528dbb77d669f937490bfc52654950e821ecae34b66e12d582950",
+      "machineText": "Mettez à jour dynamiquement l’icône et le menu de la zone de notification :",
+      "status": "machine-translated",
+      "sourcePreview": "Update tray icon and menu dynamically:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0077-heading-01": {
       "sourceHash": "7913aa4d7f2db18b6c7bab2750dec08d2ee80c25fcc69025cde1bd34214e9a68",
-      "targetHash": "ac84e42fca8eb8ee23459ce6cb1dea76631f36ccae6c8b08ae45c020934f5bb1",
-      "status": "migration-review",
-      "sourcePreview": "Change Icon"
+      "targetHash": "2f697582bb2a06aa03d395f3ed16c1d28597ac4555468e1524cc133c094e9f73",
+      "machineHash": "2f697582bb2a06aa03d395f3ed16c1d28597ac4555468e1524cc133c094e9f73",
+      "machineText": "Changer l’icône",
+      "status": "machine-translated",
+      "sourcePreview": "Change Icon",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0078-heading-01": {
       "sourceHash": "51162b4ead85498d25e73080f0ce27fe6e78a5c9e62ae3c9d2246f9eddbfb843",
-      "targetHash": "61536519aca1d87e8bead2dca027ac3b338876bdccee8a40de9e9d998b0d3592",
-      "status": "migration-review",
-      "sourcePreview": "Update Menu"
+      "targetHash": "d7ecab8353b0688e4d26668e0d060e3964fb78b5d98cf6ffaa6c9e4c8b574e41",
+      "machineHash": "d7ecab8353b0688e4d26668e0d060e3964fb78b5d98cf6ffaa6c9e4c8b574e41",
+      "machineText": "Mettre à jour le menu",
+      "status": "machine-translated",
+      "sourcePreview": "Update Menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0079-text-01": {
       "sourceHash": "c986884eea106701c0db6a8de4fbc65ce9a424925f93dd7594fd2f2d8e2a042e",
       "targetHash": "58316199f6a38eeeaeb5bec0df1e58d9d45708ea8ad70b1ba5f69f463aee9489",
-      "status": "migration-review",
-      "sourcePreview": "After changing menu state, **call `menu.Update()`**. See [Menu Reference](/features/menus/reference/…"
+      "machineHash": "58316199f6a38eeeaeb5bec0df1e58d9d45708ea8ad70b1ba5f69f463aee9489",
+      "machineText": "Après avoir modifié l’état du menu, **appelez `menu.Update()`**. Consultez la [référence des menus](/features/menus/reference/#enabled-state).",
+      "status": "machine-translated",
+      "sourcePreview": "After changing menu state, **call `menu.Update()`**. See [Menu Reference](/features/menus/reference/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0080-heading-01": {
       "sourceHash": "11836dcb6ecb4b63ae892af5cb3a49d82b63440a92d9adcc01bf73d0ace9e9b5",
-      "targetHash": "ae097737d53e1d801d10566643e6136732b95ce7ca4b064b5fb2b758fe2abfb0",
-      "status": "migration-review",
-      "sourcePreview": "Rebuild Menu"
+      "targetHash": "5a590598448b75488cfe845acd8d39d6347616a25b66ca4ee42b4f4de0f8bada",
+      "machineHash": "5a590598448b75488cfe845acd8d39d6347616a25b66ca4ee42b4f4de0f8bada",
+      "machineText": "Reconstruire le menu",
+      "status": "machine-translated",
+      "sourcePreview": "Rebuild Menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0081-text-01": {
       "sourceHash": "051a5defdd211b8283aaf46082a14036ded9cc2d27cab149b49bdfeb9641002a",
-      "targetHash": "72e7c7ef6f3c4cb31fe17f848be7a67ad3f99ea6f7eaf231c05fb62af57b9b12",
-      "status": "migration-review",
-      "sourcePreview": "For major changes, rebuild the entire menu:"
+      "targetHash": "22630cfe67349c21b2c934838bc7c8b5b05a843e9f397db63711955993148033",
+      "machineHash": "22630cfe67349c21b2c934838bc7c8b5b05a843e9f397db63711955993148033",
+      "machineText": "Pour des modifications importantes, reconstruisez l’intégralité du menu :",
+      "status": "machine-translated",
+      "sourcePreview": "For major changes, rebuild the entire menu:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0082-heading-01": {
       "sourceHash": "b2ece8347cc000827498cd52ccf1965ca53ceaf7fad13ff77fdec5241c65bcab",
-      "targetHash": "2d707726cf917631b50a9c96702b3e3c526f5b6ed18677cf85b97df2fbd99cd2",
-      "status": "migration-review",
-      "sourcePreview": "Platform-Specific Features"
+      "targetHash": "1002b8c4ce402028cb6bb14215844236f3b9b7347501fa48ec6be9712c1a030c",
+      "machineHash": "1002b8c4ce402028cb6bb14215844236f3b9b7347501fa48ec6be9712c1a030c",
+      "machineText": "Fonctionnalités propres aux plateformes",
+      "status": "machine-translated",
+      "sourcePreview": "Platform-Specific Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0083-text-01": {
       "sourceHash": "49b8f5634b4d331a3ee60162044da798c948750d0261349ace7e2c31934af88a",
       "targetHash": "d469428d28f33c185367aabb5ac3c77573bd4200396f86946df72f4c04003062",
-      "status": "migration-review",
-      "sourcePreview": "**Menu bar integration:**"
+      "machineHash": "d469428d28f33c185367aabb5ac3c77573bd4200396f86946df72f4c04003062",
+      "machineText": "**Intégration à la barre des menus :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Menu bar integration:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0084-text-01": {
       "sourceHash": "440b5d2ee9ad6187b75a61197da09c024052a1d82b64c94854ce2611b486e254",
       "targetHash": "29068bcade31dba67237f27c06fd6ea2ae84f3dc6a5c3340ba7a35d881529d24",
-      "status": "migration-review",
-      "sourcePreview": "**Icon positions** (mirroring `NSImagePosition`):"
+      "machineHash": "29068bcade31dba67237f27c06fd6ea2ae84f3dc6a5c3340ba7a35d881529d24",
+      "machineText": "**Positions de l’icône** (correspondant à `NSImagePosition`) :",
+      "status": "machine-translated",
+      "sourcePreview": "**Icon positions** (mirroring `NSImagePosition`):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0085-text-01": {
       "sourceHash": "94ec0dd54b8c2c8e73991f1e84e178d5f2a03a0580657209e27941c947fc3bb7",
-      "targetHash": "a3abfc98cc21c0bd41dc23c38c7fb9d969e6fbd7a5c6da1243fa6e12a3f54ab6",
-      "status": "migration-review",
-      "sourcePreview": "`application.NSImageLeft` - Icon left of label."
+      "targetHash": "0c011818f65906eb2aee81bc1ffd83528ffa5d2620223c6e2a64281e2940d39b",
+      "machineHash": "0c011818f65906eb2aee81bc1ffd83528ffa5d2620223c6e2a64281e2940d39b",
+      "machineText": "`application.NSImageLeft` - Icône à gauche du libellé.",
+      "status": "machine-translated",
+      "sourcePreview": "`application.NSImageLeft` - Icon left of label.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0086-text-01": {
       "sourceHash": "642b950af706cd01a5dd1959c5cc79ae71ee904e48743894b818800dd2f94498",
-      "targetHash": "5fb970a7199ebd438c8c0d953272dcd8e17e0aa0204d915f3f55d1830b7d3cde",
-      "status": "migration-review",
-      "sourcePreview": "`application.NSImageRight` - Icon right of label."
+      "targetHash": "1dbb9eb9df496303ceb488a8aa174342bb8c822a4591dd58af3a933e6741d878",
+      "machineHash": "1dbb9eb9df496303ceb488a8aa174342bb8c822a4591dd58af3a933e6741d878",
+      "machineText": "`application.NSImageRight` - Icône à droite du libellé.",
+      "status": "machine-translated",
+      "sourcePreview": "`application.NSImageRight` - Icon right of label.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0087-text-01": {
       "sourceHash": "d99ae6a8c5e21c2f9058b7ec6b947d85e4ad18b8ab91c3d0e2f889b2415cddc0",
-      "targetHash": "d8714b3a994ec393c7568844a651cf350c3864e8bd2a9326270fbc06faa7ff79",
-      "status": "migration-review",
-      "sourcePreview": "`application.NSImageOnly` - Icon only, no label."
+      "targetHash": "fdbc3fbd2de8f21eda51465f8d7091a86779766a5e1717b801f662c9a45880ee",
+      "machineHash": "fdbc3fbd2de8f21eda51465f8d7091a86779766a5e1717b801f662c9a45880ee",
+      "machineText": "`application.NSImageOnly` - Icône uniquement, sans libellé.",
+      "status": "machine-translated",
+      "sourcePreview": "`application.NSImageOnly` - Icon only, no label.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0088-text-01": {
       "sourceHash": "7351a729bc58ceb70251647e0e501efa18ca104ac0bd5793919dec81628aa0f7",
-      "targetHash": "d9cd3155d5b86ec8f0d8aea754d034a6e787d352d2c428078da0c983c2d604ff",
-      "status": "migration-review",
-      "sourcePreview": "`application.NSImageNone` - Label only, no icon."
+      "targetHash": "f89cd36d1100ad82e655c6d9cc6fc52a85452cfdd5efc314f8dd06e06485dbca",
+      "machineHash": "f89cd36d1100ad82e655c6d9cc6fc52a85452cfdd5efc314f8dd06e06485dbca",
+      "machineText": "`application.NSImageNone` - Libellé uniquement, sans icône.",
+      "status": "machine-translated",
+      "sourcePreview": "`application.NSImageNone` - Label only, no icon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0089-text-01": {
       "sourceHash": "84386118759d8ecac5bc990e94a328689818648443b8388f35b469168a7945da",
       "targetHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
-      "status": "migration-review",
-      "sourcePreview": "**Best practices:**"
+      "machineHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
+      "machineText": "**Bonnes pratiques :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practices:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0090-text-01": {
       "sourceHash": "3d070d095ac775c48481fc639fbd1f4cdc37cf432062f48d5088fae8ecb61564",
-      "targetHash": "3d3a1a5e4d28bdfd6029263d5a3ee829fd2301b24ba745453705b17ca7c528c5",
-      "status": "migration-review",
-      "sourcePreview": "Use template icons (black + transparent)"
+      "targetHash": "49741a2b8c88b29d98781909e776e935c67601194c248ed3e2401907abbbc8d1",
+      "machineHash": "49741a2b8c88b29d98781909e776e935c67601194c248ed3e2401907abbbc8d1",
+      "machineText": "Utilisez des icônes modèles (noir + transparence)",
+      "status": "machine-translated",
+      "sourcePreview": "Use template icons (black + transparent)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0091-text-01": {
       "sourceHash": "c334adaa8be6fcf2d55823068816ed54bd31fa4aa9164b97d593341806b9f879",
       "targetHash": "4657fba39712731a77f606991c5178bec372b03d534aae0f6af3c182c631ff78",
-      "status": "migration-review",
-      "sourcePreview": "Keep labels short (3-5 characters)"
+      "machineHash": "4657fba39712731a77f606991c5178bec372b03d534aae0f6af3c182c631ff78",
+      "machineText": "Utilisez des libellés courts (3-5 caractères)",
+      "status": "machine-translated",
+      "sourcePreview": "Keep labels short (3-5 characters)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0092-text-01": {
       "sourceHash": "3446b364d76733e64e5d1ec39600c1bfb0d56599a87a705bfd263827bc30f130",
       "targetHash": "fb4da2ed6a3ff1886cd2e34e0bda1aeb57a486a2253c5fa41f55d7d02c9a6cdd",
-      "status": "migration-review",
-      "sourcePreview": "18x18 to 22x22 pixels for Retina displays"
+      "machineHash": "fb4da2ed6a3ff1886cd2e34e0bda1aeb57a486a2253c5fa41f55d7d02c9a6cdd",
+      "machineText": "18x18 à 22x22 pixels pour les écrans Retina",
+      "status": "machine-translated",
+      "sourcePreview": "18x18 to 22x22 pixels for Retina displays",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0093-text-01": {
       "sourceHash": "45ad2a8c0ec54bbb05f6853ec4feeb187e703bcc0d23fe8dba0a0bccc03ac50a",
       "targetHash": "14e6c67e44f3a35b2d278dae3bd25a95716963eb144e68c0d6c14f2bd1ec7c7a",
-      "status": "migration-review",
-      "sourcePreview": "Test in both light and dark modes"
+      "machineHash": "14e6c67e44f3a35b2d278dae3bd25a95716963eb144e68c0d6c14f2bd1ec7c7a",
+      "machineText": "Testez dans les modes clair et sombre",
+      "status": "machine-translated",
+      "sourcePreview": "Test in both light and dark modes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0094-text-01": {
       "sourceHash": "59323995c64e2c87c62a6c423e17fafaf6f618efde3233ca17cd2b62f9261410",
       "targetHash": "9be74a3a706b92decdbf6e937b99a8817367022f8cb1bbbb1aed803f28d1d5d1",
-      "status": "migration-review",
-      "sourcePreview": "**Notification area integration:**"
+      "machineHash": "9be74a3a706b92decdbf6e937b99a8817367022f8cb1bbbb1aed803f28d1d5d1",
+      "machineText": "**Intégration à la zone de notification :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Notification area integration:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0095-text-01": {
       "sourceHash": "4483222426153ab1eab8011e4300250d85b39c40969a0734e66147519624c2f9",
-      "targetHash": "74fa496d7be8ebe922b64b09607be1bbdfb68af4592bdeddba358181b262493e",
-      "status": "migration-review",
-      "sourcePreview": "**Icon requirements:**"
+      "targetHash": "cc731d86861c37e01cc2f857712f63b5dda90d437bb664db9d53bfe906784e36",
+      "machineHash": "cc731d86861c37e01cc2f857712f63b5dda90d437bb664db9d53bfe906784e36",
+      "machineText": "**Exigences relatives aux icônes :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Icon requirements:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0096-text-01": {
       "sourceHash": "7cf16481adc49da6e23c65c99a6062b7ba3e35009fc667acceab3d11b3767bd7",
       "targetHash": "c7e4dc354378a6a67cd5bcbffedd9fe020ccb175953b9f41226ecefe95278e7d",
-      "status": "migration-review",
-      "sourcePreview": "16x16 or 32x32 pixels"
+      "machineHash": "c7e4dc354378a6a67cd5bcbffedd9fe020ccb175953b9f41226ecefe95278e7d",
+      "machineText": "16x16 ou 32x32 pixels",
+      "status": "machine-translated",
+      "sourcePreview": "16x16 or 32x32 pixels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0097-text-01": {
       "sourceHash": "75be546d56ad0d28efc1968015d59a3a902947ddfb0b13fcb06c750e36e6f295",
       "targetHash": "a1799191e7974ac1be3540f2c630db59b79a4640d990a1bbf9c80ce1cdb0fd95",
-      "status": "migration-review",
-      "sourcePreview": "PNG or ICO format"
+      "machineHash": "a1799191e7974ac1be3540f2c630db59b79a4640d990a1bbf9c80ce1cdb0fd95",
+      "machineText": "Format PNG ou ICO",
+      "status": "machine-translated",
+      "sourcePreview": "PNG or ICO format",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0098-text-01": {
       "sourceHash": "0fcc9d09de991506703af1892fbbebdb6cfd7d5d2c72ba1cd28715b71b68c3ea",
       "targetHash": "4241ddf8c13311ad1f2c14260caf3c3164769427ce23c58ba861a592f50a6035",
-      "status": "migration-review",
-      "sourcePreview": "Transparent background"
+      "machineHash": "4241ddf8c13311ad1f2c14260caf3c3164769427ce23c58ba861a592f50a6035",
+      "machineText": "Arrière-plan transparent",
+      "status": "machine-translated",
+      "sourcePreview": "Transparent background",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0099-text-01": {
       "sourceHash": "f52198de372ad1a6e99ee745789bb4360a64d89990ee3dd8d58e367c534c30b7",
       "targetHash": "6746b5d3071e07ae51d7f4dbe12e3e8c44eda86984f8d7b89a9c4db6a69517b2",
-      "status": "migration-review",
-      "sourcePreview": "**Tooltip limits:**"
+      "machineHash": "6746b5d3071e07ae51d7f4dbe12e3e8c44eda86984f8d7b89a9c4db6a69517b2",
+      "machineText": "**Limites des infobulles :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Tooltip limits:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0100-text-01": {
       "sourceHash": "42f6a2aaa994e9ef9de7f7c6262c3d6dfc23c0e602a8765c0615de4e6451d5a6",
       "targetHash": "4e8f993d3baa103f16226d883e183bc083c7105d46892d557ff644ce9a73813d",
-      "status": "migration-review",
-      "sourcePreview": "Maximum 127 UTF-16 characters"
+      "machineHash": "4e8f993d3baa103f16226d883e183bc083c7105d46892d557ff644ce9a73813d",
+      "machineText": "127 caractères UTF-16 au maximum",
+      "status": "machine-translated",
+      "sourcePreview": "Maximum 127 UTF-16 characters",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0101-text-01": {
       "sourceHash": "2415a4ca29d82705e499e6b3b361f1ef510a4366dc78fa95661160b78eb11970",
       "targetHash": "97d32248493131634ba7fcb6b736de43acd53cadaeb0c5f2e52783f175d76e2f",
-      "status": "migration-review",
-      "sourcePreview": "Longer tooltips will be truncated"
+      "machineHash": "97d32248493131634ba7fcb6b736de43acd53cadaeb0c5f2e52783f175d76e2f",
+      "machineText": "Les infobulles plus longues seront tronquées",
+      "status": "machine-translated",
+      "sourcePreview": "Longer tooltips will be truncated",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0102-text-01": {
       "sourceHash": "c9d74bc7a4f05d979d48fa5b1ff0d82d1a6c9b4caf3db6b3249d360aa7802553",
       "targetHash": "1cc1289ffb4f169bca00adfe1e26884cd3119a4e077ffa2d8e18e973ac1ff3dc",
-      "status": "migration-review",
-      "sourcePreview": "Keep concise for best experience"
+      "machineHash": "1cc1289ffb4f169bca00adfe1e26884cd3119a4e077ffa2d8e18e973ac1ff3dc",
+      "machineText": "Restez concis pour une expérience optimale",
+      "status": "machine-translated",
+      "sourcePreview": "Keep concise for best experience",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0103-text-01": {
       "sourceHash": "b5380ed436a6a106e6f7e0cf87563413feb9cb8f9584860a6bff20d07f935a52",
-      "targetHash": "65154dd5ed897ce5e8ab2f5325bc08e474ae8f51a6a2d01860854bbb9cf9f91d",
-      "status": "migration-review",
-      "sourcePreview": "**Platform features:**"
+      "targetHash": "e487b4d3948621cc0689854a6f606b8f9d7a0866aea3d25304c5be5b487ae236",
+      "machineHash": "e487b4d3948621cc0689854a6f606b8f9d7a0866aea3d25304c5be5b487ae236",
+      "machineText": "**Fonctionnalités propres à la plateforme :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform features:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0104-text-01": {
       "sourceHash": "9f9d64e2bc29d1c6124e9c5c9d6f776bcd585bb7fe5b2802082d9cac35935a88",
-      "targetHash": "af6832f7f19dec8191cb8825dd190ec75fcfdd61572d27e92486756ad7aefeef",
-      "status": "migration-review",
-      "sourcePreview": "Tray icon survives Windows Explorer restarts"
+      "targetHash": "6fec8ee220b6ad3e651b4f83b59ffb32b326cf9bd031d31e7a1283dc0c09c403",
+      "machineHash": "6fec8ee220b6ad3e651b4f83b59ffb32b326cf9bd031d31e7a1283dc0c09c403",
+      "machineText": "L’icône de la zone de notification résiste aux redémarrages de l’Explorateur Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Tray icon survives Windows Explorer restarts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0105-text-01": {
       "sourceHash": "e1994a755ceff06e6ff1f6f8ba2e107a16ea29fefe83227a0bda3bf8a94aeafd",
-      "targetHash": "8e7cb5198c0068cfdc59ca019f97e17da617bf491c6b8487b93b8d463309131f",
-      "status": "migration-review",
-      "sourcePreview": "Show() and Hide() methods fully functional"
+      "targetHash": "a0c531843e17e72756803e08c97c6875a12a34472a292020d90afe22e71a7a0e",
+      "machineHash": "a0c531843e17e72756803e08c97c6875a12a34472a292020d90afe22e71a7a0e",
+      "machineText": "Les méthodes Show() et Hide() sont entièrement fonctionnelles",
+      "status": "machine-translated",
+      "sourcePreview": "Show() and Hide() methods fully functional",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0106-text-01": {
       "sourceHash": "d706e68859fd12eb2e00fca71244d1bdb29722e2c436e91f5c5694ee3da30ab1",
-      "targetHash": "d98be7a3f9dc8cc84e5c13076278b170a16cd8ed2245c47d2e4be077ad0eb103",
-      "status": "migration-review",
-      "sourcePreview": "Proper lifecycle management"
+      "targetHash": "43250e85db5ddcab527690f55222a5709e02cd710076250e88b2018439c7f6b6",
+      "machineHash": "43250e85db5ddcab527690f55222a5709e02cd710076250e88b2018439c7f6b6",
+      "machineText": "Gestion appropriée du cycle de vie",
+      "status": "machine-translated",
+      "sourcePreview": "Proper lifecycle management",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0107-text-01": {
       "sourceHash": "84386118759d8ecac5bc990e94a328689818648443b8388f35b469168a7945da",
       "targetHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
-      "status": "migration-review",
-      "sourcePreview": "**Best practices:**"
+      "machineHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
+      "machineText": "**Bonnes pratiques :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practices:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0108-text-01": {
       "sourceHash": "50c9968b8bf32244ed2667ed9b538f18e035497618462edfda477c717ca8f1e2",
-      "targetHash": "e9917055ff2203920b53aacdba91c6006dc534ef42b8973318f133dd14025876",
-      "status": "migration-review",
-      "sourcePreview": "Use 32x32 for high-DPI displays"
+      "targetHash": "3c0a222703a1701fa8d0a9ba412cfd620213a6f7e1816c2bb7a3156efd2eca08",
+      "machineHash": "3c0a222703a1701fa8d0a9ba412cfd620213a6f7e1816c2bb7a3156efd2eca08",
+      "machineText": "Utilisez 32x32 pour les écrans à haute résolution",
+      "status": "machine-translated",
+      "sourcePreview": "Use 32x32 for high-DPI displays",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0109-text-01": {
       "sourceHash": "a25fe9d7d43560203a8f0c3f444b6324423086047f8980fad8d596a345990400",
       "targetHash": "5ee942f7f24a131175cb836857c021bdef5b462479c6f437fb6b222e4432118e",
-      "status": "migration-review",
-      "sourcePreview": "Keep tooltips under 127 characters"
+      "machineHash": "5ee942f7f24a131175cb836857c021bdef5b462479c6f437fb6b222e4432118e",
+      "machineText": "Limitez les infobulles à moins de 127 caractères",
+      "status": "machine-translated",
+      "sourcePreview": "Keep tooltips under 127 characters",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0110-text-01": {
       "sourceHash": "a4400612997c009e30bdc73feac6f57206d5a57b0902e393782fe8a7060a079c",
       "targetHash": "1065834240e82f26dd3cfefba4915920b7853cba0a96b2375ba6e085c1774084",
-      "status": "migration-review",
-      "sourcePreview": "Test on different Windows versions"
+      "machineHash": "1065834240e82f26dd3cfefba4915920b7853cba0a96b2375ba6e085c1774084",
+      "machineText": "Testez sur différentes versions de Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Test on different Windows versions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0111-text-01": {
       "sourceHash": "0cb1e97eafa76594d460375421e335427ef6bbf402ecf54be35f1ea8c3180883",
       "targetHash": "58e3d63d3fa9f3a72169dd4afcad9b11a7103f7c94739ff7a5300e503dceabd6",
-      "status": "migration-review",
-      "sourcePreview": "Consider notification area overflow"
+      "machineHash": "58e3d63d3fa9f3a72169dd4afcad9b11a7103f7c94739ff7a5300e503dceabd6",
+      "machineText": "Tenez compte du débordement de la zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "Consider notification area overflow",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0112-text-01": {
       "sourceHash": "71bd37473d09a74bcb35baf4405d849b33a6076f0acfd62250239c65efcf204c",
-      "targetHash": "2a966645d77af46f7149d03ab94a6735bddd96e98939481c565a70f5a5233748",
-      "status": "migration-review",
-      "sourcePreview": "Use Show/Hide for conditional tray visibility"
+      "targetHash": "838d9a823fb8adafd694992ee84dae571f5baf6d11601070c632da14dbf60dc0",
+      "machineHash": "838d9a823fb8adafd694992ee84dae571f5baf6d11601070c632da14dbf60dc0",
+      "machineText": "Utilisez Show/Hide pour afficher conditionnellement l’icône de la zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "Use Show/Hide for conditional tray visibility",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0113-text-01": {
       "sourceHash": "adf973a1e730727518f1e025760d3aae024c999f523140259b5ddac79c90f8f3",
       "targetHash": "9be74a3a706b92decdbf6e937b99a8817367022f8cb1bbbb1aed803f28d1d5d1",
-      "status": "migration-review",
-      "sourcePreview": "**System tray integration:**"
+      "machineHash": "9be74a3a706b92decdbf6e937b99a8817367022f8cb1bbbb1aed803f28d1d5d1",
+      "machineText": "**Intégration à la zone de notification :**",
+      "status": "machine-translated",
+      "sourcePreview": "**System tray integration:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0114-text-01": {
       "sourceHash": "fc9b76b7f303d6eba8cc5ea0611d0d851071a7871b274d36205a95d353debe02",
       "targetHash": "3acad1f2c6341e7f661a602627e2ba6bf5389d63386a1869a77c27aa277c7d63",
-      "status": "migration-review",
-      "sourcePreview": "Uses StatusNotifierItem specification (most modern DEs)."
+      "machineHash": "3acad1f2c6341e7f661a602627e2ba6bf5389d63386a1869a77c27aa277c7d63",
+      "machineText": "Utilise la spécification StatusNotifierItem (dans la plupart des environnements de bureau modernes).",
+      "status": "machine-translated",
+      "sourcePreview": "Uses StatusNotifierItem specification (most modern DEs).",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0115-text-01": {
       "sourceHash": "4e234c33ee394d7f2afa4f1ef0b049c949e3cdaff9c8b5533d35b0b839d66deb",
       "targetHash": "7ec8215bc70709ea0912b8b0d882ea77b0e20b80da6281add0ec5b00c1c19b54",
-      "status": "migration-review",
-      "sourcePreview": "**Desktop environment support:**"
+      "machineHash": "7ec8215bc70709ea0912b8b0d882ea77b0e20b80da6281add0ec5b00c1c19b54",
+      "machineText": "**Prise en charge des environnements de bureau :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Desktop environment support:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0116-text-01": {
       "sourceHash": "cd036d689fafbd195762146cfc05a181f4e770f2e3e9d9e0cd8f1b0a4c6ae721",
       "targetHash": "babc13a929e371755bdfddb50d60388972d82e0cc9b5908b0d4034c7f2ecaa39",
-      "status": "migration-review",
-      "sourcePreview": "**GNOME**: Top bar (with extension)"
+      "machineHash": "babc13a929e371755bdfddb50d60388972d82e0cc9b5908b0d4034c7f2ecaa39",
+      "machineText": "**GNOME** : barre supérieure (avec une extension)",
+      "status": "machine-translated",
+      "sourcePreview": "**GNOME**: Top bar (with extension)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0117-text-01": {
       "sourceHash": "58654c872ebfa982f1592c66aebcb7d780613e304cc43c4642bded25e2e98c48",
       "targetHash": "d7e34608d45af5512d88900b42a0e1bc2359c50643feeec368e4f3f45e91759f",
-      "status": "migration-review",
-      "sourcePreview": "**KDE Plasma**: System tray"
+      "machineHash": "d7e34608d45af5512d88900b42a0e1bc2359c50643feeec368e4f3f45e91759f",
+      "machineText": "**KDE Plasma** : zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "**KDE Plasma**: System tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0118-text-01": {
       "sourceHash": "dd6ef79c59d4e90f82dd68243ddb7f0f71b1afae904c20e3259821aab16d52db",
       "targetHash": "060c738cf66015ff89a5645f2baa9854c12357733f81520cecf99aaf928c402f",
-      "status": "migration-review",
-      "sourcePreview": "**XFCE**: Notification area"
+      "machineHash": "060c738cf66015ff89a5645f2baa9854c12357733f81520cecf99aaf928c402f",
+      "machineText": "**XFCE** : zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "**XFCE**: Notification area",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0119-text-01": {
       "sourceHash": "7b100674627e0a1dafca5d16f6fb1551182add6113117de0835800d435817d36",
       "targetHash": "c7e708442b0699032ca2f579fe9da054302b8a61315364e4b0254a88a51d86ad",
-      "status": "migration-review",
-      "sourcePreview": "**Others**: Varies"
+      "machineHash": "c7e708442b0699032ca2f579fe9da054302b8a61315364e4b0254a88a51d86ad",
+      "machineText": "**Autres** : variable",
+      "status": "machine-translated",
+      "sourcePreview": "**Others**: Varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0120-text-01": {
       "sourceHash": "84386118759d8ecac5bc990e94a328689818648443b8388f35b469168a7945da",
       "targetHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
-      "status": "migration-review",
-      "sourcePreview": "**Best practices:**"
+      "machineHash": "5033ed6ca6900645db380e6a6da58476ad1775d920dc9f1b9a27b37ce10df61e",
+      "machineText": "**Bonnes pratiques :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practices:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0121-text-01": {
       "sourceHash": "bb989c7e4050e795251b519c14342454f3505d06d09d7df83a40c09b57063fcd",
-      "targetHash": "96bba6385c59ec1ec36b874b916351febd76d5ac414b6531bd16143265fb6379",
-      "status": "migration-review",
-      "sourcePreview": "Use 22x22 or 24x24 pixels"
+      "targetHash": "b96c20403477b542cb0f0d7f24325b01e30db8395c91a04ceec7016515bff985",
+      "machineHash": "b96c20403477b542cb0f0d7f24325b01e30db8395c91a04ceec7016515bff985",
+      "machineText": "Utilisez des pixels de 22x22 ou 24x24",
+      "status": "machine-translated",
+      "sourcePreview": "Use 22x22 or 24x24 pixels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0122-text-01": {
       "sourceHash": "8abbc91100b857da5aec1fcf0cdc533bcf51639e4c39b12aeec9d0f293047257",
       "targetHash": "bd095f10838ec1aa1fc6600ee664dd4b42b6bb8d393938ca1b1cd5dac7a6006c",
-      "status": "migration-review",
-      "sourcePreview": "SVG icons scale better"
+      "machineHash": "bd095f10838ec1aa1fc6600ee664dd4b42b6bb8d393938ca1b1cd5dac7a6006c",
+      "machineText": "Les icônes SVG s’adaptent mieux aux différentes tailles",
+      "status": "machine-translated",
+      "sourcePreview": "SVG icons scale better",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0123-text-01": {
       "sourceHash": "b283f04f410a90d1e2472bd02d96577f3951fe5b961ae14c20b6644ab3ca5b11",
       "targetHash": "43f11d866e06f70964f3db57d6fe85357d31b826f6129100bafb296da40affaa",
-      "status": "migration-review",
-      "sourcePreview": "Test on target desktop environments"
+      "machineHash": "43f11d866e06f70964f3db57d6fe85357d31b826f6129100bafb296da40affaa",
+      "machineText": "Testez sur les environnements de bureau ciblés",
+      "status": "machine-translated",
+      "sourcePreview": "Test on target desktop environments",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0124-text-01": {
       "sourceHash": "c3cf3f6676252769bfccabe73057596df8c8b27f9a07a88d59a5aa0bfc36add9",
-      "targetHash": "bfbd746983e11b39d97550b02b17d82c6f57302c54e2856c0813fb144bed350e",
-      "status": "migration-review",
-      "sourcePreview": "Provide fallback for unsupported DEs"
+      "targetHash": "7f08f3e475aca307cdc0ba163d5f9b193250ffcd2778c338c0160c8f08a8f919",
+      "machineHash": "7f08f3e475aca307cdc0ba163d5f9b193250ffcd2778c338c0160c8f08a8f919",
+      "machineText": "Prévoyez une solution de repli pour les environnements de bureau non pris en charge",
+      "status": "machine-translated",
+      "sourcePreview": "Provide fallback for unsupported DEs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0125-heading-01": {
       "sourceHash": "47af896d4e19a08a401faf9fc9a0bfb4ff96bcadf10aed4ad8afc636fe3f3630",
       "targetHash": "6edd24c66c5ad133e005a2e52cb3bb01502da4ce47654d8ea6f2f72a17ceb2e5",
-      "status": "migration-review",
-      "sourcePreview": "Complete Example"
+      "machineHash": "6edd24c66c5ad133e005a2e52cb3bb01502da4ce47654d8ea6f2f72a17ceb2e5",
+      "machineText": "Exemple complet",
+      "status": "machine-translated",
+      "sourcePreview": "Complete Example",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0126-text-01": {
       "sourceHash": "21156d2fdc8676d81afdad13343ddd1fec9728f674426421c187bac06a4b515e",
       "targetHash": "d0ffcec58ac1d8d092d474a451269493bd05b417a3b6b53c95fd7ef92f060061",
-      "status": "migration-review",
-      "sourcePreview": "Here's a production-ready system tray application:"
+      "machineHash": "d0ffcec58ac1d8d092d474a451269493bd05b417a3b6b53c95fd7ef92f060061",
+      "machineText": "Voici une application avec zone de notification prête pour la production :",
+      "status": "machine-translated",
+      "sourcePreview": "Here's a production-ready system tray application:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0127-heading-01": {
       "sourceHash": "455255cbb11fc5fd4b01eb07373179c3bb281d01cca2b08483555a75fe547741",
       "targetHash": "d9bf20d8d8e8580fb942c78b1816ca08c3f7a9ddf538350d31027f0456e89c4d",
-      "status": "migration-review",
-      "sourcePreview": "Visibility Control"
+      "machineHash": "d9bf20d8d8e8580fb942c78b1816ca08c3f7a9ddf538350d31027f0456e89c4d",
+      "machineText": "Contrôle de la visibilité",
+      "status": "machine-translated",
+      "sourcePreview": "Visibility Control",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0128-text-01": {
       "sourceHash": "e011243416971faa8c6151056e0adfd7bf91f1b3f79ae0f1cf02c769e4c93152",
       "targetHash": "ec90c58693341cc7b7740b087bb78d586e6fe19a711b438419d804a04d68b6c4",
-      "status": "migration-review",
-      "sourcePreview": "Show/hide the tray icon dynamically:"
+      "machineHash": "ec90c58693341cc7b7740b087bb78d586e6fe19a711b438419d804a04d68b6c4",
+      "machineText": "Affichez ou masquez dynamiquement l’icône de la zone de notification :",
+      "status": "machine-translated",
+      "sourcePreview": "Show/hide the tray icon dynamically:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0129-text-01": {
       "sourceHash": "8706478d058b9ede04ff174cdaacdab05d704ee67b8ad4a2e3033317eb29bdc9",
-      "targetHash": "066208309e4127f00456607fd732f4665a776a6cd803699437460868e1a4caae",
-      "status": "migration-review",
-      "sourcePreview": "There is no `IsVisible()` getter — track visibility in your own application state if you need it."
+      "targetHash": "7eea72d8e2d5b1853cf18611f3b34875e911d810b284d2e08d69fe93378486b5",
+      "machineHash": "7eea72d8e2d5b1853cf18611f3b34875e911d810b284d2e08d69fe93378486b5",
+      "machineText": "Il n’existe aucun accesseur `IsVisible()` : si nécessaire, suivez la visibilité dans l’état de votre propre application.",
+      "status": "machine-translated",
+      "sourcePreview": "There is no `IsVisible()` getter — track visibility in your own application state if you need it.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0130-text-01": {
       "sourceHash": "d67cecbaf0bc7bf95236d4dae49ac0781e1d7607330335bc50c87bdaf14f4739",
       "targetHash": "181aaac5a52a4eb99e724300d8c10ae22a8960ae6c83f2ba411f1ecfcf73d493",
-      "status": "migration-review",
-      "sourcePreview": "**Platform Support:**"
+      "machineHash": "181aaac5a52a4eb99e724300d8c10ae22a8960ae6c83f2ba411f1ecfcf73d493",
+      "machineText": "**Prise en charge des plateformes :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform Support:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0131-cell-01": {
       "sourceHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
       "targetHash": "5ee2ea8e63ba3870653856d9db7ee325ab001223fa6da8bcc18e3d79bb22e0b3",
-      "status": "migration-review",
-      "sourcePreview": "Platform"
+      "machineHash": "5ee2ea8e63ba3870653856d9db7ee325ab001223fa6da8bcc18e3d79bb22e0b3",
+      "machineText": "Plateforme",
+      "status": "machine-translated",
+      "sourcePreview": "Platform",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0132-cell-01": {
       "sourceHash": "ab0c7020ef136bb8d7af8fbb9af9b49bd6dc95826d7bef6abb9f124ee9262b2b",
       "targetHash": "ab0c7020ef136bb8d7af8fbb9af9b49bd6dc95826d7bef6abb9f124ee9262b2b",
-      "status": "migration-review",
-      "sourcePreview": "Hide()"
+      "machineHash": "ab0c7020ef136bb8d7af8fbb9af9b49bd6dc95826d7bef6abb9f124ee9262b2b",
+      "machineText": "Hide()",
+      "status": "machine-translated",
+      "sourcePreview": "Hide()",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0133-cell-01": {
       "sourceHash": "c73a5b8b2372fbad4ff7a11e56d99cfdbcf03bf3b0468b8f90a66ed42edbb920",
       "targetHash": "c73a5b8b2372fbad4ff7a11e56d99cfdbcf03bf3b0468b8f90a66ed42edbb920",
-      "status": "migration-review",
-      "sourcePreview": "Show()"
+      "machineHash": "c73a5b8b2372fbad4ff7a11e56d99cfdbcf03bf3b0468b8f90a66ed42edbb920",
+      "machineText": "Show()",
+      "status": "machine-translated",
+      "sourcePreview": "Show()",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0134-cell-01": {
       "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
       "targetHash": "10a90f3ced76b855d718eea0cdbdcd8da28cf6174c2ed22bc6b7320bae3222f8",
-      "status": "migration-review",
-      "sourcePreview": "Notes"
+      "machineHash": "10a90f3ced76b855d718eea0cdbdcd8da28cf6174c2ed22bc6b7320bae3222f8",
+      "machineText": "Remarques",
+      "status": "machine-translated",
+      "sourcePreview": "Notes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0135-cell-01": {
       "sourceHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
       "targetHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
-      "status": "migration-review",
-      "sourcePreview": "**Windows**"
+      "machineHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
+      "machineText": "**Windows**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0138-cell-01": {
       "sourceHash": "6ba40a3c44c115cd9f08b2caba29e79d78be7eedb53e35d3a40edc05fba95d5a",
       "targetHash": "64dc5b0f6dfcc7d29b4db921b0999ecca213be1d281b50d42be61952b8899c1f",
-      "status": "migration-review",
-      "sourcePreview": "Fully functional - icon appears/disappears from notification area"
+      "machineHash": "64dc5b0f6dfcc7d29b4db921b0999ecca213be1d281b50d42be61952b8899c1f",
+      "machineText": "Entièrement fonctionnel — l’icône apparaît dans la zone de notification ou en disparaît",
+      "status": "machine-translated",
+      "sourcePreview": "Fully functional - icon appears/disappears from notification area",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0139-cell-01": {
       "sourceHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
       "targetHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
-      "status": "migration-review",
-      "sourcePreview": "**macOS**"
+      "machineHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
+      "machineText": "**macOS**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0142-cell-01": {
       "sourceHash": "0d31d25edc2f569141e68f2a0e656a0185cb3a0f5d9d6d700b9d1a1672ae81e5",
       "targetHash": "f4c66f84236b74a7f0c853d7b8fa74f30edbb91c7bff203f89ef0f87d398f353",
-      "status": "migration-review",
-      "sourcePreview": "Menu bar item shows/hides"
+      "machineHash": "f4c66f84236b74a7f0c853d7b8fa74f30edbb91c7bff203f89ef0f87d398f353",
+      "machineText": "L’élément de la barre des menus s’affiche ou se masque",
+      "status": "machine-translated",
+      "sourcePreview": "Menu bar item shows/hides",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0143-cell-01": {
       "sourceHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
       "targetHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
-      "status": "migration-review",
-      "sourcePreview": "**Linux**"
+      "machineHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
+      "machineText": "**Linux**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0146-cell-01": {
       "sourceHash": "c07e7126378a1d103eb66c7cee64d81d308fe6b953d077300ee99616443fac71",
       "targetHash": "c9b4deea82a304e195b770ee9df65e8a917d0f1425df0af5770ac8fb28b74c2a",
-      "status": "migration-review",
-      "sourcePreview": "Varies by desktop environment"
+      "machineHash": "c9b4deea82a304e195b770ee9df65e8a917d0f1425df0af5770ac8fb28b74c2a",
+      "machineText": "Varie selon l’environnement de bureau",
+      "status": "machine-translated",
+      "sourcePreview": "Varies by desktop environment",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0147-text-01": {
       "sourceHash": "ab01e138a9aed7594f6737c68cff581fd94643534080722bceb65410ab7b7459",
       "targetHash": "5d13018200f4f4e0b8cc1b9a449043d1c0cac9ecfae272a4598d2e7cc0a52399",
-      "status": "migration-review",
-      "sourcePreview": "**Use cases:**"
+      "machineHash": "5d13018200f4f4e0b8cc1b9a449043d1c0cac9ecfae272a4598d2e7cc0a52399",
+      "machineText": "**Cas d’utilisation :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Use cases:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0148-text-01": {
       "sourceHash": "86120102188ee2420212dc5969534cb8faf3f88c62a3326383d42756e9ff0f16",
-      "targetHash": "dd7a860955b40e93b2273bf22f5056519a683315ce0a28f9cdfa8c8913881860",
-      "status": "migration-review",
-      "sourcePreview": "Temporarily hide tray icon based on user preference"
+      "targetHash": "26fcd5dc132c2117ad6cd8a6c1759c0751952411d16739eab8b3bab46e375d96",
+      "machineHash": "26fcd5dc132c2117ad6cd8a6c1759c0751952411d16739eab8b3bab46e375d96",
+      "machineText": "Masquer temporairement l’icône de la zone de notification selon les préférences de l’utilisateur",
+      "status": "machine-translated",
+      "sourcePreview": "Temporarily hide tray icon based on user preference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0149-text-01": {
       "sourceHash": "ff2f7cfd4d32df2e2dad9332b1243b22a2dfa0b635bba687dad23cba87d00aad",
-      "targetHash": "4431ead238d4e9d5e8d17f842e6d3e486c5bac9367d8f73bfe35ad91784cc691",
-      "status": "migration-review",
-      "sourcePreview": "Headless mode with tray icon appearing only when needed"
+      "targetHash": "1d8ffeb5f34c6ad60cc6942efabedc80c4758db160cb7239d463be6c57c47b13",
+      "machineHash": "1d8ffeb5f34c6ad60cc6942efabedc80c4758db160cb7239d463be6c57c47b13",
+      "machineText": "Mode sans interface dans lequel l’icône de la zone de notification n’apparaît que lorsque cela est nécessaire",
+      "status": "machine-translated",
+      "sourcePreview": "Headless mode with tray icon appearing only when needed",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0150-text-01": {
       "sourceHash": "0c4b7fb7a21014a19b17ac20472e3c63d59701c1e8340f5cf12797df1db7fc6b",
-      "targetHash": "22da9b1bd16792fbb7df8637782063b03038c482bff4609e001a04d668b8d7f6",
-      "status": "migration-review",
-      "sourcePreview": "Toggle visibility based on application state"
+      "targetHash": "c58e431decdb644fc1f6271e8cc9b1e95c66f3bda8d0a00da4592e66649aab87",
+      "machineHash": "c58e431decdb644fc1f6271e8cc9b1e95c66f3bda8d0a00da4592e66649aab87",
+      "machineText": "Basculer la visibilité selon l’état de l’application",
+      "status": "machine-translated",
+      "sourcePreview": "Toggle visibility based on application state",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0151-text-01": {
       "sourceHash": "2158e8f6d1956934f74bfbc4a61cc84ee005ce50a8f952900611320116ce308a",
-      "targetHash": "e721aae7ded13c99b86420a7787bf870289255bdd485f6ff09efc17dd72208f9",
-      "status": "migration-review",
-      "sourcePreview": "**Example - Conditional Tray Visibility:**"
+      "targetHash": "5795bc87d4a52febf566f6c33a2ceb7ca6f2baa1e964b28287dc2f7fb4d9da2e",
+      "machineHash": "5795bc87d4a52febf566f6c33a2ceb7ca6f2baa1e964b28287dc2f7fb4d9da2e",
+      "machineText": "**Exemple — visibilité conditionnelle de l’icône de la zone de notification :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example - Conditional Tray Visibility:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0152-heading-01": {
       "sourceHash": "9f1b237b5dc314edb0dafba43265a24f2eb3fb998a011b4b605f38ec20a7cead",
       "targetHash": "55543f4a009cb5071b843656d844d92536d828bbe8d1116a1ec70a770f4a59f2",
-      "status": "migration-review",
-      "sourcePreview": "Cleanup"
+      "machineHash": "55543f4a009cb5071b843656d844d92536d828bbe8d1116a1ec70a770f4a59f2",
+      "machineText": "Nettoyage",
+      "status": "machine-translated",
+      "sourcePreview": "Cleanup",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0153-text-01": {
       "sourceHash": "307f41a8beda87a558abfe496731119e1309e67bc095bfdcc025101c417c6524",
       "targetHash": "78ff5bf6950facb76ead12834f0f29f1ee90b974d153df884fc235dcad092702",
-      "status": "migration-review",
-      "sourcePreview": "Destroy the tray icon when done:"
+      "machineHash": "78ff5bf6950facb76ead12834f0f29f1ee90b974d153df884fc235dcad092702",
+      "machineText": "Détruisez l’icône de la zone de notification lorsque vous n’en avez plus besoin :",
+      "status": "machine-translated",
+      "sourcePreview": "Destroy the tray icon when done:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0154-text-01": {
       "sourceHash": "0461c899299a2c0564184b0548bc862259f3531e4714f37f7e1588692035efa4",
-      "targetHash": "757a5756b41ef689700ab930bd41bdbedf9e7ca64a9a4912e282bf23f141a992",
-      "status": "migration-review",
-      "sourcePreview": "**Important:** Always destroy system tray on shutdown to release resources."
+      "targetHash": "6c9c49a9945f52a294993d9ae19a5c0fe861ca9731c0345cddee6fd62ae219fe",
+      "machineHash": "6c9c49a9945f52a294993d9ae19a5c0fe861ca9731c0345cddee6fd62ae219fe",
+      "machineText": "**Important :** détruisez toujours la zone de notification lors de l’arrêt afin de libérer les ressources.",
+      "status": "machine-translated",
+      "sourcePreview": "**Important:** Always destroy system tray on shutdown to release resources.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0155-heading-01": {
       "sourceHash": "46d9a34a79d27b3869085ea8961f543cc9425756c6ddf26628d6f5fa7df73b36",
       "targetHash": "fa5e243e098f0d999a549558404ca913ea832534208bc24cb11f1310000d177e",
-      "status": "migration-review",
-      "sourcePreview": "Best Practices"
+      "machineHash": "fa5e243e098f0d999a549558404ca913ea832534208bc24cb11f1310000d177e",
+      "machineText": "Bonnes pratiques",
+      "status": "machine-translated",
+      "sourcePreview": "Best Practices",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0156-heading-01": {
       "sourceHash": "ed57031b2772f36496ecd8b4ff4a1c11cc746cf70ef065c702b13b6d1e1f4ddc",
       "targetHash": "8e8286dd2377cf0362a3982c4770e4cd8f031af442c4cad5386db80914aca7d2",
-      "status": "migration-review",
-      "sourcePreview": "✅ Do"
+      "machineHash": "8e8286dd2377cf0362a3982c4770e4cd8f031af442c4cad5386db80914aca7d2",
+      "machineText": "✅ À faire",
+      "status": "machine-translated",
+      "sourcePreview": "✅ Do",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0157-text-01": {
       "sourceHash": "631d3071f8d2a1a51b15ff451862ff61bcf6e00b14b2a847f143beed9240df51",
-      "targetHash": "2a1dc2ab2d90cff899110489c561aef7019fc4e9be4234bbc0aea92c9eee7d5e",
-      "status": "migration-review",
-      "sourcePreview": "**Use template icons on macOS** - Adapts to dark mode"
+      "targetHash": "5a82a1e63d621339c6bbff50870c28199199f2bb0d9b9aec0feff1f9800bc5b2",
+      "machineHash": "5a82a1e63d621339c6bbff50870c28199199f2bb0d9b9aec0feff1f9800bc5b2",
+      "machineText": "**Utilisez des icônes modèles sous macOS** — elles s’adaptent au mode sombre",
+      "status": "machine-translated",
+      "sourcePreview": "**Use template icons on macOS** - Adapts to dark mode",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0158-text-01": {
       "sourceHash": "eb6852353330fabbc75984b32e38197207bf50a46c80dd71d79560bdacaf6117",
-      "targetHash": "5f0faedb9b92181b08952c31f71e889831e06c3f163a7c48d8eeeda4f070b2c1",
-      "status": "migration-review",
-      "sourcePreview": "**Keep labels short** - 3-5 characters maximum"
+      "targetHash": "9dcf181c53779c93b8827d005b19fb04e764fbfc05026a4e966f518b77d5d542",
+      "machineHash": "9dcf181c53779c93b8827d005b19fb04e764fbfc05026a4e966f518b77d5d542",
+      "machineText": "**Utilisez des libellés courts** — 3-5 caractères au maximum",
+      "status": "machine-translated",
+      "sourcePreview": "**Keep labels short** - 3-5 characters maximum",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0159-text-01": {
       "sourceHash": "4f9d6b51c85e653576595004344772368555d317bc00277210261c1e9803ac57",
-      "targetHash": "bd4ca03bf0b24dd8dd9b5a6a7b800d3e9b588297d113e65116c9b8d7a3fe4abe",
-      "status": "migration-review",
-      "sourcePreview": "**Provide tooltips on Windows** - Helps users identify your app"
+      "targetHash": "51f90aa02844d176e49a48d00eb6c486e56508ff886653ea1a7f568b2321ded5",
+      "machineHash": "51f90aa02844d176e49a48d00eb6c486e56508ff886653ea1a7f568b2321ded5",
+      "machineText": "**Fournissez des infobulles sous Windows** — elles aident les utilisateurs à identifier votre application",
+      "status": "machine-translated",
+      "sourcePreview": "**Provide tooltips on Windows** - Helps users identify your app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0160-text-01": {
       "sourceHash": "6f0dbc4ed67e41e00589a9a50049718ab34f9142e1b732f871d351873e3d92df",
-      "targetHash": "c30a9a75f5499ddff56a71a990ad1ce044160e8deb46fd402696c4f4b74d77cc",
-      "status": "migration-review",
-      "sourcePreview": "**Test on all platforms** - Behaviour varies"
+      "targetHash": "d3e867493a62db23f79c58c6c6cbc65d9851569ee46bead4bcefc71aaef346c6",
+      "machineHash": "d3e867493a62db23f79c58c6c6cbc65d9851569ee46bead4bcefc71aaef346c6",
+      "machineText": "**Testez sur toutes les plateformes** — le comportement varie",
+      "status": "machine-translated",
+      "sourcePreview": "**Test on all platforms** - Behaviour varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0161-text-01": {
       "sourceHash": "4e12bc6f592c0061cfb697913d5d9b7c7a262368f17d0d8ddc7a63c46e9e03b2",
-      "targetHash": "5b58f58b63408f8bb5365e1c0291b377e8072b05a68ff3332d6a36b859875c62",
-      "status": "migration-review",
-      "sourcePreview": "**Handle clicks appropriately** - Left-click for main action, right-click for menu"
+      "targetHash": "aaf67a0dab9f9c9334572e3791d5566f1f393014a90b8490b919c170a5e9e5ca",
+      "machineHash": "aaf67a0dab9f9c9334572e3791d5566f1f393014a90b8490b919c170a5e9e5ca",
+      "machineText": "**Gérez les clics de façon appropriée** — clic gauche pour l’action principale, clic droit pour le menu",
+      "status": "machine-translated",
+      "sourcePreview": "**Handle clicks appropriately** - Left-click for main action, right-click for menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0162-text-01": {
       "sourceHash": "dd71af1e39b6816a28b93d7bbf92da7408962bea32d8075d38d5399bc55aa1c3",
-      "targetHash": "de42c26d8ddd2d876042d39d680026d6ec03f111ff0f6e965e19d57dff75c71b",
-      "status": "migration-review",
-      "sourcePreview": "**Update icon for status** - Visual feedback is important"
+      "targetHash": "b1d247ae137e5835481405889905d0d248c70d759e4a35434c2074443e19c678",
+      "machineHash": "b1d247ae137e5835481405889905d0d248c70d759e4a35434c2074443e19c678",
+      "machineText": "**Actualisez l’icône selon l’état** — le retour visuel est important",
+      "status": "machine-translated",
+      "sourcePreview": "**Update icon for status** - Visual feedback is important",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0163-text-01": {
       "sourceHash": "3cf253c841dfd5610f7299221799fac7ab1956bfe5c41586e2734e409e038752",
-      "targetHash": "bec2a41e5ea119d5800728e2bec18fd8c0234f5e2ff3bedff46f99417e7ea2bc",
-      "status": "migration-review",
-      "sourcePreview": "**Destroy on shutdown** - Release resources"
+      "targetHash": "fceb4c77ef2442323674ec053f07eaddfabbdbf6e976eb91e1856f62a54a5aec",
+      "machineHash": "fceb4c77ef2442323674ec053f07eaddfabbdbf6e976eb91e1856f62a54a5aec",
+      "machineText": "**Détruisez-la lors de l’arrêt** — libérez les ressources",
+      "status": "machine-translated",
+      "sourcePreview": "**Destroy on shutdown** - Release resources",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0164-heading-01": {
       "sourceHash": "df89c260f72fd6330be731a6de76bab196eead3f17430716717b08b94f12b175",
       "targetHash": "116d17a80dfa0d0db6f640cd549a3196377a6169f76d6dd2a7553623c6ab39af",
-      "status": "migration-review",
-      "sourcePreview": "❌ Don't"
+      "machineHash": "116d17a80dfa0d0db6f640cd549a3196377a6169f76d6dd2a7553623c6ab39af",
+      "machineText": "❌ À ne pas faire",
+      "status": "machine-translated",
+      "sourcePreview": "❌ Don't",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0165-text-01": {
       "sourceHash": "dccad73a161ca4269f785e07ef9ecc9fe3752a233e5fa3478c7b26ac87bb4cf2",
-      "targetHash": "ffbaebb63c6cce16424d3ec6a197b1b7703a39f3482880709fb94566d3dbd419",
-      "status": "migration-review",
-      "sourcePreview": "**Don't use large icons** - Follow platform guidelines"
+      "targetHash": "afe76a5afce79cd8d0d47ab4c48ca809e47ebee3b7243e0e2eed9702ee50bcb3",
+      "machineHash": "afe76a5afce79cd8d0d47ab4c48ca809e47ebee3b7243e0e2eed9702ee50bcb3",
+      "machineText": "**N’utilisez pas de grandes icônes** — respectez les recommandations de la plateforme",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't use large icons** - Follow platform guidelines",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0166-text-01": {
       "sourceHash": "86b2101ab2f48bcb2de5e0785e3509b0086e014a0d5e7b1532b0bb0b4935db24",
-      "targetHash": "e4c4c8de80d8f4329fb2bd1d596a434b643c4d36755f6cb25b26d7937916451e",
-      "status": "migration-review",
-      "sourcePreview": "**Don't use long labels** - Gets truncated"
+      "targetHash": "8193fa50004e12b4b2645df35b644fbf45195656c126b1b5a262771191eb33e9",
+      "machineHash": "8193fa50004e12b4b2645df35b644fbf45195656c126b1b5a262771191eb33e9",
+      "machineText": "**N’utilisez pas de libellés longs** — ils seront tronqués",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't use long labels** - Gets truncated",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0167-text-01": {
       "sourceHash": "99b8606e06b6dce8ed8af1eac6f9f681a91233eaa2bee1a6109a340a2285f72c",
-      "targetHash": "a66dd98f236fa8f797a63c2508f74de207b55ef37e23edd83559a907397ab1c0",
-      "status": "migration-review",
-      "sourcePreview": "**Don't forget dark mode** - Test on Windows and macOS dark mode"
+      "targetHash": "f052b88436bf02d207a762b73cd28c2af60dca97bf6d4e6c25782e34d3883a32",
+      "machineHash": "f052b88436bf02d207a762b73cd28c2af60dca97bf6d4e6c25782e34d3883a32",
+      "machineText": "**N’oubliez pas le mode sombre** — testez avec le mode sombre de Windows et de macOS",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't forget dark mode** - Test on Windows and macOS dark mode",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0168-text-01": {
       "sourceHash": "9a6fcc7124bb8fceea742616c6eb66ec3054969b9800938daad6ad2debf3728f",
-      "targetHash": "86f2cbf6792fcb0646fc27a89dd2d021aa7c70929d3f5c74e2e6ffcff01220db",
-      "status": "migration-review",
-      "sourcePreview": "**Don't block click handlers** - Keep them fast"
+      "targetHash": "7fdc13e292803cfbf7f5a8ffb6296df8c4d5ba93d70bef24cad17ed2cf1467cf",
+      "machineHash": "7fdc13e292803cfbf7f5a8ffb6296df8c4d5ba93d70bef24cad17ed2cf1467cf",
+      "machineText": "**Ne bloquez pas les gestionnaires de clics** — veillez à leur rapidité",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't block click handlers** - Keep them fast",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0169-text-01": {
       "sourceHash": "c12f48d0d407eb31aae800af58716392d0df3c7b8e75d549cf09c4e3cb237a6c",
-      "targetHash": "7452f72e0a204b142a0340bb70735b1e5db5555c140e1ffe3c20094e6b44d72d",
-      "status": "migration-review",
-      "sourcePreview": "**Don't forget menu.Update()** - After changing menu state"
+      "targetHash": "48dead046ba45d528f6e92d5f86004251a973d715cd5f670f5f7391e49cbdb8f",
+      "machineHash": "48dead046ba45d528f6e92d5f86004251a973d715cd5f670f5f7391e49cbdb8f",
+      "machineText": "**N’oubliez pas menu.Update()** — après avoir modifié l’état du menu",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't forget menu.Update()** - After changing menu state",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0170-text-01": {
       "sourceHash": "180c078e357f6f1dd84483d1c8c6194028bcc74e3f60574ff80400946ed6ba15",
-      "targetHash": "c291fc0e79b37c23aff17a4d63b8bbc876c7113674187760e510957970b5fc3e",
-      "status": "migration-review",
-      "sourcePreview": "**Don't assume tray support** - Some Linux DEs don't support it"
+      "targetHash": "db971e40fb8ba0cbd06bbe0728c19b93aecb4916f69cdf4e9a41fc9b2591aa0d",
+      "machineHash": "db971e40fb8ba0cbd06bbe0728c19b93aecb4916f69cdf4e9a41fc9b2591aa0d",
+      "machineText": "**Ne présumez pas que la zone de notification est prise en charge** — certains environnements de bureau Linux ne la prennent pas en charge",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't assume tray support** - Some Linux DEs don't support it",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0171-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
-      "targetHash": "416275b784a3fd271b9aa808b98fe0f8d14c0e2f02595de0f8e835995805ef8f",
-      "status": "migration-review",
-      "sourcePreview": "Troubleshooting"
+      "targetHash": "9cd567b6d40d5bb437d5a21822c6d40f00c9fd5ce7e8f1d8f9ca66c633ce7d19",
+      "machineHash": "9cd567b6d40d5bb437d5a21822c6d40f00c9fd5ce7e8f1d8f9ca66c633ce7d19",
+      "machineText": "Résolution des problèmes",
+      "status": "machine-translated",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0172-heading-01": {
       "sourceHash": "957fea0f3356986e09d8949f1d7add498b0847932dac505f0b4b964ad28ae341",
-      "targetHash": "3a93c16d4806768c6261d8b13a6f6f63ed2e99b6aeb3658f3a5980c3fbb1a94d",
-      "status": "migration-review",
-      "sourcePreview": "Tray Icon Not Appearing"
+      "targetHash": "f4de498c4d7474d1a207334aa991bb23305f39b77ad58f0e0fbbc3e1ec024e63",
+      "machineHash": "f4de498c4d7474d1a207334aa991bb23305f39b77ad58f0e0fbbc3e1ec024e63",
+      "machineText": "L’icône de la zone de notification n’apparaît pas",
+      "status": "machine-translated",
+      "sourcePreview": "Tray Icon Not Appearing",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0173-text-01": {
       "sourceHash": "693acf42961caaa127aae6f5854a8764328eb7c65dd56db6a5946b1981e2f899",
       "targetHash": "6e96d3081e7b53ea92afee274f0ab566876b67495876f66748280450d598bc10",
-      "status": "migration-review",
-      "sourcePreview": "**Possible causes:**"
+      "machineHash": "6e96d3081e7b53ea92afee274f0ab566876b67495876f66748280450d598bc10",
+      "machineText": "**Causes possibles :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Possible causes:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0174-text-01": {
       "sourceHash": "f262dcc532e9c10685fd15690590dad8576e7c8cdeec9a6c327ffc8cb46a9a29",
       "targetHash": "d32b59878e5ee28b66a95931a54a7e14dcaadc862aca7ac0dd17afd0fae48cb6",
-      "status": "migration-review",
-      "sourcePreview": "Icon format not supported"
+      "machineHash": "d32b59878e5ee28b66a95931a54a7e14dcaadc862aca7ac0dd17afd0fae48cb6",
+      "machineText": "Format d’icône non pris en charge",
+      "status": "machine-translated",
+      "sourcePreview": "Icon format not supported",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0175-text-01": {
       "sourceHash": "68ddca0694d047a4594eea34a3632235f360894b32668e95c422779784dd2407",
-      "targetHash": "0214cd9c7c6eb24bc2a758d67c5d76b5105b8539627dda843103fbd5c27b68c7",
-      "status": "migration-review",
-      "sourcePreview": "Icon size too large/small"
+      "targetHash": "5b71983e10e2e541e251bed9f2b659b14ad6b349ff8059963647a0f7cea7ff40",
+      "machineHash": "5b71983e10e2e541e251bed9f2b659b14ad6b349ff8059963647a0f7cea7ff40",
+      "machineText": "Taille d’icône trop grande ou trop petite",
+      "status": "machine-translated",
+      "sourcePreview": "Icon size too large/small",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0176-text-01": {
       "sourceHash": "4b72e257bce6d959f07025730da5a0f90e97f2324c71a8adb6f521e6d0f150cf",
       "targetHash": "0682cbcec4f6fe3066ab18f305081e8b8f684393fb0f20ca0be97b67f3e5aaab",
-      "status": "migration-review",
-      "sourcePreview": "System tray not supported (Linux)"
+      "machineHash": "0682cbcec4f6fe3066ab18f305081e8b8f684393fb0f20ca0be97b67f3e5aaab",
+      "machineText": "Zone de notification non prise en charge (Linux)",
+      "status": "machine-translated",
+      "sourcePreview": "System tray not supported (Linux)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0177-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
       "targetHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "machineHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
+      "machineText": "**Solution :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0178-text-01": {
       "sourceHash": "0789daba287434c797ac2f00be6d066a425327690f8b70b47532de4fd82823d9",
       "targetHash": "f2a945fb7bc99aba9d304c8291b9fb71cb91b593da864971c374a56ec836b6b5",
-      "status": "migration-review",
-      "sourcePreview": "There is no `SystemTraySupported()` helper; instead create the tray, check the platform, and degrade…"
+      "machineHash": "f2a945fb7bc99aba9d304c8291b9fb71cb91b593da864971c374a56ec836b6b5",
+      "machineText": "Il n’existe aucun utilitaire `SystemTraySupported()` ; créez plutôt la zone de notification, vérifiez la plateforme et prévoyez un fonctionnement dégradé :",
+      "status": "machine-translated",
+      "sourcePreview": "There is no `SystemTraySupported()` helper; instead create the tray, check the platform, and degrade…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0179-heading-01": {
       "sourceHash": "e68765707ff3e22855a9b89da77a51ed12c49029db9a6fc5ae66b7a9ba24f243",
       "targetHash": "6e5dd3b5e6565719a80ecc8f09c1f12b8e15aa01ddbc99493d55ee4a8266c987",
-      "status": "migration-review",
-      "sourcePreview": "Icon Looks Wrong on macOS"
+      "machineHash": "6e5dd3b5e6565719a80ecc8f09c1f12b8e15aa01ddbc99493d55ee4a8266c987",
+      "machineText": "L’icône s’affiche incorrectement sous macOS",
+      "status": "machine-translated",
+      "sourcePreview": "Icon Looks Wrong on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0180-text-01": {
       "sourceHash": "55dcf889c398ece8164b78b347d16250492dc8be3d13407a1996dd5356e1c75a",
-      "targetHash": "c69ddf8fd527431a25066f127c1d2239322ea24607f5960b8869a75e91aa9598",
-      "status": "migration-review",
-      "sourcePreview": "**Cause:** Not using template icon"
+      "targetHash": "78d752981eb281c358f1840de49467bc8a20ee0bbbf26eff3e92990ef797dc52",
+      "machineHash": "78d752981eb281c358f1840de49467bc8a20ee0bbbf26eff3e92990ef797dc52",
+      "machineText": "**Cause :** aucune icône modèle n’est utilisée",
+      "status": "machine-translated",
+      "sourcePreview": "**Cause:** Not using template icon",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0181-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
       "targetHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "machineHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
+      "machineText": "**Solution :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0182-heading-01": {
       "sourceHash": "2f0fbd8eae9f4ed2d7209cd04a3b0d4b40d61191b162d00a6661edb35a79ffc1",
       "targetHash": "4a1c1dc60b3903e47342ffad26dbeb99ca220d367354ecf14fa044a8ec6cf199",
-      "status": "migration-review",
-      "sourcePreview": "Menu Not Updating"
+      "machineHash": "4a1c1dc60b3903e47342ffad26dbeb99ca220d367354ecf14fa044a8ec6cf199",
+      "machineText": "Le menu ne s’actualise pas",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Not Updating",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0183-text-01": {
       "sourceHash": "998a53346f91bae0715b84e62d1aafe71dc5d1b598fdef806e49cdf33bd105ed",
-      "targetHash": "c6e97c9a4c4fc9954f9a43912fb0593c194f561c5f6be10622894469e07e665f",
-      "status": "migration-review",
-      "sourcePreview": "**Cause:** Forgot to call `menu.Update()`"
+      "targetHash": "6f13585a277f2558130528bd243e68b68a7668a03b95aec3a23a0f7afaefa41c",
+      "machineHash": "6f13585a277f2558130528bd243e68b68a7668a03b95aec3a23a0f7afaefa41c",
+      "machineText": "**Cause :** vous avez oublié d’appeler `menu.Update()`",
+      "status": "machine-translated",
+      "sourcePreview": "**Cause:** Forgot to call `menu.Update()`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0184-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
       "targetHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "machineHash": "026f849c0dab3141358e264c5e4e0ecbf40fcfe56bcc07d2c332972ef69a3b06",
+      "machineText": "**Solution :**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0185-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "cd87c3007d4e191be7b33c22a56e07831091cc509c13aaf956719f58a48419a3",
-      "status": "migration-review",
-      "sourcePreview": "Next Steps"
+      "machineHash": "cd87c3007d4e191be7b33c22a56e07831091cc509c13aaf956719f58a48419a3",
+      "machineText": "Étapes suivantes",
+      "status": "machine-translated",
+      "sourcePreview": "Next Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0186-text-01": {
       "sourceHash": "6fe6e3919d3a73ef03a9f6b4edc69c8d42744c1c208c13f2807ecbad115b89c4",
       "targetHash": "126408962d8e4f7955de444d965617261d86bc087e864e5bbf840d1986b93aeb",
-      "status": "migration-review",
-      "sourcePreview": "📖 Menu Reference Complete reference for menu item types and properties."
+      "machineHash": "126408962d8e4f7955de444d965617261d86bc087e864e5bbf840d1986b93aeb",
+      "machineText": "📖 Référence des menus\nRéférence complète des types et propriétés des éléments de menu.",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Menu Reference Complete reference for menu item types and properties.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0187-text-01": {
       "sourceHash": "9049bf97bdd608286f671adbc0c53f281d540047a3dff2641bf2cc9ca35e2d55",
       "targetHash": "48fdc74b43fc2e5bb2565c6cebb98ca0315172974e743fb5ad65067ef3519db4",
-      "status": "migration-review",
-      "sourcePreview": "☰ Application Menus Create application menu bars."
+      "machineHash": "48fdc74b43fc2e5bb2565c6cebb98ca0315172974e743fb5ad65067ef3519db4",
+      "machineText": "☰ Menus de l’application\nCréez des barres de menus pour l’application.",
+      "status": "machine-translated",
+      "sourcePreview": "☰ Application Menus Create application menu bars.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0188-text-01": {
       "sourceHash": "bd1fac5413f458b9e01dc873ff743a52ffc3bf68e0b22a831a5f4258478ec641",
       "targetHash": "6ea08ff271e7eb4a50e7cd8a34480720eac623d0a0fdaa8e4c7f3417f3e988ce",
-      "status": "migration-review",
-      "sourcePreview": "◆ Context Menus Create right-click context menus."
+      "machineHash": "6ea08ff271e7eb4a50e7cd8a34480720eac623d0a0fdaa8e4c7f3417f3e988ce",
+      "machineText": "◆ Menus contextuels\nCréez des menus contextuels accessibles par clic droit.",
+      "status": "machine-translated",
+      "sourcePreview": "◆ Context Menus Create right-click context menus.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0189-text-01": {
       "sourceHash": "51a889189f749d24d2a5db731b92f65d5709273230b385a9c086b1cf9f9fa847",
-      "targetHash": "c12bae76ec2b26d8100fd4802496a1abcbcb3f905503fd86dfa6ca1a584e21ad",
-      "status": "migration-review",
-      "sourcePreview": "📖 System Tray Example Explore a complete system tray application."
+      "targetHash": "b3786dde0a72b46f60ae9c5512d4859bd18c160d1ac742bfb6e5c5ff86e48fc3",
+      "machineHash": "b3786dde0a72b46f60ae9c5512d4859bd18c160d1ac742bfb6e5c5ff86e48fc3",
+      "machineText": "📖 Exemple de zone de notification\nDécouvrez une application complète utilisant la zone de notification.",
+      "status": "machine-translated",
+      "sourcePreview": "📖 System Tray Example Explore a complete system tray application.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "b0190-text-01": {
       "sourceHash": "bcebd656d9b218fd416ca9d9abe9444a2f71322b651f658703e261242d3435eb",
       "targetHash": "650014e0d9b5206a888f5711ddf8fc6f435a9f7d1586da8c7560d2b2dc5889d7",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](h…"
+      "machineHash": "650014e0d9b5206a888f5711ddf8fc6f435a9f7d1586da8c7560d2b2dc5889d7",
+      "machineText": "**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de zones de notification](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic).",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](h…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "c0003-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
+      "machineText": "En savoir plus →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "c0003-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
+      "machineText": "En savoir plus →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "c0003-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
+      "machineText": "En savoir plus →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "c0003-line-004-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "8ab9a9a8a2ca44be5f69b0d9f72a6361447d201431093f84227f4fd26964a740",
+      "machineText": "En savoir plus →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "fm-description": {
       "sourceHash": "cae8359e767246f1af478b93f71ab04906ccee35d68ad683bfffd3e953b050b0",
-      "targetHash": "9f3d01f5134c637ba38c3d9e7c330a73b09656fc70858a5231a8ff045434fd9e",
-      "status": "migration-review",
-      "sourcePreview": "Add system tray (notification area) integration to your application"
+      "targetHash": "95561d48ad7c1798da7625ac5db585dbca3b5928aae3816b5154b303ca0b7e4c",
+      "machineHash": "95561d48ad7c1798da7625ac5db585dbca3b5928aae3816b5154b303ca0b7e4c",
+      "machineText": "Ajoutez à votre application une intégration à la zone de notification système",
+      "status": "machine-translated",
+      "sourcePreview": "Add system tray (notification area) integration to your application",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "fm-title": {
       "sourceHash": "a935c47caafb8484fd784f6881923058e75d3c0f3ae3a7a972fb6ed9deaaa98e",
       "targetHash": "ee9d0840ea09a2d0f18654b61985ee9443b528bad87c058874804c59f73d1ce3",
-      "status": "migration-review",
-      "sourcePreview": "System Tray Menus"
+      "machineHash": "ee9d0840ea09a2d0f18654b61985ee9443b528bad87c058874804c59f73d1ce3",
+      "machineText": "Menus de la zone de notification",
+      "status": "machine-translated",
+      "sourcePreview": "System Tray Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "tab0002-label-002": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "tab0002-label-003": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     },
     "tab0002-label-004": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:57Z"
     }
   },
   "migration": {

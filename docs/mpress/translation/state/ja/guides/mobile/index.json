@@ -1,700 +1,1390 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "1cd4787926ef7a31a2bc",
+  "pageKey": "a87f1c796d46724ccd4b",
   "sourceFile": "guides/mobile/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
   "segments": {
     "a0002-description-01": {
       "sourceHash": "32baf68ae3e94f2e8c0b3fb0fbc68b9b2205af26a586bd828b74af0b80c1072d",
-      "targetHash": "93f09f32dc4871a66206f8e0eb132f9a9a90bcb638884b6478f32cbe799dfe5c",
-      "status": "migration-review",
-      "sourcePreview": "Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · …"
+      "targetHash": "aa953a712d9856547fb82e505ceec98e5ecab81c2afeed3df9b420cfe2d1a86a",
+      "machineHash": "aa953a712d9856547fb82e505ceec98e5ecab81c2afeed3df9b420cfe2d1a86a",
+      "machineText": "バインディング · イベント · ダイアログ · ハプティクス · 位置情報 · 生体認証 · 通知 · セキュアストレージ · その他 — すべて 1 つの main.go から利用可能",
+      "status": "machine-translated",
+      "sourcePreview": "Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "a0002-title-01": {
       "sourceHash": "6add0d5b364e49050403087ab16d7752995e26165207bda94f6b466c7ded9081",
       "targetHash": "6add0d5b364e49050403087ab16d7752995e26165207bda94f6b466c7ded9081",
-      "status": "migration-review",
-      "sourcePreview": "Mobile Kitchen Sink — GitHub"
+      "machineHash": "6add0d5b364e49050403087ab16d7752995e26165207bda94f6b466c7ded9081",
+      "machineText": "Mobile Kitchen Sink — GitHub",
+      "status": "machine-translated",
+      "sourcePreview": "Mobile Kitchen Sink — GitHub",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0001-text-01": {
       "sourceHash": "c68b4deed8d33c749df2c331f7cf2e8b76e3effb5d13e5b16b67915a2263fdc4",
-      "targetHash": "530591d36f8140ff48443bdcb9564e1f61332ffcf934736b5e2629f93d423434",
-      "status": "migration-review",
-      "sourcePreview": "Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for des…"
+      "targetHash": "c5936d62e1c47938a30fd22f42abdd923e3e880aa11dc861d9d309f8729d3284",
+      "machineHash": "c5936d62e1c47938a30fd22f42abdd923e3e880aa11dc861d9d309f8729d3284",
+      "machineText": "Wails v3 は、デスクトップ向けに作成済みのものと同じ `main.go` およびフロントエンドを使用して、**iOS と Android** で動作します。別個のモバイルプロジェクトも、コード共有ブリッジも、書き直しも必要ありません。Go バイナリはモバイルターゲット向けにコンパイルされ、ネイティブ WebView が既存のフロントエンドをレンダリングします。",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for des…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0002-text-01": {
       "sourceHash": "9ee20db9b6d0cd76a27dc3040d5be5f13b1d19fb9bb3a495e634b11f42bd1e01",
-      "targetHash": "08a3ed994e5703de44105b2834de7cf5adc05dd69f299c22f2d25d26d5f83e6f",
-      "status": "migration-review",
-      "sourcePreview": "iOS WKWebView + UIKit host. Assets served via a custom `wails://` scheme — no open ports. Requires *…"
+      "targetHash": "4a6a44904f20381629600e0c08823f54f902127cfa4cc765bfb69fdc5978f15f",
+      "machineHash": "4a6a44904f20381629600e0c08823f54f902127cfa4cc765bfb69fdc5978f15f",
+      "machineText": "iOS\nWKWebView + UIKit ホスト。アセットはカスタム `wails://` スキーム経由で配信されるため、ポートは開きません。完全版 Xcode を備えた **macOS** が必要です。",
+      "status": "machine-translated",
+      "sourcePreview": "iOS WKWebView + UIKit host. Assets served via a custom `wails://` scheme — no open ports. Requires *…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0003-text-01": {
       "sourceHash": "045dd1bb91b8cab5d82994affbd98b37b427468bcacfa7dc2ab3a37f494f8dd9",
-      "targetHash": "4caa798c3c62c9740eb79d10d208d10be64acfbda177c2845071c23c5f156ca3",
-      "status": "migration-review",
-      "sourcePreview": "Android Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK. Works on m…"
+      "targetHash": "10a9586a23dc9b8729621c5d404a2302517fa3e7d565360898aaad4bea4e1f67",
+      "machineHash": "10a9586a23dc9b8729621c5d404a2302517fa3e7d565360898aaad4bea4e1f67",
+      "machineText": "Android\nAndroid WebView + `WebViewAssetLoader`。Go は NDK により `libwails.so` としてコンパイルされます。macOS、Linux、Windows で動作します。",
+      "status": "machine-translated",
+      "sourcePreview": "Android Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK. Works on m…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0004-heading-01": {
       "sourceHash": "199a99e5d0efa0033b6aa24c5a78e5046bd3dda3c14195d6b2af2a7c1d80c860",
-      "targetHash": "64a59e60037b65612c485bc1599e055c25c9b3a32fe113db446ca8d6de34e6c7",
-      "status": "migration-review",
-      "sourcePreview": "See it running: Kitchen Sink example"
+      "targetHash": "1e2288c1731a71cb8bc87b521a9b2f0d546c34733749d318f0b34983c7e275dc",
+      "machineHash": "1e2288c1731a71cb8bc87b521a9b2f0d546c34733749d318f0b34983c7e275dc",
+      "machineText": "動作を確認する：Kitchen Sink の例",
+      "status": "machine-translated",
+      "sourcePreview": "See it running: Kitchen Sink example",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0005-text-01": {
       "sourceHash": "af455ff9e96090b67fd2f6083d7791fde54595d62f14328735cdb44fdff0c052",
-      "targetHash": "aaf4a75a75c7bf55555361355abbfa78b4bc66ec2736e0af6f8d4ead568402c3",
-      "status": "migration-review",
-      "sourcePreview": "The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app t…"
+      "targetHash": "5bb6a1d638ee4c1741571a8e10f91548fef69055c1f1f75a61499d1009630ad5",
+      "machineHash": "5bb6a1d638ee4c1741571a8e10f91548fef69055c1f1f75a61499d1009630ad5",
+      "machineText": "何が可能かを理解するには、**Kitchen Sink** を見るのが最適です。これは、1 つのコードベースから iOS、Android、デスクトップで同じように動作する単一の Wails アプリです。",
+      "status": "machine-translated",
+      "sourcePreview": "The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app t…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0006-text-01": {
       "sourceHash": "7d7dacebb5717f92a8f350184e167660bf90f92a1e3450038e97df3d1f727a8b",
-      "targetHash": "48684948a51f088e8944357d0202566525a197e04d830c5c1958a6db713c59ba",
-      "status": "migration-review",
-      "sourcePreview": "It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mob…"
+      "targetHash": "08dcdb4ed11a6e4bcb649e2e8f6cb9a9444ccfa83ff8ff22bd813fd7a3b10ef6",
+      "machineHash": "08dcdb4ed11a6e4bcb649e2e8f6cb9a9444ccfa83ff8ff22bd813fd7a3b10ef6",
+      "machineText": "7 個のタブを通じて、主要なモバイル API サーフェスをすべて実演しており、デスクトップでも動作します。デスクトップでは、フロントエンドのプラットフォームチェックにより **Mobile** タブと **Hardware** タブが非表示になります。デスクトップ向けにビルドした場合、Go 側では `common:*` モバイルイベント用のハンドラーを登録しません。これは、単一のコードベースをすべての環境に提供するための推奨パターンです。",
+      "status": "machine-translated",
+      "sourcePreview": "It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mob…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0007-cell-01": {
       "sourceHash": "90ddf1963abb36c9921ce7f1ac9cbd94c9176d13e57c418d3d3c20ce44291c1c",
       "targetHash": "8a130ef457e00d3e0cb07884d67e1a6d686e857a9e5e3502a4adfed690fb3d87",
-      "status": "migration-review",
-      "sourcePreview": "Tab"
+      "machineHash": "8a130ef457e00d3e0cb07884d67e1a6d686e857a9e5e3502a4adfed690fb3d87",
+      "machineText": "タブ",
+      "status": "machine-translated",
+      "sourcePreview": "Tab",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0008-cell-01": {
       "sourceHash": "ab9bd7584a6270cdb048e09426138a817819e212d67801014df2cbea0b826faa",
       "targetHash": "4bf4082c3f317cf61d530d1aa6091dc56ad2700d9004c7cadbeada7e82b88616",
-      "status": "migration-review",
-      "sourcePreview": "Platforms"
+      "machineHash": "4bf4082c3f317cf61d530d1aa6091dc56ad2700d9004c7cadbeada7e82b88616",
+      "machineText": "プラットフォーム",
+      "status": "machine-translated",
+      "sourcePreview": "Platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0009-cell-01": {
       "sourceHash": "8e7ddf931c59c8c4029ec7b988e2075699660106670352905cbd5180b899b53f",
       "targetHash": "692c19335719c86796218d942c144c79a9fa4f1a3871c24e24c8e15a3d4d5c30",
-      "status": "migration-review",
-      "sourcePreview": "What it shows"
+      "machineHash": "692c19335719c86796218d942c144c79a9fa4f1a3871c24e24c8e15a3d4d5c30",
+      "machineText": "実演内容",
+      "status": "machine-translated",
+      "sourcePreview": "What it shows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0010-cell-01": {
       "sourceHash": "81c1b467078cec45444b0b3ed917aa4593f4229449a7f5d7f5b9f1198ca9f0e4",
       "targetHash": "2fcb75e91307208c875e680767f1b7c5b7925156970f3016faa8e06dc72a7c43",
-      "status": "migration-review",
-      "sourcePreview": "**Bindings**"
+      "machineHash": "2fcb75e91307208c875e680767f1b7c5b7925156970f3016faa8e06dc72a7c43",
+      "machineText": "**バインディング**",
+      "status": "machine-translated",
+      "sourcePreview": "**Bindings**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0011-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
+      "machineText": "すべて",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0012-cell-01": {
       "sourceHash": "ff139a12867e593e54f3cf23d3c8975f096c9500d68240171a2fabcfbaa56c58",
       "targetHash": "d6dd82698f24797351e833f8c894f8aa318670e720a26987a895ed6b9268893e",
-      "status": "migration-review",
-      "sourcePreview": "JS → Go service calls returning values, structs, and errors"
+      "machineHash": "d6dd82698f24797351e833f8c894f8aa318670e720a26987a895ed6b9268893e",
+      "machineText": "値、構造体、エラーを返す JS → Go サービス呼び出し",
+      "status": "machine-translated",
+      "sourcePreview": "JS → Go service calls returning values, structs, and errors",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0013-cell-01": {
       "sourceHash": "31a156ea9b0708fe55942ea9a3949b9c56dad3a8777ea44817267a26160c626c",
       "targetHash": "95345c3f2119480104eb484dcd6c9be220c1d16ce86c0c877733cd0a31c31262",
-      "status": "migration-review",
-      "sourcePreview": "**Events**"
+      "machineHash": "95345c3f2119480104eb484dcd6c9be220c1d16ce86c0c877733cd0a31c31262",
+      "machineText": "**イベント**",
+      "status": "machine-translated",
+      "sourcePreview": "**Events**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0014-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
+      "machineText": "すべて",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0015-cell-01": {
       "sourceHash": "838205717854f9db86eca84eb89d16fc0960364397d19960945c04397f10966a",
-      "targetHash": "1e674c2283579c13695976729d269229aed171143d9061fddce3e0d85019fcee",
-      "status": "migration-review",
-      "sourcePreview": "Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme)"
+      "targetHash": "94dbda6ffef375dba8ea2787510d9578eb0a497b223e3619b9b81459d496faf2",
+      "machineHash": "94dbda6ffef375dba8ea2787510d9578eb0a497b223e3619b9b81459d496faf2",
+      "machineText": "Go → JS クロック、JS → Go → JS の ping/pong、OS システムイベント（バッテリー、ネットワーク、テーマ）",
+      "status": "machine-translated",
+      "sourcePreview": "Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0016-cell-01": {
       "sourceHash": "c1b5878c64af3d8656358515b18ceeade8dd838fe69b236c5d1fca1efc90b47d",
       "targetHash": "7f14e29c36aac5519782a78bb8aff839f170ed6434b14230661962f4d9f55747",
-      "status": "migration-review",
-      "sourcePreview": "**Dialogs**"
+      "machineHash": "7f14e29c36aac5519782a78bb8aff839f170ed6434b14230661962f4d9f55747",
+      "machineText": "**ダイアログ**",
+      "status": "machine-translated",
+      "sourcePreview": "**Dialogs**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0017-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
+      "machineText": "すべて",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0018-cell-01": {
       "sourceHash": "e053bccd3fe5e25df5b6b81476399d3f36d1ee1ecf616ed53b87e69cd16371b0",
       "targetHash": "e690606c1544fb782eacfdab1ed7a8adcad78dbcaad9a9f36e21a0a9c7bc5cba",
-      "status": "migration-review",
-      "sourcePreview": "Native message dialogs on each platform"
+      "machineHash": "e690606c1544fb782eacfdab1ed7a8adcad78dbcaad9a9f36e21a0a9c7bc5cba",
+      "machineText": "各プラットフォームのネイティブメッセージダイアログ",
+      "status": "machine-translated",
+      "sourcePreview": "Native message dialogs on each platform",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0019-cell-01": {
       "sourceHash": "f19ace019b27799eb8a409a5964d147efcd56dabaf03003466310d296ce5d389",
       "targetHash": "92dd18326e012812fb0ef27b5ca3e1fcb87799d45ad4a81c0b66411f264ece7d",
-      "status": "migration-review",
-      "sourcePreview": "**System**"
+      "machineHash": "92dd18326e012812fb0ef27b5ca3e1fcb87799d45ad4a81c0b66411f264ece7d",
+      "machineText": "**システム**",
+      "status": "machine-translated",
+      "sourcePreview": "**System**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0020-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "b55eb06d25e14a36c179b5ab27d5f570f0f32d7ed970dffcdd8997ec022d0f9a",
+      "machineText": "すべて",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0021-cell-01": {
       "sourceHash": "ed658ae8b9a0a5105ea44130be9be55198eca350760b236b7a7246beaf5af43d",
       "targetHash": "278ea91efc6ff1d4022ae2bd56a834dcbeeb7c66967eccd11362260c1ca0a27c",
-      "status": "migration-review",
-      "sourcePreview": "Clipboard, screen metrics, device info"
+      "machineHash": "278ea91efc6ff1d4022ae2bd56a834dcbeeb7c66967eccd11362260c1ca0a27c",
+      "machineText": "クリップボード、画面メトリクス、デバイス情報",
+      "status": "machine-translated",
+      "sourcePreview": "Clipboard, screen metrics, device info",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0022-cell-01": {
       "sourceHash": "94328d849c59a682f18dea430c9cddb8f12c5ea346e024e5a46402610ec773ea",
       "targetHash": "00470a143523d048122b616bc7a78c6372a58ca9a2fb056fa6a1bdeed7501623",
-      "status": "migration-review",
-      "sourcePreview": "**Mobile**"
+      "machineHash": "00470a143523d048122b616bc7a78c6372a58ca9a2fb056fa6a1bdeed7501623",
+      "machineText": "**モバイル**",
+      "status": "machine-translated",
+      "sourcePreview": "**Mobile**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0023-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0024-cell-01": {
       "sourceHash": "33f3c602b932c9fb5ee9e0dead7c17065188403420783afa7f0625ded20c1101",
-      "targetHash": "d24a1d37e3041edc8d1bbe92ead7dbb1cbf65fbe46e2d5ee3c80ee4c5ea9a17d",
-      "status": "migration-review",
-      "sourcePreview": "Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage"
+      "targetHash": "325a386e4331011dcbd0871c027e954ba4ef31a907dd98ef8a30482a9e59543b",
+      "machineHash": "325a386e4331011dcbd0871c027e954ba4ef31a907dd98ef8a30482a9e59543b",
+      "machineText": "共有シート、スリープ防止、ライト、明るさ、生体認証、ローカル通知、セキュアストレージ",
+      "status": "machine-translated",
+      "sourcePreview": "Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0025-cell-01": {
       "sourceHash": "38757039d954f35cbb1dac626706b4612591a8875eb6b3787c890621f7cc93b6",
       "targetHash": "9a85b913d417fdab9b74ec1f88535ec729907e6e68472c39d0a83d57b3a4c7bf",
-      "status": "migration-review",
-      "sourcePreview": "**Hardware**"
+      "machineHash": "9a85b913d417fdab9b74ec1f88535ec729907e6e68472c39d0a83d57b3a4c7bf",
+      "machineText": "**ハードウェア**",
+      "status": "machine-translated",
+      "sourcePreview": "**Hardware**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0026-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0027-cell-01": {
       "sourceHash": "5016e5804070c4b99601b493b535ba0542b76669f99cdf218c44a58a94b1a26f",
-      "targetHash": "0ed3a89e7fde614e13fde18b6fa2ed5f445e16905f2a7e6833aa1e84572117f3",
-      "status": "migration-review",
-      "sourcePreview": "Haptics, geolocation, accelerometer, proximity, text-to-speech"
+      "targetHash": "9333d7e57fa03854ba6b993a45af97651f596f96941fa731f15884016e39556c",
+      "machineHash": "9333d7e57fa03854ba6b993a45af97651f596f96941fa731f15884016e39556c",
+      "machineText": "ハプティクス、位置情報、加速度センサー、近接センサー、テキスト読み上げ",
+      "status": "machine-translated",
+      "sourcePreview": "Haptics, geolocation, accelerometer, proximity, text-to-speech",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0028-cell-01": {
       "sourceHash": "0201c7ae6c4eff5e42becba5a1367eb67bfd72aea791ad9e136c2e6c38df9693",
       "targetHash": "9f75b2b695369cef378e2e6e5b2808d8af6b208a8b294727fa4f0e6fcd005a1f",
-      "status": "migration-review",
-      "sourcePreview": "**Native**"
+      "machineHash": "9f75b2b695369cef378e2e6e5b2808d8af6b208a8b294727fa4f0e6fcd005a1f",
+      "machineText": "**ネイティブ**",
+      "status": "machine-translated",
+      "sourcePreview": "**Native**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0029-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0030-cell-01": {
       "sourceHash": "379ce8c398c05f2030a7bdbdfbe4b5186fc0acb0b67c3feeb022f826409868fb",
-      "targetHash": "aa4f32ee81b2c70f2959a768f627a743c5114ccdbd59a2a9cf6f285fea335c59",
-      "status": "migration-review",
-      "sourcePreview": "iOS: haptics + WKWebView toggles · Android: vibrate + toast"
+      "targetHash": "b1626e514244845095fbd7537bd7628f58970c8a4cc83904772c489fb3d342a8",
+      "machineHash": "b1626e514244845095fbd7537bd7628f58970c8a4cc83904772c489fb3d342a8",
+      "machineText": "iOS：ハプティクス + WKWebView の切り替え · Android：バイブレーション + トースト",
+      "status": "machine-translated",
+      "sourcePreview": "iOS: haptics + WKWebView toggles · Android: vibrate + toast",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0031-text-01": {
       "sourceHash": "42f9f862c22df3b5ed989127ebab5106f521f5de13d88e3e362ab563cecf0441",
-      "targetHash": "77d1d15ce477dc053c163c33b66e5e34764d825b2343524d09924b33f0ba729a",
-      "status": "migration-review",
-      "sourcePreview": "To run it yourself:"
+      "targetHash": "e7bc9e7f6ea48c701ee65034a762fe95548f4c13a25a64f4e2380182b3513bef",
+      "machineHash": "e7bc9e7f6ea48c701ee65034a762fe95548f4c13a25a64f4e2380182b3513bef",
+      "machineText": "自分で実行するには：",
+      "status": "machine-translated",
+      "sourcePreview": "To run it yourself:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0032-heading-01": {
       "sourceHash": "9c870aa6e5e93270170d5a81277ad3e623afe8d4efd186d3e28f3d2b646d52e6",
       "targetHash": "04f89470260c7714ef32fe9a40bd75d7de32e9c428a2a999496bfea205492ce6",
-      "status": "migration-review",
-      "sourcePreview": "How it works"
+      "machineHash": "04f89470260c7714ef32fe9a40bd75d7de32e9c428a2a999496bfea205492ce6",
+      "machineText": "仕組み",
+      "status": "machine-translated",
+      "sourcePreview": "How it works",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0033-text-01": {
       "sourceHash": "bfdc7de00f7b6aa3838977ee6216560ea349b5993c23dd17d4e88e6a05e19da2",
       "targetHash": "b33a3fe802751ef0148270c3b8d439510548c0ea2318741efd281add899403f5",
-      "status": "migration-review",
-      "sourcePreview": "The same application model applies on every platform:"
+      "machineHash": "b33a3fe802751ef0148270c3b8d439510548c0ea2318741efd281add899403f5",
+      "machineText": "すべてのプラットフォームで同じアプリケーションモデルが適用されます。",
+      "status": "machine-translated",
+      "sourcePreview": "The same application model applies on every platform:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0034-text-01": {
       "sourceHash": "4bc6d0bd62953630c7545a44a7c1472403c4a44a31dda07b65df5f7af0b0c25a",
-      "targetHash": "f86fc86b9aa51efa5b1f19264775fa61fca59377772eb415c7976795c2e37a7f",
-      "status": "migration-review",
-      "sourcePreview": "**Go backend** — your services, event handlers and application logic compile unchanged for `GOOS=ios…"
+      "targetHash": "56d63d4a8f91885919e610d609458a4325819e401924829199fc05f829272e18",
+      "machineHash": "56d63d4a8f91885919e610d609458a4325819e401924829199fc05f829272e18",
+      "machineText": "**Go バックエンド** — サービス、イベントハンドラー、アプリケーションロジックは、変更せずに `GOOS=ios` および `GOOS=android` 向けにコンパイルされます。",
+      "status": "machine-translated",
+      "sourcePreview": "**Go backend** — your services, event handlers and application logic compile unchanged for `GOOS=ios…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0035-text-01": {
       "sourceHash": "bb9ce25789963ba18d55b2b3809bb1029b9c9f3c316b988cc36de3fe7f73ee97",
-      "targetHash": "022c1ddcdf2f1ce21a9bc40672bf6ac9c38b64b804598fb04ee7f114336748b0",
-      "status": "migration-review",
-      "sourcePreview": "**Frontend** — the exact same HTML/JS/CSS. The `@wailsio/runtime` package works identically; service…"
+      "targetHash": "0b720be77923e5ec62c9e1b98585478a505c3f8927d0f5455056a07afc1cf1bc",
+      "machineHash": "0b720be77923e5ec62c9e1b98585478a505c3f8927d0f5455056a07afc1cf1bc",
+      "machineText": "**フロントエンド** — まったく同じ HTML/JS/CSS を使用します。`@wailsio/runtime` パッケージも同じように動作し、サービスバインディング、イベント、ダイアログ、クリップボードはすべて同じプロセス内トランスポートを経由します。",
+      "status": "machine-translated",
+      "sourcePreview": "**Frontend** — the exact same HTML/JS/CSS. The `@wailsio/runtime` package works identically; service…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0036-text-01": {
       "sourceHash": "15d23e51fbe387d12ce05ada4a591924e9190f1e87ea898c86bf37e3719b9345",
-      "targetHash": "8913351d7431841e1edc9b896766780b83765e76b31da79a797820e7903ad372",
-      "status": "migration-review",
-      "sourcePreview": "**WebView host** — on iOS a `WKWebView` inside a `UIViewController`; on Android a `WebView` inside a…"
+      "targetHash": "4a2094540d5b81a5313597b65eaa5f4411ab6c0e59c271b10e6340d14823344a",
+      "machineHash": "4a2094540d5b81a5313597b65eaa5f4411ab6c0e59c271b10e6340d14823344a",
+      "machineText": "**WebView ホスト** — iOS では `UIViewController` 内の `WKWebView`、Android では `Activity` 内の `WebView` です。Wails がメッセージブリッジを自動的に接続します。",
+      "status": "machine-translated",
+      "sourcePreview": "**WebView host** — on iOS a `WKWebView` inside a `UIViewController`; on Android a `WebView` inside a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0037-text-01": {
       "sourceHash": "d39e05630d3b96e82ed723782ae78cc61340e2dfb18327c13b71e52f859d0646",
-      "targetHash": "230c588773c15282dc609a10840d96b670426d61b4ee322289a24c3e3174bf68",
-      "status": "migration-review",
-      "sourcePreview": "**In-process asset serving** — assets are served directly from Go memory, not a localhost server. No…"
+      "targetHash": "4402417b46543f5393a1bb67349c2a34a80db5aa3bf173d28271ba5a6f20b3d6",
+      "machineHash": "4402417b46543f5393a1bb67349c2a34a80db5aa3bf173d28271ba5a6f20b3d6",
+      "machineText": "**プロセス内アセット配信** — アセットは localhost サーバーではなく、Go のメモリから直接配信されます。開くポートも、ループバックも、追加のレイテンシーもありません。",
+      "status": "machine-translated",
+      "sourcePreview": "**In-process asset serving** — assets are served directly from Go memory, not a localhost server. No…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0038-text-01": {
       "sourceHash": "3f2785da548adb266cdef960ef61e5b7f8d3127dce066a3a8dd26813987b30e1",
-      "targetHash": "528bb2a214ae89393479e2134c3055f99f830ec433bcacceda02115172297c4b",
-      "status": "migration-review",
-      "sourcePreview": "Platform-specific behaviour lives in files guarded by `//go:build ios` or `//go:build android`, keep…"
+      "targetHash": "c9e0841d3f6fe5bb8c4e6b0f9110143d9cf7fe6a3633bd47dcf249c179998864",
+      "machineHash": "c9e0841d3f6fe5bb8c4e6b0f9110143d9cf7fe6a3633bd47dcf249c179998864",
+      "machineText": "プラットフォーム固有の動作は、`//go:build ios` または `//go:build android` で保護されたファイルに配置されるため、共有コードをクリーンに保てます。",
+      "status": "machine-translated",
+      "sourcePreview": "Platform-specific behaviour lives in files guarded by `//go:build ios` or `//go:build android`, keep…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0039-heading-01": {
       "sourceHash": "8222aae2034d1fe56df683efd836c3e200939a33ca07b7e8bb93b333acaa6f9b",
       "targetHash": "69dd31fe1d93de5594a67359dcfb05bda56bfcce4e2a5e02c86c6d502ebabb8b",
-      "status": "migration-review",
-      "sourcePreview": "Prerequisites at a glance"
+      "machineHash": "69dd31fe1d93de5594a67359dcfb05bda56bfcce4e2a5e02c86c6d502ebabb8b",
+      "machineText": "前提条件の概要",
+      "status": "machine-translated",
+      "sourcePreview": "Prerequisites at a glance",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0040-cell-01": {
       "sourceHash": "f5f5690b0ecc41d3ffb099de27cfbdde6e2ab3c0b1a821cc6da487816747adf5",
       "targetHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
-      "status": "migration-review",
-      "sourcePreview": "Requirement"
+      "machineHash": "55f1af66b8778106d59c12728d4da8635755f40cc779620360bc25556ac920d8",
+      "machineText": "要件",
+      "status": "machine-translated",
+      "sourcePreview": "Requirement",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0041-cell-01": {
       "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
       "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "status": "migration-review",
-      "sourcePreview": "iOS"
+      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineText": "iOS",
+      "status": "machine-translated",
+      "sourcePreview": "iOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0042-cell-01": {
       "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
       "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "status": "migration-review",
-      "sourcePreview": "Android"
+      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineText": "Android",
+      "status": "machine-translated",
+      "sourcePreview": "Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0043-cell-01": {
       "sourceHash": "0fcabfe6e097cd4064a08313b4b7da807f5ea3c59d056acc46289467bd2216e4",
       "targetHash": "a6b85e6946e72d118509379090f5c9da34ad8b832e1784e58307120afcf875b0",
-      "status": "migration-review",
-      "sourcePreview": "Operating system"
+      "machineHash": "a6b85e6946e72d118509379090f5c9da34ad8b832e1784e58307120afcf875b0",
+      "machineText": "オペレーティングシステム",
+      "status": "machine-translated",
+      "sourcePreview": "Operating system",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0044-cell-01": {
       "sourceHash": "3f2f41cd023d5fa04c05fdd336309984a4808f606f732e52cc2d48c488133dbc",
       "targetHash": "0e2d521dd1cd2d8a49caf2e2cc605e8550bb1e58a210108bff2aa0c52dd5b410",
-      "status": "migration-review",
-      "sourcePreview": "macOS only"
+      "machineHash": "0e2d521dd1cd2d8a49caf2e2cc605e8550bb1e58a210108bff2aa0c52dd5b410",
+      "machineText": "macOS のみ",
+      "status": "machine-translated",
+      "sourcePreview": "macOS only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0045-cell-01": {
       "sourceHash": "3f1ace3d8d78e5bce2de48a3349ba3d8939a7b66c1c387bc4678c32683f054eb",
       "targetHash": "a19dda8490c7dc619119c30a0cfae514017c802a39e43e580c7bd54f7970f951",
-      "status": "migration-review",
-      "sourcePreview": "macOS, Linux, Windows"
+      "machineHash": "a19dda8490c7dc619119c30a0cfae514017c802a39e43e580c7bd54f7970f951",
+      "machineText": "macOS、Linux、Windows",
+      "status": "machine-translated",
+      "sourcePreview": "macOS, Linux, Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0046-cell-01": {
       "sourceHash": "e31d021175d5b6d136382e335198d8980e9e7128d8202b0b8b900508133447d8",
       "targetHash": "d5cffde877e5127d6852d060da576f3d51a68b0fbf2c191218044d72e714a9a5",
-      "status": "migration-review",
-      "sourcePreview": "Toolchain"
+      "machineHash": "d5cffde877e5127d6852d060da576f3d51a68b0fbf2c191218044d72e714a9a5",
+      "machineText": "ツールチェーン",
+      "status": "machine-translated",
+      "sourcePreview": "Toolchain",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0047-cell-01": {
       "sourceHash": "65ae3951bd597be24e4dc4c5a0ecef5e4586f77c64acc7df88ff551064f36a13",
-      "targetHash": "41b5948d493ba6a7c677a0ccd5e2bd240d1daa9e06d09727d2e45c9d3d060c44",
-      "status": "migration-review",
-      "sourcePreview": "Full Xcode (not just CLI tools)"
+      "targetHash": "484b88580fa389938be7f4e03e194a2f42b7bfc868fc9a317c38559929cc0fe5",
+      "machineHash": "484b88580fa389938be7f4e03e194a2f42b7bfc868fc9a317c38559929cc0fe5",
+      "machineText": "完全版 Xcode（CLI ツールのみでは不可）",
+      "status": "machine-translated",
+      "sourcePreview": "Full Xcode (not just CLI tools)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0048-cell-01": {
       "sourceHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
       "targetHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
-      "status": "migration-review",
-      "sourcePreview": "Android SDK + NDK 26.3.x + JDK"
+      "machineHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
+      "machineText": "Android SDK + NDK 26.3.x + JDK",
+      "status": "machine-translated",
+      "sourcePreview": "Android SDK + NDK 26.3.x + JDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0049-cell-01": {
       "sourceHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
       "targetHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
-      "status": "migration-review",
-      "sourcePreview": "Go"
+      "machineHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
+      "machineText": "Go",
+      "status": "machine-translated",
+      "sourcePreview": "Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0052-cell-01": {
       "sourceHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
       "targetHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
-      "status": "migration-review",
-      "sourcePreview": "npm"
+      "machineHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
+      "machineText": "npm",
+      "status": "machine-translated",
+      "sourcePreview": "npm",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0055-cell-01": {
       "sourceHash": "d3bbfc4d3e17d3e6fbf1addeec4c39e8eda8d584f7a17ce8118352b182768c1a",
       "targetHash": "7c64b83ac0384c5bf00faa6e4c910b9c9fcb08115c932f1d7ac85160054173b0",
-      "status": "migration-review",
-      "sourcePreview": "Verify with"
+      "machineHash": "7c64b83ac0384c5bf00faa6e4c910b9c9fcb08115c932f1d7ac85160054173b0",
+      "machineText": "確認コマンド",
+      "status": "machine-translated",
+      "sourcePreview": "Verify with",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0056-cell-01": {
       "sourceHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
       "targetHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
-      "status": "protected",
-      "sourcePreview": "`wails3 doctor`"
+      "machineHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
+      "machineText": "`wails3 doctor`",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 doctor`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0057-cell-01": {
       "sourceHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
       "targetHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
-      "status": "protected",
-      "sourcePreview": "`wails3 doctor`"
+      "machineHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
+      "machineText": "`wails3 doctor`",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 doctor`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0058-text-01": {
       "sourceHash": "5797b933793be238536ab920fce405cfbd459500a2f39847bb518f3d39a1212c",
-      "targetHash": "4eef3268c912bf7778d4a6b0df2f0e3d82060a0bace69d2b87f04be57bd5a0d8",
-      "status": "migration-review",
-      "sourcePreview": "Run `wails3 doctor` after setting up your toolchain — it shows exactly what's found and what's missi…"
+      "targetHash": "71b9fa405be7b421d89a2044e18d4467e277ed9fdf20e198a8ceea05687bed21",
+      "machineHash": "71b9fa405be7b421d89a2044e18d4467e277ed9fdf20e198a8ceea05687bed21",
+      "machineText": "ツールチェーンをセットアップした後に `wails3 doctor` を実行してください。各プラットフォームで検出されたものと不足しているものが正確に表示されます。",
+      "status": "machine-translated",
+      "sourcePreview": "Run `wails3 doctor` after setting up your toolchain — it shows exactly what's found and what's missi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0059-heading-01": {
       "sourceHash": "00849730cf1b82ba2cfa8d46a9399566b17ab8733a4cd3a344909c011cede19f",
       "targetHash": "25288b7840403f7128a27c8dbb53d1ed0e9c746d2327e5acf447ee9a023907a1",
-      "status": "migration-review",
-      "sourcePreview": "What's supported"
+      "machineHash": "25288b7840403f7128a27c8dbb53d1ed0e9c746d2327e5acf447ee9a023907a1",
+      "machineText": "サポートされる機能",
+      "status": "machine-translated",
+      "sourcePreview": "What's supported",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0060-text-01": {
       "sourceHash": "c10bc57f1442b22391d5b5fa3653ddfdf9764a698b7365c09b25307217555d08",
-      "targetHash": "2766b0ffcb6d8724ec545017bad4e08c543e1ec29c05f1e082c65867549904d4",
-      "status": "migration-review",
-      "sourcePreview": "Both platforms share the same core feature set:"
+      "targetHash": "7bb6f1ba5f7c93c0d74e796112f4f19e81a3282cf7dc76e9a2bbf783a8190eb4",
+      "machineHash": "7bb6f1ba5f7c93c0d74e796112f4f19e81a3282cf7dc76e9a2bbf783a8190eb4",
+      "machineText": "両プラットフォームで、同じ中核機能セットを利用できます。",
+      "status": "machine-translated",
+      "sourcePreview": "Both platforms share the same core feature set:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0061-cell-01": {
       "sourceHash": "3d377ae910dce03ac324d1f4391c0d4d175825e630baf9c5b93d414d7106cfd8",
       "targetHash": "b0e21b8e8a05a041b765e12dd4d3418aaef071281b6428463bc222ba710d0516",
-      "status": "migration-review",
-      "sourcePreview": "Feature"
+      "machineHash": "b0e21b8e8a05a041b765e12dd4d3418aaef071281b6428463bc222ba710d0516",
+      "machineText": "機能",
+      "status": "machine-translated",
+      "sourcePreview": "Feature",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0062-cell-01": {
       "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
       "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "status": "migration-review",
-      "sourcePreview": "iOS"
+      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineText": "iOS",
+      "status": "machine-translated",
+      "sourcePreview": "iOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0063-cell-01": {
       "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
       "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "status": "migration-review",
-      "sourcePreview": "Android"
+      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineText": "Android",
+      "status": "machine-translated",
+      "sourcePreview": "Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0064-cell-01": {
       "sourceHash": "b6826fb78469ba1a549b89db10193f3af35b5377b9ecf8cd3603d4ccc7ca6bce",
       "targetHash": "0956d20d5f782d207bae9010f3021a9bae341fb8890d0fcc701519ba46559e2f",
-      "status": "migration-review",
-      "sourcePreview": "Service bindings (JS → Go)"
+      "machineHash": "0956d20d5f782d207bae9010f3021a9bae341fb8890d0fcc701519ba46559e2f",
+      "machineText": "サービスバインディング（JS → Go）",
+      "status": "machine-translated",
+      "sourcePreview": "Service bindings (JS → Go)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0067-cell-01": {
       "sourceHash": "cc927cad42f802408ddf84cc306a29e754266637520f40b1255aa656c758e770",
       "targetHash": "3a9fcb5b4ddbf0bf6cbfb10010c9b49294fda8c7c583184f938f87a75771d6b6",
-      "status": "migration-review",
-      "sourcePreview": "Events (both directions)"
+      "machineHash": "3a9fcb5b4ddbf0bf6cbfb10010c9b49294fda8c7c583184f938f87a75771d6b6",
+      "machineText": "イベント（双方向）",
+      "status": "machine-translated",
+      "sourcePreview": "Events (both directions)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0070-cell-01": {
       "sourceHash": "bcfffb93bb1fc6de5fd76870f80ac05358c4bd4c17a26122444c571cad2ef0fe",
       "targetHash": "37d03383557386cc7e0e9216c18215bda71d3b4747da2a6771e370e6da510a6d",
-      "status": "migration-review",
-      "sourcePreview": "Message dialogs"
+      "machineHash": "37d03383557386cc7e0e9216c18215bda71d3b4747da2a6771e370e6da510a6d",
+      "machineText": "メッセージダイアログ",
+      "status": "machine-translated",
+      "sourcePreview": "Message dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0071-cell-01": {
       "sourceHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
       "targetHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIAlertController"
+      "machineHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
+      "machineText": "✅ UIAlertController",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIAlertController",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0072-cell-01": {
       "sourceHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
       "targetHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
-      "status": "migration-review",
-      "sourcePreview": "✅ AlertDialog"
+      "machineHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
+      "machineText": "✅ AlertDialog",
+      "status": "machine-translated",
+      "sourcePreview": "✅ AlertDialog",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0073-cell-01": {
       "sourceHash": "baab374813274351ee9d1994c07222c14e65ebc571f21f588447ba34a1d6ffaf",
       "targetHash": "8e8bfc2497ceaff840d623034976c18b1ff59954dc65d4ca84db5db6e22f1fb0",
-      "status": "migration-review",
-      "sourcePreview": "Open file dialogs"
+      "machineHash": "8e8bfc2497ceaff840d623034976c18b1ff59954dc65d4ca84db5db6e22f1fb0",
+      "machineText": "ファイルを開くダイアログ",
+      "status": "machine-translated",
+      "sourcePreview": "Open file dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0074-cell-01": {
       "sourceHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
       "targetHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIDocumentPicker"
+      "machineHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
+      "machineText": "✅ UIDocumentPicker",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIDocumentPicker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0075-cell-01": {
       "sourceHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
       "targetHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
-      "status": "migration-review",
-      "sourcePreview": "✅ Storage Access Framework"
+      "machineHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
+      "machineText": "✅ Storage Access Framework",
+      "status": "machine-translated",
+      "sourcePreview": "✅ Storage Access Framework",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0076-cell-01": {
       "sourceHash": "f1df258c32c39d2850d434c73d3e9edbf1d26851d996f9ea8d941bda11610244",
       "targetHash": "33f2ae6192f43086ccac876c21ee4c35432ee515bde284d4a3415338aa3e9421",
-      "status": "migration-review",
-      "sourcePreview": "Save file dialogs"
+      "machineHash": "33f2ae6192f43086ccac876c21ee4c35432ee515bde284d4a3415338aa3e9421",
+      "machineText": "ファイル保存ダイアログ",
+      "status": "machine-translated",
+      "sourcePreview": "Save file dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0077-cell-01": {
       "sourceHash": "806ba904b249cb06871801c58b641016f4a4387eff27c808d98d2947a4645bdc",
       "targetHash": "16a8ef9e08e884ac777cf49eb3d6189ac78db7b531a436b598f612ed9b16996c",
-      "status": "migration-review",
-      "sourcePreview": "❌ write to sandbox instead"
+      "machineHash": "16a8ef9e08e884ac777cf49eb3d6189ac78db7b531a436b598f612ed9b16996c",
+      "machineText": "❌ 代わりにサンドボックスへ書き込み",
+      "status": "machine-translated",
+      "sourcePreview": "❌ write to sandbox instead",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0078-cell-01": {
       "sourceHash": "806ba904b249cb06871801c58b641016f4a4387eff27c808d98d2947a4645bdc",
       "targetHash": "16a8ef9e08e884ac777cf49eb3d6189ac78db7b531a436b598f612ed9b16996c",
-      "status": "migration-review",
-      "sourcePreview": "❌ write to sandbox instead"
+      "machineHash": "16a8ef9e08e884ac777cf49eb3d6189ac78db7b531a436b598f612ed9b16996c",
+      "machineText": "❌ 代わりにサンドボックスへ書き込み",
+      "status": "machine-translated",
+      "sourcePreview": "❌ write to sandbox instead",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0079-cell-01": {
       "sourceHash": "285d69f0c5d1a00bb2eccde0cb4c93367b3e94955acff9fabd895f81a0c45c59",
       "targetHash": "d097277357cd737acc6f97f122deb48ec9ebf63c233da0f50bacb83cc49d86dd",
-      "status": "migration-review",
-      "sourcePreview": "Clipboard"
+      "machineHash": "d097277357cd737acc6f97f122deb48ec9ebf63c233da0f50bacb83cc49d86dd",
+      "machineText": "クリップボード",
+      "status": "machine-translated",
+      "sourcePreview": "Clipboard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0080-cell-01": {
       "sourceHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
       "targetHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIPasteboard"
+      "machineHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
+      "machineText": "✅ UIPasteboard",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIPasteboard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0081-cell-01": {
       "sourceHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
       "targetHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
-      "status": "migration-review",
-      "sourcePreview": "✅ ClipboardManager"
+      "machineHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
+      "machineText": "✅ ClipboardManager",
+      "status": "machine-translated",
+      "sourcePreview": "✅ ClipboardManager",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0082-cell-01": {
       "sourceHash": "0e571e42349a4f31977aeb77048bb0b97a3fdf41e3613e53fa332e1888820bdb",
       "targetHash": "c86b8aa3669cf331c85991c49d8a0c3ebba594c81ceb09bb4c04bf17e21f31a8",
-      "status": "migration-review",
-      "sourcePreview": "Screens / safe-area metrics"
+      "machineHash": "c86b8aa3669cf331c85991c49d8a0c3ebba594c81ceb09bb4c04bf17e21f31a8",
+      "machineText": "画面／セーフエリアのメトリクス",
+      "status": "machine-translated",
+      "sourcePreview": "Screens / safe-area metrics",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0085-cell-01": {
       "sourceHash": "5c93d090a1104de16d13d4949d7ef5a2a9977e5c4f7fac23b13a17c22d81fbb6",
       "targetHash": "2a2e99e91bd88c13b17d4e88a59738aaca70aacfd6ed9b4dcf1bea4488bec987",
-      "status": "migration-review",
-      "sourcePreview": "Lifecycle events"
+      "machineHash": "2a2e99e91bd88c13b17d4e88a59738aaca70aacfd6ed9b4dcf1bea4488bec987",
+      "machineText": "ライフサイクルイベント",
+      "status": "machine-translated",
+      "sourcePreview": "Lifecycle events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0086-cell-01": {
       "sourceHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
       "targetHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
-      "status": "protected",
-      "sourcePreview": "✅ `events.IOS.*`"
+      "machineHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
+      "machineText": "✅ `events.IOS.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `events.IOS.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0087-cell-01": {
       "sourceHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
       "targetHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
-      "status": "protected",
-      "sourcePreview": "✅ `events.Android.*`"
+      "machineHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
+      "machineText": "✅ `events.Android.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `events.Android.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0088-cell-01": {
       "sourceHash": "fd4705a30cb4458267a6059d1af12454a9c66a9fe2566180fc7e3fb0d44697c4",
-      "targetHash": "59c85a30521f4db72cbeb8ba1686fcf6c9955047f9c10561c38d0ef592ceacf3",
-      "status": "migration-review",
-      "sourcePreview": "Haptics"
+      "targetHash": "ee7dd5af8d3f6375b675244f89e427d5d7f2fe1bcae21f302532d6a11caecba6",
+      "machineHash": "ee7dd5af8d3f6375b675244f89e427d5d7f2fe1bcae21f302532d6a11caecba6",
+      "machineText": "ハプティクス",
+      "status": "machine-translated",
+      "sourcePreview": "Haptics",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0089-cell-01": {
       "sourceHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
       "targetHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
-      "status": "protected",
-      "sourcePreview": "✅ `IOS.Haptics.*`"
+      "machineHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
+      "machineText": "✅ `IOS.Haptics.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `IOS.Haptics.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0090-cell-01": {
       "sourceHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
       "targetHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Haptics.Vibrate`"
+      "machineHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
+      "machineText": "✅ `Android.Haptics.Vibrate`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Haptics.Vibrate`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0091-cell-01": {
       "sourceHash": "f7d61802a4172eccac2abe7d9d804b2e2dc8586b7cca4479ff1e9e11346acb76",
       "targetHash": "e4cdb93a010fb3beaf91dddb175d32e7a85f7128763a588050f1c921183c1c75",
-      "status": "migration-review",
-      "sourcePreview": "Device info"
+      "machineHash": "e4cdb93a010fb3beaf91dddb175d32e7a85f7128763a588050f1c921183c1c75",
+      "machineText": "デバイス情報",
+      "status": "machine-translated",
+      "sourcePreview": "Device info",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0092-cell-01": {
       "sourceHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
       "targetHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
-      "status": "protected",
-      "sourcePreview": "✅ `IOS.Device.Info()`"
+      "machineHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
+      "machineText": "✅ `IOS.Device.Info()`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `IOS.Device.Info()`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0093-cell-01": {
       "sourceHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
       "targetHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Device.Info()`"
+      "machineHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
+      "machineText": "✅ `Android.Device.Info()`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Device.Info()`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0094-cell-01": {
       "sourceHash": "d54ec043baa994d741278e5803ac465694d22a536b8e7db16b0bcb26e8cbc8e6",
       "targetHash": "0541c24daf608e5456868e30afcc35292c11ff522519417c59d74bcd110a286c",
-      "status": "migration-review",
-      "sourcePreview": "Native tabs (iOS)"
+      "machineHash": "0541c24daf608e5456868e30afcc35292c11ff522519417c59d74bcd110a286c",
+      "machineText": "ネイティブタブ（iOS）",
+      "status": "machine-translated",
+      "sourcePreview": "Native tabs (iOS)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0095-cell-01": {
       "sourceHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
       "targetHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
-      "status": "migration-review",
-      "sourcePreview": "✅ UITabBar"
+      "machineHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
+      "machineText": "✅ UITabBar",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UITabBar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0097-cell-01": {
       "sourceHash": "1933065a979aa4c799b3e525f6f019b51e2e9f740a75ae22b50417ac4bce861b",
       "targetHash": "4bbd5e91104d682be680f86d65f564d12ae52eeb3c72c4be0c29d7c782e91633",
-      "status": "migration-review",
-      "sourcePreview": "Toast messages (Android)"
+      "machineHash": "4bbd5e91104d682be680f86d65f564d12ae52eeb3c72c4be0c29d7c782e91633",
+      "machineText": "トーストメッセージ（Android）",
+      "status": "machine-translated",
+      "sourcePreview": "Toast messages (Android)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0099-cell-01": {
       "sourceHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
       "targetHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Toast.Show`"
+      "machineHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
+      "machineText": "✅ `Android.Toast.Show`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Toast.Show`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0100-cell-01": {
       "sourceHash": "6774215e7eb9a17cb5286effb8d7cbe81d2296518e1946ba07299d928736c731",
       "targetHash": "d32494b4fca9b309384b1b189349b5f2a616d8425bce5d9b2f1c6e75974724a0",
-      "status": "migration-review",
-      "sourcePreview": "Multiple windows"
+      "machineHash": "d32494b4fca9b309384b1b189349b5f2a616d8425bce5d9b2f1c6e75974724a0",
+      "machineText": "複数ウィンドウ",
+      "status": "machine-translated",
+      "sourcePreview": "Multiple windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0101-cell-01": {
       "sourceHash": "9a268f11b1bab10c552b52c14653a775da25591aad2e9d41b190cd7ac0dc399b",
       "targetHash": "932cfaa970da5df02ba5cccd21abc851da0d7a9c49bd0fdc90e555d5d1d3801c",
-      "status": "migration-review",
-      "sourcePreview": "❌ first window only"
+      "machineHash": "932cfaa970da5df02ba5cccd21abc851da0d7a9c49bd0fdc90e555d5d1d3801c",
+      "machineText": "❌ 最初のウィンドウのみ",
+      "status": "machine-translated",
+      "sourcePreview": "❌ first window only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0102-cell-01": {
       "sourceHash": "9a268f11b1bab10c552b52c14653a775da25591aad2e9d41b190cd7ac0dc399b",
       "targetHash": "932cfaa970da5df02ba5cccd21abc851da0d7a9c49bd0fdc90e555d5d1d3801c",
-      "status": "migration-review",
-      "sourcePreview": "❌ first window only"
+      "machineHash": "932cfaa970da5df02ba5cccd21abc851da0d7a9c49bd0fdc90e555d5d1d3801c",
+      "machineText": "❌ 最初のウィンドウのみ",
+      "status": "machine-translated",
+      "sourcePreview": "❌ first window only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0103-cell-01": {
       "sourceHash": "958ed346cffc5acb27cbbfb628b7728fd5cfafe075d41d6cb7d8441333a6f4b3",
-      "targetHash": "af6fbb8e6ae2246b896fe9743cc079508485c0c0f20ce0def7c5fae2b0434153",
-      "status": "migration-review",
-      "sourcePreview": "Window geometry / menus / tray"
+      "targetHash": "dcababd0a75c3d7f9e7cb90818d17c934d4d322b02aa1f21ecf640cd0b9be9e9",
+      "machineHash": "dcababd0a75c3d7f9e7cb90818d17c934d4d322b02aa1f21ecf640cd0b9be9e9",
+      "machineText": "ウィンドウのジオメトリ／メニュー／トレイ",
+      "status": "machine-translated",
+      "sourcePreview": "Window geometry / menus / tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0104-cell-01": {
       "sourceHash": "ee621f537012cdb1526a50c184ceb890d4c1c351a43589bce5e796a7e4b0be45",
-      "targetHash": "b4e99c5ffc3461dcfcb2b0b46e184a1604f14cfd826e67b45f2cfa7314268aab",
-      "status": "migration-review",
-      "sourcePreview": "intentional no-ops"
+      "targetHash": "e4e37ca364a5edf4730296591d3f0cc5f6ea05f311dad4d1e8189d73ae553d89",
+      "machineHash": "e4e37ca364a5edf4730296591d3f0cc5f6ea05f311dad4d1e8189d73ae553d89",
+      "machineText": "意図的に何も行わない",
+      "status": "machine-translated",
+      "sourcePreview": "intentional no-ops",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0105-cell-01": {
       "sourceHash": "ee621f537012cdb1526a50c184ceb890d4c1c351a43589bce5e796a7e4b0be45",
-      "targetHash": "b4e99c5ffc3461dcfcb2b0b46e184a1604f14cfd826e67b45f2cfa7314268aab",
-      "status": "migration-review",
-      "sourcePreview": "intentional no-ops"
+      "targetHash": "e4e37ca364a5edf4730296591d3f0cc5f6ea05f311dad4d1e8189d73ae553d89",
+      "machineHash": "e4e37ca364a5edf4730296591d3f0cc5f6ea05f311dad4d1e8189d73ae553d89",
+      "machineText": "意図的に何も行わない",
+      "status": "machine-translated",
+      "sourcePreview": "intentional no-ops",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0106-heading-01": {
       "sourceHash": "a96f0fd6d60cd1124e4ff45d4d6a6cbad24921d41afb840163c23ac36fc0b72f",
-      "targetHash": "1b38c7fb7c6403da4c59c832df1182a0423f08005a8bedafd6e8619ff9f2202a",
-      "status": "migration-review",
-      "sourcePreview": "Build tag rules"
+      "targetHash": "a54a943c7f3197f601431dd69c5d57b14f973ed936a82c3d6dd9c1260f830c3d",
+      "machineHash": "a54a943c7f3197f601431dd69c5d57b14f973ed936a82c3d6dd9c1260f830c3d",
+      "machineText": "ビルドタグの規則",
+      "status": "machine-translated",
+      "sourcePreview": "Build tag rules",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0107-text-01": {
       "sourceHash": "270ba33959d0a61f461d03b0b36a93f9b899c73c858c02069f9bc3b05acfc54b",
-      "targetHash": "4b0b9d3f5949859d7007208c7bd2fe5bda35afeb9674414ab631819ec77a2fe4",
-      "status": "migration-review",
-      "sourcePreview": "Two important rules to know when writing platform-conditional code:"
+      "targetHash": "baf5ce4228ed94ed927dbb89f0921fbd7730a7d1ece3e19a0c971648f1d983ab",
+      "machineHash": "baf5ce4228ed94ed927dbb89f0921fbd7730a7d1ece3e19a0c971648f1d983ab",
+      "machineText": "プラットフォーム条件付きコードを記述する際には、次の2つの重要な規則を理解しておく必要があります。",
+      "status": "machine-translated",
+      "sourcePreview": "Two important rules to know when writing platform-conditional code:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0108-text-01": {
       "sourceHash": "a1e42c75fb9435aa5c9a8995679fe123c8918b92dcd0269c365aefa303271654",
-      "targetHash": "cd18bf6c4e0a3a6198af224690dff7bcd100e2665fc0b937a764a74f9d0785d0",
-      "status": "migration-review",
-      "sourcePreview": "**`ios` implies `darwin`** — a file tagged `//go:build darwin` will also compile for iOS. To target …"
+      "targetHash": "a55e1dacc38df1bab729fc958071caee5efb2e4a6a3294c47a48ff747bfb6c73",
+      "machineHash": "a55e1dacc38df1bab729fc958071caee5efb2e4a6a3294c47a48ff747bfb6c73",
+      "machineText": "**`ios` は `darwin`** を暗黙に含むため、`//go:build darwin` タグを付けたファイルは iOS 向けにもコンパイルされます。macOS のみを対象にするには、`//go:build darwin \u0026\u0026 !ios` を使用します。",
+      "status": "machine-translated",
+      "sourcePreview": "**`ios` implies `darwin`** — a file tagged `//go:build darwin` will also compile for iOS. To target …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0109-text-01": {
       "sourceHash": "4e98f206bf9b126ed7715466744b4074ecf5bdf7cc517a49dc9db8632180fb8b",
-      "targetHash": "ffe867c1f041435a48e5fa1486d20597486e01f5345eb29ff4216a5fd3e4942b",
-      "status": "migration-review",
-      "sourcePreview": "**`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To t…"
+      "targetHash": "1a1273243c0eb62122d6e338479c3855ee9738ddda6c86426dbc918a972d94a6",
+      "machineHash": "1a1273243c0eb62122d6e338479c3855ee9738ddda6c86426dbc918a972d94a6",
+      "machineText": "**`android` は `linux`** を暗黙に含むため、`//go:build linux` タグを付けたファイルは Android 向けにもコンパイルされます。デスクトップ版 Linux のみを対象にするには、`//go:build linux \u0026\u0026 !android` を使用します。",
+      "status": "machine-translated",
+      "sourcePreview": "**`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To t…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0110-text-01": {
       "sourceHash": "793347043fccf7d7dbed61c8e19363133587edec3001aa849c7a1ec246e2da3e",
       "targetHash": "ed70739f750aef4ec5c8d5d9e2def4f0cc54bbae28ab47ccef880c875fd6b79b",
-      "status": "migration-review",
-      "sourcePreview": "At runtime, `runtime.GOOS` returns `\"ios\"` and `\"android\"` respectively."
+      "machineHash": "ed70739f750aef4ec5c8d5d9e2def4f0cc54bbae28ab47ccef880c875fd6b79b",
+      "machineText": "実行時には、`runtime.GOOS` はそれぞれ `\"ios\"` と `\"android\"` を返します。",
+      "status": "machine-translated",
+      "sourcePreview": "At runtime, `runtime.GOOS` returns `\"ios\"` and `\"android\"` respectively.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0111-heading-01": {
       "sourceHash": "9068bc22b6b765ffa7b32e390c501411a9fd0a53d37fe36649b6b1537245c7e3",
-      "targetHash": "84d5b08d58a71b5c1a20444401ba588c4dbda72d3ec2798f5de7c2913956bc25",
-      "status": "migration-review",
-      "sourcePreview": "Runtime platform detection"
+      "targetHash": "99d5657a1f9e865817c61ca9fc755c837ad9c341d2449976d0698e68cce86fa3",
+      "machineHash": "99d5657a1f9e865817c61ca9fc755c837ad9c341d2449976d0698e68cce86fa3",
+      "machineText": "実行時のプラットフォーム検出",
+      "status": "machine-translated",
+      "sourcePreview": "Runtime platform detection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0112-text-01": {
       "sourceHash": "bef526864b2644eb02db0dbfafa3b09df1beb67e387f10ebd0e99177bb3ecd48",
-      "targetHash": "71faf9d934823daf7ca2f9bbd34ae5e960f1d8258b068746d738f295ea140487",
-      "status": "migration-review",
-      "sourcePreview": "Build tags are for code that can only *compile* on a given platform. For ordinary branching in share…"
+      "targetHash": "a8e18141b0c5114270fbaf65c8ee8ecc33db83d4fddfda486d9366d991f68ef4",
+      "machineHash": "a8e18141b0c5114270fbaf65c8ee8ecc33db83d4fddfda486d9366d991f68ef4",
+      "machineText": "ビルドタグは、特定のプラットフォームでのみ*コンパイル*できるコードに使用します。共有コード内で通常の条件分岐を行う場合は、`application.System` を使用します。これはすべてのビルドで利用でき（ビルドタグは不要）、同じファイルがどのプラットフォームでも動作します。",
+      "status": "machine-translated",
+      "sourcePreview": "Build tags are for code that can only *compile* on a given platform. For ordinary branching in share…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0113-text-01": {
       "sourceHash": "113c8d1941daab954f4977f490c9451f8997b14fbf399cb46cd71a87668055ce",
-      "targetHash": "494144dfb963e24ab4b24b934db7c9ea3c5463421448820b6cd3a54e06b91ad8",
-      "status": "migration-review",
-      "sourcePreview": "Available: `IsMobile()`, `IsDesktop()`, `IsServer()` (the `server` build tag), and `IsPlatform(appli…"
+      "targetHash": "7d045cddd389eed2588fd1938c34be3dce476ef33df8827a4eef663ad0681f69",
+      "machineHash": "7d045cddd389eed2588fd1938c34be3dce476ef33df8827a4eef663ad0681f69",
+      "machineText": "利用可能な値は、`IsMobile()`、`IsDesktop()`、`IsServer()`（`server` ビルドタグ）、`IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)` です。",
+      "status": "machine-translated",
+      "sourcePreview": "Available: `IsMobile()`, `IsDesktop()`, `IsServer()` (the `server` build tag), and `IsPlatform(appli…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0114-text-01": {
       "sourceHash": "2b8ad5e0e29b5672d3d18389ae74e3fc59a5aeff506078eccc6663ad54ef78ff",
-      "targetHash": "4a8565f8b2612ab2d204fe9ffdb23916b7d948ff412de306a3733bfb2064a1ad",
-      "status": "migration-review",
-      "sourcePreview": "The frontend has the matching helpers in `@wailsio/runtime`:"
+      "targetHash": "fbf8d3ed585ab109af36642edbe383221112e9d26495075384f96e80cb593d80",
+      "machineHash": "fbf8d3ed585ab109af36642edbe383221112e9d26495075384f96e80cb593d80",
+      "machineText": "フロントエンドには、`@wailsio/runtime` に対応するヘルパーがあります。",
+      "status": "machine-translated",
+      "sourcePreview": "The frontend has the matching helpers in `@wailsio/runtime`:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0115-heading-01": {
       "sourceHash": "dd00d3d3e9f73d277737cfacfb788bc46a717458297644788de995b658ceb915",
       "targetHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
-      "status": "migration-review",
-      "sourcePreview": "Next steps"
+      "machineHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
+      "machineText": "次のステップ",
+      "status": "machine-translated",
+      "sourcePreview": "Next steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0116-text-01": {
       "sourceHash": "da2ddf26a6c92f0ec9e20fe5352ac1d3120eed7a5febb29c188aa01fe54d35f8",
-      "targetHash": "8eb181fe19da5dacc271f2385843f714ea25510c090b7069892f32b9ac328fc6",
-      "status": "migration-review",
-      "sourcePreview": "🚀 Your First Mobile App Take a desktop Wails app and run it on iOS Simulator or Android Emulator in …"
+      "targetHash": "7dc65b445ffa6778b2568067a6c890fd1d1d3cb051404a8a55c1a5ccd946f925",
+      "machineHash": "7dc65b445ffa6778b2568067a6c890fd1d1d3cb051404a8a55c1a5ccd946f925",
+      "machineText": "🚀 初めてのモバイルアプリ\nデスクトップ向け Wails アプリを、わずか数分で iOS Simulator または Android Emulator 上で実行します。",
+      "status": "machine-translated",
+      "sourcePreview": "🚀 Your First Mobile App Take a desktop Wails app and run it on iOS Simulator or Android Emulator in …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0117-text-01": {
       "sourceHash": "c26302b230b582a4bb9ad060bebb249cac118cecece76cd8e9660d8f553df5e0",
-      "targetHash": "aa3afe048e005fe960f8b42a7c6fe054dece826847cac8da653ea7afc4be594e",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide Full iOS toolchain setup, simulator, device builds, signing, configuration and API referen…"
+      "targetHash": "20df5652c1e2ff8fb8f1cd33f866a92e3af29b23f7f351ce4073ca748935f93c",
+      "machineHash": "20df5652c1e2ff8fb8f1cd33f866a92e3af29b23f7f351ce4073ca748935f93c",
+      "machineText": "iOS ガイド\niOS ツールチェーンの完全なセットアップ、シミュレーター、デバイス向けビルド、署名、構成、API リファレンスについて説明します。",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide Full iOS toolchain setup, simulator, device builds, signing, configuration and API referen…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "b0118-text-01": {
       "sourceHash": "ebce09c550ee6e98bd23de79b44dc29b937902741f993172a1d2077e54a1dff5",
-      "targetHash": "bc60e06c434deb9c24bb244f15a43a6904f45e32ee62bf48e5bdb752b518cca5",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API refere…"
+      "targetHash": "05390212d1834345033a563168644be79d2e47eeec777b6eba4d0b280de2836a",
+      "machineHash": "05390212d1834345033a563168644be79d2e47eeec777b6eba4d0b280de2836a",
+      "machineText": "Android ガイド\nAndroid SDK/NDK の完全なセットアップ、エミュレーター、APK の署名、Play Store 向けパッケージング、API リファレンスについて説明します。",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API refere…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "34daca5a9aa8e78d48ab6082f734a26aaec1812e5a4337d884d60878af511668",
       "targetHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide →"
+      "machineHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
+      "machineText": "iOS ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "c0001-line-002-01": {
       "sourceHash": "80e07f62422e02cc78b77256282b2c23766531cfe59ea540847a051e5faab8d6",
       "targetHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide →"
+      "machineHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
+      "machineText": "Android ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "c0004-line-003-01": {
       "sourceHash": "0ded1aba19a492beb4722449c229816b84474016a9e6165a915519a996cbf15f",
       "targetHash": "8b21ed4a14083b4c910bf5c240bb4ab0a7a89b9773cf2879efb93979a38f9d9d",
-      "status": "migration-review",
-      "sourcePreview": "Get started →"
+      "machineHash": "8b21ed4a14083b4c910bf5c240bb4ab0a7a89b9773cf2879efb93979a38f9d9d",
+      "machineText": "始める →",
+      "status": "machine-translated",
+      "sourcePreview": "Get started →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "c0004-line-004-01": {
       "sourceHash": "34daca5a9aa8e78d48ab6082f734a26aaec1812e5a4337d884d60878af511668",
-      "targetHash": "b027b8d90fda3f32d3a3b005eb47de0f9fed2a127b9c6eda82ae38aa0b4e9c1e",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide →"
+      "targetHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
+      "machineHash": "132c859af532bf94e504ebf751e4b614e52826d651a9c4e563d93261d7cdc02b",
+      "machineText": "iOS ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "c0004-line-005-01": {
       "sourceHash": "80e07f62422e02cc78b77256282b2c23766531cfe59ea540847a051e5faab8d6",
-      "targetHash": "61bc337a50a3541feb52564d3ea2ccf21c0c3f11e2f1a2f728963c741c0cfb04",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide →"
+      "targetHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
+      "machineHash": "a70a0276f3058deb497bdeb5e8ce0de83f495159939ac0c722116cb5ceb774a2",
+      "machineText": "Android ガイド →",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "fm-description": {
       "sourceHash": "234cc97b8ae640aa0fc1def1ac0b832f1a0bef213f724aa6abd13def1d666a57",
-      "targetHash": "d7c299cc2bd2edac4b879455f8315f0e86a5ef3d0847585a894337605a628627",
-      "status": "migration-review",
-      "sourcePreview": "Build iOS and Android apps from the same Go codebase as your desktop app"
+      "targetHash": "93875405610e7714e1e298b4b3d2ff62ec1911f618af4d4471bc47e8bb54e268",
+      "machineHash": "93875405610e7714e1e298b4b3d2ff62ec1911f618af4d4471bc47e8bb54e268",
+      "machineText": "デスクトップアプリと同じ Go コードベースから iOS および Android アプリをビルドする",
+      "status": "machine-translated",
+      "sourcePreview": "Build iOS and Android apps from the same Go codebase as your desktop app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     },
     "fm-title": {
       "sourceHash": "7eea7cda194b8910d4f79c336ca4b3f72ffb73b6fdc233eb9c641ad0b615449d",
       "targetHash": "2cdda9d12b8e76299d82edd5071fcb679b7af4d3496687eb4904ab5ff27ebd2c",
-      "status": "migration-review",
-      "sourcePreview": "Mobile Overview"
+      "machineHash": "2cdda9d12b8e76299d82edd5071fcb679b7af4d3496687eb4904ab5ff27ebd2c",
+      "machineText": "モバイル概要",
+      "status": "machine-translated",
+      "sourcePreview": "Mobile Overview",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:47Z"
     }
   },
   "migration": {

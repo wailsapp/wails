@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## 繫結最佳實務
 
-設計繫結時，請遵循<strong>經過驗證的模式</strong>，以建立簡潔、高效能且安全的繫結。本指南涵蓋 API 設計原則、效能最佳化、安全模式、錯誤處理，以及可維護應用程式的測試策略。
+設計繫結時請遵循**經過驗證的模式**，以建立簡潔、高效能且安全的繫結。本指南涵蓋 API 設計原則、效能最佳化、安全模式、錯誤處理，以及可維護應用程式的測試策略。
 
 ## API 設計原則
 
 ### 1. 單一職責
 
-每項服務都應有一個明確用途：
+每項服務都應有一個明確的用途：
 
 ```go
 // ❌ Bad: God object
@@ -110,7 +110,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ## 效能模式
 
-### 1. 批次作業
+### 1. 批次操作
 
 透過批次處理減少橋接呼叫：
 
@@ -191,7 +191,7 @@ func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
 
 ### 3. 快取
 
-快取成本高昂的作業：
+快取成本高昂的操作：
 
 ```go
 type CachedService struct {
@@ -232,9 +232,9 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 }
 ```
 
-### 4. 使用事件串流
+### 4. 使用事件串流傳輸
 
-使用事件傳輸串流資料：
+使用事件串流傳輸資料：
 
 ```go
 // ❌ Bad: Polling
@@ -305,7 +305,7 @@ Events.On("progress", (event) => {
 })
 ```
 
-## 安全性模式
+## 安全模式
 
 ### 1. 輸入清理
 
@@ -334,9 +334,9 @@ func (s *Service) SaveComment(text string) error {
 }
 ```
 
-### 2. 驗證身分
+### 2. 身分驗證
 
-保護敏感作業：
+保護敏感操作：
 
 ```go
 type AuthService struct {
@@ -444,9 +444,9 @@ func (s *Service) SendEmail(to, subject, body string) error {
 
 ## 錯誤處理模式
 
-### 1. 描述清楚的錯誤
+### 1. 描述性錯誤
 
-在錯誤中提供情境資訊：
+在錯誤中提供相關內容：
 
 ```go
 // ❌ Bad: Generic errors
@@ -667,37 +667,37 @@ func TestUserService_WithMock(t *testing.T) {
 
 ## 最佳實務摘要
 
-### ✅ 應做事項
+### ✅ 建議做法
 
-- **單一職責** — 每項服務只負責一個用途
-- **清楚命名** — 使用具描述性的方法名稱
-- **驗證輸入** — 一律在 Go 端進行
-- **回傳錯誤** — 明確處理錯誤
-- **批次處理作業** — 減少橋接呼叫
-- **使用事件** — 用於串流資料
-- **清理輸入** — 防止注入攻擊
-- **徹底測試** — 執行單元測試與整合測試
-- **記錄方法說明** — 註解會轉換為 JSDoc
-- **為 API 建立版本** — 預先規劃變更
+- **單一職責** - 一項服務，一個用途
+- **清楚命名** - 使用具描述性的方法名稱
+- **驗證輸入** - 一律在 Go 端進行
+- **回傳錯誤** - 明確處理錯誤
+- **批次操作** - 減少橋接呼叫
+- **使用事件** - 用於串流資料
+- **清理輸入** - 防止注入攻擊
+- **徹底測試** - 執行單元測試與整合測試
+- **記錄方法文件** - 註解會轉為 JSDoc
+- **為 API 進行版本控制** - 預先規劃變更
 
-### ❌ 不應做事項
+### ❌ 請勿
 
-- **不要建立上帝物件** — 讓服務聚焦於單一職責
-- **不要信任前端** — 驗證所有內容
-- **不要回傳龐大的資料集** — 使用分頁
-- **不要阻塞** — 對耗時作業使用 goroutine
-- **不要忽略錯誤** — 處理所有錯誤情況
-- **不要略過測試** — 儘早測試並經常測試
-- **不要寫死設定值** — 使用組態
-- **不要公開內部實作** — 將實作保持為私有
+- **不要建立上帝物件** - 讓服務維持專注
+- **不要信任前端** - 驗證所有內容
+- **不要回傳龐大的資料集** - 使用分頁
+- **不要阻塞** - 長時間操作應使用 goroutine
+- **不要忽略錯誤** - 處理所有錯誤情況
+- **不要略過測試** - 儘早測試並經常測試
+- **不要寫死設定值** - 使用組態
+- **不要公開內部實作** - 將實作維持為私有
 
 ## 後續步驟
 
-- [方法](/features/bindings/methods/) — 瞭解方法綁定的基礎知識
-- [服務](/features/bindings/services/) — 瞭解服務架構
-- [模型](/features/bindings/models/) — 綁定複雜的資料結構
-- [事件](/features/events/system/) — 使用事件實作發布／訂閱模式
+- [方法](/features/bindings/methods/) - 瞭解方法繫結的基礎知識
+- [服務](/features/bindings/services/) - 瞭解服務架構
+- [模型](/features/bindings/models/) - 繫結複雜的資料結構
+- [事件](/features/events/system/) - 使用事件進行發布／訂閱
 
 ---
 
-<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[綁定範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。
+<strong>有任何問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[繫結範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。

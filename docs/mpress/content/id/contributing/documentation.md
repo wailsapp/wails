@@ -32,7 +32,7 @@ Buka [rilis stabil terbaru M-Press](https://github.com/leaanthony/mpress/release
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Unduh [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) dari rilis yang sama. Di direktori unduhan Anda, hitung hash SHA-256 arsip tersebut, lalu bandingkan dengan baris untuk nama file itu di `checksums.txt`:
+Unduh [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) dari rilis yang sama. Di direktori unduhan Anda, hitung hash SHA-256 arsip tersebut dan bandingkan dengan baris untuk nama file itu di `checksums.txt`:
 
 @tabs
 [macOS]

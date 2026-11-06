@@ -1,15 +1,15 @@
 ---
 title: "Boîtes de dialogue de message"
-description: "Afficher des informations, des avertissements, des erreurs et des questions"
+description: "Affichez des informations, des avertissements, des erreurs et des questions"
 slug: "features/dialogs/message"
 sourcePath: "features/dialogs/message.md"
 ---
 
 ## Boîtes de dialogue de message
 
-Wails fournit des **boîtes de dialogue de message natives** à l’apparence adaptée à chaque plateforme : boîtes de dialogue d’information, d’avertissement, d’erreur et de question, avec des titres, des messages et des boutons personnalisables. API simple, comportement natif et accessibilité par défaut.
+Wails fournit des **boîtes de dialogue de message natives** à l’apparence adaptée à chaque plateforme : boîtes de dialogue d’information, d’avertissement, d’erreur et de question, avec titres, messages et boutons personnalisables. API simple, comportement natif et accessibilité intégrée par défaut.
 
-## Créer des boîtes de dialogue
+## Création de boîtes de dialogue
 
 Les boîtes de dialogue de message sont accessibles par l’intermédiaire du gestionnaire `app.Dialog` :
 
@@ -20,7 +20,7 @@ app.Dialog.Warning()
 app.Dialog.Error()
 ```
 
-Toutes les méthodes renvoient un objet `*MessageDialog` qui peut être configuré par chaînage de méthodes.
+Toutes les méthodes renvoient un objet `*MessageDialog` configurable par chaînage de méthodes.
 
 ## Boîte de dialogue d’information
 
@@ -36,7 +36,7 @@ app.Dialog.Info().
 **Cas d’utilisation :**
 
 - Confirmations de réussite
-- Notifications d’achèvement
+- Avis d’achèvement
 - Messages d’information
 - Mises à jour d’état
 
@@ -75,7 +75,7 @@ app.Dialog.Warning().
 - Messages de mise en garde
 - Problèmes potentiels
 
-**Exemple — Avertissement relatif à l’espace disque :**
+**Exemple — Avertissement d’espace disque insuffisant :**
 
 ```go
 func checkDiskSpace(app *application.App) {
@@ -128,7 +128,7 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Boîte de dialogue de question
 
-Posez des questions aux utilisateurs et traitez leurs réponses à l’aide de fonctions de rappel associées aux boutons :
+Posez des questions aux utilisateurs et traitez leurs réponses au moyen des fonctions de rappel des boutons :
 
 ```go
 dialog := app.Dialog.Question().
@@ -196,7 +196,7 @@ func closeDocument(app *application.App) {
 }
 ```
 
-## Options de la boîte de dialogue
+## Options des boîtes de dialogue
 
 ### Titre et message
 
@@ -214,7 +214,7 @@ dialog := app.Dialog.Info().
 
 ### Boutons
 
-**Bouton unique (information/avertissement/erreur) :**
+**Bouton unique (Information/Avertissement/Erreur) :**
 
 Les boîtes de dialogue d’information, d’avertissement et d’erreur affichent par défaut un bouton « OK » :
 
@@ -234,7 +234,7 @@ dialog.SetDefaultButton(ok)
 dialog.Show()
 ```
 
-**Plusieurs boutons (question) :**
+**Plusieurs boutons (Question) :**
 
 Utilisez `AddButton()` pour ajouter des boutons. Cette méthode renvoie un objet `*Button` que vous pouvez configurer :
 
@@ -260,9 +260,9 @@ option3.OnClick(func() {
 dialog.Show()
 ```
 
-**Boutons par défaut et d’annulation :**
+**Boutons par défaut et Annuler :**
 
-Utilisez `SetDefaultButton()` pour indiquer le bouton mis en évidence et activé par Entrée. Utilisez `SetCancelButton()` pour indiquer le bouton activé par Échap.
+Utilisez `SetDefaultButton()` pour indiquer le bouton mis en évidence et déclenché par Entrée. Utilisez `SetCancelButton()` pour indiquer le bouton déclenché par Échap.
 
 ```go
 dialog := app.Dialog.Question().
@@ -300,8 +300,8 @@ dialog.Show()
 
 - **1-3 boutons :** ne submergez pas les utilisateurs
 - **Libellés explicites :** « Enregistrer » plutôt que « OK »
-- **Choix par défaut sûr :** une action non destructive
-- **L’ordre est important :** placez l’action la plus probable en premier (sauf Annuler)
+- **Choix par défaut sûr :** action non destructive
+- **L’ordre compte :** placez d’abord l’action la plus probable (sauf Annuler)
 
 ### Icône personnalisée
 
@@ -330,8 +330,8 @@ dialog.Show()
 
 **Avantages :**
 
-- La boîte de dialogue apparaît dans la fenêtre appropriée
-- La fenêtre parente est désactivée tant que la boîte de dialogue est affichée
+- La boîte de dialogue s’affiche dans la bonne fenêtre
+- La fenêtre parente est désactivée pendant l’affichage
 - Meilleure expérience utilisateur avec plusieurs fenêtres
 
 ## Exemples complets
@@ -449,43 +449,43 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ### ✅ À faire
 
-- **Soyez précis** — « Fichier enregistré dans Documents » plutôt que « Réussite »
-- **Utilisez le type approprié** — Error pour les erreurs, Warning pour les avertissements
+- **Soyez précis** — « Fichier enregistré dans Documents » plutôt que « Réussite »
+- **Utilisez le type approprié** — Erreur pour les erreurs, Avertissement pour les avertissements
 - **Fournissez le contexte** — Incluez les détails pertinents
-- **Utilisez des libellés de boutons explicites** — « Supprimer » plutôt que « OK »
-- **Définissez des choix par défaut sûrs** — Choisissez une action non destructive
+- **Utilisez des libellés de bouton explicites** — « Supprimer » plutôt que « OK »
+- **Définissez des choix par défaut sûrs** — Action non destructive
 - **Gérez l’annulation** — L’utilisateur peut fermer la boîte de dialogue
 
 ### ❌ À éviter
 
 - **N’en abusez pas** — Cela interrompt le flux de travail
-- **Ne les utilisez pas pour les mises à jour fréquentes** — Utilisez plutôt des notifications
-- **N’utilisez pas de messages génériques** — « Erreur » n’apporte aucune information
+- **Ne les utilisez pas pour des mises à jour fréquentes** — Utilisez plutôt des notifications
+- **N’utilisez pas de messages génériques** — « Erreur » n’apporte aucune information
 - **N’ignorez pas les erreurs** — Gérez les erreurs de dialog.Show()
 - **Ne bloquez pas inutilement** — Envisagez des solutions asynchrones
-- **N’utilisez pas de jargon technique** — Employez un langage clair
+- **N’employez pas de jargon technique** — Utilisez un langage simple
 
 ## Différences entre les plateformes
 
 ### macOS
 
-- Présentation sous forme de feuille lorsque la boîte de dialogue est attachée à une fenêtre
-- Raccourcis clavier standard (⌘. pour annuler)
-- Adopte automatiquement le thème du système
-- Fonctions d’accessibilité intégrées
+- Présentation sous forme de feuille lorsqu’elle est associée à une fenêtre
+- Raccourcis clavier standard (⌘. pour Annuler)
+- Suit automatiquement le thème du système
+- Accessibilité intégrée
 
 ### Windows
 
 - Boîtes de dialogue modales
 - Apparence de TaskDialog
-- Touche Échap pour annuler
-- Adopte le thème du système
+- Échap pour annuler
+- Suit le thème du système
 
 ### Linux
 
 - Boîtes de dialogue GTK
 - Varie selon l’environnement de bureau
-- Adopte le thème de l’environnement de bureau
+- Suit le thème de l’environnement de bureau
 - Navigation standard au clavier
 
 ## Étapes suivantes
@@ -510,7 +510,7 @@ Notifications non intrusives.
 
 ---
 ★ Événements
-Utilisez des événements pour une communication non bloquante.
+Utilisez les événements pour une communication non bloquante.
 
 [En savoir plus →](/features/events/system/)
 
@@ -518,4 +518,4 @@ Utilisez des événements pour une communication non bloquante.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

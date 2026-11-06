@@ -11,9 +11,9 @@ Protokol URL kustom (juga disebut skema URL) memungkinkan aplikasi Anda diluncur
 
 Protokol kustom memungkinkan:
 
-- **Tautan dalam**: Meluncurkan aplikasi Anda dengan data tertentu
+- **Deep linking**: Meluncurkan aplikasi Anda dengan data tertentu
 - **Integrasi browser**: Menangani tautan dari halaman web
-- **Tautan email**: Membuka aplikasi Anda dari klien email
+- **Tautan surel**: Membuka aplikasi Anda dari klien surel
 - **Komunikasi antar-aplikasi**: Meluncurkan aplikasi dari aplikasi lain
 
 **Contoh**: `myapp://open/document?id=123` meluncurkan aplikasi Anda dan membuka dokumen 123.
@@ -22,7 +22,7 @@ Protokol kustom memungkinkan:
 
 Tentukan protokol kustom dalam opsi aplikasi Anda:
 
-Protokol kustom dideklarasikan dalam `build/config.yml` (yang digunakan oleh pembuat paket platform—makro NSIS di Windows, manifes MSIX, `CFBundleURLTypes` di macOS, serta `.desktop`/`xdg-mime` di Linux—saat pembuatan paket). Tidak ada tipe `application.Protocol` maupun bidang `Protocols` pada `application.Options`.
+Protokol kustom dideklarasikan dalam `build/config.yml` (yang digunakan oleh pembuat paket platform—makro NSIS di Windows, manifes MSIX, `CFBundleURLTypes` di macOS, serta `.desktop`/`xdg-mime` di Linux—saat pembuatan paket). Tidak ada tipe `application.Protocol` dan tidak ada bidang `Protocols` pada `application.Options`.
 
 ```yaml
 # build/config.yml
@@ -109,7 +109,7 @@ myapp://user/profile?username=john
 - Buat skema tetap singkat dan mudah diingat
 - Gunakan jalur hierarkis untuk sumber daya
 - Sertakan parameter kueri untuk data opsional
-- Enkodekan karakter khusus untuk URL
+- Lakukan enkode URL pada karakter khusus
 
 ## Pendaftaran Platform
 
@@ -119,25 +119,25 @@ Protokol kustom didaftarkan secara berbeda pada setiap platform.
 [Windows]
 ### Penginstal NSIS Windows
 
-**Wails v3 secara otomatis mendaftarkan protokol kustom** saat menggunakan penginstal NSIS.
+**Wails v3mendaftarkan protokol kustom secara otomatis** saat menggunakan penginstal NSIS.
 
 #### Pendaftaran Otomatis
 
-Saat Anda membangun aplikasi dengan `wails3 build`, penginstal NSIS akan:
+Saat Anda membangun aplikasi dengan `wails3 build`, penginstal NSIS:
 
 1. Secara otomatis mendaftarkan semua protokol yang dideklarasikan dalam `build/config.yml` di bawah kunci `protocols:`
-2. Mengaitkan protokol dengan berkas aplikasi Anda yang dapat dieksekusi
-3. Menyiapkan entri registri yang tepat
-4. Menghapus pengaitan protokol selama penghapusan instalasi
+2. Mengaitkan protokol dengan berkas executable aplikasi Anda
+3. Menyiapkan entri registri yang sesuai
+4. Menghapus pengaitan protokol saat aplikasi dihapus instalasinya
 
-**Tidak diperlukan konfigurasi tambahan!**
+**Tidak memerlukan konfigurasi tambahan!**
 
 #### Cara Kerjanya
 
 Templat NSIS menyertakan makro bawaan:
 
-- `wails.associateCustomProtocols` - Mendaftarkan protokol selama instalasi
-- `wails.unassociateCustomProtocols` - Menghapus protokol selama penghapusan instalasi
+- `wails.associateCustomProtocols` - Mendaftarkan protokol selama penginstalan
+- `wails.unassociateCustomProtocols` - Menghapus protokol saat aplikasi dihapus instalasinya
 
 Makro ini dipanggil secara otomatis berdasarkan konfigurasi `Protocols` Anda.
 
@@ -185,7 +185,7 @@ Manifes yang dihasilkan mencakup:
 
 #### Universal Links (Penautan Web ke Aplikasi)
 
-Windows mendukung **penautan Web ke Aplikasi**, yang bekerja serupa dengan Universal Links di macOS. Saat menerapkan aplikasi sebagai paket MSIX, Anda dapat mengaktifkan tautan HTTPS untuk meluncurkan aplikasi secara langsung.
+Windows mendukung **penautan Web ke Aplikasi**, yang bekerja serupa dengan Universal Links di macOS. Saat mendistribusikan aplikasi sebagai paket MSIX, Anda dapat mengaktifkan tautan HTTPS untuk meluncurkan aplikasi secara langsung.
 
 @note{type="note"}
 Penautan Web ke Aplikasi memerlukan konfigurasi manifes secara manual. Skema protokol kustom dikonfigurasi secara otomatis dari `build/config.yml`, tetapi domain terkait harus ditambahkan secara manual ke manifes MSIX Anda.
@@ -204,7 +204,7 @@ Untuk mengaktifkan penautan Web ke Aplikasi, ikuti [panduan Microsoft tentang pe
   ```
 
 
-2. **Konfigurasikan `windows-app-web-link` di situs web Anda:** Sediakan berkas `windows-app-web-link` di `https://myawesomeapp.com/.well-known/windows-app-web-link`. Berkas ini sebaiknya berisi informasi paket aplikasi Anda dan jalur yang ditanganinya.
+2. **Konfigurasikan `windows-app-web-link` di situs web Anda:** Host berkas `windows-app-web-link` di `https://myawesomeapp.com/.well-known/windows-app-web-link`. Berkas ini harus berisi informasi paket aplikasi Anda dan jalur yang ditanganinya.
 
 Saat tautan Web ke Aplikasi meluncurkan aplikasi Anda, Anda akan menerima peristiwa `ApplicationLaunchedWithUrl` yang sama seperti pada skema protokol kustom.
 
@@ -215,7 +215,7 @@ Di macOS, protokol didaftarkan melalui berkas `Info.plist` Anda.
 
 #### Konfigurasi Otomatis
 
-Wails secara otomatis menghasilkan `Info.plist` yang berisi protokol Anda saat Anda membangun dengan `wails3 build`.
+Wails secara otomatis menghasilkan `Info.plist` beserta protokol Anda saat Anda membangun dengan `wails3 build`.
 
 Protokol yang dideklarasikan dalam `build/config.yml` ditambahkan ke:
 
@@ -247,7 +247,7 @@ open "myapp://test/action"
 
 #### Universal Links
 
-Selain skema protokol khusus, macOS juga mendukung **Universal Links**, yang memungkinkan aplikasi Anda diluncurkan melalui tautan HTTPS biasa (misalnya, `https://myawesomeapp.com/path`). Universal Links menghadirkan pengalaman pengguna yang mulus antara aplikasi web dan aplikasi desktop Anda.
+Selain skema protokol kustom, macOS juga mendukung **Universal Links**, yang memungkinkan aplikasi Anda diluncurkan melalui tautan HTTPS biasa (misalnya, `https://myawesomeapp.com/path`). Universal Links memberikan pengalaman pengguna yang mulus antara aplikasi web dan desktop Anda.
 
 @note{type="caution"}
 Universal Links mengharuskan aplikasi macOS Anda **ditandatangani secara digital** dengan sertifikat Apple Developer dan profil penyediaan yang valid. Build yang tidak ditandatangani atau ditandatangani secara ad hoc tidak akan dapat membuka Universal Links. Pastikan aplikasi Anda ditandatangani dengan benar sebelum melakukan pengujian.
@@ -274,20 +274,20 @@ Untuk mengaktifkan Universal Links, ikuti [panduan Apple tentang dukungan Univer
   ```
 
 
-3. **Konfigurasikan `apple-app-site-association` di situs web Anda:** Sediakan file `apple-app-site-association` di `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+3. **Konfigurasikan `apple-app-site-association` di situs web Anda:** Host berkas `apple-app-site-association` di `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-Saat Universal Link memicu aplikasi Anda, Anda akan menerima peristiwa `ApplicationLaunchedWithUrl` yang sama, sehingga kode penanganannya identik dengan skema protokol khusus.
+Saat Universal Link memicu aplikasi Anda, Anda akan menerima peristiwa `ApplicationLaunchedWithUrl` yang sama sehingga kode penanganannya identik dengan skema protokol kustom.
 
 [Linux]
 ### Entri Desktop
 
-Di Linux, protokol didaftarkan melalui file `.desktop`.
+Di Linux, protokol didaftarkan melalui berkas `.desktop`.
 
 #### Konfigurasi Otomatis
 
-Wails menghasilkan file entri desktop yang berisi penangan protokol saat Anda membangun dengan `wails3 build`.
+Wails menghasilkan berkas entri desktop dengan penangan protokol saat Anda membangun dengan `wails3 build`.
 
-**Diperbaiki di v3**: Templat desktop Linux kini menyertakan penanganan protokol dengan benar.
+**Diperbaiki dalam v3**: templat desktop Linux kini menyertakan penanganan protokol dengan benar.
 
 File desktop yang dihasilkan mencakup:
 
@@ -328,7 +328,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## Contoh Lengkap
 
-Berikut contoh lengkap untuk menangani beberapa tindakan protokol:
+Berikut adalah contoh lengkap yang menangani beberapa tindakan protokol:
 
 ```go
 package main
@@ -605,19 +605,19 @@ Buat halaman HTML pengujian:
 
 ## Pemecahan Masalah
 
-### Protokol Tidak Terdaftar
+### Protokol Belum Terdaftar
 
 **Windows:**
 
-- Periksa registri: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
-- Instal ulang menggunakan penginstal NSIS
+- Periksa registry: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- Instal ulang dengan penginstal NSIS
 - Pastikan penginstal dijalankan dengan izin yang sesuai
 
 **macOS:**
 
-- Bangun ulang aplikasi dengan `wails3 build`
-- Periksa `Info.plist` dalam bundel aplikasi: `MyApp.app/Contents/Info.plist`
-- Atur ulang Launch Services: `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
+- Build ulang aplikasi dengan `wails3 build`
+- Periksa `Info.plist` dalam bundle aplikasi: `MyApp.app/Contents/Info.plist`
+- Reset Launch Services: `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
 
 **Linux:**
 
@@ -625,7 +625,7 @@ Buat halaman HTML pengujian:
 - Perbarui basis data: `update-desktop-database ~/.local/share/applications/`
 - Verifikasi penangan: `xdg-mime query default x-scheme-handler/myapp`
 
-### Aplikasi Tidak Dapat Diluncurkan
+### Aplikasi Tidak Berjalan
 
 **Periksa log:**
 
@@ -639,16 +639,16 @@ app := application.New(application.Options{
 **Masalah umum:**
 
 - Aplikasi tidak terinstal di lokasi yang semestinya
-- Jalur berkas yang dapat dieksekusi dalam pendaftaran tidak sesuai dengan lokasi sebenarnya
+- Path executable dalam pendaftaran tidak cocok dengan lokasi sebenarnya
 - Masalah izin
 
 ## Praktik Terbaik
 
 ### ✅ Lakukan
 
-- **Gunakan nama skema yang deskriptif** — gunakan `mycompany-myapp`, bukan `mca`
-- **Validasi semua input** — Jangan pernah memercayai URL dari sumber eksternal
-- **Tangani kesalahan dengan baik** — Catat URL yang tidak valid ke log; jangan biarkan aplikasi mengalami crash
+- **Gunakan nama skema yang deskriptif** - gunakan `mycompany-myapp`, bukan `mca`
+- **Validasi semua input** - Jangan pernah memercayai URL dari sumber eksternal
+- **Tangani kesalahan dengan baik** - Catat URL yang tidak valid dalam log, jangan biarkan aplikasi mengalami crash
 - **Berikan umpan balik kepada pengguna** - Tampilkan tindakan yang dipicu
 - **Uji di semua platform** - Penanganan protokol berbeda-beda
 - **Dokumentasikan struktur URL Anda** - Bantu pengguna dan integrator
@@ -656,10 +656,10 @@ app := application.New(application.Options{
 ### ❌ Jangan Lakukan
 
 - **Jangan gunakan nama skema yang umum** - Hindari `http`, `file`, `app`, dan sebagainya.
-- **Jangan jalankan URL sebagai kode** - Risikonya terhadap keamanan sangat besar
-- **Jangan ekspos operasi sensitif** - Wajibkan konfirmasi untuk tindakan destruktif
+- **Jangan mengeksekusi URL sebagai kode** - Ini menimbulkan risiko keamanan yang sangat besar
+- **Jangan mengekspos operasi sensitif** - Wajibkan konfirmasi untuk tindakan destruktif
 - **Jangan berasumsi bahwa protokol berfungsi di semua lingkungan** - Sediakan mekanisme cadangan
-- **Jangan lupa melakukan pengodean URL** - Tangani karakter khusus dengan benar
+- **Jangan lupakan encoding URL** - Tangani karakter khusus dengan benar
 
 ## Langkah Berikutnya
 

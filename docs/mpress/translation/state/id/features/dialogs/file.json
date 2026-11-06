@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "338f442fbe61f4c9e42d",
+  "pageKey": "737995a859f26ec49ea6",
   "sourceFile": "features/dialogs/file.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
@@ -11,1098 +11,1104 @@
       "targetHash": "f85ba5c422f50ab6b4a22f5d410e5dc4eba6cb609bcf635947a880c79c96d619",
       "machineHash": "f85ba5c422f50ab6b4a22f5d410e5dc4eba6cb609bcf635947a880c79c96d619",
       "machineText": "Dialog file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "File dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0002-text-01": {
       "sourceHash": "f8ec8fc5c95569df15edafa91229dc2a5ea6c63663a91a6dc6710c1231d89c8d",
       "targetHash": "94a078b4267a32d3a732e9ef48ce26a42248243eb3a8061f905d6143a5f326c3",
       "machineHash": "94a078b4267a32d3a732e9ef48ce26a42248243eb3a8061f905d6143a5f326c3",
       "machineText": "Wails menyediakan **dialog file native** dengan tampilan yang sesuai untuk setiap platform guna membuka file, menyimpan file, dan memilih folder. API sederhana dengan pemfilteran jenis file, dukungan pemilihan beberapa file, dan lokasi default.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails provides **native file dialogs** with platform-appropriate appearance for opening files, savin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0003-text-01": {
       "sourceHash": "fae740c6b6b91ac5c099f1a7fbe1750a68ea0ad005b0e0a96b4983e9148ca75a",
       "targetHash": "2e35cdc43f3122c00c415e05a40054136c3a3bf7146b19a38535b0d523864b8a",
       "machineHash": "2e35cdc43f3122c00c415e05a40054136c3a3bf7146b19a38535b0d523864b8a",
       "machineText": "![Pemilih file native macOS yang dibuka oleh aplikasi Wails](/assets/screenshots/file-dialog-macos.png)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "![A native macOS file picker opened by a Wails application](/assets/screenshots/file-dialog-macos.pn…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0004-text-01": {
       "sourceHash": "5a01d9512f2ffd8ca820a75c329eb3b387e2e49fda8096ed7970d396efff463c",
-      "targetHash": "b1bdb362e3fe580566bdd4277713eaffe6b5aa95edceff70f3b13be15d52a064",
-      "machineHash": "b1bdb362e3fe580566bdd4277713eaffe6b5aa95edceff70f3b13be15d52a064",
-      "machineText": "API Wails mendelegasikan tugas kepada pemilih milik sistem operasi sehingga perilaku navigasi, pemfilteran, dan pemilihan yang familier tetap dipertahankan.",
-      "status": "final",
+      "targetHash": "0f83d77483f2585d9e0ae2aef67f29967848a9e579ce2d0a172f1c5104f4240d",
+      "machineHash": "0f83d77483f2585d9e0ae2aef67f29967848a9e579ce2d0a172f1c5104f4240d",
+      "machineText": "API Wails mendelegasikan pemilihan kepada pemilih bawaan sistem operasi sehingga perilaku navigasi, pemfilteran, dan pemilihan yang familier tetap dipertahankan.",
+      "status": "machine-translated",
       "sourcePreview": "The Wails API delegates to the operating system's picker, so familiar navigation, filtering, and sel…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0005-heading-01": {
       "sourceHash": "7074bce9e57223cbda206e199797eae05bb449fb01b3b95befa1c0ffb1df31ce",
       "targetHash": "a45336afc52c444bb477b3bdce523404e08cb4bd7de9b96f4ec933707b00069a",
       "machineHash": "a45336afc52c444bb477b3bdce523404e08cb4bd7de9b96f4ec933707b00069a",
       "machineText": "Membuat Dialog File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating File Dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0006-text-01": {
       "sourceHash": "fe8192d6dcfb421d7b51bd38d896dd71094393553a11f77d19b1ee9e41200fc9",
       "targetHash": "168f3a3447c35edf6726debbc95cd383c4cfcc792864890f9505992684de00d8",
       "machineHash": "168f3a3447c35edf6726debbc95cd383c4cfcc792864890f9505992684de00d8",
       "machineText": "Dialog file diakses melalui pengelola `app.Dialog`:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "File dialogs are accessed through the `app.Dialog` manager:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0007-heading-01": {
       "sourceHash": "1981187517809af506eb5faa6b4dea6bb7c8768555e84dfb7f18cc0926d8c0a2",
       "targetHash": "a43660dd3a6ee85585c9953bdb338c08ed82ea376bd615af80b82e1df35dac9b",
       "machineHash": "a43660dd3a6ee85585c9953bdb338c08ed82ea376bd615af80b82e1df35dac9b",
       "machineText": "Dialog Buka File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Open File dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0008-text-01": {
       "sourceHash": "5d9f2d9d7f00844964e6097439ef35a1e0e54b85184885e5d1dfc3ffd0a11d2b",
       "targetHash": "6e35de4097a92811b3c75a24b13dc453b96ee145cc3d442981e2cf60a3ff5bad",
       "machineHash": "6e35de4097a92811b3c75a24b13dc453b96ee145cc3d442981e2cf60a3ff5bad",
       "machineText": "Pilih file yang akan dibuka:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Select files to open:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0009-text-01": {
       "sourceHash": "ab01e138a9aed7594f6737c68cff581fd94643534080722bceb65410ab7b7459",
       "targetHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineText": "**Kasus penggunaan:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Use cases:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0010-text-01": {
       "sourceHash": "eadd61bac0d27a64e690924d29800ddf1edc33d77bfdecea5176555be1ab2c88",
       "targetHash": "a3312054fd711b4571dcfd0d832be22001e87f0738178aee7589b664f884a7fc",
       "machineHash": "a3312054fd711b4571dcfd0d832be22001e87f0738178aee7589b664f884a7fc",
       "machineText": "Membuka dokumen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Open documents",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0011-text-01": {
       "sourceHash": "824ca255db35db136c93d463fc610d6ad86d865a7f9a0b7bc61d85cece143ca0",
       "targetHash": "2802a3335f63eeb69c877b7b4e79c7637d425e7ed2e74edfe9315f0d41589c9a",
       "machineHash": "2802a3335f63eeb69c877b7b4e79c7637d425e7ed2e74edfe9315f0d41589c9a",
       "machineText": "Mengimpor file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Import files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0012-text-01": {
       "sourceHash": "bf47bce87890a91606a421ca93ded43ed8f5caddb603dfda8e339991e0da06ed",
       "targetHash": "6fd252add1795c7c323562cd94c214c5e8ff457e9d8e5f13b492b3da441ad05d",
       "machineHash": "6fd252add1795c7c323562cd94c214c5e8ff457e9d8e5f13b492b3da441ad05d",
       "machineText": "Memuat gambar",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Load images",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0013-text-01": {
       "sourceHash": "fac6912e0ff8c8e1db055be9ddfd491bb6a859a8d8f1c5c136f21e51f1582b5b",
       "targetHash": "fc4467b01ce22d310508f3b821c2f2ea528645be5e2b44d491a5943213721d61",
       "machineHash": "fc4467b01ce22d310508f3b821c2f2ea528645be5e2b44d491a5943213721d61",
       "machineText": "Memilih file konfigurasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Select configuration files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0014-heading-01": {
       "sourceHash": "6197fa7974d0a6de66a1c85fe9c096bd982354c220de47f3035bd60fa52cab87",
       "targetHash": "7b00cc791a421edbbd787c0a2e58dd3493fc5fc30b0843302a85bb1304a3f1b6",
       "machineHash": "7b00cc791a421edbbd787c0a2e58dd3493fc5fc30b0843302a85bb1304a3f1b6",
       "machineText": "Pemilihan Satu File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Single File Selection",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0015-heading-01": {
       "sourceHash": "e47ff5b68c71267b82fc959cdd4129499b2c9f52ef403f1d9b3ac8e1e27e236c",
       "targetHash": "fe3cd44305817aedb8d31f26a1a968e0c4bde374d863894c5e3ed2c1ed2fea07",
       "machineHash": "fe3cd44305817aedb8d31f26a1a968e0c4bde374d863894c5e3ed2c1ed2fea07",
       "machineText": "Pemilihan Beberapa File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Multiple File Selection",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0016-heading-01": {
       "sourceHash": "6056f4eb1362f697d01e5418910e8281360ce7038a5b751de0ce88a049c27495",
       "targetHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineText": "Dengan Direktori Default",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "With Default Directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0017-heading-01": {
       "sourceHash": "099214c276340e8fcec114cc5b95a31a32e8e1c82aa05db046c1be28085451bc",
       "targetHash": "5db3496b9db87f22f00b041747414c57827b19e697292fa1b8e6649eabd52bed",
       "machineHash": "5db3496b9db87f22f00b041747414c57827b19e697292fa1b8e6649eabd52bed",
       "machineText": "Dialog Simpan File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Save File dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0018-text-01": {
       "sourceHash": "9ef9a94aaf5a799f2982623af068c66ddac110109c3b9d2fdb0e4428878f7b52",
       "targetHash": "67590d6681b0fdcd1bdea5a3009e845bcaefdf5cc2b1f5082e6886cbf6f33961",
       "machineHash": "67590d6681b0fdcd1bdea5a3009e845bcaefdf5cc2b1f5082e6886cbf6f33961",
       "machineText": "Pilih lokasi penyimpanan:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Choose where to save:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0019-text-01": {
       "sourceHash": "ab01e138a9aed7594f6737c68cff581fd94643534080722bceb65410ab7b7459",
       "targetHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineText": "**Kasus penggunaan:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Use cases:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0020-text-01": {
       "sourceHash": "9beba2ba5c47f8b43b06937d59c1fe82c041937b2885c12c879acb1ec14aa24d",
       "targetHash": "38c940d078d5073c29622efe220e1ee2b53e2a5679b01be8d402fe3ed9cfe189",
       "machineHash": "38c940d078d5073c29622efe220e1ee2b53e2a5679b01be8d402fe3ed9cfe189",
       "machineText": "Menyimpan dokumen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Save documents",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0021-text-01": {
       "sourceHash": "c16e0b819445643bda35c4c131ed98a91893e328e9559b24e5c26fb616f7101b",
       "targetHash": "cb705d1451b29f70cace702c042a4ab0e980e312a43d82fff67b4ab0676e4dd1",
       "machineHash": "cb705d1451b29f70cace702c042a4ab0e980e312a43d82fff67b4ab0676e4dd1",
       "machineText": "Mengekspor data",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Export data",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0022-text-01": {
       "sourceHash": "b1e7cccbc9c49a3c85978315b8bb4be7dc9fa40590b9ee6ae07e58f8d203e431",
       "targetHash": "7fdef59da717fffc5bb7bbbacde0be6ef268d076621bbfd27f94a9cca64f3cdf",
       "machineHash": "7fdef59da717fffc5bb7bbbacde0be6ef268d076621bbfd27f94a9cca64f3cdf",
       "machineText": "Membuat file baru",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Create new files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0023-text-01": {
       "sourceHash": "73c10d4405e7527e5c8080e00dee0009373851085866bc1ffad159cc7e7f81db",
       "targetHash": "15897d0c11e5a1f2429fcc7b6755c185de7415432e2e1ac0cfb3a4c4e74fa949",
       "machineHash": "15897d0c11e5a1f2429fcc7b6755c185de7415432e2e1ac0cfb3a4c4e74fa949",
       "machineText": "Menyimpan sebagai...",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Save as...",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0024-heading-01": {
       "sourceHash": "cbb42be50e698515f23553b562b483760aa7a4d8d18de07aa27f5e0ec158ec5f",
       "targetHash": "fb4c47cca48dd7fc33d0cc3141921c15ffa79a454a70cf64b20520ba6d160536",
       "machineHash": "fb4c47cca48dd7fc33d0cc3141921c15ffa79a454a70cf64b20520ba6d160536",
       "machineText": "Dengan Nama File Default",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "With Default Filename",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0025-heading-01": {
       "sourceHash": "6056f4eb1362f697d01e5418910e8281360ce7038a5b751de0ce88a049c27495",
       "targetHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineText": "Dengan Direktori Default",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "With Default Directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0026-heading-01": {
       "sourceHash": "6a4ba6db567724a3a6b1bb84479c88873db32048d6e336312d6136d665e734bc",
       "targetHash": "306b5b2081038f586951397d0973f0e76549c8865297709f24f98e8b7afbc614",
       "machineHash": "306b5b2081038f586951397d0973f0e76549c8865297709f24f98e8b7afbc614",
       "machineText": "Konfirmasi Penimpaan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Overwrite Confirmation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0027-heading-01": {
       "sourceHash": "e130e145ee2145c24bd90c1e5d859c4599cb12100ff7d849766a1cdda8a39134",
       "targetHash": "5c8729da18529a54dc88d6c15fd0077a0775ae75fcf39f548ab63a7e442069c1",
       "machineHash": "5c8729da18529a54dc88d6c15fd0077a0775ae75fcf39f548ab63a7e442069c1",
       "machineText": "Dialog Pilih Folder",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Select Folder dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0028-text-01": {
       "sourceHash": "659846c43ef3a88f3a139000462b350b6ad7fe1a00232e4779ab13a00d8b69cf",
-      "targetHash": "305231bbe9ecc0dc696d0f82b9edbdde0a5fa5c68329db69bb74711ba6c022b8",
-      "machineHash": "305231bbe9ecc0dc696d0f82b9edbdde0a5fa5c68329db69bb74711ba6c022b8",
-      "machineText": "Pilih direktori menggunakan dialog buka file dengan pemilihan direktori yang diaktifkan:",
-      "status": "final",
+      "targetHash": "2f17298bce5414a008ad1e04c67d6b8aed4be83a8c5830ed7dd119c80133a8bb",
+      "machineHash": "2f17298bce5414a008ad1e04c67d6b8aed4be83a8c5830ed7dd119c80133a8bb",
+      "machineText": "Pilih direktori menggunakan dialog buka file dengan pemilihan direktori diaktifkan:",
+      "status": "machine-translated",
       "sourcePreview": "Choose a directory using the open file dialog with directory selection enabled:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0029-text-01": {
       "sourceHash": "ab01e138a9aed7594f6737c68cff581fd94643534080722bceb65410ab7b7459",
       "targetHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineHash": "3b3d2d38fa67924df0706b83a598280e6b418ca99a3e7000d2791064df005ee1",
       "machineText": "**Kasus penggunaan:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Use cases:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0030-text-01": {
       "sourceHash": "48a6cb1b03f91ca72fd7d2dc6b3ae68feda3147119df5f4f833135b4176139de",
       "targetHash": "f88389c094212f33a1d15e983cc36575d2f5d8bcf6a9e3d7598822cae7244b22",
       "machineHash": "f88389c094212f33a1d15e983cc36575d2f5d8bcf6a9e3d7598822cae7244b22",
       "machineText": "Memilih direktori keluaran",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Choose output directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0031-text-01": {
       "sourceHash": "d5cd6523532495bf0dfea218f44a67a47cdd96854aec7743e3e9be27118fef44",
       "targetHash": "eb6a0485bd065259b47ade8a173e28a41aad5c7472a6ca651d57174eb0624a20",
       "machineHash": "eb6a0485bd065259b47ade8a173e28a41aad5c7472a6ca651d57174eb0624a20",
       "machineText": "Memilih ruang kerja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Select workspace",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0032-text-01": {
       "sourceHash": "150d5df7e471e7db378e273263d535b3b6b3a84c44c3d066295f6d5ad632504d",
       "targetHash": "3ddb0cc1a3b59dd8a211dc1d474d7d6ec112d25d925832dd068da15d6905ce1b",
       "machineHash": "3ddb0cc1a3b59dd8a211dc1d474d7d6ec112d25d925832dd068da15d6905ce1b",
       "machineText": "Memilih lokasi cadangan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Pick backup location",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0033-text-01": {
       "sourceHash": "8eebcd874eeafa72d5aa7d92875e16dada037e5f8265346869d388bb8887a92f",
       "targetHash": "e94145013d957c28ad1330ddfa9a680e6940c4019776b5997a63cc19ef1a74d4",
       "machineHash": "e94145013d957c28ad1330ddfa9a680e6940c4019776b5997a63cc19ef1a74d4",
       "machineText": "Memilih direktori instalasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Choose installation directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0034-heading-01": {
       "sourceHash": "6056f4eb1362f697d01e5418910e8281360ce7038a5b751de0ce88a049c27495",
       "targetHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineHash": "8fa7274a14f1bdc8c7d7b2eebc16e1f94a4fbcfce3da8645e8db16129ddcd248",
       "machineText": "Dengan Direktori Default",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "With Default Directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0035-heading-01": {
       "sourceHash": "7acdaa309f3eb9f9933b17aaea6a090eb005f0a9ada9cf6c4bdeb3575c4247db",
       "targetHash": "92bc3363bd850d3382fd2355de4be46c372148dfd6d42e133088171a3ae1e751",
       "machineHash": "92bc3363bd850d3382fd2355de4be46c372148dfd6d42e133088171a3ae1e751",
       "machineText": "Filter File",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "File Filters",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0036-text-01": {
       "sourceHash": "e44fc4a3cc83281bfb04a40600e6865d8e62e992497ddaecd30bf8b36a75464a",
       "targetHash": "d8b71f4d1376c3de27fa2dcf944ec4b8fddcaa2adfff788432eaafbe8fd3ca5f",
       "machineHash": "d8b71f4d1376c3de27fa2dcf944ec4b8fddcaa2adfff788432eaafbe8fd3ca5f",
       "machineText": "Gunakan metode `AddFilter()` untuk menambahkan filter jenis file ke dialog. Setiap pemanggilan menambahkan opsi filter baru.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Use the `AddFilter()` method to add file type filters to dialogs. Each call adds a new filter option…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0037-heading-01": {
       "sourceHash": "1844d474840c34773c2695a3c1e1cdddfc40ec9a8feaf7dd1ed455532904251f",
       "targetHash": "cac68fe3957afa4118aa50943b37b57f6323c707b1122739399f16e3ac8f403d",
       "machineHash": "cac68fe3957afa4118aa50943b37b57f6323c707b1122739399f16e3ac8f403d",
       "machineText": "Filter Dasar",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Basic Filters",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0038-heading-01": {
       "sourceHash": "b4bd00dde32cfa8eef4d14fb5003caa1b30a343ed742102e9d8ff6916c949c1a",
       "targetHash": "e97d3f59c4dbc1afb3673a83568f298db81351abdf84b2f2593ec789d5722f6d",
       "machineHash": "e97d3f59c4dbc1afb3673a83568f298db81351abdf84b2f2593ec789d5722f6d",
       "machineText": "Beberapa Ekstensi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Multiple Extensions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0039-text-01": {
       "sourceHash": "5d1e2aec0a757280bfd6d82a80916b2c51bf15fa714945a1386b1e3046056d55",
       "targetHash": "6cc84be79202c12d478d5d583a6229bb824c6111fa786126cf0dce7dac87727a",
       "machineHash": "6cc84be79202c12d478d5d583a6229bb824c6111fa786126cf0dce7dac87727a",
       "machineText": "Gunakan titik koma untuk menentukan beberapa ekstensi dalam satu filter:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Use semicolons to specify multiple extensions in a single filter:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0040-heading-01": {
       "sourceHash": "022c48f65bff03a100774f56330ce035099c27adeebbebe43ca432a872b7d0a4",
       "targetHash": "357bd886a1ddbb56a2811659f011e460e59de2a8b73360280cfafa82ad1eb247",
       "machineHash": "357bd886a1ddbb56a2811659f011e460e59de2a8b73360280cfafa82ad1eb247",
       "machineText": "Format Pola",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Pattern Format",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0041-text-01": {
       "sourceHash": "400ec801564dc7779955c8d6978a9b5260ccc927cae841b2c5d4a3bdcdb27437",
       "targetHash": "f3e42c5149988f5c8ff51d57b9db34f1a1692ad844d3524f2a6ed6997de67e04",
       "machineHash": "f3e42c5149988f5c8ff51d57b9db34f1a1692ad844d3524f2a6ed6997de67e04",
       "machineText": "Gunakan **titik koma** untuk memisahkan beberapa ekstensi dalam satu filter:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Use **semicolons** to separate multiple extensions in a single filter:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0042-heading-01": {
       "sourceHash": "9b5ac24b2fbd23afca381a6e4e537c9a711c683a5268e79e9e49ea18244239d2",
       "targetHash": "ecc544f84fb069b5d12715d621f825bf6b2bac3dc41d0c05d5ce89963c45a2f5",
       "machineHash": "ecc544f84fb069b5d12715d621f825bf6b2bac3dc41d0c05d5ce89963c45a2f5",
       "machineText": "Contoh Lengkap",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Complete Examples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0043-heading-01": {
       "sourceHash": "42d5dd9a0e5a6f815dfb143abd23026cfee47f35b0c920be23a2d6fcfb5b775e",
       "targetHash": "ffb478a71bbdf4fa8ecec0eaee114765902445fe12e5607bf2f8e1aa9485d6cd",
       "machineHash": "ffb478a71bbdf4fa8ecec0eaee114765902445fe12e5607bf2f8e1aa9485d6cd",
       "machineText": "Membuka File Gambar",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Open Image File",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0044-heading-01": {
       "sourceHash": "fbd4b544be15b6d36204f1399a6e806abb1ebfa93b4804a7070eb3ed5ec31c52",
       "targetHash": "d3b7552637864c5367f33fd72fa89ad893179299492320d325e2af160bea3c69",
       "machineHash": "d3b7552637864c5367f33fd72fa89ad893179299492320d325e2af160bea3c69",
       "machineText": "Menyimpan Dokumen dengan Validasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Save Document with Validation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0045-heading-01": {
       "sourceHash": "9a19c9ef2533536065f64130c44a382c4a0b7f63d7f56d547be92ae520d785d4",
       "targetHash": "dbb6e0f76c7166554e3b30a771cd74a8f4c24afa5364e2f70d059f3667e287d4",
       "machineHash": "dbb6e0f76c7166554e3b30a771cd74a8f4c24afa5364e2f70d059f3667e287d4",
       "machineText": "Pemrosesan File secara Batch",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Batch File Processing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0046-heading-01": {
       "sourceHash": "b95d73900f6dfa71ca44a2b12fcbcde491b2aeab2e8692ac9d87e0117d606a44",
       "targetHash": "6903461cc990c751925699e0508986e0181128f72e6ea80f72f0bc092746c48f",
       "machineHash": "6903461cc990c751925699e0508986e0181128f72e6ea80f72f0bc092746c48f",
       "machineText": "Mengekspor dengan Pemilihan Folder",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Export with Folder Selection",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0047-heading-01": {
       "sourceHash": "755ac69f0f248bf07a3011cd3a91c1a71c023f10a5d3da2b44385a13b167981b",
       "targetHash": "19e15b47006ddb04eedf1b884d82638a0b6468870f790b435d4fac80f22645a5",
       "machineHash": "19e15b47006ddb04eedf1b884d82638a0b6468870f790b435d4fac80f22645a5",
       "machineText": "Mengimpor dengan Validasi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Import with Validation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0048-heading-01": {
       "sourceHash": "46d9a34a79d27b3869085ea8961f543cc9425756c6ddf26628d6f5fa7df73b36",
       "targetHash": "258ff4ad61bd45eba3e46f7bd0cd97d144e1db7f3204d938da88a1eacca504b0",
       "machineHash": "258ff4ad61bd45eba3e46f7bd0cd97d144e1db7f3204d938da88a1eacca504b0",
       "machineText": "Praktik Terbaik",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Best Practices",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0049-heading-01": {
       "sourceHash": "ed57031b2772f36496ecd8b4ff4a1c11cc746cf70ef065c702b13b6d1e1f4ddc",
       "targetHash": "8910a6fdb2e25a3ca3db071b10c997b57e148279e590bc53c77399941d1f1002",
       "machineHash": "8910a6fdb2e25a3ca3db071b10c997b57e148279e590bc53c77399941d1f1002",
       "machineText": "✅ Lakukan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "✅ Do",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0050-text-01": {
       "sourceHash": "2bc7809eafebfab68966f63d0605768124ebbfcbcf50aa86088ea43edd939b9d",
       "targetHash": "09c94b8f10628813b0dda5adaa9ff77e17d6a5b16af3f9ced448305ba763de48",
       "machineHash": "09c94b8f10628813b0dda5adaa9ff77e17d6a5b16af3f9ced448305ba763de48",
       "machineText": "**Sediakan filter file** - Bantu pengguna menemukan file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Provide file filters** - Help users find files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0051-text-01": {
       "sourceHash": "fa9165682745ce4627d0ccd7618c82560d59bfb4a2d3cf14e623c3c1ea511357",
       "targetHash": "a2f57011672685bc31459edf6478c0fbc72692461bdaefe63f7307b434cd8f91",
       "machineHash": "a2f57011672685bc31459edf6478c0fbc72692461bdaefe63f7307b434cd8f91",
       "machineText": "**Tetapkan judul yang sesuai** - Berikan konteks yang jelas",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Set appropriate titles** - Clear context",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0052-text-01": {
       "sourceHash": "f3fd8026b3dbed5d504c43201a7bcecf7481adc915ab27453c4d7bcda919806b",
-      "targetHash": "365d0afc3b7cabe851373cef7580e2d22317331cfb1f95cdf424af89586376dc",
-      "machineHash": "365d0afc3b7cabe851373cef7580e2d22317331cfb1f95cdf424af89586376dc",
-      "machineText": "**Gunakan direktori default** - Mulai dari lokasi yang logis",
-      "status": "final",
+      "targetHash": "476619efe8815f989bc452251a806077406cf65d050e34814b9bb5752e96adff",
+      "machineHash": "476619efe8815f989bc452251a806077406cf65d050e34814b9bb5752e96adff",
+      "machineText": "**Gunakan direktori default** - Mulai dari lokasi yang sesuai",
+      "status": "machine-translated",
       "sourcePreview": "**Use default directories** - Start in logical location",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0053-text-01": {
       "sourceHash": "2eb83b35ee7a55a7ff7860a251050fe9ce54ce03854d5fa0956d4d259cde57e2",
       "targetHash": "d0f2f1cd4e8a13a15e887c744aa5a9ba864387d64a97bc923fa595ea39da2905",
       "machineHash": "d0f2f1cd4e8a13a15e887c744aa5a9ba864387d64a97bc923fa595ea39da2905",
       "machineText": "**Validasi pilihan** - Periksa jenis file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Validate selections** - Check file types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0054-text-01": {
       "sourceHash": "7bac6e35da9e1fa8fad8784078c3700d2fbbadf21793c1a9567bfaab03e86a18",
       "targetHash": "b280ea19bc0a609ab021ee34836d8da3858dc52a9981801e5431af7661eca1ec",
       "machineHash": "b280ea19bc0a609ab021ee34836d8da3858dc52a9981801e5431af7661eca1ec",
       "machineText": "**Tangani pembatalan** - Pengguna mungkin membatalkan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Handle cancellation** - User might cancel",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0055-text-01": {
       "sourceHash": "7c4eb50c9bf7e2176963224205e0754d9ac6bc45f7c153a7f08690d9eff8f3dc",
       "targetHash": "cd976a410625a5a423f5a6efde1e43243ba6c61b36c3b423c5c16110cc100eb3",
       "machineHash": "cd976a410625a5a423f5a6efde1e43243ba6c61b36c3b423c5c16110cc100eb3",
       "machineText": "**Tampilkan konfirmasi** - Untuk tindakan destruktif",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Show confirmation** - For destructive actions",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0056-text-01": {
       "sourceHash": "4234250cb9c5821be6c9410865442170311c170aa3ce4be356374eabaff0c548",
       "targetHash": "659c6996e044fd2f98ef14bb097890106c1b4e00eb3d89e43162b4ecd40a0c15",
       "machineHash": "659c6996e044fd2f98ef14bb097890106c1b4e00eb3d89e43162b4ecd40a0c15",
       "machineText": "**Berikan umpan balik** - Pesan keberhasilan/kesalahan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Provide feedback** - Success/error messages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0057-heading-01": {
       "sourceHash": "df89c260f72fd6330be731a6de76bab196eead3f17430716717b08b94f12b175",
       "targetHash": "17f3f93fa687f607a15afd62c318bfc8b3f1d7679b56983581c7fc671eb60e58",
       "machineHash": "17f3f93fa687f607a15afd62c318bfc8b3f1d7679b56983581c7fc671eb60e58",
       "machineText": "❌ Jangan Lakukan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "❌ Don't",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0058-text-01": {
       "sourceHash": "53a3b1a6dd6c403c79831af8de79d8106291754109c2a9e61f3768f9c3390bc9",
       "targetHash": "7a02a189987b61361b552ac455b00ac3237c9fb20b12e6874eb87549276ceace",
       "machineHash": "7a02a189987b61361b552ac455b00ac3237c9fb20b12e6874eb87549276ceace",
       "machineText": "**Jangan lewati validasi** - Periksa jenis file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't skip validation** - Check file types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0059-text-01": {
       "sourceHash": "76144d5fdd25ae7c777922c6c87cbe4f5695646620de1207d0065b8da67eb7cd",
       "targetHash": "a040cdb66296388a51c818db8ed94ad442dd3d55635178617b3071ab11c45b42",
       "machineHash": "a040cdb66296388a51c818db8ed94ad442dd3d55635178617b3071ab11c45b42",
       "machineText": "**Jangan abaikan kesalahan** - Tangani pembatalan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't ignore errors** - Handle cancellation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0060-text-01": {
       "sourceHash": "e7f4ddc69b1536834fa28e47e355aee4c371fe54eb9c20e66e1e449bfe4523ff",
-      "targetHash": "6a073cc2881552d0d908da71da8ddf17f37fb50e4f1a7a5c5cfdaff9cfefe90a",
-      "machineHash": "6a073cc2881552d0d908da71da8ddf17f37fb50e4f1a7a5c5cfdaff9cfefe90a",
-      "machineText": "**Jangan gunakan filter generik** - Gunakan filter yang spesifik",
-      "status": "final",
+      "targetHash": "e1a0135101af6e23ea2101bb687b9bc29731e7348aeb62433e33510e76ac9ff8",
+      "machineHash": "e1a0135101af6e23ea2101bb687b9bc29731e7348aeb62433e33510e76ac9ff8",
+      "machineText": "**Jangan gunakan filter umum** - Gunakan filter yang spesifik",
+      "status": "machine-translated",
       "sourcePreview": "**Don't use generic filters** - Be specific",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0061-text-01": {
       "sourceHash": "cfc54dfb2c3ab0e8612e8d5afea1f9a4553d2e6c0ac1709d9d9303efa263560b",
       "targetHash": "b3025474fd63b5cbde86828358b4d091666dceb21b2ae2aa1fcb2630e5e99cc6",
       "machineHash": "b3025474fd63b5cbde86828358b4d091666dceb21b2ae2aa1fcb2630e5e99cc6",
       "machineText": "**Jangan lupakan \"Semua File\"** - Selalu sertakan sebagai opsi",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't forget \"All Files\"** - Always include as option",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0062-text-01": {
       "sourceHash": "379f5aba3fd50510ff73586ac13e9d6354fc4c69f301ddcd2dd82baa1777ca67",
-      "targetHash": "f602f95a4b635ac3e9633d5c4ba616a6487f21317729f51ca9589c48083cb937",
-      "machineHash": "f602f95a4b635ac3e9633d5c4ba616a6487f21317729f51ca9589c48083cb937",
-      "machineText": "**Jangan tulis jalur secara hardcode** - Gunakan direktori beranda pengguna",
-      "status": "final",
+      "targetHash": "6af9a32f02114a79288008f76c01f51d4d222dfc2ce60f6dc7d4d2fa0fe01322",
+      "machineHash": "6af9a32f02114a79288008f76c01f51d4d222dfc2ce60f6dc7d4d2fa0fe01322",
+      "machineText": "**Jangan tulis jalur secara langsung dalam kode** - Gunakan direktori beranda pengguna",
+      "status": "machine-translated",
       "sourcePreview": "**Don't hardcode paths** - Use user's home directory",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0063-text-01": {
       "sourceHash": "6323beb79bbf82c70799939cc2421c8d0da48f8472878eda33f8f798a145c125",
       "targetHash": "e5cda3ff51a7e1087fdcef198fe07ec2d7a0cddafb439b37c1e4400c83f6fd85",
       "machineHash": "e5cda3ff51a7e1087fdcef198fe07ec2d7a0cddafb439b37c1e4400c83f6fd85",
       "machineText": "**Jangan berasumsi bahwa file tersedia** - Periksa sebelum membukanya",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't assume file exists** - Check before opening",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0064-heading-01": {
       "sourceHash": "b8b745d3b056b806f9d79c36ec429cdabf11d93f6d5f3cb1853d66fb440245de",
       "targetHash": "1f23ca185098cec5e1a66b23cb4adfbd68009354c1b0a918cb83296aee468413",
       "machineHash": "1f23ca185098cec5e1a66b23cb4adfbd68009354c1b0a918cb83296aee468413",
       "machineText": "Perbedaan Antarplatform",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Platform Differences",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0065-heading-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "machineText": "macOS",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "macOS",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0066-text-01": {
       "sourceHash": "554dce732bb59b42e87408bd11c372affa9536325dc546af037379b5b1786c47",
       "targetHash": "d7f39042990bf502028780be7890999a8093865d2fe6c3e6cea8ddfe0c218178",
       "machineHash": "d7f39042990bf502028780be7890999a8093865d2fe6c3e6cea8ddfe0c218178",
       "machineText": "NSOpenPanel/NSSavePanel native",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Native NSOpenPanel/NSSavePanel",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0067-text-01": {
       "sourceHash": "d6dd82c6738500d5a40369748a8fded596fae9abb327b55ae0f2722989114d4d",
-      "targetHash": "d27b93c3bb767baba85711a04ac341162f5356da2bd8ee1e049b2254d2b88f2e",
-      "machineHash": "d27b93c3bb767baba85711a04ac341162f5356da2bd8ee1e049b2254d2b88f2e",
-      "machineText": "Bergaya sheet saat dilampirkan ke jendela",
-      "status": "final",
+      "targetHash": "f058b2782327d397ea42377025531d9e83cfaa830f3656e3559a26a914b96a27",
+      "machineHash": "f058b2782327d397ea42377025531d9e83cfaa830f3656e3559a26a914b96a27",
+      "machineText": "Bergaya lembar saat dilampirkan ke jendela",
+      "status": "machine-translated",
       "sourcePreview": "Sheet-style when attached to window",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0068-text-01": {
       "sourceHash": "5dd7669d9a862a6ae4a52a8ebf0e04fb24d4e973085824bdd223a75c606b63e6",
       "targetHash": "d511d11f1f34954264774b0c064a5969943a0262e51097fdfe33c886dfcdc333",
       "machineHash": "d511d11f1f34954264774b0c064a5969943a0262e51097fdfe33c886dfcdc333",
       "machineText": "Mengikuti tema sistem",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Follows system theme",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0069-text-01": {
       "sourceHash": "96f3e6cd0352e40639c635ca05da00df53b34f0cd6e04db918819a8ff100d35c",
       "targetHash": "ec22b01704c7ca3c87078e98dfb3d6dffa9651a3f32ab761adcb20de55cc9122",
       "machineHash": "ec22b01704c7ca3c87078e98dfb3d6dffa9651a3f32ab761adcb20de55cc9122",
       "machineText": "Mendukung pratinjau Quick Look",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Supports Quick Look preview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0070-text-01": {
       "sourceHash": "4e5c534438e8c6148a30efeaf4f710a1d26b7761d3fce5237fd1846f2df6fbf9",
-      "targetHash": "46e187848441287b14df640c060a49f44de1a9779cfcf74b21bff386b5370e0a",
-      "machineHash": "46e187848441287b14df640c060a49f44de1a9779cfcf74b21bff386b5370e0a",
-      "machineText": "Integrasi dengan tag dan favorit",
-      "status": "final",
+      "targetHash": "618f0e88f9045057ae4849510757f780eea27a81f010ae65261cd52a54208a1d",
+      "machineHash": "618f0e88f9045057ae4849510757f780eea27a81f010ae65261cd52a54208a1d",
+      "machineText": "Integrasi tag dan favorit",
+      "status": "machine-translated",
       "sourcePreview": "Tags and favourites integration",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0071-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "machineText": "Windows",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Windows",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0072-text-01": {
       "sourceHash": "31ee81f4f9144c8a057403a8480774db9a7243f9874dc92b793f69a0fff7280f",
       "targetHash": "5cd7a3f7cf193dac6a12500e24419d4e7a2e7b68e1ac2e196ed97126f4ac78fc",
       "machineHash": "5cd7a3f7cf193dac6a12500e24419d4e7a2e7b68e1ac2e196ed97126f4ac78fc",
       "machineText": "Dialog Buka/Simpan File native",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Native File Open/Save dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0073-text-01": {
       "sourceHash": "5dd7669d9a862a6ae4a52a8ebf0e04fb24d4e973085824bdd223a75c606b63e6",
       "targetHash": "d511d11f1f34954264774b0c064a5969943a0262e51097fdfe33c886dfcdc333",
       "machineHash": "d511d11f1f34954264774b0c064a5969943a0262e51097fdfe33c886dfcdc333",
       "machineText": "Mengikuti tema sistem",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Follows system theme",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0074-text-01": {
       "sourceHash": "f05f819d395b1bc8cd1334ff659951f74ea09bc45d852ccd301df644b45b08f9",
       "targetHash": "d3102c0f0a46042d4278fedc408d48fc65551bf0a496da77c8b7b21b90c5dc59",
       "machineHash": "d3102c0f0a46042d4278fedc408d48fc65551bf0a496da77c8b7b21b90c5dc59",
       "machineText": "Integrasi file terbaru",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Recent files integration",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0075-text-01": {
       "sourceHash": "049bc76237b400cd2aa12f2c9d72fa97dae8a07698923e19d95b2d1f241d6f45",
       "targetHash": "b5bb40d1ae53177da3224bf96697e7c93d3f3808aba64fddab8c7843dac31a17",
       "machineHash": "b5bb40d1ae53177da3224bf96697e7c93d3f3808aba64fddab8c7843dac31a17",
       "machineText": "Dukungan lokasi jaringan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Network location support",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0076-heading-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "machineText": "Linux",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Linux",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0077-text-01": {
       "sourceHash": "460a15dd66cc82bca76e9de8b1acc9d2611c5246d331ab456cab24aa858efd85",
       "targetHash": "f8824bc90a2e2aa02a64c45ca3676d7639e45ec0cd0cb71c68335045a75e5076",
       "machineHash": "f8824bc90a2e2aa02a64c45ca3676d7639e45ec0cd0cb71c68335045a75e5076",
       "machineText": "Pemilih file GTK",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "GTK file chooser",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0078-text-01": {
       "sourceHash": "c07e7126378a1d103eb66c7cee64d81d308fe6b953d077300ee99616443fac71",
       "targetHash": "11e38682d2475a3eb18b91e7c770e2c25e026c01b7046995366bcfff8101d08b",
       "machineHash": "11e38682d2475a3eb18b91e7c770e2c25e026c01b7046995366bcfff8101d08b",
       "machineText": "Bervariasi menurut lingkungan desktop",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Varies by desktop environment",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0079-text-01": {
       "sourceHash": "5ab7b78d1afb1dc0106647af0da637f116f4ef3517a197980054c90c82263339",
       "targetHash": "8f2034fe42b27d1e9f304cbbdd5b080c22aeed98e7745b0ce64abd2a7a65bdb3",
       "machineHash": "8f2034fe42b27d1e9f304cbbdd5b080c22aeed98e7745b0ce64abd2a7a65bdb3",
       "machineText": "Mengikuti tema desktop",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Follows desktop theme",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0080-text-01": {
       "sourceHash": "36c53eb7c7705772d7bdd0480ce1f082fabffe3f27f03194c3d3e10385ae6fe1",
       "targetHash": "a19affbaa94950baed5871be79cac7a3038788cd7247b9f9f77a55fc32a7c7f5",
       "machineHash": "a19affbaa94950baed5871be79cac7a3038788cd7247b9f9f77a55fc32a7c7f5",
       "machineText": "Dukungan file terbaru",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Recent files support",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0081-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "6c2a858a0a811410a486b150aa1c70465752216e9be8f01264bb324cb80611e5",
       "machineHash": "6c2a858a0a811410a486b150aa1c70465752216e9be8f01264bb324cb80611e5",
       "machineText": "Langkah Berikutnya",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0082-text-01": {
       "sourceHash": "de7fef67d7c71b8faa385ec1e27fb992a78dc29f36283e5fab05495d53df69cc",
       "targetHash": "6ced19d7ce073c25ef206b42868ab38928617241560711704850c0c83734f796",
       "machineHash": "6ced19d7ce073c25ef206b42868ab38928617241560711704850c0c83734f796",
       "machineText": "ℹ Dialog pesan\nDialog informasi, peringatan, dan kesalahan.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "ℹ Message dialogs Info, warning, and error dialogs.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0083-text-01": {
       "sourceHash": "3637c58973b48875fc83963a24368b3542075595529fee11df21984499c7bdf3",
       "targetHash": "9794d2c8ac321c00dcd520579934599cfb9fbf5ba24c4147c078458365bbd865",
       "machineHash": "9794d2c8ac321c00dcd520579934599cfb9fbf5ba24c4147c078458365bbd865",
       "machineText": "◆ Dialog khusus\nBuat jendela dialog khusus.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "◆ Custom dialogs Create custom dialog windows.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0084-text-01": {
       "sourceHash": "0716a5a1889736687507dfcd6aed63fd238a575a3e9f9caa9888a112491e1421",
       "targetHash": "55719c20ed7bf4b9e9f92f198eb3f5b44bea351997ea959c51a07a83244dc591",
       "machineHash": "55719c20ed7bf4b9e9f92f198eb3f5b44bea351997ea959c51a07a83244dc591",
       "machineText": "🚀 Binding\nPanggil fungsi Go dari JavaScript.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "🚀 Bindings Call Go functions from JavaScript.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0085-text-01": {
       "sourceHash": "334732cc5e7e9e50002cba357312f5e3e64c77baf5c98139069aafb237173f85",
-      "targetHash": "747e833aadc7d79e23d404c371f5d79c08b56a7f68eb139367773483eedb016d",
-      "machineHash": "747e833aadc7d79e23d404c371f5d79c08b56a7f68eb139367773483eedb016d",
-      "machineText": "★ Peristiwa\nGunakan peristiwa untuk memperbarui progres.",
-      "status": "final",
+      "targetHash": "83e493090e56a36d0d3637dace005b0396c6ebe2dd650e9409090611154b3c3e",
+      "machineHash": "83e493090e56a36d0d3637dace005b0396c6ebe2dd650e9409090611154b3c3e",
+      "machineText": "★ Peristiwa\nGunakan peristiwa untuk pembaruan progres.",
+      "status": "machine-translated",
       "sourcePreview": "★ Events Use events for progress updates.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "b0086-text-01": {
       "sourceHash": "4a04f0a11c29d86b6aa4ba4ccb5b95d6d2dab0716ae5be9db4421112cc2f43be",
       "targetHash": "f9b703ce8db1a48c614c129e46318ec4bc2db56bc12143e4703131301050f197",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [file dialog examples](h…"
+      "machineHash": "f9b703ce8db1a48c614c129e46318ec4bc2db56bc12143e4703131301050f197",
+      "machineText": "**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog file](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [file dialog examples](h…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineText": "Pelajari Selengkapnya →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "c0001-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineText": "Pelajari Selengkapnya →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "c0001-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineText": "Pelajari Selengkapnya →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "c0001-line-004-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineHash": "fee978338011ccb95186096b46d7a85c523d5e0f9761a66ae8e34a2218893261",
       "machineText": "Pelajari Selengkapnya →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "fm-description": {
       "sourceHash": "77181a0d60bc6a57c0d02146188fbfb21934302e7db7c74d9289693de31921b6",
       "targetHash": "d0d6b4535c22f7313767939f66f2ee4ee31707d43407aa8ce939bdfd979b6a3a",
       "machineHash": "d0d6b4535c22f7313767939f66f2ee4ee31707d43407aa8ce939bdfd979b6a3a",
       "machineText": "Dialog untuk membuka, menyimpan, dan memilih folder",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Open, save, and folder selection dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     },
     "fm-title": {
       "sourceHash": "cebe36955624d7c66ab5549effd85e6632236a16b54b72dffa235423ba0312dd",
       "targetHash": "f85ba5c422f50ab6b4a22f5d410e5dc4eba6cb609bcf635947a880c79c96d619",
       "machineHash": "f85ba5c422f50ab6b4a22f5d410e5dc4eba6cb609bcf635947a880c79c96d619",
       "machineText": "Dialog file",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "File dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:29Z"
+      "updatedAt": "2026-11-03T00:11:10Z"
     }
   },
   "migration": {

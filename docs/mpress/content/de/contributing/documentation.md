@@ -24,7 +24,7 @@ Das Build-Skript des Repositorys lädt die **neueste stabile M-Press-Version** h
 
 ### Eine ausführbare Datei herunterladen
 
-Öffnen Sie die Seite der [neuesten stabilen M-Press-Version](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) oder laden Sie unten das passende Archiv herunter. ARM64 umfasst Apple Silicon; AMD64 ist die übliche Architektur für PCs mit Intel- oder AMD-Prozessor.
+Öffnen Sie die [neueste stabile M-Press-Version](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) oder laden Sie unten das passende Archiv herunter. ARM64 umfasst Apple Silicon; AMD64 ist die übliche Intel-/AMD-PC-Architektur.
 
 | Computer | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ Das Build-Skript des Repositorys lädt die **neueste stabile M-Press-Version** h
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Laden Sie [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) aus demselben Release herunter. Berechnen Sie in Ihrem Downloadverzeichnis den SHA-256-Hash des Archivs und vergleichen Sie ihn mit der Zeile für diesen Dateinamen in `checksums.txt`:
+Laden Sie [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) aus derselben Version herunter. Berechnen Sie in Ihrem Download-Verzeichnis den SHA-256-Hash des Archivs und vergleichen Sie ihn mit der Zeile für diesen Dateinamen in `checksums.txt`:
 
 @tabs
 [macOS]

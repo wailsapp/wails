@@ -10,16 +10,16 @@ sourcePath: "features/notifications/overview.md"
 O Wails oferece um sistema completo de notificações multiplataforma para aplicações desktop. Esse serviço permite exibir notificações nativas do sistema, com suporte a:
 
 - Notificações básicas com título, subtítulo e corpo
-- Notificações interativas com botões de ação e respostas de texto
+- Notificações interativas com botões de ação e respostas em texto
 - [Categorias de notificação](#notificaes-interativas) reutilizáveis para ações
 - [Sons](#som-personalizado) personalizados (padrão, silencioso ou nomeado)
-- [Anexos](#anexos) (imagens em todas as plataformas; áudio/vídeo no macOS)
+- [Anexos](#anexos) (imagens em todas as plataformas; áudio e vídeo no macOS)
 - [Agrupamento de notificações relacionadas](#encadeamento-e-agrupamento) por `ThreadID`
 - [Prioridade](#nvel-de-interrupo) por meio de `InterruptionLevel` (`passive` / `active` / `timeSensitive` / `critical`)
-- [Entrega agendada](#entrega-agendada) (nativa no macOS; temporizador no processo no Windows e no Linux)
+- [Entrega agendada](#entrega-agendada) (nativa no macOS; temporizador no processo no Windows e Linux)
 - [Atualização de uma notificação em andamento](#atualizao-de-notificaes) por ID
 
-Cada novo campo opcional tem uma degradação harmoniosa quando uma plataforma não consegue respeitá-lo; consulte [Considerações sobre plataformas](#consideraes-sobre-as-plataformas) para ver a matriz de suporte de cada recurso.
+Cada novo campo opcional é degradado de forma transparente quando uma plataforma não oferece suporte a ele; consulte [Considerações sobre plataformas](#consideraes-sobre-as-plataformas) para ver a matriz de suporte de cada recurso.
 
 ## Uso básico
 
@@ -44,7 +44,7 @@ app := application.New(application.Options{
 
 ## Autorização de notificações
 
-As notificações no macOS exigem autorização do usuário. Solicite e verifique a autorização:
+No macOS, as notificações exigem autorização do usuário. Solicite e verifique a autorização:
 
 ```go
 authorized, err := notifier.CheckNotificationAuthorization()
@@ -65,7 +65,7 @@ No Windows e no Linux, isso sempre retorna `true`.
 
 ### Notificações básicas
 
-Envie aos usuários uma notificação básica com ID exclusivo, título, subtítulo opcional (macOS e Linux) e texto no corpo:
+Envie aos usuários uma notificação básica com ID exclusivo, título, subtítulo opcional (macOS e Linux) e texto do corpo:
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -117,9 +117,9 @@ notifier.SendNotificationWithActions(notifications.NotificationOptions{
 })
 ```
 
-## Respostas às notificações
+## Respostas a notificações
 
-Processe as interações dos usuários com as notificações:
+Processe as interações do usuário com as notificações:
 
 ```go
 notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
@@ -160,7 +160,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### Som personalizado
 
-Use `Sound` para controlar o áudio reproduzido quando uma notificação é entregue. Deixá-lo como `nil` reproduz o som padrão da plataforma; defina `Silent: true` para suprimir o som; defina `Name` para reproduzir um som nomeado ou incluído no pacote.
+Use `Sound` para controlar o áudio reproduzido quando uma notificação é entregue. Deixá-lo como `nil` reproduz o som padrão da plataforma; defina-o como `Silent: true` para suprimir o som; defina-o como `Name` para reproduzir um som nomeado ou incluído no pacote.
 
 ```go
 // Silent
@@ -182,12 +182,12 @@ notifier.SendNotification(notifications.NotificationOptions{
 Como `Name` é resolvido em cada plataforma:
 
 - **macOS** — `Name` é passado para `[UNNotificationSound soundNamed:]`; o arquivo de áudio deve estar no diretório `Library/Sounds` do pacote da aplicação.
-- **Windows** — se `Name` já começar com `ms-winsoundevent:` ou `ms-appx:`, será usado como está; caso contrário, será encapsulado em `ms-winsoundevent:` para uso como nome de evento de notificação toast integrado (consulte a documentação da Microsoft sobre o esquema de `<audio>` das notificações toast).
-- **Linux** — encaminhado como a dica `sound-name` do freedesktop; a reprodução depende do daemon de notificações e do tema de sons ativos.
+- **Windows** — se `Name` já começar com `ms-winsoundevent:` ou `ms-appx:`, será usado sem alterações; caso contrário, será encapsulado em `ms-winsoundevent:` para uso como nome de evento de toast integrado (consulte a documentação da Microsoft sobre o esquema `<audio>` de toast).
+- **Linux** — encaminhado como a dica `sound-name` do freedesktop; sua reprodução depende do daemon de notificações e do tema de sons ativos.
 
 ### Anexos
 
-`Attachments` adiciona arquivos de mídia a uma notificação. O macOS aceita vários anexos de qualquer tipo de mídia; o Windows e o Linux usam o primeiro anexo do tipo imagem.
+`Attachments` adiciona arquivos de mídia a uma notificação. O macOS oferece suporte a vários anexos de qualquer tipo de mídia; o Windows e o Linux usam o primeiro anexo do tipo imagem.
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -208,11 +208,11 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-`Path` deve ser um caminho absoluto do sistema de arquivos. O macOS também aceita URLs `file://`.
+`Path` deve ser um caminho absoluto no sistema de arquivos. O macOS também aceita URLs `file://`.
 
-#### Como anexar um arquivo distribuído com a aplicação
+#### Anexar um arquivo distribuído com a aplicação
 
-O sistema operacional lê o anexo do disco quando a notificação é entregue, portanto `Path` precisa corresponder a um arquivo real na máquina do usuário final. Para um recurso incluído no pacote da aplicação (um ícone ou uma imagem incorporado com `go:embed`), não há um caminho absoluto fixo que possa ser definido diretamente no código, pois o arquivo fica dentro do binário, e não em um local conhecido no disco. Grave-o uma vez em um diretório gravável durante a inicialização e passe esse caminho:
+O sistema operacional lê o anexo do disco quando a notificação é entregue, portanto `Path` deve apontar para um arquivo real no computador do usuário final. Para um recurso incluído no pacote da aplicação (um ícone ou uma imagem incorporado com `go:embed`), não há um caminho absoluto fixo que possa ser codificado diretamente, pois o arquivo fica dentro do binário, e não em um local conhecido no disco. Grave-o uma vez em um diretório gravável durante a inicialização e forneça esse caminho:
 
 ```go
 import (
@@ -240,7 +240,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-Um arquivo fornecido pelo usuário ou baixado já possui um caminho real no disco; portanto, você pode passá-lo diretamente para `Path` sem essa etapa. O suporte para passar os bytes do anexo na memória poderá ser adicionado em uma versão futura.
+Um arquivo fornecido pelo usuário ou baixado já possui um caminho real no disco, portanto você pode passá-lo diretamente para `Path` sem essa etapa. O suporte ao fornecimento dos bytes do anexo em memória poderá ser adicionado em uma versão futura.
 
 ### Encadeamento e agrupamento
 
@@ -257,7 +257,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### Nível de interrupção
 
-`InterruptionLevel` controla a prioridade das notificações. Use uma das constantes exportadas:
+`InterruptionLevel` controla a prioridade da notificação. Use uma das constantes exportadas:
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -270,20 +270,20 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 | Constante | Valor | Significado |
 | --- | --- | --- |
-| `InterruptionLevelPassive` | `"passive"` | Entrega silenciosa; não acende a tela nem reproduz o som padrão |
+| `InterruptionLevelPassive` | `"passive"` | Entrega silenciosa; não acende a tela nem reproduz um som padrão |
 | `InterruptionLevelActive` | `"active"` | Nível padrão |
-| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Ignora o Foco/Não Perturbe quando permitido |
-| `InterruptionLevelCritical` | `"critical"` | Ignora o Foco e o modo silencioso; o macOS exige o direito de Alerta Crítico (sem ele, ocorre uma degradação silenciosa) |
+| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Ignora o modo Foco/Não Perturbe quando permitido |
+| `InterruptionLevelCritical` | `"critical"` | Ignora o modo Foco e o toque; o macOS exige a autorização Critical Alert (sem ela, o recurso é degradado silenciosamente) |
 
 Mapeamento por plataforma:
 
-- **macOS** — define `UNNotificationContent.interruptionLevel`. `critical` exige o macOS 12+ e o direito de Alerta Crítico.
-- **Windows** — é mapeado para o atributo `<toast scenario="...">` da notificação toast.
-- **Linux** — é mapeado para a dica `urgency` do freedesktop.
+- **macOS** — define `UNNotificationContent.interruptionLevel`. `critical` exige macOS 12+ e a autorização Critical Alert.
+- **Windows** — mapeado para o atributo `<toast scenario="...">` do toast.
+- **Linux** — mapeado para a dica `urgency` do freedesktop.
 
 ### Entrega agendada
 
-`Schedule` adia a entrega. Defina exatamente um entre `DelaySeconds` (segundos a partir de agora) e `At` (segundos Unix, UTC).
+`Schedule` adia a entrega. Defina exatamente um dos seguintes campos: `DelaySeconds` (segundos a partir de agora) ou `At` (segundos Unix, UTC).
 
 ```go
 // Deliver in 60 seconds
@@ -302,7 +302,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 ```
 
 @note{type="caution" title="Persistência"}
-No **macOS**, as notificações agendadas usam um gatilho nativo e persistem após a reinicialização do aplicativo. No **Windows** e no **Linux**, o agendamento recorre a um temporizador `time.AfterFunc` no processo e é **perdido se o aplicativo for encerrado antes da entrega** — nem `wintoast` nem a especificação freedesktop expõem um mecanismo primitivo de entrega adiada.
+No **macOS**, as notificações agendadas usam um gatilho nativo e persistem após a reinicialização da aplicação. No **Windows** e no **Linux**, o agendamento recorre a um temporizador `time.AfterFunc` no processo e é **perdido se a aplicação for encerrada antes da entrega** — nem `wintoast` nem a especificação freedesktop disponibilizam um mecanismo primitivo de entrega adiada.
 
 @end
 
@@ -320,9 +320,9 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 Comportamento por plataforma:
 
-- **macOS** — `UNUserNotificationCenter` elimina duplicatas automaticamente pelo identificador, portanto a notificação existente é atualizada no próprio local.
+- **macOS** — `UNUserNotificationCenter` elimina automaticamente duplicatas pelo identificador, portanto a notificação existente é atualizada no próprio local.
 - **Linux** — usa o parâmetro D-Bus `replaces_id` para substituir a notificação anterior.
-- **Windows** — atualmente, entrega novamente como uma nova notificação. A substituição real no próprio local exige que `wintoast` ofereça suporte a `tag` / `group` upstream.
+- **Windows** — atualmente, reenvia como uma nova notificação. A substituição real no local exige que `wintoast` forneça suporte a `tag` / `group`.
 
 ## Considerações sobre as plataformas
 
@@ -332,43 +332,43 @@ No macOS, as notificações:
 
 - Exigem autorização do usuário
 - Exigem que o aplicativo seja empacotado e assinado (e notarizado para distribuição)
-- Usam a aparência de notificação padrão do sistema
+- Usam a aparência padrão do sistema para notificações
 - Oferecem suporte a `Subtitle`
-- Oferecem suporte à entrada de texto do usuário (respostas)
+- Oferecem suporte à entrada de texto pelo usuário (respostas)
 - Oferecem suporte à opção de ação `Destructive`
 - Oferecem suporte a vários `Attachments` de qualquer tipo de mídia (imagens, áudio e vídeo)
 - Oferecem suporte a `ThreadID` para agrupamento na Central de Notificações
-- Oferecem suporte a todos os valores de `InterruptionLevel` (`critical` exige o direito de Alerta Crítico)
-- Oferecem suporte à entrega agendada nativa que persiste após a reinicialização do aplicativo
-- Eliminam automaticamente as chamadas duplicadas de `UpdateNotification` com base em `ID`
-- Gerenciam automaticamente os modos escuro e claro
+- Oferecem suporte a todos os valores de `InterruptionLevel` (`critical` exige o direito Critical Alert)
+- Oferecem suporte à entrega agendada nativa, que persiste após reinicializações do aplicativo
+- Eliminam automaticamente a duplicação de chamadas a `UpdateNotification` com base em `ID`
+- Alternam automaticamente entre os modos escuro e claro
 
 [Windows]
 No Windows, as notificações:
 
 - Usam os estilos de notificação toast do sistema Windows por meio do backend `wintoast`
 - Adaptam-se às configurações de tema do Windows
-- Oferecem suporte à entrada de texto do usuário (respostas)
-- Oferecem suporte a telas com alta densidade de pixels (DPI)
+- Oferecem suporte à entrada de texto pelo usuário (respostas)
+- Oferecem suporte a telas de alta densidade de pixels (DPI)
 - Não oferecem suporte a `Subtitle`
-- Oferecem suporte a um único `Attachment` de imagem com a dica de posicionamento `hero`, `appLogoOverride` ou `inline` (o padrão é `inline`)
+- Oferecem suporte a uma única imagem `Attachment` com a indicação de posicionamento `hero`, `appLogoOverride` ou `inline` (o padrão é `inline`)
 - Oferecem suporte a `ThreadID` para agrupamento na Central de Ações
 - Oferecem suporte a `InterruptionLevel` por meio do atributo `scenario` da notificação toast
-- Oferecem suporte à entrega agendada por meio de um temporizador no processo — **as notificações agendadas são perdidas se o aplicativo for encerrado antes da entrega**
-- `UpdateNotification` atualmente entrega novamente como uma nova notificação (a substituição real no próprio local aguarda o suporte upstream de `wintoast` a `tag`/`group`)
+- Oferecem suporte à entrega agendada por meio de um temporizador no processo — **as notificações agendadas serão perdidas se o aplicativo for encerrado antes da entrega**
+- `UpdateNotification` atualmente reenvia como uma nova notificação (a substituição real no local aguarda o suporte de `wintoast` a `tag`/`group`)
 
 [Linux]
-No Linux, as notificações usam a interface D-Bus `org.freedesktop.Notifications`. Um daemon de notificações compatível **deve estar em execução** para que as notificações funcionem.
+No Linux, as notificações usam a interface D-Bus `org.freedesktop.Notifications`. Para que funcionem, um daemon de notificações compatível **deve estar em execução**.
 
 @note{type="caution" title="Requisito do sistema: daemon de notificações"}
 Um daemon de notificações compatível com freedesktop deve estar instalado e em execução. Opções comuns:
 
 - **dunst** — leve e altamente configurável (`apt install dunst` / `dnf install dunst`)
 - **mako** — nativo do Wayland (`apt install mako-notifier`)
-- **GNOME Shell** — registra automaticamente a interface no GNOME 43+. No Ubuntu 24.04 (GNOME Shell 46), talvez a interface não se registre automaticamente no início da sessão; instale `dunst` como alternativa se as notificações não aparecerem.
+- **GNOME Shell** — registra a interface automaticamente no GNOME 43+. No Ubuntu 24.04 (GNOME Shell 46), talvez a interface não se registre automaticamente no início da sessão; se as notificações não aparecerem, instale `dunst` como alternativa.
 - **xfce4-notifyd** — incluído nos ambientes de desktop XFCE
 
-Se nenhum daemon estiver em execução, `SendNotification` retornará um erro D-Bus: `The name org.freedesktop.Notifications was not provided by any .service files`. Trate esse erro no seu aplicativo e informe ao usuário que ele deve instalar um daemon de notificações.
+Se nenhum daemon estiver em execução, `SendNotification` retornará um erro do D-Bus: `The name org.freedesktop.Notifications was not provided by any .service files`. Trate esse erro no aplicativo e oriente o usuário a instalar um daemon de notificações.
 
 @end
 
@@ -376,14 +376,14 @@ No Linux, as notificações:
 
 - Seguem o tema do ambiente de desktop
 - São posicionadas de acordo com as regras do ambiente de desktop
-- Oferecem suporte a `Subtitle` (concatenado ao corpo para daemons que não o renderizam separadamente)
-- Não oferecem suporte à entrada de texto do usuário (não faz parte da especificação freedesktop)
-- Oferecem suporte a um único `Attachment` de imagem por meio da dica `image-path`
-- Compatível com `ThreadID` (tratado pelo daemon quando houver suporte)
-- `Sound.Name` é encaminhado como a dica `sound-name`; a reprodução depende do daemon ativo e do tema de sons
-- Mapeiam `InterruptionLevel` para a dica `urgency` do freedesktop
-- Compatível com entrega agendada por meio de um temporizador no processo — **as notificações agendadas serão perdidas se o aplicativo for encerrado antes da entrega**
-- `UpdateNotification` usa o parâmetro `replaces_id` do D-Bus para substituir a notificação anterior no mesmo lugar
+- Oferecem suporte a `Subtitle` (concatenado ao corpo nos daemons que não o renderizam separadamente)
+- Não oferecem suporte à entrada de texto pelo usuário (não faz parte da especificação freedesktop)
+- Oferecem suporte a uma única imagem `Attachment` por meio da indicação `image-path`
+- Oferecem suporte a `ThreadID` (processado pelo daemon quando houver suporte)
+- `Sound.Name` é encaminhado como a indicação `sound-name`; a reprodução depende do daemon ativo e do tema de sons
+- Mapeiam `InterruptionLevel` para a indicação freedesktop `urgency`
+- Oferecem suporte à entrega agendada por meio de um temporizador no processo — **as notificações agendadas serão perdidas se o aplicativo for encerrado antes da entrega**
+- `UpdateNotification` usa o parâmetro D-Bus `replaces_id` para substituir a notificação anterior no local
 
 @end
 
@@ -409,7 +409,7 @@ No Linux, as notificações:
 
 5. No Linux, trate a dependência do daemon:
   - Verifique o erro retornado por `SendNotification` — a ausência de um daemon produz um erro do D-Bus
-  - A documentação do pacote ou o README do aplicativo deve informar que é necessário um daemon de notificações compatível com freedesktop
+  - A documentação do pacote ou o README do aplicativo deve informar que um daemon de notificações freedesktop é obrigatório
 
 
 ## Exemplos
@@ -431,7 +431,7 @@ Explore este exemplo:
 | Método | Descrição |
 | --- | --- |
 | `RequestNotificationAuthorization()` | Solicita permissão para exibir notificações (macOS) |
-| `CheckNotificationAuthorization()` | Verifica o status atual da autorização de notificações (macOS) |
+| `CheckNotificationAuthorization()` | Verifica o estado atual da autorização de notificações (macOS) |
 
 ### Envio de notificações
 
@@ -439,9 +439,9 @@ Explore este exemplo:
 | --- | --- |
 | `SendNotification(options NotificationOptions)` | Envia uma notificação básica |
 | `SendNotificationWithActions(options NotificationOptions)` | Envia uma notificação interativa com ações |
-| `UpdateNotification(options NotificationOptions)` | Atualiza uma notificação em andamento por `ID` (consulte [Atualização de notificações](#atualizao-de-notificaes)) |
+| `UpdateNotification(options NotificationOptions)` | Atualiza uma notificação em andamento pelo `ID` (consulte [Atualização de notificações](#atualizao-de-notificaes)) |
 
-### Categorias de notificação
+### Categorias de notificações
 
 | Método | Descrição |
 | --- | --- |
@@ -452,19 +452,19 @@ Explore este exemplo:
 
 | Método | Descrição |
 | --- | --- |
-| `RemoveAllPendingNotifications()` | Remove todas as notificações pendentes (somente macOS e Linux) |
-| `RemovePendingNotification(identifier string)` | Remove uma notificação pendente específica (somente macOS e Linux) |
-| `RemoveAllDeliveredNotifications()` | Remove todas as notificações entregues (somente macOS e Linux) |
-| `RemoveDeliveredNotification(identifier string)` | Remove uma notificação entregue específica (somente macOS e Linux) |
+| `RemoveAllPendingNotifications()` | Remove todas as notificações pendentes (somente no macOS e Linux) |
+| `RemovePendingNotification(identifier string)` | Remove uma notificação pendente específica (somente no macOS e Linux) |
+| `RemoveAllDeliveredNotifications()` | Remove todas as notificações entregues (somente no macOS e Linux) |
+| `RemoveDeliveredNotification(identifier string)` | Remove uma notificação entregue específica (somente no macOS e Linux) |
 | `RemoveNotification(identifier string)` | Remove uma notificação (específico do Linux) |
 
 ### Tratamento de eventos
 
 | Método | Descrição |
 | --- | --- |
-| `OnNotificationResponse(callback func(result NotificationResult))` | Registra uma função de callback para respostas às notificações |
+| `OnNotificationResponse(callback func(result NotificationResult))` | Registra uma função de retorno de chamada para respostas a notificações |
 
-### Structs e tipos
+### Estruturas e tipos
 
 #### NotificationOptions
 

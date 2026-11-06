@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "16da2251ddd96969ae20",
+  "pageKey": "9b1c377fe9ce61810e34",
   "sourceFile": "features/bindings/enums.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
@@ -11,1050 +11,1116 @@
       "targetHash": "ee3ee47921ca73bf47609d0a53a02b6540e4988bcdc4d1d3de8bee8e7e1df4ba",
       "machineHash": "ee3ee47921ca73bf47609d0a53a02b6540e4988bcdc4d1d3de8bee8e7e1df4ba",
       "machineText": "Enum-Bindings",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Enum Bindings",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0002-text-01": {
       "sourceHash": "9a567638483fbb9329072c0491e0e5422c120de41d53af732985a1fc2980fcbc",
-      "targetHash": "382989f75a625e71b705c401c5ecce609877d20631081a791658da2618a41f07",
-      "machineHash": "382989f75a625e71b705c401c5ecce609877d20631081a791658da2618a41f07",
-      "machineText": "Der Binding-Generator von Wails v3 **erkennt Typen von Go-Konstanten automatisch und generiert TypeScript-Enums oder JavaScript-const-Objekte**. Weder Registrierung noch Konfiguration sind erforderlich: Definieren Sie einfach Ihre Typen und Konstanten in Go; der Generator erledigt den Rest.",
-      "status": "final",
+      "targetHash": "c180982d009b93d426c451188763cd0634bbf962d299d0233810fb5cfd2299cb",
+      "machineHash": "c180982d009b93d426c451188763cd0634bbf962d299d0233810fb5cfd2299cb",
+      "machineText": "Der Wails-Binding-Generator v3erkennt Go-Konstantentypen automatisch\u003cstrong\u003e und erzeugt TypeScript-Enums oder JavaScript-Const-Objekte\u003c/strong\u003e. Weder Registrierung noch Konfiguration sind erforderlich: Definieren Sie einfach Ihre Typen und Konstanten in Go; der Generator erledigt den Rest.",
+      "status": "machine-translated",
       "sourcePreview": "The Wails v3 binding generator **automatically detects Go constant types and generates TypeScript en…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0003-text-01": {
       "sourceHash": "89adecd1a2fa9ef3103aaa7e47a9c4ac0f33c1d389b40b181167fb3b37a96fcd",
-      "targetHash": "e455a4e3b783faf101a055fc080e31a312cf09a2eae1a897f6caf12de0948eb0",
-      "machineHash": "e455a4e3b783faf101a055fc080e31a312cf09a2eae1a897f6caf12de0948eb0",
-      "machineText": "Anders als bei Wails v2 müssen Sie **weder `EnumBind`** aufrufen noch Enums manuell registrieren. Der Generator erkennt sie automatisch in Ihrem Quellcode.",
-      "status": "final",
+      "targetHash": "608289a61cd04f9de4518a701d3725ba2a24150625abf35ba00c26d9f3a79868",
+      "machineHash": "608289a61cd04f9de4518a701d3725ba2a24150625abf35ba00c26d9f3a79868",
+      "machineText": "Anders als in Wails v2 müssen Sie **weder `EnumBind`** aufrufen noch Enums manuell registrieren. Der Generator erkennt sie automatisch in Ihrem Quellcode.",
+      "status": "machine-translated",
       "sourcePreview": "Unlike Wails v2, there is **no need to call `EnumBind`** or register enums manually. The generator d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0004-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
-      "targetHash": "fcd9ee12bba31e6874463dcffc571a7c4827aace64669158a7e7ef40e50dbebe",
-      "machineHash": "fcd9ee12bba31e6874463dcffc571a7c4827aace64669158a7e7ef40e50dbebe",
-      "machineText": "Schnellstart",
-      "status": "final",
+      "targetHash": "9f52a9084668111332b176ca16f4164319e0108c0b11eac12ce35ea6b6d20d42",
+      "machineHash": "9f52a9084668111332b176ca16f4164319e0108c0b11eac12ce35ea6b6d20d42",
+      "machineText": "Schnelleinstieg",
+      "status": "machine-translated",
       "sourcePreview": "Quick Start",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0005-text-01": {
       "sourceHash": "76788464afae2113c9d5a7c52e9da9ff0e84b08544c9340e5b65313244a43b88",
       "targetHash": "e380c1fcae36b71e682bdc3cc99d525e65734611c3870fd99c0103fda29a72fa",
       "machineHash": "e380c1fcae36b71e682bdc3cc99d525e65734611c3870fd99c0103fda29a72fa",
       "machineText": "**Definieren Sie in Go einen benannten Typ mit Konstanten:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Define a named type with constants in Go:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0006-text-01": {
       "sourceHash": "f881aaadbf1f749df6a37d988fe122c1c753d148bf36dfef498dfccd30fa0310",
-      "targetHash": "c564210043af4a4c17fe8f73abc4c10a61b7c38148d9dc1315ee9ea7bb27b8ae",
-      "machineHash": "c564210043af4a4c17fe8f73abc4c10a61b7c38148d9dc1315ee9ea7bb27b8ae",
-      "machineText": "**Verwenden Sie den Typ in einer Struktur oder einer Servicemethode:**",
-      "status": "final",
+      "targetHash": "9d6513127bffe9981d9c4404c512f6dd18a1b1fffba95fc7f3f3d208659f9d2a",
+      "machineHash": "9d6513127bffe9981d9c4404c512f6dd18a1b1fffba95fc7f3f3d208659f9d2a",
+      "machineText": "**Verwenden Sie den Typ in einer Struct oder einer Servicemethode:**",
+      "status": "machine-translated",
       "sourcePreview": "**Use the type in a struct or service method:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0007-text-01": {
       "sourceHash": "08879f8da39b98c9a3e3aac8e769734b7ef8b36f36cf714739d0e58a85ba2069",
       "targetHash": "af713989a88b88972fad37865c1db3d72af42a62aa6c90d4e040473e0385c152",
       "machineHash": "af713989a88b88972fad37865c1db3d72af42a62aa6c90d4e040473e0385c152",
       "machineText": "**Generieren Sie die Bindings:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generate bindings:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0008-text-01": {
       "sourceHash": "d06efac8fbe79c19c9b19ffdcd467e3b9a7489c173882ade99c01a98cd4b0637",
-      "targetHash": "c1a9ad519c614800e1d925f1b1dded500b890c069ec3f669a5dcd12d2d251908",
-      "machineHash": "c1a9ad519c614800e1d925f1b1dded500b890c069ec3f669a5dcd12d2d251908",
-      "machineText": "Die Ausgabe des Generators enthält neben der Anzahl der Modelle auch die Anzahl der Enums:",
-      "status": "final",
+      "targetHash": "cd5e8d3e6833aa02bad07d1e1ef5de34596534fafd91aff4971bd46d7ee7087b",
+      "machineHash": "cd5e8d3e6833aa02bad07d1e1ef5de34596534fafd91aff4971bd46d7ee7087b",
+      "machineText": "Die Ausgabe des Generators zeigt neben der Anzahl der Modelle auch die Anzahl der Enums an:",
+      "status": "machine-translated",
       "sourcePreview": "The generator output will report enum counts alongside models:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0009-text-01": {
       "sourceHash": "06769d44a2d8e487341cce56264c9783af27449e54b22268cb0daad79bc3dc77",
       "targetHash": "fbf3d6a12b7dee11056db615aa67ebbdacd6b49f51b311a363070b00d598a959",
       "machineHash": "fbf3d6a12b7dee11056db615aa67ebbdacd6b49f51b311a363070b00d598a959",
       "machineText": "**Verwenden Sie das Enum in Ihrem Frontend:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Use in your frontend:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0010-text-01": {
       "sourceHash": "27e45da5c1ea55be7968398a8181f318be9156f3334baff29de812ad15e187dd",
-      "targetHash": "688b727e5faa70e0535425336c8da3cffde6cb3236bfbbfeb5338c8881665c5c",
-      "machineHash": "688b727e5faa70e0535425336c8da3cffde6cb3236bfbbfeb5338c8881665c5c",
-      "machineText": "**Das ist alles!** Der Enum-Typ wird sowohl in Go als auch in JavaScript/TypeScript durchgesetzt.",
-      "status": "final",
+      "targetHash": "7a6878d4af18367a87eceb68f623e462c5d265f6d279b9761b495d79711bf553",
+      "machineHash": "7a6878d4af18367a87eceb68f623e462c5d265f6d279b9761b495d79711bf553",
+      "machineText": "**Das ist alles!** Der Enum-Typ wird sowohl in Go als auch in JavaScript/TypeScript erzwungen.",
+      "status": "machine-translated",
       "sourcePreview": "**That's it!** The enum type is enforced in both Go and JavaScript/TypeScript.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0011-heading-01": {
       "sourceHash": "ec1b2f02ab42ca60f6730bd41b800bc988fc4416bde0d61641f4d0dca1b2c98c",
       "targetHash": "b8fbd8a85c3beb6bc5fdd446dfd0d828572dca3e66823ff95764e44d3c6642ba",
       "machineHash": "b8fbd8a85c3beb6bc5fdd446dfd0d828572dca3e66823ff95764e44d3c6642ba",
       "machineText": "Enums definieren",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Defining Enums",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0012-text-01": {
       "sourceHash": "beee81be61318f7182390580c8f4dc122269e0fcad1153b07b104eb084f8d46b",
-      "targetHash": "d0debc75b99ef865b3407cf34147c632564282b9b0397cf666c893b7d34c454c",
-      "machineHash": "d0debc75b99ef865b3407cf34147c632564282b9b0397cf666c893b7d34c454c",
-      "machineText": "Ein Enum in Wails besteht aus einem **benannten Typ** mit einem zugrunde liegenden Basistyp und aus **const-Deklarationen** dieses Typs.",
-      "status": "final",
+      "targetHash": "b1c34ff35874d3a626cc4009863ee1aa2e9ca60c95df7904c60391cef864f0db",
+      "machineHash": "b1c34ff35874d3a626cc4009863ee1aa2e9ca60c95df7904c60391cef864f0db",
+      "machineText": "Ein Enum in Wails besteht aus einem **benannten Typ** mit einem zugrunde liegenden Basistyp und **Konstantendeklarationen** dieses Typs.",
+      "status": "machine-translated",
       "sourcePreview": "An enum in Wails is a **named type** with an underlying basic type, combined with **const declaratio…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0013-heading-01": {
       "sourceHash": "76603bc14573a219971f20521a0fe95debd7696d34d00da9dc3749e3ade6c4cf",
       "targetHash": "c68e20cf59d6eaffa746bad03d1cd045a47d9c79ae60228f25afd5568ee708a5",
       "machineHash": "c68e20cf59d6eaffa746bad03d1cd045a47d9c79ae60228f25afd5568ee708a5",
       "machineText": "String-Enums",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "String Enums",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0014-text-01": {
       "sourceHash": "30c3a40bfc6f00180cb23cd6ca70a7624663ec137d8c21890ebbb930f4b7ced9",
       "targetHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineText": "**Generiertes TypeScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated TypeScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0015-text-01": {
       "sourceHash": "8905ddca1f6cebe18350a60b5b32a33f49317755f75a5e7dab5822202011068c",
       "targetHash": "7c0be8113b916c807ca2cc8b40d623227785b1fe5271ee3beefbc1137a77f5f5",
       "machineHash": "7c0be8113b916c807ca2cc8b40d623227785b1fe5271ee3beefbc1137a77f5f5",
       "machineText": "**Generiertes JavaScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated JavaScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0016-heading-01": {
       "sourceHash": "e23a60c72218342aa524e5cdbfd2c0fc1b9f254bce392ac2ee9d09aaf26414d6",
       "targetHash": "cfda18dc38ce471cd8b8d2e95b1dd0713a2b83895bfc89b9cbb3e883496e68a8",
       "machineHash": "cfda18dc38ce471cd8b8d2e95b1dd0713a2b83895bfc89b9cbb3e883496e68a8",
       "machineText": "Integer-Enums",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Integer Enums",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0017-text-01": {
       "sourceHash": "30c3a40bfc6f00180cb23cd6ca70a7624663ec137d8c21890ebbb930f4b7ced9",
       "targetHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineText": "**Generiertes TypeScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated TypeScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0018-heading-01": {
       "sourceHash": "709c9f79d197ea7c288b704546b32bb0059d64ee96f7003c63883772be24e974",
-      "targetHash": "1224378edc8d45ecf4ca07abf0b63a0286faa4f3edf1e6f1e1b8f989adc75a4b",
-      "machineHash": "1224378edc8d45ecf4ca07abf0b63a0286faa4f3edf1e6f1e1b8f989adc75a4b",
-      "machineText": "Enums mit Typaliasen",
-      "status": "final",
+      "targetHash": "92a905ff4962d0cc68ed214e4e9568a394d2aea564e06f53a9c6becf671470c6",
+      "machineHash": "92a905ff4962d0cc68ed214e4e9568a394d2aea564e06f53a9c6becf671470c6",
+      "machineText": "Enums aus Typaliasen",
+      "status": "machine-translated",
       "sourcePreview": "Type Alias Enums",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0019-text-01": {
       "sourceHash": "c0c80e913795bddd4261d80ef1be1d11175d9df3998641cf59d04f7061c7a96e",
-      "targetHash": "28385475a0a64451336b429a1a8ac962c62b3979978fcd3debc1400b51118e11",
-      "machineHash": "28385475a0a64451336b429a1a8ac962c62b3979978fcd3debc1400b51118e11",
-      "machineText": "Go-Typaliase (`=`) funktionieren ebenfalls, erzeugen jedoch eine etwas andere Ausgabe: eine Typdefinition zusammen mit einem const-Objekt statt eines nativen TypeScript-`enum`:",
-      "status": "final",
+      "targetHash": "aea0ffcba42b029c9c5bcdec58ede25f058970ee5059eb31aea19af1a9282db3",
+      "machineHash": "aea0ffcba42b029c9c5bcdec58ede25f058970ee5059eb31aea19af1a9282db3",
+      "machineText": "Go-Typaliase (`=`) funktionieren ebenfalls, erzeugen jedoch eine etwas andere Ausgabe: eine Typdefinition und ein Const-Objekt statt eines nativen TypeScript-`enum`:",
+      "status": "machine-translated",
       "sourcePreview": "Go type aliases (`=`) also work, but generate a slightly different output — a type definition plus a…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0020-text-01": {
       "sourceHash": "30c3a40bfc6f00180cb23cd6ca70a7624663ec137d8c21890ebbb930f4b7ced9",
       "targetHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineText": "**Generiertes TypeScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated TypeScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0021-text-01": {
       "sourceHash": "8905ddca1f6cebe18350a60b5b32a33f49317755f75a5e7dab5822202011068c",
       "targetHash": "7c0be8113b916c807ca2cc8b40d623227785b1fe5271ee3beefbc1137a77f5f5",
       "machineHash": "7c0be8113b916c807ca2cc8b40d623227785b1fe5271ee3beefbc1137a77f5f5",
       "machineText": "**Generiertes JavaScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated JavaScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0022-text-01": {
       "sourceHash": "5ba3803d6daa00257878dcfde2e1aebca9f4a4211ac86969b3300d868b82bcd7",
-      "targetHash": "f7acc9004bd58c9658d9103d125976d44309230d753d813d7be50286de25e5bc",
-      "machineHash": "f7acc9004bd58c9658d9103d125976d44309230d753d813d7be50286de25e5bc",
-      "machineText": "**Benannte Typen** (`type Title string`) erzeugen native TypeScript-`enum`-Deklarationen mit einem `$zero`-Member. **Typaliase** (`type Age = int`) erzeugen ein Namespace-Paar aus `type` + `const` ohne `$zero`.",
-      "status": "final",
+      "targetHash": "feefdc26031bf99aa0d95ac7addf7ca3f8ae3135f5027cf28754a2591c889835",
+      "machineHash": "feefdc26031bf99aa0d95ac7addf7ca3f8ae3135f5027cf28754a2591c889835",
+      "machineText": "**Benannte Typen** (`type Title string`) erzeugen native TypeScript-`enum`-Deklarationen mit einem `$zero`-Member. **Typaliase** (`type Age = int`) erzeugen ein Namespace-Paar aus `type` und `const` ohne `$zero`.",
+      "status": "machine-translated",
       "sourcePreview": "**Named types** (`type Title string`) generate native TypeScript `enum` declarations with a `$zero` …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0023-heading-01": {
       "sourceHash": "f2b9749a0d79646452fd8134b9b21497551e6462d965fed9fc811de198d3a647",
-      "targetHash": "1cdbfe5440745406844e1b02c1762b5016b6adc0c9ca4f60bbd8e3982168866d",
-      "machineHash": "1cdbfe5440745406844e1b02c1762b5016b6adc0c9ca4f60bbd8e3982168866d",
-      "machineText": "Der `$zero`-Wert",
-      "status": "final",
+      "targetHash": "c22de51da8dab3f4440e2b540c4711ae34a4780c439b990128f099ea36d6d162",
+      "machineHash": "c22de51da8dab3f4440e2b540c4711ae34a4780c439b990128f099ea36d6d162",
+      "machineText": "Der Wert `$zero`",
+      "status": "machine-translated",
       "sourcePreview": "The `$zero` Value",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0024-text-01": {
       "sourceHash": "635a783a7b6c0d68b48b4ca2322490b45198271cb25ec5adebface13f2ce34f5",
       "targetHash": "c2a817ac40b20662cb406918417c9c7553381a48df13e1554b0d4626f0201271",
       "machineHash": "c2a817ac40b20662cb406918417c9c7553381a48df13e1554b0d4626f0201271",
       "machineText": "Jedes Enum mit benanntem Typ enthält einen speziellen `$zero`-Member, der den **Go-Nullwert** des zugrunde liegenden Typs darstellt:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Every named-type enum includes a special `$zero` member representing the **Go zero value** for the u…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0025-cell-01": {
       "sourceHash": "08cebf5e48e3a9512265a8ca17c812cc63eb334fa45a8f1bab76a0683fe2b23e",
       "targetHash": "57f3f59287d9a19b61d9352a14726feed9c02ddeedeed1ea7ccd8d056d8faf41",
       "machineHash": "57f3f59287d9a19b61d9352a14726feed9c02ddeedeed1ea7ccd8d056d8faf41",
       "machineText": "Zugrunde liegender Typ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Underlying Type",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0026-cell-01": {
       "sourceHash": "cc3897a9fc9f6f6cd0c707f9c259f5b37cc3df478f7b7900f8d84c3f4bfa7e03",
-      "targetHash": "c5dc1adfd8f2b7a47b78797bc8a70f7629a09467b0c6497d056814c56c5deecd",
-      "machineHash": "c5dc1adfd8f2b7a47b78797bc8a70f7629a09467b0c6497d056814c56c5deecd",
-      "machineText": "`$zero`-Wert",
-      "status": "final",
+      "targetHash": "9af7c09286d2c9108e65d88c534fd431312603b6d3652bc707b5b7b006bb8ce4",
+      "machineHash": "9af7c09286d2c9108e65d88c534fd431312603b6d3652bc707b5b7b006bb8ce4",
+      "machineText": "Wert von `$zero`",
+      "status": "machine-translated",
       "sourcePreview": "`$zero` Value",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0027-cell-01": {
       "sourceHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
       "targetHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
-      "status": "protected",
-      "sourcePreview": "`string`"
+      "machineHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
+      "machineText": "`string`",
+      "status": "machine-translated",
+      "sourcePreview": "`string`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0029-cell-01": {
       "sourceHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
       "targetHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
-      "status": "protected",
-      "sourcePreview": "`int`, `int8`, `int16`, `int32`, `int64`"
+      "machineHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
+      "machineText": "`int`, `int8`, `int16`, `int32`, `int64`",
+      "status": "machine-translated",
+      "sourcePreview": "`int`, `int8`, `int16`, `int32`, `int64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0031-cell-01": {
       "sourceHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
       "targetHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
-      "status": "protected",
-      "sourcePreview": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`"
+      "machineHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
+      "machineText": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`",
+      "status": "machine-translated",
+      "sourcePreview": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0033-cell-01": {
       "sourceHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
       "targetHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
-      "status": "protected",
-      "sourcePreview": "`float32`, `float64`"
+      "machineHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
+      "machineText": "`float32`, `float64`",
+      "status": "machine-translated",
+      "sourcePreview": "`float32`, `float64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0035-cell-01": {
       "sourceHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
       "targetHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
-      "status": "protected",
-      "sourcePreview": "`bool`"
+      "machineHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
+      "machineText": "`bool`",
+      "status": "machine-translated",
+      "sourcePreview": "`bool`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0036-cell-01": {
       "sourceHash": "bc4b16e60c8d211d87d48e4c53cac81c078b6d393a28fd695887e29ba9811cb2",
       "targetHash": "bc4b16e60c8d211d87d48e4c53cac81c078b6d393a28fd695887e29ba9811cb2",
       "machineHash": "bc4b16e60c8d211d87d48e4c53cac81c078b6d393a28fd695887e29ba9811cb2",
       "machineText": "`false`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`false`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0037-text-01": {
       "sourceHash": "bc7c1778d46addeaa79a3eede1b6569f8001d473af483d5bc82840d64e68efb1",
-      "targetHash": "479cf7bb7b61ba8bdf543c5c1a1f76865fd12a73d20169e5b9b56e975721670b",
-      "machineHash": "479cf7bb7b61ba8bdf543c5c1a1f76865fd12a73d20169e5b9b56e975721670b",
-      "machineText": "Wenn ein Strukturfeld einen Enum-Typ verwendet und kein Wert angegeben ist, verwendet der Konstruktor standardmäßig `$zero`:",
-      "status": "final",
+      "targetHash": "6ae7dc4639134870e80ab1dd4b2207f1b68a12f48ca85cb6b9a8eb0ab4ed04c5",
+      "machineHash": "6ae7dc4639134870e80ab1dd4b2207f1b68a12f48ca85cb6b9a8eb0ab4ed04c5",
+      "machineText": "Wenn ein Struct-Feld einen Enum-Typ verwendet und kein Wert angegeben ist, verwendet der Konstruktor standardmäßig `$zero`:",
+      "status": "machine-translated",
       "sourcePreview": "When a struct field uses an enum type and no value is provided, the constructor defaults to `$zero`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0038-text-01": {
       "sourceHash": "10cc6bf9dea45dab4676fd7484698203a5bf728e11fd1f1b76786ee1728b37bd",
-      "targetHash": "ffc843e5a18feb8adb3169c135b6244a840608ca737710665702f4bc32dfe115",
-      "machineHash": "ffc843e5a18feb8adb3169c135b6244a840608ca737710665702f4bc32dfe115",
-      "machineText": "Dies gewährleistet bei der Generierung von Klassen eine typsichere Initialisierung: Enum-Felder sind niemals `undefined`. Bei der Generierung von TypeScript-Schnittstellen (mit `-i`) gibt es keinen Konstruktor, und Felder dürfen wie üblich fehlen.",
-      "status": "final",
+      "targetHash": "afa1f8f7f452f4179ceae18545c5eed906033494871120c0fff707ec536552e7",
+      "machineHash": "afa1f8f7f452f4179ceae18545c5eed906033494871120c0fff707ec536552e7",
+      "machineText": "Dies gewährleistet bei der Klassengenerierung eine typsichere Initialisierung: Enum-Felder sind niemals `undefined`. Bei der Generierung von TypeScript-Interfaces (mit `-i`) gibt es keinen Konstruktor, und Felder können wie gewohnt fehlen.",
+      "status": "machine-translated",
       "sourcePreview": "This ensures type-safe initialisation when generating classes — enum fields are never `undefined`. W…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0039-heading-01": {
       "sourceHash": "6e256b8ea974c466cdbdd1dd326ee66e2ae8e8b2a8e66bb2628e96ea6bd51c66",
-      "targetHash": "0f403e7710603b60d619f5e323d214aba8f6e7fcc0cb145937c527131452402e",
-      "machineHash": "0f403e7710603b60d619f5e323d214aba8f6e7fcc0cb145937c527131452402e",
-      "machineText": "Enums in Strukturen verwenden",
-      "status": "final",
+      "targetHash": "9f4e2d05ac17bfb72e40bd6df6d3845427ec3b0fbe9ac3d910e6568e005783d4",
+      "machineHash": "9f4e2d05ac17bfb72e40bd6df6d3845427ec3b0fbe9ac3d910e6568e005783d4",
+      "machineText": "Enums in Structs verwenden",
+      "status": "machine-translated",
       "sourcePreview": "Using Enums in Structs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0040-text-01": {
       "sourceHash": "c297e7857015089cf419f6cb576e077e754c8effd11fc3c1afed23a212c45116",
-      "targetHash": "d06cefa553fa1d0b65219fc638fe7c1821a50c9f57117becf2b78a8393c7f310",
-      "machineHash": "d06cefa553fa1d0b65219fc638fe7c1821a50c9f57117becf2b78a8393c7f310",
-      "machineText": "Wenn ein Strukturfeld einen Enum-Typ hat, **behält der generierte Code diesen Typ bei**, statt auf den primitiven Typ zurückzufallen:",
-      "status": "final",
+      "targetHash": "c2d1cc671440b1ff0474d7ece002ee11b81d27116b91eba745351e6c497f0ab8",
+      "machineHash": "c2d1cc671440b1ff0474d7ece002ee11b81d27116b91eba745351e6c497f0ab8",
+      "machineText": "Wenn ein Struct-Feld einen Enum-Typ hat, **behält der generierte Code diesen Typ bei**, statt auf den primitiven Typ zurückzufallen:",
+      "status": "machine-translated",
       "sourcePreview": "When a struct field has an enum type, the generated code **preserves that type** rather than falling…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0041-text-01": {
       "sourceHash": "30c3a40bfc6f00180cb23cd6ca70a7624663ec137d8c21890ebbb930f4b7ced9",
       "targetHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineHash": "515d9bcda5ee75db539567625fafd107f35fa8976f170a0b9103e19a64539675",
       "machineText": "**Generiertes TypeScript:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Generated TypeScript:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0042-text-01": {
       "sourceHash": "0f3f62ef54e17109742f49b7722f4f5ede83872ce35864364902d430fda66ee9",
-      "targetHash": "ec7fd637d5420691722d4385ed6b410a3f135f5a64c3837fd6d2a4cac6a50a00",
-      "machineHash": "ec7fd637d5420691722d4385ed6b410a3f135f5a64c3837fd6d2a4cac6a50a00",
-      "machineText": "Das Feld `Title` hat den Typ `Title` und nicht `string`. Dadurch bietet Ihre IDE vollständige Autovervollständigung und Typprüfung für Enum-Werte.",
-      "status": "final",
+      "targetHash": "bf51d58f229529c794ad77425827c4032e3f20ffce6da364ed0db78cd7157619",
+      "machineHash": "bf51d58f229529c794ad77425827c4032e3f20ffce6da364ed0db78cd7157619",
+      "machineText": "Das Feld `Title` erhält den Typ `Title` und nicht `string`. Dadurch bietet Ihre IDE vollständige Autovervollständigung und Typprüfung für Enum-Werte.",
+      "status": "machine-translated",
       "sourcePreview": "The `Title` field is typed as `Title`, not `string`. This gives your IDE full autocompletion and typ…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0043-heading-01": {
       "sourceHash": "322e7f843e2393fae38a7c448716450b41f7c345c3bb33631d8907c16db2a02b",
       "targetHash": "325e93a13333ada643d5618a0117b8e6e82b6b313bce1dc17e0a45054c105771",
       "machineHash": "325e93a13333ada643d5618a0117b8e6e82b6b313bce1dc17e0a45054c105771",
       "machineText": "Enums aus importierten Paketen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Enums from Imported Packages",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0044-text-01": {
       "sourceHash": "d80f56ec60620efe6c660b4c176715a9b9459dbb78a21e1cc322c8517c8c4310",
-      "targetHash": "104ee6527664105e242ca0eb66cda1aa67955b0348a955ef333723276fdbe1ee",
-      "machineHash": "104ee6527664105e242ca0eb66cda1aa67955b0348a955ef333723276fdbe1ee",
-      "machineText": "In separaten Paketen definierte Enums werden vollständig unterstützt. Sie werden im Verzeichnis des jeweiligen Pakets generiert:",
-      "status": "final",
+      "targetHash": "bef70f65663f3cf8a9d72465287b5875f980f548d5d2b597705e23d3a403a59e",
+      "machineHash": "bef70f65663f3cf8a9d72465287b5875f980f548d5d2b597705e23d3a403a59e",
+      "machineText": "Enums, die in separaten Paketen definiert sind, werden vollständig unterstützt. Sie werden im entsprechenden Paketverzeichnis generiert:",
+      "status": "machine-translated",
       "sourcePreview": "Enums defined in separate packages are fully supported. They are generated into the corresponding pa…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0045-text-01": {
       "sourceHash": "84e32a8b81cbcbd0fd4b528a5a4368ae00af6521fe045c39543dd4905e6cb6e9",
-      "targetHash": "77d2a68656e7db36bf76a655304136c3b432dbc81e66989b41604625b87cfa70",
-      "machineHash": "77d2a68656e7db36bf76a655304136c3b432dbc81e66989b41604625b87cfa70",
-      "machineText": "Das Enum `Title` wird in der Modelldatei des Pakets `services` generiert, und Importpfade werden automatisch aufgelöst:",
-      "status": "final",
+      "targetHash": "ab6fdc602a22d1fe01bad4d378074d12ed2544a552a9a0f4ab21ce786c1407c7",
+      "machineHash": "ab6fdc602a22d1fe01bad4d378074d12ed2544a552a9a0f4ab21ce786c1407c7",
+      "machineText": "Das Enum `Title` wird in der Modelldatei `services` generiert; Importpfade werden automatisch aufgelöst:",
+      "status": "machine-translated",
       "sourcePreview": "The `Title` enum is generated in the `services` models file, and import paths are resolved automatic…",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0046-heading-01": {
       "sourceHash": "0480a76b2fc21a09b2cec4f84d5a84ab5035cf7dce56ff9a21744afc310ded54",
       "targetHash": "cede8d1800effa48891879cb48d392a82452da9a4cb3044a9a4c9f238de1bb30",
       "machineHash": "cede8d1800effa48891879cb48d392a82452da9a4cb3044a9a4c9f238de1bb30",
       "machineText": "Enum-Methoden",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Enum Methods",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0047-text-01": {
       "sourceHash": "04ad6fdbb70749028cbbfa9f9b344834c93d1f2730cd48d4a4c876aa11cb4783",
-      "targetHash": "aa56fa274a90339b95bfd345b634d3cfd6b6655b8770bc2ee5a4fe3f4a41099f",
-      "machineHash": "aa56fa274a90339b95bfd345b634d3cfd6b6655b8770bc2ee5a4fe3f4a41099f",
-      "machineText": "Sie können Ihren Enum-Typen in Go Methoden hinzufügen. Diese wirken sich nicht auf die Generierung der Bindings aus, bieten aber nützliche serverseitige Funktionen:",
-      "status": "final",
+      "targetHash": "480d61d8eeb49d2af92aabfc5a407582795d7ddde0b68f47d76b9d0010933236",
+      "machineHash": "480d61d8eeb49d2af92aabfc5a407582795d7ddde0b68f47d76b9d0010933236",
+      "machineText": "Sie können Ihren Enum-Typen in Go Methoden hinzufügen. Diese beeinflussen die Binding-Generierung nicht, bieten aber nützliche serverseitige Funktionen:",
+      "status": "machine-translated",
       "sourcePreview": "You can add methods to your enum types in Go. These don't affect binding generation but provide usef…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0048-text-01": {
       "sourceHash": "06dcef8c22643851053b34ef26aa0e40061c28b34cf13aee6c1c8cdbaf042371",
       "targetHash": "3309539e9881d50d6c59a7d8f644d26e0a17ead7c70558756dfa3b6e0bcc4e80",
       "machineHash": "3309539e9881d50d6c59a7d8f644d26e0a17ead7c70558756dfa3b6e0bcc4e80",
       "machineText": "Das generierte Enum ist unabhängig davon identisch, ob für den Typ Go-Methoden vorhanden sind.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The generated enum is identical whether or not Go methods exist on the type.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0049-heading-01": {
       "sourceHash": "b9c02ee48bf6b27cac9c3a91c6d1bf410ee1be4d0ca6cfdbb309c7173ccbb948",
       "targetHash": "bcdd8664677fa5c543bb07513eb3857aab6ec70056de518c2191acf94b7724b1",
       "machineHash": "bcdd8664677fa5c543bb07513eb3857aab6ec70056de518c2191acf94b7724b1",
       "machineText": "Kommentare und Dokumentation",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Comments and Documentation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0050-text-01": {
       "sourceHash": "c9673595a2ec41f359176edba7bfa42ba393ed0a6febc1bb32cc5470883c2871",
       "targetHash": "e2c348cda93c1fee69de201ebaf605e91f9066e353c242d1be868276fd713011",
       "machineHash": "e2c348cda93c1fee69de201ebaf605e91f9066e353c242d1be868276fd713011",
       "machineText": "Der Generator übernimmt Go-Kommentare als JSDoc in die generierte Ausgabe:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The generator preserves Go comments as JSDoc in the generated output:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0051-text-01": {
       "sourceHash": "77c2615d8b311e9f2d466247f9ccaa179756b58dffdfde5ca0ade539db36fa6f",
       "targetHash": "a12b8f9026fda91f103a2a10e43945dccd8a3b700cf094368d96c5b44c0ebbfc",
       "machineHash": "a12b8f9026fda91f103a2a10e43945dccd8a3b700cf094368d96c5b44c0ebbfc",
       "machineText": "**Typkommentare** werden zum Dokumentationskommentar des Enums",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Type comments** become the enum's doc comment",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0052-text-01": {
       "sourceHash": "aa53fd6b2c27964fa8a2121cab81b5680d53218f0b42360796442645ff257435",
-      "targetHash": "c0a62f45c465e93df09e6874302df5cec6a4064ac02159071b84814fad7e8b0f",
-      "machineHash": "c0a62f45c465e93df09e6874302df5cec6a4064ac02159071b84814fad7e8b0f",
-      "machineText": "**Kommentare zu const-Gruppen** werden zu Abschnittstrennern",
-      "status": "final",
+      "targetHash": "f8d25858e733f56cb3d401ea9b2e5ab8fbb2a638b7d7d79bf4a469b4fd83850a",
+      "machineHash": "f8d25858e733f56cb3d401ea9b2e5ab8fbb2a638b7d7d79bf4a469b4fd83850a",
+      "machineText": "**Kommentare zu Konstantengruppen** werden zu Abschnittstrennern",
+      "status": "machine-translated",
       "sourcePreview": "**Const group comments** become section separators",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0053-text-01": {
       "sourceHash": "8a25b6ecc6af32e320306212abe460858e20d3d08133c2dc7924532b892977f3",
       "targetHash": "6bea04f8cbc5911a2ae15a7550ad94138560dcb898c5bf1c0dcaede2b5ad2340",
       "machineHash": "6bea04f8cbc5911a2ae15a7550ad94138560dcb898c5bf1c0dcaede2b5ad2340",
       "machineText": "**Kommentare zu einzelnen Konstanten** werden zu Dokumentationskommentaren der Member",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Individual const comments** become member doc comments",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0054-text-01": {
       "sourceHash": "b4d3f9ab9f6bfefcbded28341a0458b276665332b7d05003945db035a72832a2",
-      "targetHash": "960e1858876f9b8fdd39cef9f9192e2a7d98be5420842f8d4a19c21bf8782206",
-      "machineHash": "960e1858876f9b8fdd39cef9f9192e2a7d98be5420842f8d4a19c21bf8782206",
-      "machineText": "**Inline-Kommentare** werden nach Möglichkeit beibehalten",
-      "status": "final",
+      "targetHash": "378ca786b24dd5ba461a55a80cfc017327886c9fe4fd4e94bdd1e0227f27e5bb",
+      "machineHash": "378ca786b24dd5ba461a55a80cfc017327886c9fe4fd4e94bdd1e0227f27e5bb",
+      "machineText": "**Inline-Kommentare** bleiben nach Möglichkeit erhalten",
+      "status": "machine-translated",
       "sourcePreview": "**Inline comments** are preserved where possible",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0055-text-01": {
       "sourceHash": "f45c711c540536775abbd611ffeecb4e0b06c80d52b3c168f621bdfaaf99020c",
-      "targetHash": "04ec3795a1c0c8bf1c22aae8b1f0dc4be7d9dbc06aaae774403b580ed09349a6",
-      "machineHash": "04ec3795a1c0c8bf1c22aae8b1f0dc4be7d9dbc06aaae774403b580ed09349a6",
-      "machineText": "Dadurch zeigt Ihre IDE beim Bewegen des Mauszeigers über Enum-Werte deren Dokumentation an.",
-      "status": "final",
+      "targetHash": "9d22ca7b847392e6be4a221569cfad97daca371bdb4e96ac26993434157ea8b1",
+      "machineHash": "9d22ca7b847392e6be4a221569cfad97daca371bdb4e96ac26993434157ea8b1",
+      "machineText": "Dadurch zeigt Ihre IDE beim Darüberfahren Dokumentation zu den Enum-Werten an.",
+      "status": "machine-translated",
       "sourcePreview": "This means your IDE will show documentation for enum values on hover.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0056-heading-01": {
       "sourceHash": "e41aec257a3498d0e6d67e49c92b88f37f443291dd8bcdc5a1e56436f07add66",
       "targetHash": "c5577e35e2785bd8f16fbcb5d453e21304907748a5aaa0479d9fab43b78ceb40",
       "machineHash": "c5577e35e2785bd8f16fbcb5d453e21304907748a5aaa0479d9fab43b78ceb40",
       "machineText": "Unterstützte zugrunde liegende Typen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Supported Underlying Types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0057-text-01": {
       "sourceHash": "7e15d349272ab5209005dc07f5423e7191428c88550966ec00c7a5fffa10fdc6",
       "targetHash": "5788f0819981e97dc225d3e2968847b6d1ab2937136e012cb6e8c4dd1015b99d",
       "machineHash": "5788f0819981e97dc225d3e2968847b6d1ab2937136e012cb6e8c4dd1015b99d",
       "machineText": "Der Binding-Generator unterstützt Enums mit den folgenden zugrunde liegenden Go-Typen:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The binding generator supports enums with the following Go underlying types:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0058-cell-01": {
       "sourceHash": "9a14a5250c282a511a750ba5eecb94a55515b9efe2ec58407984f6ff038c8fd1",
       "targetHash": "f9547a7969f7e1ed25ee2606e21d6ae6055cf889e8abee6dd4d22964ddce830b",
       "machineHash": "f9547a7969f7e1ed25ee2606e21d6ae6055cf889e8abee6dd4d22964ddce830b",
       "machineText": "Go-Typ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Go Type",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0059-cell-01": {
       "sourceHash": "2b694b175dec02c27c4cfcaa6186d07f69ddffea988bbd1a47546b432fbb7c7d",
       "targetHash": "f2200fbec5d44a64b686ceffe0100a4759f0779a224119f4c0c7c318633dc252",
       "machineHash": "f2200fbec5d44a64b686ceffe0100a4759f0779a224119f4c0c7c318633dc252",
       "machineText": "Als Enum unterstützt",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Works as Enum",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0060-cell-01": {
       "sourceHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
       "targetHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
-      "status": "protected",
-      "sourcePreview": "`string`"
+      "machineHash": "9d1e9def48cfb04fbdd7bb609ff4fe2e978897fa580687435c9f505bbc7d3dc3",
+      "machineText": "`string`",
+      "status": "machine-translated",
+      "sourcePreview": "`string`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0061-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0062-cell-01": {
       "sourceHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
       "targetHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
-      "status": "protected",
-      "sourcePreview": "`int`, `int8`, `int16`, `int32`, `int64`"
+      "machineHash": "5b6c48e654033eb7629f117a03cac4dca1e2ab93e76b9bb5919873f91b6185b4",
+      "machineText": "`int`, `int8`, `int16`, `int32`, `int64`",
+      "status": "machine-translated",
+      "sourcePreview": "`int`, `int8`, `int16`, `int32`, `int64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0063-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0064-cell-01": {
       "sourceHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
       "targetHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
-      "status": "protected",
-      "sourcePreview": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`"
+      "machineHash": "0bb03fa302f6a23c3b4180018705493e707004b76bc546bb063741735b2284eb",
+      "machineText": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`",
+      "status": "machine-translated",
+      "sourcePreview": "`uint`, `uint8`, `uint16`, `uint32`, `uint64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0065-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0066-cell-01": {
       "sourceHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
       "targetHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
-      "status": "protected",
-      "sourcePreview": "`float32`, `float64`"
+      "machineHash": "eaa3b9be8f3aadbbdb71932adf31687e198414037900d473011e0e042b6d4eeb",
+      "machineText": "`float32`, `float64`",
+      "status": "machine-translated",
+      "sourcePreview": "`float32`, `float64`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0067-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0068-cell-01": {
       "sourceHash": "780f2fd7f53642e0c43aead8016116441714319e1af7dd8455ffb3aedca0ee2c",
       "targetHash": "780f2fd7f53642e0c43aead8016116441714319e1af7dd8455ffb3aedca0ee2c",
       "machineHash": "780f2fd7f53642e0c43aead8016116441714319e1af7dd8455ffb3aedca0ee2c",
       "machineText": "`byte` (`uint8`)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`byte` (`uint8`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0069-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0070-cell-01": {
       "sourceHash": "875a7bba5936e4f461bd49a9c8d029aea790d9d2d1fcc3bf9020ec6fe001c627",
       "targetHash": "875a7bba5936e4f461bd49a9c8d029aea790d9d2d1fcc3bf9020ec6fe001c627",
       "machineHash": "875a7bba5936e4f461bd49a9c8d029aea790d9d2d1fcc3bf9020ec6fe001c627",
       "machineText": "`rune` (`int32`)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`rune` (`int32`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0071-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0072-cell-01": {
       "sourceHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
       "targetHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
-      "status": "protected",
-      "sourcePreview": "`bool`"
+      "machineHash": "1fcb00b9f973e6313cf563ee708e41f23df869a933ba8f02cadad6b8942843da",
+      "machineText": "`bool`",
+      "status": "machine-translated",
+      "sourcePreview": "`bool`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0073-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineHash": "cde9e58a9a4e1f369839d800aebbe5e4c19e2efa9f5791ecda15e9e87eb652e3",
       "machineText": "Ja",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Yes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0074-cell-01": {
       "sourceHash": "1a578d934a793f733f97b4d80de6774cbbc7a960dcaa98417f881ba6cc2f9254",
       "targetHash": "1a578d934a793f733f97b4d80de6774cbbc7a960dcaa98417f881ba6cc2f9254",
       "machineHash": "1a578d934a793f733f97b4d80de6774cbbc7a960dcaa98417f881ba6cc2f9254",
       "machineText": "`complex64`, `complex128`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`complex64`, `complex128`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0075-cell-01": {
       "sourceHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d",
       "targetHash": "90ebc1bde6f3b1ffd73c3d7db7a421b21d5a4494ef1ce86aee56013edde0a8f7",
       "machineHash": "90ebc1bde6f3b1ffd73c3d7db7a421b21d5a4494ef1ce86aee56013edde0a8f7",
       "machineText": "Nein",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "No",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0076-heading-01": {
       "sourceHash": "69b1b67de5ef98bea519f7c33bf6a1acc7b8d3693331dfd93488dffd794b6844",
       "targetHash": "ba12c1bb8f8f3a118242469d4f47284c195cb956fb784563582f45207369e021",
       "machineHash": "ba12c1bb8f8f3a118242469d4f47284c195cb956fb784563582f45207369e021",
       "machineText": "Einschränkungen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Limitations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0077-text-01": {
       "sourceHash": "240bda22626ba91c389100976bd3bf58c1e9dea9f121b92d9595c3d1119ca8ef",
       "targetHash": "14c0d98bc4b24d6b78b53a02f394531ba4ce944568f84b996ca30e85ae8db886",
       "machineHash": "14c0d98bc4b24d6b78b53a02f394531ba4ce944568f84b996ca30e85ae8db886",
       "machineText": "Folgendes wird bei der Enum-Generierung **nicht** unterstützt:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The following are **not** supported for enum generation:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0078-text-01": {
       "sourceHash": "d13a23542145672475c77057b8f1ac0068fcc7a81f73d23259c5997846e2a537",
-      "targetHash": "0969778e67e0f11f8194bf00dda8a87d22b30e4782af939036fe09b32e7a1bfb",
-      "machineHash": "0969778e67e0f11f8194bf00dda8a87d22b30e4782af939036fe09b32e7a1bfb",
-      "machineText": "**Generische Typen** — Typparameter verhindern die Erkennung von Konstanten",
-      "status": "final",
+      "targetHash": "40d1fcad85114ab6d3d4e48827dba205d1e9150f4f2771039d13175137ea6228",
+      "machineHash": "40d1fcad85114ab6d3d4e48827dba205d1e9150f4f2771039d13175137ea6228",
+      "machineText": "**Generische Typen** – Typparameter verhindern die Erkennung von Konstanten",
+      "status": "machine-translated",
       "sourcePreview": "**Generic types** — Type parameters prevent constant detection",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0079-text-01": {
       "sourceHash": "bde0c38a930d29ed138a03abaa2350b456b8f53a36088690a63ef5dfc6cda551",
-      "targetHash": "749715a73e8e8c44c27c4b1a88ee3f64cf0231b89450d06399bb5c23d8264680",
-      "machineHash": "749715a73e8e8c44c27c4b1a88ee3f64cf0231b89450d06399bb5c23d8264680",
-      "machineText": "**Typen mit benutzerdefiniertem `json.Marshaler` oder `encoding.TextMarshaler`** — Bei benutzerdefinierter Serialisierung stimmen die generierten Werte möglicherweise nicht mit dem Laufzeitverhalten überein. Daher überspringt der Generator diese Typen",
-      "status": "final",
+      "targetHash": "d8ff5ad0a23f6b301a32a13ab31b4f785447a7501ef6be0a6c9f2f47152b136f",
+      "machineHash": "d8ff5ad0a23f6b301a32a13ab31b4f785447a7501ef6be0a6c9f2f47152b136f",
+      "machineText": "**Typen mit benutzerdefiniertem `json.Marshaler` oder `encoding.TextMarshaler`** – Bei benutzerdefinierter Serialisierung stimmen die generierten Werte möglicherweise nicht mit dem Laufzeitverhalten überein; daher überspringt der Generator diese Typen",
+      "status": "machine-translated",
       "sourcePreview": "**Types with custom `json.Marshaler` or `encoding.TextMarshaler`** — Custom serialisation means the …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0080-text-01": {
       "sourceHash": "b1b67f87804cc9308c01864fe7bb7867e7c5d088085cfa6cb698fcfdd9871e2e",
-      "targetHash": "d23dc3a24f22e853ea5aa423a693e713d1b6de9874c24e24e8523e6d69bea186",
-      "machineHash": "d23dc3a24f22e853ea5aa423a693e713d1b6de9874c24e24e8523e6d69bea186",
-      "machineText": "**Konstanten, deren Werte nicht statisch ausgewertet oder dargestellt werden können** — Konstanten müssen bekannte Werte besitzen, die sich in ihrem zugrunde liegenden Typ darstellen lassen. Übliche `iota`-Muster funktionieren problemlos, da der Compiler sie in konkrete Werte auflöst",
-      "status": "final",
+      "targetHash": "40555c57914b26815a73b15b517de45fc71bb14eabc90e3a79839e1ee3f18b82",
+      "machineHash": "40555c57914b26815a73b15b517de45fc71bb14eabc90e3a79839e1ee3f18b82",
+      "machineText": "**Konstanten, deren Werte nicht statisch ausgewertet oder dargestellt werden können** — Konstanten müssen bekannte, in ihrem zugrunde liegenden Typ darstellbare Werte haben. Gängige `iota`-Muster funktionieren problemlos, da der Compiler sie in konkrete Werte auflöst",
+      "status": "machine-translated",
       "sourcePreview": "**Constants whose values cannot be statically evaluated or represented** — Constants must have known…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0081-text-01": {
       "sourceHash": "8bb3e79bf9d4843770a9f4be5d0ff580248644349f1d05b15cb462420979dc9e",
       "targetHash": "c85b7f371d1ccb915a21b95838403f18974f8717c47573d306a86000e47eb84c",
       "machineHash": "c85b7f371d1ccb915a21b95838403f18974f8717c47573d306a86000e47eb84c",
       "machineText": "**Komplexe Zahlentypen** — `complex64` und `complex128` können nicht als zugrunde liegende Enum-Typen verwendet werden",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Complex number types** — `complex64` and `complex128` cannot be enum underlying types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0082-heading-01": {
       "sourceHash": "47af896d4e19a08a401faf9fc9a0bfb4ff96bcadf10aed4ad8afc636fe3f3630",
       "targetHash": "b7a53bd31bd6305f5e1c03dfebddf8a610fb3922992c81cec18759b6e5ca4e2f",
       "machineHash": "b7a53bd31bd6305f5e1c03dfebddf8a610fb3922992c81cec18759b6e5ca4e2f",
       "machineText": "Vollständiges Beispiel",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Complete Example",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0083-text-01": {
       "sourceHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "targetHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineText": "**Go:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Go:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0084-text-01": {
       "sourceHash": "c325a46281b556be9b118fad82c52854c629220b2eda93473ef1f3492900d10f",
       "targetHash": "c325a46281b556be9b118fad82c52854c629220b2eda93473ef1f3492900d10f",
       "machineHash": "c325a46281b556be9b118fad82c52854c629220b2eda93473ef1f3492900d10f",
       "machineText": "**Frontend (TypeScript):**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Frontend (TypeScript):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0085-text-01": {
       "sourceHash": "7dd2b1c07057f5db402909cf1d6ed8dc13361deaf91db8729e0a2e5ac56ce012",
       "targetHash": "7dd2b1c07057f5db402909cf1d6ed8dc13361deaf91db8729e0a2e5ac56ce012",
       "machineHash": "7dd2b1c07057f5db402909cf1d6ed8dc13361deaf91db8729e0a2e5ac56ce012",
       "machineText": "**Frontend (JavaScript):**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Frontend (JavaScript):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0086-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineText": "Nächste Schritte",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0087-text-01": {
       "sourceHash": "a4fdf71695d88db6cbe48db158ca0a6cd2fa78ed3d15e5cb7078d3703848f16e",
       "targetHash": "41be92ce34eefcfcd5ddc254ca13db739216ac628873916c2e9a7fc019346c94",
       "machineHash": "41be92ce34eefcfcd5ddc254ca13db739216ac628873916c2e9a7fc019346c94",
       "machineText": "📖 Datenmodelle\nStructs, Typzuordnung und Modellgenerierung.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "📖 Data Models Structs, type mapping, and model generation.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0088-text-01": {
       "sourceHash": "54d85eca392318465bc1cad376a3f3027fa026be2ea17b95d5f0079788530c77",
       "targetHash": "e993f2c4744b3b6eb675eaa10e0dd8e6af01eda7bd220c3cd2fcabbb3297c7ca",
       "machineHash": "e993f2c4744b3b6eb675eaa10e0dd8e6af01eda7bd220c3cd2fcabbb3297c7ca",
       "machineText": "🚀 Methodenbindung\nGo-Methoden an das Frontend binden.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "🚀 Method Binding Bind Go methods to the frontend.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0089-text-01": {
       "sourceHash": "a23154cda1bba3e7d8078dfa76ae0ddd6ef64abf903badefb89e55bcc87fbe29",
       "targetHash": "683efd55267cd2f533d1a8c8621e6218041e75de09da90f85bc01c58208b6d22",
       "machineHash": "683efd55267cd2f533d1a8c8621e6218041e75de09da90f85bc01c58208b6d22",
       "machineText": "⚙ Erweiterte Bindung\nDirektiven, Code-Injektion und benutzerdefinierte IDs.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "⚙ Advanced Binding Directives, code injection, and custom IDs.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0090-text-01": {
       "sourceHash": "23c0a79ef93ea9ed1cf2ed16b18d66bbf6dbab4103165934cdad1c20334cf935",
-      "targetHash": "239552021106ab9e9e2b0bcd67cd208ff6e620dd5a6c854939ab332a5db24b3c",
-      "machineHash": "239552021106ab9e9e2b0bcd67cd208ff6e620dd5a6c854939ab332a5db24b3c",
-      "machineText": "✓ Bewährte Vorgehensweisen\nEntwurfsmuster für Bindings.",
-      "status": "final",
+      "targetHash": "d1a325f08f114e5b770543e5ff1d68206cec5ebbeaf07ae2b50da725576d240e",
+      "machineHash": "d1a325f08f114e5b770543e5ff1d68206cec5ebbeaf07ae2b50da725576d240e",
+      "machineText": "✓ Bewährte Verfahren\nEntwurfsmuster für Bindungen.",
+      "status": "machine-translated",
       "sourcePreview": "✓ Best Practices Binding design patterns.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "b0091-text-01": {
       "sourceHash": "e73969bee38770f5cb20163dfa8af22ea86a7752e233d569447c68798b7d40cd",
-      "targetHash": "b9aba5693abe5b1aa888ccccc0732ff0918db26573d6a0415ecba56bfd27b68a",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https…"
+      "targetHash": "80c1de77660ed2325b65df43a2ccec8f1d7842820d073bd27e947108f3d35f7f",
+      "machineHash": "80c1de77660ed2325b65df43a2ccec8f1d7842820d073bd27e947108f3d35f7f",
+      "machineText": "**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "c0003-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "c0003-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "c0003-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "c0003-line-004-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "fm-description": {
       "sourceHash": "e8075281aa96e65507664f5aba1936e821c6fc0bd27cece3a28c59115b21dd2b",
-      "targetHash": "a03e7a3f14845d04b4165b773d2b68549f55303805df64145ca3e292613e85be",
-      "machineHash": "a03e7a3f14845d04b4165b773d2b68549f55303805df64145ca3e292613e85be",
-      "machineText": "Automatische Generierung von Enums aus Go-Konstanten",
-      "status": "final",
+      "targetHash": "943610aa7592cbb12b999e567d4a1061b5723aaac1b3ae368989a90da8f6e599",
+      "machineHash": "943610aa7592cbb12b999e567d4a1061b5723aaac1b3ae368989a90da8f6e599",
+      "machineText": "Automatische Enum-Generierung aus Go-Konstanten",
+      "status": "machine-translated",
       "sourcePreview": "Automatic enum generation from Go constants",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     },
     "fm-title": {
       "sourceHash": "2ee7ca9fcbc38a7536d6ce70e51536a89b9ae32071d4f0518a94f2a37ee1d439",
       "targetHash": "2ee7ca9fcbc38a7536d6ce70e51536a89b9ae32071d4f0518a94f2a37ee1d439",
       "machineHash": "2ee7ca9fcbc38a7536d6ce70e51536a89b9ae32071d4f0518a94f2a37ee1d439",
       "machineText": "Enums",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Enums",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:07:10Z"
     }
   },
   "migration": {

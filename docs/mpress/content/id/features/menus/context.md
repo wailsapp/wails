@@ -7,13 +7,13 @@ sourcePath: "features/menus/context.md"
 
 ## Masalah
 
-Pengguna mengharapkan menu klik kanan dengan tindakan yang sesuai dengan konteks. Elemen yang berbeda memerlukan menu yang berbeda:
+Pengguna mengharapkan menu klik kanan dengan tindakan yang sesuai konteks. Elemen yang berbeda memerlukan menu yang berbeda:
 
 - **Teks**: Potong, Salin, Tempel
 - **Gambar**: Simpan, Salin, Buka
 - **Elemen khusus**: Tindakan khusus aplikasi
 
-Membuat menu konteks secara manual berarti harus menangani peristiwa mouse, pemosisian, dan perbedaan antarplatform.
+Membuat menu konteks secara manual berarti harus menangani peristiwa tetikus, penempatan, dan perbedaan antarplatform.
 
 ## Solusi Wails
 
@@ -116,7 +116,7 @@ contextMenu.AddRadio("Large", false).OnClick(handleSize)
 app.ContextMenu.Add("view-menu", contextMenu)
 ```
 
-Untuk **semua jenis item menu**, lihat [Referensi Menu](/features/menus/reference/).
+Untuk mengetahui **semua jenis item menu**, lihat [Referensi Menu](/features/menus/reference/).
 
 ## Mengaitkan dengan Elemen HTML
 
@@ -191,7 +191,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </div>
 ```
 
-**Satu menu, data berbeda untuk setiap elemen.**
+**Satu menu dengan data yang berbeda untuk setiap elemen.**
 
 ## Data Konteks
 
@@ -206,7 +206,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Jenis data:** Selalu `string`. Uraikan sesuai kebutuhan.
+**Tipe data:** Selalu `string`. Uraikan sesuai kebutuhan.
 
 ### Meneruskan Data Kompleks
 
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Keamanan"}
-**Selalu validasi data konteks** dari frontend. Pengguna dapat memanipulasi properti CSS, jadi perlakukan data sebagai input yang tidak tepercaya.
+**Selalu validasi data konteks** dari frontend. Pengguna dapat memanipulasi properti CSS, jadi perlakukan data tersebut sebagai input yang tidak tepercaya.
 
 @end
 
@@ -271,7 +271,7 @@ contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
 
 ## Menu Konteks Bawaan
 
-WebView menyediakan menu konteks bawaan untuk operasi standar (salin, tempel, inspeksi). Kendalikan dengan `--default-contextmenu`:
+WebView menyediakan menu konteks bawaan untuk operasi standar (salin, tempel, inspeksi). Kendalikan menu tersebut dengan `--default-contextmenu`:
 
 ### Sembunyikan Menu Bawaan
 
@@ -291,7 +291,7 @@ WebView menyediakan menu konteks bawaan untuk operasi standar (salin, tempel, in
 </div>
 ```
 
-**Kasus penggunaan:** Area teks, bidang input, dan konten yang dapat diedit.
+**Kasus penggunaan:** Area teks, kolom input, dan konten yang dapat diedit.
 
 ### Mode Otomatis (Cerdas)
 
@@ -304,7 +304,7 @@ WebView menyediakan menu konteks bawaan untuk operasi standar (salin, tempel, in
 **Perilaku bawaan.** Menampilkan menu bawaan ketika:
 
 - Teks dipilih
-- Berada dalam bidang input teks
+- Berada dalam kolom input teks
 - Berada dalam konten yang dapat diedit (`contenteditable`)
 
 Dalam kondisi lain, menu bawaan disembunyikan.
@@ -321,14 +321,14 @@ Dalam kondisi lain, menu bawaan disembunyikan.
 **Perilaku:**
 
 1. Menu khusus ditampilkan terlebih dahulu
-2. Jika menu khusus kosong atau tidak ditemukan, menu bawaan ditampilkan
-3. Keduanya dapat digunakan secara bersamaan (bergantung pada platform)
+2. Jika menu khusus kosong atau tidak ditemukan, menu bawaan akan ditampilkan
+3. Keduanya dapat digunakan bersamaan (bergantung pada platform)
 
 ## Menu Konteks Dinamis
 
 Perbarui menu berdasarkan status aplikasi:
 
-### Mengaktifkan/Menonaktifkan Item
+### Aktifkan/Nonaktifkan Item
 
 ```go
 var cutMenuItem *application.MenuItem
@@ -356,13 +356,13 @@ func onSelectionChanged(hasSelection bool) {
 ```
 
 @note{type="caution" title="Selalu Panggil Update()"}
-Setelah mengubah status menu, **panggil `contextMenu.Update()`**. Hal ini sangat penting pada Windows.
+Setelah mengubah status menu, **panggil `contextMenu.Update()`**. Langkah ini sangat penting di Windows.
 
-Lihat [Referensi Menu](/features/menus/reference/#enabled-state) untuk detail selengkapnya.
+Lihat [Referensi Menu](/features/menus/reference/#enabled-state) untuk detailnya.
 
 @end
 
-### Mengubah Label
+### Ubah Label
 
 ```go
 playMenuItem := contextMenu.Add("Play")
@@ -377,7 +377,7 @@ playMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Membuat Ulang Menu
+### Buat Ulang Menu
 
 Untuk perubahan besar, buat ulang seluruh menu:
 
@@ -410,7 +410,7 @@ func rebuildContextMenu(fileType string) {
 
 ## Perilaku Platform
 
-Menu konteks bersifat **native pada setiap platform**:
+Menu konteks bersifat **native bagi platform**:
 
 @tabs{sync-key="platform"}
 [macOS]
@@ -419,12 +419,12 @@ Menu konteks bersifat **native pada setiap platform**:
 - Animasi dan transisi sistem
 - Klik kanan = Control+Klik (otomatis)
 - Menyesuaikan dengan tampilan sistem (terang/gelap)
-- Operasi teks standar dalam menu default
-- Pengguliran native untuk menu panjang
+- Operasi teks standar dalam menu bawaan
+- Pengguliran native untuk menu yang panjang
 
 **Konvensi macOS:**
 
-- Gunakan kapitalisasi kalimat untuk item menu
+- Gunakan kapitalisasi seperti kalimat untuk item menu
 - Gunakan elipsis (...) untuk item yang membuka dialog
 - Pintasan umum: ⌘C (Salin), ⌘V (Tempel)
 
@@ -433,12 +433,12 @@ Menu konteks bersifat **native pada setiap platform**:
 
 - Gaya native Windows
 - Mengikuti tema Windows
-- Operasi standar Windows dalam menu default
+- Operasi standar Windows dalam menu bawaan
 - Dukungan input sentuh dan pena
 
 **Konvensi Windows:**
 
-- Gunakan kapitalisasi judul untuk item menu
+- Gunakan huruf kapital pada setiap kata utama untuk item menu
 - Gunakan elipsis (...) untuk item yang membuka dialog
 - Pintasan umum: Ctrl+C (Salin), Ctrl+V (Tempel)
 
@@ -448,7 +448,7 @@ Menu konteks bersifat **native pada setiap platform**:
 - Menyesuaikan dengan tema desktop (GTK, Qt, dan sebagainya)
 - Perilaku klik kanan mengikuti pengaturan sistem
 - Isi menu default berbeda-beda menurut lingkungan
-- Penempatan mengikuti konvensi lingkungan desktop
+- Penempatan mengikuti konvensi lingkungan desktop (DE)
 
 **Pertimbangan untuk Linux:**
 
@@ -639,21 +639,21 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ Lakukan
 
-- **Jaga agar menu tetap terfokus** - Hanya tampilkan tindakan yang relevan bagi elemen tersebut
-- **Validasi data konteks** - Perlakukan sebagai input yang tidak tepercaya
+- **Jaga agar menu tetap terfokus** - Hanya tampilkan tindakan yang relevan untuk elemen tersebut
+- **Validasi data konteks** - Perlakukan sebagai masukan yang tidak tepercaya
 - **Gunakan label yang jelas** - Gunakan "Hapus File", bukan "Hapus"
 - **Panggil menu.Update()** - Setelah mengubah status menu
-- **Uji pada semua platform** - Perilakunya berbeda-beda
+- **Uji di semua platform** - Perilakunya berbeda-beda
 - **Sediakan pintasan papan ketik** - Untuk tindakan umum
-- **Kelompokkan item terkait** - Gunakan pemisah
+- **Kelompokkan item yang berkaitan** - Gunakan pemisah
 
 ### ❌ Jangan Lakukan
 
-- **Jangan memercayai data konteks** - Selalu lakukan validasi
-- **Jangan membuat menu terlalu panjang** - Maksimum 7-10 item
-- **Jangan lupa memanggil menu.Update()** - Menu tidak akan berfungsi dengan benar
-- **Jangan membuat submenu terlalu bertingkat** - Maksimum 2 tingkat
-- **Jangan gunakan jargon** - Pastikan label mudah dipahami pengguna
+- **Jangan percayai data konteks** - Selalu lakukan validasi
+- **Jangan membuat menu terlalu panjang** - Maksimal 7-10 item
+- **Jangan lupa memanggil menu.Update()** - Menu tidak akan berfungsi dengan semestinya
+- **Jangan membuat susunan terlalu bertingkat** - Maksimal 2 tingkat
+- **Jangan gunakan jargon** - Gunakan label yang mudah dipahami pengguna
 - **Jangan memblokir handler** - Pastikan handler tetap cepat
 
 ## Pemecahan Masalah
@@ -663,7 +663,7 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 **Kemungkinan penyebab:**
 
 1. ID menu tidak cocok
-2. Kesalahan pengetikan pada properti CSS
+2. Kesalahan ketik pada properti CSS
 3. Runtime belum diinisialisasi
 
 **Solusi:**
@@ -682,7 +682,7 @@ app.ContextMenu.Add("my-menu", contextMenu)
 
 **Kemungkinan penyebab:**
 
-1. Properti CSS belum ditetapkan
+1. Properti CSS belum diatur
 2. Data berisi karakter khusus
 
 **Solusi:**
@@ -700,7 +700,7 @@ element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 
 ### Item Menu Tidak Merespons
 
-**Penyebab:** Lupa memanggil `menu.Update()` setelah mengaktifkan
+**Penyebab:** Lupa memanggil `menu.Update()` setelah mengaktifkan item
 
 **Solusi:**
 
@@ -709,7 +709,7 @@ menuItem.SetEnabled(true)
 contextMenu.Update()  // Add this!
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards{cols="2"}
 📖 Referensi Menu
@@ -725,7 +725,7 @@ Buat bilah menu aplikasi.
 
 ---
 ★ Menu Baki Sistem
-Tambahkan integrasi dengan baki sistem/bilah menu.
+Tambahkan integrasi baki sistem/bilah menu.
 
 [Pelajari Selengkapnya →](/features/menus/systray/)
 

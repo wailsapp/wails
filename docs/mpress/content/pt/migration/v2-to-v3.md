@@ -1,15 +1,15 @@
 ---
-title: "Migração da v2 para a v3"
-description: "Guia completo para migrar seu aplicativo Wails da v2 para a v3"
+title: "Migração do v2 para o v3"
+description: "Guia completo para migrar seu aplicativo Wails v2 para o v3"
 slug: "migration/v2-to-v3"
 sourcePath: "migration/v2-to-v3.md"
 ---
 
-O Wails v3 é uma **reescrita completa**, com melhorias significativas na arquitetura, no desempenho e na experiência de desenvolvimento. Este guia ajuda você a migrar seu aplicativo da v2 para a v3.
+O Wails v3 é uma **reescrita completa**, com melhorias significativas na arquitetura, no desempenho e na experiência de desenvolvimento. Este guia ajuda você a migrar seu aplicativo v2 para o v3.
 
 **Principais mudanças:**
 
-- Nova estrutura de aplicativos
+- Nova estrutura do aplicativo
 - Sistema de bindings aprimorado
 - Gerenciamento de janelas aprimorado
 - Sistema de eventos aprimorado
@@ -17,13 +17,13 @@ O Wails v3 é uma **reescrita completa**, com melhorias significativas na arquit
 
 **Tempo de migração:** 1-4 horas para aplicativos típicos
 
-## Mudanças incompatíveis
+## Alterações incompatíveis
 
 ### Inicialização do aplicativo
 
-Na v2, a configuração do aplicativo, a configuração da janela e a execução eram combinadas em uma única chamada a `wails.Run()`. Essa abordagem monolítica dificultava criar várias janelas, tratar erros em diferentes etapas ou testar componentes individuais do aplicativo.
+No v2, a configuração do aplicativo, a configuração da janela e a execução eram combinadas em uma única chamada a `wails.Run()`. Essa abordagem monolítica dificultava criar várias janelas, tratar erros em diferentes etapas ou testar componentes individuais do aplicativo.
 
-A v3 separa essas responsabilidades em fases distintas: criação do aplicativo, criação das janelas e execução. Essa separação oferece controle explícito sobre cada etapa do ciclo de vida do aplicativo e torna o código mais modular e testável.
+O v3 separa essas responsabilidades em fases distintas: criação do aplicativo, criação da janela e execução. Essa separação oferece controle explícito sobre cada etapa do ciclo de vida do aplicativo e torna o código mais modular e testável.
 
 **v2:**
 
@@ -67,9 +67,9 @@ app.Run()
 
 ### Bindings
 
-Na v2, cada struct vinculada exigia um campo de contexto e um método `startup(ctx)` para receber o contexto do runtime. Isso criava um forte acoplamento entre a lógica de negócios e o runtime do Wails, tornando o código mais difícil de testar e compreender.
+No v2, cada struct vinculada precisava de um campo de contexto e de um método `startup(ctx)` para receber o contexto de runtime. Isso criava um forte acoplamento entre a lógica de negócios e o runtime do Wails, dificultando os testes e a compreensão do código.
 
-A v3 introduz o padrão de serviços, no qual suas structs são totalmente independentes e não precisam armazenar o contexto do runtime. Se um serviço precisar acessar a instância do aplicativo, ele a receberá explicitamente por injeção de dependência, em vez de receber o contexto implicitamente ao longo da cadeia de chamadas.
+O v3 introduz o padrão de serviços, no qual suas structs são totalmente independentes e não precisam armazenar o contexto de runtime. Se um serviço precisar acessar a instância do aplicativo, ele a receberá explicitamente por injeção de dependência, em vez de depender da propagação implícita do contexto.
 
 **v2:**
 
@@ -108,15 +108,15 @@ app := application.New(application.Options{
 
 - **Sem dependências implícitas**: os serviços são structs Go comuns, sem dependências ocultas do runtime
 - **Testes mais fáceis**: você pode testar os métodos dos serviços sem simular um contexto do Wails
-- **Código mais claro**: as dependências são explícitas (passadas como argumentos do construtor), em vez de ficarem ocultas em um campo de contexto
-- **Melhor organização**: os serviços podem ser agrupados por domínio, em vez de ficarem todos em uma única struct `App`
+- **Código mais claro**: as dependências são explícitas — passadas como argumentos do construtor — em vez de ficarem ocultas em um campo de contexto
+- **Melhor organização**: os serviços podem ser agrupados por domínio, em vez de todos residirem em uma única struct `App`
 - **Inicialização adequada**: quando precisar de inicialização, use o método `ServiceStartup()` para torná-la explícita
 
 ### Runtime
 
-Na v2, todas as operações do runtime exigiam passar um contexto para funções globais do pacote `runtime`. Isso criava um forte acoplamento com o objeto de contexto em toda a base de código e fazia a API parecer procedural, em vez de orientada a objetos.
+No v2, todas as operações de runtime exigiam passar um contexto para funções globais do pacote `runtime`. Isso criava um forte acoplamento ao objeto de contexto em toda a base de código e fazia a API parecer procedural, em vez de orientada a objetos.
 
-A v3 substitui o runtime baseado em contexto por chamadas diretas a métodos dos objetos de aplicativo e janela. As operações são chamadas diretamente nos objetos que afetam, tornando o código mais intuitivo e orientado a objetos.
+O v3 substitui o runtime baseado em contexto por chamadas diretas a métodos dos objetos de aplicativo e janela. As operações são chamadas diretamente nos objetos que elas afetam, tornando o código mais intuitivo e orientado a objetos.
 
 **v2:**
 
@@ -147,17 +147,17 @@ func (s *MyService) EmitEvent() {
 
 **Por que isso é melhor:**
 
-- **Design orientado a objetos**: os métodos são chamados nos objetos que afetam (janela, aplicativo, menu etc.)
-- **Intenção mais clara**: `window.SetTitle()` é mais evidente do que `runtime.WindowSetTitle(ctx, ...)`
+- **Design orientado a objetos**: os métodos são chamados nos objetos que eles afetam (janela, aplicativo, menu etc.)
+- **Intenção mais clara**: `window.SetTitle()` é mais explícito que `runtime.WindowSetTitle(ctx, ...)`
 - **Melhor suporte da IDE**: o preenchimento automático funciona corretamente quando os métodos pertencem aos objetos
-- **Mais clareza ao usar várias janelas**: quando há várias janelas, você escolhe explicitamente em qual delas a operação será realizada
+- **Mais clareza com várias janelas**: quando há várias janelas, você escolhe explicitamente em qual delas operar
 - **Sem propagação de contexto**: você não precisa passar o contexto por todas as funções
 
 ### Bindings do frontend
 
-Na v2, os bindings eram organizados pelo pacote Go e pelo nome da struct, geralmente resultando em caminhos como `wailsjs/go/main/App`. Essa estrutura não refletia um agrupamento lógico e dificultava encontrar funcionalidades relacionadas.
+No v2, os bindings eram organizados pelo pacote Go e pelo nome da struct, normalmente resultando em caminhos como `wailsjs/go/main/App`. Essa estrutura não refletia o agrupamento lógico e dificultava encontrar funcionalidades relacionadas.
 
-A v3 organiza os bindings pelo nome do serviço e pelo módulo do aplicativo, criando uma estrutura lógica mais clara. Os bindings são gerados em um diretório `bindings`, organizado pelo nome do aplicativo e pelos nomes dos serviços, facilitando a compreensão das funcionalidades disponíveis.
+O v3 organiza os bindings pelo nome do serviço e pelo módulo do aplicativo, criando uma estrutura lógica mais clara. Os bindings são gerados em um diretório `bindings`, organizado pelo nome do aplicativo e pelos nomes dos serviços, facilitando a compreensão das funcionalidades disponíveis.
 
 **v2:**
 
@@ -177,17 +177,17 @@ const result = await Greet("World")
 
 **Por que isso é melhor:**
 
-- **Organização lógica**: os bindings são agrupados pelo nome do serviço, em vez de pela estrutura de pacotes Go
-- **Importações mais claras**: o caminho reflete a lógica do domínio (greetservice), não a estrutura de arquivos (main/App)
-- **Mais facilidade para encontrar recursos**: Você pode navegar pelos bindings por funcionalidade, em vez de pela estrutura técnica
-- **Nomenclatura consistente**: A organização baseada em serviços corresponde à arquitetura do seu backend
-- **Caminhos mais simples**: Não é mais necessário usar o prefixo `../wailsjs/go` — basta usar `./bindings`
+- **Organização lógica**: os bindings são agrupados pelo nome do serviço, e não pela estrutura de pacotes Go
+- **Importações mais claras**: o caminho reflete a lógica do domínio (greetservice), e não a estrutura de arquivos (main/App)
+- **Funcionalidades mais fáceis de encontrar**: você pode navegar pelos bindings por funcionalidade, em vez de pela estrutura técnica
+- **Nomenclatura consistente**: a organização baseada em serviços corresponde à arquitetura do backend
+- **Caminhos mais simples**: não há mais o prefixo `../wailsjs/go`, apenas `./bindings`
 
 ### Eventos
 
-Na v2, os eventos usavam parâmetros variádicos `interface{}` e exigiam que o contexto fosse passado para todas as funções de evento. Os manipuladores de eventos recebiam dados sem tipo definido que exigiam asserções de tipo manuais, tornando o sistema de eventos propenso a erros e difícil de depurar.
+No v2, os eventos usavam parâmetros variádicos `interface{}` e exigiam que o contexto fosse passado para cada função de evento. Os manipuladores de eventos recebiam dados sem tipo definido, que exigiam asserções de tipo manuais, tornando o sistema de eventos propenso a erros e difícil de depurar.
 
-A v3 introduz objetos de evento tipados e elimina a exigência de contexto. Os manipuladores de eventos recebem um objeto de evento adequado com dados tipados, tornando o sistema de eventos mais confiável e fácil de usar.
+O v3 introduz objetos de evento tipados e elimina a exigência de contexto. Os manipuladores recebem um objeto de evento adequado, com dados tipados, tornando o sistema de eventos mais confiável e fácil de usar.
 
 **v2:**
 
@@ -212,17 +212,17 @@ app.Event.Emit("event-name", data)
 
 **Por que isso é melhor:**
 
-- **Segurança de tipos**: Os eventos usam objetos de evento adequados em vez de `...interface{}`
-- **Depuração aprimorada**: Os objetos de evento contêm metadados, como o nome do evento, facilitando a depuração
+- **Segurança de tipos**: os eventos usam objetos de evento adequados em vez de `...interface{}`
+- **Depuração aprimorada**: os objetos de evento contêm metadados, como o nome do evento, facilitando a depuração
 - **API mais clara**: `app.Event.On()` e `app.Event.Emit()` são mais intuitivos do que as funções de runtime
-- **Não requer contexto**: Os eventos operam diretamente no objeto da aplicação, sem precisar propagar o contexto
-- **Manipuladores mais simples**: Os manipuladores de eventos têm uma assinatura clara em vez de parâmetros variádicos
+- **Não requer contexto**: os eventos funcionam diretamente no objeto do aplicativo, sem propagar o contexto entre threads
+- **Manipuladores mais simples**: os manipuladores de eventos têm uma assinatura clara em vez de parâmetros variádicos
 
 ### Janelas
 
-A v2 permitia apenas uma janela por aplicação. A janela era criada na inicialização, e todas as operações de janela eram realizadas por funções de runtime que tinham essa única janela como alvo implícito.
+v2 permitia apenas uma janela por aplicativo. A janela era criada na inicialização, e todas as operações de janela eram realizadas por funções de runtime que tinham essa única janela como destino implícito.
 
-A v3 introduz suporte nativo a várias janelas como funcionalidade central. Cada janela é um objeto de primeira classe, com métodos e ciclo de vida próprios. Você pode criar, gerenciar e destruir dinamicamente várias janelas durante todo o ciclo de vida da aplicação.
+v3 introduz suporte nativo a várias janelas como um recurso central. Cada janela é um objeto de primeira classe, com métodos e ciclo de vida próprios. Você pode criar, gerenciar e destruir dinamicamente várias janelas durante todo o ciclo de vida do aplicativo.
 
 **v2:**
 
@@ -244,15 +244,15 @@ window2.SetSize(1024, 768)
 
 **Por que isso é melhor:**
 
-- **Aplicações com várias janelas**: Crie aplicações com várias janelas independentes (painéis, preferências, ferramentas etc.)
-- **Referências explícitas a janelas**: Cada janela é um objeto que você pode armazenar e manipular diretamente
-- **Criação dinâmica de janelas**: Crie e destrua janelas a qualquer momento durante a execução
-- **Estado independente por janela**: Cada janela tem eventos, propriedades e ciclo de vida próprios
-- **Arquitetura aprimorada**: O gerenciamento de janelas é orientado a objetos, em vez de baseado em contexto
+- **Aplicativos com várias janelas**: crie aplicativos com várias janelas independentes (painéis, preferências, ferramentas etc.)
+- **Referências explícitas a janelas**: cada janela é um objeto que você pode armazenar e manipular diretamente
+- **Criação dinâmica de janelas**: crie e destrua janelas a qualquer momento durante a execução
+- **Estado independente por janela**: cada janela tem seus próprios eventos, propriedades e ciclo de vida
+- **Arquitetura aprimorada**: o gerenciamento de janelas é orientado a objetos, em vez de baseado em contexto
 
 ## Etapas da migração
 
-### Etapa 1: Atualizar as dependências
+### Etapa 1: atualize as dependências
 
 **go.mod:**
 
@@ -273,7 +273,7 @@ go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
-### Etapa 2: Atualizar main.go
+### Etapa 2: atualize main.go
 
 **v2:**
 
@@ -351,7 +351,7 @@ func main() {
 }
 ```
 
-### Etapa 3: Converter a struct App em um serviço
+### Etapa 3: converta a struct do aplicativo em um serviço
 
 **v2:**
 
@@ -399,7 +399,7 @@ app := application.New(application.Options{})
 app.RegisterService(application.NewService(NewMyService(app)))
 ```
 
-### Etapa 4: Atualizar as chamadas de runtime
+### Etapa 4: atualize as chamadas de runtime
 
 **v2:**
 
@@ -424,7 +424,7 @@ func (s *MyService) DoSomething() {
 }
 ```
 
-### Etapa 5: Atualizar o frontend
+### Etapa 5: atualize o frontend
 
 **Gere novos bindings:**
 
@@ -464,7 +464,7 @@ Events.On("update", (data) => {
 Events.Emit("action", data)
 ```
 
-### Etapa 6: Atualizar a configuração
+### Etapa 6: atualize a configuração
 
 **v2 (wails.json):**
 
@@ -494,7 +494,7 @@ Events.Emit("action", data)
 }
 ```
 
-## Mapeamento de funcionalidades
+## Mapeamento de recursos
 
 ### Caixas de diálogo
 
@@ -537,7 +537,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Área de notificação
+### Bandeja do sistema
 
 **v2:**
 
@@ -562,7 +562,7 @@ systray.SetMenu(menu)
 
 ### Problema: bindings não encontrados
 
-**Problema:** Erros de importação após a migração
+**Problema:** erros de importação após a migração
 
 **Solução:**
 
@@ -580,7 +580,7 @@ ls frontend/bindings
 
 **Solução:**
 
-Em vez disso, armazene uma referência ao aplicativo:
+Em vez disso, armazene a referência ao aplicativo:
 
 ```go
 type MyService struct {
@@ -592,7 +592,7 @@ func NewMyService(app *application.App) *MyService {
 }
 ```
 
-### Problema: os métodos da janela não funcionam
+### Problema: os métodos de janela não funcionam
 
 **Problema:** `runtime.WindowSetTitle()` não existe
 
@@ -607,7 +607,7 @@ window.SetTitle("New Title")
 
 ### Problema: os eventos não são disparados
 
-**Problema:** Os eventos são registrados, mas não são recebidos
+**Problema:** os eventos são registrados, mas não são recebidos
 
 **Solução:**
 
@@ -626,14 +626,14 @@ OnEvent("my-event", handler)  // Must match exactly
 ### Lista de verificação
 
 - [ ] O aplicativo inicia sem erros
-- [ ] Todas as vinculações funcionam
+- [ ] Todos os bindings funcionam
 - [ ] Os eventos são enviados e recebidos
 - [ ] As janelas abrem e fecham corretamente
 - [ ] Os menus funcionam (se aplicável)
 - [ ] As caixas de diálogo funcionam (se aplicável)
 - [ ] A bandeja do sistema funciona (se aplicável)
-- [ ] O processo de compilação funciona
-- [ ] A compilação para produção funciona
+- [ ] O processo de build funciona
+- [ ] O build de produção funciona
 
 ### Comandos de teste
 
@@ -648,27 +648,27 @@ wails3 build
 wails3 generate bindings
 ```
 
-## Benefícios da v3
+## Benefícios do v3
 
 ### Desempenho
 
-- **Inicialização mais rápida** — Inicialização otimizada
-- **Menor uso de memória** — Uso eficiente de recursos
-- **Ponte aprimorada** — Sobrecarga de &lt;1 ms por chamada
+- **Inicialização mais rápida** — inicialização otimizada
+- **Menor uso de memória** — uso eficiente de recursos
+- **Bridge aprimorada** — overhead de &lt;1 ms por chamada
 
 ### Recursos
 
-- **Múltiplas janelas** — Suporte nativo
-- **Bandeja do sistema** — Integrada
-- **Eventos aprimorados** — API tipada e mais simples
+- **Várias janelas** — suporte nativo
+- **Bandeja do sistema** — integrada
+- **Eventos melhores** — API tipada e mais simples
 - **Serviços** — Melhor organização do código
 
 ### Experiência de desenvolvimento
 
-- **Segurança de tipos** — Suporte completo a TypeScript
-- **Erros aprimorados** — Mensagens de erro claras
-- **Recarregamento automático** — Desenvolvimento mais rápido
-- **Documentação aprimorada** — Guias abrangentes
+- **Segurança de tipos** — Suporte completo ao TypeScript
+- **Erros melhores** — Mensagens de erro claras
+- **Recarga automática** — Desenvolvimento mais rápido
+- **Documentação melhor** — Guias abrangentes
 
 ## Como obter ajuda
 
@@ -681,11 +681,11 @@ wails3 generate bindings
 
 ### Perguntas frequentes
 
-**P: Posso executar a v2 e a v3 lado a lado?** R: Sim, elas usam caminhos de importação diferentes.
+**P: Posso executar v2 e v3 lado a lado?** R: Sim, eles usam caminhos de importação diferentes.
 
-**P: A v3 está pronta para produção?** O Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. O suporte a Android e iOS permanece experimental e está fora do contrato de compatibilidade estável para desktop.
+**P: O v3 está pronto para produção?** O Wails v3.0.0 é a versão estável para aplicativos desktop no Windows, macOS e Linux. O suporte a Android e iOS continua experimental e não faz parte do contrato de compatibilidade estável para desktop.
 
-**P: A v2 continuará recebendo manutenção?** R: Sim, a v2 receberá atualizações críticas.
+**P: O v2 continuará recebendo manutenção?** R: Sim, o v2 receberá atualizações críticas.
 
 **P: Quanto tempo leva a migração?** R: 1-4 horas para aplicativos típicos.
 
@@ -699,19 +699,19 @@ Comece a usar o Wails v3.
 
 ---
 ★ Conceitos fundamentais
-Entenda a arquitetura da v3.
+Entenda a arquitetura do v3.
 
 [Saiba mais →](/concepts/architecture/)
 
 ---
-◆ Vinculações
-Conheça o novo sistema de vinculações.
+◆ Bindings
+Conheça o novo sistema de bindings.
 
 [Saiba mais →](/features/bindings/methods/)
 
 ---
 📖 Exemplos
-Veja exemplos completos da v3.
+Veja exemplos completos do v3.
 
 [Ver exemplos →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 

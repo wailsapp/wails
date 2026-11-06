@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## Best Practices für Bindings
 
-Nutzen Sie für den Entwurf von Bindings **bewährte Muster**, um übersichtliche, leistungsfähige und sichere Bindings zu erstellen. Dieser Leitfaden behandelt Grundsätze des API-Designs, Leistungsoptimierung, Sicherheitsmuster, Fehlerbehandlung und Teststrategien für wartbare Anwendungen.
+Befolgen Sie **bewährte Muster** für den Entwurf von Bindings, um übersichtliche, leistungsfähige und sichere Bindings zu erstellen. Dieser Leitfaden behandelt Prinzipien des API-Designs, Leistungsoptimierung, Sicherheitsmuster, Fehlerbehandlung und Teststrategien für wartbare Anwendungen.
 
-## Grundsätze des API-Designs
+## Prinzipien des API-Designs
 
 ### 1. Einzelverantwortung
 
-Jeder Service sollte genau einen klar definierten Zweck erfüllen:
+Jeder Service sollte genau einen klaren Zweck erfüllen:
 
 ```go
 // ❌ Bad: God object
@@ -110,9 +110,9 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ## Leistungsmuster
 
-### 1. Batchoperationen
+### 1. Batch-Operationen
 
-Reduzieren Sie Aufrufe über die Bridge, indem Sie sie bündeln:
+Reduzieren Sie Aufrufe über die Bridge durch Batch-Verarbeitung:
 
 ```go
 // ❌ Bad: N calls
@@ -234,7 +234,7 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 
 ### 4. Streaming mit Events
 
-Verwenden Sie Events für das Streaming von Daten:
+Verwenden Sie Events zum Streamen von Daten:
 
 ```go
 // ❌ Bad: Polling
@@ -446,7 +446,7 @@ func (s *Service) SendEmail(to, subject, body string) error {
 
 ### 1. Aussagekräftige Fehler
 
-Geben Sie bei Fehlern den Kontext an:
+Geben Sie in Fehlermeldungen Kontext an:
 
 ```go
 // ❌ Bad: Generic errors
@@ -513,7 +513,7 @@ func (s *UserService) GetUser(id int) (*User, error) {
 
 ### 3. Fehlerbehebung
 
-Behandeln Sie Fehler angemessen:
+Behandeln Sie Fehler ordnungsgemäß:
 
 ```go
 func (s *Service) ProcessWithRetry(data string) error {
@@ -674,30 +674,30 @@ func TestUserService_WithMock(t *testing.T) {
 - **Eingaben validieren** – immer auf der Go-Seite
 - **Fehler zurückgeben** – explizite Fehlerbehandlung
 - **Operationen bündeln** – Aufrufe über die Bridge reduzieren
-- **Events verwenden** – für das Streaming von Daten
+- **Events verwenden** – zum Streamen von Daten
 - **Eingaben bereinigen** – Injection-Angriffe verhindern
 - **Gründlich testen** – Unit- und Integrationstests
 - **Methoden dokumentieren** – Kommentare werden zu JSDoc
 - **API versionieren** – Änderungen einplanen
 
-### ❌ Nicht tun
+### ❌ Nicht empfohlen
 
-- **Keine God Objects erstellen** – Services auf ihren Zweck beschränken
+- **Keine God Objects erstellen** – Services klar fokussieren
 - **Dem Frontend nicht vertrauen** – alles validieren
 - **Keine riesigen Datensätze zurückgeben** – Paginierung verwenden
-- **Nicht blockieren** – für lang laufende Operationen Goroutinen verwenden
+- **Nicht blockieren** – für lang andauernde Operationen Goroutinen verwenden
 - **Fehler nicht ignorieren** – alle Fehlerfälle behandeln
 - **Tests nicht auslassen** – frühzeitig und häufig testen
-- **Werte nicht fest codieren** – Konfiguration verwenden
-- **Keine Interna offenlegen** – Implementierung nicht öffentlich zugänglich machen
+- **Werte nicht hartcodieren** – Konfiguration verwenden
+- **Interna nicht offenlegen** – Implementierung privat halten
 
 ## Nächste Schritte
 
-- [Methoden](/features/bindings/methods/) – Grundlagen der Methodenbindung kennenlernen
+- [Methoden](/features/bindings/methods/) – Grundlagen des Methoden-Bindings kennenlernen
 - [Services](/features/bindings/services/) – Servicearchitektur verstehen
-- [Modelle](/features/bindings/models/) – Komplexe Datenstrukturen binden
-- [Ereignisse](/features/events/system/) – Ereignisse für Publish/Subscribe verwenden
+- [Modelle](/features/bindings/models/) – komplexe Datenstrukturen binden
+- [Events](/features/events/system/) – Events für Publish/Subscribe verwenden
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.

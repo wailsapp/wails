@@ -11,7 +11,7 @@ Les publications de Wails v3 suivent un **calendrier, et non les fonctionnalité
 
 | Publication | Tag | Fréquence | Publication GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nocturne | `v3.<next>.0-nightly.<YYYYMMDD>` (date UTC ; `.N` ajouté en cas de nouvelle exécution le même jour) | automatique, quotidienne, uniquement lorsque `UNRELEASED_CHANGELOG.md` contient des éléments | préversion, **pas** Latest | même version sans `v`, dist-tag `nightly` |
+| Nocturne | `v3.<next>.0-nightly.<YYYYMMDD>` (date UTC ; `.N` ajouté en cas de nouvelle exécution le même jour) | automatisée, quotidienne, uniquement lorsque les PR fusionnées dans la plage de publication testée produisent des notes visibles par les utilisateurs | préversion, **pas** Latest | même version sans `v`, dist-tag `nightly` |
 | Hebdomadaire | `v3.<next>.0` | automatique, le dimanche 20:00, heure d’Australia/Sydney **(jour non confirmé)** | publication normale, Latest | même version, dist-tag `latest` |
 | Correctif urgent | `v3.<current>.<N>`, `N > 0` | rare, manuelle | version normale, Latest | même version, dist-tag `latest` |
 | Majeure | `v4.0.0` | uniquement pour les changements incompatibles | publication normale | `latest` |
@@ -62,7 +62,7 @@ Les versions hebdomadaires sont créées depuis `master`, mais **pas depuis son 
 
 ## Comment préparer une publication
 
-Les droits de publication sont réservés au responsable du projet (consultez le document de gouvernance). Les contributeurs ne créent jamais de tag et ne publient jamais ; ils ajoutent des entrées à `v3/UNRELEASED_CHANGELOG.md`.
+Les droits de publication sont réservés au responsable du projet (voir le document de gouvernance). Les contributeurs ne créent jamais de tag et ne publient jamais de version ; ils décrivent les changements visibles par les utilisateurs dans les titres des PR ou dans une section de description `## Release notes`. L’automatisation des publications génère les notes à partir des PR fusionnées dans la plage exacte de commits testée ; `v3/UNRELEASED_CHANGELOG.md` a été supprimé.
 
 Toutes les opérations s’effectuent depuis **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`) :
 
@@ -85,7 +85,7 @@ La publication **hebdomadaire**, jamais la nightly, refuse de créer une balise 
 
 1. des issues ou des pull requests ouvertes portant le libellé `P0` ou `release-blocker` ;
 2. des issues ouvertes portant le libellé `regression` et créées depuis la dernière publication hebdomadaire ;
-3. des alertes Dependabot ouvertes de gravité critique ou élevée, des alertes d’analyse du code ouvertes de gravité critique ou élevée, ainsi que toute alerte ouverte d’analyse des secrets, **uniquement pour le code distribué**. Les alertes situées exclusivement sous `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou dans tout répertoire `examples/` sont ignorées (`SHIPPED_ALERT_IGNORE` dans `v3/tasks/releasegate/main.go`, **à examiner par le responsable**) ;
+3. les alertes Dependabot ouvertes de gravité critique ou élevée, les alertes d’analyse de code ouvertes de gravité critique ou élevée et toute alerte ouverte d’analyse des secrets, **uniquement pour le code distribué**. Les alertes situées exclusivement sous `v2/internal/staticanalysis/test/` (jeux de données de test pour l’analyse statique), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou dans tout répertoire `examples/` sont ignorées (`SHIPPED_ALERT_IGNORE` dans `v3/tasks/releasegate/main.go`, **à examiner par le propriétaire**) ;
 4. des avis de sécurité du dépôt toujours à l’état `triage`.
 
 **Qui peut définir un blocage.** Un label n'est pris en compte que si son événement `labeled` le plus récent (sans événement `unlabeled` ultérieur) a été déclenché par un membre de l'équipe `wailsapp/maintainers` ou par un collaborateur disposant de l'autorisation `maintain`/`admin`. Le même label appliqué par toute autre personne est ignoré et consigné dans le journal, afin qu'aucune personne extérieure ne puisse bloquer ou débloquer une publication. Le label `high-priority` appliqué automatiquement n'est délibérément **pas** utilisé. Les comptes de bots tels que `taliesin-ai` passent la liste d'autorisation s'ils disposent de `maintain` ; c'est intentionnel, et l'agent de triage peut appliquer des labels de blocage en fournissant des éléments justificatifs.

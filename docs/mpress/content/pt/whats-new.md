@@ -1,21 +1,21 @@
 ---
-title: "Novidades do Wails v3"
+title: "Novidades no Wails v3"
 description: "Conheça as principais melhorias e os novos recursos do Wails v3"
 slug: "whats-new"
 sourcePath: "whats-new.md"
 ---
 
-O Wails v3 introduz mudanças significativas em relação ao v2. Ele substitui a API declarativa de janela única por uma abordagem procedural mais flexível. Esse novo design de API melhora a legibilidade do código e simplifica o desenvolvimento, especialmente para aplicações complexas com várias janelas.
+O Wails v3 introduz mudanças significativas em relação ao v2. Ele substitui a API declarativa de janela única por uma abordagem procedural mais flexível. Esse novo design de API melhora a legibilidade do código e simplifica o desenvolvimento, especialmente de aplicações complexas com várias janelas.
 
-O Wails v3 representa uma evolução substancial na maneira como aplicações para desktop podem ser criadas usando Go e tecnologias web.
+O Wails v3 representa uma evolução substancial na forma de criar aplicações desktop usando Go e tecnologias web.
 
 ## Várias janelas
 
-O Wails v3 introduz a capacidade de criar e gerenciar várias janelas em uma única aplicação. Esse recurso permite que os desenvolvedores criem interfaces de usuário mais complexas e versáteis, superando as limitações das aplicações de janela única.
+O Wails v3 introduz a capacidade de criar e gerenciar várias janelas em uma única aplicação. Esse recurso permite aos desenvolvedores projetar interfaces de usuário mais complexas e versáteis, superando as limitações das aplicações de janela única.
 
-Cada janela pode ser configurada de forma independente, oferecendo flexibilidade de tamanho, posição, conteúdo e comportamento. Isso permite criar aplicações com janelas separadas para diferentes funcionalidades, como interfaces principais, painéis de configurações ou visualizações auxiliares.
+Cada janela pode ser configurada de forma independente, proporcionando flexibilidade de tamanho, posição, conteúdo e comportamento. Isso possibilita criar aplicações com janelas separadas para diferentes funcionalidades, como interfaces principais, painéis de configurações ou visualizações auxiliares.
 
-Os desenvolvedores podem criar, manipular e gerenciar essas janelas por meio de código, possibilitando interfaces de usuário dinâmicas que se adaptam às necessidades do usuário e aos estados da aplicação.
+Os desenvolvedores podem criar, manipular e gerenciar essas janelas por meio de código, o que permite interfaces de usuário dinâmicas que se adaptam às necessidades do usuário e aos estados da aplicação.
 
 @note{type="tip" title="Várias janelas"}
 @details{title="Exemplo"}
@@ -70,15 +70,15 @@ func main() {
 
 ## Integração com a bandeja do sistema
 
-O Wails v3 introduz suporte robusto aos recursos da bandeja do sistema, permitindo que sua aplicação mantenha uma presença constante na área de trabalho do usuário. Esse recurso é particularmente útil para aplicações que precisam ser executadas em segundo plano ou oferecer acesso rápido a funções essenciais.
+O Wails v3 introduz suporte robusto à funcionalidade da bandeja do sistema, permitindo que sua aplicação mantenha uma presença persistente na área de trabalho do usuário. Esse recurso é especialmente útil para aplicações que precisam ser executadas em segundo plano ou oferecer acesso rápido a funções importantes.
 
 Os principais recursos da integração do Wails v3 com a bandeja do sistema incluem:
 
-1. Vinculação de janela: você pode associar uma janela ao ícone da bandeja do sistema. Quando ativada, essa janela será centralizada em relação à posição do ícone, oferecendo uma ótima maneira de acessar rapidamente sua aplicação.
+1. Vinculação de janela: você pode associar uma janela ao ícone da bandeja do sistema. Quando ativada, essa janela será centralizada em relação à posição do ícone, proporcionando uma excelente forma de acessar rapidamente sua aplicação.
 
-2. Suporte completo a menus: crie menus avançados e interativos que os usuários possam acessar diretamente pelo ícone da bandeja do sistema. Isso permite executar ações rápidas sem precisar abrir a janela completa da aplicação.
+2. Suporte completo a menus: crie menus avançados e interativos que os usuários podem acessar diretamente pelo ícone da bandeja do sistema. Isso permite executar ações rápidas sem precisar abrir a janela completa da aplicação.
 
-3. Exibição adaptável de ícones: o suporte a ícones para os modos claro e escuro garante que o ícone da sua aplicação na bandeja do sistema permaneça visível e esteticamente agradável em diferentes temas do sistema. A integração também oferece suporte a ícones de modelo no macOS.
+3. Exibição adaptável de ícones: o suporte a ícones para os modos claro e escuro garante que o ícone da sua aplicação na bandeja do sistema permaneça visível e esteticamente agradável em diferentes temas do sistema. Ícones de modelo também são compatíveis com o macOS.
 
 @note{type="tip" title="Bandeja do sistema"}
 @details{title="Exemplo"}
@@ -148,11 +148,11 @@ func main() {
 
 ## Geração de bindings aprimorada
 
-O Wails v3 introduz uma melhoria significativa na forma como os bindings são gerados para o seu projeto. Os bindings são a camada que conecta o backend em Go ao frontend, permitindo uma comunicação transparente entre ambos.
+O Wails v3 introduz uma melhoria significativa na forma como os bindings são gerados para seu projeto. Os bindings são o elo que conecta o backend em Go ao frontend, permitindo uma comunicação fluida entre eles.
 
-A geração de bindings agora é feita por um analisador estático sofisticado, que melhora radicalmente o processo. Ele oferece mais velocidade e preserva a qualidade do código ao manter comentários e nomes de parâmetros.
+A geração de bindings agora usa um analisador estático sofisticado que melhora radicalmente o processo. Ele proporciona maior velocidade e preserva a qualidade do código ao manter comentários e nomes de parâmetros.
 
-O processo de geração de bindings foi simplificado e agora requer apenas um único comando: `wails3 generate bindings`.
+O processo de geração de bindings foi simplificado e agora exige apenas um comando: `wails3 generate bindings`.
 
 @note{type="tip" title="Bindings"}
 @details{title="Exemplo"}
@@ -189,11 +189,11 @@ export function GreetPerson($0) {
 
 ## Sistema de build aprimorado
 
-O Wails v3 introduz um sistema de build mais flexível e transparente, solucionando as limitações de seu antecessor. No v2, o processo de build era em grande parte opaco e difícil de personalizar, o que podia ser frustrante para desenvolvedores que buscavam mais controle sobre o processo de build de seus projetos.
+O Wails v3 introduz um sistema de build mais flexível e transparente, solucionando as limitações de seu antecessor. No v2, o processo de build era, em grande parte, pouco transparente e difícil de personalizar, o que podia ser frustrante para desenvolvedores que buscavam mais controle sobre o processo de build de seus projetos.
 
 Todo o trabalho pesado realizado pelo sistema de build do v2, como a geração de ícones e a criação de manifestos, foi adicionado à CLI na forma de comandos de ferramentas. Incorporamos o [Taskfile](https://taskfile.dev) à CLI para orquestrar essas chamadas e oferecer a mesma experiência de desenvolvimento do v2. No entanto, essa abordagem proporciona o equilíbrio ideal entre flexibilidade e facilidade de uso, pois agora você pode personalizar o processo de build de acordo com suas necessidades.
 
-Você pode até usar o make, se preferir!
+Você pode até usar make, se preferir!
 
 @note{type="tip" title="Taskfile.yml"}
 @details{title="Exemplo"}
@@ -219,9 +219,9 @@ darwin:build:
 
 ## Eventos aprimorados
 
-O Wails agora emite eventos para diversas operações de tempo de execução e atividades do sistema. Isso permite que seu aplicativo responda a esses eventos em tempo real. Além disso, há eventos multiplataforma (comuns), permitindo que você escreva métodos consistentes de tratamento de eventos que funcionem em diferentes sistemas operacionais.
+Agora, o Wails emite eventos para várias operações de runtime e atividades do sistema. Isso permite que sua aplicação responda a esses eventos em tempo real. Além disso, há eventos multiplataforma (comuns), permitindo escrever métodos consistentes de tratamento de eventos que funcionam em diferentes sistemas operacionais.
 
-É possível registrar hooks de eventos para tratar eventos específicos de forma síncrona. Diferentemente do método `On`, esses hooks permitem cancelar o evento, se necessário. Um caso de uso comum é exibir uma caixa de diálogo de confirmação antes de fechar uma janela. Isso proporciona maior controle sobre o fluxo de eventos e a experiência do usuário.
+Hooks de eventos podem ser registrados para tratar eventos específicos de forma síncrona. Ao contrário do método `On`, esses hooks permitem cancelar o evento, se necessário. Um caso de uso comum é exibir uma caixa de diálogo de confirmação antes de fechar uma janela. Isso proporciona mais controle sobre o fluxo de eventos e a experiência do usuário.
 
 @note{type="tip" title="Exemplo de tratamento de eventos"}
 @details{title="Exemplo"}
@@ -301,9 +301,9 @@ func main() {
 
 @end
 
-## Linguagem de Marcação do Wails (wml)
+## Wails Markup Language (wml)
 
-Um recurso experimental para chamar métodos de tempo de execução usando HTML simples, semelhante ao  [htmx](https://htmx.org).
+Um recurso experimental para chamar métodos de runtime usando HTML puro, semelhante ao [htmx](https://htmx.org).
 
 @note{type="tip" title="Exemplo de wml"}
 @details{title="Exemplo"}
@@ -348,4 +348,4 @@ Um recurso experimental para chamar métodos de tempo de execução usando HTML 
 
 ## Exemplos
 
-Há mais exemplos disponíveis no diretório  [examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples). Confira!
+Há mais exemplos disponíveis no diretório [examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples). Confira!

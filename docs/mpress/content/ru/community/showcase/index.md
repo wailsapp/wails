@@ -1,12 +1,12 @@
 ---
 title: "Обзор"
-description: "Ознакомьтесь с приложениями, созданными с помощью Wails"
+description: "Познакомьтесь с приложениями, созданными с помощью Wails"
 slug: "community/showcase"
 sourcePath: "community/showcase/index.md"
 ---
 
-@note{type="tip" title="Узнайте, как добавить свой проект"}
-Ознакомьтесь с разделом [Как добавить свой проект в витрину](#-----).
+@note{type="tip" title="Как добавить свой проект"}
+См. раздел [Как добавить свой проект в галерею](#-----).
 
 @end
 
@@ -50,15 +50,15 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Снимок экрана MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
-## Как добавить свой проект в витрину
+## Как добавить свой проект в галерею
 
 @steps
 ### Создайте форк репозитория.
 ### Добавьте изображения в папку `docs/mpress/static/showcase-images`.
-### Создайте копию существующего файла `.md` из галереи в папке
-`docs/mpress/content/community/showcase`.
+### Создайте копию существующего файла галереи `.md` в
+папке `docs/mpress/content/community/showcase`.
 
-### Переименуйте скопированный файл в соответствии с названием своего проекта. (Имя не должно начинаться
+### Переименуйте скопированный файл в соответствии с названием своего проекта. (Название не должно начинаться
 с `_`))
 
 ### Обновите заголовок, изображение, ссылку и содержимое файла.

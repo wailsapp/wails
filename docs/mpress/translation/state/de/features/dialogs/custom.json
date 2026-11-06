@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "afdb9ac11da20d7b715d",
+  "pageKey": "259a2db0e1e290686478",
   "sourceFile": "features/dialogs/custom.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
@@ -11,594 +11,600 @@
       "targetHash": "bce72ab6eb446bfe0ed152329dac489d1eb8c6bcf7528b6b84ae1c834d2e7d4b",
       "machineHash": "bce72ab6eb446bfe0ed152329dac489d1eb8c6bcf7528b6b84ae1c834d2e7d4b",
       "machineText": "Benutzerdefinierte Dialoge",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Custom dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0002-text-01": {
       "sourceHash": "2dade2104dabac40e0ea0ed1341860849fd2f95c060da828af615be2bfb9e908",
-      "targetHash": "4a0228ccd0659675af9178fdab8a6d1443af848d43bed2eae735814f7cc48c9b",
-      "machineHash": "4a0228ccd0659675af9178fdab8a6d1443af848d43bed2eae735814f7cc48c9b",
-      "machineText": "Erstellen Sie **benutzerdefinierte Dialogfenster** mit regulären Wails-Fenstern, die sich wie Dialoge verhalten. Entwickeln Sie benutzerdefinierte Formulare, komplexe Eingabevalidierungen, ein markenspezifisches Erscheinungsbild und umfangreiche Inhalte (Bilder, Videos), ohne auf vertraute Dialogmuster zu verzichten.",
-      "status": "final",
+      "targetHash": "94e1425e30b6fe54d188e334c4981277fe4e5b7b49eb8e43ffb9ce2ce674280d",
+      "machineHash": "94e1425e30b6fe54d188e334c4981277fe4e5b7b49eb8e43ffb9ce2ce674280d",
+      "machineText": "Erstellen Sie **benutzerdefinierte Dialogfenster** mithilfe regulärer Wails-Fenster mit dialogtypischem Verhalten. Implementieren Sie benutzerdefinierte Formulare, komplexe Eingabevalidierung, ein markenspezifisches Erscheinungsbild und umfangreiche Inhalte (Bilder, Videos), ohne auf vertraute Dialogmuster zu verzichten.",
+      "status": "machine-translated",
       "sourcePreview": "Create **custom dialog windows** using regular Wails windows with dialog-like behaviour. Build custo…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0003-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
       "targetHash": "fcd9ee12bba31e6874463dcffc571a7c4827aace64669158a7e7ef40e50dbebe",
       "machineHash": "fcd9ee12bba31e6874463dcffc571a7c4827aace64669158a7e7ef40e50dbebe",
       "machineText": "Schnellstart",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Quick Start",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0004-text-01": {
       "sourceHash": "4f678bbce8f9198fe37b7da8cc8ee66b6ce20090172e1b0310c650accc09aa24",
       "targetHash": "8a0722623905110f90907a7ecbe3a7a4913bd2cd25a8d10e616124b0fd0258da",
       "machineHash": "8a0722623905110f90907a7ecbe3a7a4913bd2cd25a8d10e616124b0fd0258da",
       "machineText": "**Das ist alles!** Eine benutzerdefinierte Benutzeroberfläche mit Dialogverhalten.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**That's it!** Custom UI with dialog behaviour.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0005-heading-01": {
       "sourceHash": "a77190a31c8405caf164813bc616b6c3fce39e5abde527b84168756e7693bce1",
       "targetHash": "5d320f56817f6de5916695df0b2405b6009fa26ad1e93afb2bb700fbf37a8568",
       "machineHash": "5d320f56817f6de5916695df0b2405b6009fa26ad1e93afb2bb700fbf37a8568",
       "machineText": "Benutzerdefinierte Dialoge erstellen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating Custom dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0006-heading-01": {
       "sourceHash": "7f137354cfb69a5d66c5abdb921bc39ecfee69313ea7203bd294a4c0ebbc0777",
       "targetHash": "a837d2c6064805a5bf726c7e0953cca1b9c2d8c9d1d7de5371b23266f96d83af",
       "machineHash": "a837d2c6064805a5bf726c7e0953cca1b9c2d8c9d1d7de5371b23266f96d83af",
       "machineText": "Einfacher benutzerdefinierter Dialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Basic Custom dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0007-heading-01": {
       "sourceHash": "ffcb1551e3484ed9b3733871054515c41bfd4ff47df8f22b20856aa3789fbba2",
-      "targetHash": "c5390ed713a14440d921522ddc3bdbaf3d3153e475748454d43bc48d6806ef1e",
-      "machineHash": "c5390ed713a14440d921522ddc3bdbaf3d3153e475748454d43bc48d6806ef1e",
-      "machineText": "Modaler Dialog",
-      "status": "final",
+      "targetHash": "a7ad6576abffc177d4ef01d464c1223071aa2d7064f262e9e5e90cea49f737e7",
+      "machineHash": "a7ad6576abffc177d4ef01d464c1223071aa2d7064f262e9e5e90cea49f737e7",
+      "machineText": "Modaldialog",
+      "status": "machine-translated",
       "sourcePreview": "Modal dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0008-heading-01": {
       "sourceHash": "4e435d5dbd2fca7a9afe85767fa1de2ab7875c28ddefc6e72ed23712f2503147",
       "targetHash": "1fcbf2ab9df89cef2b574c5633dc5fc9175001581fafcdfc9efd4bcc747f059d",
       "machineHash": "1fcbf2ab9df89cef2b574c5633dc5fc9175001581fafcdfc9efd4bcc747f059d",
       "machineText": "Formulardialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Form dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0009-heading-01": {
       "sourceHash": "2f9ed35eb86172d66b69adc58643e138c68afd57226d26e829ebf36bbfbf2d27",
       "targetHash": "c98443fe520259937d7bdffc6ae44bfcd9506670555075210bd4eeda0fe9c650",
       "machineHash": "c98443fe520259937d7bdffc6ae44bfcd9506670555075210bd4eeda0fe9c650",
       "machineText": "Dialogmuster",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "dialog Patterns",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0010-heading-01": {
       "sourceHash": "12c6b5250354857dac37fbce47feefda8ebaaa3e24f77cc67f6c8ea0535422ad",
       "targetHash": "7cf9a8a92fc5732e60029a1ef18e711f10df22d6ba2c51dba9817343f49d8a68",
       "machineHash": "7cf9a8a92fc5732e60029a1ef18e711f10df22d6ba2c51dba9817343f49d8a68",
       "machineText": "Bestätigungsdialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Confirmation dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0011-text-01": {
       "sourceHash": "ee00ea164b328347321c21a780914fa5e04971e7c9ef8483def61cd5933388e7",
       "targetHash": "ee00ea164b328347321c21a780914fa5e04971e7c9ef8483def61cd5933388e7",
       "machineHash": "ee00ea164b328347321c21a780914fa5e04971e7c9ef8483def61cd5933388e7",
       "machineText": "**Frontend (HTML/JS):**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Frontend (HTML/JS):**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0012-heading-01": {
       "sourceHash": "ee863c6ef7a07a15e173758aefc1738b2e57e27f8daf51e22d9afea6d2ca5321",
       "targetHash": "f3daa8ca9b4e70f4b824eafd20fccaf238a0d14e48bcd9343c76ccf51f04d061",
       "machineHash": "f3daa8ca9b4e70f4b824eafd20fccaf238a0d14e48bcd9343c76ccf51f04d061",
       "machineText": "Eingabedialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Input dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0013-heading-01": {
       "sourceHash": "337c520c22a502ffe3461ca6e653d691b6bbbcce4d82a0ac88376a292758a506",
       "targetHash": "42311b5ace4bc4dacc77be86de98f73c139fa3d924aacd2063f204ba691b3237",
       "machineHash": "42311b5ace4bc4dacc77be86de98f73c139fa3d924aacd2063f204ba691b3237",
       "machineText": "Fortschrittsdialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Progress dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0014-text-01": {
       "sourceHash": "cddc67027f6082a58f2fcb4c853a7d380000ac6bfe6b50d9ea955664d1b94c0a",
       "targetHash": "15d634d7f9e463d2d61cdf91f9a3fcefbbbeb9dc0057f84cbb27f2499ede1a2a",
       "machineHash": "15d634d7f9e463d2d61cdf91f9a3fcefbbbeb9dc0057f84cbb27f2499ede1a2a",
       "machineText": "**Verwendung:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Usage:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0015-heading-01": {
       "sourceHash": "9b5ac24b2fbd23afca381a6e4e537c9a711c683a5268e79e9e49ea18244239d2",
       "targetHash": "0246d81f857e44900ba74e74f7aa4ae9b3fa0bea85e82b412747549c60b31b65",
       "machineHash": "0246d81f857e44900ba74e74f7aa4ae9b3fa0bea85e82b412747549c60b31b65",
       "machineText": "Vollständige Beispiele",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Complete Examples",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0016-heading-01": {
       "sourceHash": "96cad0684b0754b2c739324448f52365e2e6ce5de18ec92a87c2b4adba82f6fd",
       "targetHash": "a790c4f66e3fe0603212f6c8f330edd7d0c212adc5b7d2a77cac1f2d49dcec1b",
       "machineHash": "a790c4f66e3fe0603212f6c8f330edd7d0c212adc5b7d2a77cac1f2d49dcec1b",
       "machineText": "Anmeldedialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Login dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0017-text-01": {
       "sourceHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "targetHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineText": "**Go:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Go:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0018-text-01": {
       "sourceHash": "5d392a836344a967b12d994d6cd952c82a29fe31b878e784bc5ad66dbaf19caf",
       "targetHash": "5d392a836344a967b12d994d6cd952c82a29fe31b878e784bc5ad66dbaf19caf",
       "machineHash": "5d392a836344a967b12d994d6cd952c82a29fe31b878e784bc5ad66dbaf19caf",
       "machineText": "**Frontend:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Frontend:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0019-heading-01": {
       "sourceHash": "e763f8b2cd8753f5bf9e432c7c93c5e44d3f40648ffc2cc9a662834689404d9c",
       "targetHash": "ea88861b6b78fbc84a97c850ddd658b1c49d2aa7ebb0d1f228bc5a39cd7f939b",
       "machineHash": "ea88861b6b78fbc84a97c850ddd658b1c49d2aa7ebb0d1f228bc5a39cd7f939b",
       "machineText": "Einstellungsdialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Settings dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0020-text-01": {
       "sourceHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "targetHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineHash": "8ed83b48fde67da6335c2bf72226426ab60956a08c1ec1bf73c98780fde96758",
       "machineText": "**Go:**",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Go:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0021-heading-01": {
       "sourceHash": "748a35b6d8ed0eae364041cd78cb934f4eb07f34555cb2b8223ac461414feab9",
       "targetHash": "2846871cef3b12b29162f5d829a408476cf49154ca97dc72f531f5dd741ccc67",
       "machineHash": "2846871cef3b12b29162f5d829a408476cf49154ca97dc72f531f5dd741ccc67",
       "machineText": "Assistentendialog",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wizard dialog",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0022-heading-01": {
       "sourceHash": "46d9a34a79d27b3869085ea8961f543cc9425756c6ddf26628d6f5fa7df73b36",
       "targetHash": "1a7935318df7b627c28fbdf2993f581d0b260def90f890aaf05d0314cb1011e4",
       "machineHash": "1a7935318df7b627c28fbdf2993f581d0b260def90f890aaf05d0314cb1011e4",
       "machineText": "Bewährte Vorgehensweisen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Best Practices",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0023-heading-01": {
       "sourceHash": "ed57031b2772f36496ecd8b4ff4a1c11cc746cf70ef065c702b13b6d1e1f4ddc",
       "targetHash": "6e0a95584381e494c4d1267e5553195006a6044f154da6af43d101c35864ce25",
       "machineHash": "6e0a95584381e494c4d1267e5553195006a6044f154da6af43d101c35864ce25",
       "machineText": "✅ Empfohlen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "✅ Do",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0024-text-01": {
       "sourceHash": "88596c106784058b8c9f5483e763962ecead432e4e97f6494b2f05ea5ba17f60",
       "targetHash": "ba70244e179adb34100f96fe7c897e67dc642d38eb1768c95386ae768a4dff19",
       "machineHash": "ba70244e179adb34100f96fe7c897e67dc642d38eb1768c95386ae768a4dff19",
       "machineText": "**Geeignete Fensteroptionen verwenden** – AlwaysOnTop, Frameless usw.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Use appropriate window options** - AlwaysOnTop, Frameless, etc.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0025-text-01": {
       "sourceHash": "6e195d75397c32f6357a037bebee9ee48eff34d7efece5d3854dcdd48b65aeae",
-      "targetHash": "d57b600e9f77fe152ac36356006bd5bb46625101cd9f28fb551cd884b743ce87",
-      "machineHash": "d57b600e9f77fe152ac36356006bd5bb46625101cd9f28fb551cd884b743ce87",
-      "machineText": "**Abbrechen ermöglichen** – Bieten Sie immer eine Möglichkeit zum Abbrechen an",
-      "status": "final",
+      "targetHash": "f3b50ae0f51632dbee78185be840f1fa5d35109dfb9040f90be8a9c9b054f431",
+      "machineHash": "f3b50ae0f51632dbee78185be840f1fa5d35109dfb9040f90be8a9c9b054f431",
+      "machineText": "**Abbrechen ermöglichen** – Bieten Sie stets eine Möglichkeit zum Abbrechen an",
+      "status": "machine-translated",
       "sourcePreview": "**Handle cancellation** - Always provide a way to cancel",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0026-text-01": {
       "sourceHash": "c3b51e4826f5bf74d5aa8e0012a25786502c497e44221e571b98522e4ccd734b",
-      "targetHash": "88a65ab2ed9ff97c52c47ecb06cd257317d3ab2bbf0d3f11b995e97bde51c8c3",
-      "machineHash": "88a65ab2ed9ff97c52c47ecb06cd257317d3ab2bbf0d3f11b995e97bde51c8c3",
-      "machineText": "**Eingaben validieren** – Prüfen Sie die Daten, bevor Sie sie übernehmen",
-      "status": "final",
+      "targetHash": "cd52e11deac35224331b576027d1e47116cc5fbca60decd50c19ee2371a960d3",
+      "machineHash": "cd52e11deac35224331b576027d1e47116cc5fbca60decd50c19ee2371a960d3",
+      "machineText": "**Eingaben validieren** – Prüfen Sie die Daten, bevor Sie sie akzeptieren",
+      "status": "machine-translated",
       "sourcePreview": "**Validate input** - Check data before accepting",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0027-text-01": {
       "sourceHash": "e0d724c3b048c675d3ceabfb19c69bc31b7ba1a0a73c711e6e032ac214e95c39",
-      "targetHash": "93f4198ca939a9ec20461cf54d519d01b3fdb87f3b5be338382f28d34f00e8d9",
-      "machineHash": "93f4198ca939a9ec20461cf54d519d01b3fdb87f3b5be338382f28d34f00e8d9",
-      "machineText": "**Rückmeldung geben** – Ladestatus und Fehler anzeigen",
-      "status": "final",
+      "targetHash": "c392a69be2cf6ad050ec91b47eb7fa9bbb33de8ea9f4878ee6d9a927920b83d7",
+      "machineHash": "c392a69be2cf6ad050ec91b47eb7fa9bbb33de8ea9f4878ee6d9a927920b83d7",
+      "machineText": "**Rückmeldung geben** – Ladezustände und Fehler anzeigen",
+      "status": "machine-translated",
       "sourcePreview": "**Provide feedback** - Loading states, errors",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0028-text-01": {
       "sourceHash": "bb97441e859363f4ecc05f56e511f66ded33e0a2b4d47a8f48343e92f5d18f6a",
-      "targetHash": "7800c61fa5193511e0595a17a77544e313e513d68b9bd7a6a436570bd1287641",
-      "machineHash": "7800c61fa5193511e0595a17a77544e313e513d68b9bd7a6a436570bd1287641",
-      "machineText": "**Ereignisse zur Kommunikation verwenden** – Für eine klare Trennung",
-      "status": "final",
+      "targetHash": "3f1ba06abb1674ef94a18320bb07791edec9a3a4c2aa1f860c1330be24547698",
+      "machineHash": "3f1ba06abb1674ef94a18320bb07791edec9a3a4c2aa1f860c1330be24547698",
+      "machineText": "**Ereignisse für die Kommunikation verwenden** – Für eine klare Trennung sorgen",
+      "status": "machine-translated",
       "sourcePreview": "**Use events for communication** - Clean separation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0029-text-01": {
       "sourceHash": "84d29a9158bdb29f8aa5b5bce7ddcff647996ce80d5e18b2b5c243c3bb319a99",
-      "targetHash": "5f71581fb625b76bba52babc601bee2b41da1eb5b66ef095babb3b95ea514765",
-      "machineHash": "5f71581fb625b76bba52babc601bee2b41da1eb5b66ef095babb3b95ea514765",
-      "machineText": "**Ressourcen bereinigen** – Schließen Sie Fenster und entfernen Sie Listener",
-      "status": "final",
+      "targetHash": "030add7005d0291735987785d7d727624b4093c935cfedae2b205ef603f1e64e",
+      "machineHash": "030add7005d0291735987785d7d727624b4093c935cfedae2b205ef603f1e64e",
+      "machineText": "**Ressourcen bereinigen** – Fenster schließen und Listener entfernen",
+      "status": "machine-translated",
       "sourcePreview": "**Clean up resources** - Close windows, remove listeners",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0030-heading-01": {
       "sourceHash": "df89c260f72fd6330be731a6de76bab196eead3f17430716717b08b94f12b175",
       "targetHash": "9aab4ab2a6f19b8fcade4ee6842d1682653f542809f7ce4f39833eca1afaa683",
       "machineHash": "9aab4ab2a6f19b8fcade4ee6842d1682653f542809f7ce4f39833eca1afaa683",
       "machineText": "❌ Nicht empfohlen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "❌ Don't",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0031-text-01": {
       "sourceHash": "a621cb50141f5278366398a1e702d8ed0f3da25986b07b71ce80a53262da9ab6",
-      "targetHash": "6ba2daf64f2b8c0d70938232b8e1feb9bd8bcddf42ca4f85d35806fc01a2d066",
-      "machineHash": "6ba2daf64f2b8c0d70938232b8e1feb9bd8bcddf42ca4f85d35806fc01a2d066",
-      "machineText": "**Den Hauptthread nicht blockieren** – Verwenden Sie Channels für Ergebnisse",
-      "status": "final",
+      "targetHash": "3c542bc9f91d024307b0b8c1e31d0627cc24e38320b8f1be1963f6d9d6f30d1c",
+      "machineHash": "3c542bc9f91d024307b0b8c1e31d0627cc24e38320b8f1be1963f6d9d6f30d1c",
+      "machineText": "**Den Haupt-Thread nicht blockieren** – Verwenden Sie Channels für Ergebnisse",
+      "status": "machine-translated",
       "sourcePreview": "**Don't block the main thread** - Use channels for results",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0032-text-01": {
       "sourceHash": "d65bcf586b3bb80a40c1e1c6c336e6308e13e8aed5f46aff62585ab0b0a08195",
       "targetHash": "46f2d5d6169abbd1b83e8ca9c4365d5036b2d72729a7139db1e443b531b90f2d",
       "machineHash": "46f2d5d6169abbd1b83e8ca9c4365d5036b2d72729a7139db1e443b531b90f2d",
       "machineText": "**Das Schließen nicht vergessen** – Sonst entstehen Speicherlecks",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't forget to close** - Memory leaks",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0033-text-01": {
       "sourceHash": "4d1bdb7105d324a37955f2be0ec65ce25b3ad707f034a41918f34d49f718778e",
       "targetHash": "0007d1a838c93f8a73b9267bc64cf727fdf79f821127e789e8c7af959a9fb776",
       "machineHash": "0007d1a838c93f8a73b9267bc64cf727fdf79f821127e789e8c7af959a9fb776",
       "machineText": "**Die Validierung nicht überspringen** – Validieren Sie Eingaben immer",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't skip validation** - Always validate input",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0034-text-01": {
       "sourceHash": "622394ab316c2a666bfdd26e6f92318da81e457cd780b42d36d1fb1089feef1a",
       "targetHash": "b5a9848f564299e716cee44ba1d72b8264960b157b278984f2d035c1d4bac16f",
       "machineHash": "b5a9848f564299e716cee44ba1d72b8264960b157b278984f2d035c1d4bac16f",
       "machineText": "**Fehler nicht ignorieren** – Behandeln Sie alle Fehlerfälle",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't ignore errors** - Handle all error cases",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0035-text-01": {
       "sourceHash": "0a7f245181454c965db5099c16e3f26bb42257a7d9201f6f31a1a2e2d189163c",
       "targetHash": "5428f757f63a7d603ca0901b3f6b6a0f87a577b6680e96f713c49d4521290aa3",
       "machineHash": "5428f757f63a7d603ca0901b3f6b6a0f87a577b6680e96f713c49d4521290aa3",
       "machineText": "**Dialoge nicht zu komplex gestalten** – Halten Sie Dialoge einfach",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "**Don't make it too complex** - Keep dialogs simple",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0036-text-01": {
       "sourceHash": "57bb60489cbb8df07a16f768e12334871854980c78d81c449755aca7bf84115a",
-      "targetHash": "ea2ebe5cd2c0bb203715e709a8cf0a2db7abf5517f0b1e1fc387d1a6bfe42723",
-      "machineHash": "ea2ebe5cd2c0bb203715e709a8cf0a2db7abf5517f0b1e1fc387d1a6bfe42723",
-      "machineText": "**Barrierefreiheit nicht vergessen** – Ermöglichen Sie die Tastaturnavigation",
-      "status": "final",
+      "targetHash": "669a00571f9a2fca4306349e8c83c339723c176d33e2d40b951fd72a02f78d03",
+      "machineHash": "669a00571f9a2fca4306349e8c83c339723c176d33e2d40b951fd72a02f78d03",
+      "machineText": "**Barrierefreiheit nicht vergessen** – Unterstützen Sie die Tastaturnavigation",
+      "status": "machine-translated",
       "sourcePreview": "**Don't forget accessibility** - Keyboard navigation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0037-heading-01": {
       "sourceHash": "a32584f2c061f5cb2f9ff151019ee32fafc340d6406195f09327839840bc281a",
       "targetHash": "7abcab76571bae47fa03170e07f6dadeae682731900112f00bb866b3b8e25856",
       "machineHash": "7abcab76571bae47fa03170e07f6dadeae682731900112f00bb866b3b8e25856",
       "machineText": "Benutzerdefinierte Dialoge gestalten",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Styling Custom dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0038-heading-01": {
       "sourceHash": "9858bb02b363531be4b48c11a829dda293bad0ceea8b6f9751ca81fbd065e8db",
       "targetHash": "9380036384e0859837c7babf14af2f6673690c9e24f02fbf26d5a2513ee268ab",
       "machineHash": "9380036384e0859837c7babf14af2f6673690c9e24f02fbf26d5a2513ee268ab",
       "machineText": "Moderner Dialogstil",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Modern dialog Style",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0039-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineHash": "89efd75817e71ea005cbb6b5b10f9570d655a663e5c0f905ad29e43824e1bd4c",
       "machineText": "Nächste Schritte",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0040-text-01": {
       "sourceHash": "8920fa70b707e7dfd309175c5bac13dfc8f8899f7a6a7308ba1ad21b7e68a9a9",
       "targetHash": "ebd36da7b92573808089236028f48846a24e981d3da7d709b971bf241a2ac271",
       "machineHash": "ebd36da7b92573808089236028f48846a24e981d3da7d709b971bf241a2ac271",
       "machineText": "ℹ Meldungsdialoge\nStandarddialoge für Informationen, Warnungen und Fehler.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "ℹ Message dialogs Standard info, warning, error dialogs.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0041-text-01": {
       "sourceHash": "a117c4c5fb598a9f5653b4f37081dbe3cd01c4938cbf853323708b8e48304d69",
-      "targetHash": "1bcaa92650e27a804221d4c0864c9f6cc42baecbfa572485cad39b3cc0bc537b",
-      "machineHash": "1bcaa92650e27a804221d4c0864c9f6cc42baecbfa572485cad39b3cc0bc537b",
-      "machineText": "📖 Dateidialoge\nÖffnen, Speichern und Ordnerauswahl.",
-      "status": "final",
+      "targetHash": "835614cb908bb7fa46febc4b0168da9485eb38e392d858ca6bae37cee366f52f",
+      "machineHash": "835614cb908bb7fa46febc4b0168da9485eb38e392d858ca6bae37cee366f52f",
+      "machineText": "📖 Dateidialoge\nDateien öffnen und speichern sowie Ordner auswählen.",
+      "status": "machine-translated",
       "sourcePreview": "📖 File dialogs Open, save, folder selection.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0042-text-01": {
       "sourceHash": "0ac9710645e9431f7524ec62743442422ea4c8b15f0b4cae65a97142e45c63a4",
       "targetHash": "2f84d72235b7fcadd06487f36608fa131a3f9e3d84cee70aeb111b02cf20df4b",
       "machineHash": "2f84d72235b7fcadd06487f36608fa131a3f9e3d84cee70aeb111b02cf20df4b",
       "machineText": "▣ Fenster\nErfahren Sie mehr über die Fensterverwaltung.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "▣ Windows Learn about window management.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0043-text-01": {
       "sourceHash": "4ebb3fa8db4696d03872cf665cfa27352ac43625d7dbf35b55ab6dbf88cb52d7",
       "targetHash": "203d068a78756d4f34b36664f5be83faa0c6752d07047fc6ab6c85e28892496e",
       "machineHash": "203d068a78756d4f34b36664f5be83faa0c6752d07047fc6ab6c85e28892496e",
       "machineText": "★ Ereignisse\nVerwenden Sie Ereignisse für die Dialogkommunikation.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "★ Events Use events for dialog communication.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "b0044-text-01": {
       "sourceHash": "ce90d1ed525c461d8d42b17010d709a29cb80e97b7df181c3c9002c6b958b7e8",
       "targetHash": "051247f4cf1f9dadb5d18f6c817bbcce03adc86873ca40a5aa0fe0d0a9eaa4b4",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [custom dialog examples]…"
+      "machineHash": "051247f4cf1f9dadb5d18f6c817bbcce03adc86873ca40a5aa0fe0d0a9eaa4b4",
+      "machineText": "**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele für benutzerdefinierte Dialoge](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs) an.",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [custom dialog examples]…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "c0001-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "c0001-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "c0001-line-004-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineHash": "d8888a4fb8afdd882509d2f73873e25709d8fb3d3d7b85ac06c88190b88f6225",
       "machineText": "Mehr erfahren →",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn More →",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "fm-description": {
       "sourceHash": "8657471a2b4977371d669895830274ec076b71f42c74c7ebcf0d9f29b44a2a94",
-      "targetHash": "a4dbbbdb95902411134ffa3f9e11af884434ca3494f43ad53fdb6a31d30317b9",
-      "machineHash": "a4dbbbdb95902411134ffa3f9e11af884434ca3494f43ad53fdb6a31d30317b9",
-      "machineText": "Erstellen Sie benutzerdefinierte Dialoge in Ihren Wails-Anwendungen",
-      "status": "final",
+      "targetHash": "11b8684f762bbae76b40a358da8108665db4f044d01ae62f12af14ca445963aa",
+      "machineHash": "11b8684f762bbae76b40a358da8108665db4f044d01ae62f12af14ca445963aa",
+      "machineText": "Benutzerdefinierte Dialoge in Ihren Wails-Anwendungen erstellen",
+      "status": "machine-translated",
       "sourcePreview": "Create custom dialogs in your Wails applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     },
     "fm-title": {
       "sourceHash": "49e4a35a69be28e41426c07cb12ef543cac6889be8d55910a999d14a5e290732",
       "targetHash": "bce72ab6eb446bfe0ed152329dac489d1eb8c6bcf7528b6b84ae1c834d2e7d4b",
       "machineHash": "bce72ab6eb446bfe0ed152329dac489d1eb8c6bcf7528b6b84ae1c834d2e7d4b",
       "machineText": "Benutzerdefinierte Dialoge",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Custom dialogs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-11-03T00:08:24Z"
     }
   },
   "migration": {

@@ -7,7 +7,7 @@ sourcePath: "features/windows/multiple.md"
 
 ## Anwendungen mit mehreren Fenstern
 
-Wails v3 bietet **native Unterstützung für mehrere Fenster**, um Einstellungs-, Dokument-, Werkzeugpaletten- und Inspektorfenster zu erstellen. Verfolgen Sie Fenster, ermöglichen Sie die Kommunikation zwischen ihnen und verwalten Sie ihren Lebenszyklus mit einfachen, einheitlichen APIs.
+Wails v3 bietet **native Unterstützung für mehrere Fenster**, um Einstellungsfenster, Dokumentfenster, Werkzeugpaletten und Inspektorfenster zu erstellen. Verwalten Sie Fenster, ermöglichen Sie die Kommunikation zwischen ihnen und steuern Sie ihren Lebenszyklus mit einfachen, einheitlichen APIs.
 
 ### Haupt- und Einstellungsfenster
 
@@ -60,9 +60,9 @@ func (a *App) ShowSettings() {
 
 **Wichtige Punkte:**
 
-- Hauptfenster ist immer sichtbar
-- Einstellungsfenster wird erstellt, bleibt aber ausgeblendet
-- Einstellungen bei Bedarf anzeigen
+- Das Hauptfenster ist immer sichtbar
+- Das Einstellungsfenster wird erstellt, bleibt aber ausgeblendet
+- Das Einstellungsfenster bei Bedarf anzeigen
 - Dasselbe Fenster wiederverwenden (nicht mehrere erstellen)
 
 ## Fensterverwaltung
@@ -78,7 +78,7 @@ for _, window := range windows {
 }
 ```
 
-### Bestimmtes Fenster suchen
+### Ein bestimmtes Fenster suchen
 
 ```go
 // By name
@@ -124,7 +124,7 @@ func (wm *WindowManager) Remove(name string) {
 }
 ```
 
-## Fensterkommunikation
+## Kommunikation zwischen Fenstern
 
 ### Ereignisse verwenden
 
@@ -288,7 +288,7 @@ func CreateToolPalette(app *application.App) *application.WebviewWindow {
 }
 ```
 
-### Muster 4: Modale Dialoge (nur macOS)
+### Muster 4: Modale Dialogfelder (nur macOS)
 
 Untergeordnete Fenster, die das übergeordnete Fenster blockieren:
 
@@ -344,7 +344,7 @@ func (e *EditorApp) TogglePreview() {
 }
 ```
 
-## Über- und untergeordnete Fenster
+## Über-/Unterordnungsbeziehungen
 
 ### Untergeordnete Fenster erstellen
 
@@ -370,7 +370,7 @@ parentWindow.AttachModal(childWindow)
 
 ### Modales Verhalten
 
-Erstellen Sie ein modalähnliches Verhalten:
+Erstellen Sie ein modal wirkendes Verhalten:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -386,7 +386,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 
 ## Fensterlebenszyklus verwalten
 
-### Callbacks bei der Erstellung
+### Callbacks beim Erstellen
 
 Lassen Sie sich benachrichtigen, wenn Fenster erstellt werden:
 
@@ -399,7 +399,7 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-### Callbacks bei der Zerstörung
+### Callbacks beim Zerstören
 
 Bereinigen Sie Ressourcen, wenn Fenster zerstört werden:
 
@@ -436,9 +436,9 @@ app := application.New(application.Options{
 
 ## Speicherverwaltung
 
-### Speicherlecks verhindern
+### Speicherlecks vermeiden
 
-Bereinigen Sie stets alle Fensterreferenzen:
+Bereinigen Sie Referenzen auf Fenster immer:
 
 ```go
 var windows = make(map[string]*application.WebviewWindow)
@@ -461,9 +461,9 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-In v3 gibt es kein `window.Destroy()`. Um das Schließen zu verhindern, verwenden Sie `RegisterHook(events.Common.WindowClosing, ...)` und rufen `event.Cancel()` auf.
+In v3 gibt es kein `window.Destroy()`. Um das Schließen zu verhindern, verwenden Sie `RegisterHook(events.Common.WindowClosing, ...)` und rufen Sie `event.Cancel()` auf.
 
-### Ressourcenbereinigung
+### Ressourcen bereinigen
 
 ```go
 type ManagedWindow struct {
@@ -484,9 +484,9 @@ func (mw *ManagedWindow) Destroy() {
 
 ## Fortgeschrittene Muster
 
-### Fensterpool
+### Fenster-Pool
 
-Verwenden Sie Fenster wieder, anstatt neue zu erstellen:
+Verwenden Sie Fenster wieder, statt neue zu erstellen:
 
 ```go
 type WindowPool struct {
@@ -558,7 +558,7 @@ func (wg *WindowGroup) CloseAll() {
 
 ### Arbeitsbereichsverwaltung
 
-Fensteranordnungen speichern und wiederherstellen:
+Speichern Sie Fensteranordnungen und stellen Sie sie wieder her:
 
 ```go
 type WindowLayout struct {
@@ -762,15 +762,15 @@ type WindowState struct {
 }
 ```
 
-## Bewährte Vorgehensweisen
+## Best Practices
 
 ### ✅ Empfohlen
 
-- **Fenster nachverfolgen** – Referenzen für einfachen Zugriff aufbewahren
-- **Beim Zerstören bereinigen** – Speicherlecks verhindern
+- **Fenster verwalten** – Referenzen für einfachen Zugriff aufbewahren
+- **Beim Zerstören bereinigen** – Speicherlecks vermeiden
 - **Ereignisse zur Kommunikation verwenden** – Entkoppelte Architektur
 - **Fenster wiederverwenden** – Keine Duplikate erstellen
-- **Fensteranordnungen speichern und wiederherstellen** – Bessere Benutzerfreundlichkeit
+- **Anordnungen speichern und wiederherstellen** – Bessere Benutzerfreundlichkeit
 - **Das Schließen von Fenstern behandeln** – Bei nicht gespeicherten Daten vor dem Schließen eine Bestätigung anfordern
 
 ### ❌ Nicht empfohlen
@@ -783,11 +783,11 @@ type WindowState struct {
 
 ## Nächste Schritte
 
-- [Fenstergrundlagen](/features/windows/basics/) – Grundlagen der Fensterverwaltung erlernen
-- [Fensterereignisse](/features/windows/events/) – Ereignisse im Fensterlebenszyklus behandeln
-- [Ereignissystem](/features/events/system/) – Das Ereignissystem eingehend kennenlernen
-- [Rahmenlose Fenster](/features/windows/frameless/) – Benutzerdefinierte Fensterdekoration erstellen
+- [Grundlagen zu Fenstern](/features/windows/basics/) – Lernen Sie die Grundlagen der Fensterverwaltung kennen
+- [Fensterereignisse](/features/windows/events/) – Verarbeiten Sie Ereignisse im Fensterlebenszyklus
+- [Ereignissystem](/features/events/system/) – Vertiefen Sie Ihre Kenntnisse des Ereignissystems
+- [Rahmenlose Fenster](/features/windows/frameless/) – Erstellen Sie eine benutzerdefinierte Fensterdekoration
 
 ---
 
-**Fragen?** Fragen Sie in [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Beispiel für mehrere Fenster](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich das [Beispiel für mehrere Fenster](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window) an.

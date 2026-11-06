@@ -1,27 +1,27 @@
 ---
 title: "Menus de contexto"
-description: "Crie menus de contexto de clique com o botão direito para seu aplicativo"
+description: "Crie menus de contexto acionados com o botão direito do mouse para seu aplicativo"
 slug: "features/menus/context"
 sourcePath: "features/menus/context.md"
 ---
 
 ## O problema
 
-Os usuários esperam menus de clique com o botão direito que ofereçam ações específicas ao contexto. Elementos diferentes precisam de menus diferentes:
+Os usuários esperam menus acionados com o botão direito do mouse que ofereçam ações específicas ao contexto. Elementos diferentes precisam de menus diferentes:
 
 - **Texto**: Recortar, Copiar, Colar
 - **Imagens**: Salvar, Copiar, Abrir
-- **Elementos personalizados**: Ações específicas do aplicativo
+- **Elementos personalizados**: ações específicas do aplicativo
 
 Criar menus de contexto manualmente exige lidar com eventos do mouse, posicionamento e diferenças entre plataformas.
 
 ## A solução do Wails
 
-O Wails fornece **menus de contexto declarativos** por meio de propriedades CSS. Associe menus a elementos HTML, passe dados e trate cliques — tudo com o comportamento nativo da plataforma.
+O Wails fornece **menus de contexto declarativos** por meio de propriedades CSS. Associe menus a elementos HTML, passe dados e processe cliques — tudo com o comportamento nativo da plataforma.
 
 ![Um menu de contexto personalizado do Wails exibido sobre uma webview no macOS](/assets/screenshots/context-menu-macos.png)
 
-O menu é nativo da plataforma, enquanto o elemento que o abriu continua fazendo parte da sua webview. Esta captura do macOS usa o registro de menu de contexto personalizado do exemplo abaixo.
+O menu é nativo da plataforma, enquanto o elemento que o abriu continua fazendo parte da webview. Esta captura do macOS usa o registro de menu de contexto personalizado do exemplo abaixo.
 
 ## Início rápido
 
@@ -46,7 +46,7 @@ app.ContextMenu.Add("editor-menu", contextMenu)
 </textarea>
 ```
 
-**É só isso!** Clicar com o botão direito na área de texto exibe seu menu personalizado.
+**Pronto!** Clicar com o botão direito na área de texto exibe seu menu personalizado.
 
 ## Criação de menus de contexto
 
@@ -120,7 +120,7 @@ Consulte a [Referência de menus](/features/menus/reference/) **para conhecer to
 
 ## Associação a elementos HTML
 
-Use propriedades personalizadas de CSS para anexar menus de contexto:
+Use propriedades personalizadas CSS para vincular menus de contexto:
 
 ### Associação básica
 
@@ -156,8 +156,8 @@ app.ContextMenu.Add("file-menu", contextMenu)
 
 **Propriedades CSS:**
 
-- `--custom-contextmenu: <menu-id>` — Qual menu exibir
-- `--custom-contextmenu-data: <data>` — Dados a serem passados aos manipuladores
+- `--custom-contextmenu: <menu-id>` — qual menu exibir
+- `--custom-contextmenu-data: <data>` — dados a serem passados aos manipuladores
 
 ### Dados dinâmicos
 
@@ -191,7 +191,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </div>
 ```
 
-**Um menu, com dados diferentes para cada elemento.**
+**Um único menu, com dados diferentes para cada elemento.**
 
 ## Dados de contexto
 
@@ -206,7 +206,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Tipo de dado:** sempre `string`. Faça a análise conforme necessário.
+**Tipo dos dados:** sempre `string`. Analise-os conforme necessário.
 
 ### Passagem de dados complexos
 
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Segurança"}
-**Sempre valide os dados de contexto** recebidos do frontend. Os usuários podem manipular propriedades CSS; portanto, trate esses dados como entrada não confiável.
+**Sempre valide os dados de contexto** recebidos do frontend. Os usuários podem manipular propriedades CSS, portanto trate os dados como entrada não confiável.
 
 @end
 
@@ -304,8 +304,8 @@ A WebView fornece um menu de contexto integrado para operações padrão (copiar
 **Comportamento padrão.** Exibe o menu padrão quando:
 
 - Há texto selecionado
-- O usuário está em campos de entrada de texto
-- O usuário está em conteúdo editável (`contenteditable`)
+- O cursor está em campos de entrada de texto
+- O cursor está em conteúdo editável (`contenteditable`)
 
 Caso contrário, oculta o menu padrão.
 
@@ -356,7 +356,7 @@ func onSelectionChanged(hasSelection bool) {
 ```
 
 @note{type="caution" title="Sempre chame Update()"}
-Depois de alterar o estado do menu, **chame `contextMenu.Update()`**. Isso é essencial no Windows.
+Após alterar o estado do menu, **chame `contextMenu.Update()`**. Isso é essencial no Windows.
 
 Consulte a [Referência de menus](/features/menus/reference/#enabled-state) para obter detalhes.
 
@@ -408,7 +408,7 @@ func rebuildContextMenu(fileType string) {
 }
 ```
 
-## Comportamento nas plataformas
+## Comportamento por plataforma
 
 Os menus de contexto são **nativos da plataforma**:
 
@@ -418,13 +418,13 @@ Os menus de contexto são **nativos da plataforma**:
 
 - Animações e transições do sistema
 - Clique com o botão direito = Control+Clique (automático)
-- Adaptação à aparência do sistema (clara/escura)
-- Operações de texto padrão no menu predefinido
+- Adapta-se à aparência do sistema (clara/escura)
+- Operações de texto padrão no menu padrão
 - Rolagem nativa para menus longos
 
 **Convenções do macOS:**
 
-- Use apenas a primeira palavra com inicial maiúscula nos itens de menu
+- Use inicial maiúscula apenas na primeira palavra dos itens de menu
 - Use reticências (...) nos itens que abrem caixas de diálogo
 - Atalhos comuns: ⌘C (Copiar), ⌘V (Colar)
 
@@ -432,28 +432,28 @@ Os menus de contexto são **nativos da plataforma**:
 **Menus de contexto nativos do Windows:**
 
 - Estilo nativo do Windows
-- Acompanha o tema do Windows
-- Operações padrão do Windows no menu predefinido
+- Segue o tema do Windows
+- Operações padrão do Windows no menu padrão
 - Compatibilidade com entrada por toque e caneta
 
 **Convenções do Windows:**
 
-- Use iniciais maiúsculas nas palavras principais de cada item de menu
+- Use iniciais maiúsculas nos itens de menu
 - Use reticências (...) nos itens que abrem caixas de diálogo
 - Atalhos comuns: Ctrl+C (Copiar), Ctrl+V (Colar)
 
 [Linux]
 **Integração com o ambiente de desktop:**
 
-- Adaptação ao tema do desktop (GTK, Qt etc.)
+- Adapta-se ao tema do desktop (GTK, Qt etc.)
 - O comportamento do clique com o botão direito segue as configurações do sistema
-- O conteúdo do menu predefinido varia conforme o ambiente
+- O conteúdo padrão do menu varia conforme o ambiente
 - O posicionamento segue as convenções do ambiente de desktop
 
-**Considerações sobre o Linux:**
+**Considerações para Linux:**
 
 - Teste nos ambientes de desktop de destino
-- GTK e Qt têm comportamentos diferentes
+- GTK e Qt apresentam comportamentos diferentes
 - Alguns ambientes de desktop personalizam os menus de contexto
 
 @end
@@ -652,7 +652,7 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 - **Não confie nos dados de contexto** — Sempre os valide
 - **Não crie menus longos demais** — No máximo 7-10 itens
 - **Não se esqueça de menu.Update()** — Os menus não funcionarão corretamente
-- **Não crie aninhamentos muito profundos** — No máximo 2 níveis
+- **Não aninhe em excesso** — No máximo 2 níveis
 - **Não use jargão** — Mantenha os rótulos fáceis de entender
 - **Não bloqueie os manipuladores** — Mantenha-os rápidos
 
@@ -678,11 +678,11 @@ app.ContextMenu.Add("my-menu", contextMenu)
 <div style="--custom-contextmenu: my-menu">
 ```
 
-### Dados de contexto não recebidos
+### Os dados de contexto não são recebidos
 
 **Possíveis causas:**
 
-1. Propriedade CSS não definida
+1. A propriedade CSS não está definida
 2. Os dados contêm caracteres especiais
 
 **Solução:**
@@ -698,9 +698,9 @@ Ou use JavaScript:
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 ```
 
-### Os itens de menu não respondem
+### Os itens do menu não respondem
 
-**Causa:** não chamar `menu.Update()` após habilitar
+**Causa:** Você se esqueceu de chamar `menu.Update()` após habilitar
 
 **Solução:**
 
@@ -739,4 +739,4 @@ Padrões comuns de menus e práticas recomendadas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu de contexto](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu de contexto](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus).

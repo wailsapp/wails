@@ -1,11 +1,11 @@
 ---
 title: "Funktionsweise von Wails"
-description: "Die Architektur von Wails und die Umsetzung nativer Performance verstehen"
+description: "Die Architektur von Wails und ihre native Performance verstehen"
 slug: "concepts/architecture"
 sourcePath: "concepts/architecture.md"
 ---
 
-Wails ist ein Framework zur Entwicklung von Desktopanwendungen mit **Go für das Backend** und **Webtechnologien für das Frontend**. Anders als Electron bündelt Wails jedoch keinen Browser, sondern verwendet die **native WebView des Betriebssystems**.
+Wails ist ein Framework zum Erstellen von Desktopanwendungen mit **Go für das Backend** und **Webtechnologien für das Frontend**. Anders als Electron bündelt Wails jedoch keinen Browser, sondern verwendet die **native WebView des Betriebssystems**.
 
 ```d2
 direction: left
@@ -84,14 +84,14 @@ Wails verwendet die integrierte Web-Rendering-Engine des Betriebssystems:
 
 **Warum das wichtig ist:**
 
-- **Kein gebündelter Browser** → Kleinere Anwendung
+- **Kein gebündelter Browser** → Kleinere App-Größe
 - **Betriebssystemnativ** → Bessere Integration und Performance
 - **Automatische Updates** → Sicherheitspatches durch Betriebssystemupdates
 - **Vertrautes Rendering** → Wie im Systembrowser
 
-### 2. Die Wails-Bridge
+### 2. Die Wails Bridge
 
-Die Bridge ist das Herzstück von Wails: Sie ermöglicht die **direkte Kommunikation** zwischen Go und JavaScript.
+Die Bridge ist das Herzstück von Wails. Sie ermöglicht die **direkte Kommunikation** zwischen Go und JavaScript.
 
 ```d2
 direction: down
@@ -101,7 +101,7 @@ Frontend: Frontend (JavaScript) {
   style.fill: "#8B5CF6"
 }
 
-Bridge: Wails-Bridge {
+Bridge: Wails Bridge {
   Encoder: JSON-Encoder {
     shape: rectangle
   }
@@ -127,14 +127,14 @@ Frontend -> Bridge.Encoder: "1. Go-Methode aufrufen\nGreet('Alice')"
 Bridge.Encoder -> Bridge.Router: "2. Als JSON codieren\n{method: 'Greet', args: ['Alice']}"
 Bridge.Router -> Backend.Services: "3. An Dienst weiterleiten\nGreetService.Greet('Alice')"
 Backend.Services -> Bridge.Decoder: "4. Ergebnis zurückgeben\n'Hello, Alice!'"
-Bridge.Decoder -> Frontend: "5. Für JS decodieren\nPromise wird erfüllt"
+Bridge.Decoder -> Frontend: "5. Für JS decodieren\nPromise wird aufgelöst"
 ```
 
 **Funktionsweise:**
 
 1. **Das Frontend ruft eine Go-Methode auf** (über ein automatisch generiertes Binding)
 2. **Die Bridge codiert den Aufruf** als JSON (Methodenname + Argumente)
-3. **Der Router findet die Go-Methode** in den registrierten Services
+3. **Der Router findet die Go-Methode** in den registrierten Diensten
 4. **Die Go-Methode wird ausgeführt** und gibt einen Wert zurück
 5. **Die Bridge decodiert das Ergebnis** und sendet es an das Frontend zurück
 6. **Das Promise wird aufgelöst** und stellt das Ergebnis in JavaScript bereit
@@ -146,9 +146,9 @@ Bridge.Decoder -> Frontend: "5. Für JS decodieren\nPromise wird erfüllt"
 - **Standardmäßig asynchron**: Auf beiden Seiten nicht blockierend
 - **Typsicher**: TypeScript-Definitionen werden automatisch generiert
 
-### 3. Service-System
+### 3. Dienstsystem
 
-Services sind die empfohlene Methode, um Go-Funktionalität für das Frontend bereitzustellen.
+Dienste sind die empfohlene Methode, um Go-Funktionalität für das Frontend bereitzustellen.
 
 ```go
 // Define a service (just a regular Go struct)
@@ -175,7 +175,7 @@ app := application.New(application.Options{
 
 **Service-Erkennung:**
 
-- Wails **untersucht Ihre Struktur** beim Start
+- Wails **analysiert beim Start Ihre Struktur**
 - **Exportierte Methoden** können vom Frontend aufgerufen werden
 - **Typinformationen** werden für TypeScript-Bindings extrahiert
 - **Die Fehlerbehandlung** erfolgt automatisch (Go-Fehler → JS-Ausnahmen)
@@ -192,7 +192,7 @@ export function GetTime(): Promise<Date>
 
 - **Typsicher**: vollständige TypeScript-Unterstützung
 - **Automatische Erkennung**: keine manuelle Registrierung von Methoden
-- **Übersichtlich organisiert**: zusammengehörige Funktionen gruppieren
+- **Strukturiert**: zusammengehörige Funktionen gruppieren
 - **Testbar**: Services sind einfache Go-Strukturen
 
 [Mehr über Services erfahren →](/features/bindings/services/)
@@ -228,9 +228,9 @@ Wails Event System: Wails-Ereignissystem {
 
 **Anwendungsfälle:**
 
-- **Fensterkommunikation**: Ein Fenster benachrichtigt andere Fenster
+- **Kommunikation zwischen Fenstern**: Ein Fenster benachrichtigt andere
 - **Hintergrundaufgaben**: Ein Go-Service informiert die Benutzeroberfläche über den Fortschritt
-- **Zustandssynchronisierung**: mehrere Fenster synchron halten
+- **Zustandssynchronisierung**: Mehrere Fenster synchron halten
 - **Lose Kopplung**: Komponenten benötigen keine direkten Referenzen
 
 **Beispiel:**
@@ -253,7 +253,7 @@ Events.On('user-logged-in', (user) => {
 
 ## Anwendungslebenszyklus
 
-Wenn Sie den Lebenszyklus verstehen, wissen Sie, wann Ressourcen initialisiert und bereinigt werden müssen.
+Wenn Sie den Lebenszyklus verstehen, wissen Sie, wann Sie Ressourcen initialisieren und bereinigen müssen.
 
 ```d2
 direction: down
@@ -268,7 +268,7 @@ Init: Initialisierung {
     shape: rectangle
   }
 
-  Register: Dienste registrieren {
+  Register: Services registrieren {
     shape: rectangle
   }
 
@@ -291,7 +291,7 @@ Run: Ereignisschleife {
   }
 }
 
-Shutdown: Herunterfahren {
+Shutdown: Beenden {
   Cleanup: Ressourcen bereinigen {
     shape: rectangle
   }
@@ -332,7 +332,7 @@ app := application.New(application.Options{
 })
 ```
 
-`application.Options` besitzt kein Feld `OnStartup`. Startarbeiten gehören in `ServiceStartup(ctx, options)` eines Services, in einen über `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)` registrierten Callback oder einfach vor `app.Run()`.
+`application.Options` besitzt kein Feld `OnStartup`. Startaufgaben gehören in `ServiceStartup(ctx, options)` eines Services, in einen über `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)` registrierten Callback oder einfach vor `app.Run()`.
 
 [Mehr über den Lebenszyklus erfahren →](/concepts/lifecycle/)
 
@@ -344,7 +344,7 @@ So erstellt Wails Ihre Anwendung:
 direction: down
 
 Source: Quellcode {
-  Go: "Go-Code\n(main.go, Dienste)" {
+  Go: "Go-Code\n(main.go, Services)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -360,11 +360,11 @@ Build: Build-Prozess {
     shape: rectangle
   }
 
-  GenerateBindings: Bindings erzeugen {
+  GenerateBindings: Bindings generieren {
     shape: rectangle
   }
 
-  BuildFrontend: Frontend bauen {
+  BuildFrontend: Frontend erstellen {
     shape: rectangle
   }
 
@@ -409,12 +409,12 @@ Build.Embed -> Output.Binary
 
 
 3. **Frontend erstellen**
-  - Bundler ausführen (Vite, webpack usw.)
+  - Ihren Bundler ausführen (Vite, webpack usw.)
   - Minifizieren und optimieren
-  - Ausgabe in `frontend/dist/` schreiben
+  - Nach `frontend/dist/` ausgeben
 
 
-4. **Go-Code kompilieren**
+4. **Go kompilieren**
   - Mit Optimierungen kompilieren (`-ldflags="-s -w"`)
   - Build-Metadaten einfügen
   - Plattformspezifisch kompilieren
@@ -426,7 +426,7 @@ Build.Embed -> Output.Binary
   - Eine einzelne ausführbare Datei erstellen
 
 
-**Ergebnis:** eine einzelne native ausführbare Datei, in die alles eingebettet ist.
+**Ergebnis:** Eine einzelne native ausführbare Datei, in die alles eingebettet ist.
 
 [Mehr über das Erstellen erfahren →](/guides/build/building/)
 
@@ -436,13 +436,13 @@ Wails verhält sich in der Entwicklungs- und Produktionsumgebung unterschiedlich
 
 @tabs{sync-key="mode"}
 [Entwicklung (wails3 dev)]
-**Eigenschaften:**
+**Merkmale:**
 
-- **Hot Reload**: Änderungen am Frontend werden sofort geladen
+- **Hot Reload**: Frontend-Änderungen werden sofort neu geladen
 - **Source Maps**: Debugging mit dem ursprünglichen Quellcode
 - **DevTools**: Browser-DevTools sind verfügbar
-- **Protokollierung**: ausführliche Protokollierung ist aktiviert
-- **Externes Frontend**: wird vom Entwicklungsserver bereitgestellt (Vite)
+- **Protokollierung**: Ausführliche Protokollierung ist aktiviert
+- **Externes Frontend**: Wird vom Entwicklungsserver (Vite) bereitgestellt
 
 **Funktionsweise:**
 
@@ -471,26 +471,26 @@ WebView -> WailsApp: Go-Methoden aufrufen
 
 **Vorteile:**
 
-- Sofortige Rückmeldung zu Änderungen
+- Sofortiges Feedback zu Änderungen
 - Umfassende Debugging-Möglichkeiten
 - Schnellere Iteration
 
 [Produktion (wails3 build)]
-**Eigenschaften:**
+**Merkmale:**
 
 - **Eingebettete Assets**: Das Frontend ist in die Binärdatei integriert
-- **Optimiert**: minifiziert und komprimiert
-- **Keine DevTools**: standardmäßig deaktiviert
-- **Minimale Protokollierung**: nur Fehler
-- **Einzelne Datei**: alles in einer ausführbaren Datei
+- **Optimiert**: Minifiziert und komprimiert
+- **Keine DevTools**: Standardmäßig deaktiviert
+- **Minimale Protokollierung**: Nur Fehler
+- **Eine einzige Datei**: Alles befindet sich in einer ausführbaren Datei
 
 **Funktionsweise:**
 
 ```d2
 direction: right
 
-Binary: "Einzelne Binärdatei\n(myapp.exe)" {
-  GoCode: Kompilierter Go-Code {
+Binary: "Eine einzige Binärdatei\n(myapp.exe)" {
+  GoCode: Kompiliertes Go {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -514,43 +514,43 @@ WebView -> Binary.GoCode: Go-Methoden aufrufen
 
 - Verteilung als einzelne Datei
 - Geringere Größe (minifiziert)
-- Bessere Performance
+- Bessere Leistung
 - Keine externen Abhängigkeiten
 
 @end
 
 ## Speichermodell
 
-Wenn Sie die Speichernutzung verstehen, können Sie effiziente Anwendungen erstellen.
+Wenn du die Speichernutzung verstehst, kannst du effiziente Anwendungen entwickeln.
 
 **Speicherbereiche:**
 
 1. **Go-Heap**
-  - Ihre Services und Ihr Anwendungszustand
-  - Wird vom Garbage Collector von Go verwaltet
-  - Bei einfachen Anwendungen typischerweise 5-10 MB
+  - Deine Services und dein Anwendungszustand
+  - Wird vom Go-Garbage-Collector verwaltet
+  - Bei einfachen Apps typischerweise 5-10MB
 
 
 2. **WebView-Speicher**
   - DOM, JavaScript-Heap, CSS
   - Wird von der WebView-Engine verwaltet
-  - Bei einfachen Anwendungen typischerweise 10-20 MB
+  - Bei einfachen Apps typischerweise 10-20MB
 
 
 3. **Bridge-Speicher**
   - Nachrichtenpuffer für die Kommunikation
-  - Minimaler Overhead (<1 MB)
-  - Wo möglich Zero-Copy für große Datenmengen
+  - Minimaler Overhead (<1MB)
+  - Für große Daten nach Möglichkeit ohne Kopieren
 
 
-**Tipps zur Optimierung:**
+**Optimierungstipps:**
 
-- **Vermeiden Sie die Übertragung großer Datenmengen**: Übergeben Sie IDs und rufen Sie Details bei Bedarf ab
-- **Verwenden Sie Ereignisse für Aktualisierungen**: Fragen Sie Aktualisierungen nicht vom Frontend aus regelmäßig ab
-- **Streamen Sie große Dateien**: Laden Sie sie nicht vollständig in den Speicher
-- **Bereinigen Sie Listener**: Entfernen Sie Ereignis-Listener, wenn sie nicht mehr benötigt werden
+- **Große Datenübertragungen vermeiden**: IDs übergeben und Details bei Bedarf abrufen
+- **Events für Aktualisierungen verwenden**: Nicht vom Frontend aus pollen
+- **Große Dateien streamen**: Nicht vollständig in den Arbeitsspeicher laden
+- **Listener bereinigen**: Event-Listener entfernen, wenn sie nicht mehr benötigt werden
 
-[Mehr über Performance erfahren →](/guides/performance/)
+[Mehr über Leistung erfahren →](/guides/performance/)
 
 ## Sicherheitsmodell
 
@@ -564,7 +564,7 @@ Frontend: Frontend (nicht vertrauenswürdig) {
   style.fill: "#EF4444"
 }
 
-Bridge: Wails-Bridge (Validierung) {
+Bridge: Wails Bridge (Validierung) {
   shape: diamond
   style.fill: "#F59E0B"
 }
@@ -575,7 +575,7 @@ Backend: Backend (vertrauenswürdig) {
 }
 
 Frontend -> Bridge: Methode aufrufen
-Bridge -> Bridge: "Prüfen:\n- Methode vorhanden?\n- Typen korrekt?\n- Zugriff erlaubt?"
+Bridge -> Bridge: "Validieren:\n- Ist die Methode vorhanden?\n- Sind die Typen korrekt?\n- Ist der Zugriff erlaubt?"
 Bridge -> Backend: Bei Gültigkeit ausführen
 Backend -> Bridge: Ergebnis zurückgeben
 Bridge -> Frontend: Antwort senden
@@ -586,7 +586,7 @@ Bridge -> Frontend: Antwort senden
 1. **Positivliste für Methoden**
   - Nur exportierte Methoden können aufgerufen werden
   - Auf private Methoden kann nicht zugegriffen werden
-  - Services müssen explizit registriert werden
+  - Eine explizite Service-Registrierung ist erforderlich
 
 
 2. **Typvalidierung**
@@ -607,25 +607,25 @@ Bridge -> Frontend: Antwort senden
   - Berechtigungen pro Fenster sind möglich
 
 
-**Bewährte Vorgehensweisen:**
+**Bewährte Verfahren:**
 
-- **Validieren Sie Benutzereingaben** in Go (vertrauen Sie dem Frontend nicht)
-- **Verwenden Sie den Kontext** für die Authentifizierung und Autorisierung
-- **Bereinigen Sie Dateipfade** vor Dateioperationen
-- **Begrenzen Sie die Aufrufrate** aufwendiger Operationen
+- **Benutzereingaben validieren** – in Go (dem Frontend nicht vertrauen)
+- **Kontext verwenden** – für Authentifizierung und Autorisierung
+- **Dateipfade bereinigen** – vor Dateioperationen
+- **Aufrufrate begrenzen** – bei aufwendigen Operationen
 
 [Mehr über Sicherheit erfahren →](/guides/security/)
 
 ## Nächste Schritte
 
-**Anwendungslebenszyklus** – Start, Beendigung und Lebenszyklus-Hooks verstehen [Mehr erfahren →](/concepts/lifecycle/)
+**Anwendungslebenszyklus** – Start, Beenden und Lebenszyklus-Hooks verstehen [Mehr erfahren →](/concepts/lifecycle/)
 
-**Go-Frontend-Bridge** – Im Detail erfahren, wie die Bridge funktioniert [Mehr erfahren →](/concepts/bridge/)
+**Go-Frontend-Bridge** – Die Funktionsweise der Bridge im Detail kennenlernen [Mehr erfahren →](/concepts/bridge/)
 
-**Build-System** – Verstehen, wie Wails Ihre Anwendung erstellt [Mehr erfahren →](/concepts/build-system/)
+**Build-System** – Verstehen, wie Wails deine Anwendung erstellt [Mehr erfahren →](/concepts/build-system/)
 
-**Mit der Entwicklung beginnen** – Das Gelernte in einem Tutorial anwenden [Tutorials →](/tutorials/03-notes-vanilla/)
+**Mit der Entwicklung beginnen** – Wenden Sie das Gelernte in einem Tutorial an: [Tutorials →](/tutorials/03-notes-vanilla/)
 
 ---
 
-**Fragen zur Architektur?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder lesen Sie in der [API-Referenz](/reference/overview/) nach.
+**Fragen zur Architektur?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder lesen Sie in der [API-Referenz](/reference/overview/) nach.

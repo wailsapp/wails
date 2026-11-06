@@ -779,7 +779,7 @@
       "targetHash": "37f0471856524b7c6295ff2fdc07c4a80e9dbeddeae2467a25c4c409af4cce8c",
       "machineHash": "37f0471856524b7c6295ff2fdc07c4a80e9dbeddeae2467a25c4c409af4cce8c",
       "machineText": "`go mod tidy`",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`go mod tidy`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -1051,16 +1051,16 @@
       "updatedAt": "2026-10-25T22:04:50Z"
     },
     "b0088-text-01": {
-      "sourceHash": "0adfe95f25e892a970034a17f2d2c492945b537465f6639af458698d4c5b7617",
-      "targetHash": "e203bc57969bb99988ed3561e3fff45e750f48c0663fe9a58209ce20dd6e7565",
-      "machineHash": "e203bc57969bb99988ed3561e3fff45e750f48c0663fe9a58209ce20dd6e7565",
-      "machineText": "请参阅[贡献指南](/contributing/)。随时欢迎提交 bug 修复；新增功能和公共行为变更需通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)草案 PR 提出。你可以选择在 Discord 或 GitHub Discussions 上进行非正式讨论。",
+      "sourceHash": "dbc91faa99559044beeb575090d964b499953fa5097f2583fe9938661cff9ca3",
+      "targetHash": "662dd1487e18153d04727c030100724e4e28593360755b5dfbcde1b8a7414e44",
+      "machineHash": "662dd1487e18153d04727c030100724e4e28593360755b5dfbcde1b8a7414e44",
+      "machineText": "请参阅[贡献指南](/contributing/)。随时欢迎提交错误修复；新增功能和公共行为变更需通过 [WEP（Wails 增强提案）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)草案 PR 提交。在 Discord 或 GitHub Discussions 上进行非正式讨论是可选的。",
       "status": "machine-translated",
       "sourcePreview": "See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:04:50Z"
+      "updatedAt": "2026-11-06T02:13:22Z"
     },
     "b0089-heading-01": {
       "sourceHash": "7e04a9455d286c2de3b3944df1d30d007e59e48825508a4bad741fc86269efe6",
@@ -1075,16 +1075,16 @@
       "updatedAt": "2026-10-25T22:04:50Z"
     },
     "b0090-text-01": {
-      "sourceHash": "9c100d1cc1faf3d456340abd86482a5bd369c340ce40ae89a471130f70055964",
-      "targetHash": "b5a07a21c32fb5c466fd6f1fc5a4bf6259753000d33a9b74b0093ed8cbfb9ede",
-      "machineHash": "b5a07a21c32fb5c466fd6f1fc5a4bf6259753000d33a9b74b0093ed8cbfb9ede",
-      "machineText": "仓库附带超过60个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。",
+      "sourceHash": "e3ebf0a5b08193f5cab48344e4b0503e5c5ae6471811fac7ed978d559797914b",
+      "targetHash": "2a952bd8c54126cd7866f609075f1096bbc7b6f47ac979129c8e848b915caae3",
+      "machineHash": "2a952bd8c54126cd7866f609075f1096bbc7b6f47ac979129c8e848b915caae3",
+      "machineText": "该仓库提供了超过 60 个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。",
       "status": "machine-translated",
       "sourcePreview": "The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:04:50Z"
+      "updatedAt": "2026-11-06T02:13:22Z"
     },
     "b0091-heading-01": {
       "sourceHash": "307af8007863f2e25ee83f46955f0654cecfcccef91413536486640af31e3282",

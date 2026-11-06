@@ -1,17 +1,17 @@
 ---
 title: "Rahmenlose Fenster"
-description: "Benutzerdefinierte Fensterdekorationen mit rahmenlosen Fenstern erstellen"
+description: "Benutzerdefinierte Fensterrahmen mit rahmenlosen Fenstern erstellen"
 slug: "features/windows/frameless"
 sourcePath: "features/windows/frameless.md"
 ---
 
 ## Rahmenlose Fenster
 
-Wails bietet **Unterstützung für rahmenlose Fenster** mit CSS-basierten Ziehbereichen und plattformeigenem Verhalten. Entfernen Sie die plattformeigene Titelleiste, um Fensterdekoration, individuelle Designs und besondere Benutzererlebnisse vollständig selbst zu gestalten, ohne dabei auf wichtige Funktionen wie Verschieben, Größenänderung und Systemsteuerelemente zu verzichten.
+Wails bietet **Unterstützung für rahmenlose Fenster** mit CSS-basierten Ziehbereichen und plattformeigenem Verhalten. Entfernen Sie die plattformeigene Titelleiste, um Fensterrahmen, individuelle Designs und einzigartige Benutzererlebnisse vollständig selbst zu gestalten und dabei grundlegende Funktionen wie Verschieben, Größenänderung und Systemsteuerelemente beizubehalten.
 
-![Die standardmäßige TypeScript-Starter-App von Wails v3 als rahmenloses Fenster mit nativen macOS-Ecken](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![Die standardmäßige Wails-v3-TypeScript-Starter-App als rahmenloses Fenster mit nativen macOS-Ecken](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
-Das obige Beispiel zeigt die standardmäßige TypeScript-Starter-App von Wails v3 mit aktiviertem `Frameless: true`.
+Das obige Beispiel zeigt die standardmäßige Wails-v3-TypeScript-Starter-App mit aktiviertem `Frameless: true`.
 
 ## Schnellstart
 
@@ -24,7 +24,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**CSS für eine ziehbare Titelleiste:**
+**CSS für eine verschiebbare Titelleiste:**
 
 ```css
 .titlebar {
@@ -47,7 +47,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-**Das ist alles!** Sie haben jetzt eine benutzerdefinierte Titelleiste.
+**Das ist alles!** Sie haben nun eine benutzerdefinierte Titelleiste.
 
 ## Rahmenlose Fenster erstellen
 
@@ -94,13 +94,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **Das müssen Sie implementieren:**
 
-- Ziehbarer Bereich
+- Verschiebbarer Bereich
 - Schaltflächen zum Schließen, Minimieren und Maximieren
-- Größenänderungsbereiche (falls die Größe veränderbar ist)
+- Größenänderungsgriffe (falls die Größe veränderbar ist)
 
 ### Mit transparentem Hintergrund
 
-**Private API unter macOS:** Legen Sie `Mac.Backdrop: application.MacBackdropTransparent` fest und erstellen Sie den Build mit `-tags private_mac_apis`, um die Webview transparent darzustellen. Ohne dieses Tag bleibt die native Webview undurchsichtig, selbst wenn der HTML-/CSS-Hintergrund transparent ist. `Frameless` und `TitleBar.AppearsTransparent` selbst verwenden öffentliche APIs. Siehe [Private macOS-APIs](/guides/build/private-macos-apis/#webview-transparency-and-background).
+**Private API unter macOS:** Legen Sie `Mac.Backdrop: application.MacBackdropTransparent` fest und bauen Sie mit `-tags private_mac_apis`, um WebView-Transparenz zu erhalten. Ohne dieses Tag bleibt die native WebView undurchsichtig, selbst wenn der HTML-/CSS-Hintergrund transparent ist. `Frameless` und `TitleBar.AppearsTransparent` selbst verwenden öffentliche APIs. Siehe [Private macOS-APIs](/guides/build/private-macos-apis/#webview-transparency-and-background).
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -121,7 +121,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Ziehbereiche
 
-### CSS-basiertes Ziehen
+### CSS-basiertes Verschieben
 
 Verwenden Sie die CSS-Eigenschaft `--wails-draggable`:
 
@@ -139,8 +139,8 @@ Verwenden Sie die CSS-Eigenschaft `--wails-draggable`:
 
 **Werte:**
 
-- `drag` – Der Bereich ist ziehbar
-- `no-drag` – Der Bereich ist nicht ziehbar (auch wenn der übergeordnete Bereich ziehbar ist)
+- `drag` – Der Bereich ist verschiebbar
+- `no-drag` – Der Bereich ist nicht verschiebbar (auch wenn der übergeordnete Bereich es ist)
 
 ### Vollständiges Beispiel für eine Titelleiste
 
@@ -210,41 +210,41 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ## Native Nicht-Client-Bereiche unter Windows
 
-Windows kann Teile einer benutzerdefinierten Titelleiste als native Nicht-Client-Bereiche behandeln. Dadurch können Sie die Titelleiste und die Fensterschaltflächen mit einem beliebigen HTML-/CSS-Design darstellen und gleichzeitig das native Windows-Verhalten beibehalten: Der Titelleistenbereich verschiebt das Fenster, die Maximieren-Schaltfläche kann Windows 11 Snap Assist / Snap Layouts anzeigen und die Schaltflächen zum Minimieren, Maximieren und Schließen erhalten native Treffertests und Mauszustände.
+Windows kann Teile einer benutzerdefinierten Titelleiste als native Nicht-Client-Bereiche behandeln. So können Sie die Titelleiste und die Fensterschaltflächen mit einem beliebigen HTML-/CSS-Design darstellen und gleichzeitig das native Windows-Verhalten beibehalten: Im Titelleistenbereich lässt sich das Fenster verschieben, die Schaltfläche zum Maximieren kann Windows 11 Snap Assist / Snap Layouts anzeigen, und die Schaltflächen zum Minimieren, Maximieren und Schließen erhalten native Treffertests und Mauszustände.
 
-Das folgende Video zeigt eine benutzerdefinierte HTML-/CSS-Titelleiste mit nativen Windows-Treffertests, einschließlich Windows 11 Snap Assist / Snap Layouts für eine benutzerdefinierte Maximieren-Schaltfläche.
+Das folgende Video zeigt eine benutzerdefinierte HTML-/CSS-Titelleiste mit nativen Windows-Treffertests, einschließlich Windows 11 Snap Assist / Snap Layouts für eine benutzerdefinierte Schaltfläche zum Maximieren.
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails unterstützt zwei Windows-spezifische Mechanismen:
 
 - `app-region` über die native Unterstützung von WebView2 für Nicht-Client-Bereiche
-- `--wails-non-client-region` über die Laufzeitverfolgung von Wails für benutzerdefinierte Fensterschaltflächen
+- `--wails-non-client-region` über die Nachverfolgung benutzerdefinierter Fensterschaltflächen durch die Wails-Laufzeit
 
 ### Modus auswählen
 
 @note{type="caution" title="Experimentell"}
-`WebView2CompositionHosting` verändert im Hintergrund, wie das Fenster WebView2 hostet und damit interagiert. Anstelle des standardmäßigen, in einem HWND gehosteten WebView2-Controllers verwendet Wails das Hosting eines Composition-Controllers und leitet Eingaben explizit weiter. In diesem Modus können Probleme mit Darstellung, Eingabe, Fokus oder der Kompatibilität mit der WebView2 Runtime auftreten. Aktivieren Sie ihn nur, wenn Sie natives Verhalten für benutzerdefinierte Fensterschaltflächen benötigen, und testen Sie Ihre App sorgfältig mit den von Ihnen unterstützten Windows- und WebView2-Runtime-Versionen.
+`WebView2CompositionHosting` ändert intern, wie das Fenster WebView2 hostet und damit interagiert. Anstelle des standardmäßigen, in einem HWND gehosteten WebView2-Controllers verwendet Wails das Hosting mit einem Composition Controller und leitet Eingaben ausdrücklich weiter. Dieser Modus kann Kompatibilitätsprobleme bei Darstellung, Eingabe, Fokus oder mit der WebView2 Runtime verursachen. Aktivieren Sie ihn nur, wenn Sie natives Verhalten für benutzerdefinierte Fensterschaltflächen benötigen, und testen Sie Ihre App sorgfältig mit den von Ihnen unterstützten Versionen von Windows und der WebView2 Runtime.
 
 @end
 
 Wählen Sie den Modus danach aus, welche Windows-Funktionen Sie benötigen:
 
-- Verwenden Sie `NonClientRegionSupport` für einfaches natives Verschieben der App mit `app-region: drag` und `app-region: no-drag` von WebView2.
+- Verwenden Sie `NonClientRegionSupport`, um die App mit `app-region: drag` und `app-region: no-drag` von WebView2 auf einfache Weise nativ zu verschieben.
 - Verwenden Sie `WebView2CompositionHosting`, wenn sich Ihre benutzerdefinierten Schaltflächen zum Minimieren, Maximieren und Schließen wie native Windows-Fensterschaltflächen verhalten sollen.
-- Aktivieren Sie beide, wenn dasselbe Fenster sowohl die native `app-region`-Unterstützung von WebView2 als auch von Wails verwaltete Bereiche für benutzerdefinierte Fensterschaltflächen benötigt.
+- Aktivieren Sie beides, wenn dasselbe Fenster sowohl die WebView2-native Unterstützung für `app-region` als auch von Wails verwaltete Bereiche für benutzerdefinierte Fensterschaltflächen benötigt.
 
-`NonClientRegionSupport` ist die schlanke native Alternative zur `--wails-draggable`-Verfolgung von Wails. Sie kennzeichnen ziehbare und nicht ziehbare Bereiche mit CSS, WebView2 bestimmt, welche Pixel zur Titelleiste gehören, und Wails fragt WebView2 beim Treffertest nach dem nativen Bereich.
+`NonClientRegionSupport` ist die schlanke native Alternative zur `--wails-draggable`-Nachverfolgung von Wails. Sie kennzeichnen verschiebbare und nicht verschiebbare Bereiche mit CSS, WebView2 bestimmt, welche Pixel zur Titelleiste gehören, und Wails fragt WebView2 beim Treffertest nach dem nativen Bereich.
 
-Das ist derzeit der gesamte Funktionsumfang dieses Modus. Er bewirkt weder, dass sich benutzerdefinierte Schaltflächen zum Minimieren, Maximieren oder Schließen wie native Windows-Fensterschaltflächen verhalten, noch aktiviert er Windows 11 Snap Assist / Snap Layouts für eine benutzerdefinierte Maximieren-Schaltfläche. Verwenden Sie ihn, wenn Sie einfaches natives Verschieben der App ohne den zusätzlichen Mechanismus von `--wails-draggable` benötigen.
+Darauf ist der Umfang dieses Modus derzeit vollständig beschränkt. Er sorgt weder dafür, dass sich benutzerdefinierte Schaltflächen zum Minimieren, Maximieren oder Schließen wie native Windows-Fensterschaltflächen verhalten, noch aktiviert er Windows 11 Snap Assist / Snap Layouts für eine benutzerdefinierte Schaltfläche zum Maximieren. Verwenden Sie ihn, wenn Sie die App auf einfache Weise nativ verschieben möchten, ohne den zusätzlichen Mechanismus von `--wails-draggable` zu benötigen.
 
-`WebView2CompositionHosting` ist für benutzerdefinierte Titelleistenschaltflächen mit nativem Verhalten vorgesehen. Wails verfolgt mit `--wails-non-client-region` markierte DOM-Rechtecke, ordnet ihnen Windows-Hit-Test-Werte wie `HTMINBUTTON`, `HTMAXBUTTON` und `HTCLOSE` zu und leitet Mauseingaben zurück an die per Composition gehostete WebView2-Oberfläche. Dadurch kann eine benutzerdefinierte Maximieren-Schaltfläche Windows 11 Snap Assist/Snap Layouts unterstützen, während Sie das visuelle Design frei bestimmen können.
+`WebView2CompositionHosting` dient benutzerdefinierten Fensterschaltflächen mit nativem Verhalten. Wails verfolgt mit `--wails-non-client-region` gekennzeichnete DOM-Rechtecke, ordnet sie Windows-Treffertestwerten wie `HTMINBUTTON`, `HTMAXBUTTON` und `HTCLOSE` zu und leitet Mauseingaben zurück an die mit Composition Hosting betriebene WebView2-Oberfläche. Dadurch kann eine benutzerdefinierte Schaltfläche zum Maximieren Windows 11 Snap Assist / Snap Layouts unterstützen, während Sie jedes gewünschte visuelle Design beibehalten.
 
-Anders ausgedrückt: `NonClientRegionSupport` bietet WebView2-native Unterstützung für CSS-Regionen. Bei `WebView2CompositionHosting` übernimmt Wails die Verantwortung für die vom Host verwaltete Composition und benutzerdefinierte Nicht-Client-Hit-Tests.
+Anders ausgedrückt: `NonClientRegionSupport` ist die WebView2-native Unterstützung für CSS-Bereiche. Bei `WebView2CompositionHosting` übernimmt Wails die Verantwortung für das vom Host verwaltete Composition Hosting und benutzerdefinierte Nicht-Client-Treffertests.
 
-### WebView2-app-region
+### WebView2 app-region
 
-Aktivieren Sie für das Fenster die native Unterstützung von WebView2 für Nicht-Client-Regionen:
+Aktivieren Sie für das Fenster die native Unterstützung von WebView2 für Nicht-Client-Bereiche:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -255,7 +255,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Markieren Sie anschließend ziehbare Bereiche mit der CSS-Eigenschaft `app-region`:
+Kennzeichnen Sie anschließend verschiebbare Bereiche mit der CSS-Eigenschaft `app-region`:
 
 ```css
 .titlebar {
@@ -270,16 +270,16 @@ Markieren Sie anschließend ziehbare Bereiche mit der CSS-Eigenschaft `app-regio
 }
 ```
 
-Verwenden Sie diesen Modus, wenn Sie nur natives Ziehen über die Titelleiste benötigen und die Steuerelemente Ihrer Titelleiste über normale Frontend-Klicks bedient werden.
+Verwenden Sie dies, wenn Sie nur das native Verschieben über die Titelleiste benötigen und die Steuerelemente Ihrer Titelleiste über normale Klicks im Frontend verarbeitet werden.
 
-Dieser Modus ist auf die Unterstützung beschränkt, die WebView2 selbst für Nicht-Client-Regionen bietet. In aktuellen WebView2-Versionen sind das ausschließlich ziehbare und nicht ziehbare Regionen. Der Modus ist nicht dazu vorgesehen, vollständig benutzerdefinierte Titelleistenschaltflächen im Frontend mit getrennten nativen Rollen für Minimieren, Maximieren und Schließen abzubilden.
+Dieser Modus ist auf die WebView2-eigene Unterstützung für Nicht-Client-Bereiche beschränkt. In aktuellen WebView2-Versionen bedeutet das, dass nur verschiebbare und nicht verschiebbare Bereiche unterstützt werden. Der Modus ist nicht dazu vorgesehen, vollständig benutzerdefinierte Fensterschaltflächen im Frontend mit getrennten nativen Rollen zum Minimieren, Maximieren und Schließen abzubilden.
 
-### Benutzerdefinierte Titelleistenschaltflächen mit nativem Verhalten
+### Benutzerdefinierte Fensterschaltflächen mit nativem Verhalten
 
-Aktivieren Sie das Composition-Hosting für benutzerdefinierte Schaltflächen zum Minimieren, Maximieren und Schließen, die sich wie Titelleistenschaltflächen des Systems verhalten sollen:
+Aktivieren Sie Composition Hosting für benutzerdefinierte Schaltflächen zum Minimieren, Maximieren und Schließen, die sich wie Fensterschaltflächen des Systems verhalten sollen:
 
 @note{type="caution" title="Experimentell"}
-`WebView2CompositionHosting` verwendet das Hosting des WebView2-Composition-Controllers mit DirectComposition. Lesen Sie vor der Aktivierung den Abschnitt [Modus auswählen](#modus-auswhlen).
+`WebView2CompositionHosting` verwendet das Hosting mit dem WebView2 Composition Controller und DirectComposition. Lesen Sie vor der Aktivierung [Modus auswählen](#modus-auswhlen).
 
 @end
 
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Markieren Sie anschließend jede Frontend-Region mit `--wails-non-client-region`:
+Kennzeichnen Sie anschließend jeden Frontend-Bereich mit `--wails-non-client-region`:
 
 ```html
 <div class="titlebar">
@@ -337,18 +337,18 @@ Markieren Sie anschließend jede Frontend-Region mit `--wails-non-client-region`
 
 Unterstützte Werte für `--wails-non-client-region`:
 
-- `caption` – ziehbarer Titelleistenbereich
-- `minimize` – Hit-Test-Ziel der nativen Minimieren-Schaltfläche
-- `maximize` – Hit-Test-Ziel der nativen Maximieren-Schaltfläche, einschließlich des Hover-Verhaltens von Windows 11 Snap Assist/Snap Layouts
-- `close` – Hit-Test-Ziel der nativen Schließen-Schaltfläche
+- `caption` – verschiebbarer Titelleistenbereich
+- `minimize` – Trefferbereich der nativen Minimieren-Schaltfläche
+- `maximize` – Trefferbereich der nativen Maximieren-Schaltfläche, einschließlich des Hover-Verhaltens von Windows 11 für Snap Assist und Snap Layouts
+- `close` – Trefferbereich der nativen Schließen-Schaltfläche
 
-Die Wails-Laufzeit überwacht Änderungen am DOM, an Stilen, Größe, Bildlauf und Viewport und sendet anschließend Momentaufnahmen der Regionen an das native Fenster. Die Geometrie der Regionen wird in CSS-Pixeln gemessen und für Windows-Hit-Tests in physische Pixel umgerechnet.
+Die Wails-Runtime überwacht Änderungen am DOM, an Stilen, Größe, Scrollposition und Viewport und sendet anschließend Momentaufnahmen der Bereiche an das native Fenster. Die Bereichsgeometrie wird in CSS-Pixeln gemessen und für die Windows-Treffertests in physische Pixel umgerechnet.
 
-Das visuelle Design bestimmen weiterhin vollständig Sie. Die Regionen teilen Windows lediglich die Bedeutung der einzelnen Rechtecke mit; Form, Symbol, Farbe, Abstände, Hover-Stil und Layout der Schaltflächen stammen weiterhin aus Ihrem Frontend.
+Die visuelle Gestaltung bleibt vollständig Ihnen überlassen. Die Bereiche teilen Windows lediglich mit, welche Bedeutung die einzelnen Rechtecke haben. Form, Symbol, Farbe, Abstände, Hover-Stil und Layout der Schaltflächen stammen weiterhin aus Ihrem Frontend.
 
 ### Beide kombinieren
 
-Sie können beide Optionen aktivieren, wenn Sie im selben Fenster WebView2-Unterstützung für `app-region` und von Wails verwaltete Regionen für Titelleistenschaltflächen verwenden möchten:
+Sie können beide Optionen aktivieren, wenn Sie im selben Fenster WebView2-Unterstützung für `app-region` und von Wails verwaltete Bereiche für Titelleistenschaltflächen benötigen:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -398,7 +398,7 @@ document.querySelector('.maximize').addEventListener('click', Maximise)
 document.querySelector('.close').addEventListener('click', Close)
 ```
 
-**Alternativ können Sie Laufzeitmethoden verwenden:**
+**Alternativ können Sie Runtime-Methoden verwenden:**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -438,7 +438,7 @@ async function updateMaximiseButton() {
 
 ### CSS-basierte Größenänderung
 
-Wails stellt automatische Größenänderungsbereiche für rahmenlose Fenster bereit:
+Wails stellt für rahmenlose Fenster automatische Größenänderungsbereiche bereit:
 
 ```css
 /* Enable resize on all edges */
@@ -483,8 +483,8 @@ body {
 
 **Werte:**
 
-- `all` – Größenänderung an allen Rändern
-- `top`, `bottom`, `left`, `right` – bestimmte Ränder
+- `all` – Größenänderung an allen Kanten
+- `top`, `bottom`, `left`, `right` – bestimmte Kanten
 - `top-left`, `top-right`, `bottom-left`, `bottom-right` – Ecken
 - `none` – keine Größenänderung
 
@@ -550,9 +550,9 @@ Windows: application.WindowsWindow{
 window.SnapAssist()
 ```
 
-Dadurch werden Snap Layouts über den Windows-Tastenkürzelpfad ausgelöst. Verwenden Sie für eine benutzerdefinierte HTML-Maximieren-Schaltfläche mit nativen Snap Layouts beim Darüberfahren stattdessen [Native Nicht-Client-Regionen unter Windows](#native-nicht-client-bereiche-unter-windows).
+Dadurch werden Snap Layouts über den Windows-Tastenkürzelpfad ausgelöst. Verwenden Sie für eine benutzerdefinierte HTML-Maximieren-Schaltfläche mit nativen Snap Layouts beim Darüberfahren stattdessen [Native Nicht-Client-Bereiche unter Windows](#native-nicht-client-bereiche-unter-windows).
 
-**Benutzerdefinierte Titelleistenhöhe:** Windows erkennt ziehbare Regionen automatisch anhand des CSS.
+**Benutzerdefinierte Titelleistenhöhe:** Windows erkennt Verschiebebereiche automatisch anhand des CSS.
 
 [macOS]
 **Rahmenlose Fenster unter macOS:**
@@ -576,7 +576,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - Vibrancy-Effekte
 - Transparente Titelleiste
 
-**Blenden Sie die Titelleiste vollständig aus** (verwenden Sie die aus dem Paket `application` exportierten Vorgabevarianten – es gibt weder ein Feld `TitleBarStyle` noch eine Konstante `MacTitleBarStyleHidden`):
+**Titelleiste vollständig ausblenden** (verwenden Sie die aus dem Paket `application` exportierten Preset-Varianten – es gibt weder ein Feld `TitleBarStyle` noch eine Konstante `MacTitleBarStyleHidden`):
 
 ```go
 Mac: application.MacWindow{
@@ -584,9 +584,9 @@ Mac: application.MacWindow{
 },
 ```
 
-Weitere Vorgaben sind `MacTitleBarDefault`, `MacTitleBarHiddenInset` und `MacTitleBarHiddenInsetUnified`.
+Weitere Presets sind `MacTitleBarDefault`, `MacTitleBarHiddenInset` und `MacTitleBarHiddenInsetUnified`.
 
-**Unsichtbare Titelleiste:** Ermöglicht das Ziehen bei ausgeblendeter Titelleiste. Dies wirkt sich nur aus, wenn das Fenster rahmenlos ist oder `AppearsTransparent` verwendet:
+**Unsichtbare Titelleiste:** Ermöglicht das Verschieben bei ausgeblendeter Titelleiste. Dies wird nur wirksam, wenn das Fenster rahmenlos ist oder `AppearsTransparent` verwendet:
 
 ```go
 Mac: application.MacWindow{
@@ -606,17 +606,17 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Funktionen:**
 
 - Grundlegende Unterstützung für rahmenlose Fenster
-- CSS-Ziehbereiche
-- Je nach Desktop-Umgebung unterschiedlich
+- CSS-Verschiebebereiche
+- Abhängig von der Desktop-Umgebung
 
 **Hinweise zu Desktop-Umgebungen:**
 
 - **GNOME:** Gute Unterstützung
 - **KDE Plasma:** Gute Unterstützung
 - **XFCE:** Grundlegende Unterstützung
-- **Kachelnde Fenstermanager:** Eingeschränkte Unterstützung
+- **Tiling-Fenstermanager:** Eingeschränkte Unterstützung
 
-**Compositor erforderlich:** Transparenz erfordert einen Compositor (die meisten modernen Desktop-Umgebungen verfügen über einen).
+**Compositor erforderlich:** Transparenz erfordert einen Compositor; die meisten modernen Desktop-Umgebungen verfügen über einen.
 
 @end
 
@@ -784,7 +784,7 @@ body {
 
 ## Vollständiges Beispiel
 
-Hier sehen Sie ein produktionsreifes rahmenloses Fenster:
+Hier ist ein produktionsreifes rahmenloses Fenster:
 
 **Go:**
 
@@ -981,24 +981,24 @@ updateMaximiseButton()
 
 ### ✅ Empfohlen
 
-- **Stellen Sie einen Ziehbereich bereit** – Benutzer müssen das Fenster verschieben können
-- **Implementieren Sie Systemschaltflächen** – Schließen, Minimieren, Maximieren
-- **Legen Sie eine Mindestgröße fest** – So verhindern Sie unbrauchbare Layouts
-- **Testen Sie auf allen Plattformen** – Das Verhalten variiert
-- **Verwenden Sie CSS für Ziehbereiche** – Flexibel und wartungsfreundlich
-- **Geben Sie visuelles Feedback** – Hover-Zustände für Schaltflächen
+- **Verschiebbaren Bereich bereitstellen** – Benutzer müssen das Fenster verschieben können
+- **Systemschaltflächen implementieren** – Schließen, Minimieren und Maximieren
+- **Mindestgröße festlegen** – Unbrauchbare Layouts verhindern
+- **Auf allen Plattformen testen** – Das Verhalten variiert
+- **CSS für Verschiebebereiche verwenden** – Flexibel und wartbar
+- **Visuelles Feedback bereitstellen** – Hover-Zustände für Schaltflächen
 
 ### ❌ Nicht empfohlen
 
-- **Vergessen Sie die Griffe zur Größenänderung nicht** – Wenn die Fenstergröße veränderbar ist
-- **Machen Sie nicht das gesamte Fenster ziehbar** – Dies verhindert Interaktionen
-- **Vergessen Sie bei Schaltflächen nicht, das Ziehen zu deaktivieren** – Andernfalls funktionieren sie nicht
-- **Verwenden Sie keine winzigen Ziehbereiche** – Sie sind schwer zu treffen
-- **Vergessen Sie die Plattformunterschiede nicht** – Testen Sie gründlich
+- **Größenänderungsbereiche nicht vergessen** – Wenn die Fenstergröße veränderbar ist
+- **Nicht das gesamte Fenster verschiebbar machen** – Dies verhindert Interaktionen
+- **Nicht verschiebbare Bereiche für Schaltflächen nicht vergessen** – Andernfalls funktionieren sie nicht
+- **Keine winzigen Verschiebebereiche verwenden** – Sie lassen sich schwer greifen
+- **Plattformunterschiede nicht außer Acht lassen** – Gründlich testen
 
 ## Fehlerbehebung
 
-### Fenster lässt sich nicht ziehen
+### Fenster lässt sich nicht verschieben
 
 **Ursache:** `--wails-draggable: drag` fehlt
 
@@ -1012,7 +1012,7 @@ updateMaximiseButton()
 
 ### Schaltflächen funktionieren nicht
 
-**Ursache:** Die Schaltflächen befinden sich in einem Ziehbereich
+**Ursache:** Die Schaltflächen befinden sich im ziehbaren Bereich
 
 **Lösung:**
 
@@ -1024,7 +1024,7 @@ updateMaximiseButton()
 
 ### Fenstergröße lässt sich nicht ändern
 
-**Ursache:** Griffe zur Größenänderung fehlen
+**Ursache:** Ziehpunkte zur Größenänderung fehlen
 
 **Lösung:**
 

@@ -11,7 +11,7 @@ Wails v3依**固定時程，而非依功能**發布版本。在`v3.0.0`基準版
 
 | 版本類型 | 標籤 | 發布頻率 | GitHub 發布版本 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 夜間版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若同一天重新執行，則附加`.N`） | 每日自動執行，僅在`UNRELEASED_CHANGELOG.md`有內容時發布 | 預發布版本，**不會**標為 Latest | 相同版本但不含`v`，dist-tag 為`nightly` |
+| 夜間版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若同一天重新執行，則附加`.N`） | 自動執行、每日執行，且僅在測試的發布範圍內已合併的 PR 產生使用者可見的版本說明時執行 | 預發布版本，**不會**標為 Latest | 相同版本但不含`v`，dist-tag 為`nightly` |
 | 每週版 | `v3.<next>.0` | 於 Australia/Sydney 時區星期日20:00自動執行<strong>（日期尚未確認）</strong> | 一般發布版本，標為 Latest | 相同版本，dist-tag 為`latest` |
 | 緊急修補版 | `v3.<current>.<N>`, `N > 0` | 很少發布，手動執行 | 一般版本、Latest | 相同版本，dist-tag 為`latest` |
 | 主要版本 | `v4.0.0` | 僅用於破壞性變更 | 一般發布版本 | `latest` |
@@ -62,7 +62,7 @@ CLI、Go 模組與 npm 套件`@wailsio/runtime`採用**相同版本**，取自`v
 
 ## 如何發布版本
 
-發布權限僅授予專案負責人（請參閱治理文件）。貢獻者絕不建立標籤或發布版本；他們只將項目新增至`v3/UNRELEASED_CHANGELOG.md`。
+發布權限僅限專案負責人（請參閱治理文件）。貢獻者絕不建立標籤或發布版本；他們應在 PR 標題或 `## Release notes` 說明區段中描述使用者可見的變更。發布自動化會根據精確涵蓋已測試提交的範圍，從已合併的 PR 產生版本說明；`v3/UNRELEASED_CHANGELOG.md` 已移除。
 
 所有作業都從**Nightly + Weekly Release v3**（`.github/workflows/nightly-release-v3.yml`）執行：
 
@@ -85,7 +85,7 @@ CLI、Go 模組與 npm 套件`@wailsio/runtime`採用**相同版本**，取自`v
 
 1. 具有`P0`或`release-blocker`標籤的未結問題或提取要求；
 2. 自上次每週發行以來建立、具有`regression`標籤的未結問題；
-3. 嚴重性為重大或高的未結 Dependabot 警示、嚴重性為重大或高的未結程式碼掃描警示，以及任何未結的祕密掃描警示，且**僅限已發布的程式碼**。若警示只位於`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`或任何`examples/`目錄下，則會忽略該警示（`v3/tasks/releasegate/main.go`中的`SHIPPED_ALERT_IGNORE`，**由擁有者審查**）；
+3. 嚴重性為重大或高的未解決 Dependabot 警示、嚴重性為重大或高的未解決程式碼掃描警示，以及任何未解決的密鑰掃描警示，**僅限已發布的程式碼**。僅位於 `v2/internal/staticanalysis/test/`（靜態分析測試資料）、`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/` 或任何 `examples/` 目錄下的警示會被忽略（`v3/tasks/releasegate/main.go` 中的 `SHIPPED_ALERT_IGNORE`，**由擁有者審查**）；
 4. 仍處於`triage`狀態的儲存庫安全公告。
 
 **誰可以設定阻擋項目。**只有在某標籤最近一次的`labeled`事件（之後沒有`unlabeled`事件）是由`wailsapp/maintainers`團隊成員，或具有`maintain`／`admin`權限的協作者執行時，該標籤才會生效。其他任何人套用的相同標籤都會被忽略並記錄，因此外部人員無法阻擋或解除阻擋版本發布。自動套用的`high-priority`標籤刻意**不**採用。`taliesin-ai`等機器人帳號若具備`maintain`，即可通過允許清單；這是預期行為，分流代理程式可在提供佐證的情況下套用阻擋標籤。

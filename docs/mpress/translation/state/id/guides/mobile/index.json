@@ -1,700 +1,1390 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "1cd4787926ef7a31a2bc",
+  "pageKey": "a87f1c796d46724ccd4b",
   "sourceFile": "guides/mobile/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
   "segments": {
     "a0002-description-01": {
       "sourceHash": "32baf68ae3e94f2e8c0b3fb0fbc68b9b2205af26a586bd828b74af0b80c1072d",
-      "targetHash": "f501f54599b2eed2f91b6b103e7071aa98099072189e78a3b8fc3da2a352269a",
-      "status": "migration-review",
-      "sourcePreview": "Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · …"
+      "targetHash": "fcb6fc4306421809e7c72ba7df5464c2768699cb5d1a5d198c1b10c428cd71e5",
+      "machineHash": "fcb6fc4306421809e7c72ba7df5464c2768699cb5d1a5d198c1b10c428cd71e5",
+      "machineText": "Binding · Peristiwa · Dialog · Haptik · Geolokasi · Biometrik · Notifikasi · Penyimpanan aman · dan lainnya—semuanya dari satu main.go",
+      "status": "machine-translated",
+      "sourcePreview": "Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "a0002-title-01": {
       "sourceHash": "6add0d5b364e49050403087ab16d7752995e26165207bda94f6b466c7ded9081",
-      "targetHash": "6add0d5b364e49050403087ab16d7752995e26165207bda94f6b466c7ded9081",
-      "status": "migration-review",
-      "sourcePreview": "Mobile Kitchen Sink — GitHub"
+      "targetHash": "aab5089b28c682e50df965dc54bd207774d7bcce989b9c14956cc1fb8a8c4033",
+      "machineHash": "aab5089b28c682e50df965dc54bd207774d7bcce989b9c14956cc1fb8a8c4033",
+      "machineText": "Mobile Kitchen Sink—GitHub",
+      "status": "machine-translated",
+      "sourcePreview": "Mobile Kitchen Sink — GitHub",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0001-text-01": {
       "sourceHash": "c68b4deed8d33c749df2c331f7cf2e8b76e3effb5d13e5b16b67915a2263fdc4",
-      "targetHash": "7acb6f0d5c332d889e978d96a0f285d4347ff3f8a5a7581d50badce2d04b3d14",
-      "status": "migration-review",
-      "sourcePreview": "Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for des…"
+      "targetHash": "36b1059b5ad81fe1181f6031b4f8e638d8dfab9acc4e63c96ab572f20c6d1703",
+      "machineHash": "36b1059b5ad81fe1181f6031b4f8e638d8dfab9acc4e63c96ab572f20c6d1703",
+      "machineText": "Wails v3 berjalan di **iOS dan Android** menggunakan `main.go` dan frontend yang sama dengan yang sudah Anda tulis untuk desktop. Tidak ada proyek seluler terpisah, jembatan berbagi kode, ataupun penulisan ulang: biner Go dikompilasi untuk target seluler dan WebView native merender frontend Anda yang sudah ada.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for des…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0002-text-01": {
       "sourceHash": "9ee20db9b6d0cd76a27dc3040d5be5f13b1d19fb9bb3a495e634b11f42bd1e01",
-      "targetHash": "443f48eda98a40c1613658e9871d5b3ed7ced5c3446595c1ab6db98aa478e434",
-      "status": "migration-review",
-      "sourcePreview": "iOS WKWebView + UIKit host. Assets served via a custom `wails://` scheme — no open ports. Requires *…"
+      "targetHash": "b69f839acf2d77ed861f6e05bbf92e4b29767b78e69cda0fde9e369b100a83ac",
+      "machineHash": "b69f839acf2d77ed861f6e05bbf92e4b29767b78e69cda0fde9e369b100a83ac",
+      "machineText": "iOS\nWKWebView + host UIKit. Aset disajikan melalui skema `wails://` khusus—tanpa port terbuka. Memerlukan **macOS** dengan Xcode lengkap.",
+      "status": "machine-translated",
+      "sourcePreview": "iOS WKWebView + UIKit host. Assets served via a custom `wails://` scheme — no open ports. Requires *…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0003-text-01": {
       "sourceHash": "045dd1bb91b8cab5d82994affbd98b37b427468bcacfa7dc2ab3a37f494f8dd9",
       "targetHash": "953a751260ee51849eb3c21fc9b3d77ec86b8418d19afeec66f7574e4da2d16c",
-      "status": "migration-review",
-      "sourcePreview": "Android Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK. Works on m…"
+      "machineHash": "953a751260ee51849eb3c21fc9b3d77ec86b8418d19afeec66f7574e4da2d16c",
+      "machineText": "Android\nAndroid WebView + `WebViewAssetLoader`. Go dikompilasi sebagai `libwails.so` melalui NDK. Berfungsi di macOS, Linux, dan Windows.",
+      "status": "machine-translated",
+      "sourcePreview": "Android Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK. Works on m…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0004-heading-01": {
       "sourceHash": "199a99e5d0efa0033b6aa24c5a78e5046bd3dda3c14195d6b2af2a7c1d80c860",
       "targetHash": "f032f835bee802b892804798d30098a75a45b6d6cb7065b601f7abfc2fb06c25",
-      "status": "migration-review",
-      "sourcePreview": "See it running: Kitchen Sink example"
+      "machineHash": "f032f835bee802b892804798d30098a75a45b6d6cb7065b601f7abfc2fb06c25",
+      "machineText": "Lihat cara kerjanya: contoh Kitchen Sink",
+      "status": "machine-translated",
+      "sourcePreview": "See it running: Kitchen Sink example",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0005-text-01": {
       "sourceHash": "af455ff9e96090b67fd2f6083d7791fde54595d62f14328735cdb44fdff0c052",
-      "targetHash": "dc3407beb57a99b821eb3cf287889910041a2a5bd3a45e708e83fd5f49ccdad6",
-      "status": "migration-review",
-      "sourcePreview": "The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app t…"
+      "targetHash": "bb6297400b2be276255ca377de291386a889c83612d1da5c1c54469f18a3b0ab",
+      "machineHash": "bb6297400b2be276255ca377de291386a889c83612d1da5c1c54469f18a3b0ab",
+      "machineText": "Cara terbaik untuk memahami apa saja yang dapat dilakukan adalah dengan melihat **Kitchen Sink**—satu aplikasi Wails yang berjalan secara identik di iOS, Android, dan desktop dari satu basis kode:",
+      "status": "machine-translated",
+      "sourcePreview": "The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app t…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0006-text-01": {
       "sourceHash": "7d7dacebb5717f92a8f350184e167660bf90f92a1e3450038e97df3d1f727a8b",
-      "targetHash": "ffb1f7705bbfb410a273301b4d54d726c2fb3db6e79484c94c238654e3b007bb",
-      "status": "migration-review",
-      "sourcePreview": "It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mob…"
+      "targetHash": "cdc3672f529f5edea8418ab22f2e21a909f77a7ca43de4ef59c075fc0918890e",
+      "machineHash": "cdc3672f529f5edea8418ab22f2e21a909f77a7ca43de4ef59c075fc0918890e",
+      "machineText": "Contoh ini mendemonstrasikan setiap bagian utama API seluler dalam 7 tab—dan juga berjalan di desktop. Tab **Seluler** dan **Perangkat Keras** disembunyikan di desktop melalui pemeriksaan platform pada frontend; sisi Go tidak mendaftarkan handler untuk peristiwa seluler `common:*` saat dibangun untuk desktop. Ini adalah pola yang direkomendasikan untuk mendistribusikan satu basis kode ke semua platform.",
+      "status": "machine-translated",
+      "sourcePreview": "It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mob…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0007-cell-01": {
       "sourceHash": "90ddf1963abb36c9921ce7f1ac9cbd94c9176d13e57c418d3d3c20ce44291c1c",
       "targetHash": "90ddf1963abb36c9921ce7f1ac9cbd94c9176d13e57c418d3d3c20ce44291c1c",
-      "status": "migration-review",
-      "sourcePreview": "Tab"
+      "machineHash": "90ddf1963abb36c9921ce7f1ac9cbd94c9176d13e57c418d3d3c20ce44291c1c",
+      "machineText": "Tab",
+      "status": "machine-translated",
+      "sourcePreview": "Tab",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0008-cell-01": {
       "sourceHash": "ab9bd7584a6270cdb048e09426138a817819e212d67801014df2cbea0b826faa",
       "targetHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
-      "status": "migration-review",
-      "sourcePreview": "Platforms"
+      "machineHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
+      "machineText": "Platform",
+      "status": "machine-translated",
+      "sourcePreview": "Platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0009-cell-01": {
       "sourceHash": "8e7ddf931c59c8c4029ec7b988e2075699660106670352905cbd5180b899b53f",
       "targetHash": "5d4209ff689e0dd4a13ae647be88549e7678a85aaa5887ea7eda8e357d32c7ea",
-      "status": "migration-review",
-      "sourcePreview": "What it shows"
+      "machineHash": "5d4209ff689e0dd4a13ae647be88549e7678a85aaa5887ea7eda8e357d32c7ea",
+      "machineText": "Yang ditampilkan",
+      "status": "machine-translated",
+      "sourcePreview": "What it shows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0010-cell-01": {
       "sourceHash": "81c1b467078cec45444b0b3ed917aa4593f4229449a7f5d7f5b9f1198ca9f0e4",
       "targetHash": "49a8dde703ebfba65bab1874d2adcfc24c97f16465093e743b9b8176119324da",
-      "status": "migration-review",
-      "sourcePreview": "**Bindings**"
+      "machineHash": "49a8dde703ebfba65bab1874d2adcfc24c97f16465093e743b9b8176119324da",
+      "machineText": "**Binding**",
+      "status": "machine-translated",
+      "sourcePreview": "**Bindings**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0011-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
+      "machineText": "semua",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0012-cell-01": {
       "sourceHash": "ff139a12867e593e54f3cf23d3c8975f096c9500d68240171a2fabcfbaa56c58",
-      "targetHash": "4a35140bbfa8d4cb5355463b829a327650a3f031087c34ec4ae4f1082f44e325",
-      "status": "migration-review",
-      "sourcePreview": "JS → Go service calls returning values, structs, and errors"
+      "targetHash": "3369ab9ad5071c1f536e2d664a59db2d464fcf15e9fb0753ee946132df12c0be",
+      "machineHash": "3369ab9ad5071c1f536e2d664a59db2d464fcf15e9fb0753ee946132df12c0be",
+      "machineText": "Panggilan layanan JS → Go yang mengembalikan nilai, struct, dan galat",
+      "status": "machine-translated",
+      "sourcePreview": "JS → Go service calls returning values, structs, and errors",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0013-cell-01": {
       "sourceHash": "31a156ea9b0708fe55942ea9a3949b9c56dad3a8777ea44817267a26160c626c",
       "targetHash": "52f8754f0b74945e342e1a88d5d30bb57f58658f2b9c57ac1e144c3368d75cc6",
-      "status": "migration-review",
-      "sourcePreview": "**Events**"
+      "machineHash": "52f8754f0b74945e342e1a88d5d30bb57f58658f2b9c57ac1e144c3368d75cc6",
+      "machineText": "**Peristiwa**",
+      "status": "machine-translated",
+      "sourcePreview": "**Events**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0014-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
+      "machineText": "semua",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0015-cell-01": {
       "sourceHash": "838205717854f9db86eca84eb89d16fc0960364397d19960945c04397f10966a",
       "targetHash": "6eba2d2208626e409aec1c4755d0b41d49a1d00236f45e5e7609905251ba8522",
-      "status": "migration-review",
-      "sourcePreview": "Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme)"
+      "machineHash": "6eba2d2208626e409aec1c4755d0b41d49a1d00236f45e5e7609905251ba8522",
+      "machineText": "Jam Go → JS, ping/pong JS → Go → JS, peristiwa sistem OS (baterai, jaringan, tema)",
+      "status": "machine-translated",
+      "sourcePreview": "Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0016-cell-01": {
       "sourceHash": "c1b5878c64af3d8656358515b18ceeade8dd838fe69b236c5d1fca1efc90b47d",
       "targetHash": "9f3e3e5bcc31043ffea2278ad5bd640a9a65e428b14d84dc433890844bcfd12a",
-      "status": "migration-review",
-      "sourcePreview": "**Dialogs**"
+      "machineHash": "9f3e3e5bcc31043ffea2278ad5bd640a9a65e428b14d84dc433890844bcfd12a",
+      "machineText": "**Dialog**",
+      "status": "machine-translated",
+      "sourcePreview": "**Dialogs**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0017-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
+      "machineText": "semua",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0018-cell-01": {
       "sourceHash": "e053bccd3fe5e25df5b6b81476399d3f36d1ee1ecf616ed53b87e69cd16371b0",
-      "targetHash": "1cdac557db2a58f2aa91f0ce1d7d55efc0356d559f29bce778ed5d2b5576ee8c",
-      "status": "migration-review",
-      "sourcePreview": "Native message dialogs on each platform"
+      "targetHash": "aae0613a25d90a9cb216d3509548c8cfb7eca72848c4cc2fd8f07c3677595245",
+      "machineHash": "aae0613a25d90a9cb216d3509548c8cfb7eca72848c4cc2fd8f07c3677595245",
+      "machineText": "Dialog pesan native pada setiap platform",
+      "status": "machine-translated",
+      "sourcePreview": "Native message dialogs on each platform",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0019-cell-01": {
       "sourceHash": "f19ace019b27799eb8a409a5964d147efcd56dabaf03003466310d296ce5d389",
       "targetHash": "a8a058a8ced3ea47da767be5438b090c42dc09b5a691fc2eaa60c56151f68073",
-      "status": "migration-review",
-      "sourcePreview": "**System**"
+      "machineHash": "a8a058a8ced3ea47da767be5438b090c42dc09b5a691fc2eaa60c56151f68073",
+      "machineText": "**Sistem**",
+      "status": "machine-translated",
+      "sourcePreview": "**System**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0020-cell-01": {
       "sourceHash": "5ef5ef0364b6939c4ca61f34b393f7b368d1be8619647aaf83d5b395919ab629",
       "targetHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
-      "status": "migration-review",
-      "sourcePreview": "all"
+      "machineHash": "44a7146b453c3bfed72b790b1dc39e670c56d81bcc48ff2c0c631db527587a10",
+      "machineText": "semua",
+      "status": "machine-translated",
+      "sourcePreview": "all",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0021-cell-01": {
       "sourceHash": "ed658ae8b9a0a5105ea44130be9be55198eca350760b236b7a7246beaf5af43d",
       "targetHash": "fd475739bcba597336b7759a8296172281a964a879bc1c1b8fb32070af1c5095",
-      "status": "migration-review",
-      "sourcePreview": "Clipboard, screen metrics, device info"
+      "machineHash": "fd475739bcba597336b7759a8296172281a964a879bc1c1b8fb32070af1c5095",
+      "machineText": "Papan klip, metrik layar, informasi perangkat",
+      "status": "machine-translated",
+      "sourcePreview": "Clipboard, screen metrics, device info",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0022-cell-01": {
       "sourceHash": "94328d849c59a682f18dea430c9cddb8f12c5ea346e024e5a46402610ec773ea",
       "targetHash": "23af70a2224bb7f37a117753e28acabe054972ee139f52b3218efc1849d8961f",
-      "status": "migration-review",
-      "sourcePreview": "**Mobile**"
+      "machineHash": "23af70a2224bb7f37a117753e28acabe054972ee139f52b3218efc1849d8961f",
+      "machineText": "**Seluler**",
+      "status": "machine-translated",
+      "sourcePreview": "**Mobile**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0023-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0024-cell-01": {
       "sourceHash": "33f3c602b932c9fb5ee9e0dead7c17065188403420783afa7f0625ded20c1101",
-      "targetHash": "a7c4a85c97b629c76824924b9caf87723a1e222ce4f704cdcf311bfc839cc769",
-      "status": "migration-review",
-      "sourcePreview": "Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage"
+      "targetHash": "5a27b622502aae0873f16f879d330f24e93b43e49a0bc105d69d1997abfc8167",
+      "machineHash": "5a27b622502aae0873f16f879d330f24e93b43e49a0bc105d69d1997abfc8167",
+      "machineText": "Lembar berbagi, cegah perangkat tidur, senter, kecerahan, biometrik, notifikasi lokal, penyimpanan aman",
+      "status": "machine-translated",
+      "sourcePreview": "Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0025-cell-01": {
       "sourceHash": "38757039d954f35cbb1dac626706b4612591a8875eb6b3787c890621f7cc93b6",
       "targetHash": "cab4f5932611eecd6f33e2373ac121c9f5a4016f60a115d95e9e35f6e8f14063",
-      "status": "migration-review",
-      "sourcePreview": "**Hardware**"
+      "machineHash": "cab4f5932611eecd6f33e2373ac121c9f5a4016f60a115d95e9e35f6e8f14063",
+      "machineText": "**Perangkat Keras**",
+      "status": "machine-translated",
+      "sourcePreview": "**Hardware**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0026-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0027-cell-01": {
       "sourceHash": "5016e5804070c4b99601b493b535ba0542b76669f99cdf218c44a58a94b1a26f",
-      "targetHash": "ae57f22b6e0355ba3dc1eefc12273c329fa63d9ccd6f59a9857f4cdbf791905c",
-      "status": "migration-review",
-      "sourcePreview": "Haptics, geolocation, accelerometer, proximity, text-to-speech"
+      "targetHash": "5ef44a4f9868818606d80e5ef6d7e0970a467cf1ed0989bd9f96daa1aed7f83b",
+      "machineHash": "5ef44a4f9868818606d80e5ef6d7e0970a467cf1ed0989bd9f96daa1aed7f83b",
+      "machineText": "Haptik, geolokasi, akselerometer, sensor jarak, teks ke ucapan",
+      "status": "machine-translated",
+      "sourcePreview": "Haptics, geolocation, accelerometer, proximity, text-to-speech",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0028-cell-01": {
       "sourceHash": "0201c7ae6c4eff5e42becba5a1367eb67bfd72aea791ad9e136c2e6c38df9693",
       "targetHash": "0201c7ae6c4eff5e42becba5a1367eb67bfd72aea791ad9e136c2e6c38df9693",
-      "status": "migration-review",
-      "sourcePreview": "**Native**"
+      "machineHash": "0201c7ae6c4eff5e42becba5a1367eb67bfd72aea791ad9e136c2e6c38df9693",
+      "machineText": "**Native**",
+      "status": "machine-translated",
+      "sourcePreview": "**Native**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0029-cell-01": {
       "sourceHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
       "targetHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
-      "status": "migration-review",
-      "sourcePreview": "iOS + Android"
+      "machineHash": "26dc6bf9f8f6376d659714d68a27acf068432561d080f1804b2bf91ab4c38cf6",
+      "machineText": "iOS + Android",
+      "status": "machine-translated",
+      "sourcePreview": "iOS + Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0030-cell-01": {
       "sourceHash": "379ce8c398c05f2030a7bdbdfbe4b5186fc0acb0b67c3feeb022f826409868fb",
       "targetHash": "0eb68549197a01992f3428fc5f2cc8bdcb4994344190e6b1737c1db893131432",
-      "status": "migration-review",
-      "sourcePreview": "iOS: haptics + WKWebView toggles · Android: vibrate + toast"
+      "machineHash": "0eb68549197a01992f3428fc5f2cc8bdcb4994344190e6b1737c1db893131432",
+      "machineText": "iOS: haptik + pengalih WKWebView · Android: getaran + toast",
+      "status": "machine-translated",
+      "sourcePreview": "iOS: haptics + WKWebView toggles · Android: vibrate + toast",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0031-text-01": {
       "sourceHash": "42f9f862c22df3b5ed989127ebab5106f521f5de13d88e3e362ab563cecf0441",
       "targetHash": "39faed2249e73b29ee853007c5915341abd6f1bf927b159a5d8ef37498cc2f1b",
-      "status": "migration-review",
-      "sourcePreview": "To run it yourself:"
+      "machineHash": "39faed2249e73b29ee853007c5915341abd6f1bf927b159a5d8ef37498cc2f1b",
+      "machineText": "Untuk menjalankannya sendiri:",
+      "status": "machine-translated",
+      "sourcePreview": "To run it yourself:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0032-heading-01": {
       "sourceHash": "9c870aa6e5e93270170d5a81277ad3e623afe8d4efd186d3e28f3d2b646d52e6",
       "targetHash": "8b0468fca2fac77081200eff6d9cba2cc53b5802afe13a5f3a04ceb303cddecc",
-      "status": "migration-review",
-      "sourcePreview": "How it works"
+      "machineHash": "8b0468fca2fac77081200eff6d9cba2cc53b5802afe13a5f3a04ceb303cddecc",
+      "machineText": "Cara kerjanya",
+      "status": "machine-translated",
+      "sourcePreview": "How it works",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0033-text-01": {
       "sourceHash": "bfdc7de00f7b6aa3838977ee6216560ea349b5993c23dd17d4e88e6a05e19da2",
       "targetHash": "7aa0a7428e6efacfcac8537ae87a852bdad551f1f6d1aaf00d47de206ff6909d",
-      "status": "migration-review",
-      "sourcePreview": "The same application model applies on every platform:"
+      "machineHash": "7aa0a7428e6efacfcac8537ae87a852bdad551f1f6d1aaf00d47de206ff6909d",
+      "machineText": "Model aplikasi yang sama berlaku di setiap platform:",
+      "status": "machine-translated",
+      "sourcePreview": "The same application model applies on every platform:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0034-text-01": {
       "sourceHash": "4bc6d0bd62953630c7545a44a7c1472403c4a44a31dda07b65df5f7af0b0c25a",
-      "targetHash": "be45c019788f625401f1ba8c7b5148c927a55812c63aa0d378c6a83675cc56a1",
-      "status": "migration-review",
-      "sourcePreview": "**Go backend** — your services, event handlers and application logic compile unchanged for `GOOS=ios…"
+      "targetHash": "e71f143ec4534ac9939528b6b437b7d8a51e59c10f84abe52d84e15ad83c8d31",
+      "machineHash": "e71f143ec4534ac9939528b6b437b7d8a51e59c10f84abe52d84e15ad83c8d31",
+      "machineText": "**Backend Go**—layanan, handler peristiwa, dan logika aplikasi Anda dikompilasi tanpa perubahan untuk `GOOS=ios` dan `GOOS=android`.",
+      "status": "machine-translated",
+      "sourcePreview": "**Go backend** — your services, event handlers and application logic compile unchanged for `GOOS=ios…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0035-text-01": {
       "sourceHash": "bb9ce25789963ba18d55b2b3809bb1029b9c9f3c316b988cc36de3fe7f73ee97",
-      "targetHash": "3c42091b8fd998d97be804a8d00344c72c3b72e082a4487b2d405acc487aee8c",
-      "status": "migration-review",
-      "sourcePreview": "**Frontend** — the exact same HTML/JS/CSS. The `@wailsio/runtime` package works identically; service…"
+      "targetHash": "c2fbba6aec84e22812dbdd09b6bb3d2185121934c7b8068f72aa5c7f9e2e7d7b",
+      "machineHash": "c2fbba6aec84e22812dbdd09b6bb3d2185121934c7b8068f72aa5c7f9e2e7d7b",
+      "machineText": "**Frontend**—HTML/JS/CSS yang persis sama. Paket `@wailsio/runtime` bekerja secara identik; binding layanan, peristiwa, dialog, dan papan klip semuanya dirutekan melalui transportasi dalam proses yang sama.",
+      "status": "machine-translated",
+      "sourcePreview": "**Frontend** — the exact same HTML/JS/CSS. The `@wailsio/runtime` package works identically; service…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0036-text-01": {
       "sourceHash": "15d23e51fbe387d12ce05ada4a591924e9190f1e87ea898c86bf37e3719b9345",
-      "targetHash": "67635bbb889490c6f688e7e831407d4e6058384e518c065f84fbdc0a070f802e",
-      "status": "migration-review",
-      "sourcePreview": "**WebView host** — on iOS a `WKWebView` inside a `UIViewController`; on Android a `WebView` inside a…"
+      "targetHash": "b102f335bbe92537fa19d5016cdb75371f0fe2ea7de9f798bf5b32e908a902e0",
+      "machineHash": "b102f335bbe92537fa19d5016cdb75371f0fe2ea7de9f798bf5b32e908a902e0",
+      "machineText": "**Host WebView**—di iOS, `WKWebView` di dalam `UIViewController`; di Android, `WebView` di dalam `Activity`. Wails menyiapkan jembatan pesan secara otomatis.",
+      "status": "machine-translated",
+      "sourcePreview": "**WebView host** — on iOS a `WKWebView` inside a `UIViewController`; on Android a `WebView` inside a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0037-text-01": {
       "sourceHash": "d39e05630d3b96e82ed723782ae78cc61340e2dfb18327c13b71e52f859d0646",
-      "targetHash": "c97ea69eca70924734483bfc0cbeb0380e6bc59a626dfca79f86a4dc37c85318",
-      "status": "migration-review",
-      "sourcePreview": "**In-process asset serving** — assets are served directly from Go memory, not a localhost server. No…"
+      "targetHash": "d0e347b8f0da5d5fb5da225a7cd2414bcaae41198d4e4b224e3e1715fe017722",
+      "machineHash": "d0e347b8f0da5d5fb5da225a7cd2414bcaae41198d4e4b224e3e1715fe017722",
+      "machineText": "**Penyajian aset dalam proses**—aset disajikan langsung dari memori Go, bukan dari server localhost. Tanpa port terbuka, tanpa loopback, dan tanpa latensi tambahan.",
+      "status": "machine-translated",
+      "sourcePreview": "**In-process asset serving** — assets are served directly from Go memory, not a localhost server. No…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0038-text-01": {
       "sourceHash": "3f2785da548adb266cdef960ef61e5b7f8d3127dce066a3a8dd26813987b30e1",
-      "targetHash": "408b3c76bc63ec7f6f174c699e949b601cdbd545116e3622e15ebbae93b465ce",
-      "status": "migration-review",
-      "sourcePreview": "Platform-specific behaviour lives in files guarded by `//go:build ios` or `//go:build android`, keep…"
+      "targetHash": "550e7d724642dc0fcf497325ac9911ca2fee413ccbd470c739307e7eddd14874",
+      "machineHash": "550e7d724642dc0fcf497325ac9911ca2fee413ccbd470c739307e7eddd14874",
+      "machineText": "Perilaku khusus platform ditempatkan dalam berkas yang dilindungi oleh `//go:build ios` atau `//go:build android` sehingga kode bersama Anda tetap bersih.",
+      "status": "machine-translated",
+      "sourcePreview": "Platform-specific behaviour lives in files guarded by `//go:build ios` or `//go:build android`, keep…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0039-heading-01": {
       "sourceHash": "8222aae2034d1fe56df683efd836c3e200939a33ca07b7e8bb93b333acaa6f9b",
-      "targetHash": "7c1e8de26c6e862d45bca64552ceb9dd9660f14b244069bd6cbe9d6940e2d162",
-      "status": "migration-review",
-      "sourcePreview": "Prerequisites at a glance"
+      "targetHash": "796bf1b8fee35909e22091cae3bb820be59f258730f4db20076e99781738465f",
+      "machineHash": "796bf1b8fee35909e22091cae3bb820be59f258730f4db20076e99781738465f",
+      "machineText": "Sekilas prasyarat",
+      "status": "machine-translated",
+      "sourcePreview": "Prerequisites at a glance",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0040-cell-01": {
       "sourceHash": "f5f5690b0ecc41d3ffb099de27cfbdde6e2ab3c0b1a821cc6da487816747adf5",
       "targetHash": "e5443dd10f9bfaa4af3d5eb57d64af2f39a0407f94364633b8cdf9cfe8fc592c",
-      "status": "migration-review",
-      "sourcePreview": "Requirement"
+      "machineHash": "e5443dd10f9bfaa4af3d5eb57d64af2f39a0407f94364633b8cdf9cfe8fc592c",
+      "machineText": "Persyaratan",
+      "status": "machine-translated",
+      "sourcePreview": "Requirement",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0041-cell-01": {
       "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
       "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "status": "migration-review",
-      "sourcePreview": "iOS"
+      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineText": "iOS",
+      "status": "machine-translated",
+      "sourcePreview": "iOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0042-cell-01": {
       "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
       "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "status": "migration-review",
-      "sourcePreview": "Android"
+      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineText": "Android",
+      "status": "machine-translated",
+      "sourcePreview": "Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0043-cell-01": {
       "sourceHash": "0fcabfe6e097cd4064a08313b4b7da807f5ea3c59d056acc46289467bd2216e4",
       "targetHash": "4742f28fe4b71c0e7b2ac8cda4a2648a9e5cf7b14da5a8e09aa6c97753845e82",
-      "status": "migration-review",
-      "sourcePreview": "Operating system"
+      "machineHash": "4742f28fe4b71c0e7b2ac8cda4a2648a9e5cf7b14da5a8e09aa6c97753845e82",
+      "machineText": "Sistem operasi",
+      "status": "machine-translated",
+      "sourcePreview": "Operating system",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0044-cell-01": {
       "sourceHash": "3f2f41cd023d5fa04c05fdd336309984a4808f606f732e52cc2d48c488133dbc",
-      "targetHash": "eaa4a9f149d852cae6d5bd50f7b769430bf694575c842508a1bc955a47991cc7",
-      "status": "migration-review",
-      "sourcePreview": "macOS only"
+      "targetHash": "80827030a9a79e77ba67559e847c26d4cc534d4f3622e0c7f90b1b50541001cd",
+      "machineHash": "80827030a9a79e77ba67559e847c26d4cc534d4f3622e0c7f90b1b50541001cd",
+      "machineText": "khusus macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0045-cell-01": {
       "sourceHash": "3f1ace3d8d78e5bce2de48a3349ba3d8939a7b66c1c387bc4678c32683f054eb",
       "targetHash": "3f1ace3d8d78e5bce2de48a3349ba3d8939a7b66c1c387bc4678c32683f054eb",
-      "status": "migration-review",
-      "sourcePreview": "macOS, Linux, Windows"
+      "machineHash": "3f1ace3d8d78e5bce2de48a3349ba3d8939a7b66c1c387bc4678c32683f054eb",
+      "machineText": "macOS, Linux, Windows",
+      "status": "machine-translated",
+      "sourcePreview": "macOS, Linux, Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0046-cell-01": {
       "sourceHash": "e31d021175d5b6d136382e335198d8980e9e7128d8202b0b8b900508133447d8",
       "targetHash": "e31d021175d5b6d136382e335198d8980e9e7128d8202b0b8b900508133447d8",
-      "status": "migration-review",
-      "sourcePreview": "Toolchain"
+      "machineHash": "e31d021175d5b6d136382e335198d8980e9e7128d8202b0b8b900508133447d8",
+      "machineText": "Toolchain",
+      "status": "machine-translated",
+      "sourcePreview": "Toolchain",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0047-cell-01": {
       "sourceHash": "65ae3951bd597be24e4dc4c5a0ecef5e4586f77c64acc7df88ff551064f36a13",
       "targetHash": "08d309c740023a775a561a1134d46e52efa6038eb19aad96a8e971932023950c",
-      "status": "migration-review",
-      "sourcePreview": "Full Xcode (not just CLI tools)"
+      "machineHash": "08d309c740023a775a561a1134d46e52efa6038eb19aad96a8e971932023950c",
+      "machineText": "Xcode lengkap (bukan hanya alat CLI)",
+      "status": "machine-translated",
+      "sourcePreview": "Full Xcode (not just CLI tools)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0048-cell-01": {
       "sourceHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
       "targetHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
-      "status": "migration-review",
-      "sourcePreview": "Android SDK + NDK 26.3.x + JDK"
+      "machineHash": "ed7e4368678faba8c698f9e8fee24be63009aa0ec29269a846031aa8edabffcf",
+      "machineText": "Android SDK + NDK 26.3.x + JDK",
+      "status": "machine-translated",
+      "sourcePreview": "Android SDK + NDK 26.3.x + JDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0049-cell-01": {
       "sourceHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
       "targetHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
-      "status": "migration-review",
-      "sourcePreview": "Go"
+      "machineHash": "6cc8519b91584e8bd435d63341e0838a99721948718b1c9c1e9c358c64ba992a",
+      "machineText": "Go",
+      "status": "machine-translated",
+      "sourcePreview": "Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0052-cell-01": {
       "sourceHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
       "targetHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
-      "status": "migration-review",
-      "sourcePreview": "npm"
+      "machineHash": "d79677188687e7b32b43de9d2365a1ff8ae6f1a9e3d494719be542394d99f7dd",
+      "machineText": "npm",
+      "status": "machine-translated",
+      "sourcePreview": "npm",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0055-cell-01": {
       "sourceHash": "d3bbfc4d3e17d3e6fbf1addeec4c39e8eda8d584f7a17ce8118352b182768c1a",
       "targetHash": "805f31a9bbf02c9e8a294a1448898a8e712dca5f822c756c2098ca542cb751dd",
-      "status": "migration-review",
-      "sourcePreview": "Verify with"
+      "machineHash": "805f31a9bbf02c9e8a294a1448898a8e712dca5f822c756c2098ca542cb751dd",
+      "machineText": "Verifikasi dengan",
+      "status": "machine-translated",
+      "sourcePreview": "Verify with",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0056-cell-01": {
       "sourceHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
       "targetHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
-      "status": "protected",
-      "sourcePreview": "`wails3 doctor`"
+      "machineHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
+      "machineText": "`wails3 doctor`",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 doctor`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0057-cell-01": {
       "sourceHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
       "targetHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
-      "status": "protected",
-      "sourcePreview": "`wails3 doctor`"
+      "machineHash": "ec5e8f66b3a25887a2da2bdd39ad0b78df6e71211b6899d966b036295d953e0f",
+      "machineText": "`wails3 doctor`",
+      "status": "machine-translated",
+      "sourcePreview": "`wails3 doctor`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0058-text-01": {
       "sourceHash": "5797b933793be238536ab920fce405cfbd459500a2f39847bb518f3d39a1212c",
-      "targetHash": "53b6b91e34045afd54611889945d5fcacb3cf1ae4502fbd1eeb62ba7cdd42af7",
-      "status": "migration-review",
-      "sourcePreview": "Run `wails3 doctor` after setting up your toolchain — it shows exactly what's found and what's missi…"
+      "targetHash": "06a6e5bbc448cb57d302deeaa8d106a464aa218d213230f940bf792b2399e842",
+      "machineHash": "06a6e5bbc448cb57d302deeaa8d106a464aa218d213230f940bf792b2399e842",
+      "machineText": "Jalankan `wails3 doctor` setelah menyiapkan toolchain Anda—perintah ini menunjukkan dengan tepat komponen yang ditemukan dan yang belum tersedia untuk setiap platform.",
+      "status": "machine-translated",
+      "sourcePreview": "Run `wails3 doctor` after setting up your toolchain — it shows exactly what's found and what's missi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0059-heading-01": {
       "sourceHash": "00849730cf1b82ba2cfa8d46a9399566b17ab8733a4cd3a344909c011cede19f",
       "targetHash": "d1052a5687392c235c5a9ba99a29aff2354e92f949a62522deaeb7bdcff2a12c",
-      "status": "migration-review",
-      "sourcePreview": "What's supported"
+      "machineHash": "d1052a5687392c235c5a9ba99a29aff2354e92f949a62522deaeb7bdcff2a12c",
+      "machineText": "Yang didukung",
+      "status": "machine-translated",
+      "sourcePreview": "What's supported",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0060-text-01": {
       "sourceHash": "c10bc57f1442b22391d5b5fa3653ddfdf9764a698b7365c09b25307217555d08",
-      "targetHash": "dd8aeca51b67a33a05fbce5a302edf117303969fb9e69e7af91477b5a5e7dcfc",
-      "status": "migration-review",
-      "sourcePreview": "Both platforms share the same core feature set:"
+      "targetHash": "baff2e5aabd2f51ed1b80236136eb01b66c6bfa29d40bf4add3fbea7e2859374",
+      "machineHash": "baff2e5aabd2f51ed1b80236136eb01b66c6bfa29d40bf4add3fbea7e2859374",
+      "machineText": "Kedua platform berbagi kumpulan fitur inti yang sama:",
+      "status": "machine-translated",
+      "sourcePreview": "Both platforms share the same core feature set:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0061-cell-01": {
       "sourceHash": "3d377ae910dce03ac324d1f4391c0d4d175825e630baf9c5b93d414d7106cfd8",
       "targetHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
-      "status": "migration-review",
-      "sourcePreview": "Feature"
+      "machineHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
+      "machineText": "Fitur",
+      "status": "machine-translated",
+      "sourcePreview": "Feature",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0062-cell-01": {
       "sourceHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
       "targetHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
-      "status": "migration-review",
-      "sourcePreview": "iOS"
+      "machineHash": "355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575",
+      "machineText": "iOS",
+      "status": "machine-translated",
+      "sourcePreview": "iOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0063-cell-01": {
       "sourceHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
       "targetHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
-      "status": "migration-review",
-      "sourcePreview": "Android"
+      "machineHash": "6d612a86bee4b0a659b8b3affd6f1fbcad15c4cbbbbdc4996c6c01c786711a21",
+      "machineText": "Android",
+      "status": "machine-translated",
+      "sourcePreview": "Android",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0064-cell-01": {
       "sourceHash": "b6826fb78469ba1a549b89db10193f3af35b5377b9ecf8cd3603d4ccc7ca6bce",
       "targetHash": "eeb82297af3a45ee7d2424ce2e67f177b089f640686c39f053952144cc39f628",
-      "status": "migration-review",
-      "sourcePreview": "Service bindings (JS → Go)"
+      "machineHash": "eeb82297af3a45ee7d2424ce2e67f177b089f640686c39f053952144cc39f628",
+      "machineText": "Binding layanan (JS → Go)",
+      "status": "machine-translated",
+      "sourcePreview": "Service bindings (JS → Go)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0067-cell-01": {
       "sourceHash": "cc927cad42f802408ddf84cc306a29e754266637520f40b1255aa656c758e770",
-      "targetHash": "d87deaa9ff4da091ea2329114e5fe5effd5bf43b796e656cfff30cb638e574b0",
-      "status": "migration-review",
-      "sourcePreview": "Events (both directions)"
+      "targetHash": "ebe2567c3bc647e4a60931a1fb893e2ac7ee623fd5279b257186ce7df887a426",
+      "machineHash": "ebe2567c3bc647e4a60931a1fb893e2ac7ee623fd5279b257186ce7df887a426",
+      "machineText": "Peristiwa (kedua arah)",
+      "status": "machine-translated",
+      "sourcePreview": "Events (both directions)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0070-cell-01": {
       "sourceHash": "bcfffb93bb1fc6de5fd76870f80ac05358c4bd4c17a26122444c571cad2ef0fe",
       "targetHash": "f87d21b31dfa97af0b854d0837b7efd8e66bbd68e17a25fe5fb6ec67645839d9",
-      "status": "migration-review",
-      "sourcePreview": "Message dialogs"
+      "machineHash": "f87d21b31dfa97af0b854d0837b7efd8e66bbd68e17a25fe5fb6ec67645839d9",
+      "machineText": "Dialog pesan",
+      "status": "machine-translated",
+      "sourcePreview": "Message dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0071-cell-01": {
       "sourceHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
       "targetHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIAlertController"
+      "machineHash": "aa322aed3777e060f0e32a754f9528b068625e4632624c108c1048250f8dfad2",
+      "machineText": "✅ UIAlertController",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIAlertController",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0072-cell-01": {
       "sourceHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
       "targetHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
-      "status": "migration-review",
-      "sourcePreview": "✅ AlertDialog"
+      "machineHash": "83f25a206966e09f2ebda2fcebbd10c746487006c66c2b33251cd9b0f4f02a4a",
+      "machineText": "✅ AlertDialog",
+      "status": "machine-translated",
+      "sourcePreview": "✅ AlertDialog",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0073-cell-01": {
       "sourceHash": "baab374813274351ee9d1994c07222c14e65ebc571f21f588447ba34a1d6ffaf",
-      "targetHash": "2b336a8fcd67bc1083fdc89410a8ada07ff72fcdb225012f18c164b0094e36db",
-      "status": "migration-review",
-      "sourcePreview": "Open file dialogs"
+      "targetHash": "0b74c765816293d2a9c414fc7a937c7370eb1a493b2cf4c5124a92fe69e59fcf",
+      "machineHash": "0b74c765816293d2a9c414fc7a937c7370eb1a493b2cf4c5124a92fe69e59fcf",
+      "machineText": "Dialog buka berkas",
+      "status": "machine-translated",
+      "sourcePreview": "Open file dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0074-cell-01": {
       "sourceHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
       "targetHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIDocumentPicker"
+      "machineHash": "849c2a892094c013a1b7b3ba292786ad912618143b30611ca3d161b7d1228499",
+      "machineText": "✅ UIDocumentPicker",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIDocumentPicker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0075-cell-01": {
       "sourceHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
       "targetHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
-      "status": "migration-review",
-      "sourcePreview": "✅ Storage Access Framework"
+      "machineHash": "5355f8e8ca2cf2133390730688e9b1613a8192c5a6a419a116f11918240c6aba",
+      "machineText": "✅ Storage Access Framework",
+      "status": "machine-translated",
+      "sourcePreview": "✅ Storage Access Framework",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0076-cell-01": {
       "sourceHash": "f1df258c32c39d2850d434c73d3e9edbf1d26851d996f9ea8d941bda11610244",
-      "targetHash": "d17720a631e05822dab4f5fcd1722db30ba429187abe80c781c40968a474248d",
-      "status": "migration-review",
-      "sourcePreview": "Save file dialogs"
+      "targetHash": "ebf2003e6d0d00f15e6e4a674d45b3216a07409fea2de44ef0fcf8ea87fcf86a",
+      "machineHash": "ebf2003e6d0d00f15e6e4a674d45b3216a07409fea2de44ef0fcf8ea87fcf86a",
+      "machineText": "Dialog simpan berkas",
+      "status": "machine-translated",
+      "sourcePreview": "Save file dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0077-cell-01": {
       "sourceHash": "806ba904b249cb06871801c58b641016f4a4387eff27c808d98d2947a4645bdc",
       "targetHash": "42fe095f6f225b60726b15f27bb60d41e151a4c455adc34b66b6827db036b033",
-      "status": "migration-review",
-      "sourcePreview": "❌ write to sandbox instead"
+      "machineHash": "42fe095f6f225b60726b15f27bb60d41e151a4c455adc34b66b6827db036b033",
+      "machineText": "❌ sebagai gantinya, tulis ke sandbox",
+      "status": "machine-translated",
+      "sourcePreview": "❌ write to sandbox instead",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0078-cell-01": {
       "sourceHash": "806ba904b249cb06871801c58b641016f4a4387eff27c808d98d2947a4645bdc",
       "targetHash": "42fe095f6f225b60726b15f27bb60d41e151a4c455adc34b66b6827db036b033",
-      "status": "migration-review",
-      "sourcePreview": "❌ write to sandbox instead"
+      "machineHash": "42fe095f6f225b60726b15f27bb60d41e151a4c455adc34b66b6827db036b033",
+      "machineText": "❌ sebagai gantinya, tulis ke sandbox",
+      "status": "machine-translated",
+      "sourcePreview": "❌ write to sandbox instead",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0079-cell-01": {
       "sourceHash": "285d69f0c5d1a00bb2eccde0cb4c93367b3e94955acff9fabd895f81a0c45c59",
       "targetHash": "f581d782b4c26cfd936801ccb47d3b22f23e25efb155c513426fc71210e74da4",
-      "status": "migration-review",
-      "sourcePreview": "Clipboard"
+      "machineHash": "f581d782b4c26cfd936801ccb47d3b22f23e25efb155c513426fc71210e74da4",
+      "machineText": "Papan klip",
+      "status": "machine-translated",
+      "sourcePreview": "Clipboard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0080-cell-01": {
       "sourceHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
       "targetHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
-      "status": "migration-review",
-      "sourcePreview": "✅ UIPasteboard"
+      "machineHash": "5c2d2ae3bbb4f9d3c5ab0b5f5536e0f70b3d00bc66fe08d5e70a642d98022891",
+      "machineText": "✅ UIPasteboard",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UIPasteboard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0081-cell-01": {
       "sourceHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
       "targetHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
-      "status": "migration-review",
-      "sourcePreview": "✅ ClipboardManager"
+      "machineHash": "25a388b7434da79ba29dcf0beba27642d04ce38b71817455058f189fec6a9c29",
+      "machineText": "✅ ClipboardManager",
+      "status": "machine-translated",
+      "sourcePreview": "✅ ClipboardManager",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0082-cell-01": {
       "sourceHash": "0e571e42349a4f31977aeb77048bb0b97a3fdf41e3613e53fa332e1888820bdb",
-      "targetHash": "5b24f0cc05f5ee8032c45f55173487f1b69ffaa7c8f332b96fd45df1ce6c89cb",
-      "status": "migration-review",
-      "sourcePreview": "Screens / safe-area metrics"
+      "targetHash": "ccc725f65bac2531dbb21d0a36016af31376dbbabb2f5d64288bdeb1b428312c",
+      "machineHash": "ccc725f65bac2531dbb21d0a36016af31376dbbabb2f5d64288bdeb1b428312c",
+      "machineText": "Metrik layar/area aman",
+      "status": "machine-translated",
+      "sourcePreview": "Screens / safe-area metrics",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0085-cell-01": {
       "sourceHash": "5c93d090a1104de16d13d4949d7ef5a2a9977e5c4f7fac23b13a17c22d81fbb6",
       "targetHash": "62f16dda6829f1e5872e9c477b5352b34ec2d06153626eeac72ae86e068bd33a",
-      "status": "migration-review",
-      "sourcePreview": "Lifecycle events"
+      "machineHash": "62f16dda6829f1e5872e9c477b5352b34ec2d06153626eeac72ae86e068bd33a",
+      "machineText": "Peristiwa siklus hidup",
+      "status": "machine-translated",
+      "sourcePreview": "Lifecycle events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0086-cell-01": {
       "sourceHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
       "targetHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
-      "status": "protected",
-      "sourcePreview": "✅ `events.IOS.*`"
+      "machineHash": "140490e82ab7325ba8491bc755a7b3bab1926f7b364847c5af8b71d65919ad9d",
+      "machineText": "✅ `events.IOS.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `events.IOS.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0087-cell-01": {
       "sourceHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
       "targetHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
-      "status": "protected",
-      "sourcePreview": "✅ `events.Android.*`"
+      "machineHash": "a57fb008cd1185537719542ba3009ebac3443140d3a6ca7e7fa8191edf4f1fc9",
+      "machineText": "✅ `events.Android.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `events.Android.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0088-cell-01": {
       "sourceHash": "fd4705a30cb4458267a6059d1af12454a9c66a9fe2566180fc7e3fb0d44697c4",
-      "targetHash": "bee2439ff4c837914d2848737b4bde65dab39f8b7f7d4ffaf1ae46bc9d6928f6",
-      "status": "migration-review",
-      "sourcePreview": "Haptics"
+      "targetHash": "e198e3417de533a1c44253ff6407c52df4da1b25403ea1c3f5c5b6cc428e3ba0",
+      "machineHash": "e198e3417de533a1c44253ff6407c52df4da1b25403ea1c3f5c5b6cc428e3ba0",
+      "machineText": "Haptik",
+      "status": "machine-translated",
+      "sourcePreview": "Haptics",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0089-cell-01": {
       "sourceHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
       "targetHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
-      "status": "protected",
-      "sourcePreview": "✅ `IOS.Haptics.*`"
+      "machineHash": "3262079f43ae07958769c2f3e94c4a2dbc824e03b09f371e63fba5a594e123f8",
+      "machineText": "✅ `IOS.Haptics.*`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `IOS.Haptics.*`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0090-cell-01": {
       "sourceHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
       "targetHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Haptics.Vibrate`"
+      "machineHash": "364eaa27382d6d8492b43a87f43f28d485dd5acf401b58ef4fabfb2244510350",
+      "machineText": "✅ `Android.Haptics.Vibrate`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Haptics.Vibrate`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0091-cell-01": {
       "sourceHash": "f7d61802a4172eccac2abe7d9d804b2e2dc8586b7cca4479ff1e9e11346acb76",
       "targetHash": "43feb1e04285291b504fd226e6c453a9a017930c7248b9de76d6042e4f8a9f98",
-      "status": "migration-review",
-      "sourcePreview": "Device info"
+      "machineHash": "43feb1e04285291b504fd226e6c453a9a017930c7248b9de76d6042e4f8a9f98",
+      "machineText": "Informasi perangkat",
+      "status": "machine-translated",
+      "sourcePreview": "Device info",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0092-cell-01": {
       "sourceHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
       "targetHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
-      "status": "protected",
-      "sourcePreview": "✅ `IOS.Device.Info()`"
+      "machineHash": "945a8faf1ac733908a69100386228c677b453088b635652d69f671851e6c6710",
+      "machineText": "✅ `IOS.Device.Info()`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `IOS.Device.Info()`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0093-cell-01": {
       "sourceHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
       "targetHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Device.Info()`"
+      "machineHash": "bf38d8e524261c210625c777c077abecdb32b051cd95b17bb7b975103b80c6ea",
+      "machineText": "✅ `Android.Device.Info()`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Device.Info()`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0094-cell-01": {
       "sourceHash": "d54ec043baa994d741278e5803ac465694d22a536b8e7db16b0bcb26e8cbc8e6",
       "targetHash": "6c1acc1f0cbcdc55f5628fb2c022afb7ccee3da3c9fcf7757bd0d9c284df2c31",
-      "status": "migration-review",
-      "sourcePreview": "Native tabs (iOS)"
+      "machineHash": "6c1acc1f0cbcdc55f5628fb2c022afb7ccee3da3c9fcf7757bd0d9c284df2c31",
+      "machineText": "Tab native (iOS)",
+      "status": "machine-translated",
+      "sourcePreview": "Native tabs (iOS)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0095-cell-01": {
       "sourceHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
       "targetHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
-      "status": "migration-review",
-      "sourcePreview": "✅ UITabBar"
+      "machineHash": "18975fcd08ba7bce69ba770fcf6b25ffc088c95c4c3c347b7e159cbad287f5fd",
+      "machineText": "✅ UITabBar",
+      "status": "machine-translated",
+      "sourcePreview": "✅ UITabBar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0097-cell-01": {
       "sourceHash": "1933065a979aa4c799b3e525f6f019b51e2e9f740a75ae22b50417ac4bce861b",
       "targetHash": "77beb686240c33f73424b5c35bdc6fefa12effa0a8fefc84e01a196e75ff6674",
-      "status": "migration-review",
-      "sourcePreview": "Toast messages (Android)"
+      "machineHash": "77beb686240c33f73424b5c35bdc6fefa12effa0a8fefc84e01a196e75ff6674",
+      "machineText": "Pesan toast (Android)",
+      "status": "machine-translated",
+      "sourcePreview": "Toast messages (Android)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0099-cell-01": {
       "sourceHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
       "targetHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
-      "status": "protected",
-      "sourcePreview": "✅ `Android.Toast.Show`"
+      "machineHash": "fe59551de4caafe821f56e6a310d0a9fadfb458a89d4a930f4b1500bfe70fe7d",
+      "machineText": "✅ `Android.Toast.Show`",
+      "status": "machine-translated",
+      "sourcePreview": "✅ `Android.Toast.Show`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0100-cell-01": {
       "sourceHash": "6774215e7eb9a17cb5286effb8d7cbe81d2296518e1946ba07299d928736c731",
       "targetHash": "dca08fd23e83aa493788c2ca1ddad49de17cf9f803d84f78924e2ca01bcda398",
-      "status": "migration-review",
-      "sourcePreview": "Multiple windows"
+      "machineHash": "dca08fd23e83aa493788c2ca1ddad49de17cf9f803d84f78924e2ca01bcda398",
+      "machineText": "Beberapa jendela",
+      "status": "machine-translated",
+      "sourcePreview": "Multiple windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0101-cell-01": {
       "sourceHash": "9a268f11b1bab10c552b52c14653a775da25591aad2e9d41b190cd7ac0dc399b",
       "targetHash": "fc6e79e939296955ad87135c81832ff92d745024e18e74ad0fbca0d8d48977b1",
-      "status": "migration-review",
-      "sourcePreview": "❌ first window only"
+      "machineHash": "fc6e79e939296955ad87135c81832ff92d745024e18e74ad0fbca0d8d48977b1",
+      "machineText": "❌ hanya jendela pertama",
+      "status": "machine-translated",
+      "sourcePreview": "❌ first window only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0102-cell-01": {
       "sourceHash": "9a268f11b1bab10c552b52c14653a775da25591aad2e9d41b190cd7ac0dc399b",
       "targetHash": "fc6e79e939296955ad87135c81832ff92d745024e18e74ad0fbca0d8d48977b1",
-      "status": "migration-review",
-      "sourcePreview": "❌ first window only"
+      "machineHash": "fc6e79e939296955ad87135c81832ff92d745024e18e74ad0fbca0d8d48977b1",
+      "machineText": "❌ hanya jendela pertama",
+      "status": "machine-translated",
+      "sourcePreview": "❌ first window only",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0103-cell-01": {
       "sourceHash": "958ed346cffc5acb27cbbfb628b7728fd5cfafe075d41d6cb7d8441333a6f4b3",
       "targetHash": "99996789173e8abc98bf14da903612c94235f833b4b6f294af99acd4d519568a",
-      "status": "migration-review",
-      "sourcePreview": "Window geometry / menus / tray"
+      "machineHash": "99996789173e8abc98bf14da903612c94235f833b4b6f294af99acd4d519568a",
+      "machineText": "Geometri jendela / menu / baki sistem",
+      "status": "machine-translated",
+      "sourcePreview": "Window geometry / menus / tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0104-cell-01": {
       "sourceHash": "ee621f537012cdb1526a50c184ceb890d4c1c351a43589bce5e796a7e4b0be45",
-      "targetHash": "4c0f3da4a8944a07746a77ca03d83af4858b79d5f1c570e83683830099a2b20c",
-      "status": "migration-review",
-      "sourcePreview": "intentional no-ops"
+      "targetHash": "f7da7c3808befd0234e5355c2c997e3a91edee5138678b6b07e44050fa688ce7",
+      "machineHash": "f7da7c3808befd0234e5355c2c997e3a91edee5138678b6b07e44050fa688ce7",
+      "machineText": "no-op yang disengaja",
+      "status": "machine-translated",
+      "sourcePreview": "intentional no-ops",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0105-cell-01": {
       "sourceHash": "ee621f537012cdb1526a50c184ceb890d4c1c351a43589bce5e796a7e4b0be45",
-      "targetHash": "4c0f3da4a8944a07746a77ca03d83af4858b79d5f1c570e83683830099a2b20c",
-      "status": "migration-review",
-      "sourcePreview": "intentional no-ops"
+      "targetHash": "f7da7c3808befd0234e5355c2c997e3a91edee5138678b6b07e44050fa688ce7",
+      "machineHash": "f7da7c3808befd0234e5355c2c997e3a91edee5138678b6b07e44050fa688ce7",
+      "machineText": "no-op yang disengaja",
+      "status": "machine-translated",
+      "sourcePreview": "intentional no-ops",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0106-heading-01": {
       "sourceHash": "a96f0fd6d60cd1124e4ff45d4d6a6cbad24921d41afb840163c23ac36fc0b72f",
       "targetHash": "910144ac3ba925d3ed56bfc3c112100d552de59bbc9c80660cc2ae72f4c9137d",
-      "status": "migration-review",
-      "sourcePreview": "Build tag rules"
+      "machineHash": "910144ac3ba925d3ed56bfc3c112100d552de59bbc9c80660cc2ae72f4c9137d",
+      "machineText": "Aturan tag build",
+      "status": "machine-translated",
+      "sourcePreview": "Build tag rules",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0107-text-01": {
       "sourceHash": "270ba33959d0a61f461d03b0b36a93f9b899c73c858c02069f9bc3b05acfc54b",
-      "targetHash": "06f212fe93536d9a11b554699a100db97b8a2613c6a714c4ac17e47a20118b94",
-      "status": "migration-review",
-      "sourcePreview": "Two important rules to know when writing platform-conditional code:"
+      "targetHash": "10370380d5084998878dcfa2da40b1a7a3cce97f18b8df03534ef714990ab338",
+      "machineHash": "10370380d5084998878dcfa2da40b1a7a3cce97f18b8df03534ef714990ab338",
+      "machineText": "Dua aturan penting yang perlu diketahui saat menulis kode bersyarat berdasarkan platform:",
+      "status": "machine-translated",
+      "sourcePreview": "Two important rules to know when writing platform-conditional code:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0108-text-01": {
       "sourceHash": "a1e42c75fb9435aa5c9a8995679fe123c8918b92dcd0269c365aefa303271654",
-      "targetHash": "eeffef9d7b18e68d8dbb2138bf4aa830ecce4c5db2481a11762ac4425a24bc1b",
-      "status": "migration-review",
-      "sourcePreview": "**`ios` implies `darwin`** — a file tagged `//go:build darwin` will also compile for iOS. To target …"
+      "targetHash": "1cb7666d4cb541a2755adc0ec44e43ab3e79d610d75e404ec95c31f1101f58c9",
+      "machineHash": "1cb7666d4cb541a2755adc0ec44e43ab3e79d610d75e404ec95c31f1101f58c9",
+      "machineText": "**`ios` mengimplikasikan `darwin`** — berkas dengan tag `//go:build darwin` juga akan dikompilasi untuk iOS. Agar hanya menargetkan macOS, gunakan `//go:build darwin \u0026\u0026 !ios`.",
+      "status": "machine-translated",
+      "sourcePreview": "**`ios` implies `darwin`** — a file tagged `//go:build darwin` will also compile for iOS. To target …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0109-text-01": {
       "sourceHash": "4e98f206bf9b126ed7715466744b4074ecf5bdf7cc517a49dc9db8632180fb8b",
-      "targetHash": "25d09e80c14018d2d30f9da8485c718ac96df8f744d97b28edd0d8e59bdaff83",
-      "status": "migration-review",
-      "sourcePreview": "**`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To t…"
+      "targetHash": "4a2c787a8bcbd16974990e7f9dfb3af9fa4d087856d5786390c304245de4f587",
+      "machineHash": "4a2c787a8bcbd16974990e7f9dfb3af9fa4d087856d5786390c304245de4f587",
+      "machineText": "**`android` mengimplikasikan `linux`** — berkas dengan tag `//go:build linux` juga akan dikompilasi untuk Android. Agar hanya menargetkan Linux desktop, gunakan `//go:build linux \u0026\u0026 !android`.",
+      "status": "machine-translated",
+      "sourcePreview": "**`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To t…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0110-text-01": {
       "sourceHash": "793347043fccf7d7dbed61c8e19363133587edec3001aa849c7a1ec246e2da3e",
       "targetHash": "b8e9cbe8989cf549a7bda47fb6bbd3275d81d22bdc33b84ec8b6bb7efc185d69",
-      "status": "migration-review",
-      "sourcePreview": "At runtime, `runtime.GOOS` returns `\"ios\"` and `\"android\"` respectively."
+      "machineHash": "b8e9cbe8989cf549a7bda47fb6bbd3275d81d22bdc33b84ec8b6bb7efc185d69",
+      "machineText": "Saat runtime, `runtime.GOOS` masing-masing mengembalikan `\"ios\"` dan `\"android\"`.",
+      "status": "machine-translated",
+      "sourcePreview": "At runtime, `runtime.GOOS` returns `\"ios\"` and `\"android\"` respectively.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0111-heading-01": {
       "sourceHash": "9068bc22b6b765ffa7b32e390c501411a9fd0a53d37fe36649b6b1537245c7e3",
       "targetHash": "a196c69d17b766f0264cc799ede85378a476fce2884759108c1a1a79bfef8f83",
-      "status": "migration-review",
-      "sourcePreview": "Runtime platform detection"
+      "machineHash": "a196c69d17b766f0264cc799ede85378a476fce2884759108c1a1a79bfef8f83",
+      "machineText": "Deteksi platform saat runtime",
+      "status": "machine-translated",
+      "sourcePreview": "Runtime platform detection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0112-text-01": {
       "sourceHash": "bef526864b2644eb02db0dbfafa3b09df1beb67e387f10ebd0e99177bb3ecd48",
-      "targetHash": "fcd1578a7594c99e33224679e9da724ecff2e9c5da2b787b88a33a3c99a38e99",
-      "status": "migration-review",
-      "sourcePreview": "Build tags are for code that can only *compile* on a given platform. For ordinary branching in share…"
+      "targetHash": "6945edf3425e6615ee2a110fe540078ed7c00853edeb9c950443a08eb95981c5",
+      "machineHash": "6945edf3425e6615ee2a110fe540078ed7c00853edeb9c950443a08eb95981c5",
+      "machineText": "Tag build digunakan untuk kode yang hanya dapat *dikompilasi* pada platform tertentu. Untuk percabangan biasa dalam kode bersama, gunakan `application.System` — fungsi ini tersedia di setiap build (tanpa memerlukan tag build), sehingga berkas yang sama dapat digunakan di semua platform:",
+      "status": "machine-translated",
+      "sourcePreview": "Build tags are for code that can only *compile* on a given platform. For ordinary branching in share…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0113-text-01": {
       "sourceHash": "113c8d1941daab954f4977f490c9451f8997b14fbf399cb46cd71a87668055ce",
       "targetHash": "41b2fd087f779c723cc2346b8d2f2966692e217c93de331945fa551ed0926f14",
-      "status": "migration-review",
-      "sourcePreview": "Available: `IsMobile()`, `IsDesktop()`, `IsServer()` (the `server` build tag), and `IsPlatform(appli…"
+      "machineHash": "41b2fd087f779c723cc2346b8d2f2966692e217c93de331945fa551ed0926f14",
+      "machineText": "Tersedia: `IsMobile()`, `IsDesktop()`, `IsServer()` (tag build `server`), dan `IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)`.",
+      "status": "machine-translated",
+      "sourcePreview": "Available: `IsMobile()`, `IsDesktop()`, `IsServer()` (the `server` build tag), and `IsPlatform(appli…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0114-text-01": {
       "sourceHash": "2b8ad5e0e29b5672d3d18389ae74e3fc59a5aeff506078eccc6663ad54ef78ff",
-      "targetHash": "2f252e34e72ef668dd5a84a1764dd773d8a346d2f0208e1a49aad04e02245379",
-      "status": "migration-review",
-      "sourcePreview": "The frontend has the matching helpers in `@wailsio/runtime`:"
+      "targetHash": "4ee8395e4c54963c09d53b61a79ed3e92354cecc8bd19901acfcb179266b0876",
+      "machineHash": "4ee8395e4c54963c09d53b61a79ed3e92354cecc8bd19901acfcb179266b0876",
+      "machineText": "Frontend menyediakan fungsi bantuan yang sesuai di `@wailsio/runtime`:",
+      "status": "machine-translated",
+      "sourcePreview": "The frontend has the matching helpers in `@wailsio/runtime`:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0115-heading-01": {
       "sourceHash": "dd00d3d3e9f73d277737cfacfb788bc46a717458297644788de995b658ceb915",
       "targetHash": "5ffc656d9943760257486783f7f9f3edb279cb47234dfbc5d885d678974cc6cf",
-      "status": "migration-review",
-      "sourcePreview": "Next steps"
+      "machineHash": "5ffc656d9943760257486783f7f9f3edb279cb47234dfbc5d885d678974cc6cf",
+      "machineText": "Langkah berikutnya",
+      "status": "machine-translated",
+      "sourcePreview": "Next steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0116-text-01": {
       "sourceHash": "da2ddf26a6c92f0ec9e20fe5352ac1d3120eed7a5febb29c188aa01fe54d35f8",
-      "targetHash": "145f3d5df7f41b1cceead2d034dc0e6e2dd82776dce1773ecb557a1ff1e79a4f",
-      "status": "migration-review",
-      "sourcePreview": "🚀 Your First Mobile App Take a desktop Wails app and run it on iOS Simulator or Android Emulator in …"
+      "targetHash": "469796b17a02e7aee1b50708d62585d20bc2cefb2bdbdbfbcf812cd3856dba98",
+      "machineHash": "469796b17a02e7aee1b50708d62585d20bc2cefb2bdbdbfbcf812cd3856dba98",
+      "machineText": "🚀 Aplikasi Seluler Pertama Anda\nJalankan aplikasi Wails desktop di iOS Simulator atau Android Emulator dalam hitungan menit.",
+      "status": "machine-translated",
+      "sourcePreview": "🚀 Your First Mobile App Take a desktop Wails app and run it on iOS Simulator or Android Emulator in …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0117-text-01": {
       "sourceHash": "c26302b230b582a4bb9ad060bebb249cac118cecece76cd8e9660d8f553df5e0",
-      "targetHash": "9e7e40e264dfb88c245b64ed2bc049551c478f7ebb63a3993e28b210df85b0e4",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide Full iOS toolchain setup, simulator, device builds, signing, configuration and API referen…"
+      "targetHash": "ad2667e67ef9bffb805ced86666c52c96a20f210dabd0d9de5c47eeb8a48b062",
+      "machineHash": "ad2667e67ef9bffb805ced86666c52c96a20f210dabd0d9de5c47eeb8a48b062",
+      "machineText": "Panduan iOS\nPenyiapan lengkap toolchain iOS, simulator, build untuk perangkat, penandatanganan, konfigurasi, dan referensi API.",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide Full iOS toolchain setup, simulator, device builds, signing, configuration and API referen…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "b0118-text-01": {
       "sourceHash": "ebce09c550ee6e98bd23de79b44dc29b937902741f993172a1d2077e54a1dff5",
-      "targetHash": "82d9c86e045fbaca63e6fa300dd42195d6aa904163e8a44d5ad0ac61780dc836",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API refere…"
+      "targetHash": "1e992d63bc599a8f94a5a1f847ce7a3481ccd4667d3449cb7a544c20e5c04391",
+      "machineHash": "1e992d63bc599a8f94a5a1f847ce7a3481ccd4667d3449cb7a544c20e5c04391",
+      "machineText": "Panduan Android\nPenyiapan lengkap Android SDK/NDK, emulator, penandatanganan APK, pemaketan untuk Play Store, dan referensi API.",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API refere…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "34daca5a9aa8e78d48ab6082f734a26aaec1812e5a4337d884d60878af511668",
       "targetHash": "7526361a56c635d951be329ea877a0fbbc583ad1cbbaae7671d91448f6c98d8b",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide →"
+      "machineHash": "7526361a56c635d951be329ea877a0fbbc583ad1cbbaae7671d91448f6c98d8b",
+      "machineText": "Panduan iOS →",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "c0001-line-002-01": {
       "sourceHash": "80e07f62422e02cc78b77256282b2c23766531cfe59ea540847a051e5faab8d6",
       "targetHash": "f3fb735b9535bba398d9bae265ebf24717179bbb1083c52a7e309f2d80847bab",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide →"
+      "machineHash": "f3fb735b9535bba398d9bae265ebf24717179bbb1083c52a7e309f2d80847bab",
+      "machineText": "Panduan Android →",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "c0004-line-003-01": {
       "sourceHash": "0ded1aba19a492beb4722449c229816b84474016a9e6165a915519a996cbf15f",
       "targetHash": "9e11e36954542bd24fc1e0b8667b17e1b7f91b4750e41faceabc48aeb0e54008",
-      "status": "migration-review",
-      "sourcePreview": "Get started →"
+      "machineHash": "9e11e36954542bd24fc1e0b8667b17e1b7f91b4750e41faceabc48aeb0e54008",
+      "machineText": "Mulai →",
+      "status": "machine-translated",
+      "sourcePreview": "Get started →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "c0004-line-004-01": {
       "sourceHash": "34daca5a9aa8e78d48ab6082f734a26aaec1812e5a4337d884d60878af511668",
       "targetHash": "7526361a56c635d951be329ea877a0fbbc583ad1cbbaae7671d91448f6c98d8b",
-      "status": "migration-review",
-      "sourcePreview": "iOS Guide →"
+      "machineHash": "7526361a56c635d951be329ea877a0fbbc583ad1cbbaae7671d91448f6c98d8b",
+      "machineText": "Panduan iOS →",
+      "status": "machine-translated",
+      "sourcePreview": "iOS Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "c0004-line-005-01": {
       "sourceHash": "80e07f62422e02cc78b77256282b2c23766531cfe59ea540847a051e5faab8d6",
       "targetHash": "f3fb735b9535bba398d9bae265ebf24717179bbb1083c52a7e309f2d80847bab",
-      "status": "migration-review",
-      "sourcePreview": "Android Guide →"
+      "machineHash": "f3fb735b9535bba398d9bae265ebf24717179bbb1083c52a7e309f2d80847bab",
+      "machineText": "Panduan Android →",
+      "status": "machine-translated",
+      "sourcePreview": "Android Guide →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "fm-description": {
       "sourceHash": "234cc97b8ae640aa0fc1def1ac0b832f1a0bef213f724aa6abd13def1d666a57",
       "targetHash": "d427f67becbe0530c342a6d3827a547e74a34cda102d7aba553fe05f317725a7",
-      "status": "migration-review",
-      "sourcePreview": "Build iOS and Android apps from the same Go codebase as your desktop app"
+      "machineHash": "d427f67becbe0530c342a6d3827a547e74a34cda102d7aba553fe05f317725a7",
+      "machineText": "Bangun aplikasi iOS dan Android dari basis kode Go yang sama dengan aplikasi desktop Anda",
+      "status": "machine-translated",
+      "sourcePreview": "Build iOS and Android apps from the same Go codebase as your desktop app",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     },
     "fm-title": {
       "sourceHash": "7eea7cda194b8910d4f79c336ca4b3f72ffb73b6fdc233eb9c641ad0b615449d",
       "targetHash": "47098684a569013e2d5184daabb9749a4ad971339b76475e5bf97457af3ce741",
-      "status": "migration-review",
-      "sourcePreview": "Mobile Overview"
+      "machineHash": "47098684a569013e2d5184daabb9749a4ad971339b76475e5bf97457af3ce741",
+      "machineText": "Ikhtisar Seluler",
+      "status": "machine-translated",
+      "sourcePreview": "Mobile Overview",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:31:27Z"
     }
   },
   "migration": {

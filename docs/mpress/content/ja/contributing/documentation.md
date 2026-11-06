@@ -24,7 +24,7 @@ M-Press がインストールされている場合、コマンドはそれを使
 
 ### 実行ファイルをダウンロードする
 
-[最新の安定版 M-Press リリース](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)を開くか、以下から対応するアーカイブをダウンロードしてください。ARM64 には Apple Silicon が含まれます。AMD64 は、一般的な Intel/AMD PC のアーキテクチャです。
+[最新の安定版 M-Press リリース](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)を開くか、以下から該当するアーカイブをダウンロードしてください。ARM64 には Apple Silicon が含まれ、AMD64 は一般的な Intel/AMD PC のアーキテクチャです。
 
 | コンピューター | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ M-Press がインストールされている場合、コマンドはそれを使
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-同じリリースから[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)をダウンロードしてください。ダウンロード先のディレクトリでアーカイブの SHA-256 ハッシュを計算し、`checksums.txt`内の該当ファイル名の行と比較します。
+同じリリースから [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) をダウンロードしてください。ダウンロード先のディレクトリでアーカイブの SHA-256 ハッシュを計算し、`checksums.txt` にある該当ファイル名の行と比較してください。
 
 @tabs
 [macOS]

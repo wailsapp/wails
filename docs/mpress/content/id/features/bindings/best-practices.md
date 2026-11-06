@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## Praktik Terbaik Binding
 
-Ikuti **pola yang telah terbukti** saat merancang binding untuk menghasilkan binding yang rapi, berkinerja tinggi, dan aman. Panduan ini membahas prinsip desain API, pengoptimalan kinerja, pola keamanan, penanganan kesalahan, dan strategi pengujian untuk aplikasi yang mudah dipelihara.
+Ikuti **pola yang telah teruji** dalam desain binding untuk membuat binding yang rapi, berkinerja tinggi, dan aman. Panduan ini membahas prinsip desain API, pengoptimalan kinerja, pola keamanan, penanganan kesalahan, dan strategi pengujian untuk aplikasi yang mudah dipelihara.
 
 ## Prinsip Desain API
 
 ### 1. Tanggung Jawab Tunggal
 
-Setiap layanan sebaiknya memiliki satu tujuan yang jelas:
+Setiap layanan harus memiliki satu tujuan yang jelas:
 
 ```go
 // ❌ Bad: God object
@@ -42,7 +42,7 @@ func (p *PaymentService) Process(amount float64) error
 
 ### 2. Nama Metode yang Jelas
 
-Gunakan nama yang deskriptif dan berorientasi pada tindakan:
+Gunakan nama deskriptif yang berorientasi pada tindakan:
 
 ```go
 // ❌ Bad: Unclear names
@@ -112,7 +112,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ### 1. Operasi Batch
 
-Kurangi pemanggilan melalui bridge dengan memproses operasi secara batch:
+Kurangi pemanggilan melalui bridge dengan melakukan operasi secara batch:
 
 ```go
 // ❌ Bad: N calls
@@ -191,7 +191,7 @@ func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
 
 ### 3. Caching
 
-Simpan hasil operasi yang mahal dalam cache:
+Cache hasil operasi yang mahal:
 
 ```go
 type CachedService struct {
@@ -582,7 +582,7 @@ func TestUserService_CreateUser(t *testing.T) {
 
 ### 2. Pengujian Integrasi
 
-Uji dengan dependensi nyata:
+Uji dengan dependensi yang sebenarnya:
 
 ```go
 func TestUserService_Integration(t *testing.T) {
@@ -620,7 +620,7 @@ func TestUserService_Integration(t *testing.T) {
 
 ### 3. Layanan Mock
 
-Buat antarmuka yang dapat diuji:
+Buat antarmuka yang mudah diuji:
 
 ```go
 type UserRepository interface {
@@ -672,31 +672,31 @@ func TestUserService_WithMock(t *testing.T) {
 - **Tanggung jawab tunggal** - Satu layanan, satu tujuan
 - **Penamaan yang jelas** - Nama metode yang deskriptif
 - **Validasi input** - Selalu lakukan di sisi Go
-- **Kembalikan kesalahan** - Penanganan kesalahan secara eksplisit
-- **Proses operasi secara batch** - Kurangi pemanggilan melalui bridge
+- **Kembalikan kesalahan** - Tangani kesalahan secara eksplisit
+- **Lakukan operasi secara batch** - Kurangi pemanggilan melalui bridge
 - **Gunakan event** - Untuk streaming data
 - **Sanitasi input** - Cegah injeksi
 - **Lakukan pengujian secara menyeluruh** - Pengujian unit dan integrasi
-- **Dokumentasikan metode** - Komentar menjadi JSDoc
+- **Dokumentasikan metode** - Komentar akan menjadi JSDoc
 - **Beri versi pada API Anda** - Rencanakan perubahan
 
 ### ❌ Jangan Lakukan
 
-- **Jangan buat god object** - Jaga agar setiap layanan tetap terfokus
+- **Jangan buat god object** - Jaga agar layanan tetap terfokus
 - **Jangan percayai frontend** - Validasi semuanya
 - **Jangan kembalikan set data yang sangat besar** - Gunakan paginasi
-- **Jangan lakukan operasi yang memblokir** - Gunakan goroutine untuk operasi yang berlangsung lama
+- **Jangan lakukan pemblokiran** - Gunakan goroutine untuk operasi yang berlangsung lama
 - **Jangan abaikan kesalahan** - Tangani semua kasus kesalahan
 - **Jangan lewatkan pengujian** - Uji sejak dini dan sesering mungkin
-- **Jangan hardcode nilai** - Gunakan konfigurasi
-- **Jangan mengekspos detail internal** - Jaga agar implementasi tetap privat
+- **Jangan gunakan nilai hardcode** - Gunakan konfigurasi
+- **Jangan ekspos bagian internal** - Jaga agar implementasi tetap privat
 
 ## Langkah Berikutnya
 
 - [Metode](/features/bindings/methods/) - Pelajari dasar-dasar binding metode
 - [Layanan](/features/bindings/services/) - Pahami arsitektur layanan
 - [Model](/features/bindings/models/) - Bind struktur data yang kompleks
-- [Peristiwa](/features/events/system/) - Gunakan peristiwa untuk pola pub/sub
+- [Event](/features/events/system/) - Gunakan event untuk pub/sub
 
 ---
 

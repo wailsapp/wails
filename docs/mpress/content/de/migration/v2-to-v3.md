@@ -1,11 +1,11 @@
 ---
 title: "Migration von v2 zu v3"
-description: "Vollständige Anleitung zur Migration Ihrer Wails-v2-Anwendung auf v3"
+description: "Vollständige Anleitung zur Migration Ihrer Wails-Anwendung von v2 zu v3"
 slug: "migration/v2-to-v3"
 sourcePath: "migration/v2-to-v3.md"
 ---
 
-Wails v3 wurde **vollständig neu entwickelt** und bietet erhebliche Verbesserungen bei Architektur, Leistung und Entwicklerfreundlichkeit. Diese Anleitung unterstützt Sie bei der Migration Ihrer v2-Anwendung auf v3.
+Wails v3 wurde **vollständig neu geschrieben** und bietet erhebliche Verbesserungen bei Architektur, Leistung und Entwicklungskomfort. Diese Anleitung unterstützt Sie bei der Migration Ihrer v2-Anwendung zu v3.
 
 **Wichtige Änderungen:**
 
@@ -21,9 +21,9 @@ Wails v3 wurde **vollständig neu entwickelt** und bietet erhebliche Verbesserun
 
 ### Anwendungsinitialisierung
 
-In v2 waren Anwendungseinrichtung, Fensterkonfiguration und Ausführung in einem einzigen `wails.Run()`-Aufruf zusammengefasst. Dieser monolithische Ansatz erschwerte es, mehrere Fenster zu erstellen, Fehler in verschiedenen Phasen zu behandeln oder einzelne Komponenten Ihrer Anwendung zu testen.
+In v2 wurden die Anwendungseinrichtung, die Fensterkonfiguration und die Ausführung in einem einzigen Aufruf von `wails.Run()` zusammengefasst. Dieser monolithische Ansatz erschwerte es, mehrere Fenster zu erstellen, Fehler in verschiedenen Phasen zu behandeln oder einzelne Komponenten Ihrer Anwendung zu testen.
 
-v3 trennt diese Aufgaben in verschiedene Phasen: Anwendungserstellung, Fenstererstellung und Ausführung. Dadurch haben Sie ausdrückliche Kontrolle über jede Phase des Lebenszyklus Ihrer Anwendung, und der Code wird modularer und besser testbar.
+v3 unterteilt diese Aufgaben in separate Phasen: Anwendungserstellung, Fenstererstellung und Ausführung. Diese Trennung gibt Ihnen ausdrückliche Kontrolle über jede Phase des Anwendungslebenszyklus und macht den Code modularer und besser testbar.
 
 **v2:**
 
@@ -57,19 +57,19 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 app.Run()
 ```
 
-**Vorteile dieses Ansatzes:**
+**Vorteile:**
 
 - **Unterstützung mehrerer Fenster**: Sie können Fenster jederzeit dynamisch erstellen, nicht nur beim Start
-- **Bessere Fehlerbehandlung**: Jede Phase kann separat und mit geeigneter Fehlerbehandlung validiert werden
-- **Übersichtlicherer Code**: Durch die Trennung ist klar erkennbar, was in jeder Phase geschieht
+- **Bessere Fehlerbehandlung**: Jede Phase kann separat und mit angemessener Fehlerbehandlung validiert werden
+- **Klarerer Code**: Durch die Trennung ist in jeder Phase eindeutig erkennbar, was geschieht
 - **Bessere Testbarkeit**: Sie können die Anwendungseinrichtung testen, ohne die Ereignisschleife auszuführen
-- **Mehr Flexibilität**: Fenster können während des gesamten Lebenszyklus der Anwendung erstellt, zerstört und neu erstellt werden
+- **Mehr Flexibilität**: Fenster können während des gesamten Anwendungslebenszyklus erstellt, geschlossen und neu erstellt werden
 
 ### Bindings
 
-In v2 benötigte jede gebundene Struktur ein Kontextfeld und eine `startup(ctx)`-Methode, um den Laufzeitkontext zu empfangen. Dadurch entstand eine enge Kopplung zwischen Ihrer Geschäftslogik und der Wails-Laufzeit, wodurch der Code schwerer zu testen und zu verstehen war.
+In v2 benötigte jede gebundene Struktur ein Kontextfeld und eine `startup(ctx)`-Methode, um den Laufzeitkontext zu empfangen. Dadurch entstand eine enge Kopplung zwischen Ihrer Geschäftslogik und der Wails-Laufzeit, was das Testen und Verstehen des Codes erschwerte.
 
-v3 führt das Service-Muster ein, bei dem Ihre Strukturen vollständig eigenständig sind und keinen Laufzeitkontext speichern müssen. Benötigt ein Service Zugriff auf die Anwendungsinstanz, erhält er diese ausdrücklich per Dependency Injection statt durch implizite Weitergabe des Kontexts.
+v3 führt das Service-Muster ein. Dabei sind Ihre Strukturen vollständig eigenständig und müssen keinen Laufzeitkontext speichern. Benötigt ein Service Zugriff auf die Anwendungsinstanz, erhält er diese ausdrücklich per Dependency Injection, statt dass der Kontext implizit weitergereicht wird.
 
 **v2:**
 
@@ -104,19 +104,19 @@ app := application.New(application.Options{
 })
 ```
 
-**Vorteile dieses Ansatzes:**
+**Vorteile:**
 
 - **Keine impliziten Abhängigkeiten**: Services sind einfache Go-Strukturen ohne verborgene Laufzeitabhängigkeiten
 - **Einfachere Tests**: Sie können Service-Methoden testen, ohne einen Wails-Kontext zu simulieren
-- **Übersichtlicherer Code**: Abhängigkeiten sind ausdrücklich angegeben (als Konstruktorargumente) und nicht in einem Kontextfeld verborgen
-- **Bessere Organisation**: Services können nach Domäne gruppiert werden, statt sich alle in einer einzigen `App`-Struktur zu befinden
-- **Explizite Initialisierung**: Verwenden Sie bei Bedarf die Methode `ServiceStartup()` zur Initialisierung, damit dieser Schritt ausdrücklich erkennbar ist
+- **Klarerer Code**: Abhängigkeiten sind explizit und werden als Konstruktorargumente übergeben, statt in einem Kontextfeld verborgen zu sein
+- **Bessere Organisation**: Services können nach Domäne gruppiert werden, statt alle in einer einzigen `App`-Struktur enthalten zu sein
+- **Ordnungsgemäße Initialisierung**: Verwenden Sie bei erforderlicher Initialisierung ausdrücklich die Methode `ServiceStartup()`
 
 ### Laufzeit
 
-In v2 musste für alle Laufzeitoperationen ein Kontext an globale Funktionen aus dem Paket `runtime` übergeben werden. Dadurch entstand in der gesamten Codebasis eine enge Kopplung an das Kontextobjekt, und die API wirkte eher prozedural als objektorientiert.
+In v2 musste für alle Laufzeitoperationen ein Kontext an globale Funktionen aus dem Paket `runtime` übergeben werden. Dadurch war der Code in der gesamten Codebasis eng an das Kontextobjekt gekoppelt, und die API wirkte eher prozedural als objektorientiert.
 
-v3 ersetzt die kontextbasierte Laufzeit durch direkte Methodenaufrufe auf Anwendungs- und Fensterobjekten. Operationen werden direkt auf den Objekten aufgerufen, die sie betreffen. Dadurch wird der Code intuitiver und objektorientierter.
+v3 ersetzt die kontextbasierte Laufzeit durch direkte Methodenaufrufe für Anwendungs- und Fensterobjekte. Operationen werden direkt für die betroffenen Objekte aufgerufen, wodurch der Code intuitiver und objektorientierter wird.
 
 **v2:**
 
@@ -145,19 +145,19 @@ func (s *MyService) EmitEvent() {
 }
 ```
 
-**Vorteile dieses Ansatzes:**
+**Vorteile:**
 
-- **Objektorientierter Entwurf**: Methoden werden auf den Objekten aufgerufen, die sie betreffen (Fenster, Anwendung, Menü usw.)
-- **Klarere Absicht**: `window.SetTitle()` ist aussagekräftiger als `runtime.WindowSetTitle(ctx, ...)`
-- **Bessere IDE-Unterstützung**: Die automatische Vervollständigung funktioniert korrekt, wenn Methoden Objekten zugeordnet sind
+- **Objektorientierter Entwurf**: Methoden werden für die Objekte aufgerufen, auf die sie wirken (Fenster, Anwendung, Menü usw.)
+- **Klarere Absicht**: `window.SetTitle()` ist eindeutiger als `runtime.WindowSetTitle(ctx, ...)`
+- **Bessere IDE-Unterstützung**: Die automatische Vervollständigung funktioniert korrekt, wenn Methoden zu Objekten gehören
 - **Mehr Übersicht bei mehreren Fenstern**: Bei mehreren Fenstern wählen Sie ausdrücklich aus, auf welchem Fenster die Operation ausgeführt werden soll
-- **Keine Kontextweitergabe**: Sie müssen den Kontext nicht durch jede Funktion weiterreichen
+- **Keine Kontextweitergabe**: Sie müssen den Kontext nicht durch jede Funktion reichen
 
 ### Frontend-Bindings
 
-In v2 waren Bindings nach Go-Paket und Strukturnamen organisiert, wodurch typischerweise Pfade wie `wailsjs/go/main/App` entstanden. Diese Struktur spiegelte keine logische Gruppierung wider und erschwerte es, zusammengehörige Funktionen zu finden.
+In v2 waren Bindings nach Go-Paket und Strukturnamen organisiert, was typischerweise zu Pfaden wie `wailsjs/go/main/App` führte. Diese Struktur bildete die logische Gruppierung nicht ab und erschwerte das Auffinden zusammengehöriger Funktionen.
 
-v3 organisiert Bindings nach Service-Namen und Anwendungsmodul und schafft so eine übersichtlichere logische Struktur. Die Bindings werden in einem Verzeichnis `bindings` generiert und dort nach dem Namen Ihrer Anwendung und den Service-Namen organisiert. Dadurch lässt sich die verfügbare Funktionalität leichter überblicken.
+v3 organisiert Bindings nach Service-Namen und Anwendungsmodul und schafft damit eine klarere logische Struktur. Die Bindings werden in einem Verzeichnis `bindings` generiert und dort nach dem Namen Ihrer Anwendung und den Service-Namen gegliedert. So ist leichter erkennbar, welche Funktionen verfügbar sind.
 
 **v2:**
 
@@ -175,19 +175,19 @@ import { Greet } from './bindings/changeme/greetservice'
 const result = await Greet("World")
 ```
 
-**Vorteile dieses Ansatzes:**
+**Vorteile:**
 
 - **Logische Organisation**: Bindings werden nach Service-Namen statt nach der Go-Paketstruktur gruppiert
-- **Übersichtlichere Importe**: Der Pfad bildet die Domänenlogik (greetservice) statt der Dateistruktur (main/App) ab
-- **Leichter auffindbar**: Bindings lassen sich nach Funktion statt nach technischer Struktur durchsuchen
+- **Klarere Importe**: Der Pfad bildet die Domänenlogik (greetservice) statt der Dateistruktur (main/App) ab
+- **Bessere Auffindbarkeit**: Sie können Bindings nach Funktion statt nach technischer Struktur durchsuchen
 - **Einheitliche Benennung**: Die servicebasierte Organisation entspricht Ihrer Backend-Architektur
-- **Einfachere Pfade**: Kein Präfix `../wailsjs/go` mehr – nur noch `./bindings`
+- **Einfachere Pfade**: Kein Präfix `../wailsjs/go` mehr, sondern nur noch `./bindings`
 
 ### Ereignisse
 
-In v2 verwendeten Ereignisse variadische `interface{}`-Parameter, und jeder Ereignisfunktion musste ein Kontext übergeben werden. Ereignishandler erhielten untypisierte Daten, für die manuelle Typzusicherungen erforderlich waren. Dadurch war das Ereignissystem fehleranfällig und schwer zu debuggen.
+In v2 verwendeten Ereignisse variadische `interface{}`-Parameter, und jeder Ereignisfunktion musste ein Kontext übergeben werden. Ereignishandler empfingen untypisierte Daten, für die manuelle Typzusicherungen erforderlich waren. Dadurch war das Ereignissystem fehleranfällig und schwer zu debuggen.
 
-v3 führt typisierte Ereignisobjekte ein und hebt die Kontextanforderung auf. Ereignishandler erhalten ein korrektes Ereignisobjekt mit typisierten Daten. Dadurch ist das Ereignissystem zuverlässiger und einfacher zu verwenden.
+v3 führt typisierte Ereignisobjekte ein und hebt die Kontextanforderung auf. Ereignishandler empfangen ein ordnungsgemäßes Ereignisobjekt mit typisierten Daten, wodurch das Ereignissystem zuverlässiger und einfacher zu verwenden ist.
 
 **v2:**
 
@@ -210,19 +210,19 @@ app.Event.On("event-name", func(e *application.CustomEvent) {
 app.Event.Emit("event-name", data)
 ```
 
-**Warum dies besser ist:**
+**Vorteile:**
 
-- **Typsicherheit**: Ereignisse verwenden korrekte Ereignisobjekte statt `...interface{}`
-- **Einfacheres Debugging**: Ereignisobjekte enthalten Metadaten wie den Ereignisnamen, was das Debugging erleichtert
+- **Typsicherheit**: Ereignisse verwenden geeignete Ereignisobjekte anstelle von `...interface{}`
+- **Einfacheres Debugging**: Ereignisobjekte enthalten Metadaten wie den Ereignisnamen und erleichtern dadurch das Debugging
 - **Übersichtlichere API**: `app.Event.On()` und `app.Event.Emit()` sind intuitiver als Runtime-Funktionen
-- **Kein Kontext erforderlich**: Ereignisse funktionieren direkt mit dem App-Objekt, ohne den Kontext weiterreichen zu müssen
-- **Einfachere Handler**: Ereignishandler haben statt variadischer Parameter eine klare Signatur
+- **Kein Kontext erforderlich**: Ereignisse funktionieren direkt auf dem App-Objekt, ohne dass Kontext weitergereicht werden muss
+- **Einfachere Handler**: Ereignis-Handler haben eine klare Signatur statt variadischer Parameter
 
 ### Fenster
 
-v2 unterstützte nur ein einziges Fenster pro Anwendung. Das Fenster wurde beim Start erstellt, und alle Fensteroperationen erfolgten über Runtime-Funktionen, die implizit auf dieses eine Fenster abzielten.
+v2 unterstützte nur ein einziges Fenster pro Anwendung. Das Fenster wurde beim Start erstellt, und alle Fensteroperationen erfolgten über Runtime-Funktionen, die sich implizit auf dieses einzelne Fenster bezogen.
 
-v3 führt native Mehrfensterunterstützung als Kernfunktion ein. Jedes Fenster ist ein eigenständiges Objekt mit eigenen Methoden und einem eigenen Lebenszyklus. Während der gesamten Laufzeit Ihrer Anwendung können Sie mehrere Fenster dynamisch erstellen, verwalten und schließen.
+v3 führt native Unterstützung für mehrere Fenster als Kernfunktion ein. Jedes Fenster ist ein eigenständiges Objekt mit eigenen Methoden und einem eigenen Lebenszyklus. Während der gesamten Laufzeit deiner Anwendung kannst du mehrere Fenster dynamisch erstellen, verwalten und schließen.
 
 **v2:**
 
@@ -244,9 +244,9 @@ window2.SetSize(1024, 768)
 
 **Warum dies besser ist:**
 
-- **Mehrfensteranwendungen**: Erstellen Sie Apps mit mehreren unabhängigen Fenstern (Dashboards, Einstellungen, Werkzeuge usw.)
-- **Explizite Fensterreferenzen**: Jedes Fenster ist ein Objekt, das Sie speichern und direkt bearbeiten können
-- **Dynamische Fenstererstellung**: Erstellen und zerstören Sie Fenster jederzeit während der Laufzeit
+- **Anwendungen mit mehreren Fenstern**: Erstelle Apps mit mehreren unabhängigen Fenstern (Dashboards, Einstellungen, Werkzeuge usw.)
+- **Explizite Fensterreferenzen**: Jedes Fenster ist ein Objekt, das du speichern und direkt bearbeiten kannst
+- **Dynamische Fenstererstellung**: Erstelle und schließe Fenster jederzeit während der Laufzeit
 - **Unabhängiger Fensterzustand**: Jedes Fenster hat eigene Ereignisse, Eigenschaften und einen eigenen Lebenszyklus
 - **Bessere Architektur**: Die Fensterverwaltung ist objektorientiert statt kontextbasiert
 
@@ -537,7 +537,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Taskleistenbereich
+### Infobereich
 
 **v2:**
 
@@ -580,7 +580,7 @@ ls frontend/bindings
 
 **Lösung:**
 
-Speichern Sie stattdessen eine Referenz auf die App:
+Speichere stattdessen die App-Referenz:
 
 ```go
 type MyService struct {
@@ -598,7 +598,7 @@ func NewMyService(app *application.App) *MyService {
 
 **Lösung:**
 
-Verwenden Sie die Fenstermethoden direkt:
+Verwende Fenstermethoden direkt:
 
 ```go
 window := s.app.Window.Current()
@@ -611,7 +611,7 @@ window.SetTitle("New Title")
 
 **Lösung:**
 
-Prüfen Sie, ob die Ereignisnamen exakt übereinstimmen:
+Prüfe, ob die Ereignisnamen exakt übereinstimmen:
 
 ```go
 // Go
@@ -625,13 +625,13 @@ OnEvent("my-event", handler)  // Must match exactly
 
 ### Checkliste
 
-- [ ] Die Anwendung startet fehlerfrei
+- [ ] Anwendung startet ohne Fehler
 - [ ] Alle Bindings funktionieren
 - [ ] Ereignisse werden gesendet und empfangen
-- [ ] Fenster werden korrekt geöffnet und geschlossen
+- [ ] Fenster werden ordnungsgemäß geöffnet und geschlossen
 - [ ] Menüs funktionieren (falls zutreffend)
 - [ ] Dialoge funktionieren (falls zutreffend)
-- [ ] Der Systembereich funktioniert (falls zutreffend)
+- [ ] Der Infobereich funktioniert (falls zutreffend)
 - [ ] Der Build-Prozess funktioniert
 - [ ] Der Produktions-Build funktioniert
 
@@ -652,21 +652,21 @@ wails3 generate bindings
 
 ### Leistung
 
-- **Schnellerer Start** – optimierte Initialisierung
-- **Geringerer Speicherverbrauch** – effiziente Ressourcennutzung
+- **Schnellerer Start** – Optimierte Initialisierung
+- **Geringerer Speicherbedarf** – Effiziente Ressourcennutzung
 - **Bessere Bridge** – &lt;1 ms Aufruf-Overhead
 
 ### Funktionen
 
-- **Mehrere Fenster** – native Unterstützung
-- **Systembereich** – integriert
+- **Mehrere Fenster** – Native Unterstützung
+- **Infobereich** – Integriert
 - **Bessere Ereignisse** – typisierte, einfachere API
 - **Dienste** – bessere Codeorganisation
 
-### Entwicklerfreundlichkeit
+### Entwicklungserlebnis
 
 - **Typsicherheit** – vollständige TypeScript-Unterstützung
-- **Bessere Fehlermeldungen** – eindeutige Fehlermeldungen
+- **Bessere Fehlermeldungen** – klare Fehlermeldungen
 - **Hot Reload** – schnellere Entwicklung
 - **Bessere Dokumentation** – umfassende Anleitungen
 
@@ -681,11 +681,11 @@ wails3 generate bindings
 
 ### Häufige Fragen
 
-**F: Kann ich v2 und v3 parallel ausführen?** A: Ja, sie verwenden unterschiedliche Importpfade.
+**F: Kann ich v2 und v3 parallel verwenden?** A: Ja, sie verwenden unterschiedliche Importpfade.
 
-**F: Ist v3 produktionsreif?** Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
+**F: Ist v3 produktionsreif?** Wails v3.0.0 ist die stabile Version für Desktopanwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Kompatibilitätszusage für Desktopanwendungen.
 
-**F: Wird v2 weiterhin gepflegt?** A: Ja, v2 wird weiterhin kritische Updates erhalten.
+**F: Wird v2 weiterhin gepflegt?** A: Ja, v2 erhält kritische Updates.
 
 **F: Wie lange dauert die Migration?** A: Bei typischen Anwendungen 1-4 Stunden.
 
@@ -693,25 +693,25 @@ wails3 generate bindings
 
 @cards{cols="2"}
 🚀 Schnellstart
-Beginnen Sie mit Wails v3.
+Erste Schritte mit Wails v3.
 
 [Mehr erfahren →](/quick-start/installation/)
 
 ---
 ★ Kernkonzepte
-Machen Sie sich mit der Architektur von v3 vertraut.
+Die Architektur von v3 verstehen.
 
 [Mehr erfahren →](/concepts/architecture/)
 
 ---
 ◆ Bindings
-Lernen Sie das neue Binding-System kennen.
+Das neue Bindingsystem kennenlernen.
 
 [Mehr erfahren →](/features/bindings/methods/)
 
 ---
 📖 Beispiele
-Sehen Sie sich vollständige Beispiele für v3 an.
+Vollständige Beispiele für v3 ansehen.
 
 [Beispiele ansehen →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)
 
@@ -719,4 +719,4 @@ Sehen Sie sich vollständige Beispiele für v3 an.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder [eröffnen Sie ein Issue](https://github.com/wailsapp/wails/issues).
+**Noch Fragen?** Frage auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder [öffne ein Issue](https://github.com/wailsapp/wails/issues).

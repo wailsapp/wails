@@ -1,1036 +1,2062 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "1137d4ea40887a55c13c",
+  "pageKey": "effa7481de09549e009c",
   "sourceFile": "migration/v2-to-v3.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
     "b0001-text-01": {
       "sourceHash": "d97a48191f3c736c60a701c16437c4250c9d9a571ec32385878443e7f5c5f93f",
-      "targetHash": "323986b8125ff289c74373c998c589c6168c4fd9b5caf0a21659ef32ab0179b2",
-      "status": "migration-review",
-      "sourcePreview": "Wails v3 is a **complete rewrite** with significant improvements in architecture, performance, and d…"
+      "targetHash": "650573899733b4619871ec9cb38a10d25df02c550dc994650475e4e78f2115d9",
+      "machineHash": "650573899733b4619871ec9cb38a10d25df02c550dc994650475e4e78f2115d9",
+      "machineText": "Wails v3是一次**徹底重寫**，在架構、效能和開發者體驗方面都有顯著改進。本指南可協助你將v2應用程式遷移至v3。",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3 is a **complete rewrite** with significant improvements in architecture, performance, and d…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0002-text-01": {
       "sourceHash": "f2ca2e572439e4f02b9350509b2c2701fdb87c75128658533b7df122d1ffdf75",
       "targetHash": "345bc7b5ad01132701bd5f19a37de059c987420323707e541f6adcc4626219c3",
-      "status": "migration-review",
-      "sourcePreview": "**Key changes:**"
+      "machineHash": "345bc7b5ad01132701bd5f19a37de059c987420323707e541f6adcc4626219c3",
+      "machineText": "**主要變更：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Key changes:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0003-text-01": {
       "sourceHash": "02e8efdcdab4d7c85396e5b9fe761f00abc0bac6f0b48c3c846dfcf5dab18e9a",
-      "targetHash": "552a2290d8df2ee83c5994483abb43f0cdfcd97d8cc2124cf7259d717eea9c26",
-      "status": "migration-review",
-      "sourcePreview": "New application structure"
+      "targetHash": "3f6502ef9f94f2e13bde7e7bae74092a4eb34b744320b8d9fb5a180094b2b5b5",
+      "machineHash": "3f6502ef9f94f2e13bde7e7bae74092a4eb34b744320b8d9fb5a180094b2b5b5",
+      "machineText": "新的應用程式結構",
+      "status": "machine-translated",
+      "sourcePreview": "New application structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0004-text-01": {
       "sourceHash": "13973964eeae7ef43724f60d814f6e220e39d7dcfa2789e719bfd4736df97024",
-      "targetHash": "e54b9f7864a7f8ac082c508bad7f804e1a0e0409ed30c14541b4714ee8a37934",
-      "status": "migration-review",
-      "sourcePreview": "Improved bindings system"
+      "targetHash": "6d7bf2376dd7c622d0d9e75f09811c531ed2bab7c1a8f425be976c5ab8a2d3b5",
+      "machineHash": "6d7bf2376dd7c622d0d9e75f09811c531ed2bab7c1a8f425be976c5ab8a2d3b5",
+      "machineText": "改良的繫結系統",
+      "status": "machine-translated",
+      "sourcePreview": "Improved bindings system",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0005-text-01": {
       "sourceHash": "e6a1282012a9602ee41e72678e77505b24c8d5c323fe533620c62fe842421214",
-      "targetHash": "b7a7978fb5a435eba68fab86ebeb4455fc02251448bc7ae3cfe5def683b3ac14",
-      "status": "migration-review",
-      "sourcePreview": "Enhanced window management"
+      "targetHash": "388abbc7c00426858ee9d19304b05ac7550c2a0cf4d23ad2bbc5ecd54db00136",
+      "machineHash": "388abbc7c00426858ee9d19304b05ac7550c2a0cf4d23ad2bbc5ecd54db00136",
+      "machineText": "增強的視窗管理",
+      "status": "machine-translated",
+      "sourcePreview": "Enhanced window management",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0006-text-01": {
       "sourceHash": "1f89a59b8544c30bbd1d2d42a5d26d58ebac19264ea161413aba8c8363a8c9e9",
       "targetHash": "dbf4da36b8e26433cc48b6a99c2e83a6093b55e269d159f94cd15da90b50f691",
-      "status": "migration-review",
-      "sourcePreview": "Better event system"
+      "machineHash": "dbf4da36b8e26433cc48b6a99c2e83a6093b55e269d159f94cd15da90b50f691",
+      "machineText": "更完善的事件系統",
+      "status": "machine-translated",
+      "sourcePreview": "Better event system",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0007-text-01": {
       "sourceHash": "49646b8d5cc45e253ce10672083b834b3fe608a516628b079fe50b0500ba4852",
-      "targetHash": "2ec8f1b9f34df178cf09f76fecc9b7eabb75cd6990b92eceb08c8f61a9742efb",
-      "status": "migration-review",
-      "sourcePreview": "Simplified configuration"
+      "targetHash": "9483107516d06c8ebe16590b564a274e6d89fdd5115c1c3af623060850157294",
+      "machineHash": "9483107516d06c8ebe16590b564a274e6d89fdd5115c1c3af623060850157294",
+      "machineText": "簡化的組態設定",
+      "status": "machine-translated",
+      "sourcePreview": "Simplified configuration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0008-text-01": {
       "sourceHash": "1d180af41f662aa1bf704f08971a424578f71ea8f9e8746df2bff25dbe234910",
-      "targetHash": "97f06813bf756c041e4fb93f54d72a72969f57ac02469a5ea217b64ea4abe27d",
-      "status": "migration-review",
-      "sourcePreview": "**Migration time:** 1-4 hours for typical applications"
+      "targetHash": "f829586e344f63adfa957be239e0e741c501ce13d55e74b8c6371e4b7c98def9",
+      "machineHash": "f829586e344f63adfa957be239e0e741c501ce13d55e74b8c6371e4b7c98def9",
+      "machineText": "\u003cstrong\u003e遷移時間：\u003c/strong\u003e一般應用程式約需1-4小時",
+      "status": "machine-translated",
+      "sourcePreview": "**Migration time:** 1-4 hours for typical applications",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0009-heading-01": {
       "sourceHash": "951c0bf97e1cc19b4e34b060ae6c7d73c116068e47fab762e894d75ae93ce4c1",
-      "targetHash": "4c235f4ebe654e7a0ddfe6a29377fef2a0c5907b42108daa69d6b7f396ebcf7f",
-      "status": "migration-review",
-      "sourcePreview": "Breaking Changes"
+      "targetHash": "2238025d55ef4c55b7b42e26baa0acd4f6b02063507f3a5cfd75c24c13f5e567",
+      "machineHash": "2238025d55ef4c55b7b42e26baa0acd4f6b02063507f3a5cfd75c24c13f5e567",
+      "machineText": "重大變更",
+      "status": "machine-translated",
+      "sourcePreview": "Breaking Changes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0010-heading-01": {
       "sourceHash": "0e6a666e3eb1cbfe5cdc68bcd7dc2330cf060894bf773450a1064284aeadae64",
       "targetHash": "44605860668e12d0a6740d164a469226015f9c63340b5efdf2c49ee0cb5de8eb",
-      "status": "migration-review",
-      "sourcePreview": "Application Initialisation"
+      "machineHash": "44605860668e12d0a6740d164a469226015f9c63340b5efdf2c49ee0cb5de8eb",
+      "machineText": "應用程式初始化",
+      "status": "machine-translated",
+      "sourcePreview": "Application Initialisation",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0011-text-01": {
       "sourceHash": "14161854ffb7416226d7fead0cc839110047274f465c1415097cb7911ae3bb2e",
-      "targetHash": "c729e0192677f70db4f34e56dddc78445e733408989027e8c24d873769ca3bc8",
-      "status": "migration-review",
-      "sourcePreview": "In v2, application setup, window configuration, and execution were all combined into a single `wails…"
+      "targetHash": "aff6085ef745aaa3d4de7a0409df55409a94732fba27993f8ad0ccd8ce94c80b",
+      "machineHash": "aff6085ef745aaa3d4de7a0409df55409a94732fba27993f8ad0ccd8ce94c80b",
+      "machineText": "在v2中，應用程式設定、視窗組態和執行全都整合在單一`wails.Run()`呼叫中。這種單體式做法難以建立多個視窗、在不同階段處理錯誤，或測試應用程式的個別元件。",
+      "status": "machine-translated",
+      "sourcePreview": "In v2, application setup, window configuration, and execution were all combined into a single `wails…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0012-text-01": {
       "sourceHash": "51713b9cd3472cda67f240a7c7fa71307c6085324793f840a66ad181e3592a65",
-      "targetHash": "e9bdcf8673966289b4d552a8e6b5e9b997db5226858298e8ba8e2b5c08b7463c",
-      "status": "migration-review",
-      "sourcePreview": "v3 separates these concerns into distinct phases: application creation, window creation, and executi…"
+      "targetHash": "e4510f22f06642b5f1f97646e650eee20797d0157ff32dcb4a73a651e83b087c",
+      "machineHash": "e4510f22f06642b5f1f97646e650eee20797d0157ff32dcb4a73a651e83b087c",
+      "machineText": "v3將這些關注點分成不同階段：建立應用程式、建立視窗及執行。這種分離方式讓你能明確控制應用程式生命週期的每個階段，並使程式碼更模組化且更容易測試。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 separates these concerns into distinct phases: application creation, window creation, and executi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0013-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0014-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0015-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineText": "**這樣更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0016-text-01": {
       "sourceHash": "609ccf8297d3da1400c334795cc56ccfa06d9f411784ccfcd87f3628fb842cda",
-      "targetHash": "c6d0a6467d6c778b2170eee0f65be6de3bf8403d0959717ae7243da46894ca99",
-      "status": "migration-review",
-      "sourcePreview": "**Multi-window support**: You can create windows dynamically at any point, not just at startup"
+      "targetHash": "0d249950d2c2f6da23fad429bb8b49442f9cf179bff8fe32071390108612c505",
+      "machineHash": "0d249950d2c2f6da23fad429bb8b49442f9cf179bff8fe32071390108612c505",
+      "machineText": "**支援多視窗**：你可以隨時動態建立視窗，而不僅限於啟動時",
+      "status": "machine-translated",
+      "sourcePreview": "**Multi-window support**: You can create windows dynamically at any point, not just at startup",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0017-text-01": {
       "sourceHash": "e9c672f36f89d8f58fd44763e0bebab6b5e17896c409bf8e7863d908c8d543fd",
-      "targetHash": "5283f1f7c0c99edf302cadeaa638c9a4ecd4fa8069f872f344447107a6ba6b97",
-      "status": "migration-review",
-      "sourcePreview": "**Better error handling**: Each phase can be validated separately with proper error handling"
+      "targetHash": "041a52a2ea29e18c39ec3a886a6409040267a5d2153549cc9f08e27b913c914c",
+      "machineHash": "041a52a2ea29e18c39ec3a886a6409040267a5d2153549cc9f08e27b913c914c",
+      "machineText": "**更完善的錯誤處理**：每個階段都能使用適當的錯誤處理個別驗證",
+      "status": "machine-translated",
+      "sourcePreview": "**Better error handling**: Each phase can be validated separately with proper error handling",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0018-text-01": {
       "sourceHash": "b2c93411e01b6fceed7a3523a862fe77db257ea4d8aac62827a0dc6bf3ae3af5",
-      "targetHash": "a45f621341c17d29b3fa60d660b17c4cac0e487a9e4064c5b1a4d24a7600a024",
-      "status": "migration-review",
-      "sourcePreview": "**Clearer code**: The separation makes it obvious what's happening at each stage"
+      "targetHash": "80c1253fc89df788bd9fab7ae380bd59e9f567a90af42733ad44bb3d967ffb3f",
+      "machineHash": "80c1253fc89df788bd9fab7ae380bd59e9f567a90af42733ad44bb3d967ffb3f",
+      "machineText": "**更清楚的程式碼**：各階段分開後，每個階段正在進行的作業一目瞭然",
+      "status": "machine-translated",
+      "sourcePreview": "**Clearer code**: The separation makes it obvious what's happening at each stage",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0019-text-01": {
       "sourceHash": "7c08843f47db47722eecddede347e8297236c5626a010c5da67256378c748957",
-      "targetHash": "89c355dc58bce79a09a0205b865c1e9477d03ab9d92766401b443cfbe49340e5",
-      "status": "migration-review",
-      "sourcePreview": "**More testable**: You can test application setup without running the event loop"
+      "targetHash": "7e935a34819c7717d7288b534958f49863910d0d7a33dbda9a789867f969020a",
+      "machineHash": "7e935a34819c7717d7288b534958f49863910d0d7a33dbda9a789867f969020a",
+      "machineText": "**更容易測試**：無須執行事件迴圈，即可測試應用程式設定",
+      "status": "machine-translated",
+      "sourcePreview": "**More testable**: You can test application setup without running the event loop",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0020-text-01": {
       "sourceHash": "ad83bc485fb805d3958da1ba8d60c98e59c91ca6f78a8e3c28efdfc35a8aec6c",
-      "targetHash": "c637c552f44df78189a9cf2c1d373a619b811c1a245f88875de9da430c272971",
-      "status": "migration-review",
-      "sourcePreview": "**More flexible**: Windows can be created, destroyed, and recreated throughout the application lifec…"
+      "targetHash": "03fe4e921fb3dee4fa3d6150f4ca2abcec37cd2444b57e82f3c0cc1dcbae8564",
+      "machineHash": "03fe4e921fb3dee4fa3d6150f4ca2abcec37cd2444b57e82f3c0cc1dcbae8564",
+      "machineText": "**更靈活**：在整個應用程式生命週期中，都能建立、銷毀及重新建立視窗",
+      "status": "machine-translated",
+      "sourcePreview": "**More flexible**: Windows can be created, destroyed, and recreated throughout the application lifec…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0021-heading-01": {
       "sourceHash": "7697ab84cd811cc93711c93ef0e92469f1e314a5e8957ad987d9b1fa54d691c4",
       "targetHash": "8b87779436a97e70bae90950a64276b2c72d743fa47ebbcd955e1a76e36060e2",
-      "status": "migration-review",
-      "sourcePreview": "Bindings"
+      "machineHash": "8b87779436a97e70bae90950a64276b2c72d743fa47ebbcd955e1a76e36060e2",
+      "machineText": "繫結",
+      "status": "machine-translated",
+      "sourcePreview": "Bindings",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0022-text-01": {
       "sourceHash": "299f286a344c4702d97ae16e4be8500ea9a05e2f5e42631608404cbde3d2d1b3",
-      "targetHash": "307da9669d018c769346afbd8ac1cc991403122fb54596672c92b161f16a79f2",
-      "status": "migration-review",
-      "sourcePreview": "In v2, every bound struct required a context field and a `startup(ctx)` method to receive the runtim…"
+      "targetHash": "3719e37111542d449bef9a40b2c0ed6357c455f25d810b742ba49bbbf0a541a7",
+      "machineHash": "3719e37111542d449bef9a40b2c0ed6357c455f25d810b742ba49bbbf0a541a7",
+      "machineText": "在v2中，每個繫結的結構都必須有一個 context 欄位，以及用來接收執行階段 context 的`startup(ctx)`方法。這會讓商業邏輯與 Wails 執行階段緊密耦合，使程式碼更難測試及理解。",
+      "status": "machine-translated",
+      "sourcePreview": "In v2, every bound struct required a context field and a `startup(ctx)` method to receive the runtim…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0023-text-01": {
       "sourceHash": "2b3456fab1f8001220020712e5437c31fafd29a28efa4922d202b7cfd4af08e7",
-      "targetHash": "72424547d8f108caf6854b5d5b41b257064b4698083a0a12e82ef4b7146f2398",
-      "status": "migration-review",
-      "sourcePreview": "v3 introduces the service pattern, where your structs are completely standalone and don't need to st…"
+      "targetHash": "f18bc3997cab26e157cd46461edc63578357b1bf1d312b1a5712803ef49cf450",
+      "machineHash": "f18bc3997cab26e157cd46461edc63578357b1bf1d312b1a5712803ef49cf450",
+      "machineText": "v3引入服務模式，讓你的結構完全獨立，無須儲存執行階段 context。若服務需要存取應用程式執行個體，會透過相依性注入明確接收該執行個體，而不是隱式地逐層傳遞 context。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 introduces the service pattern, where your structs are completely standalone and don't need to st…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0024-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0025-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0026-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineText": "**這樣更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0027-text-01": {
       "sourceHash": "2d9f4eec7601af631f87b6ea4364b3b522e3ec209eea14ab28f63e3ac799b2c5",
-      "targetHash": "19b884ca78f00704d068e2cab0a01b2f3d156a8fb47a33a9d3b2b4fae0a76a92",
-      "status": "migration-review",
-      "sourcePreview": "**No implicit dependencies**: Services are plain Go structs without hidden runtime dependencies"
+      "targetHash": "71dddb05512e1f11deac7464ce1d8970e471723fabf2cbcb0267c0639ec2e614",
+      "machineHash": "71dddb05512e1f11deac7464ce1d8970e471723fabf2cbcb0267c0639ec2e614",
+      "machineText": "**沒有隱式相依性**：服務是一般的 Go 結構，不含隱藏的執行階段相依性",
+      "status": "machine-translated",
+      "sourcePreview": "**No implicit dependencies**: Services are plain Go structs without hidden runtime dependencies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0028-text-01": {
       "sourceHash": "5215ae2f078e5334f512892a67d1763f6eb254c3971f6393ac5e8b32a4e7c2a7",
-      "targetHash": "133b1baa03fec980c8107b6f1304091e5556db8b889211bbbf293fb21984ce49",
-      "status": "migration-review",
-      "sourcePreview": "**Easier testing**: You can test service methods without mocking a Wails context"
+      "targetHash": "2b59f0c7d865886460bc1d3701a7ab1c8fe5ddb21594b428db1d045906528270",
+      "machineHash": "2b59f0c7d865886460bc1d3701a7ab1c8fe5ddb21594b428db1d045906528270",
+      "machineText": "**更容易測試**：無須模擬 Wails context，即可測試服務方法",
+      "status": "machine-translated",
+      "sourcePreview": "**Easier testing**: You can test service methods without mocking a Wails context",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0029-text-01": {
       "sourceHash": "ba1f149032f0e1bf94e56d8ec4462ce1615f2806b0d25b4ff3a3a5a74f260e6c",
-      "targetHash": "6b3e700dc6e22455533a034a61a7c720176ba8afe7b5c4632f9f08d2a924ea63",
-      "status": "migration-review",
-      "sourcePreview": "**Clearer code**: Dependencies are explicit (passed as constructor arguments) rather than hidden in …"
+      "targetHash": "dbb9b9f6738a33a821322fdf09c0cc9500d8b7d8149209ec690368e836c81bda",
+      "machineHash": "dbb9b9f6738a33a821322fdf09c0cc9500d8b7d8149209ec690368e836c81bda",
+      "machineText": "**更清楚的程式碼**：相依性會明確傳入（作為建構函式引數），而不是隱藏在 context 欄位中",
+      "status": "machine-translated",
+      "sourcePreview": "**Clearer code**: Dependencies are explicit (passed as constructor arguments) rather than hidden in …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0030-text-01": {
       "sourceHash": "4ea45e6156a2761b2d507d06da1ccd19998d34c99d67e984cbc576ce973f6bfa",
-      "targetHash": "2b2afd834ef4d41ede4db73d9314a9bc30df9b14a8f0ea7d6f42016ed0466bea",
-      "status": "migration-review",
-      "sourcePreview": "**Better organization**: Services can be grouped by domain rather than all living in a single `App` …"
+      "targetHash": "2511244f1fe40f8d1df269fa38eddfa45d248622d25c4e13ea62a4be7d94f2fa",
+      "machineHash": "2511244f1fe40f8d1df269fa38eddfa45d248622d25c4e13ea62a4be7d94f2fa",
+      "machineText": "**更完善的組織方式**：服務可依領域分組，而非全部集中在單一`App`結構中",
+      "status": "machine-translated",
+      "sourcePreview": "**Better organization**: Services can be grouped by domain rather than all living in a single `App` …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0031-text-01": {
       "sourceHash": "ef8cfe675861864e89853dca7d1fbd486647bf1a09d735b1938fe2fe2a937261",
-      "targetHash": "ede3b40d6d8515330c048f5c9bfd30a7fa5c6c1a823d593ac4290f935d3e57be",
-      "status": "migration-review",
-      "sourcePreview": "**Proper initialization**: Use `ServiceStartup()` method when you need initialization, making it exp…"
+      "targetHash": "bc30ab8c6c7750c1c0ea63cb9fcb99e77a64496151c379a30ca5656922a22b35",
+      "machineHash": "bc30ab8c6c7750c1c0ea63cb9fcb99e77a64496151c379a30ca5656922a22b35",
+      "machineText": "**適當的初始化**：需要初始化時，請使用`ServiceStartup()`方法，明確表達此操作",
+      "status": "machine-translated",
+      "sourcePreview": "**Proper initialization**: Use `ServiceStartup()` method when you need initialization, making it exp…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0032-heading-01": {
       "sourceHash": "1093115897879aa3ad9511a1dc2850929cfb60ba45ec741605f69f5d20203472",
       "targetHash": "37a2afa677b4845c0bf1222952469f72e037fde40837601b2cd73831682df25d",
-      "status": "migration-review",
-      "sourcePreview": "Runtime"
+      "machineHash": "37a2afa677b4845c0bf1222952469f72e037fde40837601b2cd73831682df25d",
+      "machineText": "執行階段",
+      "status": "machine-translated",
+      "sourcePreview": "Runtime",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0033-text-01": {
       "sourceHash": "e17f3bbda3e0ba212c41c53e15d83bc47beb0b77e7b1c436884f35d58ec34850",
-      "targetHash": "ed1f0c58e880a6eeed05e7928bde0c5851e19b8637202741f7572d6c35a86a63",
-      "status": "migration-review",
-      "sourcePreview": "In v2, all runtime operations required passing a context to global functions from the `runtime` pack…"
+      "targetHash": "630c4441eba94ae33d2000aa18d2e24cd42675f12be864735db5036ed99f32c6",
+      "machineHash": "630c4441eba94ae33d2000aa18d2e24cd42675f12be864735db5036ed99f32c6",
+      "machineText": "在v2中，所有執行階段操作都必須將 context 傳給`runtime`套件的全域函式。這會讓整個程式碼庫與 context 物件緊密耦合，也使 API 給人的感覺偏向程序式而非物件導向。",
+      "status": "machine-translated",
+      "sourcePreview": "In v2, all runtime operations required passing a context to global functions from the `runtime` pack…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0034-text-01": {
       "sourceHash": "482fbd23c89286ac8a077d9ee6c8c3e470c699ede04158bf76daf13971029ea0",
-      "targetHash": "411cbbaf8a8353d23779c2f91faba72a4eef01e532b202d0b0f26477d2aafb87",
-      "status": "migration-review",
-      "sourcePreview": "v3 replaces the context-based runtime with direct method calls on application and window objects. Op…"
+      "targetHash": "78b80be9f991bcaeb419ddecd5daf3b9c46d88fbbec1170ad36523c2b7e15bd7",
+      "machineHash": "78b80be9f991bcaeb419ddecd5daf3b9c46d88fbbec1170ad36523c2b7e15bd7",
+      "machineText": "v3以應用程式和視窗物件上的直接方法呼叫，取代以 context 為基礎的執行階段。操作會直接在受其影響的物件上呼叫，讓程式碼更直觀且更符合物件導向。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 replaces the context-based runtime with direct method calls on application and window objects. Op…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0035-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0036-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0037-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineText": "**這樣更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0038-text-01": {
       "sourceHash": "a53e353bf5097cb0663403ec94ffcab3b2779e54264e40bc5dad645217459c78",
-      "targetHash": "10eec9e699d26dfdd0563e84df0db47208d998ee28bffe5c20dacfa9b04a8685",
-      "status": "migration-review",
-      "sourcePreview": "**Object-oriented design**: Methods are called on the objects they affect (window, app, menu, etc.)"
+      "targetHash": "99c676c8cba7b9568a59379458e8e903c7986a2b9910ce533ade2b65acb1849d",
+      "machineHash": "99c676c8cba7b9568a59379458e8e903c7986a2b9910ce533ade2b65acb1849d",
+      "machineText": "**物件導向設計**：方法會在受其影響的物件（視窗、應用程式、選單等）上呼叫",
+      "status": "machine-translated",
+      "sourcePreview": "**Object-oriented design**: Methods are called on the objects they affect (window, app, menu, etc.)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0039-text-01": {
       "sourceHash": "383ab4ba4a69221f27e67cc6a1a2b825438ea369367e40d06baddf624ff9c730",
-      "targetHash": "34fb2dcdf20153b3d68c6017733f3b4fd8b3f2d34439f87d9f08a74c26871b06",
-      "status": "migration-review",
-      "sourcePreview": "**Clearer intent**: `window.SetTitle()` is more obvious than `runtime.WindowSetTitle(ctx, ...)`"
+      "targetHash": "c7a815b24b469d50130eccd18872bd58aa26fcd3753e274a76d2f0fdb5a68d0f",
+      "machineHash": "c7a815b24b469d50130eccd18872bd58aa26fcd3753e274a76d2f0fdb5a68d0f",
+      "machineText": "**意圖更清楚**：`window.SetTitle()`比`runtime.WindowSetTitle(ctx, ...)`更直觀",
+      "status": "machine-translated",
+      "sourcePreview": "**Clearer intent**: `window.SetTitle()` is more obvious than `runtime.WindowSetTitle(ctx, ...)`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0040-text-01": {
       "sourceHash": "187cca467d4a09711f22e10c695703db9d11b4768622a6def61907b77012b87d",
-      "targetHash": "940ad10f7f600efdacce6642a1f4cf65887ea872c49ecaa6328e8055ec6c4a19",
-      "status": "migration-review",
-      "sourcePreview": "**Better IDE support**: Autocomplete works properly when methods are on objects"
+      "targetHash": "b2f0b08a591ab4b2a69e68ecaf046ad0d5a5617559b6652e69d52d77381abc89",
+      "machineHash": "b2f0b08a591ab4b2a69e68ecaf046ad0d5a5617559b6652e69d52d77381abc89",
+      "machineText": "**更完善的 IDE 支援**：方法位於物件上時，自動完成可正常運作",
+      "status": "machine-translated",
+      "sourcePreview": "**Better IDE support**: Autocomplete works properly when methods are on objects",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0041-text-01": {
       "sourceHash": "587235ceec021cea7041a3981163b69b9db3069a9bbd8d17b1ac223c186223a4",
-      "targetHash": "9b1bd134aa7a9eafb8650f9fbc1f8892cdac36dff54a9bca32623f78a0a07dc0",
-      "status": "migration-review",
-      "sourcePreview": "**Multi-window clarity**: With multiple windows, you explicitly choose which window to operate on"
+      "targetHash": "389b3a5f3fd28ca5a113fb4f71467f6dd4aa4b0c9d04f260fbbcbe3b94592cd7",
+      "machineHash": "389b3a5f3fd28ca5a113fb4f71467f6dd4aa4b0c9d04f260fbbcbe3b94592cd7",
+      "machineText": "**多視窗操作更清楚**：使用多個視窗時，你會明確選擇要操作的視窗",
+      "status": "machine-translated",
+      "sourcePreview": "**Multi-window clarity**: With multiple windows, you explicitly choose which window to operate on",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0042-text-01": {
       "sourceHash": "a6e3338593c09aee4db353ec8d94b11647e45dedfa8ed5bbbc4f9e4d83082cfc",
-      "targetHash": "62cef1488b63c1fe2c613117fe0c275ef1d92ddcdfea85887f52835768d23c79",
-      "status": "migration-review",
-      "sourcePreview": "**No context threading**: You don't need to pass context through every function"
+      "targetHash": "bb26cb81511b734da781508a8501d12272c431619aae1adbb310baf9db4faf57",
+      "machineHash": "bb26cb81511b734da781508a8501d12272c431619aae1adbb310baf9db4faf57",
+      "machineText": "**無須逐層傳遞 context**：不必將 context 傳入每個函式",
+      "status": "machine-translated",
+      "sourcePreview": "**No context threading**: You don't need to pass context through every function",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0043-heading-01": {
       "sourceHash": "c40610662ccb8e9d1d7e105b960125fe9b4b46224cde33b7ec33e0be42a00a63",
       "targetHash": "49d3527bd65d611de15bff2a8d9b280e3b936c2dee745524de4023b382d388fd",
-      "status": "migration-review",
-      "sourcePreview": "Frontend Bindings"
+      "machineHash": "49d3527bd65d611de15bff2a8d9b280e3b936c2dee745524de4023b382d388fd",
+      "machineText": "前端繫結",
+      "status": "machine-translated",
+      "sourcePreview": "Frontend Bindings",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0044-text-01": {
       "sourceHash": "faf075800d1bca1ac687a42836450c8ab38330de27e3efcbcf78de7e78c0f112",
-      "targetHash": "68cbfb47d985b5e93bab2de29de9242d475d4fda19715260f6299f960b458d81",
-      "status": "migration-review",
-      "sourcePreview": "In v2, bindings were organized by Go package and struct name, typically resulting in paths like `wai…"
+      "targetHash": "9e4bd09d03c11a1969eb675c7cb841c64c77ff395b6cb449d9887ec91ddfa7d5",
+      "machineHash": "9e4bd09d03c11a1969eb675c7cb841c64c77ff395b6cb449d9887ec91ddfa7d5",
+      "machineText": "在v2中，繫結依 Go 套件和結構名稱組織，通常會產生類似`wailsjs/go/main/App`的路徑。這種結構未反映邏輯分組，也讓相關功能難以尋找。",
+      "status": "machine-translated",
+      "sourcePreview": "In v2, bindings were organized by Go package and struct name, typically resulting in paths like `wai…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0045-text-01": {
       "sourceHash": "7464c105872f491c2e446678a9d04c1feb8ba1988c473b8485965db1633113a1",
-      "targetHash": "457c4de0ce5c8d8136a0f2e8962ba5bb2a2cc7809fc1472c0380b90da1898df1",
-      "status": "migration-review",
-      "sourcePreview": "v3 organizes bindings by service name and application module, creating a clearer logical structure. …"
+      "targetHash": "eaaed1bead584c5e5c648ae63e0e4685f1fcce67e51aa6780b4e02345cb72d1a",
+      "machineHash": "eaaed1bead584c5e5c648ae63e0e4685f1fcce67e51aa6780b4e02345cb72d1a",
+      "machineText": "v3依服務名稱和應用程式模組組織繫結，建立更清楚的邏輯結構。繫結會產生至`bindings`目錄，並依應用程式名稱和服務名稱組織，讓可用功能更容易理解。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 organizes bindings by service name and application module, creating a clearer logical structure. …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0046-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0047-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0048-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineText": "**這樣更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0049-text-01": {
       "sourceHash": "a2a8cff251ec726d3e63c8f9d1ee67e3db9bb23eb835c209b1cd8d9a76437e09",
-      "targetHash": "72a7dd36c5be655d636889781c0d932a3864320cb59fac6255b9e9a655dd5f0f",
-      "status": "migration-review",
-      "sourcePreview": "**Logical organization**: Bindings are grouped by service name rather than Go package structure"
+      "targetHash": "f8e62b8d792df49414b11009dbc482a17312e49139a92cdb95ca763cd4a90983",
+      "machineHash": "f8e62b8d792df49414b11009dbc482a17312e49139a92cdb95ca763cd4a90983",
+      "machineText": "**依邏輯組織**：繫結依服務名稱分組，而不是依 Go 套件結構分組",
+      "status": "machine-translated",
+      "sourcePreview": "**Logical organization**: Bindings are grouped by service name rather than Go package structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0050-text-01": {
       "sourceHash": "8c6babec4e0603f8e60f5a81b1f05b056b02b7c8bf388f0ca932f60d8af0917d",
-      "targetHash": "663d66ef779eb92ab061fcf973504e44455a1cdc95eae57baa116a9da500a7c2",
-      "status": "migration-review",
-      "sourcePreview": "**Clearer imports**: The path reflects the domain logic (greetservice) not the file structure (main/…"
+      "targetHash": "8c59698654292cd2f7420e56d6fc36bbcf183eac77d3721cb8480fd2bfbea044",
+      "machineHash": "8c59698654292cd2f7420e56d6fc36bbcf183eac77d3721cb8480fd2bfbea044",
+      "machineText": "**更清楚的匯入**：路徑反映領域邏輯（greetservice），而不是檔案結構（main/App）",
+      "status": "machine-translated",
+      "sourcePreview": "**Clearer imports**: The path reflects the domain logic (greetservice) not the file structure (main/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0051-text-01": {
       "sourceHash": "e41ad02f8c7314f2f34093df0ed1c01d3ccd119c3f827ea826b313a3a990bd6a",
-      "targetHash": "c41e4f8417d5589adcc794e45393b3e28c56491e20ba210386a2aca921a45490",
-      "status": "migration-review",
-      "sourcePreview": "**Better discoverability**: You can navigate bindings by feature rather than by technical structure"
+      "targetHash": "5dfc9797380b64a55105c905da6846a6e49980d972630d503277e06903eb7ab1",
+      "machineHash": "5dfc9797380b64a55105c905da6846a6e49980d972630d503277e06903eb7ab1",
+      "machineText": "**更容易探索**：你可以依功能瀏覽繫結，而不是依技術結構瀏覽",
+      "status": "machine-translated",
+      "sourcePreview": "**Better discoverability**: You can navigate bindings by feature rather than by technical structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0052-text-01": {
       "sourceHash": "9a79bab5ef2894ae8563b587c0e8dbf478c190913bfffabeebb558402d45969c",
       "targetHash": "62e2d94d9f096be0a40e3af8e6bf36e3a2f523414262aaa2e4957dd93cd0dea1",
-      "status": "migration-review",
-      "sourcePreview": "**Consistent naming**: Service-based organization matches your backend architecture"
+      "machineHash": "62e2d94d9f096be0a40e3af8e6bf36e3a2f523414262aaa2e4957dd93cd0dea1",
+      "machineText": "**一致的命名方式**：以服務為基礎的組織方式與後端架構一致",
+      "status": "machine-translated",
+      "sourcePreview": "**Consistent naming**: Service-based organization matches your backend architecture",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0053-text-01": {
       "sourceHash": "8ecb95ba223efdaebcab2b02168a0ffa14cd4962564dc76ae7d38e50b886429e",
-      "targetHash": "023567f60e6ec3b56a26a7a2e3d08968b31f42cd9c75f0bd6c0dc2f423bdce9c",
-      "status": "migration-review",
-      "sourcePreview": "**Simpler paths**: No more `../wailsjs/go` prefix - just `./bindings`"
+      "targetHash": "b45d43d7d1e1328cd041f060d65964698642dac29425ff9d2aef8dfedbeb54ee",
+      "machineHash": "b45d43d7d1e1328cd041f060d65964698642dac29425ff9d2aef8dfedbeb54ee",
+      "machineText": "**更簡潔的路徑**：不再使用`../wailsjs/go`前置詞，只需使用`./bindings`",
+      "status": "machine-translated",
+      "sourcePreview": "**Simpler paths**: No more `../wailsjs/go` prefix - just `./bindings`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0054-heading-01": {
       "sourceHash": "8d14f6e72de8f18ab1ee5c5330f00653c0c3ce099e63024454f80af97e72d333",
       "targetHash": "c560201b331c54435b445baebe03b8922d6ef6a80065411ed3f379eb8bef9848",
-      "status": "migration-review",
-      "sourcePreview": "Events"
+      "machineHash": "c560201b331c54435b445baebe03b8922d6ef6a80065411ed3f379eb8bef9848",
+      "machineText": "事件",
+      "status": "machine-translated",
+      "sourcePreview": "Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0055-text-01": {
       "sourceHash": "15d26525a54075fdabc7521f40da29fec743190de645c26da36ced24e1f64004",
-      "targetHash": "0b4565364c39925bc145acf70b28d2a6f7cac00eaede98360ef3aa65b32464a2",
-      "status": "migration-review",
-      "sourcePreview": "In v2, events used variadic `interface{}` parameters and required passing context to every event fun…"
+      "targetHash": "8391026f07e265a986344e932a183c20f77636a6e74335ab9749607a2f78e885",
+      "machineHash": "8391026f07e265a986344e932a183c20f77636a6e74335ab9749607a2f78e885",
+      "machineText": "在v2中，事件使用可變數量的`interface{}`參數，而且每個事件函式都必須傳入 context。事件處理常式收到的是無型別資料，必須手動進行型別斷言，導致事件系統容易出錯且難以偵錯。",
+      "status": "machine-translated",
+      "sourcePreview": "In v2, events used variadic `interface{}` parameters and required passing context to every event fun…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0056-text-01": {
       "sourceHash": "571c280405e0c61bcb770ef279c7578c5a24aa1845a1c4a1f02238204349a9f0",
-      "targetHash": "d945aaafd8da2bebfcd63decded3138905fbe70ee6175ad47028fc178401c75e",
-      "status": "migration-review",
-      "sourcePreview": "v3 introduces typed event objects and removes the context requirement. Event handlers receive a prop…"
+      "targetHash": "9cf52cf293fe9669550171f60eb926a2026c447f68063739c7f0905756553183",
+      "machineHash": "9cf52cf293fe9669550171f60eb926a2026c447f68063739c7f0905756553183",
+      "machineText": "v3引入具型別的事件物件，並移除 context 要求。事件處理常式會收到包含具型別資料的適當事件物件，使事件系統更可靠且更容易使用。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 introduces typed event objects and removes the context requirement. Event handlers receive a prop…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0057-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0058-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0059-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "c3e14ef87a325d08646a8144d91e1e621e1ba3ef29e052ec33e311ebacef1a85",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineHash": "91867866f2bd89bfd1f77363f1069d637a08cb421d62eaadfdade0d84c2782c0",
+      "machineText": "**這樣更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0060-text-01": {
       "sourceHash": "da248be6374f56fa0e5efb16949d18add95ab79db892b164e8d363c6a3f04220",
-      "targetHash": "caca11ad907e9f9dd1ffe8e628ac9c253ed4f50f29205c65f57d9f8069f5bc44",
-      "status": "migration-review",
-      "sourcePreview": "**Type safety**: Events use proper event objects instead of `...interface{}`"
+      "targetHash": "d79febb8d09ff76553004de1033d57cd85f2ce09fdde49df8e6c4071d666cff2",
+      "machineHash": "d79febb8d09ff76553004de1033d57cd85f2ce09fdde49df8e6c4071d666cff2",
+      "machineText": "**型別安全**：事件使用適當的事件物件，而非`...interface{}`",
+      "status": "machine-translated",
+      "sourcePreview": "**Type safety**: Events use proper event objects instead of `...interface{}`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0061-text-01": {
       "sourceHash": "d90acb82d143519010216e8b31383bb09fd77cdf4784acf3309534cf420bf857",
-      "targetHash": "756c91c5f834912a0640383d9bfa5fa36f9ae43617b60bfa432c16670b39990d",
-      "status": "migration-review",
-      "sourcePreview": "**Better debugging**: Event objects contain metadata like event name, making debugging easier"
+      "targetHash": "28f738c91236efcc705ffa8f8b7d95162465905fa434262e8545765e8bfbc4ac",
+      "machineHash": "28f738c91236efcc705ffa8f8b7d95162465905fa434262e8545765e8bfbc4ac",
+      "machineText": "**更易於偵錯**：事件物件包含事件名稱等中繼資料，讓偵錯更容易",
+      "status": "machine-translated",
+      "sourcePreview": "**Better debugging**: Event objects contain metadata like event name, making debugging easier",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0062-text-01": {
       "sourceHash": "da1e450b44ca0ae63821dfacbd66c0d5abeafe7ccd4649c6a8383c5f118843f8",
-      "targetHash": "24e95bd65af8edf4118fb0dba3510aa09c170b0610cf5fa24e7d9af128bd28f0",
-      "status": "migration-review",
-      "sourcePreview": "**Clearer API**: `app.Event.On()` and `app.Event.Emit()` are more intuitive than runtime functions"
+      "targetHash": "185a2416dceaab07021adab73ca3411300da6966be061feb9aacd7c0ddb4adf0",
+      "machineHash": "185a2416dceaab07021adab73ca3411300da6966be061feb9aacd7c0ddb4adf0",
+      "machineText": "**更清晰的 API**：`app.Event.On()`和`app.Event.Emit()`比 runtime 函式更直覺",
+      "status": "machine-translated",
+      "sourcePreview": "**Clearer API**: `app.Event.On()` and `app.Event.Emit()` are more intuitive than runtime functions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0063-text-01": {
       "sourceHash": "02dcf0c0e2e23216314ea43f104bdb6d61e14bca211995053ab48a518bf2e800",
-      "targetHash": "7b5bc8610cf86681354556448da57a558a3a5f31004e88ea75be61adc26b771a",
-      "status": "migration-review",
-      "sourcePreview": "**No context needed**: Events work directly on the app object without threading context"
+      "targetHash": "327992440cfcfc34e439816349c6101150a297bd78f01b1e0c7d9f3b7dfd8046",
+      "machineHash": "327992440cfcfc34e439816349c6101150a297bd78f01b1e0c7d9f3b7dfd8046",
+      "machineText": "**不需要 context**：事件可直接在 app 物件上運作，無須傳遞 context",
+      "status": "machine-translated",
+      "sourcePreview": "**No context needed**: Events work directly on the app object without threading context",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0064-text-01": {
       "sourceHash": "914371f604d4f84ac0c805748bf57c10dddd3ed056ca9c6c95bfdd0b4843d62e",
-      "targetHash": "fd3e892b364b4adfe6fe348e588724daff64ebb8212022593d886b37d5aedf69",
-      "status": "migration-review",
-      "sourcePreview": "**Simpler handlers**: Event handlers have a clear signature instead of variadic parameters"
+      "targetHash": "0ec7ad1a556a08b3923e97472a0618152fca7bf08af79eb59828d4b274d12094",
+      "machineHash": "0ec7ad1a556a08b3923e97472a0618152fca7bf08af79eb59828d4b274d12094",
+      "machineText": "**更簡單的處理函式**：事件處理函式具有清楚的簽章，不再使用可變參數",
+      "status": "machine-translated",
+      "sourcePreview": "**Simpler handlers**: Event handlers have a clear signature instead of variadic parameters",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0065-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "0a66d7740c1fc4981a571c59c04a5f9481577ea314277a53df076a5e9e7f1c4e",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "0a66d7740c1fc4981a571c59c04a5f9481577ea314277a53df076a5e9e7f1c4e",
+      "machineText": "視窗",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0066-text-01": {
       "sourceHash": "13770436430d5c14bd61608950ae3e51f9f98f46d35ecaa6e273e93b3d5f722d",
-      "targetHash": "3d2b8fd5b9bae03fe4b1bafbd21af43ec4920416ff18e7a4a9f59059933f29ab",
-      "status": "migration-review",
-      "sourcePreview": "v2 supported only a single window per application. The window was created at startup and all window …"
+      "targetHash": "6392059fc1ac1a67a280d21f1e1a8210bc5ba84190a8f47fad166c2cabe3ff25",
+      "machineHash": "6392059fc1ac1a67a280d21f1e1a8210bc5ba84190a8f47fad166c2cabe3ff25",
+      "machineText": "v2每個應用程式僅支援單一視窗。視窗會在啟動時建立，所有視窗操作都透過 runtime 函式執行，並由這些函式隱含地以該單一視窗為目標。",
+      "status": "machine-translated",
+      "sourcePreview": "v2 supported only a single window per application. The window was created at startup and all window …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0067-text-01": {
       "sourceHash": "3736f4be7cc5623116664ed94e0c3930f8cd01340202b3e924f63c393c7a06d8",
-      "targetHash": "8ea120a8236a8d9a6e1621270e6831ebe0ddec51d73ca966832850981daa0910",
-      "status": "migration-review",
-      "sourcePreview": "v3 introduces native multi-window support as a core feature. Each window is a first-class object wit…"
+      "targetHash": "d6dff7e0367b0e9cf1346ec4a5921586ed2149bfedbd0d6a94a8df49ff62e8b3",
+      "machineHash": "d6dff7e0367b0e9cf1346ec4a5921586ed2149bfedbd0d6a94a8df49ff62e8b3",
+      "machineText": "v3將原生多視窗支援引入為核心功能。每個視窗都是一級物件，具有自己的方法和生命週期。您可以在應用程式的整個生命週期中動態建立、管理及銷毀多個視窗。",
+      "status": "machine-translated",
+      "sourcePreview": "v3 introduces native multi-window support as a core feature. Each window is a first-class object wit…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0068-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0069-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0070-text-01": {
       "sourceHash": "89cc5143894d813812bfb01dbce40cf4e84b7bb7e96f907688795cfa4b763814",
-      "targetHash": "c3e14ef87a325d08646a8144d91e1e621e1ba3ef29e052ec33e311ebacef1a85",
-      "status": "migration-review",
-      "sourcePreview": "**Why this is better:**"
+      "targetHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
+      "machineHash": "986dfbd7b3eb98b2666766f7832fc32ab8e7b4d1fe23a6ecce88dde7a0f545a9",
+      "machineText": "**這樣做更好的原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this is better:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0071-text-01": {
       "sourceHash": "046316849f1a802a0af28591793a426330078b700a1c142d4e02db5a6a980df1",
       "targetHash": "296e3a6d8bee27c0fa9254226fb7dc97aedc59461b75e87cc605787861116e85",
-      "status": "migration-review",
-      "sourcePreview": "**Multi-window applications**: Build apps with multiple independent windows (dashboards, preferences…"
+      "machineHash": "296e3a6d8bee27c0fa9254226fb7dc97aedc59461b75e87cc605787861116e85",
+      "machineText": "**多視窗應用程式**：建置具有多個獨立視窗的應用程式（儀表板、偏好設定、工具等）",
+      "status": "machine-translated",
+      "sourcePreview": "**Multi-window applications**: Build apps with multiple independent windows (dashboards, preferences…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0072-text-01": {
       "sourceHash": "bff495978d18914810e7bbe69622c01a10d4d3b8f4c6de246d06da9e701bfeb2",
       "targetHash": "6f59ef7d37ac7eb44c387b1a87423b3aace296aabde397b2767f192d8120c282",
-      "status": "migration-review",
-      "sourcePreview": "**Explicit window references**: Each window is an object you can store and manipulate directly"
+      "machineHash": "6f59ef7d37ac7eb44c387b1a87423b3aace296aabde397b2767f192d8120c282",
+      "machineText": "**明確的視窗參照**：每個視窗都是可儲存並直接操作的物件",
+      "status": "machine-translated",
+      "sourcePreview": "**Explicit window references**: Each window is an object you can store and manipulate directly",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0073-text-01": {
       "sourceHash": "2b8167979a7cf8262265a1a3cd37776287e0262d63b1368dce03d47047f728f2",
       "targetHash": "3d560d4a2a6cce73f914e370fa7ca7f5cc926975d52c8ed7b521e7d4a99d2415",
-      "status": "migration-review",
-      "sourcePreview": "**Dynamic window creation**: Create and destroy windows at any time during runtime"
+      "machineHash": "3d560d4a2a6cce73f914e370fa7ca7f5cc926975d52c8ed7b521e7d4a99d2415",
+      "machineText": "**動態建立視窗**：可在執行期間隨時建立及銷毀視窗",
+      "status": "machine-translated",
+      "sourcePreview": "**Dynamic window creation**: Create and destroy windows at any time during runtime",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0074-text-01": {
       "sourceHash": "8307d2a8f41f9043aa6ef582d46e040d06181547843809694025c1be826ed2d9",
-      "targetHash": "89e1bfe84618941af681e27bc2f378fc14ee6d9fd916e2034b516316c7d6a060",
-      "status": "migration-review",
-      "sourcePreview": "**Independent window state**: Each window has its own events, properties, and lifecycle"
+      "targetHash": "d180940628649c898c32c9fda9609413b9a98ade0d876fbf6093b4054c15abf2",
+      "machineHash": "d180940628649c898c32c9fda9609413b9a98ade0d876fbf6093b4054c15abf2",
+      "machineText": "**獨立的視窗狀態**：每個視窗都有自己的事件、屬性和生命週期",
+      "status": "machine-translated",
+      "sourcePreview": "**Independent window state**: Each window has its own events, properties, and lifecycle",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0075-text-01": {
       "sourceHash": "598eb0a27aa62a0f5dd0ba33df7b61fecc3c10c86a1b43af74f562290a07cf55",
-      "targetHash": "f5999012bc0ab6960d7ae4e17f667340cfa13fe68b035ba7f1b9c43d3c6b881d",
-      "status": "migration-review",
-      "sourcePreview": "**Better architecture**: Window management is object-oriented rather than context-based"
+      "targetHash": "49a676cdab326ce554d6b0a8d3811ac2cce55dded3ad968a74d0a48f9302ffe2",
+      "machineHash": "49a676cdab326ce554d6b0a8d3811ac2cce55dded3ad968a74d0a48f9302ffe2",
+      "machineText": "**更好的架構**：視窗管理以物件為導向，而非以 context 為基礎",
+      "status": "machine-translated",
+      "sourcePreview": "**Better architecture**: Window management is object-oriented rather than context-based",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0076-heading-01": {
       "sourceHash": "08d1284a2cd896906196caad22f6b479cda13afcc298c10bb9ab57c79e670870",
-      "targetHash": "731c94c9ec138dd7472ffd3e8b0f16bec910d8c02152b68ab1c3d4605147b4d2",
-      "status": "migration-review",
-      "sourcePreview": "Migration Steps"
+      "targetHash": "bbc438957af2001b8c8e42851d5d3dc3b3950a6c10514d7e95efbe9b98d7128f",
+      "machineHash": "bbc438957af2001b8c8e42851d5d3dc3b3950a6c10514d7e95efbe9b98d7128f",
+      "machineText": "遷移步驟",
+      "status": "machine-translated",
+      "sourcePreview": "Migration Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0077-heading-01": {
       "sourceHash": "f903319ee80951919d4e38284c84314e957ff0cef76fca5c591c2f5f04bc1a25",
       "targetHash": "f614f42961b9f988dca930bfbac2b985f0ed922936454faf6007ff8f83394bda",
-      "status": "migration-review",
-      "sourcePreview": "Step 1: Update Dependencies"
+      "machineHash": "f614f42961b9f988dca930bfbac2b985f0ed922936454faf6007ff8f83394bda",
+      "machineText": "步驟1：更新相依套件",
+      "status": "machine-translated",
+      "sourcePreview": "Step 1: Update Dependencies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0078-text-01": {
       "sourceHash": "c8b71ab7ae791c108f1c2fcff54f83956936abb994b7a72057bcadbbe644394a",
       "targetHash": "793b6dad529a2c936e27d31735f381b82cd342585526711d1bd1cdaef59df996",
-      "status": "migration-review",
-      "sourcePreview": "**go.mod:**"
+      "machineHash": "793b6dad529a2c936e27d31735f381b82cd342585526711d1bd1cdaef59df996",
+      "machineText": "**go.mod：**",
+      "status": "machine-translated",
+      "sourcePreview": "**go.mod:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0079-text-01": {
       "sourceHash": "efd4b0e472de77f719f6b43486be2087e55d28a5ec11c271146805045f86efb1",
-      "targetHash": "a0e4e87a7e21ff712e099ce62756f925e9d56749d6363449e66cfbfe7287459f",
-      "status": "migration-review",
-      "sourcePreview": "**Update:**"
+      "targetHash": "68610e9233793f3cc4ee6d4595d6a3f6858b4e2c1dcd1280c001ea737fe8b0b6",
+      "machineHash": "68610e9233793f3cc4ee6d4595d6a3f6858b4e2c1dcd1280c001ea737fe8b0b6",
+      "machineText": "**更新後：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Update:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0080-heading-01": {
       "sourceHash": "fdeff0455b087df1f8a869ab4af27bc01877c3f33777bdb14cd4b7dacc94f728",
       "targetHash": "62f00c1512cdb86a87c6f2d7580c8ddade1af76efe90b66d1033ad8343676417",
-      "status": "migration-review",
-      "sourcePreview": "Step 2: Update main.go"
+      "machineHash": "62f00c1512cdb86a87c6f2d7580c8ddade1af76efe90b66d1033ad8343676417",
+      "machineText": "步驟2：更新 main.go",
+      "status": "machine-translated",
+      "sourcePreview": "Step 2: Update main.go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0081-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0082-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0083-heading-01": {
       "sourceHash": "a742bebc1df8e883423d67bd154a2941f47a626030f4bb886549ff8f3b25dcdb",
       "targetHash": "dd06483582973e9d482a6f40e746d1c99fe586a2b5026d2af53056f22e1d582c",
-      "status": "migration-review",
-      "sourcePreview": "Step 3: Convert App Struct to Service"
+      "machineHash": "dd06483582973e9d482a6f40e746d1c99fe586a2b5026d2af53056f22e1d582c",
+      "machineText": "步驟3：將 App 結構轉換為服務",
+      "status": "machine-translated",
+      "sourcePreview": "Step 3: Convert App Struct to Service",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0084-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0085-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0086-heading-01": {
       "sourceHash": "8e2bb6fa8ba6f11f2f45477c76e15fd5a605995a193682d2b6aeb15c24b310df",
-      "targetHash": "ea83a7b2229ebb0ad4b2e3930d37e754cbb9ad496d43cdc025fa4ceaa5d11371",
-      "status": "migration-review",
-      "sourcePreview": "Step 4: Update Runtime Calls"
+      "targetHash": "5df487f2297f567eac29508d7ef2366a6109f0776dbe906842b5a113b0bb01a5",
+      "machineHash": "5df487f2297f567eac29508d7ef2366a6109f0776dbe906842b5a113b0bb01a5",
+      "machineText": "步驟4：更新 Runtime 呼叫",
+      "status": "machine-translated",
+      "sourcePreview": "Step 4: Update Runtime Calls",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0087-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0088-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0089-heading-01": {
       "sourceHash": "9671c54040f5d3d1186042c14003a09c72bf64ab119b00de915e2be62f899540",
       "targetHash": "602127087ff4c5354beb01b2c9bb834e6bf14812d6784d4c03c2ec1d6452042e",
-      "status": "migration-review",
-      "sourcePreview": "Step 5: Update Frontend"
+      "machineHash": "602127087ff4c5354beb01b2c9bb834e6bf14812d6784d4c03c2ec1d6452042e",
+      "machineText": "步驟5：更新前端",
+      "status": "machine-translated",
+      "sourcePreview": "Step 5: Update Frontend",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0090-text-01": {
       "sourceHash": "b4f051b53d52cf5f44330393ff7d16951deb9355a092b30fbc147cf3fb1fe0b4",
       "targetHash": "79b69e18d8d6a482bdffddac027bf233970638c20a3b43a57d8054245021f7fe",
-      "status": "migration-review",
-      "sourcePreview": "**Generate new bindings:**"
+      "machineHash": "79b69e18d8d6a482bdffddac027bf233970638c20a3b43a57d8054245021f7fe",
+      "machineText": "**產生新的繫結：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Generate new bindings:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0091-text-01": {
       "sourceHash": "4cd6e449b0844d8707b2ce619df8448f56aa91f05d44e8355d73e5f74462cb10",
       "targetHash": "3e796d7be204766ecff9614a407a584c05441c003421113dc14dcf37a82630a4",
-      "status": "migration-review",
-      "sourcePreview": "**Update imports:**"
+      "machineHash": "3e796d7be204766ecff9614a407a584c05441c003421113dc14dcf37a82630a4",
+      "machineText": "**更新匯入：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Update imports:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0092-text-01": {
       "sourceHash": "809df771ced479300e927d2ef01925e5a3e1f721a1cf41da92545354f51db3f8",
       "targetHash": "429fc4c5f627aaba2e39f2bfea5dec23e0f436639c9cc62941a3bcfdafaced4e",
-      "status": "migration-review",
-      "sourcePreview": "**Update event handling:**"
+      "machineHash": "429fc4c5f627aaba2e39f2bfea5dec23e0f436639c9cc62941a3bcfdafaced4e",
+      "machineText": "**更新事件處理：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Update event handling:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0093-heading-01": {
       "sourceHash": "85e67d6a83d14a80d742e7bf54c978770f514f5f905d6f25ba34060a779fedd6",
       "targetHash": "7aa4eb4554b97b0c3e3c346fa6f52ea88f6412e30b188ec8fbcaffb059af1759",
-      "status": "migration-review",
-      "sourcePreview": "Step 6: Update Configuration"
+      "machineHash": "7aa4eb4554b97b0c3e3c346fa6f52ea88f6412e30b188ec8fbcaffb059af1759",
+      "machineText": "步驟6：更新設定",
+      "status": "machine-translated",
+      "sourcePreview": "Step 6: Update Configuration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0094-text-01": {
       "sourceHash": "7c65c8855c6e6031fd901d65329225f0d26171f98a2a240e5f74c55783d3957d",
       "targetHash": "3384b5d3f9a536b135a4e4310d15aa986687123264555d6c76b54acc89204c40",
-      "status": "migration-review",
-      "sourcePreview": "**v2 (wails.json):**"
+      "machineHash": "3384b5d3f9a536b135a4e4310d15aa986687123264555d6c76b54acc89204c40",
+      "machineText": "**v2（wails.json）：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2 (wails.json):**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0095-text-01": {
       "sourceHash": "22f915875cf72939e5a7f4cdc890c638790900186dca5ed7f7f489ec6bb036dd",
       "targetHash": "7aed35fb387f094e704923b4544c021eb7a98ccfa5466ecbefecf52b3f422f7e",
-      "status": "migration-review",
-      "sourcePreview": "**v3 (wails.json):**"
+      "machineHash": "7aed35fb387f094e704923b4544c021eb7a98ccfa5466ecbefecf52b3f422f7e",
+      "machineText": "**v3（wails.json）：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3 (wails.json):**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0096-heading-01": {
       "sourceHash": "7f598e3ac24a8a6b763d41adf693b366f79c4580b02bcb42a5d1d543a7e6958d",
-      "targetHash": "37404e3a21f8ed1b1d783f602e7a734c475d8054d3467f123d6c07838c8170a8",
-      "status": "migration-review",
-      "sourcePreview": "Feature Mapping"
+      "targetHash": "0b0551ef3a44fe8df19b1d10b83beb5d1eada5d69faa73742d23e6e747e536b1",
+      "machineHash": "0b0551ef3a44fe8df19b1d10b83beb5d1eada5d69faa73742d23e6e747e536b1",
+      "machineText": "功能對應",
+      "status": "machine-translated",
+      "sourcePreview": "Feature Mapping",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0097-heading-01": {
       "sourceHash": "97239bd069268471081ea2d5bd327bbb57858668e8a9358d01f3f6cc5527f063",
       "targetHash": "564ddf992f7c248f53837c8420ccf9332a470d97dd11b3123bab4e956ef9caed",
-      "status": "migration-review",
-      "sourcePreview": "dialogs"
+      "machineHash": "564ddf992f7c248f53837c8420ccf9332a470d97dd11b3123bab4e956ef9caed",
+      "machineText": "對話方塊",
+      "status": "machine-translated",
+      "sourcePreview": "dialogs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0098-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0099-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0100-heading-01": {
       "sourceHash": "93534e3e8a8dccfdd5aacfa441553783e6c5be860d7309c9c965b042a9ab1b77",
       "targetHash": "d02b3d6b2655bac58809fc4160fa121a143e4031f18e7034e65720486c6301f3",
-      "status": "migration-review",
-      "sourcePreview": "Menus"
+      "machineHash": "d02b3d6b2655bac58809fc4160fa121a143e4031f18e7034e65720486c6301f3",
+      "machineText": "選單",
+      "status": "machine-translated",
+      "sourcePreview": "Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0101-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0102-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0103-heading-01": {
       "sourceHash": "2a2a416f22c1b78b6138d1904f67b680795d09b996684a47e09f217abc062d92",
       "targetHash": "0e91ac94149952cb96ed26b39d45cf9146c82c0d61160b89e1564e329e1d74ff",
-      "status": "migration-review",
-      "sourcePreview": "System Tray"
+      "machineHash": "0e91ac94149952cb96ed26b39d45cf9146c82c0d61160b89e1564e329e1d74ff",
+      "machineText": "系統匣",
+      "status": "machine-translated",
+      "sourcePreview": "System Tray",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0104-text-01": {
       "sourceHash": "463e16128811b250f9e20e2d53dadf925ae20811b2d27d72234ad55c2b1ec768",
       "targetHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
-      "status": "migration-review",
-      "sourcePreview": "**v2:**"
+      "machineHash": "4462d67c402c403bb4c7bc120ed10e4f9351122ea47f37163557c3c47ba71d38",
+      "machineText": "**v2：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v2:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0105-text-01": {
       "sourceHash": "08714030b628d9224a7875018d68ab84e3fc150c0da2cd1c4721dd8cd01535ed",
       "targetHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
-      "status": "migration-review",
-      "sourcePreview": "**v3:**"
+      "machineHash": "c8f1e78fad75534f316237e3d97a127de0b4393d73a48460a2e40e25fe133690",
+      "machineText": "**v3：**",
+      "status": "machine-translated",
+      "sourcePreview": "**v3:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0106-heading-01": {
       "sourceHash": "e2f95b4099ab32568e8f8b26a4d2b7995163c5fb0debdd74fa994155eca4af43",
       "targetHash": "f92d99c7621bc7af10560e1c1dd89d0eb94119cf98df8c5b0a2b3496df97f677",
-      "status": "migration-review",
-      "sourcePreview": "Common Issues"
+      "machineHash": "f92d99c7621bc7af10560e1c1dd89d0eb94119cf98df8c5b0a2b3496df97f677",
+      "machineText": "常見問題",
+      "status": "machine-translated",
+      "sourcePreview": "Common Issues",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0107-heading-01": {
       "sourceHash": "677f2e741b11e19e59295b9b2256c1802db57232bd36e95c008e1b3e9627b8bf",
       "targetHash": "9b88ea3edf945ab05ce2bb9e63463e6d5a45270d929d7d81da6f09bdc1f7f356",
-      "status": "migration-review",
-      "sourcePreview": "Issue: Bindings not found"
+      "machineHash": "9b88ea3edf945ab05ce2bb9e63463e6d5a45270d929d7d81da6f09bdc1f7f356",
+      "machineText": "問題：找不到繫結",
+      "status": "machine-translated",
+      "sourcePreview": "Issue: Bindings not found",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0108-text-01": {
       "sourceHash": "fdaf3288aa44a7d6c49a44a5938556e10680c038a9295b8299100d36cf90309a",
       "targetHash": "61114faa52d51e7a8cee1aae5cb362b9a0b19fa091306213d5924e7379e4a5f7",
-      "status": "migration-review",
-      "sourcePreview": "**Problem:** Import errors after migration"
+      "machineHash": "61114faa52d51e7a8cee1aae5cb362b9a0b19fa091306213d5924e7379e4a5f7",
+      "machineText": "\u003cstrong\u003e問題：\u003c/strong\u003e遷移後發生匯入錯誤",
+      "status": "machine-translated",
+      "sourcePreview": "**Problem:** Import errors after migration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0109-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "611b83e3ae537b9f08af93e9251d094e5d8e3480c3d03e7549d64fc909c65825",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineText": "**解決方法：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0110-heading-01": {
       "sourceHash": "91b75e7f7a0addf0247d6f97ba1c12965510f7bee246c8257aa4109a096d66b4",
       "targetHash": "78effe9fc801093544256398a033c98a7afd612e0c62d91ad58196edb7ce6b81",
-      "status": "migration-review",
-      "sourcePreview": "Issue: Context errors"
+      "machineHash": "78effe9fc801093544256398a033c98a7afd612e0c62d91ad58196edb7ce6b81",
+      "machineText": "問題：Context 錯誤",
+      "status": "machine-translated",
+      "sourcePreview": "Issue: Context errors",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0111-text-01": {
       "sourceHash": "f8f429f6f2d6f5cb9e9f3091b04a9aee8cd6434efd7a9106b0a567cedc60c5e3",
       "targetHash": "f6fd3cb35de2a596731ff98cd6b5c07b2ea0033e1a2ae75bda5e9749173a20af",
-      "status": "migration-review",
-      "sourcePreview": "**Problem:** `ctx` not available"
+      "machineHash": "f6fd3cb35de2a596731ff98cd6b5c07b2ea0033e1a2ae75bda5e9749173a20af",
+      "machineText": "\u003cstrong\u003e問題：\u003c/strong\u003e無法使用`ctx`",
+      "status": "machine-translated",
+      "sourcePreview": "**Problem:** `ctx` not available",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0112-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "611b83e3ae537b9f08af93e9251d094e5d8e3480c3d03e7549d64fc909c65825",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineText": "**解決方法：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0113-text-01": {
       "sourceHash": "14fd03ff6390ea3cb646a9d43614529f3ec60d7e0f28fa18ed971a277f425695",
       "targetHash": "242c559833a92201aae2a82d0d110b9b715cdf6af5abb8fc36334c427deada9a",
-      "status": "migration-review",
-      "sourcePreview": "Store app reference instead:"
+      "machineHash": "242c559833a92201aae2a82d0d110b9b715cdf6af5abb8fc36334c427deada9a",
+      "machineText": "改為儲存 app 參照：",
+      "status": "machine-translated",
+      "sourcePreview": "Store app reference instead:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0114-heading-01": {
       "sourceHash": "0a20bcd20f3d1346506262f61b1d354c85125d926a4224cf6fef080af44ee00d",
       "targetHash": "7f9f88baf9db7f1b6033603b3a88141bf85b978b886d8c544a8a07ee34ea900b",
-      "status": "migration-review",
-      "sourcePreview": "Issue: Window methods not working"
+      "machineHash": "7f9f88baf9db7f1b6033603b3a88141bf85b978b886d8c544a8a07ee34ea900b",
+      "machineText": "問題：視窗方法無法運作",
+      "status": "machine-translated",
+      "sourcePreview": "Issue: Window methods not working",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0115-text-01": {
       "sourceHash": "e02f62bc9f0af7f7381146c9eb847ab40303bb784a9a7f109aeaf388bd98ebc1",
       "targetHash": "553833fa5e97221dce5e3f12fa922532bf19129516e5ef39de7f3a9ba067591f",
-      "status": "migration-review",
-      "sourcePreview": "**Problem:** `runtime.WindowSetTitle()` doesn't exist"
+      "machineHash": "553833fa5e97221dce5e3f12fa922532bf19129516e5ef39de7f3a9ba067591f",
+      "machineText": "**問題：**`runtime.WindowSetTitle()`不存在",
+      "status": "machine-translated",
+      "sourcePreview": "**Problem:** `runtime.WindowSetTitle()` doesn't exist",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0116-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "611b83e3ae537b9f08af93e9251d094e5d8e3480c3d03e7549d64fc909c65825",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineText": "**解決方法：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0117-text-01": {
       "sourceHash": "07828338eeebbb9b83db7f6848274e127bdf800358f4eaf898b76166e07a0623",
       "targetHash": "b88f1be4e71f44e33ff74039506861f115d31aa698a4c27a44d5e7fbddf90b86",
-      "status": "migration-review",
-      "sourcePreview": "Use window methods directly:"
+      "machineHash": "b88f1be4e71f44e33ff74039506861f115d31aa698a4c27a44d5e7fbddf90b86",
+      "machineText": "直接使用視窗方法：",
+      "status": "machine-translated",
+      "sourcePreview": "Use window methods directly:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0118-heading-01": {
       "sourceHash": "600c859dc2e435684ca9cfe8308eefbac2c7a59e00bfbcdb5d7c7b765cd60cb6",
       "targetHash": "9b4baa8b6b9a968be810c75e4511b7c99c5e0b66e2fa393d389c777de9924494",
-      "status": "migration-review",
-      "sourcePreview": "Issue: Events not firing"
+      "machineHash": "9b4baa8b6b9a968be810c75e4511b7c99c5e0b66e2fa393d389c777de9924494",
+      "machineText": "問題：事件未觸發",
+      "status": "machine-translated",
+      "sourcePreview": "Issue: Events not firing",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0119-text-01": {
       "sourceHash": "51d930234f8f4accc40c4473666b3c2e2cb41eea9c8f7067675abd0a8d28a9bf",
-      "targetHash": "a8dd1fc182840d68ab16facda1569d3de8cbdb5167392297a9b066ac46e421f8",
-      "status": "migration-review",
-      "sourcePreview": "**Problem:** Events registered but not received"
+      "targetHash": "7c0dd7e42af6f273ad905ec0f4943890cdac7461775d0e50abaa169f95f882d2",
+      "machineHash": "7c0dd7e42af6f273ad905ec0f4943890cdac7461775d0e50abaa169f95f882d2",
+      "machineText": "\u003cstrong\u003e問題：\u003c/strong\u003e事件已註冊，但未收到事件",
+      "status": "machine-translated",
+      "sourcePreview": "**Problem:** Events registered but not received",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0120-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "611b83e3ae537b9f08af93e9251d094e5d8e3480c3d03e7549d64fc909c65825",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
+      "machineText": "**解決方法：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0121-text-01": {
       "sourceHash": "23399611f9744e4c493aacf657158d6be28a4a590847c331a2919aca25fe2abd",
-      "targetHash": "4a043e77e35618b1af8adb641530cd7f8fd5b0a64ee9ad4dc3449a6596ba1df3",
-      "status": "migration-review",
-      "sourcePreview": "Check event names match exactly:"
+      "targetHash": "04a29837f0f030e228a6e3a18ce2cb4132034559a16c25ccd5751d2ca5160931",
+      "machineHash": "04a29837f0f030e228a6e3a18ce2cb4132034559a16c25ccd5751d2ca5160931",
+      "machineText": "確認事件名稱完全相符：",
+      "status": "machine-translated",
+      "sourcePreview": "Check event names match exactly:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0122-heading-01": {
       "sourceHash": "8fc9129d2b46de1a4aef98a2ce7b53a0e48f9ef21b615a8492a51dbb707a15cc",
       "targetHash": "7c2f365e5b4248d878e613a353c83c46406c191d209c115733c7b54e1b833a72",
-      "status": "migration-review",
-      "sourcePreview": "Testing Migration"
+      "machineHash": "7c2f365e5b4248d878e613a353c83c46406c191d209c115733c7b54e1b833a72",
+      "machineText": "測試遷移結果",
+      "status": "machine-translated",
+      "sourcePreview": "Testing Migration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0123-heading-01": {
       "sourceHash": "7346030400bf203154bac6f5b9d9c0c8cec388fba870753ae77a977e3e113d38",
       "targetHash": "f8b12e8533f1295fff75f62539c720bafb3848f4d9e043f20c54f5681f0aa251",
-      "status": "migration-review",
-      "sourcePreview": "Checklist"
+      "machineHash": "f8b12e8533f1295fff75f62539c720bafb3848f4d9e043f20c54f5681f0aa251",
+      "machineText": "檢查清單",
+      "status": "machine-translated",
+      "sourcePreview": "Checklist",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0124-text-01": {
       "sourceHash": "6ff0fa0b889db38dc506c981fffa2e02a6d97a39ee69018b6b6f76cbc431b122",
-      "targetHash": "556336f384373f8ee1439e63fccd23edaf29ef00563c29cb578036ef37d6904f",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Application starts without errors"
+      "targetHash": "496e4d75fc1a37e969a1cc1f21acf5b96ca3dc6d0ea7b98e6df2d71a33f582da",
+      "machineHash": "496e4d75fc1a37e969a1cc1f21acf5b96ca3dc6d0ea7b98e6df2d71a33f582da",
+      "machineText": "[ ]應用程式啟動時沒有錯誤",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Application starts without errors",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0125-text-01": {
       "sourceHash": "873b511a0451b94f46e2e33f0b5e05b210f45641d14e72423e8f20620dbc5941",
-      "targetHash": "a180f9d0d4b769e5dc9c4c156e519a34da961bc4d6f3004b9d4b5441ad5c44eb",
-      "status": "migration-review",
-      "sourcePreview": "[ ] All bindings work"
+      "targetHash": "47c8b7ac9ccf26ba24933929daf6a7459992431149b66bab4b22b0b7db64fafb",
+      "machineHash": "47c8b7ac9ccf26ba24933929daf6a7459992431149b66bab4b22b0b7db64fafb",
+      "machineText": "[ ]所有繫結皆可運作",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] All bindings work",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0126-text-01": {
       "sourceHash": "b9b61d8c4b76aabd9db9fa408c2131c71c9c2d094568061217bbb20c122d77ee",
-      "targetHash": "708ff5394c04638d06952adfc0ff3309be0dd4ce85497c8fba94d2da1ce957b2",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Events are sent and received"
+      "targetHash": "cc276ea245d916e6f8661d404dc10787e5c743b53e3db55f42c8dd877a282794",
+      "machineHash": "cc276ea245d916e6f8661d404dc10787e5c743b53e3db55f42c8dd877a282794",
+      "machineText": "[ ]事件可正常傳送及接收",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Events are sent and received",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0127-text-01": {
       "sourceHash": "c4ecfb943d05638a3aa830a2f00ee86986dd99fa8710f9a149325d324eb38036",
-      "targetHash": "4766333f1e8909df8a8ada9ee31dbd7a6f0a2298a8df5be3462f0187c5eb188e",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Windows open and close correctly"
+      "targetHash": "03cd287e07cac5d99f4c5c95a8e9722cddf36eb694460f13e94426dadb5bfdb4",
+      "machineHash": "03cd287e07cac5d99f4c5c95a8e9722cddf36eb694460f13e94426dadb5bfdb4",
+      "machineText": "[ ]視窗可正確開啟及關閉",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Windows open and close correctly",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0128-text-01": {
       "sourceHash": "3b871136624a3d9333b1f6539c3617bd8ba6c7535b60152f99990efff1a1542b",
-      "targetHash": "86c07d1314c10387de9c7d031dd5b70137469d2e4789b0fac4ae285dd33e7e9c",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Menus work (if applicable)"
+      "targetHash": "7223846943fbf9afed6c23f13001b9827b58faa9c563f76e83edc21ee40b7a9f",
+      "machineHash": "7223846943fbf9afed6c23f13001b9827b58faa9c563f76e83edc21ee40b7a9f",
+      "machineText": "[ ]選單可正常運作（如適用）",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Menus work (if applicable)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0129-text-01": {
       "sourceHash": "ca9a67ab58f2da15724756da623ba1fd5134264c1bd5e8186c977d1f05800fb4",
-      "targetHash": "212e58cffc6b9a20d562b25cc399e0425b7589ed2da06d4d600b51ede40d4ea3",
-      "status": "migration-review",
-      "sourcePreview": "[ ] dialogs work (if applicable)"
+      "targetHash": "05f01b0c354d4898c671feda412516b56859739aed2862fb2383705489f7e67d",
+      "machineHash": "05f01b0c354d4898c671feda412516b56859739aed2862fb2383705489f7e67d",
+      "machineText": "[ ]對話方塊可正常運作（如適用）",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] dialogs work (if applicable)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0130-text-01": {
       "sourceHash": "214d4f2ca32a73479af1562628948d94bc8a076a2dfbedb5a28c917239711462",
-      "targetHash": "10c282a8402c17965d0cec397dc254e2a2558c8fc2c7a5a50a549de5c9a478cf",
-      "status": "migration-review",
-      "sourcePreview": "[ ] System tray works (if applicable)"
+      "targetHash": "4028838cf533625a6fd9d3197cc68d76a07f3fa7c01cd1893a91a34801fc5f27",
+      "machineHash": "4028838cf533625a6fd9d3197cc68d76a07f3fa7c01cd1893a91a34801fc5f27",
+      "machineText": "[ ]系統匣可正常運作（如適用）",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] System tray works (if applicable)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0131-text-01": {
       "sourceHash": "7db2fab4ed0eb3e6676d2be242ef593acc6a6aadbd4b6f0a8d6b203dea17a6fd",
-      "targetHash": "d6b8048e2737697d1927d11ea4774bde6446101dd12157ac2ae5d26cc7600719",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Build process works"
+      "targetHash": "2bfe10eb26f90a3a9862862c29549239cc151199ac693c6b2b5d02f9c4650909",
+      "machineHash": "2bfe10eb26f90a3a9862862c29549239cc151199ac693c6b2b5d02f9c4650909",
+      "machineText": "[ ]建置流程可正常運作",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Build process works",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0132-text-01": {
       "sourceHash": "08652f2c1cdd148599c2056045521da0ff0e3dc2393c31f4ebc30ce17047feb9",
-      "targetHash": "23c40580ea010255424906624efd8d25e367e6da05c91cf4bc8d74a0d3e36b68",
-      "status": "migration-review",
-      "sourcePreview": "[ ] Production build works"
+      "targetHash": "55f3b5259edc582c94d875658fd8525c6f8a75915ff28aed8dc8f6021346b92a",
+      "machineHash": "55f3b5259edc582c94d875658fd8525c6f8a75915ff28aed8dc8f6021346b92a",
+      "machineText": "[ ]正式環境建置可正常運作",
+      "status": "machine-translated",
+      "sourcePreview": "[ ] Production build works",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0133-heading-01": {
       "sourceHash": "5dab4d9e18d3b46202cbd9d649f869f5ab7a6c2ddabb3d1099784056ac7418eb",
       "targetHash": "ccf4a6da0ce7b226cae69aedd8dffda7456ee420ccee855294da1ed2daf915d8",
-      "status": "migration-review",
-      "sourcePreview": "Test Commands"
+      "machineHash": "ccf4a6da0ce7b226cae69aedd8dffda7456ee420ccee855294da1ed2daf915d8",
+      "machineText": "測試命令",
+      "status": "machine-translated",
+      "sourcePreview": "Test Commands",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0134-heading-01": {
       "sourceHash": "3a6b80216a599b74aa201859560bef372d75ec87932a2544c2a21d8259bb8321",
-      "targetHash": "f7a4795f448b900f4d8377647b8329541cd77cf0d3c12cb481727771f2f4f21e",
-      "status": "migration-review",
-      "sourcePreview": "Benefits of v3"
+      "targetHash": "7370716e8bfc7e49f142eb51050bec9ee1460730a965f3faed3a400f579c8d01",
+      "machineHash": "7370716e8bfc7e49f142eb51050bec9ee1460730a965f3faed3a400f579c8d01",
+      "machineText": "v3的優點",
+      "status": "machine-translated",
+      "sourcePreview": "Benefits of v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0135-heading-01": {
       "sourceHash": "442aded87a55aa8c8f7d5ff0c30228150d4b1cb8756e4be138d615ca4708fc26",
       "targetHash": "8462428e74b2d53fe2e40df2091c986bf11bb1ccbcd56dada2995d592b8db785",
-      "status": "migration-review",
-      "sourcePreview": "Performance"
+      "machineHash": "8462428e74b2d53fe2e40df2091c986bf11bb1ccbcd56dada2995d592b8db785",
+      "machineText": "效能",
+      "status": "machine-translated",
+      "sourcePreview": "Performance",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0136-text-01": {
       "sourceHash": "2a5218e8cadc5a6b3bbd49cc427dd7e263c2ca608f27f6b09efeda6cafc5fa00",
-      "targetHash": "ad38581c7be3b74417c1a0b4dd220342d7362ea3696493b650fba1c6648318cd",
-      "status": "migration-review",
-      "sourcePreview": "**Faster startup** - Optimised initialisation"
+      "targetHash": "f59c58921ae352c3f70219d9fafdca900533ed91ea7851f5a03929c2813a3b5c",
+      "machineHash": "f59c58921ae352c3f70219d9fafdca900533ed91ea7851f5a03929c2813a3b5c",
+      "machineText": "**啟動速度更快**－最佳化初始化流程",
+      "status": "machine-translated",
+      "sourcePreview": "**Faster startup** - Optimised initialisation",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0137-text-01": {
       "sourceHash": "c65b35799c30a136d7ef7624cdefda12d1b0c57aad60f4be28a679c14081fd34",
-      "targetHash": "1d868874a8d4df3d507aa834d1182afe5129db186117fe1d14dd5a74e2ab3ba4",
-      "status": "migration-review",
-      "sourcePreview": "**Lower memory** - Efficient resource usage"
+      "targetHash": "cdeaee8b15fdf2778a1fc66ed14b5323a1d1c4b09f605a34149e3cf12a479a4f",
+      "machineHash": "cdeaee8b15fdf2778a1fc66ed14b5323a1d1c4b09f605a34149e3cf12a479a4f",
+      "machineText": "**記憶體用量更低**－有效率地使用資源",
+      "status": "machine-translated",
+      "sourcePreview": "**Lower memory** - Efficient resource usage",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0138-text-01": {
       "sourceHash": "21c593107bedd72f31be8a8782ed7bcb94ba35f1a8c07e7afe15fc54f1925001",
-      "targetHash": "06713e00e1db1dca085d930d9f8f6b63c9e52775a65cbb9d79d4eec2471d8278",
-      "status": "migration-review",
-      "sourcePreview": "**Better bridge** - \u0026lt;1ms call overhead"
+      "targetHash": "25e1fcacaea9e4a12a1b39740e85a75b7c1724b75caea215f49dd4839b16e58e",
+      "machineHash": "25e1fcacaea9e4a12a1b39740e85a75b7c1724b75caea215f49dd4839b16e58e",
+      "machineText": "**更優良的橋接機制**－每次呼叫的額外負擔為\u0026lt;1ms",
+      "status": "machine-translated",
+      "sourcePreview": "**Better bridge** - \u0026lt;1ms call overhead",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0139-heading-01": {
       "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
       "targetHash": "25f5ce57a1909740c1f26740d3f32767c9ac8f7122bf01b0845629716fb496eb",
-      "status": "migration-review",
-      "sourcePreview": "Features"
+      "machineHash": "25f5ce57a1909740c1f26740d3f32767c9ac8f7122bf01b0845629716fb496eb",
+      "machineText": "功能",
+      "status": "machine-translated",
+      "sourcePreview": "Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0140-text-01": {
       "sourceHash": "fa35f5203ea1ecca1070fa16cf69ca1f4090bbff265b7c91969c47dabd4585d7",
       "targetHash": "0d645bcb1d08a61607f3c03e64489c5092272e9dc3f07292cf6f9fdc8c12dd2d",
-      "status": "migration-review",
-      "sourcePreview": "**Multi-window** - Native support"
+      "machineHash": "0d645bcb1d08a61607f3c03e64489c5092272e9dc3f07292cf6f9fdc8c12dd2d",
+      "machineText": "**多視窗**－原生支援",
+      "status": "machine-translated",
+      "sourcePreview": "**Multi-window** - Native support",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0141-text-01": {
       "sourceHash": "a9e3a825b8d6d3516e0d02f2acf246f76ccca212cb8c20c0c510f7b2e0136bd6",
-      "targetHash": "513d24b573674517175fb40df5d0799b343cd40dd89342c8e64b5e45f255ab8a",
-      "status": "migration-review",
-      "sourcePreview": "**System tray** - Built-in"
+      "targetHash": "dbbfa604e66e18bd2b990f176e014ba7b30c2b161257504d4bbb8bdf44cb48e2",
+      "machineHash": "dbbfa604e66e18bd2b990f176e014ba7b30c2b161257504d4bbb8bdf44cb48e2",
+      "machineText": "**系統匣**－內建",
+      "status": "machine-translated",
+      "sourcePreview": "**System tray** - Built-in",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0142-text-01": {
       "sourceHash": "8370f46577584787add31aad308c219622d20caaafb5cd1cbf42ceb0975d9309",
-      "targetHash": "1ae9da7f0f0cdb354e4c494b44b66d10c755106ee65cf90e94496cee35c48df4",
-      "status": "migration-review",
-      "sourcePreview": "**Better events** - Typed, simpler API"
+      "targetHash": "d9d5765cd6cd2ae731927a0d21a86802f0b47283ff2a12c9f45460eab3d73a42",
+      "machineHash": "d9d5765cd6cd2ae731927a0d21a86802f0b47283ff2a12c9f45460eab3d73a42",
+      "machineText": "**更完善的事件** - 具備型別且更簡潔的 API",
+      "status": "machine-translated",
+      "sourcePreview": "**Better events** - Typed, simpler API",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0143-text-01": {
       "sourceHash": "32fc13e2f58566255e4e6ca9149b861781741e1a3018abcc462a398525a6e2af",
-      "targetHash": "c7b2d0eb0856d79fb26418f3b992c2fadae96a8027dad5a996bb8107ceef0ac2",
-      "status": "migration-review",
-      "sourcePreview": "**Services** - Better code organisation"
+      "targetHash": "c4f00e2626025e5379e90933469150cce16b0e4e0879528e1a9261552bde2166",
+      "machineHash": "c4f00e2626025e5379e90933469150cce16b0e4e0879528e1a9261552bde2166",
+      "machineText": "**服務** - 更完善的程式碼組織",
+      "status": "machine-translated",
+      "sourcePreview": "**Services** - Better code organisation",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0144-heading-01": {
       "sourceHash": "9074f64a8b19b4627c91a76eb297f7ee5e8083a439507033f63a0dcad5044fc4",
-      "targetHash": "15dc79a661b7ec6dbc1c32301df77ebba0c4a5b329b7fb5b584d4b4e4ef409f8",
-      "status": "migration-review",
-      "sourcePreview": "Developer Experience"
+      "targetHash": "af4c463dce7a9265f04d214d7e1fabd3bdc2b5cb4083856d6a06c41280a003a7",
+      "machineHash": "af4c463dce7a9265f04d214d7e1fabd3bdc2b5cb4083856d6a06c41280a003a7",
+      "machineText": "開發者體驗",
+      "status": "machine-translated",
+      "sourcePreview": "Developer Experience",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0145-text-01": {
       "sourceHash": "cced1d81c625c764b94258f0d0bf3e06a14eb61eff71264b2f67ae55cd491df2",
-      "targetHash": "aae2304fc86cd9c91b0ff0f707f24e0b53c2251db2e7e0d87008a2fe62ba8e6d",
-      "status": "migration-review",
-      "sourcePreview": "**Type safety** - Full TypeScript support"
+      "targetHash": "e91982ad44c657754105cb3edbb49581c1aae2f6804716e7d27b1b4eab52f88f",
+      "machineHash": "e91982ad44c657754105cb3edbb49581c1aae2f6804716e7d27b1b4eab52f88f",
+      "machineText": "**型別安全** - 完整支援 TypeScript",
+      "status": "machine-translated",
+      "sourcePreview": "**Type safety** - Full TypeScript support",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0146-text-01": {
       "sourceHash": "6b8ad9a93d01af3587e3901ad7dcff702081525f34f36317cf6c08c33b0a0fb4",
-      "targetHash": "dec705ba3476b5e2ac7f08f98c8d9e7ce8b96dff1eec8d25435a6593d6674725",
-      "status": "migration-review",
-      "sourcePreview": "**Better errors** - Clear error messages"
+      "targetHash": "9b9c3f857b89628b557627100ad6951ce8d4fcaac14063c0677bb2c89a80e07a",
+      "machineHash": "9b9c3f857b89628b557627100ad6951ce8d4fcaac14063c0677bb2c89a80e07a",
+      "machineText": "**更完善的錯誤處理** - 清楚的錯誤訊息",
+      "status": "machine-translated",
+      "sourcePreview": "**Better errors** - Clear error messages",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0147-text-01": {
       "sourceHash": "7fe67c68b2dbbd458eb6b915e17f5de03f6de0457bb056bc6e90c414d7d3e565",
-      "targetHash": "39491d348ec4d74517fc3fe5da52ef81127f2f9d3758f8a49e8b7eab15a45c3b",
-      "status": "migration-review",
-      "sourcePreview": "**Hot reload** - Faster development"
+      "targetHash": "7d8325f0e5820351d108c123bd1500d7b6c5b2bff2b56f84fb39d82a3c3f11ce",
+      "machineHash": "7d8325f0e5820351d108c123bd1500d7b6c5b2bff2b56f84fb39d82a3c3f11ce",
+      "machineText": "**熱重新載入** - 加快開發速度",
+      "status": "machine-translated",
+      "sourcePreview": "**Hot reload** - Faster development",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0148-text-01": {
       "sourceHash": "4a27bf7375a42a3ec53c238b58777bafc63ed62ca6d39c2b93fccf3235713d27",
-      "targetHash": "69d6d82ee72cc9168876747d1118173b33a9fc3c1ed1706cfe0abd4459f884b0",
-      "status": "migration-review",
-      "sourcePreview": "**Better docs** - Comprehensive guides"
+      "targetHash": "9c22e9fb991387eead38bd406247c7a6f46e274b4c71e783896dfef66660fd18",
+      "machineHash": "9c22e9fb991387eead38bd406247c7a6f46e274b4c71e783896dfef66660fd18",
+      "machineText": "**更完善的文件** - 完整詳盡的指南",
+      "status": "machine-translated",
+      "sourcePreview": "**Better docs** - Comprehensive guides",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0149-heading-01": {
       "sourceHash": "806ed836244278bb55c063a25611c231502a0d320e3f42c53c3a355cdbc1c0f3",
       "targetHash": "e7b1e10c6212478e38feadd335c2ff677a8a688bee53e07a17eb4d72a3d34c50",
-      "status": "migration-review",
-      "sourcePreview": "Getting Help"
+      "machineHash": "e7b1e10c6212478e38feadd335c2ff677a8a688bee53e07a17eb4d72a3d34c50",
+      "machineText": "取得協助",
+      "status": "machine-translated",
+      "sourcePreview": "Getting Help",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0150-heading-01": {
       "sourceHash": "e89b30aa1dc30a6ad8c34610689bede83b3ef645a24c3a84a0990826687fb735",
       "targetHash": "7880dd3efa828cd2eeb4ef89581cdcda1a3b56db0928d7e47e83d5c0e2f7dc33",
-      "status": "migration-review",
-      "sourcePreview": "Resources"
+      "machineHash": "7880dd3efa828cd2eeb4ef89581cdcda1a3b56db0928d7e47e83d5c0e2f7dc33",
+      "machineText": "資源",
+      "status": "machine-translated",
+      "sourcePreview": "Resources",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0151-text-01": {
       "sourceHash": "4efaa0e4617c253f305d625da04fa36339020257cd0881388a1d34a0feadad3b",
       "targetHash": "54b350228a3cfb3c9ecbe8f20a185e89b4d3a1e673c03a555fef402c6a9ed232",
-      "status": "migration-review",
-      "sourcePreview": "[Documentation](/quick-start/why-wails/)"
+      "machineHash": "54b350228a3cfb3c9ecbe8f20a185e89b4d3a1e673c03a555fef402c6a9ed232",
+      "machineText": "[文件](/quick-start/why-wails/)",
+      "status": "machine-translated",
+      "sourcePreview": "[Documentation](/quick-start/why-wails/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0152-text-01": {
       "sourceHash": "953d4531acf701db56d44313eeae5ae905162b0e853d3ca4c6638a3bccc788e7",
       "targetHash": "7a8c808d299a166392492602d02ac1dd28761e02fa3c7bd6304d1949720e7943",
-      "status": "migration-review",
-      "sourcePreview": "[Discord Community](https://discord.gg/JDdSxwjhGf)"
+      "machineHash": "7a8c808d299a166392492602d02ac1dd28761e02fa3c7bd6304d1949720e7943",
+      "machineText": "[Discord 社群](https://discord.gg/JDdSxwjhGf)",
+      "status": "machine-translated",
+      "sourcePreview": "[Discord Community](https://discord.gg/JDdSxwjhGf)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0153-text-01": {
       "sourceHash": "1d1ec87b9d73699439c3f6b4900e347452d2e92b0b4fd9f23110591d619d9c8e",
-      "targetHash": "03492cf8700739ce366000e9a692211162f43051284f344b0c49fff9ab76c4ba",
-      "status": "migration-review",
-      "sourcePreview": "[GitHub Issues](https://github.com/wailsapp/wails/issues)"
+      "targetHash": "1d1ec87b9d73699439c3f6b4900e347452d2e92b0b4fd9f23110591d619d9c8e",
+      "machineHash": "1d1ec87b9d73699439c3f6b4900e347452d2e92b0b4fd9f23110591d619d9c8e",
+      "machineText": "[GitHub Issues](https://github.com/wailsapp/wails/issues)",
+      "status": "machine-translated",
+      "sourcePreview": "[GitHub Issues](https://github.com/wailsapp/wails/issues)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0154-text-01": {
       "sourceHash": "55a79a2098c0e5c300a0d58ccbe9d2021297012975bd98b1b058a56350ea4049",
       "targetHash": "07971a96b9a75282a4d8b31ece09d5c996173f229298747c455d922d5b38dba6",
-      "status": "migration-review",
-      "sourcePreview": "[Examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)"
+      "machineHash": "07971a96b9a75282a4d8b31ece09d5c996173f229298747c455d922d5b38dba6",
+      "machineText": "[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)",
+      "status": "machine-translated",
+      "sourcePreview": "[Examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0155-heading-01": {
       "sourceHash": "dfbe4d437b5951474967577817573677443d81e1f04942cc09e806e1364a5205",
       "targetHash": "f92d99c7621bc7af10560e1c1dd89d0eb94119cf98df8c5b0a2b3496df97f677",
-      "status": "migration-review",
-      "sourcePreview": "Common Questions"
+      "machineHash": "f92d99c7621bc7af10560e1c1dd89d0eb94119cf98df8c5b0a2b3496df97f677",
+      "machineText": "常見問題",
+      "status": "machine-translated",
+      "sourcePreview": "Common Questions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0156-text-01": {
       "sourceHash": "2a3991e78c9a91a3c1505cc826c8868c4230c927761cb099a5617e33ad926c0b",
-      "targetHash": "2b71ca3cbfc55c95c6779391666e02989ed3923e0ded383ea9588328e6d72648",
-      "status": "migration-review",
-      "sourcePreview": "**Q: Can I run v2 and v3 side by side?** A: Yes, they use different import paths."
+      "targetHash": "04ed3007c680647b28b62959869f922ec8c9720fa63b9500570ec1da7ba70e88",
+      "machineHash": "04ed3007c680647b28b62959869f922ec8c9720fa63b9500570ec1da7ba70e88",
+      "machineText": "**問：我可以同時執行v2和v3嗎？** 答：可以，兩者使用不同的匯入路徑。",
+      "status": "machine-translated",
+      "sourcePreview": "**Q: Can I run v2 and v3 side by side?** A: Yes, they use different import paths.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0157-text-01": {
       "sourceHash": "ba84fda47df82a529a846c1f4d0536fe29cf919bb19d0a2e3eeef28a420a1237",
-      "targetHash": "76c71b98209028407354ebf5f146976c3c6216cee20aeb972806310392f9ccea",
-      "status": "migration-review",
-      "sourcePreview": "**Q: Is v3 production-ready?** Wails v3.0.0 is the stable release for desktop applications on Window…"
+      "targetHash": "21f47273708ebcedb1078cec1d21a3ec2567244e113308bfbc62b6f94b6b60fd",
+      "machineHash": "21f47273708ebcedb1078cec1d21a3ec2567244e113308bfbc62b6f94b6b60fd",
+      "machineText": "**問：v3已可用於正式環境嗎？** Wails v3.0.0是適用於 Windows、macOS 和 Linux 桌面應用程式的穩定版本。Android 與 iOS 支援仍處於實驗階段，不在穩定版桌面相容性契約的範圍內。",
+      "status": "machine-translated",
+      "sourcePreview": "**Q: Is v3 production-ready?** Wails v3.0.0 is the stable release for desktop applications on Window…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0158-text-01": {
       "sourceHash": "747281aafb1d9eebb6eeeaa885d8aa1c718f7dcba0f4e93d66b5f616f63cf32b",
-      "targetHash": "8f317189ec02f235131a4e99157426672fd0a0adba14d15ebaa597dd4de4f575",
-      "status": "migration-review",
-      "sourcePreview": "**Q: Will v2 be maintained?** A: Yes, v2 will receive critical updates."
+      "targetHash": "0c0e1e569407ca2361b0dbc71ed30fae1db67e6d9330836cc19495eea871fa8d",
+      "machineHash": "0c0e1e569407ca2361b0dbc71ed30fae1db67e6d9330836cc19495eea871fa8d",
+      "machineText": "**問：v2會持續維護嗎？** 答：會，v2將會收到重大更新。",
+      "status": "machine-translated",
+      "sourcePreview": "**Q: Will v2 be maintained?** A: Yes, v2 will receive critical updates.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0159-text-01": {
       "sourceHash": "f8c49e7c8604c932795d0639da93933b65e4ca114ecb7e9f7910c92c2e603934",
       "targetHash": "72ff225269b989b0c15bb1ef47071729071d9523b6f7552243d3b1845eef7bf5",
-      "status": "migration-review",
-      "sourcePreview": "**Q: How long does migration take?** A: 1-4 hours for typical applications."
+      "machineHash": "72ff225269b989b0c15bb1ef47071729071d9523b6f7552243d3b1845eef7bf5",
+      "machineText": "**問：遷移需要多久？** 答：一般應用程式需要1-4小時。",
+      "status": "machine-translated",
+      "sourcePreview": "**Q: How long does migration take?** A: 1-4 hours for typical applications.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0160-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
-      "status": "migration-review",
-      "sourcePreview": "Next Steps"
+      "machineHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
+      "machineText": "後續步驟",
+      "status": "machine-translated",
+      "sourcePreview": "Next Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0161-text-01": {
       "sourceHash": "8fd854e77bc81f0e3509dc4a7990ea1d0a1ca14fe11b3d1d3cce62ba81cd723e",
       "targetHash": "786f4d4372a55b108a9e4190954a923e444571b6b040e9a4f0ef1eaae275705f",
-      "status": "migration-review",
-      "sourcePreview": "🚀 Quick Start Get started with Wails v3."
+      "machineHash": "786f4d4372a55b108a9e4190954a923e444571b6b040e9a4f0ef1eaae275705f",
+      "machineText": "🚀 快速入門\n開始使用 Wails v3。",
+      "status": "machine-translated",
+      "sourcePreview": "🚀 Quick Start Get started with Wails v3.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0162-text-01": {
       "sourceHash": "412ba355054b25b694b84e2f4ecc320b3c1c53cda28b88cf30b55d3aa97eb688",
-      "targetHash": "4cb535be5b80f29cc3fc71a2f2d24dd77916f16d109aa97361fecfcef218740a",
-      "status": "migration-review",
-      "sourcePreview": "★ Core Concepts Understand v3 architecture."
+      "targetHash": "79c8dcfa806c0ed06c8311aa90dbab8d2816fd39b75bea8bf9be8fac26bccdf4",
+      "machineHash": "79c8dcfa806c0ed06c8311aa90dbab8d2816fd39b75bea8bf9be8fac26bccdf4",
+      "machineText": "★ 核心概念\n瞭解v3架構。",
+      "status": "machine-translated",
+      "sourcePreview": "★ Core Concepts Understand v3 architecture.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0163-text-01": {
       "sourceHash": "320de82c27eefe07905ef23b6ac1da76dcffabd1be784ecc776aa2f3f8fac714",
       "targetHash": "4348101b83e940c8cd361c2908dfb61cd9ff076a9ec9b4ffdea510bdb6bbd81b",
-      "status": "migration-review",
-      "sourcePreview": "◆ Bindings Learn the new bindings system."
+      "machineHash": "4348101b83e940c8cd361c2908dfb61cd9ff076a9ec9b4ffdea510bdb6bbd81b",
+      "machineText": "◆ 繫結\n瞭解新的繫結系統。",
+      "status": "machine-translated",
+      "sourcePreview": "◆ Bindings Learn the new bindings system.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0164-text-01": {
       "sourceHash": "e15b4136798dfab058899a09d9b4f0590bb3bd3b9152896f66c34c952efa9ec0",
-      "targetHash": "6fe4f1939f14a3618959ec0da5458e7497b77fcb864357e2b3673253fa21029a",
-      "status": "migration-review",
-      "sourcePreview": "📖 Examples See complete v3 examples."
+      "targetHash": "b875864e6e0c1d5ce63c7f5aa6bb20c94b9d62e6fbfa82ffd623d1201e24687f",
+      "machineHash": "b875864e6e0c1d5ce63c7f5aa6bb20c94b9d62e6fbfa82ffd623d1201e24687f",
+      "machineText": "📖 範例\n查看完整的v3範例。",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Examples See complete v3 examples.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "b0165-text-01": {
       "sourceHash": "735398dc4a502cc8624570a56fa891f50e76b599fef2154027ce9596710e42a7",
-      "targetHash": "7ee80f5b8cbdd89232e9b8455afc1c45d2cd2fa3a5b952b606134befc680dd78",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or [open an issue](https://github.com…"
+      "targetHash": "773e0311473ab81f77e24f4a959440f5d9d00b557589d1a761e34db5946f6611",
+      "machineHash": "773e0311473ab81f77e24f4a959440f5d9d00b557589d1a761e34db5946f6611",
+      "machineText": "\u003cstrong\u003e有任何問題嗎？\u003c/strong\u003e請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或[建立 Issue](https://github.com/wailsapp/wails/issues)。",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or [open an issue](https://github.com…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
+      "machineText": "深入瞭解 →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "c0001-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
+      "machineText": "深入瞭解 →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "c0001-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "68fbdf7052d5e62495fe016d53b4dfeb197f65ba9eeabb5898131c9683857080",
+      "machineText": "深入瞭解 →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "c0001-line-004-01": {
       "sourceHash": "1db462ab4aea2185fe49f9624b10fd1e9b5efcbc0a0119e2d9af8910ea404fcd",
       "targetHash": "2fa1667f541848e7f0cba19d538b20cfe513e5d10032452d0523f171de377af1",
-      "status": "migration-review",
-      "sourcePreview": "View Examples →"
+      "machineHash": "2fa1667f541848e7f0cba19d538b20cfe513e5d10032452d0523f171de377af1",
+      "machineText": "查看範例 →",
+      "status": "machine-translated",
+      "sourcePreview": "View Examples →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "fm-description": {
       "sourceHash": "f767a997bdd53b7f1cacfdf54764f20240838da460e960342fc275bff030b602",
-      "targetHash": "64953ca8b63a12a4e486734ca6898bc337061d14a2656e0a74eeb7e0900c0ad0",
-      "status": "migration-review",
-      "sourcePreview": "Complete guide to migrating your Wails v2 application to v3"
+      "targetHash": "3772ccf2e523cb87ef4bca07e05fac63d6b9d359cdd200879e0179ead8c05405",
+      "machineHash": "3772ccf2e523cb87ef4bca07e05fac63d6b9d359cdd200879e0179ead8c05405",
+      "machineText": "將 Wails v2應用程式遷移至v3的完整指南",
+      "status": "machine-translated",
+      "sourcePreview": "Complete guide to migrating your Wails v2 application to v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     },
     "fm-title": {
       "sourceHash": "6c90c0c73d2d74981f8691120438f57e527f7e209685593e2dd3102ce2bb1354",
-      "targetHash": "cbc2df7619e1dbffb846444b8880ec75895dcec72ea306fdd3e4df2ed25946ac",
-      "status": "migration-review",
-      "sourcePreview": "Migrating from v2 to v3"
+      "targetHash": "94e1326e2abbeb15aa03a56e88ec233f8a828d52ae22f920f020eca2bfe21166",
+      "machineHash": "94e1326e2abbeb15aa03a56e88ec233f8a828d52ae22f920f020eca2bfe21166",
+      "machineText": "從v2遷移至v3",
+      "status": "machine-translated",
+      "sourcePreview": "Migrating from v2 to v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:37:29Z"
     }
   },
   "migration": {

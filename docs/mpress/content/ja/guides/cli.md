@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-タグは、基盤となる Taskfile に`EXTRA_TAGS`として転送されます。
+タグは `EXTRA_TAGS` として基盤の Taskfile に渡されます。`WAILS_PUREGO=1` を設定すると、フラグを指定しなくても `build`、`package`、`dev` に `purego` タグが追加されます。[CGO を使用しないビルド](/experimental/#cgo-free-builds-purego)を参照してください。
 
 @note{type="info"}
 これは`wails3 task build`を実行するのと同等で、プロジェクトのメイン Taskfile にある`build`タスクを実行します。`build`に渡した CLI 変数は、基盤となるタスクに転送されます。`Taskfile.yml`ファイルを編集して、ビルド処理をカスタマイズできます。
@@ -132,6 +135,14 @@ wails3 package [CLI variables...]
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| フラグ | 説明 | デフォルト |
+|------|-------------|---------|
+| `-tags` | 追加の Go ビルドタグ（カンマ区切り）。`EXTRA_TAGS` として渡されます |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` と `OUTPUT` が影響するのは、これらの変数を明示的に読み取るカスタム Taskfile のみです。標準のパッケージバージョンやファイル名は上書きされません。
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | 入力 PNG ファイル | 必須 |
 | `-windowsfilename` | Windows 用出力ファイル名 |  |
 | `-macfilename` | macOS 用出力ファイル名 |  |
-| `-sizes` | アイコンサイズ（カンマ区切り） | `256,128,64,48,32,16` |
+| `-sizes` | 1～256 ピクセルのアイコンサイズ（カンマ区切り。ゼロは無視されます） | `256,128,64,48,32,16` |
 | `-example` | サンプルアイコンを生成 | `false` |
 | `-iconcomposerinput` | 入力 Icon Composer ファイル（`.icon`） |  |
 | `-macassetdir` | Mac アセット（Assets.car + icns）の出力ディレクトリ |  |
+
+ゼロ以外のサイズを少なくとも1つ指定する必要があります。
 
 #### Icon Composer（macOS）
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-ビルド済みのランタイムを生成します。
+CLI に埋め込まれているビルド済みランタイムを、`runtime.js`（本番用）および `runtime-debug.js`（デバッグ用）としてエクスポートします。Wails のソースツリーにアクセスできないインストール済みの CLI からも使用でき、`-trimpath` を使用して作成されたビルドにも対応します。
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-ファイルをコピーします。
+1つのソースファイルを1つの宛先ファイルにコピーします。既存のファイルは上書きされ、現在のパーミッションが維持されます。新しいファイルにはソースのパーミッションが使用されますが、Unix ではシステムの umask の影響を受けます。親ディレクトリはあらかじめ存在している必要があります。
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`

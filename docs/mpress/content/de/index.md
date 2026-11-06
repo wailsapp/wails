@@ -1,7 +1,7 @@
 ---
-title: "Desktop-Anwendungen mit Go entwickeln"
+title: "Desktop-Apps mit Go entwickeln"
 description: "Native Desktop-Anwendungen mit Go und Webtechnologien"
-banner: {"content": "Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. <a href=\"https://v2.wails.io\">Du suchst die Dokumentation zu v2?</a>\n"}
+banner: {"content": "Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. \u003ca href=\"https://v2.wails.io\"\u003eDu suchst die Dokumentation zu v2?\u003c/a\u003e\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Erste Schritte","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Tutorial ansehen","variant":"secondary"}],"image":{"alt":"Wails-Logo","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Entwickle ansprechende, leistungsfähige Anwendungen mit Go und modernen Webtechnologien. Eine Codebasis. Drei Plattformen. Keine Browser.*"}
 sourcePath: "index.md"
@@ -125,7 +125,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup
 @end
 
-Jetzt bist du bereit für dein erstes Projekt:
+Danach kannst du dein erstes Projekt erstellen:
 
 @terminal{frame="macos" prompt="none"}
 wails3 init -n myapp -t vanilla
@@ -136,14 +136,14 @@ cd myapp && wails3 dev
 
 Gibt es Probleme mit `wails3 setup`? Sieh dir die [Anleitung zur manuellen Installation](/quick-start/installation/) an.
 
-## Deine Desktop-Anwendung ist bereits eine mobile Anwendung
+## Deine Desktop-App ist bereits eine mobile App
 
 @terminal{frame="macos" prompt="none"}
 wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Keine Änderungen an deinem Go-Code.** Dieselbe `main.go`, dieselben Dienste, dasselbe Frontend – Wails kompiliert alles automatisch für iOS und Android. Plattformspezifische Funktionen wie Haptik, native Dialoge und Safe Areas stehen bei Bedarf zur Verfügung, sind für die Auslieferung aber nicht erforderlich.
+**Keine Änderungen an deinem Go-Code.** Dieselbe `main.go`, dieselben Dienste, dasselbe Frontend – Wails kompiliert alles automatisch für iOS und Android. Plattformspezifische Funktionen wie Haptik, native Dialoge und sichere Bereiche stehen bei Bedarf zur Verfügung, sind für die Veröffentlichung aber nicht erforderlich.
 
 [Dokumentation für Mobilgeräte →](/guides/mobile/)
 
@@ -154,13 +154,13 @@ wails3 task android:run  # run your existing app on Android Emulator
 @cards{cols="2"}
 🚀 Leistung, die Benutzer bemerken
 - Binärdateien mit ~15 MB gegenüber 150 MB bei Electron
-- ~10 MB Grundspeicherbedarf gegenüber mehr als 100 MB
+- ~10 MB Arbeitsspeicher im Ausgangszustand gegenüber mehr als 100 MB
 - &lt;0.5 s Startzeit gegenüber 2-3 s
 - Natives Rendering mit der WebView des Betriebssystems
 - Kein Overhead durch einen gebündelten Browser
 
 ---
-⚙ Entwicklungskomfort
+⚙ Entwicklungserlebnis
 - Eine Go-Codebasis für alle Plattformen
 - Beliebiges Webframework – React, Vue oder Svelte
 - Hot Reload während der Entwicklung
@@ -170,15 +170,15 @@ wails3 task android:run  # run your existing app on Android Emulator
 ---
 ✓ Bereit für den Desktop
 - Mehrere Fenster mit eigenen Lebenszyklen
-- Native Menüs und System-Tray
+- Native Menüs und Taskleistensymbole
 - Plattformnative Dateidialoge
-- Systemintegration und Tastenkürzel
+- Systemintegration und Tastenkombinationen
 - Werkzeuge für Codesignierung und Paketierung
 
 ---
-▣ Desktop und Mobilgeräte
-- Windows, macOS, Linux, iOS und Android
-- Dieselbe Codebasis, kein Neuschreiben
+▣ Desktop & Mobilgeräte
+- Windows, macOS, Linux, iOS, Android
+- Dieselbe Codebasis, kein Neuschreiben erforderlich
 - Native WebView auf jeder Plattform
 - Keine offenen Ports, kein localhost-Server
 - Plattformfunktionen bei Bedarf verfügbar
@@ -187,16 +187,16 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Nächste Schritte
 
-Als Nächstes kannst du [eine vollständige Anwendung entwickeln](/tutorials/03-notes-vanilla/), die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) durchsuchen oder in der [API-Referenz](/reference/application/) nachschlagen. Du migrierst von v2? Sieh dir den [Upgrade-Leitfaden](/migration/v2-to-v3/) an.
+Als Nächstes kannst du [eine vollständige Anwendung entwickeln](/tutorials/03-notes-vanilla/), [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) durchsuchen oder die [API-Referenz](/reference/application/) aufrufen. Du migrierst von v2? Dann sieh dir den [Upgrade-Leitfaden](/migration/v2-to-v3/) an.
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
+Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die Kompatibilitätsgarantie für stabile Desktop-Versionen.
 
 @end
 
 @cards{cols="1"}
 ♥ Unterstütze die Entwicklung von Wails
-Wails ist kostenlos, quelloffen und wird von Entwicklern für Entwickler entwickelt. Wenn Wails dir hilft, beeindruckende Anwendungen zu entwickeln, erwäge, die weitere Entwicklung zu unterstützen.
+Wails ist kostenlos und Open Source und wird von Entwicklern für Entwickler entwickelt. Wenn Wails dir hilft, herausragende Anwendungen zu entwickeln, erwäge, die weitere Entwicklung zu unterstützen.
 
 Dein Sponsoring hilft dabei, das Projekt zu pflegen, die Dokumentation zu verbessern und neue Funktionen zu entwickeln, von denen die gesamte Community profitiert.
 

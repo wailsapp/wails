@@ -1,17 +1,17 @@
 ---
 title: "Jendela Tanpa Bingkai"
-description: "Buat dekorasi jendela khusus dengan jendela tanpa bingkai"
+description: "Buat dekorasi jendela kustom dengan jendela tanpa bingkai"
 slug: "features/windows/frameless"
 sourcePath: "features/windows/frameless.md"
 ---
 
 ## Jendela Tanpa Bingkai
 
-Wails menyediakan **dukungan jendela tanpa bingkai** dengan area seret berbasis CSS dan perilaku native platform. Hapus bilah judul native platform untuk mendapatkan kendali penuh atas dekorasi jendela, desain khusus, dan pengalaman pengguna yang unik, sekaligus mempertahankan fungsi penting seperti menyeret, mengubah ukuran, dan kontrol sistem.
+Wails menyediakan **dukungan jendela tanpa bingkai** dengan area seret berbasis CSS dan perilaku native platform. Hapus bilah judul native platform untuk mendapatkan kendali penuh atas dekorasi jendela, desain kustom, dan pengalaman pengguna yang unik, sembari mempertahankan fungsi penting seperti menyeret, mengubah ukuran, dan kontrol sistem.
 
-![Aplikasi pemula TypeScript Wails v3 bawaan yang berjalan sebagai jendela tanpa bingkai dengan sudut native macOS](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![Aplikasi awal TypeScript v3 bawaan Wails yang berjalan sebagai jendela tanpa bingkai dengan sudut native macOS](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
-Contoh di atas adalah aplikasi pemula TypeScript Wails v3 bawaan dengan `Frameless: true` diaktifkan.
+Contoh di atas adalah aplikasi awal TypeScript v3 bawaan Wails dengan `Frameless: true` yang diaktifkan.
 
 ## Mulai Cepat
 
@@ -47,13 +47,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-**Selesai!** Kini Anda memiliki bilah judul khusus.
+**Selesai!** Kini Anda memiliki bilah judul kustom.
 
 ## Membuat Jendela Tanpa Bingkai
 
 ### Radius Sudut (macOS)
 
-Secara bawaan, jendela tanpa bingkai mempertahankan sudut membulat standar macOS dari AppKit. Atur `Mac.CornerRadius` untuk menggunakan radius khusus (dalam poin):
+Secara default, jendela tanpa bingkai mempertahankan sudut membulat standar macOS dari AppKit. Atur `Mac.CornerRadius` untuk menggunakan radius kustom (dalam poin):
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -64,7 +64,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Atur `Mac.CornerType` ke `MacWindowCornerTypeSquare` untuk sudut siku-siku. Pengaturan ini mengabaikan `CornerRadius`:
+Atur `Mac.CornerType` menjadi `MacWindowCornerTypeSquare` untuk sudut siku-siku. Pengaturan ini mengabaikan `CornerRadius`:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -75,7 +75,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### Jendela Tanpa Bingkai Dasar
+### Jendela Dasar Tanpa Bingkai
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -96,11 +96,11 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 - Area yang dapat diseret
 - Tombol tutup/minimalkan/maksimalkan
-- Handel pengubahan ukuran (jika ukurannya dapat diubah)
+- Gagang pengubah ukuran (jika ukurannya dapat diubah)
 
 ### Dengan Latar Belakang Transparan
 
-**API privat di macOS:** atur `Mac.Backdrop: application.MacBackdropTransparent` dan lakukan build dengan `-tags private_mac_apis` agar webview transparan. Tanpa tag tersebut, webview native tetap opak meskipun latar belakang HTML/CSS transparan. `Frameless` dan `TitleBar.AppearsTransparent` sendiri menggunakan API publik. Lihat [API macOS privat](/guides/build/private-macos-apis/#webview-transparency-and-background).
+**API privat di macOS:** atur `Mac.Backdrop: application.MacBackdropTransparent` dan lakukan build dengan `-tags private_mac_apis` untuk transparansi webview. Tanpa tag tersebut, webview native tetap buram meskipun latar belakang HTML/CSS transparan. `Frameless` dan `TitleBar.AppearsTransparent` sendiri menggunakan API publik. Lihat [API macOS privat](/guides/build/private-macos-apis/#webview-transparency-and-background).
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -115,7 +115,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Kasus penggunaan:**
 
 - Sudut membulat
-- Bentuk khusus
+- Bentuk kustom
 - Jendela overlay
 - Layar pembuka
 
@@ -140,7 +140,7 @@ Gunakan properti CSS `--wails-draggable`:
 **Nilai:**
 
 - `drag` - Area dapat diseret
-- `no-drag` - Area tidak dapat diseret (meskipun induknya dapat diseret)
+- `no-drag` - Area tidak dapat diseret (meskipun elemen induknya dapat diseret)
 
 ### Contoh Bilah Judul Lengkap
 
@@ -208,43 +208,43 @@ document.querySelector('.maximize').addEventListener('click', () => Window.Maxim
 document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
-## Area Nonklien Native di Windows
+## Area Non-Klien Native di Windows
 
-Windows dapat memperlakukan bagian dari bilah judul khusus sebagai area nonklien native. Dengan demikian, Anda dapat menggambar bilah judul dan tombol bilah judul dengan desain HTML/CSS apa pun sekaligus mempertahankan perilaku native Windows: area bilah judul menyeret jendela, tombol maksimalkan dapat menampilkan Snap Assist / Snap Layouts Windows 11, dan tombol minimalkan, maksimalkan, serta tutup menerima hit testing dan status mouse native.
+Windows dapat memperlakukan bagian dari bilah judul kustom sebagai area non-klien native. Dengan demikian, Anda dapat menggambar bilah judul dan tombol keterangan menggunakan desain HTML/CSS apa pun sembari mempertahankan perilaku native Windows: area keterangan menyeret jendela, tombol maksimalkan dapat menampilkan 11 Snap Assist / Snap Layouts Windows, dan tombol minimalkan, maksimalkan, serta tutup menerima pengujian hit dan status mouse native.
 
-Video di bawah menunjukkan bilah judul HTML/CSS khusus yang menggunakan hit testing native Windows, termasuk Snap Assist / Snap Layouts Windows 11 pada tombol maksimalkan khusus.
+Video di bawah ini menampilkan bilah judul HTML/CSS kustom yang menggunakan pengujian hit native Windows, termasuk 11 Snap Assist / Snap Layouts Windows pada tombol maksimalkan kustom.
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails mendukung dua mekanisme khusus Windows:
 
-- `app-region` melalui dukungan area nonklien native WebView2
-- `--wails-non-client-region` melalui pelacakan runtime Wails untuk tombol bilah judul khusus
+- `app-region` melalui dukungan area non-klien native WebView2
+- `--wails-non-client-region` melalui pelacakan runtime Wails untuk tombol keterangan kustom
 
 ### Memilih Mode
 
 @note{type="caution" title="Eksperimental"}
-`WebView2CompositionHosting` mengubah cara jendela meng-host dan berinteraksi dengan WebView2 di balik layar. Alih-alih menggunakan pengontrol WebView2 bawaan yang di-host oleh HWND, Wails menggunakan hosting pengontrol komposisi dan meneruskan input secara eksplisit. Mode ini mungkin mengalami masalah rendering, input, fokus, atau kompatibilitas WebView2 Runtime. Aktifkan hanya jika Anda memerlukan perilaku native untuk tombol bilah judul khusus, lalu uji aplikasi Anda dengan cermat pada versi Windows dan WebView2 Runtime yang Anda dukung.
+`WebView2CompositionHosting` mengubah cara jendela meng-host dan berinteraksi dengan WebView2 di balik layar. Alih-alih menggunakan pengontrol WebView2 bawaan yang di-host HWND, Wails menggunakan hosting pengontrol komposisi dan meneruskan input secara eksplisit. Mode ini mungkin mengalami masalah rendering, input, fokus, atau kompatibilitas WebView2 Runtime. Aktifkan hanya jika Anda memerlukan perilaku native pada tombol keterangan kustom, lalu uji aplikasi secara cermat pada versi Windows dan WebView2 Runtime yang Anda dukung.
 
 @end
 
 Pilih berdasarkan kebutuhan Anda dari Windows:
 
-- Gunakan `NonClientRegionSupport` untuk penyeretan aplikasi native sederhana dengan `app-region: drag` dan `app-region: no-drag` dari WebView2.
-- Gunakan `WebView2CompositionHosting` jika tombol minimalkan, maksimalkan, dan tutup khusus Anda perlu berperilaku seperti tombol bilah judul native Windows.
-- Aktifkan keduanya jika jendela yang sama memerlukan dukungan `app-region` native WebView2 dan area tombol bilah judul khusus yang dikelola Wails.
+- Gunakan `NonClientRegionSupport` untuk penyeretan aplikasi native sederhana dengan `app-region: drag` dan `app-region: no-drag` milik WebView2.
+- Gunakan `WebView2CompositionHosting` jika tombol minimalkan, maksimalkan, dan tutup kustom Anda harus berperilaku seperti tombol keterangan native Windows.
+- Aktifkan keduanya jika jendela yang sama memerlukan dukungan `app-region` native WebView2 dan area tombol keterangan kustom yang dikelola Wails.
 
-`NonClientRegionSupport` adalah alternatif native yang ringan untuk pelacakan `--wails-draggable` milik Wails. Anda menandai area yang dapat dan tidak dapat diseret dengan CSS, WebView2 menentukan piksel yang termasuk dalam area bilah judul, lalu Wails meminta area native tersebut dari WebView2 saat melakukan hit testing.
+`NonClientRegionSupport` adalah alternatif native yang ringan untuk pelacakan `--wails-draggable` Wails. Anda menandai area yang dapat dan tidak dapat diseret dengan CSS, WebView2 menentukan piksel mana yang termasuk dalam keterangan, lalu Wails meminta area native kepada WebView2 saat melakukan pengujian hit.
 
-Itulah keseluruhan cakupan mode ini saat ini. Mode ini tidak membuat tombol minimalkan, maksimalkan, atau tutup khusus berperilaku seperti tombol bilah judul native Windows, dan tidak mengaktifkan Snap Assist / Snap Layouts Windows 11 untuk tombol maksimalkan khusus. Gunakan mode ini jika Anda memerlukan penyeretan aplikasi native sederhana tanpa mekanisme tambahan dari `--wails-draggable`.
+Itulah seluruh cakupan mode ini saat ini. Mode ini tidak membuat tombol minimalkan, maksimalkan, atau tutup kustom berperilaku seperti tombol keterangan native Windows, dan tidak mengaktifkan 11 Snap Assist / Snap Layouts Windows untuk tombol maksimalkan kustom. Gunakan mode ini jika Anda memerlukan penyeretan aplikasi native sederhana tanpa mekanisme tambahan dari `--wails-draggable`.
 
-`WebView2CompositionHosting` digunakan untuk tombol bilah judul kustom dengan perilaku native. Wails melacak persegi panjang DOM yang ditandai dengan `--wails-non-client-region`, memetakannya ke nilai uji hit Windows seperti `HTMINBUTTON`, `HTMAXBUTTON`, dan `HTCLOSE`, lalu meneruskan input mouse kembali ke permukaan WebView2 yang dihosting melalui komposisi. Hal inilah yang memungkinkan tombol maksimalkan kustom berpartisipasi dalam Snap Assist / Snap Layouts Windows 11 sambil tetap mempertahankan desain visual apa pun yang Anda pilih.
+`WebView2CompositionHosting` ditujukan untuk tombol keterangan kustom dengan perilaku native. Wails melacak persegi panjang DOM yang ditandai dengan `--wails-non-client-region`, memetakannya ke nilai pengujian hit Windows seperti `HTMINBUTTON`, `HTMAXBUTTON`, dan `HTCLOSE`, lalu meneruskan input mouse kembali ke permukaan WebView2 yang di-host melalui komposisi. Mekanisme inilah yang memungkinkan tombol maksimalkan kustom berpartisipasi dalam 11 Snap Assist / Snap Layouts Windows sembari mempertahankan desain visual apa pun yang Anda pilih.
 
-Dengan kata lain: `NonClientRegionSupport` adalah dukungan region CSS native WebView2. `WebView2CompositionHosting` berarti Wails bertanggung jawab atas komposisi yang dimiliki host dan uji hit non-klien kustom.
+Dengan kata lain: `NonClientRegionSupport` adalah dukungan area CSS native WebView2. Pada `WebView2CompositionHosting`, Wails bertanggung jawab atas komposisi yang dimiliki host dan pengujian hit non-klien kustom.
 
 ### app-region WebView2
 
-Aktifkan dukungan region non-klien native WebView2 untuk jendela:
+Aktifkan dukungan area non-klien native WebView2 untuk jendela:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -270,13 +270,13 @@ Kemudian tandai area yang dapat diseret dengan properti CSS `app-region`:
 }
 ```
 
-Gunakan ini jika Anda hanya memerlukan penyeretan bilah judul secara native dan kontrol bilah judul ditangani melalui klik frontend biasa.
+Gunakan mode ini jika Anda hanya memerlukan penyeretan keterangan native dan kontrol bilah judul Anda ditangani melalui klik frontend biasa.
 
-Keterbatasan mode ini adalah cakupannya dibatasi oleh dukungan region non-klien WebView2 sendiri. Dalam rilis WebView2 saat ini, ini berarti hanya region seret dan jangan-seret. Mode ini tidak ditujukan untuk memodelkan tombol bilah judul frontend yang sepenuhnya kustom dengan peran native yang berbeda untuk meminimalkan, memaksimalkan, dan menutup.
+Keterbatasan mode ini adalah cakupannya dibatasi oleh dukungan area non-klien WebView2 itu sendiri. Pada rilis WebView2 saat ini, dukungan tersebut hanya mencakup area seret dan tanpa seret. Mode ini tidak ditujukan untuk memodelkan tombol keterangan frontend yang sepenuhnya kustom dengan peran native minimalkan, maksimalkan, dan tutup yang berbeda.
 
-### Tombol Bilah Judul Kustom dengan Perilaku Native
+### Tombol Keterangan Kustom dengan Perilaku Native
 
-Untuk tombol minimalkan, maksimalkan, dan tutup kustom yang harus berperilaku seperti tombol bilah judul sistem, aktifkan hosting komposisi:
+Untuk tombol minimalkan, maksimalkan, dan tutup kustom yang harus berperilaku seperti tombol keterangan sistem, aktifkan hosting komposisi:
 
 @note{type="caution" title="Eksperimental"}
 `WebView2CompositionHosting` menggunakan hosting pengontrol komposisi WebView2 dengan DirectComposition. Lihat [Memilih Mode](#memilih-mode) sebelum mengaktifkannya.
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Kemudian tandai setiap region frontend dengan `--wails-non-client-region`:
+Kemudian tandai setiap area frontend dengan `--wails-non-client-region`:
 
 ```html
 <div class="titlebar">
@@ -338,17 +338,17 @@ Kemudian tandai setiap region frontend dengan `--wails-non-client-region`:
 Nilai `--wails-non-client-region` yang didukung:
 
 - `caption` - area bilah judul yang dapat diseret
-- `minimize` - target hit tombol minimalkan native
-- `maximize` - target hit tombol maksimalkan native, termasuk perilaku saat penunjuk diarahkan untuk Snap Assist / Snap Layouts Windows 11
-- `close` - target hit tombol tutup native
+- `minimize` - target klik tombol perkecil native
+- `maximize` - target klik tombol maksimalkan native, termasuk perilaku saat mengarahkan penunjuk pada Snap Assist / Snap Layouts Windows 11
+- `close` - target klik tombol tutup native
 
-Runtime Wails mengamati perubahan DOM, gaya, ukuran, gulir, dan viewport, lalu mengirim snapshot region ke jendela native. Geometri region diukur dalam piksel CSS dan dikonversi menjadi piksel fisik untuk uji hit Windows.
+Runtime Wails mengamati perubahan DOM, gaya, ukuran, gulir, dan viewport, lalu mengirim snapshot region ke jendela native. Geometri region diukur dalam piksel CSS dan dikonversi menjadi piksel fisik untuk pengujian klik Windows.
 
-Desain visual tetap sepenuhnya menjadi pilihan Anda. Region hanya memberi tahu Windows arti setiap persegi panjang; bentuk tombol, ikon, warna, jarak, gaya saat penunjuk diarahkan, dan tata letak tetap berasal dari frontend Anda.
+Desain visual tetap sepenuhnya Anda tentukan. Region hanya memberi tahu Windows arti setiap persegi panjang; bentuk tombol, ikon, warna, jarak, gaya saat penunjuk diarahkan, dan tata letak tetap berasal dari frontend Anda.
 
 ### Menggabungkan Keduanya
 
-Anda dapat mengaktifkan kedua opsi jika menginginkan dukungan `app-region` WebView2 dan region tombol bilah judul yang dikelola Wails dalam jendela yang sama:
+Anda dapat mengaktifkan kedua opsi saat menginginkan dukungan `app-region` WebView2 dan region tombol bilah judul yang dikelola Wails dalam jendela yang sama:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -362,7 +362,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Tombol Sistem
 
-### Mengimplementasikan Tutup/Minimalkan/Maksimalkan
+### Mengimplementasikan Tutup/Perkecil/Maksimalkan
 
 **Sisi Go:**
 
@@ -408,9 +408,9 @@ document.querySelector('.maximize').addEventListener('click', () => Window.Maxim
 document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
-### Mengalihkan Status Maksimalkan
+### Mengalihkan Status Maksimal
 
-Lacak status maksimalkan untuk ikon tombol:
+Lacak status maksimal untuk ikon tombol:
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -434,11 +434,11 @@ async function updateMaximiseButton() {
 }
 ```
 
-## Pegangan Ubah Ukuran
+## Gagang Pengubah Ukuran
 
-### Ubah Ukuran Berbasis CSS
+### Pengubahan Ukuran Berbasis CSS
 
-Wails menyediakan pegangan ubah ukuran otomatis untuk jendela tanpa bingkai:
+Wails menyediakan gagang pengubah ukuran otomatis untuk jendela tanpa bingkai:
 
 ```css
 /* Enable resize on all edges */
@@ -486,9 +486,9 @@ body {
 - `all` - Ubah ukuran dari semua tepi
 - `top`, `bottom`, `left`, `right` - Tepi tertentu
 - `top-left`, `top-right`, `bottom-left`, `bottom-right` - Sudut
-- `none` - Jangan ubah ukuran
+- `none` - Tidak dapat diubah ukurannya
 
-### Contoh Pegangan Ubah Ukuran
+### Contoh Gagang Pengubah Ukuran
 
 ```html
 <div class="window">
@@ -517,7 +517,7 @@ body {
 
 @tabs{sync-key="platform"}
 [Windows]
-**Jendela tanpa bingkai Windows:**
+**Jendela tanpa bingkai di Windows:**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -550,12 +550,12 @@ Windows: application.WindowsWindow{
 window.SnapAssist()
 ```
 
-Ini memicu Snap Layouts melalui jalur tombol pintas Windows. Untuk tombol maksimalkan HTML kustom dengan Snap Layouts native saat penunjuk diarahkan, gunakan [Region Non-Klien Native di Windows](#area-nonklien-native-di-windows) sebagai gantinya.
+Ini memicu Snap Layouts melalui jalur tombol pintas Windows. Untuk tombol maksimalkan HTML khusus dengan Snap Layouts native saat penunjuk diarahkan, gunakan [Region Non-Klien Native di Windows](#area-non-klien-native-di-windows) sebagai gantinya.
 
-**Tinggi bilah judul kustom:** Windows secara otomatis mendeteksi region seret dari CSS.
+**Tinggi bilah judul khusus:** Windows secara otomatis mendeteksi region seret dari CSS.
 
 [macOS]
-**Jendela tanpa bingkai macOS:**
+**Jendela tanpa bingkai di macOS:**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -576,7 +576,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - Efek vibrancy
 - Bilah judul transparan
 
-**Sembunyikan bilah judul sepenuhnya** (gunakan varian preset yang diekspor dari paket `application` — tidak ada bidang `TitleBarStyle` ataupun konstanta `MacTitleBarStyleHidden`):
+**Sembunyikan bilah judul sepenuhnya** (gunakan varian preset yang diekspor dari paket `application` — tidak ada field `TitleBarStyle` atau konstanta `MacTitleBarStyleHidden`):
 
 ```go
 Mac: application.MacWindow{
@@ -586,7 +586,7 @@ Mac: application.MacWindow{
 
 Preset lainnya mencakup `MacTitleBarDefault`, `MacTitleBarHiddenInset`, dan `MacTitleBarHiddenInsetUnified`.
 
-**Bilah judul tak terlihat:** Memungkinkan jendela diseret saat bilah judul disembunyikan. Ini hanya berlaku jika jendela tidak berbingkai atau menggunakan `AppearsTransparent`:
+**Bilah judul tak terlihat:** Memungkinkan jendela diseret sambil menyembunyikan bilah judul. Ini hanya berlaku saat jendela tidak memiliki bingkai atau menggunakan `AppearsTransparent`:
 
 ```go
 Mac: application.MacWindow{
@@ -606,7 +606,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **Fitur:**
 
 - Dukungan dasar untuk jendela tanpa bingkai
-- Area seret CSS
+- Region seret CSS
 - Bervariasi menurut lingkungan desktop
 
 **Catatan lingkungan desktop:**
@@ -616,7 +616,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - **XFCE:** Dukungan dasar
 - **WM tiling:** Dukungan terbatas
 
-**Kompositor diperlukan:** Transparansi memerlukan kompositor (sebagian besar lingkungan desktop modern memilikinya).
+**Memerlukan compositor:** Transparansi memerlukan compositor (sebagian besar DE modern memilikinya).
 
 @end
 
@@ -982,18 +982,18 @@ updateMaximiseButton()
 ### ✅ Lakukan
 
 - **Sediakan area yang dapat diseret** - Pengguna perlu memindahkan jendela
-- **Implementasikan tombol sistem** - Tutup, minimalkan, maksimalkan
+- **Implementasikan tombol sistem** - Tutup, perkecil, maksimalkan
 - **Tetapkan ukuran minimum** - Cegah tata letak yang tidak dapat digunakan
-- **Uji di semua platform** - Perilakunya bervariasi
-- **Gunakan CSS untuk area seret** - Fleksibel dan mudah dipelihara
-- **Berikan umpan balik visual** - Status saat penunjuk berada di atas tombol
+- **Uji pada semua platform** - Perilakunya berbeda-beda
+- **Gunakan CSS untuk region seret** - Fleksibel dan mudah dipelihara
+- **Berikan umpan balik visual** - Status saat penunjuk diarahkan pada tombol
 
 ### ❌ Jangan Lakukan
 
 - **Jangan lupakan gagang pengubah ukuran** - Jika ukuran jendela dapat diubah
-- **Jangan jadikan seluruh jendela dapat diseret** - Ini mencegah interaksi
-- **Jangan lupa menonaktifkan seret pada tombol** - Tombol tidak akan berfungsi
-- **Jangan gunakan area seret yang terlalu kecil** - Sulit untuk diseret
+- **Jangan jadikan seluruh jendela dapat diseret** - Menghalangi interaksi
+- **Jangan lupakan no-drag pada tombol** - Tombol tidak akan berfungsi
+- **Jangan gunakan area seret yang terlalu kecil** - Sulit diraih
 - **Jangan abaikan perbedaan antarplatform** - Uji secara menyeluruh
 
 ## Pemecahan Masalah
@@ -1024,7 +1024,7 @@ updateMaximiseButton()
 
 ### Ukuran Jendela Tidak Dapat Diubah
 
-**Penyebab:** Gagang pengubah ukuran tidak ada
+**Penyebab:** Handel pengubah ukuran tidak ada
 
 **Solusi:**
 
@@ -1056,7 +1056,7 @@ Tangani peristiwa siklus hidup jendela.
 
 ---
 ◆ Beberapa Jendela
-Pola untuk aplikasi multijendela.
+Pola untuk aplikasi dengan beberapa jendela.
 
 [Pelajari Selengkapnya →](/features/windows/multiple/)
 

@@ -7,9 +7,9 @@ sourcePath: "reference/window.md"
 
 ## 概觀
 
-視窗 API 提供控制視窗外觀、行為與生命週期的方法。可透過視窗執行個體或`app.Window`管理器存取。
+視窗 API 提供控制視窗外觀、行為與生命週期的方法。可透過視窗執行個體或 `app.Window` 管理器存取。
 
-`Window`是由`*application.WebviewWindow`實作的介面；以下方法簽章屬於`*WebviewWindow`。許多修改方法會傳回`Window`以便鏈式呼叫，各方法的傳回值均記載於其說明中。
+`Window` 是由 `*application.WebviewWindow` 實作的介面；以下方法簽章屬於 `*WebviewWindow`。許多修改方法會傳回 `Window`，以便進行鏈式呼叫；各方法的傳回值會分別說明。
 
 **常見操作：**
 
@@ -23,7 +23,7 @@ sourcePath: "reference/window.md"
 
 ### Show()
 
-顯示視窗。如果視窗原先隱藏，則會變為可見。傳回接收者以便鏈式呼叫。
+顯示視窗。若視窗原本已隱藏，則會變為可見。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -38,7 +38,7 @@ window.Show()
 
 ### Hide()
 
-隱藏視窗，但不將其關閉。視窗會保留在記憶體中，之後可再次顯示。傳回接收者以便鏈式呼叫。
+隱藏視窗但不將其關閉。視窗會保留在記憶體中，之後可再次顯示。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -58,11 +58,11 @@ window.Show()
 
 - 隱藏至系統匣的應用程式
 - 重複使用視窗的精靈流程
-- 在作業期間暫時隱藏視窗
+- 在操作期間暫時隱藏視窗
 
 ### Close()
 
-關閉視窗。這會觸發`WindowClosing`事件。
+關閉視窗。這會觸發 `WindowClosing` 事件。
 
 ```go
 func (w *WebviewWindow) Close()
@@ -74,13 +74,13 @@ func (w *WebviewWindow) Close()
 window.Close()
 ```
 
-<strong>注意：</strong>如果已註冊的鉤子呼叫`event.Cancel()`，便會阻止視窗關閉。
+<strong>注意：</strong>若已註冊的掛鉤呼叫 `event.Cancel()`，便會阻止視窗關閉。
 
 ## 視窗屬性
 
 ### SetTitle()
 
-設定視窗標題列文字。傳回接收者以便鏈式呼叫。
+設定視窗標題列文字。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetTitle(title string) Window
@@ -120,7 +120,7 @@ if w, ok := app.Window.GetByName(name); ok {
 
 ### SetSize()
 
-以像素為單位設定視窗尺寸。傳回接收者以便鏈式呼叫。
+以像素為單位設定視窗尺寸。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetSize(width, height int) Window
@@ -154,7 +154,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-設定視窗的最小與最大尺寸。兩者都會傳回接收者以便鏈式呼叫。
+設定視窗的最小與最大尺寸。兩者皆傳回接收者，以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -246,7 +246,7 @@ window.Focus()
 
 ### Minimise() / UnMinimise()
 
-將視窗最小化至工作列／Dock，或將其還原。`Minimise()`會傳回接收者以便鏈式呼叫；`UnMinimise()`不會傳回任何值。
+將視窗最小化至工作列／Dock，或將其還原。`Minimise()` 會傳回接收者以便進行鏈式呼叫；`UnMinimise()` 不會傳回任何值。
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-將視窗最大化以填滿螢幕，或還原至先前的大小。`Maximise()`會傳回接收者以便鏈式呼叫；`UnMaximise()`不會傳回任何值。
+將視窗最大化以填滿螢幕，或將其還原為先前的大小。`Maximise()` 會傳回接收者以便進行鏈式呼叫；`UnMaximise()` 不會傳回任何值。
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-進入或退出全螢幕模式。`Fullscreen()`會傳回接收者以便鏈式呼叫。
+進入或退出全螢幕模式。`Fullscreen()` 會傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -305,7 +305,7 @@ window.UnFullscreen()
 window.ToggleFullscreen()
 ```
 
-沒有`SetFullscreen(bool)`方法。
+沒有 `SetFullscreen(bool)` 方法。
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-在視窗內導覽至指定的 URL。傳回接收者以便鏈式呼叫。
+在視窗內導覽至指定的 URL。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **參數：**
 
-- `url` - 要導覽至的 URL（內嵌資產可使用`http://wails.localhost/`）
+- `url` - 要導覽至的 URL（內嵌資產可使用 `http://wails.localhost/`）
 
 **範例：**
 
@@ -359,7 +359,7 @@ window.SetURL("https://wails.io")
 
 ### SetHTML()
 
-直接使用 HTML 字串設定視窗內容。傳回接收者以便鏈式呼叫。
+直接使用 HTML 字串設定視窗內容。傳回接收者以便進行鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
@@ -388,7 +388,7 @@ window.SetHTML(html)
 **使用情境：**
 
 - 動態產生內容
-- 不使用前端建置流程的簡易視窗
+- 不需前端建置流程的簡易視窗
 - 錯誤頁面或啟動畫面
 
 ### Reload()
@@ -412,8 +412,8 @@ window.Reload()
 
 Wails 提供兩種處理視窗事件的方法：
 
-- **OnWindowEvent()** - 監聽視窗事件（無法阻止事件）。
-- **RegisterHook()** - 攔截視窗事件（可呼叫`event.Cancel()`阻止事件）。
+- **OnWindowEvent()**－監聽視窗事件（無法阻止事件）。
+- **RegisterHook()**－掛接視窗事件（可呼叫`event.Cancel()`來阻止事件）。
 
 ### OnWindowEvent()
 
@@ -447,21 +447,21 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-**常見視窗事件：**
+**常見的視窗事件：**
 
-- `events.Common.WindowClosing` - 視窗即將關閉
-- `events.Common.WindowFocus` - 視窗取得焦點
-- `events.Common.WindowLostFocus` - 視窗失去焦點
-- `events.Common.WindowDidMove` - 視窗已移動
-- `events.Common.WindowDidResize` - 視窗大小已調整
-- `events.Common.WindowMinimise` - 視窗已最小化
-- `events.Common.WindowMaximise` - 視窗已最大化
-- `events.Common.WindowFullscreen` - 視窗已進入全螢幕模式
-- `events.Common.WindowRuntimeReady` - 視窗內執行階段已初始化
+- `events.Common.WindowClosing`－視窗即將關閉
+- `events.Common.WindowFocus`－視窗取得焦點
+- `events.Common.WindowLostFocus`－視窗失去焦點
+- `events.Common.WindowDidMove`－視窗已移動
+- `events.Common.WindowDidResize`－視窗大小已調整
+- `events.Common.WindowMinimise`－視窗已最小化
+- `events.Common.WindowMaximise`－視窗已最大化
+- `events.Common.WindowFullscreen`－視窗已進入全螢幕模式
+- `events.Common.WindowRuntimeReady`－視窗內執行階段已初始化
 
 ### RegisterHook()
 
-為視窗事件註冊鉤子。鉤子會在監聽器之前執行，並可呼叫`event.Cancel()`阻止事件。傳回取消訂閱函式。
+為視窗事件註冊掛鉤。掛鉤會在監聽器之前執行，並可呼叫`event.Cancel()`來阻止事件。傳回取消訂閱函式。
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -470,7 +470,7 @@ func (w *WebviewWindow) RegisterHook(
 ) func()
 ```
 
-**範例 - 阻止視窗關閉：**
+**範例－阻止視窗關閉：**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -493,7 +493,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-**範例 - 關閉前儲存：**
+**範例－關閉前儲存：**
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -521,7 +521,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-向視窗的前端發出自訂事件。如果發出動作被鉤子取消，則傳回`true`。
+向視窗的前端發出自訂事件。如果掛鉤取消發出事件，則傳回`true`。
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
@@ -529,8 +529,8 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 
 **參數：**
 
-- `name` - 事件名稱
-- `data` - 要隨事件傳送的選用資料
+- `name`－事件名稱
+- `data`－隨事件傳送的選用資料
 
 **範例：**
 
@@ -578,7 +578,7 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-設定視窗的背景色彩（在內容載入前顯示）。傳回接收者以便鏈式呼叫。
+設定視窗背景顏色（在內容載入前顯示）。傳回接收者以供鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-控制使用者是否可調整視窗大小。傳回接收者以便鏈式呼叫。
+控制使用者是否可調整視窗大小。傳回接收者以供鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -613,7 +613,7 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-設定視窗是否保持在其他視窗之上。傳回接收者以便鏈式呼叫。
+設定視窗是否保持在其他視窗上方。傳回接收者以供鏈式呼叫。
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -626,15 +626,40 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 window.SetAlwaysOnTop(true)
 ```
 
+### SetMenu()
+
+在 Windows 和 Linux 上設定視窗的選單列，取代目前顯示的選單列。
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**參數：**
+- `menu`－要顯示的選單；若要移除選單列，則傳入`nil`
+
+傳入`nil`會移除選單列：視窗將不顯示任何選單，連應用程式選單也不會顯示，而且已移除選單的快速鍵將無法在該視窗中使用。如果在視窗啟動前呼叫，建立視窗時將不會有選單列。
+
+**平台支援：**
+- **Windows**：完整支援
+- **Linux**：完整支援
+- **macOS**：沒有效果，因為選單列屬於應用程式。請改用`app.Menu.Set`。
+
+**範例：**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
+```
+
 ### Print()
 
-開啟視窗內容的原生列印對話方塊。
+為視窗內容開啟原生列印對話方塊。
 
 ```go
 func (w *WebviewWindow) Print() error
 ```
 
-<strong>傳回值：</strong>列印失敗時傳回錯誤。
+<strong>傳回值：</strong>若列印失敗，則傳回錯誤。
 
 **範例：**
 
@@ -646,7 +671,7 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-將第二個視窗附加為附屬於父視窗的模態對話框。
+將第二個視窗附加為工作表式強制回應視窗。
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
@@ -654,11 +679,11 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **參數：**
 
-- `modalWindow`－要附加為模態視窗的視窗
+- `modalWindow`－要附加為強制回應視窗的視窗
 
 **平台支援：**
 
-- **macOS**：完整支援（以附屬於父視窗的對話框形式顯示）
+- **macOS**：完整支援（以工作表形式顯示）
 - **Windows**：不支援
 - **Linux**：不支援
 
@@ -677,12 +702,12 @@ Linux 視窗可透過`LinuxWindow`使用下列平台特定選項：
 
 #### MenuStyle
 
-控制應用程式選單的顯示方式。此選項可用於預設的 GTK4 組建，但在舊版`-tags gtk3`組建中會被忽略。
+控制應用程式選單的顯示方式。此選項可用於預設的 GTK4 組建，但舊版`-tags gtk3`組建會忽略此選項。
 
 | 值 | 說明 |
 | --- | --- |
-| `LinuxMenuStyleMenuBar` | 標題列下方的傳統選單列（預設） |
-| `LinuxMenuStylePrimaryMenu` | 標頭列中的主要選單按鈕（GNOME 風格） |
+| `LinuxMenuStyleMenuBar` | 位於標題列下方的傳統選單列（預設） |
+| `LinuxMenuStylePrimaryMenu` | 標頭列中的主選單按鈕（GNOME 樣式） |
 
 **範例：**
 
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-<strong>注意：</strong>主要選單樣式會依循 GNOME 人機介面指南，在標頭列中顯示漢堡選單按鈕（☰）。這是現代 GNOME 應用程式的建議樣式。
+<strong>注意：</strong>主選單樣式會依循 GNOME 人機介面指南，在標頭列中顯示漢堡選單按鈕（☰）。這是現代 GNOME 應用程式的建議樣式。
 
 ## 完整範例
 

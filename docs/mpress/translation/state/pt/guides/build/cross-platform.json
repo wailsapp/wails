@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "35fb12c3f048d4569271",
+  "pageKey": "ff59a587fdac4d1bff42",
   "sourceFile": "guides/build/cross-platform.md",
   "sourceLanguage": "en",
   "targetLanguage": "pt",
@@ -9,752 +9,1502 @@
     "b0001-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
       "targetHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
-      "status": "migration-review",
-      "sourcePreview": "Quick Start"
+      "machineHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineText": "Início rápido",
+      "status": "machine-translated",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0002-text-01": {
       "sourceHash": "6b1ba90edc58dd6897a80a361a1d89c12041178ddce1e8485d0174783ad8b5fe",
-      "targetHash": "3501bf21f56ed93bef4c578b6b19dd0184fc21d1fb9a08ce1b1541b828e05399",
-      "status": "migration-review",
-      "sourcePreview": "Wails v3 supports building for Windows, macOS, and Linux from any host operating system. The build s…"
+      "targetHash": "e2f7c028abc8d0a45c739ab9a308519efd9113dbff24af4d50952cfca77499ab",
+      "machineHash": "e2f7c028abc8d0a45c739ab9a308519efd9113dbff24af4d50952cfca77499ab",
+      "machineText": "O Wails v3 permite compilar para Windows, macOS e Linux a partir de qualquer sistema operacional host. O sistema de compilação detecta automaticamente seu ambiente e escolhe o método de compilação correto.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails v3 supports building for Windows, macOS, and Linux from any host operating system. The build s…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0003-text-01": {
       "sourceHash": "d51fe06a2210f50522706b2f163a91ddbd40875f160d28762d07e81a215b8cfa",
-      "targetHash": "b67fb6d50cf3ac19efe268220b1e1e0cbca4097faf5fcd4dee34437436d9a60b",
-      "status": "migration-review",
-      "sourcePreview": "**Want to cross-compile to macOS and Linux?** Run this once to set up the Docker images (~800MB down…"
+      "targetHash": "82e59e186f3cbc974f457fbaed59ba0fa346a361cf34422f9512a58743524823",
+      "machineHash": "82e59e186f3cbc974f457fbaed59ba0fa346a361cf34422f9512a58743524823",
+      "machineText": "**Quer fazer compilação cruzada para macOS e Linux?** Execute este comando uma vez para configurar as imagens Docker (download de aproximadamente 800 MB):",
+      "status": "machine-translated",
+      "sourcePreview": "**Want to cross-compile to macOS and Linux?** Run this once to set up the Docker images (~800MB down…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0004-text-01": {
       "sourceHash": "ecf8160fd37581e06de7ce769dca0cd65a12fe9c47c7937f0f9ebb399d60e504",
       "targetHash": "7549d767123d0338903b41e9635059d1171046fbf6150e3760575d889192e4cf",
-      "status": "migration-review",
-      "sourcePreview": "Then build for any platform:"
+      "machineHash": "7549d767123d0338903b41e9635059d1171046fbf6150e3760575d889192e4cf",
+      "machineText": "Depois, compile para qualquer plataforma:",
+      "status": "machine-translated",
+      "sourcePreview": "Then build for any platform:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0005-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0006-text-01": {
       "sourceHash": "6566e607f71fdac6587f30a386e60d4ad85b9a3c0918b665ec3c8e6defd9aa7a",
-      "targetHash": "e0a077ed21dc059b65f397dc509511617fe148624b246e4724d38f71866eb659",
-      "status": "migration-review",
-      "sourcePreview": "Windows is the simplest cross-compilation target because it doesn't require CGO by default."
+      "targetHash": "f23efc6d6b5d067b9cbc1742c8ca07e827734e166d40f48e25a616175fd6d207",
+      "machineHash": "f23efc6d6b5d067b9cbc1742c8ca07e827734e166d40f48e25a616175fd6d207",
+      "machineText": "O Windows é o destino de compilação cruzada mais simples, pois não exige CGO por padrão.",
+      "status": "machine-translated",
+      "sourcePreview": "Windows is the simplest cross-compilation target because it doesn't require CGO by default.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0007-text-01": {
       "sourceHash": "7ea4c593ee6a50b990fc2320c1711a2ce98edde1063e0fc40df9a768f76a8867",
-      "targetHash": "5f517a8943649ff338c1afe2e7fd05ceeef736b816e50be4cc47d14f1f87e021",
-      "status": "migration-review",
-      "sourcePreview": "This works from any host OS with no additional setup. Go's built-in cross-compilation handles everyt…"
+      "targetHash": "0d67a17708db0a0181b43a3e4b2fb0f1ba168621a756e24c318edb8a84adee79",
+      "machineHash": "0d67a17708db0a0181b43a3e4b2fb0f1ba168621a756e24c318edb8a84adee79",
+      "machineText": "Isso funciona em qualquer sistema operacional host sem configuração adicional. A compilação cruzada integrada do Go cuida de tudo.",
+      "status": "machine-translated",
+      "sourcePreview": "This works from any host OS with no additional setup. Go's built-in cross-compilation handles everyt…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0008-text-01": {
       "sourceHash": "121ddbd303efd442ff811e51bf6f394cd4a16a9576d22f4552760f7e24bf91df",
-      "targetHash": "1dbb34426fa74fdabd60d1ceda4f5e5e682857c7f46d8498cf33d465e1e38474",
-      "status": "migration-review",
-      "sourcePreview": "**If your app requires CGO** (e.g., you're using a C library or CGO-dependent package), you'll need …"
+      "targetHash": "e460575223312b45edb2537f063daf808a382633325b5edefc12cfd809d00053",
+      "machineHash": "e460575223312b45edb2537f063daf808a382633325b5edefc12cfd809d00053",
+      "machineText": "**Se seu aplicativo exigir CGO** (por exemplo, se você usar uma biblioteca C ou um pacote que dependa de CGO), será necessário usar o Docker ao compilar no macOS ou Linux:",
+      "status": "machine-translated",
+      "sourcePreview": "**If your app requires CGO** (e.g., you're using a C library or CGO-dependent package), you'll need …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0009-text-01": {
       "sourceHash": "b0f3adc633ce7951995c02abe5e44b9e8f897138e774bf0f15fa5e7e74a15076",
-      "targetHash": "dd650292ef8e775102c116778a86621f90cf04ee0fadc26d0a8c6088a4825310",
-      "status": "migration-review",
-      "sourcePreview": "The Taskfile detects `CGO_ENABLED=1` on non-Windows hosts and automatically uses the Docker image."
+      "targetHash": "0bd9f6218cbe3c411d77690488901affe5697e6617f6185a9b7b4adbfcaed128",
+      "machineHash": "0bd9f6218cbe3c411d77690488901affe5697e6617f6185a9b7b4adbfcaed128",
+      "machineText": "O Taskfile detecta `CGO_ENABLED=1` em hosts que não executam Windows e usa automaticamente a imagem Docker.",
+      "status": "machine-translated",
+      "sourcePreview": "The Taskfile detects `CGO_ENABLED=1` on non-Windows hosts and automatically uses the Docker image.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0010-heading-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0011-text-01": {
       "sourceHash": "2af57da45545ec99caf26ebf30e60083a9c6ce0d5d357e2a0d68578d0b5445dd",
-      "targetHash": "066db16f05abaeb49da7eb6744f5f224c6fd86305400fe8cbe535eec33262366",
-      "status": "migration-review",
-      "sourcePreview": "macOS builds require CGO for WebView integration, which means cross-compilation needs special toolin…"
+      "targetHash": "307625deb17016065bf2337838c99876b2b07beebeed4c95674394d0c6d3528a",
+      "machineHash": "307625deb17016065bf2337838c99876b2b07beebeed4c95674394d0c6d3528a",
+      "machineText": "As compilações para macOS exigem CGO para a integração com o WebView, o que significa que a compilação cruzada requer ferramentas especiais.",
+      "status": "machine-translated",
+      "sourcePreview": "macOS builds require CGO for WebView integration, which means cross-compilation needs special toolin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0012-text-01": {
       "sourceHash": "e2e2352e0fec64b69af479db328a571f6e9ea140e0efcd8c44902ef80000eea3",
-      "targetHash": "a98b72cff1db1bf4cc0b7f8a19f45cd20c085549fbd2f48f211033f6504ce90e",
-      "status": "migration-review",
-      "sourcePreview": "**From Linux or Windows**, you'll need to set up Docker first:"
+      "targetHash": "85ef6ed53426ef5ea2c4111508bf91c0b5b3d6557d0b39c038011eec9c1a45b3",
+      "machineHash": "85ef6ed53426ef5ea2c4111508bf91c0b5b3d6557d0b39c038011eec9c1a45b3",
+      "machineText": "**No Linux ou Windows**, primeiro você precisará configurar o Docker:",
+      "status": "machine-translated",
+      "sourcePreview": "**From Linux or Windows**, you'll need to set up Docker first:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0013-text-01": {
       "sourceHash": "4f41c9a89a96fe068419ba51a744c6c6576d27ae29af4e5826bdf5102e5a4b90",
-      "targetHash": "403e06b5bebe37dfe9d1cb33f6093e0dbc135a0234edff49814a2ef174c4e7f0",
-      "status": "migration-review",
-      "sourcePreview": "Once the images are built, the build system detects that you're not on macOS and uses Docker automat…"
+      "targetHash": "0b39c71de39187dcb876e8ebabf7ce1427a33029f60e9eb26b4e493da48ad55d",
+      "machineHash": "0b39c71de39187dcb876e8ebabf7ce1427a33029f60e9eb26b4e493da48ad55d",
+      "machineText": "Depois que as imagens forem criadas, o sistema de compilação detectará que você não está no macOS e usará o Docker automaticamente. Não é necessário alterar seus comandos de compilação.",
+      "status": "machine-translated",
+      "sourcePreview": "Once the images are built, the build system detects that you're not on macOS and uses Docker automat…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0014-text-01": {
       "sourceHash": "35c80f49ffc9f36caedea15d8a8445c10f98b948c040d0892f5b850deef910a6",
-      "targetHash": "e46277c237610771847d13fd6fabe0f84bef6cb60cf410cafebe9a159bc79d5c",
-      "status": "migration-review",
-      "sourcePreview": "Note that cross-compiled macOS binaries are not code-signed. You'll need to sign them on macOS or in…"
+      "targetHash": "c4217246ccebd004aa9d3ded96ee064dc741145a00976988363da02db126a1f9",
+      "machineHash": "c4217246ccebd004aa9d3ded96ee064dc741145a00976988363da02db126a1f9",
+      "machineText": "Observe que os binários do macOS gerados por compilação cruzada não são assinados digitalmente. Você precisará assiná-los no macOS ou no ambiente de CI antes da distribuição.",
+      "status": "machine-translated",
+      "sourcePreview": "Note that cross-compiled macOS binaries are not code-signed. You'll need to sign them on macOS or in…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0015-heading-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0016-text-01": {
       "sourceHash": "6a7b36c44dad89c0f175fadc5ee148bd02d6e92775567f15d804b84ce2e4cbac",
-      "targetHash": "32c6e8ce40f2f3716170b3069ae35dae6f28ef7d56c1e117d69bf8dbc3fe7cce",
-      "status": "migration-review",
-      "sourcePreview": "Linux builds require CGO for WebView integration."
+      "targetHash": "600bee4561c5ddc25039464a36320e1a8a671d538523c697496203990d95b933",
+      "machineHash": "600bee4561c5ddc25039464a36320e1a8a671d538523c697496203990d95b933",
+      "machineText": "As compilações para Linux exigem CGO para a integração com o WebView.",
+      "status": "machine-translated",
+      "sourcePreview": "Linux builds require CGO for WebView integration.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0017-text-01": {
       "sourceHash": "7ef6acb95bf31fbfea928b8c382bd1159f6e9aee5389530534b38fa833f395d9",
-      "targetHash": "1c0eb0b5988dc5af7e9934c7764ba421d7e63562a6a620c71ee1261c0af5170c",
-      "status": "migration-review",
-      "sourcePreview": "**From macOS or Windows**, you'll need to set up Docker first:"
+      "targetHash": "2b409e7de6a8e698ae71c355409826ecbf0069edb3e1c440d0309641ed17629c",
+      "machineHash": "2b409e7de6a8e698ae71c355409826ecbf0069edb3e1c440d0309641ed17629c",
+      "machineText": "**No macOS ou Windows**, primeiro você precisará configurar o Docker:",
+      "status": "machine-translated",
+      "sourcePreview": "**From macOS or Windows**, you'll need to set up Docker first:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0018-text-01": {
       "sourceHash": "0a1eeebfdf89cdff3f66574355bc9ac2fc3556462402e022078609a23a0227aa",
       "targetHash": "83e99f1a61dc962a834d57f751a97ae6cbf3a002d72d9700fc0f806522bb018b",
-      "status": "migration-review",
-      "sourcePreview": "The build system detects that you're not on Linux and uses Docker automatically."
+      "machineHash": "83e99f1a61dc962a834d57f751a97ae6cbf3a002d72d9700fc0f806522bb018b",
+      "machineText": "O sistema de compilação detecta que você não está no Linux e usa o Docker automaticamente.",
+      "status": "machine-translated",
+      "sourcePreview": "The build system detects that you're not on Linux and uses Docker automatically.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0019-text-01": {
       "sourceHash": "be8782e77f658f93227d96ebf948c69c4d9e9a558607ff1ce09f70773dc1d47c",
-      "targetHash": "86129366d1d5e291f9e6f3db4ebf27495284fad47c308a7394e79c64f73737dc",
-      "status": "migration-review",
-      "sourcePreview": "**On Linux without a C compiler**, the build system checks for `gcc` or `clang`. If neither is found…"
+      "targetHash": "da4e9b89928ffcbcad88395cf098a93a0d33f6019a0333445f75511f814d9db7",
+      "machineHash": "da4e9b89928ffcbcad88395cf098a93a0d33f6019a0333445f75511f814d9db7",
+      "machineText": "**No Linux sem um compilador C**, o sistema de compilação procura `gcc` ou `clang`. Se nenhum deles for encontrado, ele recorrerá ao Docker. Isso é útil para contêineres mínimos ou sistemas sem ferramentas de compilação instaladas. Você pode:",
+      "status": "machine-translated",
+      "sourcePreview": "**On Linux without a C compiler**, the build system checks for `gcc` or `clang`. If neither is found…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0020-text-01": {
       "sourceHash": "5e101eac3403f9188363a927875aad3223387364cc1d668296f107155e435aa7",
       "targetHash": "893c68e6fcd533afbfedbc5c626b758b64d91a642207e64a638d709b66a7ef2a",
-      "status": "migration-review",
-      "sourcePreview": "Install a C compiler: `sudo apt install build-essential` (Debian/Ubuntu) or `sudo pacman -S base-dev…"
+      "machineHash": "893c68e6fcd533afbfedbc5c626b758b64d91a642207e64a638d709b66a7ef2a",
+      "machineText": "Instalar um compilador C: `sudo apt install build-essential` (Debian/Ubuntu) ou `sudo pacman -S base-devel` (Arch)",
+      "status": "machine-translated",
+      "sourcePreview": "Install a C compiler: `sudo apt install build-essential` (Debian/Ubuntu) or `sudo pacman -S base-dev…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0021-text-01": {
       "sourceHash": "807c11c0f23ba77a68153f00f461baa7f217b05e8598099d5e7992cb18789d12",
-      "targetHash": "e100124af9bfa735b875d5b037dc7965d1a620fb6426457cffa51a37684898a7",
-      "status": "migration-review",
-      "sourcePreview": "Build the Docker image and let it be used automatically"
+      "targetHash": "840165d98d270a5e7fe4e345be17232a705e6b290e584b07789b0ea389a0ee42",
+      "machineHash": "840165d98d270a5e7fe4e345be17232a705e6b290e584b07789b0ea389a0ee42",
+      "machineText": "Criar a imagem Docker e permitir que ela seja usada automaticamente",
+      "status": "machine-translated",
+      "sourcePreview": "Build the Docker image and let it be used automatically",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0022-heading-01": {
       "sourceHash": "2aada8697fce508f2eb43c06cc3bf33273deba524dad80a48f8e5b9099eca637",
       "targetHash": "c126e9a85090011eadce0a02cff144c49d2c810958eacb27408767b541d9c6eb",
-      "status": "migration-review",
-      "sourcePreview": "ARM Architecture"
+      "machineHash": "c126e9a85090011eadce0a02cff144c49d2c810958eacb27408767b541d9c6eb",
+      "machineText": "Arquitetura ARM",
+      "status": "machine-translated",
+      "sourcePreview": "ARM Architecture",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0023-text-01": {
       "sourceHash": "74dbef16554db834a2eb6b9cbbad47bdbed7edcd4da0f7959c03145efd948701",
-      "targetHash": "556e550db01ab73258119eeb7fa1477e4cce5a55f840e4c0bd48af27c2c155be",
-      "status": "migration-review",
-      "sourcePreview": "All platforms support ARM64 cross-compilation using `GOARCH`:"
+      "targetHash": "56f256e4d3278301480c592043e28697734b57d13388647c48de51dff7b83569",
+      "machineHash": "56f256e4d3278301480c592043e28697734b57d13388647c48de51dff7b83569",
+      "machineText": "Todas as plataformas oferecem suporte à compilação cruzada para ARM64 usando `GOARCH`:",
+      "status": "machine-translated",
+      "sourcePreview": "All platforms support ARM64 cross-compilation using `GOARCH`:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0024-text-01": {
       "sourceHash": "f0b77aa3c34fb97476684d2a1fc76f3706c7c6fcd587030db02909d2ec944ff1",
-      "targetHash": "4fbdb67a957fd5db63c2aed939444a5b0b9075d3450133c4eaf9bbe182c4ad1d",
-      "status": "migration-review",
-      "sourcePreview": "The Docker image includes Zig cross-compiler targets for both amd64 and arm64 on all platforms, so A…"
+      "targetHash": "2fb55fff7b02173300f71434ebec2ac2edadd06722b6a87758f619caca3ee7d7",
+      "machineHash": "2fb55fff7b02173300f71434ebec2ac2edadd06722b6a87758f619caca3ee7d7",
+      "machineText": "A imagem Docker inclui destinos do compilador cruzado Zig para amd64 e arm64 em todas as plataformas, portanto as compilações para ARM funcionam em qualquer host:",
+      "status": "machine-translated",
+      "sourcePreview": "The Docker image includes Zig cross-compiler targets for both amd64 and arm64 on all platforms, so A…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0025-cell-01": {
       "sourceHash": "7572a98fee32f167ccdf3fbd4973f7e3fc02ba46e055d545783c990548149959",
-      "targetHash": "c9cee7f444ec5945f7aa3457ba84f74df60c6021308a50d5f7e6b34b2187ba91",
-      "status": "migration-review",
-      "sourcePreview": "Build ARM64 for"
+      "targetHash": "05bff42e808619e9a93c020bd9fbd7caccdfa5ab8ae7129959323153211c2ecf",
+      "machineHash": "05bff42e808619e9a93c020bd9fbd7caccdfa5ab8ae7129959323153211c2ecf",
+      "machineText": "Compilar ARM64 para",
+      "status": "machine-translated",
+      "sourcePreview": "Build ARM64 for",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0026-cell-01": {
       "sourceHash": "48aaad2c0f463688d89f37192532667308a8f5ec39269090e26d8a8bb5c6cc60",
       "targetHash": "ca12e56b4ba6ddbe2b1945c2cf6c84d8a93030fc9c6e0f985632ad6112cb44f0",
-      "status": "migration-review",
-      "sourcePreview": "From Windows"
+      "machineHash": "ca12e56b4ba6ddbe2b1945c2cf6c84d8a93030fc9c6e0f985632ad6112cb44f0",
+      "machineText": "No Windows",
+      "status": "machine-translated",
+      "sourcePreview": "From Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0027-cell-01": {
       "sourceHash": "dae5c979954a87f3a963f5567d1d9e7786e925b0fac61321e3a0f620a84a80fc",
       "targetHash": "8d477107d3439a1f74b14ddf0e1e90d9a5aa11d2f97823ef1d7c4c710bb59073",
-      "status": "migration-review",
-      "sourcePreview": "From macOS"
+      "machineHash": "8d477107d3439a1f74b14ddf0e1e90d9a5aa11d2f97823ef1d7c4c710bb59073",
+      "machineText": "No macOS",
+      "status": "machine-translated",
+      "sourcePreview": "From macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0028-cell-01": {
       "sourceHash": "2848312d2bdc17a3500f915ef7db71b6c3bff3fbac99339ef7020f4e1965b2c8",
       "targetHash": "24a1f8afc8be0a55d300232976b4a0b2069db03312747b95b554842a3d342c1f",
-      "status": "migration-review",
-      "sourcePreview": "From Linux"
+      "machineHash": "24a1f8afc8be0a55d300232976b4a0b2069db03312747b95b554842a3d342c1f",
+      "machineText": "No Linux",
+      "status": "machine-translated",
+      "sourcePreview": "From Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0029-cell-01": {
       "sourceHash": "bec1ac171a365770ae7aacbb1e13d99ac977ec54667c897f35f5e95c4adf145b",
       "targetHash": "bec1ac171a365770ae7aacbb1e13d99ac977ec54667c897f35f5e95c4adf145b",
-      "status": "migration-review",
-      "sourcePreview": "**Windows ARM64**"
+      "machineHash": "bec1ac171a365770ae7aacbb1e13d99ac977ec54667c897f35f5e95c4adf145b",
+      "machineText": "**Windows ARM64**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows ARM64**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0030-cell-01": {
       "sourceHash": "a8f05e25c12a4083a880f4ab4d8d6f977f454f365130bcfe0d1b75e6bce98f85",
       "targetHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
-      "status": "migration-review",
-      "sourcePreview": "Native Go"
+      "machineHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
+      "machineText": "Go nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0031-cell-01": {
       "sourceHash": "a8f05e25c12a4083a880f4ab4d8d6f977f454f365130bcfe0d1b75e6bce98f85",
       "targetHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
-      "status": "migration-review",
-      "sourcePreview": "Native Go"
+      "machineHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
+      "machineText": "Go nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0032-cell-01": {
       "sourceHash": "a8f05e25c12a4083a880f4ab4d8d6f977f454f365130bcfe0d1b75e6bce98f85",
       "targetHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
-      "status": "migration-review",
-      "sourcePreview": "Native Go"
+      "machineHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
+      "machineText": "Go nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0033-cell-01": {
       "sourceHash": "d1a250db91dfb6176eb72bfe49c9fc92ce498d39aef551567130900cefb2eee4",
       "targetHash": "d1a250db91dfb6176eb72bfe49c9fc92ce498d39aef551567130900cefb2eee4",
-      "status": "migration-review",
-      "sourcePreview": "**macOS ARM64**"
+      "machineHash": "d1a250db91dfb6176eb72bfe49c9fc92ce498d39aef551567130900cefb2eee4",
+      "machineText": "**macOS ARM64**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS ARM64**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0034-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0035-cell-01": {
       "sourceHash": "d509e493885298a23c55f83c133e5d725f24dd6cc67cf734baa2c11b220ab809",
-      "targetHash": "da1276388e496b7d25e13958a616176d95f6fc8f628db7950418e548a91c9520",
-      "status": "migration-review",
-      "sourcePreview": "Native"
+      "targetHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineText": "Nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0036-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0037-cell-01": {
       "sourceHash": "252268ffc15e51d42e546175de170bbd405fdc24b0963de9d0dcd00977a20475",
       "targetHash": "252268ffc15e51d42e546175de170bbd405fdc24b0963de9d0dcd00977a20475",
-      "status": "migration-review",
-      "sourcePreview": "**Linux ARM64**"
+      "machineHash": "252268ffc15e51d42e546175de170bbd405fdc24b0963de9d0dcd00977a20475",
+      "machineText": "**Linux ARM64**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux ARM64**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0038-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0039-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0040-cell-01": {
       "sourceHash": "e45db1a66698c77a9cca233c1a3e04439aed00e839ddec8cb80c9062ad65a5ac",
       "targetHash": "e45db1a66698c77a9cca233c1a3e04439aed00e839ddec8cb80c9062ad65a5ac",
-      "status": "migration-review",
-      "sourcePreview": "Docker_"
+      "machineHash": "e45db1a66698c77a9cca233c1a3e04439aed00e839ddec8cb80c9062ad65a5ac",
+      "machineText": "Docker_",
+      "status": "machine-translated",
+      "sourcePreview": "Docker_",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0041-text-01": {
       "sourceHash": "7a03e0ac0458ff37cf1cc848640b97f6fa5412b6b3aa95caee25b0705842e053",
-      "targetHash": "d05879c83cfbd45dfc24c31d96973fa7fadb78fa4cf7e6a2198ed06fe23cf93c",
-      "status": "migration-review",
-      "sourcePreview": "\u003cem\u003eLinux ARM64 from Linux x86\u003c/em\u003e64 uses Docker because CGO cross-compilation requires a different…"
+      "targetHash": "d134b1c1737d7b5a6cda67394312e71697950d5b54e3f1c23faa6b7e49054b2f",
+      "machineHash": "d134b1c1737d7b5a6cda67394312e71697950d5b54e3f1c23faa6b7e49054b2f",
+      "machineText": "\u003cem\u003eLinux ARM64 a partir do Linux x86\u003c/em\u003e64 usa o Docker porque a compilação cruzada com CGO exige uma cadeia de ferramentas diferente.",
+      "status": "machine-translated",
+      "sourcePreview": "\u003cem\u003eLinux ARM64 from Linux x86\u003c/em\u003e64 uses Docker because CGO cross-compilation requires a different…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0042-heading-01": {
       "sourceHash": "c1879525c75cb5c2f2f3bcd2db2554aeca020ede722bdbe6949b8f5f51d885d2",
       "targetHash": "991f80d4356d46fd9c565c92f281523fef297f3e244e1470112135157ab191f7",
-      "status": "migration-review",
-      "sourcePreview": "How It Works"
+      "machineHash": "991f80d4356d46fd9c565c92f281523fef297f3e244e1470112135157ab191f7",
+      "machineText": "Como funciona",
+      "status": "machine-translated",
+      "sourcePreview": "How It Works",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0043-heading-01": {
       "sourceHash": "275b874b84e86ef66d3bafdbb0d9f4861b58688d96ec7fd7670d93091af192e2",
       "targetHash": "370d073c8b26041db2a88f9be0aaa6cee85946f3ce10b4503a46905a2adc0f83",
-      "status": "migration-review",
-      "sourcePreview": "Cross-Compilation Matrix"
+      "machineHash": "370d073c8b26041db2a88f9be0aaa6cee85946f3ce10b4503a46905a2adc0f83",
+      "machineText": "Matriz de compilação cruzada",
+      "status": "machine-translated",
+      "sourcePreview": "Cross-Compilation Matrix",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0044-cell-01": {
       "sourceHash": "52ef04ba122ec1af7fb9f63a545a25ccb36854fafc2f163436c96eb3f6a0413c",
       "targetHash": "062d7ad8ac3365de74e8c01e372258e680864dafd4122ede491a7be2e8da1278",
-      "status": "migration-review",
-      "sourcePreview": "Host → Target"
+      "machineHash": "062d7ad8ac3365de74e8c01e372258e680864dafd4122ede491a7be2e8da1278",
+      "machineText": "Host → Destino",
+      "status": "machine-translated",
+      "sourcePreview": "Host → Target",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0045-cell-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0046-cell-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0047-cell-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0048-cell-01": {
       "sourceHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
       "targetHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
-      "status": "migration-review",
-      "sourcePreview": "**Windows**"
+      "machineHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
+      "machineText": "**Windows**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0049-cell-01": {
       "sourceHash": "d509e493885298a23c55f83c133e5d725f24dd6cc67cf734baa2c11b220ab809",
-      "targetHash": "da1276388e496b7d25e13958a616176d95f6fc8f628db7950418e548a91c9520",
-      "status": "migration-review",
-      "sourcePreview": "Native"
+      "targetHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineText": "Nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0050-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0051-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0052-cell-01": {
       "sourceHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
       "targetHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
-      "status": "migration-review",
-      "sourcePreview": "**macOS**"
+      "machineHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
+      "machineText": "**macOS**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0053-cell-01": {
       "sourceHash": "a8f05e25c12a4083a880f4ab4d8d6f977f454f365130bcfe0d1b75e6bce98f85",
       "targetHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
-      "status": "migration-review",
-      "sourcePreview": "Native Go"
+      "machineHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
+      "machineText": "Go nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0054-cell-01": {
       "sourceHash": "d509e493885298a23c55f83c133e5d725f24dd6cc67cf734baa2c11b220ab809",
-      "targetHash": "da1276388e496b7d25e13958a616176d95f6fc8f628db7950418e548a91c9520",
-      "status": "migration-review",
-      "sourcePreview": "Native"
+      "targetHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineText": "Nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0055-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0056-cell-01": {
       "sourceHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
       "targetHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
-      "status": "migration-review",
-      "sourcePreview": "**Linux**"
+      "machineHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
+      "machineText": "**Linux**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0057-cell-01": {
       "sourceHash": "a8f05e25c12a4083a880f4ab4d8d6f977f454f365130bcfe0d1b75e6bce98f85",
       "targetHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
-      "status": "migration-review",
-      "sourcePreview": "Native Go"
+      "machineHash": "ba0fba5bfd0a84ad38d7b7569f722b40cccad2b77f6b3d56dea10381a6832721",
+      "machineText": "Go nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0058-cell-01": {
       "sourceHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
       "targetHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
-      "status": "migration-review",
-      "sourcePreview": "Docker"
+      "machineHash": "e6169e958b37ce8662817b0f3e0bf450a174742fafc527800e67f430738b4b63",
+      "machineText": "Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0059-cell-01": {
       "sourceHash": "d509e493885298a23c55f83c133e5d725f24dd6cc67cf734baa2c11b220ab809",
-      "targetHash": "da1276388e496b7d25e13958a616176d95f6fc8f628db7950418e548a91c9520",
-      "status": "migration-review",
-      "sourcePreview": "Native"
+      "targetHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineHash": "8956ceffe26dd2ac17bd1b8e876c7ed24f5a1f4eb4dcc3e2ef000bff45a9b4a6",
+      "machineText": "Nativo",
+      "status": "machine-translated",
+      "sourcePreview": "Native",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0060-text-01": {
       "sourceHash": "87dd1fdec963f77d63c8d811531dc45e9934fce923ce0a2488f8eb36076b0dd9",
-      "targetHash": "8ddde1f85220bda4a3e1c13e57e2a697389906a80385a44b03c46b56b7fe51d8",
-      "status": "migration-review",
-      "sourcePreview": "**Native** = Platform's native toolchain, no additional setup"
+      "targetHash": "8d4ff39ecc88905a0f936700c71708be56b103a74ee799749873a9cb86ceef59",
+      "machineHash": "8d4ff39ecc88905a0f936700c71708be56b103a74ee799749873a9cb86ceef59",
+      "machineText": "**Nativo** = cadeia de ferramentas nativa da plataforma, sem configuração adicional",
+      "status": "machine-translated",
+      "sourcePreview": "**Native** = Platform's native toolchain, no additional setup",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0061-text-01": {
       "sourceHash": "781d688478e89b36dbf16c64ddf970f511bf49b4f16f85ec2b506e3f3072e142",
       "targetHash": "9b17c2571fe5e2afc969abbac6b4f227352e94076119f4072a403dc977932f38",
-      "status": "migration-review",
-      "sourcePreview": "**Native Go** = Go's built-in cross-compilation (`CGO_ENABLED=0`)"
+      "machineHash": "9b17c2571fe5e2afc969abbac6b4f227352e94076119f4072a403dc977932f38",
+      "machineText": "**Go nativo** = compilação cruzada integrada do Go (`CGO_ENABLED=0`)",
+      "status": "machine-translated",
+      "sourcePreview": "**Native Go** = Go's built-in cross-compilation (`CGO_ENABLED=0`)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0062-text-01": {
       "sourceHash": "3bfca5115ea93d3a95541d6f7942bff19dee800debad177f08fa8f1c8bbdb928",
-      "targetHash": "193ac432ee417d4c2f99b8501ad31e89dba2d1be91a464cfd621d65904a43a23",
-      "status": "migration-review",
-      "sourcePreview": "**Docker** = Docker image with Zig cross-compiler"
+      "targetHash": "b7debb451c142e2bae409581b5e675e9ab334c64eb5295b00f750a08a814a699",
+      "machineHash": "b7debb451c142e2bae409581b5e675e9ab334c64eb5295b00f750a08a814a699",
+      "machineText": "**Docker** = imagem Docker com o compilador cruzado Zig",
+      "status": "machine-translated",
+      "sourcePreview": "**Docker** = Docker image with Zig cross-compiler",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0063-heading-01": {
       "sourceHash": "ab0ae3d17322404c14ef64940c0fb8e7a52d4ee421f84fadfff70a0dd3e9f42e",
-      "targetHash": "feb13deb060b0d34b01d6f66bf2b3a9f5ca3ee61f519b4eb8df44ad36fef7640",
-      "status": "migration-review",
-      "sourcePreview": "CGO Requirements"
+      "targetHash": "6e347a7ffd69a65b47a09a443ce6d15fc1400b0eaefbfbb87c9d67d121e8abec",
+      "machineHash": "6e347a7ffd69a65b47a09a443ce6d15fc1400b0eaefbfbb87c9d67d121e8abec",
+      "machineText": "Requisitos do CGO",
+      "status": "machine-translated",
+      "sourcePreview": "CGO Requirements",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0064-cell-01": {
       "sourceHash": "978354db0c00fc78c3a5524f462a73bc425df3fb2767e51a5f46352ae26ae6f9",
       "targetHash": "8e7290e445465b8692e25e9582805956ce1e16c0e96bc13863ae217f3cd5f0fa",
-      "status": "migration-review",
-      "sourcePreview": "Target"
+      "machineHash": "8e7290e445465b8692e25e9582805956ce1e16c0e96bc13863ae217f3cd5f0fa",
+      "machineText": "Destino",
+      "status": "machine-translated",
+      "sourcePreview": "Target",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0065-cell-01": {
       "sourceHash": "2680bd332a35c71158f7bf1e5fa5ee656bc5e995b150a3e2faab9f0a97d241cd",
-      "targetHash": "d3122d7a8277c4a000bb67416ffea36a1c0611c611270a091413b455a1fa9830",
-      "status": "migration-review",
-      "sourcePreview": "CGO Required"
+      "targetHash": "2862763c40027cdda942e3750df4c8c715a630c14cc849f7fbc09717c077c222",
+      "machineHash": "2862763c40027cdda942e3750df4c8c715a630c14cc849f7fbc09717c077c222",
+      "machineText": "CGO obrigatório",
+      "status": "machine-translated",
+      "sourcePreview": "CGO Required",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0066-cell-01": {
       "sourceHash": "eae9f7b7d279e8309fa4a0c2373d6070c0009eac3e9d355e93b65079d01ce5a3",
       "targetHash": "5e64ef84a840528b5a3d022d74a3f68df2640dd1ccae3b38360ff067c524f65f",
-      "status": "migration-review",
-      "sourcePreview": "Cross-Compilation Method"
+      "machineHash": "5e64ef84a840528b5a3d022d74a3f68df2640dd1ccae3b38360ff067c524f65f",
+      "machineText": "Método de compilação cruzada",
+      "status": "machine-translated",
+      "sourcePreview": "Cross-Compilation Method",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0067-cell-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0068-cell-01": {
       "sourceHash": "ec6464b2feeed0b33e9708ee331e698c5fd334fc406c62fd856681d6bd292b2a",
       "targetHash": "dd5b8810e48f4c8ece44fbc8dc4bc4a42d19d72c16cde7aaf44bebcaae181f78",
-      "status": "migration-review",
-      "sourcePreview": "No (default)"
+      "machineHash": "dd5b8810e48f4c8ece44fbc8dc4bc4a42d19d72c16cde7aaf44bebcaae181f78",
+      "machineText": "Não (por padrão)",
+      "status": "machine-translated",
+      "sourcePreview": "No (default)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0069-cell-01": {
       "sourceHash": "ff71f08d48c7361e096247734dc7ee96c6f6588a6f2e1b5e9f8fbaba75aafa7e",
       "targetHash": "e50bdc2c1bd5a0315483c3be545e41f0e189a5eb285abc6275563ca3d6da73a7",
-      "status": "migration-review",
-      "sourcePreview": "Native Go. Docker only if `CGO_ENABLED=1`"
+      "machineHash": "e50bdc2c1bd5a0315483c3be545e41f0e189a5eb285abc6275563ca3d6da73a7",
+      "machineText": "Go nativo. Docker somente se `CGO_ENABLED=1`",
+      "status": "machine-translated",
+      "sourcePreview": "Native Go. Docker only if `CGO_ENABLED=1`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0070-cell-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0071-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "9313455e45aa22430a92fddbb70f21312d3c944ab590dfb1da845c1a96b664fe",
-      "status": "migration-review",
-      "sourcePreview": "Yes"
+      "machineHash": "9313455e45aa22430a92fddbb70f21312d3c944ab590dfb1da845c1a96b664fe",
+      "machineText": "Sim",
+      "status": "machine-translated",
+      "sourcePreview": "Yes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0072-cell-01": {
       "sourceHash": "008f31adcf2a43b015cd57c1a179dc07a1d9e7a44d58c97bb384d4287e903fe0",
       "targetHash": "dda103603dc8b81aa229eccca5047c40747970e5334fdf080825d46a4b14caf5",
-      "status": "migration-review",
-      "sourcePreview": "Docker with macOS SDK"
+      "machineHash": "dda103603dc8b81aa229eccca5047c40747970e5334fdf080825d46a4b14caf5",
+      "machineText": "Docker com o SDK do macOS",
+      "status": "machine-translated",
+      "sourcePreview": "Docker with macOS SDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0073-cell-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0074-cell-01": {
       "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
       "targetHash": "9313455e45aa22430a92fddbb70f21312d3c944ab590dfb1da845c1a96b664fe",
-      "status": "migration-review",
-      "sourcePreview": "Yes"
+      "machineHash": "9313455e45aa22430a92fddbb70f21312d3c944ab590dfb1da845c1a96b664fe",
+      "machineText": "Sim",
+      "status": "machine-translated",
+      "sourcePreview": "Yes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0075-cell-01": {
       "sourceHash": "d489ab2e4dc65400a473434c83932372db2ecb7a6c8b27a7574d72c2a662f45d",
       "targetHash": "4bc6ebd271fe6367d33f9b71bf10090a53e7c6cd9762e005b662bb65900c7433",
-      "status": "migration-review",
-      "sourcePreview": "Docker, or native if C compiler available"
+      "machineHash": "4bc6ebd271fe6367d33f9b71bf10090a53e7c6cd9762e005b662bb65900c7433",
+      "machineText": "Docker ou compilação nativa, se houver um compilador C disponível",
+      "status": "machine-translated",
+      "sourcePreview": "Docker, or native if C compiler available",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0076-heading-01": {
       "sourceHash": "058517e3d12324eb43931a6488241f00740ad24037742069c7e7fc33f0259935",
       "targetHash": "13aa33a839fca38903f9403e814339cb55317d77fc78e2b9c29ed92995983ab0",
-      "status": "migration-review",
-      "sourcePreview": "Auto-Detection"
+      "machineHash": "13aa33a839fca38903f9403e814339cb55317d77fc78e2b9c29ed92995983ab0",
+      "machineText": "Detecção automática",
+      "status": "machine-translated",
+      "sourcePreview": "Auto-Detection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0077-text-01": {
       "sourceHash": "dc3eace0cd3fccb208bfbb5c125e7ec8c7bb5fc46ddc7eb7c532becd73068e31",
       "targetHash": "5990409ba40ccc45cbc101971da1d62bb366419a5f4284d619afb4a8d39d0bbc",
-      "status": "migration-review",
-      "sourcePreview": "The Taskfiles automatically choose the right build method based on your environment:"
+      "machineHash": "5990409ba40ccc45cbc101971da1d62bb366419a5f4284d619afb4a8d39d0bbc",
+      "machineText": "Os Taskfiles escolhem automaticamente o método de compilação correto com base no seu ambiente:",
+      "status": "machine-translated",
+      "sourcePreview": "The Taskfiles automatically choose the right build method based on your environment:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0078-text-01": {
       "sourceHash": "de6f020e05ec31a7e56a421b7c1862c0c6b06a31bf7fddb71b01c81dc5712624",
-      "targetHash": "7849943e4d9311a2ed87df2f5e14b0d4c33c50443d9eb13923c216f7cc950499",
-      "status": "migration-review",
-      "sourcePreview": "**Windows target:** Uses native Go cross-compilation by default. If you explicitly set `CGO_ENABLED=…"
+      "targetHash": "f5dc12d4fa38432485f71c3ee4633cdd3c957d69310579e002a931a7ec6219de",
+      "machineHash": "f5dc12d4fa38432485f71c3ee4633cdd3c957d69310579e002a931a7ec6219de",
+      "machineText": "**Destino Windows:** usa a compilação cruzada nativa do Go por padrão. Se você definir explicitamente `CGO_ENABLED=1` em um host que não execute Windows, o sistema passará a usar o Docker.",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows target:** Uses native Go cross-compilation by default. If you explicitly set `CGO_ENABLED=…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0079-text-01": {
       "sourceHash": "bd15ad9cb8e0fce103dbb80b2f96abc56c52322f87f2b92a8ab3954a729a20b9",
-      "targetHash": "97ec55acf3f226ba7cdf31475dcde33ef53fff544288fdad941659a5cd0de8da",
-      "status": "migration-review",
-      "sourcePreview": "**macOS target:** Uses Docker automatically when not on macOS. No manual intervention needed."
+      "targetHash": "37483f026d9f7b79a55353e7b9e4ab9f7cafbc04a37478a1ca830ce62dc68cc5",
+      "machineHash": "37483f026d9f7b79a55353e7b9e4ab9f7cafbc04a37478a1ca830ce62dc68cc5",
+      "machineText": "**Destino macOS:** usa o Docker automaticamente quando o host não executa macOS. Nenhuma intervenção manual é necessária.",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS target:** Uses Docker automatically when not on macOS. No manual intervention needed.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0080-text-01": {
       "sourceHash": "1bb2b963222da6e680ce8f392d58f787dff3f262b2937679420c464b762b781b",
-      "targetHash": "93cc5ff7e808648169ceefb9a3310d30d138f8987b5c120b63b69484d72d667c",
-      "status": "migration-review",
-      "sourcePreview": "**Linux target:** Checks for `gcc` or `clang`. Uses native compilation if found, otherwise falls bac…"
+      "targetHash": "3a1a61c37185728f8e825ed521f60b67d68cbcfd4c4cd0e77deecd420f98bf52",
+      "machineHash": "3a1a61c37185728f8e825ed521f60b67d68cbcfd4c4cd0e77deecd420f98bf52",
+      "machineText": "**Destino Linux:** procura `gcc` ou `clang`. Se encontrar um deles, usa a compilação nativa; caso contrário, recorre ao Docker.",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux target:** Checks for `gcc` or `clang`. Uses native compilation if found, otherwise falls bac…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0081-heading-01": {
       "sourceHash": "140d5d5895d71e6fdfc2200bd1a678a00e75033b1cd2458cb485bdba3f760565",
-      "targetHash": "c1bc7fb6aea0868951fb77950a74eae66d679faa148736338b316d37b5979c87",
-      "status": "migration-review",
-      "sourcePreview": "Docker Image"
+      "targetHash": "c07ec4276f53ef6712f3cb1e3fbe9e6f11912ce56cef4aa99480cda44f0da9e6",
+      "machineHash": "c07ec4276f53ef6712f3cb1e3fbe9e6f11912ce56cef4aa99480cda44f0da9e6",
+      "machineText": "Imagem Docker",
+      "status": "machine-translated",
+      "sourcePreview": "Docker Image",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0082-text-01": {
       "sourceHash": "7a29ba13867cdf08b0a7d90d3e66bb9ca1d06472f847a996b22976cc5de1e7ee",
-      "targetHash": "55d267abb31b2970109f3dadb2179a15e5d2710b9b8899c5db621eca52c9567b",
-      "status": "migration-review",
-      "sourcePreview": "Wails uses a single Docker image (`wails-cross`) that can build for all platforms. It uses [Zig](htt…"
+      "targetHash": "aa257b89bd20f40a9aa453fd1a097188e059190281f3b14eb8b6eae86a50f2b1",
+      "machineHash": "aa257b89bd20f40a9aa453fd1a097188e059190281f3b14eb8b6eae86a50f2b1",
+      "machineText": "O Wails usa uma única imagem Docker (`wails-cross`), capaz de compilar para todas as plataformas. Ela usa o [Zig](https://ziglang.org/) como compilador cruzado, permitindo direcionar a compilação a qualquer plataforma a partir de qualquer host. O SDK do macOS está incluído para destinos darwin.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails uses a single Docker image (`wails-cross`) that can build for all platforms. It uses [Zig](htt…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0083-text-01": {
       "sourceHash": "c5810f86e812e6e3964f8db8e6f68cc9b85fd64c41a84e69920d7c7edf7c7b00",
       "targetHash": "ab7ab7ccb7644f5060d371dedd05b7e9c8c0db0e2c36f3a1fc14b4fc765336d5",
-      "status": "migration-review",
-      "sourcePreview": "You can check if the image is ready by running `wails3 doctor`."
+      "machineHash": "ab7ab7ccb7644f5060d371dedd05b7e9c8c0db0e2c36f3a1fc14b4fc765336d5",
+      "machineText": "Você pode verificar se a imagem está pronta executando `wails3 doctor`.",
+      "status": "machine-translated",
+      "sourcePreview": "You can check if the image is ready by running `wails3 doctor`.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0084-heading-01": {
       "sourceHash": "67dc71f8020843731671efce97e610c248d91216692862a794252888118736fa",
       "targetHash": "30e1ac3dc361b2f01ba7ac8c466995ad54b5b8216d1070de6f348252d522a49d",
-      "status": "migration-review",
-      "sourcePreview": "macOS SDK"
+      "machineHash": "30e1ac3dc361b2f01ba7ac8c466995ad54b5b8216d1070de6f348252d522a49d",
+      "machineText": "SDK do macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS SDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0085-text-01": {
       "sourceHash": "dbc1e7801c8401aab6f9d2e143591bcd4284438a215e67f3f32229b21e87342d",
-      "targetHash": "842d239b0447a4f3e238d41b46e9ba36eaffcbabd00d1a873447df0ff7faec52",
-      "status": "migration-review",
-      "sourcePreview": "The Docker image downloads the macOS SDK from [wailsapp/macosx-sdks](https://github.com/wailsapp/mac…"
+      "targetHash": "c42ab240d66a004dab52d994ad40565939c1f9470c6633f9769161ad4bec686b",
+      "machineHash": "c42ab240d66a004dab52d994ad40565939c1f9470c6633f9769161ad4bec686b",
+      "machineText": "A imagem Docker baixa o SDK do macOS de [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) durante o processo de criação da imagem. Isso é necessário porque os cabeçalhos do macOS são exigidos para a compilação com CGO.",
+      "status": "machine-translated",
+      "sourcePreview": "The Docker image downloads the macOS SDK from [wailsapp/macosx-sdks](https://github.com/wailsapp/mac…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0086-text-01": {
       "sourceHash": "043e4e79d21a482a63dfe69c5ff0d9dbbab7f508878f9196e07be5c68566c4b5",
-      "targetHash": "05ca042ad334b6f71d6d482f7699327648bc3465eb835ddb97ab21ace9c36872",
-      "status": "migration-review",
-      "sourcePreview": "**Important:** Wails does not distribute the macOS SDK. Users are responsible for reviewing Apple's …"
+      "targetHash": "c060c08735db51b17dc3187e56c6877bd99698eb7db759219e47211a74d878f9",
+      "machineHash": "c060c08735db51b17dc3187e56c6877bd99698eb7db759219e47211a74d878f9",
+      "machineText": "**Importante:** o Wails não distribui o SDK do macOS. Os usuários são responsáveis por analisar os termos da licença do SDK da Apple antes de usar esse recurso.",
+      "status": "machine-translated",
+      "sourcePreview": "**Important:** Wails does not distribute the macOS SDK. Users are responsible for reviewing Apple's …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0087-heading-01": {
       "sourceHash": "97f529f22ca7d6fe68c703593ee2d8e289bd774a1ec0f426dd6c36a173a16f8f",
       "targetHash": "b09fafaf068697cbca925ab044079d04b7e0accf560c0940b737dbdec9ff69bd",
-      "status": "migration-review",
-      "sourcePreview": "Build Your Own Image"
+      "machineHash": "b09fafaf068697cbca925ab044079d04b7e0accf560c0940b737dbdec9ff69bd",
+      "machineText": "Crie sua própria imagem",
+      "status": "machine-translated",
+      "sourcePreview": "Build Your Own Image",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0088-text-01": {
       "sourceHash": "b90255c71da69e3f4729041a0f0cdf5ab9dbe07c6a08d380ed5b5ff3abd2e786",
-      "targetHash": "c83b3e06f8116408c1d5369abc85dec14ff3fb97d2909a62ab250e1546aa728f",
-      "status": "migration-review",
-      "sourcePreview": "If you need to customize the Docker image (e.g., use a different macOS SDK version, add additional t…"
+      "targetHash": "bce35f182e0fbe9260f7e76a95fee7b38d2765db8fe1d556516d9fe7c393a24b",
+      "machineHash": "bce35f182e0fbe9260f7e76a95fee7b38d2765db8fe1d556516d9fe7c393a24b",
+      "machineText": "Se precisar personalizar a imagem do Docker (por exemplo, usar uma versão diferente do SDK do macOS, adicionar outras ferramentas ou usar seu próprio SDK), você poderá criar a imagem por conta própria.",
+      "status": "machine-translated",
+      "sourcePreview": "If you need to customize the Docker image (e.g., use a different macOS SDK version, add additional t…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0089-heading-01": {
       "sourceHash": "dd2c0eb6ea5cfc6c4bd4eac30934e2d5746747af48fef6da689e85b752f39557",
       "targetHash": "dd2c0eb6ea5cfc6c4bd4eac30934e2d5746747af48fef6da689e85b752f39557",
-      "status": "migration-review",
-      "sourcePreview": "Dockerfile"
+      "machineHash": "dd2c0eb6ea5cfc6c4bd4eac30934e2d5746747af48fef6da689e85b752f39557",
+      "machineText": "Dockerfile",
+      "status": "machine-translated",
+      "sourcePreview": "Dockerfile",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0090-text-01": {
       "sourceHash": "28053ba3087329abe46032fbfd79dbe7f2183c0396e278247018b67111de9e88",
       "targetHash": "7fd7ebe5187ecca53cbbe5446963a7930833ee27433cacd1ecf9b66d5ea1ea06",
-      "status": "migration-review",
-      "sourcePreview": "Create a `Dockerfile` with the following content:"
+      "machineHash": "7fd7ebe5187ecca53cbbe5446963a7930833ee27433cacd1ecf9b66d5ea1ea06",
+      "machineText": "Crie um `Dockerfile` com o seguinte conteúdo:",
+      "status": "machine-translated",
+      "sourcePreview": "Create a `Dockerfile` with the following content:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0091-heading-01": {
       "sourceHash": "c574bf52dec7f0a38637861fdb3643cfc7454f3a36698c8c862a8bcca229c5b1",
-      "targetHash": "7016c30cec56fa7577b8e9e09033b66c6e0539cadfcd4433a86e16ade3a7f339",
-      "status": "migration-review",
-      "sourcePreview": "Building the Image"
+      "targetHash": "243be4457096e9f1f79b52d3b6550ca0865aae3c966a15607ee5aeafaeda023f",
+      "machineHash": "243be4457096e9f1f79b52d3b6550ca0865aae3c966a15607ee5aeafaeda023f",
+      "machineText": "Como criar a imagem",
+      "status": "machine-translated",
+      "sourcePreview": "Building the Image",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0092-text-01": {
       "sourceHash": "b662526ff2c5e2415076743068027b834ef85a374e7235f992b903258920bee5",
       "targetHash": "812dcc11801d3eaa8a05e743b605258c4afdeb0ee4504d8e180447116960076f",
-      "status": "migration-review",
-      "sourcePreview": "Save the Dockerfile and build the image:"
+      "machineHash": "812dcc11801d3eaa8a05e743b605258c4afdeb0ee4504d8e180447116960076f",
+      "machineText": "Salve o Dockerfile e crie a imagem:",
+      "status": "machine-translated",
+      "sourcePreview": "Save the Dockerfile and build the image:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0093-heading-01": {
       "sourceHash": "54b1f473716463870d769f9f809d688c19a78cda7de86f7ed1503534cea5f232",
       "targetHash": "c39fec64dddda4e26c5fdb45ab3f571d68c08e86d6a8e64035060b36b28a6a95",
-      "status": "migration-review",
-      "sourcePreview": "Using a Different SDK Version"
+      "machineHash": "c39fec64dddda4e26c5fdb45ab3f571d68c08e86d6a8e64035060b36b28a6a95",
+      "machineText": "Como usar outra versão do SDK",
+      "status": "machine-translated",
+      "sourcePreview": "Using a Different SDK Version",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0094-text-01": {
       "sourceHash": "3c1b9b0d44dfffd7187e0dd9cb94bc6ab1c20ed2e6f5ca98a8bbc44edda52975",
       "targetHash": "40782549af5d85cd47462b316e47d1a37ba1ea509026dc13e4adbad15db2cf95",
-      "status": "migration-review",
-      "sourcePreview": "Change the `MACOS_SDK_VERSION` build argument:"
+      "machineHash": "40782549af5d85cd47462b316e47d1a37ba1ea509026dc13e4adbad15db2cf95",
+      "machineText": "Altere o argumento de compilação `MACOS_SDK_VERSION`:",
+      "status": "machine-translated",
+      "sourcePreview": "Change the `MACOS_SDK_VERSION` build argument:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0095-text-01": {
       "sourceHash": "f2dfd64f84809a10bc89f0fd2bdeb5f4400b0d50f6a731d8af29968c89228dcb",
-      "targetHash": "5f5e8a5cf34094cf005ca3e73bf44cd6a7212c4858bb7d8b62dfd70def57c180",
-      "status": "migration-review",
-      "sourcePreview": "See [available SDK versions](https://github.com/wailsapp/macosx-sdks/releases) for options."
+      "targetHash": "fb656588adad8e1a9463e81ea3eddadaeaa3f4cf6d973722ade6c32791cdba23",
+      "machineHash": "fb656588adad8e1a9463e81ea3eddadaeaa3f4cf6d973722ade6c32791cdba23",
+      "machineText": "Consulte as [versões disponíveis do SDK](https://github.com/wailsapp/macosx-sdks/releases) para ver as opções.",
+      "status": "machine-translated",
+      "sourcePreview": "See [available SDK versions](https://github.com/wailsapp/macosx-sdks/releases) for options.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0096-heading-01": {
       "sourceHash": "6ea03e38c73c1d0920251886ec329307dda7b2c74e47562fc09e1f0438e7956c",
       "targetHash": "84aa60e8478b590ddfccede9881d76cfa252455457cbf3d5478bc359b878621c",
-      "status": "migration-review",
-      "sourcePreview": "Using Your Own SDK"
+      "machineHash": "84aa60e8478b590ddfccede9881d76cfa252455457cbf3d5478bc359b878621c",
+      "machineText": "Como usar seu próprio SDK",
+      "status": "machine-translated",
+      "sourcePreview": "Using Your Own SDK",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0097-text-01": {
       "sourceHash": "43988ddd09fb1a325a54eb0e65b3f9d928eeebe25997f3d0c9b73e6fb0f52d86",
       "targetHash": "db1e8d6a1986e32a36644ad8861112a6d9fe7856a50b76efdb8b10fc4052f717",
-      "status": "migration-review",
-      "sourcePreview": "If you have your own macOS SDK (e.g., extracted from Xcode), you can modify the Dockerfile to use a …"
+      "machineHash": "db1e8d6a1986e32a36644ad8861112a6d9fe7856a50b76efdb8b10fc4052f717",
+      "machineText": "Se você tiver seu próprio SDK do macOS (por exemplo, extraído do Xcode), poderá modificar o Dockerfile para usar um arquivo local em vez de baixá-lo:",
+      "status": "machine-translated",
+      "sourcePreview": "If you have your own macOS SDK (e.g., extracted from Xcode), you can modify the Dockerfile to use a …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0098-text-01": {
       "sourceHash": "4c832276ea37ced8cafc574b36cfbdf0b8d2ab3afe3c2c56705c08f0a7c8fe1c",
-      "targetHash": "795234d68842c90524d72e031d8fe2313a56167aae6e1740427d5b3b9bf0245d",
-      "status": "migration-review",
-      "sourcePreview": "Place your SDK tarball in the same directory as the Dockerfile and build."
+      "targetHash": "6a4d0fa63ac5069dea69592c5ac423fe5eb7784d8e395ac9ef8fa56984a99b26",
+      "machineHash": "6a4d0fa63ac5069dea69592c5ac423fe5eb7784d8e395ac9ef8fa56984a99b26",
+      "machineText": "Coloque o arquivo tar do SDK no mesmo diretório do Dockerfile e crie a imagem.",
+      "status": "machine-translated",
+      "sourcePreview": "Place your SDK tarball in the same directory as the Dockerfile and build.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0099-heading-01": {
       "sourceHash": "b2169ec85515c6a13607be029004fcacbcbd6eb00543c274187d3859a371e594",
       "targetHash": "6551c71e113c45ab1f12631de90182eae494cab3387146c1157a34bdaf6abd07",
-      "status": "migration-review",
-      "sourcePreview": "CI/CD Integration"
+      "machineHash": "6551c71e113c45ab1f12631de90182eae494cab3387146c1157a34bdaf6abd07",
+      "machineText": "Integração com CI/CD",
+      "status": "machine-translated",
+      "sourcePreview": "CI/CD Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0100-text-01": {
       "sourceHash": "a54b8ed163d61a985ce07410155043906647826f0f80fee911a256da56e453c9",
-      "targetHash": "4ca22fb90723af4dbabb9cd675bc8ad9d9c00314bf0224516bf09f916f53fbbc",
-      "status": "migration-review",
-      "sourcePreview": "For production releases, we recommend using CI/CD with native runners for each platform. This avoids…"
+      "targetHash": "3ed6e41181077bcbefb83860409bb6c9743cd9b0acc48980951b193f3613c84e",
+      "machineHash": "3ed6e41181077bcbefb83860409bb6c9743cd9b0acc48980951b193f3613c84e",
+      "machineText": "Para versões de produção, recomendamos usar CI/CD com executores nativos para cada plataforma. Isso elimina totalmente a compilação cruzada e garante a geração de binários devidamente assinados.",
+      "status": "machine-translated",
+      "sourcePreview": "For production releases, we recommend using CI/CD with native runners for each platform. This avoids…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0101-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "3ca435987df6ab1b7fa1028fc2dcd453354c8d3249eea59ac72d9b8533e5079d",
-      "status": "migration-review",
-      "sourcePreview": "Troubleshooting"
+      "machineHash": "3ca435987df6ab1b7fa1028fc2dcd453354c8d3249eea59ac72d9b8533e5079d",
+      "machineText": "Solução de problemas",
+      "status": "machine-translated",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0102-heading-01": {
       "sourceHash": "57079224d44d50161719e7bdbd12bbdb20b022b27aafaa4a1a989f746eac4808",
       "targetHash": "d200759e3bf926dd09c101d9d2c2d5d077f74a3e95fc1eadef425e9f432c22a5",
-      "status": "migration-review",
-      "sourcePreview": "Docker image not found"
+      "machineHash": "d200759e3bf926dd09c101d9d2c2d5d077f74a3e95fc1eadef425e9f432c22a5",
+      "machineText": "Imagem do Docker não encontrada",
+      "status": "machine-translated",
+      "sourcePreview": "Docker image not found",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0103-text-01": {
       "sourceHash": "a4b1940e52b01b4978dbf86dfd4f02e2fdfea3631ba86d1c4e4bc4a6488ae337",
       "targetHash": "7b7cdff1bdccb3ac276ab13201dd904cb4206bfb66e1b717db2f044e816abf86",
-      "status": "migration-review",
-      "sourcePreview": "Run `wails3 task setup:docker` to build the Docker image. You only need to do this once."
+      "machineHash": "7b7cdff1bdccb3ac276ab13201dd904cb4206bfb66e1b717db2f044e816abf86",
+      "machineText": "Execute `wails3 task setup:docker` para criar a imagem do Docker. Você só precisa fazer isso uma vez.",
+      "status": "machine-translated",
+      "sourcePreview": "Run `wails3 task setup:docker` to build the Docker image. You only need to do this once.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0104-heading-01": {
       "sourceHash": "a51a7e8455696939ee91259ba1ebae06896426bceb30a5e62e2028bc0c504d3c",
       "targetHash": "fed69311431f7ac953b6f9ef224fe56ea06a2e816e9eff9f316fd966c0324e19",
-      "status": "migration-review",
-      "sourcePreview": "Docker daemon not running"
+      "machineHash": "fed69311431f7ac953b6f9ef224fe56ea06a2e816e9eff9f316fd966c0324e19",
+      "machineText": "Daemon do Docker não está em execução",
+      "status": "machine-translated",
+      "sourcePreview": "Docker daemon not running",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0105-text-01": {
       "sourceHash": "e7af0a560fc079d5bc3b7ae54588446e3905c845182ee3066899f8823ec8c89f",
       "targetHash": "8688400b097fce312d3fd0a20b31c0ec534a86f8a97ec277bda0d405891a893d",
-      "status": "migration-review",
-      "sourcePreview": "Start Docker Desktop or the Docker daemon. On Linux, you may need to run `sudo systemctl start docke…"
+      "machineHash": "8688400b097fce312d3fd0a20b31c0ec534a86f8a97ec277bda0d405891a893d",
+      "machineText": "Inicie o Docker Desktop ou o daemon do Docker. No Linux, talvez seja necessário executar `sudo systemctl start docker`.",
+      "status": "machine-translated",
+      "sourcePreview": "Start Docker Desktop or the Docker daemon. On Linux, you may need to run `sudo systemctl start docke…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0106-heading-01": {
       "sourceHash": "bc3dc78d173b87bea0b0fb8b4abdb35c62e564de320b07732f4dfa27da84cea3",
       "targetHash": "0df953514213daa7aa2201138ee19ff43cdaf35361c13f2fa77b7f5199d4c48f",
-      "status": "migration-review",
-      "sourcePreview": "No C compiler on Linux"
+      "machineHash": "0df953514213daa7aa2201138ee19ff43cdaf35361c13f2fa77b7f5199d4c48f",
+      "machineText": "Nenhum compilador C no Linux",
+      "status": "machine-translated",
+      "sourcePreview": "No C compiler on Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0107-text-01": {
       "sourceHash": "27da51226c0e568df12c3e31a82db44c7ea839f445142d4c07343e797a17512a",
-      "targetHash": "590f77b4f4f6d290a6dbca371115aee97bb586a6f29ab3585f2041722b033986",
-      "status": "migration-review",
-      "sourcePreview": "If you see CGO-related errors when building on Linux, you have two options:"
+      "targetHash": "82a3fd64b52dc6ebd4f4be2c394d4c14f69eedca864d18d84f354c15e499f331",
+      "machineHash": "82a3fd64b52dc6ebd4f4be2c394d4c14f69eedca864d18d84f354c15e499f331",
+      "machineText": "Se ocorrerem erros relacionados ao CGO durante a compilação no Linux, há duas opções:",
+      "status": "machine-translated",
+      "sourcePreview": "If you see CGO-related errors when building on Linux, you have two options:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0108-text-01": {
       "sourceHash": "3b403dea6a59949bb840d9e53aef99495fd05ba0259338d78001b1a6afbad1de",
       "targetHash": "2cebb1f082dbc3bdcc8a3b5e51a0356745232cb678582f188ea730e79aabb478",
-      "status": "migration-review",
-      "sourcePreview": "**Install a C compiler:**"
+      "machineHash": "2cebb1f082dbc3bdcc8a3b5e51a0356745232cb678582f188ea730e79aabb478",
+      "machineText": "**Instalar um compilador C:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Install a C compiler:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0109-text-01": {
       "sourceHash": "acfe97d21ff051f0abe832c8f3133c140c11e2d0a2cc60209081cffef06a0ad0",
       "targetHash": "acfe97d21ff051f0abe832c8f3133c140c11e2d0a2cc60209081cffef06a0ad0",
-      "status": "migration-review",
-      "sourcePreview": "Debian/Ubuntu: `sudo apt install build-essential`"
+      "machineHash": "acfe97d21ff051f0abe832c8f3133c140c11e2d0a2cc60209081cffef06a0ad0",
+      "machineText": "Debian/Ubuntu: `sudo apt install build-essential`",
+      "status": "machine-translated",
+      "sourcePreview": "Debian/Ubuntu: `sudo apt install build-essential`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0110-text-01": {
       "sourceHash": "c50827d9df76d001c58a6f91e6ac9d42b01ec8b558b1bc26c2f577f2c01d4736",
       "targetHash": "c50827d9df76d001c58a6f91e6ac9d42b01ec8b558b1bc26c2f577f2c01d4736",
-      "status": "migration-review",
-      "sourcePreview": "Arch Linux: `sudo pacman -S base-devel`"
+      "machineHash": "c50827d9df76d001c58a6f91e6ac9d42b01ec8b558b1bc26c2f577f2c01d4736",
+      "machineText": "Arch Linux: `sudo pacman -S base-devel`",
+      "status": "machine-translated",
+      "sourcePreview": "Arch Linux: `sudo pacman -S base-devel`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0111-text-01": {
       "sourceHash": "f73a2354628be41bc8546abfa22d6dbcb2fb7574bb0d4f77970c7b8a334a0a1f",
       "targetHash": "f73a2354628be41bc8546abfa22d6dbcb2fb7574bb0d4f77970c7b8a334a0a1f",
-      "status": "migration-review",
-      "sourcePreview": "Fedora: `sudo dnf install gcc`"
+      "machineHash": "f73a2354628be41bc8546abfa22d6dbcb2fb7574bb0d4f77970c7b8a334a0a1f",
+      "machineText": "Fedora: `sudo dnf install gcc`",
+      "status": "machine-translated",
+      "sourcePreview": "Fedora: `sudo dnf install gcc`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0112-text-01": {
       "sourceHash": "0a4e2fa0f341107039bb6c9e99db00ea2e256494c25586b10da29c8e9df16c84",
-      "targetHash": "96fa8d6f70fe7e1fc04cdd703737e9ee0a71b2a57f9b9e33302faadf8b02699e",
-      "status": "migration-review",
-      "sourcePreview": "**Use Docker instead:** Run `wails3 task setup:docker` and the Taskfile will use it automatically wh…"
+      "targetHash": "f08a1febbb14676c8e2f6f1cbcdc7819f73492b1384d461e17873997f63adf37",
+      "machineHash": "f08a1febbb14676c8e2f6f1cbcdc7819f73492b1384d461e17873997f63adf37",
+      "machineText": "**Usar o Docker:** execute `wails3 task setup:docker`, e o Taskfile o usará automaticamente quando nenhum compilador for detectado.",
+      "status": "machine-translated",
+      "sourcePreview": "**Use Docker instead:** Run `wails3 task setup:docker` and the Taskfile will use it automatically wh…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0113-heading-01": {
       "sourceHash": "7413a4b24f5346e0842fba94671865776412d8e4e69be769f0289b3f040c9937",
       "targetHash": "d477b79a6809a0d1f55bdc3754b3c83b47d38b237f9917c17df0de257aca84d4",
-      "status": "migration-review",
-      "sourcePreview": "macOS binaries not signed"
+      "machineHash": "d477b79a6809a0d1f55bdc3754b3c83b47d38b237f9917c17df0de257aca84d4",
+      "machineText": "Binários do macOS não assinados",
+      "status": "machine-translated",
+      "sourcePreview": "macOS binaries not signed",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0114-text-01": {
       "sourceHash": "2d5605565200ac101c6de80bb9ebd1a67b5e6f04ced4c325b83f1d38ea44dbcf",
-      "targetHash": "40e9e07fe513f03d42a975f4a838d91bcd6877db266100cfb766e51aa7bdc878",
-      "status": "migration-review",
-      "sourcePreview": "Cross-compiled macOS binaries are not code-signed. Apple requires code signing for distribution, so …"
+      "targetHash": "2c8f249dcd49c1b4ef6a5630dd14a27baa8399a79c25021a479122a51119a6a9",
+      "machineHash": "2c8f249dcd49c1b4ef6a5630dd14a27baa8399a79c25021a479122a51119a6a9",
+      "machineText": "Os binários do macOS gerados por compilação cruzada não têm assinatura de código. A Apple exige assinatura de código para distribuição, portanto você precisará:",
+      "status": "machine-translated",
+      "sourcePreview": "Cross-compiled macOS binaries are not code-signed. Apple requires code signing for distribution, so …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0115-text-01": {
       "sourceHash": "faddeada18ff8e9eecfe65dd18c1534a27b67e774bb446fd45a3e6616d568302",
-      "targetHash": "ea6f6d35fb0450043b432e1fac48d044f0b9f4057aa37633bb00ac3b20efd2cc",
-      "status": "migration-review",
-      "sourcePreview": "Sign the binary on a macOS machine, or"
+      "targetHash": "68a0d294954ff684c2e11248951eeeea33469110da817f4da65fcda446d21117",
+      "machineHash": "68a0d294954ff684c2e11248951eeeea33469110da817f4da65fcda446d21117",
+      "machineText": "Assinar o binário em uma máquina com macOS; ou",
+      "status": "machine-translated",
+      "sourcePreview": "Sign the binary on a macOS machine, or",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0116-text-01": {
       "sourceHash": "89efec8a1e03ae7f3ca6f8fe704263f68c89979427da6b681715dda830fd4220",
-      "targetHash": "b2b70ee63a37bb07fb8f07e1048e8f8dedf54b068305268a480cbe0221022e5b",
-      "status": "migration-review",
-      "sourcePreview": "Sign in CI using a macOS runner"
+      "targetHash": "79726096941c1c5b456ecf41cd0bc3917bdd31dd24e10afa3485409b577ed1e1",
+      "machineHash": "79726096941c1c5b456ecf41cd0bc3917bdd31dd24e10afa3485409b577ed1e1",
+      "machineText": "Assiná-lo no CI usando um executor do macOS",
+      "status": "machine-translated",
+      "sourcePreview": "Sign in CI using a macOS runner",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0117-text-01": {
       "sourceHash": "2155acb9bd69d17a69854f45bd14cab90ebe2dda62f02e3c0d2e20276f34c5c9",
       "targetHash": "8df2b2de6749e2a42569d1842ef47da47232624859831b5ebe90db79fab9e3b2",
-      "status": "migration-review",
-      "sourcePreview": "See [Signing Applications](/guides/build/signing/) for details."
+      "machineHash": "8df2b2de6749e2a42569d1842ef47da47232624859831b5ebe90db79fab9e3b2",
+      "machineText": "Consulte [Assinatura de aplicativos](/guides/build/signing/) para obter detalhes.",
+      "status": "machine-translated",
+      "sourcePreview": "See [Signing Applications](/guides/build/signing/) for details.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0118-heading-01": {
       "sourceHash": "db630136e75cd27eec6c6fb0fd8d9b964e9f0b41761687c7f7ddeb7a1e2749fa",
       "targetHash": "419c99f3764b6a99d9f8e6ffaa18483961f6aebab05b14df8491ac669fe70717",
-      "status": "migration-review",
-      "sourcePreview": "Universal binary creation"
+      "machineHash": "419c99f3764b6a99d9f8e6ffaa18483961f6aebab05b14df8491ac669fe70717",
+      "machineText": "Criação de binários universais",
+      "status": "machine-translated",
+      "sourcePreview": "Universal binary creation",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0119-text-01": {
       "sourceHash": "79a1439c72d592292edf741566f3c4bb595eebf66ece66eff6018b0f4501f705",
-      "targetHash": "7762d76f4dcff1ed5641e526581b9fa074959d36769ccfe94cf0b824f18dfb7f",
-      "status": "migration-review",
-      "sourcePreview": "Universal binaries (arm64 + amd64 combined) can be built on any platform:"
+      "targetHash": "618bde8ccfed9acd465d2119fd01a20f32d76028e2ae3e5366abf079310132ec",
+      "machineHash": "618bde8ccfed9acd465d2119fd01a20f32d76028e2ae3e5366abf079310132ec",
+      "machineText": "É possível criar binários universais (arm64 + amd64 combinados) em qualquer plataforma:",
+      "status": "machine-translated",
+      "sourcePreview": "Universal binaries (arm64 + amd64 combined) can be built on any platform:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0120-text-01": {
       "sourceHash": "fd2a8897600598cd69ce06bb69c14111d3d07ecb47dfd314c49304e89b8a2c03",
-      "targetHash": "3b0d8d7db84e23baeaca515734e8dc2d504e2f9e2c56fa0686b376deb5675ef2",
-      "status": "migration-review",
-      "sourcePreview": "On Linux and Windows, Wails uses its built-in `wails3 tool lipo` command (powered by [konoui/lipo](h…"
+      "targetHash": "8413d4022d369afbed4e9ab562354666bf22c4294303fd0ae8546694a07789b1",
+      "machineHash": "8413d4022d369afbed4e9ab562354666bf22c4294303fd0ae8546694a07789b1",
+      "machineText": "No Linux e no Windows, o Wails usa o comando `wails3 tool lipo` integrado (baseado em [konoui/lipo](https://github.com/konoui/lipo)) para combinar os binários. Isso cria um único binário que é executado nativamente em Macs com Apple Silicon e Intel.",
+      "status": "machine-translated",
+      "sourcePreview": "On Linux and Windows, Wails uses its built-in `wails3 tool lipo` command (powered by [konoui/lipo](h…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0121-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
-      "status": "migration-review",
-      "sourcePreview": "Next Steps"
+      "machineHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
+      "machineText": "Próximas etapas",
+      "status": "machine-translated",
+      "sourcePreview": "Next Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0122-text-01": {
       "sourceHash": "0bdecc8d3b7dd57557bb344d8ad3fbf4ac79ead4e0b600854d204a114e79ce01",
       "targetHash": "d7d8fb439320f9e10ee1e4d5d809df9c61c0831c375518396959eaefd216e41a",
-      "status": "migration-review",
-      "sourcePreview": "[Building Applications](/guides/build/building/) - Basic build commands and options"
+      "machineHash": "d7d8fb439320f9e10ee1e4d5d809df9c61c0831c375518396959eaefd216e41a",
+      "machineText": "[Compilação de aplicativos](/guides/build/building/) — Comandos e opções básicos de compilação",
+      "status": "machine-translated",
+      "sourcePreview": "[Building Applications](/guides/build/building/) - Basic build commands and options",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "b0123-text-01": {
       "sourceHash": "984f93940598ac765b8f1ad62b1c0efd95876dbbda9fdead540199b3d9a27905",
       "targetHash": "31f278366b395f44969db740491d377b940f0e1d0595017e5254b978d5f322ee",
-      "status": "migration-review",
-      "sourcePreview": "[Signing Applications](/guides/build/signing/) - Code signing for distribution"
+      "machineHash": "31f278366b395f44969db740491d377b940f0e1d0595017e5254b978d5f322ee",
+      "machineText": "[Assinatura de aplicativos](/guides/build/signing/) — Assinatura de código para distribuição",
+      "status": "machine-translated",
+      "sourcePreview": "[Signing Applications](/guides/build/signing/) - Code signing for distribution",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "fm-description": {
       "sourceHash": "5db49ec29bc602207f5b8aceea2f0453ffb363569cebfa3c9ed6dac7e9e69b09",
       "targetHash": "9fe3bce15bdc94d72f01bcc5a35637d24a6db45c5e377c4ed1dccc5a8eac5eaa",
-      "status": "migration-review",
-      "sourcePreview": "Build for multiple platforms from a single machine"
+      "machineHash": "9fe3bce15bdc94d72f01bcc5a35637d24a6db45c5e377c4ed1dccc5a8eac5eaa",
+      "machineText": "Compile para várias plataformas em uma única máquina",
+      "status": "machine-translated",
+      "sourcePreview": "Build for multiple platforms from a single machine",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     },
     "fm-title": {
       "sourceHash": "4d216ade6e88b3830af1d1d5f5a968be06a639db90874c447befae9d61ac5336",
       "targetHash": "570380487f316c301dae8cc4f293053a3d2d981964791a1b5fb45994b9e148dd",
-      "status": "migration-review",
-      "sourcePreview": "Cross-Platform Building"
+      "machineHash": "570380487f316c301dae8cc4f293053a3d2d981964791a1b5fb45994b9e148dd",
+      "machineText": "Compilação multiplataforma",
+      "status": "machine-translated",
+      "sourcePreview": "Cross-Platform Building",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:28:10Z"
     }
   },
   "migration": {

@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="瞭解如何新增您的專案"}
-請參閱 [如何將我的專案新增至展示區](#heading)章節。
+請參閱「[如何將我的專案新增至展示區](#heading)」一節。
 
 @end
 
@@ -47,22 +47,22 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="HappyTools 螢幕截圖" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith 螢幕截圖" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui 螢幕截圖" loading="lazy"><span>Condui</span></a>
-<a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 螢幕擷取畫面" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 螢幕截圖" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## 如何將我的專案新增至展示區
 
 @steps
-### 建立此儲存庫的分叉副本。
+### 建立此儲存庫的分支。
 ### 將圖片新增至`docs/mpress/static/showcase-images`資料夾。
-### 複製位於以下資料夾中的現有`.md`展示作品檔案：
+### 複製以下位置中現有的`.md`展示檔案：
 `docs/mpress/content/community/showcase`資料夾。
 
-### 將複製的檔案重新命名為您的專案名稱。（名稱開頭不應
-為`_`）
+### 將複製的檔案重新命名為您的專案名稱。（名稱不應以
+`_`開頭）
 
-### 更新檔案的標題、圖片、連結和內容。
-### 將其新增至下列檔案中的上述清單：
+### 更新檔案的標題、圖片、連結與內容。
+### 將它新增至以下檔案中的上述清單：
 `docs/mpress/content/community/showcase/index.md`。
 
 ### 提交 PR。

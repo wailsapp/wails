@@ -576,8 +576,8 @@ if (isDevelopment) {
 
 Daftar lengkap peristiwa yang tersedia dapat ditemukan dalam kode sumber Wails:
 
-- Peristiwa frontend: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
-- Peristiwa backend: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
+- Event frontend: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/master/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Event backend: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/events/events.go)
 
 Selalu rujuk file-file ini untuk mengetahui nama dan ketersediaan peristiwa terbaru.
 

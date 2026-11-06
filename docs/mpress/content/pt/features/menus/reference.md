@@ -1,19 +1,19 @@
 ---
 title: "Referência de menus"
-description: "Referência completa dos tipos, propriedades e métodos de itens de menu"
+description: "Referência completa de tipos, propriedades e métodos de itens de menu"
 slug: "features/menus/reference"
 sourcePath: "features/menus/reference.md"
 ---
 
 ## Referência de menus
 
-Referência completa dos tipos, propriedades e comportamentos dinâmicos de itens de menu. Crie menus profissionais e responsivos com caixas de seleção, grupos de opções, separadores e atualizações dinâmicas.
+Referência completa de tipos, propriedades e comportamento dinâmico dos itens de menu. Crie menus profissionais e responsivos com caixas de seleção, grupos de opções, separadores e atualizações dinâmicas.
 
 ## Tipos de itens de menu
 
 ### Itens de menu comuns
 
-O tipo mais comum — exibe texto e aciona uma ação:
+O tipo mais comum: exibe texto e aciona uma ação:
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -38,11 +38,11 @@ checkbox.OnClick(func(ctx *application.Context) {
 
 **Use para:** configurações booleanas, ativação e desativação de recursos e opções de visualização
 
-**Importante:** o estado marcado é alternado automaticamente ao clicar.
+**Importante:** o estado de seleção é alternado automaticamente ao clicar.
 
 ### Grupos de opções
 
-Opções mutuamente exclusivas — apenas uma pode ser selecionada:
+Opções mutuamente exclusivas: somente uma pode ser selecionada:
 
 ```go
 menu.AddRadio("Small", true)   // true = initially selected
@@ -55,7 +55,7 @@ menu.AddRadio("Large", false)
 **Como funciona o agrupamento:**
 
 - Itens de opção adjacentes formam um grupo automaticamente
-- Selecionar um item desmarca os demais no grupo
+- Selecionar um item desmarca os demais itens do grupo
 - Separe os grupos com um separador ou um item comum
 
 **Exemplo com vários grupos:**
@@ -87,7 +87,7 @@ submenu.Add("Submenu Item 2")
 
 **Use para:** agrupar itens relacionados e reduzir a poluição visual
 
-**Limite de aninhamento:** a maioria das plataformas oferece suporte a 2-3 níveis. Evite um aninhamento mais profundo.
+**Limite de aninhamento:** a maioria das plataformas aceita 2-3 níveis. Evite um aninhamento mais profundo.
 
 ### Separadores
 
@@ -101,7 +101,7 @@ menu.Add("Item 2")
 
 **Use para:** agrupar visualmente itens relacionados
 
-**Boa prática:** não inicie nem termine menus com separadores.
+**Boa prática:** não comece nem termine menus com separadores.
 
 ### Cabeçalhos de seção
 
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` usa a aparência padrão de cabeçalhos de seção do AppKit. Não retorna nenhum item de menu nem associa uma ação. Em versões anteriores do macOS, Windows, Linux, plataformas móveis e compilações de servidor, a chamada não faz nada e não insere nenhuma linha.
+`AddSectionHeader` usa a aparência padrão de cabeçalho de seção do AppKit. Não retorna nenhum item de menu nem associa uma ação. Em versões anteriores do macOS, no Windows, no Linux e em compilações para dispositivos móveis e servidores, a chamada não tem efeito e não insere nenhuma linha.
 
-Use esse método em menus da bandeja do sistema, de contexto ou do aplicativo para identificar comandos relacionados. Use `AddSeparator()` para separar grupos de botões de opção em todas as plataformas, pois cabeçalhos omitidos não separam esses grupos. Consulte a [API Menu](/reference/menu#addsectionheader) para ver a assinatura do método e o exemplo `systray-menu` para um cabeçalho com o nome do host.
+Use-o em menus da bandeja, de contexto ou do aplicativo para rotular comandos relacionados. Use `AddSeparator()` para separar grupos de opções em todas as plataformas, pois cabeçalhos omitidos não separam grupos de opções. Consulte a [API de menus](/reference/menu#addsectionheader) para ver a assinatura do método e o exemplo de `systray-menu` para ver um cabeçalho com nome de host.
 
 ## Propriedades dos itens de menu
 
@@ -166,7 +166,7 @@ isEnabled := menuItem.Enabled()
 @note{type="caution" title="Comportamento dos menus no Windows"}
 No Windows, os menus precisam ser reconstruídos quando seu estado muda. **Sempre chame `menu.Update()` após habilitar ou desabilitar itens de menu**, especialmente se o item tiver sido criado enquanto estava desabilitado.
 
-**Motivo:** no Windows, os menus são recriados do zero quando atualizados. Se você não chamar `Update()`, os manipuladores de clique não serão acionados corretamente.
+**Motivo:** os menus do Windows são reconstruídos do zero quando atualizados. Se você não chamar `Update()`, os manipuladores de clique não serão acionados corretamente.
 
 @end
 
@@ -207,9 +207,9 @@ onDocumentChanged(func() {
 })
 ```
 
-### Estado marcado
+### Estado de seleção
 
-Para caixas de seleção e itens de opção, controle ou consulte o estado marcado:
+Para caixas de seleção e itens de opção, controle ou consulte o estado de seleção:
 
 ```go
 checkbox := menu.AddCheckbox("Feature", false)
@@ -220,7 +220,7 @@ menu.Update()
 isChecked := checkbox.Checked()
 ```
 
-**Alternância automática:** as caixas de seleção alternam automaticamente ao serem clicadas. Não é necessário chamar `SetChecked()` no manipulador de clique.
+**Alternância automática:** as caixas de seleção alternam automaticamente ao serem clicadas. Você não precisa chamar `SetChecked()` no manipulador de clique.
 
 **Controle manual:**
 
@@ -278,18 +278,18 @@ if runtime.GOOS == "darwin" {
 
 ### Dica de ferramenta
 
-Adicione aos itens de menu um texto exibido ao passar o cursor (o suporte varia conforme a plataforma):
+Adicione aos itens de menu um texto exibido ao passar o cursor (a compatibilidade varia conforme a plataforma):
 
 ```go
 menuItem := menu.Add("Advanced Options")
 menuItem.SetTooltip("Configure advanced settings")
 ```
 
-**Suporte por plataforma:**
+**Compatibilidade com plataformas:**
 
-- **Windows:** ✅ compatível
-- **macOS:** ❌ incompatível (dicas de ferramenta não são padrão em menus)
-- **Linux:** ⚠️ varia conforme o ambiente de área de trabalho
+- **Windows:** ✅ Compatível
+- **macOS:** ❌ Não compatível (dicas de ferramenta não são padrão em menus)
+- **Linux:** ⚠️ Varia conforme o ambiente de desktop
 
 ### Estado oculto
 
@@ -324,8 +324,8 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **O contexto fornece:**
 
-- `ctx.ClickedMenuItem()` — O item de menu que foi clicado
-- Contexto da janela (se for proveniente do menu da janela)
+- `ctx.ClickedMenuItem()` — o item de menu que foi clicado
+- Contexto da janela (se vier de um menu de janela)
 - Contexto do aplicativo
 
 **Exemplo: acessar o item de menu no manipulador**
@@ -355,13 +355,13 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Prática recomendada:** defina o manipulador uma única vez e, se necessário, use lógica condicional dentro dele.
+**Boa prática:** defina o manipulador uma única vez e, se necessário, use lógica condicional dentro dele.
 
 ## Menus dinâmicos
 
 ### Atualização de itens de menu
 
-**Regra de ouro:** sempre chame `menu.Update()` depois de alterar o estado do menu.
+**A regra de ouro:** sempre chame `menu.Update()` após alterar o estado do menu.
 
 ```go
 // ✅ Correct
@@ -376,12 +376,12 @@ menuItem.SetEnabled(true)
 **Por que isso é importante:**
 
 - **Windows:** os menus são reconstruídos quando atualizados
-- **macOS/Linux:** é menos importante, mas ainda recomendado
+- **macOS/Linux:** menos crítico, mas ainda recomendado
 - **Manipuladores de clique:** não serão acionados corretamente sem Update()
 
 ### Reconstrução de menus
 
-Para alterações significativas, reconstrua o menu inteiro:
+Para alterações significativas, reconstrua todo o menu:
 
 ```go
 func rebuildFileMenu() {
@@ -409,19 +409,19 @@ func rebuildFileMenu() {
 
 **Quando reconstruir:**
 
-- A lista de arquivos recentes muda
-- Os menus de plugins mudam
-- Transições de estado significativas
+- Alterações na lista de arquivos recentes
+- Alterações nos menus de plugins
+- Transições importantes de estado
 
 **Quando atualizar:**
 
 - Habilitar ou desabilitar itens
 - Alterar rótulos
-- Marcar ou desmarcar caixas de seleção
+- Alternar caixas de seleção
 
 ### Menus sensíveis ao contexto
 
-Ajuste os menus com base no estado do aplicativo:
+Ajuste os menus com base no estado da aplicação:
 
 ```go
 func updateEditMenu() {
@@ -446,24 +446,24 @@ onUndoStackChanged(updateEditMenu)
 | Plataforma | Localização | Observações |
 | --- | --- | --- |
 | **macOS** | Parte superior da tela | Barra de menus global |
-| **Windows** | Parte superior da janela | Menu por janela |
-| **Linux** | Parte superior da janela | Por janela (geralmente) |
+| **Windows** | Parte superior da janela | Menu específico de cada janela |
+| **Linux** | Parte superior da janela | Específico de cada janela (geralmente) |
 
 ### Menus padrão
 
 **macOS:**
 
-- Tem o menu "Aplicativo" (com o nome do aplicativo)
-- "Preferências" no menu Aplicativo
-- "Encerrar" no menu Aplicativo
+- Tem o menu "Aplicação" (com o nome da aplicação)
+- "Preferências" no menu Aplicação
+- "Encerrar" no menu Aplicação
 
 **Windows/Linux:**
 
-- Não há menu Aplicativo
+- Não têm menu Aplicação
 - "Preferências" no menu Editar ou Ferramentas
 - "Sair" no menu Arquivo
 
-**Exemplo: estrutura apropriada para a plataforma**
+**Exemplo: estrutura adequada à plataforma**
 
 ```go
 menu := app.Menu.New()
@@ -488,7 +488,7 @@ if runtime.GOOS == "darwin" {
 }
 ```
 
-### Convenções de atalhos de teclado
+### Convenções de teclas de atalho
 
 **macOS:**
 
@@ -507,32 +507,32 @@ if runtime.GOOS == "darwin" {
 - Geralmente segue as convenções do Windows
 - O ambiente de desktop pode substituí-las
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
 - **Chame menu.Update()** depois de alterar o estado do menu (especialmente no Windows)
-- **Use grupos de botões de opção** para opções mutuamente exclusivas
-- **Use caixas de seleção** para recursos que podem ser ativados ou desativados
-- **Adicione atalhos de teclado** às ações comuns
-- **Agrupe itens relacionados** usando separadores
+- **Use grupos de opções** para opções mutuamente exclusivas
+- **Use caixas de seleção** para funcionalidades que podem ser ativadas ou desativadas
+- **Adicione teclas de atalho** às ações comuns
+- **Agrupe itens relacionados** com separadores
 - **Teste em todas as plataformas** — o comportamento varia
 
 ### ❌ Não faça
 
-- **Não se esqueça de menu.Update()** — os manipuladores de clique não funcionarão corretamente
-- **Não crie muitos níveis de aninhamento** — no máximo 2-3 níveis
+- **Não se esqueça de chamar menu.Update()** — os manipuladores de clique não funcionarão corretamente
+- **Não crie níveis demais de aninhamento** — no máximo 2-3 níveis
 - **Não comece nem termine com separadores** — isso parece pouco profissional
-- **Não use dicas de ferramenta no macOS** — esse recurso não é compatível
+- **Não use dicas de ferramenta no macOS** — elas não são compatíveis
 - **Não fixe atalhos específicos da plataforma no código** — use `CmdOrCtrl`
 
 ## Solução de problemas
 
-### Os itens de menu não respondem
+### Itens de menu não respondem
 
 **Sintoma:** os manipuladores de clique não são acionados
 
-**Causa:** a chamada a `menu.Update()` não foi feita após habilitar o item
+**Causa:** não foi chamado `menu.Update()` depois de habilitar o item
 
 **Solução:**
 
@@ -541,7 +541,7 @@ menuItem.SetEnabled(true)
 menu.Update()  // Add this!
 ```
 
-### Os itens de menu aparecem esmaecidos
+### Itens de menu aparecem esmaecidos
 
 **Sintoma:** não é possível clicar nos itens de menu
 
@@ -554,15 +554,15 @@ menuItem.SetEnabled(true)
 menu.Update()
 ```
 
-### Os atalhos de teclado não funcionam
+### Teclas de atalho não funcionam
 
 **Sintoma:** os atalhos de teclado não acionam os itens de menu
 
 **Causas:**
 
-1. Formato incorreto do atalho de teclado
+1. Formato incorreto da tecla de atalho
 2. Conflito com atalhos do sistema
-3. A janela não está com o foco
+3. A janela não está em foco
 
 **Solução:**
 
@@ -578,10 +578,10 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 ## Próximas etapas
 
-- [Menus do aplicativo](/features/menus/application/) — crie barras de menus para o aplicativo
-- [Menus de contexto](/features/menus/context/) — menus de contexto abertos com o botão direito
-- [Menus da bandeja do sistema](/features/menus/systray/) — menus da bandeja do sistema ou da barra de menus
-- [Padrões de menus](/guides/menus/) — padrões comuns de menus e práticas recomendadas
+- [Menus da aplicação](/features/menus/application/) — crie barras de menus para a aplicação
+- [Menus de contexto](/features/menus/context/) — menus de contexto acionados com o botão direito
+- [Menus da bandeja do sistema](/features/menus/systray/) — menus da bandeja do sistema/barra de menus
+- [Padrões de menus](/guides/menus/) — padrões comuns de menus e boas práticas
 
 ---
 

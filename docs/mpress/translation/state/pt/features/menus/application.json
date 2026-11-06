@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "4aab2ef5fd8b60b5b77e",
+  "pageKey": "0e221ce730c904a2474c",
   "sourceFile": "features/menus/application.md",
   "sourceLanguage": "en",
   "targetLanguage": "pt",
@@ -9,1088 +9,2174 @@
     "a0002-title-01": {
       "sourceHash": "e871e7bea656a3f245aa90729a78ef423e59c90ee3799de96a3c7fd88156274d",
       "targetHash": "91c52a8d203bd13cd5cf2bbca4bbe745f6f4473f0ca0726b201924b8db59fdd1",
-      "status": "migration-review",
-      "sourcePreview": "Simplify Cross-Platform Menus"
+      "machineHash": "91c52a8d203bd13cd5cf2bbca4bbe745f6f4473f0ca0726b201924b8db59fdd1",
+      "machineText": "Simplifique os menus multiplataforma",
+      "status": "machine-translated",
+      "sourcePreview": "Simplify Cross-Platform Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "a0004-title-01": {
       "sourceHash": "1ec7300692072bd118ec58c67390ce29a48c66cdd4f527377cbee61fd22e8dc1",
       "targetHash": "127632b5d47879ceebd1ffb414dc66ed02c313767a5554fa50af9e4ce768040f",
-      "status": "migration-review",
-      "sourcePreview": "Always Call menu.Update()"
+      "machineHash": "127632b5d47879ceebd1ffb414dc66ed02c313767a5554fa50af9e4ce768040f",
+      "machineText": "Sempre chame menu.Update()",
+      "status": "machine-translated",
+      "sourcePreview": "Always Call menu.Update()",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0001-heading-01": {
       "sourceHash": "7569ea8da8a6a397ab7a5619ec9b19045491c6985f9474ad61db9b680b57915a",
       "targetHash": "127846c2361586e0fbf6ae121db4bef4b6a1a7db9751df9e6e314e2846de11b1",
-      "status": "migration-review",
-      "sourcePreview": "The Problem"
+      "machineHash": "127846c2361586e0fbf6ae121db4bef4b6a1a7db9751df9e6e314e2846de11b1",
+      "machineText": "O problema",
+      "status": "machine-translated",
+      "sourcePreview": "The Problem",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0002-text-01": {
       "sourceHash": "7307b600519e3cafc36aaa5116c13b220bb3815f1e28a080a22e20aa4019a011",
-      "targetHash": "d3ec2e8727e4b5b893dc0c7c83395fa391ee6360bec1742ed867ddc814120fe1",
-      "status": "migration-review",
-      "sourcePreview": "Professional desktop applications need menu bars—File, Edit, View, Help. But menus work differently …"
+      "targetHash": "3d79ce33039987d8b1ccc56ff82c4d3d4c41972fe6756ddf1fb418e5e4bc4c7c",
+      "machineHash": "3d79ce33039987d8b1ccc56ff82c4d3d4c41972fe6756ddf1fb418e5e4bc4c7c",
+      "machineText": "Aplicativos desktop profissionais precisam de barras de menu — Arquivo, Editar, Exibir, Ajuda. Porém, os menus funcionam de maneira diferente em cada plataforma:",
+      "status": "machine-translated",
+      "sourcePreview": "Professional desktop applications need menu bars—File, Edit, View, Help. But menus work differently …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0003-text-01": {
       "sourceHash": "304efa0ddff11d31c3e256aa08ccc473bf884cdbfca98814098db5090a8328f0",
-      "targetHash": "48183bf1c17054259bdb14623fbab04edd740dca75d055ea194cac24a7e68920",
-      "status": "migration-review",
-      "sourcePreview": "**macOS**: Global menu bar at top of screen"
+      "targetHash": "c8e3942844e3bf6da0c7e1ea896af8c842d7e4d8341cf874102d064af93adc39",
+      "machineHash": "c8e3942844e3bf6da0c7e1ea896af8c842d7e4d8341cf874102d064af93adc39",
+      "machineText": "**macOS**: barra de menu global na parte superior da tela",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS**: Global menu bar at top of screen",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0004-text-01": {
       "sourceHash": "761d39fa4b95f7c259267da855ec7a8ccec30c8b0d679d1be8aa7164fa346a4e",
-      "targetHash": "899da1ef64d29464516a243dc115c3ed9b9c1e511ca2b57a920d129a4c60f89d",
-      "status": "migration-review",
-      "sourcePreview": "**Windows**: Menu bar in window title bar"
+      "targetHash": "7281a6c0a40eb5786efc2134bb83d08e4eef873a2bba62516b32f7b59e513bba",
+      "machineHash": "7281a6c0a40eb5786efc2134bb83d08e4eef873a2bba62516b32f7b59e513bba",
+      "machineText": "**Windows**: barra de menu na barra de título da janela",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows**: Menu bar in window title bar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0005-text-01": {
       "sourceHash": "204387d1104ffc67d3e29c357b6ab3c5c7c439e18d1c25f408c96f877e35c325",
       "targetHash": "5568fe2d345558b5c85201e28ce7297a89f1e0e005f189c3be79fc9d2e9eb366",
-      "status": "migration-review",
-      "sourcePreview": "**Linux**: Varies by desktop environment"
+      "machineHash": "5568fe2d345558b5c85201e28ce7297a89f1e0e005f189c3be79fc9d2e9eb366",
+      "machineText": "**Linux**: varia conforme o ambiente de desktop",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux**: Varies by desktop environment",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0006-text-01": {
       "sourceHash": "d7ed24b6b37e80ee3d01c4cda37d2b1f7c4b659960a48c1c3411cf571c70d893",
       "targetHash": "8f580e6f1146fea70d853c313581eaf4da9aacdc610a7acafb70aba29298c6da",
-      "status": "migration-review",
-      "sourcePreview": "Building platform-appropriate menus manually is tedious and error-prone."
+      "machineHash": "8f580e6f1146fea70d853c313581eaf4da9aacdc610a7acafb70aba29298c6da",
+      "machineText": "Criar manualmente menus adequados a cada plataforma é trabalhoso e propenso a erros.",
+      "status": "machine-translated",
+      "sourcePreview": "Building platform-appropriate menus manually is tedious and error-prone.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0007-heading-01": {
       "sourceHash": "5342e7d775e46d38f39b02fed6d2c55fcc97ee7bdf70e7bd59921cda0b28dddf",
       "targetHash": "cd332d4212a10227e70b220a96fca0d0ab0a165cb641022160f33e814fb75bee",
-      "status": "migration-review",
-      "sourcePreview": "The Wails Solution"
+      "machineHash": "cd332d4212a10227e70b220a96fca0d0ab0a165cb641022160f33e814fb75bee",
+      "machineText": "A solução do Wails",
+      "status": "machine-translated",
+      "sourcePreview": "The Wails Solution",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0008-text-01": {
       "sourceHash": "73b30f6c14d575a3100f475adb0b51c9a45008e5fb0ff41bb7c7ecc8c1e6f946",
-      "targetHash": "f760ead07ec94e969efe5752aa4ebce0f5b8848a6aa74d2ab8006f8157b06600",
-      "status": "migration-review",
-      "sourcePreview": "Wails provides a **unified API** that creates platform-native menus automatically. Write once, get n…"
+      "targetHash": "c76681ccabe409ea5f3a7dbf0b4151b472cf664d4321036ef7b1bed287497270",
+      "machineHash": "c76681ccabe409ea5f3a7dbf0b4151b472cf664d4321036ef7b1bed287497270",
+      "machineText": "O Wails fornece uma **API unificada** que cria automaticamente menus nativos da plataforma. Escreva uma vez e obtenha comportamento nativo em todas as plataformas.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails provides a **unified API** that creates platform-native menus automatically. Write once, get n…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0009-text-01": {
       "sourceHash": "2b8139c65ae696f7179ff2b54f11e17ecd06969b20de38f2f5ab401f1efbb9c7",
-      "targetHash": "aad76d3fc0ed166ba70c9105788cacb87874363efa9547113a5fe8611dd8e2b4",
-      "status": "migration-review",
-      "sourcePreview": "![A Wails application menu on macOS with standard, checkbox, radio, and submenu items](/assets/scree…"
+      "targetHash": "9bb91e7d7b4ad5576d48803a326d701c3bee082f86cd7ef11550d77c7e53b542",
+      "machineHash": "9bb91e7d7b4ad5576d48803a326d701c3bee082f86cd7ef11550d77c7e53b542",
+      "machineText": "![Um menu de aplicativo Wails no macOS com itens padrão, de caixa de seleção, de opção e de submenu](/assets/screenshots/application-menu-macos.png)",
+      "status": "machine-translated",
+      "sourcePreview": "![A Wails application menu on macOS with standard, checkbox, radio, and submenu items](/assets/scree…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0010-text-01": {
       "sourceHash": "1264645ff4f0eb382ac09469085f604462b41052746ceb56b131e4d30628b30c",
-      "targetHash": "898591b1b7a4194f157707cb07c5894129daf3070083aa8c16c6332ae58f5d80",
-      "status": "migration-review",
-      "sourcePreview": "On macOS, the application menu is placed in the global menu bar. This capture shows the native menu …"
+      "targetHash": "dce7d341d19a9768bb3e47c285a047a6479a1a14ea93d53ce6b4e13647d761cc",
+      "machineHash": "dce7d341d19a9768bb3e47c285a047a6479a1a14ea93d53ce6b4e13647d761cc",
+      "machineText": "No macOS, o menu do aplicativo fica na barra de menu global. Esta captura mostra o menu nativo renderizado pela API de menus do Wails, incluindo itens desabilitados, de caixa de seleção, de opção e de submenu.",
+      "status": "machine-translated",
+      "sourcePreview": "On macOS, the application menu is placed in the global menu bar. This capture shows the native menu …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0011-heading-01": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
       "targetHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
-      "status": "migration-review",
-      "sourcePreview": "Quick Start"
+      "machineHash": "26a6c16147841b36707a9727e525777d696a3eb4c0dd6d9ba4f0fd2c89a03d0d",
+      "machineText": "Início rápido",
+      "status": "machine-translated",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0012-text-01": {
       "sourceHash": "cf07f5057cbbde3932e94510954beb19fa99b26620aad63eb8dce88dea09f894",
-      "targetHash": "e69d3a402c7eabc670226c65bc97ed48ca0bacd618143327de714f1dfe3043d9",
-      "status": "migration-review",
-      "sourcePreview": "**That's it!** You now have platform-native menus with standard items. The `UseApplicationMenu` opti…"
+      "targetHash": "213b6c5b0dd659e152ce817d2b0b2c74806e8fbb538da95a1fcd39ab158f8e16",
+      "machineHash": "213b6c5b0dd659e152ce817d2b0b2c74806e8fbb538da95a1fcd39ab158f8e16",
+      "machineText": "**É só isso!** Agora você tem menus nativos da plataforma com itens padrão. A opção `UseApplicationMenu` garante que as janelas no Windows e no Linux exibam o menu sem código adicional.",
+      "status": "machine-translated",
+      "sourcePreview": "**That's it!** You now have platform-native menus with standard items. The `UseApplicationMenu` opti…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0013-heading-01": {
       "sourceHash": "4df37f6738e314b1da0c4c7bf3c5e0014673d7ba631123505642be070184da79",
       "targetHash": "86fb28b7991f3c4bbc8b71a9b1bb1d634626ea6ef8cbb18be629be92cee60671",
-      "status": "migration-review",
-      "sourcePreview": "Creating Menus"
+      "machineHash": "86fb28b7991f3c4bbc8b71a9b1bb1d634626ea6ef8cbb18be629be92cee60671",
+      "machineText": "Criação de menus",
+      "status": "machine-translated",
+      "sourcePreview": "Creating Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0014-heading-01": {
       "sourceHash": "d50e3601d0ae9f1aa2789fb0029f1c9380d9baa2b4fba46f8941a98e40ae8aaa",
       "targetHash": "e5dca67f9ac02dd54dda7526a93cd276118cea24d95aaa4a75ae5cc7e26e3c45",
-      "status": "migration-review",
-      "sourcePreview": "Basic Menu Creation"
+      "machineHash": "e5dca67f9ac02dd54dda7526a93cd276118cea24d95aaa4a75ae5cc7e26e3c45",
+      "machineText": "Criação básica de menus",
+      "status": "machine-translated",
+      "sourcePreview": "Basic Menu Creation",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0015-heading-01": {
       "sourceHash": "1c1e2e22981b268aeed6f6127270ae71bed363697e736a123ff549fb9b27efd3",
       "targetHash": "94a2f6a5ff2720b80bf6f38358f48352f06cfddb0574e5da977078564f1bc172",
-      "status": "migration-review",
-      "sourcePreview": "Setting the Menu"
+      "machineHash": "94a2f6a5ff2720b80bf6f38358f48352f06cfddb0574e5da977078564f1bc172",
+      "machineText": "Definição do menu",
+      "status": "machine-translated",
+      "sourcePreview": "Setting the Menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0016-text-01": {
       "sourceHash": "afafdb7f4b1fa6cca31100ff43ead33993cc675dec4dd238555ef163ad309901",
-      "targetHash": "4125c0c053c327df9d2b5f7d6990f3908badd101917f7c8fc578386375a865e7",
-      "status": "migration-review",
-      "sourcePreview": "**Recommended approach** — Use `UseApplicationMenu` for cross-platform consistency:"
+      "targetHash": "7ce77fa0a743bf7c5a90bae63d04e22b9802ab0e00b24bb7935d1246775b9e2c",
+      "machineHash": "7ce77fa0a743bf7c5a90bae63d04e22b9802ab0e00b24bb7935d1246775b9e2c",
+      "machineText": "**Abordagem recomendada** — Use `UseApplicationMenu` para manter a consistência entre plataformas:",
+      "status": "machine-translated",
+      "sourcePreview": "**Recommended approach** — Use `UseApplicationMenu` for cross-platform consistency:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0017-text-01": {
       "sourceHash": "8535e3737742f67c686f6fc6fe8fb1f18edacb29ed042c496e1cc1f023c98d45",
-      "targetHash": "ee193973361d8cc5694f7728efe86dc8d8ac9a3dc71a15d5a58ca539a1795230",
-      "status": "migration-review",
-      "sourcePreview": "This approach:"
+      "targetHash": "b5c0093f434b9d8cf0a79408d65005923e77d973edf65495105c31f47ffd08d1",
+      "machineHash": "b5c0093f434b9d8cf0a79408d65005923e77d973edf65495105c31f47ffd08d1",
+      "machineText": "Essa abordagem funciona assim:",
+      "status": "machine-translated",
+      "sourcePreview": "This approach:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0018-text-01": {
       "sourceHash": "c42c3da17c4d8ddd785168f45561acd7f5b1ed6a887ecfb4edd7083f6aa860cf",
       "targetHash": "87b711b410dd2cd41ea3c36246ea9a791a90e4b05dc91f731e6b9ce5eeb14000",
-      "status": "migration-review",
-      "sourcePreview": "On **macOS**: The menu appears at the top of screen (standard behaviour)"
+      "machineHash": "87b711b410dd2cd41ea3c36246ea9a791a90e4b05dc91f731e6b9ce5eeb14000",
+      "machineText": "No **macOS**: o menu aparece na parte superior da tela (comportamento padrão)",
+      "status": "machine-translated",
+      "sourcePreview": "On **macOS**: The menu appears at the top of screen (standard behaviour)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0019-text-01": {
       "sourceHash": "dfa751643706d50bfb7cc2a24fed469e87273f9f7a60987dacf0d81e157200d7",
       "targetHash": "b41f450cdc75789e6d8e907d8343885469fa193889a8bb48d96492f2844425f6",
-      "status": "migration-review",
-      "sourcePreview": "On **Windows/Linux**: Each window with `UseApplicationMenu: true` displays the app menu"
+      "machineHash": "b41f450cdc75789e6d8e907d8343885469fa193889a8bb48d96492f2844425f6",
+      "machineText": "No **Windows/Linux**: cada janela com `UseApplicationMenu: true` exibe o menu do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "On **Windows/Linux**: Each window with `UseApplicationMenu: true` displays the app menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0020-text-01": {
       "sourceHash": "04fc6c97a590e595865340e73e3e4a1be5188910d9fb8d4524f3498e04c1c8bf",
       "targetHash": "d42e3797bf379748f5217296d943bd057edcd76be265f7a62c1c9e7c81d2d50e",
-      "status": "migration-review",
-      "sourcePreview": "**Platform-specific details:**"
+      "machineHash": "d42e3797bf379748f5217296d943bd057edcd76be265f7a62c1c9e7c81d2d50e",
+      "machineText": "**Detalhes específicos de cada plataforma:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform-specific details:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0021-text-01": {
       "sourceHash": "60de13a33075ab070568785b0594cecfe1f7b05a93bc902d0c005393156a8629",
-      "targetHash": "ab8ca758e26c1e653606c064788852d47365485fcfc58d45981f5a83726061c6",
-      "status": "migration-review",
-      "sourcePreview": "**Global menu bar** (one per application):"
+      "targetHash": "038b0cef8a5850cf6ae8329d04a9a950bf50828728d8375e35fdb58b71e89086",
+      "machineHash": "038b0cef8a5850cf6ae8329d04a9a950bf50828728d8375e35fdb58b71e89086",
+      "machineText": "**Barra de menu global** (uma por aplicativo):",
+      "status": "machine-translated",
+      "sourcePreview": "**Global menu bar** (one per application):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0022-text-01": {
       "sourceHash": "4aaee9736e3704c962dc2b631ac2509e766c80489820f204e894fa0f98967355",
-      "targetHash": "e597dad4253f8b6e23af35c946ed6fd6d86f238e14f6556d527d478163088f30",
-      "status": "migration-review",
-      "sourcePreview": "The menu appears at the top of the screen and persists even when all windows are closed. The `UseApp…"
+      "targetHash": "9a330c6486f3c91838351671eac78ad86ea44b2ba4a169441f4acff59f1a45ca",
+      "machineHash": "9a330c6486f3c91838351671eac78ad86ea44b2ba4a169441f4acff59f1a45ca",
+      "machineText": "O menu aparece na parte superior da tela e permanece disponível mesmo quando todas as janelas estão fechadas. A opção `UseApplicationMenu` não tem efeito no macOS, pois todos os aplicativos usam o menu global.",
+      "status": "machine-translated",
+      "sourcePreview": "The menu appears at the top of the screen and persists even when all windows are closed. The `UseApp…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0023-text-01": {
       "sourceHash": "9a32d961e96a0533f22a25e4d55b3cc05ab225450b8fda98ca12ea7d86209b48",
-      "targetHash": "0c1e11dfd2b4eacbddfb74e7398c45073c68e1fe8d7a2a363da0268ff1f28bf8",
-      "status": "migration-review",
-      "sourcePreview": "**Per-window menu bar**:"
+      "targetHash": "9bc56fff56c320e7338901aeb7565b0aee1437925206d67bada3ec3ce301a65a",
+      "machineHash": "9bc56fff56c320e7338901aeb7565b0aee1437925206d67bada3ec3ce301a65a",
+      "machineText": "**Barra de menu por janela**:",
+      "status": "machine-translated",
+      "sourcePreview": "**Per-window menu bar**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0024-text-01": {
       "sourceHash": "f6d8a4211c8e069f1cbe224e3aee90cf627d0efe2cce60e017c1ecdeb7c2905a",
       "targetHash": "f2555b18433da57a9ac7672cad5a72f457a872e23f83fffe31bf0880f4641c88",
-      "status": "migration-review",
-      "sourcePreview": "Each window can have its own menu, or inherit the application menu. The menu appears in the window's…"
+      "machineHash": "f2555b18433da57a9ac7672cad5a72f457a872e23f83fffe31bf0880f4641c88",
+      "machineText": "Cada janela pode ter seu próprio menu ou herdar o menu do aplicativo. O menu aparece na barra de título da janela.",
+      "status": "machine-translated",
+      "sourcePreview": "Each window can have its own menu, or inherit the application menu. The menu appears in the window's…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0025-text-01": {
       "sourceHash": "e9488e62bf207945cfda23fcb2437470a4d4e45ce3aee20268ed2dc2acbadaea",
-      "targetHash": "637fc217ac90a0a16f25bd8b31955fec5628c793e28e26f5b7fdf28ea4eca1ff",
-      "status": "migration-review",
-      "sourcePreview": "**Per-window menu bar** (usually):"
+      "targetHash": "ba64ac47cd3f32ffd9f3883334f94a9ca38a3d03385467bd923d0adf271d5037",
+      "machineHash": "ba64ac47cd3f32ffd9f3883334f94a9ca38a3d03385467bd923d0adf271d5037",
+      "machineText": "**Barra de menu por janela** (geralmente):",
+      "status": "machine-translated",
+      "sourcePreview": "**Per-window menu bar** (usually):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0026-text-01": {
       "sourceHash": "97b057072671a130c745af62db912891853282e836f7462c95ef983e587fc307",
-      "targetHash": "2b4021615b3f6fef065c7e214693736c58c9c07075d6196155586ddc4a8babc7",
-      "status": "migration-review",
-      "sourcePreview": "Behaviour varies by desktop environment. Some (like Unity) support global menus."
+      "targetHash": "a925d2669378f6a85ae846d76c4d025564080a04614febb067a98d515869be41",
+      "machineHash": "a925d2669378f6a85ae846d76c4d025564080a04614febb067a98d515869be41",
+      "machineText": "O comportamento varia conforme o ambiente de desktop. Alguns, como o Unity, oferecem suporte a menus globais.",
+      "status": "machine-translated",
+      "sourcePreview": "Behaviour varies by desktop environment. Some (like Unity) support global menus.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0027-text-01": {
       "sourceHash": "d9bd612cb43e9eef771bbd2f2ba50b72fc0045038d93db2b2555ab59afb42c6a",
-      "targetHash": "8d49d8bdca5091f0355730b4cfce109f2fd3767f13a9327210e08220d50bd57f",
-      "status": "migration-review",
-      "sourcePreview": "Using `UseApplicationMenu: true` eliminates the need for platform-specific code like:"
+      "targetHash": "63ae1342b0a6689d7f0e2166776cd33625a5180a6f0c1f116e4e8d1bcf898a44",
+      "machineHash": "63ae1342b0a6689d7f0e2166776cd33625a5180a6f0c1f116e4e8d1bcf898a44",
+      "machineText": "O uso de `UseApplicationMenu: true` elimina a necessidade de código específico para cada plataforma, como:",
+      "status": "machine-translated",
+      "sourcePreview": "Using `UseApplicationMenu: true` eliminates the need for platform-specific code like:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0028-text-01": {
       "sourceHash": "01757673a94702f1adf67edafd15bd8f33cea48acaee80ee21dad025ac92f465",
       "targetHash": "ce364439405348d8eda7df668cc46692f6e3e412e6c1bb31c45a9b2ec5251118",
-      "status": "migration-review",
-      "sourcePreview": "**Per-window custom menus:**"
+      "machineHash": "ce364439405348d8eda7df668cc46692f6e3e412e6c1bb31c45a9b2ec5251118",
+      "machineText": "**Menus personalizados por janela:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Per-window custom menus:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0029-text-01": {
       "sourceHash": "0223692bb40c2ce0a9409251e192e2820e75492c49be493dbab119aa2a05860d",
       "targetHash": "dfa1ddb2787f778a6dda90678484613ef1b6c8bf9b33db2a696cfe26a2454139",
-      "status": "migration-review",
-      "sourcePreview": "If a window needs a different menu than the application menu, set it directly:"
+      "machineHash": "dfa1ddb2787f778a6dda90678484613ef1b6c8bf9b33db2a696cfe26a2454139",
+      "machineText": "Se uma janela precisar de um menu diferente do menu do aplicativo, defina-o diretamente:",
+      "status": "machine-translated",
+      "sourcePreview": "If a window needs a different menu than the application menu, set it directly:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0030-text-01": {
       "sourceHash": "f7879704a2a1d56e909d27163d7440563a10fcdb038e8f86b51bd3688b623a55",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Removing a window's menu bar:**"
+      "targetHash": "9498a2f7c097a718bda59b9f0b5bb9941428af22c65b680ee4fa719eeab88518",
+      "machineHash": "9498a2f7c097a718bda59b9f0b5bb9941428af22c65b680ee4fa719eeab88518",
+      "machineText": "**Remoção da barra de menu de uma janela:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Removing a window's menu bar:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0031-text-01": {
       "sourceHash": "786928cbc5ae1cb005d4feecb70338088d1c5e60036a487dba3dbc8267f1a08f",
-      "targetHash": "441cd9c9981b9c5954784dd56144bc725b099b00bfb0994badafb608b2ce9f09",
-      "status": "migration-review",
-      "sourcePreview": "Pass `nil` to remove the menu bar from a window:"
+      "targetHash": "94d9cc8c49bf7175aa3761e27c0071d9504b9280e63c0cfa5653983273a55a4c",
+      "machineHash": "94d9cc8c49bf7175aa3761e27c0071d9504b9280e63c0cfa5653983273a55a4c",
+      "machineText": "Passe `nil` para remover a barra de menu de uma janela:",
+      "status": "machine-translated",
+      "sourcePreview": "Pass `nil` to remove the menu bar from a window:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0032-text-01": {
       "sourceHash": "6b54bf3b87498052fcabaab61bddde4b1eb05b3699d5d3ecafb33ad7503e19d2",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "On Windows and Linux the window then shows no menu bar, not even the application menu it opted into …"
+      "targetHash": "9023a4667820fdf22bac6435bebe6aab04b3adef476ddd57742978c99013118a",
+      "machineHash": "9023a4667820fdf22bac6435bebe6aab04b3adef476ddd57742978c99013118a",
+      "machineText": "No Windows e no Linux, a janela deixa de exibir qualquer barra de menu, inclusive o menu do aplicativo que ela havia optado por usar com `UseApplicationMenu`, e os atalhos de teclado do menu removido deixam de funcionar nessa janela. Chamá-lo antes de a janela ser iniciada cria a janela sem uma barra de menu. Uma chamada posterior a `SetMenu(menu)` restaura a barra.",
+      "status": "machine-translated",
+      "sourcePreview": "On Windows and Linux the window then shows no menu bar, not even the application menu it opted into …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0033-text-01": {
       "sourceHash": "04719c0ed8e98619b19d390f9fd16f0559cea66f23f2f5f15d2f96a6e534d3f3",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "On macOS the menu bar belongs to the application, not to a window, so `SetMenu` does nothing there. …"
+      "targetHash": "15f46b086dcfdfc388b28fbb30c823056a3180ed0a2fadaf9ddb7f1208a9c6f7",
+      "machineHash": "15f46b086dcfdfc388b28fbb30c823056a3180ed0a2fadaf9ddb7f1208a9c6f7",
+      "machineText": "No macOS, a barra de menu pertence ao aplicativo, não a uma janela; portanto, `SetMenu` não faz nada nessa plataforma. Use `app.Menu.Set` para alterar o menu do aplicativo.",
+      "status": "machine-translated",
+      "sourcePreview": "On macOS the menu bar belongs to the application, not to a window, so `SetMenu` does nothing there. …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0034-heading-01": {
       "sourceHash": "da7d2c7306d82c30bd38eb54e74859814132b1ad3213e1bc3d0ed7b128564c07",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Menu Roles"
+      "targetHash": "57eaa8c22b0cdb9273a7e7b24905763e7dc0f0c85d53499e9b0ef98bf9f444e5",
+      "machineHash": "57eaa8c22b0cdb9273a7e7b24905763e7dc0f0c85d53499e9b0ef98bf9f444e5",
+      "machineText": "Funções de menu",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Roles",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0035-text-01": {
       "sourceHash": "5166f32d87266966c497a4b35039791b3d7dc72071ceed6f460fdae14e8d268f",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Wails provides **predefined menu roles** that create platform-appropriate menu structures automatica…"
+      "targetHash": "b88f7974b17b41ba20bfcc66d5b475cd51db5063582ecdb65927c06918db36af",
+      "machineHash": "b88f7974b17b41ba20bfcc66d5b475cd51db5063582ecdb65927c06918db36af",
+      "machineText": "O Wails fornece **funções de menu predefinidas** que criam automaticamente estruturas de menu adequadas à plataforma.",
+      "status": "machine-translated",
+      "sourcePreview": "Wails provides **predefined menu roles** that create platform-appropriate menu structures automatica…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0036-heading-01": {
       "sourceHash": "003a9aea1b7e4f10eac56d07396e99dd4cc664556c454cad4af39d0de6b9b130",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Available Roles"
+      "targetHash": "7a0b9b334b9bdeb38aa63f457ad4f7f72ced31abada39cb0941fc959a1593903",
+      "machineHash": "7a0b9b334b9bdeb38aa63f457ad4f7f72ced31abada39cb0941fc959a1593903",
+      "machineText": "Funções disponíveis",
+      "status": "machine-translated",
+      "sourcePreview": "Available Roles",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0037-cell-01": {
       "sourceHash": "14736a2eb9f4159f4b6b86f192c3c222243fd9659aadf2ecc0139e3d72bed85c",
-      "targetHash": "ff23b4b2d8a0d14b26d7e9c5a68bb88609a7bac516e484bfc4d1da7ceb57d49a",
-      "status": "migration-review",
-      "sourcePreview": "Role"
+      "targetHash": "e93e2b1e7736d280c9b470877bbc5fb84a39c43c8e5c0a3ff601cfeb2f6a6085",
+      "machineHash": "e93e2b1e7736d280c9b470877bbc5fb84a39c43c8e5c0a3ff601cfeb2f6a6085",
+      "machineText": "Função",
+      "status": "machine-translated",
+      "sourcePreview": "Role",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0038-cell-01": {
       "sourceHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba",
-      "targetHash": "e252d672215bbebef15c840217917877481a75b2198cded97501a932b175ad9a",
-      "status": "migration-review",
-      "sourcePreview": "Description"
+      "targetHash": "46332f9d834ef8dd3a196297b8864654b0038973be0734ba0bf27a9a6336651e",
+      "machineHash": "46332f9d834ef8dd3a196297b8864654b0038973be0734ba0bf27a9a6336651e",
+      "machineText": "Descrição",
+      "status": "machine-translated",
+      "sourcePreview": "Description",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0039-cell-01": {
       "sourceHash": "1a86aada8273264acc005e83576f463e6e9d068575d72bede9b2d56749508093",
-      "targetHash": "9308e045469ae574667afff63a196e3c8717e98f48ef753e7985d55aadcaec55",
-      "status": "migration-review",
-      "sourcePreview": "Platform Notes"
+      "targetHash": "a83c4309ccbe3c859eff179860ded399f64714565117989b28115aaa7efac459",
+      "machineHash": "a83c4309ccbe3c859eff179860ded399f64714565117989b28115aaa7efac459",
+      "machineText": "Observações sobre plataformas",
+      "status": "machine-translated",
+      "sourcePreview": "Platform Notes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0040-cell-01": {
       "sourceHash": "a474ebca636bb2ad0dd1caf857652c250468de5f18f56ab44b7d9a23e54a4bea",
-      "targetHash": "1c27731f1df6a16b69ffd56ef2b070fefe349f3ee5417fa800044638d8d6a097",
-      "status": "migration-review",
-      "sourcePreview": "`AppMenu`"
+      "targetHash": "a474ebca636bb2ad0dd1caf857652c250468de5f18f56ab44b7d9a23e54a4bea",
+      "machineHash": "a474ebca636bb2ad0dd1caf857652c250468de5f18f56ab44b7d9a23e54a4bea",
+      "machineText": "`AppMenu`",
+      "status": "machine-translated",
+      "sourcePreview": "`AppMenu`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0041-cell-01": {
       "sourceHash": "7dff459ab1a5103582afd7b0f3d867102781043be2db0a2824355222ae6199ed",
-      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
-      "status": "migration-review",
-      "sourcePreview": "Application menu with About, Preferences, Quit"
+      "targetHash": "ff23b4b2d8a0d14b26d7e9c5a68bb88609a7bac516e484bfc4d1da7ceb57d49a",
+      "machineHash": "ff23b4b2d8a0d14b26d7e9c5a68bb88609a7bac516e484bfc4d1da7ceb57d49a",
+      "machineText": "Menu do aplicativo com Sobre, Preferências e Sair",
+      "status": "machine-translated",
+      "sourcePreview": "Application menu with About, Preferences, Quit",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0042-cell-01": {
       "sourceHash": "c6fc3daae1e674f4cdb73028cc5bfd365604343bbe4518f9db4d14de85e59077",
-      "targetHash": "9bc835bda29cf9df0d5775e3ea07bfd5789bbbd819039cba450a7a69081399bd",
-      "status": "migration-review",
-      "sourcePreview": "**macOS only**"
+      "targetHash": "e252d672215bbebef15c840217917877481a75b2198cded97501a932b175ad9a",
+      "machineHash": "e252d672215bbebef15c840217917877481a75b2198cded97501a932b175ad9a",
+      "machineText": "**Somente macOS**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS only**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0043-cell-01": {
       "sourceHash": "9308e045469ae574667afff63a196e3c8717e98f48ef753e7985d55aadcaec55",
-      "targetHash": "7ee7c2c1f31683739871421cf569263cee6dcd99beaf2a4e3c9d63a4cf0504f3",
-      "status": "migration-review",
-      "sourcePreview": "`FileMenu`"
+      "targetHash": "9308e045469ae574667afff63a196e3c8717e98f48ef753e7985d55aadcaec55",
+      "machineHash": "9308e045469ae574667afff63a196e3c8717e98f48ef753e7985d55aadcaec55",
+      "machineText": "`FileMenu`",
+      "status": "machine-translated",
+      "sourcePreview": "`FileMenu`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0044-cell-01": {
       "sourceHash": "2ab479b34d3f43654d30c166fc0c8a51b5befbc63a2396ffa4da694e2e2bd6a7",
-      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
-      "status": "migration-review",
-      "sourcePreview": "File operations (New, Open, Save, etc.)"
+      "targetHash": "1c27731f1df6a16b69ffd56ef2b070fefe349f3ee5417fa800044638d8d6a097",
+      "machineHash": "1c27731f1df6a16b69ffd56ef2b070fefe349f3ee5417fa800044638d8d6a097",
+      "machineText": "Operações de arquivo (Novo, Abrir, Salvar etc.)",
+      "status": "machine-translated",
+      "sourcePreview": "File operations (New, Open, Save, etc.)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0045-cell-01": {
       "sourceHash": "6d46bb346f19a539f1d3771f7f46bb39dbc1e77425a7c65f3492be2b72c761c5",
-      "targetHash": "47c7e7ce46c5589c83c50c469e6ef4c6e5762bf9c37556cf37bf3883f8740d22",
-      "status": "migration-review",
-      "sourcePreview": "All platforms"
+      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineText": "Todas as plataformas",
+      "status": "machine-translated",
+      "sourcePreview": "All platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0046-cell-01": {
       "sourceHash": "9bc835bda29cf9df0d5775e3ea07bfd5789bbbd819039cba450a7a69081399bd",
-      "targetHash": "bdd2fb40bc84ff57b410dad0e6dfd3a7a905ab2d8e3e49fb9642cf6102f91615",
-      "status": "migration-review",
-      "sourcePreview": "`EditMenu`"
+      "targetHash": "9bc835bda29cf9df0d5775e3ea07bfd5789bbbd819039cba450a7a69081399bd",
+      "machineHash": "9bc835bda29cf9df0d5775e3ea07bfd5789bbbd819039cba450a7a69081399bd",
+      "machineText": "`EditMenu`",
+      "status": "machine-translated",
+      "sourcePreview": "`EditMenu`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0047-cell-01": {
       "sourceHash": "aee78ce143181f7adb50c7802d7666f6422dfd7ee1636a144667427e5868bd50",
-      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
-      "status": "migration-review",
-      "sourcePreview": "Text editing (Undo, Redo, Cut, Copy, Paste)"
+      "targetHash": "7ee7c2c1f31683739871421cf569263cee6dcd99beaf2a4e3c9d63a4cf0504f3",
+      "machineHash": "7ee7c2c1f31683739871421cf569263cee6dcd99beaf2a4e3c9d63a4cf0504f3",
+      "machineText": "Edição de texto (Desfazer, Refazer, Recortar, Copiar, Colar)",
+      "status": "machine-translated",
+      "sourcePreview": "Text editing (Undo, Redo, Cut, Copy, Paste)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0048-cell-01": {
       "sourceHash": "6d46bb346f19a539f1d3771f7f46bb39dbc1e77425a7c65f3492be2b72c761c5",
-      "targetHash": "721816e8d7b3e821451b063be51ea947e8d8398c49904b2066e1bf5216bdf399",
-      "status": "migration-review",
-      "sourcePreview": "All platforms"
+      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineText": "Todas as plataformas",
+      "status": "machine-translated",
+      "sourcePreview": "All platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0049-cell-01": {
       "sourceHash": "47c7e7ce46c5589c83c50c469e6ef4c6e5762bf9c37556cf37bf3883f8740d22",
-      "targetHash": "86202fa087ac852f2b78a5e863220dcd0e25b4cc9e034978ef5c612a8f471692",
-      "status": "migration-review",
-      "sourcePreview": "`WindowMenu`"
+      "targetHash": "47c7e7ce46c5589c83c50c469e6ef4c6e5762bf9c37556cf37bf3883f8740d22",
+      "machineHash": "47c7e7ce46c5589c83c50c469e6ef4c6e5762bf9c37556cf37bf3883f8740d22",
+      "machineText": "`WindowMenu`",
+      "status": "machine-translated",
+      "sourcePreview": "`WindowMenu`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0050-cell-01": {
       "sourceHash": "9d4b907fb90a2729a42b8005bd1fcb83d2b0ea8cdf9052aa915673dff0e2018c",
-      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
-      "status": "migration-review",
-      "sourcePreview": "Window management (Minimise, Zoom, etc.)"
+      "targetHash": "cce8554b2f474b3cf07b2269a2eaec8b9fb3a843806004fa2f67d5d652e279b4",
+      "machineHash": "cce8554b2f474b3cf07b2269a2eaec8b9fb3a843806004fa2f67d5d652e279b4",
+      "machineText": "Gerenciamento de janelas (Minimizar, Zoom etc.)",
+      "status": "machine-translated",
+      "sourcePreview": "Window management (Minimise, Zoom, etc.)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0051-cell-01": {
       "sourceHash": "6d46bb346f19a539f1d3771f7f46bb39dbc1e77425a7c65f3492be2b72c761c5",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "All platforms"
+      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineText": "Todas as plataformas",
+      "status": "machine-translated",
+      "sourcePreview": "All platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0052-cell-01": {
       "sourceHash": "721816e8d7b3e821451b063be51ea947e8d8398c49904b2066e1bf5216bdf399",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "`HelpMenu`"
+      "targetHash": "721816e8d7b3e821451b063be51ea947e8d8398c49904b2066e1bf5216bdf399",
+      "machineHash": "721816e8d7b3e821451b063be51ea947e8d8398c49904b2066e1bf5216bdf399",
+      "machineText": "`HelpMenu`",
+      "status": "machine-translated",
+      "sourcePreview": "`HelpMenu`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0053-cell-01": {
       "sourceHash": "25a21aad8689b4ee1d046ee12803de90ec59542dbe757f3ac4c73ae82a984a6a",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Help and information"
+      "targetHash": "86202fa087ac852f2b78a5e863220dcd0e25b4cc9e034978ef5c612a8f471692",
+      "machineHash": "86202fa087ac852f2b78a5e863220dcd0e25b4cc9e034978ef5c612a8f471692",
+      "machineText": "Ajuda e informações",
+      "status": "machine-translated",
+      "sourcePreview": "Help and information",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0054-cell-01": {
       "sourceHash": "6d46bb346f19a539f1d3771f7f46bb39dbc1e77425a7c65f3492be2b72c761c5",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "All platforms"
+      "targetHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineHash": "3f03323b6ac7bb59f84e54d33028317b86db1d55d2a271a60a4edbed102d02de",
+      "machineText": "Todas as plataformas",
+      "status": "machine-translated",
+      "sourcePreview": "All platforms",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0055-heading-01": {
       "sourceHash": "a0b0207295583b34550b9ac6164d15cfe3383bb9c1042ea8d94283f2688b2d1a",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Using Roles"
+      "targetHash": "e8c95dee7b307b813db5a7f446636e0762ae0f4fb3fdcd76e889f583025a0bf4",
+      "machineHash": "e8c95dee7b307b813db5a7f446636e0762ae0f4fb3fdcd76e889f583025a0bf4",
+      "machineText": "Uso das funções",
+      "status": "machine-translated",
+      "sourcePreview": "Using Roles",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0056-text-01": {
       "sourceHash": "c4e48251e23e5848f44e6876e5f0ff7d99d5539b3ffa7dc49b6e6472bd368d6c",
-      "targetHash": "4944b0b2b62648a3b36622a9722fb4e7daef21668490e472b08ddf67c81619dd",
-      "status": "migration-review",
-      "sourcePreview": "**What you get:**"
+      "targetHash": "d2bba1a6c34dbc0373544a3ecf9fa1e0b9b54aed7b54e0a10f2b27b4d94348c2",
+      "machineHash": "d2bba1a6c34dbc0373544a3ecf9fa1e0b9b54aed7b54e0a10f2b27b4d94348c2",
+      "machineText": "**O que você obtém:**",
+      "status": "machine-translated",
+      "sourcePreview": "**What you get:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0057-text-01": {
       "sourceHash": "9c5cf779e4a556bc3947811de99bc11f143dfddf1762e328e9b9cff50fbacccf",
-      "targetHash": "6ccac10853cb91d27c6ce70624196620ad1fa28e9c0220e10b6e42f1685d7a60",
-      "status": "migration-review",
-      "sourcePreview": "**AppMenu** (with app name):"
+      "targetHash": "0a070f869f75fd72c05c5d95fe698ec663ce0e661993139a12973d7e24d79e31",
+      "machineHash": "0a070f869f75fd72c05c5d95fe698ec663ce0e661993139a12973d7e24d79e31",
+      "machineText": "**AppMenu** (com o nome do aplicativo):",
+      "status": "machine-translated",
+      "sourcePreview": "**AppMenu** (with app name):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0058-text-01": {
       "sourceHash": "aada402f8f54ad0b0c2783073ff85670c9146a2908b8f31b009fbd5a57c17dc8",
-      "targetHash": "7d6ca41ce20ba44a467a5c32bc4a149d91d834109cc8521cba7292ff7019dd92",
-      "status": "migration-review",
-      "sourcePreview": "About [App Name]"
+      "targetHash": "fa9755585a0ce4b3bba59c4f3c0b57e7b82d3ef449f793277e08a7936d59bc8d",
+      "machineHash": "fa9755585a0ce4b3bba59c4f3c0b57e7b82d3ef449f793277e08a7936d59bc8d",
+      "machineText": "Sobre [Nome do aplicativo]",
+      "status": "machine-translated",
+      "sourcePreview": "About [App Name]",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0059-text-01": {
       "sourceHash": "1c50cc5fa385a8600faf9b575199304450cdf4d8822679477c3499aa83cce9cd",
-      "targetHash": "12da4b08458b0965ca7a0b760849cce73b0bc259ac62b0f33f81df182b716fec",
-      "status": "migration-review",
-      "sourcePreview": "Preferences... (⌘,)"
+      "targetHash": "94e1cf969abff850615825da517886f0fc1cd36bf6b7f81530d0b1a73eb01f22",
+      "machineHash": "94e1cf969abff850615825da517886f0fc1cd36bf6b7f81530d0b1a73eb01f22",
+      "machineText": "Preferências... (⌘,)",
+      "status": "machine-translated",
+      "sourcePreview": "Preferences... (⌘,)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0060-text-01": {
       "sourceHash": "604dce445e326d952308addc99bd3d0e3ffb0ed9a455e4aa0190641fc5facccc",
-      "targetHash": "0028281b5211034602acc43fbb255b02d3e438b3fee7f6d6272c4ecb549b847b",
-      "status": "migration-review",
-      "sourcePreview": "Services"
+      "targetHash": "4944b0b2b62648a3b36622a9722fb4e7daef21668490e472b08ddf67c81619dd",
+      "machineHash": "4944b0b2b62648a3b36622a9722fb4e7daef21668490e472b08ddf67c81619dd",
+      "machineText": "Serviços",
+      "status": "machine-translated",
+      "sourcePreview": "Services",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0061-text-01": {
       "sourceHash": "6b6ef6963833af8be2d23f874665f947302f9be942388f44d1b87ab048f46f60",
-      "targetHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
-      "status": "migration-review",
-      "sourcePreview": "Hide [App Name] (⌘H)"
+      "targetHash": "6ccac10853cb91d27c6ce70624196620ad1fa28e9c0220e10b6e42f1685d7a60",
+      "machineHash": "6ccac10853cb91d27c6ce70624196620ad1fa28e9c0220e10b6e42f1685d7a60",
+      "machineText": "Ocultar [Nome do aplicativo] (⌘H)",
+      "status": "machine-translated",
+      "sourcePreview": "Hide [App Name] (⌘H)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0062-text-01": {
       "sourceHash": "51e3b6cbf774d54e3e21111f61456c5592224374d54cfa968641cfa9b7882d8f",
-      "targetHash": "83e89aff87558e15b6743510b8a65a8928e48f1cca9cb2ed6d33249318847b47",
-      "status": "migration-review",
-      "sourcePreview": "Hide Others (⌥⌘H)"
+      "targetHash": "7d6ca41ce20ba44a467a5c32bc4a149d91d834109cc8521cba7292ff7019dd92",
+      "machineHash": "7d6ca41ce20ba44a467a5c32bc4a149d91d834109cc8521cba7292ff7019dd92",
+      "machineText": "Ocultar Outros (⌥⌘H)",
+      "status": "machine-translated",
+      "sourcePreview": "Hide Others (⌥⌘H)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0063-text-01": {
       "sourceHash": "e1c32645f2f85a25ae64e38f306ded9b82771ab8ac4595e769f9410e632584f4",
-      "targetHash": "f6f2b125ef5eba86d897ef8e25be1d34535a8441e682ba1800ac6caf128f1cc3",
-      "status": "migration-review",
-      "sourcePreview": "Show All"
+      "targetHash": "12da4b08458b0965ca7a0b760849cce73b0bc259ac62b0f33f81df182b716fec",
+      "machineHash": "12da4b08458b0965ca7a0b760849cce73b0bc259ac62b0f33f81df182b716fec",
+      "machineText": "Mostrar Todos",
+      "status": "machine-translated",
+      "sourcePreview": "Show All",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0064-text-01": {
       "sourceHash": "9c43f0136dac76b5f641e4ebafc3176086a9e9e6b35e15fa42b9421de44e6837",
-      "targetHash": "4b06f86f4d3d8bd5757be716b21f212fcb6cc2a9fcbc95dd9c0ee9ac42e3a5a3",
-      "status": "migration-review",
-      "sourcePreview": "Quit [App Name] (⌘Q)"
+      "targetHash": "3d6503e341aa74c552cb114a8d446c743320ccb448b490de977483af33bb1455",
+      "machineHash": "3d6503e341aa74c552cb114a8d446c743320ccb448b490de977483af33bb1455",
+      "machineText": "Sair de [Nome do aplicativo] (⌘Q)",
+      "status": "machine-translated",
+      "sourcePreview": "Quit [App Name] (⌘Q)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0065-text-01": {
       "sourceHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
-      "targetHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
-      "status": "migration-review",
-      "sourcePreview": "**FileMenu**:"
+      "targetHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
+      "machineHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
+      "machineText": "**FileMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**FileMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0066-text-01": {
       "sourceHash": "140a516df58449e870039bf9e90c9bd10342bb6388effd2f145a845e691eec3b",
-      "targetHash": "023c5d09d6ee8114482b48bda7237395e2d724e5cd3249eed474b0b5b02ba06c",
-      "status": "migration-review",
-      "sourcePreview": "New (⌘N)"
+      "targetHash": "83e89aff87558e15b6743510b8a65a8928e48f1cca9cb2ed6d33249318847b47",
+      "machineHash": "83e89aff87558e15b6743510b8a65a8928e48f1cca9cb2ed6d33249318847b47",
+      "machineText": "Novo (⌘N)",
+      "status": "machine-translated",
+      "sourcePreview": "New (⌘N)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0067-text-01": {
       "sourceHash": "5ae12e9c02f587803e92e974b4bbdc4e2c59bd9afecbed9a132c81098da50afa",
-      "targetHash": "6339d1ede6c2c8cae616fb4f95424057ee8469ee42f54d4f8044eb5d58a81cd0",
-      "status": "migration-review",
-      "sourcePreview": "Open... (⌘O)"
+      "targetHash": "f6f2b125ef5eba86d897ef8e25be1d34535a8441e682ba1800ac6caf128f1cc3",
+      "machineHash": "f6f2b125ef5eba86d897ef8e25be1d34535a8441e682ba1800ac6caf128f1cc3",
+      "machineText": "Abrir... (⌘O)",
+      "status": "machine-translated",
+      "sourcePreview": "Open... (⌘O)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0068-text-01": {
       "sourceHash": "5214771e515be349600ab031f1dbc6590a98181e9d18412e97c83ee8895d0bc0",
-      "targetHash": "b7147ba40cac17020b43316ae62595ff07c4080305eb17e217d5b008ba2139fd",
-      "status": "migration-review",
-      "sourcePreview": "Close Window (⌘W)"
+      "targetHash": "4b06f86f4d3d8bd5757be716b21f212fcb6cc2a9fcbc95dd9c0ee9ac42e3a5a3",
+      "machineHash": "4b06f86f4d3d8bd5757be716b21f212fcb6cc2a9fcbc95dd9c0ee9ac42e3a5a3",
+      "machineText": "Fechar Janela (⌘W)",
+      "status": "machine-translated",
+      "sourcePreview": "Close Window (⌘W)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0069-text-01": {
       "sourceHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
-      "targetHash": "f44c22cf0c0d921d731ba49a534fb1058944c4bcad0e389bd590febb7fb48b98",
-      "status": "migration-review",
-      "sourcePreview": "**EditMenu**:"
+      "targetHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
+      "machineHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
+      "machineText": "**EditMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**EditMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0070-text-01": {
       "sourceHash": "9c72706aa5d8c00befe5efb488e4e2d74c38c4130afbf68cc80006b88bbd04bc",
-      "targetHash": "f94c47cd6db7fde51b35a652c385a077f1ab69aa73c08bfa5bd64d9bb53a7884",
-      "status": "migration-review",
-      "sourcePreview": "Undo (⌘Z)"
+      "targetHash": "023c5d09d6ee8114482b48bda7237395e2d724e5cd3249eed474b0b5b02ba06c",
+      "machineHash": "023c5d09d6ee8114482b48bda7237395e2d724e5cd3249eed474b0b5b02ba06c",
+      "machineText": "Desfazer (⌘Z)",
+      "status": "machine-translated",
+      "sourcePreview": "Undo (⌘Z)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0071-text-01": {
       "sourceHash": "a212a69e6880e3d512afc066ae6c6dd9d4acba62b8c3df9b65866710bbe694a7",
-      "targetHash": "ca67854746ea87d84d8fcccb3ec9d9f98762c632586634112fd5b5587a20ec7e",
-      "status": "migration-review",
-      "sourcePreview": "Redo (⇧⌘Z)"
+      "targetHash": "6339d1ede6c2c8cae616fb4f95424057ee8469ee42f54d4f8044eb5d58a81cd0",
+      "machineHash": "6339d1ede6c2c8cae616fb4f95424057ee8469ee42f54d4f8044eb5d58a81cd0",
+      "machineText": "Refazer (⇧⌘Z)",
+      "status": "machine-translated",
+      "sourcePreview": "Redo (⇧⌘Z)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0072-text-01": {
       "sourceHash": "dbff9dc095cb92067f26da988a4b9830816b15226a9b28de8672abe5a50c0a4e",
-      "targetHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
-      "status": "migration-review",
-      "sourcePreview": "Cut (⌘X)"
+      "targetHash": "b7147ba40cac17020b43316ae62595ff07c4080305eb17e217d5b008ba2139fd",
+      "machineHash": "b7147ba40cac17020b43316ae62595ff07c4080305eb17e217d5b008ba2139fd",
+      "machineText": "Recortar (⌘X)",
+      "status": "machine-translated",
+      "sourcePreview": "Cut (⌘X)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0073-text-01": {
       "sourceHash": "2d91a5ed312f455db9ba3c56f04b83af54003e3feeb69d0040dbacf47f37749e",
-      "targetHash": "6cb1a41a0a35abec4123cba8f17248fca1e5ecf08f4d0e2058be44b009b570d0",
-      "status": "migration-review",
-      "sourcePreview": "Copy (⌘C)"
+      "targetHash": "f44c22cf0c0d921d731ba49a534fb1058944c4bcad0e389bd590febb7fb48b98",
+      "machineHash": "f44c22cf0c0d921d731ba49a534fb1058944c4bcad0e389bd590febb7fb48b98",
+      "machineText": "Copiar (⌘C)",
+      "status": "machine-translated",
+      "sourcePreview": "Copy (⌘C)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0074-text-01": {
       "sourceHash": "21f93d649709ab6af17a096c6271093232420eab323198e2cc933d83b4e5c4c3",
-      "targetHash": "509c517ede79fef060a5f3a109fd1f45951eef2c7970b25c20992011e36a4070",
-      "status": "migration-review",
-      "sourcePreview": "Paste (⌘V)"
+      "targetHash": "f94c47cd6db7fde51b35a652c385a077f1ab69aa73c08bfa5bd64d9bb53a7884",
+      "machineHash": "f94c47cd6db7fde51b35a652c385a077f1ab69aa73c08bfa5bd64d9bb53a7884",
+      "machineText": "Colar (⌘V)",
+      "status": "machine-translated",
+      "sourcePreview": "Paste (⌘V)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0075-text-01": {
       "sourceHash": "c39c2c2ee8cf3e44dbd4fe9fb493eaeac07597073e5a93de6d742b8b28421efd",
-      "targetHash": "2e31a56a55bb4a1c47452a027a1acec225961819a69b7e059b32d87510bb72ff",
-      "status": "migration-review",
-      "sourcePreview": "Select All (⌘A)"
+      "targetHash": "d7963dabef27a4cff2428f1ebade975b8cda367625916394fccf8828fb3a6af4",
+      "machineHash": "d7963dabef27a4cff2428f1ebade975b8cda367625916394fccf8828fb3a6af4",
+      "machineText": "Selecionar Tudo (⌘A)",
+      "status": "machine-translated",
+      "sourcePreview": "Select All (⌘A)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0076-text-01": {
       "sourceHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
-      "targetHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
-      "status": "migration-review",
-      "sourcePreview": "**WindowMenu**:"
+      "targetHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
+      "machineHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
+      "machineText": "**WindowMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**WindowMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0077-text-01": {
       "sourceHash": "44c50d36f0b9ae98199286c5f831db73fc51ca8fe77b09f0c68e644a994b332c",
-      "targetHash": "b952724757f1dddad2d999763292ac3ebcd060bcefdc37bcbc2206f387b435ab",
-      "status": "migration-review",
-      "sourcePreview": "Minimise (⌘M)"
+      "targetHash": "6cb1a41a0a35abec4123cba8f17248fca1e5ecf08f4d0e2058be44b009b570d0",
+      "machineHash": "6cb1a41a0a35abec4123cba8f17248fca1e5ecf08f4d0e2058be44b009b570d0",
+      "machineText": "Minimizar (⌘M)",
+      "status": "machine-translated",
+      "sourcePreview": "Minimise (⌘M)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0078-text-01": {
       "sourceHash": "509c517ede79fef060a5f3a109fd1f45951eef2c7970b25c20992011e36a4070",
-      "targetHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
-      "status": "migration-review",
-      "sourcePreview": "Zoom"
+      "targetHash": "509c517ede79fef060a5f3a109fd1f45951eef2c7970b25c20992011e36a4070",
+      "machineHash": "509c517ede79fef060a5f3a109fd1f45951eef2c7970b25c20992011e36a4070",
+      "machineText": "Zoom",
+      "status": "machine-translated",
+      "sourcePreview": "Zoom",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0079-text-01": {
       "sourceHash": "7e64cb6a48176de0d6812f2acc5fe331108f3a7594e07479aac45a2bef4000d9",
-      "targetHash": "a77a641f3403315790622418c40924170da36acbcf38547440043db586869433",
-      "status": "migration-review",
-      "sourcePreview": "Bring All to Front"
+      "targetHash": "d8eccb36b1b44c150547317d8298de4f1e8aae4c7ca700ddc8cc9bb34470d4d1",
+      "machineHash": "d8eccb36b1b44c150547317d8298de4f1e8aae4c7ca700ddc8cc9bb34470d4d1",
+      "machineText": "Trazer Tudo para a Frente",
+      "status": "machine-translated",
+      "sourcePreview": "Bring All to Front",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0080-text-01": {
       "sourceHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
-      "targetHash": "1491f28f3bdc8c99da2b613588aa92fe6f8ca78d7deafeeaaf2e8a6bdb69226d",
-      "status": "migration-review",
-      "sourcePreview": "**HelpMenu**:"
+      "targetHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
+      "machineHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
+      "machineText": "**HelpMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**HelpMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0081-text-01": {
       "sourceHash": "e63cc62328cf1ae64adea40eeb05563da33904b2c42da477d6b7ca8556493bbb",
-      "targetHash": "eb8010ba2a84732832f2c405677fe818b46e7f6e7767ecf8fd05c4c9961aa8f6",
-      "status": "migration-review",
-      "sourcePreview": "[App Name] Help"
+      "targetHash": "b952724757f1dddad2d999763292ac3ebcd060bcefdc37bcbc2206f387b435ab",
+      "machineHash": "b952724757f1dddad2d999763292ac3ebcd060bcefdc37bcbc2206f387b435ab",
+      "machineText": "Ajuda do [Nome do aplicativo]",
+      "status": "machine-translated",
+      "sourcePreview": "[App Name] Help",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0082-text-01": {
       "sourceHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
-      "targetHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
-      "status": "migration-review",
-      "sourcePreview": "**FileMenu**:"
+      "targetHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
+      "machineHash": "509cc032b576651502baf4dd456ef103e99c6f1929e1dd964e4287744277ed6a",
+      "machineText": "**FileMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**FileMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0083-text-01": {
       "sourceHash": "c44dd7c496f7904d50064fe1d7c4bff6a72dd6c9f13f6e3a82e7c2c4491ecdba",
-      "targetHash": "e8908ee8f72bc8a8a51626d9064576ff17a29985e9f99aabceebdc47edf5b05b",
-      "status": "migration-review",
-      "sourcePreview": "New (Ctrl+N)"
+      "targetHash": "a77a641f3403315790622418c40924170da36acbcf38547440043db586869433",
+      "machineHash": "a77a641f3403315790622418c40924170da36acbcf38547440043db586869433",
+      "machineText": "Novo (Ctrl+N)",
+      "status": "machine-translated",
+      "sourcePreview": "New (Ctrl+N)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0084-text-01": {
       "sourceHash": "52d59f5dd04f063458c3279c8320cddda588017db2f9a3f6007d28bcdd369c70",
-      "targetHash": "189406ffe91abca3c269bf38969b0139f1486fe2b2042c1708a0ebf1e0cb36a8",
-      "status": "migration-review",
-      "sourcePreview": "Open... (Ctrl+O)"
+      "targetHash": "1491f28f3bdc8c99da2b613588aa92fe6f8ca78d7deafeeaaf2e8a6bdb69226d",
+      "machineHash": "1491f28f3bdc8c99da2b613588aa92fe6f8ca78d7deafeeaaf2e8a6bdb69226d",
+      "machineText": "Abrir... (Ctrl+O)",
+      "status": "machine-translated",
+      "sourcePreview": "Open... (Ctrl+O)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0085-text-01": {
       "sourceHash": "5d124dd26c15957364e26fc490d5843e0f8d432eb6b583dbd74dd07f9c460b49",
-      "targetHash": "a3633afab60ceb5effedfef8ffe81df7680c59aed4d5330631226ab411cf39ec",
-      "status": "migration-review",
-      "sourcePreview": "Exit (Alt+F4)"
+      "targetHash": "eb8010ba2a84732832f2c405677fe818b46e7f6e7767ecf8fd05c4c9961aa8f6",
+      "machineHash": "eb8010ba2a84732832f2c405677fe818b46e7f6e7767ecf8fd05c4c9961aa8f6",
+      "machineText": "Sair (Alt+F4)",
+      "status": "machine-translated",
+      "sourcePreview": "Exit (Alt+F4)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0086-text-01": {
       "sourceHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
-      "targetHash": "0b882c0f3b0fa1b722eb6bea6cb5de895546909a592e5452d8e98f878d6fdac8",
-      "status": "migration-review",
-      "sourcePreview": "**EditMenu**:"
+      "targetHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
+      "machineHash": "45ddc5b5f5e29a160738e51511dc1688c8986e626a3df3d7df3c1043c49f572a",
+      "machineText": "**EditMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**EditMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0087-text-01": {
       "sourceHash": "a67232246217b31bf81c53caa7ae5b734ea8af3a0513d84c042a648adaf8cf5d",
-      "targetHash": "2337ddcf8b0a0ad790ac4aafbfad563b095bd5b308d7038313692fb38eb8105b",
-      "status": "migration-review",
-      "sourcePreview": "Undo (Ctrl+Z)"
+      "targetHash": "e8908ee8f72bc8a8a51626d9064576ff17a29985e9f99aabceebdc47edf5b05b",
+      "machineHash": "e8908ee8f72bc8a8a51626d9064576ff17a29985e9f99aabceebdc47edf5b05b",
+      "machineText": "Desfazer (Ctrl+Z)",
+      "status": "machine-translated",
+      "sourcePreview": "Undo (Ctrl+Z)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0088-text-01": {
       "sourceHash": "3231090430a1363e278b1076f5c46b755f3c415175019754a1bb6214aceaf128",
-      "targetHash": "89414c5354af97cd570872bbc7c00436d2fc9545f6a02f6df08a8158bf672f6f",
-      "status": "migration-review",
-      "sourcePreview": "Redo (Ctrl+Y)"
+      "targetHash": "189406ffe91abca3c269bf38969b0139f1486fe2b2042c1708a0ebf1e0cb36a8",
+      "machineHash": "189406ffe91abca3c269bf38969b0139f1486fe2b2042c1708a0ebf1e0cb36a8",
+      "machineText": "Refazer (Ctrl+Y)",
+      "status": "machine-translated",
+      "sourcePreview": "Redo (Ctrl+Y)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0089-text-01": {
       "sourceHash": "4b1f239f66dc773ca6b53ba4a24bb77e43b29be26a97f128758807ab11293eae",
-      "targetHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
-      "status": "migration-review",
-      "sourcePreview": "Cut (Ctrl+X)"
+      "targetHash": "a3633afab60ceb5effedfef8ffe81df7680c59aed4d5330631226ab411cf39ec",
+      "machineHash": "a3633afab60ceb5effedfef8ffe81df7680c59aed4d5330631226ab411cf39ec",
+      "machineText": "Recortar (Ctrl+X)",
+      "status": "machine-translated",
+      "sourcePreview": "Cut (Ctrl+X)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0090-text-01": {
       "sourceHash": "eaa1a344e59e24c08c8f144145d81647ca14206ad87f50b26ee2c408619a784d",
-      "targetHash": "3fc5f90b27f1acbcb89e1d36925f276ecd0e281b37e0b06c7dc381750f84fef0",
-      "status": "migration-review",
-      "sourcePreview": "Copy (Ctrl+C)"
+      "targetHash": "0b882c0f3b0fa1b722eb6bea6cb5de895546909a592e5452d8e98f878d6fdac8",
+      "machineHash": "0b882c0f3b0fa1b722eb6bea6cb5de895546909a592e5452d8e98f878d6fdac8",
+      "machineText": "Copiar (Ctrl+C)",
+      "status": "machine-translated",
+      "sourcePreview": "Copy (Ctrl+C)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0091-text-01": {
       "sourceHash": "9ad50e4f53b9433480dc703c2723103ce60cd40099f709eae874748c60dfa482",
-      "targetHash": "092b9ccfbf63a6ee5346ddfc71e8ffb3beaccecbdbbe0b9602b33ec3c150cce0",
-      "status": "migration-review",
-      "sourcePreview": "Paste (Ctrl+V)"
+      "targetHash": "2337ddcf8b0a0ad790ac4aafbfad563b095bd5b308d7038313692fb38eb8105b",
+      "machineHash": "2337ddcf8b0a0ad790ac4aafbfad563b095bd5b308d7038313692fb38eb8105b",
+      "machineText": "Colar (Ctrl+V)",
+      "status": "machine-translated",
+      "sourcePreview": "Paste (Ctrl+V)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0092-text-01": {
       "sourceHash": "f237bfbd215edf03547b1cb28e59382f455a0e711c7414112d0ce897c09521d6",
-      "targetHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
-      "status": "migration-review",
-      "sourcePreview": "Select All (Ctrl+A)"
+      "targetHash": "89414c5354af97cd570872bbc7c00436d2fc9545f6a02f6df08a8158bf672f6f",
+      "machineHash": "89414c5354af97cd570872bbc7c00436d2fc9545f6a02f6df08a8158bf672f6f",
+      "machineText": "Selecionar tudo (Ctrl+A)",
+      "status": "machine-translated",
+      "sourcePreview": "Select All (Ctrl+A)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0093-text-01": {
       "sourceHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
-      "targetHash": "a97e0999ca0082d5cb018016d867d67bca35435a66ffa4b823f6d36275e9c107",
-      "status": "migration-review",
-      "sourcePreview": "**WindowMenu**:"
+      "targetHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
+      "machineHash": "befdb06e1ea31daf0e48484f22f058b0157861cdb70a0f194f542ba91a89cda2",
+      "machineText": "**WindowMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**WindowMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0094-text-01": {
       "sourceHash": "20f082e96e6f93f01c53dab7fe7c633f9a8b792444910c222536c33fb457eaab",
-      "targetHash": "ded59affd90835702d2140eeef3583432d92e69fcfa60aaa5ff835d3437c574b",
-      "status": "migration-review",
-      "sourcePreview": "Minimise"
+      "targetHash": "3fc5f90b27f1acbcb89e1d36925f276ecd0e281b37e0b06c7dc381750f84fef0",
+      "machineHash": "3fc5f90b27f1acbcb89e1d36925f276ecd0e281b37e0b06c7dc381750f84fef0",
+      "machineText": "Minimizar",
+      "status": "machine-translated",
+      "sourcePreview": "Minimise",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0095-text-01": {
       "sourceHash": "1c9fcada241616b5de8d32cbc20d241cc79037f4adc777ca74d2e7f67254cc41",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Maximise"
+      "targetHash": "092b9ccfbf63a6ee5346ddfc71e8ffb3beaccecbdbbe0b9602b33ec3c150cce0",
+      "machineHash": "092b9ccfbf63a6ee5346ddfc71e8ffb3beaccecbdbbe0b9602b33ec3c150cce0",
+      "machineText": "Maximizar",
+      "status": "machine-translated",
+      "sourcePreview": "Maximise",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0096-text-01": {
       "sourceHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
-      "targetHash": "fecb9c6a193d94dd3191f42c5d4c54619d95882d5cea30648851361295fe1695",
-      "status": "migration-review",
-      "sourcePreview": "**HelpMenu**:"
+      "targetHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
+      "machineHash": "1d618f946e480d5649b8c5cefa2c770db1ef27b5b8a766a28e261b6f724e4712",
+      "machineText": "**HelpMenu**:",
+      "status": "machine-translated",
+      "sourcePreview": "**HelpMenu**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0097-text-01": {
       "sourceHash": "aada402f8f54ad0b0c2783073ff85670c9146a2908b8f31b009fbd5a57c17dc8",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "About [App Name]"
+      "targetHash": "fa9755585a0ce4b3bba59c4f3c0b57e7b82d3ef449f793277e08a7936d59bc8d",
+      "machineHash": "fa9755585a0ce4b3bba59c4f3c0b57e7b82d3ef449f793277e08a7936d59bc8d",
+      "machineText": "Sobre [Nome do aplicativo]",
+      "status": "machine-translated",
+      "sourcePreview": "About [App Name]",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0098-text-01": {
       "sourceHash": "523219d0138901a75abe92ba3623567b3f0045b761766c9887de786b7af192ee",
-      "targetHash": "ab4adeb15c4342534b4f0dbf014e85d62e47e0c84c7083712e00ba51cc892d3b",
-      "status": "migration-review",
-      "sourcePreview": "Similar to Windows, but keyboard shortcuts may vary by desktop environment."
+      "targetHash": "ded59affd90835702d2140eeef3583432d92e69fcfa60aaa5ff835d3437c574b",
+      "machineHash": "ded59affd90835702d2140eeef3583432d92e69fcfa60aaa5ff835d3437c574b",
+      "machineText": "Semelhante ao Windows, mas os atalhos de teclado podem variar conforme o ambiente de desktop.",
+      "status": "machine-translated",
+      "sourcePreview": "Similar to Windows, but keyboard shortcuts may vary by desktop environment.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0099-heading-01": {
       "sourceHash": "62ff2d9e1bdef4e40a6b80496dd7aa505f7313e4b25f77aca97ae949a8cede13",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Customising Role Menus"
+      "targetHash": "c15fd8e94b788263ffc717dd6ee4ea7c8595482f36204c0006079845b0c496de",
+      "machineHash": "c15fd8e94b788263ffc717dd6ee4ea7c8595482f36204c0006079845b0c496de",
+      "machineText": "Personalização de menus de função",
+      "status": "machine-translated",
+      "sourcePreview": "Customising Role Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0100-text-01": {
       "sourceHash": "cce7dcea8a64bbaa6f0f7d99c98daa492c66282067638b705183f934563524a7",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "`Menu.AddRole(role)` returns the **receiver** menu (the top-level menu), **not** the role's submenu.…"
+      "targetHash": "be2e48471bb5ee093d9a6756b9a4a348488dabfdeac0a1ba15c439951590efef",
+      "machineHash": "be2e48471bb5ee093d9a6756b9a4a348488dabfdeac0a1ba15c439951590efef",
+      "machineText": "`Menu.AddRole(role)` retorna o menu **receptor** (o menu de nível superior), **não** o submenu da função. Para adicionar itens ao submenu da função, localize o item de função inserido com `FindByRole` e chame `GetSubmenu()` nele:",
+      "status": "machine-translated",
+      "sourcePreview": "`Menu.AddRole(role)` returns the **receiver** menu (the top-level menu), **not** the role's submenu.…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0101-heading-01": {
       "sourceHash": "dbad096c4272bc450f847ad668117e4c27367f9d4869c9623130da3f27c81661",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Custom Menus"
+      "targetHash": "7beb6405580c0f2f6cad73406e079e18e0965aad85c2e566686c71d822f342f3",
+      "machineHash": "7beb6405580c0f2f6cad73406e079e18e0965aad85c2e566686c71d822f342f3",
+      "machineText": "Menus personalizados",
+      "status": "machine-translated",
+      "sourcePreview": "Custom Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0102-text-01": {
       "sourceHash": "c60d5ff9ff4fe3bd956a99691bdbbbc9a942c92e9dac086e7f05f8944e9c018a",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Create your own menus for application-specific features:"
+      "targetHash": "ab4adeb15c4342534b4f0dbf014e85d62e47e0c84c7083712e00ba51cc892d3b",
+      "machineHash": "ab4adeb15c4342534b4f0dbf014e85d62e47e0c84c7083712e00ba51cc892d3b",
+      "machineText": "Crie seus próprios menus para recursos específicos do aplicativo:",
+      "status": "machine-translated",
+      "sourcePreview": "Create your own menus for application-specific features:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0103-text-01": {
       "sourceHash": "8e890de032208d30a9f08524735a09df56de957d2686ed73db5624f847e8ce64",
-      "targetHash": "ff98cdaa2076b2c4f0f1df57600c4a6c4eb732b3355d1bf29f3f9976b9708029",
-      "status": "migration-review",
-      "sourcePreview": "**For more menu item types**, see [Menu Reference](/features/menus/reference/)."
+      "targetHash": "46dca45cb46b1dd7c7356b6c5217c52e34bc821cc6ac3b68d767b1f60520328c",
+      "machineHash": "46dca45cb46b1dd7c7356b6c5217c52e34bc821cc6ac3b68d767b1f60520328c",
+      "machineText": "**Para conhecer mais tipos de itens de menu**, consulte a [Referência de menus](/features/menus/reference/).",
+      "status": "machine-translated",
+      "sourcePreview": "**For more menu item types**, see [Menu Reference](/features/menus/reference/).",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0104-heading-01": {
       "sourceHash": "2ae9ba1902888b4008778355eb812682df3d23e84477cea3b905f3daefc97093",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Dynamic Menus"
+      "targetHash": "87b61564df3e900b12957be0998b1c3594e482920b6e3c38ce008b9a6fcbee07",
+      "machineHash": "87b61564df3e900b12957be0998b1c3594e482920b6e3c38ce008b9a6fcbee07",
+      "machineText": "Menus dinâmicos",
+      "status": "machine-translated",
+      "sourcePreview": "Dynamic Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0105-text-01": {
       "sourceHash": "c82077ce930ab77bf99e86d0a89c1c5082823e01b1a86b03870d31e1a2c59b20",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Update menus based on application state:"
+      "targetHash": "b0ccdaa5f06da02a26177a66275e54e134e09f227b7004a97ceb556315c816e0",
+      "machineHash": "b0ccdaa5f06da02a26177a66275e54e134e09f227b7004a97ceb556315c816e0",
+      "machineText": "Atualize os menus com base no estado do aplicativo:",
+      "status": "machine-translated",
+      "sourcePreview": "Update menus based on application state:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0106-heading-01": {
       "sourceHash": "644b45dcf4b857158e740cab99149a072394fe7e9258523c4983ac202793a765",
-      "targetHash": "a35c384f047bf403cda2bba772012c79764591628cdb760de265d6da333d657a",
-      "status": "migration-review",
-      "sourcePreview": "Enable/Disable Items"
+      "targetHash": "e2309858d8a2ffb86c042c396c986233240b5e914865a3ba3bd8eb88906b9b6d",
+      "machineHash": "e2309858d8a2ffb86c042c396c986233240b5e914865a3ba3bd8eb88906b9b6d",
+      "machineText": "Ativar/desativar itens",
+      "status": "machine-translated",
+      "sourcePreview": "Enable/Disable Items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0107-text-01": {
       "sourceHash": "0433a4d7b25e5e9241048a65dbd9e5891bb8178befb222238d632e5f6e37e85b",
-      "targetHash": "5361e292b7ca50acadfc6821af40385af8077a35a8f25774bef34efdd36797b3",
-      "status": "migration-review",
-      "sourcePreview": "After changing menu state (enable/disable, label, checked), **always call `menu.Update()`**. This is…"
+      "targetHash": "ff98cdaa2076b2c4f0f1df57600c4a6c4eb732b3355d1bf29f3f9976b9708029",
+      "machineHash": "ff98cdaa2076b2c4f0f1df57600c4a6c4eb732b3355d1bf29f3f9976b9708029",
+      "machineText": "Depois de alterar o estado do menu (ativado/desativado, rótulo ou marcação), **sempre chame `menu.Update()`**. Isso é especialmente importante no Windows, onde os menus são reconstruídos.",
+      "status": "machine-translated",
+      "sourcePreview": "After changing menu state (enable/disable, label, checked), **always call `menu.Update()`**. This is…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0108-text-01": {
       "sourceHash": "4fdcd5231f3e8ada20b7583c43559ca7c3144c08e91c526fa69c99afb5a1416e",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "See [Menu Reference](/features/menus/reference/#enabled-state) for details."
+      "targetHash": "9bc6b14eca88ad259e066ef8b5c3f9f6cc2bdc1ea7d14c0f92407d0cbae97fe6",
+      "machineHash": "9bc6b14eca88ad259e066ef8b5c3f9f6cc2bdc1ea7d14c0f92407d0cbae97fe6",
+      "machineText": "Consulte a [Referência de menus](/features/menus/reference/#enabled-state) para obter detalhes.",
+      "status": "machine-translated",
+      "sourcePreview": "See [Menu Reference](/features/menus/reference/#enabled-state) for details.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0109-heading-01": {
       "sourceHash": "ca3a33b41f4ee3c17b936e21dceab8806731272e2b7f8bec20f62570d8a0e500",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Change Labels"
+      "targetHash": "ec5eaa6d082f90a4737da37dc65927672f8f34ff065084a3f87133565efec3e6",
+      "machineHash": "ec5eaa6d082f90a4737da37dc65927672f8f34ff065084a3f87133565efec3e6",
+      "machineText": "Alterar rótulos",
+      "status": "machine-translated",
+      "sourcePreview": "Change Labels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0110-heading-01": {
       "sourceHash": "b80246e49920b31cb90db430dd30f87f7c77da58d3202d75c1bd79a21416bf10",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Rebuild Menus"
+      "targetHash": "a35c384f047bf403cda2bba772012c79764591628cdb760de265d6da333d657a",
+      "machineHash": "a35c384f047bf403cda2bba772012c79764591628cdb760de265d6da333d657a",
+      "machineText": "Reconstruir menus",
+      "status": "machine-translated",
+      "sourcePreview": "Rebuild Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0111-text-01": {
       "sourceHash": "051a5defdd211b8283aaf46082a14036ded9cc2d27cab149b49bdfeb9641002a",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "For major changes, rebuild the entire menu:"
+      "targetHash": "65c76bf7f81ae23faea5160f8e6f83ecc41983de1a8c5964c82bc5d0ca8fe3cc",
+      "machineHash": "65c76bf7f81ae23faea5160f8e6f83ecc41983de1a8c5964c82bc5d0ca8fe3cc",
+      "machineText": "Para alterações significativas, reconstrua o menu inteiro:",
+      "status": "machine-translated",
+      "sourcePreview": "For major changes, rebuild the entire menu:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0112-heading-01": {
       "sourceHash": "68289d641996559914ab07dd9e29fbbfe30662e37c740c87df918311b7d264bd",
-      "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "Window Control from Menus"
+      "targetHash": "6eafa55656d989aeffa49e6300bd011ff168e0bfccca47c8753c48f1cab14b9a",
+      "machineHash": "6eafa55656d989aeffa49e6300bd011ff168e0bfccca47c8753c48f1cab14b9a",
+      "machineText": "Controle de janelas por meio de menus",
+      "status": "machine-translated",
+      "sourcePreview": "Window Control from Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0113-text-01": {
       "sourceHash": "bbcd21feff1068e8552f62342e3da43dae588985ae7813d5d83762da167ed2e5",
-      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
-      "status": "migration-review",
-      "sourcePreview": "Menu items can control windows:"
+      "targetHash": "fabfecc0be4bfcc7b3f9a1bb5d0fbe0b370250cf93f61344ca268bb583f4d2dc",
+      "machineHash": "fabfecc0be4bfcc7b3f9a1bb5d0fbe0b370250cf93f61344ca268bb583f4d2dc",
+      "machineText": "Os itens de menu podem controlar janelas:",
+      "status": "machine-translated",
+      "sourcePreview": "Menu items can control windows:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0114-text-01": {
       "sourceHash": "abd1d78992b58233ee0439c1fc61a61a1a9ab00bac2a049d831e6ca274d3d4a3",
-      "targetHash": "8d80177c28c42a0387fef9f2b6b346d0fd7f9fc38f20fa2c457f41e1ff8da55d",
-      "status": "migration-review",
-      "sourcePreview": "**Get the active window:**"
+      "targetHash": "55ead4ad4b2d28f47393f3922b87a5c68de023e00c2d002c1e0b78197c571b52",
+      "machineHash": "55ead4ad4b2d28f47393f3922b87a5c68de023e00c2d002c1e0b78197c571b52",
+      "machineText": "**Obtenha a janela ativa:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Get the active window:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0115-heading-01": {
       "sourceHash": "ddf217edeb60e3a2f7f123b88ba76aaac77c2e8de858169e23581d735f1dac52",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Platform-Specific Considerations"
+      "targetHash": "b5fa1905e6109233a9f2b4e181bedf0ee97772360c4416360f0a78fc7220a0d6",
+      "machineHash": "b5fa1905e6109233a9f2b4e181bedf0ee97772360c4416360f0a78fc7220a0d6",
+      "machineText": "Considerações específicas de cada plataforma",
+      "status": "machine-translated",
+      "sourcePreview": "Platform-Specific Considerations",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0116-heading-01": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0117-text-01": {
       "sourceHash": "066cfec8e4bd766d1446595516d4a23221b53bbfb2cc50dde1e5aaab2b3813e8",
-      "targetHash": "29f6495195dd73482d2b9fe8e1969627cbdbebba1f16fa9040871808c71015db",
-      "status": "migration-review",
-      "sourcePreview": "**Menu bar behaviour:**"
+      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineText": "**Comportamento da barra de menus:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Menu bar behaviour:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0118-text-01": {
       "sourceHash": "a07a0eff599d15ffc5a7e5dd034e642402307a61c6c5c84cc0ff74c816b1456c",
-      "targetHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
-      "status": "migration-review",
-      "sourcePreview": "Appears at **top of screen** (global)"
+      "targetHash": "8d80177c28c42a0387fef9f2b6b346d0fd7f9fc38f20fa2c457f41e1ff8da55d",
+      "machineHash": "8d80177c28c42a0387fef9f2b6b346d0fd7f9fc38f20fa2c457f41e1ff8da55d",
+      "machineText": "Aparece na **parte superior da tela** (global)",
+      "status": "machine-translated",
+      "sourcePreview": "Appears at **top of screen** (global)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0119-text-01": {
       "sourceHash": "f8d0ca43ad79a292b89c3bac073dbb7931b2e445fb23c9ea8e5de5541a8792f3",
-      "targetHash": "1ad2b85859881a45d1250a64456e3515486f2754b660769a47c47373b4d1db41",
-      "status": "migration-review",
-      "sourcePreview": "Persists when all windows closed"
+      "targetHash": "cf74171d930a30d2da4d1dbd08ac8cbec8cd43cb4902fb0ccf11c99e019433e4",
+      "machineHash": "cf74171d930a30d2da4d1dbd08ac8cbec8cd43cb4902fb0ccf11c99e019433e4",
+      "machineText": "Permanece disponível quando todas as janelas estão fechadas",
+      "status": "machine-translated",
+      "sourcePreview": "Persists when all windows closed",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0120-text-01": {
       "sourceHash": "ea41b809bc1c4b4d2da87a0b904a3279a50a2c3551a12896629a90916385073a",
-      "targetHash": "b79ceca9d5b41d73c5cd5419e7f3978fe0b17c374f3ddd14edb82c516ad0308e",
-      "status": "migration-review",
-      "sourcePreview": "First menu is **always the application menu**"
+      "targetHash": "ca1765a3c63975bbd8421765d2ce9af8eb096125abca1e5a8e92c391cf059a8f",
+      "machineHash": "ca1765a3c63975bbd8421765d2ce9af8eb096125abca1e5a8e92c391cf059a8f",
+      "machineText": "O primeiro menu é **sempre o menu do aplicativo**",
+      "status": "machine-translated",
+      "sourcePreview": "First menu is **always the application menu**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0121-text-01": {
       "sourceHash": "208149b738982b4bf46e09bccdb487722187e9084e8ede4d1f3abd6b32a9485d",
-      "targetHash": "67a81ef77d85157fd8aa3e713896d29f1231bd2a5d0582f22c34478ce881035d",
-      "status": "migration-review",
-      "sourcePreview": "Use `menu.AddRole(application.AppMenu)` for standard items"
+      "targetHash": "29f6495195dd73482d2b9fe8e1969627cbdbebba1f16fa9040871808c71015db",
+      "machineHash": "29f6495195dd73482d2b9fe8e1969627cbdbebba1f16fa9040871808c71015db",
+      "machineText": "Use `menu.AddRole(application.AppMenu)` para itens padrão",
+      "status": "machine-translated",
+      "sourcePreview": "Use `menu.AddRole(application.AppMenu)` for standard items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0122-text-01": {
       "sourceHash": "446fdb2b919098be068db768eae8a9147a147154a99fef492e6d5357e6202956",
-      "targetHash": "7cc02aaa375eb666ace2a233995ecfc4c7af07fdd703de2953f09aa6579376bb",
-      "status": "migration-review",
-      "sourcePreview": "**Standard locations:**"
+      "targetHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
+      "machineHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
+      "machineText": "**Locais padrão:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Standard locations:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0123-text-01": {
       "sourceHash": "6f42a558189bbde8d8a34a505e49f1a5d9195f5e19bcd45fa2280d4d95719bd9",
-      "targetHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
-      "status": "migration-review",
-      "sourcePreview": "**About**: Application menu"
+      "targetHash": "1ad2b85859881a45d1250a64456e3515486f2754b660769a47c47373b4d1db41",
+      "machineHash": "1ad2b85859881a45d1250a64456e3515486f2754b660769a47c47373b4d1db41",
+      "machineText": "**Sobre**: menu do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "**About**: Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0124-text-01": {
       "sourceHash": "a82ff2a670012bed9f299528fbf8bb03782a1201fe5259a642d37fc78a1ad67f",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Preferences**: Application menu (⌘,)"
+      "targetHash": "b79ceca9d5b41d73c5cd5419e7f3978fe0b17c374f3ddd14edb82c516ad0308e",
+      "machineHash": "b79ceca9d5b41d73c5cd5419e7f3978fe0b17c374f3ddd14edb82c516ad0308e",
+      "machineText": "**Preferências**: menu do aplicativo (⌘,)",
+      "status": "machine-translated",
+      "sourcePreview": "**Preferences**: Application menu (⌘,)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0125-text-01": {
       "sourceHash": "ca0707f5cdb5e3edd166fe7b9f5986489afa53ffad3ccdd55ce872cf2946dee7",
-      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
-      "status": "migration-review",
-      "sourcePreview": "**Quit**: Application menu (⌘Q)"
+      "targetHash": "28b7cecbd23e7686d3fe790bbc753e842953105133c882917b71228a52c4fcad",
+      "machineHash": "28b7cecbd23e7686d3fe790bbc753e842953105133c882917b71228a52c4fcad",
+      "machineText": "**Sair**: menu do aplicativo (⌘Q)",
+      "status": "machine-translated",
+      "sourcePreview": "**Quit**: Application menu (⌘Q)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0126-text-01": {
       "sourceHash": "0ece964e98cfc993df8db0eb9b1b06a59ce9b29b01ad8414e6807fcac57d445e",
-      "targetHash": "a70e82308e79cde0cecc77b4c999d9a51a9e8727a80cc0e73018f81fd4191a05",
-      "status": "migration-review",
-      "sourcePreview": "**Help**: Help menu"
+      "targetHash": "7cc02aaa375eb666ace2a233995ecfc4c7af07fdd703de2953f09aa6579376bb",
+      "machineHash": "7cc02aaa375eb666ace2a233995ecfc4c7af07fdd703de2953f09aa6579376bb",
+      "machineText": "**Ajuda**: menu Ajuda",
+      "status": "machine-translated",
+      "sourcePreview": "**Help**: Help menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0127-text-01": {
       "sourceHash": "7cfe1b9c27bbfaa85c8030da8c6308bf8a1b92c6b8592754a77844c446e9722d",
-      "targetHash": "74404c71fdf653c40a923aa895eca7388286be6a244f0cac6a3f173ad66c555f",
-      "status": "migration-review",
-      "sourcePreview": "**Example:**"
+      "targetHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
+      "machineHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
+      "machineText": "**Exemplo:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0128-heading-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0129-text-01": {
       "sourceHash": "066cfec8e4bd766d1446595516d4a23221b53bbfb2cc50dde1e5aaab2b3813e8",
-      "targetHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
-      "status": "migration-review",
-      "sourcePreview": "**Menu bar behaviour:**"
+      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineText": "**Comportamento da barra de menus:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Menu bar behaviour:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0130-text-01": {
       "sourceHash": "dbcce30823717e00dcf9110d5c90f9a06693dd7311a8d7b63ecdb00c38e33332",
-      "targetHash": "0f44b03e5020a0b2596135a072e90eecbd02c2284c4cfc78c4dd2aad26d4caeb",
-      "status": "migration-review",
-      "sourcePreview": "Appears in **window title bar**"
+      "targetHash": "a70e82308e79cde0cecc77b4c999d9a51a9e8727a80cc0e73018f81fd4191a05",
+      "machineHash": "a70e82308e79cde0cecc77b4c999d9a51a9e8727a80cc0e73018f81fd4191a05",
+      "machineText": "Aparece na **barra de título da janela**",
+      "status": "machine-translated",
+      "sourcePreview": "Appears in **window title bar**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0131-text-01": {
       "sourceHash": "ca4020212abe8a5059e691478ad5768f3c3f5e7794486c97edd20abeac0c17b4",
-      "targetHash": "a4834b686cc8893b0b6273b307b91fac67266da42fac7acc77ebfefab28cd3ba",
-      "status": "migration-review",
-      "sourcePreview": "Each window has its own menu"
+      "targetHash": "74404c71fdf653c40a923aa895eca7388286be6a244f0cac6a3f173ad66c555f",
+      "machineHash": "74404c71fdf653c40a923aa895eca7388286be6a244f0cac6a3f173ad66c555f",
+      "machineText": "Cada janela tem seu próprio menu",
+      "status": "machine-translated",
+      "sourcePreview": "Each window has its own menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0132-text-01": {
       "sourceHash": "ee5ab0468d0399c48427089e19fd405f9e662255113700dfb01fe70401d39024",
-      "targetHash": "67405719c2e0b2da3361175478105ca64cb3c0bd9e19cc32688e56a00b04f091",
-      "status": "migration-review",
-      "sourcePreview": "No application menu"
+      "targetHash": "474e509989859713acb98852f4c5968255c613f4ad94466d9ea103d8c14315d0",
+      "machineHash": "474e509989859713acb98852f4c5968255c613f4ad94466d9ea103d8c14315d0",
+      "machineText": "Não há menu do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "No application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0133-text-01": {
       "sourceHash": "446fdb2b919098be068db768eae8a9147a147154a99fef492e6d5357e6202956",
-      "targetHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
-      "status": "migration-review",
-      "sourcePreview": "**Standard locations:**"
+      "targetHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
+      "machineHash": "7bb49938c6a27cfdcce616f4ed3fe0ec6997bbfb5c34586d1b54f049e497193c",
+      "machineText": "**Locais padrão:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Standard locations:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0134-text-01": {
       "sourceHash": "9c6f1df611fc73c557876570616f52740c7312a3b6c1e580f3e66abea2087ef4",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Exit**: File menu (Alt+F4)"
+      "targetHash": "0f44b03e5020a0b2596135a072e90eecbd02c2284c4cfc78c4dd2aad26d4caeb",
+      "machineHash": "0f44b03e5020a0b2596135a072e90eecbd02c2284c4cfc78c4dd2aad26d4caeb",
+      "machineText": "**Sair**: menu Arquivo (Alt+F4)",
+      "status": "machine-translated",
+      "sourcePreview": "**Exit**: File menu (Alt+F4)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0135-text-01": {
       "sourceHash": "c34e0458017903cd95f8ff90b0d5c0c5f85213fe7ee57259fe860a35571e4156",
-      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
-      "status": "migration-review",
-      "sourcePreview": "**Settings**: Tools or Edit menu"
+      "targetHash": "a4834b686cc8893b0b6273b307b91fac67266da42fac7acc77ebfefab28cd3ba",
+      "machineHash": "a4834b686cc8893b0b6273b307b91fac67266da42fac7acc77ebfefab28cd3ba",
+      "machineText": "**Configurações**: menu Ferramentas ou Editar",
+      "status": "machine-translated",
+      "sourcePreview": "**Settings**: Tools or Edit menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0136-text-01": {
       "sourceHash": "c233a3474d23f6a2da9187318b04fc89d5532a8d1322c1b6158a33f8239d9659",
-      "targetHash": "1588b6c277675f57ea98d3b15539b402920a7950a57001c2762969e5453f59de",
-      "status": "migration-review",
-      "sourcePreview": "**About**: Help menu"
+      "targetHash": "67405719c2e0b2da3361175478105ca64cb3c0bd9e19cc32688e56a00b04f091",
+      "machineHash": "67405719c2e0b2da3361175478105ca64cb3c0bd9e19cc32688e56a00b04f091",
+      "machineText": "**Sobre**: menu Ajuda",
+      "status": "machine-translated",
+      "sourcePreview": "**About**: Help menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0137-text-01": {
       "sourceHash": "7cfe1b9c27bbfaa85c8030da8c6308bf8a1b92c6b8592754a77844c446e9722d",
-      "targetHash": "1940aa563b5f74c548e059e257d63572c4975a8a088cd82810c61b26f5161d87",
-      "status": "migration-review",
-      "sourcePreview": "**Example:**"
+      "targetHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
+      "machineHash": "6944e8f168c7e5c8c40b33d548bf413a91608df5db4c2a196b3f3065560607c7",
+      "machineText": "**Exemplo:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0138-heading-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0139-text-01": {
       "sourceHash": "066cfec8e4bd766d1446595516d4a23221b53bbfb2cc50dde1e5aaab2b3813e8",
-      "targetHash": "9fdd721b5c93d61e1a1a9f701f6c7c423734e35cf8ed3828e63fffeae8ccd22a",
-      "status": "migration-review",
-      "sourcePreview": "**Menu bar behaviour:**"
+      "targetHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineHash": "953ee320b4c77d571f9736b09fccc9635099449be3f73edc9211b0f809b69ea4",
+      "machineText": "**Comportamento da barra de menus:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Menu bar behaviour:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0140-text-01": {
       "sourceHash": "0332aad6fdce2deb2190c9237ea6d293779dcb41d2a5f9343591fbac44d04239",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Usually per-window (like Windows)"
+      "targetHash": "1588b6c277675f57ea98d3b15539b402920a7950a57001c2762969e5453f59de",
+      "machineHash": "1588b6c277675f57ea98d3b15539b402920a7950a57001c2762969e5453f59de",
+      "machineText": "Geralmente é específica de cada janela (como no Windows)",
+      "status": "machine-translated",
+      "sourcePreview": "Usually per-window (like Windows)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0141-text-01": {
       "sourceHash": "ee9a2e5eaeee5b0b0c6b6115544ccf02fca9f8d64841996a025a95b441686d56",
-      "targetHash": "9bae0c4cba1b2658f66949af6a8b105ace2e1b57642ea5c4f528c5ba6f731b7e",
-      "status": "migration-review",
-      "sourcePreview": "Some DEs support global menus (Unity, GNOME with extension)"
+      "targetHash": "8c2b8d65008aa37d42794ff471e7cb681068480e6a086e60d93985e81731d134",
+      "machineHash": "8c2b8d65008aa37d42794ff471e7cb681068480e6a086e60d93985e81731d134",
+      "machineText": "Alguns ambientes de desktop oferecem suporte a menus globais (Unity e GNOME com extensão)",
+      "status": "machine-translated",
+      "sourcePreview": "Some DEs support global menus (Unity, GNOME with extension)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0142-text-01": {
       "sourceHash": "0681a3838438495c77dbcddc14881647cd8d3da12ef51109d92609b96abc1028",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Appearance varies by desktop environment"
+      "targetHash": "bfc031f4f6c149e89668a753990d79f07651c6d8bf1ba4e1b759ded8a96cdff9",
+      "machineHash": "bfc031f4f6c149e89668a753990d79f07651c6d8bf1ba4e1b759ded8a96cdff9",
+      "machineText": "A aparência varia conforme o ambiente de desktop",
+      "status": "machine-translated",
+      "sourcePreview": "Appearance varies by desktop environment",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0143-text-01": {
       "sourceHash": "1a73b8b3fab0e89fa8914b6dfaa61fa7322ad48fd4d8f8e2abcc7f5a7fa588fb",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Best practice:** Follow Windows conventions, test on target DEs."
+      "targetHash": "9fdd721b5c93d61e1a1a9f701f6c7c423734e35cf8ed3828e63fffeae8ccd22a",
+      "machineHash": "9fdd721b5c93d61e1a1a9f701f6c7c423734e35cf8ed3828e63fffeae8ccd22a",
+      "machineText": "**Prática recomendada:** siga as convenções do Windows e teste nos ambientes de desktop de destino.",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practice:** Follow Windows conventions, test on target DEs.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0144-heading-01": {
       "sourceHash": "47af896d4e19a08a401faf9fc9a0bfb4ff96bcadf10aed4ad8afc636fe3f3630",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Complete Example"
+      "targetHash": "0e2a2e680fd59ee9bf30ad0aff46f1c78e718b61b343848277932692c9b82a85",
+      "machineHash": "0e2a2e680fd59ee9bf30ad0aff46f1c78e718b61b343848277932692c9b82a85",
+      "machineText": "Exemplo completo",
+      "status": "machine-translated",
+      "sourcePreview": "Complete Example",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0145-text-01": {
       "sourceHash": "96b90e75d297923d22e55152e47b338455f9a9979050d32d0640a50e28de3d4e",
-      "targetHash": "ff63c631e7411f488153572e550937b007bd97a119d0b98225de553502d15d04",
-      "status": "migration-review",
-      "sourcePreview": "Here's a production-ready menu structure:"
+      "targetHash": "9bae0c4cba1b2658f66949af6a8b105ace2e1b57642ea5c4f528c5ba6f731b7e",
+      "machineHash": "9bae0c4cba1b2658f66949af6a8b105ace2e1b57642ea5c4f528c5ba6f731b7e",
+      "machineText": "Esta é uma estrutura de menu pronta para produção:",
+      "status": "machine-translated",
+      "sourcePreview": "Here's a production-ready menu structure:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0146-heading-01": {
       "sourceHash": "46d9a34a79d27b3869085ea8961f543cc9425756c6ddf26628d6f5fa7df73b36",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Best Practices"
+      "targetHash": "8a8c0316cc9986a0d31533d0887d31a5c25b9abb81be92472d77a426a4303b67",
+      "machineHash": "8a8c0316cc9986a0d31533d0887d31a5c25b9abb81be92472d77a426a4303b67",
+      "machineText": "Práticas recomendadas",
+      "status": "machine-translated",
+      "sourcePreview": "Best Practices",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0147-heading-01": {
       "sourceHash": "ed57031b2772f36496ecd8b4ff4a1c11cc746cf70ef065c702b13b6d1e1f4ddc",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "✅ Do"
+      "targetHash": "11b36d22820000da5ee818e8c2abbe569590f0a3746d80056048bf90db60ebe1",
+      "machineHash": "11b36d22820000da5ee818e8c2abbe569590f0a3746d80056048bf90db60ebe1",
+      "machineText": "✅ Faça",
+      "status": "machine-translated",
+      "sourcePreview": "✅ Do",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0148-text-01": {
       "sourceHash": "d2ab63b3e22ec611d0292cc4c6e015d1d719c12337ed8d3d8b72e32b4413ddc8",
-      "targetHash": "3396bcf72901e57d8f2cc37f8ca785c73683be6b80a9568eedf6edc72a8e3cf1",
-      "status": "migration-review",
-      "sourcePreview": "**Use menu roles** for standard menus (File, Edit, etc.)"
+      "targetHash": "030cf761fd14ba144f8f493ea1c6bd95f977efbdd0b86945286fa63e6b7131bf",
+      "machineHash": "030cf761fd14ba144f8f493ea1c6bd95f977efbdd0b86945286fa63e6b7131bf",
+      "machineText": "**Use funções de menu** para menus padrão (Arquivo, Editar etc.)",
+      "status": "machine-translated",
+      "sourcePreview": "**Use menu roles** for standard menus (File, Edit, etc.)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0149-text-01": {
       "sourceHash": "d9e1812290c535f1d142f03c2fbaa4f614f49f8ae879ba35e05532aad62ac519",
-      "targetHash": "993f06ce93e7123c2bb49b8e28b3b007665298cc8aa14e47e7cb7848b1dc3d81",
-      "status": "migration-review",
-      "sourcePreview": "**Follow platform conventions** for menu structure"
+      "targetHash": "33338efa9c13028b203385d04c2e824328b58bcb4edbeff21b2ed6a28352dc39",
+      "machineHash": "33338efa9c13028b203385d04c2e824328b58bcb4edbeff21b2ed6a28352dc39",
+      "machineText": "**Siga as convenções da plataforma** para estruturar os menus",
+      "status": "machine-translated",
+      "sourcePreview": "**Follow platform conventions** for menu structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0150-text-01": {
       "sourceHash": "96a1682fb4868e1b9e38e992db338b1e5210c4c8fd3634f7be81955b9bf5a7f4",
-      "targetHash": "8bd8c3b19999a178067c16121db4d52fb5ab3c74fb3eb8f14a1332fb0f30839b",
-      "status": "migration-review",
-      "sourcePreview": "**Add keyboard shortcuts** to common actions"
+      "targetHash": "d3982aad477cc004aae7249b3f02048cbd3105a97cbe765243e708aca85cff03",
+      "machineHash": "d3982aad477cc004aae7249b3f02048cbd3105a97cbe765243e708aca85cff03",
+      "machineText": "**Adicione atalhos de teclado** às ações comuns",
+      "status": "machine-translated",
+      "sourcePreview": "**Add keyboard shortcuts** to common actions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0151-text-01": {
       "sourceHash": "7ada8a59f3bb79510c9a3e181292aeb468858ffea09f054cebfcebdfa9d01280",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Call menu.Update()** after changing menu state"
+      "targetHash": "c656a024b20065902618a8e41fa59f37d5586c032cd8acdfafbd5fa10056c58f",
+      "machineHash": "c656a024b20065902618a8e41fa59f37d5586c032cd8acdfafbd5fa10056c58f",
+      "machineText": "**Chame menu.Update()** depois de alterar o estado do menu",
+      "status": "machine-translated",
+      "sourcePreview": "**Call menu.Update()** after changing menu state",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0152-text-01": {
       "sourceHash": "ec45b271e055fe192b4efed9573a277468563fc9643aec0c58384b892f4b00b9",
-      "targetHash": "3854015adfc23c1b6992d721abf11468ab5e20f35c20a95066837adbf31ff19b",
-      "status": "migration-review",
-      "sourcePreview": "**Test on all platforms** - behaviour varies"
+      "targetHash": "3396bcf72901e57d8f2cc37f8ca785c73683be6b80a9568eedf6edc72a8e3cf1",
+      "machineHash": "3396bcf72901e57d8f2cc37f8ca785c73683be6b80a9568eedf6edc72a8e3cf1",
+      "machineText": "**Teste em todas as plataformas** — o comportamento varia",
+      "status": "machine-translated",
+      "sourcePreview": "**Test on all platforms** - behaviour varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0153-text-01": {
       "sourceHash": "19dab54590f9164853b4817c1d67df9cde1a87857a2292933ab0d41c4f028b4a",
-      "targetHash": "cb21ecdadfd95e50711ca1ff652f9b71e0162ffb5135920ea3aa5b9da3274379",
-      "status": "migration-review",
-      "sourcePreview": "**Keep menus shallow** - 2-3 levels maximum"
+      "targetHash": "993f06ce93e7123c2bb49b8e28b3b007665298cc8aa14e47e7cb7848b1dc3d81",
+      "machineHash": "993f06ce93e7123c2bb49b8e28b3b007665298cc8aa14e47e7cb7848b1dc3d81",
+      "machineText": "**Mantenha os menus pouco profundos** — no máximo 2-3 níveis",
+      "status": "machine-translated",
+      "sourcePreview": "**Keep menus shallow** - 2-3 levels maximum",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0154-text-01": {
       "sourceHash": "fcd4ddd23247392efec61f39e24c9f5556471105d617eec322c89644a6ae2cd9",
-      "targetHash": "4a575c48b7eb4d46c6b45a349cd107d607efb83636d305076c2f2d6d340d7e35",
-      "status": "migration-review",
-      "sourcePreview": "**Use clear labels** - \"Save Project\" not \"Save\""
+      "targetHash": "8bd8c3b19999a178067c16121db4d52fb5ab3c74fb3eb8f14a1332fb0f30839b",
+      "machineHash": "8bd8c3b19999a178067c16121db4d52fb5ab3c74fb3eb8f14a1332fb0f30839b",
+      "machineText": "**Use rótulos claros** — \"Salvar projeto\", não \"Salvar\"",
+      "status": "machine-translated",
+      "sourcePreview": "**Use clear labels** - \"Save Project\" not \"Save\"",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0155-heading-01": {
       "sourceHash": "df89c260f72fd6330be731a6de76bab196eead3f17430716717b08b94f12b175",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "❌ Don't"
+      "targetHash": "672f5e881bb98f65de65b38b3d7851c92a8a3e911d9ae42602e8820dfdd0d8ea",
+      "machineHash": "672f5e881bb98f65de65b38b3d7851c92a8a3e911d9ae42602e8820dfdd0d8ea",
+      "machineText": "❌ Não faça",
+      "status": "machine-translated",
+      "sourcePreview": "❌ Don't",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0156-text-01": {
       "sourceHash": "1d7e9e7cd147b6e8b7f19ec09a8a08ef265511db31e9f22386df4d51ccb487a2",
-      "targetHash": "ffd528095d11892065cd9fdd140d6e4093130b3b2eef21eaee0be49720399af0",
-      "status": "migration-review",
-      "sourcePreview": "**Don't hardcode platform shortcuts** - Use `CmdOrCtrl`"
+      "targetHash": "03f200b56bff2db9040af4d8c1f24dfa679f7d732632f2c9e4a67ab774440d85",
+      "machineHash": "03f200b56bff2db9040af4d8c1f24dfa679f7d732632f2c9e4a67ab774440d85",
+      "machineText": "**Não codifique atalhos específicos da plataforma diretamente** — use `CmdOrCtrl`",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't hardcode platform shortcuts** - Use `CmdOrCtrl`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0157-text-01": {
       "sourceHash": "8a4f3d3c52d91a7aa7848cbb414ca80a741dc7e9df2dbbbcda6ea082dba65e8e",
-      "targetHash": "275b1590503740e47e580d963cc281ebcae55cc7ed283ec2e810c01b6355698a",
-      "status": "migration-review",
-      "sourcePreview": "**Don't put Quit in File menu on macOS** - It's in Application menu"
+      "targetHash": "cb21ecdadfd95e50711ca1ff652f9b71e0162ffb5135920ea3aa5b9da3274379",
+      "machineHash": "cb21ecdadfd95e50711ca1ff652f9b71e0162ffb5135920ea3aa5b9da3274379",
+      "machineText": "**Não coloque Sair no menu Arquivo no macOS** — essa opção fica no menu do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't put Quit in File menu on macOS** - It's in Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0158-text-01": {
       "sourceHash": "b399126f46ebc4cc47252e6de647eb84e20db743adf002a600d67625a42eaf09",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Don't put About in Help menu on macOS** - It's in Application menu"
+      "targetHash": "4a575c48b7eb4d46c6b45a349cd107d607efb83636d305076c2f2d6d340d7e35",
+      "machineHash": "4a575c48b7eb4d46c6b45a349cd107d607efb83636d305076c2f2d6d340d7e35",
+      "machineText": "**Não coloque Sobre no menu Ajuda no macOS** — essa opção fica no menu do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't put About in Help menu on macOS** - It's in Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0159-text-01": {
       "sourceHash": "d46c6fe2fca3f80203e55f8af3feeb2eba1bc8ecfce57ca57a492c903cc0efc5",
-      "targetHash": "81da99cf7bc47fec54aa0b62f0bd5f3ed201f71929fca77a54d0e81fedaa7c2e",
-      "status": "migration-review",
-      "sourcePreview": "**Don't forget menu.Update()** - Menus won't work properly"
+      "targetHash": "2d7b5daf4b84b644577f0f4cfd8474d18798ecf074f404774d2e751b6132e918",
+      "machineHash": "2d7b5daf4b84b644577f0f4cfd8474d18798ecf074f404774d2e751b6132e918",
+      "machineText": "**Não se esqueça de menu.Update()** — os menus não funcionarão corretamente",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't forget menu.Update()** - Menus won't work properly",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0160-text-01": {
       "sourceHash": "fd1679441675a0fa451f015113392ef43b493b094479267c62b95afaaa16751a",
-      "targetHash": "d18c5de4fb3ed6f87dc63e0f3dec25776c8deb287bbb4adc2220f2481cfeadbb",
-      "status": "migration-review",
-      "sourcePreview": "**Don't nest too deeply** - Users get lost"
+      "targetHash": "2a3cfcbb80f10054bdf11fb6ba5064b46f74210a1ac3b8222bb0dbea5929ed99",
+      "machineHash": "2a3cfcbb80f10054bdf11fb6ba5064b46f74210a1ac3b8222bb0dbea5929ed99",
+      "machineText": "**Não crie muitos níveis aninhados** — os usuários se perdem",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't nest too deeply** - Users get lost",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0161-text-01": {
       "sourceHash": "31553208aa5b0f669d79de1f1d682ef7230fac6ef4862886ddaa49fb6980f266",
-      "targetHash": "8dbaa42e0ebfb2a3bb257c4ec04721b45f55a2ba90d4113950fc1ee56b5d49cf",
-      "status": "migration-review",
-      "sourcePreview": "**Don't use jargon** - Keep labels user-friendly"
+      "targetHash": "215c9715d055a4beda3eb962bf6c88fda92bcf62093558b8074b531a72f505ce",
+      "machineHash": "215c9715d055a4beda3eb962bf6c88fda92bcf62093558b8074b531a72f505ce",
+      "machineText": "**Não use jargão** — mantenha os rótulos fáceis de entender",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't use jargon** - Keep labels user-friendly",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0162-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "Next Steps"
+      "targetHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
+      "machineHash": "24ad3ef2dd13e99d165039db80df8dd01d3761332758fdb4755075de2b30c313",
+      "machineText": "Próximas etapas",
+      "status": "machine-translated",
+      "sourcePreview": "Next Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0163-text-01": {
       "sourceHash": "6fe6e3919d3a73ef03a9f6b4edc69c8d42744c1c208c13f2807ecbad115b89c4",
-      "targetHash": "28b473fa8c2126296b40c6194a95e588ae36e4885fe3e52080e616fd9be7cef5",
-      "status": "migration-review",
-      "sourcePreview": "📖 Menu Reference Complete reference for menu item types and properties."
+      "targetHash": "81da99cf7bc47fec54aa0b62f0bd5f3ed201f71929fca77a54d0e81fedaa7c2e",
+      "machineHash": "81da99cf7bc47fec54aa0b62f0bd5f3ed201f71929fca77a54d0e81fedaa7c2e",
+      "machineText": "📖 Referência de menus\nReferência completa dos tipos e das propriedades dos itens de menu.",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Menu Reference Complete reference for menu item types and properties.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0164-text-01": {
       "sourceHash": "bd1fac5413f458b9e01dc873ff743a52ffc3bf68e0b22a831a5f4258478ec641",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "◆ Context Menus Create right-click context menus."
+      "targetHash": "39f2561bdaa7a2064ec6fdfb5edeb6317dd015bcf9d5e88492e7dbe40cc78a3e",
+      "machineHash": "39f2561bdaa7a2064ec6fdfb5edeb6317dd015bcf9d5e88492e7dbe40cc78a3e",
+      "machineText": "◆ Menus de contexto\nCrie menus de contexto acionados com o botão direito.",
+      "status": "machine-translated",
+      "sourcePreview": "◆ Context Menus Create right-click context menus.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0165-text-01": {
       "sourceHash": "ffa20575f8dfe2b3dae80c8ea02cace516d07613e7ef42e44cbc2c3e0038423e",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "★ System Tray Menus Add system tray/menu bar integration."
+      "targetHash": "133dbce08defd026a0f73c3078e9322d17c343c4e66919ed1fa2472d1091f875",
+      "machineHash": "133dbce08defd026a0f73c3078e9322d17c343c4e66919ed1fa2472d1091f875",
+      "machineText": "★ Menus da bandeja do sistema\nAdicione integração com a bandeja do sistema/barra de menus.",
+      "status": "machine-translated",
+      "sourcePreview": "★ System Tray Menus Add system tray/menu bar integration.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0166-text-01": {
       "sourceHash": "f876ec04644d377172bb5bc90c680694054567743ab6216b6e52a1959f2fbc43",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "📖 Menu Patterns Common menu patterns and best practices."
+      "targetHash": "642301033c8ac4e62dc34ae6e9acf673fbbddb141a784a0a26b6924e5ddd5624",
+      "machineHash": "642301033c8ac4e62dc34ae6e9acf673fbbddb141a784a0a26b6924e5ddd5624",
+      "machineText": "📖 Padrões de menus\nPadrões comuns de menus e práticas recomendadas.",
+      "status": "machine-translated",
+      "sourcePreview": "📖 Menu Patterns Common menu patterns and best practices.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "b0167-text-01": {
       "sourceHash": "e76ccc2a343d5db158bd406a594b70e54bed63e04693057fe4001f19b1e65b6c",
-      "targetHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://g…"
+      "targetHash": "955794c44307d259f8270c08555c55e8d6b26ed35bde97733b18f31a54b285d2",
+      "machineHash": "955794c44307d259f8270c08555c55e8d6b26ed35bde97733b18f31a54b285d2",
+      "machineText": "**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de menu](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu).",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://g…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "c0005-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
+      "machineText": "Saiba mais →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "c0005-line-002-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
+      "machineText": "Saiba mais →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "c0005-line-003-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
+      "machineText": "Saiba mais →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "c0005-line-004-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",
       "targetHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
-      "status": "migration-review",
-      "sourcePreview": "Learn More →"
+      "machineHash": "6c0c751cb728cec6dfe18efb6c0403541c02dc2684bea6bfa94e88b9631cbb98",
+      "machineText": "Saiba mais →",
+      "status": "machine-translated",
+      "sourcePreview": "Learn More →",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "fm-description": {
       "sourceHash": "8a206027f2bbf7d04d9f74991ba7dfef20b5fc432d6cdb3dfc5048e6a9df24e8",
-      "targetHash": "a8e0682e784daec7ffa2963c5bafb12e0a913403a3a70859b23d14edba07baaf",
-      "status": "migration-review",
-      "sourcePreview": "Create native menu bars for your desktop application"
+      "targetHash": "38539935098eb5699c2127a005db716206b88d5cf4e58a3843cf484b6f1d4542",
+      "machineHash": "38539935098eb5699c2127a005db716206b88d5cf4e58a3843cf484b6f1d4542",
+      "machineText": "Crie barras de menu nativas para seu aplicativo desktop",
+      "status": "machine-translated",
+      "sourcePreview": "Create native menu bars for your desktop application",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "fm-title": {
       "sourceHash": "38dd078b7e1f8ce31a81fb2a1006d698c3fe49be8cbdf9c445d9d5522e5e376a",
       "targetHash": "b582c19dc86f4ff6445f7aebb60ebeb4548f1db91b09727878c3850bfede2aac",
-      "status": "migration-review",
-      "sourcePreview": "Application Menus"
+      "machineHash": "b582c19dc86f4ff6445f7aebb60ebeb4548f1db91b09727878c3850bfede2aac",
+      "machineText": "Menus do aplicativo",
+      "status": "machine-translated",
+      "sourcePreview": "Application Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0001-label-001": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0001-label-002": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0001-label-003": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0003-label-005": {
       "sourceHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
       "targetHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
-      "status": "migration-review",
-      "sourcePreview": "macOS"
+      "machineHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7",
+      "machineText": "macOS",
+      "status": "machine-translated",
+      "sourcePreview": "macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0003-label-006": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
       "targetHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
-      "status": "migration-review",
-      "sourcePreview": "Windows"
+      "machineHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
+      "machineText": "Windows",
+      "status": "machine-translated",
+      "sourcePreview": "Windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     },
     "tab0003-label-007": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
       "targetHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
-      "status": "migration-review",
-      "sourcePreview": "Linux"
+      "machineHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
+      "machineText": "Linux",
+      "status": "machine-translated",
+      "sourcePreview": "Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:16:26Z"
     }
   },
   "migration": {

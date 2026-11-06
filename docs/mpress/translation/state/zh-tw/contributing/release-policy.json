@@ -115,16 +115,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0010-cell-01": {
-      "sourceHash": "ee453293ba2b0158fe84d7cea2d0da443a72bf89371269f81d65d8431e1e3aa0",
-      "targetHash": "940717ab17c91d8ed0dc5fd12d83f0855fdf3c125b33642d163ccf846eee0e6a",
-      "machineHash": "940717ab17c91d8ed0dc5fd12d83f0855fdf3c125b33642d163ccf846eee0e6a",
-      "machineText": "每日自動執行，僅在`UNRELEASED_CHANGELOG.md`有內容時發布",
-      "status": "reviewed",
-      "sourcePreview": "automated, daily, only when `UNRELEASED_CHANGELOG.md` has content",
+      "sourceHash": "7e167ef239e8e3743ebd7e49c732171e2e5d5ccdd5f29b0faf380de15ef8d86e",
+      "targetHash": "a6c66c7c897807bd29e9b23d88c2b3eb8065b318fbc054caeda6d6f91b194156",
+      "machineHash": "a6c66c7c897807bd29e9b23d88c2b3eb8065b318fbc054caeda6d6f91b194156",
+      "machineText": "自動執行、每日執行，且僅在測試的發布範圍內已合併的 PR 產生使用者可見的版本說明時執行",
+      "status": "machine-translated",
+      "sourcePreview": "automated, daily, only when merged PRs in the tested release range produce user-visible notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0011-cell-01": {
       "sourceHash": "3ebf4c66f5f26704350b6ea1f1510b59d3f48f2f4323af34a77ff9c7f53c0176",
@@ -932,16 +932,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0086-text-01": {
-      "sourceHash": "e838c68cc47aed2cda32c3e583cef2b42153a393acee17582af7a064526922d3",
-      "targetHash": "f1d1ad904b0068a30d975c30ee9444366b5ff5fbae40dab4691fa2d6a29956d3",
-      "machineHash": "f1d1ad904b0068a30d975c30ee9444366b5ff5fbae40dab4691fa2d6a29956d3",
-      "machineText": "發布權限僅授予專案負責人（請參閱治理文件）。貢獻者絕不建立標籤或發布版本；他們只將項目新增至`v3/UNRELEASED_CHANGELOG.md`。",
-      "status": "reviewed",
+      "sourceHash": "f63de58a409ea5859195d79ddf41b6c86bb98b4d7d9c46effc39873d6987e12a",
+      "targetHash": "0ba4a154977ff6e0077a0e3113984efd4112d4781379b2bb4f99eb0b6c0f501b",
+      "machineHash": "0ba4a154977ff6e0077a0e3113984efd4112d4781379b2bb4f99eb0b6c0f501b",
+      "machineText": "發布權限僅限專案負責人（請參閱治理文件）。貢獻者絕不建立標籤或發布版本；他們應在 PR 標題或 `## Release notes` 說明區段中描述使用者可見的變更。發布自動化會根據精確涵蓋已測試提交的範圍，從已合併的 PR 產生版本說明；`v3/UNRELEASED_CHANGELOG.md` 已移除。",
+      "status": "machine-translated",
       "sourcePreview": "Release rights are limited to the project Lead (see the governance document). Contributors never tag…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0087-text-01": {
       "sourceHash": "387dc819de83611dded717da09e75e41de0e4e00cdc75d3bde2721a7f4c7237e",
@@ -1112,16 +1112,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0101-text-01": {
-      "sourceHash": "75197c10b52ce49da77047b51d02252b9af1df684f06c1876a3ce806a7065ff6",
-      "targetHash": "7e79a1470b3b3bb6c5872bf153ee440a85936250189bec176704dbd36cbc31d5",
-      "machineHash": "c07451976a232dfd1569bd361553ac2d5d80284f737ec48f2f6592052c62afc9",
-      "machineText": "嚴重性為重大或高的未結 Dependabot 警示、嚴重性為重大或高的未結程式碼掃描警示，以及任何未結的祕密掃描警示，且**僅限已發布的程式碼**。若警示只位於`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`或任何`examples/`目錄下，則會忽略該警示（`.github/scripts/check-release-blockers.sh`中的`SHIPPED_ALERT_IGNORE`，**由擁有者審查**）；",
-      "status": "reviewed",
-      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or hig",
+      "sourceHash": "62b47b4238afd8b1b2292b0de411636878afd323b81131dd746f989356984979",
+      "targetHash": "18fde20c04179273fde6f19ac1cf407460ed8171498ab090431b1c420e5794b9",
+      "machineHash": "18fde20c04179273fde6f19ac1cf407460ed8171498ab090431b1c420e5794b9",
+      "machineText": "嚴重性為重大或高的未解決 Dependabot 警示、嚴重性為重大或高的未解決程式碼掃描警示，以及任何未解決的密鑰掃描警示，**僅限已發布的程式碼**。僅位於 `v2/internal/staticanalysis/test/`（靜態分析測試資料）、`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/` 或任何 `examples/` 目錄下的警示會被忽略（`v3/tasks/releasegate/main.go` 中的 `SHIPPED_ALERT_IGNORE`，**由擁有者審查**）；",
+      "status": "machine-translated",
+      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0102-text-01": {
       "sourceHash": "1b385bd81a0263a3996e77d7af193864863b8545051d9ba54afb80eb1eeb1660",

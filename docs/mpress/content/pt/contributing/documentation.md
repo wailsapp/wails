@@ -24,7 +24,7 @@ O script de compilação do repositório baixa a **versão estável mais recente
 
 ### Baixe um executável
 
-Abra a página da [versão estável mais recente do M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) ou baixe abaixo o arquivo correspondente. ARM64 inclui Apple Silicon; AMD64 é a arquitetura comum de PCs Intel/AMD.
+Abra a [versão estável mais recente do M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) ou baixe abaixo o arquivo correspondente. ARM64 inclui Apple Silicon; AMD64 é a arquitetura habitual de PCs Intel/AMD.
 
 | Computador | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ Abra a página da [versão estável mais recente do M-Press](https://github.com/
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Baixe [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) da mesma versão. No diretório de downloads, calcule o hash SHA-256 do arquivo e compare-o com a linha referente a esse nome de arquivo em `checksums.txt`:
+Baixe o arquivo [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) da mesma versão. No diretório de downloads, calcule o hash SHA-256 do arquivo e compare-o com a linha correspondente a esse nome de arquivo em `checksums.txt`:
 
 @tabs
 [macOS]

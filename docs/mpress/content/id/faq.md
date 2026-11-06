@@ -230,7 +230,7 @@ Ya. CLI-nya merupakan biner terpisah (`wails` dan `wails3`), sedangkan modulnya 
 
 ### Bagaimana cara berkontribusi?
 
-Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan draf PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
+Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan PR draf [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
 
 ### Di mana saya dapat menemukan contoh?
 

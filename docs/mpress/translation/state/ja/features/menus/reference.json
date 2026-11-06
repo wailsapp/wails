@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "extractor": "markdown-blocks-v2",
-  "pageKey": "2b66c6af91d5654f07f1",
+  "pageKey": "57c10c524ebee40d4582",
   "sourceFile": "features/menus/reference.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
@@ -9,1010 +9,2018 @@
     "a0001-title-01": {
       "sourceHash": "2f13124e062eafa9ffffc0c601084cca3eb4bf7e1a2f8985da5b3cb3438f3924",
       "targetHash": "6fb44c3b6d7ca917b21f8206ed7e238cc463cdae44c441451eacb345ae5e3507",
-      "status": "migration-review",
-      "sourcePreview": "Windows Menu Behaviour"
+      "machineHash": "6fb44c3b6d7ca917b21f8206ed7e238cc463cdae44c441451eacb345ae5e3507",
+      "machineText": "Windowsでのメニューの動作",
+      "status": "machine-translated",
+      "sourcePreview": "Windows Menu Behaviour",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0001-heading-01": {
       "sourceHash": "3e9fd87a78f87240868d6a05b0e975c03588497632361ee133168e868a671761",
       "targetHash": "c79438a0f4dbd157f9637ef438e61c91d1f0bbfef28143078c435df21141b9d2",
-      "status": "migration-review",
-      "sourcePreview": "Menu Reference"
+      "machineHash": "c79438a0f4dbd157f9637ef438e61c91d1f0bbfef28143078c435df21141b9d2",
+      "machineText": "メニューリファレンス",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0002-text-01": {
       "sourceHash": "ec12e37172f2d826a494131be14df6dda3416d5b9c974b41dca204505d3334cb",
-      "targetHash": "fe7f100e90eb02616d141a0571518ff6294f4bb651d44b28ab9c41affe764bbf",
-      "status": "migration-review",
-      "sourcePreview": "Complete reference for menu item types, properties, and dynamic behaviour. Build professional, respo…"
+      "targetHash": "e2c53ccd31abc2a64a3be61a03ae53c8e32030da1238aaf1fb9fd7bdd5a9f424",
+      "machineHash": "e2c53ccd31abc2a64a3be61a03ae53c8e32030da1238aaf1fb9fd7bdd5a9f424",
+      "machineText": "メニュー項目の種類、プロパティ、動的な動作についての完全なリファレンスです。チェックボックス、ラジオグループ、セパレーター、動的更新を使用して、プロフェッショナルで応答性の高いメニューを構築します。",
+      "status": "machine-translated",
+      "sourcePreview": "Complete reference for menu item types, properties, and dynamic behaviour. Build professional, respo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0003-heading-01": {
       "sourceHash": "420a2b997f396acad57a619cdb1775c65eed77fa05be08da9151efd07d034d07",
       "targetHash": "b5d97d60008656e848b5ca1e9a00924aa91e3a628230e83edae9968b0c418973",
-      "status": "migration-review",
-      "sourcePreview": "Menu Item Types"
+      "machineHash": "b5d97d60008656e848b5ca1e9a00924aa91e3a628230e83edae9968b0c418973",
+      "machineText": "メニュー項目の種類",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Item Types",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0004-heading-01": {
       "sourceHash": "e03c2a20ac5498e0bda80f5e20ac6c90da8f19413c54a4d0a954807306385f77",
       "targetHash": "302be8bb4ac6d7a46333ae6a3a012d3e61e0e85188af0caa1705fd65cfb9d770",
-      "status": "migration-review",
-      "sourcePreview": "Regular Menu Items"
+      "machineHash": "302be8bb4ac6d7a46333ae6a3a012d3e61e0e85188af0caa1705fd65cfb9d770",
+      "machineText": "通常のメニュー項目",
+      "status": "machine-translated",
+      "sourcePreview": "Regular Menu Items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0005-text-01": {
       "sourceHash": "e76a4f9652af85f578ed3c743794e01337eb496fbfe9cea094d1d9977ea2ff44",
-      "targetHash": "77df94a7f2de02c66d7f7ad229096538f17cfe1af556a8524cae7523d71bf8da",
-      "status": "migration-review",
-      "sourcePreview": "The most common type—displays text and triggers an action:"
+      "targetHash": "ce54686eca87b236f63e3a3672cc46bb49e43effd74d626aaeb51c4d898f203f",
+      "machineHash": "ce54686eca87b236f63e3a3672cc46bb49e43effd74d626aaeb51c4d898f203f",
+      "machineText": "最も一般的な種類です。テキストを表示し、アクションを実行します。",
+      "status": "machine-translated",
+      "sourcePreview": "The most common type—displays text and triggers an action:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0006-text-01": {
       "sourceHash": "9874c435613a6e4524539a1ce236fb7ec717e220e4b86afa41677f1a5cf15ba1",
-      "targetHash": "872b95acdbc1fbbe4c5858dbc4912901abfdecd3150f1583a476f8988ecd745b",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Commands, actions, opening windows"
+      "targetHash": "116f8dd725ded0a11e9d6b248dafc250550a80eedc22ef470bb278477a120a44",
+      "machineHash": "116f8dd725ded0a11e9d6b248dafc250550a80eedc22ef470bb278477a120a44",
+      "machineText": "**用途:** コマンド、アクション、ウィンドウを開く操作",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Commands, actions, opening windows",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0007-heading-01": {
       "sourceHash": "186fcf8c9431fefc8fd761ac131f683c1ba568bf752d34de4de14b8d7b3e5456",
       "targetHash": "db082480b3366885a3982e2cec8d62224549549e1419df2bf2420abd1f738e7b",
-      "status": "migration-review",
-      "sourcePreview": "Checkboxes"
+      "machineHash": "db082480b3366885a3982e2cec8d62224549549e1419df2bf2420abd1f738e7b",
+      "machineText": "チェックボックス",
+      "status": "machine-translated",
+      "sourcePreview": "Checkboxes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0008-text-01": {
       "sourceHash": "4ad595193be2a9a15e6d4a333239baa3bb0ac6ec3389d7a52f908a5372f88a05",
-      "targetHash": "5365ced06ee008e3dabe492f2cd91f81de792dda251045cd301e57f37291c8e9",
-      "status": "migration-review",
-      "sourcePreview": "Toggle-able menu items with checked/unchecked state:"
+      "targetHash": "5fffd41eec6adf4703870d9650a868ad45a4c1fc90879b162b40f18838e6d7b9",
+      "machineHash": "5fffd41eec6adf4703870d9650a868ad45a4c1fc90879b162b40f18838e6d7b9",
+      "machineText": "オンとオフを切り替えられる、チェック済み／未チェック状態を持つメニュー項目です。",
+      "status": "machine-translated",
+      "sourcePreview": "Toggle-able menu items with checked/unchecked state:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0009-text-01": {
       "sourceHash": "325dab4abaae519314dbade352bde18e7521ec3dbac7f10b461d607518793143",
-      "targetHash": "6fa7de79046eaaa5554b2ebb18f00350524f54a3032f1ce5f4deda097e71c30a",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Boolean settings, feature toggles, view options"
+      "targetHash": "653b0a383d3a1b152eefcd81c12a1ea0c0471b4aec8acd4a0d0d4c4c1d5b708d",
+      "machineHash": "653b0a383d3a1b152eefcd81c12a1ea0c0471b4aec8acd4a0d0d4c4c1d5b708d",
+      "machineText": "**用途:** ブール値の設定、機能の切り替え、表示オプション",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Boolean settings, feature toggles, view options",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0010-text-01": {
       "sourceHash": "c9cdfff7f7330e284302f73f3dee38363dd7bc02c0f0a17ac59c38d841afca1b",
-      "targetHash": "e7432cdf9214662c8e673f5c6e2b7b95c804dfc2dc818abb50a023fedf18ae4e",
-      "status": "migration-review",
-      "sourcePreview": "**Important:** The checked state toggles automatically when clicked."
+      "targetHash": "a4c1dea88097e9b68cfe0c9776fa1b57c64d9540bcc7c17448e63f4d707a8b9a",
+      "machineHash": "a4c1dea88097e9b68cfe0c9776fa1b57c64d9540bcc7c17448e63f4d707a8b9a",
+      "machineText": "**重要:** クリックすると、チェック状態が自動的に切り替わります。",
+      "status": "machine-translated",
+      "sourcePreview": "**Important:** The checked state toggles automatically when clicked.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0011-heading-01": {
       "sourceHash": "6d55e20a8ab90ed25a0598e480bbd79839f1c087290baa976c79c928226a7dac",
       "targetHash": "030ef366861689d9e12db60cda3ea39e33ada7946569b11e00113bca26ebfa8f",
-      "status": "migration-review",
-      "sourcePreview": "Radio Groups"
+      "machineHash": "030ef366861689d9e12db60cda3ea39e33ada7946569b11e00113bca26ebfa8f",
+      "machineText": "ラジオグループ",
+      "status": "machine-translated",
+      "sourcePreview": "Radio Groups",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0012-text-01": {
       "sourceHash": "93b1a2ca1198c8b2d0872fe04db7aa00188e0f785b2d0dcc2a38f01bb7ff075b",
-      "targetHash": "7d2fea3c7b5e5f70ecca16059421707d12b8165de503c966b22760a69005b78e",
-      "status": "migration-review",
-      "sourcePreview": "Mutually exclusive options—only one can be selected:"
+      "targetHash": "68a7ea2746f83e91e847f79e2d07ae6f9d2e644bdd1f2370c75c5504a988c6cf",
+      "machineHash": "68a7ea2746f83e91e847f79e2d07ae6f9d2e644bdd1f2370c75c5504a988c6cf",
+      "machineText": "相互排他的な選択肢です。選択できるのは1つだけです。",
+      "status": "machine-translated",
+      "sourcePreview": "Mutually exclusive options—only one can be selected:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0013-text-01": {
       "sourceHash": "7ba3524fb1c30c43f3f162dae8a5e1191b3adfd0d782e516321e6122ce7fc733",
-      "targetHash": "a70763af4473377fcda0530505d793265ffe19e76937c9447bc45a58341a1b21",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Mutually exclusive choices (size, theme, mode)"
+      "targetHash": "29fa530fd8dcd50e812efbd1ff213bfd5cac53422f62fe0a8a418268d7a7f5e2",
+      "machineHash": "29fa530fd8dcd50e812efbd1ff213bfd5cac53422f62fe0a8a418268d7a7f5e2",
+      "machineText": "**用途:** 相互排他的な選択肢（サイズ、テーマ、モード）",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Mutually exclusive choices (size, theme, mode)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0014-text-01": {
       "sourceHash": "bfb0e17f87415c3da94844b6cada47cca4d6930c44fe436be2b86f518c461169",
-      "targetHash": "27055c60bd3f6f18befbb4efdeca4a16c1ecc44a10a464053abf22e1a14c0758",
-      "status": "migration-review",
-      "sourcePreview": "**How grouping works:**"
+      "targetHash": "29fd2c667efa51b02d1edcac7d84c2bcaffb9611e0a8c57da69b80ab3b1a68c0",
+      "machineHash": "29fd2c667efa51b02d1edcac7d84c2bcaffb9611e0a8c57da69b80ab3b1a68c0",
+      "machineText": "**グループ化の仕組み:**",
+      "status": "machine-translated",
+      "sourcePreview": "**How grouping works:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0015-text-01": {
       "sourceHash": "089ccd5da0c61805b6d7f217110191728a8c5baa0e5a1de6efbacafa975edeb4",
       "targetHash": "d672a2720f7876c566c2250a9d279fb3367ca652b5d6c3943065d15bd8f7382a",
-      "status": "migration-review",
-      "sourcePreview": "Adjacent radio items form a group automatically"
+      "machineHash": "d672a2720f7876c566c2250a9d279fb3367ca652b5d6c3943065d15bd8f7382a",
+      "machineText": "隣接するラジオ項目は自動的にグループを形成します",
+      "status": "machine-translated",
+      "sourcePreview": "Adjacent radio items form a group automatically",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0016-text-01": {
       "sourceHash": "5bde6ffe0314eb5be75cd20cee1f97aaa653fd7132260d32ce19936020d4b1fe",
-      "targetHash": "23950762c9572bfe1498b174f6fd8540b40b05ba44f5a5a5049ca98e0d929543",
-      "status": "migration-review",
-      "sourcePreview": "Selecting one deselects others in the group"
+      "targetHash": "17f8eb6b93f2fef65eaddf1b04b62643522abf7d3444735aca5f5e0e88efb73a",
+      "machineHash": "17f8eb6b93f2fef65eaddf1b04b62643522abf7d3444735aca5f5e0e88efb73a",
+      "machineText": "1つを選択すると、グループ内のほかの項目の選択が解除されます",
+      "status": "machine-translated",
+      "sourcePreview": "Selecting one deselects others in the group",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0017-text-01": {
       "sourceHash": "bf434c1a55c82361939d8eb0679012083e532767599fb70e2d655e5ef0200a78",
       "targetHash": "a011674bf5ba38499e5fa338ac28de29a008c395c93a561caa5ee25abec5c9a1",
-      "status": "migration-review",
-      "sourcePreview": "Separate groups with a separator or regular item"
+      "machineHash": "a011674bf5ba38499e5fa338ac28de29a008c395c93a561caa5ee25abec5c9a1",
+      "machineText": "セパレーターまたは通常の項目でグループを分けます",
+      "status": "machine-translated",
+      "sourcePreview": "Separate groups with a separator or regular item",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0018-text-01": {
       "sourceHash": "e04fecdffaa13a70d2c683dfe399ebea65615c8514c0cdcc2e99eb553ef13158",
-      "targetHash": "991805fe1fedc7945dd91a4b9a6c0fa1a253f3181cbaed53e2dcf4cdd66e9142",
-      "status": "migration-review",
-      "sourcePreview": "**Example with multiple groups:**"
+      "targetHash": "bb5ae8c44c72b6bbbdb8aae09a28df67f7a1421f21819f919ed5f97f247f7f24",
+      "machineHash": "bb5ae8c44c72b6bbbdb8aae09a28df67f7a1421f21819f919ed5f97f247f7f24",
+      "machineText": "**複数のグループを使用する例:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example with multiple groups:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0019-heading-01": {
       "sourceHash": "475bab54fe5f107ce3ca00de8e770329d970c0dac6cf370b1a6411593e749005",
       "targetHash": "eb9a84e4ffc31656ff9af0d35c9d4990df2b49bbde70df0225c0d2aec9758d33",
-      "status": "migration-review",
-      "sourcePreview": "Submenus"
+      "machineHash": "eb9a84e4ffc31656ff9af0d35c9d4990df2b49bbde70df0225c0d2aec9758d33",
+      "machineText": "サブメニュー",
+      "status": "machine-translated",
+      "sourcePreview": "Submenus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0020-text-01": {
       "sourceHash": "629a509a1f23f049487afe4ea3cb8d8ebb89c11d11337a844e0c46026af54a45",
-      "targetHash": "d2be85ec461687a47b4a192dc6be37656002a6d4d17f62d49d0e085d24b0b1a2",
-      "status": "migration-review",
-      "sourcePreview": "Nested menu structures for organisation:"
+      "targetHash": "d88cbb064f41a9ead929af24e423e7733da666888e9e5a2b9e3d06d84b123497",
+      "machineHash": "d88cbb064f41a9ead929af24e423e7733da666888e9e5a2b9e3d06d84b123497",
+      "machineText": "整理するための入れ子構造のメニューです。",
+      "status": "machine-translated",
+      "sourcePreview": "Nested menu structures for organisation:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0021-text-01": {
       "sourceHash": "554f505c44d7a4b77c6ea94be1df276492f9fddd667b51ef9ef03fbefffb30f1",
-      "targetHash": "99e467fb8343dca7ae7a3785a03cf1664a87a4d4832422ab1ad81941011ce3ab",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Grouping related items, reducing clutter"
+      "targetHash": "f995a4475c055b734ea288518c998630fcaf0d8b072b0a433bad5c4ec3c8251d",
+      "machineHash": "f995a4475c055b734ea288518c998630fcaf0d8b072b0a433bad5c4ec3c8251d",
+      "machineText": "**用途:** 関連項目のグループ化、煩雑さの軽減",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Grouping related items, reducing clutter",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0022-text-01": {
       "sourceHash": "fcd422c927ab0c91f174b51f5a3a646cb7342a3cc90d7d1e8d4d9e09d2faf73e",
-      "targetHash": "86e196f07cf37aafa5c881eb3456420bc58a21858837a429ecaa7630353927c6",
-      "status": "migration-review",
-      "sourcePreview": "**Nesting limit:** Most platforms support 2-3 levels. Avoid deeper nesting."
+      "targetHash": "749a5e495ca9bfcbe3f50ee8e549bcfeeca6ff18a44254cb32ee206939a915e7",
+      "machineHash": "749a5e495ca9bfcbe3f50ee8e549bcfeeca6ff18a44254cb32ee206939a915e7",
+      "machineText": "**入れ子の上限:** ほとんどのプラットフォームは2-3階層をサポートします。それより深い入れ子は避けてください。",
+      "status": "machine-translated",
+      "sourcePreview": "**Nesting limit:** Most platforms support 2-3 levels. Avoid deeper nesting.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0023-heading-01": {
       "sourceHash": "194465bc6eb263200f64c001c6a022b189f0846ee723b6e1d5174238727a2318",
       "targetHash": "3b7e80fee0e34d6c74d6f92d9b170a6a92cdb540117dde4b7539045ea92fa8b4",
-      "status": "migration-review",
-      "sourcePreview": "Separators"
+      "machineHash": "3b7e80fee0e34d6c74d6f92d9b170a6a92cdb540117dde4b7539045ea92fa8b4",
+      "machineText": "セパレーター",
+      "status": "machine-translated",
+      "sourcePreview": "Separators",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0024-text-01": {
       "sourceHash": "e0d04b071421947a434d9c004ac1c403e31d87b6cfdff5158178ad281f0a5e9e",
-      "targetHash": "f7e18eb9a3b95b160c2f98b84f1cf924b2a8fd81f9ace6716019c3cfb0d173f6",
-      "status": "migration-review",
-      "sourcePreview": "Visual dividers between menu items:"
+      "targetHash": "a1715fb95eb281e963a5aab597303acdec0e41ff1ffffe9ab9b71504e9d96e2a",
+      "machineHash": "a1715fb95eb281e963a5aab597303acdec0e41ff1ffffe9ab9b71504e9d96e2a",
+      "machineText": "メニュー項目間の視覚的な区切りです。",
+      "status": "machine-translated",
+      "sourcePreview": "Visual dividers between menu items:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0025-text-01": {
       "sourceHash": "38381ce325520101b382f33ab7a869be47905cc36234e00803813951b04fb7a8",
-      "targetHash": "fe5db98d988f64e390f7c7477691dc099a73110eb3201f00199ecb41e5e1b357",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Grouping related items visually"
+      "targetHash": "419e2173919e96b36bd376a5aba26e84fbb77e9074c26097a3e474d06f467bf6",
+      "machineHash": "419e2173919e96b36bd376a5aba26e84fbb77e9074c26097a3e474d06f467bf6",
+      "machineText": "**用途:** 関連項目を視覚的にグループ化する",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Grouping related items visually",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0026-text-01": {
       "sourceHash": "a9abdfb1f26cc304273b39d3b47e7f8e6f9c30505e4cd905b1b54081b0b2d68b",
-      "targetHash": "61d4dbda72d9ea97f716457270d8d214bcbb3c2a18525ffea6a11bfb8c1dfc39",
-      "status": "migration-review",
-      "sourcePreview": "**Best practice:** Don't start or end menus with separators."
+      "targetHash": "da062ad6b96d2c9cfe2a883253e64c1db62e7b061abe3661bf0973bd411587db",
+      "machineHash": "da062ad6b96d2c9cfe2a883253e64c1db62e7b061abe3661bf0973bd411587db",
+      "machineText": "**ベストプラクティス:** メニューの先頭または末尾にセパレーターを配置しないでください。",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practice:** Don't start or end menus with separators.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0027-heading-01": {
       "sourceHash": "62a6a6ea68fa46a04f0f5621e87bc010867d1103f90fd02c50e7a4dd573a8738",
       "targetHash": "6970b24c43449fc3fcda8002f4a083bfe2017b8adfbda11cd9d71098bb00beb8",
-      "status": "migration-review",
-      "sourcePreview": "Section Headers"
+      "machineHash": "6970b24c43449fc3fcda8002f4a083bfe2017b8adfbda11cd9d71098bb00beb8",
+      "machineText": "セクション見出し",
+      "status": "machine-translated",
+      "sourcePreview": "Section Headers",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0028-text-01": {
       "sourceHash": "904110e8ee4b1b53a1e21d20370d7a3fb5c0fe30079f26b702fa65d5951beacc",
-      "targetHash": "8629ffd1038559740a91f6185752379dd9fdd0c6b7335a21af8516120f389ea6",
-      "status": "migration-review",
-      "sourcePreview": "Native, non-interactive labels for a group of menu items on **macOS 14+**:"
+      "targetHash": "29a375e94f81832aba14980bc2ea27675ae49a20954bb1e23a8afc8da72b7334",
+      "machineHash": "29a375e94f81832aba14980bc2ea27675ae49a20954bb1e23a8afc8da72b7334",
+      "machineText": "**macOS 14以降**で、メニュー項目のグループに使用できるネイティブの非対話型ラベルです。",
+      "status": "machine-translated",
+      "sourcePreview": "Native, non-interactive labels for a group of menu items on **macOS 14+**:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0029-text-01": {
       "sourceHash": "71e63e539d5cac226baf40e8ed79a2de95bc5a672979dd1f74323319742bc98d",
-      "targetHash": "eb2b31791f69b99e4c94037c65023bab51fe6d6c3af62763b158b5e21b0903d3",
-      "status": "migration-review",
-      "sourcePreview": "`AddSectionHeader` uses AppKit's standard section-header appearance. It returns no menu item and doe…"
+      "targetHash": "681fc92ff3b3c2cb2c03e3237fdc8a423d407cc0c1bd1f33888cd003d1ef45b2",
+      "machineHash": "681fc92ff3b3c2cb2c03e3237fdc8a423d407cc0c1bd1f33888cd003d1ef45b2",
+      "machineText": "`AddSectionHeader`は、AppKit標準のセクション見出しの外観を使用します。メニュー項目は返さず、アクションも関連付けません。古いバージョンのmacOS、Windows、Linux、モバイルおよびサーバービルドでは、この呼び出しは何も行わず、行も挿入しません。",
+      "status": "machine-translated",
+      "sourcePreview": "`AddSectionHeader` uses AppKit's standard section-header appearance. It returns no menu item and doe…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0030-text-01": {
       "sourceHash": "bf16999e533103a549ea1e775072b7ba26a6a0d188c9ef3563bc01fd0fa41820",
-      "targetHash": "64f3e16e7a8ee4e1b82fd44217986e91e8e1ba7caa0a95a87625eff89f09299b",
-      "status": "migration-review",
-      "sourcePreview": "Use it in tray, context or application menus to label related commands. Use `AddSeparator()` to sepa…"
+      "targetHash": "e8cc84f1d42c484399a986030e4f08fcd7fcdfef904dce4dab37e0fd73c8f7cc",
+      "machineHash": "e8cc84f1d42c484399a986030e4f08fcd7fcdfef904dce4dab37e0fd73c8f7cc",
+      "machineText": "トレイメニュー、コンテキストメニュー、またはアプリケーションメニューで、関連するコマンドに見出しを付けるために使用します。省略された見出しではラジオグループが分断されないため、すべてのプラットフォームでラジオグループを分けるには`AddSeparator()`を使用してください。メソッドシグネチャについては[メニューAPI](/reference/menu#addsectionheader)を、ホスト名を見出しにする例については`systray-menu`の例を参照してください。",
+      "status": "machine-translated",
+      "sourcePreview": "Use it in tray, context or application menus to label related commands. Use `AddSeparator()` to sepa…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0031-heading-01": {
       "sourceHash": "3ae67b777479a4d2c85640f2d4bc6d15a6a2e796da09074be384239eb0bcbd7c",
       "targetHash": "95ff47783e18a6bbf5caab1c854e58a5c49007d7fd01e7a03af6b9ac79d894a0",
-      "status": "migration-review",
-      "sourcePreview": "Menu Item Properties"
+      "machineHash": "95ff47783e18a6bbf5caab1c854e58a5c49007d7fd01e7a03af6b9ac79d894a0",
+      "machineText": "メニュー項目のプロパティ",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Item Properties",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0032-heading-01": {
       "sourceHash": "0e66373f45dcf3dd656151e519f7ee5e3d558d9c22cb87df339bbdd2b6c6a3c1",
       "targetHash": "1a27dd1558ac061d5c13c6e798435fe6f56fd4a4af4ecc05dc11e9bd8c2c1a62",
-      "status": "migration-review",
-      "sourcePreview": "Label"
+      "machineHash": "1a27dd1558ac061d5c13c6e798435fe6f56fd4a4af4ecc05dc11e9bd8c2c1a62",
+      "machineText": "ラベル",
+      "status": "machine-translated",
+      "sourcePreview": "Label",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0033-text-01": {
       "sourceHash": "afa4f92426bff54158cdf34150c1c6246b719c944f3d1e8e4367eb5ea759c468",
-      "targetHash": "0a7ef031ef03c2e1d7e7342c5d9e9a309175b9c65be788f51156c89ebb92b026",
-      "status": "migration-review",
-      "sourcePreview": "The text displayed for the menu item:"
+      "targetHash": "d678b4336cc212c3f7fb030bf190a16c4160ec7908be933961449109105c7c8b",
+      "machineHash": "d678b4336cc212c3f7fb030bf190a16c4160ec7908be933961449109105c7c8b",
+      "machineText": "メニュー項目に表示されるテキストです。",
+      "status": "machine-translated",
+      "sourcePreview": "The text displayed for the menu item:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0034-text-01": {
       "sourceHash": "ce15c75411f3e673fa1544c8fa0a539f1c11b90ac74057081270cc618266df96",
-      "targetHash": "f5ef089f30f9f37925ae07d5dca7270c0cac8e96b7d843955a5d731d934c70a2",
-      "status": "migration-review",
-      "sourcePreview": "**Dynamic labels:**"
+      "targetHash": "8c29c01eddc3b38e430c09dca4029fa394d0877501b7b293f3429bee0de16952",
+      "machineHash": "8c29c01eddc3b38e430c09dca4029fa394d0877501b7b293f3429bee0de16952",
+      "machineText": "**動的ラベル:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Dynamic labels:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0035-heading-01": {
       "sourceHash": "82bcfd6ac2c0cfa7425532344da8410eaa170ef7b9bd04e9788b37db1b111957",
       "targetHash": "604406ec45d03e840d971b0be62cedf4bb48232fd17424a5667541161898e9b2",
-      "status": "migration-review",
-      "sourcePreview": "Enabled State"
+      "machineHash": "604406ec45d03e840d971b0be62cedf4bb48232fd17424a5667541161898e9b2",
+      "machineText": "有効状態",
+      "status": "machine-translated",
+      "sourcePreview": "Enabled State",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0036-text-01": {
       "sourceHash": "9ff7339149bfef793dec2c9240c5ee80bd022581acc6baae4c5794e2b17fbf1e",
-      "targetHash": "d4a385d4bffe2b791b752ace25b6e0e6c48c33fd74a1a1928af7499363069227",
-      "status": "migration-review",
-      "sourcePreview": "Control whether the menu item can be interacted with:"
+      "targetHash": "ad0e46e375ffa2d826cd0215adb2de25251a72d6acc886f6276f3fd0e2f3e0a1",
+      "machineHash": "ad0e46e375ffa2d826cd0215adb2de25251a72d6acc886f6276f3fd0e2f3e0a1",
+      "machineText": "メニュー項目を操作できるかどうかを制御します。",
+      "status": "machine-translated",
+      "sourcePreview": "Control whether the menu item can be interacted with:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0037-text-01": {
       "sourceHash": "7d32b313fed5db5556c2ffbc995bc597d42920aa6249d6a6ef9b76d98857005d",
-      "targetHash": "31adfa3beed5da35cb33642849494b2ec4b55d3bda6982c980f9c87fc9a70d77",
-      "status": "migration-review",
-      "sourcePreview": "On Windows, menus need to be reconstructed when their state changes. **Always call `menu.Update()` a…"
+      "targetHash": "667540e56fb6fd70476fb01e8e731362cfa392cfc6f8c90fc81fea6bef4b1b61",
+      "machineHash": "667540e56fb6fd70476fb01e8e731362cfa392cfc6f8c90fc81fea6bef4b1b61",
+      "machineText": "Windowsでは、メニューの状態が変化したときにメニューを再構築する必要があります。メニュー項目を有効化または無効化した後は**必ず`menu.Update()`を呼び出してください**。特に、その項目を無効な状態で作成した場合は必須です。",
+      "status": "machine-translated",
+      "sourcePreview": "On Windows, menus need to be reconstructed when their state changes. **Always call `menu.Update()` a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0038-text-01": {
       "sourceHash": "a1aa9912b2ee77d8c9a5fcf550d2ae6d243153d8589e5271bb8051c591d9869e",
-      "targetHash": "24b2c9f1a6c94f8f873c89d1d50f17be6239e33edc183cd50a405162839511c2",
-      "status": "migration-review",
-      "sourcePreview": "**Why:** Windows menus are rebuilt from scratch when updated. If you don't call `Update()`, click ha…"
+      "targetHash": "0e012c4d351592e53e1f863f64b3a4c64b9124a726b1d3242531699cbf7678a7",
+      "machineHash": "0e012c4d351592e53e1f863f64b3a4c64b9124a726b1d3242531699cbf7678a7",
+      "machineText": "**理由:** Windowsのメニューは、更新時に一から再構築されます。`Update()`を呼び出さないと、クリックハンドラーが正しく実行されません。",
+      "status": "machine-translated",
+      "sourcePreview": "**Why:** Windows menus are rebuilt from scratch when updated. If you don't call `Update()`, click ha…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0039-text-01": {
       "sourceHash": "bf79698a7d58990a9693ef13caf887a004b67cdbb97e918ca66b0278f5559867",
-      "targetHash": "52d60d59ded1dcb14579d54f85a8265164efaa587c346a01f0ea05062c5ffee0",
-      "status": "migration-review",
-      "sourcePreview": "**Example: Dynamic enable/disable**"
+      "targetHash": "e9c72499d9ac04b8b05688f01236d5e6d3bf26b2acec3c5887d652aea4e11bee",
+      "machineHash": "e9c72499d9ac04b8b05688f01236d5e6d3bf26b2acec3c5887d652aea4e11bee",
+      "machineText": "**例: 動的な有効化／無効化**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example: Dynamic enable/disable**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0040-text-01": {
       "sourceHash": "2fcfdcc144ec0f424cbd694dac3983bb923335e4cce4c626917dd5935e3d942d",
-      "targetHash": "b6e7aa00ed04dc953fccba6dbde75d71b9a7f325aa4169a770ce28f21436d0d4",
-      "status": "migration-review",
-      "sourcePreview": "**Common pattern: Enable on condition**"
+      "targetHash": "de9b3e2db4f0fb3e88f2708354e68e467b30104a7dea7f36deaebaaec3e1ed06",
+      "machineHash": "de9b3e2db4f0fb3e88f2708354e68e467b30104a7dea7f36deaebaaec3e1ed06",
+      "machineText": "**一般的なパターン: 条件に応じて有効化**",
+      "status": "machine-translated",
+      "sourcePreview": "**Common pattern: Enable on condition**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0041-heading-01": {
       "sourceHash": "a59608695af4c5616eb8895b876e5d0e1ef49d0acc60781860c4adc082077373",
       "targetHash": "6d7331d3cb0d66059725e7f1c0baa5a82185ffea4a2c92ec0df06c8ed6ee434d",
-      "status": "migration-review",
-      "sourcePreview": "Checked State"
+      "machineHash": "6d7331d3cb0d66059725e7f1c0baa5a82185ffea4a2c92ec0df06c8ed6ee434d",
+      "machineText": "チェック状態",
+      "status": "machine-translated",
+      "sourcePreview": "Checked State",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0042-text-01": {
       "sourceHash": "0e7c46c867ce379b3262641b4a5d474ba3481be1e0681c955c7f3622ff771043",
-      "targetHash": "12c995ed945bf68d598e4d4330f1f45c272b523886be00d5bf99aaa9d9445f5e",
-      "status": "migration-review",
-      "sourcePreview": "For checkbox and radio items, control or query their checked state:"
+      "targetHash": "f362d6db021fdb0f9907379c2fb6f5c7c480be1edb0f8c9167e3ae46e9956cfc",
+      "machineHash": "f362d6db021fdb0f9907379c2fb6f5c7c480be1edb0f8c9167e3ae46e9956cfc",
+      "machineText": "チェックボックス項目とラジオ項目では、チェック状態を制御または取得できます。",
+      "status": "machine-translated",
+      "sourcePreview": "For checkbox and radio items, control or query their checked state:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0043-text-01": {
       "sourceHash": "d9e8715ee2140739298add0a66397c52fcbb5b4eb4d659a9e9168e2a86c8eef5",
-      "targetHash": "b044bc937c1fb655a399c23e55da3236dbf4943c2d728304711dab4c40d2522b",
-      "status": "migration-review",
-      "sourcePreview": "**Auto-toggle:** Checkboxes toggle automatically when clicked. You don't need to call `SetChecked()`…"
+      "targetHash": "da0bf5fcce07fe338b1f97866b8a59bdae1cc7c3495d62bb1e232f47b8098314",
+      "machineHash": "da0bf5fcce07fe338b1f97866b8a59bdae1cc7c3495d62bb1e232f47b8098314",
+      "machineText": "**自動切り替え:** チェックボックスは、クリックすると自動的に切り替わります。クリックハンドラー内で`SetChecked()`を呼び出す必要はありません。",
+      "status": "machine-translated",
+      "sourcePreview": "**Auto-toggle:** Checkboxes toggle automatically when clicked. You don't need to call `SetChecked()`…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0044-text-01": {
       "sourceHash": "a0a113772a19e04b52f0a76d040f289f12df7f7359bef9748536dc59f2f7fe95",
-      "targetHash": "17a54a0fd5f9ed3db5dc2078c263136a158bae9ef5309332280c8dabc29cfd55",
-      "status": "migration-review",
-      "sourcePreview": "**Manual control:**"
+      "targetHash": "268afde2e21abd2416399f1cf0e9bb513c90a45bc488ec22b6e103218cbc0f67",
+      "machineHash": "268afde2e21abd2416399f1cf0e9bb513c90a45bc488ec22b6e103218cbc0f67",
+      "machineText": "**手動制御:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Manual control:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0045-heading-01": {
       "sourceHash": "5f8817d4f3579030d47eb2aacacb35e7786a5d4e735fb8f1fb1692a87846bf82",
       "targetHash": "883335959b925c5152ffa2dfa11104f54996668a92c2f682662ea0baf4f89da0",
-      "status": "migration-review",
-      "sourcePreview": "Accelerators (Keyboard Shortcuts)"
+      "machineHash": "883335959b925c5152ffa2dfa11104f54996668a92c2f682662ea0baf4f89da0",
+      "machineText": "アクセラレーター（キーボードショートカット）",
+      "status": "machine-translated",
+      "sourcePreview": "Accelerators (Keyboard Shortcuts)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0046-text-01": {
       "sourceHash": "35f417a4ffa390a8bf849f8e5f3a45d8331f233e0cf835a3a98deb248d1a0396",
-      "targetHash": "b851a56871bde6b43b6a39302741791c4afc957d274c62185b630b3d7df2d7f8",
-      "status": "migration-review",
-      "sourcePreview": "Add keyboard shortcuts to menu items:"
+      "targetHash": "ca797725e5060dbbc7fe2727edcc6f9251bfceb0bb1a6ff157193ef6bc238109",
+      "machineHash": "ca797725e5060dbbc7fe2727edcc6f9251bfceb0bb1a6ff157193ef6bc238109",
+      "machineText": "メニュー項目にキーボードショートカットを追加します。",
+      "status": "machine-translated",
+      "sourcePreview": "Add keyboard shortcuts to menu items:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0047-text-01": {
       "sourceHash": "20a317c89b791b6956bf2166312c505d1be91ee52770cc373be76bbc9abcde4d",
-      "targetHash": "1061bac4059340890ed2e37d2f43eb1b65e1a951045270c867620184f6ca9638",
-      "status": "migration-review",
-      "sourcePreview": "**Accelerator format:**"
+      "targetHash": "e36b69bccc6b89b99a6ef5f5b520df41f9ca6da5cf287c51e55670d5e7b0267c",
+      "machineHash": "e36b69bccc6b89b99a6ef5f5b520df41f9ca6da5cf287c51e55670d5e7b0267c",
+      "machineText": "**アクセラレーターの形式:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Accelerator format:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0048-text-01": {
       "sourceHash": "5685db3fc1c6f6c25ca353545979801b432bb68c6342abe1d3844079aab8ddb0",
       "targetHash": "440226e5009d772810ced421d7d370b04dfa205e6d103b6790f437eb2ad0b9ec",
-      "status": "migration-review",
-      "sourcePreview": "`CmdOrCtrl` - Cmd on macOS, Ctrl on Windows/Linux"
+      "machineHash": "440226e5009d772810ced421d7d370b04dfa205e6d103b6790f437eb2ad0b9ec",
+      "machineText": "`CmdOrCtrl` - macOSではCmd、Windows/LinuxではCtrl",
+      "status": "machine-translated",
+      "sourcePreview": "`CmdOrCtrl` - Cmd on macOS, Ctrl on Windows/Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0049-text-01": {
       "sourceHash": "29ea91ed031a56f1573f99fbe5b21d2b981abed79286a8a287a29ff2df7ea51e",
       "targetHash": "fb4500de5ca291717275a1380258d70181cfb87906e5e34436dc0b24dfe32dd6",
-      "status": "migration-review",
-      "sourcePreview": "`Shift`, `Alt`, `Option` - Modifier keys"
+      "machineHash": "fb4500de5ca291717275a1380258d70181cfb87906e5e34436dc0b24dfe32dd6",
+      "machineText": "`Shift`、`Alt`、`Option` - 修飾キー",
+      "status": "machine-translated",
+      "sourcePreview": "`Shift`, `Alt`, `Option` - Modifier keys",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0050-text-01": {
       "sourceHash": "5ea05fed09880b425086e9bbe80e8aa1b0187b96c285d435f2570928c6fff0cf",
       "targetHash": "dea21c2e506159984969bc1ddb74a53ef0d5baae82cfe7d6092df358ccc80446",
-      "status": "migration-review",
-      "sourcePreview": "`A-Z`, `0-9` - Letter/number keys"
+      "machineHash": "dea21c2e506159984969bc1ddb74a53ef0d5baae82cfe7d6092df358ccc80446",
+      "machineText": "`A-Z`、`0-9` - 英字／数字キー",
+      "status": "machine-translated",
+      "sourcePreview": "`A-Z`, `0-9` - Letter/number keys",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0051-text-01": {
       "sourceHash": "0504ec2dc09527b32e8d604cded7776996a06080a7078edd93f908430a2cead8",
       "targetHash": "80b626b8450e6f9ee63c4b13664a303106daecd0a87262e6b1b8b886bf514ced",
-      "status": "migration-review",
-      "sourcePreview": "`F1-F12` - Function keys"
+      "machineHash": "80b626b8450e6f9ee63c4b13664a303106daecd0a87262e6b1b8b886bf514ced",
+      "machineText": "`F1-F12` - ファンクションキー",
+      "status": "machine-translated",
+      "sourcePreview": "`F1-F12` - Function keys",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0052-text-01": {
       "sourceHash": "788f619f4e799d6c1c738c79337b8e49e256b8b94a7fe9ca81f0d071a4176622",
       "targetHash": "9eeeca1b5b211c6a774d860418a353349d8d46ef421cd99c0d9826adfac3226c",
-      "status": "migration-review",
-      "sourcePreview": "`Enter`, `Space`, `Backspace`, etc. - Special keys"
+      "machineHash": "9eeeca1b5b211c6a774d860418a353349d8d46ef421cd99c0d9826adfac3226c",
+      "machineText": "`Enter`、`Space`、`Backspace`など - 特殊キー",
+      "status": "machine-translated",
+      "sourcePreview": "`Enter`, `Space`, `Backspace`, etc. - Special keys",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0053-text-01": {
       "sourceHash": "ba002d5e7b17e16e4594f2cfc3f2e5723021c6099c6b2b149955bba130582b18",
-      "targetHash": "ddd97fd9c4296986885b7c095ad8c02dad577f32dc7b2859970625c076a02ba5",
-      "status": "migration-review",
-      "sourcePreview": "**Examples:**"
+      "targetHash": "dc5fc2d0ccbfcf344e1502cf04a71e79b6c6ec2c75529c0c77389f825496b632",
+      "machineHash": "dc5fc2d0ccbfcf344e1502cf04a71e79b6c6ec2c75529c0c77389f825496b632",
+      "machineText": "**例:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Examples:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0054-text-01": {
       "sourceHash": "9b07609affca106f5dd2c8d28fe27cd07b30def6f67be9bc9a14be55c24adaa5",
-      "targetHash": "9368b1ab364f428fb0f5b175708f5533bf77c1c55088c6e483d87b8710d30be6",
-      "status": "migration-review",
-      "sourcePreview": "**Platform-specific accelerators:**"
+      "targetHash": "75144b088d0f7ad6124b79696f892e6478936dff42204a362f6cdad38189da62",
+      "machineHash": "75144b088d0f7ad6124b79696f892e6478936dff42204a362f6cdad38189da62",
+      "machineText": "**プラットフォーム固有のアクセラレーター:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform-specific accelerators:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0055-heading-01": {
       "sourceHash": "20f12289f9b818970e7a0862d3c41139ec574cd4a9fa984885f612e697d41292",
       "targetHash": "77b36ced160c035a19b93a26bf3485f5aad61fe0ac594b8ee794d2747e40a3ab",
-      "status": "migration-review",
-      "sourcePreview": "Tooltip"
+      "machineHash": "77b36ced160c035a19b93a26bf3485f5aad61fe0ac594b8ee794d2747e40a3ab",
+      "machineText": "ツールチップ",
+      "status": "machine-translated",
+      "sourcePreview": "Tooltip",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0056-text-01": {
       "sourceHash": "d04a5cf99964c73e2c4f486a54175b0ab033d48c9e4f08789c8b8f84912d2e38",
-      "targetHash": "b1b1d1e0aac4bc6666591901183374ac58d4515fb3eed25497bb0a4222950f77",
-      "status": "migration-review",
-      "sourcePreview": "Add hover text to menu items (platform support varies):"
+      "targetHash": "48ea0ca51bd6060e31a9d489dca176038faf1828c95dc03d781c03acd5d1195d",
+      "machineHash": "48ea0ca51bd6060e31a9d489dca176038faf1828c95dc03d781c03acd5d1195d",
+      "machineText": "メニュー項目に、マウスポインターを重ねたときに表示するテキストを追加します（対応状況はプラットフォームによって異なります）。",
+      "status": "machine-translated",
+      "sourcePreview": "Add hover text to menu items (platform support varies):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0057-text-01": {
       "sourceHash": "5b6b58bc7aab0717cc23b489b8d09c223e68c10f02710cfc1e5ed16ebba194c6",
-      "targetHash": "ffaa456ce63e11e79a27f4284d863a71e4d8d552d82a7dc1b8639ef1e89320d5",
-      "status": "migration-review",
-      "sourcePreview": "**Platform support:**"
+      "targetHash": "8ad298c4bf48e63d76df1d292bd12c254b5a81e0a56ded668b00f89055aa9ef7",
+      "machineHash": "8ad298c4bf48e63d76df1d292bd12c254b5a81e0a56ded668b00f89055aa9ef7",
+      "machineText": "**プラットフォームの対応状況:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Platform support:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0058-text-01": {
       "sourceHash": "f684bc3f3079b6178dcf4dd0489d9b660b28efe8abc6a74ea4a3aa7c121a645a",
-      "targetHash": "702c1a20872b5f812d24ea4d09baae14a53a45bf7f7f901a4a458b4180394732",
-      "status": "migration-review",
-      "sourcePreview": "**Windows:** ✅ Supported"
+      "targetHash": "165a1cc41d596247fd5976d09528741415bf1bd1d28c1c15ab05ef0d422e9e1e",
+      "machineHash": "165a1cc41d596247fd5976d09528741415bf1bd1d28c1c15ab05ef0d422e9e1e",
+      "machineText": "**Windows:** ✅ 対応",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:** ✅ Supported",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0059-text-01": {
       "sourceHash": "3b71052d6259f4ddb8125e7f99530a9c1527bb64a080d7ba08adddaa78a51a09",
-      "targetHash": "882b11e3a0211c6f931f3007a05c2098a6255dcbb164fda5b6a4e28b6d18c1a5",
-      "status": "migration-review",
-      "sourcePreview": "**macOS:** ❌ Not supported (tooltips not standard for menus)"
+      "targetHash": "04278929d313efacf732dbb9dc0ce1c9120e448fea99adc11fcc9cdff7ffd580",
+      "machineHash": "04278929d313efacf732dbb9dc0ce1c9120e448fea99adc11fcc9cdff7ffd580",
+      "machineText": "**macOS:** ❌ 非対応（メニューでのツールチップは標準ではありません）",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS:** ❌ Not supported (tooltips not standard for menus)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0060-text-01": {
       "sourceHash": "84e2a4efc44739d437af193dd9922c20d2260477307b10caeebbe9edf836e771",
-      "targetHash": "b3ce250d7f51580d86d6710226adbd21720a9216a143ea569247e79de89a0edd",
-      "status": "migration-review",
-      "sourcePreview": "**Linux:** ⚠️ Varies by desktop environment"
+      "targetHash": "2a05e92f631f360e9bd0787385e092c09d6fffc41eb03391e0ae0de0af7087d1",
+      "machineHash": "2a05e92f631f360e9bd0787385e092c09d6fffc41eb03391e0ae0de0af7087d1",
+      "machineText": "**Linux:** ⚠️ デスクトップ環境によって異なります",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux:** ⚠️ Varies by desktop environment",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0061-heading-01": {
       "sourceHash": "9e3f4f7845882af0f0b126c461477225a8a4951185f7cbd2019f2f40cdefe066",
       "targetHash": "c1dc1bfd07c44b2a5289353f44e24ac6f9f6e02fd317ce926f8e01bda998e1bf",
-      "status": "migration-review",
-      "sourcePreview": "Hidden State"
+      "machineHash": "c1dc1bfd07c44b2a5289353f44e24ac6f9f6e02fd317ce926f8e01bda998e1bf",
+      "machineText": "非表示状態",
+      "status": "machine-translated",
+      "sourcePreview": "Hidden State",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0062-text-01": {
       "sourceHash": "abdb56f16e01659398866ba752a1f780b8a428cb2df4026ba6eab88f77f58011",
-      "targetHash": "a377cfe222e40aa668d064ac1a6cb46381695322a7e85972b81da5a655d93869",
-      "status": "migration-review",
-      "sourcePreview": "Hide menu items without removing them:"
+      "targetHash": "b94fd6999d0ac0ce8e83ad031a82acdd88d854d8aa8215d7cb5a3454bf3d2038",
+      "machineHash": "b94fd6999d0ac0ce8e83ad031a82acdd88d854d8aa8215d7cb5a3454bf3d2038",
+      "machineText": "メニュー項目を削除せずに非表示にします。",
+      "status": "machine-translated",
+      "sourcePreview": "Hide menu items without removing them:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0063-text-01": {
       "sourceHash": "89f58dd1a3f09880d6125377ee382297b73165bf3c5dc4f52dff4cbe5e76f7a5",
-      "targetHash": "a3ed64b33d60186d8f2807830513cfefce418a6c056d022e1d2efcd7108fdac4",
-      "status": "migration-review",
-      "sourcePreview": "**Use for:** Debug options, feature flags, conditional features"
+      "targetHash": "65f55988edd581e56d2dd6dec661f488ea5a4f76848852141088830a8860b3d5",
+      "machineHash": "65f55988edd581e56d2dd6dec661f488ea5a4f76848852141088830a8860b3d5",
+      "machineText": "**用途:** デバッグオプション、機能フラグ、条件付き機能",
+      "status": "machine-translated",
+      "sourcePreview": "**Use for:** Debug options, feature flags, conditional features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0064-heading-01": {
       "sourceHash": "e44410e5abdaca38fb56bfe95b2292977e81a681c1b627a639d4e2db86591f95",
       "targetHash": "f36731c695d179e9dca723ec8a0da0c0c69a02a260c26393a4e6478433eba020",
-      "status": "migration-review",
-      "sourcePreview": "Event Handling"
+      "machineHash": "f36731c695d179e9dca723ec8a0da0c0c69a02a260c26393a4e6478433eba020",
+      "machineText": "イベント処理",
+      "status": "machine-translated",
+      "sourcePreview": "Event Handling",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0065-heading-01": {
       "sourceHash": "2adaa7badf0dcc2db612e3b1ae035976f1a6ec30b3b7ce5eb2077c4977866655",
       "targetHash": "d1c0c80b019714f6e745a6d90fb24461999635eca5be7f0be1adef332b4211bd",
-      "status": "migration-review",
-      "sourcePreview": "OnClick Handler"
+      "machineHash": "d1c0c80b019714f6e745a6d90fb24461999635eca5be7f0be1adef332b4211bd",
+      "machineText": "OnClickハンドラー",
+      "status": "machine-translated",
+      "sourcePreview": "OnClick Handler",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0066-text-01": {
       "sourceHash": "5fadb0d8d7a2cb69c3415e9f3d24ca1dbd85d8fa763726d1a34259136a4c86f7",
-      "targetHash": "100b88279103f5adcc349e11e236e6356f312e470ba4729b6343ca9794ad6306",
-      "status": "migration-review",
-      "sourcePreview": "Execute code when menu item is clicked:"
+      "targetHash": "c602f089ae3d7668ade0b1b282f01928482be3062ce3b58d524a513a48f31b5f",
+      "machineHash": "c602f089ae3d7668ade0b1b282f01928482be3062ce3b58d524a513a48f31b5f",
+      "machineText": "メニュー項目がクリックされたときにコードを実行します。",
+      "status": "machine-translated",
+      "sourcePreview": "Execute code when menu item is clicked:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0067-text-01": {
       "sourceHash": "c93698a78637c20dc3b26baba5b468495ce251d413bca9460b39faeb3b593ce9",
-      "targetHash": "7a7648e5ef78c95264a984ce4f97dcab667477a52f7123dda2518e0a1814a208",
-      "status": "migration-review",
-      "sourcePreview": "**Context provides:**"
+      "targetHash": "fb390059a60ee778d53229c0ac9c90d76ab86ebdaa8e6ac1171fc32445a71aa8",
+      "machineHash": "fb390059a60ee778d53229c0ac9c90d76ab86ebdaa8e6ac1171fc32445a71aa8",
+      "machineText": "**コンテキストから取得できるもの:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Context provides:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0068-text-01": {
       "sourceHash": "a15521c92755fb5fd168f83ac7f6bea60743f512dd253466829bf897635abfbb",
       "targetHash": "eead97e8c8ea053b8a0d3e16f8ac60c84461d8917897f590a50898e00bda5fe4",
-      "status": "migration-review",
-      "sourcePreview": "`ctx.ClickedMenuItem()` - The menu item that was clicked"
+      "machineHash": "eead97e8c8ea053b8a0d3e16f8ac60c84461d8917897f590a50898e00bda5fe4",
+      "machineText": "`ctx.ClickedMenuItem()` - クリックされたメニュー項目",
+      "status": "machine-translated",
+      "sourcePreview": "`ctx.ClickedMenuItem()` - The menu item that was clicked",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0069-text-01": {
       "sourceHash": "af29780671fdf43019a49010cc1bff99727a206df35ebf63158fe1cbb4764076",
       "targetHash": "06180c213b66ec66156b8c47eb32c61d67d155b6801a170aa4bda8e71a1610ee",
-      "status": "migration-review",
-      "sourcePreview": "Window context (if from window menu)"
+      "machineHash": "06180c213b66ec66156b8c47eb32c61d67d155b6801a170aa4bda8e71a1610ee",
+      "machineText": "ウィンドウのコンテキスト（ウィンドウメニューからの場合）",
+      "status": "machine-translated",
+      "sourcePreview": "Window context (if from window menu)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0070-text-01": {
       "sourceHash": "ba85ff580e670596df55ee0827bb54c193e9a8251c7854a75b3d2d3ec1c42e48",
       "targetHash": "6d1ce2bccb693f197ef83c4048ba582c8859a6b1fc9b8474d7695fef8d22285d",
-      "status": "migration-review",
-      "sourcePreview": "Application context"
+      "machineHash": "6d1ce2bccb693f197ef83c4048ba582c8859a6b1fc9b8474d7695fef8d22285d",
+      "machineText": "アプリケーションのコンテキスト",
+      "status": "machine-translated",
+      "sourcePreview": "Application context",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0071-text-01": {
       "sourceHash": "615687d3fb7346677f5903b2499e5b9cc9205d5e4c0fe0da7af4c2faf0e4dd18",
-      "targetHash": "99937a499840f36b9e7b4d105363b03aed748c09c0247f27443d1ea2a9f08010",
-      "status": "migration-review",
-      "sourcePreview": "**Example: Access menu item in handler**"
+      "targetHash": "37311589b1a311464422371146a442da13c0fad653413dd906eeec63f52bd06f",
+      "machineHash": "37311589b1a311464422371146a442da13c0fad653413dd906eeec63f52bd06f",
+      "machineText": "**例: ハンドラー内でメニュー項目にアクセスする**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example: Access menu item in handler**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0072-heading-01": {
       "sourceHash": "cfbf5bf3b6d7478eae3acc7edc375fe889be9a47664beb39e3f847363015fb07",
       "targetHash": "2b5cd0d3c1c5a0de51d66b63a473f2624de30ea161963484451aa77494ecbebb",
-      "status": "migration-review",
-      "sourcePreview": "Multiple Handlers"
+      "machineHash": "2b5cd0d3c1c5a0de51d66b63a473f2624de30ea161963484451aa77494ecbebb",
+      "machineText": "複数のハンドラー",
+      "status": "machine-translated",
+      "sourcePreview": "Multiple Handlers",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0073-text-01": {
       "sourceHash": "c90da71a64896f28af454bf7b8651681383db6c247e46f458982b2d741b8ed83",
-      "targetHash": "77a733492c28fec804a4cf05688c329622bc8ac0fce1baafbcb01fd5aa129cbb",
-      "status": "migration-review",
-      "sourcePreview": "You can set multiple handlers (last one wins):"
+      "targetHash": "2276be808539bcb1c1e8125ffa4c4bd41546dc7771bff26f55c98355968f182e",
+      "machineHash": "2276be808539bcb1c1e8125ffa4c4bd41546dc7771bff26f55c98355968f182e",
+      "machineText": "複数のハンドラーを設定できます（最後に設定したものが優先されます）。",
+      "status": "machine-translated",
+      "sourcePreview": "You can set multiple handlers (last one wins):",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0074-text-01": {
       "sourceHash": "9796308bcc9b344352a5f04e34a91bc0ca4d6bf7c520f09c434b27aa6147fb8c",
-      "targetHash": "369b114874a5bcada7dc0559df96750bdd4f6b0e11340846e3239a9efd5eb413",
-      "status": "migration-review",
-      "sourcePreview": "**Best practice:** Set handler once, use conditional logic inside if needed."
+      "targetHash": "350b6fccf9cb2f3fc5475dd6ba091e3e5f09d738efa1221cd6a2514008579f85",
+      "machineHash": "350b6fccf9cb2f3fc5475dd6ba091e3e5f09d738efa1221cd6a2514008579f85",
+      "machineText": "**ベストプラクティス:** ハンドラーは一度だけ設定し、必要に応じてその内部で条件分岐を使用してください。",
+      "status": "machine-translated",
+      "sourcePreview": "**Best practice:** Set handler once, use conditional logic inside if needed.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0075-heading-01": {
       "sourceHash": "2ae9ba1902888b4008778355eb812682df3d23e84477cea3b905f3daefc97093",
       "targetHash": "07781f5ac8a7139f39cbd76e2cbfd58adfc76c2c0fb24947583fce2884e850f3",
-      "status": "migration-review",
-      "sourcePreview": "Dynamic Menus"
+      "machineHash": "07781f5ac8a7139f39cbd76e2cbfd58adfc76c2c0fb24947583fce2884e850f3",
+      "machineText": "動的メニュー",
+      "status": "machine-translated",
+      "sourcePreview": "Dynamic Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0076-heading-01": {
       "sourceHash": "e9c7389b02cb66e01618d368876da530b7da3160497e5b718114be4a266967b6",
       "targetHash": "4ba8295c9dba90b7b21ee4d2eea4caed59587085c844bb026b0abb51fb87cf96",
-      "status": "migration-review",
-      "sourcePreview": "Updating Menu Items"
+      "machineHash": "4ba8295c9dba90b7b21ee4d2eea4caed59587085c844bb026b0abb51fb87cf96",
+      "machineText": "メニュー項目の更新",
+      "status": "machine-translated",
+      "sourcePreview": "Updating Menu Items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0077-text-01": {
       "sourceHash": "9ed3f5e38dc18a9ff48ac229c7ce6eeee3496b7b9eb557f0ca64cafce16dabdc",
-      "targetHash": "de08bc138f62aeeea20d098f339d2cc33fad19df4026a8d10d293f61f4918a55",
-      "status": "migration-review",
-      "sourcePreview": "**The golden rule:** Always call `menu.Update()` after changing menu state."
+      "targetHash": "a42069896e051a987d9d94622b6c5d9be0b5fbc1be0566bc239cfb747fbd8ee1",
+      "machineHash": "a42069896e051a987d9d94622b6c5d9be0b5fbc1be0566bc239cfb747fbd8ee1",
+      "machineText": "**鉄則:** メニューの状態を変更した後は、必ず`menu.Update()`を呼び出してください。",
+      "status": "machine-translated",
+      "sourcePreview": "**The golden rule:** Always call `menu.Update()` after changing menu state.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0078-text-01": {
       "sourceHash": "9f42406954cbbefc959b543201d5c357518b05b05c775ef6882271e262bf836b",
-      "targetHash": "005a0b90023039d5f4712d95552ea91ffa71de1e4fa28dc7db188bd349af3774",
-      "status": "migration-review",
-      "sourcePreview": "**Why this matters:**"
+      "targetHash": "b0e2f3177cd8863e89a7b9b64fc791388c95435aa9454468a7261bfdd29234d9",
+      "machineHash": "b0e2f3177cd8863e89a7b9b64fc791388c95435aa9454468a7261bfdd29234d9",
+      "machineText": "**これが重要な理由:**",
+      "status": "machine-translated",
+      "sourcePreview": "**Why this matters:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0079-text-01": {
       "sourceHash": "ff63ea4c2c0127335d09b5854d39cf07f2dd56cbefd08646eb9ff1c2a0b7eb93",
-      "targetHash": "85d40c92d40865cd5f79c1999dd6b578b492773bcdf298f0f812822e222103fe",
-      "status": "migration-review",
-      "sourcePreview": "**Windows:** Menus are reconstructed when updated"
+      "targetHash": "ec77fa8a7c26f305dfd157180b6e288705c528fe89774bd0d4ffe3875400cd39",
+      "machineHash": "ec77fa8a7c26f305dfd157180b6e288705c528fe89774bd0d4ffe3875400cd39",
+      "machineText": "**Windows:** メニューは更新時に再構築されます",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:** Menus are reconstructed when updated",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0080-text-01": {
       "sourceHash": "83202ffe137562e9ffae1a04bd961618e7567f59a00a5e148773537f7ec37b9b",
-      "targetHash": "aff4872402b762eb32ebb7afda8d32e03ddec999947ac22707a95f4e5b55c81d",
-      "status": "migration-review",
-      "sourcePreview": "**macOS/Linux:** Less critical but still recommended"
+      "targetHash": "9b4781ec3a27faf03f94cc2fb4c7d72ca95f1f8e32472dc2bd99b1327c1fd13f",
+      "machineHash": "9b4781ec3a27faf03f94cc2fb4c7d72ca95f1f8e32472dc2bd99b1327c1fd13f",
+      "machineText": "\u003cstrong\u003emacOS/Linux：\u003c/strong\u003e重要度は低いものの、引き続き推奨されます",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS/Linux:** Less critical but still recommended",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0081-text-01": {
       "sourceHash": "ac30e05535cd4eb491d9fe7b14dd2b0db5ad88385af996056cd5bf82ff9578a7",
-      "targetHash": "fe1c43989b98e540679ec4d48ca19664f2fc42ca71e9eb44adf5b29f1b610e53",
-      "status": "migration-review",
-      "sourcePreview": "**Click handlers:** Won't fire properly without Update()"
+      "targetHash": "ac90161a1fc43942b32e3edbbbea36313adbc22493caf232144509de574a4db8",
+      "machineHash": "ac90161a1fc43942b32e3edbbbea36313adbc22493caf232144509de574a4db8",
+      "machineText": "\u003cstrong\u003eクリックハンドラー：\u003c/strong\u003eUpdate() を呼び出さないと正常に発火しません",
+      "status": "machine-translated",
+      "sourcePreview": "**Click handlers:** Won't fire properly without Update()",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0082-heading-01": {
       "sourceHash": "07d97239e46910edf6d5aeac9185dc323803262ed509b9284e4d8aadd65c34d7",
       "targetHash": "3270178a387ebabb386b69d57f786df69a05a6f278c2062bfd826072c7351332",
-      "status": "migration-review",
-      "sourcePreview": "Rebuilding Menus"
+      "machineHash": "3270178a387ebabb386b69d57f786df69a05a6f278c2062bfd826072c7351332",
+      "machineText": "メニューの再構築",
+      "status": "machine-translated",
+      "sourcePreview": "Rebuilding Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0083-text-01": {
       "sourceHash": "051a5defdd211b8283aaf46082a14036ded9cc2d27cab149b49bdfeb9641002a",
-      "targetHash": "60dd681ef683059b422db1f5d43156817883192ae024ef516a2559d1989b2da5",
-      "status": "migration-review",
-      "sourcePreview": "For major changes, rebuild the entire menu:"
+      "targetHash": "7f4a57f057318d635ef70150a9150baeeea3a7f27ef56c66ca4bc5836ce156a9",
+      "machineHash": "7f4a57f057318d635ef70150a9150baeeea3a7f27ef56c66ca4bc5836ce156a9",
+      "machineText": "大幅に変更する場合は、メニュー全体を再構築します：",
+      "status": "machine-translated",
+      "sourcePreview": "For major changes, rebuild the entire menu:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0084-text-01": {
       "sourceHash": "fea55d83db6f59c7a1b91744634ff0ab056ce9b5a7129e45a9a953e30e77426b",
       "targetHash": "b9a539d2c4d15d57316620b5acea3352e6e89c9cf35f3a3f1a694313bb8ed829",
-      "status": "migration-review",
-      "sourcePreview": "**When to rebuild:**"
+      "machineHash": "b9a539d2c4d15d57316620b5acea3352e6e89c9cf35f3a3f1a694313bb8ed829",
+      "machineText": "**再構築する場合：**",
+      "status": "machine-translated",
+      "sourcePreview": "**When to rebuild:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0085-text-01": {
       "sourceHash": "4777d4f51327fbb235da5baeb4a37025334cdd6051b467e584812f13908bc16a",
-      "targetHash": "68f3a7f45afc4d349986b4272c8da5ccaa0c76288e5deadd618d3c0104ee976b",
-      "status": "migration-review",
-      "sourcePreview": "Recent files list changes"
+      "targetHash": "a135456ee0e5c7da21f85cc8dd421a1fffc2b85e010cb3153fd6f0a6822e0d21",
+      "machineHash": "a135456ee0e5c7da21f85cc8dd421a1fffc2b85e010cb3153fd6f0a6822e0d21",
+      "machineText": "最近使ったファイルの一覧を変更する場合",
+      "status": "machine-translated",
+      "sourcePreview": "Recent files list changes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0086-text-01": {
       "sourceHash": "e2266745e2c0116610fe114ce9f120124ef0f8c8e4d5734d19a2fcc26fc54a77",
-      "targetHash": "6537155fa9ef120648196eea293dd9de1034e350799ec19105cdd30f4acf19ea",
-      "status": "migration-review",
-      "sourcePreview": "Plugin menus change"
+      "targetHash": "535434029f17d2f7c32b61b9461a2f87fd6f28e6c947faaa9863b90e2723336c",
+      "machineHash": "535434029f17d2f7c32b61b9461a2f87fd6f28e6c947faaa9863b90e2723336c",
+      "machineText": "プラグインメニューを変更する場合",
+      "status": "machine-translated",
+      "sourcePreview": "Plugin menus change",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0087-text-01": {
       "sourceHash": "36df1fb2e6c039c5be17d0c5815dec43dd9e3246b8d73021153406749d87a29b",
-      "targetHash": "d71800613faeb95a1e3d7d9349cb5de891e14145070cfd3dd0aac9cfc22d1dc6",
-      "status": "migration-review",
-      "sourcePreview": "Major state transitions"
+      "targetHash": "f03ddfd5cd685be59fe8bb0fc31700933a59d413755cc5488f6a8db30c64f410",
+      "machineHash": "f03ddfd5cd685be59fe8bb0fc31700933a59d413755cc5488f6a8db30c64f410",
+      "machineText": "大きな状態遷移がある場合",
+      "status": "machine-translated",
+      "sourcePreview": "Major state transitions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0088-text-01": {
       "sourceHash": "63f61f874de2959d2a4a5802898ca8f28a071ba0ff0bf52d6d1d43e99b0fe860",
       "targetHash": "e0f31d20479d7b3b12134de520651c1454c6b37bbe41643fcb2cb3695a6dee09",
-      "status": "migration-review",
-      "sourcePreview": "**When to update:**"
+      "machineHash": "e0f31d20479d7b3b12134de520651c1454c6b37bbe41643fcb2cb3695a6dee09",
+      "machineText": "**更新する場合：**",
+      "status": "machine-translated",
+      "sourcePreview": "**When to update:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0089-text-01": {
       "sourceHash": "d02305c05f45c0a63e8e5d84e000a9674b3747bcd19f3375c9004e4d247a01f9",
       "targetHash": "9027a91dbd8558b73a97a90a6f70c4a43aa097cab1bcdfb924e8e245c07fc53c",
-      "status": "migration-review",
-      "sourcePreview": "Enable/disable items"
+      "machineHash": "9027a91dbd8558b73a97a90a6f70c4a43aa097cab1bcdfb924e8e245c07fc53c",
+      "machineText": "項目を有効化または無効化する場合",
+      "status": "machine-translated",
+      "sourcePreview": "Enable/disable items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0090-text-01": {
       "sourceHash": "51292a3e5af6adc12eee94ef147396b76ca5ef5485c2f06ad63d8de8bf3b29b4",
       "targetHash": "aaf8b1dbb1270c54adecf47fdf25832c2d85247f11f32e0a9e252648fa4e0745",
-      "status": "migration-review",
-      "sourcePreview": "Change labels"
+      "machineHash": "aaf8b1dbb1270c54adecf47fdf25832c2d85247f11f32e0a9e252648fa4e0745",
+      "machineText": "ラベルを変更する場合",
+      "status": "machine-translated",
+      "sourcePreview": "Change labels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0091-text-01": {
       "sourceHash": "6da73a95c145f32095b7164119e20c94dfff11f71afb2ba5924f74a46e67b13a",
       "targetHash": "aca42178e458c6f73b0413e2b45aba3e67e30e8f133fa51154a6a56d4547ff84",
-      "status": "migration-review",
-      "sourcePreview": "Toggle checkboxes"
+      "machineHash": "aca42178e458c6f73b0413e2b45aba3e67e30e8f133fa51154a6a56d4547ff84",
+      "machineText": "チェックボックスの状態を切り替える場合",
+      "status": "machine-translated",
+      "sourcePreview": "Toggle checkboxes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0092-heading-01": {
       "sourceHash": "a5dbbd941cf2326900a2c6736398683ef941abed5249b729c814b35877c15bac",
       "targetHash": "0fa489d1b3ccfaccb7d02f0e6ec509541092ac4d5a09a7bf1e8fbeec8dd7ee3a",
-      "status": "migration-review",
-      "sourcePreview": "Context-Sensitive Menus"
+      "machineHash": "0fa489d1b3ccfaccb7d02f0e6ec509541092ac4d5a09a7bf1e8fbeec8dd7ee3a",
+      "machineText": "コンテキスト依存メニュー",
+      "status": "machine-translated",
+      "sourcePreview": "Context-Sensitive Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0093-text-01": {
       "sourceHash": "3b9ac44e65690e5a489d26f0ea922c8b02bde25fb43b8f690b8ef2313fc6fc9d",
       "targetHash": "320f1e3389ddbaac072876bd7b60f20d4eab23417c0540168d5431cc0d4a4d17",
-      "status": "migration-review",
-      "sourcePreview": "Adjust menus based on application state:"
+      "machineHash": "320f1e3389ddbaac072876bd7b60f20d4eab23417c0540168d5431cc0d4a4d17",
+      "machineText": "アプリケーションの状態に応じてメニューを調整します：",
+      "status": "machine-translated",
+      "sourcePreview": "Adjust menus based on application state:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0094-heading-01": {
       "sourceHash": "b8b745d3b056b806f9d79c36ec429cdabf11d93f6d5f3cb1853d66fb440245de",
       "targetHash": "1e063f07a1ff1ce1a0853bc39337ece15bccd1262cc9a8e22d5c5b9232d04c52",
-      "status": "migration-review",
-      "sourcePreview": "Platform Differences"
+      "machineHash": "1e063f07a1ff1ce1a0853bc39337ece15bccd1262cc9a8e22d5c5b9232d04c52",
+      "machineText": "プラットフォームによる違い",
+      "status": "machine-translated",
+      "sourcePreview": "Platform Differences",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0095-heading-01": {
       "sourceHash": "0c7077566e40f91182767fe39e65b14ac71450aa7592212eb6b6d24524b6f2a2",
       "targetHash": "fc2692349dc6b5d5870016107cec81d8470179e6111f4b7a6513a8ad3d2398c8",
-      "status": "migration-review",
-      "sourcePreview": "Menu Bar Location"
+      "machineHash": "fc2692349dc6b5d5870016107cec81d8470179e6111f4b7a6513a8ad3d2398c8",
+      "machineText": "メニューバーの位置",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Bar Location",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0096-cell-01": {
       "sourceHash": "c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144",
       "targetHash": "4bf4082c3f317cf61d530d1aa6091dc56ad2700d9004c7cadbeada7e82b88616",
-      "status": "migration-review",
-      "sourcePreview": "Platform"
+      "machineHash": "4bf4082c3f317cf61d530d1aa6091dc56ad2700d9004c7cadbeada7e82b88616",
+      "machineText": "プラットフォーム",
+      "status": "machine-translated",
+      "sourcePreview": "Platform",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0097-cell-01": {
       "sourceHash": "15b61974b2707a7b3d4201385e0f01f4ff5eb1f17c5639d98788ee5add2025cd",
       "targetHash": "1fb4d574da92f1c182183f205b77a1fcfc538ab438a04f2399ceac29687a7a56",
-      "status": "migration-review",
-      "sourcePreview": "Location"
+      "machineHash": "1fb4d574da92f1c182183f205b77a1fcfc538ab438a04f2399ceac29687a7a56",
+      "machineText": "位置",
+      "status": "machine-translated",
+      "sourcePreview": "Location",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0098-cell-01": {
       "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
       "targetHash": "80309c573b8b509f033703fa0c20b992113e39f328abb5b6f45ce8149eebea07",
-      "status": "migration-review",
-      "sourcePreview": "Notes"
+      "machineHash": "80309c573b8b509f033703fa0c20b992113e39f328abb5b6f45ce8149eebea07",
+      "machineText": "備考",
+      "status": "machine-translated",
+      "sourcePreview": "Notes",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0099-cell-01": {
       "sourceHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
       "targetHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
-      "status": "migration-review",
-      "sourcePreview": "**macOS**"
+      "machineHash": "f8fdd31623ff375dbf97a06f86925c8dc39b7fa99ec47cdc07a121e0063906a6",
+      "machineText": "**macOS**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0100-cell-01": {
       "sourceHash": "2b8bd0fa3e2c54ecb375f33f099ce0eb776a162fee028ad96bbe869a232c17f8",
       "targetHash": "df077ec9418749578c0eae36f87d2a84badd7b4d1c96febe9e98f2a6b865fda3",
-      "status": "migration-review",
-      "sourcePreview": "Top of screen"
+      "machineHash": "df077ec9418749578c0eae36f87d2a84badd7b4d1c96febe9e98f2a6b865fda3",
+      "machineText": "画面上部",
+      "status": "machine-translated",
+      "sourcePreview": "Top of screen",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0101-cell-01": {
       "sourceHash": "3044be5051fbfc79986db6dbc94a95a81aa453e2a91a60065c058a6589d0c500",
       "targetHash": "bb01a1be5ab1dcdb9b657c9f1d016bc320ff8d09ceea45c2f05a5fd942546ced",
-      "status": "migration-review",
-      "sourcePreview": "Global menu bar"
+      "machineHash": "bb01a1be5ab1dcdb9b657c9f1d016bc320ff8d09ceea45c2f05a5fd942546ced",
+      "machineText": "グローバルメニューバー",
+      "status": "machine-translated",
+      "sourcePreview": "Global menu bar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0102-cell-01": {
       "sourceHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
       "targetHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
-      "status": "migration-review",
-      "sourcePreview": "**Windows**"
+      "machineHash": "429a6816decae44c9079caf8e9a83e8291852c88942d1305acd61913fdd1e5af",
+      "machineText": "**Windows**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0103-cell-01": {
       "sourceHash": "2f0a9ebc9fb73ffdf6ea26517d3f1ee0563f071d3efe6c0cc0a1898309fb4d16",
       "targetHash": "2afbb1c72aa63ab3930223607a2dd0cc13df6aca7695f6f7c579faa247a15acd",
-      "status": "migration-review",
-      "sourcePreview": "Top of window"
+      "machineHash": "2afbb1c72aa63ab3930223607a2dd0cc13df6aca7695f6f7c579faa247a15acd",
+      "machineText": "ウィンドウ上部",
+      "status": "machine-translated",
+      "sourcePreview": "Top of window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0104-cell-01": {
       "sourceHash": "c8e03f78b0e0821f9215ca408b96b5396b0d821ac79984fe40056e117e6a50fd",
       "targetHash": "f0e988b31287b8bf9e7d6dcaf04175146d16ec2f35e764ff5bbf11cee291f3d0",
-      "status": "migration-review",
-      "sourcePreview": "Per-window menu"
+      "machineHash": "f0e988b31287b8bf9e7d6dcaf04175146d16ec2f35e764ff5bbf11cee291f3d0",
+      "machineText": "ウィンドウごとのメニュー",
+      "status": "machine-translated",
+      "sourcePreview": "Per-window menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0105-cell-01": {
       "sourceHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
       "targetHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
-      "status": "migration-review",
-      "sourcePreview": "**Linux**"
+      "machineHash": "b65901b395ba718c060f9f9991047f2b2915c570e0db34df02afdb1b4a6a176e",
+      "machineText": "**Linux**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0106-cell-01": {
       "sourceHash": "2f0a9ebc9fb73ffdf6ea26517d3f1ee0563f071d3efe6c0cc0a1898309fb4d16",
       "targetHash": "2afbb1c72aa63ab3930223607a2dd0cc13df6aca7695f6f7c579faa247a15acd",
-      "status": "migration-review",
-      "sourcePreview": "Top of window"
+      "machineHash": "2afbb1c72aa63ab3930223607a2dd0cc13df6aca7695f6f7c579faa247a15acd",
+      "machineText": "ウィンドウ上部",
+      "status": "machine-translated",
+      "sourcePreview": "Top of window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0107-cell-01": {
       "sourceHash": "b2f0ec8f85f06c3b5544414897010eb61de789f1233ee73cd5ff8cc6373161c4",
-      "targetHash": "08117bd54356c07a106459cf9b31b444692765ddc855d072dcec1c7bb28db744",
-      "status": "migration-review",
-      "sourcePreview": "Per-window (usually)"
+      "targetHash": "bcc58e61af034885b7f9cb035534f86beaee136cc452a4dfa018e2ba97bb08c0",
+      "machineHash": "bcc58e61af034885b7f9cb035534f86beaee136cc452a4dfa018e2ba97bb08c0",
+      "machineText": "通常はウィンドウごと",
+      "status": "machine-translated",
+      "sourcePreview": "Per-window (usually)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0108-heading-01": {
       "sourceHash": "7949fc66e0d953d22fb2d938263b60b7f18ccaca9931cc53f85d3dacc333c034",
       "targetHash": "ac42ee295ca665453e2330441ce9c921d498af694e4d621bd468ce5041dd19e0",
-      "status": "migration-review",
-      "sourcePreview": "Standard Menus"
+      "machineHash": "ac42ee295ca665453e2330441ce9c921d498af694e4d621bd468ce5041dd19e0",
+      "machineText": "標準メニュー",
+      "status": "machine-translated",
+      "sourcePreview": "Standard Menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0109-text-01": {
       "sourceHash": "cf2f82b7f6d44673c2abddda38d21059447b36ac1d468ecfb6ce6b6b30945128",
       "targetHash": "3e8c41c6324da874766687c561d0de4a298b3348f34d8fbc12d4efce516a05da",
-      "status": "migration-review",
-      "sourcePreview": "**macOS:**"
+      "machineHash": "3e8c41c6324da874766687c561d0de4a298b3348f34d8fbc12d4efce516a05da",
+      "machineText": "**macOS：**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0110-text-01": {
       "sourceHash": "f7b4b4debb40b71e3f48415715dafd1e44441d81df70ea5a03cb066f4e8a768e",
-      "targetHash": "4c354b5891f5852cafaf84c01207cdee8d4113a3423c4b39d5dfc8cf84319853",
-      "status": "migration-review",
-      "sourcePreview": "Has \"Application\" menu (with app name)"
+      "targetHash": "d314531fd67e1d3247722e302a7c8127591cd0ca24f6fa1b480aaeb47b639262",
+      "machineHash": "d314531fd67e1d3247722e302a7c8127591cd0ca24f6fa1b480aaeb47b639262",
+      "machineText": "アプリ名を表示する「アプリケーション」メニューがあります",
+      "status": "machine-translated",
+      "sourcePreview": "Has \"Application\" menu (with app name)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0111-text-01": {
       "sourceHash": "66f01c28d68cb4c33a0f7c1c71160e3c7b482932c2bab9c3be427375f14aa1da",
       "targetHash": "616037eab73674e3e8eafebfd6e6fcedac9739c05616b23f14f21ae5fb412e84",
-      "status": "migration-review",
-      "sourcePreview": "\"Preferences\" in Application menu"
+      "machineHash": "616037eab73674e3e8eafebfd6e6fcedac9739c05616b23f14f21ae5fb412e84",
+      "machineText": "「環境設定」は「アプリケーション」メニューにあります",
+      "status": "machine-translated",
+      "sourcePreview": "\"Preferences\" in Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0112-text-01": {
       "sourceHash": "0622169a15a25a5141a363b3afd8d950e60ed9e8e4e632f222aa144df4cbd7e8",
       "targetHash": "8fb001b061f1f7adbfd21c1636c908d759114cceb577290dec49f919c0056973",
-      "status": "migration-review",
-      "sourcePreview": "\"Quit\" in Application menu"
+      "machineHash": "8fb001b061f1f7adbfd21c1636c908d759114cceb577290dec49f919c0056973",
+      "machineText": "「終了」は「アプリケーション」メニューにあります",
+      "status": "machine-translated",
+      "sourcePreview": "\"Quit\" in Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0113-text-01": {
       "sourceHash": "720b693185626843e2ca71b5d40ec172257e6653371a3dcf2fab9421b8aaad50",
       "targetHash": "97a105b0e423cc55746198d80e1a2bd76ee98854d0b7ecd73dd927f603df7426",
-      "status": "migration-review",
-      "sourcePreview": "**Windows/Linux:**"
+      "machineHash": "97a105b0e423cc55746198d80e1a2bd76ee98854d0b7ecd73dd927f603df7426",
+      "machineText": "**Windows/Linux：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows/Linux:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0114-text-01": {
       "sourceHash": "0b4ebb1bc4315f4ffc43ac340cbbddb015f53a40bd048507c582d9a4b7fd4522",
       "targetHash": "1f06da8f1ecfabc7c78965ca3a3799a4bbdd0154a97e6ac28a085435c7b5ba68",
-      "status": "migration-review",
-      "sourcePreview": "No Application menu"
+      "machineHash": "1f06da8f1ecfabc7c78965ca3a3799a4bbdd0154a97e6ac28a085435c7b5ba68",
+      "machineText": "「アプリケーション」メニューはありません",
+      "status": "machine-translated",
+      "sourcePreview": "No Application menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0115-text-01": {
       "sourceHash": "b3035b011904026f4886c4d4ea3a9fdd8941e1bdc238f714f490cab080077cfe",
       "targetHash": "cdedee4bfd86779fda8d957c0922011b5880d52c2a2ef5b2ae920e86869bf2b6",
-      "status": "migration-review",
-      "sourcePreview": "\"Preferences\" in Edit or Tools menu"
+      "machineHash": "cdedee4bfd86779fda8d957c0922011b5880d52c2a2ef5b2ae920e86869bf2b6",
+      "machineText": "「環境設定」は「編集」または「ツール」メニューにあります",
+      "status": "machine-translated",
+      "sourcePreview": "\"Preferences\" in Edit or Tools menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0116-text-01": {
       "sourceHash": "f7488a70041be648a69ef462999261d1b8fb2a4ea87cfd2eb68bcbb810590f0f",
       "targetHash": "8c66da63e2a126627cd5a22770ba41d02c762f2b5c6077ba843fa4616f9cab5d",
-      "status": "migration-review",
-      "sourcePreview": "\"Exit\" in File menu"
+      "machineHash": "8c66da63e2a126627cd5a22770ba41d02c762f2b5c6077ba843fa4616f9cab5d",
+      "machineText": "「終了」は「ファイル」メニューにあります",
+      "status": "machine-translated",
+      "sourcePreview": "\"Exit\" in File menu",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0117-text-01": {
       "sourceHash": "5381cfa9ce7e38e54d2d4bb92085d8e5a3b2b00d16fdfcb48f20fa4427f218a4",
       "targetHash": "71c9113cc685e8ba04f7bb19546419fb87a1a50e782a95d395082683b0c5d850",
-      "status": "migration-review",
-      "sourcePreview": "**Example: Platform-appropriate structure**"
+      "machineHash": "71c9113cc685e8ba04f7bb19546419fb87a1a50e782a95d395082683b0c5d850",
+      "machineText": "**例：プラットフォームに適した構成**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example: Platform-appropriate structure**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0118-heading-01": {
       "sourceHash": "e904eceb6d8cb0444979dc12e5682fa22761e57aa534c9a8c5a8273a6a1eb7f6",
       "targetHash": "d185b0f57258f82866c9ccac85bd389dc83b3de45e31f5616fc54a0f267fde40",
-      "status": "migration-review",
-      "sourcePreview": "Accelerator Conventions"
+      "machineHash": "d185b0f57258f82866c9ccac85bd389dc83b3de45e31f5616fc54a0f267fde40",
+      "machineText": "アクセラレーターの慣例",
+      "status": "machine-translated",
+      "sourcePreview": "Accelerator Conventions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0119-text-01": {
       "sourceHash": "cf2f82b7f6d44673c2abddda38d21059447b36ac1d468ecfb6ce6b6b30945128",
       "targetHash": "3e8c41c6324da874766687c561d0de4a298b3348f34d8fbc12d4efce516a05da",
-      "status": "migration-review",
-      "sourcePreview": "**macOS:**"
+      "machineHash": "3e8c41c6324da874766687c561d0de4a298b3348f34d8fbc12d4efce516a05da",
+      "machineText": "**macOS：**",
+      "status": "machine-translated",
+      "sourcePreview": "**macOS:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0120-text-01": {
       "sourceHash": "9d361f4c4b0fe584db3a009bf33c57c5b67e2f2cc7ead354e3230b67386d76d5",
-      "targetHash": "ec05c22fc4d2b0d04cf505848e02c7c54b1f48b0db73689fa52b27025c4ddb94",
-      "status": "migration-review",
-      "sourcePreview": "`Cmd+` for most shortcuts"
+      "targetHash": "02afeda25ae7d20be0734741c45f129c5b2cc682d657730eb17a7e8ea0ae2116",
+      "machineHash": "02afeda25ae7d20be0734741c45f129c5b2cc682d657730eb17a7e8ea0ae2116",
+      "machineText": "ほとんどのショートカットには `Cmd+` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Cmd+` for most shortcuts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0121-text-01": {
       "sourceHash": "17b4701cc642b318af2ba8ce6de2591a2fb63e2cbfe3a59828c52692a7408304",
-      "targetHash": "251b7f123ef5aa78fdf2a9bdf9b9fa185f3b77654ab9a616aff6b9981030fce3",
-      "status": "migration-review",
-      "sourcePreview": "`Cmd+,` for Preferences"
+      "targetHash": "351fa3018f6995d0f2cd3a44964015baa14c38b2be9620b68b17f08aedfd26e3",
+      "machineHash": "351fa3018f6995d0f2cd3a44964015baa14c38b2be9620b68b17f08aedfd26e3",
+      "machineText": "「環境設定」には `Cmd+,` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Cmd+,` for Preferences",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0122-text-01": {
       "sourceHash": "714f1988449e4b6898537ee54f3c024f20a4b2c91babc67d39d1a2291ca777e2",
-      "targetHash": "837a49d107a655e801f8f2e4ccf0da93a1624c8be19de5b4b1fb01e84269d8bd",
-      "status": "migration-review",
-      "sourcePreview": "`Cmd+Q` for Quit"
+      "targetHash": "38fe275222cbf27170621be0a1ae10de1a78979979af88b942306c7ec8a9d97d",
+      "machineHash": "38fe275222cbf27170621be0a1ae10de1a78979979af88b942306c7ec8a9d97d",
+      "machineText": "「終了」には `Cmd+Q` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Cmd+Q` for Quit",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0123-text-01": {
       "sourceHash": "2c593e83e57658f9480818465b12523df4dab04646987ccddecbb7c383dc219a",
       "targetHash": "c36cac2cde8efc7d0a5a3993762a279ef5517f274325919151569e2fe36e1fcc",
-      "status": "migration-review",
-      "sourcePreview": "**Windows:**"
+      "machineHash": "c36cac2cde8efc7d0a5a3993762a279ef5517f274325919151569e2fe36e1fcc",
+      "machineText": "**Windows：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Windows:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0124-text-01": {
       "sourceHash": "12e29bed7de7f816a9f3a54d63e4e2ecd57a8185a29fb02b42c6c2020b5f4f8e",
-      "targetHash": "e32e810f0a2f85ec7b9199c01523d879521b35b872878ee79965fb35e4403384",
-      "status": "migration-review",
-      "sourcePreview": "`Ctrl+` for most shortcuts"
+      "targetHash": "b892977eecd105f4eebe67dc8b562b5c8a69e4b0e2f4fa9c9e4b6eec76d6af60",
+      "machineHash": "b892977eecd105f4eebe67dc8b562b5c8a69e4b0e2f4fa9c9e4b6eec76d6af60",
+      "machineText": "ほとんどのショートカットには `Ctrl+` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Ctrl+` for most shortcuts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0125-text-01": {
       "sourceHash": "74e8cccc8c51875f0c6a0b87353a03012715978d292da30a42745066fd77710c",
-      "targetHash": "1dce5585992f3d9b52845547a9f460c885899462db7b009d093fdb43a400b398",
-      "status": "migration-review",
-      "sourcePreview": "`Ctrl+P` or `Ctrl+,` for Preferences"
+      "targetHash": "89cffdc39e3161e23c10851c84888138f6035bbc38ebacf57f7da46c472f1f1f",
+      "machineHash": "89cffdc39e3161e23c10851c84888138f6035bbc38ebacf57f7da46c472f1f1f",
+      "machineText": "「環境設定」には `Ctrl+P` または `Ctrl+,` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Ctrl+P` or `Ctrl+,` for Preferences",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0126-text-01": {
       "sourceHash": "e478ee08ba179ceb5552d653da1a8b4aaa4ac977759414934189050364fbc953",
-      "targetHash": "75e0237c62e883a4255751be45a8d73356ba51fb9419d6c7d22df93232ed552f",
-      "status": "migration-review",
-      "sourcePreview": "`Alt+F4` for Exit (or `Ctrl+Q`)"
+      "targetHash": "86bf6ea6565dbd974ba0932c6310378d6f5c3fdcfb5f9820f891bb50111585a0",
+      "machineHash": "86bf6ea6565dbd974ba0932c6310378d6f5c3fdcfb5f9820f891bb50111585a0",
+      "machineText": "「終了」には `Alt+F4`（または `Ctrl+Q`）を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "`Alt+F4` for Exit (or `Ctrl+Q`)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0127-text-01": {
       "sourceHash": "2a8297ac43bf29720040c8deea0373740334e67fc6211cfa1d3530bbd3990c67",
       "targetHash": "5dc179b01052ae0445c70614487a727ead1f66d645250505ded0a2845b9bfd6b",
-      "status": "migration-review",
-      "sourcePreview": "**Linux:**"
+      "machineHash": "5dc179b01052ae0445c70614487a727ead1f66d645250505ded0a2845b9bfd6b",
+      "machineText": "**Linux：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Linux:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0128-text-01": {
       "sourceHash": "4fc64b5f0279ce36197ee20c4d0b1092bd5fc1a643c48a8e122e6e0bd0e05aa6",
       "targetHash": "9fd51f53b3039a4a21e1dfbfd048c5c2ffa10503359b7abf3915072ec3a6eb3c",
-      "status": "migration-review",
-      "sourcePreview": "Generally follows Windows conventions"
+      "machineHash": "9fd51f53b3039a4a21e1dfbfd048c5c2ffa10503359b7abf3915072ec3a6eb3c",
+      "machineText": "通常は Windows の慣例に従います",
+      "status": "machine-translated",
+      "sourcePreview": "Generally follows Windows conventions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0129-text-01": {
       "sourceHash": "0e3092282fef975f29f42bfeadd5e2fb6f727f681ba501c3dbb4b24ad3d29a81",
       "targetHash": "ffac1652a18ea722bf0f459adcd53d5f2894a47d0d3fcbe0b13bfc70b831acd9",
-      "status": "migration-review",
-      "sourcePreview": "Desktop environment may override"
+      "machineHash": "ffac1652a18ea722bf0f459adcd53d5f2894a47d0d3fcbe0b13bfc70b831acd9",
+      "machineText": "デスクトップ環境によって上書きされる場合があります",
+      "status": "machine-translated",
+      "sourcePreview": "Desktop environment may override",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0130-heading-01": {
       "sourceHash": "46d9a34a79d27b3869085ea8961f543cc9425756c6ddf26628d6f5fa7df73b36",
       "targetHash": "f291c1930453e820baea7ecc7ab06530bdf45858338606b82fc3b9089949702a",
-      "status": "migration-review",
-      "sourcePreview": "Best Practices"
+      "machineHash": "f291c1930453e820baea7ecc7ab06530bdf45858338606b82fc3b9089949702a",
+      "machineText": "ベストプラクティス",
+      "status": "machine-translated",
+      "sourcePreview": "Best Practices",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0131-heading-01": {
       "sourceHash": "ed57031b2772f36496ecd8b4ff4a1c11cc746cf70ef065c702b13b6d1e1f4ddc",
       "targetHash": "a81d9a5d150465792b3e9187325a284a856ebef32ee8db243f75b47cc7e2f2cb",
-      "status": "migration-review",
-      "sourcePreview": "✅ Do"
+      "machineHash": "a81d9a5d150465792b3e9187325a284a856ebef32ee8db243f75b47cc7e2f2cb",
+      "machineText": "✅ 推奨事項",
+      "status": "machine-translated",
+      "sourcePreview": "✅ Do",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0132-text-01": {
       "sourceHash": "62279e6d90a090e20075685fe3ff95ccfdb04ff0ff5e081c0fa1308599561bf9",
-      "targetHash": "5adcee163516fbaf47582b945ba7b0ae440c5852a947a86bb9762be95b858cfc",
-      "status": "migration-review",
-      "sourcePreview": "**Call menu.Update()** after changing menu state (especially on Windows)"
+      "targetHash": "7c1e1abfc98286343ba9d65ad9d06370f527da5e47b0d563c36f0cb520328b5c",
+      "machineHash": "7c1e1abfc98286343ba9d65ad9d06370f527da5e47b0d563c36f0cb520328b5c",
+      "machineText": "メニューの状態を変更した後は、特に Windows では**menu.Update() を呼び出してください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Call menu.Update()** after changing menu state (especially on Windows)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0133-text-01": {
       "sourceHash": "9c236f0acbc8dce049816f301d1276410a72b878f32bac13f3254386e14eaa8b",
-      "targetHash": "dc3b16e3fa86567c524a8232f356aa0c7858d1ef17341ce85d87e99ba11dc387",
-      "status": "migration-review",
-      "sourcePreview": "**Use radio groups** for mutually exclusive options"
+      "targetHash": "6f28486c461c53e73981bcfbec840940dcb57467172cc3e74b9eb9caa9be7001",
+      "machineHash": "6f28486c461c53e73981bcfbec840940dcb57467172cc3e74b9eb9caa9be7001",
+      "machineText": "排他的な選択肢には**ラジオグループを使用してください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Use radio groups** for mutually exclusive options",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0134-text-01": {
       "sourceHash": "a155d118ec7d929d4138c97a7afba319473a5a58b002fbb9915b0f030ec8ff82",
-      "targetHash": "3888a07d69634c4c50b346474a526192c3ce357ba9a4a1396c4175d44ee74cf2",
-      "status": "migration-review",
-      "sourcePreview": "**Use checkboxes** for toggleable features"
+      "targetHash": "2b23a5e5e7efde90d3c016f16f3101e690cb384ff954d1be39b5d1d928741ae4",
+      "machineHash": "2b23a5e5e7efde90d3c016f16f3101e690cb384ff954d1be39b5d1d928741ae4",
+      "machineText": "オンとオフを切り替えられる機能には**チェックボックスを使用してください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Use checkboxes** for toggleable features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0135-text-01": {
       "sourceHash": "67a286d4a9aaef70e08b40a5f458c5acac02e6cf61da7bef5726c3d1f5b29826",
-      "targetHash": "76a2d83f0f65b0ea1b47e2a3a93c9cc8fe93060945680f5281ae4df4fa3e163f",
-      "status": "migration-review",
-      "sourcePreview": "**Add accelerators** to common actions"
+      "targetHash": "3923a01c3faf9bfbcacae39cc9e1e036cde7c14b3a44d11a40e332338e98a172",
+      "machineHash": "3923a01c3faf9bfbcacae39cc9e1e036cde7c14b3a44d11a40e332338e98a172",
+      "machineText": "よく使う操作には**アクセラレーターを追加してください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Add accelerators** to common actions",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0136-text-01": {
       "sourceHash": "75e9918d364aa464c56688288460a919ebb1d05f00aa061ff51fdab2b12391c5",
-      "targetHash": "60715d8a7f2396f69e4eb44b6dd3c39d808e67a5343a3fcd65efb89c9b38b3d2",
-      "status": "migration-review",
-      "sourcePreview": "**Group related items** with separators"
+      "targetHash": "2f1f1345958f3813b4ff74333694edecadfc483ff0eaa90d3863752bc2f3336b",
+      "machineHash": "2f1f1345958f3813b4ff74333694edecadfc483ff0eaa90d3863752bc2f3336b",
+      "machineText": "関連する項目は区切り線で**グループ化してください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Group related items** with separators",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0137-text-01": {
       "sourceHash": "ec45b271e055fe192b4efed9573a277468563fc9643aec0c58384b892f4b00b9",
-      "targetHash": "9c1b6ef92d9abba0df3bb6eb91af6186aa8aff0b4e4a51163d028a4457a2163c",
-      "status": "migration-review",
-      "sourcePreview": "**Test on all platforms** - behaviour varies"
+      "targetHash": "f784c12217b1082004b69fe0c2aaa611ef76b162cbbcb7254518faa2a9a18b86",
+      "machineHash": "f784c12217b1082004b69fe0c2aaa611ef76b162cbbcb7254518faa2a9a18b86",
+      "machineText": "動作が異なるため、**すべてのプラットフォームでテストしてください**",
+      "status": "machine-translated",
+      "sourcePreview": "**Test on all platforms** - behaviour varies",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0138-heading-01": {
       "sourceHash": "df89c260f72fd6330be731a6de76bab196eead3f17430716717b08b94f12b175",
-      "targetHash": "1433a5b5e1f4bd13d6e664dba1961e52c2cd7a098eb6177b8d4f2e9f3bff5851",
-      "status": "migration-review",
-      "sourcePreview": "❌ Don't"
+      "targetHash": "25ae1c0b5e04b1902ed9bbebbc24266fd48e4d0ef3dc66b8e285c2913ced5826",
+      "machineHash": "25ae1c0b5e04b1902ed9bbebbc24266fd48e4d0ef3dc66b8e285c2913ced5826",
+      "machineText": "❌ 禁止事項",
+      "status": "machine-translated",
+      "sourcePreview": "❌ Don't",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0139-text-01": {
       "sourceHash": "16654794021885996dd8041a562b8a16160b069c84b4233c7724e96368c24ffd",
-      "targetHash": "30249429e9c94c0c2f755c818c7b84b833f8aac15e335ac37d08d48b9d958ed2",
-      "status": "migration-review",
-      "sourcePreview": "**Don't forget menu.Update()** - Click handlers won't work properly"
+      "targetHash": "4d02ddf6ad8954e036a27f20982518b3edc0b1c13abcc86fb060ef805eee2792",
+      "machineHash": "4d02ddf6ad8954e036a27f20982518b3edc0b1c13abcc86fb060ef805eee2792",
+      "machineText": "**menu.Update() の呼び出しを忘れないでください**。クリックハンドラーが正常に動作しなくなります",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't forget menu.Update()** - Click handlers won't work properly",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0140-text-01": {
       "sourceHash": "61d34f7e1eb80972ad31b47c3b723474158ee004c339d7c5a6953587fe464559",
-      "targetHash": "fe32915216b9c208a9c4eb726234d880ce4bf0d18c986623425c69e2d9bc9164",
-      "status": "migration-review",
-      "sourcePreview": "**Don't nest too deeply** - 2-3 levels maximum"
+      "targetHash": "8a12f76e2b764e707ab82518241ab9229ad72fc09967eca7c8f14f4ebbbe9bd9",
+      "machineHash": "8a12f76e2b764e707ab82518241ab9229ad72fc09967eca7c8f14f4ebbbe9bd9",
+      "machineText": "**階層を深くしすぎないでください**。最大 2-3 階層にします",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't nest too deeply** - 2-3 levels maximum",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0141-text-01": {
       "sourceHash": "bf1fe52e016f2bc6cb215162273b9ef72d2f9ea426907a3bb07ea239e4b3ae0b",
-      "targetHash": "71db02570e409d86f95d25022405cf6ba7266cc7cc66a526c8e118c36a0ec883",
-      "status": "migration-review",
-      "sourcePreview": "**Don't start/end with separators** - Looks unprofessional"
+      "targetHash": "f53540110600d756647248fb02f0eaa6ed005b060fd175915e0ebb819ba2ae77",
+      "machineHash": "f53540110600d756647248fb02f0eaa6ed005b060fd175915e0ebb819ba2ae77",
+      "machineText": "**先頭または末尾に区切り線を置かないでください**。洗練されていない印象になります",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't start/end with separators** - Looks unprofessional",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0142-text-01": {
       "sourceHash": "b379cf297accd2bb1934a42a0c677211c407187d92889ba9b8c9ff1afcfc7658",
-      "targetHash": "6639089f0366f9a4a827c9fe0eba67ee29d1c290ec9b1f8a8371b5c5cfe3e49b",
-      "status": "migration-review",
-      "sourcePreview": "**Don't use tooltips on macOS** - Not supported"
+      "targetHash": "4ad3e8b21494558729dd703244833ca09b0e03d27e405f3e691081421ddbb32d",
+      "machineHash": "4ad3e8b21494558729dd703244833ca09b0e03d27e405f3e691081421ddbb32d",
+      "machineText": "**macOS ではツールチップを使用しないでください**。サポートされていません",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't use tooltips on macOS** - Not supported",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0143-text-01": {
       "sourceHash": "1d7e9e7cd147b6e8b7f19ec09a8a08ef265511db31e9f22386df4d51ccb487a2",
-      "targetHash": "c175a8fd7fe36c325844ae275668e895326609e32504ca4bba599313899f1b24",
-      "status": "migration-review",
-      "sourcePreview": "**Don't hardcode platform shortcuts** - Use `CmdOrCtrl`"
+      "targetHash": "a38d1204c79ff51b1480d9fc679022108531140f53629e7d4ddfaff293a0f1f2",
+      "machineHash": "a38d1204c79ff51b1480d9fc679022108531140f53629e7d4ddfaff293a0f1f2",
+      "machineText": "**プラットフォーム固有のショートカットをハードコードしないでください**。`CmdOrCtrl` を使用します",
+      "status": "machine-translated",
+      "sourcePreview": "**Don't hardcode platform shortcuts** - Use `CmdOrCtrl`",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0144-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "7a259e9a8eba32089dbab8bca80bf11ef4b871e684f2d6979009a95512acb728",
-      "status": "migration-review",
-      "sourcePreview": "Troubleshooting"
+      "machineHash": "7a259e9a8eba32089dbab8bca80bf11ef4b871e684f2d6979009a95512acb728",
+      "machineText": "トラブルシューティング",
+      "status": "machine-translated",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0145-heading-01": {
       "sourceHash": "65319c24f4447a57981485a8be8aa82a1316ed80471dbf1226d920632dea9196",
       "targetHash": "456e49ae633b4628992c1d9e487c2faa936ae3a910e4e532f6c7ec13b6d5d4b9",
-      "status": "migration-review",
-      "sourcePreview": "Menu Items Not Responding"
+      "machineHash": "456e49ae633b4628992c1d9e487c2faa936ae3a910e4e532f6c7ec13b6d5d4b9",
+      "machineText": "メニュー項目が反応しない",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Items Not Responding",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0146-text-01": {
       "sourceHash": "6ae592266de3a976f344064e758329871ca13232bd0ec3bdd639f14e9b67a492",
-      "targetHash": "e029be977ab46a4e51c02ea1d5484f76ccf0973368c637758d56be683361c22e",
-      "status": "migration-review",
-      "sourcePreview": "**Symptom:** Click handlers don't fire"
+      "targetHash": "b045074702f5037ef8596a4a6cd084c2116832b9eb5cdc4167dceebc5ec22545",
+      "machineHash": "b045074702f5037ef8596a4a6cd084c2116832b9eb5cdc4167dceebc5ec22545",
+      "machineText": "\u003cstrong\u003e症状：\u003c/strong\u003eクリックハンドラーが発火しない",
+      "status": "machine-translated",
+      "sourcePreview": "**Symptom:** Click handlers don't fire",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0147-text-01": {
       "sourceHash": "48ba409c6a998dbc07869984cd1b5e097540f40cd2f8ff16f154a1bc96a5cad6",
-      "targetHash": "4d0c48ffb27618c652877b610b9d7671927fed0b9d3f72e20dd8c609c282eaa8",
-      "status": "migration-review",
-      "sourcePreview": "**Cause:** Forgot to call `menu.Update()` after enabling item"
+      "targetHash": "36241591264ad279b93ef297236a4b70226befa5e0302b2c87dbb701194d7a9d",
+      "machineHash": "36241591264ad279b93ef297236a4b70226befa5e0302b2c87dbb701194d7a9d",
+      "machineText": "\u003cstrong\u003e原因：\u003c/strong\u003e項目を有効化した後に `menu.Update()` を呼び出していない",
+      "status": "machine-translated",
+      "sourcePreview": "**Cause:** Forgot to call `menu.Update()` after enabling item",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0148-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineText": "**解決策：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0149-heading-01": {
       "sourceHash": "cb38636728b0b85108fe176a80c30a5aa7e33f6d2aa59677eff7f7b30f0db512",
-      "targetHash": "3984c04cc5a47c09b228c8a2bf23ea4d3ef7fb5e40a73859f1236a1bf7c7a454",
-      "status": "migration-review",
-      "sourcePreview": "Menu Items Greyed Out"
+      "targetHash": "13460f1da4615dbac215e3c93e7adacea564c4440364398b9123ea178fbed37c",
+      "machineHash": "13460f1da4615dbac215e3c93e7adacea564c4440364398b9123ea178fbed37c",
+      "machineText": "メニュー項目がグレーアウトしている",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Items Greyed Out",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0150-text-01": {
       "sourceHash": "e54324b992fe0f1a93e9f46863df31218ba92a5eb34ccfd8ddd99b115fe7b6ed",
       "targetHash": "54724958a3ed39b1328b810d9edab74ae9163dd9372ffba985f7908515f713c5",
-      "status": "migration-review",
-      "sourcePreview": "**Symptom:** Can't click menu items"
+      "machineHash": "54724958a3ed39b1328b810d9edab74ae9163dd9372ffba985f7908515f713c5",
+      "machineText": "\u003cstrong\u003e症状：\u003c/strong\u003eメニュー項目をクリックできない",
+      "status": "machine-translated",
+      "sourcePreview": "**Symptom:** Can't click menu items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0151-text-01": {
       "sourceHash": "b2d131b9aa048c14c373179502c819852f5b07e3eab075c3a15b3249c80ccb5b",
       "targetHash": "91f1ce6b157d8c295d9c0f5901424d7f4eec26bfe27e543c2afd8707afc53a1a",
-      "status": "migration-review",
-      "sourcePreview": "**Cause:** Items are disabled"
+      "machineHash": "91f1ce6b157d8c295d9c0f5901424d7f4eec26bfe27e543c2afd8707afc53a1a",
+      "machineText": "\u003cstrong\u003e原因：\u003c/strong\u003e項目が無効になっている",
+      "status": "machine-translated",
+      "sourcePreview": "**Cause:** Items are disabled",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0152-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineText": "**解決策：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0153-heading-01": {
       "sourceHash": "d32a313bf0b114b6b648c158c47393612ba9b126e9a8ba7c2c8838481aa8c986",
-      "targetHash": "74458f4a8c4c5be7bc2f0d14ac52e75acdf90a46770ea73f75673f269bd298b9",
-      "status": "migration-review",
-      "sourcePreview": "Accelerators Not Working"
+      "targetHash": "f37c511f4bb98621445a0f8c68e30156167212f62f1d05c7d7d4cb1f8b4f27e7",
+      "machineHash": "f37c511f4bb98621445a0f8c68e30156167212f62f1d05c7d7d4cb1f8b4f27e7",
+      "machineText": "アクセラレーターが動作しない",
+      "status": "machine-translated",
+      "sourcePreview": "Accelerators Not Working",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0154-text-01": {
       "sourceHash": "615f72f84d566090789324fdc40885807070548d06a1854d5292425bfa0780ac",
-      "targetHash": "67e65a4dd8c8186cc99e82fea65ae40e1b4e781d55113ab70079ba85760789bd",
-      "status": "migration-review",
-      "sourcePreview": "**Symptom:** Keyboard shortcuts don't trigger menu items"
+      "targetHash": "08daeb4221bed9231ba82b2c83cf2c23aff0ef810897d39cc703eb91d3f85095",
+      "machineHash": "08daeb4221bed9231ba82b2c83cf2c23aff0ef810897d39cc703eb91d3f85095",
+      "machineText": "\u003cstrong\u003e症状：\u003c/strong\u003eキーボードショートカットを押してもメニュー項目が実行されない",
+      "status": "machine-translated",
+      "sourcePreview": "**Symptom:** Keyboard shortcuts don't trigger menu items",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0155-text-01": {
       "sourceHash": "cbbfbd9928c3eba3ecc3668537df1aa2f52bca888f0cc067a759a2cea9c90ff2",
       "targetHash": "310373fa56eab397b6f32432616e9121d98c7917c35e3d53cfbc42194be5d419",
-      "status": "migration-review",
-      "sourcePreview": "**Causes:**"
+      "machineHash": "310373fa56eab397b6f32432616e9121d98c7917c35e3d53cfbc42194be5d419",
+      "machineText": "**原因：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Causes:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0156-text-01": {
       "sourceHash": "cf951f7b517286fa95b8c345b6fa1acf963c06fc85e8567f06b0346928c48120",
-      "targetHash": "12482cd96c8072fde0b0bfcd30241711fbe4620c087a237e98c7cab1c5638889",
-      "status": "migration-review",
-      "sourcePreview": "Accelerator format incorrect"
+      "targetHash": "9660f88945aaa13ef7917ea1ef4a41fec51aaf6965d31bd4372b1595b0530917",
+      "machineHash": "9660f88945aaa13ef7917ea1ef4a41fec51aaf6965d31bd4372b1595b0530917",
+      "machineText": "アクセラレーターの形式が正しくない",
+      "status": "machine-translated",
+      "sourcePreview": "Accelerator format incorrect",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0157-text-01": {
       "sourceHash": "a8d0c1bdbf767c115781992df0119f05246c162184fa22efd88fad27e7402b51",
-      "targetHash": "65116e0c661967caa3efc3625c27e02392fb406a22a1b2aa4ac14f5f510eb6e3",
-      "status": "migration-review",
-      "sourcePreview": "Conflict with system shortcuts"
+      "targetHash": "d5233570378289d4c3831913295dd2d964f920f23efb49188fa1b70dd8771d04",
+      "machineHash": "d5233570378289d4c3831913295dd2d964f920f23efb49188fa1b70dd8771d04",
+      "machineText": "システムのショートカットと競合している",
+      "status": "machine-translated",
+      "sourcePreview": "Conflict with system shortcuts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0158-text-01": {
       "sourceHash": "0178601a47bac96f02ced33384134b1f24a4c56fe9fb0bdde0b4d14d0595bd6a",
       "targetHash": "37d4ecc06860f87ebbf409a406927fabdbac54c9320cac1481f1adc0379c2183",
-      "status": "migration-review",
-      "sourcePreview": "Window doesn't have focus"
+      "machineHash": "37d4ecc06860f87ebbf409a406927fabdbac54c9320cac1481f1adc0379c2183",
+      "machineText": "ウィンドウにフォーカスがない",
+      "status": "machine-translated",
+      "sourcePreview": "Window doesn't have focus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0159-text-01": {
       "sourceHash": "e26e48cc5d7eaf08fbb9e829119c1ee67f51f8094d3149e40d5143592418f6df",
-      "targetHash": "488dd21c80b967bb3d36ceb0f437fae09c9b18f5296f5906dee7140fa5b2c09e",
-      "status": "migration-review",
-      "sourcePreview": "**Solution:**"
+      "targetHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineHash": "8a88b8e6fd7eea9dce5d2e956feab24dfe0a1a0a2c63d9acd6c6c4d4c3f08a3e",
+      "machineText": "**解決策：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Solution:**",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0160-heading-01": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
       "targetHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
-      "status": "migration-review",
-      "sourcePreview": "Next Steps"
+      "machineHash": "8a1aef9b62a550506668fa234622d2e3b1eeef90e33dca0053a6a074a5cf2c0e",
+      "machineText": "次のステップ",
+      "status": "machine-translated",
+      "sourcePreview": "Next Steps",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0161-text-01": {
       "sourceHash": "315881450902358bad1663533ebeda23593db8da46830a162cdfb3e5f48b5950",
-      "targetHash": "68b40eb15169d534a063b62e2343cee904bce301698ecb91f3bedf817d0f3cae",
-      "status": "migration-review",
-      "sourcePreview": "[Application Menus](/features/menus/application/) - Create application menu bars"
+      "targetHash": "bfc30730ec9a0a59ee8ecead6b383793490affd2bcd4c16877bcf3529ae0995c",
+      "machineHash": "bfc30730ec9a0a59ee8ecead6b383793490affd2bcd4c16877bcf3529ae0995c",
+      "machineText": "[アプリケーションメニュー](/features/menus/application/)：アプリケーションのメニューバーを作成する",
+      "status": "machine-translated",
+      "sourcePreview": "[Application Menus](/features/menus/application/) - Create application menu bars",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0162-text-01": {
       "sourceHash": "bfd8f6a86f0e6184b3666fa8176f5ccfcaed2c7b871235b1c291ff2ccb79fcbc",
-      "targetHash": "85de1b3549843ea9a9ee074ad15d2106b02b5aa56258900cf959d92d483495f0",
-      "status": "migration-review",
-      "sourcePreview": "[Context Menus](/features/menus/context/) - Right-click context menus"
+      "targetHash": "55807ac3c0e01697f86ca9a8d8a5e89e31311dd2123a961dde3c362c3e9f8bdf",
+      "machineHash": "55807ac3c0e01697f86ca9a8d8a5e89e31311dd2123a961dde3c362c3e9f8bdf",
+      "machineText": "[コンテキストメニュー](/features/menus/context/)：右クリックのコンテキストメニューを作成する",
+      "status": "machine-translated",
+      "sourcePreview": "[Context Menus](/features/menus/context/) - Right-click context menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0163-text-01": {
       "sourceHash": "eb7a81415c721a768b8173fea3932f226a9801d25d311ad6376d36700b59bb21",
-      "targetHash": "fefee7b2128499f4fa197d4be938dfd3e810b992f674b6aceff168df7eb04172",
-      "status": "migration-review",
-      "sourcePreview": "[System Tray Menus](/features/menus/systray/) - System tray/menu bar menus"
+      "targetHash": "dfc8416a9420921b5513c2a8108f2715ca30d4dfe0e09d254fb9e061b860ce3e",
+      "machineHash": "dfc8416a9420921b5513c2a8108f2715ca30d4dfe0e09d254fb9e061b860ce3e",
+      "machineText": "[システムトレイメニュー](/features/menus/systray/)：システムトレイ／メニューバーのメニューを作成する",
+      "status": "machine-translated",
+      "sourcePreview": "[System Tray Menus](/features/menus/systray/) - System tray/menu bar menus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0164-text-01": {
       "sourceHash": "bf2e1f31a13eedd5bcb46a9e1ef9beac772a3c3d2a146dbc1cf284b5e04b0633",
-      "targetHash": "af7c3d263c87ff0c6a03c8b6567e399268bff2f9786be6cde32890920ff91708",
-      "status": "migration-review",
-      "sourcePreview": "[Menu Patterns](/guides/menus/) - Common menu patterns and best practices"
+      "targetHash": "b740f50bad4e9e1ba7901e82cd314460f6dd6de485b672cb6d25edd769bfd490",
+      "machineHash": "b740f50bad4e9e1ba7901e82cd314460f6dd6de485b672cb6d25edd769bfd490",
+      "machineText": "[メニューパターン](/guides/menus/)：一般的なメニューパターンとベストプラクティス",
+      "status": "machine-translated",
+      "sourcePreview": "[Menu Patterns](/guides/menus/) - Common menu patterns and best practices",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "b0165-text-01": {
       "sourceHash": "8c483ede811a7c3b2095bf932b9db5336fb6a53c5c310c12d84b12e92e0dccb6",
-      "targetHash": "941306c7eb45a209b37b92e4fe4c7a95442dd18c5ead1e29c0b72cb8493cba58",
-      "status": "migration-review",
-      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu examples](https://…"
+      "targetHash": "5f5412ec6d02c7f3d5f4b0512057b498e33a2b9918dc6fa0cfc7ed7cd066ec1f",
+      "machineHash": "5f5412ec6d02c7f3d5f4b0512057b498e33a2b9918dc6fa0cfc7ed7cd066ec1f",
+      "machineText": "**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[メニューの例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)を確認してください。",
+      "status": "machine-translated",
+      "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu examples](https://…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "fm-description": {
       "sourceHash": "0139842e590d765c801a4ba253b830e8ec27e744ab28af26b269587a39519a7f",
-      "targetHash": "b902e447c436c0e2b795b46e7d05e3f500ff2e3bae319a7219438270344c18f9",
-      "status": "migration-review",
-      "sourcePreview": "Complete reference for menu item types, properties, and methods"
+      "targetHash": "9f310a495a032b1a11da9a5f5b8ee28735c88cc113a5f2c23ac400410d6ba426",
+      "machineHash": "9f310a495a032b1a11da9a5f5b8ee28735c88cc113a5f2c23ac400410d6ba426",
+      "machineText": "メニュー項目の種類、プロパティ、メソッドの完全なリファレンス",
+      "status": "machine-translated",
+      "sourcePreview": "Complete reference for menu item types, properties, and methods",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     },
     "fm-title": {
       "sourceHash": "3e9fd87a78f87240868d6a05b0e975c03588497632361ee133168e868a671761",
       "targetHash": "c79438a0f4dbd157f9637ef438e61c91d1f0bbfef28143078c435df21141b9d2",
-      "status": "migration-review",
-      "sourcePreview": "Menu Reference"
+      "machineHash": "c79438a0f4dbd157f9637ef438e61c91d1f0bbfef28143078c435df21141b9d2",
+      "machineText": "メニューリファレンス",
+      "status": "machine-translated",
+      "sourcePreview": "Menu Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-03T00:17:24Z"
     }
   },
   "migration": {

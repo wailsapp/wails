@@ -307,16 +307,16 @@
       "updatedAt": "2026-10-25T21:50:48Z"
     },
     "b0026-text-01": {
-      "sourceHash": "f5fb6eabe7d16c4cb37fb8f490deddb04ec949479ba108341e5939b2b41df138",
-      "targetHash": "7149a80565ba04fb3bf5e5c2bbdaddf4abfa7b74cc30e7594a63dba276e00ac3",
-      "machineHash": "7149a80565ba04fb3bf5e5c2bbdaddf4abfa7b74cc30e7594a63dba276e00ac3",
-      "machineText": "Эта дорожная карта может меняться с учётом отзывов сообщества и приоритетов проекта. Мы будем регулярно обновлять её, чтобы отражать ход работы и изменения направления развития. Сообщайте о воспроизводимых проблемах в задачах; предлагайте новые возможности через запрос на включение изменений с [WEP (предложением по улучшению Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).",
+      "sourceHash": "48dfcf206977fbc4c3bcf4217220d4012ab514c1c8d27e085ffbb356fed6d09b",
+      "targetHash": "886268a82c6a62cc9b939924b0c7f1b785be8e8baebe3ecb86dd4982f9f1b40a",
+      "machineHash": "886268a82c6a62cc9b939924b0c7f1b785be8e8baebe3ecb86dd4982f9f1b40a",
+      "machineText": "Эта дорожная карта может меняться с учётом отзывов сообщества и приоритетов проекта. Мы будем регулярно обновлять её, отражая достигнутый прогресс и изменения направления. Сообщайте о воспроизводимых проблемах в задачах; новую функциональность предлагайте через PR с [WEP (предложением по улучшению Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).",
       "status": "machine-translated",
       "sourcePreview": "This roadmap is subject to change based on community feedback and project priorities. We'll update i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:48Z"
+      "updatedAt": "2026-11-06T02:15:15Z"
     },
     "fm-description": {
       "sourceHash": "acbf6f4923696d9bc59f9c891419bb098d49bd9b30e1ecf24ef15e3f1474b434",

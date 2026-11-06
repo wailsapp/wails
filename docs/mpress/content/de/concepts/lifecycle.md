@@ -5,11 +5,11 @@ slug: "concepts/lifecycle"
 sourcePath: "concepts/lifecycle.md"
 ---
 
-## Anwendungslebenszyklus verstehen
+## Den Anwendungslebenszyklus verstehen
 
-Desktopanwendungen durchlaufen einen Lebenszyklus vom Start bis zum Herunterfahren. Wails v3 bietet **Dienste**, **Ereignisse** und **Hooks**, um diesen Lebenszyklus effektiv zu verwalten.
+Desktopanwendungen durchlaufen einen Lebenszyklus vom Start bis zum Herunterfahren. Wails v3 stellt **Dienste**, **Ereignisse** und **Hooks** bereit, um diesen Lebenszyklus effizient zu verwalten.
 
-## Phasen des Lebenszyklus
+## Die Phasen des Lebenszyklus
 
 ```d2
 direction: down
@@ -108,7 +108,7 @@ Cleanup.Release -> End
 
 ### 1. Anwendung erstellen
 
-Erstellen Sie Ihre Anwendung mit `application.New()`:
+Erstelle deine Anwendung mit `application.New()`:
 
 ```go
 app := application.New(application.Options{
@@ -125,14 +125,14 @@ app := application.New(application.Options{
 
 **Was geschieht:**
 
-1. Optionen werden analysiert und validiert
+1. Optionen werden ausgewertet und validiert
 2. Dienste werden registriert (aber noch nicht gestartet)
 3. Der Asset-Server wird konfiguriert
 4. Die Laufzeitumgebung wird eingerichtet
 
 ### 2. Anwendung ausführen
 
-Rufen Sie `app.Run()` auf, um die Anwendung zu starten:
+Rufe `app.Run()` auf, um die Anwendung zu starten:
 
 ```go
 err := app.Run()  // Blocks until quit
@@ -159,19 +159,19 @@ Die Anwendung wechselt in die Ereignisschleife, in der sie die meiste Zeit verbr
 
 ### 4. Herunterfahren
 
-Beim Beenden der Anwendung:
+Beim Beenden der Anwendung geschieht Folgendes:
 
 1. Der Callback `ShouldQuit` wird geprüft (falls festgelegt)
-2. `OnShutdown`-Callbacks werden ausgeführt
+2. Die `OnShutdown`-Callbacks werden ausgeführt
 3. Dienste werden in umgekehrter Reihenfolge heruntergefahren
 4. Fenster werden geschlossen
 5. Ressourcen werden freigegeben
 
 ## Lebenszyklus von Diensten
 
-Dienste sind in Wails v3 der wichtigste Mechanismus zur Verwaltung des Lebenszyklus. Sie stellen über Schnittstellen Hooks für das Starten und Herunterfahren bereit. Eine vollständige Dokumentation zu Diensten finden Sie im [Leitfaden zu Diensten](/features/bindings/services/).
+Dienste sind der wichtigste Mechanismus zur Verwaltung des Lebenszyklus in Wails v3. Über Schnittstellen stellen sie Hooks für das Starten und Herunterfahren bereit. Eine vollständige Dokumentation findest du im [Leitfaden zu Diensten](/features/bindings/services/).
 
-### Dienst erstellen
+### Einen Dienst erstellen
 
 ```go
 type MyService struct {
@@ -218,12 +218,12 @@ app := application.New(application.Options{
 
 - Dienste werden in der Reihenfolge ihrer Registrierung gestartet
 - Dienste werden in **umgekehrter** Registrierungsreihenfolge heruntergefahren
-- Gibt `ServiceStartup` eines Dienstes einen Fehler zurück, bricht die Anwendung ab
+- Gibt `ServiceStartup` eines Dienstes einen Fehler zurück, wird die Anwendung abgebrochen
 - Der an `ServiceStartup` übergebene `ctx` wird abgebrochen, sobald das Herunterfahren beginnt
 
-### Anwendungskontext verwenden
+### Den Anwendungskontext verwenden
 
-Der an `ServiceStartup` übergebene Kontext bleibt während der gesamten Lebensdauer der Anwendung gültig:
+Der an `ServiceStartup` übergebene Kontext ist während der gesamten Lebensdauer der Anwendung gültig:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -247,7 +247,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-Sie können auch über die Anwendungsinstanz auf den Kontext zugreifen:
+Du kannst auch über die Anwendungsinstanz auf den Kontext zugreifen:
 
 ```go
 app := application.Get()
@@ -256,20 +256,20 @@ ctx := app.Context()
 
 ## Hooks auf Anwendungsebene
 
-Diese praktischen Callbacks in `application.Options` ermöglichen es, sich in den Anwendungslebenszyklus einzuklinken, ohne einen vollständigen Service zu erstellen. Sie eignen sich für einfache Bereinigungsaufgaben, die Bestätigung des Beendens oder zum Ausführen von Code an bestimmten Stellen der Herunterfahrsequenz.
+Dies sind praktische Callbacks in `application.Options`, mit denen du dich in den Anwendungslebenszyklus einklinken kannst, ohne einen vollständigen Dienst zu erstellen. Sie eignen sich für einfache Bereinigungsaufgaben, zur Bestätigung des Beendens oder wenn du Code an bestimmten Punkten der Herunterfahrsequenz ausführen musst.
 
-Verwenden Sie für eine komplexere Verwaltung des Lebenszyklus mit Startlogik, Dependency Injection oder zustandsbehafteten Ressourcen stattdessen [Services](#lebenszyklus-von-diensten).
+Verwende stattdessen [Dienste](#lebenszyklus-von-diensten), wenn du den Lebenszyklus mit Startlogik, Dependency Injection oder zustandsbehafteten Ressourcen komplexer verwalten musst.
 
 ### ShouldQuit
 
-Der Callback `ShouldQuit` wird bei jeder Anforderung zum Beenden aufgerufen – unabhängig davon, ob der Benutzer das letzte Fenster schließt, Cmd+Q (macOS) bzw. Alt+F4 (Windows) drückt oder `app.Quit()` programmgesteuert aufgerufen wird.
+Der Callback `ShouldQuit` wird bei jeder Anforderung zum Beenden aufgerufen – unabhängig davon, ob der Benutzer das letzte Fenster schließt, Cmd+Q (macOS) beziehungsweise Alt+F4 (Windows) drückt oder `app.Quit()` programmgesteuert aufgerufen wird.
 
 **Rückgabewert:**
 
-- Geben Sie `true` zurück, um das Beenden zuzulassen (die Anwendung wird heruntergefahren).
-- Geben Sie `false` zurück, um das Beenden abzubrechen (die Anwendung wird weiter ausgeführt).
+- Gib `true` zurück, um das Beenden zuzulassen (die Anwendung wird heruntergefahren)
+- Gib `false` zurück, um das Beenden abzubrechen (die Anwendung läuft weiter)
 
-Hier können Sie Anforderungen zum Beenden abfangen und bei Bedarf verhindern, beispielsweise um den Benutzer auf ungespeicherte Änderungen hinzuweisen:
+Hier kannst du Anforderungen zum Beenden abfangen und bei Bedarf verhindern, beispielsweise um den Benutzer auf nicht gespeicherte Änderungen hinzuweisen:
 
 ```go
 app := application.New(application.Options{
@@ -303,19 +303,19 @@ Ist `ShouldQuit` nicht festgelegt, wird die Anwendung bei einer entsprechenden A
 
 **Wann ShouldQuit aufgerufen wird:**
 
-- Der Benutzer schließt das letzte Fenster (sofern `DisableQuitOnLastWindowClosed` nicht festgelegt ist).
-- Der Benutzer drückt unter macOS Cmd+Q.
-- Der Benutzer drückt unter Windows Alt+F4 (während das letzte Fenster den Fokus hat).
-- Der Code ruft `app.Quit()` auf.
+- Der Benutzer schließt das letzte Fenster (sofern `DisableQuitOnLastWindowClosed` nicht festgelegt ist)
+- Der Benutzer drückt unter macOS Cmd+Q
+- Der Benutzer drückt unter Windows Alt+F4 (wenn das letzte Fenster den Fokus hat)
+- Der Code ruft `app.Quit()` auf
 
 **Wann ShouldQuit NICHT aufgerufen wird:**
 
-- Der Prozess wird zwangsweise beendet (SIGKILL oder erzwungenes Beenden über den Task-Manager).
-- `os.Exit()` wird direkt aufgerufen.
+- Der Prozess wird zwangsweise beendet (SIGKILL oder erzwungenes Beenden über den Task-Manager)
+- `os.Exit()` wird direkt aufgerufen
 
 ### OnShutdown
 
-Der Callback `OnShutdown` wird aufgerufen, sobald das Beenden der Anwendung bestätigt ist (nachdem `ShouldQuit` den Wert `true` zurückgegeben hat, sofern festgelegt). Verwenden Sie ihn für Bereinigungsaufgaben wie das Speichern des Zustands, das Schließen von Datenbankverbindungen oder das Freigeben von Ressourcen.
+Der Callback `OnShutdown` wird aufgerufen, sobald das Beenden der Anwendung bestätigt ist (nachdem `ShouldQuit` den Wert `true` zurückgegeben hat, sofern festgelegt). Verwende ihn für Bereinigungsaufgaben wie das Speichern des Zustands, das Schließen von Datenbankverbindungen oder das Freigeben von Ressourcen.
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-Sie können außerdem jederzeit während des Anwendungslebenszyklus programmgesteuert weitere Callbacks für das Herunterfahren registrieren:
+Du kannst während des Anwendungslebenszyklus außerdem jederzeit programmgesteuert weitere Callbacks für das Herunterfahren registrieren:
 
 ```go
 app.OnShutdown(func() {
@@ -339,15 +339,15 @@ app.OnShutdown(func() {
 
 Mehrere Callbacks werden in der Reihenfolge ihrer Registrierung ausgeführt. Der Herunterfahrvorgang wird blockiert, bis alle Callbacks abgeschlossen sind.
 
-**Wichtig:** Halten Sie Callbacks für das Herunterfahren kurz (unter 1 Sekunde). Das Betriebssystem kann Anwendungen zwangsweise beenden, wenn der Beendigungsvorgang zu lange dauert. Dadurch könnte die Bereinigung unterbrochen werden und es könnten Daten verloren gehen.
+**Wichtig:** Halten Sie Callbacks zum Herunterfahren kurz (unter 1 Sekunde). Das Betriebssystem kann Anwendungen zwangsweise beenden, wenn das Beenden zu lange dauert. Dadurch könnten Ihre Bereinigungsarbeiten unterbrochen werden und Daten verloren gehen.
 
 ### PostShutdown
 
-Der Callback `PostShutdown` wird unmittelbar vor dem Beenden des Prozesses aufgerufen, nachdem alle Aufgaben zum Herunterfahren abgeschlossen sind. Zu diesem Zeitpunkt kann die Anwendungsinstanz nicht mehr verwendet werden: Die Fenster sind geschlossen, die Services heruntergefahren und die Ressourcen freigegeben.
+Der Callback `PostShutdown` wird aufgerufen, nachdem alle Aufgaben zum Herunterfahren abgeschlossen wurden, unmittelbar bevor der Prozess beendet wird. Zu diesem Zeitpunkt kann die Anwendungsinstanz nicht mehr verwendet werden – die Fenster sind geschlossen, die Dienste heruntergefahren und die Ressourcen freigegeben.
 
-Dies ist hauptsächlich für Folgendes nützlich:
+Dies ist vor allem für Folgendes nützlich:
 
-- Abschließende Protokollierung, die erst nach allen anderen Bereinigungsaufgaben erfolgen darf
+- Abschließende Protokollierung, die nach allen anderen Bereinigungsarbeiten erfolgen muss
 - Testen und Debuggen des Verhaltens beim Herunterfahren
 - Plattformen, auf denen `app.Run()` nicht zurückkehrt (der Callback stellt sicher, dass Ihr Code ausgeführt wird)
 
@@ -363,19 +363,19 @@ app := application.New(application.Options{
 })
 ```
 
-**Hinweis:** Versuchen Sie in `PostShutdown` nicht, Anwendungsfunktionen wie Fenster oder Dialoge zu verwenden – sie sind nicht mehr verfügbar.
+**Hinweis:** Versuchen Sie nicht, in `PostShutdown` Anwendungsfunktionen wie Fenster oder Dialoge zu verwenden – sie sind nicht mehr verfügbar.
 
 ## Ereignisbasierter Lebenszyklus
 
-Wails stellt ein Ereignissystem bereit, das Sie über Vorgänge in Ihrer Anwendung informiert, etwa über das Öffnen von Fenstern, den Start der Anwendung, Änderungen des Farbschemas und weitere Ereignisse. Sie können auf diese Ereignisse reagieren, um Änderungen des Lebenszyklus zu verarbeiten, ohne sie zu blockieren oder abzufangen.
+Wails bietet ein Ereignissystem, das Sie über Vorgänge in Ihrer Anwendung informiert, etwa über das Öffnen von Fenstern, den Start der Anwendung oder Designänderungen. Sie können auf diese Ereignisse reagieren, um Änderungen am Lebenszyklus zu verarbeiten, ohne sie zu blockieren oder abzufangen.
 
-Bei Fensterereignissen können Sie statt `OnWindowEvent` auch `RegisterHook` verwenden, um Aktionen abzufangen und abzubrechen, beispielsweise um das Schließen eines Fensters zu verhindern. Siehe unten [Fenster-Hooks](#fenster-hooks-abbrechbare-ereignisse).
+Bei Fensterereignissen können Sie außerdem `RegisterHook` anstelle von `OnWindowEvent` verwenden, um Aktionen abzufangen und abzubrechen – beispielsweise um das Schließen eines Fensters zu verhindern. Siehe unten [Fenster-Hooks](#fenster-hooks-abbrechbare-ereignisse).
 
-Die vollständige Dokumentation des Ereignissystems finden Sie im [Ereignisleitfaden](/features/events/system/).
+Die vollständige Dokumentation zum Ereignissystem finden Sie im [Ereignisleitfaden](/features/events/system/).
 
 ### Anwendungsereignisse
 
-Reagieren Sie auf Ereignisse des Anwendungslebenszyklus:
+Reagieren Sie auf Ereignisse im Anwendungslebenszyklus:
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
@@ -383,7 +383,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *appli
 })
 ```
 
-Außerdem sind plattformspezifische Ereignisse verfügbar:
+Zusätzlich sind plattformspezifische Ereignisse verfügbar:
 
 ```go
 // macOS
@@ -403,7 +403,7 @@ app.Event.OnApplicationEvent(events.Windows.ApplicationStarted, func(event *appl
 
 ### Fensterereignisse
 
-Reagieren Sie auf Ereignisse des Fensterlebenszyklus:
+Reagieren Sie auf Ereignisse im Fensterlebenszyklus:
 
 ```go
 window := app.Window.New()
@@ -419,7 +419,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ### Fenster-Hooks (abbrechbare Ereignisse)
 
-Verwenden Sie `RegisterHook` statt `OnWindowEvent`, wenn Sie ein Ereignis **abbrechen** müssen:
+Verwenden Sie `RegisterHook` anstelle von `OnWindowEvent`, wenn Sie ein Ereignis **abbrechen** müssen:
 
 ```go
 window := app.Window.New()
@@ -439,14 +439,14 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Unterschied zwischen OnWindowEvent und RegisterHook:**
 
-- `OnWindowEvent`: Benachrichtigt Sie, wenn ein Ereignis eintritt (es kann nicht abgebrochen werden)
+- `OnWindowEvent`: Benachrichtigt Sie, wenn ein Ereignis eintritt (kann nicht abgebrochen werden)
 - `RegisterHook`: Ermöglicht es Ihnen, das Ereignis abzufangen und gegebenenfalls abzubrechen
 
 ## Fensterlebenszyklus
 
-Fenster haben einen eigenen Lebenszyklus von der Erstellung bis zur Zerstörung. Jedes Fenster lädt seine Frontend-Inhalte unabhängig und kann jederzeit angezeigt, ausgeblendet oder geschlossen werden. Wenn ein Benutzer versucht, ein Fenster zu schließen, können Sie dies mit einem `RegisterHook` abfangen, um eine Bestätigung anzufordern oder das Fenster auszublenden, statt es zu zerstören.
+Fenster haben einen eigenen Lebenszyklus, der von der Erstellung bis zur Zerstörung reicht. Jedes Fenster lädt seine Frontend-Inhalte unabhängig und kann jederzeit angezeigt, ausgeblendet oder geschlossen werden. Wenn ein Benutzer versucht, ein Fenster zu schließen, können Sie dies mit einem `RegisterHook` abfangen, um eine Bestätigung anzufordern oder das Fenster auszublenden, statt es zu zerstören.
 
-Die vollständige Dokumentation zu Fenstern finden Sie im [Leitfaden zu Fenstern](/features/windows/basics/).
+Die vollständige Dokumentation zu Fenstern finden Sie im [Fensterleitfaden](/features/windows/basics/).
 
 ```d2
 direction: down
@@ -493,10 +493,10 @@ Create -> Load
 Load -> Show
 Show -> Active.Events
 Active.Events -> Active.Events: Schleife
-Active.Events -> CloseRequest: Benutzer schließt das Fenster
+Active.Events -> CloseRequest: Benutzer schließt Fenster
 CloseRequest -> Hook
 Hook -> Active.Events: Abgebrochen
-Hook -> Destroy: Zulässig
+Hook -> Destroy: Zugelassen
 Destroy -> End
 ```
 
@@ -548,9 +548,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-## Lebenszyklus bei mehreren Fenstern
+## Lebenszyklus mehrerer Fenster
 
-Bei mehreren Fenstern:
+Bei mehreren Fenstern gilt:
 
 ```go
 mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -565,17 +565,17 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Das Standardverhalten variiert je nach Plattform:**
+**Das Standardverhalten unterscheidet sich je nach Plattform:**
 
 | Plattform | Standardverhalten beim Schließen des letzten Fensters |
 | --- | --- |
-| macOS | Anwendung wird weiter ausgeführt (Menüleiste bleibt sichtbar) |
+| macOS | Anwendung läuft weiter (Menüleiste bleibt bestehen) |
 | Windows | Anwendung wird beendet |
 | Linux | Anwendung wird beendet |
 
-macOS folgt den nativen Plattformkonventionen, nach denen Anwendungen normalerweise auch ohne geöffnete Fenster in der Menüleiste aktiv bleiben. Unter Windows und Linux werden sie standardmäßig beendet.
+macOS folgt den nativen Plattformkonventionen, nach denen Anwendungen üblicherweise auch ohne Fenster in der Menüleiste aktiv bleiben. Unter Windows und Linux werden sie standardmäßig beendet.
 
-**Alle Plattformen so konfigurieren, dass die Anwendung beim Schließen des letzten Fensters beendet wird:**
+**Anwendung auf allen Plattformen beim Schließen des letzten Fensters beenden:**
 
 ```go
 app := application.New(application.Options{
@@ -585,9 +585,9 @@ app := application.New(application.Options{
 })
 ```
 
-**Alle Plattformen so konfigurieren, dass die Anwendung beim Schließen des letzten Fensters weiter ausgeführt wird:**
+**Anwendung auf allen Plattformen nach dem Schließen des letzten Fensters weiterlaufen lassen:**
 
-Dies ist für Anwendungen im Infobereich oder Anwendungen nützlich, die im Hintergrund weiter ausgeführt werden sollen.
+Dies ist für Anwendungen im Infobereich oder für Anwendungen nützlich, die im Hintergrund weiterlaufen sollen.
 
 ```go
 app := application.New(application.Options{
@@ -708,12 +708,12 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ## Lebenszyklusreferenz
 
-| Hook/Schnittstelle | Aufrufzeitpunkt | Abbruch möglich? | Verwendungszweck |
+| Hook/Schnittstelle | Aufrufzeitpunkt | Abbrechbar? | Verwendungszweck |
 | --- | --- | --- | --- |
-| `ServiceStartup` | Während `app.Run()`, vor der Ereignisschleife | Nein (zum Abbrechen Fehler zurückgeben) | Initialisierung |
+| `ServiceStartup` | Während `app.Run()`, vor der Ereignisschleife | Nein (Fehler zurückgeben, um abzubrechen) | Initialisierung |
 | `ServiceShutdown` | Während des Herunterfahrens, nach `OnShutdown` | Nein | Bereinigung |
-| `OnShutdown` | Nach Bestätigung des Beendens | Nein | Anwendungsbereinigung |
-| `ShouldQuit` | Wenn das Beenden angefordert wird | Ja (`false` zurückgeben) | Beenden bestätigen |
+| `OnShutdown` | Wenn das Beenden bestätigt wurde | Nein | Anwendungsbereinigung |
+| `ShouldQuit` | Wenn das Beenden angefordert wird | Ja (false zurückgeben) | Beenden bestätigen |
 | `RegisterHook(WindowClosing)` | Wenn das Schließen des Fensters angefordert wird | Ja (`e.Cancel()`) | Schließen des Fensters verhindern |
 | `OnWindowEvent` | Wenn das Ereignis eintritt | Nein | Auf Ereignisse reagieren |
 | `OnApplicationEvent` | Wenn das Ereignis eintritt | Nein | Auf Ereignisse reagieren |
@@ -722,31 +722,31 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ### macOS
 
-- Das **Anwendungsmenü** bleibt auch ohne geöffnete Fenster verfügbar
-- **Cmd+Q** löst den Beendigungsvorgang aus (über `ShouldQuit`)
-- Das **Dock-Symbol** bleibt sichtbar, sofern es nicht ausgeblendet wird
+- **Das Anwendungsmenü** bleibt auch ohne geöffnete Fenster verfügbar
+- **Cmd+Q** beendet die Anwendung (über `ShouldQuit`)
+- **Das Dock-Symbol** bleibt sichtbar, sofern es nicht ausgeblendet wird
 - Verwenden Sie `ApplicationShouldTerminateAfterLastWindowClosed`, um das Beendigungsverhalten zu steuern
 
 ### Windows
 
-- Ohne Fenster gibt es **kein Anwendungsmenü**
+- **Ohne Fenster gibt es kein Anwendungsmenü**
 - **Alt+F4** schließt das Fenster (kann mit `RegisterHook` verhindert werden)
-- Der **Infobereich der Taskleiste** kann die Anwendung weiter ausführen lassen
+- **Der Infobereich der Taskleiste** kann die Anwendung weiter ausführen
 
 ### Linux
 
-- Das **Verhalten variiert** je nach Desktop-Umgebung
+- **Das Verhalten variiert** je nach Desktop-Umgebung
 - **Im Allgemeinen ähnlich wie unter Windows**
 
-## Probleme mit dem Lebenszyklus beheben
+## Probleme mit dem Lebenszyklus debuggen
 
-### Problem: Anwendung lässt sich nicht beenden
+### Problem: Die Anwendung wird nicht beendet
 
 **Ursachen:**
 
 1. `ShouldQuit` gibt `false` zurück
 2. `OnShutdown` dauert zu lange
-3. Hintergrund-Goroutinen werden nicht beendet
+3. Goroutinen im Hintergrund werden nicht beendet
 
 **Lösung:**
 
@@ -774,7 +774,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-### Problem: Dienst kann nicht gestartet werden
+### Problem: Der Dienst kann nicht gestartet werden
 
 **Lösung:** Geben Sie aussagekräftige Fehler zurück:
 
@@ -789,30 +789,30 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 Der Fehler wird protokolliert und die Anwendung wird nicht gestartet.
 
-## Bewährte Methoden
+## Bewährte Vorgehensweisen
 
 ### Empfohlen
 
-- **Verwenden Sie Dienste für die Lebenszyklusverwaltung** – Sie stellen geeignete Hooks für Start und Herunterfahren bereit
-- **Sorgen Sie für schnelles Herunterfahren** – Streben Sie für sämtliche Bereinigungen insgesamt weniger als 1 Sekunde an
-- **Verwenden Sie den Kontext für Abbrüche** – Beenden Sie Hintergrundaufgaben ordnungsgemäß
-- **Behandeln Sie Fehler beim Start** – Geben Sie Fehler zurück, um den Start ordnungsgemäß abzubrechen
-- **Protokollieren Sie Lebenszyklusereignisse** – Das erleichtert die Fehlersuche
+- **Verwenden Sie Dienste für die Lebenszyklusverwaltung** – sie bieten geeignete Hooks für Start und Herunterfahren
+- **Sorgen Sie für schnelles Herunterfahren** – die gesamte Bereinigung sollte weniger als 1 Sekunde dauern
+- **Verwenden Sie den Kontext für Abbrüche** – beenden Sie Hintergrundaufgaben ordnungsgemäß
+- **Behandeln Sie Fehler beim Start** – geben Sie Fehler zurück, um den Start sauber abzubrechen
+- **Protokollieren Sie Lebenszyklusereignisse** – das erleichtert das Debugging
 
 ### Nicht empfohlen
 
-- **Führen Sie beim Dienststart keine blockierenden Operationen aus** – Halten Sie die Initialisierung kurz (unter 2 Sekunden)
-- **Zeigen Sie beim Herunterfahren keine Dialogfelder an** – Die Anwendung wird beendet; die Benutzeroberfläche funktioniert möglicherweise nicht mehr
-- **Ignorieren Sie den Kontext nicht** – Prüfen Sie in Goroutinen immer `ctx.Done()`
-- **Vermeiden Sie Ressourcenlecks** – Implementieren Sie immer `ServiceShutdown`
+- **Blockieren Sie den Dienststart nicht** – halten Sie die Initialisierung kurz (unter 2 Sekunden)
+- **Zeigen Sie beim Herunterfahren keine Dialogfelder an** – die Anwendung wird beendet und die Benutzeroberfläche funktioniert möglicherweise nicht mehr
+- **Ignorieren Sie den Kontext nicht** – prüfen Sie in Goroutinen stets `ctx.Done()`
+- **Vermeiden Sie Ressourcenlecks** – implementieren Sie immer `ServiceShutdown`
 
 ## Nächste Schritte
 
-**Dienste** – Erfahren Sie mehr über das Dienstsystem [Mehr erfahren →](/features/bindings/services/)
+**Dienste** – erfahren Sie mehr über das Dienstsystem [Mehr erfahren →](/features/bindings/services/)
 
-**Ereignissystem** – Verwenden Sie Ereignisse zur Kommunikation [Mehr erfahren →](/features/events/system/)
+**Ereignissystem** – verwenden Sie Ereignisse zur Kommunikation [Mehr erfahren →](/features/events/system/)
 
-**Fensterverwaltung** – Erstellen und verwalten Sie Fenster [Mehr erfahren →](/features/windows/basics/)
+**Fensterverwaltung** – erstellen und verwalten Sie Fenster [Mehr erfahren →](/features/windows/basics/)
 
 ---
 

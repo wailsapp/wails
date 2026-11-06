@@ -24,7 +24,7 @@ Wails v3使用**M-Press**将 Markdown 转换为此文档站点。你可以修正
 
 ### 下载可执行文件
 
-打开[最新的 M-Press 稳定版](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)发布页面，或在下面下载对应的压缩包。ARM64 包括 Apple Silicon；AMD64 是 Intel/AMD PC 常用的架构。
+打开[最新的 M-Press 稳定版发布页面](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)，或在下方下载对应的归档文件。ARM64 包括 Apple Silicon；AMD64 是常见的 Intel/AMD PC 架构。
 
 | 计算机 | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ Wails v3使用**M-Press**将 Markdown 转换为此文档站点。你可以修正
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-从同一个发布版本下载[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)。在下载目录中，计算压缩包的 SHA-256 哈希值，并将其与`checksums.txt`中该文件名所在行的值进行比较：
+从同一发布页面下载[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)。在下载目录中，计算归档文件的 SHA-256 哈希值，并将其与`checksums.txt`中该文件名对应的行进行比较：
 
 @tabs
 [macOS]

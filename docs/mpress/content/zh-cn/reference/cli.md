@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | 生成从 Go 到前端的绑定。标志：`-d`（输出目录）、`-models`、`-index`、`-ts`、`-i`（接口）、`-b`（捆绑）、`-names`（生成`Call.ByName`）、`-noevents`、`-noindex`、`-dry`、`-silent`、`-v`、`-clean`（默认为`true`）、`-f`、`-obfuscated`（生成带有稳定绑定 ID 的`wails_obfuscated.gen.go`，用于 Garble 构建；请参阅[混淆构建](/guides/build/obfuscation/)）、`-obfuscated-output`（生成文件的目录；默认为 main 包目录）。接受包模式（例如`./...`）；如果未提供，则回退到当前目录。 |
 | `generate icons` | 将源 PNG 转换为各平台的图标格式。标志：`-input`、`-windowsfilename`、`-macfilename`、`-iconcomposerinput`、`-macassetdir`。 |
 | `generate build-assets` | 根据`build/config.yml`生成`build/`目录的内容（Taskfile 片段、NSIS 文件、`Info.plist`、`.desktop`模板等）。 |
-| `generate runtime` | 重新生成随 webview 一同提供的预构建`/wails/runtime.js`。 |
+| `generate runtime` | 导出 CLI 内嵌的生产版/调试版 JavaScript 捆绑包（`-d`用于选择目标位置）。 |
 | `generate syso` | 生成 Windows `.syso`资源文件（图标、清单和版本信息）。 |
 | `generate webview2bootstrapper` | 生成适用于 Windows 的 WebView2 引导安装程序。 |
 | `generate constants` | 根据 Go 事件类型生成 JS 事件名称常量。 |

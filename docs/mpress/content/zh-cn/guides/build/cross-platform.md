@@ -1,13 +1,13 @@
 ---
 title: "跨平台构建"
-description: "在一台计算机上为多个平台构建"
+description: "在一台机器上为多个平台构建"
 slug: "guides/build/cross-platform"
 sourcePath: "guides/build/cross-platform.md"
 ---
 
 ## 快速开始
 
-Wails v3 支持从任意主机操作系统为 Windows、macOS 和 Linux 构建。构建系统会自动检测你的环境并选择正确的编译方式。
+Wails v3 支持从任意宿主操作系统为 Windows、macOS 和 Linux 构建。构建系统会自动检测你的环境并选择正确的编译方式。
 
 <strong>想要交叉编译到 macOS 和 Linux？</strong>运行一次以下命令来设置 Docker 镜像（下载约 800MB）：
 
@@ -15,7 +15,7 @@ Wails v3 支持从任意主机操作系统为 Windows、macOS 和 Linux 构建�
 wails3 task setup:docker
 ```
 
-然后为任意平台构建：
+然后即可为任意平台构建：
 
 ```bash
 # Build for current platform (production by default)
@@ -37,15 +37,15 @@ GOOS=darwin GOARCH=arm64 wails3 build
 
 ### Windows
 
-Windows 是最简单的交叉编译目标，因为默认情况下不需要 CGO。
+Windows 是最简单的交叉编译目标，因为默认不需要 CGO。
 
 ```bash
 wails3 build GOOS=windows
 ```
 
-无需任何额外设置，即可从任意主机操作系统构建。Go 的内置交叉编译会处理一切。
+这可以在任意宿主操作系统上运行，无需额外设置。Go 内置的交叉编译功能会处理一切。
 
-**如果你的应用需要 CGO**（例如使用了 C 库或依赖 CGO 的软件包），从 macOS 或 Linux 构建时需要使用 Docker：
+**如果你的应用需要 CGO**（例如使用了 C 库或依赖 CGO 的包），从 macOS 或 Linux 构建时需要使用 Docker：
 
 ```bash
 # One-time setup
@@ -55,11 +55,11 @@ wails3 task setup:docker
 wails3 task windows:build CGO_ENABLED=1
 ```
 
-Taskfile 会在非 Windows 主机上检测 `CGO_ENABLED=1`，并自动使用 Docker 镜像。
+Taskfile 会在非 Windows 宿主机上检测 `CGO_ENABLED=1`，并自动使用 Docker 镜像。
 
 ### macOS
 
-macOS 构建需要使用 CGO 来集成 WebView，因此交叉编译需要特殊工具。
+macOS 构建需要使用 CGO 集成 WebView，因此交叉编译需要特殊工具。
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -72,19 +72,19 @@ wails3 build GOOS=darwin GOARCH=amd64
 wails3 task darwin:build:universal
 ```
 
-<strong>从 Linux 或 Windows 构建</strong>时，需要先设置 Docker：
+**从 Linux 或 Windows 构建时**，需要先设置 Docker：
 
 ```bash
 wails3 task setup:docker
 ```
 
-镜像构建完成后，构建系统会检测到你使用的不是 macOS，并自动使用 Docker。无需更改构建命令。
+镜像构建完成后，构建系统会检测到你当前未使用 macOS，并自动使用 Docker。无需更改构建命令。
 
-请注意，交叉编译生成的 macOS 二进制文件没有代码签名。分发前需要在 macOS 上或 CI 中对其签名。
+请注意，交叉编译得到的 macOS 二进制文件没有代码签名。分发前需要在 macOS 或 CI 中对其签名。
 
 ### Linux
 
-Linux 构建需要使用 CGO 来集成 WebView。
+Linux 构建需要使用 CGO 集成 WebView。
 
 ```bash
 wails3 build GOOS=linux
@@ -94,15 +94,15 @@ wails3 build GOOS=linux GOARCH=amd64
 wails3 build GOOS=linux GOARCH=arm64
 ```
 
-<strong>从 macOS 或 Windows 构建</strong>时，需要先设置 Docker：
+**从 macOS 或 Windows 构建时**，需要先设置 Docker：
 
 ```bash
 wails3 task setup:docker
 ```
 
-构建系统会检测到你使用的不是 Linux，并自动使用 Docker。
+构建系统会检测到你当前未使用 Linux，并自动使用 Docker。
 
-**在没有 C 编译器的 Linux 上**，构建系统会检查是否存在 `gcc` 或 `clang`。如果两者都未找到，则会回退到 Docker。这适用于未安装构建工具的最小化容器或系统。你可以选择：
+**在没有 C 编译器的 Linux 上**，构建系统会检查 `gcc` 或 `clang`。如果两者均未找到，则回退到 Docker。这对最小化容器或未安装构建工具的系统很有用。你可以选择：
 
 1. 安装 C 编译器：`sudo apt install build-essential`（Debian/Ubuntu）或 `sudo pacman -S base-devel`（Arch）
 2. 构建 Docker 镜像并让系统自动使用它
@@ -125,69 +125,69 @@ wails3 build GOOS=darwin GOARCH=arm64
 wails3 build GOOS=darwin GOARCH=amd64
 ```
 
-Docker 镜像包含适用于所有平台的 amd64 和 arm64 Zig 交叉编译目标，因此可以从任意主机构建 ARM 版本：
+Docker 镜像包含适用于所有平台上 amd64 和 arm64 的 Zig 交叉编译目标，因此可以从任意宿主机进行 ARM 构建：
 
-| 构建以下平台的 ARM64 版本 | 从 Windows | 从 macOS | 从 Linux |
+| 构建 ARM64 目标 | 从 Windows | 从 macOS | 从 Linux |
 | --- | --- | --- | --- |
-| **Windows ARM64** | Go 原生交叉编译 | Go 原生交叉编译 | Go 原生交叉编译 |
+| **Windows ARM64** | 原生 Go | 原生 Go | 原生 Go |
 | **macOS ARM64** | Docker | 原生 | Docker |
 | **Linux ARM64** | Docker | Docker | Docker_ |
 
-<em>从 Linux x86</em>64 构建 Linux ARM64 时会使用 Docker，因为 CGO 交叉编译需要不同的工具链。
+<em>从 Linux x86 构建 Linux ARM64</em>64时会使用 Docker，因为 CGO 交叉编译需要不同的工具链。
 
 ## 工作原理
 
 ### 交叉编译矩阵
 
-| 主机 → 目标平台 | Windows | macOS | Linux |
+| 宿主机 → 目标平台 | Windows | macOS | Linux |
 | --- | --- | --- | --- |
 | **Windows** | 原生 | Docker | Docker |
-| **macOS** | Go 原生交叉编译 | 原生 | Docker |
-| **Linux** | Go 原生交叉编译 | Docker | 原生 |
+| **macOS** | 原生 Go | 原生 | Docker |
+| **Linux** | 原生 Go | Docker | 原生 |
 
-- **原生** = 平台的原生工具链，无需额外设置
-- **Go 原生交叉编译** = Go 的内置交叉编译（`CGO_ENABLED=0`）
+- **原生** = 使用平台的原生工具链，无需额外设置
+- **原生 Go** = 使用 Go 内置的交叉编译功能（`CGO_ENABLED=0`）
 - **Docker** = 包含 Zig 交叉编译器的 Docker 镜像
 
 ### CGO 要求
 
 | 目标平台 | 是否需要 CGO | 交叉编译方式 |
 | --- | --- | --- |
-| Windows | 否（默认） | Go 原生交叉编译。仅当 `CGO_ENABLED=1` 时使用 Docker |
-| macOS | 是 | 包含 macOS SDK 的 Docker |
-| Linux | 是 | Docker；如果有可用的 C 编译器，也可使用原生编译 |
+| Windows | 否（默认） | 原生 Go。仅在设置了 `CGO_ENABLED=1` 时使用 Docker |
+| macOS | 是 | 使用包含 macOS SDK 的 Docker |
+| Linux | 是 | 使用 Docker；如果有可用的 C 编译器，则使用原生编译 |
 
 ### 自动检测
 
-Taskfile 会根据你的环境自动选择合适的构建方式：
+Taskfile 会根据你的环境自动选择正确的构建方式：
 
-- <strong>Windows 目标平台：</strong>默认使用 Go 原生交叉编译。如果你在非 Windows 主机上显式设置了`CGO_ENABLED=1`，则会切换到 Docker。
-- <strong>macOS 目标平台：</strong>不在 macOS 上时自动使用 Docker，无需手动干预。
-- <strong>Linux 目标平台：</strong>检查是否存在`gcc`或`clang`。如果找到，则使用原生编译；否则回退到 Docker。
+- <strong>Windows 目标平台：</strong>默认使用原生 Go 交叉编译。如果你在非 Windows 宿主机上显式设置 `CGO_ENABLED=1`，则切换为 Docker。
+- <strong>macOS 目标平台：</strong>不在 macOS 上时自动使用 Docker。无需手动干预。
+- <strong>Linux 目标平台：</strong>检查 `gcc` 或 `clang`。如果找到，则使用原生编译；否则回退到 Docker。
 
 ### Docker 镜像
 
-Wails 使用一个可为所有平台构建的 Docker 镜像（`wails-cross`）。该镜像使用[Zig](https://ziglang.org/)作为交叉编译器，可以在任何主机上面向任何平台进行构建。镜像中包含用于 darwin 目标平台的 macOS SDK。
+Wails 使用一个 Docker 镜像（`wails-cross`）即可为所有平台构建。该镜像使用 [Zig](https://ziglang.org/) 作为交叉编译器，可以从任意宿主机面向任意平台进行编译。镜像中包含用于 darwin 目标的 macOS SDK。
 
 ```bash
 wails3 task setup:docker
 ```
 
-你可以运行`wails3 doctor`检查镜像是否已准备就绪。
+可以运行 `wails3 doctor` 检查镜像是否已准备就绪。
 
 ### macOS SDK
 
-构建 Docker 镜像时，会从[wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks)下载 macOS SDK。CGO 编译需要 macOS 头文件，因此必须执行此操作。
+构建 Docker 镜像时，该镜像会从 [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) 下载 macOS SDK。之所以需要这样做，是因为 CGO 编译需要 macOS 头文件。
 
-<strong>重要提示：</strong>Wails 不分发 macOS SDK。用户在使用此功能前，应自行查阅 Apple 的 SDK 许可条款。
+<strong>重要：</strong>Wails 不分发 macOS SDK。用户在使用此功能前有责任审阅 Apple 的 SDK 许可条款。
 
-## 自行构建镜像
+## 构建自己的镜像
 
-如果需要自定义 Docker 镜像（例如使用其他版本的 macOS SDK、添加额外工具或使用你自己的 SDK），可以自行构建镜像。
+如果需要自定义 Docker 镜像（例如使用其他版本的 macOS SDK、添加额外工具或使用自己的 SDK），可以自行构建镜像。
 
 ### Dockerfile
 
-创建一个`Dockerfile`，内容如下：
+创建一个包含以下内容的`Dockerfile`：
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -401,11 +401,11 @@ docker build -t wails-cross .
 docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
 ```
 
-有关可选版本，请参阅[可用的 SDK 版本](https://github.com/wailsapp/macosx-sdks/releases)。
+可用选项请参阅[可用的 SDK 版本](https://github.com/wailsapp/macosx-sdks/releases)。
 
-### 使用你自己的 SDK
+### 使用自己的 SDK
 
-如果你有自己的 macOS SDK（例如从 Xcode 中提取的 SDK），可以修改 Dockerfile，改用本地文件而不进行下载：
+如果你有自己的 macOS SDK（例如从 Xcode 中提取的 SDK），可以修改 Dockerfile，使其使用本地文件而不是下载文件：
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -416,11 +416,11 @@ RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
     && rm /tmp/sdk.tar.xz
 ```
 
-将 SDK tarball 放在 Dockerfile 所在的目录中，然后进行构建。
+将 SDK tarball 放在与 Dockerfile 相同的目录中，然后进行构建。
 
 ## CI/CD 集成
 
-对于生产版本，我们建议使用 CI/CD，并为每个平台使用原生运行器。这样可以完全避免交叉编译，并确保获得正确签名的二进制文件。
+对于生产版本，我们建议使用 CI/CD，并为每个平台使用原生运行器。这样可以完全避免交叉编译，并确保生成的二进制文件已正确签名。
 
 ```yaml
 name: Build
@@ -477,7 +477,7 @@ jobs:
 Docker image 'wails-cross' not found.
 ```
 
-运行`wails3 task setup:docker`构建 Docker 镜像。此操作只需执行一次。
+运行`wails3 task setup:docker`以构建 Docker 镜像。此操作只需执行一次。
 
 ### Docker 守护进程未运行
 
@@ -485,11 +485,11 @@ Docker image 'wails-cross' not found.
 Docker is required for cross-compilation. Please install Docker.
 ```
 
-启动 Docker Desktop 或 Docker 守护进程。在 Linux 上，你可能需要运行`sudo systemctl start docker`。
+启动 Docker Desktop 或 Docker 守护进程。在 Linux 上，可能需要运行`sudo systemctl start docker`。
 
 ### Linux 上没有 C 编译器
 
-如果在 Linux 上构建时出现与 CGO 相关的错误，你有两种选择：
+如果在 Linux 上构建时出现与 CGO 相关的错误，有以下两种选择：
 
 1. **安装 C 编译器：**
   - Debian/Ubuntu：`sudo apt install build-essential`
@@ -497,16 +497,16 @@ Docker is required for cross-compilation. Please install Docker.
   - Fedora：`sudo dnf install gcc`
 
 
-2. <strong>改用 Docker：</strong>运行`wails3 task setup:docker`；未检测到编译器时，Taskfile 会自动使用该镜像。
+2. <strong>改用 Docker：</strong>运行`wails3 task setup:docker`；如果未检测到编译器，Taskfile 将自动使用它。
 
 ### macOS 二进制文件未签名
 
-交叉编译的 macOS 二进制文件没有代码签名。Apple 要求分发的软件必须经过代码签名，因此你需要：
+交叉编译生成的 macOS 二进制文件没有代码签名。Apple 要求分发的软件必须进行代码签名，因此需要：
 
-1. 在 macOS 计算机上为二进制文件签名，或
+1. 在 macOS 计算机上对二进制文件进行签名，或者
 2. 在 CI 中使用 macOS 运行器进行签名
 
-有关详细信息，请参阅[为应用程序签名](/guides/build/signing/)。
+有关详细信息，请参阅[应用签名](/guides/build/signing/)。
 
 ### 创建通用二进制文件
 
@@ -516,9 +516,9 @@ Docker is required for cross-compilation. Please install Docker.
 wails3 task darwin:build:universal
 ```
 
-在 Linux 和 Windows 上，Wails 使用其内置的`wails3 tool lipo`命令（由[konoui/lipo](https://github.com/konoui/lipo)提供支持）合并二进制文件。这样会生成一个可在 Apple Silicon Mac 和 Intel Mac 上原生运行的二进制文件。
+在 Linux 和 Windows 上，Wails 使用其内置的`wails3 tool lipo`命令（由[konoui/lipo](https://github.com/konoui/lipo)提供支持）合并二进制文件。这样会创建一个可在 Apple 芯片和 Intel Mac 上原生运行的二进制文件。
 
 ## 后续步骤
 
 - [构建应用程序](/guides/build/building/) - 基本构建命令和选项
-- [为应用程序签名](/guides/build/signing/) - 用于分发的代码签名
+- [应用签名](/guides/build/signing/) - 用于分发的代码签名

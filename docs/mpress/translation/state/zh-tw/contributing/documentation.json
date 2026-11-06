@@ -127,16 +127,16 @@
       "updatedAt": "2026-10-25T21:33:26Z"
     },
     "b0011-text-01": {
-      "sourceHash": "4ecc18cff159235826e9db77ce75adb427fef416c00f1beb292a9a865ee4f8f4",
-      "targetHash": "0a3ee7820f085b3dfcd94c77e1ea9e6ea5076e27834ba3cea4ebc92c84575ca6",
-      "machineHash": "0a3ee7820f085b3dfcd94c77e1ea9e6ea5076e27834ba3cea4ebc92c84575ca6",
-      "machineText": "開啟[最新的 M-Press 穩定版](https://github.com/leaanthony/mpress/releases/latest)頁面，或下載下方相符的封存檔。ARM64 包括 Apple Silicon；AMD64 則是一般 Intel/AMD PC 使用的架構。",
+      "sourceHash": "f54ef1979b7f33b6060b3dec8e2d11f2ea5c5c797116fe423ee13b0457973ad6",
+      "targetHash": "8d8a76f27d433ccdbef06411d8bb4c04450021edddd30208320d66a1a6a6384a",
+      "machineHash": "8d8a76f27d433ccdbef06411d8bb4c04450021edddd30208320d66a1a6a6384a",
+      "machineText": "開啟[最新的 M-Press 穩定版本](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)，或在下方下載相符的封存檔。ARM64 包含 Apple Silicon；AMD64 是一般 Intel/AMD PC 所使用的架構。",
       "status": "machine-translated",
-      "sourcePreview": "Open the [latest stable M-Press release](https://github.com/leaanthony/mpress/releases/latest), or d…",
+      "sourcePreview": "Open the [latest stable M-Press release](https://github.com/leaanthony/mpress/releases/tag/v1.0.27),…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0012-cell-01": {
       "sourceHash": "76ed42d22129dc354362704eb4b54208041b68736f976932aada43bc0035f7c0",
@@ -187,28 +187,28 @@
       "updatedAt": "2026-10-25T21:33:26Z"
     },
     "b0016-cell-01": {
-      "sourceHash": "29fe1a84bcf0333d6831bbc0c2d0f125e99d353ee7ebd9b3f20bdeed24a0e3b0",
-      "targetHash": "29fe1a84bcf0333d6831bbc0c2d0f125e99d353ee7ebd9b3f20bdeed24a0e3b0",
-      "machineHash": "29fe1a84bcf0333d6831bbc0c2d0f125e99d353ee7ebd9b3f20bdeed24a0e3b0",
-      "machineText": "[mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-amd64.tar.gz)",
+      "sourceHash": "94f6f5f35c30b7d8cb239fc1fcf98dc1f1da5efb173d18c61d447a1090a37813",
+      "targetHash": "94f6f5f35c30b7d8cb239fc1fcf98dc1f1da5efb173d18c61d447a1090a37813",
+      "machineHash": "94f6f5f35c30b7d8cb239fc1fcf98dc1f1da5efb173d18c61d447a1090a37813",
+      "machineText": "[mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-amd64.tar.gz)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-da…",
+      "sourcePreview": "[mpress-darwin-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0017-cell-01": {
-      "sourceHash": "e6c89e19ef51a1b4022df8661a58d9c771e169619603b24b5eb356f98891af62",
-      "targetHash": "e6c89e19ef51a1b4022df8661a58d9c771e169619603b24b5eb356f98891af62",
-      "machineHash": "e6c89e19ef51a1b4022df8661a58d9c771e169619603b24b5eb356f98891af62",
-      "machineText": "[mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-darwin-arm64.tar.gz)",
+      "sourceHash": "47e15540e8f150b077b9d4db37d0218891436970f125ed021fbec6b219833e91",
+      "targetHash": "47e15540e8f150b077b9d4db37d0218891436970f125ed021fbec6b219833e91",
+      "machineHash": "47e15540e8f150b077b9d4db37d0218891436970f125ed021fbec6b219833e91",
+      "machineText": "[mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-darwin-arm64.tar.gz)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-da…",
+      "sourcePreview": "[mpress-darwin-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-d…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0018-cell-01": {
       "sourceHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed",
@@ -223,28 +223,28 @@
       "updatedAt": "2026-10-25T21:33:26Z"
     },
     "b0019-cell-01": {
-      "sourceHash": "fbf33e73e10b8d65439a9aa147667795736857a56620ceac700358fd70bc267e",
-      "targetHash": "fbf33e73e10b8d65439a9aa147667795736857a56620ceac700358fd70bc267e",
-      "machineHash": "fbf33e73e10b8d65439a9aa147667795736857a56620ceac700358fd70bc267e",
-      "machineText": "[mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-amd64.tar.gz)",
+      "sourceHash": "23a5bc408208b7e85ee505acef927e23ea368ffa3847ee65975da1a551e12acd",
+      "targetHash": "23a5bc408208b7e85ee505acef927e23ea368ffa3847ee65975da1a551e12acd",
+      "machineHash": "23a5bc408208b7e85ee505acef927e23ea368ffa3847ee65975da1a551e12acd",
+      "machineText": "[mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-lin…",
+      "sourcePreview": "[mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-li…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0020-cell-01": {
-      "sourceHash": "357f25f4159eb4f5b2ff477997456168ec2d0ee6f6f11149afac007a1f3f5b31",
-      "targetHash": "357f25f4159eb4f5b2ff477997456168ec2d0ee6f6f11149afac007a1f3f5b31",
-      "machineHash": "357f25f4159eb4f5b2ff477997456168ec2d0ee6f6f11149afac007a1f3f5b31",
-      "machineText": "[mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-linux-arm64.tar.gz)",
+      "sourceHash": "f7a37992726cfcf8a8e729091c8347ee8d9874fddbb80b76e3c5320d5ca995c2",
+      "targetHash": "f7a37992726cfcf8a8e729091c8347ee8d9874fddbb80b76e3c5320d5ca995c2",
+      "machineHash": "f7a37992726cfcf8a8e729091c8347ee8d9874fddbb80b76e3c5320d5ca995c2",
+      "machineText": "[mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/latest/download/mpress-lin…",
+      "sourcePreview": "[mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-li…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0021-cell-01": {
       "sourceHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10",
@@ -259,40 +259,40 @@
       "updatedAt": "2026-10-25T21:33:26Z"
     },
     "b0022-cell-01": {
-      "sourceHash": "e287aa816ab8a77f0498b8efcbb8b380b829d37d2333bd9aa16c5c7bea1d0e94",
-      "targetHash": "e287aa816ab8a77f0498b8efcbb8b380b829d37d2333bd9aa16c5c7bea1d0e94",
-      "machineHash": "e287aa816ab8a77f0498b8efcbb8b380b829d37d2333bd9aa16c5c7bea1d0e94",
-      "machineText": "[mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-amd64.zip)",
+      "sourceHash": "1694c5dc126367275aaabf84f93e3cbc90a691d9be5dc859ea93cc8f81bf0426",
+      "targetHash": "1694c5dc126367275aaabf84f93e3cbc90a691d9be5dc859ea93cc8f81bf0426",
+      "machineHash": "1694c5dc126367275aaabf84f93e3cbc90a691d9be5dc859ea93cc8f81bf0426",
+      "machineText": "[mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-wind…",
+      "sourcePreview": "[mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-win…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0023-cell-01": {
-      "sourceHash": "3995836afa5cee9cdea9990f50ed01b32234657bf872a96ee951b92f3c620356",
-      "targetHash": "3995836afa5cee9cdea9990f50ed01b32234657bf872a96ee951b92f3c620356",
-      "machineHash": "3995836afa5cee9cdea9990f50ed01b32234657bf872a96ee951b92f3c620356",
-      "machineText": "[mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-windows-arm64.zip)",
+      "sourceHash": "f8536d6c9a15a6796b07db85534d714509b7fff81dbb7395efe71d4ab1bcac01",
+      "targetHash": "f8536d6c9a15a6796b07db85534d714509b7fff81dbb7395efe71d4ab1bcac01",
+      "machineHash": "f8536d6c9a15a6796b07db85534d714509b7fff81dbb7395efe71d4ab1bcac01",
+      "machineText": "[mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip)",
       "status": "machine-translated",
-      "sourcePreview": "[mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/latest/download/mpress-wind…",
+      "sourcePreview": "[mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-win…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0024-text-01": {
-      "sourceHash": "aafac93b53e0c3b6722f62462355bd34c88c8ceb4ffbac45a3d86b4080f25556",
-      "targetHash": "662ba32d8659e19aac2caf118cc07bd478eb6df5d1ed1845b74a2fbfb8be9945",
-      "machineHash": "662ba32d8659e19aac2caf118cc07bd478eb6df5d1ed1845b74a2fbfb8be9945",
-      "machineText": "從同一個發行版本下載[checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt)。在下載目錄中計算封存檔的 SHA-256雜湊值，並與`checksums.txt`中該檔名所在行比較：",
+      "sourceHash": "5500c4ec22a8206559719411323ad3358db5a1865f756993d6831bc9569cdc19",
+      "targetHash": "7cde1e8bcbb0e8e7f567a6e81c1301b81b3938b44014ce0ca6af9b4029bc6f67",
+      "machineHash": "7cde1e8bcbb0e8e7f567a6e81c1301b81b3938b44014ce0ca6af9b4029bc6f67",
+      "machineText": "從同一個版本下載[checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)。在下載目錄中計算封存檔的 SHA-256 雜湊值，並與`checksums.txt`中該檔名所在行的值進行比較：",
       "status": "machine-translated",
-      "sourcePreview": "Download [checksums.txt](https://github.com/leaanthony/mpress/releases/latest/download/checksums.txt…",
+      "sourcePreview": "Download [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.tx…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:59:43Z"
+      "updatedAt": "2026-11-06T02:13:07Z"
     },
     "b0025-text-01": {
       "sourceHash": "1e33dd116bf76f6eaba5282e661a19405f07d9a28b298f5530f880843871ca3e",

@@ -24,7 +24,7 @@ sourcePath: "contributing/documentation.md"
 
 ### Скачайте исполняемый файл
 
-Откройте страницу [последнего стабильного выпуска M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) или загрузите ниже соответствующий архив. ARM64 включает Apple Silicon, а AMD64 — это распространённая архитектура ПК на базе Intel/AMD.
+Откройте страницу [последнего стабильного выпуска M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.27) или скачайте ниже соответствующий архив. ARM64 включает Apple Silicon, а AMD64 — это обычная архитектура ПК на базе процессоров Intel/AMD.
 
 | Компьютер | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ sourcePath: "contributing/documentation.md"
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-Загрузите файл [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) из того же выпуска. В каталоге загрузки вычислите SHA-256-хеш архива и сравните его со строкой для этого имени файла в `checksums.txt`:
+Скачайте файл [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt) из того же выпуска. В каталоге загрузок вычислите SHA-256-хеш архива и сравните его со строкой для этого имени файла в `checksums.txt`:
 
 @tabs
 [macOS]

@@ -11,7 +11,7 @@ O Wails v3 faz lançamentos com base em um **cronograma, não em funcionalidades
 
 | Lançamento | Tag | Periodicidade | Lançamento no GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (data UTC; `.N` é acrescentado se houver uma nova execução no mesmo dia) | automatizado, diariamente, somente quando `UNRELEASED_CHANGELOG.md` contém algo | pré-lançamento, **não** marcado como Latest | mesma versão sem `v`, dist-tag `nightly` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (data UTC; `.N` é acrescentado se houver uma nova execução no mesmo dia) | automatizado, diário, somente quando PRs mesclados no intervalo de versão testado geram notas visíveis para o usuário | pré-lançamento, **não** marcado como Latest | mesma versão sem `v`, dist-tag `nightly` |
 | Semanal | `v3.<next>.0` | automatizado, domingo às 20:00 no fuso Australia/Sydney **(dia não confirmado)** | lançamento normal, marcado como Latest | mesma versão, dist-tag `latest` |
 | Correção emergencial | `v3.<current>.<N>`, `N > 0` | raro, manual | versão normal, Latest | mesma versão, dist-tag `latest` |
 | Principal | `v4.0.0` | somente para alterações incompatíveis | lançamento normal | `latest` |
@@ -62,7 +62,7 @@ Os lançamentos semanais são preparados a partir de `master`, mas **não da pon
 
 ## Como preparar um lançamento
 
-Os direitos de lançamento são restritos ao líder do projeto (consulte o documento de governança). Os colaboradores nunca criam tags nem publicam; eles adicionam entradas a `v3/UNRELEASED_CHANGELOG.md`.
+Os direitos de lançamento são restritos ao líder do projeto (consulte o documento de governança). Colaboradores nunca criam tags nem publicam; eles descrevem as alterações visíveis para o usuário nos títulos dos PRs ou em uma seção de descrição `## Release notes`. A automação de lançamento gera notas com base nos PRs mesclados no intervalo exato de commits testado; `v3/UNRELEASED_CHANGELOG.md` foi removido.
 
 Tudo é executado por meio de **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
@@ -85,7 +85,7 @@ O fluxo **semanal** (nunca o noturno) se recusa a criar uma tag enquanto existir
 
 1. issues ou pull requests abertos com o rótulo `P0` ou `release-blocker`;
 2. issues abertas com o rótulo `regression` criadas desde o último lançamento semanal;
-3. alertas abertos do Dependabot de severidade crítica ou alta, alertas abertos de análise de código de severidade crítica ou alta e qualquer alerta aberto de verificação de segredos, **somente para código distribuído**. Alertas localizados exclusivamente em `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou em qualquer diretório `examples/` são ignorados (`SHIPPED_ALERT_IGNORE` em `v3/tasks/releasegate/main.go`, **o proprietário deve revisar**);
+3. alertas abertos do Dependabot de severidade crítica ou alta, alertas abertos de verificação de código de severidade crítica ou alta e qualquer alerta aberto de verificação de segredos, **somente para código distribuído**. Alertas localizados exclusivamente em `v2/internal/staticanalysis/test/` (artefatos de teste de análise estática), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou em qualquer diretório `examples/` são ignorados (`SHIPPED_ALERT_IGNORE` em `v3/tasks/releasegate/main.go`, **o responsável deve revisar**);
 4. avisos de segurança do repositório que ainda estejam em `triage`.
 
 **Quem pode definir um bloqueador.** Um rótulo só é considerado se o evento `labeled` mais recente correspondente (sem um `unlabeled` posterior) tiver sido realizado por um membro da equipe `wailsapp/maintainers` ou por um colaborador com permissão `maintain`/`admin`. O mesmo rótulo aplicado por qualquer outra pessoa é ignorado e registrado, de modo que pessoas externas não possam bloquear nem desbloquear um lançamento. O rótulo `high-priority` aplicado automaticamente **não** é usado deliberadamente. Contas de bot, como `taliesin-ai`, passam pela lista de permissões se tiverem `maintain`; isso é intencional, e o agente de triagem pode aplicar rótulos de bloqueio com evidências.

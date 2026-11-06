@@ -24,7 +24,7 @@ M-Press가 설치되어 있으면 이 명령은 M-Press를 사용합니다. 설�
 
 ### 실행 파일 다운로드
 
-[최신 안정 버전의 M-Press 릴리스](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)를 열거나 아래에서 해당 아카이브를 다운로드하세요. ARM64에는 Apple Silicon이 포함되며, AMD64는 일반적인 Intel/AMD PC 아키텍처입니다.
+[최신 안정 버전 M-Press 릴리스](https://github.com/leaanthony/mpress/releases/tag/v1.0.27)를 열거나 아래에서 해당 아카이브를 다운로드하세요. ARM64에는 Apple Silicon이 포함되며, AMD64는 일반적인 Intel/AMD PC 아키텍처입니다.
 
 | 컴퓨터 | AMD64 / Intel | ARM64 / Apple Silicon |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ M-Press가 설치되어 있으면 이 명령은 M-Press를 사용합니다. 설�
 | Linux | [mpress-linux-amd64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-amd64.tar.gz) | [mpress-linux-arm64.tar.gz](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-linux-arm64.tar.gz) |
 | Windows | [mpress-windows-amd64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-amd64.zip) | [mpress-windows-arm64.zip](https://github.com/leaanthony/mpress/releases/download/v1.0.27/mpress-windows-arm64.zip) |
 
-같은 릴리스에서 [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)를 다운로드하세요. 다운로드 디렉터리에서 아카이브의 SHA-256 해시를 계산하고 `checksums.txt`에서 해당 파일 이름이 있는 줄과 비교하세요.
+같은 릴리스에서 [checksums.txt](https://github.com/leaanthony/mpress/releases/download/v1.0.27/checksums.txt)를 다운로드하세요. 다운로드 디렉터리에서 아카이브의 SHA-256 해시를 계산한 다음, `checksums.txt`에서 해당 파일 이름이 있는 줄과 비교하세요:
 
 @tabs
 [macOS]

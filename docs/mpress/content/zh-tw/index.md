@@ -1,9 +1,9 @@
 ---
 title: "使用 Go 建置桌面應用程式"
-description: "使用 Go 與網頁技術打造原生桌面應用程式"
-banner: {"content": "Wails v3.0.0 是適用於 Windows、macOS 和 Linux 桌面應用程式的穩定版本。 <a href=\"https://v2.wails.io\">正在尋找 v2 文件？</a>\n"}
+description: "使用 Go 與 Web 技術打造原生桌面應用程式"
+banner: {"content": "Wails v3.0.0 是適用於 Windows、macOS 與 Linux 桌面應用程式的穩定版本。\u003ca href=\"https://v2.wails.io\"\u003e正在尋找 v2 文件？\u003c/a\u003e\n"}
 template: "splash"
-hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"開始使用","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"查看教學","variant":"secondary"}],"image":{"alt":"Wails 標誌","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"使用 Go 與現代網頁技術建置美觀且高效能的應用程式。一套程式碼。三個平台。不含瀏覽器。*"}
+hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"開始使用","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"查看教學","variant":"secondary"}],"image":{"alt":"Wails 標誌","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"使用 Go 與現代 Web 技術打造美觀且高效能的應用程式。一套程式碼，支援三個平台，無須瀏覽器。*"}
 sourcePath: "index.md"
 ---
 
@@ -75,7 +75,7 @@ sourcePath: "index.md"
 
 </style>
 
-<span class="browser-footnote" data-browser-footnote>* 除非您真的想要</span>
+<span class="browser-footnote" data-browser-footnote>* 除非你真的想使用瀏覽器</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
@@ -125,25 +125,25 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup
 @end
 
-接著，您就可以建立第一個專案：
+接著，你就可以建立第一個專案：
 
 @terminal{frame="macos" prompt="none"}
 wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 @end
 
-**您的應用程式現在已開始執行**，並支援熱重新載入和型別安全的 Go-to-JS 繫結。
+**你的應用程式現在已開始執行**，並支援熱重新載入和型別安全的 Go-to-JS 繫結。
 
 使用`wails3 setup`時遇到問題？請參閱[手動安裝指南](/quick-start/installation/)。
 
-## 您的桌面應用程式已經是行動應用程式
+## 你的桌面應用程式已經是行動應用程式
 
 @terminal{frame="macos" prompt="none"}
 wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-<strong>完全不必修改 Go 程式碼。</strong>同一個`main.go`、相同的服務、相同的前端——Wails 會自動將其編譯至 iOS 和 Android。需要時可使用平台特定功能（觸覺回饋、原生對話方塊、安全區域），但即使不用，也能發布應用程式。
+<strong>完全不必修改 Go 程式碼。</strong>相同的`main.go`、相同的服務、相同的前端——Wails 會自動將它編譯至 iOS 與 Android。需要時即可使用平台特定功能（觸覺回饋、原生對話方塊、安全區域），但不使用這些功能也能發布應用程式。
 
 [行動版文件 →](/guides/mobile/)
 
@@ -152,53 +152,53 @@ wails3 task android:run  # run your existing app on Android Emulator
 ## 為什麼選擇 Wails？
 
 @cards{cols="2"}
-🚀 使用者能感受到的效能
-- 約 15MB 的二進位檔，Electron 則為 150MB
-- 基準記憶體用量：約10MB，對比100MB+
-- 啟動時間：&lt;0.5秒，對比2-3秒
-- 使用作業系統 WebView 進行原生繪製
+🚀 使用者感受得到的效能
+- 二進位檔約 15MB，而 Electron 約為 150MB
+- 基準記憶體用量約 10MB，而對照值為 100MB 以上
+- &lt;啟動時間為 0.5 秒，而對照值為 2-3 秒
+- 使用作業系統 WebView 進行原生算繪
 - 沒有隨附瀏覽器所造成的額外負擔
 
 ---
 ⚙ 開發者體驗
 - 所有平台共用一套 Go 程式碼
-- 可使用任何網頁框架——React、Vue、Svelte
+- 可使用任何 Web 框架——React、Vue、Svelte
 - 開發期間支援熱重新載入
-- 自動產生繫結，讓 JavaScript 能輕鬆呼叫 Go
-- 記憶體內 IPC，不使用網路連接埠
+- 自動產生繫結，方便從 JavaScript 呼叫 Go
+- 記憶體內 IPC，無須網路連接埠
 
 ---
-✓ 完整支援桌面應用程式
+✓ 桌面應用就緒
 - 支援多個視窗及其生命週期
-- 原生選單和系統匣
+- 原生選單與系統匣
 - 平台原生檔案對話方塊
-- 系統整合和快速鍵
-- 程式碼簽署和封裝工具
+- 系統整合與快捷鍵
+- 程式碼簽署與封裝工具
 
 ---
 ▣ 桌面與行動平台
 - Windows、macOS、Linux、iOS、Android
-- 共用同一套程式碼，完全不必重寫
+- 共用同一套程式碼，完全無須重寫
 - 每個平台皆使用原生 WebView
-- 不開放任何連接埠，也不使用 localhost 伺服器
-- 需要時即可使用平台功能
+- 不開放連接埠，也不使用 localhost 伺服器
+- 需要時可使用平台功能
 
 @end
 
 ## 後續步驟
 
-接下來：[建置完整的應用程式](/tutorials/03-notes-vanilla/)、瀏覽[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)，或查看[API 參考文件](/reference/application/)。要從 v2 遷移嗎？請參閱[升級指南](/migration/v2-to-v3/)。
+接下來：[建置完整的應用程式](/tutorials/03-notes-vanilla/)、瀏覽[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)，或查閱[API 參考](/reference/application/)。要從v2遷移？請參閱[升級指南](/migration/v2-to-v3/)。
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0 是適用於 Windows、macOS 和 Linux 桌面應用程式的穩定版本。 Android 和 iOS 支援仍屬實驗性質，不在穩定桌面版的相容性保證範圍內。
+Wails v3.0.0 是適用於 Windows、macOS 與 Linux 桌面應用程式的穩定版本。Android 與 iOS 支援仍處於實驗階段，不在穩定桌面版的相容性承諾範圍內。
 
 @end
 
 @cards{cols="1"}
 ♥ 支持 Wails 開發
-Wails 是由開發者為開發者打造的免費開放原始碼軟體。如果 Wails 能協助您建置出色的應用程式，請考慮支持其持續開發。
+Wails 是由開發者為開發者打造的免費開放原始碼專案。如果 Wails 協助你打造出色的應用程式，歡迎考慮支持其持續開發。
 
-您的贊助有助於維護專案、改善文件，並開發造福整個社群的新功能。
+你的贊助有助於維護專案、改善文件，並開發讓整個社群受益的新功能。
 
 [成為贊助者 →](https://github.com/sponsors/leaanthony)
 

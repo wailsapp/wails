@@ -7,7 +7,7 @@ sourcePath: "features/menus/systray.md"
 
 ## 시스템 트레이 메뉴
 
-Wails는 모든 플랫폼에서 작동하는 <strong>통합 시스템 트레이 API</strong>를 제공합니다. 메뉴가 있는 트레이 아이콘을 만들고, 창을 연결하고, 클릭을 처리할 수 있으며 백그라운드 애플리케이션, 서비스 및 빠른 실행 유틸리티에서 각 플랫폼의 네이티브 동작을 지원합니다.
+Wails는 모든 플랫폼에서 작동하는 **통합 시스템 트레이 API**를 제공합니다. 메뉴가 있는 트레이 아이콘을 만들고, 창을 연결하며, 백그라운드 애플리케이션, 서비스 및 빠른 실행 유틸리티에서 각 플랫폼의 네이티브 동작으로 클릭을 처리할 수 있습니다.
 
 ![macOS 메뉴 막대에서 연 Wails 시스템 트레이 메뉴](/assets/screenshots/systray-menu-macos.png)
 
@@ -71,9 +71,9 @@ systray.SetIcon(iconBytes)
 systray.SetLabel("My Application")
 ```
 
-### 아이콘 추가
+### 아이콘 사용
 
-아이콘은 임베드하는 것이 좋습니다:
+아이콘은 임베드해야 합니다:
 
 ```go
 import _ "embed"
@@ -107,7 +107,7 @@ func main() {
 
 ### 템플릿 아이콘(macOS)
 
-템플릿 아이콘은 라이트/다크 모드에 자동으로 맞춰집니다.
+템플릿 아이콘은 라이트/다크 모드에 자동으로 맞춰집니다:
 
 ```go
 systray.SetTemplateIcon(iconBytes)
@@ -115,14 +115,14 @@ systray.SetTemplateIcon(iconBytes)
 
 **템플릿 아이콘 지침:**
 
-- 검은색과 투명색만 사용하세요.
-- 다크 모드에서는 검은색이 흰색으로 바뀝니다.
-- 파일 이름에 `Template` 접미사를 붙이세요: `iconTemplate.png`
+- 검은색과 투명색만 사용하세요
+- 다크 모드에서는 검은색이 흰색으로 바뀝니다
+- 파일 이름에 `Template` 접미사를 사용하세요: `iconTemplate.png`
 - [디자인 가이드](https://bjango.com/articles/designingmenubarextras/)
 
-## 메뉴 추가하기
+## 메뉴 추가
 
-시스템 트레이 메뉴는 애플리케이션 메뉴와 동일하게 작동합니다.
+시스템 트레이 메뉴는 애플리케이션 메뉴와 같은 방식으로 작동합니다:
 
 ```go
 menu := app.NewMenu()
@@ -149,11 +149,11 @@ menu.Add("Quit").OnClick(func(ctx *application.Context) {
 systray.SetMenu(menu)
 ```
 
-<strong>모든 메뉴 항목 유형</strong>은 [메뉴 레퍼런스](/features/menus/reference/)를 참조하세요.
+**모든 메뉴 항목 유형**은 [메뉴 참조](/features/menus/reference/)를 확인하세요.
 
-## 창 연결하기
+## 창 연결
 
-자동으로 표시하거나 숨기려면 창을 트레이 아이콘에 연결하세요.
+자동으로 표시하거나 숨기려면 창을 트레이 아이콘에 연결하세요:
 
 ```go
 // Create window
@@ -169,10 +169,10 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 
 **동작:**
 
-- 창은 숨겨진 상태로 시작됩니다.
+- 창은 숨겨진 상태로 시작됩니다
 - **트레이 아이콘 왼쪽 클릭** → 창 표시 여부 전환
-- **트레이 아이콘 오른쪽 클릭** → 메뉴 표시(설정된 경우)
-- 창은 트레이 아이콘 근처에 배치됩니다.
+- **트레이 아이콘 오른쪽 클릭** → 메뉴가 설정된 경우 표시
+- 창이 트레이 아이콘 근처에 배치됩니다
 
 **예제: 팝업 창**
 
@@ -191,13 +191,13 @@ systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
-`HideOnFocusLost`은 Windows, macOS 및 클릭하여 포커스를 설정하는 Linux 데스크톱의 트레이 팝업에 유용합니다. Wails는 포커스가 마우스를 따라가는 Linux 환경(일반적인 Hyprland, Sway 및 i3 설정 포함)에서는 이 동작을 비활성화합니다. 그렇지 않으면 팝업에서 마우스 포인터가 벗어날 때 팝업을 사용하기도 전에 숨겨질 수 있기 때문입니다. 이러한 환경에서도 `HideOnEscape`은 계속 사용할 수 있습니다.
+`HideOnFocusLost`는 Windows, macOS 및 클릭 시 포커스를 받는 Linux 데스크톱의 트레이 팝업에 유용합니다. Wails는 마우스를 따라 포커스가 이동하는 Linux 환경(일반적인 Hyprland, Sway 및 i3 설정 포함)에서 이 동작을 비활성화합니다. 그렇지 않으면 팝업을 벗어나는 순간 사용하기도 전에 숨겨질 수 있기 때문입니다. 이러한 환경에서도 `HideOnEscape`는 계속 사용할 수 있습니다.
 
-위의 왼쪽 및 오른쪽 클릭 동작은 지능형 기본값입니다. 명시적인 `OnClick` 또는 `OnRightClick` 핸들러를 지정하면 해당 기본 동작을 대체합니다. 플랫폼 확인 및 예외 사례는 [수동 systray 테스트 모음](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray)과 [systray 스트레스 테스트 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress)를 참조하세요.
+위의 왼쪽 및 오른쪽 클릭 동작은 지능형 기본값입니다. `OnClick` 또는 `OnRightClick` 핸들러를 명시적으로 지정하면 해당 기본 동작을 대체합니다. 플랫폼 검사와 예외 사례는 [수동 systray 테스트 모음](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) 및 [systray 스트레스 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress)를 확인하세요.
 
 ## 클릭 핸들러
 
-트레이 아이콘 클릭을 처리하세요.
+트레이 아이콘 클릭을 처리하세요:
 
 ```go
 systray := app.SystemTray.New()
@@ -239,9 +239,9 @@ systray.OnMouseLeave(func() {
 
 ## 동적 업데이트
 
-트레이 아이콘과 메뉴를 동적으로 업데이트하세요.
+트레이 아이콘과 메뉴를 동적으로 업데이트하세요:
 
-### 아이콘 변경하기
+### 아이콘 변경
 
 ```go
 var isActive bool
@@ -257,7 +257,7 @@ func updateTrayIcon() {
 }
 ```
 
-### 메뉴 업데이트하기
+### 메뉴 업데이트
 
 ```go
 var isPaused bool
@@ -278,13 +278,13 @@ pauseMenuItem.OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="항상 Update() 호출"}
-메뉴 상태를 변경한 후 <strong>`menu.Update()`</strong>을 호출하세요. [메뉴 레퍼런스](/features/menus/reference/#enabled-state)를 참조하세요.
+메뉴 상태를 변경한 후에는 <strong>`menu.Update()`</strong>를 호출하세요. [메뉴 참조](/features/menus/reference/#enabled-state)를 확인하세요.
 
 @end
 
-### 메뉴 다시 빌드하기
+### 메뉴 다시 빌드
 
-대규모로 변경하려면 메뉴 전체를 다시 빌드하세요:
+큰 변경 사항이 있으면 전체 메뉴를 다시 빌드하세요:
 
 ```go
 func rebuildTrayMenu(status string) {
@@ -329,16 +329,16 @@ systray.SetTemplateIcon(iconBytes)
 systray.SetIconPosition(application.NSImageRight)
 ```
 
-**아이콘 위치**(`NSImagePosition` 미러링):
+`NSImagePosition`를 반영하는 **아이콘 위치**:
 
 - `application.NSImageLeft` - 레이블 왼쪽에 아이콘을 표시합니다.
 - `application.NSImageRight` - 레이블 오른쪽에 아이콘을 표시합니다.
 - `application.NSImageOnly` - 레이블 없이 아이콘만 표시합니다.
 - `application.NSImageNone` - 아이콘 없이 레이블만 표시합니다.
 
-**권장 사례:**
+**권장 사항:**
 
-- 템플릿 아이콘(검은색 + 투명 배경)을 사용하세요
+- 템플릿 아이콘(검은색 + 투명)을 사용하세요
 - 레이블을 짧게 유지하세요(3-5자)
 - Retina 디스플레이에는 18x18~22x22픽셀을 사용하세요
 - 라이트 모드와 다크 모드에서 모두 테스트하세요
@@ -367,8 +367,8 @@ systray.Hide()  // Hide tray icon
 **도구 설명 제한:**
 
 - 최대 127개의 UTF-16 문자
-- 이보다 긴 도구 설명은 잘립니다
-- 최상의 사용자 경험을 위해 간결하게 작성하세요
+- 더 긴 도구 설명은 잘립니다
+- 최상의 사용 경험을 위해 간결하게 유지하세요
 
 **플랫폼 기능:**
 
@@ -376,12 +376,12 @@ systray.Hide()  // Hide tray icon
 - Show() 및 Hide() 메서드가 완전히 작동합니다
 - 수명 주기를 올바르게 관리합니다
 
-**권장 사례:**
+**권장 사항:**
 
-- 고DPI 디스플레이에는 32x32를 사용하세요
-- 도구 설명을 127자 미만으로 유지하세요
+- 고해상도 디스플레이에는 32x32를 사용하세요
+- 도구 설명은 127자 미만으로 유지하세요
 - 여러 Windows 버전에서 테스트하세요
-- 알림 영역 오버플로를 고려하세요
+- 알림 영역의 오버플로를 고려하세요
 - 조건에 따라 트레이 표시 여부를 제어하려면 Show/Hide를 사용하세요
 
 [Linux]
@@ -401,18 +401,18 @@ systray.SetLabel("My App")
 - **XFCE**: 알림 영역
 - **기타**: 환경에 따라 다름
 
-**권장 사례:**
+**권장 사항:**
 
 - 22x22 또는 24x24픽셀을 사용하세요
-- SVG 아이콘은 크기 조정 시 품질이 더 잘 유지됩니다
+- SVG 아이콘은 크기 조정에 더 적합합니다
 - 대상 데스크톱 환경에서 테스트하세요
-- 지원되지 않는 데스크톱 환경을 위한 대체 수단을 제공하세요
+- 지원되지 않는 데스크톱 환경을 위한 대체 동작을 제공하세요
 
 @end
 
 ## 전체 예제
 
-다음은 프로덕션 환경에서 사용할 수 있는 시스템 트레이 애플리케이션입니다:
+다음은 프로덕션에 사용할 수 있는 시스템 트레이 애플리케이션입니다:
 
 ```go
 package main
@@ -568,21 +568,21 @@ systray.Hide()
 systray.Show()
 ```
 
-`IsVisible()` getter는 없습니다. 표시 여부를 확인해야 한다면 애플리케이션 상태에서 직접 추적하세요.
+`IsVisible()` getter는 없습니다. 필요한 경우 애플리케이션 상태에서 표시 여부를 직접 추적하세요.
 
 **플랫폼 지원:**
 
 | 플랫폼 | Hide() | Show() | 참고 |
 | --- | --- | --- | --- |
-| **Windows** | ✅ | ✅ | 완전히 작동함 - 알림 영역에서 아이콘이 나타나거나 사라집니다 |
-| **macOS** | ✅ | ✅ | 메뉴 막대 항목이 표시되거나 숨겨집니다 |
-| **Linux** | ✅ | ✅ | 데스크톱 환경에 따라 다릅니다 |
+| **Windows** | ✅ | ✅ | 완전히 작동함 - 알림 영역에서 아이콘이 나타나거나 사라짐 |
+| **macOS** | ✅ | ✅ | 메뉴 막대 항목이 표시되거나 숨겨짐 |
+| **Linux** | ✅ | ✅ | 데스크톱 환경에 따라 다름 |
 
 **사용 사례:**
 
-- 사용자 환경 설정에 따라 트레이 아이콘을 일시적으로 숨기기
+- 사용자 환경설정에 따라 트레이 아이콘을 일시적으로 숨기기
 - 필요할 때만 트레이 아이콘이 나타나는 헤드리스 모드
-- 애플리케이션 상태에 따라 표시 여부 전환
+- 애플리케이션 상태에 따라 표시 여부 전환하기
 
 **예제 - 조건부 트레이 표시:**
 
@@ -608,7 +608,7 @@ func (t *TrayApp) checkForUpdates() {
 
 ## 정리
 
-작업을 마치면 트레이 아이콘을 제거하세요:
+사용이 끝나면 트레이 아이콘을 제거하세요:
 
 ```go
 // In OnShutdown
@@ -621,28 +621,28 @@ app := application.New(application.Options{
 })
 ```
 
-**중요:** 리소스를 해제하려면 종료 시 항상 시스템 트레이를 제거하세요.
+**중요:** 리소스를 해제하려면 종료할 때 항상 시스템 트레이를 제거하세요.
 
-## 권장 사례
+## 권장 사항
 
-### ✅ 권장 사항
+### ✅ 권장
 
 - **macOS에서는 템플릿 아이콘을 사용하세요** - 다크 모드에 맞게 조정됩니다
 - **레이블을 짧게 유지하세요** - 최대 3-5자
 - **Windows에서는 도구 설명을 제공하세요** - 사용자가 앱을 식별하는 데 도움이 됩니다
-- **모든 플랫폼에서 테스트하세요** - 동작이 플랫폼마다 다릅니다
-- **클릭을 적절히 처리하세요** - 기본 동작에는 왼쪽 클릭을, 메뉴에는 오른쪽 클릭을 사용하세요
+- **모든 플랫폼에서 테스트하세요** - 동작이 서로 다릅니다
+- **클릭을 적절하게 처리하세요** - 기본 동작에는 왼쪽 클릭을, 메뉴에는 오른쪽 클릭을 사용하세요
 - **상태에 따라 아이콘을 업데이트하세요** - 시각적 피드백은 중요합니다
-- **종료할 때 시스템 트레이를 제거하세요** - 리소스를 해제할 수 있습니다
+- **종료할 때 제거하세요** - 리소스를 해제하세요
 
-### ❌ 하지 말아야 할 사항
+### ❌ 금지
 
 - **큰 아이콘을 사용하지 마세요** - 플랫폼 지침을 따르세요
-- **긴 레이블을 사용하지 마세요** - 일부가 잘립니다
+- **긴 레이블을 사용하지 마세요** - 내용이 잘립니다
 - **다크 모드를 잊지 마세요** - Windows와 macOS의 다크 모드에서 테스트하세요
 - **클릭 핸들러를 블로킹하지 마세요** - 빠르게 실행되도록 유지하세요
-- **menu.Update()를 잊지 마세요** - 메뉴 상태를 변경한 후 호출하세요
-- **시스템 트레이가 지원된다고 단정하지 마세요** - 일부 Linux 데스크톱 환경에서는 지원하지 않습니다
+- **menu.Update() 호출을 잊지 마세요** - 메뉴 상태를 변경한 후 호출하세요
+- **트레이가 지원된다고 가정하지 마세요** - 일부 Linux 데스크톱 환경에서는 지원하지 않습니다
 
 ## 문제 해결
 
@@ -650,13 +650,13 @@ app := application.New(application.Options{
 
 **가능한 원인:**
 
-1. 지원되지 않는 아이콘 형식
+1. 아이콘 형식이 지원되지 않음
 2. 아이콘 크기가 너무 크거나 작음
 3. 시스템 트레이가 지원되지 않음(Linux)
 
 **해결 방법:**
 
-`SystemTraySupported()` 헬퍼는 없습니다. 대신 트레이를 생성하고 플랫폼을 확인한 후, 지원되지 않는 경우에도 정상적으로 동작하도록 처리하세요:
+`SystemTraySupported()` 헬퍼는 없습니다. 대신 트레이를 생성하고 플랫폼을 확인한 후 지원되지 않는 경우에도 정상적으로 동작하도록 처리하세요:
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -666,7 +666,7 @@ systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 ```
 
-### macOS에서 아이콘이 올바르게 표시되지 않음
+### macOS에서 아이콘이 잘못 표시됨
 
 **원인:** 템플릿 아이콘을 사용하지 않음
 
@@ -693,14 +693,14 @@ menu.Update()  // Add this!
 ## 다음 단계
 
 @cards{cols="2"}
-📖 메뉴 참조
-메뉴 항목 유형과 속성에 대한 전체 참조입니다.
+📖 메뉴 레퍼런스
+메뉴 항목 유형과 속성에 대한 전체 레퍼런스입니다.
 
 [자세히 알아보기 →](/features/menus/reference/)
 
 ---
 ☰ 애플리케이션 메뉴
-애플리케이션 메뉴 모음을 만드세요.
+애플리케이션 메뉴 막대를 만드세요.
 
 [자세히 알아보기 →](/features/menus/application/)
 

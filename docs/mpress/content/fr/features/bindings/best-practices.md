@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## Bonnes pratiques pour les bindings
 
-Suivez des **patrons éprouvés** lors de la conception afin de créer des bindings clairs, performants et sécurisés. Ce guide aborde les principes de conception des API, l’optimisation des performances, les patrons de sécurité, la gestion des erreurs et les stratégies de test pour des applications faciles à maintenir.
+Suivez des **patrons éprouvés** pour concevoir des bindings propres, performants et sécurisés. Ce guide présente les principes de conception des API, l’optimisation des performances, les patrons de sécurité, la gestion des erreurs et les stratégies de test pour créer des applications faciles à maintenir.
 
 ## Principes de conception des API
 
 ### 1. Responsabilité unique
 
-Chaque service devrait avoir un objectif clair et unique :
+Chaque service doit avoir un objectif unique et clairement défini :
 
 ```go
 // ❌ Bad: God object
@@ -58,7 +58,7 @@ func (s *OrderService) CreateOrder(items []Item) (*Order, error)
 
 ### 3. Types de retour cohérents
 
-Renvoyez toujours les erreurs explicitement :
+Retournez toujours les erreurs explicitement :
 
 ```go
 // ❌ Bad: Inconsistent error handling
@@ -112,7 +112,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ### 1. Opérations par lots
 
-Réduisez les appels au pont en regroupant les opérations par lots :
+Réduisez les appels au pont en regroupant les opérations :
 
 ```go
 // ❌ Bad: N calls
@@ -137,7 +137,7 @@ const results = await ProcessItems(items)  // 1 bridge call
 
 ### 2. Pagination
 
-Ne renvoyez pas d’énormes jeux de données :
+Ne retournez pas de jeux de données volumineux :
 
 ```go
 // ❌ Bad: Returns everything
@@ -232,9 +232,9 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 }
 ```
 
-### 4. Diffusion continue avec des événements
+### 4. Diffusion avec des événements
 
-Utilisez des événements pour diffuser les données en continu :
+Utilisez des événements pour diffuser les données :
 
 ```go
 // ❌ Bad: Polling
@@ -395,7 +395,7 @@ func (a *AuthService) DeleteAccount(token string) error {
 
 ### 3. Limitation du débit
 
-Prévenez les abus :
+Empêchez les abus :
 
 ```go
 type RateLimiter struct {
@@ -446,7 +446,7 @@ func (s *Service) SendEmail(to, subject, body string) error {
 
 ### 1. Erreurs descriptives
 
-Fournissez le contexte dans les erreurs :
+Ajoutez du contexte aux erreurs :
 
 ```go
 // ❌ Bad: Generic errors
@@ -513,7 +513,7 @@ func (s *UserService) GetUser(id int) (*User, error) {
 
 ### 3. Récupération après une erreur
 
-Gérez les erreurs avec élégance :
+Gérez les erreurs sans interrompre brutalement l’application :
 
 ```go
 func (s *Service) ProcessWithRetry(data string) error {
@@ -582,7 +582,7 @@ func TestUserService_CreateUser(t *testing.T) {
 
 ### 2. Tests d’intégration
 
-Effectuez les tests avec les dépendances réelles :
+Testez avec les dépendances réelles :
 
 ```go
 func TestUserService_Integration(t *testing.T) {
@@ -620,7 +620,7 @@ func TestUserService_Integration(t *testing.T) {
 
 ### 3. Services simulés
 
-Créez des interfaces testables :
+Créez des interfaces faciles à tester :
 
 ```go
 type UserRepository interface {
@@ -669,22 +669,22 @@ func TestUserService_WithMock(t *testing.T) {
 
 ### ✅ À faire
 
-- **Appliquer le principe de responsabilité unique** — Un service, un objectif
+- **Respecter le principe de responsabilité unique** — Un service, un objectif
 - **Choisir des noms explicites** — Des noms de méthodes descriptifs
 - **Valider les entrées** — Toujours côté Go
-- **Renvoyer les erreurs** — Une gestion explicite des erreurs
-- **Regrouper les opérations par lots** — Réduire les appels au pont
-- **Utiliser des événements** — Pour diffuser les données en continu
-- **Assainir les entrées** — Prévenir les injections
-- **Tester minutieusement** — Tests unitaires et d’intégration
-- **Documenter les méthodes** — Les commentaires deviennent de la documentation JSDoc
-- **Versionner votre API** — Anticiper les modifications
+- **Retourner les erreurs** — Une gestion explicite des erreurs
+- **Regrouper les opérations par lots** — Moins d’appels au pont
+- **Utiliser des événements** — Pour diffuser les données
+- **Assainir les entrées** — Pour empêcher les injections
+- **Tester de manière approfondie** — Tests unitaires et d’intégration
+- **Documenter les méthodes** — Les commentaires deviennent du JSDoc
+- **Versionner votre API** — Anticipez les changements
 
-### ❌ À ne pas faire
+### ❌ À éviter
 
-- **Ne créez pas d’objets fourre-tout** — Conservez des services ciblés
+- **Ne créez pas d’objets omnipotents** — Conservez des services ciblés
 - **Ne faites pas confiance au frontend** — Validez tout
-- **Ne renvoyez pas d’énormes jeux de données** — Utilisez la pagination
+- **Ne retournez pas de jeux de données volumineux** — Utilisez la pagination
 - **Ne bloquez pas l’exécution** — Utilisez des goroutines pour les opérations longues
 - **N’ignorez pas les erreurs** — Gérez tous les cas d’erreur
 - **Ne négligez pas les tests** — Testez tôt et souvent
@@ -693,11 +693,11 @@ func TestUserService_WithMock(t *testing.T) {
 
 ## Étapes suivantes
 
-- [Méthodes](/features/bindings/methods/) — Découvrez les bases de la liaison de méthodes
+- [Méthodes](/features/bindings/methods/) — Découvrez les bases du binding de méthodes
 - [Services](/features/bindings/services/) — Comprenez l’architecture des services
 - [Modèles](/features/bindings/models/) — Liez des structures de données complexes
-- [Événements](/features/events/system/) — Utilisez les événements pour la publication et l’abonnement
+- [Événements](/features/events/system/) — Utilisez des événements pour la publication et l’abonnement
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de bindings](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).

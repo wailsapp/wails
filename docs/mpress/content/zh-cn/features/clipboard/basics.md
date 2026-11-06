@@ -7,9 +7,9 @@ sourcePath: "features/clipboard/basics.md"
 
 ## 剪贴板操作
 
-Wails 提供了一个<strong>统一的剪贴板 API</strong>，可在所有平台上使用。通过简单且一致的方法，在 Windows、macOS 和 Linux 上复制和粘贴文本。
+Wails 提供了一个可在所有平台上使用的**统一剪贴板 API**。在 Windows、macOS 和 Linux 上使用简单且一致的方法复制和粘贴文本。
 
-## 快速开始
+## 快速入门
 
 ```go
 // Copy text to clipboard
@@ -22,7 +22,7 @@ if ok {
 }
 ```
 
-<strong>就是这么简单！</strong>实现跨平台剪贴板访问。
+<strong>就是这么简单！</strong>跨平台访问剪贴板。
 
 ## 复制文本
 
@@ -35,7 +35,7 @@ if !success {
 }
 ```
 
-**返回值：**`bool`——成功时为`true`，否则为`false`
+**返回值：**`bool` - 成功时为`true`，否则为`false`
 
 ### 从服务复制
 
@@ -89,7 +89,7 @@ if !ok {
 fmt.Println("Clipboard text:", text)
 ```
 
-**返回值：**`(string, bool)`——文本和成功标志
+**返回值：**`(string, bool)` - 文本和成功标志
 
 ### 从服务粘贴
 
@@ -374,11 +374,11 @@ async function pasteText() {
 }
 ```
 
-<strong>注意：</strong>浏览器剪贴板 API 需要使用 HTTPS 或 localhost，并获得用户权限。
+<strong>注意：</strong>浏览器剪贴板 API 需要 HTTPS 或 localhost，并且需要用户授权。
 
 ### 使用 Wails 剪贴板
 
-如需访问系统范围的剪贴板：
+如需在整个系统范围内访问剪贴板：
 
 ```javascript
 import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -402,21 +402,21 @@ async function paste() {
 
 ### ✅ 应该做
 
-- **检查返回值**——妥善处理失败情况
-- **提供反馈**——让用户知道复制已成功
-- **验证粘贴的文本**——检查格式和大小
-- **使用适当的方法**——根据情况选择浏览器 API 或 Wails API
-- **处理剪贴板为空的情况**——使用前先检查
-- **去除首尾空白字符**——清理粘贴的文本
+- **检查返回值** - 妥善处理失败情况
+- **提供反馈** - 告知用户复制成功
+- **验证粘贴的文本** - 检查格式和大小
+- **使用适当的方法** - 根据情况选择浏览器 API 或 Wails API
+- **处理剪贴板为空的情况** - 使用前进行检查
+- **去除首尾空白** - 清理粘贴的文本
 
 ### ❌ 不应该做
 
-- **不要忽略失败**——始终检查操作是否成功
-- **不要复制敏感数据**——剪贴板是共享的
-- **不要假定格式**——验证粘贴的数据
-- **不要过于频繁地轮询**——监视剪贴板时尤其如此
-- **不要复制大量数据**——改用文件
-- **不要忽视安全性**——净化粘贴的内容
+- **不要忽略失败** - 始终检查操作是否成功
+- **不要复制敏感数据** - 剪贴板是共享的
+- **不要假定格式** - 验证粘贴的数据
+- **不要过于频繁地轮询** - 监视剪贴板时尤其如此
+- **不要复制大量数据** - 应改用文件
+- **不要忽视安全性** - 对粘贴的内容进行清理
 
 ## 平台差异
 
@@ -424,38 +424,38 @@ async function paste() {
 
 - 使用 NSPasteboard
 - 支持富文本（未来）
-- 系统范围的剪贴板
+- 系统级剪贴板
 - 剪贴板历史记录（系统功能）
 
 ### Windows
 
 - 使用 Windows Clipboard API
 - 支持多种格式（未来）
-- 系统范围的剪贴板
+- 系统级剪贴板
 - 剪贴板历史记录（Windows 10+）
 
 ### Linux
 
 - 使用 X11/Wayland 剪贴板
-- 主选区和剪贴板选区
-- 因桌面环境而异
+- 主选择区和剪贴板选择区
+- 具体行为因桌面环境而异
 - 可能需要剪贴板管理器
 
 ## 限制
 
 ### 当前版本
 
-- **仅支持文本**——尚不支持图像
-- **不支持格式检测**——仅支持纯文本
-- **无剪贴板事件**——必须轮询更改
-- **无剪贴板历史记录**——需要自行实现
+- **仅支持文本** - 尚不支持图像
+- **不支持格式检测** - 仅支持纯文本
+- **不支持剪贴板事件** - 必须通过轮询检测变化
+- **不支持剪贴板历史记录** - 需要自行实现
 
 ### 未来功能
 
 - 图像支持
 - 富文本支持
-- 多格式支持
-- 剪贴板更改事件
+- 多种格式
+- 剪贴板变更事件
 - 剪贴板历史记录 API
 
 ## 后续步骤
@@ -474,7 +474,7 @@ async function paste() {
 
 ---
 ℹ 对话框
-显示复制/粘贴操作的反馈。
+显示复制/粘贴反馈。
 
 [了解更多 →](/features/dialogs/message/)
 
@@ -488,4 +488,4 @@ async function paste() {
 
 ---
 
-<strong>有问题？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[剪贴板示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[剪贴板示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
