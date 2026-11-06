@@ -9,8 +9,8 @@
   
   <Identity 
     Name="{{.ProductIdentifier}}"
-    Publisher="{{.Publisher}}"
-    Version="{{.ProductVersion}}.0" 
+    Publisher="{{.Publisher | html}}"
+    Version="{{.WindowsVersion}}"
     ProcessorArchitecture="{{.ProcessorArchitecture}}" />
   
   <Properties>

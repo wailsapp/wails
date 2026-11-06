@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d5430270e8a0f07efe7c",
+  "sourceFile": "community/showcase/october.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "targetHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineText": "![October](/assets/showcase-images/october.webp)",
+      "status": "final",
+      "sourcePreview": "![October](/assets/showcase-images/october.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "8abb59d117fa8d9809a5ab1d3a56cc5d6c49258aaf2c0eafcfe677cdb00c0e81",
+      "targetHash": "a5af303bfb347d713ffef3f065b1393c9c5637a50e7c4c064ec83ab88ca3798f",
+      "machineHash": "a5af303bfb347d713ffef3f065b1393c9c5637a50e7c4c064ec83ab88ca3798f",
+      "machineText": "[October](https://october.utf9k.net)는 [Kobo eReaders](https://en.wikipedia.org/wiki/Kobo_eReader)에서 하이라이트를 매우 간편하게 추출한 다음 [Readwise](https://readwise.io)로 전달할 수 있는 소규모 Wails 애플리케이션입니다.",
+      "status": "final",
+      "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it\\ really easy to extr…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "29d79eaad378274371e8c6e65a98996328a635b81e486b835ab2ce5091c69988",
+      "targetHash": "60850cb29453724cb38af6d1009ac39cff18700568fa0fe3073d8fa0ccbd95f5",
+      "machineHash": "60850cb29453724cb38af6d1009ac39cff18700568fa0fe3073d8fa0ccbd95f5",
+      "machineText": "기능 범위가 비교적 작아 모든 플랫폼용 버전의 용량이 10MB 미만이며, 이는 [UPX 압축](https://upx.github.io/)을 활성화하지 않은 상태의 크기입니다!",
+      "status": "final",
+      "sourcePreview": "It has a relatively small scope with all platform versions weighing in under\\ 10MB, and that's witho…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "168bd9cc70124dd7b3bf65ceac42f0331f43bfd6fbf6adab523d968cd82b6468",
+      "targetHash": "248175fe67fc0be5ccd90210b3910cbad8284226e3eb816528d38754a4770688",
+      "machineHash": "248175fe67fc0be5ccd90210b3910cbad8284226e3eb816528d38754a4770688",
+      "machineText": "반면 저자가 이전에 Electron으로 개발을 시도했을 때는 용량이 순식간에 수백 메가바이트로 불어났습니다.",
+      "status": "final",
+      "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to\\ several hundred megaby…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "targetHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineText": "October",
+      "status": "final",
+      "sourcePreview": "October",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

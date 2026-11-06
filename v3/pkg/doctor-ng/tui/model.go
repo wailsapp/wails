@@ -5,11 +5,12 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"sync/atomic"
+	"time"
 
-	"github.com/atotto/clipboard"
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/wailsapp/wails/v3/internal/reportcopy"
 	doctorng "github.com/wailsapp/wails/v3/pkg/doctor-ng"
 )
 
@@ -21,14 +22,15 @@ const (
 )
 
 type Model struct {
-	state        state
-	report       *doctorng.Report
-	spinner      spinner.Model
-	err          error
-	width        int
-	height       int
-	showHelp     bool
-	copiedNotice bool
+	state          state
+	report         *doctorng.Report
+	loadingFrame   int
+	scanGeneration uint64
+	err            error
+	width          int
+	height         int
+	showHelp       bool
+	copiedNotice   bool
 }
 
 type reportReadyMsg struct {
@@ -40,20 +42,24 @@ type installCompleteMsg struct {
 	err error
 }
 
-func NewModel() Model {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = spinnerStyle
+type loadingTickMsg uint64
 
-	return Model{
-		state:   stateLoading,
-		spinner: s,
-	}
+// Tokens distinguish both independent models and successive scans.
+var loadingSequence atomic.Uint64
+
+var loadingFrames = [...]string{"⣾ ", "⣽ ", "⣻ ", "⢿ ", "⡿ ", "⣟ ", "⣯ ", "⣷ "}
+
+func loadingTick(generation uint64) tea.Cmd {
+	return tea.Tick(100*time.Millisecond, func(time.Time) tea.Msg { return loadingTickMsg(generation) })
+}
+
+func NewModel() Model {
+	return Model{state: stateLoading, scanGeneration: loadingSequence.Add(1)}
 }
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		m.spinner.Tick,
+		loadingTick(m.scanGeneration),
 		runDoctor,
 	)
 }
@@ -87,12 +93,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			if m.state == stateReport {
 				m.state = stateLoading
-				return m, tea.Batch(m.spinner.Tick, runDoctor)
+				m.scanGeneration = loadingSequence.Add(1)
+				return m, tea.Batch(loadingTick(m.scanGeneration), runDoctor)
 			}
 		case "c":
 			if m.state == stateReport && m.report != nil {
 				text := m.generateClipboardText()
-				if err := clipboard.WriteAll(text); err == nil {
+				if err := reportcopy.Write(text); err == nil {
 					m.copiedNotice = true
 				}
 			}
@@ -107,14 +114,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = msg.err
 		m.state = stateReport
 
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
-		return m, cmd
+	case loadingTickMsg:
+		// A completed or superseded scan must not keep a second clock alive.
+		if m.state != stateLoading || uint64(msg) != m.scanGeneration {
+			return m, nil
+		}
+		m.loadingFrame = (m.loadingFrame + 1) % len(loadingFrames)
+		return m, loadingTick(m.scanGeneration)
 
 	case installCompleteMsg:
 		m.state = stateLoading
-		return m, tea.Batch(m.spinner.Tick, runDoctor)
+		m.scanGeneration = loadingSequence.Add(1)
+		return m, tea.Batch(loadingTick(m.scanGeneration), runDoctor)
 	}
 
 	return m, nil
@@ -132,7 +143,7 @@ func (m Model) View() string {
 }
 
 func (m Model) viewLoading() string {
-	return fmt.Sprintf("\n  %s Scanning system...\n", m.spinner.View())
+	return fmt.Sprintf("\n  %s Scanning system...\n", spinnerStyle.Render(loadingFrames[m.loadingFrame]))
 }
 
 func (m Model) viewReport() string {

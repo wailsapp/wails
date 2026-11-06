@@ -3,16 +3,36 @@
 package application
 
 type linuxMenu struct {
-	menu   *Menu
-	native pointer
+	menu      *Menu
+	native    pointer
+	isSubmenu bool
+	onDestroy func()
 }
 
 func newMenuImpl(menu *Menu) *linuxMenu {
-	result := &linuxMenu{
-		menu:   menu,
-		native: menuBarNew(),
-	}
+	return newLinuxMenu(menu, false)
+}
+
+func newLinuxMenu(menu *Menu, isSubmenu bool) *linuxMenu {
+	result := &linuxMenu{menu: menu, isSubmenu: isSubmenu}
+	result.createNative()
 	return result
+}
+
+func (m *linuxMenu) createNative() {
+	if m.isSubmenu {
+		m.native = menuNew()
+	} else {
+		m.native = menuBarNew()
+	}
+	menuOnDestroy(m.native, func() {
+		// Retain the menu kind so Update on a detached submenu recreates a
+		// GtkMenu, rather than a GtkMenuBar that cannot be reattached.
+		m.native = nil
+		if m.onDestroy != nil {
+			m.onDestroy()
+		}
+	})
 }
 
 func (m *linuxMenu) run() {
@@ -20,18 +40,20 @@ func (m *linuxMenu) run() {
 }
 
 func (m *linuxMenu) update() {
-	if m.native == nil || m.menu == nil {
+	if m.menu == nil {
 		return
 	}
+	defer refreshSystemTrayMenus(m.menu)
+
 	m.processMenu(m.menu)
+	refreshGTK3MenuViews(m.menu)
 }
 
 func (m *linuxMenu) processMenu(menu *Menu) {
 	if menu.impl == nil {
-		menu.impl = &linuxMenu{
-			menu:   menu,
-			native: menuNew(),
-		}
+		menu.impl = newLinuxMenu(menu, true)
+	} else if impl := menu.impl.(*linuxMenu); impl.native == nil {
+		impl.createNative()
 	} else {
 		// Clear existing menu items before rebuilding (prevents appending on Update())
 		menuClear(menu)
@@ -80,10 +102,7 @@ func (m *linuxMenu) attachHandler(item *MenuItem) {
 
 func (m *linuxMenu) addSubMenuToItem(menu *Menu, item *MenuItem) {
 	if menu.impl == nil {
-		menu.impl = &linuxMenu{
-			menu:   menu,
-			native: menuNew(),
-		}
+		menu.impl = newLinuxMenu(menu, true)
 	}
 	menuSetSubmenu(item, menu)
 }

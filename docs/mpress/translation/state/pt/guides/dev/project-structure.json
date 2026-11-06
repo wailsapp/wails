@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f9161f96c9def64b7650",
+  "sourceFile": "guides/dev/project-structure.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "a0001-title-01": {
+      "sourceHash": "6182fb7f4677ae02e233dc74f0294fe645ebe92b3657c34e8deea157fa2c90d3",
+      "targetHash": "1e80d4c038734c2e9f5193903ebfe26a999a929271736b8b9a7790eca801c9ac",
+      "machineHash": "1e80d4c038734c2e9f5193903ebfe26a999a929271736b8b9a7790eca801c9ac",
+      "machineText": "Arquivos do projeto de frontend",
+      "status": "final",
+      "sourcePreview": "Frontend project files",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "b0001-text-01": {
+      "sourceHash": "44b9294068221fd8669c6918b2c192f8a366d4a1075ea58ca7e246d8790cb402",
+      "targetHash": "b91c2401bf6557d2bdcdbe276c842e424c1b239f40ad6f6222a054cc2ba955c9",
+      "machineHash": "b91c2401bf6557d2bdcdbe276c842e424c1b239f40ad6f6222a054cc2ba955c9",
+      "machineText": "Esta página é uma referência simples dos arquivos criados quando você inicia um novo projeto usando o modelo Vanilla",
+      "status": "final",
+      "sourcePreview": "This page is a simple reference to the files created when you initiate a new project using the Vanil…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "4e66e1910d82ca8e6b2d220d76581f1ac77a574461d47041f24a5ee6cdb615a9",
+      "targetHash": "53b7a911f00de318725734f138587fef1c7b1a9ac6ffbe396e71dd7461a1d276",
+      "machineHash": "53b7a911f00de318725734f138587fef1c7b1a9ac6ffbe396e71dd7461a1d276",
+      "machineText": "Se você optar por usar um modelo inicial diferente, o conteúdo de `frontend/src` variará de acordo com o framework escolhido",
+      "status": "final",
+      "sourcePreview": "If you choose to use a different starter template, contents of `frontend/src` will differ depending …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7b6ffba19464fadd57a58d9beb5ee8d93801f37378dc8989a8fc02d7f543171e",
+      "targetHash": "6eebe6993f6f74eaf4af7ec3bf32ac23991f0d8c335778e188ccf444c6d8748b",
+      "machineHash": "6eebe6993f6f74eaf4af7ec3bf32ac23991f0d8c335778e188ccf444c6d8748b",
+      "machineText": "Entenda a organização dos arquivos de um projeto Wails típico",
+      "status": "final",
+      "sourcePreview": "Understand the file layout for a typical Wails project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "7f12b80d8cb4e011294db2c84e27bad2e9feb76e556f33a6f671e085df8f13af",
+      "targetHash": "a7eb26e786e192c9d372c3899e85f2c2e75f0f51e2715107ab5334cd90185f7c",
+      "machineHash": "a7eb26e786e192c9d372c3899e85f2c2e75f0f51e2715107ab5334cd90185f7c",
+      "machineText": "Estrutura do projeto",
+      "status": "final",
+      "sourcePreview": "Project Structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    }
+  }
+}

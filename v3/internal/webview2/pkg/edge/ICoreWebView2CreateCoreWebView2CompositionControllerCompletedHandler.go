@@ -2,6 +2,8 @@
 
 package edge
 
+import "unsafe"
+
 type iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerVtbl struct {
 	_IUnknownVtbl
 	Invoke ComProc
@@ -17,11 +19,11 @@ func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknow
 }
 
 func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownAddRef(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownRelease(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerInvoke(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler, errorCode uintptr, result *ICoreWebView2CompositionController) uintptr {

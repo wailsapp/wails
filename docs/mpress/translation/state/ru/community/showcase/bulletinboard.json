@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "78412c2a3c8910079a87",
+  "sourceFile": "community/showcase/bulletinboard.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "targetHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineText": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "status": "final",
+      "sourcePreview": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "101473fcfd92f30446c502de0bc357dbde219775d10357ce617a323129af3031",
+      "targetHash": "40851d1b12e5e50747b055eb26b20700cb3448f54dc59601c257f13d84e83906",
+      "machineHash": "40851d1b12e5e50747b055eb26b20700cb3448f54dc59601c257f13d84e83906",
+      "machineText": "Приложение [BulletinBoard](https://github.com/raguay/BulletinBoard) — это\\\nуниверсальная доска для статических сообщений и диалогов, позволяющих сценарию получать данные от\\\nпользователя. В приложении есть текстовый интерфейс (TUI) для создания новых диалогов, которые затем можно\\\nиспользовать для получения данных от пользователя. Приложение рассчитано на постоянную работу в вашей\\\nсистеме: оно показывает информацию по мере необходимости, а затем скрывается. У меня настроен процесс,\\\nкоторый отслеживает файл в системе и при его изменении отправляет содержимое в BulletinBoard.\\\nОн отлично вписывается в мои рабочие процессы. Также предусмотрен\\\n[рабочий процесс Alfred](https://github.com/raguay/MyAlfred/blob/master/Alfred%205/EmailIt.alfredworkflow)\\\nдля отправки информации в программу. Этот рабочий процесс также предназначен для работы с\\\n[EmailIt](https://github.com/raguay/EmailIt).",
+      "status": "final",
+      "sourcePreview": "The [BulletinBoard](https://github.com/raguay/BulletinBoard) application is a\\ versital message boar…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineText": "Настольное приложение, созданное с помощью Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "targetHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineText": "BulletinBoard",
+      "status": "final",
+      "sourcePreview": "BulletinBoard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  }
+}

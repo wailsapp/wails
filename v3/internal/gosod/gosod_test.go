@@ -57,6 +57,32 @@ func TestExtract_TemplateFile(t *testing.T) {
 	}
 }
 
+func TestExtract_LiteralTemplatePaths(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		files  fstest.MapFS
+		output string
+	}{
+		{"bracket directory", fstest.MapFS{
+			"routes/[id]/page.txt.tmpl": {Data: []byte("Project {{.Name}}")},
+		}, "routes/[id]/page.txt"},
+		{"bracket filename with glob match", fstest.MapFS{
+			"settings[dev].txt.tmpl": {Data: []byte("Project {{.Name}}")},
+			"settingsd.txt.tmpl":     {Data: []byte("wrong file")},
+		}, "settings[dev].txt"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := New(tt.files).Extract(dir, struct{ Name string }{"example"}); err != nil {
+				t.Fatal(err)
+			}
+			if got := readFile(t, filepath.Join(dir, tt.output)); got != "Project example" {
+				t.Errorf("extracted content = %q, want Project example", got)
+			}
+		})
+	}
+}
+
 // ---- Subdirectory creation ----
 
 func TestExtract_Subdirectory(t *testing.T) {

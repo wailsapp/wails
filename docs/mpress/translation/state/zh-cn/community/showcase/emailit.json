@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "31d42ccec848da48a89b",
+  "sourceFile": "community/showcase/emailit.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "targetHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineText": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "status": "final",
+      "sourcePreview": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "cf6c353b8eb58108d414cc4bcd662b2dfdbabc07195ee2db1febc67446b9dfec",
+      "targetHash": "afd4fdca97f5f9bd1705f4805f99f994f818b475cd34714c830f8ed1c841c2e6",
+      "machineHash": "afd4fdca97f5f9bd1705f4805f99f994f818b475cd34714c830f8ed1c841c2e6",
+      "machineText": "[EmailIt](https://github.com/raguay/EmailIt/) 是一个使用 Wails 2 构建的程序。它仅用于发送基于 Markdown 的电子邮件，配有九个记事本、用于处理文本的脚本和模板。它还提供脚本终端，可在 EmailIt 中对系统里的文件运行脚本。脚本和模板既可直接通过命令行使用，也可通过 Alfred、Keyboard Maestro、Dropzone 或 PopClip 扩展使用。它还支持从 GitHub 下载的脚本和主题。文档尚不完整，但程序可以正常运行。它使用 Wails2 和 Svelte 构建，下载文件是通用 macOS 应用程序。",
+      "status": "final",
+      "sourcePreview": "[EmailIt](https://github.com/raguay/EmailIt/) is a Wails 2 program that is a\\ markdown based email s…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "targetHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineText": "EmailIt",
+      "status": "final",
+      "sourcePreview": "EmailIt",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

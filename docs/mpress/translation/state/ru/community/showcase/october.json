@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d5430270e8a0f07efe7c",
+  "sourceFile": "community/showcase/october.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "targetHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineText": "![October](/assets/showcase-images/october.webp)",
+      "status": "final",
+      "sourcePreview": "![October](/assets/showcase-images/october.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "8abb59d117fa8d9809a5ab1d3a56cc5d6c49258aaf2c0eafcfe677cdb00c0e81",
+      "targetHash": "09525726ac98c44ca1b8f15067471f99369abd9463386ca11dca88d8955e7f04",
+      "machineHash": "09525726ac98c44ca1b8f15067471f99369abd9463386ca11dca88d8955e7f04",
+      "machineText": "[October](https://october.utf9k.net) — небольшое приложение на Wails, которое позволяет очень легко извлекать выделенные фрагменты из [электронных книг Kobo](https://en.wikipedia.org/wiki/Kobo_eReader), а затем отправлять их в [Readwise](https://readwise.io).",
+      "status": "final",
+      "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it\\ really easy to extr…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "29d79eaad378274371e8c6e65a98996328a635b81e486b835ab2ce5091c69988",
+      "targetHash": "6178808a9e7acb228d773dd8038ca67895ddec01d7c056ec36648cbbf74ef3e6",
+      "machineHash": "6178808a9e7acb228d773dd8038ca67895ddec01d7c056ec36648cbbf74ef3e6",
+      "machineText": "Приложение решает сравнительно узкий круг задач, и размер каждой версии для поддерживаемых платформ составляет менее 10 МБ — даже без [сжатия с помощью UPX](https://upx.github.io/)!",
+      "status": "final",
+      "sourcePreview": "It has a relatively small scope with all platform versions weighing in under\\ 10MB, and that's witho…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "168bd9cc70124dd7b3bf65ceac42f0331f43bfd6fbf6adab523d968cd82b6468",
+      "targetHash": "2de8d7dec61cb6fa8f663bd21a09f69883bac6ebe0e9005f8775e7f02ae16ea6",
+      "machineHash": "2de8d7dec61cb6fa8f663bd21a09f69883bac6ebe0e9005f8775e7f02ae16ea6",
+      "machineText": "Для сравнения: предыдущие попытки автора реализовать приложение с помощью Electron быстро разрастались до нескольких сотен мегабайт.",
+      "status": "final",
+      "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to\\ several hundred megaby…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineText": "Настольное приложение, созданное с помощью Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "targetHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineText": "October",
+      "status": "final",
+      "sourcePreview": "October",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  }
+}

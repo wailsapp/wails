@@ -21,9 +21,10 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/doctor"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"gopkg.in/yaml.v3"
 )
 
 //go:embed frontend/dist/*
@@ -201,37 +202,23 @@ type DockerStatus struct {
 
 const crossImageName = "ghcr.io/wailsapp/wails-cross"
 
-// WailsConfigInfo represents the info section of wails.yaml
-type WailsConfigInfo struct {
-	CompanyName       string `json:"companyName" yaml:"companyName"`
-	ProductName       string `json:"productName" yaml:"productName"`
-	ProductIdentifier string `json:"productIdentifier" yaml:"productIdentifier"`
-	Description       string `json:"description" yaml:"description"`
-	Copyright         string `json:"copyright" yaml:"copyright"`
-	Comments          string `json:"comments,omitempty" yaml:"comments,omitempty"`
-	Version           string `json:"version" yaml:"version"`
-}
-
-// WailsConfig represents the wails.yaml configuration
-type WailsConfig struct {
-	Info WailsConfigInfo `json:"info" yaml:"info"`
-}
-
 // SystemInfo contains detected system information
 type SystemInfo struct {
-	OS           string `json:"os"`
-	Arch         string `json:"arch"`
-	WailsVersion string `json:"wailsVersion"`
-	GoVersion    string `json:"goVersion"`
-	HomeDir      string `json:"homeDir"`
-	OSName       string `json:"osName,omitempty"`
-	OSVersion    string `json:"osVersion,omitempty"`
-	GitName      string `json:"gitName,omitempty"`
-	GitEmail     string `json:"gitEmail,omitempty"`
+	OS           string               `json:"os"`
+	Arch         string               `json:"arch"`
+	WailsVersion string               `json:"wailsVersion"`
+	GoVersion    string               `json:"goVersion"`
+	HomeDir      string               `json:"homeDir"`
+	OSName       string               `json:"osName,omitempty"`
+	OSVersion    string               `json:"osVersion,omitempty"`
+	GitName      string               `json:"gitName,omitempty"`
+	GitEmail     string               `json:"gitEmail,omitempty"`
+	Details      *doctor.SystemReport `json:"details,omitempty"`
 }
 
 // WizardState represents the complete wizard state
 type WizardState struct {
+	WakeEnabled  bool               `json:"wakeEnabled"`
 	Dependencies []DependencyStatus `json:"dependencies"`
 	System       SystemInfo         `json:"system"`
 	StartTime    time.Time          `json:"startTime"`
@@ -240,16 +227,28 @@ type WizardState struct {
 // Wizard is the setup wizard server
 type Wizard struct {
 	server          *http.Server
+	origin          string
 	state           WizardState
 	stateMu         sync.RWMutex
 	dockerStatus    DockerStatus
 	dockerBuildLogs string
 	dockerMu        sync.RWMutex
+	stopping        bool
 	done            chan struct{}
 	doneOnce        sync.Once
 	shutdown        chan struct{}
 	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
+
+	// Notarization state. The macOS notarization profile is created in a
+	// terminal window of the wizard's own making, so the job outlives the
+	// request that started it.
+	notarizeMu       sync.Mutex
+	notarizeJob      *notarizeJob
+	notarizeStarting bool
+	// Bumped on every cancel, so a job whose window was still opening when the
+	// user gave up can tell that it is no longer wanted.
+	notarizeCancelGen uint64
 
 	// Init-mode state. When initData is non-nil the wizard runs as the project
 	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
@@ -281,6 +280,7 @@ func (w *Wizard) Run() error {
 
 	port := listener.Addr().(*net.TCPAddr).Port
 	url := fmt.Sprintf("http://127.0.0.1:%d", port)
+	w.origin = url
 
 	// Set up HTTP routes
 	mux := http.NewServeMux()
@@ -320,7 +320,10 @@ func (w *Wizard) Run() error {
 
 func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
+	mux.HandleFunc("/api/", http.NotFound)
 	mux.HandleFunc("/api/state", w.handleState)
+	mux.HandleFunc("/api/wake/setup", w.handleWakeSetup)
+	mux.HandleFunc("/api/wake/setup/requirements", w.handleWakeRequirements)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
 	mux.HandleFunc("/api/dependencies/mobile", w.handleCheckMobileDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
@@ -329,11 +332,12 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
 	mux.HandleFunc("/api/docker/logs", w.handleDockerLogs)
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
-	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/signing", w.handleSigning)
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/signing/notarize/create", w.handleNotarizeCreate)
+	mux.HandleFunc("/api/signing/notarize/status", w.handleNotarizeStatus)
+	mux.HandleFunc("/api/signing/notarize/cancel", w.handleNotarizeCancel)
 	mux.HandleFunc("/api/signing/notarize/validate", w.handleNotarizeValidate)
 	mux.HandleFunc("/api/init", w.handleInit)
 	mux.HandleFunc("/api/init/create", w.handleInitCreate)
@@ -414,6 +418,7 @@ func staticContentType(path string) string {
 }
 
 func (w *Wizard) initSystemInfo() {
+	details, detailsErr := doctor.CollectSystemInfo()
 	w.stateMu.Lock()
 	defer w.stateMu.Unlock()
 
@@ -426,11 +431,18 @@ func (w *Wizard) initSystemInfo() {
 		GoVersion:    runtime.Version(),
 		HomeDir:      homeDir,
 	}
+	if detailsErr == nil {
+		w.state.System.Details = &details
+		w.state.System.OSName = details.Name
+		w.state.System.OSVersion = details.Version
+	}
 
 	// Get OS details
-	if info, err := operatingsystem.Info(); err == nil {
-		w.state.System.OSName = info.Name
-		w.state.System.OSVersion = info.Version
+	if detailsErr != nil {
+		if info, err := operatingsystem.Info(); err == nil {
+			w.state.System.OSName = info.Name
+			w.state.System.OSVersion = info.Version
+		}
 	}
 
 	// Pre-fill author identity from git config (effective config: local repo
@@ -448,7 +460,9 @@ func (w *Wizard) handleState(rw http.ResponseWriter, r *http.Request) {
 	defer w.stateMu.RUnlock()
 
 	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(w.state)
+	state := w.state
+	state.WakeEnabled = features.WakeEnabled()
+	json.NewEncoder(rw).Encode(state)
 }
 
 func (w *Wizard) handleCheckDependencies(rw http.ResponseWriter, r *http.Request) {
@@ -471,85 +485,20 @@ func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.R
 	json.NewEncoder(rw).Encode(deps)
 }
 
-func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Content-Type", "application/json")
-
-	// Find wails.yaml in current directory or parent directories
-	configPath := findWailsConfig()
-
-	switch r.Method {
-	case http.MethodGet:
-		if configPath == "" {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		data, err := os.ReadFile(configPath)
-		if err != nil {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		var config WailsConfig
-		if err := yaml.Unmarshal(data, &config); err != nil {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(config)
-
-	case http.MethodPost:
-		var config WailsConfig
-		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if configPath == "" {
-			configPath = "wails.yaml"
-		}
-
-		data, err := yaml.Marshal(&config)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if err := os.WriteFile(configPath, data, 0644); err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(map[string]string{"status": "saved", "path": configPath})
-
-	default:
-		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func findWailsConfig() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		return ""
-	}
-
-	for {
-		configPath := filepath.Join(dir, "wails.yaml")
-		if _, err := os.Stat(configPath); err == nil {
-			return configPath
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
-	}
-
-	return ""
-}
-
 func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !w.isWizardOrigin(r) {
+		http.Error(rw, "Origin not allowed", http.StatusForbidden)
+		return
+	}
+	w.dockerMu.Lock()
+	w.stopping = true
+	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
+	w.dockerMu.Unlock()
+
 	w.stateMu.RLock()
 	state := w.state
 	w.stateMu.RUnlock()
@@ -557,23 +506,28 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 	duration := time.Since(state.StartTime)
 
 	response := map[string]interface{}{
-		"status":   "complete",
-		"duration": duration.String(),
+		"status":         "complete",
+		"duration":       duration.String(),
+		"dockerBuilding": dockerBuilding,
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(response)
 
-	w.doneOnce.Do(func() { close(w.done) })
+	go func() {
+		w.buildWg.Wait()
+		w.doneOnce.Do(func() { close(w.done) })
+	}()
 }
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	// Check if Docker build is in progress
-	w.dockerMu.RLock()
+	w.dockerMu.Lock()
+	w.stopping = true
 	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
-	w.dockerMu.RUnlock()
+	w.dockerMu.Unlock()
 
 	response := map[string]interface{}{
 		"status":         "closing",
@@ -775,7 +729,7 @@ type layerProgress struct {
 
 func (w *Wizard) startDockerPull() {
 	w.dockerMu.Lock()
-	if w.dockerStatus.PullStatus == "pulling" {
+	if w.stopping || w.dockerStatus.PullStatus == "pulling" {
 		w.dockerMu.Unlock()
 		return
 	}
@@ -789,9 +743,9 @@ func (w *Wizard) startDockerPull() {
 	w.dockerStatus.LayerCount = 0
 	w.dockerStatus.LayersDone = 0
 	w.dockerBuildLogs = ""
+	w.buildWg.Add(1)
 	w.dockerMu.Unlock()
 
-	w.buildWg.Add(1)
 	go func() {
 		defer w.buildWg.Done()
 
@@ -1159,28 +1113,150 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
-// allowedInstallers is the set of executables permitted by handleInstallDependency.
-// The wizard only ever sends package-manager install commands, so we restrict to
-// those to prevent an adversarial local process from invoking arbitrary binaries.
-var allowedInstallers = map[string]bool{
-	// Linux package managers (invoked directly or via sudo)
-	"sudo": true, "apt": true, "apt-get": true, "dnf": true, "yum": true,
-	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
-	"eopkg": true, "nix-env": true,
-	// macOS
-	"brew": true,
-	// Mobile toolchains: install SDK packages / simulator runtimes
-	"sdkmanager": true, "xcodebuild": true,
-	// Windows
-	"winget": true, "choco": true, "scoop": true,
+// safeInstallers maps request-controlled executable names to constants. The
+// command is still executed by the wizard, but only after its complete
+// package-manager shape has been checked below.
+var safeInstallers = map[string]string{
+	"apt": "apt", "apt-get": "apt-get", "apk": "apk", "dnf": "dnf", "yum": "yum",
+	"rpm-ostree": "rpm-ostree", "pacman": "pacman", "zypper": "zypper",
+	"emerge": "emerge", "xbps-install": "xbps-install", "eopkg": "eopkg",
+	"nix-env": "nix-env", "brew": "brew", "port": "port", "snap": "snap",
+	"flatpak": "flatpak", "winget": "winget", "choco": "choco", "scoop": "scoop",
+	"sdkmanager": "sdkmanager", "xcodebuild": "xcodebuild", "xcode-select": "xcode-select",
+	"sudo": "sudo", "pkexec": "pkexec", "doas": "doas",
 }
 
-// allowedSudoSubcmds lists the second word (the real executable) when the
-// command starts with "sudo", so callers cannot do e.g. "sudo rm -rf /".
-var allowedSudoSubcmds = map[string]bool{
-	"apt": true, "apt-get": true, "dnf": true, "yum": true,
-	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
-	"eopkg": true, "nix-env": true,
+var safeElevatedInstallers = map[string]bool{
+	"apt": true, "apt-get": true, "apk": true, "dnf": true, "yum": true,
+	"rpm-ostree": true, "pacman": true, "zypper": true, "emerge": true,
+	"xbps-install": true, "eopkg": true, "nix-env": true,
+}
+
+// Package names are generated by Wails' dependency tables. Keep the accepted
+// alphabet deliberately small so an attacker cannot turn an installer option
+// into a config-file or command-substitution primitive. Android SDK package
+// names use ';' (for example, ndk;26.3.11579264), hence it is included.
+var safeInstallArgument = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9+._:@/;=#,\-]*$`)
+
+func validInstallArguments(args []string) bool {
+	if len(args) == 0 {
+		return false
+	}
+	for _, arg := range args {
+		if !safeInstallArgument.MatchString(arg) {
+			return false
+		}
+	}
+	return true
+}
+
+func hasSubcommand(args []string, subcommand string) bool {
+	return len(args) >= 2 && args[0] == subcommand && validInstallArguments(args[1:])
+}
+
+func hasPackageInstallSubcommand(args []string, subcommand string, optionalFlag string) bool {
+	if len(args) < 2 || args[0] != subcommand {
+		return false
+	}
+	packageArgs := args[1:]
+	if optionalFlag != "" && len(packageArgs) >= 2 && packageArgs[0] == optionalFlag {
+		packageArgs = packageArgs[1:]
+	}
+	return validInstallArguments(packageArgs)
+}
+
+func isSafeInstallShape(command string, args []string) bool {
+	switch command {
+	case "apt", "apt-get", "apk", "dnf", "yum", "rpm-ostree":
+		if command == "apk" {
+			return hasSubcommand(args, "add")
+		}
+		if command == "apt-get" || command == "dnf" || command == "yum" {
+			return hasPackageInstallSubcommand(args, "install", "-y")
+		}
+		return hasSubcommand(args, "install")
+	case "pacman":
+		if len(args) < 2 || args[0] != "-S" {
+			return false
+		}
+		packageArgs := args[1:]
+		if len(packageArgs) >= 2 && packageArgs[0] == "--noconfirm" {
+			packageArgs = packageArgs[1:]
+		}
+		return validInstallArguments(packageArgs)
+	case "zypper":
+		return hasSubcommand(args, "in")
+	case "eopkg":
+		return hasSubcommand(args, "it")
+	case "nix-env":
+		return len(args) >= 2 && args[0] == "-iA" && validInstallArguments(args[1:])
+	case "xbps-install":
+		return len(args) >= 2 && args[0] == "-Sy" && validInstallArguments(args[1:])
+	case "emerge":
+		return validInstallArguments(args)
+	case "brew":
+		if len(args) < 2 || args[0] != "install" {
+			return false
+		}
+		if args[1] == "--cask" {
+			return len(args) >= 3 && validInstallArguments(args[2:])
+		}
+		return validInstallArguments(args[1:])
+	case "port", "snap", "flatpak", "winget", "choco", "scoop":
+		return hasSubcommand(args, "install")
+	case "sdkmanager":
+		return len(args) >= 2 && args[0] == "--install" && validInstallArguments(args[1:])
+	case "xcodebuild":
+		return len(args) == 2 && args[0] == "-downloadPlatform" && args[1] == "iOS"
+	case "xcode-select":
+		return len(args) == 1 && args[0] == "--install"
+	default:
+		return false
+	}
+}
+
+// getSafeCommand validates a complete command and returns constant executable
+// names plus the validated arguments. Privilege-escalation wrappers cannot
+// receive flags: their next token must be one of the approved installers.
+func getSafeCommand(parts []string) (safeCmd string, elevatedCmd string, args []string, ok bool) {
+	if len(parts) == 0 {
+		return "", "", nil, false
+	}
+
+	requested := parts[0]
+	if requested == "sudo" || requested == "pkexec" || requested == "doas" {
+		if len(parts) < 3 || strings.HasPrefix(parts[1], "-") || !safeElevatedInstallers[parts[1]] {
+			return "", "", nil, false
+		}
+		if !isSafeInstallShape(parts[1], parts[2:]) {
+			return "", "", nil, false
+		}
+		return safeInstallers[requested], safeInstallers[parts[1]], parts[2:], true
+	}
+
+	safeCmd, exists := safeInstallers[requested]
+	if !exists || !isSafeInstallShape(requested, parts[1:]) {
+		return "", "", nil, false
+	}
+	return safeCmd, "", parts[1:], true
+}
+
+func isCommandAllowed(parts []string) bool {
+	_, _, _, ok := getSafeCommand(parts)
+	return ok
+}
+
+func (w *Wizard) isWizardOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		// Non-browser clients do not send Origin. They are already local to the
+		// loopback listener, so retain support for CLI/test callers.
+		return true
+	}
+	if w.origin == "" {
+		return false
+	}
+	return origin == w.origin || origin == strings.Replace(w.origin, "127.0.0.1", "localhost", 1)
 }
 
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
@@ -1188,9 +1264,17 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	if !w.isWizardOrigin(r) {
+		http.Error(rw, "Origin not allowed", http.StatusForbidden)
+		return
+	}
+
+	r.Body = http.MaxBytesReader(rw, r.Body, 4<<10)
 
 	var req InstallRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&req); err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -1198,30 +1282,21 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 	rw.Header().Set("Content-Type", "application/json")
 
 	parts := strings.Fields(req.Command)
-	if len(parts) == 0 {
+	safeCmd, elevatedCmd, args, ok := getSafeCommand(parts)
+	if !ok {
 		json.NewEncoder(rw).Encode(InstallResponse{
 			Success: false,
-			Error:   "Empty command",
+			Error:   "command is not an approved dependency installer command",
 		})
 		return
 	}
 
-	if !allowedInstallers[parts[0]] {
-		json.NewEncoder(rw).Encode(InstallResponse{
-			Success: false,
-			Error:   fmt.Sprintf("command not allowed: %s", parts[0]),
-		})
-		return
-	}
-	if parts[0] == "sudo" && (len(parts) < 2 || !allowedSudoSubcmds[parts[1]]) {
-		json.NewEncoder(rw).Encode(InstallResponse{
-			Success: false,
-			Error:   "sudo subcommand not allowed",
-		})
-		return
+	cmdArgs := args
+	if elevatedCmd != "" {
+		cmdArgs = append([]string{elevatedCmd}, args...)
 	}
 
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.Command(safeCmd, cmdArgs...)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -1378,9 +1453,14 @@ type notarizeCreateRequest struct {
 	ProfileName string `json:"profileName"`
 	AppleID     string `json:"appleID"`
 	TeamID      string `json:"teamID"`
-	Password    string `json:"password"`
 }
 
+// handleNotarizeCreate hands the credential setup to a terminal window of its
+// own rather than running it against the wizard's own stdin. notarytool needs to
+// prompt for the app-specific password on a terminal, and the user is looking at
+// a browser: spawning the window puts that prompt in front of them instead of
+// asking them to go and find the terminal `wails3 setup` was started from. The
+// browser polls /api/signing/notarize/status while the window is open.
 func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
@@ -1406,64 +1486,138 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.ProfileName == "" || req.AppleID == "" || req.TeamID == "" || req.Password == "" {
+	profileName, okProfile := notarizeFieldClean(req.ProfileName)
+	appleID, okAppleID := notarizeFieldClean(req.AppleID)
+	teamID, okTeamID := notarizeFieldClean(req.TeamID)
+	if !okProfile || !okAppleID || !okTeamID {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
-			"error":   "All fields are required",
+			"error":   "Profile name, Apple ID and Team ID are all required",
 		})
 		return
 	}
 
-	cmd := exec.Command("xcrun", "notarytool", "store-credentials",
-		req.ProfileName,
-		"--apple-id", req.AppleID,
-		"--team-id", req.TeamID,
-		"--password-stdin",
-		"--validate",
-	)
-	cmd.Stdin = strings.NewReader(req.Password)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		errMsg := strings.TrimSpace(string(output))
-		// Clean up the error message
-		if strings.Contains(errMsg, "Error:") {
-			lines := strings.Split(errMsg, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Error:") {
-					errMsg = strings.TrimSpace(strings.TrimPrefix(line, "Error:"))
-					break
-				}
+	w.notarizeMu.Lock()
+	if w.notarizeStarting {
+		w.notarizeMu.Unlock()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "A terminal window is already opening. Check your screen for it.",
+		})
+		return
+	}
+	if w.notarizeJob != nil {
+		if state, _ := w.notarizeJob.snapshot(); state == notarizeStateRunning {
+			running := w.notarizeJob
+			w.notarizeMu.Unlock()
+			// Answering a create for different credentials with the open window
+			// would store the window's profile, not the one just typed.
+			if !running.matches(profileName, appleID, teamID) {
+				json.NewEncoder(rw).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "A terminal window is already open for different credentials. Finish or cancel it first.",
+				})
+				return
 			}
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"success": true,
+				"pending": true,
+				"command": running.command,
+			})
+			return
 		}
+	}
+	// Spawning the window shells out to `open`, so do it with the lock released:
+	// status and cancel have to stay answerable while it happens. The sentinel
+	// keeps a second create from racing in behind it, and the generation catches
+	// a cancel that lands while the window is still opening.
+	w.notarizeStarting = true
+	startGen := w.notarizeCancelGen
+	w.notarizeMu.Unlock()
+
+	job, err := startNotarizeJob(profileName, appleID, teamID)
+
+	w.notarizeMu.Lock()
+	w.notarizeStarting = false
+	wanted := err == nil && w.notarizeCancelGen == startGen
+	if wanted {
+		w.notarizeJob = job
+	}
+	w.notarizeMu.Unlock()
+
+	if err != nil {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
-			"error":   errMsg,
+			"error":   err.Error(),
+		})
+		return
+	}
+	if !wanted {
+		job.abandon()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Cancelled while the terminal window was opening.",
 		})
 		return
 	}
 
-	// Save the profile name to defaults
-	defs, err := LoadGlobalDefaults()
-	if err != nil {
+	go w.watchNotarizeJob(job)
+
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"success": true,
+		"pending": true,
+		"command": job.command,
+	})
+}
+
+// handleNotarizeStatus reports on the terminal window opened by
+// handleNotarizeCreate.
+func (w *Wizard) handleNotarizeStatus(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	w.notarizeMu.Lock()
+	job := w.notarizeJob
+	w.notarizeMu.Unlock()
+
+	if job == nil {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "Profile created but failed to load defaults: " + err.Error(),
+			"state": notarizeStateIdle,
 		})
 		return
 	}
-	defs.Signing.Darwin.KeychainProfile = req.ProfileName
-	defs.Signing.Darwin.TeamID = req.TeamID
-	if err := SaveGlobalDefaults(defs); err != nil {
-		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "Profile created but failed to save defaults: " + err.Error(),
-		})
+
+	state, errMsg := job.snapshot()
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"state":   state,
+		"error":   errMsg,
+		"command": job.command,
+	})
+}
+
+// handleNotarizeCancel stops the wizard waiting on a terminal window the user
+// has given up on. The window itself is left alone: it may still be sitting at
+// notarytool's password prompt, and killing it out from under the user would be
+// ruder than letting them close it.
+func (w *Wizard) handleNotarizeCancel(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 		return
+	}
+
+	w.notarizeMu.Lock()
+	job := w.notarizeJob
+	w.notarizeJob = nil
+	w.notarizeCancelGen++
+	w.notarizeMu.Unlock()
+
+	if job != nil {
+		job.finish(notarizeStateFailed, "Cancelled")
 	}
 
 	json.NewEncoder(rw).Encode(map[string]interface{}{
 		"success": true,
-		"output":  strings.TrimSpace(string(output)),
 	})
 }
 
@@ -1831,9 +1985,6 @@ type darwinSigningStatus struct {
 	HasNotarization bool     `json:"hasNotarization"`
 	TeamID          string   `json:"teamID,omitempty"`
 	ConfigSource    string   `json:"configSource,omitempty"`
-	// RcodesignAvailable reports whether the `rcodesign` tool is installed —
-	// the way to sign macOS apps from a non-macOS host.
-	RcodesignAvailable bool `json:"rcodesignAvailable"`
 }
 
 type windowsSigningStatus struct {
@@ -1842,9 +1993,6 @@ type windowsSigningStatus struct {
 	HasSignTool     bool   `json:"hasSignTool"`
 	TimestampServer string `json:"timestampServer,omitempty"`
 	ConfigSource    string `json:"configSource,omitempty"`
-	// OsslsigncodeAvailable reports whether `osslsigncode` is installed — the
-	// cross-platform way to Authenticode-sign Windows binaries from macOS/Linux.
-	OsslsigncodeAvailable bool `json:"osslsigncodeAvailable"`
 	// OpensslAvailable gates the "generate self-signed certificate" option.
 	OpensslAvailable bool `json:"opensslAvailable"`
 }
@@ -1882,7 +2030,12 @@ func checkSigningStatus() signingStatusResponse {
 func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 	status := darwinSigningStatus{}
 
-	if cfg.Signing.Darwin.Identity != "" {
+	if cfg.Signing.Darwin.P12Path != "" {
+		status.HasIdentity = true
+		status.Identity = "Exported PKCS#12 certificate"
+		status.TeamID = cfg.Signing.Darwin.TeamID
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Darwin.Identity != "" {
 		status.HasIdentity = true
 		status.Identity = cfg.Signing.Darwin.Identity
 		status.TeamID = cfg.Signing.Darwin.TeamID
@@ -1902,8 +2055,6 @@ func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 			status.ConfigSource = "keychain"
 		}
 	}
-
-	status.RcodesignAvailable = toolAvailable("rcodesign")
 
 	return status
 }
@@ -1935,7 +2086,6 @@ func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
 		status.HasSignTool = err == nil
 	}
 
-	status.OsslsigncodeAvailable = toolAvailable("osslsigncode")
 	status.OpensslAvailable = toolAvailable("openssl")
 
 	return status
@@ -2081,4 +2231,3 @@ func getMacOSSigningIdentities() []string {
 
 	return identities
 }
-

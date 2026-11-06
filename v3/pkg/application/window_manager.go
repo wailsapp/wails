@@ -53,6 +53,11 @@ func (wm *WindowManager) New() *WebviewWindow {
 // NewWithOptions creates a new webview window with options
 func (wm *WindowManager) NewWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
+	wm.addAndRun(newWindow)
+	return newWindow
+}
+
+func (wm *WindowManager) addAndRun(newWindow *WebviewWindow) {
 	id := newWindow.ID()
 
 	wm.app.windowsLock.Lock()
@@ -64,8 +69,6 @@ func (wm *WindowManager) NewWithOptions(windowOptions WebviewWindowOptions) *Web
 	}
 
 	wm.app.runOrDeferToAppRun(newWindow)
-
-	return newWindow
 }
 
 // Current returns the current active window (may be nil)

@@ -26,3 +26,11 @@ NSRect NSScreen_frame(void* screen);
 void windowSetScreen(void* window, void* screen, int yOffset);
 int statusBarHeight();
 void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset);
+
+// systemTrayCoerceEventType maps the raw NSEvent.type observed inside
+// -[StatusItemController statusItemClicked:] to a mouse-button event type
+// that Go's processClick can dispatch on. On current macOS betas the
+// currentEvent at action time is no longer the originating mouse-down
+// (typically a later NSEventTypeMouseMoved), so callers fall back to
+// [NSEvent pressedMouseButtons]. Exposed for regression testing (#5752).
+int systemTrayCoerceEventType(int rawEventType, unsigned long pressedMouseButtons);

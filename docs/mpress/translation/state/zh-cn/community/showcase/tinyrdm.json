@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "c0bffb400051f6f092c1",
+  "sourceFile": "community/showcase/tinyrdm.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "fdd37cab9b411fc9e8b97c96a815db54edb8b8ced13a3820f110a0f3ccb9886e",
+      "targetHash": "28902400027f78cc5802c801f0d9880cf30fb394c478c81d4b55ec3b4758789a",
+      "machineHash": "28902400027f78cc5802c801f0d9880cf30fb394c478c81d4b55ec3b4758789a",
+      "machineText": "![Tiny RDM 截图](/assets/showcase-images/tiny-rdm1.webp)\\\n![Tiny RDM 截图](/assets/showcase-images/tiny-rdm2.webp)",
+      "status": "final",
+      "sourcePreview": "![Tiny RDM Screenshot](/assets/showcase-images/tiny-rdm1.webp)\\ ![Tiny RDM Screenshot](/assets/showc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "7dca47eaee2bd183bed31a0c0541a299a05fb69f31634f95ad7370cd924f985e",
+      "targetHash": "3cca867eab0d5a6e6a727595b7496e8bf0b2b0b16236d3faa2bbfa2635c4f5ba",
+      "machineHash": "3cca867eab0d5a6e6a727595b7496e8bf0b2b0b16236d3faa2bbfa2635c4f5ba",
+      "machineText": "[Tiny RDM](https://redis.tinycraft.cc/) 是一款开源的现代轻量级 Redis GUI 应用程序。它拥有美观的用户界面，提供直观的 Redis 数据库管理，并兼容 Windows、Mac 和 Linux。它提供可视化键值数据操作，支持多种数据解码和查看方式，并配有用于执行命令的内置控制台、慢日志查询等功能。",
+      "status": "final",
+      "sourcePreview": "The [Tiny RDM](https://redis.tinycraft.cc/) application is an open-source,\\ modern lightweight Redis…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "targetHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineText": "Tiny RDM",
+      "status": "final",
+      "sourcePreview": "Tiny RDM",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

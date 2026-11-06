@@ -1,0 +1,37 @@
+---
+sidebar_position: 2
+---
+
+# Événements
+
+Le runtime Wails fournit un système d'événements unifiés, où les événements peuvent être émis ou reçus par Go ou JavaScript. En option, des données peuvent être transmises avec les événements. Les écouteurs vont recevoir les données dans les types de donnée du langage correspondant.
+
+### EventsOn
+
+Cette méthode définit un listener pour le nom d'événement donné. Lorsqu'un événement de type `eventName` est [émis](#EventsEmit), la méthode définie en callback est déclenchée. Toutes les données supplémentaires envoyées avec l'événement émis seront passées en paramètre à la méthode définie en callback. Il renvoie une fonction pour annuler l'écouteur.
+
+Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => void`
+
+### EventsOff
+
+Cette méthode désactive l'évènement correspondant au nom donné, éventuellement plusieurs évènements peuvent être désinscrits via `additionalEventNames`.
+
+Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
+
+### EventsOnce
+
+Cette méthode définit un évènement pour le nom donné, mais ne se déclenchera qu'une seule fois. Il renvoie une fonction pour annuler l'évènement.
+
+Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any)): () => void`
+
+### EventsOnMultiple
+
+Cette méthode définit un évènement pour le nom donné, mais ne se déclenchera au maximum qu'un certain nombre de fois, définit avec le paramètre `counter`. Il renvoie une fonction pour annuler l'écouteur.
+
+Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func()`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int): () => void`
+
+### EventsEmit
+
+Cette méthode émet l'événement donné. En option, des données peuvent être transmises avec l'événement. Cela déclenchera tous les événements.
+
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`

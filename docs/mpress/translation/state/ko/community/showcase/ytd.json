@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "4599a12a29cc639559b1afe975e0749f362f90ce96fe2af6db0bb0c95bb5743e",
+      "machineHash": "4599a12a29cc639559b1afe975e0749f362f90ce96fe2af6db0bb0c95bb5743e",
+      "machineText": "![Ytd 스크린샷](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "1f47442da9770aaa4be582fd50727e66b05632a735124e9531ef473aa738f3af",
+      "machineHash": "1f47442da9770aaa4be582fd50727e66b05632a735124e9531ef473aa738f3af",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails)는 YouTube에서 트랙을 다운로드하고 오프라인 재생 목록을 만들어 친구들과 공유할 수 있는 앱입니다. 친구들은 공유받은 재생 목록을 재생하거나 오프라인 감상용으로 다운로드할 수 있으며, 앱에는 플레이어가 내장되어 있습니다.",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>eventperf</title>
+<style>
+  body { font: 13px ui-monospace, Menlo, monospace; background:#141414; color:#ddd; padding:16px; }
+  h1 { font-size:14px; color:#8ab4f8; margin:0 0 12px; }
+  td { padding:2px 10px 2px 0; }
+  .n { color:#9ae6a0; text-align:right; }
+  .w { color:#f0a860; }
+</style>
+</head>
+<body>
+<h1>eventperf — transport measurement</h1>
+<table>
+  <tr><td>epoch</td><td class="n" id="epoch">0</td></tr>
+  <tr><td>received</td><td class="n" id="recv">0</td></tr>
+  <tr><td>drops</td><td class="n w" id="drops">0</td></tr>
+  <tr><td>reorders</td><td class="n w" id="reord">0</td></tr>
+  <tr><td>long frames (&gt;20ms)</td><td class="n w" id="lf">0</td></tr>
+  <tr><td>jitter p99</td><td class="n" id="p99">0</td></tr>
+</table>
+
+<script>
+// Installed BEFORE the runtime module loads (module scripts are deferred), so
+// the accessor below is guaranteed to capture the runtime's assignment of
+// dispatchWailsEvent regardless of which runtime module creates window._wails.
+(function () {
+  "use strict";
+
+  var CAP = 8192;                 // ring of latency samples; bounded so the
+  var deltas = new Float64Array(CAP);  // page itself doesn't perturb the run
+  var dn = 0, dcount = 0;
+
+  var st = {
+    epoch: 0, received: 0, drops: 0, reorders: 0,
+    frames: 0, longFrames: 0, lastSeq: -1, deltaMin: Infinity
+  };
+
+  function reset(epoch) {
+    st.epoch = epoch;
+    st.received = 0; st.drops = 0; st.reorders = 0;
+    st.frames = 0; st.longFrames = 0; st.lastSeq = -1;
+    // deltaMin is deliberately NOT reset: the Go↔JS clock offset is a constant
+    // property of the run, and estimating it across the whole run (rather than
+    // per scenario) keeps a degrading web process from inflating it.
+    dn = 0; dcount = 0;
+  }
+
+  function onEvent(evt) {
+    var d = evt && evt.data;
+    if (!d) { return; }
+
+    if (d.ctl === "reset") { reset(d.epoch); return; }
+    if (typeof d.seq !== "number") { return; }
+
+    var now = performance.now();
+    st.received++;
+
+    if (st.lastSeq >= 0) {
+      var expected = st.lastSeq + 1;
+      if (d.seq > expected)      { st.drops += d.seq - expected; }
+      else if (d.seq < expected) { st.reorders++; }
+    }
+    if (d.seq > st.lastSeq) { st.lastSeq = d.seq; }
+
+    if (typeof d.tms === "number") {
+      var delta = now - d.tms;          // different clock origins; constant offset
+      if (delta < st.deltaMin) { st.deltaMin = delta; }
+      deltas[dn] = delta;
+      dn = (dn + 1) % CAP;
+      if (dcount < CAP) { dcount++; }
+    }
+  }
+
+  // ---- intercept window._wails.dispatchWailsEvent -------------------------
+  var realDispatch = null;
+  var wailsObj = {};
+
+  var wrapped = function (evt) {
+    try { onEvent(evt); } catch (e) { /* never let measurement break delivery */ }
+    if (realDispatch) { return realDispatch.apply(this, arguments); }
+  };
+
+  Object.defineProperty(wailsObj, "dispatchWailsEvent", {
+    configurable: true, enumerable: true,
+    get: function () { return wrapped; },
+    set: function (fn) { realDispatch = fn; }
+  });
+
+  Object.defineProperty(window, "_wails", {
+    configurable: true, enumerable: true,
+    get: function () { return wailsObj; },
+    set: function (v) {
+      // The runtime does `window._wails = window._wails || {}`, which lands here
+      // with v === wailsObj. Handle wholesale replacement too, just in case.
+      if (v && v !== wailsObj) {
+        for (var k in v) {
+          if (k !== "dispatchWailsEvent") { wailsObj[k] = v[k]; }
+        }
+        if (v.dispatchWailsEvent) { realDispatch = v.dispatchWailsEvent; }
+      }
+    }
+  });
+
+  // ---- frame pacing: proxy for main-thread blocking / perceived jank ------
+  var lastFrame = performance.now();
+  function raf() {
+    var n = performance.now();
+    if (n - lastFrame > 20) { st.longFrames++; }
+    lastFrame = n;
+    st.frames++;
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  // ---- periodic report to Go ---------------------------------------------
+  function pct(sorted, p) {
+    if (!sorted.length) { return 0; }
+    var i = Math.floor(p / 100 * (sorted.length - 1));
+    return sorted[i];
+  }
+
+  function report() {
+    var arr = Array.prototype.slice.call(deltas.subarray(0, dcount));
+    arr.sort(function (a, b) { return a - b; });
+
+    var body = {
+      epoch: st.epoch,
+      received: st.received,
+      drops: st.drops,
+      reorders: st.reorders,
+      frames: st.frames,
+      longFrames: st.longFrames,
+      deltaMin: (st.deltaMin === Infinity ? 0 : st.deltaMin),
+      p50: pct(arr, 50), p95: pct(arr, 95), p99: pct(arr, 99),
+      max: arr.length ? arr[arr.length - 1] : 0
+    };
+
+    document.getElementById("epoch").textContent = st.epoch;
+    document.getElementById("recv").textContent  = st.received;
+    document.getElementById("drops").textContent = st.drops;
+    document.getElementById("reord").textContent = st.reorders;
+    document.getElementById("lf").textContent    = st.longFrames;
+    document.getElementById("p99").textContent   =
+      (body.p99 - body.deltaMin).toFixed(2) + " ms";
+
+    fetch("/harness/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).catch(function () { /* harness shutting down */ });
+  }
+  setInterval(report, 250);
+})();
+</script>
+
+<!-- Loading the runtime is what makes the framework mount dispatchWailsEvent
+     and fire WindowRuntimeReady, which is the harness's start signal. -->
+<script type="module">
+  import "/wails/runtime.js";
+</script>
+</body>
+</html>

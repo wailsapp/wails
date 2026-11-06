@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_23Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_22Vtbl
 	PostWebMessageAsJsonWithAdditionalObjects ComProc
 }
 

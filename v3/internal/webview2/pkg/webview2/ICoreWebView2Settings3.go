@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings2Vtbl
 	GetAreBrowserAcceleratorKeysEnabled ComProc
 	PutAreBrowserAcceleratorKeysEnabled ComProc
 }

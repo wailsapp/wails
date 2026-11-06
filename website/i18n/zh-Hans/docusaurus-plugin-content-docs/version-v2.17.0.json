@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "下个版本 🚧",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "快速入门",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "参考",
+    "description": "The label for category Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Runtime": {
+    "message": "运行时",
+    "description": "The label for category Runtime in sidebar docs"
+  },
+  "sidebar.docs.category.Community": {
+    "message": "社区",
+    "description": "The label for category Community in sidebar docs"
+  },
+  "sidebar.docs.category.Showcase": {
+    "message": "案例展示",
+    "description": "The label for category Showcase in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "指南",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.category.Tutorials": {
+    "message": "教程",
+    "description": "The label for category Tutorials in sidebar docs"
+  },
+  "sidebar.docs.link.Contributing": {
+    "message": "参与贡献",
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d4aae76b6e6ad6c46ae",
+  "sourceFile": "community/showcase/minecraftupdater.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "targetHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "machineHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "machineText": "![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "status": "final",
+      "sourcePreview": "![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "93f856a7b29bc5ed606c111ef45f5220f4082501da07a3cf0f4a0a35f7ed7198",
+      "targetHash": "1e27209ad75fda04e51f126d03bdaea473d80bd935af7f11b57f76b4657eeef3",
+      "machineHash": "1e27209ad75fda04e51f126d03bdaea473d80bd935af7f11b57f76b4657eeef3",
+      "machineText": "O [Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) é uma\\\nferramenta utilitária para atualizar e sincronizar mods do Minecraft para sua base de usuários. Ele foi\\\ndesenvolvido usando Wails2 e React, com [antd](https://ant.design/) como framework de\\\nfrontend.",
+      "status": "final",
+      "sourcePreview": "[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) is a\\ utility tool to upda…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineText": "Um aplicativo para desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "targetHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "machineHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "machineText": "Minecraft Updater",
+      "status": "final",
+      "sourcePreview": "Minecraft Updater",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Frame6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Frame5Vtbl
 	AddScreenCaptureStarting    ComProc
 	RemoveScreenCaptureStarting ComProc
 }

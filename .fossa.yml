@@ -11,16 +11,9 @@ version: 3
 # distributed as part of the Wails Go module or @wailsio/runtime and
 # are excluded to keep the compliance posture focused on distributed
 # artifacts.
-#
-# The Astro-based docs site (docs/) carries the same pattern: sharp pulls in
-# @img/sharp-libvips-* (LGPL-3.0-or-later) and astro-d2 pulls in
-# @terrastruct/d2 (MPL-2.0). Both are dev/build tools only and are never
-# distributed with the Wails module or npm package.
 targets:
   exclude:
     - type: npm
       path: website
     - type: npm
       path: v3/examples
-    - type: npm
-      path: docs

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "3018f3bb94aaef9db88f",
+  "sourceFile": "community/showcase/restic-browser.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+      "targetHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+      "machineHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+      "machineText": "![Restic Browser](/assets/showcase-images/restic-browser-2.png)",
+      "status": "final",
+      "sourcePreview": "![Restic Browser](/assets/showcase-images/restic-browser-2.png)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "63f2b7b0d9629e8238fd228693587f51ee25b0b77fec3f5d7a5ff4eee6f53789",
+      "targetHash": "b9794fcb3e6de20378a990339aa3c68d3600b2d8bea1e38f12a635370e50c1c3",
+      "machineHash": "b9794fcb3e6de20378a990339aa3c68d3600b2d8bea1e38f12a635370e50c1c3",
+      "machineText": "[Restic-Browser](https://github.com/emuell/restic-browser) — Une interface graphique de sauvegarde simple et multiplateforme pour [restic](https://github.com/restic/restic), permettant de parcourir et de restaurer des dépôts restic.",
+      "status": "final",
+      "sourcePreview": "[Restic-Browser](https://github.com/emuell/restic-browser) - A simple,\\ cross-platform [restic](http…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "6b461d4d9a870292fb997fca8ca1724f8ae8190b6b44383393983657a797eb47",
+      "machineHash": "6b461d4d9a870292fb997fca8ca1724f8ae8190b6b44383393983657a797eb47",
+      "machineText": "Une application de bureau conçue avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+      "targetHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+      "machineHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+      "machineText": "Restic Browser",
+      "status": "final",
+      "sourcePreview": "Restic Browser",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    }
+  }
+}

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_18Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_17Vtbl
 	AddLaunchingExternalUriScheme    ComProc
 	RemoveLaunchingExternalUriScheme ComProc
 }

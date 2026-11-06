@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile3Vtbl
 	SetPermissionState              ComProc
 	GetNonDefaultPermissionSettings ComProc
 }

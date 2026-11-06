@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e4f964aa8e27e32a9fcd",
+  "sourceFile": "community/showcase/redisviewer.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "d930e8a2b5248faceab66a0679aff6347760a43a79443c093d64578cdae6e61a",
+      "targetHash": "fa2b13d3a3852ad1d1f00e0995ea1a0af62e32f282ba4036c04bec40f2fc0851",
+      "machineHash": "fa2b13d3a3852ad1d1f00e0995ea1a0af62e32f282ba4036c04bec40f2fc0851",
+      "machineText": "![Tangkapan layar RedisViewer](/assets/showcase-images/redisviewer-overview1.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview1.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "b27d3c226e4519da5d620f88d5fc2eb6e3b0b05cb8ac88387cd8376ae67f6eeb",
+      "targetHash": "721eaf4245d7e44053c58db95580ad9f8f61b376a2270f51212e97584fe1a1f8",
+      "machineHash": "721eaf4245d7e44053c58db95580ad9f8f61b376a2270f51212e97584fe1a1f8",
+      "machineText": "![Tangkapan layar RedisViewer](/assets/showcase-images/redisviewer-overview2.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview2.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "575284aad16a7c42d789295540f3ed10bd1122837baaa6ea314244ad9e412b7c",
+      "targetHash": "dd4a456e33e4a929f62a30e1133775e32bb52fa79e5122ef5ba3b0746dd83629",
+      "machineHash": "dd4a456e33e4a929f62a30e1133775e32bb52fa79e5122ef5ba3b0746dd83629",
+      "machineText": "[RedisViewer](https://redisviewer.com/) adalah GUI Redis desktop modern yang dibuat dengan Wails. Gunakan aplikasi ini untuk memeriksa nilai yang kompleks, menjalankan perintah, dan menganalisis performa Redis tanpa mengorbankan kualitas interaksi.",
+      "status": "final",
+      "sourcePreview": "[RedisViewer](https://redisviewer.com/) is a modern Redis desktop GUI built with Wails. Use it to in…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "02697cb537d2b8f33ab5eaa18a346b9a1cd09e24f192271dfb8993d4c39de17b",
+      "targetHash": "a24d41d5a3b37aaba2b59b7947de433b8e2b3930642aa35211cc613314e298db",
+      "machineHash": "a24d41d5a3b37aaba2b59b7947de433b8e2b3930642aa35211cc613314e298db",
+      "machineText": "Dirancang berdasarkan arsitektur WebView + Go milik Wails, aplikasi ini menangani keyspace besar dan payload berat di backend Go, alih-alih mengirimkan semuanya ke frontend—dengan memanfaatkan model memori Go serta menghindari tekanan heap dan risiko kebocoran memori yang umum terjadi pada klien yang sangat bergantung pada JS. Antarmuka pengguna disesuaikan agar hanya merender konten yang tampil di layar, sehingga penelusuran set data berukuran sangat besar tetap responsif dan terasa menyerupai aplikasi desktop native.",
+      "status": "final",
+      "sourcePreview": "Designed around Wails' WebView + Go architecture, it keeps large keyspaces and heavy payloads in the…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "566922c42e5bb889533e602266f348665195e5890d19956e5b59c730064bad63",
+      "targetHash": "194a66b0df66da6bcaf83ed62c5d35fce4f536c9cef84ae973736a548486cd8f",
+      "machineHash": "194a66b0df66da6bcaf83ed62c5d35fce4f536c9cef84ae973736a548486cd8f",
+      "machineText": "[Kunjungi Situs Web Proyek](https://redisviewer.com/)",
+      "status": "final",
+      "sourcePreview": "[Visit Project Website](https://redisviewer.com/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "ba9a7b58d078585e87dc0c51d822ab114492c04e4230de2d434df44553a5d0b9",
+      "targetHash": "dd91fd0eab013ee45ae47ea0663d81b10ff802cb45e2168fdb5885e48715fa62",
+      "machineHash": "dd91fd0eab013ee45ae47ea0663d81b10ff802cb45e2168fdb5885e48715fa62",
+      "machineText": "GUI Redis desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop Redis GUI built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "targetHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineText": "Redis Viewer",
+      "status": "final",
+      "sourcePreview": "Redis Viewer",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

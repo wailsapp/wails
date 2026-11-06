@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d6a0fba96db935aefa28",
+  "sourceFile": "community/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+      "targetHash": "6c2d59ae1e526142abcc4b8326dd8774ac597fdf85b136fd37ced569e0819a49",
+      "machineHash": "6c2d59ae1e526142abcc4b8326dd8774ac597fdf85b136fd37ced569e0819a49",
+      "machineText": "コミュニティ",
+      "status": "final",
+      "sourcePreview": "Community",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+      "targetHash": "6c2d59ae1e526142abcc4b8326dd8774ac597fdf85b136fd37ced569e0819a49",
+      "machineHash": "6c2d59ae1e526142abcc4b8326dd8774ac597fdf85b136fd37ced569e0819a49",
+      "machineText": "コミュニティ",
+      "status": "final",
+      "sourcePreview": "Community",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

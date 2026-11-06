@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "c0bffb400051f6f092c1",
+  "sourceFile": "community/showcase/tinyrdm.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "fdd37cab9b411fc9e8b97c96a815db54edb8b8ced13a3820f110a0f3ccb9886e",
+      "targetHash": "9b4bd4167b623e4fbf03b0a1481c29269c13876d4afe8de04b60c94347ce6857",
+      "machineHash": "9b4bd4167b623e4fbf03b0a1481c29269c13876d4afe8de04b60c94347ce6857",
+      "machineText": "![Tiny RDM 스크린샷](/assets/showcase-images/tiny-rdm1.webp)\\\n![Tiny RDM 스크린샷](/assets/showcase-images/tiny-rdm2.webp)",
+      "status": "final",
+      "sourcePreview": "![Tiny RDM Screenshot](/assets/showcase-images/tiny-rdm1.webp)\\ ![Tiny RDM Screenshot](/assets/showc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "7dca47eaee2bd183bed31a0c0541a299a05fb69f31634f95ad7370cd924f985e",
+      "targetHash": "90cf98e204ec116a19160b944a71a8c906c18b91f469b14073dfb72901223bb5",
+      "machineHash": "90cf98e204ec116a19160b944a71a8c906c18b91f469b14073dfb72901223bb5",
+      "machineText": "[Tiny RDM](https://redis.tinycraft.cc/) 애플리케이션은 오픈 소스 기반의\\\n현대적이고 가벼운 Redis GUI입니다. 세련된 UI와 직관적인 Redis 데이터베이스\\\n관리 기능을 갖추고 있으며 Windows, Mac, Linux와 호환됩니다. 키-값 데이터의\\\n시각적 조작, 다양한 데이터 디코딩 및 보기 옵션, 명령 실행을 위한 내장 콘솔,\\\n슬로 로그 조회 등의 기능을 제공합니다.",
+      "status": "final",
+      "sourcePreview": "The [Tiny RDM](https://redis.tinycraft.cc/) application is an open-source,\\ modern lightweight Redis…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "targetHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineText": "Tiny RDM",
+      "status": "final",
+      "sourcePreview": "Tiny RDM",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

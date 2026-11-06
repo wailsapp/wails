@@ -23,6 +23,13 @@ type Config struct {
 	// here is to bind verification to a value the application developer set
 	// at build time and the release feed cannot influence.
 	//
+	// Setting it makes signatures mandatory (fail closed): a release whose
+	// Verification carries no signature — a digest-only block, or no
+	// Verification at all — is rejected, as is a release that carries a
+	// Signature but no configured key. This is what protects against a
+	// compromised or proxied distribution channel: an attacker cannot strip
+	// the signature to downgrade to digest-only mode.
+	//
 	// When unset, releases that carry only a Digest still install (the digest
 	// is checked against the streaming hash), but any release that carries a
 	// Signature is rejected. Strongly recommended for any app whose
@@ -33,6 +40,11 @@ type Config struct {
 	// timer in the background. Pop-up-on-found behaviour is the same as a
 	// manual Check finding an update.
 	CheckInterval time.Duration
+
+	// HelperReadyTimeout bounds how long Restart waits for the helper to reach
+	// application.New. Zero uses 30 seconds. Increase it if application startup
+	// performs lengthy initialization before creating the Wails application.
+	HelperReadyTimeout time.Duration
 
 	// Platform / Arch / Channel override the per-platform defaults passed to
 	// each Provider's Check. Leave empty to use runtime.GOOS / runtime.GOARCH
@@ -62,6 +74,9 @@ func (c *Config) validate() error {
 	}
 	if c.CurrentVersion == "" {
 		return errors.New("updater: Config.CurrentVersion is required")
+	}
+	if c.HelperReadyTimeout < 0 {
+		return errors.New("updater: HelperReadyTimeout must not be negative")
 	}
 	if len(c.Providers) == 0 {
 		return errors.New("updater: Config.Providers must contain at least one Provider")

@@ -176,6 +176,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = main/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "{{.ProductIdentifier}}";
 				PRODUCT_NAME = "{{.ProductName}}";
 				CODE_SIGNING_ALLOWED = NO;
@@ -188,6 +192,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = main/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "{{.ProductIdentifier}}";
 				PRODUCT_NAME = "{{.ProductName}}";
 				CODE_SIGNING_ALLOWED = NO;

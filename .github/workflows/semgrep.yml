@@ -1,4 +1,13 @@
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable commit to scan
+        required: true
+        type: string
+    secrets:
+      SEMGREP_APP_TOKEN:
+        required: false
   workflow_dispatch: {}
   pull_request: {}
   push:
@@ -6,10 +15,9 @@ on:
     - master
     paths:
     - .github/workflows/semgrep.yml
-  schedule:
-  # random HH:MM to avoid a load spike on GitHub Actions at 00:00
-  - cron: 14 16 * * *
 name: Semgrep
+permissions:
+  contents: read
 jobs:
   semgrep:
     name: semgrep/ci
@@ -19,5 +27,7 @@ jobs:
     container:
       image: returntocorp/semgrep
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref || github.sha }}
     - run: semgrep ci

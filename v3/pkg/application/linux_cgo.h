@@ -14,7 +14,12 @@
 #include <string.h>
 
 // Application flags for GTK4
-#define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
+// NON_UNIQUE, as in the GTK3 path. With uniqueness on, a launch that finds the
+// bus name already taken joins the owner as a remote instance: "activate" is
+// forwarded to the primary and never fires locally, so waitForActivation in
+// WebviewWindow.Run blocks and no window is ever built. Single instance
+// behaviour is handled separately, through SingleInstanceOptions.
+#define APPLICATION_DEFAULT_FLAGS G_APPLICATION_NON_UNIQUE
 
 // ============================================================================
 // Type definitions
@@ -132,6 +137,8 @@ char* build_accelerator_string(guint key, GdkModifierType mods);
 void set_action_enabled(const char *action_name, gboolean enabled);
 void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
+char* get_action_state_string(const char *action_name);
+void set_action_state_string(const char *action_name, const char *value);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
 void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);

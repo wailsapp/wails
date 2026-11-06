@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "23f47f0c548dfa71eba9",
+  "sourceFile": "guides/advanced/wml.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "67346d2024838df7923aa61dac0bed50f825843a4b6543a1f0418908aef9a304",
+      "targetHash": "2a3c4cabebc69186c632c87a1b349ef6ac74feb2e98ee287df2bf8b1eaedc830",
+      "machineHash": "2a3c4cabebc69186c632c87a1b349ef6ac74feb2e98ee287df2bf8b1eaedc830",
+      "machineText": "Diese Seite ist ein Platzhalter. Die vollständigen WML-Inhalte folgen in Kürze.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full WML content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "e8779f0a75e5b7f7664c5c2129429d73230c2a650eb475bc21b51068f028168f",
+      "targetHash": "6ecff17076c37d4f427b8daa312ebe2c7c1b9b8cc192489af2c277e6049346ea",
+      "machineHash": "6ecff17076c37d4f427b8daa312ebe2c7c1b9b8cc192489af2c277e6049346ea",
+      "machineText": "WML (Wails Markup) ist eine deklarative Sprache zur Beschreibung von Wails-Benutzeroberflächen. Die Dokumentation der Auszeichnungssyntax und der verfügbaren Komponenten wird hier ergänzt.",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup) is a declarative language for describing Wails user interfaces. Documentation for…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "81b8912330ea9905cc7c096f1c524bf70f00e21e21fa363134542e7f32420b80",
+      "targetHash": "e8e6c558775b18a9cc4fb7bce8da79bc1fb092d1dd5fe3c46aab3a105eb74a61",
+      "machineHash": "e8e6c558775b18a9cc4fb7bce8da79bc1fb092d1dd5fe3c46aab3a105eb74a61",
+      "machineText": "Eine Auszeichnungssprache zur Beschreibung von Benutzeroberflächen in Wails v3",
+      "status": "final",
+      "sourcePreview": "A markup language for describing Wails v3 user interfaces",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "a29008f9131597a579cd07aa4a8d1e382976a3632f9a1f4387c7af792afa979b",
+      "targetHash": "a29008f9131597a579cd07aa4a8d1e382976a3632f9a1f4387c7af792afa979b",
+      "machineHash": "a29008f9131597a579cd07aa4a8d1e382976a3632f9a1f4387c7af792afa979b",
+      "machineText": "WML (Wails Markup)",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    }
+  }
+}

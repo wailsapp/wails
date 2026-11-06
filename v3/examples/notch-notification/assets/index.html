@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>System Monitor</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="notch-window" aria-label="System monitor">
+      <header class="window-toolbar">
+        <div class="toolbar-actions">
+          <button id="hide" class="toolbar-button" type="button" aria-label="Hide notification" title="Hide notification">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.5 9.5 4.5-4 4.5 4"/></svg>
+          </button>
+          <button id="quit" class="toolbar-button toolbar-button-danger" type="button" aria-label="Quit application" title="Quit application">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="dashboard">
+        <section class="metric-panel cpu-panel" aria-labelledby="cpu-title">
+          <h1 id="cpu-title">CPU load</h1>
+          <div class="metric-reading"><strong id="cpu-value">—</strong><span>%</span></div>
+          <canvas class="cpu-chart" id="cpu-chart" aria-label="Live CPU activity graph"></canvas>
+          <small><span id="peak-value">— peak</span></small>
+        </section>
+
+        <section class="metric-panel memory-panel" aria-labelledby="memory-title">
+          <h1 id="memory-title">Memory</h1>
+          <div class="metric-reading"><strong id="memory-value">—</strong><span>GB</span></div>
+          <progress id="memory-progress" max="100" value="0" aria-label="Memory used"></progress>
+          <small><span id="memory-percent">— used</span><span id="memory-free">— free</span></small>
+        </section>
+
+        <section class="metric-panel disk-panel" aria-labelledby="disk-title">
+          <h1 id="disk-title">Disk</h1>
+          <div class="metric-reading"><strong id="disk-value">—</strong><span>GB</span></div>
+          <progress id="disk-progress" max="100" value="0" aria-label="Disk used"></progress>
+          <small><span id="disk-percent">— used</span><span id="disk-free">— free</span></small>
+        </section>
+
+        <section class="machine-panel" aria-labelledby="machine-title">
+          <h1 id="machine-title">Machine</h1>
+          <strong id="machine-name">Apple silicon</strong>
+          <div class="machine-details">
+            <span><b id="core-count">—</b> CPU cores</span>
+            <span><b id="memory-total">—</b> GB unified memory</span>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

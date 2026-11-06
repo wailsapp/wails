@@ -2,6 +2,7 @@ package s
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"unicode"
 )
 
@@ -210,17 +212,30 @@ func SYMLINK(source string, target string) {
 	checkError(err)
 }
 
-// COPY file from source to target
+// COPY file from source to target, keeping the source's permission bits
 func COPY(source string, target string) {
 	log("COPY %s -> %s", source, target)
 	src, err := os.Open(source)
 	checkError(err)
 	defer closefile(src)
+	sourceInfo, err := src.Stat()
+	checkError(err)
 	if ISDIR(target) {
 		target = filepath.Join(target, filepath.Base(source))
 	}
-	d, err := os.Create(target)
+	// Compare open files before truncating, including symlink and hard-link aliases.
+	d, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE, sourceInfo.Mode().Perm())
 	checkError(err)
+	defer closefile(d)
+	targetInfo, err := d.Stat()
+	checkError(err)
+	if os.SameFile(sourceInfo, targetInfo) {
+		checkError(fmt.Errorf("source %q and target %q are the same file", source, target))
+	}
+	if targetInfo.Mode().IsRegular() {
+		checkError(d.Chmod(sourceInfo.Mode().Perm()))
+		checkError(d.Truncate(0))
+	}
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
@@ -233,7 +248,46 @@ func MOVE(source string, target string) {
 	}
 	log("MOVE %s -> %s", source, target)
 	err := os.Rename(source, target)
+	if errors.Is(err, syscall.EXDEV) {
+		err = copyAcrossDevices(source, target)
+	}
 	checkError(err)
+}
+
+// copyAcrossDevices moves a regular file when rename cannot, e.g. from a tmpfs
+// build dir to an on-disk output dir. It copies into a temporary file beside
+// the target and renames that over it, so a failed copy leaves an existing
+// output untouched and a symlink at the target is replaced, as with rename.
+// The file mode is kept so an AppImage stays executable.
+func copyAcrossDevices(source, target string) error {
+	src, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	info, err := src.Stat()
+	if err != nil {
+		return err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(target), "."+filepath.Base(target)+".*")
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(tmp, src)
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Chmod(tmp.Name(), info.Mode().Perm())
+	}
+	if err == nil {
+		err = os.Rename(tmp.Name(), target)
+	}
+	if err != nil {
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	return os.Remove(source)
 }
 
 func CWD() string {
@@ -463,18 +517,46 @@ func REPLACEALL(filename string, substitutions Sub) {
 
 func DOWNLOAD(url string, target string) {
 	log("DOWNLOAD %s -> %s", url, target)
-	// create HTTP client
+	checkError(downloadFile(url, target))
+}
+
+// Return errors before DOWNLOAD exits, so staging cleanup can finish first.
+func downloadFile(url string, target string) error {
 	resp, err := http.Get(url)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("download %s: unexpected HTTP status %s", url, resp.Status)
+	}
 
-	out, err := os.Create(target)
-	checkError(err)
+	// A private sibling directory keeps staging on the destination filesystem.
+	staging, err := os.MkdirTemp(filepath.Dir(target), ".wails-download-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(staging)
+	staged := filepath.Join(staging, "download")
+	out, err := os.OpenFile(staged, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		return err
+	}
 	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	checkError(err)
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return err
+	}
+	if info, err := os.Stat(target); err == nil {
+		if err := out.Chmod(info.Mode().Perm()); err != nil {
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := out.Close(); err != nil {
+		return err
+	}
+	return os.Rename(staged, target)
 }
 
 func FINDFILES(root string, filenames ...string) []string {

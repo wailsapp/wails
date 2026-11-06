@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "b8a91e42f35515e5af10",
+  "sourceFile": "community/showcase/minesweeper-xp.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "194e480326c0b2f4c1ed827ab8ac09b9d3071a7686406dce51fe7e13abe218ba",
+      "targetHash": "194e480326c0b2f4c1ed827ab8ac09b9d3071a7686406dce51fe7e13abe218ba",
+      "machineHash": "194e480326c0b2f4c1ed827ab8ac09b9d3071a7686406dce51fe7e13abe218ba",
+      "machineText": "![Minesweeper XP](/assets/showcase-images/minesweeper-xp.webp)",
+      "status": "final",
+      "sourcePreview": "![Minesweeper XP](/assets/showcase-images/minesweeper-xp.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3e6dcda2d5e72519853225a88af6da7604bd9aaa58bed65ab66ae0bfdb2fa1c8",
+      "targetHash": "f61151de8b1822a1c6676c01e63942020932e49953f048a8d4847a8edcae3620",
+      "machineHash": "f61151de8b1822a1c6676c01e63942020932e49953f048a8d4847a8edcae3620",
+      "machineText": "[Minesweeper-XP](https://git.new/Minesweeper-XP) memungkinkan Anda menikmati pengalaman Minesweeper XP klasik (+ 98 dan 3.1) di macOS, Windows, dan Linux!",
+      "status": "final",
+      "sourcePreview": "[Minesweeper-XP](https://git.new/Minesweeper-XP) allows you to experience the\\ classic Minesweeper X…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "26b490675a0ac473cd38f779d11f08ad6a1f19247fb5abe5e82f8293bde1fab3",
+      "targetHash": "26b490675a0ac473cd38f779d11f08ad6a1f19247fb5abe5e82f8293bde1fab3",
+      "machineHash": "26b490675a0ac473cd38f779d11f08ad6a1f19247fb5abe5e82f8293bde1fab3",
+      "machineText": "Minesweeper XP",
+      "status": "final",
+      "sourcePreview": "Minesweeper XP",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

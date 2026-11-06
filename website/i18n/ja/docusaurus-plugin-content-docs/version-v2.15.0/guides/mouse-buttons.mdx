@@ -1,0 +1,25 @@
+# マウスボタン
+
+Wailsランタイムでは、マウスクリックを途中で捕捉し、フレームレスウィンドウのサイズ変更が必要かどうかや、ウィンドウの移動が必要かどうかを判断しています。 `window.onclick`はマウスボタンを正しく報告しないため、どのようにマウスクリックが発生したことを検出しているのかを尋ねられました。 以下のコードは、マウスクリックを検出する方法を示しています:
+
+```javascript
+window.addEventListener("mousedown", handleMouseButtonDown);
+
+function handleMouseButtonDown(event) {
+  if (event.button === 0) {
+    // left mouse button
+  } else if (event.button === 1) {
+    // middle mouse button
+  } else if (event.button === 2) {
+    // right mouse button
+  } else if (event.button === 3) {
+    // back mouse button
+  } else if (event.button === 4) {
+    // forward mouse button
+  } else {
+    // other mouse button
+  }
+}
+```
+
+参考: https://developer.mozilla.org/ja/docs/Web/API/MouseEvent/button

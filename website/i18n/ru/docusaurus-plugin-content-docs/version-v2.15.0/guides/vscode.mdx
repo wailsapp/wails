@@ -1,0 +1,82 @@
+
+# Visual Studio Code
+
+Эта страница предназначена для разных советов и трюков при использовании Visual Studio Code с Wails.
+
+## Конфигурация Vetur
+
+Большое спасибо [@Lyimmi](https://github.com/Lyimmi) за этот совет. Изначально оставил сообщение [здесь](https://github.com/wailsapp/wails/issues/1791#issuecomment-1228158349).
+
+Vetur - это популярный плагин для кода Visual Studio, который предоставляет подсветку синтаксиса и завершение кода для Vue проектов. При загрузке проекта Wails в VSCode, Ветур выбросит ошибку, ожидая найти проект фронтенда в корневом каталоге. Чтобы исправить это, можно сделать следующее:
+
+Создайте файл `vetur.config.js` в корне проекта.
+
+```javascript
+// vetur.config.js
+/** @type {import('vls').VeturConfig} */
+module.exports = {
+    // **optional** default: `{}`
+    // override vscode settings
+    // Notice: It only affects the settings used by Vetur.
+    settings: {
+        "vetur.useWorkspaceDependencies": true,
+        "vetur.experimental.templateInterpolationService": true
+    },
+    // **optional** default: `[{ root: './' }]`
+    // support monorepos
+    projects: [
+        {
+            // **required**
+            // Where is your project?
+            // It is relative to `vetur.config.js`.
+            // root: './packages/repo1',
+            root: './frontend',
+            // **optional** default: `'package.json'`
+            // Where is `package.json` in the project?
+            // We use it to determine the version of vue.
+            // It is relative to root property.
+            package: './package.json',
+            // **optional**
+            // Where is TypeScript config file in the project?
+            // It is relative to root property.
+            tsconfig: './tsconfig.json',
+            // **optional** default: `'./.vscode/vetur/snippets'`
+            // Where is vetur custom snippets folders?
+            snippetFolder: './.vscode/vetur/snippets',
+            // **optional** default: `[]`
+            // Register globally Vue component glob.
+            // If you set it, you can get completion by that components.
+            // It is relative to root property.
+            // Notice: It won't actually do it. You need to use `require.context` or `Vue.component`
+            globalComponents: [
+                './src/components/**/*.vue'
+            ]
+        }
+    ]
+}
+```
+
+Затем настройте `frontend/tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    "module": "system",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outFile": "../../built/local/tsc.js",
+    "allowJs": true
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ],
+  "include": [
+    "src/**/*",
+    "wailsjs/**/*.ts"
+  ]
+}
+```
+Это должно позволить теперь использовать Vetur как ожидалось.

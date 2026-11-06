@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment9Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment8Vtbl
 	CreateContextMenuItem ComProc
 }
 

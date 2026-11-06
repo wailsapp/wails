@@ -303,20 +303,20 @@ func BenchmarkWindowOptionsInit(b *testing.B) {
 	b.Run("FullOptions", func(b *testing.B) {
 		for b.Loop() {
 			opts := WebviewWindowOptions{
-				Title:             "Full Test Window",
-				Width:             1024,
-				Height:            768,
-				MinWidth:          400,
-				MinHeight:         300,
-				MaxWidth:          1920,
-				MaxHeight:         1080,
-				URL:               "http://localhost:8080",
-				Frameless:         false,
-				DisableResize:     false,
-				AlwaysOnTop:       false,
-				Hidden:            false,
-				EnableDragAndDrop: true,
-				BackgroundColour:  RGBA{Red: 255, Green: 255, Blue: 255, Alpha: 255},
+				Title:            "Full Test Window",
+				Width:            1024,
+				Height:           768,
+				MinWidth:         400,
+				MinHeight:        300,
+				MaxWidth:         1920,
+				MaxHeight:        1080,
+				URL:              "http://localhost:8080",
+				Frameless:        false,
+				DisableResize:    false,
+				AlwaysOnTop:      false,
+				Hidden:           false,
+				EnableFileDrop:   true,
+				BackgroundColour: RGBA{Red: 255, Green: 255, Blue: 255, Alpha: 255},
 			}
 			_ = opts
 		}

@@ -48,6 +48,17 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 
 :::
 
+:::danger Security: templates are code
+
+A template is not just a set of files: `wails build` and `wails dev` run the `frontend:install`, `frontend:build`,
+`frontend:dev`, `frontend:dev:install`, `frontend:dev:build` and `frontend:dev:watcher` commands from `wails.json`
+on your machine without asking. A template can point these at scripts it ships, and package manager scripts in
+`package.json` also run. Using a remote template is equivalent to running its author's code with your user's
+permissions. Review `wails.json`, `package.json` and any scripts they reference before your first build.
+`wails init` prints the commands found in `wails.json` when a remote template is used.
+
+:::
+
 ## build
 
 `wails build` is used for compiling your project to a production-ready binary.

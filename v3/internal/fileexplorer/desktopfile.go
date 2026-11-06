@@ -2,9 +2,9 @@ package fileexplorer
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"os"
-	"strings"
 )
 
 // DesktopEntry represents a parsed .desktop file's [Desktop Entry] section.
@@ -38,7 +38,7 @@ func ParseDesktopReader(r io.Reader) (*DesktopEntry, error) {
 	inDesktopEntry := false
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := scanner.Bytes()
 
 		// Skip empty lines
 		if len(line) == 0 {
@@ -54,8 +54,8 @@ func ParseDesktopReader(r io.Reader) (*DesktopEntry, error) {
 		if line[0] == '[' {
 			// Check if this is the [Desktop Entry] section
 			// The spec says section names are case-sensitive
-			trimmed := strings.TrimSpace(line)
-			if trimmed == "[Desktop Entry]" {
+			trimmed := bytes.TrimSpace(line)
+			if bytes.Equal(trimmed, []byte("[Desktop Entry]")) {
 				inDesktopEntry = true
 			} else if inDesktopEntry {
 				// We've left the [Desktop Entry] section
@@ -72,18 +72,19 @@ func ParseDesktopReader(r io.Reader) (*DesktopEntry, error) {
 		}
 
 		// Parse key=value (spec says no spaces around =, but be lenient)
-		eqIdx := strings.Index(line, "=")
+		eqIdx := bytes.IndexByte(line, '=')
 		if eqIdx == -1 {
 			continue
 		}
 
-		key := strings.TrimSpace(line[:eqIdx])
+		key := bytes.TrimSpace(line[:eqIdx])
 		value := line[eqIdx+1:] // Don't trim value - preserve intentional whitespace
 
 		// We only need the Exec key
 		// Per spec, keys are case-sensitive and Exec is always "Exec"
-		if key == "Exec" {
-			entry.Exec = value
+		if bytes.Equal(key, []byte("Exec")) {
+			// Scanner reuses its buffer, so copy the value we retain.
+			entry.Exec = string(value)
 			// Continue parsing in case there are multiple Exec lines (shouldn't happen but be safe)
 		}
 	}

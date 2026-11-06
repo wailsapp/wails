@@ -5,6 +5,7 @@ package application
 // mobileStub is the desktop implementation of MobileManager. Every action is a
 // no-op and every query returns its zero value, so cross-platform code that
 // calls application.Mobile.* compiles and runs off-device without effect.
+// Secure storage returns ErrSecureStorageUnsupported.
 type mobileStub struct{}
 
 // Mobile is the cross-platform mobile manager. Off-device it is a no-op stub.
@@ -24,8 +25,6 @@ func (mobileStub) PowerJSON() string            { return "" }
 func (mobileStub) NetworkJSON() string          { return "" }
 func (mobileStub) SystemLocale() string         { return SystemLocale() }
 func (mobileStub) BiometricAuthenticate(string) {}
-func (mobileStub) SecureGet(string) string      { return "" }
-func (mobileStub) SecureDelete(string)          {}
 func (mobileStub) GetLocation()                 {}
 func (mobileStub) Haptic(string)                {}
 func (mobileStub) SetMotion(bool)               {}
@@ -36,3 +35,9 @@ func (mobileStub) SetKeyboardWatch(bool)        {}
 func (mobileStub) SetScreenProtect(bool)        {}
 func (mobileStub) CapturePhoto()                {}
 func (mobileStub) CaptureVideo()                {}
+
+func (mobileStub) SecureSet(string, string) error { return ErrSecureStorageUnsupported }
+func (mobileStub) SecureGet(string) (string, bool, error) {
+	return "", false, ErrSecureStorageUnsupported
+}
+func (mobileStub) SecureDelete(string) error { return ErrSecureStorageUnsupported }

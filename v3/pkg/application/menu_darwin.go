@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -10,6 +10,15 @@ package application
 
 extern void setMenuItemChecked(void*, unsigned int, bool);
 extern void setMenuItemBitmap(void*, unsigned char*, int);
+
+static bool menuSectionHeadersSupported(void) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+	if (@available(macOS 14.0, *)) {
+		return true;
+	}
+#endif
+	return false;
+}
 
 // Clear and release all menu items in the menu
 void clearMenu(void* nsMenu) {
@@ -73,28 +82,8 @@ void addWindowsMenu(void* menu) {
 import "C"
 import "unsafe"
 
-type macosMenu struct {
-	menu *Menu
-
-	nsMenu unsafe.Pointer
-}
-
-func newMenuImpl(menu *Menu) *macosMenu {
-	result := &macosMenu{
-		menu: menu,
-	}
-	return result
-}
-
-func (m *macosMenu) update() {
-	InvokeSync(func() {
-		if m.nsMenu == nil {
-			m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
-		} else {
-			C.clearMenu(m.nsMenu)
-		}
-		m.processMenu(m.nsMenu, m.menu)
-	})
+func menuSectionHeadersSupported() bool {
+	return bool(C.menuSectionHeadersSupported())
 }
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
@@ -124,7 +113,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			// The NSMenuItem retains its submenu; drop the createNSMenu +1 so
 			// the subtree unwinds when the item goes away.
 			C.releaseNSMenu(nsSubmenu)
-		case text, checkbox, radio:
+		case text, checkbox, radio, sectionHeader:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			if item.hidden {
@@ -142,13 +131,12 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	}
 }
 
-func DefaultApplicationMenu() *Menu {
-	menu := NewMenu()
-	menu.AddRole(AppMenu)
-	menu.AddRole(FileMenu)
-	menu.AddRole(EditMenu)
-	menu.AddRole(ViewMenu)
-	menu.AddRole(WindowMenu)
-	menu.AddRole(HelpMenu)
-	return menu
+// newNSMenu creates an NSMenu with the given title.
+func newNSMenu(label string) unsafe.Pointer {
+	return C.createNSMenu(C.CString(label))
+}
+
+// clearNSMenu removes every item from menu.
+func clearNSMenu(menu unsafe.Pointer) {
+	C.clearMenu(menu)
 }

@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !purego
 
 package webview
 
@@ -86,32 +86,13 @@ type responseWriter struct {
 	finished bool
 }
 
-func (rw *responseWriter) Header() http.Header {
-	if rw.header == nil {
-		rw.header = http.Header{}
-	}
-	return rw.header
-}
-
-func (rw *responseWriter) Write(buf []byte) (int, error) {
-	if rw.finished {
-		return 0, errResponseFinished
-	}
-
-	rw.WriteHeader(http.StatusOK)
-
-	var content unsafe.Pointer
-	var contentLen int
-	if buf != nil && len(buf) > 0 {
-		content = unsafe.Pointer(&buf[0])
-		contentLen = len(buf)
-	}
-
-	if !C.URLSchemeTaskDidReceiveData(rw.r.task, content, C.int(contentLen)) {
-		return 0, errRequestStopped
-	}
-	return contentLen, nil
-}
+// Flush implements the http.Flusher interface.
+//
+// Write hands each chunk straight to the URL scheme task via
+// didReceiveData, so there is nothing buffered on this side and a flush has
+// no work to do. Declaring it anyway is what lets http.ResponseController
+// report success truthfully to a streaming handler.
+func (rw *responseWriter) Flush() {}
 
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.code = code
@@ -136,21 +117,13 @@ func (rw *responseWriter) WriteHeader(code int) {
 	C.URLSchemeTaskDidReceiveResponse(rw.r.task, C.int(code), headers, C.int(headersLen))
 }
 
-func (rw *responseWriter) Finish() error {
-	if !rw.wroteHeader {
-		rw.WriteHeader(http.StatusNotImplemented)
-	}
-
-	if rw.finished {
-		return nil
-	}
-	rw.finished = true
-
-	C.URLSchemeTaskDidFinish(rw.r.task)
-
-	return nil
+// urlSchemeTaskDidReceiveData hands data to the WKURLSchemeTask. It reports
+// false when the task has already been stopped.
+func urlSchemeTaskDidReceiveData(task unsafe.Pointer, data unsafe.Pointer, length int) bool {
+	return bool(C.URLSchemeTaskDidReceiveData(task, data, C.int(length)))
 }
 
-func (rw *responseWriter) Code() int {
-	return rw.code
+// urlSchemeTaskDidFinish completes the WKURLSchemeTask.
+func urlSchemeTaskDidFinish(task unsafe.Pointer) bool {
+	return bool(C.URLSchemeTaskDidFinish(task))
 }

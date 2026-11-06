@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2WebMessageReceivedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2WebMessageReceivedEventArgsVtbl
 	GetAdditionalObjects ComProc
 }
 

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "f333c3cf6ca425e54a98772c70ce238832f2b022b8a3a51c8db699cba9e2e875",
+      "machineHash": "f333c3cf6ca425e54a98772c70ce238832f2b022b8a3a51c8db699cba9e2e875",
+      "machineText": "![Capture d’écran de Ytd](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "98ee43a41b45b8e1b8385df47cb08c2773b4ded3ff4c4a4b889abc83a7177aba",
+      "machineHash": "98ee43a41b45b8e1b8385df47cb08c2773b4ded3ff4c4a4b889abc83a7177aba",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) est une application qui permet de\\\ntélécharger des morceaux depuis YouTube, de créer des playlists hors ligne et de les partager avec\\\nvos amis. Ceux-ci pourront lire vos playlists ou les télécharger\\\npour les écouter hors ligne. Elle intègre également un lecteur.",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    }
+  }
+}

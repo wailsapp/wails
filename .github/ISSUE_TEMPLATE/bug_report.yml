@@ -12,7 +12,7 @@ body:
         - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce.
         - Search the issue tracker using [this link](https://github.com/wailsapp/wails/issues?q=is%3Aissue+).
         - Search the [discussion forums](https://github.com/wailsapp/wails/discussions?discussions_q=type+your+issue+here).
-        - For v3, check the [FAQ](https://v3.wails.io/faq/) and the [feedback guide](https://v3.wails.io/feedback/). For v2, read the [Troubleshooting Guide](https://wails.io/docs/guides/troubleshooting).
+        - For v3, check the [FAQ](https://wails.io/faq/) and the [feedback guide](https://wails.io/feedback/). For v2, read the [Troubleshooting Guide](https://v2.wails.io/docs/guides/troubleshooting).
         - Create a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example) and link to it in the issue.
         - If your issue is related to the bindings or TypeScript generation, please open a ticket and create a PR with a failing test case.
           For v3, the binding generator tests live [here](https://github.com/wailsapp/wails/tree/master/v3/internal/generator).
@@ -42,7 +42,7 @@ body:
     attributes:
       label: Exact Wails version
       description: Run `wails3 version` for v3 or `wails version` for v2, then paste the full output.
-      placeholder: v3.0.0-beta.1
+      placeholder: v3.0.0
     validations:
       required: true
   - type: dropdown

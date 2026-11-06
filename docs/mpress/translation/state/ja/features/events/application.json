@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "de74368892d1cbfb1cfef39fec89af9557617420f249e4dc7d1d31df2546a387",
+      "machineHash": "de74368892d1cbfb1cfef39fec89af9557617420f249e4dc7d1d31df2546a387",
+      "machineText": "アプリケーションイベントは、起動、停止、ウィンドウ管理操作など、アプリケーション全体のライフサイクルが変化したときに発行されます。",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "ce48642fc7f2d66b4ff38db24a6035ecc848c0b38c5ae5c5ea36c1b1bd92aace",
+      "machineHash": "ce48642fc7f2d66b4ff38db24a6035ecc848c0b38c5ae5c5ea36c1b1bd92aace",
+      "machineText": "アプリケーションイベントの完全なドキュメントについては、[イベントシステム](/features/events/system/#application-events)ガイドを参照してください。",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "57eb17702dd8e1d489481a5fe6824dadc2af3463dcb385ae89f4b77284b7257f",
+      "machineHash": "57eb17702dd8e1d489481a5fe6824dadc2af3463dcb385ae89f4b77284b7257f",
+      "machineText": "Wails v3 が発行するアプリケーションレベルのイベント",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "b5558f709e64e56ed4402c71d6e6349f2886caf1013230add0db38304adb5846",
+      "machineHash": "b5558f709e64e56ed4402c71d6e6349f2886caf1013230add0db38304adb5846",
+      "machineText": "アプリケーションイベント",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    }
+  }
+}

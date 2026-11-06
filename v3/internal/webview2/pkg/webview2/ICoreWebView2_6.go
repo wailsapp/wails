@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_5Vtbl
 	OpenTaskManagerWindow ComProc
 }
 

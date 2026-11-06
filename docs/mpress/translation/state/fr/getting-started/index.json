@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e59467c77349e0006ec0",
+  "sourceFile": "getting-started/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "d6d5a01b51b05099871a192933d669445eae5f3d37bfa64163d5b5960c67f53d",
+      "machineHash": "d6d5a01b51b05099871a192933d669445eae5f3d37bfa64163d5b5960c67f53d",
+      "machineText": "Bien démarrer",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "d6d5a01b51b05099871a192933d669445eae5f3d37bfa64163d5b5960c67f53d",
+      "machineHash": "d6d5a01b51b05099871a192933d669445eae5f3d37bfa64163d5b5960c67f53d",
+      "machineText": "Bien démarrer",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    }
+  }
+}

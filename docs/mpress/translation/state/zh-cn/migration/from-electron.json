@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "39d0a279d6ddfab5304c",
+  "sourceFile": "migration/from-electron.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "76f44833f686ed3d89da63ee436431a10fe095aa5a1a2b108dd0a4832b525682",
+      "targetHash": "1ee3c44fef340c1503c9868949ea6401ecb651db7392a1aff59f07362b5089d9",
+      "machineHash": "1ee3c44fef340c1503c9868949ea6401ecb651db7392a1aff59f07362b5089d9",
+      "machineText": "此页面为占位页面。完整的 Electron 迁移内容即将推出。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full Electron migration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:51Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "b36bd592b9759b4c7ebae91273f502c3ec3a2d492e838c1063ffa1c5c67e4eaf",
+      "targetHash": "1c7d362da8a4f7f2744f7ce21dacd78fafa2f7e0bdf949f4cb1b5d4ed2d43961",
+      "machineHash": "1c7d362da8a4f7f2744f7ce21dacd78fafa2f7e0bdf949f4cb1b5d4ed2d43961",
+      "machineText": "Wails 允许你使用 Go 和 Web 技术构建桌面应用程序，并以单个 Go 二进制文件取代 Electron 的 Node.js 运行时。有关 Wails v2 与 v3 之间的差异，请参阅[从 v2 迁移到 v3](/migration/v2-to-v3/)。",
+      "status": "final",
+      "sourcePreview": "Wails lets you build desktop applications using Go and web technologies, replacing Electron's Node.j…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:51Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "14fbaf9954cadcbf542445f2483970e40df3dc1985ab6a0dedf1f41f0ec1f102",
+      "targetHash": "6e90f3b10aea769ed47b2c450c437350de6fc3691e348c65ead3d84be52deca4",
+      "machineHash": "6e90f3b10aea769ed47b2c450c437350de6fc3691e348c65ead3d84be52deca4",
+      "machineText": "将 Electron 应用程序迁移到 Wails v3",
+      "status": "final",
+      "sourcePreview": "Migrating an Electron application to Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:51Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "12962b35e4c08c8f197a436a67f28b63c10cb14abc93e6fda9ccc49dd592a285",
+      "targetHash": "a1e93a469daace4f022e586b0bb5c4a0b6f450bd82e281d4157d3de82017e8c1",
+      "machineHash": "a1e93a469daace4f022e586b0bb5c4a0b6f450bd82e281d4157d3de82017e8c1",
+      "machineText": "从 Electron 迁移",
+      "status": "final",
+      "sourcePreview": "From Electron",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:51Z"
+    }
+  }
+}

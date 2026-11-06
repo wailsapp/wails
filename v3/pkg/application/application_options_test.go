@@ -203,6 +203,9 @@ func TestLinuxOptions_Defaults(t *testing.T) {
 	if opts.ProgramName != "" {
 		t.Error("ProgramName should default to empty string")
 	}
+	if opts.ApplicationID != "" {
+		t.Error("ApplicationID should default to empty string")
+	}
 }
 
 func TestIOSOptions_Defaults(t *testing.T) {

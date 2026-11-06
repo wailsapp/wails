@@ -1,4 +1,4 @@
-//go:build ios
+//go:build ios && !server
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
@@ -13,7 +13,7 @@
 
 // Forward declarations for Go callbacks
 void ServeAssetRequest(unsigned int windowID, void* urlSchemeTask);
-void HandleJSMessage(unsigned int windowID, char* message);
+void HandleJSMessage(unsigned int windowID, char* message, bool isMainFrame);
 
 
 // Global references - declare after interface

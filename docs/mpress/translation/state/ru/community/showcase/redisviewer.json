@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e4f964aa8e27e32a9fcd",
+  "sourceFile": "community/showcase/redisviewer.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "d930e8a2b5248faceab66a0679aff6347760a43a79443c093d64578cdae6e61a",
+      "targetHash": "5ef53c8c10e80ee5ca4a0ebefcb3983b3003f94c2a31cba28597830c511bbb05",
+      "machineHash": "5ef53c8c10e80ee5ca4a0ebefcb3983b3003f94c2a31cba28597830c511bbb05",
+      "machineText": "![Снимок экрана RedisViewer](/assets/showcase-images/redisviewer-overview1.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview1.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "b27d3c226e4519da5d620f88d5fc2eb6e3b0b05cb8ac88387cd8376ae67f6eeb",
+      "targetHash": "81a835f27d6486bd666388f4ee5ebc06831778b8f0854bae0d7c5be22cb335b9",
+      "machineHash": "81a835f27d6486bd666388f4ee5ebc06831778b8f0854bae0d7c5be22cb335b9",
+      "machineText": "![Снимок экрана RedisViewer](/assets/showcase-images/redisviewer-overview2.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview2.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "575284aad16a7c42d789295540f3ed10bd1122837baaa6ea314244ad9e412b7c",
+      "targetHash": "6aa03bcae1cd348135895829dcad11389defc54dfe53f876d221c2d84004d3ec",
+      "machineHash": "6aa03bcae1cd348135895829dcad11389defc54dfe53f876d221c2d84004d3ec",
+      "machineText": "[RedisViewer](https://redisviewer.com/) — современный настольный графический клиент Redis, созданный с помощью Wails. Он позволяет просматривать сложные значения, выполнять команды и анализировать производительность Redis без ущерба для удобства взаимодействия.",
+      "status": "final",
+      "sourcePreview": "[RedisViewer](https://redisviewer.com/) is a modern Redis desktop GUI built with Wails. Use it to in…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "02697cb537d2b8f33ab5eaa18a346b9a1cd09e24f192271dfb8993d4c39de17b",
+      "targetHash": "5f4f50d0c4e18817158f228816d9a56e6f97d8a9184fdf90d71243890ccb2457",
+      "machineHash": "5f4f50d0c4e18817158f228816d9a56e6f97d8a9184fdf90d71243890ccb2457",
+      "machineText": "Приложение спроектировано с учётом архитектуры Wails на базе WebView и Go, поэтому большие пространства ключей и объёмные данные остаются в бэкенде на Go, а не передаются целиком во фронтенд. Это позволяет использовать преимущества модели памяти Go и избежать нагрузки на кучу и рисков утечек, характерных для клиентов, активно использующих JS. Интерфейс оптимизирован так, чтобы отрисовывать только видимое на экране, поэтому просмотр огромных наборов данных остаётся быстрым и отзывчивым, почти как в нативном настольном приложении.",
+      "status": "final",
+      "sourcePreview": "Designed around Wails' WebView + Go architecture, it keeps large keyspaces and heavy payloads in the…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "566922c42e5bb889533e602266f348665195e5890d19956e5b59c730064bad63",
+      "targetHash": "bb4ecd3b77cdcc010b3fec1f28bcf6f76e7e45f840bcc2743f0296c8d61c10b3",
+      "machineHash": "bb4ecd3b77cdcc010b3fec1f28bcf6f76e7e45f840bcc2743f0296c8d61c10b3",
+      "machineText": "[Перейти на сайт проекта](https://redisviewer.com/)",
+      "status": "final",
+      "sourcePreview": "[Visit Project Website](https://redisviewer.com/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "ba9a7b58d078585e87dc0c51d822ab114492c04e4230de2d434df44553a5d0b9",
+      "targetHash": "8b71f298200e91bbcf258881282672d66980eca591a288e7e1cbe17f85e74d70",
+      "machineHash": "8b71f298200e91bbcf258881282672d66980eca591a288e7e1cbe17f85e74d70",
+      "machineText": "Настольный графический клиент Redis, созданный с помощью Wails",
+      "status": "final",
+      "sourcePreview": "A desktop Redis GUI built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "targetHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineText": "Redis Viewer",
+      "status": "final",
+      "sourcePreview": "Redis Viewer",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  }
+}

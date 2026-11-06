@@ -3,7 +3,6 @@
 package edge
 
 import (
-	"errors"
 	"io"
 	"syscall"
 	"unsafe"
@@ -21,22 +20,20 @@ type IStream struct {
 	vtbl *_IStreamVtbl
 }
 
-func (i *IStream) AddRef() error {
-	_, _, err := i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *IStream) AddRef() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::AddRef.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
-func (i *IStream) Release() error {
-	_, _, err := i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *IStream) Release() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::Release.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
 func (i *IStream) Read(p []byte) (int, error) {

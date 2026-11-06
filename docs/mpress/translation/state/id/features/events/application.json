@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "f5cf67380579ce631afd9fd9a8946df107bd7aedae8bc4bc1aff7f027eee6a88",
+      "machineHash": "f5cf67380579ce631afd9fd9a8946df107bd7aedae8bc4bc1aff7f027eee6a88",
+      "machineText": "Peristiwa aplikasi dipancarkan untuk perubahan siklus hidup yang berlaku di seluruh aplikasi, seperti operasi memulai, menghentikan, dan mengelola jendela.",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "ad195cc6b4c377b22ad0936917bb531300ad5183b6b881869977c944b872d085",
+      "machineHash": "ad195cc6b4c377b22ad0936917bb531300ad5183b6b881869977c944b872d085",
+      "machineText": "Dokumentasi lengkap tentang peristiwa aplikasi tersedia dalam panduan [Sistem Peristiwa](/features/events/system/#application-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "4a4ad18446bc4aeebec028ee65a36686e7cf75b6d011bfe7b5702c7ace96cede",
+      "machineHash": "4a4ad18446bc4aeebec028ee65a36686e7cf75b6d011bfe7b5702c7ace96cede",
+      "machineText": "Peristiwa tingkat aplikasi yang dipancarkan oleh Wails v3",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "2ca20a9dc2f8c7c175c6c9bf4238d999e250fd03f79927468b23c98c8a723b2c",
+      "machineHash": "2ca20a9dc2f8c7c175c6c9bf4238d999e250fd03f79927468b23c98c8a723b2c",
+      "machineText": "Peristiwa Aplikasi",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    }
+  }
+}

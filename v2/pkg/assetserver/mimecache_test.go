@@ -18,6 +18,7 @@ func TestGetMimetype(t *testing.T) {
 	svgWithComment := append([]byte("<!-- this is a comment -->"), svg...)
 	svgWithCommentAndControlChars := append([]byte("    \r\n "), svgWithComment...)
 	svgWithBomCommentAndControlChars := append(bomUTF8, append([]byte("    \r\n "), svgWithComment...)...)
+	svgWithXMLDecl := append([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"), svg...)
 
 	tests := []struct {
 		name string
@@ -36,6 +37,18 @@ func TestGetMimetype(t *testing.T) {
 		{"svg-w-comment", args{"test_comment.svg", svgWithComment}, "image/svg+xml"},
 		{"svg-w-control-comment", args{"test_control_comment.svg", svgWithCommentAndControlChars}, "image/svg+xml"},
 		{"svg-w-bom-control-comment", args{"test_bom_control_comment.svg", svgWithBomCommentAndControlChars}, "image/svg+xml"},
+		// Content detection, no known extension
+		{"detect-html", args{"detect_html", html}, "text/html; charset=utf-8"},
+		{"detect-html-bom-utf8", args{"detect_bom_html", bomHtml}, "text/html; charset=utf-8"},
+		{"detect-svg", args{"detect_svg", svg}, "image/svg+xml"},
+		{"detect-svg-w-comment", args{"detect_svg_comment", svgWithCommentAndControlChars}, "image/svg+xml"},
+		{"detect-svg-w-bom", args{"detect_svg_bom", append(bomUTF8, svg...)}, "image/svg+xml"},
+		{"detect-svg-w-bom-control-comment", args{"detect_svg_bom_control_comment", svgWithBomCommentAndControlChars}, "image/svg+xml"},
+		{"detect-svg-w-xml-decl", args{"detect_svg_xml_decl", svgWithXMLDecl}, "image/svg+xml"},
+		{"detect-svg-w-bom-xml-decl", args{"detect_svg_bom_xml_decl", append(bomUTF8, svgWithXMLDecl...)}, "image/svg+xml"},
+		{"detect-json", args{"detect_json", []byte(`{"a":1}`)}, "application/json"},
+		{"detect-png", args{"detect_png", []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")}, "image/png"},
+		{"detect-text-bom-utf8", args{"detect_text_bom", append(bomUTF8, []byte("hello world")...)}, "text/plain; charset=utf-8"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

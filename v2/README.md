@@ -208,7 +208,9 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Wails star history chart" src="../website/static/img/star-history.svg" width="800" />
+</a>
 
 ## Contributors
 

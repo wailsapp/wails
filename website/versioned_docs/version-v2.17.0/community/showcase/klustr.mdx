@@ -1,0 +1,16 @@
+# Klustr
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/klustr.png").default} />
+  <br />
+</p>
+```
+
+[Klustr](https://github.com/SametKUM/klustr) is a fast, lightweight Kubernetes desktop client. It is a pure client — nothing is installed in the cluster — and it drives the standard Kubernetes API through client-go informers, so every resource list updates live without polling. Built with Wails, Go and React.
+
+- Multi-cluster: drive several contexts at once as a single aggregated view
+- Live resource lists for all built-in kinds and auto-discovered CRDs
+- Logs, exec, port-forwarding, YAML editing, rollout history and revert
+- Helm, Argo CD, Flux CD and Gateway API support built in, all through the Kubernetes API
+- Read-only mode and per-context color tags as guardrails for production work

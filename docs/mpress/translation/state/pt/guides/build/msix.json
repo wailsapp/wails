@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "04544e12d7cb693c2199",
+  "sourceFile": "guides/build/msix.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "4b26b45f84604955445f433cba8e8dc2be7db16230d1d197fc02c29d69dc6c28",
+      "targetHash": "d56fc93be279594daba321654bcf87a2d081dce0260683fba7eee8769a19c96a",
+      "machineHash": "d56fc93be279594daba321654bcf87a2d081dce0260683fba7eee8769a19c96a",
+      "machineText": "MSIX é o formato moderno de empacotamento de aplicativos para Windows. O Wails pode gerar um pacote MSIX como parte da compilação para Windows.",
+      "status": "final",
+      "sourcePreview": "MSIX is the modern Windows application packaging format. Wails can generate an MSIX package as part …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9585850901a3a6bb394d4fb5a3516930f51d58983dace3c5c9a02bde39272f2e",
+      "targetHash": "85da221d942eb5f8fd4eae507348e56a7d2cb52fa5444e10029eea2457229907",
+      "machineHash": "85da221d942eb5f8fd4eae507348e56a7d2cb52fa5444e10029eea2457229907",
+      "machineText": "As instruções para empacotamento MSIX estão documentadas no guia [Empacotamento para Windows](/guides/build/windows/#msix-package).",
+      "status": "final",
+      "sourcePreview": "Instructions for MSIX packaging are documented in the [Windows Packaging](/guides/build/windows/#msi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "49a001a77dfe3b1f33fa83d848e8cc8eae7b2154dbb7f611585f6af58630e14e",
+      "targetHash": "f97b34e85215d7c0b76ee99c2cb3ff04fe72494dc96ba622a34a212f035ab3e9",
+      "machineHash": "f97b34e85215d7c0b76ee99c2cb3ff04fe72494dc96ba622a34a212f035ab3e9",
+      "machineText": "Empacotamento do seu aplicativo Wails v3 como um pacote MSIX",
+      "status": "final",
+      "sourcePreview": "Packaging your Wails v3 application as an MSIX package",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "c2971ff534c0532d885a8af4d0faaad7c71f00dde3e802d5a92027a9156f8a1d",
+      "targetHash": "1be2b66cf41b58837297f266fcbd44626a729e1c2e4ef3b088d2aa6d72c6577e",
+      "machineHash": "1be2b66cf41b58837297f266fcbd44626a729e1c2e4ef3b088d2aa6d72c6577e",
+      "machineText": "Empacotamento MSIX",
+      "status": "final",
+      "sourcePreview": "MSIX Packaging",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    }
+  }
+}
