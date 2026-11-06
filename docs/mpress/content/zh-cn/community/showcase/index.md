@@ -49,6 +49,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui 截图" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 截图" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn 截图" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/foundation/"><img src="/assets/showcase-images/foundation-layouts.webp" alt="Foundation 截图" loading="lazy"><span>Foundation</span></a>
 </div>
 
 ## 如何将我的项目添加到作品展示中
