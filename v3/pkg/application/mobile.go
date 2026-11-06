@@ -39,7 +39,6 @@ type MobileManager interface {
 	StoragePath() string
 	PowerJSON() string
 	NetworkJSON() string
-	SystemLocale() string
 
 	// Permissions / async results (delivered as common:* events)
 	BiometricAuthenticate(reason string)

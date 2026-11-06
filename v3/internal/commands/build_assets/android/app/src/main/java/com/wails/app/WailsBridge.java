@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.StatFs;
@@ -1188,10 +1189,15 @@ public class WailsBridge {
     }
 
     /**
-     * Returns the device's configured locale as a BCP-47 language tag
-     * (e.g. "nb-NO", "en-US").
+     * Returns the languages the user has chosen in Settings, most preferred
+     * first, as comma-separated BCP-47 tags (e.g. "nb-NO,en-US"). Android
+     * before 7.0 (API 24) has no list, so its one default locale is returned.
+     * Called by application.PreferredLanguages().
      */
-    public String getLocale() {
+    public String getPreferredLanguages() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return LocaleList.getDefault().toLanguageTags();
+        }
         return java.util.Locale.getDefault().toLanguageTag();
     }
 
