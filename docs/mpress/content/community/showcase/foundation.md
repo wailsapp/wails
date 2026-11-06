@@ -1,6 +1,6 @@
 ---
 title: "Foundation"
-description: "A production-ready Wails v3 desktop app scaffold"
+description: "Desktop app scaffold for Wails v3.1 with React 19 and Mantine 9"
 slug: "community/showcase/foundation"
 sourcePath: "community/showcase/foundation.md"
 ---
@@ -11,21 +11,21 @@ sourcePath: "community/showcase/foundation.md"
 
 ![Foundation X-Pro charts in the Obsidian theme](/assets/showcase-images/foundation-charts.webp)
 
-**[Foundation](https://github.com/FxRayHughes/foundation)** is a production-ready **desktop app scaffold for Wails v3**, built with **Go, React 19, TypeScript and Mantine 9**. It gives a new project the pieces that usually take weeks to build — a layered Go backend, platform-specific window chrome, persistence, theming, i18n and end-to-end tests — so you can go straight to your business logic.
+**[Foundation](https://github.com/FxRayHughes/foundation)** is a **desktop app scaffold for Wails v3.1**, built with **Go, React 19, TypeScript and Mantine 9**. It provides a layered Go backend, platform-specific window chrome, SQLite persistence, themes, i18n and end-to-end tests as a starting point for new projects.
 
-## Key Highlights
+## Features
 
-- **Native window on every platform** — a frameless, self-drawn title bar on Windows and Linux; an immersive title bar on macOS that keeps the native traffic lights
-- **Nine switchable layouts** — icon rail, sidebar, top nav, merged title bar, right rail, bottom dock, draggable floating dock, inset card and focus mode, all on a CSS Grid shell; register your own preset in one line
-- **Themes and i18n** — light, dark and Obsidian presets plus a custom palette editor; English and Chinese out of the box; theme and language stay in sync across the main window, child windows and the tray panel
-- **SQLite persistence** — GORM AutoMigrate with no migration files, a user-selectable database location and per-table usage charts
+- **Platform-specific windows** — a frameless window with a frontend-drawn title bar on Windows and Linux; on macOS, an immersive title bar that keeps the native traffic lights
+- **Nine layout presets** — icon rail, sidebar, top nav, merged title bar, right rail, bottom dock, draggable floating dock, inset card and focus mode on a CSS Grid shell; custom presets can be registered
+- **Themes and i18n** — light, dark and Obsidian presets and a custom palette editor; English and Chinese UI; theme and language are kept in sync across the main window, child windows and the tray panel
+- **SQLite persistence** — GORM AutoMigrate without migration files, a user-selectable database location and per-table usage charts
 - **Desktop integration** — system tray panel, child windows, native file and message dialogs, and CSV / XLSX export through the native Save As dialog
-- **Reliable utilities** — HTTP client, subprocesses bound to a Windows Job Object, AES-GCM encryption, rotating logs and atomic writes
-- **Tested end-to-end** — Playwright drives a Wails server-mode build (real Go backend, real frontend), and the same suite generates the README screenshots
+- **Utilities** — HTTP client, subprocesses bound to a Windows Job Object, AES-GCM encryption, rotating logs and atomic writes
+- **End-to-end tests** — Playwright runs against a Wails server-mode build (real Go backend and frontend); the same suite generates the README screenshots
 
-Wails keeps it all in a single binary per platform: Go services are called directly through generated bindings, while the frontend follows a strict MVVM structure that stays maintainable as features are added.
+Go services are called from the frontend through Wails-generated bindings, and each platform builds to a single binary. The frontend uses an MVVM structure, and the README includes a step-by-step guide for renaming the scaffold into your own project.
 
-Available for Windows, macOS and Linux.
+Runs on Windows, macOS and Linux.
 
 [GitHub](https://github.com/FxRayHughes/foundation) |
 [Releases](https://github.com/FxRayHughes/foundation/releases/latest)
