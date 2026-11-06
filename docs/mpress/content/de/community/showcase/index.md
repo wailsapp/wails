@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="So fügst du dein Projekt hinzu"}
-Weitere Informationen findest du im Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-du-dein-projekt-zum-showcase-hinzu).
+Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-du-dein-projekt-zum-showcase-hinzu) an.
 
 @end
 
@@ -47,7 +47,8 @@ Weitere Informationen findest du im Abschnitt [So fügst du dein Projekt zum Sho
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="Screenshot von HappyTools" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Screenshot von Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Screenshot von Condui" loading="lazy"><span>Condui</span></a>
-<a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Screenshot von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Bildschirmaufnahme von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Screenshot von Larvyn" loading="lazy"><span>Larvyn</span></a>
 </div>
 
 ## So fügst du dein Projekt zum Showcase hinzu
@@ -55,15 +56,15 @@ Weitere Informationen findest du im Abschnitt [So fügst du dein Projekt zum Sho
 @steps
 ### Erstelle einen Fork des Repositorys.
 ### Füge die Bilder im Ordner `docs/mpress/static/showcase-images` hinzu.
-### Erstelle eine Kopie einer vorhandenen Showcase-Datei des Typs `.md` im
+### Erstellen Sie unter eine Kopie einer vorhandenen `.md`-Showcase-Datei
 Ordner `docs/mpress/content/community/showcase`.
 
 ### Benenne die kopierte Datei nach deinem Projekt. (Der Name sollte nicht
-mit `_` beginnen)
+mit `_` beginnen.)
 
 ### Aktualisiere Titel, Bild, Link und Inhalt der Datei.
-### Füge sie der obigen Liste in
-`docs/mpress/content/community/showcase/index.md`.
+### Füge das Projekt der obigen Liste in
+`docs/mpress/content/community/showcase/index.md` hinzu.
 
-### Reiche einen PR ein.
+### Reiche einen Pull Request ein.
 @end
