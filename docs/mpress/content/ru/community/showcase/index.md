@@ -49,6 +49,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Снимок экрана Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Снимок экрана MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Снимок экрана Larvyn" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/foundation/"><img src="/assets/showcase-images/foundation-layouts.webp" alt="Снимок экрана Foundation" loading="lazy"><span>Foundation</span></a>
 </div>
 
 ## Как добавить свой проект в витрину

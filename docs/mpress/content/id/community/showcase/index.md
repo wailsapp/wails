@@ -49,6 +49,7 @@ Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Tangkapan layar Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Tangkapan layar MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Tangkapan layar Larvyn" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/foundation/"><img src="/assets/showcase-images/foundation-layouts.webp" alt="Tangkapan layar Foundation" loading="lazy"><span>Foundation</span></a>
 </div>
 
 ## Cara menambahkan proyek saya ke showcase
