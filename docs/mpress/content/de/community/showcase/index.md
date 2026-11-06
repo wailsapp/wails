@@ -64,7 +64,7 @@ mit `_` beginnen.)
 
 ### Aktualisiere Titel, Bild, Link und Inhalt der Datei.
 ### Füge das Projekt der obigen Liste in
-`docs/mpress/content/community/showcase/index.md` hinzu.
+`docs/mpress/content/community/showcase/index.md`.
 
 ### Reiche einen Pull Request ein.
 @end

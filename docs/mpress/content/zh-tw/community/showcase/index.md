@@ -48,7 +48,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith 螢幕截圖" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui 螢幕截圖" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 螢幕擷取畫面" loading="lazy"><span>MQ Studio</span></a>
-<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn 螢幕擷圖" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn 螢幕截圖" loading="lazy"><span>Larvyn</span></a>
 </div>
 
 ## 如何將我的專案新增至展示區
@@ -64,7 +64,7 @@ sourcePath: "community/showcase/index.md"
 
 ### 更新檔案的標題、圖片、連結和內容。
 ### 將其新增至下列檔案中的上述清單：
-`docs/mpress/content/community/showcase/index.md`。
+`docs/mpress/content/community/showcase/index.md`.
 
 ### 提交 PR。
 @end

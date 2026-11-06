@@ -1073,6 +1073,30 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-11-02T23:55:31Z"
+    },
+    "h0001-text-075": {
+      "sourceHash": "56e9212f83886630d7982b52ad1908012e634a43be63dc820007ada20b9d0c4d",
+      "targetHash": "d3fe9eae4c6d82972e8a46f25b16ea6deb2c4264ea70fa79d6835aa8bed2ca18",
+      "machineHash": "d3fe9eae4c6d82972e8a46f25b16ea6deb2c4264ea70fa79d6835aa8bed2ca18",
+      "machineText": "Captura de tela do Larvyn",
+      "status": "machine-translated",
+      "sourcePreview": "Larvyn screenshot",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-06T12:30:37Z"
+    },
+    "h0001-text-076": {
+      "sourceHash": "7361979e84f40350d1a8029ba1c49dd7db5592ac11a79207fdbbc054931042b4",
+      "targetHash": "7361979e84f40350d1a8029ba1c49dd7db5592ac11a79207fdbbc054931042b4",
+      "machineHash": "7361979e84f40350d1a8029ba1c49dd7db5592ac11a79207fdbbc054931042b4",
+      "machineText": "Larvyn",
+      "status": "machine-translated",
+      "sourcePreview": "Larvyn",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-11-06T12:30:37Z"
     }
   },
   "migration": {
