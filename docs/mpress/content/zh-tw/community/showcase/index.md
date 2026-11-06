@@ -59,11 +59,11 @@ sourcePath: "community/showcase/index.md"
 `docs/mpress/content/community/showcase`資料夾。
 
 ### 將複製的檔案重新命名為您的專案名稱。（名稱不應以
-`_`開頭）
+以`_`開頭）
 
 ### 更新檔案的標題、圖片、連結與內容。
 ### 將它新增至以下檔案中的上述清單：
-`docs/mpress/content/community/showcase/index.md`。
+`docs/mpress/content/community/showcase/index.md`.
 
 ### 提交 PR。
 @end

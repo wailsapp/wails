@@ -59,7 +59,7 @@ Consultez la section [Comment ajouter mon projet à la vitrine](#comment-ajouter
 dossier `docs/mpress/content/community/showcase`.
 
 ### Renommez le fichier copié en lui donnant le nom de votre projet. (Le nom ne doit pas commencer
-par `_`))
+par `_`)
 
 ### Mettez à jour le titre, l’image, le lien et le contenu du fichier.
 ### Ajoutez-le à la liste ci-dessus dans

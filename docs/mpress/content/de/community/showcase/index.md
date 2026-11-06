@@ -59,11 +59,11 @@ Weitere Informationen findest du im Abschnitt [So fügst du dein Projekt zum Sho
 Ordner `docs/mpress/content/community/showcase`.
 
 ### Benenne die kopierte Datei nach deinem Projekt. (Der Name sollte nicht
-mit `_` beginnen))
+mit `_` beginnen)
 
 ### Aktualisiere Titel, Bild, Link und Inhalt der Datei.
 ### Füge sie der obigen Liste in
-`docs/mpress/content/community/showcase/index.md` hinzu.
+`docs/mpress/content/community/showcase/index.md`.
 
 ### Reiche einen PR ein.
 @end

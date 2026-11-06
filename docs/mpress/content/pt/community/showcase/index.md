@@ -59,7 +59,7 @@ Consulte a seção [Como adicionar meu projeto à galeria](#como-adicionar-meu-p
 a pasta `docs/mpress/content/community/showcase`.
 
 ### Renomeie o arquivo copiado com o nome do seu projeto. (O nome não deve começar
-com `_`))
+com `_`)
 
 ### Atualize o título, a imagem, o link e o conteúdo do arquivo.
 ### Adicione-o à lista acima em

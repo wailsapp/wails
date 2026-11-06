@@ -103,16 +103,16 @@
       "updatedAt": "2026-11-02T23:55:17Z"
     },
     "b0008-text-01": {
-      "sourceHash": "df5f8a2a7abf815490a21b7eab9a528342a023fe06676a141e5183798018e75b",
-      "targetHash": "c17f41badcdbac95ddf0b6eccebfd512318cd223993f0854e6c185a210374e8a",
-      "machineHash": "c17f41badcdbac95ddf0b6eccebfd512318cd223993f0854e6c185a210374e8a",
-      "machineText": "`_`(으)로 시작하면 안 됩니다.)",
+      "sourceHash": "3c948360cd77f2fa9fe828504db5956de4578a588bbb00b4f4c6baa4f850ba20",
+      "targetHash": "57f7301cad9dd651131445a1e6107a1c090da10cece3db4fa4b27a1ff191f4f8",
+      "machineHash": "57f7301cad9dd651131445a1e6107a1c090da10cece3db4fa4b27a1ff191f4f8",
+      "machineText": "`_`(으)로 시작해서는 안 됩니다.)",
       "status": "machine-translated",
-      "sourcePreview": "with `_`))",
+      "sourcePreview": "with `_`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-02T23:55:17Z"
+      "updatedAt": "2026-11-06T10:49:21Z"
     },
     "b0009-heading-01": {
       "sourceHash": "93c78eafc72b9316091a2d53ea7c97021350be091ce9e3d2f71e00162416a1e7",
@@ -143,7 +143,7 @@
       "targetHash": "2d0c4182ebe301536924dd212ef0cbfc08132d4f0a0b0ec82bdd9263adb7685f",
       "machineHash": "2d0c4182ebe301536924dd212ef0cbfc08132d4f0a0b0ec82bdd9263adb7685f",
       "machineText": "`docs/mpress/content/community/showcase/index.md`.",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`docs/mpress/content/community/showcase/index.md`.",
       "provider": "codex",
       "model": "gpt-5.6-sol",

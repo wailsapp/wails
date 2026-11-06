@@ -103,16 +103,16 @@
       "updatedAt": "2026-11-02T23:54:37Z"
     },
     "b0008-text-01": {
-      "sourceHash": "df5f8a2a7abf815490a21b7eab9a528342a023fe06676a141e5183798018e75b",
-      "targetHash": "705b6a60c3f1715b3bf01476b532666a7e29cac59e23701bbeedae490723518c",
-      "machineHash": "705b6a60c3f1715b3bf01476b532666a7e29cac59e23701bbeedae490723518c",
-      "machineText": "par `_`))",
+      "sourceHash": "3c948360cd77f2fa9fe828504db5956de4578a588bbb00b4f4c6baa4f850ba20",
+      "targetHash": "8e11dd5547380809f9c4fd24b42218325574c4bd609c75d94028918b3c63730e",
+      "machineHash": "8e11dd5547380809f9c4fd24b42218325574c4bd609c75d94028918b3c63730e",
+      "machineText": "par `_`)",
       "status": "machine-translated",
-      "sourcePreview": "with `_`))",
+      "sourcePreview": "with `_`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-11-02T23:54:37Z"
+      "updatedAt": "2026-11-06T10:49:09Z"
     },
     "b0009-heading-01": {
       "sourceHash": "93c78eafc72b9316091a2d53ea7c97021350be091ce9e3d2f71e00162416a1e7",
@@ -143,7 +143,7 @@
       "targetHash": "2d0c4182ebe301536924dd212ef0cbfc08132d4f0a0b0ec82bdd9263adb7685f",
       "machineHash": "2d0c4182ebe301536924dd212ef0cbfc08132d4f0a0b0ec82bdd9263adb7685f",
       "machineText": "`docs/mpress/content/community/showcase/index.md`.",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`docs/mpress/content/community/showcase/index.md`.",
       "provider": "codex",
       "model": "gpt-5.6-sol",

@@ -59,7 +59,7 @@ sourcePath: "community/showcase/index.md"
 `docs/mpress/content/community/showcase` 폴더입니다.
 
 ### 복사한 파일의 이름을 프로젝트 이름으로 변경하세요. (이름은
-`_`(으)로 시작하면 안 됩니다.)
+`_`(으)로 시작해서는 안 됩니다.)
 
 ### 파일의 제목, 이미지, 링크 및 콘텐츠를 업데이트하세요.
 ### 위 목록의 다음 위치에 프로젝트를 추가하세요.

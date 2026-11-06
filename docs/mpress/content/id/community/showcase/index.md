@@ -59,7 +59,7 @@ Lihat bagian [Cara menambahkan proyek saya ke etalase](#cara-menambahkan-proyek-
 folder `docs/mpress/content/community/showcase`.
 
 ### Ubah nama berkas yang disalin menjadi nama proyek Anda. (Nama tidak boleh diawali
-dengan `_`))
+dengan `_`)
 
 ### Perbarui judul, gambar, tautan, dan isi berkas.
 ### Tambahkan proyek tersebut ke daftar di atas dalam

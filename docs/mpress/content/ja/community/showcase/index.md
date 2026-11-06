@@ -59,11 +59,11 @@ sourcePath: "community/showcase/index.md"
 `docs/mpress/content/community/showcase` フォルダー。
 
 ### コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭を
-`_` にしないでください）
+`_` で始めないでください）
 
 ### ファイルのタイトル、画像、リンク、内容を更新します。
 ### 上記のリストに追加します。対象ファイルは
-`docs/mpress/content/community/showcase/index.md` です。
+`docs/mpress/content/community/showcase/index.md`.
 
 ### PR を提出します。
 @end
