@@ -7,13 +7,14 @@ import (
 
 // Service wraps a bound type instance.
 // The zero value of Service is invalid.
-// Valid values may only be obtained by calling [NewService].
+// Valid values may only be obtained by calling one of the NewService functions.
 type Service struct {
-	instance any
-	options  ServiceOptions
+	instance          any
+	options           ServiceOptions
+	bindingProjection reflect.Type
 }
 
-// ServiceOptions provides optional parameters for calls to [NewService].
+// ServiceOptions provides optional parameters for service registration.
 type ServiceOptions struct {
 	// Name can be set to override the name of the service
 	// for logging and debugging purposes.
@@ -40,13 +41,34 @@ type ServiceOptions struct {
 }
 
 // DefaultServiceOptions specifies the default values of service options,
-// used when no [ServiceOptions] instance is provided to [NewService].
+// used when no [ServiceOptions] instance is provided.
 var DefaultServiceOptions = ServiceOptions{}
 
 // NewService returns a Service value wrapping the given pointer.
 // If T is not a concrete named type, the returned value is invalid.
 func NewService[T any](instance *T) Service {
-	return Service{instance, DefaultServiceOptions}
+	return Service{
+		instance: instance,
+		options:  DefaultServiceOptions,
+	}
+}
+
+// NewServiceAs returns a Service value wrapping the given instance and exposes
+// only the methods declared by API to the frontend.
+//
+// API must be a named interface, and instance must be a pointer to a concrete
+// named type that implements it. Callers should always provide API explicitly:
+//
+//	application.NewServiceAs[FrontendAPI](service)
+//
+// The concrete instance is retained for service lifecycle hooks, HTTP routing,
+// and backend access. The interface affects only frontend method bindings.
+func NewServiceAs[API any](instance API) Service {
+	return Service{
+		instance:          instance,
+		options:           DefaultServiceOptions,
+		bindingProjection: reflect.TypeFor[API](),
+	}
 }
 
 // NewServiceWithOptions returns a Service value wrapping the given pointer
@@ -58,7 +80,15 @@ func NewServiceWithOptions[T any](instance *T, options ServiceOptions) Service {
 	return service
 }
 
-// Instance returns the service instance provided to [NewService].
+// NewServiceAsWithOptions is equivalent to [NewServiceAs] with additional
+// [ServiceOptions].
+func NewServiceAsWithOptions[API any](instance API, options ServiceOptions) Service {
+	service := NewServiceAs[API](instance)
+	service.options = options
+	return service
+}
+
+// Instance returns the concrete service instance provided at registration.
 func (s Service) Instance() any {
 	return s.instance
 }
@@ -124,11 +154,23 @@ func getServiceName(service Service) string {
 		return service.options.Name
 	}
 
+	instance := service.Instance()
+
 	// Check if the service implements the ServiceName interface
-	if s, ok := service.Instance().(ServiceName); ok {
+	if s, ok := instance.(ServiceName); ok {
 		return s.ServiceName()
 	}
 
 	// Finally, get the name from the type.
-	return reflect.TypeOf(service.Instance()).Elem().String()
+	instanceType := reflect.TypeOf(instance)
+	if instanceType == nil {
+		if service.bindingProjection != nil {
+			return service.bindingProjection.String()
+		}
+		return "<nil>"
+	}
+	if instanceType.Kind() == reflect.Pointer {
+		return instanceType.Elem().String()
+	}
+	return instanceType.String()
 }
