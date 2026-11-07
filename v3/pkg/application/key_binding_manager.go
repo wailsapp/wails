@@ -14,8 +14,14 @@ func newKeyBindingManager(app *App) *KeyBindingManager {
 	}
 }
 
-// Add adds a key binding
+// Add adds a key binding ignoring case so "Ctrl-X", "ctrl-x" etc are the same.
 func (kbm *KeyBindingManager) Add(accelerator string, callback func(window Window)) {
+	if a, err := parseAccelerator(accelerator); err != nil {
+		globalApplication.error("invalid accelerator: %w", err)
+		return
+	} else {
+		accelerator = a.String() // use the normalised format
+	}
 	kbm.app.keyBindingsLock.Lock()
 	defer kbm.app.keyBindingsLock.Unlock()
 	kbm.app.keyBindings[accelerator] = callback
@@ -38,6 +44,9 @@ func (kbm *KeyBindingManager) removeMenuBinding(item *MenuItem) {
 
 // Remove removes a key binding
 func (kbm *KeyBindingManager) Remove(accelerator string) {
+	if a, err := parseAccelerator(accelerator); err == nil {
+		accelerator = a.String() // normalised to match KeyBindingManager.Add()
+	}
 	kbm.app.keyBindingsLock.Lock()
 	defer kbm.app.keyBindingsLock.Unlock()
 	delete(kbm.app.keyBindings, accelerator)
