@@ -251,8 +251,9 @@ func (t *HTTPTransport) handleChunkedRequest(rw http.ResponseWriter, r *http.Req
 		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("inconsistent chunk total"))
 		return
 	}
+	// A retried chunk replaces its earlier copy, so it must not count twice.
+	pc.size += len(chunk) - len(pc.chunks[index])
 	pc.chunks[index] = chunk
-	pc.size += len(chunk)
 	if pc.size > maxAssembledBytes {
 		pc.mu.Unlock()
 		t.chunkStore.Delete(chunkID)
