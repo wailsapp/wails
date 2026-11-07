@@ -274,8 +274,8 @@ func TestValidateURL(t *testing.T) {
 			errMsg:    "scheme not allowed",
 		},
 		{
-			name:      "custom scheme with semicolon",
-			url:       "myapp://example.com/a;b",
+			name:      "mailto with semicolon",
+			url:       "mailto:a@example.com?subject=a;b",
 			shouldErr: true,
 			errMsg:    "shell metacharacters",
 		},
