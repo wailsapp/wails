@@ -9,6 +9,10 @@ import "github.com/wailsapp/wails/v3/pkg/events"
 // the iOS side (battery level, theme, …) rides along to the common event.
 var commonApplicationEventMap = map[events.ApplicationEventType]events.ApplicationEventType{
     events.IOS.ApplicationDidFinishLaunching:      events.Common.ApplicationStarted,
+    events.IOS.ApplicationDidBecomeActive:         events.Common.ApplicationResumed,
+    events.IOS.ApplicationWillResignActive:        events.Common.ApplicationPaused,
+    events.IOS.ApplicationDidEnterBackground:      events.Common.ApplicationBackgrounded,
+    events.IOS.ApplicationWillEnterForeground:     events.Common.ApplicationForegrounded,
     events.IOS.ApplicationDidReceiveMemoryWarning: events.Common.LowMemory,
     events.IOS.BatteryChanged:                     events.Common.BatteryChanged,
     events.IOS.NetworkChanged:                     events.Common.NetworkChanged,
