@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
@@ -177,6 +178,15 @@ func calculateMessageDialogFlags(options frontend.MessageDialogOptions) uint32 {
 	return flags
 }
 
+// messageDialogUserIconFlags prepares flags for MB_USERICON: the stock icon bits
+// must be stripped (mixing MB_ICON* with MB_USERICON is undefined), while the
+// button configuration is preserved (#4233). MB_SYSTEMMODAL is kept: it controls
+// modality, not the icon.
+func messageDialogUserIconFlags(flags uint32) uint32 {
+	const mbIconMask = windows.MB_ICONHAND | windows.MB_ICONQUESTION | windows.MB_ICONASTERISK | windows.MB_USERICON
+	return (flags &^ mbIconMask) | windows.MB_USERICON | windows.MB_SYSTEMMODAL
+}
+
 // MessageDialog show a message dialog to the user
 func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string, error) {
 
@@ -191,7 +201,16 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 
 	flags := calculateMessageDialogFlags(options)
 
-	button, _ := windows.MessageBox(windows.HWND(f.getHandleForDialog()), message, title, flags|windows.MB_SYSTEMMODAL)
+	// Show the application icon (the same icon the main window uses) in the
+	// message box; MessageBoxW can only show the four stock icons.
+	hwnd := f.getHandleForDialog()
+	button, err := w32.MessageBoxWithIcon(hwnd, message, title, uint16(winc.AppIconID), messageDialogUserIconFlags(flags))
+	if err != nil {
+		// The icon resource is not embedded in dev builds (`go run`, `wails dev`),
+		// which makes MessageBoxIndirect fail outright (#4233). Fall back to a
+		// stock-icon dialog so the message is still shown.
+		button, _ = windows.MessageBox(windows.HWND(hwnd), message, title, flags|windows.MB_SYSTEMMODAL)
+	}
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"

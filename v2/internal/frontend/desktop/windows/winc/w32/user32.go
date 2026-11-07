@@ -66,6 +66,7 @@ var (
 	procReleaseCapture                = moduser32.NewProc("ReleaseCapture")
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
+	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterWindowMessageA        = moduser32.NewProc("RegisterWindowMessageA")
@@ -621,6 +622,29 @@ func MessageBox(hwnd HWND, title, caption string, flags uint) int {
 		uintptr(flags))
 
 	return int(ret)
+}
+
+// MessageBoxWithIcon shows a modal message box that displays the icon stored in
+// resource iconID of the given module. MessageBoxW cannot show an application
+// icon, only the four stock icons. Returns an error if the icon resource is
+// missing, which happens in dev builds (`go run`, `wails dev`) where no icon
+// resource is embedded - see #4233.
+func MessageBoxWithIcon(hwnd HWND, text, caption *uint16, iconID uint16, flags uint32) (int32, error) {
+	params := MSGBOXPARAMS{
+		Size:     uint32(unsafe.Sizeof(MSGBOXPARAMS{})),
+		Owner:    hwnd,
+		Instance: GetModuleHandle(""),
+		Text:     text,
+		Caption:  caption,
+		Style:    flags,
+		Icon:     (*uint16)(unsafe.Pointer(uintptr(iconID))), // MAKEINTRESOURCE
+	}
+
+	ret, _, err := procMessageBoxIndirect.Call(uintptr(unsafe.Pointer(&params)))
+	if ret == 0 {
+		return 0, err
+	}
+	return int32(ret), nil
 }
 
 func GetSystemMetrics(index int) int {
