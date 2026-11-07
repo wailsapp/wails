@@ -320,6 +320,9 @@ func TestRunHelperSwap_LaunchFails_NoReplacedVersion(t *testing.T) {
 // A folder that refuses changes stops the rollback before the marker is touched: the update stays installed, so the
 // marker that names it is still true, and nothing is relaunched.
 func TestRunHelperSwap_LaunchFails_FolderLocked_KeepsUpdateAndItsMarker(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a read-only directory mode does not stop file removal on Windows")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("root can remove files in a read-only directory")
 	}
@@ -367,14 +370,18 @@ func TestRunHelperSwap_LaunchFails_FolderLocked_KeepsUpdateAndItsMarker(t *testi
 }
 
 func TestConsumeAppliedMarker_RemoveFails_DoesNotReport(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a read-only directory mode does not stop file removal on Windows")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("root can remove files in a read-only directory")
 	}
-	target, err := resolveTarget()
-	if err != nil {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app")
+	if err := os.WriteFile(target, []byte("app"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Dir(target)
+	t.Cleanup(SetSelfExecutableForTest(func() (string, error) { return target, nil }))
 	marker := appliedMarker(target)
 	if err := os.WriteFile(marker, []byte("1.0.0"), 0o600); err != nil {
 		t.Fatal(err)
