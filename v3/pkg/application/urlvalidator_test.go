@@ -274,6 +274,12 @@ func TestValidateURL(t *testing.T) {
 			errMsg:    "scheme not allowed",
 		},
 		{
+			name:      "custom scheme with semicolon",
+			url:       "myapp://example.com/a;b",
+			shouldErr: true,
+			errMsg:    "shell metacharacters",
+		},
+		{
 			name:      "pipe in path",
 			url:       "https://example.com/a|b",
 			shouldErr: true,
