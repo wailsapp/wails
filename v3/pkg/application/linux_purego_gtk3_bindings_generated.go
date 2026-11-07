@@ -139,9 +139,17 @@ type _Ctype_JSCValuePrivate = _Ctype_struct__JSCValuePrivate
 type _Ctype_WebKitHardwareAccelerationPolicy uint32
 type _Ctype_WebKitJavascriptResult = _Ctype_struct__WebKitJavascriptResult
 type _Ctype_WebKitLoadEvent uint32
+type _Ctype_WebKitNavigationAction = _Ctype_struct__WebKitNavigationAction
+type _Ctype_WebKitNavigationPolicyDecision = _Ctype_struct__WebKitNavigationPolicyDecision
+type _Ctype_WebKitNavigationPolicyDecisionPrivate = _Ctype_struct__WebKitNavigationPolicyDecisionPrivate
 type _Ctype_WebKitPermissionRequest = _Ctype_struct__WebKitPermissionRequest
+type _Ctype_WebKitPolicyDecision = _Ctype_struct__WebKitPolicyDecision
+type _Ctype_WebKitPolicyDecisionPrivate = _Ctype_struct__WebKitPolicyDecisionPrivate
+type _Ctype_WebKitPolicyDecisionType uint32
 type _Ctype_WebKitSettings = _Ctype_struct__WebKitSettings
 type _Ctype_WebKitSettingsPrivate = _Ctype_struct__WebKitSettingsPrivate
+type _Ctype_WebKitURIRequest = _Ctype_struct__WebKitURIRequest
+type _Ctype_WebKitURIRequestPrivate = _Ctype_struct__WebKitURIRequestPrivate
 type _Ctype_WebKitURISchemeRequest = _Ctype_struct__WebKitURISchemeRequest
 type _Ctype_WebKitURISchemeRequestCallback *[0]byte
 type _Ctype_WebKitURISchemeRequestPrivate = _Ctype_struct__WebKitURISchemeRequestPrivate
@@ -692,13 +700,33 @@ type _Ctype_struct__JSCValuePrivate struct {
 }
 type _Ctype_struct__WebKitJavascriptResult struct {
 }
+type _Ctype_struct__WebKitNavigationAction struct {
+}
+type _Ctype_struct__WebKitNavigationPolicyDecision struct {
+	parent _Ctype_struct__WebKitPolicyDecision
+	priv   *_Ctype_struct__WebKitNavigationPolicyDecisionPrivate
+}
+type _Ctype_struct__WebKitNavigationPolicyDecisionPrivate struct {
+}
 type _Ctype_struct__WebKitPermissionRequest struct {
+}
+type _Ctype_struct__WebKitPolicyDecision struct {
+	parent _Ctype_struct__GObject
+	priv   *_Ctype_struct__WebKitPolicyDecisionPrivate
+}
+type _Ctype_struct__WebKitPolicyDecisionPrivate struct {
 }
 type _Ctype_struct__WebKitSettings struct {
 	parent _Ctype_struct__GObject
 	priv   *_Ctype_struct__WebKitSettingsPrivate
 }
 type _Ctype_struct__WebKitSettingsPrivate struct {
+}
+type _Ctype_struct__WebKitURIRequest struct {
+	parent _Ctype_struct__GObject
+	priv   *_Ctype_struct__WebKitURIRequestPrivate
+}
+type _Ctype_struct__WebKitURIRequestPrivate struct {
 }
 type _Ctype_struct__WebKitURISchemeRequest struct {
 	parent _Ctype_struct__GObject
@@ -806,6 +834,8 @@ const _Ciconst_WEBKIT_LOAD_COMMITTED = 0x2
 const _Ciconst_WEBKIT_LOAD_FINISHED = 0x3
 const _Ciconst_WEBKIT_LOAD_REDIRECTED = 0x1
 const _Ciconst_WEBKIT_LOAD_STARTED = 0x0
+const _Ciconst_WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION = 0x0
+const _Ciconst_WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION = 0x1
 const _Ciconst_WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES = 0x0
 const _Ciconst_WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START = 0x0
 
@@ -963,12 +993,18 @@ var _Cfunc_webkit_get_major_version func() (r1 _Ctype_guint)
 var _Cfunc_webkit_get_micro_version func() (r1 _Ctype_guint)
 var _Cfunc_webkit_get_minor_version func() (r1 _Ctype_guint)
 var _Cfunc_webkit_javascript_result_get_js_value func(p0 *_Ctype_struct__WebKitJavascriptResult) (r1 *_Ctype_struct__JSCValue)
+var _Cfunc_webkit_navigation_action_get_request func(p0 *_Ctype_struct__WebKitNavigationAction) (r1 *_Ctype_struct__WebKitURIRequest)
+var _Cfunc_webkit_navigation_action_is_user_gesture func(p0 *_Ctype_struct__WebKitNavigationAction) (r1 _Ctype_gboolean)
+var _Cfunc_webkit_navigation_policy_decision_get_navigation_action func(p0 *_Ctype_struct__WebKitNavigationPolicyDecision) (r1 *_Ctype_struct__WebKitNavigationAction)
 var _Cfunc_webkit_permission_request_allow func(p0 *_Ctype_struct__WebKitPermissionRequest)
 var _Cfunc_webkit_permission_request_deny func(p0 *_Ctype_struct__WebKitPermissionRequest)
+var _Cfunc_webkit_policy_decision_ignore func(p0 *_Ctype_struct__WebKitPolicyDecision)
+var _Cfunc_webkit_policy_decision_use func(p0 *_Ctype_struct__WebKitPolicyDecision)
 var _Cfunc_webkit_settings_get_enable_developer_extras func(p0 *_Ctype_struct__WebKitSettings) (r1 _Ctype_gboolean)
 var _Cfunc_webkit_settings_set_enable_developer_extras func(p0 *_Ctype_struct__WebKitSettings, p1 _Ctype_gboolean)
 var _Cfunc_webkit_settings_set_hardware_acceleration_policy func(p0 *_Ctype_struct__WebKitSettings, p1 _Ctype_WebKitHardwareAccelerationPolicy)
 var _Cfunc_webkit_settings_set_user_agent_with_application_details func(p0 *_Ctype_struct__WebKitSettings, p1 *_Ctype_gchar, p2 *_Ctype_gchar)
+var _Cfunc_webkit_uri_request_get_uri func(p0 *_Ctype_struct__WebKitURIRequest) (r1 *_Ctype_gchar)
 var _Cfunc_webkit_uri_scheme_request_get_web_view func(p0 *_Ctype_struct__WebKitURISchemeRequest) (r1 *_Ctype_struct__WebKitWebView)
 var _Cfunc_webkit_user_content_manager_add_script func(p0 *_Ctype_struct__WebKitUserContentManager, p1 *_Ctype_struct__WebKitUserScript)
 var _Cfunc_webkit_user_content_manager_new func() (r1 *_Ctype_struct__WebKitUserContentManager)
@@ -995,6 +1031,7 @@ var _Cfunc_webkit_web_view_stop_loading func(p0 *_Ctype_struct__WebKitWebView)
 var _Cfpvar_fp_activateLinux = unsafe.Pointer(purego.NewCallback(activateLinux))
 var _Cfpvar_fp_handleClick = unsafe.Pointer(purego.NewCallback(handleClick))
 var _Cfpvar_fp_handleConfigureEvent = unsafe.Pointer(purego.NewCallback(handleConfigureEvent))
+var _Cfpvar_fp_handleDecidePolicy = unsafe.Pointer(purego.NewCallback(handleDecidePolicy))
 var _Cfpvar_fp_handleDeleteEvent = unsafe.Pointer(purego.NewCallback(handleDeleteEvent))
 var _Cfpvar_fp_handleFocusEvent = unsafe.Pointer(purego.NewCallback(handleFocusEvent))
 var _Cfpvar_fp_handleLoadChanged = unsafe.Pointer(purego.NewCallback(handleLoadChanged))
@@ -1162,12 +1199,18 @@ func registerGTK3Functions(lib uintptr, missing *[]string) {
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_get_micro_version, "webkit_get_micro_version")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_get_minor_version, "webkit_get_minor_version")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_javascript_result_get_js_value, "webkit_javascript_result_get_js_value")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_navigation_action_get_request, "webkit_navigation_action_get_request")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_navigation_action_is_user_gesture, "webkit_navigation_action_is_user_gesture")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_navigation_policy_decision_get_navigation_action, "webkit_navigation_policy_decision_get_navigation_action")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_permission_request_allow, "webkit_permission_request_allow")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_permission_request_deny, "webkit_permission_request_deny")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_policy_decision_ignore, "webkit_policy_decision_ignore")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_policy_decision_use, "webkit_policy_decision_use")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_settings_get_enable_developer_extras, "webkit_settings_get_enable_developer_extras")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_settings_set_enable_developer_extras, "webkit_settings_set_enable_developer_extras")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_settings_set_hardware_acceleration_policy, "webkit_settings_set_hardware_acceleration_policy")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_settings_set_user_agent_with_application_details, "webkit_settings_set_user_agent_with_application_details")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_uri_request_get_uri, "webkit_uri_request_get_uri")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_uri_scheme_request_get_web_view, "webkit_uri_scheme_request_get_web_view")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_user_content_manager_add_script, "webkit_user_content_manager_add_script")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_user_content_manager_new, "webkit_user_content_manager_new")

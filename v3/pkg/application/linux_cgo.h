@@ -80,6 +80,9 @@ extern void onDropFiles(char**, gint, gint, uintptr_t);
 void activateLinux(gpointer data);
 
 // Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
+void policy_decision_info(WebKitPolicyDecision *decision, char **uri, int *gesture);
+void policy_decision_apply(WebKitPolicyDecision *decision, int allow);
+extern gboolean handleDecidePolicy(WebKitWebView*, WebKitPolicyDecision*, WebKitPolicyDecisionType, uintptr_t);
 int is_user_media_permission_request(WebKitPermissionRequest *request);
 // Whether a user-media request needs the microphone / camera respectively.
 int is_user_media_for_audio(WebKitPermissionRequest *request);

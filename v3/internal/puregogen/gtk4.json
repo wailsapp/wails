@@ -1057,6 +1057,30 @@
       "library": "libWebKit"
     },
     {
+      "name": "webkit_navigation_action_get_request",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_navigation_action_is_user_gesture",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_navigation_policy_decision_get_navigation_action",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_policy_decision_ignore",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_policy_decision_use",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_uri_request_get_uri",
+      "library": "libWebKit"
+    },
+    {
       "name": "webkit_permission_request_allow",
       "library": "libWebKit"
     },

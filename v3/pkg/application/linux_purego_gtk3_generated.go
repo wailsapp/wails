@@ -1189,6 +1189,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {
+	appNavigation.allow(uri)
 	target := _Cfunc_CString(uri)
 	_Cfunc_webkit_web_view_load_uri(w.webKitWebView(), target)
 	_Cfunc_free(unsafe.Pointer(target))
@@ -1251,6 +1252,27 @@ func handleFocusEvent(widget *_Ctype_GtkWidget, event *_Ctype_GdkEvent, data _Ct
 	return _Ctype_gboolean(0)
 }
 
+func handleDecidePolicy(wv *_Ctype_WebKitWebView, decision *_Ctype_WebKitPolicyDecision, kind _Ctype_WebKitPolicyDecisionType, data _Ctype_uintptr_t) _Ctype_gboolean {
+	var newWindow bool
+	switch kind {
+	case _Ciconst_WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+	case _Ciconst_WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+		newWindow = true
+	default:
+		return _Ctype_gboolean(0)
+	}
+	action := _Cfunc_webkit_navigation_policy_decision_get_navigation_action((*_Ctype_WebKitNavigationPolicyDecision)(unsafe.Pointer(decision)))
+	request := _Cfunc_webkit_navigation_action_get_request(action)
+	raw := _Cfunc_GoString(_Cfunc_webkit_uri_request_get_uri(request))
+	gesture := _Cfunc_webkit_navigation_action_is_user_gesture(action) != 0
+	if linuxDecideNavigation(raw, gesture, newWindow) {
+		_Cfunc_webkit_policy_decision_use(decision)
+	} else {
+		_Cfunc_webkit_policy_decision_ignore(decision)
+	}
+	return _Ctype_gboolean(1)
+}
+
 func handlePermissionRequest(webview *_Ctype_WebKitWebView, request *_Ctype_WebKitPermissionRequest, data _Ctype_uintptr_t) _Ctype_gboolean {
 
 	if _Cfunc_is_user_media_permission_request(request) == 0 {
@@ -1292,6 +1314,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), _Cfpvar_fp_handleFocusEvent, winID)
 	_Cfunc_signal_connect(wv, c.String("load-changed"), _Cfpvar_fp_handleLoadChanged, winID)
 	_Cfunc_signal_connect(wv, c.String("permission-request"), _Cfpvar_fp_handlePermissionRequest, winID)
+	_Cfunc_signal_connect(wv, c.String("decide-policy"), _Cfpvar_fp_handleDecidePolicy, winID)
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), _Cfpvar_fp_handleConfigureEvent, winID)
 
 	contentManager := _Cfunc_webkit_web_view_get_user_content_manager(w.webKitWebView())
