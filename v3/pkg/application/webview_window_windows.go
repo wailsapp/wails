@@ -986,6 +986,11 @@ func (w *windowsWebviewWindow) destroy() {
 	}
 
 	w.parent.markAsDestroyed()
+	// DestroyWindow bypasses WM_CLOSE; release the drop target before the
+	// HWND becomes invalid, just as the normal close path does.
+	if w.chromium != nil {
+		w.chromium.ShuttingDown()
+	}
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }

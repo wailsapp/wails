@@ -181,6 +181,10 @@ func (e *Chromium) ShuttingDown() {
 	e.MoveFocusRequestedCallback = nil
 	e.CursorChangedCallback = nil
 	e.globalErrorCallback = globalErrorHandler
+	// Normal window closure calls ShuttingDown before destroying the HWND,
+	// without calling Close. Revoke OLE registration while the HWND is valid.
+	// Like controller teardown, this must run on the owning UI/STA thread.
+	e.releaseCompositionDropTarget()
 }
 
 // Close abandons this instance and releases its controller and environment.
@@ -602,10 +606,7 @@ func (e *Chromium) ReleaseCompositionResources() {
 }
 
 func (e *Chromium) releaseCompositionController() {
-	if e.compositionDropTarget != nil {
-		e.compositionDropTarget.close()
-		e.compositionDropTarget = nil
-	}
+	e.releaseCompositionDropTarget()
 	if e.compositionController4 != nil {
 		e.compositionController4.Release()
 		e.compositionController4 = nil
