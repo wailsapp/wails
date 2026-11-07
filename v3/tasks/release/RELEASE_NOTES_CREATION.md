@@ -7,7 +7,7 @@ edit or revert. `v3/UNRELEASED_CHANGELOG.md` has been removed.
 From the repository root, with Git tags fetched and read access through `gh`:
 
 ```sh
-python3 v3/scripts/generate-release-changelog.py generate --repo wailsapp/wails --target HEAD --channel nightly
+go -C v3 run ./scripts/generate-release-changelog.go generate --repo wailsapp/wails --target HEAD --channel nightly
 ```
 
 Use the repository being released; the generator has no public-repository default.
@@ -64,8 +64,8 @@ The sync is idempotent and does not recreate a staging file.
 To run the focused checks without publishing:
 
 ```sh
-python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'
-python3 .github/scripts/test_release_ci.py
+go -C v3 test ./tasks/changelog
+go -C v3 test ./tasks/releaseci
 cd v3
 go test -race ./tasks/release ./tasks/releasegate
 ```
