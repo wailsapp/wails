@@ -552,13 +552,18 @@ static gboolean on_drop(GtkDropTarget *target, const GValue *value, gdouble x, g
     guint i = 0;
     for (GSList *l = file_list; l != NULL; l = l->next) {
         GFile *file = G_FILE(l->data);
-        paths[i++] = g_file_get_path(file);
+        // Non-local GFiles have no path; storing NULL would end the
+        // NULL-terminated list early on the Go side and drop later files.
+        char *path = g_file_get_path(file);
+        if (path != NULL) {
+            paths[i++] = path;
+        }
     }
-    paths[count] = NULL;
+    paths[i] = NULL;
 
     onDropFiles(paths, (gint)x, (gint)y, (uintptr_t)data);
 
-    for (i = 0; i < count; i++) {
+    for (i = 0; paths[i] != NULL; i++) {
         g_free(paths[i]);
     }
     g_free(paths);
