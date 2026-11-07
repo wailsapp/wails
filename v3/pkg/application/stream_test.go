@@ -1002,18 +1002,17 @@ func TestStreamSessionAdmissionBoundAtHTTPBoundary(t *testing.T) {
 func TestStreamOpenAckPrecedesHandlerOutput(t *testing.T) {
 	mgr, s := newTestSession(t)
 
-	started := make(chan struct{})
+	sent := make(chan struct{})
 	mgr.handlers["greet"] = func(c *StreamConn) {
-		close(started)
 		_ = c.Send([]byte("first"))
+		// Send returns once its frame is queued, and open queued the ack
+		// before starting this handler, so both are queued by now.
+		close(sent)
 		<-c.Context().Done()
 	}
 
 	s.open(9, "greet")
-	<-started
-
-	// Give the handler's Send time to land.
-	time.Sleep(50 * time.Millisecond)
+	<-sent
 
 	s.mu.Lock()
 	frames, _ := s.drainLocked(streamMaxResponseBytes)
