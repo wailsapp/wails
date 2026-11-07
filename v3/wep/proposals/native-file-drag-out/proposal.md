@@ -97,13 +97,15 @@ Require native transfer tests before merging an implementation:
 | Disarm, window close and disabled option | No stale drag source or input grab remains. |
 | File validation | Reject empty, relative, missing and NUL-containing paths. |
 
-The prototype has manual macOS confirmation in AudioVault and passing native
-tests on Ubuntu 24.04 with GTK3/GTK4, each using CGO and purego. Windows amd64
-and arm64 compile; Windows native runtime verification is still pending.
+The prototype has manual macOS confirmation in AudioVault. Native tests pass on
+Windows amd64 and Ubuntu 24.04 with GTK3/GTK4, each using CGO and purego. They
+cover ordinary clicks, multi-file transfer, Unicode paths, cancellation and
+reuse. Windows arm64 is compile-checked only.
+[CI results](https://github.com/dreadl0ck/wails/actions/runs/42426040522).
 
 ## Reference Implementation
 
-[Prototype and native test probes](https://github.com/dreadl0ck/wails/tree/feat/native-file-dragout).
+[Prototype and native test probes](https://github.com/dreadl0ck/wails/tree/cff11ab6c22449c91fd4c013bba94ba3461a6de2).
 This PR contains only the proposal; the prototype is separate.
 
 ## Maintenance Plan
