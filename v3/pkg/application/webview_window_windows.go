@@ -977,6 +977,9 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 	w.setPosition(pos.X, pos.Y)
 }
 
+// destroy cancels requests, restores a modal parent, and shuts down Chromium
+// before destroying the HWND. It runs on the UI thread and performs shutdown
+// explicitly because DestroyWindow bypasses the WM_CLOSE handler.
 func (w *windowsWebviewWindow) destroy() {
 	w.requestCancellation.close()
 	// Re-enable parent window if this was a modal window

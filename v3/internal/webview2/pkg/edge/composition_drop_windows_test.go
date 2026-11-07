@@ -113,6 +113,9 @@ func newDropRegistrationChromium(t *testing.T, hwnd uintptr) (*Chromium, *int) {
 	return e, refs
 }
 
+// TestCompositionDropRegistrationLifecycle verifies shutdown, close, and
+// recovery release OLE registration and controller ownership independently,
+// allowing a replacement target to register on the same HWND.
 func TestCompositionDropRegistrationLifecycle(t *testing.T) {
 	for _, path := range []string{"shutdown", "close", "recovery"} {
 		t.Run(path, func(t *testing.T) {
@@ -160,6 +163,9 @@ func TestCompositionDropRegistrationLifecycle(t *testing.T) {
 	}
 }
 
+// TestCompositionDropRegistrationFailureReleasesController checks that a
+// duplicate HWND registration releases the contender's controller reference
+// without revoking or releasing the existing owner's drop target.
 func TestCompositionDropRegistrationFailureReleasesController(t *testing.T) {
 	lockWebView2Thread(t)
 	hwnd := newLiveTestWindow(t)

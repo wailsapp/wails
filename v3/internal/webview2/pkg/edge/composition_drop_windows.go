@@ -39,6 +39,7 @@ type compositionDropInterface interface {
 	drop(uintptr, uint32, uintptr, *uint32) uintptr
 }
 
+// init registers the IDropTarget COM vtable in its native method order.
 func init() {
 	combridge.RegisterVTable[combridge.IUnknown, compositionDropInterface](
 		"{00000122-0000-0000-C000-000000000046}",
@@ -62,6 +63,9 @@ type compositionDropTarget struct {
 	object     *combridge.ComObject[compositionDropInterface]
 }
 
+// registerCompositionDropTarget registers the host HWND for OLE drops on the
+// owning UI/STA thread. Success retains a controller reference and an OLE
+// initialization until releaseCompositionDropTarget; failure releases both.
 func (e *Chromium) registerCompositionDropTarget() error {
 	var controller *compositionController3
 	iid := NewGUID("{9570570e-4d76-4361-9ee1-f04d0dbdfb1e}")
@@ -87,6 +91,9 @@ func (e *Chromium) registerCompositionDropTarget() error {
 	return nil
 }
 
+// releaseCompositionDropTarget revokes OLE registration and releases its
+// controller reference on the owning UI/STA thread, before HWND destruction.
+// It is safe to call repeatedly or reentrantly.
 func (e *Chromium) releaseCompositionDropTarget() {
 	d := e.compositionDropTarget
 	if d == nil {
@@ -101,12 +108,17 @@ func (e *Chromium) releaseCompositionDropTarget() {
 	dropOleUninitialize.Call()
 }
 
+// clientPoint converts a packed screen POINTL to host client coordinates.
+// The boolean reports whether ScreenToClient succeeded.
 func (d *compositionDropTarget) clientPoint(packed uintptr) (uintptr, bool) {
 	p := POINT{X: int32(uint32(packed)), Y: int32(uint64(packed) >> 32)}
 	ok, _, _ := dropScreenToClient.Call(d.hwnd, uintptr(unsafe.Pointer(&p)))
 	return p.uintptr(), ok != 0
 }
 
+// enter forwards DragEnter with the original data object, key state, and
+// effects, translating screen coordinates and returning the controller HRESULT.
+// Coordinate conversion failure rejects the drag by clearing the effect.
 func (d *compositionDropTarget) enter(data uintptr, keys uint32, point uintptr, effect *uint32) uintptr {
 	p, ok := d.clientPoint(point)
 	if !ok {
@@ -117,6 +129,8 @@ func (d *compositionDropTarget) enter(data uintptr, keys uint32, point uintptr, 
 	return hr
 }
 
+// over forwards DragOver in client coordinates and preserves the controller
+// HRESULT and effect output. Coordinate conversion failure rejects the drag.
 func (d *compositionDropTarget) over(keys uint32, point uintptr, effect *uint32) uintptr {
 	p, ok := d.clientPoint(point)
 	if !ok {
@@ -127,11 +141,15 @@ func (d *compositionDropTarget) over(keys uint32, point uintptr, effect *uint32)
 	return hr
 }
 
+// leave forwards DragLeave and returns the controller HRESULT unchanged.
 func (d *compositionDropTarget) leave() uintptr {
 	hr, _, _ := d.controller.Vtbl.DragLeave.Call(uintptr(unsafe.Pointer(d.controller)))
 	return hr
 }
 
+// drop forwards Drop with the original data object and client coordinates,
+// preserving the controller HRESULT and effect output. Coordinate conversion
+// failure clears the effect so the source does not treat the drop as accepted.
 func (d *compositionDropTarget) drop(data uintptr, keys uint32, point uintptr, effect *uint32) uintptr {
 	p, ok := d.clientPoint(point)
 	if !ok {
