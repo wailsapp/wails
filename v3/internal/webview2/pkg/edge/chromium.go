@@ -57,6 +57,7 @@ type Chromium struct {
 
 	controller                       *ICoreWebView2Controller
 	compositionController            *ICoreWebView2CompositionController
+	compositionDropTarget            *compositionDropTarget
 	compositionController4           *ICoreWebView2CompositionController4
 	webview                          *ICoreWebView2
 	inited                           uintptr
@@ -555,6 +556,12 @@ func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr,
 		return 0
 	}
 
+	if err := e.registerCompositionDropTarget(); err != nil {
+		if fallbackErr := e.fallbackToCoreWebView2Controller(err); fallbackErr != nil {
+			return e.initializationFailed(fallbackErr)
+		}
+		return 0
+	}
 	controller := compositionController.GetICoreWebView2Controller()
 	if controller == nil {
 		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error getting controller from composition controller")); err != nil {
@@ -595,6 +602,10 @@ func (e *Chromium) ReleaseCompositionResources() {
 }
 
 func (e *Chromium) releaseCompositionController() {
+	if e.compositionDropTarget != nil {
+		e.compositionDropTarget.close()
+		e.compositionDropTarget = nil
+	}
 	if e.compositionController4 != nil {
 		e.compositionController4.Release()
 		e.compositionController4 = nil
