@@ -141,12 +141,12 @@ func TestCheckCallerRefusesOnlyAKnownOtherExecutable(t *testing.T) {
 
 func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
 	stamp := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
-	copyOf := func(dir, body string, at time.Time) os.FileInfo {
-		p := filepath.Join(t.TempDir(), dir, "app")
-		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+	file := func(dir, name, body string, mode os.FileMode, at time.Time) os.FileInfo {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(p, []byte(body), 0o755); err != nil {
+		if err := os.Chmod(p, mode); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.Chtimes(p, at, at); err != nil {
@@ -158,11 +158,56 @@ func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
 		}
 		return fi
 	}
-	a := copyOf(".mount_appA", "build-1", stamp)
-	if !sameBuild(a, copyOf(".mount_appB", "build-1", stamp)) {
-		t.Fatal("two mounts of one image were judged different")
+	tests := []struct {
+		name  string
+		aName string
+		aBody string
+		aMode os.FileMode
+		aTime time.Time
+		bName string
+		bBody string
+		bMode os.FileMode
+		bTime time.Time
+		want  bool
+	}{
+		{
+			name:  "identical copies in different directories",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o755, bTime: stamp,
+			want: true,
+		},
+		{
+			name:  "name differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "other", bBody: "build-1", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "size differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-11", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "mode differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o644, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "mtime differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o755, bTime: stamp.Add(time.Hour),
+			want: false,
+		},
 	}
-	if sameBuild(a, copyOf(".mount_appC", "build-2", stamp.Add(time.Hour))) {
-		t.Fatal("another build was judged the same")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := file(t.TempDir(), tt.aName, tt.aBody, tt.aMode, tt.aTime)
+			b := file(t.TempDir(), tt.bName, tt.bBody, tt.bMode, tt.bTime)
+			if got := sameBuild(a, b); got != tt.want {
+				t.Fatalf("sameBuild = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
