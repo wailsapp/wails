@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestEncryptDecrypt(t *testing.T) {
@@ -91,15 +92,19 @@ func TestDecrypt_InvalidData(t *testing.T) {
 }
 
 func TestDecrypt_WrongKey(t *testing.T) {
-	key1 := [32]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	key1 := [32]byte{
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-		0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f}
+		0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+	}
 
-	key2 := [32]byte{0xff, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	key2 := [32]byte{
+		0xff, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-		0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f}
+		0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+	}
 
 	plaintext := []byte("Secret message")
 
@@ -235,17 +240,43 @@ func TestDispatchSecondInstanceSurvivesCallbackPanic(t *testing.T) {
 	globalApplication = &App{options: Options{PanicHandler: func(*PanicDetails) { panics++ }}}
 
 	calls := 0
+	second := make(chan struct{})
 	m := &singleInstanceManager{options: &SingleInstanceOptions{
 		OnSecondInstanceLaunch: func(SecondInstanceData) {
 			calls++
 			if calls == 1 {
 				panic("callback failed")
 			}
+			close(second)
 		},
 	}}
 
-	m.dispatchSecondInstance(`{"args":["a"]}`)
-	m.dispatchSecondInstance(`{"args":["b"]}`)
+	t.Cleanup(func() {
+		select {
+		case <-secondInstanceBuffer:
+		default:
+		}
+	})
+
+	go func() {
+		n := 0
+		for encryptedData := range secondInstanceBuffer {
+			m.dispatchSecondInstance(encryptedData)
+			n++
+			if n == 2 {
+				return
+			}
+		}
+	}()
+
+	secondInstanceBuffer <- `{"args":["a"]}`
+	secondInstanceBuffer <- `{"args":["b"]}`
+
+	select {
+	case <-second:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for second callback after panic")
+	}
 
 	if calls != 2 || panics != 1 {
 		t.Fatalf("calls = %d, panics = %d; want 2 and 1", calls, panics)
