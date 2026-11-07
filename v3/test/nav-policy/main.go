@@ -123,7 +123,10 @@ func main() {
 				fmt.Println("FAIL: the untrusted iframe loaded")
 				os.Exit(1)
 			}
-			fmt.Println("PASS: main-frame navigation and window.open were refused, the control iframe loaded, and the untrusted iframe was refused")
+			// window.open runs without a user gesture, so WebKit's popup setting may stop it before the policy sees it:
+			// that the page stayed put shows no window opened in-app, not which of the two refused it. The policy's own
+			// new-window decision is covered by TestLinuxDecideNavigationSendsUserLinksToTheBrowser.
+			fmt.Println("PASS: main-frame navigation was refused, window.open opened nothing in-app, the control iframe loaded, and the untrusted iframe was refused")
 			os.Exit(0)
 		case <-time.After(20 * time.Second):
 			fmt.Println("FAIL: the page never reported back; it was navigated away")
