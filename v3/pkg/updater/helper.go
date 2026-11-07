@@ -367,16 +367,17 @@ func consumeAppliedMarker(current string) (string, bool) {
 }
 
 func restoreFromBackup(backup, target string, l launcher) error {
-	// Neutralize before relaunch: a marker that still names a version would
-	// make the next Init call OnUpdateApplied for an update that was rolled back.
-	if err := discardAppliedMarker(appliedMarker(target)); err != nil {
-		return fmt.Errorf("applied marker: %w", err)
-	}
 	if err := os.RemoveAll(target); err != nil {
 		return fmt.Errorf("remove broken target: %w", err)
 	}
 	if err := os.Rename(backup, target); err != nil {
 		return fmt.Errorf("restore: %w", err)
+	}
+	// The original is back on disk either way. It is not relaunched with a
+	// marker that still names a version, which would make its next Init call
+	// OnUpdateApplied for an update that was rolled back.
+	if err := discardAppliedMarker(appliedMarker(target)); err != nil {
+		return fmt.Errorf("applied marker: %w", err)
 	}
 	return l.launch(target)
 }

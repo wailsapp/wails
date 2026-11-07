@@ -317,7 +317,9 @@ func TestRunHelperSwap_LaunchFails_NoReplacedVersion(t *testing.T) {
 	}
 }
 
-func TestRunHelperSwap_LaunchFails_MarkerRemoveFails_DoesNotRelaunchWithLiveMarker(t *testing.T) {
+// A folder that refuses changes stops the rollback before the marker is touched: the update stays installed, so the
+// marker that names it is still true, and nothing is relaunched.
+func TestRunHelperSwap_LaunchFails_FolderLocked_KeepsUpdateAndItsMarker(t *testing.T) {
 	if os.Geteuid() == 0 {
 		t.Skip("root can remove files in a read-only directory")
 	}
@@ -351,13 +353,16 @@ func TestRunHelperSwap_LaunchFails_MarkerRemoveFails_DoesNotRelaunchWithLiveMark
 		t.Fatal(err)
 	}
 	if relaunched {
-		t.Error("must not relaunch with a post-update marker that could not be removed")
+		t.Error("relaunched after a rollback that could not complete")
 	}
 	if code != 16 {
-		t.Fatalf("code: %d, want 16 (restore must not launch after marker cleanup fails or dir is locked)", code)
+		t.Fatalf("code: %d, want 16 (rollback failed)", code)
 	}
-	if b, err := os.ReadFile(marker); err == nil && string(b) == "1.0.0" {
-		t.Errorf("marker still claims applied update %q", b)
+	if b, _ := os.ReadFile(target); string(b) != "NEW" {
+		t.Errorf("target %q, want the update still installed", b)
+	}
+	if b, _ := os.ReadFile(marker); string(b) != "1.0.0" {
+		t.Errorf("marker %q, want it to still name the update that stays installed", b)
 	}
 }
 
