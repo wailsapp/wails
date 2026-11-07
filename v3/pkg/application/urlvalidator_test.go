@@ -76,6 +76,24 @@ func TestValidateURL(t *testing.T) {
 			errMsg:    "scheme not allowed",
 		},
 		{
+			name:      "mailto scheme",
+			url:       "mailto:someone@example.com",
+			shouldErr: false,
+			expected:  "mailto:someone@example.com",
+		},
+		{
+			name:      "registered handler scheme",
+			url:       "steam://run/413150",
+			shouldErr: true,
+			errMsg:    "scheme not allowed",
+		},
+		{
+			name:      "ssh scheme",
+			url:       "ssh://host/x",
+			shouldErr: true,
+			errMsg:    "scheme not allowed",
+		},
+		{
 			name:      "missing scheme",
 			url:       "example.com",
 			shouldErr: true,
