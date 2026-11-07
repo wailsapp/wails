@@ -16,6 +16,8 @@ extern char* acceleratorFromKeyPress(unsigned short keyCode, unsigned long modif
 extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern int resolveMediaCapturePermission(unsigned int, bool, bool);
+extern bool windowInterceptsNavigation(unsigned int);
+extern bool processNavigationAction(unsigned int, const char*, bool);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
 
@@ -974,6 +976,38 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
         processWindowEvent(self.windowId, EventWebViewWebContentProcessDidTerminate);
     }
     [webView reload];
+}
+// WKNavigationDelegate - Ask the window's OnBeforeNavigate whether a frame may
+// load a URL. WebKit asks before every navigation, server redirects included.
+// Without an OnBeforeNavigate this allows everything, which is what WebKit
+// does when the method is not implemented.
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
+    decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if (!windowInterceptsNavigation(self.windowId)) {
+        decisionHandler(WKNavigationActionPolicyAllow);
+        return;
+    }
+    NSString *url = navigationAction.request.URL.absoluteString;
+    // A nil targetFrame is a request for a new window: a new top-level
+    // document, so it counts as the main frame.
+    WKFrameInfo *targetFrame = navigationAction.targetFrame;
+    bool isMainFrame = targetFrame == nil || targetFrame.isMainFrame;
+    bool allow = processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", isMainFrame);
+    decisionHandler(allow ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
+}
+// WKNavigationDelegate (macOS 26+) - A back/forward navigation that resumes a
+// suspended page (Instant Back) can skip decidePolicyForNavigationAction, so
+// ask OnBeforeNavigate here too. Otherwise the normal load that follows asks
+// it through decidePolicyForNavigationAction, so allow. Older macOS never
+// calls this method.
+- (void)webView:(WKWebView *)webView shouldGoToBackForwardListItem:(WKBackForwardListItem *)item
+    willUseInstantBack:(BOOL)willUseInstantBack completionHandler:(void (^)(BOOL))completionHandler {
+    if (!willUseInstantBack || !windowInterceptsNavigation(self.windowId)) {
+        completionHandler(YES);
+        return;
+    }
+    NSString *url = item.URL.absoluteString;
+    completionHandler(processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", true));
 }
 // WKUIDelegate - Handle file input element clicks
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
