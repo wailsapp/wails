@@ -11,6 +11,7 @@ Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/httprepeater/"><img src="/assets/showcase-images/httprepeater.png" alt="Tangkapan layar HttpRepeater" loading="lazy"><span>HttpRepeater</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Tangkapan layar Clipora" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Tangkapan layar BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Tangkapan layar CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
