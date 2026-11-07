@@ -22,12 +22,24 @@ type navigationPolicy struct {
 	origins map[string]struct{}
 }
 
+// originOf returns scheme://host[:port] with an http(s) default port dropped, as WebKit reports it. A blob: URL has the origin of the document that made it.
 func originOf(raw string) (string, bool) {
+	if len(raw) > len("blob:") && strings.EqualFold(raw[:len("blob:")], "blob:") {
+		raw = raw[len("blob:"):]
+	}
 	u, err := url.Parse(raw)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		return "", false
 	}
-	return u.Scheme + "://" + strings.ToLower(u.Host), true
+	scheme := strings.ToLower(u.Scheme)
+	host := strings.ToLower(u.Host)
+	if port := u.Port(); (scheme == "http" && port == "80") || (scheme == "https" && port == "443") {
+		host = strings.ToLower(u.Hostname())
+		if strings.Contains(host, ":") {
+			host = "[" + host + "]"
+		}
+	}
+	return scheme + "://" + host, true
 }
 
 // allow trusts the origin of a URL the application itself loads into the
@@ -49,7 +61,8 @@ func (p *navigationPolicy) allow(raw string) {
 // asset server's origin, the dev server's origin, or an origin the application
 // loaded itself.
 func (p *navigationPolicy) permits(raw string) bool {
-	if raw == "about:blank" {
+	// The native reload paths load the bare scheme, which has no host.
+	if raw == "about:blank" || raw == "wails://" || raw == "wails:///" {
 		return true
 	}
 	origin, ok := originOf(raw)
@@ -73,9 +86,20 @@ var appNavigation navigationPolicy
 
 // linuxDecideNavigation is what each backend's decide-policy handler asks. newWindow is true for a request to open another window (window.open, target=_blank).
 func linuxDecideNavigation(raw string, userGesture, newWindow bool) bool {
-	allowed := appNavigation.decideNavigation(raw, userGesture)
-	// No handler creates windows, so a new-window request is never allowed to proceed.
-	return allowed && !newWindow
+	if newWindow {
+		// No handler creates windows, so a new-window request never proceeds; a user's link still reaches the browser.
+		if userGesture {
+			openInBrowser(raw)
+		}
+		return false
+	}
+	return appNavigation.decideNavigation(raw, userGesture)
+}
+
+func openInBrowser(raw string) {
+	if u, err := ValidateAndSanitizeURL(raw); err == nil && (strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://")) {
+		go func() { _ = openExternalURL(u) }()
+	}
 }
 
 // decideNavigation is the policy for one navigation or new-window request. It
@@ -86,9 +110,7 @@ func (p *navigationPolicy) decideNavigation(raw string, userGesture bool) bool {
 		return true
 	}
 	if userGesture {
-		if u, err := ValidateAndSanitizeURL(raw); err == nil && (strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://")) {
-			go func() { _ = openExternalURL(u) }()
-		}
+		openInBrowser(raw)
 	}
 	return false
 }
