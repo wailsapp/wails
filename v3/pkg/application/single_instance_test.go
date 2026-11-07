@@ -251,7 +251,7 @@ func TestDispatchSecondInstanceSurvivesCallbackPanic(t *testing.T) {
 		},
 	}}
 
-	in := make(chan string)
+	in := make(chan string, 2)
 	t.Cleanup(func() { close(in) })
 	go m.listen(in)
 
