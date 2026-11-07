@@ -3,8 +3,11 @@
 package application
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,15 +53,44 @@ func checkCaller(procRoot string, pid int) *dbus.Error {
 // cannot be read (a sandbox's bus proxy reports a pid from another namespace), which leaves the caller unverified
 // rather than refused.
 func sameExecutable(procRoot string, pid int) (same, known bool) {
-	theirs, err := os.Stat(filepath.Join(procRoot, strconv.Itoa(pid), "exe"))
+	theirsPath := filepath.Join(procRoot, strconv.Itoa(pid), "exe")
+	oursPath := filepath.Join(procRoot, "self", "exe")
+	theirs, err := os.Stat(theirsPath)
 	if err != nil {
 		return false, false
 	}
-	ours, err := os.Stat(filepath.Join(procRoot, "self", "exe"))
+	ours, err := os.Stat(oursPath)
 	if err != nil {
 		return false, false
 	}
-	return os.SameFile(ours, theirs) || sameBuild(ours, theirs), true
+	if os.SameFile(ours, theirs) {
+		return true, true
+	}
+	if !sameBuild(ours, theirs) {
+		return false, true
+	}
+	theirsSum, err := fileSHA256(theirsPath)
+	if err != nil {
+		return false, false
+	}
+	oursSum, err := fileSHA256(oursPath)
+	if err != nil {
+		return false, false
+	}
+	return bytes.Equal(theirsSum, oursSum), true
+}
+
+func fileSHA256(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	sum := sha256.New()
+	if _, err := io.Copy(sum, f); err != nil {
+		return nil, err
+	}
+	return sum.Sum(nil), nil
 }
 
 // sameBuild reports whether two executables are copies of one build. Each AppImage launch mounts its own squashfs,

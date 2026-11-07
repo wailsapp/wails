@@ -200,13 +200,40 @@ func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
 			bName: "app", bBody: "build-1", bMode: 0o755, bTime: stamp.Add(time.Hour),
 			want: false,
 		},
+		{
+			name:  "equal name, size, mode and mtime with different content",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-2", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := file(t.TempDir(), tt.aName, tt.aBody, tt.aMode, tt.aTime)
 			b := file(t.TempDir(), tt.bName, tt.bBody, tt.bMode, tt.bTime)
-			if got := sameBuild(a, b); got != tt.want {
-				t.Fatalf("sameBuild = %v, want %v", got, tt.want)
+			if !sameBuild(a, b) {
+				if tt.want {
+					t.Fatal("sameBuild = false, want true")
+				}
+				return
+			}
+			root := t.TempDir()
+			selfDir := filepath.Join(root, "self")
+			pidDir := filepath.Join(root, "3")
+			if err := os.MkdirAll(selfDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.MkdirAll(pidDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			file(selfDir, "exe", tt.aBody, tt.aMode, tt.aTime)
+			file(pidDir, "exe", tt.bBody, tt.bMode, tt.bTime)
+			same, known := sameExecutable(root, 3)
+			if !known {
+				t.Fatal("known = false")
+			}
+			if same != tt.want {
+				t.Fatalf("sameExecutable = %v, want %v", same, tt.want)
 			}
 		})
 	}
