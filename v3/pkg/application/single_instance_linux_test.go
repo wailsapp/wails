@@ -3,9 +3,12 @@
 package application
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -127,5 +130,53 @@ func TestLinuxLockReleaseFreesTheBusName(t *testing.T) {
 	reply, err = other.RequestName(busName, dbus.NameFlagDoNotQueue)
 	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
 		t.Fatalf("after release: reply %d, err %v; want the name free", reply, err)
+	}
+}
+
+// App.cleanup must drop the single-instance lock before shutdown hooks run, so
+// a relaunch during a slow shutdown can take the lock instead of handing off
+// to an instance that is already exiting.
+func TestAppCleanupReleasesSingleInstanceLockBeforeShutdownHooks(t *testing.T) {
+	uniqueID := fmt.Sprintf("org.wails.test.cleanup.p%d.n%d", os.Getpid(), time.Now().UnixNano())
+
+	manager := &singleInstanceManager{options: &SingleInstanceOptions{}}
+	lock, err := newPlatformLock(manager)
+	if err != nil {
+		t.Skipf("could not create single-instance lock: %v", err)
+	}
+	manager.lock = lock
+	if err := lock.acquire(uniqueID); err != nil {
+		t.Skipf("could not acquire single-instance lock: %v", err)
+	}
+
+	_, cancel := context.WithCancel(context.Background())
+	app := &App{
+		cancel:                cancel,
+		singleInstanceManager: manager,
+		impl:                  &closeTestApp{},
+		Logger:                slog.Default(),
+	}
+	previous := globalApplication
+	globalApplication = app
+	t.Cleanup(func() { globalApplication = previous })
+
+	acquired := false
+	app.OnShutdown(func() {
+		second, err := newPlatformLock(manager)
+		if err != nil {
+			t.Errorf("second instance could not create lock: %v", err)
+			return
+		}
+		if err := second.acquire(uniqueID); err != nil {
+			t.Errorf("shutdown hook could not acquire lock: %v", err)
+			return
+		}
+		acquired = true
+		second.release()
+	})
+
+	app.cleanup()
+	if !acquired {
+		t.Fatal("second instance did not acquire the lock before the shutdown hook returned")
 	}
 }
