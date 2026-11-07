@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"slices"
 	"sort"
@@ -95,6 +97,10 @@ func (e Executor) Inspect(ctx context.Context, plan Plan, root string) (Inspecti
 		operation, result, inspectErr := e.inspectNode(ctx, store, node, inspection.Operations, results, operations.actionKey)
 		if inspectErr != nil {
 			return Inspection{}, fmt.Errorf("%s: %w", key, inspectErr)
+		}
+		if !requiredFilesPresent(root, node) {
+			operation.Decision, operation.Status = "run", cache.LookupMiss
+			result = Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}
 		}
 		inspection.Operations[key], results[key] = operation, result
 		for _, dependent := range dependents[key] {
@@ -279,7 +285,7 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 					dependencyResults[dependency] = results[dependency]
 				}
 				resultsMu.RUnlock()
-				result, err := e.runNode(ctx, cacheStore, &cacheMu, node, dependencyResults, options.Force, reporter, operations.actionKey)
+				result, err := e.runNode(ctx, cacheStore, &cacheMu, node, dependencyResults, options.Force || !requiredFilesPresent(options.Root, node), reporter, operations.actionKey)
 				if exclusiveLock != nil {
 					exclusiveLock.Unlock()
 				}
@@ -541,4 +547,15 @@ func exitCode(err error) int {
 		return value.ExitCode()
 	}
 	return -1
+}
+
+// requiredFilesPresent reports whether every file a node writes outside its
+// cached Output still exists, so a cache hit cannot leave one missing.
+func requiredFilesPresent(root string, node Node) bool {
+	for _, file := range node.RequiredFiles {
+		if _, err := os.Lstat(filepath.Join(root, filepath.FromSlash(file))); err != nil {
+			return false
+		}
+	}
+	return true
 }
