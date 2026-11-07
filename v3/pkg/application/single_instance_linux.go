@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -13,13 +15,42 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-type dbusHandler func(string)
-
 var setup sync.Once
 
-func (f dbusHandler) SendMessage(message string) *dbus.Error {
-	f(message)
+// dbusHandler receives the second instance's call. The session bus is per user, but any process of that user can
+// call the exported method, so a caller that is not this executable is dropped: its arguments would otherwise reach
+// OnSecondInstanceLaunch as if a real second launch had sent them.
+type dbusHandler struct {
+	conn    *dbus.Conn
+	deliver func(string)
+}
+
+func (h dbusHandler) SendMessage(sender dbus.Sender, message string) *dbus.Error {
+	var pid uint32
+	call := h.conn.BusObject().Call("org.freedesktop.DBus.GetConnectionUnixProcessID", 0, string(sender))
+	if err := call.Store(&pid); err != nil {
+		return dbus.MakeFailedError(errors.New("cannot identify the caller"))
+	}
+	if same, known := sameExecutable("/proc", int(pid)); known && !same {
+		return dbus.MakeFailedError(errors.New("caller is not this application"))
+	}
+	h.deliver(message)
 	return nil
+}
+
+// sameExecutable compares the executable of process pid with this process's. known is false when pid's executable
+// cannot be read (a sandbox's bus proxy reports a pid from another namespace), which leaves the caller unverified
+// rather than refused.
+func sameExecutable(procRoot string, pid int) (same, known bool) {
+	theirs, err := os.Stat(filepath.Join(procRoot, strconv.Itoa(pid), "exe"))
+	if err != nil {
+		return false, false
+	}
+	ours, err := os.Stat(filepath.Join(procRoot, "self", "exe"))
+	if err != nil {
+		return false, false
+	}
+	return os.SameFile(ours, theirs), true
 }
 
 type linuxLock struct {
@@ -96,9 +127,7 @@ func (l *linuxLock) acquire(uniqueID string) error {
 	}
 
 	setup.Do(func() {
-		f := dbusHandler(func(message string) {
-			secondInstanceBuffer <- message
-		})
+		f := dbusHandler{conn: conn, deliver: func(message string) { secondInstanceBuffer <- message }}
 
 		err = conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusInterface)
 	})
