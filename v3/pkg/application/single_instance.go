@@ -75,27 +75,8 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	// Launch second instance data listener
 	once.Do(func() {
 		go func() {
-			defer handlePanic()
 			for encryptedData := range secondInstanceBuffer {
-				var secondInstanceData SecondInstanceData
-				var jsonData []byte
-				var err error
-
-				// Check if encryption key is non-zero
-				var zeroKey [32]byte
-				if options.EncryptionKey != zeroKey {
-					// Try to decrypt the data
-					jsonData, err = decrypt(options.EncryptionKey, encryptedData)
-					if err != nil {
-						continue // Skip invalid data
-					}
-				} else {
-					jsonData = []byte(encryptedData)
-				}
-
-				if err := json.Unmarshal(jsonData, &secondInstanceData); err == nil && manager.options.OnSecondInstanceLaunch != nil {
-					manager.options.OnSecondInstanceLaunch(secondInstanceData)
-				}
+				manager.dispatchSecondInstance(encryptedData)
 			}
 		}()
 	})
@@ -115,6 +96,27 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	}
 
 	return manager, nil
+}
+
+// dispatchSecondInstance recovers a panic from the callback per message: the
+// listener goroutine is the only reader of secondInstanceBuffer, so one panic
+// that ended it would leave every later launch blocked on the full buffer.
+func (m *singleInstanceManager) dispatchSecondInstance(encryptedData string) {
+	defer handlePanic()
+	var secondInstanceData SecondInstanceData
+	jsonData := []byte(encryptedData)
+
+	var zeroKey [32]byte
+	if m.options.EncryptionKey != zeroKey {
+		var err error
+		if jsonData, err = decrypt(m.options.EncryptionKey, encryptedData); err != nil {
+			return // Skip invalid data
+		}
+	}
+
+	if err := json.Unmarshal(jsonData, &secondInstanceData); err == nil && m.options.OnSecondInstanceLaunch != nil {
+		m.options.OnSecondInstanceLaunch(secondInstanceData)
+	}
 }
 
 func (m *singleInstanceManager) cleanup() {

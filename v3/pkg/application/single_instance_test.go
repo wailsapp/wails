@@ -227,3 +227,27 @@ func TestAlreadyRunningError(t *testing.T) {
 		t.Errorf("alreadyRunningError.Error() = %q", alreadyRunningError.Error())
 	}
 }
+
+func TestDispatchSecondInstanceSurvivesCallbackPanic(t *testing.T) {
+	prev := globalApplication
+	t.Cleanup(func() { globalApplication = prev })
+	panics := 0
+	globalApplication = &App{options: Options{PanicHandler: func(*PanicDetails) { panics++ }}}
+
+	calls := 0
+	m := &singleInstanceManager{options: &SingleInstanceOptions{
+		OnSecondInstanceLaunch: func(SecondInstanceData) {
+			calls++
+			if calls == 1 {
+				panic("callback failed")
+			}
+		},
+	}}
+
+	m.dispatchSecondInstance(`{"args":["a"]}`)
+	m.dispatchSecondInstance(`{"args":["b"]}`)
+
+	if calls != 2 || panics != 1 {
+		t.Fatalf("calls = %d, panics = %d; want 2 and 1", calls, panics)
+	}
+}
