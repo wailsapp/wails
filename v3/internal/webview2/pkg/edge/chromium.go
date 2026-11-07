@@ -164,6 +164,9 @@ func NewChromium() *Chromium {
 	return e
 }
 
+// ShuttingDown marks the instance inactive, clears host callbacks, and revokes
+// its drop target. Call it on the owning UI/STA thread before HWND destruction;
+// it does not release the remaining controller or environment references.
 func (e *Chromium) ShuttingDown() {
 	e.shuttingDown = true
 	atomic.StoreUintptr(&e.inited, 0)
@@ -525,6 +528,10 @@ func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Env
 	return env3.CreateCoreWebView2CompositionController(e.hwnd, e.compositionControllerCompleted)
 }
 
+// CreateCoreWebView2CompositionControllerCompleted attaches a newly created
+// composition controller and registers its drop target before initialization.
+// Failed composition setup uses the existing HWND controller fallback; late
+// callbacks after shutdown or initialization failure close their controller.
 func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
 	if e.shuttingDown || e.initErr != nil {
 		if compositionController != nil {
@@ -605,6 +612,9 @@ func (e *Chromium) ReleaseCompositionResources() {
 	e.releaseCompositionHost()
 }
 
+// releaseCompositionController revokes the drop target before closing and
+// releasing composition controller interfaces. It runs on the owning UI/STA
+// thread and tolerates partial initialization and repeated cleanup.
 func (e *Chromium) releaseCompositionController() {
 	e.releaseCompositionDropTarget()
 	if e.compositionController4 != nil {
