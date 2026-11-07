@@ -249,6 +249,48 @@ func TestValidateURL(t *testing.T) {
 			shouldErr: true,
 			errMsg:    "invalid URL format",
 		},
+		{
+			name:      "https path with semicolon",
+			url:       "https://example.com/catalog;page=2",
+			shouldErr: false,
+			expected:  "https://example.com/catalog;page=2",
+		},
+		{
+			name:      "https query with semicolon",
+			url:       "https://example.com/a?x=1;y=2",
+			shouldErr: false,
+			expected:  "https://example.com/a?x=1;y=2",
+		},
+		{
+			name:      "semicolon in host",
+			url:       "https://exa;mple.com/",
+			shouldErr: true,
+			errMsg:    "shell metacharacters",
+		},
+		{
+			name:      "file URL with semicolon",
+			url:       "file:///tmp/a;b",
+			shouldErr: true,
+			errMsg:    "scheme not allowed",
+		},
+		{
+			name:      "pipe in path",
+			url:       "https://example.com/a|b",
+			shouldErr: true,
+			errMsg:    "shell metacharacters",
+		},
+		{
+			name:      "dollar paren in path",
+			url:       "https://example.com/a$(x)",
+			shouldErr: true,
+			errMsg:    "shell metacharacters",
+		},
+		{
+			name:      "backtick in path",
+			url:       "https://example.com/a`b",
+			shouldErr: true,
+			errMsg:    "shell metacharacters",
+		},
 	}
 
 	for _, tc := range testCases {
