@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -129,6 +130,11 @@ func BenchmarkMatch(b *testing.B) {
 }
 
 func TestReadToleratesDirectoriesDeletedMidWalk(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// Windows refuses to open a directory another goroutine is deleting (a sharing violation, not "not exist"),
+		// and Read rightly reports that; the race this guards is the POSIX unlink-while-walking one.
+		t.Skip("concurrent deletion fails differently on Windows")
+	}
 	root := t.TempDir()
 	staging := filepath.Join(root, "staging")
 	stop := make(chan struct{})
