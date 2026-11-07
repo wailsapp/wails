@@ -35,7 +35,9 @@ const (
 	// draws it in the window's own X window and gives the page no X window of
 	// its own, so the page origin is the window origin plus this height. It
 	// was measured on the container's GTK3 (the page background starts at
-	// window y=27). Other themes or fonts may differ: set E2E_MENUBAR_HEIGHT.
+	// window y=27). It is only the fallback for a window the probe has not
+	// calibrated (calibrate measures the origin and the scale); other themes
+	// or fonts may differ: set E2E_MENUBAR_HEIGHT.
 	menuBarHeight = 27
 )
 
@@ -193,15 +195,6 @@ func (x *xlib) focusWindow(w uint64) {
 	time.Sleep(eventDelay)
 }
 
-// pageOrigin returns the root-window coordinates of the page's top-left
-// corner in the window top: the window origin plus the menu bar height.
-func (x *xlib) pageOrigin(top uint64) (int32, int32) {
-	var dx, dy int32
-	var child uint64
-	x.translateCoords(x.dpy, top, x.root, 0, 0, &dx, &dy, &child)
-	return dx, dy + menuBarOffset()
-}
-
 // menuBarOffset is menuBarHeight, or E2E_MENUBAR_HEIGHT when it is set.
 func menuBarOffset() int32 {
 	if v, err := strconv.ParseInt(os.Getenv("E2E_MENUBAR_HEIGHT"), 10, 32); err == nil && v >= 0 {
@@ -257,8 +250,12 @@ func (x *xlib) keycodeFor(name string) (kc uint32, shift bool, err error) {
 	return uint32(code), shift, nil
 }
 
-// xDriver implements driver over one X display.
-type xDriver struct{ x *xlib }
+// xDriver implements driver over one X display. mappings holds each
+// calibrated window's page-to-window mapping, by title.
+type xDriver struct {
+	x        *xlib
+	mappings map[string]mapping
+}
 
 // newDriver loads XTEST and connects to the display.
 func newDriver() (driver, error) {
@@ -269,7 +266,7 @@ func newDriver() (driver, error) {
 	if err := x.open(); err != nil {
 		return nil, err
 	}
-	return &xDriver{x}, nil
+	return &xDriver{x: x, mappings: map[string]mapping{}}, nil
 }
 
 func (d *xDriver) focus(title string) error {
@@ -349,10 +346,8 @@ func (d *xDriver) mouse(title string, x, y int, button uint32) error {
 		return err
 	}
 	d.x.focusWindow(w)
-	ox, oy := d.x.pageOrigin(w)
-	d.x.fakeMotion(d.x.dpy, 0, ox+int32(x), oy+int32(y), 0)
-	d.x.flush(d.x.dpy)
-	time.Sleep(eventDelay)
+	rx, ry := d.toRaw(title, x, y)
+	d.x.motion(w, rx, ry)
 	d.x.fakeButton(d.x.dpy, button, 1, 0)
 	d.x.flush(d.x.dpy)
 	time.Sleep(eventDelay)
@@ -361,3 +356,34 @@ func (d *xDriver) mouse(title string, x, y int, button uint32) error {
 	time.Sleep(eventDelay)
 	return nil
 }
+
+// toRaw maps page point (x, y) of window w to window coordinates: through
+// the calibrated mapping, or else the window origin plus the menu bar.
+func (d *xDriver) toRaw(title string, x, y int) (int32, int32) {
+	if m, ok := d.mappings[title]; ok {
+		return m.raw(x, y)
+	}
+	return int32(x), int32(y) + menuBarOffset()
+}
+
+// motion moves the pointer to window point (x, y) of w.
+func (x *xlib) motion(w uint64, wx, wy int32) {
+	var rx, ry int32
+	var child uint64
+	x.translateCoords(x.dpy, w, x.root, wx, wy, &rx, &ry, &child)
+	x.fakeMotion(x.dpy, 0, rx, ry, 0)
+	x.flush(x.dpy)
+	time.Sleep(eventDelay)
+}
+
+// moveRaw moves the pointer to (x, y) in the X window's own coordinates.
+func (d *xDriver) moveRaw(title string, x, y int) error {
+	w, err := d.x.find(title)
+	if err != nil {
+		return err
+	}
+	d.x.motion(w, int32(x), int32(y))
+	return nil
+}
+
+func (d *xDriver) setMapping(title string, m mapping) { d.mappings[title] = m }

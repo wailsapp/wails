@@ -310,3 +310,38 @@ func TestWindowsSetMenuRetainsItemBindingsOnFailure(t *testing.T) {
 		t.Error("item update did not reach the retained native menu")
 	}
 }
+
+// Menu.Update rebuilds the bar of a window showing the menu, so a changed
+// accelerator reaches the window's bindings, and SetMenu with the menu the
+// window already shows replaces it once: the refresh Menu.Update starts must
+// not destroy the menu SetMenu is replacing.
+func TestWindowsMenuUpdateRebuildsWindowBar(t *testing.T) {
+	withTestApplication(t)
+	w := newTestMenuWindow(t)
+	w.parent.menuBindings = map[string]*MenuItem{}
+	menu := NewMenu()
+	item := menu.Add("Rebound").SetAccelerator("Ctrl+E").OnClick(func(*Context) {})
+	w.setMenu(menu)
+	first := w.menu.menu
+	oldKey := item.accelerator.String()
+	if w.parent.menuBindings[oldKey] != item {
+		t.Fatalf("setMenu bound %v", w.parent.menuBindings)
+	}
+
+	item.SetAccelerator("Ctrl+O")
+	w.refreshMenu(menu)
+	if w32.IsMenu(first) || !w32.IsMenu(w.menu.menu) {
+		t.Fatal("the refresh did not replace the window's bar")
+	}
+	if w.parent.menuBindings[oldKey] != nil || w.parent.menuBindings[item.accelerator.String()] != item {
+		t.Errorf("bindings after the refresh: %v", w.parent.menuBindings)
+	}
+
+	w.replacingMenu = true
+	second := w.menu.menu
+	w.refreshMenu(menu)
+	w.replacingMenu = false
+	if w.menu.menu != second {
+		t.Error("the refresh rebuilt a bar its window was replacing")
+	}
+}

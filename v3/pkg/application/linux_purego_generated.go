@@ -4,6 +4,8 @@
 package application
 
 var (
+	_native_cairo_region_create                                         func() uintptr
+	_native_cairo_region_destroy                                        func(uintptr)
 	_native_g_action_get_state                                          func(uintptr) uintptr
 	_native_g_action_map_add_action                                     func(uintptr, uintptr)
 	_native_g_action_map_lookup_action                                  func(uintptr, string) uintptr
@@ -98,6 +100,7 @@ var (
 	_native_gdk_surface_get_display                                     func(uintptr) uintptr
 	_native_gdk_surface_get_height                                      func(uintptr) int32
 	_native_gdk_surface_get_width                                       func(uintptr) int32
+	_native_gdk_surface_set_input_region                                func(uintptr, uintptr)
 	_native_gdk_texture_get_width                                       func(uintptr) int32
 	_native_gdk_texture_new_from_bytes                                  func(uintptr, uintptr) uintptr
 	_native_gdk_toplevel_begin_move                                     func(uintptr, uintptr, int32, float64, float64, uint32)
@@ -188,6 +191,7 @@ var (
 	_native_gtk_widget_grab_focus                                       func(uintptr) int32
 	_native_gtk_widget_insert_action_group                              func(uintptr, string, uintptr)
 	_native_gtk_widget_is_visible                                       func(uintptr) int32
+	_native_gtk_widget_realize                                          func(uintptr)
 	_native_gtk_widget_remove_css_class                                 func(uintptr, string)
 	_native_gtk_widget_set_halign                                       func(uintptr, int32)
 	_native_gtk_widget_set_hexpand                                      func(uintptr, int32)
@@ -258,6 +262,7 @@ var (
 	_native_webkit_web_view_get_zoom_level                              func(uintptr) float64
 	_native_webkit_web_view_load_alternate_html                         func(uintptr, string, string, string)
 	_native_webkit_web_view_load_uri                                    func(uintptr, string)
+	_native_webkit_web_view_reload                                      func(uintptr)
 	_native_webkit_web_view_set_background_color                        func(uintptr, uintptr)
 	_native_webkit_web_view_set_settings                                func(uintptr, uintptr)
 	_native_webkit_web_view_set_zoom_level                              func(uintptr, float64)
@@ -265,6 +270,8 @@ var (
 )
 
 func registerGeneratedNativeFunctions() {
+	register(&_native_cairo_region_create, libGtk, "cairo_region_create")
+	register(&_native_cairo_region_destroy, libGtk, "cairo_region_destroy")
 	register(&_native_g_action_get_state, libGio, "g_action_get_state")
 	register(&_native_g_action_map_add_action, libGio, "g_action_map_add_action")
 	register(&_native_g_action_map_lookup_action, libGio, "g_action_map_lookup_action")
@@ -359,6 +366,7 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_gdk_surface_get_display, libGtk, "gdk_surface_get_display")
 	register(&_native_gdk_surface_get_height, libGtk, "gdk_surface_get_height")
 	register(&_native_gdk_surface_get_width, libGtk, "gdk_surface_get_width")
+	register(&_native_gdk_surface_set_input_region, libGtk, "gdk_surface_set_input_region")
 	register(&_native_gdk_texture_get_width, libGtk, "gdk_texture_get_width")
 	register(&_native_gdk_texture_new_from_bytes, libGtk, "gdk_texture_new_from_bytes")
 	register(&_native_gdk_toplevel_begin_move, libGtk, "gdk_toplevel_begin_move")
@@ -449,6 +457,7 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_gtk_widget_grab_focus, libGtk, "gtk_widget_grab_focus")
 	register(&_native_gtk_widget_insert_action_group, libGtk, "gtk_widget_insert_action_group")
 	register(&_native_gtk_widget_is_visible, libGtk, "gtk_widget_is_visible")
+	register(&_native_gtk_widget_realize, libGtk, "gtk_widget_realize")
 	register(&_native_gtk_widget_remove_css_class, libGtk, "gtk_widget_remove_css_class")
 	register(&_native_gtk_widget_set_halign, libGtk, "gtk_widget_set_halign")
 	register(&_native_gtk_widget_set_hexpand, libGtk, "gtk_widget_set_hexpand")
@@ -519,10 +528,21 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_webkit_web_view_get_zoom_level, libWebKit, "webkit_web_view_get_zoom_level")
 	register(&_native_webkit_web_view_load_alternate_html, libWebKit, "webkit_web_view_load_alternate_html")
 	register(&_native_webkit_web_view_load_uri, libWebKit, "webkit_web_view_load_uri")
+	register(&_native_webkit_web_view_reload, libWebKit, "webkit_web_view_reload")
 	register(&_native_webkit_web_view_set_background_color, libWebKit, "webkit_web_view_set_background_color")
 	register(&_native_webkit_web_view_set_settings, libWebKit, "webkit_web_view_set_settings")
 	register(&_native_webkit_web_view_set_zoom_level, libWebKit, "webkit_web_view_set_zoom_level")
 	register(&_native_webkit_web_view_stop_loading, libWebKit, "webkit_web_view_stop_loading")
+}
+
+//go:uintptrescapes
+func cairo_region_create() uintptr {
+	return _native_cairo_region_create()
+}
+
+//go:uintptrescapes
+func cairo_region_destroy(p0 uintptr) {
+	_native_cairo_region_destroy(p0)
 }
 
 //go:uintptrescapes
@@ -996,6 +1016,11 @@ func gdk_surface_get_width(p0 uintptr) int32 {
 }
 
 //go:uintptrescapes
+func gdk_surface_set_input_region(p0 uintptr, p1 uintptr) {
+	_native_gdk_surface_set_input_region(p0, p1)
+}
+
+//go:uintptrescapes
 func gdk_texture_get_width(p0 uintptr) int32 {
 	return _native_gdk_texture_get_width(p0)
 }
@@ -1446,6 +1471,11 @@ func gtk_widget_is_visible(p0 uintptr) int32 {
 }
 
 //go:uintptrescapes
+func gtk_widget_realize(p0 uintptr) {
+	_native_gtk_widget_realize(p0)
+}
+
+//go:uintptrescapes
 func gtk_widget_remove_css_class(p0 uintptr, p1 string) {
 	_native_gtk_widget_remove_css_class(p0, p1)
 }
@@ -1793,6 +1823,11 @@ func webkit_web_view_load_alternate_html(p0 uintptr, p1 string, p2 string, p3 st
 //go:uintptrescapes
 func webkit_web_view_load_uri(p0 uintptr, p1 string) {
 	_native_webkit_web_view_load_uri(p0, p1)
+}
+
+//go:uintptrescapes
+func webkit_web_view_reload(p0 uintptr) {
+	_native_webkit_web_view_reload(p0)
 }
 
 //go:uintptrescapes

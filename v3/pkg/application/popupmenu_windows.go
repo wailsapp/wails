@@ -305,6 +305,21 @@ func (p *Win32Menu) Update() {
 	p.updateRadioGroups()
 }
 
+// bindAccelerators binds the accelerators of the menu's shown items with
+// handlers, as buildMenu does while it builds the menu.
+func (p *Win32Menu) bindAccelerators() {
+	for _, item := range p.menuMapping {
+		if item.accelerator == nil || item.callback == nil || item.Hidden() {
+			continue
+		}
+		if p.parentWindow != nil {
+			p.parentWindow.parent.addMenuBinding(item.accelerator, item)
+		} else {
+			globalApplication.KeyBinding.addMenuBinding(item)
+		}
+	}
+}
+
 func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
 	result := &Win32Menu{
 		isPopup:       true,

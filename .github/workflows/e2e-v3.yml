@@ -1,0 +1,251 @@
+name: E2E input probe (v3)
+
+# Drives a real Wails app with real OS input (tests/purego/e2e): key bindings,
+# menu accelerators, menu navigation, context menus, typed text, Edit-menu
+# shortcuts, window focus, dialogs and file dialogs. Linux runs on several
+# distros (including the oldest the purego backend supports) and in the
+# configurations that change how input arrives: HiDPI, keyboard layouts, lock
+# keys, a window manager, accessibility. The lanes are in
+# v3/tests/purego/e2e/lanes.json; pull requests run the lanes marked "pr",
+# the nightly and manual runs every lane.
+
+on:
+  pull_request:
+    paths:
+      - 'v3/pkg/application/**'
+      - 'v3/pkg/events/**'
+      - 'v3/pkg/w32/**'
+      - 'v3/internal/assetserver/**'
+      - 'v3/internal/runtime/**'
+      - 'v3/tests/purego/**'
+      - 'v3/go.mod'
+      - 'v3/go.sum'
+      - '.github/workflows/e2e-v3.yml'
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-v3-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.26.10'
+
+jobs:
+  plan:
+    name: Plan lanes
+    runs-on: ubuntu-latest
+    outputs:
+      linux: ${{ steps.lanes.outputs.linux }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: v3/tests/purego/e2e/lanes.json
+          sparse-checkout-cone-mode: false
+      - name: Choose lanes
+        id: lanes
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then filter='map(select(.pr))'; else filter='.'; fi
+          echo "linux=$(jq -c "$filter" v3/tests/purego/e2e/lanes.json)" >> "$GITHUB_OUTPUT"
+
+  linux:
+    name: Linux ${{ matrix.lane.name }}
+    needs: plan
+    runs-on: ${{ matrix.lane.runner }}
+    container:
+      image: ${{ matrix.lane.image }}
+    timeout-minutes: 25
+    # A lane with a known, tracked failure ("known" in lanes.json) still runs
+    # and shows its result, without failing the workflow.
+    continue-on-error: ${{ matrix.lane.known != '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ fromJSON(needs.plan.outputs.linux) }}
+    defaults:
+      run:
+        working-directory: v3
+        # bash runs steps with pipefail: the probe's status survives the filter.
+        shell: bash
+    env:
+      # The CI container cannot create WebKit's nested user namespaces.
+      WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
+    steps:
+      - name: Install dependencies
+        working-directory: /
+        shell: sh
+        # Before checkout: it needs git (and tar) to fetch the repository.
+        run: |
+          if command -v apt-get >/dev/null; then apt-get update -q && apt-get install -y -q git ca-certificates; fi
+          if command -v pacman >/dev/null; then pacman -Sy --noconfirm --needed git; fi
+          if command -v zypper >/dev/null; then zypper --non-interactive install git-core tar gzip; fi
+          if command -v dnf >/dev/null; then dnf install -y git tar gzip; fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install GTK, WebKitGTK and the X tools
+        run: tests/purego/e2e/ci-deps.sh ${{ matrix.lane.cgo && 'cgo' || '' }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: v3/go.sum
+      - name: Known failure
+        if: matrix.lane.known != ''
+        env:
+          KNOWN: ${{ matrix.lane.known }}
+        run: echo "::warning::$KNOWN"
+      - name: Run the probe
+        env:
+          LANE: ${{ matrix.lane.lane }}
+          TAGS: ${{ matrix.lane.tags }}
+        # In a job container github.workspace is the runner's path, not the
+        # mounted one: the output paths come from GITHUB_WORKSPACE.
+        run: |
+          export GOCOVERDIR="$GITHUB_WORKSPACE/coverage" E2E_EVIDENCE_DIR="$GITHUB_WORKSPACE/evidence"
+          mkdir -p "$E2E_EVIDENCE_DIR"
+          tests/purego/e2e/run-linux.sh "$LANE" "$TAGS" | grep -vE '^[A-Za-z0-9+/=]{1,76}$'
+      - name: Upload coverage and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-linux-${{ matrix.lane.id }}
+          path: |
+            coverage
+            evidence
+          if-no-files-found: ignore
+          retention-days: 14
+
+  macos:
+    name: macOS ${{ matrix.backend }}
+    runs-on: macos-15
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS runners are scarce org-wide: pull requests run purego only.
+        backend: ${{ fromJSON(github.event_name == 'pull_request' && '["purego"]' || '["purego","cgo"]') }}
+    defaults:
+      run:
+        working-directory: v3
+        shell: bash
+    env:
+      GOCOVERDIR: ${{ github.workspace }}/coverage
+      E2E_EVIDENCE_DIR: ${{ github.workspace }}/evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: v3/go.sum
+      - name: Run the probe
+        env:
+          BACKEND: ${{ matrix.backend }}
+        run: |
+          mkdir -p "$GOCOVERDIR" "$E2E_EVIDENCE_DIR"
+          if [ "$BACKEND" = purego ]; then tags=purego; cgo=0; else tags=; cgo=1; fi
+          CGO_ENABLED=$cgo go build -cover -covermode=atomic -tags "$tags" -o ../e2e-bin/e2e ./tests/purego/e2e
+          ../e2e-bin/e2e | grep -vE '^[A-Za-z0-9+/=]{1,76}$'
+      - name: Upload coverage and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-macos-${{ matrix.backend }}
+          path: |
+            coverage
+            evidence
+          if-no-files-found: ignore
+          retention-days: 14
+
+  windows:
+    name: Windows ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pull requests run amd64; the nightly adds arm64.
+        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"amd64","runner":"windows-2025"}]' || '[{"arch":"amd64","runner":"windows-2025"},{"arch":"arm64","runner":"windows-11-arm"}]') }}
+    defaults:
+      run:
+        working-directory: v3
+        shell: bash
+    env:
+      GOCOVERDIR: ${{ github.workspace }}/coverage
+      E2E_EVIDENCE_DIR: ${{ github.workspace }}/evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: v3/go.sum
+      - name: Run the probe
+        run: |
+          mkdir -p "$GOCOVERDIR" "$E2E_EVIDENCE_DIR"
+          # The manifest Wails apps carry (Common Controls 6, DPI awareness).
+          go generate ./tests/purego/e2e
+          go build -cover -covermode=atomic -o ../e2e-bin/e2e.exe ./tests/purego/e2e
+          ../e2e-bin/e2e.exe | grep -vE '^[A-Za-z0-9+/=]{1,76}$'
+      - name: Upload coverage and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-windows-${{ matrix.arch }}
+          path: |
+            coverage
+            evidence
+          if-no-files-found: ignore
+          retention-days: 14
+
+  coverage:
+    name: Coverage
+    needs: [linux, macos, windows]
+    if: always()
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: v3
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: v3/go.sum
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-*
+          path: ${{ runner.temp }}/e2e
+      - name: Summarise what the probe exercised
+        env:
+          ARTIFACTS: ${{ runner.temp }}/e2e
+        run: |
+          {
+            echo '## E2E probe coverage of pkg/application'
+            echo
+            echo '| Lane | Coverage |'
+            echo '| --- | --- |'
+            for dir in "$ARTIFACTS"/*/coverage; do
+              [ -d "$dir" ] || continue
+              lane=$(basename "$(dirname "$dir")")
+              pct=$(go tool covdata percent -pkg=github.com/wailsapp/wails/v3/pkg/application -i="$dir" | grep -oE '[0-9.]+%' || echo n/a)
+              echo "| ${lane#e2e-} | $pct |"
+              all="${all:+$all,}$dir"
+            done
+            if [ -n "${all-}" ]; then
+              pct=$(go tool covdata percent -pkg=github.com/wailsapp/wails/v3/pkg/application -i="$all" | grep -oE '[0-9.]+%' || echo n/a)
+              echo "| **every lane** | **$pct** |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

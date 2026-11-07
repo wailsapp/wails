@@ -21,8 +21,10 @@ func (a *linuxApp) getAccentColor() string {
 	return "rgb(0,122,255)"
 }
 
+// hide and show are called from any goroutine (App.Hide from the frontend
+// runs on a request handler); GTK must only be used on its own thread.
 func (a *linuxApp) hide() {
-	a.hideAllWindows()
+	InvokeSync(a.hideAllWindows)
 }
 
 func (a *linuxApp) isOnMainThread() bool {
@@ -43,7 +45,7 @@ func (a *linuxApp) registerWindow(window pointer, id uint) {
 }
 
 func (a *linuxApp) show() {
-	a.showAllWindows()
+	InvokeSync(a.showAllWindows)
 }
 
 func fatalHandler(errFunc func(error)) {

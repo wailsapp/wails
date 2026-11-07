@@ -45,6 +45,7 @@ func newMenuImpl(menu *Menu) *windowsMenu {
 
 func (w *windowsMenu) update() {
 	defer refreshSystemTrayMenus(w.menu)
+	defer refreshWindowMenus(w.menu)
 
 	// Stage the rebuild into a fresh HMENU and fresh mapping, only swapping
 	// the old state out once processMenu returns successfully. See
@@ -65,6 +66,14 @@ func (w *windowsMenu) update() {
 		}
 	}
 
+	// The rebuild binds each item's current accelerator; drop the old
+	// bindings first, or one changed with SetAccelerator keeps firing.
+	if w.parentWindow != nil {
+		w.parentWindow.parent.removeMenuBindingsTo(oldMapping)
+	} else {
+		globalApplication.KeyBinding.removeMenuBindingsTo(oldMapping)
+	}
+
 	w.hMenu = newHMENU
 	w.menuMapping = make(map[int]*MenuItem)
 	w.currentMenuID = 0
@@ -80,6 +89,7 @@ func (w *windowsMenu) update() {
 		w.menuMapping = oldMapping
 		w.bitmaps = oldBitmaps
 		w.detachedSubmenus = oldDetachedSubmenus
+		w.bindAccelerators(oldMapping)
 		return
 	}
 
@@ -87,6 +97,21 @@ func (w *windowsMenu) update() {
 	if oldHMENU != 0 {
 		releaseMenuBitmaps(oldBitmaps, oldMapping)
 		w32.DestroyMenu(oldHMENU)
+	}
+}
+
+// bindAccelerators binds the accelerators of the shown items with handlers,
+// as processMenu does while it builds the menu.
+func (w *windowsMenu) bindAccelerators(items map[int]*MenuItem) {
+	for _, item := range items {
+		if item.accelerator == nil || item.callback == nil || item.Hidden() {
+			continue
+		}
+		if w.parentWindow != nil {
+			w.parentWindow.parent.addMenuBinding(item.accelerator, item)
+		} else {
+			globalApplication.KeyBinding.addMenuBinding(item)
+		}
 	}
 }
 
@@ -143,7 +168,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		}
 
 		thisText := item.Label()
-		if item.accelerator != nil && item.callback != nil {
+		if item.accelerator != nil && item.callback != nil && !item.Hidden() {
 			if w.parentWindow != nil {
 				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
 			} else {
@@ -220,4 +245,24 @@ func DefaultApplicationMenu() *Menu {
 	menu.AddRole(WindowMenu)
 	menu.AddRole(HelpMenu)
 	return menu
+}
+
+// refreshWindowMenus rebuilds the menu bar of every window that shows menu.
+// Window bars are their own Win32Menu, built when the menu was set, so
+// without this Menu.Update reached the application's bindings and the system
+// trays but not the bars: a window kept its old accelerators, and new or
+// removed items did not appear.
+func refreshWindowMenus(menu *Menu) {
+	if globalApplication == nil {
+		return
+	}
+	for _, window := range globalApplication.Window.GetAll() {
+		ww, ok := window.(*WebviewWindow)
+		if !ok || ww.isDestroyed() {
+			continue
+		}
+		if impl, ok := ww.impl.(*windowsWebviewWindow); ok {
+			InvokeSync(func() { impl.refreshMenu(menu) })
+		}
+	}
 }

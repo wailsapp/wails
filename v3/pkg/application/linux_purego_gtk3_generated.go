@@ -1013,16 +1013,6 @@ func (w *linuxWebviewWindow) windowShow() {
 	_Cfunc_gtk_widget_show_all(w.gtkWidget())
 }
 
-func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
-	var enable _Ctype_int
-	if ignore {
-		enable = 1
-	}
-	gdkWindow := (*_Ctype_GdkWindow)(window)
-	_Cfunc_gdk_window_set_pass_through(gdkWindow, enable)
-	_Cfunc_webkit_web_view_set_editable((*_Ctype_WebKitWebView)(webview), _Ctype_gboolean(enable))
-}
-
 func (w *linuxWebviewWindow) webKitWebView() *_Ctype_WebKitWebView {
 	return (*_Ctype_WebKitWebView)(w.webview)
 }
@@ -1289,6 +1279,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), _Cfpvar_fp_handleDeleteEvent, winID)
+	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("focus-in-event"), _Cfpvar_fp_handleFocusEvent, winID)
 	_Cfunc_signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), _Cfpvar_fp_handleFocusEvent, winID)
 	_Cfunc_signal_connect(wv, c.String("load-changed"), _Cfpvar_fp_handleLoadChanged, winID)
 	_Cfunc_signal_connect(wv, c.String("permission-request"), _Cfpvar_fp_handlePermissionRequest, winID)
@@ -1371,9 +1362,7 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 const zoomInFactor = 1.10
 
 func (w *linuxWebviewWindow) reload() {
-	uri := _Cfunc_CString("wails://")
-	_Cfunc_webkit_web_view_load_uri(w.webKitWebView(), uri)
-	_Cfunc_free(unsafe.Pointer(uri))
+	_Cfunc_webkit_web_view_reload(w.webKitWebView())
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
@@ -1396,11 +1385,24 @@ func (w *linuxWebviewWindow) position() (int, int) {
 }
 
 func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
-	if ignore {
-		_Cfunc_gtk_widget_set_events((*_Ctype_GtkWidget)(unsafe.Pointer(w.window)), _Ciconst_GDK_ENTER_NOTIFY_MASK|_Ciconst_GDK_LEAVE_NOTIFY_MASK)
-	} else {
-		_Cfunc_gtk_widget_set_events((*_Ctype_GtkWidget)(unsafe.Pointer(w.window)), _Ciconst_GDK_ALL_EVENTS_MASK)
+	widget := (*_Ctype_GtkWidget)(unsafe.Pointer(w.window))
+	gdkWindow := _Cfunc_gtk_widget_get_window(widget)
+	if gdkWindow == nil {
+		if !ignore {
+			return
+		}
+		_Cfunc_gtk_widget_realize(widget)
+		if gdkWindow = _Cfunc_gtk_widget_get_window(widget); gdkWindow == nil {
+			return
+		}
 	}
+	if !ignore {
+		_Cfunc_gdk_window_input_shape_combine_region(gdkWindow, nil, 0, 0)
+		return
+	}
+	region := _Cfunc_cairo_region_create()
+	_Cfunc_gdk_window_input_shape_combine_region(gdkWindow, region, 0, 0)
+	_Cfunc_cairo_region_destroy(region)
 }
 
 func onButtonEvent(_ *_Ctype_GtkWidget, event *_Ctype_GdkEventButton, data _Ctype_uintptr_t) _Ctype_gboolean {

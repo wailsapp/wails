@@ -18,8 +18,8 @@ func TestChordStroke(t *testing.T) {
 		ignoring string
 	}{
 		{"cmd+m is the menu accelerator key", "cmd+m", 0x2E, 1 << 20, "m", "m"},
-		{"cmd+shift+k types upper case", "cmd+shift+k", 0x28, 1<<20 | 1<<17, "K", "k"},
-		{"cmd+shift+g keeps the base key", "cmd+shift+g", 0x05, 1<<20 | 1<<17, "G", "g"},
+		{"cmd+shift+k types upper case", "cmd+shift+k", 0x28, 1<<20 | 1<<17, "K", "K"},
+		{"cmd+shift+g keeps the base key", "cmd+shift+g", 0x05, 1<<20 | 1<<17, "G", "G"},
 		{"return is the carriage return", "return", 0x24, 0, "\r", "\r"},
 		{"enter is the same key as return", "enter", 0x24, 0, "\r", "\r"},
 		{"escape", "escape", 0x35, 0, "\x1b", "\x1b"},
@@ -33,12 +33,13 @@ func TestChordStroke(t *testing.T) {
 		{"f10 is kVK_F10 with NSF10 characters", "f10", 0x6D, 1 << 23, "", ""},
 		{"f12", "f12", 0x6F, 1 << 23, "", ""},
 		{"ctrl+l is the control character", "ctrl+l", 0x25, 1 << 18, "\x0c", "l"},
-		{"ctrl+shift+k", "ctrl+shift+k", 0x28, 1<<18 | 1<<17, "\x0b", "k"},
-		{"shift+1 types the shifted symbol", "shift+1", 0x12, 1 << 17, "!", "1"},
-		{"shift+/ types a question mark", "shift+/", 0x2C, 1 << 17, "?", "/"},
+		{"ctrl+shift+k", "ctrl+shift+k", 0x28, 1<<18 | 1<<17, "\x0b", "K"},
+		{"shift+1 types the shifted symbol", "shift+1", 0x12, 1 << 17, "!", "!"},
+		{"shift+/ types a question mark", "shift+/", 0x2C, 1 << 17, "?", "?"},
 		{"alt+tab uses option", "alt+tab", 0x30, 1 << 19, "\t", "\t"},
 		{"option+a", "option+a", 0x00, 1 << 19, "a", "a"},
 		{"cmd+/", "cmd+/", 0x2C, 1 << 20, "/", "/"},
+		{"cmd+shift+= is Zoom In's cmd++", "cmd+shift+=", 0x18, 1<<20 | 1<<17, "+", "+"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,13 +105,13 @@ func TestTypeStroke(t *testing.T) {
 		ignoring string
 	}{
 		{"lower case letter", 'a', 0x00, 0, "a", "a"},
-		{"upper case letter is shift plus the base key", 'A', 0x00, 1 << 17, "A", "a"},
+		{"upper case letter is shift plus the base key", 'A', 0x00, 1 << 17, "A", "A"},
 		{"digit", '7', 0x1A, 0, "7", "7"},
 		{"slash in a path", '/', 0x2C, 0, "/", "/"},
 		{"dot in a file name", '.', 0x2F, 0, ".", "."},
 		{"dash in a file name", '-', 0x1B, 0, "-", "-"},
-		{"underscore is shift plus minus", '_', 0x1B, 1 << 17, "_", "-"},
-		{"colon is shift plus semicolon", ':', 0x29, 1 << 17, ":", ";"},
+		{"underscore is shift plus minus", '_', 0x1B, 1 << 17, "_", "_"},
+		{"colon is shift plus semicolon", ':', 0x29, 1 << 17, ":", ":"},
 		{"space", ' ', 0x31, 0, " ", " "},
 		{"character with no key on the ANSI layout", 'é', 0, 0, "é", "é"},
 	}

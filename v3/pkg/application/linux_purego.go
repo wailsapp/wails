@@ -156,6 +156,14 @@ func lookupActionName(itemId uint) (string, bool) {
 	return name, ok
 }
 
+// lookupRadioGroup returns the group action of a radio item.
+func lookupRadioGroup(itemId uint) (string, bool) {
+	menuItemsLock.RLock()
+	defer menuItemsLock.RUnlock()
+	group, ok := menuItemRadioGroups[itemId]
+	return group, ok
+}
+
 func menuActionActivated(id uint) {
 	menuItemActivatedByID(id)
 }
@@ -252,6 +260,7 @@ func menuItemNew(label string, bitmap []byte) pointer {
 }
 
 func menuItemNewWithId(label string, bitmap []byte, itemId uint) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createMenuItem(label, actionName, itemId)
 
@@ -283,6 +292,7 @@ func menuCheckItemNew(label string, bitmap []byte) pointer {
 }
 
 func menuCheckItemNewWithId(label string, bitmap []byte, itemId uint, checked bool) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createCheckMenuItem(label, actionName, itemId, checked)
 
@@ -375,6 +385,7 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 }
 
 func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old action keeps no shortcut
 	actionName := generateActionName(itemId)
 	gitem := createCheckMenuItem(label, actionName, itemId, checked)
 
@@ -385,6 +396,7 @@ func menuRadioItemNewWithId(label string, itemId uint, checked bool) pointer {
 }
 
 func menuRadioItemNewWithGroup(label string, itemId uint, groupId uint, checkedId uint) pointer {
+	unregisterMenuItemAccelerator(itemId) // a rebuilt item: its old group keeps no shortcut for it
 	actionName := fmt.Sprintf("radio_group_%d", groupId)
 	targetValue := fmt.Sprintf("%d", itemId)
 	initialValue := fmt.Sprintf("%d", checkedId)
@@ -447,7 +459,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	}
 
 	// Look up the action name for this menu item
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -475,7 +487,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 // clearMenuItemAccelerator removes every accelerator GTK holds for the item's
 // action.
 func clearMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -761,6 +773,29 @@ func widgetIsVisible(widget pointer) bool {
 	return gtk_widget_is_visible(uintptr(widget)) != 0
 }
 
+// windowSetPassThrough gives the window's surface an empty input region when
+// ignore is set, and the default one otherwise. A surface exists only once the
+// window is realized: one asked to ignore input before that is realized now.
+func windowSetPassThrough(window pointer, ignore bool) {
+	surface := gtk_native_get_surface(uintptr(window))
+	if surface == 0 {
+		if !ignore {
+			return
+		}
+		gtk_widget_realize(uintptr(window))
+		if surface = gtk_native_get_surface(uintptr(window)); surface == 0 {
+			return
+		}
+	}
+	if !ignore {
+		gdk_surface_set_input_region(surface, 0)
+		return
+	}
+	region := cairo_region_create()
+	gdk_surface_set_input_region(surface, region)
+	cairo_region_destroy(region)
+}
+
 func (w *linuxWebviewWindow) maximise() {
 	gtk_window_maximize(uintptr(w.window))
 }
@@ -819,9 +854,12 @@ func windowAttachMenuBar(window, vbox, menu pointer, menuStyle LinuxMenuStyle) p
 }
 
 // unregisterMenuItemAccelerator removes the accelerator registered for the
-// item's action, so the action no longer fires from the keyboard.
+// item's action, so the action no longer fires from the keyboard. Menu.Update
+// rebuilds every item with a new action, and calls this first: the previous
+// action stays in the application's action group, and with its accelerator
+// it went on firing the item on the old shortcut after SetAccelerator.
 func unregisterMenuItemAccelerator(itemId uint) {
-	actionName, ok := lookupActionName(itemId)
+	actionName, ok := acceleratorAction(itemId)
 	if !ok {
 		return
 	}
@@ -1043,8 +1081,10 @@ func (w *linuxWebviewWindow) setZoom(zoom float64) {
 	webkit_web_view_set_zoom_level(w.webKitWebView(), zoom)
 }
 
+// reload reloads the current page. (It used to load "wails://", the app's
+// root, so a page at another route or with a query came back as the root.)
 func (w *linuxWebviewWindow) reload() {
-	webkit_web_view_load_uri(w.webKitWebView(), "wails://")
+	webkit_web_view_reload(w.webKitWebView())
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {

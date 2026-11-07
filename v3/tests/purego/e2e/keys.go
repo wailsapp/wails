@@ -27,6 +27,8 @@ var x11NamedKeys = map[string]string{
 	"pageup":    "Prior",
 	"pagedown":  "Next",
 	"insert":    "Insert",
+	"numlock":   "Num_Lock",
+	"capslock":  "Caps_Lock",
 }
 
 // punctKeysyms maps ASCII punctuation to X keysym names. The keysym is the
@@ -108,4 +110,40 @@ func needsShift(level0, level1, want uint64) (shift, ok bool) {
 		return true, true
 	}
 	return false, false
+}
+
+// windowsNamedKeys maps chord key names to Windows virtual-key codes. Letters
+// and digits are their upper-case ASCII codes; other printable characters
+// depend on the keyboard layout and are looked up at run time.
+var windowsNamedKeys = map[string]uint16{
+	"return": 0x0D, "enter": 0x0D, "escape": 0x1B, "esc": 0x1B, "tab": 0x09,
+	"space": 0x20, "backspace": 0x08, "delete": 0x2E, "insert": 0x2D,
+	"up": 0x26, "down": 0x28, "left": 0x25, "right": 0x27,
+	"home": 0x24, "end": 0x23, "pageup": 0x21, "pagedown": 0x22,
+	"numlock": 0x90, "capslock": 0x14,
+}
+
+// windowsVirtualKey returns the virtual-key code for a chord key name that
+// does not depend on the keyboard layout: named keys, F1 to F12, letters and
+// digits.
+func windowsVirtualKey(key string) (uint16, bool) {
+	if vk, ok := windowsNamedKeys[key]; ok {
+		return vk, true
+	}
+	if fKey.MatchString(key) {
+		n := 0
+		for _, c := range key[1:] {
+			n = n*10 + int(c-'0')
+		}
+		return uint16(0x70 + n - 1), true // VK_F1 is 0x70
+	}
+	if len(key) == 1 {
+		switch c := key[0]; {
+		case c >= 'a' && c <= 'z':
+			return uint16(c - 'a' + 'A'), true
+		case c >= '0' && c <= '9':
+			return uint16(c), true
+		}
+	}
+	return 0, false
 }
