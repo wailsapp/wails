@@ -278,6 +278,14 @@ func (cba *ControlBase) SetPos(x, y int) {
 
 	w32.SetWindowPos(cba.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
+// PosOnMonitor returns the window position relative to the work area of the
+// monitor it is on. It is the inverse of SetPos.
+func (cba *ControlBase) PosOnMonitor() (x, y int) {
+	rect := w32.GetWindowRect(cba.hwnd)
+	workRect := getMonitorInfo(cba.hwnd).RcWork
+	return int(rect.Left) - int(workRect.Left), int(rect.Top) - int(workRect.Top)
+}
+
 func (cba *ControlBase) SetAlwaysOnTop(b bool) {
 	if b {
 		w32.SetWindowPos(cba.hwnd, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOMOVE)
