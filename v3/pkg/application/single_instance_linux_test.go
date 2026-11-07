@@ -5,7 +5,9 @@ package application
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestSingleInstanceNames(t *testing.T) {
@@ -113,5 +115,33 @@ func TestSameExecutableTellsThisBinaryFromAnother(t *testing.T) {
 	}
 	if _, known := sameExecutable("/proc", 1<<30); known {
 		t.Fatal("a missing process was judged")
+	}
+}
+
+func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
+	stamp := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
+	copyOf := func(dir, body string, at time.Time) os.FileInfo {
+		p := filepath.Join(t.TempDir(), dir, "app")
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(p, at, at); err != nil {
+			t.Fatal(err)
+		}
+		fi, err := os.Stat(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return fi
+	}
+	a := copyOf(".mount_appA", "build-1", stamp)
+	if !sameBuild(a, copyOf(".mount_appB", "build-1", stamp)) {
+		t.Fatal("two mounts of one image were judged different")
+	}
+	if sameBuild(a, copyOf(".mount_appC", "build-2", stamp.Add(time.Hour))) {
+		t.Fatal("another build was judged the same")
 	}
 }

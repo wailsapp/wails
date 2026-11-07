@@ -50,7 +50,14 @@ func sameExecutable(procRoot string, pid int) (same, known bool) {
 	if err != nil {
 		return false, false
 	}
-	return os.SameFile(ours, theirs), true
+	return os.SameFile(ours, theirs) || sameBuild(ours, theirs), true
+}
+
+// sameBuild reports whether two executables are copies of one build. Each AppImage launch mounts its own squashfs,
+// so two launches of one image never share an executable file, but the copies keep the image's name, size, mode and
+// modification time.
+func sameBuild(a, b os.FileInfo) bool {
+	return a.Name() == b.Name() && a.Size() == b.Size() && a.Mode() == b.Mode() && a.ModTime().Equal(b.ModTime())
 }
 
 type linuxLock struct {
