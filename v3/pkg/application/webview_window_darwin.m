@@ -127,6 +127,12 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     }
     [super cancelOperation:sender];
 }
+- (void)doCommandBySelector:(SEL)selector {
+    if (windowDropsEscapeCommand(self, selector)) {
+        return;
+    }
+    [super doCommandBySelector:selector];
+}
 - (void)cancelZoomAnimation {
     [self.zoomAnimationTimer invalidate];
     self.zoomAnimationTimer = nil;
