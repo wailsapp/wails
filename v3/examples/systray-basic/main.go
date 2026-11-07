@@ -34,11 +34,6 @@ func main() {
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
-		KeyBindings: map[string]func(window application.Window){
-			"F12": func(window application.Window) {
-				systemTray.OpenMenu()
-			},
-		},
 	})
 
 	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
