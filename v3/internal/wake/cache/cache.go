@@ -425,6 +425,10 @@ func observeDirectoryTreeWithWalk(root string, excluded map[string]bool, ignored
 	prefix := root + string(filepath.Separator)
 	err := walk(root, workers, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
+			// A sibling build step may delete its staging directory mid-walk.
+			if errors.Is(walkErr, fs.ErrNotExist) && path != root {
+				return nil
+			}
 			return walkErr
 		}
 		if path == root {
@@ -448,6 +452,9 @@ func observeDirectoryTreeWithWalk(root string, excluded map[string]bool, ignored
 		}
 		observed := &observedFile{path: path, relative: relative, entry: entry}
 		observed.info, observed.infoErr = entry.Info()
+		if errors.Is(observed.infoErr, fs.ErrNotExist) {
+			return nil
+		}
 		if observed.infoErr != nil {
 			return observed.infoErr
 		}

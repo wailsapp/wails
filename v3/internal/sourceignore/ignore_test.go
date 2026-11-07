@@ -127,3 +127,30 @@ func BenchmarkMatch(b *testing.B) {
 		m.Match(paths[i%len(paths)], false)
 	}
 }
+
+func TestReadToleratesDirectoriesDeletedMidWalk(t *testing.T) {
+	root := t.TempDir()
+	staging := filepath.Join(root, "staging")
+	stop := make(chan struct{})
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for i := 0; ; i++ {
+			select {
+			case <-stop:
+				return
+			default:
+			}
+			dir := filepath.Join(staging, "stage-"+strings.Repeat("x", i%7), "nested")
+			_ = os.MkdirAll(dir, 0o755)
+			_ = os.WriteFile(filepath.Join(dir, ".gitignore"), []byte("*.tmp\n"), 0o644)
+			_ = os.RemoveAll(staging)
+		}
+	}()
+	defer func() { close(stop); <-done }()
+	for range 2000 {
+		if _, err := Read(root); err != nil {
+			t.Fatalf("Read failed on a directory deleted mid-walk: %v", err)
+		}
+	}
+}
