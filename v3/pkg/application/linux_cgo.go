@@ -1313,6 +1313,26 @@ func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
+func (w *linuxWebviewWindow) setTransparent() {
+	display := C.gdk_display_get_default()
+	if display == nil {
+		return
+	}
+	transparentWindowCSS.Do(func() {
+		provider := C.gtk_css_provider_new()
+		css := C.CString("window.wails-transparent { background: transparent; }")
+		defer C.free(unsafe.Pointer(css))
+		C.gtk_css_provider_load_from_string(provider, css)
+		C.gtk_style_context_add_provider_for_display(display, (*C.GtkStyleProvider)(unsafe.Pointer(provider)), C.GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)
+		C.g_object_unref(C.gpointer(provider))
+	})
+	className := C.CString("wails-transparent")
+	defer C.free(unsafe.Pointer(className))
+	C.gtk_widget_add_css_class(w.gtkWidget(), className)
+}
+
+var transparentWindowCSS sync.Once
+
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.float(colour.Red) / 255.0, C.float(colour.Green) / 255.0, C.float(colour.Blue) / 255.0, C.float(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color(w.webKitWebView(), &rgba)
