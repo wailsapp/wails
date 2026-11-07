@@ -126,6 +126,12 @@ func (h *serverApp) run() error {
 		IdleTimeout:  idleTimeout,
 	}
 
+	// Registered before listening, so a caller that can connect knows a signal now reaches this select; stopped on
+	// return so a later run does not share the signal.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
+
 	// Create listener
 	var err error
 	h.listener, err = net.Listen("tcp", addr)
@@ -146,9 +152,6 @@ func (h *serverApp) run() error {
 	}()
 
 	// Wait for shutdown signal or error
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
 	case err := <-errCh:
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -164,6 +167,14 @@ func (h *serverApp) run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
+	// A signal ends server mode here rather than through Quit, so the app's shutdown hooks (OnShutdown) run now.
+	// The same signal also reaches the default signal handler, and a Quit cancels the context this select waits
+	// on, so another goroutine may already be running the hooks; Run must not return, letting the process exit,
+	// until they have finished.
+	defer func() {
+		h.app.cleanup()
+		h.app.waitForCleanup()
+	}()
 	if err := h.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown error: %w", err)
 	}
