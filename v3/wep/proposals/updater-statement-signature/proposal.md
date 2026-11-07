@@ -98,7 +98,7 @@ Improves release authenticity. The statement is signed with the key that already
 
 ## Test Plan
 
-Unit tests in the reference branch cover: a valid statement; a wrong version, platform, arch and digest; a missing statement when required; an older version; invalid base64; the CLI signing and `-require-statement` round trip. These run with `go test ./pkg/updater/... ./internal/commands`.
+Unit tests in the reference branch cover: a correctly signed release is accepted; a downgrade or relabelled version is refused; another platform's file is refused; a release without a statement is refused when required; and `updater statement` output passing `updater verify`. Run with `go test ./pkg/updater/... ./internal/commands`.
 
 ## Reference Implementation
 
