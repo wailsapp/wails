@@ -31,10 +31,18 @@ func (h dbusHandler) SendMessage(sender dbus.Sender, message string) *dbus.Error
 	if err := call.Store(&pid); err != nil {
 		return dbus.MakeFailedError(errors.New("cannot identify the caller"))
 	}
-	if same, known := sameExecutable("/proc", int(pid)); known && !same {
-		return dbus.MakeFailedError(errors.New("caller is not this application"))
+	if err := checkCaller("/proc", int(pid)); err != nil {
+		return err
 	}
 	h.deliver(message)
+	return nil
+}
+
+// checkCaller refuses a caller whose executable is known and is not this one.
+func checkCaller(procRoot string, pid int) *dbus.Error {
+	if same, known := sameExecutable(procRoot, pid); known && !same {
+		return dbus.MakeFailedError(errors.New("caller is not this application"))
+	}
 	return nil
 }
 

@@ -118,6 +118,27 @@ func TestSameExecutableTellsThisBinaryFromAnother(t *testing.T) {
 	}
 }
 
+func TestCheckCallerRefusesOnlyAKnownOtherExecutable(t *testing.T) {
+	if err := checkCaller("/proc", os.Getpid()); err != nil {
+		t.Fatalf("this process refused: %v", err)
+	}
+	if err := checkCaller("/proc", 1<<30); err != nil {
+		t.Fatalf("an unknown caller refused: %v", err)
+	}
+	sleep, err := exec.LookPath("sleep")
+	if err != nil {
+		t.Skip(err)
+	}
+	cmd := exec.Command(sleep, "30")
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
+	if err := checkCaller("/proc", cmd.Process.Pid); err == nil {
+		t.Fatal("another executable was accepted")
+	}
+}
+
 func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
 	stamp := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
 	copyOf := func(dir, body string, at time.Time) os.FileInfo {
