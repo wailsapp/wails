@@ -87,7 +87,14 @@ func (e *Chromium) registerCompositionDropTarget() error {
 	return nil
 }
 
-func (d *compositionDropTarget) close() {
+func (e *Chromium) releaseCompositionDropTarget() {
+	d := e.compositionDropTarget
+	if d == nil {
+		return
+	}
+	// Detach first: native teardown can reenter shutdown, and Close also calls
+	// this after ShuttingDown. Each registration owns one OLE initialization.
+	e.compositionDropTarget = nil
 	dropRevoke.Call(d.hwnd)
 	d.object.Close()
 	d.controller.Vtbl.Release.Call(uintptr(unsafe.Pointer(d.controller)))

@@ -15,8 +15,24 @@ import (
 // Exercise the actual COM vtable trampolines: POINTL packing and the different
 // IDropTarget/controller method orders must work on both amd64 and arm64.
 func TestCompositionDropForwarding(t *testing.T) {
-	hwnd, _, _ := windows.NewLazySystemDLL("user32.dll").NewProc("GetDesktopWindow").Call()
-	point := POINT{X: -123, Y: 456}.uintptr()
+	lockWebView2Thread(t)
+	hwnd := newLiveTestWindow(t)
+	user32 := windows.NewLazySystemDLL("user32.dll")
+	if ok, _, err := user32.NewProc("MoveWindow").Call(hwnd, 200, 150, 640, 480, 0); ok == 0 {
+		t.Fatal(err)
+	}
+	// OLE supplies screen coordinates; the controller must receive client
+	// coordinates even when the window is moved away from the desktop origin.
+	client := POINT{X: -123, Y: 456}
+	screen := client
+	if ok, _, err := user32.NewProc("ClientToScreen").Call(hwnd, uintptr(unsafe.Pointer(&screen))); ok == 0 {
+		t.Fatal(err)
+	}
+	point := client.uintptr()
+	screenPoint := screen.uintptr()
+	if screenPoint == point {
+		t.Fatal("test window has no client-to-screen offset")
+	}
 	const data = uintptr(0x12345678)
 	const keys = uintptr(9)
 	var calls []string
@@ -55,7 +71,7 @@ func TestCompositionDropForwarding(t *testing.T) {
 			args = append(args, data)
 		}
 		if index != 5 {
-			args = append(args, keys, point, uintptr(unsafe.Pointer(&effect)))
+			args = append(args, keys, screenPoint, uintptr(unsafe.Pointer(&effect)))
 		}
 		hr, _, _ := syscall.SyscallN(vt[index], args...)
 		if hr != 1 {
@@ -67,5 +83,103 @@ func TestCompositionDropForwarding(t *testing.T) {
 	}
 	if len(calls) != 4 || calls[0] != "enter" || calls[1] != "over" || calls[2] != "leave" || calls[3] != "drop" {
 		t.Fatalf("wrong callback order: %v", calls)
+	}
+}
+
+// Use the real OLE registration API with a stub controller so these tests do
+// not require an installed WebView2 runtime. The returned count tracks the
+// controller reference acquired specifically for the drop target.
+func newDropRegistrationChromium(t *testing.T, hwnd uintptr) (*Chromium, *int) {
+	t.Helper()
+	refs := new(int)
+	controller := &compositionController3{Vtbl: &compositionController3Vtbl{}}
+	controller.Vtbl.Release = NewComProc(func(uintptr) uintptr {
+		*refs--
+		return uintptr(*refs)
+	})
+	base := &ICoreWebView2CompositionController{Vtbl: &ICoreWebView2CompositionControllerVtbl{}}
+	base.Vtbl.QueryInterface = NewComProc(func(_ uintptr, iid *windows.GUID, out **compositionController3) uintptr {
+		*out = nil
+		if iid.Data1 != 0x9570570e {
+			return 0x80004002 // E_NOINTERFACE; no base controller to close.
+		}
+		*refs++
+		*out = controller
+		return 0
+	})
+	base.Vtbl.Release = NewComProc(func(uintptr) uintptr { return 0 })
+	e := &Chromium{hwnd: hwnd, compositionController: base}
+	t.Cleanup(e.Close)
+	return e, refs
+}
+
+func TestCompositionDropRegistrationLifecycle(t *testing.T) {
+	for _, path := range []string{"shutdown", "close", "recovery"} {
+		t.Run(path, func(t *testing.T) {
+			lockWebView2Thread(t)
+			hwnd := newLiveTestWindow(t)
+			e, refs := newDropRegistrationChromium(t, hwnd)
+			if err := e.registerCompositionDropTarget(); err != nil {
+				t.Fatal(err)
+			}
+			ref := e.compositionDropTarget.object.Ref()
+			if *refs != 1 {
+				t.Fatalf("registered controller references = %d, want 1", *refs)
+			}
+			switch path {
+			case "shutdown":
+				// WM_CLOSE and direct destruction call this before DestroyWindow.
+				e.ShuttingDown()
+				e.ShuttingDown()
+			case "close":
+				e.Close()
+				e.Close()
+			case "recovery":
+				e.ReleaseCompositionResources()
+				e.ReleaseCompositionResources()
+			}
+			if e.compositionDropTarget != nil || *refs != 0 {
+				t.Fatalf("cleanup retained target/reference: target=%p refs=%d", e.compositionDropTarget, *refs)
+			}
+			if combridge.Resolve[compositionDropInterface](ref) != nil {
+				t.Fatal("drop target still retained by the COM bridge after cleanup")
+			}
+			// Check before Close (including the cleanup registered by the helper),
+			// so it cannot mask broken shutdown or recovery cleanup.
+			// Prove the HWND registration was actually revoked, not just the
+			// Go field cleared: a replacement must register on the same HWND.
+			replacement, replacementRefs := newDropRegistrationChromium(t, hwnd)
+			if err := replacement.registerCompositionDropTarget(); err != nil {
+				t.Fatalf("register replacement: %v", err)
+			}
+			replacement.ShuttingDown()
+			if *replacementRefs != 0 {
+				t.Fatalf("replacement retained %d controller references", *replacementRefs)
+			}
+		})
+	}
+}
+
+func TestCompositionDropRegistrationFailureReleasesController(t *testing.T) {
+	lockWebView2Thread(t)
+	hwnd := newLiveTestWindow(t)
+	owner, ownerRefs := newDropRegistrationChromium(t, hwnd)
+	if err := owner.registerCompositionDropTarget(); err != nil {
+		t.Fatal(err)
+	}
+	contender, contenderRefs := newDropRegistrationChromium(t, hwnd)
+	if err := contender.registerCompositionDropTarget(); err == nil {
+		t.Fatal("registering a second target on the same HWND unexpectedly succeeded")
+	}
+	contender.Close()
+	if *contenderRefs != 0 || contender.compositionDropTarget != nil {
+		t.Fatalf("failed registration leaked: refs=%d target=%p", *contenderRefs, contender.compositionDropTarget)
+	}
+	if *ownerRefs != 1 || combridge.Resolve[compositionDropInterface](owner.compositionDropTarget.object.Ref()) == nil {
+		t.Fatal("failed registration released the existing owner's target")
+	}
+	owner.ShuttingDown()
+	if *ownerRefs != 0 {
+		t.Fatalf("owner retained %d controller references", *ownerRefs)
 	}
 }
