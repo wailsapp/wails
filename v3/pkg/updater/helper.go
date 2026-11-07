@@ -302,11 +302,6 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	}
 
 	if err := l.launch(target); err != nil {
-		// A marker left behind names the restored version itself, which
-		// consumeAppliedMarker ignores.
-		if err := os.Remove(marker); err != nil && !os.IsNotExist(err) {
-			lg.logf("applied marker cleanup: %v", err)
-		}
 		lg.logf("launch new failed: %v — restoring backup", err)
 		if err := restoreFromBackup(backup, target, l); err != nil {
 			lg.logf("restore failed: %v", err)
@@ -367,10 +362,16 @@ func consumeAppliedMarker(current string) (string, bool) {
 	if err := os.Remove(path); err != nil {
 		return "", false
 	}
-	return string(from), string(from) != current
+	version := string(from)
+	return version, version != "" && version != current
 }
 
 func restoreFromBackup(backup, target string, l launcher) error {
+	// Neutralize before relaunch: a marker that still names a version would
+	// make the next Init call OnUpdateApplied for an update that was rolled back.
+	if err := discardAppliedMarker(appliedMarker(target)); err != nil {
+		return fmt.Errorf("applied marker: %w", err)
+	}
 	if err := os.RemoveAll(target); err != nil {
 		return fmt.Errorf("remove broken target: %w", err)
 	}
@@ -378,6 +379,20 @@ func restoreFromBackup(backup, target string, l launcher) error {
 		return fmt.Errorf("restore: %w", err)
 	}
 	return l.launch(target)
+}
+
+// discardAppliedMarker removes the post-update marker, or truncates it so
+// consumeAppliedMarker will ignore it, before a rolled-back application is
+// launched. A live marker must not survive into that relaunch.
+func discardAppliedMarker(path string) error {
+	err := os.Remove(path)
+	if err == nil || os.IsNotExist(err) {
+		return nil
+	}
+	if terr := os.Truncate(path, 0); terr != nil {
+		return err
+	}
+	return nil
 }
 
 // copyAny dispatches between file and directory copies. macOS .app bundles

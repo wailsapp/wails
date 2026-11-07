@@ -317,6 +317,82 @@ func TestRunHelperSwap_LaunchFails_NoReplacedVersion(t *testing.T) {
 	}
 }
 
+func TestRunHelperSwap_LaunchFails_MarkerRemoveFails_DoesNotRelaunchWithLiveMarker(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can remove files in a read-only directory")
+	}
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperFrom, "1.0.0")
+	marker := appliedMarker(target)
+	t.Cleanup(func() {
+		_ = os.Chmod(dir, 0o700)
+		_ = os.Remove(marker)
+	})
+
+	first := true
+	var relaunched bool
+	l := &funcLauncher{fn: func(string) error {
+		if first {
+			first = false
+			if err := os.Chmod(dir, 0o500); err != nil {
+				t.Fatal(err)
+			}
+			return errors.New("boom")
+		}
+		relaunched = true
+		return nil
+	}}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if relaunched {
+		t.Error("must not relaunch with a post-update marker that could not be removed")
+	}
+	if code != 16 {
+		t.Fatalf("code: %d, want 16 (restore must not launch after marker cleanup fails or dir is locked)", code)
+	}
+	if b, err := os.ReadFile(marker); err == nil && string(b) == "1.0.0" {
+		t.Errorf("marker still claims applied update %q", b)
+	}
+}
+
+func TestConsumeAppliedMarker_RemoveFails_DoesNotReport(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can remove files in a read-only directory")
+	}
+	target, err := resolveTarget()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Dir(target)
+	marker := appliedMarker(target)
+	if err := os.WriteFile(marker, []byte("1.0.0"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chmod(dir, 0o700)
+		_ = os.Remove(marker)
+	})
+	if err := os.Chmod(dir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	from, ok := consumeAppliedMarker("2.0.0")
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if from != "" || ok {
+		t.Errorf("reported applied update despite failed removal: from=%q ok=%v", from, ok)
+	}
+	if _, err := os.Stat(marker); err != nil {
+		t.Errorf("marker should remain for a later attempt: %v", err)
+	}
+}
+
 // funcLauncher is a launcher whose launch is provided by the test. Different
 // from fakeLauncher in that the callback runs custom inspection logic.
 type funcLauncher struct {
