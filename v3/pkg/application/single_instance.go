@@ -62,6 +62,14 @@ type singleInstanceManager struct {
 	app     *App
 }
 
+// listen hands each second-instance message to the callback until in closes; a callback that panics loses only its
+// own message.
+func (m *singleInstanceManager) listen(in <-chan string) {
+	for encryptedData := range in {
+		m.dispatchSecondInstance(encryptedData)
+	}
+}
+
 func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*singleInstanceManager, error) {
 	if options == nil {
 		return nil, nil
@@ -73,13 +81,7 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	}
 
 	// Launch second instance data listener
-	once.Do(func() {
-		go func() {
-			for encryptedData := range secondInstanceBuffer {
-				manager.dispatchSecondInstance(encryptedData)
-			}
-		}()
-	})
+	once.Do(func() { go manager.listen(secondInstanceBuffer) })
 
 	// Create platform-specific lock
 	lock, err := newPlatformLock(manager)

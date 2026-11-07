@@ -251,26 +251,12 @@ func TestDispatchSecondInstanceSurvivesCallbackPanic(t *testing.T) {
 		},
 	}}
 
-	t.Cleanup(func() {
-		select {
-		case <-secondInstanceBuffer:
-		default:
-		}
-	})
+	in := make(chan string)
+	t.Cleanup(func() { close(in) })
+	go m.listen(in)
 
-	go func() {
-		n := 0
-		for encryptedData := range secondInstanceBuffer {
-			m.dispatchSecondInstance(encryptedData)
-			n++
-			if n == 2 {
-				return
-			}
-		}
-	}()
-
-	secondInstanceBuffer <- `{"args":["a"]}`
-	secondInstanceBuffer <- `{"args":["b"]}`
+	in <- `{"args":["a"]}`
+	in <- `{"args":["b"]}`
 
 	select {
 	case <-second:
