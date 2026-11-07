@@ -45,7 +45,7 @@ const (
 var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 
 func nameTypeOf(typeOf reflect.Type) string {
-	tname := typeOf.Name()
+	tname := strings.ReplaceAll(typeOf.Name(), "*", "")
 	gidx := strings.IndexRune(tname, '[')
 	if gidx > 0 { // its a generic type
 		rem := strings.SplitN(tname, "[", 2)
@@ -114,7 +114,8 @@ type TypeScriptify struct {
 	fieldTypeOptions map[reflect.Type]TypeOptions
 
 	// throwaway, used when converting
-	alreadyConverted map[string]bool
+	alreadyConverted     map[string]bool
+	alreadyConvertedName map[string]bool // true for enums, false for structs
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
@@ -392,6 +393,7 @@ func (t *TypeScriptify) AddEnumValues(typeOf reflect.Type, values interface{}) *
 
 func (t *TypeScriptify) Convert(customCode map[string]string) (string, error) {
 	t.alreadyConverted = make(map[string]bool)
+	t.alreadyConvertedName = make(map[string]bool)
 	depth := 0
 
 	result := ""
@@ -537,6 +539,10 @@ func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []e
 	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+	if _, found := t.alreadyConvertedName[entityName]; found {
+		return "", fmt.Errorf("TypeScript name %q is used by multiple types", entityName)
+	}
+	t.alreadyConvertedName[entityName] = true
 	result := "enum " + entityName + " {\n"
 
 	for _, val := range elements {
@@ -643,6 +649,16 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+
+	// Generic instantiations that differ only by pointer arguments share the
+	// same TypeScript name, so emit the entity only once.
+	if isEnum, found := t.alreadyConvertedName[entityName]; found {
+		if isEnum {
+			return "", fmt.Errorf("TypeScript name %q is used by multiple types", entityName)
+		}
+		return "", nil
+	}
+	t.alreadyConvertedName[entityName] = false
 
 	if typeClashWithReservedKeyword(entityName) {
 		warnAboutTypesClash(entityName)
