@@ -29,7 +29,7 @@ func iUnknownQueryInterface(this uintptr, refiid *windows.GUID, ppvObject *uintp
 	obj := comIfcePointers[this]
 	comIfcePointersL.RUnlock()
 
-	ref := obj.queryInterface(refiid.String(), true)
+	ref := obj.queryInterface(formatGUID(*refiid), true)
 	if ref != 0 {
 		*ppvObject = ref
 		return windows.NO_ERROR

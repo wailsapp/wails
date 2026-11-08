@@ -5,22 +5,9 @@ package cfd
 
 import (
 	"fmt"
-	"github.com/go-ole/go-ole"
 	"syscall"
 	"unsafe"
 )
-
-const (
-	iidShellItemArrayGUID = "{b63ea76d-1f85-456f-a19c-48159efa858b}"
-)
-
-var (
-	iidShellItemArray *ole.GUID
-)
-
-func init() {
-	iidShellItemArray, _ = ole.IIDFromString(iidShellItemArrayGUID)
-}
 
 type iShellItemArray struct {
 	vtbl *iShellItemArrayVtbl

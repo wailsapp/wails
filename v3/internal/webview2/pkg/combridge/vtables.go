@@ -72,7 +72,7 @@ func registerVTableInternal[TParent, T IUnknown](guid string, isInternal bool, f
 		parentProcsCount = len(parentProcs)
 	}
 
-	comGuid, err := windows.GUIDFromString(guid)
+	comGuid, err := parseGUID(guid)
 	if err != nil {
 		panic(fmt.Errorf("RegisterVTable '%s': invalid guid: %s", tName, err))
 	}
@@ -80,7 +80,7 @@ func registerVTableInternal[TParent, T IUnknown](guid string, isInternal bool, f
 	vTable := &vTable{
 		Parent:  parent,
 		Name:    tName,
-		ComGUID: comGuid.String(),
+		ComGUID: formatGUID(comGuid),
 	}
 	vTable.ComVTable, vTable.ComProcs = allocUintptrObject(parentProcsCount + len(fns))
 
