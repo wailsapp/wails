@@ -1,6 +1,10 @@
 package application
 
-import "github.com/wailsapp/wails/v3/internal/userpaths"
+import (
+	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/userpaths"
+)
 
 type PathType int
 
@@ -68,24 +72,31 @@ const (
 	PathPublicShare
 )
 
-var resolvedPaths = userpaths.Resolve()
+// The user's folders are resolved on the first call to Path or Paths, not at
+// package init: on Windows that asks the shell (shell32, and user32 and COM
+// with it), which a program that never asks should not pay for. The snapshot
+// is taken then, so environment changes made before that call are seen.
+var resolvedPaths = sync.OnceValue(userpaths.Resolve)
 
-var paths = map[PathType]string{
-	PathHome:        resolvedPaths.Home,
-	PathDataHome:    resolvedPaths.DataHome,
-	PathConfigHome:  resolvedPaths.ConfigHome,
-	PathStateHome:   resolvedPaths.StateHome,
-	PathCacheHome:   resolvedPaths.CacheHome,
-	PathRuntimeDir:  resolvedPaths.RuntimeDir,
-	PathDesktop:     resolvedPaths.Desktop,
-	PathDownload:    resolvedPaths.Download,
-	PathDocuments:   resolvedPaths.Documents,
-	PathMusic:       resolvedPaths.Music,
-	PathPictures:    resolvedPaths.Pictures,
-	PathVideos:      resolvedPaths.Videos,
-	PathTemplates:   resolvedPaths.Templates,
-	PathPublicShare: resolvedPaths.PublicShare,
-}
+var paths = sync.OnceValue(func() map[PathType]string {
+	p := resolvedPaths()
+	return map[PathType]string{
+		PathHome:        p.Home,
+		PathDataHome:    p.DataHome,
+		PathConfigHome:  p.ConfigHome,
+		PathStateHome:   p.StateHome,
+		PathCacheHome:   p.CacheHome,
+		PathRuntimeDir:  p.RuntimeDir,
+		PathDesktop:     p.Desktop,
+		PathDownload:    p.Download,
+		PathDocuments:   p.Documents,
+		PathMusic:       p.Music,
+		PathPictures:    p.Pictures,
+		PathVideos:      p.Videos,
+		PathTemplates:   p.Templates,
+		PathPublicShare: p.PublicShare,
+	}
+})
 
 type PathTypes int
 
@@ -117,19 +128,22 @@ const (
 	PathsApplicationDirs
 )
 
-var pathdirs = map[PathTypes][]string{
-	PathsDataDirs:        resolvedPaths.DataDirs,
-	PathsConfigDirs:      resolvedPaths.ConfigDirs,
-	PathsFontDirs:        resolvedPaths.FontDirs,
-	PathsApplicationDirs: resolvedPaths.ApplicationDirs,
-}
+var pathdirs = sync.OnceValue(func() map[PathTypes][]string {
+	p := resolvedPaths()
+	return map[PathTypes][]string{
+		PathsDataDirs:        p.DataDirs,
+		PathsConfigDirs:      p.ConfigDirs,
+		PathsFontDirs:        p.FontDirs,
+		PathsApplicationDirs: p.ApplicationDirs,
+	}
+})
 
 // Path returns the path for the given selector
 func Path(selector PathType) string {
-	return paths[selector]
+	return paths()[selector]
 }
 
 // Paths returns the paths for the given selector
 func Paths(selector PathTypes) []string {
-	return pathdirs[selector]
+	return pathdirs()[selector]
 }
