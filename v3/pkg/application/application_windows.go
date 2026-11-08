@@ -14,6 +14,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -22,9 +23,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
-var (
-	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
-)
+// wmTaskbarCreated is registered by registerWindowMessages.
+var wmTaskbarCreated uint32
 
 // taskbarRestartDebounce is how long TaskbarCreated broadcasts are ignored
 // after the first one, so one Explorer restart re-adds each tray icon once.
@@ -469,6 +469,12 @@ func setupDPIAwareness() error {
 }
 
 func newPlatformApp(app *App) *windowsApp {
+	// Run calls this on the startup thread, where windows are made, before it
+	// starts services (whose ServiceStartup may open one): set up the COM
+	// apartment WebView2 needs, and dark mode, which the window code reads.
+	// New did both already unless it ran on another goroutine.
+	edge.InitCOM()
+	w32.InitDarkMode()
 
 	// Force WebView2 visual hosting before any WebView2 environment is
 	// initialised. This is the documented Microsoft workaround for the

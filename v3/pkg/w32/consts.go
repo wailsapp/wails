@@ -7,6 +7,7 @@ import (
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 	"strconv"
+	"sync"
 	"syscall"
 	"unsafe"
 )
@@ -28,12 +29,21 @@ var (
 	brandingFormatString = modBranding.NewProc("BrandingFormatString")
 )
 
-var windowsVersion, _ = GetWindowsVersionInfo()
+// windowsVersion is read from the registry on first use, not at package init:
+// a program that links this package but never asks pays nothing for it.
+var windowsVersion = sync.OnceValue(func() *WindowsVersionInfo {
+	v, _ := GetWindowsVersionInfo()
+	return v
+})
 
 func IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
-	return windowsVersion.Major >= major &&
-		windowsVersion.Minor >= minor &&
-		windowsVersion.Build >= buildNumber
+	v := windowsVersion()
+	if v == nil {
+		return false
+	}
+	return v.Major >= major &&
+		v.Minor >= minor &&
+		v.Build >= buildNumber
 }
 
 type WindowsVersionInfo struct {

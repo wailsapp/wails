@@ -5,6 +5,7 @@ package application
 import (
 	"runtime"
 	"sort"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -14,12 +15,21 @@ var (
 	wmInvokeCallback uint32
 )
 
-func init() {
-	wmInvokeCallback = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("WailsV0.InvokeCallback"))
+var windowMessagesOnce sync.Once
+
+// registerWindowMessages registers the window messages Wails uses, once. It
+// is not done at package init: RegisterWindowMessage loads user32.dll (and
+// gdi32 with it), which a program that never opens a window should not pay for.
+func registerWindowMessages() {
+	windowMessagesOnce.Do(func() {
+		wmInvokeCallback = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("WailsV0.InvokeCallback"))
+		wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
+	})
 }
 
 // initMainLoop must be called with the same OSThread that is used to call runMainLoop() later.
 func (m *windowsApp) initMainLoop() {
+	registerWindowMessages()
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	if m.mainThreadWindowHWND != 0 {

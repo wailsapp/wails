@@ -1,4 +1,4 @@
-//go:build !(linux && purego && !gtk3 && !android && !server)
+//go:build !(linux && purego && !gtk3 && !android && !server) && !(windows && !server)
 
 package application
 

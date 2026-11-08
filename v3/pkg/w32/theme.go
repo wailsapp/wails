@@ -4,6 +4,7 @@ package w32
 
 import (
 	"fmt"
+	"sync"
 	"syscall"
 	"unsafe"
 
@@ -95,7 +96,20 @@ var (
 	ShouldAppsUseDarkMode            func() bool
 )
 
-func init() {
+var darkModeOnce sync.Once
+
+// InitDarkMode resolves the dark-mode functions above and opts the process in
+// to dark menus (SetPreferredAppMode), once. Both used to happen at package
+// init; now a program that links this package but never opens a window does
+// not load uxtheme.dll. Wails calls it before its first window, and SetTheme
+// and SetMenuTheme call it, so code using this package on its own should call
+// it before reading the function variables or creating menus.
+func InitDarkMode() {
+	darkModeOnce.Do(initDarkMode)
+}
+
+// initDarkMode is InitDarkMode's work: it needs Windows 10 1809 or later.
+func initDarkMode() {
 	// The dark-mode uxtheme exports (ordinals 132/133/135/136/104) exist from
 	// Windows 10 1809 (build 17763), which includes Windows Server 2019. Gating
 	// them on a later build left those hosts with unreadable menus: the menu
@@ -202,6 +216,7 @@ func SetMenuTheme(hwnd uintptr, useDarkMode bool) {
 	if !SupportsThemes() {
 		return
 	}
+	InitDarkMode()
 
 	// Check if dark mode is supported and enabled
 	if useDarkMode && ShouldAppsUseDarkMode != nil && !ShouldAppsUseDarkMode() {
@@ -236,6 +251,7 @@ func SetMenuTheme(hwnd uintptr, useDarkMode bool) {
 
 func SetTheme(hwnd uintptr, useDarkMode bool) {
 	if SupportsThemes() {
+		InitDarkMode()
 		attr := DwmwaUseImmersiveDarkModeBefore20h1
 		if SupportsImmersiveDarkMode() {
 			attr = DwmwaUseImmersiveDarkMode

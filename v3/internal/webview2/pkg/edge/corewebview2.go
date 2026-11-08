@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+	"sync"
 	"syscall"
 	"unsafe"
 
@@ -17,11 +18,25 @@ import (
 
 func init() {
 	runtime.LockOSThread()
+}
 
-	r, _, _ := w32.Ole32CoInitializeEx.Call(0, uintptr(w32.COINIT_APARTMENTTHREADED))
-	if int(r) < 0 {
-		log.Printf("Warning: CoInitializeEx call failed: E=%08x", r)
-	}
+var comOnce sync.Once
+
+// InitCOM puts the first thread that calls it in a single-threaded COM
+// apartment; later calls, from any thread, do nothing. WebView2 needs the
+// apartment on the thread that creates the webview, so call it there first:
+// the application does, on the main thread, before its first window. It used
+// to run at package init, which loaded ole32 and combase and set the
+// apartment in every program that links this package.
+func InitCOM() {
+	comOnce.Do(func() {
+		r, _, _ := w32.Ole32CoInitializeEx.Call(0, uintptr(w32.COINIT_APARTMENTTHREADED))
+		// An HRESULT is 32 bits: a failure is negative as an int32, not as
+		// the 64-bit int the uintptr would make.
+		if int32(r) < 0 {
+			log.Printf("Warning: CoInitializeEx call failed: E=%08x", uint32(r))
+		}
+	})
 }
 
 type _EventRegistrationToken struct {
