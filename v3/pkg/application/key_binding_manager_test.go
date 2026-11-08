@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-// TestRemoveDifferentCase check that removing a key binding which differs only in case works as expected
-func TestRemoveDifferentCase(t *testing.T) {
+// TestKeyBindingMgrRemoveDifferentCase check that removing a key binding which differs only in case works as expected
+func TestKeyBindingMgrRemoveDifferentCase(t *testing.T) {
 	const key = "Ctrl+K"
 	app := &App{keyBindings: make(map[string]func(Window))}
 	manager := newKeyBindingManager(app)
@@ -17,8 +17,8 @@ func TestRemoveDifferentCase(t *testing.T) {
 	}
 }
 
-// TestLowercaseFires checks that a binding fires even if added with a different case (lowercase)
-func TestLowercaseFires(t *testing.T) {
+// TestKeyBindingMgrLowercaseFires checks that a binding fires even if added with a different case (lowercase)
+func TestKeyBindingMgrLowercaseFires(t *testing.T) {
 	const key = "Ctrl+K"
 	app := &App{keyBindings: make(map[string]func(Window))}
 	manager := newKeyBindingManager(app)
@@ -33,9 +33,9 @@ func TestLowercaseFires(t *testing.T) {
 	}
 }
 
-// TestRemovedDoesNotFire checks that adding then removing the same key binding using
+// TestKeyBindingMgrRemovedDoesNotFire checks that adding then removing the same key binding using
 // case causes the binding to not fire
-func TestRemovedDoesNotFire(t *testing.T) {
+func TestKeyBindingMgrRemovedDoesNotFire(t *testing.T) {
 	const key = "Ctrl+K"
 	app := &App{keyBindings: make(map[string]func(Window))}
 	manager := newKeyBindingManager(app)
@@ -51,9 +51,9 @@ func TestRemovedDoesNotFire(t *testing.T) {
 	}
 }
 
-// TestSameKeyDiffCase checks that overriding a key binding using different case
+// TestKeyBindingMgrSameKeyDiffCase checks that overriding a key binding using different case
 // results only in the last callback added being called
-func TestSameKeyDiffCase(t *testing.T) {
+func TestKeyBindingMgrSameKeyDiffCase(t *testing.T) {
 	const key = "Ctrl+K"
 	app := &App{keyBindings: make(map[string]func(Window))}
 	manager := newKeyBindingManager(app)
@@ -63,9 +63,9 @@ func TestSameKeyDiffCase(t *testing.T) {
 	// Override the previous binding (should ignore case) with a new callback
 	manager.Add(strings.ToLower(key), func(Window) { called = "override" })
 	if !manager.Process(key, &WebviewWindow{}) {
-		t.Fatal("removed binding was processed")
+		t.Fatal("callback was not processed")
 	}
-	if called != "last" {
+	if called != "override" {
 		t.Fatal("correct callback was not called")
 	}
 }

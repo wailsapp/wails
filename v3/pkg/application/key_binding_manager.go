@@ -55,6 +55,9 @@ func (kbm *KeyBindingManager) Remove(accelerator string) {
 
 // Process processes a key binding and returns true if handled
 func (kbm *KeyBindingManager) Process(accelerator string, window Window) bool {
+	if a, err := parseAccelerator(accelerator); err == nil {
+		accelerator = a.String()
+	}
 	kbm.app.keyBindingsLock.RLock()
 	callback, exists := kbm.app.keyBindings[accelerator]
 	item := kbm.menuBindings[accelerator]
