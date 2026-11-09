@@ -143,8 +143,9 @@ type Options struct {
 
 	// DisableGeneralAutofill stops the webview from saving what users type into
 	// forms and from suggesting it again (WebView2's IsGeneralAutofillEnabled).
-	// Autofill stays on by default. Needs WebView2 Runtime 100.0.1185.39 or
-	// later; on older runtimes a warning is logged and autofill stays on.
+	// It doesn't delete entries saved before it was set. Autofill stays on by
+	// default. Needs WebView2 Runtime 100.0.1185.39 or later; on older
+	// runtimes a warning is logged and autofill stays on.
 	DisableGeneralAutofill bool
 
 	// Class name for the window. If empty, 'wailsWindow' will be used.
