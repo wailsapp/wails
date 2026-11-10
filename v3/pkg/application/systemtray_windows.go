@@ -251,8 +251,10 @@ func (s *windowsSystemTray) run() {
 	// Resolve the base icons once so we can reuse them for light/dark modes
 	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
 
-	// Priority: custom icon > default app icon > built-in icon
-	if s.parent.icon != nil {
+	// Priority: custom icon > default app icon > built-in icon. A SetIcon that
+	// ran between impl being set and this lock already holds the newest icon
+	// (it no longer waits for the main thread), so keep it.
+	if s.lightModeIcon == 0 && s.parent.icon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.icon)
 		if err == nil {
 			s.lightModeIcon = icon
@@ -279,7 +281,7 @@ func (s *windowsSystemTray) run() {
 		}
 	}
 
-	if s.parent.darkModeIcon != nil {
+	if s.darkModeIcon == 0 && s.parent.darkModeIcon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.darkModeIcon)
 		if err == nil {
 			s.darkModeIcon = icon
