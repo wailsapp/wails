@@ -151,7 +151,7 @@ require (
 	golang.org/x/mod v0.41.0
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sync v0.23.0
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/text v0.42.0
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9
