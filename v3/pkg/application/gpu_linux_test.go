@@ -72,6 +72,7 @@ func TestNVIDIARenders(t *testing.T) {
 		want   bool
 	}{
 		{"no nvidia module", false, map[string]fakeCard{"card1": {"amdgpu", "connected", true}}, wayland, false},
+		{"Flatpak sandbox: no module/, NVIDIA's PCI driver drives the screen", false, map[string]fakeCard{"card0": {"nvidia", "connected", true}}, wayland, true},
 		{"nvidia drives the screen", true, map[string]fakeCard{"card0": {"nvidia", "connected", true}}, wayland, true},
 		{"hybrid laptop on the AMD iGPU", true, hybrid, wayland, false},
 		{"hybrid laptop offloaded to the dGPU", true, hybrid, with("__NV_PRIME_RENDER_OFFLOAD", "1"), true},
