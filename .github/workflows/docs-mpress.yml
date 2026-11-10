@@ -2,9 +2,9 @@ name: Wails v3 documentation
 
 on:
   pull_request:
-    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', 'v3/scripts/*changelog*', 'v3/tasks/changelog/**', 'v3/tasks/releaseci/**', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
   push:
-    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', 'v3/scripts/*changelog*', 'v3/tasks/changelog/**', 'v3/tasks/releaseci/**', 'v3/tasks/release/**', 'v3/tasks/releasegate/**']
   workflow_dispatch:
 
 permissions:
@@ -39,8 +39,7 @@ jobs:
         working-directory: v3
         env:
           GOWORK: 'off'
-          PYTHONDONTWRITEBYTECODE: '1'
         run: |
           go test scripts/validate-changelog.go scripts/validate-changelog_test.go
           go test ./tasks/release ./tasks/releasegate
-          python3 -m unittest discover -s scripts -p 'test_generate_release_changelog.py'
+          go test ./tasks/changelog ./tasks/releaseci
