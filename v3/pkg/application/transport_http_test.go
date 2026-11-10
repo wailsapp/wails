@@ -70,6 +70,7 @@ func TestHTTPTransportRuntimeBodyLimit(t *testing.T) {
 				padding := &runtimeBodyPadding{remaining: size - 2}
 				body := io.MultiReader(strings.NewReader("{}"), padding)
 				req := httptest.NewRequest(http.MethodPost, "/wails/runtime", body)
+				req.Header.Set("x-wails-client-id", "test")
 				if knownLength {
 					req.ContentLength = size
 				}
@@ -105,6 +106,7 @@ func (p *runtimeBodyPadding) Read(buf []byte) (int, error) {
 func TestHTTPTransportRuntimeBodyStopsReadingAtLimit(t *testing.T) {
 	padding := &runtimeBodyPadding{remaining: 2 * maxRuntimeBodyBytes}
 	req := httptest.NewRequest(http.MethodPost, "/wails/runtime", padding)
+	req.Header.Set("x-wails-client-id", "test")
 	rec := httptest.NewRecorder()
 	NewHTTPTransport().handleRuntimeRequest(rec, req)
 	if rec.Code != http.StatusRequestEntityTooLarge {
