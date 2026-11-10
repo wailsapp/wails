@@ -2,7 +2,13 @@
 
 package application
 
-import "testing"
+import (
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+	"time"
+)
 
 func TestSingleInstanceNames(t *testing.T) {
 	tests := []struct {
@@ -86,6 +92,148 @@ func TestSingleInstanceNamesRejectsInvalidIDs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, _, _, err := singleInstanceNames(tt.uniqueID); err == nil {
 				t.Errorf("singleInstanceNames(%q) succeeded, want an error", tt.uniqueID)
+			}
+		})
+	}
+}
+
+func TestSameExecutableTellsThisBinaryFromAnother(t *testing.T) {
+	if same, known := sameExecutable("/proc", os.Getpid()); !known || !same {
+		t.Fatalf("this process: same=%v known=%v", same, known)
+	}
+	sleep, err := exec.LookPath("sleep")
+	if err != nil {
+		t.Skip(err)
+	}
+	cmd := exec.Command(sleep, "30")
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
+	if same, known := sameExecutable("/proc", cmd.Process.Pid); !known || same {
+		t.Fatalf("another executable: same=%v known=%v", same, known)
+	}
+	if _, known := sameExecutable("/proc", 1<<30); known {
+		t.Fatal("a missing process was judged")
+	}
+}
+
+func TestCheckCallerRefusesOnlyAKnownOtherExecutable(t *testing.T) {
+	if err := checkCaller("/proc", os.Getpid()); err != nil {
+		t.Fatalf("this process refused: %v", err)
+	}
+	if err := checkCaller("/proc", 1<<30); err != nil {
+		t.Fatalf("an unknown caller refused: %v", err)
+	}
+	sleep, err := exec.LookPath("sleep")
+	if err != nil {
+		t.Skip(err)
+	}
+	cmd := exec.Command(sleep, "30")
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
+	if err := checkCaller("/proc", cmd.Process.Pid); err == nil {
+		t.Fatal("another executable was accepted")
+	}
+}
+
+func TestSameBuildAcceptsTwoMountsOfOneAppImage(t *testing.T) {
+	stamp := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
+	file := func(dir, name, body string, mode os.FileMode, at time.Time) os.FileInfo {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(p, mode); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(p, at, at); err != nil {
+			t.Fatal(err)
+		}
+		fi, err := os.Stat(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return fi
+	}
+	tests := []struct {
+		name  string
+		aName string
+		aBody string
+		aMode os.FileMode
+		aTime time.Time
+		bName string
+		bBody string
+		bMode os.FileMode
+		bTime time.Time
+		want  bool
+	}{
+		{
+			name:  "identical copies in different directories",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o755, bTime: stamp,
+			want: true,
+		},
+		{
+			name:  "name differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "other", bBody: "build-1", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "size differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-11", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "mode differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o644, bTime: stamp,
+			want: false,
+		},
+		{
+			name:  "mtime differs",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-1", bMode: 0o755, bTime: stamp.Add(time.Hour),
+			want: false,
+		},
+		{
+			name:  "equal name, size, mode and mtime with different content",
+			aName: "app", aBody: "build-1", aMode: 0o755, aTime: stamp,
+			bName: "app", bBody: "build-2", bMode: 0o755, bTime: stamp,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := file(t.TempDir(), tt.aName, tt.aBody, tt.aMode, tt.aTime)
+			b := file(t.TempDir(), tt.bName, tt.bBody, tt.bMode, tt.bTime)
+			if !sameBuild(a, b) {
+				if tt.want {
+					t.Fatal("sameBuild = false, want true")
+				}
+				return
+			}
+			root := t.TempDir()
+			selfDir := filepath.Join(root, "self")
+			pidDir := filepath.Join(root, "3")
+			if err := os.MkdirAll(selfDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.MkdirAll(pidDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			file(selfDir, "exe", tt.aBody, tt.aMode, tt.aTime)
+			file(pidDir, "exe", tt.bBody, tt.bMode, tt.bTime)
+			same, known := sameExecutable(root, 3)
+			if !known {
+				t.Fatal("known = false")
+			}
+			if same != tt.want {
+				t.Fatalf("sameExecutable = %v, want %v", same, tt.want)
 			}
 		})
 	}
