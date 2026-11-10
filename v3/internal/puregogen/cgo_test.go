@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go/ast"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,5 +53,21 @@ func atom() C.int { return C.ATOM }
 	delete(names, "native_init")
 	if err := generate(false); err == nil {
 		t.Fatal("unknown native call silently accepted")
+	}
+}
+
+func TestPortableTypeChar(t *testing.T) {
+	// cgo declares plain char as uint8 on arm64 and int8 on amd64.
+	for _, cgo := range []string{"uint8", "int8"} {
+		spec := &ast.TypeSpec{Name: ast.NewIdent("_Ctype_char"), Type: ast.NewIdent(cgo)}
+		portableType(spec)
+		if got := spec.Type.(*ast.Ident).Name; got != "int8" {
+			t.Errorf("char declared %s by cgo: got %s, want int8", cgo, got)
+		}
+	}
+	other := &ast.TypeSpec{Name: ast.NewIdent("_Ctype_uchar"), Type: ast.NewIdent("uint8")}
+	portableType(other)
+	if got := other.Type.(*ast.Ident).Name; got != "uint8" {
+		t.Errorf("unsigned char changed to %s", got)
 	}
 }

@@ -1771,7 +1771,8 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 	if w.menuBindings != nil {
 		w.menuBindingsLock.RLock()
 		defer w.menuBindingsLock.RUnlock()
-		if menuItem := w.menuBindings[acceleratorString]; menuItem != nil {
+		// A disabled item's shortcut does nothing, as its greyed-out row does.
+		if menuItem := w.menuBindings[acceleratorString]; menuItem != nil && menuItem.Enabled() {
 			menuItem.handleClick()
 			return true
 		}
@@ -1843,6 +1844,15 @@ func (w *WebviewWindow) removeMenuBindingsOf(items []*MenuItem) {
 			delete(w.menuBindings, key)
 		}
 	}
+}
+
+// removeMenuBindingsTo unregisters every accelerator bound to one of items,
+// whatever the accelerator: a menu rebuild calls it before binding the items
+// afresh, so a shortcut changed with SetAccelerator stops firing.
+func (w *WebviewWindow) removeMenuBindingsTo(items map[int]*MenuItem) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	removeBindingsTo(w.menuBindings, items)
 }
 
 func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {

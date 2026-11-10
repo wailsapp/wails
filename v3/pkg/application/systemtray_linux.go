@@ -36,10 +36,11 @@ type linuxSystemTray struct {
 	iconPosition   IconPosition
 	isTemplateIcon bool
 
-	quitChan  chan struct{}
-	conn      *dbus.Conn
-	props     *prop.Properties
-	menuProps *prop.Properties
+	quitChan    chan struct{}
+	destroyOnce sync.Once
+	conn        *dbus.Conn
+	props       *prop.Properties
+	menuProps   *prop.Properties
 
 	menuVersion atomic.Uint32
 
@@ -343,11 +344,22 @@ func (s *linuxSystemTray) bounds() (*Rect, error) {
 }
 
 func (s *linuxSystemTray) run() {
-	conn, err := dbus.SessionBus()
+	// Each tray has its own connection. The objects live at fixed paths, so
+	// trays sharing one would replace each other's, and a watcher drops an
+	// item when its connection goes away: closing it is what removes the
+	// icon on Destroy.
+	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		globalApplication.error("systray error: failed to connect to DBus: %w\n", err)
 		return
 	}
+	// Until the tray publishes it below, the connection is run's to close.
+	published := false
+	defer func() {
+		if !published {
+			_ = conn.Close()
+		}
+	}()
 	err = notifier.ExportStatusNotifierItem(conn, itemPath, s)
 	if err != nil {
 		globalApplication.error("systray error: failed to export status notifier item: %w\n", err)
@@ -359,7 +371,7 @@ func (s *linuxSystemTray) run() {
 		return
 	}
 
-	name := fmt.Sprintf("org.kde.StatusNotifierItem-%d-1", os.Getpid()) // register id 1 for this process
+	name := fmt.Sprintf("org.kde.StatusNotifierItem-%d-%d", os.Getpid(), s.id)
 	_, err = conn.RequestName(name, dbus.NameFlagDoNotQueue)
 	if err != nil {
 		globalApplication.error("systray error: failed to request name: %w", err)
@@ -380,9 +392,17 @@ func (s *linuxSystemTray) run() {
 	// them under, so a setter racing with the run()-side wiring never
 	// observes a half-initialised pair.
 	s.itemMapLock.Lock()
+	select {
+	case <-s.quitChan:
+		// Destroyed while connecting: destroy found no connection to close.
+		s.itemMapLock.Unlock()
+		return
+	default:
+	}
 	s.conn = conn
 	s.props = props
 	s.menuProps = menuProps
+	published = true
 	s.itemMapLock.Unlock()
 
 	node := introspect.Node{
@@ -415,7 +435,7 @@ func (s *linuxSystemTray) run() {
 	s.setLabel(s.label)
 	go func() {
 		defer handlePanic()
-		s.register()
+		s.register(conn)
 
 		if err := conn.AddMatchSignal(
 			dbus.WithMatchObjectPath("/org/freedesktop/DBus"),
@@ -454,7 +474,7 @@ func (s *linuxSystemTray) run() {
 					continue
 				}
 				if newOwner != "" {
-					s.register()
+					s.register(conn)
 				}
 
 			case <-s.quitChan:
@@ -578,7 +598,16 @@ func (s *linuxSystemTray) setLabel(label string) {
 }
 
 func (s *linuxSystemTray) destroy() {
-	close(s.quitChan)
+	s.destroyOnce.Do(func() {
+		close(s.quitChan)
+		s.itemMapLock.Lock()
+		conn := s.conn
+		s.conn = nil
+		s.itemMapLock.Unlock()
+		if conn != nil {
+			_ = conn.Close()
+		}
+	})
 }
 
 func (s *linuxSystemTray) createMenuPropSpec() map[string]map[string]*prop.Prop {
@@ -699,11 +728,18 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 	}
 }
 
-func (s *linuxSystemTray) register() bool {
-	obj := s.conn.Object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
+// register announces the item to the watcher on conn, the tray's own
+// connection (not s.conn, which destroy clears).
+func (s *linuxSystemTray) register(conn *dbus.Conn) bool {
+	obj := conn.Object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
 	call := obj.Call("org.kde.StatusNotifierWatcher.RegisterStatusNotifierItem", 0, itemPath)
 	if call.Err != nil {
-		globalApplication.error("systray error: failed to register: %w", call.Err)
+		select {
+		case <-s.quitChan:
+			// Destroyed while registering: the connection is closed.
+		default:
+			globalApplication.error("systray error: failed to register: %w", call.Err)
+		}
 		return false
 	}
 
@@ -785,7 +821,7 @@ func (s *linuxSystemTray) EventGroup(events []struct {
 	V3 uint32
 }) (idErrors []int32, err *dbus.Error) {
 	for _, event := range events {
-		fmt.Printf("EventGroup: %v, %v, %v, %v\n", event.V0, event.V1, event.V2, event.V3)
+		globalApplication.debug("systray EventGroup called", "id", event.V0, "eventID", event.V1)
 		if event.V1 == "clicked" {
 			s.itemMapLock.RLock()
 			item, ok := s.itemMap[event.V0]

@@ -26,6 +26,33 @@ type driver interface {
 	rightClick(title string, x, y int) error
 }
 
+// The optional abilities a driver can have. The scenarios check for them.
+
+// calibrator is a driver whose pointer coordinates are not the page's: it
+// moves the pointer in its own raw coordinates for the window, and maps page
+// coordinates through what calibrate measured (see calibrate in main.go).
+type calibrator interface {
+	moveRaw(title string, x, y int) error
+	setMapping(title string, m mapping)
+}
+
+// mapping is raw = origin + scale*page, per axis.
+type mapping struct{ ox, oy, scale float64 }
+
+func (m mapping) raw(x, y int) (int32, int32) {
+	return int32(m.ox + m.scale*float64(x) + 0.5), int32(m.oy + m.scale*float64(y) + 0.5)
+}
+
+// dialogCanceller is a driver that cannot type into file dialogs (macOS: the
+// panel runs in another process) but can cancel them.
+type dialogCanceller interface{ cancelDialog() error }
+
+// fileChooser is a driver with its own way to choose path in the file
+// dialog titled title. Without it, the GTK path in main.go is used.
+type fileChooser interface {
+	chooseFile(title, path string) error
+}
+
 // chord is a parsed key chord: modifiers plus one key name, all lower case.
 type chord struct {
 	ctrl, shift, alt, cmd bool

@@ -110,6 +110,7 @@ func portCgo(path string, check bool) error {
 					if sel, ok := spec.Type.(*ast.SelectorExpr); ok && sel.Sel.Name == "Incomplete" {
 						spec.Type = &ast.StructType{Fields: &ast.FieldList{}}
 					}
+					portableType(spec)
 					decls = append(decls, &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{spec}})
 				case *ast.ValueSpec:
 					name := spec.Names[0].Name
@@ -258,4 +259,15 @@ func writeGenerated(path string, data []byte, check bool) error {
 		return nil
 	}
 	return os.WriteFile(path, formatted, 0644)
+}
+
+// portableType makes a C type's Go declaration the same on every target, so
+// the checked-in output does not depend on the machine that generated it.
+// Plain C char is signed on amd64 and unsigned on arm64, and cgo says so; the
+// bindings only point at chars (strings), so the sign is immaterial and amd64's
+// is kept.
+func portableType(spec *ast.TypeSpec) {
+	if spec.Name.Name == "_Ctype_char" {
+		spec.Type = ast.NewIdent("int8")
+	}
 }

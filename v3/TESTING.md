@@ -90,6 +90,48 @@ behaviors separate from migration regressions when comparing logs.
 Implementation lineage: [#2388](https://github.com/wailsapp/wails/issues/2388) and
 [#5715](https://github.com/wailsapp/wails/pull/5715).
 
+### E2E input probe (Linux, macOS, Windows)
+
+`tests/purego/e2e` drives a real Wails app with real operating-system input
+(XTEST on X11, posted NSEvents on macOS, `SendInput` on Windows): key
+bindings, menu accelerators (checkbox, radio, disabled and re-bound items),
+keyboard menu navigation, context menus, typed text, Edit-menu shortcuts,
+window focus and close events, Go-to-JavaScript events, message dialogs and
+the open and save dialogs. It also drives the app the other ways apps are
+driven: the role menus' own shortcuts, menus changed at run time, the Go
+window API, the page calling the JavaScript runtime (window methods, events,
+clipboard, screens, bound calls with cancellation, streams and dialogs), a
+second copy handing over to the first, and on Linux the tray icon, with the
+probe playing the desktop panel on the session bus. It builds with either
+backend, so it also checks cgo and purego behave the same. The `E2E input probe (v3)` workflow
+(`.github/workflows/e2e-v3.yml`) runs it on every platform; the Linux lanes
+are listed in `tests/purego/e2e/lanes.json` and cover Fedora, Debian 12 (the
+GTK4 floor), Debian 13, Ubuntu 22.04 (the GTK3 floor) and 24.04 (amd64 and
+arm64), Arch and openSUSE, plus HiDPI scaling, German, French and Russian
+keyboard layouts, Num Lock and Caps Lock, a window manager, and the
+accessibility bus. Pull requests run a subset; the nightly run takes them all.
+
+Never run it on your own desktop session: it takes over the keyboard and
+pointer. Run it in a VM, a container or CI:
+
+```bash
+# Linux, one lane (see run-linux.sh for the list); as root in a container,
+# tests/purego/e2e/ci-deps.sh installs what it needs on Fedora, Debian/Ubuntu,
+# Arch and openSUSE.
+tests/purego/e2e/run-linux.sh default purego
+tests/purego/e2e/run-linux.sh layout-de purego,gtk3
+# macOS (purego or, without the tag, cgo)
+go run -tags purego ./tests/purego/e2e
+# Windows: generate the application manifest first (Common Controls 6)
+go generate ./tests/purego/e2e && go run ./tests/purego/e2e
+```
+
+`E2E_SCENARIOS` and `E2E_SKIP` choose scenarios; build with `-cover` and set
+`GOCOVERDIR` to measure what it exercises; set `E2E_EVIDENCE_DIR` to keep the
+screenshots it takes of open menus and dialogs. Wayland is not covered: XTEST
+does not reach native Wayland clients, and the parity probe covers Wayland
+instead.
+
 ### 🚀 Complete Cross-Platform Testing
 ```bash
 # Build all examples for ALL platforms (macOS + Windows + Linux)

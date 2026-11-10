@@ -12,6 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -128,6 +129,11 @@ type windowsWebviewWindow struct {
 
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
+
+	// replacingMenu is set while replaceMenu runs Menu.Update, so the
+	// refresh that triggers (refreshWindowMenus) leaves this window alone.
+	// Only the main thread reads or writes it.
+	replacingMenu bool
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -138,6 +144,25 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 		w.removeMenu()
 		return
 	}
+	w.replaceMenu(menu, true)
+}
+
+// refreshMenu rebuilds the window's menu bar from menu, which Menu.Update has
+// just processed: items added, removed or hidden, and changed accelerators,
+// reach the bar only through a rebuild.
+func (w *windowsWebviewWindow) refreshMenu(menu *Menu) {
+	// A window replacing its menu calls Menu.Update itself, and goes on to
+	// build the bar: rebuilding it here too would destroy the menu it is
+	// replacing twice.
+	if w.replacingMenu || w.menu == nil || w.menu.menuData != menu || w.parent.options.Windows.DisableMenu {
+		return
+	}
+	w.replaceMenu(menu, false)
+}
+
+// replaceMenu gives the window a menu bar built from menu, first processing
+// menu (Menu.Update) when update is set.
+func (w *windowsWebviewWindow) replaceMenu(menu *Menu, update bool) {
 	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
 	// allocated while building it, and the submenu handles detached for hidden
 	// rows. Win32Menu.Update frees those, but only for the same object, and
@@ -152,7 +177,15 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 			previousImpls[item] = item.impl
 		}
 	}
-	menu.Update()
+	if update {
+		func() {
+			// Deferred: a panic in Update recovered higher up must not leave
+			// this window's bar refusing every later refresh.
+			w.replacingMenu = true
+			defer func() { w.replacingMenu = false }()
+			menu.Update()
+		}()
+	}
 
 	replacement := NewApplicationMenu(w, menu)
 	if !w32.SetMenu(w.hwnd, replacement.menu) {
@@ -167,10 +200,13 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 
 	// Only once the window has been given the new menu: destroying one that is
 	// still assigned to a window leaves it pointing at a freed handle. Its
-	// accelerators go too, except those the replacement still holds.
+	// accelerators go too - all of them, by item, as an item kept in the
+	// replacement may have a new accelerator (SetAccelerator) - and the
+	// replacement's are bound again.
 	if previous != nil {
-		w.parent.removeMenuBindingsOf(itemsOnlyIn(previous, replacement))
+		w.parent.removeMenuBindingsTo(previous.menuMapping)
 		previous.Destroy()
+		replacement.bindAccelerators()
 	}
 
 	// Set menu background if theme is active
@@ -994,8 +1030,20 @@ func (w *windowsWebviewWindow) reload() {
 	w.execJS("window.location.reload();")
 }
 
+// forceReload reloads the page bypassing the cache, as the other platforms
+// do. WebView2 has no such method; the DevTools protocol's Page.reload does.
 func (w *windowsWebviewWindow) forceReload() {
-	// noop
+	if w.chromium == nil {
+		return
+	}
+	err := w.chromium.CallDevTools("Page.reload", `{"ignoreCache":true}`, func(_ string, err error) {
+		if err != nil {
+			w.reload()
+		}
+	})
+	if err != nil {
+		w.reload()
+	}
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
@@ -3009,6 +3057,24 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 
 	accKey := acc.String()
 	globalApplication.debug("Processing key binding", "vkey", vkey, "acc", accKey)
+
+	// Punctuation keys are reported by virtual key (OEM_PLUS), which no
+	// accelerator written with the character (CmdOrCtrl+plus, CmdOrCtrl+-,
+	// CmdOrCtrl+/) ever matched. Try what the key types on the active layout.
+	if strings.HasPrefix(acc.Key, "oem_") {
+		unshifted := rune(w32.MapVirtualKey(vkey, w32.MAPVK_VK_TO_CHAR) & 0x7FFF) // the high bit marks a dead key
+		typing := keyState
+		for _, k := range []int{w32.VK_CONTROL, w32.VK_LCONTROL, w32.VK_RCONTROL, w32.VK_MENU, w32.VK_LMENU, w32.VK_RMENU} {
+			typing[k] = 0 // the character as typed, not a control character
+		}
+		shifted, _ := w32.ToUnicodeNoState(vkey, 0, &typing)
+		for _, candidate := range punctuationAcceleratorCandidates(acc.Modifiers, unicode.ToLower(unshifted), shifted, acc.Key) {
+			if w.parent.processKeyBinding(candidate) {
+				return true
+			}
+		}
+		return false
+	}
 
 	// Process the key binding
 	if w.parent.processKeyBinding(accKey) {
