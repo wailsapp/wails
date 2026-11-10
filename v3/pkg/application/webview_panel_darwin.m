@@ -89,6 +89,13 @@ extern void processWindowKeyDownEvent(unsigned int, const char*);
     [super cancelOperation:sender];
 }
 
+- (void)doCommandBySelector:(SEL)selector {
+    if (windowDropsEscapeCommand(self, selector)) {
+        return;
+    }
+    [super doCommandBySelector:selector];
+}
+
 - (void)setDelegate:(id<NSWindowDelegate>)delegate {
     id<NSWindowDelegate> previousDelegate = [super delegate];
     if (previousDelegate == delegate) {

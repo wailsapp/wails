@@ -713,7 +713,8 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 // A minimal NSWindow subclass supplying the overrides the cgo WebviewWindow
 // relies on: it must be able to become key/main even when borderless
 // (frameless), and it can optionally swallow the Escape key so it doesn't exit
-// fullscreen.
+// fullscreen, whether Escape arrives as cancelOperation: or, from a focused
+// text field, as doCommandBySelector:cancelOperation:.
 // ---------------------------------------------------------------------------
 
 var (
@@ -721,6 +722,28 @@ var (
 	webviewWindowClass      id
 	windowDisableEscape     sync.Map // uintptr(window) -> bool
 )
+
+const nsWindowStyleMaskFullScreen = 1 << 14 // NSWindowStyleMaskFullScreen
+
+// windowDropsEscapeCommand reports whether a window's doCommandBySelector:
+// should drop selector for DisableEscapeExitsFullscreen (cgo's
+// windowDropsEscapeCommand in webview_window_darwin.h). In fullscreen,
+// -[NSWindow doCommandBySelector:] leaves fullscreen for cancelOperation: (the
+// command WebKit sends for an unhandled Escape) without calling the window's
+// cancelOperation:, unless the delegate implements it.
+func windowDropsEscapeCommand(win id, selector objc.SEL) bool {
+	if selector != sel_("cancelOperation:") {
+		return false
+	}
+	if v, ok := windowDisableEscape.Load(win.ptr()); !ok || !v.(bool) {
+		return false
+	}
+	if get[uint](win, "styleMask")&nsWindowStyleMaskFullScreen != nsWindowStyleMaskFullScreen {
+		return false
+	}
+	delegate := win.send("delegate")
+	return delegate.isNil() || !get[bool](delegate, "respondsToSelector:", selector)
+}
 
 func registerWebviewWindowClass() id {
 	registerWindowClassOnce.Do(func() {
@@ -743,13 +766,18 @@ func webviewWindowMethods(definer *id) []objc.MethodDef {
 		{Cmd: sel_("becomeFirstResponder"), Fn: yes},
 		{Cmd: sel_("resignFirstResponder"), Fn: yes},
 		{Cmd: sel_("cancelOperation:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) {
-			const fullScreen = 1 << 14 // NSWindowStyleMaskFullScreen
 			if v, ok := windowDisableEscape.Load(uintptr(self)); ok && v.(bool) {
-				if get[uint](id(self), "styleMask")&fullScreen == fullScreen {
+				if get[uint](id(self), "styleMask")&nsWindowStyleMaskFullScreen == nsWindowStyleMaskFullScreen {
 					return
 				}
 			}
 			sendSuperFrom(*definer, self, "cancelOperation:", sender)
+		}},
+		{Cmd: sel_("doCommandBySelector:"), Fn: func(self objc.ID, cmd objc.SEL, selector objc.SEL) {
+			if windowDropsEscapeCommand(id(self), selector) {
+				return
+			}
+			sendSuperFrom(*definer, self, "doCommandBySelector:", selector)
 		}},
 		{Cmd: sel_("keyDown:"), Fn: func(self objc.ID, cmd objc.SEL, event objc.ID) {
 			v, ok := nsWindowToID.Load(uintptr(self))
@@ -1105,7 +1133,6 @@ func (w *macosWebviewWindow) isMaximised() bool {
 }
 func (w *macosWebviewWindow) isFullscreen() bool {
 	return w.syncMainThreadReturningBool(func() bool {
-		const nsWindowStyleMaskFullScreen = 1 << 14
 		return get[uint](w.win(), "styleMask")&nsWindowStyleMaskFullScreen != 0
 	})
 }
@@ -1489,7 +1516,6 @@ func (w *macosWebviewWindow) windowZoom() {
 // restore mirrors cgo windowRestore: exit fullscreen, un-zoom, deminiaturize.
 func (w *macosWebviewWindow) restore() {
 	runOnMain(func() {
-		const nsWindowStyleMaskFullScreen = 1 << 14
 		if get[uint](w.win(), "styleMask")&nsWindowStyleMaskFullScreen != 0 {
 			w.win().send("toggleFullScreen:", objc.ID(0))
 		}

@@ -653,8 +653,11 @@ type MacWindow struct {
 	LiquidGlass MacLiquidGlass
 
 	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
-	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
-	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// When true, Esc never takes the window out of fullscreen — neither as
+	// cancelOperation: on the responder chain nor as the command WebKit sends for
+	// a keydown the page leaves unhandled — allowing web content (e.g. modals with
+	// Esc-to-close behaviour) to handle Esc directly. Fullscreen can still be left
+	// through UnFullscreen, ToggleFullscreen, the green button and the View menu.
 	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
 	DisableEscapeExitsFullscreen bool
 
