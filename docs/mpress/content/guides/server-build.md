@@ -157,6 +157,9 @@ Events work bidirectionally in server mode:
 - **Frontend to Backend**: Events emitted from the browser are sent via HTTP and received by your Go event handlers
 - **Backend to Frontend**: Events emitted from Go are broadcast to all connected browsers via WebSocket
 
+Server builds do not queue native IPC events for Go window objects created by
+`app.Window.NewWithOptions`.
+
 Each browser tab is represented as a "window" with a unique name (`browser-1`, `browser-2`, etc.), accessible via `event.Sender`:
 
 ```go
