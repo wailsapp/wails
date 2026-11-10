@@ -220,11 +220,25 @@ func (w *Window) GetPosition() (int, int) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	invokeOnMainThread(func() {
-		C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+		C.GetPosition(unsafe.Pointer(w.asGTKWindow()), &width, &height)
 		wg.Done()
 	})
 	wg.Wait()
 	return int(width), int(height)
+}
+
+// absolutePosition returns the window position in desktop coordinates, unlike
+// GetPosition which is relative to the current monitor.
+func (w *Window) absolutePosition() (int, int) {
+	var x, y C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_position(w.asGTKWindow(), &x, &y)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(x), int(y)
 }
 
 func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {

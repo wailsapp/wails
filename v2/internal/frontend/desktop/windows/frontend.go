@@ -264,7 +264,7 @@ func (f *Frontend) WindowSetPosition(x, y int) {
 func (f *Frontend) WindowGetPosition() (int, int) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
-	return f.mainWindow.Pos()
+	return f.mainWindow.PosOnMonitor()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {

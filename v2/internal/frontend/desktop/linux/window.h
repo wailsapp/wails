@@ -87,6 +87,7 @@ void SetWindowTransparency(GtkWidget *widget);
 void SetBackgroundColour(void *data);
 void SetTitle(GtkWindow *window, char *title);
 void SetPosition(void *window, int x, int y);
+void GetPosition(void *window, int *x, int *y);
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height);
 void DisableContextMenu(void *webview);
 void ConnectButtons(void *webview);
