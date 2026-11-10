@@ -2,13 +2,15 @@
 
 package application
 
+import "unsafe"
+
 func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window, _ := globalApplication.Window.GetByID(a.getCurrentWindowID())
-	var parent uintptr
+	var parent unsafe.Pointer
 	if window != nil {
 		nativeWindow := window.NativeWindow()
 		if nativeWindow != nil {
-			parent = uintptr(nativeWindow)
+			parent = nativeWindow
 		}
 	}
 	about := newMessageDialog(InfoDialogType)
@@ -30,11 +32,11 @@ type linuxDialog struct {
 func (m *linuxDialog) show() {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window, _ := globalApplication.Window.GetByID(windowId)
-	var parent uintptr
+	var parent unsafe.Pointer
 	if window != nil {
 		nativeWindow := window.NativeWindow()
 		if nativeWindow != nil {
-			parent = uintptr(nativeWindow)
+			parent = nativeWindow
 		}
 	}
 
