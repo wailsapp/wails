@@ -510,6 +510,9 @@ type App struct {
 	performingShutdown  bool
 	shutdownLock        sync.Mutex
 	serviceShutdownLock sync.Mutex
+	// cleanupRunning is held for the whole of the cleanup that won the race to start, so a caller that lost it
+	// can wait for the shutdown tasks to finish (see waitForCleanup).
+	cleanupRunning sync.Mutex
 
 	// Shutdown tasks are run when the application is shutting down.
 	// They are run in the order they are added and run on the main thread.
@@ -958,6 +961,8 @@ func (a *App) cleanup() {
 	}
 	a.cancel() // Cancel app context before running shutdown hooks.
 	a.performingShutdown = true
+	a.cleanupRunning.Lock()
+	defer a.cleanupRunning.Unlock()
 	a.shutdownLock.Unlock()
 
 	// No need to hold the lock here because a.shutdownTasks
@@ -997,6 +1002,13 @@ func (a *App) cleanup() {
 			a.options.PostShutdown()
 		}
 	})
+}
+
+// waitForCleanup blocks until a cleanup already started elsewhere has finished. It must be called after
+// cleanup, never from inside a shutdown task.
+func (a *App) waitForCleanup() {
+	a.cleanupRunning.Lock()
+	a.cleanupRunning.Unlock()
 }
 
 func (a *App) Quit() {
