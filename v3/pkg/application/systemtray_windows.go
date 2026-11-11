@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"unsafe"
 
@@ -50,6 +51,19 @@ type windowsSystemTray struct {
 	darkModeIconOwned  bool
 	currentIcon        w32.HICON
 	currentIconOwned   bool
+
+	// lightSeq and darkSeq number each setIcon / setDarkModeIcon call, in call
+	// order. A call made on the main thread is applied on a goroutine, so an
+	// older call can reach iconLock after a newer one; lightApplied and
+	// darkApplied (guarded by iconLock) let it see that and drop itself.
+	lightSeq     atomic.Uint64
+	darkSeq      atomic.Uint64
+	lightApplied uint64
+	darkApplied  uint64
+
+	// destroyed is set before destroy deletes the icon, so a TaskbarCreated
+	// re-add still queued behind iconLock does not add it back.
+	destroyed atomic.Bool
 }
 
 // releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
@@ -253,8 +267,10 @@ func (s *windowsSystemTray) run() {
 
 	// Priority: custom icon > default app icon > built-in icon. A SetIcon that
 	// ran between impl being set and this lock already holds the newest icon
-	// (it no longer waits for the main thread), so keep it.
-	if s.lightModeIcon == 0 && s.parent.icon != nil {
+	// (it no longer waits for the main thread), so keep it. A slot that only
+	// holds the handle the other setter copied into it (not owned) is not a
+	// configured icon: the icon configured before Run still wins there.
+	if (s.lightModeIcon == 0 || !s.lightModeIconOwned) && s.parent.icon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.icon)
 		if err == nil {
 			s.lightModeIcon = icon
@@ -281,7 +297,7 @@ func (s *windowsSystemTray) run() {
 		}
 	}
 
-	if s.darkModeIcon == 0 && s.parent.darkModeIcon != nil {
+	if (s.darkModeIcon == 0 || !s.darkModeIconOwned) && s.parent.darkModeIcon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.darkModeIcon)
 		if err == nil {
 			s.darkModeIcon = icon
@@ -418,7 +434,19 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 	return nid
 }
 
+// setIcon updates the light mode icon. On the main thread (a tray click
+// handler, for example) it hands the update to a goroutine, so the main
+// thread never waits for iconLock or for Shell_NotifyIcon.
 func (s *windowsSystemTray) setIcon(icon []byte) {
+	seq := s.lightSeq.Add(1)
+	if onMainThread() {
+		go s.applyIcon(icon, seq)
+		return
+	}
+	s.applyIcon(icon, seq)
+}
+
+func (s *windowsSystemTray) applyIcon(icon []byte, seq uint64) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		globalApplication.error("failed to create systray light mode icon: %v", err)
@@ -427,6 +455,11 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 
 	s.iconLock.Lock()
 	defer s.iconLock.Unlock()
+	if seq < s.lightApplied || s.destroyed.Load() {
+		w32.DestroyIcon(newIcon) // a newer SetIcon got here first, or the tray is gone
+		return
+	}
+	s.lightApplied = seq
 
 	oldLight := s.lightModeIcon
 	oldLightOwned := s.lightModeIconOwned
@@ -451,7 +484,18 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 	s.updateIcon()
 }
 
+// setDarkModeIcon updates the dark mode icon, handing off from the main
+// thread like setIcon.
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
+	seq := s.darkSeq.Add(1)
+	if onMainThread() {
+		go s.applyDarkModeIcon(icon, seq)
+		return
+	}
+	s.applyDarkModeIcon(icon, seq)
+}
+
+func (s *windowsSystemTray) applyDarkModeIcon(icon []byte, seq uint64) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		globalApplication.error("failed to create systray dark mode icon: %v", err)
@@ -460,6 +504,11 @@ func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 
 	s.iconLock.Lock()
 	defer s.iconLock.Unlock()
+	if seq < s.darkApplied || s.destroyed.Load() {
+		w32.DestroyIcon(newIcon) // a newer SetDarkModeIcon got here first, or the tray is gone
+		return
+	}
+	s.darkApplied = seq
 
 	oldDark := s.darkModeIcon
 	oldDarkOwned := s.darkModeIconOwned
@@ -490,6 +539,16 @@ func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 // iconSettersRunOnAnyThread marks setIcon and setDarkModeIcon as safe off the
 // main thread: they lock iconLock themselves.
 func (s *windowsSystemTray) iconSettersRunOnAnyThread() {}
+
+// onMainThread reports whether the caller is the main (message loop) thread.
+// False before the main loop exists, when there is no message loop to block.
+func onMainThread() bool {
+	if globalApplication == nil {
+		return false
+	}
+	app, ok := globalApplication.impl.(*windowsApp)
+	return ok && app != nil && app.mainThreadID != 0 && app.isOnMainThread()
+}
 
 func newSystemTrayImpl(parent *SystemTray) systemTrayImpl {
 	return &windowsSystemTray{
@@ -625,6 +684,7 @@ func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	s.destroyed.Store(true)
 	if s.cancelTheme != nil {
 		s.cancelTheme()
 		s.cancelTheme = nil
@@ -650,13 +710,16 @@ func (s *windowsSystemTray) destroy() {
 		s.hwnd = 0
 		s.iconLock.Unlock()
 	} else {
-		// An icon update holds iconLock, maybe stuck in Shell_NotifyIcon. Waiting
-		// here would freeze the main thread and hang Quit, so free the handles it
-		// may still be using once it returns. hwnd keeps its value because only
-		// the main thread may write it; later calls on this tray fail harmlessly.
+		// An icon update or a TaskbarCreated re-add holds iconLock, maybe stuck in
+		// Shell_NotifyIcon. Waiting here would freeze the main thread and hang
+		// Quit, so finish once it returns: delete the icon again in case a re-add
+		// in flight put it back after the delete above, then free the handles.
+		// hwnd keeps its value because only the main thread may write it; later
+		// calls on this tray fail harmlessly.
 		go func() {
 			s.iconLock.Lock()
 			defer s.iconLock.Unlock()
+			w32.ShellNotifyIcon(w32.NIM_DELETE, &nid)
 			s.releaseIcons()
 		}()
 	}
@@ -716,7 +779,7 @@ func (s *windowsSystemTray) Hide() {
 // added from a goroutine once that update returns.
 func (s *windowsSystemTray) reshow() {
 	add := func() {
-		if s.hwnd == 0 {
+		if s.hwnd == 0 || s.destroyed.Load() {
 			return // destroyed in the meantime
 		}
 		if _, err := s.show(); err != nil {
