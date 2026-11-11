@@ -57,6 +57,9 @@ type windowsApp struct {
 	// Restart taskbar flag
 	restartingTaskbar atomic.Bool
 
+	// Set while a delayed re-read of the screens is scheduled
+	screenRetryPending atomic.Bool
+
 	// Last used icon from SetIcon, if any
 	currentIcon w32.HICON
 }
@@ -308,6 +311,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			err := m.processAndCacheScreens()
 			if err != nil {
 				m.parent.handleError(err)
+				m.retryCacheScreensLater()
 			}
 		}
 	}
@@ -494,7 +498,7 @@ func newPlatformApp(app *App) *windowsApp {
 		systrayMap: make(map[w32.HWND]*windowsSystemTray),
 	}
 
-	err = result.processAndCacheScreens()
+	err = retryScreenCache(screenCacheStartupAttempts, screenCacheRetryDelay, result.processAndCacheScreens)
 	if err != nil {
 		app.handleFatalError(err)
 	}
