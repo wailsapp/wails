@@ -4,6 +4,7 @@ package application
 
 import (
 	"testing"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
@@ -37,5 +38,58 @@ func TestWindowsSystemTrayDropsAnOlderDarkModeIconUpdate(t *testing.T) {
 	s.applyDarkModeIcon(icons.SystrayLight, 1)
 	if s.darkModeIcon != newest || s.darkApplied != 2 {
 		t.Fatalf("an older dark mode icon update replaced a newer one (applied=%d)", s.darkApplied)
+	}
+}
+
+// While a worker is stuck applying one main-thread update (Shell_NotifyIcon
+// blocked on Explorer), further updates must not start more workers: only
+// the newest is kept, from a copy of the caller's bytes.
+func TestQueueIconKeepsOnlyTheNewestUpdateWhileBlocked(t *testing.T) {
+	var p pendingIcon
+	release := make(chan struct{})
+	started := make(chan struct{}, 1)
+	type applied struct {
+		icon []byte
+		seq  uint64
+	}
+	done := make(chan applied, 10)
+	apply := func(icon []byte, seq uint64) {
+		select {
+		case started <- struct{}{}:
+		default:
+		}
+		<-release
+		done <- applied{icon, seq}
+	}
+
+	buf := []byte{1}
+	queueIcon(&p, buf, 1, apply)
+	<-started // the first worker is now blocked in apply
+
+	for seq := uint64(2); seq <= 50; seq++ {
+		buf[0] = byte(seq)
+		queueIcon(&p, buf, seq, apply)
+	}
+	buf[0] = 0 // the caller reuses its buffer
+	close(release)
+
+	first := <-done
+	second := <-done
+	if first.seq != 1 || second.seq != 50 {
+		t.Fatalf("applied seqs %d, %d; want 1 then 50", first.seq, second.seq)
+	}
+	if second.icon[0] != 50 {
+		t.Fatalf("applied icon byte %d; want a copy holding 50", second.icon[0])
+	}
+	select {
+	case extra := <-done:
+		t.Fatalf("an extra update was applied: seq %d", extra.seq)
+	case <-time.After(100 * time.Millisecond):
+	}
+	p.mu.Lock()
+	running := p.running
+	p.mu.Unlock()
+	if running {
+		t.Fatal("the worker did not exit after draining")
 	}
 }

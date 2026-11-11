@@ -61,10 +61,60 @@ type windowsSystemTray struct {
 	lightApplied uint64
 	darkApplied  uint64
 
+	// lightPending and darkPending hold the newest main-thread update for each
+	// mode while one worker applies them, so a long Shell_NotifyIcon stall
+	// costs one goroutine and one icon handle per mode, not one per call.
+	lightPending pendingIcon
+	darkPending  pendingIcon
+
 	// destroyed is set before destroy deletes the icon, so a TaskbarCreated
 	// re-add still queued behind iconLock does not add it back.
 	destroyed atomic.Bool
 }
+
+// pendingIcon is the newest icon update queued from the main thread for one
+// mode (see queueIcon).
+type pendingIcon struct {
+	mu      sync.Mutex
+	icon    []byte
+	seq     uint64
+	pending bool
+	running bool
+}
+
+// queueIcon hands a main-thread icon update to a worker goroutine. It keeps a
+// copy of icon, because the caller may reuse its buffer once this returns, and
+// only the newest update: a worker still waiting for iconLock picks up the
+// latest icon when it gets there. At most one worker runs per mode.
+func queueIcon(p *pendingIcon, icon []byte, seq uint64, apply func(icon []byte, seq uint64)) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.icon = append([]byte(nil), icon...)
+	p.seq = seq
+	p.pending = true
+	if p.running {
+		return
+	}
+	p.running = true
+	go func() {
+		for {
+			p.mu.Lock()
+			if !p.pending {
+				p.running = false
+				p.mu.Unlock()
+				return
+			}
+			icon, seq := p.icon, p.seq
+			p.icon, p.pending = nil, false
+			p.mu.Unlock()
+			apply(icon, seq)
+		}
+	}()
+}
+
+// destroyIcon is w32.DestroyIcon; a variable so tests can see which handles
+// are destroyed.
+var destroyIcon = w32.DestroyIcon
 
 // releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
 // Shared handles (e.g. from LoadIcon/LoadIconWithResourceID) must not be passed to DestroyIcon per https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-destroyicon.
@@ -77,7 +127,7 @@ func (s *windowsSystemTray) releaseIcon(handle w32.HICON, owned bool, keep ...w3
 			return
 		}
 	}
-	w32.DestroyIcon(handle)
+	destroyIcon(handle)
 }
 
 func (s *windowsSystemTray) openMenu() {
@@ -440,7 +490,7 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	seq := s.lightSeq.Add(1)
 	if onMainThread() {
-		go s.applyIcon(icon, seq)
+		queueIcon(&s.lightPending, icon, seq, s.applyIcon)
 		return
 	}
 	s.applyIcon(icon, seq)
@@ -456,7 +506,7 @@ func (s *windowsSystemTray) applyIcon(icon []byte, seq uint64) {
 	s.iconLock.Lock()
 	defer s.iconLock.Unlock()
 	if seq < s.lightApplied || s.destroyed.Load() {
-		w32.DestroyIcon(newIcon) // a newer SetIcon got here first, or the tray is gone
+		destroyIcon(newIcon) // a newer SetIcon got here first, or the tray is gone
 		return
 	}
 	s.lightApplied = seq
@@ -489,7 +539,7 @@ func (s *windowsSystemTray) applyIcon(icon []byte, seq uint64) {
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	seq := s.darkSeq.Add(1)
 	if onMainThread() {
-		go s.applyDarkModeIcon(icon, seq)
+		queueIcon(&s.darkPending, icon, seq, s.applyDarkModeIcon)
 		return
 	}
 	s.applyDarkModeIcon(icon, seq)
@@ -505,7 +555,7 @@ func (s *windowsSystemTray) applyDarkModeIcon(icon []byte, seq uint64) {
 	s.iconLock.Lock()
 	defer s.iconLock.Unlock()
 	if seq < s.darkApplied || s.destroyed.Load() {
-		w32.DestroyIcon(newIcon) // a newer SetDarkModeIcon got here first, or the tray is gone
+		destroyIcon(newIcon) // a newer SetDarkModeIcon got here first, or the tray is gone
 		return
 	}
 	s.darkApplied = seq
