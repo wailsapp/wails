@@ -797,15 +797,40 @@ func (s *windowsSystemTray) destroy() {
 	w32.DestroyWindow(hwnd)
 }
 
-// releaseIcons destroys the icon handles the tray owns. Call with iconLock held.
+// releaseIcons destroys the icon handles the tray owns, each exactly once.
+// Call with iconLock held.
+//
+// A handle can sit in several slots with only one of them owning it (for
+// example SetDarkModeIcon with no light icon leaves the light slot an
+// unowned copy of the dark handle), so ownership is decided per handle:
+// it is destroyed when any slot holding it owns it.
 func (s *windowsSystemTray) releaseIcons() {
-	lightIcon := s.lightModeIcon
-	darkIcon := s.darkModeIcon
-	currentIcon := s.currentIcon
-
-	s.releaseIcon(lightIcon, s.lightModeIconOwned)
-	s.releaseIcon(darkIcon, s.darkModeIconOwned, lightIcon)
-	s.releaseIcon(currentIcon, s.currentIconOwned, lightIcon, darkIcon)
+	slots := [...]struct {
+		handle w32.HICON
+		owned  bool
+	}{
+		{s.lightModeIcon, s.lightModeIconOwned},
+		{s.darkModeIcon, s.darkModeIconOwned},
+		{s.currentIcon, s.currentIconOwned},
+	}
+	for i, slot := range slots {
+		if slot.handle == 0 {
+			continue
+		}
+		owned, seen := slot.owned, false
+		for j, other := range slots {
+			if other.handle != slot.handle {
+				continue
+			}
+			if j < i {
+				seen = true // handled with the earlier slot
+			}
+			owned = owned || other.owned
+		}
+		if !seen && owned {
+			destroyIcon(slot.handle)
+		}
+	}
 
 	s.lightModeIcon = 0
 	s.lightModeIconOwned = false

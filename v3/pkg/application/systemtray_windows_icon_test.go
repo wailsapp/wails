@@ -309,3 +309,39 @@ func TestWindowsSystemTrayRunAfterDestroyDoesNothing(t *testing.T) {
 	}
 	s.iconLock.Unlock()
 }
+
+// Teardown frees every handle the tray owns exactly once, whichever slot owns
+// it. SetDarkModeIcon with no separate light icon leaves the light slot as an
+// unowned copy of the owned dark handle; that copy must not stop the dark
+// handle being freed.
+func TestWindowsSystemTrayReleaseIconsFreesEachOwnedHandleOnce(t *testing.T) {
+	a, b := w32.HICON(0x1111), w32.HICON(0x2222)
+	cases := []struct {
+		name string
+		tray *windowsSystemTray
+		want map[w32.HICON]int
+	}{
+		{"dark owns, light copies", &windowsSystemTray{darkModeIcon: a, darkModeIconOwned: true, lightModeIcon: a, currentIcon: a}, map[w32.HICON]int{a: 1}},
+		{"light owns, dark copies", &windowsSystemTray{lightModeIcon: a, lightModeIconOwned: true, darkModeIcon: a, currentIcon: a}, map[w32.HICON]int{a: 1}},
+		{"current owns, modes copy", &windowsSystemTray{currentIcon: a, currentIconOwned: true, lightModeIcon: a, darkModeIcon: a}, map[w32.HICON]int{a: 1}},
+		{"all owned, shared", &windowsSystemTray{lightModeIcon: a, lightModeIconOwned: true, darkModeIcon: a, darkModeIconOwned: true, currentIcon: a, currentIconOwned: true}, map[w32.HICON]int{a: 1}},
+		{"two owned handles", &windowsSystemTray{lightModeIcon: a, lightModeIconOwned: true, darkModeIcon: b, darkModeIconOwned: true, currentIcon: b}, map[w32.HICON]int{a: 1, b: 1}},
+		{"nothing owned", &windowsSystemTray{lightModeIcon: a, darkModeIcon: b, currentIcon: a}, map[w32.HICON]int{}},
+	}
+	for _, c := range cases {
+		destroyed := recordDestroyedIcons(t)
+		s := c.tray
+		s.releaseIcons()
+		if len(*destroyed) != len(c.want) {
+			t.Fatalf("%s: destroyed %v, want %v", c.name, *destroyed, c.want)
+		}
+		for h, n := range c.want {
+			if got := countIcon(*destroyed, h); got != n {
+				t.Fatalf("%s: handle %v destroyed %d times, want %d", c.name, h, got, n)
+			}
+		}
+		if s.lightModeIcon != 0 || s.darkModeIcon != 0 || s.currentIcon != 0 {
+			t.Fatalf("%s: slots not cleared", c.name)
+		}
+	}
+}
