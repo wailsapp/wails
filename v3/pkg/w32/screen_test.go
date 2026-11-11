@@ -23,8 +23,11 @@ func TestGetAllScreensReusesCallback(t *testing.T) {
 }
 
 func TestMonitorEnumerationIncompleteError(t *testing.T) {
-	primary := &Screen{IsPrimary: true}
-	secondary := &Screen{}
+	// Three monitors side by side: primary, middle, far.
+	primary := &Screen{IsPrimary: true, MONITORINFOEX: monitorAt(0, 1920)}
+	middle := &Screen{MONITORINFOEX: monitorAt(1920, 3840)}
+	far := &Screen{MONITORINFOEX: monitorAt(3840, 5760)}
+	secondary := middle
 
 	tests := []struct {
 		name     string
@@ -42,6 +45,22 @@ func TestMonitorEnumerationIncompleteError(t *testing.T) {
 				screens:  []*Screen{primary},
 				failures: []string{"GetMonitorInfo failed for monitor 0x2"},
 			},
+		},
+		{
+			name: "the skipped monitor was last in the chain",
+			e: monitorEnumeration{
+				screens:  []*Screen{primary, middle},
+				failures: []string{"GetMonitorInfo failed for monitor 0x3"},
+			},
+		},
+		{
+			name: "the skipped monitor disconnects a retained one",
+			e: monitorEnumeration{
+				screens:  []*Screen{primary, far},
+				failures: []string{"GetMonitorInfo failed for monitor 0x2"},
+			},
+			wantErr:  true,
+			contains: []string{"not all connected", "monitor 0x2"},
 		},
 		{
 			name: "the primary monitor was skipped",
@@ -75,6 +94,12 @@ func TestMonitorEnumerationIncompleteError(t *testing.T) {
 			}
 		})
 	}
+}
+
+// monitorAt returns monitor info for a 1080 pixel high monitor spanning the
+// given horizontal range.
+func monitorAt(left, right int32) MONITORINFOEX {
+	return MONITORINFOEX{MONITORINFO: MONITORINFO{RcMonitor: RECT{Left: left, Right: right, Bottom: 1080}}}
 }
 
 func TestLastErrorSuffix(t *testing.T) {

@@ -163,20 +163,61 @@ func (e *monitorEnumeration) add(hMonitor uintptr) {
 	e.screens = append(e.screens, screen)
 }
 
-// incompleteError reports a failure to read the primary monitor. The screen
-// layout cannot be built without it, whereas a secondary monitor that failed
-// can be left out. It returns nil when nothing went wrong, or when only
-// non-primary monitors were skipped.
+// incompleteError reports whether the monitors that were read are too few to
+// build the screen layout. It returns an error when the primary monitor could
+// not be read, since the layout cannot be built without it, and when skipping
+// monitors left a retained one unreachable from the primary (see
+// monitorsConnected). A secondary monitor that failed and left the rest
+// connected can simply be left out. It returns nil when nothing went wrong.
 func (e *monitorEnumeration) incompleteError() error {
 	if len(e.failures) == 0 {
 		return nil
 	}
+	var primary *Screen
 	for _, screen := range e.screens {
 		if screen.IsPrimary {
-			return nil
+			primary = screen
+			break
 		}
 	}
-	return fmt.Errorf("the primary monitor could not be read: %s", strings.Join(e.failures, "; "))
+	if primary == nil {
+		return fmt.Errorf("the primary monitor could not be read: %s", strings.Join(e.failures, "; "))
+	}
+	if !monitorsConnected(primary, e.screens) {
+		return fmt.Errorf("the monitors that could be read are not all connected to the primary monitor: %s", strings.Join(e.failures, "; "))
+	}
+	return nil
+}
+
+// monitorsConnected reports whether every screen can be reached from primary by
+// walking through screens whose monitor rectangles touch. This is how
+// ScreenManager.LayoutScreens places screens, and it never positions one it
+// cannot reach: if the monitor between two others was skipped, the far one
+// would keep unscaled coordinates until the next display change.
+func monitorsConnected(primary *Screen, screens []*Screen) bool {
+	reached := map[*Screen]bool{primary: true}
+	queue := []*Screen{primary}
+	for len(queue) > 0 {
+		parent := queue[0]
+		queue = queue[1:]
+		for _, screen := range screens {
+			if !reached[screen] && rectsTouch(parent.RcMonitor, screen.RcMonitor) {
+				reached[screen] = true
+				queue = append(queue, screen)
+			}
+		}
+	}
+	return len(reached) == len(screens)
+}
+
+// rectsTouch reports whether two monitor rectangles share an edge or a corner.
+// It matches ScreenManager.areScreensTouching.
+func rectsTouch(a, b RECT) bool {
+	maxLeft := max(a.Left, b.Left)
+	maxTop := max(a.Top, b.Top)
+	minRight := min(a.Right, b.Right)
+	minBottom := min(a.Bottom, b.Bottom)
+	return (maxLeft == minRight && maxTop <= minBottom) || (maxTop == minBottom && maxLeft <= minRight)
 }
 
 // lastErrorSuffix formats the last-error value returned by a Proc.Call for
