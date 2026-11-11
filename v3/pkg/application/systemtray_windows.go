@@ -116,6 +116,10 @@ func queueIcon(p *pendingIcon, icon []byte, seq uint64, apply func(icon []byte, 
 // are destroyed.
 var destroyIcon = w32.DestroyIcon
 
+// shellNotifyIcon is w32.ShellNotifyIcon for updateIcon; a variable so tests
+// can make NIM_MODIFY succeed or fail.
+var shellNotifyIcon = w32.ShellNotifyIcon
+
 // releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
 // Shared handles (e.g. from LoadIcon/LoadIconWithResourceID) must not be passed to DestroyIcon per https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-destroyicon.
 func (s *windowsSystemTray) releaseIcon(handle w32.HICON, owned bool, keep ...w32.HICON) {
@@ -444,7 +448,7 @@ func (s *windowsSystemTray) updateIcon() {
 		nid.HIcon = s.currentIcon
 	}
 
-	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+	if !shellNotifyIcon(w32.NIM_MODIFY, &nid) {
 		// The icon isn't currently registered with the shell. This happens
 		// transiently when Explorer / the taskbar restarts and our icon is
 		// dropped before the TaskbarCreated handler (reshowSystrays) re-adds it.

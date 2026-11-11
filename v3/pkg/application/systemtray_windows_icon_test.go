@@ -196,3 +196,88 @@ func TestWindowsSystemTrayDestroyTwiceDoesNothingTheSecondTime(t *testing.T) {
 
 	s.destroy()
 }
+
+// runIconUpdate sets up a tray whose shell shows an owned handle in one mode
+// (the other mode unset), then replaces that mode's icon with NIM_MODIFY
+// answering ok. After the update both modes hold the new handle, so the
+// result does not depend on the machine's theme.
+func runIconUpdate(t *testing.T, dark bool, ok bool) (s *windowsSystemTray, shown w32.HICON, destroyed *[]w32.HICON, sent []w32.HICON) {
+	t.Helper()
+	destroyed = recordDestroyedIcons(t)
+
+	original := shellNotifyIcon
+	shellNotifyIcon = func(msg uintptr, nid *w32.NOTIFYICONDATA) bool {
+		if msg == w32.NIM_MODIFY {
+			sent = append(sent, nid.HIcon)
+		}
+		return ok
+	}
+	t.Cleanup(func() { shellNotifyIcon = original })
+
+	savedApp := globalApplication
+	globalApplication = &App{options: Options{WarningHandler: func(string) {}}}
+	t.Cleanup(func() { globalApplication = savedApp })
+
+	shown = w32.HICON(0x1234)
+	s = &windowsSystemTray{
+		parent:           &SystemTray{},
+		hwnd:             w32.HWND(0x1),
+		currentIcon:      shown,
+		currentIconOwned: true,
+	}
+	if dark {
+		s.darkModeIcon, s.darkModeIconOwned = shown, true
+		s.applyDarkModeIcon(icons.SystrayLight, 1)
+	} else {
+		s.lightModeIcon, s.lightModeIconOwned = shown, true
+		s.applyIcon(icons.SystrayDark, 1)
+	}
+	return s, shown, destroyed, sent
+}
+
+// When NIM_MODIFY succeeds the shell shows the new icon and the old one is
+// released exactly once.
+func TestWindowsSystemTrayIconUpdateReleasesTheOldIconOnceOnSuccess(t *testing.T) {
+	for _, dark := range []bool{false, true} {
+		s, shown, destroyed, sent := runIconUpdate(t, dark, true)
+		if len(sent) != 1 || sent[0] != s.currentIcon || s.currentIcon == shown {
+			t.Fatalf("dark=%v: NIM_MODIFY sent %v, currentIcon %v; want the new icon", dark, sent, s.currentIcon)
+		}
+		if !s.currentIconOwned {
+			t.Fatalf("dark=%v: the new current icon is not marked owned", dark)
+		}
+		if n := countIcon(*destroyed, shown); n != 1 {
+			t.Fatalf("dark=%v: the old icon was destroyed %d times, want once", dark, n)
+		}
+		if n := countIcon(*destroyed, s.currentIcon); n != 0 {
+			t.Fatalf("dark=%v: the icon now shown was destroyed", dark)
+		}
+	}
+}
+
+// When NIM_MODIFY fails (the icon is not registered, e.g. while Explorer
+// restarts) the tray rolls back to the old icon, which must still be valid,
+// and releases each handle exactly once when the tray is torn down.
+func TestWindowsSystemTrayIconUpdateKeepsTheOldIconOnFailure(t *testing.T) {
+	for _, dark := range []bool{false, true} {
+		s, shown, destroyed, sent := runIconUpdate(t, dark, false)
+		if len(sent) != 1 || sent[0] == shown {
+			t.Fatalf("dark=%v: NIM_MODIFY sent %v; want one attempt with the new icon", dark, sent)
+		}
+		newIcon := sent[0]
+		if s.currentIcon != shown || !s.currentIconOwned {
+			t.Fatalf("dark=%v: currentIcon %v (owned %v); want the rollback to the old icon", dark, s.currentIcon, s.currentIconOwned)
+		}
+		if n := countIcon(*destroyed, shown); n != 0 {
+			t.Fatalf("dark=%v: the icon still shown was destroyed %d time(s)", dark, n)
+		}
+
+		s.releaseIcons()
+		if n := countIcon(*destroyed, shown); n != 1 {
+			t.Fatalf("dark=%v: the old icon was destroyed %d times at teardown, want once", dark, n)
+		}
+		if n := countIcon(*destroyed, newIcon); n != 1 {
+			t.Fatalf("dark=%v: the new icon was destroyed %d times at teardown, want once", dark, n)
+		}
+	}
+}
