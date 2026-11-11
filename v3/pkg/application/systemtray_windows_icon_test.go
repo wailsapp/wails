@@ -158,10 +158,19 @@ func TestQueueIconKeepsOnlyTheNewestUpdateWhileBlocked(t *testing.T) {
 		t.Fatalf("an extra update was applied: seq %d", extra.seq)
 	case <-time.After(100 * time.Millisecond):
 	}
-	p.mu.Lock()
-	running := p.running
-	p.mu.Unlock()
-	if running {
-		t.Fatal("the worker did not exit after draining")
+	// The worker clears running after apply returns, so wait for it rather
+	// than read it once.
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		p.mu.Lock()
+		running := p.running
+		p.mu.Unlock()
+		if !running {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the worker did not exit after draining")
+		}
+		time.Sleep(time.Millisecond)
 	}
 }
