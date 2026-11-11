@@ -861,6 +861,11 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
     gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
     gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
     gtk_window_set_decorated(GTK_WINDOW(dialog), TRUE);
+    // Title the window itself, not only the heading label, so that window lists,
+    // taskbars and assistive technology can identify the dialog (GTK3 parity).
+    if (heading != NULL && strlen(heading) > 0) {
+        gtk_window_set_title(GTK_WINDOW(dialog), heading);
+    }
     gtk_widget_add_css_class(dialog, "message");
     gtk_widget_set_size_request(dialog, 300, -1);
     
