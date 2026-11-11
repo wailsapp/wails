@@ -281,3 +281,31 @@ func TestWindowsSystemTrayIconUpdateKeepsTheOldIconOnFailure(t *testing.T) {
 		}
 	}
 }
+
+// SystemTray.Run sets the implementation and then queues run on the main
+// thread. A Destroy that lands in between must stop run from creating the
+// window and adding an icon nobody can remove.
+func TestWindowsSystemTrayRunAfterDestroyDoesNothing(t *testing.T) {
+	s := &windowsSystemTray{parent: &SystemTray{}}
+	s.destroyed.Store(true)
+
+	// Creating the window reads the application options; without a guard this
+	// panics, which shows run did not return early.
+	saved := globalApplication
+	globalApplication = nil
+	t.Cleanup(func() { globalApplication = saved })
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("run went ahead on a destroyed tray: %v", r)
+		}
+	}()
+
+	s.run()
+	if s.hwnd != 0 {
+		t.Fatal("run created a window for a destroyed tray")
+	}
+	if !s.iconLock.TryLock() {
+		t.Fatal("run left iconLock held")
+	}
+	s.iconLock.Unlock()
+}

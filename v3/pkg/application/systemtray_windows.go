@@ -295,6 +295,12 @@ func (s *windowsSystemTray) run() {
 	// Safe to wait for on the main thread: until hwnd is set below, an icon
 	// update holds iconLock only briefly and never calls Shell_NotifyIcon.
 	s.iconLock.Lock()
+	if s.destroyed.Load() {
+		// Destroy ran between SystemTray.Run setting the implementation and
+		// this call reaching the main thread: create nothing.
+		s.iconLock.Unlock()
+		return
+	}
 	s.hwnd = w32.CreateWindowEx(
 		0,
 		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
