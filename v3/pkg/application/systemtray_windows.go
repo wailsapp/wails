@@ -526,9 +526,12 @@ func (s *windowsSystemTray) applyIcon(icon []byte, seq uint64) {
 	}
 
 	// Only free previous handles we own that are no longer referenced.
-	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	// The handle the shell is showing (currentIcon) is kept here: updateIcon
+	// releases it once NIM_MODIFY has moved the shell off it, or keeps
+	// showing it if that call fails.
+	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	if oldDark != s.darkModeIcon {
-		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	}
 
 	s.updateIcon()
@@ -578,9 +581,12 @@ func (s *windowsSystemTray) applyDarkModeIcon(icon []byte, seq uint64) {
 	}
 
 	// Only free the previous handle if nothing else keeps a reference to it.
-	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	// The handle the shell is showing (currentIcon) is kept here: updateIcon
+	// releases it once NIM_MODIFY has moved the shell off it, or keeps
+	// showing it if that call fails.
+	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	if lightReplaced {
-		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	}
 
 	s.updateIcon()

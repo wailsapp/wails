@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 // A SetIcon made on the main thread is applied on a goroutine, so an older
@@ -38,6 +39,77 @@ func TestWindowsSystemTrayDropsAnOlderDarkModeIconUpdate(t *testing.T) {
 	s.applyDarkModeIcon(icons.SystrayLight, 1)
 	if s.darkModeIcon != newest || s.darkApplied != 2 {
 		t.Fatalf("an older dark mode icon update replaced a newer one (applied=%d)", s.darkApplied)
+	}
+}
+
+// recordDestroyedIcons swaps destroyIcon for a recorder for the test.
+func recordDestroyedIcons(t *testing.T) *[]w32.HICON {
+	var destroyed []w32.HICON
+	original := destroyIcon
+	destroyIcon = func(h w32.HICON) bool {
+		destroyed = append(destroyed, h)
+		return true
+	}
+	t.Cleanup(func() { destroyIcon = original })
+	return &destroyed
+}
+
+func countIcon(handles []w32.HICON, h w32.HICON) int {
+	n := 0
+	for _, x := range handles {
+		if x == h {
+			n++
+		}
+	}
+	return n
+}
+
+// The handle the shell is showing must not be destroyed when SetIcon replaces
+// the light icon: updateIcon still needs it, either to roll back to when
+// NIM_MODIFY fails or to release once when it succeeds. Destroying it in
+// applyIcon as well freed it twice.
+func TestWindowsSystemTraySetIconKeepsTheShownIcon(t *testing.T) {
+	destroyed := recordDestroyedIcons(t)
+	shown := w32.HICON(0x1234) // a stand-in handle; destroyIcon is recorded, not called
+	s := &windowsSystemTray{
+		parent:             &SystemTray{},
+		lightModeIcon:      shown,
+		lightModeIconOwned: true,
+		currentIcon:        shown,
+		currentIconOwned:   true,
+	}
+
+	s.applyIcon(icons.SystrayDark, 1)
+	if n := countIcon(*destroyed, shown); n != 0 {
+		t.Fatalf("the icon the shell is showing was destroyed %d time(s) by SetIcon", n)
+	}
+
+	s.releaseIcons()
+	if n := countIcon(*destroyed, shown); n != 1 {
+		t.Fatalf("the shown icon was destroyed %d times, want once", n)
+	}
+}
+
+// The same rule for SetDarkModeIcon.
+func TestWindowsSystemTraySetDarkModeIconKeepsTheShownIcon(t *testing.T) {
+	destroyed := recordDestroyedIcons(t)
+	shown := w32.HICON(0x1234)
+	s := &windowsSystemTray{
+		parent:            &SystemTray{},
+		darkModeIcon:      shown,
+		darkModeIconOwned: true,
+		currentIcon:       shown,
+		currentIconOwned:  true,
+	}
+
+	s.applyDarkModeIcon(icons.SystrayLight, 1)
+	if n := countIcon(*destroyed, shown); n != 0 {
+		t.Fatalf("the icon the shell is showing was destroyed %d time(s) by SetDarkModeIcon", n)
+	}
+
+	s.releaseIcons()
+	if n := countIcon(*destroyed, shown); n != 1 {
+		t.Fatalf("the shown icon was destroyed %d times, want once", n)
 	}
 }
 
