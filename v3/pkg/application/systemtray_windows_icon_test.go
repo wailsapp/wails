@@ -174,3 +174,25 @@ func TestQueueIconKeepsOnlyTheNewestUpdateWhileBlocked(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 }
+
+// SystemTray.Destroy reaches the platform destroy on every call. When the
+// first call left the cleanup to a goroutine (iconLock busy), hwnd keeps the
+// destroyed window's handle, so a second call must return before it passes
+// that stale handle to Shell_NotifyIcon and DestroyWindow again.
+func TestWindowsSystemTrayDestroyTwiceDoesNothingTheSecondTime(t *testing.T) {
+	s := &windowsSystemTray{parent: &SystemTray{}, hwnd: w32.HWND(0x1234)}
+	s.destroyed.Store(true) // the state the first destroy leaves
+
+	// Any work past the guard reaches the application; without one it panics,
+	// which shows the second call did not return early.
+	saved := globalApplication
+	globalApplication = nil
+	t.Cleanup(func() { globalApplication = saved })
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("a second destroy did work again: %v", r)
+		}
+	}()
+
+	s.destroy()
+}

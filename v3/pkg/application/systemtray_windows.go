@@ -740,7 +740,11 @@ func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 }
 
 func (s *windowsSystemTray) destroy() {
-	s.destroyed.Store(true)
+	// SystemTray.Destroy calls this on every call. A deferred cleanup keeps
+	// hwnd at the destroyed window's handle, so only the first call may act.
+	if s.destroyed.Swap(true) {
+		return
+	}
 	if s.cancelTheme != nil {
 		s.cancelTheme()
 		s.cancelTheme = nil
