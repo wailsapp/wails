@@ -1882,8 +1882,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// (or one of its child windows, e.g. the webview's own HWND) still owns
 		// keyboard focus. GetFocus returns 0 when the focus window belongs to
 		// another thread's message queue; a nonzero result from another window
-		// of ours means focus moved on before this message was processed.
-		if focusWnd := w32.GetFocus(); focusWnd != 0 && w32.GetAncestor(focusWnd, w32.GA_ROOT) == w.hwnd {
+		// of ours means focus moved on before this message was processed. Also
+		// recheck the Tab hand-off, which may have changed while the message
+		// was queued.
+		if focusWnd := w32.GetFocus(); focusWnd != 0 && w32.GetAncestor(focusWnd, w32.GA_ROOT) == w.hwnd && w.focusHandoff.shouldRestoreWebview() {
 			if wparam == 1 {
 				w.focus()
 			} else {
