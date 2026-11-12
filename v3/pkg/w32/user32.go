@@ -64,6 +64,7 @@ var (
 	procIsWindowVisible               = moduser32.NewProc("IsWindowVisible")
 	procSetFocus                      = moduser32.NewProc("SetFocus")
 	procGetFocus                      = moduser32.NewProc("GetFocus")
+	procGetAncestor                   = moduser32.NewProc("GetAncestor")
 	procSetActiveWindow               = moduser32.NewProc("SetActiveWindow")
 	procSetForegroundWindow           = moduser32.NewProc("SetForegroundWindow")
 	procBringWindowToTop              = moduser32.NewProc("BringWindowToTop")
@@ -745,6 +746,14 @@ func SetForegroundWindow(hwnd HWND) HWND {
 
 func GetFocus() HWND {
 	ret, _, _ := procGetFocus.Call()
+	return HWND(ret)
+}
+
+func GetAncestor(hwnd HWND, flags uint32) HWND {
+	ret, _, _ := procGetAncestor.Call(
+		uintptr(hwnd),
+		uintptr(flags))
+
 	return HWND(ret)
 }
 

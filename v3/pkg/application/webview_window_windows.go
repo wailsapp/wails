@@ -1878,10 +1878,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowSetFocus)
 	case wmDeferredWebviewFocus:
 		// Posted from WM_ACTIVATE/WM_SETFOCUS so MoveFocus happens after the
-		// activation sequence has completed. Skip it if keyboard focus went
-		// elsewhere in the meantime (GetFocus returns 0 when the focus window
-		// belongs to another thread's message queue).
-		if w32.GetFocus() != 0 {
+		// activation sequence has completed. Only restore focus if this window
+		// (or one of its child windows, e.g. the webview's own HWND) still owns
+		// keyboard focus. GetFocus returns 0 when the focus window belongs to
+		// another thread's message queue; a nonzero result from another window
+		// of ours means focus moved on before this message was processed.
+		if focusWnd := w32.GetFocus(); focusWnd != 0 && w32.GetAncestor(focusWnd, w32.GA_ROOT) == w.hwnd {
 			if wparam == 1 {
 				w.focus()
 			} else {

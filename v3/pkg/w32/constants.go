@@ -403,6 +403,11 @@ const (
 	LWA_ALPHA    = 0x00000002
 )
 
+// GetAncestor flags
+const (
+	GA_ROOT = 2
+)
+
 // Window message constants
 const (
 	WM_APP                    = 32768
