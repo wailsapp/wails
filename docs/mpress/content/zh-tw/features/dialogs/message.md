@@ -7,7 +7,7 @@ sourcePath: "features/dialogs/message.md"
 
 ## 訊息對話方塊
 
-Wails 提供具有平台原生外觀的<strong>原生訊息對話方塊</strong>：包括資訊、警告、錯誤與問題對話方塊，並可自訂標題、訊息和按鈕。API 簡單、行為符合平台原生慣例，且預設具備無障礙支援。
+Wails 提供具備各平台原生外觀的**原生訊息對話方塊**：包括可自訂標題、訊息與按鈕的資訊、警告、錯誤及問題對話方塊。API 簡單、行為原生，且預設具備無障礙功能。
 
 ## 建立對話方塊
 
@@ -40,7 +40,7 @@ app.Dialog.Info().
 - 資訊訊息
 - 狀態更新
 
-**範例——儲存確認：**
+**範例—儲存確認：**
 
 ```go
 func saveFile(app *application.App, path string, data []byte) error {
@@ -72,10 +72,10 @@ app.Dialog.Warning().
 
 - 非重大警告
 - 棄用通知
-- 注意訊息
+- 提醒訊息
 - 潛在問題
 
-**範例——磁碟空間警告：**
+**範例—磁碟空間警告：**
 
 ```go
 func checkDiskSpace(app *application.App) {
@@ -108,7 +108,7 @@ app.Dialog.Error().
 - 例外處理
 - 重大問題
 
-**範例——網路錯誤：**
+**範例—網路錯誤：**
 
 ```go
 func fetchData(app *application.App, url string) ([]byte, error) {
@@ -157,12 +157,12 @@ dialog.Show()
 
 **使用情境：**
 
-- 確認動作
+- 確認操作
 - 是／否問題
 - 多選一
 - 使用者決策
 
-**範例——未儲存的變更：**
+**範例—未儲存的變更：**
 
 ```go
 func closeDocument(app *application.App) {
@@ -208,9 +208,9 @@ dialog := app.Dialog.Info().
 
 **最佳實務：**
 
-- <strong>標題：</strong>簡短且具描述性（2-5個單字）
-- <strong>訊息：</strong>清楚、具體且可據以採取行動
-- <strong>避免術語：</strong>使用淺白易懂的語言
+- <strong>標題：</strong>簡短且具描述性（2-5個字）
+- <strong>訊息：</strong>清楚、具體且可據以行動
+- <strong>避免使用術語：</strong>使用淺白易懂的語言
 
 ### 按鈕
 
@@ -262,7 +262,7 @@ dialog.Show()
 
 **預設按鈕與取消按鈕：**
 
-使用`SetDefaultButton()`指定反白顯示且按 Enter 鍵時觸發的按鈕。 使用`SetCancelButton()`指定按 Escape 鍵時觸發的按鈕。
+使用`SetDefaultButton()`指定醒目顯示且按 Enter 時觸發的按鈕。使用`SetCancelButton()`指定按 Escape 時觸發的按鈕。
 
 ```go
 dialog := app.Dialog.Question().
@@ -298,14 +298,14 @@ dialog.Show()
 
 **最佳實務：**
 
-- <strong>1-3個按鈕：</strong>不要讓使用者無所適從
+- <strong>1-3個按鈕：</strong>不要讓過多選項令使用者不知所措
 - <strong>清楚的標籤：</strong>使用「儲存」，而非「確定」
-- <strong>安全的預設選項：</strong>非破壞性動作
-- <strong>順序很重要：</strong>最可能執行的動作排在最前面（取消除外）
+- <strong>安全的預設值：</strong>非破壞性操作
+- <strong>順序很重要：</strong>最可能執行的操作排在最前面（取消除外）
 
 ### 自訂圖示
 
-設定對話方塊的自訂圖示：
+為對話方塊設定自訂圖示：
 
 ```go
 app.Dialog.Info().
@@ -317,7 +317,7 @@ app.Dialog.Info().
 
 ### 附加至視窗
 
-附加至指定視窗：
+附加至特定視窗：
 
 ```go
 dialog := app.Dialog.Question().
@@ -331,12 +331,12 @@ dialog.Show()
 **優點：**
 
 - 對話方塊會顯示在正確的視窗上
-- 顯示對話方塊期間會停用父視窗
-- 提供更好的多視窗使用者體驗
+- 對話方塊顯示期間會停用父視窗
+- 提供更佳的多視窗使用者體驗
 
 ## 完整範例
 
-### 確認破壞性動作
+### 確認破壞性操作
 
 ```go
 func deleteFiles(app *application.App, paths []string) {
@@ -449,43 +449,43 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ### ✅ 建議做法
 
-- **具體明確**—使用「檔案已儲存至『文件』」而非「成功」
-- **使用適當的類型**—錯誤使用 Error，警告使用 Warning
-- **提供脈絡**—包含相關詳細資訊
-- **使用清楚的按鈕標籤**—使用「刪除」而非「確定」
-- **設定安全的預設選項**—使用非破壞性操作
+- **具體明確**—使用「檔案已儲存至『文件』」，而非「成功」
+- **使用適當的類型**—錯誤使用「錯誤」，警告使用「警告」
+- **提供背景資訊**—包含相關詳細資訊
+- **使用清楚的按鈕標籤**—使用「刪除」，而非「確定」
+- **設定安全的預設值**—使用非破壞性操作
 - **處理取消操作**—使用者可能會關閉對話方塊
 
-### ❌ 不該做的事
+### ❌ 不建議做法
 
 - **不要過度使用**—這會中斷工作流程
-- **不要用於頻繁更新**—改用通知
-- **不要使用籠統的訊息**—「錯誤」無法提供任何資訊
-- **不要忽略錯誤**—處理dialog.Show()錯誤
-- **不要在非必要時阻塞**—考慮非同步替代方案
+- **不要用於頻繁更新**—請改用通知
+- **不要使用籠統的訊息**—「錯誤」未提供任何有用資訊
+- **不要忽略錯誤**—請處理 dialog.Show() 的錯誤
+- **不要進行不必要的阻塞**—考慮非同步替代方案
 - **不要使用技術術語**—使用淺白易懂的語言
 
 ## 平台差異
 
 ### macOS
 
-- 附加至視窗時會以表單式對話方塊顯示
-- 標準鍵盤快速鍵（按⌘.取消）
-- 自動遵循系統佈景主題
+- 附加至視窗時採用工作表樣式
+- 標準鍵盤快速鍵（按 ⌘. 取消）
+- 自動採用系統主題
 - 內建無障礙功能
 
 ### Windows
 
-- 強制回應對話方塊
-- TaskDialog外觀
-- 按Esc取消
-- 遵循系統佈景主題
+- 模態對話方塊
+- TaskDialog 外觀
+- 按 Esc 取消
+- 遵循系統主題
 
 ### Linux
 
-- GTK對話方塊
+- GTK 對話方塊
 - 依桌面環境而異
-- 遵循桌面佈景主題
+- 遵循桌面主題
 - 標準鍵盤導覽
 
 ## 後續步驟
@@ -504,7 +504,7 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ---
 ● 通知
-不干擾操作的通知。
+不干擾使用者的通知。
 
 [深入瞭解 →](/features/notifications/overview/)
 

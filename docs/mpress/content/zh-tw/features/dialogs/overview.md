@@ -7,13 +7,13 @@ sourcePath: "features/dialogs/overview.md"
 
 ## 原生對話方塊
 
-Wails 提供可跨所有平台運作的<strong>原生系統對話方塊</strong>：訊息對話方塊（資訊、警告、錯誤、問題）、檔案對話方塊（開啟、儲存、資料夾），以及具有平台原生外觀與行為的自訂對話方塊視窗。
+Wails 提供可跨所有平台運作的**原生系統對話方塊**：訊息對話方塊（資訊、警告、錯誤、問題）、檔案對話方塊（開啟、儲存、資料夾），以及具有平台原生外觀與行為的自訂對話視窗。
 
-![macOS 上具有「取消」和「捨棄」按鈕的 Wails 問題對話方塊](/assets/screenshots/dialog-question-macos.png)
+![macOS 上具有「取消」與「捨棄」按鈕的 Wails 問題對話方塊](/assets/screenshots/dialog-question-macos.png)
 
-同一套 API 會依各支援平台的慣例呈現。此 macOS 範例顯示附加至其 Wails 視窗的問題對話方塊，其中包含預設按鈕和取消按鈕。
+同一套 API 會依照各支援平台的慣例呈現。這個 macOS 範例顯示附加至其 Wails 視窗的問題對話方塊，其中包括預設按鈕與取消按鈕。
 
-## 快速入門
+## 快速開始
 
 ```go
 // Information dialog
@@ -44,7 +44,7 @@ path, _ := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-<strong>就是這麼簡單！</strong>只需極少量程式碼即可使用原生對話方塊。
+<strong>就是這麼簡單！</strong>只需極少程式碼即可使用原生對話方塊。
 
 ## 存取對話方塊
 
@@ -63,7 +63,7 @@ app.Dialog.SaveFile()
 
 ### 資訊對話方塊
 
-顯示簡短訊息：
+顯示簡單訊息：
 
 ```go
 app.Dialog.Info().
@@ -156,7 +156,7 @@ if err == nil && path != "" {
 }
 ```
 
-**多選：**
+**多重選取：**
 
 ```go
 paths, err := app.Dialog.OpenFile().
@@ -189,7 +189,7 @@ if err == nil && path != "" {
 
 ### 選取資料夾對話方塊
 
-啟用開啟檔案對話方塊的目錄選取功能，以選擇目錄：
+使用已啟用目錄選取功能的開啟檔案對話方塊來選擇目錄：
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -227,7 +227,7 @@ app.Dialog.Info().
 
 **問題對話方塊的自訂按鈕：**
 
-使用`AddButton()`新增按鈕。此操作會傳回可設定回呼的`*Button`：
+使用`AddButton()`新增按鈕；此方法會傳回可設定回呼的`*Button`：
 
 ```go
 dialog := app.Dialog.Question().
@@ -251,9 +251,9 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-**預設按鈕和取消按鈕：**
+**預設按鈕與取消按鈕：**
 
-使用`SetDefaultButton()`指定要醒目提示並在按下 Enter 時觸發的按鈕。 使用`SetCancelButton()`指定在按下 Escape 時觸發的按鈕。
+使用`SetDefaultButton()`指定要醒目顯示並在按下 Enter 時觸發的按鈕。使用`SetCancelButton()`指定在按下 Escape 時觸發的按鈕。
 
 ```go
 dialog := app.Dialog.Question().
@@ -284,8 +284,8 @@ dialog.Show()
 
 **行為：**
 
-- 對話方塊會顯示在父視窗中央
-- 顯示對話方塊時，父視窗會停用
+- 對話方塊會顯示於父視窗中央
+- 顯示對話方塊時會停用父視窗
 - 對話方塊會隨父視窗移動（macOS）
 
 ## 平台行為
@@ -295,11 +295,11 @@ dialog.Show()
 **macOS 對話方塊：**
 
 - 原生 NSAlert 外觀
-- 遵循系統主題（淺色／深色）
+- 跟隨系統主題（淺色／深色）
 - 支援鍵盤導覽
 - 標準快速鍵（按 ⌘. 取消）
 - 內建無障礙功能
-- 附加至視窗時採用附屬面板樣式
+- 附加至視窗時採用工作表樣式
 
 **範例：**
 
@@ -317,11 +317,11 @@ dialog.Show()
 **Windows 對話方塊：**
 
 - 原生 TaskDialog 外觀
-- 遵循系統主題
+- 跟隨系統主題
 - 支援鍵盤導覽
 - 標準快速鍵（按 Esc 取消）
 - 內建無障礙功能
-- 相對於父視窗的模態視窗
+- 相對於父視窗採用強制回應模式
 
 **範例：**
 
@@ -337,7 +337,7 @@ app.Dialog.Error().
 **Linux 對話方塊：**
 
 - GTK 對話方塊外觀
-- 遵循桌面佈景主題
+- 跟隨桌面主題
 - 支援鍵盤導覽
 - 整合桌面環境
 - 依桌面環境而異（GNOME、KDE 等）
@@ -399,7 +399,7 @@ func saveDocument(app *application.App, path string, data []byte) {
 }
 ```
 
-### 選取檔案並進行驗證
+### 選取並驗證檔案
 
 ```go
 func selectImageFile(app *application.App) (string, error) {
@@ -477,20 +477,20 @@ func exportData(app *application.App) {
 ### ✅ 建議做法
 
 - **使用原生對話方塊** — 使用者體驗優於自訂對話方塊
-- **提供清楚的訊息** — 內容要具體
+- **提供清楚的訊息** — 內容應明確具體
 - **設定適當的標題** — 情境很重要
-- **審慎使用預設按鈕** — 將安全選項設為預設值
+- **審慎使用預設按鈕** — 將安全的選項設為預設值
 - **處理取消操作** — 使用者可能會取消
 - **驗證選取的檔案** — 檢查檔案類型
 
-### ❌ 避免的做法
+### ❌ 避免做法
 
 - **不要過度使用對話方塊** — 這會中斷工作流程
 - **不要用於頻繁出現的訊息** — 請改用通知
-- **不要忘記處理錯誤** — 使用者可能會取消
-- **不要在不必要時阻塞操作** — 考慮其他做法
-- **不要使用籠統的訊息** — 內容要具體
-- **不要忽略平台差異** — 在所有平台上進行測試
+- **不要忘記處理錯誤** — 使用者可能會取消操作
+- **不要在非必要時阻塞操作** — 請考慮其他做法
+- **不要使用籠統的訊息** — 請提供具體資訊
+- **不要忽略平台差異** — 請在所有平台上測試
 
 ## 後續步驟
 
@@ -498,28 +498,28 @@ func exportData(app *application.App) {
 ℹ 訊息對話方塊
 資訊、警告和錯誤對話方塊。
 
-[深入瞭解 →](/features/dialogs/message/)
+[進一步瞭解 →](/features/dialogs/message/)
 
 ---
 📖 檔案對話方塊
 開啟、儲存和資料夾選取。
 
-[深入瞭解 →](/features/dialogs/file/)
+[進一步瞭解 →](/features/dialogs/file/)
 
 ---
 ◆ 自訂對話方塊
 建立自訂對話方塊視窗。
 
-[深入瞭解 →](/features/dialogs/custom/)
+[進一步瞭解 →](/features/dialogs/custom/)
 
 ---
 ▣ 視窗
 瞭解視窗管理。
 
-[深入瞭解 →](/features/windows/basics/)
+[進一步瞭解 →](/features/windows/basics/)
 
 @end
 
 ---
 
-<strong>有問題嗎？</strong>請前往[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[對話方塊範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)。
+<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[對話方塊範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)。

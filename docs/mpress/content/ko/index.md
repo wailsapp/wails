@@ -1,7 +1,7 @@
 ---
 title: "Go로 데스크톱 앱 빌드하기"
 description: "Go와 웹 기술을 사용하는 네이티브 데스크톱 애플리케이션"
-banner: {"content": "Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. <a href=\"https://v2.wails.io\">v2 문서를 찾고 계신가요?</a>\n"}
+banner: {"content": "Wails v3.0.0은 Windows, macOS 및 Linux용 데스크톱 애플리케이션을 위한 안정화 릴리스입니다. \u003ca href=\"https://v2.wails.io\"\u003ev2 문서를 찾고 계신가요?\u003c/a\u003e\n"}
 template: "splash"
 hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"시작하기","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"튜토리얼 보기","variant":"secondary"}],"image":{"alt":"Wails 로고","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go와 최신 웹 기술로 아름답고 성능이 뛰어난 애플리케이션을 빌드하세요. 하나의 코드베이스. 세 가지 플랫폼. 브라우저 불필요.*"}
 sourcePath: "index.md"
@@ -75,7 +75,7 @@ sourcePath: "index.md"
 
 </style>
 
-<span class="browser-footnote" data-browser-footnote>* 정말 원한다면 사용할 수 있습니다</span>
+<span class="browser-footnote" data-browser-footnote>* 정말 사용하고 싶은 경우는 제외합니다</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
@@ -132,18 +132,18 @@ wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 @end
 
-**이제 애플리케이션이 실행 중이며** 핫 리로드와 타입 안전성이 보장되는 Go-to-JS 바인딩을 사용할 수 있습니다.
+핫 리로드와 타입 안전 Go-JS 바인딩을 사용하여 **애플리케이션을 실행했습니다**.
 
 `wails3 setup`에 문제가 있나요? [수동 설치 가이드](/quick-start/installation/)를 참조하세요.
 
-## 데스크톱 앱을 그대로 모바일 앱으로
+## 데스크톱 앱은 이미 모바일 앱입니다
 
 @terminal{frame="macos" prompt="none"}
 wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Go 코드를 전혀 변경할 필요가 없습니다.** 동일한 `main.go`, 동일한 서비스, 동일한 프런트엔드를 Wails가 iOS 및 Android용으로 자동 컴파일합니다. 플랫폼별 기능(햅틱, 네이티브 대화 상자, 안전 영역)은 필요할 때 사용할 수 있지만, 앱을 출시하는 데 반드시 필요한 것은 아닙니다.
+**Go 코드를 전혀 변경할 필요가 없습니다.** 동일한 `main.go`, 동일한 서비스, 동일한 프런트엔드를 Wails가 iOS 및 Android용으로 자동 컴파일합니다. 플랫폼별 기능(햅틱, 네이티브 대화 상자, 안전 영역)은 원할 때 사용할 수 있지만, 출시하는 데 반드시 필요하지는 않습니다.
 
 [모바일 문서 →](/guides/mobile/)
 
@@ -153,31 +153,31 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 @cards{cols="2"}
 🚀 사용자가 체감하는 성능
-- Electron의 150MB에 비해 약 15MB인 바이너리
-- 100MB+에 비해 약 10MB인 기본 메모리 사용량
-- 2-3초에 비해 &lt;0.5초인 시작 시간
+- 바이너리 크기: 약 15MB(Electron은 150MB)
+- 기본 메모리 사용량: 약 10MB(비교 대상은 100MB 이상)
+- 시작 시간: &lt;0.5초(비교 대상은 2-3초)
 - OS WebView를 사용한 네이티브 렌더링
-- 번들 브라우저로 인한 오버헤드 없음
+- 브라우저 번들로 인한 오버헤드 없음
 
 ---
 ⚙ 개발자 경험
 - 모든 플랫폼에서 하나의 Go 코드베이스 사용
 - React, Vue, Svelte 등 모든 웹 프레임워크 지원
-- 개발 중 핫 리로드 지원
-- Go를 Javascript에서 쉽게 호출할 수 있도록 바인딩 자동 생성
-- 메모리 내 IPC. 네트워크 포트를 사용하지 않음
+- 개발 중 핫 리로드
+- JavaScript에서 Go를 쉽게 호출할 수 있도록 자동 생성되는 바인딩
+- 인메모리 IPC. 네트워크 포트 불필요
 
 ---
-✓ 데스크톱 앱 개발에 필요한 기능 완비
+✓ 데스크톱 지원 완료
 - 수명 주기를 지원하는 다중 창
 - 네이티브 메뉴 및 시스템 트레이
 - 플랫폼 네이티브 파일 대화 상자
-- 시스템 통합 및 바로 가기
+- 시스템 통합 및 단축키
 - 코드 서명 및 패키징 도구
 
 ---
 ▣ 데스크톱 및 모바일
-- Windows, macOS, Linux, iOS 및 Android
+- Windows, macOS, Linux, iOS, Android
 - 동일한 코드베이스, 재작성 불필요
 - 모든 플랫폼에서 네이티브 WebView 사용
 - 열린 포트 및 localhost 서버 없음
@@ -187,19 +187,19 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## 다음 단계
 
-다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
+다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하는 경우 [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다.
+Wails v3.0.0은 Windows, macOS 및 Linux용 데스크톱 애플리케이션을 위한 안정화 릴리스입니다. Android 및 iOS 지원은 여전히 실험 단계이며 안정적인 데스크톱 호환성 계약의 범위에 포함되지 않습니다.
 
 @end
 
 @cards{cols="1"}
 ♥ Wails 개발 후원하기
-Wails는 개발자가 개발자를 위해 만든 무료 오픈 소스입니다. Wails로 훌륭한 애플리케이션을 빌드하는 데 도움을 받으셨다면 지속적인 개발을 후원해 주세요.
+Wails는 개발자가 개발자를 위해 만든 무료 오픈 소스 프로젝트입니다. Wails가 멋진 애플리케이션을 빌드하는 데 도움이 된다면 지속적인 개발을 후원해 주세요.
 
-여러분의 후원은 프로젝트를 유지하고 문서를 개선하며 전체 커뮤니티에 도움이 되는 새로운 기능을 개발하는 데 보탬이 됩니다.
+후원금은 프로젝트를 유지하고 문서를 개선하며 전체 커뮤니티에 도움이 되는 새로운 기능을 개발하는 데 사용됩니다.
 
-[후원자 되기 →](https://github.com/sponsors/leaanthony)
+[스폰서 되기 →](https://github.com/sponsors/leaanthony)
 
 @end

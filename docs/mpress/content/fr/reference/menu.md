@@ -5,7 +5,7 @@ slug: "reference/menu"
 sourcePath: "reference/menu.md"
 ---
 
-## Présentation
+## Vue d’ensemble
 
 L’API des menus fournit des méthodes permettant de créer et de gérer les menus d’application, les menus contextuels et les menus de la zone de notification.
 
@@ -13,7 +13,7 @@ L’API des menus fournit des méthodes permettant de créer et de gérer les me
 
 - **Menus d’application** — Barre de menus supérieure (Fichier, Édition, etc.)
 - **Menus contextuels** — Menus accessibles par clic droit
-- **Menus de la zone de notification** — Menus situés dans la zone de notification système
+- **Menus de la zone de notification** — Menus situés dans la barre d’état système ou la zone de notification
 
 ## Création de menus
 
@@ -45,7 +45,7 @@ func (m *Menu) Add(label string) *MenuItem
 
 - `label` — Texte affiché pour l’élément de menu
 
-**Valeur renvoyée :** l’élément de menu créé
+**Valeur renvoyée :** L’élément de menu créé
 
 **Exemple :**
 
@@ -68,7 +68,7 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 - `label` — Libellé du sous-menu
 
-**Valeur renvoyée :** le sous-menu créé
+**Valeur renvoyée :** Le sous-menu créé
 
 **Exemple :**
 
@@ -100,13 +100,15 @@ menu.Add("Select All")
 
 ### AddSectionHeader()
 
-Ajoute un en-tête de section natif non interactif sous **macOS 14 et versions ultérieures**. Sur les versions antérieures de macOS et toutes les autres plateformes (y compris les compilations serveur), cet appel est sans effet : aucun élément de remplacement n’est inséré.
+Ajoute un en-tête de section natif et non interactif sous **macOS 14 et versions ultérieures**.
+Sur les versions antérieures de macOS et toutes les autres plateformes (y compris les builds serveur),
+cette opération ne produit aucun effet : aucun élément de substitution n’est inséré.
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-Utilisez les en-têtes pour nommer les groupes dans les menus de la zone de notification, les menus contextuels ou les menus d’application :
+Utilisez des en-têtes pour identifier les groupes dans les menus de la zone de notification, les menus contextuels ou les menus d’application :
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,13 +118,16 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-Les en-têtes utilisent l’apparence standard des en-têtes de section d’AppKit. Appelez `menu.Update()` après avoir reconstruit un menu déjà affiché, comme pour les autres modifications de structure. Consultez l’exemple `systray-menu` pour un en-tête obtenu avec `os.Hostname()`.
+Les en-têtes utilisent l’apparence standard des en-têtes de section d’AppKit. Appelez `menu.Update()`
+après avoir reconstruit un menu déjà affiché, comme pour les autres modifications structurelles.
+Consultez l’exemple `systray-menu` pour voir un en-tête obtenu à partir de `os.Hostname()`.
 
-Les en-têtes omis ne séparent pas les groupes de boutons radio. Utilisez `AddSeparator()` lorsque les groupes doivent rester séparés sur toutes les plateformes.
+Les en-têtes omis ne séparent pas les groupes de boutons radio. Utilisez `AddSeparator()` lorsque les groupes de boutons radio
+doivent rester distincts sur toutes les plateformes.
 
 ### AddCheckbox()
 
-Ajoute un élément de menu à cocher.
+Ajoute un élément de menu pouvant être coché.
 
 ```go
 func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-Ajoute un élément de menu de type bouton radio (dans un groupe à choix mutuellement exclusifs).
+Ajoute un élément de menu de type bouton radio (groupe d’options mutuellement exclusives).
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -175,7 +180,7 @@ gridView.OnClick(func(ctx *application.Context) {
 
 ### Update()
 
-Met à jour le menu afin de refléter les modifications apportées aux éléments de menu.
+Met à jour le menu pour refléter toutes les modifications apportées à ses éléments.
 
 ```go
 func (m *Menu) Update()
@@ -204,7 +209,7 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 - `callback` — Fonction appelée lorsque l’utilisateur clique sur l’élément
 
-**Valeur renvoyée :** l’élément de menu (pour le chaînage)
+**Valeur renvoyée :** L’élément de menu (pour le chaînage)
 
 **Exemple :**
 
@@ -299,13 +304,13 @@ func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
 
 **Paramètres :**
 
-- `accelerator` — Raccourci clavier (par exemple, "Ctrl+S", "Cmd+Q")
+- `accelerator` — Raccourci clavier (par exemple, « Ctrl+S » ou « Cmd+Q »)
 
 **Format du raccourci clavier :**
 
 - **Touches de modification :** `Ctrl`, `Cmd`, `Alt`, `Shift`
 - **Touches :** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace`, etc.
-- **Plateforme :** utilisez `Cmd` sous macOS et `Ctrl` sous Windows/Linux.
+- **Plateforme :** utilisez `Cmd` sous macOS et `Ctrl` sous Windows/Linux
 
 **Exemple :**
 
@@ -331,7 +336,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-Définit une infobulle qui s’affiche au survol de l’élément de menu.
+Définit une infobulle qui apparaît lorsque le pointeur survole l’élément de menu.
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -359,7 +364,7 @@ debugItem.SetHidden(!isDevelopment)
 menu.Update()
 ```
 
-## Menu de l’application
+## Menu d’application
 
 ### app.Menu.Set()
 
@@ -398,7 +403,7 @@ app.Menu.Set(menu)
 
 **Remarques propres aux plateformes :**
 
-- **macOS :** le menu apparaît dans la barre de menus en haut de l’écran
+- **macOS :** le menu apparaît dans la barre de menus supérieure
 - **Windows/Linux :** le menu apparaît dans la barre de titre de la fenêtre
 - **macOS :** ajoute automatiquement un menu d’application portant le nom de l’application
 
@@ -406,7 +411,7 @@ app.Menu.Set(menu)
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-Créez un `*ContextMenu` via le gestionnaire, puis enregistrez-le sous un nom. `ContextMenuManager.Add` accepte `*ContextMenu` — **pas** `*Menu` — et il n’existe **aucune** méthode `app.RegisterContextMenu`.
+Créez un `*ContextMenu` à l’aide du gestionnaire et enregistrez-le sous un nom. `ContextMenuManager.Add` accepte `*ContextMenu` — et **non** `*Menu` — et il n’existe **aucune** méthode `app.RegisterContextMenu`.
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +420,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-Vous pouvez également utiliser la fonction `application.NewContextMenu(name string) *ContextMenu` au niveau du paquet pour créer et enregistrer un menu contextuel en une seule étape.
+Vous pouvez également utiliser la fonction `application.NewContextMenu(name string) *ContextMenu` au niveau du package pour créer et enregistrer un menu contextuel en une seule étape.
 
 **Go :**
 
@@ -434,7 +439,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML/CSS :**
 
-Le runtime déclenche un menu contextuel enregistré lorsque la cible du clic droit (ou l’un de ses ancêtres) possède la propriété personnalisée CSS `--custom-contextmenu` définie sur ce nom. La propriété facultative `--custom-contextmenu-data` est transmise à la fonction de rappel Go via `ctx.ContextMenuData()`. Pour supprimer le menu contextuel par défaut du navigateur, définissez `--default-contextmenu: hide` (ou `auto`/`show`).
+Le runtime déclenche un menu contextuel enregistré lorsque la cible du clic droit (ou l’un de ses ancêtres) possède la propriété CSS personnalisée `--custom-contextmenu` définie sur ce nom. La propriété facultative `--custom-contextmenu-data` est transmise au rappel Go via `ctx.ContextMenuData()`. Pour masquer le menu contextuel par défaut du navigateur, définissez `--default-contextmenu: hide` (ou `auto`/`show`).
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-Définit l’infobulle affichée au survol de l’icône de la zone de notification. Ne renvoie rien.
+Définit l’infobulle affichée lors du survol de l’icône de la zone de notification. Ne renvoie rien.
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -639,7 +644,7 @@ func main() {
 }
 ```
 
-### Application avec icône dans la zone de notification
+### Application avec zone de notification
 
 ```go
 func setupSystemTray(app *application.App, window application.Window) {
@@ -752,31 +757,31 @@ func (e *Editor) save() {
 
 ### ✅ À faire
 
-- **Utilisez les raccourcis clavier standard** — respectez les conventions de la plateforme (Ctrl+C pour copier, etc.).
-- **Appelez Update() après les modifications** — sinon, le menu ne les reflétera pas.
-- **Regroupez les éléments associés** — utilisez des séparateurs pour organiser les éléments de menu.
-- **Désactivez les actions indisponibles** — ne les masquez pas ; désactivez-les avec SetEnabled(false).
-- **Utilisez des libellés clairs** — soyez concis et explicite.
-- **Respectez les conventions de la plateforme** — les structures de menus diffèrent entre macOS et Windows/Linux.
+- **Utilisez les raccourcis clavier standard** — Respectez les conventions de la plateforme (Ctrl+C pour copier, etc.)
+- **Appelez Update() après chaque modification** — Sinon, les modifications ne seront pas répercutées dans le menu
+- **Regroupez les éléments associés** — Utilisez des séparateurs pour organiser les éléments de menu
+- **Désactivez les actions indisponibles** — Ne les masquez pas ; désactivez-les avec SetEnabled(false)
+- **Utilisez des libellés clairs** — Soyez concis et explicite
+- **Respectez les conventions de la plateforme** — Les modèles de menus diffèrent entre macOS et Windows/Linux
 
-### ❌ À éviter
+### ❌ À ne pas faire
 
-- **N’oubliez pas Update()** — c’est l’erreur la plus courante.
-- **N’imbriquez pas trop profondément les menus** — limitez-les à 2-3 niveaux.
-- **N’utilisez pas de libellés ambigus** — « Traiter » contre « Traiter le document ».
-- **Ne compliquez pas inutilement les menus** — gardez-les simples et ciblés.
-- **Ne mélangez pas les métaphores** — adoptez une dénomination et une organisation cohérentes.
+- **N’oubliez pas Update()** — C’est l’erreur la plus courante
+- **N’imbriquez pas les menus trop profondément** — Limitez-les à 2-3 niveaux
+- **N’utilisez pas de libellés ambigus** — « Traiter » plutôt que « Traiter le document »
+- **Ne rendez pas les menus inutilement complexes** — Gardez-les simples et ciblés
+- **Ne mélangez pas les conventions** — Adoptez une dénomination et une organisation cohérentes
 
-## Remarques propres aux plateformes
+## Remarques propres à chaque plateforme
 
 ### macOS
 
-- Un menu d’application portant le nom de l’application est ajouté automatiquement.
-- Utilisez `Cmd` plutôt que `Ctrl` pour les raccourcis clavier.
-- Par défaut, « À propos », « Préférences » et « Quitter » figurent dans le menu de l’application.
+- Un menu d’application portant le nom de l’application est ajouté automatiquement
+- Utilisez `Cmd` plutôt que `Ctrl` pour les raccourcis clavier
+- Les commandes « À propos », « Préférences » et « Quitter » figurent par défaut dans le menu de l’application
 
 ### Windows/Linux
 
-- Aucun menu d’application automatique
+- Aucun menu d’application n’est ajouté automatiquement
 - Utilisez `Ctrl` pour les raccourcis clavier
-- « Quitter » se trouve généralement dans le menu Fichier
+- La commande « Quitter » se trouve généralement dans le menu Fichier

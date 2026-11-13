@@ -1,13 +1,13 @@
 ---
 title: "Opérations sur le presse-papiers"
-description: "Copier et coller du texte avec le presse-papiers système"
+description: "Copiez et collez du texte avec le presse-papiers système"
 slug: "features/clipboard/basics"
 sourcePath: "features/clipboard/basics.md"
 ---
 
 ## Opérations sur le presse-papiers
 
-Wails fournit une **API de presse-papiers unifiée** qui fonctionne sur toutes les plateformes. Copiez et collez du texte à l’aide de méthodes simples et cohérentes sous Windows, macOS et Linux.
+Wails fournit une **API de presse-papiers unifiée** qui fonctionne sur toutes les plateformes. Copiez et collez du texte avec des méthodes simples et cohérentes sous Windows, macOS et Linux.
 
 ## Démarrage rapide
 
@@ -22,9 +22,9 @@ if ok {
 }
 ```
 
-**C’est tout !** Vous disposez maintenant d’un accès multiplateforme au presse-papiers.
+**C’est tout !** Vous disposez maintenant d’un accès multiplateforme au presse-papiers.
 
-## Copie de texte
+## Copier du texte
 
 ### Copie simple
 
@@ -35,9 +35,9 @@ if !success {
 }
 ```
 
-**Renvoie :** `bool` — `true` en cas de réussite, `false` sinon
+**Valeur renvoyée :** `bool` — `true` en cas de réussite, `false` sinon
 
-### Copie depuis un service
+### Copier depuis un service
 
 ```go
 type ClipboardService struct {
@@ -49,7 +49,7 @@ func (c *ClipboardService) CopyToClipboard(text string) bool {
 }
 ```
 
-**Appelez depuis JavaScript :**
+**Appel depuis JavaScript :**
 
 ```javascript
 import { CopyToClipboard } from './bindings/changeme/clipboardservice'
@@ -57,7 +57,7 @@ import { CopyToClipboard } from './bindings/changeme/clipboardservice'
 await CopyToClipboard("Text to copy")
 ```
 
-### Copie avec confirmation
+### Copier avec confirmation
 
 ```go
 func copyWithFeedback(text string) {
@@ -75,7 +75,7 @@ func copyWithFeedback(text string) {
 }
 ```
 
-## Collage de texte
+## Coller du texte
 
 ### Collage simple
 
@@ -89,9 +89,9 @@ if !ok {
 fmt.Println("Clipboard text:", text)
 ```
 
-**Renvoie :** `(string, bool)` — le texte et un indicateur de réussite
+**Valeur renvoyée :** `(string, bool)` — Texte et indicateur de réussite
 
-### Collage depuis un service
+### Coller depuis un service
 
 ```go
 func (c *ClipboardService) PasteFromClipboard() string {
@@ -103,7 +103,7 @@ func (c *ClipboardService) PasteFromClipboard() string {
 }
 ```
 
-**Appelez depuis JavaScript :**
+**Appel depuis JavaScript :**
 
 ```javascript
 import { PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -112,7 +112,7 @@ const text = await PasteFromClipboard()
 console.log("Pasted:", text)
 ```
 
-### Collage avec validation
+### Coller avec validation
 
 ```go
 func pasteText() (string, error) {
@@ -138,7 +138,7 @@ func pasteText() (string, error) {
 
 ### Bouton de copie
 
-**Go :**
+**Go :**
 
 ```go
 type TextService struct {
@@ -153,7 +153,7 @@ func (t *TextService) CopyText(text string) error {
 }
 ```
 
-**JavaScript :**
+**JavaScript :**
 
 ```javascript
 import { CopyText } from './bindings/changeme/textservice'
@@ -174,9 +174,9 @@ document.getElementById('copy-btn').addEventListener('click', () => {
 })
 ```
 
-### Collage et traitement
+### Coller et traiter
 
-**Go :**
+**Go :**
 
 ```go
 type DataService struct {
@@ -198,7 +198,7 @@ func (d *DataService) PasteAndProcess() (string, error) {
 }
 ```
 
-**JavaScript :**
+**JavaScript :**
 
 ```javascript
 import { PasteAndProcess } from './bindings/changeme/dataservice'
@@ -213,7 +213,7 @@ async function pasteAndProcess() {
 }
 ```
 
-### Copie dans plusieurs formats
+### Copier plusieurs formats
 
 ```go
 type CopyService struct {
@@ -299,7 +299,7 @@ func (cm *ClipboardMonitor) checkClipboard() {
 }
 ```
 
-### Copie avec historique
+### Copier avec historique
 
 ```go
 type ClipboardHistory struct {
@@ -347,9 +347,9 @@ func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
 
 ## Intégration au frontend
 
-### Utilisation de l’API de presse-papiers du navigateur
+### Utiliser l’API de presse-papiers du navigateur
 
-Pour du texte simple, vous pouvez utiliser l’API de presse-papiers du navigateur :
+Pour du texte simple, vous pouvez utiliser l’API de presse-papiers du navigateur :
 
 ```javascript
 // Copy
@@ -374,11 +374,11 @@ async function pasteText() {
 }
 ```
 
-**Remarque :** l’API de presse-papiers du navigateur nécessite HTTPS ou localhost, ainsi que l’autorisation de l’utilisateur.
+**Remarque :** l’API de presse-papiers du navigateur nécessite HTTPS ou localhost, ainsi que l’autorisation de l’utilisateur.
 
-### Utilisation du presse-papiers de Wails
+### Utiliser le presse-papiers de Wails
 
-Pour accéder au presse-papiers à l’échelle du système :
+Pour accéder au presse-papiers à l’échelle du système :
 
 ```javascript
 import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -402,42 +402,42 @@ async function paste() {
 
 ### ✅ À faire
 
-- **Vérifiez les valeurs de retour** — gérez les échecs de manière appropriée
-- **Fournissez un retour** — informez les utilisateurs que la copie a réussi
-- **Validez le texte collé** — vérifiez son format et sa taille
-- **Utilisez la méthode appropriée** — API du navigateur ou API de Wails
-- **Gérez un presse-papiers vide** — effectuez une vérification avant toute utilisation
-- **Supprimez les caractères blancs en début et en fin de texte** — nettoyez le texte collé
+- **Vérifiez les valeurs renvoyées** — Gérez correctement les échecs
+- **Fournissez une confirmation** — Informez les utilisateurs que la copie a réussi
+- **Validez le texte collé** — Vérifiez son format et sa taille
+- **Utilisez la méthode appropriée** — API du navigateur ou API Wails
+- **Gérez les presse-papiers vides** — Effectuez une vérification avant toute utilisation
+- **Supprimez les espaces superflus** — Nettoyez le texte collé
 
 ### ❌ À ne pas faire
 
-- **N’ignorez pas les échecs** — vérifiez toujours la réussite de l’opération
-- **Ne copiez pas de données sensibles** — le presse-papiers est partagé
-- **Ne présumez pas du format** — validez les données collées
-- **N’effectuez pas d’interrogations trop fréquentes** — si vous surveillez le presse-papiers
-- **Ne copiez pas de données volumineuses** — utilisez plutôt des fichiers
-- **Ne négligez pas la sécurité** — assainissez le contenu collé
+- **N’ignorez pas les échecs** — Vérifiez toujours la réussite de l’opération
+- **Ne copiez pas de données sensibles** — Le presse-papiers est partagé
+- **Ne présumez pas du format** — Validez les données collées
+- **N’interrogez pas le presse-papiers trop fréquemment** — Si vous le surveillez
+- **Ne copiez pas de grandes quantités de données** — Utilisez plutôt des fichiers
+- **Ne négligez pas la sécurité** — Assainissez le contenu collé
 
 ## Différences entre les plateformes
 
 ### macOS
 
 - Utilise NSPasteboard
-- Prise en charge future du texte enrichi
-- Presse-papiers à l’échelle du système
-- Historique du presse-papiers (fonctionnalité système)
+- Prendra en charge le texte enrichi à l’avenir
+- Presse-papiers accessible à l’échelle du système
+- Historique du presse-papiers (fonctionnalité du système)
 
 ### Windows
 
 - Utilise l’API Presse-papiers de Windows
-- Prise en charge future de plusieurs formats
-- Presse-papiers à l’échelle du système
+- Prendra en charge plusieurs formats à l’avenir
+- Presse-papiers accessible à l’échelle du système
 - Historique du presse-papiers (Windows 10+)
 
 ### Linux
 
-- Utilise le presse-papiers de X11/Wayland
-- Sélections primaire et du presse-papiers
+- Utilise le presse-papiers X11/Wayland
+- Sélections principale et du presse-papiers
 - Varie selon l’environnement de bureau
 - Peut nécessiter un gestionnaire de presse-papiers
 
@@ -445,12 +445,12 @@ async function paste() {
 
 ### Version actuelle
 
-- **Texte uniquement** — les images ne sont pas encore prises en charge
-- **Aucune détection du format** — texte brut uniquement
-- **Aucun événement du presse-papiers** — Vous devez rechercher régulièrement les modifications
-- **Aucun historique du presse-papiers** — Implémentez-le vous-même
+- **Texte uniquement** — Les images ne sont pas encore prises en charge
+- **Aucune détection de format** — Texte brut uniquement
+- **Aucun événement de presse-papiers** — Vous devez interroger le presse-papiers pour détecter les changements
+- **Aucun historique du presse-papiers** — Vous devez l’implémenter vous-même
 
-### Fonctionnalités futures
+### Fonctionnalités à venir
 
 - Prise en charge des images
 - Prise en charge du texte enrichi
@@ -461,14 +461,14 @@ async function paste() {
 ## Étapes suivantes
 
 @cards{cols="2"}
-🚀 Liaisons
+🚀 Bindings
 Appelez des fonctions Go depuis JavaScript.
 
 [En savoir plus →](/features/bindings/methods/)
 
 ---
 ★ Événements
-Utilisez des événements pour recevoir les notifications du presse-papiers.
+Utilisez des événements pour les notifications du presse-papiers.
 
 [En savoir plus →](/features/events/system/)
 
@@ -480,7 +480,7 @@ Affichez une confirmation après une opération de copie ou de collage.
 
 ---
 ◆ Services
-Organisez le code du presse-papiers.
+Organisez le code lié au presse-papiers.
 
 [En savoir plus →](/features/bindings/services/)
 
@@ -488,4 +488,4 @@ Organisez le code du presse-papiers.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples relatifs au presse-papiers](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples d’utilisation du presse-papiers](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

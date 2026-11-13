@@ -1,59 +1,60 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "6e901493ef796ab4cf3d",
   "sourceFile": "community/showcase/warmine.md",
   "sourceLanguage": "en",
   "targetLanguage": "ko",
   "segments": {
     "b0001-text-01": {
-      "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
-      "targetHash": "4ad7d8397ac963999bbd02a42c76c7414d0d490f3062cfa9a4584ef1eca55d59",
-      "machineHash": "4ad7d8397ac963999bbd02a42c76c7414d0d490f3062cfa9a4584ef1eca55d59",
-      "machineText": "![WarMine 스크린샷](/assets/showcase-images/warmine1.png)\\\n![WarMine 스크린샷](/assets/showcase-images/warmine2.png)",
+      "sourceHash": "d3ea28dba15937da8ab25ef1a7f2717ee4ba154efd6c713a825ca169bbf9eebb",
+      "targetHash": "a662ec14449c04ee16ed4cf622e09822aecb62281f33f32ab96bebc5f0416e24",
+      "machineHash": "a662ec14449c04ee16ed4cf622e09822aecb62281f33f32ab96bebc5f0416e24",
+      "machineText": "![WarMine 스크린샷](/assets/showcase-images/warmine1.png) ![WarMine 스크린샷](/assets/showcase-images/warmine2.png)",
       "status": "final",
-      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png) ![WarMine Screenshot](/assets/showcase-i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
     "b0002-text-01": {
-      "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
-      "targetHash": "26c8ddbb278e43f6bedc5106d9dfc0e9cfbad2c816ca020d44bf9662c08a3a64",
-      "machineHash": "26c8ddbb278e43f6bedc5106d9dfc0e9cfbad2c816ca020d44bf9662c08a3a64",
-      "machineText": "[WarMine용 Minecraft 런처](https://warmine.ru/)는 모드가 적용된 게임 서버에 쉽게 접속하고 게임\\\n계정을 관리할 수 있는 Wails 애플리케이션입니다.",
+      "sourceHash": "31b55f930830e21faddd21562ba06686dc70cddb92895a9845f8a36df9336210",
+      "targetHash": "f51a1f25aedf49773fa7dc871d12cea10745a0b286d9035b60a3265618b6d27d",
+      "machineHash": "f51a1f25aedf49773fa7dc871d12cea10745a0b286d9035b60a3265618b6d27d",
+      "machineText": "[WarMine용 Minecraft 런처](https://warmine.ru/)는 모드가 적용된 게임 서버에 쉽게 접속하고 게임 계정을 관리할 수 있는 Wails 애플리케이션입니다.",
       "status": "final",
-      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application, that allows you to eas…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
     "b0003-text-01": {
-      "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
-      "targetHash": "b41d1f3397131eb5dd63722bc19250239204d3a0305262142a4ae7aea32542ab",
-      "machineHash": "b41d1f3397131eb5dd63722bc19250239204d3a0305262142a4ae7aea32542ab",
-      "machineText": "런처는 게임 파일을 다운로드하고 무결성을 검사한 후, 백엔드에서 실행 인수를\\\n폭넓게 사용자 지정할 수 있도록 게임을 실행합니다.",
+      "sourceHash": "fd3cb59c855fa7bcb02b5eed748c753590f86db8b776532faf7d54702cfd9ffb",
+      "targetHash": "52efa091d946b42def70b34fa7316149e879c287a8d644ad0934085d25cb84b2",
+      "machineHash": "52efa091d946b42def70b34fa7316149e879c287a8d644ad0934085d25cb84b2",
+      "machineText": "런처는 게임 파일을 다운로드하고 무결성을 검사한 후, 백엔드에서 실행 인수를 폭넓게 사용자 지정할 수 있도록 게임을 실행합니다.",
       "status": "final",
-      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the game with a wide rang…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
     "b0004-text-01": {
-      "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
-      "targetHash": "3f5aa456b287f399dbdd83fd9f29753ab60b882084f0d8548def907600fe0dd3",
-      "machineHash": "3f5aa456b287f399dbdd83fd9f29753ab60b882084f0d8548def907600fe0dd3",
-      "machineText": "프런트엔드는 Svelte로 작성되었으며, 전체 런처의 용량은 9MB이고 Windows 7-11을\\\n지원합니다.",
+      "sourceHash": "dc57f28113002a82c013c06aa93230ad8c75468da9ee6d587e18947d64ed17ea",
+      "targetHash": "5a6c934ed767a2ed63c474a7c05981b2fbd353bcdaaaa06c89b27aef37e293e0",
+      "machineHash": "5a6c934ed767a2ed63c474a7c05981b2fbd353bcdaaaa06c89b27aef37e293e0",
+      "machineText": "프런트엔드는 Svelte로 작성되었으며, 전체 런처의 용량은 9MB이고 Windows 7-11을 지원합니다.",
       "status": "final",
-      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows 7-11.",
       "provider": "codex",
       "model": "gpt-6-astra",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
       "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
@@ -65,7 +66,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
       "targetHash": "4b0cffbf8d6ade76f8dedc9eaba5dcf36cfaa4f4892754424c4a44c3ddebbd8c",
       "machineHash": "4b0cffbf8d6ade76f8dedc9eaba5dcf36cfaa4f4892754424c4a44c3ddebbd8c",
@@ -76,6 +77,86 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/warmine.mpd",
+    "sourceHash": "834c6552bc4a9f82a43d5057c8b7839d7263c4d1fa0b65ba8b329e2fd91e54c8",
+    "targetHash": "5347fcd5f11263ca480d0d7602baa40245b9797f70e10e7b58803b106826ef15",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
+        "targetHash": "4ad7d8397ac963999bbd02a42c76c7414d0d490f3062cfa9a4584ef1eca55d59",
+        "machineHash": "4ad7d8397ac963999bbd02a42c76c7414d0d490f3062cfa9a4584ef1eca55d59",
+        "machineText": "![WarMine 스크린샷](/assets/showcase-images/warmine1.png)\\\n![WarMine 스크린샷](/assets/showcase-images/warmine2.png)",
+        "status": "final",
+        "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
+        "targetHash": "26c8ddbb278e43f6bedc5106d9dfc0e9cfbad2c816ca020d44bf9662c08a3a64",
+        "machineHash": "26c8ddbb278e43f6bedc5106d9dfc0e9cfbad2c816ca020d44bf9662c08a3a64",
+        "machineText": "[WarMine용 Minecraft 런처](https://warmine.ru/)는 모드가 적용된 게임 서버에 쉽게 접속하고 게임\\\n계정을 관리할 수 있는 Wails 애플리케이션입니다.",
+        "status": "final",
+        "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "b0003-text-01": {
+        "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
+        "targetHash": "b41d1f3397131eb5dd63722bc19250239204d3a0305262142a4ae7aea32542ab",
+        "machineHash": "b41d1f3397131eb5dd63722bc19250239204d3a0305262142a4ae7aea32542ab",
+        "machineText": "런처는 게임 파일을 다운로드하고 무결성을 검사한 후, 백엔드에서 실행 인수를\\\n폭넓게 사용자 지정할 수 있도록 게임을 실행합니다.",
+        "status": "final",
+        "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "b0004-text-01": {
+        "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
+        "targetHash": "3f5aa456b287f399dbdd83fd9f29753ab60b882084f0d8548def907600fe0dd3",
+        "machineHash": "3f5aa456b287f399dbdd83fd9f29753ab60b882084f0d8548def907600fe0dd3",
+        "machineText": "프런트엔드는 Svelte로 작성되었으며, 전체 런처의 용량은 9MB이고 Windows 7-11을\\\n지원합니다.",
+        "status": "final",
+        "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+        "provider": "codex",
+        "model": "gpt-6-astra",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+        "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+        "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
+        "targetHash": "4b0cffbf8d6ade76f8dedc9eaba5dcf36cfaa4f4892754424c4a44c3ddebbd8c",
+        "machineHash": "4b0cffbf8d6ade76f8dedc9eaba5dcf36cfaa4f4892754424c4a44c3ddebbd8c",
+        "machineText": "WarMine용 Minecraft 런처",
+        "status": "final",
+        "sourcePreview": "Minecraft launcher for WarMine",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      }
     }
   }
 }

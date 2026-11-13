@@ -60,30 +60,33 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `darwin.microphone_usage_description` | `string` | 否 |  | `"value"` | `darwin` | macOS 麥克風權限文字；若未設定使用者自有的權利檔案，則會產生音訊輸入權利。 |
 | `darwin.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支援的最低作業系統版本。 |
 | `darwin.notarization` | `object` | 否 |  | `{}` | `darwin` | macOS 公證設定。 |
+| `darwin.notarization.api_key` | `string` | 否 |  | `"signing/AuthKey.p8"` |  | 相對於專案的 App Store Connect 團隊 API 私密金鑰 .p8 檔案。使用可攜式 Notary API，而非 notarytool；需要 key_id 和 issuer_id。 |
 | `darwin.notarization.credential` | `string` | 否 |  | `"release-notary"` |  | 用於公證的 Apple notarytool 鑰匙圈描述檔名稱。 |
+| `darwin.notarization.issuer_id` | `string` | 否 |  | `"00000000-0000-0000-0000-000000000000"` |  | 用於 API 公證的 App Store Connect 團隊簽發者 ID。 |
+| `darwin.notarization.key_id` | `string` | 否 |  | `"ABCDEFGHIJ"` |  | 屬於 api_key 的 App Store Connect 團隊 API 金鑰 ID。 |
 | `darwin.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人類可讀的產品名稱。 |
 | `darwin.signing` | `object` | 否 |  | `{}` |  | 平台簽署設定。 |
-| `darwin.signing.certificate` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
-| `darwin.signing.credential` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
+| `darwin.signing.certificate` | `string` | 否 |  | `"signing/developer-id.p12"` |  | 相對於專案、已匯出的 PKCS#12 身分識別，用於可攜式 Go 簽署；若要使用 macOS 鑰匙圈身分識別或臨時簽署，請省略此項。 |
+| `darwin.signing.credential` | `string` | 否 |  | `"APPLE_SIGNING_PASSWORD"` |  | 包含已匯出 PKCS#12 身分識別密碼的環境變數名稱；絕不可填入密碼本身。 |
 | `darwin.signing.entitlements` | `string` | 否 |  | `"signing/entitlements.plist"` |  | 相對於專案的 Apple 權利檔案。 |
-| `darwin.signing.identity` | `string` | 否 |  | `"Developer ID Application: Example"` |  | 鑰匙圈中的 macOS 程式碼簽署身分；使用 - 進行臨時簽署。 |
+| `darwin.signing.identity` | `string` | 否 |  | `"Developer ID Application: Example"` |  | 來自鑰匙圈的 macOS 程式碼簽署身分識別；若要進行可攜式臨時簽署，請使用 -，或設定已匯出的憑證。 |
 | `darwin.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
 | `darwin.signing.provisioning_profile` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
 | `darwin.signing.thumbprint` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
-| `darwin.signing.timestamp_server` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
+| `darwin.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | 用於可攜式憑證簽署的 RFC 3161 時間戳記 URL；經公證的憑證簽章需要此項。 |
 | `dev` | `object` | 否 |  | `{}` |  | 開發建置與監看器設定。 |
 | `dev.args` | `list(string)` | 否 |  | `["value"]` |  | 不經 shell 展開而傳遞的開發應用程式引數；桌面平台與 iOS 支援此功能。Android 要求使用空清單。 |
 | `dev.debounce_ms` | `integer` | 否 | `250` | `250` |  | 用於合併開發檔案變更的延遲時間。 |
 | `dev.exclude` | `list(string)` | 否 | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | 開發監看器的排除模式。 |
 | `dev.grace_period_ms` | `integer` | 否 | `1500` | `1500` |  | 允許開發程序正常停止的時間。 |
 | `dev.log_level` | `string` | 否 | `warn` | `"info"` |  | 開發記錄的詳細程度。 |
-| `dev.tags` | `list(string)` | 否 | `[]` | `[]` |  | 其他 Go 建置標籤。 |
+| `dev.tags` | `list(string)` | 否 | `[]` | `[]` |  | 額外的 Go 建置標籤。 |
 | `dev.use_git_ignore` | `boolean` | 否 | `true` | `true` |  | 將 .gitignore 規則套用至開發監看器。 |
 | `dev.watch` | `list(string)` | 否 | `["**/*.go","wails.yaml"]` | `["**/*.go", "wails.yaml"]` |  | 開發監看器的包含模式。 |
 | `file_associations` | `map(object)` | 否 |  | `{}` |  | 具名檔案關聯註冊。 |
 | `file_associations["association"].description` | `string` | 否 |  | `"value"` |  | 人類可讀的說明。 |
 | `file_associations["association"].extensions` | `list(string)` | 是 |  | `["example"]` |  | 應用程式處理的副檔名。 |
-| `file_associations["association"].icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 相對於專案、由使用者擁有的圖示檔案。 |
+| `file_associations["association"].icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 使用者擁有、相對於專案的圖示檔案。 |
 | `file_associations["association"].mime_type` | `string` | 否 |  | `"application/x-example"` |  | 為檔案關聯註冊的 MIME 類型。 |
 | `file_associations["association"].name` | `string` | 否 |  | `"value"` |  | 穩定的專案或註冊名稱。 |
 | `file_associations["association"].platforms` | `list(string)` | 否 |  | `["windows", "darwin", "linux"]` |  | 套用此註冊的平台。 |
@@ -119,7 +122,7 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `ios.comments` | `string` | 否 |  | `"value"` | `ios,android` | 其他套件中繼資料註解。 |
 | `ios.company` | `string` | 否 |  | `"value"` | `ios,android` | 公司或組織名稱。 |
 | `ios.display_name` | `string` | 否 |  | `"Example App"` | `ios,android` | 行動平台顯示的名稱。 |
-| `ios.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 使用者擁有、相對於專案的圖示檔案。 |
+| `ios.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 相對於專案的使用者自有圖示檔案。 |
 | `ios.info_plist` | `string` | 否 |  | `"assets/Info.plist"` | `darwin,ios` | 使用者擁有的 Apple Info.plist 檔案。 |
 | `ios.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支援的最低作業系統版本。 |
 | `ios.signing` | `object` | 否 |  | `{}` |  | 平台簽署設定。 |
@@ -136,18 +139,18 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `linux.capabilities` | `list(string)` | 否 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 應用程式要求的原生平台功能。 |
 | `linux.desktop_entry` | `string` | 否 |  | `"assets/app.desktop"` | `linux` | 使用者擁有的 Linux 桌面項目檔案。 |
 | `linux.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 使用者擁有、相對於專案的圖示檔案。 |
-| `linux.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向網域應用程式識別碼。 |
+| `linux.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向網域格式的應用程式識別碼。 |
 | `linux.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支援的最低作業系統版本。 |
 | `linux.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人類可讀的產品名稱。 |
 | `linux.signing` | `object` | 否 |  | `{}` |  | 平台簽署設定。 |
-| `linux.signing.certificate` | `string` | 否 |  | `"signing/private-key.asc"` |  | Arch：相對於專案、已匯出且採 ASCII 裝甲格式的 PGP 私密金鑰檔案。DEB/RPM：傳遞給外部簽署工具的 PGP 金鑰識別碼。 |
-| `linux.signing.credential` | `string` | 否 |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch：選用的環境變數，其中包含私密金鑰的複雜密碼；若金鑰未加密，請省略。 |
+| `linux.signing.certificate` | `string` | 否 |  | `"signing/private-key.asc"` |  | 已匯出的 ASCII 裝甲格式或二進位 OpenPGP 私密金鑰檔案，用於原生 DEB、RPM 或 Arch 簽署。單獨的 GnuPG 金鑰識別碼會繼續使用外部 DEB/RPM 簽署器。 |
+| `linux.signing.credential` | `string` | 否 |  | `"LINUX_SIGNING_PASSPHRASE"` |  | 選用的環境變數，其中包含已匯出私密金鑰的複雜密碼；若金鑰未加密，請省略此項。 |
 | `linux.signing.entitlements` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
 | `linux.signing.identity` | `string` | 否 |  | `"builder"` |  | DEB 簽署角色；預設為 builder。Arch 的分離式簽署器不使用此項目。 |
 | `linux.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
 | `linux.signing.provisioning_profile` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
 | `linux.signing.thumbprint` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
-| `linux.signing.timestamp_server` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
+| `linux.signing.timestamp_server` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
 | `packages` | `map(object)` | 否 |  | `{}` |  | 具名套件格式設定。 |
 | `packages["format"].background` | `string` | 否 |  | `"assets/dmg-background.png"` | `dmg` | 使用者擁有的 DMG 背景影像。 |
 | `packages["format"].categories` | `list(string)` | 否 |  | `["Development"]` | `appimage` | 桌面選單類別。 |
@@ -157,7 +160,8 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `packages["format"].desktop_entry` | `string` | 否 |  | `"assets/app.desktop"` | `appimage` | 使用者擁有的 Linux 桌面項目檔案。 |
 | `packages["format"].file_icon` | `string` | 否 |  | `"assets/file.icns"` | `dmg` | 使用者擁有的 DMG 檔案圖示。 |
 | `packages["format"].files` | `map(string)` | 否 |  | `{License.pdf: LICENSE.pdf}` | `dmg` | 複製到 DMG 中、以目的地名稱為鍵的使用者自有檔案。 |
-| `packages["format"].icon` | `string` | 否 |  | `"assets/appicon.png"` | `appimage` | 相對於專案的使用者自有圖示檔案。 |
+| `packages["format"].gtk_version` | `integer` | 否 |  | `1` | `appimage` | GTK 執行階段設定檔：3 或 4。預設採用 GUI 可執行檔的建置標籤，包括隨附程式；匯入的 CGo 程式庫必須與其一致。 |
+| `packages["format"].icon` | `string` | 否 |  | `"assets/appicon.png"` | `appimage` | 相對於專案、由使用者擁有的圖示檔案。 |
 | `packages["format"].install_scope` | `string` | 否 |  | `"user"` | `nsis` | NSIS 安裝範圍。 |
 | `packages["format"].maintainer` | `string` | 否 |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | 原生 Linux 套件維護者。 |
 | `packages["format"].manifest` | `string` | 否 |  | `"assets/manifest.xml"` | `msix` | 相對於專案的使用者自有平台或套件資訊清單。 |
@@ -165,10 +169,12 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `packages["format"].post_remove` | `string` | 否 |  | `"packaging/postremove.sh"` | `deb,rpm,archlinux,void` | 相對於專案的 Linux 移除後指令碼。 |
 | `packages["format"].pre_install` | `string` | 否 |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | 相對於專案的 Linux 安裝前指令碼。 |
 | `packages["format"].pre_remove` | `string` | 否 |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | 相對於專案的 Linux 移除前指令碼。 |
-| `packages["format"].publisher` | `string` | 否 |  | `"CN=Example"` | `msix` | Windows 套件發行者身分識別。 |
+| `packages["format"].publisher` | `string` | 否 |  | `"CN=Example"` | `msix` | Windows 套件發行者身分。 |
+| `packages["format"].runtime_path` | `string` | 否 |  | `"value"` | `appimage` | 相對於專案的 AppImage type-2 執行階段 ELF；預設下載已固定版本且通過總和檢查碼驗證的目標執行階段。 |
+| `packages["format"].runtime_root` | `string` | 否 |  | `"value"` | `appimage` | 相對於專案的目標 Linux 根檔案系統，其中包含 GTK/WebKit 程式庫和已編譯的資源快取；預設為 Linux 主機的根檔案系統。 |
 | `packages["format"].section` | `string` | 否 |  | `"utils"` | `deb,rpm,archlinux,void` | Linux 套件軟體庫區段。 |
 | `packages["format"].template` | `string` | 否 |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | 完全取代套件範本的使用者自有範本。 |
-| `packages["format"].update_info` | `string` | 否 |  | `"value"` | `appimage` | AppImage 更新資訊字串；需要 linuxdeploy 產生相符的 zsync 附屬檔案。 |
+| `packages["format"].update_info` | `string` | 否 |  | `"value"` | `appimage` | AppImage 更新資訊字串；會以 Go 產生相符的 zsync 附屬檔案。 |
 | `packages["format"].volume_icon` | `string` | 否 |  | `"assets/volume.icns"` | `dmg` | 使用者擁有的 DMG 卷宗圖示。 |
 | `packages["format"].window_height` | `integer` | 否 |  | `1` | `dmg` | DMG Finder 視窗高度（像素）。 |
 | `packages["format"].window_width` | `integer` | 否 |  | `1` | `dmg` | DMG Finder 視窗寬度（像素）。 |
@@ -218,24 +224,24 @@ description: "Wails v3 YAML 資訊清單中產生的欄位、型別、預設值�
 | `targets["target"].run.args` | `list(string)` | 否 |  | `["value"]` |  | 傳入應用程式且不經 shell 展開的引數。 |
 | `targets["target"].run.environment` | `map(string)` | 否 |  | `{RELEASE: "true"}` |  | 新增至此作業的環境變數。 |
 | `targets["target"].run.tags` | `list(string)` | 否 |  | `["value"]` |  | 額外的 Go 建置標籤。 |
-| `targets["target"].tags` | `list(string)` | 否 |  | `["value"]` |  | 額外的 Go 建置標籤。 |
+| `targets["target"].tags` | `list(string)` | 否 |  | `["value"]` |  | 其他 Go 建置標籤。 |
 | `targets["target"].toolchain` | `string` | 否 |  | `"auto"` |  | 此目標的編譯器工具鏈原則。 |
 | `version` | `integer` | 是 |  | `3` |  | Wails 資訊清單結構描述版本；此欄位必須位於最前面。 |
 | `windows` | `object` | 否 |  | `{}` |  | Windows 平台設定。 |
 | `windows.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台建置編號。 |
 | `windows.capabilities` | `list(string)` | 否 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 應用程式要求的原生平台功能。 |
 | `windows.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 由使用者擁有、相對於專案的圖示檔案。 |
-| `windows.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向網域格式的應用程式識別碼。 |
+| `windows.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向網域應用程式識別碼。 |
 | `windows.manifest` | `string` | 否 |  | `"assets/manifest.xml"` | `windows,android` | 由使用者擁有、相對於專案的平台或套件資訊清單。 |
 | `windows.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支援的最低作業系統版本。 |
 | `windows.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人類可讀的產品名稱。 |
-| `windows.publisher` | `string` | 否 |  | `"CN=Example"` | `windows` | Windows 套件發行者身分。 |
+| `windows.publisher` | `string` | 否 |  | `"CN=Example"` | `windows` | Windows 套件發行者身分識別。 |
 | `windows.signing` | `object` | 否 |  | `{}` |  | 平台簽署設定。 |
-| `windows.signing.certificate` | `string` | 否 |  | `"signing/windows.pfx"` |  | 相對於專案的 PFX 簽署憑證檔案；也可以設定指紋。 |
+| `windows.signing.certificate` | `string` | 否 |  | `"signing/windows.pfx"` |  | 相對於專案、已匯出的 RSA PFX 身分識別，用於在任何桌面主機上進行可攜式 PE/MSIX 簽署。支援 AES/PBKDF2 和 3DES；Windows 原生 SignTool 可處理 RC2 匯出檔。也可改為設定指紋。 |
 | `windows.signing.credential` | `string` | 否 |  | `"WINDOWS_SIGNING_PASSWORD"` |  | 包含 PFX 憑證密碼的環境變數名稱；切勿填入密碼本身。 |
 | `windows.signing.entitlements` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
-| `windows.signing.identity` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
+| `windows.signing.identity` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項。 |
 | `windows.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
 | `windows.signing.provisioning_profile` | `string` | 否 |  | `""` |  | 此平台的簽署作業不使用此項目。 |
-| `windows.signing.thumbprint` | `string` | 否 |  | `"0123456789ABCDEF"` |  | Windows 憑證存放區中憑證的指紋。 |
-| `windows.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | Windows 簽署時間戳記服務的 URL。 |
+| `windows.signing.thumbprint` | `string` | 否 |  | `"0123456789ABCDEF"` |  | Windows 憑證存放區中憑證的指紋；需要具備 SignTool 的 Windows。 |
+| `windows.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | RFC 3161 時間戳記服務 URL；預設為`http://timestamp.digicert.com`。系統會驗證時間戳記簽章和信任鏈。 |

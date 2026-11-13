@@ -1,27 +1,27 @@
 ---
 title: "Anwendungsmenüs"
-description: "Native Menüleisten für Ihre Desktop-Anwendung erstellen"
+description: "Native Menüleisten für Ihre Desktopanwendung erstellen"
 slug: "features/menus/application"
 sourcePath: "features/menus/application.md"
 ---
 
 ## Das Problem
 
-Professionelle Desktop-Anwendungen benötigen Menüleisten – Datei, Bearbeiten, Ansicht, Hilfe. Menüs funktionieren jedoch auf jeder Plattform anders:
+Professionelle Desktopanwendungen benötigen Menüleisten – Datei, Bearbeiten, Ansicht, Hilfe. Menüs funktionieren jedoch auf jeder Plattform anders:
 
 - **macOS**: Globale Menüleiste am oberen Bildschirmrand
 - **Windows**: Menüleiste in der Titelleiste des Fensters
-- **Linux**: Abhängig von der Desktop-Umgebung
+- **Linux**: Abhängig von der Desktopumgebung
 
 Plattformgerechte Menüs manuell zu erstellen, ist mühsam und fehleranfällig.
 
 ## Die Wails-Lösung
 
-Wails bietet eine **einheitliche API**, die automatisch plattformspezifische native Menüs erstellt. Einmal schreiben und auf allen Plattformen natives Verhalten erhalten.
+Wails stellt eine **einheitliche API** bereit, die automatisch plattformnative Menüs erstellt. Einmal schreiben und auf allen Plattformen natives Verhalten erhalten.
 
 ![Ein Wails-Anwendungsmenü unter macOS mit Standard-, Kontrollkästchen-, Options- und Untermenüeinträgen](/assets/screenshots/application-menu-macos.png)
 
-Unter macOS befindet sich das Anwendungsmenü in der globalen Menüleiste. Diese Aufnahme zeigt das von der Wails-Menü-API gerenderte native Menü einschließlich deaktivierter Einträge sowie Kontrollkästchen-, Options- und Untermenüeinträgen.
+Unter macOS wird das Anwendungsmenü in der globalen Menüleiste angezeigt. Diese Aufnahme zeigt das von der Wails-Menü-API gerenderte native Menü mit deaktivierten Einträgen sowie Kontrollkästchen-, Options- und Untermenüeinträgen.
 
 ## Schnellstart
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-**Das ist alles!** Sie verfügen nun über plattformspezifische native Menüs mit Standardeinträgen. Die Option `UseApplicationMenu` stellt sicher, dass Fenster unter Windows und Linux das Menü ohne zusätzlichen Code anzeigen.
+**Das ist alles!** Sie verfügen nun über plattformnative Menüs mit Standardeinträgen. Die Option `UseApplicationMenu` sorgt dafür, dass Windows- und Linux-Fenster das Menü ohne zusätzlichen Code anzeigen.
 
 ## Menüs erstellen
 
@@ -93,7 +93,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### Menü festlegen
 
-**Empfohlene Vorgehensweise** – Verwenden Sie für plattformübergreifende Konsistenz `UseApplicationMenu`:
+**Empfohlener Ansatz** – Verwenden Sie `UseApplicationMenu` für plattformübergreifende Konsistenz:
 
 ```go
 // Set the application menu once
@@ -105,7 +105,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Diese Vorgehensweise bewirkt Folgendes:
+Dieser Ansatz bewirkt Folgendes:
 
 - Unter **macOS**: Das Menü erscheint am oberen Bildschirmrand (Standardverhalten)
 - Unter **Windows/Linux**: Jedes Fenster mit `UseApplicationMenu: true` zeigt das Anwendungsmenü an
@@ -120,7 +120,7 @@ Diese Vorgehensweise bewirkt Folgendes:
 app.Menu.Set(menu)
 ```
 
-Das Menü erscheint am oberen Bildschirmrand und bleibt auch dann bestehen, wenn alle Fenster geschlossen sind. Die Option `UseApplicationMenu` hat unter macOS keine Wirkung, da alle Anwendungen das globale Menü verwenden.
+Das Menü erscheint am oberen Bildschirmrand und bleibt auch dann bestehen, wenn alle Fenster geschlossen sind. Die Option `UseApplicationMenu` hat unter macOS keine Auswirkung, da alle Anwendungen das globale Menü verwenden.
 
 [Windows]
 **Fensterspezifische Menüleiste**:
@@ -136,10 +136,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Jedes Fenster kann ein eigenes Menü besitzen oder das Anwendungsmenü übernehmen. Das Menü erscheint in der Titelleiste des Fensters.
+Jedes Fenster kann ein eigenes Menü haben oder das Anwendungsmenü übernehmen. Das Menü erscheint in der Titelleiste des Fensters.
 
 [Linux]
-**Fensterspezifische Menüleiste** (normalerweise):
+**Fensterspezifische Menüleiste** (üblicherweise):
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -152,7 +152,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Das Verhalten hängt von der Desktop-Umgebung ab. Einige Desktop-Umgebungen, etwa Unity, unterstützen globale Menüs.
+Das Verhalten hängt von der Desktopumgebung ab. Einige Umgebungen wie Unity unterstützen globale Menüs.
 
 @end
 
@@ -178,15 +178,27 @@ Wenn ein Fenster ein anderes Menü als das Anwendungsmenü benötigt, legen Sie 
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**Menüleiste eines Fensters entfernen:**
+
+Übergeben Sie `nil`, um die Menüleiste aus einem Fenster zu entfernen:
+
+```go
+window.SetMenu(nil)
+```
+
+Unter Windows und Linux zeigt das Fenster anschließend keine Menüleiste mehr an – auch nicht das Anwendungsmenü, das es mit `UseApplicationMenu` übernommen hatte. Außerdem funktionieren die Tastenkürzel des entfernten Menüs in diesem Fenster nicht mehr. Erfolgt der Aufruf, bevor das Fenster gestartet wurde, wird das Fenster ohne Menüleiste erstellt. Ein späterer Aufruf von `SetMenu(menu)` fügt wieder eine Menüleiste hinzu.
+
+Unter macOS gehört die Menüleiste zur Anwendung und nicht zu einem Fenster. Daher hat `SetMenu` dort keine Wirkung. Verwenden Sie `app.Menu.Set`, um das Anwendungsmenü zu ändern.
+
 ## Menürollen
 
-Wails bietet **vordefinierte Menürollen**, die automatisch plattformgerechte Menüstrukturen erstellen.
+Wails stellt **vordefinierte Menürollen** bereit, die automatisch plattformgerechte Menüstrukturen erstellen.
 
 ### Verfügbare Rollen
 
 | Rolle | Beschreibung | Plattformhinweise |
 | --- | --- | --- |
-| `AppMenu` | Anwendungsmenü mit „Über“, Einstellungen und Beenden | **Nur macOS** |
+| `AppMenu` | Anwendungsmenü mit Info, Einstellungen und Beenden | **Nur macOS** |
 | `FileMenu` | Dateioperationen (Neu, Öffnen, Speichern usw.) | Alle Plattformen |
 | `EditMenu` | Textbearbeitung (Rückgängig, Wiederholen, Ausschneiden, Kopieren, Einfügen) | Alle Plattformen |
 | `WindowMenu` | Fensterverwaltung (Minimieren, Zoomen usw.) | Alle Plattformen |
@@ -215,21 +227,21 @@ menu.AddRole(application.HelpMenu)
 [macOS]
 **AppMenu** (mit Anwendungsname):
 
-- Über [App Name]
-- Einstellungen ... (⌘,)
+- Über [Anwendungsname]
+- Einstellungen... (⌘,)
 - ---
 - Dienste
 - ---
-- [App Name] ausblenden (⌘H)
+- [Anwendungsname] ausblenden (⌘H)
 - Andere ausblenden (⌥⌘H)
 - Alle einblenden
 - ---
-- [App Name] beenden (⌘Q)
+- [Anwendungsname] beenden (⌘Q)
 
 **FileMenu**:
 
 - Neu (⌘N)
-- Öffnen ... (⌘O)
+- Öffnen... (⌘O)
 - ---
 - Fenster schließen (⌘W)
 
@@ -248,11 +260,11 @@ menu.AddRole(application.HelpMenu)
 - Minimieren (⌘M)
 - Zoomen
 - ---
-- Alle in den Vordergrund
+- Alle nach vorne bringen
 
 **HelpMenu**:
 
-- Hilfe zu [App Name]
+- Hilfe für [Anwendungsname]
 
 [Windows]
 **FileMenu**:
@@ -279,16 +291,16 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**:
 
-- Info zu [App Name]
+- Über [App-Name]
 
 [Linux]
-Ähnlich wie unter Windows, die Tastenkombinationen können jedoch je nach Desktop-Umgebung variieren.
+Ähnlich wie unter Windows, die Tastenkürzel können jedoch je nach Desktop-Umgebung variieren.
 
 @end
 
 ### Rollenmenüs anpassen
 
-`Menu.AddRole(role)` gibt das als **Empfänger** verwendete Menü (das Menü der obersten Ebene) zurück, **nicht** das Untermenü der Rolle. Um dem Untermenü der Rolle Einträge hinzuzufügen, suche den eingefügten Rolleneintrag mit `FindByRole` und rufe darauf `GetSubmenu()` auf:
+`Menu.AddRole(role)` gibt das **Empfänger**-Menü (das Menü der obersten Ebene) zurück, **nicht** das Untermenü der Rolle. Um dem Untermenü der Rolle Einträge hinzuzufügen, suchen Sie mit `FindByRole` nach dem eingefügten Rolleneintrag und rufen Sie darauf `GetSubmenu()` auf:
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -300,7 +312,7 @@ fileMenu.Add("Export...").OnClick(handleExport)
 
 ## Benutzerdefinierte Menüs
 
-Erstelle eigene Menüs für anwendungsspezifische Funktionen:
+Erstellen Sie eigene Menüs für anwendungsspezifische Funktionen:
 
 ```go
 // Add a custom top-level menu
@@ -329,11 +341,11 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-**Weitere Menüeintragstypen** findest du in der [Menüreferenz](/features/menus/reference/).
+Weitere Menüeintragstypen finden Sie unter **Weitere Menüeintragstypen** in der [Menüreferenz](/features/menus/reference/).
 
 ## Dynamische Menüs
 
-Aktualisiere Menüs entsprechend dem Anwendungszustand:
+Aktualisieren Sie Menüs abhängig vom Anwendungszustand:
 
 ### Einträge aktivieren/deaktivieren
 
@@ -358,9 +370,9 @@ func onDocumentChanged() {
 ```
 
 @note{type="caution" title="Immer menu.Update() aufrufen"}
-Rufe nach einer Änderung des Menüzustands (aktiviert/deaktiviert, Beschriftung, ausgewählt) **immer `menu.Update()`** auf. Dies ist besonders unter Windows entscheidend, da Menüs dort neu erstellt werden.
+Rufen Sie nach jeder Änderung des Menüzustands (aktiviert/deaktiviert, Beschriftung, ausgewählt) **immer `menu.Update()`** auf. Dies ist besonders unter Windows entscheidend, da Menüs dort neu aufgebaut werden.
 
-Weitere Informationen findest du in der [Menüreferenz](/features/menus/reference/#enabled-state).
+Weitere Informationen finden Sie in der [Menüreferenz](/features/menus/reference/#enabled-state).
 
 @end
 
@@ -380,9 +392,9 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Menüs neu erstellen
+### Menüs neu aufbauen
 
-Erstelle bei umfangreichen Änderungen das gesamte Menü neu:
+Bauen Sie bei umfangreichen Änderungen das gesamte Menü neu auf:
 
 ```go
 func rebuildFileMenu() {
@@ -460,11 +472,11 @@ menuItem.OnClick(func(ctx *application.Context) {
 - Wird **am oberen Bildschirmrand** angezeigt (global)
 - Bleibt bestehen, wenn alle Fenster geschlossen sind
 - Das erste Menü ist **immer das Anwendungsmenü**
-- Verwende `menu.AddRole(application.AppMenu)` für Standardeinträge
+- Verwenden Sie `menu.AddRole(application.AppMenu)` für Standardeinträge
 
 **Standardpositionen:**
 
-- **Info**: Anwendungsmenü
+- **Über**: Anwendungsmenü
 - **Einstellungen**: Anwendungsmenü (⌘,)
 - **Beenden**: Anwendungsmenü (⌘Q)
 - **Hilfe**: Hilfemenü
@@ -492,7 +504,7 @@ if runtime.GOOS == "darwin" {
 
 - **Beenden**: Dateimenü (Alt+F4)
 - **Einstellungen**: Menü „Extras“ oder „Bearbeiten“
-- **Info**: Hilfemenü
+- **Über**: Hilfemenü
 
 **Beispiel:**
 
@@ -507,7 +519,7 @@ if runtime.GOOS == "windows" {
 
 **Verhalten der Menüleiste:**
 
-- Normalerweise fensterspezifisch (wie unter Windows)
+- Normalerweise fensterbezogen (wie unter Windows)
 - Einige Desktop-Umgebungen unterstützen globale Menüs (Unity, GNOME mit Erweiterung)
 - Das Erscheinungsbild variiert je nach Desktop-Umgebung
 
@@ -641,40 +653,40 @@ func showAbout(ctx *application.Context) {
 
 ### ✅ Empfohlen
 
-- **Verwenden Sie Menürollen** für Standardmenüs (Datei, Bearbeiten usw.)
-- **Befolgen Sie die plattformspezifischen Konventionen** für die Menüstruktur
-- **Fügen Sie häufig verwendeten Aktionen Tastenkombinationen hinzu**
-- **Rufen Sie menu.Update() auf**, nachdem Sie den Menüzustand geändert haben
+- Verwenden Sie **Menürollen** für Standardmenüs (Datei, Bearbeiten usw.)
+- Befolgen Sie bei der Menüstruktur die **Plattformkonventionen**
+- Fügen Sie häufig verwendeten Aktionen **Tastenkürzel** hinzu
+- Rufen Sie nach Änderungen des Menüzustands **menu.Update() auf**
 - **Testen Sie auf allen Plattformen** – das Verhalten variiert
 - **Halten Sie Menüs flach** – maximal 2-3 Ebenen
-- **Verwenden Sie eindeutige Bezeichnungen** – „Projekt speichern“ statt „Speichern“
+- **Verwenden Sie eindeutige Beschriftungen** – „Projekt speichern“ statt „Speichern“
 
 ### ❌ Nicht empfohlen
 
-- **Codieren Sie plattformspezifische Tastenkombinationen nicht fest** – verwenden Sie `CmdOrCtrl`
-- **Platzieren Sie „Beenden“ unter macOS nicht im Menü „Datei“** – der Eintrag gehört in das Anwendungsmenü
-- **Platzieren Sie „Über“ unter macOS nicht im Menü „Hilfe“** – der Eintrag gehört in das Anwendungsmenü
-- **Vergessen Sie menu.Update() nicht** – sonst funktionieren Menüs nicht ordnungsgemäß
-- **Verschachteln Sie Menüs nicht zu tief** – sonst verlieren Benutzer den Überblick
-- **Verwenden Sie keinen Fachjargon** – halten Sie die Bezeichnungen benutzerfreundlich
+- **Codieren Sie plattformspezifische Tastenkürzel nicht fest** – verwenden Sie `CmdOrCtrl`
+- **Platzieren Sie „Beenden“ unter macOS nicht im Dateimenü** – der Eintrag gehört ins Anwendungsmenü
+- **Platzieren Sie „Über“ unter macOS nicht im Hilfemenü** – der Eintrag gehört ins Anwendungsmenü
+- **Vergessen Sie menu.Update() nicht** – andernfalls funktionieren Menüs nicht ordnungsgemäß
+- **Verschachteln Sie Menüs nicht zu tief** – Benutzer verlieren sonst die Orientierung
+- **Verwenden Sie keinen Fachjargon** – halten Sie Beschriftungen benutzerfreundlich
 
 ## Nächste Schritte
 
 @cards{cols="2"}
 📖 Menüreferenz
-Vollständige Referenz zu Menüeintragstypen und -eigenschaften.
+Vollständige Referenz der Menüeintragstypen und Eigenschaften.
 
 [Mehr erfahren →](/features/menus/reference/)
 
 ---
 ◆ Kontextmenüs
-Erstellen Sie Kontextmenüs, die per Rechtsklick geöffnet werden.
+Erstellen Sie Kontextmenüs für Rechtsklicks.
 
 [Mehr erfahren →](/features/menus/context/)
 
 ---
-★ System-Tray-Menüs
-Fügen Sie eine Integration in den Infobereich beziehungsweise die Menüleiste hinzu.
+★ Infobereichsmenüs
+Fügen Sie eine Integration für den Infobereich beziehungsweise die Menüleiste hinzu.
 
 [Mehr erfahren →](/features/menus/systray/)
 
@@ -688,4 +700,4 @@ Gängige Menümuster und bewährte Vorgehensweisen.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Menübeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich das [Menübeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu) an.

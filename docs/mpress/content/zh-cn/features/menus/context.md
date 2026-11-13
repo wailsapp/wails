@@ -7,21 +7,21 @@ sourcePath: "features/menus/context.md"
 
 ## 问题
 
-用户希望右键菜单能够提供与上下文相关的操作。不同的元素需要不同的菜单：
+用户希望右键菜单能提供与上下文相关的操作。不同元素需要不同的菜单：
 
 - **文本**：剪切、复制、粘贴
 - **图像**：保存、复制、打开
-- **自定义元素**：应用程序特定操作
+- **自定义元素**：应用程序特定的操作
 
-手动构建上下文菜单需要处理鼠标事件、定位以及平台差异。
+手动构建上下文菜单需要处理鼠标事件、定位和平台差异。
 
-## Wails 的解决方案
+## Wails 解决方案
 
-Wails 使用 CSS 属性提供<strong>声明式上下文菜单</strong>。可将菜单与 HTML 元素关联、传递数据并处理点击事件，所有操作均采用平台原生行为。
+Wails 使用 CSS 属性提供**声明式上下文菜单**。你可以将菜单与 HTML 元素关联、传递数据并处理点击操作，同时完全采用平台原生行为。
 
-![macOS 上显示在 WebView 上方的 Wails 自定义上下文菜单](/assets/screenshots/context-menu-macos.png)
+![在 macOS 的 WebView 上显示的 Wails 自定义上下文菜单](/assets/screenshots/context-menu-macos.png)
 
-菜单是平台原生菜单，而打开该菜单的元素仍属于 WebView。此 macOS 截图使用了下方示例中的自定义上下文菜单注册。
+菜单是平台原生菜单，而打开菜单的元素仍属于 WebView。此 macOS 截图使用了下方示例中的自定义上下文菜单注册方式。
 
 ## 快速开始
 
@@ -46,7 +46,7 @@ app.ContextMenu.Add("editor-menu", contextMenu)
 </textarea>
 ```
 
-<strong>就这么简单！</strong>右键单击文本区域即可显示自定义菜单。
+<strong>就这么简单！</strong>右键点击文本区域即可显示自定义菜单。
 
 ## 创建上下文菜单
 
@@ -116,7 +116,7 @@ contextMenu.AddRadio("Large", false).OnClick(handleSize)
 app.ContextMenu.Add("view-menu", contextMenu)
 ```
 
-有关<strong>所有菜单项类型</strong>，请参阅[菜单参考](/features/menus/reference/)。
+有关**所有菜单项类型**，请参阅[菜单参考](/features/menus/reference/)。
 
 ## 与 HTML 元素关联
 
@@ -134,7 +134,7 @@ app.ContextMenu.Add("view-menu", contextMenu)
 
 ### 使用上下文数据
 
-将数据从 HTML 传递到 Go：
+将数据从 HTML 传递给 Go：
 
 ```html
 <div style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-123">
@@ -191,7 +191,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </div>
 ```
 
-**同一菜单，每个元素使用不同的数据。**
+**一个菜单，每个元素使用不同的数据。**
 
 ## 上下文数据
 
@@ -206,7 +206,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-<strong>数据类型：</strong>始终为`string`。请根据需要解析。
+<strong>数据类型：</strong>始终为`string`。请按需解析。
 
 ### 传递复杂数据
 
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="安全性"}
-请<strong>始终验证</strong>来自前端的上下文数据。用户可以操纵 CSS 属性，因此应将这些数据视为不可信输入。
+**始终验证**来自前端的上下文数据。用户可以操纵 CSS 属性，因此请将这些数据视为不受信任的输入。
 
 @end
 
@@ -291,7 +291,7 @@ WebView 为标准操作（复制、粘贴、检查）提供内置上下文菜单
 </div>
 ```
 
-<strong>适用场景：</strong>文本区域、输入字段、可编辑内容。
+<strong>适用场景：</strong>文本区域、输入字段和可编辑内容。
 
 ### 自动（智能）模式
 
@@ -309,7 +309,7 @@ WebView 为标准操作（复制、粘贴、检查）提供内置上下文菜单
 
 其他情况下隐藏默认菜单。
 
-### 结合使用自定义菜单和默认菜单
+### 组合使用自定义菜单和默认菜单
 
 ```html
 <!-- Custom menu + default menu -->
@@ -322,13 +322,13 @@ WebView 为标准操作（复制、粘贴、检查）提供内置上下文菜单
 
 1. 首先显示自定义菜单
 2. 如果自定义菜单为空或未找到，则显示默认菜单
-3. 两者可以共存（取决于平台）
+3. 两者可以共存（具体取决于平台）
 
 ## 动态上下文菜单
 
 根据应用程序状态更新菜单：
 
-### 启用/禁用菜单项
+### 启用或禁用菜单项
 
 ```go
 var cutMenuItem *application.MenuItem
@@ -356,7 +356,7 @@ func onSelectionChanged(hasSelection bool) {
 ```
 
 @note{type="caution" title="始终调用 Update()"}
-更改菜单状态后，请<strong>调用`contextMenu.Update()`</strong>。这在 Windows 上至关重要。
+更改菜单状态后，**请调用`contextMenu.Update()`**。这在 Windows 上至关重要。
 
 有关详细信息，请参阅[菜单参考](/features/menus/reference/#enabled-state)。
 
@@ -379,7 +379,7 @@ playMenuItem.OnClick(func(ctx *application.Context) {
 
 ### 重新构建菜单
 
-如需进行重大更改，请重新构建整个菜单：
+对于重大更改，请重新构建整个菜单：
 
 ```go
 func rebuildContextMenu(fileType string) {
@@ -410,50 +410,50 @@ func rebuildContextMenu(fileType string) {
 
 ## 平台行为
 
-上下文菜单是<strong>平台原生的</strong>：
+上下文菜单是**平台原生菜单**：
 
 @tabs{sync-key="platform"}
 [macOS]
-**原生 macOS 上下文菜单：**
+**macOS 原生上下文菜单：**
 
 - 系统动画和过渡效果
-- 右键单击 = Control+单击（自动）
+- 右键点击 = Control+点击（自动）
 - 适应系统外观（浅色/深色）
-- 默认菜单中的标准文本操作
+- 默认菜单中提供标准文本操作
 - 长菜单使用原生滚动
 
 **macOS 惯例：**
 
-- 菜单项采用句首字母大写格式
-- 对打开对话框的菜单项使用省略号（...）
+- 菜单项使用句首字母大写格式
+- 会打开对话框的菜单项使用省略号（...）
 - 常用快捷键：⌘C（复制）、⌘V（粘贴）
 
 [Windows]
-**原生 Windows 上下文菜单：**
+**Windows 原生上下文菜单：**
 
 - Windows 原生样式
 - 遵循 Windows 主题
-- 默认菜单中的标准 Windows 操作
-- 支持触摸和笔输入
+- 默认菜单中提供标准 Windows 操作
+- 支持触控和笔输入
 
 **Windows 惯例：**
 
-- 菜单项采用标题式大小写
-- 对打开对话框的菜单项使用省略号（...）
+- 菜单项使用标题式大小写
+- 会打开对话框的菜单项使用省略号（...）
 - 常用快捷键：Ctrl+C（复制）、Ctrl+V（粘贴）
 
 [Linux]
 **桌面环境集成：**
 
-- 适应桌面主题（GTK、Qt 等）
+- 适配桌面主题（GTK、Qt 等）
 - 右键单击行为遵循系统设置
-- 默认菜单内容因环境而异
-- 定位方式遵循桌面环境惯例
+- 默认菜单内容因桌面环境而异
+- 菜单位置遵循桌面环境的惯例
 
 **Linux 注意事项：**
 
 - 在目标桌面环境中进行测试
-- GTK 和 Qt 的行为不同
+- GTK 和 Qt 的行为有所不同
 - 某些桌面环境会自定义上下文菜单
 
 @end
@@ -639,22 +639,22 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ 应该做
 
-- **让菜单保持专注**——仅提供与该元素相关的操作
+- **保持菜单简洁聚焦**——仅提供与该元素相关的操作
 - **验证上下文数据**——将其视为不可信输入
 - **使用清晰的标签**——使用“删除文件”，而不是“删除”
-- **调用 menu.Update()**——更改菜单状态后
-- **在所有平台上进行测试**——行为因平台而异
+- **调用 menu.Update()**——在更改菜单状态后调用
+- **在所有平台上测试**——行为因平台而异
 - **提供键盘快捷键**——用于常用操作
-- **将相关菜单项分组**——使用分隔符
+- **将相关菜单项分组**——使用分隔线
 
 ### ❌ 不应该做
 
 - **不要信任上下文数据**——始终进行验证
-- **不要让菜单过长**——最多 7-10 个菜单项
+- **菜单不要过长**——最多包含7-10个菜单项
 - **不要忘记调用 menu.Update()**——否则菜单将无法正常工作
-- **不要嵌套得过深**——最多 2 层
-- **不要使用行话**——让标签对用户友好
-- **不要阻塞处理程序**——确保处理程序快速运行
+- **不要嵌套得太深**——最多2层
+- **不要使用行话**——确保标签对用户友好
+- **不要阻塞处理程序**——确保其快速完成
 
 ## 故障排除
 
@@ -692,7 +692,7 @@ app.ContextMenu.Add("my-menu", contextMenu)
 <div style="--custom-contextmenu-data: {&quot;id&quot;:123}">
 ```
 
-或者使用 JavaScript：
+也可以使用 JavaScript：
 
 ```javascript
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
@@ -700,7 +700,7 @@ element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 
 ### 菜单项无响应
 
-<strong>原因：</strong>启用后忘记调用 `menu.Update()`
+<strong>原因：</strong>启用后忘记调用`menu.Update()`
 
 **解决方案：**
 
@@ -731,7 +731,7 @@ contextMenu.Update()  // Add this!
 
 ---
 📖 菜单模式
-常用菜单模式和最佳实践。
+常见的菜单模式和最佳实践。
 
 [了解更多 →](/guides/menus/)
 

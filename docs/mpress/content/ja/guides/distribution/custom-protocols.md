@@ -5,7 +5,7 @@ slug: "guides/distribution/custom-protocols"
 sourcePath: "guides/distribution/custom-protocols.md"
 ---
 
-カスタム URL プロトコル（URL スキームとも呼ばれます）を使用すると、ユーザーが `myapp://action` や `myapp://open/document` など、カスタムプロトコルを使用するリンクをクリックしたときにアプリケーションを起動できます。
+カスタム URL プロトコル（URL スキームとも呼ばれます）を使用すると、ユーザーが `myapp://action` や `myapp://open/document` などのカスタムプロトコルを持つリンクをクリックしたときに、アプリケーションを起動できます。
 
 ## 概要
 
@@ -13,7 +13,7 @@ sourcePath: "guides/distribution/custom-protocols.md"
 
 - **ディープリンク**：特定のデータを渡してアプリを起動する
 - **ブラウザー連携**：Web ページからのリンクを処理する
-- **メール内のリンク**：メールクライアントからアプリを開く
+- **メール内リンク**：メールクライアントからアプリを開く
 - **アプリ間通信**：ほかのアプリケーションから起動する
 
 **例**：`myapp://open/document?id=123` はアプリを起動し、ドキュメント 123 を開きます。
@@ -22,7 +22,7 @@ sourcePath: "guides/distribution/custom-protocols.md"
 
 アプリケーションオプションでカスタムプロトコルを定義します。
 
-カスタムプロトコルは `build/config.yml` で宣言します。これは、各プラットフォームのパッケージャー（Windows の NSIS マクロ、MSIX マニフェスト、macOS の `CFBundleURLTypes`、Linux の `.desktop`/`xdg-mime`）がパッケージ作成時に使用します。`application.Protocol` 型は存在せず、`application.Options` に `Protocols` フィールドもありません。
+カスタムプロトコルは `build/config.yml` で宣言します。各プラットフォームのパッケージャー（Windows の NSIS マクロ、MSIX マニフェスト、macOS の `CFBundleURLTypes`、Linux の `.desktop`/`xdg-mime`）は、パッケージ作成時にこの宣言を使用します。`application.Protocol` 型は存在せず、`application.Options` に `Protocols` フィールドもありません。
 
 ```yaml
 # build/config.yml
@@ -31,7 +31,7 @@ protocols:
     description: "My Application Protocol"
 ```
 
-Go コードでは、`ApplicationLaunchedWithUrl` イベントを使用して、URL による起動を待ち受けます。
+Go コードでは、`ApplicationLaunchedWithUrl` イベントを介して URL による起動を待ち受けます。
 
 ```go
 package main
@@ -63,7 +63,7 @@ func handleCustomURL(url string) {
 
 ## プロトコルハンドラー
 
-受信 URL を処理するため、プロトコルイベントを待ち受けます。
+受信した URL を処理するには、プロトコルイベントを待ち受けます。
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
@@ -92,7 +92,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *a
 
 ## URL 構造
 
-明確な階層型 URL 構造を設計します。
+明確な階層構造を持つ URL を設計します。
 
 ```
 myapp://action/resource?param=value
@@ -107,26 +107,26 @@ myapp://user/profile?username=john
 
 - スキーム名には小文字を使用する
 - スキームは短く覚えやすいものにする
-- リソースには階層型パスを使用する
-- 省略可能なデータにはクエリパラメーターを使用する
+- リソースには階層的なパスを使用する
+- 任意指定のデータにはクエリパラメーターを使用する
 - 特殊文字を URL エンコードする
 
 ## プラットフォームへの登録
 
-カスタムプロトコルの登録方法はプラットフォームごとに異なります。
+カスタムプロトコルの登録方法は、プラットフォームごとに異なります。
 
 @tabs{sync-key="platform"}
 [Windows]
 ### Windows NSIS インストーラー
 
-NSIS インストーラーを使用すると、**Wails v3 がカスタムプロトコルを自動的に登録します**。
+NSIS インストーラーを使用すると、**Wails v3 はカスタムプロトコルを自動的に登録します**。
 
 #### 自動登録
 
 `wails3 build` を使用してアプリケーションをビルドすると、NSIS インストーラーは次の処理を行います。
 
-1. `build/config.yml` の `protocols:` キーで宣言されたすべてのプロトコルを自動登録する
-2. プロトコルをアプリケーションの実行可能ファイルに関連付ける
+1. `build/config.yml` で宣言されたすべてのプロトコルを、`protocols:` キーの配下に自動登録する
+2. プロトコルをアプリケーションの実行ファイルに関連付ける
 3. 適切なレジストリエントリを設定する
 4. アンインストール時にプロトコルの関連付けを削除する
 
@@ -143,7 +143,7 @@ NSIS テンプレートには、次の組み込みマクロが含まれていま
 
 #### レジストリへの手動登録（上級者向け）
 
-NSIS を使用せずに手動登録する必要がある場合：
+NSIS を使用せず、手動で登録する必要がある場合：
 
 ```batch
 @echo off
@@ -155,7 +155,7 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"
 
 #### テスト
 
-プロトコルの登録をテストします。
+プロトコルが登録されていることをテストします。
 
 ```powershell
 # Open protocol URL from PowerShell
@@ -185,7 +185,7 @@ MSIX を使用してアプリケーションをビルドすると、`build/confi
 
 #### Universal Links（Web-to-App リンク）
 
-Windows は、macOS の Universal Links と同様に機能する <strong>Web-to-App リンク</strong>をサポートしています。アプリケーションを MSIX パッケージとして展開する場合、HTTPS リンクからアプリを直接起動できるように設定できます。
+Windows は、macOS の Universal Links と同様に機能する **Web-to-App リンク**をサポートしています。アプリケーションを MSIX パッケージとしてデプロイする場合、HTTPS リンクからアプリを直接起動できるように設定できます。
 
 @note{type="note"}
 Web-to-App リンクには、マニフェストの手動設定が必要です。カスタムプロトコルスキームは `build/config.yml` から自動的に設定されますが、関連付けるドメインは MSIX マニフェストに手動で追加する必要があります。
@@ -194,7 +194,7 @@ Web-to-App リンクには、マニフェストの手動設定が必要です。
 
 Web-to-App リンクを有効にするには、[Web-to-App リンクに関する Microsoft のガイド](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)に従ってください。次の作業が必要です。
 
-1. **MSIX マニフェストに App URI Handler を手動で追加します**（`build/windows/msix/app_manifest.xml`）。
+1. **MSIX マニフェストに App URI Handler を手動で追加する**（`build/windows/msix/app_manifest.xml`）：
   ```xml
   <uap3:Extension Category="windows.appUriHandler">
     <uap3:AppUriHandler>
@@ -204,7 +204,7 @@ Web-to-App リンクを有効にするには、[Web-to-App リンクに関する
   ```
 
 
-2. **Web サイトで `windows-app-web-link` を設定します。** `https://myawesomeapp.com/.well-known/windows-app-web-link` に `windows-app-web-link` ファイルを配置します。このファイルには、アプリのパッケージ情報と、アプリが処理するパスを含めるべきです。
+2. **Web サイトで `windows-app-web-link` を設定する：** `https://myawesomeapp.com/.well-known/windows-app-web-link` に `windows-app-web-link` ファイルをホストします。このファイルには、アプリのパッケージ情報と、そのアプリが処理するパスを記載する必要があります。
 
 Web-to-App リンクによってアプリケーションが起動されると、カスタムプロトコルスキームの場合と同じ `ApplicationLaunchedWithUrl` イベントを受信します。
 
@@ -215,9 +215,9 @@ macOS では、`Info.plist` ファイルを介してプロトコルを登録し�
 
 #### 自動設定
 
-`wails3 build`を指定してビルドすると、Wails はプロトコルを含む`Info.plist`を自動的に生成します。
+`wails3 build` を使用してビルドすると、Wails はプロトコルを含む `Info.plist` を自動的に生成します。
 
-`build/config.yml`で宣言されたプロトコルは、次の場所に追加されます。
+`build/config.yml` で宣言したプロトコルは、次の場所に追加されます。
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -247,16 +247,16 @@ open "myapp://test/action"
 
 #### Universal Links
 
-macOS は、カスタムプロトコルスキームに加えて<strong>Universal Links</strong>もサポートしています。これにより、通常の HTTPS リンク（例：`https://myawesomeapp.com/path`）からアプリを起動できます。Universal Links は、Web アプリとデスクトップアプリの間でシームレスなユーザー体験を提供します。
+macOS は、カスタムプロトコルスキームに加えて、通常の HTTPS リンク（例：`https://myawesomeapp.com/path`）からアプリを起動できる **Universal Links** もサポートしています。Universal Links を使用すると、Web アプリとデスクトップアプリの間でシームレスなユーザー体験を提供できます。
 
 @note{type="caution"}
-Universal Links を使用するには、有効な Apple Developer 証明書とプロビジョニングプロファイルを使用して、macOS アプリを<strong>コード署名</strong>する必要があります。未署名またはアドホック署名されたビルドでは、Universal Links を開けません。テストする前に、アプリが正しく署名されていることを確認してください。
+Universal Links を使用するには、有効な Apple Developer 証明書とプロビジョニングプロファイルを使用して、macOS アプリを **コード署名**する必要があります。未署名またはアドホック署名されたビルドでは、Universal Links を開けません。テストする前に、アプリが適切に署名されていることを確認してください。
 
 @end
 
 Universal Links を有効にするには、[アプリで Universal Links をサポートするための Apple のガイド](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)に従ってください。次の作業が必要です。
 
-1. `entitlements.plist`に<strong>エンタイトルメントを追加</strong>します。
+1. `entitlements.plist` に**エンタイトルメントを追加する**：
   ```xml
   <key>com.apple.developer.associated-domains</key>
   <array>
@@ -265,7 +265,7 @@ Universal Links を有効にするには、[アプリで Universal Links をサ�
   ```
 
 
-2. <strong>Info.plist に NSUserActivityTypes を追加</strong>します。
+2. **Info.plist に NSUserActivityTypes を追加する**：
   ```xml
   <key>NSUserActivityTypes</key>
   <array>
@@ -274,22 +274,22 @@ Universal Links を有効にするには、[アプリで Universal Links をサ�
   ```
 
 
-3. **Web サイトで`apple-app-site-association`を構成します。**`https://myawesomeapp.com/.well-known/apple-app-site-association`に`apple-app-site-association`ファイルを配置します。
+3. **Web サイトで `apple-app-site-association` を設定する：** `https://myawesomeapp.com/.well-known/apple-app-site-association` に `apple-app-site-association` ファイルをホストします。
 
-Universal Link によってアプリが起動されると、同じ`ApplicationLaunchedWithUrl`イベントを受信するため、処理コードはカスタムプロトコルスキームの場合と同一になります。
+Universal Link によってアプリが起動されると、同じ `ApplicationLaunchedWithUrl` イベントを受信するため、処理コードはカスタムプロトコルスキームの場合と同一になります。
 
 [Linux]
 ### デスクトップエントリ
 
-Linux では、プロトコルは`.desktop`ファイルを介して登録されます。
+Linux では、`.desktop` ファイルを介してプロトコルを登録します。
 
-#### 自動構成
+#### 自動設定
 
-`wails3 build`を指定してビルドすると、Wails はプロトコルハンドラーを含むデスクトップエントリファイルを生成します。
+`wails3 build` を使用してビルドすると、Wails はプロトコルハンドラーを含むデスクトップエントリファイルを生成します。
 
-**v3 で修正済み**：Linux のデスクトップテンプレートにプロトコル処理が正しく含まれるようになりました。
+**v3**で修正済み：Linux デスクトップテンプレートにプロトコル処理が正しく含まれるようになりました。
 
-生成されるデスクトップファイルには、次の内容が含まれます。
+生成されるデスクトップファイルには、次の内容が含まれます：
 
 ```ini
 [Desktop Entry]
@@ -301,7 +301,7 @@ MimeType=x-scheme-handler/myapp;
 
 #### 手動登録
 
-必要に応じて、デスクトップファイルを手動でインストールします。
+必要に応じて、デスクトップファイルを手動でインストールします：
 
 ```bash
 # Copy desktop file
@@ -328,7 +328,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## 完全な例
 
-複数のプロトコルアクションを処理する完全な例を次に示します。
+複数のプロトコルアクションを処理する完全な例を次に示します：
 
 ```go
 package main
@@ -454,7 +454,7 @@ func (a *App) openUserProfile(username string) {
 
 ## フロントエンドとの統合
 
-フロントエンドでナビゲーションイベントを処理します。
+フロントエンドでナビゲーションイベントを処理します：
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -480,7 +480,7 @@ Events.On('navigate', (event) => {
 
 ### すべての入力を検証する
 
-外部ソースから受け取った URL は、必ず検証してサニタイズしてください。
+外部ソースから受け取った URL は、必ず検証してサニタイズしてください：
 
 ```go
 func (a *App) handleDeepLink(rawURL string) {
@@ -529,9 +529,9 @@ func sanitizeQueryParams(query url.Values) map[string]string {
 }
 ```
 
-### インジェクション攻撃を防ぐ
+### インジェクション攻撃を防止する
 
-URL をコードや SQL として直接実行してはいけません。
+URL をコードや SQL として直接実行しないでください：
 
 ```go
 // ❌ DON'T: Execute URL content
@@ -561,7 +561,7 @@ func goodHandler(url string) {
 
 ### 手動テスト
 
-開発中にプロトコルハンドラーをテストします。
+開発中にプロトコルハンドラーをテストします：
 
 **Windows：**
 
@@ -581,9 +581,9 @@ open "myapp://test/action?id=123"
 xdg-open "myapp://test/action?id=123"
 ```
 
-### HTML テスト
+### HTML でのテスト
 
-テスト用の HTML ページを作成します。
+テスト用の HTML ページを作成します：
 
 ```html
 <!DOCTYPE html>
@@ -610,12 +610,12 @@ xdg-open "myapp://test/action?id=123"
 **Windows：**
 
 - レジストリを確認します：`HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
-- NSIS インストーラーを使用して再インストールします
+- NSIS インストーラーで再インストールします
 - インストーラーが適切な権限で実行されたことを確認します
 
 **macOS：**
 
-- `wails3 build`を指定してアプリケーションを再ビルドします
+- `wails3 build`を使用してアプリケーションを再ビルドします
 - アプリバンドル内の`Info.plist`を確認します：`MyApp.app/Contents/Info.plist`
 - Launch Services をリセットします：`/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
 
@@ -638,34 +638,34 @@ app := application.New(application.Options{
 
 **よくある問題：**
 
-- アプリケーションが想定された場所にインストールされていない
-- 登録されている実行可能ファイルのパスが実際の場所と一致していない
-- 権限の問題
+- アプリケーションが想定した場所にインストールされていない
+- 登録されている実行ファイルのパスが実際の場所と一致していない
+- 権限に問題がある
 
 ## ベストプラクティス
 
 ### ✅ 推奨事項
 
-- **説明的なスキーム名を使用する** — `mca`ではなく`mycompany-myapp`を使用します
-- **すべての入力を検証する** — 外部ソースから受け取った URL を決して信頼しないでください
-- **エラーを適切に処理する** — 無効な URL をログに記録し、クラッシュさせないでください
-- **ユーザーにフィードバックを提供する** - どのアクションが実行されたかを示す
-- **すべてのプラットフォームでテストする** - プロトコルの処理はプラットフォームによって異なる
-- **URL 構造を文書化する** - ユーザーやインテグレーターが理解できるようにする
+- **わかりやすいスキーム名を使用する** — `mca`ではなく`mycompany-myapp`を使用します
+- **すべての入力を検証する** — 外部ソースからの URL を決して信頼しないでください
+- **エラーを適切に処理する** — 無効な URL はログに記録し、クラッシュさせないでください
+- **ユーザーにフィードバックを提供する** — どのアクションがトリガーされたかを表示します
+- **すべてのプラットフォームでテストする** — プロトコルの処理方法はプラットフォームによって異なります
+- **URL 構造を文書化する** — ユーザーやインテグレーターが利用しやすいようにします
 
-### ❌ 避けるべきこと
+### ❌ 禁止事項
 
-- **一般的なスキーム名を使用しない** - `http`、`file`、`app`などは避ける
-- **URL をコードとして実行しない** - 極めて大きなセキュリティリスクとなる
-- **セキュリティ上慎重に扱うべき操作を公開しない** - 破壊的な操作には確認を必須とする
-- **プロトコルがどの環境でも動作すると思い込まない** - フォールバック手段を用意する
-- **URL エンコーディングを忘れない** - 特殊文字を適切に処理する
+- **一般的なスキーム名を使用しない** — `http`、`file`、`app`などは避けてください
+- **URL をコードとして実行しない** — 非常に大きなセキュリティリスクがあります
+- **機密性の高い操作を公開しない** — 破壊的な操作には確認を必須としてください
+- **プロトコルがどこでも動作すると思い込まない** — フォールバック手段を用意してください
+- **URL エンコーディングを忘れない** — 特殊文字を適切に処理してください
 
 ## 次のステップ
 
-- [Windows パッケージング](/guides/build/windows/) - NSIS インストーラーのオプションについて学ぶ
-- [ファイルの関連付け](/guides/file-associations/) - アプリでファイルを開く
-- [シングルインスタンス](/guides/single-instance/) - アプリの複数インスタンスが起動しないようにする
+- [Windows 向けパッケージング](/guides/build/windows/) — NSIS インストーラーのオプションについて学びます
+- [ファイルの関連付け](/guides/file-associations/) — アプリでファイルを開きます
+- [シングルインスタンス](/guides/single-instance/) — アプリの複数インスタンスが起動しないようにします
 
 ---
 

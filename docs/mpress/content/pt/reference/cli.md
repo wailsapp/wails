@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Gere bindings do Go para o frontend. Flags: `-d` (diretório de saída), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emitir `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (padrão: `true`), `-f`, `-obfuscated` (gerar `wails_obfuscated.gen.go` com IDs de binding estáveis para builds com Garble; consulte [Builds ofuscados](/guides/build/obfuscation/)), `-obfuscated-output` (diretório do arquivo gerado; o padrão é o diretório do pacote principal). Aceita padrões de pacotes (por exemplo, `./...`); se nenhum for informado, usa o diretório atual. |
 | `generate icons` | Converta um PNG de origem nos formatos de ícone da plataforma. Flags: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Gere o conteúdo do diretório `build/` (trechos de Taskfile, arquivos NSIS, `Info.plist`, modelo `.desktop` etc.) a partir de `build/config.yml`. |
-| `generate runtime` | Gere novamente o `/wails/runtime.js` pré-compilado fornecido ao webview. |
+| `generate runtime` | Exporte os pacotes JavaScript de produção/depuração incorporados à CLI (`-d` seleciona o destino). |
 | `generate syso` | Gere o arquivo de recursos `.syso` do Windows (ícone + manifesto + informações de versão). |
 | `generate webview2bootstrapper` | Gere um instalador de bootstrap do WebView2 para Windows. |
 | `generate constants` | Gere constantes de nomes de eventos em JS a partir dos tipos de eventos do Go. |

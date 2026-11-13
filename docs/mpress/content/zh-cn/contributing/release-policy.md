@@ -11,7 +11,7 @@ Wails v3按**时间表而非功能**发布。在`v3.0.0`基线之后：
 
 | 发布类型 | 标签 | 发布频率 | GitHub 发布版 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 每夜版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若在同一天重新运行，则追加`.N`） | 自动、每日，仅当`UNRELEASED_CHANGELOG.md`有内容时发布 | 预发布版，**不**标记为 Latest | 相同版本，但不含`v`，dist-tag 为`nightly` |
+| 每夜版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若在同一天重新运行，则追加`.N`） | 自动执行，每日运行，仅当已合并的 PR 在经过测试的发布范围内产生面向用户的说明时运行 | 预发布版，**不**标记为 Latest | 相同版本，但不含`v`，dist-tag 为`nightly` |
 | 每周版 | `v3.<next>.0` | 自动，于 Australia/Sydney 时区星期日20:00发布<strong>（日期尚未确认）</strong> | 常规发布版，标记为 Latest | 相同版本，dist-tag 为`latest` |
 | 热修复版 | `v3.<current>.<N>`, `N > 0` | 很少发布，手动操作 | 正常发布，Latest | 相同版本，dist-tag 为`latest` |
 | 主版本 | `v4.0.0` | 仅用于破坏性变更 | 常规发布版 | `latest` |
@@ -62,7 +62,7 @@ CLI、Go 模块和 npm 包`@wailsio/runtime`使用取自`v3/internal/version/ver
 
 ## 如何发布版本
 
-发布权限仅授予项目负责人（参见治理文档）。贡献者绝不打标签或发布；他们只向`v3/UNRELEASED_CHANGELOG.md`添加条目。
+发布权限仅限项目负责人（参见治理文档）。贡献者绝不创建标签或发布版本；他们应在 PR 标题或 `## Release notes` 描述章节中说明面向用户的变更。发布自动化会根据精确覆盖已测试提交范围的已合并 PR 生成发布说明；`v3/UNRELEASED_CHANGELOG.md` 已被移除。
 
 所有操作都通过**Nightly + Weekly Release v3**（`.github/workflows/nightly-release-v3.yml`）运行：
 
@@ -85,7 +85,7 @@ CLI、Go 模块和 npm 包`@wailsio/runtime`使用取自`v3/internal/version/ver
 
 1. 带有`P0`或`release-blocker`标签的未关闭议题或拉取请求；
 2. 自上次每周发布以来创建且带有`regression`标签的未关闭议题；
-3. 严重级别为严重或高的未解决 Dependabot 警报、严重级别为严重或高的未解决代码扫描警报，以及任何未解决的密钥扫描警报，但**仅限已发布的代码**。如果警报仅位于`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`或任意`examples/`目录下，则会被忽略（`v3/tasks/releasegate/main.go`中的`SHIPPED_ALERT_IGNORE`，**由负责人审核**）；
+3. 严重级别为严重或高且处于开启状态的 Dependabot 警报、严重级别为严重或高且处于开启状态的代码扫描警报，以及任何处于开启状态的机密扫描警报，**仅针对已发布的代码**。仅位于 `v2/internal/staticanalysis/test/`（静态分析固件）、`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/` 或任何 `examples/` 目录下的警报将被忽略（`v3/tasks/releasegate/main.go` 中的 `SHIPPED_ALERT_IGNORE`，**由所有者审核**）；
 4. 仍处于`triage`状态的仓库安全公告。
 
 **谁可以设置阻塞项。**只有当某标签最近一次 `labeled` 事件（之后没有 `unlabeled`）由 `wailsapp/maintainers` 团队成员或拥有 `maintain`/`admin` 权限的协作者执行时，该标签才有效。其他任何人应用的同一标签都会被忽略并记录到日志中，因此外部人员无法阻塞发布或解除发布阻塞。自动应用的 `high-priority` 标签特意**不**用于此目的。`taliesin-ai`等机器人账户只要拥有 `maintain`，即可通过允许列表检查；这是有意为之，分类代理可以在提供证据的情况下应用阻塞标签。

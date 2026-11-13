@@ -7,11 +7,11 @@ sourcePath: "features/dialogs/overview.md"
 
 ## Boîtes de dialogue natives
 
-Wails fournit des **boîtes de dialogue système natives** compatibles avec toutes les plateformes : boîtes de message (information, avertissement, erreur, question), boîtes de dialogue de fichiers (ouverture, enregistrement, dossier) et fenêtres de dialogue personnalisées avec l’apparence et le comportement natifs de chaque plateforme.
+Wails fournit des **boîtes de dialogue système natives** compatibles avec toutes les plateformes : boîtes de message (information, avertissement, erreur et question), boîtes de dialogue de fichiers (ouverture, enregistrement et dossier) et fenêtres de dialogue personnalisées dont l’apparence et le comportement sont natifs de la plateforme.
 
-![Une boîte de dialogue de question Wails sous macOS avec les boutons Annuler et Ignorer](/assets/screenshots/dialog-question-macos.png)
+![Une boîte de dialogue de question Wails sous macOS, avec les boutons Annuler et Ignorer](/assets/screenshots/dialog-question-macos.png)
 
-La même API respecte les conventions de chaque plateforme prise en charge. Cet exemple sous macOS présente une boîte de dialogue de question attachée à sa fenêtre Wails, avec le bouton par défaut et le bouton d’annulation.
+La même API respecte les conventions de chaque plateforme prise en charge. Cet exemple sous macOS présente une boîte de dialogue de question attachée à sa fenêtre Wails, avec les boutons par défaut et d’annulation.
 
 ## Démarrage rapide
 
@@ -46,9 +46,9 @@ path, _ := app.Dialog.OpenFile().
 
 **C’est tout !** Des boîtes de dialogue natives avec un minimum de code.
 
-## Accéder aux boîtes de dialogue
+## Accès aux boîtes de dialogue
 
-Accédez aux boîtes de dialogue par l’intermédiaire du gestionnaire `app.Dialog` :
+Accédez aux boîtes de dialogue via le gestionnaire `app.Dialog` :
 
 ```go
 app.Dialog.Info()
@@ -114,7 +114,7 @@ app.Dialog.Error().
 
 ### Boîte de dialogue de question
 
-Posez des questions aux utilisateurs et traitez leurs réponses au moyen des fonctions de rappel des boutons :
+Posez des questions aux utilisateurs et traitez leurs réponses au moyen de fonctions de rappel associées aux boutons :
 
 ```go
 dialog := app.Dialog.Question().
@@ -189,7 +189,7 @@ if err == nil && path != "" {
 
 ### Boîte de dialogue de sélection de dossier
 
-Choisissez un répertoire à l’aide de la boîte de dialogue d’ouverture de fichier, avec la sélection de répertoires activée :
+Choisissez un répertoire à l’aide de la boîte de dialogue d’ouverture de fichier, avec la sélection de répertoire activée :
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -217,7 +217,7 @@ dialog := app.Dialog.Info().
 
 **Bouton par défaut des boîtes de dialogue simples :**
 
-Les boîtes de dialogue d’information, d’avertissement et d’erreur affichent par défaut un bouton « OK » :
+Les boîtes de dialogue d’information, d’avertissement et d’erreur affichent un bouton « OK » par défaut :
 
 ```go
 app.Dialog.Info().
@@ -227,7 +227,7 @@ app.Dialog.Info().
 
 **Boutons personnalisés des boîtes de dialogue de question :**
 
-Utilisez `AddButton()` pour ajouter des boutons. Cette méthode renvoie un objet `*Button` que vous pouvez configurer avec des fonctions de rappel :
+Utilisez `AddButton()` pour ajouter des boutons. Cette méthode renvoie un `*Button` que vous pouvez configurer avec des fonctions de rappel :
 
 ```go
 dialog := app.Dialog.Question().
@@ -251,9 +251,9 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-**Boutons par défaut et d’annulation :**
+**Boutons par défaut et Annuler :**
 
-Utilisez `SetDefaultButton()` pour indiquer le bouton mis en évidence et activé par Entrée. Utilisez `SetCancelButton()` pour indiquer le bouton activé par Échap.
+Utilisez `SetDefaultButton()` pour indiquer le bouton mis en évidence et déclenché par Entrée. Utilisez `SetCancelButton()` pour indiquer le bouton déclenché par Échap.
 
 ```go
 dialog := app.Dialog.Question().
@@ -270,9 +270,9 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-### Attachement à une fenêtre
+### Association à une fenêtre
 
-Attachez la boîte de dialogue à une fenêtre précise :
+Attachez la boîte de dialogue à une fenêtre particulière :
 
 ```go
 dialog := app.Dialog.Info().
@@ -285,21 +285,21 @@ dialog.Show()
 **Comportement :**
 
 - La boîte de dialogue apparaît centrée sur la fenêtre parente
-- La fenêtre parente est désactivée pendant l’affichage de la boîte de dialogue
+- La fenêtre parente est désactivée tant que la boîte de dialogue est affichée
 - La boîte de dialogue se déplace avec la fenêtre parente (macOS)
 
 ## Comportement selon la plateforme
 
 @tabs{sync-key="platform"}
 [macOS]
-**Boîtes de dialogue sous macOS :**
+**Boîtes de dialogue macOS :**
 
-- Apparence native de NSAlert
+- Apparence native NSAlert
 - Respect du thème système (clair/sombre)
 - Prise en charge de la navigation au clavier
 - Raccourcis standard (⌘. pour Annuler)
 - Fonctionnalités d’accessibilité intégrées
-- Présentation sous forme de feuille lorsque la boîte de dialogue est attachée à une fenêtre
+- Présentation en feuille lorsque la boîte de dialogue est attachée à une fenêtre
 
 **Exemple :**
 
@@ -314,9 +314,9 @@ dialog.Show()
 ```
 
 [Windows]
-**Boîtes de dialogue sous Windows :**
+**Boîtes de dialogue Windows :**
 
-- Apparence native de TaskDialog
+- Apparence native TaskDialog
 - Respect du thème système
 - Prise en charge de la navigation au clavier
 - Raccourcis standard (Échap pour Annuler)
@@ -337,10 +337,10 @@ app.Dialog.Error().
 **Boîtes de dialogue Linux :**
 
 - Apparence des boîtes de dialogue GTK
-- Respectent le thème du bureau
-- Prennent en charge la navigation au clavier
+- Respect du thème de l’environnement de bureau
+- Prise en charge de la navigation au clavier
 - Intégration à l’environnement de bureau
-- Varie selon l’environnement de bureau (GNOME, KDE, etc.)
+- Variable selon l’environnement de bureau (GNOME, KDE, etc.)
 
 **Exemple :**
 
@@ -477,18 +477,18 @@ func exportData(app *application.App) {
 ### ✅ À faire
 
 - **Utilisez des boîtes de dialogue natives** — Elles offrent une meilleure expérience utilisateur que les boîtes personnalisées
-- **Affichez des messages clairs** — Soyez précis
+- **Fournissez des messages clairs** — Soyez précis
 - **Définissez des titres appropriés** — Le contexte est important
-- **Choisissez judicieusement les boutons par défaut** — Utilisez l’option la plus sûre par défaut
+- **Utilisez judicieusement les boutons par défaut** — Choisissez l’option sûre par défaut
 - **Gérez l’annulation** — L’utilisateur peut annuler
-- **Validez les fichiers sélectionnés** — Vérifiez leur type
+- **Validez les fichiers sélectionnés** — Vérifiez les types de fichiers
 
-### ❌ À ne pas faire
+### ❌ À éviter
 
 - **N’abusez pas des boîtes de dialogue** — Elles interrompent le flux de travail
-- **Ne les utilisez pas pour des messages fréquents** — Utilisez des notifications
-- **N’oubliez pas de gérer les erreurs** — L’utilisateur peut annuler
-- **Ne bloquez pas inutilement l’application** — Envisagez d’autres solutions
+- **Ne les utilisez pas pour les messages fréquents** — Utilisez des notifications
+- **N’oubliez pas la gestion des erreurs** — L’utilisateur peut annuler
+- **Ne bloquez pas inutilement** — Envisagez d’autres solutions
 - **N’utilisez pas de messages génériques** — Soyez précis
 - **N’ignorez pas les différences entre les plateformes** — Testez sur toutes les plateformes
 

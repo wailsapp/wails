@@ -7,7 +7,7 @@ sourcePath: "features/events/system.md"
 
 ## 事件系统
 
-Wails 提供用于发布/订阅通信的<strong>统一事件系统</strong>。你可以在任何位置发出和监听事件——从 Go 到 JavaScript、从 JavaScript 到 Go，以及从一个窗口到另一个窗口——借助类型化事件和生命周期钩子实现解耦架构。
+Wails 提供了一个用于发布/订阅通信的**统一事件系统**。你可以在任意位置发出和监听事件——从 Go 到 JavaScript、从 JavaScript 到 Go，以及从一个窗口到另一个窗口——从而利用类型化事件和生命周期钩子实现解耦架构。
 
 ## 快速入门
 
@@ -30,13 +30,13 @@ Events.On("user-logged-in", (event) => {
 })
 ```
 
-<strong>就是这样！</strong>跨语言发布/订阅。
+<strong>就是这样！</strong>实现了跨语言发布/订阅。
 
 ## 事件类型
 
 ### 自定义事件
 
-应用专用事件：
+应用专属事件：
 
 ```go
 // Emit from Go
@@ -74,7 +74,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *applicati
 
 ### 窗口事件
 
-窗口专用事件：
+窗口专属事件：
 
 ```go
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -118,7 +118,7 @@ app.Event.Emit("config", map[string]interface{}{
 app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
-**向特定窗口发出：**
+**发往特定窗口：**
 
 ```go
 window.EmitEvent("window-specific-event", data)
@@ -158,7 +158,7 @@ app.Event.On("user-updated", func(e *application.CustomEvent) {
 })
 ```
 
-**多个处理程序：**
+**多个处理器：**
 
 ```go
 // All handlers will be called
@@ -166,6 +166,9 @@ app.Event.On("order-created", logOrder)
 app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
+
+<strong>传递顺序：</strong>通过`On`、`Once`或`OnMultiple`注册的每个处理器一次只处理一个事件，因此绝不会与自身并发运行，并会按顺序接收连续的`Emit`调用：如果一次`Emit`调用在下一次调用开始前返回，则每个处理器都会按该顺序看到这些调用。
+来自不同 goroutine 的并发`Emit`调用之间没有明确的顺序。不同处理器独立运行：缓慢的处理器不会延迟其他处理器，并且处理器之间没有顺序保证。`Emit`绝不会等待处理器。移除处理器后，仍在其队列中的事件将被丢弃。
 
 ### 在 JavaScript 中
 
@@ -188,7 +191,7 @@ const unsubscribe = Events.On("event-name", handleEvent)
 unsubscribe()
 ```
 
-**多个处理程序：**
+**多个处理器：**
 
 ```javascript
 Events.On("data-updated", updateUI)
@@ -196,7 +199,7 @@ Events.On("data-updated", saveToCache)
 Events.On("data-updated", logChange)
 ```
 
-**一次性处理程序：**
+**一次性处理器：**
 
 ```javascript
 Events.Once("data-updated", updateVariable)
@@ -206,7 +209,7 @@ Events.Once("data-updated", updateVariable)
 
 ### 应用事件
 
-**通用事件（跨平台）：**
+**常用事件（跨平台）：**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -242,7 +245,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
 })
 ```
 
-**平台特定事件：**
+**平台专属事件：**
 
 @tabs{sync-key="platform"}
 [macOS]
@@ -323,7 +326,7 @@ app.Event.OnApplicationEvent(events.Linux.SystemDidWake, func(e *application.App
 
 ### 窗口事件
 
-**常见窗口事件：**
+**常用窗口事件：**
 
 ```go
 // Window focus
@@ -351,7 +354,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## 事件钩子
 
-钩子会在标准监听器<strong>之前</strong>运行，并且可以<strong>取消</strong>事件：
+钩子在标准监听器**之前**运行，并且可以**取消**事件：
 
 ```go
 // Hook - runs first, can cancel
@@ -374,10 +377,10 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 | 特性 | 钩子 | 标准监听器 |
 | --- | --- | --- |
-| 执行顺序 | 最先执行，按注册顺序 | 在钩子之后执行，顺序不作保证 |
-| 阻塞 | 同步执行，会阻塞下一个钩子 | 异步执行，不阻塞 |
-| 能否取消 | 能 | 不能（已传播） |
-| 用例 | 控制流、验证 | 日志记录、副作用 |
+| 执行顺序 | 首先按注册顺序执行 | 在钩子之后执行，顺序无保证 |
+| 阻塞 | 同步执行，会阻塞下一个钩子 | 异步执行，非阻塞 |
+| 能否取消 | 能 | 不能（事件已传播） |
+| 使用场景 | 控制流、验证 | 日志记录、副作用 |
 
 ## 事件模式
 
@@ -445,7 +448,7 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-<strong>注意：</strong>对于请求/响应，**使用绑定更合适**。事件应用于通知。
+<strong>注意：</strong>对于请求/响应，<strong>绑定更合适</strong>。请使用事件发送通知。
 
 ### 广播模式
 
@@ -584,23 +587,23 @@ document.getElementById('button').addEventListener('click', () => {
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 推荐做法
 
 - **使用事件发送通知**——单向通信
 - **使用绑定处理请求**——双向通信
 - **保持事件名称一致**——使用 kebab-case
-- **记录事件数据的说明**——其中包含哪些字段？
+- **记录事件数据说明**——其中包含哪些字段？
 - **使用完毕后取消订阅**——防止内存泄漏
 - **使用钩子进行验证**——控制事件流
 
-### ❌ 不应该做
+### ❌ 避免的做法
 
-- **不要将事件用于 RPC**——应改用绑定
-- **不要过于频繁地发出事件** - 必要时批量处理
-- **不要在处理程序中阻塞** - 保持快速执行
-- **不要忘记取消订阅** - 否则会导致内存泄漏
-- **不要使用事件传输大量数据** - 请使用绑定
-- **不要形成事件循环** - A 发出 B，B 又发出 A
+- **不要使用事件实现 RPC**——应改用绑定
+- **不要过于频繁地发出事件**——必要时批量处理
+- **不要在处理器中执行阻塞操作**——保持处理器快速运行
+- **不要忘记取消订阅**——否则会导致内存泄漏
+- **不要使用事件传输大型数据**——请使用绑定
+- **不要形成事件循环**——A 发出 B，B 又发出 A
 
 ## 后续步骤
 
@@ -612,7 +615,7 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 ◆ 事件 API
-探索完整的应用程序和窗口事件 API。
+探索完整的应用和窗口事件 API。
 
 [了解更多 →](/reference/events/)
 

@@ -60,17 +60,20 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `darwin.microphone_usage_description` | `string` | não |  | `"value"` | `darwin` | Texto da permissão de uso do microfone no macOS; gera o entitlement de entrada de áudio, a menos que um arquivo de entitlements fornecido pelo usuário esteja configurado. |
 | `darwin.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima compatível do sistema operacional. |
 | `darwin.notarization` | `object` | não |  | `{}` | `darwin` | Configurações de notarização do macOS. |
+| `darwin.notarization.api_key` | `string` | não |  | `"signing/AuthKey.p8"` |  | Arquivo .p8 de chave privada da API da equipe do App Store Connect, relativo ao projeto. Usa a API portátil do Notary em vez do notarytool; requer key_id e issuer_id. |
 | `darwin.notarization.credential` | `string` | não |  | `"release-notary"` |  | Nome do perfil do chaveiro do notarytool da Apple usado para notarização. |
+| `darwin.notarization.issuer_id` | `string` | não |  | `"00000000-0000-0000-0000-000000000000"` |  | ID do emissor da equipe do App Store Connect para notarização via API. |
+| `darwin.notarization.key_id` | `string` | não |  | `"ABCDEFGHIJ"` |  | ID da chave de API da equipe do App Store Connect correspondente a api_key. |
 | `darwin.product_name` | `string` | não |  | `"value"` | `windows,darwin,linux` | Nome do produto legível por humanos. |
 | `darwin.signing` | `object` | não |  | `{}` |  | Configurações de assinatura da plataforma. |
-| `darwin.signing.certificate` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
-| `darwin.signing.credential` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `darwin.signing.certificate` | `string` | não |  | `"signing/developer-id.p12"` |  | Identidade PKCS#12 exportada, relativa ao projeto, para assinatura portátil em Go; omita para usar uma identidade das Chaves do macOS ou assinatura ad hoc. |
+| `darwin.signing.credential` | `string` | não |  | `"APPLE_SIGNING_PASSWORD"` |  | Nome da variável de ambiente que contém a senha da identidade PKCS#12 exportada; nunca a senha em si. |
 | `darwin.signing.entitlements` | `string` | não |  | `"signing/entitlements.plist"` |  | Arquivo de entitlements da Apple relativo ao projeto. |
-| `darwin.signing.identity` | `string` | não |  | `"Developer ID Application: Example"` |  | Identidade de assinatura de código do macOS obtida do chaveiro; use - para assinatura ad hoc. |
+| `darwin.signing.identity` | `string` | não |  | `"Developer ID Application: Example"` |  | Identidade de assinatura de código do macOS obtida das Chaves; use - para assinatura ad hoc portátil ou configure um certificado exportado. |
 | `darwin.signing.key_alias` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
-| `darwin.signing.provisioning_profile` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `darwin.signing.provisioning_profile` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
 | `darwin.signing.thumbprint` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
-| `darwin.signing.timestamp_server` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `darwin.signing.timestamp_server` | `string` | não |  | `"https://timestamp.example.com"` |  | URL de carimbo de data/hora RFC 3161 para assinatura portátil com certificado; obrigatória para assinaturas de certificado notarizadas. |
 | `dev` | `object` | não |  | `{}` |  | Configurações de compilação e monitoramento no ambiente de desenvolvimento. |
 | `dev.args` | `list(string)` | não |  | `["value"]` |  | Argumentos do aplicativo de desenvolvimento passados sem expansão pelo shell; compatível com desktop e iOS. O Android exige uma lista vazia. |
 | `dev.debounce_ms` | `integer` | não | `250` | `250` |  | Atraso usado para agrupar alterações em arquivos durante o desenvolvimento. |
@@ -83,7 +86,7 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `file_associations` | `map(object)` | não |  | `{}` |  | Registros nomeados de associação de arquivos. |
 | `file_associations["association"].description` | `string` | não |  | `"value"` |  | Descrição legível por humanos. |
 | `file_associations["association"].extensions` | `list(string)` | sim |  | `["example"]` |  | Extensões de arquivo processadas pelo aplicativo. |
-| `file_associations["association"].icon` | `string` | não |  | `"assets/appicon.png"` |  | Arquivo de ícone fornecido pelo usuário, relativo ao projeto. |
+| `file_associations["association"].icon` | `string` | não |  | `"assets/appicon.png"` |  | Arquivo de ícone fornecido pelo usuário, com caminho relativo ao projeto. |
 | `file_associations["association"].mime_type` | `string` | não |  | `"application/x-example"` |  | Tipo MIME registrado para uma associação de arquivo. |
 | `file_associations["association"].name` | `string` | não |  | `"value"` |  | Nome estável do projeto ou do registro. |
 | `file_associations["association"].platforms` | `list(string)` | não |  | `["windows", "darwin", "linux"]` |  | Plataformas que recebem este registro. |
@@ -116,12 +119,12 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `ios.bundle_id` | `string` | não |  | `"com.example.app"` | `ios` | Identificador de bundle do iOS. |
 | `ios.capabilities` | `list(string)` | não |  | `["internetClient"]` | `windows,darwin,linux,ios` | Recursos nativos da plataforma solicitados pelo aplicativo. |
 | `ios.cf_bundle_icon_name` | `string` | não |  | `"AppIcon"` | `darwin,ios` | Nome do conjunto de ícones do catálogo de assets da Apple. |
-| `ios.comments` | `string` | não |  | `"value"` | `ios,android` | Comentários adicionais dos metadados do pacote. |
+| `ios.comments` | `string` | não |  | `"value"` | `ios,android` | Comentários adicionais nos metadados do pacote. |
 | `ios.company` | `string` | não |  | `"value"` | `ios,android` | Nome da empresa ou organização. |
 | `ios.display_name` | `string` | não |  | `"Example App"` | `ios,android` | Nome exibido pela plataforma móvel. |
 | `ios.icon` | `string` | não |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Arquivo de ícone fornecido pelo usuário, relativo ao projeto. |
 | `ios.info_plist` | `string` | não |  | `"assets/Info.plist"` | `darwin,ios` | Arquivo Info.plist da Apple fornecido pelo usuário. |
-| `ios.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima compatível do sistema operacional. |
+| `ios.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima do sistema operacional compatível. |
 | `ios.signing` | `object` | não |  | `{}` |  | Configurações de assinatura da plataforma. |
 | `ios.signing.certificate` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `ios.signing.credential` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
@@ -132,22 +135,22 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `ios.signing.thumbprint` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `ios.signing.timestamp_server` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `linux` | `object` | não |  | `{}` |  | Configurações da plataforma Linux. |
-| `linux.build_number` | `integer` | não |  | `1` | `windows,darwin,linux,ios` | Número da compilação da plataforma. |
+| `linux.build_number` | `integer` | não |  | `1` | `windows,darwin,linux,ios` | Número de build da plataforma. |
 | `linux.capabilities` | `list(string)` | não |  | `["internetClient"]` | `windows,darwin,linux,ios` | Recursos nativos da plataforma solicitados pelo aplicativo. |
 | `linux.desktop_entry` | `string` | não |  | `"assets/app.desktop"` | `linux` | Arquivo de entrada da área de trabalho do Linux fornecido pelo usuário. |
 | `linux.icon` | `string` | não |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Arquivo de ícone fornecido pelo usuário, relativo ao projeto. |
 | `linux.identifier` | `string` | não |  | `"com.example.app"` | `windows,darwin,linux` | Identificador do aplicativo em formato de domínio reverso. |
 | `linux.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima compatível do sistema operacional. |
-| `linux.product_name` | `string` | não |  | `"value"` | `windows,darwin,linux` | Nome do produto legível por pessoas. |
+| `linux.product_name` | `string` | não |  | `"value"` | `windows,darwin,linux` | Nome do produto legível por humanos. |
 | `linux.signing` | `object` | não |  | `{}` |  | Configurações de assinatura da plataforma. |
-| `linux.signing.certificate` | `string` | não |  | `"signing/private-key.asc"` |  | Arch: arquivo exportado e em formato ASCII armored da chave privada PGP, relativo ao projeto. DEB/RPM: identificador da chave PGP passado à ferramenta externa de assinatura. |
-| `linux.signing.credential` | `string` | não |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch: variável de ambiente opcional que contém a frase secreta da chave privada; omita-a para uma chave não criptografada. |
+| `linux.signing.certificate` | `string` | não |  | `"signing/private-key.asc"` |  | Arquivo exportado de chave privada OpenPGP, em formato ASCII armor ou binário, para assinatura nativa de DEB, RPM ou Arch. Identificadores simples de chave GnuPG mantêm o assinador externo de DEB/RPM. |
+| `linux.signing.credential` | `string` | não |  | `"LINUX_SIGNING_PASSPHRASE"` |  | Variável de ambiente opcional que contém a frase secreta da chave privada exportada; omita para uma chave não criptografada. |
 | `linux.signing.entitlements` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `linux.signing.identity` | `string` | não |  | `"builder"` |  | Função de assinatura DEB; o padrão é builder. Não usada pelo assinador de assinatura separada do Arch. |
 | `linux.signing.key_alias` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `linux.signing.provisioning_profile` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `linux.signing.thumbprint` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
-| `linux.signing.timestamp_server` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `linux.signing.timestamp_server` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
 | `packages` | `map(object)` | não |  | `{}` |  | Configurações nomeadas de formato de pacote. |
 | `packages["format"].background` | `string` | não |  | `"assets/dmg-background.png"` | `dmg` | Imagem de fundo do DMG fornecida pelo usuário. |
 | `packages["format"].categories` | `list(string)` | não |  | `["Development"]` | `appimage` | Categorias do menu da área de trabalho. |
@@ -157,18 +160,21 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `packages["format"].desktop_entry` | `string` | não |  | `"assets/app.desktop"` | `appimage` | Arquivo de entrada de desktop do Linux fornecido pelo usuário. |
 | `packages["format"].file_icon` | `string` | não |  | `"assets/file.icns"` | `dmg` | Ícone do arquivo DMG fornecido pelo usuário. |
 | `packages["format"].files` | `map(string)` | não |  | `{License.pdf: LICENSE.pdf}` | `dmg` | Arquivos fornecidos pelo usuário e copiados para o DMG, indexados pelo nome de destino. |
+| `packages["format"].gtk_version` | `integer` | não |  | `1` | `appimage` | Perfil de runtime do GTK: 3 ou 4. Por padrão, usa as tags de compilação do executável da GUI, incluindo os executáveis auxiliares; as bibliotecas CGo importadas devem ser compatíveis. |
 | `packages["format"].icon` | `string` | não |  | `"assets/appicon.png"` | `appimage` | Arquivo de ícone fornecido pelo usuário, com caminho relativo ao projeto. |
 | `packages["format"].install_scope` | `string` | não |  | `"user"` | `nsis` | Escopo de instalação do NSIS. |
 | `packages["format"].maintainer` | `string` | não |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | Mantenedor do pacote nativo do Linux. |
-| `packages["format"].manifest` | `string` | não |  | `"assets/manifest.xml"` | `msix` | Manifesto de plataforma ou de pacote fornecido pelo usuário, com caminho relativo ao projeto. |
+| `packages["format"].manifest` | `string` | não |  | `"assets/manifest.xml"` | `msix` | Manifesto da plataforma ou do pacote, fornecido pelo usuário e relativo ao projeto. |
 | `packages["format"].post_install` | `string` | não |  | `"packaging/postinstall.sh"` | `deb,rpm,archlinux,void` | Script de pós-instalação do Linux, com caminho relativo ao projeto. |
 | `packages["format"].post_remove` | `string` | não |  | `"packaging/postremove.sh"` | `deb,rpm,archlinux,void` | Script de pós-remoção do Linux, com caminho relativo ao projeto. |
 | `packages["format"].pre_install` | `string` | não |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | Script de pré-instalação do Linux, com caminho relativo ao projeto. |
 | `packages["format"].pre_remove` | `string` | não |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | Script de pré-remoção do Linux, com caminho relativo ao projeto. |
 | `packages["format"].publisher` | `string` | não |  | `"CN=Example"` | `msix` | Identidade do publicador do pacote do Windows. |
+| `packages["format"].runtime_path` | `string` | não |  | `"value"` | `appimage` | ELF de runtime AppImage tipo 2, relativo ao projeto; por padrão, baixa o runtime da plataforma de destino com versão fixada e soma de verificação validada. |
+| `packages["format"].runtime_root` | `string` | não |  | `"value"` | `appimage` | Sistema de arquivos raiz do Linux de destino, relativo ao projeto, que contém as bibliotecas GTK/WebKit e os caches de recursos compilados; por padrão, usa a raiz do host Linux. |
 | `packages["format"].section` | `string` | não |  | `"utils"` | `deb,rpm,archlinux,void` | Seção do repositório de pacotes do Linux. |
 | `packages["format"].template` | `string` | não |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | Substituição completa do modelo de pacote por um modelo fornecido pelo usuário. |
-| `packages["format"].update_info` | `string` | não |  | `"value"` | `appimage` | String de informações de atualização do AppImage; requer um arquivo auxiliar zsync correspondente gerado pelo linuxdeploy. |
+| `packages["format"].update_info` | `string` | não |  | `"value"` | `appimage` | String de informações de atualização do AppImage; gera em Go um arquivo auxiliar zsync correspondente. |
 | `packages["format"].volume_icon` | `string` | não |  | `"assets/volume.icns"` | `dmg` | Ícone de volume do DMG fornecido pelo usuário. |
 | `packages["format"].window_height` | `integer` | não |  | `1` | `dmg` | Altura, em pixels, da janela do Finder do DMG. |
 | `packages["format"].window_width` | `integer` | não |  | `1` | `dmg` | Largura, em pixels, da janela do Finder do DMG. |
@@ -180,18 +186,18 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `profiles["profile"].targets["target"].sign` | `boolean` | não |  | `true` |  | Assinar o artefato produzido. |
 | `project` | `object` | sim |  | `{}` |  | Identidade e metadados do projeto. |
 | `project.binary_name` | `string` | não | `$project.name.slug` | `"my-app"` |  | Nome-base do executável nativo. |
-| `project.build_number` | `integer` | não | `1` | `1` |  | Número de build da plataforma. |
-| `project.comments` | `string` | não |  | `"value"` |  | Comentários adicionais nos metadados do pacote. |
+| `project.build_number` | `integer` | não | `1` | `1` |  | Número da compilação da plataforma. |
+| `project.comments` | `string` | não |  | `"value"` |  | Comentários adicionais dos metadados do pacote. |
 | `project.commit_symbol` | `string` | não |  | `"value"` |  | Variável string qualificada do Go que recebe a revisão Git do aplicativo por meio de flags do linker. |
 | `project.company` | `string` | não |  | `"value"` |  | Nome da empresa ou organização. |
 | `project.copyright` | `string` | não |  | `"value"` |  | Aviso de direitos autorais incorporado aos artefatos. |
 | `project.description` | `string` | não |  | `"value"` |  | Descrição legível por humanos. |
-| `project.icon` | `string` | não |  | `"assets/appicon.png"` |  | Arquivo de ícone fornecido pelo usuário, com caminho relativo ao projeto. |
-| `project.identifier` | `string` | sim |  | `"com.example.app"` |  | Identificador do aplicativo em formato de domínio invertido. |
+| `project.icon` | `string` | não |  | `"assets/appicon.png"` |  | Arquivo de ícone fornecido pelo usuário e relativo ao projeto. |
+| `project.identifier` | `string` | sim |  | `"com.example.app"` |  | Identificador do aplicativo no formato de domínio reverso. |
 | `project.kind` | `string` | não | `gui` | `"gui"` |  | Tipo de executável: gui, cli ou server; os executáveis complementares usam cli por padrão. |
 | `project.name` | `string` | sim |  | `"value"` |  | Nome estável do projeto ou do registro. |
 | `project.package` | `string` | não | `.` | `"."` |  | Diretório relativo ao projeto que contém um pacote Go main. |
-| `project.product_name` | `string` | sim |  | `"value"` |  | Nome do produto legível por humanos. |
+| `project.product_name` | `string` | sim |  | `"value"` |  | Nome do produto legível por pessoas. |
 | `project.supported_platforms` | `list(string)` | não |  | `["linux"]` |  | Plataformas compatíveis com este projeto; uma lista vazia permite todas as plataformas. |
 | `project.upx_level` | `integer` | não | `0` | `0` |  | Nível opcional de compactação do UPX: 0 desabilitado ou de 1 a 9; ignorado no macOS e durante o desenvolvimento. |
 | `project.version` | `string` | não |  | `"value"` |  | Versão do manifesto ou do aplicativo. |
@@ -224,18 +230,18 @@ Os campos são listados usando caminhos do esquema. Mapas nomeados usam placehol
 | `windows` | `object` | não |  | `{}` |  | Configurações da plataforma Windows. |
 | `windows.build_number` | `integer` | não |  | `1` | `windows,darwin,linux,ios` | Número de build da plataforma. |
 | `windows.capabilities` | `list(string)` | não |  | `["internetClient"]` | `windows,darwin,linux,ios` | Recursos nativos da plataforma solicitados pelo aplicativo. |
-| `windows.icon` | `string` | não |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Arquivo de ícone fornecido pelo usuário e relativo ao projeto. |
-| `windows.identifier` | `string` | não |  | `"com.example.app"` | `windows,darwin,linux` | Identificador do aplicativo no formato de domínio reverso. |
-| `windows.manifest` | `string` | não |  | `"assets/manifest.xml"` | `windows,android` | Manifesto da plataforma ou do pacote, fornecido pelo usuário e relativo ao projeto. |
-| `windows.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima do sistema operacional compatível. |
+| `windows.icon` | `string` | não |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Arquivo de ícone fornecido pelo usuário, relativo ao projeto. |
+| `windows.identifier` | `string` | não |  | `"com.example.app"` | `windows,darwin,linux` | Identificador do aplicativo em formato de domínio invertido. |
+| `windows.manifest` | `string` | não |  | `"assets/manifest.xml"` | `windows,android` | Manifesto de plataforma ou de pacote fornecido pelo usuário, com caminho relativo ao projeto. |
+| `windows.minimum_version` | `string` | não |  | `"12.0"` | `windows,darwin,linux,ios` | Versão mínima compatível do sistema operacional. |
 | `windows.product_name` | `string` | não |  | `"value"` | `windows,darwin,linux` | Nome do produto legível para humanos. |
 | `windows.publisher` | `string` | não |  | `"CN=Example"` | `windows` | Identidade do editor do pacote do Windows. |
 | `windows.signing` | `object` | não |  | `{}` |  | Configurações de assinatura da plataforma. |
-| `windows.signing.certificate` | `string` | não |  | `"signing/windows.pfx"` |  | Arquivo de certificado de assinatura PFX relativo ao projeto; como alternativa, configure a impressão digital. |
+| `windows.signing.certificate` | `string` | não |  | `"signing/windows.pfx"` |  | Identidade PFX RSA exportada, relativa ao projeto, para assinatura portátil de PE/MSIX em qualquer host de desktop. Há suporte a AES/PBKDF2 e 3DES; o SignTool nativo do Windows processa exportações RC2. Como alternativa, configure a impressão digital. |
 | `windows.signing.credential` | `string` | não |  | `"WINDOWS_SIGNING_PASSWORD"` |  | Nome da variável de ambiente que contém a senha do certificado PFX; nunca a senha propriamente dita. |
-| `windows.signing.entitlements` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
-| `windows.signing.identity` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
+| `windows.signing.entitlements` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `windows.signing.identity` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
 | `windows.signing.key_alias` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
-| `windows.signing.provisioning_profile` | `string` | não |  | `""` |  | Não é usado pela operação de assinatura desta plataforma. |
-| `windows.signing.thumbprint` | `string` | não |  | `"0123456789ABCDEF"` |  | Impressão digital de um certificado no repositório de certificados do Windows. |
-| `windows.signing.timestamp_server` | `string` | não |  | `"https://timestamp.example.com"` |  | URL do serviço de carimbo de data e hora para assinatura do Windows. |
+| `windows.signing.provisioning_profile` | `string` | não |  | `""` |  | Não usado pela operação de assinatura desta plataforma. |
+| `windows.signing.thumbprint` | `string` | não |  | `"0123456789ABCDEF"` |  | Impressão digital de um certificado no repositório de certificados do Windows; requer o Windows com o SignTool. |
+| `windows.signing.timestamp_server` | `string` | não |  | `"https://timestamp.example.com"` |  | URL do serviço de carimbo de data e hora RFC 3161; o padrão é `http://timestamp.digicert.com`. As assinaturas de carimbo de data e hora e as cadeias de confiança são verificadas. |

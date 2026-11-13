@@ -60,17 +60,20 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `darwin.microphone_usage_description` | `string` | いいえ |  | `"value"` | `darwin` | macOS のマイク権限に表示するテキスト。ユーザー管理のエンタイトルメントファイルが設定されていない場合は、オーディオ入力のエンタイトルメントを生成します。 |
 | `darwin.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポートするオペレーティングシステムの最小バージョン。 |
 | `darwin.notarization` | `object` | いいえ |  | `{}` | `darwin` | macOS の公証設定。 |
+| `darwin.notarization.api_key` | `string` | いいえ |  | `"signing/AuthKey.p8"` |  | プロジェクト相対パスで指定する、App Store Connect チーム API の秘密鍵 .p8 ファイル。notarytool の代わりにポータブルな Notary API を使用します。key_id と issuer_id が必要です。 |
 | `darwin.notarization.credential` | `string` | いいえ |  | `"release-notary"` |  | 公証に使用する Apple notarytool キーチェーンプロファイルの名前。 |
+| `darwin.notarization.issuer_id` | `string` | いいえ |  | `"00000000-0000-0000-0000-000000000000"` |  | API 公証に使用する App Store Connect チームの発行者 ID。 |
+| `darwin.notarization.key_id` | `string` | いいえ |  | `"ABCDEFGHIJ"` |  | api_key に対応する App Store Connect チーム API のキー ID。 |
 | `darwin.product_name` | `string` | いいえ |  | `"value"` | `windows,darwin,linux` | 人が読める形式の製品名。 |
 | `darwin.signing` | `object` | いいえ |  | `{}` |  | プラットフォームの署名設定。 |
-| `darwin.signing.certificate` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
-| `darwin.signing.credential` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
+| `darwin.signing.certificate` | `string` | いいえ |  | `"signing/developer-id.p12"` |  | ポータブルな Go 署名に使用する、プロジェクト相対パスのエクスポート済み PKCS#12 ID。macOS キーチェーンの ID またはアドホック署名を使用する場合は省略します。 |
+| `darwin.signing.credential` | `string` | いいえ |  | `"APPLE_SIGNING_PASSWORD"` |  | エクスポート済み PKCS#12 ID のパスワードを格納する環境変数の名前。パスワード自体は指定しないでください。 |
 | `darwin.signing.entitlements` | `string` | いいえ |  | `"signing/entitlements.plist"` |  | プロジェクトからの相対パスで指定する Apple エンタイトルメントファイル。 |
-| `darwin.signing.identity` | `string` | いいえ |  | `"Developer ID Application: Example"` |  | キーチェーンに登録された macOS コード署名用 ID。アドホック署名には - を使用します。 |
+| `darwin.signing.identity` | `string` | いいえ |  | `"Developer ID Application: Example"` |  | キーチェーン内の macOS コード署名 ID。ポータブルなアドホック署名には - を使用するか、エクスポート済み証明書を設定します。 |
 | `darwin.signing.key_alias` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `darwin.signing.provisioning_profile` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `darwin.signing.thumbprint` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
-| `darwin.signing.timestamp_server` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
+| `darwin.signing.timestamp_server` | `string` | いいえ |  | `"https://timestamp.example.com"` |  | ポータブルな証明書署名に使用する RFC 3161 タイムスタンプ URL。公証済み証明書の署名には必須です。 |
 | `dev` | `object` | いいえ |  | `{}` |  | 開発ビルドとウォッチャーの設定。 |
 | `dev.args` | `list(string)` | いいえ |  | `["value"]` |  | シェル展開を行わずに渡す開発用アプリケーション引数。デスクトップと iOS でサポートされます。Android では空のリストを指定する必要があります。 |
 | `dev.debounce_ms` | `integer` | いいえ | `250` | `250` |  | 開発中のファイル変更をまとめるための遅延時間。 |
@@ -121,7 +124,7 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `ios.display_name` | `string` | いいえ |  | `"Example App"` | `ios,android` | モバイルプラットフォームに表示される名前。 |
 | `ios.icon` | `string` | いいえ |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | プロジェクト相対パスで指定する、ユーザー管理のアイコンファイル。 |
 | `ios.info_plist` | `string` | いいえ |  | `"assets/Info.plist"` | `darwin,ios` | ユーザー管理の Apple Info.plist ファイル。 |
-| `ios.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポート対象となるオペレーティングシステムの最小バージョン。 |
+| `ios.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポートされるオペレーティングシステムの最小バージョン。 |
 | `ios.signing` | `object` | いいえ |  | `{}` |  | プラットフォームの署名設定。 |
 | `ios.signing.certificate` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `ios.signing.credential` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
@@ -135,13 +138,13 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `linux.build_number` | `integer` | いいえ |  | `1` | `windows,darwin,linux,ios` | プラットフォームのビルド番号。 |
 | `linux.capabilities` | `list(string)` | いいえ |  | `["internetClient"]` | `windows,darwin,linux,ios` | アプリケーションが要求するネイティブプラットフォーム機能。 |
 | `linux.desktop_entry` | `string` | いいえ |  | `"assets/app.desktop"` | `linux` | ユーザー管理の Linux デスクトップエントリファイル。 |
-| `linux.icon` | `string` | いいえ |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | プロジェクト相対パスで指定する、ユーザー管理のアイコンファイル。 |
+| `linux.icon` | `string` | いいえ |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | プロジェクト相対パスで指定するユーザー管理のアイコンファイル。 |
 | `linux.identifier` | `string` | いいえ |  | `"com.example.app"` | `windows,darwin,linux` | 逆ドメイン形式のアプリケーション識別子。 |
-| `linux.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポート対象となるオペレーティングシステムの最小バージョン。 |
-| `linux.product_name` | `string` | いいえ |  | `"value"` | `windows,darwin,linux` | 人が読みやすい製品名。 |
+| `linux.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポートされるオペレーティングシステムの最低バージョン。 |
+| `linux.product_name` | `string` | いいえ |  | `"value"` | `windows,darwin,linux` | 人が読める形式の製品名。 |
 | `linux.signing` | `object` | いいえ |  | `{}` |  | プラットフォームの署名設定。 |
-| `linux.signing.certificate` | `string` | いいえ |  | `"signing/private-key.asc"` |  | Arch：プロジェクト相対パスで指定する、エクスポート済みの ASCII Armor 形式 PGP 秘密鍵ファイル。DEB/RPM：外部署名ツールに渡す PGP 鍵識別子。 |
-| `linux.signing.credential` | `string` | いいえ |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch：秘密鍵のパスフレーズを格納する任意の環境変数。暗号化されていない鍵では省略します。 |
+| `linux.signing.certificate` | `string` | いいえ |  | `"signing/private-key.asc"` |  | ネイティブの DEB、RPM、または Arch 署名に使用する、エクスポート済みの ASCII Armor 形式またはバイナリ形式の OpenPGP 秘密鍵ファイル。修飾のない GnuPG キー識別子を指定した場合は、外部の DEB/RPM 署名ツールが引き続き使用されます。 |
+| `linux.signing.credential` | `string` | いいえ |  | `"LINUX_SIGNING_PASSPHRASE"` |  | エクスポート済み秘密鍵のパスフレーズを格納する、省略可能な環境変数。暗号化されていない鍵では省略します。 |
 | `linux.signing.entitlements` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `linux.signing.identity` | `string` | いいえ |  | `"builder"` |  | DEB の署名ロール。デフォルトは builder です。Arch の分離署名処理では使用されません。 |
 | `linux.signing.key_alias` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
@@ -157,23 +160,26 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `packages["format"].desktop_entry` | `string` | いいえ |  | `"assets/app.desktop"` | `appimage` | ユーザー管理の Linux デスクトップエントリーファイル。 |
 | `packages["format"].file_icon` | `string` | いいえ |  | `"assets/file.icns"` | `dmg` | ユーザー管理の DMG ファイルアイコン。 |
 | `packages["format"].files` | `map(string)` | いいえ |  | `{License.pdf: LICENSE.pdf}` | `dmg` | DMG にコピーするユーザー管理のファイル。キーはコピー先の名前です。 |
-| `packages["format"].icon` | `string` | いいえ |  | `"assets/appicon.png"` | `appimage` | プロジェクト相対パスで指定するユーザー管理のアイコンファイル。 |
+| `packages["format"].gtk_version` | `integer` | いいえ |  | `1` | `appimage` | GTK ランタイムプロファイル：3 または 4。デフォルトでは、付随する実行ファイルを含め、GUI 実行ファイルのビルドタグが使用されます。インポートする CGo ライブラリでも同じ設定を使用する必要があります。 |
+| `packages["format"].icon` | `string` | いいえ |  | `"assets/appicon.png"` | `appimage` | プロジェクト相対パスで指定する、ユーザー管理のアイコンファイル。 |
 | `packages["format"].install_scope` | `string` | いいえ |  | `"user"` | `nsis` | NSIS のインストールスコープ。 |
 | `packages["format"].maintainer` | `string` | いいえ |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | ネイティブ Linux パッケージのメンテナー。 |
-| `packages["format"].manifest` | `string` | いいえ |  | `"assets/manifest.xml"` | `msix` | プロジェクト相対パスで指定するユーザー管理のプラットフォームマニフェストまたはパッケージマニフェスト。 |
+| `packages["format"].manifest` | `string` | いいえ |  | `"assets/manifest.xml"` | `msix` | ユーザーが管理する、プロジェクト相対のプラットフォームまたはパッケージのマニフェスト。 |
 | `packages["format"].post_install` | `string` | いいえ |  | `"packaging/postinstall.sh"` | `deb,rpm,archlinux,void` | プロジェクト相対パスで指定する Linux のインストール後スクリプト。 |
 | `packages["format"].post_remove` | `string` | いいえ |  | `"packaging/postremove.sh"` | `deb,rpm,archlinux,void` | プロジェクト相対パスで指定する Linux の削除後スクリプト。 |
 | `packages["format"].pre_install` | `string` | いいえ |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | プロジェクト相対パスで指定する Linux のインストール前スクリプト。 |
 | `packages["format"].pre_remove` | `string` | いいえ |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | プロジェクト相対パスで指定する Linux の削除前スクリプト。 |
-| `packages["format"].publisher` | `string` | いいえ |  | `"CN=Example"` | `msix` | Windows パッケージの発行元 ID。 |
+| `packages["format"].publisher` | `string` | いいえ |  | `"CN=Example"` | `msix` | Windowsパッケージの発行元ID。 |
+| `packages["format"].runtime_path` | `string` | いいえ |  | `"value"` | `appimage` | プロジェクト相対パスで指定する AppImage type-2 ランタイム ELF。デフォルトでは、バージョンが固定され、チェックサム検証済みのターゲットランタイムをダウンロードします。 |
+| `packages["format"].runtime_root` | `string` | いいえ |  | `"value"` | `appimage` | GTK/WebKit ライブラリとコンパイル済みリソースキャッシュを含む、プロジェクト相対パスのターゲット Linux ルートファイルシステム。デフォルトでは Linux ホストのルートを使用します。 |
 | `packages["format"].section` | `string` | いいえ |  | `"utils"` | `deb,rpm,archlinux,void` | Linux パッケージリポジトリのセクション。 |
 | `packages["format"].template` | `string` | いいえ |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | ユーザー管理の完全なパッケージテンプレートによる置き換え。 |
-| `packages["format"].update_info` | `string` | いいえ |  | `"value"` | `appimage` | AppImage の更新情報文字列。linuxdeploy が生成する、対応する zsync サイドカーファイルが必要です。 |
+| `packages["format"].update_info` | `string` | いいえ |  | `"value"` | `appimage` | AppImage の更新情報文字列。対応する zsync サイドカーファイルを Go で生成します。 |
 | `packages["format"].volume_icon` | `string` | いいえ |  | `"assets/volume.icns"` | `dmg` | ユーザー管理の DMG ボリュームアイコン。 |
 | `packages["format"].window_height` | `integer` | いいえ |  | `1` | `dmg` | DMG の Finder ウィンドウの高さ（ピクセル単位）。 |
 | `packages["format"].window_width` | `integer` | いいえ |  | `1` | `dmg` | DMG の Finder ウィンドウの幅（ピクセル単位）。 |
 | `profiles` | `map(object)` | いいえ |  | `{}` |  | 名前付きの本番ビルドプロファイル。 |
-| `profiles["profile"].targets` | `map(object)` | はい |  | `{}` |  | 名前付きのターゲットオーバーライド。 |
+| `profiles["profile"].targets` | `map(object)` | はい |  | `{}` |  | 名前付きターゲットのオーバーライド。 |
 | `profiles["profile"].targets["target"].destination` | `string` | いいえ |  | `"device"` |  | モバイルビルドの出力先。 |
 | `profiles["profile"].targets["target"].formats` | `list(string)` | いいえ |  | `["nsis"]` |  | このプロファイルターゲットで生成する成果物の形式。 |
 | `profiles["profile"].targets["target"].notarize` | `boolean` | いいえ |  | `true` |  | 生成した成果物を公証する。 |
@@ -204,7 +210,7 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `run.args` | `list(string)` | いいえ |  | `["value"]` |  | シェル展開を行わずに渡すアプリケーション引数。 |
 | `run.environment` | `map(string)` | いいえ |  | `{RELEASE: "true"}` |  | この処理に追加する環境変数。 |
 | `run.tags` | `list(string)` | いいえ |  | `["value"]` |  | 追加の Go ビルドタグ。 |
-| `targets` | `map(object)` | いいえ |  | `{}` |  | 名前付きターゲットのオーバーライド。 |
+| `targets` | `map(object)` | いいえ |  | `{}` |  | 名前付きのターゲットオーバーライド。 |
 | `targets["target"].build_number` | `integer` | いいえ |  | `1` |  | プラットフォームのビルド番号。 |
 | `targets["target"].compiler_flags` | `list(string)` | いいえ |  | `["all=-l"]` |  | 追加の Go コンパイラフラグ。 |
 | `targets["target"].dev` | `object` | いいえ |  | `{}` |  | 開発用ビルドおよびウォッチャーの設定。 |
@@ -212,7 +218,7 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `targets["target"].environment` | `map(string)` | いいえ |  | `{RELEASE: "true"}` |  | この処理に追加する環境変数。 |
 | `targets["target"].garble_args` | `list(string)` | いいえ |  | `["-literals"]` |  | garble に渡す追加引数。 |
 | `targets["target"].ldflags` | `list(string)` | いいえ |  | `["-X example/build.version=1.0.0"]` |  | 追加の Go リンカーフラグ。 |
-| `targets["target"].minimum_version` | `string` | いいえ |  | `"12.0"` |  | サポートされるオペレーティングシステムの最小バージョン。 |
+| `targets["target"].minimum_version` | `string` | いいえ |  | `"12.0"` |  | サポート対象となるオペレーティングシステムの最小バージョン。 |
 | `targets["target"].obfuscated` | `boolean` | いいえ |  | `true` |  | garble で Go コードを難読化します。 |
 | `targets["target"].run` | `object` | いいえ |  | `{}` |  | アプリケーション起動時のデフォルト設定。 |
 | `targets["target"].run.args` | `list(string)` | いいえ |  | `["value"]` |  | シェル展開を行わずに渡すアプリケーション引数。 |
@@ -226,16 +232,16 @@ description: "Wails v3 YAML マニフェストの生成済みフィールド、�
 | `windows.capabilities` | `list(string)` | いいえ |  | `["internetClient"]` | `windows,darwin,linux,ios` | アプリケーションが要求するネイティブプラットフォーム機能。 |
 | `windows.icon` | `string` | いいえ |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | ユーザーが管理する、プロジェクト相対のアイコンファイル。 |
 | `windows.identifier` | `string` | いいえ |  | `"com.example.app"` | `windows,darwin,linux` | 逆ドメイン形式のアプリケーション識別子。 |
-| `windows.manifest` | `string` | いいえ |  | `"assets/manifest.xml"` | `windows,android` | ユーザーが管理する、プロジェクト相対のプラットフォームまたはパッケージのマニフェスト。 |
-| `windows.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポートされるオペレーティングシステムの最低バージョン。 |
-| `windows.product_name` | `string` | いいえ |  | `"value"` | `windows,darwin,linux` | 人が読める形式の製品名。 |
-| `windows.publisher` | `string` | いいえ |  | `"CN=Example"` | `windows` | Windowsパッケージの発行元ID。 |
+| `windows.manifest` | `string` | いいえ |  | `"assets/manifest.xml"` | `windows,android` | プロジェクト相対パスで指定するユーザー管理のプラットフォームマニフェストまたはパッケージマニフェスト。 |
+| `windows.minimum_version` | `string` | いいえ |  | `"12.0"` | `windows,darwin,linux,ios` | サポート対象となるオペレーティングシステムの最小バージョン。 |
+| `windows.product_name` | `string` | いいえ |  | `"value"` | `windows,darwin,linux` | 人が読みやすい製品名。 |
+| `windows.publisher` | `string` | いいえ |  | `"CN=Example"` | `windows` | Windows パッケージの発行元 ID。 |
 | `windows.signing` | `object` | いいえ |  | `{}` |  | プラットフォームの署名設定。 |
-| `windows.signing.certificate` | `string` | いいえ |  | `"signing/windows.pfx"` |  | プロジェクト相対パスで指定する署名用PFX証明書ファイル。代わりに拇印を設定することもできます。 |
+| `windows.signing.certificate` | `string` | いいえ |  | `"signing/windows.pfx"` |  | 任意のデスクトップホストでポータブルな PE/MSIX 署名に使用する、プロジェクト相対パスのエクスポート済み RSA PFX ID。AES/PBKDF2 と 3DES をサポートします。RC2 形式のエクスポートは Windows ネイティブの SignTool で処理します。代わりにサムプリントを設定することもできます。 |
 | `windows.signing.credential` | `string` | いいえ |  | `"WINDOWS_SIGNING_PASSWORD"` |  | PFX証明書のパスワードを格納する環境変数の名前。パスワード自体は決して指定しないでください。 |
 | `windows.signing.entitlements` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `windows.signing.identity` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `windows.signing.key_alias` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
 | `windows.signing.provisioning_profile` | `string` | いいえ |  | `""` |  | このプラットフォームの署名処理では使用されません。 |
-| `windows.signing.thumbprint` | `string` | いいえ |  | `"0123456789ABCDEF"` |  | Windows証明書ストア内の証明書の拇印。 |
-| `windows.signing.timestamp_server` | `string` | いいえ |  | `"https://timestamp.example.com"` |  | Windows署名用タイムスタンプサービスのURL。 |
+| `windows.signing.thumbprint` | `string` | いいえ |  | `"0123456789ABCDEF"` |  | Windows 証明書ストア内の証明書のサムプリント。SignTool を備えた Windows が必要です。 |
+| `windows.signing.timestamp_server` | `string` | いいえ |  | `"https://timestamp.example.com"` |  | RFC 3161 タイムスタンプサービスの URL。デフォルトは `http://timestamp.digicert.com` です。タイムスタンプ署名と信頼チェーンが検証されます。 |

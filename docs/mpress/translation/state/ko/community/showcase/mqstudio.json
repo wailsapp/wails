@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "0b4b4a6772ab97322cf4",
+  "sourceFile": "community/showcase/mqstudio.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "2f4272b0e2be2713048bc0587b5df15217c63e7e2b3222810a287688755a0e63",
+      "targetHash": "f18669e811e69facd36416f0359c5b38a3030e78f80e40ff5846c165527bfeab",
+      "status": "adopted",
+      "sourcePreview": "![MQ Studio new connection dialog showing the RocketMQ, Kafka and RabbitMQ drivers](/assets/showcase…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0002-text-01": {
+      "sourceHash": "0c64e1669bd7f74d57a195dba654a6d5adce219217a72fa629ed70b683efb36a",
+      "targetHash": "be02c1af87e6646f1e65957c000f8ff4ca92920f3972fe3a4951f328156c8604",
+      "status": "adopted",
+      "sourcePreview": "**[MQ Studio](https://mq-studio.amigoer.com)** is a **local-first desktop client for message queues*…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0003-heading-01": {
+      "sourceHash": "3bd1800a9fb61e6e945aeb560d4bafac789be57d901c97f4412502afd0896570",
+      "targetHash": "c33a9f532786c1ca6ec9c8a240b81b445b96dfc2a6f29db40420914384e58bdf",
+      "status": "adopted",
+      "sourcePreview": "Key Highlights",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0004-text-01": {
+      "sourceHash": "b2709600c01690810091b9211e6786d117741ef3eee13719dcbf69df38e59c33",
+      "targetHash": "4e7794b1d685bf0ad6de96cb058f8a54edc6c1ea87ee17d582ff40f5e2e56fdb",
+      "status": "adopted",
+      "sourcePreview": "**One interface, every broker** — RocketMQ, RabbitMQ and Kafka today, with Pulsar, NATS, MQTT and SQ…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0005-text-01": {
+      "sourceHash": "e6c5be19b561f1cef02693094bb75e0e76b861da25fe899c51accecc7f911cc8",
+      "targetHash": "f17fc601d02498a3fd8e001ac62104f290b7942311ff115501c48fed5588b3d1",
+      "status": "adopted",
+      "sourcePreview": "**Topics, queues and messages** — inspect topics, queues, exchanges and bindings; query and trace, f…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0006-text-01": {
+      "sourceHash": "0ff70acb82866f5a150db2aea39b7a88e2acf85b14c2080431842f294f22a48c",
+      "targetHash": "d06bbe0d256d21bebb12c50e13df3082e61572b5bc12418b2fd114a0714c037a",
+      "status": "adopted",
+      "sourcePreview": "**Consumers and lag** — groups, clients, subscriptions and per-partition lag, with offset resets and…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0007-text-01": {
+      "sourceHash": "6af938b9fe617bba007c9640fc9f9c6b8cdf54438226b210b26606dcbec89df9",
+      "targetHash": "d22639c44bd9c157f4652780b7ef8c8baf3a7751aac0da487017b364fa6975ff",
+      "status": "adopted",
+      "sourcePreview": "**Cluster and alerts** — broker health, runtime metrics, throughput, disk usage, and native desktop …",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0008-text-01": {
+      "sourceHash": "19da4d4edf91b4e185171f7ca4fab4f1a831fa3079c69067c83b470fcd8d1338",
+      "targetHash": "6939e0cda0e94ba4c540095d6fcd20a2c7e5ef0ca4dd9a0acdc5eb1dca7329b4",
+      "status": "adopted",
+      "sourcePreview": "**Honest about what it connects to** — every driver declares what its endpoint can actually do, and …",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0009-text-01": {
+      "sourceHash": "68b8325e3f1115e33904f16c6b44a2ab802e7ca0de10fc5364b9b64efcb5ff05",
+      "targetHash": "885a6cebb85ec0f84e34a22cdac9c70324e3be2d501a1bff315a234629c74fbf",
+      "status": "adopted",
+      "sourcePreview": "**Private by default** — configuration stays on your device and credentials are encrypted at rest",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0010-text-01": {
+      "sourceHash": "3b83c9fa433bfede6aa5a839d46a982e661fafc096a4119bcfdfb6118905f452",
+      "targetHash": "34d2fdc695621fbd4fd04089a9f8cc398a2078fb37c5ff916f2fcbfb449a69bd",
+      "status": "adopted",
+      "sourcePreview": "There is no server component to deploy, no web console to keep alive, and no telemetry. Wails makes …",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0011-text-01": {
+      "sourceHash": "8fb103d1c5c4f83c27cc611d0ade8f8a8a81eaddc72add111ad13e4ee6f33cb0",
+      "targetHash": "dfc978a9d8ea6a04b33ea2440087f6c4b21e67eee511f9f19deb0f8e3b76acea",
+      "status": "adopted",
+      "sourcePreview": "Available for macOS, Windows and Linux, in English and Chinese.",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "b0012-text-01": {
+      "sourceHash": "244550d46e762e0941f5a6df39d478d19c24c57a08bb8610c9e0583625a2ee1e",
+      "targetHash": "7352b93d408d8ef47c128505aac59b986ad4903c115548c561ea75ae901b5f60",
+      "status": "adopted",
+      "sourcePreview": "[Website](https://mq-studio.amigoer.com) | [GitHub](https://github.com/amigoer/mq-studio) | [Downloa…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "fm-description": {
+      "sourceHash": "a6fe0177592de3d3b392e5774d074c9a84d87ba05ba518a7b11d940b407af5fe",
+      "targetHash": "8bfea1f95fa43cc0bdee74f442d66a80650b3fe91e62ec015b8853727ca5f535",
+      "status": "adopted",
+      "sourcePreview": "Local-first desktop client for RocketMQ, RabbitMQ, Kafka and more",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    },
+    "fm-title": {
+      "sourceHash": "70794d3016e05f69dfc1baae8fe09c1d23573a178c5b40a7cc7db7d43e147b03",
+      "targetHash": "70794d3016e05f69dfc1baae8fe09c1d23573a178c5b40a7cc7db7d43e147b03",
+      "status": "adopted",
+      "sourcePreview": "MQ Studio",
+      "provider": "adopted",
+      "updatedAt": "2026-11-02T23:26:49Z",
+      "adoptedFrom": "2a6be718d31977381d2a57cf40ad9ef1111099a7"
+    }
+  }
+}

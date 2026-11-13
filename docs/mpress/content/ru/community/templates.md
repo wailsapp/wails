@@ -6,44 +6,44 @@ sourcePath: "community/templates.md"
 ---
 
 @note{type="caution"}
-Эта страница может содержать устаревшую информацию для Wails v3.
+Эта страница может быть устаревшей для Wails v3.
 
 @end
 
 <!-- TODO: Update this link -->
 
-На этой странице перечислены шаблоны, поддерживаемые сообществом. Чтобы создать собственный шаблон, обратитесь к руководству [«Шаблоны»](https://v2.wails.io/docs/guides/templates).
+На этой странице перечислены шаблоны, поддерживаемые сообществом. Чтобы создать собственный шаблон, ознакомьтесь с руководством [«Шаблоны»](https://v2.wails.io/docs/guides/templates).
 
-@note{type="tip" title="Как отправить шаблон"}
+@note{type="tip" title="Как предложить шаблон"}
 Чтобы добавить свои шаблоны, нажмите `Edit this page` внизу страницы.
 
 @end
 
-Чтобы использовать эти шаблоны, выполните команду: `wails init -n "Your Project Name" -t [the link below[@version]]`
+Чтобы использовать эти шаблоны, выполните команду `wails init -n "Your Project Name" -t [the link below[@version]]`
 
 Если суффикс версии не указан, по умолчанию используется шаблон кода из основной ветки. Если суффикс версии указан, используется шаблон кода, соответствующий тегу этой версии.
 
 Пример: `wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
 
 @note{type="danger" title="Внимание"}
-**Проект Wails не сопровождает шаблоны 3-х лиц, не отвечает за них и не несёт за них юридической ответственности!**
+**Проект Wails не сопровождает сторонние шаблоны и не несёт за них ответственности!3rd party templates!**
 
-Если вы не уверены в шаблоне, проверьте `package.json` и `wails.json`, чтобы узнать, какие скрипты выполняются и какие пакеты устанавливаются.
+Если вы не уверены в надёжности шаблона, проверьте `package.json` и `wails.json`, чтобы узнать, какие скрипты запускаются и какие пакеты устанавливаются.
 
 @end
 
 ## Vue
 
-- [wails-template-vue](https://github.com/misitebao/wails-template-vue) — шаблон Wails на основе экосистемы Vue (интегрированы TypeScript, тёмная тема, интернационализация, одностраничная маршрутизация и TailwindCSS)
+- [wails-template-vue](https://github.com/misitebao/wails-template-vue) — шаблон Wails на основе экосистемы Vue (интеграция с TypeScript, тёмная тема, интернационализация, одностраничная маршрутизация, TailwindCSS)
 - [wails-template-quasar-js](https://github.com/sgosiaco/wails-template-quasar-js) — шаблон на основе JavaScript + Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier)
 - [wails-template-quasar-ts](https://github.com/sgosiaco/wails-template-quasar-ts) — шаблон на основе TypeScript + Quasar V2 (Vue 3, Vite, Sass, Pinia, ESLint, Prettier, Composition API с &lt;script setup&gt;)
 - [wails-template-naive](https://github.com/tk103331/wails-template-naive) — шаблон Wails на основе Naive UI (библиотеки компонентов для Vue 3)
 - [wails-template-nuxt](https://github.com/gornius/wails-template-nuxt) — шаблон Wails на основе чистого Nuxt3 и TypeScript с автоматическим импортом среды выполнения Wails для JavaScript
-- [Wails-Tool-Template](https://github.com/xisuo67/Wails-Tool-Template) — шаблон Wails на основе Vue+TypeScript+Vite+Element-plus (имитация NetEase Cloud Music)
+- [Wails-Tool-Template](https://github.com/xisuo67/Wails-Tool-Template) — шаблон Wails на основе Vue+TypeScript+Vite+Element-plus (仿网易云)
 
 ## Angular
 
-- [wails-template-angular](https://github.com/mateothegreat/wails-template-angular) — Angular 15+ с широким набором возможностей, готовый к развёртыванию в рабочей среде.
+- [wails-template-angular](https://github.com/mateothegreat/wails-template-angular) — Angular 15 с богатым набором возможностей, готовый к использованию в рабочей среде.
 - [wails-angular-template](https://github.com/TAINCER/wails-angular-template) — Angular с TypeScript, Sass, горячей перезагрузкой, разделением кода и i18n
 
 ## React
@@ -72,16 +72,16 @@ sourcePath: "community/templates.md"
 
 ## Elm
 
-- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) — разрабатывайте приложения с графическим интерфейсом, используя функциональное программирование и **быстрое** окружение с горячей перезагрузкой :tada: :rocket:
-- [wails-template-elm-tailwind](https://github.com/rnice01/wails-template-elm-tailwind) — объедините мощь :muscle: Elm + Tailwind CSS + Wails! Поддерживается горячая перезагрузка.
+- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) — разрабатывайте приложения с графическим интерфейсом, используя функциональное программирование и **быструю** горячую перезагрузку :tada: :rocket:
+- [wails-template-elm-tailwind](https://github.com/rnice01/wails-template-elm-tailwind) — объедините возможности :muscle: Elm + Tailwind CSS + Wails! Поддерживается горячая перезагрузка.
 
 ## HTMX
 
 - [wails-htmx-templ-chi-tailwind](https://github.com/PylotLight/wails-hmtx-templ-template) — используйте уникальное сочетание чистого htmx для интерактивности и templ для создания компонентов и форм
 
-## Чистый JavaScript (без фреймворков)
+## Чистый JavaScript (Vanilla)
 
-- [wails-pure-js-template](https://github.com/KiddoV/wails-pure-js-template) — шаблон, содержащий только базовые JavaScript, HTML и CSS
+- [wails-pure-js-template](https://github.com/KiddoV/wails-pure-js-template) — шаблон только с базовыми JavaScript, HTML и CSS
 
 ## Lit (веб-компоненты)
 

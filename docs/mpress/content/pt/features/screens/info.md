@@ -7,7 +7,7 @@ sourcePath: "features/screens/info.md"
 
 ## Informações da tela
 
-O Wails fornece uma **API unificada para telas** que funciona em todas as plataformas. Obtenha informações sobre telas, detecte vários monitores, consulte propriedades da tela (tamanho, posição e DPI), identifique a tela principal e gerencie o escalonamento de DPI com código consistente.
+O Wails fornece uma **API unificada para telas** que funciona em todas as plataformas. Obtenha informações da tela, detecte vários monitores, consulte propriedades da tela (tamanho, posição e DPI), identifique a tela principal e gerencie o dimensionamento por DPI com código consistente.
 
 ## Início rápido
 
@@ -220,7 +220,7 @@ func listMonitors() {
 }
 ```
 
-### Escolher o monitor
+### Escolher um monitor
 
 ```go
 func chooseMonitor() (*Screen, error) {
@@ -344,7 +344,7 @@ func (sm *ScreenMonitor) checkScreens() {
 }
 ```
 
-### Dimensionamento de janelas com reconhecimento de DPI
+### Dimensionamento de janelas considerando o DPI
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
@@ -400,50 +400,50 @@ func visualiseScreenLayout() string {
 }
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
 - **Verifique a quantidade de telas** - Ofereça suporte a um ou vários monitores
 - **Use pixels lógicos** - O Wails gerencia o DPI automaticamente
-- **Centralize as janelas** - Isso proporciona uma experiência do usuário melhor do que posições fixas
+- **Centralize as janelas** - Proporciona uma experiência melhor do que posições fixas
 - **Valide as posições** - Garanta que as janelas estejam visíveis
 - **Trate alterações nas telas** - Monitores podem ser adicionados ou removidos
-- **Teste com diferentes configurações de DPI** - 100%, 125%, 150%, 200%
+- **Teste com diferentes valores de DPI** - 100%, 125%, 150%, 200%
 
 ### ❌ Não faça
 
-- **Não fixe posições no código** - Use as dimensões da tela
-- **Não pressuponha que haja apenas a tela principal** - O usuário pode ter várias telas
-- **Não ignore o fator de escala** - Ele é importante para o reconhecimento de DPI
+- **Não fixe posições diretamente no código** - Use as dimensões da tela
+- **Não pressuponha que há apenas a tela principal** - O usuário pode ter várias telas
+- **Não ignore o fator de escala** - Ele é importante para considerar o DPI
 - **Não posicione janelas fora da tela** - Valide as coordenadas
-- **Não se esqueça das alterações nas telas** - Notebooks podem ser conectados e desconectados de uma estação de acoplamento
+- **Não se esqueça das alterações nas telas** - Notebooks podem ser conectados ou desconectados de uma dock
 - **Não use pixels físicos** - Use pixels lógicos
 
 ## Diferenças entre plataformas
 
 ### macOS
 
-- Telas Retina (fator de escala 2x)
+- Telas Retina (fator de escala de 2x)
 - O uso de várias telas é comum
 - Sistema de coordenadas: (0,0) no canto inferior esquerdo
-- Os Spaces (áreas de trabalho virtuais) afetam o posicionamento
+- Os Spaces (desktops virtuais) afetam o posicionamento
 
 ### Windows
 
-- Vários níveis de escala de DPI (100%, 125%, 150%, 200%)
+- Várias escalas de DPI (100%, 125%, 150%, 200%)
 - O uso de várias telas é comum
 - Sistema de coordenadas: (0,0) no canto superior esquerdo
-- Reconhecimento de DPI por monitor
+- Consideração do DPI por monitor
 
 ### Linux
 
 - Varia conforme o ambiente de desktop
 - Diferenças entre X11 e Wayland
-- O suporte ao escalonamento de DPI varia
+- O suporte ao dimensionamento por DPI varia
 - Há suporte a várias telas
 
-## Próximas etapas
+## Próximos passos
 
 @cards{cols="2"}
 ▣ Janelas
@@ -453,7 +453,7 @@ Saiba mais sobre o gerenciamento de janelas.
 
 ---
 ⚙ Opções de janela
-Configure a aparência da janela.
+Configure a aparência das janelas.
 
 [Saiba mais →](/features/windows/options/)
 
@@ -473,4 +473,4 @@ Chame funções Go a partir do JavaScript.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de telas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de telas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

@@ -7,10 +7,10 @@ sourcePath: "features/bindings/enums.md"
 
 ## 列舉繫結
 
-Wails v3 繫結產生器會<strong>自動偵測 Go 常數型別，並產生 TypeScript 列舉或 JavaScript const 物件</strong>。不需註冊，也不需設定，只要在 Go 中定義型別與常數，其餘工作便由產生器處理。
+Wails v3繫結產生器**會自動偵測 Go 常數型別，並產生 TypeScript 列舉或 JavaScript const 物件**。不需要註冊，也不需要設定，只要在 Go 中定義型別和常數，其餘工作會由產生器處理。
 
 @note{type="info"}
-與 Wails v2 不同，現在<strong>不需要呼叫`EnumBind`</strong>或手動註冊列舉。產生器會自動從原始碼中找出它們。
+與 Wails v2不同，<strong>不需要呼叫`EnumBind`</strong>或手動註冊列舉。產生器會自動從原始碼中找出它們。
 
 @end
 
@@ -44,7 +44,7 @@ type Ticket struct {
 wails3 generate bindings
 ```
 
-產生器的輸出會同時報告列舉與模型的數量：
+產生器輸出會在模型數量旁一併顯示列舉數量：
 
 ```
 3 Enums, 5 Models
@@ -62,11 +62,11 @@ const ticket = new Ticket({
 })
 ```
 
-<strong>就這麼簡單！</strong>Go 和 JavaScript/TypeScript 都會強制執行列舉型別檢查。
+<strong>就這麼簡單！</strong>Go 和 JavaScript/TypeScript 都會強制採用此列舉型別。
 
 ## 定義列舉
 
-Wails 中的列舉是具有基礎基本型別的<strong>具名型別</strong>，並搭配該型別的<strong>const 宣告</strong>。
+Wails 中的列舉是以基本型別作為基礎型別的**具名型別**，並搭配該型別的**const 宣告**。
 
 ### 字串列舉
 
@@ -237,15 +237,15 @@ export const Age = {
 ```
 
 @note{type="tip"}
-**具名型別**（`type Title string`）會產生原生 TypeScript `enum` 宣告，其中包含 `$zero` 成員。 **型別別名**（`type Age = int`）則會產生不含 `$zero` 的 `type` + `const` 命名空間組合。
+**具名型別**（`type Title string`）會產生含有`$zero`成員的原生 TypeScript `enum`宣告。**型別別名**（`type Age = int`）則會產生不含`$zero`的`type` + `const`命名空間組合。
 
 @end
 
-## `$zero` 值
+## `$zero`值
 
-每個具名型別列舉都包含特殊的 `$zero` 成員，代表基礎型別的<strong>Go 零值</strong>：
+每個具名型別列舉都包含特殊的`$zero`成員，代表基礎型別的**Go 零值**：
 
-| 基礎型別 | `$zero` 值 |
+| 基礎型別 | `$zero`值 |
 | --- | --- |
 | `string` | `""` |
 | `int`、`int8`、`int16`、`int32`、`int64` | `0` |
@@ -253,7 +253,7 @@ export const Age = {
 | `float32`、`float64` | `0` |
 | `bool` | `false` |
 
-當結構欄位使用列舉型別且未提供值時，建構函式會預設使用 `$zero`：
+當結構欄位使用列舉型別但未提供值時，建構函式預設會使用`$zero`：
 
 ```typescript
 export class Person {
@@ -268,11 +268,11 @@ export class Person {
 }
 ```
 
-這可確保產生類別時以型別安全的方式初始化，列舉欄位絕不會是 `undefined`。產生 TypeScript 介面時（使用 `-i`），則不會有建構函式，欄位也可像平常一樣不存在。
+這可確保產生類別時進行型別安全的初始化，列舉欄位絕不會是`undefined`。產生 TypeScript 介面時（使用`-i`），不會有建構函式，欄位也可以像往常一樣不存在。
 
 ## 在結構中使用列舉
 
-當結構欄位具有列舉型別時，產生的程式碼會<strong>保留該型別</strong>，而不會退回基本型別：
+當結構欄位具有列舉型別時，產生的程式碼會**保留該型別**，而不會退回使用基本型別：
 
 ```go
 type Person struct {
@@ -306,11 +306,11 @@ export class Person {
 }
 ```
 
-`Title` 欄位的型別是 `Title`，而不是 `string`。因此，IDE 可針對列舉值提供完整的自動完成與型別檢查。
+`Title`欄位的型別是`Title`，而不是`string`。因此，您的 IDE 可針對列舉值提供完整的自動完成和型別檢查。
 
 ## 來自匯入套件的列舉
 
-完整支援在其他套件中定義的列舉。它們會產生至對應的套件目錄：
+完整支援在其他套件中定義的列舉。它們會產生至對應的套件目錄中：
 
 ```go
 // services/types.go
@@ -336,7 +336,7 @@ func (*GreetService) Greet(name string, title services.Title) string {
 }
 ```
 
-`Title` 列舉會產生在 `services` 模型檔案中，且系統會自動解析匯入路徑：
+`Title`列舉會產生於`services`模型檔案中，且匯入路徑會自動解析：
 
 ```typescript
 // bindings/changeme/services/models.ts
@@ -350,7 +350,7 @@ export enum Title {
 
 ## 列舉方法
 
-你可以在 Go 中為列舉型別新增方法。這些方法不會影響繫結產生，但可提供實用的伺服器端功能：
+您可以在 Go 中為列舉型別新增方法。這些方法不會影響繫結產生，但能提供實用的伺服器端功能：
 
 ```go
 type Title string
@@ -369,18 +369,18 @@ const (
 
 ## 註解與文件
 
-產生器會將 Go 註解保留為產生輸出中的 JSDoc：
+產生器會將 Go 註解保留為所產生輸出中的 JSDoc：
 
-- <strong>型別註解</strong>會成為列舉的文件註解
-- <strong>const 群組註解</strong>會成為區段分隔標記
-- <strong>個別 const 註解</strong>會成為成員的文件註解
-- <strong>行內註解</strong>會盡可能保留
+- **型別註解**會成為列舉的文件註解
+- **const 群組註解**會成為區段分隔
+- **個別 const 註解**會成為成員文件註解
+- **行內註解**會在可行時予以保留
 
-因此，將游標停留在列舉值上時，IDE 會顯示相關文件。
+因此，將游標停留在列舉值上時，IDE 會顯示其文件。
 
 ## 支援的基礎型別
 
-繫結產生器支援以下列 Go 基礎型別建立的列舉：
+繫結產生器支援使用下列 Go 基礎型別的列舉：
 
 | Go 型別 | 可作為列舉 |
 | --- | :---: |
@@ -395,12 +395,12 @@ const (
 
 ## 限制
 
-產生列舉時，<strong>不</strong>支援以下項目：
+列舉產生**不**支援下列項目：
 
-- **泛型型別** — 型別參數會使常數無法被偵測
+- **泛型型別** — 型別參數會妨礙常數偵測
 - <strong>具有自訂`json.Marshaler`或`encoding.TextMarshaler`</strong>的型別 — 自訂序列化表示產生的值可能與執行階段行為不符，因此產生器會略過這些型別
-- **值無法靜態求值或表示的常數** — 常數在其基礎型別中必須具有已知且可表示的值。標準`iota`模式可以正常運作，因為編譯器會將它們解析為具體值
-- **複數型別** — `complex64`和`complex128`不能作為列舉的基礎型別
+- **值無法靜態求值或表示的常數** — 常數在其基礎型別中必須具有已知且可表示的值。標準的`iota`模式可正常運作，因為編譯器會將其解析為具體值
+- **複數型別** — `complex64`與`complex128`不能作為列舉的基礎型別
 
 ## 完整範例
 

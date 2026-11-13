@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Esse é exatamente o padrão usado pelo [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — consulte `native_features_stub.go`, `native_features_ios.go` e `native_features_android.go`.
+Este é exatamente o padrão usado pelo [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — consulte `native_features_stub.go`, `native_features_ios.go` e `native_features_android.go`.
 
 @note{type="note" title="API de recursos nativos e nomenclatura de eventos"}
 Vale a pena conhecer duas convenções:

@@ -307,16 +307,16 @@
       "updatedAt": "2026-10-25T21:50:37Z"
     },
     "b0026-text-01": {
-      "sourceHash": "f5fb6eabe7d16c4cb37fb8f490deddb04ec949479ba108341e5939b2b41df138",
-      "targetHash": "b27915cd3799b0ebafbf07b8911077a8d8565b690e3f898f1429762c8738d0ec",
-      "machineHash": "b27915cd3799b0ebafbf07b8911077a8d8565b690e3f898f1429762c8738d0ec",
-      "machineText": "本路线图可能会根据社区反馈和项目优先级进行调整。我们将定期更新路线图，以反映进展和方向变化。请将可复现的问题报告为议题；新功能请通过[WEP（Wails 增强提案）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) PR 提出。",
+      "sourceHash": "48dfcf206977fbc4c3bcf4217220d4012ab514c1c8d27e085ffbb356fed6d09b",
+      "targetHash": "24c518bfdfaa5d9b07855cab7a7256756efacc702ee2eaf2388ccfdc577918e7",
+      "machineHash": "24c518bfdfaa5d9b07855cab7a7256756efacc702ee2eaf2388ccfdc577918e7",
+      "machineText": "此路线图可能会根据社区反馈和项目优先级进行调整。我们将定期更新，以反映进展和方向变化。请将可复现的问题报告为 issue；如需提议新功能，请提交[WEP（Wails Enhancement Proposal，Wails 增强提案）](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) PR。",
       "status": "machine-translated",
       "sourcePreview": "This roadmap is subject to change based on community feedback and project priorities. We'll update i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:37Z"
+      "updatedAt": "2026-11-06T02:15:20Z"
     },
     "fm-description": {
       "sourceHash": "acbf6f4923696d9bc59f9c891419bb098d49bd9b30e1ecf24ef15e3f1474b434",

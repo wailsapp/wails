@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-这正是 [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) 使用的模式——请参阅 `native_features_stub.go`、`native_features_ios.go` 和 `native_features_android.go`。
+这正是[Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)采用的模式——请参阅`native_features_stub.go`、`native_features_ios.go`和`native_features_android.go`。
 
 @note{type="note" title="原生功能 API 与事件命名"}
 有两个约定值得了解：
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-在 [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) 浏览源代码——其中 `native_features_ios.go` 和 `native_features_android.go` 文件特别适合作为实现平台特定功能时复制粘贴的起点。
+请在[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)浏览源代码——其中，`native_features_ios.go`和`native_features_android.go`文件特别适合作为实现平台特定功能时复制粘贴的起点。
 
 ## 后续步骤
 

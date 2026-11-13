@@ -5,17 +5,17 @@ slug: "whats-new"
 sourcePath: "whats-new.md"
 ---
 
-Wails v3 menghadirkan perubahan signifikan dibandingkan v2. API deklaratif berjendela tunggal digantikan dengan pendekatan prosedural yang lebih fleksibel. Desain API baru ini meningkatkan keterbacaan kode dan menyederhanakan pengembangan, terutama untuk aplikasi multijendela yang kompleks.
+Wails v3 menghadirkan perubahan signifikan dari v2. API deklaratif berjendela tunggal diganti dengan pendekatan prosedural yang lebih fleksibel. Desain API baru ini meningkatkan keterbacaan kode dan menyederhanakan pengembangan, terutama untuk aplikasi multijendela yang kompleks.
 
 Wails v3 merupakan evolusi besar dalam cara membangun aplikasi desktop menggunakan Go dan teknologi web.
 
 ## Beberapa Jendela
 
-Wails v3 menghadirkan kemampuan untuk membuat dan mengelola beberapa jendela dalam satu aplikasi. Fitur ini memungkinkan pengembang merancang antarmuka pengguna yang lebih kompleks dan serbaguna, melampaui keterbatasan aplikasi berjendela tunggal.
+Wails v3 memperkenalkan kemampuan untuk membuat dan mengelola beberapa jendela dalam satu aplikasi. Fitur ini memungkinkan pengembang merancang antarmuka pengguna yang lebih kompleks dan serbaguna, melampaui keterbatasan aplikasi berjendela tunggal.
 
-Setiap jendela dapat dikonfigurasi secara independen, sehingga memberikan fleksibilitas dalam hal ukuran, posisi, konten, dan perilaku. Hal ini memungkinkan pembuatan aplikasi dengan jendela terpisah untuk berbagai fungsi, seperti antarmuka utama, panel pengaturan, atau tampilan tambahan.
+Setiap jendela dapat dikonfigurasi secara terpisah sehingga memberikan fleksibilitas dalam hal ukuran, posisi, konten, dan perilaku. Dengan demikian, Anda dapat membuat aplikasi dengan jendela terpisah untuk berbagai fungsi, seperti antarmuka utama, panel pengaturan, atau tampilan tambahan.
 
-Pengembang dapat membuat, memanipulasi, dan mengelola jendela tersebut secara terprogram, sehingga memungkinkan antarmuka pengguna dinamis yang menyesuaikan diri dengan kebutuhan pengguna dan status aplikasi.
+Pengembang dapat membuat, memanipulasi, dan mengelola jendela tersebut secara terprogram sehingga dapat membangun antarmuka pengguna dinamis yang menyesuaikan dengan kebutuhan pengguna dan status aplikasi.
 
 @note{type="tip" title="Beberapa Jendela"}
 @details{title="Contoh"}
@@ -70,15 +70,15 @@ func main() {
 
 ## Integrasi Baki Sistem
 
-Wails v3 menghadirkan dukungan tangguh untuk fungsionalitas baki sistem, sehingga aplikasi Anda dapat terus hadir di desktop pengguna. Fitur ini sangat berguna bagi aplikasi yang perlu berjalan di latar belakang atau menyediakan akses cepat ke fungsi utama.
+Wails v3 menghadirkan dukungan yang andal untuk fungsi baki sistem sehingga aplikasi Anda dapat terus hadir di desktop pengguna. Fitur ini sangat berguna untuk aplikasi yang perlu berjalan di latar belakang atau menyediakan akses cepat ke fungsi utama.
 
 Fitur utama integrasi baki sistem Wails v3 meliputi:
 
-1. Penautan Jendela: Anda dapat mengaitkan jendela dengan ikon baki sistem. Saat diaktifkan, jendela ini akan dipusatkan relatif terhadap posisi ikon, sehingga memberikan cara praktis untuk mengakses aplikasi Anda dengan cepat.
+1. Penautan Jendela: Anda dapat mengaitkan jendela dengan ikon baki sistem. Saat diaktifkan, jendela ini akan diposisikan di tengah relatif terhadap posisi ikon sehingga pengguna dapat mengakses aplikasi Anda dengan cepat.
 
-2. Dukungan Menu Lengkap: Buat menu interaktif yang kaya dan dapat diakses pengguna langsung dari ikon baki sistem. Dengan demikian, tindakan cepat dapat dilakukan tanpa perlu membuka jendela aplikasi secara penuh.
+2. Dukungan Menu Lengkap: Buat menu interaktif yang kaya dan dapat diakses pengguna langsung dari ikon baki sistem. Dengan demikian, pengguna dapat menjalankan tindakan cepat tanpa perlu membuka jendela aplikasi secara penuh.
 
-3. Tampilan Ikon Adaptif: Dukungan ikon untuk mode terang dan gelap memastikan ikon baki sistem aplikasi Anda tetap terlihat dan tampak menarik pada berbagai tema sistem. Ikon templat juga didukung di macOS.
+3. Tampilan Ikon Adaptif: Dukungan ikon untuk mode terang maupun gelap memastikan ikon baki sistem aplikasi Anda tetap terlihat dan menarik secara visual dalam berbagai tema sistem. Ikon templat juga didukung di macOS.
 
 @note{type="tip" title="Baki Sistem"}
 @details{title="Contoh"}
@@ -146,11 +146,11 @@ func main() {
 
 @end
 
-## Peningkatan Pembuatan Binding
+## Pembuatan Binding yang Disempurnakan
 
-Wails v3 menghadirkan peningkatan signifikan pada cara binding dibuat untuk proyek Anda. Binding merupakan penghubung antara backend Go dan frontend Anda, yang memungkinkan komunikasi lancar di antara keduanya.
+Wails v3 menghadirkan peningkatan signifikan pada cara binding dibuat untuk proyek Anda. Binding adalah perekat yang menghubungkan backend Go dengan frontend Anda sehingga keduanya dapat berkomunikasi dengan lancar.
 
-Pembuatan binding kini dilakukan menggunakan penganalisis statis canggih yang secara drastis meningkatkan proses tersebut. Penganalisis ini memberikan kecepatan yang lebih tinggi dan mempertahankan kualitas kode dengan menjaga komentar serta nama parameter.
+Pembuatan binding kini dilakukan menggunakan penganalisis statis canggih yang secara drastis menyempurnakan proses tersebut. Penganalisis ini menawarkan kecepatan yang lebih tinggi dan mempertahankan kualitas kode dengan menjaga komentar serta nama parameter.
 
 Proses pembuatan binding telah disederhanakan dan kini hanya memerlukan satu perintah: `wails3 generate bindings`.
 
@@ -187,13 +187,13 @@ export function GreetPerson($0) {
 
 @end
 
-## Peningkatan Sistem Build
+## Sistem Build yang Disempurnakan
 
-Wails v3 menghadirkan sistem build yang lebih fleksibel dan transparan untuk mengatasi keterbatasan pendahulunya. Di v2, proses build sebagian besar tidak transparan dan sulit disesuaikan, sehingga dapat menyulitkan pengembang yang menginginkan kendali lebih besar atas proses build proyek mereka.
+Wails v3 menghadirkan sistem build yang lebih fleksibel dan transparan untuk mengatasi keterbatasan pendahulunya. Di v2, proses build sebagian besar tidak transparan dan sulit disesuaikan sehingga dapat menyulitkan pengembang yang menginginkan kontrol lebih besar atas proses build proyek mereka.
 
-Semua pekerjaan berat yang sebelumnya dilakukan oleh sistem build v2, seperti pembuatan ikon dan manifes, telah ditambahkan sebagai perintah alat di CLI. Kami telah mengintegrasikan [Taskfile](https://taskfile.dev) ke dalam CLI untuk mengatur pemanggilan tersebut dan memberikan pengalaman pengembang yang sama seperti v2. Namun, pendekatan ini memberikan keseimbangan terbaik antara fleksibilitas dan kemudahan penggunaan karena kini Anda dapat menyesuaikan proses build dengan kebutuhan Anda.
+Semua pekerjaan berat yang sebelumnya dilakukan oleh sistem build v2, seperti pembuatan ikon dan manifes, telah ditambahkan sebagai perintah alat di CLI. Kami telah mengintegrasikan [Taskfile](https://taskfile.dev) ke dalam CLI untuk mengorkestrasi pemanggilan tersebut dan memberikan pengalaman pengembang yang sama seperti v2. Namun, pendekatan ini memberikan keseimbangan terbaik antara fleksibilitas dan kemudahan penggunaan karena kini Anda dapat menyesuaikan proses build dengan kebutuhan Anda.
 
-Anda bahkan dapat menggunakan make jika itu pilihan Anda!
+Anda bahkan dapat menggunakan make jika itu lebih sesuai dengan preferensi Anda!
 
 @note{type="tip" title="Taskfile.yml"}
 @details{title="Contoh"}
@@ -217,13 +217,13 @@ darwin:build:
 
 @end
 
-## Peningkatan Peristiwa
+## Event yang Disempurnakan
 
-Wails kini memancarkan peristiwa untuk berbagai operasi runtime dan aktivitas sistem. Hal ini memungkinkan aplikasi Anda merespons peristiwa tersebut secara real-time. Selain itu, tersedia peristiwa lintas platform (umum), sehingga Anda dapat menulis metode penanganan peristiwa yang konsisten dan berfungsi di berbagai sistem operasi.
+Wails kini memancarkan event untuk berbagai operasi runtime dan aktivitas sistem. Dengan demikian, aplikasi Anda dapat merespons event tersebut secara real-time. Selain itu, tersedia event lintas platform (umum) sehingga Anda dapat menulis metode penanganan event yang konsisten dan berfungsi di berbagai sistem operasi.
 
-Hook peristiwa dapat didaftarkan untuk menangani peristiwa tertentu secara sinkron. Berbeda dengan metode `On`, hook ini memungkinkan Anda membatalkan peristiwa jika diperlukan. Kasus penggunaan yang umum adalah menampilkan dialog konfirmasi sebelum menutup jendela. Hal ini memberi Anda kendali lebih besar atas alur peristiwa dan pengalaman pengguna.
+Hook event dapat didaftarkan untuk menangani event tertentu secara sinkron. Berbeda dengan metode `On`, hook ini memungkinkan Anda membatalkan event jika diperlukan. Salah satu kasus penggunaan yang umum adalah menampilkan dialog konfirmasi sebelum menutup jendela. Hal ini memberi Anda kontrol lebih besar atas alur event dan pengalaman pengguna.
 
-@note{type="tip" title="Contoh penanganan peristiwa"}
+@note{type="tip" title="Contoh penanganan event"}
 @details{title="Contoh"}
 ```go
 package main
@@ -303,7 +303,7 @@ func main() {
 
 ## Wails Markup Language (wml)
 
-Fitur eksperimental untuk memanggil metode runtime menggunakan HTML biasa, serupa dengan [htmx](https://htmx.org).
+Fitur eksperimental untuk memanggil metode runtime menggunakan HTML biasa, mirip dengan [htmx](https://htmx.org).
 
 @note{type="tip" title="Contoh wml"}
 @details{title="Contoh"}

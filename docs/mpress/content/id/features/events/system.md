@@ -1,13 +1,13 @@
 ---
 title: "Sistem Peristiwa"
-description: "Berkomunikasi antar komponen dengan sistem peristiwa"
+description: "Berkomunikasi antar-komponen dengan sistem peristiwa"
 slug: "features/events/system"
 sourcePath: "features/events/system.md"
 ---
 
 ## Sistem Peristiwa
 
-Wails menyediakan **sistem peristiwa terpadu** untuk komunikasi pub/sub. Pancarkan peristiwa dari mana saja dan dengarkan dari mana saja—dari Go ke JavaScript, JavaScript ke Go, maupun satu jendela ke jendela lain—sehingga memungkinkan arsitektur yang terpisah dengan peristiwa bertipe dan hook siklus hidup.
+Wails menyediakan **sistem peristiwa terpadu** untuk komunikasi pub/sub. Pancarkan peristiwa dari mana saja dan dengarkan dari mana saja—dari Go ke JavaScript, JavaScript ke Go, atau satu jendela ke jendela lain—sehingga memungkinkan arsitektur yang tidak saling bergantung dengan peristiwa bertipe dan hook siklus hidup.
 
 ## Mulai Cepat
 
@@ -96,7 +96,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 app.Event.Emit("event-name", data)
 ```
 
-**Dengan berbagai jenis data:**
+**Dengan jenis data yang berbeda:**
 
 ```go
 // String
@@ -149,7 +149,7 @@ app.Event.On("custom-event", func(e *application.CustomEvent) {
 })
 ```
 
-**Dengan penegasan tipe:**
+**Dengan type assertion:**
 
 ```go
 app.Event.On("user-updated", func(e *application.CustomEvent) {
@@ -166,6 +166,8 @@ app.Event.On("order-created", logOrder)
 app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
+
+**Urutan pengiriman:** setiap handler yang didaftarkan dengan `On`, `Once`, atau `OnMultiple` menangani satu peristiwa pada satu waktu sehingga tidak pernah berjalan secara konkuren dengan dirinya sendiri, dan menerima pemanggilan `Emit` berurutan sesuai urutan: jika satu `Emit` selesai sebelum pemanggilan berikutnya dilakukan, setiap handler melihatnya dalam urutan tersebut. Pemanggilan `Emit` secara konkuren dari goroutine yang berbeda tidak memiliki urutan yang ditentukan. Handler yang berbeda berjalan secara independen: handler yang lambat tidak menunda handler lain, dan tidak ada urutan antar-handler. `Emit` tidak pernah menunggu handler. Setelah handler dihapus, peristiwa yang masih mengantre untuknya akan dibuang.
 
 ### Di JavaScript
 
@@ -196,7 +198,7 @@ Events.On("data-updated", saveToCache)
 Events.On("data-updated", logChange)
 ```
 
-**Handler sekali pakai:**
+**Handler satu kali:**
 
 ```javascript
 Events.Once("data-updated", updateVariable)
@@ -323,7 +325,7 @@ app.Event.OnApplicationEvent(events.Linux.SystemDidWake, func(e *application.App
 
 ### Peristiwa Jendela
 
-**Peristiwa jendela yang umum:**
+**Peristiwa jendela umum:**
 
 ```go
 // Window focus
@@ -351,7 +353,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## Hook Peristiwa
 
-Hook dijalankan **sebelum** listener standar dan dapat **membatalkan** peristiwa:
+Hook berjalan **sebelum** listener standar dan dapat **membatalkan** peristiwa:
 
 ```go
 // Hook - runs first, can cancel
@@ -375,8 +377,8 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 | Fitur | Hook | Listener Standar |
 | --- | --- | --- |
 | Urutan eksekusi | Pertama, sesuai urutan pendaftaran | Setelah hook, tanpa jaminan urutan |
-| Pemblokiran | Sinkron, memblokir hook berikutnya | Asinkron, tanpa pemblokiran |
-| Dapat membatalkan | Ya | Tidak (sudah disebarkan) |
+| Pemblokiran | Sinkron, memblokir hook berikutnya | Asinkron, tidak memblokir |
+| Dapat membatalkan | Ya | Tidak (sudah dipropagasikan) |
 | Kasus penggunaan | Kontrol alur, validasi | Pencatatan log, efek samping |
 
 ## Pola Peristiwa
@@ -445,7 +447,7 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-**Catatan:** Untuk permintaan/respons, **binding lebih sesuai**. Gunakan peristiwa untuk notifikasi.
+**Catatan:** Untuk permintaan/respons, **binding lebih baik**. Gunakan peristiwa untuk notifikasi.
 
 ### Pola Siaran
 
@@ -588,45 +590,45 @@ document.getElementById('button').addEventListener('click', () => {
 
 - **Gunakan peristiwa untuk notifikasi** - Komunikasi satu arah
 - **Gunakan binding untuk permintaan** - Komunikasi dua arah
-- **Pertahankan konsistensi nama peristiwa** - Gunakan kebab-case
-- **Dokumentasikan data peristiwa** - Kolom apa saja yang disertakan?
-- **Hentikan langganan setelah selesai** - Cegah kebocoran memori
+- **Gunakan nama peristiwa yang konsisten** - Gunakan kebab-case
+- **Dokumentasikan data peristiwa** - Field apa saja yang disertakan?
+- **Batalkan langganan setelah selesai** - Cegah kebocoran memori
 - **Gunakan hook untuk validasi** - Kendalikan alur peristiwa
 
 ### ❌ Jangan Lakukan
 
 - **Jangan gunakan peristiwa untuk RPC** - Gunakan binding sebagai gantinya
-- **Jangan memancarkan event terlalu sering** - Kelompokkan jika diperlukan
+- **Jangan memancarkan terlalu sering** - Kelompokkan jika perlu
 - **Jangan memblokir di dalam handler** - Pastikan handler tetap cepat
-- **Jangan lupa berhenti berlangganan** - Dapat menyebabkan kebocoran memori
-- **Jangan gunakan event untuk data berukuran besar** - Gunakan binding
-- **Jangan membuat perulangan event** - A memancarkan B, B memancarkan A
+- **Jangan lupa membatalkan langganan** - Kebocoran memori
+- **Jangan gunakan peristiwa untuk data berukuran besar** - Gunakan binding
+- **Jangan membuat loop peristiwa** - A memancarkan B, B memancarkan A
 
 ## Langkah Berikutnya
 
 @cards{cols="2"}
-★ Panduan Event
-Pelajari pola event dan pembuatan event yang aman terhadap tipe.
+★ Panduan Peristiwa
+Pelajari pola peristiwa dan pembuatan peristiwa yang aman terhadap tipe.
 
-[Pelajari Selengkapnya →](/guides/events-reference/)
+[Pelajari Lebih Lanjut →](/guides/events-reference/)
 
 ---
-◆ API Event
-Pelajari API event aplikasi dan jendela secara lengkap.
+◆ API Peristiwa
+Jelajahi API peristiwa aplikasi dan jendela secara lengkap.
 
-[Pelajari Selengkapnya →](/reference/events/)
+[Pelajari Lebih Lanjut →](/reference/events/)
 
 ---
 🚀 Binding
 Gunakan binding untuk permintaan/respons.
 
-[Pelajari Selengkapnya →](/features/bindings/methods/)
+[Pelajari Lebih Lanjut →](/features/bindings/methods/)
 
 ---
-▣ Event Jendela
-Tangani event siklus hidup jendela.
+▣ Peristiwa Jendela
+Tangani peristiwa siklus hidup jendela.
 
-[Pelajari Selengkapnya →](/features/windows/events/)
+[Pelajari Lebih Lanjut →](/features/windows/events/)
 
 @end
 

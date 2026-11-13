@@ -1,6 +1,6 @@
 ---
 title: "Système d’événements"
-description: "Faites communiquer les composants grâce au système d’événements"
+description: "Communiquez entre les composants grâce au système d’événements"
 slug: "features/events/system"
 sourcePath: "features/events/system.md"
 ---
@@ -30,7 +30,7 @@ Events.On("user-logged-in", (event) => {
 })
 ```
 
-**C’est tout !** Vous disposez maintenant d’un système de publication/abonnement interlangage.
+**C’est tout !** Vous disposez d’un système de publication/abonnement interlangage.
 
 ## Types d’événements
 
@@ -138,9 +138,9 @@ Events.Emit("broadcast-message", "Hello everyone")
 
 ## Écoute des événements
 
-### Dans Go
+### En Go
 
-**Événements de l’application :**
+**Événements d’application :**
 
 ```go
 app.Event.On("custom-event", func(e *application.CustomEvent) {
@@ -167,7 +167,9 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
-### Dans JavaScript
+**Ordre de distribution :** chaque gestionnaire enregistré avec `On`, `Once` ou `OnMultiple` traite un seul événement à la fois. Il ne s’exécute donc jamais simultanément avec lui-même et reçoit les appels séquentiels à `Emit` dans l’ordre : si un appel à `Emit` se termine avant le suivant, tous les gestionnaires les voient dans cet ordre. L’ordre relatif des appels simultanés à `Emit` provenant de goroutines différentes n’est pas défini. Les différents gestionnaires s’exécutent indépendamment : un gestionnaire lent ne retarde pas les autres et aucun ordre n’est garanti entre eux. `Emit` n’attend jamais les gestionnaires. Après la suppression d’un gestionnaire, les événements encore dans sa file d’attente sont abandonnés.
+
+### En JavaScript
 
 **Écouteur simple :**
 
@@ -204,7 +206,7 @@ Events.Once("data-updated", updateVariable)
 
 ## Événements système
 
-### Événements de l’application
+### Événements d’application
 
 **Événements courants (multiplateformes) :**
 
@@ -379,7 +381,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 | Possibilité d’annuler | Oui | Non (déjà propagé) |
 | Cas d’usage | Contrôle du flux, validation | Journalisation, effets de bord |
 
-## Modèles événementiels
+## Modèles d’événements
 
 ### Modèle de publication/abonnement
 
@@ -445,7 +447,7 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-**Remarque :** pour les requêtes et réponses, **les liaisons sont préférables**. Utilisez les événements pour les notifications.
+**Remarque :** pour les requêtes/réponses, **les bindings sont préférables**. Utilisez les événements pour les notifications.
 
 ### Modèle de diffusion
 
@@ -587,38 +589,38 @@ document.getElementById('button').addEventListener('click', () => {
 ### ✅ À faire
 
 - **Utilisez les événements pour les notifications** — Communication unidirectionnelle
-- **Utilisez les liaisons pour les requêtes** — Communication bidirectionnelle
-- **Utilisez des noms d’événements cohérents** — Adoptez le kebab-case
+- **Utilisez les bindings pour les requêtes** — Communication bidirectionnelle
+- **Nommez les événements de façon cohérente** — Utilisez le kebab-case
 - **Documentez les données des événements** — Quels champs sont inclus ?
 - **Désabonnez-vous lorsque vous avez terminé** — Évitez les fuites de mémoire
 - **Utilisez les hooks pour la validation** — Contrôlez le flux des événements
 
 ### ❌ À ne pas faire
 
-- **N’utilisez pas les événements pour les RPC** — Utilisez plutôt les liaisons
-- **N’émettez pas trop fréquemment** — Regroupez les événements si nécessaire
-- **Ne bloquez pas l’exécution dans les gestionnaires** — Veillez à ce qu’ils s’exécutent rapidement
+- **N’utilisez pas les événements pour les RPC** — Utilisez plutôt les bindings
+- **N’émettez pas d’événements trop fréquemment** — Regroupez-les si nécessaire
+- **Ne bloquez pas l’exécution dans les gestionnaires** — Veillez à ce qu’ils restent rapides
 - **N’oubliez pas de vous désabonner** — Risque de fuites de mémoire
-- **N’utilisez pas les événements pour de grandes quantités de données** — Utilisez les liaisons
-- **Ne créez pas de boucles d’événements** — A émet B, B émet A
+- **N’utilisez pas les événements pour les données volumineuses** — Utilisez les bindings
+- **Ne créez pas de boucles d’événements** — A émet B, puis B émet A
 
 ## Étapes suivantes
 
 @cards{cols="2"}
 ★ Guide des événements
-Découvrez les modèles d’événements et la génération d’événements avec typage sûr.
+Découvrez les modèles d’événements et la génération d’événements avec sûreté des types.
 
 [En savoir plus →](/guides/events-reference/)
 
 ---
 ◆ API des événements
-Explorez l’API complète des événements de l’application et des fenêtres.
+Explorez l’API complète des événements d’application et de fenêtre.
 
 [En savoir plus →](/reference/events/)
 
 ---
-🚀 Liaisons
-Utilisez les liaisons pour les échanges requête-réponse.
+🚀 Bindings
+Utilisez les bindings pour les requêtes/réponses.
 
 [En savoir plus →](/features/bindings/methods/)
 

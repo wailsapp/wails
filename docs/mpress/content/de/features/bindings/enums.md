@@ -1,20 +1,20 @@
 ---
 title: "Enums"
-description: "Automatische Generierung von Enums aus Go-Konstanten"
+description: "Automatische Enum-Generierung aus Go-Konstanten"
 slug: "features/bindings/enums"
 sourcePath: "features/bindings/enums.md"
 ---
 
 ## Enum-Bindings
 
-Der Binding-Generator von Wails v3 **erkennt Typen von Go-Konstanten automatisch und generiert TypeScript-Enums oder JavaScript-const-Objekte**. Weder Registrierung noch Konfiguration sind erforderlich: Definieren Sie einfach Ihre Typen und Konstanten in Go; der Generator erledigt den Rest.
+Der Wails-Binding-Generator v3erkennt Go-Konstantentypen automatisch<strong> und erzeugt TypeScript-Enums oder JavaScript-Const-Objekte</strong>. Weder Registrierung noch Konfiguration sind erforderlich: Definieren Sie einfach Ihre Typen und Konstanten in Go; der Generator erledigt den Rest.
 
 @note{type="info"}
-Anders als bei Wails v2 müssen Sie **weder `EnumBind`** aufrufen noch Enums manuell registrieren. Der Generator erkennt sie automatisch in Ihrem Quellcode.
+Anders als in Wails v2 müssen Sie **weder `EnumBind`** aufrufen noch Enums manuell registrieren. Der Generator erkennt sie automatisch in Ihrem Quellcode.
 
 @end
 
-## Schnellstart
+## Schnelleinstieg
 
 **Definieren Sie in Go einen benannten Typ mit Konstanten:**
 
@@ -28,7 +28,7 @@ const (
 )
 ```
 
-**Verwenden Sie den Typ in einer Struktur oder einer Servicemethode:**
+**Verwenden Sie den Typ in einer Struct oder einer Servicemethode:**
 
 ```go
 type Ticket struct {
@@ -44,7 +44,7 @@ type Ticket struct {
 wails3 generate bindings
 ```
 
-Die Ausgabe des Generators enthält neben der Anzahl der Modelle auch die Anzahl der Enums:
+Die Ausgabe des Generators zeigt neben der Anzahl der Modelle auch die Anzahl der Enums an:
 
 ```
 3 Enums, 5 Models
@@ -62,11 +62,11 @@ const ticket = new Ticket({
 })
 ```
 
-**Das ist alles!** Der Enum-Typ wird sowohl in Go als auch in JavaScript/TypeScript durchgesetzt.
+**Das ist alles!** Der Enum-Typ wird sowohl in Go als auch in JavaScript/TypeScript erzwungen.
 
 ## Enums definieren
 
-Ein Enum in Wails besteht aus einem **benannten Typ** mit einem zugrunde liegenden Basistyp und aus **const-Deklarationen** dieses Typs.
+Ein Enum in Wails besteht aus einem **benannten Typ** mit einem zugrunde liegenden Basistyp und **Konstantendeklarationen** dieses Typs.
 
 ### String-Enums
 
@@ -159,9 +159,9 @@ export enum Priority {
 }
 ```
 
-### Enums mit Typaliasen
+### Enums aus Typaliasen
 
-Go-Typaliase (`=`) funktionieren ebenfalls, erzeugen jedoch eine etwas andere Ausgabe: eine Typdefinition zusammen mit einem const-Objekt statt eines nativen TypeScript-`enum`:
+Go-Typaliase (`=`) funktionieren ebenfalls, erzeugen jedoch eine etwas andere Ausgabe: eine Typdefinition und ein Const-Objekt statt eines nativen TypeScript-`enum`:
 
 ```go
 // Age is an integer with some predefined values
@@ -237,15 +237,15 @@ export const Age = {
 ```
 
 @note{type="tip"}
-**Benannte Typen** (`type Title string`) erzeugen native TypeScript-`enum`-Deklarationen mit einem `$zero`-Member. **Typaliase** (`type Age = int`) erzeugen ein Namespace-Paar aus `type` + `const` ohne `$zero`.
+**Benannte Typen** (`type Title string`) erzeugen native TypeScript-`enum`-Deklarationen mit einem `$zero`-Member. **Typaliase** (`type Age = int`) erzeugen ein Namespace-Paar aus `type` und `const` ohne `$zero`.
 
 @end
 
-## Der `$zero`-Wert
+## Der Wert `$zero`
 
 Jedes Enum mit benanntem Typ enthält einen speziellen `$zero`-Member, der den **Go-Nullwert** des zugrunde liegenden Typs darstellt:
 
-| Zugrunde liegender Typ | `$zero`-Wert |
+| Zugrunde liegender Typ | Wert von `$zero` |
 | --- | --- |
 | `string` | `""` |
 | `int`, `int8`, `int16`, `int32`, `int64` | `0` |
@@ -253,7 +253,7 @@ Jedes Enum mit benanntem Typ enthält einen speziellen `$zero`-Member, der den *
 | `float32`, `float64` | `0` |
 | `bool` | `false` |
 
-Wenn ein Strukturfeld einen Enum-Typ verwendet und kein Wert angegeben ist, verwendet der Konstruktor standardmäßig `$zero`:
+Wenn ein Struct-Feld einen Enum-Typ verwendet und kein Wert angegeben ist, verwendet der Konstruktor standardmäßig `$zero`:
 
 ```typescript
 export class Person {
@@ -268,11 +268,11 @@ export class Person {
 }
 ```
 
-Dies gewährleistet bei der Generierung von Klassen eine typsichere Initialisierung: Enum-Felder sind niemals `undefined`. Bei der Generierung von TypeScript-Schnittstellen (mit `-i`) gibt es keinen Konstruktor, und Felder dürfen wie üblich fehlen.
+Dies gewährleistet bei der Klassengenerierung eine typsichere Initialisierung: Enum-Felder sind niemals `undefined`. Bei der Generierung von TypeScript-Interfaces (mit `-i`) gibt es keinen Konstruktor, und Felder können wie gewohnt fehlen.
 
-## Enums in Strukturen verwenden
+## Enums in Structs verwenden
 
-Wenn ein Strukturfeld einen Enum-Typ hat, **behält der generierte Code diesen Typ bei**, statt auf den primitiven Typ zurückzufallen:
+Wenn ein Struct-Feld einen Enum-Typ hat, **behält der generierte Code diesen Typ bei**, statt auf den primitiven Typ zurückzufallen:
 
 ```go
 type Person struct {
@@ -306,11 +306,11 @@ export class Person {
 }
 ```
 
-Das Feld `Title` hat den Typ `Title` und nicht `string`. Dadurch bietet Ihre IDE vollständige Autovervollständigung und Typprüfung für Enum-Werte.
+Das Feld `Title` erhält den Typ `Title` und nicht `string`. Dadurch bietet Ihre IDE vollständige Autovervollständigung und Typprüfung für Enum-Werte.
 
 ## Enums aus importierten Paketen
 
-In separaten Paketen definierte Enums werden vollständig unterstützt. Sie werden im Verzeichnis des jeweiligen Pakets generiert:
+Enums, die in separaten Paketen definiert sind, werden vollständig unterstützt. Sie werden im entsprechenden Paketverzeichnis generiert:
 
 ```go
 // services/types.go
@@ -336,7 +336,7 @@ func (*GreetService) Greet(name string, title services.Title) string {
 }
 ```
 
-Das Enum `Title` wird in der Modelldatei des Pakets `services` generiert, und Importpfade werden automatisch aufgelöst:
+Das Enum `Title` wird in der Modelldatei `services` generiert; Importpfade werden automatisch aufgelöst:
 
 ```typescript
 // bindings/changeme/services/models.ts
@@ -350,7 +350,7 @@ export enum Title {
 
 ## Enum-Methoden
 
-Sie können Ihren Enum-Typen in Go Methoden hinzufügen. Diese wirken sich nicht auf die Generierung der Bindings aus, bieten aber nützliche serverseitige Funktionen:
+Sie können Ihren Enum-Typen in Go Methoden hinzufügen. Diese beeinflussen die Binding-Generierung nicht, bieten aber nützliche serverseitige Funktionen:
 
 ```go
 type Title string
@@ -372,11 +372,11 @@ Das generierte Enum ist unabhängig davon identisch, ob für den Typ Go-Methoden
 Der Generator übernimmt Go-Kommentare als JSDoc in die generierte Ausgabe:
 
 - **Typkommentare** werden zum Dokumentationskommentar des Enums
-- **Kommentare zu const-Gruppen** werden zu Abschnittstrennern
+- **Kommentare zu Konstantengruppen** werden zu Abschnittstrennern
 - **Kommentare zu einzelnen Konstanten** werden zu Dokumentationskommentaren der Member
-- **Inline-Kommentare** werden nach Möglichkeit beibehalten
+- **Inline-Kommentare** bleiben nach Möglichkeit erhalten
 
-Dadurch zeigt Ihre IDE beim Bewegen des Mauszeigers über Enum-Werte deren Dokumentation an.
+Dadurch zeigt Ihre IDE beim Darüberfahren Dokumentation zu den Enum-Werten an.
 
 ## Unterstützte zugrunde liegende Typen
 
@@ -397,9 +397,9 @@ Der Binding-Generator unterstützt Enums mit den folgenden zugrunde liegenden Go
 
 Folgendes wird bei der Enum-Generierung **nicht** unterstützt:
 
-- **Generische Typen** — Typparameter verhindern die Erkennung von Konstanten
-- **Typen mit benutzerdefiniertem `json.Marshaler` oder `encoding.TextMarshaler`** — Bei benutzerdefinierter Serialisierung stimmen die generierten Werte möglicherweise nicht mit dem Laufzeitverhalten überein. Daher überspringt der Generator diese Typen
-- **Konstanten, deren Werte nicht statisch ausgewertet oder dargestellt werden können** — Konstanten müssen bekannte Werte besitzen, die sich in ihrem zugrunde liegenden Typ darstellen lassen. Übliche `iota`-Muster funktionieren problemlos, da der Compiler sie in konkrete Werte auflöst
+- **Generische Typen** – Typparameter verhindern die Erkennung von Konstanten
+- **Typen mit benutzerdefiniertem `json.Marshaler` oder `encoding.TextMarshaler`** – Bei benutzerdefinierter Serialisierung stimmen die generierten Werte möglicherweise nicht mit dem Laufzeitverhalten überein; daher überspringt der Generator diese Typen
+- **Konstanten, deren Werte nicht statisch ausgewertet oder dargestellt werden können** — Konstanten müssen bekannte, in ihrem zugrunde liegenden Typ darstellbare Werte haben. Gängige `iota`-Muster funktionieren problemlos, da der Compiler sie in konkrete Werte auflöst
 - **Komplexe Zahlentypen** — `complex64` und `complex128` können nicht als zugrunde liegende Enum-Typen verwendet werden
 
 ## Vollständiges Beispiel
@@ -516,8 +516,8 @@ Direktiven, Code-Injektion und benutzerdefinierte IDs.
 [Mehr erfahren →](/features/bindings/advanced/)
 
 ---
-✓ Bewährte Vorgehensweisen
-Entwurfsmuster für Bindings.
+✓ Bewährte Verfahren
+Entwurfsmuster für Bindungen.
 
 [Mehr erfahren →](/features/bindings/best-practices/)
 
@@ -525,4 +525,4 @@ Entwurfsmuster für Bindings.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.
+**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding) an.

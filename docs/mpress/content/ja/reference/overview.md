@@ -284,7 +284,7 @@ API が非推奨になる場合：
 - [チュートリアル](/tutorials/overview/) - 実際のアプリケーションを構築しながら学ぶ
 - [ガイド](/guides/architecture/) - 一般的なシナリオに対応するタスク指向のガイド
 - [機能](/features/windows/basics/) - 機能別のドキュメント
-- [サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - GitHub 上の動作するコードサンプル
+- [サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) - GitHub で公開されている実際に動作するコード例
 
 ---
 

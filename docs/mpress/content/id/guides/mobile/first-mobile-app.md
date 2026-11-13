@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Inilah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
+Ini adalah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
 
 @note{type="note" title="Penamaan API fitur native \u0026 peristiwa"}
 Ada dua konvensi yang perlu diketahui:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Telusuri kode sumbernya di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — file `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
+Telusuri kode sumber di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — berkas `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
 
 ## Langkah berikutnya
 

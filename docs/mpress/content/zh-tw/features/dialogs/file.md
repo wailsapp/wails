@@ -1,13 +1,13 @@
 ---
 title: "檔案對話方塊"
-description: "開啟、儲存及資料夾選取對話方塊"
+description: "開啟、儲存與資料夾選取對話方塊"
 slug: "features/dialogs/file"
 sourcePath: "features/dialogs/file.md"
 ---
 
 ## 檔案對話方塊
 
-Wails 提供具備平台原生外觀的<strong>原生檔案對話方塊</strong>，可用於開啟檔案、儲存檔案及選取資料夾。API 簡潔，並支援檔案類型篩選、多重選取和預設位置。
+Wails 提供具有平台原生外觀的**原生檔案對話方塊**，可用於開啟檔案、儲存檔案及選取資料夾。其 API 簡潔，支援檔案類型篩選、多重選取及預設位置。
 
 ![由 Wails 應用程式開啟的 macOS 原生檔案選取器](/assets/screenshots/file-dialog-macos.png)
 
@@ -115,7 +115,7 @@ saveFile(path, data)
 - 儲存文件
 - 匯出資料
 - 建立新檔案
-- 另存新檔…
+- 另存新檔...
 
 ### 指定預設檔名
 
@@ -169,7 +169,7 @@ saveFile(path, data)
 
 ## 選取資料夾對話方塊
 
-啟用目錄選取功能，透過開啟檔案對話方塊選擇目錄：
+啟用開啟檔案對話方塊的目錄選取功能，以選擇目錄：
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -205,7 +205,7 @@ path, err := app.Dialog.OpenFile().
 
 ## 檔案篩選器
 
-使用`AddFilter()`方法將檔案類型篩選器新增至對話方塊。每次呼叫都會新增一個篩選選項。
+使用`AddFilter()`方法，將檔案類型篩選器加入對話方塊。每次呼叫都會新增一個篩選選項。
 
 ### 基本篩選器
 
@@ -218,7 +218,7 @@ path, _ := app.Dialog.OpenFile().
 
 ### 多個副檔名
 
-使用分號在單一篩選器中指定多個副檔名：
+使用分號，在單一篩選器中指定多個副檔名：
 
 ```go
 dialog := app.Dialog.OpenFile().
@@ -229,7 +229,7 @@ dialog := app.Dialog.OpenFile().
 
 ### 模式格式
 
-使用<strong>分號</strong>分隔單一篩選器中的多個副檔名：
+使用**分號**分隔單一篩選器中的多個副檔名：
 
 ```go
 // Multiple extensions separated by semicolons
@@ -279,7 +279,7 @@ func openImage(app *application.App) (image.Image, error) {
 }
 ```
 
-### 經驗證後儲存文件
+### 驗證後儲存文件
 
 ```go
 func saveDocument(app *application.App, content string) {
@@ -433,7 +433,7 @@ func exportData(app *application.App, data []byte) {
 }
 ```
 
-### 經驗證後匯入
+### 驗證後匯入
 
 ```go
 func importConfiguration(app *application.App) {
@@ -495,25 +495,25 @@ func importConfiguration(app *application.App) {
 }
 ```
 
-## 最佳做法
+## 最佳實務
 
 ### ✅ 建議做法
 
-- **提供檔案篩選器** — 協助使用者尋找檔案
+- **提供檔案篩選器** — 協助使用者找到檔案
 - **設定適當的標題** — 提供清楚的操作情境
 - **使用預設目錄** — 從合理的位置開始
 - **驗證選取項目** — 檢查檔案類型
 - **處理取消操作** — 使用者可能會取消
-- **顯示確認提示** — 適用於破壞性操作
-- **提供操作結果回饋** — 顯示成功或錯誤訊息
+- **顯示確認提示** — 用於破壞性操作
+- **提供回饋** — 顯示成功或錯誤訊息
 
 ### ❌ 請勿
 
 - **請勿略過驗證** — 檢查檔案類型
 - **請勿忽略錯誤** — 處理取消操作
-- **請勿使用籠統的篩選器** — 明確指定類型
-- **請勿忘記「所有檔案」** — 一律將其納入選項
-- **請勿將路徑寫死** — 使用使用者的主目錄
+- **請勿使用通用篩選器** — 請明確指定
+- **請勿忘記「所有檔案」** — 一律將其列為選項
+- **請勿寫死路徑** — 使用使用者的主目錄
 - **請勿假設檔案存在** — 開啟前先檢查
 
 ## 平台差異
@@ -521,30 +521,30 @@ func importConfiguration(app *application.App) {
 ### macOS
 
 - 原生 NSOpenPanel/NSSavePanel
-- 附加至視窗時，以視窗附屬對話方塊的形式呈現
-- 沿用系統主題
-- 支援「快速查看」預覽
+- 附加至視窗時採用工作表樣式
+- 遵循系統佈景主題
+- 支援 Quick Look 預覽
 - 整合標籤與喜好項目
 
 ### Windows
 
-- 原生「開啟檔案」與「儲存檔案」對話方塊
-- 沿用系統主題
-- 最近使用的檔案整合
+- 原生檔案開啟／儲存對話方塊
+- 遵循系統佈景主題
+- 整合最近使用的檔案
 - 支援網路位置
 
 ### Linux
 
-- GTK 檔案選擇器
+- GTK 檔案選取器
 - 依桌面環境而異
-- 遵循桌面主題
+- 遵循桌面佈景主題
 - 支援最近使用的檔案
 
 ## 後續步驟
 
 @cards{cols="2"}
 ℹ 訊息對話方塊
-資訊、警告和錯誤對話方塊。
+資訊、警告與錯誤對話方塊。
 
 [深入瞭解 →](/features/dialogs/message/)
 

@@ -1,28 +1,28 @@
 ---
-title: "Caixas de diálogo de arquivos"
-description: "Caixas de diálogo para abrir, salvar e selecionar pastas"
+title: "Diálogos de arquivos"
+description: "Diálogos para abrir, salvar e selecionar pastas"
 slug: "features/dialogs/file"
 sourcePath: "features/dialogs/file.md"
 ---
 
-## Caixas de diálogo de arquivos
+## Diálogos de arquivos
 
-O Wails fornece **caixas de diálogo de arquivos nativas**, com a aparência apropriada para cada plataforma, para abrir e salvar arquivos e selecionar pastas. Uma API simples com filtragem por tipo de arquivo, suporte à seleção de vários arquivos e locais padrão.
+O Wails fornece **diálogos de arquivos nativos** com a aparência adequada a cada plataforma para abrir e salvar arquivos e selecionar pastas. A API simples oferece filtragem por tipo de arquivo, seleção múltipla e locais padrão.
 
 ![Um seletor de arquivos nativo do macOS aberto por um aplicativo Wails](/assets/screenshots/file-dialog-macos.png)
 
-A API do Wails delega a seleção ao seletor do sistema operacional, preservando a navegação, a filtragem e o comportamento de seleção conhecidos.
+A API do Wails delega a seleção ao sistema operacional, preservando os comportamentos conhecidos de navegação, filtragem e seleção.
 
-## Como criar caixas de diálogo de arquivos
+## Como criar diálogos de arquivos
 
-As caixas de diálogo de arquivos são acessadas por meio do gerenciador `app.Dialog`:
+Os diálogos de arquivos são acessados por meio do gerenciador `app.Dialog`:
 
 ```go
 app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
 
-## Caixa de diálogo Abrir arquivo
+## Diálogo para abrir arquivos
 
 Selecione os arquivos que deseja abrir:
 
@@ -92,7 +92,7 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-## Caixa de diálogo Salvar arquivo
+## Diálogo para salvar arquivos
 
 Escolha onde salvar:
 
@@ -114,7 +114,7 @@ saveFile(path, data)
 
 - Salvar documentos
 - Exportar dados
-- Criar novos arquivos
+- Criar arquivos
 - Salvar como...
 
 ### Com nome de arquivo padrão
@@ -167,9 +167,9 @@ if _, err := os.Stat(path); err == nil {
 saveFile(path, data)
 ```
 
-## Caixa de diálogo Selecionar pasta
+## Diálogo para selecionar pastas
 
-Escolha um diretório usando a caixa de diálogo para abrir arquivos com a seleção de diretórios habilitada:
+Escolha um diretório usando o diálogo para abrir arquivos com a seleção de diretórios habilitada:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -205,7 +205,7 @@ path, err := app.Dialog.OpenFile().
 
 ## Filtros de arquivos
 
-Use o método `AddFilter()` para adicionar filtros de tipo de arquivo às caixas de diálogo. Cada chamada adiciona uma nova opção de filtro.
+Use o método `AddFilter()` para adicionar filtros de tipo de arquivo aos diálogos. Cada chamada adiciona uma nova opção de filtro.
 
 ### Filtros básicos
 
@@ -238,7 +238,7 @@ AddFilter("Images", "*.png;*.jpg;*.gif")
 
 ## Exemplos completos
 
-### Abrir arquivo de imagem
+### Abrir um arquivo de imagem
 
 ```go
 func openImage(app *application.App) (image.Image, error) {
@@ -279,7 +279,7 @@ func openImage(app *application.App) (image.Image, error) {
 }
 ```
 
-### Salvar documento com validação
+### Salvar um documento com validação
 
 ```go
 func saveDocument(app *application.App, content string) {
@@ -388,7 +388,7 @@ func processMultipleFiles(app *application.App) {
 }
 ```
 
-### Exportar com seleção de pasta
+### Exportar selecionando uma pasta
 
 ```go
 func exportData(app *application.App, data []byte) {
@@ -495,7 +495,7 @@ func importConfiguration(app *application.App) {
 }
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
@@ -505,7 +505,7 @@ func importConfiguration(app *application.App) {
 - **Valide as seleções** — Verifique os tipos de arquivo
 - **Trate o cancelamento** — O usuário pode cancelar
 - **Exiba uma confirmação** — Para ações destrutivas
-- **Forneça feedback** — Mensagens de sucesso ou erro
+- **Forneça feedback** — Exiba mensagens de sucesso ou erro
 
 ### ❌ Não faça
 
@@ -514,55 +514,55 @@ func importConfiguration(app *application.App) {
 - **Não use filtros genéricos** — Seja específico
 - **Não se esqueça de "Todos os arquivos"** — Sempre inclua essa opção
 - **Não codifique caminhos diretamente** — Use o diretório pessoal do usuário
-- **Não presuma que o arquivo existe** — Verifique antes de abrir
+- **Não pressuponha que o arquivo exista** — Verifique antes de abrir
 
 ## Diferenças entre plataformas
 
 ### macOS
 
-- NSOpenPanel/NSSavePanel nativo
-- Exibido como painel quando anexado a uma janela
+- NSOpenPanel/NSSavePanel nativos
+- Exibido como uma folha quando anexado a uma janela
 - Segue o tema do sistema
 - Compatível com a visualização do Quick Look
 - Integração com etiquetas e favoritos
 
 ### Windows
 
-- Caixas de diálogo nativas para abrir e salvar arquivos
+- Diálogos nativos para abrir e salvar arquivos
 - Segue o tema do sistema
 - Integração com arquivos recentes
-- Compatibilidade com locais de rede
+- Compatível com locais de rede
 
 ### Linux
 
-- Seletor de arquivos do GTK
-- Varia de acordo com o ambiente de desktop
+- Seletor de arquivos GTK
+- Varia conforme o ambiente de desktop
 - Segue o tema do ambiente de desktop
-- Compatibilidade com arquivos recentes
+- Compatível com arquivos recentes
 
-## Próximas etapas
+## Próximos passos
 
 @cards{cols="2"}
-ℹ Caixas de diálogo de mensagens
-Caixas de diálogo de informações, avisos e erros.
+ℹ Diálogos de mensagens
+Diálogos informativos, de aviso e de erro.
 
 [Saiba mais →](/features/dialogs/message/)
 
 ---
-◆ Caixas de diálogo personalizadas
+◆ Diálogos personalizados
 Crie janelas de diálogo personalizadas.
 
 [Saiba mais →](/features/dialogs/custom/)
 
 ---
 🚀 Bindings
-Chame funções Go a partir do JavaScript.
+Chame funções Go pelo JavaScript.
 
 [Saiba mais →](/features/bindings/methods/)
 
 ---
 ★ Eventos
-Use eventos para atualizações de progresso.
+Use eventos para atualizar o progresso.
 
 [Saiba mais →](/features/events/system/)
 
@@ -570,4 +570,4 @@ Use eventos para atualizações de progresso.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo de arquivos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de diálogos de arquivos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

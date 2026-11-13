@@ -1,13 +1,13 @@
 ---
 title: "Beberapa Jendela"
-description: "Pola dan praktik terbaik untuk aplikasi dengan beberapa jendela"
+description: "Pola dan praktik terbaik untuk aplikasi multijendela"
 slug: "features/windows/multiple"
 sourcePath: "features/windows/multiple.md"
 ---
 
-## Aplikasi dengan Beberapa Jendela
+## Aplikasi Multijendela
 
-Wails v3 menyediakan **dukungan bawaan untuk beberapa jendela** guna membuat jendela pengaturan, jendela dokumen, palet alat, dan jendela pemeriksa. Lacak jendela, aktifkan komunikasi antarjendela, dan kelola siklus hidupnya dengan API yang sederhana dan konsisten.
+Wails v3 menyediakan **dukungan multijendela native** untuk membuat jendela pengaturan, jendela dokumen, palet alat, dan jendela pemeriksa. Lacak jendela, aktifkan komunikasi antardjendela, dan kelola siklus hidupnya dengan API yang sederhana dan konsisten.
 
 ### Jendela Utama + Pengaturan
 
@@ -58,12 +58,12 @@ func (a *App) ShowSettings() {
 }
 ```
 
-**Poin utama:**
+**Poin penting:**
 
 - Jendela utama selalu terlihat
 - Jendela pengaturan dibuat tetapi disembunyikan
-- Tampilkan pengaturan saat diperlukan
-- Gunakan kembali jendela yang sama (jangan buat beberapa jendela)
+- Tampilkan pengaturan sesuai kebutuhan
+- Gunakan kembali jendela yang sama (jangan membuat beberapa jendela)
 
 ## Pelacakan Jendela
 
@@ -97,7 +97,7 @@ current := app.Window.Current()
 
 ### Pola Registri Jendela
 
-Lacak jendela dalam aplikasi Anda:
+Lacak jendela di aplikasi Anda:
 
 ```go
 type WindowManager struct {
@@ -124,7 +124,7 @@ func (wm *WindowManager) Remove(name string) {
 }
 ```
 
-## Komunikasi Antarjendela
+## Komunikasi Antardjendela
 
 ### Menggunakan Peristiwa
 
@@ -180,7 +180,7 @@ func (s *AppState) GetTheme() string {
 }
 ```
 
-### Pesan Antarjendela
+### Pesan Antardjendela
 
 Kirim pesan di antara jendela tertentu:
 
@@ -271,7 +271,7 @@ func OpenDocument(app *application.App, filePath string) {
 
 ### Pola 3: Palet Alat
 
-Jendela mengambang yang tetap berada di atas:
+Jendela mengambang yang selalu berada di atas:
 
 ```go
 func CreateToolPalette(app *application.App) *application.WebviewWindow {
@@ -308,7 +308,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 
 ### Pola 5: Jendela Pemeriksa/Pratinjau
 
-Jendela tertaut yang diperbarui secara bersamaan:
+Jendela tertaut yang diperbarui bersama-sama:
 
 ```go
 type EditorApp struct {
@@ -344,7 +344,7 @@ func (e *EditorApp) TogglePreview() {
 }
 ```
 
-## Hubungan Induk-Anak
+## Relasi Induk-Anak
 
 ### Membuat Jendela Anak
 
@@ -482,7 +482,7 @@ func (mw *ManagedWindow) Destroy() {
 }
 ```
 
-## Pola Lanjutan
+## Pola Tingkat Lanjut
 
 ### Pool Jendela
 
@@ -768,25 +768,25 @@ type WindowState struct {
 
 - **Lacak jendela** - Simpan referensi agar mudah diakses
 - **Bersihkan saat dihancurkan** - Cegah kebocoran memori
-- **Gunakan event untuk komunikasi** - Arsitektur yang tidak saling bergantung
-- **Gunakan kembali jendela** - Jangan buat duplikat
-- **Simpan/pulihkan tata letak** - UX yang lebih baik
+- **Gunakan peristiwa untuk komunikasi** - Arsitektur yang terpisah secara longgar
+- **Gunakan kembali jendela** - Jangan membuat duplikat
+- **Simpan/pulihkan tata letak** - Pengalaman pengguna yang lebih baik
 - **Tangani penutupan jendela** - Minta konfirmasi sebelum menutup jika ada data yang belum disimpan
 
 ### ❌ Jangan Lakukan
 
-- **Jangan buat jendela tanpa batas** - Menimbulkan masalah memori dan performa
+- **Jangan membuat jendela tanpa batas** - Menimbulkan masalah memori dan performa
 - **Jangan lupa melakukan pembersihan** - Menyebabkan kebocoran memori
-- **Jangan gunakan variabel global secara sembarangan** - Menimbulkan masalah keamanan thread
-- **Jangan blokir pembuatan jendela** - Buat secara asinkron jika diperlukan
-- **Jangan abaikan perbedaan antarplatform** - Uji di semua platform
+- **Jangan menggunakan variabel global secara sembarangan** - Menimbulkan masalah keamanan thread
+- **Jangan memblokir pembuatan jendela** - Buat secara asinkron jika diperlukan
+- **Jangan mengabaikan perbedaan platform** - Uji di semua platform
 
 ## Langkah Berikutnya
 
 - [Dasar-Dasar Jendela](/features/windows/basics/) - Pelajari dasar-dasar pengelolaan jendela
-- [Event Jendela](/features/windows/events/) - Tangani event siklus hidup jendela
-- [Sistem Event](/features/events/system/) - Pelajari sistem event secara mendalam
-- [Jendela Tanpa Bingkai](/features/windows/frameless/) - Buat dekorasi jendela khusus
+- [Peristiwa Jendela](/features/windows/events/) - Tangani peristiwa siklus hidup jendela
+- [Sistem Peristiwa](/features/events/system/) - Pelajari sistem peristiwa secara mendalam
+- [Jendela Tanpa Bingkai](/features/windows/frameless/) - Buat bingkai jendela khusus
 
 ---
 

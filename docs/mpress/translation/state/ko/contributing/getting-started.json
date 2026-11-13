@@ -727,16 +727,16 @@
       "updatedAt": "2026-10-25T22:06:23Z"
     },
     "b0061-text-01": {
-      "sourceHash": "17c8463b691cf1ec0e081077cf3da14b3efcce23f86f52a9f2c194917a606790",
-      "targetHash": "4399d4a0ba27b19cc7a0fa21eeaac2522623f6b6cbc43a2615ed8128dbcd8997",
-      "machineHash": "4399d4a0ba27b19cc7a0fa21eeaac2522623f6b6cbc43a2615ed8128dbcd8997",
-      "machineText": "[WEP(Wails 개선 제안) 절차](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)를 읽어 보세요.",
+      "sourceHash": "5c91877ae25c4d98d9e223d9683bbca2db28e409c7224007cc9fbf1e3ffb3d5b",
+      "targetHash": "bb8e4289f65fa78ef32c8d4893a903c4e49e5a936c182691c27ed7be85af1a7e",
+      "machineHash": "bb8e4289f65fa78ef32c8d4893a903c4e49e5a936c182691c27ed7be85af1a7e",
+      "machineText": "[WEP(Wails 개선 제안) 절차](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)를 읽어 보세요",
       "status": "machine-translated",
-      "sourcePreview": "Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/releases/…",
+      "sourcePreview": "Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/v3.0.0/v3…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:23Z"
+      "updatedAt": "2026-11-06T02:11:47Z"
     },
     "b0062-text-01": {
       "sourceHash": "b2e7d8dea9badd678bce1d5023cf54d413a27a313d8e58ce2f7a1a0ed79dce7a",

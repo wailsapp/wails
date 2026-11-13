@@ -11,7 +11,7 @@ Wails v3 릴리스는 **기능이 아닌 일정에 따라** 진행됩니다. `v3
 
 | 릴리스 | 태그 | 주기 | GitHub 릴리스 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| 나이틀리 | `v3.<next>.0-nightly.<YYYYMMDD>`(UTC 날짜, 같은 날 다시 실행하면 `.N` 추가) | 자동으로 매일 실행하며, `UNRELEASED_CHANGELOG.md`에 내용이 있을 때만 릴리스 | 시험판 릴리스, Latest가 **아님** | `v`을 제외하면 같은 버전, dist-tag `nightly` |
+| 나이틀리 | `v3.<next>.0-nightly.<YYYYMMDD>`(UTC 날짜, 같은 날 다시 실행하면 `.N` 추가) | 자동화 방식으로 매일 실행되며, 테스트한 릴리스 범위에 병합된 PR이 사용자에게 표시되는 릴리스 노트를 생성하는 경우에만 해당 | 시험판 릴리스, Latest가 **아님** | `v`을 제외하면 같은 버전, dist-tag `nightly` |
 | 위클리 | `v3.<next>.0` | 자동으로 일요일 20:00 Australia/Sydney에 실행 **(요일 미확정)** | 정식 릴리스, Latest | 같은 버전, dist-tag `latest` |
 | 핫픽스 | `v3.<current>.<N>`, `N > 0` | 드물게 수동으로 실행 | 정식 릴리스, Latest | 같은 버전, dist-tag `latest` |
 | 메이저 | `v4.0.0` | 호환성을 깨는 변경이 있을 때만 실행 | 정식 릴리스 | `latest` |
@@ -62,7 +62,7 @@ CLI, Go 모듈 및 npm 패키지 `@wailsio/runtime`에는 `v3/internal/version/v
 
 ## 릴리스 방법
 
-릴리스 권한은 프로젝트 Lead에게만 있습니다(거버넌스 문서 참조). 기여자는 태그를 지정하거나 게시하지 않으며, `v3/UNRELEASED_CHANGELOG.md`에 항목을 추가합니다.
+릴리스 권한은 프로젝트 리드로 제한됩니다(거버넌스 문서 참조). 기여자는 태그를 지정하거나 게시하지 않으며, PR 제목이나 `## Release notes` 설명 섹션에 사용자에게 표시되는 변경 사항을 기술합니다. 릴리스 자동화는 정확히 테스트한 커밋 범위에 병합된 PR을 바탕으로 릴리스 노트를 생성합니다. `v3/UNRELEASED_CHANGELOG.md`은(는) 제거되었습니다.
 
 모든 작업은 **Nightly + Weekly Release v3**(`.github/workflows/nightly-release-v3.yml`)에서 실행됩니다.
 
@@ -85,7 +85,7 @@ CLI, Go 모듈 및 npm 패키지 `@wailsio/runtime`에는 `v3/internal/version/v
 
 1. `P0` 또는 `release-blocker` 레이블이 지정된 열린 이슈나 풀 리퀘스트;
 2. 지난 주간 릴리스 이후 생성되었으며 `regression` 레이블이 지정된 열린 이슈;
-3. Dependabot의 치명적 또는 높음 심각도 열린 알림, 코드 스캔의 치명적 또는 높음 심각도 열린 알림, 모든 열린 비밀 스캔 알림. 이러한 알림은 <strong>출시되는 코드에 한해서만</strong> 적용됩니다. `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` 또는 `examples/` 디렉터리에만 있는 알림은 무시합니다(`v3/tasks/releasegate/main.go`의 `SHIPPED_ALERT_IGNORE`, <strong>소유자가 검토</strong>);
+3. 심각도가 critical 또는 high인 미해결 Dependabot 알림, 심각도가 critical 또는 high인 미해결 코드 스캔 알림, 그리고 모든 미해결 비밀 스캔 알림(**배포되는 코드에만 해당**). `v2/internal/staticanalysis/test/`(정적 분석 픽스처), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` 또는 임의의 `examples/` 디렉터리에만 있는 알림은 무시됩니다(`v3/tasks/releasegate/main.go`의 `SHIPPED_ALERT_IGNORE`, **소유자가 검토**).
 4. 아직 `triage` 상태인 저장소 보안 권고.
 
 **차단자를 설정할 수 있는 사람.** 레이블은 가장 최근의 `labeled` 이벤트(그 이후에 `unlabeled` 이벤트가 없는 경우)를 `wailsapp/maintainers` 팀의 구성원이나 `maintain`/`admin` 권한을 가진 협업자가 수행한 경우에만 차단자로 인정됩니다. 다른 사람이 같은 레이블을 적용하면 무시되고 로그에 기록되므로 외부인은 릴리스를 차단하거나 차단을 해제할 수 없습니다. 자동으로 적용되는 `high-priority` 레이블은 의도적으로 사용하지 **않습니다**. `taliesin-ai` 같은 봇 계정도 `maintain` 권한이 있으면 허용 목록 검사를 통과합니다. 이는 의도된 동작이며, 트리아지 에이전트는 근거와 함께 차단 레이블을 적용할 수 있습니다.

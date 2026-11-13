@@ -511,16 +511,16 @@
       "updatedAt": "2026-10-25T21:49:36Z"
     },
     "b0043-cell-01": {
-      "sourceHash": "b47dae65c19dbba7b7fe549f894882eef656bda4afaff0eb9de1400e62754e2a",
-      "targetHash": "58a24abe6466d24dbb851badb3954618a06d33789c9f242d51f6555a80542bb1",
-      "machineHash": "58a24abe6466d24dbb851badb3954618a06d33789c9f242d51f6555a80542bb1",
-      "machineText": "重新產生提供給 WebView 的預先建置`/wails/runtime.js`。",
+      "sourceHash": "af2ea662c34d6f8d53f3c9a382d485092fc7e154d37d1b2b0614fbb57ab9a6dc",
+      "targetHash": "435f2d240801586f3e6a57a0dc9ece4ee706d4880b0b242eb4ef675090b15138",
+      "machineHash": "435f2d240801586f3e6a57a0dc9ece4ee706d4880b0b242eb4ef675090b15138",
+      "machineText": "匯出 CLI 內嵌的正式版／偵錯版 JavaScript 套件（`-d` 用於指定目的地）。",
       "status": "machine-translated",
-      "sourcePreview": "Regenerate the pre-built `/wails/runtime.js` shipped to the webview.",
+      "sourcePreview": "Export the CLI's embedded production/debug JavaScript bundles (`-d` selects the destination).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:49:36Z"
+      "updatedAt": "2026-11-02T23:47:31Z"
     },
     "b0044-cell-01": {
       "sourceHash": "5e6125f04cdf2d464f4ecf48bdbfef345ace5b9f41c0ac75bdbda0092584b86c",
@@ -1459,16 +1459,16 @@
       "updatedAt": "2026-10-25T21:49:36Z"
     },
     "b0122-text-01": {
-      "sourceHash": "e0f10f798279cc306a3dbe478b049f6713035f493d7acdd97a8e0a94aaf9903e",
-      "targetHash": "1b75734d616bf59f4b82cea512012bd9cb6b53a574783216c4801e1f7463f0ea",
-      "machineHash": "1b75734d616bf59f4b82cea512012bd9cb6b53a574783216c4801e1f7463f0ea",
-      "machineText": "\u003cstrong\u003e有問題嗎？\u003c/strong\u003e請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。",
+      "sourceHash": "b75712c146e06a9d2cb40af01c0ea008daea8af16f79fc7a693bb951bbd77d4e",
+      "targetHash": "7042c957c476f0e424dc7dd23528d86b3cfaf9d11a1c5837991b6659f2968694",
+      "machineHash": "7042c957c476f0e424dc7dd23528d86b3cfaf9d11a1c5837991b6659f2968694",
+      "machineText": "\u003cstrong\u003e有問題嗎？\u003c/strong\u003e請到 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://githu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:49:36Z"
+      "updatedAt": "2026-11-02T23:47:31Z"
     },
     "fm-description": {
       "sourceHash": "fac0769fc7745d02e2bc1e438b414aad10bd527618fd27890968f5e238e4a82e",

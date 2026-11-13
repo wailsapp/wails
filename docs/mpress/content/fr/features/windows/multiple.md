@@ -1,13 +1,13 @@
 ---
 title: "Fenêtres multiples"
-description: "Modèles et bonnes pratiques pour les applications multifenêtres"
+description: "Modèles et bonnes pratiques pour les applications à fenêtres multiples"
 slug: "features/windows/multiple"
 sourcePath: "features/windows/multiple.md"
 ---
 
-## Applications multifenêtres
+## Applications à fenêtres multiples
 
-Wails v3 offre une **prise en charge native de plusieurs fenêtres** pour créer des fenêtres de paramètres, de documents, de palettes d’outils et d’inspection. Suivez les fenêtres, permettez-leur de communiquer entre elles et gérez leur cycle de vie à l’aide d’API simples et cohérentes.
+Wails v3 offre une **prise en charge native des fenêtres multiples** pour créer des fenêtres de paramètres, de documents, de palettes d’outils et d’inspection. Suivez les fenêtres, permettez-leur de communiquer et gérez leur cycle de vie à l’aide d’API simples et cohérentes.
 
 ### Fenêtre principale et fenêtre de paramètres
 
@@ -63,7 +63,7 @@ func (a *App) ShowSettings() {
 - Fenêtre principale toujours visible
 - Fenêtre de paramètres créée, mais masquée
 - Affichage des paramètres à la demande
-- Réutilisation de la même fenêtre (ne pas en créer plusieurs)
+- Réutilisation de la même fenêtre (n’en créez pas plusieurs)
 
 ## Suivi des fenêtres
 
@@ -126,7 +126,7 @@ func (wm *WindowManager) Remove(name string) {
 
 ## Communication entre les fenêtres
 
-### Utiliser des événements
+### Utiliser les événements
 
 Les fenêtres communiquent au moyen du système d’événements :
 
@@ -225,7 +225,7 @@ func ShowSettings(app *application.App) {
 
 ### Modèle 2 : fenêtres de documents
 
-Créez plusieurs instances du même type de fenêtre :
+Créez plusieurs instances d’un même type de fenêtre :
 
 ```go
 type DocumentWindow struct {
@@ -370,7 +370,7 @@ parentWindow.AttachModal(childWindow)
 
 ### Comportement modal
 
-Créez un comportement similaire à celui d’une fenêtre modale :
+Créez un comportement semblable à celui d’une fenêtre modale :
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -430,7 +430,7 @@ app := application.New(application.Options{
 
 **Cas d’utilisation :**
 
-- Applications de la zone de notification système
+- Applications de la zone de notification
 - Services en arrière-plan
 - Applications de la barre des menus (macOS)
 
@@ -461,9 +461,9 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-Il n’existe pas de `window.Destroy()` dans la v3. Pour empêcher la fermeture, utilisez `RegisterHook(events.Common.WindowClosing, ...)` et appelez `event.Cancel()`.
+v3 ne contient aucun `window.Destroy()`. Pour empêcher la fermeture, utilisez `RegisterHook(events.Common.WindowClosing, ...)` et appelez `event.Cancel()`.
 
-### Nettoyage des ressources
+### Libération des ressources
 
 ```go
 type ManagedWindow struct {
@@ -556,7 +556,7 @@ func (wg *WindowGroup) CloseAll() {
 }
 ```
 
-### Gestion des espaces de travail
+### Gestion de l’espace de travail
 
 Enregistrez et restaurez la disposition des fenêtres :
 
@@ -604,7 +604,7 @@ func RestoreLayout(layout *WindowLayout) {
 
 ## Exemple complet
 
-Voici une application multifenêtre prête pour la production :
+Voici une application à fenêtres multiples prête pour la production :
 
 ```go
 package main
@@ -766,28 +766,28 @@ type WindowState struct {
 
 ### ✅ À faire
 
-- **Suivez les fenêtres** – Conservez des références pour y accéder facilement
-- **Nettoyez les ressources lors de la destruction** – Évitez les fuites de mémoire
-- **Utilisez des événements pour la communication** – Architecture découplée
-- **Réutilisez les fenêtres** – Ne créez pas de doublons
-- **Enregistrez et restaurez les dispositions** – Pour une meilleure expérience utilisateur
-- **Gérez la fermeture des fenêtres** – Demandez confirmation avant de fermer une fenêtre contenant des données non enregistrées
+- **Suivez les fenêtres** — Conservez des références pour y accéder facilement
+- **Effectuez le nettoyage lors de la destruction** — Évitez les fuites de mémoire
+- **Utilisez les événements pour communiquer** — Découplez l’architecture
+- **Réutilisez les fenêtres** — Ne créez pas de doublons
+- **Enregistrez et restaurez les dispositions** — Améliorez l’expérience utilisateur
+- **Gérez la fermeture des fenêtres** — Demandez confirmation avant de fermer une fenêtre contenant des données non enregistrées
 
-### ❌ À ne pas faire
+### ❌ À éviter
 
-- **Ne créez pas un nombre illimité de fenêtres** – Problèmes de mémoire et de performances
-- **N’oubliez pas de nettoyer les ressources** – Fuites de mémoire
-- **N’utilisez pas les variables globales sans précaution** – Problèmes de sûreté des accès concurrents
-- **Ne bloquez pas la création des fenêtres** – Créez-les de manière asynchrone si nécessaire
-- **N’ignorez pas les différences entre les plateformes** – Effectuez des tests sur toutes les plateformes
+- **Ne créez pas un nombre illimité de fenêtres** — Cela entraîne des problèmes de mémoire et de performances
+- **N’oubliez pas d’effectuer le nettoyage** — Vous éviterez les fuites de mémoire
+- **N’utilisez pas les variables globales sans précaution** — Cela entraîne des problèmes de sûreté des accès concurrents
+- **Ne bloquez pas la création des fenêtres** — Créez-les de manière asynchrone si nécessaire
+- **N’ignorez pas les différences entre les plateformes** — Testez sur toutes les plateformes
 
 ## Étapes suivantes
 
-- [Principes de base des fenêtres](/features/windows/basics/) – Découvrez les fondamentaux de la gestion des fenêtres
-- [Événements de fenêtre](/features/windows/events/) – Gérez les événements du cycle de vie des fenêtres
-- [Système d’événements](/features/events/system/) – Explorez le système d’événements en profondeur
-- [Fenêtres sans cadre](/features/windows/frameless/) – Créez un habillage de fenêtre personnalisé
+- [Principes fondamentaux des fenêtres](/features/windows/basics/) — Découvrez les bases de la gestion des fenêtres
+- [Événements des fenêtres](/features/windows/events/) — Gérez les événements du cycle de vie des fenêtres
+- [Système d’événements](/features/events/system/) — Explorez le système d’événements en détail
+- [Fenêtres sans cadre](/features/windows/frameless/) — Créez un habillage de fenêtre personnalisé
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez l’[exemple multifenêtre](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez l’[exemple d’application à fenêtres multiples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window).

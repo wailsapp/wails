@@ -7,7 +7,7 @@ sourcePath: "features/clipboard/basics.md"
 
 ## Operasi Papan Klip
 
-Wails menyediakan **API papan klip terpadu** yang berfungsi di semua platform. Salin dan tempel teks dengan metode yang sederhana dan konsisten di Windows, macOS, dan Linux.
+Wails menyediakan **API papan klip terpadu** yang berfungsi di semua platform. Salin dan tempel teks menggunakan metode yang sederhana dan konsisten di Windows, macOS, dan Linux.
 
 ## Mulai Cepat
 
@@ -35,7 +35,7 @@ if !success {
 }
 ```
 
-**Mengembalikan:** `bool` - `true` jika berhasil, `false` jika tidak
+**Mengembalikan:** `bool` - `true` jika berhasil, jika tidak `false`
 
 ### Menyalin dari Layanan
 
@@ -174,7 +174,7 @@ document.getElementById('copy-btn').addEventListener('click', () => {
 })
 ```
 
-### Tempel dan Proses
+### Menempelkan dan Memproses
 
 **Go:**
 
@@ -213,7 +213,7 @@ async function pasteAndProcess() {
 }
 ```
 
-### Menyalin Beberapa Format
+### Menyalin Berbagai Format
 
 ```go
 type CopyService struct {
@@ -406,8 +406,8 @@ async function paste() {
 - **Berikan umpan balik** - Beri tahu pengguna bahwa penyalinan berhasil
 - **Validasi teks yang ditempelkan** - Periksa format dan ukurannya
 - **Gunakan metode yang sesuai** - API browser atau API Wails
-- **Tangani papan klip kosong** - Periksa sebelum digunakan
-- **Hapus spasi kosong di awal dan akhir** - Bersihkan teks yang ditempelkan
+- **Tangani papan klip kosong** - Periksa sebelum menggunakannya
+- **Pangkas spasi kosong** - Bersihkan teks yang ditempelkan
 
 ### ❌ Jangan Lakukan
 
@@ -423,21 +423,21 @@ async function paste() {
 ### macOS
 
 - Menggunakan NSPasteboard
-- Mendukung teks kaya (di masa mendatang)
+- Mendukung teks kaya (mendatang)
 - Papan klip seluruh sistem
 - Riwayat papan klip (fitur sistem)
 
 ### Windows
 
 - Menggunakan Windows Clipboard API
-- Mendukung beberapa format (di masa mendatang)
+- Mendukung berbagai format (mendatang)
 - Papan klip seluruh sistem
 - Riwayat papan klip (Windows 10+)
 
 ### Linux
 
 - Menggunakan papan klip X11/Wayland
-- Pilihan primer dan papan klip
+- Seleksi utama dan seleksi papan klip
 - Bervariasi menurut lingkungan desktop
 - Mungkin memerlukan pengelola papan klip
 
@@ -447,7 +447,7 @@ async function paste() {
 
 - **Hanya teks** - Gambar belum didukung
 - **Tidak ada deteksi format** - Hanya teks biasa
-- **Tidak ada peristiwa papan klip** - Perubahan harus diperiksa secara berkala
+- **Tidak ada peristiwa papan klip** - Perubahan harus diperiksa dengan polling
 - **Tidak ada riwayat papan klip** - Implementasikan sendiri
 
 ### Fitur Mendatang
@@ -474,7 +474,7 @@ Gunakan peristiwa untuk notifikasi papan klip.
 
 ---
 ℹ dialog
-Tampilkan umpan balik penyalinan atau penempelan.
+Tampilkan umpan balik penyalinan/penempelan.
 
 [Pelajari Lebih Lanjut →](/features/dialogs/message/)
 

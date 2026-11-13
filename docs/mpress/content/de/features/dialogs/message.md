@@ -36,7 +36,7 @@ app.Dialog.Info().
 **Anwendungsfälle:**
 
 - Erfolgsbestätigungen
-- Abschlussbenachrichtigungen
+- Abschlussmeldungen
 - Informationsmeldungen
 - Statusaktualisierungen
 
@@ -70,12 +70,12 @@ app.Dialog.Warning().
 
 **Anwendungsfälle:**
 
-- Nicht kritische Warnungen
+- Unkritische Warnungen
 - Hinweise auf veraltete Funktionen
-- Warnhinweise
-- Mögliche Probleme
+- Vorsichtshinweise
+- Potenzielle Probleme
 
-**Beispiel – Warnung bei geringem Speicherplatz:**
+**Beispiel – Warnung bei knappem Speicherplatz:**
 
 ```go
 func checkDiskSpace(app *application.App) {
@@ -104,7 +104,7 @@ app.Dialog.Error().
 **Anwendungsfälle:**
 
 - Fehlermeldungen
-- Benachrichtigungen über fehlgeschlagene Vorgänge
+- Benachrichtigungen über Fehlschläge
 - Ausnahmebehandlung
 - Kritische Probleme
 
@@ -128,7 +128,7 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Fragedialog
 
-Benutzern Fragen stellen und Antworten über Rückruffunktionen der Schaltflächen verarbeiten:
+Benutzern Fragen stellen und Antworten über Schaltflächen-Callbacks verarbeiten:
 
 ```go
 dialog := app.Dialog.Question().
@@ -159,7 +159,7 @@ dialog.Show()
 
 - Aktionen bestätigen
 - Ja/Nein-Fragen
-- Auswahl zwischen mehreren Antworten
+- Mehrfachauswahl
 - Benutzerentscheidungen
 
 **Beispiel – Nicht gespeicherte Änderungen:**
@@ -208,9 +208,9 @@ dialog := app.Dialog.Info().
 
 **Bewährte Vorgehensweisen:**
 
-- **Titel:** Kurz und aussagekräftig (2-5 Wörter)
-- **Meldung:** Klar, konkret und handlungsorientiert
-- **Fachjargon vermeiden:** Verständliche Sprache verwenden
+- **Titel:** kurz und aussagekräftig (2-5 Wörter)
+- **Meldung:** klar, konkret und handlungsorientiert
+- **Fachjargon vermeiden:** Einfache Sprache verwenden
 
 ### Schaltflächen
 
@@ -224,7 +224,7 @@ app.Dialog.Info().
     Show()
 ```
 
-Sie können auch benutzerdefinierte Schaltflächen hinzufügen:
+Du kannst auch benutzerdefinierte Schaltflächen hinzufügen:
 
 ```go
 dialog := app.Dialog.Info().
@@ -236,7 +236,7 @@ dialog.Show()
 
 **Mehrere Schaltflächen (Frage):**
 
-Fügen Sie mit `AddButton()` Schaltflächen hinzu. Die Methode gibt ein konfigurierbares `*Button` zurück:
+Füge mit `AddButton()` Schaltflächen hinzu. Die Methode gibt ein konfigurierbares `*Button` zurück:
 
 ```go
 dialog := app.Dialog.Question().
@@ -262,7 +262,7 @@ dialog.Show()
 
 **Standard- und Abbrechen-Schaltflächen:**
 
-Legen Sie mit `SetDefaultButton()` fest, welche Schaltfläche hervorgehoben und mit der Eingabetaste ausgelöst wird. Legen Sie mit `SetCancelButton()` fest, welche Schaltfläche mit der Esc-Taste ausgelöst wird.
+Lege mit `SetDefaultButton()` fest, welche Schaltfläche hervorgehoben und durch die Eingabetaste ausgelöst wird. Lege mit `SetCancelButton()` fest, welche Schaltfläche durch Escape ausgelöst wird.
 
 ```go
 dialog := app.Dialog.Question().
@@ -281,7 +281,7 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-Sie können für Schaltflächen auch die Fluent-Methoden `SetAsDefault()` und `SetAsCancel()` verwenden:
+Du kannst für Schaltflächen auch die Fluent-Methoden `SetAsDefault()` und `SetAsCancel()` verwenden:
 
 ```go
 dialog := app.Dialog.Question().
@@ -300,7 +300,7 @@ dialog.Show()
 
 - **1-3 Schaltflächen:** Benutzer nicht überfordern
 - **Eindeutige Beschriftungen:** „Speichern“ statt „OK“
-- **Sichere Standardeinstellung:** Nicht destruktive Aktion
+- **Sichere Standardaktion:** Nicht destruktive Aktion
 - **Die Reihenfolge ist wichtig:** Die wahrscheinlichste Aktion zuerst (außer „Abbrechen“)
 
 ### Benutzerdefiniertes Symbol
@@ -315,9 +315,9 @@ app.Dialog.Info().
     Show()
 ```
 
-### Fensterzuordnung
+### An ein Fenster anhängen
 
-Den Dialog einem bestimmten Fenster zuordnen:
+An ein bestimmtes Fenster anhängen:
 
 ```go
 dialog := app.Dialog.Question().
@@ -332,7 +332,7 @@ dialog.Show()
 
 - Der Dialog erscheint im richtigen Fenster
 - Das übergeordnete Fenster ist während der Anzeige deaktiviert
-- Bessere Benutzerfreundlichkeit bei mehreren Fenstern
+- Bessere Benutzererfahrung bei mehreren Fenstern
 
 ## Vollständige Beispiele
 
@@ -449,29 +449,29 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ### ✅ Empfohlen
 
-- **Konkrete Angaben machen** – „Datei unter Dokumente gespeichert“ statt „Erfolgreich“
-- **Passenden Typ verwenden** – „Error“ für Fehler, „Warning“ für Warnungen
-- **Kontext angeben** – Relevante Details aufnehmen
+- **Konkret formulieren** – „Datei unter Dokumente gespeichert“ statt „Erfolgreich“
+- **Passenden Typ verwenden** – Fehler für Fehler, Warnung für Warnungen
+- **Kontext angeben** – Relevante Details einbeziehen
 - **Eindeutige Schaltflächenbeschriftungen verwenden** – „Löschen“ statt „OK“
-- **Sichere Standardaktion festlegen** – Eine nicht destruktive Aktion
-- **Abbruch behandeln** – Der Benutzer könnte den Dialog schließen
+- **Sichere Standardaktionen festlegen** – Nicht destruktive Aktion
+- **Abbrechen behandeln** – Benutzer könnten den Dialog schließen
 
 ### ❌ Nicht empfohlen
 
 - **Nicht übermäßig verwenden** – Unterbricht den Arbeitsablauf
 - **Nicht für häufige Aktualisierungen verwenden** – Stattdessen Benachrichtigungen verwenden
-- **Keine allgemeinen Meldungen verwenden** – „Fehler“ enthält keine hilfreichen Informationen
+- **Keine allgemeinen Meldungen verwenden** – „Fehler“ ist nicht aussagekräftig
 - **Fehler nicht ignorieren** – Fehler von dialog.Show() behandeln
-- **Nicht unnötig blockieren** – Asynchrone Alternativen in Betracht ziehen
-- **Keine Fachsprache verwenden** – Einfache Sprache verwenden
+- **Nicht unnötig blockieren** – Asynchrone Alternativen erwägen
+- **Keinen technischen Fachjargon verwenden** – Einfache Sprache verwenden
 
 ## Plattformunterschiede
 
 ### macOS
 
-- Bei Verknüpfung mit einem Fenster im Sheet-Stil
-- Standardtastenkürzel (⌘. für Abbrechen)
-- Übernimmt automatisch das Systemdesign
+- Bei Anbindung an ein Fenster Darstellung als Sheet
+- Standard-Tastenkombinationen (⌘. für „Abbrechen“)
+- Passt sich automatisch an das Systemdesign an
 - Integrierte Barrierefreiheit
 
 ### Windows
@@ -484,7 +484,7 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 ### Linux
 
 - GTK-Dialoge
-- Je nach Desktop-Umgebung unterschiedlich
+- Variiert je nach Desktop-Umgebung
 - Übernimmt das Desktop-Design
 - Standardmäßige Tastaturnavigation
 
@@ -498,19 +498,19 @@ Dateien öffnen und speichern sowie Ordner auswählen.
 
 ---
 ◆ Benutzerdefinierte Dialoge
-Benutzerdefinierte Dialogfenster erstellen.
+Erstellen Sie benutzerdefinierte Dialogfenster.
 
 [Mehr erfahren →](/features/dialogs/custom/)
 
 ---
 ● Benachrichtigungen
-Nicht störende Benachrichtigungen.
+Unaufdringliche Benachrichtigungen.
 
 [Mehr erfahren →](/features/notifications/overview/)
 
 ---
 ★ Ereignisse
-Ereignisse für nicht blockierende Kommunikation verwenden.
+Verwenden Sie Ereignisse für die nicht blockierende Kommunikation.
 
 [Mehr erfahren →](/features/events/system/)
 
@@ -518,4 +518,4 @@ Ereignisse für nicht blockierende Kommunikation verwenden.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Dialogbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs) an.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Dialogbeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs) an.

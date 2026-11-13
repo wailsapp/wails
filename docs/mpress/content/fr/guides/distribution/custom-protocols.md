@@ -9,9 +9,9 @@ Les protocoles d’URL personnalisés (également appelés schémas d’URL) per
 
 ## Vue d’ensemble
 
-Les protocoles personnalisés permettent :
+Les protocoles personnalisés permettent les opérations suivantes :
 
-- **Liens profonds** : lancez votre application avec des données précises
+- **Liens profonds** : lancez votre application avec des données spécifiques
 - **Intégration au navigateur** : gérez les liens provenant de pages web
 - **Liens dans les e-mails** : ouvrez votre application depuis des clients de messagerie
 - **Communication entre applications** : lancez votre application depuis d’autres applications
@@ -22,7 +22,7 @@ Les protocoles personnalisés permettent :
 
 Définissez les protocoles personnalisés dans les options de votre application :
 
-Les protocoles personnalisés sont déclarés dans `build/config.yml`, que les outils de création de paquets propres à chaque plateforme — macros NSIS sous Windows, manifeste MSIX, `CFBundleURLTypes` sous macOS, `.desktop`/`xdg-mime` sous Linux — utilisent lors de la création du paquet. Il n’existe ni type `application.Protocol` ni champ `Protocols` dans `application.Options`.
+Les protocoles personnalisés sont déclarés dans `build/config.yml`, que les outils de création de paquets propres à chaque plateforme — macros NSIS sous Windows, manifeste MSIX, `CFBundleURLTypes` sous macOS et `.desktop`/`xdg-mime` sous Linux — utilisent lors de la création du paquet. Il n’existe aucun type `application.Protocol` ni aucun champ `Protocols` dans `application.Options`.
 
 ```yaml
 # build/config.yml
@@ -31,7 +31,7 @@ protocols:
     description: "My Application Protocol"
 ```
 
-Dans le code Go, écoutez l’événement `ApplicationLaunchedWithUrl` pour détecter un lancement avec une URL :
+Dans le code Go, écoutez le lancement avec URL au moyen de l’événement `ApplicationLaunchedWithUrl` :
 
 ```go
 package main
@@ -106,12 +106,12 @@ myapp://user/profile?username=john
 **Bonnes pratiques :**
 
 - Utilisez des noms de schéma en minuscules
-- Choisissez des schémas courts et faciles à retenir
+- Choisissez des schémas courts et faciles à mémoriser
 - Utilisez des chemins hiérarchiques pour les ressources
 - Utilisez des paramètres de requête pour les données facultatives
 - Encodez les caractères spéciaux dans les URL
 
-## Enregistrement propre à chaque plateforme
+## Enregistrement selon la plateforme
 
 Les protocoles personnalisés sont enregistrés différemment sur chaque plateforme.
 
@@ -119,13 +119,13 @@ Les protocoles personnalisés sont enregistrés différemment sur chaque platefo
 [Windows]
 ### Programme d’installation NSIS pour Windows
 
-**Wails v3 enregistre automatiquement les protocoles personnalisés** lorsque vous utilisez un programme d’installation NSIS.
+**Wails v3 enregistre automatiquement les protocoles personnalisés** lors de l’utilisation de programmes d’installation NSIS.
 
 #### Enregistrement automatique
 
 Lorsque vous compilez votre application avec `wails3 build`, le programme d’installation NSIS :
 
-1. Enregistre automatiquement tous les protocoles déclarés dans `build/config.yml` sous la clé `protocols:`
+1. Enregistre automatiquement sous la clé `protocols:` tous les protocoles déclarés dans `build/config.yml`
 2. Associe les protocoles au fichier exécutable de votre application
 3. Crée les entrées de registre appropriées
 4. Supprime les associations de protocoles lors de la désinstallation
@@ -136,14 +136,14 @@ Lorsque vous compilez votre application avec `wails3 build`, le programme d’in
 
 Le modèle NSIS comprend des macros intégrées :
 
-- `wails.associateCustomProtocols` - Enregistre les protocoles lors de l’installation
-- `wails.unassociateCustomProtocols` - Supprime les protocoles lors de la désinstallation
+- `wails.associateCustomProtocols` — Enregistre les protocoles lors de l’installation
+- `wails.unassociateCustomProtocols` — Supprime les protocoles lors de la désinstallation
 
 Ces macros sont appelées automatiquement en fonction de votre configuration `Protocols`.
 
 #### Registre manuel (avancé)
 
-Si vous devez effectuer un enregistrement manuel (sans NSIS) :
+Si vous devez effectuer un enregistrement manuel (en dehors de NSIS) :
 
 ```batch
 @echo off
@@ -167,11 +167,11 @@ start myapp://test/action
 
 ### Paquet MSIX pour Windows
 
-Les protocoles personnalisés sont également enregistrés automatiquement lorsque vous utilisez un paquet MSIX.
+Les protocoles personnalisés sont également enregistrés automatiquement avec le format de paquet MSIX.
 
 #### Enregistrement automatique
 
-Lorsque vous compilez votre application au format MSIX, le manifeste inclut automatiquement les enregistrements de protocoles provenant de votre configuration des protocoles `build/config.yml`.
+Lorsque vous compilez votre application avec MSIX, le manifeste inclut automatiquement les enregistrements de protocoles provenant de votre configuration de protocoles `build/config.yml`.
 
 Le manifeste généré comprend :
 
@@ -183,16 +183,16 @@ Le manifeste généré comprend :
 </uap:Extension>
 ```
 
-#### Liens universels (liens entre le Web et l’application)
+#### Liens universels (liaison du web vers l’application)
 
-Windows prend en charge les **liens entre le Web et l’application**, qui fonctionnent de manière similaire aux liens universels sous macOS. Lorsque vous déployez votre application sous forme de paquet MSIX, vous pouvez autoriser des liens HTTPS à lancer directement votre application.
+Windows prend en charge la **liaison du web vers l’application**, qui fonctionne de manière similaire aux liens universels sous macOS. Lorsque vous déployez votre application sous forme de paquet MSIX, vous pouvez permettre aux liens HTTPS de lancer directement votre application.
 
 @note{type="note"}
-Les liens entre le Web et l’application nécessitent une configuration manuelle du manifeste. Les schémas de protocoles personnalisés sont configurés automatiquement depuis `build/config.yml`, mais les domaines associés doivent être ajoutés manuellement à votre manifeste MSIX.
+La liaison du web vers l’application nécessite une configuration manuelle du manifeste. Les schémas de protocoles personnalisés sont configurés automatiquement à partir de `build/config.yml`, mais vous devez ajouter manuellement les domaines associés à votre manifeste MSIX.
 
 @end
 
-Pour activer les liens entre le Web et l’application, suivez le [guide de Microsoft sur les liens entre le Web et l’application](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Vous devrez :
+Pour activer la liaison du web vers l’application, suivez le [guide de Microsoft sur la liaison du web vers l’application](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Vous devrez :
 
 1. **Ajouter manuellement App URI Handler à votre manifeste MSIX** (`build/windows/msix/app_manifest.xml`) :
   ```xml
@@ -204,18 +204,18 @@ Pour activer les liens entre le Web et l’application, suivez le [guide de Micr
   ```
 
 
-2. **Configurez `windows-app-web-link` sur votre site web :** hébergez un fichier `windows-app-web-link` à l’adresse `https://myawesomeapp.com/.well-known/windows-app-web-link`. Ce fichier devrait contenir les informations sur le paquet de votre application et les chemins qu’elle gère.
+2. **Configurer `windows-app-web-link` sur votre site web :** hébergez un fichier `windows-app-web-link` à l’emplacement `https://myawesomeapp.com/.well-known/windows-app-web-link`. Ce fichier doit contenir les informations sur le paquet de votre application et les chemins qu’elle gère.
 
-Lorsqu’un lien entre le Web et l’application lance votre application, vous recevez le même événement `ApplicationLaunchedWithUrl` qu’avec les schémas de protocoles personnalisés.
+Lorsqu’un lien du web vers l’application lance votre application, vous recevez le même événement `ApplicationLaunchedWithUrl` qu’avec les schémas de protocoles personnalisés.
 
 [macOS]
-### Configuration du fichier Info.plist
+### Configuration de Info.plist
 
 Sous macOS, les protocoles sont enregistrés au moyen de votre fichier `Info.plist`.
 
 #### Configuration automatique
 
-Wails génère automatiquement le fichier `Info.plist` avec vos protocoles lorsque vous effectuez une compilation avec `wails3 build`.
+Wails génère automatiquement le fichier `Info.plist` avec vos protocoles lorsque vous compilez avec `wails3 build`.
 
 Les protocoles déclarés dans `build/config.yml` sont ajoutés à :
 
@@ -235,7 +235,7 @@ Les protocoles déclarés dans `build/config.yml` sont ajoutés à :
 </array>
 ```
 
-#### Tests
+#### Test
 
 ```bash
 # Open protocol URL from terminal
@@ -247,14 +247,14 @@ open "myapp://test/action"
 
 #### Liens universels
 
-Outre les schémas de protocole personnalisés, macOS prend également en charge les **liens universels**, qui permettent de lancer votre application à l’aide de liens HTTPS ordinaires (par exemple, `https://myawesomeapp.com/path`). Les liens universels offrent une expérience utilisateur fluide entre votre application web et votre application de bureau.
+Outre les schémas de protocoles personnalisés, macOS prend également en charge les **liens universels**, qui permettent de lancer votre application à partir de liens HTTPS ordinaires (par exemple, `https://myawesomeapp.com/path`). Les liens universels assurent une expérience utilisateur fluide entre votre application web et votre application de bureau.
 
 @note{type="caution"}
-Pour prendre en charge les liens universels, votre application macOS doit être **signée numériquement** à l’aide d’un certificat Apple Developer et d’un profil de provisionnement valides. Les versions non signées ou dotées d’une signature ad hoc ne pourront pas ouvrir de liens universels. Assurez-vous que votre application est correctement signée avant de la tester.
+Pour prendre en charge les liens universels, votre application macOS doit être **signée avec du code** au moyen d’un certificat Apple Developer et d’un profil d’approvisionnement valides. Les versions non signées ou signées de façon ad hoc ne pourront pas ouvrir les liens universels. Vérifiez que votre application est correctement signée avant de la tester.
 
 @end
 
-Pour activer les liens universels, suivez le [guide d’Apple sur leur prise en charge dans votre application](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Vous devrez :
+Pour activer les liens universels, suivez le [guide d’Apple sur la prise en charge des liens universels dans votre application](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Vous devrez :
 
 1. **Ajouter des droits** dans votre fichier `entitlements.plist` :
   ```xml
@@ -276,7 +276,7 @@ Pour activer les liens universels, suivez le [guide d’Apple sur leur prise en 
 
 3. **Configurer `apple-app-site-association` sur votre site web :** hébergez un fichier `apple-app-site-association` à l’emplacement `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-Lorsqu’un lien universel déclenche votre application, vous recevez le même événement `ApplicationLaunchedWithUrl` ; le code de traitement est donc identique à celui des schémas de protocole personnalisés.
+Lorsqu’un lien universel déclenche votre application, vous recevez le même événement `ApplicationLaunchedWithUrl` ; le code de traitement est donc identique à celui des schémas de protocoles personnalisés.
 
 [Linux]
 ### Entrée de bureau
@@ -285,9 +285,9 @@ Sous Linux, les protocoles sont enregistrés au moyen de fichiers `.desktop`.
 
 #### Configuration automatique
 
-Wails génère un fichier d’entrée de bureau contenant les gestionnaires de protocoles lorsque vous effectuez une compilation avec `wails3 build`.
+Wails génère un fichier d’entrée de bureau comportant des gestionnaires de protocoles lorsque vous compilez avec `wails3 build`.
 
-**Corrigé dans la v3** : le modèle de bureau Linux inclut désormais correctement la gestion des protocoles.
+**Corrigé dans v3** : le modèle de bureau Linux prend désormais correctement en charge la gestion des protocoles.
 
 Le fichier de bureau généré contient :
 
@@ -314,7 +314,7 @@ update-desktop-database ~/.local/share/applications/
 xdg-mime default myapp.desktop x-scheme-handler/myapp
 ```
 
-#### Tests
+#### Test
 
 ```bash
 # Open protocol URL
@@ -328,7 +328,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## Exemple complet
 
-Voici un exemple complet qui traite plusieurs actions de protocole :
+Voici un exemple complet qui gère plusieurs actions de protocole :
 
 ```go
 package main
@@ -480,7 +480,7 @@ Events.On('navigate', (event) => {
 
 ### Valider toutes les entrées
 
-Validez et nettoyez toujours les URL provenant de sources externes :
+Validez et assainissez toujours les URL provenant de sources externes :
 
 ```go
 func (a *App) handleDeepLink(rawURL string) {
@@ -531,7 +531,7 @@ func sanitizeQueryParams(query url.Values) map[string]string {
 
 ### Prévenir les attaques par injection
 
-N’exécutez jamais directement les URL en tant que code ou requêtes SQL :
+N’exécutez jamais directement des URL comme du code ou des requêtes SQL :
 
 ```go
 // ❌ DON'T: Execute URL content
@@ -557,9 +557,9 @@ func goodHandler(url string) {
 }
 ```
 
-## Tests
+## Test
 
-### Tests manuels
+### Test manuel
 
 Testez les gestionnaires de protocoles pendant le développement :
 
@@ -581,7 +581,7 @@ open "myapp://test/action?id=123"
 xdg-open "myapp://test/action?id=123"
 ```
 
-### Tests HTML
+### Test HTML
 
 Créez une page HTML de test :
 
@@ -609,14 +609,14 @@ Créez une page HTML de test :
 
 **Windows :**
 
-- Vérifiez le registre : `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- Vérifiez le Registre : `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
 - Réinstallez l’application avec le programme d’installation NSIS
-- Vérifiez que le programme d’installation a été exécuté avec les autorisations appropriées
+- Vérifiez que le programme d’installation s’est exécuté avec les autorisations appropriées
 
 **macOS :**
 
 - Recompilez l’application avec `wails3 build`
-- Vérifiez `Info.plist` dans le paquet de l’application : `MyApp.app/Contents/Info.plist`
+- Vérifiez la présence de `Info.plist` dans le paquet de l’application : `MyApp.app/Contents/Info.plist`
 - Réinitialisez Launch Services : `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
 
 **Linux :**
@@ -625,7 +625,7 @@ Créez une page HTML de test :
 - Mettez à jour la base de données : `update-desktop-database ~/.local/share/applications/`
 - Vérifiez le gestionnaire : `xdg-mime query default x-scheme-handler/myapp`
 
-### L’application ne se lance pas
+### L’application ne démarre pas
 
 **Consultez les journaux :**
 
@@ -648,12 +648,12 @@ app := application.New(application.Options{
 
 - **Utilisez des noms de schéma explicites** — `mycompany-myapp` plutôt que `mca`
 - **Validez toutes les entrées** — Ne faites jamais confiance aux URL provenant de sources externes
-- **Gérez les erreurs sans interrompre l’application** — Consignez les URL non valides dans les journaux ; ne provoquez pas de plantage
-- **Fournissez un retour à l’utilisateur** — Indiquez quelle action a été déclenchée
+- **Gérez les erreurs proprement** — Consignez les URL non valides sans provoquer de plantage
+- **Informez l’utilisateur** — Indiquez l’action qui a été déclenchée
 - **Testez sur toutes les plateformes** — La gestion des protocoles varie selon la plateforme
 - **Documentez la structure de vos URL** — Aidez les utilisateurs et les intégrateurs
 
-### ❌ À éviter
+### ❌ À ne pas faire
 
 - **N’utilisez pas de noms de schéma courants** — Évitez `http`, `file`, `app`, etc.
 - **N’exécutez pas les URL comme du code** — Cela présente un risque de sécurité majeur
@@ -663,7 +663,7 @@ app := application.New(application.Options{
 
 ## Étapes suivantes
 
-- [Création de packages Windows](/guides/build/windows/) — Découvrez les options du programme d’installation NSIS
+- [Création de paquets Windows](/guides/build/windows/) — Découvrez les options du programme d’installation NSIS
 - [Associations de fichiers](/guides/file-associations/) — Ouvrez des fichiers avec votre application
 - [Instance unique](/guides/single-instance/) — Empêchez l’exécution de plusieurs instances de l’application
 

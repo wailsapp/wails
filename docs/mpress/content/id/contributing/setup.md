@@ -228,7 +228,7 @@ go test ./... -race
 
 ## Mengembangkan Dokumentasi
 
-Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal CLI Wails atau dependensi pembangunan desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh executable dengan versi yang telah ditetapkan, melakukan instalasi, melihat pratinjau langsung, menjalankan validasi, dan mengikuti alur kerja PR untuk cabang `master`.
+Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal Wails CLI atau dependensi build desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengetahui cara mengunduh dan menginstal executable yang versinya telah ditetapkan, melihat pratinjau langsung, melakukan validasi, serta menjalankan alur kerja PR yang menargetkan `master`.
 
 Markdown bahasa Inggris berada di `docs/mpress/content/`; terjemahan berada di direktori bahasa. Dari root repositori, `mpress dev` menyajikan pratinjau di `http://127.0.0.1:3000`. Hentikan dengan Ctrl+C sebelum menjalankan perintah validasi dalam panduan.
 

@@ -1271,4 +1271,4 @@ Frontend-Assets werden auf Anwendungsebene (`application.Options.Assets`) und ni
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.
+**Fragen?** Fragen Sie in [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.

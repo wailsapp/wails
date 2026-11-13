@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:43Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "01ed74cf5437b5827eb25cf188692c7138545008c23381089af38b96a575fcde",
-      "machineHash": "01ed74cf5437b5827eb25cf188692c7138545008c23381089af38b96a575fcde",
-      "machineText": "Авторы документации могут использовать M-Press без установки Wails CLI и зависимостей для сборки настольных приложений. Инструкции по скачиванию закреплённых версий исполняемых файлов, установке, интерактивному предварительному просмотру, проверке и процессу создания PR для ветки выпуска см. в разделе [Создание документации с помощью M-Press](/contributing/documentation/).",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "4811c950944cc9f886f8b6c57ab9be274d7cc5d2fb713ebf1552a98654d257f3",
+      "machineHash": "4811c950944cc9f886f8b6c57ab9be274d7cc5d2fb713ebf1552a98654d257f3",
+      "machineText": "Авторы документации могут использовать M-Press, не устанавливая Wails CLI и зависимости для сборки настольных приложений. Инструкции по скачиванию закреплённых версий исполняемых файлов, установке, предварительному просмотру в реальном времени, проверке и процессу работы с PR для `master` приведены в разделе [«Работа с документацией в M-Press»](/contributing/documentation/).",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:43Z"
+      "updatedAt": "2026-11-06T02:12:45Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

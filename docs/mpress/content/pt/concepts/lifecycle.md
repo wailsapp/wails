@@ -9,12 +9,12 @@ sourcePath: "concepts/lifecycle.md"
 
 As aplicações desktop têm um ciclo de vida que vai da inicialização ao encerramento. O Wails v3 fornece **serviços**, **eventos** e **hooks** para gerenciar esse ciclo de vida com eficiência.
 
-## Etapas do ciclo de vida
+## As etapas do ciclo de vida
 
 ```d2
 direction: down
 
-Start: Início do aplicativo {
+Start: Início da aplicação {
   shape: oval
   style.fill: "#10B981"
 }
@@ -26,7 +26,7 @@ Init: Inicialização {
   Register: Registrar serviços {
     shape: rectangle
   }
-  Setup: Configurar o runtime {
+  Setup: Configurar runtime {
     shape: rectangle
   }
 }
@@ -48,7 +48,7 @@ EventLoop: Loop de eventos {
   Handle: Tratar mensagens {
     shape: rectangle
   }
-  Update: Atualizar a interface {
+  Update: Atualizar interface {
     shape: rectangle
   }
 }
@@ -82,7 +82,7 @@ Cleanup: Limpeza {
   }
 }
 
-End: Fim do aplicativo {
+End: Fim da aplicação {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -97,7 +97,7 @@ EventLoop.Process -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: Loop
 EventLoop.Process -> QuitSignal: Usuário encerra
-QuitSignal -> ShouldQuit: Verificar se é permitido?
+QuitSignal -> ShouldQuit: Encerramento permitido?
 ShouldQuit -> EventLoop.Process: Negado
 ShouldQuit -> OnShutdown: Permitido
 OnShutdown -> ServiceShutdown
@@ -146,7 +146,7 @@ if err != nil {
 1. Os serviços são iniciados na ordem de registro
 2. Os listeners de eventos são ativados
 3. As janelas podem ser criadas
-4. O loop de eventos é iniciado
+4. O loop de eventos começa
 
 ### 3. Loop de eventos
 
@@ -169,7 +169,7 @@ Quando a aplicação é encerrada:
 
 ## Ciclo de vida dos serviços
 
-Os serviços são a principal forma de gerenciar o ciclo de vida no Wails v3. Eles fornecem hooks de inicialização e encerramento por meio de interfaces. Para consultar a documentação completa sobre serviços, consulte o [guia de serviços](/features/bindings/services/).
+Os serviços são a principal forma de gerenciar o ciclo de vida no Wails v3. Eles fornecem hooks de inicialização e encerramento por meio de interfaces. Para consultar a documentação completa sobre serviços, veja o [guia de Serviços](/features/bindings/services/).
 
 ### Criando um serviço
 
@@ -218,12 +218,12 @@ app := application.New(application.Options{
 
 - Os serviços são iniciados na ordem de registro
 - Os serviços são encerrados na ordem **inversa** à de registro
-- Se `ServiceStartup` de um serviço retornar um erro, a aplicação será abortada
+- Se o `ServiceStartup` de um serviço retornar um erro, a aplicação será abortada
 - O `ctx` passado para `ServiceStartup` é cancelado quando o encerramento começa
 
 ### Usando o contexto da aplicação
 
-O contexto passado para `ServiceStartup` é válido durante todo o ciclo de vida do aplicativo:
+O contexto passado para `ServiceStartup` permanece válido durante todo o ciclo de vida da aplicação:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -247,27 +247,27 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-Você também pode acessar o contexto pela instância do aplicativo:
+Você também pode acessar o contexto pela instância da aplicação:
 
 ```go
 app := application.Get()
 ctx := app.Context()
 ```
 
-## Hooks no nível do aplicativo
+## Hooks no nível da aplicação
 
-Esses são callbacks de conveniência em `application.Options` que permitem interagir com o ciclo de vida do aplicativo sem criar um serviço completo. Eles são úteis para tarefas simples de limpeza, confirmação de encerramento ou quando você precisa executar código em pontos específicos da sequência de desligamento.
+Estes são callbacks de conveniência em `application.Options` que permitem interagir com o ciclo de vida da aplicação sem criar um serviço completo. Eles são úteis para tarefas simples de limpeza, confirmação de encerramento ou quando você precisa executar código em pontos específicos da sequência de encerramento.
 
 Para um gerenciamento mais complexo do ciclo de vida, com lógica de inicialização, injeção de dependências ou recursos com estado, use [Serviços](#ciclo-de-vida-dos-servios).
 
 ### ShouldQuit
 
-O callback `ShouldQuit` é chamado sempre que o encerramento é solicitado, seja quando o usuário fecha a última janela, pressiona Cmd+Q (macOS) ou Alt+F4 (Windows), seja quando `app.Quit()` é chamado programaticamente.
+O callback `ShouldQuit` é chamado sempre que o encerramento é solicitado, seja pelo usuário ao fechar a última janela, ao pressionar Cmd+Q (macOS) / Alt+F4 (Windows) ou ao chamar `app.Quit()` programaticamente.
 
 **Valor de retorno:**
 
-- Retorne `true` para permitir que o encerramento prossiga (o aplicativo será desligado)
-- Retorne `false` para cancelar o encerramento (o aplicativo continuará em execução)
+- Retorne `true` para permitir que o encerramento prossiga (a aplicação será encerrada)
+- Retorne `false` para cancelar o encerramento (a aplicação continuará em execução)
 
 Essa é a oportunidade de interceptar solicitações de encerramento e, opcionalmente, impedi-las, por exemplo, para avisar o usuário sobre alterações não salvas:
 
@@ -299,7 +299,7 @@ app := application.New(application.Options{
 })
 ```
 
-Se `ShouldQuit` não estiver definido, o aplicativo será encerrado imediatamente quando solicitado.
+Se `ShouldQuit` não estiver definido, a aplicação será encerrada imediatamente quando solicitado.
 
 **Quando ShouldQuit é chamado:**
 
@@ -315,7 +315,7 @@ Se `ShouldQuit` não estiver definido, o aplicativo será encerrado imediatament
 
 ### OnShutdown
 
-O callback `OnShutdown` é chamado quando se confirma que o aplicativo será encerrado (depois que `ShouldQuit` retorna `true`, caso esteja definido). Use-o para tarefas de limpeza, como salvar o estado, fechar conexões com o banco de dados ou liberar recursos.
+O callback `OnShutdown` é chamado quando se confirma que a aplicação será encerrada (depois que `ShouldQuit` retorna `true`, se estiver definido). Use-o para tarefas de limpeza, como salvar o estado, fechar conexões com bancos de dados ou liberar recursos.
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-Você também pode registrar callbacks adicionais de desligamento programaticamente a qualquer momento durante o ciclo de vida do aplicativo:
+Você também pode registrar programaticamente callbacks adicionais de encerramento a qualquer momento durante o ciclo de vida da aplicação:
 
 ```go
 app.OnShutdown(func() {
@@ -337,18 +337,18 @@ app.OnShutdown(func() {
 })
 ```
 
-Vários callbacks são executados na ordem em que foram registrados. O processo de desligamento fica bloqueado até que todos os callbacks sejam concluídos.
+Vários callbacks são executados na ordem em que foram registrados. O processo de encerramento fica bloqueado até que todos os callbacks sejam concluídos.
 
-**Importante:** Mantenha os callbacks de desligamento rápidos (menos de 1 segundo). O sistema operacional pode encerrar à força aplicativos que demoram demais para fechar, o que pode interromper a limpeza e causar perda de dados.
+**Importante:** Mantenha os callbacks de encerramento rápidos (menos de 1 segundo). O sistema operacional pode forçar o encerramento de aplicativos que demoram muito para sair, o que pode interromper a limpeza e causar perda de dados.
 
 ### PostShutdown
 
-O callback `PostShutdown` é chamado depois que todas as tarefas de desligamento são concluídas, pouco antes do término do processo. Nesse ponto, a instância do aplicativo não pode mais ser usada: as janelas estão fechadas, os serviços foram desligados e os recursos foram liberados.
+O callback `PostShutdown` é chamado depois que todas as tarefas de encerramento são concluídas, imediatamente antes do término do processo. Nesse ponto, a instância do aplicativo não pode mais ser usada — as janelas estão fechadas, os serviços estão encerrados e os recursos foram liberados.
 
 Isso é útil principalmente para:
 
-- Registro final de logs que precisa ocorrer depois de todas as outras tarefas de limpeza
-- Testes e depuração do comportamento de desligamento
+- Registro final de logs que deve ocorrer após todas as outras tarefas de limpeza
+- Testar e depurar o comportamento de encerramento
 - Plataformas nas quais `app.Run()` não retorna (o callback garante que seu código seja executado)
 
 ```go
@@ -363,15 +363,15 @@ app := application.New(application.Options{
 })
 ```
 
-**Observação:** Não tente usar recursos do aplicativo (janelas, caixas de diálogo etc.) em `PostShutdown`, pois eles não estão mais disponíveis.
+**Observação:** Não tente usar recursos do aplicativo (janelas, caixas de diálogo etc.) em `PostShutdown` — eles não estão mais disponíveis.
 
 ## Ciclo de vida baseado em eventos
 
-O Wails fornece um sistema de eventos que notifica você quando algo acontece no aplicativo, como a abertura de janelas, a inicialização do aplicativo, alterações de tema e muito mais. Você pode escutar esses eventos para reagir a mudanças no ciclo de vida sem bloqueá-las nem interceptá-las.
+O Wails fornece um sistema de eventos que envia notificações quando algo acontece no aplicativo — abertura de janelas, inicialização do aplicativo, mudanças de tema e muito mais. Você pode escutar esses eventos para reagir a mudanças no ciclo de vida sem bloqueá-las nem interceptá-las.
 
-Para eventos de janela, você também pode usar `RegisterHook` em vez de `OnWindowEvent` para interceptar e cancelar ações, por exemplo, para impedir que uma janela seja fechada. Consulte [Hooks de janela](#hooks-de-janela-eventos-cancelveis) abaixo.
+Para eventos de janela, você também pode usar `RegisterHook` em vez de `OnWindowEvent` para interceptar e cancelar ações — por exemplo, impedir o fechamento de uma janela. Consulte [Hooks de janela](#hooks-de-janela-eventos-cancelveis) abaixo.
 
-Para consultar a documentação completa do sistema de eventos, consulte o [guia de eventos](/features/events/system/).
+Para ver a documentação completa do sistema de eventos, consulte o [guia de eventos](/features/events/system/).
 
 ### Eventos do aplicativo
 
@@ -383,7 +383,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *appli
 })
 ```
 
-Também há eventos específicos de cada plataforma:
+Também estão disponíveis eventos específicos de cada plataforma:
 
 ```go
 // macOS
@@ -403,7 +403,7 @@ app.Event.OnApplicationEvent(events.Windows.ApplicationStarted, func(event *appl
 
 ### Eventos de janela
 
-Escute os eventos do ciclo de vida das janelas:
+Escute os eventos do ciclo de vida da janela:
 
 ```go
 window := app.Window.New()
@@ -439,14 +439,14 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 **Diferença entre OnWindowEvent e RegisterHook:**
 
-- `OnWindowEvent`: notifica você quando ocorre um evento (não permite cancelá-lo)
-- `RegisterHook`: permite interceptar e, possivelmente, cancelar o evento
+- `OnWindowEvent`: Notifica você quando ocorre um evento (não permite cancelá-lo)
+- `RegisterHook`: Permite interceptar e, se necessário, cancelar o evento
 
-## Ciclo de vida das janelas
+## Ciclo de vida da janela
 
 As janelas têm seu próprio ciclo de vida, desde a criação até a destruição. Cada janela carrega o conteúdo do frontend de forma independente e pode ser exibida, ocultada ou fechada a qualquer momento. Quando um usuário tenta fechar uma janela, você pode interceptar essa ação com um `RegisterHook` para solicitar confirmação ou ocultar a janela em vez de destruí-la.
 
-Para consultar a documentação completa sobre janelas, veja o [guia de janelas](/features/windows/basics/).
+Para ver a documentação completa sobre janelas, consulte o [guia de janelas](/features/windows/basics/).
 
 ```d2
 direction: down
@@ -456,7 +456,7 @@ Create: Criar janela {
   style.fill: "#10B981"
 }
 
-Load: Carregar o frontend {
+Load: Carregar frontend {
   shape: rectangle
 }
 
@@ -565,7 +565,7 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**O comportamento padrão varia conforme a plataforma:**
+**O comportamento padrão varia de acordo com a plataforma:**
 
 | Plataforma | Comportamento padrão ao fechar a última janela |
 | --- | --- |
@@ -573,7 +573,7 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | Windows | O aplicativo é encerrado |
 | Linux | O aplicativo é encerrado |
 
-O macOS segue as convenções nativas da plataforma, nas quais os aplicativos normalmente permanecem ativos na barra de menus mesmo sem nenhuma janela. No Windows e no Linux, eles são encerrados por padrão.
+O macOS segue as convenções nativas da plataforma, segundo as quais os aplicativos normalmente permanecem ativos na barra de menus mesmo sem nenhuma janela. No Windows e no Linux, eles são encerrados por padrão.
 
 **Fazer o aplicativo ser encerrado em todas as plataformas quando a última janela for fechada:**
 
@@ -602,7 +602,7 @@ app := application.New(application.Options{
 
 ## Padrões comuns
 
-### Padrão 1: serviço de banco de dados
+### Padrão 1: Serviço de banco de dados
 
 ```go
 type DatabaseService struct {
@@ -636,7 +636,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### Padrão 2: serviço de configuração
+### Padrão 2: Serviço de configuração
 
 ```go
 type ConfigService struct {
@@ -668,7 +668,7 @@ func (s *ConfigService) ServiceShutdown() error {
 }
 ```
 
-### Padrão 3: worker em segundo plano
+### Padrão 3: Worker em segundo plano
 
 ```go
 type WorkerService struct {
@@ -711,9 +711,9 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 | Hook/interface | Quando é chamado | Pode cancelar? | Finalidade |
 | --- | --- | --- | --- |
 | `ServiceStartup` | Durante `app.Run()`, antes do loop de eventos | Não (retorne um erro para interromper) | Inicialização |
-| `ServiceShutdown` | Durante o encerramento, após `OnShutdown` | Não | Limpeza |
-| `OnShutdown` | Quando o encerramento é confirmado | Não | Limpeza do aplicativo |
-| `ShouldQuit` | Quando o encerramento é solicitado | Sim (retorne false) | Confirmar encerramento |
+| `ServiceShutdown` | Durante o encerramento, depois de `OnShutdown` | Não | Limpeza |
+| `OnShutdown` | Quando a saída é confirmada | Não | Limpeza do aplicativo |
+| `ShouldQuit` | Quando a saída é solicitada | Sim (retorne false) | Confirmar saída |
 | `RegisterHook(WindowClosing)` | Quando o fechamento da janela é solicitado | Sim (`e.Cancel()`) | Impedir o fechamento da janela |
 | `OnWindowEvent` | Quando o evento ocorre | Não | Reagir a eventos |
 | `OnApplicationEvent` | Quando o evento ocorre | Não | Reagir a eventos |
@@ -722,20 +722,20 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ### macOS
 
-- O **menu do aplicativo** permanece disponível mesmo sem nenhuma janela
-- **Cmd+Q** inicia o encerramento do aplicativo (passando por `ShouldQuit`)
-- O **ícone no Dock** permanece visível, a menos que seja ocultado
+- **O menu do aplicativo** permanece disponível mesmo sem nenhuma janela
+- **Cmd+Q** aciona o encerramento (passando por `ShouldQuit`)
+- **O ícone no Dock** permanece, a menos que seja ocultado
 - Use `ApplicationShouldTerminateAfterLastWindowClosed` para controlar o comportamento de encerramento
 
 ### Windows
 
 - **Não há menu do aplicativo** sem uma janela
 - **Alt+F4** fecha a janela (isso pode ser impedido com `RegisterHook`)
-- A **bandeja do sistema** pode manter o aplicativo em execução
+- **A bandeja do sistema** pode manter o aplicativo em execução
 
 ### Linux
 
-- O **comportamento varia** de acordo com o ambiente de desktop
+- **O comportamento varia** conforme o ambiente de desktop
 - **Geralmente semelhante ao Windows**
 
 ## Depuração de problemas do ciclo de vida
@@ -746,7 +746,7 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 1. `ShouldQuit` retornando `false`
 2. `OnShutdown` demorando demais
-3. Goroutines em segundo plano não são interrompidas
+3. Goroutines em segundo plano não estão parando
 
 **Solução:**
 
@@ -774,7 +774,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-### Problema: falha na inicialização do serviço
+### Problema: falha ao iniciar o serviço
 
 **Solução:** Retorne erros descritivos:
 
@@ -794,9 +794,9 @@ O erro será registrado, e o aplicativo não será iniciado.
 ### Faça
 
 - **Use serviços para gerenciar o ciclo de vida** — Eles fornecem hooks adequados de inicialização e encerramento
-- **Mantenha o encerramento rápido** — Procure concluir toda a limpeza em menos de 1 segundo
+- **Mantenha o encerramento rápido** — Tente concluir toda a limpeza em menos de 1 segundo
 - **Use o contexto para cancelamento** — Interrompa corretamente as tarefas em segundo plano
-- **Trate erros durante a inicialização** — Retorne os erros para interromper o processo de forma segura
+- **Trate os erros durante a inicialização** — Retorne erros para interromper o processo de forma limpa
 - **Registre os eventos do ciclo de vida** — Isso ajuda na depuração
 
 ### Não faça
@@ -804,9 +804,9 @@ O erro será registrado, e o aplicativo não será iniciado.
 - **Não bloqueie durante a inicialização do serviço** — Mantenha a inicialização rápida (menos de 2 segundos)
 - **Não exiba caixas de diálogo durante o encerramento** — O aplicativo está sendo encerrado, e a interface pode não funcionar
 - **Não ignore o contexto** — Sempre verifique `ctx.Done()` nas goroutines
-- **Não cause vazamento de recursos** — Sempre implemente `ServiceShutdown`
+- **Não deixe recursos sem liberar** — Sempre implemente `ServiceShutdown`
 
-## Próximas etapas
+## Próximos passos
 
 **Serviços** — Saiba mais sobre o sistema de serviços [Saiba mais →](/features/bindings/services/)
 

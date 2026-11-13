@@ -43,7 +43,7 @@ func (m *Menu) Add(label string) *MenuItem
 
 **매개변수:**
 
-- `label` - 메뉴 항목에 표시할 텍스트
+- `label` - 메뉴 항목에 표시되는 텍스트
 
 **반환값:** 생성된 메뉴 항목
 
@@ -100,13 +100,15 @@ menu.Add("Select All")
 
 ### AddSectionHeader()
 
-**macOS 14 이상** 에서 상호 작용이 불가능한 네이티브 섹션 제목을 추가합니다. 이전 macOS 버전과 다른 모든 플랫폼(서버 빌드 포함)에서는 아무 작업도 수행하지 않으며 자리 표시자 항목도 삽입하지 않습니다.
+**macOS 14 이상에서 네이티브 비대화형 섹션 제목을 추가합니다**.
+이전 macOS 버전과 서버 빌드를 포함한 그 밖의 모든 플랫폼에서는
+아무 작업도 수행하지 않으며 자리표시자 항목도 삽입하지 않습니다.
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-트레이, 컨텍스트 또는 애플리케이션 메뉴에서 그룹에 레이블을 붙이려면 제목을 사용하세요:
+트레이, 컨텍스트 또는 애플리케이션 메뉴에서 그룹에 레이블을 지정하려면 제목을 사용하세요:
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,13 +118,16 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-제목은 AppKit의 표준 섹션 제목 모양을 사용합니다. 이미 표시된 메뉴를 다시 구성한 후에는 다른 구조 변경과 마찬가지로 `menu.Update()`를 호출하세요. `os.Hostname()`으로 얻은 제목은 `systray-menu` 예제를 참고하세요.
+제목에는 AppKit의 표준 섹션 제목 모양이 적용됩니다. 이미 표시된 메뉴를 다시 빌드한 후에는
+다른 구조 변경과 마찬가지로 `menu.Update()`을 호출하세요.
+`os.Hostname()`에서 가져온 제목은 `systray-menu` 예를 참조하세요.
 
-생략된 제목은 라디오 그룹을 나누지 않습니다. 모든 플랫폼에서 그룹을 분리해 두어야 할 때는 `AddSeparator()`를 사용하세요.
+생략된 제목은 라디오 그룹을 나누지 않습니다. 모든 플랫폼에서 라디오
+그룹을 서로 분리해야 한다면 `AddSeparator()`을 사용하세요.
 
 ### AddCheckbox()
 
-선택 여부를 전환할 수 있는 메뉴 항목을 추가합니다.
+선택 상태를 전환할 수 있는 메뉴 항목을 추가합니다.
 
 ```go
 func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-라디오 메뉴 항목(상호 배타적 그룹)을 추가합니다.
+라디오 메뉴 항목을 추가합니다(상호 배타적 그룹).
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -175,7 +180,7 @@ gridView.OnClick(func(ctx *application.Context) {
 
 ### Update()
 
-메뉴 항목에 적용한 변경 사항이 반영되도록 메뉴를 업데이트합니다.
+메뉴 항목의 변경 사항이 반영되도록 메뉴를 업데이트합니다.
 
 ```go
 func (m *Menu) Update()
@@ -188,7 +193,7 @@ item.SetEnabled(false)
 menu.Update()  // Must call to apply changes
 ```
 
-**중요:** 메뉴 항목의 속성을 수정한 후에는 항상 `Update()`을 호출하세요.
+**중요:** 메뉴 항목 속성을 수정한 후에는 항상 `Update()`을 호출하세요.
 
 ## 메뉴 항목 메서드
 
@@ -331,7 +336,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-메뉴 항목 위에 포인터를 올리면 표시되는 도구 설명을 설정합니다.
+메뉴 항목 위에 마우스 포인터를 올리면 나타나는 도구 설명을 설정합니다.
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -398,15 +403,15 @@ app.Menu.Set(menu)
 
 **플랫폼 참고 사항:**
 
-- **macOS:** 메뉴가 화면 상단의 메뉴 모음에 표시됩니다.
-- **Windows/Linux:** 메뉴가 창 제목 표시줄에 표시됩니다.
-- **macOS:** 애플리케이션 이름이 지정된 애플리케이션 메뉴를 자동으로 추가합니다.
+- **macOS:** 메뉴가 화면 상단 메뉴 막대에 표시됩니다
+- **Windows/Linux:** 메뉴가 창 제목 표시줄에 표시됩니다
+- **macOS:** 앱 이름이 포함된 애플리케이션 메뉴가 자동으로 추가됩니다
 
 ## 컨텍스트 메뉴
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-관리자를 통해 `*ContextMenu`을 생성하고 이름을 지정해 등록합니다. `ContextMenuManager.Add`에는 `*Menu`가 **아닌** `*ContextMenu`을 전달하며, `app.RegisterContextMenu` 메서드는 **없습니다**.
+관리자를 통해 `*ContextMenu`을 만들고 이름을 지정하여 등록합니다. `ContextMenuManager.Add`은 `*Menu`이 **아닌** `*ContextMenu`을 받으며, `app.RegisterContextMenu` 메서드는 **없습니다**.
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +420,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-또는 패키지 수준의 `application.NewContextMenu(name string) *ContextMenu`을 사용하면 컨텍스트 메뉴를 한 번에 생성하고 등록할 수 있습니다.
+또는 패키지 수준의 `application.NewContextMenu(name string) *ContextMenu`을 사용하면 컨텍스트 메뉴를 한 단계로 만들고 등록할 수 있습니다.
 
 **Go:**
 
@@ -434,7 +439,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML / CSS:**
 
-오른쪽 클릭 대상 또는 그 상위 요소에 `--custom-contextmenu` CSS 사용자 지정 속성이 해당 이름으로 설정되어 있으면 런타임이 등록된 컨텍스트 메뉴를 엽니다. 선택 사항인 `--custom-contextmenu-data` 속성은 `ctx.ContextMenuData()`을 통해 Go 콜백으로 전달됩니다. 브라우저의 기본 컨텍스트 메뉴가 표시되지 않게 하려면 `--default-contextmenu: hide` 또는 `auto`/`show`을 설정합니다.
+오른쪽 클릭 대상 또는 그 상위 요소에 `--custom-contextmenu` CSS 사용자 지정 속성이 설정되어 있고 그 값이 등록된 이름과 일치하면 런타임이 해당 컨텍스트 메뉴를 표시합니다. 선택적 `--custom-contextmenu-data` 속성은 `ctx.ContextMenuData()`을 통해 Go 콜백에 전달됩니다. 브라우저의 기본 컨텍스트 메뉴가 표시되지 않게 하려면 `--default-contextmenu: hide`(또는 `auto`/`show`)을 설정합니다.
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -467,7 +472,7 @@ func updateContextMenu() {
 
 ### app.SystemTray.New()
 
-새 시스템 트레이 아이콘을 생성합니다.
+새 시스템 트레이 아이콘을 만듭니다.
 
 ```go
 func (sm *SystemTrayManager) New() *SystemTray
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-트레이 아이콘 위에 포인터를 올리면 표시되는 도구 설명을 설정합니다. 반환값은 없습니다.
+트레이 아이콘 위에 마우스 포인터를 올렸을 때 표시되는 툴팁을 설정합니다. 반환값은 없습니다.
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -750,33 +755,33 @@ func (e *Editor) save() {
 
 ## 권장 사항
 
-### ✅ 권장 사항
+### ✅ 권장
 
-- **표준 단축키를 사용하세요** - 플랫폼 관례를 따르세요(예: 복사에는 Ctrl+C).
+- **표준 단축키를 사용하세요** - 플랫폼 관례를 따릅니다(복사의 경우 Ctrl+C 등).
 - **변경 후 Update()를 호출하세요** - 호출하지 않으면 변경 사항이 메뉴에 반영되지 않습니다.
-- **관련 항목을 그룹화하세요** - 구분선을 사용해 메뉴 항목을 정리하세요.
-- **사용할 수 없는 동작을 비활성화하세요** - 숨기지 말고 SetEnabled(false)로 비활성화하세요.
+- **관련 항목을 그룹화하세요** - 구분선을 사용하여 메뉴 항목을 정리합니다.
+- **사용할 수 없는 동작은 비활성화하세요** - 숨기지 말고 SetEnabled(false)로 비활성화합니다.
 - **명확한 레이블을 사용하세요** - 간결하면서도 의미가 분명해야 합니다.
 - **플랫폼 관례를 따르세요** - macOS와 Windows/Linux의 메뉴 패턴은 서로 다릅니다.
 
-### ❌ 피해야 할 사항
+### ❌ 금지
 
 - **Update() 호출을 잊지 마세요** - 가장 흔한 실수입니다.
-- **메뉴를 너무 깊게 중첩하지 마세요** - 메뉴 깊이는 최대 2-3단계로 유지하세요.
-- **모호한 레이블을 사용하지 마세요** - "문서 처리" 대신 "처리"처럼 쓰지 마세요.
-- **지나치게 복잡하게 만들지 마세요** - 메뉴를 단순하고 목적에 집중하도록 구성하세요.
-- **서로 다른 표현 체계를 혼용하지 마세요** - 이름과 구성을 일관되게 유지하세요.
+- **메뉴를 너무 깊게 중첩하지 마세요** - 메뉴 깊이는 최대 2-3단계로 유지합니다.
+- **모호한 레이블을 사용하지 마세요** - "처리"보다는 "문서 처리"처럼 명확하게 작성합니다.
+- **지나치게 복잡하게 만들지 마세요** - 메뉴를 단순하고 목적에 집중하도록 구성합니다.
+- **서로 다른 표현 체계를 혼용하지 마세요** - 이름과 구성을 일관되게 유지합니다.
 
 ## 플랫폼별 참고 사항
 
 ### macOS
 
-- 애플리케이션 이름이 지정된 애플리케이션 메뉴가 자동으로 추가됩니다.
-- 단축키에는 `Ctrl` 대신 `Cmd`을 사용하세요.
-- 기본적으로 애플리케이션 메뉴에 "정보", "환경설정", "종료"가 포함됩니다.
+- 앱 이름이 포함된 애플리케이션 메뉴가 자동으로 추가됩니다
+- 단축키에는 `Ctrl` 대신 `Cmd`을 사용합니다
+- 기본적으로 애플리케이션 메뉴에 "정보", "환경설정", "종료"가 포함됩니다
 
 ### Windows/Linux
 
-- 애플리케이션 메뉴가 자동으로 생성되지 않음
-- 단축키에는 `Ctrl` 사용
-- 일반적으로 파일 메뉴에 "종료" 배치
+- 애플리케이션 메뉴가 자동으로 추가되지 않습니다
+- 단축키에는 `Ctrl`을 사용합니다
+- 일반적으로 "끝내기"는 파일 메뉴에 있습니다

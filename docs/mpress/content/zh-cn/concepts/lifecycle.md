@@ -1,20 +1,20 @@
 ---
-title: "应用生命周期"
-description: "了解 Wails 应用从启动到关闭的生命周期"
+title: "应用程序生命周期"
+description: "了解 Wails 应用程序从启动到关闭的生命周期"
 slug: "concepts/lifecycle"
 sourcePath: "concepts/lifecycle.md"
 ---
 
-## 了解应用生命周期
+## 了解应用程序生命周期
 
-桌面应用具有从启动到关闭的生命周期。Wails v3 提供<strong>服务</strong>、<strong>事件</strong>和<strong>钩子</strong>，用于有效管理此生命周期。
+桌面应用程序具有从启动到关闭的生命周期。Wails v3提供**服务**、**事件**和**钩子**，用于有效管理此生命周期。
 
 ## 生命周期阶段
 
 ```d2
 direction: down
 
-Start: 应用启动 {
+Start: 应用程序启动 {
   shape: oval
   style.fill: "#10B981"
 }
@@ -36,7 +36,7 @@ AppRun: app.Run() {
   style.fill: "#3B82F6"
 }
 
-ServiceStartup: 启动服务 {
+ServiceStartup: 服务启动 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
@@ -48,7 +48,7 @@ EventLoop: 事件循环 {
   Handle: 处理消息 {
     shape: rectangle
   }
-  Update: 更新界面 {
+  Update: 更新 UI {
     shape: rectangle
   }
 }
@@ -68,7 +68,7 @@ OnShutdown: OnShutdown 回调 {
   style.fill: "#3B82F6"
 }
 
-ServiceShutdown: 关闭服务 {
+ServiceShutdown: 服务关闭 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
@@ -82,7 +82,7 @@ Cleanup: 清理 {
   }
 }
 
-End: 应用结束 {
+End: 应用程序结束 {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -98,17 +98,17 @@ EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: 循环
 EventLoop.Process -> QuitSignal: 用户退出
 QuitSignal -> ShouldQuit: 检查是否允许？
-ShouldQuit -> EventLoop.Process: 已拒绝
-ShouldQuit -> OnShutdown: 已允许
+ShouldQuit -> EventLoop.Process: 拒绝
+ShouldQuit -> OnShutdown: 允许
 OnShutdown -> ServiceShutdown
 ServiceShutdown -> Cleanup.Close
 Cleanup.Close -> Cleanup.Release
 Cleanup.Release -> End
 ```
 
-### 1. 创建应用
+### 1. 创建应用程序
 
-使用`application.New()`创建应用：
+使用`application.New()`创建应用程序：
 
 ```go
 app := application.New(application.Options{
@@ -130,9 +130,9 @@ app := application.New(application.Options{
 3. 配置资源服务器
 4. 设置运行时
 
-### 2. 运行应用
+### 2. 运行应用程序
 
-调用`app.Run()`启动应用：
+调用`app.Run()`启动应用程序：
 
 ```go
 err := app.Run()  // Blocks until quit
@@ -146,11 +146,11 @@ if err != nil {
 1. 按注册顺序启动服务
 2. 激活事件监听器
 3. 可以创建窗口
-4. 开始事件循环
+4. 事件循环开始
 
 ### 3. 事件循环
 
-应用进入事件循环，并在其中运行大部分时间：
+应用程序进入事件循环，其大部分运行时间都在此循环中度过：
 
 - 处理操作系统事件（鼠标、键盘和窗口事件）
 - 处理 Go 到 JS 的消息
@@ -159,7 +159,7 @@ if err != nil {
 
 ### 4. 关闭
 
-应用退出时：
+应用程序退出时：
 
 1. 检查`ShouldQuit`回调（如果已设置）
 2. 执行`OnShutdown`回调
@@ -169,7 +169,7 @@ if err != nil {
 
 ## 服务生命周期
 
-服务是 Wails v3 中管理生命周期的主要方式。服务通过接口提供启动和关闭钩子。有关服务的完整文档，请参阅[服务指南](/features/bindings/services/)。
+服务是管理 Wails v3生命周期的主要方式。它们通过接口提供启动和关闭钩子。有关服务的完整文档，请参阅[服务指南](/features/bindings/services/)。
 
 ### 创建服务
 
@@ -217,13 +217,13 @@ app := application.New(application.Options{
 **要点：**
 
 - 服务按注册顺序启动
-- 服务按注册顺序的<strong>相反顺序</strong>关闭
-- 如果服务的`ServiceStartup`返回错误，应用将中止
-- 传递给`ServiceStartup`的`ctx`会在关闭开始时被取消
+- 服务按注册顺序的**相反顺序**关闭
+- 如果服务的`ServiceStartup`返回错误，应用程序将中止
+- 关闭开始时，传递给`ServiceStartup`的`ctx`将被取消
 
-### 使用应用上下文
+### 使用应用程序上下文
 
-传递给`ServiceStartup`的上下文在应用程序的整个生命周期内均有效：
+传递给`ServiceStartup`的上下文在应用程序的整个生命周期内有效：
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -256,20 +256,20 @@ ctx := app.Context()
 
 ## 应用程序级钩子
 
-这些是`application.Options`中的便捷回调，无需创建完整的服务即可挂接到应用程序生命周期。它们适用于简单的清理任务、退出确认，或需要在关闭流程的特定阶段运行代码的情况。
+这些是`application.Options`中的便捷回调，无需创建完整服务即可接入应用程序生命周期。它们适用于简单的清理任务、退出确认，或需要在关闭流程的特定阶段运行代码的场景。
 
-如果需要通过启动逻辑、依赖注入或有状态资源进行更复杂的生命周期管理，请改用[服务](#heading-2)。
+如果生命周期管理更复杂，涉及启动逻辑、依赖注入或有状态资源，请改用[服务](#heading-2)。
 
 ### ShouldQuit
 
-每当收到退出请求时，都会调用`ShouldQuit`回调——无论是用户关闭最后一个窗口、按下 Cmd+Q (macOS) / Alt+F4 (Windows)，还是以编程方式调用`app.Quit()`。
+每当应用程序收到退出请求时，都会调用`ShouldQuit`回调，无论是用户关闭最后一个窗口、按下 Cmd+Q (macOS) / Alt+F4 (Windows)，还是以编程方式调用`app.Quit()`。
 
 **返回值：**
 
 - 返回`true`以允许继续退出（应用程序将关闭）
-- 返回`false`以取消退出（应用程序将继续运行）
+- 返回`false`以取消退出（应用程序继续运行）
 
-你可以借此拦截退出请求，并选择阻止退出，例如提示用户存在未保存的更改：
+可以在此拦截退出请求，并视情况阻止退出，例如提示用户存在未保存的更改：
 
 ```go
 app := application.New(application.Options{
@@ -310,12 +310,12 @@ app := application.New(application.Options{
 
 **不调用 ShouldQuit 的情况：**
 
-- 进程被终止（SIGKILL、通过任务管理器强制退出）
+- 进程被终止（SIGKILL、任务管理器强制退出）
 - 直接调用`os.Exit()`
 
 ### OnShutdown
 
-确认应用程序即将退出时，将调用`OnShutdown`回调（如果设置了`ShouldQuit`，则在其返回`true`后调用）。可使用此回调执行保存状态、关闭数据库连接或释放资源等清理任务。
+确认应用程序即将退出时，将调用`OnShutdown`回调（如果设置了`ShouldQuit`，则在其返回`true`后调用）。此回调适用于保存状态、关闭数据库连接或释放资源等清理任务。
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-在应用程序生命周期内，也可以随时以编程方式注册其他关闭回调：
+还可以在应用程序生命周期内随时以编程方式注册其他关闭回调：
 
 ```go
 app.OnShutdown(func() {
@@ -339,17 +339,17 @@ app.OnShutdown(func() {
 
 多个回调按注册顺序执行。关闭流程会阻塞，直到所有回调执行完毕。
 
-<strong>重要提示：</strong>请确保关闭回调能快速完成（少于1秒）。操作系统可能会强制终止退出耗时过长的应用程序，这可能会中断清理工作并导致数据丢失。
+<strong>重要提示：</strong>关闭回调应尽快完成（不超过1秒）。如果应用退出耗时过长，操作系统可能会强制终止应用，从而中断清理工作并导致数据丢失。
 
 ### PostShutdown
 
-所有关闭任务完成后、进程终止前，将调用`PostShutdown`回调。此时应用程序实例已无法使用——窗口已关闭、服务已停止、资源已释放。
+所有关闭任务完成后、进程终止前，会调用`PostShutdown`回调。此时应用实例已无法使用——窗口已关闭、服务已停止、资源已释放。
 
-此回调主要用于：
+这主要适用于：
 
-- 在完成所有其他清理工作后必须执行的最终日志记录
+- 必须在所有其他清理工作完成后执行的最终日志记录
 - 测试和调试关闭行为
-- 在`app.Run()`不会返回的平台上确保代码得以运行
+- `app.Run()`不会返回的平台（此回调可确保代码得到执行）
 
 ```go
 app := application.New(application.Options{
@@ -363,19 +363,19 @@ app := application.New(application.Options{
 })
 ```
 
-<strong>注意：</strong>请勿尝试在`PostShutdown`中使用应用程序功能（窗口、对话框等），因为这些功能已不可用。
+<strong>注意：</strong>请勿尝试在`PostShutdown`中使用应用功能（窗口、对话框等），因为这些功能已不可用。
 
 ## 基于事件的生命周期
 
-Wails 提供了一个事件系统，可在应用程序中发生各种情况时通知你，例如窗口打开、应用程序启动、主题更改等。你可以监听这些事件，以便在不阻塞或拦截事件的情况下响应生命周期变化。
+Wails 提供事件系统，可在应用中发生各种情况时通知你，例如窗口打开、应用启动、主题更改等。你可以监听这些事件，以便在不阻塞或拦截事件的情况下响应生命周期变化。
 
-对于窗口事件，如果需要拦截并取消操作（例如阻止窗口关闭），还可以使用`RegisterHook`而不是`OnWindowEvent`。请参阅下文的[窗口钩子](#heading-10)。
+对于窗口事件，你还可以使用`RegisterHook`代替`OnWindowEvent`来拦截并取消操作，例如阻止窗口关闭。请参阅下文的[窗口钩子](#heading-10)。
 
 有关事件系统的完整文档，请参阅[事件指南](/features/events/system/)。
 
-### 应用程序事件
+### 应用事件
 
-监听应用程序生命周期事件：
+监听应用生命周期事件：
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
@@ -383,7 +383,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *appli
 })
 ```
 
-还可以使用平台特定的事件：
+还可以使用平台特定事件：
 
 ```go
 // macOS
@@ -419,7 +419,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ### 窗口钩子（可取消事件）
 
-需要<strong>取消</strong>事件时，请使用`RegisterHook`而不是`OnWindowEvent`：
+需要**取消**事件时，请使用`RegisterHook`而不是`OnWindowEvent`：
 
 ```go
 window := app.Window.New()
@@ -440,11 +440,11 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 **OnWindowEvent 与 RegisterHook 的区别：**
 
 - `OnWindowEvent`：在事件发生时通知你（无法取消）
-- `RegisterHook`：允许你拦截并视情况取消事件
+- `RegisterHook`：允许你拦截事件，并可选择取消事件
 
 ## 窗口生命周期
 
-窗口有自己的生命周期，从创建到销毁。每个窗口独立加载其前端内容，并且可以随时显示、隐藏或关闭。当用户尝试关闭窗口时，你可以使用`RegisterHook`拦截此操作，以提示用户确认，或隐藏窗口而不将其销毁。
+窗口拥有从创建到销毁的独立生命周期。每个窗口都会独立加载其前端内容，并且可以随时显示、隐藏或关闭。当用户尝试关闭窗口时，你可以使用`RegisterHook`拦截该操作，提示用户确认，或隐藏窗口而不将其销毁。
 
 有关窗口的完整文档，请参阅[窗口指南](/features/windows/basics/)。
 
@@ -537,9 +537,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-### 隐藏而非关闭
+### 隐藏而不是关闭
 
-系统托盘应用常用以下模式：
+系统托盘应用的一种常见模式：
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -573,7 +573,7 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | Windows | 应用退出 |
 | Linux | 应用退出 |
 
-macOS 遵循平台原生惯例，即使没有窗口，应用通常也会在菜单栏中保持活动状态。Windows 和 Linux 默认会退出应用。
+macOS 遵循平台的原生惯例，即使没有任何窗口，应用通常仍会在菜单栏中保持活动状态。Windows 和 Linux 默认会退出应用。
 
 **让所有平台在最后一个窗口关闭时退出应用：**
 
@@ -587,7 +587,7 @@ app := application.New(application.Options{
 
 **让所有平台在最后一个窗口关闭时继续运行应用：**
 
-这适用于系统托盘应用或需要在后台继续运行的应用。
+这适用于系统托盘应用或应在后台继续运行的应用。
 
 ```go
 app := application.New(application.Options{
@@ -602,7 +602,7 @@ app := application.New(application.Options{
 
 ## 常见模式
 
-### 模式 1：数据库服务
+### 模式1：数据库服务
 
 ```go
 type DatabaseService struct {
@@ -636,7 +636,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### 模式 2：配置服务
+### 模式2：配置服务
 
 ```go
 type ConfigService struct {
@@ -668,7 +668,7 @@ func (s *ConfigService) ServiceShutdown() error {
 }
 ```
 
-### 模式 3：后台工作程序
+### 模式3：后台工作程序
 
 ```go
 type WorkerService struct {
@@ -708,7 +708,7 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ## 生命周期参考
 
-| 钩子/接口 | 调用时机 | 可取消？ | 用途 |
+| 钩子/接口 | 调用时机 | 能否取消？ | 用途 |
 | --- | --- | --- | --- |
 | `ServiceStartup` | 在`app.Run()`期间、事件循环开始前 | 否（返回错误可中止） | 初始化 |
 | `ServiceShutdown` | 关闭期间，在`OnShutdown`之后 | 否 | 清理 |
@@ -722,25 +722,25 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 ### macOS
 
-- 即使没有窗口，<strong>应用程序菜单</strong>也会保留
-- <strong>Cmd+Q</strong>会触发退出（经过`ShouldQuit`）
-- 除非隐藏，否则<strong>程序坞图标</strong>会一直保留
+- 即使没有窗口，**应用程序菜单**也会保留
+- **Cmd+Q**会触发退出（经由`ShouldQuit`）
+- 除非隐藏，否则**程序坞图标**会一直保留
 - 使用`ApplicationShouldTerminateAfterLastWindowClosed`控制退出行为
 
 ### Windows
 
-- 没有窗口时<strong>不会显示应用程序菜单</strong>
-- <strong>Alt+F4</strong>会关闭窗口（可使用`RegisterHook`阻止）
-- <strong>系统托盘</strong>可使应用保持运行
+- 没有窗口时，**不会显示应用程序菜单**
+- **Alt+F4**会关闭窗口（可通过`RegisterHook`阻止）
+- **系统托盘**可让应用继续运行
 
 ### Linux
 
-- **行为会因桌面环境而异**
+- **行为**因桌面环境而异
 - **通常与 Windows 类似**
 
 ## 调试生命周期问题
 
-### 问题：应用无法退出
+### 问题：应用程序无法退出
 
 **原因：**
 
@@ -787,28 +787,28 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-系统将记录该错误，并且应用不会启动。
+系统会记录该错误，并且应用程序不会启动。
 
 ## 最佳实践
 
 ### 应该做
 
 - **使用服务管理生命周期**——服务提供适当的启动和关闭钩子
-- **快速完成关闭**——争取在1秒内完成所有清理工作
+- **快速完成关闭**——所有清理工作的目标耗时应少于1秒
 - **使用 context 取消操作**——正确停止后台任务
-- **处理启动过程中的错误**——返回错误以彻底中止启动
+- **处理启动期间的错误**——返回错误以干净地中止启动
 - **记录生命周期事件**——有助于调试
 
-### 不应该做
+### 不要做
 
-- **不要在服务启动期间阻塞**——快速完成初始化（控制在2秒内）
-- **不要在关闭期间显示对话框**——应用正在退出，UI 可能无法正常工作
+- **不要在服务启动时阻塞**——快速完成初始化（少于2秒）
+- **不要在关闭期间显示对话框**——应用正在退出，UI 可能无法工作
 - **不要忽略 context**——始终在 goroutine 中检查`ctx.Done()`
 - **不要泄漏资源**——始终实现`ServiceShutdown`
 
 ## 后续步骤
 
-**服务**——进一步了解服务系统 [了解更多 →](/features/bindings/services/)
+**服务**——深入了解服务系统 [了解更多 →](/features/bindings/services/)
 
 **事件系统**——使用事件进行通信 [了解更多 →](/features/events/system/)
 
@@ -816,4 +816,4 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ---
 
-<strong>有生命周期方面的问题？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问或查看[示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
+<strong>对生命周期有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问或查看[示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

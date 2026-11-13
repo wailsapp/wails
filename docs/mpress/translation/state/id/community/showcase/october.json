@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "d5430270e8a0f07efe7c",
   "sourceFile": "community/showcase/october.md",
   "sourceLanguage": "en",
@@ -18,42 +19,42 @@
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0002-text-01": {
-      "sourceHash": "8abb59d117fa8d9809a5ab1d3a56cc5d6c49258aaf2c0eafcfe677cdb00c0e81",
-      "targetHash": "1dbd6c093bf978244092307650782137c1f710b57a83f2422cd3aa428d3cdc18",
-      "machineHash": "1dbd6c093bf978244092307650782137c1f710b57a83f2422cd3aa428d3cdc18",
-      "machineText": "[October](https://october.utf9k.net) adalah aplikasi Wails kecil yang sangat memudahkan ekstraksi sorotan dari\\\n[Kobo eReader](https://en.wikipedia.org/wiki/Kobo_eReader), lalu meneruskannya ke [Readwise](https://readwise.io).",
+      "sourceHash": "e08f913a6b3a74cccf845fb2582140dc8c1b12b755a07797d49daba89fed5ac9",
+      "targetHash": "dab2a318956ef1ec22768253ddfd974564bd424b293fe49c19dd3073f7b4c63a",
+      "machineHash": "dab2a318956ef1ec22768253ddfd974564bd424b293fe49c19dd3073f7b4c63a",
+      "machineText": "[October](https://october.utf9k.net) adalah aplikasi Wails kecil yang sangat memudahkan ekstraksi sorotan dari [Kobo eReader](https://en.wikipedia.org/wiki/Kobo_eReader), lalu meneruskannya ke [Readwise](https://readwise.io).",
       "status": "final",
-      "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it\\ really easy to extr…",
+      "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it really easy to extra…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0003-text-01": {
-      "sourceHash": "29d79eaad378274371e8c6e65a98996328a635b81e486b835ab2ce5091c69988",
-      "targetHash": "8c2fccd9ae9f9a151a3a7e879c170e9e0cf6e6dea7d3eda77e7c97307b4389b7",
-      "machineHash": "8c2fccd9ae9f9a151a3a7e879c170e9e0cf6e6dea7d3eda77e7c97307b4389b7",
-      "machineText": "Cakupannya relatif kecil, dengan semua versi platform berukuran kurang dari\\\n10 MB, bahkan tanpa mengaktifkan [kompresi UPX](https://upx.github.io/)!",
+      "sourceHash": "580f50c73d6c4fdbd3f0f9087cd94641dc295ef4be4690dd9efea142df0a351d",
+      "targetHash": "4ddb11224a41235479886c4a63d3fed3aa96edb2fa4b269baaaf7a328d47c087",
+      "machineHash": "4ddb11224a41235479886c4a63d3fed3aa96edb2fa4b269baaaf7a328d47c087",
+      "machineText": "Cakupannya relatif kecil, dengan semua versi platform berukuran kurang dari 10 MB, bahkan tanpa mengaktifkan [kompresi UPX](https://upx.github.io/)!",
       "status": "final",
-      "sourcePreview": "It has a relatively small scope with all platform versions weighing in under\\ 10MB, and that's witho…",
+      "sourcePreview": "It has a relatively small scope with all platform versions weighing in under 10MB, and that's withou…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0004-text-01": {
-      "sourceHash": "168bd9cc70124dd7b3bf65ceac42f0331f43bfd6fbf6adab523d968cd82b6468",
-      "targetHash": "12e171b0f6df4aaf9b0e960faf713852f0405220503b092eb121e3b221e73ff1",
-      "machineHash": "12e171b0f6df4aaf9b0e960faf713852f0405220503b092eb121e3b221e73ff1",
-      "machineText": "Sebaliknya, upaya penulis sebelumnya menggunakan Electron dengan cepat membengkak hingga\\\nbeberapa ratus megabita.",
+      "sourceHash": "d48cb7f6f68aa05f992673d2adf897fb0636be8a9b7ba2ad00ea57db87e9807d",
+      "targetHash": "808773586c5e8c19d6922bdfcf9404bc8268bc3e1276ad51c9cf4f9a9410986a",
+      "machineHash": "808773586c5e8c19d6922bdfcf9404bc8268bc3e1276ad51c9cf4f9a9410986a",
+      "machineText": "Sebaliknya, upaya penulis sebelumnya menggunakan Electron dengan cepat membengkak hingga beberapa ratus megabita.",
       "status": "final",
-      "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to\\ several hundred megaby…",
+      "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to several hundred megabyt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
       "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
@@ -65,7 +66,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
       "targetHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
       "machineHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
@@ -76,6 +77,86 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/october.mpd",
+    "sourceHash": "9e71e6d3b0085e0aba16a6493527caada8eb866fbc279518a976f47fde9c3315",
+    "targetHash": "53e8060a48bc50205955e92fc67c27ebc11ba0318f4f73a6dcd271e4d285b2f1",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+        "targetHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+        "machineHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+        "machineText": "![October](/assets/showcase-images/october.webp)",
+        "status": "final",
+        "sourcePreview": "![October](/assets/showcase-images/october.webp)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "8abb59d117fa8d9809a5ab1d3a56cc5d6c49258aaf2c0eafcfe677cdb00c0e81",
+        "targetHash": "1dbd6c093bf978244092307650782137c1f710b57a83f2422cd3aa428d3cdc18",
+        "machineHash": "1dbd6c093bf978244092307650782137c1f710b57a83f2422cd3aa428d3cdc18",
+        "machineText": "[October](https://october.utf9k.net) adalah aplikasi Wails kecil yang sangat memudahkan ekstraksi sorotan dari\\\n[Kobo eReader](https://en.wikipedia.org/wiki/Kobo_eReader), lalu meneruskannya ke [Readwise](https://readwise.io).",
+        "status": "final",
+        "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it\\ really easy to extr…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0003-text-01": {
+        "sourceHash": "29d79eaad378274371e8c6e65a98996328a635b81e486b835ab2ce5091c69988",
+        "targetHash": "8c2fccd9ae9f9a151a3a7e879c170e9e0cf6e6dea7d3eda77e7c97307b4389b7",
+        "machineHash": "8c2fccd9ae9f9a151a3a7e879c170e9e0cf6e6dea7d3eda77e7c97307b4389b7",
+        "machineText": "Cakupannya relatif kecil, dengan semua versi platform berukuran kurang dari\\\n10 MB, bahkan tanpa mengaktifkan [kompresi UPX](https://upx.github.io/)!",
+        "status": "final",
+        "sourcePreview": "It has a relatively small scope with all platform versions weighing in under\\ 10MB, and that's witho…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0004-text-01": {
+        "sourceHash": "168bd9cc70124dd7b3bf65ceac42f0331f43bfd6fbf6adab523d968cd82b6468",
+        "targetHash": "12e171b0f6df4aaf9b0e960faf713852f0405220503b092eb121e3b221e73ff1",
+        "machineHash": "12e171b0f6df4aaf9b0e960faf713852f0405220503b092eb121e3b221e73ff1",
+        "machineText": "Sebaliknya, upaya penulis sebelumnya menggunakan Electron dengan cepat membengkak hingga\\\nbeberapa ratus megabita.",
+        "status": "final",
+        "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to\\ several hundred megaby…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+        "targetHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+        "machineHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+        "machineText": "October",
+        "status": "final",
+        "sourcePreview": "October",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      }
     }
   }
 }

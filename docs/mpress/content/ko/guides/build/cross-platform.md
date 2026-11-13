@@ -7,9 +7,9 @@ sourcePath: "guides/build/cross-platform.md"
 
 ## 빠른 시작
 
-Wails v3는 어떤 호스트 운영 체제에서든 Windows, macOS 및 Linux용 빌드를 지원합니다. 빌드 시스템은 환경을 자동으로 감지하여 적절한 컴파일 방식을 선택합니다.
+Wails v3에서는 어떤 호스트 운영 체제에서든 Windows, macOS 및 Linux용으로 빌드할 수 있습니다. 빌드 시스템이 환경을 자동으로 감지하여 적절한 컴파일 방법을 선택합니다.
 
-**macOS 및 Linux용으로 크로스 컴파일하려고 하나요?** Docker 이미지를 설정하려면 다음 명령을 한 번 실행하세요(약 800MB 다운로드):
+**macOS 및 Linux용으로 크로스 컴파일하려고 하나요?** 다음 명령을 한 번 실행하여 Docker 이미지를 설정하세요(약 800MB 다운로드):
 
 ```bash
 wails3 task setup:docker
@@ -43,7 +43,7 @@ Windows는 기본적으로 CGO가 필요하지 않으므로 가장 간단한 크
 wails3 build GOOS=windows
 ```
 
-추가 설정 없이 어떤 호스트 OS에서든 빌드할 수 있습니다. Go의 기본 제공 크로스 컴파일 기능이 모든 작업을 처리합니다.
+추가 설정 없이 어떤 호스트 OS에서든 사용할 수 있습니다. Go에 내장된 크로스 컴파일 기능이 모든 작업을 처리합니다.
 
 **앱에 CGO가 필요한 경우**(예: C 라이브러리 또는 CGO 종속 패키지를 사용하는 경우) macOS나 Linux에서 빌드하려면 Docker가 필요합니다:
 
@@ -55,11 +55,11 @@ wails3 task setup:docker
 wails3 task windows:build CGO_ENABLED=1
 ```
 
-Taskfile은 Windows가 아닌 호스트에서 `CGO_ENABLED=1`을 감지하고 Docker 이미지를 자동으로 사용합니다.
+Taskfile은 Windows가 아닌 호스트에서 `CGO_ENABLED=1`을 감지하면 Docker 이미지를 자동으로 사용합니다.
 
 ### macOS
 
-macOS 빌드는 WebView 통합에 CGO가 필요하므로 크로스 컴파일하려면 특수 도구가 필요합니다.
+macOS 빌드는 WebView 통합에 CGO가 필요하므로 크로스 컴파일에는 특수 도구가 필요합니다.
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -72,15 +72,15 @@ wails3 build GOOS=darwin GOARCH=amd64
 wails3 task darwin:build:universal
 ```
 
-**Linux 또는 Windows에서 빌드하는 경우** 먼저 Docker를 설정해야 합니다:
+**Linux 또는 Windows에서** 빌드하려면 먼저 Docker를 설정해야 합니다:
 
 ```bash
 wails3 task setup:docker
 ```
 
-이미지를 빌드하고 나면 빌드 시스템은 현재 환경이 macOS가 아님을 감지하고 Docker를 자동으로 사용합니다. 빌드 명령을 변경할 필요는 없습니다.
+이미지를 빌드한 후에는 빌드 시스템이 현재 환경이 macOS가 아님을 감지하고 Docker를 자동으로 사용합니다. 빌드 명령을 변경할 필요가 없습니다.
 
-크로스 컴파일된 macOS 바이너리는 코드 서명되지 않습니다. 배포하기 전에 macOS 또는 CI에서 서명해야 합니다.
+크로스 컴파일된 macOS 바이너리에는 코드 서명이 되어 있지 않습니다. 배포하기 전에 macOS 또는 CI에서 서명해야 합니다.
 
 ### Linux
 
@@ -94,22 +94,22 @@ wails3 build GOOS=linux GOARCH=amd64
 wails3 build GOOS=linux GOARCH=arm64
 ```
 
-**macOS 또는 Windows에서 빌드하는 경우** 먼저 Docker를 설정해야 합니다:
+**macOS 또는 Windows에서** 빌드하려면 먼저 Docker를 설정해야 합니다:
 
 ```bash
 wails3 task setup:docker
 ```
 
-빌드 시스템은 현재 환경이 Linux가 아님을 감지하고 Docker를 자동으로 사용합니다.
+빌드 시스템이 현재 환경이 Linux가 아님을 감지하고 Docker를 자동으로 사용합니다.
 
-**C 컴파일러가 없는 Linux에서는** 빌드 시스템이 `gcc` 또는 `clang`을 확인합니다. 둘 다 없으면 Docker를 대신 사용합니다. 이는 최소 구성 컨테이너나 빌드 도구가 설치되지 않은 시스템에 유용합니다. 다음 중 하나를 선택할 수 있습니다:
+**C 컴파일러가 없는 Linux에서는** 빌드 시스템이 `gcc` 또는 `clang`을 확인합니다. 둘 다 찾지 못하면 Docker를 대신 사용합니다. 이는 최소 구성 컨테이너나 빌드 도구가 설치되지 않은 시스템에 유용합니다. 다음 방법 중 하나를 선택할 수 있습니다:
 
-1. C 컴파일러를 설치하세요: `sudo apt install build-essential`(Debian/Ubuntu) 또는 `sudo pacman -S base-devel`(Arch)
-2. Docker 이미지를 빌드하여 자동으로 사용되도록 하세요
+1. C 컴파일러 설치: `sudo apt install build-essential`(Debian/Ubuntu) 또는 `sudo pacman -S base-devel`(Arch)
+2. Docker 이미지를 빌드하고 자동으로 사용되도록 하기
 
 ### ARM 아키텍처
 
-모든 플랫폼은 `GOARCH`을 사용한 ARM64 크로스 컴파일을 지원합니다:
+모든 플랫폼에서 `GOARCH`을 사용한 ARM64 크로스 컴파일을 지원합니다:
 
 ```bash
 # Windows ARM64 (Surface Pro X, Windows on ARM)
@@ -125,15 +125,15 @@ wails3 build GOOS=darwin GOARCH=arm64
 wails3 build GOOS=darwin GOARCH=amd64
 ```
 
-Docker 이미지에는 모든 플랫폼의 amd64 및 arm64용 Zig 크로스 컴파일러 대상이 포함되어 있으므로 어떤 호스트에서든 ARM 빌드를 수행할 수 있습니다:
+Docker 이미지에는 모든 플랫폼의 amd64 및 arm64용 Zig 크로스 컴파일러 대상이 포함되어 있으므로 어떤 호스트에서든 ARM 빌드가 가능합니다:
 
 | ARM64 빌드 대상 | Windows에서 | macOS에서 | Linux에서 |
 | --- | --- | --- | --- |
-| **Windows ARM64** | Go 기본 기능 | Go 기본 기능 | Go 기본 기능 |
+| **Windows ARM64** | 네이티브 Go | 네이티브 Go | 네이티브 Go |
 | **macOS ARM64** | Docker | 네이티브 | Docker |
 | **Linux ARM64** | Docker | Docker | Docker_ |
 
-<em>Linux x86</em>64에서 Linux ARM64용으로 빌드할 때는 CGO 크로스 컴파일에 다른 툴체인이 필요하므로 Docker를 사용합니다.
+<em>Linux x86에서 Linux ARM64용으로 빌드하는 경우</em>64 CGO 크로스 컴파일에 다른 도구 체인이 필요하므로 Docker를 사용합니다.
 
 ## 작동 방식
 
@@ -142,52 +142,52 @@ Docker 이미지에는 모든 플랫폼의 amd64 및 arm64용 Zig 크로스 컴�
 | 호스트 → 대상 | Windows | macOS | Linux |
 | --- | --- | --- | --- |
 | **Windows** | 네이티브 | Docker | Docker |
-| **macOS** | Go 기본 기능 | 네이티브 | Docker |
-| **Linux** | Go 기본 기능 | Docker | 네이티브 |
+| **macOS** | 네이티브 Go | 네이티브 | Docker |
+| **Linux** | 네이티브 Go | Docker | 네이티브 |
 
-- **네이티브** = 플랫폼의 네이티브 툴체인, 추가 설정 불필요
-- **Go 기본 기능** = Go의 기본 제공 크로스 컴파일(`CGO_ENABLED=0`)
+- **네이티브** = 플랫폼의 네이티브 도구 체인, 추가 설정 불필요
+- **네이티브 Go** = Go에 내장된 크로스 컴파일(`CGO_ENABLED=0`)
 - **Docker** = Zig 크로스 컴파일러가 포함된 Docker 이미지
 
 ### CGO 요구 사항
 
-| 대상 | CGO 필요 여부 | 크로스 컴파일 방식 |
+| 대상 | CGO 필요 여부 | 크로스 컴파일 방법 |
 | --- | --- | --- |
-| Windows | 아니요(기본값) | Go 기본 기능. `CGO_ENABLED=1`인 경우에만 Docker 사용 |
+| Windows | 아니요(기본값) | 네이티브 Go. `CGO_ENABLED=1`인 경우에만 Docker 사용 |
 | macOS | 예 | macOS SDK가 포함된 Docker |
-| Linux | 예 | Docker 또는 C 컴파일러를 사용할 수 있는 경우 네이티브 빌드 |
+| Linux | 예 | Docker 또는 C 컴파일러를 사용할 수 있으면 네이티브 |
 
 ### 자동 감지
 
-Taskfile은 환경에 따라 적절한 빌드 방식을 자동으로 선택합니다:
+Taskfile은 환경에 따라 적절한 빌드 방법을 자동으로 선택합니다:
 
-- **Windows 대상:** 기본적으로 네이티브 Go 교차 컴파일을 사용합니다. Windows가 아닌 호스트에서 `CGO_ENABLED=1`을(를) 명시적으로 설정하면 Docker로 전환합니다.
+- **Windows 대상:** 기본적으로 네이티브 Go 크로스 컴파일을 사용합니다. Windows가 아닌 호스트에서 `CGO_ENABLED=1`을 명시적으로 설정하면 Docker로 전환합니다.
 - **macOS 대상:** macOS가 아닌 환경에서는 Docker를 자동으로 사용합니다. 수동으로 개입할 필요가 없습니다.
-- **Linux 대상:** `gcc` 또는 `clang`이(가) 있는지 확인합니다. 발견되면 네이티브 컴파일을 사용하고, 그렇지 않으면 Docker를 사용합니다.
+- **Linux 대상:** `gcc` 또는 `clang`을 확인합니다. 찾으면 네이티브 컴파일을 사용하고, 그렇지 않으면 Docker를 대신 사용합니다.
 
 ### Docker 이미지
 
-Wails는 모든 플랫폼용으로 빌드할 수 있는 단일 Docker 이미지(`wails-cross`)를 사용합니다. 모든 호스트에서 모든 플랫폼을 대상으로 지정할 수 있는 교차 컴파일러인 [Zig](https://ziglang.org/)를 사용합니다. darwin 대상용 macOS SDK도 포함되어 있습니다.
+Wails는 모든 플랫폼용으로 빌드할 수 있는 단일 Docker 이미지(`wails-cross`)를 사용합니다. 어떤 호스트에서든 모든 플랫폼을 대상으로 지정할 수 있는 크로스 컴파일러인 [Zig](https://ziglang.org/)를 사용합니다. darwin 대상용 macOS SDK도 포함되어 있습니다.
 
 ```bash
 wails3 task setup:docker
 ```
 
-`wails3 doctor`을(를) 실행하여 이미지가 준비되었는지 확인할 수 있습니다.
+`wails3 doctor`을 실행하여 이미지가 준비되었는지 확인할 수 있습니다.
 
 ### macOS SDK
 
-Docker 이미지는 이미지 빌드 과정에서 [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks)에서 macOS SDK를 다운로드합니다. CGO 컴파일에는 macOS 헤더가 필요하므로 이 SDK가 필요합니다.
+Docker 이미지는 이미지 빌드 과정에서 [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks)로부터 macOS SDK를 다운로드합니다. CGO 컴파일에는 macOS 헤더가 필요하므로 이 SDK가 필요합니다.
 
 **중요:** Wails는 macOS SDK를 배포하지 않습니다. 이 기능을 사용하기 전에 Apple의 SDK 라이선스 조건을 검토할 책임은 사용자에게 있습니다.
 
 ## 직접 이미지 빌드하기
 
-Docker 이미지를 사용자 지정해야 하는 경우(예: 다른 macOS SDK 버전 사용, 추가 도구 설치 또는 자체 SDK 사용) 이미지를 직접 빌드할 수 있습니다.
+다른 macOS SDK 버전을 사용하거나, 도구를 추가하거나, 자체 SDK를 사용하는 등 Docker 이미지를 사용자 지정해야 하는 경우 이미지를 직접 빌드할 수 있습니다.
 
 ### Dockerfile
 
-다음 내용으로 `Dockerfile`을(를) 만드세요:
+다음 내용으로 `Dockerfile`을 생성하세요:
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -401,11 +401,11 @@ docker build -t wails-cross .
 docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
 ```
 
-선택할 수 있는 버전은 [사용 가능한 SDK 버전](https://github.com/wailsapp/macosx-sdks/releases)에서 확인하세요.
+선택 가능한 버전은 [사용 가능한 SDK 버전](https://github.com/wailsapp/macosx-sdks/releases)을 참조하세요.
 
 ### 자체 SDK 사용하기
 
-자체 macOS SDK(예: Xcode에서 추출한 SDK)가 있는 경우 다운로드 대신 로컬 파일을 사용하도록 Dockerfile을 수정할 수 있습니다:
+Xcode에서 추출한 SDK와 같은 자체 macOS SDK가 있다면 다운로드 대신 로컬 파일을 사용하도록 Dockerfile을 수정할 수 있습니다:
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -416,11 +416,11 @@ RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
     && rm /tmp/sdk.tar.xz
 ```
 
-SDK tarball을 Dockerfile과 같은 디렉터리에 두고 빌드하세요.
+SDK tarball을 Dockerfile과 같은 디렉터리에 넣고 빌드하세요.
 
 ## CI/CD 통합
 
-프로덕션 릴리스에는 플랫폼별 네이티브 러너를 사용하는 CI/CD를 권장합니다. 이렇게 하면 교차 컴파일을 완전히 피할 수 있으며 올바르게 서명된 바이너리를 얻을 수 있습니다.
+프로덕션 릴리스에는 플랫폼별 네이티브 러너를 사용하는 CI/CD를 권장합니다. 이렇게 하면 크로스 컴파일을 완전히 피하고 올바르게 서명된 바이너리를 얻을 수 있습니다.
 
 ```yaml
 name: Build
@@ -477,19 +477,19 @@ jobs:
 Docker image 'wails-cross' not found.
 ```
 
-`wails3 task setup:docker`을(를) 실행하여 Docker 이미지를 빌드하세요. 이 작업은 한 번만 하면 됩니다.
+`wails3 task setup:docker`을 실행하여 Docker 이미지를 빌드하세요. 이 작업은 한 번만 수행하면 됩니다.
 
-### Docker 데몬이 실행되고 있지 않음
+### Docker 데몬이 실행 중이 아님
 
 ```
 Docker is required for cross-compilation. Please install Docker.
 ```
 
-Docker Desktop 또는 Docker 데몬을 시작하세요. Linux에서는 `sudo systemctl start docker`을(를) 실행해야 할 수 있습니다.
+Docker Desktop 또는 Docker 데몬을 시작하세요. Linux에서는 `sudo systemctl start docker`을 실행해야 할 수 있습니다.
 
 ### Linux에 C 컴파일러가 없음
 
-Linux에서 빌드할 때 CGO 관련 오류가 발생하면 다음 두 가지 방법 중 하나를 선택할 수 있습니다:
+Linux에서 빌드할 때 CGO 관련 오류가 표시되면 다음 두 가지 방법 중 하나를 사용할 수 있습니다:
 
 1. **C 컴파일러 설치:**
   - Debian/Ubuntu: `sudo apt install build-essential`
@@ -497,18 +497,18 @@ Linux에서 빌드할 때 CGO 관련 오류가 발생하면 다음 두 가지 �
   - Fedora: `sudo dnf install gcc`
 
 
-2. **Docker 사용:** `wails3 task setup:docker`을(를) 실행하세요. 컴파일러가 감지되지 않으면 Taskfile이 Docker를 자동으로 사용합니다.
+2. **대신 Docker 사용:** `wails3 task setup:docker`을 실행하세요. 컴파일러가 감지되지 않으면 Taskfile이 Docker를 자동으로 사용합니다.
 
 ### macOS 바이너리가 서명되지 않음
 
-교차 컴파일된 macOS 바이너리에는 코드 서명이 적용되지 않습니다. Apple은 배포 시 코드 서명을 요구하므로 다음 중 하나를 수행해야 합니다:
+크로스 컴파일된 macOS 바이너리에는 코드 서명이 적용되지 않습니다. Apple은 배포 시 코드 서명을 요구하므로 다음 중 하나를 수행해야 합니다:
 
-1. macOS 머신에서 바이너리에 서명하거나
-2. macOS 러너를 사용하는 CI에서 서명하세요.
+1. macOS 컴퓨터에서 바이너리에 서명하거나
+2. macOS 러너를 사용하여 CI에서 서명하세요.
 
 자세한 내용은 [애플리케이션 서명](/guides/build/signing/)을 참조하세요.
 
-### 유니버설 바이너리 만들기
+### 유니버설 바이너리 생성
 
 유니버설 바이너리(arm64와 amd64 결합)는 모든 플랫폼에서 빌드할 수 있습니다:
 

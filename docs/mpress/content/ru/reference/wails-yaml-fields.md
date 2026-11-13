@@ -60,19 +60,22 @@ description: "Справочник по сгенерированным поля�
 | `darwin.microphone_usage_description` | `string` | нет |  | `"value"` | `darwin` | Текст запроса разрешения на использование микрофона в macOS; создаёт право на аудиоввод, если не настроен предоставляемый пользователем файл прав. |
 | `darwin.minimum_version` | `string` | нет |  | `"12.0"` | `windows,darwin,linux,ios` | Минимальная поддерживаемая версия операционной системы. |
 | `darwin.notarization` | `object` | нет |  | `{}` | `darwin` | Настройки нотариального заверения macOS. |
+| `darwin.notarization.api_key` | `string` | нет |  | `"signing/AuthKey.p8"` |  | Файл закрытого API-ключа команды App Store Connect в формате .p8 с путём относительно проекта. Использует переносимый Notary API вместо notarytool; требуются key_id и issuer_id. |
 | `darwin.notarization.credential` | `string` | нет |  | `"release-notary"` |  | Имя профиля связки ключей Apple notarytool, используемого для нотариального заверения. |
-| `darwin.product_name` | `string` | нет |  | `"value"` | `windows,darwin,linux` | Удобочитаемое название продукта. |
+| `darwin.notarization.issuer_id` | `string` | нет |  | `"00000000-0000-0000-0000-000000000000"` |  | Идентификатор издателя команды App Store Connect для нотариального заверения через API. |
+| `darwin.notarization.key_id` | `string` | нет |  | `"ABCDEFGHIJ"` |  | Идентификатор API-ключа команды App Store Connect, соответствующий api_key. |
+| `darwin.product_name` | `string` | нет |  | `"value"` | `windows,darwin,linux` | Понятное пользователю название продукта. |
 | `darwin.signing` | `object` | нет |  | `{}` |  | Настройки подписывания для платформы. |
-| `darwin.signing.certificate` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `darwin.signing.credential` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
+| `darwin.signing.certificate` | `string` | нет |  | `"signing/developer-id.p12"` |  | Экспортированный идентификатор PKCS#12 с путём относительно проекта для переносимого подписывания средствами Go; не указывайте, чтобы использовать идентификатор из связки ключей macOS или специальную подпись. |
+| `darwin.signing.credential` | `string` | нет |  | `"APPLE_SIGNING_PASSWORD"` |  | Имя переменной окружения, содержащей пароль экспортированного идентификатора PKCS#12; никогда не указывайте здесь сам пароль. |
 | `darwin.signing.entitlements` | `string` | нет |  | `"signing/entitlements.plist"` |  | Файл прав Apple с путём относительно корня проекта. |
-| `darwin.signing.identity` | `string` | нет |  | `"Developer ID Application: Example"` |  | Идентификатор подписи кода macOS из связки ключей; для ad-hoc-подписи используйте -. |
+| `darwin.signing.identity` | `string` | нет |  | `"Developer ID Application: Example"` |  | Идентификатор подписи кода macOS из связки ключей; укажите - для переносимого специального подписывания либо настройте экспортированный сертификат. |
 | `darwin.signing.key_alias` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
 | `darwin.signing.provisioning_profile` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `darwin.signing.thumbprint` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `darwin.signing.timestamp_server` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
+| `darwin.signing.thumbprint` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `darwin.signing.timestamp_server` | `string` | нет |  | `"https://timestamp.example.com"` |  | URL-адрес службы меток времени RFC 3161 для переносимого подписывания сертификатом; обязателен для подписей сертификатом, подлежащих нотариальному заверению. |
 | `dev` | `object` | нет |  | `{}` |  | Настройки сборки для разработки и средства отслеживания изменений. |
-| `dev.args` | `list(string)` | нет |  | `["value"]` |  | Аргументы приложения для разработки, передаваемые без подстановок оболочки; поддерживаются на настольных платформах и iOS. Для Android требуется пустой список. |
+| `dev.args` | `list(string)` | нет |  | `["value"]` |  | Аргументы приложения для разработки, передаваемые без подстановок командной оболочки; поддерживаются в настольных системах и iOS. Для Android требуется пустой список. |
 | `dev.debounce_ms` | `integer` | нет | `250` | `250` |  | Задержка для объединения изменений файлов во время разработки. |
 | `dev.exclude` | `list(string)` | нет | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | Шаблоны исключений средства отслеживания изменений при разработке. |
 | `dev.grace_period_ms` | `integer` | нет | `1500` | `1500` |  | Время, отведённое процессу разработки для корректного завершения. |
@@ -81,7 +84,7 @@ description: "Справочник по сгенерированным поля�
 | `dev.use_git_ignore` | `boolean` | нет | `true` | `true` |  | Применение правил .gitignore к средству отслеживания изменений при разработке. |
 | `dev.watch` | `list(string)` | нет | `["**/*.go","wails.yaml"]` | `["**/*.go", "wails.yaml"]` |  | Шаблоны включения файлов для отслеживания изменений при разработке. |
 | `file_associations` | `map(object)` | нет |  | `{}` |  | Именованные регистрации ассоциаций файлов. |
-| `file_associations["association"].description` | `string` | нет |  | `"value"` |  | Понятное человеку описание. |
+| `file_associations["association"].description` | `string` | нет |  | `"value"` |  | Удобочитаемое описание. |
 | `file_associations["association"].extensions` | `list(string)` | да |  | `["example"]` |  | Расширения файлов, обрабатываемые приложением. |
 | `file_associations["association"].icon` | `string` | нет |  | `"assets/appicon.png"` |  | Пользовательский файл значка с путём относительно проекта. |
 | `file_associations["association"].mime_type` | `string` | нет |  | `"application/x-example"` |  | Тип MIME, зарегистрированный для ассоциации файлов. |
@@ -129,25 +132,25 @@ description: "Справочник по сгенерированным поля�
 | `ios.signing.identity` | `string` | нет |  | `"Apple Development: Example"` |  | Идентификатор подписи кода Apple из связки ключей macOS. |
 | `ios.signing.key_alias` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
 | `ios.signing.provisioning_profile` | `string` | нет |  | `"signing/app.mobileprovision"` |  | Профиль подготовки Apple с путём относительно проекта. |
-| `ios.signing.thumbprint` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
-| `ios.signing.timestamp_server` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `ios.signing.thumbprint` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
+| `ios.signing.timestamp_server` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
 | `linux` | `object` | нет |  | `{}` |  | Параметры платформы Linux. |
 | `linux.build_number` | `integer` | нет |  | `1` | `windows,darwin,linux,ios` | Номер сборки для платформы. |
 | `linux.capabilities` | `list(string)` | нет |  | `["internetClient"]` | `windows,darwin,linux,ios` | Нативные возможности платформы, запрашиваемые приложением. |
 | `linux.desktop_entry` | `string` | нет |  | `"assets/app.desktop"` | `linux` | Принадлежащий пользователю файл desktop entry для Linux. |
-| `linux.icon` | `string` | нет |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Принадлежащий пользователю файл значка с путём относительно проекта. |
+| `linux.icon` | `string` | нет |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Пользовательский файл значка с путём относительно проекта. |
 | `linux.identifier` | `string` | нет |  | `"com.example.app"` | `windows,darwin,linux` | Идентификатор приложения в формате обратного доменного имени. |
 | `linux.minimum_version` | `string` | нет |  | `"12.0"` | `windows,darwin,linux,ios` | Минимальная поддерживаемая версия операционной системы. |
 | `linux.product_name` | `string` | нет |  | `"value"` | `windows,darwin,linux` | Удобочитаемое название продукта. |
 | `linux.signing` | `object` | нет |  | `{}` |  | Параметры подписывания для платформы. |
-| `linux.signing.certificate` | `string` | нет |  | `"signing/private-key.asc"` |  | Arch: принадлежащий пользователю экспортированный файл закрытого PGP-ключа в текстовом формате с путём относительно проекта. DEB/RPM: идентификатор PGP-ключа, передаваемый внешнему инструменту подписывания. |
-| `linux.signing.credential` | `string` | нет |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch: необязательная переменная окружения, содержащая парольную фразу закрытого ключа; не указывайте её для незашифрованного ключа. |
+| `linux.signing.certificate` | `string` | нет |  | `"signing/private-key.asc"` |  | Экспортированный файл закрытого ключа OpenPGP в текстовом или двоичном формате для нативного подписывания DEB, RPM или Arch. Если указать только идентификатор ключа GnuPG, для DEB/RPM сохранится внешний инструмент подписывания. |
+| `linux.signing.credential` | `string` | нет |  | `"LINUX_SIGNING_PASSPHRASE"` |  | Необязательная переменная окружения, содержащая парольную фразу экспортированного закрытого ключа; не указывайте для незашифрованного ключа. |
 | `linux.signing.entitlements` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
 | `linux.signing.identity` | `string` | нет |  | `"builder"` |  | Роль для подписывания DEB; по умолчанию — builder. Не используется средством создания отделённой подписи Arch. |
 | `linux.signing.key_alias` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
-| `linux.signing.provisioning_profile` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `linux.signing.provisioning_profile` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
 | `linux.signing.thumbprint` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
-| `linux.signing.timestamp_server` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `linux.signing.timestamp_server` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
 | `packages` | `map(object)` | нет |  | `{}` |  | Именованные параметры форматов пакетов. |
 | `packages["format"].background` | `string` | нет |  | `"assets/dmg-background.png"` | `dmg` | Принадлежащее пользователю фоновое изображение DMG. |
 | `packages["format"].categories` | `list(string)` | нет |  | `["Development"]` | `appimage` | Категории меню рабочего стола. |
@@ -157,6 +160,7 @@ description: "Справочник по сгенерированным поля�
 | `packages["format"].desktop_entry` | `string` | нет |  | `"assets/app.desktop"` | `appimage` | Пользовательский файл элемента рабочего стола Linux. |
 | `packages["format"].file_icon` | `string` | нет |  | `"assets/file.icns"` | `dmg` | Пользовательский файл значка DMG. |
 | `packages["format"].files` | `map(string)` | нет |  | `{License.pdf: LICENSE.pdf}` | `dmg` | Пользовательские файлы, копируемые в DMG; ключом служит имя файла в месте назначения. |
+| `packages["format"].gtk_version` | `integer` | нет |  | `1` | `appimage` | Профиль среды выполнения GTK: 3 или 4. По умолчанию определяется тегами сборки исполняемого файла с графическим интерфейсом, включая вспомогательные исполняемые файлы; импортированные библиотеки CGo должны использовать тот же профиль. |
 | `packages["format"].icon` | `string` | нет |  | `"assets/appicon.png"` | `appimage` | Пользовательский файл значка с путём относительно проекта. |
 | `packages["format"].install_scope` | `string` | нет |  | `"user"` | `nsis` | Область установки NSIS. |
 | `packages["format"].maintainer` | `string` | нет |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | Сопровождающий нативного пакета Linux. |
@@ -166,14 +170,16 @@ description: "Справочник по сгенерированным поля�
 | `packages["format"].pre_install` | `string` | нет |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | Сценарий Linux, выполняемый перед установкой, с путём относительно проекта. |
 | `packages["format"].pre_remove` | `string` | нет |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | Сценарий Linux, выполняемый перед удалением, с путём относительно проекта. |
 | `packages["format"].publisher` | `string` | нет |  | `"CN=Example"` | `msix` | Идентификатор издателя пакета Windows. |
+| `packages["format"].runtime_path` | `string` | нет |  | `"value"` | `appimage` | ELF-файл среды выполнения AppImage типа 2 для целевой платформы с путём относительно проекта; по умолчанию загружается закреплённая версия среды выполнения для целевой платформы с проверкой контрольной суммы. |
+| `packages["format"].runtime_root` | `string` | нет |  | `"value"` | `appimage` | Корневая файловая система целевой платформы Linux с путём относительно проекта, содержащая библиотеки GTK/WebKit и скомпилированные кэши ресурсов; по умолчанию используется корневая файловая система хоста Linux. |
 | `packages["format"].section` | `string` | нет |  | `"utils"` | `deb,rpm,archlinux,void` | Раздел репозитория пакетов Linux. |
 | `packages["format"].template` | `string` | нет |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | Полная замена шаблона пакета пользовательским шаблоном. |
-| `packages["format"].update_info` | `string` | нет |  | `"value"` | `appimage` | Строка сведений об обновлении AppImage; требуется соответствующий вспомогательный файл zsync от linuxdeploy. |
+| `packages["format"].update_info` | `string` | нет |  | `"value"` | `appimage` | Строка сведений об обновлении AppImage; средствами Go создаётся соответствующий сопутствующий файл zsync. |
 | `packages["format"].volume_icon` | `string` | нет |  | `"assets/volume.icns"` | `dmg` | Пользовательский значок тома DMG. |
 | `packages["format"].window_height` | `integer` | нет |  | `1` | `dmg` | Высота окна Finder для DMG в пикселях. |
 | `packages["format"].window_width` | `integer` | нет |  | `1` | `dmg` | Ширина окна Finder для DMG в пикселях. |
 | `profiles` | `map(object)` | нет |  | `{}` |  | Именованные профили производственной сборки. |
-| `profiles["profile"].targets` | `map(object)` | да |  | `{}` |  | Именованные переопределения целевых платформ. |
+| `profiles["profile"].targets` | `map(object)` | да |  | `{}` |  | Именованные переопределения для целевых платформ. |
 | `profiles["profile"].targets["target"].destination` | `string` | нет |  | `"device"` |  | Целевое устройство мобильной сборки. |
 | `profiles["profile"].targets["target"].formats` | `list(string)` | нет |  | `["nsis"]` |  | Форматы артефактов, создаваемых для целевой платформы этого профиля. |
 | `profiles["profile"].targets["target"].notarize` | `boolean` | нет |  | `true` |  | Нотаризовать созданный артефакт. |
@@ -185,8 +191,8 @@ description: "Справочник по сгенерированным поля�
 | `project.commit_symbol` | `string` | нет |  | `"value"` |  | Полностью квалифицированная строковая переменная Go, в которую через флаги компоновщика передаётся Git-ревизия приложения. |
 | `project.company` | `string` | нет |  | `"value"` |  | Название компании или организации. |
 | `project.copyright` | `string` | нет |  | `"value"` |  | Уведомление об авторских правах, встроенное в артефакты. |
-| `project.description` | `string` | нет |  | `"value"` |  | Удобочитаемое описание. |
-| `project.icon` | `string` | нет |  | `"assets/appicon.png"` |  | Пользовательский файл значка с путём относительно проекта. |
+| `project.description` | `string` | нет |  | `"value"` |  | Понятное пользователю описание. |
+| `project.icon` | `string` | нет |  | `"assets/appicon.png"` |  | Принадлежащий пользователю файл значка с путём относительно проекта. |
 | `project.identifier` | `string` | да |  | `"com.example.app"` |  | Идентификатор приложения в формате обратного доменного имени. |
 | `project.kind` | `string` | нет | `gui` | `"gui"` |  | Тип исполняемого файла: gui, cli или server; для вспомогательных программ по умолчанию используется cli. |
 | `project.name` | `string` | да |  | `"value"` |  | Стабильное имя проекта или регистрации. |
@@ -198,17 +204,17 @@ description: "Справочник по сгенерированным поля�
 | `project.version_file` | `string` | нет |  | `"value"` |  | Исходный файл Go, объявляющий версию приложения; используется совместно с version_symbol. |
 | `project.version_symbol` | `string` | нет |  | `"value"` |  | Статическое объявление строки Go, используемое вместо литерального значения версии проекта. |
 | `protocols` | `map(object)` | нет |  | `{}` |  | Именованные регистрации пользовательских протоколов. |
-| `protocols["scheme"].description` | `string` | нет |  | `"value"` |  | Понятное пользователю описание. |
+| `protocols["scheme"].description` | `string` | нет |  | `"value"` |  | Понятное человеку описание. |
 | `protocols["scheme"].platforms` | `list(string)` | нет |  | `["windows", "darwin", "linux"]` |  | Платформы, к которым применяется эта регистрация. |
 | `run` | `object` | нет |  | `{}` |  | Параметры запуска приложения по умолчанию. |
 | `run.args` | `list(string)` | нет |  | `["value"]` |  | Аргументы приложения, передаваемые без подстановок командной оболочки. |
 | `run.environment` | `map(string)` | нет |  | `{RELEASE: "true"}` |  | Переменные среды, добавляемые для этой операции. |
 | `run.tags` | `list(string)` | нет |  | `["value"]` |  | Дополнительные теги сборки Go. |
-| `targets` | `map(object)` | нет |  | `{}` |  | Именованные переопределения для целевых платформ. |
+| `targets` | `map(object)` | нет |  | `{}` |  | Именованные переопределения целевых платформ. |
 | `targets["target"].build_number` | `integer` | нет |  | `1` |  | Номер сборки для платформы. |
 | `targets["target"].compiler_flags` | `list(string)` | нет |  | `["all=-l"]` |  | Дополнительные флаги компилятора Go. |
 | `targets["target"].dev` | `object` | нет |  | `{}` |  | Настройки сборки для разработки и отслеживания изменений. |
-| `targets["target"].dev.args` | `list(string)` | нет |  | `["value"]` |  | Аргументы приложения для разработки, передаваемые без подстановок командной оболочки; поддерживаются в настольных системах и iOS. Для Android требуется пустой список. |
+| `targets["target"].dev.args` | `list(string)` | нет |  | `["value"]` |  | Аргументы приложения для разработки, передаваемые без подстановок оболочки; поддерживаются на настольных платформах и iOS. Для Android требуется пустой список. |
 | `targets["target"].environment` | `map(string)` | нет |  | `{RELEASE: "true"}` |  | Переменные среды, добавляемые для этой операции. |
 | `targets["target"].garble_args` | `list(string)` | нет |  | `["-literals"]` |  | Дополнительные аргументы, передаваемые garble. |
 | `targets["target"].ldflags` | `list(string)` | нет |  | `["-X example/build.version=1.0.0"]` |  | Дополнительные флаги компоновщика Go. |
@@ -228,14 +234,14 @@ description: "Справочник по сгенерированным поля�
 | `windows.identifier` | `string` | нет |  | `"com.example.app"` | `windows,darwin,linux` | Идентификатор приложения в формате обратного доменного имени. |
 | `windows.manifest` | `string` | нет |  | `"assets/manifest.xml"` | `windows,android` | Принадлежащий пользователю манифест платформы или пакета, путь к которому указан относительно корня проекта. |
 | `windows.minimum_version` | `string` | нет |  | `"12.0"` | `windows,darwin,linux,ios` | Минимальная поддерживаемая версия операционной системы. |
-| `windows.product_name` | `string` | нет |  | `"value"` | `windows,darwin,linux` | Понятное пользователю название продукта. |
+| `windows.product_name` | `string` | нет |  | `"value"` | `windows,darwin,linux` | Удобочитаемое название продукта. |
 | `windows.publisher` | `string` | нет |  | `"CN=Example"` | `windows` | Идентификатор издателя пакета Windows. |
 | `windows.signing` | `object` | нет |  | `{}` |  | Параметры подписывания для платформы. |
-| `windows.signing.certificate` | `string` | нет |  | `"signing/windows.pfx"` |  | Файл сертификата подписи PFX с путём относительно проекта; вместо него можно указать отпечаток. |
+| `windows.signing.certificate` | `string` | нет |  | `"signing/windows.pfx"` |  | Экспортированный идентификатор RSA PFX с путём относительно проекта для переносимого подписывания PE/MSIX на любом настольном хосте. Поддерживаются AES/PBKDF2 и 3DES; экспортированные сертификаты с RC2 обрабатывает нативный Windows SignTool. В качестве альтернативы настройте отпечаток. |
 | `windows.signing.credential` | `string` | нет |  | `"WINDOWS_SIGNING_PASSWORD"` |  | Имя переменной среды, содержащей пароль сертификата PFX; никогда не указывайте здесь сам пароль. |
 | `windows.signing.entitlements` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `windows.signing.identity` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `windows.signing.key_alias` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `windows.signing.provisioning_profile` | `string` | нет |  | `""` |  | Не используется при подписывании на этой платформе. |
-| `windows.signing.thumbprint` | `string` | нет |  | `"0123456789ABCDEF"` |  | Отпечаток сертификата в хранилище сертификатов Windows. |
-| `windows.signing.timestamp_server` | `string` | нет |  | `"https://timestamp.example.com"` |  | URL-адрес службы меток времени для подписывания Windows. |
+| `windows.signing.identity` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `windows.signing.key_alias` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `windows.signing.provisioning_profile` | `string` | нет |  | `""` |  | Не используется при подписывании для этой платформы. |
+| `windows.signing.thumbprint` | `string` | нет |  | `"0123456789ABCDEF"` |  | Отпечаток сертификата в хранилище сертификатов Windows; требуется Windows с SignTool. |
+| `windows.signing.timestamp_server` | `string` | нет |  | `"https://timestamp.example.com"` |  | URL службы меток времени RFC 3161; по умолчанию — `http://timestamp.digicert.com`. Подписи меток времени и цепочки доверия проверяются. |

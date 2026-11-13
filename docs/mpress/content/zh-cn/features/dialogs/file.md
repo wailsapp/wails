@@ -7,11 +7,11 @@ sourcePath: "features/dialogs/file.md"
 
 ## 文件对话框
 
-Wails 提供具有平台原生外观的<strong>原生文件对话框</strong>，可用于打开文件、保存文件和选择文件夹。其 API 简洁易用，支持文件类型筛选、多选和默认位置。
+Wails 提供具有平台原生外观的**原生文件对话框**，用于打开文件、保存文件和选择文件夹。其 API 简洁，支持文件类型筛选、多选和默认位置。
 
 ![由 Wails 应用程序打开的原生 macOS 文件选择器](/assets/screenshots/file-dialog-macos.png)
 
-Wails API 将操作委托给操作系统的选择器，因此保留了用户熟悉的导航、筛选和选择行为。
+Wails API 将操作委托给操作系统的选择器，因此会保留用户熟悉的导航、筛选和选择行为。
 
 ## 创建文件对话框
 
@@ -22,7 +22,7 @@ app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
 
-## “打开文件”对话框
+## 打开文件对话框
 
 选择要打开的文件：
 
@@ -40,7 +40,7 @@ if err != nil || path == "" {
 openFile(path)
 ```
 
-**使用场景：**
+**用例：**
 
 - 打开文档
 - 导入文件
@@ -92,7 +92,7 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-## “保存文件”对话框
+## 保存文件对话框
 
 选择保存位置：
 
@@ -110,7 +110,7 @@ if err != nil || path == "" {
 saveFile(path, data)
 ```
 
-**使用场景：**
+**用例：**
 
 - 保存文档
 - 导出数据
@@ -167,9 +167,9 @@ if _, err := os.Stat(path); err == nil {
 saveFile(path, data)
 ```
 
-## “选择文件夹”对话框
+## 选择文件夹对话框
 
-启用“打开文件”对话框的目录选择功能来选择目录：
+启用目录选择后，使用打开文件对话框选择目录：
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -185,7 +185,7 @@ if err != nil || path == "" {
 exportToFolder(path)
 ```
 
-**使用场景：**
+**用例：**
 
 - 选择输出目录
 - 选择工作区
@@ -218,7 +218,7 @@ path, _ := app.Dialog.OpenFile().
 
 ### 多个扩展名
 
-使用分号在一个筛选器中指定多个扩展名：
+使用分号在单个筛选器中指定多个扩展名：
 
 ```go
 dialog := app.Dialog.OpenFile().
@@ -229,7 +229,7 @@ dialog := app.Dialog.OpenFile().
 
 ### 模式格式
 
-使用<strong>分号</strong>分隔一个筛选器中的多个扩展名：
+使用**分号**分隔单个筛选器中的多个扩展名：
 
 ```go
 // Multiple extensions separated by semicolons
@@ -279,7 +279,7 @@ func openImage(app *application.App) (image.Image, error) {
 }
 ```
 
-### 验证并保存文档
+### 验证后保存文档
 
 ```go
 func saveDocument(app *application.App, content string) {
@@ -388,7 +388,7 @@ func processMultipleFiles(app *application.App) {
 }
 ```
 
-### 选择文件夹并导出
+### 选择文件夹后导出
 
 ```go
 func exportData(app *application.App, data []byte) {
@@ -433,7 +433,7 @@ func exportData(app *application.App, data []byte) {
 }
 ```
 
-### 验证并导入
+### 验证后导入
 
 ```go
 func importConfiguration(app *application.App) {
@@ -499,29 +499,29 @@ func importConfiguration(app *application.App) {
 
 ### ✅ 应该做
 
-- **提供文件筛选器**——帮助用户查找文件
-- **设置适当的标题**——提供清晰的上下文
-- **使用默认目录**——从合理的位置开始浏览
-- **验证选择结果**——检查文件类型
-- **处理取消操作**——用户可能会取消
-- **显示确认提示**——用于破坏性操作
-- **提供反馈**——显示成功或错误消息
+- **提供文件筛选器** - 帮助用户查找文件
+- **设置恰当的标题** - 明确上下文
+- **使用默认目录** - 从合理的位置开始
+- **验证所选内容** - 检查文件类型
+- **处理取消操作** - 用户可能会取消
+- **显示确认提示** - 用于破坏性操作
+- **提供反馈** - 显示成功或错误消息
 
 ### ❌ 不应该做
 
-- **不要跳过验证**——检查文件类型
-- **不要忽略错误**——处理取消操作
-- **不要使用宽泛的筛选器**——筛选条件应明确具体
-- **不要忘记“所有文件”**——始终将其作为一个选项
-- **不要硬编码路径**——使用用户的主目录
-- **不要假定文件存在**——打开前先检查
+- **不要跳过验证** - 检查文件类型
+- **不要忽略错误** - 处理取消操作
+- **不要使用过于笼统的筛选器** - 应明确具体
+- **不要忘记“所有文件”** - 始终将其作为一个选项
+- **不要硬编码路径** - 使用用户的主目录
+- **不要假定文件存在** - 打开前先检查
 
 ## 平台差异
 
 ### macOS
 
 - 原生 NSOpenPanel/NSSavePanel
-- 附加到窗口时以窗口附属对话框形式显示
+- 附加到窗口时采用表单式样式
 - 遵循系统主题
 - 支持快速查看预览
 - 集成标签和个人收藏
@@ -530,7 +530,7 @@ func importConfiguration(app *application.App) {
 
 - 原生文件打开/保存对话框
 - 遵循系统主题
-- 最近使用的文件集成
+- 集成最近使用的文件
 - 支持网络位置
 
 ### Linux
@@ -562,7 +562,7 @@ func importConfiguration(app *application.App) {
 
 ---
 ★ 事件
-使用事件更新进度。
+使用事件提供进度更新。
 
 [了解更多 →](/features/events/system/)
 
@@ -570,4 +570,4 @@ func importConfiguration(app *application.App) {
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[文件对话框示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)。
+<strong>有问题？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[文件对话框示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)。

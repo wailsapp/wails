@@ -1,13 +1,13 @@
 ---
-title: "Sistema de build"
+title: "Sistema de compilação"
 description: "Entenda como o Wails compila e empacota seu aplicativo"
 slug: "concepts/build-system"
 sourcePath: "concepts/build-system.md"
 ---
 
-## Sistema de build unificado
+## Sistema de compilação unificado
 
-O Wails oferece um **sistema de build unificado** que compila o código Go, agrupa os recursos do frontend, incorpora tudo em um único executável e gerencia builds específicos de cada plataforma — tudo com um único comando.
+O Wails oferece um **sistema de compilação unificado** que compila o código Go, agrupa os recursos do frontend, incorpora tudo em um único executável e gerencia compilações específicas de cada plataforma — tudo com um único comando.
 
 ```bash
 wails3 build
@@ -15,15 +15,15 @@ wails3 build
 
 **Saída:** executável nativo com tudo incorporado.
 
-## Visão geral do processo de build
+## Visão geral do processo de compilação
 
-**[Espaço reservado para o diagrama do processo de build]**
+**[Espaço reservado para o diagrama do processo de compilação]**
 
-## Fases do build
+## Fases da compilação
 
 ### 1. Fase de análise
 
-O Wails examina seu código Go para entender seus serviços:
+O Wails examina seu código Go para compreender seus serviços:
 
 ```go
 type GreetService struct {
@@ -63,14 +63,14 @@ export function Greet($0) {
 
 **Benefícios:**
 
-- Segurança total de tipos
+- Segurança de tipos completa
 - Preenchimento automático na IDE
 - Erros em tempo de compilação
 - Comentários JSDoc
 
-#### Build do frontend
+#### Compilação do frontend
 
-O empacotador do frontend é executado (Vite, webpack etc.):
+Seu empacotador de frontend é executado (Vite, webpack etc.):
 
 ```bash
 # Vite example
@@ -79,7 +79,7 @@ vite build --outDir dist
 
 **O que acontece:**
 
-- JavaScript/TypeScript compilados
+- JavaScript/TypeScript compilado
 - CSS processado e minificado
 - Recursos otimizados
 - Mapas de código-fonte gerados (somente em desenvolvimento)
@@ -95,13 +95,13 @@ O código Go é compilado com otimizações:
 go build -ldflags="-s -w" -o myapp.exe
 ```
 
-**Flags:**
+**Opções:**
 
 - `-s`: remove a tabela de símbolos
 - `-w`: remove as informações de depuração DWARF
 - Resultado: binário menor (redução de aproximadamente 30%)
 
-**Específico de cada plataforma:**
+**Específico da plataforma:**
 
 - Windows: `.exe` com ícone incorporado
 - macOS: estrutura de pacote `.app`
@@ -116,15 +116,15 @@ Os recursos do frontend são incorporados ao binário Go:
 var assets embed.FS
 ```
 
-**Resultado:** um único executável contendo tudo.
+**Resultado:** um único executável com tudo dentro dele.
 
 ### 4. Saída
 
 **Um único binário nativo:**
 
-- Windows: `myapp.exe` (~15 MB)
-- macOS: `myapp.app` (~15 MB)
-- Linux: `myapp` (~15 MB)
+- Windows: `myapp.exe` (aproximadamente 15 MB)
+- macOS: `myapp.app` (aproximadamente 15 MB)
+- Linux: `myapp` (aproximadamente 15 MB)
 
 **Sem dependências** (exceto a WebView do sistema).
 
@@ -140,21 +140,21 @@ wails3 dev
 
 **O que acontece:**
 
-1. Inicia o servidor de desenvolvimento do frontend (Vite na porta 9245 por padrão)
+1. Inicia o servidor de desenvolvimento do frontend (por padrão, Vite na porta 9245)
 2. Compila o Go sem otimizações
 3. Inicia o aplicativo apontando para o servidor de desenvolvimento
-4. Habilita o recarregamento automático
+4. Ativa o recarregamento automático
 5. Inclui mapas de código-fonte
 
 **Características:**
 
-- **Rebuilds rápidos** (&lt;1 s para alterações no frontend)
+- **Recompilações rápidas** (&lt;1 s para alterações no frontend)
 - **Sem incorporação de recursos** (servidos pelo servidor de desenvolvimento)
 - **Símbolos de depuração** incluídos
-- **Mapas de código-fonte** habilitados
+- **Mapas de código-fonte** ativados
 - **Logs detalhados**
 
-**Tamanho do arquivo:** maior (~50 MB com símbolos de depuração)
+**Tamanho do arquivo:** maior (aproximadamente 50 MB com símbolos de depuração)
 
 [Produção (wails3 build)]
 **Otimizado para tamanho e desempenho:**
@@ -166,20 +166,20 @@ wails3 build
 **O que acontece:**
 
 1. Compila o frontend para produção (minificado)
-2. Compila o código Go com otimizações
+2. Compila o Go com otimizações
 3. Remove os símbolos de depuração
 4. Incorpora os recursos
 5. Cria um único binário
 
 **Características:**
 
-- **Código otimizado** (minificado e com tree-shaking)
+- **Código otimizado** (minificado e com tree shaking)
 - **Recursos incorporados** (sem arquivos externos)
 - **Símbolos de depuração removidos**
 - **Sem mapas de código-fonte**
 - **Logs mínimos**
 
-**Tamanho do arquivo:** menor (~15 MB)
+**Tamanho do arquivo:** menor (aproximadamente 15 MB)
 
 @end
 
@@ -193,18 +193,18 @@ wails3 build
 
 **Saída:** `bin/<APP_NAME>` (ou `bin/<APP_NAME>.exe` no Windows). O diretório `bin/` fica na raiz do projeto.
 
-`wails3 build` é um wrapper leve em torno de `wails3 task build`. A única opção de compilação que ele encaminha é `--tags`, que se torna a variável `EXTRA_TAGS` do Taskfile:
+`wails3 build` é um wrapper simples para `wails3 task build`. A única opção de compilação que ele encaminha é `--tags`, que se torna a variável `EXTRA_TAGS` do Taskfile:
 
 ```bash
 # Build with extra Go build tags
 wails3 build --tags "myfeature,gtk4"
 ```
 
-`wails3 build` não tem as opções `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags` ou `-package`. A compilação cruzada, os caminhos de saída, os ícones e o empacotamento são controlados pelo Taskfile do projeto (`Taskfile.yml` + `build/config.yml`).
+`wails3 build` não aceita as opções `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags` nem `-package`. A compilação cruzada, os caminhos de saída, os ícones e o empacotamento são controlados pelo Taskfile do projeto (`Taskfile.yml` + `build/config.yml`).
 
 ### Compilações multiplataforma e específicas de cada plataforma
 
-As compilações de plataforma são disponibilizadas como tarefas do Taskfile nos namespaces `darwin:` / `windows:` / `linux:` (definidos em `build/Taskfile.<platform>.yml`). Por exemplo:
+As compilações para cada plataforma são disponibilizadas como tarefas do Taskfile nos namespaces `darwin:` / `windows:` / `linux:` (definidos em `build/Taskfile.<platform>.yml`). Por exemplo:
 
 ```bash
 # macOS — universal binary
@@ -247,7 +247,7 @@ wails3 task darwin:package:universal
 
 ### Taskfile.yml
 
-Os projetos Wails 3 usam o [Taskfile](https://taskfile.dev/) para orquestrar a compilação. O `Taskfile.yml` da raiz inclui arquivos de tarefas específicos de cada plataforma provenientes de `build/`:
+Os projetos Wails 3 usam o [Taskfile](https://taskfile.dev/) para orquestrar a compilação. O `Taskfile.yml` raiz inclui arquivos de tarefas específicos de cada plataforma provenientes de `build/`:
 
 ```yaml
 # Taskfile.yml (excerpt — the real templates are richer)
@@ -276,7 +276,7 @@ wails3 task linux:create:appimage
 
 ### Configuração do projeto: `build/config.yml`
 
-Os metadados do projeto (nome, identificador, versão, valores do info-plist, configurações do NSIS, campos de `.desktop`, protocolos personalizados etc.) ficam em `build/config.yml`. O Taskfile lê esse arquivo ao gerar ícones, manifestos, instaladores e itens semelhantes. No Wails 3, **não** existe um arquivo `build/build.json`.
+Os metadados do projeto (nome, identificador, versão, valores de info-plist, configurações do NSIS, campos de `.desktop`, protocolos personalizados etc.) ficam em `build/config.yml`. O Taskfile lê esse arquivo ao gerar ícones, manifestos, instaladores e itens semelhantes. No Wails 3, **não** existe um arquivo `build/build.json`.
 
 ```yaml
 # build/config.yml (illustrative)
@@ -330,8 +330,8 @@ func main() {
 **Em tempo de execução:**
 
 1. O aplicativo é iniciado
-2. Os recursos são servidos a partir da memória
-3. Sem E/S em disco para os recursos
+2. Os recursos são servidos da memória
+3. Não há E/S de disco para os recursos
 4. Carregamento rápido
 
 ### Recursos personalizados
@@ -349,7 +349,7 @@ var dataAssets embed.FS
 var templateAssets embed.FS
 ```
 
-## Otimizações de compilação
+## Otimizações da compilação
 
 ### Otimizações do frontend
 
@@ -379,21 +379,21 @@ export default {
 
 **Resultados:**
 
-- JavaScript minificado (redução de ~70%)
-- CSS minificado (redução de ~60%)
+- JavaScript minificado (redução de aproximadamente 70%)
+- CSS minificado (redução de aproximadamente 60%)
 - Imagens otimizadas
 - Tree-shaking aplicado
 
 ### Otimizações do Go
 
-**Opções do compilador:**
+**Flags do compilador:**
 
 ```bash
 -ldflags="-s -w"
 ```
 
-- `-s`: remover a tabela de símbolos (redução de ~10%)
-- `-w`: remover as informações de depuração DWARF (redução de ~20%)
+- `-s`: remove a tabela de símbolos (redução de aproximadamente 10%)
+- `-w`: remove as informações de depuração DWARF (redução de aproximadamente 20%)
 
 **Otimizações adicionais:**
 
@@ -401,7 +401,7 @@ export default {
 -ldflags="-s -w -X main.version=1.0.0"
 ```
 
-- `-X`: definir valores de variáveis durante a compilação
+- `-X`: define valores de variáveis durante a compilação
 - Útil para números de versão e datas de compilação
 
 ### Compactação do binário
@@ -415,11 +415,11 @@ upx --best bin/myapp.exe
 
 **Resultados:**
 
-- Redução de ~50% no tamanho
-- Inicialização ligeiramente mais lenta (~100 ms)
+- Redução de tamanho de aproximadamente 50%
+- Inicialização ligeiramente mais lenta (aproximadamente 100 ms)
 - Não recomendado para macOS (problemas com assinatura de código)
 
-## Compilações específicas por plataforma
+## Compilações específicas de cada plataforma
 
 ### Windows
 
@@ -428,8 +428,8 @@ upx --best bin/myapp.exe
 **Inclui:**
 
 - Ícone do aplicativo
-- Informações de versão
-- Manifesto (configurações de UAC)
+- Informações da versão
+- Manifesto (configurações do UAC)
 
 **Ícone:**
 
@@ -438,7 +438,7 @@ upx --best bin/myapp.exe
 wails3 generate icons -input appicon.png -windowsfilename build/icon.ico
 ```
 
-A etapa `tool package` do Windows incorpora então o `.ico` gerado ao executável.
+Em seguida, a etapa `tool package` do Windows incorpora o `.ico` gerado ao executável.
 
 **Manifesto:**
 
@@ -459,7 +459,7 @@ A etapa `tool package` do Windows incorpora então o `.ico` gerado ao executáve
 
 ### macOS
 
-**Saída:** `myapp.app` (pacote de aplicativo)
+**Saída:** `myapp.app` (pacote do aplicativo)
 
 **Estrutura:**
 
@@ -493,7 +493,7 @@ myapp.app/
 
 **Binário universal:**
 
-O Taskfile do macOS inclui uma tarefa `darwin:build:universal` (e `darwin:package:universal`) que compila ambas as arquiteturas e as combina por meio de `wails3 tool lipo`:
+O Taskfile do macOS fornece uma tarefa `darwin:build:universal` (e `darwin:package:universal`) que compila as duas arquiteturas e as combina por meio de `wails3 tool lipo`:
 
 ```bash
 wails3 task darwin:build:universal
@@ -539,13 +539,13 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 
 | Fase | Tempo | Observações |
 | --- | --- | --- |
-| Análise | &lt;1 s | Análise do código Go |
+| Análise | &lt;1 s | Varredura do código Go |
 | Geração de bindings | &lt;1 s | Geração de TypeScript |
 | Compilação do frontend | 5-30 s | Depende do tamanho do projeto |
-| Compilação do código Go | 2-10 s | Depende do tamanho do código |
+| Compilação do Go | 2-10 s | Depende do tamanho do código |
 | Incorporação de recursos | &lt;1 s | Incorporação do frontend |
 | **Total** | **10-45 s** | Primeira compilação |
-| **Incremental** | **5-15 s** | Compilações posteriores |
+| **Incremental** | **5-15 s** | Compilações subsequentes |
 
 ### Como acelerar as compilações
 
@@ -557,7 +557,7 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 npm run build  # Uses cache by default
 ```
 
-**2. Execute somente o necessário:**
+**2. Execute apenas o necessário:**
 
 ```bash
 # Pick the specific Taskfile target you actually need
@@ -567,7 +567,7 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 **3. Compilações paralelas (várias máquinas/CI):**
 
-No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em um contêiner Docker `wails-cross` ou em executores dedicados para cada plataforma — o próprio `wails3 build` tem como destino o sistema operacional do host. Consulte [Compilações multiplataforma](/guides/build/cross-platform/) para conhecer os fluxos de trabalho compatíveis.
+A compilação cruzada entre Linux/Windows/macOS no v3 geralmente ocorre em um contêiner Docker `wails-cross` ou em executores dedicados para cada plataforma — o próprio `wails3 build` tem como destino o sistema operacional do host. Consulte [Compilações multiplataforma](/guides/build/cross-platform/) para conhecer os fluxos de trabalho compatíveis.
 
 **4. Use ferramentas mais rápidas:**
 
@@ -580,7 +580,7 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
 
 ### Falha na compilação
 
-**Sintoma:** `wails3 build` é encerrado com um erro
+**Sintoma:** `wails3 build` é encerrado com erro
 
 **Causas comuns:**
 
@@ -591,7 +591,7 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
   ```
 
 
-2. **Erro de build do frontend**
+2. **Erro de compilação do frontend**
   ```bash
   # Check frontend builds
   cd frontend
@@ -607,7 +607,7 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
   ```
 
 
-### Binário muito grande
+### Binário grande demais
 
 **Sintoma:** o binário tem mais de 50 MB
 
@@ -615,7 +615,7 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
 
 1. **Remova os símbolos de depuração** (o Taskfile fornecido já passa `-ldflags="-s -w"` para `go build`).
 
-2. **Verifique os ativos incorporados**
+2. **Verifique os assets incorporados**
   ```bash
   # Remove unnecessary files from frontend/dist/
   # Check for large images, videos, etc.
@@ -628,13 +628,13 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
   ```
 
 
-### Builds lentos
+### Compilações lentas
 
-**Sintoma:** os builds levam mais de 1 minuto
+**Sintoma:** as compilações levam mais de 1 minuto
 
 **Soluções:**
 
-1. **Use o cache de build**
+1. **Use o cache de compilação**
   - O cache do Go é automático
   - O cache do frontend (Vite) é automático
 
@@ -646,7 +646,7 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
   ```
 
 
-3. **Otimize o build do frontend**
+3. **Otimize a compilação do frontend**
   ```javascript
   // vite.config.js
   export default {
@@ -663,27 +663,27 @@ No v3, a compilação cruzada entre Linux, Windows e macOS geralmente ocorre em 
 
 - **Use `wails3 dev` durante o desenvolvimento** — Iteração rápida
 - **Use `wails3 build` para lançamentos** — Saída otimizada
-- **Versione seus builds** — Use `-ldflags` para incorporar a versão
-- **Teste os builds nas plataformas de destino** — A compilação cruzada não é perfeita
-- **Mantenha os builds do frontend rápidos** — Otimize a configuração do empacotador
-- **Use o cache de build** — Acelera os builds subsequentes
+- **Atribua versões às compilações** — Use `-ldflags` para incorporar a versão
+- **Teste as compilações nas plataformas de destino** — A compilação cruzada não é perfeita
+- **Mantenha rápidas as compilações do frontend** — Otimize a configuração do empacotador
+- **Use o cache de compilação** — Acelera as compilações subsequentes
 
 ### ❌ Não faça
 
-- **Não faça commit do diretório `build/`** — Adicione-o ao `.gitignore`
-- **Não deixe de testar os builds** — Sempre teste antes do lançamento
-- **Não incorpore ativos desnecessários** — Mantenha os binários pequenos
-- **Não use builds de depuração em produção** — Use builds otimizados
+- **Não faça commit do diretório `build/`** — Adicione-o a `.gitignore`
+- **Não deixe de testar as compilações** — Sempre teste antes do lançamento
+- **Não incorpore assets desnecessários** — Mantenha os binários pequenos
+- **Não use compilações de depuração em produção** — Use compilações otimizadas
 - **Não se esqueça da assinatura de código** — Ela é obrigatória para distribuição
 
 ## Próximas etapas
 
 **Compilação de aplicações** — Guia detalhado para compilar e empacotar [Saiba mais →](/guides/build/building/)
 
-**Builds multiplataforma** — Compile para todas as plataformas em uma única máquina [Saiba mais →](/guides/build/cross-platform/)
+**Compilações multiplataforma** — Compile para todas as plataformas em uma única máquina [Saiba mais →](/guides/build/cross-platform/)
 
 **Criação de instaladores** — Crie instaladores para usuários finais [Saiba mais →](/guides/installers/)
 
 ---
 
-**Tem dúvidas sobre compilação?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de build](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/build).
+**Tem dúvidas sobre compilação?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de compilação](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/build).

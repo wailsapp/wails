@@ -1,6 +1,6 @@
 ---
 title: "Sistem Build"
-description: "Memahami cara Wails membangun dan mengemas aplikasi Anda"
+description: "Memahami cara Wails membangun dan memaketkan aplikasi Anda"
 slug: "concepts/build-system"
 sourcePath: "concepts/build-system.md"
 ---
@@ -13,9 +13,9 @@ Wails menyediakan **sistem build terpadu** yang mengompilasi kode Go, membundel 
 wails3 build
 ```
 
-**Keluaran:** Berkas executable native dengan semua komponen yang telah disematkan.
+**Output:** Berkas executable native dengan semua komponen tertanam.
 
-## Ringkasan Proses Build
+## Gambaran Umum Proses Build
 
 **[Placeholder Diagram Proses Build]**
 
@@ -48,7 +48,7 @@ func (g *GreetService) Greet(name string) string {
 
 #### Binding TypeScript
 
-Wails menghasilkan binding dengan keamanan tipe:
+Wails menghasilkan binding yang aman secara tipe:
 
 ```javascript
 // Auto-generated: frontend/bindings/<full-go-import-path>/greetservice.js
@@ -64,8 +64,8 @@ export function Greet($0) {
 **Manfaat:**
 
 - Keamanan tipe penuh
-- Pelengkapan otomatis di IDE
-- Kesalahan pada waktu kompilasi
+- Pelengkapan otomatis IDE
+- Error pada waktu kompilasi
 - Komentar JSDoc
 
 #### Build Frontend
@@ -82,8 +82,8 @@ vite build --outDir dist
 - JavaScript/TypeScript dikompilasi
 - CSS diproses dan diminifikasi
 - Aset dioptimalkan
-- Source map dihasilkan (khusus pengembangan)
-- Keluaran disimpan ke `frontend/dist/`
+- Source map dibuat (hanya untuk pengembangan)
+- Output disimpan ke `frontend/dist/`
 
 ### 3. Tahap Kompilasi
 
@@ -99,11 +99,11 @@ go build -ldflags="-s -w" -o myapp.exe
 
 - `-s`: Menghapus tabel simbol
 - `-w`: Menghapus informasi debug DWARF
-- Hasil: Berkas biner lebih kecil (berkurang ~30%)
+- Hasil: Berkas biner lebih kecil (pengurangan ~30%)
 
 **Khusus platform:**
 
-- Windows: `.exe` dengan ikon yang disematkan
+- Windows: `.exe` dengan ikon tertanam
 - macOS: Struktur bundle `.app`
 - Linux: Berkas biner ELF
 
@@ -118,7 +118,7 @@ var assets embed.FS
 
 **Hasil:** Satu berkas executable yang memuat semuanya.
 
-### 4. Keluaran
+### 4. Output
 
 **Satu berkas biner native:**
 
@@ -140,21 +140,21 @@ wails3 dev
 
 **Yang terjadi:**
 
-1. Memulai server pengembangan frontend (Vite menggunakan porta 9245 secara default)
+1. Menjalankan server pengembangan frontend (secara default Vite pada port 9245)
 2. Mengompilasi Go tanpa pengoptimalan
-3. Meluncurkan aplikasi yang mengarah ke server pengembangan
+3. Menjalankan aplikasi yang mengarah ke server pengembangan
 4. Mengaktifkan hot reload
 5. Menyertakan source map
 
 **Karakteristik:**
 
-- **Build ulang cepat** (&lt;1 dtk untuk perubahan frontend)
+- **Build ulang cepat** (&lt;1 detik untuk perubahan frontend)
 - **Tanpa penyematan aset** (disajikan dari server pengembangan)
 - **Simbol debug** disertakan
 - **Source map** diaktifkan
-- **Pencatatan log mendetail**
+- **Logging mendetail**
 
-**Ukuran file:** Lebih besar (~50 MB dengan simbol debug)
+**Ukuran berkas:** Lebih besar (~50MB dengan simbol debug)
 
 [Produksi (wails3 build)]
 **Dioptimalkan untuk ukuran dan performa:**
@@ -166,20 +166,20 @@ wails3 build
 **Yang terjadi:**
 
 1. Membangun frontend untuk produksi (diminifikasi)
-2. Mengompilasi Go dengan optimisasi
+2. Mengompilasi Go dengan pengoptimalan
 3. Menghapus simbol debug
 4. Menyematkan aset
 5. Membuat satu berkas biner
 
 **Karakteristik:**
 
-- **Kode yang dioptimalkan** (diminifikasi, menerapkan tree-shaking)
-- **Aset disematkan** (tanpa file eksternal)
+- **Kode yang dioptimalkan** (diminifikasi, melalui tree-shaking)
+- **Aset tertanam** (tanpa berkas eksternal)
 - **Simbol debug dihapus**
-- **Tanpa peta sumber**
-- **Pencatatan log minimal**
+- **Tanpa source map**
+- **Logging minimal**
 
-**Ukuran file:** Lebih kecil (~15 MB)
+**Ukuran berkas:** Lebih kecil (~15MB)
 
 @end
 
@@ -191,18 +191,18 @@ wails3 build
 wails3 build
 ```
 
-**Keluaran:** `bin/<APP_NAME>` (atau `bin/<APP_NAME>.exe` di Windows). Direktori `bin/` berada di root proyek.
+**Output:** `bin/<APP_NAME>` (atau `bin/<APP_NAME>.exe` di Windows). Direktori `bin/` berada di root proyek.
 
-`wails3 build` adalah pembungkus tipis untuk `wails3 task build`. Satu-satunya flag waktu build yang diteruskannya adalah `--tags`, yang menjadi variabel Taskfile `EXTRA_TAGS`:
+`wails3 build` adalah wrapper tipis untuk `wails3 task build`. Satu-satunya flag waktu build yang diteruskannya adalah `--tags`, yang menjadi variabel Taskfile `EXTRA_TAGS`:
 
 ```bash
 # Build with extra Go build tags
 wails3 build --tags "myfeature,gtk4"
 ```
 
-`wails3 build` tidak memiliki flag `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags`, atau `-package`. Kompilasi silang, jalur keluaran, ikon, dan pengemasan dikendalikan melalui Taskfile proyek (`Taskfile.yml` + `build/config.yml`).
+Tidak ada flag `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags`, atau `-package` pada `wails3 build`. Kompilasi silang, jalur output, ikon, dan pemaketan dikendalikan melalui Taskfile proyek (`Taskfile.yml` + `build/config.yml`).
 
-### Build lintas platform dan khusus platform
+### Build Lintas Platform dan Khusus Platform
 
 Build platform tersedia sebagai tugas Taskfile dalam namespace `darwin:` / `windows:` / `linux:` (ditentukan dalam `build/Taskfile.<platform>.yml`). Contoh:
 
@@ -226,7 +226,7 @@ Untuk melihat semua tugas yang tersedia dalam proyek saat ini:
 wails3 task --list
 ```
 
-### Ikon dan pengemasan
+### Ikon dan pemaketan
 
 Buat ikon platform (`build/icons.icns`, `build/icon.ico`, dan sebagainya) dari PNG sumber:
 
@@ -234,7 +234,7 @@ Buat ikon platform (`build/icons.icns`, `build/icon.ico`, dan sebagainya) dari P
 wails3 generate icons -input appicon.png
 ```
 
-Buat penginstal/paket khusus platform:
+Build penginstal/paket khusus platform:
 
 ```bash
 wails3 package           # uses the current Go build env
@@ -247,7 +247,7 @@ wails3 task darwin:package:universal
 
 ### Taskfile.yml
 
-Proyek Wails 3 menggunakan [Taskfile](https://taskfile.dev/) sebagai orkestrator build. `Taskfile.yml` di root menyertakan file tugas per platform dari `build/`:
+Proyek Wails 3 menggunakan [Taskfile](https://taskfile.dev/) sebagai pengatur proses build. `Taskfile.yml` tingkat akar menyertakan berkas tugas per platform dari `build/`:
 
 ```yaml
 # Taskfile.yml (excerpt — the real templates are richer)
@@ -276,7 +276,7 @@ wails3 task linux:create:appimage
 
 ### Konfigurasi proyek: `build/config.yml`
 
-Metadata proyek (nama, pengidentifikasi, versi, nilai info-plist, pengaturan NSIS, kolom `.desktop`, protokol kustom, dan sebagainya) berada dalam `build/config.yml`. Taskfile membaca file ini saat membuat ikon, manifes, penginstal, dan sejenisnya. Wails 3 **tidak** memiliki file `build/build.json`.
+Metadata proyek (nama, pengenal, versi, nilai info-plist, pengaturan NSIS, bidang `.desktop`, protokol khusus, dan sebagainya) berada dalam `build/config.yml`. Taskfile membaca berkas ini saat membuat ikon, manifes, penginstal, dan sejenisnya. Wails 3 **tidak** memiliki berkas `build/build.json`.
 
 ```yaml
 # build/config.yml (illustrative)
@@ -320,23 +320,23 @@ func main() {
 }
 ```
 
-**Pada waktu build:**
+**Pada saat build:**
 
-1. Frontend dibangun ke `frontend/dist/`
-2. Direktif `//go:embed` menyertakan file
-3. File dikompilasi ke dalam berkas biner
-4. Berkas biner memuat semuanya
+1. Frontend di-build ke `frontend/dist/`
+2. Direktif `//go:embed` menyertakan berkas
+3. Berkas dikompilasi ke dalam biner
+4. Biner memuat semuanya
 
-**Saat runtime:**
+**Pada saat runtime:**
 
 1. Aplikasi dimulai
 2. Aset disajikan dari memori
 3. Tidak ada I/O disk untuk aset
 4. Pemuatan cepat
 
-### Aset Kustom
+### Aset Khusus
 
-Sematkan file tambahan:
+Sematkan berkas tambahan:
 
 ```go
 //go:embed frontend/dist
@@ -349,9 +349,9 @@ var dataAssets embed.FS
 var templateAssets embed.FS
 ```
 
-## Optimisasi Build
+## Pengoptimalan Build
 
-### Optimisasi Frontend
+### Pengoptimalan Frontend
 
 **Vite (bawaan):**
 
@@ -384,7 +384,7 @@ export default {
 - Gambar dioptimalkan
 - Tree-shaking diterapkan
 
-### Optimisasi Go
+### Pengoptimalan Go
 
 **Flag compiler:**
 
@@ -392,8 +392,8 @@ export default {
 -ldflags="-s -w"
 ```
 
-- `-s`: Hapus tabel simbol (pengurangan ~10%)
-- `-w`: Hapus informasi debug DWARF (pengurangan ~20%)
+- `-s`: Menghapus tabel simbol (pengurangan ~10%)
+- `-w`: Menghapus informasi debug DWARF (pengurangan ~20%)
 
 **Pengoptimalan tambahan:**
 
@@ -401,7 +401,7 @@ export default {
 -ldflags="-s -w -X main.version=1.0.0"
 ```
 
-- `-X`: Tetapkan nilai variabel pada waktu build
+- `-X`: Menetapkan nilai variabel pada saat build
 - Berguna untuk nomor versi dan tanggal build
 
 ### Kompresi Biner
@@ -416,7 +416,7 @@ upx --best bin/myapp.exe
 **Hasil:**
 
 - Pengurangan ukuran ~50%
-- Waktu mulai sedikit lebih lambat (~100 ms)
+- Startup sedikit lebih lambat (~100 mdtk)
 - Tidak disarankan untuk macOS (masalah penandatanganan kode)
 
 ## Build Khusus Platform
@@ -438,7 +438,7 @@ upx --best bin/myapp.exe
 wails3 generate icons -input appicon.png -windowsfilename build/icon.ico
 ```
 
-Langkah `tool package` Windows kemudian menyematkan `.ico` yang dihasilkan ke dalam berkas yang dapat dieksekusi.
+Langkah `tool package` Windows kemudian menyematkan `.ico` yang dihasilkan ke dalam berkas executable.
 
 **Manifes:**
 
@@ -493,7 +493,7 @@ myapp.app/
 
 **Biner Universal:**
 
-Taskfile macOS menyediakan tugas `darwin:build:universal` (dan `darwin:package:universal`) yang membangun kedua arsitektur dan menggabungkannya melalui `wails3 tool lipo`:
+Taskfile macOS menyediakan tugas `darwin:build:universal` (dan `darwin:package:universal`) yang mem-build kedua arsitektur dan menggabungkannya melalui `wails3 tool lipo`:
 
 ```bash
 wails3 task darwin:build:universal
@@ -580,7 +580,7 @@ Kompilasi silang antara Linux/Windows/macOS di v3 umumnya dilakukan dalam kontai
 
 ### Build Gagal
 
-**Gejala:** `wails3 build` berhenti dengan pesan kesalahan
+**Gejala:** `wails3 build` berhenti dengan kesalahan
 
 **Penyebab umum:**
 
@@ -635,8 +635,8 @@ Kompilasi silang antara Linux/Windows/macOS di v3 umumnya dilakukan dalam kontai
 **Solusi:**
 
 1. **Gunakan cache build**
-  - Cache Go berjalan secara otomatis
-  - Cache frontend (Vite) berjalan secara otomatis
+  - Cache Go berjalan otomatis
+  - Cache frontend (Vite) berjalan otomatis
 
 
 2. **Jalankan hanya tugas yang Anda perlukan**
@@ -661,28 +661,28 @@ Kompilasi silang antara Linux/Windows/macOS di v3 umumnya dilakukan dalam kontai
 
 ### ✅ Lakukan
 
-- **Gunakan `wails3 dev` selama pengembangan** — Iterasi cepat
-- **Gunakan `wails3 build` untuk rilis** — Keluaran yang dioptimalkan
-- **Beri versi pada build Anda** — Gunakan `-ldflags` untuk menyematkan versi
-- **Uji build pada platform target** — Kompilasi silang tidak selalu sempurna
-- **Pastikan build frontend tetap cepat** — Optimalkan konfigurasi bundler
-- **Gunakan cache build** — Mempercepat build berikutnya
+- **Gunakan `wails3 dev` selama pengembangan** - Iterasi cepat
+- **Gunakan `wails3 build` untuk rilis** - Output yang dioptimalkan
+- **Beri versi pada build Anda** - Gunakan `-ldflags` untuk menyematkan versi
+- **Uji build pada platform target** - Kompilasi silang tidak selalu sempurna
+- **Pastikan build frontend tetap cepat** - Optimalkan konfigurasi bundler
+- **Gunakan cache build** - Mempercepat build berikutnya
 
 ### ❌ Jangan Lakukan
 
-- **Jangan commit direktori `build/`** — Tambahkan ke `.gitignore`
-- **Jangan melewatkan pengujian build** — Selalu uji sebelum rilis
-- **Jangan sematkan aset yang tidak diperlukan** — Jaga agar ukuran biner tetap kecil
-- **Jangan gunakan build debug untuk produksi** — Gunakan build yang dioptimalkan
-- **Jangan lupakan penandatanganan kode** — Diperlukan untuk distribusi
+- **Jangan commit direktori `build/`** - Tambahkan ke `.gitignore`
+- **Jangan lewati pengujian build** - Selalu uji sebelum rilis
+- **Jangan sematkan aset yang tidak diperlukan** - Jaga agar ukuran biner tetap kecil
+- **Jangan gunakan build debug untuk produksi** - Gunakan build yang dioptimalkan
+- **Jangan lupakan penandatanganan kode** - Diperlukan untuk distribusi
 
 ## Langkah Berikutnya
 
-**Membangun Aplikasi** — Panduan terperinci untuk membangun dan mengemas [Pelajari Selengkapnya →](/guides/build/building/)
+**Membangun Aplikasi** - Panduan terperinci untuk membangun dan mengemas aplikasi [Pelajari Selengkapnya →](/guides/build/building/)
 
-**Build Lintas Platform** — Lakukan build untuk semua platform dari satu mesin [Pelajari Selengkapnya →](/guides/build/cross-platform/)
+**Build Lintas Platform** - Lakukan build untuk semua platform dari satu mesin [Pelajari Selengkapnya →](/guides/build/cross-platform/)
 
-**Membuat Penginstal** — Buat penginstal untuk pengguna akhir [Pelajari Selengkapnya →](/guides/installers/)
+**Membuat Penginstal** - Buat penginstal untuk pengguna akhir [Pelajari Selengkapnya →](/guides/installers/)
 
 ---
 

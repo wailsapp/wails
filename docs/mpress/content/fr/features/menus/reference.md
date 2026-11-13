@@ -11,9 +11,9 @@ Référence complète des types, propriétés et comportements dynamiques des é
 
 ## Types d’éléments de menu
 
-### Éléments de menu standard
+### Éléments de menu ordinaires
 
-Le type le plus courant : il affiche du texte et déclenche une action :
+Le type le plus courant affiche du texte et déclenche une action :
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -22,11 +22,11 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Utilisation :** commandes, actions, ouverture de fenêtres
+**À utiliser pour :** les commandes, les actions et l’ouverture de fenêtres
 
 ### Cases à cocher
 
-Éléments de menu basculables entre les états coché et décoché :
+Éléments de menu pouvant basculer entre les états coché et non coché :
 
 ```go
 checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
@@ -36,7 +36,7 @@ checkbox.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Utilisation :** paramètres booléens, activation ou désactivation de fonctionnalités, options d’affichage
+**À utiliser pour :** les paramètres booléens, l’activation ou la désactivation de fonctionnalités et les options d’affichage
 
 **Important :** l’état coché bascule automatiquement lors d’un clic.
 
@@ -50,13 +50,13 @@ menu.AddRadio("Medium", false)
 menu.AddRadio("Large", false)
 ```
 
-**Utilisation :** choix mutuellement exclusifs (taille, thème, mode)
+**À utiliser pour :** les choix mutuellement exclusifs (taille, thème, mode)
 
 **Fonctionnement du regroupement :**
 
 - Les éléments radio adjacents forment automatiquement un groupe
 - La sélection d’un élément désélectionne les autres éléments du groupe
-- Séparez les groupes avec un séparateur ou un élément standard
+- Séparez les groupes par un séparateur ou un élément ordinaire
 
 **Exemple avec plusieurs groupes :**
 
@@ -75,7 +75,7 @@ menu.AddRadio("Dark", false)
 
 ### Sous-menus
 
-Structures de menus imbriquées pour faciliter l’organisation :
+Structures de menus imbriquées pour organiser les éléments :
 
 ```go
 submenu := menu.AddSubmenu("More Options")
@@ -85,13 +85,13 @@ submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
 submenu.Add("Submenu Item 2")
 ```
 
-**Utilisation :** regroupement d’éléments associés, réduction de l’encombrement
+**À utiliser pour :** regrouper les éléments associés et réduire l’encombrement
 
 **Limite d’imbrication :** la plupart des plateformes prennent en charge 2-3 niveaux. Évitez une imbrication plus profonde.
 
 ### Séparateurs
 
-Séparations visuelles entre les éléments de menu :
+Séparateurs visuels entre les éléments de menu :
 
 ```go
 menu.Add("Item 1")
@@ -99,13 +99,13 @@ menu.AddSeparator()
 menu.Add("Item 2")
 ```
 
-**Utilisation :** regroupement visuel d’éléments associés
+**À utiliser pour :** regrouper visuellement les éléments associés
 
 **Bonne pratique :** ne placez pas de séparateur au début ou à la fin d’un menu.
 
 ### En-têtes de section
 
-Libellés natifs non interactifs pour un groupe d’éléments de menu sous **macOS 14+** :
+Libellés natifs non interactifs pour un groupe d’éléments de menu sous **macOS 14+** :
 
 ```go
 menu.AddSectionHeader("Build server")
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` utilise l’apparence standard des en-têtes de section d’AppKit. Cette méthode ne renvoie aucun élément de menu et n’associe aucune action. Sur les versions antérieures de macOS, Windows, Linux, les plateformes mobiles et les compilations serveur, l’appel est sans effet et n’insère aucune ligne.
+`AddSectionHeader` utilise l’apparence standard des en-têtes de section d’AppKit. Cette méthode ne renvoie aucun élément de menu et n’associe aucune action. Sur les versions antérieures de macOS, sous Windows et Linux, ainsi que dans les builds mobiles et serveur, l’appel ne fait rien et n’insère aucune ligne.
 
-Utilisez cette méthode dans les menus de la zone de notification, les menus contextuels ou les menus d’application pour nommer des groupes de commandes associées. Utilisez `AddSeparator()` pour séparer les groupes de boutons radio sur toutes les plateformes, car les en-têtes omis ne séparent pas ces groupes. Consultez [l’API Menu](/reference/menu#addsectionheader) pour la signature de la méthode et l’exemple `systray-menu` pour un en-tête affichant le nom d’hôte.
+Utilisez-le dans les menus de la zone de notification, les menus contextuels ou les menus d’application pour libeller des commandes associées. Utilisez `AddSeparator()` pour séparer les groupes de boutons radio sur toutes les plateformes, car l’omission des en-têtes ne sépare pas ces groupes. Consultez l’[API des menus](/reference/menu#addsectionheader) pour connaître la signature de la méthode et l’exemple `systray-menu` pour voir un en-tête contenant un nom d’hôte.
 
 ## Propriétés des éléments de menu
 
@@ -149,7 +149,7 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 
 ### État activé
 
-Déterminez si l’utilisateur peut interagir avec l’élément de menu :
+Contrôlez si l’utilisateur peut interagir avec l’élément de menu :
 
 ```go
 menuItem := menu.Add("Save")
@@ -166,7 +166,7 @@ isEnabled := menuItem.Enabled()
 @note{type="caution" title="Comportement des menus sous Windows"}
 Sous Windows, les menus doivent être reconstruits lorsque leur état change. **Appelez toujours `menu.Update()` après avoir activé ou désactivé des éléments de menu**, en particulier si l’élément a été créé alors qu’il était désactivé.
 
-**Pourquoi :** sous Windows, les menus sont entièrement reconstruits lors de leur mise à jour. Si vous n’appelez pas `Update()`, les gestionnaires de clic ne se déclencheront pas correctement.
+**Pourquoi :** sous Windows, les menus sont entièrement reconstruits lors de leur mise à jour. Si vous n’appelez pas `Update()`, les gestionnaires de clics ne se déclencheront pas correctement.
 
 @end
 
@@ -190,7 +190,7 @@ func onSelectionChanged(selected bool) {
 }
 ```
 
-**Schéma courant : activation sous condition**
+**Schéma courant : activation selon une condition**
 
 ```go
 saveMenuItem := menu.Add("Save")
@@ -220,7 +220,7 @@ menu.Update()
 isChecked := checkbox.Checked()
 ```
 
-**Basculement automatique :** les cases à cocher basculent automatiquement lors d’un clic. Il n’est pas nécessaire d’appeler `SetChecked()` dans le gestionnaire de clic.
+**Basculement automatique :** les cases à cocher basculent automatiquement lors d’un clic. Il n’est pas nécessaire d’appeler `SetChecked()` dans le gestionnaire de clics.
 
 **Contrôle manuel :**
 
@@ -250,7 +250,7 @@ quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 
 - `CmdOrCtrl` — Cmd sous macOS, Ctrl sous Windows/Linux
 - `Shift`, `Alt`, `Option` — touches de modification
-- `A-Z`, `0-9` — touches de lettres ou de chiffres
+- `A-Z`, `0-9` — touches alphabétiques ou numériques
 - `F1-F12` — touches de fonction
 - `Enter`, `Space`, `Backspace`, etc. — touches spéciales
 
@@ -276,19 +276,19 @@ if runtime.GOOS == "darwin" {
 }
 ```
 
-### Infobulle
+### Info-bulle
 
-Ajoutez du texte qui s’affiche au survol des éléments de menu (la prise en charge varie selon la plateforme) :
+Ajoutez du texte affiché au survol des éléments de menu (la prise en charge varie selon la plateforme) :
 
 ```go
 menuItem := menu.Add("Advanced Options")
 menuItem.SetTooltip("Configure advanced settings")
 ```
 
-**Prise en charge par plateforme :**
+**Prise en charge des plateformes :**
 
 - **Windows :** ✅ pris en charge
-- **macOS :** ❌ non pris en charge (les infobulles ne sont pas standard dans les menus)
+- **macOS :** ❌ non pris en charge (les info-bulles ne sont pas standard dans les menus)
 - **Linux :** ⚠️ varie selon l’environnement de bureau
 
 ### État masqué
@@ -306,13 +306,13 @@ if isDebugBuild {
 }
 ```
 
-**Utilisation :** options de débogage, indicateurs de fonctionnalités, fonctionnalités conditionnelles
+**À utiliser pour :** les options de débogage, les indicateurs de fonctionnalités et les fonctionnalités conditionnelles
 
 ## Gestion des événements
 
 ### Gestionnaire OnClick
 
-Exécutez du code lorsque l’utilisateur clique sur un élément de menu :
+Exécutez du code lorsqu’un utilisateur clique sur l’élément de menu :
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -324,11 +324,11 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **Le contexte fournit :**
 
-- `ctx.ClickedMenuItem()` — L’élément de menu sur lequel l’utilisateur a cliqué
-- Contexte de la fenêtre (si l’action provient du menu de la fenêtre)
-- Contexte de l’application
+- `ctx.ClickedMenuItem()` — l’élément de menu sur lequel l’utilisateur a cliqué
+- Le contexte de la fenêtre (si l’élément provient du menu d’une fenêtre)
+- Le contexte de l’application
 
-**Exemple : accéder à l’élément de menu dans le gestionnaire**
+**Exemple : accès à l’élément de menu dans le gestionnaire**
 
 ```go
 checkbox := menu.AddCheckbox("Feature", false)
@@ -355,7 +355,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Bonne pratique :** définissez le gestionnaire une seule fois et, si nécessaire, utilisez une logique conditionnelle à l’intérieur.
+**Bonne pratique :** définissez le gestionnaire une seule fois et utilisez-y une logique conditionnelle si nécessaire.
 
 ## Menus dynamiques
 
@@ -376,12 +376,12 @@ menuItem.SetEnabled(true)
 **Pourquoi est-ce important ?**
 
 - **Windows :** les menus sont reconstruits lors de leur mise à jour
-- **macOS/Linux :** moins indispensable, mais toujours recommandé
-- **Gestionnaires de clic :** ils ne se déclenchent pas correctement sans Update()
+- **macOS/Linux :** moins critique, mais toujours recommandé
+- **Gestionnaires de clic :** ne se déclenchent pas correctement sans Update()
 
 ### Reconstruction des menus
 
-Pour les modifications importantes, reconstruisez l’intégralité du menu :
+Pour les modifications importantes, reconstruisez entièrement le menu :
 
 ```go
 func rebuildFileMenu() {
@@ -407,19 +407,19 @@ func rebuildFileMenu() {
 }
 ```
 
-**Quand reconstruire le menu ?**
+**Quand reconstruire :**
 
-- La liste des fichiers récents change
-- Les menus des plugins changent
-- Transitions d’état majeures
+- Modification de la liste des fichiers récents
+- Modification des menus des extensions
+- Transitions d’état importantes
 
-**Quand mettre le menu à jour ?**
+**Quand mettre à jour :**
 
 - Activer ou désactiver des éléments
-- Modifier les libellés
+- Modifier des libellés
 - Cocher ou décocher des cases
 
-### Menus contextuels
+### Menus contextuels selon l’état
 
 Adaptez les menus à l’état de l’application :
 
@@ -511,20 +511,20 @@ if runtime.GOOS == "darwin" {
 
 ### ✅ À faire
 
-- **Appelez menu.Update()** après avoir modifié l’état du menu (en particulier sous Windows)
+- Après avoir modifié l’état du menu, **appelez menu.Update()**, surtout sous Windows
 - **Utilisez des groupes de boutons radio** pour les options mutuellement exclusives
 - **Utilisez des cases à cocher** pour les fonctionnalités activables et désactivables
 - **Ajoutez des raccourcis clavier** aux actions courantes
 - **Regroupez les éléments associés** à l’aide de séparateurs
-- **Testez sur toutes les plateformes** — le comportement varie
+- **Testez sur toutes les plateformes** : le comportement varie
 
-### ❌ À éviter
+### ❌ À ne pas faire
 
-- **N’oubliez pas menu.Update()** — les gestionnaires de clic ne fonctionneront pas correctement
-- **N’imbriquez pas trop profondément** — 2-3 niveaux au maximum
-- **Ne commencez et ne terminez pas par des séparateurs** — cela manque de professionnalisme
-- **N’utilisez pas d’infobulles sous macOS** — elles ne sont pas prises en charge
-- **Ne codez pas en dur les raccourcis propres à chaque plateforme** — utilisez `CmdOrCtrl`
+- **N’oubliez pas menu.Update()** : les gestionnaires de clic ne fonctionneront pas correctement
+- **N’imbriquez pas trop profondément** : 2-3 niveaux au maximum
+- **Ne commencez et ne terminez pas par des séparateurs** : cela manque de professionnalisme
+- **N’utilisez pas d’infobulles sous macOS** : elles ne sont pas prises en charge
+- **Ne codez pas en dur les raccourcis propres à une plateforme** : utilisez `CmdOrCtrl`
 
 ## Dépannage
 
@@ -532,7 +532,7 @@ if runtime.GOOS == "darwin" {
 
 **Symptôme :** les gestionnaires de clic ne se déclenchent pas
 
-**Cause :** oubli de l’appel à `menu.Update()` après l’activation de l’élément
+**Cause :** vous avez oublié d’appeler `menu.Update()` après avoir activé l’élément
 
 **Solution :**
 
@@ -578,10 +578,10 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 ## Étapes suivantes
 
-- [Menus d’application](/features/menus/application/) — créez des barres de menus d’application
-- [Menus contextuels](/features/menus/context/) — créez des menus contextuels accessibles par clic droit
-- [Menus de la zone de notification](/features/menus/systray/) — créez des menus pour la zone de notification ou la barre des menus
-- [Modèles de menus](/guides/menus/) — découvrez les modèles de menus courants et les bonnes pratiques
+- [Menus d’application](/features/menus/application/) : créez des barres de menus d’application
+- [Menus contextuels](/features/menus/context/) : créez des menus contextuels accessibles par clic droit
+- [Menus de la zone de notification](/features/menus/systray/) : créez des menus pour la zone de notification ou la barre de menus
+- [Modèles de menus](/guides/menus/) : découvrez les modèles de menus courants et les bonnes pratiques
 
 ---
 

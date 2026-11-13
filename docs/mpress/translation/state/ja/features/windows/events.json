@@ -847,16 +847,16 @@
       "updatedAt": "2026-10-25T21:35:37Z"
     },
     "b0071-text-01": {
-      "sourceHash": "e0f10f798279cc306a3dbe478b049f6713035f493d7acdd97a8e0a94aaf9903e",
-      "targetHash": "e2a85a13dad6919cb000488983fb73b6b877e4476208508b61df7697a463d2d7",
-      "machineHash": "e2a85a13dad6919cb000488983fb73b6b877e4476208508b61df7697a463d2d7",
-      "machineText": "**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。",
+      "sourceHash": "b75712c146e06a9d2cb40af01c0ea008daea8af16f79fc7a693bb951bbd77d4e",
+      "targetHash": "d2fcc76e0cdba48c7ff843562e48ed8d62ebe33ebc6b7fdd681f7de1132a6d63",
+      "machineHash": "d2fcc76e0cdba48c7ff843562e48ed8d62ebe33ebc6b7fdd681f7de1132a6d63",
+      "machineText": "**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://githu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:35:37Z"
+      "updatedAt": "2026-11-06T02:13:49Z"
     },
     "fm-description": {
       "sourceHash": "1f163504f508ed93cedcf76df1959c26fb6fc8f659ac297f06674b9944a93470",

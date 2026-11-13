@@ -230,7 +230,7 @@ Sim. As CLIs são binários separados (`wails` e `wails3`), e os módulos têm c
 
 ### Como posso contribuir?
 
-Consulte o [Guia de Contribuição](/contributing/). Correções de bugs são bem-vindas a qualquer momento; novas funcionalidades e alterações no comportamento público usam um PR de rascunho de [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md). A discussão informal no Discord ou nas Discussões do GitHub é opcional.
+Consulte o [Guia de Contribuição](/contributing/). Correções de bugs são bem-vindas a qualquer momento; novas funcionalidades e alterações no comportamento público exigem um PR de rascunho de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md). A discussão informal no Discord ou no GitHub Discussions é opcional.
 
 ### Onde encontro exemplos?
 

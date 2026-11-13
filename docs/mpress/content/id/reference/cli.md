@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Buat binding dari Go ke frontend. Flag: `-d` (direktori keluaran), `-models`, `-index`, `-ts`, `-i` (antarmuka), `-b` (bundel), `-names` (hasilkan `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (nilai default `true`), `-f`, `-obfuscated` (buat `wails_obfuscated.gen.go` dengan ID binding stabil untuk build Garble; lihat [Build yang Diobfusikasi](/guides/build/obfuscation/)), `-obfuscated-output` (direktori untuk berkas yang dibuat; nilai default-nya adalah direktori paket utama). Menerima pola paket (misalnya `./...`); jika tidak ada yang diberikan, gunakan direktori saat ini. |
 | `generate icons` | Konversikan PNG sumber menjadi format ikon platform. Flag: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Buat isi direktori `build/` (cuplikan Taskfile, berkas NSIS, `Info.plist`, templat `.desktop`, dan sebagainya) dari `build/config.yml`. |
-| `generate runtime` | Buat ulang `/wails/runtime.js` siap pakai yang disertakan untuk webview. |
+| `generate runtime` | Ekspor bundel JavaScript produksi/debug yang disematkan dalam CLI (`-d` menentukan tujuan). |
 | `generate syso` | Buat berkas sumber daya Windows `.syso` (ikon + manifes + informasi versi). |
 | `generate webview2bootstrapper` | Buat penginstal bootstrap WebView2 untuk Windows. |
 | `generate constants` | Buat konstanta nama peristiwa JS dari tipe peristiwa Go. |

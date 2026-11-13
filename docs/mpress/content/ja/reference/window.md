@@ -1,17 +1,17 @@
 ---
-title: "ウィンドウ API"
-description: "ウィンドウ API の完全なリファレンス"
+title: "Window API"
+description: "Window API の完全なリファレンス"
 slug: "reference/window"
 sourcePath: "reference/window.md"
 ---
 
 ## 概要
 
-ウィンドウ API は、ウィンドウの外観、動作、ライフサイクルを制御するためのメソッドを提供します。ウィンドウインスタンスまたは `app.Window` マネージャーを介してアクセスします。
+Window API は、ウィンドウの外観、動作、ライフサイクルを制御するためのメソッドを提供します。ウィンドウインスタンスまたは `app.Window` マネージャーを介してアクセスします。
 
-`Window` は `*application.WebviewWindow` が実装するインターフェースです。以下のメソッドシグネチャは `*WebviewWindow` に定義されています。多くの変更メソッドは、メソッドチェーンを可能にするために `Window` を返します。戻り値については、各メソッドの説明を参照してください。
+`Window` は `*application.WebviewWindow` が実装するインターフェースです。以下のメソッドシグネチャは `*WebviewWindow` に定義されています。多くの変更メソッドは、メソッドチェーンを可能にするため `Window` を返します。戻り値については各メソッドで説明します。
 
-**一般的な操作：**
+**主な操作：**
 
 - ウィンドウの作成と表示
 - サイズ、位置、状態の制御
@@ -23,7 +23,7 @@ sourcePath: "reference/window.md"
 
 ### Show()
 
-ウィンドウを表示します。ウィンドウが非表示の場合は、表示状態になります。メソッドチェーン用にレシーバーを返します。
+ウィンドウを表示します。ウィンドウが非表示だった場合は、表示状態になります。メソッドチェーン用にレシーバーを返します。
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -38,7 +38,7 @@ window.Show()
 
 ### Hide()
 
-ウィンドウを閉じずに非表示にします。ウィンドウはメモリ上に残り、再度表示できます。メソッドチェーン用にレシーバーを返します。
+ウィンドウを閉じずに非表示にします。ウィンドウはメモリ内に保持され、再度表示できます。メソッドチェーン用にレシーバーを返します。
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -56,13 +56,13 @@ window.Show()
 
 **ユースケース：**
 
-- システムトレイに格納するアプリケーション
-- ウィンドウを再利用するウィザードフロー
+- システムトレイに格納して非表示にするアプリケーション
+- ウィンドウを再利用するウィザード形式のフロー
 - 処理中の一時的な非表示
 
 ### Close()
 
-ウィンドウを閉じます。これにより、`WindowClosing` イベントが発生します。
+ウィンドウを閉じます。これにより `WindowClosing` イベントが発生します。
 
 ```go
 func (w *WebviewWindow) Close()
@@ -173,7 +173,7 @@ window.SetMaxSize(1920, 1080)
 
 ### SetPosition()
 
-画面の左上隅を基準としてウィンドウの位置を設定します。
+画面の左上隅を基準にウィンドウの位置を設定します。
 
 ```go
 func (w *WebviewWindow) SetPosition(x, y int)
@@ -246,7 +246,7 @@ window.Focus()
 
 ### Minimise() / UnMinimise()
 
-ウィンドウをタスクバー／Dock に最小化するか、元の状態に戻します。`Minimise()` はメソッドチェーン用にレシーバーを返しますが、`UnMinimise()` は何も返しません。
+ウィンドウをタスクバーまたは Dock に最小化するか、元の状態に戻します。`Minimise()` はメソッドチェーン用にレシーバーを返します。`UnMinimise()` は何も返しません。
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-ウィンドウを画面全体に最大化するか、以前のサイズに戻します。`Maximise()` はメソッドチェーン用にレシーバーを返しますが、`UnMaximise()` は何も返しません。
+ウィンドウを画面全体に広げて最大化するか、以前のサイズに戻します。`Maximise()` はメソッドチェーン用にレシーバーを返します。`UnMaximise()` は何も返しません。
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-フルスクリーンモードに切り替えるか、フルスクリーンモードを終了します。`Fullscreen()` はメソッドチェーン用にレシーバーを返します。
+フルスクリーンモードを開始または終了します。`Fullscreen()` はメソッドチェーン用にレシーバーを返します。
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -309,7 +309,7 @@ window.ToggleFullscreen()
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
-現在のウィンドウの状態を確認します。
+現在のウィンドウ状態を確認します。
 
 ```go
 func (w *WebviewWindow) IsMinimised() bool
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **パラメーター：**
 
-- `url` - 移動先の URL（埋め込みアセットには `http://wails.localhost/` を使用できます）
+- `url` - 移動先の URL（埋め込みアセットには `http://wails.localhost/` を使用可能）
 
 **例：**
 
@@ -385,10 +385,10 @@ html := `
 window.SetHTML(html)
 ```
 
-**使用例：**
+**ユースケース：**
 
-- 動的なコンテンツの生成
-- フロントエンドのビルドプロセスを使用しないシンプルなウィンドウ
+- 動的なコンテンツ生成
+- フロントエンドのビルドプロセスを必要としないシンプルなウィンドウ
 - エラーページまたはスプラッシュ画面
 
 ### Reload()
@@ -399,21 +399,21 @@ window.SetHTML(html)
 func (w *WebviewWindow) Reload()
 ```
 
-**例：**
+**例:**
 
 ```go
 // Reload current page
 window.Reload()
 ```
 
-**注：** 開発中やコンテンツを更新する必要がある場合に便利です。
+**注:** 開発中やコンテンツを更新する必要がある場合に便利です。
 
 ## ウィンドウイベント
 
-Wails には、ウィンドウイベントを処理するためのメソッドが 2 つあります。
+Wails には、ウィンドウイベントを処理するためのメソッドが2つあります。
 
 - **OnWindowEvent()** - ウィンドウイベントをリッスンします（イベントを阻止することはできません）。
-- **RegisterHook()** - ウィンドウイベントにフックします（`event.Cancel()` を呼び出すことでイベントを阻止できます）。
+- **RegisterHook()** - ウィンドウイベントにフックします（`event.Cancel()`を呼び出すことでイベントを阻止できます）。
 
 ### OnWindowEvent()
 
@@ -426,7 +426,7 @@ func (w *WebviewWindow) OnWindowEvent(
 ) func()
 ```
 
-**例：**
+**例:**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -447,21 +447,21 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-**一般的なウィンドウイベント：**
+**一般的なウィンドウイベント:**
 
-- `events.Common.WindowClosing` - ウィンドウが閉じようとしている
-- `events.Common.WindowFocus` - ウィンドウがフォーカスを取得した
+- `events.Common.WindowClosing` - ウィンドウが閉じられようとしている
+- `events.Common.WindowFocus` - ウィンドウがフォーカスを得た
 - `events.Common.WindowLostFocus` - ウィンドウがフォーカスを失った
 - `events.Common.WindowDidMove` - ウィンドウが移動した
 - `events.Common.WindowDidResize` - ウィンドウのサイズが変更された
 - `events.Common.WindowMinimise` - ウィンドウが最小化された
 - `events.Common.WindowMaximise` - ウィンドウが最大化された
-- `events.Common.WindowFullscreen` - ウィンドウがフルスクリーンになった
-- `events.Common.WindowRuntimeReady` - ウィンドウ内のランタイムが初期化された
+- `events.Common.WindowFullscreen` - ウィンドウがフルスクリーン表示になった
+- `events.Common.WindowRuntimeReady` - ウィンドウ内ランタイムが初期化された
 
 ### RegisterHook()
 
-ウィンドウイベントのフックを登録します。フックはリスナーより先に実行され、`event.Cancel()` を呼び出すことでイベントを阻止できます。購読解除関数を返します。
+ウィンドウイベントのフックを登録します。フックはリスナーより先に実行され、`event.Cancel()`を呼び出すことでイベントを阻止できます。購読解除関数を返します。
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -470,7 +470,7 @@ func (w *WebviewWindow) RegisterHook(
 ) func()
 ```
 
-**例 — ウィンドウが閉じるのを阻止する：**
+**例 - ウィンドウが閉じるのを阻止する:**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -493,7 +493,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-**例 — 閉じる前に保存する：**
+**例 - 閉じる前に保存する:**
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -521,18 +521,18 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-ウィンドウのフロントエンドにカスタムイベントを送出します。送出がフックによってキャンセルされた場合は `true` を返します。
+ウィンドウのフロントエンドにカスタムイベントを送出します。送出がフックによってキャンセルされた場合は`true`を返します。
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 ```
 
-**パラメーター：**
+**パラメーター:**
 
 - `name` - イベント名
-- `data` - イベントとともに送信する任意のデータ
+- `data` - イベントとともに送信する省略可能なデータ
 
-**例：**
+**例:**
 
 ```go
 // Send data to specific window
@@ -542,7 +542,7 @@ window.EmitEvent("data-updated", map[string]any{
 })
 ```
 
-**フロントエンド（JavaScript）：**
+**フロントエンド（JavaScript）:**
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -563,7 +563,7 @@ Events.On('data-updated', (data) => {
 func (w *WebviewWindow) SetEnabled(enabled bool)
 ```
 
-**例：**
+**例:**
 
 ```go
 // Disable window during long operation
@@ -584,9 +584,9 @@ window.SetEnabled(true)
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA` は `application.RGBA{Red, Green, Blue, Alpha uint8}` です。ヘルパー `application.NewRGB(r, g, b)`（アルファ値 255）または `application.NewRGBA(r, g, b, a)` を使用してください。
+`RGBA`は`application.RGBA{Red, Green, Blue, Alpha uint8}`です。ヘルパーの`application.NewRGB(r, g, b)`（アルファ値は255）または`application.NewRGBA(r, g, b, a)`を使用します。
 
-**例：**
+**例:**
 
 ```go
 // White background
@@ -604,7 +604,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 func (w *WebviewWindow) SetResizable(resizable bool) Window
 ```
 
-**例：**
+**例:**
 
 ```go
 // Make window fixed size
@@ -613,17 +613,42 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-ウィンドウをほかのウィンドウより常に手前に表示するかどうかを設定します。メソッドチェーン用にレシーバーを返します。
+ウィンドウをほかのウィンドウより前面に維持するかどうかを設定します。メソッドチェーン用にレシーバーを返します。
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 ```
 
-**例：**
+**例:**
 
 ```go
 // Keep window on top
 window.SetAlwaysOnTop(true)
+```
+
+### SetMenu()
+
+Windows および Linux で、ウィンドウに表示されているメニューバーを指定したメニューバーに置き換えます。
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**パラメーター:**
+- `menu` - 表示するメニュー。メニューバーを削除する場合は`nil`
+
+`nil`を渡すとメニューバーが削除されます。ウィンドウにはアプリケーションメニューを含む一切のメニューが表示されなくなり、削除されたメニューのアクセラレーターもそのウィンドウでは機能しなくなります。ウィンドウの起動前に呼び出すと、メニューバーなしでウィンドウが作成されます。
+
+**プラットフォーム対応:**
+- **Windows**: 完全対応
+- **Linux**: 完全対応
+- **macOS**: メニューバーはアプリケーションに属するため、効果はありません。代わりに`app.Menu.Set`を使用してください。
+
+**例:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
 ```
 
 ### Print()
@@ -634,9 +659,9 @@ window.SetAlwaysOnTop(true)
 func (w *WebviewWindow) Print() error
 ```
 
-**戻り値：** 印刷に失敗した場合はエラー。
+**戻り値:** 印刷に失敗した場合はエラー。
 
-**例：**
+**例:**
 
 ```go
 if err := window.Print(); err != nil {
@@ -652,17 +677,17 @@ if err := window.Print(); err != nil {
 func (w *WebviewWindow) AttachModal(modalWindow Window)
 ```
 
-**パラメーター：**
+**パラメーター:**
 
 - `modalWindow` - モーダルとしてアタッチするウィンドウ
 
-**プラットフォーム対応：**
+**プラットフォーム対応:**
 
-- **macOS**：完全対応（シートとして表示）
-- **Windows**：未対応
-- **Linux**：未対応
+- **macOS**: 完全対応（シートとして表示）
+- **Windows**: 非対応
+- **Linux**: 非対応
 
-**例：**
+**例:**
 
 ```go
 modalWindow := app.Window.New()
@@ -673,18 +698,18 @@ window.AttachModal(modalWindow)
 
 ### Linux
 
-Linuxのウィンドウでは、`LinuxWindow`を介して次のプラットフォーム固有のオプションを使用できます。
+Linux のウィンドウでは、`LinuxWindow`を介して次のプラットフォーム固有のオプションを使用できます。
 
 #### MenuStyle
 
-アプリケーションメニューの表示方法を制御します。このオプションはデフォルトのGTK4ビルドで使用でき、従来の`-tags gtk3`ビルドでは無視されます。
+アプリケーションメニューの表示方法を制御します。このオプションはデフォルトの GTK4 ビルドで使用でき、従来の`-tags gtk3`ビルドでは無視されます。
 
 | 値 | 説明 |
 | --- | --- |
-| `LinuxMenuStyleMenuBar` | タイトルバーの下に表示される従来型のメニューバー（デフォルト） |
-| `LinuxMenuStylePrimaryMenu` | ヘッダーバー内のプライマリメニューボタン（GNOMEスタイル） |
+| `LinuxMenuStyleMenuBar` | タイトルバーの下に表示される従来のメニューバー（デフォルト） |
+| `LinuxMenuStylePrimaryMenu` | ヘッダーバー内のプライマリメニューボタン（GNOME スタイル） |
 
-**例：**
+**例:**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-<strong>注：</strong>プライマリメニュースタイルでは、GNOME Human Interface Guidelinesに従って、ヘッダーバーにハンバーガーボタン（☰）が表示されます。これは最新のGNOMEアプリケーションに推奨されるスタイルです。
+**注:** プライマリメニュースタイルでは、GNOME Human Interface Guidelines に従い、ヘッダーバーにハンバーガーボタン（☰）が表示されます。これは、最新の GNOME アプリケーションに推奨されるスタイルです。
 
 ## 完全な例
 

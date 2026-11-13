@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-Tag diteruskan sebagai `EXTRA_TAGS` ke Taskfile yang mendasarinya.
+Tag diteruskan sebagai `EXTRA_TAGS` ke Taskfile yang mendasarinya. Menetapkan `WAILS_PUREGO=1` akan menambahkan tag `purego` ke `build`, `package`, dan `dev` tanpa flag; lihat [build tanpa CGO](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 Ini setara dengan menjalankan `wails3 task build`, yang akan menjalankan tugas `build` dalam Taskfile utama proyek. Semua variabel CLI yang diberikan kepada `build` diteruskan ke tugas yang mendasarinya. Anda dapat menyesuaikan proses build dengan mengedit file `Taskfile.yml`.
@@ -132,6 +135,14 @@ Tugas pemaketan bawaan menerima `ARCH` untuk memilih arsitektur target:
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| Flag | Deskripsi | Bawaan |
+|------|-------------|---------|
+| `-tags` | Tag build Go tambahan (dipisahkan dengan koma), diteruskan sebagai `EXTRA_TAGS` |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` dan `OUTPUT` hanya memengaruhi Taskfile khusus yang secara eksplisit membaca variabel tersebut; keduanya tidak mengganti versi paket atau nama file bawaan.
@@ -245,7 +256,7 @@ Gunakan `--stdio` atau `--http` untuk memilih transport secara eksplisit. Gunaka
 
 #### Flag MCP
 
-| Flag | Deskripsi | Default |
+| Opsi | Deskripsi | Default |
 | --- | --- | --- |
 | `--root` | Root proyek yang diizinkan. Path dan symlink di luar root tersebut ditolak. | Direktori saat ini |
 | `--token` | Token sesi/bearer untuk alat yang melakukan perubahan dan mengendalikan proses. Jika tidak tersedia, menggunakan `WAILS_MCP_TOKEN`. | Dihasilkan secara aman |
@@ -275,7 +286,7 @@ Menghasilkan binding dan model untuk kode Go Anda.
 wails3 generate bindings [flags] [patterns...]
 ```
 
-#### Flag
+#### Opsi
 
 | Flag | Deskripsi | Default |
 | --- | --- | --- |
@@ -304,7 +315,7 @@ wails3 generate build-assets [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Default |
+| Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
 | `-name` | Nama proyek |  |
 | `-dir` | Direktori keluaran | `build` |
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | Berkas PNG masukan | Wajib |
 | `-windowsfilename` | Nama berkas keluaran Windows |  |
 | `-macfilename` | Nama berkas keluaran macOS |  |
-| `-sizes` | Ukuran ikon (dipisahkan dengan koma) | `256,128,64,48,32,16` |
+| `-sizes` | Ukuran ikon dari 1 hingga 256 piksel (dipisahkan dengan koma; nilai nol diabaikan) | `256,128,64,48,32,16` |
 | `-example` | Hasilkan ikon contoh | `false` |
 | `-iconcomposerinput` | Berkas Icon Composer masukan (`.icon`) |  |
 | `-macassetdir` | Direktori keluaran untuk aset Mac (Assets.car + icns) |  |
+
+Diperlukan setidaknya satu ukuran bukan nol.
 
 #### Icon Composer (macOS)
 
@@ -384,7 +397,7 @@ wails3 generate .desktop [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Bawaan |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-name` | Nama aplikasi | Wajib |
 | `-exec` | Path ke berkas yang dapat dieksekusi | Wajib |
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Menghasilkan versi runtime yang telah dikompilasi sebelumnya.
+Mengekspor runtime bawaan yang telah di-build dan disematkan dalam CLI sebagai `runtime.js` (produksi) dan `runtime-debug.js` (debug). Perintah ini dapat dijalankan dari CLI yang telah diinstal tanpa memerlukan akses ke pohon sumber Wails, termasuk untuk build yang dibuat dengan `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -441,7 +455,7 @@ wails3 generate appimage [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Default |
+| Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
 | `-binary` | Path ke file biner | Wajib |
 | `-icon` | Path ke file ikon | Wajib |
@@ -463,7 +477,7 @@ wails3 service init [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Bawaan |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-n` | Nama layanan | `example_service` |
 | `-d` | Deskripsi layanan | `Example service` |
@@ -490,7 +504,7 @@ wails3 tool checkport [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Bawaan |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-port` | Port yang akan diperiksa | `9245` |
 | `-host` | Host yang akan diperiksa | `localhost` |
@@ -505,7 +519,7 @@ wails3 tool watcher [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Default |
+| Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
 | `-config` | Jalur file konfigurasi | `./build/config.yml` |
 | `-ignore` | Pola yang akan diabaikan |  |
@@ -513,10 +527,12 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Menyalin file.
+Menyalin satu file sumber ke satu file tujuan. File yang sudah ada akan ditimpa
+dan tetap mempertahankan izin saat ini. File baru menggunakan izin file sumber, dengan tetap tunduk
+pada umask sistem di Unix. Direktori induk harus sudah ada.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -537,7 +553,7 @@ wails3 tool version [flags]
 
 #### Flag
 
-| Opsi | Deskripsi | Default |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-v` | Versi saat ini yang akan dinaikkan |  |
 | `-major` | Naikkan versi mayor | `false` |
@@ -564,7 +580,7 @@ Menghasilkan paket Linux (deb, rpm, archlinux).
 wails3 tool package [flags]
 ```
 
-#### Opsi
+#### Flag
 
 | Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
@@ -583,7 +599,7 @@ wails3 tool lipo [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Default |
+| Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
 | `-output` | Jalur biner keluaran |  |
 
@@ -659,7 +675,7 @@ wails3 update cli [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Bawaan |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-pre` | Perbarui ke prarilis terbaru | `false` |
 | `-version` | Perbarui ke versi tertentu |  |
@@ -683,7 +699,7 @@ wails3 update build-assets [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Bawaan |
+| Flag | Deskripsi | Default |
 | --- | --- | --- |
 | `-config` | Jalur file konfigurasi |  |
 | `-dir` | Direktori keluaran | `build` |
@@ -718,7 +734,7 @@ wails3 releasenotes [flags]
 
 #### Flag
 
-| Flag | Deskripsi | Default |
+| Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
 | `-v` | Versi yang catatan rilisnya akan ditampilkan |  |
 | `-n` | Nonaktifkan keluaran berwarna | `false` |

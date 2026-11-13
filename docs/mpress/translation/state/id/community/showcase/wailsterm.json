@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "fe3243ae4816d1ecf421",
   "sourceFile": "community/showcase/wailsterm.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:29Z"
     },
     "b0002-text-01": {
-      "sourceHash": "ad12595e14434cde4712fd1829c83e982f9ad6c2efa1ce476ed0a703e03e19ea",
-      "targetHash": "9c96e531e3fe1ef3d59fb5071b9553a8d93f3b67324087234a33eceb537407f3",
-      "machineHash": "9c96e531e3fe1ef3d59fb5071b9553a8d93f3b67324087234a33eceb537407f3",
-      "machineText": "[WailsTerm](https://github.com/rlshukhov/wailsterm) adalah aplikasi terminal semitransparan sederhana\\\nyang didukung oleh Wails dan Xterm.js.",
+      "sourceHash": "d395cb793467ee086e095527e37f2ca5c950b8f1d3e670e63c40357a5e7ba066",
+      "targetHash": "70490c2c8f2ab9c8989e0d6bc27098bc52798802624d43d2012562627ddb3feb",
+      "machineHash": "70490c2c8f2ab9c8989e0d6bc27098bc52798802624d43d2012562627ddb3feb",
+      "machineText": "[WailsTerm](https://github.com/rlshukhov/wailsterm) adalah aplikasi terminal semitransparan sederhana yang didukung oleh Wails dan Xterm.js.",
       "status": "final",
-      "sourcePreview": "[WailsTerm](https://github.com/rlshukhov/wailsterm) is a simple translucent\\ terminal app powered by…",
+      "sourcePreview": "[WailsTerm](https://github.com/rlshukhov/wailsterm) is a simple translucent terminal app powered by …",
       "provider": "codex",
       "model": "gpt-6-astra",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:29Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
       "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:29Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
       "targetHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
       "machineHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:29Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/wailsterm.mpd",
+    "sourceHash": "24078bb66b22ee0ea531e3f57aee1d4017bd0447dce37245e4dca3b931e67bd3",
+    "targetHash": "7da80d2c6a39274ea0fd7d9b7393dd205404d2e975dc34e015fe2830d80dbf7c",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "8dcddece546de009d76773707b674c638dd60160f75536d34a45b1d285c7c5b4",
+        "targetHash": "2f24cb5e48b416035b8736405cbbca288cd7c226ad631d6fcb51197632839e94",
+        "machineHash": "2f24cb5e48b416035b8736405cbbca288cd7c226ad631d6fcb51197632839e94",
+        "machineText": "![Tangkapan layar WailsTerm](/assets/showcase-images/wailsterm.webp)",
+        "status": "final",
+        "sourcePreview": "![WailsTerm Screenshot](/assets/showcase-images/wailsterm.webp)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:29Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "ad12595e14434cde4712fd1829c83e982f9ad6c2efa1ce476ed0a703e03e19ea",
+        "targetHash": "9c96e531e3fe1ef3d59fb5071b9553a8d93f3b67324087234a33eceb537407f3",
+        "machineHash": "9c96e531e3fe1ef3d59fb5071b9553a8d93f3b67324087234a33eceb537407f3",
+        "machineText": "[WailsTerm](https://github.com/rlshukhov/wailsterm) adalah aplikasi terminal semitransparan sederhana\\\nyang didukung oleh Wails dan Xterm.js.",
+        "status": "final",
+        "sourcePreview": "[WailsTerm](https://github.com/rlshukhov/wailsterm) is a simple translucent\\ terminal app powered by…",
+        "provider": "codex",
+        "model": "gpt-6-astra",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:29Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:29Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+        "targetHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+        "machineHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+        "machineText": "WailsTerm",
+        "status": "final",
+        "sourcePreview": "WailsTerm",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:29Z"
+      }
     }
   }
 }

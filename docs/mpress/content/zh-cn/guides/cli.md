@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-标签会以`EXTRA_TAGS`的形式转发给底层 Taskfile。
+标签会以`EXTRA_TAGS`的形式传递给底层 Taskfile。设置`WAILS_PUREGO=1`后，无需使用标志即可将`purego`标签添加到`build`、`package`和`dev`；请参阅[无 CGO 构建](/experimental/#cgo-free-builds-purego)。
 
 @note{type="info"}
 这等同于运行`wails3 task build`，后者会执行项目主 Taskfile 中的`build`任务。传给`build`的所有 CLI 变量都会转发给底层任务。你可以编辑`Taskfile.yml`文件来自定义构建流程。
@@ -132,6 +135,14 @@ wails3 package [CLI variables...]
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| 标志 | 说明 | 默认值 |
+|------|-------------|---------|
+| `-tags` | 其他 Go 构建标签（以逗号分隔），以`EXTRA_TAGS`的形式传递 |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION`和`OUTPUT`仅对显式读取这些变量的自定义 Taskfile 生效；它们不会覆盖标准软件包的版本或文件名。
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | 输入 PNG 文件 | 必填 |
 | `-windowsfilename` | Windows 输出文件名 |  |
 | `-macfilename` | macOS 输出文件名 |  |
-| `-sizes` | 图标尺寸（以逗号分隔） | `256,128,64,48,32,16` |
+| `-sizes` | 图标尺寸范围为1到256像素（以逗号分隔；忽略零值） | `256,128,64,48,32,16` |
 | `-example` | 生成示例图标 | `false` |
 | `-iconcomposerinput` | 输入 Icon Composer 文件（`.icon`） |  |
 | `-macassetdir` | Mac 资源的输出目录（Assets.car + icns） |  |
+
+至少需要一个非零尺寸。
 
 #### Icon Composer（macOS）
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-生成预构建版本的运行时。
+将嵌入 CLI 的预构建运行时导出为`runtime.js`（生产版）和`runtime-debug.js`（调试版）。即使无法访问 Wails 源代码树，也可通过已安装的 CLI 使用此功能，包括使用`-trimpath`生成的构建。
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-复制文件。
+将一个源文件复制到一个目标文件。现有文件会被覆盖并保留其当前权限。新文件使用源文件的权限，但在 Unix 上受系统 umask 限制。父目录必须已存在。
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`

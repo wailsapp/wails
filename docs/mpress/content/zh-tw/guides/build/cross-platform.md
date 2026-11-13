@@ -1,15 +1,15 @@
 ---
 title: "跨平台建置"
-description: "從單一機器為多個平台建置"
+description: "在單一機器上為多個平台建置"
 slug: "guides/build/cross-platform"
 sourcePath: "guides/build/cross-platform.md"
 ---
 
-## 快速入門
+## 快速開始
 
-Wails v3 支援從任何主機作業系統為 Windows、macOS 和 Linux 建置。建置系統會自動偵測您的環境，並選擇正確的編譯方式。
+Wails v3支援從任何主機作業系統為 Windows、macOS 和 Linux 建置。建置系統會自動偵測您的環境，並選擇正確的編譯方式。
 
-<strong>想要交叉編譯至 macOS 和 Linux 嗎？</strong>執行一次以下操作以設定 Docker 映像檔（下載量約 800MB）：
+<strong>想要交叉編譯至 macOS 和 Linux 嗎？</strong>執行一次以下操作以設定 Docker 映像檔（下載量約為 800MB）：
 
 ```bash
 wails3 task setup:docker
@@ -43,7 +43,7 @@ Windows 是最簡單的交叉編譯目標，因為預設不需要 CGO。
 wails3 build GOOS=windows
 ```
 
-這可在任何主機作業系統上運作，不需要額外設定。Go 內建的交叉編譯功能會處理所有作業。
+這可在任何主機作業系統上運作，無須額外設定。Go 內建的交叉編譯功能會處理一切。
 
 **如果您的應用程式需要 CGO**（例如使用 C 程式庫或依賴 CGO 的套件），從 macOS 或 Linux 建置時便需要 Docker：
 
@@ -55,11 +55,11 @@ wails3 task setup:docker
 wails3 task windows:build CGO_ENABLED=1
 ```
 
-Taskfile 會在非 Windows 主機上偵測`CGO_ENABLED=1`，並自動使用 Docker 映像檔。
+Taskfile 會在非 Windows 主機上偵測 `CGO_ENABLED=1`，並自動使用 Docker 映像檔。
 
 ### macOS
 
-macOS 建置需要使用 CGO 來整合 WebView，因此交叉編譯需要特殊工具。
+macOS 建置需要 CGO 以整合 WebView，因此交叉編譯需要特殊工具。
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -72,19 +72,19 @@ wails3 build GOOS=darwin GOARCH=amd64
 wails3 task darwin:build:universal
 ```
 
-**從 Linux 或 Windows 建置時**，您需要先設定 Docker：
+**從 Linux 或 Windows**建置時，您需要先設定 Docker：
 
 ```bash
 wails3 task setup:docker
 ```
 
-映像檔建置完成後，建置系統會偵測到您並非位於 macOS，並自動使用 Docker。您不需要變更建置命令。
+映像檔建置完成後，建置系統會偵測到您並非使用 macOS，並自動使用 Docker。您不需要變更建置命令。
 
-請注意，交叉編譯的 macOS 二進位檔未經程式碼簽署。散布前，您需要在 macOS 或 CI 中簽署這些檔案。
+請注意，交叉編譯的 macOS 二進位檔未經程式碼簽署。散佈前，您需要在 macOS 或 CI 中簽署這些檔案。
 
 ### Linux
 
-Linux 建置需要使用 CGO 來整合 WebView。
+Linux 建置需要 CGO 以整合 WebView。
 
 ```bash
 wails3 build GOOS=linux
@@ -94,22 +94,22 @@ wails3 build GOOS=linux GOARCH=amd64
 wails3 build GOOS=linux GOARCH=arm64
 ```
 
-**從 macOS 或 Windows 建置時**，您需要先設定 Docker：
+**從 macOS 或 Windows**建置時，您需要先設定 Docker：
 
 ```bash
 wails3 task setup:docker
 ```
 
-建置系統會偵測到您並非位於 Linux，並自動使用 Docker。
+建置系統會偵測到您並非使用 Linux，並自動使用 Docker。
 
-**在沒有 C 編譯器的 Linux 上**，建置系統會檢查`gcc`或`clang`。若兩者皆未找到，便會改用 Docker。這對未安裝建置工具的精簡容器或系統很有用。您可以選擇：
+**在沒有 C 編譯器的 Linux 上**，建置系統會檢查是否有 `gcc`或 `clang`。若兩者皆未找到，便會改用 Docker。這對精簡容器或未安裝建置工具的系統很有用。您可以選擇：
 
-1. 安裝 C 編譯器：`sudo apt install build-essential`（Debian/Ubuntu）或`sudo pacman -S base-devel`（Arch）
-2. 建置 Docker 映像檔，讓系統自動使用
+1. 安裝 C 編譯器：`sudo apt install build-essential`（Debian/Ubuntu）或 `sudo pacman -S base-devel`（Arch）
+2. 建置 Docker 映像檔，並讓系統自動使用它
 
 ### ARM 架構
 
-所有平台都支援使用`GOARCH`進行 ARM64 交叉編譯：
+所有平台都支援使用 `GOARCH`進行 ARM64 交叉編譯：
 
 ```bash
 # Windows ARM64 (Surface Pro X, Windows on ARM)
@@ -125,7 +125,7 @@ wails3 build GOOS=darwin GOARCH=arm64
 wails3 build GOOS=darwin GOARCH=amd64
 ```
 
-Docker 映像檔包含所有平台的 amd64 和 arm64 Zig 交叉編譯器目標，因此可從任何主機進行 ARM 建置：
+Docker 映像檔包含所有平台適用的 amd64 和 arm64 Zig 交叉編譯器目標，因此可從任何主機進行 ARM 建置：
 
 | 建置 ARM64 目標 | 從 Windows | 從 macOS | 從 Linux |
 | --- | --- | --- | --- |
@@ -133,7 +133,7 @@ Docker 映像檔包含所有平台的 amd64 和 arm64 Zig 交叉編譯器目標�
 | **macOS ARM64** | Docker | 原生 | Docker |
 | **Linux ARM64** | Docker | Docker | Docker_ |
 
-<em>在 Linux x86</em>64 上建置 Linux ARM64 時會使用 Docker，因為 CGO 交叉編譯需要不同的工具鏈。
+<em>在 Linux x86 上建置 Linux ARM64</em>64時會使用 Docker，因為 CGO 交叉編譯需要不同的工具鏈。
 
 ## 運作方式
 
@@ -145,7 +145,7 @@ Docker 映像檔包含所有平台的 amd64 和 arm64 Zig 交叉編譯器目標�
 | **macOS** | 原生 Go | 原生 | Docker |
 | **Linux** | 原生 Go | Docker | 原生 |
 
-- **原生** = 平台的原生工具鏈，不需要額外設定
+- **原生** = 平台的原生工具鏈，無須額外設定
 - **原生 Go** = Go 內建的交叉編譯（`CGO_ENABLED=0`）
 - **Docker** = 包含 Zig 交叉編譯器的 Docker 映像檔
 
@@ -153,41 +153,41 @@ Docker 映像檔包含所有平台的 amd64 和 arm64 Zig 交叉編譯器目標�
 
 | 目標 | 是否需要 CGO | 交叉編譯方式 |
 | --- | --- | --- |
-| Windows | 否（預設） | 原生 Go。僅在`CGO_ENABLED=1`時使用 Docker |
-| macOS | 是 | 使用含 macOS SDK 的 Docker |
-| Linux | 是 | Docker；若有可用的 C 編譯器，也可使用原生編譯 |
+| Windows | 否（預設） | 原生 Go。僅在 `CGO_ENABLED=1`時使用 Docker |
+| macOS | 是 | 搭配 macOS SDK 的 Docker |
+| Linux | 是 | 使用 Docker；若有 C 編譯器則使用原生編譯 |
 
 ### 自動偵測
 
-Taskfile 會根據您的環境自動選擇適當的建置方式：
+Taskfile 會根據您的環境自動選擇正確的建置方式：
 
-- <strong>Windows 目標：</strong>預設使用 Go 原生交叉編譯。若您在非 Windows 主機上明確設定 `CGO_ENABLED=1`，則會改用 Docker。
-- <strong>macOS 目標：</strong>若主機不是 macOS，會自動使用 Docker，無須手動介入。
-- <strong>Linux 目標：</strong>檢查是否有 `gcc` 或 `clang`。若找到則使用原生編譯，否則改用 Docker。
+- <strong>Windows 目標：</strong>預設使用原生 Go 交叉編譯。如果您在非 Windows 主機上明確設定 `CGO_ENABLED=1`，系統便會改用 Docker。
+- <strong>macOS 目標：</strong>不在 macOS 上時會自動使用 Docker，無須手動介入。
+- <strong>Linux 目標：</strong>檢查是否有 `gcc`或 `clang`。若找到便使用原生編譯，否則改用 Docker。
 
 ### Docker 映像檔
 
-Wails 使用單一 Docker 映像檔（`wails-cross`）建置所有平台的版本。它使用 [Zig](https://ziglang.org/) 作為交叉編譯器，可從任何主機以任何平台為目標進行編譯。映像檔包含供 darwin 目標使用的 macOS SDK。
+Wails 使用單一 Docker 映像檔（`wails-cross`），即可為所有平台建置。它使用 [Zig](https://ziglang.org/)作為交叉編譯器，可從任何主機編譯至任何目標平台。映像檔內含 darwin 目標所需的 macOS SDK。
 
 ```bash
 wails3 task setup:docker
 ```
 
-您可以執行 `wails3 doctor`，檢查映像檔是否已準備就緒。
+您可以執行 `wails3 doctor`，檢查映像檔是否已就緒。
 
 ### macOS SDK
 
-Docker 映像檔會在映像檔建置過程中，從 [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) 下載 macOS SDK。這是必要步驟，因為 CGO 編譯需要 macOS 標頭檔。
+Docker 映像檔會在建置過程中從 [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks)下載 macOS SDK。這是必要步驟，因為 CGO 編譯需要 macOS 標頭檔。
 
-<strong>重要：</strong>Wails 不散布 macOS SDK。使用者在使用此功能前，有責任查閱 Apple 的 SDK 授權條款。
+<strong>重要：</strong>Wails 不散佈 macOS SDK。使用者有責任在使用此功能前審閱 Apple 的 SDK 授權條款。
 
-## 自行建置映像檔
+## 建置您自己的映像檔
 
-若需要自訂 Docker 映像檔（例如使用不同版本的 macOS SDK、新增其他工具，或使用您自己的 SDK），可以自行建置映像檔。
+如果您需要自訂 Docker 映像檔（例如使用不同版本的 macOS SDK、新增其他工具，或使用您自己的 SDK），可以自行建置映像檔。
 
 ### Dockerfile
 
-建立一個 `Dockerfile`，內容如下：
+建立包含以下內容的`Dockerfile`：
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -393,19 +393,19 @@ CMD ["darwin", "arm64"]
 docker build -t wails-cross .
 ```
 
-### 使用不同的 SDK 版本
+### 使用不同版本的 SDK
 
-變更 `MACOS_SDK_VERSION` 建置引數：
+變更`MACOS_SDK_VERSION`建置引數：
 
 ```bash
 docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
 ```
 
-如需可用選項，請參閱[可用的 SDK 版本](https://github.com/wailsapp/macosx-sdks/releases)。
+如需瞭解可用選項，請參閱[可用的 SDK 版本](https://github.com/wailsapp/macosx-sdks/releases)。
 
 ### 使用您自己的 SDK
 
-若您有自己的 macOS SDK（例如從 Xcode 擷取），可以修改 Dockerfile，改用本機檔案而不下載：
+如果您有自己的 macOS SDK（例如從 Xcode 擷取的 SDK），可以修改 Dockerfile，以使用本機檔案而非下載：
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -416,11 +416,11 @@ RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
     && rm /tmp/sdk.tar.xz
 ```
 
-將 SDK tarball 放在 Dockerfile 所在的目錄中，然後進行建置。
+將 SDK tarball 放在與 Dockerfile 相同的目錄中，然後進行建置。
 
 ## CI/CD 整合
 
-針對正式環境版本，我們建議使用 CI/CD，並為每個平台採用原生執行器。這可完全避免交叉編譯，並確保產生已正確簽署的二進位檔。
+對於正式環境版本，我們建議使用 CI/CD，並為每個平台採用原生執行器。這能完全避免交叉編譯，並確保取得已正確簽署的二進位檔。
 
 ```yaml
 name: Build
@@ -477,7 +477,7 @@ jobs:
 Docker image 'wails-cross' not found.
 ```
 
-執行 `wails3 task setup:docker` 以建置 Docker 映像檔。此操作只需執行一次。
+執行`wails3 task setup:docker`以建置 Docker 映像檔。此操作只需執行一次。
 
 ### Docker 常駐程式未執行
 
@@ -485,11 +485,11 @@ Docker image 'wails-cross' not found.
 Docker is required for cross-compilation. Please install Docker.
 ```
 
-啟動 Docker Desktop 或 Docker 常駐程式。在 Linux 上，您可能需要執行 `sudo systemctl start docker`。
+啟動 Docker Desktop 或 Docker 常駐程式。在 Linux 上，您可能需要執行`sudo systemctl start docker`。
 
 ### Linux 上沒有 C 編譯器
 
-若在 Linux 上建置時看到 CGO 相關錯誤，有以下兩種選擇：
+如果在 Linux 上建置時看到與 CGO 相關的錯誤，有以下兩個選項：
 
 1. **安裝 C 編譯器：**
   - Debian/Ubuntu：`sudo apt install build-essential`
@@ -497,28 +497,28 @@ Docker is required for cross-compilation. Please install Docker.
   - Fedora：`sudo dnf install gcc`
 
 
-2. <strong>改用 Docker：</strong>執行 `wails3 task setup:docker`；未偵測到編譯器時，Taskfile 會自動使用該映像檔。
+2. <strong>改用 Docker：</strong>執行`wails3 task setup:docker`；未偵測到編譯器時，Taskfile 會自動使用它。
 
 ### macOS 二進位檔未簽署
 
-交叉編譯的 macOS 二進位檔未經程式碼簽署。Apple 要求散布時必須進行程式碼簽署，因此您需要：
+交叉編譯的 macOS 二進位檔未經程式碼簽署。Apple 要求散佈的程式必須經過程式碼簽署，因此您需要：
 
 1. 在 macOS 電腦上簽署二進位檔，或
 2. 在 CI 中使用 macOS 執行器進行簽署
 
-如需詳細資訊，請參閱[簽署應用程式](/guides/build/signing/)。
+詳情請參閱[簽署應用程式](/guides/build/signing/)。
 
 ### 建立通用二進位檔
 
-可在任何平台上建置通用二進位檔（合併 arm64 與 amd64）：
+可以在任何平台上建置通用二進位檔（結合 arm64 與 amd64）：
 
 ```bash
 wails3 task darwin:build:universal
 ```
 
-在 Linux 和 Windows 上，Wails 使用其內建的 `wails3 tool lipo` 命令（由 [konoui/lipo](https://github.com/konoui/lipo) 提供支援）合併二進位檔。這會建立單一二進位檔，可在 Apple Silicon 與 Intel Mac 上原生執行。
+在 Linux 和 Windows 上，Wails 會使用其內建的`wails3 tool lipo`命令（由[konoui/lipo](https://github.com/konoui/lipo)提供支援）來合併二進位檔。這會建立一個可在 Apple Silicon 和 Intel Mac 上原生執行的單一二進位檔。
 
 ## 後續步驟
 
-- [建置應用程式](/guides/build/building/) — 基本建置命令與選項
-- [簽署應用程式](/guides/build/signing/) — 用於散布的程式碼簽署
+- [建置應用程式](/guides/build/building/) - 基本建置命令與選項
+- [簽署應用程式](/guides/build/signing/) - 用於散佈的程式碼簽署

@@ -7,19 +7,19 @@ sourcePath: "features/notifications/overview.md"
 
 ## Einführung
 
-Wails bietet ein umfassendes plattformübergreifendes Benachrichtigungssystem für Desktopanwendungen. Mit diesem Dienst können Sie native Systembenachrichtigungen mit folgenden Funktionen anzeigen:
+Wails bietet ein umfassendes plattformübergreifendes Benachrichtigungssystem für Desktopanwendungen. Mit diesem Dienst können Sie native Systembenachrichtigungen anzeigen. Unterstützt werden:
 
-- Einfache Benachrichtigungen mit Titel, Untertitel und Nachrichtentext
+- Einfache Benachrichtigungen mit Titel, Untertitel und Text
 - Interaktive Benachrichtigungen mit Aktionsschaltflächen und Textantworten
 - Wiederverwendbare [Benachrichtigungskategorien](#interaktive-benachrichtigungen) für Aktionen
-- Benutzerdefinierte [Töne](#benutzerdefinierter-ton) (Standard, stumm oder benannt)
+- Benutzerdefinierte [Töne](#benutzerdefinierter-ton) (Standardton, stumm oder benannt)
 - [Anhänge](#anhnge) (Bilder auf allen Plattformen; Audio und Video unter macOS)
-- [Gruppieren zusammengehöriger Benachrichtigungen](#zusammenfassen-und-gruppieren) anhand von `ThreadID`
+- [Gruppierung zusammengehöriger Benachrichtigungen](#threads-und-gruppierung) nach `ThreadID`
 - [Priorität](#unterbrechungsstufe) über `InterruptionLevel` (`passive` / `active` / `timeSensitive` / `critical`)
 - [Geplante Zustellung](#geplante-zustellung) (nativ unter macOS; prozessinterner Timer unter Windows und Linux)
-- [Aktualisieren einer bereits versendeten Benachrichtigung](#benachrichtigungen-aktualisieren) anhand ihrer ID
+- [Aktualisierung einer bereits zugestellten Benachrichtigung](#benachrichtigungen-aktualisieren) anhand ihrer ID
 
-Für jedes neue optionale Feld greift ein geeignetes Rückfallverhalten, wenn eine Plattform es nicht unterstützen kann. Die Unterstützungsmatrix für die einzelnen Funktionen finden Sie unter [Plattformhinweise](#plattformspezifische-aspekte).
+Jedes neue optionale Feld wird problemlos ignoriert, wenn eine Plattform es nicht unterstützt. Die Unterstützungsmatrix für die einzelnen Funktionen finden Sie unter [Plattformhinweise](#plattformspezifische-hinweise).
 
 ## Grundlegende Verwendung
 
@@ -42,9 +42,9 @@ app := application.New(application.Options{
 })
 ```
 
-## Autorisierung von Benachrichtigungen
+## Berechtigung für Benachrichtigungen
 
-Unter macOS erfordern Benachrichtigungen die Zustimmung des Benutzers. Fordern Sie die Autorisierung an und prüfen Sie sie:
+Unter macOS erfordern Benachrichtigungen die Zustimmung des Benutzers. Fordern Sie die Berechtigung an und prüfen Sie sie:
 
 ```go
 authorized, err := notifier.CheckNotificationAuthorization()
@@ -65,7 +65,7 @@ Unter Windows und Linux wird immer `true` zurückgegeben.
 
 ### Einfache Benachrichtigungen
 
-Senden Sie Benutzern eine einfache Benachrichtigung mit eindeutiger ID, Titel, optionalem Untertitel (macOS und Linux) und Nachrichtentext:
+Senden Sie Benutzern eine einfache Benachrichtigung mit einer eindeutigen ID, einem Titel, einem optionalen Untertitel (macOS und Linux) und einem Nachrichtentext:
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -160,7 +160,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### Benutzerdefinierter Ton
 
-Steuern Sie mit `Sound`, welcher Ton bei der Zustellung einer Benachrichtigung wiedergegeben wird. Wenn Sie das Feld auf `nil` belassen, wird der Standardton der Plattform wiedergegeben. Mit `Silent: true` unterdrücken Sie den Ton, mit `Name` geben Sie einen benannten oder gebündelten Ton wieder.
+Steuern Sie mit `Sound`, welcher Ton bei der Zustellung einer Benachrichtigung abgespielt wird. Bleibt das Feld `nil`, wird der Standardton der Plattform abgespielt. Setzen Sie `Silent: true`, um den Ton zu unterdrücken, oder `Name`, um einen benannten beziehungsweise mitgelieferten Ton abzuspielen.
 
 ```go
 // Silent
@@ -181,13 +181,13 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 So wird `Name` auf den einzelnen Plattformen aufgelöst:
 
-- **macOS** — `Name` wird an `[UNNotificationSound soundNamed:]` übergeben. Die Audiodatei muss sich im `Library/Sounds`-Verzeichnis Ihres App-Bundles befinden.
-- **Windows** — wenn `Name` bereits mit `ms-winsoundevent:` oder `ms-appx:` beginnt, wird der Wert unverändert verwendet. Andernfalls wird er zur Verwendung als Name eines integrierten Toast-Ereignisses in `ms-winsoundevent:` eingeschlossen (siehe Microsofts Dokumentation zum Toast-Schema `<audio>`).
-- **Linux** — der Wert wird als freedesktop-Hinweis `sound-name` weitergeleitet. Ob der Ton wiedergegeben wird, hängt vom aktiven Benachrichtigungsdienst und Klangthema ab.
+- **macOS** — `Name` wird an `[UNNotificationSound soundNamed:]` übergeben; die Audiodatei muss sich im Verzeichnis `Library/Sounds` Ihres App-Bundles befinden.
+- **Windows** — beginnt `Name` bereits mit `ms-winsoundevent:` oder `ms-appx:`, wird der Wert unverändert verwendet. Andernfalls wird er zur Verwendung als Name eines integrierten Toast-Ereignisses in `ms-winsoundevent:` eingeschlossen (siehe Microsofts Dokumentation zum Toast-Schema `<audio>`).
+- **Linux** — wird als freedesktop-Hinweis `sound-name` weitergeleitet. Ob der Ton abgespielt wird, hängt vom aktiven Benachrichtigungs-Daemon und Klangthema ab.
 
 ### Anhänge
 
-Mit `Attachments` werden einer Benachrichtigung Mediendateien hinzugefügt. macOS unterstützt mehrere Anhänge beliebiger Medientypen. Windows und Linux berücksichtigen den ersten als Bild typisierten Anhang.
+Mit `Attachments` werden einer Benachrichtigung Mediendateien hinzugefügt. macOS unterstützt mehrere Anhänge beliebiger Medientypen; Windows und Linux berücksichtigen den ersten als Bild typisierten Anhang.
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -212,7 +212,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 #### Eine mit Ihrer App ausgelieferte Datei anhängen
 
-Das Betriebssystem liest den Anhang bei der Zustellung der Benachrichtigung vom Datenträger. Daher muss `Path` auf eine tatsächlich vorhandene Datei auf dem Rechner des Endbenutzers verweisen. Für eine Ressource, die Sie mit der Anwendung bündeln, etwa ein mit `go:embed` eingebettetes Symbol oder Bild, können Sie keinen festen absoluten Pfad hartcodieren: Die Datei befindet sich innerhalb der Binärdatei und nicht an einem bekannten Speicherort auf dem Datenträger. Schreiben Sie sie beim Start einmalig in ein beschreibbares Verzeichnis und übergeben Sie diesen Pfad:
+Das Betriebssystem liest den Anhang bei der Zustellung der Benachrichtigung vom Datenträger. Daher muss `Path` auf dem Rechner des Endbenutzers auf eine tatsächlich vorhandene Datei verweisen. Für eine Ressource, die Sie mit der Anwendung ausliefern, etwa ein mit `go:embed` eingebettetes Symbol oder Bild, können Sie keinen festen absoluten Pfad hartcodieren: Die Datei befindet sich innerhalb der Binärdatei und nicht an einem bekannten Speicherort auf dem Datenträger. Schreiben Sie sie beim Start einmal in ein beschreibbares Verzeichnis und übergeben Sie diesen Pfad:
 
 ```go
 import (
@@ -240,11 +240,11 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-Eine vom Benutzer bereitgestellte oder heruntergeladene Datei besitzt bereits einen tatsächlichen Pfad auf dem Datenträger. Sie können ihn daher ohne diesen Schritt direkt an `Path` übergeben. Die Übergabe von Anhangsdaten als Bytes im Arbeitsspeicher wird möglicherweise in einer zukünftigen Version ergänzt.
+Eine vom Benutzer bereitgestellte oder heruntergeladene Datei besitzt bereits einen tatsächlichen Pfad auf dem Datenträger. Daher können Sie sie ohne diesen Schritt direkt an `Path` übergeben. Die Übergabe von Anhangsdaten als Bytes im Arbeitsspeicher wird möglicherweise in einer zukünftigen Version ergänzt.
 
-### Zusammenfassen und Gruppieren
+### Threads und Gruppierung
 
-`ThreadID` gruppiert zusammengehörige Benachrichtigungen, sodass das Betriebssystem sie in der Mitteilungszentrale bzw. im Info-Center zusammenfassen kann.
+`ThreadID` gruppiert zusammengehörige Benachrichtigungen, sodass das Betriebssystem sie im Notification Center beziehungsweise Action Center zusammenfassen kann.
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -270,20 +270,20 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 | Konstante | Wert | Bedeutung |
 | --- | --- | --- |
-| `InterruptionLevelPassive` | `"passive"` | Unauffällige Zustellung; der Bildschirm wird nicht aktiviert und kein Standardton wiedergegeben |
+| `InterruptionLevelPassive` | `"passive"` | Stille Zustellung; aktiviert weder den Bildschirm noch den Standardton |
 | `InterruptionLevelActive` | `"active"` | Standardstufe |
-| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Umgeht den Fokusmodus bzw. „Nicht stören“, sofern zulässig |
-| `InterruptionLevelCritical` | `"critical"` | Umgeht Fokusmodus und Klingelton- bzw. Stummschaltungseinstellungen; unter macOS ist die Berechtigung für kritische Hinweise erforderlich (ohne sie erfolgt stillschweigend eine Herabstufung) |
+| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Durchbricht Fokus beziehungsweise „Nicht stören“, sofern zulässig |
+| `InterruptionLevelCritical` | `"critical"` | Umgeht Fokus und Klingelton; macOS erfordert die Berechtigung für kritische Hinweise (ohne diese wird die Funktion stillschweigend herabgestuft) |
 
-Plattformspezifische Zuordnung:
+Zuordnung nach Plattform:
 
-- **macOS** — legt `UNNotificationContent.interruptionLevel` fest. `critical` erfordert macOS 12+ und die Berechtigung für kritische Hinweise.
+- **macOS** — setzt `UNNotificationContent.interruptionLevel`. `critical` erfordert macOS 12+ und die Berechtigung für kritische Hinweise.
 - **Windows** — wird dem Toast-Attribut `<toast scenario="...">` zugeordnet.
 - **Linux** — wird dem freedesktop-Hinweis `urgency` zugeordnet.
 
 ### Geplante Zustellung
 
-`Schedule` verzögert die Zustellung. Legen Sie genau eine der Optionen `DelaySeconds` (Sekunden ab jetzt) oder `At` (Unix-Sekunden, UTC) fest.
+`Schedule` verzögert die Zustellung. Setzen Sie genau einen der Werte `DelaySeconds` (Sekunden ab jetzt) oder `At` (Unix-Sekunden, UTC).
 
 ```go
 // Deliver in 60 seconds
@@ -302,13 +302,13 @@ notifier.SendNotification(notifications.NotificationOptions{
 ```
 
 @note{type="caution" title="Persistenz"}
-Unter **macOS** verwenden geplante Benachrichtigungen einen nativen Trigger und bleiben über App-Neustarts hinweg erhalten. Unter **Windows** und **Linux** greift die Planung auf einen prozessinternen `time.AfterFunc`-Timer zurück und geht **verloren, wenn die App vor der Zustellung beendet wird** — weder `wintoast` noch die freedesktop-Spezifikation stellen ein Primitiv für verzögerte Zustellung bereit.
+Unter **macOS** verwenden geplante Benachrichtigungen einen nativen Auslöser und bleiben über App-Neustarts hinweg erhalten. Unter **Windows** und **Linux** greift die Planung auf einen prozessinternen `time.AfterFunc`-Timer zurück und **geht verloren, wenn die App vor der Zustellung beendet wird** — weder `wintoast` noch die freedesktop-Spezifikation stellen eine Funktion zur verzögerten Zustellung bereit.
 
 @end
 
 ### Benachrichtigungen aktualisieren
 
-`UpdateNotification` ersetzt eine bereits laufende Benachrichtigung mit demselben `ID`:
+`UpdateNotification` ersetzt eine bereits zugestellte Benachrichtigung mit derselben `ID`:
 
 ```go
 notifier.UpdateNotification(notifications.NotificationOptions{
@@ -318,103 +318,103 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 })
 ```
 
-Plattformspezifisches Verhalten:
+Verhalten nach Plattform:
 
 - **macOS** — `UNUserNotificationCenter` dedupliziert automatisch anhand der Kennung, sodass die vorhandene Benachrichtigung direkt aktualisiert wird.
 - **Linux** — verwendet den D-Bus-Parameter `replaces_id`, um die vorherige Benachrichtigung zu ersetzen.
-- **Windows** — stellt die Benachrichtigung derzeit erneut als neue Benachrichtigung zu. Ein echtes direktes Ersetzen erfordert vorgelagerte `wintoast`-Unterstützung für `tag`/`group`.
+- **Windows** — stellt sie derzeit erneut als neue Benachrichtigung zu. Für eine echte direkte Ersetzung ist vorgelagerte Unterstützung für `tag`/`group` durch `wintoast` erforderlich.
 
-## Plattformspezifische Aspekte
+## Plattformspezifische Hinweise
 
 @tabs
 [macOS]
 Unter macOS gelten für Benachrichtigungen folgende Punkte:
 
-- Erfordern die Autorisierung durch den Benutzer
-- Erfordern, dass die App paketiert und signiert ist (für die Verteilung notarisiert)
-- Verwenden das systemübliche Erscheinungsbild für Benachrichtigungen
-- Unterstützen `Subtitle`
-- Unterstützen Texteingaben des Benutzers (Antworten)
-- Unterstützen die Aktionsoption `Destructive`
-- Unterstützen mehrere `Attachments` beliebiger Medientypen (Bilder, Audio, Video)
-- Unterstützen `ThreadID` zur Gruppierung in der Mitteilungszentrale
-- Unterstützen alle `InterruptionLevel`-Werte (`critical` erfordert die Berechtigung für kritische Hinweise)
-- Unterstützen native geplante Zustellung, die über App-Neustarts hinweg erhalten bleibt
-- Deduplizieren `UpdateNotification`-Aufrufe automatisch anhand von `ID`
-- Berücksichtigen den dunklen und hellen Modus automatisch
+- Sie erfordern die Autorisierung durch den Benutzer
+- Sie erfordern, dass die App paketiert und signiert ist (für die Verteilung notarisiert)
+- Sie verwenden die systemübliche Darstellung für Benachrichtigungen
+- Sie unterstützen `Subtitle`
+- Sie unterstützen Texteingaben des Benutzers (Antworten)
+- Sie unterstützen die Aktionsoption `Destructive`
+- Sie unterstützen mehrere `Attachments` beliebiger Medientypen (Bilder, Audio und Video)
+- Sie unterstützen `ThreadID` zur Gruppierung in der Mitteilungszentrale
+- Sie unterstützen alle `InterruptionLevel`-Werte (`critical` erfordert die Berechtigung für kritische Hinweise)
+- Sie unterstützen die native geplante Zustellung, die App-Neustarts überdauert
+- Sie deduplizieren Aufrufe von `UpdateNotification` automatisch anhand von `ID`
+- Sie berücksichtigen den Dunkel-/Hellmodus automatisch
 
 [Windows]
 Unter Windows gelten für Benachrichtigungen folgende Punkte:
 
-- Verwenden über das `wintoast`-Backend die Windows-systemeigenen Toast-Stile
-- Passen sich an die Windows-Designeinstellungen an
-- Unterstützen Texteingaben des Benutzers (Antworten)
-- Unterstützen Anzeigen mit hoher DPI-Dichte
-- Unterstützen `Subtitle` nicht
-- Unterstützen ein einzelnes Bild-`Attachment` mit dem Platzierungshinweis `hero`, `appLogoOverride` oder `inline` (Standard: `inline`)
-- Unterstützen `ThreadID` zur Gruppierung im Info-Center
-- Unterstützen `InterruptionLevel` über das Toast-Attribut `scenario`
-- Unterstützen geplante Zustellung über einen prozessinternen Timer — **geplante Benachrichtigungen gehen verloren, wenn die App vor der Zustellung beendet wird**
-- `UpdateNotification` stellt die Benachrichtigung derzeit erneut als neue Benachrichtigung zu (echtes direktes Ersetzen steht aus, bis die vorgelagerte `wintoast`-Unterstützung für `tag`/`group` verfügbar ist)
+- Sie verwenden über das `wintoast`-Backend die systemeigenen Windows-Toast-Stile
+- Sie passen sich den Windows-Designeinstellungen an
+- Sie unterstützen Texteingaben des Benutzers (Antworten)
+- Sie unterstützen Anzeigen mit hoher DPI-Zahl
+- Sie unterstützen `Subtitle` nicht
+- Sie unterstützen einen einzelnen Bildanhang `Attachment` mit dem Platzierungshinweis `hero`, `appLogoOverride` oder `inline` (Standard: `inline`)
+- Sie unterstützen `ThreadID` zur Gruppierung im Info-Center
+- Sie unterstützen `InterruptionLevel` über das Toast-Attribut `scenario`
+- Sie unterstützen die geplante Zustellung über einen prozessinternen Timer — **geplante Benachrichtigungen gehen verloren, wenn die App vor der Zustellung beendet wird**
+- `UpdateNotification` stellt die Benachrichtigung derzeit erneut als neue Benachrichtigung zu (eine echte direkte Ersetzung setzt noch die vorgelagerte Unterstützung für `tag`/`group` durch `wintoast` voraus)
 
 [Linux]
 Unter Linux verwenden Benachrichtigungen die D-Bus-Schnittstelle `org.freedesktop.Notifications`. Damit Benachrichtigungen funktionieren, **muss ein kompatibler Benachrichtigungs-Daemon ausgeführt werden**.
 
 @note{type="caution" title="Systemanforderung: Benachrichtigungs-Daemon"}
-Ein freedesktop-kompatibler Benachrichtigungs-Daemon muss installiert sein und ausgeführt werden. Häufig verwendete Optionen:
+Ein mit freedesktop kompatibler Benachrichtigungs-Daemon muss installiert sein und ausgeführt werden. Häufig verwendete Optionen:
 
-- **dunst** — ressourcenschonend und umfassend konfigurierbar (`apt install dunst`/`dnf install dunst`)
+- **dunst** — schlank und umfassend konfigurierbar (`apt install dunst`/`dnf install dunst`)
 - **mako** — nativ für Wayland (`apt install mako-notifier`)
-- **GNOME Shell** — registriert die Schnittstelle unter GNOME 43+ automatisch. Unter Ubuntu 24.04 (GNOME Shell 46) wird die Schnittstelle beim Sitzungsstart möglicherweise nicht automatisch registriert. Installieren Sie ersatzweise `dunst`, wenn keine Benachrichtigungen angezeigt werden.
-- **xfce4-notifyd** — in XFCE-Desktopumgebungen enthalten
+- **GNOME Shell** — registriert die Schnittstelle unter GNOME 43+ automatisch. Unter Ubuntu 24.04 (GNOME Shell 46) registriert sich die Schnittstelle beim Sitzungsstart möglicherweise nicht selbst. Installiere als Ausweichlösung `dunst`, wenn keine Benachrichtigungen angezeigt werden.
+- **xfce4-notifyd** — im Lieferumfang von XFCE-Desktopumgebungen enthalten
 
-Wenn kein Daemon ausgeführt wird, gibt `SendNotification` folgenden D-Bus-Fehler zurück: `The name org.freedesktop.Notifications was not provided by any .service files`. Behandeln Sie diesen Fehler in Ihrer App und weisen Sie den Benutzer darauf hin, einen Benachrichtigungs-Daemon zu installieren.
+Wenn kein Daemon ausgeführt wird, gibt `SendNotification` einen D-Bus-Fehler zurück: `The name org.freedesktop.Notifications was not provided by any .service files`. Behandle diesen Fehler in deiner App und weise den Benutzer darauf hin, einen Benachrichtigungs-Daemon zu installieren.
 
 @end
 
 Unter Linux gelten für Benachrichtigungen folgende Punkte:
 
-- Übernehmen das Design der Desktopumgebung
-- Werden gemäß den Regeln der Desktopumgebung positioniert
-- Unterstützen `Subtitle` (wird bei Daemons, die es nicht separat darstellen, mit dem Textkörper verkettet)
-- Unterstützen keine Texteingaben des Benutzers (nicht Bestandteil der freedesktop-Spezifikation)
-- Unterstützen ein einzelnes Bild-`Attachment` über den Hinweis `image-path`
-- Unterstützt `ThreadID` (wird, sofern unterstützt, vom Daemon verarbeitet)
-- `Sound.Name` wird als Hinweis `sound-name` weitergeleitet; ob der Sound abgespielt wird, hängt vom aktiven Daemon und Soundthema ab
-- Ordnet `InterruptionLevel` dem freedesktop-Hinweis `urgency` zu
-- Unterstützt die geplante Zustellung über einen prozessinternen Timer – **geplante Benachrichtigungen gehen verloren, wenn die App vor der Zustellung beendet wird**
+- Sie richten sich nach dem Design der Desktopumgebung
+- Ihre Position richtet sich nach den Regeln der Desktopumgebung
+- Sie unterstützen `Subtitle` (bei Daemons, die dies nicht separat darstellen, wird es mit dem Nachrichtentext verkettet)
+- Sie unterstützen keine Texteingaben des Benutzers (nicht Bestandteil der freedesktop-Spezifikation)
+- Sie unterstützen einen einzelnen Bildanhang `Attachment` über den Hinweis `image-path`
+- Sie unterstützen `ThreadID` (wird vom Daemon verarbeitet, sofern dieser es unterstützt)
+- `Sound.Name` wird als Hinweis `sound-name` weitergeleitet. Ob der Ton wiedergegeben wird, hängt vom aktiven Daemon und Klangthema ab
+- Sie ordnen `InterruptionLevel` dem freedesktop-Hinweis `urgency` zu
+- Sie unterstützen die geplante Zustellung über einen prozessinternen Timer — **geplante Benachrichtigungen gehen verloren, wenn die App vor der Zustellung beendet wird**
 - `UpdateNotification` verwendet den D-Bus-Parameter `replaces_id`, um die vorherige Benachrichtigung direkt zu ersetzen
 
 @end
 
-## Bewährte Verfahren
+## Bewährte Vorgehensweisen
 
-1. Berechtigung prüfen und anfordern:
-  - macOS erfordert die Berechtigung des Benutzers
-
-
-2. Klare und prägnante Benachrichtigungen bereitstellen:
-  - Aussagekräftige Titel, Untertitel, Texte und Aktionsbezeichnungen verwenden
+1. Prüfe die Autorisierung und fordere sie an:
+  - macOS erfordert die Autorisierung durch den Benutzer
 
 
-3. Benachrichtigungsantworten angemessen verarbeiten:
-  - Benachrichtigungsantworten auf Fehler prüfen
-  - Rückmeldung zu Benutzeraktionen geben
+2. Formuliere Benachrichtigungen klar und prägnant:
+  - Verwende aussagekräftige Titel, Untertitel, Texte und Aktionsbeschriftungen
 
 
-4. Plattformkonventionen berücksichtigen:
-  - Plattformspezifische Benachrichtigungsmuster befolgen
-  - Systemeinstellungen berücksichtigen
+3. Behandle Reaktionen auf Benachrichtigungen angemessen:
+  - Prüfe Reaktionen auf Benachrichtigungen auf Fehler
+  - Gib Rückmeldung zu Benutzeraktionen
 
 
-5. Unter Linux die Abhängigkeit vom Daemon berücksichtigen:
-  - Den von `SendNotification` zurückgegebenen Fehler prüfen – ein fehlender Daemon verursacht einen D-Bus-Fehler
-  - In der Paketdokumentation oder README-Datei der App sollte darauf hingewiesen werden, dass ein freedesktop-Benachrichtigungs-Daemon erforderlich ist
+4. Berücksichtige die Plattformkonventionen:
+  - Befolge die plattformspezifischen Benachrichtigungsmuster
+  - Berücksichtige die Systemeinstellungen
+
+
+5. Berücksichtige unter Linux die Abhängigkeit vom Daemon:
+  - Prüfe den von `SendNotification` zurückgegebenen Fehler — ein fehlender Daemon verursacht einen D-Bus-Fehler
+  - Die Paketdokumentation oder README-Datei der App sollte darauf hinweisen, dass ein freedesktop-Benachrichtigungs-Daemon erforderlich ist
 
 
 ## Beispiele
 
-Dieses Beispiel ansehen:
+Sieh dir dieses Beispiel an:
 
 - [Benachrichtigungen](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/notifications)
 
@@ -426,12 +426,12 @@ Dieses Beispiel ansehen:
 | --- | --- |
 | `New()` | Erstellt einen neuen Benachrichtigungsdienst |
 
-### Benachrichtigungsberechtigung
+### Benachrichtigungsautorisierung
 
 | Methode | Beschreibung |
 | --- | --- |
 | `RequestNotificationAuthorization()` | Fordert die Berechtigung zum Anzeigen von Benachrichtigungen an (macOS) |
-| `CheckNotificationAuthorization()` | Prüft den aktuellen Status der Benachrichtigungsberechtigung (macOS) |
+| `CheckNotificationAuthorization()` | Prüft den aktuellen Autorisierungsstatus für Benachrichtigungen (macOS) |
 
 ### Benachrichtigungen senden
 
@@ -439,7 +439,7 @@ Dieses Beispiel ansehen:
 | --- | --- |
 | `SendNotification(options NotificationOptions)` | Sendet eine einfache Benachrichtigung |
 | `SendNotificationWithActions(options NotificationOptions)` | Sendet eine interaktive Benachrichtigung mit Aktionen |
-| `UpdateNotification(options NotificationOptions)` | Aktualisiert eine noch nicht abgeschlossene Benachrichtigung anhand von `ID` (siehe [Benachrichtigungen aktualisieren](#benachrichtigungen-aktualisieren)) |
+| `UpdateNotification(options NotificationOptions)` | Aktualisiert eine noch aktive Benachrichtigung anhand von `ID` (siehe [Benachrichtigungen aktualisieren](#benachrichtigungen-aktualisieren)) |
 
 ### Benachrichtigungskategorien
 
@@ -458,11 +458,11 @@ Dieses Beispiel ansehen:
 | `RemoveDeliveredNotification(identifier string)` | Entfernt eine bestimmte zugestellte Benachrichtigung (nur macOS und Linux) |
 | `RemoveNotification(identifier string)` | Entfernt eine Benachrichtigung (Linux-spezifisch) |
 
-### Ereignisverarbeitung
+### Ereignisbehandlung
 
 | Methode | Beschreibung |
 | --- | --- |
-| `OnNotificationResponse(callback func(result NotificationResult))` | Registriert eine Callback-Funktion für Benachrichtigungsantworten |
+| `OnNotificationResponse(callback func(result NotificationResult))` | Registriert eine Callback-Funktion für Reaktionen auf Benachrichtigungen |
 
 ### Strukturen und Typen
 

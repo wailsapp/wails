@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "ee0273cc17b7c70d88d3",
   "sourceFile": "community/showcase/portfall.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:36Z"
     },
     "b0002-text-01": {
-      "sourceHash": "c32a5a68abde01940c5931efb9d72fa99b826537c5e889af240011b4f9a858fa",
-      "targetHash": "c96b424ede727fb99f50ebafb541fc275319c173c2d7eade2c3b3a8a58a193ee",
-      "machineHash": "c96b424ede727fb99f50ebafb541fc275319c173c2d7eade2c3b3a8a58a193ee",
-      "machineText": "[Portfall](https://github.com/rekon-oss/portfall) - 모든 클러스터 UI에 쉽게 액세스할 수 있는 데스크톱 k8s\\\n포트 포워딩 포털",
+      "sourceHash": "28c50b228f2572f76cd7f582d5a18f890b69c35a1d6634d1f254d2e6d245e7b6",
+      "targetHash": "d001446fbdacb57276a01bc1daa203dc18caef9bc761330e6db461f443c4ba0d",
+      "machineHash": "d001446fbdacb57276a01bc1daa203dc18caef9bc761330e6db461f443c4ba0d",
+      "machineText": "[Portfall](https://github.com/rekon-oss/portfall) - 모든 클러스터 UI에 쉽게 액세스할 수 있는 데스크톱 k8s 포트 포워딩 포털",
       "status": "final",
-      "sourcePreview": "[Portfall](https://github.com/rekon-oss/portfall) - A desktop k8s\\ port-forwarding portal for easy a…",
+      "sourcePreview": "[Portfall](https://github.com/rekon-oss/portfall) - A desktop k8s port-forwarding portal for easy ac…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
       "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
       "targetHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
       "machineHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/portfall.mpd",
+    "sourceHash": "ea41acbb6ae9e8a009bf87b631a8f84a198f6c6230be50cf7c24f90ff341dbf1",
+    "targetHash": "31575a3ed1f1ef1b8acebf28c35f00c954d4b341b28796bb3ba0db379dff69c3",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+        "targetHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+        "machineHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+        "machineText": "![Portfall](/assets/showcase-images/portfall.webp)",
+        "status": "final",
+        "sourcePreview": "![Portfall](/assets/showcase-images/portfall.webp)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "c32a5a68abde01940c5931efb9d72fa99b826537c5e889af240011b4f9a858fa",
+        "targetHash": "c96b424ede727fb99f50ebafb541fc275319c173c2d7eade2c3b3a8a58a193ee",
+        "machineHash": "c96b424ede727fb99f50ebafb541fc275319c173c2d7eade2c3b3a8a58a193ee",
+        "machineText": "[Portfall](https://github.com/rekon-oss/portfall) - 모든 클러스터 UI에 쉽게 액세스할 수 있는 데스크톱 k8s\\\n포트 포워딩 포털",
+        "status": "final",
+        "sourcePreview": "[Portfall](https://github.com/rekon-oss/portfall) - A desktop k8s\\ port-forwarding portal for easy a…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+        "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+        "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+        "targetHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+        "machineHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+        "machineText": "Portfall",
+        "status": "final",
+        "sourcePreview": "Portfall",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:36Z"
+      }
     }
   }
 }

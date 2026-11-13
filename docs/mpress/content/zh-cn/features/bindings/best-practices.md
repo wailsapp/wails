@@ -1,13 +1,13 @@
 ---
 title: "绑定最佳实践"
-description: "Go-JavaScript 绑定的设计模式和最佳实践"
+description: "Go-JavaScript 绑定的设计模式与最佳实践"
 slug: "features/bindings/best-practices"
 sourcePath: "features/bindings/best-practices.md"
 ---
 
 ## 绑定最佳实践
 
-遵循经过<strong>实践验证的模式</strong>来设计绑定，以创建简洁、高效且安全的绑定。本指南涵盖 API 设计原则、性能优化、安全模式、错误处理和测试策略，帮助构建易于维护的应用程序。
+遵循成熟的**模式**来设计简洁、高效且安全的绑定。本指南涵盖 API 设计原则、性能优化、安全模式、错误处理以及用于构建可维护应用程序的测试策略。
 
 ## API 设计原则
 
@@ -42,7 +42,7 @@ func (p *PaymentService) Process(amount float64) error
 
 ### 2. 清晰的方法名称
 
-使用含义明确、体现操作的方法名称：
+使用描述明确、以操作为导向的名称：
 
 ```go
 // ❌ Bad: Unclear names
@@ -307,9 +307,9 @@ Events.On("progress", (event) => {
 
 ## 安全模式
 
-### 1. 输入清理
+### 1. 输入净化
 
-始终清理用户输入：
+始终净化用户输入：
 
 ```go
 import (
@@ -549,7 +549,7 @@ func (s *Service) ProcessWithRetry(data string) error {
 
 ### 1. 单元测试
 
-独立测试各项服务：
+对服务进行隔离测试：
 
 ```go
 func TestUserService_CreateUser(t *testing.T) {
@@ -582,7 +582,7 @@ func TestUserService_CreateUser(t *testing.T) {
 
 ### 2. 集成测试
 
-使用真实依赖项进行测试：
+使用实际依赖项进行测试：
 
 ```go
 func TestUserService_Integration(t *testing.T) {
@@ -669,35 +669,35 @@ func TestUserService_WithMock(t *testing.T) {
 
 ### ✅ 应该做
 
-- **单一职责**——一项服务只负责一个用途
-- **清晰命名**——使用描述明确的方法名称
-- **验证输入**——始终在 Go 端进行
-- **返回错误**——显式处理错误
-- **批量操作**——减少桥接调用
-- **使用事件**——用于传输流式数据
-- **清理输入**——防止注入攻击
-- **全面测试**——执行单元测试和集成测试
-- **记录方法文档**——注释会转换为 JSDoc
-- **对 API 进行版本管理**——为变更做好规划
+- **单一职责** - 一项服务，一个用途
+- **清晰命名** - 使用描述明确的方法名称
+- **验证输入** - 始终在 Go 端进行
+- **返回错误** - 显式处理错误
+- **批量操作** - 减少桥接调用
+- **使用事件** - 用于传输流式数据
+- **净化输入** - 防止注入攻击
+- **全面测试** - 进行单元测试和集成测试
+- **为方法编写文档** - 注释会转换为 JSDoc
+- **对 API 进行版本管理** - 为变更做好规划
 
 ### ❌ 不应该做
 
-- **不要创建上帝对象**——让服务保持专注
-- **不要信任前端**——验证所有内容
-- **不要返回海量数据集**——使用分页
-- **不要阻塞**——使用 goroutine 执行耗时操作
-- **不要忽略错误**——处理所有错误情况
-- **不要跳过测试**——尽早测试并经常测试
-- **不要硬编码**——使用配置
+- **不要创建上帝对象** - 让服务保持职责集中
+- **不要信任前端** - 验证所有内容
+- **不要返回海量数据集** - 使用分页
+- **不要阻塞** - 对耗时操作使用 goroutine
+- **不要忽略错误** - 处理所有错误情况
+- **不要跳过测试** - 尽早并经常测试
+- **不要硬编码** - 使用配置
 - **不要暴露内部实现** - 将实现保持为私有
 
 ## 后续步骤
 
-- [方法](/features/bindings/methods/) - 了解方法绑定的基础知识
+- [方法](/features/bindings/methods/) - 学习方法绑定基础知识
 - [服务](/features/bindings/services/) - 了解服务架构
 - [模型](/features/bindings/models/) - 绑定复杂数据结构
 - [事件](/features/events/system/) - 使用事件实现发布/订阅
 
 ---
 
-<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。
+<strong>有疑问？</strong>请前往[Discord](https://discord.gg/JDdSxwjhGf)提问，或查看[绑定示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)。

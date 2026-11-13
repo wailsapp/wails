@@ -60,30 +60,33 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `darwin.microphone_usage_description` | `string` | non |  | `"value"` | `darwin` | Texte d’autorisation d’accès au microphone sous macOS ; génère le droit d’accès à l’entrée audio, sauf si un fichier de droits géré par l’utilisateur est configuré. |
 | `darwin.minimum_version` | `string` | non |  | `"12.0"` | `windows,darwin,linux,ios` | Version minimale prise en charge du système d’exploitation. |
 | `darwin.notarization` | `object` | non |  | `{}` | `darwin` | Paramètres de notarisation macOS. |
+| `darwin.notarization.api_key` | `string` | non |  | `"signing/AuthKey.p8"` |  | Fichier de clé privée .p8 de l’API d’équipe App Store Connect, avec un chemin relatif au projet. Utilise l’API Notary portable au lieu de notarytool ; nécessite key_id et issuer_id. |
 | `darwin.notarization.credential` | `string` | non |  | `"release-notary"` |  | Nom du profil de trousseau Apple notarytool utilisé pour la notarisation. |
+| `darwin.notarization.issuer_id` | `string` | non |  | `"00000000-0000-0000-0000-000000000000"` |  | ID d’émetteur de l’équipe App Store Connect pour la notarisation par API. |
+| `darwin.notarization.key_id` | `string` | non |  | `"ABCDEFGHIJ"` |  | ID de clé API de l’équipe App Store Connect correspondant à api_key. |
 | `darwin.product_name` | `string` | non |  | `"value"` | `windows,darwin,linux` | Nom de produit lisible par l’utilisateur. |
-| `darwin.signing` | `object` | non |  | `{}` |  | Paramètres de signature de la plateforme. |
-| `darwin.signing.certificate` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
-| `darwin.signing.credential` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
+| `darwin.signing` | `object` | non |  | `{}` |  | Paramètres de signature propres à la plateforme. |
+| `darwin.signing.certificate` | `string` | non |  | `"signing/developer-id.p12"` |  | Identité PKCS#12 exportée, avec un chemin relatif au projet, pour la signature Go portable ; omettez-la pour utiliser une identité du trousseau macOS ou une signature ad hoc. |
+| `darwin.signing.credential` | `string` | non |  | `"APPLE_SIGNING_PASSWORD"` |  | Nom de la variable d’environnement contenant le mot de passe de l’identité PKCS#12 exportée ; jamais le mot de passe lui-même. |
 | `darwin.signing.entitlements` | `string` | non |  | `"signing/entitlements.plist"` |  | Fichier de droits Apple relatif au projet. |
-| `darwin.signing.identity` | `string` | non |  | `"Developer ID Application: Example"` |  | Identité de signature de code macOS provenant du trousseau ; utilisez - pour une signature ad hoc. |
+| `darwin.signing.identity` | `string` | non |  | `"Developer ID Application: Example"` |  | Identité de signature de code macOS issue du trousseau ; utilisez - pour une signature ad hoc portable ou configurez un certificat exporté. |
 | `darwin.signing.key_alias` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `darwin.signing.provisioning_profile` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `darwin.signing.thumbprint` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
-| `darwin.signing.timestamp_server` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
-| `dev` | `object` | non |  | `{}` |  | Paramètres de build et de surveillance pour le développement. |
-| `dev.args` | `list(string)` | non |  | `["value"]` |  | Arguments de l’application en développement transmis sans expansion par l’interpréteur de commandes ; pris en charge sur les plateformes de bureau et iOS. Android exige une liste vide. |
+| `darwin.signing.timestamp_server` | `string` | non |  | `"https://timestamp.example.com"` |  | URL d’horodatage RFC 3161 pour la signature portable par certificat ; requise pour les signatures par certificat notariées. |
+| `dev` | `object` | non |  | `{}` |  | Paramètres du build de développement et de la surveillance des fichiers. |
+| `dev.args` | `list(string)` | non |  | `["value"]` |  | Arguments de l’application en développement transmis sans expansion par le shell ; pris en charge sur les plateformes de bureau et iOS. Android exige une liste vide. |
 | `dev.debounce_ms` | `integer` | non | `250` | `250` |  | Délai utilisé pour regrouper les modifications de fichiers en développement. |
 | `dev.exclude` | `list(string)` | non | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | Motifs d’exclusion du système de surveillance en développement. |
 | `dev.grace_period_ms` | `integer` | non | `1500` | `1500` |  | Délai accordé à un processus de développement pour s’arrêter proprement. |
 | `dev.log_level` | `string` | non | `warn` | `"info"` |  | Niveau de détail des journaux de développement. |
-| `dev.tags` | `list(string)` | non | `[]` | `[]` |  | Étiquettes de compilation Go supplémentaires. |
+| `dev.tags` | `list(string)` | non | `[]` | `[]` |  | Tags de compilation Go supplémentaires. |
 | `dev.use_git_ignore` | `boolean` | non | `true` | `true` |  | Applique les règles .gitignore au système de surveillance en développement. |
 | `dev.watch` | `list(string)` | non | `["**/*.go","wails.yaml"]` | `["**/*.go", "wails.yaml"]` |  | Motifs d’inclusion de l’observateur de développement. |
 | `file_associations` | `map(object)` | non |  | `{}` |  | Enregistrements nommés d’associations de fichiers. |
 | `file_associations["association"].description` | `string` | non |  | `"value"` |  | Description lisible par l’utilisateur. |
 | `file_associations["association"].extensions` | `list(string)` | oui |  | `["example"]` |  | Extensions de fichiers prises en charge par l’application. |
-| `file_associations["association"].icon` | `string` | non |  | `"assets/appicon.png"` |  | Fichier d’icône fourni par l’utilisateur, avec un chemin relatif au projet. |
+| `file_associations["association"].icon` | `string` | non |  | `"assets/appicon.png"` |  | Fichier d’icône fourni par l’utilisateur, relatif au projet. |
 | `file_associations["association"].mime_type` | `string` | non |  | `"application/x-example"` |  | Type MIME enregistré pour une association de fichiers. |
 | `file_associations["association"].name` | `string` | non |  | `"value"` |  | Nom stable du projet ou de l’enregistrement. |
 | `file_associations["association"].platforms` | `list(string)` | non |  | `["windows", "darwin", "linux"]` |  | Plateformes auxquelles cet enregistrement s’applique. |
@@ -116,7 +119,7 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `ios.bundle_id` | `string` | non |  | `"com.example.app"` | `ios` | Identifiant de bundle iOS. |
 | `ios.capabilities` | `list(string)` | non |  | `["internetClient"]` | `windows,darwin,linux,ios` | Fonctionnalités natives de la plateforme demandées par l’application. |
 | `ios.cf_bundle_icon_name` | `string` | non |  | `"AppIcon"` | `darwin,ios` | Nom du jeu d’icônes du catalogue de ressources Apple. |
-| `ios.comments` | `string` | non |  | `"value"` | `ios,android` | Commentaires supplémentaires sur les métadonnées du paquet. |
+| `ios.comments` | `string` | non |  | `"value"` | `ios,android` | Commentaires supplémentaires dans les métadonnées du paquet. |
 | `ios.company` | `string` | non |  | `"value"` | `ios,android` | Nom de l’entreprise ou de l’organisation. |
 | `ios.display_name` | `string` | non |  | `"Example App"` | `ios,android` | Nom affiché par la plateforme mobile. |
 | `ios.icon` | `string` | non |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Fichier d’icône fourni par l’utilisateur, avec un chemin relatif au projet. |
@@ -140,8 +143,8 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `linux.minimum_version` | `string` | non |  | `"12.0"` | `windows,darwin,linux,ios` | Version minimale prise en charge du système d’exploitation. |
 | `linux.product_name` | `string` | non |  | `"value"` | `windows,darwin,linux` | Nom du produit lisible par l’utilisateur. |
 | `linux.signing` | `object` | non |  | `{}` |  | Paramètres de signature de la plateforme. |
-| `linux.signing.certificate` | `string` | non |  | `"signing/private-key.asc"` |  | Arch : fichier exporté de clé privée PGP au format ASCII armor, avec un chemin relatif au projet. DEB/RPM : identifiant de clé PGP transmis à l’outil de signature externe. |
-| `linux.signing.credential` | `string` | non |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch : variable d’environnement facultative contenant la phrase secrète de la clé privée ; omettez-la si la clé n’est pas chiffrée. |
+| `linux.signing.certificate` | `string` | non |  | `"signing/private-key.asc"` |  | Fichier de clé privée OpenPGP exportée, au format ASCII armor ou binaire, pour la signature native de paquets DEB, RPM ou Arch. Les identifiants de clé GnuPG seuls conservent le signataire DEB/RPM externe. |
+| `linux.signing.credential` | `string` | non |  | `"LINUX_SIGNING_PASSPHRASE"` |  | Variable d’environnement facultative contenant la phrase secrète de la clé privée exportée ; omettez-la si la clé n’est pas chiffrée. |
 | `linux.signing.entitlements` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `linux.signing.identity` | `string` | non |  | `"builder"` |  | Rôle de signature DEB ; la valeur par défaut est builder. Non utilisé par le signataire détaché d’Arch. |
 | `linux.signing.key_alias` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
@@ -157,23 +160,26 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `packages["format"].desktop_entry` | `string` | non |  | `"assets/app.desktop"` | `appimage` | Fichier d’entrée de bureau Linux fourni par l’utilisateur. |
 | `packages["format"].file_icon` | `string` | non |  | `"assets/file.icns"` | `dmg` | Icône de fichier DMG fournie par l’utilisateur. |
 | `packages["format"].files` | `map(string)` | non |  | `{License.pdf: LICENSE.pdf}` | `dmg` | Fichiers fournis par l’utilisateur et copiés dans le DMG, indexés par nom de destination. |
+| `packages["format"].gtk_version` | `integer` | non |  | `1` | `appimage` | Profil d’exécution GTK : 3 ou 4. Utilise par défaut les balises de compilation de l’exécutable d’interface graphique, y compris celles des exécutables compagnons ; les bibliothèques CGo importées doivent utiliser le même profil. |
 | `packages["format"].icon` | `string` | non |  | `"assets/appicon.png"` | `appimage` | Fichier d’icône fourni par l’utilisateur, avec un chemin relatif au projet. |
 | `packages["format"].install_scope` | `string` | non |  | `"user"` | `nsis` | Portée de l’installation NSIS. |
 | `packages["format"].maintainer` | `string` | non |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | Mainteneur du paquet Linux natif. |
-| `packages["format"].manifest` | `string` | non |  | `"assets/manifest.xml"` | `msix` | Manifeste de plateforme ou de paquet fourni par l’utilisateur, avec un chemin relatif au projet. |
+| `packages["format"].manifest` | `string` | non |  | `"assets/manifest.xml"` | `msix` | Manifeste de plateforme ou de package fourni par l’utilisateur, relatif au projet. |
 | `packages["format"].post_install` | `string` | non |  | `"packaging/postinstall.sh"` | `deb,rpm,archlinux,void` | Script Linux de post-installation avec un chemin relatif au projet. |
 | `packages["format"].post_remove` | `string` | non |  | `"packaging/postremove.sh"` | `deb,rpm,archlinux,void` | Script Linux de post-suppression avec un chemin relatif au projet. |
 | `packages["format"].pre_install` | `string` | non |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | Script Linux de préinstallation avec un chemin relatif au projet. |
 | `packages["format"].pre_remove` | `string` | non |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | Script Linux de pré-suppression avec un chemin relatif au projet. |
 | `packages["format"].publisher` | `string` | non |  | `"CN=Example"` | `msix` | Identité de l’éditeur du paquet Windows. |
+| `packages["format"].runtime_path` | `string` | non |  | `"value"` | `appimage` | Fichier ELF d’exécution AppImage de type 2 pour la cible, avec un chemin relatif au projet ; utilise par défaut le téléchargement épinglé de l’environnement d’exécution cible, dont la somme de contrôle est vérifiée. |
+| `packages["format"].runtime_root` | `string` | non |  | `"value"` | `appimage` | Système de fichiers racine Linux cible, avec un chemin relatif au projet, contenant les bibliothèques GTK/WebKit et les caches de ressources compilés ; utilise par défaut la racine de l’hôte Linux. |
 | `packages["format"].section` | `string` | non |  | `"utils"` | `deb,rpm,archlinux,void` | Section du dépôt de paquets Linux. |
 | `packages["format"].template` | `string` | non |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | Modèle de paquet complet fourni par l’utilisateur pour remplacer le modèle par défaut. |
-| `packages["format"].update_info` | `string` | non |  | `"value"` | `appimage` | Chaîne d’informations de mise à jour AppImage ; nécessite un fichier annexe zsync correspondant généré par linuxdeploy. |
+| `packages["format"].update_info` | `string` | non |  | `"value"` | `appimage` | Chaîne d’informations de mise à jour AppImage ; génère dans Go un fichier annexe zsync correspondant. |
 | `packages["format"].volume_icon` | `string` | non |  | `"assets/volume.icns"` | `dmg` | Icône de volume DMG fournie par l’utilisateur. |
 | `packages["format"].window_height` | `integer` | non |  | `1` | `dmg` | Hauteur en pixels de la fenêtre Finder du DMG. |
 | `packages["format"].window_width` | `integer` | non |  | `1` | `dmg` | Largeur en pixels de la fenêtre Finder du DMG. |
 | `profiles` | `map(object)` | non |  | `{}` |  | Profils de build de production nommés. |
-| `profiles["profile"].targets` | `map(object)` | oui |  | `{}` |  | Substitutions de cible nommées. |
+| `profiles["profile"].targets` | `map(object)` | oui |  | `{}` |  | Substitutions nommées propres aux cibles. |
 | `profiles["profile"].targets["target"].destination` | `string` | non |  | `"device"` |  | Destination du build mobile. |
 | `profiles["profile"].targets["target"].formats` | `list(string)` | non |  | `["nsis"]` |  | Formats d’artefact produits pour la cible de ce profil. |
 | `profiles["profile"].targets["target"].notarize` | `boolean` | non |  | `true` |  | Authentifier l’artefact produit auprès du service de notarisation. |
@@ -181,7 +187,7 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `project` | `object` | oui |  | `{}` |  | Identité et métadonnées du projet. |
 | `project.binary_name` | `string` | non | `$project.name.slug` | `"my-app"` |  | Nom de base de l’exécutable natif. |
 | `project.build_number` | `integer` | non | `1` | `1` |  | Numéro de build de la plateforme. |
-| `project.comments` | `string` | non |  | `"value"` |  | Commentaires supplémentaires dans les métadonnées du paquet. |
+| `project.comments` | `string` | non |  | `"value"` |  | Commentaires supplémentaires sur les métadonnées du paquet. |
 | `project.commit_symbol` | `string` | non |  | `"value"` |  | Variable de chaîne Go qualifiée qui reçoit la révision Git de l’application par l’intermédiaire des options de l’éditeur de liens. |
 | `project.company` | `string` | non |  | `"value"` |  | Nom de l’entreprise ou de l’organisation. |
 | `project.copyright` | `string` | non |  | `"value"` |  | Mention de droits d’auteur intégrée aux artefacts. |
@@ -203,12 +209,12 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `run` | `object` | non |  | `{}` |  | Paramètres de lancement par défaut de l’application. |
 | `run.args` | `list(string)` | non |  | `["value"]` |  | Arguments de l’application transmis sans expansion par le shell. |
 | `run.environment` | `map(string)` | non |  | `{RELEASE: "true"}` |  | Variables d’environnement ajoutées à cette opération. |
-| `run.tags` | `list(string)` | non |  | `["value"]` |  | Tags de compilation Go supplémentaires. |
-| `targets` | `map(object)` | non |  | `{}` |  | Substitutions nommées propres aux cibles. |
+| `run.tags` | `list(string)` | non |  | `["value"]` |  | Étiquettes de compilation Go supplémentaires. |
+| `targets` | `map(object)` | non |  | `{}` |  | Substitutions de cible nommées. |
 | `targets["target"].build_number` | `integer` | non |  | `1` |  | Numéro de build de la plateforme. |
 | `targets["target"].compiler_flags` | `list(string)` | non |  | `["all=-l"]` |  | Options supplémentaires du compilateur Go. |
-| `targets["target"].dev` | `object` | non |  | `{}` |  | Paramètres du build de développement et de la surveillance des fichiers. |
-| `targets["target"].dev.args` | `list(string)` | non |  | `["value"]` |  | Arguments de l’application en développement transmis sans expansion par le shell ; pris en charge sur les plateformes de bureau et iOS. Android exige une liste vide. |
+| `targets["target"].dev` | `object` | non |  | `{}` |  | Paramètres de build et de surveillance pour le développement. |
+| `targets["target"].dev.args` | `list(string)` | non |  | `["value"]` |  | Arguments de l’application en développement transmis sans expansion par l’interpréteur de commandes ; pris en charge sur les plateformes de bureau et iOS. Android exige une liste vide. |
 | `targets["target"].environment` | `map(string)` | non |  | `{RELEASE: "true"}` |  | Variables d’environnement ajoutées à cette opération. |
 | `targets["target"].garble_args` | `list(string)` | non |  | `["-literals"]` |  | Arguments supplémentaires transmis à garble. |
 | `targets["target"].ldflags` | `list(string)` | non |  | `["-X example/build.version=1.0.0"]` |  | Options supplémentaires de l’éditeur de liens Go. |
@@ -224,18 +230,18 @@ Les champs sont répertoriés à l’aide de chemins de schéma. Les tables nomm
 | `windows` | `object` | non |  | `{}` |  | Paramètres de la plateforme Windows. |
 | `windows.build_number` | `integer` | non |  | `1` | `windows,darwin,linux,ios` | Numéro de build de la plateforme. |
 | `windows.capabilities` | `list(string)` | non |  | `["internetClient"]` | `windows,darwin,linux,ios` | Fonctionnalités natives de la plateforme demandées par l’application. |
-| `windows.icon` | `string` | non |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Fichier d’icône fourni par l’utilisateur, relatif au projet. |
+| `windows.icon` | `string` | non |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Fichier d’icône fourni par l’utilisateur, avec un chemin relatif au projet. |
 | `windows.identifier` | `string` | non |  | `"com.example.app"` | `windows,darwin,linux` | Identifiant d’application au format de domaine inversé. |
-| `windows.manifest` | `string` | non |  | `"assets/manifest.xml"` | `windows,android` | Manifeste de plateforme ou de package fourni par l’utilisateur, relatif au projet. |
+| `windows.manifest` | `string` | non |  | `"assets/manifest.xml"` | `windows,android` | Manifeste de plateforme ou de paquet fourni par l’utilisateur, avec un chemin relatif au projet. |
 | `windows.minimum_version` | `string` | non |  | `"12.0"` | `windows,darwin,linux,ios` | Version minimale prise en charge du système d’exploitation. |
 | `windows.product_name` | `string` | non |  | `"value"` | `windows,darwin,linux` | Nom du produit lisible par l’utilisateur. |
 | `windows.publisher` | `string` | non |  | `"CN=Example"` | `windows` | Identité de l’éditeur du paquet Windows. |
-| `windows.signing` | `object` | non |  | `{}` |  | Paramètres de signature propres à la plateforme. |
-| `windows.signing.certificate` | `string` | non |  | `"signing/windows.pfx"` |  | Fichier de certificat de signature PFX relatif au projet ; vous pouvez également configurer l’empreinte numérique. |
+| `windows.signing` | `object` | non |  | `{}` |  | Paramètres de signature de la plateforme. |
+| `windows.signing.certificate` | `string` | non |  | `"signing/windows.pfx"` |  | Identité RSA PFX exportée, avec un chemin relatif au projet, pour la signature PE/MSIX portable sur tout hôte de bureau. AES/PBKDF2 et 3DES sont pris en charge ; sous Windows, SignTool natif gère les exportations RC2. Vous pouvez également configurer une empreinte numérique. |
 | `windows.signing.credential` | `string` | non |  | `"WINDOWS_SIGNING_PASSWORD"` |  | Nom de la variable d’environnement contenant le mot de passe du certificat PFX ; jamais le mot de passe lui-même. |
 | `windows.signing.entitlements` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `windows.signing.identity` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `windows.signing.key_alias` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
 | `windows.signing.provisioning_profile` | `string` | non |  | `""` |  | Non utilisé par l’opération de signature de cette plateforme. |
-| `windows.signing.thumbprint` | `string` | non |  | `"0123456789ABCDEF"` |  | Empreinte numérique d’un certificat dans le magasin de certificats Windows. |
-| `windows.signing.timestamp_server` | `string` | non |  | `"https://timestamp.example.com"` |  | URL du service d’horodatage pour la signature Windows. |
+| `windows.signing.thumbprint` | `string` | non |  | `"0123456789ABCDEF"` |  | Empreinte numérique d’un certificat du magasin de certificats Windows ; nécessite Windows avec SignTool. |
+| `windows.signing.timestamp_server` | `string` | non |  | `"https://timestamp.example.com"` |  | URL du service d’horodatage RFC 3161 ; la valeur par défaut est `http://timestamp.digicert.com`. Les signatures d’horodatage et les chaînes de confiance sont vérifiées. |

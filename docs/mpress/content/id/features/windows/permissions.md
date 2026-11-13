@@ -5,7 +5,7 @@ slug: "features/windows/permissions"
 sourcePath: "features/windows/permissions.md"
 ---
 
-Konten web yang memanggil `navigator.mediaDevices.getUserMedia()`, API Geolocation, atau API Notifications memerlukan aplikasi host untuk mengizinkan atau menolak permintaan tersebut. Wails menyediakan peta `Permissions` lintas platform pada `WebviewWindowOptions` yang memungkinkan Anda mengaturnya secara deklaratif—tanpa memerlukan kode khusus platform.
+Konten web yang memanggil `navigator.mediaDevices.getUserMedia()`, Geolocation API, atau Notifications API memerlukan aplikasi host untuk mengizinkan atau menolak permintaan tersebut. Wails menyediakan peta `Permissions` lintas platform pada `WebviewWindowOptions` yang memungkinkan Anda mengaturnya secara deklaratif — tanpa memerlukan kode khusus platform.
 
 ## Mulai Cepat
 
@@ -19,7 +19,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Permintaan akses kamera dan mikrofon dari konten web jendela tersebut diizinkan tanpa menampilkan permintaan izin browser.
+Permintaan kamera dan mikrofon dari konten web jendela tersebut diizinkan tanpa prompt browser.
 
 ## Jenis Izin
 
@@ -40,10 +40,10 @@ Permintaan akses kamera dan mikrofon dari konten web jendela tersebut diizinkan 
 | Konstanta | Nilai | Arti |
 | --- | --- | --- |
 | `PermissionDefault` | 0 | Gunakan penanganan bawaan platform (lihat di bawah) |
-| `PermissionAllow` | 1 | Izinkan tanpa meminta konfirmasi |
-| `PermissionDeny` | 2 | Tolak tanpa meminta konfirmasi |
+| `PermissionAllow` | 1 | Izinkan tanpa prompt |
+| `PermissionDeny` | 2 | Tolak tanpa prompt |
 
-`PermissionDefault` adalah nilai nol, sehingga entri yang tidak ditetapkan dalam peta menggunakan perilaku bawaan.
+`PermissionDefault` adalah nilai nol, sehingga entri yang tidak ditetapkan dalam peta berperilaku sesuai nilai default.
 
 ## Perilaku Platform
 
@@ -51,9 +51,9 @@ Setiap platform menangani `PermissionDefault` secara berbeda karena webview yang
 
 ### Linux (WebKitGTK)
 
-WebKitGTK **tidak memiliki permintaan izin bawaan**. Tanpa handler yang terpasang, WebKitGTK secara diam-diam menolak setiap permintaan—karena itulah `getUserMedia` selalu mengembalikan `NotAllowedError` sebelum fitur ini ditambahkan.
+WebKitGTK **tidak memiliki prompt izin bawaan**. Tanpa handler yang terpasang, WebKitGTK menolak setiap permintaan secara diam-diam — karena itulah `getUserMedia` selalu mengembalikan `NotAllowedError` sebelum fitur ini ditambahkan.
 
-Saat ini, Wails menangani permintaan akses **kamera dan mikrofon** di Linux. Geolokasi, notifikasi, dan pembacaan papan klip belum dihubungkan dan tetap ditolak, apa pun kebijakan yang Anda tetapkan.
+Saat ini Wails menangani permintaan **kamera dan mikrofon** di Linux. Geolokasi, notifikasi, dan pembacaan papan klip belum terhubung dan tetap ditolak, apa pun kebijakan yang Anda tetapkan.
 
 | Kebijakan | Kamera/Mikrofon | Geolokasi, Notifikasi, Papan Klip |
 | --- | --- | --- |
@@ -63,33 +63,33 @@ Saat ini, Wails menangani permintaan akses **kamera dan mikrofon** di Linux. Geo
 
 ### Windows (WebView2)
 
-WebView2 memiliki permintaan izin bawaan dan API izin untuk setiap jenis. Kelima jenis kapabilitas didukung sepenuhnya.
+WebView2 memiliki prompt izin bawaan dan API izin untuk setiap jenis. Kelima jenis kapabilitas didukung sepenuhnya.
 
 | Kebijakan | Perilaku |
 | --- | --- |
-| `PermissionDefault` | WebView2 menampilkan permintaan izin bawaan OS/browser |
-| `PermissionAllow` | Diizinkan tanpa pemberitahuan |
-| `PermissionDeny` | Ditolak tanpa pemberitahuan |
+| `PermissionDefault` | WebView2 menampilkan prompt izin bawaan sistem operasi/browser |
+| `PermissionAllow` | Diizinkan secara diam-diam |
+| `PermissionDeny` | Ditolak secara diam-diam |
 
-**Penting:** Sebelum fitur ini tersedia, Wails memanggil `SetGlobalPermission(Allow)` tanpa syarat—sehingga secara diam-diam mengizinkan semua kapabilitas. Sekarang, jika ada entri apa pun dalam `Permissions`, izin menyeluruh tersebut **tidak** ditetapkan. Kapabilitas yang tidak ditetapkan akan ditangani oleh permintaan izin bawaan WebView2 dan tidak lagi diizinkan secara otomatis.
+**Penting:** Sebelum fitur ini tersedia, Wails memanggil `SetGlobalPermission(Allow)` tanpa syarat — sehingga semua kapabilitas diizinkan secara diam-diam. Sekarang, jika ada entri apa pun dalam `Permissions`, izin menyeluruh tersebut **tidak** ditetapkan. Kapabilitas yang tidak ditetapkan akan menggunakan prompt bawaan WebView2, bukan diizinkan secara otomatis.
 
-Artinya, jika Anda mengonfigurasi `Permissions` di Windows, kapabilitas apa pun yang tidak Anda cantumkan secara eksplisit akan menampilkan permintaan izin, bukan diizinkan tanpa pemberitahuan. Tetapkan secara eksplisit kapabilitas yang Anda perlukan.
+Artinya, jika Anda mengonfigurasi `Permissions` sama sekali di Windows, setiap kapabilitas yang tidak Anda cantumkan secara eksplisit akan menampilkan prompt, bukan diizinkan secara diam-diam. Tetapkan secara eksplisit kapabilitas yang Anda perlukan.
 
 ### macOS (WKWebView + TCC)
 
-Dua lapisan harus sepakat di macOS. WKWebView menanyakan aplikasi sebelum memulai sesi capture, dan permintaan itulah yang dijawab oleh map `Permissions`. Di bawahnya, framework privasi sistem (TCC) menjaga perangkatnya sendiri: prompt OS muncul saat aplikasi benar-benar mengakses kamera atau mikrofon untuk pertama kali, dan pilihan pengguna diingat per-aplikasi di System Settings → Privacy & Security.
+Di macOS, dua lapisan harus sama-sama menyetujui. WKWebView meminta izin kepada aplikasi sebelum memulai sesi pengambilan, dan permintaan itulah yang dijawab oleh peta `Permissions`. Di bawahnya, kerangka kerja privasi sistem (TCC) membatasi akses ke perangkat itu sendiri: prompt sistem muncul saat pertama kali aplikasi benar-benar mencoba mengakses kamera atau mikrofon, dan pilihan pengguna diingat untuk setiap aplikasi di Pengaturan Sistem → Privasi & Keamanan.
 
-Wails menangani permintaan **kamera dan mikrofon** di macOS 12 dan yang lebih baru. Geolokasi, notifikasi, dan clipboard read tidak memiliki padanan `WKUIDelegate`, sehingga belum dihubungkan dan diserahkan sepenuhnya ke TCC — seperti di Linux, kebijakan yang Anda setel untuk ketiganya tidak berpengaruh.
+Wails menangani permintaan **kamera dan mikrofon** di macOS 12 dan versi yang lebih baru. Geolokasi, notifikasi, dan pembacaan papan klip tidak memiliki padanan `WKUIDelegate`, sehingga tidak terhubung dan hanya ditangani oleh TCC — seperti di Linux, kebijakan yang Anda tetapkan untuk kapabilitas tersebut tidak berpengaruh.
 
-| Kebijakan | Kamera / Mikrofon | Geolokasi, Notifikasi, Clipboard |
+| Kebijakan | Kamera/Mikrofon | Geolokasi, Notifikasi, Papan Klip |
 | --- | --- | --- |
-| `PermissionDefault` | WebKit menampilkan prompt permission-nya sendiri | TCC saja |
-| `PermissionAllow` | Prompt WebKit dilewati — **TCC tetap berlaku** | TCC saja |
-| `PermissionDeny` | Ditolak oleh WebKit; otorisasi sistem terpisah | TCC saja |
+| `PermissionDefault` | WebKit menampilkan prompt izinnya sendiri | Hanya TCC |
+| `PermissionAllow` | Prompt WebKit dilewati — **TCC tetap berlaku** | Hanya TCC |
+| `PermissionDeny` | Ditolak oleh WebKit; otorisasi sistem ditangani secara terpisah | Hanya TCC |
 
-`PermissionAllow` mengizinkan permintaan webview, bukan akses perangkat. Otorisasi sistem tetap berlaku secara terpisah, dan aplikasi yang ditolak di System Settings tetap ditolak. Hanya prompt WebKit sendiri yang dilewati.
+`PermissionAllow` mengizinkan permintaan webview, bukan akses perangkat. Otorisasi sistem tetap berlaku secara independen, dan aplikasi yang ditolak di Pengaturan Sistem akan tetap ditolak. Hanya prompt WebKit sendiri yang dilewati.
 
-Di bawah macOS 12 metode delegate tersebut tidak ada, sehingga map diabaikan di sana dan setiap permintaan kembali ke prompt WebKit.
+Pada versi sebelum macOS 12, metode delegate tersebut tidak tersedia, sehingga peta diabaikan dan setiap permintaan kembali menggunakan prompt WebKit.
 
 Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 
@@ -100,19 +100,19 @@ Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="Deskripsi penggunaan tetap diperlukan"}
+@note{type="caution" title="Deskripsi penggunaan wajib disertakan"}
 
-WebKit dapat meminta otorisasi sistem sebelum memanggil delegate permission Wails. `PermissionDeny` memblokir permintaan WebKit, tetapi tidak menjamin bahwa prompt TCC atau permintaan otorisasi AVFoundation tidak akan muncul.
+WebKit mungkin meminta otorisasi sistem sebelum memanggil delegate izin Wails. `PermissionDeny` memblokir permintaan WebKit, tetapi tidak menjamin bahwa prompt TCC atau permintaan otorisasi AVFoundation tidak akan muncul.
 
-Sertakan deskripsi penggunaan untuk perangkat yang diminta aplikasi Anda, serta entitlement perangkat yang sesuai jika menggunakan sandbox. Jangan gunakan `PermissionDeny` sebagai pengganti deklarasi ini.
+Sertakan deskripsi penggunaan yang sesuai untuk perangkat yang diminta aplikasi Anda, serta entitlement perangkat yang cocok jika aplikasi berjalan dalam sandbox. Jangan gunakan `PermissionDeny` sebagai pengganti deklarasi tersebut.
 
 @end
 
 ## Pola Umum
 
-### Aplikasi perekaman media
+### Aplikasi pengambilan media
 
-Izinkan akses kamera dan mikrofon di semua platform:
+Izinkan kamera dan mikrofon di semua platform:
 
 ```go
 Permissions: map[application.PermissionType]application.Permission{
@@ -121,7 +121,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-Di **Linux**, pengaturan ini secara eksplisit mengizinkan kedua perangkat; kapabilitas lainnya tetap ditolak. Di **Windows**, pengaturan ini mengizinkan keduanya; kapabilitas lain yang tidak Anda cantumkan akan menampilkan dialog izin native. Di **macOS** ini mengizinkan keduanya di lapisan WebKit, sehingga tidak ada prompt browser yang muncul; TCC tetap menanyakan perangkatnya sendiri saat pertama kali digunakan, dan kedua kunci deskripsi penggunaan harus ada di `Info.plist`.
+Di **Linux**, pengaturan ini secara eksplisit mengizinkan kedua perangkat tersebut; kapabilitas lainnya tetap ditolak. Di **Windows**, pengaturan ini mengizinkan keduanya; kapabilitas lain yang tidak Anda cantumkan akan menampilkan dialog izin native. Di **macOS**, pengaturan ini mengizinkan keduanya pada lapisan WebKit sehingga dialog browser tidak muncul; TCC tetap meminta izin untuk perangkat itu sendiri saat pertama kali digunakan, dan kedua kunci deskripsi penggunaan harus tersedia di `Info.plist`.
 
 ### Menolak pengambilan media di Linux
 
@@ -178,9 +178,9 @@ embeddedWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-## Penimpaan Khusus Windows
+## Penggantian khusus Windows
 
-Kolom `Windows.Permissions` per jendela (`map[CoreWebView2PermissionKind]CoreWebView2PermissionState`) tetap berfungsi dan dapat menimpa masing-masing kapabilitas setelah peta lintas platform diterapkan. Gunakan kolom ini jika Anda memerlukan akses ke jenis izin WebView2 yang tidak memiliki padanan lintas platform (misalnya, `CoreWebView2PermissionKindOtherSensors`).
+Kolom `Windows.Permissions` per jendela (`map[CoreWebView2PermissionKind]CoreWebView2PermissionState`) tetap berfungsi dan dapat mengganti pengaturan masing-masing kapabilitas setelah peta lintas platform diterapkan. Gunakan kolom ini jika Anda memerlukan akses ke jenis izin WebView2 yang tidak memiliki padanan lintas platform (misalnya, `CoreWebView2PermissionKindOtherSensors`).
 
 ```go
 Windows: application.WindowsWindow{
@@ -192,11 +192,11 @@ Windows: application.WindowsWindow{
 
 Urutan evaluasi di Windows adalah:
 
-1. Peta `Permissions` lintas platform (menetapkan status per jenis melalui `SetPermission`)
-2. Peta `Windows.Permissions` (menimpa masing-masing jenis)
-3. Untuk jenis apa pun yang tidak tercakup oleh kedua peta: dialog izin native WebView2 (jika kebijakan dikonfigurasi) atau izin otomatis (jika tidak ada kebijakan yang dikonfigurasi—perilaku lama)
+1. Peta lintas platform `Permissions` (menetapkan status per jenis melalui `SetPermission`)
+2. Peta `Windows.Permissions` (mengganti pengaturan masing-masing jenis)
+3. Untuk jenis apa pun yang tidak tercakup oleh kedua peta: dialog izin native WebView2 (ketika kebijakan dikonfigurasi) atau izin otomatis (ketika tidak ada kebijakan yang dikonfigurasi—perilaku lama)
 
-## Matriks Dukungan Platform
+## Matriks dukungan platform
 
 | Kapabilitas | Linux | Windows | macOS |
 | --- | --- | --- | --- |
@@ -204,11 +204,11 @@ Urutan evaluasi di Windows adalah:
 | Kamera | ✅ | ✅ | ✅ (macOS 12+) |
 | Geolokasi | ❌ belum didukung | ✅ | ❌ belum didukung |
 | Notifikasi | ❌ belum didukung | ✅ | ❌ belum didukung |
-| Pembacaan Papan Klip | ❌ belum didukung | ✅ | ❌ belum didukung |
+| Pembacaan papan klip | ❌ belum didukung | ✅ | ❌ belum didukung |
 
-Di tempat macOS bertanda ✅, kebijakan menjawab permintaan WebKit; TCC tetap menjaga perangkat di atasnya. Di tempat bertanda ❌, kemampuan diserahkan sepenuhnya ke TCC.
+Jika macOS ditandai ✅, kebijakan tersebut menanggapi permintaan WebKit; selain itu, TCC tetap membatasi akses ke perangkat. Jika ditandai ❌, kapabilitas tersebut hanya dikendalikan oleh TCC.
 
-## Pemecahan Masalah
+## Pemecahan masalah
 
 **`getUserMedia` masih gagal di Linux setelah pemutakhiran**
 
@@ -216,16 +216,16 @@ Pastikan Anda tidak menetapkan `PermissionMicrophone: PermissionDeny` atau `Perm
 
 **Windows menampilkan dialog untuk izin yang tidak saya konfigurasi**
 
-Setelah ada entri apa pun di `Permissions`, Wails tidak lagi menetapkan pemberian izin menyeluruh `Allow`. Kapabilitas yang tidak Anda cantumkan akan menampilkan dialog izin native WebView2. Tambahkan entri `PermissionAllow` secara eksplisit untuk setiap kapabilitas yang digunakan aplikasi Anda.
+Setelah `Permissions` memiliki entri apa pun, Wails tidak lagi menetapkan izin menyeluruh `Allow`. Kapabilitas yang tidak Anda cantumkan akan menampilkan dialog izin native WebView2. Tambahkan entri `PermissionAllow` secara eksplisit untuk setiap kapabilitas yang digunakan aplikasi Anda.
 
 **Izin macOS tidak berfungsi**
 
-`Permissions` mencakup kamera dan mikrofon di macOS 12 dan yang lebih baru; geolokasi, notifikasi, dan clipboard read belum dihubungkan dan mengabaikan kebijakan. Di tempat kebijakan dihormati, TCC tetap menjaga perangkat di atasnya: `PermissionAllow` menghilangkan prompt WebKit, bukan prompt sistem. Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`) dan pengguna telah memberikan akses di System Settings → Privacy & Security.
+`Permissions` mencakup kamera dan mikrofon pada macOS 12 dan versi yang lebih baru; geolokasi, notifikasi, dan pembacaan papan klip belum terhubung serta mengabaikan kebijakan tersebut. Jika kebijakan diterapkan, TCC tetap membatasi akses ke perangkat: `PermissionAllow` menghilangkan dialog WebKit, tetapi tidak menghilangkan dialog sistem. Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`) dan pengguna telah memberikan akses di Pengaturan Sistem → Privasi & Keamanan.
 
-**Aplikasi macOS saya keluar saat konten web meminta kamera atau mikrofon**
+**Aplikasi macOS saya berhenti ketika konten web meminta akses ke kamera atau mikrofon**
 
-Periksa bahwa `Info.plist` menyertakan `NSCameraUsageDescription` atau `NSMicrophoneUsageDescription` untuk setiap perangkat yang diminta aplikasi. Deskripsi yang tidak ada dapat menyebabkan penolakan permintaan; akses AVFoundation tanpa deskripsi yang diwajibkan dapat menghentikan aplikasi. `PermissionDeny` mengontrol keputusan WebKit dan tidak menggantikan kunci-kunci tersebut.
+Pastikan `Info.plist` menyertakan `NSCameraUsageDescription` atau `NSMicrophoneUsageDescription` untuk setiap perangkat yang diminta aplikasi Anda. Deskripsi yang tidak tersedia dapat menyebabkan permintaan ditolak; mengakses AVFoundation tanpa deskripsi yang diwajibkan dapat menghentikan aplikasi. `PermissionDeny` mengendalikan keputusan WebKit dan tidak menggantikan kunci-kunci tersebut.
 
 **Geolokasi/notifikasi/papan klip tidak berpengaruh di Linux**
 
-Saat ini, hanya kamera dan mikrofon yang ditangani di Linux. Dukungan untuk jenis kapabilitas lainnya belum diimplementasikan—kapabilitas tersebut tetap ditolak, apa pun kebijakan yang Anda tetapkan.
+Saat ini, hanya kamera dan mikrofon yang ditangani di Linux. Dukungan untuk jenis kapabilitas lain belum diterapkan—kapabilitas tersebut tetap ditolak, apa pun kebijakan yang Anda tetapkan.

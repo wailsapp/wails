@@ -1699,16 +1699,16 @@
       "updatedAt": "2026-10-25T21:31:57Z"
     },
     "b0142-text-01": {
-      "sourceHash": "cdcca6362b9c0fdd1bf3367aca99d126586d20c08809f87da4e4b85ebd6aa0a8",
-      "targetHash": "3ed07684e2f97db883af9d8deb8063a9dcac0a8b170f7b05c4ea334ea192c96e",
-      "machineHash": "3ed07684e2f97db883af9d8deb8063a9dcac0a8b170f7b05c4ea334ea192c96e",
-      "machineText": "**ブリッジについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)を確認してください。",
+      "sourceHash": "53fff8e43e34e04d43f2a4d36928a8f56cd64c8255926ac10e85297f74be32b2",
+      "targetHash": "990fde630ba897f79701ace48f12305e1ac63e324c7256b135115e87c14227bb",
+      "machineHash": "990fde630ba897f79701ace48f12305e1ac63e324c7256b135115e87c14227bb",
+      "machineText": "**ブリッジについてご不明な点がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングのサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)を確認してください。",
       "status": "machine-translated",
       "sourcePreview": "**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [bindin…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:31:57Z"
+      "updatedAt": "2026-11-06T02:11:57Z"
     },
     "d0001-label-0b16019f85688e8f": {
       "sourceHash": "7948f929a06290b44590a7042cc8cbf2b7fa270cba7c2c5209fc6c2d07bd0a18",

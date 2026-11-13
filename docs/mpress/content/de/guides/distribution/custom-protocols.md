@@ -5,24 +5,24 @@ slug: "guides/distribution/custom-protocols"
 sourcePath: "guides/distribution/custom-protocols.md"
 ---
 
-Mit benutzerdefinierten URL-Protokollen (auch URL-Schemata genannt) kann Ihre Anwendung gestartet werden, wenn Benutzer auf Links mit Ihrem benutzerdefinierten Protokoll klicken, etwa `myapp://action` oder `myapp://open/document`.
+Mit benutzerdefinierten URL-Protokollen (auch URL-Schemata genannt) kann Ihre Anwendung gestartet werden, wenn Benutzer auf Links mit Ihrem benutzerdefinierten Protokoll klicken, beispielsweise `myapp://action` oder `myapp://open/document`.
 
 ## Übersicht
 
-Benutzerdefinierte Protokolle ermöglichen Folgendes:
+Benutzerdefinierte Protokolle ermöglichen:
 
-- **Deep Linking**: Anwendung mit bestimmten Daten starten
+- **Deep Linking**: Ihre App mit bestimmten Daten starten
 - **Browserintegration**: Links von Webseiten verarbeiten
-- **E-Mail-Links**: Anwendung aus E-Mail-Clients öffnen
-- **Kommunikation zwischen Anwendungen**: Anwendung aus anderen Anwendungen starten
+- **E-Mail-Links**: Ihre App aus E-Mail-Clients öffnen
+- **Kommunikation zwischen Apps**: Ihre App aus anderen Anwendungen starten
 
-**Beispiel**: `myapp://open/document?id=123` startet Ihre Anwendung und öffnet das Dokument 123.
+**Beispiel**: `myapp://open/document?id=123` startet Ihre App und öffnet das Dokument 123.
 
 ## Konfiguration
 
 Definieren Sie benutzerdefinierte Protokolle in den Optionen Ihrer Anwendung:
 
-Benutzerdefinierte Protokolle werden in `build/config.yml` deklariert. Die plattformspezifischen Paketierungswerkzeuge – NSIS-Makros unter Windows, das MSIX-Manifest, `CFBundleURLTypes` unter macOS sowie `.desktop`/`xdg-mime` unter Linux – verwenden diese Angaben beim Erstellen des Pakets. Es gibt weder einen Typ `application.Protocol` noch ein Feld `Protocols` in `application.Options`.
+Benutzerdefinierte Protokolle werden in `build/config.yml` deklariert. Die Paketierungswerkzeuge der Plattformen – NSIS-Makros unter Windows, das MSIX-Manifest, `CFBundleURLTypes` unter macOS sowie `.desktop`/`xdg-mime` unter Linux – verarbeiten sie beim Paketieren. Es gibt weder einen Typ `application.Protocol` noch ein Feld `Protocols` in `application.Options`.
 
 ```yaml
 # build/config.yml
@@ -61,7 +61,7 @@ func handleCustomURL(url string) {
 }
 ```
 
-## Protokollhandler
+## Protokoll-Handler
 
 Überwachen Sie Protokollereignisse, um eingehende URLs zu verarbeiten:
 
@@ -103,13 +103,13 @@ myapp://settings/theme?mode=dark
 myapp://user/profile?username=john
 ```
 
-**Bewährte Verfahren:**
+**Bewährte Vorgehensweisen:**
 
 - Verwenden Sie kleingeschriebene Schemanamen
-- Halten Sie Schemanamen kurz und einprägsam
+- Halten Sie Schemata kurz und einprägsam
 - Verwenden Sie hierarchische Pfade für Ressourcen
 - Verwenden Sie Abfrageparameter für optionale Daten
-- Codieren Sie Sonderzeichen URL-konform
+- Kodieren Sie Sonderzeichen URL-konform
 
 ## Plattformregistrierung
 
@@ -119,13 +119,13 @@ Benutzerdefinierte Protokolle werden auf jeder Plattform unterschiedlich registr
 [Windows]
 ### Windows-NSIS-Installationsprogramm
 
-**Wails v3 registriert benutzerdefinierte Protokolle automatisch**, wenn Sie NSIS-Installationsprogramme verwenden.
+**Wails v3 registriert benutzerdefinierte Protokolle bei Verwendung von NSIS-Installationsprogrammen automatisch**.
 
 #### Automatische Registrierung
 
-Wenn Sie Ihre Anwendung mit `wails3 build` erstellen, führt das NSIS-Installationsprogramm folgende Schritte aus:
+Wenn Sie Ihre Anwendung mit `wails3 build` erstellen, führt das NSIS-Installationsprogramm Folgendes aus:
 
-1. Es registriert automatisch alle Protokolle, die in `build/config.yml` unter dem Schlüssel `protocols:` deklariert sind
+1. Es registriert automatisch alle in `build/config.yml` deklarierten Protokolle unter dem Schlüssel `protocols:`
 2. Es verknüpft die Protokolle mit der ausführbaren Datei Ihrer Anwendung
 3. Es richtet die erforderlichen Registrierungseinträge ein
 4. Es entfernt die Protokollzuordnungen bei der Deinstallation
@@ -139,11 +139,11 @@ Die NSIS-Vorlage enthält integrierte Makros:
 - `wails.associateCustomProtocols` – Registriert Protokolle während der Installation
 - `wails.unassociateCustomProtocols` – Entfernt Protokolle während der Deinstallation
 
-Diese Makros werden anhand Ihrer Konfiguration in `Protocols` automatisch aufgerufen.
+Diese Makros werden anhand Ihrer `Protocols`-Konfiguration automatisch aufgerufen.
 
-#### Manuelle Registrierungseinträge (für Fortgeschrittene)
+#### Manuelle Registrierung (für Fortgeschrittene)
 
-Wenn Sie die Protokolle manuell registrieren müssen (außerhalb von NSIS):
+Wenn Sie eine manuelle Registrierung benötigen (außerhalb von NSIS):
 
 ```batch
 @echo off
@@ -155,7 +155,7 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"
 
 #### Testen
 
-Testen Sie die Registrierung Ihres Protokolls:
+Testen Sie Ihre Protokollregistrierung:
 
 ```powershell
 # Open protocol URL from PowerShell
@@ -171,9 +171,9 @@ Auch bei der MSIX-Paketierung werden benutzerdefinierte Protokolle automatisch r
 
 #### Automatische Registrierung
 
-Wenn Sie Ihre Anwendung als MSIX-Paket erstellen, übernimmt das Manifest automatisch die Protokollregistrierungen aus Ihrer Protokollkonfiguration in `build/config.yml`.
+Wenn Sie Ihre Anwendung mit MSIX erstellen, übernimmt das Manifest automatisch die Protokollregistrierungen aus Ihrer `build/config.yml`-Protokollkonfiguration.
 
-Das generierte Manifest enthält Folgendes:
+Das generierte Manifest enthält:
 
 ```xml
 <uap:Extension Category="windows.protocol">
@@ -183,18 +183,18 @@ Das generierte Manifest enthält Folgendes:
 </uap:Extension>
 ```
 
-#### Universal Links (Verknüpfung vom Web zur Anwendung)
+#### Universal Links (Verknüpfung vom Web zur App)
 
-Windows unterstützt die **Verknüpfung vom Web zur Anwendung**, die ähnlich wie Universal Links unter macOS funktioniert. Wenn Sie Ihre Anwendung als MSIX-Paket bereitstellen, können Sie ermöglichen, dass HTTPS-Links Ihre Anwendung direkt starten.
+Windows unterstützt die **Verknüpfung vom Web zur App**, die ähnlich wie Universal Links unter macOS funktioniert. Wenn Sie Ihre Anwendung als MSIX-Paket bereitstellen, können Sie festlegen, dass HTTPS-Links Ihre App direkt starten.
 
 @note{type="note"}
-Die Verknüpfung vom Web zur Anwendung erfordert eine manuelle Manifestkonfiguration. Benutzerdefinierte Protokollschemata werden automatisch anhand von `build/config.yml` konfiguriert; zugeordnete Domänen müssen Sie jedoch manuell zum MSIX-Manifest hinzufügen.
+Die Verknüpfung vom Web zur App erfordert eine manuelle Manifestkonfiguration. Benutzerdefinierte Protokollschemata werden automatisch anhand von `build/config.yml` konfiguriert, zugeordnete Domains müssen Sie Ihrem MSIX-Manifest jedoch manuell hinzufügen.
 
 @end
 
-Um die Verknüpfung vom Web zur Anwendung zu aktivieren, folgen Sie dem [Microsoft-Leitfaden zur Verknüpfung vom Web zur Anwendung](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Dazu müssen Sie Folgendes tun:
+Um die Verknüpfung vom Web zur App zu aktivieren, folgen Sie dem [Microsoft-Leitfaden zur Verknüpfung vom Web zur App](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Sie müssen:
 
-1. **Fügen Sie den App URI Handler manuell zu Ihrem MSIX-Manifest hinzu** (`build/windows/msix/app_manifest.xml`):
+1. **App URI Handler manuell Ihrem MSIX-Manifest hinzufügen** (`build/windows/msix/app_manifest.xml`):
   ```xml
   <uap3:Extension Category="windows.appUriHandler">
     <uap3:AppUriHandler>
@@ -204,9 +204,9 @@ Um die Verknüpfung vom Web zur Anwendung zu aktivieren, folgen Sie dem [Microso
   ```
 
 
-2. **Konfigurieren Sie `windows-app-web-link` auf Ihrer Website:** Stellen Sie unter `https://myawesomeapp.com/.well-known/windows-app-web-link` eine Datei `windows-app-web-link` bereit. Diese Datei sollte die Paketinformationen Ihrer Anwendung und die von ihr verarbeiteten Pfade enthalten.
+2. **Konfigurieren Sie `windows-app-web-link` auf Ihrer Website:** Stellen Sie unter `https://myawesomeapp.com/.well-known/windows-app-web-link` eine Datei `windows-app-web-link` bereit. Diese Datei sollte die Paketinformationen Ihrer App und die von ihr verarbeiteten Pfade enthalten.
 
-Wenn ein Web-to-App-Link Ihre Anwendung startet, erhalten Sie dasselbe Ereignis `ApplicationLaunchedWithUrl` wie bei benutzerdefinierten Protokollschemata.
+Wenn Ihre Anwendung über einen Web-to-App-Link gestartet wird, empfangen Sie dasselbe Ereignis `ApplicationLaunchedWithUrl` wie bei benutzerdefinierten Protokollschemata.
 
 [macOS]
 ### Info.plist-Konfiguration
@@ -215,9 +215,9 @@ Unter macOS werden Protokolle über Ihre Datei `Info.plist` registriert.
 
 #### Automatische Konfiguration
 
-Wails generiert beim Build mit `wails3 build` automatisch die `Info.plist` mit Ihren Protokollen.
+Wenn Sie mit `wails3 build` erstellen, generiert Wails automatisch die Datei `Info.plist` mit Ihren Protokollen.
 
-Die in `build/config.yml` deklarierten Protokolle werden hier hinzugefügt:
+Die in `build/config.yml` deklarierten Protokolle werden hinzugefügt zu:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -247,16 +247,16 @@ open "myapp://test/action"
 
 #### Universal Links
 
-Zusätzlich zu benutzerdefinierten Protokollschemata unterstützt macOS auch **Universal Links**, über die reguläre HTTPS-Links (z. B. `https://myawesomeapp.com/path`) Ihre App starten können. Universal Links ermöglichen einen nahtlosen Übergang zwischen Ihrer Web- und Desktop-App.
+Neben benutzerdefinierten Protokollschemata unterstützt macOS auch **Universal Links**, über die Ihre App durch gewöhnliche HTTPS-Links gestartet werden kann (z. B. `https://myawesomeapp.com/path`). Universal Links ermöglichen eine nahtlose Benutzererfahrung zwischen Ihrer Web- und Desktop-App.
 
 @note{type="caution"}
-Für Universal Links muss Ihre macOS-App mit einem gültigen Apple-Developer-Zertifikat und Bereitstellungsprofil **codesigniert** sein. Unsignierte oder ad hoc signierte Builds können keine Universal Links öffnen. Stellen Sie vor dem Testen sicher, dass Ihre App ordnungsgemäß signiert ist.
+Für Universal Links muss Ihre macOS-App mit einem gültigen Apple-Developer-Zertifikat und Bereitstellungsprofil **codesigniert** sein. Nicht signierte oder ad hoc signierte Builds können Universal Links nicht öffnen. Stellen Sie vor dem Testen sicher, dass Ihre App ordnungsgemäß signiert ist.
 
 @end
 
 Um Universal Links zu aktivieren, folgen Sie dem [Apple-Leitfaden zur Unterstützung von Universal Links in Ihrer App](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Sie müssen:
 
-1. in Ihrer `entitlements.plist` **Entitlements hinzufügen**:
+1. **Entitlements** in Ihrer Datei `entitlements.plist` hinzufügen:
   ```xml
   <key>com.apple.developer.associated-domains</key>
   <array>
@@ -274,9 +274,9 @@ Um Universal Links zu aktivieren, folgen Sie dem [Apple-Leitfaden zur Unterstüt
   ```
 
 
-3. **Konfigurieren Sie `apple-app-site-association` auf Ihrer Website:** Stellen Sie unter `https://myawesomeapp.com/.well-known/apple-app-site-association` eine `apple-app-site-association`-Datei bereit.
+3. **Konfigurieren Sie `apple-app-site-association` auf Ihrer Website:** Stellen Sie unter `https://myawesomeapp.com/.well-known/apple-app-site-association` eine Datei `apple-app-site-association` bereit.
 
-Wenn ein Universal Link Ihre App auslöst, empfangen Sie dasselbe `ApplicationLaunchedWithUrl`-Ereignis. Daher ist der Verarbeitungscode identisch mit dem für benutzerdefinierte Protokollschemata.
+Wenn Ihre App durch einen Universal Link ausgelöst wird, empfangen Sie dasselbe Ereignis `ApplicationLaunchedWithUrl`. Daher ist der Verarbeitungscode mit dem für benutzerdefinierte Protokollschemata identisch.
 
 [Linux]
 ### Desktop-Eintrag
@@ -285,9 +285,9 @@ Unter Linux werden Protokolle über `.desktop`-Dateien registriert.
 
 #### Automatische Konfiguration
 
-Wails generiert beim Build mit `wails3 build` eine Desktop-Eintragsdatei mit Protokollhandlern.
+Wenn Sie mit `wails3 build` erstellen, generiert Wails eine Desktop-Eintragsdatei mit Protokoll-Handlern.
 
-**In v3 behoben**: Die Linux-Desktopvorlage unterstützt die Protokollverarbeitung jetzt ordnungsgemäß.
+**Behoben in v3**: Die Linux-Desktopvorlage unterstützt jetzt Protokoll-Handler korrekt.
 
 Die generierte Desktopdatei enthält:
 
@@ -328,7 +328,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## Vollständiges Beispiel
 
-Hier ist ein vollständiges Beispiel für die Verarbeitung mehrerer Protokollaktionen:
+Das folgende vollständige Beispiel verarbeitet mehrere Protokollaktionen:
 
 ```go
 package main
@@ -561,7 +561,7 @@ func goodHandler(url string) {
 
 ### Manuelles Testen
 
-Testen Sie Protokollhandler während der Entwicklung:
+Testen Sie Protokoll-Handler während der Entwicklung:
 
 **Windows:**
 
@@ -581,7 +581,7 @@ open "myapp://test/action?id=123"
 xdg-open "myapp://test/action?id=123"
 ```
 
-### HTML-Tests
+### HTML-Test
 
 Erstellen Sie eine HTML-Testseite:
 
@@ -610,8 +610,8 @@ Erstellen Sie eine HTML-Testseite:
 **Windows:**
 
 - Überprüfen Sie die Registrierung: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
-- Installieren Sie die Anwendung mit dem NSIS-Installationsprogramm neu
-- Überprüfen Sie, ob das Installationsprogramm mit den erforderlichen Berechtigungen ausgeführt wurde
+- Installieren Sie die Anwendung mit dem NSIS-Installer neu
+- Prüfen Sie, ob der Installer mit den erforderlichen Berechtigungen ausgeführt wurde
 
 **macOS:**
 
@@ -627,7 +627,7 @@ Erstellen Sie eine HTML-Testseite:
 
 ### Anwendung startet nicht
 
-**Protokolle prüfen:**
+**Überprüfen Sie die Protokolle:**
 
 ```go
 app := application.New(application.Options{
@@ -639,34 +639,34 @@ app := application.New(application.Options{
 **Häufige Probleme:**
 
 - Die Anwendung ist nicht am erwarteten Speicherort installiert
-- Der bei der Registrierung angegebene Pfad zur ausführbaren Datei stimmt nicht mit dem tatsächlichen Speicherort überein
+- Der registrierte Pfad zur ausführbaren Datei stimmt nicht mit dem tatsächlichen Speicherort überein
 - Berechtigungsprobleme
 
 ## Bewährte Vorgehensweisen
 
 ### ✅ Empfohlen
 
-- **Aussagekräftige Schemanamen verwenden** – `mycompany-myapp` statt `mca`
-- **Alle Eingaben validieren** – Vertrauen Sie niemals URLs aus externen Quellen
-- **Fehler angemessen behandeln** – Protokollieren Sie ungültige URLs, statt die Anwendung abstürzen zu lassen
-- **Benutzerfeedback geben** – Zeigen, welche Aktion ausgelöst wurde
-- **Auf allen Plattformen testen** – Die Protokollverarbeitung unterscheidet sich je nach Plattform
-- **URL-Struktur dokumentieren** – Benutzer und Integratoren unterstützen
+- **Verwenden Sie aussagekräftige Schemanamen** – `mycompany-myapp` statt `mca`
+- **Validieren Sie alle Eingaben** – Vertrauen Sie niemals URLs aus externen Quellen
+- **Behandeln Sie Fehler ordnungsgemäß** – Protokollieren Sie ungültige URLs, statt die Anwendung abstürzen zu lassen
+- **Geben Sie den Benutzern Rückmeldung** – Zeigen Sie, welche Aktion ausgelöst wurde
+- **Testen Sie auf allen Plattformen** – Die Protokollverarbeitung unterscheidet sich je nach Plattform
+- **Dokumentieren Sie Ihre URL-Struktur** – Unterstützen Sie Benutzer und Integratoren
 
-### ❌ Nicht tun
+### ❌ Nicht empfohlen
 
-- **Keine allgemeinen Schemanamen verwenden** – `http`, `file`, `app` usw. vermeiden
-- **URLs nicht als Code ausführen** – Enormes Sicherheitsrisiko
-- **Keine sensiblen Vorgänge offenlegen** – Für destruktive Aktionen eine Bestätigung verlangen
-- **Nicht davon ausgehen, dass Protokolle überall funktionieren** – Ausweichmechanismen bereitstellen
-- **URL-Codierung nicht vergessen** – Sonderzeichen korrekt verarbeiten
+- **Verwenden Sie keine gängigen Schemanamen** – Vermeiden Sie `http`, `file`, `app` usw.
+- **Führen Sie URLs nicht als Code aus** – Dies stellt ein enormes Sicherheitsrisiko dar
+- **Machen Sie keine sensiblen Vorgänge zugänglich** – Verlangen Sie bei destruktiven Aktionen eine Bestätigung
+- **Gehen Sie nicht davon aus, dass Protokolle überall funktionieren** – Stellen Sie Ausweichmechanismen bereit
+- **Vergessen Sie die URL-Codierung nicht** – Verarbeiten Sie Sonderzeichen korrekt
 
 ## Nächste Schritte
 
-- [Windows-Paketierung](/guides/build/windows/) – Mehr über die Optionen des NSIS-Installationsprogramms erfahren
-- [Dateizuordnungen](/guides/file-associations/) – Dateien mit der App öffnen
-- [Einzelinstanz](/guides/single-instance/) – Mehrere App-Instanzen verhindern
+- [Windows-Paketierung](/guides/build/windows/) – Erfahren Sie mehr über die Optionen des NSIS-Installers
+- [Dateizuordnungen](/guides/file-associations/) – Öffnen Sie Dateien mit Ihrer Anwendung
+- [Einzelinstanz](/guides/single-instance/) – Verhindern Sie mehrere Anwendungsinstanzen
 
 ---
 
-**Fragen?** Im [Discord](https://discord.gg/JDdSxwjhGf) fragen oder die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ansehen.
+**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.

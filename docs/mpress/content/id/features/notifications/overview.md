@@ -7,25 +7,25 @@ sourcePath: "features/notifications/overview.md"
 
 ## Pendahuluan
 
-Wails menyediakan sistem notifikasi lintas platform yang lengkap untuk aplikasi desktop. Layanan ini memungkinkan Anda menampilkan notifikasi sistem native, dengan dukungan untuk:
+Wails menyediakan sistem notifikasi lintas platform yang komprehensif untuk aplikasi desktop. Layanan ini memungkinkan Anda menampilkan notifikasi sistem native, dengan dukungan untuk:
 
 - Notifikasi dasar dengan judul, subjudul, dan isi
 - Notifikasi interaktif dengan tombol tindakan dan balasan teks
 - [Kategori notifikasi](#notifikasi-interaktif) yang dapat digunakan kembali untuk tindakan
-- [Suara](#suara-khusus) khusus (default, senyap, atau bernama)
+- [Suara](#suara-khusus) khusus (bawaan, senyap, atau bernama)
 - [Lampiran](#lampiran) (gambar di setiap platform; audio/video di macOS)
 - [Pengelompokan notifikasi terkait](#utas-dan-pengelompokan) berdasarkan `ThreadID`
 - [Prioritas](#tingkat-interupsi) melalui `InterruptionLevel` (`passive` / `active` / `timeSensitive` / `critical`)
-- [Pengiriman terjadwal](#pengiriman-terjadwal) (native di macOS; timer dalam proses di Windows + Linux)
+- [Pengiriman terjadwal](#pengiriman-terjadwal) (native di macOS; pewaktu dalam proses di Windows + Linux)
 - [Pembaruan notifikasi yang sedang aktif](#memperbarui-notifikasi) berdasarkan ID
 
-Setiap kolom opsional baru mengalami degradasi secara wajar ketika suatu platform tidak dapat mendukungnya; lihat [Pertimbangan Platform](#pertimbangan-platform) untuk matriks dukungan setiap fitur.
+Setiap kolom opsional baru akan mengalami penurunan fungsi secara wajar ketika suatu platform tidak dapat mendukungnya; lihat [Pertimbangan Platform](#pertimbangan-platform) untuk matriks dukungan setiap fitur.
 
 ## Penggunaan Dasar
 
 ### Membuat Layanan
 
-Pertama, inisialisasi layanan notifikasi:
+Pertama, inisialisasikan layanan notifikasi:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -79,7 +79,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### Notifikasi Interaktif
 
-Kirim notifikasi dengan tombol tindakan dan input teks. Kategori notifikasi harus didaftarkan terlebih dahulu untuk menggunakan notifikasi ini:
+Kirim notifikasi dengan tombol tindakan dan input teks. Sebelum mengirim notifikasi ini, Anda harus mendaftarkan kategori notifikasi:
 
 ```go
 // Define a unique category id
@@ -160,7 +160,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### Suara Khusus
 
-Gunakan `Sound` untuk mengontrol audio yang diputar saat notifikasi dikirimkan. Jika dibiarkan `nil`, suara default platform akan diputar; atur `Silent: true` untuk menonaktifkan suara; atur `Name` untuk memutar suara bernama/yang disertakan dalam bundel.
+Gunakan `Sound` untuk mengontrol audio yang diputar saat notifikasi dikirimkan. Jika dibiarkan `nil`, suara bawaan platform akan diputar; tetapkan `Silent: true` untuk menonaktifkan suara; tetapkan `Name` untuk memutar suara bernama/yang disertakan dalam bundel.
 
 ```go
 // Silent
@@ -179,15 +179,15 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-Cara `Name` ditentukan di setiap platform:
+Cara `Name` diresolusi pada setiap platform:
 
-- **macOS** — `Name` diteruskan ke `[UNNotificationSound soundNamed:]`; berkas audio harus berada di bawah `Library/Sounds` dalam bundel aplikasi Anda.
+- **macOS** — `Name` diteruskan ke `[UNNotificationSound soundNamed:]`; berkas audio harus berada di `Library/Sounds` dalam bundel aplikasi Anda.
 - **Windows** — jika `Name` sudah diawali dengan `ms-winsoundevent:` atau `ms-appx:`, nilainya digunakan apa adanya; jika tidak, nilainya dibungkus dalam `ms-winsoundevent:` agar dapat digunakan sebagai nama peristiwa toast bawaan (lihat dokumentasi skema `<audio>` toast Microsoft).
-- **Linux** — diteruskan sebagai petunjuk `sound-name` freedesktop; pemutarannya bergantung pada daemon notifikasi dan tema suara yang aktif.
+- **Linux** — diteruskan sebagai petunjuk `sound-name` freedesktop; pemutaran suara bergantung pada daemon notifikasi dan tema suara yang aktif.
 
 ### Lampiran
 
-`Attachments` menambahkan berkas media bersama notifikasi. macOS mendukung beberapa lampiran dari jenis media apa pun; Windows dan Linux mendukung lampiran pertama yang berjenis gambar.
+`Attachments` menambahkan berkas media ke notifikasi. macOS mendukung beberapa lampiran dengan jenis media apa pun; Windows dan Linux menggunakan lampiran pertama yang berjenis gambar.
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -208,11 +208,11 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-`Path` harus berupa jalur absolut sistem berkas. macOS juga menerima URL `file://`.
+`Path` harus berupa jalur absolut pada sistem berkas. macOS juga menerima URL `file://`.
 
 #### Melampirkan berkas yang disertakan bersama aplikasi Anda
 
-OS membaca lampiran dari disk saat notifikasi dikirimkan, sehingga `Path` harus merujuk ke berkas nyata di komputer pengguna akhir. Untuk aset yang Anda sertakan dalam bundel aplikasi (ikon atau gambar yang disematkan dengan `go:embed`), tidak ada jalur absolut tetap yang dapat Anda tuliskan langsung dalam kode karena berkas tersebut berada di dalam biner, bukan di lokasi disk yang diketahui. Tulis berkas tersebut satu kali ke direktori yang dapat ditulisi saat aplikasi dimulai, lalu teruskan jalurnya:
+OS membaca lampiran dari disk saat notifikasi dikirimkan, sehingga `Path` harus merujuk ke berkas nyata pada mesin pengguna akhir. Untuk aset yang Anda bundel bersama aplikasi (ikon atau gambar yang disematkan dengan `go:embed`), tidak ada jalur absolut tetap yang dapat ditulis langsung dalam kode karena berkas tersebut berada di dalam biner, bukan di lokasi disk yang diketahui. Tulis berkas tersebut sekali ke direktori yang dapat ditulisi saat aplikasi dimulai, lalu teruskan jalurnya:
 
 ```go
 import (
@@ -240,7 +240,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-Berkas yang disediakan pengguna atau diunduh sudah memiliki jalur nyata di disk, sehingga Anda dapat meneruskannya langsung ke `Path` tanpa langkah ini. Dukungan untuk meneruskan byte lampiran dalam memori mungkin ditambahkan dalam rilis mendatang.
+Berkas yang diberikan pengguna atau diunduh sudah memiliki jalur nyata pada disk, sehingga Anda dapat meneruskannya langsung ke `Path` tanpa langkah ini. Dukungan untuk meneruskan byte lampiran dalam memori mungkin ditambahkan pada rilis mendatang.
 
 ### Utas dan Pengelompokan
 
@@ -270,16 +270,16 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 | Konstanta | Nilai | Arti |
 | --- | --- | --- |
-| `InterruptionLevelPassive` | `"passive"` | Pengiriman senyap; tidak akan menyalakan layar atau memutar suara default |
-| `InterruptionLevelActive` | `"active"` | Tingkat default |
-| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Menerobos mode Focus / Do Not Disturb jika diizinkan |
-| `InterruptionLevelCritical` | `"critical"` | Melewati Fokus dan dering; macOS memerlukan hak Critical Alert (tanpanya, fungsi ini akan diturunkan secara diam-diam) |
+| `InterruptionLevelPassive` | `"passive"` | Pengiriman senyap; tidak akan menyalakan layar atau memutar suara bawaan |
+| `InterruptionLevelActive` | `"active"` | Tingkat bawaan |
+| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | Menerobos Focus / Do Not Disturb jika diizinkan |
+| `InterruptionLevelCritical` | `"critical"` | Melewati Focus dan dering; macOS memerlukan hak Critical Alert (mengalami penurunan fungsi secara diam-diam tanpa hak tersebut) |
 
 Pemetaan per platform:
 
 - **macOS** — menetapkan `UNNotificationContent.interruptionLevel`. `critical` memerlukan macOS 12+ dan hak Critical Alert.
 - **Windows** — dipetakan ke atribut toast `<toast scenario="...">`.
-- **Linux** — dipetakan ke petunjuk freedesktop `urgency`.
+- **Linux** — dipetakan ke petunjuk `urgency` freedesktop.
 
 ### Pengiriman Terjadwal
 
@@ -302,13 +302,13 @@ notifier.SendNotification(notifications.NotificationOptions{
 ```
 
 @note{type="caution" title="Persistensi"}
-Di **macOS**, notifikasi terjadwal menggunakan pemicu native dan tetap ada setelah aplikasi dimulai ulang. Di **Windows** dan **Linux**, penjadwalan beralih ke timer `time.AfterFunc` dalam proses dan akan **hilang jika aplikasi ditutup sebelum pengiriman** — baik `wintoast` maupun spesifikasi freedesktop tidak menyediakan primitif pengiriman tertunda.
+Di **macOS**, notifikasi terjadwal menggunakan pemicu native dan tetap tersedia setelah aplikasi dimulai ulang. Di **Windows** dan **Linux**, penjadwalan beralih ke pewaktu `time.AfterFunc` dalam proses dan **akan hilang jika aplikasi ditutup sebelum pengiriman** — baik `wintoast` maupun spesifikasi freedesktop tidak menyediakan primitif pengiriman tertunda.
 
 @end
 
 ### Memperbarui Notifikasi
 
-`UpdateNotification` mengganti notifikasi yang sedang diproses dengan `ID` yang sama:
+`UpdateNotification` mengganti notifikasi yang sedang aktif dengan `ID` yang sama:
 
 ```go
 notifier.UpdateNotification(notifications.NotificationOptions{
@@ -320,9 +320,9 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 Perilaku per platform:
 
-- **macOS** — `UNUserNotificationCenter` secara otomatis menghapus duplikasi berdasarkan pengidentifikasi, sehingga notifikasi yang ada diperbarui langsung.
-- **Linux** — menggunakan parameter D-Bus `replaces_id` untuk mengganti notifikasi sebelumnya.
-- **Windows** — saat ini mengirimkannya kembali sebagai notifikasi baru. Penggantian langsung yang sebenarnya memerlukan dukungan `wintoast` upstream untuk `tag` / `group`.
+- **macOS** — `UNUserNotificationCenter` secara otomatis menghapus duplikasi berdasarkan pengenal, sehingga notifikasi yang ada diperbarui di tempat.
+- **Linux** — menggunakan parameter D-Bus `replaces_id` untuk menggantikan notifikasi sebelumnya.
+- **Windows** — saat ini mengirimkan ulang sebagai notifikasi baru. Penggantian langsung yang sebenarnya memerlukan dukungan upstream `wintoast` untuk `tag` / `group`.
 
 ## Pertimbangan Platform
 
@@ -331,16 +331,16 @@ Perilaku per platform:
 Di macOS, notifikasi:
 
 - Memerlukan otorisasi pengguna
-- Mengharuskan aplikasi dikemas dan ditandatangani (dinotarisasi untuk distribusi)
+- Mengharuskan aplikasi dikemas dan ditandatangani (dinotariskan untuk distribusi)
 - Menggunakan tampilan notifikasi standar sistem
 - Mendukung `Subtitle`
-- Mendukung masukan teks pengguna (balasan)
+- Mendukung input teks pengguna (balasan)
 - Mendukung opsi tindakan `Destructive`
 - Mendukung beberapa `Attachments` dari semua jenis media (gambar, audio, video)
 - Mendukung `ThreadID` untuk pengelompokan di Notification Center
 - Mendukung semua nilai `InterruptionLevel` (`critical` memerlukan hak Critical Alert)
-- Mendukung pengiriman terjadwal native yang tetap ada setelah aplikasi dimulai ulang
-- Secara otomatis menghapus duplikasi panggilan `UpdateNotification` berdasarkan `ID`
+- Mendukung pengiriman terjadwal native yang tetap berlaku setelah aplikasi dimulai ulang
+- Secara otomatis mendeduplikasi panggilan `UpdateNotification` berdasarkan `ID`
 - Menangani mode gelap/terang secara otomatis
 
 [Windows]
@@ -348,14 +348,14 @@ Di Windows, notifikasi:
 
 - Menggunakan gaya toast sistem Windows melalui backend `wintoast`
 - Menyesuaikan dengan pengaturan tema Windows
-- Mendukung masukan teks pengguna (balasan)
+- Mendukung input teks pengguna (balasan)
 - Mendukung layar DPI tinggi
 - Tidak mendukung `Subtitle`
 - Mendukung satu `Attachment` gambar dengan petunjuk penempatan `hero`, `appLogoOverride`, atau `inline` (default `inline`)
 - Mendukung `ThreadID` untuk pengelompokan di Action Center
 - Mendukung `InterruptionLevel` melalui atribut toast `scenario`
-- Mendukung pengiriman terjadwal melalui timer dalam proses — **notifikasi terjadwal akan hilang jika aplikasi ditutup sebelum pengiriman**
-- `UpdateNotification` saat ini mengirimkannya kembali sebagai notifikasi baru (penggantian langsung yang sebenarnya menunggu dukungan `wintoast` upstream untuk `tag`/`group`)
+- Mendukung pengiriman terjadwal melalui timer dalam proses — **notifikasi terjadwal akan hilang jika aplikasi berhenti sebelum dikirim**
+- `UpdateNotification` saat ini mengirimkan ulang sebagai notifikasi baru (penggantian langsung yang sebenarnya masih menunggu dukungan upstream `wintoast` untuk `tag`/`group`)
 
 [Linux]
 Di Linux, notifikasi menggunakan antarmuka D-Bus `org.freedesktop.Notifications`. Daemon notifikasi yang kompatibel **harus berjalan** agar notifikasi dapat berfungsi.
@@ -363,12 +363,12 @@ Di Linux, notifikasi menggunakan antarmuka D-Bus `org.freedesktop.Notifications`
 @note{type="caution" title="Persyaratan sistem: daemon notifikasi"}
 Daemon notifikasi yang kompatibel dengan freedesktop harus terinstal dan berjalan. Pilihan yang umum:
 
-- **dunst** — ringan dan memiliki banyak opsi konfigurasi (`apt install dunst` / `dnf install dunst`)
+- **dunst** — ringan dan sangat mudah dikonfigurasi (`apt install dunst` / `dnf install dunst`)
 - **mako** — native untuk Wayland (`apt install mako-notifier`)
-- **GNOME Shell** — mendaftarkan antarmuka secara otomatis di GNOME 43+. Di Ubuntu 24.04 (GNOME Shell 46), antarmuka mungkin tidak mendaftarkan diri saat sesi dimulai; instal `dunst` sebagai solusi cadangan jika notifikasi tidak muncul.
-- **xfce4-notifyd** — disertakan bersama desktop XFCE
+- **GNOME Shell** — mendaftarkan antarmuka secara otomatis di GNOME 43+. Di Ubuntu 24.04 (GNOME Shell 46), antarmuka mungkin tidak mendaftarkan dirinya sendiri saat sesi dimulai; instal `dunst` sebagai solusi cadangan jika notifikasi tidak muncul.
+- **xfce4-notifyd** — disertakan dengan desktop XFCE
 
-Jika tidak ada daemon yang berjalan, `SendNotification` akan mengembalikan galat D-Bus: `The name org.freedesktop.Notifications was not provided by any .service files`. Tangani galat ini di aplikasi Anda dan beri tahu pengguna untuk menginstal daemon notifikasi.
+Jika tidak ada daemon yang berjalan, `SendNotification` akan mengembalikan kesalahan D-Bus: `The name org.freedesktop.Notifications was not provided by any .service files`. Tangani kesalahan ini di aplikasi Anda dan beri tahu pengguna agar menginstal daemon notifikasi.
 
 @end
 
@@ -376,14 +376,14 @@ Di Linux, notifikasi:
 
 - Mengikuti tema lingkungan desktop
 - Diposisikan sesuai aturan lingkungan desktop
-- Mendukung `Subtitle` (digabungkan ke dalam isi untuk daemon yang tidak merendernya secara terpisah)
-- Tidak mendukung masukan teks pengguna (bukan bagian dari spesifikasi freedesktop)
+- Mendukung `Subtitle` (digabungkan ke isi untuk daemon yang tidak merendernya secara terpisah)
+- Tidak mendukung input teks pengguna (bukan bagian dari spesifikasi freedesktop)
 - Mendukung satu `Attachment` gambar melalui petunjuk `image-path`
 - Mendukung `ThreadID` (ditangani oleh daemon jika didukung)
-- `Sound.Name` diteruskan sebagai hint `sound-name`; pemutarannya bergantung pada daemon dan tema suara yang aktif
-- Memetakan `InterruptionLevel` ke hint freedesktop `urgency`
-- Mendukung pengiriman terjadwal melalui timer dalam proses — **notifikasi terjadwal akan hilang jika aplikasi ditutup sebelum dikirim**
-- `UpdateNotification` menggunakan parameter D-Bus `replaces_id` untuk mengganti notifikasi sebelumnya di tempat
+- `Sound.Name` diteruskan sebagai petunjuk `sound-name`; apakah suara diputar bergantung pada daemon yang aktif dan tema suara
+- Memetakan `InterruptionLevel` ke petunjuk freedesktop `urgency`
+- Mendukung pengiriman terjadwal melalui timer dalam proses — **notifikasi terjadwal akan hilang jika aplikasi berhenti sebelum dikirim**
+- `UpdateNotification` menggunakan parameter D-Bus `replaces_id` untuk menggantikan notifikasi sebelumnya secara langsung
 
 @end
 
@@ -394,12 +394,12 @@ Di Linux, notifikasi:
 
 
 2. Berikan notifikasi yang jelas dan ringkas:
-  - Gunakan judul, subtitel, teks, dan judul tindakan yang deskriptif
+  - Gunakan judul, subjudul, teks, dan judul tindakan yang deskriptif
 
 
 3. Tangani respons notifikasi dengan tepat:
-  - Periksa apakah ada kesalahan dalam respons notifikasi
-  - Berikan umpan balik atas tindakan pengguna
+  - Periksa kesalahan dalam respons notifikasi
+  - Berikan umpan balik untuk tindakan pengguna
 
 
 4. Pertimbangkan konvensi platform:
@@ -409,7 +409,7 @@ Di Linux, notifikasi:
 
 5. Di Linux, tangani dependensi daemon:
   - Periksa kesalahan yang dikembalikan oleh `SendNotification` — daemon yang tidak tersedia menghasilkan kesalahan D-Bus
-  - Dokumentasi paket atau README aplikasi sebaiknya menyatakan bahwa daemon notifikasi freedesktop diperlukan
+  - Dokumentasi paket atau README aplikasi harus menyatakan bahwa daemon notifikasi freedesktop diperlukan
 
 
 ## Contoh
@@ -446,23 +446,23 @@ Pelajari contoh ini:
 | Metode | Deskripsi |
 | --- | --- |
 | `RegisterNotificationCategory(category NotificationCategory)` | Mendaftarkan kategori notifikasi yang dapat digunakan kembali |
-| `RemoveNotificationCategory(categoryID string)` | Menghapus kategori yang sebelumnya didaftarkan |
+| `RemoveNotificationCategory(categoryID string)` | Menghapus kategori yang telah didaftarkan sebelumnya |
 
 ### Mengelola Notifikasi
 
 | Metode | Deskripsi |
 | --- | --- |
-| `RemoveAllPendingNotifications()` | Menghapus semua notifikasi tertunda (hanya macOS dan Linux) |
-| `RemovePendingNotification(identifier string)` | Menghapus notifikasi tertunda tertentu (hanya macOS dan Linux) |
-| `RemoveAllDeliveredNotifications()` | Menghapus semua notifikasi yang telah dikirim (hanya macOS dan Linux) |
-| `RemoveDeliveredNotification(identifier string)` | Menghapus notifikasi tertentu yang telah dikirim (hanya macOS dan Linux) |
+| `RemoveAllPendingNotifications()` | Menghapus semua notifikasi tertunda (khusus macOS dan Linux) |
+| `RemovePendingNotification(identifier string)` | Menghapus notifikasi tertunda tertentu (khusus macOS dan Linux) |
+| `RemoveAllDeliveredNotifications()` | Menghapus semua notifikasi yang telah ditampilkan (khusus macOS dan Linux) |
+| `RemoveDeliveredNotification(identifier string)` | Menghapus notifikasi tertentu yang telah ditampilkan (khusus macOS dan Linux) |
 | `RemoveNotification(identifier string)` | Menghapus notifikasi (khusus Linux) |
 
 ### Penanganan Peristiwa
 
 | Metode | Deskripsi |
 | --- | --- |
-| `OnNotificationResponse(callback func(result NotificationResult))` | Mendaftarkan callback untuk respons notifikasi |
+| `OnNotificationResponse(callback func(result NotificationResult))` | Mendaftarkan fungsi panggil balik untuk respons notifikasi |
 
 ### Struct dan Tipe
 

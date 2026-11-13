@@ -115,16 +115,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0010-cell-01": {
-      "sourceHash": "ee453293ba2b0158fe84d7cea2d0da443a72bf89371269f81d65d8431e1e3aa0",
-      "targetHash": "83f05eda82c3fa80cdb3cdbb3428a4666ffcb438f938e4a5fb20078ca10f1a52",
-      "machineHash": "83f05eda82c3fa80cdb3cdbb3428a4666ffcb438f938e4a5fb20078ca10f1a52",
-      "machineText": "자동으로 매일 실행하며, `UNRELEASED_CHANGELOG.md`에 내용이 있을 때만 릴리스",
-      "status": "reviewed",
-      "sourcePreview": "automated, daily, only when `UNRELEASED_CHANGELOG.md` has content",
+      "sourceHash": "7e167ef239e8e3743ebd7e49c732171e2e5d5ccdd5f29b0faf380de15ef8d86e",
+      "targetHash": "1dfe07b2319afdbcfe2c5e3571f096240e1bdb1c5b8000123c000769b42dabef",
+      "machineHash": "1dfe07b2319afdbcfe2c5e3571f096240e1bdb1c5b8000123c000769b42dabef",
+      "machineText": "자동화 방식으로 매일 실행되며, 테스트한 릴리스 범위에 병합된 PR이 사용자에게 표시되는 릴리스 노트를 생성하는 경우에만 해당",
+      "status": "machine-translated",
+      "sourcePreview": "automated, daily, only when merged PRs in the tested release range produce user-visible notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0011-cell-01": {
       "sourceHash": "3ebf4c66f5f26704350b6ea1f1510b59d3f48f2f4323af34a77ff9c7f53c0176",
@@ -932,16 +932,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0086-text-01": {
-      "sourceHash": "e838c68cc47aed2cda32c3e583cef2b42153a393acee17582af7a064526922d3",
-      "targetHash": "90d6c12183ac5c2115394a739e78bcc873e74c088d9bb4ebbb0014548df37cd7",
-      "machineHash": "90d6c12183ac5c2115394a739e78bcc873e74c088d9bb4ebbb0014548df37cd7",
-      "machineText": "릴리스 권한은 프로젝트 Lead에게만 있습니다(거버넌스 문서 참조). 기여자는 태그를 지정하거나 게시하지 않으며, `v3/UNRELEASED_CHANGELOG.md`에 항목을 추가합니다.",
-      "status": "reviewed",
+      "sourceHash": "f63de58a409ea5859195d79ddf41b6c86bb98b4d7d9c46effc39873d6987e12a",
+      "targetHash": "f1a9476f8d47d6f9145c60b612d4ccb74abee279367cca9210edd5ad3548adf8",
+      "machineHash": "f1a9476f8d47d6f9145c60b612d4ccb74abee279367cca9210edd5ad3548adf8",
+      "machineText": "릴리스 권한은 프로젝트 리드로 제한됩니다(거버넌스 문서 참조). 기여자는 태그를 지정하거나 게시하지 않으며, PR 제목이나 `## Release notes` 설명 섹션에 사용자에게 표시되는 변경 사항을 기술합니다. 릴리스 자동화는 정확히 테스트한 커밋 범위에 병합된 PR을 바탕으로 릴리스 노트를 생성합니다. `v3/UNRELEASED_CHANGELOG.md`은(는) 제거되었습니다.",
+      "status": "machine-translated",
       "sourcePreview": "Release rights are limited to the project Lead (see the governance document). Contributors never tag…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0087-text-01": {
       "sourceHash": "387dc819de83611dded717da09e75e41de0e4e00cdc75d3bde2721a7f4c7237e",
@@ -1112,16 +1112,16 @@
       "updatedAt": "2026-10-25T21:46:27Z"
     },
     "b0101-text-01": {
-      "sourceHash": "75197c10b52ce49da77047b51d02252b9af1df684f06c1876a3ce806a7065ff6",
-      "targetHash": "d77e9b827804c25c8df78a4adb2cebca7d36b3116eacbbf8352afec37d3e4cc6",
-      "machineHash": "dac5544316ab5def308cebb357d4e09cfd93c920d8ca97e87af80afdbc640458",
-      "machineText": "출시되는 코드에만 해당하는\u003cstrong\u003e\u003c/strong\u003e 열린 심각도 치명적 또는 높음의 Dependabot 알림, 열린 심각도 치명적 또는 높음의 코드 스캔 알림, 열린 모든 비밀 스캔 알림. `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` 또는 `examples/` 디렉터리에만 있는 알림은 무시합니다(`.github/scripts/check-release-blockers.sh`의 `SHIPPED_ALERT_IGNORE`, \u003cstrong\u003e소유자가 검토\u003c/strong\u003e);",
-      "status": "reviewed",
-      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or hig",
+      "sourceHash": "62b47b4238afd8b1b2292b0de411636878afd323b81131dd746f989356984979",
+      "targetHash": "4204282d0974fcd8f8b91516c3989e7b2ad2f20b7f8bfd72e2d5ccf0341e0720",
+      "machineHash": "4204282d0974fcd8f8b91516c3989e7b2ad2f20b7f8bfd72e2d5ccf0341e0720",
+      "machineText": "심각도가 critical 또는 high인 미해결 Dependabot 알림, 심각도가 critical 또는 high인 미해결 코드 스캔 알림, 그리고 모든 미해결 비밀 스캔 알림(**배포되는 코드에만 해당**). `v2/internal/staticanalysis/test/`(정적 분석 픽스처), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` 또는 임의의 `examples/` 디렉터리에만 있는 알림은 무시됩니다(`v3/tasks/releasegate/main.go`의 `SHIPPED_ALERT_IGNORE`, **소유자가 검토**).",
+      "status": "machine-translated",
+      "sourcePreview": "open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:46:27Z"
+      "updatedAt": "2026-11-02T23:47:13Z"
     },
     "b0102-text-01": {
       "sourceHash": "1b385bd81a0263a3996e77d7af193864863b8545051d9ba54afb80eb1eeb1660",

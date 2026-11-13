@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:39Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "000095f44ba893ef32ffb83855afebae2c876430dbae246016416cca0f87dbf4",
-      "machineHash": "000095f44ba893ef32ffb83855afebae2c876430dbae246016416cca0f87dbf4",
-      "machineText": "Les personnes qui contribuent à la documentation peuvent utiliser M-Press sans installer la CLI Wails ni les dépendances de compilation des applications de bureau. Consultez [Rédiger la documentation avec M-Press](/contributing/documentation/) pour connaître la procédure de téléchargement des exécutables aux versions épinglées, d’installation, d’aperçu en direct, de validation et de création des PR destinées aux branches de publication.",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "1649f8183362c45cb54a2fbc0d89417e8a7afae54dfef22293f0826e7d254253",
+      "machineHash": "1649f8183362c45cb54a2fbc0d89417e8a7afae54dfef22293f0826e7d254253",
+      "machineText": "Les personnes qui contribuent à la documentation peuvent utiliser M-Press sans installer la CLI Wails ni les dépendances nécessaires à la compilation d’applications de bureau. Suivez le guide [Rédiger de la documentation avec M-Press](/contributing/documentation/) pour télécharger et installer les exécutables aux versions épinglées, utiliser l’aperçu en direct, effectuer la validation et suivre le processus de création de PR ciblant `master`.",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:39Z"
+      "updatedAt": "2026-11-06T02:12:17Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

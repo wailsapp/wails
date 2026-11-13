@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "9263ecba511cd0f9c7c9",
+  "sourceFile": "community/showcase/larvyn.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "713305db5cc3ce2d68a049fe7aa8061688284cefd5670fe20b961bc34d6cd231",
+      "targetHash": "690da93ae1278be7c2df03e30f676e251b8bd3f04ea44389c47c15dd224c17e7",
+      "status": "adopted",
+      "sourcePreview": "![Larvyn screenshot](/assets/showcase-images/larvyn-agents.webp)",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "b0002-text-01": {
+      "sourceHash": "80c674d82696162165e5db09d1bfabe81c82e71c6fdd9c0ea470a615fc816936",
+      "targetHash": "bd54d2f8c75e781dcf07724904916ac929094273b0b2fc78adc32b5516df866b",
+      "status": "adopted",
+      "sourcePreview": "![Larvyn overview](/assets/showcase-images/larvyn-overview.webp)",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "b0003-text-01": {
+      "sourceHash": "392c93670ad28c43822cf44a6bd9c0c626d754dc297dda8caf717f0c47abf64b",
+      "targetHash": "63a59a1a22645bcf4af5aaaabd98a009ee3fe6d539b4a3e2eca3dea4840c0e33",
+      "status": "adopted",
+      "sourcePreview": "Larvyn is a desktop workbench for Laravel developers on Linux, macOS and Windows. It puts your Larav…",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "b0004-text-01": {
+      "sourceHash": "5031323c5903986ceffeeaebd697eb3ca0cde588a1404157939ba284781f27b7",
+      "targetHash": "12410f0ebb587136bb0ffd2bb25e0174806d0520fc501f4422ec1f02912b8ae8",
+      "status": "adopted",
+      "sourcePreview": "Launch Claude Code, Codex, OpenCode, Cursor Agent, Aider and more side by side, each in its own git …",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "b0005-text-01": {
+      "sourceHash": "8265f6c7e5b3c60f870d0d3b3dd9152b57397714d06daffcc35ba63b9c917fb0",
+      "targetHash": "8f15a1943dcea2e876f5b0c90a2c37a21a3a0661d5e3d7fd3c0d4cb41ccbfe78",
+      "status": "adopted",
+      "sourcePreview": "[Website](https://larvyn.dev) | [Releases on GitHub](https://github.com/larvyn/releases)",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "fm-description": {
+      "sourceHash": "f44b84ca5445d599e63d034a4dfb87dff3167bd0cef52825226f90d03ce7784e",
+      "targetHash": "b1b1239391ac88d7e910e0792d316a513b26144e22f76ec9d40925010383da2c",
+      "status": "adopted",
+      "sourcePreview": "The Laravel workbench, with parallel AI coding agents",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    },
+    "fm-title": {
+      "sourceHash": "7361979e84f40350d1a8029ba1c49dd7db5592ac11a79207fdbbc054931042b4",
+      "targetHash": "7361979e84f40350d1a8029ba1c49dd7db5592ac11a79207fdbbc054931042b4",
+      "status": "adopted",
+      "sourcePreview": "Larvyn",
+      "provider": "adopted",
+      "updatedAt": "2026-11-06T12:30:11Z",
+      "adoptedFrom": "d712435412ae40fb4041022a64a07107062c52f0"
+    }
+  }
+}

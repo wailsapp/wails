@@ -919,16 +919,16 @@
       "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0076-text-01": {
-      "sourceHash": "f32778828203c13433c7e6792f98a09bcb39684bd0ba74aca861ba6cbf356424",
-      "targetHash": "dd8e2d1cd86d82b2eb3b9395d60f07996ac7dd593b1dc0a4a562b0b1d01e546d",
-      "machineHash": "dd8e2d1cd86d82b2eb3b9395d60f07996ac7dd593b1dc0a4a562b0b1d01e546d",
-      "machineText": "이는 [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)에서 사용하는 방식과 정확히 같습니다. `native_features_stub.go`, `native_features_ios.go`, `native_features_android.go`을 참고하세요.",
+      "sourceHash": "088b33094e24fb3815d2e0741c2e05d9768a5fcd05e8e0b9ac1262e1c6e8cf29",
+      "targetHash": "eb8253ccbd7ecbb1b7e52148ad7659c9014eadafb9d32ec9d9d28e4b4b54634c",
+      "machineHash": "eb8253ccbd7ecbb1b7e52148ad7659c9014eadafb9d32ec9d9d28e4b4b54634c",
+      "machineText": "이는 [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)에서 사용하는 것과 정확히 같은 패턴입니다. `native_features_stub.go`, `native_features_ios.go`, `native_features_android.go`을 참고하세요.",
       "status": "machine-translated",
-      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/…",
+      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/exampl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:09:12Z"
+      "updatedAt": "2026-11-06T02:14:28Z"
     },
     "b0077-text-01": {
       "sourceHash": "983f281e045f68e6ef9eed8c0a1d3429a0365fa56853ce026da552f88866a5dc",
@@ -1255,16 +1255,16 @@
       "updatedAt": "2026-10-25T22:09:12Z"
     },
     "b0104-text-01": {
-      "sourceHash": "6c23f4d999b2e5f60a998b61984b6ed022ced0850ada9306b24e4ca554d9f48e",
-      "targetHash": "a452298ca193a3031e2fb61a970683a9d98ed8175cb59d5b2f58e5fc13324828",
-      "machineHash": "a452298ca193a3031e2fb61a970683a9d98ed8175cb59d5b2f58e5fc13324828",
-      "machineText": "소스는 [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)에서 살펴볼 수 있습니다. 특히 `native_features_ios.go` 및 `native_features_android.go` 파일은 플랫폼별 기능을 복사하여 시작할 때 유용합니다.",
+      "sourceHash": "cfc104d247867ee4529c056884ef0bfd032c4df025308b28d8af3ba81de8f413",
+      "targetHash": "17a3f47e9ce20c90f5b0fdc2b2d1d5e9856c70f1d8ea92bf918d14f01fb10441",
+      "machineHash": "17a3f47e9ce20c90f5b0fdc2b2d1d5e9856c70f1d8ea92bf918d14f01fb10441",
+      "machineText": "[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)에서 소스 코드를 살펴보세요. 특히 `native_features_ios.go` 및 `native_features_android.go` 파일은 플랫폼별 기능을 구현할 때 복사하여 시작하기에 유용합니다.",
       "status": "machine-translated",
-      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v…",
+      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/example…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:09:12Z"
+      "updatedAt": "2026-11-06T02:14:28Z"
     },
     "b0105-heading-01": {
       "sourceHash": "eaf380e7f60489b7d687971d73fa8687ed68ef0aa7cc9a38310c146b06538067",

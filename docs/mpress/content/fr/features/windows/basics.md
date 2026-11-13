@@ -7,7 +7,7 @@ sourcePath: "features/windows/basics.md"
 
 ## Gestion des fenêtres
 
-Wails fournit une **API unifiée de gestion des fenêtres** qui fonctionne sur toutes les plateformes. Créez des fenêtres, contrôlez leur comportement et gérez plusieurs fenêtres en maîtrisant entièrement leur création, leur apparence, leur comportement et leur cycle de vie.
+Wails fournit une **API unifiée de gestion des fenêtres** qui fonctionne sur toutes les plateformes. Créez des fenêtres, contrôlez leur comportement et gérez plusieurs fenêtres avec un contrôle total sur leur création, leur apparence, leur comportement et leur cycle de vie.
 
 ## Démarrage rapide
 
@@ -36,19 +36,19 @@ func main() {
 }
 ```
 
-**Voilà, c’est tout !** Vous disposez maintenant d’une fenêtre multiplateforme.
+**C’est tout !** Vous disposez maintenant d’une fenêtre multiplateforme.
 
 ## Création de fenêtres
 
 ### Fenêtre de base
 
-La méthode la plus simple pour créer une fenêtre :
+La manière la plus simple de créer une fenêtre :
 
 ```go
 window := app.Window.New()
 ```
 
-**Ce que vous obtenez :**
+**Vous obtenez :**
 
 - Taille par défaut (800x600)
 - Titre par défaut (nom de l’application)
@@ -83,8 +83,8 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | `Title` | `string` | Titre de la fenêtre |
 | `Width` | `int` | Largeur de la fenêtre en pixels |
 | `Height` | `int` | Hauteur de la fenêtre en pixels |
-| `X` | `int` | Position X (depuis la gauche) |
-| `Y` | `int` | Position Y (depuis le haut) |
+| `X` | `int` | Position X (à partir de la gauche) |
+| `Y` | `int` | Position Y (à partir du haut) |
 | `AlwaysOnTop` | `bool` | Maintenir la fenêtre au-dessus des autres |
 | `Frameless` | `bool` | Supprimer la barre de titre et les bordures |
 | `Hidden` | `bool` | Démarrer avec la fenêtre masquée |
@@ -115,7 +115,7 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 
 - Plusieurs fenêtres (principale, paramètres, à propos)
 - Recherche de fenêtres depuis différentes parties de votre code
-- Communication entre les fenêtres
+- Communication entre fenêtres
 
 ## Contrôle des fenêtres
 
@@ -161,7 +161,7 @@ x, y := window.Position()
 
 **Système de coordonnées :**
 
-- (0, 0) correspond au coin supérieur gauche de l’écran principal
+- Le point (0, 0) correspond au coin supérieur gauche de l’écran principal
 - Les valeurs X positives vont vers la droite
 - Les valeurs Y positives vont vers le bas
 
@@ -225,7 +225,7 @@ window.SetResizable(false)
 window.Close()
 ```
 
-Il n’existe aucune méthode `window.Destroy()` dans la v3 : utilisez `Close()` et écoutez l’événement avec `OnWindowEvent` (sans possibilité d’annulation) ou interceptez-le avec `RegisterHook` (qui permet d’appeler `e.Cancel()` pour maintenir la fenêtre ouverte).
+Il n’existe aucune méthode `window.Destroy()` dans v3 : utilisez `Close()`, puis écoutez l’événement avec `OnWindowEvent` (sans possibilité d’annulation) ou interceptez-le avec `RegisterHook` (vous pouvez appeler `e.Cancel()` pour garder la fenêtre ouverte).
 
 ## Recherche de fenêtres
 
@@ -251,9 +251,9 @@ if found, ok := app.Window.GetByID(id); ok {
 }
 ```
 
-### Fenêtre actuelle
+### Fenêtre active
 
-Obtenez la fenêtre qui a actuellement le focus :
+Récupérez la fenêtre qui a actuellement le focus :
 
 ```go
 current := app.Window.Current()
@@ -264,7 +264,7 @@ if current != nil {
 
 ### Toutes les fenêtres
 
-Obtenez toutes les fenêtres :
+Récupérez toutes les fenêtres :
 
 ```go
 windows := app.Window.GetAll()
@@ -344,7 +344,7 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settingsWindow.Show()
 ```
 
-### Communication entre les fenêtres
+### Communication entre fenêtres
 
 Les fenêtres peuvent communiquer au moyen d’événements :
 
@@ -362,11 +362,11 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 })
 ```
 
-**Pour en savoir plus, consultez [Événements](/features/events/system/).**
+**Pour en savoir plus, consultez la page [Événements](/features/events/system/).**
 
 ### Fenêtres parentes et enfants
 
-`WebviewWindowOptions` ne comporte aucun champ `Parent`. Créez la fenêtre enfant comme une fenêtre normale, puis rattachez-la à une fenêtre parente sous la forme d’une feuille modale :
+`WebviewWindowOptions` ne comporte aucun champ `Parent`. Créez la fenêtre enfant comme une fenêtre normale, puis rattachez-la à une fenêtre parente en tant que feuille modale :
 
 ```go
 // Create child window
@@ -381,15 +381,15 @@ mainWindow.AttachModal(childWindow)
 **Comportement :**
 
 - La fenêtre enfant reste au-dessus de la fenêtre parente.
-- La fenêtre enfant est modale : elle bloque les interactions avec la fenêtre parente.
+- La fenêtre enfant est modale — elle bloque les interactions avec la fenêtre parente.
 
-**Prise en charge par plateforme :**
+**Prise en charge selon la plateforme :**
 
-- **macOS :** prise en charge complète (affichage sous forme de feuille).
+- **macOS :** prise en charge complète (s’affiche sous forme de feuille).
 - **Windows :** non pris en charge.
 - **Linux :** non pris en charge.
 
-## Fonctionnalités propres aux plateformes
+## Fonctionnalités propres à chaque plateforme
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-Il n’existe aucun `SetIcon` propre à chaque fenêtre : l’icône de l’application est définie au niveau de l’application avec `app.SetIcon([]byte)` (ou, pour une icône de fenêtre propre à Linux, avec le champ `application.LinuxWindow.Icon` lors de la création de la fenêtre).
+Il n’existe aucun `SetIcon` propre à chaque fenêtre : l’icône de l’application est définie sur l’application via `app.SetIcon([]byte)` (ou, pour une icône de fenêtre propre à Linux, dans le champ `application.LinuxWindow.Icon` lors de la création de la fenêtre).
 
-**Snap Assist :** Affiche les options de disposition d’ancrage de Windows 11 au moyen du raccourci système. Pour créer un bouton HTML personnalisé d’agrandissement qui affiche les dispositions d’ancrage natives au survol, utilisez plutôt [Régions non clientes natives sous Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
+**Snap Assist :** affiche les options de disposition d’ancrage de Windows 11 au moyen du raccourci système. Pour qu’un bouton HTML personnalisé d’agrandissement affiche les dispositions d’ancrage natives au survol, utilisez plutôt les [régions non clientes natives sous Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
 
-**Clignotement dans la barre des tâches :** Utile pour signaler des notifications lorsque la fenêtre est réduite.
+**Clignotement dans la barre des tâches :** utile pour les notifications lorsque la fenêtre est réduite.
 
 [macOS]
 **Fonctionnalités propres à macOS :**
@@ -427,19 +427,19 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **Types d’arrière-plan :**
 
-- `MacBackdropNormal` - Fenêtre standard
-- `MacBackdropTranslucent` - Arrière-plan translucide ; **une API privée est requise** pour rendre la WebView transparente.
-- `MacBackdropTransparent` - Entièrement transparent ; **une API privée est requise** pour rendre la WebView transparente.
-- `MacBackdropLiquidGlass` - Arrière-plan en verre ; **une API privée est requise** pour rendre la WebView transparente.
+- `MacBackdropNormal` — Fenêtre standard
+- `MacBackdropTranslucent` — Arrière-plan translucide ; une **API privée est requise** pour rendre la vue web transparente.
+- `MacBackdropTransparent` — Entièrement transparent ; une **API privée est requise** pour rendre la vue web transparente.
+- `MacBackdropLiquidGlass` — Arrière-plan en verre ; une **API privée est requise** pour rendre la vue web transparente.
 
-Effectuez la compilation avec `-tags private_mac_apis` pour que ces effets soient visibles à travers la WebView. Sans cette option, la WebView reste opaque. `TitleBar.AppearsTransparent` utilise elle-même des API publiques. Consultez [API privées de macOS](/guides/build/private-macos-apis/).
+Compilez avec `-tags private_mac_apis` pour que ces effets soient visibles à travers la vue web. Sans cette option, la vue web reste opaque. `TitleBar.AppearsTransparent` utilise lui-même des API publiques. Consultez [API macOS privées](/guides/build/private-macos-apis/).
 
-**Comportement de regroupement :** Contrôlez le comportement des fenêtres dans les différents Spaces :
+**Comportement de regroupement :** contrôlez le comportement des fenêtres dans les différents Spaces :
 
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visible dans tous les Spaces
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Peut se superposer aux applications en plein écran
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` — Visible dans tous les Spaces
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` — Peut se superposer aux applications en plein écran
 
-**Plein écran natif :** Le mode plein écran de macOS crée un nouveau Space (bureau virtuel).
+**Plein écran natif :** le mode plein écran de macOS crée un nouveau Space (bureau virtuel).
 
 [Linux]
 **Fonctionnalités propres à Linux :**
@@ -453,19 +453,19 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Remarques sur les environnements de bureau :**
+**Remarques concernant les environnements de bureau :**
 
 - GNOME : prise en charge complète
 - KDE Plasma : prise en charge complète
 - XFCE : prise en charge partielle
-- Autres : prise en charge variable
+- Autres : variable
 
 **Gestionnaires de fenêtres en mosaïque (Hyprland, Sway, i3, etc.) :**
 
 - `Minimise()` et `Maximise()` peuvent ne pas fonctionner comme prévu, car le gestionnaire de fenêtres contrôle la géométrie des fenêtres
-- Les requêtes `SetSize()` et `SetPosition()` sont données à titre indicatif et peuvent être ignorées
+- Les requêtes `SetSize()` et `SetPosition()` sont indicatives et peuvent être ignorées
 - `Fullscreen()` fonctionne généralement comme prévu
-- Certains gestionnaires de fenêtres ne prennent pas en charge le mode toujours au premier plan
+- Certains gestionnaires de fenêtres ne prennent pas en charge le maintien au premier plan
 
 @end
 
@@ -533,30 +533,30 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ À faire
 
-- **Nommez les fenêtres importantes** – Elles seront plus faciles à retrouver par la suite
-- **Définissez une taille minimale** – Vous éviterez les mises en page inutilisables
-- **Centrez les fenêtres** – L’expérience utilisateur est meilleure qu’avec une position aléatoire
-- **Gérez les événements de fermeture** – Vous éviterez les pertes de données
-- **Testez sur toutes les plateformes** – Le comportement varie selon la plateforme
-- **Utilisez des dimensions adaptées** – Tenez compte des différentes tailles d’écran
+- **Nommez les fenêtres importantes** — Elles seront plus faciles à retrouver par la suite
+- **Définissez une taille minimale** — Évitez les mises en page inutilisables
+- **Centrez les fenêtres** — L’expérience utilisateur est meilleure qu’avec une position aléatoire
+- **Gérez les événements de fermeture** — Évitez les pertes de données
+- **Testez sur toutes les plateformes** — Le comportement varie
+- **Utilisez des dimensions adaptées** — Tenez compte des différentes tailles d’écran
 
-### ❌ À éviter
+### ❌ À ne pas faire
 
-- **Ne créez pas trop de fenêtres** – Cela déroute les utilisateurs
-- **N’oubliez pas de fermer les fenêtres** – Vous éviterez les fuites de mémoire
-- **Ne codez pas les positions en dur** – Les tailles d’écran diffèrent
-- **N’ignorez pas les différences entre les plateformes** – Effectuez des tests approfondis
-- **Ne bloquez pas le thread de l’interface utilisateur** – Utilisez des goroutines pour les opérations longues
+- **Ne créez pas trop de fenêtres** — Cela perturbe les utilisateurs
+- **N’oubliez pas de fermer les fenêtres** — Vous risqueriez des fuites de mémoire
+- **Ne codez pas les positions en dur** — Les tailles d’écran diffèrent
+- **N’ignorez pas les différences entre les plateformes** — Effectuez des tests approfondis
+- **Ne bloquez pas le thread de l’interface utilisateur** — Utilisez des goroutines pour les opérations longues
 
-## Dépannage
+## Résolution des problèmes
 
 ### La fenêtre ne s’affiche pas
 
 **Causes possibles :**
 
-1. La fenêtre a été créée en mode masqué
-2. La fenêtre se trouve hors de l’écran
-3. La fenêtre se trouve derrière d’autres fenêtres
+1. Fenêtre créée comme masquée
+2. Fenêtre située hors de l’écran
+3. Fenêtre située derrière d’autres fenêtres
 
 **Solution :**
 
@@ -568,7 +568,7 @@ window.Focus()
 
 ### La fenêtre n’a pas la bonne taille
 
-**Cause :** mise à l’échelle selon la résolution (DPI) sous Windows/Linux
+**Cause :** mise à l’échelle selon le nombre de PPP sous Windows/Linux
 
 **Solution :**
 
@@ -608,7 +608,7 @@ Modèles pour les applications à plusieurs fenêtres.
 
 ---
 ★ Fenêtres sans cadre
-Créez une décoration de fenêtre personnalisée.
+Créez un habillage de fenêtre personnalisé.
 
 [En savoir plus →](/features/windows/frameless/)
 

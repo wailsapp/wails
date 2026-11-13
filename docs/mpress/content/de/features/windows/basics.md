@@ -42,17 +42,17 @@ func main() {
 
 ### Einfaches Fenster
 
-So erstellen Sie ein Fenster am einfachsten:
+So erstellen Sie am einfachsten ein Fenster:
 
 ```go
 window := app.Window.New()
 ```
 
-**Sie erhalten:**
+**Das erhalten Sie:**
 
 - Standardgröße (800x600)
 - Standardtitel (Anwendungsname)
-- Für Ihr Frontend bereites WebView
+- Eine für Ihr Frontend bereite WebView
 - Plattformnative Darstellung
 
 ### Fenster mit Optionen
@@ -76,7 +76,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Gängige Optionen:**
+**Häufig verwendete Optionen:**
 
 | Option | Typ | Beschreibung |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### Benannte Fenster
 
-Vergeben Sie Namen für Fenster, damit Sie sie leicht abrufen können:
+Geben Sie Fenstern Namen, um sie einfach abzurufen:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -114,7 +114,7 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 **Anwendungsfälle:**
 
 - Mehrere Fenster (Hauptfenster, Einstellungen, Info)
-- Fenster aus verschiedenen Teilen Ihres Codes abrufen
+- Fenster aus verschiedenen Teilen Ihres Codes finden
 - Kommunikation zwischen Fenstern
 
 ## Fenster steuern
@@ -136,9 +136,9 @@ if window.IsVisible() {
 
 **Anwendungsfälle:**
 
-- Startbildschirme (einblenden, dann ausblenden)
+- Startbildschirme (zuerst ein-, dann ausblenden)
 - Einstellungsfenster (ausblenden, wenn sie nicht benötigt werden)
-- Popupfenster (bei Bedarf einblenden)
+- Popup-Fenster (bei Bedarf einblenden)
 
 ### Position und Größe
 
@@ -161,7 +161,7 @@ x, y := window.Position()
 
 **Koordinatensystem:**
 
-- (0, 0) ist die obere linke Ecke des primären Bildschirms
+- (0, 0) befindet sich oben links auf dem primären Bildschirm
 - Positive X-Werte verlaufen nach rechts
 - Positive Y-Werte verlaufen nach unten
 
@@ -202,7 +202,7 @@ Normal ←→ Maximised
 Normal ←→ Fullscreen
 ```
 
-### Titel und Erscheinungsbild
+### Titel und Darstellung
 
 ```go
 // Set title
@@ -225,9 +225,9 @@ window.SetResizable(false)
 window.Close()
 ```
 
-In v3 gibt es keine Methode `window.Destroy()`. Verwenden Sie `Close()` und registrieren Sie entweder mit `OnWindowEvent` einen Listener (Schließen kann nicht abgebrochen werden) oder mit `RegisterHook` einen Hook (kann `e.Cancel()` aufrufen, um das Fenster geöffnet zu lassen).
+In v3 gibt es keine Methode `window.Destroy()`. Verwenden Sie `Close()` und registrieren Sie entweder mit `OnWindowEvent` einen Listener (Schließen kann nicht abgebrochen werden) oder mit `RegisterHook` einen Hook (kann `e.Cancel()` aufrufen, um das Fenster geöffnet zu halten).
 
-## Fenster suchen
+## Fenster finden
 
 ### Nach Name
 
@@ -253,7 +253,7 @@ if found, ok := app.Window.GetByID(id); ok {
 
 ### Aktuelles Fenster
 
-Rufen Sie das aktuell fokussierte Fenster ab:
+Rufen Sie das derzeit fokussierte Fenster ab:
 
 ```go
 current := app.Window.Current()
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**Wichtig:** `RegisterHook` fängt das Schließereignis ab, bevor es eintritt. Rufen Sie `event.Cancel()` auf, um das Schließen des Fensters zu verhindern. Dies funktioniert beim Schließen durch den Benutzer (Klick auf die X-Schaltfläche).
+**Wichtig:** `RegisterHook` fängt das Schließereignis ab, bevor es eintritt. Rufen Sie `event.Cancel()` auf, um das Schließen des Fensters zu verhindern. Dies funktioniert beim vom Benutzer ausgelösten Schließen (Klick auf die X-Schaltfläche).
 
 ### Zerstörung
 
-Um beim Schließen eines Fensters Aufräumarbeiten auszuführen, verwenden Sie `OnWindowEvent` mit dem Ereignis `WindowClosing`:
+Um beim Schließen eines Fensters Bereinigungsarbeiten auszuführen, verwenden Sie `OnWindowEvent` mit dem Ereignis `WindowClosing`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -344,9 +344,9 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settingsWindow.Show()
 ```
 
-### Fensterkommunikation
+### Kommunikation zwischen Fenstern
 
-Fenster können über Ereignisse kommunizieren:
+Fenster können über Ereignisse miteinander kommunizieren:
 
 ```go
 // In main window
@@ -385,7 +385,7 @@ mainWindow.AttachModal(childWindow)
 
 **Plattformunterstützung:**
 
-- **macOS:** Vollständig unterstützt (Darstellung als Sheet).
+- **macOS:** Vollständig unterstützt (wird als Sheet angezeigt).
 - **Windows:** Nicht unterstützt.
 - **Linux:** Nicht unterstützt.
 
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-Es gibt kein fensterspezifisches `SetIcon`. Das Anwendungssymbol wird über `app.SetIcon([]byte)` für die App festgelegt (oder bei der Fenstererstellung über das Feld `application.LinuxWindow.Icon`, wenn ein Linux-spezifisches Fenstersymbol benötigt wird).
+Es gibt kein fensterspezifisches `SetIcon`. Das Anwendungssymbol wird über `app.SetIcon([]byte)` für die App festgelegt (oder bei einem Linux-spezifischen Fenstersymbol beim Erstellen des Fensters über das Feld `application.LinuxWindow.Icon`).
 
-**Snap Assist:** Zeigt über den Pfad für Systemtastenkürzel die Optionen des Windows-11-Andocklayouts an. Verwenden Sie stattdessen [Native Nicht-Client-Bereiche unter Windows](/features/windows/frameless/#native-non-client-regions-on-windows), wenn eine benutzerdefinierte HTML-Maximierungsschaltfläche beim Darüberfahren native Andocklayouts anzeigen soll.
+**Snap Assist:** Zeigt über den System-Tastenkürzelpfad die Optionen für 11-Andocklayouts von Windows an. Verwende für eine benutzerdefinierte HTML-Maximierungsschaltfläche mit nativen Andocklayouts beim Darüberfahren stattdessen [Native Nicht-Client-Bereiche unter Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
 
-**Blinken der Taskleiste:** Nützlich für Benachrichtigungen, wenn das Fenster minimiert ist.
+**Blinken in der Taskleiste:** Nützlich für Benachrichtigungen, wenn das Fenster minimiert ist.
 
 [macOS]
 **macOS-spezifische Funktionen:**
@@ -432,14 +432,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - `MacBackdropTransparent` – Vollständig transparent; für die Transparenz der Webview ist eine **private API erforderlich**.
 - `MacBackdropLiquidGlass` – Glashintergrund; für die Transparenz der Webview ist eine **private API erforderlich**.
 
-Erstellen Sie den Build mit `-tags private_mac_apis`, damit diese Effekte durch die Webview sichtbar sind. Ohne diese Option bleibt die Webview undurchsichtig. `TitleBar.AppearsTransparent` selbst verwendet öffentliche APIs. Siehe [Private macOS-APIs](/guides/build/private-macos-apis/).
+Erstelle den Build mit `-tags private_mac_apis`, damit diese Effekte durch die Webview sichtbar sind. Ohne diese Option bleibt die Webview undurchsichtig. `TitleBar.AppearsTransparent` selbst verwendet öffentliche APIs. Siehe [Private macOS-APIs](/guides/build/private-macos-apis/).
 
-**Sammlungsverhalten:** Steuern Sie das Verhalten von Fenstern über mehrere Spaces hinweg:
+**Sammlungsverhalten:** Steuere, wie sich Fenster über mehrere Spaces hinweg verhalten:
 
 - `MacWindowCollectionBehaviorCanJoinAllSpaces` – Auf allen Spaces sichtbar
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` – Kann Vollbild-Apps überlagern
 
-**Natives Vollbild:** Der macOS-Vollbildmodus erstellt einen neuen Space (virtuellen Desktop).
+**Nativer Vollbildmodus:** Der Vollbildmodus von macOS erstellt einen neuen Space (virtuellen Desktop).
 
 [Linux]
 **Linux-spezifische Funktionen:**
@@ -460,10 +460,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - XFCE: Teilweise unterstützt
 - Andere: Unterschiedlich
 
-**Kachelnde Fenstermanager (Hyprland, Sway, i3 usw.):**
+**Tiling-Fenstermanager (Hyprland, Sway, i3 usw.):**
 
-- `Minimise()` und `Maximise()` funktionieren möglicherweise nicht wie erwartet – der Fenstermanager steuert die Fenstergeometrie
-- Anforderungen für `SetSize()` und `SetPosition()` sind unverbindlich und können ignoriert werden
+- `Minimise()` und `Maximise()` funktionieren möglicherweise nicht wie erwartet, da der Fenstermanager die Fenstergeometrie steuert
+- Anforderungen von `SetSize()` und `SetPosition()` sind lediglich Empfehlungen und können ignoriert werden
 - `Fullscreen()` funktioniert in der Regel wie erwartet
 - Einige Fenstermanager unterstützen „Immer im Vordergrund“ nicht
 
@@ -514,7 +514,7 @@ func showSettings() {
 }
 ```
 
-### Schließen bestätigen
+### Vor dem Schließen bestätigen
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -533,20 +533,20 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ Empfohlen
 
-- **Wichtige Fenster benennen** – So lassen sie sich später leichter finden
-- **Mindestgröße festlegen** – Verhindert unbrauchbare Layouts
-- **Fenster zentrieren** – Bessere Benutzerfreundlichkeit als eine zufällige Position
-- **Schließereignisse behandeln** – Verhindert Datenverlust
-- **Auf allen Plattformen testen** – Das Verhalten variiert
-- **Geeignete Größen verwenden** – Unterschiedliche Bildschirmgrößen berücksichtigen
+- **Benenne wichtige Fenster** – So lassen sie sich später leichter finden
+- **Lege eine Mindestgröße fest** – Verhindert unbrauchbare Layouts
+- **Zentriere Fenster** – Bessere Benutzererfahrung als bei einer zufälligen Position
+- **Behandle Schließereignisse** – Verhindert Datenverlust
+- **Teste auf allen Plattformen** – Das Verhalten unterscheidet sich
+- **Verwende geeignete Größen** – Berücksichtige unterschiedliche Bildschirmgrößen
 
 ### ❌ Nicht empfohlen
 
-- **Nicht zu viele Fenster erstellen** – Das verwirrt Benutzer
-- **Nicht vergessen, Fenster zu schließen** – Sonst entstehen Speicherlecks
-- **Positionen nicht fest codieren** – Bildschirmgrößen unterscheiden sich
-- **Plattformunterschiede nicht ignorieren** – Gründlich testen
-- **UI-Thread nicht blockieren** – Für lange Vorgänge Goroutinen verwenden
+- **Erstelle nicht zu viele Fenster** – Das verwirrt Benutzer
+- **Vergiss nicht, Fenster zu schließen** – Andernfalls entstehen Speicherlecks
+- **Codiere Positionen nicht fest ein** – Bildschirmgrößen unterscheiden sich
+- **Ignoriere Plattformunterschiede nicht** – Teste gründlich
+- **Blockiere den UI-Thread nicht** – Verwende für lang laufende Vorgänge Goroutinen
 
 ## Fehlerbehebung
 
@@ -555,7 +555,7 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 **Mögliche Ursachen:**
 
 1. Fenster wurde ausgeblendet erstellt
-2. Fenster befindet sich außerhalb des sichtbaren Bildschirmbereichs
+2. Fenster befindet sich außerhalb des Bildschirms
 3. Fenster befindet sich hinter anderen Fenstern
 
 **Lösung:**
@@ -608,13 +608,13 @@ Muster für Anwendungen mit mehreren Fenstern.
 
 ---
 ★ Rahmenlose Fenster
-Benutzerdefinierte Fensterdekorationen erstellen.
+Erstelle eine benutzerdefinierte Fensterdekoration.
 
 [Mehr erfahren →](/features/windows/frameless/)
 
 ---
 🚀 Fensterereignisse
-Ereignisse im Fensterlebenszyklus behandeln.
+Behandle Ereignisse im Fensterlebenszyklus.
 
 [Mehr erfahren →](/features/windows/events/)
 

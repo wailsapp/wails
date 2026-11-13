@@ -7,7 +7,7 @@ sourcePath: "features/menus/reference.md"
 
 ## Referensi Menu
 
-Referensi lengkap untuk jenis dan properti item menu, serta perilaku dinamis. Buat menu profesional dan responsif dengan kotak centang, grup tombol radio, pemisah, dan pembaruan dinamis.
+Referensi lengkap untuk jenis, properti, dan perilaku dinamis item menu. Buat menu yang profesional dan responsif dengan kotak centang, grup tombol radio, pemisah, dan pembaruan dinamis.
 
 ## Jenis Item Menu
 
@@ -26,7 +26,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### Kotak Centang
 
-Item menu yang dapat diaktifkan atau dinonaktifkan dengan status dicentang/tidak dicentang:
+Item menu yang dapat dialihkan antara status dicentang dan tidak dicentang:
 
 ```go
 checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
@@ -36,9 +36,9 @@ checkbox.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Gunakan untuk:** Pengaturan Boolean, pengalih fitur, opsi tampilan
+**Gunakan untuk:** Pengaturan boolean, pengalih fitur, opsi tampilan
 
-**Penting:** Status centang berubah secara otomatis saat diklik.
+**Penting:** Status centang beralih secara otomatis saat diklik.
 
 ### Grup Tombol Radio
 
@@ -85,7 +85,7 @@ submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
 submenu.Add("Submenu Item 2")
 ```
 
-**Gunakan untuk:** Mengelompokkan item terkait, mengurangi kepadatan
+**Gunakan untuk:** Mengelompokkan item terkait, mengurangi keruwetan
 
 **Batas tingkat:** Sebagian besar platform mendukung 2-3 tingkat. Hindari tingkat yang lebih dalam.
 
@@ -103,9 +103,9 @@ menu.Add("Item 2")
 
 **Praktik terbaik:** Jangan mengawali atau mengakhiri menu dengan pemisah.
 
-### Judul Bagian
+### Header Bagian
 
-Label bawaan yang tidak interaktif untuk sekelompok item menu di **macOS 14+**:
+Label native noninteraktif untuk sekelompok item menu pada **macOS 14+**:
 
 ```go
 menu.AddSectionHeader("Build server")
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` menggunakan tampilan judul bagian standar AppKit. Metode ini tidak mengembalikan item menu dan tidak mengaitkan tindakan. Pada versi macOS yang lebih lama, Windows, Linux, platform seluler, dan build server, pemanggilan ini tidak melakukan apa pun dan tidak menyisipkan baris.
+`AddSectionHeader` menggunakan tampilan header bagian standar AppKit. Metode ini tidak mengembalikan item menu dan tidak memasang tindakan. Pada versi macOS yang lebih lama, Windows, Linux, serta build seluler dan server, pemanggilan ini tidak melakukan apa pun dan tidak menyisipkan baris.
 
-Gunakan metode ini di menu baki sistem, menu konteks, atau menu aplikasi untuk memberi label pada perintah yang terkait. Gunakan `AddSeparator()` untuk memisahkan grup radio di semua platform, karena judul yang dihilangkan tidak memisahkan grup radio. Lihat [API Menu](/reference/menu#addsectionheader) untuk tanda tangan metode dan contoh `systray-menu` untuk judul yang menampilkan nama host.
+Gunakan dalam menu tray, konteks, atau aplikasi untuk memberi label pada perintah yang terkait. Gunakan `AddSeparator()` untuk memisahkan grup radio di semua platform karena header yang dihilangkan tidak memutus grup radio. Lihat [API Menu](/reference/menu#addsectionheader) untuk tanda tangan metode dan contoh `systray-menu` untuk header nama host.
 
 ## Properti Item Menu
 
@@ -149,7 +149,7 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 
 ### Status Aktif
 
-Atur apakah pengguna dapat berinteraksi dengan item menu:
+Atur apakah item menu dapat digunakan:
 
 ```go
 menuItem := menu.Add("Save")
@@ -163,14 +163,14 @@ menu.Update()  // Important: Call this after changing enabled state!
 isEnabled := menuItem.Enabled()
 ```
 
-@note{type="caution" title="Perilaku Menu di Windows"}
-Di Windows, menu harus dibuat ulang ketika statusnya berubah. **Selalu panggil `menu.Update()` setelah mengaktifkan/menonaktifkan item menu**, terutama jika item tersebut dibuat dalam keadaan nonaktif.
+@note{type="caution" title="Perilaku Menu Windows"}
+Di Windows, menu harus direkonstruksi ketika statusnya berubah. **Selalu panggil `menu.Update()` setelah mengaktifkan atau menonaktifkan item menu**, terutama jika item tersebut dibuat dalam keadaan nonaktif.
 
-**Alasannya:** Menu Windows dibangun ulang dari awal ketika diperbarui. Jika Anda tidak memanggil `Update()`, pengendali klik tidak akan dipicu dengan benar.
+**Alasannya:** Menu Windows dibangun ulang dari awal saat diperbarui. Jika Anda tidak memanggil `Update()`, handler klik tidak akan dipicu dengan benar.
 
 @end
 
-**Contoh: Pengaktifan/penonaktifan dinamis**
+**Contoh: Mengaktifkan/menonaktifkan secara dinamis**
 
 ```go
 var hasSelection bool
@@ -209,7 +209,7 @@ onDocumentChanged(func() {
 
 ### Status Centang
 
-Untuk item kotak centang dan tombol radio, atur atau periksa status centangnya:
+Untuk item kotak centang dan radio, atur atau periksa status centangnya:
 
 ```go
 checkbox := menu.AddCheckbox("Feature", false)
@@ -220,7 +220,7 @@ menu.Update()
 isChecked := checkbox.Checked()
 ```
 
-**Perubahan otomatis:** Status kotak centang berubah secara otomatis saat diklik. Anda tidak perlu memanggil `SetChecked()` di pengendali klik.
+**Pengalihan otomatis:** Status kotak centang beralih secara otomatis saat diklik. Anda tidak perlu memanggil `SetChecked()` dalam handler klik.
 
 **Kontrol manual:**
 
@@ -252,7 +252,7 @@ quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 - `Shift`, `Alt`, `Option` - Tombol pengubah
 - `A-Z`, `0-9` - Tombol huruf/angka
 - `F1-F12` - Tombol fungsi
-- `Enter`, `Space`, `Backspace`, dll. - Tombol khusus
+- `Enter`, `Space`, `Backspace`, dan sebagainya - Tombol khusus
 
 **Contoh:**
 
@@ -278,7 +278,7 @@ if runtime.GOOS == "darwin" {
 
 ### Tooltip
 
-Tambahkan teks yang muncul saat penunjuk diarahkan ke item menu (dukungan berbeda-beda menurut platform):
+Tambahkan teks saat penunjuk diarahkan ke item menu (dukungan platform bervariasi):
 
 ```go
 menuItem := menu.Add("Advanced Options")
@@ -289,7 +289,7 @@ menuItem.SetTooltip("Configure advanced settings")
 
 - **Windows:** ✅ Didukung
 - **macOS:** ❌ Tidak didukung (tooltip bukan fitur standar untuk menu)
-- **Linux:** ⚠️ Berbeda-beda menurut lingkungan desktop
+- **Linux:** ⚠️ Bervariasi menurut lingkungan desktop
 
 ### Status Tersembunyi
 
@@ -306,11 +306,11 @@ if isDebugBuild {
 }
 ```
 
-**Gunakan untuk:** Opsi debug, flag fitur, fitur bersyarat
+**Gunakan untuk:** Opsi debug, feature flag, fitur kondisional
 
 ## Penanganan Peristiwa
 
-### Pengendali OnClick
+### Handler OnClick
 
 Jalankan kode saat item menu diklik:
 
@@ -341,7 +341,7 @@ checkbox.OnClick(func(ctx *application.Context) {
 
 ### Beberapa Handler
 
-Anda dapat menetapkan beberapa handler (handler terakhir yang berlaku):
+Anda dapat menetapkan beberapa handler (yang terakhir akan digunakan):
 
 ```go
 menuItem := menu.Add("Action")
@@ -375,13 +375,13 @@ menuItem.SetEnabled(true)
 
 **Mengapa hal ini penting:**
 
-- **Windows:** Menu dibuat ulang saat diperbarui
+- **Windows:** Menu direkonstruksi saat diperbarui
 - **macOS/Linux:** Tidak terlalu penting, tetapi tetap disarankan
-- **Handler klik:** Tidak akan dipicu dengan benar tanpa Update()
+- **Penangan klik:** Tidak akan dipicu dengan benar tanpa Update()
 
-### Membuat Ulang Menu
+### Membangun Ulang Menu
 
-Untuk perubahan besar, buat ulang seluruh menu:
+Untuk perubahan besar, bangun ulang seluruh menu:
 
 ```go
 func rebuildFileMenu() {
@@ -407,11 +407,11 @@ func rebuildFileMenu() {
 }
 ```
 
-**Kapan harus membuat ulang:**
+**Kapan harus membangun ulang:**
 
 - Daftar file terbaru berubah
 - Menu plugin berubah
-- Transisi status utama
+- Transisi status besar
 
 **Kapan harus memperbarui:**
 
@@ -454,14 +454,14 @@ onUndoStackChanged(updateEditMenu)
 **macOS:**
 
 - Memiliki menu "Aplikasi" (dengan nama aplikasi)
-- "Preferensi" berada di menu Aplikasi
-- "Keluar" berada di menu Aplikasi
+- "Preferensi" di menu Aplikasi
+- "Keluar" di menu Aplikasi
 
 **Windows/Linux:**
 
-- Tidak ada menu Aplikasi
-- "Preferensi" berada di menu Edit atau Alat
-- "Keluar" berada di menu File
+- Tidak memiliki menu Aplikasi
+- "Preferensi" di menu Edit atau Alat
+- "Keluar" di menu File
 
 **Contoh: Struktur yang sesuai dengan platform**
 
@@ -511,26 +511,26 @@ if runtime.GOOS == "darwin" {
 
 ### ✅ Lakukan
 
-- **Panggil menu.Update()** setelah mengubah status menu (terutama pada Windows)
+- **Panggil menu.Update()** setelah mengubah status menu (terutama di Windows)
 - **Gunakan grup tombol radio** untuk opsi yang saling eksklusif
 - **Gunakan kotak centang** untuk fitur yang dapat diaktifkan atau dinonaktifkan
-- **Tambahkan pintasan keyboard** ke tindakan yang umum digunakan
+- **Tambahkan akselerator** ke tindakan yang umum digunakan
 - **Kelompokkan item terkait** dengan pemisah
-- **Uji di semua platform** — perilakunya berbeda-beda
+- **Uji di semua platform** - perilakunya berbeda-beda
 
-### ❌ Jangan lakukan
+### ❌ Jangan
 
-- **Jangan lupa memanggil menu.Update()** — handler klik tidak akan berfungsi dengan benar
-- **Jangan buat submenu terlalu dalam** — maksimum 2-3 tingkat
-- **Jangan awali atau akhiri dengan pemisah** — terlihat tidak profesional
-- **Jangan gunakan tooltip di macOS** — tidak didukung
-- **Jangan tulis pintasan khusus platform secara hardcode** — gunakan `CmdOrCtrl`
+- **Jangan lupa memanggil menu.Update()** - penangan klik tidak akan berfungsi dengan benar
+- **Jangan membuat penyarangan terlalu dalam** - maksimum 2-3 tingkat
+- **Jangan mengawali/mengakhiri menu dengan pemisah** - terlihat tidak profesional
+- **Jangan gunakan tooltip di macOS** - tidak didukung
+- **Jangan menulis pintasan platform secara hardcode** - gunakan `CmdOrCtrl`
 
 ## Pemecahan Masalah
 
 ### Item Menu Tidak Merespons
 
-**Gejala:** Handler klik tidak dijalankan
+**Gejala:** Penangan klik tidak dipicu
 
 **Penyebab:** Lupa memanggil `menu.Update()` setelah mengaktifkan item
 
@@ -554,14 +554,14 @@ menuItem.SetEnabled(true)
 menu.Update()
 ```
 
-### Pintasan Keyboard Tidak Berfungsi
+### Akselerator Tidak Berfungsi
 
-**Gejala:** Pintasan keyboard tidak memicu item menu
+**Gejala:** Pintasan papan ketik tidak memicu item menu
 
 **Penyebab:**
 
-1. Format pintasan keyboard salah
-2. Konflik dengan pintasan sistem
+1. Format akselerator salah
+2. Berbenturan dengan pintasan sistem
 3. Jendela tidak memiliki fokus
 
 **Solusi:**
@@ -578,10 +578,10 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 ## Langkah Berikutnya
 
-- [Menu Aplikasi](/features/menus/application/) — buat bilah menu aplikasi
-- [Menu Konteks](/features/menus/context/) — menu konteks klik kanan
-- [Menu Baki Sistem](/features/menus/systray/) — menu baki sistem/bilah menu
-- [Pola Menu](/guides/menus/) — pola menu umum dan praktik terbaik
+- [Menu Aplikasi](/features/menus/application/) - Membuat bilah menu aplikasi
+- [Menu Konteks](/features/menus/context/) - Menu konteks klik kanan
+- [Menu Baki Sistem](/features/menus/systray/) - Menu baki sistem/bilah menu
+- [Pola Menu](/guides/menus/) - Pola menu umum dan praktik terbaik
 
 ---
 

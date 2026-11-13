@@ -1,17 +1,17 @@
 ---
 title: "無框視窗"
-description: "使用無框視窗建立自訂視窗框架"
+description: "使用無框視窗建立自訂視窗外框"
 slug: "features/windows/frameless"
 sourcePath: "features/windows/frameless.md"
 ---
 
 ## 無框視窗
 
-Wails 提供<strong>無框視窗支援</strong>，包含以 CSS 為基礎的拖曳區域及平台原生行為。移除平台原生標題列，即可完全掌控視窗框架、自訂設計及獨特的使用者體驗，同時保留拖曳、調整大小及系統控制項等必要功能。
+Wails 提供**無框視窗支援**，具備以 CSS 為基礎的拖曳區域和平台原生行為。移除平台原生標題列，即可完整控制視窗外框、採用自訂設計並打造獨特的使用者體驗，同時保留拖曳、調整大小和系統控制項等必要功能。
 
-![以無框視窗執行並具有原生 macOS 圓角的預設 Wails v3 TypeScript 入門應用程式](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![預設的 Wails v3 TypeScript 入門應用程式以無框視窗執行，並採用 macOS 原生圓角](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
-上例是啟用`Frameless: true`的預設 Wails v3 TypeScript 入門應用程式。
+上例是已啟用`Frameless: true`的預設 Wails v3 TypeScript 入門應用程式。
 
 ## 快速開始
 
@@ -47,13 +47,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-<strong>就這麼簡單！</strong>現在您已有自訂標題列。
+<strong>就這麼簡單！</strong>你現在已有自訂標題列。
 
 ## 建立無框視窗
 
 ### 圓角半徑（macOS）
 
-無框視窗預設會保留 AppKit 標準的 macOS 圓角。設定`Mac.CornerRadius`即可使用自訂半徑（以點為單位）：
+無框視窗預設會保留 AppKit 的標準 macOS 圓角。設定`Mac.CornerRadius`以使用自訂半徑（單位為點）：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -64,7 +64,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-將`Mac.CornerType`設為`MacWindowCornerTypeSquare`可使用直角。此設定會忽略`CornerRadius`：
+將`Mac.CornerType`設為`MacWindowCornerTypeSquare`即可使用直角。這會忽略`CornerRadius`：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -85,14 +85,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**您會得到：**
+**你會得到：**
 
-- 無標題列
-- 無視窗邊框
-- 無系統按鈕
+- 沒有標題列
+- 沒有視窗邊框
+- 沒有系統按鈕
 - 透明背景（選用）
 
-**您需要實作：**
+**你需要實作：**
 
 - 可拖曳區域
 - 關閉／最小化／最大化按鈕
@@ -100,7 +100,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### 使用透明背景
 
-<strong>macOS 上的私有 API：</strong>若要讓 WebView 透明，請設定`Mac.Backdrop: application.MacBackdropTransparent`，並使用`-tags private_mac_apis`建置。若未使用此標記，即使 HTML/CSS 背景透明，原生 WebView 仍會保持不透明。`Frameless`與`TitleBar.AppearsTransparent`本身使用公用 API。請參閱[macOS 私有 API](/guides/build/private-macos-apis/#webview-transparency-and-background)。
+<strong>macOS 上的私有 API：</strong>設定`Mac.Backdrop: application.MacBackdropTransparent`並使用`-tags private_mac_apis`建置，才能讓 WebView 透明。若未使用此標籤，即使 HTML/CSS 背景透明，原生 WebView 仍會維持不透明。`Frameless`和`TitleBar.AppearsTransparent`本身使用公開 API。請參閱[私有 macOS API](/guides/build/private-macos-apis/#webview-transparency-and-background)。
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -121,7 +121,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## 拖曳區域
 
-### 以 CSS 為基礎的拖曳
+### 以 CSS 實作拖曳
 
 使用`--wails-draggable` CSS 屬性：
 
@@ -139,8 +139,8 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **值：**
 
-- `drag`－區域可拖曳
-- `no-drag`－區域不可拖曳（即使父元素可拖曳）
+- `drag`－此區域可拖曳
+- `no-drag`－此區域不可拖曳（即使父元素可拖曳）
 
 ### 完整標題列範例
 
@@ -208,43 +208,43 @@ document.querySelector('.maximize').addEventListener('click', () => Window.Maxim
 document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
-## Windows 上的原生非用戶區域
+## Windows 上的原生非用戶端區域
 
-Windows 可將自訂標題列的部分區域視為原生非用戶區域。如此一來，您便能使用任意 HTML/CSS 設計繪製標題列及標題按鈕，同時保留 Windows 原生行為：標題區域可拖曳視窗、最大化按鈕可顯示 Windows 11貼齊小幫手／貼齊配置，而最小化、最大化及關閉按鈕則可接收原生命中測試與滑鼠狀態。
+Windows 可將自訂標題列的部分區域視為原生非用戶端區域。如此便能使用任意 HTML/CSS 設計繪製標題列和標題按鈕，同時保留 Windows 原生行為：標題區域可拖曳視窗、最大化按鈕可顯示 Windows 11 Snap Assist／Snap Layouts，而最小化、最大化和關閉按鈕則會採用原生命中測試與滑鼠狀態。
 
-下方影片展示使用 Windows 原生命中測試的自訂 HTML/CSS 標題列，其中包括自訂最大化按鈕上的 Windows 11貼齊小幫手／貼齊配置。
+下方影片顯示使用 Windows 原生命中測試的自訂 HTML/CSS 標題列，其中包括自訂最大化按鈕上的 Windows 11 Snap Assist／Snap Layouts。
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails 支援兩種 Windows 專用機制：
 
-- 透過 WebView2 原生非用戶區域支援的`app-region`
-- 透過 Wails 執行階段追蹤自訂標題按鈕的`--wails-non-client-region`
+- 透過 WebView2 的原生非用戶端區域支援實現`app-region`
+- 透過 Wails 執行階段追蹤自訂標題按鈕來實現`--wails-non-client-region`
 
 ### 選擇模式
 
 @note{type="caution" title="實驗性功能"}
-`WebView2CompositionHosting`會從底層變更視窗託管 WebView2 及與其互動的方式。Wails 不再使用預設由 HWND 託管的 WebView2 控制器，而是改用合成控制器託管並明確轉送輸入。此模式可能存在算繪、輸入、焦點或 WebView2 Runtime 相容性問題。只有在需要自訂標題按鈕的原生行為時才啟用此模式，並在您支援的 Windows 與 WebView2 Runtime 版本上仔細測試應用程式。
+`WebView2CompositionHosting`會在底層變更視窗裝載 WebView2 及與其互動的方式。Wails 不再使用預設由 HWND 裝載的 WebView2 控制器，而是改用組合控制器裝載，並明確轉送輸入。此模式可能會有算繪、輸入、焦點或 WebView2 Runtime 相容性問題。請僅在需要原生自訂標題按鈕行為時啟用，並在應用程式支援的 Windows 和 WebView2 Runtime 版本上仔細測試。
 
 @end
 
-請依您需要的 Windows 功能選擇：
+請依你需要的 Windows 功能選擇：
 
-- 若要透過 WebView2 的`app-region: drag`與`app-region: no-drag`實現簡單的原生應用程式拖曳，請使用`NonClientRegionSupport`。
-- 若希望自訂的最小化、最大化及關閉按鈕能如同 Windows 原生標題按鈕般運作，請使用`WebView2CompositionHosting`。
+- 若只需透過 WebView2 的`app-region: drag`和`app-region: no-drag`實現簡單的原生應用程式拖曳，請使用`NonClientRegionSupport`。
+- 若要讓自訂的最小化、最大化和關閉按鈕具備 Windows 原生標題按鈕的行為，請使用`WebView2CompositionHosting`。
 - 若同一個視窗同時需要 WebView2 原生的`app-region`支援，以及由 Wails 管理的自訂標題按鈕區域，請同時啟用兩者。
 
-`NonClientRegionSupport`是 Wails `--wails-draggable`追蹤機制的輕量原生替代方案。您使用 CSS 標記可拖曳與不可拖曳區域，由 WebView2 判斷哪些像素屬於標題區域，而 Wails 會在執行命中測試時向 WebView2 查詢原生區域。
+`NonClientRegionSupport`是 Wails `--wails-draggable`追蹤機制的輕量原生替代方案。你可以使用 CSS 標記可拖曳和不可拖曳區域，由 WebView2 判定哪些像素屬於標題區域，而 Wails 會在進行命中測試時向 WebView2 查詢原生區域。
 
-目前此模式的完整範圍僅限於此。它不會讓自訂的最小化、最大化或關閉按鈕如同 Windows 原生標題按鈕般運作，也不會為自訂最大化按鈕啟用 Windows 11貼齊小幫手／貼齊配置。若您只需要簡單的原生應用程式拖曳，而不需要`--wails-draggable`的額外機制，請使用此模式。
+目前此模式的完整功能範圍僅止於此。它不會讓自訂的最小化、最大化或關閉按鈕具備 Windows 原生標題按鈕的行為，也不會讓自訂最大化按鈕啟用 Windows 11 Snap Assist／Snap Layouts。若只需簡單的原生應用程式拖曳，而不需要`--wails-draggable`的額外機制，請使用此模式。
 
-`WebView2CompositionHosting`適用於具備原生行為的自訂標題列按鈕。Wails 會追蹤以`--wails-non-client-region`標記的 DOM 矩形區域，將其對應至`HTMINBUTTON`、`HTMAXBUTTON`和`HTCLOSE`等 Windows 命中測試值，再將滑鼠輸入轉送回以合成模式託管的 WebView2 介面。因此，自訂最大化按鈕可以支援 Windows 11的貼齊小幫手／貼齊版面配置，同時保留您選擇的任何視覺設計。
+`WebView2CompositionHosting`適用於具備原生行為的自訂標題按鈕。Wails 會追蹤以`--wails-non-client-region`標記的 DOM 矩形，將其對應至`HTMINBUTTON`、`HTMAXBUTTON`和`HTCLOSE`等 Windows 命中測試值，並將滑鼠輸入轉送回以組合方式裝載的 WebView2 表面。如此便能讓自訂最大化按鈕參與 Windows 11 Snap Assist／Snap Layouts，同時保留你選擇的任何視覺設計。
 
-換句話說：`NonClientRegionSupport`是 WebView2 原生的 CSS 區域支援；`WebView2CompositionHosting`則是由 Wails 負責主機端合成與自訂非工作區命中測試。
+換句話說：`NonClientRegionSupport`是 WebView2 原生的 CSS 區域支援；`WebView2CompositionHosting`則由 Wails 負責主機擁有的組合，以及自訂非用戶端命中測試。
 
 ### WebView2 app-region
 
-為視窗啟用 WebView2 的原生非工作區支援：
+為視窗啟用 WebView2 的原生非用戶端區域支援：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -255,7 +255,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-接著，使用 CSS `app-region`屬性標記可拖曳區域：
+接著使用 CSS `app-region`屬性標記可拖曳區域：
 
 ```css
 .titlebar {
@@ -270,16 +270,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-如果您只需要原生標題列拖曳功能，而標題列控制項以一般前端點擊處理，請使用此模式。
+若你只需要原生標題區域拖曳，且標題列控制項是透過一般前端點擊處理，請使用此模式。
 
-此模式受限於 WebView2 本身的非工作區支援。目前的 WebView2 版本只支援可拖曳和不可拖曳區域，並非用來建模具有不同原生最小化、最大化和關閉角色的完全自訂前端標題列按鈕。
+此模式受限於 WebView2 本身的非用戶端區域支援。目前的 WebView2 版本只支援拖曳與禁止拖曳區域。此模式並非用來建立具有不同原生最小化、最大化和關閉角色的完全自訂前端標題按鈕。
 
-### 具備原生行為的自訂標題列按鈕
+### 具備原生行為的自訂標題按鈕
 
-若要讓自訂的最小化、最大化和關閉按鈕像系統標題列按鈕一樣運作，請啟用合成託管：
+若要讓自訂的最小化、最大化和關閉按鈕具備系統標題按鈕的行為，請啟用組合裝載：
 
 @note{type="caution" title="實驗性功能"}
-`WebView2CompositionHosting`使用搭配 DirectComposition 的 WebView2 合成控制器託管。啟用前，請參閱[選擇模式](#heading-7)。
+`WebView2CompositionHosting`會搭配 DirectComposition，使用 WebView2 組合控制器裝載。啟用前請參閱[選擇模式](#heading-7)。
 
 @end
 
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-接著，以`--wails-non-client-region`標記各個前端區域：
+接著使用`--wails-non-client-region`標記每個前端區域：
 
 ```html
 <div class="titlebar">
@@ -339,16 +339,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 - `caption`－可拖曳的標題列區域
 - `minimize`－原生最小化按鈕的點擊目標
-- `maximize`－原生最大化按鈕的點擊目標，包括 Windows 11貼齊小幫手／貼齊版面配置的暫留行為
+- `maximize`－原生最大化按鈕的點擊目標，包括 Windows 11貼齊小幫手／貼齊配置的懸停行為
 - `close`－原生關閉按鈕的點擊目標
 
-Wails 執行階段會監控 DOM、樣式、大小、捲動和檢視區的變更，再將區域快照傳送至原生視窗。區域幾何資訊以 CSS 像素測量，並轉換為實體像素，以供 Windows 進行命中測試。
+Wails 執行階段會監聽 DOM、樣式、尺寸、捲動及檢視區的變更，然後將區域快照傳送至原生視窗。區域幾何尺寸以 CSS 像素測量，並轉換為實體像素，供 Windows 進行點擊測試。
 
-視覺設計仍完全由您掌控。這些區域只會告知 Windows 各矩形所代表的意義；按鈕形狀、圖示、色彩、間距、暫留樣式和版面配置仍由前端提供。
+視覺設計完全由您決定。這些區域只會告訴 Windows 每個矩形所代表的意義；按鈕形狀、圖示、色彩、間距、懸停樣式及版面配置仍由前端提供。
 
-### 結合兩種模式
+### 結合兩者
 
-若要在同一個視窗中同時使用 WebView2 `app-region`支援和由 Wails 管理的標題列按鈕區域，可以同時啟用這兩個選項：
+如果希望同一個視窗同時支援 WebView2 `app-region`及由 Wails 管理的標題列按鈕區域，可以同時啟用這兩個選項：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -436,9 +436,9 @@ async function updateMaximiseButton() {
 
 ## 調整大小控點
 
-### 使用 CSS 調整大小
+### 以 CSS 調整大小
 
-Wails 為無框線視窗提供自動調整大小控點：
+Wails 為無框視窗提供自動調整大小控點：
 
 ```css
 /* Enable resize on all edges */
@@ -481,7 +481,7 @@ body {
 }
 ```
 
-**值：**
+**可用值：**
 
 - `all`－從所有邊緣調整大小
 - `top`、`bottom`、`left`、`right`－指定邊緣
@@ -513,11 +513,11 @@ body {
 }
 ```
 
-## 平台特定行為
+## 各平台特有的行為
 
 @tabs{sync-key="platform"}
 [Windows]
-**Windows 無框線視窗：**
+**Windows 無框視窗：**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -531,7 +531,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **功能：**
 
 - 自動陰影
-- 支援貼齊版面配置（Windows 11）
+- 支援貼齊配置（Windows 11）
 - 支援 Aero Snap
 - DPI 縮放
 
@@ -550,12 +550,12 @@ Windows: application.WindowsWindow{
 window.SnapAssist()
 ```
 
-這會透過 Windows 快速鍵路徑觸發貼齊版面配置。若自訂 HTML 最大化按鈕需要具備原生暫留貼齊版面配置，請改用[Windows 上的原生非工作區](#windows-)。
+這會透過 Windows 快速鍵路徑觸發貼齊配置。若要讓自訂 HTML 最大化按鈕支援原生的懸停貼齊配置，請改用[Windows 上的原生非用戶區區域](#windows-)。
 
-**自訂標題列高度：** Windows 會自動從 CSS 偵測拖曳區域。
+<strong>自訂標題列高度：</strong>Windows 會自動從 CSS 偵測拖曳區域。
 
 [macOS]
-**macOS 無框線視窗：**
+**macOS 無框視窗：**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -571,12 +571,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **功能：**
 
-- 原生全螢幕支援
+- 支援原生全螢幕
 - 紅綠燈按鈕（選用）
 - 毛玻璃效果
 - 透明標題列
 
-**完全隱藏標題列**（請使用`application`套件匯出的預設變體——不存在`TitleBarStyle`欄位或`MacTitleBarStyleHidden`常數）：
+**完全隱藏標題列**（請使用`application`套件匯出的預設變體，不存在`TitleBarStyle`欄位或`MacTitleBarStyleHidden`常數）：
 
 ```go
 Mac: application.MacWindow{
@@ -584,9 +584,9 @@ Mac: application.MacWindow{
 },
 ```
 
-其他預設包括`MacTitleBarDefault`、`MacTitleBarHiddenInset`和`MacTitleBarHiddenInsetUnified`。
+其他預設選項包括`MacTitleBarDefault`、`MacTitleBarHiddenInset`及`MacTitleBarHiddenInsetUnified`。
 
-**不可見的標題列：** 隱藏標題列的同時仍可拖曳視窗。這僅在視窗為無框線或使用`AppearsTransparent`時生效：
+<strong>不可見標題列：</strong>隱藏標題列的同時仍允許拖曳。只有在視窗為無框視窗或使用`AppearsTransparent`時才會生效：
 
 ```go
 Mac: application.MacWindow{
@@ -595,7 +595,7 @@ Mac: application.MacWindow{
 ```
 
 [Linux]
-**Linux 無框線視窗：**
+**Linux 無框視窗：**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -605,9 +605,9 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **功能：**
 
-- 基本無框線支援
+- 基本無框支援
 - CSS 拖曳區域
-- 依桌面環境而異
+- 行為因桌面環境而異
 
 **桌面環境注意事項：**
 
@@ -616,7 +616,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - <strong>XFCE：</strong>基本支援
 - <strong>平鋪式視窗管理員：</strong>支援有限
 
-**需要合成器：** 透明效果需要合成器（大多數現代桌面環境均有提供）。
+<strong>需要合成器：</strong>透明效果需要合成器（大多數現代桌面環境皆有）。
 
 @end
 
@@ -756,7 +756,7 @@ body {
 }
 ```
 
-### 模式4：浮層視窗
+### 模式4：覆疊視窗
 
 ```go
 overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -784,7 +784,7 @@ body {
 
 ## 完整範例
 
-以下是可用於正式環境的無框線視窗：
+以下是一個可供正式環境使用的無框視窗：
 
 **Go：**
 
@@ -981,24 +981,24 @@ updateMaximiseButton()
 
 ### ✅ 建議做法
 
-- **提供可拖曳區域**——使用者需要移動視窗
-- **實作系統按鈕**——關閉、最小化和最大化
-- **設定最小尺寸**——避免版面無法使用
-- **在所有平台上測試**——行為因平台而異
-- **使用 CSS 定義拖曳區域**——靈活且易於維護
-- **提供視覺回饋**——為按鈕設定游標懸停狀態
+- **提供可拖曳區域**－使用者需要移動視窗
+- **實作系統按鈕**－關閉、最小化及最大化
+- **設定最小尺寸**－避免版面配置變得無法使用
+- **在所有平台上測試**－行為因平台而異
+- **使用 CSS 定義拖曳區域**－靈活且易於維護
+- **提供視覺回饋**－為按鈕加入懸停狀態
 
-### ❌ 請勿
+### ❌ 請勿這樣做
 
-- **若視窗可調整大小，請勿忘記加入調整大小控點**
-- **請勿讓整個視窗都可拖曳**——這會妨礙互動
-- **請勿忘記將按鈕設為不可拖曳**——否則按鈕將無法運作
-- **請勿使用過小的拖曳區域**——難以拖曳
-- **請勿忽略平台差異**——請徹底測試
+- **不要忘記調整大小控點**－如果視窗可調整大小
+- **不要讓整個視窗都可拖曳**－這會妨礙互動
+- **不要忘記將按鈕設為不可拖曳**－否則按鈕將無法運作
+- **不要使用太小的拖曳區域**－難以點選拖曳
+- **不要忽略平台差異**－請充分測試
 
 ## 疑難排解
 
-### 無法拖曳視窗
+### 視窗無法拖曳
 
 <strong>原因：</strong>缺少`--wails-draggable: drag`
 
@@ -1038,13 +1038,13 @@ body {
 
 @cards{cols="2"}
 ▣ 視窗基礎
-瞭解視窗管理的基礎知識。
+瞭解視窗管理的基本概念。
 
 [深入瞭解 →](/features/windows/basics/)
 
 ---
 ⚙ 視窗選項
-視窗選項的完整參考資料。
+完整的視窗選項參考資料。
 
 [深入瞭解 →](/features/windows/options/)
 
@@ -1056,7 +1056,7 @@ body {
 
 ---
 ◆ 多視窗
-多視窗應用程式的模式。
+多視窗應用程式的設計模式。
 
 [深入瞭解 →](/features/windows/multiple/)
 
@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[無框線範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)。
+<strong>有疑問嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[無邊框範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)。

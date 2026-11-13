@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-標籤會以`EXTRA_TAGS`形式轉送至底層 Taskfile。
+標籤會以`EXTRA_TAGS`轉送至底層的 Taskfile。設定`WAILS_PUREGO=1`後，無須使用旗標即可將`purego`標籤新增至`build`、`package`和`dev`；請參閱[不使用 CGO 的建置](/experimental/#cgo-free-builds-purego)。
 
 @note{type="info"}
 這相當於執行`wails3 task build`，而該命令會執行專案主要 Taskfile 中的`build`工作。傳給`build`的任何 CLI 變數都會轉送至底層工作。您可以編輯`Taskfile.yml`檔案來自訂建置流程。
@@ -132,6 +135,14 @@ wails3 package [CLI variables...]
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| 旗標 | 說明 | 預設值 |
+|------|-------------|---------|
+| `-tags` | 其他 Go 建置標籤（以逗號分隔），以`EXTRA_TAGS`轉送 |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION`和`OUTPUT`只會影響明確讀取這些變數的自訂 Taskfile；它們不會覆寫內建封裝的版本或檔案名稱。
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | 輸入 PNG 檔案 | 必填 |
 | `-windowsfilename` | Windows 輸出檔案名稱 |  |
 | `-macfilename` | macOS 輸出檔案名稱 |  |
-| `-sizes` | 圖示尺寸（以逗號分隔） | `256,128,64,48,32,16` |
+| `-sizes` | 圖示大小，從1到256像素（以逗號分隔；忽略零值） | `256,128,64,48,32,16` |
 | `-example` | 產生範例圖示 | `false` |
 | `-iconcomposerinput` | 輸入 Icon Composer 檔案（`.icon`） |  |
 | `-macassetdir` | Mac 資產的輸出目錄（Assets.car + icns） |  |
+
+至少需要一個非零的大小。
 
 #### Icon Composer（macOS）
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-產生預先建置的執行階段版本。
+將內嵌於 CLI 的預先建置執行階段匯出為`runtime.js`（正式版）和`runtime-debug.js`（偵錯版）。即使無法存取 Wails 原始碼樹，也能從已安裝的 CLI 使用此功能，包括以`-trimpath`建立的建置。
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-複製檔案。
+將一個來源檔案複製到一個目的檔案。現有檔案會被覆寫，並保留其目前的權限。新檔案會使用來源檔案的權限，但在 Unix 上會受系統 umask 限制。上層目錄必須已存在。
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`

@@ -705,4 +705,4 @@ Le pont est sécurisé par défaut :
 
 ---
 
-**Des questions sur le pont ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).
+**Vous avez des questions sur le pont ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de bindings](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).

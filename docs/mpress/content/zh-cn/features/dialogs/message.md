@@ -7,7 +7,7 @@ sourcePath: "features/dialogs/message.md"
 
 ## 消息对话框
 
-Wails 提供具有平台原生外观的<strong>原生消息对话框</strong>：包括信息、警告、错误和问题对话框，并可自定义标题、消息和按钮。API 简洁、行为原生，并且默认支持无障碍访问。
+Wails 提供具有平台原生外观的**原生消息对话框**：包括信息、警告、错误和问题对话框，并可自定义标题、消息和按钮。API 简单、行为原生，且默认支持无障碍功能。
 
 ## 创建对话框
 
@@ -20,7 +20,7 @@ app.Dialog.Warning()
 app.Dialog.Error()
 ```
 
-所有方法都会返回一个`*MessageDialog`，可通过方法链进行配置。
+所有方法都会返回`*MessageDialog`，可使用方法链对其进行配置。
 
 ## 信息对话框
 
@@ -72,7 +72,7 @@ app.Dialog.Warning().
 
 - 非严重警告
 - 弃用通知
-- 注意消息
+- 注意事项
 - 潜在问题
 
 **示例——磁盘空间警告：**
@@ -208,9 +208,9 @@ dialog := app.Dialog.Info().
 
 **最佳实践：**
 
-- <strong>标题：</strong>简短且含义明确（2-5个词）
-- <strong>消息：</strong>清晰、具体且可据此采取行动
-- <strong>避免使用行话：</strong>使用浅显易懂的语言
+- <strong>标题：</strong>简短且具有描述性（2-5个词）
+- <strong>消息：</strong>清晰、具体且可执行
+- <strong>避免使用术语：</strong>使用通俗易懂的语言
 
 ### 按钮
 
@@ -236,7 +236,7 @@ dialog.Show()
 
 **多个按钮（问题）：**
 
-使用`AddButton()`添加按钮；该方法会返回一个可供配置的`*Button`：
+使用`AddButton()`添加按钮。该方法会返回可供配置的`*Button`：
 
 ```go
 dialog := app.Dialog.Question().
@@ -262,7 +262,7 @@ dialog.Show()
 
 **默认按钮和取消按钮：**
 
-使用`SetDefaultButton()`指定要突出显示且按 Enter 键时触发的按钮。 使用`SetCancelButton()`指定按 Escape 键时触发的按钮。
+使用`SetDefaultButton()`指定突出显示并在按下 Enter 时触发的按钮。使用`SetCancelButton()`指定在按下 Escape 时触发的按钮。
 
 ```go
 dialog := app.Dialog.Question().
@@ -281,7 +281,7 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-也可以对按钮使用流式`SetAsDefault()`和`SetAsCancel()`方法：
+也可以在按钮上使用流式`SetAsDefault()`和`SetAsCancel()`方法：
 
 ```go
 dialog := app.Dialog.Question().
@@ -298,10 +298,10 @@ dialog.Show()
 
 **最佳实践：**
 
-- <strong>1-3个按钮：</strong>不要让过多选项困扰用户
-- <strong>明确的标签：</strong>使用“保存”，而不是“确定”
+- <strong>1-3个按钮：</strong>不要让用户无所适从
+- <strong>清晰的标签：</strong>使用“保存”，不要使用“确定”
 - <strong>安全的默认选项：</strong>非破坏性操作
-- <strong>顺序很重要：</strong>最可能执行的操作放在最前面（“取消”除外）
+- <strong>顺序很重要：</strong>将最可能使用的操作放在最前面（“取消”除外）
 
 ### 自定义图标
 
@@ -315,9 +315,9 @@ app.Dialog.Info().
     Show()
 ```
 
-### 关联窗口
+### 附加到窗口
 
-关联到特定窗口：
+附加到指定窗口：
 
 ```go
 dialog := app.Dialog.Question().
@@ -331,7 +331,7 @@ dialog.Show()
 **优点：**
 
 - 对话框显示在正确的窗口上
-- 对话框显示期间禁用父窗口
+- 显示对话框期间禁用父窗口
 - 改善多窗口用户体验
 
 ## 完整示例
@@ -421,7 +421,7 @@ func showUpdateDialog(app *application.App) {
 }
 ```
 
-### 带自定义图标的问题对话框
+### 使用自定义图标的问题对话框
 
 ```go
 func showCustomIconQuestion(app *application.App, iconBytes []byte) {
@@ -447,30 +447,30 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ## 最佳实践
 
-### ✅ 推荐做法
+### ✅ 应该做
 
-- **具体明确** — 使用“文件已保存到文档文件夹”，而不是“成功”
-- **使用适当的类型** — 错误使用 Error，警告使用 Warning
-- **提供上下文** — 包含相关详细信息
-- **使用明确的按钮标签** — 使用“删除”，而不是“确定”
-- **设置安全的默认操作** — 使用非破坏性操作
-- **处理取消操作** — 用户可能会关闭对话框
+- **明确具体**——使用“文件已保存到‘文档’文件夹”，不要只说“成功”
+- **使用适当的类型**——错误使用 Error，警告使用 Warning
+- **提供上下文**——包含相关详细信息
+- **使用清晰的按钮标签**——使用“删除”，不要使用“确定”
+- **设置安全的默认选项**——使用非破坏性操作
+- **处理取消操作**——用户可能会关闭对话框
 
-### ❌ 不要这样做
+### ❌ 不应该做
 
-- **不要过度使用** — 这会打断工作流程
-- **不要用于频繁更新** — 应改用通知
-- **不要使用笼统的消息** — “错误”无法提供任何有用信息
-- **不要忽略错误** — 处理 dialog.Show() 返回的错误
-- **不要进行不必要的阻塞** — 考虑异步替代方案
-- **不要使用技术术语** — 使用通俗易懂的语言
+- **不要过度使用**——这会打断工作流程
+- **不要用于频繁更新**——改用通知
+- **不要使用笼统的消息**——“错误”无法提供任何信息
+- **不要忽略错误**——处理 dialog.Show() 错误
+- **不要进行不必要的阻塞**——考虑异步替代方案
+- **不要使用技术术语**——使用通俗易懂的语言
 
 ## 平台差异
 
 ### macOS
 
-- 附加到窗口时采用表单式对话框
-- 标准键盘快捷键（按 ⌘. 取消）
+- 附加到窗口时采用表单式样式
+- 支持标准键盘快捷键（按 ⌘. 取消）
 - 自动跟随系统主题
 - 内置无障碍功能
 

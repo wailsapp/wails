@@ -7,9 +7,9 @@ sourcePath: "features/windows/frameless.md"
 
 ## フレームレスウィンドウ
 
-Wails は、CSS ベースのドラッグ領域と各プラットフォームにネイティブな動作を備えた<strong>フレームレスウィンドウのサポート</strong>を提供します。プラットフォーム標準のタイトルバーを取り除くことで、ドラッグ、サイズ変更、システムコントロールなどの必須機能を維持しながら、ウィンドウクローム、独自デザイン、固有のユーザー体験を完全に制御できます。
+Wails は、CSS ベースのドラッグ領域とプラットフォームネイティブの動作を備えた**フレームレスウィンドウのサポート**を提供します。プラットフォームネイティブのタイトルバーを取り除くことで、ドラッグ、サイズ変更、システムコントロールなどの基本機能を維持しながら、ウィンドウクローム、カスタムデザイン、独自のユーザー体験を完全に制御できます。
 
-![macOS ネイティブの角丸を使用したフレームレスウィンドウとして動作する、デフォルトの Wails v3 TypeScript スターターアプリ](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![ネイティブの macOS コーナーを備えたフレームレスウィンドウとして動作する、デフォルトの Wails v3 TypeScript スターターアプリ](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
 上の例は、`Frameless: true`を有効にしたデフォルトの Wails v3 TypeScript スターターアプリです。
 
@@ -47,13 +47,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-**これだけです！** カスタムタイトルバーが完成しました。
+<strong>これだけです。</strong>カスタムタイトルバーが完成しました。
 
 ## フレームレスウィンドウの作成
 
-### 角の半径（macOS）
+### コーナー半径（macOS）
 
-フレームレスウィンドウでは、デフォルトで AppKit 標準の macOS の角丸が維持されます。独自の半径（ポイント単位）を使用するには、`Mac.CornerRadius`を設定します：
+フレームレスウィンドウでは、AppKit の標準的な丸みのある macOS コーナーがデフォルトで維持されます。カスタム半径（ポイント単位）を使用するには、`Mac.CornerRadius`を設定します：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -64,7 +64,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-角を直角にするには、`Mac.CornerType`を`MacWindowCornerTypeSquare`に設定します。この場合、`CornerRadius`は無視されます：
+直角のコーナーにするには、`Mac.CornerType`を`MacWindowCornerTypeSquare`に設定します。この場合、`CornerRadius`は無視されます：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -98,7 +98,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - 閉じる／最小化／最大化ボタン
 - サイズ変更ハンドル（サイズ変更可能な場合）
 
-### 透明な背景を使用する
+### 透明な背景を使用する場合
 
 <strong>macOS のプライベート API：</strong>WebView を透明にするには、`Mac.Backdrop: application.MacBackdropTransparent`を設定し、`-tags private_mac_apis`を指定してビルドします。このタグがない場合、HTML/CSS の背景が透明でも、ネイティブ WebView は不透明なままです。`Frameless`と`TitleBar.AppearsTransparent`自体はパブリック API を使用します。[macOS のプライベート API](/guides/build/private-macos-apis/#webview-transparency-and-background)を参照してください。
 
@@ -117,7 +117,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - 角丸
 - カスタム形状
 - オーバーレイウィンドウ
-- スプラッシュスクリーン
+- スプラッシュ画面
 
 ## ドラッグ領域
 
@@ -139,10 +139,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **値：**
 
-- `drag` - ドラッグ可能な領域
-- `no-drag` - ドラッグできない領域（親要素がドラッグ可能な場合も含む）
+- `drag` - 領域をドラッグ可能にする
+- `no-drag` - 領域をドラッグ不可にする（親がドラッグ可能な場合も含む）
 
-### タイトルバーの完全な例
+### 完全なタイトルバーの例
 
 ```html
 <div class="titlebar">
@@ -210,41 +210,41 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ## Windows のネイティブ非クライアント領域
 
-Windows では、カスタムタイトルバーの一部をネイティブの非クライアント領域として扱えます。これにより、任意の HTML/CSS デザインでタイトルバーとキャプションボタンを描画しながら、Windows ネイティブの動作を維持できます。キャプション領域ではウィンドウをドラッグでき、最大化ボタンでは Windows 11 の Snap Assist / Snap Layouts を表示でき、最小化、最大化、閉じるボタンではネイティブのヒットテストとマウス状態を利用できます。
+Windows では、カスタムタイトルバーの一部をネイティブの非クライアント領域として扱えます。これにより、任意の HTML/CSS デザインでタイトルバーとキャプションボタンを描画しながら、Windows ネイティブの動作を維持できます。キャプション領域でウィンドウをドラッグでき、最大化ボタンで Windows 11 Snap Assist / Snap Layouts を表示できるほか、最小化、最大化、閉じるボタンにネイティブのヒットテストとマウス状態が適用されます。
 
-以下の動画では、Windows ネイティブのヒットテストを使用するカスタム HTML/CSS タイトルバーを紹介しています。カスタム最大化ボタンでの Windows 11 の Snap Assist / Snap Layouts も含まれます。
+次の動画では、Windows ネイティブのヒットテストを使用するカスタム HTML/CSS タイトルバーを示します。カスタム最大化ボタンでの Windows 11 Snap Assist / Snap Layouts も含まれます。
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails は、Windows 固有の仕組みを 2 つサポートしています：
 
-- `app-region`：WebView2 のネイティブ非クライアント領域サポートを使用
-- `--wails-non-client-region`：カスタムキャプションボタン用の Wails ランタイムによる追跡を使用
+- WebView2 のネイティブ非クライアント領域サポートを介した`app-region`
+- カスタムキャプションボタン向けの Wails ランタイム追跡を介した`--wails-non-client-region`
 
 ### モードの選択
 
-@note{type="caution" title="試験的機能"}
-`WebView2CompositionHosting`は、内部でのウィンドウによる WebView2 のホスト方法と操作方法を変更します。Wails は、デフォルトの HWND ホスト型 WebView2 コントローラーの代わりにコンポジションコントローラーによるホストを使用し、入力を明示的に転送します。このモードでは、レンダリング、入力、フォーカス、または WebView2 Runtime の互換性に問題が生じる可能性があります。ネイティブ動作をするカスタムキャプションボタンが必要な場合にのみ有効にし、サポート対象の Windows および WebView2 Runtime の各バージョンでアプリを十分にテストしてください。
+@note{type="caution" title="実験的機能"}
+`WebView2CompositionHosting`は、内部でウィンドウが WebView2 をホストし、操作する方法を変更します。Wails は、デフォルトの HWND ホスト型 WebView2 コントローラーの代わりに、コンポジションコントローラーによるホスティングを使用し、入力を明示的に転送します。このモードでは、レンダリング、入力、フォーカス、または WebView2 Runtime の互換性に問題が生じる可能性があります。ネイティブ動作のカスタムキャプションボタンが必要な場合にのみ有効にし、サポート対象の Windows および WebView2 Runtime の各バージョンでアプリを十分にテストしてください。
 
 @end
 
-Windows で必要な機能に応じて選択してください：
+Windows に求める機能に応じて選択してください：
 
-- WebView2 の`app-region: drag`と`app-region: no-drag`を使用して、アプリをシンプルにネイティブドラッグするには、`NonClientRegionSupport`を使用します。
+- WebView2 の`app-region: drag`と`app-region: no-drag`を使用して、シンプルなネイティブのアプリドラッグを実現するには、`NonClientRegionSupport`を使用します。
 - カスタムの最小化、最大化、閉じるボタンを Windows ネイティブのキャプションボタンと同様に動作させるには、`WebView2CompositionHosting`を使用します。
-- 同じウィンドウで WebView2 ネイティブの`app-region`サポートと、Wails が管理するカスタムキャプションボタン領域の両方が必要な場合は、両方を有効にします。
+- 同じウィンドウで、WebView2 ネイティブの`app-region`サポートと、Wails が管理するカスタムキャプションボタン領域の両方が必要な場合は、両方を有効にします。
 
-`NonClientRegionSupport`は、Wails の`--wails-draggable`による追跡に代わる軽量なネイティブ方式です。ドラッグ可能な領域とドラッグできない領域を CSS で指定すると、WebView2 がキャプションに属するピクセルを判定し、Wails はヒットテスト時に WebView2 へネイティブ領域を問い合わせます。
+`NonClientRegionSupport`は、Wails の`--wails-draggable`追跡に代わる軽量なネイティブ方式です。CSS でドラッグ可能領域とドラッグ不可領域を指定すると、WebView2 がキャプションに属するピクセルを判定し、Wails がヒットテスト時に WebView2 へネイティブ領域を問い合わせます。
 
-現時点で、このモードが提供する機能は以上です。カスタムの最小化、最大化、閉じるボタンを Windows ネイティブのキャプションボタンと同様に動作させるものではなく、カスタム最大化ボタンで Windows 11 の Snap Assist / Snap Layouts を有効にするものでもありません。`--wails-draggable`の追加機構を使わず、アプリをシンプルにネイティブドラッグする必要がある場合に使用してください。
+現時点でのこのモードの範囲はこれだけです。カスタムの最小化、最大化、閉じるボタンを Windows ネイティブのキャプションボタンのように動作させるものではなく、カスタム最大化ボタンで Windows 11 Snap Assist / Snap Layouts を有効にするものでもありません。`--wails-draggable`の追加機構を使わず、シンプルなネイティブのアプリドラッグだけが必要な場合に使用してください。
 
-`WebView2CompositionHosting` は、ネイティブに動作するカスタムキャプションボタン用です。Wails は、`--wails-non-client-region` でマークされた DOM の矩形領域を追跡し、それらを `HTMINBUTTON`、`HTMAXBUTTON`、`HTCLOSE` などの Windows ヒットテスト値に対応付け、マウス入力をコンポジションホスト型の WebView2 サーフェスへ転送します。これにより、任意のビジュアルデザインを維持しながら、カスタム最大化ボタンを Windows 11 の Snap Assist / Snap Layouts に対応させることができます。
+`WebView2CompositionHosting`は、ネイティブ動作のカスタムキャプションボタン向けです。Wails は、`--wails-non-client-region`でマークされた DOM 矩形を追跡し、それらを`HTMINBUTTON`、`HTMAXBUTTON`、`HTCLOSE`などの Windows ヒットテスト値に対応付け、マウス入力をコンポジションホスト型の WebView2 サーフェスへ転送します。これにより、任意の外観デザインを維持しながら、カスタム最大化ボタンを Windows 11 Snap Assist / Snap Layouts に対応させられます。
 
-言い換えると、`NonClientRegionSupport` は WebView2 ネイティブの CSS リージョンサポートです。`WebView2CompositionHosting` では、ホスト側が所有するコンポジションとカスタムの非クライアント領域ヒットテストを Wails が担います。
+言い換えると、`NonClientRegionSupport`は WebView2 ネイティブの CSS 領域サポートです。`WebView2CompositionHosting`では、ホスト所有のコンポジションとカスタム非クライアントヒットテストを Wails が担います。
 
 ### WebView2 app-region
 
-ウィンドウで WebView2 ネイティブの非クライアント領域サポートを有効にします。
+ウィンドウで WebView2 のネイティブ非クライアント領域サポートを有効にします：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -255,7 +255,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-次に、ドラッグ可能な領域を CSS の `app-region` プロパティでマークします。
+次に、CSS の`app-region`プロパティでドラッグ可能な領域を指定します：
 
 ```css
 .titlebar {
@@ -270,16 +270,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-ネイティブのキャプションドラッグだけが必要で、タイトルバーのコントロールを通常のフロントエンドクリックで処理する場合に使用します。
+ネイティブのキャプションドラッグだけが必要で、タイトルバーのコントロールを通常のフロントエンドクリックで処理する場合に使用してください。
 
-このモードは、WebView2 自体の非クライアント領域サポートに制約されます。現在の WebView2 リリースでは、ドラッグ領域と非ドラッグ領域のみを使用できます。ネイティブの最小化、最大化、閉じるという個別の役割を持つ、完全にカスタム化されたフロントエンドのキャプションボタンを表現するためのものではありません。
+このモードの制約は、WebView2 自体の非クライアント領域サポートに限定されることです。現在の WebView2 リリースでは、ドラッグ領域とドラッグ不可領域のみを意味します。ネイティブの最小化、最大化、閉じるという個別の役割を持つ、完全にカスタムなフロントエンドのキャプションボタンをモデル化することは意図されていません。
 
-### ネイティブに動作するカスタムキャプションボタン
+### ネイティブ動作のカスタムキャプションボタン
 
-システムのキャプションボタンと同様に動作させるカスタムの最小化、最大化、閉じるボタンでは、コンポジションホスティングを有効にします。
+システムのキャプションボタンと同様に動作するカスタムの最小化、最大化、閉じるボタンを使用するには、コンポジションホスティングを有効にします：
 
-@note{type="caution" title="試験的機能"}
-`WebView2CompositionHosting` は、DirectComposition を使用した WebView2 コンポジションコントローラーのホスティングを使用します。有効にする前に、[モードの選択](#heading-7)を参照してください。
+@note{type="caution" title="実験的機能"}
+`WebView2CompositionHosting`は、DirectComposition を使用した WebView2 コンポジションコントローラーのホスティングを利用します。有効にする前に、[モードの選択](#heading-7)を参照してください。
 
 @end
 
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-次に、フロントエンドの各領域を `--wails-non-client-region` でマークします。
+次に、各フロントエンド領域を`--wails-non-client-region`でマークします：
 
 ```html
 <div class="titlebar">
@@ -335,16 +335,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-サポートされる `--wails-non-client-region` の値：
+サポートされる`--wails-non-client-region`の値：
 
 - `caption` - ドラッグ可能なキャプション領域
-- `minimize` - ネイティブ最小化ボタンのヒットターゲット
-- `maximize` - Windows 11 の Snap Assist / Snap Layouts のホバー動作を含む、ネイティブ最大化ボタンのヒットターゲット
+- `minimize` - ネイティブの最小化ボタンのヒットターゲット
+- `maximize` - Windows 11 のスナップアシスト／スナップレイアウトのホバー動作を含む、ネイティブの最大化ボタンのヒットターゲット
 - `close` - ネイティブの閉じるボタンのヒットターゲット
 
-Wails ランタイムは DOM、スタイル、サイズ、スクロール、ビューポートの変更を監視し、領域のスナップショットをネイティブウィンドウへ送信します。領域のジオメトリは CSS ピクセル単位で測定され、Windows のヒットテスト用に物理ピクセルへ変換されます。
+Wails ランタイムは DOM、スタイル、サイズ、スクロール、ビューポートの変更を監視し、領域のスナップショットをネイティブウィンドウに送信します。領域のジオメトリは CSS ピクセル単位で測定され、Windows のヒットテスト用に物理ピクセルへ変換されます。
 
-ビジュアルデザインはすべて自由に決められます。領域は、各矩形が何を意味するかを Windows に伝えるだけです。ボタンの形状、アイコン、色、間隔、ホバースタイル、レイアウトは、引き続きフロントエンドで定義します。
+ビジュアルデザインはすべて自由に決められます。領域は各矩形の意味を Windows に伝えるだけです。ボタンの形状、アイコン、色、間隔、ホバースタイル、レイアウトは、引き続きフロントエンド側で指定します。
 
 ### 両方の組み合わせ
 
@@ -398,7 +398,7 @@ document.querySelector('.maximize').addEventListener('click', Maximise)
 document.querySelector('.close').addEventListener('click', Close)
 ```
 
-**または、ランタイムメソッドを使用します：**
+**または、ランタイムメソッドを使用します。**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -485,8 +485,8 @@ body {
 
 - `all` - すべての辺からリサイズ
 - `top`、`bottom`、`left`、`right` - 特定の辺
-- `top-left`、`top-right`、`bottom-left`、`bottom-right` - 四隅
-- `none` - リサイズなし
+- `top-left`、`top-right`、`bottom-left`、`bottom-right` - コーナー
+- `none` - リサイズ不可
 
 ### リサイズハンドルの例
 
@@ -531,7 +531,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **機能：**
 
 - 自動ドロップシャドウ
-- Snap Layouts のサポート（Windows 11）
+- スナップレイアウトのサポート（Windows 11）
 - Aero Snap のサポート
 - DPI スケーリング
 
@@ -543,16 +543,16 @@ Windows: application.WindowsWindow{
 },
 ```
 
-**Snap Assist：**
+**スナップアシスト：**
 
 ```go
 // Trigger Windows 11 Snap Assist
 window.SnapAssist()
 ```
 
-これは、Windows のホットキー経由で Snap Layouts を起動します。ホバー時にネイティブの Snap Layouts を表示するカスタム HTML 最大化ボタンには、代わりに[Windows のネイティブ非クライアント領域](#windows-)を使用してください。
+これにより、Windows のホットキー経由でスナップレイアウトが起動します。ネイティブのホバースナップレイアウトに対応したカスタム HTML 最大化ボタンを使用する場合は、代わりに [Windows のネイティブ非クライアント領域](#windows-)を使用してください。
 
-**カスタムタイトルバーの高さ：** Windows は CSS からドラッグ領域を自動的に検出します。
+**カスタムタイトルバーの高さ：** Windows は CSS からドラッグ領域を自動検出します。
 
 [macOS]
 **macOS のフレームレスウィンドウ：**
@@ -571,12 +571,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **機能：**
 
-- ネイティブフルスクリーンのサポート
+- ネイティブのフルスクリーンサポート
 - 信号機ボタン（オプション）
-- すりガラス効果
+- バイブランシー効果
 - 透明なタイトルバー
 
-**タイトルバーを完全に非表示にする**（`application` パッケージからエクスポートされているプリセットバリアントを使用してください。`TitleBarStyle` フィールドや `MacTitleBarStyleHidden` 定数はありません）:
+**タイトルバーを完全に非表示にする**（`application` パッケージからエクスポートされたプリセットバリアントを使用してください。`TitleBarStyle` フィールドや `MacTitleBarStyleHidden` 定数はありません）：
 
 ```go
 Mac: application.MacWindow{
@@ -586,7 +586,7 @@ Mac: application.MacWindow{
 
 その他のプリセットには、`MacTitleBarDefault`、`MacTitleBarHiddenInset`、`MacTitleBarHiddenInsetUnified` があります。
 
-**非表示のタイトルバー:** タイトルバーを非表示にしたままドラッグできます。これは、ウィンドウがフレームレスであるか、`AppearsTransparent` を使用している場合にのみ有効です:
+**非表示のタイトルバー：** タイトルバーを非表示にしたままドラッグできるようにします。これは、ウィンドウがフレームレスであるか、`AppearsTransparent` を使用している場合にのみ有効です。
 
 ```go
 Mac: application.MacWindow{
@@ -595,7 +595,7 @@ Mac: application.MacWindow{
 ```
 
 [Linux]
-**Linux のフレームレスウィンドウ:**
+**Linux のフレームレスウィンドウ：**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -603,26 +603,26 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**機能:**
+**機能：**
 
 - 基本的なフレームレス対応
 - CSS ドラッグ領域
 - デスクトップ環境によって異なる
 
-**デスクトップ環境に関する注意事項:**
+**デスクトップ環境に関する注意事項：**
 
-- **GNOME:** 良好な対応
-- **KDE Plasma:** 良好な対応
-- **XFCE:** 基本的な対応
-- **タイル型ウィンドウマネージャー:** 限定的な対応
+- **GNOME：** 良好なサポート
+- **KDE Plasma：** 良好なサポート
+- **XFCE：** 基本的なサポート
+- **タイル型 WM：** 限定的なサポート
 
-**コンポジターが必要:** 透過にはコンポジターが必要です（最新のデスクトップ環境のほとんどには備わっています）。
+**コンポジターが必要：** 透過にはコンポジターが必要です（最新の DE のほとんどには搭載されています）。
 
 @end
 
 ## 一般的なパターン
 
-### パターン 1: モダンなタイトルバー
+### パターン 1：モダンなタイトルバー
 
 ```html
 <div class="modern-titlebar">
@@ -690,7 +690,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-### パターン 2: スプラッシュスクリーン
+### パターン 2：スプラッシュ画面
 
 ```go
 splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -723,7 +723,7 @@ body {
 }
 ```
 
-### パターン 3: 角丸ウィンドウ
+### パターン 3：角丸ウィンドウ
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -756,7 +756,7 @@ body {
 }
 ```
 
-### パターン 4: オーバーレイウィンドウ
+### パターン 4：オーバーレイウィンドウ
 
 ```go
 overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -784,9 +784,9 @@ body {
 
 ## 完全な例
 
-以下は、本番環境で使用できるフレームレスウィンドウです:
+以下は、本番環境で使用できるフレームレスウィンドウです。
 
-**Go:**
+**Go：**
 
 ```go
 package main
@@ -834,7 +834,7 @@ func main() {
 }
 ```
 
-**HTML:**
+**HTML：**
 
 ```html
 <!DOCTYPE html>
@@ -861,7 +861,7 @@ func main() {
 </html>
 ```
 
-**CSS:**
+**CSS：**
 
 ```css
 * {
@@ -937,7 +937,7 @@ body {
 }
 ```
 
-**JavaScript:**
+**JavaScript：**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -983,16 +983,16 @@ updateMaximiseButton()
 
 - **ドラッグ可能な領域を用意する** - ユーザーがウィンドウを移動するために必要です
 - **システムボタンを実装する** - 閉じる、最小化、最大化
-- **最小サイズを設定する** - 使用できないレイアウトになることを防ぎます
-- **すべてのプラットフォームでテストする** - 動作が異なります
+- **最小サイズを設定する** - 使用不能なレイアウトを防ぎます
+- **すべてのプラットフォームでテストする** - 動作はプラットフォームによって異なります
 - **ドラッグ領域には CSS を使用する** - 柔軟で保守しやすくなります
 - **視覚的なフィードバックを提供する** - ボタンにホバー状態を設けます
 
-### ❌ 禁止事項
+### ❌ 非推奨事項
 
-- **サイズ変更ハンドルを忘れない** - ウィンドウのサイズを変更可能にする場合は必要です
+- **リサイズハンドルを忘れない** - ウィンドウをリサイズ可能にする場合は必要です
 - **ウィンドウ全体をドラッグ可能にしない** - 操作できなくなります
-- **ボタンをドラッグ対象外にすることを忘れない** - 忘れるとボタンが機能しません
+- **ボタンにドラッグ禁止を設定し忘れない** - 設定しないとボタンが機能しません
 - **ドラッグ領域を小さくしすぎない** - つかみにくくなります
 - **プラットフォーム間の違いを忘れない** - 十分にテストしてください
 
@@ -1000,7 +1000,7 @@ updateMaximiseButton()
 
 ### ウィンドウをドラッグできない
 
-**原因:** `--wails-draggable: drag` が指定されていない
+**原因:** `--wails-draggable: drag`がありません
 
 **解決策:**
 
@@ -1012,7 +1012,7 @@ updateMaximiseButton()
 
 ### ボタンが機能しない
 
-**原因:** ボタンがドラッグ可能な領域内にある
+**原因:** ボタンがドラッグ可能領域内にあります
 
 **解決策:**
 
@@ -1024,7 +1024,7 @@ updateMaximiseButton()
 
 ### ウィンドウのサイズを変更できない
 
-**原因:** サイズ変更ハンドルがない
+**原因:** リサイズハンドルがありません
 
 **解決策:**
 
@@ -1037,8 +1037,8 @@ body {
 ## 次のステップ
 
 @cards{cols="2"}
-▣ ウィンドウの基本
-ウィンドウ管理の基礎を学びます。
+▣ ウィンドウの基礎
+ウィンドウ管理の基本を学びます。
 
 [詳しく見る →](/features/windows/basics/)
 
@@ -1056,7 +1056,7 @@ body {
 
 ---
 ◆ 複数ウィンドウ
-マルチウィンドウアプリケーションのパターンです。
+マルチウィンドウアプリケーションのパターンを学びます。
 
 [詳しく見る →](/features/windows/multiple/)
 
@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[フレームレスのサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[フレームレスのサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)を確認してください。

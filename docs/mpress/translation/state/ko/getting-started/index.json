@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "e59467c77349e0006ec0",
   "sourceFile": "getting-started/index.md",
   "sourceLanguage": "en",
@@ -17,7 +18,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:38Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
       "targetHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
       "machineHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
@@ -28,6 +29,38 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:38Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "getting-started/index.mpd",
+    "sourceHash": "4a154f665f40a2d045c9dca8f4aa09c2913b4f34b7f6a718741e5232dba9204a",
+    "targetHash": "a3a3b6a1fd31aece3a3beddfb3d72433659c9271943010067f6d002d3ce3f82b",
+    "previousSegments": {
+      "b0001-heading-01": {
+        "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+        "targetHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
+        "machineHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
+        "machineText": "시작하기",
+        "status": "final",
+        "sourcePreview": "Getting Started",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:38Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+        "targetHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
+        "machineHash": "8779a905898386e47543f08ac2017bd772c2467a28a5eca68315bfc8b970ee75",
+        "machineText": "시작하기",
+        "status": "final",
+        "sourcePreview": "Getting Started",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:38Z"
+      }
     }
   }
 }

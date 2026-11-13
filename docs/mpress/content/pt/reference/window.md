@@ -7,9 +7,9 @@ sourcePath: "reference/window.md"
 
 ## Visão geral
 
-A API de janelas fornece métodos para controlar a aparência, o comportamento e o ciclo de vida das janelas. Acesse-a por meio das instâncias de janela ou do gerenciador `app.Window`.
+A API de janelas fornece métodos para controlar a aparência, o comportamento e o ciclo de vida das janelas. Acesse-a por meio de instâncias de janela ou do gerenciador `app.Window`.
 
-`Window` é uma interface implementada por `*application.WebviewWindow`; as assinaturas dos métodos abaixo pertencem a `*WebviewWindow`. Muitos métodos modificadores retornam `Window` para permitir o encadeamento — os valores de retorno estão documentados em cada método.
+`Window` é uma interface implementada por `*application.WebviewWindow`; as assinaturas dos métodos abaixo pertencem a `*WebviewWindow`. Muitos métodos modificadores retornam `Window` para permitir o encadeamento — os valores retornados são documentados em cada método.
 
 **Operações comuns:**
 
@@ -23,7 +23,7 @@ A API de janelas fornece métodos para controlar a aparência, o comportamento e
 
 ### Show()
 
-Exibe a janela. Se ela estava oculta, torna-se visível. Retorna o receptor para permitir o encadeamento.
+Exibe a janela. Se a janela estava oculta, ela se torna visível. Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -56,7 +56,7 @@ window.Show()
 
 **Casos de uso:**
 
-- Aplicativos da bandeja do sistema que são ocultados na bandeja
+- Aplicativos da área de notificação que são ocultados nela
 - Fluxos de assistente nos quais as janelas são reutilizadas
 - Ocultação temporária durante operações
 
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-Entra no modo de tela cheia ou sai dele. `Fullscreen()` retorna o receptor para permitir o encadeamento.
+Entra ou sai do modo de tela cheia. `Fullscreen()` retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -305,7 +305,7 @@ window.UnFullscreen()
 window.ToggleFullscreen()
 ```
 
-Não há um método `SetFullscreen(bool)`.
+Não há nenhum método `SetFullscreen(bool)`.
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-Navega até uma URL específica na janela. Retorna o receptor para permitir o encadeamento de chamadas.
+Navega até uma URL específica dentro da janela. Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **Parâmetros:**
 
-- `url` — URL de destino (pode ser `http://wails.localhost/` para recursos incorporados)
+- `url` - URL de destino da navegação (pode ser `http://wails.localhost/` para recursos incorporados)
 
 **Exemplo:**
 
@@ -359,7 +359,7 @@ window.SetURL("https://wails.io")
 
 ### SetHTML()
 
-Define o conteúdo da janela diretamente a partir de uma string HTML. Retorna o receptor para permitir o encadeamento de chamadas.
+Define o conteúdo da janela diretamente a partir de uma string HTML. Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
@@ -367,7 +367,7 @@ func (w *WebviewWindow) SetHTML(html string) Window
 
 **Parâmetros:**
 
-- `html` — conteúdo HTML a ser exibido
+- `html` - Conteúdo HTML a ser exibido
 
 **Exemplo:**
 
@@ -408,16 +408,16 @@ window.Reload()
 
 **Observação:** Útil durante o desenvolvimento ou quando o conteúdo precisa ser atualizado.
 
-## Eventos da janela
+## Eventos de janela
 
-O Wails fornece dois métodos para tratar eventos da janela:
+O Wails oferece dois métodos para processar eventos de janela:
 
-- **OnWindowEvent()** — monitora eventos da janela (não pode impedi-los).
-- **RegisterHook()** — intercepta eventos da janela (pode impedi-los chamando `event.Cancel()`).
+- **OnWindowEvent()** — Escuta eventos de janela (não pode impedi-los).
+- **RegisterHook()** — Intercepta eventos de janela (pode impedi-los chamando `event.Cancel()`).
 
 ### OnWindowEvent()
 
-Registra uma função de callback para eventos da janela. Retorna uma função para cancelar a inscrição.
+Registra uma função de callback para eventos de janela. Retorna uma função para cancelar a inscrição.
 
 ```go
 func (w *WebviewWindow) OnWindowEvent(
@@ -447,21 +447,21 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-**Eventos comuns da janela:**
+**Eventos de janela comuns:**
 
-- `events.Common.WindowClosing` — a janela está prestes a fechar
-- `events.Common.WindowFocus` — a janela ganhou foco
-- `events.Common.WindowLostFocus` — a janela perdeu o foco
-- `events.Common.WindowDidMove` — a janela foi movida
-- `events.Common.WindowDidResize` — a janela foi redimensionada
-- `events.Common.WindowMinimise` — a janela foi minimizada
-- `events.Common.WindowMaximise` — a janela foi maximizada
-- `events.Common.WindowFullscreen` — a janela entrou no modo de tela cheia
-- `events.Common.WindowRuntimeReady` — o runtime da janela foi inicializado
+- `events.Common.WindowClosing` — A janela está prestes a ser fechada
+- `events.Common.WindowFocus` — A janela recebeu foco
+- `events.Common.WindowLostFocus` — A janela perdeu o foco
+- `events.Common.WindowDidMove` — A janela foi movida
+- `events.Common.WindowDidResize` — A janela foi redimensionada
+- `events.Common.WindowMinimise` — A janela foi minimizada
+- `events.Common.WindowMaximise` — A janela foi maximizada
+- `events.Common.WindowFullscreen` — A janela entrou no modo de tela cheia
+- `events.Common.WindowRuntimeReady` — O runtime dentro da janela foi inicializado
 
 ### RegisterHook()
 
-Registra um hook para eventos da janela. Os hooks são executados antes dos listeners e podem impedir o evento chamando `event.Cancel()`. Retorna uma função para cancelar a inscrição.
+Registra um hook para eventos de janela. Os hooks são executados antes dos listeners e podem impedir o evento chamando `event.Cancel()`. Retorna uma função para cancelar a inscrição.
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -470,7 +470,7 @@ func (w *WebviewWindow) RegisterHook(
 ) func()
 ```
 
-**Exemplo — impedir o fechamento da janela:**
+**Exemplo — Impedir o fechamento da janela:**
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -493,7 +493,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-**Exemplo — salvar antes de fechar:**
+**Exemplo — Salvar antes de fechar:**
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -529,8 +529,8 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 
 **Parâmetros:**
 
-- `name` — nome do evento
-- `data` — dados opcionais a serem enviados com o evento
+- `name` — Nome do evento
+- `data` — Dados opcionais a serem enviados com o evento
 
 **Exemplo:**
 
@@ -557,7 +557,7 @@ Events.On('data-updated', (data) => {
 
 ### SetEnabled()
 
-Habilita ou desabilita a interação do usuário com a janela.
+Ativa ou desativa a interação do usuário com a janela.
 
 ```go
 func (w *WebviewWindow) SetEnabled(enabled bool)
@@ -578,7 +578,7 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-Define a cor de fundo da janela (exibida antes do carregamento do conteúdo). Retorna o receptor para permitir o encadeamento de chamadas.
+Define a cor de fundo da janela (exibida antes do carregamento do conteúdo). Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-Controla se a janela pode ser redimensionada pelo usuário. Retorna o receptor para permitir o encadeamento de chamadas.
+Controla se o usuário pode redimensionar a janela. Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -613,7 +613,7 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-Define se a janela permanece acima das demais janelas. Retorna o receptor para permitir o encadeamento de chamadas.
+Define se a janela permanece acima das demais. Retorna o receptor para permitir o encadeamento.
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -626,15 +626,40 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 window.SetAlwaysOnTop(true)
 ```
 
+### SetMenu()
+
+Define a barra de menus da janela no Windows e no Linux, substituindo a barra exibida atualmente.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**Parâmetros:**
+- `menu` — O menu a ser exibido ou `nil` para remover a barra de menus
+
+Passar `nil` remove a barra: a janela não exibe nenhum menu, nem mesmo o menu do aplicativo, e os atalhos do menu removido deixam de funcionar nessa janela. Se chamado antes de a janela ser iniciada, ela será criada sem uma barra de menus.
+
+**Compatibilidade com plataformas:**
+- **Windows**: Compatibilidade total
+- **Linux**: Compatibilidade total
+- **macOS**: Não tem efeito, pois a barra de menus pertence ao aplicativo. Em vez disso, use `app.Menu.Set`.
+
+**Exemplo:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
+```
+
 ### Print()
 
-Abre a caixa de diálogo nativa de impressão para o conteúdo da janela.
+Abre a caixa de diálogo de impressão nativa para o conteúdo da janela.
 
 ```go
 func (w *WebviewWindow) Print() error
 ```
 
-**Retorno:** um erro se a impressão falhar.
+**Retorna:** Um erro se a impressão falhar.
 
 **Exemplo:**
 
@@ -654,11 +679,11 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **Parâmetros:**
 
-- `modalWindow` - A janela a ser anexada como modal
+- `modalWindow` — A janela a ser anexada como modal
 
 **Compatibilidade com plataformas:**
 
-- **macOS**: Compatibilidade total (exibida como uma folha)
+- **macOS**: Compatibilidade total (apresentada como uma folha)
 - **Windows**: Sem compatibilidade
 - **Linux**: Sem compatibilidade
 
@@ -677,7 +702,7 @@ As janelas no Linux são compatíveis com as seguintes opções específicas da 
 
 #### MenuStyle
 
-Controla como o menu do aplicativo é exibido. Essa opção está disponível na compilação GTK4 padrão e é ignorada nas compilações legadas de `-tags gtk3`.
+Controla como o menu do aplicativo é exibido. Esta opção está disponível na compilação GTK4 padrão e é ignorada em compilações legadas de `-tags gtk3`.
 
 | Valor | Descrição |
 | --- | --- |
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-**Observação:** O estilo de menu principal exibe um botão de menu hambúrguer (☰) na barra de cabeçalho, de acordo com as Diretrizes de Interface Humana do GNOME. Esse é o estilo recomendado para aplicativos GNOME modernos.
+**Observação:** O estilo de menu principal exibe um botão de menu hambúrguer (☰) na barra de cabeçalho, seguindo as Diretrizes de Interface Humana do GNOME. Esse é o estilo recomendado para aplicativos GNOME modernos.
 
 ## Exemplo completo
 

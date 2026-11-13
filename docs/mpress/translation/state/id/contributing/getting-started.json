@@ -727,16 +727,16 @@
       "updatedAt": "2026-10-25T22:06:19Z"
     },
     "b0061-text-01": {
-      "sourceHash": "17c8463b691cf1ec0e081077cf3da14b3efcce23f86f52a9f2c194917a606790",
-      "targetHash": "80519845a6267fb10b41ff6dda3ce255c4408da4a18bcf3da47f73eebfac941b",
-      "machineHash": "80519845a6267fb10b41ff6dda3ce255c4408da4a18bcf3da47f73eebfac941b",
-      "machineText": "Baca proses [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)",
+      "sourceHash": "5c91877ae25c4d98d9e223d9683bbca2db28e409c7224007cc9fbf1e3ffb3d5b",
+      "targetHash": "f44608cbc3905451237e057756890d5f14055f1084bc39de3f7432158f71e6f4",
+      "machineHash": "f44608cbc3905451237e057756890d5f14055f1084bc39de3f7432158f71e6f4",
+      "machineText": "Baca [proses WEP (Proposal Peningkatan Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md)",
       "status": "machine-translated",
-      "sourcePreview": "Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/releases/…",
+      "sourcePreview": "Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/v3.0.0/v3…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:19Z"
+      "updatedAt": "2026-11-06T02:11:38Z"
     },
     "b0062-text-01": {
       "sourceHash": "b2e7d8dea9badd678bce1d5023cf54d413a27a313d8e58ce2f7a1a0ed79dce7a",

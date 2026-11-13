@@ -1,32 +1,32 @@
 ---
 title: "アプリケーションのライフサイクル"
-description: "起動からシャットダウンまでの Wails アプリケーションのライフサイクルを理解する"
+description: "起動から終了までの Wails アプリケーションのライフサイクルを理解する"
 slug: "concepts/lifecycle"
 sourcePath: "concepts/lifecycle.md"
 ---
 
 ## アプリケーションのライフサイクルを理解する
 
-デスクトップアプリケーションには、起動からシャットダウンまでのライフサイクルがあります。Wails v3 では、このライフサイクルを効果的に管理するために、**サービス**、**イベント**、<strong>フック</strong>が提供されています。
+デスクトップアプリケーションには、起動から終了までのライフサイクルがあります。Wails v3 には、このライフサイクルを効果的に管理するための**サービス**、**イベント**、**フック**が用意されています。
 
 ## ライフサイクルの各段階
 
 ```d2
 direction: down
 
-Start: アプリケーション開始 {
+Start: アプリケーションの起動 {
   shape: oval
   style.fill: "#10B981"
 }
 
 Init: 初期化 {
-  Parse: オプションを解析 {
+  Parse: オプションの解析 {
     shape: rectangle
   }
-  Register: サービスを登録 {
+  Register: サービスの登録 {
     shape: rectangle
   }
-  Setup: ランタイムをセットアップ {
+  Setup: ランタイムのセットアップ {
     shape: rectangle
   }
 }
@@ -36,19 +36,19 @@ AppRun: app.Run() {
   style.fill: "#3B82F6"
 }
 
-ServiceStartup: サービスを起動 {
+ServiceStartup: サービスの起動 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
 EventLoop: イベントループ {
-  Process: イベントを処理 {
+  Process: イベントの処理 {
     shape: rectangle
   }
-  Handle: メッセージを処理 {
+  Handle: メッセージの処理 {
     shape: rectangle
   }
-  Update: UIを更新 {
+  Update: UI の更新 {
     shape: rectangle
   }
 }
@@ -58,17 +58,17 @@ QuitSignal: 終了シグナル {
   style.fill: "#F59E0B"
 }
 
-ShouldQuit: ShouldQuitを確認 {
+ShouldQuit: ShouldQuit の確認 {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-OnShutdown: OnShutdownコールバック {
+OnShutdown: OnShutdown コールバック {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-ServiceShutdown: サービスを停止 {
+ServiceShutdown: サービスの終了 {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
@@ -77,12 +77,12 @@ Cleanup: クリーンアップ {
   Close: ウィンドウを閉じる {
     shape: rectangle
   }
-  Release: リソースを解放 {
+  Release: リソースの解放 {
     shape: rectangle
   }
 }
 
-End: アプリケーション終了 {
+End: アプリケーションの終了 {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -161,15 +161,15 @@ if err != nil {
 
 アプリケーションが終了するときは、次の処理が行われます。
 
-1. `ShouldQuit`コールバックが設定されている場合、その結果が確認される
+1. `ShouldQuit`コールバックが設定されている場合は、その結果が確認される
 2. `OnShutdown`コールバックが実行される
-3. サービスが逆順にシャットダウンされる
+3. サービスが逆順に終了される
 4. ウィンドウが閉じられる
 5. リソースが解放される
 
 ## サービスのライフサイクル
 
-Wails v3 では、ライフサイクルの主な管理手段としてサービスを使用します。サービスは、インターフェースを通じて起動フックとシャットダウンフックを提供します。サービスの詳細については、[サービスガイド](/features/bindings/services/)を参照してください。
+Wails v3 では、主にサービスを使用してライフサイクルを管理します。サービスは、インターフェースを通じて起動フックと終了フックを提供します。サービスの詳細については、[サービスガイド](/features/bindings/services/)を参照してください。
 
 ### サービスの作成
 
@@ -217,13 +217,13 @@ app := application.New(application.Options{
 **要点：**
 
 - サービスは登録順に起動される
-- サービスは登録時とは<strong>逆</strong>の順序でシャットダウンされる
-- サービスの`ServiceStartup`がエラーを返した場合、アプリケーションは中止される
+- サービスは登録時と**逆**の順序で終了される
+- サービスの`ServiceStartup`がエラーを返すと、アプリケーションは中止される
 - `ServiceStartup`に渡された`ctx`は、シャットダウンの開始時にキャンセルされる
 
 ### アプリケーションコンテキストの使用
 
-`ServiceStartup` に渡されるコンテキストは、アプリケーションの存続期間中有効です。
+`ServiceStartup`に渡されるコンテキストは、アプリケーションの存続期間中有効です。
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -256,20 +256,20 @@ ctx := app.Context()
 
 ## アプリケーションレベルのフック
 
-これらは `application.Options` の便利なコールバックであり、完全なサービスを作成せずにアプリケーションのライフサイクルへフックできます。単純なクリーンアップ処理、終了確認、またはシャットダウンシーケンスの特定時点でコードを実行する必要がある場合に役立ちます。
+これらは`application.Options`の便利なコールバックであり、完全なサービスを作成しなくてもアプリケーションのライフサイクルに処理を組み込めます。単純なクリーンアップ処理、終了確認、またはシャットダウンシーケンスの特定時点でコードを実行する必要がある場合に役立ちます。
 
-起動ロジック、依存性注入、ステートフルなリソースを伴う、より複雑なライフサイクル管理には、代わりに [サービス](#heading-2) を使用してください。
+起動ロジック、依存性注入、ステートフルなリソースなど、より複雑なライフサイクル管理には、代わりに[サービス](#heading-2)を使用してください。
 
 ### ShouldQuit
 
-終了が要求されるたびに `ShouldQuit` コールバックが呼び出されます。これには、ユーザーが最後のウィンドウを閉じた場合、Cmd+Q（macOS）／Alt+F4（Windows）を押した場合、またはプログラムから `app.Quit()` を呼び出した場合が含まれます。
+`ShouldQuit`コールバックは、ユーザーが最後のウィンドウを閉じた場合、Cmd+Q（macOS）または Alt+F4（Windows）を押した場合、あるいはプログラムから`app.Quit()`を呼び出した場合など、終了が要求されるたびに呼び出されます。
 
 **戻り値：**
 
-- 終了処理の続行を許可するには `true` を返します（アプリケーションはシャットダウンします）
-- 終了をキャンセルするには `false` を返します（アプリケーションは実行を継続します）
+- 終了処理の続行を許可するには`true`を返す（アプリケーションがシャットダウンする）
+- 終了をキャンセルするには`false`を返す（アプリケーションは実行を継続する）
 
-ここで終了要求をインターセプトし、必要に応じて終了を阻止できます。たとえば、未保存の変更についてユーザーに確認できます。
+ここで終了要求を捕捉し、必要に応じて終了を阻止できます。たとえば、保存されていない変更についてユーザーに確認できます。
 
 ```go
 app := application.New(application.Options{
@@ -299,23 +299,23 @@ app := application.New(application.Options{
 })
 ```
 
-`ShouldQuit` が設定されていない場合、終了が要求されるとアプリケーションは直ちに終了します。
+`ShouldQuit`が設定されていない場合、終了が要求されるとアプリケーションは直ちに終了します。
 
 **ShouldQuit が呼び出される場合：**
 
-- ユーザーが最後のウィンドウを閉じた場合（`DisableQuitOnLastWindowClosed` が設定されている場合を除く）
+- ユーザーが最後のウィンドウを閉じた場合（`DisableQuitOnLastWindowClosed`が設定されている場合を除く）
 - ユーザーが macOS で Cmd+Q を押した場合
 - ユーザーが Windows で Alt+F4 を押した場合（最後のウィンドウにフォーカスがあるとき）
-- コードから `app.Quit()` を呼び出した場合
+- コードが`app.Quit()`を呼び出した場合
 
 **ShouldQuit が呼び出されない場合：**
 
 - プロセスが強制終了された場合（SIGKILL、タスクマネージャーによる強制終了）
-- `os.Exit()` が直接呼び出された場合
+- `os.Exit()`が直接呼び出された場合
 
 ### OnShutdown
 
-アプリケーションの終了が確定すると、`OnShutdown` コールバックが呼び出されます（`ShouldQuit` が設定されている場合は、それが `true` を返した後）。状態の保存、データベース接続の切断、リソースの解放などのクリーンアップ処理に使用してください。
+`OnShutdown`コールバックは、アプリケーションの終了が確定したときに呼び出されます（`ShouldQuit`が設定されている場合は、それが`true`を返した後）。状態の保存、データベース接続の切断、リソースの解放などのクリーンアップ処理に使用してください。
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-アプリケーションのライフサイクル中はいつでも、プログラムから追加のシャットダウンコールバックを登録できます。
+アプリケーションのライフサイクル中はいつでも、追加のシャットダウンコールバックをプログラムから登録できます。
 
 ```go
 app.OnShutdown(func() {
@@ -339,17 +339,17 @@ app.OnShutdown(func() {
 
 複数のコールバックは登録順に実行されます。すべてのコールバックが完了するまで、シャットダウン処理はブロックされます。
 
-**重要：** シャットダウンコールバックは短時間（1 秒未満）で完了させてください。終了に時間がかかりすぎるアプリケーションは、オペレーティングシステムによって強制終了される可能性があります。その場合、クリーンアップが中断され、データが失われるおそれがあります。
+**重要:** シャットダウンコールバックは短時間（1秒未満）で完了させてください。終了に時間がかかりすぎるアプリケーションは、オペレーティングシステムによって強制終了されることがあります。その場合、クリーンアップが中断され、データが失われる可能性があります。
 
 ### PostShutdown
 
-すべてのシャットダウン処理が完了した後、プロセスが終了する直前に `PostShutdown` コールバックが呼び出されます。この時点では、アプリケーションインスタンスは使用できません。ウィンドウは閉じられ、サービスはシャットダウンされ、リソースは解放されています。
+`PostShutdown`コールバックは、すべてのシャットダウン処理が完了した後、プロセスが終了する直前に呼び出されます。この時点では、ウィンドウが閉じ、サービスが停止し、リソースも解放されているため、アプリケーションインスタンスは使用できません。
 
 これは主に次の用途に役立ちます。
 
-- ほかのすべてのクリーンアップ後に行う必要がある最終ログ記録
+- その他のすべてのクリーンアップ後に行う必要がある最終ログ記録
 - シャットダウン動作のテストとデバッグ
-- `app.Run()` が戻らないプラットフォーム（このコールバックによりコードの実行が保証されます）
+- `app.Run()`が戻らないプラットフォームでのコード実行（コールバックによってコードの実行が保証されます）
 
 ```go
 app := application.New(application.Options{
@@ -363,15 +363,15 @@ app := application.New(application.Options{
 })
 ```
 
-**注記：** `PostShutdown` では、アプリケーション機能（ウィンドウやダイアログなど）を使用しないでください。これらはすでに利用できません。
+**注:** `PostShutdown`内では、アプリケーション機能（ウィンドウやダイアログなど）を使用しないでください。これらはすでに利用できません。
 
 ## イベントベースのライフサイクル
 
-Wails は、ウィンドウが開いたとき、アプリケーションが起動したとき、テーマが変更されたときなど、アプリケーション内で何かが発生した際に通知するイベントシステムを提供します。これらのイベントをリッスンすることで、処理をブロックしたりイベントをインターセプトしたりせずに、ライフサイクルの変化に対応できます。
+Wailsには、ウィンドウが開く、アプリケーションが起動する、テーマが変更されるなど、アプリケーション内で発生した事象を通知するイベントシステムがあります。これらのイベントをリッスンすることで、処理をブロックしたりイベントをインターセプトしたりせずに、ライフサイクルの変化に対応できます。
 
-ウィンドウイベントでは、`OnWindowEvent` の代わりに `RegisterHook` を使用してアクションをインターセプトし、キャンセルすることもできます。たとえば、ウィンドウが閉じるのを阻止できます。以下の「[ウィンドウフック](#heading-10)」を参照してください。
+ウィンドウイベントでは、`OnWindowEvent`の代わりに`RegisterHook`を使用してアクションをインターセプトし、キャンセルすることもできます。たとえば、ウィンドウが閉じるのを防止できます。以下の[ウィンドウフック](#heading-10)を参照してください。
 
-イベントシステムの完全なドキュメントについては、[イベントガイド](/features/events/system/)を参照してください。
+イベントシステムの詳細については、[イベントガイド](/features/events/system/)を参照してください。
 
 ### アプリケーションイベント
 
@@ -419,7 +419,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ### ウィンドウフック（キャンセル可能なイベント）
 
-イベントを<strong>キャンセル</strong>する必要がある場合は、`OnWindowEvent` の代わりに `RegisterHook` を使用します。
+イベントを**キャンセル**する必要がある場合は、`OnWindowEvent`の代わりに`RegisterHook`を使用します。
 
 ```go
 window := app.Window.New()
@@ -437,14 +437,14 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-**OnWindowEvent と RegisterHook の違い：**
+**OnWindowEventとRegisterHookの違い:**
 
-- `OnWindowEvent`：イベントが発生したときに通知します（キャンセル不可）
-- `RegisterHook`：イベントをインターセプトし、必要に応じてキャンセルできます
+- `OnWindowEvent`: イベントの発生を通知します（キャンセルはできません）
+- `RegisterHook`: イベントをインターセプトし、必要に応じてキャンセルできます
 
 ## ウィンドウのライフサイクル
 
-ウィンドウには、作成から破棄まで独自のライフサイクルがあります。各ウィンドウはフロントエンドのコンテンツを個別に読み込み、いつでも表示、非表示、または閉じることができます。ユーザーがウィンドウを閉じようとしたときは、`RegisterHook`でその操作をインターセプトし、確認を求めたり、ウィンドウを破棄せずに非表示にしたりできます。
+ウィンドウには、作成から破棄までの固有のライフサイクルがあります。各ウィンドウはフロントエンドのコンテンツを個別に読み込み、いつでも表示、非表示、または閉じることができます。ユーザーがウィンドウを閉じようとしたときは、`RegisterHook`でその操作をインターセプトし、確認を求めたり、ウィンドウを破棄せずに非表示にしたりできます。
 
 ウィンドウに関する完全なドキュメントについては、[ウィンドウガイド](/features/windows/basics/)を参照してください。
 
@@ -470,7 +470,7 @@ Active: ウィンドウがアクティブ {
   }
 }
 
-CloseRequest: 閉じるリクエスト {
+CloseRequest: クローズ要求 {
   shape: diamond
   style.fill: "#F59E0B"
 }
@@ -484,7 +484,7 @@ Destroy: ウィンドウを破棄 {
   shape: rectangle
 }
 
-End: ウィンドウが閉じられた {
+End: ウィンドウが閉じた {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -495,8 +495,8 @@ Show -> Active.Events
 Active.Events -> Active.Events: ループ
 Active.Events -> CloseRequest: ユーザーが閉じる
 CloseRequest -> Hook
-Hook -> Active.Events: キャンセル
-Hook -> Destroy: 許可
+Hook -> Active.Events: キャンセル済み
+Hook -> Destroy: 許可済み
 Destroy -> End
 ```
 
@@ -510,7 +510,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### ウィンドウが閉じられるのを防ぐ
+### ウィンドウが閉じるのを防ぐ
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -550,7 +550,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ## 複数ウィンドウのライフサイクル
 
-複数のウィンドウがある場合：
+複数のウィンドウがある場合:
 
 ```go
 mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -565,17 +565,17 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**デフォルトの動作はプラットフォームによって異なります：**
+**デフォルトの動作はプラットフォームによって異なります。**
 
 | プラットフォーム | 最後のウィンドウを閉じたときのデフォルト動作 |
 | --- | --- |
-| macOS | アプリは実行を継続する（メニューバーは残る） |
-| Windows | アプリが終了する |
-| Linux | アプリが終了する |
+| macOS | アプリは実行を継続（メニューバーは残る） |
+| Windows | アプリが終了 |
+| Linux | アプリが終了 |
 
-macOS はプラットフォーム固有の慣例に従い、ウィンドウがなくても通常はアプリケーションがメニューバーでアクティブな状態を維持します。Windows と Linux ではデフォルトで終了します。
+macOSはプラットフォーム固有の慣例に従い、ウィンドウがなくても通常はアプリケーションがメニューバーでアクティブな状態を維持します。WindowsとLinuxではデフォルトで終了します。
 
-**すべてのプラットフォームで、最後のウィンドウを閉じたときに終了させる：**
+**すべてのプラットフォームで、最後のウィンドウを閉じたときに終了するようにする:**
 
 ```go
 app := application.New(application.Options{
@@ -585,7 +585,7 @@ app := application.New(application.Options{
 })
 ```
 
-**すべてのプラットフォームで、最後のウィンドウを閉じた後も実行を継続させる：**
+**すべてのプラットフォームで、最後のウィンドウを閉じても実行を継続するようにする:**
 
 これは、システムトレイアプリケーションや、バックグラウンドで実行を継続する必要があるアプリに役立ちます。
 
@@ -602,7 +602,7 @@ app := application.New(application.Options{
 
 ## 一般的なパターン
 
-### パターン 1：データベースサービス
+### パターン1: データベースサービス
 
 ```go
 type DatabaseService struct {
@@ -636,7 +636,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### パターン 2：構成サービス
+### パターン2: 構成サービス
 
 ```go
 type ConfigService struct {
@@ -668,7 +668,7 @@ func (s *ConfigService) ServiceShutdown() error {
 }
 ```
 
-### パターン 3：バックグラウンドワーカー
+### パターン3: バックグラウンドワーカー
 
 ```go
 type WorkerService struct {
@@ -710,35 +710,35 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 | フック／インターフェース | 呼び出されるタイミング | キャンセル可能か | 用途 |
 | --- | --- | --- | --- |
-| `ServiceStartup` | `app.Run()`の実行中（イベントループの開始前） | 不可（エラーを返すと中止） | 初期化 |
-| `ServiceShutdown` | シャットダウン中（`OnShutdown`の後） | 不可 | クリーンアップ |
+| `ServiceStartup` | `app.Run()`の実行中、イベントループの開始前 | 不可（エラーを返すと中止） | 初期化 |
+| `ServiceShutdown` | シャットダウン中、`OnShutdown`の後 | 不可 | クリーンアップ |
 | `OnShutdown` | 終了が確定したとき | 不可 | アプリケーションのクリーンアップ |
-| `ShouldQuit` | 終了が要求されたとき | 可（false を返す） | 終了の確認 |
-| `RegisterHook(WindowClosing)` | ウィンドウを閉じるよう要求されたとき | 可（`e.Cancel()`） | ウィンドウが閉じられるのを防ぐ |
-| `OnWindowEvent` | イベントが発生したとき | 不可 | イベントへの応答 |
-| `OnApplicationEvent` | イベントが発生したとき | 不可 | イベントへの応答 |
+| `ShouldQuit` | 終了が要求されたとき | 可能（falseを返す） | 終了の確認 |
+| `RegisterHook(WindowClosing)` | ウィンドウを閉じる操作が要求されたとき | 可能（`e.Cancel()`） | ウィンドウが閉じるのを防止 |
+| `OnWindowEvent` | イベントが発生したとき | 不可 | イベントへの対応 |
+| `OnApplicationEvent` | イベントが発生したとき | 不可 | イベントへの対応 |
 
 ## プラットフォームによる違い
 
 ### macOS
 
-- ウィンドウがなくても<strong>アプリケーションメニュー</strong>は表示され続ける
-- <strong>Cmd+Q</strong>で終了がトリガーされる（`ShouldQuit`を経由する）
-- 非表示にしない限り、<strong>Dockアイコン</strong>は表示され続ける
-- 終了動作を制御するには`ApplicationShouldTerminateAfterLastWindowClosed`を使用する
+- ウィンドウがなくても**アプリケーションメニュー**は維持されます
+- **Cmd+Q**で終了します（`ShouldQuit`を経由します）
+- **Dockアイコン**は、非表示にしない限り残ります
+- 終了時の動作を制御するには`ApplicationShouldTerminateAfterLastWindowClosed`を使用します
 
 ### Windows
 
-- ウィンドウがない場合、**アプリケーションメニューは表示されない**
-- <strong>Alt+F4</strong>でウィンドウが閉じる（`RegisterHook`で防止可能）
-- <strong>システムトレイ</strong>を使用すると、アプリケーションを実行し続けることができる
+- ウィンドウがない場合、**アプリケーションメニューはありません**
+- **Alt+F4**でウィンドウを閉じます（`RegisterHook`で阻止できます）
+- **システムトレイ**を使用すると、アプリを実行し続けることができます
 
 ### Linux
 
-- デスクトップ環境によって<strong>動作が異なる</strong>
-- **通常はWindowsと同様**
+- デスクトップ環境によって**動作が異なります**
+- **通常はWindowsと同様です**
 
-## ライフサイクルの問題をデバッグする
+## ライフサイクルの問題のデバッグ
 
 ### 問題：アプリケーションが終了しない
 
@@ -776,7 +776,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ### 問題：サービスの起動に失敗する
 
-**解決策：** 内容が分かるエラーを返す：
+**解決策：** 内容が明確なエラーを返します：
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -793,26 +793,26 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 
 ### 推奨事項
 
-- **ライフサイクル管理にはサービスを使用する** — 適切な起動・終了フックが提供される
-- **終了処理を高速に保つ** — すべてのクリーンアップを1秒未満で完了することを目標にする
-- **キャンセルにはcontextを使用する** — バックグラウンドタスクを適切に停止する
-- **起動時のエラーを処理する** — エラーを返して正常に中止する
-- **ライフサイクルイベントをログに記録する** — デバッグに役立つ
+- **ライフサイクル管理にはサービスを使用する** - 適切な起動／シャットダウンフックが提供されます
+- **シャットダウンを迅速に行う** - すべてのクリーンアップを1秒未満で完了することを目標にします
+- **キャンセルにはcontextを使用する** - バックグラウンドタスクを適切に停止します
+- **起動時のエラーを処理する** - エラーを返して正常に中止します
+- **ライフサイクルイベントをログに記録する** - デバッグに役立ちます
 
 ### 禁止事項
 
-- **サービスの起動処理をブロックしない** — 初期化を高速に保つ（2秒未満）
-- **終了処理中にダイアログを表示しない** — アプリケーションは終了中であり、UIが機能しない可能性がある
-- **contextを無視しない** — goroutine内では常に`ctx.Done()`を確認する
-- **リソースをリークさせない** — 必ず`ServiceShutdown`を実装する
+- **サービスの起動処理をブロックしない** - 初期化を迅速に行います（2秒未満）
+- **シャットダウン時にダイアログを表示しない** - アプリの終了中は、UIが機能しない可能性があります
+- **contextを無視しない** - goroutineでは必ず`ctx.Done()`を確認します
+- **リソースを解放せずに残さない** - 必ず`ServiceShutdown`を実装します
 
 ## 次のステップ
 
-**サービス** — サービスシステムについて詳しく学ぶ [詳細を見る →](/features/bindings/services/)
+**サービス** - サービスシステムの詳細を確認する [詳細を見る →](/features/bindings/services/)
 
-**イベントシステム** — 通信にイベントを使用する [詳細を見る →](/features/events/system/)
+**イベントシステム** - イベントを通信に使用する [詳細を見る →](/features/events/system/)
 
-**ウィンドウ管理** — ウィンドウを作成および管理する [詳細を見る →](/features/windows/basics/)
+**ウィンドウ管理** - ウィンドウを作成・管理する [詳細を見る →](/features/windows/basics/)
 
 ---
 

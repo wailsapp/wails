@@ -7,11 +7,11 @@ sourcePath: "features/menus/systray.md"
 
 ## Menu Baki Sistem
 
-Wails menyediakan **API baki sistem terpadu** yang berfungsi di semua platform. Buat ikon baki dengan menu, lampirkan jendela, dan tangani klik dengan perilaku native platform untuk aplikasi latar belakang, layanan, dan utilitas akses cepat.
+Wails menyediakan **API baki sistem terpadu** yang berfungsi di semua platform. Buat ikon baki beserta menu, kaitkan jendela, dan tangani klik dengan perilaku asli platform untuk aplikasi latar belakang, layanan, dan utilitas akses cepat.
 
-![Menu baki sistem Wails yang dibuka dari bar menu macOS](/assets/screenshots/systray-menu-macos.png)
+![Menu baki sistem Wails yang dibuka dari bilah menu macOS](/assets/screenshots/systray-menu-macos.png)
 
-Di macOS, item baki sistem Wails muncul di bar menu dan membuka menu native. Contoh ini mencakup item yang dinonaktifkan, kotak centang, tombol radio, submenu, dan tindakan.
+Di macOS, item baki sistem Wails muncul di bilah menu dan membuka menu asli. Contoh ini mencakup item yang dinonaktifkan, kotak centang, radio, submenu, dan tindakan.
 
 ## Mulai Cepat
 
@@ -73,7 +73,7 @@ systray.SetLabel("My Application")
 
 ### Dengan Ikon
 
-Ikon sebaiknya disematkan:
+Ikon harus disematkan:
 
 ```go
 import _ "embed"
@@ -102,12 +102,12 @@ func main() {
 | Platform | Ukuran | Format | Catatan |
 | --- | --- | --- | --- |
 | **Windows** | 16x16 atau 32x32 | PNG, ICO | Area notifikasi |
-| **macOS** | 18x18 hingga 22x22 | PNG | Bar menu, templat disarankan |
+| **macOS** | 18x18 hingga 22x22 | PNG | Bilah menu, disarankan menggunakan templat |
 | **Linux** | 22x22 hingga 48x48 | PNG, SVG | Bervariasi menurut DE |
 
 ### Ikon Templat (macOS)
 
-Ikon templat secara otomatis menyesuaikan dengan mode terang/gelap:
+Ikon templat menyesuaikan diri dengan mode terang/gelap secara otomatis:
 
 ```go
 systray.SetTemplateIcon(iconBytes)
@@ -116,7 +116,7 @@ systray.SetTemplateIcon(iconBytes)
 **Panduan ikon templat:**
 
 - Gunakan hanya warna hitam dan bening (transparan)
-- Warna hitam berubah menjadi putih dalam mode gelap
+- Warna hitam menjadi putih dalam mode gelap
 - Beri nama file dengan akhiran `Template`: `iconTemplate.png`
 - [Panduan desain](https://bjango.com/articles/designingmenubarextras/)
 
@@ -151,9 +151,9 @@ systray.SetMenu(menu)
 
 Untuk **semua jenis item menu**, lihat [Referensi Menu](/features/menus/reference/).
 
-## Melampirkan Jendela
+## Mengaitkan Jendela
 
-Lampirkan jendela ke ikon baki agar ditampilkan/disembunyikan secara otomatis:
+Kaitkan jendela ke ikon baki untuk menampilkan/menyembunyikannya secara otomatis:
 
 ```go
 // Create window
@@ -174,7 +174,7 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 - **Klik kanan ikon baki** → Tampilkan menu (jika ditetapkan)
 - Jendela ditempatkan di dekat ikon baki
 
-**Contoh: Jendela popup**
+**Contoh: Jendela pop-up**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -191,9 +191,9 @@ systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
-`HideOnFocusLost` berguna untuk popup baki pada Windows, macOS, dan desktop Linux dengan fokus melalui klik. Wails menonaktifkan perilaku tersebut pada lingkungan Linux yang menerapkan fokus mengikuti tetikus (termasuk konfigurasi umum Hyprland, Sway, dan i3), karena meninggalkan popup dalam lingkungan tersebut dapat menyembunyikannya sebelum sempat digunakan. `HideOnEscape` tetap tersedia dalam lingkungan tersebut.
+`HideOnFocusLost` berguna untuk pop-up baki di Windows, macOS, dan desktop Linux dengan klik untuk memfokuskan. Wails menonaktifkan perilaku tersebut pada lingkungan Linux yang fokusnya mengikuti tetikus (termasuk konfigurasi Hyprland, Sway, dan i3 yang umum), karena meninggalkan pop-up dapat menyembunyikannya sebelum sempat digunakan. `HideOnEscape` tetap tersedia di lingkungan tersebut.
 
-Perilaku klik kiri dan klik kanan di atas merupakan default cerdas. Handler `OnClick` atau `OnRightClick` yang ditetapkan secara eksplisit menggantikan default terkait. Untuk pemeriksaan platform dan kasus khusus, lihat [rangkaian pengujian manual systray](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) dan [contoh pengujian beban systray](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
+Perilaku klik kiri dan klik kanan di atas merupakan default cerdas. Handler `OnClick` atau `OnRightClick` yang ditetapkan secara eksplisit menggantikan default terkait. Untuk pemeriksaan platform dan kasus khusus, lihat [rangkaian pengujian systray manual](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray) dan [contoh uji beban systray](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress).
 
 ## Handler Klik
 
@@ -284,7 +284,7 @@ Setelah mengubah status menu, **panggil `menu.Update()`**. Lihat [Referensi Menu
 
 ### Membangun Ulang Menu
 
-Untuk perubahan besar, buat ulang seluruh menu:
+Untuk perubahan besar, bangun ulang seluruh menu:
 
 ```go
 func rebuildTrayMenu(status string) {
@@ -364,28 +364,28 @@ systray.Hide()  // Hide tray icon
 - Format PNG atau ICO
 - Latar belakang transparan
 
-**Batas tooltip:**
+**Batas keterangan alat:**
 
 - Maksimum 127 karakter UTF-16
-- Tooltip yang lebih panjang akan dipotong
+- Keterangan alat yang lebih panjang akan dipotong
 - Buat tetap ringkas untuk pengalaman terbaik
 
 **Fitur platform:**
 
-- Ikon tray tetap tersedia setelah Windows Explorer dimulai ulang
+- Ikon baki tetap aktif setelah Windows Explorer dimulai ulang
 - Metode Show() dan Hide() berfungsi sepenuhnya
 - Pengelolaan siklus hidup yang tepat
 
 **Praktik terbaik:**
 
-- Gunakan 32x32 untuk layar ber-DPI tinggi
+- Gunakan 32x32 untuk layar dengan DPI tinggi
 - Batasi tooltip hingga kurang dari 127 karakter
 - Uji pada berbagai versi Windows
 - Pertimbangkan luapan area notifikasi
-- Gunakan Show/Hide untuk mengatur visibilitas tray secara kondisional
+- Gunakan Show/Hide untuk mengatur visibilitas baki secara kondisional
 
 [Linux]
-**Integrasi tray sistem:**
+**Integrasi baki sistem:**
 
 Menggunakan spesifikasi StatusNotifierItem (sebagian besar DE modern).
 
@@ -397,22 +397,22 @@ systray.SetLabel("My App")
 **Dukungan lingkungan desktop:**
 
 - **GNOME**: Bilah atas (dengan ekstensi)
-- **KDE Plasma**: Tray sistem
+- **KDE Plasma**: Baki sistem
 - **XFCE**: Area notifikasi
 - **Lainnya**: Bervariasi
 
 **Praktik terbaik:**
 
-- Gunakan ukuran 22x22 atau 24x24 piksel
+- Gunakan piksel 22x22 atau 24x24
 - Ikon SVG dapat diskalakan dengan lebih baik
 - Uji pada lingkungan desktop target
-- Sediakan opsi fallback untuk DE yang tidak didukung
+- Sediakan mekanisme fallback untuk DE yang tidak didukung
 
 @end
 
 ## Contoh Lengkap
 
-Berikut adalah aplikasi tray sistem yang siap digunakan dalam produksi:
+Berikut aplikasi baki sistem yang siap digunakan dalam produksi:
 
 ```go
 package main
@@ -558,7 +558,7 @@ func (t *TrayApp) setStartAtLogin(enabled bool) {
 
 ## Kontrol Visibilitas
 
-Tampilkan atau sembunyikan ikon tray secara dinamis:
+Tampilkan/sembunyikan ikon baki secara dinamis:
 
 ```go
 // Hide tray icon
@@ -574,17 +574,17 @@ Tidak ada getter `IsVisible()` — jika diperlukan, lacak visibilitas dalam stat
 
 | Platform | Hide() | Show() | Catatan |
 | --- | --- | --- | --- |
-| **Windows** | ✅ | ✅ | Berfungsi sepenuhnya - ikon muncul atau menghilang dari area notifikasi |
-| **macOS** | ✅ | ✅ | Item bilah menu ditampilkan atau disembunyikan |
+| **Windows** | ✅ | ✅ | Berfungsi sepenuhnya—ikon muncul/menghilang dari area notifikasi |
+| **macOS** | ✅ | ✅ | Item bilah menu ditampilkan/disembunyikan |
 | **Linux** | ✅ | ✅ | Bervariasi menurut lingkungan desktop |
 
 **Kasus penggunaan:**
 
-- Sembunyikan ikon tray untuk sementara berdasarkan preferensi pengguna
-- Mode headless dengan ikon tray yang hanya muncul saat diperlukan
+- Sembunyikan ikon baki untuk sementara berdasarkan preferensi pengguna
+- Mode headless dengan ikon baki yang hanya muncul saat diperlukan
 - Alihkan visibilitas berdasarkan status aplikasi
 
-**Contoh - Visibilitas Tray Kondisional:**
+**Contoh—Visibilitas Baki Kondisional:**
 
 ```go
 func (t *TrayApp) setTrayVisibility(visible bool) {
@@ -608,7 +608,7 @@ func (t *TrayApp) checkForUpdates() {
 
 ## Pembersihan
 
-Hancurkan ikon tray setelah selesai:
+Hancurkan ikon baki setelah selesai:
 
 ```go
 // In OnShutdown
@@ -621,28 +621,28 @@ app := application.New(application.Options{
 })
 ```
 
-**Penting:** Selalu hancurkan tray sistem saat aplikasi dimatikan untuk melepaskan sumber daya.
+**Penting:** Selalu hancurkan baki sistem saat aplikasi dimatikan untuk melepaskan sumber daya.
 
 ## Praktik Terbaik
 
 ### ✅ Lakukan
 
-- **Gunakan ikon templat di macOS** - Menyesuaikan dengan mode gelap
-- **Buat label tetap singkat** - Maksimum 3-5 karakter
-- **Sediakan tooltip di Windows** - Membantu pengguna mengenali aplikasi Anda
-- **Uji di semua platform** - Perilakunya berbeda-beda
-- **Tangani klik dengan tepat** - Klik kiri untuk tindakan utama, klik kanan untuk menu
-- **Perbarui ikon sesuai status** - Umpan balik visual itu penting
-- **Hancurkan saat aplikasi ditutup** - Bebaskan sumber daya
+- **Gunakan ikon templat di macOS**—Menyesuaikan dengan mode gelap
+- **Buat label tetap pendek**—Maksimum 3-5 karakter
+- **Sediakan tooltip di Windows**—Membantu pengguna mengenali aplikasi Anda
+- **Uji pada semua platform**—Perilakunya bervariasi
+- **Tangani klik dengan tepat**—Klik kiri untuk tindakan utama, klik kanan untuk menu
+- **Perbarui ikon untuk menunjukkan status**—Umpan balik visual itu penting
+- **Hancurkan saat aplikasi dimatikan**—Lepaskan sumber daya
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- **Jangan gunakan ikon berukuran besar** - Ikuti pedoman platform
-- **Jangan gunakan label panjang** - Label akan terpotong
-- **Jangan lupakan mode gelap** - Uji dalam mode gelap Windows dan macOS
-- **Jangan memblokir handler klik** - Pastikan handler tetap cepat
-- **Jangan lupa memanggil menu.Update()** - Setelah mengubah status menu
-- **Jangan berasumsi bahwa baki sistem didukung** - Beberapa lingkungan desktop Linux tidak mendukungnya
+- **Jangan gunakan ikon besar**—Ikuti panduan platform
+- **Jangan gunakan label panjang**—Label akan terpotong
+- **Jangan lupakan mode gelap**—Uji dalam mode gelap Windows dan macOS
+- **Jangan memblokir handler klik**—Pastikan handler tetap cepat
+- **Jangan lupa memanggil menu.Update()**—Setelah mengubah status menu
+- **Jangan mengasumsikan baki didukung**—Beberapa DE Linux tidak mendukungnya
 
 ## Pemecahan Masalah
 
@@ -656,7 +656,7 @@ app := application.New(application.Options{
 
 **Solusi:**
 
-Tidak ada helper `SystemTraySupported()`; sebagai gantinya, buat baki, periksa platform, dan turunkan fungsionalitas secara wajar:
+Tidak ada helper `SystemTraySupported()`; sebagai gantinya, buat baki, periksa platform, lalu turunkan fungsionalitas secara wajar:
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -666,7 +666,7 @@ systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 ```
 
-### Ikon Terlihat Tidak Tepat di macOS
+### Tampilan Ikon Salah di macOS
 
 **Penyebab:** Tidak menggunakan ikon templat
 
@@ -712,7 +712,7 @@ Buat menu konteks klik kanan.
 
 ---
 📖 Contoh Baki Sistem
-Jelajahi aplikasi baki sistem yang lengkap.
+Pelajari aplikasi baki sistem yang lengkap.
 
 [Pelajari Lebih Lanjut →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)
 

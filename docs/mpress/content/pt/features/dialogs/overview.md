@@ -7,11 +7,11 @@ sourcePath: "features/dialogs/overview.md"
 
 ## Caixas de diálogo nativas
 
-O Wails fornece **caixas de diálogo nativas do sistema** que funcionam em todas as plataformas: caixas de mensagem (informação, aviso, erro e pergunta), caixas de diálogo de arquivo (abrir, salvar e pasta) e janelas de diálogo personalizadas com aparência e comportamento nativos da plataforma.
+O Wails oferece **caixas de diálogo nativas do sistema** que funcionam em todas as plataformas: caixas de mensagem (informação, aviso, erro e pergunta), caixas de diálogo de arquivo (abrir, salvar e pasta) e janelas de diálogo personalizadas com aparência e comportamento nativos da plataforma.
 
 ![Uma caixa de diálogo de pergunta do Wails no macOS com os botões Cancelar e Descartar](/assets/screenshots/dialog-question-macos.png)
 
-A mesma API é renderizada de acordo com as convenções de cada plataforma compatível. Este exemplo no macOS mostra uma caixa de diálogo de pergunta anexada à janela do Wails, incluindo os botões padrão e de cancelamento.
+A mesma API é renderizada de acordo com as convenções de cada plataforma compatível. Este exemplo no macOS mostra uma caixa de diálogo de pergunta vinculada à janela do Wails, incluindo os botões padrão e de cancelamento.
 
 ## Início rápido
 
@@ -93,7 +93,7 @@ app.Dialog.Warning().
 
 - Avisos não críticos
 - Avisos de descontinuação
-- Mensagens de atenção
+- Mensagens de precaução
 
 ### Caixa de diálogo de erro
 
@@ -140,7 +140,7 @@ dialog.Show()
 
 ## Caixas de diálogo de arquivo
 
-### Caixa de diálogo Abrir Arquivo
+### Caixa de diálogo para abrir arquivo
 
 Selecione arquivos para abrir:
 
@@ -171,7 +171,7 @@ if err == nil {
 }
 ```
 
-### Caixa de diálogo Salvar Arquivo
+### Caixa de diálogo para salvar arquivo
 
 Escolha onde salvar:
 
@@ -187,9 +187,9 @@ if err == nil && path != "" {
 }
 ```
 
-### Caixa de diálogo Selecionar Pasta
+### Caixa de diálogo para selecionar pasta
 
-Escolha um diretório usando a caixa de diálogo Abrir Arquivo com a seleção de diretórios habilitada:
+Escolha um diretório usando a caixa de diálogo para abrir arquivo com a seleção de diretórios habilitada:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -203,7 +203,7 @@ if err == nil && path != "" {
 }
 ```
 
-## Opções da caixa de diálogo
+## Opções das caixas de diálogo
 
 ### Título e mensagem
 
@@ -217,7 +217,7 @@ dialog := app.Dialog.Info().
 
 **Botão padrão para caixas de diálogo simples:**
 
-As caixas de diálogo de informação, aviso e erro exibem um botão "OK" padrão:
+As caixas de diálogo de informação, aviso e erro exibem um botão "OK" por padrão:
 
 ```go
 app.Dialog.Info().
@@ -227,7 +227,7 @@ app.Dialog.Info().
 
 **Botões personalizados para caixas de diálogo de pergunta:**
 
-Use `AddButton()` para adicionar botões. Esse método retorna um `*Button` que você pode configurar com callbacks:
+Use `AddButton()` para adicionar botões. Esse método retorna um `*Button` que pode ser configurado com callbacks:
 
 ```go
 dialog := app.Dialog.Question().
@@ -251,9 +251,9 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-**Botões padrão e Cancelar:**
+**Botões padrão e de cancelamento:**
 
-Use `SetDefaultButton()` para especificar qual botão será realçado e acionado pela tecla Enter. Use `SetCancelButton()` para especificar qual botão será acionado pela tecla Escape.
+Use `SetDefaultButton()` para especificar qual botão fica destacado e é acionado pela tecla Enter. Use `SetCancelButton()` para especificar qual botão é acionado pela tecla Escape.
 
 ```go
 dialog := app.Dialog.Question().
@@ -272,7 +272,7 @@ dialog.Show()
 
 ### Vinculação à janela
 
-Anexe a caixa de diálogo a uma janela específica:
+Vincule a caixa de diálogo a uma janela específica:
 
 ```go
 dialog := app.Dialog.Info().
@@ -286,20 +286,20 @@ dialog.Show()
 
 - A caixa de diálogo aparece centralizada na janela pai
 - A janela pai fica desabilitada enquanto a caixa de diálogo é exibida
-- A caixa de diálogo se move com a janela pai (macOS)
+- A caixa de diálogo se move junto com a janela pai (macOS)
 
 ## Comportamento por plataforma
 
 @tabs{sync-key="platform"}
 [macOS]
-**Caixas de diálogo no macOS:**
+**Caixas de diálogo do macOS:**
 
 - Aparência nativa do NSAlert
 - Seguem o tema do sistema (claro/escuro)
 - Oferecem suporte à navegação pelo teclado
 - Atalhos padrão (⌘. para Cancelar)
 - Recursos de acessibilidade integrados
-- Estilo de folha quando anexadas à janela
+- Estilo de folha quando vinculadas a uma janela
 
 **Exemplo:**
 
@@ -314,14 +314,14 @@ dialog.Show()
 ```
 
 [Windows]
-**Caixas de diálogo no Windows:**
+**Caixas de diálogo do Windows:**
 
 - Aparência nativa do TaskDialog
 - Seguem o tema do sistema
 - Oferecem suporte à navegação pelo teclado
 - Atalhos padrão (Esc para Cancelar)
 - Recursos de acessibilidade integrados
-- Modal em relação à janela pai
+- Modais em relação à janela pai
 
 **Exemplo:**
 
@@ -334,13 +334,13 @@ app.Dialog.Error().
 ```
 
 [Linux]
-**Caixas de diálogo no Linux:**
+**Caixas de diálogo do Linux:**
 
-- Aparência das caixas de diálogo do GTK
-- Seguem o tema da área de trabalho
+- Aparência das caixas de diálogo GTK
+- Seguem o tema do ambiente de desktop
 - Oferecem suporte à navegação pelo teclado
 - Integração com o ambiente de desktop
-- Varia conforme o ambiente de desktop (GNOME, KDE etc.)
+- Variam conforme o ambiente de desktop (GNOME, KDE etc.)
 
 **Exemplo:**
 
@@ -355,7 +355,7 @@ app.Dialog.Info().
 
 ## Padrões comuns
 
-### Confirmar antes de uma ação destrutiva
+### Confirmação antes de uma ação destrutiva
 
 ```go
 func deleteFile(app *application.App, path string) {
@@ -472,22 +472,22 @@ func exportData(app *application.App) {
 }
 ```
 
-## Boas práticas
+## Práticas recomendadas
 
-### ✅ Recomendações
+### ✅ Faça
 
-- **Use caixas de diálogo nativas** — Oferecem uma experiência do usuário melhor do que as personalizadas
+- **Use caixas de diálogo nativas** — Elas oferecem uma experiência do usuário melhor do que caixas personalizadas
 - **Forneça mensagens claras** — Seja específico
-- **Defina títulos adequados** — O contexto é importante
+- **Defina títulos apropriados** — O contexto é importante
 - **Use os botões padrão com cuidado** — Defina a opção segura como padrão
 - **Trate o cancelamento** — O usuário pode cancelar
-- **Valide os arquivos selecionados** — Verifique os tipos de arquivo
+- **Valide as seleções de arquivos** — Verifique os tipos de arquivo
 
-### ❌ O que não fazer
+### ❌ Não faça
 
-- **Não use caixas de diálogo em excesso** — Elas interrompem o fluxo de trabalho
-- **Não as use para mensagens frequentes** — Use notificações
-- **Não se esqueça do tratamento de erros** — O usuário pode cancelar
+- **Não abuse das caixas de diálogo** — Elas interrompem o fluxo de trabalho
+- **Não use caixas de diálogo para mensagens frequentes** — Use notificações
+- **Não se esqueça de tratar erros** — O usuário pode cancelar
 - **Não bloqueie desnecessariamente** — Considere alternativas
 - **Não use mensagens genéricas** — Seja específico
 - **Não ignore as diferenças entre plataformas** — Teste em todas as plataformas
@@ -522,4 +522,4 @@ Saiba mais sobre o gerenciamento de janelas.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

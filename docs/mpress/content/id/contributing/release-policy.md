@@ -11,7 +11,7 @@ Wails v3 merilis berdasarkan **jadwal, bukan fitur**. Setelah versi dasar `v3.0.
 
 | Rilis | Tag | Frekuensi | Rilis GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (tanggal UTC; `.N` ditambahkan jika dijalankan ulang pada hari yang sama) | otomatis, setiap hari, hanya jika `UNRELEASED_CHANGELOG.md` memiliki konten | prarilis, **bukan** Latest | versi yang sama tanpa `v`, dist-tag `nightly` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (tanggal UTC; `.N` ditambahkan jika dijalankan ulang pada hari yang sama) | otomatis, setiap hari, hanya ketika PR yang digabungkan dalam rentang rilis yang diuji menghasilkan catatan yang terlihat oleh pengguna | prarilis, **bukan** Latest | versi yang sama tanpa `v`, dist-tag `nightly` |
 | Weekly | `v3.<next>.0` | otomatis, Minggu 20:00 waktu Australia/Sydney **(hari belum dikonfirmasi)** | rilis normal, Latest | versi yang sama, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | jarang, manual | rilis normal, Terbaru | versi yang sama, dist-tag `latest` |
 | Mayor | `v4.0.0` | hanya untuk perubahan yang merusak kompatibilitas | rilis normal | `latest` |
@@ -62,7 +62,7 @@ Weekly dibuat dari `master`, tetapi **bukan dari commit terbarunya**: alur kerja
 
 ## Cara membuat rilis
 
-Hak merilis hanya diberikan kepada Lead proyek (lihat dokumen tata kelola). Kontributor tidak pernah membuat tag atau menerbitkan rilis; mereka menambahkan entri ke `v3/UNRELEASED_CHANGELOG.md`.
+Hak rilis hanya dimiliki oleh Pemimpin proyek (lihat dokumen tata kelola). Kontributor tidak pernah membuat tag atau menerbitkan rilis; mereka menjelaskan perubahan yang terlihat oleh pengguna dalam judul PR atau bagian deskripsi `## Release notes`. Otomatisasi rilis menghasilkan catatan dari PR yang digabungkan dalam rentang commit yang diuji secara tepat; `v3/UNRELEASED_CHANGELOG.md` telah dihapus.
 
 Semuanya dijalankan dari **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
@@ -85,7 +85,7 @@ Proses **mingguan** (bukan proses nightly) menolak membuat tag selama salah satu
 
 1. issue atau pull request terbuka yang diberi label `P0` atau `release-blocker`;
 2. issue terbuka yang diberi label `regression` dan dibuat sejak rilis mingguan terakhir;
-3. peringatan Dependabot terbuka dengan tingkat keparahan kritis atau tinggi, peringatan pemindaian kode terbuka dengan tingkat keparahan kritis atau tinggi, serta setiap peringatan pemindaian rahasia yang masih terbuka, **hanya untuk kode yang didistribusikan**. Peringatan yang hanya berada di bawah `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/`, atau direktori `examples/` mana pun akan diabaikan (`SHIPPED_ALERT_IGNORE` di `v3/tasks/releasegate/main.go`, **perlu ditinjau oleh pemilik**);
+3. peringatan Dependabot terbuka dengan tingkat keparahan kritis atau tinggi, peringatan pemindaian kode terbuka dengan tingkat keparahan kritis atau tinggi, dan setiap peringatan pemindaian rahasia yang masih terbuka, **hanya untuk kode yang didistribusikan**. Peringatan yang hanya berada di bawah `v2/internal/staticanalysis/test/` (fixture analisis statis), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/`, atau direktori `examples/` mana pun akan diabaikan (`SHIPPED_ALERT_IGNORE` dalam `v3/tasks/releasegate/main.go`, **pemilik harus meninjau**);
 4. advisori keamanan repositori yang masih berstatus `triage`.
 
 **Siapa yang dapat menetapkan pemblokir.** Sebuah label hanya diperhitungkan jika peristiwa `labeled` terbarunya (tanpa `unlabeled` setelahnya) dilakukan oleh anggota tim `wailsapp/maintainers` atau kolaborator dengan izin `maintain`/`admin`. Label yang sama jika diterapkan oleh pihak lain akan diabaikan dan dicatat dalam log, sehingga pihak luar tidak dapat memblokir atau membuka blokir rilis. Label `high-priority` yang diterapkan secara otomatis sengaja **tidak** digunakan. Akun bot seperti `taliesin-ai` lolos daftar izin jika memiliki `maintain`; hal ini memang disengaja, dan agen triase dapat menerapkan label pemblokir dengan bukti.

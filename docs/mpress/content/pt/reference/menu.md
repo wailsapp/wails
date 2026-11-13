@@ -11,9 +11,9 @@ A API de menus fornece métodos para criar e gerenciar menus do aplicativo, menu
 
 **Tipos de menu:**
 
-- **Menus do aplicativo** - Barra de menus superior (Arquivo, Editar etc.)
-- **Menus de contexto** - Menus abertos com o botão direito do mouse
-- **Menus da bandeja do sistema** - Menus na bandeja do sistema/área de notificação
+- **Menus do aplicativo** — Barra de menus superior (Arquivo, Editar etc.)
+- **Menus de contexto** — Menus abertos com o botão direito
+- **Menus da bandeja do sistema** — Menus na bandeja do sistema/área de notificação
 
 ## Criação de menus
 
@@ -43,9 +43,9 @@ func (m *Menu) Add(label string) *MenuItem
 
 **Parâmetros:**
 
-- `label` - O texto exibido no item de menu
+- `label` — O texto exibido no item de menu
 
-**Retorna:** O item de menu criado
+**Retorna:** o item de menu criado
 
 **Exemplo:**
 
@@ -66,9 +66,9 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 **Parâmetros:**
 
-- `label` - O rótulo do submenu
+- `label` — O rótulo do submenu
 
-**Retorna:** O submenu criado
+**Retorna:** o submenu criado
 
 **Exemplo:**
 
@@ -81,7 +81,7 @@ fileMenu.Add("Save")
 
 ### AddSeparator()
 
-Adiciona uma linha separadora visual entre os itens de menu.
+Adiciona uma linha separadora visual entre itens de menu.
 
 ```go
 func (m *Menu) AddSeparator()
@@ -96,17 +96,19 @@ menu.AddSeparator()
 menu.Add("Select All")
 ```
 
-**Prática recomendada:** Use separadores para agrupar itens de menu relacionados.
+**Boa prática:** use separadores para agrupar itens de menu relacionados.
 
 ### AddSectionHeader()
 
-Adiciona um cabeçalho de seção nativo e não interativo no **macOS 14 e posterior**. Em versões anteriores do macOS e em todas as outras plataformas (incluindo compilações de servidor), a chamada não faz nada: nenhum item substituto é inserido.
+Adiciona um cabeçalho de seção nativo e não interativo no **macOS 14 e posteriores**.
+Em versões anteriores do macOS e em todas as outras plataformas (incluindo compilações para servidor),
+esta operação não tem efeito: nenhum item de espaço reservado é inserido.
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-Use cabeçalhos para identificar grupos em menus da bandeja do sistema, de contexto ou do aplicativo:
+Use cabeçalhos para identificar grupos em menus da bandeja, menus de contexto ou menus do aplicativo:
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,13 +118,16 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-Os cabeçalhos usam a aparência padrão de cabeçalhos de seção do AppKit. Chame `menu.Update()` após reconstruir um menu já exibido, como em outras alterações estruturais. Veja o exemplo `systray-menu` para um cabeçalho obtido com `os.Hostname()`.
+Os cabeçalhos usam a aparência padrão de cabeçalho de seção do AppKit. Chame `menu.Update()`
+após reconstruir um menu que já esteja sendo exibido, assim como ocorre com outras alterações estruturais.
+Consulte o exemplo de `systray-menu` para ver um cabeçalho obtido de `os.Hostname()`.
 
-Cabeçalhos omitidos não separam grupos de botões de opção. Use `AddSeparator()` quando os grupos precisarem permanecer separados em todas as plataformas.
+Cabeçalhos omitidos não separam grupos de opções. Use `AddSeparator()` quando os grupos de opções
+precisarem permanecer separados em todas as plataformas.
 
 ### AddCheckbox()
 
-Adiciona um item de menu que pode ser marcado.
+Adiciona um item de menu marcável.
 
 ```go
 func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
@@ -130,8 +135,8 @@ func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
 
 **Parâmetros:**
 
-- `label` - O rótulo da caixa de seleção
-- `checked` - O estado inicial de seleção
+- `label` — O rótulo da caixa de seleção
+- `checked` — O estado inicial de seleção
 
 **Exemplo:**
 
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-Adiciona um item de menu do tipo botão de opção (grupo mutuamente exclusivo).
+Adiciona um item de menu do tipo opção (grupo mutuamente exclusivo).
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -153,8 +158,8 @@ func (m *Menu) AddRadio(label string, checked bool) *MenuItem
 
 **Parâmetros:**
 
-- `label` - O rótulo do botão de opção
-- `checked` - O estado inicial de seleção
+- `label` — O rótulo do botão de opção
+- `checked` — O estado inicial de seleção
 
 **Exemplo:**
 
@@ -188,9 +193,9 @@ item.SetEnabled(false)
 menu.Update()  // Must call to apply changes
 ```
 
-**Importante:** Sempre chame `Update()` depois de modificar as propriedades de um item de menu.
+**Importante:** sempre chame `Update()` após modificar as propriedades de um item de menu.
 
-## Métodos de itens de menu
+## Métodos de item de menu
 
 ### OnClick()
 
@@ -202,9 +207,9 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 **Parâmetros:**
 
-- `callback` - Função chamada quando o item é clicado
+- `callback` — Função chamada quando o item recebe um clique
 
-**Retorna:** O item de menu (para encadeamento)
+**Retorna:** o item de menu (para encadeamento)
 
 **Exemplo:**
 
@@ -260,7 +265,7 @@ func updateMenuState() {
 
 ### SetChecked()
 
-Define o estado de seleção de itens de menu do tipo caixa de seleção ou botão de opção.
+Define o estado de seleção de itens de menu do tipo caixa de seleção ou opção.
 
 ```go
 func (mi *MenuItem) SetChecked(checked bool) *MenuItem
@@ -299,13 +304,13 @@ func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
 
 **Parâmetros:**
 
-- `accelerator` - Atalho de teclado (por exemplo, "Ctrl+S", "Cmd+Q")
+- `accelerator` — Atalho de teclado (por exemplo, "Ctrl+S", "Cmd+Q")
 
 **Formato do acelerador:**
 
 - **Modificadores:** `Ctrl`, `Cmd`, `Alt`, `Shift`
 - **Teclas:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace` etc.
-- **Plataforma:** Use `Cmd` no macOS e `Ctrl` no Windows/Linux
+- **Plataforma:** use `Cmd` no macOS e `Ctrl` no Windows/Linux
 
 **Exemplo:**
 
@@ -331,7 +336,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-Define uma dica de ferramenta exibida ao passar o cursor sobre o item de menu.
+Define uma dica de ferramenta exibida ao passar o ponteiro sobre o item de menu.
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -396,7 +401,7 @@ editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
 app.Menu.Set(menu)
 ```
 
-**Observações sobre as plataformas:**
+**Observações específicas da plataforma:**
 
 - **macOS:** o menu aparece na barra de menus superior
 - **Windows/Linux:** o menu aparece na barra de título da janela
@@ -406,7 +411,7 @@ app.Menu.Set(menu)
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-Crie um `*ContextMenu` por meio do gerenciador e registre-o com um nome. `ContextMenuManager.Add` recebe `*ContextMenu` — **não** `*Menu` — e **não** há nenhum método `app.RegisterContextMenu`.
+Crie um `*ContextMenu` por meio do gerenciador e registre-o com um nome. `ContextMenuManager.Add` recebe `*ContextMenu` — **não** `*Menu` — e **não** existe um método `app.RegisterContextMenu`.
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -434,7 +439,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML/CSS:**
 
-O runtime aciona um menu de contexto registrado quando o elemento clicado com o botão direito (ou qualquer ancestral dele) tem a propriedade personalizada CSS `--custom-contextmenu` definida com esse nome. A propriedade opcional `--custom-contextmenu-data` é passada ao callback do Go por meio de `ctx.ContextMenuData()`. Para suprimir o menu de contexto padrão do navegador, defina `--default-contextmenu: hide` (ou `auto`/`show`).
+O runtime aciona um menu de contexto registrado quando o alvo do clique com o botão direito (ou qualquer elemento ancestral) tem a propriedade personalizada CSS `--custom-contextmenu` definida com esse nome. A propriedade opcional `--custom-contextmenu-data` é passada ao callback Go por meio de `ctx.ContextMenuData()`. Para suprimir o menu de contexto padrão do navegador, defina `--default-contextmenu: hide` (ou `auto`/`show`).
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -443,7 +448,7 @@ O runtime aciona um menu de contexto registrado quando o elemento clicado com o 
 </div>
 ```
 
-Não há nenhum atributo `data-wails-context-menu="..."` — ele nunca foi integrado ao runtime.
+Não existe um atributo `data-wails-context-menu="..."` — ele nunca foi conectado ao runtime.
 
 **Menus de contexto dinâmicos:**
 
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-Define a dica de ferramenta exibida ao passar o cursor sobre o ícone da bandeja. Não retorna nenhum valor.
+Define a dica de ferramenta exibida ao passar o cursor sobre o ícone da bandeja. Não retorna nada.
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -639,7 +644,7 @@ func main() {
 }
 ```
 
-### Aplicativo com bandeja do sistema
+### Aplicativo na bandeja do sistema
 
 ```go
 func setupSystemTray(app *application.App, window application.Window) {
@@ -752,31 +757,31 @@ func (e *Editor) save() {
 
 ### ✅ Faça
 
-- **Use aceleradores padrão** — siga as convenções da plataforma (Ctrl+C para copiar etc.)
+- **Use atalhos de teclado padrão** — siga as convenções da plataforma (Ctrl+C para copiar etc.)
 - **Chame Update() após as alterações** — caso contrário, o menu não refletirá as alterações
-- **Agrupe itens relacionados** — use separadores para organizar os itens de menu
+- **Agrupe itens relacionados** — use separadores para organizar os itens do menu
 - **Desabilite ações indisponíveis** — não as oculte; desabilite-as com SetEnabled(false)
 - **Use rótulos claros** — seja conciso e descritivo
-- **Siga as convenções da plataforma** — os padrões de menu diferem entre macOS e Windows/Linux
+- **Siga as convenções da plataforma** — os padrões de menu do macOS diferem dos usados no Windows/Linux
 
 ### ❌ Não faça
 
-- **Não se esqueça de Update()** — esse é o erro mais comum
-- **Não crie níveis demais de aninhamento** — mantenha os menus com no máximo 2-3 níveis
-- **Não use rótulos ambíguos** — "Processar" versus "Processar documento"
+- **Não se esqueça de chamar Update()** — esse é o erro mais comum
+- **Não aninhe em excesso** — limite os menus a, no máximo, 2-3 níveis
+- **Não use rótulos ambíguos** — "Processar" em vez de "Processar documento"
 - **Não complique demais** — mantenha os menus simples e focados
-- **Não misture metáforas** — mantenha a nomenclatura e a organização consistentes
+- **Não misture conceitos** — mantenha a nomenclatura e a organização consistentes
 
-## Observações específicas de cada plataforma
+## Observações específicas da plataforma
 
 ### macOS
 
 - O menu do aplicativo é adicionado automaticamente com o nome do aplicativo
-- Use `Cmd` em vez de `Ctrl` nos aceleradores
+- Use `Cmd` em vez de `Ctrl` para os atalhos de teclado
 - Por padrão, "Sobre", "Preferências" e "Sair" ficam no menu do aplicativo
 
 ### Windows/Linux
 
-- Sem menu de aplicativo automático
+- O menu do aplicativo não é adicionado automaticamente
 - Use `Ctrl` para os atalhos de teclado
-- “Sair” geralmente fica no menu Arquivo
+- "Sair" normalmente fica no menu Arquivo

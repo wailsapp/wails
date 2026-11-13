@@ -1,9 +1,9 @@
 ---
 title: "Créez des applications de bureau avec Go"
 description: "Applications de bureau natives utilisant Go et les technologies web"
-banner: {"content": "Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. <a href=\"https://v2.wails.io\">Vous recherchez la documentation de la v2 ?</a>\n"}
+banner: {"content": "Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. \u003ca href=\"https://v2.wails.io\"\u003eVous recherchez la documentation de v2 ?\u003c/a\u003e\n"}
 template: "splash"
-hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Bien démarrer","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Voir le tutoriel","variant":"secondary"}],"image":{"alt":"Logo de Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Créez de belles applications performantes avec Go et les technologies web modernes. Une seule base de code. Trois plateformes. Aucun navigateur.*"}
+hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Commencer","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Voir le tutoriel","variant":"secondary"}],"image":{"alt":"Logo de Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Créez de belles applications performantes avec Go et les technologies web modernes. Une seule base de code. Trois plateformes. Aucun navigateur.*"}
 sourcePath: "index.md"
 ---
 
@@ -75,7 +75,7 @@ sourcePath: "index.md"
 
 </style>
 
-<span class="browser-footnote" data-browser-footnote>* sauf si vous y tenez vraiment</span>
+<span class="browser-footnote" data-browser-footnote>* sauf si vous en voulez vraiment un</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
@@ -143,7 +143,7 @@ wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Aucune modification de votre code Go.** Le même `main.go`, les mêmes services, le même frontend : Wails compile automatiquement le tout pour iOS et Android. Les fonctionnalités propres à chaque plateforme (retour haptique, boîtes de dialogue natives, zones sûres) sont disponibles lorsque vous en avez besoin, mais ne sont pas nécessaires pour publier votre application.
+**Aucune modification de votre code Go.** Les mêmes `main.go`, les mêmes services, le même frontend : Wails compile automatiquement l’ensemble pour iOS et Android. Les fonctionnalités propres à chaque plateforme (retour haptique, boîtes de dialogue natives, zones sûres) sont disponibles lorsque vous en avez besoin, mais elles ne sont pas nécessaires pour publier votre application.
 
 [Documentation mobile →](/guides/mobile/)
 
@@ -152,51 +152,51 @@ wails3 task android:run  # run your existing app on Android Emulator
 ## Pourquoi Wails ?
 
 @cards{cols="2"}
-🚀 Des performances perceptibles par les utilisateurs
-- Binaires d’environ 15 Mo contre 150 Mo pour Electron
+🚀 Des performances que les utilisateurs remarquent
+- Binaires d’environ 15 Mo contre 150 Mo avec Electron
 - Environ 10 Mo de mémoire au repos contre plus de 100 Mo
-- Démarrage en &lt;0.5 s contre 2-3 s
-- Rendu natif à l’aide de la WebView du système d’exploitation
-- Aucune surcharge due à un navigateur intégré
+- Temps de démarrage de &lt;0.5 s contre 2-3 s
+- Rendu natif avec la WebView du système d’exploitation
+- Aucune surcharge liée à l’intégration d’un navigateur
 
 ---
 ⚙ Expérience de développement
 - Une seule base de code Go pour toutes les plateformes
-- N’importe quel framework web — React, Vue, Svelte
+- N’importe quel framework web : React, Vue, Svelte
 - Rechargement à chaud pendant le développement
-- Liaisons générées automatiquement pour appeler facilement Go depuis JavaScript
+- Liaisons générées automatiquement pour appeler facilement Go depuis Javascript
 - IPC en mémoire. Aucun port réseau
 
 ---
 ✓ Prêt pour les applications de bureau
 - Plusieurs fenêtres avec gestion de leur cycle de vie
 - Menus natifs et zone de notification système
-- Boîtes de dialogue de fichiers natives de la plateforme
+- Boîtes de dialogue de fichiers natives de chaque plateforme
 - Intégration au système et raccourcis
 - Outils de signature du code et de création de paquets
 
 ---
-▣ Bureau et mobile
-- Windows, macOS, Linux, iOS et Android
+▣ Ordinateur et mobile
+- Windows, macOS, Linux, iOS, Android
 - Même base de code, aucune réécriture
 - WebView native sur chaque plateforme
 - Aucun port ouvert, aucun serveur localhost
-- Fonctionnalités de la plateforme disponibles selon les besoins
+- Fonctionnalités propres à chaque plateforme disponibles selon les besoins
 
 @end
 
 ## Étapes suivantes
 
-Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
+Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. La prise en charge d’Android et d’iOS reste expérimentale et ne relève pas du contrat de compatibilité stable des applications de bureau.
+Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. La prise en charge d’Android et d’iOS reste expérimentale et ne relève pas du contrat de compatibilité stable pour les applications de bureau.
 
 @end
 
 @cards{cols="1"}
 ♥ Soutenez le développement de Wails
-Wails est un logiciel libre et gratuit, créé par des développeurs pour des développeurs. Si Wails vous aide à créer des applications exceptionnelles, envisagez de soutenir la poursuite de son développement.
+Wails est un logiciel libre et open source, créé par des développeurs pour des développeurs. Si Wails vous aide à créer des applications remarquables, envisagez de soutenir la poursuite de son développement.
 
 Votre parrainage contribue à maintenir le projet, à améliorer la documentation et à développer de nouvelles fonctionnalités qui profitent à toute la communauté.
 

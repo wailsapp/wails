@@ -5,43 +5,43 @@ slug: "feedback"
 sourcePath: "feedback.md"
 ---
 
-Vos retours sont les bienvenus et nous vous encourageons à nous en faire part ! Avant de créer un problème ou une discussion, recherchez ceux qui existent déjà. Voici les différentes manières de contribuer :
+Vos retours sont les bienvenus et vivement encouragés ! Avant de créer un ticket ou une discussion, vérifiez s'il en existe déjà sur le même sujet. Voici les différentes manières de contribuer :
 
 @tabs
 [Bugs]
-Si vous trouvez un bug, veuillez [ouvrir un problème](https://github.com/wailsapp/wails/issues/new/choose) sur GitHub à l’aide du modèle de rapport de bug.
+Si vous trouvez un bug, veuillez [ouvrir un ticket](https://github.com/wailsapp/wails/issues/new/choose) sur GitHub à l'aide du modèle de rapport de bug.
 
-- Décrivez clairement le bug à l’aide d’un exemple simple et reproductible. Si la documentation n’indique pas clairement ce qui *devrait* se produire, mentionnez-le dans le rapport.
+- Décrivez clairement le bug à l'aide d'un exemple simple et reproductible. Si la documentation n'indique pas clairement ce qui *devrait* se produire, mentionnez-le dans le rapport.
 - Incluez la sortie de `wails3 doctor` dans votre rapport.
-- Si le bug correspond à un comportement qui ne concorde pas avec la documentation actuelle, procédez également comme suit :
-  - Mettez à jour un exemple existant dans le répertoire `v3/examples`, ou créez-en un qui illustre clairement le problème.
-  - Ouvrez une [PR](https://github.com/wailsapp/wails/pulls) faisant référence au problème.
+- Si le bug correspond à un comportement qui n'est pas conforme à la documentation actuelle, effectuez également les opérations suivantes :
+  - Mettez à jour un exemple existant dans le répertoire `v3/examples` ou créez-en un nouveau qui illustre clairement le problème.
+  - Ouvrez une [PR](https://github.com/wailsapp/wails/pulls) faisant référence au ticket.
 
 
 @note{type="caution"}
-*N’oubliez pas* qu’un comportement inattendu n’est pas nécessairement un bug : il se peut simplement que le résultat ne corresponde pas à vos attentes. Dans ce cas, utilisez `Suggestions`.
+*Rappelez-vous* qu'un comportement inattendu n'est pas nécessairement un bug : il peut simplement ne pas correspondre à vos attentes. Dans ce cas, utilisez `Suggestions`.
 
 @end
 
 Vous pouvez également discuter des bugs dans le canal [#v3](https://discord.gg/bdj28QNHmT) sur Discord.
 
 [Correctifs]
-Si vous disposez d’un correctif pour un bug ou d’une amélioration de la documentation, veuillez procéder comme suit :
+Si vous disposez d'un correctif pour un bug ou d'une amélioration de la documentation, veuillez :
 
-- Ouvrez une pull request dans le [dépôt Wails](https://github.com/wailsapp/wails) en suivant les [consignes de contribution](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
-- Référencez tous les problèmes associés dans la description de la PR.
+- Ouvrir une pull request dans le [dépôt Wails](https://github.com/wailsapp/wails) en suivant les [directives de contribution](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
+- Mentionnez tous les tickets associés dans la description de la PR.
 
 [Améliorations]
-Les nouvelles fonctionnalités et les modifications du comportement public doivent être proposées au moyen d’une pull request en brouillon contenant une **WEP (proposition d’amélioration de Wails)**, et non d’un problème de demande de fonctionnalité.
+Les nouvelles fonctionnalités et les modifications du comportement public doivent être proposées au moyen d'une pull request à l'état de brouillon contenant une **WEP (Wails Enhancement Proposal)**, et non d'un ticket de demande de fonctionnalité.
 
 - Consultez le [processus WEP](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
-- Copiez le modèle, puis ouvrez une PR en brouillon intitulée `[WEP] <title>` qui ne contient que la WEP et les documents à l’appui.
-- Vous pouvez commencer par discuter d’une idée de manière informelle dans les [discussions GitHub](https://github.com/wailsapp/wails/discussions) ou sur le canal Discord [#v3](https://discord.gg/bdj28QNHmT), mais une PR de WEP est requise pour qu’un responsable de maintenance prenne une décision.
+- Copiez le modèle, puis ouvrez une PR à l'état de brouillon intitulée `[WEP] <title>`, contenant uniquement la WEP et les documents complémentaires.
+- Vous pouvez d'abord discuter de manière informelle d'une idée dans les [discussions GitHub](https://github.com/wailsapp/wails/discussions) ou dans le canal Discord [#v3](https://discord.gg/bdj28QNHmT), mais une PR de WEP est requise pour qu'un mainteneur prenne une décision.
 
 [Votes favorables]
-- Montrez votre soutien aux bugs, aux WEP et aux discussions à l’aide de la réaction :thumbsup: sur GitHub.
-- Veuillez *ne pas* ajouter simplement des commentaires tels que « +1 » ou « moi aussi ».
-- Ajoutez toutefois un commentaire si vous avez une contribution pertinente, par exemple « ce bug affecte également les builds ARM » ou « Une autre approche consisterait à… ».
+- Manifestez votre soutien aux bugs, aux WEP et aux discussions à l'aide de la réaction :thumbsup: sur GitHub.
+- Veuillez *ne pas* vous contenter d'ajouter des commentaires tels que « +1 » ou « moi aussi ».
+- Ajoutez toutefois un commentaire si vous avez une contribution pertinente à apporter, par exemple « ce bug affecte également les builds ARM » ou « Une autre approche consisterait à… ».
 
 @end
 
