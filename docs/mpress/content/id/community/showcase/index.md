@@ -27,6 +27,7 @@ Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek
 <a class="mpress-showcase-card" href="/community/showcase/minesweeper-xp/"><img src="/assets/showcase-images/minesweeper-xp.webp" alt="Tangkapan layar Minesweeper XP" loading="lazy"><span>Minesweeper XP</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/modalfilemanager/"><img src="/assets/showcase-images/modalfilemanager.webp" alt="Tangkapan layar Modal File Manager" loading="lazy"><span>Modal File Manager</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mollywallet/"><img src="/assets/showcase-images/mollywallet.webp" alt="Tangkapan layar Molly Wallet" loading="lazy"><span>Molly Wallet</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mygit/"><img src="/assets/showcase-images/mygit.webp" alt="Tangkapan layar MyGit" loading="lazy"><span>MyGit</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/october/"><img src="/assets/showcase-images/october.webp" alt="Tangkapan layar October" loading="lazy"><span>October</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/optimus/"><img src="/assets/showcase-images/optimus.webp" alt="Tangkapan layar Optimus" loading="lazy"><span>Optimus</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/portfall/"><img src="/assets/showcase-images/portfall.webp" alt="Tangkapan layar Portfall" loading="lazy"><span>Portfall</span></a>

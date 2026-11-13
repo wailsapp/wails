@@ -27,6 +27,7 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/minesweeper-xp/"><img src="/assets/showcase-images/minesweeper-xp.webp" alt="Captura de tela do Minesweeper XP" loading="lazy"><span>Minesweeper XP</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/modalfilemanager/"><img src="/assets/showcase-images/modalfilemanager.webp" alt="Captura de tela do Modal File Manager" loading="lazy"><span>Modal File Manager</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mollywallet/"><img src="/assets/showcase-images/mollywallet.webp" alt="Captura de tela do Molly Wallet" loading="lazy"><span>Molly Wallet</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mygit/"><img src="/assets/showcase-images/mygit.webp" alt="Captura de tela do MyGit" loading="lazy"><span>MyGit</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/october/"><img src="/assets/showcase-images/october.webp" alt="Captura de tela do October" loading="lazy"><span>October</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/optimus/"><img src="/assets/showcase-images/optimus.webp" alt="Captura de tela do Optimus" loading="lazy"><span>Optimus</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/portfall/"><img src="/assets/showcase-images/portfall.webp" alt="Captura de tela do Portfall" loading="lazy"><span>Portfall</span></a>

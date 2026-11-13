@@ -27,6 +27,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/minesweeper-xp/"><img src="/assets/showcase-images/minesweeper-xp.webp" alt="Minesweeper XP のスクリーンショット" loading="lazy"><span>Minesweeper XP</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/modalfilemanager/"><img src="/assets/showcase-images/modalfilemanager.webp" alt="Modal File Manager のスクリーンショット" loading="lazy"><span>Modal File Manager</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mollywallet/"><img src="/assets/showcase-images/mollywallet.webp" alt="Molly Wallet のスクリーンショット" loading="lazy"><span>Molly Wallet</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mygit/"><img src="/assets/showcase-images/mygit.webp" alt="MyGit のスクリーンショット" loading="lazy"><span>MyGit</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/october/"><img src="/assets/showcase-images/october.webp" alt="October のスクリーンショット" loading="lazy"><span>October</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/optimus/"><img src="/assets/showcase-images/optimus.webp" alt="Optimus のスクリーンショット" loading="lazy"><span>Optimus</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/portfall/"><img src="/assets/showcase-images/portfall.webp" alt="Portfall のスクリーンショット" loading="lazy"><span>Portfall</span></a>
