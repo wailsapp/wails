@@ -11,6 +11,7 @@ sourcePath: "community/showcase/index.md"
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/zh-tw/community/showcase/clip/"><img src="/assets/showcase-images/clip.png" alt="Clip 螢幕截圖" loading="lazy"><span>Clip</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Clipora 螢幕截圖" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard 螢幕截圖" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker 螢幕截圖" loading="lazy"><span>CFN Tracker</span></a>
