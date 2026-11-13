@@ -202,7 +202,11 @@ func init() {
 	if os.Getenv("WAILS_TEST_NOTARY_PROFILE_HELPER") != "1" {
 		return
 	}
-	if err := os.WriteFile(os.Getenv("WAILS_TEST_NOTARY_PROFILE_READY"), []byte(strings.Join(os.Args[1:], "\n")), 0600); err != nil {
+	ready := os.Getenv("WAILS_TEST_NOTARY_PROFILE_READY")
+	if err := os.WriteFile(ready+".tmp", []byte(strings.Join(os.Args[1:], "\n")), 0600); err != nil {
+		os.Exit(23)
+	}
+	if err := os.Rename(ready+".tmp", ready); err != nil {
 		os.Exit(23)
 	}
 	time.Sleep(time.Minute)
@@ -239,20 +243,20 @@ func TestSubmitNotarizationProfileCancelsRunningTool(t *testing.T) {
 	defer deadline.Stop()
 	poll := time.NewTicker(10 * time.Millisecond)
 	defer poll.Stop()
+	var readErr error
 	for {
 		select {
 		case err := <-result:
 			t.Fatalf("tool exited before cancellation: %v", err)
 		case <-deadline.C:
 			cancel()
-			t.Fatal("notarytool did not start")
+			t.Fatalf("notarytool did not start (last read error: %v)", readErr)
 		case <-poll.C:
 			arguments, err := os.ReadFile(ready)
-			if os.IsNotExist(err) {
-				continue
-			}
 			if err != nil {
-				t.Fatal(err)
+				// Windows scanners briefly lock a freshly renamed file with a sharing violation.
+				readErr = err
+				continue
 			}
 			want := strings.Join([]string{"notarytool", "submit", input, "--keychain-profile", "test-profile", "--wait"}, "\n")
 			if string(arguments) != want {
