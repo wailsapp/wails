@@ -561,6 +561,16 @@ func (f *Frontend) setupChromium() {
 			log.Fatal(err)
 		}
 	}
+	if opts := f.frontendOptions.Windows; opts != nil && opts.DisableGeneralAutofill {
+		if chromium.HasCapability(edge.GeneralAutofillEnabled) {
+			err := chromium.PutIsGeneralAutofillEnabled(false)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			f.logger.Warning("WebView2 Runtime is too old to disable general autofill")
+		}
+	}
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
