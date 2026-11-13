@@ -49,6 +49,7 @@ Consultez la section [Comment ajouter mon projet à la vitrine](#comment-ajouter
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Capture d’écran de Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Capture d’écran de MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Capture d’écran de Larvyn" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/foundation/"><img src="/assets/showcase-images/foundation-layouts.webp" alt="Capture d’écran de Foundation" loading="lazy"><span>Foundation</span></a>
 </div>
 
 ## Comment ajouter mon projet à la vitrine
