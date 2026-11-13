@@ -166,6 +166,10 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 	m.logger.Error(message, args...)
 }
 
+func (m *MessageProcessor) Warn(message string, args ...any) {
+	m.logger.Warn(message, args...)
+}
+
 func (m *MessageProcessor) Debug(message string, args ...any) {
 	m.logger.Debug(message, args...)
 }

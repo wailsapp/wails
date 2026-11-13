@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"encoding/json"
 
@@ -126,9 +127,33 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		jsonArgs, _ := json.Marshal(options.Args)
 		var result any
 		defer func() {
-			var jsonResult []byte
-			jsonResult, _ = json.Marshal(result)
-			m.Debug("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+			jsonResult, marshalErr := marshalSafely(result)
+			if marshalErr != nil {
+				m.Warn(
+					"Binding call result could not be JSON encoded",
+					"id",
+					*callID,
+					"method",
+					boundMethod.Name,
+					"result-type",
+					fmt.Sprintf("%T", result),
+					"error",
+					marshalErr,
+				)
+				return
+			}
+
+			m.Debug(
+				"Binding call complete:",
+				"id",
+				*callID,
+				"method",
+				boundMethod,
+				"args",
+				string(jsonArgs),
+				"result",
+				string(jsonResult),
+			)
 		}()
 
 		// Set the context values for the window
@@ -148,6 +173,19 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		}
 		if err != nil {
 			return nil, errs.WrapBindingCallFailedErrorf(err, "failed to call binding")
+		}
+		if _, marshalErr := marshalSafely(result); marshalErr != nil {
+			m.Warn(
+				"bound method returned a value that could not be encoded as JSON",
+				"id",
+				*callID,
+				"method",
+				boundMethod.Name,
+				"result-type",
+				fmt.Sprintf("%T", result),
+				"error",
+				marshalErr,
+			)
 		}
 		return result, nil
 
