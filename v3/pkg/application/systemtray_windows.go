@@ -5,6 +5,8 @@ package application
 import (
 	"errors"
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"syscall"
 	"unsafe"
 
@@ -27,13 +29,96 @@ type windowsSystemTray struct {
 	uid         uint32
 	hwnd        w32.HWND
 
+	// iconLock guards the icon handles below and every write to hwnd. SetIcon and
+	// SetDarkModeIcon run on the caller's goroutine (see anyThreadIconSetter) and
+	// the SystemThemeChanged listener on its own goroutine, so this state is not
+	// only touched by the main thread. Shell_NotifyIcon has no thread requirement
+	// and icon handles belong to the process, not to the thread that made them.
+	//
+	// The lock is held across each Shell_NotifyIcon call that passes an icon
+	// handle, and every DestroyIcon is made under it, so no goroutine can destroy
+	// a handle another is about to give to the shell. The cost is that a
+	// Shell_NotifyIcon that never returns keeps the lock, so the main thread must
+	// never wait for it: run takes it before any update can reach the shell
+	// (updateIcon skips the shell until hwnd is set), while reshow and destroy
+	// use TryLock and finish on a goroutine when it is busy. Main-thread reads of
+	// hwnd need no lock because only the main thread writes it.
+	iconLock sync.Mutex
+
 	lightModeIcon      w32.HICON
 	lightModeIconOwned bool
 	darkModeIcon       w32.HICON
 	darkModeIconOwned  bool
 	currentIcon        w32.HICON
 	currentIconOwned   bool
+
+	// lightSeq and darkSeq number each setIcon / setDarkModeIcon call, in call
+	// order. A call made on the main thread is applied on a goroutine, so an
+	// older call can reach iconLock after a newer one; lightApplied and
+	// darkApplied (guarded by iconLock) let it see that and drop itself.
+	lightSeq     atomic.Uint64
+	darkSeq      atomic.Uint64
+	lightApplied uint64
+	darkApplied  uint64
+
+	// lightPending and darkPending hold the newest main-thread update for each
+	// mode while one worker applies them, so a long Shell_NotifyIcon stall
+	// costs one goroutine and one icon handle per mode, not one per call.
+	lightPending pendingIcon
+	darkPending  pendingIcon
+
+	// destroyed is set before destroy deletes the icon, so a TaskbarCreated
+	// re-add still queued behind iconLock does not add it back.
+	destroyed atomic.Bool
 }
+
+// pendingIcon is the newest icon update queued from the main thread for one
+// mode (see queueIcon).
+type pendingIcon struct {
+	mu      sync.Mutex
+	icon    []byte
+	seq     uint64
+	pending bool
+	running bool
+}
+
+// queueIcon hands a main-thread icon update to a worker goroutine. It keeps a
+// copy of icon, because the caller may reuse its buffer once this returns, and
+// only the newest update: a worker still waiting for iconLock picks up the
+// latest icon when it gets there. At most one worker runs per mode.
+func queueIcon(p *pendingIcon, icon []byte, seq uint64, apply func(icon []byte, seq uint64)) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.icon = append([]byte(nil), icon...)
+	p.seq = seq
+	p.pending = true
+	if p.running {
+		return
+	}
+	p.running = true
+	go func() {
+		for {
+			p.mu.Lock()
+			if !p.pending {
+				p.running = false
+				p.mu.Unlock()
+				return
+			}
+			icon, seq := p.icon, p.seq
+			p.icon, p.pending = nil, false
+			p.mu.Unlock()
+			apply(icon, seq)
+		}
+	}()
+}
+
+// destroyIcon is w32.DestroyIcon; a variable so tests can see which handles
+// are destroyed.
+var destroyIcon = w32.DestroyIcon
+
+// shellNotifyIcon is w32.ShellNotifyIcon for updateIcon; a variable so tests
+// can make NIM_MODIFY succeed or fail.
+var shellNotifyIcon = w32.ShellNotifyIcon
 
 // releaseIcon destroys an icon handle only when we own it and no new handle reuses it.
 // Shared handles (e.g. from LoadIcon/LoadIconWithResourceID) must not be passed to DestroyIcon per https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-destroyicon.
@@ -46,7 +131,7 @@ func (s *windowsSystemTray) releaseIcon(handle w32.HICON, owned bool, keep ...w3
 			return
 		}
 	}
-	w32.DestroyIcon(handle)
+	destroyIcon(handle)
 }
 
 func (s *windowsSystemTray) openMenu() {
@@ -207,6 +292,15 @@ func (s *windowsSystemTray) setMenu(menu *Menu) {
 }
 
 func (s *windowsSystemTray) run() {
+	// Safe to wait for on the main thread: until hwnd is set below, an icon
+	// update holds iconLock only briefly and never calls Shell_NotifyIcon.
+	s.iconLock.Lock()
+	if s.destroyed.Load() {
+		// Destroy ran between SystemTray.Run setting the implementation and
+		// this call reaching the main thread: create nothing.
+		s.iconLock.Unlock()
+		return
+	}
 	s.hwnd = w32.CreateWindowEx(
 		0,
 		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
@@ -221,6 +315,7 @@ func (s *windowsSystemTray) run() {
 		0,
 		nil)
 	if s.hwnd == 0 {
+		s.iconLock.Unlock()
 		globalApplication.fatal("failed to create tray window: %s", syscall.GetLastError())
 		return
 	}
@@ -230,8 +325,12 @@ func (s *windowsSystemTray) run() {
 	// Resolve the base icons once so we can reuse them for light/dark modes
 	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
 
-	// Priority: custom icon > default app icon > built-in icon
-	if s.parent.icon != nil {
+	// Priority: custom icon > default app icon > built-in icon. A SetIcon that
+	// ran between impl being set and this lock already holds the newest icon
+	// (it no longer waits for the main thread), so keep it. A slot that only
+	// holds the handle the other setter copied into it (not owned) is not a
+	// configured icon: the icon configured before Run still wins there.
+	if (s.lightModeIcon == 0 || !s.lightModeIconOwned) && s.parent.icon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.icon)
 		if err == nil {
 			s.lightModeIcon = icon
@@ -258,7 +357,7 @@ func (s *windowsSystemTray) run() {
 		}
 	}
 
-	if s.parent.darkModeIcon != nil {
+	if (s.darkModeIcon == 0 || !s.darkModeIconOwned) && s.parent.darkModeIcon != nil {
 		icon, err := w32.CreateSmallHIconFromImage(s.parent.darkModeIcon)
 		if err == nil {
 			s.darkModeIcon = icon
@@ -294,6 +393,7 @@ func (s *windowsSystemTray) run() {
 		// Initial systray add can fail when the shell is not available. This is handled downstream via TaskbarCreated message.
 		globalApplication.warning("initial systray add failed: %v", err)
 	}
+	s.iconLock.Unlock()
 
 	if s.parent.menu != nil {
 		s.updateMenu(s.parent.menu)
@@ -315,7 +415,10 @@ func (s *windowsSystemTray) run() {
 	}
 
 	// Listen for dark mode changes
+	// Application event listeners run on their own goroutine, so lock like SetIcon.
 	s.cancelTheme = globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
+		s.iconLock.Lock()
+		defer s.iconLock.Unlock()
 		s.updateIcon()
 	})
 
@@ -323,7 +426,13 @@ func (s *windowsSystemTray) run() {
 	getNativeApplication().registerSystemTray(s)
 }
 
+// updateIcon must be called with iconLock held.
 func (s *windowsSystemTray) updateIcon() {
+	if s.hwnd == 0 {
+		// Not running yet, or destroyed. NIM_MODIFY would fail and roll back
+		// anyway; skipping it keeps iconLock clear of the shell until run.
+		return
+	}
 	var newIcon w32.HICON
 	if w32.IsSystemCurrentlyDarkMode() {
 		newIcon = s.darkModeIcon
@@ -345,7 +454,7 @@ func (s *windowsSystemTray) updateIcon() {
 		nid.HIcon = s.currentIcon
 	}
 
-	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
+	if !shellNotifyIcon(w32.NIM_MODIFY, &nid) {
 		// The icon isn't currently registered with the shell. This happens
 		// transiently when Explorer / the taskbar restarts and our icon is
 		// dropped before the TaskbarCreated handler (reshowSystrays) re-adds it.
@@ -385,12 +494,32 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 	return nid
 }
 
+// setIcon updates the light mode icon. On the main thread (a tray click
+// handler, for example) it hands the update to a goroutine, so the main
+// thread never waits for iconLock or for Shell_NotifyIcon.
 func (s *windowsSystemTray) setIcon(icon []byte) {
+	seq := s.lightSeq.Add(1)
+	if onMainThread() {
+		queueIcon(&s.lightPending, icon, seq, s.applyIcon)
+		return
+	}
+	s.applyIcon(icon, seq)
+}
+
+func (s *windowsSystemTray) applyIcon(icon []byte, seq uint64) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		globalApplication.error("failed to create systray light mode icon: %v", err)
 		return
 	}
+
+	s.iconLock.Lock()
+	defer s.iconLock.Unlock()
+	if seq < s.lightApplied || s.destroyed.Load() {
+		destroyIcon(newIcon) // a newer SetIcon got here first, or the tray is gone
+		return
+	}
+	s.lightApplied = seq
 
 	oldLight := s.lightModeIcon
 	oldLightOwned := s.lightModeIconOwned
@@ -407,20 +536,42 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 	}
 
 	// Only free previous handles we own that are no longer referenced.
-	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+	// The handle the shell is showing (currentIcon) is kept here: updateIcon
+	// releases it once NIM_MODIFY has moved the shell off it, or keeps
+	// showing it if that call fails.
+	s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	if oldDark != s.darkModeIcon {
-		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+		s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	}
 
 	s.updateIcon()
 }
 
+// setDarkModeIcon updates the dark mode icon, handing off from the main
+// thread like setIcon.
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
+	seq := s.darkSeq.Add(1)
+	if onMainThread() {
+		queueIcon(&s.darkPending, icon, seq, s.applyDarkModeIcon)
+		return
+	}
+	s.applyDarkModeIcon(icon, seq)
+}
+
+func (s *windowsSystemTray) applyDarkModeIcon(icon []byte, seq uint64) {
 	newIcon, err := w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		globalApplication.error("failed to create systray dark mode icon: %v", err)
 		return
 	}
+
+	s.iconLock.Lock()
+	defer s.iconLock.Unlock()
+	if seq < s.darkApplied || s.destroyed.Load() {
+		destroyIcon(newIcon) // a newer SetDarkModeIcon got here first, or the tray is gone
+		return
+	}
+	s.darkApplied = seq
 
 	oldDark := s.darkModeIcon
 	oldDarkOwned := s.darkModeIconOwned
@@ -440,12 +591,29 @@ func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	}
 
 	// Only free the previous handle if nothing else keeps a reference to it.
-	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon)
+	// The handle the shell is showing (currentIcon) is kept here: updateIcon
+	// releases it once NIM_MODIFY has moved the shell off it, or keeps
+	// showing it if that call fails.
+	s.releaseIcon(oldDark, oldDarkOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	if lightReplaced {
-		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon)
+		s.releaseIcon(oldLight, oldLightOwned, s.lightModeIcon, s.darkModeIcon, s.currentIcon)
 	}
 
 	s.updateIcon()
+}
+
+// iconSettersRunOnAnyThread marks setIcon and setDarkModeIcon as safe off the
+// main thread: they lock iconLock themselves.
+func (s *windowsSystemTray) iconSettersRunOnAnyThread() {}
+
+// onMainThread reports whether the caller is the main (message loop) thread.
+// False before the main loop exists, when there is no message loop to block.
+func onMainThread() bool {
+	if globalApplication == nil {
+		return false
+	}
+	app, ok := globalApplication.impl.(*windowsApp)
+	return ok && app != nil && app.mainThreadID != 0 && app.isOnMainThread()
 }
 
 func newSystemTrayImpl(parent *SystemTray) systemTrayImpl {
@@ -582,6 +750,11 @@ func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	// SystemTray.Destroy calls this on every call. A deferred cleanup keeps
+	// hwnd at the destroyed window's handle, so only the first call may act.
+	if s.destroyed.Swap(true) {
+		return
+	}
 	if s.cancelTheme != nil {
 		s.cancelTheme()
 		s.cancelTheme = nil
@@ -601,14 +774,63 @@ func (s *windowsSystemTray) destroy() {
 		globalApplication.debug("ShellNotifyIcon NIM_DELETE failed", "error", syscall.GetLastError())
 	}
 
-	// Clean up icon handles
-	lightIcon := s.lightModeIcon
-	darkIcon := s.darkModeIcon
-	currentIcon := s.currentIcon
+	hwnd := s.hwnd
+	if s.iconLock.TryLock() {
+		s.releaseIcons()
+		s.hwnd = 0
+		s.iconLock.Unlock()
+	} else {
+		// An icon update or a TaskbarCreated re-add holds iconLock, maybe stuck in
+		// Shell_NotifyIcon. Waiting here would freeze the main thread and hang
+		// Quit, so finish once it returns: delete the icon again in case a re-add
+		// in flight put it back after the delete above, then free the handles.
+		// hwnd keeps its value because only the main thread may write it; later
+		// calls on this tray fail harmlessly.
+		go func() {
+			s.iconLock.Lock()
+			defer s.iconLock.Unlock()
+			w32.ShellNotifyIcon(w32.NIM_DELETE, &nid)
+			s.releaseIcons()
+		}()
+	}
 
-	s.releaseIcon(lightIcon, s.lightModeIconOwned)
-	s.releaseIcon(darkIcon, s.darkModeIconOwned, lightIcon)
-	s.releaseIcon(currentIcon, s.currentIconOwned, lightIcon, darkIcon)
+	w32.DestroyWindow(hwnd)
+}
+
+// releaseIcons destroys the icon handles the tray owns, each exactly once.
+// Call with iconLock held.
+//
+// A handle can sit in several slots with only one of them owning it (for
+// example SetDarkModeIcon with no light icon leaves the light slot an
+// unowned copy of the dark handle), so ownership is decided per handle:
+// it is destroyed when any slot holding it owns it.
+func (s *windowsSystemTray) releaseIcons() {
+	slots := [...]struct {
+		handle w32.HICON
+		owned  bool
+	}{
+		{s.lightModeIcon, s.lightModeIconOwned},
+		{s.darkModeIcon, s.darkModeIconOwned},
+		{s.currentIcon, s.currentIconOwned},
+	}
+	for i, slot := range slots {
+		if slot.handle == 0 {
+			continue
+		}
+		owned, seen := slot.owned, false
+		for j, other := range slots {
+			if other.handle != slot.handle {
+				continue
+			}
+			if j < i {
+				seen = true // handled with the earlier slot
+			}
+			owned = owned || other.owned
+		}
+		if !seen && owned {
+			destroyIcon(slot.handle)
+		}
+	}
 
 	s.lightModeIcon = 0
 	s.lightModeIconOwned = false
@@ -616,9 +838,6 @@ func (s *windowsSystemTray) destroy() {
 	s.darkModeIconOwned = false
 	s.currentIcon = 0
 	s.currentIconOwned = false
-
-	w32.DestroyWindow(s.hwnd)
-	s.hwnd = 0
 }
 
 func (s *windowsSystemTray) Show() {
@@ -649,6 +868,32 @@ func (s *windowsSystemTray) Hide() {
 	}
 }
 
+// reshow adds the icon again after Explorer restarts (TaskbarCreated). It runs
+// on the main thread, so it does not wait for iconLock: when an icon update
+// holds it, maybe stuck in Shell_NotifyIcon on the old taskbar, the icon is
+// added from a goroutine once that update returns.
+func (s *windowsSystemTray) reshow() {
+	add := func() {
+		if s.hwnd == 0 || s.destroyed.Load() {
+			return // destroyed in the meantime
+		}
+		if _, err := s.show(); err != nil {
+			globalApplication.warning("failed to re-add system tray icon: %v", err)
+		}
+	}
+	if s.iconLock.TryLock() {
+		defer s.iconLock.Unlock()
+		add()
+		return
+	}
+	go func() {
+		s.iconLock.Lock()
+		defer s.iconLock.Unlock()
+		add()
+	}()
+}
+
+// show adds the icon to the notification area. Call with iconLock held.
 func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE

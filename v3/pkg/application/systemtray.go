@@ -78,6 +78,20 @@ type systemTrayImpl interface {
 	Hide()
 }
 
+// anyThreadIconSetter is implemented by a platform tray whose setIcon and
+// setDarkModeIcon lock their own state, so SetIcon and SetDarkModeIcon call them
+// on the caller's goroutine instead of the main thread. On Windows the update
+// waits on Shell_NotifyIcon, which Explorer or a security product's hook can
+// leave unanswered for hours; on the main thread that froze every window.
+type anyThreadIconSetter interface {
+	iconSettersRunOnAnyThread()
+}
+
+func iconSettersRunOnAnyThread(impl systemTrayImpl) bool {
+	_, ok := impl.(anyThreadIconSetter)
+	return ok
+}
+
 type SystemTray struct {
 	id           uint
 	textLock     sync.RWMutex // guards label and tooltip
@@ -242,9 +256,13 @@ func (s *SystemTray) PositionWindow(window Window, offset int) error {
 	})
 }
 
+// SetIcon sets the tray icon. On Windows the update runs on the calling
+// goroutine, which waits until Explorer accepts it; the main thread does not.
 func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 	if s.impl == nil {
 		s.icon = icon
+	} else if iconSettersRunOnAnyThread(s.impl) {
+		s.impl.setIcon(icon)
 	} else {
 		InvokeSync(func() {
 			s.impl.setIcon(icon)
@@ -256,6 +274,8 @@ func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 	if s.impl == nil {
 		s.darkModeIcon = icon
+	} else if iconSettersRunOnAnyThread(s.impl) {
+		s.impl.setDarkModeIcon(icon)
 	} else {
 		InvokeSync(func() {
 			s.impl.setDarkModeIcon(icon)
