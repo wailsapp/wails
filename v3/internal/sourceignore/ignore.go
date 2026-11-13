@@ -38,6 +38,10 @@ func Read(root string) (Matcher, error) {
 	m := &matcher{}
 	err := filepath.WalkDir(root, func(current string, entry fs.DirEntry, err error) error {
 		if err != nil {
+			// A sibling build step may delete its staging directory mid-walk.
+			if errors.Is(err, fs.ErrNotExist) && current != root {
+				return nil
+			}
 			return err
 		}
 		if !entry.IsDir() {
@@ -62,6 +66,9 @@ func Read(root string) (Matcher, error) {
 			return nil
 		}
 		file, err := os.Open(name)
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
 		if err != nil {
 			return err
 		}
