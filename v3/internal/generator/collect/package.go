@@ -266,11 +266,11 @@ func (info *PackageInfo) Collect() *PackageInfo {
 // is not the one described by the receiver.
 //
 // recordService is safe for unsynchronised concurrent calls.
-func (info *PackageInfo) recordService(obj *types.TypeName) *ServiceInfo {
+func (info *PackageInfo) recordService(obj, projection *types.TypeName) *ServiceInfo {
 	// Fetch current value, then add if not already present.
 	service, _ := info.services.Load(obj)
 	if service == nil {
-		service, _ = info.services.LoadOrStore(obj, newServiceInfo(info.collector, obj))
+		service, _ = info.services.LoadOrStore(obj, newServiceInfo(info.collector, obj, projection))
 	}
 	return service.(*ServiceInfo)
 }

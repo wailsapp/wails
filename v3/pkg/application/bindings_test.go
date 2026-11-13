@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wailsapp/wails/v3/internal/hash"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -17,6 +18,30 @@ type TestService struct {
 type Person struct {
 	Name string `json:"name"`
 }
+
+type ProjectedService struct{}
+
+type FrontendProjection interface {
+	Echo(string) string
+}
+
+type BackendProjection interface {
+	BackendOnly() string
+}
+
+type privateProjection interface {
+	private()
+}
+
+func (*ProjectedService) Echo(value string) string {
+	return value
+}
+
+func (*ProjectedService) BackendOnly() string {
+	return "secret"
+}
+
+func (*ProjectedService) private() {}
 
 func (t *TestService) Nil() {}
 
@@ -215,6 +240,152 @@ func TestRegisteredBindingMethodID(t *testing.T) {
 	}
 	if result != "foo" {
 		t.Fatalf("result: %v, expected result: foo", result)
+	}
+}
+
+func TestServiceBindingProjection(t *testing.T) {
+	const (
+		exposedID uint32 = 4000000002
+		hiddenID  uint32 = 4000000003
+	)
+
+	_ = application.New(application.Options{})
+
+	application.RegisterBindingMethodID((*ProjectedService).Echo, exposedID)
+	application.RegisterBindingMethodID((*ProjectedService).BackendOnly, hiddenID)
+	t.Cleanup(func() {
+		application.UnregisterBindingMethodID((*ProjectedService).Echo)
+		application.UnregisterBindingMethodID((*ProjectedService).BackendOnly)
+	})
+
+	instance := &ProjectedService{}
+	service := application.NewServiceAs[FrontendProjection](instance)
+	if service.Instance() != instance {
+		t.Fatal("NewServiceAs did not retain the concrete service instance")
+	}
+
+	bindings := application.NewBindings(nil, nil)
+	if err := bindings.Add(service); err != nil {
+		t.Fatalf("bindings.Add() error = %v", err)
+	}
+
+	const prefix = "github.com/wailsapp/wails/v3/pkg/application_test.ProjectedService."
+	exposed := bindings.Get(&application.CallOptions{MethodName: prefix + "Echo"})
+	if exposed == nil {
+		t.Fatal("projected method was not bound by name")
+	}
+	if bindings.GetByID(exposedID) != exposed {
+		t.Fatal("projected method was not bound by its registered ID")
+	}
+
+	if hidden := bindings.Get(&application.CallOptions{MethodName: prefix + "BackendOnly"}); hidden != nil {
+		t.Fatal("method outside the projection was bound by name")
+	}
+	if hidden := bindings.GetByID(hiddenID); hidden != nil {
+		t.Fatal("method outside the projection was bound by its registered ID")
+	}
+	if hidden := bindings.GetByID(hash.Fnv(prefix + "BackendOnly")); hidden != nil {
+		t.Fatal("method outside the projection was bound by its default ID")
+	}
+
+	result, err := exposed.Call(context.Background(), newArgs(`"hello"`))
+	if err != nil {
+		t.Fatalf("projected method call failed: %v", err)
+	}
+	if result != "hello" {
+		t.Fatalf("projected method result = %v, want hello", result)
+	}
+}
+
+func TestServiceBindingProjectionValidation(t *testing.T) {
+	_ = application.New(application.Options{})
+
+	tests := []struct {
+		name    string
+		service application.Service
+		want    string
+	}{
+		{
+			name:    "inferred concrete type",
+			service: application.NewServiceAs(&ProjectedService{}),
+			want:    "is not a named interface",
+		},
+		{
+			name:    "anonymous interface",
+			service: application.NewServiceAs[interface{ Echo(string) string }](&ProjectedService{}),
+			want:    "is not a named interface",
+		},
+		{
+			name:    "unexported interface method",
+			service: application.NewServiceAs[privateProjection](&ProjectedService{}),
+			want:    "contains unexported method private",
+		},
+		{
+			name: "nil interface instance",
+			service: func() application.Service {
+				var instance FrontendProjection
+				return application.NewServiceAs[FrontendProjection](instance)
+			}(),
+			want: "service instance is nil",
+		},
+		{
+			name: "typed nil concrete pointer",
+			service: func() application.Service {
+				var instance *ProjectedService
+				return application.NewServiceAs[FrontendProjection](instance)
+			}(),
+			want: "service instance is nil",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := application.NewBindings(nil, nil).Add(test.service)
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("bindings.Add() error = %v, want error containing %q", err, test.want)
+			}
+		})
+	}
+}
+
+func TestServiceBindingRejectsDuplicateConcreteType(t *testing.T) {
+	_ = application.New(application.Options{})
+
+	tests := []struct {
+		name     string
+		services func(*ProjectedService) (application.Service, application.Service)
+	}{
+		{
+			name: "different projections",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewServiceAs[FrontendProjection](instance), application.NewServiceAs[BackendProjection](instance)
+			},
+		},
+		{
+			name: "projected then unprojected",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewServiceAs[FrontendProjection](instance), application.NewService(instance)
+			},
+		},
+		{
+			name: "unprojected then projected",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewService(instance), application.NewServiceAs[FrontendProjection](instance)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			first, second := test.services(&ProjectedService{})
+			bindings := application.NewBindings(nil, nil)
+			if err := bindings.Add(first); err != nil {
+				t.Fatalf("first bindings.Add() error = %v", err)
+			}
+			if err := bindings.Add(second); err == nil || !strings.Contains(err.Error(), "is already registered") {
+				t.Fatalf("second bindings.Add() error = %v, want already registered error", err)
+			}
+		})
 	}
 }
 
