@@ -253,7 +253,9 @@ func (w *linuxWebviewWindow) setPosition(x int, y int) {
 }
 
 func (w *linuxWebviewWindow) applyScreenPlacement() {
-	opts := w.parent.options
+	// Read the placement fields in place. Copying the whole struct would also
+	// read DisableResize without resizableLock.
+	opts := &w.parent.options
 	if opts.Screen != nil {
 		if opts.InitialPosition == WindowCentered {
 			w.centerOnScreen(opts.Screen)
