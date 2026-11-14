@@ -191,7 +191,7 @@ tasks:
       - wails3 generate bindings -f '{{.Opn}}.BUILD_FLAGS{{.Cls}}' -clean=true{{if not (and .UseInterfaces .Typescript)}} -time-type=Date{{end}}{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}} -obfuscated{{.Opn}}end{{.Cls}}{{if .Typescript}} -ts{{end}}{{if and .UseInterfaces .Typescript}} -i{{end}}
 
   generate:icons:
-    summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
+    summary: Generates Windows `.ico`, Mac `.icns`, and Linux hicolor PNGs from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
     run: once
     dir: build
     sources:
@@ -200,8 +200,15 @@ tasks:
     generates:
       - "darwin/icons.icns"
       - "windows/icon.ico"
+      - "linux/icons/16x16.png"
+      - "linux/icons/32x32.png"
+      - "linux/icons/48x48.png"
+      - "linux/icons/64x64.png"
+      - "linux/icons/128x128.png"
+      - "linux/icons/256x256.png"
+      - "linux/icons/512x512.png"
     cmds:
-      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 
   dev:frontend:
     summary: Runs the frontend in development mode

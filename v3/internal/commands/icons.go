@@ -37,6 +37,8 @@ type IconsOptions struct {
 	MacFilename       string `description:"The output filename for the Mac icon bundle" default:"build/darwin/icon.icns"`
 	IconComposerInput string `description:"The input Icon Composer file (.icon)"`
 	MacAssetDir       string `description:"The output directory for the Mac assets (Assets.car and icons.icns)"`
+	LinuxOutputDir    string `description:"The output directory for Linux hicolor PNG icons"`
+	LinuxSizes        string `description:"The sizes to generate as Linux PNG icons (comma separated)" default:"16,32,48,64,128,256,512"`
 }
 
 func GenerateIcons(options *IconsOptions) error {
@@ -49,9 +51,12 @@ func GenerateIcons(options *IconsOptions) error {
 	if options.Input == "" && options.IconComposerInput == "" {
 		return fmt.Errorf("either input or icon composer input is required")
 	}
+	if options.LinuxOutputDir != "" && options.Input == "" {
+		return fmt.Errorf("input is required for Linux icon generation")
+	}
 
-	if options.Input != "" && options.WindowsFilename == "" && options.MacFilename == "" {
-		return fmt.Errorf("either windows filename or mac filename is required")
+	if options.Input != "" && options.WindowsFilename == "" && options.MacFilename == "" && options.LinuxOutputDir == "" {
+		return fmt.Errorf("at least one Windows, Mac, or Linux output is required")
 	}
 
 	if options.IconComposerInput != "" && options.MacAssetDir == "" {
@@ -63,6 +68,14 @@ func GenerateIcons(options *IconsOptions) error {
 	var err error
 	if options.Sizes != "" {
 		sizes, err = parseSizes(options.Sizes)
+		if err != nil {
+			return err
+		}
+	}
+
+	var linuxSizes []int
+	if options.LinuxOutputDir != "" {
+		linuxSizes, err = parseLinuxIconSizes(options.LinuxSizes)
 		if err != nil {
 			return err
 		}
@@ -108,6 +121,12 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacFilename != "" && !macIconsGenerated {
 			err := generateMacIcon(iconData, options)
 			if err != nil {
+				return err
+			}
+		}
+
+		if options.LinuxOutputDir != "" {
+			if err := generateLinuxIcons(iconData, linuxSizes, options.LinuxOutputDir); err != nil {
 				return err
 			}
 		}
