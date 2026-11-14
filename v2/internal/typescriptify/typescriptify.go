@@ -155,6 +155,15 @@ func New() *TypeScriptify {
 	return result
 }
 
+func hasNamedJSONTag(f reflect.StructField) bool {
+	jsonTag, hasTag := f.Tag.Lookup("json")
+	if !hasTag {
+		return false
+	}
+	parts := strings.Split(jsonTag, ",")
+	return len(parts) > 0 && parts[0] != "" && parts[0] != "-"
+}
+
 func (t *TypeScriptify) deepFields(typeOf reflect.Type) []reflect.StructField {
 	fields := make([]reflect.StructField, 0)
 
@@ -171,13 +180,24 @@ func (t *TypeScriptify) deepFields(typeOf reflect.Type) []reflect.StructField {
 		kind := f.Type.Kind()
 		isPointer := kind == reflect.Ptr && f.Type.Elem().Kind() == reflect.Struct
 		if f.Anonymous && kind == reflect.Struct {
-			// fmt.Println(v.Interface())
-			fields = append(fields, t.deepFields(f.Type)...)
+			if hasNamedJSONTag(f) {
+				jsonTag := t.getJSONFieldName(f, false)
+				if jsonTag != "" {
+					fields = append(fields, f)
+				}
+			} else {
+				fields = append(fields, t.deepFields(f.Type)...)
+			}
 		} else if f.Anonymous && isPointer {
-			// fmt.Println(v.Interface())
-			fields = append(fields, t.deepFields(f.Type.Elem())...)
+			if hasNamedJSONTag(f) {
+				jsonTag := t.getJSONFieldName(f, true)
+				if jsonTag != "" {
+					fields = append(fields, f)
+				}
+			} else {
+				fields = append(fields, t.deepFields(f.Type.Elem())...)
+			}
 		} else {
-			// Check we have a json tag
 			jsonTag := t.getJSONFieldName(f, isPointer)
 			if jsonTag != "" {
 				fields = append(fields, f)
