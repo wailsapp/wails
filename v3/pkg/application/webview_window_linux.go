@@ -463,7 +463,7 @@ func (w *linuxWebviewWindow) run() {
 	w.setTitle(title)
 	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
-	w.setResizable(!w.parent.options.DisableResize)
+	w.setResizable(w.parent.Resizable())
 	// Set min/max size with defaults
 	// Default min: 1x1 (smallest possible)
 	// Default max: 0x0 (uses screen size)
@@ -539,7 +539,7 @@ func (w *linuxWebviewWindow) run() {
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
 		js += fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", w.parent.options.Frameless)
-		js += fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", !w.parent.options.DisableResize)
+		js += fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", w.parent.Resizable())
 		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
