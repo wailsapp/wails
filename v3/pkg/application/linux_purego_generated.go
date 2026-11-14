@@ -229,13 +229,19 @@ var (
 	_native_webkit_get_major_version                                    func() uint32
 	_native_webkit_get_micro_version                                    func() uint32
 	_native_webkit_get_minor_version                                    func() uint32
+	_native_webkit_navigation_action_get_request                        func(uintptr) uintptr
+	_native_webkit_navigation_action_is_user_gesture                    func(uintptr) int32
+	_native_webkit_navigation_policy_decision_get_navigation_action     func(uintptr) uintptr
 	_native_webkit_network_session_get_default                          func() uintptr
 	_native_webkit_permission_request_allow                             func(uintptr)
 	_native_webkit_permission_request_deny                              func(uintptr)
+	_native_webkit_policy_decision_ignore                               func(uintptr)
+	_native_webkit_policy_decision_use                                  func(uintptr)
 	_native_webkit_settings_get_enable_developer_extras                 func(uintptr) int32
 	_native_webkit_settings_new                                         func() uintptr
 	_native_webkit_settings_set_enable_developer_extras                 func(uintptr, int32)
 	_native_webkit_settings_set_hardware_acceleration_policy            func(uintptr, int32)
+	_native_webkit_uri_request_get_uri                                  func(uintptr) uintptr
 	_native_webkit_uri_scheme_request_get_web_view                      func(uintptr) uintptr
 	_native_webkit_user_content_manager_add_script                      func(uintptr, uintptr)
 	_native_webkit_user_content_manager_new                             func() uintptr
@@ -490,13 +496,19 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_webkit_get_major_version, libWebKit, "webkit_get_major_version")
 	register(&_native_webkit_get_micro_version, libWebKit, "webkit_get_micro_version")
 	register(&_native_webkit_get_minor_version, libWebKit, "webkit_get_minor_version")
+	register(&_native_webkit_navigation_action_get_request, libWebKit, "webkit_navigation_action_get_request")
+	register(&_native_webkit_navigation_action_is_user_gesture, libWebKit, "webkit_navigation_action_is_user_gesture")
+	register(&_native_webkit_navigation_policy_decision_get_navigation_action, libWebKit, "webkit_navigation_policy_decision_get_navigation_action")
 	register(&_native_webkit_network_session_get_default, libWebKit, "webkit_network_session_get_default")
 	register(&_native_webkit_permission_request_allow, libWebKit, "webkit_permission_request_allow")
 	register(&_native_webkit_permission_request_deny, libWebKit, "webkit_permission_request_deny")
+	register(&_native_webkit_policy_decision_ignore, libWebKit, "webkit_policy_decision_ignore")
+	register(&_native_webkit_policy_decision_use, libWebKit, "webkit_policy_decision_use")
 	register(&_native_webkit_settings_get_enable_developer_extras, libWebKit, "webkit_settings_get_enable_developer_extras")
 	register(&_native_webkit_settings_new, libWebKit, "webkit_settings_new")
 	register(&_native_webkit_settings_set_enable_developer_extras, libWebKit, "webkit_settings_set_enable_developer_extras")
 	register(&_native_webkit_settings_set_hardware_acceleration_policy, libWebKit, "webkit_settings_set_hardware_acceleration_policy")
+	register(&_native_webkit_uri_request_get_uri, libWebKit, "webkit_uri_request_get_uri")
 	register(&_native_webkit_uri_scheme_request_get_web_view, libWebKit, "webkit_uri_scheme_request_get_web_view")
 	register(&_native_webkit_user_content_manager_add_script, libWebKit, "webkit_user_content_manager_add_script")
 	register(&_native_webkit_user_content_manager_new, libWebKit, "webkit_user_content_manager_new")
@@ -1651,6 +1663,21 @@ func webkit_get_minor_version() uint32 {
 }
 
 //go:uintptrescapes
+func webkit_navigation_action_get_request(p0 uintptr) uintptr {
+	return _native_webkit_navigation_action_get_request(p0)
+}
+
+//go:uintptrescapes
+func webkit_navigation_action_is_user_gesture(p0 uintptr) int32 {
+	return _native_webkit_navigation_action_is_user_gesture(p0)
+}
+
+//go:uintptrescapes
+func webkit_navigation_policy_decision_get_navigation_action(p0 uintptr) uintptr {
+	return _native_webkit_navigation_policy_decision_get_navigation_action(p0)
+}
+
+//go:uintptrescapes
 func webkit_network_session_get_default() uintptr {
 	return _native_webkit_network_session_get_default()
 }
@@ -1663,6 +1690,16 @@ func webkit_permission_request_allow(p0 uintptr) {
 //go:uintptrescapes
 func webkit_permission_request_deny(p0 uintptr) {
 	_native_webkit_permission_request_deny(p0)
+}
+
+//go:uintptrescapes
+func webkit_policy_decision_ignore(p0 uintptr) {
+	_native_webkit_policy_decision_ignore(p0)
+}
+
+//go:uintptrescapes
+func webkit_policy_decision_use(p0 uintptr) {
+	_native_webkit_policy_decision_use(p0)
 }
 
 //go:uintptrescapes
@@ -1683,6 +1720,11 @@ func webkit_settings_set_enable_developer_extras(p0 uintptr, p1 int32) {
 //go:uintptrescapes
 func webkit_settings_set_hardware_acceleration_policy(p0 uintptr, p1 int32) {
 	_native_webkit_settings_set_hardware_acceleration_policy(p0, p1)
+}
+
+//go:uintptrescapes
+func webkit_uri_request_get_uri(p0 uintptr) uintptr {
+	return _native_webkit_uri_request_get_uri(p0)
 }
 
 //go:uintptrescapes
