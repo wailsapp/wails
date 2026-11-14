@@ -219,6 +219,10 @@ type WebviewWindow struct {
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
 
+	// resizableLock guards options.DisableResize. SetResizable is called from
+	// the runtime message goroutine while window event hooks read the option.
+	resizableLock sync.RWMutex
+
 	savedMinWidth    int
 	savedMinHeight   int
 	savedMaxWidth    int
@@ -588,7 +592,9 @@ func (w *WebviewWindow) GetZoom() float64 {
 
 // SetResizable sets whether the window is resizable.
 func (w *WebviewWindow) SetResizable(b bool) Window {
+	w.resizableLock.Lock()
 	w.options.DisableResize = !b
+	w.resizableLock.Unlock()
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setResizable(b)
@@ -610,6 +616,8 @@ func (w *WebviewWindow) SetContentProtection(b bool) Window {
 
 // Resizable returns true if the window is resizable.
 func (w *WebviewWindow) Resizable() bool {
+	w.resizableLock.RLock()
+	defer w.resizableLock.RUnlock()
 	return !w.options.DisableResize
 }
 
@@ -885,7 +893,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		pending := w.pendingJS
 		w.pendingJS = nil
 		w.pendingJSMutex.Unlock()
-		w.SetResizable(!w.options.DisableResize)
+		w.SetResizable(w.Resizable())
 		for _, js := range pending {
 			InvokeSync(func() {
 				w.impl.execJS(js)

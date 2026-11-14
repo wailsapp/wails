@@ -204,7 +204,7 @@ func (w *windowsWebviewWindow) nonClientHitTestFromScreen(screenX, screenY int) 
 }
 
 func (w *windowsWebviewWindow) resizeBorderHitTest(screenX, screenY int) (uintptr, bool) {
-	if w.parent.options.DisableResize || w.isMaximised() || w.isFullscreen() {
+	if !w.parent.Resizable() || w.isMaximised() || w.isFullscreen() {
 		return 0, false
 	}
 
