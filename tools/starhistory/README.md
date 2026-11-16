@@ -15,6 +15,8 @@ Run it locally from this directory:
 GOWORK=off GITHUB_TOKEN="$(gh auth token)" go run .
 ```
 
-The scheduled workflow renders the SVG weekly and retains it as a workflow
-artifact. A manually dispatched run also publishes the changed SVG, keeping
-repository writes behind an explicit confirmation.
+The scheduled workflow renders and publishes the SVG weekly, retaining it as a
+workflow artifact and committing the updated image to the repository. A manually
+dispatched run performs the same refresh immediately. Publishing runs only in
+wailsapp/wails and uses the existing repository token; its identity must be
+allowed to push to the target branch under the repository rules.

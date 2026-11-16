@@ -91,14 +91,19 @@ func FindLibraryFile(fileName string) (string, error) {
 	for _, dir := range GetAllLibPaths() {
 		// Check exact match
 		fullPath := filepath.Join(dir, fileName)
-		if _, err := os.Stat(fullPath); err == nil {
+		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
 			return fullPath, nil
 		}
 
 		// Check with .so suffix variations
-		matches, err := filepath.Glob(filepath.Join(dir, fileName+"*"))
-		if err == nil && len(matches) > 0 {
-			return matches[0], nil
+		matches, err := filepath.Glob(filepath.Join(dir, fileName+".[0-9]*"))
+		if err != nil {
+			continue
+		}
+		for _, match := range matches {
+			if info, err := os.Stat(match); err == nil && !info.IsDir() {
+				return match, nil
+			}
 		}
 	}
 
@@ -206,13 +211,17 @@ func findFileWithLdconfig(fileName string) (string, error) {
 		return "", err
 	}
 
-	baseName := strings.TrimSuffix(fileName, ".so")
 	for _, line := range strings.Split(string(output), "\n") {
-		if strings.Contains(line, baseName) {
-			parts := strings.Split(line, "=>")
-			if len(parts) == 2 {
-				return strings.TrimSpace(parts[1]), nil
-			}
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		name := fields[0]
+		if name != fileName && !(strings.HasSuffix(fileName, ".so") && strings.HasPrefix(name, fileName+".")) {
+			continue
+		}
+		if _, libPath, ok := strings.Cut(line, "=>"); ok {
+			return strings.TrimSpace(libPath), nil
 		}
 	}
 
@@ -500,6 +509,9 @@ func FindAllLibraries(libNames ...string) []LibraryMatch {
 
 // findLibraryPathCtx is FindLibraryPath with context support.
 func findLibraryPathCtx(ctx context.Context, libName string) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
 	// Create a child context for this search
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -543,8 +555,16 @@ func findLibraryPathCtx(ctx context.Context, libName string) (string, error) {
 		close(results)
 	}()
 
-	if result, ok := <-results; ok {
-		return result.path, nil
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case result, ok := <-results:
+		if ok {
+			return result.path, nil
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return "", err
 	}
 
 	return "", &LibraryNotFoundError{Name: libName}

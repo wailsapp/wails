@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "completed_by": "CLI_VERSION",
+  "complete": false,
+  "wrote": [
+    "wails.migrated.yaml"
+  ],
+  "sources": {
+    "Taskfile.yml": "0ad3fc270b445867b3d99276446cabce09d95b67a7155516d22f0ec7e807afb1"
+  },
+  "taskfiles": [
+    {
+      "file": "Taskfile.yml",
+      "role": "root",
+      "classification": "customised",
+      "modified_tasks": [
+        "build",
+        "preflight"
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "modified-task",
+      "file": "Taskfile.yml",
+      "task": "build",
+      "message": "root dispatch task was modified and is not proven representable in config-only YAML; keep using Taskfiles"
+    },
+    {
+      "severity": "warning",
+      "code": "unsupported-task",
+      "file": "Taskfile.yml",
+      "task": "preflight",
+      "message": "reachable custom task is not representable in config-only YAML; keep using Taskfiles"
+    },
+    {
+      "severity": "info",
+      "code": "frontend-missing",
+      "file": "frontend",
+      "message": "no conventional frontend directory was found; manifest defaults were retained"
+    }
+  ]
+}

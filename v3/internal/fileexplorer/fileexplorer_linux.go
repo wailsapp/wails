@@ -4,36 +4,28 @@ package fileexplorer
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 )
 
 // when possible; the fallback method does not support selecting a file.
-func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
-	// Map of field codes to their replacements
-	var fieldCodes = map[string]string{
-		"%d": "",
-		"%D": "",
-		"%n": "",
-		"%N": "",
-		"%v": "",
-		"%m": "",
-		"%f": path,
-		"%F": path,
-		"%u": pathToURI(path),
-		"%U": pathToURI(path),
-	}
-	fileManagerQuery := exec.Command("xdg-mime", "query", "default", "inode/directory")
+func explorerBinArgs(ctx context.Context, path string, selectFile bool) (string, []string, error) {
+	fileManagerQuery := exec.CommandContext(ctx, "xdg-mime", "query", "default", "inode/directory")
 	buf := new(bytes.Buffer)
 	fileManagerQuery.Stdout = buf
 	fileManagerQuery.Stderr = nil
 
 	if err := fileManagerQuery.Run(); err != nil {
+		if err := ctx.Err(); err != nil {
+			return "", nil, err
+		}
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
@@ -48,12 +40,29 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	execCmd := entry.Exec
-	for fieldCode, replacement := range fieldCodes {
-		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
+	uri := pathToURI(path)
+	fieldCodes := strings.NewReplacer(
+		"%%", "%",
+		"%d", "", "%D", "", "%n", "", "%N", "", "%v", "", "%m", "",
+		"%f", path, "%F", path, "%u", uri, "%U", uri,
+	)
+	// Split before expanding so whitespace in a selected path stays in one argument.
+	fields := splitDesktopExec(entry.Exec)
+	args := fields[:0]
+	targetExpanded := false
+	for _, field := range fields {
+		if expanded := fieldCodes.Replace(field); expanded != "" || field == "" {
+			args = append(args, expanded)
+			// Escaped percent signs do not introduce file or URI placeholders.
+			unescapedCodes := strings.ReplaceAll(field, "%%", "")
+			targetExpanded = targetExpanded || strings.Contains(unescapedCodes, "%f") || strings.Contains(unescapedCodes, "%F") ||
+				strings.Contains(unescapedCodes, "%u") || strings.Contains(unescapedCodes, "%U")
+		}
 	}
-	args := strings.Fields(execCmd)
-	if !strings.Contains(strings.Join(args, " "), path) {
+	if len(args) == 0 {
+		return fallbackExplorerBinArgs(path, selectFile)
+	}
+	if !targetExpanded && !slices.Contains(args[1:], path) && !slices.Contains(args[1:], uri) {
 		args = append(args, path)
 	}
 
@@ -96,15 +105,25 @@ func pathToURI(path string) string {
 }
 
 func findDesktopFile(xdgFileName string) (string, error) {
-	paths := []string{
-		filepath.Join(os.Getenv("XDG_DATA_HOME"), "applications"),
-		filepath.Join(os.Getenv("HOME"), ".local", "share", "applications"),
-		"/usr/share/applications",
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if !filepath.IsAbs(dataHome) {
+		dataHome = ""
+		if home, err := os.UserHomeDir(); err == nil {
+			dataHome = filepath.Join(home, ".local", "share")
+		}
 	}
+	dataDirs := os.Getenv("XDG_DATA_DIRS")
+	if dataDirs == "" {
+		dataDirs = "/usr/local/share:/usr/share"
+	}
+	paths := append([]string{dataHome}, filepath.SplitList(dataDirs)...)
 
-	for _, path := range paths {
-		desktopFile := filepath.Join(path, xdgFileName)
-		if _, err := os.Stat(desktopFile); err == nil {
+	for _, dataDir := range paths {
+		if !filepath.IsAbs(dataDir) {
+			continue
+		}
+		desktopFile := filepath.Join(dataDir, "applications", xdgFileName)
+		if info, err := os.Stat(desktopFile); err == nil && !info.IsDir() {
 			return desktopFile, nil
 		}
 	}

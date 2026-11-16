@@ -1,465 +1,454 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "d9941e6335ab667e4139",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "0d2afe1362d95c3762fa",
   "sourceFile": "guides/custom-transport.md",
   "sourceLanguage": "en",
   "targetLanguage": "ja",
   "segments": {
     "b0001-text-01": {
       "sourceHash": "d6e6df4c3e403361f21437c062a5a943fe34e16116764bab57738969a732774b",
-      "targetHash": "45465fb02d6255401977f95b9c0dd6b26b8ce9246a0a06b1958af08767f5efc3",
-      "machineHash": "45465fb02d6255401977f95b9c0dd6b26b8ce9246a0a06b1958af08767f5efc3",
-      "machineText": "Wails v3 では、生成されたすべてのバインディングとイベント通信を維持したまま、カスタム IPC トランスポート層を使用できます。これにより、デフォルトの HTTP fetch ベースのトランスポートを、WebSocket、カスタムプロトコル、またはその他の任意のトランスポート方式に置き換えられます。",
-      "status": "final",
+      "targetHash": "b0c4c9c189ff2f853a1581cbec2a0448d9e5d359dfe532986d938f8347cce440",
+      "machineHash": "b0c4c9c189ff2f853a1581cbec2a0448d9e5d359dfe532986d938f8347cce440",
+      "machineText": "Wails v3 では、生成されたすべてのバインディングとイベント通信を維持したまま、カスタム IPC トランスポート層を使用できます。これにより、デフォルトの HTTP fetch ベースのトランスポートを、WebSocket、カスタムプロトコル、またはその他の任意のトランスポート機構に置き換えられます。",
+      "status": "machine-translated",
       "sourcePreview": "Wails v3 allows you to provide a custom IPC transport layer while retaining all generated bindings a…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0002-heading-01": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "aaaf449bd4eac9c5629ab332244ab95c20fab59150ca0428592b44e1ffeba446",
       "machineHash": "aaaf449bd4eac9c5629ab332244ab95c20fab59150ca0428592b44e1ffeba446",
       "machineText": "概要",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Overview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0003-text-01": {
       "sourceHash": "a086d67f1346a1e05c0a8382a1a711810fb8e295283b1bda25770aa46b60cefe",
-      "targetHash": "5b64300a0cc4b5870546ec5633e096e9c1b12b459e4f933eb22bb832d140cc3b",
-      "machineHash": "5b64300a0cc4b5870546ec5633e096e9c1b12b459e4f933eb22bb832d140cc3b",
-      "machineText": "デフォルトでは、Wails はフロントエンドからの HTTP fetch リクエストを使用し、`/wails/runtime` を介してバックエンドと通信します。カスタムトランスポート API では、次のことが可能です。",
-      "status": "final",
+      "targetHash": "591eb6c2109a83d7292f218d99c06ae631f0d17c0761f500435db5abcd972871",
+      "machineHash": "591eb6c2109a83d7292f218d99c06ae631f0d17c0761f500435db5abcd972871",
+      "machineText": "デフォルトでは、Wails はフロントエンドからの HTTP fetch リクエストを使用し、`/wails/runtime` を介してバックエンドと通信します。カスタムトランスポート API を使用すると、次のことができます。",
+      "status": "machine-translated",
       "sourcePreview": "By default, Wails uses HTTP fetch requests from the frontend to communicate with the backend via `/w…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0004-text-01": {
       "sourceHash": "aa367d15d354444f5227fbcf404d508ac2bc305594598418c99d14a5095d2316",
       "targetHash": "3a1a918dc632297df074a718e09db3fdc80bb5a6d82d80ac1f56654f7b6b315e",
       "machineHash": "3a1a918dc632297df074a718e09db3fdc80bb5a6d82d80ac1f56654f7b6b315e",
       "machineText": "HTTP トランスポートを WebSocket、gRPC、または任意のカスタムプロトコルに置き換える",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Replace the HTTP transport with WebSockets, gRPC, or any custom protocol",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0005-text-01": {
       "sourceHash": "a7f66838790528040b14321b6216b51f315840e6e637fd2fde238165f7c5f0da",
       "targetHash": "468889bc2376246b4ab13667e728040216dc331277e06308bbabeefae7796557",
       "machineHash": "468889bc2376246b4ab13667e728040216dc331277e06308bbabeefae7796557",
       "machineText": "Wails のコード生成との完全な互換性を維持する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Maintain full compatibility with Wails code generation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0006-text-01": {
       "sourceHash": "19a8361c79cf39248a2c4dced91b5da404d66ff82fb1b1e4ba69444af75aab04",
       "targetHash": "f5e9680bab70831cd87936f6b3b90b3a0fe8a55d5ba001212c26d478b30b440b",
       "machineHash": "f5e9680bab70831cd87936f6b3b90b3a0fe8a55d5ba001212c26d478b30b440b",
       "machineText": "既存のすべてのバインディング、イベント、ダイアログ、およびその他の Wails 機能を維持する",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Keep all existing bindings, events, dialogs, and other Wails features",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0007-text-01": {
       "sourceHash": "0b04b37f4b236630595c98c0e715c68c9ebea51d362b888778c70b98fc94bc42",
-      "targetHash": "c3a17c08f943c083a1c1fd2c1606a3279ac2b5e995754dcac503093d850011e0",
-      "machineHash": "c3a17c08f943c083a1c1fd2c1606a3279ac2b5e995754dcac503093d850011e0",
-      "machineText": "独自の接続管理、認証、エラー処理を実装する",
-      "status": "final",
+      "targetHash": "5dd67e54fc5acc5d294b74e000c0bf3e57be8c8fb66bb6109eb16857ad46106f",
+      "machineHash": "5dd67e54fc5acc5d294b74e000c0bf3e57be8c8fb66bb6109eb16857ad46106f",
+      "machineText": "独自の接続管理、認証、およびエラー処理を実装する",
+      "status": "machine-translated",
       "sourcePreview": "Implement your own connection management, authentication, and error handling",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0008-heading-01": {
       "sourceHash": "cd74053c54816e473883dede0ad3b152f38a41995409eade6b42704919bb1359",
       "targetHash": "bdf750266125c115dfd0b0957d05969dbf65403d7332e8a5d3ce662aeba058a4",
       "machineHash": "bdf750266125c115dfd0b0957d05969dbf65403d7332e8a5d3ce662aeba058a4",
       "machineText": "アーキテクチャ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Architecture",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0009-heading-01": {
-      "sourceHash": "8d59829c1e15afe1a7fae93e8e5e32d8511bec5fd598a09f4fea6033b31e8a66",
-      "targetHash": "a6d0fc6c0ba3cdc4284359a6db437b609db0f8764bd70afc120896beef7520c5",
-      "machineHash": "a6d0fc6c0ba3cdc4284359a6db437b609db0f8764bd70afc120896beef7520c5",
-      "machineText": "使用方法",
-      "status": "final",
-      "sourcePreview": "Usage",
+      "sourceHash": "0e0929a725fc69956ccebfb705451b5ab16e1a17be86b579eefd320bf2833fab",
+      "targetHash": "3b3a3e4227cc1891bcb251e41c94e89c5cc6565906f33d2a0543097bb0df5a29",
+      "machineHash": "3b3a3e4227cc1891bcb251e41c94e89c5cc6565906f33d2a0543097bb0df5a29",
+      "machineText": "完全な WebSocket サンプルの実行",
+      "status": "machine-translated",
+      "sourcePreview": "Run the complete WebSocket example",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0010-heading-01": {
-      "sourceHash": "4d3b0d44aac27d9aa4f472775a4c83864617822f6dc9bb4fb6c753c081f91576",
-      "targetHash": "0fbcbc33d0aa84c63fc6daa508f8b0cdfb3a77548733e2a301839e12e5652890",
-      "machineHash": "0fbcbc33d0aa84c63fc6daa508f8b0cdfb3a77548733e2a301839e12e5652890",
-      "machineText": "1. Transport インターフェースを実装する",
-      "status": "final",
-      "sourcePreview": "1. Implement the Transport Interface",
+    "b0010-text-01": {
+      "sourceHash": "fcc8d763af00800b5dd42a0b646e066de4cfd56c3cf9e54ab74df30a689cbc10",
+      "targetHash": "59af9f8c343abc4f5b31e831f3149a2cf03e8a13a12e400e3bbca822151f7deb",
+      "machineHash": "59af9f8c343abc4f5b31e831f3149a2cf03e8a13a12e400e3bbca822151f7deb",
+      "machineText": "[WebSocket トランスポートのサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport)には、リクエスト ID とレスポンス、ライフサイクル管理、JavaScript クライアント、イベント配信という、プロトコルの両側の実装が含まれています。`Start` と `Stop` だけを実装したトランスポートではなく、これらのファイルを出発点にしてください。",
+      "status": "machine-translated",
+      "sourcePreview": "The [WebSocket transport example](https://github.com/wailsapp/wails/tree/master/v3/examples/websocke…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0011-text-01": {
-      "sourceHash": "a22be1c580ba98b2e82400760d417fb0ae1181ce81037a34bd3ff66af42ae97e",
-      "targetHash": "5c27ff8a796d08d966f4d31c91482681dc12f560a9226ed693a5899783a88a9d",
-      "machineHash": "5c27ff8a796d08d966f4d31c91482681dc12f560a9226ed693a5899783a88a9d",
-      "machineText": "`Transport` インターフェースを実装して、カスタムトランスポートを作成します。",
-      "status": "final",
-      "sourcePreview": "Create a custom transport by implementing the `Transport` interface:",
+      "sourceHash": "7cad785f7ea32d06b028eded63ceec1cf02b4c32db0f8789bd361935018ee203",
+      "targetHash": "645bc6e678f646d0de95a12a1e6a15c36f3b595fcb56c912d789b4c62042b287",
+      "machineHash": "645bc6e678f646d0de95a12a1e6a15c36f3b595fcb56c912d789b4c62042b287",
+      "machineText": "ネイティブプラットフォームの依存関係がインストールされている Wails リポジトリの作業コピーで、次を実行します。",
+      "status": "machine-translated",
+      "sourcePreview": "From a Wails repository checkout with the native platform dependencies installed:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0012-heading-01": {
-      "sourceHash": "a0cfead0dcdb872d3b047b491d24c80545385ab1e3bcff798ff69aecbe1568ed",
-      "targetHash": "848d349e56707a10e9172ef2ffb990ed99ea84bd51ab7de46f3ef237cf67fbb2",
-      "machineHash": "848d349e56707a10e9172ef2ffb990ed99ea84bd51ab7de46f3ef237cf67fbb2",
-      "machineText": "2. アプリケーションを設定する",
-      "status": "final",
-      "sourcePreview": "2. Configure Your Application",
+    "b0012-text-01": {
+      "sourceHash": "f7bcaa1d66e05ac8c2534d68a2c52865a390bdfbfb38328301d097562f32b254",
+      "targetHash": "5a5835308a30f8b7acc1d329988328f850fdc65b93ce787c820fa55938fe3204",
+      "machineHash": "5a5835308a30f8b7acc1d329988328f850fdc65b93ce787c820fa55938fe3204",
+      "machineText": "このサンプルはネイティブウィンドウを開き、ポート 9099 で WebSocket エンドポイントを起動します。信頼できるローカル開発環境で使用してください。ネットワークからアクセス可能な派生版をデプロイする前に、リスナーを制限し、オリジンを検証して、クライアントを認証してください。このサンプルのオリジンポリシーは制限が緩く、本番環境向けのセキュリティポリシーではありません。",
+      "status": "machine-translated",
+      "sourcePreview": "The example opens a native window and starts a WebSocket endpoint at port 9099. Use it in a trusted …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0013-text-01": {
-      "sourceHash": "bf1892cc0d514ff54da903beedfb8592c7696bb0dbc91eb31399f6ad7b6de19f",
-      "targetHash": "c7c30eb7bc329f921df1e2f15cfa159dd34ee2297cd1a5265d0f383251caaee4",
-      "machineHash": "c7c30eb7bc329f921df1e2f15cfa159dd34ee2297cd1a5265d0f383251caaee4",
-      "machineText": "カスタムトランスポートをアプリケーションのオプションに渡します。",
-      "status": "final",
-      "sourcePreview": "Pass your custom transport to the application options:",
+    "b0013-heading-01": {
+      "sourceHash": "8705d1750ad9ae3633054692239c2e801929ad650ef929e7612c95e256273e9e",
+      "targetHash": "5ddebfb6aa92cc530fde9a388ea8d23c66415c199c430dad877c9a4dbbae1de9",
+      "machineHash": "5ddebfb6aa92cc530fde9a388ea8d23c66415c199c430dad877c9a4dbbae1de9",
+      "machineText": "バックエンドの規約",
+      "status": "machine-translated",
+      "sourcePreview": "Backend contract",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0014-heading-01": {
-      "sourceHash": "202beee28e90d45d2fd861af10e8f0f8fd75041085b76cbe06b3d08a11c93bc5",
-      "targetHash": "22740ff72670dc564ba6dc637a145e9d8d292d0557e22bc6e2eacd48ce329698",
-      "machineHash": "22740ff72670dc564ba6dc637a145e9d8d292d0557e22bc6e2eacd48ce329698",
-      "machineText": "3. フロントエンドランタイムを変更する",
-      "status": "final",
-      "sourcePreview": "3. Modify Frontend Runtime",
+    "b0014-text-01": {
+      "sourceHash": "2273d0949699bf9a567e3adb4915078fd9432b75b88217a693cff37758052c10",
+      "targetHash": "7d756e734bca119671c4e92075d4dec2b3256a742d6ebe0074b71eabd01facef",
+      "machineHash": "7d756e734bca119671c4e92075d4dec2b3256a742d6ebe0074b71eabd01facef",
+      "machineText": "トランスポートは、必須の 3 つのメソッドをすべて実装する必要があります。サンプルの `WebSocketTransport` は `Start`、`JSClient`、`Stop` を実装し、`JSClient` は Wails がページに挿入する JavaScript シムを提供します。実装には、コンパイル時のインターフェースチェックを含めてください。",
+      "status": "machine-translated",
+      "sourcePreview": "A transport must implement all three required methods. The example's `WebSocketTransport` implements…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0015-text-01": {
-      "sourceHash": "297e75307dff32d92e77ea132350de0f02fc7d3e4082871bdb039a3e18a92793",
-      "targetHash": "2bd9dda607f7ba702a0671bb025cab49c0b062c58ef35445938a44be2680aa4e",
-      "machineHash": "2bd9dda607f7ba702a0671bb025cab49c0b062c58ef35445938a44be2680aa4e",
-      "machineText": "カスタムトランスポートを使用する場合は、HTTP fetch の代わりにそのトランスポートを使用するよう、フロントエンドランタイムを変更する必要があります。リクエストの処理に使用される `RuntimeTransport` インターフェースを実装します。",
-      "status": "final",
-      "sourcePreview": "If using a custom transport, you'll need to modify the frontend runtime to use your transport instea…",
+      "sourceHash": "90056161c57cd2756afef7f3e5e75cb103714551e411ef65634613c26bdcab4c",
+      "targetHash": "806f7d80b0327f0240131149e39eaeb5a1677f4557c69ab97393f4bf3f82aa1c",
+      "machineHash": "806f7d80b0327f0240131149e39eaeb5a1677f4557c69ab97393f4bf3f82aa1c",
+      "machineText": "サンプルのコンストラクターを使用してアプリケーションを構成します。",
+      "status": "machine-translated",
+      "sourcePreview": "Configure the application using the constructor from the example:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0016-heading-01": {
-      "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085",
-      "targetHash": "57094d03c6e62f4ebbde46a6aecbc7ab82463f11d20b46a63f157d9e428dd5af",
-      "machineHash": "57094d03c6e62f4ebbde46a6aecbc7ab82463f11d20b46a63f157d9e428dd5af",
-      "machineText": "注意事項",
-      "status": "final",
-      "sourcePreview": "Notes",
+    "b0016-text-01": {
+      "sourceHash": "7c589371a7c64511dd954e4bda74d0ee28f4a82b81110ab3d3b72a7994bde230",
+      "targetHash": "a412c22d3281a31ecfcc209b3e7b13d99d5b272ad7cd9aaafe8e0ce48c735e71",
+      "machineHash": "a412c22d3281a31ecfcc209b3e7b13d99d5b272ad7cd9aaafe8e0ce48c735e71",
+      "machineText": "このフィールドは、通常のアセットおよびサービスと並べて `application.Options` に配置します。コンストラクター呼び出しだけでなく、実装ファイルもコピーしてください。`Start` は `MessageProcessor` を受け取ります。`Stop` は、リスナー、アクティブな接続、および保留中の処理を終了しなければなりません。",
+      "status": "machine-translated",
+      "sourcePreview": "This field belongs in `application.Options`, alongside the ordinary assets and services. Copy the im…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0017-text-01": {
-      "sourceHash": "5847b25d4dffca89145ae86e4fe9017dd99f6ed6edcefa65fea21ca48dc75b0e",
-      "targetHash": "35798d4139d16e6bbf833d0100599ecf562bc4a51e0aa5b835a028d6ef837e9d",
-      "machineHash": "35798d4139d16e6bbf833d0100599ecf562bc4a51e0aa5b835a028d6ef837e9d",
-      "machineText": "カスタムトランスポートを指定しなければ、デフォルトの HTTP トランスポートが引き続き動作します",
-      "status": "final",
-      "sourcePreview": "The default HTTP transport continues to work if no custom transport is specified",
+    "b0017-heading-01": {
+      "sourceHash": "4493ae4ae29af5defda6980c8a3b64b9ced24a6ea459a7b3ccbc65004cc2c418",
+      "targetHash": "962a9a67b12a8e31c9e0768f49c6f14aaffa6dc010f274946f74b35ec4a021b3",
+      "machineHash": "962a9a67b12a8e31c9e0768f49c6f14aaffa6dc010f274946f74b35ec4a021b3",
+      "machineText": "フロントエンドの規約",
+      "status": "machine-translated",
+      "sourcePreview": "Frontend contract",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0018-text-01": {
-      "sourceHash": "b767b0aa6fd8a61d1e4d8f422c2d7facea49fada0277dd7832da5a74f3e18860",
-      "targetHash": "286af7d58d07a45e63bea3d4a62078ecf51ea6d68534aef7b8c446ed4fdc5b16",
-      "machineHash": "286af7d58d07a45e63bea3d4a62078ecf51ea6d68534aef7b8c446ed4fdc5b16",
-      "machineText": "生成されたバインディングは変更されず、変更されるのはトランスポート層のみです",
-      "status": "final",
-      "sourcePreview": "Generated bindings remain unchanged - only the transport layer changes",
+      "sourceHash": "b4b429dc1518ddabac70c64c64a2cf7092c3cd9bbb30ee6a218815a42677ee90",
+      "targetHash": "1e3c0207ec26d1390dbdbd1bffd97919a50751b00c7fe923fd12adff057976d9",
+      "machineHash": "1e3c0207ec26d1390dbdbd1bffd97919a50751b00c7fe923fd12adff057976d9",
+      "machineText": "サンプルの `websocket-transport.js` は、リクエストとレスポンスの対応付けや、失敗した呼び出しの reject 処理を含むランタイムトランスポートを実装しています。そのファイルをアセットから配信した後、生成されたサービスバインディングを呼び出す前に初期化してください。",
+      "status": "machine-translated",
+      "sourcePreview": "The example's `websocket-transport.js` implements the runtime transport, including request/response …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0019-text-01": {
-      "sourceHash": "c5ebfd45f7440907f23ffce0805b2d1a4066a1d86c8f09fe0105f72b04e05189",
-      "targetHash": "5addad200a6bc7988eefeaba74197faba2422a7db338fc2d4f3e80cd81978276",
-      "machineHash": "5addad200a6bc7988eefeaba74197faba2422a7db338fc2d4f3e80cd81978276",
-      "machineText": "イベント、ダイアログ、クリップボード、およびその他のすべての Wails 機能は透過的に動作します",
-      "status": "final",
-      "sourcePreview": "Events, dialogs, clipboard, and all other Wails features work transparently",
+      "sourceHash": "87b3ae282b3d53e27fa5f2233e31a66d87062c55e2fcbfd786ec5c2331ed4fd0",
+      "targetHash": "b1a43e8b47be2f6f608dd358752c66a4165fa90726a9eabb6f861b984a0cb487",
+      "machineHash": "b1a43e8b47be2f6f608dd358752c66a4165fa90726a9eabb6f861b984a0cb487",
+      "machineText": "生成されたサービスバインディングは変更されません。トランスポートがクライアントを置き換える場合は、アプリケーションが使用するメソッドを提供し、そのエラーセマンティクスを維持する必要があります。イベント配信には、オプションのイベントトランスポート規約が必要です。任意の `Transport` 実装によって自動的に提供されるものではありません。完全な WebSocket サンプルでその実装を確認できます。",
+      "status": "machine-translated",
+      "sourcePreview": "Generated service bindings remain unchanged. If your transport replaces the client, it must carry th…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
     "b0020-text-01": {
-      "sourceHash": "fa58e8e6f44becf217b57e57c48a7249cb99000490db2bbd4cee18ae1adcfae2",
-      "targetHash": "cb4acdc141e2855b1b76ca70003159dd990dd401582932ca3ec4a1175a7e9f12",
-      "machineHash": "cb4acdc141e2855b1b76ca70003159dd990dd401582932ca3ec4a1175a7e9f12",
-      "machineText": "カスタムトランスポートにおけるエラー処理、再接続ロジック、セキュリティは、実装者が担う必要があります",
-      "status": "final",
-      "sourcePreview": "You're responsible for error handling, reconnection logic, and security in your custom transport",
+      "sourceHash": "621d65af9fc18fc0b2486c91b64375cffb8b91ea1d233e05834a6258a1e6d79e",
+      "targetHash": "ce9e3af6fad1f605d204a61d55e68e7de0018f5dcb36ed27950ef8eff48884d2",
+      "machineHash": "ce9e3af6fad1f605d204a61d55e68e7de0018f5dcb36ed27950ef8eff48884d2",
+      "machineText": "リモート環境へデプロイする場合は、TLS と、明示的な認証ポリシーおよびオリジンポリシーを使用してください。ブラウザのみでホストする場合は、以下で説明するように、アプリケーションアセットの配信も必要です。",
+      "status": "machine-translated",
+      "sourcePreview": "For remote deployments, use TLS and an explicit authentication and origin policy. Browser-only hosti…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0021-text-01": {
-      "sourceHash": "2b79f796de73c2ada53d651fa172795d80c0a782822403540df79f6079b7f558",
-      "targetHash": "d89de09386a55313b49c4071eab93a956840304045d6a4c9f1194349388cf522",
-      "machineHash": "d89de09386a55313b49c4071eab93a956840304045d6a4c9f1194349388cf522",
-      "machineText": "提示されている WebSocket の例はデモ用であり、本番環境で使用するには堅牢化が必要になる場合があります",
-      "status": "final",
-      "sourcePreview": "The WebSocket example provided is for demonstration and may need hardening for production use",
-      "provider": "codex",
-      "model": "gpt-5.6-sol",
-      "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
-    },
-    "b0022-heading-01": {
+    "b0021-heading-01": {
       "sourceHash": "0b40234a6136f15dedcace3b83580ce8c12f511d2344edcc03075f2dc1852e3d",
       "targetHash": "d8a4cd9a48b630e81892204441e8725e030673c963e2d5079c08424b84730dac",
       "machineHash": "d8a4cd9a48b630e81892204441e8725e030673c963e2d5079c08424b84730dac",
       "machineText": "API リファレンス",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "API Reference",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0023-heading-01": {
+    "b0022-heading-01": {
       "sourceHash": "f0324a9e0f9b3ebc49c60dd25b4091817c3d39d60e801bb0915c4ffe61c40610",
       "targetHash": "b978d39368f170e7c93ba42c08878563600a34b65b7177fa9db4958180005b6c",
       "machineHash": "b978d39368f170e7c93ba42c08878563600a34b65b7177fa9db4958180005b6c",
       "machineText": "Transport インターフェース",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Transport Interface",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0024-heading-01": {
+    "b0023-heading-01": {
       "sourceHash": "91a2d90f987aa57dd625d6674a822b75ae51cfc7361c4320fa2cbcff1b8fd1ba",
-      "targetHash": "16a209785a4797380ff623d2a31c2d4924e0d3e4af4dc7775d85d3b5638491ec",
-      "machineHash": "16a209785a4797380ff623d2a31c2d4924e0d3e4af4dc7775d85d3b5638491ec",
-      "machineText": "AssetServerTransport インターフェース（任意）",
-      "status": "final",
+      "targetHash": "d33ee77cf0da64145ea6c34972cc3eb2234532ef7c962945a9fbe471f24f4bdf",
+      "machineHash": "d33ee77cf0da64145ea6c34972cc3eb2234532ef7c962945a9fbe471f24f4bdf",
+      "machineText": "AssetServerTransport インターフェース（オプション）",
+      "status": "machine-translated",
       "sourcePreview": "AssetServerTransport Interface (Optional)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0025-text-01": {
+    "b0024-text-01": {
       "sourceHash": "ce887f393b9b2f21bbe06d4ba1f3673461c8887551d7a44b31389687b00f9071",
-      "targetHash": "5e512605ad61828e4334904b9f7ead46730e3e2da9844e717a76babf9d7746c5",
-      "machineHash": "5e512605ad61828e4334904b9f7ead46730e3e2da9844e717a76babf9d7746c5",
-      "machineText": "ブラウザベースでデプロイする場合、またはカスタムトランスポートを介してアセットと IPC の両方を提供する場合は、`AssetServerTransport` インターフェースを実装します。",
-      "status": "final",
+      "targetHash": "8a7416abf5ea6ad5994807161ed16d1b88e909f25ce40a69bcaa8f38c4c8d12c",
+      "machineHash": "8a7416abf5ea6ad5994807161ed16d1b88e909f25ce40a69bcaa8f38c4c8d12c",
+      "machineText": "ブラウザベースのデプロイメントで使用する場合、またはカスタムトランスポートを介してアセットと IPC の両方を配信する場合は、`AssetServerTransport` インターフェースを実装してください。",
+      "status": "machine-translated",
       "sourcePreview": "For browser-based deployments or when you want to serve both assets and IPC through your custom tran…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0026-text-01": {
-      "sourceHash": "7a2a6bb886603f7637f993b984c129099221a7e9eb65de00007519b0bbf2c668",
-      "targetHash": "dfeb29846bee5553f6eee867f1cad6191da6819737053f694ec83707d02beada",
-      "machineHash": "dfeb29846bee5553f6eee867f1cad6191da6819737053f694ec83707d02beada",
-      "machineText": "*このインターフェースを実装するケース：*",
-      "status": "final",
-      "sourcePreview": "*When to implement this interface:*",
+    "b0025-text-01": {
+      "sourceHash": "edcbcc10556c34a65855af6a601ebbc1934bb048693877a156f382c003958dcf",
+      "targetHash": "e2bc5f7ec9de5f1f873c8d2dea299a31e5b09a6bb41cc1539238476105d36e30",
+      "machineHash": "e2bc5f7ec9de5f1f873c8d2dea299a31e5b09a6bb41cc1539238476105d36e30",
+      "machineText": "**このインターフェースを実装する場合：**",
+      "status": "machine-translated",
+      "sourcePreview": "**When to implement this interface:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0027-text-01": {
+    "b0026-text-01": {
       "sourceHash": "1e7034b3a8c9e463247a2dbe99f543eb445c86c3b4684b0f7910f6ddfe0399e8",
       "targetHash": "e04adfee43117ad229ddc20b830d7d9d818c589a90c0a17d9e9bbfcd6316d425",
       "machineHash": "e04adfee43117ad229ddc20b830d7d9d818c589a90c0a17d9e9bbfcd6316d425",
       "machineText": "WebView ではなくブラウザでアプリを実行する場合",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Running the app in a browser instead of a webview",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0028-text-01": {
+    "b0027-text-01": {
       "sourceHash": "d7833cd1630790b745a83a0bbddb2a31ce50c15e59926ccc0ce04e6c26049065",
-      "targetHash": "a997eb520e7ed9e28401c05e908942aa4e08ccdc54a8d0396ac1a9b33e574fb9",
-      "machineHash": "a997eb520e7ed9e28401c05e908942aa4e08ccdc54a8d0396ac1a9b33e574fb9",
-      "machineText": "カスタム IPC トランスポートと併用して、HTTP 経由でアセットを提供する場合",
-      "status": "final",
+      "targetHash": "0d60698792ff0be54af57d2b05db7f1ea41b9b914613866bae4fa11610a02c72",
+      "machineHash": "0d60698792ff0be54af57d2b05db7f1ea41b9b914613866bae4fa11610a02c72",
+      "machineText": "カスタム IPC トランスポートと併せて HTTP 経由でアセットを配信する場合",
+      "status": "machine-translated",
       "sourcePreview": "Serving assets over HTTP alongside your custom IPC transport",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0029-text-01": {
+    "b0028-text-01": {
       "sourceHash": "1ac0375afc4367d1f8f68761c46f6b6a001770df337b3c64348164440b689b55",
-      "targetHash": "07439d56c1f7572f102f9aad0d0ab21cfa6595105567b68fa457838916efbdbc",
-      "machineHash": "07439d56c1f7572f102f9aad0d0ab21cfa6595105567b68fa457838916efbdbc",
-      "machineText": "ネットワーク経由でアクセス可能なアプリケーションを構築する場合",
-      "status": "final",
+      "targetHash": "31a601f55c0c4500d7515f5ad74461288731cb2806faa1a6c44381fa04b19ee7",
+      "machineHash": "31a601f55c0c4500d7515f5ad74461288731cb2806faa1a6c44381fa04b19ee7",
+      "machineText": "ネットワークからアクセス可能なアプリケーションを構築する場合",
+      "status": "machine-translated",
       "sourcePreview": "Building network-accessible applications",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0030-text-01": {
-      "sourceHash": "42656c12fd4ca67b89fa643e094609e6336735b0556fe13aabd02c4066b7504a",
-      "targetHash": "63fd984729cbacb2c45045d3b141b09a85a7bfe80bf65239ed0b900fed32f6eb",
-      "machineHash": "63fd984729cbacb2c45045d3b141b09a85a7bfe80bf65239ed0b900fed32f6eb",
-      "machineText": "*実装例：*",
-      "status": "final",
-      "sourcePreview": "*Example implementation:*",
+    "b0029-text-01": {
+      "sourceHash": "4c374020ed9fe5072b2b6774620c0ec7832cc5c34f4bddd68bed7af71c50aaae",
+      "targetHash": "7e0acca0d1d5a1ee97d37dbf1a1dff6956bff2408534309db72f3a413c5d4641",
+      "machineHash": "7e0acca0d1d5a1ee97d37dbf1a1dff6956bff2408534309db72f3a413c5d4641",
+      "machineText": "**実装例：**",
+      "status": "machine-translated",
+      "sourcePreview": "**Example implementation:**",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0031-text-01": {
+    "b0030-text-01": {
       "sourceHash": "49d268a540e2a1a44b6110120df2ecb013881be75e91c386f17a1acc32d7ab8a",
       "targetHash": "03b8c2c0796351c4aeb0282f2d34b500eed64118b8f7b310a679767ba95ed2a5",
       "machineHash": "03b8c2c0796351c4aeb0282f2d34b500eed64118b8f7b310a679767ba95ed2a5",
       "machineText": "`ServeAssets()` が呼び出されると、assetHandler は次のものを提供します。",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "When `ServeAssets()` is called, the assetHandler provides:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0032-text-01": {
+    "b0031-text-01": {
       "sourceHash": "1470abc6d9ccb7cb089369ddde547845b7c692d015ce720e41027089aeea1244",
       "targetHash": "457b2ee0db0849bdbd4c1497f2b2c3ad9fc74c28be16d198c36c129362924184",
       "machineHash": "457b2ee0db0849bdbd4c1497f2b2c3ad9fc74c28be16d198c36c129362924184",
       "machineText": "すべての静的アセット（HTML、CSS、JS、画像など）",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "All static assets (HTML, CSS, JS, images, etc.)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0033-text-01": {
+    "b0032-text-01": {
       "sourceHash": "2c75d455f9f3e41757e3da0f3092a0ad1180880116809493b41bd6ed2bce5e29",
       "targetHash": "c59573e2046d1286fc416fd22e546fe79c3d90974a2df8229495717e5d74a121",
       "machineHash": "c59573e2046d1286fc416fd22e546fe79c3d90974a2df8229495717e5d74a121",
       "machineText": "`/wails/runtime.js` - Wails ランタイムライブラリ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`/wails/runtime.js` - The Wails runtime library",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0034-heading-01": {
+    "b0033-heading-01": {
       "sourceHash": "3f86b834e243323bd671c9d3d3867d5a6cffdabbe063b257302fda50abcb4cb2",
       "targetHash": "a2985b39c545d2fc7ff63e9f03c7a6e924972d272a9543fabb9797ed42c84cfa",
       "machineHash": "a2985b39c545d2fc7ff63e9f03c7a6e924972d272a9543fabb9797ed42c84cfa",
       "machineText": "関連項目",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "See Also",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0035-text-01": {
+    "b0034-text-01": {
       "sourceHash": "73f08ae220907a5baf87cdc524377014245b04e0f3696fd43471c5319fafd4ca",
       "targetHash": "2caa24f48da38e8dcd9c8c323da3410ba29d92974dbd651633368e907ecb32d1",
       "machineHash": "2caa24f48da38e8dcd9c8c323da3410ba29d92974dbd651633368e907ecb32d1",
       "machineText": "`transport.go` - コアトランスポートのインターフェースと型",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`transport.go` - Core transport interfaces and types",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "b0036-text-01": {
+    "b0035-text-01": {
       "sourceHash": "bfa46de85f80d244c45cd492225dc5cd6bb4467858a6dd6e8299d4d14a3faaa5",
       "targetHash": "f6839bea2896d98405a1903b66db4d1194ed217daf33a724f334b7ea153ede46",
       "machineHash": "f6839bea2896d98405a1903b66db4d1194ed217daf33a724f334b7ea153ede46",
       "machineText": "`messageprocessor.go` - すべての Wails IPC を処理する基盤のメッセージプロセッサ",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`messageprocessor.go` - The underlying message processor that handles all Wails IPC",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "7181c3e5e6ec540ac0793efd85937bf183c24421f1c79ba05715392d14a21816",
       "targetHash": "f14053c3fec813a964d369b91da598ed8356c350da4e4715be94ad9731eb0e6b",
       "machineHash": "f14053c3fec813a964d369b91da598ed8356c350da4e4715be94ad9731eb0e6b",
       "machineText": "独自の Wails v3 カスタム IPC トランスポート層を作成し、カスタマイズする方法を説明します",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Learn how to create and customize your own Wails v3 custom IPC transport layer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "0dd407633b08e7ce6a5790c27ebaf8690da4463e9ffca7aa619391b3cdafeb87",
       "targetHash": "c52c42ff5eef0470cc75fcfae7c46826610cecb6c6468f5b6056d2bbfd39ad86",
       "machineHash": "c52c42ff5eef0470cc75fcfae7c46826610cecb6c6468f5b6056d2bbfd39ad86",
       "machineText": "カスタムトランスポート層の作成",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Creating Custom Transport Layer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:34Z"
+      "updatedAt": "2026-10-25T21:45:55Z"
     }
   }
 }

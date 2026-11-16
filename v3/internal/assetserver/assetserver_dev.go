@@ -2,38 +2,20 @@
 
 package assetserver
 
-import (
-	"embed"
-	"io"
-	iofs "io/fs"
-)
+import "embed"
 
 //go:embed defaults
 var defaultHTML embed.FS
 
 func defaultIndexHTML(language string) []byte {
-	result := []byte("index.html not found")
-	// Create an fs.Sub in the defaults directory
-	defaults, err := iofs.Sub(defaultHTML, "defaults")
-	if err != nil {
-		return result
-	}
 	// Get the 2 character language code
 	lang := "en"
 	if len(language) >= 2 {
 		lang = language[:2]
 	}
-	// Now we can read the index.html file in the format
-	// index.<lang>.html.
-
-	indexFile, err := defaults.Open("index." + lang + ".html")
+	indexBytes, err := defaultHTML.ReadFile("defaults/index." + lang + ".html")
 	if err != nil {
-		return result
-	}
-
-	indexBytes, err := io.ReadAll(indexFile)
-	if err != nil {
-		return result
+		return []byte("index.html not found")
 	}
 	return indexBytes
 }

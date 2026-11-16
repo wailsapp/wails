@@ -1,44 +1,21 @@
 name: Cross-Compile Test v3
 
 on:
-  pull_request_review:
-    types: [submitted]
-    branches:
-      - master
-    paths:
-      - 'v3/**'
-      - '.github/workflows/cross-compile-test-v3.yml'
-  # Manual runs test the dispatched ref only. A PR-number input that checked
-  # out PR code here was removed: workflow_dispatch runs in the default
-  # branch's context, so executing PR code there could poison its caches.
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable commit to test
+        required: true
+        type: string
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  check_approval:
-    name: Check PR Approval
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved'
-    outputs:
-      approved: ${{ steps.check.outputs.approved }}
-    steps:
-      - name: Check if PR is approved or manual dispatch
-        id: check
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "Manual dispatch, proceeding with cross-compile tests"
-          else
-            echo "PR approved, proceeding with cross-compile tests"
-          fi
-          echo "approved=true" >> $GITHUB_OUTPUT
-
   cross_compile:
     name: Cross-Compile (${{ matrix.target_os }}/${{ matrix.target_arch }})
-    needs: check_approval
     runs-on: ${{ matrix.runner }}
-    if: needs.check_approval.outputs.approved == 'true'
     env:
       GOWORK: "off"
     strategy:
@@ -66,6 +43,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -128,8 +107,8 @@ jobs:
       - run: |
           result="${{ needs.cross_compile.result }}"
           echo "Cross-compile result: $result"
-          if [[ $result == "success" || $result == "skipped" ]]; then
-            echo "Cross-compile tests passed (or were skipped)!"
+          if [[ $result == "success" ]]; then
+            echo "Cross-compile tests passed!"
             exit 0
           else
             echo "One or more cross-compile tests failed"

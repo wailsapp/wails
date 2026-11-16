@@ -45,12 +45,15 @@ func run(args ...string) error {
 }
 
 func output(args ...string) (string, error) {
-	out, err := exec.Command("git", args...).CombinedOutput()
+	cmd := exec.Command("git", args...)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	out, err := cmd.Output()
 	if err != nil {
 		if isNotFound(err) {
 			return "", ErrNotInstalled
 		}
-		return "", fmt.Errorf("git %s: %w\n%s", strings.Join(redactArgs(args), " "), err, bytes.TrimSpace(out))
+		return "", fmt.Errorf("git %s: %w\n%s", strings.Join(redactArgs(args), " "), err, bytes.TrimSpace(append(out, stderr.Bytes()...)))
 	}
 	return strings.TrimSpace(string(out)), nil
 }

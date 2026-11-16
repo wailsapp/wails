@@ -474,6 +474,21 @@ MimeType=inode/directory;`,
 	}
 }
 
+func TestParseDesktopReaderRetainsExecAfterBufferReuse(t *testing.T) {
+	const wantExec = "  nautilus --new-window %U  "
+	input := "[Desktop Entry]\nExec=ignored\nExec=" + wantExec + "\n" +
+		strings.Repeat("Name[en]=Files\n", 1000) +
+		"[Desktop Action new-window]\nExec=ignored-action\n"
+
+	entry, err := ParseDesktopReader(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if entry.Exec != wantExec {
+		t.Fatalf("Exec = %q, want %q", entry.Exec, wantExec)
+	}
+}
+
 // BenchmarkParseDesktopReader measures parsing performance
 func BenchmarkParseDesktopReader(b *testing.B) {
 	// Real Nautilus .desktop file content

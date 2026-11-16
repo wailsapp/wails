@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !purego
 
 #import "notifications_darwin.h"
 #include <Foundation/Foundation.h>

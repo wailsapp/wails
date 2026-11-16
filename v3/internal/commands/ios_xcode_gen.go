@@ -17,6 +17,7 @@ import (
 
 // IOSXcodeGenOptions holds parameters for Xcode project generation.
 type IOSXcodeGenOptions struct {
+	Icon   string `description:"Path to the application icon PNG"`
 	OutDir string `description:"Output directory for generated Xcode project" default:"build/ios/xcode"`
 	Config string `description:"Path to build/config.yml (optional)" default:"build/config.yml"`
 }
@@ -246,8 +247,11 @@ func IOSXcodeGen(options *IOSXcodeGenOptions) error {
 	}
 
 	// Generate iOS AppIcon PNGs from build/appicon.png if present; otherwise use embedded default
-	inputIcon := filepath.Join("build", "appicon.png")
-	if _, err := os.Stat(inputIcon); err == nil {
+	inputIcon := options.Icon
+	if inputIcon == "" {
+		inputIcon = filepath.Join("build", "appicon.png")
+	}
+	if _, err := os.Stat(inputIcon); err == nil || options.Icon != "" {
 		if err := generateIOSAppIcons(inputIcon, assetsDir); err != nil {
 			return fmt.Errorf("generate iOS icons: %w", err)
 		}

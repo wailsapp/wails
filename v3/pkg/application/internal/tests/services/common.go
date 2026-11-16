@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync/atomic"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -60,8 +60,8 @@ func (s *Startupper) ServiceStartup(ctx context.Context, options application.Ser
 
 	s.startup = s.Seq.Add(1)
 
-	if diff := cmp.Diff(s.Options, options); diff != "" {
-		s.T.Errorf("Options mismatch for service #%d (-want +got):\n%s", s.Id(), diff)
+	if !reflect.DeepEqual(s.Options, options) {
+		s.T.Errorf("Options mismatch for service #%d: want %+v, got %+v", s.Id(), s.Options, options)
 	}
 
 	if s.StartupErr {
@@ -135,8 +135,8 @@ func (s *StartupShutdowner) ServiceStartup(ctx context.Context, options applicat
 	s.startup = s.Seq.Add(1)
 	s.ctx = ctx
 
-	if diff := cmp.Diff(s.Options, options); diff != "" {
-		s.T.Errorf("Options mismatch for service #%d (-want +got):\n%s", s.Id(), diff)
+	if !reflect.DeepEqual(s.Options, options) {
+		s.T.Errorf("Options mismatch for service #%d: want %+v, got %+v", s.Id(), s.Options, options)
 	}
 
 	if s.StartupErr {

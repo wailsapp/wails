@@ -34,7 +34,7 @@ go func() {
 ### Prerequisites
 
 - Linux with WebKit2GTK 4.1 installed
-- Go 1.21+
+- Go 1.26+
 - Wails CLI
 
 ### Steps

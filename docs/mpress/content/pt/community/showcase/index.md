@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="Veja como adicionar seu projeto"}
-Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-projeto--vitrine).
+Consulte a seção [Como adicionar meu projeto à galeria](#como-adicionar-meu-projeto--galeria).
 
 @end
 
@@ -48,19 +48,20 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Captura de tela do Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Captura de tela do Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Captura de tela do MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Captura de tela do Larvyn" loading="lazy"><span>Larvyn</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Captura de tela do Zentro" loading="lazy"><span>Zentro</span></a>
 </div>
 
-## Como adicionar meu projeto à vitrine
+## Como adicionar meu projeto à galeria
 
 @steps
 ### Crie um fork do repositório.
 ### Adicione as imagens à pasta `docs/mpress/static/showcase-images`.
-### Faça uma cópia de um arquivo `.md` existente da vitrine na pasta
-pasta `docs/mpress/content/community/showcase`.
+### Crie uma cópia de um arquivo `.md` existente da galeria em
+a pasta `docs/mpress/content/community/showcase`.
 
 ### Renomeie o arquivo copiado com o nome do seu projeto. (O nome não deve começar
-com `_`))
+com `_`)
 
 ### Atualize o título, a imagem, o link e o conteúdo do arquivo.
 ### Adicione-o à lista acima em

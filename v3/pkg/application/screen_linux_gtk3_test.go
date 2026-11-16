@@ -1,4 +1,4 @@
-//go:build linux && cgo && gtk3 && !android && !server
+//go:build linux && gtk3 && !android && !server
 
 package application
 

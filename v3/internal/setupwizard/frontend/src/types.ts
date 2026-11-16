@@ -38,18 +38,6 @@ export interface UserConfig {
   editor: string;
 }
 
-export interface WailsConfig {
-  info: {
-    companyName: string;
-    productName: string;
-    productIdentifier: string;
-    description: string;
-    copyright: string;
-    comments: string;
-    version: string;
-  };
-}
-
 export interface SystemInfo {
   os: string;
   arch: string;
@@ -75,6 +63,7 @@ export interface SystemInfo {
 }
 
 export interface WizardState {
+  wakeEnabled?: boolean;
   currentStep: number;
   dependencies: DependencyStatus[];
   docker: DockerStatus;
@@ -82,8 +71,6 @@ export interface WizardState {
   system: SystemInfo;
   startTime: string;
 }
-
-export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'signing' | 'config' | 'wails-config' | 'complete';
 
 export interface AuthorDefaults {
   name: string;
@@ -147,6 +134,10 @@ export interface InitTemplate {
 }
 
 export interface InitData {
+  wakeEnabled?: boolean;
+  wakeSetup?: WakeSetupState;
+  wake?: WakeSetupConfig;
+  buildConfigFile: string;
   mode: string;
   projectName: string;
   templateName: string;
@@ -170,7 +161,6 @@ export interface DarwinSigningStatus {
   hasNotarization: boolean;
   teamID?: string;
   configSource?: string;
-  rcodesignAvailable: boolean;
 }
 
 export interface WindowsSigningStatus {
@@ -179,7 +169,6 @@ export interface WindowsSigningStatus {
   hasSignTool: boolean;
   timestampServer?: string;
   configSource?: string;
-  osslsigncodeAvailable: boolean;
   opensslAvailable: boolean;
 }
 
@@ -196,4 +185,53 @@ export interface SigningStatus {
   darwin: DarwinSigningStatus;
   windows: WindowsSigningStatus;
   linux: LinuxSigningStatus;
+}
+
+export interface WakeProjectConfig {
+  info: {
+    projectName?: string;
+    companyName: string;
+    productName: string;
+    productIdentifier: string;
+    description: string;
+    copyright: string;
+    comments?: string;
+    version: string;
+  };
+  bindings?: { typescript: boolean; interfaces: boolean };
+}
+
+export interface WakeTarget {
+  os: string;
+  arch: string;
+  formats: string[];
+  destination?: 'device' | 'simulator';
+}
+
+export interface WakeSetupConfig {
+  applicationType: 'gui' | 'cli' | 'server';
+  backend: 'cgo' | 'purego';
+  experimentalPureGo: boolean;
+  prebuilt: boolean;
+  sign: boolean;
+  targets: WakeTarget[];
+  project?: WakeProjectConfig;
+}
+
+export interface WakeSetupState {
+  enabled: boolean;
+  hostOS: string;
+  hostArch: string;
+  projectRoot: string;
+  manifestPath?: string;
+  error?: string;
+  config: WakeSetupConfig;
+  catalog: (WakeTarget & { experimental: boolean })[];
+}
+
+export interface WakeRequirements {
+  requirements: DependencyStatus[];
+  errors: string[];
+  warnings: string[];
+  command: string;
 }

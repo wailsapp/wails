@@ -5,169 +5,145 @@ slug: "guides/e2e-testing"
 sourcePath: "guides/e2e-testing.md"
 ---
 
-## 概要
+## このガイドでテストする内容
 
-エンドツーエンドテストでは、アプリケーション内のユーザーワークフロー全体を検証します。
+ブラウザーでフロントエンドと実際の Go サービスを動作させるには、Playwright を **サーバービルド**に対して使用します。ポート 9245 の Vite プレビューはフロントエンドファイルを配信しますが、通常のブラウザーで開くだけでは Wails のサービスバインディングは利用できません。
 
-## Playwright の使用
+このテストハーネスは、ブラウザー UI とサービス呼び出しを対象とします。ネイティブ WebView ウィンドウ、OS のメニュー、トレイアイコン、ネイティブファイルダイアログは自動化しません。これらは、サポート対象の各デスクトッププラットフォームで個別にテストしてください。
 
-### セットアップ
+## スターターアプリケーションを準備する
+
+JavaScript スターターを作成し、そのディレクトリで作業します。
 
 ```bash
-# Install Playwright
-npm install -D @playwright/test
-
-# Initialize
-npx playwright install
+wails3 init -n e2e-app -t vanilla-js
+cd e2e-app
 ```
 
-### 設定
+`main.go` で、既存の `application.Options` 値に次のフィールドを追加します。
+
+```go
+Server: application.ServerOptions{
+    Host: "127.0.0.1",
+    Port: 8080,
+},
+```
+
+既存のアセットハンドラーとサービス登録は維持してください。サーバーオプションは、アプリケーションを `server` タグ付きでビルドした場合に有効になります。機能と制限については、[サーバービルド](/guides/server-build/)を参照してください。
+
+テストホストを起動する前に、バインディングを生成し、本番用フロントエンドをビルドします。
+
+```bash
+wails3 generate bindings -f '-tags=server'
+cd frontend
+npm install
+npm run build
+npm install -D @playwright/test
+npx playwright install chromium
+```
+
+CI で `npm ci` を使用できるように、生成されたパッケージマニフェストとロックファイルをコミットしてください。
+
+## Go ホストを起動して待機する
+
+`frontend/playwright.config.js` を作成します。
 
 ```javascript
-// playwright.config.js
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
   use: {
-    baseURL: 'http://localhost:9245', // Wails v3 dev server (default port)
+    baseURL: 'http://127.0.0.1:8080',
+    viewport: { width: 800, height: 600 },
+  },
+  webServer: {
+    command: 'go run -tags server,production .',
+    cwd: '..',
+    url: 'http://127.0.0.1:8080',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
 })
 ```
 
-### テストの作成
+Playwright はプロジェクトルートから Go アプリケーションを起動し、その HTTP エンドポイントが利用可能になるまで待機します。テストジョブごとに、分離したホストを 1 つ実行してください。永続化テストを追加する場合は、一時ストレージまたはテスト用データベースを使用し、このテストハーネスを実際のユーザーデータに接続しないでください。
+
+## 実際のサービス呼び出しを検証する
+
+`frontend/e2e/app.spec.js` を作成します。
 
 ```javascript
-// e2e/app.spec.js
 import { test, expect } from '@playwright/test'
 
-test('create note', async ({ page }) => {
+test('greet through the Go service', async ({ page }) => {
   await page.goto('/')
-  
-  // Click new note button
-  await page.click('#new-note-btn')
-  
-  // Fill in title
-  await page.fill('#note-title', 'Test Note')
-  
-  // Fill in content
-  await page.fill('#note-content', 'Test content')
-  
-  // Verify note appears in list
-  await expect(page.locator('.note-item')).toContainText('Test Note')
-})
-
-test('delete note', async ({ page }) => {
-  await page.goto('/')
-  
-  // Create a note first
-  await page.click('#new-note-btn')
-  await page.fill('#note-title', 'To Delete')
-  
-  // Delete it
-  await page.click('#delete-btn')
-  
-  // Confirm dialog
-  page.on('dialog', dialog => dialog.accept())
-  
-  // Verify it's gone
-  await expect(page.locator('.note-item')).not.toContainText('To Delete')
+  await page.locator('#name').fill('Ada')
+  // The starter's aria-label supplies the button's accessible name.
+  await page.getByRole('button', { name: 'greet-btn' }).click()
+  await expect(page.locator('#result')).toContainText('Ada')
 })
 ```
 
-## ダイアログのテスト
+上記のセレクターは、生成された `vanilla-js` スターターに対応しています。スターターを置き換えた後は、実際の UI に合わせて調整してください。結果のアサーションは固定時間の遅延を前提とせず、Go 呼び出しの完了を待機します。
 
-```javascript
-test('file save dialog', async ({ page }) => {
-  await page.goto('/')
-  
-  // Intercept file dialog
-  page.on('filechooser', async (fileChooser) => {
-    await fileChooser.setFiles('/path/to/test/file.json')
-  })
-  
-  // Trigger save
-  await page.click('#save-btn')
-  
-  // Verify success message
-  await expect(page.locator('.success-message')).toBeVisible()
-})
-```
-
-## ウィンドウ動作のテスト
-
-```javascript
-test('window state', async ({ page }) => {
-  await page.goto('/')
-  
-  // Test window title
-  await expect(page).toHaveTitle('My App')
-  
-  // Test window size
-  const size = await page.viewportSize()
-  expect(size.width).toBe(800)
-  expect(size.height).toBe(600)
-})
-```
-
-## ベストプラクティス
-
-### ✅ 推奨事項
-
-- 重要なユーザーフローをテストする
-- data-testid 属性を使用する
-- テストデータをクリーンアップする
-- CI/CD でテストを実行する
-- エラーシナリオをテストする
-- 各テストを独立させる
-
-### ❌ 禁止事項
-
-- 実装の詳細をテストしない
-- 壊れやすいセレクターを作成しない
-- クリーンアップを省略しない
-- 不安定なテストを放置しない
-- すべてをテストしようとしない
-
-## E2E テストの実行
+`frontend` から実行します。
 
 ```bash
-# Run all tests
 npx playwright test
-
-# Run in headed mode
-npx playwright test --headed
-
-# Run specific test
-npx playwright test e2e/app.spec.js
-
-# Debug mode
-npx playwright test --debug
 ```
 
-## CI/CD との統合
+この構成では、Playwright のデフォルトの Chromium ブラウザーを使用します。
+
+## ブラウザー操作とネイティブ機能の境界
+
+ブラウザーの `window.confirm` では、それを開くクリックの**前に**ハンドラーを登録します。
+
+```javascript
+page.once('dialog', dialog => dialog.accept())
+await page.getByRole('button', { name: 'Delete' }).click()
+```
+
+HTML のアップロード入力には、`page.locator('input[type=file]').setInputFiles('fixtures/note.json')` を使用します。これはブラウザーの入力要素にファイルを渡すものであり、Wails のネイティブ保存ダイアログをテストするものではありません。アプリケーションの保存結果はサービス境界を通じてテストし、その後、ネイティブダイアログを手動または適切なプラットフォーム自動化ハーネスで検証してください。
+
+設定された 800×600 のビューポートは、ブラウザーのレスポンシブレイアウトをテストします。`page.viewportSize()` はネイティブ Wails ウィンドウを測定しません。同様に、Playwright のブラウザーダイアログハンドラーは、Wails のネイティブメッセージダイアログを処理しません。
+
+## CI
+
+このワークフローでは、アプリケーションがリポジトリルートにあり、上記の Playwright 依存関係とロックファイルがコミットされていることを前提とします。
 
 ```yaml
-# .github/workflows/e2e.yml
-name: E2E Tests
-
-on: [push]
-
+name: Browser integration tests
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-      - name: Run tests
-        run: npx playwright test
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+      - run: wails3 generate bindings -f '-tags=server'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npx playwright test
+        working-directory: frontend
 ```
+
+構成内の `webServer` は、ローカル環境だけでなく CI でもバックエンドを起動します。サーバーテストは、ネイティブデスクトップのパッケージ化および起動確認とは分けてください。
 
 ## 次のステップ
 
-- [テスト](/guides/testing/) - 単体テストについて学ぶ
-- [ビルド](/guides/build/building/) - アプリケーションをビルドする
+- [テスト](/guides/testing/) — ユニットテストとサービスレベルテスト
+- [サーバービルド](/guides/server-build/) — ブラウザーホストの動作
+- [ビルド](/guides/build/building/) — ネイティブビルド

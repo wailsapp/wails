@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -13,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/appimage"
 	"github.com/wailsapp/wails/v3/internal/s"
 )
 
@@ -119,7 +119,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		s.DOWNLOAD(fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch), linuxdeployPath)
 	}
 	s.CHMOD(linuxdeployPath, 0755)
-	if err := os.WriteFile(filepath.Join(appDir, "AppRun"), []byte(fmt.Sprintf(appRun, filepath.Base(options.Binary))), 0755); err != nil {
+	if err := os.WriteFile(filepath.Join(appDir, "AppRun"), appimage.Launcher(filepath.Base(options.Binary)), 0755); err != nil {
 		return err
 	}
 
@@ -230,8 +230,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 	output, err = s.EXEC(linuxdeploy + " --output appimage")
 	if err != nil {
-		fmt.Println(string(output))
-		return err
+		return fmt.Errorf("linuxdeploy failed: %w\n%s", err, commandOutputTail(string(output), 20))
 	}
 
 	// Move file to output directory
@@ -241,117 +240,21 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	return nil
 }
 
-// appRun starts the application from $APPDIR/usr/lib, where the path relocateWebKitHelpers writes into the WebKit
-// library resolves, and sets the environment AppImageKit's AppRun would. AppImageKit's AppRun changes directory to
-// $APPDIR/usr instead, which cannot be made to work with WebKit's sandbox.
-// WEBKIT_INJECTED_BUNDLE_PATH, which release builds honour, points WebKit at the
-// bundled injected bundle: the path compiled into the library is the build
-// machine's, missing on other distros and a different WebKit build on the same one.
-const appRun = `#!/bin/sh
-set -e
-
-APPDIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-OWD="${OWD:-$PWD}"
-export OWD
-usr="$APPDIR/usr"
-export PATH="$usr/bin:$PATH"
-export LD_LIBRARY_PATH="$usr/lib:$usr/lib/x86_64-linux-gnu:$usr/lib/aarch64-linux-gnu:$usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-export XDG_DATA_DIRS="$usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-export GSETTINGS_SCHEMA_DIR="$usr/share/glib-2.0/schemas"
-for bundle in "$usr"/lib*/webkit*gtk-*/injected-bundle/*.so "$usr"/lib*/*/webkit*gtk-*/injected-bundle/*.so; do
-	if [ -e "$bundle" ]; then
-		export WEBKIT_INJECTED_BUNDLE_PATH="${bundle%%/*}/"
-		break
-	fi
-done
-cd "$usr/lib"
-exec "$usr/bin/%s" "$@"
-`
-
-// relocateWebKitHelpers points the bundled WebKit library at the helper
-// processes copied into the AppDir. WebKitGTK looks for them in a directory
-// compiled into the library (only developer builds honour WEBKIT_EXEC_PATH),
-// so as deployed the AppImage only starts where the build machine's path
-// exists, e.g. /usr/lib/x86_64-linux-gnu on Debian and Ubuntu, and there it
-// runs the system's helpers. Everywhere else WebKit fails with "Unable to spawn
-// a new child process".
-//
-// Each helper directory moves to usr/lib/<name> and the library's copy of its
-// path becomes "././<name>/", NUL-padded to the original length. WebKit hands
-// that string to bubblewrap both as a bind destination, resolved against the
-// sandbox root, and as the exec path, resolved against the working directory.
-// bwrap can create a top-level destination in its read-only root where a nested
-// one under /lib fails, and appRun starts the application in $APPDIR/usr/lib,
-// which WebKit binds at the same absolute path, so the exec path resolves inside
-// the sandbox too. Only the whole NUL-terminated string is rewritten: the
-// injected-bundle directory shares the prefix on Debian-family systems and must
-// stay absolute, because a relative bind destination there fails the same way;
-// appRun redirects it to the bundled copy.
 func relocateWebKitHelpers(appDir string, helperDirs []string) error {
-	libDir := filepath.Join(appDir, "usr", "lib")
-	libs, err := filepath.Glob(filepath.Join(libDir, "libwebkit*gtk-*.so*"))
-	if err != nil {
-		return err
-	}
-	contents := make([][]byte, len(libs))
-	for i, lib := range libs {
-		if contents[i], err = os.ReadFile(lib); err != nil {
-			return err
-		}
-	}
-	patched := make([][]byte, len(libs))
-	copy(patched, contents)
-	for _, dir := range helperDirs {
-		abs := []byte(dir + "\x00")
-		rel := []byte("././" + filepath.Base(dir) + "/")
-		if len(rel) >= len(abs) {
-			return fmt.Errorf("WebKit helper directory %q is too short to relocate in place", dir)
-		}
-		rel = append(rel, make([]byte, len(abs)-len(rel))...)
-		// Only the directory a library was built with is moved: the file search can also turn up other copies.
-		referenced := false
-		for i := range patched {
-			if bytes.Contains(patched[i], abs) {
-				patched[i] = bytes.ReplaceAll(patched[i], abs, rel)
-				referenced = true
-			}
-		}
-		if !referenced {
-			continue
-		}
-		if target := filepath.Join(libDir, filepath.Base(dir)); target != filepath.Join(appDir, dir) {
-			if err := os.Rename(filepath.Join(appDir, dir), target); err != nil {
-				return err
-			}
-		}
-	}
-	relocated := false
-	for i, lib := range libs {
-		if bytes.Equal(patched[i], contents[i]) {
-			continue
-		}
-		info, err := os.Stat(lib)
-		if err != nil {
-			return err
-		}
-		if err := os.WriteFile(lib, patched[i], info.Mode().Perm()); err != nil {
-			return err
-		}
-		relocated = true
-	}
-	if !relocated {
-		return fmt.Errorf("no WebKit library in %s references the helper directories %v", libDir, helperDirs)
-	}
-	return nil
+	return appimage.RelocateWebKitHelpers(appDir, helperDirs)
 }
 
 func findGTKFiles(files []string) ([]string, error) {
+	return findGTKFilesInRoots([]string{"/usr/lib", "/usr/lib64", "/usr/libexec"}, files)
+}
+
+func findGTKFilesInRoots(roots []string, files []string) ([]string, error) {
 	notFound := []string{}
 	found := []string{}
 	// Distros install WebKit's helpers and injected bundle under these. Walking all of /usr also reaches /usr/local and
 	// /usr/src, where other projects' AppDirs and cross-built binaries would be bundled too.
-	for _, root := range []string{"/usr/lib", "/usr/lib64", "/usr/libexec"} {
-		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	for _, root := range roots {
+		err := filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
 			if err != nil {
 				if os.IsPermission(err) || (path == root && os.IsNotExist(err)) {
 					return nil
@@ -423,4 +326,12 @@ func hasRelrDynSections() bool {
 		}
 	}
 	return false
+}
+
+func commandOutputTail(output string, lines int) string {
+	items := strings.Split(strings.TrimSpace(output), "\n")
+	if len(items) > lines {
+		items = items[len(items)-lines:]
+	}
+	return strings.Join(items, "\n")
 }

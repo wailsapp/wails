@@ -29,7 +29,7 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 @steps
 ### Create a new Wails project
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 

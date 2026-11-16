@@ -11,7 +11,10 @@ tasks:
   build:
     summary: Builds the application
     cmds:
-      - task: '{{if eq OS "darwin"}}build:native{{else}}build:docker{{end}}'
+      # The experimental CGO-free backend (-tags purego, or WAILS_PUREGO=1) needs
+      # no C toolchain, so it builds natively on every host; cgo builds
+      # cross-compile through Docker.
+      - task: '{{if or (eq OS "darwin") (has "purego" (splitList "," (.EXTRA_TAGS | default "")))}}build:native{{else}}build:docker{{end}}'
         vars:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
@@ -24,7 +27,7 @@ tasks:
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
 
   build:native:
-    summary: Builds the application natively on macOS
+    summary: Builds the application natively (on macOS, or anywhere with -tags purego)
     internal: true
     deps:
       - task: common:go:mod:tidy
@@ -49,7 +52,7 @@ tasks:
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: darwin
-      CGO_ENABLED: 1
+      CGO_ENABLED: '{{if (has "purego" (splitList "," (.EXTRA_TAGS | default "")))}}0{{else}}1{{end}}'
       GOARCH: '{{.ARCH | default ARCH}}'
       CGO_CFLAGS: "-mmacosx-version-min=12.0"
       CGO_LDFLAGS: "-mmacosx-version-min=12.0"

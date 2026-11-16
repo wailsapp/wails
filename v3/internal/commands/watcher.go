@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -8,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 
 	"github.com/atterpac/refresh/engine"
@@ -70,7 +72,24 @@ func Watcher(options *WatcherOptions) error {
 	if err != nil {
 		return err
 	}
-	if err := watcherEngine.Start(); err != nil {
+	return runWatcherEngine(watcherEngine, devconfig.Config.EnablePause)
+}
+
+// runWatcherEngine runs the engine until it exits or a shutdown signal arrives.
+// The engine's Start only traps SIGINT and SIGTERM, so the watcher owns signal
+// handling and uses Run, which shuts every process group down when ctx is done.
+func runWatcherEngine(watcherEngine *engine.Engine, enablePause bool) error {
+	ctx, stop := signal.NotifyContext(context.Background(), shutdownSignals...)
+	defer stop()
+	if enablePause {
+		trapPauseSignal(ctx, watcherEngine)
+	}
+
+	err := watcherEngine.Run(ctx)
+	if ctx.Err() != nil {
+		slog.Warn("graceful exit requested", "cause", context.Cause(ctx))
+	}
+	if err != nil {
 		if isInterruptError(err) {
 			slog.Warn("graceful exit requested", "signal", os.Interrupt)
 			return nil

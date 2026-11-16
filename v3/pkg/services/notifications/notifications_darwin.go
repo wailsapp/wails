@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !purego
 
 package notifications
 
@@ -42,23 +42,6 @@ type ChannelHandler interface {
 
 const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
 
-// Creates a new Notifications Service.
-// Your app must be packaged and signed for this feature to work.
-func New() *NotificationService {
-	notificationServiceOnce.Do(func() {
-		impl := &darwinNotifier{
-			channels:      make(map[int]chan notificationChannel),
-			nextChannelID: 0,
-		}
-
-		NotificationService_ = &NotificationService{
-			impl: impl,
-		}
-	})
-
-	return NotificationService_
-}
-
 func (dn *darwinNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	if !isNotificationAvailable() {
 		return fmt.Errorf("notifications are not available on this system")
@@ -72,10 +55,6 @@ func (dn *darwinNotifier) Startup(ctx context.Context, options application.Servi
 	return nil
 }
 
-func (dn *darwinNotifier) Shutdown() error {
-	return nil
-}
-
 // isNotificationAvailable checks if notifications are available on the system.
 func isNotificationAvailable() bool {
 	return bool(C.isNotificationAvailable())
@@ -83,55 +62,6 @@ func isNotificationAvailable() bool {
 
 func checkBundleIdentifier() bool {
 	return bool(C.checkBundleIdentifier())
-}
-
-// RequestNotificationAuthorization requests permission for notifications.
-// Default timeout is 3 minutes
-func (dn *darwinNotifier) RequestNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
-	defer cancel()
-
-	id, resultCh := dn.registerChannel()
-
-	C.requestNotificationAuthorization(C.int(id))
-
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 3 minutes: %w", ctx.Err())
-	}
-}
-
-// CheckNotificationAuthorization checks current notification permission status.
-func (dn *darwinNotifier) CheckNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	id, resultCh := dn.registerChannel()
-
-	C.checkNotificationAuthorization(C.int(id))
-
-	select {
-	case result := <-resultCh:
-		return result.Success, result.Error
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
-	}
-}
-
-// SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
-func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
-	return dn.dispatchNotification(options, false)
-}
-
-// SendNotificationWithActions sends a notification with additional actions and inputs.
-// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
-// If a NotificationCategory is not registered a basic notification will be sent.
-func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOptions) error {
-	return dn.dispatchNotification(options, true)
 }
 
 // dispatchNotification is the shared body of SendNotification and
@@ -171,14 +101,6 @@ func (dn *darwinNotifier) dispatchNotification(options NotificationOptions, with
 		dn.cleanupChannel(id)
 		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
 	}
-}
-
-// UpdateNotification re-posts a notification with the same identifier.
-// UNUserNotificationCenter auto-replaces by identifier, so the existing
-// notification's content is updated in place (or freshly delivered if no
-// notification with that identifier is currently pending or delivered).
-func (dn *darwinNotifier) UpdateNotification(options NotificationOptions) error {
-	return dn.dispatchNotification(options, options.CategoryID != "")
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
@@ -224,32 +146,6 @@ func (dn *darwinNotifier) RegisterNotificationCategory(category NotificationCate
 	}
 }
 
-// RemoveNotificationCategory remove a previously registered NotificationCategory.
-func (dn *darwinNotifier) RemoveNotificationCategory(categoryId string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cCategoryID := C.CString(categoryId)
-	defer C.free(unsafe.Pointer(cCategoryID))
-
-	id, resultCh := dn.registerChannel()
-	C.removeNotificationCategory(C.int(id), cCategoryID)
-
-	select {
-	case result := <-resultCh:
-		if !result.Success {
-			if result.Error != nil {
-				return result.Error
-			}
-			return fmt.Errorf("category removal failed")
-		}
-		return nil
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return fmt.Errorf("category removal timed out: %w", ctx.Err())
-	}
-}
-
 // RemoveAllPendingNotifications removes all pending notifications.
 func (dn *darwinNotifier) RemoveAllPendingNotifications() error {
 	C.removeAllPendingNotifications()
@@ -275,17 +171,6 @@ func (dn *darwinNotifier) RemoveDeliveredNotification(identifier string) error {
 	cIdentifier := C.CString(identifier)
 	defer C.free(unsafe.Pointer(cIdentifier))
 	C.removeDeliveredNotification(cIdentifier)
-	return nil
-}
-
-// RemoveNotification is a macOS stub that always returns nil.
-// Use one of the following instead:
-// RemoveAllPendingNotifications
-// RemovePendingNotification
-// RemoveAllDeliveredNotifications
-// RemoveDeliveredNotification
-// (Linux-specific)
-func (dn *darwinNotifier) RemoveNotification(identifier string) error {
 	return nil
 }
 
@@ -363,36 +248,22 @@ func didReceiveNotificationResponse(jsonPayload *C.char, err *C.char) {
 
 // Helper methods
 
-func (dn *darwinNotifier) registerChannel() (int, chan notificationChannel) {
-	dn.channelsLock.Lock()
-	defer dn.channelsLock.Unlock()
-
-	id := dn.nextChannelID
-	dn.nextChannelID++
-
-	resultCh := make(chan notificationChannel, 1)
-
-	dn.channels[id] = resultCh
-	return id, resultCh
+// checkNotificationAuthorization asks the system for the current notification
+// authorization; the result is delivered on the channel registered as channelID.
+func checkNotificationAuthorization(channelID int) {
+	C.checkNotificationAuthorization(C.int(channelID))
 }
 
-func (dn *darwinNotifier) GetChannel(id int) (chan notificationChannel, bool) {
-	dn.channelsLock.Lock()
-	defer dn.channelsLock.Unlock()
-
-	ch, exists := dn.channels[id]
-	if exists {
-		delete(dn.channels, id)
-	}
-	return ch, exists
+// requestNotificationAuthorization prompts for notification authorization; the
+// result is delivered on the channel registered as channelID.
+func requestNotificationAuthorization(channelID int) {
+	C.requestNotificationAuthorization(C.int(channelID))
 }
 
-func (dn *darwinNotifier) cleanupChannel(id int) {
-	dn.channelsLock.Lock()
-	defer dn.channelsLock.Unlock()
-
-	if ch, exists := dn.channels[id]; exists {
-		delete(dn.channels, id)
-		close(ch)
-	}
+// removeNotificationCategory removes categoryID; the result is delivered on the
+// channel registered as channelID.
+func removeNotificationCategory(channelID int, categoryID string) {
+	cCategoryID := C.CString(categoryID)
+	defer C.free(unsafe.Pointer(cCategoryID))
+	C.removeNotificationCategory(C.int(channelID), cCategoryID)
 }

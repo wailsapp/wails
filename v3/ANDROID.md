@@ -39,8 +39,8 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 
 ## Requirements
 
-- The **Android SDK** with platform-tools, an SDK platform (API 35),
-  build-tools and the **NDK** (r26+/26.3.x). `wails3 doctor` reports what it
+- The **Android SDK** with platform-tools, an SDK platform (API 36),
+  build-tools and the **NDK** (r29/29.0.x). `wails3 doctor` reports what it
   can see.
 - A **JDK** (e.g. OpenJDK 21) for Gradle. Set `JAVA_HOME` if `java` is not on
   your `PATH`.
@@ -51,11 +51,17 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 Install the SDK pieces with the command-line tools:
 
 ```bash
-sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" \
-           "ndk;26.3.11579264" "emulator" \
-           "system-images;android-35;google_apis;arm64-v8a"
+case "$(uname -m)" in
+  arm64|aarch64) android_abi="arm64-v8a" ;;
+  x86_64|amd64)  android_abi="x86_64" ;;
+  *) echo "Unsupported emulator host architecture: $(uname -m)"; exit 1 ;;
+esac
+
+sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" \
+           "ndk;29.0.14206865" "emulator" \
+           "system-images;android-36;google_apis;${android_abi}"
 avdmanager create avd --name wails \
-           --package "system-images;android-35;google_apis;arm64-v8a" \
+           --package "system-images;android-36;google_apis;${android_abi}" \
            --device pixel_7
 ```
 

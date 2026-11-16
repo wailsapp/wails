@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -49,8 +49,4 @@ func (m macosClipboard) text() (string, bool) {
 	clipboardText := C.getClipboardText()
 	result := C.GoString(clipboardText)
 	return result, true
-}
-
-func newClipboardImpl() *macosClipboard {
-	return &macosClipboard{}
 }

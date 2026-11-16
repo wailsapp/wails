@@ -87,9 +87,11 @@ The binding system supports several directives that can be used to customize the
 
 - `//wails:inject`: Injects custom JavaScript/TypeScript code into the generated bindings
 - `//wails:include`: Includes additional files with the generated bindings
-- `//wails:internal`: Marks a type or method as internal, preventing it from being exported to the frontend
+- `//wails:internal`: Suppresses exports in the generated SDK; it does not prevent runtime invocation of exported Go methods
 - `//wails:ignore`: Completely ignores a method during binding generation
 - `//wails:id`: Specifies a custom ID for a method, overriding the default hash-based ID
+
+These directives control generated code. In normal builds, runtime registration still reflects exported service methods; use unexported methods or unbound types for private operations and enforce authorisation in exposed methods.
 
 ### Directive Processing
 

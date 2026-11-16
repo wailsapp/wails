@@ -5,7 +5,7 @@ slug: "reference/frontend-runtime"
 sourcePath: "reference/frontend-runtime.md"
 ---
 
-Wails 前端运行时是 Wails 应用程序的标准库。它提供了多项可在应用程序中使用的功能，包括：
+Wails 前端运行时是 Wails 应用程序的标准库。它提供了许多可在应用程序中使用的功能，包括：
 
 - 窗口管理
 - 对话框
@@ -18,30 +18,30 @@ Wails 前端运行时是 Wails 应用程序的标准库。它提供了多项可�
 - 屏幕
 - WML（Wails 标记语言）
 
-Go 与前端之间的集成需要使用该运行时。可通过 2 种方式集成运行时：
+Go 与前端之间的集成需要使用运行时。可通过2种方式集成运行时：
 
-- 使用 `@wailsio/runtime` 包
-- 使用预构建的捆绑包
+- 使用`@wailsio/runtime`包
+- 使用预构建包
 
 ## 使用 npm 包
 
-`@wailsio/runtime` 包是一个 JavaScript 包，可供前端访问 Wails 运行时。所有标准模板都使用该包，并且推荐使用这种方式将运行时集成到应用程序中。使用 `@wailsio/runtime` 包时，只会包含实际使用的运行时部分。
+`@wailsio/runtime`包是一个 JavaScript 包，可供前端访问 Wails 运行时。所有标准模板都使用此包，建议采用这种方式将运行时集成到应用程序中。使用`@wailsio/runtime`包时，只会包含实际使用的运行时部分。
 
-该包已发布到 npm，可使用以下命令安装：
+该包可从 npm 获取，并可使用以下命令安装：
 
 ```shell
 npm install --save @wailsio/runtime
 ```
 
-## 使用预构建的捆绑包
+## 使用预构建包
 
-有些项目不使用 JavaScript 打包工具，可能更适合使用预先构建的运行时捆绑版本。可使用以下命令在本地生成此版本：
+有些项目不会使用 JavaScript 打包工具，因而可能更适合使用预构建的运行时捆绑版本。可使用以下命令在本地生成此版本：
 
 ```shell
 wails3 generate runtime
 ```
 
-该命令将在当前目录中输出一个 `runtime.js` 文件（以及一个 `runtime.debug.js` 文件）。该文件是 ES 模块，可以像 npm 包一样由应用程序脚本导入；此外，该 API 还会导出到全局 window 对象，因此较简单的应用程序可按如下方式使用：
+该命令会在当前目录中输出一个`runtime.js`文件（以及`runtime-debug.js`文件）。此文件是 ES 模块，可像 npm 包一样由应用程序脚本导入；其 API 也会导出到全局 window 对象，因此较简单的应用程序可以按如下方式使用：
 
 ```html
 <html>
@@ -58,13 +58,13 @@ wails3 generate runtime
 ```
 
 @note{type="caution"}
-请务必在加载运行时的 `<script>` 标签上添加 `type="module"` 属性，并等待页面完全加载后再调用 API，因为带有 `type="module"` 属性的脚本会异步运行。
+务必在加载运行时的`<script>`标签上添加`type="module"`属性，并等待页面完全加载后再调用 API，因为带有`type="module"`属性的脚本会异步运行。
 
 @end
 
 ## 初始化
 
-除 API 函数外，运行时还支持上下文菜单和窗口拖动。这些功能只有在运行时初始化后才能按预期工作。即使不使用 API，也务必在前端代码的某处添加一条仅用于触发副作用的导入语句：
+除 API 函数外，运行时还支持上下文菜单和窗口拖动。只有初始化运行时后，这些功能才能按预期工作。即使不使用 API，也请确保在前端代码的某处加入一条仅用于触发副作用的导入语句：
 
 ```javascript
 import "@wailsio/runtime";
@@ -73,7 +73,7 @@ import "@wailsio/runtime";
 打包工具应能检测到副作用，并在构建中包含所有必需的初始化代码。
 
 @note{type="info"}
-如果更倾向于使用预构建的捆绑包，按上文所示添加 script 标签即可。
+如果更倾向于使用预构建包，按上文所示添加 script 标签即可。
 
 @end
 
@@ -83,21 +83,23 @@ import "@wailsio/runtime";
 
 ### 设置
 
-将插件添加到 `vite.config.ts`：
+将插件添加到`vite.config.ts`：
 
 ```typescript
 import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
 
+该参数是相对于 Vite 项目的已生成绑定目录。请在构建前端之前生成绑定。
+
 ### 优势
 
-- **自动重新加载**：运行 `wails3 generate bindings` 时，会自动重新生成并重新加载事件绑定
-- **开发模式**：与 `wails3 dev` 无缝配合，可即时更新
+- **自动重新加载**：运行`wails3 generate bindings`时，会自动重新生成并重新加载事件绑定
+- **开发模式**：与`wails3 dev`无缝配合，实现即时更新
 - **类型安全**：提供完整的 TypeScript 支持，包括自动补全和类型检查
 
 ### 与事件注册配合使用
@@ -134,15 +136,15 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## API 参考
 
-运行时按模块组织，每个模块提供特定功能。仅导入所需内容：
+运行时按模块组织，每个模块提供特定功能。只导入所需内容：
 
 ```javascript
 import { Events, Window, Clipboard } from '@wailsio/runtime'
@@ -150,15 +152,14 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### 事件
 
-用于 Go 与 JavaScript 之间通信的事件系统。
+用于 Go 与 JavaScript 之间通信的事件系统。`UserUpdated`等生成的事件导出项是字符串常量，而不是负载工厂函数。生成器会扩充`CustomEvents`，将已注册的事件名称映射到负载类型。以下类型（`WailsEventName`、`WailsEventCallback`、`WailsEventData`）由 Events 模块导出。
 
 #### On()
 
-为事件注册回调函数。
+为事件注册回调。
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 <strong>返回值：</strong>取消订阅函数
@@ -186,11 +187,10 @@ Events.On(UserLogin, (event) => {
 
 #### Once()
 
-注册仅运行一次的回调函数。
+注册仅运行一次的回调。
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **示例：**
@@ -208,11 +208,11 @@ Events.Once('app-ready', () => {
 向 Go 后端或其他窗口发出事件。
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
-<strong>返回值：</strong>一个 Promise；如果事件已取消，则解析为 `true`，否则解析为 `false`
+<strong>返回值：</strong>如果事件已取消，则 Promise 兑现为`true`；否则兑现为`false`
 
 **示例：**
 
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')
@@ -237,7 +237,7 @@ if (cancelled) {
 ```
 
 @note{type="info"}
-返回值表示事件是否已被钩子取消。大多数事件无法取消，并且始终返回 `false`。
+返回值表示事件是否已被钩子取消。大多数事件无法取消，因此始终返回`false`。
 
 @end
 
@@ -267,7 +267,7 @@ function OffAll(): void
 
 ### 窗口
 
-窗口管理方法。默认导出为当前窗口。
+窗口管理方法。默认导出项是当前窗口。
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -384,7 +384,7 @@ function IsMinimised(): Promise<boolean>
 function IsMaximised(): Promise<boolean>
 ```
 
-**IsFullscreen()** - 检查窗口是否处于全屏模式
+**IsFullscreen()** - 检查窗口是否处于全屏状态
 
 ```typescript
 function IsFullscreen(): Promise<boolean>
@@ -410,7 +410,7 @@ function Name(): Promise<string>
 function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
 ```
 
-**SetAlwaysOnTop(alwaysOnTop)** - 使窗口始终置顶
+**SetAlwaysOnTop(alwaysOnTop)** - 使窗口保持在最前端
 
 ```typescript
 function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
@@ -422,7 +422,7 @@ function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
 function SetResizable(resizable: boolean): Promise<void>
 ```
 
-#### 焦点和屏幕
+#### 焦点与屏幕
 
 **Focus()** - 使窗口获得焦点
 
@@ -505,7 +505,7 @@ import { Window } from '@wailsio/runtime'
 await Window.Print()
 ```
 
-<strong>注意：</strong>此操作会打开操作系统的原生打印对话框，用户可以选择打印机设置并打印当前窗口内容。与可能无法在 WebView 中工作的`window.print()`不同，此方法使用平台原生打印 API。
+<strong>注意：</strong>此操作会打开操作系统的原生打印对话框，用户可以选择打印机设置并打印当前窗口的内容。不同于可能无法在 WebView 中工作的`window.print()`，此方法使用原生平台打印 API。
 
 ### 剪贴板
 
@@ -546,7 +546,7 @@ console.log('Clipboard:', clipboardText)
 
 ### 系统
 
-用于与后端直接通信的底层系统方法。
+用于直接与后端通信的底层系统方法。
 
 #### invoke()
 
@@ -569,7 +569,7 @@ System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 ```
 
 @note{type="caution"}
-这是一个即发即弃且没有返回值的函数。请使用事件接收后端的响应。
+这是一个即发即弃且没有返回值的函数。请使用事件接收后端响应。
 
 @end
 
@@ -581,7 +581,7 @@ System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 
 #### Show()
 
-显示所有应用程序窗口。
+显示应用程序的所有窗口。
 
 ```typescript
 function Show(): Promise<void>
@@ -589,7 +589,7 @@ function Show(): Promise<void>
 
 #### Hide()
 
-隐藏所有应用程序窗口。
+隐藏应用程序的所有窗口。
 
 ```typescript
 function Hide(): Promise<void>
@@ -636,7 +636,7 @@ await Browser.OpenURL('https://wails.io')
 
 ### 屏幕
 
-屏幕信息和管理。
+屏幕信息与管理。
 
 #### GetAll()
 
@@ -662,7 +662,7 @@ function GetPrimary(): Promise<Screen>
 function GetCurrent(): Promise<Screen>
 ```
 
-**Screen 接口：**
+**屏幕接口：**
 
 ```typescript
 interface Screen {
@@ -697,7 +697,7 @@ console.log('Primary screen:', primary.Name)
 
 ### 对话框
 
-通过 JavaScript 显示操作系统原生对话框。
+通过 JavaScript 使用操作系统原生对话框。
 
 #### Info()
 
@@ -763,7 +763,7 @@ if (result === 'Delete') {
 
 #### OpenFile()
 
-显示文件打开对话框。
+显示打开文件对话框。
 
 ```typescript
 function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
@@ -789,7 +789,7 @@ if (file) {
 
 #### SaveFile()
 
-显示文件保存对话框。
+显示保存文件对话框。
 
 ```typescript
 function SaveFile(options: SaveFileDialogOptions): Promise<string>
@@ -797,11 +797,11 @@ function SaveFile(options: SaveFileDialogOptions): Promise<string>
 
 ### WML（Wails 标记语言）
 
-WML 为常用操作提供声明式属性。请将这些属性添加到 HTML 元素：
+WML 为常用操作提供声明式属性。将这些属性添加到 HTML 元素：
 
 #### 属性
 
-**wml-event** - 点击时发出事件
+**wml-event** - 点击时触发事件
 
 ```html
 <button wml-event="save-clicked">Save</button>
@@ -903,15 +903,15 @@ screens.forEach(screen => {
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 推荐做法
 
-- **按需导入** - 只导入所需内容
-- **处理 Promise** - 所有方法都返回 Promise
+- **按需导入** - 仅导入所需内容
+- **处理 Promise** - 所有方法都会返回 Promise
 - **使用 WML 执行简单操作** - 比 JavaScript 更简洁
-- **检查返回值** - 对话框尤其如此
+- **检查返回值** - 对话框尤其需要检查
 - **取消订阅事件** - 使用完毕后进行清理
 
-### ❌ 不应该做
+### ❌ 不要这样做
 
 - **不要忘记 await** - 大多数方法都是异步的
 - **不要阻塞 UI** - 正确使用 async/await

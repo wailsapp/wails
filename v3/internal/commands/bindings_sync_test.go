@@ -177,3 +177,40 @@ func TestSyncDirsIdenticalContent(t *testing.T) {
 	}
 	checkTree(t, dst, files)
 }
+
+func TestSyncDirsReplacesEqualContentSymlink(t *testing.T) {
+	root := t.TempDir()
+	src, dst := filepath.Join(root, "generated"), filepath.Join(root, "bindings")
+	const content = "generated binding"
+	writeFiles(t, src, map[string]string{"service.ts": content})
+	writeFiles(t, dst, map[string]string{"other.ts": "stale"})
+	external := filepath.Join(root, "external.ts")
+	if err := os.WriteFile(external, []byte(content), 0600); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(dst, "service.ts")
+	if err := os.Symlink(external, target); err != nil {
+		t.Skipf("cannot create symlink fixture: %v", err)
+	}
+	if err := syncDirs(src, dst); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Lstat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !info.Mode().IsRegular() {
+		t.Errorf("destination mode=%v, want regular file", info.Mode())
+	}
+	checkTree(t, dst, map[string]string{"service.ts": content})
+	if _, err := os.Lstat(src); !os.IsNotExist(err) {
+		t.Errorf("source not removed: %v", err)
+	}
+	if err := os.WriteFile(external, []byte("changed external file"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(target)
+	if err != nil || string(data) != content {
+		t.Errorf("generated file follows external changes: %q, error=%v", data, err)
+	}
+}

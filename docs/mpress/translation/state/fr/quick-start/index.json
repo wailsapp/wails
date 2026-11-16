@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "4820647960e27385e339",
   "sourceFile": "quick-start/index.md",
   "sourceLanguage": "en",
@@ -17,7 +18,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:27Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
       "targetHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
       "machineHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
@@ -28,6 +29,38 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:27Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "quick-start/index.mpd",
+    "sourceHash": "8a11f15127c9c348497bad36b0d0368aa39ba1fb365ad86a21ab0e00b0e7b29c",
+    "targetHash": "161f4306d117d3f652a6c25c659979ad9dd68c8e4047bc2438c8a162840ea501",
+    "previousSegments": {
+      "b0001-heading-01": {
+        "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+        "targetHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
+        "machineHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
+        "machineText": "Démarrage rapide",
+        "status": "final",
+        "sourcePreview": "Quick Start",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:27Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+        "targetHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
+        "machineHash": "5aed35af5147a1391be992d47e0dadfff4d76eaec2cdf0ca10b18f34ca6e7497",
+        "machineText": "Démarrage rapide",
+        "status": "final",
+        "sourcePreview": "Quick Start",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:27Z"
+      }
     }
   }
 }

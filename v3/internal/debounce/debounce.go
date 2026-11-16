@@ -38,6 +38,8 @@ func (d *debouncer) fire(generation uint64, f func()) {
 		d.mu.Unlock()
 		return
 	}
+	// A completed timer retains its callback and anything that callback captures.
+	d.timer = nil
 	d.mu.Unlock()
 	f()
 }

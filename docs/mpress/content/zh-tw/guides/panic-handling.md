@@ -5,17 +5,17 @@ slug: "guides/panic-handling"
 sourcePath: "guides/panic-handling.md"
 ---
 
-在 Go 應用程式中，執行階段發生非預期狀況時，可能會出現 panic。本指南說明如何在一般 Go 程式碼中，以及特別是在 Wails 應用程式中處理 panic。
+在 Go 應用程式中，執行期間發生非預期狀況時可能會觸發 panic。本指南說明如何在一般 Go 程式碼中，以及專門在 Wails 應用程式中處理 panic。
 
 ## 瞭解 Go 中的 Panic
 
-在深入瞭解 Wails 特有的 panic 處理方式之前，請務必先瞭解 panic 在 Go 中的運作方式：
+在深入探討 Wails 特有的 panic 處理方式之前，務必先瞭解 panic 在 Go 中的運作方式：
 
-1. Panic 用於處理正常運作期間不應發生且無法復原的錯誤
-2. 當 goroutine 中發生 panic 時，只有該 goroutine 會受到影響
-3. 可以使用`defer`和`recover()`從 panic 中復原
+1. Panic 適用於正常運作期間不應發生且無法復原的錯誤
+2. Panic 會展開目前的 goroutine；如果在未復原的情況下到達頂層，處理程序便會終止，其他 goroutine 也會一併終止
+3. 復原必須在與 panic 相同的 goroutine 中，於延遲執行的函式內進行
 
-以下是在 Go 中處理 panic 的基本範例：
+以下是 Go 中處理 panic 的基本範例：
 
 ```go
 func doSomething() {
@@ -31,22 +31,22 @@ func doSomething() {
 }
 ```
 
-如需進一步瞭解 Go 中的 panic 和 recover，請參閱[Go 部落格：Defer、Panic 與 Recover](https://go.dev/blog/defer-panic-and-recover)。
+如需更詳細地瞭解 Go 中的 panic 與 recover，請參閱[Go 部落格：Defer、Panic 與 Recover](https://go.dev/blog/defer-panic-and-recover)。
 
-## Wails 中的 Panic 處理
+## 在 Wails 中處理 Panic
 
-從前端呼叫 Service 方法時，如果方法中發生 panic，Wails 會自動處理。因此，你不需要在這些方法中加入 panic 復原機制；Wails 會攔截 panic，並交由你設定的 panic 處理常式處理。
+從前端呼叫 Service 方法時，如果方法內發生 panic，Wails 會自動處理。這表示你不需要在這些方法中加入 panic 復原機制；Wails 會捕捉 panic，並交由你設定的 panic 處理常式處理。
 
-Panic 處理常式專門用來攔截：
+Panic 處理常式專門用來捕捉：
 
-- 從前端呼叫的已繫結服務方法中發生的 panic
-- Wails 執行階段內部發生的 panic
+- 從前端呼叫的已繫結服務方法內所發生的 panic
+- 在明確安裝 Wails 復原機制的執行階段路徑中發生的 panic；這不是能處理每個 goroutine 的全處理程序處理常式
 
 對於其他情境，例如背景 goroutine 或獨立的 Go 程式碼，你應使用 Go 的標準 panic 復原機制自行處理 panic。
 
 ## PanicDetails 結構
 
-發生 panic 時，Wails 會將其重要資訊擷取至`PanicDetails`結構中：
+發生 panic 時，Wails 會在`PanicDetails`結構中擷取與該 panic 有關的重要資訊：
 
 ```go
 type PanicDetails struct {
@@ -57,21 +57,21 @@ type PanicDetails struct {
 }
 ```
 
-此結構提供下列完整的 panic 資訊：
+此結構會提供完整的 panic 資訊：
 
 - `StackTrace`：顯示導致 panic 之呼叫堆疊的格式化字串
 - `Error`：實際的錯誤或 panic 訊息
 - `Time`：panic 發生的確切時間
-- `FullStackTrace`：包含執行階段堆疊框架的完整堆疊追蹤
+- `FullStackTrace`：包含執行階段框架的完整堆疊追蹤
 
 @note{type="info" title="Service 程式碼中的 Panic"}
-從前端呼叫 Service 程式碼後，如果其中的 panic 被攔截，系統會裁剪堆疊追蹤，使其聚焦於程式碼中發生 panic 的確切位置。 若要查看完整的堆疊追蹤，可以使用`FullStackTrace`欄位。
+從前端呼叫 Service 程式碼後，如果其中的 panic 被捕捉，堆疊追蹤會經過裁剪，讓內容聚焦於 panic 在程式碼中發生的確切位置。如果想查看完整的堆疊追蹤，可以使用`FullStackTrace`欄位。
 
 @end
 
 ## 預設 Panic 處理常式
 
-如果未指定自訂 panic 處理常式，Wails 會使用預設處理常式，以格式化的記錄訊息輸出錯誤資訊，然後結束應用程式。 例如：
+如果未指定自訂 panic 處理常式，Wails 會使用預設處理常式，以格式化的記錄訊息輸出錯誤資訊，然後結束。例如：
 
 ```
 ************************ FATAL ******************************
@@ -89,7 +89,7 @@ main.(*WindowService).GeneratePanic
 
 ## 自訂 Panic 處理常式
 
-建立應用程式時，可以設定`PanicHandler`選項來實作自己的 panic 處理常式。範例如下：
+建立應用程式時，可以設定`PanicHandler`選項來實作自己的 panic 處理常式。以下是範例：
 
 ```go
 app := application.New(application.Options{
@@ -110,8 +110,8 @@ app := application.New(application.Options{
 })
 ```
 
-如需 Wails 應用程式中 panic 處理方式的完整可運作範例，請參閱`v3/examples/panic-handling`中的 panic-handling 範例。
+如需 Wails 應用程式中 panic 處理方式的完整可執行範例，請參閱`v3/examples/panic-handling`中的 panic-handling 範例。
 
 ## 最後注意事項
 
-請記住，Wails panic 處理常式專門用於管理已繫結方法中的 panic 和執行階段內部錯誤。對於應用程式的其他部分，你應在適當時使用 Go 的標準錯誤處理模式和 panic 復原機制。與所有 Go 應用程式一樣，最好盡可能透過妥善的錯誤處理來避免發生 panic。
+請記住，Wails panic 處理常式專門用於管理已繫結方法中的 panic 與內部執行階段錯誤。對於應用程式的其他部分，你應視情況使用 Go 的標準錯誤處理模式與 panic 復原機制。如同所有 Go 應用程式，最好盡可能透過適當的錯誤處理來防止 panic。

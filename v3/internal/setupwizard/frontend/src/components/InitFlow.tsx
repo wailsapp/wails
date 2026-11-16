@@ -1,12 +1,15 @@
 import { useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { InitData } from '../types';
-import { createProject } from '../api';
+import type { InitData, WakeRequirements as Requirements } from '../types';
+import { checkWakeRequirements, createProject } from '../api';
+import { initSteps, initWakeConfig } from '../wake';
+import WakeSetupChoices from './WakeSetupChoices';
+import WakeRequirements from './WakeRequirements';
 import wailsLogoWhite from '../assets/wails-logo-white-text.svg';
 import wailsLogoBlack from '../assets/wails-logo-black-text.svg';
 
 type Theme = 'light' | 'dark';
-type Step = 'project' | 'framework' | 'language' | 'bindings' | 'details' | 'done';
+type Step = 'project' | 'framework' | 'language' | 'bindings' | 'details' | 'Application' | 'Targets' | 'Packages' | 'Tools' | 'done';
 
 const pageVariants = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } };
 
@@ -26,17 +29,17 @@ function slugIdentifier(name: string): string {
 }
 
 // One focused choice per page, presented like the setup wizard.
-function Page({ title, subtitle, children, onBack, onNext, nextLabel = 'Continue', nextDisabled, busy }: {
+function Page({ title, subtitle, children, onBack, onNext, nextLabel = 'Continue', nextDisabled, busy, scroll = false }: {
   title: string; subtitle: string; children: ReactNode;
-  onBack?: () => void; onNext: () => void; nextLabel?: string; nextDisabled?: boolean; busy?: boolean;
+  onBack?: () => void; onNext: () => void; nextLabel?: string; nextDisabled?: boolean; busy?: boolean; scroll?: boolean;
 }) {
   return (
-    <motion.main variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.25 }} className="flex-1 flex flex-col">
+    <motion.main variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.25 }} className="min-h-0 flex-1 flex flex-col">
       <header className="text-center mb-6 shrink-0 px-10 pt-10">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight">{title}</h1>
         <p className="text-base text-gray-500 dark:text-gray-400">{subtitle}</p>
       </header>
-      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10 flex flex-col justify-center">{children}</div>
+      <div className={`flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10 flex flex-col ${scroll ? 'gap-4 py-2' : 'justify-center'}`}>{children}</div>
       <div className="shrink-0 pt-4 pb-6 flex items-center justify-center gap-3">
         {onBack && (
           <button onClick={onBack} disabled={busy}
@@ -66,10 +69,14 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
   const [form, setForm] = useState<InitData>({ ...data });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const wakeEnabled = Boolean(data.wakeEnabled && data.wakeSetup?.enabled);
+  const [wake, setWake] = useState(data.wakeSetup?.config);
+  const [requirements, setRequirements] = useState<Requirements | null>(null);
+  const [checking, setChecking] = useState(false);
   const set = <K extends keyof InitData>(k: K, v: InitData[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   // Linear flow; the Bindings page only applies to TypeScript.
-  const flow: Step[] = ['project', 'framework', 'language', ...(preferTS ? (['bindings'] as Step[]) : []), 'details'];
+  const flow = initSteps(preferTS, wakeEnabled) as Step[];
   const goNext = () => { const i = flow.indexOf(step); if (i >= 0 && i < flow.length - 1) setStep(flow[i + 1]); };
   const goBack = () => { const i = flow.indexOf(step); if (i > 0) setStep(flow[i - 1]); };
 
@@ -106,11 +113,24 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
   const create = async () => {
     setError(''); setCreating(true);
     try {
-      const result = await createProject({ ...form, templateName: resolveTemplate(framework, preferTS) });
+      const selected = wakeEnabled && wake ? initWakeConfig(form, wake, preferTS) : undefined;
+      const result = await createProject({ ...form, templateName: resolveTemplate(framework, preferTS), ...(selected ? { wake: selected } : {}) });
       if (result.success) setStep('done');
       else { setError(result.error || 'Failed to create project'); }
-    } catch { setError('Failed to create project'); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Failed to create project'); }
     finally { setCreating(false); }
+  };
+
+  const check = async () => {
+    if (!wake) return;
+    setChecking(true); setError(''); setRequirements(null);
+    try { setRequirements(await checkWakeRequirements(initWakeConfig(form, wake, preferTS))); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not check build tools'); }
+    finally { setChecking(false); }
+  };
+  const advanceWake = () => {
+    goNext();
+    if (step === 'Packages') void check();
   };
 
   const stages: { key: Step; label: string }[] = [
@@ -119,6 +139,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
     { key: 'language', label: 'Language' },
     ...(preferTS ? [{ key: 'bindings' as Step, label: 'Bindings' }] : []),
     { key: 'details', label: 'Details' },
+    ...(wakeEnabled ? (['Application', 'Targets', 'Packages', 'Tools'] as const).map((key) => ({ key, label: key })) : []),
     { key: 'done', label: 'Create' },
   ];
   const currentIndex = stages.findIndex((s) => s.key === step);
@@ -162,7 +183,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
           </aside>
 
           {/* Content */}
-          <div className="flex-1 flex flex-col min-w-[36rem] bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
+          <div className="min-h-0 flex-1 flex flex-col min-w-[36rem] bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
             <AnimatePresence mode="wait">
               {step === 'project' && (
                 <Page key="project" title="Create a Wails project" subtitle="What's your project called?" onNext={advance} nextDisabled={!form.projectName.trim()}>
@@ -259,7 +280,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
               )}
 
               {step === 'details' && (
-                <Page key="details" title="Project details" subtitle="Written to build/config.yml" onBack={goBack} onNext={create} nextLabel={creating ? 'Creating…' : 'Create Project'} busy={creating} nextDisabled={!form.projectName.trim()}>
+                <Page key="details" title="Project details" subtitle={`Written to ${data.buildConfigFile}`} onBack={goBack} onNext={wakeEnabled ? goNext : create} nextLabel={creating ? 'Creating…' : wakeEnabled ? 'Continue' : 'Create Project'} busy={creating} nextDisabled={!form.projectName.trim()}>
                   <div className="max-w-md mx-auto w-full space-y-3">
                     {([
                       ['productName', 'Product Name', 'My App'],
@@ -275,11 +296,22 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                         <input type="text" value={String(form[k] ?? '')} onChange={(e) => set(k, e.target.value as never)} placeholder={ph} className={inputCls} />
                       </div>
                     ))}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Advanced config (icons, file associations, custom URL schemes, iOS overrides) can be edited in <code className="font-mono">build/config.yml</code> after creation.</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Advanced config (icons, file associations, custom URL schemes, iOS overrides) can be edited in <code className="font-mono">{data.buildConfigFile}</code> after creation.</p>
                     {error && (
                       <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"><p className="text-sm text-red-600 dark:text-red-400">{error}</p></div>
                     )}
                   </div>
+                </Page>
+              )}
+
+              {wakeEnabled && wake && data.wakeSetup && (step === 'Application' || step === 'Targets' || step === 'Packages' || step === 'Tools') && (
+                <Page key={step} scroll title={{ Application: 'What are you building?', Targets: 'Where should it run?', Packages: 'Choose release outputs', Tools: 'Tools for your build' }[step]} subtitle={`Create ${form.projectName} with these project settings`} onBack={goBack} onNext={step === 'Tools' ? create : advanceWake} nextLabel={creating ? 'Creating…' : checking ? 'Checking…' : step === 'Tools' ? 'Create Project' : 'Continue'} busy={creating || checking} nextDisabled={wake.targets.length === 0 || (step === 'Tools' && (!requirements || requirements.errors.length > 0))}>
+                  {step !== 'Tools' ? <WakeSetupChoices step={step} config={wake} initial={data.wakeSetup} update={(next) => { setWake(next); setRequirements(null); setError(''); }} /> : <>
+                    <p className="text-sm text-gray-500">Only the tools needed for your selected targets are checked. Missing tools can be installed later. No project files are written until you choose Create Project.</p>
+                    <button className="self-start text-sm underline text-red-600 dark:text-red-400 disabled:opacity-50" disabled={checking || creating} onClick={() => void check()}>Recheck requirements</button>
+                    {requirements && <WakeRequirements requirements={requirements} busy={checking} />}
+                  </>}
+                  {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
                 </Page>
               )}
 
@@ -288,10 +320,11 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                   <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
                     <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                   </div>
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Project created</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Project choices accepted</h2>
                   <p className="text-gray-500 dark:text-gray-400 text-center max-w-sm">
-                    <code className="font-mono">{form.projectName}</code> was scaffolded from the <code className="font-mono">{resolveTemplate(framework, preferTS)}</code> template at <code className="font-mono break-all">{form.baseDir}/{form.projectName}</code>. You can close this window and return to the terminal.
+                    Return to the terminal to check the creation result for <code className="font-mono">{form.projectName}</code> using the <code className="font-mono">{resolveTemplate(framework, preferTS)}</code> template. The project will be created at <code className="font-mono break-all">{form.baseDir}/{form.projectName}</code>. You can close this window.
                   </p>
+                  {wakeEnabled && <div className="mt-4 text-sm text-gray-600 dark:text-gray-300"><p>After the terminal confirms successful creation:</p><pre className="mt-2 rounded-lg bg-gray-100 dark:bg-gray-950 p-3">cd {form.projectName}{'\n'}wails3 build setup{'\n'}wails3 dev</pre></div>}
                 </motion.main>
               )}
             </AnimatePresence>

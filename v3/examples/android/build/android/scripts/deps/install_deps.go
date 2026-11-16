@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -47,6 +49,17 @@ func main() {
 		errors = append(errors, "ANDROID_HOME not set. Install Android Studio and set ANDROID_HOME environment variable")
 	} else {
 		fmt.Printf("✓ ANDROID_HOME: %s\n", androidHome)
+		for _, component := range []struct {
+			path string
+			name string
+		}{
+			{filepath.Join(androidHome, "platforms", "android-36"), "Android SDK Platform API 36 (platforms;android-36)"},
+			{filepath.Join(androidHome, "build-tools", "36.0.0"), "Android SDK Build-Tools 36.0.0 (build-tools;36.0.0)"},
+		} {
+			if info, err := os.Stat(component.path); err != nil || !info.IsDir() {
+				errors = append(errors, component.name+" is not installed")
+			}
+		}
 	}
 
 	// Check adb
@@ -94,11 +107,13 @@ func main() {
 		fmt.Printf("✓ Android NDK: %s\n", ndkHome)
 	}
 
-	// Check Java
-	if !checkCommand("java", "-version") {
-		errors = append(errors, "Java not found. Install JDK 11+ (OpenJDK recommended)")
+	// Check Java. AGP 9 requires JDK 17 or newer.
+	if major, err := javaMajorVersion(); err != nil {
+		errors = append(errors, "Java not found or its version could not be read. Install JDK 17+ (OpenJDK recommended)")
+	} else if major < 17 {
+		errors = append(errors, fmt.Sprintf("Java %d is too old. Install JDK 17+ (OpenJDK recommended)", major))
 	} else {
-		fmt.Println("✓ Java is installed")
+		fmt.Printf("✓ Java %d is installed\n", major)
 	}
 
 	// Check for AVD (Android Virtual Device)
@@ -124,8 +139,8 @@ func main() {
 		fmt.Println("Setup instructions:")
 		fmt.Println("1. Install Android Studio: https://developer.android.com/studio")
 		fmt.Println("2. Open SDK Manager and install:")
-		fmt.Println("   - Android SDK Platform (API 35)")
-		fmt.Println("   - Android SDK Build-Tools")
+		fmt.Println("   - Android SDK Platform (API 36)")
+		fmt.Println("   - Android SDK Build-Tools 36.0.0")
 		fmt.Println("   - Android SDK Platform-Tools")
 		fmt.Println("   - Android Emulator")
 		fmt.Println("   - NDK (Side by side)")
@@ -141,6 +156,24 @@ func main() {
 	}
 
 	fmt.Println("✓ All Android development dependencies are installed!")
+}
+
+var javaVersionPattern = regexp.MustCompile(`(?i)(?:java|openjdk) version "(?:1\.)?(\d+)`)
+
+func javaMajorVersion() (int, error) {
+	java := "java"
+	if javaHome := os.Getenv("JAVA_HOME"); javaHome != "" {
+		java = filepath.Join(javaHome, "bin", "java")
+	}
+	output, err := exec.Command(java, "-version").CombinedOutput()
+	if err != nil {
+		return 0, err
+	}
+	match := javaVersionPattern.FindStringSubmatch(string(output))
+	if len(match) != 2 {
+		return 0, fmt.Errorf("unrecognised java version output")
+	}
+	return strconv.Atoi(match[1])
 }
 
 func checkCommand(name string, args ...string) bool {

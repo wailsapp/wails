@@ -11,7 +11,7 @@ sourcePath: "features/bindings/advanced.md"
 
 ### 注入自定义代码
 
-`//wails:inject` 指令允许你将自定义 JavaScript/TypeScript 代码注入生成的绑定：
+`//wails:inject` 指令允许你将自定义 JavaScript/TypeScript 代码注入生成的绑定中：
 
 ```go
 //wails:inject console.log("Hello from Wails!");
@@ -24,7 +24,7 @@ func (s *MyService) Greet(name string) string {
 
 这会将指定代码注入为 `MyService` 服务生成的 JavaScript/TypeScript 文件中。
 
-你还可以使用条件注入来针对特定输出格式：
+你还可以使用条件注入，以针对特定的输出格式：
 
 ```go
 //wails:inject j*:console.log("Hello JS!");  // JavaScript only
@@ -44,7 +44,7 @@ package mypackage
 
 ### 将类型和方法标记为内部使用
 
-`//wails:internal` 指令将类型或方法标记为内部使用，阻止其导出到前端：
+`//wails:internal` 指令会阻止在生成的 JavaScript/TypeScript 绑定中导出某个类型或方法：
 
 ```go
 //wails:internal
@@ -56,7 +56,7 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-这适用于仅供 Go 代码内部使用、不应向前端公开的类型和方法。
+这控制的是生成的 SDK，而非运行时访问权限。在常规构建中，即使导出的 Go 服务方法未出现在生成的 SDK 中，仍可通过运行时注册和调用。请将私有操作设为未导出，或将其放在未绑定的类型上，并在公开的方法内部实施授权检查。
 
 ### 忽略方法
 
@@ -67,11 +67,11 @@ func (s *MyService) InternalMethod() {}
 func (s *MyService) IgnoredMethod() {}
 ```
 
-这与 `//wails:internal` 类似，但它会完全忽略该方法，而不是将其标记为内部使用。
+这会省略生成的封装代码。与 `//wails:internal` 一样，它并不是导出 Go 服务方法的访问控制边界。
 
 ### 自定义方法 ID
 
-`//wails:id` 指令为方法指定自定义 ID，覆盖默认的基于哈希的 ID：
+`//wails:id` 指令可为方法指定自定义 ID，从而覆盖默认的基于哈希的 ID：
 
 ```go
 //wails:id 42
@@ -157,7 +157,7 @@ func (s *MyService) GetResult() Result[string] {
 }
 ```
 
-生成的 TypeScript 代码将包含 `Result` 的泛型类：
+生成的 TypeScript 代码将包含 `Result` 对应的泛型类：
 
 ```typescript
 export class Result<T> {
@@ -184,7 +184,7 @@ export class Result<T> {
 
 ### 接口
 
-绑定生成器可使用 `-i` 标志生成 TypeScript 接口而非类：
+绑定生成器可以使用 `-i` 标志生成 TypeScript 接口而不是类：
 
 ```bash
 wails3 generate bindings -ts -i
@@ -202,15 +202,15 @@ export interface Person {
 
 ## 优化绑定生成
 
-### 使用名称而非 ID
+### 使用名称而不是 ID
 
-默认情况下，绑定生成器使用基于哈希的 ID 调用方法。你可以使用 `-names` 标志改为使用名称：
+默认情况下，绑定生成器使用基于哈希的 ID 调用方法。你可以使用 `-names` 标志，改为使用名称：
 
 ```bash
 wails3 generate bindings -names
 ```
 
-这会生成通过绑定方法的<strong>完全限定</strong>名称（`<package>.<Service>.<Method>`）调用该方法的代码，并使用按位置命名的参数名 `$0`、`$1`、……：
+这会生成相应代码，通过绑定方法的**完全限定**名称（`<package>.<Service>.<Method>`）调用该方法，并使用按位置命名的 `$0`、`$1`……参数：
 
 ```javascript
 export function Greet($0) {
@@ -219,33 +219,33 @@ export function Greet($0) {
 }
 ```
 
-这可以提高生成代码的可读性并使其更易于调试，但效率可能略低。
+这可以提高生成代码的可读性并使其更易于调试，但效率可能会略低。
 
 ### 捆绑运行时
 
-默认情况下，生成的代码从 `@wailsio/runtime` npm 包导入 Wails 运行时。你可以使用 `-b` 标志，将运行时与生成的代码捆绑在一起：
+默认情况下，生成的代码会从 `@wailsio/runtime` npm 包导入 Wails 运行时。你可以使用 `-b` 标志，将运行时与生成的代码捆绑在一起：
 
 ```bash
 wails3 generate bindings -b
 ```
 
-这会将运行时代码直接包含在生成的文件中，从而不再需要该 npm 包。
+这会将运行时代码直接包含在生成的文件中，从而不再需要 npm 包。
 
 ### 禁用索引文件
 
-如果不需要索引文件，可以使用 `-noindex` 标志禁止生成这些文件：
+如果不需要索引文件，可以使用 `-noindex` 标志禁用其生成：
 
 ```bash
 wails3 generate bindings -noindex
 ```
 
-如果你更喜欢直接从服务和模型各自的文件中导入它们，这会很有用。
+如果你倾向于直接从服务和模型各自的文件中导入它们，这会很有用。
 
-## 实际应用示例
+## 实际示例
 
 ### 身份验证服务
 
-下面是一个使用自定义指令的身份验证服务示例：
+以下是一个使用自定义指令的身份验证服务示例：
 
 ```go
 package auth
@@ -293,7 +293,7 @@ func (s *AuthService) validateCredentials(username, password string) bool {
 
 ### 数据处理服务
 
-下面是一个使用泛型类型的数据处理服务示例：
+以下是一个使用泛型类型的数据处理服务示例：
 
 ```go
 package data
@@ -324,7 +324,7 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 
 ### 条件代码注入
 
-下面是一个针对不同输出格式进行条件代码注入的示例：
+以下是一个针对不同输出格式进行条件代码注入的示例：
 
 ```go
 //wails:inject j*:/**

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jaypipes/ghw"
+	"github.com/wailsapp/wails/v3/internal/hostinfo"
 )
 
 func collectHardwareInfo() HardwareInfo {
@@ -26,41 +26,29 @@ func collectHardwareInfo() HardwareInfo {
 }
 
 func collectCPUs() []CPUInfo {
-	cpus, err := ghw.CPU()
+	cpus, err := hostinfo.Processors()
 	if err != nil || cpus == nil {
 		return []CPUInfo{{Model: "Unknown"}}
 	}
 
-	result := make([]CPUInfo, 0, len(cpus.Processors))
-	for _, cpu := range cpus.Processors {
+	result := make([]CPUInfo, 0, len(cpus))
+	for _, cpu := range cpus {
 		result = append(result, CPUInfo{
 			Model: cpu.Model,
-			Cores: int(cpu.NumCores),
+			Cores: cpu.Cores,
 		})
 	}
 	return result
 }
 
 func collectGPUs() []GPUInfo {
-	gpu, err := ghw.GPU(ghw.WithDisableWarnings())
-	if err == nil && gpu != nil {
-		result := make([]GPUInfo, 0, len(gpu.GraphicsCards))
-		for _, card := range gpu.GraphicsCards {
-			info := GPUInfo{Name: "Unknown"}
-			if card.DeviceInfo != nil {
-				if card.DeviceInfo.Product != nil {
-					info.Name = card.DeviceInfo.Product.Name
-				}
-				if card.DeviceInfo.Vendor != nil {
-					info.Vendor = card.DeviceInfo.Vendor.Name
-				}
-				info.Driver = card.DeviceInfo.Driver
-			}
-			result = append(result, info)
+	cards, err := hostinfo.Graphics()
+	if err == nil && len(cards) > 0 {
+		result := make([]GPUInfo, 0, len(cards))
+		for _, card := range cards {
+			result = append(result, GPUInfo{Name: card.Name, Vendor: card.Vendor, Driver: card.Driver})
 		}
-		if len(result) > 0 {
-			return result
-		}
+		return result
 	}
 
 	if runtime.GOOS == "darwin" {
@@ -101,9 +89,9 @@ func collectMacGPU() []GPUInfo {
 }
 
 func collectMemory() string {
-	memory, err := ghw.Memory()
-	if err == nil && memory != nil {
-		return strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
+	memory, err := hostinfo.Memory()
+	if err == nil {
+		return strconv.Itoa(int(memory/1024/1024/1024)) + "GB"
 	}
 
 	if runtime.GOOS == "darwin" {

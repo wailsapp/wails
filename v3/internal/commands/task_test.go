@@ -11,12 +11,12 @@ import (
 
 func TestParseTaskAndVars(t *testing.T) {
 	tests := []struct {
-		name           string
-		options        *RunTaskOptions
-		otherArgs      []string
-		osArgs         []string
-		expectedTask   string
-		expectedVars   map[string]string
+		name         string
+		options      *RunTaskOptions
+		otherArgs    []string
+		osArgs       []string
+		expectedTask string
+		expectedVars map[string]string
 	}{
 		{
 			name:         "Task name in options with CLI variables",
@@ -94,7 +94,7 @@ func TestParseTaskAndVars(t *testing.T) {
 			// Verify variables
 			if len(tt.expectedVars) > 0 {
 				require.NotNil(t, call.Vars)
-				
+
 				// Check each expected variable
 				for key, expectedValue := range tt.expectedVars {
 					var actualValue string
@@ -122,7 +122,7 @@ func TestParseTaskAndVars(t *testing.T) {
 // Helper function to extract the task parsing logic for testing
 func parseTaskCall(options *RunTaskOptions, otherArgs []string) *ast.Call {
 	var tasksAndVars []string
-	
+
 	// Check if we have a task name specified in options
 	if options.Name != "" {
 		// If task name is provided via options, use it and treat otherArgs as CLI variables
@@ -156,13 +156,13 @@ func parseTaskCall(options *RunTaskOptions, otherArgs []string) *ast.Call {
 	// Parse task name and CLI variables
 	taskName := tasksAndVars[0]
 	cliVars := tasksAndVars[1:]
-	
+
 	// Create call with CLI variables
 	call := &ast.Call{
 		Task: taskName,
 		Vars: &ast.Vars{},
 	}
-	
+
 	// Parse CLI variables (format: KEY=VALUE)
 	for _, v := range cliVars {
 		if idx := findEquals(v); idx != -1 {

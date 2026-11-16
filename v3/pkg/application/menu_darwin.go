@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -82,32 +82,8 @@ void addWindowsMenu(void* menu) {
 import "C"
 import "unsafe"
 
-type macosMenu struct {
-	menu *Menu
-
-	nsMenu unsafe.Pointer
-}
-
 func menuSectionHeadersSupported() bool {
 	return bool(C.menuSectionHeadersSupported())
-}
-
-func newMenuImpl(menu *Menu) *macosMenu {
-	result := &macosMenu{
-		menu: menu,
-	}
-	return result
-}
-
-func (m *macosMenu) update() {
-	InvokeSync(func() {
-		if m.nsMenu == nil {
-			m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
-		} else {
-			C.clearMenu(m.nsMenu)
-		}
-		m.processMenu(m.nsMenu, m.menu)
-	})
 }
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
@@ -155,13 +131,12 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	}
 }
 
-func DefaultApplicationMenu() *Menu {
-	menu := NewMenu()
-	menu.AddRole(AppMenu)
-	menu.AddRole(FileMenu)
-	menu.AddRole(EditMenu)
-	menu.AddRole(ViewMenu)
-	menu.AddRole(WindowMenu)
-	menu.AddRole(HelpMenu)
-	return menu
+// newNSMenu creates an NSMenu with the given title.
+func newNSMenu(label string) unsafe.Pointer {
+	return C.createNSMenu(C.CString(label))
+}
+
+// clearNSMenu removes every item from menu.
+func clearNSMenu(menu unsafe.Pointer) {
+	C.clearMenu(menu)
 }

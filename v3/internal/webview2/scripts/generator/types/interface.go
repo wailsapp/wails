@@ -2,23 +2,23 @@ package types
 
 import (
 	"bytes"
-	"github.com/leaanthony/slicer"
 	"io"
 	"log"
+	"slices"
 	"strings"
 	"text/template"
 )
 
 type InterfaceDeclaration struct {
-	Header    *InterfaceHeader   `parser:"'[' @@ ']'"`
-	Name      string             `parser:"'interface' @Ident"`
-	BaseClass string             `parser:" ':' @Ident '{' "`
-	Methods   []*InterfaceMethod `parser:"@@+ '}'"`
+	Header    *InterfaceHeader
+	Name      string
+	BaseClass string
+	Methods   []*InterfaceMethod
 
 	// private
 	decl         *Declaration
 	InvokeMethod *InterfaceMethod
-	includes     slicer.StringSlicer
+	includes     []string
 }
 
 func (d *InterfaceDeclaration) Process(decl *Declaration) error {
@@ -35,13 +35,19 @@ func (d *InterfaceDeclaration) Process(decl *Declaration) error {
 			break
 		}
 	}
-	d.includes.AddUnique(`"unsafe"`)
+	d.addImport(`"unsafe"`)
 	if len(d.Methods) == 1 && d.Methods[0] == d.InvokeMethod {
 		return nil
 	}
-	d.includes.AddUnique(`"syscall"`)
-	d.includes.AddUnique(`"golang.org/x/sys/windows"`)
+	d.addImport(`"syscall"`)
+	d.addImport(`"golang.org/x/sys/windows"`)
 	return nil
+}
+
+func (d *InterfaceDeclaration) addImport(path string) {
+	if !slices.Contains(d.includes, path) {
+		d.includes = append(d.includes, path)
+	}
 }
 
 func (d *InterfaceDeclaration) Generate(packageName string, w io.Writer) error {
@@ -79,7 +85,7 @@ func (d *InterfaceDeclaration) generateVtbl(packageName string, w io.Writer) err
 		Name:            d.Name,
 		Methods:         d.Methods,
 		HasInvokeMethod: d.HasInvokeMethod(),
-		Includes:        d.includes.AsSlice(),
+		Includes:        d.includes,
 	}
 	if d.BaseClass == "IUnknown" {
 		data.BaseClass = ""
@@ -149,10 +155,10 @@ func (d *InterfaceDeclaration) generateInterfaceMethods(w io.Writer) error {
 }
 
 type InterfaceMethod struct {
-	Prop       *Prop               `parser:"('[' @('propget'|'propput') ']')?"`
-	ReturnType string              `parser:"@Ident"`
-	Name       InterfaceMethodName `parser:"@Ident '('"`
-	Params     []*Param            `parser:" @@* ')' ';'"`
+	Prop       *Prop
+	ReturnType string
+	Name       InterfaceMethodName
+	Params     []*Param
 
 	// private
 	GoMethodName string
@@ -202,36 +208,36 @@ func (m *InterfaceMethod) processParams() {
 }
 
 func (m *InterfaceMethod) processInputParams() {
-	var inputs slicer.StringSlicer
-	var inputParamNames slicer.StringSlicer
+	var inputs []string
+	var inputParamNames []string
 	for _, param := range m.inputParams {
-		inputs.Add(param.Name + " " + param.AsInputType())
-		inputParamNames.Add(param.Name)
+		inputs = append(inputs, param.Name+" "+param.AsInputType())
+		inputParamNames = append(inputParamNames, param.Name)
 		param.processSetup()
 	}
-	m.GoInputs = inputs.Join(", ")
-	m.InputParamNames = inputParamNames.Join(", ")
+	m.GoInputs = strings.Join(inputs, ", ")
+	m.InputParamNames = strings.Join(inputParamNames, ", ")
 }
 
 func (m *InterfaceMethod) processOutputParams() {
-	var outputs slicer.StringSlicer
-	var outputParamNames slicer.StringSlicer
-	var outputParamTypes slicer.StringSlicer
+	var outputs []string
+	var outputParamNames []string
+	var outputParamTypes []string
 	for _, param := range m.outputParams {
-		outputs.Add(param.Name + " " + param.GoType)
-		outputParamNames.Add(param.Name)
-		outputParamTypes.Add(param.GoType)
+		outputs = append(outputs, param.Name+" "+param.GoType)
+		outputParamNames = append(outputParamNames, param.Name)
+		outputParamTypes = append(outputParamTypes, param.GoType)
 		param.processSetup()
 	}
 	// Add the mandatory error
-	outputs.Add("err error")
-	outputParamNames.Add("err")
-	outputParamTypes.Add("error")
+	outputs = append(outputs, "err error")
+	outputParamNames = append(outputParamNames, "err")
+	outputParamTypes = append(outputParamTypes, "error")
 
-	m.GoOutputs = outputs.Join(", ")
-	m.OutputParamNames = outputParamNames.Join(", ")
-	m.GoReturnTypes = outputParamTypes.Join(", ")
-	if outputParamTypes.Length() > 1 {
+	m.GoOutputs = strings.Join(outputs, ", ")
+	m.OutputParamNames = strings.Join(outputParamNames, ", ")
+	m.GoReturnTypes = strings.Join(outputParamTypes, ", ")
+	if len(outputParamTypes) > 1 {
 		m.GoReturnTypes = "(" + m.GoReturnTypes + ")"
 	}
 }
@@ -265,24 +271,24 @@ func (m *InterfaceMethod) ReturnsHRESULT() bool {
 }
 
 func (m *InterfaceMethod) ErrorValues() string {
-	var errorValues slicer.StringSlicer
+	var errorValues []string
 	for _, outputParam := range m.outputParams {
-		errorValues.Add(outputParam.defaultErrorValue())
+		errorValues = append(errorValues, outputParam.defaultErrorValue())
 	}
-	errorValues.Add("err")
-	return errorValues.Join(", ")
+	errorValues = append(errorValues, "err")
+	return strings.Join(errorValues, ", ")
 }
 func (m *InterfaceMethod) ErrorValuesHRESULT() string {
-	var errorValues slicer.StringSlicer
+	var errorValues []string
 	for _, outputParam := range m.outputParams {
-		errorValues.Add(outputParam.defaultErrorValue())
+		errorValues = append(errorValues, outputParam.defaultErrorValue())
 	}
 	if m.ReturnsHRESULT() {
-		errorValues.Add("syscall.Errno(hr)")
+		errorValues = append(errorValues, "syscall.Errno(hr)")
 	} else {
-		errorValues.Add("err")
+		errorValues = append(errorValues, "err")
 	}
-	return errorValues.Join(", ")
+	return strings.Join(errorValues, ", ")
 }
 
 func (m *InterfaceMethod) GetHResultVariable() string {
@@ -293,16 +299,16 @@ func (m *InterfaceMethod) GetHResultVariable() string {
 }
 
 func (m *InterfaceMethod) SuccessValues() string {
-	var successValues slicer.StringSlicer
+	var successValues []string
 	for _, outputParam := range m.outputParams {
-		successValues.Add(outputParam.GetReturnVariableName())
+		successValues = append(successValues, outputParam.GetReturnVariableName())
 	}
-	successValues.Add("err")
-	return successValues.Join(", ")
+	successValues = append(successValues, "err")
+	return strings.Join(successValues, ", ")
 }
 
 type InterfaceHeader struct {
-	UUID *UUID `parser:"'uuid' '(' @UUID ')' ',' 'object' ',' 'pointer_default' '(' 'unique' ')'"`
+	UUID *UUID
 }
 
 func (h *InterfaceHeader) AsString() string {

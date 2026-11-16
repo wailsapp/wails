@@ -7,9 +7,7 @@ tasks:
     desc: Install Dependencies
     aliases: [i]
     cmds:
-      - corepack enable
-      - corepack prepare pnpm@10.34.7 --activate
-      - pnpm install
+      - corepack pnpm install --frozen-lockfile
     sources:
       - package.json
       - pnpm-lock.yaml
@@ -33,18 +31,6 @@ tasks:
     aliases: [serve]
     cmds:
       - npx docusaurus serve
-
-  crowdin:push:
-    desc: Upload source files to Crowdin
-    deps: [install]
-    cmds:
-      - npx crowdin push -b v2
-
-  crowdin:pull:
-    desc: Download approved translation files from Crowdin to local
-    deps: [install]
-    cmds:
-      - npx crowdin pull -b v2 --export-only-approved
 
   format:md:
     cmds:

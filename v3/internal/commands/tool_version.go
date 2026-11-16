@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/github"
@@ -16,38 +15,25 @@ type ToolVersionOptions struct {
 	Prerelease bool   `name:"prerelease" description:"Bump prerelease version (e.g., alpha.5 to alpha.6)"`
 }
 
-// bumpPrerelease increments the numeric part of a prerelease string
-// For example, "alpha.5" becomes "alpha.6"
+// bumpPrerelease increments the final numeric prerelease identifier.
 func bumpPrerelease(prerelease string) string {
-	// If prerelease is empty, return it as is
-	if prerelease == "" {
+	start := strings.LastIndexByte(prerelease, '.') + 1
+	lastPart := prerelease[start:]
+	if lastPart == "" || strings.Trim(lastPart, "0123456789") != "" {
 		return prerelease
 	}
 
-	// Split the prerelease string by dots
-	parts := strings.Split(prerelease, ".")
-
-	// If there's only one part (e.g., "alpha"), return it as is
-	if len(parts) == 1 {
-		return prerelease
+	// Increment decimal digits directly, without imposing a machine-integer limit.
+	// Strip leading zeroes to preserve the previous integer formatter's behavior.
+	digits := []byte(strings.TrimLeft(lastPart, "0"))
+	for i := len(digits) - 1; i >= 0; i-- {
+		if digits[i] != '9' {
+			digits[i]++
+			return prerelease[:start] + string(digits)
+		}
+		digits[i] = '0'
 	}
-
-	// Try to parse the last part as a number
-	lastPart := parts[len(parts)-1]
-	num, err := strconv.Atoi(lastPart)
-	if err != nil {
-		// If the last part is not a number, return the prerelease as is
-		return prerelease
-	}
-
-	// Increment the number
-	num++
-
-	// Replace the last part with the incremented number
-	parts[len(parts)-1] = strconv.Itoa(num)
-
-	// Join the parts back together
-	return strings.Join(parts, ".")
+	return prerelease[:start] + "1" + string(digits)
 }
 
 // ToolVersion bumps a semantic version based on the provided flags

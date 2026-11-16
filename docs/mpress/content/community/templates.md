@@ -12,7 +12,7 @@ This page might be outdated for Wails v3.
 
 <!-- TODO: Update this link -->
 
-This page serves as a list for community supported templates. To build your own template, please see the [Templates](https://wails.io/docs/guides/templates) guide.
+This page serves as a list for community supported templates. To build your own template, please see the [Templates](https://v2.wails.io/docs/guides/templates) guide.
 
 @note{type="tip" title="How to Submit a Template"}
 You can click `Edit this page` at the bottom to include your templates.

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wailsapp/wails/v3/internal/buildmeta"
 	"github.com/wailsapp/wails/v3/internal/gosod"
 	"gopkg.in/yaml.v3"
 	"howett.net/plist"
@@ -504,4 +505,18 @@ func sanitizePlistValue(v any) (any, bool) {
 	default:
 		return v, true
 	}
+}
+
+// WindowsVersion is the numeric MSIX identity; display metadata retains semver.
+func (config BuildConfig) WindowsVersion() string {
+	return windowsIdentityVersion(config.ProductVersion)
+}
+func (config UpdateConfig) WindowsVersion() string {
+	return windowsIdentityVersion(config.ProductVersion)
+}
+func windowsIdentityVersion(value string) string {
+	if info, err := buildmeta.Parse(value); err == nil {
+		return info.Core + ".0"
+	}
+	return value
 }

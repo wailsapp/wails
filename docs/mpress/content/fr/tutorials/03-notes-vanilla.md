@@ -5,36 +5,36 @@ slug: "tutorials/03-notes-vanilla"
 sourcePath: "tutorials/03-notes-vanilla.md"
 ---
 
-Dans ce tutoriel, vous allez créer avec Wails v3 une application de prise de notes qui illustre les opérations sur les fichiers, les boîtes de dialogue natives et les modèles modernes de conception d’applications de bureau.
+Dans ce tutoriel, vous allez créer avec Wails v3 une application de prise de notes qui met en œuvre des opérations sur les fichiers, des boîtes de dialogue natives et des modèles modernes d’application de bureau.
 
-![Capture d’écran de l’application de prise de notes](/assets/notes-app.png)
+![Capture d’écran de l’application Notes](/assets/notes-app.png)
 
 ## Ce que vous allez créer
 
 - Une application de prise de notes complète permettant de créer, modifier et supprimer des notes
 - Des boîtes de dialogue natives d’ouverture et d’enregistrement de fichiers pour importer et exporter des notes
-- Un enregistrement automatique pendant la saisie, avec temporisation, afin de réduire les mises à jour inutiles
+- Un enregistrement automatique lors de la saisie, avec temporisation anti-rebond pour réduire les mises à jour inutiles
 - Une mise en page professionnelle à deux colonnes (barre latérale et éditeur) inspirée d’Apple Notes
 
 ## Ce que vous allez apprendre
 
 - Utiliser les boîtes de dialogue de fichiers natives dans Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
-- Utiliser des fichiers JSON pour la persistance des données
-- Mettre en œuvre des modèles d’enregistrement automatique temporisé
-- Créer des interfaces utilisateur professionnelles pour applications de bureau avec du CSS moderne
-- Sérialiser correctement des structures Go en JSON
+- Utiliser des fichiers JSON pour assurer la persistance des données
+- Mettre en œuvre l’enregistrement automatique avec temporisation anti-rebond
+- Créer des interfaces de bureau professionnelles avec du CSS moderne
+- Sérialiser correctement les structures Go en JSON
 
 ## Configuration du projet
 
 @steps
 ### Créer un projet Wails
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
 ### Créer le NotesService
-Créez un fichier `notesservice.go` à la racine du projet :
+Créez un fichier `notesservice.go` à la racine du projet :
 
 ```go
 package main
@@ -171,16 +171,16 @@ func generateID() string {
 }
 ```
 
-**Voici ce qui se passe :**
+**Ce qui se passe ici :**
 
-- **Structure Note** : définit la structure des données avec des balises JSON en minuscules pour assurer une sérialisation correcte
-- **Opérations CRUD** : GetAll, Create, Update et Delete permettent de gérer les notes en mémoire
-- **Boîtes de dialogue de fichiers** : utilisent `application.Get().Dialog.SaveFile()` et `application.Get().Dialog.OpenFile()` pour accéder aux boîtes de dialogue natives
-- **Boîtes de dialogue d’information** : affichent des messages de réussite à l’aide de `application.Get().Dialog.Info()`
-- **Génération des identifiants** : générateur d’identifiants simple fondé sur l’horodatage
+- **Structure Note** : définit la structure des données avec des balises JSON en minuscules afin d’assurer une sérialisation correcte
+- **Opérations CRUD** : GetAll, Create, Update et Delete permettent de gérer les notes en mémoire
+- **Boîtes de dialogue de fichiers** : utilise `application.Get().Dialog.SaveFile()` et `application.Get().Dialog.OpenFile()` pour accéder aux boîtes de dialogue natives
+- **Boîtes de dialogue d’information** : affiche des messages de réussite à l’aide de `application.Get().Dialog.Info()`
+- **Génération des identifiants** : générateur simple d’identifiants fondé sur l’horodatage
 
 ### Mettre à jour main.go
-Remplacez le contenu de `main.go` :
+Remplacez le contenu de `main.go` :
 
 ```go
 package main
@@ -226,14 +226,14 @@ func main() {
 }
 ```
 
-**Voici ce qui se passe :**
+**Ce qui se passe ici :**
 
 - Enregistre `NotesService` auprès de l’application
 - Crée une fenêtre aux dimensions 1000x700, inspirée d’Apple Notes
-- Configure le comportement approprié sous macOS afin de quitter l’application lorsque la dernière fenêtre se ferme
+- Configure le comportement approprié sous macOS afin de quitter l’application lors de la fermeture de la dernière fenêtre
 
 ### Créer la structure HTML
-Remplacez `frontend/index.html` :
+Remplacez `frontend/index.html` :
 
 ```html
 <!DOCTYPE html>
@@ -282,14 +282,14 @@ Remplacez `frontend/index.html` :
 </html>
 ```
 
-**Voici ce qui se passe :**
+**Ce qui se passe ici :**
 
-- **Mise en page à deux colonnes** : une barre latérale pour la liste des notes et une zone principale pour l’éditeur
-- **État vide** : s’affiche lorsqu’aucune note n’est sélectionnée
-- **Environnement d’exécution Wails** : doit être chargé avant le script de module
+- **Mise en page à deux colonnes** : une barre latérale pour la liste des notes et une zone principale pour l’éditeur
+- **État vide** : s’affiche lorsqu’aucune note n’est sélectionnée
+- **Runtime Wails** : doit être chargé avant le script de module
 
 ### Ajouter les styles CSS
-Remplacez `frontend/public/style.css` :
+Remplacez `frontend/public/style.css` :
 
 ```css
 * {
@@ -471,15 +471,15 @@ body {
 }
 ```
 
-**Voici ce qui se passe :**
+**Ce qui se passe ici :**
 
-- Design dans le style d’Apple, avec une typographie et des couleurs épurées
-- Mise en page Flexbox pour une barre latérale et un éditeur adaptatifs
-- Mise en évidence de la note active sur un arrière-plan bleu
-- Transitions fluides au survol
+- Une conception dans le style d’Apple, avec une typographie et des couleurs épurées
+- Une mise en page Flexbox pour rendre la barre latérale et l’éditeur adaptatifs
+- La note active est mise en évidence par un arrière-plan bleu
+- Des transitions fluides au survol
 
 ### Implémenter la logique JavaScript
-Remplacez `frontend/src/main.js` :
+Remplacez `frontend/src/main.js` :
 
 ```javascript
 import { NotesService } from '../bindings/changeme'
@@ -615,27 +615,27 @@ document.getElementById('load-btn').addEventListener('click', async () => {
 loadNotes()
 ```
 
-**Voici ce qui se passe :**
+**Ce qui se passe ici :**
 
-- **Enregistrement automatique** : une temporisation de 500 ms évite les appels excessifs au backend pendant la saisie
-- **Accès aux propriétés** : utilise des noms de propriétés en minuscules (`.id`, `.title`), conformément aux balises JSON de Go
-- **Gestion du focus** : place automatiquement le focus sur le titre et le sélectionne lors de la création d’une note
-- **Suppression sans confirmation** : la fonction `confirm()` du navigateur ne fonctionne pas dans les vues web de Wails
-- **Opérations sur les fichiers** : les boîtes de dialogue natives gèrent l’enregistrement et le chargement avec une gestion appropriée des erreurs
+- **Enregistrement automatique** : une temporisation anti-rebond de 500 ms évite les appels excessifs au backend pendant la saisie
+- **Accès aux propriétés** : utilise des noms de propriétés en minuscules (`.id`, `.title`) correspondant aux balises JSON de Go
+- **Gestion du focus** : place automatiquement le focus sur le titre et le sélectionne lors de la création d’une note
+- **Suppression sans confirmation** : la fonction `confirm()` du navigateur ne fonctionne pas dans les vues web de Wails
+- **Opérations sur les fichiers** : les boîtes de dialogue natives gèrent l’enregistrement et le chargement avec une gestion appropriée des erreurs
 
 ### Exécuter l’application
 ```bash
 wails3 dev
 ```
 
-L’application démarre et vous pouvez alors :
+L’application démarre et vous pouvez alors :
 
-- Cliquer sur « + New Note » pour créer des notes
-- Modifier le titre et le contenu, qui sont enregistrés automatiquement après 500 ms
+- Cliquer sur « + New Note » pour créer des notes
+- Modifier le titre et le contenu (enregistrement automatique après 500 ms)
 - Cliquer sur les notes dans la barre latérale pour passer de l’une à l’autre
-- Cliquer sur « Delete » pour supprimer la note active
-- Cliquer sur « Save » pour exporter les notes au format JSON
-- Cliquer sur « Load » pour importer des notes précédemment enregistrées
+- Cliquer sur « Delete » pour supprimer la note actuelle
+- Cliquer sur « Save » pour exporter les notes au format JSON
+- Cliquer sur « Load » pour importer des notes précédemment enregistrées
 
 @end
 
@@ -643,7 +643,7 @@ L’application démarre et vous pouvez alors :
 
 ### Boîtes de dialogue de fichiers et de messages
 
-Dans Wails v3, il n’existe **aucun** constructeur de boîte de dialogue au niveau du paquet : chaque boîte de dialogue est créée au moyen du gestionnaire `app.Dialog`. Depuis un service, récupérez l’application avec `application.Get()`, qui renvoie l’instance `*application.App` en cours d’exécution :
+Dans Wails v3, il n’existe **aucun** constructeur de boîte de dialogue au niveau du package : chaque boîte de dialogue est créée par l’intermédiaire du gestionnaire `app.Dialog`. Depuis un service, obtenez l’application au moyen de `application.Get()`, qui renvoie l’instance `*application.App` en cours d’exécution :
 
 ```go
 // Correct — manager-based dialogs.
@@ -658,7 +658,7 @@ Les méthodes correspondantes sont `app.Dialog.Info() / Question() / Warning() /
 
 ### Correspondance des balises JSON
 
-Les balises JSON des structures Go doivent être en minuscules pour correspondre à l’accès aux propriétés en JavaScript :
+Les balises JSON des structures Go doivent être en minuscules pour correspondre aux propriétés utilisées en JavaScript :
 
 ```go
 type Note struct {
@@ -672,9 +672,9 @@ const noteId = note.id // Correct
 const noteId = note.ID // Would be undefined
 ```
 
-### Enregistrement automatique temporisé
+### Enregistrement automatique avec temporisation anti-rebond
 
-La temporisation de 500 ms réduit les appels inutiles au backend :
+La temporisation anti-rebond de 500 ms réduit les appels inutiles au backend :
 
 ```javascript
 let updateTimeout
@@ -691,6 +691,6 @@ function scheduleUpdate() {
 
 - Ajoutez des catégories ou des étiquettes pour organiser les notes
 - Implémentez la recherche et le filtrage
-- Ajoutez l’édition de texte enrichi à l’aide d’un éditeur WYSIWYG
-- Synchronisez les notes avec un stockage dans le cloud
+- Ajoutez la modification de texte enrichi à l’aide d’un éditeur WYSIWYG
+- Synchronisez les notes avec un stockage cloud
 - Ajoutez des raccourcis clavier pour les opérations courantes

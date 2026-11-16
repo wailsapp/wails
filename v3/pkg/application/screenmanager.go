@@ -371,6 +371,10 @@ func (s *Screen) physicalToDipRect(physicalRect Rect) Rect {
 
 // Layout screens in the virtual space with DIP calculations and cache the screens
 // for future coordinate transformation between the physical and logical (DIP) space
+//
+// The screens must describe one coherent layout in device pixels, which is what
+// Windows reports. A platform whose displays arrive in DIP space already — macOS
+// and GTK — has nothing to rebuild and must use layoutDIPScreens instead.
 func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 	if len(screens) == 0 {
 		return errors.New("screens parameter is nil or empty")
@@ -394,6 +398,82 @@ func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 	}
 
 	return nil
+}
+
+// layoutDIPScreens caches screens a platform reports in DIP space directly:
+// logical pixels against one origin shared by every display, which is the space
+// Bounds, WorkArea and window positions are all defined in. It resolves the
+// primary and fills in the Size and Physical* bookkeeping, and deliberately
+// positions nothing.
+//
+// This is the counterpart to LayoutScreens, whose input contract is a coherent
+// global layout in device pixels. Windows reports one natively. macOS and GTK do
+// not: they report logical coordinates, and a screen's DIP position can simply be
+// read off rather than rebuilt.
+//
+// Rebuilding it from a scaled copy loses it. calculateScreensDipCoordinates
+// positions a screen only by walking out from the primary through screens that
+// touch exactly, and multiplying each screen's logical origin by its own scale
+// factor to synthesise physical coordinates does not preserve that: neighbours
+// that abut in logical space stop abutting whenever their scale factors differ.
+// A 2x display beside a 1x primary is then never reached, so it keeps the scaled
+// coordinates — a space no window is ever reported in, which leaves every window
+// on that display looking like a window on no display at all.
+func (m *ScreenManager) layoutDIPScreens(screens []*Screen) error {
+	if len(screens) == 0 {
+		return errors.New("screens parameter is nil or empty")
+	}
+
+	var primary *Screen
+	kept := make([]*Screen, 0, len(screens))
+	for _, screen := range screens {
+		if screen == nil {
+			continue
+		}
+		screen.completeDIPFields()
+		if screen.IsPrimary && primary == nil {
+			primary = screen
+		}
+		kept = append(kept, screen)
+	}
+	if primary == nil {
+		return errors.New("no primary screen found")
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.screens = kept
+	m.primaryScreen = primary
+	return nil
+}
+
+// completeDIPFields derives the fields a DIP-space screen need not carry itself
+// from the ones it must: X/Y mirror Bounds, Size is the bounds' size, and each
+// Physical* rectangle is its DIP rectangle in device pixels. A platform that has
+// already filled a Physical* rectangle keeps it, since it can measure the pixels
+// rather than infer them.
+func (s *Screen) completeDIPFields() {
+	s.X, s.Y = s.Bounds.X, s.Bounds.Y
+	s.Size = s.Bounds.Size()
+	if s.ScaleFactor <= 0 {
+		s.ScaleFactor = 1
+	}
+	if s.PhysicalBounds.IsEmpty() {
+		s.PhysicalBounds = s.toPhysicalRect(s.Bounds)
+	}
+	if s.PhysicalWorkArea.IsEmpty() {
+		s.PhysicalWorkArea = s.toPhysicalRect(s.WorkArea)
+	}
+}
+
+// toPhysicalRect scales a DIP rectangle into device pixels.
+func (s *Screen) toPhysicalRect(r Rect) Rect {
+	return Rect{
+		X:      s.scale(r.X, false),
+		Y:      s.scale(r.Y, false),
+		Width:  s.scale(r.Width, false),
+		Height: s.scale(r.Height, false),
+	}
 }
 
 func (m *ScreenManager) GetAll() []*Screen {

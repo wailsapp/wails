@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
 #import <CoreServices/CoreServices.h> // For Apple Event constants

@@ -32,7 +32,7 @@ Erschaffe Desktop Anwendungen mit Go & Web Technologien.
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -47,6 +47,16 @@ Erschaffe Desktop Anwendungen mit Go & Web Technologien.
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+Wails v3.0.0 ist die stabile Version für Desktop-Anwendungen unter Windows, macOS und Linux. Die Unterstützung für Android und iOS bleibt experimentell und fällt nicht unter die stabile Desktop-Kompatibilitätszusage.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Inhaltsverzeichnis
 
@@ -91,7 +101,7 @@ durch bevor du eine Idee vorschlägst
 
 ## Loslegen
 
-Die Installationsinstruktionen sind auf der [offiziellen Website](https://wails.io/docs/gettingstarted/installation).
+Die Installationsinstruktionen sind auf der [offiziellen Website](https://wails.io/quick-start/installation/).
 
 ## Sponsoren
 
@@ -99,7 +109,7 @@ Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## FAQ
@@ -131,7 +141,7 @@ Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
 ## Mitwirkende
 
 Die Liste der Mitwirkenden wird zu groß für diese Readme. All die fantastischen Menschen, die zu diesem 
-Projekt beigetragen haben, haben [hier](https://wails.io/credits#contributors) ihre eigene Seite.
+Projekt beigetragen haben, haben [hier](https://wails.io/credits/) ihre eigene Seite.
 
 ## Lizenz
 

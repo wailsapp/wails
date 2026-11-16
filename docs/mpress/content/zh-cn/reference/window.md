@@ -9,7 +9,7 @@ sourcePath: "reference/window.md"
 
 窗口 API 提供用于控制窗口外观、行为和生命周期的方法。可通过窗口实例或`app.Window`管理器访问。
 
-`Window`是由`*application.WebviewWindow`实现的接口；下列方法签名属于`*WebviewWindow`。许多修改方法会返回`Window`以支持链式调用——各方法的返回值均在相应说明中注明。
+`Window`是一个由`*application.WebviewWindow`实现的接口；以下方法签名属于`*WebviewWindow`。许多修改方法会返回`Window`以支持链式调用——每个方法的返回值均在相应说明中列出。
 
 **常用操作：**
 
@@ -38,7 +38,7 @@ window.Show()
 
 ### Hide()
 
-隐藏窗口，但不将其关闭。窗口仍保留在内存中，可以再次显示。返回接收者以支持链式调用。
+隐藏窗口但不关闭它。窗口仍保留在内存中，可以再次显示。返回接收者以支持链式调用。
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -57,12 +57,12 @@ window.Show()
 **使用场景：**
 
 - 隐藏到系统托盘的应用程序
-- 重复使用窗口的向导流程
-- 在操作期间暂时隐藏窗口
+- 复用窗口的向导流程
+- 在操作期间临时隐藏窗口
 
 ### Close()
 
-关闭窗口。此操作会触发`WindowClosing`事件。
+关闭窗口。这会触发`WindowClosing`事件。
 
 ```go
 func (w *WebviewWindow) Close()
@@ -74,7 +74,7 @@ func (w *WebviewWindow) Close()
 window.Close()
 ```
 
-<strong>注意：</strong>如果已注册的钩子调用`event.Cancel()`，则会阻止窗口关闭。
+<strong>注意：</strong>如果已注册的钩子调用`event.Cancel()`，窗口将不会关闭。
 
 ## 窗口属性
 
@@ -88,7 +88,7 @@ func (w *WebviewWindow) SetTitle(title string) Window
 
 **参数：**
 
-- `title` - 新窗口标题
+- `title` - 新的窗口标题
 
 **示例：**
 
@@ -120,7 +120,7 @@ if w, ok := app.Window.GetByName(name); ok {
 
 ### SetSize()
 
-设置窗口尺寸，单位为像素。返回接收者以支持链式调用。
+以像素为单位设置窗口尺寸。返回接收者以支持链式调用。
 
 ```go
 func (w *WebviewWindow) SetSize(width, height int) Window
@@ -128,8 +128,8 @@ func (w *WebviewWindow) SetSize(width, height int) Window
 
 **参数：**
 
-- `width` - 窗口宽度，单位为像素
-- `height` - 窗口高度，单位为像素
+- `width` - 窗口宽度（像素）
+- `height` - 窗口高度（像素）
 
 **示例：**
 
@@ -154,7 +154,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-设置窗口的最小和最大尺寸。这两个方法均返回接收者以支持链式调用。
+设置窗口的最小和最大尺寸。两者均返回接收者以支持链式调用。
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -181,8 +181,8 @@ func (w *WebviewWindow) SetPosition(x, y int)
 
 **参数：**
 
-- `x` - 水平位置，单位为像素
-- `y` - 垂直位置，单位为像素
+- `x` - 水平位置（像素）
+- `y` - 垂直位置（像素）
 
 **示例：**
 
@@ -196,7 +196,7 @@ window.SetPosition(100, 100)
 
 ### Position()
 
-返回窗口的当前位置。
+返回当前窗口位置。
 
 ```go
 func (w *WebviewWindow) Position() (x, y int)
@@ -211,7 +211,7 @@ fmt.Printf("Window is at (%d, %d)\n", x, y)
 
 ### Center()
 
-将窗口置于屏幕中央。
+将窗口在屏幕上居中。
 
 ```go
 func (w *WebviewWindow) Center()
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-将窗口最大化以填满屏幕，或将其还原到之前的大小。`Maximise()`返回接收者以支持链式调用；`UnMaximise()`不返回任何值。
+最大化窗口以填满屏幕，或将其还原到先前的大小。`Maximise()`返回接收者以支持链式调用；`UnMaximise()`不返回任何值。
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -305,11 +305,11 @@ window.UnFullscreen()
 window.ToggleFullscreen()
 ```
 
-没有`SetFullscreen(bool)`方法。
+不存在`SetFullscreen(bool)`方法。
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
-检查窗口的当前状态。
+检查当前窗口状态。
 
 ```go
 func (w *WebviewWindow) IsMinimised() bool
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-在窗口中导航到指定的 URL。返回接收者以支持链式调用。
+在窗口中导航到指定 URL。返回接收者以支持链式调用。
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetURL(url string) Window
 
 **参数：**
 
-- `url` - 要导航到的 URL（对于嵌入式资源，可以使用`http://wails.localhost/`）
+- `url` - 要导航到的 URL（对于嵌入式资源，可以是`http://wails.localhost/`）
 
 **示例：**
 
@@ -406,7 +406,7 @@ func (w *WebviewWindow) Reload()
 window.Reload()
 ```
 
-<strong>注意：</strong>此方法适用于开发期间或需要刷新内容时。
+<strong>注意：</strong>适用于开发期间或需要刷新内容时。
 
 ## 窗口事件
 
@@ -417,7 +417,7 @@ Wails 提供两种处理窗口事件的方法：
 
 ### OnWindowEvent()
 
-为窗口事件注册回调。返回取消订阅函数。
+为窗口事件注册回调。返回一个取消订阅函数。
 
 ```go
 func (w *WebviewWindow) OnWindowEvent(
@@ -447,7 +447,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-**常见窗口事件：**
+**常用窗口事件：**
 
 - `events.Common.WindowClosing` - 窗口即将关闭
 - `events.Common.WindowFocus` - 窗口获得焦点
@@ -461,7 +461,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ### RegisterHook()
 
-为窗口事件注册钩子。钩子先于监听器运行，并可通过调用`event.Cancel()`阻止事件。返回取消订阅函数。
+为窗口事件注册钩子。钩子先于监听器运行，并可通过调用`event.Cancel()`阻止事件。返回一个取消订阅函数。
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -521,7 +521,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-向窗口的前端发出自定义事件。如果发出操作被钩子取消，则返回`true`。
+向窗口前端发出自定义事件。如果发送被钩子取消，则返回`true`。
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
@@ -578,13 +578,13 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-设置窗口的背景颜色（在内容加载前显示）。返回接收者以支持链式调用。
+设置窗口背景颜色（在内容加载前显示）。返回接收者以便链式调用。
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA`为`application.RGBA{Red, Green, Blue, Alpha uint8}`。请使用辅助函数`application.NewRGB(r, g, b)`（alpha 值为255）或`application.NewRGBA(r, g, b, a)`。
+`RGBA`为`application.RGBA{Red, Green, Blue, Alpha uint8}`。请使用辅助函数`application.NewRGB(r, g, b)`（alpha 为255）或`application.NewRGBA(r, g, b, a)`。
 
 **示例：**
 
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-控制用户能否调整窗口大小。返回接收者以支持链式调用。
+控制用户能否调整窗口大小。返回接收者以便链式调用。
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -613,7 +613,7 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-设置窗口是否始终位于其他窗口之上。返回接收者以支持链式调用。
+设置窗口是否始终位于其他窗口之上。返回接收者以便链式调用。
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -624,6 +624,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 ```go
 // Keep window on top
 window.SetAlwaysOnTop(true)
+```
+
+### SetMenu()
+
+在 Windows 和 Linux 上设置窗口的菜单栏，替换其当前显示的菜单栏。
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**参数：**
+- `menu` - 要显示的菜单，或传入`nil`以移除菜单栏
+
+传入`nil`会移除菜单栏：窗口将不显示任何菜单，包括应用程序菜单；被移除菜单的快捷键也会在该窗口中停止工作。如果在窗口启动前调用，则创建窗口时不会包含菜单栏。
+
+**平台支持：**
+- **Windows**：完全支持
+- **Linux**：完全支持
+- **macOS**：无效，因为菜单栏属于应用程序。请改用`app.Menu.Set`。
+
+**示例：**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
 ```
 
 ### Print()
@@ -646,7 +671,7 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-将第二个窗口附加为表单式模态窗口。
+将另一个窗口附加为表单式模态窗口。
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
@@ -658,7 +683,7 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **平台支持：**
 
-- **macOS**：完全支持（以表单形式显示）
+- **macOS**：完全支持（以表单形式呈现）
 - **Windows**：不支持
 - **Linux**：不支持
 
@@ -696,7 +721,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-<strong>注意：</strong>主菜单样式遵循 GNOME 人机界面指南，在标题栏中显示汉堡菜单按钮（☰）。这是现代 GNOME 应用程序的推荐样式。
+<strong>注意：</strong>主菜单样式会按照 GNOME 人机界面指南，在标题栏中显示一个汉堡菜单按钮（☰）。这是现代 GNOME 应用程序的推荐样式。
 
 ## 完整示例
 

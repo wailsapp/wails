@@ -2,15 +2,16 @@ package types
 
 import (
 	"io"
+	"slices"
 	"strings"
 )
 
 type Param struct {
-	Direction *Direction `parser:"@@?"`
-	Type      string     `parser:"@Ident"`
-	Const     string     `parser:"@('const')?"`
-	Pointer   string     `parser:"@('*')*"`
-	Name      string     `parser:"@Ident ','?"`
+	Direction *Direction
+	Type      string
+	Const     string
+	Pointer   string
+	Name      string
 
 	// Processed
 	GoType       string
@@ -153,7 +154,7 @@ func (p *Param) GetReturnVariableName() string {
 }
 
 func (p *Param) IsEnum() bool {
-	return p.decl.decl.decl.library.enums.Contains(p.Type)
+	return slices.Contains(p.decl.decl.decl.library.enums, p.Type)
 }
 
 func (p *Param) processSetupInputs() {
@@ -185,7 +186,7 @@ func (p *Param) processSetupOutputs() {
 		p.setupTemplate = "outputDefaultSetup.tmpl"
 	}
 	if p.Pointer != "" {
-		p.decl.decl.includes.AddUnique(`"unsafe"`)
+		p.decl.decl.addImport(`"unsafe"`)
 	}
 }
 
@@ -209,6 +210,6 @@ func (p *Param) defaultErrorValue() string {
 }
 
 type Direction struct {
-	Dir    string `parser:"'[' @('out'|'in')"`
-	Retval string `parser:"(',' @('retval'|'size_is' '(' Ident ')') )? ']'"`
+	Dir    string
+	Retval string
 }

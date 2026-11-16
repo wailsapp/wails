@@ -1,22 +1,22 @@
 ---
 title: "Mídia"
-description: "Botões oficiais do Wails com prévias e códigos de incorporação HTML e Markdown"
+description: "Botões oficiais do Wails com pré-visualizações e códigos de incorporação em HTML e Markdown"
 slug: "community/media"
 sourcePath: "community/media.md"
 ---
 
-Use os recursos visuais oficiais do Wails ao compartilhar um projeto criado com Wails. Os botões abaixo levam a [wails.io](https://wails.io) e continuam hospedados pelo Wails, então você não precisa copiar a imagem para o seu projeto.
+Use os recursos oficiais do Wails ao compartilhar um projeto criado com o Wails. Os botões abaixo direcionam para [wails.io](https://wails.io) e continuam hospedados pelo Wails, portanto, não é necessário copiar a imagem para o seu projeto.
 
 ## Criado com Wails
 
-Escolha a versão que ofereça contraste suficiente com o fundo. Cada prévia mostra exatamente a imagem com link que seus visitantes verão.
+Escolha a versão com contraste suficiente em relação ao plano de fundo. Cada pré-visualização corresponde exatamente à imagem vinculada que os visitantes verão.
 
-### Fundo claro
+### Plano de fundo claro
 
 <div class="wails-media-preview wails-media-preview-light">  
-<p>Tamanho padrão (<code>180</code> × <code>48</code> px):</p>  
+<p>Padrão (<code>180</code> × <code>48</code> px):</p>  
 <a href="https://wails.io"><img src="/img/wails-button-light.svg" width="180" height="48" alt="Criado com Wails" /></a>  
-<p>Tamanho compacto (<code>90</code> × <code>24</code> px):</p>  
+<p>Compacto (<code>90</code> × <code>24</code> px):</p>  
 <a href="https://wails.io"><img src="/img/wails-button-light.svg" width="90" height="24" alt="Criado com Wails" /></a>  
 </div>
 
@@ -36,12 +36,12 @@ Para a versão compacta, use `width="90" height="24"`.
 [![Built with Wails](https://wails.io/img/wails-button-light.svg)](https://wails.io)
 ```
 
-### Fundo escuro
+### Plano de fundo escuro
 
 <div class="wails-media-preview wails-media-preview-dark">  
-<p>Tamanho padrão (<code>180</code> × <code>48</code> px):</p>  
+<p>Padrão (<code>180</code> × <code>48</code> px):</p>  
 <a href="https://wails.io"><img src="/img/wails-button-dark.svg" width="180" height="48" alt="Criado com Wails" /></a>  
-<p>Tamanho compacto (<code>90</code> × <code>24</code> px):</p>  
+<p>Compacto (<code>90</code> × <code>24</code> px):</p>  
 <a href="https://wails.io"><img src="/img/wails-button-dark.svg" width="90" height="24" alt="Criado com Wails" /></a>  
 </div>
 
@@ -61,4 +61,4 @@ Para a versão compacta, use `width="90" height="24"`.
 [![Built with Wails](https://wails.io/img/wails-button-dark.svg)](https://wails.io)
 ```
 
-O Markdown exibe a imagem em seu tamanho original de `180` por `48` pixels. Use a versão HTML quando precisar definir outro tamanho de exibição. Mantenha a proporção original dos botões de `15:4`.
+O Markdown renderiza a imagem em seu tamanho intrínseco de `180` por `48` pixels. Use a versão em HTML quando precisar definir um tamanho de exibição diferente. Mantenha os botões em suas proporções originais de `15:4`.

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -89,6 +90,28 @@ func TestBuildDMGOptionsDefaults(t *testing.T) {
 	}
 	if got := opts.IconPositions["Applications"]; got != (dmg.IconPosition{X: 388, Y: 164}) {
 		t.Errorf("Applications icon position = %#v, want {388 164}", got)
+	}
+}
+
+func TestToolPackageCreatesDMGWithoutHostTools(t *testing.T) {
+	root := t.TempDir()
+	app := filepath.Join(root, "Example.app", "Contents", "MacOS")
+	if err := os.MkdirAll(app, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(app, "Example"), []byte("payload"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", t.TempDir())
+	if err := toolPackage(&flags.ToolPackage{Format: "dmg", ExecutableName: "Example", Out: root}); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join(root, "Example.dmg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) < 512 || string(data[len(data)-512:len(data)-508]) != "koly" {
+		t.Fatal("output is missing the UDIF disk-image trailer")
 	}
 }
 
@@ -220,6 +243,54 @@ func TestToolPackage(t *testing.T) {
 
 			if tt.wantErr && !strings.Contains(err.Error(), tt.errMsg) {
 				t.Errorf("ToolPackage() error = %v, want error containing %v", err, tt.errMsg)
+			}
+		})
+	}
+}
+
+func TestBuildDMGPreservesPreviousOutput(t *testing.T) {
+	for _, name := range []string{"build failure", "missing output", "success"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			output := filepath.Join(root, "previous image.dmg")
+			if err := os.WriteFile(output, []byte("previous image"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			buildError := errors.New("conversion failed after writing output")
+			err := buildDMG(dmg.Options{OutputPath: output}, func(opts dmg.Options) error {
+				if name == "missing output" {
+					return nil
+				}
+				if err := os.WriteFile(opts.OutputPath, []byte("new image"), 0600); err != nil {
+					return err
+				}
+				if name == "build failure" {
+					return buildError
+				}
+				return nil
+			})
+			want := "new image"
+			if name != "success" {
+				want = "previous image"
+				if err == nil {
+					t.Error("expected build or replacement failure")
+				}
+				if name == "build failure" && !errors.Is(err, buildError) {
+					t.Errorf("error=%v, want build failure", err)
+				}
+			} else if err != nil {
+				t.Fatal(err)
+			}
+			got, err := os.ReadFile(output)
+			if err != nil || string(got) != want {
+				t.Errorf("output=%q, want %q; error=%v", got, want, err)
+			}
+			entries, err := os.ReadDir(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(entries) != 1 {
+				t.Errorf("staging files retained: %v", entries)
 			}
 		})
 	}

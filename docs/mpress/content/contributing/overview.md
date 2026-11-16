@@ -68,7 +68,7 @@ Each subsequent page drills into these areas with concrete code samples, diagram
 ---
 
 @note{type="info"}
-Prerequisites: You should be comfortable with **Go 1.25+**, basic TypeScript, and modern frontend build tools. If you are new to Go, consider skimming the official tour first.
+Prerequisites: You should be comfortable with **Go 1.26+**, basic TypeScript, and modern frontend build tools. If you are new to Go, consider skimming the official tour first.
 
 @end
 

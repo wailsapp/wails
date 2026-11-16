@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "1237bd36fc8187cfa76f",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "b4227d5561038d2062a4",
   "sourceFile": "guides/panic-handling.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
@@ -10,384 +11,384 @@
       "targetHash": "3a463399c8a18489d7bb35d19b57075f1f84297be26cf939f2529e2618895f5e",
       "machineHash": "3a463399c8a18489d7bb35d19b57075f1f84297be26cf939f2529e2618895f5e",
       "machineText": "Panic dalam Kode Service",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Panics in Service Code",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0001-text-01": {
       "sourceHash": "16b485cc712aa839320e8b29e3fac4978539c1e44d461b310f02070e21178d35",
-      "targetHash": "5a099f09cd60a69b2a8b6d4d58a197dec28e1ef1043cdf1571683c7a3df1e04c",
-      "machineHash": "5a099f09cd60a69b2a8b6d4d58a197dec28e1ef1043cdf1571683c7a3df1e04c",
-      "machineText": "Dalam aplikasi Go, panic dapat terjadi saat runtime ketika sesuatu yang tidak terduga terjadi. Panduan ini menjelaskan cara menangani panic baik dalam kode Go secara umum maupun secara khusus dalam aplikasi Wails Anda.",
-      "status": "final",
+      "targetHash": "5c338e67c95c78496576299b6ff7aa16bc690444d0de594e87a6c50f4344595d",
+      "machineHash": "5c338e67c95c78496576299b6ff7aa16bc690444d0de594e87a6c50f4344595d",
+      "machineText": "Dalam aplikasi Go, panic dapat terjadi saat runtime ketika muncul sesuatu yang tidak terduga. Panduan ini menjelaskan cara menangani panic, baik dalam kode Go secara umum maupun secara khusus dalam aplikasi Wails Anda.",
+      "status": "machine-translated",
       "sourcePreview": "In Go applications, panics can occur during runtime when something unexpected happens. This guide ex…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0002-heading-01": {
       "sourceHash": "2087bfdcd606959f546939e3338e428f6cfc0907cc1bdd396f1609a1d5acd397",
       "targetHash": "1621e648183fcfceed40f6428cffb80447a970089d8c48a3df7c4dc11af36f19",
       "machineHash": "1621e648183fcfceed40f6428cffb80447a970089d8c48a3df7c4dc11af36f19",
       "machineText": "Memahami Panic di Go",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Understanding Panics in Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0003-text-01": {
       "sourceHash": "92fd631c89d18fd1c09d50df17154d11bf8c07890d64edaec5e977004628b6a5",
       "targetHash": "48ffcc853f6050e7287d2d7fed3e0e9490ed24802c8c4f00efcfd67c9e0ca81f",
       "machineHash": "48ffcc853f6050e7287d2d7fed3e0e9490ed24802c8c4f00efcfd67c9e0ca81f",
       "machineText": "Sebelum membahas penanganan panic khusus Wails, penting untuk memahami cara kerja panic di Go:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Before diving into Wails-specific panic handling, it's essential to understand how panics work in Go…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0004-text-01": {
       "sourceHash": "70d9384521be21e714e38a23ef47c15c8016283e176a923a5230cb0bb798727e",
       "targetHash": "dc1c3978e0d6f72f2d3c09023274a14314a4d8a3dd3db3ab3a3e36bad48372a5",
       "machineHash": "dc1c3978e0d6f72f2d3c09023274a14314a4d8a3dd3db3ab3a3e36bad48372a5",
       "machineText": "Panic digunakan untuk galat yang tidak dapat dipulihkan dan seharusnya tidak terjadi selama operasi normal",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Panics are for unrecoverable errors that shouldn't happen during normal operation",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0005-text-01": {
-      "sourceHash": "398467ca8348fe289157be353d40fa0575cb259960c906765a23d618429e3368",
-      "targetHash": "eb3f7f14f760295ebc2e5ab7f2a87f081d3fc3061bfe6028bc5d13814ad3cf7b",
-      "machineHash": "eb3f7f14f760295ebc2e5ab7f2a87f081d3fc3061bfe6028bc5d13814ad3cf7b",
-      "machineText": "Ketika panic terjadi dalam sebuah goroutine, hanya goroutine tersebut yang terpengaruh",
-      "status": "final",
-      "sourcePreview": "When a panic occurs in a goroutine, only that goroutine is affected",
+      "sourceHash": "61f0fd957a14ede1acf1ef2afa3df1510be334f98257e17e56c02341ba2f7717",
+      "targetHash": "1c6812db942b9e2fea1d7daf6b229297dab85570cef98c85f09834eb63483858",
+      "machineHash": "1c6812db942b9e2fea1d7daf6b229297dab85570cef98c85f09834eb63483858",
+      "machineText": "Panic mengurai goroutine saat ini; jika mencapai tingkat teratas tanpa dipulihkan, proses akan dihentikan, termasuk goroutine lainnya",
+      "status": "machine-translated",
+      "sourcePreview": "A panic unwinds the current goroutine; if it reaches the top without recovery, the process terminate…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0006-text-01": {
-      "sourceHash": "97ba2bba01935e7ac870aeb25a1a9ecec2f5c24f6ae7647a7a5d4f6786edc304",
-      "targetHash": "d6be4a672961e2ba26c407bf9cd080abe1a9141ff40dcc570042a0466fd8fcfc",
-      "machineHash": "d6be4a672961e2ba26c407bf9cd080abe1a9141ff40dcc570042a0466fd8fcfc",
-      "machineText": "Panic dapat dipulihkan menggunakan `defer` dan `recover()`",
-      "status": "final",
-      "sourcePreview": "Panics can be recovered using `defer` and `recover()`",
+      "sourceHash": "b40c85c0a55a704cb8fcb5ade8d538487b231a309b589d591dae68e9290db4a4",
+      "targetHash": "c200c84d273b5bcacc70619e7c8c2f4e1912f89929030acfcb898a39df9580a9",
+      "machineHash": "c200c84d273b5bcacc70619e7c8c2f4e1912f89929030acfcb898a39df9580a9",
+      "machineText": "Pemulihan harus dijalankan dalam fungsi yang ditangguhkan pada goroutine yang sama dengan tempat terjadinya panic",
+      "status": "machine-translated",
+      "sourcePreview": "Recovery must run in a deferred function in the same goroutine as the panic",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0007-text-01": {
       "sourceHash": "b5369ac5b48000a99039032dbb66bf8138162c8782d8d7e20f7fa9e2d6f4bf9f",
-      "targetHash": "93c95574d6ef99e5f952fb168a588a4d4004ec40e5da3f7e4a4cb6f0248ec362",
-      "machineHash": "93c95574d6ef99e5f952fb168a588a4d4004ec40e5da3f7e4a4cb6f0248ec362",
-      "machineText": "Berikut adalah contoh dasar penanganan panic di Go:",
-      "status": "final",
+      "targetHash": "a17a6b569cd41e44e82fdde7578d0805bc33d28de30ddd4e75cb5366ea6dd39e",
+      "machineHash": "a17a6b569cd41e44e82fdde7578d0805bc33d28de30ddd4e75cb5366ea6dd39e",
+      "machineText": "Berikut contoh dasar penanganan panic di Go:",
+      "status": "machine-translated",
       "sourcePreview": "Here's a basic example of panic handling in Go:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0008-text-01": {
       "sourceHash": "6a31f090f4f4aecb140215ffee869a90efba9a3906062b9faf147baa5046fbed",
-      "targetHash": "9f3777503065e9bb9181681c61983e20c2bb84446315e40496f6b50dc274cba0",
-      "machineHash": "9f3777503065e9bb9181681c61983e20c2bb84446315e40496f6b50dc274cba0",
-      "machineText": "Untuk informasi lebih terperinci tentang panic dan recover di Go, lihat [Blog Go: Defer, Panic, dan Recover](https://go.dev/blog/defer-panic-and-recover).",
-      "status": "final",
+      "targetHash": "a0a6a8e0664437f6c0c4fc17647041b5f8aa7925675183938dd4b393a43fc967",
+      "machineHash": "a0a6a8e0664437f6c0c4fc17647041b5f8aa7925675183938dd4b393a43fc967",
+      "machineText": "Untuk informasi lebih mendetail tentang panic dan recover di Go, lihat [Blog Go: Defer, Panic, dan Recover](https://go.dev/blog/defer-panic-and-recover).",
+      "status": "machine-translated",
       "sourcePreview": "For more detailed information about panic and recover in Go, see the [Go Blog: Defer, Panic, and Rec…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0009-heading-01": {
       "sourceHash": "b61a4c5a3d4f3e96e4e461f112b000a1752ec4b400d4c0a647850dab896d3053",
       "targetHash": "aa3e69da0d33e60515b826b82986cea175f8b5110e6bd1b3f101d404a7466323",
       "machineHash": "aa3e69da0d33e60515b826b82986cea175f8b5110e6bd1b3f101d404a7466323",
       "machineText": "Penanganan Panic di Wails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Panic Handling in Wails",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0010-text-01": {
       "sourceHash": "d0ca9c2bd8fd641e58f95504d9bea42277d52df49c42b298f4d3fb7543ebf921",
       "targetHash": "87cfde5353f0042cb88a78ab5c72e89caf3ddf4ea68af4e3267b8722a7ce994f",
       "machineHash": "87cfde5353f0042cb88a78ab5c72e89caf3ddf4ea68af4e3267b8722a7ce994f",
       "machineText": "Wails secara otomatis menangani panic yang terjadi dalam metode Service Anda ketika metode tersebut dipanggil dari frontend. Artinya, Anda tidak perlu menambahkan pemulihan panic ke metode ini—Wails akan menangkap panic tersebut dan memprosesnya melalui penangan panic yang telah Anda konfigurasi.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Wails automatically handles panics that occur in your Service methods when they are called from the …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0011-text-01": {
       "sourceHash": "254a540a5a622c424d7ffaa552687ff0460aced42ff9677d44d5bc0854bf2cb0",
       "targetHash": "324bfc9e2b4ce2e9ac32510b442b84d2ce7d741dfa9f93cf5dee7cdce8d04894",
       "machineHash": "324bfc9e2b4ce2e9ac32510b442b84d2ce7d741dfa9f93cf5dee7cdce8d04894",
       "machineText": "Penangan panic dirancang secara khusus untuk menangkap:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The panic handler is specifically designed to catch:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0012-text-01": {
       "sourceHash": "33515b434c3399f8c9c87ff2a14725303f8cc6e4c649596c6ce067249737bf82",
       "targetHash": "a6bd01f66ca6e15a64c06d99090afed34d5ab967483bb99c7f36ca2d9af03ff9",
       "machineHash": "a6bd01f66ca6e15a64c06d99090afed34d5ab967483bb99c7f36ca2d9af03ff9",
       "machineText": "Panic dalam metode service terikat yang dipanggil dari frontend",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Panics in bound service methods called from the frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0013-text-01": {
-      "sourceHash": "d01aac34a71a6cecfc84a5543e92065130c965dadc79236ea3c58dc7f599787a",
-      "targetHash": "d2561b997d80ab95c4f515b45ecd129bb5c6658196809e58d94111cc30a03ed7",
-      "machineHash": "d2561b997d80ab95c4f515b45ecd129bb5c6658196809e58d94111cc30a03ed7",
-      "machineText": "Panic internal dari runtime Wails",
-      "status": "final",
-      "sourcePreview": "Internal panics from the Wails runtime",
+      "sourceHash": "4ca2adef334bae4386c2b116adf5a22879958d4464fd9f240c45dd3f643ff11a",
+      "targetHash": "2d2c77ef9e4ebc41e089f1a8bcffe958fc8102d733775956d2f069f4dea0696a",
+      "machineHash": "2d2c77ef9e4ebc41e089f1a8bcffe958fc8102d733775956d2f069f4dea0696a",
+      "machineText": "Panic dalam jalur runtime yang secara eksplisit memasang mekanisme pemulihan Wails; ini bukan penangan untuk setiap goroutine di seluruh proses",
+      "status": "machine-translated",
+      "sourcePreview": "Panics in runtime paths that explicitly install Wails recovery; this is not a process-wide handler f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0014-text-01": {
       "sourceHash": "1b82cb4ebee37e8683ca08939e0e1c355af9981cd81e9db02c21cf9da1eea8ad",
-      "targetHash": "5ae70077e5eee9297ce9c02121e7bb884c0821a61e641269ad5afc16c7b6be25",
-      "machineHash": "5ae70077e5eee9297ce9c02121e7bb884c0821a61e641269ad5afc16c7b6be25",
-      "machineText": "Untuk skenario lain, seperti goroutine latar belakang atau kode Go mandiri, Anda sebaiknya menangani panic sendiri menggunakan mekanisme pemulihan panic standar Go.",
-      "status": "final",
+      "targetHash": "2ac12a67eb514b51a05de965fabb8ceb11c01ef17ccf2138d48645eae52ccc7b",
+      "machineHash": "2ac12a67eb514b51a05de965fabb8ceb11c01ef17ccf2138d48645eae52ccc7b",
+      "machineText": "Untuk skenario lain, seperti goroutine latar belakang atau kode Go mandiri, Anda harus menangani panic sendiri menggunakan mekanisme pemulihan panic standar Go.",
+      "status": "machine-translated",
       "sourcePreview": "For other scenarios, such as background goroutines or standalone Go code, you should handle panics y…",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0015-heading-01": {
       "sourceHash": "6fbafd5874a44570c771ca8cc26251f41f9e3845e70fd1c7da3f014930845311",
       "targetHash": "87a244dc889f804a705fb4d0605d810a670abe4619663f5bbc3e014286a758e4",
       "machineHash": "87a244dc889f804a705fb4d0605d810a670abe4619663f5bbc3e014286a758e4",
       "machineText": "Struct PanicDetails",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The PanicDetails Struct",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0016-text-01": {
       "sourceHash": "b247dfd8b72670fe19576489fde06756ff17b04df7bf6e32b470e926e3d65012",
-      "targetHash": "b2b7170572967248200a6a0ee14851b485a0468cd02bb5eef06a1b28b922b709",
-      "machineHash": "b2b7170572967248200a6a0ee14851b485a0468cd02bb5eef06a1b28b922b709",
-      "machineText": "Ketika panic terjadi, Wails menyimpan informasi penting tentang panic tersebut dalam sebuah struct `PanicDetails`:",
-      "status": "final",
+      "targetHash": "97a67a762c0421104a57a41c4b2189a1a4f129bdc66cb0890b17171487afd47b",
+      "machineHash": "97a67a762c0421104a57a41c4b2189a1a4f129bdc66cb0890b17171487afd47b",
+      "machineText": "Ketika panic terjadi, Wails menyimpan informasi penting tentang panic tersebut dalam struct `PanicDetails`:",
+      "status": "machine-translated",
       "sourcePreview": "When a panic occurs, Wails captures important information about the panic in a `PanicDetails` struct…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0017-text-01": {
       "sourceHash": "32aadd14aa56e53b8b8de89c88295fc71aa5f9c43533af644fe2778ab4e61416",
-      "targetHash": "f119809f212b876ddb30f1f019926bee5ff3eafbb9df4578cb3371b1a6739d1e",
-      "machineHash": "f119809f212b876ddb30f1f019926bee5ff3eafbb9df4578cb3371b1a6739d1e",
-      "machineText": "Struktur ini menyediakan informasi lengkap tentang panic tersebut:",
-      "status": "final",
+      "targetHash": "e085088f38be765028107d53263e586acc36d12147a90fbe60f0415753d58e52",
+      "machineHash": "e085088f38be765028107d53263e586acc36d12147a90fbe60f0415753d58e52",
+      "machineText": "Struktur ini menyediakan informasi lengkap tentang panic:",
+      "status": "machine-translated",
       "sourcePreview": "This structure provides comprehensive information about the panic:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0018-text-01": {
       "sourceHash": "a6ad8eb3ffc242e38ef9324d33fa324166e35a22eca79e68637117c6b9b33809",
-      "targetHash": "ae14fd56bc084f43f84390651a8be14f155adafbe056970e21f094d5ac5ece55",
-      "machineHash": "ae14fd56bc084f43f84390651a8be14f155adafbe056970e21f094d5ac5ece55",
-      "machineText": "`StackTrace`: String berformat yang menampilkan tumpukan panggilan yang menyebabkan panic",
-      "status": "final",
+      "targetHash": "4bc27b891490d4cdd19cdb66012dd58a152468ea5a27d1cfaabdca1b7a06086a",
+      "machineHash": "4bc27b891490d4cdd19cdb66012dd58a152468ea5a27d1cfaabdca1b7a06086a",
+      "machineText": "`StackTrace`: String terformat yang menampilkan tumpukan pemanggilan yang menyebabkan panic",
+      "status": "machine-translated",
       "sourcePreview": "`StackTrace`: A formatted string showing the call stack that led to the panic",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0019-text-01": {
       "sourceHash": "d459229e71fb50e6de18832ce6a0cb4efb74c6ce826b7ad6746f75cd8bc0c35a",
       "targetHash": "aa70e33549c755a3e55b127c3104840dbc79f819af380fd546792144efcd9992",
       "machineHash": "aa70e33549c755a3e55b127c3104840dbc79f819af380fd546792144efcd9992",
       "machineText": "`Error`: Galat aktual atau pesan panic",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`Error`: The actual error or panic message",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0020-text-01": {
       "sourceHash": "f378b6ba5e99be63dd8bf1b093c2ac04a3570f9c683de33545d24f2e051cf508",
-      "targetHash": "ece0307121e5696aa60487a9f3996ee3d88043b795466cc5e207d9280daa5e15",
-      "machineHash": "ece0307121e5696aa60487a9f3996ee3d88043b795466cc5e207d9280daa5e15",
-      "machineText": "`Time`: Waktu persis saat panic terjadi",
-      "status": "final",
+      "targetHash": "2574210625a192534b68429e51c2a9665118742e6f5746f6eeba0865d1b9b2e7",
+      "machineHash": "2574210625a192534b68429e51c2a9665118742e6f5746f6eeba0865d1b9b2e7",
+      "machineText": "`Time`: Waktu persis ketika panic terjadi",
+      "status": "machine-translated",
       "sourcePreview": "`Time`: The exact time when the panic occurred",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0021-text-01": {
       "sourceHash": "159c5261738312193da17ddf960d156a252aad3af0b0c90dd89b10ab8d3ce9d4",
-      "targetHash": "ddf2d486bdf8bac9a01064d72c9a5697570bfbfd2cf8a03b388c4503f509944c",
-      "machineHash": "ddf2d486bdf8bac9a01064d72c9a5697570bfbfd2cf8a03b388c4503f509944c",
-      "machineText": "`FullStackTrace`: Pelacakan tumpukan lengkap, termasuk frame runtime",
-      "status": "final",
+      "targetHash": "83ddbda11e7c9f6bbdfdd443d9e2076614f267313589fe56cc1127046c69603b",
+      "machineHash": "83ddbda11e7c9f6bbdfdd443d9e2076614f267313589fe56cc1127046c69603b",
+      "machineText": "`FullStackTrace`: Jejak tumpukan lengkap, termasuk frame runtime",
+      "status": "machine-translated",
       "sourcePreview": "`FullStackTrace`: The complete stack trace including runtime frames",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0022-text-01": {
-      "sourceHash": "a30893d403aae5650754a17ac5105e1227e4dae0fc71695e0ce170d758abaf6a",
-      "targetHash": "908e96b4fed5ea6e4ca1fb294afcdb3bb1289fb1535d1ac534573e0fde1ddcaf",
-      "machineHash": "908e96b4fed5ea6e4ca1fb294afcdb3bb1289fb1535d1ac534573e0fde1ddcaf",
-      "machineText": "Ketika panic ditangkap dalam kode Service Anda setelah dipanggil dari frontend, pelacakan tumpukan dipangkas agar berfokus tepat pada lokasi terjadinya panic dalam kode Anda.\\\nJika ingin melihat pelacakan tumpukan lengkap, Anda dapat menggunakan field `FullStackTrace`.",
-      "status": "final",
+      "sourceHash": "db79b4cb4a5da94feaa6f90dc8253b0d1fcc72103e1871416eae1d19a54b68b5",
+      "targetHash": "1e6a0ca772a4935566044d333f5fdf619cd897f3879c683d0c72c730aecd02b2",
+      "machineHash": "1e6a0ca772a4935566044d333f5fdf619cd897f3879c683d0c72c730aecd02b2",
+      "machineText": "Ketika panic ditangkap dalam kode Service Anda setelah dipanggil dari frontend, jejak tumpukan dipangkas agar berfokus pada lokasi persis terjadinya panic dalam kode Anda. Jika ingin melihat jejak tumpukan lengkap, Anda dapat menggunakan bidang `FullStackTrace`.",
+      "status": "machine-translated",
       "sourcePreview": "When panics are caught in your Service code after being called from the frontend, the stack trace is…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0023-heading-01": {
       "sourceHash": "40a1554e1cc2575e1f1ed87f1b60ec677a7600497e4f324c8f1a5f7c24bd5e9a",
       "targetHash": "5fe9bed0c43fcf2b86df92bb8cb8f330f7cd556701b126f8380808c13d4444d2",
       "machineHash": "5fe9bed0c43fcf2b86df92bb8cb8f330f7cd556701b126f8380808c13d4444d2",
       "machineText": "Penangan Panic Bawaan",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Default Panic Handler",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0024-text-01": {
-      "sourceHash": "83cc8c8fdd6d56872c13a5c9c858d6e0648241b509a699ef3d1189bb0d697a51",
-      "targetHash": "483275b1d79dc846aa9c7d7bc062398b25e8e062038d1d8ae703e1bfb31e03eb",
-      "machineHash": "483275b1d79dc846aa9c7d7bc062398b25e8e062038d1d8ae703e1bfb31e03eb",
-      "machineText": "Jika Anda tidak menentukan penangan panic khusus, Wails akan menggunakan penangan bawaannya, yang menampilkan informasi galat dalam pesan log berformat lalu keluar.\\\nContoh:",
-      "status": "final",
+      "sourceHash": "4ba88a049ec33ea1184c3dd1c1f4e48747d3433b41cdd1b55e1c9ef6e11e9251",
+      "targetHash": "a3ad2dab2590e6485b173fdb1166f4b616587aff5d997b460a9514da85f9a17f",
+      "machineHash": "a3ad2dab2590e6485b173fdb1166f4b616587aff5d997b460a9514da85f9a17f",
+      "machineText": "Jika Anda tidak menentukan penangan panic khusus, Wails akan menggunakan penangan bawaannya, yang menampilkan informasi galat dalam pesan log terformat lalu keluar. Contoh:",
+      "status": "machine-translated",
       "sourcePreview": "If you don't specify a custom panic handler, Wails will use its default handler which outputs error …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0025-heading-01": {
       "sourceHash": "469ffc293a1b68d0084ebbade189c8cd3487187d2d46624e31cb5a923f3312c8",
       "targetHash": "6696ced58ffb8fce1cb0d30852b2d944196172af4998b87d957a7deb7a2b586f",
       "machineHash": "6696ced58ffb8fce1cb0d30852b2d944196172af4998b87d957a7deb7a2b586f",
       "machineText": "Penangan Panic Khusus",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Custom Panic Handler",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0026-text-01": {
       "sourceHash": "a656fcaa87099eca88fc31561cb89bca6e53a1ad9f5474ee02c2c9312d4b0f80",
-      "targetHash": "7693ccb84c76e39e9651b030bed4b183213e9278c9e986f9ac1ef42456d39c21",
-      "machineHash": "7693ccb84c76e39e9651b030bed4b183213e9278c9e986f9ac1ef42456d39c21",
-      "machineText": "Anda dapat mengimplementasikan penangan panic sendiri dengan menetapkan opsi `PanicHandler` saat membuat aplikasi. Berikut contohnya:",
-      "status": "final",
+      "targetHash": "4c8397286358eacc7f5d2719b6f7a6208f43820714137c8de1079ed27f32b230",
+      "machineHash": "4c8397286358eacc7f5d2719b6f7a6208f43820714137c8de1079ed27f32b230",
+      "machineText": "Anda dapat menerapkan penangan panic sendiri dengan mengatur opsi `PanicHandler` saat membuat aplikasi. Berikut contohnya:",
+      "status": "machine-translated",
       "sourcePreview": "You can implement your own panic handler by setting the `PanicHandler` option when creating your app…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0027-text-01": {
       "sourceHash": "b680aa2dd189bdd03b913502ac9b5adefd81fe6515e97093e85e9e8b376ac675",
       "targetHash": "048340686b79aa4f0ead1645737b816d3d23ff0e9f70ed2efa0a731604a761dd",
       "machineHash": "048340686b79aa4f0ead1645737b816d3d23ff0e9f70ed2efa0a731604a761dd",
       "machineText": "Untuk contoh lengkap yang dapat dijalankan mengenai penanganan panic dalam aplikasi Wails, lihat contoh panic-handling di `v3/examples/panic-handling`.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "For a complete working example of panic handling in a Wails application, see the panic-handling exam…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0028-heading-01": {
       "sourceHash": "f4079e3d3bc9820cdce97b0eba1281268750b2e8b53e07bccc9d66f69e72cbbe",
       "targetHash": "92691641dae7a6443a663b1642f5d633aa5e592214171fa3c6dcb56dcb6c1170",
       "machineHash": "92691641dae7a6443a663b1642f5d633aa5e592214171fa3c6dcb56dcb6c1170",
       "machineText": "Catatan Akhir",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Final Notes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
     "b0029-text-01": {
       "sourceHash": "3c5f27bc5ecf3952764898edf1aeeedbbfe5983c838ca2c6ba5354fe5cc09b0d",
-      "targetHash": "4fedaa25f226a6eea76758e5d30b8ebce57e87fe461550a3125437a950c23e74",
-      "machineHash": "4fedaa25f226a6eea76758e5d30b8ebce57e87fe461550a3125437a950c23e74",
-      "machineText": "Ingat bahwa penangan panic Wails ditujukan secara khusus untuk mengelola panic dalam metode terikat dan galat runtime internal. Untuk bagian lain aplikasi Anda, gunakan pola penanganan galat standar Go dan mekanisme pemulihan panic jika sesuai. Seperti pada semua aplikasi Go, sebaiknya cegah panic melalui penanganan galat yang tepat jika memungkinkan.",
-      "status": "final",
+      "targetHash": "552aaef476bba85ae50776d4cabca7cb8ee435e143f17c6164448766c6c7f545",
+      "machineHash": "552aaef476bba85ae50776d4cabca7cb8ee435e143f17c6164448766c6c7f545",
+      "machineText": "Ingat bahwa penangan panic Wails ditujukan secara khusus untuk menangani panic dalam metode terikat dan galat runtime internal. Untuk bagian lain aplikasi Anda, gunakan pola penanganan galat standar Go dan mekanisme pemulihan panic jika sesuai. Seperti pada semua aplikasi Go, sebaiknya cegah panic melalui penanganan galat yang tepat jika memungkinkan.",
+      "status": "machine-translated",
       "sourcePreview": "Remember that the Wails panic handler is specifically for managing panics in bound methods and inter…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "0a6cb7d42c979c7b3364a93f8ecb7b5ee1f1a54cde7cc538008b52c59496bcf1",
       "targetHash": "78549b864af818296e65dc165e0ac304848d51844730bd6c5b063b23d458823a",
       "machineHash": "78549b864af818296e65dc165e0ac304848d51844730bd6c5b063b23d458823a",
       "machineText": "Cara menangani panic dalam aplikasi Wails Anda",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "How to handle panics in your Wails application",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "359676cfaa2cdbbe3460938fd596955a5bdd2df7accdaf502890347737c9d4c0",
       "targetHash": "81f85d9fd5340f90f1c2edca19b0ce140aa5cdfb9e9c962da514e2ff3d74ac70",
       "machineHash": "81f85d9fd5340f90f1c2edca19b0ce140aa5cdfb9e9c962da514e2ff3d74ac70",
       "machineText": "Menangani Panic",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Handling Panics",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:31Z"
+      "updatedAt": "2026-10-25T21:46:52Z"
     }
   }
 }

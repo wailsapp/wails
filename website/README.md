@@ -24,25 +24,22 @@ language - The language code configured in the i18n field in the docusaurus.conf
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-### Translate
+### Translations
 
-After the English source file is updated, run the following command to submit the source file to Crowdin:
+The Wails v2 documentation retains its existing translations. Crowdin imports,
+source uploads and build-time progress requests have been retired. A Crowdin
+account or token is not required to build the site.
 
-```
-npm run crowdin push -- -b <branch>
-```
+Submit corrections to the existing locale files under `website/i18n/` through
+GitHub. For current Wails v3 documentation, use the
+[M-Press contribution guide](https://v3.wails.io/contributing/documentation/).
 
-branch - Branch name in crowdin project
+### Hosting
 
-Run the following command to pull the translated files in crowdin to the local:
-
-```
-npm run crowdin pull -- -b <branch> -l <languageCode>
-```
-
-languageCode - **Note** that this refers to the language code in the crowdin project.
-
-The recommended practice is to update the English source file locally, then translate the file in crowdin, and finally pull the translated file to the local.
+The existing Cloudflare Pages project serves the same v2 build on both
+`wails.io` and `v2.wails.io`. Keep `wails.io` attached until the separate v3
+launch is ready. Adding the v2 hostname does not require copying or moving
+any documentation.
 
 ### Build
 

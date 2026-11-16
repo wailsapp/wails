@@ -46,7 +46,16 @@ func platformIsAlive(pid int) bool {
 // bundles are directories: those cannot be renamed onto a non-empty
 // directory nor safely merged via copy, so the slot is cleared first and the
 // move retried once for a clean replace.
+//
+// The payload is re-checked first, on every attempt: clearing a directory
+// slot is irreversible without the backup, and neither rename nor the copy
+// fallback can tell a populated directory from a hollow one, so this is the
+// last point at which refusing costs nothing. A refusal wraps
+// errNotInstallable.
 func replaceTarget(target, newPath string) error {
+	if err := validatePayloadForTarget(newPath, target); err != nil {
+		return err
+	}
 	// Directory-over-directory needs an empty slot so the retry lands clean
 	// instead of merging stale files from the old bundle into the new one.
 	if bothDirs(target, newPath) {

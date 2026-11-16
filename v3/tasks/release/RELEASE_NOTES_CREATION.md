@@ -1,118 +1,75 @@
-# Release Notes Creation Documentation
+# Generate v3 release notes
 
-## Overview
+Release notes come from merged PRs included between a previous release tag and
+the exact tested source commit. There is no shared unreleased changelog file to
+edit or revert. `v3/UNRELEASED_CHANGELOG.md` has been removed.
 
-The `release.go` script now supports a `--create-release-notes` flag that extracts changelog content from `UNRELEASED_CHANGELOG.md` and creates a clean `release_notes.md` file suitable for GitHub releases.
+From the repository root, with Git tags fetched and read access through `gh`:
 
-## How It Works
-
-### 1. Command Usage
-
-```bash
-go run release.go --create-release-notes [output_path]
+```sh
+python3 v3/scripts/generate-release-changelog.py generate --repo wailsapp/wails --target HEAD --channel nightly
 ```
 
-- `output_path` is optional, defaults to `../../release_notes.md`
-- The script expects `UNRELEASED_CHANGELOG.md` to be at `../../UNRELEASED_CHANGELOG.md` (relative to the script location)
+Use the repository being released; the generator has no public-repository default.
+This command only reads GitHub. It writes ignored `v3/release_changelog.md` and
+`v3/release_changelog.json`, containing notes and a provenance receipt respectively.
+Failures invalidate any earlier generated input and fail the command. Keep the
+receipt with the notes for auditing the selected PRs and exact source/baseline.
 
-### 2. Extraction Process
+Nightlies use the nearest reachable v3 release tag. Weekly and explicitly stable
+releases use the nearest reachable **stable** v3 tag so changes already shipped
+in nightlies appear in the stable release. `--version v3.1.1` selects stable
+boundaries even when the channel defaults to nightly. With no eligible reachable
+tag, an operator must explicitly choose an ancestor with `--since`; the tool
+fails rather than guessing a bootstrap boundary.
 
-The `extractChangelogContent()` function:
+Closed PRs are listed once, following all API pages. A PR is included once only
+if it is merged into this repository and its
+merge commit is actually in the range. This covers normal, squash, and rebase
+merges, and excludes open PRs, later merges and other repositories' PRs. PRs
+must affect `v3/` or `docs/mpress/`; v2-only PRs are excluded. Direct commits
+without an associated merged PR do not produce release-note entries.
 
-1. Reads the UNRELEASED_CHANGELOG.md file
-2. Filters out:
-   - The main "# Unreleased Changes" header
-   - HTML comments (`<!-- ... -->`)
-   - Empty sections (sections with no bullet points)
-   - Everything after the `---` separator (example entries)
-3. Preserves:
-   - Section headers (## Added, ## Changed, etc.) that have content
-   - Bullet points with actual text (both `-` and `*` styles)
-   - Proper spacing between sections
+Use a clear, user-visible PR title. An optional `## Release notes` section in the
+PR description overrides its prose. Conventional types `feat` and `fix` select
+Added and Fixed; other user-visible types, including `perf` and `refactor`, select
+Changed. `security`, `deprecate` and `remove` select their corresponding sections.
+Internal types `build`, `chore`, `ci`, `docs`, `style` and `test` are omitted unless
+an explicit `changelog:added|changed|fixed|deprecated|removed|security` label is
+present. `skip-changelog` always excludes a PR. Multiple category labels fail the
+run. The generator uses no external model or reviewer service.
 
-### 3. File Structure Expected
+After generation, the existing release commands consume the same notes:
 
-```markdown
-# Unreleased Changes
-
-<!-- Comments are ignored -->
-
-## Added
-<!-- Section comments ignored -->
-- Actual content preserved
-- More content
-
-## Changed
-<!-- Empty sections are omitted -->
-
-## Fixed
-- Bug fixes included
-
----
-
-### Example Entries:
-Everything after the --- is ignored
-```
-
-### 4. Output Format
-
-The generated `release_notes.md` contains only the actual changelog entries:
-
-```markdown
-## Added
-- Actual content preserved
-- More content
-
-## Fixed
-- Bug fixes included
-```
-
-## Testing Results
-
-### ✅ Successful Tests
-
-1. **Valid Content Extraction**: Successfully extracts and formats changelog entries
-2. **Empty Changelog Detection**: Properly fails when no content exists
-3. **Comment Filtering**: Correctly removes HTML comments
-4. **Mixed Bullet Styles**: Handles both `-` and `*` bullet points
-5. **Custom Output Path**: Supports specifying custom output file location
-6. **Flag Compatibility**: Works with `--check-only` and `--extract-changelog` flags
-
-### Test Commands Run
-
-```bash
-# Create release notes with default path
-go run release.go --create-release-notes
-
-# Create with custom path
-go run release.go --create-release-notes /path/to/output.md
-
-# Check if content exists
+```sh
+cd v3/tasks/release
 go run release.go --check-only
-
-# Extract content to stdout
 go run release.go --extract-changelog
+go run release.go --create-release-notes /tmp/release-notes.md
 ```
 
-## Integration with GitHub Workflow
+The nightly/weekly workflow generates and preserves the input and receipt before
+checking whether a release is needed. Missing input, failed GitHub reads or an
+incomplete changed-files response fail the pipeline; they do not count as an
+empty release. An internal-only range skips an automatic nightly. Explicit
+versions and weekly cadence retain their existing empty-range release behavior.
 
-The nightly release workflow should:
+Live releases use the generated notes for both the GitHub release body and a new
+versioned section of `docs/mpress/content/changelog.md`. The generated inputs are
+never staged or reset. Weekly tag-only releases include the changelog section in
+the tag; the subsequent sync copies only that section onto current master,
+preserving newer sections and detecting conflicting edits to the same release.
+The sync is idempotent and does not recreate a staging file.
 
-1. Run `go run release.go --create-release-notes` before the main release task
-2. Use the generated `release_notes.md` for the GitHub release body
-3. The main release task will clear UNRELEASED_CHANGELOG.md after processing
+To run the focused checks without publishing:
 
-## Error Handling
+```sh
+python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'
+python3 .github/scripts/test_release_ci.py
+cd v3
+go test -race ./tasks/release ./tasks/releasegate
+```
 
-The script will exit with status 1 if:
-- UNRELEASED_CHANGELOG.md doesn't exist
-- No actual content is found (only template/comments)
-- File write operations fail
-
-## Benefits
-
-1. **Separation of Concerns**: Changelog extraction happens before the file is cleared
-2. **Clean Output**: No template text or comments in release notes
-3. **Testable**: Can be run and tested independently
-4. **Flexible**: Supports custom output paths
-5. **Consistent**: Same extraction logic used by all flags
+The release tests use isolated Git repositories, local bare remotes and a local
+HTTP server. They do not create GitHub releases or touch repository branches.
+The migration preserves the pending PR #6519 entry in a repository-scoped, immutable migration seed. Its original wording is used only while its merge commit is inside the selected release range; it is not an ongoing staging file.

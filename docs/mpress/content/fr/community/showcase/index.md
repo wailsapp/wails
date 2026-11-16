@@ -48,6 +48,7 @@ Consultez la section [Comment ajouter mon projet à la vitrine](#comment-ajouter
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Capture d’écran de Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Capture d’écran de Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Capture d’écran de MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Capture d’écran de Larvyn" loading="lazy"><span>Larvyn</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Capture d’écran de Zentro" loading="lazy"><span>Zentro</span></a>
 </div>
 
@@ -56,11 +57,11 @@ Consultez la section [Comment ajouter mon projet à la vitrine](#comment-ajouter
 @steps
 ### Créez un fork du dépôt.
 ### Ajoutez la ou les images dans le dossier `docs/mpress/static/showcase-images`.
-### Faites une copie d’un fichier `.md` existant de la vitrine dans le dossier
-`docs/mpress/content/community/showcase`.
+### Créez une copie d’un fichier de vitrine `.md` existant dans le
+dossier `docs/mpress/content/community/showcase`.
 
-### Renommez le fichier copié avec le nom de votre projet. (Le nom ne devrait pas commencer
-par `_`.)
+### Renommez le fichier copié en lui donnant le nom de votre projet. (Le nom ne doit pas commencer
+par `_`)
 
 ### Mettez à jour le titre, l’image, le lien et le contenu du fichier.
 ### Ajoutez-le à la liste ci-dessus dans

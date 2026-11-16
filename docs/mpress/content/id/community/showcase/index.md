@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="Lihat cara menambahkan proyek Anda"}
-Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek-saya-ke-showcase).
+Lihat bagian [Cara menambahkan proyek saya ke etalase](#cara-menambahkan-proyek-saya-ke-etalase).
 
 @end
 
@@ -48,23 +48,24 @@ Lihat bagian [Cara menambahkan proyek saya ke showcase](#cara-menambahkan-proyek
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Tangkapan layar Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Tangkapan layar Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Tangkapan layar MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Tangkapan layar Larvyn" loading="lazy"><span>Larvyn</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Tangkapan layar Zentro" loading="lazy"><span>Zentro</span></a>
 </div>
 
-## Cara menambahkan proyek saya ke showcase
+## Cara menambahkan proyek saya ke etalase
 
 @steps
 ### Buat fork repositori.
-### Tambahkan gambar ke folder `docs/mpress/static/showcase-images`.
-### Buat salinan file showcase `.md` yang sudah ada di dalam
+### Tambahkan gambar ke dalam folder `docs/mpress/static/showcase-images`.
+### Buat salinan salah satu berkas etalase `.md` yang ada di dalam
 folder `docs/mpress/content/community/showcase`.
 
-### Ubah nama file salinan sesuai nama proyek Anda. (Nama sebaiknya tidak diawali
-dengan `_`))
+### Ubah nama berkas yang disalin menjadi nama proyek Anda. (Nama tidak boleh diawali
+dengan `_`)
 
-### Perbarui judul, gambar, tautan, dan konten file tersebut.
-### Tambahkan ke daftar di atas dalam
+### Perbarui judul, gambar, tautan, dan isi berkas.
+### Tambahkan proyek tersebut ke daftar di atas dalam
 `docs/mpress/content/community/showcase/index.md`.
 
-### Ajukan PR.
+### Kirimkan PR.
 @end

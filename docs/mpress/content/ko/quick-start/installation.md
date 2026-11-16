@@ -1,6 +1,6 @@
 ---
 title: "설치"
-description: "Wails를 설치하고 애플리케이션 빌드 준비하기"
+description: "Wails를 설치하고 애플리케이션을 빌드할 준비를 합니다"
 slug: "quick-start/installation"
 sourcePath: "quick-start/installation.md"
 ---
@@ -9,8 +9,8 @@ sourcePath: "quick-start/installation.md"
 
 @note{type="tip" title="요약 - 숙련된 개발자용"}
 ```bash
-# Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+# Install Go 1.26+, then:
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -22,7 +22,7 @@ wails3 setup   # Interactive setup wizard (experimental)
 
 @steps
 ### Go 설치(필수)
-Wails에는 Go 1.25 이상이 필요합니다.
+Wails v3에는 Go 1.26 이상의 빌드 도구 체인이 필요합니다. 최신 Go 1.26 패치 릴리스를 설치하세요. `GOTOOLCHAIN=auto`인 경우 이전 버전의 Go 런처가 적합한 도구 체인을 자동으로 다운로드할 수 있습니다. 자동 다운로드를 비활성화했다면 필요한 도구 체인을 직접 설치하세요. 시작 프로젝트 자체의 `go.mod` 선언으로 Wails 종속성의 요구 버전을 낮출 수는 없습니다.
 
 @tabs{sync-key="os"}
 [Windows]
@@ -31,7 +31,7 @@ Wails에는 Go 1.25 이상이 필요합니다.
 **설치 확인:**
 
 ```powershell
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 ```
 
 **PATH 확인:**
@@ -40,7 +40,7 @@ go version  # Should show 1.25 or later
 $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
 ```
 
-비어 있으면 `C:\Users\YourName\go\bin`을 PATH에 추가하세요.
+비어 있다면 `C:\Users\YourName\go\bin`을 PATH에 추가하세요.
 
 [macOS]
 **옵션 1: 공식 설치 프로그램**
@@ -56,11 +56,11 @@ brew install go
 **설치 확인:**
 
 ```bash
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 echo $PATH | grep go/bin  # Should show ~/go/bin
 ```
 
-`~/go/bin`이 PATH에 없으면 `~/.zshrc` 또는 `~/.bash_profile`에 추가하세요:
+`~/go/bin`이 PATH에 없다면 `~/.zshrc` 또는 `~/.bash_profile`에 다음을 추가하세요:
 
 ```bash
 export PATH=$PATH:~/go/bin
@@ -73,7 +73,7 @@ export PATH=$PATH:~/go/bin
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 **옵션 2: 패키지 관리자**
@@ -105,20 +105,20 @@ echo $PATH | grep go/bin
 
 @end
 
-### 플랫폼 종속 항목 설치
+### 플랫폼 종속성 설치
 @tabs{sync-key="os"}
 [Windows]
-**WebView2 Runtime**(대개 사전 설치됨)
+**WebView2 Runtime**(일반적으로 사전 설치됨)
 
-Windows 10/11에는 기본적으로 WebView2가 포함되어 있습니다. 없는 경우:
+Windows 10/11에는 기본적으로 WebView2가 포함되어 있습니다. 설치되어 있지 않다면:
 
 - [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)에서 다운로드하세요.
-- 또는 나중에 `wails3 doctor`을 실행하면 안내를 받을 수 있습니다.
+- 또는 나중에 `wails3 doctor` 명령을 실행하면 설치 과정을 안내합니다.
 
-**이것으로 끝입니다!** 다른 종속 항목은 필요하지 않습니다.
+**이것으로 끝입니다!** 다른 종속성은 필요하지 않습니다.
 
 @note{type="tip" title="Windows 11 성능 팁"}
-프로젝트 저장 위치로 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)를 사용하는 것을 고려해 보세요. Dev Drive는 개발자 워크로드에 최적화되어 있으며 빌드 시간과 디스크 액세스 속도를 최대 30%까지 크게 개선할 수 있습니다.
+프로젝트를 저장할 때 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 사용을 고려해 보세요. Dev Drive는 개발자 워크로드에 최적화되어 있으며 빌드 시간과 디스크 접근 속도를 최대 30%까지 크게 개선할 수 있습니다.
 
 @end
 
@@ -129,7 +129,7 @@ Windows 10/11에는 기본적으로 WebView2가 포함되어 있습니다. 없�
 xcode-select --install
 ```
 
-표시되는 대화 상자에서 "Install"을 클릭하세요.
+표시되는 대화 상자에서 "설치"를 클릭하세요.
 
 **확인:**
 
@@ -143,7 +143,7 @@ xcode-select -p  # Should show /Library/Developer/CommandLineTools
 **빌드 도구 및 WebKit**
 
 @note{type="caution" title="최소 배포판 버전"}
-Wails v3에는 기본적으로 <strong>WebKitGTK 6.0</strong>가 필요합니다. WebKit2GTK 4.1만 제공하는 배포판(Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x)은 레거시 `-tags gtk3` 옵션을 활성화하여 빌드해야 합니다. WebKit2GTK 4.0만 제공하는 더 오래된 릴리스(Ubuntu 20.04, Debian 11, RHEL 8)는 지원되지 않습니다.
+Wails v3에는 기본적으로 **WebKitGTK 6.0**이 필요합니다. WebKit2GTK 4.1만 제공하는 배포판(Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x)은 레거시 `-tags gtk3` 옵션을 명시적으로 사용하여 빌드해야 합니다. WebKit2GTK 4.0만 제공하는 이전 릴리스(Ubuntu 20.04, Debian 11, RHEL 8)는 지원되지 않습니다.
 
 @end
 
@@ -177,19 +177,19 @@ sudo emerge --ask net-libs/webkit-gtk:6
 ```
 
 [NixOS]
-`shell.nix` 또는 `devShell`에 추가하세요:
+`shell.nix` 또는 `devShell`에 다음을 추가하세요:
 
 ```nix
 buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 ```
 
 [기타]
-Wails를 설치한 후 `wails3 doctor`을 실행하세요. 사용 중인 배포판에 필요한 정확한 패키지가 표시됩니다.
+Wails를 설치한 후 `wails3 doctor` 명령을 실행하세요. 사용 중인 배포판에 필요한 정확한 패키지가 표시됩니다.
 
 @end
 
 @note{type="info" title="레거시 GTK3 스택"}
-대상 배포판에서 아직 WebKitGTK 6.0를 제공하지 않는 경우(예: Ubuntu 22.04 LTS, Debian 12), 대신 GTK3 + WebKit2GTK 4.1 개발 라이브러리(Debian/Ubuntu에서는 `libgtk-3-dev libwebkit2gtk-4.1-dev`, 다른 배포판에서는 이에 해당하는 패키지)를 설치하고 `wails3 build -tags gtk3` 옵션으로 빌드하세요. 레거시 경로는 v3.0.x 계열까지 지원되며 v3.1에서 제거됩니다. 자세한 내용은 [Linux 패키징 - 레거시 GTK3 지원](/guides/build/linux/#legacy-gtk3-support)을 참조하세요.
+대상 배포판에서 아직 WebKitGTK 6.0을 제공하지 않는다면(예: Ubuntu 22.04 LTS, Debian 12), 대신 GTK3 + WebKit2GTK 4.1 개발 라이브러리(Debian/Ubuntu에서는 `libgtk-3-dev libwebkit2gtk-4.1-dev`, 다른 배포판에서는 이에 해당하는 패키지)를 설치하고 `wails3 build -tags gtk3` 옵션으로 빌드하세요. 레거시 경로는 v3.0.x 릴리스 계열까지 지원되며 v3.1에서 제거됩니다. 자세한 내용은 [Linux 패키징 - 레거시 GTK3 지원](/guides/build/linux/#legacy-gtk3-support)을 참조하세요.
 
 @end
 
@@ -197,20 +197,20 @@ Wails를 설치한 후 `wails3 doctor`을 실행하세요. 사용 중인 배포�
 
 ### Wails CLI 설치
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-이렇게 하면 `wails3` 명령이 `~/go/bin`(Windows에서는 `%USERPROFILE%\go\bin`)에 설치됩니다.
+이 작업은 `wails3` 명령을 `~/go/bin`(Windows에서는 `%USERPROFILE%\go\bin`)에 설치합니다.
 
 ### 설정 마법사 실행(권장)
 ```bash
 wails3 setup
 ```
 
-설정 마법사는 종속 항목을 확인하고, 누락된 항목의 설치를 도우며, 프로젝트 기본값을 구성합니다.
+설정 마법사는 종속성을 확인하고 누락된 종속성 설치를 지원하며 프로젝트 기본값을 구성합니다.
 
 @note{type="caution" title="실험적 기능"}
-설정 마법사는 새로 도입되었으며 주로 Linux에서 테스트되었습니다. 문제가 발생하면 [문제를 보고](https://github.com/wailsapp/wails/issues/4904)하고 대신 `wails3 doctor`을 사용하세요.
+설정 마법사는 새로운 기능이며 주로 Linux에서 테스트되었습니다. 문제가 발생하면 [문제를 보고](https://github.com/wailsapp/wails/issues/4904)하고 대신 `wails3 doctor` 명령을 사용하세요.
 
 @end
 
@@ -222,7 +222,7 @@ wails3 doctor
 **예상 출력(또는 이와 유사한 출력):**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -244,8 +244,8 @@ Wails (v3.0.0-dev)  Wails Doctor
 # Build Environment
 
 ┌─────────────┬─────────────────┐
-| Wails CLI   | Your installed version |
-| Go Version  | go1.25.0        |
+| Wails CLI   | v3.0.0          |
+| Go Version  | go1.26.0        |
 └─────────────┴─────────────────┘
 
 # Dependencies
@@ -266,16 +266,16 @@ SUCCESS Your system is ready for Wails development!
 ```
 
 @note{type="info" title="`wails3` 명령을 찾을 수 없는 경우"}
-`~/go/bin`이 PATH에 없습니다. 위의 1단계를 따라 문제를 해결한 다음 터미널을 다시 시작하세요.
+`~/go/bin`이 PATH에 없습니다. 위의 1단계를 따라 문제를 해결한 후 터미널을 다시 시작하세요.
 
 @end
 
 ### npm 설치(선택 사항이지만 권장)
-대부분의 Wails 템플릿은 프런트엔드 도구로 npm을 사용합니다.
+대부분의 Wails 템플릿은 프런트엔드 도구에 npm을 사용합니다.
 
 @tabs{sync-key="os"}
 [Windows]
-[nodejs.org](https://nodejs.org/)에서 다운로드한 후 설치 프로그램을 실행하세요.
+[nodejs.org](https://nodejs.org/)에서 다운로드하여 설치 프로그램을 실행하세요.
 
 **확인:**
 
@@ -332,18 +332,18 @@ npm --version
 
 ### `wails3` 명령을 찾을 수 없음
 
-**원인:** `~/go/bin`(또는 `%USERPROFILE%\go\bin`)이 PATH에 없습니다.
+**원인:** `~/go/bin`(또는 `%USERPROFILE%\go\bin`)이(가) PATH에 없습니다.
 
 **해결 방법:**
 
 @tabs{sync-key="os"}
 [Windows]
-1. "환경 변수"를 여세요(시작 메뉴에서 검색).
+1. 시작 메뉴에서 검색하여 "환경 변수"를 여세요.
 2. "사용자 변수"에서 `Path`을(를) 찾으세요.
 3. "편집" → "새로 만들기"를 클릭하세요.
-4. `C:\Users\YourName\go\bin`을(를) 추가하세요(`YourName` 교체).
+4. 다음을 추가하세요: `C:\Users\YourName\go\bin`(`YourName`은(는) 실제 값으로 바꾸세요).
 5. 모든 대화 상자에서 "확인"을 클릭하세요.
-6. **터미널을 다시 시작하세요**
+6. **터미널을 다시 시작하세요.**
 
 **확인:**
 
@@ -358,7 +358,7 @@ $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
 export PATH=$PATH:~/go/bin
 ```
 
-다시 불러오세요:
+다시 로드하세요:
 
 ```bash
 source ~/.zshrc  # or ~/.bashrc
@@ -387,7 +387,7 @@ wails3 version
 **Windows:** WebView2가 없는 경우:
 
 - [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)에서 다운로드하세요.
-- 또는 첫 번째 앱을 실행할 때 자동으로 설치됩니다.
+- 또는 첫 번째 앱을 실행하면 자동으로 설치됩니다.
 
 **macOS:** Xcode 도구가 없는 경우:
 
@@ -399,7 +399,7 @@ xcode-select --install
 
 #### Go 버전이 너무 오래됨
 
-Wails v3에는 Go 1.25 이상이 필요합니다. 이전 버전을 사용 중인 경우:
+Wails v3에는 Go 1.26 이상이 필요합니다. 이전 버전을 사용 중이라면 다음과 같이 하세요:
 
 @tabs{sync-key="os"}
 [Windows/macOS]
@@ -410,26 +410,26 @@ Wails v3에는 Go 1.25 이상이 필요합니다. 이전 버전을 사용 중인
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 @end
 
 ## 개발 버전(최신 개발판)
 
-주 개발 브랜치의 가장 최신 코드를 사용하고 싶으신가요? 릴리스 전에 새로운 기능과 수정 사항을 사용할 수 있지만, 버그와 호환성을 깨는 변경 사항이 포함될 위험이 있습니다. 기여자 또는 출시 예정 기능을 테스트해야 하는 사용자에게만 권장합니다.
+기본 개발 브랜치의 가장 최신 코드를 사용하고 싶으신가요? 릴리스 전에 새로운 기능과 수정 사항을 이용할 수 있지만, 버그와 호환성을 깨는 변경 사항이 포함될 위험이 있습니다. 기여자나 향후 기능을 테스트해야 하는 사용자에게만 권장합니다.
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```
 
 @note{type="caution" title="개발 버전"}
-- 버그 또는 호환성을 깨는 변경 사항이 있을 수 있음
-- 생성된 프로젝트는 `replace` 지시문을 사용하여 로컬 Wails를 가리킵니다.
+- 버그나 호환성을 깨는 변경 사항이 있을 수 있음
+- 생성된 프로젝트에서는 `replace` 지시문을 사용하여 로컬 Wails를 가리킵니다.
 - 기여자 또는 새로운 기능을 테스트하는 경우에만 권장
 
 @end
@@ -440,7 +440,7 @@ go install
 
 @cards{cols="1"}
 🚀 첫 번째 앱 빌드하기
-10분 만에 작동하는 애플리케이션을 만드세요.
+10분 안에 작동하는 애플리케이션을 만들어 보세요.
 
 [첫 번째 앱 튜토리얼 →](/quick-start/first-app/)
 

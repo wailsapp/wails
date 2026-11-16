@@ -12,12 +12,12 @@ Der Servermodus eignet sich für:
 - **Docker-/Container-Bereitstellungen** – Ausführung ohne X11-/Wayland-Abhängigkeiten
 - **Serverseitige Anwendungen** – Bereitstellung als Webserver, auf den über einen Browser zugegriffen werden kann
 - **Reiner Webzugriff** – Gemeinsame Codebasis für Desktop und Web
-- **CI/CD-Tests** – Integrationstests ohne Displayserver ausführen
-- **Microservices** – Wails-Bindings in Headless-Backenddiensten verwenden
+- **CI/CD-Tests** – Integrationstests ohne Display-Server ausführen
+- **Microservices** – Wails-Bindings in Headless-Backend-Diensten verwenden
 
 ## Schnellstart
 
-Aktivieren Sie den Servermodus über das Build-Tag `server`. Ihr Anwendungscode bleibt unverändert – erstellen Sie den Build lediglich mit diesem Tag:
+Der Servermodus wird über das Build-Tag `server` aktiviert. Ihr Anwendungscode bleibt unverändert – Sie führen den Build lediglich mit diesem Tag aus:
 
 ```bash
 # Using Taskfile (recommended)
@@ -28,7 +28,7 @@ wails3 task run:server
 go build -tags server -o myapp-server .
 ```
 
-Hier ist ein minimales Beispiel:
+Hier ist ein Minimalbeispiel:
 
 ```go
 package main
@@ -66,7 +66,7 @@ func main() {
 }
 ```
 
-Derselbe Code kann für den Desktopmodus (ohne das Tag) oder den Servermodus (mit `-tags server`) gebaut werden.
+Derselbe Code kann für den Desktopmodus (ohne Tag) oder den Servermodus (mit `-tags server`) gebaut werden.
 
 ## Konfiguration
 
@@ -95,11 +95,11 @@ Server: application.ServerOptions{
     // Graceful shutdown timeout. Default: 30s
     ShutdownTimeout: 30 * time.Second,
 
-    // Additional origins allowed to open WebSocket connections.
-    // Same-origin connections are always allowed.
+    // Additional origins allowed to open WebSocket connections and call
+    // /wails/runtime. Same-origin requests are always allowed.
     WebSocketOriginPatterns: []string{"app.example.com"},
 
-    // Disable WebSocket origin checks. Unsafe; default: false.
+    // Disable WebSocket and runtime origin checks. Unsafe; default: false.
     WebSocketAllowAllOrigins: false,
 
     // TLS configuration (optional)
@@ -112,9 +112,9 @@ Server: application.ServerOptions{
 
 ## Funktionen
 
-### Endpunkt für Integritätsprüfungen
+### Endpunkt für Zustandsprüfungen
 
-Unter `/health` ist automatisch ein Endpunkt für Integritätsprüfungen verfügbar:
+Unter `/health` ist automatisch ein Endpunkt für Zustandsprüfungen verfügbar:
 
 ```bash
 curl http://localhost:8080/health
@@ -123,13 +123,13 @@ curl http://localhost:8080/health
 
 Dies eignet sich für:
 
-- Liveness-/Readiness-Probes von Kubernetes
-- Integritätsprüfungen von Load-Balancern
+- Liveness- und Readiness-Probes von Kubernetes
+- Zustandsprüfungen von Load-Balancern
 - Überwachungssysteme
 
-### Service-Bindings
+### Dienst-Bindings
 
-Alle Service-Bindings funktionieren genauso wie im Desktopmodus:
+Alle Dienst-Bindings funktionieren genauso wie im Desktopmodus:
 
 ```go
 type GreetService struct{}
@@ -144,7 +144,7 @@ Services: []application.Service{
 },
 ```
 
-Das Frontend kann diese Bindings über die standardmäßige Wails-Laufzeit aufrufen:
+Das Frontend kann diese Bindings über die standardmäßige Wails-Runtime aufrufen:
 
 ```javascript
 const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
@@ -154,10 +154,10 @@ const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
 
 Ereignisse funktionieren im Servermodus bidirektional:
 
-- **Vom Frontend zum Backend**: Vom Browser ausgelöste Ereignisse werden über HTTP gesendet und von Ihren Go-Ereignishandlern empfangen
-- **Vom Backend zum Frontend**: Von Go ausgelöste Ereignisse werden über WebSocket an alle verbundenen Browser übertragen
+- **Frontend an Backend**: Vom Browser ausgelöste Ereignisse werden über HTTP gesendet und von Ihren Go-Event-Handlern empfangen
+- **Backend an Frontend**: Von Go ausgelöste Ereignisse werden über WebSocket an alle verbundenen Browser übertragen
 
-Jeder Browser-Tab wird als „Fenster“ mit einem eindeutigen Namen (`browser-1`, `browser-2` usw.) dargestellt und ist über `event.Sender` zugänglich:
+Jeder Browser-Tab wird als „Fenster“ mit einem eindeutigen Namen dargestellt (`browser-1`, `browser-2` usw.) und ist über `event.Sender` zugänglich:
 
 ```go
 // Listen for events from browsers
@@ -170,7 +170,7 @@ app.Event.On("user-action", func(event *application.CustomEvent) {
 app.Event.Emit("server-update", data)
 ```
 
-Vom Frontend aus:
+Im Frontend:
 
 ```javascript
 // Emit event to server (and all other browsers)
@@ -182,9 +182,9 @@ wails.Events.On('server-update', (event) => {
 });
 ```
 
-### Kontrolliertes Herunterfahren
+### Geordnetes Herunterfahren
 
-Der Server verarbeitet die Signale `SIGINT` und `SIGTERM` kontrolliert:
+Der Server verarbeitet die Signale `SIGINT` und `SIGTERM` ordnungsgemäß:
 
 1. Akzeptiert keine neuen Verbindungen mehr
 2. Wartet auf den Abschluss aktiver Anfragen (bis zu `ShutdownTimeout`)
@@ -199,23 +199,30 @@ Der Server verarbeitet die Signale `SIGINT` und `SIGTERM` kontrolliert:
 | Infobereich | Verfügbar | Nicht verfügbar |
 | Native Dialogfelder | Verfügbar | Nicht verfügbar |
 | Anwendungsmenü | Verfügbar | Nicht verfügbar |
-| Bildschirminformationen | Verfügbar | Gibt einen Fehler zurück |
-| Service-Bindings | Funktionieren | Funktionieren |
+| Bildschirminformationen | Verfügbar | Kein nativer Bildschirm; `GetPrimary()` gibt `nil` zurück |
+| Dienst-Bindings | Funktionieren | Funktionieren |
 | Ereignisse | Funktionieren | Funktionieren (über WebSocket) |
-| Assets | Über Webview | Über HTTP |
+| Assets | Über WebView | Über HTTP |
 | CGO erforderlich | Ja | Nein |
 
 ### Verhalten der Fenster-API
 
 Im Servermodus werden fensterbezogene APIs sicher behandelt:
 
-- `app.Window.NewWithOptions()` – Protokolliert eine Warnung und gibt nil zurück
-- `app.Hide()` / `app.Show()` – Keine Aktion
-- `app.Screen.GetPrimary()` – Gibt einen Fehler zurück
+- `app.Window.NewWithOptions(options)` – Gibt ein Go-Fensterobjekt zurück, das nicht nil ist; dadurch wird kein natives Desktopfenster erstellt
+- `app.Hide()` / `app.Show()` – Keine Wirkung
+- `app.Screen.GetPrimary()` – Gibt `*application.Screen` zurück; wenn kein primärer Bildschirm verfügbar ist, ist dies `nil`. Prüfen Sie den Wert vor der Dereferenzierung
 
-Dadurch kann Code, der auf Fenster verweist, ohne Absturz ausgeführt werden, obwohl Fensteroperationen keine Wirkung haben.
+Unterscheiden Sie Go-Fensterobjekte von der Verfügbarkeit nativer Fenster. Sichern Sie beim Erstellen eines Servers ausschließlich für den Desktop vorgesehenes Verhalten ab; ein Go-Fensterobjekt, das nicht nil ist, belegt nicht, dass ein natives Fenster oder ein Bildschirm vorhanden ist.
 
-## Produktions-Build erstellen
+### Unterstützte Plattformen
+
+Der Servermodus ist vollständig in Go implementiert und lässt sich ohne CGO für jedes von Wails unterstützte `GOOS` kompilieren, einschließlich `android` und `ios`. Für mobile Zielplattformen wird lediglich ein Headless-Server gebaut:
+
+- Die nativen mobilen APIs `application.Android` und `application.IOS` sind nicht verfügbar. Code, der sie verwendet, muss durch eine `!server`-Build-Bedingung von Server-Builds ausgeschlossen werden.
+- Standardmäßig wird der Desktop-Logger verwendet, der in Entwicklungs-Builds in stderr schreibt und nicht in logcat oder die WebView-Konsole.
+
+## Build für den Produktivbetrieb
 
 ### Task verwenden (empfohlen)
 
@@ -238,7 +245,7 @@ go build -tags server -o myapp-server .
 
 ### Docker
 
-Wails-Projekte enthalten eine sofort einsatzbereite Docker-Konfiguration. So erstellen Sie Ihre Anwendung und führen sie in einem Container aus:
+Wails-Projekte enthalten eine sofort einsatzbereite Docker-Konfiguration. So bauen Sie Ihre Anwendung und führen sie in einem Container aus:
 
 ```bash
 # Build the Docker image
@@ -264,7 +271,7 @@ Die generierte Datei `Dockerfile.server` erstellt ein minimales Image auf Distro
 
 ### Docker Compose
 
-Für komplexere Bereitstellungen finden Sie hier eine Docker-Compose-Konfiguration mit Integritätsprüfungen:
+Für komplexere Bereitstellungen finden Sie hier eine Docker-Compose-Konfiguration mit Zustandsprüfungen:
 
 ```yaml
 services:
@@ -282,13 +289,13 @@ services:
 ```
 
 @note{type="info"}
-Das Healthcheck-Beispiel verwendet `wget`. Wenn Sie ein Distroless-Basis-Image verwenden, müssen Sie entweder ein Healthcheck-Programm in Ihr Image aufnehmen oder einen externen Mechanismus zur Integritätsprüfung verwenden, beispielsweise die Docker-Option `curl` oder einen Sidecar-Container.
+Das Healthcheck-Beispiel verwendet `wget`. Wenn Sie ein Distroless-Basis-Image verwenden, müssen Sie entweder ein Healthcheck-Binärprogramm in Ihr Image aufnehmen oder einen externen Mechanismus für Zustandsprüfungen verwenden (z. B. Dockers Option `curl` oder einen Sidecar-Container).
 
 @end
 
 ### Benutzerdefiniertes Dockerfile
 
-Wenn Sie mehr Kontrolle benötigen, können Sie ein eigenes Dockerfile erstellen. Wichtig ist, `WAILS_SERVER_HOST=0.0.0.0` festzulegen, damit der Server Verbindungen von außerhalb des Containers akzeptiert:
+Wenn Sie mehr Kontrolle benötigen, können Sie ein eigenes Dockerfile erstellen. Entscheidend ist, `WAILS_SERVER_HOST=0.0.0.0` festzulegen, damit der Server Verbindungen von außerhalb des Containers akzeptiert:
 
 ```dockerfile
 # Build stage
@@ -312,11 +319,11 @@ ENTRYPOINT ["/server"]
 
 Beachten Sie beim Bereitstellen von Anwendungen im Servermodus Folgendes:
 
-1. **Standardmäßig an localhost binden** – Verwenden Sie `0.0.0.0` nur bei Bedarf
-2. **In der Produktion TLS verwenden** – Konfigurieren Sie `ServerOptions.TLS`
-3. **Hinter einem Reverse-Proxy betreiben** – Verwenden Sie nginx/traefik für zusätzliche Sicherheit
-4. **Für WebSockets denselben Ursprung beibehalten** – Fügen Sie mit `WebSocketOriginPatterns` nur vertrauenswürdige Ursprünge hinzu; vermeiden Sie `WebSocketAllowAllOrigins`
-5. **Alle Eingaben validieren** – Es gelten dieselben Sicherheitspraktiken wie für jede andere Webanwendung
+1. **Standardmäßig an localhost binden** – `0.0.0.0` nur bei Bedarf verwenden
+2. **In der Produktion TLS verwenden** – `ServerOptions.TLS` konfigurieren
+3. **Hinter einem Reverse-Proxy betreiben** – nginx/traefik für zusätzliche Sicherheit verwenden
+4. **WebSockets und Runtime-Aufrufe auf demselben Origin belassen** – mit `WebSocketOriginPatterns` ausschließlich vertrauenswürdige Origins hinzufügen; `WebSocketAllowAllOrigins` vermeiden
+5. **Alle Eingaben validieren** – dieselben Sicherheitspraktiken wie bei jeder Webanwendung anwenden
 
 ## Beispiel
 
@@ -340,17 +347,27 @@ Für Bereitstellungsszenarien, in denen Sie die Serverkonfiguration ohne Codeän
 
 | Variable | Beschreibung | Standardwert |
 | --- | --- | --- |
-| `WAILS_SERVER_HOST` | Netzwerkschnittstelle für die Bindung | `localhost` |
-| `WAILS_SERVER_PORT` | Port, auf dem Verbindungen entgegengenommen werden | `8080` |
+| `WAILS_SERVER_HOST` | Netzwerkschnittstelle, an die gebunden werden soll | `localhost` |
+| `WAILS_SERVER_PORT` | Port, auf dem eingehende Verbindungen angenommen werden | `8080` |
 
-Diese haben Vorrang vor `ServerOptions` in Ihrem Code. Deshalb setzen die Docker-Beispiele `WAILS_SERVER_HOST=0.0.0.0`: Dadurch kann der Container externe Verbindungen akzeptieren, ohne dass Änderungen an Ihrer Anwendung erforderlich sind.
+Diese Variablen haben Vorrang vor `ServerOptions` in Ihrem Code. Deshalb setzen die Docker-Beispiele `WAILS_SERVER_HOST=0.0.0.0`: So kann der Container externe Verbindungen akzeptieren, ohne dass Änderungen an Ihrer Anwendung erforderlich sind.
 
 ## Siehe auch
 
-- [Benutzerdefinierter Transport](/guides/custom-transport/) – Für erweiterte IPC-Anpassungen
+- [Benutzerdefinierter Transport](/guides/custom-transport/) – für erweiterte IPC-Anpassungen
 - [Dienste](/features/bindings/services/) – Dokumentation zur Dienstbindung
 - [Ereignisse](/guides/events-reference/) – Dokumentation zum Ereignissystem
 
 ### Größe von Runtime-Anfragen
 
-Anfragen an `/wails/runtime` sind vor der JSON-Verarbeitung auf 64 MiB begrenzt. Eine gewöhnliche Anfrage oberhalb dieses Grenzwerts erhält HTTP 413; dies gilt auch für Anfragen ohne `Content-Length`. In Blöcke aufgeteilte Runtime-Uploads behalten ihre separaten Grenzwerte von 1 MiB pro Block und 64 MiB für die zusammengesetzten Nutzdaten bei. Verwenden Sie gegebenenfalls Anwendungs-Middleware oder einen Reverse-Proxy, um einen niedrigeren Grenzwert festzulegen.
+Anfragen an `/wails/runtime` sind vor der JSON-Verarbeitung auf 64 MiB begrenzt. Eine gewöhnliche Anfrage oberhalb dieses Grenzwerts erhält HTTP 413; dies gilt auch für Anfragen ohne `Content-Length`. Für in Blöcke aufgeteilte Runtime-Uploads gelten weiterhin die separaten Grenzwerte von 1 MiB pro Block und 64 MiB für die zusammengesetzten Nutzdaten. Verwenden Sie gegebenenfalls Anwendungs-Middleware oder einen Reverse-Proxy, um einen niedrigeren Grenzwert festzulegen.
+
+### Origin von Runtime-Anfragen
+
+`/wails/runtime` akzeptiert nur `POST`-Anfragen; andere Methoden erhalten HTTP 405. Eine Browseranfrage, deren `Origin` weder dem Host der Anfrage noch `WebSocketOriginPatterns` entspricht, erhält HTTP 403. Dasselbe gilt für eine Anfrage ohne `Origin`, deren `Sec-Fetch-Site` den Wert `cross-site` oder `same-site` hat. Anfragen, die keinen der beiden Header enthalten, etwa von `curl` oder anderen Nicht-Browser-Clients, werden akzeptiert. Wenn ein Reverse-Proxy den Header `Host` umschreibt, fügen Sie den öffentlichen Origin zu `WebSocketOriginPatterns` hinzu.
+
+`WebSocketOriginPatterns` ist für Bereitstellungen mit Reverse-Proxy vorgesehen, bei denen sich der öffentliche Origin von dem für die Anwendung sichtbaren `Host` unterscheidet. Frontends, die von einem anderen Origin bereitgestellt werden und `/wails/runtime` direkt aufrufen, werden nicht unterstützt: Der Endpunkt gibt keine CORS-Header aus und beantwortet Preflight-Anfragen mit `OPTIONS` mit HTTP 405. Stellen Sie das Frontend über den Wails-Server bereit oder betreiben Sie beide hinter demselben Proxy-Origin.
+
+### Prüfung des Loopback-Hosts
+
+Wenn der Server an eine Loopback-Adresse gebunden ist (den Standardwert `localhost`, eine beliebige `127.0.0.0/8`-Adresse oder `::1`, unabhängig davon, ob sie in `ServerOptions.Host` oder `WAILS_SERVER_HOST` festgelegt wurde), muss jede Anfrage einen `Host`-Header enthalten, der `localhost`, ein IP-Literal, den Bind-Host oder einen Host angibt, der dem Host-Teil eines `WebSocketOriginPatterns`-Eintrags entspricht. Jeder andere Wert für `Host` erhält HTTP 403. Dies verhindert DNS-Rebinding, bei dem eine schädliche Webseite ihren eigenen Hostnamen auf `127.0.0.1` verweisen lässt, sodass ihre Anfragen die oben beschriebenen Same-Origin-Prüfungen bestehen. Der Port wird nicht verglichen, und Schreibweisen wie `localhost.` (mit abschließendem Punkt) oder `127.1` werden abgelehnt. Die Prüfung gilt auch, wenn `WebSocketAllowAllOrigins` festgelegt ist. Wenn ein lokaler Reverse-Proxy seinen öffentlichen `Host` weiterleitet, fügen Sie diesen Host zu `WebSocketOriginPatterns` hinzu. Bindungen an andere Adressen, beispielsweise `0.0.0.0` in Containern, sind davon nicht betroffen.

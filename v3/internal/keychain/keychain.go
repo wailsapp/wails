@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/zalando/go-keyring"
+	"github.com/wailsapp/wails/v3/internal/credentialstore"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 // Set stores a credential in the system keychain.
 // The credential is identified by a key and can be retrieved later with Get.
 func Set(key, value string) error {
-	err := keyring.Set(ServiceName, key, value)
+	err := credentialstore.Set(ServiceName, key, value)
 	if err != nil {
 		return fmt.Errorf("failed to store credential in keychain: %w", err)
 	}
@@ -40,9 +40,9 @@ func Get(key string) (string, error) {
 	}
 
 	// Try keychain
-	value, err := keyring.Get(ServiceName, key)
+	value, err := credentialstore.Get(ServiceName, key)
 	if err != nil {
-		if err == keyring.ErrNotFound {
+		if err == credentialstore.ErrNotFound {
 			return "", fmt.Errorf("credential %q not found in keychain (set with: wails3 setup signing, or set env var %s)", key, envKey)
 		}
 		return "", fmt.Errorf("failed to retrieve credential from keychain: %w", err)
@@ -52,8 +52,8 @@ func Get(key string) (string, error) {
 
 // Delete removes a credential from the system keychain.
 func Delete(key string) error {
-	err := keyring.Delete(ServiceName, key)
-	if err != nil && err != keyring.ErrNotFound {
+	err := credentialstore.Delete(ServiceName, key)
+	if err != nil && err != credentialstore.ErrNotFound {
 		return fmt.Errorf("failed to delete credential from keychain: %w", err)
 	}
 	return nil
@@ -68,7 +68,7 @@ func Exists(key string) bool {
 	}
 
 	// Check keychain
-	_, err := keyring.Get(ServiceName, key)
+	_, err := credentialstore.Get(ServiceName, key)
 	return err == nil
 }
 

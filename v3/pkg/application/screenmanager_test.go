@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -296,14 +296,14 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 	sm := application.ScreenManager{}
 
 	t.Run("Child scaled", func(t *testing.T) {
-		is := is.New(t)
+		is := require.New(t)
 
 		layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 			{id: 1, w: 1200, h: 1200, s: 1},
 			{id: 2, w: 1200, h: 1200, s: 1.5, parent: ScreenDefParent{id: 1, align: "r", offset: 600}},
 		}})
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 
 		screens := sm.GetAll()
 		is.Equal(len(screens), 2)                                                                         // 2 screens
@@ -314,7 +314,7 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 	})
 
 	t.Run("Parent scaled", func(t *testing.T) {
-		is := is.New(t)
+		is := require.New(t)
 
 		layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 			{id: 1, w: 1200, h: 1200, s: 1.5},
@@ -322,7 +322,7 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 		}})
 
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 
 		screens := sm.GetAll()
 		is.Equal(len(screens), 2)                                                                         // 2 screens
@@ -336,14 +336,14 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 // Test basic transformation between physical and DIP coordinates
 func TestScreenManager_BasicTranformation(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 	layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 		{id: 1, w: 1200, h: 1200, s: 1},
 		{id: 2, w: 1200, h: 1200, s: 1.5, parent: ScreenDefParent{id: 1, align: "r", offset: 600}},
 	}})
 
 	err := sm.LayoutScreens(layout.screens)
-	is.NoErr(err)
+	is.NoError(err)
 
 	pt := application.Point{X: 100, Y: 100}
 	is.Equal(sm.DipToPhysicalPoint(pt), pt) // DipToPhysicalPoint screen1
@@ -371,11 +371,11 @@ func TestScreenManager_BasicTranformation(t *testing.T) {
 
 func TestScreenManager_PrimaryScreen(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 		is.Equal(sm.GetPrimary(), layout.screens[0]) // Primary screen
 	}
 
@@ -386,7 +386,7 @@ func TestScreenManager_PrimaryScreen(t *testing.T) {
 
 	layout.screens[0], layout.screens[1] = layout.screens[1], layout.screens[0]
 	err := sm.LayoutScreens(layout.screens)
-	is.NoErr(err)
+	is.NoError(err)
 	is.Equal(sm.GetPrimary(), layout.screens[1]) // Primary screen
 
 	layout.screens[1].IsPrimary = false
@@ -398,11 +398,11 @@ func TestScreenManager_PrimaryScreen(t *testing.T) {
 // (points and rects on the screen edge should transform to the same precise edge position)
 func TestScreenManager_EdgeAlign(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 		for _, screen := range sm.GetAll() {
 			ptOriginDip := screen.Bounds.Origin()
 			ptOriginPhysical := screen.PhysicalBounds.Origin()
@@ -429,13 +429,13 @@ func TestScreenManager_EdgeAlign(t *testing.T) {
 
 func TestScreenManager_ProbePoints(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 	threshold := 1.0
 	steps := 3
 
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 		for _, screen := range sm.GetAll() {
 			for i := 0; i <= 1; i++ {
 				isDip := (i == 0)
@@ -495,11 +495,11 @@ func TestScreenManager_ProbePoints(t *testing.T) {
 // Test transformation drift over time
 func TestScreenManager_TransformationDrift(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 		for _, screen := range sm.GetAll() {
 			rectPhysicalOriginal := application.Rect{
 				X:      screen.PhysicalBounds.X + 100,
@@ -518,7 +518,7 @@ func TestScreenManager_TransformationDrift(t *testing.T) {
 					rectDip := sm.PhysicalToDipRect(rectPhysical)
 					rectPhysical = sm.DipToPhysicalRect(rectDip)
 				}
-				is.NoErr(matchRects(rectPhysical, rectPhysicalOriginal))
+				is.NoError(matchRects(rectPhysical, rectPhysicalOriginal))
 			}
 		}
 	}
@@ -526,7 +526,7 @@ func TestScreenManager_TransformationDrift(t *testing.T) {
 
 func TestScreenManager_ScreenNearestRect(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
+	is := require.New(t)
 
 	layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 		{id: 1, w: 3840, h: 2160, s: 163.0 / 96, name: `27" 4K UHD 163DPI`},
@@ -534,12 +534,12 @@ func TestScreenManager_ScreenNearestRect(t *testing.T) {
 		{id: 3, w: 1920, h: 1080, s: 1.25, parent: ScreenDefParent{id: 1, align: "l", offset: 0}, name: `23" FHD 96DPI (125%)`},
 	}})
 	err := sm.LayoutScreens(layout.screens)
-	is.NoErr(err)
+	is.NoError(err)
 
 	type Rects map[string][]application.Rect
 
 	t.Run("DIP rects", func(t *testing.T) {
-		is := is.New(t)
+		is := require.New(t)
 		rects := Rects{
 			"1": []application.Rect{
 				{X: -150, Y: 260, Width: 400, Height: 300},
@@ -572,7 +572,7 @@ func TestScreenManager_ScreenNearestRect(t *testing.T) {
 		}
 	})
 	t.Run("Physical rects", func(t *testing.T) {
-		is := is.New(t)
+		is := require.New(t)
 		rects := Rects{
 			"1": []application.Rect{
 				{X: -150, Y: 100, Width: 400, Height: 300},
@@ -602,13 +602,13 @@ func TestScreenManager_ScreenNearestRect(t *testing.T) {
 	// To have a consistent transformation back & forth, screen nearest physical rect
 	// should be the one given by ScreenNearestDipRect
 	t.Run("Edge case 1", func(t *testing.T) {
-		is := is.New(t)
+		is := require.New(t)
 		layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 			{id: 1, w: 1200, h: 1200, s: 1},
 			{id: 2, w: 1200, h: 1300, s: 1.5, parent: ScreenDefParent{id: 1, align: "r", offset: -20}},
 		}})
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 
 		rectDip := application.Rect{X: 1020, Y: 800, Width: 400, Height: 300}
 		rectPhysical := sm.DipToPhysicalRect(rectDip)
@@ -619,14 +619,13 @@ func TestScreenManager_ScreenNearestRect(t *testing.T) {
 		is.Equal(screenPhysical.ID, "2") // screenPhysical
 
 		rectDblTransformed := sm.PhysicalToDipRect(rectPhysical)
-		is.NoErr(matchRects(rectDblTransformed, rectDip)) // double transformation
+		is.NoError(matchRects(rectDblTransformed, rectDip)) // double transformation
 	})
 }
 
 // Unsolved edge cases
 func TestScreenManager_UnsolvedEdgeCases(t *testing.T) {
 	sm := application.ScreenManager{}
-	is := is.New(t)
 
 	// Edge case 1: invalid DIP rect location
 	// there could be a setup where some dip rects locations are invalid, meaning that there's no
@@ -634,13 +633,13 @@ func TestScreenManager_UnsolvedEdgeCases(t *testing.T) {
 	// Not sure how to solve this scenario
 	t.Run("Edge case 1: invalid dip rect", func(t *testing.T) {
 		t.Skip("Unsolved edge case")
-		is := is.New(t)
+		is := require.New(t)
 		layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 			{id: 1, w: 1200, h: 1200, s: 1},
 			{id: 2, w: 1200, h: 1100, s: 1.5, parent: ScreenDefParent{id: 1, align: "r", offset: 0}},
 		}})
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 
 		rectDip := application.Rect{X: 1050, Y: 700, Width: 400, Height: 300}
 		rectPhysical := sm.DipToPhysicalRect(rectDip)
@@ -650,7 +649,7 @@ func TestScreenManager_UnsolvedEdgeCases(t *testing.T) {
 		is.Equal(screenDip.ID, screenPhysical.ID)
 
 		rectDblTransformed := sm.PhysicalToDipRect(rectPhysical)
-		is.NoErr(matchRects(rectDblTransformed, rectDip)) // double transformation
+		is.NoError(matchRects(rectDblTransformed, rectDip)) // double transformation
 	})
 
 	// Edge case 2: physical rect that changes when double transformed
@@ -659,17 +658,17 @@ func TestScreenManager_UnsolvedEdgeCases(t *testing.T) {
 	// Not sure how to solve this scenario
 	t.Run("Edge case 2: changed physical rect", func(t *testing.T) {
 		t.Skip("Unsolved edge case")
-		is := is.New(t)
+		is := require.New(t)
 		layout := parseLayout(ScreensLayout{screens: []ScreenDef{
 			{id: 1, w: 1200, h: 1200, s: 1.5},
 			{id: 2, w: 1200, h: 900, s: 1, parent: ScreenDefParent{id: 1, align: "r", offset: 0}},
 		}})
 		err := sm.LayoutScreens(layout.screens)
-		is.NoErr(err)
+		is.NoError(err)
 
 		rectPhysical := application.Rect{X: 1050, Y: 890, Width: 400, Height: 300}
 		rectDblTransformed := sm.DipToPhysicalRect(sm.PhysicalToDipRect(rectPhysical))
-		is.NoErr(matchRects(rectDblTransformed, rectPhysical)) // double transformation
+		is.NoError(matchRects(rectDblTransformed, rectPhysical)) // double transformation
 	})
 }
 

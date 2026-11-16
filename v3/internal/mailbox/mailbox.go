@@ -28,6 +28,19 @@ func (m *Mailbox[T]) Send(message T) {
 	}
 }
 
+// Discard drops the messages that are still waiting. A message already being
+// consumed finishes normally; Discard does not wait for it.
+func (m *Mailbox[T]) Discard() {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// pending[0] is the message in progress (or about to start); drain removes it.
+	if len(m.pending) > 1 {
+		clear(m.pending[1:])
+		m.pending = m.pending[:1]
+	}
+}
+
 func (m *Mailbox[T]) drain() {
 	for {
 		m.lock.Lock()

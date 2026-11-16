@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
@@ -51,9 +51,7 @@ func init() {
 }
 `
 
-	if diff := cmp.Diff(want, string(got)); diff != "" {
-		t.Fatalf("binding ID metadata mismatch (-want +got):\n%s", diff)
-	}
+	require.Equal(t, want, string(got), "binding ID metadata mismatch")
 }
 
 // When a service lives in the same package as the metadata file (typically

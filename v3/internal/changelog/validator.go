@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // ValidationError represents a validation error with context
@@ -35,14 +36,19 @@ type Validator struct {
 	issueRefRegex      *regexp.Regexp
 }
 
-// NewValidator creates a new changelog validator
-func NewValidator() *Validator {
-	return &Validator{
+var validatorDefaults = sync.OnceValue(func() Validator {
+	return Validator{
 		sectionHeaderRegex: regexp.MustCompile(`^##\s+(Added|Changed|Fixed|Deprecated|Removed|Security)\s*$`),
 		bulletPointRegex:   regexp.MustCompile(`^[\s]*[-*]\s+(.+)$`),
 		urlRegex:           regexp.MustCompile(`https?://[^\s]+`),
 		issueRefRegex:      regexp.MustCompile(`#\d+`),
 	}
+})
+
+// NewValidator creates a new changelog validator
+func NewValidator() *Validator {
+	validator := validatorDefaults()
+	return &validator
 }
 
 // ValidateContent validates raw changelog content for proper formatting
@@ -52,18 +58,18 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 		Errors: []ValidationError{},
 	}
 
-	lines := strings.Split(content, "\n")
 	var currentSection string
 	var hasValidSections bool
 	var inExampleSection bool
+	var comments commentBlock
 	lineNum := 0
 
-	for _, line := range lines {
+	for line := range strings.SplitSeq(content, "\n") {
 		lineNum++
 		trimmedLine := strings.TrimSpace(line)
 
 		// Skip empty lines and comments
-		if trimmedLine == "" || strings.HasPrefix(trimmedLine, "<!--") || strings.HasPrefix(trimmedLine, "-->") {
+		if trimmedLine == "" || comments.skip(trimmedLine) || strings.HasPrefix(trimmedLine, "-->") {
 			continue
 		}
 
@@ -122,8 +128,8 @@ func (v *Validator) ValidateContent(content string) ValidationResult {
 				continue
 			}
 
-			if matches := v.bulletPointRegex.FindStringSubmatch(trimmedLine); len(matches) > 1 {
-				content := strings.TrimSpace(matches[1])
+			if v.bulletPointRegex.MatchString(trimmedLine) {
+				content := strings.TrimSpace(trimmedLine[1:])
 				if content == "" {
 					result.Valid = false
 					result.Errors = append(result.Errors, ValidationError{
@@ -242,9 +248,9 @@ func (v *Validator) validateBulletPointContent(content string, lineNum int, resu
 
 	// Check for placeholder text
 	placeholders := []string{
-		"TODO",
-		"FIXME",
-		"TBD",
+		"todo",
+		"fixme",
+		"tbd",
 		"placeholder",
 		"example",
 		"sample",

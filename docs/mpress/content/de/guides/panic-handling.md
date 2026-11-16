@@ -9,13 +9,13 @@ In Go-Anwendungen können zur Laufzeit Panics auftreten, wenn etwas Unerwartetes
 
 ## Panics in Go verstehen
 
-Bevor Sie sich mit der Wails-spezifischen Panic-Behandlung befassen, müssen Sie verstehen, wie Panics in Go funktionieren:
+Bevor Sie sich mit der Wails-spezifischen Panic-Behandlung befassen, sollten Sie verstehen, wie Panics in Go funktionieren:
 
-1. Panics sind für nicht behebbare Fehler vorgesehen, die im normalen Betrieb nicht auftreten sollten
-2. Wenn in einer Goroutine eine Panic auftritt, ist nur diese Goroutine betroffen
-3. Panics können mit `defer` und `recover()` abgefangen werden
+1. Panics sind für nicht behebbare Fehler vorgesehen, die im Normalbetrieb nicht auftreten sollten
+2. Eine Panic wickelt die aktuelle Goroutine ab. Erreicht sie ohne Wiederherstellung die oberste Ebene, wird der Prozess einschließlich der anderen Goroutinen beendet
+3. Die Wiederherstellung muss in einer verzögert ausgeführten Funktion in derselben Goroutine wie die Panic erfolgen
 
-Hier sehen Sie ein einfaches Beispiel für die Panic-Behandlung in Go:
+Hier ist ein einfaches Beispiel für die Behandlung von Panics in Go:
 
 ```go
 func doSomething() {
@@ -31,20 +31,20 @@ func doSomething() {
 }
 ```
 
-Ausführlichere Informationen zu panic und recover in Go finden Sie im [Go-Blogbeitrag „Defer, Panic, and Recover“](https://go.dev/blog/defer-panic-and-recover).
+Ausführlichere Informationen zu panic und recover in Go finden Sie im [Go-Blog: Defer, Panic, and Recover](https://go.dev/blog/defer-panic-and-recover).
 
 ## Panic-Behandlung in Wails
 
-Wails behandelt automatisch Panics, die in Ihren Service-Methoden auftreten, wenn diese vom Frontend aufgerufen werden. Sie müssen diesen Methoden daher keine Panic-Wiederherstellung hinzufügen: Wails fängt die Panic ab und verarbeitet sie mit Ihrem konfigurierten Panic-Handler.
+Wails behandelt automatisch Panics, die in Ihren Service-Methoden auftreten, wenn diese vom Frontend aufgerufen werden. Sie müssen diesen Methoden daher keine Panic-Wiederherstellung hinzufügen. Wails fängt die Panic ab und verarbeitet sie mit dem von Ihnen konfigurierten Panic-Handler.
 
 Der Panic-Handler ist speziell dafür ausgelegt, Folgendes abzufangen:
 
 - Panics in gebundenen Service-Methoden, die vom Frontend aufgerufen werden
-- Interne Panics der Wails-Laufzeitumgebung
+- Panics in Laufzeitpfaden, die ausdrücklich die Wails-Wiederherstellung einrichten; dies ist kein prozessweiter Handler für jede Goroutine
 
-In anderen Szenarien, etwa bei Hintergrund-Goroutinen oder eigenständigem Go-Code, sollten Sie Panics selbst mit den standardmäßigen Mechanismen zur Panic-Wiederherstellung von Go behandeln.
+In anderen Szenarien, etwa bei Hintergrund-Goroutinen oder eigenständigem Go-Code, sollten Sie Panics selbst mit den standardmäßigen Mechanismen von Go zur Panic-Wiederherstellung behandeln.
 
-## Die Struktur PanicDetails
+## Die PanicDetails-Struktur
 
 Wenn eine Panic auftritt, erfasst Wails wichtige Informationen dazu in einer `PanicDetails`-Struktur:
 
@@ -57,21 +57,21 @@ type PanicDetails struct {
 }
 ```
 
-Diese Struktur stellt umfassende Informationen zur Panic bereit:
+Diese Struktur stellt umfassende Informationen über die Panic bereit:
 
-- `StackTrace`: Eine formatierte Zeichenfolge mit dem Aufruf-Stack, der zur Panic geführt hat
+- `StackTrace`: Eine formatierte Zeichenfolge mit dem Aufrufstapel, der zur Panic geführt hat
 - `Error`: Die eigentliche Fehler- oder Panic-Meldung
 - `Time`: Der genaue Zeitpunkt, zu dem die Panic aufgetreten ist
-- `FullStackTrace`: Der vollständige Stacktrace einschließlich Laufzeit-Frames
+- `FullStackTrace`: Der vollständige Stacktrace einschließlich der Laufzeit-Frames
 
 @note{type="info" title="Panics im Service-Code"}
-Wenn Panics in Ihrem Service-Code nach einem Aufruf vom Frontend abgefangen werden, wird der Stacktrace so gekürzt, dass er genau die Stelle in Ihrem Code hervorhebt, an der die Panic aufgetreten ist. Wenn Sie den vollständigen Stacktrace sehen möchten, können Sie das Feld `FullStackTrace` verwenden.
+Wenn Panics nach einem Aufruf aus dem Frontend in Ihrem Service-Code abgefangen werden, wird der Stacktrace so gekürzt, dass genau die Stelle in Ihrem Code im Mittelpunkt steht, an der die Panic aufgetreten ist. Den vollständigen Stacktrace können Sie über das Feld `FullStackTrace` anzeigen.
 
 @end
 
 ## Standardmäßiger Panic-Handler
 
-Wenn Sie keinen benutzerdefinierten Panic-Handler angeben, verwendet Wails seinen Standard-Handler. Dieser gibt Fehlerinformationen als formatierte Protokollmeldung aus und beendet anschließend die Anwendung. Beispiel:
+Wenn Sie keinen benutzerdefinierten Panic-Handler angeben, verwendet Wails seinen Standard-Handler. Dieser gibt Fehlerinformationen in einer formatierten Protokollmeldung aus und beendet anschließend die Anwendung. Beispiel:
 
 ```
 ************************ FATAL ******************************
@@ -89,7 +89,7 @@ main.(*WindowService).GeneratePanic
 
 ## Benutzerdefinierter Panic-Handler
 
-Sie können einen eigenen Panic-Handler implementieren, indem Sie beim Erstellen Ihrer Anwendung die Option `PanicHandler` festlegen. Beispiel:
+Sie können einen eigenen Panic-Handler implementieren, indem Sie beim Erstellen Ihrer Anwendung die Option `PanicHandler` festlegen. Hier ist ein Beispiel:
 
 ```go
 app := application.New(application.Options{
@@ -110,8 +110,8 @@ app := application.New(application.Options{
 })
 ```
 
-Ein vollständiges, funktionsfähiges Beispiel für die Panic-Behandlung in einer Wails-Anwendung finden Sie im Beispiel „panic-handling“ unter `v3/examples/panic-handling`.
+Ein vollständiges, funktionsfähiges Beispiel für die Panic-Behandlung in einer Wails-Anwendung finden Sie im Beispiel zur Panic-Behandlung unter `v3/examples/panic-handling`.
 
 ## Abschließende Hinweise
 
-Beachten Sie, dass der Wails-Panic-Handler speziell für Panics in gebundenen Methoden und für interne Laufzeitfehler vorgesehen ist. In anderen Teilen Ihrer Anwendung sollten Sie gegebenenfalls die standardmäßigen Fehlerbehandlungsmuster und Mechanismen zur Panic-Wiederherstellung von Go verwenden. Wie bei allen Go-Anwendungen ist es nach Möglichkeit besser, Panics durch eine ordnungsgemäße Fehlerbehandlung zu verhindern.
+Beachten Sie, dass der Wails-Panic-Handler speziell für die Behandlung von Panics in gebundenen Methoden und von internen Laufzeitfehlern vorgesehen ist. In anderen Teilen Ihrer Anwendung sollten Sie gegebenenfalls die standardmäßigen Fehlerbehandlungsmuster und Mechanismen zur Panic-Wiederherstellung von Go verwenden. Wie bei allen Go-Anwendungen ist es nach Möglichkeit besser, Panics durch eine ordnungsgemäße Fehlerbehandlung zu verhindern.

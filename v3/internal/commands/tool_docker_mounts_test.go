@@ -189,11 +189,11 @@ func TestToolHas(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{tool: stubName, want: "true"},                            // found: stub is in PATH
-		{tool: "nonexistent-wails-tool-xyz", want: "false"},      // not found
+		{tool: stubName, want: "true"},                                 // found: stub is in PATH
+		{tool: "nonexistent-wails-tool-xyz", want: "false"},            // not found
 		{tool: "nonexistent-wails-tool-xyz|" + stubName, want: "true"}, // second alternative found
 		{tool: stubName + "|nonexistent-wails-tool-xyz", want: "true"}, // first alternative found
-		{tool: "", wantErr: true},                                 // missing arg: error
+		{tool: "", wantErr: true},                                      // missing arg: error
 	}
 
 	for _, tc := range tests {

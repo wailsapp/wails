@@ -22,9 +22,9 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/browser"
 	"github.com/wailsapp/wails/v3/internal/doctor"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"gopkg.in/yaml.v3"
 )
 
 //go:embed frontend/dist/*
@@ -202,22 +202,6 @@ type DockerStatus struct {
 
 const crossImageName = "ghcr.io/wailsapp/wails-cross"
 
-// WailsConfigInfo represents the info section of wails.yaml
-type WailsConfigInfo struct {
-	CompanyName       string `json:"companyName" yaml:"companyName"`
-	ProductName       string `json:"productName" yaml:"productName"`
-	ProductIdentifier string `json:"productIdentifier" yaml:"productIdentifier"`
-	Description       string `json:"description" yaml:"description"`
-	Copyright         string `json:"copyright" yaml:"copyright"`
-	Comments          string `json:"comments,omitempty" yaml:"comments,omitempty"`
-	Version           string `json:"version" yaml:"version"`
-}
-
-// WailsConfig represents the wails.yaml configuration
-type WailsConfig struct {
-	Info WailsConfigInfo `json:"info" yaml:"info"`
-}
-
 // SystemInfo contains detected system information
 type SystemInfo struct {
 	OS           string               `json:"os"`
@@ -234,6 +218,7 @@ type SystemInfo struct {
 
 // WizardState represents the complete wizard state
 type WizardState struct {
+	WakeEnabled  bool               `json:"wakeEnabled"`
 	Dependencies []DependencyStatus `json:"dependencies"`
 	System       SystemInfo         `json:"system"`
 	StartTime    time.Time          `json:"startTime"`
@@ -335,7 +320,10 @@ func (w *Wizard) Run() error {
 
 func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
+	mux.HandleFunc("/api/", http.NotFound)
 	mux.HandleFunc("/api/state", w.handleState)
+	mux.HandleFunc("/api/wake/setup", w.handleWakeSetup)
+	mux.HandleFunc("/api/wake/setup/requirements", w.handleWakeRequirements)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
 	mux.HandleFunc("/api/dependencies/mobile", w.handleCheckMobileDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
@@ -344,7 +332,6 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
 	mux.HandleFunc("/api/docker/logs", w.handleDockerLogs)
 	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
-	mux.HandleFunc("/api/wails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/signing", w.handleSigning)
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
@@ -473,7 +460,9 @@ func (w *Wizard) handleState(rw http.ResponseWriter, r *http.Request) {
 	defer w.stateMu.RUnlock()
 
 	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(w.state)
+	state := w.state
+	state.WakeEnabled = features.WakeEnabled()
+	json.NewEncoder(rw).Encode(state)
 }
 
 func (w *Wizard) handleCheckDependencies(rw http.ResponseWriter, r *http.Request) {
@@ -494,84 +483,6 @@ func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.R
 	deps := w.checkMobileDependencies(q.Get("ios") == "true", q.Get("android") == "true")
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(deps)
-}
-
-func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Content-Type", "application/json")
-
-	// Find wails.yaml in current directory or parent directories
-	configPath := findWailsConfig()
-
-	switch r.Method {
-	case http.MethodGet:
-		if configPath == "" {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		data, err := os.ReadFile(configPath)
-		if err != nil {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		var config WailsConfig
-		if err := yaml.Unmarshal(data, &config); err != nil {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(config)
-
-	case http.MethodPost:
-		var config WailsConfig
-		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if configPath == "" {
-			configPath = "wails.yaml"
-		}
-
-		data, err := yaml.Marshal(&config)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if err := os.WriteFile(configPath, data, 0644); err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(map[string]string{"status": "saved", "path": configPath})
-
-	default:
-		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func findWailsConfig() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		return ""
-	}
-
-	for {
-		configPath := filepath.Join(dir, "wails.yaml")
-		if _, err := os.Stat(configPath); err == nil {
-			return configPath
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
-	}
-
-	return ""
 }
 
 func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
@@ -2074,9 +1985,6 @@ type darwinSigningStatus struct {
 	HasNotarization bool     `json:"hasNotarization"`
 	TeamID          string   `json:"teamID,omitempty"`
 	ConfigSource    string   `json:"configSource,omitempty"`
-	// RcodesignAvailable reports whether the `rcodesign` tool is installed —
-	// the way to sign macOS apps from a non-macOS host.
-	RcodesignAvailable bool `json:"rcodesignAvailable"`
 }
 
 type windowsSigningStatus struct {
@@ -2085,9 +1993,6 @@ type windowsSigningStatus struct {
 	HasSignTool     bool   `json:"hasSignTool"`
 	TimestampServer string `json:"timestampServer,omitempty"`
 	ConfigSource    string `json:"configSource,omitempty"`
-	// OsslsigncodeAvailable reports whether `osslsigncode` is installed — the
-	// cross-platform way to Authenticode-sign Windows binaries from macOS/Linux.
-	OsslsigncodeAvailable bool `json:"osslsigncodeAvailable"`
 	// OpensslAvailable gates the "generate self-signed certificate" option.
 	OpensslAvailable bool `json:"opensslAvailable"`
 }
@@ -2125,7 +2030,12 @@ func checkSigningStatus() signingStatusResponse {
 func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 	status := darwinSigningStatus{}
 
-	if cfg.Signing.Darwin.Identity != "" {
+	if cfg.Signing.Darwin.P12Path != "" {
+		status.HasIdentity = true
+		status.Identity = "Exported PKCS#12 certificate"
+		status.TeamID = cfg.Signing.Darwin.TeamID
+		status.ConfigSource = "defaults.yaml"
+	} else if cfg.Signing.Darwin.Identity != "" {
 		status.HasIdentity = true
 		status.Identity = cfg.Signing.Darwin.Identity
 		status.TeamID = cfg.Signing.Darwin.TeamID
@@ -2145,8 +2055,6 @@ func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 			status.ConfigSource = "keychain"
 		}
 	}
-
-	status.RcodesignAvailable = toolAvailable("rcodesign")
 
 	return status
 }
@@ -2178,7 +2086,6 @@ func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
 		status.HasSignTool = err == nil
 	}
 
-	status.OsslsigncodeAvailable = toolAvailable("osslsigncode")
 	status.OpensslAvailable = toolAvailable("openssl")
 
 	return status

@@ -1,4 +1,4 @@
-//go:build linux && cgo && !gtk3 && !android
+//go:build linux && cgo && !gtk3 && !android && !purego
 
 package webview
 
@@ -11,7 +11,6 @@ package webview
 import "C"
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"unsafe"
@@ -69,24 +68,3 @@ func (r *request) Body() (io.ReadCloser, error) {
 
 	return r.body, nil
 }
-
-func (r *request) Response() ResponseWriter {
-	if r.rw != nil {
-		return r.rw
-	}
-
-	r.rw = &responseWriter{req: r.req}
-	return r.rw
-}
-
-func (r *request) Close() error {
-	var err error
-	if r.body != nil {
-		err = r.body.Close()
-	}
-	r.Response().Finish()
-	r.lifetime.close()
-	return err
-}
-
-func (r *request) Context() context.Context { return r.lifetime.Context }

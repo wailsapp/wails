@@ -28,7 +28,8 @@ const _invoke = (function () {
         }
         // Android WebView - uses addJavascriptInterface which exposes window.wails.invoke
         else if ((window as any).wails?.invoke) {
-            return (msg: any) => (window as any).wails.invoke(typeof msg === 'string' ? msg : JSON.stringify(msg));
+            const bridge = (window as any).wails;
+            return (msg: any) => bridge.invoke(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     } catch(e) {}
 

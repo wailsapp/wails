@@ -22,29 +22,29 @@ func (s *MyService) Greet(name string) string {
 }
 ```
 
-Tindakan ini akan menginjeksikan kode yang ditentukan ke dalam file JavaScript/TypeScript yang dihasilkan untuk layanan `MyService`.
+Tindakan ini akan menginjeksikan kode yang ditentukan ke dalam berkas JavaScript/TypeScript yang dihasilkan untuk layanan `MyService`.
 
-Anda juga dapat menggunakan injeksi kondisional untuk menargetkan format keluaran tertentu:
+Anda juga dapat menggunakan injeksi bersyarat untuk menargetkan format keluaran tertentu:
 
 ```go
 //wails:inject j*:console.log("Hello JS!");  // JavaScript only
 //wails:inject t*:console.log("Hello TS!");  // TypeScript only
 ```
 
-### Menyertakan File Tambahan
+### Menyertakan Berkas Tambahan
 
-Direktif `//wails:include` memungkinkan Anda menyertakan file tambahan bersama binding yang dihasilkan:
+Direktif `//wails:include` memungkinkan Anda menyertakan berkas tambahan bersama binding yang dihasilkan:
 
 ```go
 //wails:include js/*.js
 package mypackage
 ```
 
-Direktif ini biasanya digunakan dalam komentar dokumentasi paket untuk menyertakan file JavaScript/TypeScript tambahan bersama binding yang dihasilkan.
+Direktif ini biasanya digunakan dalam komentar dokumentasi paket untuk menyertakan berkas JavaScript/TypeScript tambahan bersama binding yang dihasilkan.
 
 ### Menandai Tipe dan Metode Internal
 
-Direktif `//wails:internal` menandai tipe atau metode sebagai internal agar tidak diekspor ke frontend:
+Direktif `//wails:internal` mencegah tipe atau metode diekspor dalam binding JavaScript/TypeScript yang dihasilkan:
 
 ```go
 //wails:internal
@@ -56,7 +56,7 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-Ini berguna untuk tipe dan metode yang hanya digunakan secara internal oleh kode Go Anda dan sebaiknya tidak diekspos ke frontend.
+Ini mengendalikan SDK yang dihasilkan, bukan akses runtime. Dalam build normal, metode layanan Go yang diekspor masih dapat didaftarkan dan dipanggil melalui runtime meskipun tidak ada dalam SDK yang dihasilkan. Pastikan operasi privat tidak diekspor atau berada pada tipe yang tidak terikat, dan terapkan otorisasi di dalam metode yang diekspos.
 
 ### Mengabaikan Metode
 
@@ -67,18 +67,18 @@ Direktif `//wails:ignore` sepenuhnya mengabaikan suatu metode selama pembuatan b
 func (s *MyService) IgnoredMethod() {}
 ```
 
-Ini serupa dengan `//wails:internal`, tetapi sepenuhnya mengabaikan metode tersebut alih-alih menandainya sebagai internal.
+Ini menghilangkan wrapper yang dihasilkan. Seperti `//wails:internal`, direktif ini bukan batas kontrol akses untuk metode layanan Go yang diekspor.
 
 ### ID Metode Khusus
 
-Direktif `//wails:id` menentukan ID khusus untuk suatu metode, menggantikan ID bawaan berbasis hash:
+Direktif `//wails:id` menetapkan ID khusus untuk suatu metode dan menggantikan ID bawaan berbasis hash:
 
 ```go
 //wails:id 42
 func (s *MyService) CustomIDMethod() {}
 ```
 
-Ini dapat berguna untuk mempertahankan kompatibilitas saat melakukan pemfaktoran ulang kode.
+Ini dapat berguna untuk mempertahankan kompatibilitas saat melakukan refaktor kode.
 
 ## Menggunakan Tipe Kompleks
 
@@ -190,7 +190,7 @@ Generator binding dapat menghasilkan antarmuka TypeScript sebagai pengganti kela
 wails3 generate bindings -ts -i
 ```
 
-Tindakan ini akan menghasilkan antarmuka TypeScript untuk semua model:
+Ini akan menghasilkan antarmuka TypeScript untuk semua model:
 
 ```typescript
 export interface Person {
@@ -204,13 +204,13 @@ export interface Person {
 
 ### Menggunakan Nama sebagai Pengganti ID
 
-Secara bawaan, generator binding menggunakan ID berbasis hash untuk pemanggilan metode. Anda dapat menggunakan flag `-names` untuk menggunakan nama sebagai gantinya:
+Secara default, generator binding menggunakan ID berbasis hash untuk pemanggilan metode. Anda dapat menggunakan flag `-names` agar menggunakan nama sebagai gantinya:
 
 ```bash
 wails3 generate bindings -names
 ```
 
-Tindakan ini akan menghasilkan kode yang memanggil metode terikat berdasarkan nama **lengkap** (`<package>.<Service>.<Method>`) dan menggunakan nama parameter posisional `$0`, `$1`, …:
+Ini akan menghasilkan kode yang memanggil metode terikat berdasarkan nama **lengkap**-nya (`<package>.<Service>.<Method>`) dan menggunakan nama parameter posisional `$0`, `$1`, …:
 
 ```javascript
 export function Greet($0) {
@@ -223,25 +223,25 @@ Ini dapat membuat kode yang dihasilkan lebih mudah dibaca dan di-debug, tetapi m
 
 ### Membundel Runtime
 
-Secara bawaan, kode yang dihasilkan mengimpor runtime Wails dari paket npm `@wailsio/runtime`. Anda dapat menggunakan flag `-b` untuk membundel runtime bersama kode yang dihasilkan:
+Secara default, kode yang dihasilkan mengimpor runtime Wails dari paket npm `@wailsio/runtime`. Anda dapat menggunakan flag `-b` untuk membundel runtime bersama kode yang dihasilkan:
 
 ```bash
 wails3 generate bindings -b
 ```
 
-Tindakan ini akan menyertakan kode runtime secara langsung dalam file yang dihasilkan sehingga paket npm tidak lagi diperlukan.
+Ini akan menyertakan kode runtime secara langsung dalam berkas yang dihasilkan sehingga paket npm tidak lagi diperlukan.
 
-### Menonaktifkan File Indeks
+### Menonaktifkan Berkas Indeks
 
-Jika tidak memerlukan file indeks, Anda dapat menggunakan flag `-noindex` untuk menonaktifkan pembuatannya:
+Jika Anda tidak memerlukan berkas indeks, gunakan flag `-noindex` untuk menonaktifkan pembuatannya:
 
 ```bash
 wails3 generate bindings -noindex
 ```
 
-Ini dapat berguna jika Anda lebih memilih mengimpor layanan dan model secara langsung dari file masing-masing.
+Ini dapat berguna jika Anda lebih suka mengimpor layanan dan model secara langsung dari berkasnya masing-masing.
 
-## Contoh Dunia Nyata
+## Contoh Penggunaan Nyata
 
 ### Layanan Autentikasi
 
@@ -322,9 +322,9 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 }
 ```
 
-### Injeksi Kode Kondisional
+### Injeksi Kode Bersyarat
 
-Berikut adalah contoh injeksi kode kondisional untuk format keluaran yang berbeda:
+Berikut adalah contoh injeksi kode bersyarat untuk berbagai format keluaran:
 
 ```go
 //wails:inject j*:/**
@@ -338,4 +338,4 @@ Berikut adalah contoh injeksi kode kondisional untuk format keluaran yang berbed
 type Service struct{}
 ```
 
-Ini menyisipkan kode yang berbeda untuk keluaran JavaScript dan TypeScript, dengan menyediakan anotasi tipe yang sesuai untuk setiap bahasa.
+Ini menginjeksikan kode yang berbeda untuk keluaran JavaScript dan TypeScript serta menyediakan anotasi tipe yang sesuai untuk setiap bahasa.

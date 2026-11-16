@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"errors"
-	"github.com/leaanthony/slicer"
 	"log"
 	"strings"
 	"text/template"
@@ -16,8 +15,8 @@ type GeneratedFile struct {
 }
 
 type IDL struct {
-	Imports   []*Import  `parser:"@@*"`
-	Libraries []*Library `parser:"@@*"`
+	Imports   []*Import
+	Libraries []*Library
 }
 
 func (i *IDL) Process() error {
@@ -38,21 +37,21 @@ func (i *IDL) Generate() ([]*GeneratedFile, error) {
 }
 
 type Import struct {
-	Name string `parser:"'import' @(!';')* ';'"`
+	Name string
 }
 
 type LibraryHeader struct {
-	UUID string `parser:"'uuid' '(' @UUID ')' ',' 'version' '(' Int ('.' Int)? ')'"`
+	UUID string
 }
 
 type Library struct {
-	Header       *LibraryHeader `parser:"'[' @@ ']'"`
-	Name         string         `parser:"'library' @Ident"`
-	Declarations []*Declaration `parser:"'{' @@* '}'"`
+	Header       *LibraryHeader
+	Name         string
+	Declarations []*Declaration
 
 	// private
-	forewardInterfaceDeclarations slicer.StringSlicer
-	enums                         slicer.StringSlicer
+	forewardInterfaceDeclarations []string
+	enums                         []string
 	packageName                   string
 }
 
@@ -84,7 +83,7 @@ func (l *Library) Generate() ([]*GeneratedFile, error) {
 }
 
 func (l *Library) addInterfaceName(interfaceName string) {
-	l.forewardInterfaceDeclarations.Add(interfaceName)
+	l.forewardInterfaceDeclarations = append(l.forewardInterfaceDeclarations, interfaceName)
 }
 
 func (l *Library) GenerateDefaultFiles() []*GeneratedFile {
@@ -121,11 +120,11 @@ func (l *Library) GenerateDefaultFiles() []*GeneratedFile {
 }
 
 type Declaration struct {
-	InterfaceForewardDecl string                `parser:"'interface' @Ident ';'"`
-	Enum                  *EnumDeclaration      `parser:"| '[' 'v1_enum' ']' @@"`
-	Struct                *StructDeclaration    `parser:"| @@"`
-	Interface             *InterfaceDeclaration `parser:"| @@"`
-	CppQuote              string                `parser:"| 'cpp_quote' '(' @String ')'"`
+	InterfaceForewardDecl string
+	Enum                  *EnumDeclaration
+	Struct                *StructDeclaration
+	Interface             *InterfaceDeclaration
+	CppQuote              string
 
 	// Private
 	library *Library

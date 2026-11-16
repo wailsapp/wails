@@ -1,0 +1,9 @@
+version: "3"
+
+vars:
+  APP_NAME: Unsupported
+
+includes:
+  generated: "{{.DYNAMIC_TASKFILE}}"
+
+tasks: {}

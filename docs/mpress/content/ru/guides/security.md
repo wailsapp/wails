@@ -1,13 +1,13 @@
 ---
-title: "Рекомендации по обеспечению безопасности"
-description: "Обеспечьте безопасность приложения Wails"
+title: "Рекомендации по безопасности"
+description: "Обеспечение безопасности приложения Wails"
 slug: "guides/security"
 sourcePath: "guides/security.md"
 ---
 
 ## Обзор
 
-Безопасность критически важна для настольных приложений. Следуйте этим рекомендациям, чтобы обеспечить безопасность своего приложения.
+Безопасность критически важна для настольных приложений. Следуйте этим рекомендациям, чтобы защитить свое приложение.
 
 ## Проверка входных данных
 
@@ -95,27 +95,42 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ### Шифруйте конфиденциальные данные
 
-```go
-import "crypto/aes"
-import "crypto/cipher"
+Для каждого сообщения, зашифрованного данным ключом, используйте новый nonce. В инструментарии Go, который требуется для Wails v3, `NewGCMWithRandomNonce` автоматически генерирует nonce и добавляет его в начало данных. Храните возвращенные байты без изменений: `decrypt` считывает nonce из этого префикса. Храните ключ отдельно от шифротекста.
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+```go
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
+
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
 
-### Безопасное хранение
+Используйте подходящий случайно сгенерированный ключ AES и соблюдайте установленное для AEAD ограничение на количество сообщений для одного ключа. См. [справочник по шифрованию в Go](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
+
+### Безопасное хранение данных
 
 ```go
 // Use OS keychain for sensitive data
@@ -135,23 +150,44 @@ func getAPIKey() (string, error) {
 ### Используйте HTTPS
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
 ### Проверяйте сертификаты
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## Операции с файлами
 
-### Проверяйте пути
+### Ограничивайте доступ к файлам
+
+Принимайте путь относительно каталога, контролируемого приложением. `os.OpenRoot` ограничивает разрешение путей файловой системы этим каталогом, в том числе при использовании символических ссылок. Отклонение `..` или одна лишь проверка строкового префикса не обеспечивают соблюдение этой границы.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+Например, вызовите `readFile(appDataDir, "notes/today.json")`. Задавайте `appDataDir` в доверенном коде серверной части; не позволяйте фронтенду передавать разрешенный корневой каталог. Корневой каталог ограничивает обход файловой системы, но не определяет, какие файлы внутри него пользователю разрешено читать.
 
 ## Ограничение частоты запросов
 
@@ -230,32 +262,32 @@ func (r *RateLimiter) Allow(key string) bool {
 - Реализуйте ограничение частоты запросов
 - Своевременно обновляйте зависимости
 - Регистрируйте события безопасности
-- Используйте системные хранилища учётных данных
+- Используйте системные хранилища ключей ОС
 
 ### ❌ Не делайте
 
 - Не доверяйте пользовательскому вводу
 - Не храните пароли в открытом виде
-- Не встраивайте секреты непосредственно в код
+- Не указывайте секреты непосредственно в коде
 - Не пропускайте проверку сертификатов
 - Не раскрывайте конфиденциальные данные в журналах
-- Не используйте ненадёжное шифрование
+- Не используйте слабое шифрование
 - Не игнорируйте обновления безопасности
 
 ## Контрольный список безопасности
 
-- [ ] Все пользовательские входные данные проверены
+- [ ] Все пользовательские данные проверяются
 - [ ] Пароли хешируются с помощью bcrypt
-- [ ] Конфиденциальные данные зашифрованы
+- [ ] Конфиденциальные данные шифруются
 - [ ] Для всех сетевых запросов используется HTTPS
 - [ ] Реализовано ограничение частоты запросов
-- [ ] Пути к файлам проверены
-- [ ] Зависимости обновлены до актуальных версий
+- [ ] Пути к файлам проверяются
+- [ ] Зависимости обновлены
 - [ ] Включено журналирование событий безопасности
 - [ ] Сообщения об ошибках не раскрывают информацию
 - [ ] Код проверен на наличие уязвимостей
 
-## Дальнейшие действия
+## Дальнейшие шаги
 
-- [Архитектура](/guides/architecture/) — шаблоны архитектуры приложений
-- [Рекомендации](/features/bindings/best-practices/) — рекомендации по использованию привязок
+- [Архитектура](/guides/architecture/) — Шаблоны архитектуры приложений
+- [Рекомендации](/features/bindings/best-practices/) — Рекомендации по привязкам

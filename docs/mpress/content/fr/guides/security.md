@@ -11,7 +11,7 @@ La sécurité est essentielle pour les applications de bureau. Suivez ces pratiq
 
 ## Validation des entrées
 
-### Toujours valider
+### Validez systématiquement
 
 ```go
 func (s *UserService) CreateUser(email, password string) (*User, error) {
@@ -33,7 +33,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 }
 ```
 
-### Nettoyer le HTML
+### Assainissez le HTML
 
 ```go
 import "html"
@@ -93,27 +93,42 @@ func (a *AuthService) CreateSession(userID int) (*Session, error) {
 
 ## Protection des données
 
-### Chiffrer les données sensibles
+### Chiffrez les données sensibles
+
+Utilisez un nonce inédit pour chaque message chiffré avec une clé donnée. Avec la chaîne d’outils Go requise par Wails v3, `NewGCMWithRandomNonce` génère automatiquement le nonce et l’ajoute en préfixe. Stockez tels quels les octets renvoyés ; `decrypt` lit le nonce dans ce préfixe. Conservez la clé séparément du texte chiffré.
 
 ```go
-import "crypto/aes"
-import "crypto/cipher"
+import (
+    "crypto/aes"
+    "crypto/cipher"
+)
 
-func encrypt(data []byte, key []byte) ([]byte, error) {
+func encrypt(data, key []byte) ([]byte, error) {
     block, err := aes.NewCipher(key)
     if err != nil {
         return nil, err
     }
-    
-    gcm, err := cipher.NewGCM(block)
+    aead, err := cipher.NewGCMWithRandomNonce(block)
     if err != nil {
         return nil, err
     }
-    
-    nonce := make([]byte, gcm.NonceSize())
-    return gcm.Seal(nonce, nonce, data, nil), nil
+    return aead.Seal(nil, nil, data, nil), nil
+}
+
+func decrypt(ciphertext, key []byte) ([]byte, error) {
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+    aead, err := cipher.NewGCMWithRandomNonce(block)
+    if err != nil {
+        return nil, err
+    }
+    return aead.Open(nil, nil, ciphertext, nil)
 }
 ```
+
+Utilisez une clé AES appropriée générée aléatoirement et respectez la limite de messages par clé de l’AEAD. Consultez la [référence sur le chiffrement en Go](https://pkg.go.dev/crypto/cipher#NewGCMWithRandomNonce).
 
 ### Stockage sécurisé
 
@@ -132,26 +147,47 @@ func getAPIKey() (string, error) {
 
 ## Sécurité du réseau
 
-### Utiliser HTTPS
+### Utilisez HTTPS
 
 ```go
-func makeAPICall(url string) (*Response, error) {
+import (
+    "errors"
+    "net/http"
+    "strings"
+)
+
+func makeAPICall(url string) (*http.Response, error) {
     // Always use HTTPS
     if !strings.HasPrefix(url, "https://") {
         return nil, errors.New("only HTTPS allowed")
     }
     
-    return http.Get(url)
+    return secureClient().Get(url)
 }
 ```
 
-### Vérifier les certificats
+### Vérifiez les certificats
 
 ```go
-import "crypto/tls"
+import (
+    "crypto/tls"
+    "errors"
+    "net/http"
+    "time"
+)
 
 func secureClient() *http.Client {
     return &http.Client{
+        Timeout: 30 * time.Second,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            if req.URL.Scheme != "https" {
+                return errors.New("redirect to non-HTTPS URL denied")
+            }
+            if len(via) >= 10 {
+                return errors.New("too many redirects")
+            }
+            return nil
+        },
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
                 MinVersion: tls.VersionTLS12,
@@ -163,28 +199,24 @@ func secureClient() *http.Client {
 
 ## Opérations sur les fichiers
 
-### Valider les chemins d’accès
+### Restreignez l’accès aux fichiers
+
+Acceptez un chemin relatif à un répertoire contrôlé par l’application. `os.OpenRoot` restreint à ce répertoire la résolution des chemins du système de fichiers, y compris celle des liens symboliques. Rejeter `..` ou vérifier uniquement le préfixe d’une chaîne ne permet pas d’établir cette limite.
 
 ```go
-func readFile(path string) ([]byte, error) {
-    // Prevent path traversal
-    if strings.Contains(path, "..") {
-        return nil, errors.New("invalid path")
-    }
-    
-    // Check file exists in allowed directory
-    absPath, err := filepath.Abs(path)
+import "os"
+
+func readFile(allowedDir, name string) ([]byte, error) {
+    root, err := os.OpenRoot(allowedDir)
     if err != nil {
         return nil, err
     }
-    
-    if !strings.HasPrefix(absPath, allowedDir) {
-        return nil, errors.New("access denied")
-    }
-    
-    return os.ReadFile(absPath)
+    defer root.Close()
+    return root.ReadFile(name)
 }
 ```
+
+Par exemple, appelez `readFile(appDataDir, "notes/today.json")`. Choisissez `appDataDir` dans le code backend de confiance ; ne laissez pas le frontend fournir la racine autorisée. Une racine limite le parcours du système de fichiers, mais ne détermine pas quels fichiers l’utilisateur est autorisé à lire dans cette racine.
 
 ## Limitation du débit
 
@@ -227,7 +259,7 @@ func (r *RateLimiter) Allow(key string) bool {
 - Utilisez HTTPS pour les appels réseau
 - Chiffrez les données sensibles
 - Utilisez un hachage sécurisé des mots de passe
-- Mettez en place une limitation du débit
+- Mettez en œuvre une limitation du débit
 - Maintenez les dépendances à jour
 - Journalisez les événements de sécurité
 - Utilisez les trousseaux de clés du système d’exploitation
@@ -248,14 +280,14 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] Les mots de passe sont hachés avec bcrypt
 - [ ] Les données sensibles sont chiffrées
 - [ ] HTTPS est utilisé pour tous les appels réseau
-- [ ] La limitation du débit est mise en place
-- [ ] Les chemins d’accès aux fichiers sont validés
+- [ ] La limitation du débit est mise en œuvre
+- [ ] Les chemins de fichiers sont validés
 - [ ] Les dépendances sont à jour
 - [ ] La journalisation des événements de sécurité est activée
 - [ ] Les messages d’erreur ne divulguent aucune information
-- [ ] Le code a fait l’objet d’une recherche de vulnérabilités
+- [ ] Le code a été examiné afin de détecter les vulnérabilités
 
 ## Étapes suivantes
 
 - [Architecture](/guides/architecture/) - Modèles d’architecture d’application
-- [Bonnes pratiques](/features/bindings/best-practices/) - Bonnes pratiques relatives aux bindings
+- [Bonnes pratiques](/features/bindings/best-practices/) - Bonnes pratiques relatives aux liaisons

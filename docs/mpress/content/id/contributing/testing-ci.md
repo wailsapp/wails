@@ -5,21 +5,19 @@ slug: "contributing/testing-ci"
 sourcePath: "contributing/testing-ci.md"
 ---
 
-Framework desktop yang tangguh memerlukan pengujian yang sangat andal. Wails v3 menerapkan **strategi berlapis**:
+Framework desktop yang tangguh memerlukan pengujian yang benar-benar andal. Wails v3 menggunakan **strategi berlapis**:
 
 | Lapisan | Tujuan | Peralatan |
 | --- | --- | --- |
 | Pengujian unit | Umpan balik cepat untuk fungsi yang terisolasi | `go test ./...` |
-| Pengujian generator/CLI | Memvalidasi `wails3 generate bindings` dan mekanisme penghubung CLI | `task test:generator`, `task test:cli` |
-| Pengujian templat | Memastikan setiap templat yang disertakan tetap dapat dibangun | `task test:templates` |
-| Deteksi race | Mendeteksi data race dalam runtime & bridge | `go test -race ./...` |
-| Matriks CI | Keyakinan akan keandalan lintas sistem operasi pada setiap PR | GitHub Actions |
+| Pengujian generator/CLI | Memvalidasi `wails3 generate bindings` dan infrastruktur CLI | `task test:generator`, `task test:cli` |
+| Pengujian templat | Memastikan setiap templat yang didistribusikan tetap dapat dibangun | `task test:templates` |
+| Deteksi race | Mendeteksi data race pada runtime dan bridge | `go test -race ./...` |
+| Matriks CI | Keyakinan lintas OS pada setiap PR | GitHub Actions |
 
 Dokumen ini menjelaskan **lokasi pengujian**, **cara menjalankannya**, dan **hal-hal yang diorkestrasi oleh Taskfile**.
 
-> Panduan race yang dirujuk oleh draf lama sebagai `pkg/application/RACE.md`
->
-> kini berada di `v3/TESTING.md`.
+`v3/TESTING.md` mendokumentasikan build contoh lintas platform; ini bukan katalog penekanan laporan race.
 
 ---
 
@@ -31,14 +29,14 @@ v3/
 ├── pkg/.../_test.go          # Public API tests
 ├── tasks/events/generate.go  # Code generator for event constants (NOT a test harness)
 ├── tests/                    # Top-level integration test harness
-└── TESTING.md                # Race / Cgo testing guidance
+└── TESTING.md                # Cross-platform example-build guidance
 ```
 
 Panduan:
 
 - **Letakkan pengujian unit di sebelah kode** (`foo.go` ↔ `foo_test.go`).
-- Gunakan **gaya black-box** untuk paket `pkg/` (`package application_test`) jika hal itu meningkatkan kebersihan API.
-- Fixture bersama berada di tempat penggunaannya (tidak ada paket `internal/testutil/` terpusat dalam working tree ini—hubungkan helper untuk setiap paket sebagai gantinya).
+- Gunakan **gaya black-box** untuk paket `pkg/` (`package application_test`) jika hal tersebut meningkatkan kebersihan API.
+- Fixture bersama ditempatkan di lokasi penggunaannya (tidak ada paket `internal/testutil/` terpusat dalam pohon ini—hubungkan helper secara terpisah untuk setiap paket).
 
 ---
 
@@ -54,9 +52,9 @@ func TestEventConstants(t *testing.T) {
 
 Rekomendasi:
 
-- Gunakan [`stretchr/testify`](https://github.com/stretchr/testify)—sudah tersedia dalam `go.mod`.
-- Utamakan pengujian **berbasis tabel** setiap kali beberapa input, kasus batas, atau hasil yang diharapkan menguji perilaku yang sama. Beri setiap kasus nama yang deskriptif.
-- Jika diperlukan, buat stub untuk kekhususan platform di balik build tag (`foo_windows_test.go`, `foo_darwin_test.go`, …).
+- Gunakan [`stretchr/testify`](https://github.com/stretchr/testify)—sudah tersedia di `go.mod`.
+- Utamakan pengujian **berbasis tabel** setiap kali beberapa input, kasus tepi, atau hasil yang diharapkan menguji perilaku yang sama. Berikan nama deskriptif untuk setiap kasus.
+- Jika diperlukan, buat stub untuk kekhususan platform di balik tag build (`foo_windows_test.go`, `foo_darwin_test.go`, …).
 
 ### Target cakupan
 
@@ -67,7 +65,7 @@ go test ./pkg/application -coverprofile=coverage.out
 go tool cover -func=coverage.out
 ```
 
-Beberapa jalur memang tidak dapat diuji secara wajar dalam lingkungan pengujian normal—misalnya kegagalan yang hanya terjadi pada platform tertentu, perilaku yang bergantung pada perangkat keras, atau fallback defensif yang tidak dapat dipicu dengan aman. Batasi pengecualian tersebut secara ketat dan jelaskan setiap jalur yang tidak tercakup dalam deskripsi PR.
+Beberapa jalur memang tidak dapat diuji secara wajar dalam lingkungan pengujian normal—misalnya kegagalan khusus platform, perilaku yang bergantung pada perangkat keras, atau fallback defensif yang tidak dapat dipicu dengan aman. Batasi pengecualian tersebut dan jelaskan setiap jalur yang tidak tercakup dalam deskripsi PR.
 
 ### Menjalankan Secara Lokal
 
@@ -76,7 +74,7 @@ cd v3
 go test ./... -cover
 ```
 
-Atau melalui Taskfile (target yang sebenarnya—tidak ada pintasan `task test`):
+Atau melalui Taskfile (target sebenarnya—tidak ada pintasan `task test`):
 
 ```
 task test:cli            # CLI plumbing tests
@@ -85,7 +83,7 @@ task test:templates      # build every shipped template
 task test:infrastructure # supporting helpers
 task test:examples       # exercise the example matrix (downloads as needed)
 task test:all            # everything above
-task sanity              # quick smoke check (also: sanity:gtk4)
+task sanity              # default GTK4 smoke check (legacy: sanity:gtk3)
 task precommit           # what you should run before pushing
 ```
 
@@ -93,9 +91,9 @@ task precommit           # what you should run before pushing
 
 ## 3. Pengujian Integrasi
 
-`v3/tests/` menampung harness integrasi lintas paket. Target Taskfile `test:example:*` dan `test:examples:*` menjalankan pemeriksaan build dan peluncuran di darwin/windows/linux (termasuk matriks GTK3/GTK4 berbasis Docker di Linux).
+`v3/tests/` menampung harness integrasi lintas paket. Target Taskfile `test:example:*` dan `test:examples:*` menjalankan pemeriksaan kompilasi pada darwin/windows/linux (termasuk matriks GTK3/GTK4 berbasis Docker di Linux).
 
-> Contoh yang dapat dijalankan berada di `v3/examples/`. Target pengujian memilih dan membangun
+> Contoh yang dapat dijalankan tersedia di `v3/examples/`. Target pengujian memilih dan membangun
 >
 > contoh yang sesuai untuk platform host atau matriks CI.
 
@@ -110,14 +108,11 @@ task test:examples:all   # full matrix (slow)
 
 ## 4. Deteksi Race
 
-Data race berakibat fatal dalam runtime GUI.
+Data race berakibat fatal pada runtime GUI.
 
-### Panduan Race
+### Menyelidiki race
 
-Lihat `v3/TESTING.md` untuk:
-
-- Race jinak yang telah diketahui dan alasan penyisihannya
-- Cara menafsirkan stack trace yang melintasi batas Cgo (Linux GTK + WebKit2GTK)
+Periksa kedua akses yang berkonflik dan reproduksi masalah pada platform yang terdampak. Jangan menganggap laporan sebagai sesuatu yang tidak berbahaya atau menekannya tanpa bukti. `v3/TESTING.md` menjelaskan kompilasi contoh; keberhasilan build tersebut tidak membuktikan ketiadaan race ataupun perilaku runtime native.
 
 ### Rangkaian Pengujian Race Lokal
 
@@ -127,7 +122,7 @@ go test -race ./...
 
 > `wails3 dev` tidak memiliki flag `-race`—flag CLI-nya adalah `--config`, `--port`,
 >
-> dan `-s` (mengaktifkan HTTPS). Untuk menguji runtime dengan race detector,
+> dan `-s` (mengaktifkan HTTPS). Untuk menjalankan runtime di bawah race detector,
 >
 > bangun aplikasi pengujian dengan `go build -race` lalu jalankan secara langsung.
 
@@ -135,28 +130,26 @@ go test -race ./...
 
 ## 5. Alur Kerja GitHub Actions
 
-File alur kerja aktual di bawah `.github/workflows/` (telah diverifikasi terhadap working tree):
+File alur kerja yang sebenarnya di bawah `.github/workflows/` (telah diverifikasi terhadap pohon repositori):
 
 | File | Tujuan |
 | --- | --- |
-| `build-and-test-v3.yml` | Matriks build + pengujian utama v3. Menggunakan `actions/setup-go@v5` dengan `go-version: 1.25`. Menjalankan `task runtime:check`, `task runtime:test`, `task runtime:build`, `task test:examples` (serta `BUILD_TAGS=gtk4 task test:examples` untuk jalur GTK4), `task generator:test:check`, `task install`, lalu `wails3 build` sebagai smoke check. Job Linux menginstal `libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk` dan menjalankan rangkaian pengujian di bawah `dbus-run-session -- xvfb-run`. |
+| `build-and-test-v3.yml` | Matriks Go 1.26/1.27, pemeriksaan runtime dan generator, kompilasi templat/contoh, serta pemeriksaan build aplikasi. Secara default, Linux menggunakan GTK4/WebKitGTK 6.0; varian lama menetapkan `BUILD_TAGS=gtk3`. Peluncuran dan interaksi native harus diperiksa secara terpisah. |
 | `cross-compile-test-v3.yml` | Pemeriksaan kewajaran kompilasi silang |
 | `auto-changelog-v3.yml`, `changelog-v3.yml` | Otomatisasi changelog |
 | `nightly-release-v3.yml` | Artefak rilis nightly v3 |
-| `bump-webview2-v3.yml`, `release-webview2.yml` | Pengelolaan dependensi / rilis WebView2 |
-| `build-cross-image.yml` | Membangun image container cross-compiler |
-| `publish-npm.yml` | Menerbitkan runtime JS `@wailsio/runtime` tersemat ke npm |
-| `pr-master.yml` | Pemeriksaan pada sisi PR terhadap cabang `master` |
+| `bump-webview2-v3.yml`, `release-webview2.yml` | Pengelolaan dependensi/rilis WebView2 |
+| `build-cross-image.yml` | Membangun image container untuk kompilator silang |
+| `publish-npm.yml` | Menerbitkan runtime JS `@wailsio/runtime` tertanam ke npm |
+| `pr-master.yml` | Pemeriksaan pada sisi PR terhadap branch `master` |
 | `semgrep.yml` | Analisis statis Semgrep |
-| `stale-issues.yml`, `issue-labeler.yml`, `file-labeler.yml`, `claude.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Alur pemeliharaan repositori / sisi v2 |
+| `stale-issues.yml`, `generate-sponsor-image.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Pemeliharaan repositori dan alur kerja v2; alur kerja sinkronisasi/pengunggahan Crowdin yang lama telah dihentikan. |
 
-Di pohon ini, **tidak ada** `qodana.yaml` dan **tidak ada** `runtime.yml` — draf lama halaman ini menyebut keduanya, tetapi hanya `semgrep.yml` yang mencakup analisis statis, dan paket JS runtime diterbitkan melalui `publish-npm.yml`.
-
-Langkah-langkah CI mencerminkan target Taskfile di atas (`task test:cli`, `task test:generator`, `task test:templates`, `task test:examples`, …), sehingga Anda dapat mereproduksi setiap langkah CI secara lokal dengan padanan yang persis sama. Langkah smoke `wails3 build` di `build-and-test-v3.yml` dijalankan **tanpa flag tambahan** — tidak ada flag `-skip-package` pada `wails3 build`.
+Langkah-langkah CI mencerminkan target Taskfile di atas (`task test:cli`, `task test:generator`, `task test:templates`, `task test:examples`, …), sehingga Anda dapat mereproduksi CI secara lokal dengan kesetaraan satu banding satu. Langkah smoke `wails3 build` di `build-and-test-v3.yml` dipanggil dengan **tanpa flag tambahan**—`wails3 build` tidak memiliki flag `-skip-package`.
 
 ---
 
-## 6. Kesetaraan Lokal dengan CI
+## 6. Kesetaraan CI Lokal
 
 Tidak ada satu target payung `task ci`. Reproduksi CI dengan merangkai target yang sebenarnya:
 
@@ -174,34 +167,34 @@ task test:examples
 
 | Gejala | Kemungkinan Penyebab | Perbaikan |
 | --- | --- | --- |
-| **Race pada `webview_window_darwin.go`** | Mengubah state jendela di luar thread utama | Lakukan marshaling melalui `application.InvokeAsync` / `Invoke` agar panggilan berjalan di thread utama |
-| **Pengujian Linux macet di CI headless** | GTK memerlukan display | Jalankan di bawah `xvfb-run`, misalnya `xvfb-run task test:examples:linux` |
-| **Build templat gagal** | Lockfile frontend sudah tidak mutakhir | Jalankan kembali `wails3 init` pada direktori bersih untuk memperbarui templat |
-| **Kesalahan Coverpkg** | Pengujian integrasi mengimpor `main` | Beralihlah ke build tag `//go:build integration` dan batasi impor dengan kondisi tersebut |
+| **Race pada `webview_window_darwin.go`** | Mengubah status jendela di luar thread utama | Teruskan melalui `application.InvokeAsync` / `Invoke` agar pemanggilan berjalan di thread utama |
+| **Pengujian Linux macet di CI tanpa antarmuka grafis** | GTK memerlukan display | Jalankan dengan `xvfb-run`, misalnya `xvfb-run task test:examples:linux` |
+| **Build templat gagal** | Lockfile frontend sudah tidak mutakhir | Jalankan ulang `wails3 init` pada direktori bersih untuk memperbarui templat |
+| **Kesalahan coverpkg** | Pengujian integrasi mengimpor `main` | Beralihlah ke tag build `//go:build integration` dan batasi impor tersebut dengannya |
 
 ---
 
 ## 8. Menambahkan Pengujian Baru
 
 1. **Unit** — buat `*_test.go`, lalu jalankan `go test ./...`
-2. **Generator / CLI** — perluas kasus di bawah `internal/generator/testcases/` atau `internal/commands/*_test.go`, lalu jalankan kembali `task test:generator` / `task test:cli`
-3. **Templat / contoh** — pastikan templat yang didistribusikan tetap dapat dibangun dengan `task test:templates`
+2. **Generator / CLI** — perluas kasus di bawah `internal/generator/testcases/` atau `internal/commands/*_test.go`, lalu jalankan ulang `task test:generator` / `task test:cli`
+3. **Templat / contoh** — pastikan templat yang didistribusikan tetap dapat di-build dengan `task test:templates`
 
 ---
 
-## 9. Peta File Utama
+## 9. Peta Berkas Utama
 
 | Apa | Path |
 | --- | --- |
 | Pengujian round-trip generator | `internal/generator/generate_test.go` |
 | Pengujian build-assets | `internal/commands/build-assets_test.go` |
-| Panduan race / Cgo | `v3/TESTING.md` |
+| Build contoh lintas platform | `v3/TESTING.md` |
 | Target pengujian Taskfile | `v3/Taskfile.yaml` |
 | Generator konstanta event | `v3/tasks/events/generate.go` |
-| Workflow CI | `.github/workflows/build-and-test-v3.yml` (Go 1.25 melalui `actions/setup-go@v5`) |
+| Alur kerja CI | `.github/workflows/build-and-test-v3.yml` (1.26/1.27 Go melalui `actions/setup-go@v5`) |
 | Analisis statis | `.github/workflows/semgrep.yml` |
-| Publikasi runtime ke npm | `.github/workflows/publish-npm.yml` |
+| Publikasi runtime npm | `.github/workflows/publish-npm.yml` |
 
 ---
 
-Kualitas bukan sekadar pertimbangan belakangan di Wails v3. Dengan pengujian unit, rangkaian pengujian generator/templat, deteksi race, dan matriks CI lintas platform, Anda dapat berkontribusi dengan yakin karena mengetahui bahwa perubahan Anda berhasil dijalankan di setiap OS yang kami dukung. Selamat menguji!
+Kualitas bukan sekadar pertimbangan belakangan di Wails v3. Dengan pengujian unit, rangkaian pengujian generator/templat, deteksi race, dan matriks CI lintas platform, Anda dapat berkontribusi dengan yakin karena perubahan Anda berhasil dijalankan pada setiap sistem operasi yang kami dukung. Selamat menguji!

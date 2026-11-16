@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !purego
 
 package application
 
@@ -185,51 +185,11 @@ func (g *macosGlobalShortcuts) unregister(id int) error {
 	return nil
 }
 
-func (g *macosGlobalShortcuts) unregisterAll() error {
-	var firstErr error
-	for id := range g.refs {
-		if err := g.unregister(id); err != nil && firstErr == nil {
-			firstErr = err
-		}
-	}
-	return firstErr
-}
-
 //export globalShortcutCallback
 func globalShortcutCallback(id C.int) {
 	if globalApplication != nil && globalApplication.GlobalShortcut != nil {
 		globalApplication.GlobalShortcut.dispatch(int(id))
 	}
-}
-
-// macKeyCodeFor resolves the macOS virtual key code to bind for an accelerator
-// key (already lower-cased by parseAccelerator).
-//
-// Letters (a-z) are resolved against the *active* keyboard layout via
-// UCKeyTranslate, so "Cmd+A" binds to the physical key labelled A on the user's
-// layout (AZERTY, QWERTZ, Dvorak, ...) rather than the fixed ANSI/QWERTY
-// position. Only letters are translated: they are produced unshifted on every
-// Latin layout and never appear on the numeric keypad, so the reverse lookup is
-// unambiguous. Translating digits would mis-bind to the numpad on layouts whose
-// number row is shifted (for example AZERTY), so digits, punctuation and named
-// keys use the fixed positional table below. If the active layout has no key
-// for a letter (for example a Cyrillic or Greek layout) we fall back to the
-// ANSI/QWERTY position so registration still succeeds.
-//
-// Note: the binding is resolved at registration time. If the user switches
-// keyboard layout while the application is running, existing letter shortcuts
-// keep their original physical key; re-registering on layout change is a
-// possible future enhancement.
-func macKeyCodeFor(key string) (int, error) {
-	if len(key) == 1 && key[0] >= 'a' && key[0] <= 'z' {
-		if code := int(C.keyCodeForChar(C.ushort(key[0]))); code >= 0 {
-			return code, nil
-		}
-	}
-	if code, ok := macKeyCodes[key]; ok {
-		return code, nil
-	}
-	return 0, fmt.Errorf("key %q is not supported as a global shortcut on macOS", key)
 }
 
 // macKeyCodes maps Wails accelerator key names (already lower-cased by
@@ -271,4 +231,9 @@ var macKeyCodes = map[string]int{
 	"f7": 98, "f8": 100, "f9": 101, "f10": 109, "f11": 103, "f12": 111,
 	"f13": 105, "f14": 107, "f15": 113, "f16": 106, "f17": 64, "f18": 79,
 	"f19": 80, "f20": 90,
+}
+
+// keyCodeForChar returns the virtual key code for a lowercase ASCII letter.
+func keyCodeForChar(target uint16) int {
+	return int(C.keyCodeForChar(C.ushort(target)))
 }

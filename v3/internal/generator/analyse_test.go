@@ -10,9 +10,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/generator/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAnalyser(t *testing.T) {
@@ -106,13 +104,13 @@ func TestAnalyser(t *testing.T) {
 
 			for _, pkg := range pkgs {
 				for _, err := range pkg.Errors {
-					pterm.Warning.Println(err)
+					t.Logf("package warning: %v", err)
 				}
 			}
 
 			got := make([]string, 0)
 
-			services, registerService, err := FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil))
+			services, registerService, err := FindServices(pkgs, systemPaths, analyserTestLogger{t})
 			if err != nil {
 				t.Error(err)
 			}
@@ -123,13 +121,38 @@ func TestAnalyser(t *testing.T) {
 
 			slices.Sort(got)
 
-			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf("Found services mismatch (-want +got):\n%s", diff)
-			}
+			assert.Equal(t, test.want, got, "Found services mismatch")
 
 			if test.events != (registerService != nil) {
 				t.Errorf("Found events mismatch: wanted=%t, got=%t", test.events, registerService != nil)
 			}
 		})
 	}
+}
+
+type analyserTestLogger struct{ t *testing.T }
+
+func (logger analyserTestLogger) Errorf(format string, args ...any) {
+	logger.t.Helper()
+	logger.t.Logf("error: "+format, args...)
+}
+
+func (logger analyserTestLogger) Warningf(format string, args ...any) {
+	logger.t.Helper()
+	logger.t.Logf("warning: "+format, args...)
+}
+
+func (logger analyserTestLogger) Infof(format string, args ...any) {
+	logger.t.Helper()
+	logger.t.Logf("info: "+format, args...)
+}
+
+func (logger analyserTestLogger) Debugf(format string, args ...any) {
+	logger.t.Helper()
+	logger.t.Logf("debug: "+format, args...)
+}
+
+func (logger analyserTestLogger) Statusf(format string, args ...any) {
+	logger.t.Helper()
+	logger.t.Logf("status: "+format, args...)
 }

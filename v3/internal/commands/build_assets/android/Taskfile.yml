@@ -305,8 +305,8 @@ tasks:
           else
             echo "No Android Virtual Devices found, and no system image is installed to create one from."
             echo "Install a system image and create an AVD, e.g.:"
-            echo "  sdkmanager 'system-images;android-35;google_apis;$ABI'"
-            echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;$ABI' --device pixel_7"
+            echo "  sdkmanager 'system-images;android-36;google_apis;$ABI'"
+            echo "  avdmanager create avd --name wails --package 'system-images;android-36;google_apis;$ABI' --device pixel_7"
             exit 1
           fi
         fi

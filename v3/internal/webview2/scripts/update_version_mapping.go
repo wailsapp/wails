@@ -6,7 +6,6 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"io"
 	"log"
 	"os"
@@ -40,14 +39,11 @@ func getDoc() []byte {
 		return data
 	}
 	// GET the URL
-	client := resty.New()
-	resp, err := client.R().
-		EnableTrace().
-		Get(URL)
+	data, err := downloadBytes(URL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return resp.Body()
+	return data
 }
 
 func extractVersion(in string) string {
@@ -217,16 +213,13 @@ func DownloadIDL(version string) ([]byte, error) {
 
 	// URL for the nuget package: https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/<version>
 	// Download the package to the current directory
-	client := resty.New()
 	println("Downloading: ", fmt.Sprintf("https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/%s", version))
-	resp, err := client.R().
-		EnableTrace().
-		Get(fmt.Sprintf("https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/%s", version))
+	data, err = downloadBytes(fmt.Sprintf("https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/%s", version))
 	if err != nil {
 		return nil, err
 	}
 
-	reader := bytes.NewReader(resp.Body())
+	reader := bytes.NewReader(data)
 	zr, err := zip.NewReader(reader, int64(reader.Len()))
 	if err != nil {
 		return nil, err

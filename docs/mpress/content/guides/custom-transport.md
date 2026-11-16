@@ -35,81 +35,49 @@ By default, Wails uses HTTP fetch requests from the frontend to communicate with
 └─────────────────────────────────────────────────┘
 ```
 
-## Usage
+## Run the complete WebSocket example
 
-### 1. Implement the Transport Interface
+The [WebSocket transport example](https://github.com/wailsapp/wails/tree/master/v3/examples/websocket-transport) includes both halves of the protocol: request IDs and responses, lifecycle management, the JavaScript client, and event delivery. Start from those files rather than a transport that only implements `Start` and `Stop`.
 
-Create a custom transport by implementing the `Transport` interface:
+From a Wails repository checkout with the native platform dependencies installed:
+
+```bash
+cd v3/examples/websocket-transport
+go run .
+```
+
+The example opens a native window and starts a WebSocket endpoint at port 9099. Use it in a trusted local development environment. Before deploying a network-accessible variant, restrict the listener, validate origins and authenticate clients. The sample origin policy is permissive and is not a production security policy.
+
+### Backend contract
+
+A transport must implement all three required methods. The example's `WebSocketTransport` implements `Start`, `JSClient` and `Stop`; `JSClient` supplies the JavaScript shim Wails injects into the page. Include a compile-time interface check in your implementation:
 
 ```go
-package main
-
-import (
-    "context"
-    "github.com/wailsapp/wails/v3/pkg/application"
-)
-
-type MyCustomTransport struct {
-    // Your fields
-}
-
-func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
-    // Initialize your transport (WebSocket server, gRPC server, etc.)
-    // When you receive requests, call processor.HandleRuntimeCallWithIDs()
-    return nil
-}
-
-func (t *MyCustomTransport) Stop() error {
-    // Clean up your transport
-    return nil
-}
+var _ application.Transport = (*WebSocketTransport)(nil)
 ```
 
-### 2. Configure Your Application
-
-Pass your custom transport to the application options:
+Configure the application using the constructor from the example:
 
 ```go
-func main() {
-    app := application.New(application.Options{
-        Name: "My App",
-        Transport: &MyCustomTransport{},
-        // ... other options
-    })
-
-    err := app.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
-}
+Transport: NewWebSocketTransport("127.0.0.1:9099"),
 ```
 
-### 3. Modify Frontend Runtime
+This field belongs in `application.Options`, alongside the ordinary assets and services. Copy the implementation files as well as the constructor call. `Start` receives the `MessageProcessor`; `Stop` must close listeners, active connections and pending work.
 
-If using a custom transport, you'll need to modify the frontend runtime to use your transport instead of HTTP fetch. Implement `RuntimeTransport` interface that will be used to handle requests:
+### Frontend contract
 
-```typescript
-const { setTransport } = await import('/wails/runtime.js');
+The example's `websocket-transport.js` implements the runtime transport, including request/response correlation and rejection of failed calls. After serving that file from your assets, initialise it before invoking generated service bindings:
 
-class MyRuntimeTransport {
-  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // TODO: implement IPC call with your transport protocol
+```javascript
+import { setTransport } from '/wails/runtime.js'
+import { createWebSocketTransport } from '/websocket-transport.js'
 
-    return resp;
-  }
-}
-
-const myTransport = new MyRuntimeTransport();
-setTransport(myTransport);
+setTransport(createWebSocketTransport('ws://127.0.0.1:9099/wails/ws'))
 ```
 
-## Notes
+Generated service bindings remain unchanged. If your transport replaces the client, it must carry the methods your application uses and preserve their error semantics. Event delivery requires the optional event transport contract; it is not supplied automatically by an arbitrary `Transport` implementation. The complete WebSocket example demonstrates it.
 
-- The default HTTP transport continues to work if no custom transport is specified
-- Generated bindings remain unchanged - only the transport layer changes
-- Events, dialogs, clipboard, and all other Wails features work transparently
-- You're responsible for error handling, reconnection logic, and security in your custom transport
-- The WebSocket example provided is for demonstration and may need hardening for production use
+For remote deployments, use TLS and an explicit authentication and origin policy. Browser-only hosting additionally requires serving the application assets, as described below.
 
 ## API Reference
 

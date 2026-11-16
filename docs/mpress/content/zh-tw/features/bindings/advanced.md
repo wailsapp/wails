@@ -1,17 +1,17 @@
 ---
-title: "進階綁定"
-description: "進階綁定技術，包括指示詞、程式碼注入和自訂 ID"
+title: "進階繫結"
+description: "進階繫結技術，包括指示詞、程式碼注入和自訂 ID"
 slug: "features/bindings/advanced"
 sourcePath: "features/bindings/advanced.md"
 ---
 
-本指南介紹在 Wails v3 中自訂及最佳化綁定產生流程的進階技術。
+本指南涵蓋在 Wails v3 中自訂及最佳化繫結產生流程的進階技術。
 
 ## 使用指示詞自訂產生的程式碼
 
 ### 注入自訂程式碼
 
-`//wails:inject` 指示詞可讓你將自訂 JavaScript/TypeScript 程式碼注入產生的綁定：
+`//wails:inject` 指示詞可讓你將自訂 JavaScript/TypeScript 程式碼注入產生的繫結：
 
 ```go
 //wails:inject console.log("Hello from Wails!");
@@ -22,9 +22,9 @@ func (s *MyService) Greet(name string) string {
 }
 ```
 
-這會將指定的程式碼注入為 `MyService` 服務產生的 JavaScript/TypeScript 檔案中。
+這會將指定的程式碼注入為 `MyService` 服務產生的 JavaScript/TypeScript 檔案。
 
-你也可以使用條件式注入，以指定特定的輸出格式：
+你也可以使用條件式注入，以特定輸出格式為目標：
 
 ```go
 //wails:inject j*:console.log("Hello JS!");  // JavaScript only
@@ -33,18 +33,18 @@ func (s *MyService) Greet(name string) string {
 
 ### 包含其他檔案
 
-`//wails:include` 指示詞可讓你在產生綁定時包含其他檔案：
+`//wails:include` 指示詞可讓你在產生繫結時包含其他檔案：
 
 ```go
 //wails:include js/*.js
 package mypackage
 ```
 
-此指示詞通常用於套件文件註解，以便在產生綁定時包含其他 JavaScript/TypeScript 檔案。
+此指示詞通常用於套件文件註解，以便在產生繫結時包含其他 JavaScript/TypeScript 檔案。
 
 ### 將型別和方法標記為內部使用
 
-`//wails:internal` 指示詞會將型別或方法標記為內部使用，防止其匯出至前端：
+`//wails:internal` 指示詞會禁止在產生的 JavaScript/TypeScript 繫結中匯出型別或方法：
 
 ```go
 //wails:internal
@@ -56,18 +56,18 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-這適用於僅供 Go 程式碼內部使用、不應公開給前端的型別和方法。
+這會控制產生的 SDK，而非執行階段存取。在一般建置中，即使已匯出的 Go 服務方法未出現在產生的 SDK 中，仍可透過執行階段註冊和呼叫。請將私有操作保持為未匯出狀態，或將其放在未繫結的型別上，並在公開的方法內強制執行授權檢查。
 
 ### 忽略方法
 
-`//wails:ignore` 指示詞會在產生綁定時完全忽略某個方法：
+`//wails:ignore` 指示詞會在產生繫結時完全忽略某個方法：
 
 ```go
 //wails:ignore
 func (s *MyService) IgnoredMethod() {}
 ```
 
-這與 `//wails:internal` 類似，但它會完全忽略該方法，而不是將其標記為內部使用。
+這會省略產生的包裝函式。和 `//wails:internal` 一樣，它並不是已匯出 Go 服務方法的存取控制界線。
 
 ### 自訂方法 ID
 
@@ -80,11 +80,11 @@ func (s *MyService) CustomIDMethod() {}
 
 這有助於在重構程式碼時維持相容性。
 
-## 處理複雜型別
+## 使用複雜型別
 
-### 巢狀結構體
+### 巢狀結構
 
-綁定產生器會自動處理巢狀結構體：
+繫結產生器會自動處理巢狀結構：
 
 ```go
 type Address struct {
@@ -114,7 +114,7 @@ func (s *MyService) GetPerson() Person {
 
 產生的 JavaScript/TypeScript 程式碼會同時包含 `Person` 和 `Address` 的類別。
 
-### 映射與切片
+### 映射和切片
 
 映射和切片也會自動處理：
 
@@ -137,11 +137,11 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-在 JavaScript 中，映射以物件表示，切片以陣列表示。在 TypeScript 中，映射以 `Record<K, V>` 表示，切片以 `T[]` 表示。
+在 JavaScript 中，映射以物件表示，切片則以陣列表示。在 TypeScript 中，映射以 `Record<K, V>` 表示，切片則以 `T[]` 表示。
 
 ### 泛型型別
 
-綁定產生器支援泛型型別：
+繫結產生器支援泛型型別：
 
 ```go
 type Result[T any] struct {
@@ -184,7 +184,7 @@ export class Result<T> {
 
 ### 介面
 
-綁定產生器可使用 `-i` 旗標產生 TypeScript 介面，而不是類別：
+繫結產生器可使用 `-i` 旗標產生 TypeScript 介面，而非類別：
 
 ```bash
 wails3 generate bindings -ts -i
@@ -200,17 +200,17 @@ export interface Person {
 }
 ```
 
-## 最佳化綁定產生流程
+## 最佳化繫結產生流程
 
 ### 使用名稱而非 ID
 
-綁定產生器預設使用雜湊式 ID 呼叫方法。你可以使用 `-names` 旗標，改用名稱：
+繫結產生器預設使用雜湊式 ID 進行方法呼叫。你可以使用 `-names` 旗標，改用名稱：
 
 ```bash
 wails3 generate bindings -names
 ```
 
-這會產生依繫結方法的 <strong>完整限定</strong>名稱（`<package>.<Service>.<Method>`）呼叫該方法的程式碼，並使用依位置命名的 `$0`、`$1`……參數名稱：
+這會產生程式碼，透過繫結方法的**完整限定**名稱（`<package>.<Service>.<Method>`）呼叫該方法，並使用依位置命名的 `$0`、`$1`、… 參數名稱：
 
 ```javascript
 export function Greet($0) {
@@ -219,29 +219,29 @@ export function Greet($0) {
 }
 ```
 
-這可讓產生的程式碼更容易閱讀和偵錯，但效率可能會稍低。
+這可讓產生的程式碼更易讀、也更容易偵錯，但效率可能略低。
 
 ### 封裝執行階段
 
-產生的程式碼預設會從 `@wailsio/runtime` npm 套件匯入 Wails 執行階段。你可以使用 `-b` 旗標，將執行階段封裝到產生的程式碼中：
+產生的程式碼預設會從 `@wailsio/runtime` npm 套件匯入 Wails 執行階段。你可以使用 `-b` 旗標，將執行階段與產生的程式碼封裝在一起：
 
 ```bash
 wails3 generate bindings -b
 ```
 
-這會將執行階段程式碼直接納入產生的檔案中，因而不再需要 npm 套件。
+這會將執行階段程式碼直接包含在產生的檔案中，因此不再需要該 npm 套件。
 
 ### 停用索引檔案
 
-如果不需要索引檔案，可以使用 `-noindex` 旗標停用其產生：
+如果不需要索引檔案，可以使用 `-noindex` 旗標停用其產生功能：
 
 ```bash
 wails3 generate bindings -noindex
 ```
 
-如果你偏好直接從各自的檔案匯入服務和模型，這會很實用。
+如果你偏好直接從服務和模型各自的檔案匯入，這會很有用。
 
-## 實際案例
+## 實務範例
 
 ### 驗證服務
 
@@ -338,4 +338,4 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 type Service struct{}
 ```
 
-這會針對 JavaScript 與 TypeScript 輸出注入不同的程式碼，並為各語言提供適當的型別註記。
+這會分別為 JavaScript 和 TypeScript 輸出注入不同的程式碼，並為每種語言提供適當的型別註解。

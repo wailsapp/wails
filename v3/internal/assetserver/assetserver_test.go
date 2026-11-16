@@ -10,7 +10,7 @@ import (
 	"testing"
 	_ "unsafe"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestContentSniffing(t *testing.T) {
@@ -141,14 +141,10 @@ func TestContentSniffing(t *testing.T) {
 			}
 
 			for key, values := range test.Header {
-				if diff := cmp.Diff(values, res.Header().Values(key)); diff != "" {
-					t.Errorf("Header '%s' mismatch (-want +got):\n%s", key, diff)
-				}
+				assert.Equal(t, values, res.Header().Values(key), "Header '%s' mismatch", key)
 			}
 
-			if diff := cmp.Diff(strings.Join(test.Body, ""), res.Body.String()); diff != "" {
-				t.Errorf("Response body mismatch (-want +got):\n%s", diff)
-			}
+			assert.Equal(t, strings.Join(test.Body, ""), res.Body.String(), "Response body mismatch")
 		})
 	}
 }
@@ -223,20 +219,16 @@ func TestIndexFallback(t *testing.T) {
 				}
 
 				if fallbackTriggered {
-					if cmp.Equal(body, res.Body.String()) {
+					if body == res.Body.String() {
 						t.Errorf("Fallback response has the same body as not found response")
 					}
 					return
 				} else {
 					for key, values := range header {
-						if diff := cmp.Diff(values, res.Header().Values(key)); diff != "" {
-							t.Errorf("Header '%s' mismatch (-want +got):\n%s", key, diff)
-						}
+						assert.Equal(t, values, res.Header().Values(key), "Header '%s' mismatch", key)
 					}
 
-					if diff := cmp.Diff(body, res.Body.String()); diff != "" {
-						t.Errorf("Response body mismatch (-want +got):\n%s", diff)
-					}
+					assert.Equal(t, body, res.Body.String(), "Response body mismatch")
 				}
 			})
 		}

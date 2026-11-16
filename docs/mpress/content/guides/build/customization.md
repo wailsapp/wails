@@ -122,14 +122,11 @@ You can pass CLI variables to tasks using the `KEY=VALUE` format. These variable
 
 ```bash
 # These are equivalent:
-wails3 build PLATFORM=linux CONFIG=production
-wails3 task build PLATFORM=linux CONFIG=production
-
-# Package with custom version:
-wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+wails3 build GOOS=linux
+wails3 task build GOOS=linux
 ```
 
-In your `Taskfile.yml`, you can access these variables using Go template syntax:
+The stock tasks use `GOOS`, `ARCH` and `DEV`. Variables such as `VERSION`, `OUTPUT`, `PLATFORM` or `CONFIG` only affect a task if your own Taskfile reads them. The following is a custom Taskfile illustration, not the stock Wails build task:
 
 ```yaml
 tasks:
@@ -137,6 +134,12 @@ tasks:
     cmds:
       - echo "Building for {{.PLATFORM | default "darwin"}}"
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+If your custom packaging task reads `VERSION` and `OUTPUT`, you can pass them in the same way:
+
+```bash
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
 ```
 
 ## Common Build Process

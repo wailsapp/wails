@@ -34,6 +34,16 @@ func GenerateSyso(options *SysoOptions) (err error) {
 		return fmt.Errorf("icon is required")
 	}
 
+	architecture := map[string]winres.Arch{
+		"amd64": winres.ArchAMD64,
+		"arm64": winres.ArchARM64,
+		"386":   winres.ArchI386,
+	}
+	targetArch, supported := architecture[options.Arch]
+	if !supported {
+		return fmt.Errorf("arch '%s' not supported", options.Arch)
+	}
+
 	rs := winres.ResourceSet{}
 
 	// Process Icon
@@ -93,18 +103,10 @@ func GenerateSyso(options *SysoOptions) (err error) {
 		return err
 	}
 	defer func() {
-		err = outputFile.Close()
+		if closeErr := outputFile.Close(); err == nil && closeErr != nil {
+			err = fmt.Errorf("error closing output file: %w", closeErr)
+		}
 	}()
-
-	architecture := map[string]winres.Arch{
-		"amd64": winres.ArchAMD64,
-		"arm64": winres.ArchARM64,
-		"386":   winres.ArchI386,
-	}
-	targetArch, supported := architecture[options.Arch]
-	if !supported {
-		return fmt.Errorf("arch '%s' not supported", options.Arch)
-	}
 
 	err = rs.WriteObject(outputFile, targetArch)
 	if err != nil {

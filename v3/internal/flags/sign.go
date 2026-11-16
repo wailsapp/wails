@@ -2,9 +2,9 @@ package flags
 
 // Sign contains flags for the sign command
 type Sign struct {
-	Input       string `name:"input" description:"Path to the file to sign"`
-	Output      string `name:"output" description:"Output path (optional, defaults to in-place signing)"`
-	Verbose     bool   `name:"verbose" description:"Enable verbose output"`
+	Input   string `name:"input" description:"Path to the file to sign"`
+	Output  string `name:"output" description:"Output path (optional, defaults to in-place signing)"`
+	Verbose bool   `name:"verbose" description:"Enable verbose output"`
 
 	// Windows/macOS certificate signing
 	Certificate string `name:"certificate" description:"Path to PKCS#12 (.pfx/.p12) certificate file"`
@@ -13,11 +13,14 @@ type Sign struct {
 	Timestamp   string `name:"timestamp" description:"Timestamp server URL"`
 
 	// macOS specific
-	Identity         string `name:"identity" description:"Signing identity (e.g., 'Developer ID Application: ...')"`
-	Entitlements     string `name:"entitlements" description:"Path to entitlements plist file"`
-	HardenedRuntime  bool   `name:"hardened-runtime" description:"Enable hardened runtime (default: true for notarization)"`
-	Notarize         bool   `name:"notarize" description:"Submit for Apple notarization after signing"`
-	KeychainProfile  string `name:"keychain-profile" description:"Keychain profile for notarization credentials"`
+	Identity        string `name:"identity" description:"Signing identity (e.g., 'Developer ID Application: ...')"`
+	Entitlements    string `name:"entitlements" description:"Path to entitlements plist file"`
+	HardenedRuntime bool   `name:"hardened-runtime" description:"Enable hardened runtime (default: true for notarization)"`
+	Notarize        bool   `name:"notarize" description:"Submit for Apple notarization after signing"`
+	KeychainProfile string `name:"keychain-profile" description:"Keychain profile for notarization credentials"`
+	NotaryKey       string `name:"notary-key" description:"App Store Connect team API private-key .p8 file"`
+	NotaryKeyID     string `name:"notary-key-id" description:"App Store Connect team API key ID"`
+	NotaryIssuerID  string `name:"notary-issuer-id" description:"App Store Connect team issuer ID"`
 
 	// Linux PGP signing
 	PGPKey      string `name:"pgp-key" description:"Path to PGP private key file"`

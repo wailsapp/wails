@@ -1,16 +1,16 @@
 ---
 title: "安装"
-description: "安装 Wails 并做好构建应用程序的准备"
+description: "安装并配置好 Wails，以便开始构建应用程序"
 slug: "quick-start/installation"
 sourcePath: "quick-start/installation.md"
 ---
 
 ## 快速安装（5 分钟）
 
-@note{type="tip" title="简要说明——面向有经验的开发者"}
+@note{type="tip" title="简要说明 — 面向有经验的开发者"}
 ```bash
-# Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+# Install Go 1.26+, then:
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -22,7 +22,7 @@ wails3 setup   # Interactive setup wizard (experimental)
 
 @steps
 ### 安装 Go（必需）
-Wails 需要 Go 1.25或更高版本。
+Wails v3需要 Go 1.26或更高版本的构建工具链。请安装当前 Go 1.26系列的最新补丁版本。运行`GOTOOLCHAIN=auto`时，较旧的 Go 启动程序可能会自动下载合适的工具链；如果已禁用自动下载，请自行安装所需的工具链。入门项目自身的`go.mod`声明不会降低 Wails 依赖项的版本要求。
 
 @tabs{sync-key="os"}
 [Windows]
@@ -31,7 +31,7 @@ Wails 需要 Go 1.25或更高版本。
 **验证安装：**
 
 ```powershell
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 ```
 
 **检查 PATH：**
@@ -56,24 +56,24 @@ brew install go
 **验证安装：**
 
 ```bash
-go version  # Should show 1.25 or later
+go version  # Should show 1.26 or later
 echo $PATH | grep go/bin  # Should show ~/go/bin
 ```
 
-如果 PATH 中没有`~/go/bin`，请将其添加到`~/.zshrc`或`~/.bash_profile`：
+如果`~/go/bin`不在 PATH 中，请将其添加到`~/.zshrc`或`~/.bash_profile`：
 
 ```bash
 export PATH=$PATH:~/go/bin
 ```
 
 [Linux]
-**选项1：官方 Tar 包**
+**选项1：官方 tar 包**
 
 从<strong>[go.dev/dl](https://go.dev/dl/)</strong>下载 Linux tar 包，然后执行：
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 **选项2：软件包管理器**
@@ -113,23 +113,23 @@ echo $PATH | grep go/bin
 Windows 10/11默认包含 WebView2。如果缺失：
 
 - 从[Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)下载
-- 也可以稍后运行`wails3 doctor`，它会提供引导
+- 或者稍后运行`wails3 doctor`，它会提供引导
 
-<strong>就这么简单！</strong>无需其他依赖项。
+<strong>这样就完成了！</strong>无需其他依赖项。
 
 @note{type="tip" title="Windows 11性能提示"}
-考虑使用[Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)存储项目。Dev Drive 针对开发工作负载进行了优化，可显著缩短构建时间并提高磁盘访问速度，两者的改善幅度均最高可达30%。
+可以考虑使用[Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)存储项目。Dev Drive 针对开发者工作负载进行了优化，可显著缩短构建时间，并将磁盘访问速度最多提升30%。
 
 @end
 
 [macOS]
-**Xcode Command Line Tools**（必需）
+**Xcode 命令行工具**（必需）
 
 ```bash
 xcode-select --install
 ```
 
-在出现的对话框中单击“安装”。
+在弹出的对话框中点击“安装”。
 
 **验证：**
 
@@ -137,19 +137,19 @@ xcode-select --install
 xcode-select -p  # Should show /Library/Developer/CommandLineTools
 ```
 
-<strong>就这么简单！</strong>macOS 默认包含 WebKit。
+<strong>这样就完成了！</strong>macOS 默认包含 WebKit。
 
 [Linux]
 **构建工具和 WebKit**
 
 @note{type="caution" title="最低发行版版本"}
-Wails v3 默认需要<strong>WebKitGTK 6.0</strong>。仅提供 WebKit2GTK 4.1的发行版——Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x——必须选择启用旧版`-tags gtk3`进行构建。仅提供 WebKit2GTK 4.0的更旧版本（Ubuntu 20.04、Debian 11、RHEL 8）不受支持。
+Wails v3默认需要**WebKitGTK 6.0**。仅提供 WebKit2GTK 4.1的发行版（Ubuntu 22.04 LTS、Debian 12、Fedora ≤ 39、RHEL 9.x）必须选择启用旧版`-tags gtk3`进行构建。不支持仅提供 WebKit2GTK 4.0的更旧版本（Ubuntu 20.04、Debian 11、RHEL 8）。
 
 @end
 
 @tabs{sync-key="distro"}
 [Ubuntu/Debian]
-默认 GTK4 技术栈要求 Ubuntu 24.04或更高版本，或者 Debian 13或更高版本。
+默认 GTK4 技术栈要求 Ubuntu 24.04+ 或 Debian 13+。
 
 ```bash
 sudo apt update
@@ -184,12 +184,12 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 ```
 
 [其他]
-安装 Wails 后运行`wails3 doctor`，它会显示你的发行版所需的确切软件包。
+安装 Wails 后运行`wails3 doctor`，它会显示你的发行版所需的具体软件包。
 
 @end
 
 @note{type="info" title="旧版 GTK3 技术栈"}
-如果目标发行版尚未提供 WebKitGTK 6.0（例如 Ubuntu 22.04 LTS、Debian 12），请改为安装 GTK3 + WebKit2GTK 4.1开发库（在 Debian/Ubuntu 上为`libgtk-3-dev libwebkit2gtk-4.1-dev`；其他发行版请安装对应软件包），并使用`wails3 build -tags gtk3`进行构建。旧版路径在 v3.0.x 系列中受支持，并将在 v3.1中移除。有关详细信息，请参阅[Linux 打包——旧版 GTK3 支持](/guides/build/linux/#legacy-gtk3-support)。
+如果目标发行版尚未提供 WebKitGTK 6.0（例如 Ubuntu 22.04 LTS、Debian 12），请改为安装 GTK3 + WebKit2GTK 4.1开发库（Debian/Ubuntu 上为`libgtk-3-dev libwebkit2gtk-4.1-dev`；其他发行版请安装对应软件包），并使用`wails3 build -tags gtk3`进行构建。旧版构建路径支持到v3.0.x 系列，并将在v3.1中移除。详情请参阅[Linux 打包 — 旧版 GTK3 支持](/guides/build/linux/#legacy-gtk3-support)。
 
 @end
 
@@ -197,17 +197,17 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 ### 安装 Wails CLI
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-这会将`wails3`命令安装到`~/go/bin`（Windows 上则安装到`%USERPROFILE%\go\bin`）。
+此操作会将`wails3`命令安装到`~/go/bin`（Windows 上则安装到`%USERPROFILE%\go\bin`）。
 
 ### 运行设置向导（推荐）
 ```bash
 wails3 setup
 ```
 
-设置向导会检查依赖项，帮助安装缺失的依赖项，并配置项目默认设置。
+设置向导会检查依赖项、协助安装缺失的依赖项，并配置项目默认设置。
 
 @note{type="caution" title="实验性功能"}
 设置向导是一项新功能，目前主要在 Linux 上经过测试。如果遇到问题，请[报告问题](https://github.com/wailsapp/wails/issues/4904)，并改用`wails3 doctor`。
@@ -222,7 +222,7 @@ wails3 doctor
 **预期输出（或类似内容）：**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -244,8 +244,8 @@ Wails (v3.0.0-dev)  Wails Doctor
 # Build Environment
 
 ┌─────────────┬─────────────────┐
-| Wails CLI   | Your installed version |
-| Go Version  | go1.25.0        |
+| Wails CLI   | v3.0.0          |
+| Go Version  | go1.26.0        |
 └─────────────┴─────────────────┘
 
 # Dependencies
@@ -266,7 +266,7 @@ SUCCESS Your system is ready for Wails development!
 ```
 
 @note{type="info" title="如果找不到 `wails3` 命令"}
-PATH 中没有`~/go/bin`。请参照上面的步骤1修复此问题，然后重新启动终端。
+你的`~/go/bin`不在 PATH 中。请按照上面的步骤1修复，然后重启终端。
 
 @end
 
@@ -284,9 +284,9 @@ npm --version
 ```
 
 [macOS]
-**选项 1：官方安装程序** 从[nodejs.org](https://nodejs.org/)下载
+**选项1：官方安装程序** 从[nodejs.org](https://nodejs.org/)下载
 
-**选项 2：Homebrew**
+**选项2：Homebrew**
 
 ```bash
 brew install node
@@ -299,14 +299,14 @@ npm --version
 ```
 
 [Linux]
-**选项 1：NodeSource**
+**选项1：NodeSource**
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt-get install -y nodejs  # Ubuntu/Debian
 ```
 
-**选项 2：软件包管理器**
+**选项2：软件包管理器**
 
 ```bash
 sudo dnf install nodejs  # Fedora
@@ -321,8 +321,8 @@ npm --version
 
 @end
 
-@note{type="tip" title="其他软件包管理器"}
-更喜欢`pnpm`、`yarn`或`bun`？没问题！只需更新项目中的`Taskfile.yml`，改用你偏好的工具。
+@note{type="tip" title="其他包管理器"}
+更喜欢`pnpm`、`yarn`或`bun`？没问题！只需更新项目中的`Taskfile.yml`，改用你偏好的工具即可。
 
 @end
 
@@ -377,7 +377,7 @@ wails3 version
 
 #### `wails3 doctor`报告缺少依赖项
 
-<strong>Linux：</strong>输出会明确告知你需要安装哪些软件包。例如：
+<strong>Linux：</strong>输出会明确告诉你需要安装哪些软件包。例如：
 
 ```
 ❌ webkit2gtk not found
@@ -387,7 +387,7 @@ wails3 version
 <strong>Windows：</strong>如果缺少 WebView2：
 
 - 从[Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)下载
-- 或者，在你首次运行应用时，它会自动安装
+- 或者，它会在你首次运行应用时自动安装
 
 <strong>macOS：</strong>如果缺少 Xcode 工具：
 
@@ -399,36 +399,36 @@ xcode-select --install
 
 #### Go 版本过旧
 
-Wails v3 要求 Go 1.25 或更高版本。如果你的版本较旧：
+Wails v3要求 Go 1.26 或更高版本。如果你的版本较旧：
 
 @tabs{sync-key="os"}
 [Windows/macOS]
 从[go.dev/dl](https://go.dev/dl/)下载最新版本并重新安装。
 
 [Linux]
-从[go.dev/dl](https://go.dev/dl/)下载最新的 tarball，然后：
+从[go.dev/dl](https://go.dev/dl/)下载最新的 tar 包，然后：
 
 ```bash
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
 ```
 
 @end
 
-## 开发版本（最前沿版本）
+## 开发版本（前沿版）
 
-想使用主开发分支中的绝对最新代码？这样可以在新功能和修复正式发布前使用它们，但也有遇到错误和破坏性变更的风险。仅建议贡献者或需要测试即将推出功能的用户使用。
+想使用主开发分支中绝对最新的代码吗？这样可以在新功能和修复正式发布前使用它们，但也存在缺陷和破坏性变更的风险。仅建议贡献者或需要测试即将推出的功能的用户使用。
 
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```
 
 @note{type="caution" title="开发版本"}
-- 可能存在错误或破坏性变更
+- 可能存在缺陷或破坏性变更
 - 创建的项目将使用`replace`指令指向本地 Wails
 - 仅建议贡献者或测试新功能时使用
 
@@ -448,7 +448,7 @@ go install
 
 @cards{cols="1"}
 📖 探索模板
-查看开箱即用的内容。
+查看开箱即用的模板。
 
 ```bash
 wails3 init -l  # List templates

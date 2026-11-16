@@ -11,17 +11,17 @@ Dalam tutorial ini, Anda akan membuat aplikasi catatan yang mendemonstrasikan op
 
 ## Yang Akan Anda Buat
 
-- Aplikasi catatan lengkap dengan fungsi untuk membuat, mengedit, dan menghapus catatan
-- Dialog native untuk menyimpan/membuka file guna mengimpor dan mengekspor catatan
+- Aplikasi catatan lengkap dengan fungsi membuat, mengedit, dan menghapus
+- Dialog native untuk menyimpan dan membuka file guna mengimpor dan mengekspor catatan
 - Penyimpanan otomatis saat mengetik dengan debounce untuk mengurangi pembaruan yang tidak perlu
-- Tata letak dua kolom profesional (bilah samping + editor) yang menyerupai Apple Notes
+- Tata letak dua kolom profesional (bilah sisi + editor) yang menyerupai Apple Notes
 
 ## Yang Akan Anda Pelajari
 
 - Menggunakan dialog file native di Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
 - Menggunakan file JSON untuk persistensi data
 - Menerapkan pola penyimpanan otomatis dengan debounce
-- Membuat antarmuka pengguna desktop profesional dengan CSS modern
+- Membuat antarmuka desktop profesional dengan CSS modern
 - Serialisasi JSON yang tepat untuk struct Go
 
 ## Penyiapan Proyek
@@ -29,12 +29,12 @@ Dalam tutorial ini, Anda akan membuat aplikasi catatan yang mendemonstrasikan op
 @steps
 ### Buat proyek Wails baru
 ```bash
-wails3 init -n notes-app -t vanilla
+wails3 init -n notes-app -t vanilla-js
 cd notes-app
 ```
 
 ### Buat NotesService
-Buat file baru `notesservice.go` di direktori root proyek:
+Buat file baru `notesservice.go` di root proyek:
 
 ```go
 package main
@@ -173,11 +173,11 @@ func generateID() string {
 
 **Yang terjadi di sini:**
 
-- **Struct Note**: Menentukan struktur data dengan tag JSON (huruf kecil) agar serialisasi dilakukan dengan benar
+- **Struct Note**: Mendefinisikan struktur data dengan tag JSON (huruf kecil) agar serialisasi berjalan dengan benar
 - **Operasi CRUD**: GetAll, Create, Update, dan Delete untuk mengelola catatan dalam memori
 - **Dialog file**: Menggunakan `application.Get().Dialog.SaveFile()` dan `application.Get().Dialog.OpenFile()` untuk mengakses dialog native
 - **Dialog informasi**: Menampilkan pesan keberhasilan menggunakan `application.Get().Dialog.Info()`
-- **Pembuatan ID**: Generator ID sederhana berbasis stempel waktu
+- **Pembuatan ID**: Pembuat ID sederhana berbasis stempel waktu
 
 ### Perbarui main.go
 Ganti isi `main.go`:
@@ -230,7 +230,7 @@ func main() {
 
 - Mendaftarkan `NotesService` ke aplikasi
 - Membuat jendela berdimensi (1000x700) yang menyerupai Apple Notes
-- Menyiapkan perilaku macOS yang tepat agar aplikasi berhenti ketika jendela terakhir ditutup
+- Menyiapkan perilaku macOS yang tepat agar aplikasi ditutup ketika jendela terakhir ditutup
 
 ### Buat struktur HTML
 Ganti `frontend/index.html`:
@@ -284,8 +284,8 @@ Ganti `frontend/index.html`:
 
 **Yang terjadi di sini:**
 
-- **Tata letak dua kolom**: Bilah samping untuk daftar catatan dan area utama untuk editor
-- **Status kosong**: Ditampilkan saat tidak ada catatan yang dipilih
+- **Tata letak dua kolom**: Bilah sisi untuk daftar catatan dan area utama untuk editor
+- **Keadaan kosong**: Ditampilkan saat tidak ada catatan yang dipilih
 - **Runtime Wails**: Harus dimuat sebelum skrip modul
 
 ### Tambahkan gaya CSS
@@ -474,9 +474,9 @@ body {
 **Yang terjadi di sini:**
 
 - Desain bergaya Apple dengan tipografi dan warna yang bersih
-- Tata letak Flexbox untuk bilah samping dan editor yang responsif
-- Sorotan catatan aktif dengan latar belakang biru
-- Transisi halus saat penunjuk diarahkan ke elemen
+- Tata letak Flexbox untuk bilah sisi dan editor yang responsif
+- Penyorotan catatan aktif dengan latar belakang biru
+- Transisi hover yang halus
 
 ### Implementasikan logika JavaScript
 Ganti `frontend/src/main.js`:
@@ -617,11 +617,11 @@ loadNotes()
 
 **Yang terjadi di sini:**
 
-- **Penyimpanan otomatis**: Debounce 500 milidetik mencegah panggilan backend yang berlebihan saat mengetik
-- **Akses properti**: Menggunakan nama properti dengan huruf kecil (`.id`, `.title`) yang sesuai dengan tag JSON Go
+- **Penyimpanan otomatis**: Debounce selama 500 md mencegah panggilan backend yang berlebihan saat mengetik
+- **Akses properti**: Menggunakan nama properti berhuruf kecil (`.id`, `.title`) yang sesuai dengan tag JSON Go
 - **Pengelolaan fokus**: Secara otomatis memfokuskan dan memilih judul saat membuat catatan baru
-- **Menghapus tanpa konfirmasi**: `confirm()` milik browser tidak berfungsi di webview Wails
-- **Operasi file**: Dialog native menangani penyimpanan/pemuatan dengan penanganan kesalahan yang tepat
+- **Hapus tanpa konfirmasi**: `confirm()` milik browser tidak berfungsi di webview Wails
+- **Operasi file**: Dialog native menangani penyimpanan dan pemuatan dengan penanganan kesalahan yang tepat
 
 ### Jalankan aplikasi
 ```bash
@@ -631,8 +631,8 @@ wails3 dev
 Aplikasi akan dimulai dan Anda dapat:
 
 - Klik "+ New Note" untuk membuat catatan
-- Edit judul dan isi (disimpan secara otomatis setelah 500 milidetik)
-- Klik catatan di bilah samping untuk beralih antarcatatan
+- Edit judul dan isi (disimpan otomatis setelah 500 md)
+- Klik catatan di bilah sisi untuk beralih di antaranya
 - Klik "Delete" untuk menghapus catatan saat ini
 - Klik "Save" untuk mengekspor catatan sebagai JSON
 - Klik "Load" untuk mengimpor catatan yang sebelumnya disimpan
@@ -674,7 +674,7 @@ const noteId = note.ID // Would be undefined
 
 ### Penyimpanan Otomatis dengan Debounce
 
-Debounce 500 milidetik mengurangi panggilan backend yang tidak perlu:
+Debounce selama 500 md mengurangi panggilan backend yang tidak perlu:
 
 ```javascript
 let updateTimeout

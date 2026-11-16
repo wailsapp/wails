@@ -248,6 +248,30 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.refreshLocked()
 }
 
+// refreshSystemTrayMenus rebuilds the dbusmenu layout of every tray showing
+// menu. That layout is built from the Menu by setMenu, separately from the
+// native menu Menu.Update rebuilds, so without this a tray never shows changes
+// made with Menu.Update.
+func refreshSystemTrayMenus(menu *Menu) {
+	app := globalApplication
+	if app == nil {
+		return
+	}
+	InvokeSync(func() {
+		app.systemTraysLock.Lock()
+		var trays []*linuxSystemTray
+		for _, tray := range app.systemTrays {
+			if impl, ok := tray.impl.(*linuxSystemTray); ok && tray.menu == menu {
+				trays = append(trays, impl)
+			}
+		}
+		app.systemTraysLock.Unlock()
+		for _, tray := range trays {
+			tray.setMenu(menu)
+		}
+	})
+}
+
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
 	_, _, currentScreen := getMousePosition()
 	if currentScreen == nil {
@@ -449,8 +473,24 @@ func (s *linuxSystemTray) run() {
 	s.setMenu(s.menu)
 }
 
-func (s *linuxSystemTray) setTooltip(_ string) {
-	// TBD
+func (s *linuxSystemTray) setTooltip(text string) {
+	s.tooltip = text
+	s.updateToolTip()
+}
+
+// updateToolTip republishes the ToolTip property. Its title is the item's name
+// and its description is what SetTooltip was given, which is the line a desktop
+// shows under the name on hover. The property is declared with prop.EmitTrue,
+// so setting it is what tells the host to re-read it.
+func (s *linuxSystemTray) updateToolTip() {
+	if s.props == nil {
+		return
+	}
+
+	if err := s.props.Set("org.kde.StatusNotifierItem", "ToolTip",
+		dbus.MakeVariant(tooltip{V2: s.label, V3: s.tooltip})); err != nil {
+		globalApplication.error("systray error: failed to set ToolTip prop: %w", err)
+	}
 }
 
 func (s *linuxSystemTray) setIcon(icon []byte) {
@@ -521,6 +561,9 @@ func (s *linuxSystemTray) setLabel(label string) {
 		return
 	}
 
+	// The tooltip repeats the name as its title, so it follows the label.
+	s.updateToolTip()
+
 	if s.conn == nil {
 		return
 	}
@@ -532,7 +575,6 @@ func (s *linuxSystemTray) setLabel(label string) {
 		globalApplication.error("systray error: failed to emit new title signal: %w", err)
 		return
 	}
-
 }
 
 func (s *linuxSystemTray) destroy() {
@@ -642,13 +684,14 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 		}
 	}
 
-	if s.menu != nil {
-		props["Menu"] = &prop.Prop{
-			Value:    dbus.ObjectPath(menuPath),
-			Writable: true,
-			Emit:     prop.EmitTrue,
-			Callback: nil,
-		}
+	// The dbusmenu object is exported at menuPath whether or not a menu is set yet. A tray created after
+	// the app runs registers before SetMenu, and hosts such as GNOME's AppIndicator extension drop an
+	// item whose Menu property is missing.
+	props["Menu"] = &prop.Prop{
+		Value:    dbus.ObjectPath(menuPath),
+		Writable: true,
+		Emit:     prop.EmitTrue,
+		Callback: nil,
 	}
 
 	return map[string]map[string]*prop.Prop{

@@ -1,0 +1,2 @@
+# Purego functions that are intentionally empty although their cgo twin is
+# not. One name per line (Type.method or func), with the reason.

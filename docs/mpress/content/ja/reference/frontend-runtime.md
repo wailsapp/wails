@@ -1,15 +1,15 @@
 ---
 title: "フロントエンドランタイム"
-description: "フロントエンド統合用の Wails JavaScript ランタイムパッケージ"
+description: "フロントエンド連携用の Wails JavaScript ランタイムパッケージ"
 slug: "reference/frontend-runtime"
 sourcePath: "reference/frontend-runtime.md"
 ---
 
-Wails フロントエンドランタイムは、Wails アプリケーションの標準ライブラリです。アプリケーションで使用できる次のような機能を提供します。
+Wails フロントエンドランタイムは、Wails アプリケーションの標準ライブラリです。アプリケーションで利用できる次のような機能を提供します。
 
 - ウィンドウ管理
 - ダイアログ
-- ブラウザー統合
+- ブラウザー連携
 - クリップボード
 - メニュー
 - システム情報
@@ -18,30 +18,30 @@ Wails フロントエンドランタイムは、Wails アプリケーション�
 - 画面
 - WML（Wails Markup Language）
 
-Go とフロントエンドの統合にはランタイムが必要です。ランタイムの統合方法は 2 つあります。
+Go とフロントエンドの連携にはランタイムが必要です。ランタイムを統合する方法は 2 つあります。
 
 - `@wailsio/runtime` パッケージを使用する
 - ビルド済みバンドルを使用する
 
-## npm パッケージの使用
+## npm パッケージを使用する
 
-`@wailsio/runtime` パッケージは、フロントエンドから Wails ランタイムにアクセスできる JavaScript パッケージです。すべての標準テンプレートで使用されており、アプリケーションにランタイムを統合する方法として推奨されています。`@wailsio/runtime` パッケージを使用すると、ランタイムのうち実際に使用する部分だけが含まれます。
+`@wailsio/runtime` パッケージは、フロントエンドから Wails ランタイムへアクセスするための JavaScript パッケージです。すべての標準テンプレートで使用されており、アプリケーションへランタイムを統合する方法として推奨されています。`@wailsio/runtime` パッケージを使用すると、実際に使用するランタイムの部分だけが組み込まれます。
 
-このパッケージは npm で提供されており、次のコマンドでインストールできます。
+このパッケージは npm で公開されており、次のコマンドでインストールできます。
 
 ```shell
 npm install --save @wailsio/runtime
 ```
 
-## ビルド済みバンドルの使用
+## ビルド済みバンドルを使用する
 
-JavaScript バンドラーを使用しないプロジェクトでは、ビルド済みのバンドル版ランタイムを使用する方が適している場合があります。このバージョンは、次のコマンドを使用してローカルで生成できます。
+JavaScript バンドラーを使用しないプロジェクトでは、ビルド済みのランタイムバンドルを使用する方が適している場合があります。このバージョンは、次のコマンドを使用してローカルで生成できます。
 
 ```shell
 wails3 generate runtime
 ```
 
-このコマンドを実行すると、現在のディレクトリに `runtime.js` ファイル（および `runtime.debug.js` ファイル）が出力されます。このファイルは ES モジュールであり、npm パッケージと同様にアプリケーションのスクリプトからインポートできます。また、API はグローバルな window オブジェクトにもエクスポートされるため、単純なアプリケーションでは次のように使用できます。
+このコマンドを実行すると、現在のディレクトリに `runtime.js` ファイル（および `runtime-debug.js` ファイル）が出力されます。このファイルは ES モジュールであり、npm パッケージと同じようにアプリケーションのスクリプトからインポートできます。また、API はグローバルな window オブジェクトにもエクスポートされるため、単純なアプリケーションでは次のように使用できます。
 
 ```html
 <html>
@@ -58,13 +58,13 @@ wails3 generate runtime
 ```
 
 @note{type="caution"}
-ランタイムを読み込む `<script>` タグには `type="module"` 属性を指定し、API を呼び出す前にページが完全に読み込まれるまで待つことが重要です。これは、`type="module"` 属性を持つスクリプトが非同期で実行されるためです。
+ランタイムを読み込む `<script>` タグには `type="module"` 属性を指定し、API を呼び出す前にページが完全に読み込まれるまで待つことが重要です。これは、`type="module"` 属性を指定したスクリプトが非同期で実行されるためです。
 
 @end
 
 ## 初期化
 
-ランタイムは API 関数に加えて、コンテキストメニューとウィンドウのドラッグをサポートします。これらの機能は、ランタイムを初期化した後にのみ期待どおりに動作します。API を使用しない場合でも、フロントエンドコード内のいずれかの場所に、副作用のための import 文を必ず含めてください。
+ランタイムは API 関数に加えて、コンテキストメニューとウィンドウのドラッグもサポートしています。これらの機能は、ランタイムの初期化後にのみ期待どおりに動作します。API を使用しない場合でも、フロントエンドコードのどこかに、副作用を目的とした import 文を必ず含めてください。
 
 ```javascript
 import "@wailsio/runtime";
@@ -90,9 +90,11 @@ import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
+
+引数には、Vite プロジェクトからの相対パスで、生成されたバインディングのディレクトリを指定します。フロントエンドをビルドする前にバインディングを生成してください。
 
 ### 利点
 
@@ -100,7 +102,7 @@ export default defineConfig({
 - **開発モード**：`wails3 dev` とシームレスに連携し、変更が即座に反映されます
 - **型安全性**：自動補完と型チェックを備えた完全な TypeScript サポートを提供します
 
-### イベント登録での使用
+### イベント登録での使用方法
 
 Go でイベントを登録します。
 
@@ -134,15 +136,15 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## API リファレンス
 
-ランタイムはモジュール単位で構成されており、各モジュールが特定の機能を提供します。必要なものだけをインポートしてください。
+ランタイムはモジュール単位で構成され、各モジュールが特定の機能を提供します。必要なものだけをインポートしてください。
 
 ```javascript
 import { Events, Window, Clipboard } from '@wailsio/runtime'
@@ -150,15 +152,14 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### イベント
 
-Go と JavaScript の間で通信するためのイベントシステムです。
+Go と JavaScript の間で通信するためのイベントシステムです。`UserUpdated` などの生成されたイベントのエクスポートは文字列定数であり、ペイロードを生成するファクトリーではありません。ジェネレーターは `CustomEvents` を拡張し、登録されたイベント名をペイロード型に対応付けます。以下の型（`WailsEventName`、`WailsEventCallback`、`WailsEventData`）は Events モジュールからエクスポートされます。
 
 #### On()
 
 イベントのコールバックを登録します。
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 <strong>戻り値：</strong>購読解除関数
@@ -189,8 +190,7 @@ Events.On(UserLogin, (event) => {
 一度だけ実行されるコールバックを登録します。
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **例：**
@@ -205,11 +205,11 @@ Events.Once('app-ready', () => {
 
 #### Emit()
 
-Go バックエンドまたは他のウィンドウにイベントを送出します。
+Go バックエンドまたは他のウィンドウへイベントを発行します。
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
 <strong>戻り値：</strong>イベントがキャンセルされた場合は `true`、それ以外の場合は `false` に解決される Promise
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')
@@ -237,7 +237,7 @@ if (cancelled) {
 ```
 
 @note{type="info"}
-戻り値は、イベントがフックによってキャンセルされたかどうかを示します。ほとんどのイベントはキャンセルできず、常に `false` を返します。
+戻り値は、イベントがフックによってキャンセルされたかどうかを示します。ほとんどのイベントはキャンセルできないため、常に `false` を返します。
 
 @end
 
@@ -281,15 +281,15 @@ const otherWindow = Window.Get('secondary')
 await otherWindow.Show()
 ```
 
-#### 表示と非表示
+#### 表示状態
 
-**Show()** — ウィンドウを表示します
+**Show()** - ウィンドウを表示します
 
 ```typescript
 function Show(): Promise<void>
 ```
 
-**Hide()** — ウィンドウを非表示にします
+**Hide()** - ウィンドウを非表示にします
 
 ```typescript
 function Hide(): Promise<void>
@@ -366,13 +366,13 @@ function Maximise(): Promise<void>
 function Fullscreen(): Promise<void>
 ```
 
-**Restore()** - 最小化、最大化、または全画面表示から元の状態に戻します
+**Restore()** - 最小化、最大化、または全画面表示の状態から元に戻します
 
 ```typescript
 function Restore(): Promise<void>
 ```
 
-**IsMinimised()** - 最小化されているか確認します
+**IsMinimised()** - 最小化されているかどうかを確認します
 
 ```typescript
 function IsMinimised(): Promise<boolean>
@@ -384,7 +384,7 @@ function IsMinimised(): Promise<boolean>
 function IsMaximised(): Promise<boolean>
 ```
 
-**IsFullscreen()** - 全画面表示になっているか確認します
+**IsFullscreen()** - フルスクリーンか確認します
 
 ```typescript
 function IsFullscreen(): Promise<boolean>
@@ -416,7 +416,7 @@ function SetBackgroundColour(r: number, g: number, b: number, a: number): Promis
 function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
 ```
 
-**SetResizable(resizable)** - ウィンドウをサイズ変更可能にします
+**SetResizable(resizable)** - ウィンドウのサイズを変更可能にします
 
 ```typescript
 function SetResizable(resizable: boolean): Promise<void>
@@ -470,13 +470,13 @@ function SetZoom(level: number): Promise<void>
 function GetZoom(): Promise<number>
 ```
 
-**ZoomIn()** - ズーム倍率を上げます
+**ZoomIn()** - 表示を拡大します
 
 ```typescript
 function ZoomIn(): Promise<void>
 ```
 
-**ZoomOut()** - ズーム倍率を下げます
+**ZoomOut()** - 表示を縮小します
 
 ```typescript
 function ZoomOut(): Promise<void>
@@ -505,15 +505,15 @@ import { Window } from '@wailsio/runtime'
 await Window.Print()
 ```
 
-**注：** OSネイティブの印刷ダイアログが開き、ユーザーはプリンター設定を選択して、現在のウィンドウの内容を印刷できます。WebViewでは動作しない場合がある`window.print()`とは異なり、これは各プラットフォームのネイティブ印刷APIを使用します。
+**注：** OSネイティブの印刷ダイアログが開き、ユーザーはプリンター設定を選択して現在のウィンドウ内容を印刷できます。WebViewでは動作しない場合がある`window.print()`とは異なり、これは各プラットフォームのネイティブ印刷APIを使用します。
 
 ### クリップボード
 
-クリップボード操作。
+クリップボードを操作します。
 
 #### SetText()
 
-クリップボードのテキストを設定します。
+クリップボードにテキストを設定します。
 
 ```typescript
 function SetText(text: string): Promise<void>
@@ -546,11 +546,11 @@ console.log('Clipboard:', clipboardText)
 
 ### システム
 
-バックエンドと直接通信するための低レベルのシステムメソッド。
+バックエンドと直接通信するための低レベルなシステムメソッドです。
 
 #### invoke()
 
-生のメッセージをバックエンドへ直接送信します。標準のバインディングシステムを経由せず、アプリケーションオプションの`RawMessageHandler`によって処理されます。
+未加工のメッセージをバックエンドに直接送信します。標準のバインディングシステムを経由せず、アプリケーションオプションの`RawMessageHandler`によって処理されます。
 
 ```typescript
 function invoke(message: any): void
@@ -569,15 +569,15 @@ System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 ```
 
 @note{type="caution"}
-これは戻り値のない、送信後に完了を待たない関数です。バックエンドから応答を受信するにはイベントを使用します。
+これは戻り値のない、送信後に応答を待たない関数です。バックエンドから応答を受信するにはイベントを使用してください。
 
 @end
 
-詳細については、[生メッセージガイド](/guides/raw-messages/)を参照してください。
+詳細については、[未加工メッセージガイド](/guides/raw-messages/)を参照してください。
 
 ### アプリケーション
 
-アプリケーションレベルのメソッド。
+アプリケーションレベルのメソッドです。
 
 #### Show()
 
@@ -616,11 +616,11 @@ document.getElementById('quit-btn').addEventListener('click', async () => {
 
 ### ブラウザー
 
-デフォルトのブラウザーで URL を開きます。
+デフォルトのブラウザーでURLを開きます。
 
 #### OpenURL()
 
-システムのブラウザーで URL を開きます。
+システムのブラウザーでURLを開きます。
 
 ```typescript
 function OpenURL(url: string | URL): Promise<void>
@@ -636,7 +636,7 @@ await Browser.OpenURL('https://wails.io')
 
 ### 画面
 
-画面情報の取得と管理を行います。
+画面の情報を取得し、管理します。
 
 #### GetAll()
 
@@ -648,7 +648,7 @@ function GetAll(): Promise<Screen[]>
 
 #### GetPrimary()
 
-プライマリー画面を取得します。
+プライマリ画面を取得します。
 
 ```typescript
 function GetPrimary(): Promise<Screen>
@@ -662,7 +662,7 @@ function GetPrimary(): Promise<Screen>
 function GetCurrent(): Promise<Screen>
 ```
 
-**Screen インターフェース：**
+**Screenインターフェース：**
 
 ```typescript
 interface Screen {
@@ -697,7 +697,7 @@ console.log('Primary screen:', primary.Name)
 
 ### ダイアログ
 
-JavaScript から OS ネイティブのダイアログを使用します。
+JavaScriptからOSネイティブのダイアログを使用します。
 
 #### Info()
 
@@ -736,7 +736,7 @@ function Warning(options: MessageDialogOptions): Promise<string>
 
 #### Question()
 
-カスタムボタンを備えた質問ダイアログを表示します。
+カスタムボタン付きの質問ダイアログを表示します。
 
 ```typescript
 function Question(options: MessageDialogOptions): Promise<string>
@@ -789,7 +789,7 @@ if (file) {
 
 #### SaveFile()
 
-ファイルを保存するダイアログを表示します。
+ファイル保存ダイアログを表示します。
 
 ```typescript
 function SaveFile(options: SaveFileDialogOptions): Promise<string>
@@ -797,11 +797,11 @@ function SaveFile(options: SaveFileDialogOptions): Promise<string>
 
 ### WML（Wails Markup Language）
 
-WML は、一般的なアクションを宣言的に指定するための属性を提供します。HTML 要素に属性を追加します：
+WMLは、一般的な操作のための宣言的な属性を提供します。HTML要素に属性を追加します：
 
 #### 属性
 
-**wml-event** - クリック時にイベントを発行します
+**wml-event** - クリックされたときにイベントを発行します
 
 ```html
 <button wml-event="save-clicked">Save</button>
@@ -814,7 +814,7 @@ WML は、一般的なアクションを宣言的に指定するための属性�
 <button wml-window="Minimise">Minimize</button>
 ```
 
-**wml-target-window** - wml-window の対象ウィンドウを指定します
+**wml-target-window** - wml-windowの対象ウィンドウを指定します
 
 ```html
 <button wml-window="Show" wml-target-window="settings">
@@ -822,13 +822,13 @@ WML は、一般的なアクションを宣言的に指定するための属性�
 </button>
 ```
 
-**wml-openurl** - ブラウザーで URL を開きます
+**wml-openurl** - ブラウザーでURLを開きます
 
 ```html
 <a href="#" wml-openurl="https://wails.io">Visit Wails</a>
 ```
 
-**wml-confirm** - アクションを実行する前に確認ダイアログを表示します
+**wml-confirm** - 操作の実行前に確認ダイアログを表示します
 
 ```html
 <button wml-window="Close" wml-confirm="Are you sure you want to close?">
@@ -903,15 +903,15 @@ screens.forEach(screen => {
 
 ## ベストプラクティス
 
-### ✅ 推奨事項
+### ✅ 推奨
 
-- **選択的にインポートする** - 必要なものだけをインポートします
-- **Promise を処理する** - すべてのメソッドは Promise を返します
-- **単純なアクションには WML を使用する** - JavaScript より簡潔に記述できます
+- **必要なものだけをインポートする** - 必要なものだけをインポートしてください
+- **Promiseを処理する** - すべてのメソッドはPromiseを返します
+- **単純なアクションには WML を使用する** - JavaScript より簡潔です
 - **戻り値を確認する** - 特にダイアログでは重要です
 - **イベントの購読を解除する** - 完了したらクリーンアップします
 
-### ❌ 禁止事項
+### ❌ 避けること
 
 - **await を忘れない** - ほとんどのメソッドは非同期です
 - **UI をブロックしない** - async/await を適切に使用します

@@ -1,11 +1,11 @@
 ---
 title: "Runtime frontend"
-description: "Le package d’exécution JavaScript de Wails pour l’intégration au frontend"
+description: "Le package d’exécution JavaScript de Wails pour l’intégration du frontend"
 slug: "reference/frontend-runtime"
 sourcePath: "reference/frontend-runtime.md"
 ---
 
-Le runtime frontend de Wails constitue la bibliothèque standard des applications Wails. Il fournit de nombreuses fonctionnalités utilisables dans vos applications, notamment :
+Le runtime frontend de Wails est la bibliothèque standard des applications Wails. Il offre plusieurs fonctionnalités utilisables dans vos applications, notamment :
 
 - Gestion des fenêtres
 - Boîtes de dialogue
@@ -18,14 +18,14 @@ Le runtime frontend de Wails constitue la bibliothèque standard des application
 - Écrans
 - WML (langage de balisage Wails)
 
-Le runtime est nécessaire à l’intégration entre Go et le frontend. Il existe 2 façons d’intégrer le runtime :
+Le runtime est indispensable à l’intégration entre Go et le frontend. Il existe 2 façons de l’intégrer :
 
 - Utiliser le package `@wailsio/runtime`
 - Utiliser un bundle précompilé
 
 ## Utiliser le package npm
 
-Le package `@wailsio/runtime` est un package JavaScript qui permet d’accéder au runtime Wails depuis le frontend. Tous les modèles standard l’utilisent et il s’agit de la méthode recommandée pour intégrer le runtime à votre application. Avec le package `@wailsio/runtime`, seules les parties du runtime que vous utilisez sont incluses.
+Le package `@wailsio/runtime` est un package JavaScript qui permet d’accéder au runtime Wails depuis le frontend. Tous les modèles standard l’utilisent et il constitue la méthode recommandée pour intégrer le runtime à votre application. En utilisant le package `@wailsio/runtime`, vous n’incluez que les parties du runtime dont vous avez besoin.
 
 Le package est disponible sur npm et peut être installé avec :
 
@@ -35,13 +35,13 @@ npm install --save @wailsio/runtime
 
 ## Utiliser un bundle précompilé
 
-Certains projets n’utilisent pas d’outil de regroupement JavaScript et peuvent préférer une version précompilée du runtime sous forme de bundle. Vous pouvez générer cette version localement à l’aide de la commande suivante :
+Certains projets n’utilisent pas de bundler JavaScript et peuvent préférer une version précompilée du runtime sous forme de bundle. Vous pouvez générer cette version localement avec la commande suivante :
 
 ```shell
 wails3 generate runtime
 ```
 
-La commande génère un fichier `runtime.js` (ainsi qu’un fichier `runtime.debug.js`) dans le répertoire courant. Ce fichier est un module ES que les scripts de votre application peuvent importer comme le package npm, mais l’API est également exportée dans l’objet global window ; les applications plus simples peuvent donc l’utiliser comme suit :
+La commande génère un fichier `runtime.js` (ainsi qu’un fichier `runtime-debug.js`) dans le répertoire courant. Ce fichier est un module ES que les scripts de votre application peuvent importer comme le package npm. L’API est également exportée dans l’objet global de la fenêtre ; les applications plus simples peuvent donc l’utiliser comme suit :
 
 ```html
 <html>
@@ -58,22 +58,22 @@ La commande génère un fichier `runtime.js` (ainsi qu’un fichier `runtime.deb
 ```
 
 @note{type="caution"}
-Il est important d’inclure l’attribut `type="module"` dans la balise `<script>` qui charge le runtime et d’attendre le chargement complet de la page avant d’appeler l’API, car les scripts dotés de l’attribut `type="module"` s’exécutent de manière asynchrone.
+Vous devez inclure l’attribut `type="module"` dans la balise `<script>` qui charge le runtime et attendre le chargement complet de la page avant d’appeler l’API, car les scripts dotés de l’attribut `type="module"` s’exécutent de manière asynchrone.
 
 @end
 
 ## Initialisation
 
-Outre les fonctions de l’API, le runtime prend en charge les menus contextuels et le déplacement des fenêtres. Ces fonctionnalités ne fonctionneront comme prévu qu’après l’initialisation du runtime. Même si vous n’utilisez pas l’API, veillez à inclure quelque part dans votre code frontend une instruction d’importation avec effet de bord :
+Outre les fonctions de l’API, le runtime prend en charge les menus contextuels et le déplacement des fenêtres. Ces fonctionnalités ne fonctionnent comme prévu qu’après l’initialisation du runtime. Même si vous n’utilisez pas l’API, veillez à inclure quelque part dans le code de votre frontend une instruction d’importation destinée uniquement à produire des effets de bord :
 
 ```javascript
 import "@wailsio/runtime";
 ```
 
-Votre outil de regroupement devrait détecter la présence d’effets de bord et inclure dans le build tout le code d’initialisation requis.
+Votre bundler doit détecter la présence d’effets de bord et inclure tout le code d’initialisation requis dans la compilation.
 
 @note{type="info"}
-Si vous préférez le bundle précompilé, il suffit d’ajouter une balise script comme indiqué ci-dessus.
+Si vous préférez le bundle précompilé, il suffit d’ajouter une balise de script comme indiqué ci-dessus.
 
 @end
 
@@ -90,17 +90,19 @@ import { defineConfig } from 'vite'
 import wails from '@wailsio/runtime/plugins/vite'
 
 export default defineConfig({
-  plugins: [wails()],
+  plugins: [wails("./bindings")],
 })
 ```
+
+L’argument correspond au répertoire des liaisons générées, relativement au projet Vite. Générez les liaisons avant de compiler le frontend.
 
 ### Avantages
 
 - **Rechargement automatique** : les liaisons d’événements sont automatiquement régénérées et rechargées lorsque vous exécutez `wails3 generate bindings`
-- **Mode développement** : fonctionne de manière transparente avec `wails3 dev` pour appliquer les mises à jour instantanément
-- **Sécurité des types** : prise en charge complète de TypeScript avec autocomplétion et vérification des types
+- **Mode développement** : fonctionne de manière transparente avec `wails3 dev` pour appliquer instantanément les mises à jour
+- **Sûreté des types** : prise en charge complète de TypeScript avec autocomplétion et vérification des types
 
-### Utilisation avec l’enregistrement des événements
+### Utilisation avec l’enregistrement d’événements
 
 Enregistrez vos événements dans Go :
 
@@ -134,10 +136,10 @@ import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
 // Type-safe event with autocomplete
-Events.Emit(UserUpdated({
+Events.Emit(UserUpdated, {
     ID: "123",
     Name: "John Doe"
-}))
+})
 ```
 
 ## Référence de l’API
@@ -150,18 +152,17 @@ import { Events, Window, Clipboard } from '@wailsio/runtime'
 
 ### Événements
 
-Système d’événements permettant la communication entre Go et JavaScript.
+Système d’événements assurant la communication entre Go et JavaScript. Les exports d’événements générés tels que `UserUpdated` sont des constantes de chaîne, et non des fabriques de charges utiles. Le générateur enrichit `CustomEvents` afin d’associer les noms d’événements enregistrés aux types de leurs charges utiles. Les types ci-dessous (`WailsEventName`, `WailsEventCallback`, `WailsEventData`) sont exportés par le module Events.
 
 #### On()
 
 Enregistre une fonction de rappel pour un événement.
 
 ```typescript
-function On(eventName: string, callback: (event: WailsEvent) => void): () => void
-function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
-**Renvoie :** fonction de désabonnement
+**Valeur renvoyée :** fonction de désabonnement
 
 **Exemple :**
 
@@ -189,8 +190,7 @@ Events.On(UserLogin, (event) => {
 Enregistre une fonction de rappel qui ne s’exécute qu’une seule fois.
 
 ```typescript
-function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
-function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void
 ```
 
 **Exemple :**
@@ -208,11 +208,11 @@ Events.Once('app-ready', () => {
 Émet un événement vers le backend Go ou d’autres fenêtres.
 
 ```typescript
-function Emit(name: string, data?: any): Promise<boolean>
-function Emit<T>(event: Event<T>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: E, data: WailsEventData<E>): Promise<boolean>
+function Emit<E extends WailsEventName = WailsEventName>(name: WailsEventData<E> extends null | void ? E : never): Promise<boolean>
 ```
 
-**Renvoie :** une promesse résolue avec `true` si l’événement a été annulé, et avec `false` dans le cas contraire
+**Valeur renvoyée :** promesse résolue avec `true` si l’événement a été annulé, ou avec `false` dans le cas contraire
 
 **Exemple :**
 
@@ -225,11 +225,11 @@ const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 // With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
-const cancelled = await Events.Emit(UserLogin({
+const cancelled = await Events.Emit(UserLogin, {
     UserID: "123",
     Username: "john_doe",
     LoginTime: new Date().toISOString()
-}))
+})
 
 if (cancelled) {
     console.log('Login was cancelled by a hook')
@@ -267,7 +267,7 @@ function OffAll(): void
 
 ### Fenêtre
 
-Méthodes de gestion des fenêtres. L’exportation par défaut correspond à la fenêtre actuelle.
+Méthodes de gestion des fenêtres. L’exportation par défaut correspond à la fenêtre courante.
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -295,7 +295,7 @@ function Show(): Promise<void>
 function Hide(): Promise<void>
 ```
 
-**Close()** - Ferme la fenêtre
+**Close()** — Ferme la fenêtre
 
 ```typescript
 function Close(): Promise<void>
@@ -303,31 +303,31 @@ function Close(): Promise<void>
 
 #### Taille et position
 
-**SetSize(width, height)** - Définit la taille de la fenêtre
+**SetSize(width, height)** — Définit la taille de la fenêtre
 
 ```typescript
 function SetSize(width: number, height: number): Promise<void>
 ```
 
-**Size()** - Récupère la taille de la fenêtre
+**Size()** — Obtient la taille de la fenêtre
 
 ```typescript
 function Size(): Promise<{ width: number, height: number }>
 ```
 
-**SetPosition(x, y)** - Définit la position absolue
+**SetPosition(x, y)** — Définit la position absolue
 
 ```typescript
 function SetPosition(x: number, y: number): Promise<void>
 ```
 
-**Position()** - Récupère la position absolue
+**Position()** — Obtient la position absolue
 
 ```typescript
 function Position(): Promise<{ x: number, y: number }>
 ```
 
-**Center()** - Centre la fenêtre
+**Center()** — Centre la fenêtre
 
 ```typescript
 function Center(): Promise<void>
@@ -348,37 +348,37 @@ const { width, height } = await Window.Size()
 
 #### État de la fenêtre
 
-**Minimise()** - Réduit la fenêtre
+**Minimise()** — Réduit la fenêtre
 
 ```typescript
 function Minimise(): Promise<void>
 ```
 
-**Maximise()** - Agrandit la fenêtre
+**Maximise()** — Agrandit la fenêtre
 
 ```typescript
 function Maximise(): Promise<void>
 ```
 
-**Fullscreen()** - Passe en plein écran
+**Fullscreen()** — Passe en plein écran
 
 ```typescript
 function Fullscreen(): Promise<void>
 ```
 
-**Restore()** - Restaure la fenêtre depuis l’état réduit, agrandi ou plein écran
+**Restore()** — Restaure la fenêtre depuis l’état réduit, agrandi ou plein écran
 
 ```typescript
 function Restore(): Promise<void>
 ```
 
-**IsMinimised()** - Vérifie si la fenêtre est réduite
+**IsMinimised()** — Vérifie si la fenêtre est réduite
 
 ```typescript
 function IsMinimised(): Promise<boolean>
 ```
 
-**IsMaximised()** - Vérifie si la fenêtre est agrandie
+**IsMaximised()** - Vérifie si la fenêtre est maximisée
 
 ```typescript
 function IsMaximised(): Promise<boolean>
@@ -398,7 +398,7 @@ function IsFullscreen(): Promise<boolean>
 function SetTitle(title: string): Promise<void>
 ```
 
-**Name()** - Récupère le nom de la fenêtre
+**Name()** - Renvoie le nom de la fenêtre
 
 ```typescript
 function Name(): Promise<string>
@@ -436,7 +436,7 @@ function Focus(): Promise<void>
 function IsFocused(): Promise<boolean>
 ```
 
-**GetScreen()** - Récupère l’écran sur lequel se trouve la fenêtre
+**GetScreen()** - Renvoie l’écran sur lequel se trouve la fenêtre
 
 ```typescript
 function GetScreen(): Promise<Screen>
@@ -464,7 +464,7 @@ function ForceReload(): Promise<void>
 function SetZoom(level: number): Promise<void>
 ```
 
-**GetZoom()** - Récupère le niveau de zoom
+**GetZoom()** - Renvoie le niveau de zoom
 
 ```typescript
 function GetZoom(): Promise<number>
@@ -482,7 +482,7 @@ function ZoomIn(): Promise<void>
 function ZoomOut(): Promise<void>
 ```
 
-**ZoomReset()** - Réinitialise le zoom à 100 %
+**ZoomReset()** - Réinitialise le zoom à 100 %
 
 ```typescript
 function ZoomReset(): Promise<void>
@@ -496,7 +496,7 @@ function ZoomReset(): Promise<void>
 function Print(): Promise<void>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -505,7 +505,7 @@ import { Window } from '@wailsio/runtime'
 await Window.Print()
 ```
 
-**Remarque :** cette méthode ouvre la boîte de dialogue d’impression native du système d’exploitation, permettant à l’utilisateur de sélectionner les paramètres de l’imprimante et d’imprimer le contenu actuel de la fenêtre. Contrairement à `window.print()`, qui peut ne pas fonctionner dans les vues web, elle utilise l’API d’impression native de la plateforme.
+**Remarque :** cette méthode ouvre la boîte de dialogue d’impression native du système d’exploitation, dans laquelle l’utilisateur peut sélectionner les paramètres de l’imprimante et imprimer le contenu actuel de la fenêtre. Contrairement à `window.print()`, qui peut ne pas fonctionner dans les vues web, elle utilise l’API d’impression native de la plateforme.
 
 ### Presse-papiers
 
@@ -519,7 +519,7 @@ Définit le texte du presse-papiers.
 function SetText(text: string): Promise<void>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Clipboard } from '@wailsio/runtime'
@@ -529,13 +529,13 @@ await Clipboard.SetText('Hello from Wails!')
 
 #### Text()
 
-Récupère le texte du presse-papiers.
+Renvoie le texte du presse-papiers.
 
 ```typescript
 function Text(): Promise<string>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Clipboard } from '@wailsio/runtime'
@@ -550,13 +550,13 @@ Méthodes système de bas niveau permettant de communiquer directement avec le b
 
 #### invoke()
 
-Envoie un message brut directement au backend. Cette méthode contourne le système de liaison standard et le message est traité par le `RawMessageHandler` défini dans les options de votre application.
+Envoie directement un message brut au backend. Cette méthode contourne le système de liaison standard et le message est traité par le `RawMessageHandler` défini dans les options de votre application.
 
 ```typescript
 function invoke(message: any): void
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { System } from '@wailsio/runtime'
@@ -569,11 +569,11 @@ System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 ```
 
 @note{type="caution"}
-Cette fonction est exécutée sans attendre de réponse et ne renvoie aucune valeur. Utilisez des événements pour recevoir les réponses du backend.
+Cette fonction fonctionne en mode « envoyer et oublier » et ne renvoie aucune valeur. Utilisez des événements pour recevoir les réponses du backend.
 
 @end
 
-Pour plus de détails, consultez le [guide des messages bruts](/guides/raw-messages/).
+Pour en savoir plus, consultez le [guide des messages bruts](/guides/raw-messages/).
 
 ### Application
 
@@ -603,7 +603,7 @@ Quitte l’application.
 function Quit(): Promise<void>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Application } from '@wailsio/runtime'
@@ -626,7 +626,7 @@ Ouvre une URL dans le navigateur du système.
 function OpenURL(url: string | URL): Promise<void>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Browser } from '@wailsio/runtime'
@@ -636,11 +636,11 @@ await Browser.OpenURL('https://wails.io')
 
 ### Écrans
 
-Informations sur les écrans et gestion de ceux-ci.
+Informations sur les écrans et gestion des écrans.
 
 #### GetAll()
 
-Récupère tous les écrans.
+Renvoie tous les écrans.
 
 ```typescript
 function GetAll(): Promise<Screen[]>
@@ -648,7 +648,7 @@ function GetAll(): Promise<Screen[]>
 
 #### GetPrimary()
 
-Récupère l’écran principal.
+Renvoie l’écran principal.
 
 ```typescript
 function GetPrimary(): Promise<Screen>
@@ -656,13 +656,13 @@ function GetPrimary(): Promise<Screen>
 
 #### GetCurrent()
 
-Récupère l’écran actif actuel.
+Renvoie l’écran actuellement actif.
 
 ```typescript
 function GetCurrent(): Promise<Screen>
 ```
 
-**Interface Screen :**
+**Interface Screen :**
 
 ```typescript
 interface Screen {
@@ -679,7 +679,7 @@ interface Screen {
 }
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Screens } from '@wailsio/runtime'
@@ -707,7 +707,7 @@ Affiche une boîte de dialogue d’information.
 function Info(options: MessageDialogOptions): Promise<string>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Dialogs } from '@wailsio/runtime'
@@ -742,7 +742,7 @@ Affiche une boîte de dialogue de question avec des boutons personnalisés.
 function Question(options: MessageDialogOptions): Promise<string>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Dialogs } from '@wailsio/runtime'
@@ -769,7 +769,7 @@ Affiche une boîte de dialogue d’ouverture de fichier.
 function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```javascript
 import { Dialogs } from '@wailsio/runtime'
@@ -797,24 +797,24 @@ function SaveFile(options: SaveFileDialogOptions): Promise<string>
 
 ### WML (langage de balisage Wails)
 
-WML fournit des attributs déclaratifs pour les actions courantes. Ajoutez des attributs aux éléments HTML :
+WML fournit des attributs déclaratifs pour les actions courantes. Ajoutez des attributs aux éléments HTML :
 
 #### Attributs
 
-**wml-event** – Émet un événement lors d’un clic
+**wml-event** - Émet un événement lors d’un clic
 
 ```html
 <button wml-event="save-clicked">Save</button>
 ```
 
-**wml-window** – Appelle une méthode de fenêtre
+**wml-window** - Appelle une méthode de fenêtre
 
 ```html
 <button wml-window="Close">Close Window</button>
 <button wml-window="Minimise">Minimize</button>
 ```
 
-**wml-target-window** – Spécifie la fenêtre cible pour wml-window
+**wml-target-window** - Spécifie la fenêtre cible de wml-window
 
 ```html
 <button wml-window="Show" wml-target-window="settings">
@@ -822,13 +822,13 @@ WML fournit des attributs déclaratifs pour les actions courantes. Ajoutez des a
 </button>
 ```
 
-**wml-openurl** – Ouvre une URL dans le navigateur
+**wml-openurl** - Ouvre une URL dans le navigateur
 
 ```html
 <a href="#" wml-openurl="https://wails.io">Visit Wails</a>
 ```
 
-**wml-confirm** – Affiche une boîte de dialogue de confirmation avant l’action
+**wml-confirm** - Affiche une boîte de dialogue de confirmation avant l’action
 
 ```html
 <button wml-window="Close" wml-confirm="Are you sure you want to close?">
@@ -836,7 +836,7 @@ WML fournit des attributs déclaratifs pour les actions courantes. Ajoutez des a
 </button>
 ```
 
-**Exemple :**
+**Exemple :**
 
 ```html
 <div>
@@ -905,17 +905,17 @@ screens.forEach(screen => {
 
 ### ✅ À faire
 
-- **Effectuez des importations sélectives** – Importez uniquement ce dont vous avez besoin
-- **Gérez les promesses** – Toutes les méthodes renvoient des promesses
-- **Utilisez WML pour les actions simples** – Le code est plus clair qu’en JavaScript
-- **Vérifiez les valeurs de retour** – En particulier pour les boîtes de dialogue
-- **Désabonnez-vous des événements** – Effectuez le nettoyage lorsque vous avez terminé
+- **Effectuez des importations sélectives** - Importez uniquement ce dont vous avez besoin
+- **Gérez les promesses** - Toutes les méthodes renvoient des promesses
+- **Utilisez WML pour les actions simples** — Plus clair que JavaScript
+- **Vérifiez les valeurs de retour** — En particulier pour les boîtes de dialogue
+- **Désabonnez-vous des événements** — Effectuez le nettoyage lorsque vous avez terminé
 
 ### ❌ À ne pas faire
 
-- **N’oubliez pas await** – La plupart des méthodes sont asynchrones
-- **Ne bloquez pas l’interface utilisateur** – Utilisez correctement async/await
-- **N’ignorez pas les erreurs** – Gérez toujours les rejets de promesse
+- **N’oubliez pas await** — La plupart des méthodes sont asynchrones
+- **Ne bloquez pas l’interface utilisateur** — Utilisez correctement async/await
+- **N’ignorez pas les erreurs** — Gérez toujours les rejets de promesse
 
 ## Prise en charge de TypeScript
 

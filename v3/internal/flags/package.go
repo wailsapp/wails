@@ -14,5 +14,5 @@ type ToolPackage struct {
 	DmgFiles        string `name:"files" description:"Additional DMG files as name=path pairs separated by commas" default:""`
 	DmgWindowWidth  int    `name:"window-width" description:"DMG Finder window width in pixels" default:"540"`
 	DmgWindowHeight int    `name:"window-height" description:"DMG Finder window height in pixels" default:"380"`
-	CreateDMG       bool   `name:"create-dmg" description:"Create a DMG file (macOS only)" default:"false"`
+	CreateDMG       bool   `name:"create-dmg" description:"Create a macOS DMG file" default:"false"`
 }

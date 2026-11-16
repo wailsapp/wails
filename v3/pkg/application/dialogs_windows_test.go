@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCleanPath(t *testing.T) {
-	i := is.New(t)
+	i := require.New(t)
 	tests := []struct {
 		name      string
 		inputPath string

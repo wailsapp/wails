@@ -166,7 +166,7 @@ For apps distributed outside the Mac App Store, Apple requires notarization:
 wails3 task darwin:sign:notarize
 ```
 
-First, store your credentials. Either run the interactive wizard (`wails3 setup signing`) or call `notarytool` directly:
+First, store your credentials. Either run the interactive wizard (`wails3 signing`) or call `notarytool` directly:
 
 ```bash
 xcrun notarytool store-credentials "my-notarize-profile" \
@@ -260,7 +260,7 @@ xattr -cr /path/to/YourApp.app
 
 Common issues:
 
-- **Invalid credentials**: Re-run `xcrun notarytool store-credentials` (or `wails3 setup signing`)
+- **Invalid credentials**: Re-run `xcrun notarytool store-credentials` (or `wails3 signing`)
 - **Hardened runtime required**: Ensure entitlements include `com.apple.security.cs.allow-unsigned-executable-memory` if needed
 - **Missing timestamp**: The signing process should include a timestamp automatically
 

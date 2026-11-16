@@ -89,7 +89,7 @@ vars:
 Store your key password:
 
 ```bash
-wails3 setup signing
+wails3 signing
 ```
 
 See [Signing Applications](/guides/build/signing/) for details.
@@ -168,18 +168,29 @@ chmod +x MyApp-x86_64.AppImage
 
 ### Missing dependencies
 
-If the app fails to start, check for missing WebKit dependencies:
+Match the libraries to the binary's build variant. For a default GTK4/WebKitGTK 6.0 build:
+
+```bash
+# Debian/Ubuntu versions that provide WebKitGTK 6.0
+sudo apt install libgtk-4-1 libwebkitgtk-6.0-4
+# Fedora
+sudo dnf install gtk4 webkitgtk6.0
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+For a binary explicitly built with `-tags gtk3`, install the legacy GTK3/WebKit2GTK 4.1 libraries instead:
 
 ```bash
 # Debian/Ubuntu
-sudo apt install libwebkit2gtk-4.1-0
-
+sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
 # Fedora
-sudo dnf install webkit2gtk4.1
-
+sudo dnf install gtk3 webkit2gtk4.1
 # Arch
-sudo pacman -S webkit2gtk-4.1
+sudo pacman -S gtk3 webkit2gtk-4.1
 ```
+
+Package availability and names depend on the distribution release. Use a supported release with the required libraries, or the documented cross-build/container path; installing the legacy libraries does not satisfy a default build. An AppImage's portability depends on what its packaging actually bundles and which host libraries it still needs.
 
 ### No C compiler found
 

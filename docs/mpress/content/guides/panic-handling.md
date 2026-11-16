@@ -12,8 +12,8 @@ In Go applications, panics can occur during runtime when something unexpected ha
 Before diving into Wails-specific panic handling, it's essential to understand how panics work in Go:
 
 1. Panics are for unrecoverable errors that shouldn't happen during normal operation
-2. When a panic occurs in a goroutine, only that goroutine is affected
-3. Panics can be recovered using `defer` and `recover()`
+2. A panic unwinds the current goroutine; if it reaches the top without recovery, the process terminates, including other goroutines
+3. Recovery must run in a deferred function in the same goroutine as the panic
 
 Here's a basic example of panic handling in Go:
 
@@ -40,7 +40,7 @@ Wails automatically handles panics that occur in your Service methods when they 
 The panic handler is specifically designed to catch:
 
 - Panics in bound service methods called from the frontend
-- Internal panics from the Wails runtime
+- Panics in runtime paths that explicitly install Wails recovery; this is not a process-wide handler for every goroutine
 
 For other scenarios, such as background goroutines or standalone Go code, you should handle panics yourself using Go's standard panic recovery mechanisms.
 

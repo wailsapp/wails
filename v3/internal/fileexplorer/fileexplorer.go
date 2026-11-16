@@ -42,7 +42,7 @@ func OpenFileManager(path string, selectFile bool) error {
 		return errors.New("unsupported platform: " + runtime.GOOS)
 	}
 
-	explorerBin, explorerArgs, err := explorerBinArgs(path, selectFile)
+	explorerBin, explorerArgs, err := explorerBinArgs(ctx, path, selectFile)
 	if err != nil {
 		return fmt.Errorf("failed to determine the file explorer binary: %w", err)
 	}

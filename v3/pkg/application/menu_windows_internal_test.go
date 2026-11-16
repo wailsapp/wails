@@ -4,6 +4,7 @@ package application
 
 import (
 	"testing"
+	"time"
 	"unicode/utf16"
 	"unsafe"
 
@@ -15,6 +16,49 @@ type nativeMenuItemSnapshot struct {
 	id      uint32
 	state   uint32
 	submenu w32.HMENU
+}
+
+func TestWin32MenuHiddenAcceleratorBindings(t *testing.T) {
+	for _, scope := range []string{"application", "window"} {
+		t.Run(scope, func(t *testing.T) {
+			previous := globalApplication
+			app := &App{keyBindings: make(map[string]func(Window))}
+			app.KeyBinding = newKeyBindingManager(app)
+			globalApplication = app
+			t.Cleanup(func() { globalApplication = previous })
+			window := &WebviewWindow{menuBindings: make(map[string]*MenuItem)}
+			menu := NewMenu()
+			clicks := make(chan struct{}, 1)
+			item := menu.Add("Action").SetAccelerator("Ctrl+M").SetHidden(true).
+				OnClick(func(*Context) { clicks <- struct{}{} })
+			var builder *Win32Menu
+			if scope == "window" {
+				builder = NewApplicationMenu(&windowsWebviewWindow{parent: window}, menu)
+			} else {
+				builder = NewPopupMenu(0, menu)
+			}
+			t.Cleanup(builder.Destroy)
+			key := item.accelerator.String()
+			if window.processKeyBinding(key) {
+				t.Fatal("initially hidden menu shortcut was handled")
+			}
+			item.SetHidden(false)
+			builder.Update()
+			if !window.processKeyBinding(key) {
+				t.Fatal("visible menu shortcut was not handled")
+			}
+			select {
+			case <-clicks:
+			case <-time.After(time.Second):
+				t.Fatal("visible menu callback did not fire")
+			}
+			item.SetHidden(true)
+			builder.Update()
+			if window.processKeyBinding(key) {
+				t.Fatal("hidden menu shortcut survived a rebuild")
+			}
+		})
+	}
 }
 
 func snapshotNativeMenuItem(t *testing.T, menu w32.HMENU, position uint32) nativeMenuItemSnapshot {

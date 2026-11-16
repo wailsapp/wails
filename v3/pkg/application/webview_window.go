@@ -190,6 +190,10 @@ type WebviewWindow struct {
 	keyBindings     map[string]func(Window)
 	keyBindingsLock sync.RWMutex
 
+	// menuRemoved is set by SetMenu(nil): the window shows no menu bar, not
+	// even the application menu it would otherwise fall back to.
+	menuRemoved bool
+
 	// menuBindings holds the menu bindings for the window
 	menuBindings     map[string]*MenuItem
 	menuBindingsLock sync.RWMutex
@@ -222,6 +226,13 @@ type WebviewWindow struct {
 	constraintsSaved bool
 }
 
+// SetMenu sets the window's menu bar on platforms where windows have one
+// (Linux and Windows), replacing the bar it shows. SetMenu(nil) removes the
+// bar: the window then shows no menu, not even the application menu, and the
+// removed menu's accelerators stop working in it. On a window that has not
+// started yet, it is created without a menu bar. On macOS the menu bar
+// belongs to the application, not the window, so SetMenu does nothing there:
+// use app.Menu.Set instead.
 func (w *WebviewWindow) SetMenu(menu *Menu) {
 	switch runtime.GOOS {
 	case "darwin":
@@ -231,6 +242,7 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	case "linux":
 		w.options.Linux.Menu = menu
 	}
+	w.menuRemoved = menu == nil
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setMenu(menu)
@@ -601,23 +613,39 @@ func (w *WebviewWindow) Resizable() bool {
 	return !w.options.DisableResize
 }
 
+// stateOwnsSize reports whether the window's size currently belongs to the
+// window state rather than to the application. A fullscreen or maximised
+// window is sized by the platform, and resizing it to satisfy a new
+// constraint leaves the geometry and the state disagreeing - on macOS
+// IsFullscreen() goes on reporting true at the new size. The constraint is
+// still recorded, and UnFullscreen/UnMaximise restores a frame it applies to.
+func (w *WebviewWindow) stateOwnsSize() bool {
+	return w.IsFullscreen() || w.IsMaximised()
+}
+
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
-	currentWidth, currentHeight := w.Size()
-	newWidth, newHeight := currentWidth, currentHeight
-
-	var newSize bool
-	if minHeight != 0 && currentHeight < minHeight {
-		newHeight = minHeight
-		newSize = true
-	}
-	if minWidth != 0 && currentWidth < minWidth {
-		newWidth = minWidth
-		newSize = true
-	}
 	InvokeSync(func() {
+		currentWidth, currentHeight := w.Size()
+		newWidth, newHeight := currentWidth, currentHeight
+
+		var newSize bool
+		if minHeight != 0 && currentHeight < minHeight {
+			newHeight = minHeight
+			newSize = true
+		}
+		if minWidth != 0 && currentWidth < minWidth {
+			newWidth = minWidth
+			newSize = true
+		}
+		if newSize && w.stateOwnsSize() {
+			newSize = false
+		}
 		w.options.MinWidth = minWidth
 		w.options.MinHeight = minHeight
+		if w.constraintsSaved {
+			w.savedMinWidth, w.savedMinHeight = minWidth, minHeight
+		}
 		if newSize {
 			w.options.Height = newHeight
 			w.options.Width = newWidth
@@ -634,21 +662,27 @@ func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
 
 // SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
-	currentWidth, currentHeight := w.Size()
-	newWidth, newHeight := currentWidth, currentHeight
-
-	var newSize bool
-	if maxHeight != 0 && currentHeight > maxHeight {
-		newHeight = maxHeight
-		newSize = true
-	}
-	if maxWidth != 0 && currentWidth > maxWidth {
-		newWidth = maxWidth
-		newSize = true
-	}
 	InvokeSync(func() {
+		currentWidth, currentHeight := w.Size()
+		newWidth, newHeight := currentWidth, currentHeight
+
+		var newSize bool
+		if maxHeight != 0 && currentHeight > maxHeight {
+			newHeight = maxHeight
+			newSize = true
+		}
+		if maxWidth != 0 && currentWidth > maxWidth {
+			newWidth = maxWidth
+			newSize = true
+		}
+		if newSize && w.stateOwnsSize() {
+			newSize = false
+		}
 		w.options.MaxWidth = maxWidth
 		w.options.MaxHeight = maxHeight
+		if w.constraintsSaved {
+			w.savedMaxWidth, w.savedMaxHeight = maxWidth, maxHeight
+		}
 		if newSize {
 			w.options.Height = newHeight
 			w.options.Width = newWidth
@@ -844,6 +878,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		message = strings.Replace(message, "wails:non-client-region:", "", 1)
 		w.handleNonClientRegionMessage(message)
 	case message == "wails:runtime:ready":
+		notifyDevRuntimeReady()
 		w.emit(events.Common.WindowRuntimeReady)
 		w.pendingJSMutex.Lock()
 		w.runtimeLoaded = true
@@ -1348,13 +1383,7 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if !w.constraintsSaved {
-			w.savedMinWidth = w.options.MinWidth
-			w.savedMinHeight = w.options.MinHeight
-			w.savedMaxWidth = w.options.MaxWidth
-			w.savedMaxHeight = w.options.MaxHeight
-			w.constraintsSaved = true
-		}
+		w.saveSizeConstraintOptions()
 		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
@@ -1362,6 +1391,17 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 			w.impl.setMaxSize(0, 0)
 		}
 	})
+}
+
+func (w *WebviewWindow) saveSizeConstraintOptions() {
+	if w.constraintsSaved {
+		return
+	}
+	w.savedMinWidth = w.options.MinWidth
+	w.savedMinHeight = w.options.MinHeight
+	w.savedMaxWidth = w.options.MaxWidth
+	w.savedMaxHeight = w.options.MaxHeight
+	w.constraintsSaved = true
 }
 
 func (w *WebviewWindow) restoreSavedSizeConstraintOptions() bool {
@@ -1788,6 +1828,21 @@ func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
 	w.menuBindingsLock.Lock()
 	defer w.menuBindingsLock.Unlock()
 	w.menuBindings[a.String()] = nil
+}
+
+// removeMenuBindingsOf unregisters the accelerators that items hold in this
+// window, leaving any accelerator that now belongs to another item alone.
+func (w *WebviewWindow) removeMenuBindingsOf(items []*MenuItem) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	for _, item := range items {
+		if item.accelerator == nil {
+			continue
+		}
+		if key := item.accelerator.String(); w.menuBindings[key] == item {
+			delete(w.menuBindings, key)
+		}
+	}
 }
 
 func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {

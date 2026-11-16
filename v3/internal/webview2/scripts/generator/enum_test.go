@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"embed"
 	_ "embed"
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"updater/generator/types"
@@ -77,22 +75,10 @@ typedef enum COREWEBVIEW2_PREFERRED_COLOR_SCHEME2 {
 
 func TestEnum(t *testing.T) {
 
-	i := is.New(t)
-
 	var buf bytes.Buffer
 	buf.Write(testData)
 
-	idl, err := Parser.Parse("", &buf)
-	i.NoErr(err)
-
-	err = idl.Process()
-	i.NoErr(err)
-
-	files, err := idl.Generate()
-	i.NoErr(err)
-
-	// Remove the `com.go` filename
-	files = files[1:]
+	files := generateFixture(t, buf.Bytes())
 
 	expected := []*types.GeneratedFile{
 		{
@@ -112,6 +98,6 @@ func TestEnum(t *testing.T) {
 		},
 	}
 
-	require.ElementsMatch(t, files, expected)
+	checkGeneratedFiles(t, files, expected)
 
 }

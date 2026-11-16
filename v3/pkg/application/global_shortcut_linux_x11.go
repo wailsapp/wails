@@ -1,4 +1,4 @@
-//go:build linux && cgo && !android && !server
+//go:build linux && cgo && !android && !server && !purego
 
 package application
 
@@ -113,7 +113,6 @@ import "C"
 
 import (
 	"fmt"
-	"runtime"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -186,144 +185,6 @@ func newX11GlobalShortcuts(manager *GlobalShortcutManager) globalShortcutImpl {
 	return g
 }
 
-func (g *x11GlobalShortcuts) wake() {
-	var b [1]byte
-	_, _ = syscall.Write(g.wakeW, b[:])
-}
-
-// run executes fn on the event-loop goroutine and waits for it to complete.
-func (g *x11GlobalShortcuts) run(fn func()) {
-	done := make(chan struct{})
-	g.opCh <- func() {
-		fn()
-		close(done)
-	}
-	g.wake()
-	<-done
-}
-
-func (g *x11GlobalShortcuts) eventLoop() {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-	for {
-		var keycode, state C.uint
-		r := C.gsWaitForEvent(g.display, C.int(g.wakeR), &keycode, &state)
-		switch r {
-		case 0:
-			g.drainOps()
-		case 1:
-			b := x11Binding{keycode: uint(keycode), modMask: uint(state) & x11SignificantMask}
-			g.mu.RLock()
-			id, ok := g.match[b]
-			g.mu.RUnlock()
-			if ok {
-				g.manager.dispatch(id)
-			}
-		default:
-			return
-		}
-	}
-}
-
-func (g *x11GlobalShortcuts) drainOps() {
-	for {
-		select {
-		case op := <-g.opCh:
-			op()
-		default:
-			return
-		}
-	}
-}
-
-func (g *x11GlobalShortcuts) modMask(accel *accelerator) uint {
-	var mask uint
-	for _, m := range accel.Modifiers {
-		switch m {
-		case CmdOrCtrlKey, ControlKey:
-			mask |= x11ControlMask
-		case OptionOrAltKey:
-			mask |= x11Mod1Mask
-		case ShiftKey:
-			mask |= x11ShiftMask
-		case SuperKey:
-			mask |= x11Mod4Mask
-		}
-	}
-	return mask
-}
-
-func (g *x11GlobalShortcuts) register(id int, accel *accelerator) error {
-	if g.startErr != nil {
-		return g.startErr
-	}
-	keysymName, ok := x11KeysymNames[accel.Key]
-	if !ok {
-		return fmt.Errorf("key %q is not supported as a global shortcut", accel.Key)
-	}
-	modMask := g.modMask(accel)
-
-	var regErr error
-	var binding x11Binding
-	g.run(func() {
-		cname := C.CString(keysymName)
-		defer C.free(unsafe.Pointer(cname))
-		keycode := uint(C.gsKeycodeForName(g.display, cname))
-		if keycode == 0 {
-			regErr = fmt.Errorf("key %q has no keycode on this keyboard", accel.Key)
-			return
-		}
-		if C.gsGrabKey(g.display, C.uint(keycode), C.uint(modMask)) != 0 {
-			regErr = fmt.Errorf("the shortcut is already registered (possibly by another application)")
-			return
-		}
-		binding = x11Binding{keycode: keycode, modMask: modMask}
-	})
-	if regErr != nil {
-		return regErr
-	}
-
-	g.mu.Lock()
-	g.bindings[id] = binding
-	g.match[binding] = id
-	g.mu.Unlock()
-	return nil
-}
-
-func (g *x11GlobalShortcuts) unregister(id int) error {
-	g.mu.Lock()
-	binding, ok := g.bindings[id]
-	if ok {
-		delete(g.bindings, id)
-		delete(g.match, binding)
-	}
-	g.mu.Unlock()
-	if !ok {
-		return nil
-	}
-	g.run(func() {
-		C.gsUngrabKey(g.display, C.uint(binding.keycode), C.uint(binding.modMask))
-	})
-	return nil
-}
-
-func (g *x11GlobalShortcuts) unregisterAll() error {
-	g.mu.Lock()
-	bindings := g.bindings
-	g.bindings = make(map[int]x11Binding)
-	g.match = make(map[x11Binding]int)
-	g.mu.Unlock()
-	if len(bindings) == 0 {
-		return nil
-	}
-	g.run(func() {
-		for _, b := range bindings {
-			C.gsUngrabKey(g.display, C.uint(b.keycode), C.uint(b.modMask))
-		}
-	})
-	return nil
-}
-
 // x11KeysymNames maps Wails accelerator key names (already lower-cased by
 // parseAccelerator) to X keysym names accepted by XStringToKeysym. Letters and
 // digits map to themselves.
@@ -361,4 +222,29 @@ var x11KeysymNames = map[string]string{
 	"f13": "F13", "f14": "F14", "f15": "F15", "f16": "F16", "f17": "F17",
 	"f18": "F18", "f19": "F19", "f20": "F20", "f21": "F21", "f22": "F22",
 	"f23": "F23", "f24": "F24",
+}
+
+// waitForEvent blocks until a key press (1, with its keycode and state), a
+// wake-up (0), or a display failure (-1) occurs.
+func (g *x11GlobalShortcuts) waitForEvent() (r int, keycode, state uint32) {
+	var kc, st C.uint
+	r = int(C.gsWaitForEvent(g.display, C.int(g.wakeR), &kc, &st))
+	return r, uint32(kc), uint32(st)
+}
+
+// keycodeForName resolves an X keysym name to a hardware keycode, or 0 if unknown.
+func (g *x11GlobalShortcuts) keycodeForName(name string) uint {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	return uint(C.gsKeycodeForName(g.display, cname))
+}
+
+// grabKey grabs keycode+modmask on the root window. It returns 0 on success.
+func (g *x11GlobalShortcuts) grabKey(keycode, modmask uint32) int {
+	return int(C.gsGrabKey(g.display, C.uint(keycode), C.uint(modmask)))
+}
+
+// ungrabKey releases keycode+modmask on the root window.
+func (g *x11GlobalShortcuts) ungrabKey(keycode, modmask uint32) {
+	C.gsUngrabKey(g.display, C.uint(keycode), C.uint(modmask))
 }

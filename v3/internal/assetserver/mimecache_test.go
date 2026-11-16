@@ -1,8 +1,23 @@
 package assetserver
 
 import (
+	"net/http"
 	"testing"
 )
+
+func TestGetMimetypeContentChanges(t *testing.T) {
+	for _, data := range [][]byte{
+		[]byte("<!DOCTYPE html><html></html>"),
+		{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'},
+		nil,
+		{0, 1, 2, 3},
+	} {
+		want := http.DetectContentType(data)
+		if got := GetMimetype("changing-asset.unknown", data); got != want {
+			t.Errorf("GetMimetype with %x = %q, want %q", data, got, want)
+		}
+	}
+}
 
 func TestGetMimetype(t *testing.T) {
 	type args struct {
@@ -27,6 +42,12 @@ func TestGetMimetype(t *testing.T) {
 		{"nil data", args{"nil.svg", nil}, "image/svg+xml"},
 		{"empty data", args{"empty.html", emptyMsg}, "text/html; charset=utf-8"},
 		{"css", args{"test.css", css}, "text/css; charset=utf-8"},
+		{"mixed-case css", args{"test.CsS", css}, "text/css; charset=utf-8"},
+		{"uppercase js", args{"test.JS", []byte("let foo = 'bar';")}, "text/javascript; charset=utf-8"},
+		{"uppercase svg", args{"test.SVG", svg}, "image/svg+xml"},
+		{"mixed-case font", args{"font.WoFf2", nil}, "font/woff2"},
+		{"uppercase wasm", args{"module.WASM", nil}, "application/wasm"},
+		{"uppercase unknown extension", args{"data.UNKNOWN", html}, "text/html; charset=utf-8"},
 		{"js", args{"test.js", []byte("let foo = 'bar'; console.log(foo);")}, "text/javascript; charset=utf-8"},
 		{"mjs", args{"test.mjs", []byte("let foo = 'bar'; console.log(foo);")}, "text/javascript; charset=utf-8"},
 		{"html-utf8", args{"test_utf8.html", html}, "text/html; charset=utf-8"},

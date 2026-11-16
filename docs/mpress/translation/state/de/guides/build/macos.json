@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "pageKey": "217a65040f205de3989f",
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "95d00bb9c63daf89887e",
   "sourceFile": "guides/build/macos.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
@@ -10,900 +11,960 @@
       "targetHash": "992eafbe5cf6b7ecd60e010b5328ce2c781976b5c40e70037c1ffca56c61f685",
       "machineHash": "992eafbe5cf6b7ecd60e010b5328ce2c781976b5c40e70037c1ffca56c61f685",
       "machineText": "Private macOS-APIs",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Private macOS APIs",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0002-text-01": {
       "sourceHash": "9842f7cdac727d6715ccece7e98bc4cb609bb4f48f39950db42eceea5068d5ce",
-      "targetHash": "9f79379a76bd083417e96168d6ac377618dbf26bddc8d0bff04d88e65df9e5af",
-      "machineHash": "9f79379a76bd083417e96168d6ac377618dbf26bddc8d0bff04d88e65df9e5af",
-      "machineText": "Wails v3 verwendet standardmäßig öffentliche macOS-APIs. Um Funktionen zu aktivieren, die undokumentierte Apple-APIs erfordern, erstellen Sie Ihre App mit dem einzelnen Go-Build-Tag `private_mac_apis`:",
-      "status": "final",
+      "targetHash": "daa38105add4ded654accdd6418e9ecdbfaf428acf16624ea1ca001f1265d0a5",
+      "machineHash": "daa38105add4ded654accdd6418e9ecdbfaf428acf16624ea1ca001f1265d0a5",
+      "machineText": "Wails v3 verwendet standardmäßig öffentliche macOS-APIs. Um Funktionen zu aktivieren, die undokumentierte Apple-APIs benötigen, erstellen Sie Ihre App mit dem einzelnen Go-Build-Tag `private_mac_apis`:",
+      "status": "machine-translated",
       "sourcePreview": "Wails v3 uses public macOS APIs by default. To opt into features that require undocumented Apple API…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0003-text-01": {
       "sourceHash": "69380b3dc94be58c55fe79a5e42745683caa4f15d0ca1f88874c9d2455b20f33",
-      "targetHash": "c386f31c586fed24d47ef62794fa3bc4f323baebdccfcb45ed19d55d1be8c959",
-      "machineHash": "c386f31c586fed24d47ef62794fa3bc4f323baebdccfcb45ed19d55d1be8c959",
-      "machineText": "Verwenden Sie für einen direkten Go-Build `go build -tags private_mac_apis .` (oder `-tags production,private_mac_apis` für den Produktivbetrieb). Bestehende Anwendungen, die von privatem Verhalten abhängen, müssen dieses Tag hinzufügen, um es beizubehalten. Das Tag gilt nur für macOS-Desktop-Builds.",
-      "status": "final",
+      "targetHash": "fa5e1d0de6ba255a920b4a9cf0a2a3a4b59fab86707b91aa121e78ecb2938f3d",
+      "machineHash": "fa5e1d0de6ba255a920b4a9cf0a2a3a4b59fab86707b91aa121e78ecb2938f3d",
+      "machineText": "Verwenden Sie für einen direkten Go-Build `go build -tags private_mac_apis .` (oder `-tags production,private_mac_apis` für die Produktion). Bestehende Anwendungen, die auf privatem Verhalten beruhen, müssen dieses Tag hinzufügen, um es beizubehalten. Das Tag gilt nur für macOS-Desktop-Builds.",
+      "status": "machine-translated",
       "sourcePreview": "For a direct Go build, use `go build -tags private_mac_apis .` (or `-tags production,private_mac_api…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0004-text-01": {
       "sourceHash": "224dd0a272d83c41801531082791cd70dec3778fa2d1101f07a4b278f2b0c1d1",
-      "targetHash": "bbd1220310628a7a266f88e5adf43f4ff9c899e85383ffd470f58c6e6060a9a2",
-      "machineHash": "bbd1220310628a7a266f88e5adf43f4ff9c899e85383ffd470f58c6e6060a9a2",
-      "machineText": "Eine vollständige Übersicht der betroffenen Funktionen und Optionswerte, die genauen Ausweichmechanismen für öffentliche Builds, Zuordnungen für den Liquid-Glass-Stil und Build-Kombinationen für den Inspektor finden Sie unter [Private macOS-APIs](/guides/build/private-macos-apis/). Ausschließlich private Operationen haben ohne das Tag keine Wirkung; die öffentliche Go-API bleibt unverändert.",
-      "status": "final",
+      "targetHash": "a228c2e514b69adeaab9296dd208dc13354a7bb9539e9fde377b4611ba215232",
+      "machineHash": "a228c2e514b69adeaab9296dd208dc13354a7bb9539e9fde377b4611ba215232",
+      "machineText": "Eine vollständige Übersicht der betroffenen Funktionen und Optionswerte, die genauen Fallbacks öffentlicher Builds, die Zuordnungen der Liquid-Glass-Stile und die Build-Kombinationen für den Inspector finden Sie unter [Private macOS-APIs](/guides/build/private-macos-apis/). Ausschließlich private Operationen bleiben ohne das Tag wirkungslos; die öffentliche Go-API bleibt unverändert.",
+      "status": "machine-translated",
       "sourcePreview": "See [Private macOS APIs](/guides/build/private-macos-apis/) for the complete inventory of affected f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0005-heading-01": {
       "sourceHash": "376a6071c49a386c7094041147988a64bc33295e87774066f5645eebcbf11bf0",
       "targetHash": "4903d9f8e052bfbafe8996dfdbe3b0e1f1e0829e7b6d4fc995b6c772e6035a74",
       "machineHash": "4903d9f8e052bfbafe8996dfdbe3b0e1f1e0829e7b6d4fc995b6c772e6035a74",
       "machineText": "Anwendungspaket",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Application Bundle",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0006-text-01": {
       "sourceHash": "2fbbd58466f65014f6aab6aac5c3b4669c485ebc7f648468b361ff7752570d3d",
       "targetHash": "9b1580900a29913e455057f626f7e01eb93a4ed42bd385dd8c0052098d9e4b4f",
       "machineHash": "9b1580900a29913e455057f626f7e01eb93a4ed42bd385dd8c0052098d9e4b4f",
       "machineText": "Paketieren Sie Ihre App als standardmäßiges macOS-`.app`-Bundle:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Package your app as a standard macOS `.app` bundle:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0007-text-01": {
       "sourceHash": "ec2d3991137d3784de7f8650c6be8376da9c0905357dab2d7625d697dfec0678",
       "targetHash": "d5d62608844f5d4c1af6072aa9102e8baa56942f7b080007456a63848a135fab",
       "machineHash": "d5d62608844f5d4c1af6072aa9102e8baa56942f7b080007456a63848a135fab",
       "machineText": "Dadurch wird `bin/\u003cAppName\u003e.app` mit folgendem Inhalt erstellt:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "This creates `bin/\u003cAppName\u003e.app` containing:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0008-text-01": {
       "sourceHash": "446afac75e1296a298ce1c44845d67275c90c0f95f1d080c5d375ecb6af64da3",
       "targetHash": "59a1e8630c6851349c34fa8781ef59980c7eeb0aab9933d0edf2a6e66184a601",
       "machineHash": "59a1e8630c6851349c34fa8781ef59980c7eeb0aab9933d0edf2a6e66184a601",
       "machineText": "Die kompilierte Binärdatei in `Contents/MacOS/`",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The compiled binary in `Contents/MacOS/`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0009-text-01": {
       "sourceHash": "5b476fa6fe2869b34aaab427ded3ecd3652edc3c1aab038f58cc205cd07f9843",
       "targetHash": "0d30026e617958c0d7534c936eea48929437f0d2be5d1d66dc9b1d8cd50576ea",
       "machineHash": "0d30026e617958c0d7534c936eea48929437f0d2be5d1d66dc9b1d8cd50576ea",
       "machineText": "Das App-Symbol in `Contents/Resources/` (aus `icons.icns` oder, sofern vorhanden, aus dem Asset-Katalog `Assets.car`)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0010-text-01": {
       "sourceHash": "e18c645a86b88838862aa650cd94c0d35f217d61f94c59c3c730e83dcb551269",
       "targetHash": "58185ac1fc8d1599b5270428d609b97651a191f3f2bf978a3f13062c3d69912d",
       "machineHash": "58185ac1fc8d1599b5270428d609b97651a191f3f2bf978a3f13062c3d69912d",
       "machineText": "`Info.plist` mit App-Metadaten",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`Info.plist` with app metadata",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
     "b0011-heading-01": {
+      "sourceHash": "7860d7f691fbe0bfd9a3833593eb7b9ccb8e5b01b402bfbd69c09b3d2d78bac3",
+      "targetHash": "797976abc56ad785483f62507e53a1109850f53f39c36466eed6a6341cb52755",
+      "machineHash": "797976abc56ad785483f62507e53a1109850f53f39c36466eed6a6341cb52755",
+      "machineText": "Projekte in synchronisierten Ordnern",
+      "status": "machine-translated",
+      "sourcePreview": "Projects in synced folders",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:55Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "e72e050afe9377041b601de1260ce6f4b70de802f134c130ce6e3fcfd6c6f2e6",
+      "targetHash": "ad1611454ed22f52b446017212d0a8d5fddd1ca02a96f3791ace645bd6acb1a0",
+      "machineHash": "ad1611454ed22f52b446017212d0a8d5fddd1ca02a96f3791ace645bd6acb1a0",
+      "machineText": "Einige macOS-Dateianbieter fügen `.app`-Verzeichnissen Finder-Metadaten hinzu. Dadurch lehnt `codesign` das Bundle ab oder dessen Signatur wird nach dem Signieren ungültig. Es reicht nicht, nur die Metadaten zu entfernen, wenn der Anbieter sie erneut hinzufügt.",
+      "status": "machine-translated",
+      "sourcePreview": "Some macOS file providers add Finder metadata to `.app` directories. This causes `codesign` to rejec…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:55Z"
+    },
+    "b0013-text-01": {
+      "sourceHash": "3c1bcada0871f8e6de843573cd4bc0da100f1f0d33b85227542855203d10cc32",
+      "targetHash": "6e58a0f3b28c22a24c30bbce1c32c4b787f90962ebd4bfef751d01f09bb84b58",
+      "machineHash": "6e58a0f3b28c22a24c30bbce1c32c4b787f90962ebd4bfef751d01f09bb84b58",
+      "machineText": "Die generierten macOS-Build-Tasks prüfen auf dieses Verhalten. Wird es erkannt, verschiebt Wails das generierte Ausgabeverzeichnis des Projekts nach `~/Library/Application Support/Wails/build-output/\u003cproject\u003e-\u003chash\u003e` und ersetzt das ursprüngliche Ausgabeverzeichnis durch einen symbolischen Link. Vorhandene Ausgabedateien bleiben erhalten, und `bin/\u003cAppName\u003e.app` bleibt der für Paketierung, Signierung und Entwicklungsmodus verwendete Pfad. Die CLI gibt beim Verschieben den lokalen Speicherort aus.",
+      "status": "machine-translated",
+      "sourcePreview": "The generated macOS build tasks check for this behavior. When detected, Wails moves the project's ge…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:55Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "50c1b72b906732dc6ff010d8d82863576586533e04bb659c5d2cc86bf465504a",
+      "targetHash": "0b70b7729f03fcdfc5c9a350a1d6c6bd77bf4070070a8a824969ff698c1b4a9d",
+      "machineHash": "0b70b7729f03fcdfc5c9a350a1d6c6bd77bf4070070a8a824969ff698c1b4a9d",
+      "machineText": "Legen Sie mit `WAILS_MACOS_OUTPUT_ROOT` einen anderen lokalen, nicht synchronisierten Speicherort fest. Das Stammverzeichnis für die Verlagerung muss sich auf demselben Dateisystem wie das Projekt befinden. Ein explizit konfiguriertes `BIN_DIR` außerhalb des Projekts wird unverändert verwendet. Bestehende Projekte benötigen das aktualisierte `build/darwin/Taskfile.yml`, um diese Behandlung zu nutzen.",
+      "status": "machine-translated",
+      "sourcePreview": "Set `WAILS_MACOS_OUTPUT_ROOT` to choose another local, unsynced storage location. The relocation roo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:55Z"
+    },
+    "b0015-text-01": {
+      "sourceHash": "b75fb5f163a6367412e00a47f1d7d9eb54066375fc1dc12de6bd570178654450",
+      "targetHash": "3ae7752a01ca7383c857af15bff6c7b7cac78b418658b49ed22f87279b76bef2",
+      "machineHash": "3ae7752a01ca7383c857af15bff6c7b7cac78b418658b49ed22f87279b76bef2",
+      "machineText": "Kopieren Sie für die Verteilung `bin/\u003cAppName\u003e.app` oder erstellen Sie ein DMG. Beim alleinigen Kopieren des symbolischen Links `bin` werden die Build-Artefakte nicht einbezogen. Der direkte Befehl `wails3 tool sign` meldet einen Fehler, wenn sein Eingabeordner erneut Metadaten erhält. Verschieben Sie dieses Bundle vor dem Signieren in einen nicht synchronisierten Ordner.",
+      "status": "machine-translated",
+      "sourcePreview": "For distribution, copy `bin/\u003cAppName\u003e.app` or create a DMG. Copying the `bin` symlink alone does not…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-10-25T21:41:55Z"
+    },
+    "b0016-heading-01": {
       "sourceHash": "544b1fff3c41faf00de91881bf7d805d2df5936d78d99c2e3ad822c97808dd94",
       "targetHash": "bd44b94d3c851d1cbf558951dca709981127e0610d3764a7cdbc9b472f305b4f",
       "machineHash": "bd44b94d3c851d1cbf558951dca709981127e0610d3764a7cdbc9b472f305b4f",
       "machineText": "Bundle-Ressourcen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Bundle Resources",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0012-text-01": {
+    "b0017-text-01": {
       "sourceHash": "26c73134a2aa251e91aa605f896d2ece33d24ea665649cb111875552fbe62ca9",
-      "targetHash": "3ee7ad21e825a3661ee3e53cfdf0498e480e72489b47e0b338986a2a211c1cc4",
-      "machineHash": "3ee7ad21e825a3661ee3e53cfdf0498e480e72489b47e0b338986a2a211c1cc4",
-      "machineText": "`Contents/Resources/` ist der Standardort für schreibgeschützte Dateien, die mit einer macOS-App ausgeliefert werden. Verwenden Sie ihn für größere Vorlagen, Ausgangsdaten, Medien, Sprachpakete oder andere Nutzdaten, die bei Bedarf geöffnet und nicht mit `embed` in die ausführbare Go-Datei kompiliert werden sollen.",
-      "status": "final",
+      "targetHash": "76fcb39857ab48a09dc67df0004f85cfab1ed0ca5c09fb14cadde7cc9599df21",
+      "machineHash": "76fcb39857ab48a09dc67df0004f85cfab1ed0ca5c09fb14cadde7cc9599df21",
+      "machineText": "`Contents/Resources/` ist der Standardspeicherort für schreibgeschützte Dateien, die mit einer macOS-App ausgeliefert werden. Verwenden Sie ihn für größere Vorlagen, Ausgangsdaten, Medien, Sprachpakete oder andere Inhalte, die bei Bedarf geöffnet und nicht mit `embed` in die ausführbare Go-Datei kompiliert werden sollen.",
+      "status": "machine-translated",
       "sourcePreview": "`Contents/Resources/` is the standard place for read-only files that ship with a macOS app. Use it f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0013-text-01": {
+    "b0018-text-01": {
       "sourceHash": "e9c1fa2ed2bdb5302bc7d3f51038a5b4088517c10337061ff2a9963e95640f38",
-      "targetHash": "96ab25473447a47d4cbb664eebc97c8e641c0fbbe4ac5f9a8d1dfd0d7e6c1890",
-      "machineHash": "96ab25473447a47d4cbb664eebc97c8e641c0fbbe4ac5f9a8d1dfd0d7e6c1890",
-      "machineText": "Wails legt bereits das Anwendungssymbol in diesem Verzeichnis ab. Um eigene Dateien hinzuzufügen, legen Sie diese in einem Quellverzeichnis wie `build/resources/` ab und fügen Sie anschließend der Aufgabe `create:app:bundle` in `build/darwin/Taskfile.yml` einen Kopierschritt hinzu:",
-      "status": "final",
+      "targetHash": "71c3f567197c74dd6e8ba102a988cbb976d9d9cdc9d043183f4184fe392dcbe4",
+      "machineHash": "71c3f567197c74dd6e8ba102a988cbb976d9d9cdc9d043183f4184fe392dcbe4",
+      "machineText": "Wails legt das Anwendungssymbol bereits in diesem Verzeichnis ab. Um eigene Dateien hinzuzufügen, legen Sie diese in einem Quellverzeichnis wie `build/resources/` ab und fügen Sie anschließend dem Task `create:app:bundle` in `build/darwin/Taskfile.yml` einen Kopierschritt hinzu:",
+      "status": "machine-translated",
       "sourcePreview": "Wails already places the application icon in this directory. To add your own files, place them in a …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0014-text-01": {
+    "b0019-text-01": {
       "sourceHash": "0d52852df91b03b1c9611c8bf9bbed70e60a1fdb1ba75fd61c94fa93311842d1",
-      "targetHash": "ad62038b94f53a50735181fff85f8f9f96fcbea5b6088ac73faa1f871f866144",
-      "machineHash": "ad62038b94f53a50735181fff85f8f9f96fcbea5b6088ac73faa1f871f866144",
-      "machineText": "Wenn Sie die Aufgabe `darwin:run` des Taskfiles verwenden, fügen Sie deren Aufgabe `run` den entsprechenden Befehl mit dem Ziel `{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Resources/` hinzu.",
-      "status": "final",
+      "targetHash": "acf9e536d3870055bbd5ffd01e532685235337761dbefa731a9a65a7fdb7ae98",
+      "machineHash": "acf9e536d3870055bbd5ffd01e532685235337761dbefa731a9a65a7fdb7ae98",
+      "machineText": "Wenn Sie den Task `darwin:run` des Taskfiles verwenden, fügen Sie dessen Task `run` den entsprechenden Befehl mit `{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Resources/` als Ziel hinzu.",
+      "status": "machine-translated",
       "sourcePreview": "If you use the Taskfile's `darwin:run` task, add the equivalent command to its `run` task, targeting…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0015-heading-01": {
+    "b0020-heading-01": {
       "sourceHash": "8b1ed5d1de2b08ca7461c67eea42774c2824fe98509e523f2c4706607d928688",
       "targetHash": "824207eb411f9abaf6df650431d621bfb716aa5d2de929c29d683eb8eb92e375",
       "machineHash": "824207eb411f9abaf6df650431d621bfb716aa5d2de929c29d683eb8eb92e375",
       "machineText": "Ressourcen aus Go lesen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Reading Resources from Go",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0016-text-01": {
+    "b0021-text-01": {
       "sourceHash": "d97ba99dc514216d3a7397341bb4dadbccb6ede71fa9c89129e6935c5570acc6",
       "targetHash": "4102c2e6d0484c94d5fe1739fd7f1b70de1544ff97dbfbf00ee4c6a0ec749f97",
       "machineHash": "4102c2e6d0484c94d5fe1739fd7f1b70de1544ff97dbfbf00ee4c6a0ec749f97",
       "machineText": "Importieren Sie das macOS-Plattformpaket:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Import the macOS platform package:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0017-text-01": {
+    "b0022-text-01": {
       "sourceHash": "6a3a610276ddc39bf551328a329623ed09ca1d816cfe56298ee96934eb42505e",
       "targetHash": "703a6aa5d141df5f639ae191d0c0303dbee6c304260cc0ac2a48dc2d75b4987c",
       "machineHash": "703a6aa5d141df5f639ae191d0c0303dbee6c304260cc0ac2a48dc2d75b4987c",
       "machineText": "Verwenden Sie für kleine Dateien `LoadResource`:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "For small files, use `LoadResource`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0018-text-01": {
+    "b0023-text-01": {
       "sourceHash": "dceaa297c7f7248900ffa391a932bb0c291d3b45e2a497ae6a859f3dddb775c5",
-      "targetHash": "28eae15b902cf1038688e09175c461811840c01c100e05f665c9b1e4692ba209",
-      "machineHash": "28eae15b902cf1038688e09175c461811840c01c100e05f665c9b1e4692ba209",
-      "machineText": "Verwenden Sie für größere Dateien `ResourceFS`. Die Funktion gibt ein in `Contents/Resources` verwurzeltes `io/fs.FS` zurück, sodass Aufrufer eine Ressource öffnen und streamen können, ohne sie zunächst vollständig in einen Go-Byte-Slice zu laden:",
-      "status": "final",
+      "targetHash": "c82aafcc30cdaed48a329759b001a404873467d166eb5463d32ab10cc4f0cfd4",
+      "machineHash": "c82aafcc30cdaed48a329759b001a404873467d166eb5463d32ab10cc4f0cfd4",
+      "machineText": "Verwenden Sie für größere Dateien `ResourceFS`. Die Funktion gibt ein in `Contents/Resources` verwurzeltes `io/fs.FS` zurück, sodass Aufrufer eine Ressource öffnen und streamen können, ohne sie zuerst vollständig in ein Go-Byte-Slice zu laden:",
+      "status": "machine-translated",
       "sourcePreview": "For larger files, use `ResourceFS`. It returns an `io/fs.FS` rooted at `Contents/Resources`, so call…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0019-text-01": {
+    "b0024-text-01": {
       "sourceHash": "d2921dbc92553de01fb0659b18419410c78773f277f8408b412fbf14c47d2639",
       "targetHash": "5464c1d37c6cadd3901f2bb2e4a3c5b217cc029c4de38afd6a87ccb464ca7a7d",
       "machineHash": "5464c1d37c6cadd3901f2bb2e4a3c5b217cc029c4de38afd6a87ccb464ca7a7d",
       "machineText": "Ressourcennamen sind durch Schrägstriche getrennte Pfade relativ zu `Contents/Resources`. `ResourceFS` und `LoadResource` geben `mac.ErrNotInAppBundle` zurück, sofern die ausführbare Datei nicht aus `.app/Contents/MacOS` ausgeführt wird.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Resource names are slash-separated paths relative to `Contents/Resources`. `ResourceFS` and `LoadRes…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0020-text-01": {
+    "b0025-text-01": {
       "sourceHash": "a5bb9bffea84ec2413faa69a5e8409d44c6aadf83d3310d3740d786b76ff8f28",
       "targetHash": "faff30c9bd3192f9c8cf436a42596b63098fd8c997b8cf85eb502e5413f6038a",
       "machineHash": "faff30c9bd3192f9c8cf436a42596b63098fd8c997b8cf85eb502e5413f6038a",
       "machineText": "Behandeln Sie Bundle-Ressourcen als unveränderlich. Änderungen an Dateien innerhalb einer signierten Anwendung machen deren Codesignatur ungültig. Speichern Sie heruntergeladene, generierte oder vom Benutzer bearbeitbare Daten stattdessen im Application-Support-Verzeichnis des Benutzers.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Treat bundle resources as immutable. Changing files inside a signed application invalidates its code…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0021-heading-01": {
+    "b0026-heading-01": {
       "sourceHash": "921dff04fe23d625d6a5419e281c6f57ad2fc32b178aaa3f43841282f2286de5",
       "targetHash": "ad1b520790725b1132e756ddad5ac9d2e3c735c9bcb2bd0e3ea001fb86dc3fe4",
       "machineHash": "ad1b520790725b1132e756ddad5ac9d2e3c735c9bcb2bd0e3ea001fb86dc3fe4",
       "machineText": "Universelle Binärdatei",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Universal Binary",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0022-text-01": {
+    "b0027-text-01": {
       "sourceHash": "8ff0b1fbddcfcdc8c3b454b6f52aee3f7f7898f5b03a21acac5b2d5ff19015c9",
       "targetHash": "50bb1f8b48bf409104f44e165c18b794e76911fe3d6612af47e040650a979543",
       "machineHash": "50bb1f8b48bf409104f44e165c18b794e76911fe3d6612af47e040650a979543",
       "machineText": "Erstellen Sie einen Build für Macs mit Apple Silicon und Intel-Prozessoren:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Build for both Apple Silicon and Intel Macs:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0023-text-01": {
+    "b0028-text-01": {
       "sourceHash": "306a2d815f7ac7f8e44ef4cf084fbb2517b7c4205c6f8746dcddc9c4a2dab3cb",
-      "targetHash": "d15e33c781289643e65837f791807f6d51624cd0fe0add9f405595e90ce03d78",
-      "machineHash": "d15e33c781289643e65837f791807f6d51624cd0fe0add9f405595e90ce03d78",
-      "machineText": "Dadurch wird ein einzelnes `.app`-Anwendungsbundle erstellt, das auf beiden Architekturen nativ ausgeführt wird. Universelle Binärdateien können auf jeder Plattform erstellt werden – unter Linux und Windows wird `wails3 tool lipo` automatisch verwendet.",
-      "status": "final",
+      "targetHash": "457b79a72484769e4fde3a7aca2b0cf2be045cab64b965693ada5392f74ec169",
+      "machineHash": "457b79a72484769e4fde3a7aca2b0cf2be045cab64b965693ada5392f74ec169",
+      "machineText": "Dadurch wird eine einzelne `.app` erstellt, die auf beiden Architekturen nativ ausgeführt wird. Universelle Binärdateien können auf jeder Plattform erstellt werden – unter Linux und Windows wird `wails3 tool lipo` automatisch verwendet.",
+      "status": "machine-translated",
       "sourcePreview": "This creates a single `.app` that runs natively on both architectures. Universal binaries can be bui…",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0024-heading-01": {
+    "b0029-heading-01": {
       "sourceHash": "38ebaa83052d648d62ab749c162530a1f3992d4611b9f10d9c9fda93c4d56dc3",
       "targetHash": "4c05292952e5fc48438ef087c75b359c97fd2f5c961b4062fc1aa4ff2b33e893",
       "machineHash": "4c05292952e5fc48438ef087c75b359c97fd2f5c961b4062fc1aa4ff2b33e893",
       "machineText": "Bundle anpassen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Customizing the Bundle",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0025-text-01": {
+    "b0030-text-01": {
       "sourceHash": "1cb12fc4e0b567d59f1eb40d107a86b69bb2a2e198224aadf90166bb35c8dc5b",
       "targetHash": "ba51274a7189dfde960a5398524ae22a7bd2e6eebc0de1175f6e2222c64df013",
       "machineHash": "ba51274a7189dfde960a5398524ae22a7bd2e6eebc0de1175f6e2222c64df013",
       "machineText": "Bearbeiten Sie `build/darwin/Info.plist`, um Folgendes anzupassen:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Edit `build/darwin/Info.plist` to customize:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0026-text-01": {
+    "b0031-text-01": {
       "sourceHash": "402d1c37b8a19c395d5c2536f7c1e996bf7525fa523274262e877c1ecc4dc420",
       "targetHash": "7f80aa4f92ff7c2c79f78c69c6502e8d8b8a5509a77651c2b893e239fa974289",
       "machineHash": "7f80aa4f92ff7c2c79f78c69c6502e8d8b8a5509a77651c2b893e239fa974289",
       "machineText": "Bundle-Kennung (`CFBundleIdentifier`)",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Bundle identifier (`CFBundleIdentifier`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0027-text-01": {
+    "b0032-text-01": {
       "sourceHash": "ca898f7ea1c4eadc905f8dbff74ec96f359b7dfaf65838a88d768980500ede45",
       "targetHash": "fad653e1f266987fec6652bb12e100bf562955fba8a88a83018ebd9b9923ee93",
       "machineHash": "fad653e1f266987fec6652bb12e100bf562955fba8a88a83018ebd9b9923ee93",
       "machineText": "App-Name und -Version",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "App name and version",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0028-text-01": {
+    "b0033-text-01": {
       "sourceHash": "ee8c09f1f0d839ec6d10bc1fee924465930f2fe21ceeb3542556d89d67c165dd",
       "targetHash": "67d9c340320a47c215722e7a9c26c51f00ce85b640f49e07c0d1707d0ea9cb0a",
       "machineHash": "67d9c340320a47c215722e7a9c26c51f00ce85b640f49e07c0d1707d0ea9cb0a",
       "machineText": "MacOS-Mindestversion",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Minimum macOS version",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0029-text-01": {
+    "b0034-text-01": {
       "sourceHash": "dcde200b0f10ad32a73a71b665333d8cd1f852498728e9d71724096990163e4c",
       "targetHash": "503852906d730c78dca384afe31ea137f07546e9a2ce73f328d363dcfe34c7fa",
       "machineHash": "503852906d730c78dca384afe31ea137f07546e9a2ce73f328d363dcfe34c7fa",
       "machineText": "Dateizuordnungen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "File associations",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0030-text-01": {
+    "b0035-text-01": {
       "sourceHash": "0725f797569589b78637df4ffa65c18c6752a76669bc6ad153f40a574c01cfbb",
       "targetHash": "8f971e500f230c4940aa428af67eff1bab1d1998b81a2794117208840ea8e37f",
       "machineHash": "8f971e500f230c4940aa428af67eff1bab1d1998b81a2794117208840ea8e37f",
       "machineText": "URL-Schemata",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "URL schemes",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0031-text-01": {
+    "b0036-text-01": {
       "sourceHash": "4c2ea8deda6e19cd8b927329cd141f2c641ddae0117e499513ff1ab82b0090c4",
-      "targetHash": "a34e56e0b3d54a9f15bb191550e1e76c6b23715c6f1cd8c441f2561ba90506ed",
-      "machineHash": "a34e56e0b3d54a9f15bb191550e1e76c6b23715c6f1cd8c441f2561ba90506ed",
-      "machineText": "Das App-Symbol wird aus Assets im Verzeichnis `build/` generiert. Verwenden Sie die Aufgabe `generate:icons`:",
-      "status": "final",
+      "targetHash": "57af44311fb8c639d7c372987ade5ccf64a3ea893d8a773b0d7381246a87bf21",
+      "machineHash": "57af44311fb8c639d7c372987ade5ccf64a3ea893d8a773b0d7381246a87bf21",
+      "machineText": "Das App-Symbol wird aus Assets im Verzeichnis `build/` generiert. Verwenden Sie den Task `generate:icons`:",
+      "status": "machine-translated",
       "sourcePreview": "The app icon is generated from assets in the `build/` directory. Use the `generate:icons` task:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0032-text-01": {
+    "b0037-text-01": {
       "sourceHash": "fbd91ccf644e53c7b23471bf3a9cdd8e408242f8fbb2034c4d82f0ca01d44b38",
-      "targetHash": "f197d1739adbe9831c266a521fd2ad296c43dba5931b7a528a8ad0692e3a00bc",
-      "machineHash": "f197d1739adbe9831c266a521fd2ad296c43dba5931b7a528a8ad0692e3a00bc",
-      "machineText": "Dabei verwendet die Aufgabe `build/appicon.png`, um die Dateien `darwin/icons.icns` und `windows/icon.ico` zu erzeugen. Unter macOS können Sie außerdem `build/appicon.icon` (Icon-Composer-Format) bereitstellen: Die Aufgabe übergibt `-iconcomposerinput appicon.icon -macassetdir darwin`, wodurch aus der Datei `.icon` die Dateien `Assets.car` und `darwin/icons.icns` erzeugt werden (auf anderen Plattformen als macOS wird dieser Schritt übersprungen). Wenn `Assets.car` vorhanden ist, führen Sie die Aufgabe `update:build-assets` aus, damit `Info.plist` und `CFBundleIconName` entsprechend aktualisiert werden:",
-      "status": "final",
+      "targetHash": "faae853ecb036d2e876efb478d1f49e6982e375c862aa2fc34c0ac4515c01fc3",
+      "machineHash": "faae853ecb036d2e876efb478d1f49e6982e375c862aa2fc34c0ac4515c01fc3",
+      "machineText": "Dabei erzeugt `build/appicon.png` die Dateien `darwin/icons.icns` und `windows/icon.ico`. Unter macOS können Sie auch `build/appicon.icon` (Icon-Composer-Format) bereitstellen: Der Task übergibt `-iconcomposerinput appicon.icon -macassetdir darwin`, wodurch aus der Datei `.icon` die Dateien `Assets.car` und `darwin/icons.icns` erzeugt werden (auf anderen Plattformen als macOS wird dieser Schritt übersprungen). Wenn `Assets.car` vorhanden ist, führen Sie den Task `update:build-assets` aus, damit `Info.plist` und `CFBundleIconName` entsprechend aktualisiert werden:",
+      "status": "machine-translated",
       "sourcePreview": "This uses `build/appicon.png` to produce `darwin/icons.icns` and `windows/icon.ico`. On macOS you ca…",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0033-text-01": {
+    "b0038-text-01": {
       "sourceHash": "2196e52c6b5ba17640e75927b7af88a2f38440ad11e179ac522fd2b229ca9e7c",
       "targetHash": "325d251c2210e69d78a81553b78393df8fbd5dab3611e0a0e978f7f25b7591e3",
       "machineHash": "325d251c2210e69d78a81553b78393df8fbd5dab3611e0a0e978f7f25b7591e3",
       "machineText": "So führen Sie den Symbolbefehl manuell aus dem Verzeichnis `build/` aus:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "To run the icon command manually from the `build/` directory:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0034-heading-01": {
+    "b0039-heading-01": {
       "sourceHash": "2010b84979181bc2e2daf20724fc318dcacbbcea1ee1ac117836c9bb54cf00bf",
       "targetHash": "3ec2cd876edf61d34f78318dfdc51f61070245567db3dc90f03782495d761a52",
       "machineHash": "3ec2cd876edf61d34f78318dfdc51f61070245567db3dc90f03782495d761a52",
       "machineText": "Codesignierung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Code Signing",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0035-text-01": {
+    "b0040-text-01": {
       "sourceHash": "5854e3181d4ee9be0eb9ea61114cc9a81cceb32f92437f2d1ca95f73a36a26cf",
       "targetHash": "d979f09e1c2c08fc1e81581ada9808c7e1829f63d7ad407da7629aaee59fdc2d",
       "machineHash": "d979f09e1c2c08fc1e81581ada9808c7e1829f63d7ad407da7629aaee59fdc2d",
       "machineText": "Signieren Sie Ihre App für die Verteilung:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Sign your app for distribution:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0036-text-01": {
+    "b0041-text-01": {
       "sourceHash": "3fbd272a8de127ffa92c40bac84b55ee3383ff7a2fec18892910d0f5ae85c180",
       "targetHash": "c6e50d61b19fdf2dc96d3755538f9b73f7de52ea90e46982779a8e93b7be6ec6",
       "machineHash": "c6e50d61b19fdf2dc96d3755538f9b73f7de52ea90e46982779a8e93b7be6ec6",
       "machineText": "Konfigurieren Sie die Signierung in `build/darwin/Taskfile.yml`:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configure signing in `build/darwin/Taskfile.yml`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0037-heading-01": {
+    "b0042-heading-01": {
       "sourceHash": "ac4fabd7f17e9b34b89411d5a668293d38732595218a3654e081745767be1af8",
       "targetHash": "602f64b700a46b949e8e2bf4784eab047c21f8b8e793222c0d3030ce73deba95",
       "machineHash": "602f64b700a46b949e8e2bf4784eab047c21f8b8e793222c0d3030ce73deba95",
       "machineText": "Notarisierung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Notarization",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0038-text-01": {
+    "b0043-text-01": {
       "sourceHash": "1fc9b32557c388f447e620a2eb18ee84e923c795c69fb0ebfe7c14cb6f2ab82c",
       "targetHash": "89bd4c81e6f6d0cb7938cb0eb8b48c72a7a7c43ce7c1dbd16163937bbef3fca2",
       "machineHash": "89bd4c81e6f6d0cb7938cb0eb8b48c72a7a7c43ce7c1dbd16163937bbef3fca2",
       "machineText": "Für Apps, die außerhalb des Mac App Store verteilt werden, verlangt Apple eine Notarisierung:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "For apps distributed outside the Mac App Store, Apple requires notarization:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0039-text-01": {
-      "sourceHash": "87212f84563ac9d2dc86cc46a89d5e2b8fe52bb1655f1edd432c4611c936aa5c",
-      "targetHash": "5d32a339fe214f355f8fa22bf9a42bdfa814f40e050d85f141b6b5b34f7b4f2c",
-      "machineHash": "5d32a339fe214f355f8fa22bf9a42bdfa814f40e050d85f141b6b5b34f7b4f2c",
-      "machineText": "Speichern Sie zunächst Ihre Anmeldedaten. Führen Sie entweder den interaktiven Assistenten (`wails3 setup signing`) aus oder rufen Sie `notarytool` direkt auf:",
-      "status": "final",
-      "sourcePreview": "First, store your credentials. Either run the interactive wizard (`wails3 setup signing`) or call `n…",
+    "b0044-text-01": {
+      "sourceHash": "100061b0ca03ec0a8378732f10dbde9db5a39b337a340471a0191f578bcc0947",
+      "targetHash": "3b3d298c46c2f00ba54931e92de8266933ab4298c2be54cca8bfa0602f68381f",
+      "machineHash": "3b3d298c46c2f00ba54931e92de8266933ab4298c2be54cca8bfa0602f68381f",
+      "machineText": "Speichern Sie zunächst Ihre Anmeldedaten. Führen Sie entweder den interaktiven Assistenten (`wails3 signing`) aus oder rufen Sie `notarytool` direkt auf:",
+      "status": "machine-translated",
+      "sourcePreview": "First, store your credentials. Either run the interactive wizard (`wails3 signing`) or call `notaryt…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0040-text-01": {
+    "b0045-text-01": {
       "sourceHash": "b469efbcede441318f06ac3d4df9c6d3634b7b227cec606e1c0e3fc4cc120f19",
       "targetHash": "7ed086cd78263e12051de34681795839c79ca84f7f839ecb2ae3297496a45612",
       "machineHash": "7ed086cd78263e12051de34681795839c79ca84f7f839ecb2ae3297496a45612",
       "machineText": "Konfigurieren Sie dies in `build/darwin/Taskfile.yml`:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Configure in `build/darwin/Taskfile.yml`:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0041-text-01": {
+    "b0046-text-01": {
       "sourceHash": "2155acb9bd69d17a69854f45bd14cab90ebe2dda62f02e3c0d2e20276f34c5c9",
       "targetHash": "3a29be3aaa04cfe25d29eb7208c2581cca826f16473b9a06ece80da017c7fd43",
       "machineHash": "3a29be3aaa04cfe25d29eb7208c2581cca826f16473b9a06ece80da017c7fd43",
       "machineText": "Weitere Informationen finden Sie unter [Anwendungen signieren](/guides/build/signing/).",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "See [Signing Applications](/guides/build/signing/) for details.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0042-heading-01": {
+    "b0047-heading-01": {
       "sourceHash": "4087689f8b365567628ab33566eed3dfba55a11be5b6ff4fa8e29d1948514852",
       "targetHash": "ff8fd76aac062bcb39ae28892218b9b7fdf64a1899b18e0f5c603dd7a0caf645",
       "machineHash": "ff8fd76aac062bcb39ae28892218b9b7fdf64a1899b18e0f5c603dd7a0caf645",
       "machineText": "DMG-Installationsprogramm",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "DMG Installer",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0043-text-01": {
+    "b0048-text-01": {
       "sourceHash": "630ccadf3918920d8161cb39130952a1d5d8b3249a5023fd478d657ef3318701",
-      "targetHash": "6bdca9ec7b288df4c17fdf771f7534aa338602ca84542174061ac2a00fbd1814",
-      "machineHash": "6bdca9ec7b288df4c17fdf771f7534aa338602ca84542174061ac2a00fbd1814",
-      "machineText": "Die mit Wails 3 ausgelieferte Vorlage stellt `wails3 task darwin:package:dmg` bereit. Sie erstellt zunächst `.app` und anschließend mithilfe der DMG-Bibliothek ein gestaltetes DMG. Standardmäßig verwendet das DMG einen Verlaufshintergrund im Wails-Design mit dem roten Drachensymbol und der Wortmarke WAILS.",
-      "status": "final",
+      "targetHash": "de08e9799d48cc43b13f9b23958b608cca7485efbab161eb2c39dc14ab0e03e9",
+      "machineHash": "de08e9799d48cc43b13f9b23958b608cca7485efbab161eb2c39dc14ab0e03e9",
+      "machineText": "Die mit Wails ausgelieferte Vorlage 3 stellt `wails3 task darwin:package:dmg` bereit. Sie erstellt zunächst `.app` und anschließend mithilfe der DMG-Bibliothek ein gestaltetes DMG. Standardmäßig verwendet das DMG einen Verlaufshintergrund im Wails-Branding mit dem roten Drachenlogo und der WAILS-Wortmarke.",
+      "status": "machine-translated",
       "sourcePreview": "The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first …",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0044-text-01": {
+    "b0049-text-01": {
       "sourceHash": "6c64a16c1abad83fc76303f98ed9e2e6226ec0cabac54d7a0ac4241b15d86006",
-      "targetHash": "ca585ce1988a8745807c73fc415a533fdb091f728203c0301eb92ecd65c87dbf",
-      "machineHash": "ca585ce1988a8745807c73fc415a533fdb091f728203c0301eb92ecd65c87dbf",
-      "machineText": "Die untergeordnete Aufgabe `darwin:create:dmg` erstellt aus einem vorhandenen `.app`-Bundle ein DMG und kann direkt im Taskfile konfiguriert werden:",
-      "status": "final",
+      "targetHash": "7a43d66bf2f262852442c29d3daac41c197d42a045b16a4806086f342eb8c23f",
+      "machineHash": "7a43d66bf2f262852442c29d3daac41c197d42a045b16a4806086f342eb8c23f",
+      "machineText": "Der untergeordnete Task `darwin:create:dmg` erstellt aus einem vorhandenen `.app`-Bundle ein DMG und kann direkt im Taskfile konfiguriert werden:",
+      "status": "machine-translated",
       "sourcePreview": "The lower-level `darwin:create:dmg` task creates a DMG from an existing `.app` bundle and can be con…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0045-heading-01": {
+    "b0050-heading-01": {
       "sourceHash": "83e3a2f672076e12bb85bfb08157d50eba933582dbb45d02f3e8658ec2ff6474",
       "targetHash": "79a2b85f9ac18d5bde14a73ee3c79243021811d0df8c70fd1a045d42320593db",
       "machineHash": "79a2b85f9ac18d5bde14a73ee3c79243021811d0df8c70fd1a045d42320593db",
       "machineText": "Standardlayout",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Default Layout",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0046-text-01": {
+    "b0051-text-01": {
       "sourceHash": "d65a39244ad621e483e69739719ba74a600799d3d3590920a6b011ac55d91d43",
       "targetHash": "b0e8c0409e90ab4a8377e8ad25bc7902366a93c01c47646fb29c53e24e62a9f0",
       "machineHash": "b0e8c0409e90ab4a8377e8ad25bc7902366a93c01c47646fb29c53e24e62a9f0",
       "machineText": "Das generierte DMG enthält:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The generated DMG contains:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0047-text-01": {
+    "b0052-text-01": {
       "sourceHash": "2a9f3a2da601635f4b75e77be4afcd47beeaed2833db5277e59d7f604285bddd",
       "targetHash": "8d0eb03bebd2e0dee494012aa16ce3f9036c9fd09f013dfbb0fc68dbb90454c6",
       "machineHash": "8d0eb03bebd2e0dee494012aa16ce3f9036c9fd09f013dfbb0fc68dbb90454c6",
       "machineText": "Das Anwendungspaket auf der linken Seite",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "The application bundle on the left",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0048-text-01": {
+    "b0053-text-01": {
       "sourceHash": "c8075e0bd1b313d15a7a4c32bcef7809293cabe16a7132a0a7cc15a8e4286bb2",
-      "targetHash": "6fb7213880f7d52724fc0442c83e49da2f9eb3511833bae2ff222f183603913d",
-      "machineHash": "6fb7213880f7d52724fc0442c83e49da2f9eb3511833bae2ff222f183603913d",
-      "machineText": "Einen Link zu `Applications` auf der rechten Seite",
-      "status": "final",
+      "targetHash": "07f05cc01932940dd6bcd93cec7e22e84a40fd0dbf24c2f8055654b9f50ec971",
+      "machineHash": "07f05cc01932940dd6bcd93cec7e22e84a40fd0dbf24c2f8055654b9f50ec971",
+      "machineText": "Einen `Applications`-Link auf der rechten Seite",
+      "status": "machine-translated",
       "sourcePreview": "An `Applications` link on the right",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0049-text-01": {
+    "b0054-text-01": {
       "sourceHash": "45577baeb4af50f868c24855ba491353e906c205fe79909311f2cab701c791c2",
       "targetHash": "9d42aa2ed2db3c28ff5753a8fc450188f836eb8299aa5ed41ba0ddd0c66054f2",
       "machineHash": "9d42aa2ed2db3c28ff5753a8fc450188f836eb8299aa5ed41ba0ddd0c66054f2",
       "machineText": "Ein Finder-Fenster mit einer Größe von 540 × 380 Pixeln",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "A Finder window sized to 540×380 pixels",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0050-text-01": {
+    "b0055-text-01": {
       "sourceHash": "bb34cbbab5ee27d57d756cd9f008da5460927af602e80b55ef1e7ae79ef56d4b",
-      "targetHash": "bb348a39818f8099c20109062c39c8ed7153acacafe2fd824237bda0fa157aea",
-      "machineHash": "bb348a39818f8099c20109062c39c8ed7153acacafe2fd824237bda0fa157aea",
-      "machineText": "Eine Symbolgröße von 96 Punkt mit Beschriftungen unter den jeweiligen Symbolen",
-      "status": "final",
+      "targetHash": "0060f7f1cfee139bcacdeb6d6b80b7bbc036aeae9a73b0c11860fcb7aba82649",
+      "machineHash": "0060f7f1cfee139bcacdeb6d6b80b7bbc036aeae9a73b0c11860fcb7aba82649",
+      "machineText": "Eine Symbolgröße von 96 Punkt mit Beschriftungen unter jedem Symbol",
+      "status": "machine-translated",
       "sourcePreview": "A 96-point icon size with labels beneath each icon",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0051-text-01": {
+    "b0056-text-01": {
       "sourceHash": "6b52b9fce3ec16846aa21747167d31c62a53e448c8b9cee6cb37a29b359c493e",
-      "targetHash": "228278a1d8f5df36492f6ce4bcc368311a747f796bea8ec40564efb0051bf3c7",
-      "machineHash": "228278a1d8f5df36492f6ce4bcc368311a747f796bea8ec40564efb0051bf3c7",
-      "machineText": "Den Hintergrund im Wails-Design aus `build/darwin/dmg-background.png`",
-      "status": "final",
+      "targetHash": "e27cba36d0c6b408855e340d5e8a6f40c2a09482796f24a6fa425361bde07cb5",
+      "machineHash": "e27cba36d0c6b408855e340d5e8a6f40c2a09482796f24a6fa425361bde07cb5",
+      "machineText": "Den Hintergrund im Wails-Branding aus `build/darwin/dmg-background.png`",
+      "status": "machine-translated",
       "sourcePreview": "The Wails-branded background from `build/darwin/dmg-background.png`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0052-text-01": {
+    "b0057-text-01": {
       "sourceHash": "34b288ffb5eae3a4104e40e696ec7d662e830e6b450d45734f81d2befbd5b186",
-      "targetHash": "5fc9a004673793aadd27dec973158849c6aca341244eb49c16eefdbbee7bbaaa",
-      "machineHash": "5fc9a004673793aadd27dec973158849c6aca341244eb49c16eefdbbee7bbaaa",
-      "machineText": "Die Symbole der Anwendung und von `Applications` werden relativ zu den konfigurierten Fensterabmessungen positioniert. Dadurch bleibt der Abstand des standardmäßigen Layouts mit zwei Symbolen proportional, wenn `DMG_WINDOW_WIDTH` oder `DMG_WINDOW_HEIGHT` geändert wird. Verwenden Sie für das beste Ergebnis ein Hintergrundbild mit denselben Pixelabmessungen wie das Finder-Fenster.",
-      "status": "final",
+      "targetHash": "b1786a1fe2deb52b588965655f7480beda08cb722bb0b1a9f497cfe68ebeca58",
+      "machineHash": "b1786a1fe2deb52b588965655f7480beda08cb722bb0b1a9f497cfe68ebeca58",
+      "machineText": "Die Symbole der Anwendung und von `Applications` werden relativ zu den konfigurierten Fensterabmessungen positioniert. Dadurch bleiben die Abstände des standardmäßigen Layouts mit zwei Symbolen proportional, wenn Sie `DMG_WINDOW_WIDTH` oder `DMG_WINDOW_HEIGHT` ändern. Das beste Ergebnis erzielen Sie mit einem Hintergrundbild, dessen Pixelabmessungen denen des Finder-Fensters entsprechen.",
+      "status": "machine-translated",
       "sourcePreview": "The application and `Applications` icons are positioned relative to the configured window dimensions…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0053-heading-01": {
+    "b0058-heading-01": {
       "sourceHash": "d533aa1fed942b212ac4ee41a05b2b65fc9a5b3bc9e2fa34a25902bbfa8e20d5",
       "targetHash": "386d705ea99f76f9c73b8d0a936454e83e03af15bfa015b49441da795929d881",
       "machineHash": "386d705ea99f76f9c73b8d0a936454e83e03af15bfa015b49441da795929d881",
       "machineText": "DMG-Assets ersetzen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Replacing the DMG Assets",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0054-text-01": {
+    "b0059-text-01": {
       "sourceHash": "52c9a2c0e36cc101f2b7a3e17a31a60487b157854274f655d787c7dc031314fa",
-      "targetHash": "f8aadccfcd32c12403653941be876774c596a5f292457808a607bd15461be777",
-      "machineHash": "f8aadccfcd32c12403653941be876774c596a5f292457808a607bd15461be777",
-      "machineText": "Die generierten Dateien unter `build/darwin/` sind normale Projektressourcen und können ersetzt werden:",
-      "status": "final",
+      "targetHash": "ccf0f90a5b0a4ddf394df09d788590c112cebd9c6657e7d2cbaaeba9f776c0c7",
+      "machineHash": "ccf0f90a5b0a4ddf394df09d788590c112cebd9c6657e7d2cbaaeba9f776c0c7",
+      "machineText": "Die generierten Dateien unter `build/darwin/` sind normale Projekt-Assets und können ersetzt werden:",
+      "status": "machine-translated",
       "sourcePreview": "The generated files under `build/darwin/` are normal project assets and may be replaced:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0055-text-01": {
+    "b0060-text-01": {
       "sourceHash": "ac49e54fb12beb61976636332621ae9f3d60b0ddad4f6c05792883c32861ade7",
       "targetHash": "060285c02d5bd5a6f3a6d27a7d919e76f303057b11ead6cbb104951db6ed614a",
       "machineHash": "060285c02d5bd5a6f3a6d27a7d919e76f303057b11ead6cbb104951db6ed614a",
       "machineText": "`DMG_BACKGROUND` steuert das Bild, das hinter dem Inhalt des Finder-Fensters angezeigt wird.",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "`DMG_BACKGROUND` controls the image displayed behind the Finder window contents.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0056-text-01": {
+    "b0061-text-01": {
       "sourceHash": "d758e2ffd0e77536f7269b1ceb365bb7bab9b625833b9024cb6acb978ce71b33",
-      "targetHash": "cf02aec9b635e12980adfb3e0a81719e78006a4b0be6c896640a4d051b0d6667",
-      "machineHash": "cf02aec9b635e12980adfb3e0a81719e78006a4b0be6c896640a4d051b0d6667",
-      "machineText": "`DMG_VOLUME_ICON` steuert das Symbol, das für das eingebundene Volume angezeigt wird.",
-      "status": "final",
+      "targetHash": "5406848a4ff9a44fb0c68c4a491e789d06f5be5774496ad58109ceb0725940fb",
+      "machineHash": "5406848a4ff9a44fb0c68c4a491e789d06f5be5774496ad58109ceb0725940fb",
+      "machineText": "`DMG_VOLUME_ICON` steuert das für das eingebundene Volume angezeigte Symbol.",
+      "status": "machine-translated",
       "sourcePreview": "`DMG_VOLUME_ICON` controls the icon shown for the mounted volume.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0057-text-01": {
+    "b0062-text-01": {
       "sourceHash": "8baeea4ce889aff875eff4ed8dc1646aaffd8d9a2091f1210964650ba6674226",
-      "targetHash": "684aa89823a89892001e82c1743e7f8d7a5005ff2ca3b915c99c3169d5dafe61",
-      "machineHash": "684aa89823a89892001e82c1743e7f8d7a5005ff2ca3b915c99c3169d5dafe61",
-      "machineText": "`DMG_FILE_ICON` steuert das Symbol, das im Finder für die resultierende `.dmg`-Datei angezeigt wird.",
-      "status": "final",
+      "targetHash": "cb6f5f9df661b2d795e237b0a9b53b8f5cc331ae34626a006b6b3f50d180575a",
+      "machineHash": "cb6f5f9df661b2d795e237b0a9b53b8f5cc331ae34626a006b6b3f50d180575a",
+      "machineText": "`DMG_FILE_ICON` steuert das Symbol, das im Finder für die resultierende Datei `.dmg` angezeigt wird.",
+      "status": "machine-translated",
       "sourcePreview": "`DMG_FILE_ICON` controls the icon shown for the resulting `.dmg` file in Finder.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0058-text-01": {
+    "b0063-text-01": {
       "sourceHash": "b13db35469ccdd2bea54f1993da3ce5c2ebfebc11ffc48eeaf6fa9f4e0ac7c6d",
-      "targetHash": "ca05e934ce15724ca009e2b1b33492b88b859e7a532c2d6ed1529e7a1e0604fb",
-      "machineHash": "ca05e934ce15724ca009e2b1b33492b88b859e7a532c2d6ed1529e7a1e0604fb",
-      "machineText": "Das Volume-Symbol und das Symbol der DMG-Datei sind separate Ressourcen. Beim Ersetzen des Anwendungssymbols wird keines dieser beiden Symbole automatisch ersetzt.",
-      "status": "final",
+      "targetHash": "7d2263ffd7b6b3aef1f24baf61699f119d9d5a498e9aa466b75c795ad1695db2",
+      "machineHash": "7d2263ffd7b6b3aef1f24baf61699f119d9d5a498e9aa466b75c795ad1695db2",
+      "machineText": "Das Volume-Symbol und das Symbol der DMG-Datei sind separate Ressourcen. Wenn Sie das Anwendungssymbol ersetzen, werden diese beiden Symbole nicht automatisch ersetzt.",
+      "status": "machine-translated",
       "sourcePreview": "The volume icon and DMG file icon are separate resources. Replacing the application icon does not au…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0059-heading-01": {
+    "b0064-heading-01": {
       "sourceHash": "6b664deb303a12f937de058819a83d41a33a428a425e1441d11e699bd97afd26",
       "targetHash": "18b16d6b8fb7d71d09bde9ab4233ddd07257b01dc7cbf23affc8a82cc3629d35",
       "machineHash": "18b16d6b8fb7d71d09bde9ab4233ddd07257b01dc7cbf23affc8a82cc3629d35",
       "machineText": "Zusätzliche Dateien hinzufügen",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Adding Extra Files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0060-text-01": {
+    "b0065-text-01": {
       "sourceHash": "f7725dc4b692f65114493d8da18da71d8d0ab25753384cec9b5fbad8c0deea01",
-      "targetHash": "9e1fa75c03274a5a72e9576bdcddcc78b35adfdc6371ddaea7cb5a1a78dc9dc7",
-      "machineHash": "9e1fa75c03274a5a72e9576bdcddcc78b35adfdc6371ddaea7cb5a1a78dc9dc7",
-      "machineText": "Verwenden Sie `DMG_FILES`, um neben der Anwendung Installationsskripte, Versionshinweise, Lizenzdateien oder andere Ressourcen einzuschließen. Der Wert ist eine kommagetrennte Liste von `name=path`-Paaren:",
-      "status": "final",
+      "targetHash": "7107938cd4cfddd5504dfcca881fe629628d2d108ea80332c83df8e0aaa3976d",
+      "machineHash": "7107938cd4cfddd5504dfcca881fe629628d2d108ea80332c83df8e0aaa3976d",
+      "machineText": "Verwenden Sie `DMG_FILES`, um Installationsskripte, Versionshinweise, Lizenzdateien oder andere Ressourcen neben der Anwendung einzubinden. Der Wert ist eine kommagetrennte Liste von `name=path`-Paaren:",
+      "status": "machine-translated",
       "sourcePreview": "Use `DMG_FILES` to include installer scripts, release notes, licences, or other resources alongside …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0061-text-01": {
+    "b0066-text-01": {
       "sourceHash": "2ce9dfcf182f9d4746e47be1016b81e67ed4cef3ea74fa9e20db32f712a26a31",
-      "targetHash": "1d466b43e32b72f43add4edf7164a29bfe24624c4244ee0c3f9990e67e09de68",
-      "machineHash": "1d466b43e32b72f43add4edf7164a29bfe24624c4244ee0c3f9990e67e09de68",
-      "machineText": "Der Name vor `=` ist der innerhalb des DMG angezeigte Dateiname. Der Pfad nach `=` bezeichnet die Quelldatei im Projekt. Führende und nachgestellte Whitespace-Zeichen werden ignoriert.",
-      "status": "final",
+      "targetHash": "92543989d7e928278eacacaaffea0faa95b1bef731a6021f7f9847096373f769",
+      "machineHash": "92543989d7e928278eacacaaffea0faa95b1bef731a6021f7f9847096373f769",
+      "machineText": "Der Name vor `=` ist der im DMG angezeigte Dateiname. Der Pfad nach `=` verweist auf die Quelldatei im Projekt. Führende und nachgestellte Leerzeichen werden ignoriert.",
+      "status": "machine-translated",
       "sourcePreview": "The name before `=` is the filename shown inside the DMG. The path after `=` is the source file in t…",
       "provider": "codex",
-      "model": "gpt-6-astra",
+      "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0062-text-01": {
+    "b0067-text-01": {
       "sourceHash": "19ecea8bdf9880c0ba84deecd1c542141bf54c9d106122f406bc644ac2a61b17",
-      "targetHash": "deca74fea793ec3667ac75b38d88d71fb6506bbea85fa078644f87cdb15ce9f8",
-      "machineHash": "deca74fea793ec3667ac75b38d88d71fb6506bbea85fa078644f87cdb15ce9f8",
-      "machineText": "Jeder angezeigte Name muss eindeutig sein. Zusätzliche Dateien können keine bereits vom Packager erstellten Einträge ersetzen, einschließlich des Anwendungspakets oder des Eintrags `Applications`. Bei einem Namenskonflikt schlägt die Paketierung mit einem Fehler fehl, statt ein beschädigtes DMG zu erzeugen.",
-      "status": "final",
+      "targetHash": "5da56722130d9b85f833ce9c63a5f64b340dae8865d33314d22e1d01307b56c5",
+      "machineHash": "5da56722130d9b85f833ce9c63a5f64b340dae8865d33314d22e1d01307b56c5",
+      "machineText": "Jeder angezeigte Name muss eindeutig sein. Zusätzliche Dateien können keine bereits vom Paketierungswerkzeug erstellten Einträge ersetzen, einschließlich des Anwendungspakets oder des Eintrags `Applications`. Bei einem Namenskonflikt schlägt die Paketierung mit einer Fehlermeldung fehl, anstatt ein beschädigtes DMG zu erzeugen.",
+      "status": "machine-translated",
       "sourcePreview": "Each displayed name must be unique. Extra files cannot replace entries already created by the packag…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0063-text-01": {
+    "b0068-text-01": {
       "sourceHash": "57732167f1f6ec6a82c2390882b30c62bfe05ac3cb75aa4cfc0790327c794186",
-      "targetHash": "9bbfdb640bc61461a021eb92a336d3d2c44938bcf374d19a8f474ffea654a47c",
-      "machineHash": "9bbfdb640bc61461a021eb92a336d3d2c44938bcf374d19a8f474ffea654a47c",
-      "machineText": "Das Erstellen von DMGs wird nur unter macOS unterstützt, da dafür die Festplattenabbild- und Finder-Werkzeuge von macOS verwendet werden. Plattformübergreifend kompilierte `.app`-Pakete können auch auf anderen Systemen erstellt werden, das endgültige DMG muss jedoch auf einem Mac erzeugt werden.",
-      "status": "final",
+      "targetHash": "bfb3012b720937d56e2bd69cb06db2b6ecb75f023e7bc5d8e1729da2da7551d2",
+      "machineHash": "bfb3012b720937d56e2bd69cb06db2b6ecb75f023e7bc5d8e1729da2da7551d2",
+      "machineText": "Das Erstellen von DMGs wird nur unter macOS unterstützt, da dafür die Werkzeuge von macOS für Festplattenabbilder und Finder verwendet werden. Kreuzkompilierte `.app`-Pakete können auch auf anderen Systemen erstellt werden, das endgültige DMG muss jedoch auf einem Mac erzeugt werden.",
+      "status": "machine-translated",
       "sourcePreview": "DMG creation is supported only on macOS because it uses macOS disk-image and Finder tooling. Cross-c…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0064-heading-01": {
+    "b0069-heading-01": {
       "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
       "targetHash": "ad802ba838a4b5e6eba3d440a14a2bff3cc01dc0a5aae67a7e740ec3878bdc18",
       "machineHash": "ad802ba838a4b5e6eba3d440a14a2bff3cc01dc0a5aae67a7e740ec3878bdc18",
       "machineText": "Fehlerbehebung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Troubleshooting",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0065-heading-01": {
+    "b0070-heading-01": {
       "sourceHash": "552ba94a6ff9ccab7ce7b169bc6af65e57386f34fcf3d9d79b64ed88ff074a75",
-      "targetHash": "56e06913fdd3f083c8d0f27c760902379411ae9b112262e6eb38f60975ed9577",
-      "machineHash": "56e06913fdd3f083c8d0f27c760902379411ae9b112262e6eb38f60975ed9577",
-      "machineText": "„Die App ist beschädigt und kann nicht geöffnet werden“",
-      "status": "final",
+      "targetHash": "47078cddd5bce0696fac0b1eef87682deea10b183743e54c5735721aedc15347",
+      "machineHash": "47078cddd5bce0696fac0b1eef87682deea10b183743e54c5735721aedc15347",
+      "machineText": "„App ist beschädigt und kann nicht geöffnet werden“",
+      "status": "machine-translated",
       "sourcePreview": "\"App is damaged and can't be opened\"",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0066-text-01": {
+    "b0071-text-01": {
       "sourceHash": "d5715c65c445261c3568d707f9bd08192d444d81f46db148efe030a7c24b9b1b",
-      "targetHash": "1dddbab0dc581bab1c2b1d4aa6bc8b1521a858ea553b1d0219db9a9e994c6338",
-      "machineHash": "1dddbab0dc581bab1c2b1d4aa6bc8b1521a858ea553b1d0219db9a9e994c6338",
-      "machineText": "Die App ist nicht signiert. Signieren Sie sie entweder mit einem Developer-ID-Zertifikat, oder Benutzer können Gatekeeper umgehen:",
-      "status": "final",
+      "targetHash": "373abbaa47af62c82ad22f309a60e6083a1401410bd22a6b24127521a4d90906",
+      "machineHash": "373abbaa47af62c82ad22f309a60e6083a1401410bd22a6b24127521a4d90906",
+      "machineText": "Die App ist nicht signiert. Signieren Sie sie entweder mit einem Developer-ID-Zertifikat, oder lassen Sie die Benutzer Gatekeeper umgehen:",
+      "status": "machine-translated",
       "sourcePreview": "The app isn't signed. Either sign it with a Developer ID certificate, or users can bypass Gatekeeper…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0067-heading-01": {
+    "b0072-heading-01": {
       "sourceHash": "773da8b4c3681d511accce2d1cdd79005976e7a36cc119e9c38b2e44953db26f",
       "targetHash": "79684a01a1f649890a526692af05e3298e6e1e5e32a7123a5a40630e17c6f42e",
       "machineHash": "79684a01a1f649890a526692af05e3298e6e1e5e32a7123a5a40630e17c6f42e",
       "machineText": "Notarisierung schlägt fehl",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Notarization fails",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0068-text-01": {
+    "b0073-text-01": {
       "sourceHash": "18ce2bc52128dabfc833601b74d2b7865802cc11d45120c1d6b5fcb76a14f041",
       "targetHash": "ca25e5d594950d80b1efd292008485daae804a2027263d3086c1373bd7194ce1",
       "machineHash": "ca25e5d594950d80b1efd292008485daae804a2027263d3086c1373bd7194ce1",
       "machineText": "Häufige Probleme:",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "Common issues:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0069-text-01": {
-      "sourceHash": "96791335ab86e85d87a23308c1b8498797c75aab4949ea379a93267c7e6c8fa2",
-      "targetHash": "f0fe93d2e87ef09460a0dc8ad0c307afd97fe66ed86d87aa02c877a098605cdc",
-      "machineHash": "f0fe93d2e87ef09460a0dc8ad0c307afd97fe66ed86d87aa02c877a098605cdc",
-      "machineText": "*Ungültige Anmeldedaten*: Führen Sie `xcrun notarytool store-credentials` (oder `wails3 setup signing`) erneut aus",
-      "status": "final",
-      "sourcePreview": "*Invalid credentials*: Re-run `xcrun notarytool store-credentials` (or `wails3 setup signing`)",
+    "b0074-text-01": {
+      "sourceHash": "3688b54072966eeb564a839111d375efe364506352dc285d2e7675a4e076ce13",
+      "targetHash": "29d5398bdcd4dec166e512884856a4a8fcef45783b885bdb98bc4acc4509090a",
+      "machineHash": "29d5398bdcd4dec166e512884856a4a8fcef45783b885bdb98bc4acc4509090a",
+      "machineText": "**Ungültige Anmeldedaten**: Führen Sie `xcrun notarytool store-credentials` (oder `wails3 signing`) erneut aus",
+      "status": "machine-translated",
+      "sourcePreview": "**Invalid credentials**: Re-run `xcrun notarytool store-credentials` (or `wails3 signing`)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0070-text-01": {
-      "sourceHash": "0cfc024ea5cece409eabcac4f7ec4eaf0231282c82b43e84562e963acec44c12",
-      "targetHash": "4041b9234b565fb393360d58ce7e9b1c8c9ad892da2376088c9e14175c5f953a",
-      "machineHash": "4041b9234b565fb393360d58ce7e9b1c8c9ad892da2376088c9e14175c5f953a",
-      "machineText": "*Gehärtete Laufzeit erforderlich*: Stellen Sie bei Bedarf sicher, dass die Berechtigungen `com.apple.security.cs.allow-unsigned-executable-memory` enthalten",
-      "status": "final",
-      "sourcePreview": "*Hardened runtime required*: Ensure entitlements include `com.apple.security.cs.allow-unsigned-execu…",
+    "b0075-text-01": {
+      "sourceHash": "aedfb534b53203af23446b21a41efcb8d069adaf1eed203e357da9f496a50778",
+      "targetHash": "55e3346224b5757d05803f422a8bc98c8731a72f7dcb4142e50f62c2dd594130",
+      "machineHash": "55e3346224b5757d05803f422a8bc98c8731a72f7dcb4142e50f62c2dd594130",
+      "machineText": "**Gehärtete Laufzeit erforderlich**: Stellen Sie sicher, dass die Berechtigungen bei Bedarf `com.apple.security.cs.allow-unsigned-executable-memory` enthalten",
+      "status": "machine-translated",
+      "sourcePreview": "**Hardened runtime required**: Ensure entitlements include `com.apple.security.cs.allow-unsigned-exe…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0071-text-01": {
-      "sourceHash": "98406a38cd2152137b10afeac95847b45ea950bd93b9994a838aa84c82faf106",
-      "targetHash": "24f79843d3288000fd2fcf866bb608c43d6d739dcf404bdc5bd71ce0b44a2b9e",
-      "machineHash": "24f79843d3288000fd2fcf866bb608c43d6d739dcf404bdc5bd71ce0b44a2b9e",
-      "machineText": "*Fehlender Zeitstempel*: Der Signierungsprozess sollte automatisch einen Zeitstempel einschließen",
-      "status": "final",
-      "sourcePreview": "*Missing timestamp*: The signing process should include a timestamp automatically",
+    "b0076-text-01": {
+      "sourceHash": "88f7a1214780b5cc0a65de523b9447e9dc27ecd46cb480b4e61f8a5ccd60ff11",
+      "targetHash": "510f4ac0cc4f5a4b638aba115dc09f3a8d70c1b08ad2c6fdae9e2a7123802cef",
+      "machineHash": "510f4ac0cc4f5a4b638aba115dc09f3a8d70c1b08ad2c6fdae9e2a7123802cef",
+      "machineText": "**Fehlender Zeitstempel**: Der Signierungsprozess sollte automatisch einen Zeitstempel hinzufügen",
+      "status": "machine-translated",
+      "sourcePreview": "**Missing timestamp**: The signing process should include a timestamp automatically",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0072-heading-01": {
+    "b0077-heading-01": {
       "sourceHash": "140d004a02f75b31f814b4f1f834015b3c9f1f9c5f82b688e83a413584ccd75c",
-      "targetHash": "e94b3b86e63ba51bf98a2f6321e9d31a0463617a21c8a9ad3f8daf9b9358bfa5",
-      "machineHash": "e94b3b86e63ba51bf98a2f6321e9d31a0463617a21c8a9ad3f8daf9b9358bfa5",
-      "machineText": "Plattformübergreifend kompilierte App wird nicht ausgeführt",
-      "status": "final",
+      "targetHash": "367268cd8b664c968f58efbc35501b772d0792d91a2ba68145e20cdaa4f79185",
+      "machineHash": "367268cd8b664c968f58efbc35501b772d0792d91a2ba68145e20cdaa4f79185",
+      "machineText": "Kreuzkompilierte App wird nicht ausgeführt",
+      "status": "machine-translated",
       "sourcePreview": "Cross-compiled app won't run",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "b0073-text-01": {
+    "b0078-text-01": {
       "sourceHash": "dad569853db2e74f9716516a466b93cb3bf50b5b53654d643911dceef934d0a7",
-      "targetHash": "a6f99e7aa3421939ee59ac8542329f4dab311166bae1bfa4f673a8dfb10909c3",
-      "machineHash": "a6f99e7aa3421939ee59ac8542329f4dab311166bae1bfa4f673a8dfb10909c3",
-      "machineText": "Plattformübergreifend kompilierte macOS-Binärdateien sind nicht signiert. Übertragen Sie sie auf einen Mac und signieren Sie sie vor dem Testen:",
-      "status": "final",
+      "targetHash": "6cc5e9828f000762e43029506505f34d2d0b8fddc1eadf2b1ba13ed4c0ac5929",
+      "machineHash": "6cc5e9828f000762e43029506505f34d2d0b8fddc1eadf2b1ba13ed4c0ac5929",
+      "machineText": "Kreuzkompilierte macOS-Binärdateien sind nicht signiert. Übertragen Sie sie auf einen Mac und signieren Sie sie vor dem Testen:",
+      "status": "machine-translated",
       "sourcePreview": "Cross-compiled macOS binaries aren't signed. Transfer to a Mac and sign before testing:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "4fe54b9c5c3f9c0c309e35c96b650b9960fc1f34a4d0103d85e86bc7880db640",
-      "targetHash": "b21370d1835f28a83dc320c145f22168485f1c6adb2ae6920c2895ab7f25cd11",
-      "machineHash": "b21370d1835f28a83dc320c145f22168485f1c6adb2ae6920c2895ab7f25cd11",
-      "machineText": "Paketieren Sie Ihre Wails-Anwendung für die Verteilung unter macOS",
-      "status": "final",
+      "targetHash": "5cccbb0aeed663e3edb23f550896d50331f8e658998c4425c5634d2388bd6b36",
+      "machineHash": "5cccbb0aeed663e3edb23f550896d50331f8e658998c4425c5634d2388bd6b36",
+      "machineText": "Ihre Wails-Anwendung für die Verteilung unter macOS paketieren",
+      "status": "machine-translated",
       "sourcePreview": "Package your Wails application for macOS distribution",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "2afa5aa53e89e190a843ef2b5f3a516a53394761ccbb816fdf3b1be28bf16cbe",
       "targetHash": "d43f60d12d7ad3427b099244e520738415dd2c302c5eff6d8a17e8be4c71555f",
       "machineHash": "d43f60d12d7ad3427b099244e520738415dd2c302c5eff6d8a17e8be4c71555f",
       "machineText": "macOS-Paketierung",
-      "status": "final",
+      "status": "machine-translated",
       "sourcePreview": "macOS Packaging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-09-13T23:13:22Z"
+      "updatedAt": "2026-10-25T21:41:55Z"
     }
   }
 }

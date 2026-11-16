@@ -32,7 +32,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -47,6 +47,16 @@
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+O Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. O suporte a Android e iOS permanece experimental e está fora do contrato de compatibilidade estável para desktop.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Índice
 
@@ -90,7 +100,7 @@ isso antes de abrir um pedido de melhoria.
 
 ## Iniciando
 
-As instruções de instalação estão no [site oficial](https://wails.io/docs/gettingstarted/installation).
+As instruções de instalação estão no [site oficial](https://wails.io/quick-start/installation/).
 
 ## Patrocinadores
 
@@ -98,7 +108,7 @@ Este projeto é apoiado por estas simpáticas pessoas/empresas:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## Perguntas frequentes
@@ -128,7 +138,7 @@ Este projeto é apoiado por estas simpáticas pessoas/empresas:
 ## Colaboradores
 
 A lista de colaboradores está ficando grande demais para o arquivo readme! Todas as pessoas incríveis que contribuíram para o
-projeto tem sua própria página [aqui](https://wails.io/credits#contributors).
+projeto tem sua própria página [aqui](https://wails.io/credits/).
 
 ## Licença
 

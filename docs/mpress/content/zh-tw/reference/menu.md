@@ -1,19 +1,19 @@
 ---
 title: "選單 API"
-description: "選單 API 完整參考資料"
+description: "選單 API 完整參考文件"
 slug: "reference/menu"
 sourcePath: "reference/menu.md"
 ---
 
-## 概觀
+## 概述
 
-選單 API 提供建立及管理應用程式選單、快顯選單和系統匣選單的方法。
+選單 API 提供建立及管理應用程式選單、內容選單與系統匣選單的方法。
 
 **選單類型：**
 
-- **應用程式選單**——頂端選單列（檔案、編輯等）
-- **快顯選單**——按一下滑鼠右鍵時顯示的選單
-- **系統匣選單**——系統匣／通知區域中的選單
+- **應用程式選單**－頂端選單列（檔案、編輯等）
+- **內容選單**－按一下滑鼠右鍵時顯示的選單
+- **系統匣選單**－系統匣／通知區域中的選單
 
 ## 建立選單
 
@@ -35,7 +35,7 @@ menu := app.NewMenu()
 
 ### Add()
 
-將選單項目新增至選單。
+將選單項目加入選單。
 
 ```go
 func (m *Menu) Add(label string) *MenuItem
@@ -43,7 +43,7 @@ func (m *Menu) Add(label string) *MenuItem
 
 **參數：**
 
-- `label`——選單項目所顯示的文字
+- `label`－選單項目顯示的文字
 
 <strong>傳回值：</strong>建立的選單項目
 
@@ -58,7 +58,7 @@ item.OnClick(func(ctx *application.Context) {
 
 ### AddSubmenu()
 
-將子選單新增至選單。
+將子選單加入選單。
 
 ```go
 func (m *Menu) AddSubmenu(label string) *Menu
@@ -66,7 +66,7 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 **參數：**
 
-- `label`——子選單標籤
+- `label`－子選單標籤
 
 <strong>傳回值：</strong>建立的子選單
 
@@ -81,7 +81,7 @@ fileMenu.Add("Save")
 
 ### AddSeparator()
 
-在選單項目之間新增一條視覺分隔線。
+在選單項目之間加入一條視覺分隔線。
 
 ```go
 func (m *Menu) AddSeparator()
@@ -100,13 +100,15 @@ menu.Add("Select All")
 
 ### AddSectionHeader()
 
-在 **macOS 14 及更新版本**上新增原生、不可互動的區段標題。在較舊版本的 macOS 和所有其他平台（包括伺服器建置）上，此呼叫不會執行任何操作：不會插入預留位置項目。
+在**macOS 14及更新版本**上加入原生、不可互動的區段標題。
+在較舊的 macOS 版本及所有其他平台（包括伺服器組建）上，
+此操作不會執行任何動作：不會插入預留位置項目。
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-使用標題為系統匣選單、快顯選單或應用程式選單中的群組加上標籤：
+使用標題為系統匣、內容或應用程式選單中的群組加上標籤：
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,13 +118,16 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-標題使用 AppKit 標準的區段標題外觀。重新建構已顯示的選單後，與其他結構變更一樣，請呼叫 `menu.Update()`。如需使用 `os.Hostname()` 取得標題的範例，請參閱 `systray-menu`。
+標題會使用 AppKit 的標準區段標題外觀。重新建立已顯示的選單後，請呼叫`menu.Update()`，
+處理方式與其他結構變更相同。
+如需查看從`os.Hostname()`取得標題的用法，請參閱`systray-menu`範例。
 
-省略的標題不會分隔單選群組。若群組必須在每個平台上保持獨立，請使用 `AddSeparator()`。
+省略的標題不會分隔單選群組。若單選群組必須在每個平台上保持分離，
+請使用`AddSeparator()`。
 
 ### AddCheckbox()
 
-新增可勾選的選單項目。
+加入可勾選的選單項目。
 
 ```go
 func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
@@ -130,8 +135,8 @@ func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
 
 **參數：**
 
-- `label`——核取方塊標籤
-- `checked`——初始勾選狀態
+- `label`－核取方塊標籤
+- `checked`－初始勾選狀態
 
 **範例：**
 
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-新增單選選單項目（互斥群組）。
+加入單選選單項目（互斥群組）。
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -153,8 +158,8 @@ func (m *Menu) AddRadio(label string, checked bool) *MenuItem
 
 **參數：**
 
-- `label`——選項按鈕標籤
-- `checked`——初始勾選狀態
+- `label`－選項按鈕標籤
+- `checked`－初始勾選狀態
 
 **範例：**
 
@@ -188,7 +193,7 @@ item.SetEnabled(false)
 menu.Update()  // Must call to apply changes
 ```
 
-<strong>重要：</strong>修改選單項目的屬性後，一律呼叫`Update()`。
+<strong>重要：</strong>修改選單項目屬性後，一律呼叫`Update()`。
 
 ## 選單項目方法
 
@@ -202,7 +207,7 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 **參數：**
 
-- `callback`——點擊項目時呼叫的函式
+- `callback`－點擊項目時呼叫的函式
 
 <strong>傳回值：</strong>選單項目（用於鏈式呼叫）
 
@@ -291,7 +296,7 @@ if darkModeItem.Checked() {
 
 ### SetAccelerator()
 
-為選單項目設定鍵盤快速鍵。
+設定選單項目的鍵盤快速鍵。
 
 ```go
 func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
@@ -299,13 +304,13 @@ func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
 
 **參數：**
 
-- `accelerator`——鍵盤快速鍵（例如「Ctrl+S」、「Cmd+Q」）
+- `accelerator`－鍵盤快速鍵（例如「Ctrl+S」、「Cmd+Q」）
 
 **快速鍵格式：**
 
-- **輔助按鍵：**`Ctrl`、`Cmd`、`Alt`、`Shift`
-- **按鍵：**`A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace`等
-- <strong>平台：</strong>macOS 使用`Cmd`，Windows/Linux 使用`Ctrl`
+- **修飾鍵：**`Ctrl`、`Cmd`、`Alt`、`Shift`
+- **按鍵：**`A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace`等。
+- <strong>平台：</strong>在 macOS 上使用`Cmd`，在 Windows/Linux 上使用`Ctrl`
 
 **範例：**
 
@@ -331,7 +336,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-設定將游標停留在功能表項目上時顯示的工具提示。
+設定滑鼠游標停留在選單項目上時顯示的工具提示。
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -345,7 +350,7 @@ item.SetTooltip("Opens a file from disk")
 
 ### SetHidden()
 
-顯示或隱藏功能表項目。
+顯示或隱藏選單項目。
 
 ```go
 func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
@@ -359,11 +364,11 @@ debugItem.SetHidden(!isDevelopment)
 menu.Update()
 ```
 
-## 應用程式功能表
+## 應用程式選單
 
 ### app.Menu.Set()
 
-設定應用程式的主功能表列。
+設定應用程式的主選單列。
 
 ```go
 func (mm *MenuManager) Set(menu *Menu)
@@ -398,15 +403,15 @@ app.Menu.Set(menu)
 
 **平台注意事項：**
 
-- <strong>macOS：</strong>功能表會顯示在畫面頂端的功能表列中
-- <strong>Windows/Linux：</strong>功能表會顯示在視窗標題列中
-- <strong>macOS：</strong>自動加入以應用程式名稱命名的應用程式功能表
+- <strong>macOS：</strong>選單會顯示在螢幕頂端的選單列中
+- <strong>Windows/Linux：</strong>選單會顯示在視窗標題列中
+- <strong>macOS：</strong>會自動加入以應用程式名稱命名的應用程式選單
 
-## 快顯功能表
+## 快顯選單
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-透過管理員建立`*ContextMenu`，並以名稱註冊。`ContextMenuManager.Add`接受`*ContextMenu`，**而不是**`*Menu`；此外，**沒有**`app.RegisterContextMenu`方法。
+透過管理器建立`*ContextMenu`，並以名稱註冊。`ContextMenuManager.Add`接受`*ContextMenu`，**而非**`*Menu`；此外，**沒有**`app.RegisterContextMenu`方法。
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +420,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-或者，也可以使用套件層級的`application.NewContextMenu(name string) *ContextMenu`，一次完成快顯功能表的建立與註冊。
+或者，套件層級的`application.NewContextMenu(name string) *ContextMenu`可在一個步驟中建立並註冊快顯選單。
 
 **Go：**
 
@@ -434,7 +439,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML / CSS：**
 
-當按滑鼠右鍵的目標（或其任一祖先元素）將`--custom-contextmenu` CSS 自訂屬性設為該名稱時，執行階段便會觸發已註冊的快顯功能表。選用的`--custom-contextmenu-data`屬性會透過`ctx.ContextMenuData()`傳給 Go 回呼函式。若要停用瀏覽器的預設快顯功能表，請設定`--default-contextmenu: hide`（或`auto`/`show`）。
+當按右鍵的目標元素（或其任何祖先元素）將`--custom-contextmenu` CSS 自訂屬性設為該名稱時，執行階段會觸發已註冊的快顯選單。選用的`--custom-contextmenu-data`屬性會透過`ctx.ContextMenuData()`傳遞給 Go 回呼。若要停用瀏覽器的預設快顯選單，請設定`--default-contextmenu: hide`（或`auto`/`show`）。
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -443,9 +448,9 @@ app.ContextMenu.Add("editor", contextMenu)
 </div>
 ```
 
-不存在`data-wails-context-menu="..."`屬性，因為執行階段從未接入該屬性。
+不存在`data-wails-context-menu="..."`屬性；執行階段從未接入此屬性。
 
-**動態快顯功能表：**
+**動態快顯選單：**
 
 ```go
 // Update context menu based on selection
@@ -463,7 +468,7 @@ func updateContextMenu() {
 }
 ```
 
-## 系統匣功能表
+## 系統匣選單
 
 ### app.SystemTray.New()
 
@@ -496,7 +501,7 @@ tray.SetIcon(iconData)
 
 ### SetMenu()
 
-設定系統匣的功能表。
+設定系統匣的選單。
 
 ```go
 func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-設定將游標停留在系統匣圖示上時顯示的工具提示。此方法不會傳回任何值。
+設定滑鼠游標停留在系統匣圖示上時顯示的工具提示。此方法不會傳回任何值。
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -556,7 +561,7 @@ tray.OnClick(func() {
 
 ## 完整範例
 
-### 標準應用程式功能表
+### 標準應用程式選單
 
 ```go
 package main
@@ -690,7 +695,7 @@ func setupSystemTray(app *application.App, window application.Window) {
 }
 ```
 
-### 動態更新功能表
+### 動態更新選單
 
 ```go
 type Editor struct {
@@ -753,30 +758,30 @@ func (e *Editor) save() {
 ### ✅ 建議做法
 
 - **使用標準快速鍵**——遵循平台慣例（例如使用 Ctrl+C 複製）
-- **變更後呼叫 Update()**——否則功能表不會反映變更
-- **將相關項目分組**——使用分隔線整理功能表項目
-- **停用目前無法使用的動作**——不要隱藏，請使用 SetEnabled(false) 停用
+- **變更後呼叫 Update()**——否則選單不會反映變更
+- **將相關項目分組**——使用分隔線整理選單項目
+- **停用目前無法使用的動作**——不要隱藏，而應使用 SetEnabled(false) 停用
 - **使用清楚的標籤**——保持簡潔且具描述性
-- **遵循平台慣例**——注意 macOS 與 Windows/Linux 的功能表模式差異
+- **遵循平台慣例**——留意 macOS 與 Windows/Linux 的選單模式差異
 
 ### ❌ 避免事項
 
 - **不要忘記呼叫 Update()**——這是最常見的錯誤
-- **不要巢狀化得太深**——功能表最多維持在2-3層
+- **不要巢狀化得太深**——選單最多保持2-3層
 - **不要使用含糊的標籤**——例如「處理」與「處理文件」
-- **不要過度複雜化**——讓功能表保持簡單且聚焦
-- **不要混用不同概念**——命名與編排方式應保持一致
+- **不要過度複雜化**——讓選單保持簡單且重點明確
+- **不要混用概念**——維持一致的命名與組織方式
 
-## 平台特定注意事項
+## 各平台注意事項
 
 ### macOS
 
-- 自動加入以應用程式名稱命名的應用程式功能表
+- 會自動加入以應用程式名稱命名的應用程式選單
 - 快速鍵請使用`Cmd`，而非`Ctrl`
-- 應用程式功能表預設包含「關於」、「偏好設定」和「結束」
+- 應用程式選單預設包含「關於」、「偏好設定」和「結束」
 
 ### Windows/Linux
 
-- 不會自動建立應用程式選單
-- 使用`Ctrl`作為快速鍵
+- 不會自動加入應用程式選單
+- 快速鍵請使用`Ctrl`
 - 「結束」通常位於「檔案」選單中
