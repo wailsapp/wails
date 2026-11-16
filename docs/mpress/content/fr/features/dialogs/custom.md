@@ -7,7 +7,7 @@ sourcePath: "features/dialogs/custom.md"
 
 ## Boîtes de dialogue personnalisées
 
-Créez des **fenêtres de boîte de dialogue personnalisées** à l’aide de fenêtres Wails standard configurées pour se comporter comme des boîtes de dialogue. Créez des formulaires personnalisés, une validation complexe des saisies, une apparence conforme à votre marque et du contenu enrichi (images, vidéos), tout en conservant les conventions familières des boîtes de dialogue.
+Créez des **fenêtres de boîte de dialogue personnalisées** à partir de fenêtres Wails ordinaires dotées d’un comportement de boîte de dialogue. Créez des formulaires personnalisés, une validation complexe des saisies, une apparence conforme à votre marque et du contenu enrichi (images, vidéos), tout en conservant les modèles habituels des boîtes de dialogue.
 
 ## Démarrage rapide
 
@@ -30,9 +30,9 @@ dialog.Show()
 dialog.Focus()
 ```
 
-**Et voilà !** Une interface utilisateur personnalisée qui se comporte comme une boîte de dialogue.
+**Et voilà !** Une interface utilisateur personnalisée avec le comportement d’une boîte de dialogue.
 
-## Création de boîtes de dialogue personnalisées
+## Créer des boîtes de dialogue personnalisées
 
 ### Boîte de dialogue personnalisée de base
 
@@ -188,7 +188,7 @@ func ShowConfirmdialog(message string) bool {
 }
 ```
 
-**Frontend (HTML/JS) :**
+**Frontend (HTML/JS) :**
 
 ```html
 <div class="dialog">
@@ -294,7 +294,7 @@ func (pd *Progressdialog) Close() {
 }
 ```
 
-**Utilisation :**
+**Utilisation :**
 
 ```go
 func processFiles(files []string) {
@@ -316,7 +316,7 @@ func processFiles(files []string) {
 
 ### Boîte de dialogue de connexion
 
-**Go :**
+**Go :**
 
 ```go
 type Logindialog struct {
@@ -374,7 +374,7 @@ func (ld *Logindialog) Cancel() {
 }
 ```
 
-**Frontend :**
+**Frontend :**
 
 ```html
 <div class="login-dialog">
@@ -407,7 +407,7 @@ function cancel() {
 
 ### Boîte de dialogue des paramètres
 
-**Go :**
+**Go :**
 
 ```go
 type Settingsdialog struct {
@@ -454,7 +454,7 @@ func (sd *Settingsdialog) Cancel() {
 }
 ```
 
-### Assistant
+### Boîte de dialogue d’assistant
 
 ```go
 type Wizarddialog struct {
@@ -525,22 +525,22 @@ func (wd *Wizarddialog) Cancel() {
 ### ✅ À faire
 
 - **Utilisez les options de fenêtre appropriées** — AlwaysOnTop, Frameless, etc.
-- **Gérez l’annulation** — Proposez toujours un moyen d’annuler
+- **Gérez l’annulation** — Prévoyez toujours un moyen d’annuler
 - **Validez les saisies** — Vérifiez les données avant de les accepter
 - **Fournissez un retour d’information** — États de chargement, erreurs
-- **Utilisez des événements pour la communication** — Séparation claire des responsabilités
+- **Utilisez des événements pour la communication** — Séparation claire
 - **Libérez les ressources** — Fermez les fenêtres et supprimez les écouteurs
 
 ### ❌ À ne pas faire
 
 - **Ne bloquez pas le thread principal** — Utilisez des canaux pour transmettre les résultats
-- **N’oubliez pas de fermer les fenêtres** — Risques de fuite de mémoire
-- **Ne négligez pas la validation** — Validez toujours les saisies
+- **N’oubliez pas de fermer les fenêtres** — Risques de fuites de mémoire
+- **N’omettez pas la validation** — Validez toujours les saisies
 - **N’ignorez pas les erreurs** — Gérez tous les cas d’erreur
-- **Ne rendez pas les boîtes de dialogue trop complexes** — Gardez-les simples
+- **Ne rendez pas la boîte de dialogue trop complexe** — Gardez les boîtes de dialogue simples
 - **N’oubliez pas l’accessibilité** — Navigation au clavier
 
-## Style des boîtes de dialogue personnalisées
+## Personnaliser le style des boîtes de dialogue
 
 ### Style moderne de boîte de dialogue
 
@@ -624,4 +624,4 @@ Utilisez des événements pour la communication avec les boîtes de dialogue.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue personnalisées](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de boîtes de dialogue personnalisées](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

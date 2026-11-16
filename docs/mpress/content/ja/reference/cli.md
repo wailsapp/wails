@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Go からフロントエンドへのバインディングを生成します。フラグ: `-d`（出力ディレクトリ）、`-models`、`-index`、`-ts`、`-i`（インターフェイス）、`-b`（バンドル）、`-names`（`Call.ByName` を出力）、`-noevents`、`-noindex`、`-dry`、`-silent`、`-v`、`-clean`（デフォルトは `true`）、`-f`、`-obfuscated`（Garble ビルド用の安定したバインディング ID を含む `wails_obfuscated.gen.go` を生成。[難読化ビルド](/guides/build/obfuscation/)を参照）、`-obfuscated-output`（生成ファイルの配置先ディレクトリ。デフォルトは main パッケージのディレクトリ）。パッケージパターン（例: `./...`）を指定できます。何も指定しない場合は、現在のディレクトリを使用します。 |
 | `generate icons` | ソース PNG を各プラットフォームのアイコン形式に変換します。フラグ: `-input`、`-windowsfilename`、`-macfilename`、`-iconcomposerinput`、`-macassetdir`。 |
 | `generate build-assets` | `build/config.yml` から `build/` ディレクトリの内容（Taskfile スニペット、NSIS ファイル、`Info.plist`、`.desktop` テンプレートなど）を生成します。 |
-| `generate runtime` | webview に配布されるビルド済みの `/wails/runtime.js` を再生成します。 |
+| `generate runtime` | CLI に組み込まれた本番用／デバッグ用の JavaScript バンドルをエクスポートします（`-d` で出力先を指定します）。 |
 | `generate syso` | Windows の `.syso` リソースファイル（アイコン、マニフェスト、バージョン情報）を生成します。 |
 | `generate webview2bootstrapper` | Windows 用の WebView2 ブートストラップインストーラーを生成します。 |
 | `generate constants` | Go のイベント型から JS のイベント名定数を生成します。 |
@@ -118,4 +118,4 @@ wails3 <command> --help
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[使用例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。

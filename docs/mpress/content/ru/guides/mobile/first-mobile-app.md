@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Именно этот шаблон используется в примере [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — см. `native_features_stub.go`, `native_features_ios.go` и `native_features_android.go`.
+Именно этот шаблон используется в [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — см. `native_features_stub.go`, `native_features_ios.go` и `native_features_android.go`.
 
 @note{type="note" title="Именование API нативных функций и событий"}
 Стоит знать о двух соглашениях:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Исходный код доступен по адресу [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile). Файлы `native_features_ios.go` и `native_features_android.go` особенно удобны как готовые отправные точки для реализации платформенно-зависимых функций.
+Просмотрите исходный код в [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) — файлы `native_features_ios.go` и `native_features_android.go` особенно удобны как заготовки для копирования при реализации платформозависимых функций.
 
 ## Что дальше
 

@@ -26,7 +26,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### 复选框
 
-可切换选中/未选中状态的菜单项：
+可在选中和未选中状态之间切换的菜单项：
 
 ```go
 checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
@@ -38,7 +38,7 @@ checkbox.OnClick(func(ctx *application.Context) {
 
 <strong>适用于：</strong>布尔设置、功能开关、视图选项
 
-<strong>重要：</strong>单击时，选中状态会自动切换。
+<strong>重要：</strong>单击后，选中状态会自动切换。
 
 ### 单选组
 
@@ -50,13 +50,13 @@ menu.AddRadio("Medium", false)
 menu.AddRadio("Large", false)
 ```
 
-<strong>适用于：</strong>互斥选项（大小、主题、模式）
+<strong>适用于：</strong>互斥选择（大小、主题、模式）
 
-**分组方式：**
+**分组原理：**
 
-- 相邻的单选菜单项会自动组成一组
-- 选择其中一项会取消选中组内其他项
-- 使用分隔符或常规菜单项分隔不同的组
+- 相邻的单选项会自动组成一组
+- 选择其中一项会取消选择组内其他项
+- 使用分隔符或常规菜单项隔开不同的组
 
 **包含多个组的示例：**
 
@@ -75,7 +75,7 @@ menu.AddRadio("Dark", false)
 
 ### 子菜单
 
-用于组织菜单项的嵌套菜单结构：
+用于组织内容的嵌套菜单结构：
 
 ```go
 submenu := menu.AddSubmenu("More Options")
@@ -87,7 +87,7 @@ submenu.Add("Submenu Item 2")
 
 <strong>适用于：</strong>对相关菜单项分组、减少杂乱
 
-<strong>嵌套限制：</strong>大多数平台支持2-3层。请避免更深层级的嵌套。
+<strong>嵌套限制：</strong>大多数平台支持2-3层。请避免更深层次的嵌套。
 
 ### 分隔符
 
@@ -103,9 +103,9 @@ menu.Add("Item 2")
 
 <strong>最佳实践：</strong>不要在菜单开头或末尾放置分隔符。
 
-### 分区标题
+### 分节标题
 
-在 **macOS 14+** 上为一组菜单项提供原生、不可交互的标签：
+<strong>macOS 14+</strong>上用于标识一组菜单项的原生非交互式标签：
 
 ```go
 menu.AddSectionHeader("Build server")
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` 使用 AppKit 标准的分区标题外观。它不返回菜单项，也不关联操作。在较早版本的 macOS、Windows、Linux、移动平台和服务器构建中，调用不执行任何操作，也不会插入任何行。
+`AddSectionHeader`使用 AppKit 的标准分节标题外观。它不返回菜单项，也不附加操作。在较旧的 macOS 版本、Windows、Linux、移动端和服务器构建中，此调用不执行任何操作，也不会插入任何行。
 
-可在托盘菜单、上下文菜单或应用程序菜单中使用它，为相关命令添加标签。要在所有平台上分隔单选组，请使用 `AddSeparator()`，因为被省略的标题不会分隔单选组。方法签名请参阅 [Menu API](/reference/menu#addsectionheader)，使用主机名作为标题的示例请参阅 `systray-menu`。
+可在托盘菜单、上下文菜单或应用程序菜单中使用它来标识相关命令。由于省略的标题不会隔断单选组，请使用`AddSeparator()`在所有平台上分隔单选组。有关方法签名，请参阅[菜单 API](/reference/menu#addsectionheader)；有关以主机名作为标题的用法，请参阅`systray-menu`示例。
 
 ## 菜单项属性
 
@@ -164,9 +164,9 @@ isEnabled := menuItem.Enabled()
 ```
 
 @note{type="caution" title="Windows 菜单行为"}
-在 Windows 上，菜单状态发生变化时需要重新构建。启用或禁用菜单项后，**务必调用`menu.Update()`**，尤其是该菜单项创建时处于禁用状态的情况。
+在 Windows 上，菜单状态发生变化时需要重新构建。启用或禁用菜单项后，**务必调用`menu.Update()`**，尤其是该菜单项在创建时处于禁用状态的情况。
 
-<strong>原因：</strong>Windows 菜单更新时会从头重新构建。如果不调用`Update()`，单击处理程序将无法正常触发。
+<strong>原因：</strong>Windows 菜单在更新时会从头重新构建。如果不调用`Update()`，单击处理程序将无法正常触发。
 
 @end
 
@@ -209,7 +209,7 @@ onDocumentChanged(func() {
 
 ### 选中状态
 
-对于复选框和单选菜单项，可控制或查询其选中状态：
+对于复选框项和单选项，可以控制或查询其选中状态：
 
 ```go
 checkbox := menu.AddCheckbox("Feature", false)
@@ -220,7 +220,7 @@ menu.Update()
 isChecked := checkbox.Checked()
 ```
 
-<strong>自动切换：</strong>单击复选框时，其状态会自动切换。无需在单击处理程序中调用`SetChecked()`。
+<strong>自动切换：</strong>单击复选框后，其状态会自动切换。无需在单击处理程序中调用`SetChecked()`。
 
 **手动控制：**
 
@@ -234,7 +234,7 @@ func syncAutoSave(enabled bool) {
 }
 ```
 
-### 加速键（键盘快捷键）
+### 快捷键（键盘快捷方式）
 
 为菜单项添加键盘快捷键：
 
@@ -246,9 +246,9 @@ quitMenuItem := menu.Add("Quit")
 quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 ```
 
-**加速键格式：**
+**快捷键格式：**
 
-- `CmdOrCtrl`——在 macOS 上为 Cmd，在 Windows/Linux 上为 Ctrl
+- `CmdOrCtrl`——在 macOS 上表示 Cmd，在 Windows/Linux 上表示 Ctrl
 - `Shift`、`Alt`、`Option`——修饰键
 - `A-Z`、`0-9`——字母键/数字键
 - `F1-F12`——功能键
@@ -266,7 +266,7 @@ quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 "Alt+F4"                // Close (Windows convention)
 ```
 
-**平台特定的加速键：**
+**平台特定快捷键：**
 
 ```go
 if runtime.GOOS == "darwin" {
@@ -285,10 +285,10 @@ menuItem := menu.Add("Advanced Options")
 menuItem.SetTooltip("Configure advanced settings")
 ```
 
-**平台支持情况：**
+**平台支持：**
 
 - **Windows：**✅ 支持
-- **macOS：**❌ 不支持（工具提示并非菜单的标准功能）
+- **macOS：**❌ 不支持（菜单通常不使用工具提示）
 - **Linux：**⚠️ 因桌面环境而异
 
 ### 隐藏状态
@@ -324,7 +324,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **上下文提供：**
 
-- `ctx.ClickedMenuItem()` — 被单击的菜单项
+- `ctx.ClickedMenuItem()`——被单击的菜单项
 - 窗口上下文（如果来自窗口菜单）
 - 应用程序上下文
 
@@ -361,7 +361,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### 更新菜单项
 
-<strong>黄金法则：</strong>更改菜单状态后，始终调用`menu.Update()`。
+<strong>黄金法则：</strong>更改菜单状态后，务必调用`menu.Update()`。
 
 ```go
 // ✅ Correct
@@ -375,9 +375,9 @@ menuItem.SetEnabled(true)
 
 **这为何很重要：**
 
-- <strong>Windows：</strong>更新菜单时会重新构建菜单
-- <strong>macOS/Linux：</strong>重要性较低，但仍建议这样做
-- <strong>单击处理程序：</strong>如果不调用 Update()，将无法正常触发
+- <strong>Windows：</strong>菜单会在更新时重新构建
+- <strong>macOS/Linux：</strong>没那么关键，但仍建议这样做
+- <strong>点击处理程序：</strong>如果不调用 Update()，将无法正常触发
 
 ### 重新构建菜单
 
@@ -415,7 +415,7 @@ func rebuildFileMenu() {
 
 **何时更新：**
 
-- 启用或禁用菜单项
+- 启用/禁用菜单项
 - 更改标签
 - 切换复选框状态
 
@@ -446,14 +446,14 @@ onUndoStackChanged(updateEditMenu)
 | 平台 | 位置 | 说明 |
 | --- | --- | --- |
 | **macOS** | 屏幕顶部 | 全局菜单栏 |
-| **Windows** | 窗口顶部 | 每个窗口各有一个菜单 |
-| **Linux** | 窗口顶部 | 每个窗口各有一个（通常如此） |
+| **Windows** | 窗口顶部 | 每个窗口各自的菜单 |
+| **Linux** | 窗口顶部 | 通常每个窗口各自拥有 |
 
 ### 标准菜单
 
 **macOS：**
 
-- 有“应用程序”菜单（以应用名称命名）
+- 包含“应用程序”菜单（以应用名称命名）
 - “偏好设置”位于“应用程序”菜单中
 - “退出”位于“应用程序”菜单中
 
@@ -509,22 +509,22 @@ if runtime.GOOS == "darwin" {
 
 ## 最佳实践
 
-### ✅ 推荐做法
+### ✅ 应该做
 
 - 更改菜单状态后（尤其是在 Windows 上），**调用 menu.Update()**
-- 对互斥选项<strong>使用单选组</strong>
-- 对可切换的功能<strong>使用复选框</strong>
-- **为常用操作添加快捷键**
-- **使用分隔符对相关项目进行分组**
+- 对于互斥选项，**使用单选组**
+- 对于可切换的功能，**使用复选框**
+- 为常用操作**添加快捷键**
+- 使用分隔符**将相关菜单项分组**
 - **在所有平台上测试**——行为因平台而异
 
-### ❌ 不要这样做
+### ❌ 不应该做
 
 - **不要忘记调用 menu.Update()**——否则点击处理程序将无法正常工作
-- **不要嵌套得太深**——最多 2-3 层
-- **不要以分隔符开头或结尾**——这样显得不专业
-- **不要在 macOS 上使用工具提示**——不受支持
-- **不要硬编码特定平台的快捷键**——请使用`CmdOrCtrl`
+- **嵌套不要太深**——最多2-3层
+- **不要以分隔符开头或结尾**——这会显得不专业
+- **不要在 macOS 上使用工具提示**——该平台不支持
+- **不要硬编码平台快捷键**——请使用`CmdOrCtrl`
 
 ## 故障排除
 

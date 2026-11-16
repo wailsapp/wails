@@ -7,7 +7,7 @@ sourcePath: "features/menus/application.md"
 
 ## 問題
 
-專業桌面應用程式需要「檔案」、「編輯」、「顯示方式」和「輔助說明」等選單列。但選單在各平台上的運作方式不同：
+專業桌面應用程式需要選單列，例如「檔案」、「編輯」、「檢視」和「說明」。但選單在各平台上的運作方式不同：
 
 - **macOS**：位於螢幕頂端的全域選單列
 - **Windows**：位於視窗標題列中的選單列
@@ -17,11 +17,11 @@ sourcePath: "features/menus/application.md"
 
 ## Wails 解決方案
 
-Wails 提供<strong>統一的 API</strong>，可自動建立各平台的原生選單。只需撰寫一次，即可在所有平台上獲得原生行為。
+Wails 提供**統一 API**，可自動建立各平台的原生選單。只需撰寫一次，即可在所有平台上獲得原生行為。
 
-![macOS 上的 Wails 應用程式選單，包含標準項目、核取方塊項目、選項按鈕項目及子選單項目](/assets/screenshots/application-menu-macos.png)
+![macOS 上的 Wails 應用程式選單，包含標準項目、核取方塊、選項按鈕和子選單項目](/assets/screenshots/application-menu-macos.png)
 
-在 macOS 上，應用程式選單會顯示於全域選單列中。此擷取畫面顯示由 Wails 選單 API 繪製的原生選單，其中包含停用的項目、核取方塊項目、選項按鈕項目及子選單項目。
+在 macOS 上，應用程式選單位於全域選單列中。此畫面擷取顯示 Wails 選單 API 算繪的原生選單，其中包含停用項目、核取方塊、選項按鈕和子選單項目。
 
 ## 快速開始
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-<strong>就這麼簡單！</strong>現在您已擁有包含標準項目的平台原生選單。`UseApplicationMenu`選項可確保 Windows 和 Linux 視窗無須額外程式碼即可顯示選單。
+<strong>這樣就完成了！</strong>現在您已擁有包含標準項目的平台原生選單。`UseApplicationMenu`選項可確保 Windows 和 Linux 視窗無須額外程式碼即可顯示選單。
 
 ## 建立選單
 
@@ -105,10 +105,10 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-此做法的效果如下：
+此做法的行為如下：
 
-- 在<strong>macOS</strong>上：選單會顯示於螢幕頂端（標準行為）
-- 在<strong>Windows/Linux</strong>上：每個具有`UseApplicationMenu: true`的視窗都會顯示應用程式選單
+- 在**macOS**上：選單顯示於螢幕頂端（標準行為）
+- 在**Windows/Linux**上：每個設定了`UseApplicationMenu: true`的視窗都會顯示應用程式選單
 
 **各平台的詳細資訊：**
 
@@ -120,10 +120,10 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 app.Menu.Set(menu)
 ```
 
-選單會顯示於螢幕頂端，即使所有視窗都已關閉仍會保留。由於所有應用程式都使用全域選單，因此`UseApplicationMenu`選項在 macOS 上不會產生任何作用。
+選單顯示於螢幕頂端，即使所有視窗都已關閉仍會保留。由於所有應用程式都使用全域選單，因此`UseApplicationMenu`選項在 macOS 上不會產生任何效果。
 
 [Windows]
-**各視窗的選單列**：
+**每個視窗各自的選單列**：
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -136,10 +136,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-每個視窗都能擁有自己的選單，或繼承應用程式選單。選單會顯示於視窗的標題列中。
+每個視窗都可擁有自己的選單，或繼承應用程式選單。選單顯示於視窗的標題列中。
 
 [Linux]
-**各視窗的選單列**（通常如此）：
+**每個視窗各自的選單列**（通常如此）：
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -152,12 +152,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-行為會依桌面環境而異。部分桌面環境（例如 Unity）支援全域選單。
+行為依桌面環境而異。部分桌面環境（例如 Unity）支援全域選單。
 
 @end
 
 @note{type="tip" title="簡化跨平台選單"}
-使用`UseApplicationMenu: true`後，就不需要如下所示的平台專用程式碼：
+使用`UseApplicationMenu: true`後，就不需要撰寫如下的各平台專用程式碼：
 
 ```go
 // Old approach - no longer needed
@@ -170,17 +170,29 @@ if runtime.GOOS == "darwin" {
 
 @end
 
-**各視窗的自訂選單：**
+**每個視窗的自訂選單：**
 
-如果視窗需要不同於應用程式選單的選單，請直接為其設定：
+如果某個視窗需要與應用程式選單不同的選單，請直接為其設定：
 
 ```go
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**移除視窗的選單列：**
+
+傳入`nil`即可移除視窗的選單列：
+
+```go
+window.SetMenu(nil)
+```
+
+在 Windows 和 Linux 上，該視窗之後將不再顯示任何選單列，包括它透過`UseApplicationMenu`選擇使用的應用程式選單；已移除選單的快速鍵也會停止在該視窗中運作。如果在視窗啟動前呼叫此方法，建立的視窗將不含選單列。之後呼叫`SetMenu(menu)`可恢復選單列。
+
+在 macOS 上，選單列屬於應用程式而非視窗，因此`SetMenu`不會產生任何效果。請使用`app.Menu.Set`變更應用程式選單。
+
 ## 選單角色
 
-Wails 提供<strong>預先定義的選單角色</strong>，可自動建立符合各平台慣例的選單結構。
+Wails 提供**預先定義的選單角色**，可自動建立符合各平台慣例的選單結構。
 
 ### 可用角色
 
@@ -188,7 +200,7 @@ Wails 提供<strong>預先定義的選單角色</strong>，可自動建立符合
 | --- | --- | --- |
 | `AppMenu` | 包含「關於」、「偏好設定」和「結束」的應用程式選單 | **僅限 macOS** |
 | `FileMenu` | 檔案操作（新增、開啟、儲存等） | 所有平台 |
-| `EditMenu` | 文字編輯（還原、重做、剪下、複製、貼上） | 所有平台 |
+| `EditMenu` | 文字編輯（復原、重做、剪下、複製、貼上） | 所有平台 |
 | `WindowMenu` | 視窗管理（最小化、縮放等） | 所有平台 |
 | `HelpMenu` | 說明與資訊 | 所有平台 |
 
@@ -209,22 +221,22 @@ menu.AddRole(application.WindowMenu)
 menu.AddRole(application.HelpMenu)
 ```
 
-**您會獲得以下項目：**
+**您將獲得以下項目：**
 
 @tabs{sync-key="platform"}
 [macOS]
 **AppMenu**（包含應用程式名稱）：
 
-- 關於 [應用程式名稱]
+- 關於 [App Name]
 - 偏好設定... (⌘,)
 - ---
 - 服務
 - ---
-- 隱藏 [應用程式名稱] (⌘H)
+- 隱藏 [App Name] (⌘H)
 - 隱藏其他項目 (⌥⌘H)
 - 全部顯示
 - ---
-- 結束 [應用程式名稱] (⌘Q)
+- 結束 [App Name] (⌘Q)
 
 **FileMenu**：
 
@@ -235,7 +247,7 @@ menu.AddRole(application.HelpMenu)
 
 **EditMenu**：
 
-- 還原 (⌘Z)
+- 復原 (⌘Z)
 - 重做 (⇧⌘Z)
 - ---
 - 剪下 (⌘X)
@@ -248,11 +260,11 @@ menu.AddRole(application.HelpMenu)
 - 最小化 (⌘M)
 - 縮放
 - ---
-- 將所有視窗移至最前方
+- 將全部移到最前方
 
 **HelpMenu**：
 
-- [應用程式名稱] 說明
+- [App Name] 說明
 
 [Windows]
 **FileMenu**：
@@ -279,7 +291,7 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**：
 
-- 關於 [應用程式名稱]
+- 關於 [App Name]
 
 [Linux]
 與 Windows 類似，但鍵盤快速鍵可能因桌面環境而異。
@@ -288,7 +300,7 @@ menu.AddRole(application.HelpMenu)
 
 ### 自訂角色選單
 
-`Menu.AddRole(role)`會傳回<strong>接收者</strong>選單（最上層選單），<strong>而不是</strong>該角色的子選單。若要將項目新增至該角色的子選單，請使用`FindByRole`查詢已插入的角色項目，並對其呼叫`GetSubmenu()`：
+`Menu.AddRole(role)`會傳回作為**接收者**的選單（最上層選單），而**不是**該角色的子選單。若要將項目新增至角色的子選單，請使用`FindByRole`查詢已插入的角色項目，並對其呼叫`GetSubmenu()`：
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -329,7 +341,7 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-**如需更多選單項目類型**，請參閱[選單參考](/features/menus/reference/)。
+如需更多選單項目類型，請參閱**更多選單項目類型**的[選單參考](/features/menus/reference/)。
 
 ## 動態選單
 
@@ -360,7 +372,7 @@ func onDocumentChanged() {
 @note{type="caution" title="一律呼叫 menu.Update()"}
 變更選單狀態（啟用／停用、標籤、勾選狀態）後，**一律呼叫`menu.Update()`**。這在會重建選單的 Windows 上尤其重要。
 
-如需詳細資訊，請參閱[選單參考](/features/menus/reference/#enabled-state)。
+詳細資訊請參閱[選單參考](/features/menus/reference/#enabled-state)。
 
 @end
 
@@ -382,7 +394,7 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 
 ### 重建選單
 
-若要進行重大變更，請重建整個選單：
+如有重大變更，請重建整個選單：
 
 ```go
 func rebuildFileMenu() {
@@ -416,7 +428,7 @@ func rebuildFileMenu() {
 
 ## 從選單控制視窗
 
-選單項目可以控制視窗：
+選單項目可控制視窗：
 
 ```go
 viewMenu := menu.AddSubmenu("View")
@@ -451,15 +463,15 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-## 各平台的注意事項
+## 各平台的特別考量
 
 ### macOS
 
 **選單列行為：**
 
-- 顯示於<strong>螢幕頂端</strong>（全域）
+- 顯示於**畫面頂端**（全域）
 - 關閉所有視窗後仍會保留
-- 第一個選單<strong>一律是應用程式選單</strong>
+- 第一個選單**一律是應用程式選單**
 - 標準項目請使用`menu.AddRole(application.AppMenu)`
 
 **標準位置：**
@@ -484,7 +496,7 @@ if runtime.GOOS == "darwin" {
 
 **選單列行為：**
 
-- 顯示於<strong>視窗標題列</strong>中
+- 顯示於**視窗標題列**中
 - 每個視窗都有自己的選單
 - 沒有應用程式選單
 
@@ -507,9 +519,9 @@ if runtime.GOOS == "windows" {
 
 **選單列行為：**
 
-- 通常每個視窗各自擁有選單（與 Windows 類似）
-- 某些桌面環境支援全域選單（Unity、安裝擴充功能的 GNOME）
-- 外觀會因桌面環境而異
+- 通常每個視窗各有一個（與 Windows 相同）
+- 部分桌面環境支援全域選單（Unity、安裝擴充功能的 GNOME）
+- 外觀因桌面環境而異
 
 <strong>最佳實務：</strong>遵循 Windows 慣例，並在目標桌面環境上測試。
 
@@ -641,46 +653,46 @@ func showAbout(ctx *application.Context) {
 
 ### ✅ 建議做法
 
-- 標準選單（檔案、編輯等）應<strong>使用選單角色</strong>
-- 選單結構應<strong>遵循平台慣例</strong>
-- 為常用操作<strong>新增鍵盤快速鍵</strong>
-- 變更選單狀態後，**呼叫 menu.Update()**
+- 對標準選單（檔案、編輯等）**使用選單角色**
+- 選單結構應**遵循平台慣例**
+- 為常用操作**新增鍵盤快速鍵**
+- 變更選單狀態後**呼叫 menu.Update()**
 - **在所有平台上測試**——行為會因平台而異
-- **讓選單層級保持精簡**——最多 2-3 層
-- **使用清楚的標籤**——使用「儲存專案」，而不是「儲存」
+- **維持淺層選單結構**——最多2-3層
+- **使用清楚的標籤**——使用「儲存專案」，而非「儲存」
 
-### ❌ 請勿這樣做
+### ❌ 避免做法
 
-- **請勿寫死各平台的快速鍵**——請使用 `CmdOrCtrl`
-- **在 macOS 上，請勿將「結束」放在「檔案」選單中**——它應位於「應用程式」選單中
-- **在 macOS 上，請勿將「關於」放在「說明」選單中**——它應位於「應用程式」選單中
-- **請勿忘記呼叫 menu.Update()**——否則選單將無法正常運作
-- **請勿巢狀設定過多層級**——使用者會迷失方向
-- **請勿使用術語**——讓標籤保持淺顯易懂
+- **不要將平台快速鍵寫死**——請使用`CmdOrCtrl`
+- **在 macOS 上，不要將「結束」放入「檔案」選單**——它應位於應用程式選單中
+- **在 macOS 上，不要將「關於」放入「說明」選單**——它應位於應用程式選單中
+- **不要忘記呼叫 menu.Update()**——否則選單將無法正常運作
+- **不要巢狀太多層**——使用者會迷失方向
+- **不要使用術語**——標籤應便於使用者理解
 
 ## 後續步驟
 
 @cards{cols="2"}
 📖 選單參考
-選單項目類型和屬性的完整參考資料。
+選單項目類型與屬性的完整參考。
 
 [深入瞭解 →](/features/menus/reference/)
 
 ---
-◆ 快顯選單
-建立按一下滑鼠右鍵時顯示的快顯選單。
+◆ 快顯功能表
+建立按滑鼠右鍵開啟的快顯功能表。
 
 [深入瞭解 →](/features/menus/context/)
 
 ---
 ★ 系統匣選單
-新增系統匣／選單列整合。
+新增系統匣／選單列整合功能。
 
 [深入瞭解 →](/features/menus/systray/)
 
 ---
 📖 選單模式
-常見的選單模式與最佳實務。
+常用的選單模式與最佳實務。
 
 [深入瞭解 →](/guides/menus/)
 
@@ -688,4 +700,4 @@ func showAbout(ctx *application.Context) {
 
 ---
 
-<strong>有疑問嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[選單範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。
+<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[選單範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu)。

@@ -919,16 +919,16 @@
       "updatedAt": "2026-10-25T22:09:16Z"
     },
     "b0076-text-01": {
-      "sourceHash": "f32778828203c13433c7e6792f98a09bcb39684bd0ba74aca861ba6cbf356424",
-      "targetHash": "0787547140fb38ec9c5ad416d15d5e8c26225e5a3d555255b3869bea5db96c97",
-      "machineHash": "0787547140fb38ec9c5ad416d15d5e8c26225e5a3d555255b3869bea5db96c97",
-      "machineText": "這正是[Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)採用的模式，請參閱`native_features_stub.go`、`native_features_ios.go`和`native_features_android.go`。",
+      "sourceHash": "088b33094e24fb3815d2e0741c2e05d9768a5fcd05e8e0b9ac1262e1c6e8cf29",
+      "targetHash": "078d66f9ce37d66df197f506455cc7b14a37594e3bd8f467da1144699ac3d8d9",
+      "machineHash": "078d66f9ce37d66df197f506455cc7b14a37594e3bd8f467da1144699ac3d8d9",
+      "machineText": "這正是[Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)採用的模式——請參閱`native_features_stub.go`、`native_features_ios.go`和`native_features_android.go`。",
       "status": "machine-translated",
-      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/…",
+      "sourcePreview": "This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/exampl…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:09:16Z"
+      "updatedAt": "2026-11-06T02:14:56Z"
     },
     "b0077-text-01": {
       "sourceHash": "983f281e045f68e6ef9eed8c0a1d3429a0365fa56853ce026da552f88866a5dc",
@@ -1255,16 +1255,16 @@
       "updatedAt": "2026-10-25T22:09:16Z"
     },
     "b0104-text-01": {
-      "sourceHash": "6c23f4d999b2e5f60a998b61984b6ed022ced0850ada9306b24e4ca554d9f48e",
-      "targetHash": "4a5046e1a3a226c2b7bc6c059457660ad8f9f8d6d379dc4daf5dded7bfe0f79a",
-      "machineHash": "4a5046e1a3a226c2b7bc6c059457660ad8f9f8d6d379dc4daf5dded7bfe0f79a",
-      "machineText": "請在[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)瀏覽原始碼；其中`native_features_ios.go`和`native_features_android.go`檔案特別適合作為複製貼上平台專屬功能的起點。",
+      "sourceHash": "cfc104d247867ee4529c056884ef0bfd032c4df025308b28d8af3ba81de8f413",
+      "targetHash": "0b6e53da3e8d93de06dbb8fbed64c4462a1ff431b8b1c399b5469b6cdc36871a",
+      "machineHash": "0b6e53da3e8d93de06dbb8fbed64c4462a1ff431b8b1c399b5469b6cdc36871a",
+      "machineText": "請在[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile)瀏覽原始碼；其中`native_features_ios.go`和`native_features_android.go`檔案特別適合作為複製貼上後開始實作平台特定功能的起點。",
       "status": "machine-translated",
-      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v…",
+      "sourcePreview": "Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/example…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:09:16Z"
+      "updatedAt": "2026-11-06T02:14:56Z"
     },
     "b0105-heading-01": {
       "sourceHash": "eaf380e7f60489b7d687971d73fa8687ed68ef0aa7cc9a38310c146b06538067",

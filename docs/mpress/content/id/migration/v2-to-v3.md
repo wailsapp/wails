@@ -5,25 +5,25 @@ slug: "migration/v2-to-v3"
 sourcePath: "migration/v2-to-v3.md"
 ---
 
-Wails v3 merupakan **penulisan ulang secara menyeluruh** dengan peningkatan signifikan pada arsitektur, performa, dan pengalaman developer. Panduan ini membantu Anda memigrasikan aplikasi v2 ke v3.
+Wails v3 adalah **penulisan ulang menyeluruh** dengan peningkatan signifikan pada arsitektur, performa, dan pengalaman developer. Panduan ini membantu Anda memigrasikan aplikasi v2 ke v3.
 
 **Perubahan utama:**
 
 - Struktur aplikasi baru
 - Sistem binding yang ditingkatkan
 - Pengelolaan jendela yang disempurnakan
-- Sistem peristiwa yang lebih baik
+- Sistem event yang lebih baik
 - Konfigurasi yang disederhanakan
 
 **Waktu migrasi:** 1-4 jam untuk aplikasi pada umumnya
 
-## Perubahan yang Tidak Kompatibel
+## Perubahan yang Merusak Kompatibilitas
 
 ### Inisialisasi Aplikasi
 
-Di v2, penyiapan aplikasi, konfigurasi jendela, dan eksekusi semuanya digabungkan dalam satu pemanggilan `wails.Run()`. Pendekatan monolitik ini menyulitkan pembuatan beberapa jendela, penanganan kesalahan pada tahap yang berbeda, atau pengujian setiap komponen aplikasi secara terpisah.
+Di v2, penyiapan aplikasi, konfigurasi jendela, dan eksekusi digabungkan dalam satu pemanggilan `wails.Run()`. Pendekatan monolitik ini menyulitkan pembuatan beberapa jendela, penanganan kesalahan pada tahap yang berbeda, atau pengujian masing-masing komponen aplikasi Anda.
 
-v3 memisahkan hal-hal tersebut menjadi beberapa fase tersendiri: pembuatan aplikasi, pembuatan jendela, dan eksekusi. Pemisahan ini memberi Anda kendali eksplisit atas setiap tahap siklus hidup aplikasi serta menjadikan kode lebih modular dan mudah diuji.
+v3 memisahkan berbagai aspek ini menjadi beberapa fase tersendiri: pembuatan aplikasi, pembuatan jendela, dan eksekusi. Pemisahan ini memberi Anda kendali eksplisit atas setiap tahap siklus hidup aplikasi serta membuat kode lebih modular dan mudah diuji.
 
 **v2:**
 
@@ -59,17 +59,17 @@ app.Run()
 
 **Mengapa ini lebih baik:**
 
-- **Dukungan multi-jendela**: Anda dapat membuat jendela secara dinamis kapan saja, tidak hanya saat aplikasi dimulai
+- **Dukungan beberapa jendela**: Anda dapat membuat jendela secara dinamis kapan saja, tidak hanya saat aplikasi dimulai
 - **Penanganan kesalahan yang lebih baik**: Setiap fase dapat divalidasi secara terpisah dengan penanganan kesalahan yang tepat
-- **Kode yang lebih jelas**: Pemisahan ini memperjelas apa yang terjadi pada setiap tahap
+- **Kode yang lebih jelas**: Pemisahan tersebut memperjelas apa yang terjadi pada setiap tahap
 - **Lebih mudah diuji**: Anda dapat menguji penyiapan aplikasi tanpa menjalankan event loop
-- **Lebih fleksibel**: Jendela dapat dibuat, dihapus, dan dibuat ulang sepanjang siklus hidup aplikasi
+- **Lebih fleksibel**: Jendela dapat dibuat, dimusnahkan, dan dibuat ulang sepanjang siklus hidup aplikasi
 
 ### Binding
 
-Di v2, setiap struct yang di-binding memerlukan field konteks dan metode `startup(ctx)` untuk menerima konteks runtime. Hal ini menciptakan keterikatan yang erat antara logika bisnis dan runtime Wails sehingga kode lebih sulit diuji dan dipahami.
+Di v2, setiap struct yang di-binding memerlukan field context dan metode `startup(ctx)` untuk menerima context runtime. Hal ini menciptakan keterikatan erat antara logika bisnis Anda dan runtime Wails sehingga kode lebih sulit diuji dan dipahami.
 
-v3 memperkenalkan pola layanan, yang memungkinkan struct Anda sepenuhnya mandiri dan tidak perlu menyimpan konteks runtime. Jika suatu layanan memerlukan akses ke instans aplikasi, layanan tersebut menerimanya secara eksplisit melalui injeksi dependensi, bukan melalui penerusan konteks secara implisit.
+v3 memperkenalkan pola service, yang memungkinkan struct Anda sepenuhnya mandiri dan tidak perlu menyimpan context runtime. Jika suatu service memerlukan akses ke instance aplikasi, service tersebut menerimanya secara eksplisit melalui dependency injection, bukan melalui penerusan context secara implisit.
 
 **v2:**
 
@@ -106,17 +106,17 @@ app := application.New(application.Options{
 
 **Mengapa ini lebih baik:**
 
-- **Tanpa dependensi implisit**: Layanan merupakan struct Go biasa tanpa dependensi runtime tersembunyi
-- **Pengujian lebih mudah**: Anda dapat menguji metode layanan tanpa membuat mock konteks Wails
-- **Kode yang lebih jelas**: Dependensi dinyatakan secara eksplisit (diteruskan sebagai argumen konstruktor), bukan disembunyikan dalam field konteks
-- **Pengorganisasian yang lebih baik**: Layanan dapat dikelompokkan berdasarkan domain, bukan semuanya ditempatkan dalam satu struct `App`
-- **Inisialisasi yang tepat**: Gunakan metode `ServiceStartup()` saat Anda memerlukan inisialisasi agar proses tersebut dinyatakan secara eksplisit
+- **Tanpa dependensi implisit**: Service merupakan struct Go biasa tanpa dependensi runtime tersembunyi
+- **Lebih mudah diuji**: Anda dapat menguji metode service tanpa membuat mock untuk context Wails
+- **Kode yang lebih jelas**: Dependensi dinyatakan secara eksplisit (diteruskan sebagai argumen constructor), bukan disembunyikan dalam field context
+- **Pengorganisasian yang lebih baik**: Service dapat dikelompokkan berdasarkan domain, alih-alih semuanya ditempatkan dalam satu struct `App`
+- **Inisialisasi yang tepat**: Gunakan metode `ServiceStartup()` saat Anda memerlukan inisialisasi agar kebutuhan tersebut dinyatakan secara eksplisit
 
 ### Runtime
 
-Di v2, semua operasi runtime mengharuskan konteks diteruskan ke fungsi global dari paket `runtime`. Hal ini menciptakan keterikatan yang erat dengan objek konteks di seluruh basis kode Anda dan membuat API terasa prosedural, bukan berorientasi objek.
+Di v2, semua operasi runtime mengharuskan context diteruskan ke fungsi global dari package `runtime`. Hal ini menciptakan keterikatan erat dengan objek context di seluruh basis kode Anda dan membuat API terasa prosedural, bukan berorientasi objek.
 
-v3 mengganti runtime berbasis konteks dengan pemanggilan metode langsung pada objek aplikasi dan jendela. Operasi dipanggil langsung pada objek yang dipengaruhinya sehingga kode menjadi lebih intuitif dan berorientasi objek.
+v3 mengganti runtime berbasis context dengan pemanggilan metode langsung pada objek aplikasi dan jendela. Operasi dipanggil langsung pada objek yang dipengaruhinya sehingga kode menjadi lebih intuitif dan berorientasi objek.
 
 **v2:**
 
@@ -149,15 +149,15 @@ func (s *MyService) EmitEvent() {
 
 - **Desain berorientasi objek**: Metode dipanggil pada objek yang dipengaruhinya (jendela, aplikasi, menu, dan sebagainya)
 - **Maksud yang lebih jelas**: `window.SetTitle()` lebih mudah dipahami daripada `runtime.WindowSetTitle(ctx, ...)`
-- **Dukungan IDE yang lebih baik**: Pelengkapan otomatis berfungsi dengan baik ketika metode berada pada objek
-- **Pengelolaan multi-jendela yang lebih jelas**: Saat terdapat beberapa jendela, Anda secara eksplisit memilih jendela yang akan dikenai operasi
-- **Tanpa penerusan konteks**: Anda tidak perlu meneruskan konteks melalui setiap fungsi
+- **Dukungan IDE yang lebih baik**: Pelengkapan otomatis berfungsi dengan semestinya ketika metode berada pada objek
+- **Kejelasan saat menggunakan beberapa jendela**: Saat terdapat beberapa jendela, Anda memilih secara eksplisit jendela yang akan dioperasikan
+- **Tanpa penerusan context**: Anda tidak perlu meneruskan context melalui setiap fungsi
 
 ### Binding Frontend
 
-Di v2, binding disusun berdasarkan paket Go dan nama struct, yang biasanya menghasilkan path seperti `wailsjs/go/main/App`. Struktur ini tidak mencerminkan pengelompokan logis dan menyulitkan pencarian fungsionalitas yang saling terkait.
+Di v2, binding diatur berdasarkan package Go dan nama struct, yang biasanya menghasilkan path seperti `wailsjs/go/main/App`. Struktur ini tidak mencerminkan pengelompokan logis dan menyulitkan pencarian fungsionalitas yang berkaitan.
 
-v3 menyusun binding berdasarkan nama layanan dan modul aplikasi sehingga menghasilkan struktur logis yang lebih jelas. Binding dibuat dalam direktori `bindings` yang disusun berdasarkan nama aplikasi dan nama layanan Anda, sehingga fungsionalitas yang tersedia lebih mudah dipahami.
+v3 mengatur binding berdasarkan nama service dan modul aplikasi sehingga menghasilkan struktur logis yang lebih jelas. Binding dibuat ke dalam direktori `bindings` yang diatur berdasarkan nama aplikasi dan nama service Anda, sehingga fungsionalitas yang tersedia lebih mudah dipahami.
 
 **v2:**
 
@@ -177,17 +177,17 @@ const result = await Greet("World")
 
 **Mengapa ini lebih baik:**
 
-- **Pengorganisasian logis**: Binding dikelompokkan berdasarkan nama layanan, bukan struktur paket Go
-- **Impor yang lebih jelas**: Path mencerminkan logika domain (greetservice), bukan struktur file (main/App)
-- **Lebih mudah ditemukan**: Anda dapat menelusuri binding berdasarkan fitur, bukan berdasarkan struktur teknis
-- **Penamaan yang konsisten**: Pengorganisasian berbasis layanan selaras dengan arsitektur backend Anda
+- **Pengorganisasian logis**: Binding dikelompokkan berdasarkan nama service, bukan struktur package Go
+- **Import yang lebih jelas**: Path mencerminkan logika domain (greetservice), bukan struktur file (main/App)
+- **Lebih mudah ditemukan**: Anda dapat menelusuri binding berdasarkan fitur, bukan struktur teknis
+- **Penamaan yang konsisten**: Pengorganisasian berbasis service selaras dengan arsitektur backend Anda
 - **Path yang lebih sederhana**: Tidak ada lagi prefiks `../wailsjs/go`—cukup `./bindings`
 
 ### Event
 
-Di v2, event menggunakan parameter variadik `interface{}` dan mengharuskan konteks diteruskan ke setiap fungsi event. Handler event menerima data tanpa tipe yang memerlukan assertion tipe secara manual sehingga sistem event rentan terhadap kesalahan dan sulit di-debug.
+Di v2, event menggunakan parameter variadik `interface{}` dan mengharuskan context diteruskan ke setiap fungsi event. Handler event menerima data tanpa tipe yang memerlukan type assertion manual sehingga sistem event rentan terhadap kesalahan dan sulit di-debug.
 
-v3 memperkenalkan objek event bertipe dan menghapus keharusan penggunaan konteks. Handler event menerima objek event yang tepat dengan data bertipe sehingga sistem event lebih andal dan lebih mudah digunakan.
+v3 memperkenalkan objek event bertipe dan menghapus persyaratan context. Handler event menerima objek event yang sesuai dengan data bertipe sehingga sistem event lebih andal dan mudah digunakan.
 
 **v2:**
 
@@ -212,17 +212,17 @@ app.Event.Emit("event-name", data)
 
 **Mengapa ini lebih baik:**
 
-- **Keamanan tipe**: Event menggunakan objek event yang tepat, bukan `...interface{}`
-- **Debugging yang lebih mudah**: Objek event berisi metadata seperti nama event sehingga debugging menjadi lebih mudah
+- **Keamanan tipe**: Peristiwa menggunakan objek peristiwa yang sesuai, bukan `...interface{}`
+- **Proses debug yang lebih baik**: Objek peristiwa berisi metadata seperti nama peristiwa sehingga proses debug menjadi lebih mudah
 - **API yang lebih jelas**: `app.Event.On()` dan `app.Event.Emit()` lebih intuitif daripada fungsi runtime
-- **Tidak memerlukan konteks**: Event bekerja langsung pada objek aplikasi tanpa meneruskan konteks
-- **Handler yang lebih sederhana**: Handler event memiliki signature yang jelas, bukan parameter variadik
+- **Tidak memerlukan konteks**: Peristiwa bekerja langsung pada objek aplikasi tanpa meneruskan konteks antar-thread
+- **Handler yang lebih sederhana**: Handler peristiwa memiliki signature yang jelas, bukan parameter variadik
 
 ### Jendela
 
-v2 hanya mendukung satu jendela per aplikasi. Jendela dibuat saat aplikasi dimulai dan semua operasi jendela dilakukan melalui fungsi runtime yang secara implisit menargetkan satu-satunya jendela tersebut.
+v2 hanya mendukung satu jendela per aplikasi. Jendela dibuat saat aplikasi dimulai, dan semua operasi jendela dilakukan melalui fungsi runtime yang secara implisit menargetkan satu-satunya jendela tersebut.
 
-v3 memperkenalkan dukungan multi-jendela native sebagai fitur inti. Setiap jendela merupakan objek mandiri dengan metode dan siklus hidupnya sendiri. Anda dapat membuat, mengelola, dan memusnahkan beberapa jendela secara dinamis sepanjang masa aktif aplikasi.
+v3 memperkenalkan dukungan native untuk banyak jendela sebagai fitur inti. Setiap jendela merupakan objek kelas satu dengan metode dan siklus hidupnya sendiri. Anda dapat membuat, mengelola, dan menghancurkan beberapa jendela secara dinamis sepanjang masa aktif aplikasi.
 
 **v2:**
 
@@ -244,13 +244,13 @@ window2.SetSize(1024, 768)
 
 **Mengapa ini lebih baik:**
 
-- **Aplikasi multi-jendela**: Buat aplikasi dengan beberapa jendela independen (dasbor, preferensi, alat, dan sebagainya)
-- **Referensi jendela yang eksplisit**: Setiap jendela adalah objek yang dapat Anda simpan dan manipulasi secara langsung
-- **Pembuatan jendela dinamis**: Buat dan musnahkan jendela kapan saja selama runtime
-- **Status jendela independen**: Setiap jendela memiliki event, properti, dan siklus hidupnya sendiri
+- **Aplikasi dengan banyak jendela**: Bangun aplikasi dengan beberapa jendela independen (dasbor, preferensi, alat, dan sebagainya)
+- **Referensi jendela yang eksplisit**: Setiap jendela merupakan objek yang dapat Anda simpan dan manipulasi secara langsung
+- **Pembuatan jendela secara dinamis**: Buat dan hancurkan jendela kapan saja selama runtime
+- **Status jendela yang independen**: Setiap jendela memiliki peristiwa, properti, dan siklus hidupnya sendiri
 - **Arsitektur yang lebih baik**: Pengelolaan jendela berorientasi objek, bukan berbasis konteks
 
-## Langkah Migrasi
+## Langkah-Langkah Migrasi
 
 ### Langkah 1: Perbarui Dependensi
 
@@ -351,7 +351,7 @@ func main() {
 }
 ```
 
-### Langkah 3: Ubah Struct App Menjadi Layanan
+### Langkah 3: Konversikan Struct App Menjadi Layanan
 
 **v2:**
 
@@ -442,7 +442,7 @@ import { Greet } from '../wailsjs/go/main/App'
 import { Greet } from './bindings/changeme/myservice'
 ```
 
-**Perbarui penanganan event:**
+**Perbarui penanganan peristiwa:**
 
 ```javascript
 // v2
@@ -562,7 +562,7 @@ systray.SetMenu(menu)
 
 ### Masalah: Binding tidak ditemukan
 
-**Masalah:** Kesalahan impor setelah migrasi
+**Masalah:** Terjadi kesalahan impor setelah migrasi
 
 **Solusi:**
 
@@ -580,7 +580,7 @@ ls frontend/bindings
 
 **Solusi:**
 
-Simpan referensi aplikasi sebagai gantinya:
+Sebagai gantinya, simpan referensi aplikasi:
 
 ```go
 type MyService struct {
@@ -594,7 +594,7 @@ func NewMyService(app *application.App) *MyService {
 
 ### Masalah: Metode jendela tidak berfungsi
 
-**Masalah:** `runtime.WindowSetTitle()` tidak tersedia
+**Masalah:** `runtime.WindowSetTitle()` tidak ada
 
 **Solusi:**
 
@@ -605,7 +605,7 @@ window := s.app.Window.Current()
 window.SetTitle("New Title")
 ```
 
-### Masalah: Peristiwa tidak dipicu
+### Masalah: Peristiwa tidak terpicu
 
 **Masalah:** Peristiwa telah didaftarkan, tetapi tidak diterima
 
@@ -627,7 +627,7 @@ OnEvent("my-event", handler)  // Must match exactly
 
 - [ ] Aplikasi dimulai tanpa kesalahan
 - [ ] Semua binding berfungsi
-- [ ] Peristiwa dikirim dan diterima
+- [ ] Peristiwa terkirim dan diterima
 - [ ] Jendela terbuka dan tertutup dengan benar
 - [ ] Menu berfungsi (jika berlaku)
 - [ ] Dialog berfungsi (jika berlaku)
@@ -654,21 +654,21 @@ wails3 generate bindings
 
 - **Startup lebih cepat** - Inisialisasi yang dioptimalkan
 - **Penggunaan memori lebih rendah** - Penggunaan sumber daya yang efisien
-- **Bridge yang lebih baik** - Overhead panggilan sebesar &lt;1ms
+- **Bridge yang lebih baik** - Overhead pemanggilan sebesar &lt;1ms
 
 ### Fitur
 
-- **Multi-jendela** - Dukungan native
+- **Banyak jendela** - Dukungan native
 - **Baki sistem** - Bawaan
-- **Peristiwa yang lebih baik** - API bertipe yang lebih sederhana
+- **Event yang lebih baik** - API yang lebih sederhana dan bertipe
 - **Layanan** - Pengorganisasian kode yang lebih baik
 
 ### Pengalaman Developer
 
-- **Keamanan tipe** - Dukungan TypeScript penuh
-- **Kesalahan yang lebih baik** - Pesan kesalahan yang jelas
-- **Hot reload** - Pengembangan lebih cepat
-- **Dokumentasi yang lebih baik** - Panduan lengkap
+- **Keamanan tipe** - Dukungan penuh untuk TypeScript
+- **Pesan kesalahan yang lebih baik** - Pesan kesalahan yang jelas
+- **Pemuatan ulang otomatis** - Pengembangan yang lebih cepat
+- **Dokumentasi yang lebih baik** - Panduan yang lengkap
 
 ## Mendapatkan Bantuan
 
@@ -683,11 +683,11 @@ wails3 generate bindings
 
 **T: Dapatkah saya menjalankan v2 dan v3 secara berdampingan?** J: Ya, keduanya menggunakan jalur impor yang berbeda.
 
-**T: Apakah v3 siap digunakan dalam produksi?** Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS tetap eksperimental dan berada di luar jaminan kompatibilitas desktop yang stabil.
+**T: Apakah v3 siap digunakan dalam produksi?** Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS masih bersifat eksperimental dan berada di luar kontrak kompatibilitas desktop stabil.
 
-**T: Apakah v2 akan tetap dipelihara?** J: Ya, v2 akan menerima pembaruan kritis.
+**T: Apakah v2 akan terus dipelihara?** J: Ya, v2 akan menerima pembaruan penting.
 
-**T: Berapa lama waktu yang diperlukan untuk migrasi?** J: 1-4 jam untuk aplikasi pada umumnya.
+**T: Berapa lama proses migrasi berlangsung?** J: 1-4 jam untuk aplikasi pada umumnya.
 
 ## Langkah Berikutnya
 

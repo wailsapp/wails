@@ -37,7 +37,7 @@ if !success {
 
 **Retorna:** `bool` — `true` em caso de sucesso; caso contrário, `false`
 
-### Copiar a partir de um serviço
+### Copiar por meio de um serviço
 
 ```go
 type ClipboardService struct {
@@ -49,7 +49,7 @@ func (c *ClipboardService) CopyToClipboard(text string) bool {
 }
 ```
 
-**Chamada a partir do JavaScript:**
+**Chamada pelo JavaScript:**
 
 ```javascript
 import { CopyToClipboard } from './bindings/changeme/clipboardservice'
@@ -57,7 +57,7 @@ import { CopyToClipboard } from './bindings/changeme/clipboardservice'
 await CopyToClipboard("Text to copy")
 ```
 
-### Copiar com confirmação
+### Copiar com feedback
 
 ```go
 func copyWithFeedback(text string) {
@@ -89,9 +89,9 @@ if !ok {
 fmt.Println("Clipboard text:", text)
 ```
 
-**Retorna:** `(string, bool)` — texto e indicador de sucesso
+**Retorna:** `(string, bool)` — Texto e indicador de sucesso
 
-### Colar a partir de um serviço
+### Colar por meio de um serviço
 
 ```go
 func (c *ClipboardService) PasteFromClipboard() string {
@@ -103,7 +103,7 @@ func (c *ClipboardService) PasteFromClipboard() string {
 }
 ```
 
-**Chamada a partir do JavaScript:**
+**Chamada pelo JavaScript:**
 
 ```javascript
 import { PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -136,7 +136,7 @@ func pasteText() (string, error) {
 
 ## Exemplos completos
 
-### Botão de cópia
+### Botão de copiar
 
 **Go:**
 
@@ -213,7 +213,7 @@ async function pasteAndProcess() {
 }
 ```
 
-### Copiar em vários formatos
+### Copiar vários formatos
 
 ```go
 type CopyService struct {
@@ -247,7 +247,7 @@ func (c *CopyService) CopyAsCSV(rows [][]string) bool {
 }
 ```
 
-### Monitoramento da área de transferência
+### Monitor da área de transferência
 
 ```go
 type ClipboardMonitor struct {
@@ -398,39 +398,39 @@ async function paste() {
 }
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
-- **Verifique os valores retornados** — trate as falhas de forma adequada
-- **Forneça uma confirmação** — informe aos usuários que a cópia foi bem-sucedida
-- **Valide o texto colado** — verifique o formato e o tamanho
-- **Use o método adequado** — API do navegador ou API do Wails
-- **Trate a área de transferência vazia** — verifique antes de usar
-- **Remova os espaços em branco no início e no fim** — limpe o texto colado
+- **Verifique os valores retornados** — Trate as falhas adequadamente
+- **Forneça feedback** — Informe aos usuários que a cópia foi bem-sucedida
+- **Valide o texto colado** — Verifique o formato e o tamanho
+- **Use o método apropriado** — API do navegador ou API do Wails
+- **Trate a área de transferência vazia** — Verifique antes de usar
+- **Remova os espaços em branco** — Limpe o texto colado
 
 ### ❌ Não faça
 
-- **Não ignore falhas** — sempre verifique se a operação foi bem-sucedida
-- **Não copie dados confidenciais** — a área de transferência é compartilhada
-- **Não presuma o formato** — valide os dados colados
-- **Não faça consultas com frequência excessiva** — ao monitorar a área de transferência
-- **Não copie grandes volumes de dados** — use arquivos em vez disso
-- **Não se esqueça da segurança** — higienize o conteúdo colado
+- **Não ignore falhas** — Sempre verifique se a operação foi bem-sucedida
+- **Não copie dados confidenciais** — A área de transferência é compartilhada
+- **Não presuma o formato** — Valide os dados colados
+- **Não faça consultas frequentes demais** — Ao monitorar a área de transferência
+- **Não copie grandes volumes de dados** — Use arquivos em vez disso
+- **Não se esqueça da segurança** — Higienize o conteúdo colado
 
 ## Diferenças entre plataformas
 
 ### macOS
 
 - Usa NSPasteboard
-- Compatibilidade futura com rich text
+- Oferecerá suporte a rich text (futuramente)
 - Área de transferência disponível em todo o sistema
 - Histórico da área de transferência (recurso do sistema)
 
 ### Windows
 
-- Usa a API da área de transferência do Windows
-- Compatibilidade futura com vários formatos
+- Usa a API da Área de Transferência do Windows
+- Oferecerá suporte a vários formatos (futuramente)
 - Área de transferência disponível em todo o sistema
 - Histórico da área de transferência (Windows 10+)
 
@@ -439,15 +439,15 @@ async function paste() {
 - Usa a área de transferência do X11/Wayland
 - Seleções primária e da área de transferência
 - Varia conforme o ambiente de desktop
-- Pode exigir um gerenciador da área de transferência
+- Pode exigir um gerenciador de área de transferência
 
 ## Limitações
 
 ### Versão atual
 
-- **Somente texto** — imagens ainda não são compatíveis
-- **Sem detecção de formato** — somente texto sem formatação
-- **Sem eventos da área de transferência** — É necessário verificar periodicamente se há alterações
+- **Somente texto** — Ainda não há suporte a imagens
+- **Sem detecção de formato** — Somente texto simples
+- **Sem eventos da área de transferência** — É necessário consultar periodicamente se houve alterações
 - **Sem histórico da área de transferência** — Implemente-o por conta própria
 
 ### Recursos futuros
@@ -456,9 +456,9 @@ async function paste() {
 - Suporte a rich text
 - Vários formatos
 - Eventos de alteração da área de transferência
-- API de histórico da área de transferência
+- API do histórico da área de transferência
 
-## Próximas etapas
+## Próximos passos
 
 @cards{cols="2"}
 🚀 Bindings
@@ -474,7 +474,7 @@ Use eventos para receber notificações da área de transferência.
 
 ---
 ℹ Caixas de diálogo
-Mostre uma confirmação ao copiar ou colar.
+Exiba feedback sobre operações de copiar e colar.
 
 [Saiba mais →](/features/dialogs/message/)
 

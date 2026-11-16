@@ -1,13 +1,13 @@
 ---
 title: "ウィンドウの基本"
-description: "Wailsでのアプリケーションウィンドウの作成と管理"
+description: "Wailsでアプリケーションウィンドウを作成、管理する方法"
 slug: "features/windows/basics"
 sourcePath: "features/windows/basics.md"
 ---
 
 ## ウィンドウ管理
 
-Wailsは、すべてのプラットフォームで動作する<strong>統一されたウィンドウ管理API</strong>を提供します。ウィンドウを作成し、その動作を制御できます。また、作成、外観、動作、ライフサイクルを完全に制御しながら、複数のウィンドウを管理できます。
+Wailsは、すべてのプラットフォームで動作する**統一ウィンドウ管理API**を提供します。ウィンドウを作成して動作を制御できるほか、作成、外観、動作、ライフサイクルを完全に制御しながら複数のウィンドウを管理できます。
 
 ## クイックスタート
 
@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-<strong>これだけです！</strong>クロスプラットフォームのウィンドウが作成されました。
+<strong>これだけです！</strong>クロスプラットフォームのウィンドウが作成できました。
 
 ## ウィンドウの作成
 
@@ -50,7 +50,7 @@ window := app.Window.New()
 
 **作成されるもの：**
 
-- デフォルトのサイズ（800x600）
+- デフォルトサイズ（800x600）
 - デフォルトのタイトル（アプリケーション名）
 - フロントエンドで使用できるWebView
 - プラットフォームネイティブの外観
@@ -76,18 +76,18 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**一般的なオプション：**
+**よく使うオプション：**
 
 | オプション | 型 | 説明 |
 | --- | --- | --- |
 | `Title` | `string` | ウィンドウのタイトル |
-| `Width` | `int` | ウィンドウの幅（ピクセル単位） |
-| `Height` | `int` | ウィンドウの高さ（ピクセル単位） |
-| `X` | `int` | X位置（左端から） |
-| `Y` | `int` | Y位置（上端から） |
+| `Width` | `int` | ウィンドウの幅（ピクセル） |
+| `Height` | `int` | ウィンドウの高さ（ピクセル） |
+| `X` | `int` | X座標（左端から） |
+| `Y` | `int` | Y座標（上端から） |
 | `AlwaysOnTop` | `bool` | ウィンドウをほかのウィンドウより前面に維持 |
 | `Frameless` | `bool` | タイトルバーと境界線を削除 |
-| `Hidden` | `bool` | 非表示の状態で起動 |
+| `Hidden` | `bool` | 非表示で起動 |
 | `MinWidth` | `int` | 最小幅 |
 | `MinHeight` | `int` | 最小高さ |
 | `MaxWidth` | `int` | 最大幅 |
@@ -97,7 +97,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### 名前付きウィンドウ
 
-簡単に取得できるように、ウィンドウに名前を付けます。
+簡単に取得できるよう、ウィンドウに名前を付けます。
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -113,8 +113,8 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 
 **ユースケース：**
 
-- 複数のウィンドウ（メイン、設定、アプリ情報）
-- コード内のさまざまな場所からウィンドウを検索
+- 複数のウィンドウ（メイン、設定、バージョン情報）
+- コード内の異なる場所からウィンドウを検索
 - ウィンドウ間の通信
 
 ## ウィンドウの制御
@@ -136,7 +136,7 @@ if window.IsVisible() {
 
 **ユースケース：**
 
-- スプラッシュ画面（表示してから非表示）
+- スプラッシュ画面（表示後に非表示）
 - 設定ウィンドウ（不要なときは非表示）
 - ポップアップウィンドウ（必要に応じて表示）
 
@@ -161,9 +161,9 @@ x, y := window.Position()
 
 **座標系：**
 
-- （0, 0）はプライマリ画面の左上です
-- Xの正方向は右です
-- 正のY方向は下です
+- （0, 0）はプライマリ画面の左上
+- Xの正方向は右
+- Yの正方向は下
 
 ### ウィンドウの状態
 
@@ -225,9 +225,9 @@ window.SetResizable(false)
 window.Close()
 ```
 
-v3には`window.Destroy()`メソッドがありません。`Close()`を使用し、`OnWindowEvent`でリッスンするか（キャンセル不可）、`RegisterHook`でフックします（`e.Cancel()`を呼び出すとウィンドウを開いたままにできます）。
+v3には`window.Destroy()`メソッドがありません。`Close()`を使用し、`OnWindowEvent`でリッスンするか（キャンセル不可）、`RegisterHook`でフックします（`e.Cancel()`を呼び出してウィンドウを開いたままにできます）。
 
-## ウィンドウを検索する
+## ウィンドウの検索
 
 ### 名前で検索
 
@@ -239,7 +239,7 @@ if window, ok := app.Window.GetByName("settings"); ok {
 
 ### IDで検索
 
-各ウィンドウには一意のIDがあります：
+各ウィンドウには一意のIDがあります。
 
 ```go
 id := window.ID()
@@ -253,7 +253,7 @@ if found, ok := app.Window.GetByID(id); ok {
 
 ### 現在のウィンドウ
 
-現在フォーカスされているウィンドウを取得します：
+現在フォーカスされているウィンドウを取得します。
 
 ```go
 current := app.Window.Current()
@@ -264,7 +264,7 @@ if current != nil {
 
 ### すべてのウィンドウ
 
-すべてのウィンドウを取得します：
+すべてのウィンドウを取得します。
 
 ```go
 windows := app.Window.GetAll()
@@ -288,9 +288,9 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-### クローズ
+### 終了
 
-ウィンドウが閉じるのを防ぐには、`WindowClosing`イベントとともに`RegisterHook`を使用します：
+ウィンドウが閉じるのを防ぐには、`WindowClosing`イベントで`RegisterHook`を使用します。
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**重要：** `RegisterHook`は、クローズイベントが発生する前にインターセプトします。ウィンドウが閉じるのを防ぐには、`event.Cancel()`を呼び出します。これは、ユーザーが開始したクローズ操作（Xボタンのクリック）で機能します。
+**重要：**`RegisterHook`は、クローズイベントが発生する前にインターセプトします。ウィンドウが閉じるのを防ぐには、`event.Cancel()`を呼び出します。これは、ユーザーが開始した終了操作（Xボタンのクリック）で機能します。
 
 ### 破棄
 
-ウィンドウが閉じるときにクリーンアップを実行するには、`WindowClosing`イベントとともに`OnWindowEvent`を使用します：
+ウィンドウが閉じるときにクリーンアップを実行するには、`WindowClosing`イベントで`OnWindowEvent`を使用します。
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -320,7 +320,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 
 ## 複数のウィンドウ
 
-### 複数のウィンドウを作成する
+### 複数のウィンドウの作成
 
 ```go
 // Main window
@@ -346,7 +346,7 @@ settingsWindow.Show()
 
 ### ウィンドウ間の通信
 
-ウィンドウはイベントを介して通信できます：
+ウィンドウはイベントを介して通信できます。
 
 ```go
 // In main window
@@ -366,7 +366,7 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 ### 親子ウィンドウ
 
-`WebviewWindowOptions`には`Parent`フィールドがありません。子ウィンドウを通常のウィンドウとして作成し、シートモーダルとして親ウィンドウに関連付けます：
+`WebviewWindowOptions`には`Parent`フィールドがありません。子ウィンドウを通常のウィンドウとして作成し、シートモーダルとして親ウィンドウに関連付けます。
 
 ```go
 // Create child window
@@ -380,10 +380,10 @@ mainWindow.AttachModal(childWindow)
 
 **動作：**
 
-- 子ウィンドウは親ウィンドウより前面に表示され続けます。
+- 子ウィンドウは親ウィンドウより前面に維持されます。
 - 子ウィンドウはモーダルであり、親ウィンドウの操作をブロックします。
 
-**プラットフォームのサポート：**
+**プラットフォームのサポート状況：**
 
 - <strong>macOS：</strong>完全にサポートされています（シートとして表示されます）。
 - <strong>Windows：</strong>サポートされていません。
@@ -393,7 +393,7 @@ mainWindow.AttachModal(childWindow)
 
 @tabs{sync-key="platform"}
 [Windows]
-**Windows固有の機能：**
+**Windows 固有の機能：**
 
 ```go
 // Flash taskbar button
@@ -404,14 +404,14 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-ウィンドウごとの`SetIcon`はありません。アプリケーションアイコンは、`app.SetIcon([]byte)`を使用してアプリに設定します（Linux固有のウィンドウアイコンの場合は、ウィンドウ作成時に`application.LinuxWindow.Icon`フィールドを使用します）。
+ウィンドウごとの `SetIcon` はありません。アプリケーションアイコンは `app.SetIcon([]byte)` を使用してアプリに設定します（Linux 固有のウィンドウアイコンについては、ウィンドウ作成時に `application.LinuxWindow.Icon` フィールドを使用します）。
 
-**Snap Assist：** システムショートカット経由でWindows 11のスナップレイアウトオプションを表示します。ホバー時にネイティブのスナップレイアウトを表示するカスタムHTML最大化ボタンには、代わりに[Windowsのネイティブ非クライアント領域](/features/windows/frameless/#native-non-client-regions-on-windows)を使用してください。
+<strong>Snap Assist：</strong>システムのショートカット経由で Windows の 11 スナップレイアウトオプションを表示します。ネイティブのホバー時 Snap Layouts に対応したカスタム HTML 最大化ボタンを使用する場合は、代わりに [Windows のネイティブ非クライアント領域](/features/windows/frameless/#native-non-client-regions-on-windows)を使用してください。
 
-**タスクバーの点滅：** ウィンドウが最小化されているときの通知に便利です。
+<strong>タスクバーの点滅：</strong>ウィンドウが最小化されているときの通知に便利です。
 
 [macOS]
-**macOS固有の機能：**
+**macOS 固有の機能：**
 
 ```go
 // Transparent title bar
@@ -425,24 +425,24 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**背景タイプ：**
+**背景効果の種類：**
 
 - `MacBackdropNormal` - 標準ウィンドウ
-- `MacBackdropTranslucent` - 半透明の背景。WebViewを透明にするには<strong>プライベートAPIが必要</strong>です。
-- `MacBackdropTransparent` - 完全に透明。WebViewを透明にするには<strong>プライベートAPIが必要</strong>です。
-- `MacBackdropLiquidGlass` - ガラス調の背景。WebViewを透明にするには<strong>プライベートAPIが必要</strong>です。
+- `MacBackdropTranslucent` - 半透明の背景。WebView を透明にするには**プライベート API が必要です**。
+- `MacBackdropTransparent` - 完全に透明。WebView を透明にするには**プライベート API が必要です**。
+- `MacBackdropLiquidGlass` - ガラス風の背景。WebView を透明にするには**プライベート API が必要です**。
 
-これらの効果をWebView越しに表示するには、`-tags private_mac_apis`を指定してビルドします。指定しない場合、WebViewは不透明なままです。`TitleBar.AppearsTransparent`自体は公開APIを使用します。[macOSのプライベートAPI](/guides/build/private-macos-apis/)を参照してください。
+これらの効果を WebView 越しに表示するには、`-tags private_mac_apis` を指定してビルドします。指定しない場合、WebView は不透明なままです。`TitleBar.AppearsTransparent` 自体はパブリック API を使用します。[macOS のプライベート API](/guides/build/private-macos-apis/)を参照してください。
 
-**コレクション動作：** Spaces間でのウィンドウの動作を制御します：
+<strong>コレクション動作：</strong>複数の操作スペースにまたがるウィンドウの動作を制御します：
 
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - すべてのSpaceに表示
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - すべての操作スペースに表示
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` - フルスクリーンアプリの上に重ねて表示可能
 
-**ネイティブフルスクリーン：** macOSのフルスクリーンでは、新しいSpace（仮想デスクトップ）が作成されます。
+<strong>ネイティブフルスクリーン：</strong>macOS のフルスクリーンでは、新しい操作スペース（仮想デスクトップ）が作成されます。
 
 [Linux]
-**Linux固有の機能：**
+**Linux 固有の機能：**
 
 ```go
 // Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)
@@ -455,15 +455,15 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **デスクトップ環境に関する注意事項：**
 
-- GNOME：完全サポート
-- KDE Plasma：完全サポート
+- GNOME：完全にサポート
+- KDE Plasma：完全にサポート
 - XFCE：部分的にサポート
-- その他：環境により異なる
+- その他：環境によって異なります
 
-**タイル型ウィンドウマネージャー（Hyprland、Sway、i3など）：**
+**タイル型ウィンドウマネージャー（Hyprland、Sway、i3 など）：**
 
-- `Minimise()`と`Maximise()`は期待どおりに動作しない場合があります。ウィンドウのジオメトリはウィンドウマネージャーが制御します
-- `SetSize()` と `SetPosition()` の要求は助言的なものであり、無視される場合があります
+- `Minimise()` と `Maximise()` は期待どおりに動作しない場合があります。ウィンドウの位置とサイズはウィンドウマネージャーが制御します
+- `SetSize()` と `SetPosition()` の要求は参考情報として扱われ、無視される場合があります
 - `Fullscreen()` は通常、期待どおりに動作します
 - 一部のウィンドウマネージャーは常に最前面に表示する機能をサポートしていません
 
@@ -533,20 +533,20 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ 推奨事項
 
-- **重要なウィンドウに名前を付ける** — 後から簡単に見つけられます
-- **最小サイズを設定する** — 使用不能なレイアウトを防ぎます
-- **ウィンドウを中央に配置する** — 無作為な位置に配置するよりも優れたユーザー体験を提供できます
-- **クローズイベントを処理する** — データの損失を防ぎます
-- **すべてのプラットフォームでテストする** — 動作はプラットフォームによって異なります
-- **適切なサイズを使用する** — さまざまな画面サイズを考慮してください
+- **重要なウィンドウに名前を付ける** - 後で簡単に検索できます
+- **最小サイズを設定する** - 使用不能なレイアウトを防ぎます
+- **ウィンドウを中央に配置する** - ランダムな位置に配置するよりもユーザー体験が向上します
+- **クローズイベントを処理する** - データの損失を防ぎます
+- **すべてのプラットフォームでテストする** - 動作はプラットフォームによって異なります
+- **適切なサイズを使用する** - さまざまな画面サイズを考慮します
 
-### ❌ 非推奨事項
+### ❌ 禁止事項
 
-- **ウィンドウを作りすぎない** — ユーザーの混乱を招きます
-- **ウィンドウを閉じ忘れない** — メモリリークにつながります
-- **位置をハードコードしない** — 画面サイズは環境によって異なります
-- **プラットフォーム間の違いを無視しない** — 十分にテストしてください
-- **UI スレッドをブロックしない** — 長時間の処理には goroutine を使用してください
+- **ウィンドウを作成しすぎない** - ユーザーの混乱を招きます
+- **ウィンドウを閉じ忘れない** - メモリリークの原因になります
+- **位置をハードコードしない** - 画面サイズは環境によって異なります
+- **プラットフォーム間の違いを無視しない** - 十分にテストしてください
+- **UI スレッドをブロックしない** - 長時間かかる処理には goroutine を使用してください
 
 ## トラブルシューティング
 
@@ -568,7 +568,7 @@ window.Focus()
 
 ### ウィンドウのサイズが正しくない
 
-**原因：** Windows/Linux での DPI スケーリング
+<strong>原因：</strong>Windows/Linux の DPI スケーリング
 
 **解決策：**
 
@@ -580,7 +580,7 @@ window.SetSize(800, 600)
 
 ### ウィンドウがすぐに閉じる
 
-**原因：** 最後のウィンドウを閉じるとアプリケーションが終了するためです
+<strong>原因：</strong>最後のウィンドウを閉じるとアプリケーションが終了する
 
 **解決策：**
 
@@ -596,27 +596,27 @@ app := application.New(application.Options{
 
 @cards{cols="2"}
 ⚙ ウィンドウオプション
-すべてのウィンドウオプションを網羅したリファレンスです。
+すべてのウィンドウオプションの完全なリファレンスです。
 
-[詳しく見る →](/features/windows/options/)
+[詳細を見る →](/features/windows/options/)
 
 ---
-▣ 複数のウィンドウ
-マルチウィンドウアプリケーション向けのパターンです。
+▣ 複数ウィンドウ
+マルチウィンドウアプリケーションのパターンです。
 
-[詳しく見る →](/features/windows/multiple/)
+[詳細を見る →](/features/windows/multiple/)
 
 ---
 ★ フレームレスウィンドウ
-独自のウィンドウ装飾を作成します。
+カスタムのウィンドウ装飾を作成します。
 
-[詳しく見る →](/features/windows/frameless/)
+[詳細を見る →](/features/windows/frameless/)
 
 ---
 🚀 ウィンドウイベント
 ウィンドウのライフサイクルイベントを処理します。
 
-[詳しく見る →](/features/windows/events/)
+[詳細を見る →](/features/windows/events/)
 
 @end
 

@@ -5,24 +5,24 @@ slug: "guides/distribution/custom-protocols"
 sourcePath: "guides/distribution/custom-protocols.md"
 ---
 
-Os protocolos de URL personalizados (também chamados de esquemas de URL) permitem iniciar seu aplicativo quando os usuários clicam em links que usam seu protocolo personalizado, como `myapp://action` ou `myapp://open/document`.
+Os protocolos de URL personalizados (também chamados de esquemas de URL) permitem iniciar seu aplicativo quando os usuários clicam em links com seu protocolo personalizado, como `myapp://action` ou `myapp://open/document`.
 
 ## Visão geral
 
 Os protocolos personalizados permitem:
 
-- **Links profundos**: iniciar seu aplicativo com dados específicos
-- **Integração com navegadores**: processar links de páginas da Web
-- **Links de e-mail**: abrir seu aplicativo a partir de clientes de e-mail
-- **Comunicação entre aplicativos**: iniciar seu aplicativo a partir de outros aplicativos
+- **Links diretos**: iniciar seu aplicativo com dados específicos
+- **Integração com o navegador**: processar links de páginas da Web
+- **Links em e-mails**: abrir seu aplicativo por meio de clientes de e-mail
+- **Comunicação entre aplicativos**: iniciar por meio de outros aplicativos
 
 **Exemplo**: `myapp://open/document?id=123` inicia seu aplicativo e abre o documento 123.
 
 ## Configuração
 
-Defina os protocolos personalizados nas opções do aplicativo:
+Defina os protocolos personalizados nas opções do seu aplicativo:
 
-Os protocolos personalizados são declarados em `build/config.yml` (que os empacotadores de cada plataforma — macros do NSIS no Windows, manifesto MSIX, `CFBundleURLTypes` no macOS e `.desktop`/`xdg-mime` no Linux — utilizam durante o empacotamento). Não existe um tipo `application.Protocol` nem um campo `Protocols` em `application.Options`.
+Os protocolos personalizados são declarados em `build/config.yml` (que os empacotadores de cada plataforma — macros NSIS no Windows, manifesto MSIX, `CFBundleURLTypes` no macOS e `.desktop`/`xdg-mime` no Linux — consomem durante o empacotamento). Não há nenhum tipo `application.Protocol` nem campo `Protocols` em `application.Options`.
 
 ```yaml
 # build/config.yml
@@ -31,7 +31,7 @@ protocols:
     description: "My Application Protocol"
 ```
 
-No código Go, escute o evento `ApplicationLaunchedWithUrl` para detectar a inicialização por URL:
+No código Go, aguarde o início por URL por meio do evento `ApplicationLaunchedWithUrl`:
 
 ```go
 package main
@@ -63,7 +63,7 @@ func handleCustomURL(url string) {
 
 ## Manipulador de protocolo
 
-Escute os eventos de protocolo para processar URLs recebidas:
+Aguarde eventos de protocolo para processar URLs recebidas:
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
@@ -106,20 +106,20 @@ myapp://user/profile?username=john
 **Práticas recomendadas:**
 
 - Use nomes de esquema em letras minúsculas
-- Use esquemas curtos e fáceis de lembrar
+- Mantenha os esquemas curtos e fáceis de lembrar
 - Use caminhos hierárquicos para os recursos
 - Inclua parâmetros de consulta para dados opcionais
-- Codifique caracteres especiais para uso em URLs
+- Codifique caracteres especiais para URL
 
-## Registro por plataforma
+## Registro na plataforma
 
-Os protocolos personalizados são registrados de forma diferente em cada plataforma.
+Os protocolos personalizados são registrados de maneira diferente em cada plataforma.
 
 @tabs{sync-key="platform"}
 [Windows]
 ### Instalador NSIS para Windows
 
-**O Wails v3 registra automaticamente os protocolos personalizados** ao usar instaladores NSIS.
+**O Wails v3registra automaticamente os protocolos personalizados** ao usar instaladores NSIS.
 
 #### Registro automático
 
@@ -127,23 +127,23 @@ Quando você compila seu aplicativo com `wails3 build`, o instalador NSIS:
 
 1. Registra automaticamente todos os protocolos declarados em `build/config.yml` na chave `protocols:`
 2. Associa os protocolos ao executável do seu aplicativo
-3. Cria as entradas apropriadas no Registro
+3. Configura corretamente as entradas do Registro
 4. Remove as associações de protocolo durante a desinstalação
 
 **Nenhuma configuração adicional é necessária!**
 
 #### Como funciona
 
-O modelo do NSIS inclui macros integradas:
+O modelo NSIS inclui macros integradas:
 
-- `wails.associateCustomProtocols` - Registra os protocolos durante a instalação
-- `wails.unassociateCustomProtocols` - Remove os protocolos durante a desinstalação
+- `wails.associateCustomProtocols` — registra os protocolos durante a instalação
+- `wails.unassociateCustomProtocols` — remove os protocolos durante a desinstalação
 
-Essas macros são chamadas automaticamente de acordo com sua configuração em `Protocols`.
+Essas macros são chamadas automaticamente com base na configuração de `Protocols`.
 
 #### Registro manual (avançado)
 
-Se você precisar fazer o registro manualmente (fora do NSIS):
+Se precisar fazer o registro manualmente (fora do NSIS):
 
 ```batch
 @echo off
@@ -155,7 +155,7 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"
 
 #### Teste
 
-Teste o registro do protocolo:
+Teste o registro do seu protocolo:
 
 ```powershell
 # Open protocol URL from PowerShell
@@ -167,11 +167,11 @@ start myapp://test/action
 
 ### Pacote MSIX para Windows
 
-Os protocolos personalizados também são registrados automaticamente quando se usa o empacotamento MSIX.
+Os protocolos personalizados também são registrados automaticamente ao usar o empacotamento MSIX.
 
 #### Registro automático
 
-Quando você compila seu aplicativo com o MSIX, o manifesto inclui automaticamente os registros de protocolo definidos na configuração de protocolos em `build/config.yml`.
+Quando você compila seu aplicativo com MSIX, o manifesto inclui automaticamente os registros de protocolo definidos na configuração de protocolos `build/config.yml`.
 
 O manifesto gerado inclui:
 
@@ -185,10 +185,10 @@ O manifesto gerado inclui:
 
 #### Links universais (vinculação da Web ao aplicativo)
 
-O Windows oferece suporte à **vinculação da Web ao aplicativo**, que funciona de forma semelhante aos Links Universais do macOS. Ao implantar seu aplicativo como um pacote MSIX, você pode habilitar links HTTPS para iniciá-lo diretamente.
+O Windows oferece suporte à **vinculação da Web ao aplicativo**, que funciona de modo semelhante aos Links Universais no macOS. Ao implantar seu aplicativo como um pacote MSIX, você pode permitir que links HTTPS iniciem diretamente o aplicativo.
 
 @note{type="note"}
-A vinculação da Web ao aplicativo exige a configuração manual do manifesto. Os esquemas de protocolo personalizados são configurados automaticamente com base em `build/config.yml`, mas os domínios associados devem ser adicionados manualmente ao manifesto MSIX.
+A vinculação da Web ao aplicativo exige a configuração manual do manifesto. Os esquemas de protocolo personalizados são configurados automaticamente por meio de `build/config.yml`, mas os domínios associados devem ser adicionados manualmente ao manifesto MSIX.
 
 @end
 
@@ -204,7 +204,7 @@ Para habilitar a vinculação da Web ao aplicativo, siga o [guia da Microsoft so
   ```
 
 
-2. **Configure `windows-app-web-link` em seu site:** hospede um arquivo `windows-app-web-link` em `https://myawesomeapp.com/.well-known/windows-app-web-link`. Esse arquivo deve conter as informações do pacote do aplicativo e os caminhos que ele processa.
+2. **Configurar `windows-app-web-link` no seu site:** hospede um arquivo `windows-app-web-link` em `https://myawesomeapp.com/.well-known/windows-app-web-link`. Esse arquivo deve conter as informações do pacote do seu aplicativo e os caminhos que ele processa.
 
 Quando um link da Web para o aplicativo iniciar seu aplicativo, você receberá o mesmo evento `ApplicationLaunchedWithUrl` usado com esquemas de protocolo personalizados.
 
@@ -235,7 +235,7 @@ Os protocolos declarados em `build/config.yml` são adicionados a:
 </array>
 ```
 
-#### Testes
+#### Teste
 
 ```bash
 # Open protocol URL from terminal
@@ -245,16 +245,16 @@ open "myapp://test/action"
 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
 ```
 
-#### Links universais
+#### Links Universais
 
-Além de esquemas de protocolo personalizados, o macOS também oferece suporte a **links universais**, que permitem iniciar seu aplicativo por meio de links HTTPS comuns (por exemplo, `https://myawesomeapp.com/path`). Os links universais proporcionam uma experiência integrada entre seus aplicativos web e desktop.
+Além dos esquemas de protocolo personalizados, o macOS também oferece suporte a **Links Universais**, que permitem iniciar seu aplicativo por meio de links HTTPS comuns (por exemplo, `https://myawesomeapp.com/path`). Os Links Universais proporcionam uma experiência integrada entre seu aplicativo Web e o aplicativo para desktop.
 
 @note{type="caution"}
-Os links universais exigem que seu aplicativo para macOS seja **assinado digitalmente** com um certificado Apple Developer e um perfil de provisionamento válidos. Compilações sem assinatura ou com assinatura ad hoc não poderão abrir links universais. Verifique se o aplicativo está devidamente assinado antes de testá-lo.
+Os Links Universais exigem que seu aplicativo para macOS seja **assinado digitalmente** com um certificado Apple Developer e um perfil de provisionamento válidos. Compilações sem assinatura ou com assinatura ad hoc não poderão abrir Links Universais. Verifique se seu aplicativo está corretamente assinado antes de testá-lo.
 
 @end
 
-Para habilitar os links universais, siga o [guia da Apple sobre como oferecer suporte a links universais em seu aplicativo](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Você precisará:
+Para habilitar os Links Universais, siga o [guia da Apple sobre como oferecer suporte a Links Universais no seu aplicativo](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Você precisará:
 
 1. **Adicionar direitos** ao seu `entitlements.plist`:
   ```xml
@@ -274,9 +274,9 @@ Para habilitar os links universais, siga o [guia da Apple sobre como oferecer su
   ```
 
 
-3. **Configurar `apple-app-site-association` em seu site:** hospede um arquivo `apple-app-site-association` em `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+3. **Configurar `apple-app-site-association` no seu site:** hospede um arquivo `apple-app-site-association` em `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-Quando um link universal aciona seu aplicativo, você recebe o mesmo evento `ApplicationLaunchedWithUrl`, portanto o código de tratamento é idêntico ao usado para esquemas de protocolo personalizados.
+Quando um Link Universal acionar seu aplicativo, você receberá o mesmo evento `ApplicationLaunchedWithUrl`, portanto o código de processamento será idêntico ao usado para esquemas de protocolo personalizados.
 
 [Linux]
 ### Entrada de desktop
@@ -287,7 +287,7 @@ No Linux, os protocolos são registrados por meio de arquivos `.desktop`.
 
 O Wails gera um arquivo de entrada de desktop com manipuladores de protocolo quando você compila com `wails3 build`.
 
-**Corrigido na v3**: agora o modelo de desktop do Linux inclui corretamente o tratamento de protocolos.
+**Corrigido no v3**: o modelo de desktop do Linux agora inclui corretamente o tratamento de protocolos.
 
 O arquivo de desktop gerado inclui:
 
@@ -581,7 +581,7 @@ open "myapp://test/action?id=123"
 xdg-open "myapp://test/action?id=123"
 ```
 
-### Testes com HTML
+### Testes em HTML
 
 Crie uma página HTML de teste:
 
@@ -646,27 +646,27 @@ app := application.New(application.Options{
 
 ### ✅ Faça
 
-- **Use nomes de esquema descritivos** — `mycompany-myapp` em vez de `mca`
+- **Use nomes de esquema descritivos** — use `mycompany-myapp` em vez de `mca`
 - **Valide todas as entradas** — nunca confie em URLs provenientes de fontes externas
-- **Trate os erros de forma adequada** — registre URLs inválidas nos logs; não permita que o aplicativo falhe
-- **Forneça feedback ao usuário** — Mostre qual ação foi acionada
-- **Teste em todas as plataformas** — O tratamento de protocolos varia
-- **Documente a estrutura das suas URLs** — Ajude usuários e integradores
+- **Trate os erros de forma adequada** — registre URLs inválidas nos logs, sem causar falhas no aplicativo
+- **Forneça feedback ao usuário** — mostre qual ação foi acionada
+- **Teste em todas as plataformas** — o tratamento de protocolos varia
+- **Documente a estrutura das suas URLs** — ajude usuários e integradores
 
 ### ❌ Não faça
 
-- **Não use nomes de esquema comuns** — Evite `http`, `file`, `app` etc.
-- **Não execute URLs como código** — Isso representa um enorme risco à segurança
-- **Não exponha operações sensíveis** — Exija confirmação para ações destrutivas
-- **Não presuma que os protocolos funcionam em todos os ambientes** — Disponibilize mecanismos alternativos
-- **Não se esqueça da codificação de URLs** — Trate corretamente os caracteres especiais
+- **Não use nomes de esquema comuns** — evite `http`, `file`, `app` etc.
+- **Não execute URLs como código** — isso representa um enorme risco de segurança
+- **Não exponha operações confidenciais** — exija confirmação para ações destrutivas
+- **Não presuma que os protocolos funcionam em todos os ambientes** — forneça mecanismos alternativos
+- **Não se esqueça da codificação de URL** — trate corretamente os caracteres especiais
 
 ## Próximas etapas
 
-- [Empacotamento para Windows](/guides/build/windows/) — Conheça as opções do instalador NSIS
-- [Associações de arquivos](/guides/file-associations/) — Abra arquivos com seu aplicativo
-- [Instância única](/guides/single-instance/) — Evite várias instâncias do aplicativo
+- [Empacotamento para Windows](/guides/build/windows/) — conheça as opções do instalador NSIS
+- [Associações de arquivos](/guides/file-associations/) — abra arquivos com seu aplicativo
+- [Instância única](/guides/single-instance/) — evite várias instâncias do aplicativo
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

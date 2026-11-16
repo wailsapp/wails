@@ -7,7 +7,7 @@ sourcePath: "features/windows/basics.md"
 
 ## 視窗管理
 
-Wails 提供可跨所有平台運作的<strong>統一視窗管理 API</strong>。您可以建立視窗、控制其行為，並完整掌控多個視窗的建立、外觀、行為及生命週期。
+Wails 提供可跨所有平台運作的**統一視窗管理 API**。您可以建立視窗、控制其行為，並完整掌控多個視窗的建立、外觀、行為及生命週期。
 
 ## 快速開始
 
@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-<strong>就這麼簡單！</strong>您現在已有一個跨平台視窗。
+<strong>就是這麼簡單！</strong>您已經有一個跨平台視窗。
 
 ## 建立視窗
 
@@ -52,7 +52,7 @@ window := app.Window.New()
 
 - 預設大小（800x600）
 - 預設標題（應用程式名稱）
-- 可供前端使用的 WebView
+- 已準備好載入前端的 WebView
 - 平台原生外觀
 
 ### 含選項的視窗
@@ -86,7 +86,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | `X` | `int` | X 位置（從左側起算） |
 | `Y` | `int` | Y 位置（從頂端起算） |
 | `AlwaysOnTop` | `bool` | 讓視窗保持在其他視窗上方 |
-| `Frameless` | `bool` | 移除標題列和邊框 |
+| `Frameless` | `bool` | 移除標題列與邊框 |
 | `Hidden` | `bool` | 啟動時隱藏 |
 | `MinWidth` | `int` | 最小寬度 |
 | `MinHeight` | `int` | 最小高度 |
@@ -97,7 +97,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### 具名視窗
 
-為視窗命名，以便輕鬆擷取：
+為視窗命名，以便輕鬆取得：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -115,7 +115,7 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 
 - 多個視窗（主視窗、設定、關於）
 - 從程式碼的不同部分尋找視窗
-- 視窗間通訊
+- 視窗通訊
 
 ## 控制視窗
 
@@ -161,9 +161,9 @@ x, y := window.Position()
 
 **座標系統：**
 
-- （0, 0）是主要螢幕的左上角
-- X 軸正向朝右
-- Y 正值向下
+- （0, 0）是主螢幕的左上角
+- X 正值方向向右
+- Y 正值方向向下
 
 ### 視窗狀態
 
@@ -225,7 +225,7 @@ window.SetResizable(false)
 window.Close()
 ```
 
-v3 中沒有 `window.Destroy()` 方法——請使用 `Close()`，並以 `OnWindowEvent` 監聽（無法取消），或以 `RegisterHook` 掛接處理常式（可呼叫 `e.Cancel()` 讓視窗保持開啟）。
+v3中沒有`window.Destroy()`方法；請使用`Close()`，並使用`OnWindowEvent`監聽（無法取消），或使用`RegisterHook`掛鉤（可呼叫`e.Cancel()`讓視窗保持開啟）。
 
 ## 尋找視窗
 
@@ -239,7 +239,7 @@ if window, ok := app.Window.GetByName("settings"); ok {
 
 ### 依 ID
 
-每個視窗都有唯一的 ID：
+每個視窗都有唯一 ID：
 
 ```go
 id := window.ID()
@@ -290,7 +290,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### 關閉
 
-若要防止視窗關閉，請搭配 `WindowClosing` 事件使用 `RegisterHook`：
+若要防止視窗關閉，請搭配`WindowClosing`事件使用`RegisterHook`：
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**重要：**`RegisterHook` 會在關閉事件發生前攔截該事件。呼叫 `event.Cancel()` 可防止視窗關閉。這適用於使用者主動發起的關閉操作（按一下 X 按鈕）。
+**重要：**`RegisterHook`會在關閉事件發生前攔截該事件。呼叫`event.Cancel()`可防止視窗關閉。這適用於使用者發起的關閉操作（按一下 X 按鈕）。
 
 ### 銷毀
 
-若要在視窗關閉時執行清理，請搭配 `WindowClosing` 事件使用 `OnWindowEvent`：
+若要在視窗關閉時執行清理，請搭配`WindowClosing`事件使用`OnWindowEvent`：
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -344,7 +344,7 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settingsWindow.Show()
 ```
 
-### 視窗間通訊
+### 視窗通訊
 
 視窗可透過事件互相通訊：
 
@@ -366,7 +366,7 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 ### 父子視窗
 
-`WebviewWindowOptions`沒有`Parent`欄位。請將子視窗建立為一般視窗，並以表單式模態視窗的形式附加至父視窗：
+`WebviewWindowOptions`沒有`Parent`欄位。請將子視窗建立為一般視窗，再以工作表模態視窗的形式附加至父視窗：
 
 ```go
 // Create child window
@@ -381,11 +381,11 @@ mainWindow.AttachModal(childWindow)
 **行為：**
 
 - 子視窗會保持在父視窗上方。
-- 子視窗是模態視窗——會阻止與父視窗互動。
+- 子視窗為強制回應視窗，會阻止與父視窗互動。
 
 **平台支援：**
 
-- <strong>macOS：</strong>完整支援（以表單式對話框顯示）。
+- <strong>macOS：</strong>完整支援（顯示為工作表視窗）。
 - <strong>Windows：</strong>不支援。
 - <strong>Linux：</strong>不支援。
 
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-沒有個別視窗專用的 `SetIcon`——應透過 `app.SetIcon([]byte)` 設定應用程式圖示（若要設定 Linux 特定的視窗圖示，則在建立視窗時使用 `application.LinuxWindow.Icon` 欄位）。
+沒有個別視窗專用的`SetIcon`；應用程式圖示透過`app.SetIcon([]byte)`設定於應用程式上（若要設定 Linux 特定的視窗圖示，則在建立視窗時使用`application.LinuxWindow.Icon`欄位）。
 
-**貼齊小幫手：** 透過系統捷徑路徑顯示 Windows 11 貼齊配置選項。若自訂 HTML 最大化按鈕需要原生的懸停貼齊配置，請改用 [Windows 上的原生非用戶端區域](/features/windows/frameless/#native-non-client-regions-on-windows)。
+<strong>貼齊小幫手：</strong>透過系統快速鍵路徑顯示 Windows 11貼齊配置選項。若要讓自訂 HTML 最大化按鈕在游標停留時顯示原生貼齊配置，請改用[Windows 上的原生非用戶端區域](/features/windows/frameless/#native-non-client-regions-on-windows)。
 
-**工作列閃爍：** 適合在視窗最小化時發出通知。
+<strong>工作列閃爍：</strong>適合在視窗最小化時發出通知。
 
 [macOS]
 **macOS 特定功能：**
@@ -427,19 +427,19 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **背景類型：**
 
-- `MacBackdropNormal` - 標準視窗
-- `MacBackdropTranslucent` - 半透明背景；若要讓 WebView 透明，**需要使用私有 API**。
-- `MacBackdropTransparent` - 完全透明；若要讓 WebView 透明，**需要使用私有 API**。
-- `MacBackdropLiquidGlass` - 玻璃背景；若要讓 WebView 透明，**需要使用私有 API**。
+- `MacBackdropNormal`－標準視窗
+- `MacBackdropTranslucent`－半透明背景；若要讓 WebView 透明，**必須使用私有 API**。
+- `MacBackdropTransparent`－完全透明；若要讓 WebView 透明，**必須使用私有 API**。
+- `MacBackdropLiquidGlass`－玻璃背景；若要讓 WebView 透明，**必須使用私有 API**。
 
-建置時使用 `-tags private_mac_apis`，才能讓這些效果透過 WebView 顯示。若未使用，WebView 會保持不透明。`TitleBar.AppearsTransparent` 本身使用公開 API。請參閱[私有 macOS API](/guides/build/private-macos-apis/)。
+使用`-tags private_mac_apis`建置，這些效果才能透過 WebView 顯示。若未使用，WebView 會維持不透明。`TitleBar.AppearsTransparent`本身使用公開 API。請參閱[macOS 私有 API](/guides/build/private-macos-apis/)。
 
-**集合行為：** 控制視窗在各個 Space 間的行為：
+<strong>集合行為：</strong>控制視窗在不同「空間」中的行為：
 
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - 在所有 Space 上皆可見
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - 可覆蓋全螢幕應用程式
+- `MacWindowCollectionBehaviorCanJoinAllSpaces`－在所有「空間」中皆可見
+- `MacWindowCollectionBehaviorFullScreenAuxiliary`－可覆蓋全螢幕應用程式
 
-**原生全螢幕：** macOS 全螢幕模式會建立新的 Space（虛擬桌面）。
+<strong>原生全螢幕：</strong>macOS 全螢幕模式會建立新的「空間」（虛擬桌面）。
 
 [Linux]
 **Linux 特定功能：**
@@ -458,14 +458,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - GNOME：完整支援
 - KDE Plasma：完整支援
 - XFCE：部分支援
-- 其他：視情況而定
+- 其他：依環境而異
 
 **平鋪式視窗管理員（Hyprland、Sway、i3 等）：**
 
-- `Minimise()` 和 `Maximise()` 可能不會如預期運作——視窗幾何配置由視窗管理員控制
-- `SetSize()`和`SetPosition()`請求僅供參考，可能會被忽略
+- `Minimise()`和`Maximise()`可能不會如預期運作，因為視窗幾何配置由視窗管理員控制
+- `SetSize()`和`SetPosition()`要求僅供參考，可能會被忽略
 - `Fullscreen()`通常會如預期運作
-- 部分視窗管理員不支援視窗永遠置頂
+- 部分視窗管理員不支援永遠置頂
 
 @end
 
@@ -533,32 +533,32 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ 建議做法
 
-- **為重要視窗命名**——日後更容易尋找
-- **設定最小尺寸**——避免版面無法使用
-- **將視窗置中**——使用者體驗比隨機位置更好
-- **處理關閉事件**——避免資料遺失
-- **在所有平台上測試**——行為因平台而異
-- **使用適當的尺寸**——考量不同的螢幕尺寸
+- **為重要視窗命名**－方便日後尋找
+- **設定最小尺寸**－避免版面配置無法使用
+- **將視窗置中**－比隨機位置提供更好的使用者體驗
+- **處理關閉事件**－避免資料遺失
+- **在所有平台上測試**－行為因平台而異
+- **使用適當的尺寸**－考量不同的螢幕尺寸
 
-### ❌ 請勿這樣做
+### ❌ 避免做法
 
-- **不要建立過多視窗**——會讓使用者感到困惑
-- **不要忘記關閉視窗**——否則會造成記憶體洩漏
-- **不要將位置寫死**——螢幕尺寸各不相同
-- **不要忽略平台差異**——請徹底測試
-- **不要阻塞 UI 執行緒**——長時間執行的作業請使用 goroutine
+- **不要建立過多視窗**－會讓使用者感到困惑
+- **不要忘記關閉視窗**－否則會造成記憶體洩漏
+- **不要將位置寫死**－螢幕尺寸各不相同
+- **不要忽略平台差異**－請徹底測試
+- **不要封鎖 UI 執行緒**－長時間操作請使用 goroutine
 
 ## 疑難排解
 
 ### 視窗未顯示
 
-**可能原因：**
+**可能的原因：**
 
 1. 建立視窗時將其設為隱藏
 2. 視窗位於螢幕範圍之外
 3. 視窗位於其他視窗後方
 
-**解決方法：**
+**解決方案：**
 
 ```go
 window.Show()
@@ -566,11 +566,11 @@ window.Center()
 window.Focus()
 ```
 
-### 視窗尺寸不正確
+### 視窗尺寸錯誤
 
 <strong>原因：</strong>Windows/Linux 上的 DPI 縮放
 
-**解決方法：**
+**解決方案：**
 
 ```go
 // Wails handles DPI automatically
@@ -580,9 +580,9 @@ window.SetSize(800, 600)
 
 ### 視窗立即關閉
 
-<strong>原因：</strong>最後一個視窗關閉時，應用程式會結束
+<strong>原因：</strong>最後一個視窗關閉時，應用程式隨即結束
 
-**解決方法：**
+**解決方案：**
 
 ```go
 app := application.New(application.Options{
@@ -602,12 +602,12 @@ app := application.New(application.Options{
 
 ---
 ▣ 多視窗
-多視窗應用程式的常見模式。
+多視窗應用程式的模式。
 
 [深入瞭解 →](/features/windows/multiple/)
 
 ---
-★ 無邊框視窗
+★ 無框線視窗
 建立自訂視窗框架。
 
 [深入瞭解 →](/features/windows/frameless/)

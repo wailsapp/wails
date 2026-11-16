@@ -1,52 +1,52 @@
 ---
-title: "后续步骤"
-description: "构建第一个应用后该做什么"
+title: "後續步驟"
+description: "建立第一個應用程式後的後續學習方向"
 slug: "quick-start/next-steps"
 sourcePath: "quick-start/next-steps.md"
 ---
 
-你已经构建了第一个 Wails 应用。请按照下面的学习路径继续，或者，如果你已经知道自己想构建什么，可以直接跳到相应指南。
+你已建立第一個 Wails 應用程式。請依照下方的學習路徑繼續，若已知道要建立什麼，也可以直接前往相關指南。
 
-## 深入学习
+## 深入學習
 
-每次通过一个完整的应用继续学习：
+每次透過一個完整的應用程式繼續學習：
 
-1. <strong>[创建二维码服务](/tutorials/01-creating-a-service/)。</strong>练习如何通过服务向前端公开 Go 逻辑。
-2. <strong>[构建待办事项列表](/tutorials/02-todo-vanilla/)。</strong>通过服务调用添加、修改和删除应用数据。
-3. <strong>[构建笔记应用](/tutorials/03-notes-vanilla/)。</strong>使用文件、原生对话框和已保存的数据。
+1. <strong>[建立 QR Code 服務](/tutorials/01-creating-a-service/)。</strong>練習透過服務將 Go 邏輯公開給前端。
+2. <strong>[建立待辦事項清單](/tutorials/02-todo-vanilla/)。</strong>透過服務呼叫新增、修改及刪除應用程式資料。
+3. <strong>[建立筆記應用程式](/tutorials/03-notes-vanilla/)。</strong>使用檔案、原生對話方塊及已儲存的資料。
 
-准备好探索发布流程后，请按照[应用自动更新教程](/tutorials/04-self-update-a-wails-app/)操作。请参阅[所有教程](/tutorials/overview/)，了解各课的学习成果。
+準備好探索版本發布後，請按照[應用程式自動更新教學](/tutorials/04-self-update-a-wails-app/)操作。如需瞭解各課程的學習成果，請參閱[所有教學](/tutorials/overview/)。
 
 ## 功能
 
-<strong>已经在构建自己的应用了？</strong>请针对当前任务使用相应的操作指南：
+<strong>已經在建立自己的應用程式了嗎？</strong>請針對目前的工作使用操作指南：
 
-| 我想要…… | 从这里开始 |
+| 我想要…… | 從這裡開始 |
 | --- | --- |
-| 从前端调用 Go | [从 JavaScript 调用 Go](/features/bindings/methods/) |
-| 打开或管理窗口 | [窗口基础知识](/features/windows/basics/) |
-| 添加原生菜单或系统托盘图标 | [应用菜单](/features/menus/application/)或[系统托盘菜单](/features/menus/systray/) |
-| 让用户打开或保存文件 | [文件对话框](/features/dialogs/file/) |
-| 在组件之间发送事件 | [事件系统](/features/events/system/) |
-| 复制文本或接收拖放的文件 | [剪贴板](/features/clipboard/basics/)或[文件拖放](/features/drag-and-drop/files/) |
-| 添加键盘快捷键 | [键盘快捷键](/features/keyboard/shortcuts/) |
-| 构建和打包应用 | 先参阅[构建应用](/guides/build/building/)，再为[Windows](/guides/build/windows/)、[macOS](/guides/build/macos/)或[Linux](/guides/build/linux/)打包 |
+| 從前端呼叫 Go | [從 JavaScript 呼叫 Go](/features/bindings/methods/) |
+| 開啟或管理視窗 | [視窗基礎](/features/windows/basics/) |
+| 新增原生選單或系統匣圖示 | [應用程式選單](/features/menus/application/)或[系統匣選單](/features/menus/systray/) |
+| 要求使用者開啟或儲存檔案 | [檔案對話方塊](/features/dialogs/file/) |
+| 在元件之間傳送事件 | [事件系統](/features/events/system/) |
+| 複製文字或接收拖放的檔案 | [剪貼簿](/features/clipboard/basics/)或[檔案拖放](/features/drag-and-drop/files/) |
+| 新增鍵盤快速鍵 | [鍵盤快速鍵](/features/keyboard/shortcuts/) |
+| 建置及封裝應用程式 | 先參閱[建置應用程式](/guides/build/building/)，再針對[Windows](/guides/build/windows/)、[macOS](/guides/build/macos/)或[Linux](/guides/build/linux/)進行封裝 |
 
-这些页面位于侧边栏的**操作指南**下。你可以直接打开相关主题，无须按顺序阅读整个章节。
+這些頁面位於側邊欄的**操作指南**下方。你不必依序閱讀整個章節，可直接開啟相關主題。
 
-## 了解 Wails 的工作原理
+## 瞭解 Wails 的運作方式
 
-如果想了解代码背后的设计，请参阅**核心概念**：
+若想瞭解程式碼背後的設計，請參閱**核心概念**：
 
-- [Wails 的工作原理](/concepts/architecture/)介绍 Go 后端、前端和原生 WebView 之间的连接。
-- [Go 与前端的桥接](/concepts/bridge/)说明调用如何在 Go 与 JavaScript 之间传递。
-- [应用生命周期](/concepts/lifecycle/)说明启动和关闭过程。
-- [构建系统](/concepts/build-system/)说明项目任务和前端工具的作用。
+- [Wails 的運作方式](/concepts/architecture/)說明 Go 後端、前端與原生 WebView 之間的連接。
+- [Go 與前端橋接](/concepts/bridge/)說明呼叫如何在 Go 與 JavaScript 之間傳遞。
+- [應用程式生命週期](/concepts/lifecycle/)說明啟動及關閉流程。
+- [建置系統](/concepts/build-system/)說明專案工作與前端工具的作用。
 
-## 查阅 API
+## 查閱 API
 
-当你需要查找类型、方法、选项或命令，而不是学习教程时，请使用[API 参考](/reference/overview/)。对于命令行操作，请先查看[CLI 命令概览](/reference/cli/)；如需了解各个命令的详细信息，请参阅[CLI 标志和示例](/guides/cli/)。
+需要查找型別、方法、選項或命令，而不是學習課程時，請使用[API 參考](/reference/overview/)。若要進行命令列操作，請先參閱[CLI 命令概覽](/reference/cli/)；個別命令的詳細資訊則請參閱[CLI 旗標與範例](/guides/cli/)。
 
-## 获取帮助
+## 取得協助
 
-查看[常见问题](/faq/)、浏览[可运行的示例](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples)，或在[Discord](https://discord.gg/JDdSxwjhGf)中提问。平台特定问题归类在侧边栏的**故障排除**下。
+請查看[常見問題](/faq/)、瀏覽[可運作的範例](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples)，或在[Discord](https://discord.gg/JDdSxwjhGf)中提問。各平台特有的問題集中列於側邊欄的**疑難排解**下方。

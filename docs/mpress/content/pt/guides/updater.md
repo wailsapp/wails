@@ -1,13 +1,13 @@
 ---
 title: "Atualizador"
-description: "Atualizações feitas pelo próprio aplicativo no Wails v3 — provedores conectáveis, verificação criptográfica, substituição atômica e uma interface padrão que você pode personalizar com temas ou substituir."
+description: "Atualizações automáticas dentro do aplicativo para Wails v3 — provedores conectáveis, verificação criptográfica, substituição atômica e uma interface padrão que você pode personalizar com temas ou substituir."
 slug: "guides/updater"
 sourcePath: "guides/updater.md"
 ---
 
-O atualizador distribui atualizações de software no aplicativo sem obrigar você a criar seu próprio pipeline de download, verificação e substituição. Ele se baseia em `app.Updater`, aceita um ou mais `Provider`s conectáveis (GitHub Releases, keygen.sh, Sparkle AppCast, o protocolo aberto Wails Update Manifest ou um provedor próprio), autentica os downloads usando uma chave pública configurada, substitui com segurança o binário em execução e expõe cada transição pelo barramento de eventos padrão do Wails.
+O atualizador distribui atualizações de software dentro do aplicativo sem obrigar você a criar seu próprio pipeline de download, verificação e substituição. Ele funciona sobre `app.Updater`, aceita um ou mais `Provider`s conectáveis (GitHub Releases, keygen.sh, Sparkle AppCast, o protocolo aberto Wails Update Manifest ou um provedor próprio), autentica os downloads usando uma chave pública configurada, substitui com segurança o binário em execução e expõe todas as transições por meio do barramento de eventos padrão do Wails.
 
-![A janela padrão do atualizador no estado Atualização pronta — ícone que reflete o estado, indicador de versão (v1.0.0 → v2.0.1 · 8.8 MB), notas da versão renderizadas em Markdown, incluindo uma tabela GFM, e uma única ação principal.](/assets/updater/default-window-ready.png)
+![A janela padrão do atualizador no estado Atualização pronta — ícone de acordo com o estado, indicador de versão (v1.0.0 → v2.0.1 · 8.8 MB), notas da versão renderizadas em Markdown, incluindo uma tabela GFM, e uma única ação principal.](/assets/updater/default-window-ready.png)
 
 ## Início rápido
 
@@ -42,7 +42,7 @@ func main() {
 }
 ```
 
-Isso abre a janela de atualização do framework, consulta o GitHub, baixa o artefato da plataforma, verifica-o, substitui o binário e aguarda o usuário reiniciar.
+Isso abre a janela de atualização do framework, verifica o GitHub, baixa o artefato da plataforma, verifica-o, substitui o binário e aguarda o usuário reiniciar o aplicativo.
 
 ## O ciclo de vida
 
@@ -50,32 +50,32 @@ Isso abre a janela de atualização do framework, consulta o GitHub, baixa o art
 
 | Estado | Quando |
 | --- | --- |
-| `unconfigured` | Antes de chamar `Init` |
+| `unconfigured` | Antes de `Init` ser chamado |
 | `idle` | Depois de `Init`, antes de qualquer verificação |
-| `checking` | Uma `Check` está em andamento |
-| `up-to-date` | A resposta mais recente do provedor indicou que o chamador está atualizado |
+| `checking` | Um `Check` está em andamento |
+| `up-to-date` | A resposta mais recente do provedor informou que o chamador está atualizado |
 | `available` | Uma nova versão foi encontrada; o download ainda não começou |
 | `downloading` | Os bytes estão sendo transmitidos pelo provedor |
-| `verifying` | Download concluído; a assinatura ou o resumo está sendo verificado |
+| `verifying` | Download concluído; assinatura/resumo sendo verificado |
 | `installing` | Os bytes verificados estão sendo descompactados e renomeados no diretório de preparação |
 | `ready` | Atualização preparada; chame `Restart` para aplicá-la |
-| `error` | Qualquer etapa anterior falhou |
+| `error` | Uma etapa anterior falhou |
 
-Você pode consultar o estado atual com `app.Updater.State()` a qualquer momento. Cada transição também emite um evento do Wails (consulte [Eventos](#eventos)).
+Você pode consultar o estado atual a qualquer momento com `app.Updater.State()`. Cada transição também emite um evento do Wails (consulte [Eventos](#eventos)).
 
-`Restart` espera que o processo auxiliar chegue a `application.New` antes de solicitar que o aplicativo em execução seja encerrado. O tempo limite padrão de inicialização é de 30 segundos. Se o aplicativo executar uma inicialização demorada antes de `application.New`, defina `Config.HelperReadyTimeout` com uma duração maior, como `time.Minute`. Zero seleciona o valor padrão; durações negativas são rejeitadas. Se o tempo de inicialização se esgotar, `Restart` retorna `updater.ErrHelperNotReady` e mantém o aplicativo em execução aberto.
+`Restart` aguarda o processo auxiliar alcançar `application.New` antes de solicitar o encerramento do aplicativo em execução. O tempo limite padrão de inicialização é de 30 segundos. Se o aplicativo executar uma inicialização demorada antes de `application.New`, defina `Config.HelperReadyTimeout` como uma duração maior, por exemplo, `time.Minute`. Zero seleciona o valor padrão; durações negativas são rejeitadas. Se a inicialização exceder o tempo limite, `Restart` retornará `updater.ErrHelperNotReady` e manterá o aplicativo em execução aberto.
 
-A atualização é preparada em um diretório `wails-update-*` ao lado do binário instalado (no macOS, ao lado do pacote `.app`), portanto esse diretório precisa ser gravável.
+A atualização é preparada em um diretório `wails-update-*` ao lado do binário instalado (no macOS, ao lado do pacote `.app`), portanto esse diretório precisa permitir gravação.
 
-Dentro de um AppImage, o atualizador substitui e reinicia o arquivo `.AppImage` indicado por `$APPIMAGE`, e não a montagem somente leitura.
+Dentro de um AppImage, o atualizador substitui e reinicia o arquivo `.AppImage` indicado por `$APPIMAGE`, em vez do ponto de montagem somente leitura.
 
-A janela padrão reflete automaticamente o estado atual — por exemplo, quando `Check` não retorna nenhuma atualização, o usuário vê esta tela e a fecha com **Fechar**:
+A janela padrão reflete automaticamente o estado atual — por exemplo, quando `Check` não retorna nenhuma atualização, o usuário vê esta mensagem e fecha a janela com **Fechar**:
 
-![A janela padrão do atualizador no estado Atualizado — marca de seleção verde, título "Você está usando a versão mais recente" e um único botão Fechar.](/assets/updater/default-window-up-to-date.png)
+![A janela padrão do atualizador no estado Atualizado — marca de seleção verde, título “Você está atualizado” e um único botão Fechar.](/assets/updater/default-window-up-to-date.png)
 
 ## Provedores
 
-Um `Provider` é qualquer elemento que implemente esta interface:
+Um `Provider` pode ser qualquer implementação que satisfaça esta interface:
 
 ```go
 type Provider interface {
@@ -85,7 +85,7 @@ type Provider interface {
 }
 ```
 
-Quatro implementações estão incluídas no repositório.
+Quatro implementações estão incluídas na árvore do repositório.
 
 ### GitHub Releases — `updater/providers/github`
 
@@ -118,7 +118,7 @@ gh, _ := github.New(github.Config{
 })
 ```
 
-`ChecksumAsset` é o nome de um artefato irmão da versão cujo conteúdo consiste em linhas `<sha256>  <filename>` (o formato produzido por `sha256sum` e `shasum -a 256`). O provedor o busca durante `Check`, localiza a linha correspondente ao artefato selecionado e preenche `Release.Verification.Digest` para que o framework verifique o download.
+`ChecksumAsset` é o nome de um artefato irmão da versão cujo conteúdo consiste em linhas `<sha256>  <filename>` (o formato gerado por `sha256sum` e `shasum -a 256`). O provedor o obtém durante `Check`, encontra a linha correspondente ao artefato selecionado e preenche `Release.Verification.Digest` para que o framework verifique o download.
 
 ### keygen.sh — `updater/providers/keygen`
 
@@ -136,9 +136,9 @@ kg, err := keygen.New(keygen.Config{
 })
 ```
 
-O provedor mapeia automaticamente a soma de verificação SHA-512 e a assinatura Ed25519ph por artefato do keygen.sh para o bloco `Release.Verification` do framework — nenhuma configuração adicional é necessária.
+O provedor mapeia automaticamente a soma de verificação SHA-512 e a assinatura Ed25519ph de cada artefato do keygen.sh para o bloco `Release.Verification` do framework — nenhuma configuração adicional é necessária.
 
-**Formatos de token:** os tokens do keygen.sh incluem um prefixo de função (`admi-` / `prod-` / `envi-` / `user-`). O UUID sem formatação exibido no painel é o *identificador* do token, não seu valor secreto — o segredo só fica visível no momento da criação do token. Consulte a [documentação de autenticação](https://keygen.sh/docs/api/authentication/) do keygen.sh para obter detalhes.
+**Formatos de token:** os tokens do keygen.sh têm um prefixo de função (`admi-` / `prod-` / `envi-` / `user-`). O UUID puro exibido no painel é o *identificador* do token, não seu valor secreto — o segredo só fica visível no momento da criação do token. Consulte a [documentação de autenticação](https://keygen.sh/docs/api/authentication/) do keygen.sh para obter detalhes.
 
 ### Sparkle AppCast — `updater/providers/appcast`
 
@@ -150,9 +150,9 @@ ac, err := appcast.New(appcast.Config{
 })
 ```
 
-Integra-se à infraestrutura existente do Sparkle / WinSparkle sem nenhuma alteração. Lê `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>` e `sparkle:channel` do feed.
+Integra-se sem alterações à infraestrutura existente do Sparkle / WinSparkle. Lê `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>` e `sparkle:channel` do feed.
 
-As assinaturas DSA do Sparkle 1 (`sparkle:dsaSignature`) não são compatíveis — projetos que usam esse esquema de assinatura devem migrar para EdDSA (Sparkle 2).
+As assinaturas DSA de 1 do Sparkle (`sparkle:dsaSignature`) não são compatíveis — projetos que usam esse esquema de assinatura devem migrar para EdDSA (2 do Sparkle).
 
 ### Wails Update Manifest — `updater/providers/endpoint`
 
@@ -165,9 +165,9 @@ ep, err := endpoint.New(endpoint.Config{
 })
 ```
 
-Usa o protocolo aberto [Wails Update Manifest](/reference/update-manifest/): um documento JSON que descreve a versão mais recente e seus artefatos específicos de cada plataforma, com somas de verificação e assinaturas embutidas. O mesmo documento funciona em um serviço de hospedagem de arquivos estáticos (S3, GitHub Pages ou qualquer CDN — publique um manifesto por canal que liste todas as plataformas) ou em um servidor de atualização dinâmico (o provedor envia `platform`, `arch`, `version` e `channel` em cada verificação, para que o servidor possa retornar exatamente um artefato ou restringir o acesso com base em uma licença).
+Usa o protocolo aberto [Wails Update Manifest](/reference/update-manifest/): um documento JSON que descreve a versão mais recente e seus artefatos por plataforma, com somas de verificação e assinaturas embutidas. O mesmo documento funciona em uma hospedagem de arquivos estáticos (S3, GitHub Pages ou qualquer CDN — publique um manifesto por canal contendo todas as plataformas) ou em um servidor de atualização dinâmico (o provedor envia `platform`, `arch`, `version` e `channel` em cada verificação, permitindo que o servidor retorne exatamente um artefato ou condicione o acesso a uma licença).
 
-Os placeholders de URL reduzem layouts estáticos a uma única linha de configuração:
+Os placeholders de URL permitem configurar layouts estáticos em uma única linha:
 
 ```go
 ep, _ := endpoint.New(endpoint.Config{
@@ -175,13 +175,13 @@ ep, _ := endpoint.New(endpoint.Config{
 })
 ```
 
-Os cabeçalhos configurados são enviados em todas as solicitações de manifesto; os downloads de artefatos só os reutilizam no próprio host do manifesto e quando não há downgrade de `https` para `http`, e o cabeçalho `Authorization` é removido em qualquer redirecionamento entre origens ou que faça downgrade.
+Os cabeçalhos configurados são enviados em todas as solicitações do manifesto; os downloads de artefatos só os reutilizam no próprio host do manifesto, sem rebaixamento de `https` para `http`, e o cabeçalho `Authorization` é removido em qualquer redirecionamento entre origens ou que faça esse rebaixamento.
 
-A CLI cuida da publicação: `wails3 updater manifest` calcula os resumos, assina e descreve os arquivos da versão em um único comando, e `wails3 updater verify` verifica novamente o resultado antes do upload. Consulte [Publicação com a CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
+A CLI cuida da publicação: `wails3 updater manifest` calcula os resumos, assina e descreve os arquivos da versão em um único comando, enquanto `wails3 updater verify` verifica novamente o resultado antes do envio. Consulte [Publicação com a CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
 
 ### Cadeia de fallback
 
-`Config.Providers` é ordenado. O atualizador percorre a lista sequencialmente: o primeiro provedor que retorna uma versão prevalece; o primeiro que informa "atualizado" interrompe a cadeia (o fallback serve para o caso de o "provedor principal estar inacessível", não para quando "os provedores discordam"). Um erro faz o atualizador avançar para o próximo provedor.
+`Config.Providers` é ordenado. O atualizador percorre a lista sequencialmente: vence o primeiro provedor que retorna uma versão, e o primeiro que informa “atualizado” interrompe a cadeia (o fallback serve para o caso de o “provedor principal estar inacessível”, não para quando “os provedores discordam”). Um erro avança para o próximo provedor.
 
 ```go
 app.Updater.Init(updater.Config{
@@ -195,7 +195,7 @@ app.Updater.Init(updater.Config{
 
 ### Como criar seu próprio provedor
 
-Três métodos, cerca de 150 linhas em uma implementação típica. O Updater é responsável pela verificação, preparação atômica, substituição e janela — o código do provedor identifica a próxima versão e transmite os bytes:
+São três métodos e cerca de 150 linhas em uma implementação típica. O Updater é responsável pela verificação, preparação atômica, substituição e janela — o código do provedor determina a próxima versão e transmite os bytes:
 
 ```go
 type CustomProvider struct { /* config */ }
@@ -215,11 +215,11 @@ func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst i
 }
 ```
 
-Use os provedores incluídos na árvore do projeto como referência — cada um consiste em um único arquivo Go.
+Use como referência os provedores incluídos na árvore do repositório — cada um ocupa um único arquivo Go.
 
 ## Verificação criptográfica
 
-As versões são autenticadas pelo verificador do framework, que usa `Config.PublicKey` como raiz de confiança:
+As versões são autenticadas pelo verificador do framework, usando `Config.PublicKey` como raiz de confiança:
 
 ```go
 //go:embed publickey.pem
@@ -236,16 +236,16 @@ Algoritmos compatíveis (`Release.Verification.SignatureAlgo`):
 
 | Algoritmo | O que é assinado | Observações |
 | --- | --- | --- |
-| `ed25519` | O resumo SHA-256 do artefato | Usado pelo Sparkle EdDSA |
+| `ed25519` | O resumo SHA-256 do artefato | Usado pelo EdDSA do Sparkle |
 | `ed25519ph` | O artefato completo por meio do pré-hash do Ed25519ph (SHA-512 internamente) | Usado pelo keygen.sh |
 | `ecdsa-p256` | O resumo SHA-256 do artefato | São aceitas assinaturas `r∥s` brutas e DER |
 
 Também há suporte somente a resumo (`DigestAlgo`: `sha256` / `sha512`) quando uma versão inclui um hash, mas não uma assinatura.
 
-`Config.PublicKey` é a ÚNICA âncora de confiança para a verificação de assinaturas — a origem da versão não tem como substituí-la por uma chave própria. Versões que incluem um `Signature` sem que um `Config.PublicKey` esteja configurado falham de forma segura. O verificador calcula o resumo em uma passagem de streaming durante o download; portanto, mesmo em atualizações com vários GB, a verificação não adiciona outra passagem pelo disco.
+`Config.PublicKey` é a ÚNICA âncora de confiança para a verificação de assinaturas — a origem da versão não tem como substituí-la por uma chave própria. Versões que incluem uma `Signature` sem uma `Config.PublicKey` configurada falham de forma segura. O verificador calcula o resumo em uma passagem contínua durante o download; portanto, mesmo em atualizações com vários GB, a verificação não acrescenta outra passagem pelo disco.
 
 @note{type="caution" title="Somente resumo ≠ verificação criptográfica"}
-Uma versão que contém apenas `Digest` é autenticada pelo TLS do registro e por qualquer garantia de integridade fornecida pelo próprio registro — não por uma raiz criptográfica sob seu controle. Use somente resumo para detectar deterioração de bits; use assinaturas para resistir a adulterações decorrentes do comprometimento do pipeline de lançamento.
+Uma versão que contém apenas `Digest` é autenticada com base no TLS do registro e em qualquer garantia de integridade fornecida pelo próprio registro — não com base em uma raiz criptográfica sob seu controle. Use somente resumo para detectar corrupção de dados; use assinaturas para resistir a adulterações quando o pipeline de lançamento estiver comprometido.
 
 @end
 
@@ -257,7 +257,7 @@ wails3 updater genkey
 # updater.key.pub   — bundle in your app via go:embed
 ```
 
-A chave privada usa PEM PKCS#8, e a chave pública, PEM PKIX; `Config.PublicKey` aceita o arquivo `.pub` como está (também aceita a chave bruta de 32 bytes ou sua codificação base64, que `genkey` imprime para incorporação). Assine as versões com `wails3 updater manifest -key updater.key ...` ou `wails3 updater sign`; consulte [Publicação com a CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
+A chave privada usa PEM PKCS#8, e a chave pública usa PEM PKIX; `Config.PublicKey` aceita o arquivo `.pub` como está (também aceita a chave bruta de 32 bytes ou sua representação em base64, que `genkey` exibe para inclusão direta). Assine as versões com `wails3 updater manifest -key updater.key ...` ou `wails3 updater sign`; consulte [Publicação com a CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
 
 Ou em Go:
 
@@ -274,22 +274,22 @@ pub, priv, _ := ed25519.GenerateKey(rand.Reader)
 Os provedores transmitem os bytes do arquivo que você publicar; em seguida, o framework o descompacta antes da substituição:
 
 - **Binário único** (por exemplo, `myapp-linux-amd64`) — usado como está. Comum no Linux.
-- **`.zip`** — extraído no local de destino. O arquivo compactado deve conter exatamente uma entrada no nível superior (geralmente um pacote `.app` do macOS ou um único binário). Formato de empacotamento recomendado para macOS.
-- **`.tar.gz`** / **`.tgz`** — extraído no local de destino, seguindo a mesma regra de uma única entrada no nível superior. Útil para distribuições Linux que fornecem uma árvore de runtime junto ao binário.
+- **`.zip`** — extraído no local de destino. O arquivo compactado deve conter exatamente uma entrada no nível superior (normalmente um pacote `.app` do macOS ou um único binário). É o empacotamento recomendado para macOS.
+- **`.tar.gz`** / **`.tgz`** — extraído no local de destino seguindo a mesma regra de uma única entrada no nível superior. Útil para distribuições Linux que fornecem uma árvore de runtime junto ao binário.
 
-Arquivos compactados com mais de uma entrada no nível superior são rejeitados: o framework substitui um único destino no disco, portanto, “colocar este arquivo compactado no lugar” é ambíguo quando ele contém vários itens. `.dmg` e `.pkg` (macOS), bem como `.msi` (Windows), não são compatíveis com a v1 — distribua um `.zip` do pacote. A extração aplica proteção contra zip slip, rejeita links simbólicos que escapem da raiz do arquivo compactado e limita o tamanho total descompactado (2 GiB) e a quantidade de entradas (50 000).
+Arquivos compactados com mais de uma entrada no nível superior são rejeitados: o framework substitui um único destino no disco, portanto, “colocar este arquivo compactado no lugar” é ambíguo quando ele contém vários itens. `.dmg` e `.pkg` (macOS), bem como `.msi` (Windows), não são compatíveis com v1 — em vez disso, distribua um `.zip` do pacote. A extração aplica proteção contra zip slip, rejeita links simbólicos que escapem da raiz do arquivo compactado e limita o tamanho total descompactado (2 GiB) e o número de entradas (50 000).
 
 ## A janela padrão
 
-`app.Updater.CheckAndInstall(ctx)` abre uma janela de 520×540 controlada pelo framework com:
+`app.Updater.CheckAndInstall(ctx)` abre uma janela de 520×540 gerenciada pelo framework com:
 
-- Um ícone de destaque determinado pelo estado (↓ azul para disponível/baixando, ✓ verde para pronta/atualizada e ! vermelho para erro)
-- Um indicador de versão em formato de pílula: `v1.0.0 → v2.0.1 · 8.8 MB`
-- Um painel rolável de notas da versão com **Markdown renderizado** (parágrafos, negrito/itálico, listas, tabelas GFM, código embutido, blocos de código delimitados, h1–h3 e links)
+- Um ícone de destaque controlado pelo estado (↓ azul para disponível/baixando, ✓ verde para pronta/atualizada e ! vermelho para erro)
+- Um indicador de versão: `v1.0.0 → v2.0.1 · 8.8 MB`
+- Um painel rolável de notas da versão com Markdown **renderizado** (parágrafos, negrito/itálico, listas, tabelas GFM, código embutido, blocos de código delimitados, h1–h3 e links)
 - Uma única ação principal por estado (Instalar / Reiniciar e aplicar / Tentar novamente)
-- Ações secundárias em estilo ghost (Ignorar esta versão / Lembrar mais tarde)
+- Ações secundárias em estilo discreto (Ignorar esta versão / Lembrar mais tarde)
 - Modo escuro/claro por meio de `prefers-color-scheme`
-- Animação de brilho para indicar progresso indeterminado quando o tamanho total é desconhecido
+- Efeito de brilho de progresso indeterminado quando o tamanho total é desconhecido
 
 Ela escuta eventos `updater:*` no barramento de eventos do Wails e emite ações `updater:user:*` de volta para o Go.
 
@@ -304,7 +304,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-A folha de estilos padrão expõe estas variáveis — sobrescreva qualquer uma delas:
+A folha de estilos padrão expõe estas variáveis — substitua qualquer uma delas:
 
 | Variável | Padrão (claro) | Padrão (escuro) |
 | --- | --- | --- |
@@ -322,7 +322,7 @@ A folha de estilos padrão expõe estas variáveis — sobrescreva qualquer uma 
 | `--radius` | `10px` | — |
 | `--font` | pilha do sistema | — |
 
-### Substituir o modelo
+### Substitua o modelo
 
 Forneça seu próprio HTML; ele só precisa escutar eventos `wails:updater:*` e emitir ações `wails:updater:user:*`:
 
@@ -335,12 +335,12 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Janelas InitialHTML são carregadas sem uma origem do servidor de ativos e, portanto, não podem buscar `/wails/runtime.js` dinamicamente. Há duas maneiras de se comunicar com o host a partir de uma delas:
+As janelas InitialHTML são carregadas sem uma origem do servidor de ativos, portanto não podem buscar `/wails/runtime.js` dinamicamente. Há duas maneiras de se comunicar com o host a partir de uma delas:
 
-1. **Basta escrever HTML.** O framework injeta automaticamente um shim `window.wails.Events` mínimo em qualquer janela aberta com `WebviewWindowOptions.AllowSimpleEventEmit = true` e `HTML` definidos — exatamente como fazem os fluxos integrado e BYO do atualizador. Nenhuma etapa de build é necessária. Este é o caminho usado pelo exemplo abaixo.
-2. **Empacote `@wailsio/runtime` com o empacotador de sua preferência** (Vite, esbuild, Rollup) e importe-o em seu HTML personalizado durante o build. `Events.On` funciona sem configuração adicional porque opera totalmente no lado do cliente; `Events.Emit` passa pelo transporte fetch do runtime, que é interrompido pela origem nula — portanto, instale um pequeno transporte postMessage por meio do gancho [`setTransport`](/guides/custom-transport/) do runtime, que encaminhe as mensagens por `window._wails.invoke("wails:event:emit:<name>")`. A injeção do framework não faz nada se `window.wails.Events` já estiver no escopo, evitando conflitos entre as duas abordagens.
+1. **Basta escrever HTML.** O framework injeta automaticamente um shim `window.wails.Events` mínimo em qualquer janela aberta com `WebviewWindowOptions.AllowSimpleEventEmit = true` e `HTML` definidos — exatamente como fazem os fluxos integrado e BYO do atualizador. Nenhuma etapa de build é necessária. Este é o fluxo usado no exemplo abaixo.
+2. **Empacote `@wailsio/runtime` com o empacotador de sua preferência** (Vite, esbuild, Rollup) e importe-o para seu HTML personalizado durante a compilação. `Events.On` funciona sem configuração adicional porque opera exclusivamente no cliente; `Events.Emit` usa o transporte fetch do runtime, que não funciona com a origem nula — portanto, instale um pequeno transporte postMessage por meio do gancho [`setTransport`](/guides/custom-transport/) do runtime, que encaminha as mensagens por `window._wails.invoke("wails:event:emit:<name>")`. A injeção do framework não faz nada se `window.wails.Events` já estiver no escopo, evitando conflitos entre as duas abordagens.
 
-Em ambos os casos, o JavaScript escrito em seu HTML personalizado chama a mesma API `Events.On` / `Events.Emit`:
+De qualquer forma, o JavaScript escrito no HTML personalizado chama a mesma API `Events.On` / `Events.Emit`:
 
 ```html
 <script>
@@ -359,13 +359,13 @@ Emit("wails:updater:window:ready");
 </script>
 ```
 
-O shim expõe o subconjunto do runtime moderno necessário para eventos com nomes simples: `Events.On(name, cb)` retorna uma função de cancelamento da inscrição, e `Events.Emit(nameOrEventObject)` encaminha ao host pela rota postMessage `wails:event:emit:` protegida. Ele é instalado uma única vez durante o carregamento da página, antes da execução de qualquer um de seus scripts inline.
+O shim expõe o subconjunto do runtime moderno necessário para eventos com nomes simples: `Events.On(name, cb)` retorna uma função de cancelamento da inscrição, e `Events.Emit(nameOrEventObject)` encaminha ao host pelo caminho postMessage protegido por `wails:event:emit:`. Ele é instalado uma única vez durante o carregamento da página, antes da execução de qualquer um dos seus scripts inline.
 
-Se você *quiser* substituir o shim (ou estiver carregando o runtime completo de outra maneira), defina `window.wails.Events` antes da execução da primeira tag `<script>` da página para que a injeção seja ignorada.
+Se você *quiser* substituir o shim (ou estiver carregando o runtime completo de outra maneira), defina `window.wails.Events` antes da execução da primeira tag `<script>` da página, e a injeção será ignorada.
 
-### Elementos da janela
+### Moldura da janela
 
-Sobrescreva as opções da janela (tamanho, sem moldura, sempre acima das outras janelas) sem alterar o HTML:
+Substitua as opções da janela (tamanho, sem moldura, sempre visível) sem alterar o HTML:
 
 ```go
 Window: &updater.BuiltinWindow{
@@ -382,9 +382,9 @@ Window: &updater.BuiltinWindow{
 
 ### Use sua própria janela
 
-Conduza o fluxo de atualização usando uma `*application.WebviewWindow` criada por você. O atualizador chama `Show()` / `Close()` / `EmitEvent()` em sua janela — seu HTML decide o que renderizar:
+Conduza o fluxo de atualização usando um `*application.WebviewWindow` criado por você. O atualizador chama `Show()` / `Close()` / `EmitEvent()` na sua janela — seu HTML decide o que renderizar:
 
-![Uma janela de atualização do tipo “use a sua própria”, com fundo em gradiente rosa e laranja, um único cartão branco com cantos arredondados, tipografia personalizada e os mesmos eventos do atualizador controlando o estado visível. Demonstra como a interface padrão pode ser totalmente substituída.](/assets/updater/byo-custom-window.png)
+![Uma janela de atualização própria, com fundo em gradiente rosa e laranja, um único cartão branco arredondado, tipografia personalizada e os mesmos eventos do atualizador controlando o estado visível. Demonstra como a interface padrão pode ser completamente substituída.](/assets/updater/byo-custom-window.png)
 
 ```go
 myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -399,14 +399,14 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Seu HTML usa `window.wails.Events.On` / `Events.Emit` da mesma forma que o modelo integrado — o shim injetado automaticamente pelo framework é incluído em qualquer janela com `AllowSimpleEventEmit: true`, independentemente de ela pertencer ao framework ou a você. Consulte [Substituir o modelo](#substituir-o-modelo) para conhecer a API.
+Seu HTML usa `window.wails.Events.On` / `Events.Emit` exatamente como o modelo integrado — o shim injetado automaticamente pelo framework é incluído em qualquer janela com `AllowSimpleEventEmit: true`, independentemente de a janela pertencer ao framework ou a você. Consulte [Substituir o modelo](#substitua-o-modelo) para conhecer a API.
 
-@note{type="caution" title="`AllowSimpleEventEmit` é obrigatório para janelas de atualização BYO"}
-Por segurança, o framework condiciona o atalho postMessage `wails:event:emit:` a esse campo: uma janela que não o tenha definido não pode gerar eventos personalizados no lado do host. O shim de HTML personalizado do atualizador emite eventos `updater:user:*` por esse atalho; portanto, se esse campo for esquecido em uma janela BYO, todos os cliques em botões serão silenciosamente descartados — o usuário clica em Instalar e nada acontece.
+@note{type="caution" title="`AllowSimpleEventEmit` é obrigatório para janelas de atualização próprias"}
+Por segurança, o framework condiciona o atalho postMessage `wails:event:emit:` a esse campo: uma janela sem o campo definido não pode gerar eventos personalizados no host. O shim de HTML personalizado do atualizador emite eventos `updater:user:*` por esse atalho; portanto, se o campo for esquecido em uma janela própria, todos os cliques nos botões serão silenciosamente ignorados — o usuário clica em Instalar e nada acontece.
 
-Mantenha `AllowSimpleEventEmit` **desativado** em qualquer janela que carregue HTML sobre o qual você não tenha controle total (URLs remotas ou conteúdo fornecido pelo usuário). Quando ativado, qualquer JavaScript da página — inclusive pontos vulneráveis a XSS — pode acionar qualquer manipulador `app.Event.On(name, …)`. O atalho transmite apenas nomes simples (sem carga útil) e não pode acessar o caminho binding/Call, mas ainda pode acionar manipuladores privilegiados de eventos personalizados em seu código Go caso eles atuem apenas com base no nome do evento.
+Mantenha `AllowSimpleEventEmit` **desativado** em qualquer janela que carregue HTML que você não controle totalmente (URLs remotas ou conteúdo fornecido pelo usuário). Quando ativado, qualquer JavaScript na página — inclusive pontos vulneráveis a XSS — pode acionar qualquer manipulador `app.Event.On(name, …)`. O atalho transmite apenas nomes simples (sem payload) e não consegue acessar o caminho de binding/Call, mas ainda pode acionar manipuladores privilegiados de eventos personalizados no seu código Go caso eles atuem apenas com base no nome do evento.
 
-A janela de atualização *integrada* do framework define isso internamente — somente quem usa uma janela BYO precisa se lembrar desse campo.
+A janela *integrada* do atualizador do framework define isso internamente — somente quem usa uma janela própria precisa se lembrar desse campo.
 
 @end
 
@@ -419,15 +419,15 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Nenhuma janela é aberta. Inscreva sua própria interface (ou a janela principal existente) nos eventos `updater:*` e chame `app.Updater.CheckAndInstall(ctx)` em um manipulador de botão. Isso é útil para verificações periódicas em segundo plano que só devem aparecer quando algo for encontrado ou para aplicativos que integrem o fluxo de atualização a um painel de configurações personalizado.
+Nenhuma janela é aberta. Inscreva sua própria interface (ou a janela principal existente) nos eventos `updater:*` e chame `app.Updater.CheckAndInstall(ctx)` em um manipulador de botão. Isso é útil para verificações periódicas em segundo plano que só devem aparecer quando algo for encontrado ou para aplicativos que integram o fluxo de atualização a um painel de configurações personalizado.
 
 ## Eventos
 
-Tanto Go quanto JavaScript fazem a inscrição pelo barramento de eventos padrão do Wails. **Não digite manualmente as strings de transporte** — use as constantes exportadas pelo pacote do atualizador (Go) ou pelo pacote do runtime (JS). As duas camadas compartilham o mesmo conjunto de nomes, mantido sincronizado por um teste de regressão.
+Tanto Go quanto JavaScript fazem inscrições pelo barramento de eventos padrão do Wails. **Não digite manualmente as strings usadas na comunicação** — use as constantes exportadas pelo pacote do atualizador (Go) ou pelo pacote do runtime (JS). As duas camadas compartilham o mesmo conjunto de nomes, mantido em sincronia por um teste de regressão.
 
-### A partir do Go
+### No Go
 
-As constantes ficam em `github.com/wailsapp/wails/v3/pkg/updater`. Faça a inscrição por meio de `app.Event.On(name, fn)`; o callback recebe um `*application.CustomEvent` cujo campo `Data` contém a carga útil tipada indicada na [referência de eventos](#referncia-de-eventos) — use uma asserção de tipo, não a decodificação de JSON:
+As constantes ficam em `github.com/wailsapp/wails/v3/pkg/updater`. Faça a inscrição por meio de `app.Event.On(name, fn)`; o callback recebe um `*application.CustomEvent` cujo campo `Data` contém o payload tipado listado na [referência de eventos](#referncia-de-eventos) — use uma asserção de tipo, não a decodificação de JSON:
 
 ```go {title="main.go"}
 import (
@@ -460,7 +460,7 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 
 Todas as constantes Go disponíveis:
 
-| Constante | String de transporte |
+| Constante | String de comunicação |
 | --- | --- |
 | `updater.EventCheckStarted` | `wails:updater:check-started` |
 | `updater.EventUpdateAvailable` | `wails:updater:update-available` |
@@ -480,9 +480,9 @@ Todas as constantes Go disponíveis:
 | `updater.EventUserCancel` | `wails:updater:user:cancel` |
 | `updater.EventUserRestart` | `wails:updater:user:restart` |
 
-### Do JavaScript
+### No JavaScript
 
-As constantes ficam em `Updater.Events`, dentro de `@wailsio/runtime`. Elas têm os mesmos nomes usados no Go e são organizadas por subespaço de nomes (`User.*`, `Window.*`) para facilitar sua localização pelo preenchimento automático:
+As constantes ficam em `Updater.Events`, dentro de `@wailsio/runtime`. Elas têm os mesmos nomes usados no Go e são organizadas por subnamespace (`User.*`, `Window.*`) para facilitar sua descoberta pelo preenchimento automático:
 
 ```js
 import { Events, Updater } from "@wailsio/runtime";
@@ -516,27 +516,27 @@ document.getElementById("install-btn").addEventListener("click", () => {
 
 ### Referência de eventos
 
-Lado da assinatura (host → página):
+Lado da inscrição (host → página):
 
 | Constante (Go) | Constante (JS) | Payload | Quando |
 | --- | --- | --- | --- |
-| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | nenhum | Antes de cada ciclo de ida e volta de `Check` |
+| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | nenhum | Antes de cada operação de ida e volta de `Check` |
 | `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` encontrou uma versão mais recente |
-| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | nenhum | `Check` confirmou que a versão está atualizada |
-| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | O fluxo de bytes começa |
+| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | nenhum | `Check` confirmou que o aplicativo está atualizado |
+| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Os bytes começam a ser transmitidos |
 | `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ~10 Hz durante o download |
 | `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | Todos os bytes foram gravados, antes da verificação |
-| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | A verificação da assinatura ou do resumo começa |
-| `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | A descompactação e a preparação começam |
+| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | A verificação da assinatura/resumo é iniciada |
+| `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | O desempacotamento e a preparação são iniciados |
 | `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | Reinicialização pendente |
 | `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | Falha em qualquer etapa |
-| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Uma vez por sessão, antes de reproduzir o snapshot |
+| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Uma vez por sessão, antes da reprodução do snapshot |
 
-Lado da página (página → host) — seu código faz a assinatura se você criar um modelo personalizado:
+No lado da página (página → host) — seu código se inscreve caso você crie um modelo personalizado:
 
 | Constante (Go) | Constante (JS) | Quando |
 | --- | --- | --- |
-| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | A janela terminou de carregar; o host reenvia o estado atual |
+| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | A janela terminou de carregar; o host reproduz o estado atual |
 | `updater.EventUserInstall` | `Updater.Events.User.Install` | Ação principal no estado `available` |
 | `updater.EventUserRestart` | `Updater.Events.User.Restart` | Ação principal no estado `ready` |
 | `updater.EventUserSkip` | `Updater.Events.User.Skip` | "Ignorar esta versão" |
@@ -551,11 +551,11 @@ Lado da página (página → host) — seu código faz a assinatura se você cri
 | --- | --- | --- |
 | `CurrentVersion` | `string` | **Obrigatório.** A mesma string usada para marcar as versões (sem o prefixo `v`) |
 | `Providers` | `[]updater.Provider` | **Obrigatório.** Cadeia de fallback ordenada |
-| `PublicKey` | `[]byte` | PEM ou bytes brutos. Opcional, mas, sem isso, versões assinadas falham de forma segura |
+| `PublicKey` | `[]byte` | PEM ou bytes brutos. Opcional, mas versões assinadas falham de forma segura sem esse valor |
 | `CheckInterval` | `time.Duration` | Um valor diferente de zero inicia um loop de consulta em segundo plano que chama `CheckAndInstall` |
-| `Platform` | `string` | Sobrescreve `runtime.GOOS` para a seleção do artefato |
-| `Arch` | `string` | Sobrescreve `runtime.GOARCH` para a seleção do artefato |
-| `Channel` | `string` | Atualmente apenas informativo; filtragem de canal específica do provedor |
+| `Platform` | `string` | Substitui `runtime.GOOS` na seleção de artefatos |
+| `Arch` | `string` | Substitui `runtime.GOARCH` na seleção de artefatos |
+| `Channel` | `string` | Atualmente apenas informativo; filtragem por canal específica do provedor |
 | `Window` | `updater.WindowOption` | `nil` (padrões integrados), `&BuiltinWindow{…}`, `BYOWindow(handle)` ou `WindowNone` |
 
 ### Métodos de `*updater.Updater`
@@ -566,11 +566,11 @@ Lado da página (página → host) — seu código faz a assinatura se você cri
 | `State() State` | Fase atual do ciclo de vida |
 | `CurrentVersion() string` | A versão passada para `Init` |
 | `Check(ctx) (*Release, error)` | Percorre a cadeia de provedores. `(rel, nil)` = encontrada, `(nil, nil)` = atualizada, `(nil, err)` = todos falharam |
-| `DownloadAndInstall(ctx) error` | Transmite, verifica, extrai (se for um arquivo compactado) e prepara. Exige uma chamada anterior a `Check` |
-| `CheckAndInstall(ctx) error` | Atalho: abre a janela, executa `Check` e, se encontrar uma atualização, executa `DownloadAndInstall` |
-| `Restart(ctx) error` | Inicia o processo auxiliar, chama `Host.Quit` e encerra; o processo auxiliar substitui o aplicativo e o reinicia |
-| `DownloadedPath() string` | Local no disco em que a atualização preparada está armazenada ou `""`, se não houver nenhuma |
-| `SkipVersion(v string)` | Registra `v` como ignorada; chamadas posteriores a `Check` a consideram atualizada |
+| `DownloadAndInstall(ctx) error` | Transmite, verifica, extrai (se for um arquivo compactado) e prepara. Requer uma chamada anterior a `Check` |
+| `CheckAndInstall(ctx) error` | Atalho: abre a janela, executa `Check` e, se encontrar, executa `DownloadAndInstall` |
+| `Restart(ctx) error` | Inicia o auxiliar, chama `Host.Quit` e encerra; o auxiliar faz a substituição e reinicia o aplicativo |
+| `DownloadedPath() string` | Local no disco em que a atualização preparada está armazenada, ou `""` se não houver nenhuma |
+| `SkipVersion(v string)` | Registra `v` como ignorada; chamadas subsequentes a `Check` a consideram atualizada |
 | `SkippedVersion() string` | Lê a versão atualmente ignorada |
 | `StopPeriodicCheck()` | Cancela o temporizador iniciado por `Config.CheckInterval` e aguarda o retorno do loop |
 
@@ -582,25 +582,25 @@ Lado da página (página → host) — seu código faz a assinatura se você cri
 | `ErrNotConfigured` | Qualquer operação antes de `Init` |
 | `ErrNoPendingRelease` | `DownloadAndInstall` sem um `Check` anterior |
 | `ErrDownloadInProgress` | `DownloadAndInstall` chamado enquanto outro está em execução |
-| `ErrNotReady` | `Restart` sem uma atualização preparada |
+| `ErrNotReady` | `Restart` sem nenhuma atualização preparada |
 
 ## Como funciona a substituição
 
-`Restart` executa novamente o binário atual com variáveis de ambiente sentinela definidas. `application.New` as detecta na inicialização e desvia a execução para o modo auxiliar:
+`Restart` executa novamente o binário atual com variáveis de ambiente sentinela definidas. `application.New` as detecta durante a inicialização e desvia a execução para o modo auxiliar:
 
-1. O auxiliar aguarda até 30 s para que o PID do processo pai seja encerrado (`platformIsAlive` faz sondagens por meio de `syscall.OpenProcess` + `GetExitCodeProcess` no Windows e de `os.FindProcess` + `proc.Signal(syscall.Signal(0))` no Unix).
-2. O auxiliar cria um backup do destino (uma cópia para arquivos e uma cópia recursiva para diretórios de pacotes `.app` do macOS).
-3. O auxiliar substitui o destino pelo artefato preparado, tentando novamente até 20 vezes, com um intervalo de 500 ms entre as tentativas:
-  - **Unix** — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. Os descritores de arquivo abertos referentes ao inode antigo continuam válidos.
-  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. O Windows permite renomear arquivos cuja imagem ainda esteja mapeada, mas não permite excluí-los; na próxima atualização, o auxiliar remove quaisquer arquivos irmãos `.old.*` restantes cujo mapeamento correspondente no kernel já tenha sido liberado.
+1. O auxiliar aguarda até 30 s para que o PID do processo pai seja encerrado (`platformIsAlive` consulta periodicamente por meio de `syscall.OpenProcess` + `GetExitCodeProcess` no Windows e `os.FindProcess` + `proc.Signal(syscall.Signal(0))` no Unix).
+2. O auxiliar cria um backup do destino (cópia para arquivos e cópia recursiva para diretórios de pacotes `.app` do macOS).
+3. O auxiliar substitui o destino pelo artefato preparado, tentando novamente até 20 vezes, com uma espera de 500 ms entre as tentativas:
+  - **Unix** — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. Descritores de arquivo abertos para o inode antigo continuam válidos.
+  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. O Windows permite renomear arquivos cuja imagem ainda esteja mapeada, mas não excluí-los; na próxima atualização, o auxiliar remove quaisquer arquivos irmãos `.old.*` remanescentes cujo mapeamento de kernel proprietário já tenha sido liberado.
 
-4. O auxiliar restaura no novo binário o modo original do executável (o arquivo baixado foi criado com a umask padrão, que remove `+x` no Unix; no Windows, essa operação não tem efeito).
-5. O auxiliar remove as variáveis de ambiente do modo auxiliar e inicia novamente o binário, que agora está substituído.
+4. O auxiliar restaura no novo binário o modo de execução do arquivo original (o arquivo baixado foi criado com a umask padrão, que remove `+x` no Unix; no Windows, essa operação não tem efeito).
+5. O auxiliar remove as variáveis de ambiente do modo auxiliar e reinicia o binário, agora substituído.
 6. O auxiliar é encerrado.
 
-Se a inicialização falhar, o auxiliar restaurará o backup. Se o processo pai não for encerrado dentro de 30 s, o auxiliar abortará antes de modificar o destino (assim, o usuário manterá um aplicativo funcional mesmo que uma caixa de diálogo de encerramento bloqueie `Quit`).
+Se a inicialização falhar, o auxiliar restaura o backup. Se o processo pai não for encerrado em até 30 s, o auxiliar aborta antes de modificar o destino (assim, o usuário mantém um aplicativo funcional mesmo se uma caixa de diálogo de encerramento bloquear `Quit`).
 
-Para pacotes `.app` do macOS distribuídos como `.zip` (o empacotamento recomendado), o arquivo compactado é descompactado entre as etapas de verificação e prontidão, para que o auxiliar tenha um diretório real para colocar no lugar do atual.
+Para pacotes `.app` do macOS distribuídos como `.zip` (o empacotamento recomendado), o arquivo é descompactado entre as etapas de verificação e prontidão, para que o auxiliar tenha um diretório real para colocar no lugar do atual.
 
 ## Verificação periódica
 
@@ -611,13 +611,13 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Quando `CheckInterval > 0`, uma goroutine em segundo plano chama `CheckAndInstall` no intervalo configurado. Os ciclos do temporizador que ocorrem enquanto outro fluxo já está em andamento (verificação, download, validação ou instalação) são descartados — máquinas de estado simultâneas não são compatíveis.
+Quando `CheckInterval > 0`, uma goroutine em segundo plano chama `CheckAndInstall` no intervalo configurado. Os disparos que ocorrem enquanto outro fluxo já está em andamento (verificação, download, validação ou instalação) são descartados — máquinas de estado simultâneas não são compatíveis.
 
-Para fazer sondagens silenciosas em segundo plano que só sejam exibidas quando algo for encontrado, defina `Window: updater.WindowNone` e responda a `EventUpdateAvailable` na sua própria interface.
+Para realizar consultas silenciosas em segundo plano que só sejam exibidas quando algo for encontrado, defina `Window: updater.WindowNone` e responda a `EventUpdateAvailable` em sua própria interface.
 
-## Ignorar e lembrar
+## Ignorar e lembrar depois
 
-O botão "Ignorar esta versão" da janela padrão registra a versão disponível por meio de `SkipVersion(rel.Version)`. Chamadas posteriores a `Check` encontram a mesma versão e a consideram atualizada (até que o usuário atualize `CurrentVersion`, o que acontece automaticamente após um `Restart` bem-sucedido). "Lembrar mais tarde" apenas fecha a janela sem registrar nada.
+O botão "Ignorar esta versão" da janela padrão registra a versão disponível por meio de `SkipVersion(rel.Version)`. Chamadas posteriores a `Check` encontram a mesma versão e a consideram atualizada (até que o usuário atualize `CurrentVersion`, o que ocorre automaticamente após um `Restart` bem-sucedido). "Lembrar mais tarde" apenas fecha a janela sem registrar nada.
 
 ```go
 // Reading what the user skipped (e.g. to surface in app settings)
@@ -629,29 +629,29 @@ if v := app.Updater.SkippedVersion(); v != "" {
 app.Updater.SkipVersion("")
 ```
 
-## Lista de verificação da distribuição
+## Lista de verificação para distribuição
 
-Antes de publicar uma versão que o atualizador instalará:
+Antes de publicar uma versão que será instalada pelo atualizador:
 
-1. **Escolha o formato de arquivo compactado correto.** macOS: `.zip` do pacote `.app`. Linux: binário único ou `.tar.gz`. Windows: um único `.exe` ou `.zip`. `.dmg`, `.msi` e `.pkg` não são compatíveis.
-2. **Assine o artefato** com a chave privada correspondente a `Config.PublicKey`. Para feeds publicados por provedores (keygen.sh, AppCast), siga o fluxo de assinatura de cada provedor. Para GitHub Releases com `ChecksumAsset`, gere um arquivo `SHA256SUMS` com `sha256sum` ou `shasum -a 256`.
-3. **Use a mesma string de versão.** `Config.CurrentVersion` e a tag de versão do lançamento devem corresponder exatamente (por exemplo, `1.0.0` ↔ tag `v1.0.0`; o `v` inicial é removido no lado do provedor).
-4. **Teste a substituição na plataforma de destino** pelo menos uma vez antes da distribuição — o tratamento de assinatura de código, notarização e Gatekeeper é específico de cada plataforma e não é realizado pelo próprio atualizador.
+1. **Escolha o formato de arquivo correto.** macOS: `.zip` do pacote `.app`. Linux: binário único ou `.tar.gz`. Windows: um único `.exe` ou `.zip`. `.dmg`, `.msi` e `.pkg` não são compatíveis.
+2. **Assine o artefato** com a chave privada correspondente a `Config.PublicKey`. Para feeds publicados por provedores (keygen.sh, AppCast), siga o fluxo de assinatura de cada provedor. Para GitHub Releases com `ChecksumAsset`, gere um arquivo `SHA256SUMS` com `sha256sum` / `shasum -a 256`.
+3. **Faça a string de versão corresponder.** `Config.CurrentVersion` e a tag de versão da release devem ser exatamente iguais (por exemplo, `1.0.0` ↔ tag `v1.0.0`; o `v` inicial é removido no lado do provedor).
+4. **Teste a substituição na plataforma de destino** pelo menos uma vez antes de distribuir — o tratamento de assinatura de código, notarização e Gatekeeper é específico da plataforma e não é realizado pelo próprio atualizador.
 
 ## Solução de problemas
 
-**"a assinatura exige uma chave pública, mas nenhuma foi configurada"** — a versão tem um campo `Signature`, mas `Config.PublicKey` está vazio. Defina a chave pública ou altere o pipeline de lançamento para não incluir uma assinatura.
+**"a assinatura exige uma chave pública, mas nenhuma foi configurada"** — a release tem um campo `Signature`, mas `Config.PublicKey` está vazio. Defina a chave pública ou altere seu pipeline de release para não incluir uma assinatura.
 
-**"o resumo não corresponde"** — os bytes baixados não correspondem ao que o provedor informou. Geralmente, isso ocorre devido a um download parcial (falha momentânea de rede) ou a um artefato corrompido. Executar novamente costuma resolver o problema.
+**"incompatibilidade de resumo"** — os bytes baixados não correspondem ao que o provedor informou. Geralmente, isso indica um download parcial (falha momentânea de rede) ou um artefato corrompido. Executar novamente costuma resolver o problema.
 
-**A janela é aberta, mas desaparece imediatamente, sem Markdown e sem progresso** — seu HTML personalizado não chamou `wails:runtime:ready`. Consulte o adaptador [Substituir o modelo](#substituir-o-modelo).
+**A janela abre, mas desaparece imediatamente, sem Markdown nem progresso** — seu HTML personalizado não chamou `wails:runtime:ready`. Consulte o shim [Substituir o modelo](#substitua-o-modelo).
 
-**A atualização no Windows nunca termina; o log do auxiliar informa "remove old (attempt N): Access is denied"** — isso ocorre apenas em versões anteriores a `de764fb` deste PR; a implementação atual renomeia o arquivo antigo para outro nome e não apresenta esse problema. Atualize.
+**A atualização no Windows nunca termina; o log do auxiliar informa "remove old (attempt N): Access is denied"** — isso só acontece em versões desta PR anteriores a `de764fb`; a implementação atual usa renomeação para um nome alternativo, que não apresenta esse problema. Atualize.
 
-**O Gatekeeper do macOS bloqueia o binário substituído** — a assinatura de código precisa ser preservada de ponta a ponta. Assine o `.app` original *e* assine novamente o binário reiniciado se o seu pipeline de compilação modificar os direitos no momento da atualização.
+**O Gatekeeper do macOS bloqueia o binário substituído** — a assinatura de código deve ser preservada de ponta a ponta. Assine o `.app` original *e* assine novamente o binário reiniciado caso seu pipeline de compilação modifique os direitos durante a atualização.
 
 ## Veja também
 
 - Exemplo executável: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - Repositório de demonstração para testes: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
-- Tutorial: [Como permitir que um aplicativo Wails atualize a si próprio](/tutorials/04-self-update-a-wails-app/)
+- Tutorial: [Como adicionar atualizações automáticas a um aplicativo Wails](/tutorials/04-self-update-a-wails-app/)

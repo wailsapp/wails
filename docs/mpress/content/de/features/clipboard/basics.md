@@ -9,7 +9,7 @@ sourcePath: "features/clipboard/basics.md"
 
 Wails bietet eine **einheitliche Zwischenablage-API**, die auf allen Plattformen funktioniert. Kopieren und fügen Sie Text unter Windows, macOS und Linux mit einfachen, einheitlichen Methoden ein.
 
-## Schnelleinstieg
+## Schnellstart
 
 ```go
 // Copy text to clipboard
@@ -299,7 +299,7 @@ func (cm *ClipboardMonitor) checkClipboard() {
 }
 ```
 
-### Mit Verlauf kopieren
+### Kopieren mit Verlauf
 
 ```go
 type ClipboardHistory struct {
@@ -347,7 +347,7 @@ func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
 
 ## Frontend-Integration
 
-### Zwischenablage-API des Browsers verwenden
+### Browser-Zwischenablage-API verwenden
 
 Für einfachen Text können Sie die Zwischenablage-API des Browsers verwenden:
 
@@ -374,7 +374,7 @@ async function pasteText() {
 }
 ```
 
-**Hinweis:** Die Zwischenablage-API des Browsers erfordert HTTPS oder localhost sowie die Berechtigung des Benutzers.
+**Hinweis:** Die Zwischenablage-API des Browsers erfordert HTTPS oder localhost sowie die Zustimmung des Benutzers.
 
 ### Wails-Zwischenablage verwenden
 
@@ -398,25 +398,25 @@ async function paste() {
 }
 ```
 
-## Bewährte Methoden
+## Bewährte Vorgehensweisen
 
 ### ✅ Empfohlen
 
-- **Rückgabewerte prüfen** – Fehler ordnungsgemäß behandeln
+- **Rückgabewerte prüfen** – Fehler angemessen behandeln
 - **Rückmeldung geben** – Benutzer über erfolgreiches Kopieren informieren
 - **Eingefügten Text validieren** – Format und Größe prüfen
 - **Geeignete Methode verwenden** – Browser-API oder Wails-API
-- **Leere Zwischenablage berücksichtigen** – Vor der Verwendung prüfen
-- **Führenden und nachgestellten Leerraum entfernen** – Eingefügten Text bereinigen
+- **Leere Zwischenablage berücksichtigen** – vor der Verwendung prüfen
+- **Leerraum entfernen** – eingefügten Text bereinigen
 
 ### ❌ Nicht empfohlen
 
 - **Fehler nicht ignorieren** – Erfolg immer prüfen
-- **Keine vertraulichen Daten kopieren** – Die Zwischenablage wird gemeinsam genutzt
-- **Format nicht voraussetzen** – Eingefügte Daten validieren
-- **Nicht zu häufig abfragen** – Beim Überwachen der Zwischenablage
-- **Keine großen Datenmengen kopieren** – Stattdessen Dateien verwenden
-- **Sicherheit nicht vernachlässigen** – Eingefügte Inhalte bereinigen
+- **Keine vertraulichen Daten kopieren** – die Zwischenablage wird gemeinsam genutzt
+- **Format nicht voraussetzen** – eingefügte Daten validieren
+- **Nicht zu häufig abfragen** – wenn Sie die Zwischenablage überwachen
+- **Keine großen Datenmengen kopieren** – stattdessen Dateien verwenden
+- **Sicherheit nicht vergessen** – eingefügte Inhalte bereinigen
 
 ## Plattformunterschiede
 
@@ -439,21 +439,21 @@ async function paste() {
 - Verwendet die X11-/Wayland-Zwischenablage
 - Primär- und Zwischenablageauswahl
 - Abhängig von der Desktop-Umgebung
-- Möglicherweise ist ein Zwischenablage-Manager erforderlich
+- Erfordert möglicherweise einen Zwischenablage-Manager
 
 ## Einschränkungen
 
 ### Aktuelle Version
 
 - **Nur Text** – Bilder werden noch nicht unterstützt
-- **Keine Formaterkennung** – Nur reiner Text
-- **Keine Zwischenablageereignisse** – Änderungen müssen regelmäßig abgefragt werden
+- **Keine Formaterkennung** – nur Klartext
+- **Keine Zwischenablageereignisse** – Änderungen müssen abgefragt werden
 - **Kein Zwischenablageverlauf** – selbst implementieren
 
 ### Zukünftige Funktionen
 
 - Bildunterstützung
-- Unterstützung für formatierten Text
+- Rich-Text-Unterstützung
 - Mehrere Formate
 - Ereignisse bei Änderungen der Zwischenablage
 - API für den Zwischenablageverlauf
@@ -468,19 +468,19 @@ Go-Funktionen aus JavaScript aufrufen.
 
 ---
 ★ Ereignisse
-Ereignisse für Benachrichtigungen zur Zwischenablage verwenden.
+Ereignisse für Zwischenablagebenachrichtigungen verwenden.
 
 [Mehr erfahren →](/features/events/system/)
 
 ---
 ℹ Dialoge
-Rückmeldungen zu Kopier- und Einfügevorgängen anzeigen.
+Rückmeldungen zum Kopieren und Einfügen anzeigen.
 
 [Mehr erfahren →](/features/dialogs/message/)
 
 ---
-◆ Dienste
-Code für die Zwischenablage organisieren.
+◆ Services
+Zwischenablagecode organisieren.
 
 [Mehr erfahren →](/features/bindings/services/)
 
@@ -488,4 +488,4 @@ Code für die Zwischenablage organisieren.
 
 ---
 
-**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir die [Zwischenablagebeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Zwischenablagebeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.

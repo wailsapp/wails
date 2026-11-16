@@ -1,19 +1,19 @@
 ---
 title: "Menü-API"
-description: "Vollständige Referenz zur Menü-API"
+description: "Vollständige Referenz der Menü-API"
 slug: "reference/menu"
 sourcePath: "reference/menu.md"
 ---
 
-## Übersicht
+## Überblick
 
-Die Menü-API bietet Methoden zum Erstellen und Verwalten von Anwendungsmenüs, Kontextmenüs und Menüs im Infobereich.
+Die Menü-API stellt Methoden zum Erstellen und Verwalten von Anwendungsmenüs, Kontextmenüs und Taskleistenmenüs bereit.
 
 **Menütypen:**
 
-- **Anwendungsmenüs** – Obere Menüleiste (Datei, Bearbeiten usw.)
-- **Kontextmenüs** – Menüs für Rechtsklicks
-- **Infobereichsmenüs** – Menüs im Infobereich der Taskleiste
+- **Anwendungsmenüs** – obere Menüleiste (Datei, Bearbeiten usw.)
+- **Kontextmenüs** – Rechtsklickmenüs
+- **Taskleistenmenüs** – Menüs im Infobereich der Taskleiste
 
 ## Menüs erstellen
 
@@ -43,9 +43,9 @@ func (m *Menu) Add(label string) *MenuItem
 
 **Parameter:**
 
-- `label` – Der für den Menüeintrag angezeigte Text
+- `label` – der für den Menüeintrag angezeigte Text
 
-**Rückgabewert:** Der erstellte Menüeintrag
+**Rückgabewert:** der erstellte Menüeintrag
 
 **Beispiel:**
 
@@ -66,9 +66,9 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 **Parameter:**
 
-- `label` – Die Beschriftung des Untermenüs
+- `label` – die Beschriftung des Untermenüs
 
-**Rückgabewert:** Das erstellte Untermenü
+**Rückgabewert:** das erstellte Untermenü
 
 **Beispiel:**
 
@@ -96,11 +96,12 @@ menu.AddSeparator()
 menu.Add("Select All")
 ```
 
-**Bewährte Vorgehensweise:** Gruppieren Sie zusammengehörige Menüeinträge mit Trennlinien.
+**Empfehlung:** Gruppieren Sie zusammengehörige Menüeinträge mit Trennlinien.
 
 ### AddSectionHeader()
 
-Fügt unter **macOS 14 und neuer** eine native, nicht interaktive Abschnittsüberschrift hinzu. Unter älteren macOS-Versionen und auf allen anderen Plattformen (einschließlich Server-Builds) bleibt der Aufruf ohne Wirkung: Es wird kein Platzhaltereintrag eingefügt.
+Fügt unter **macOS 14 und neuer** eine native, nicht interaktive Abschnittsüberschrift hinzu.
+Unter älteren macOS-Versionen und auf allen anderen Plattformen (einschließlich Server-Builds) hat dies keine Wirkung: Es wird kein Platzhaltereintrag eingefügt.
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
@@ -116,13 +117,14 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-Überschriften verwenden das standardmäßige Erscheinungsbild von AppKit für Abschnittsüberschriften. Rufen Sie nach dem Neuaufbau eines bereits angezeigten Menüs wie bei anderen strukturellen Änderungen `menu.Update()` auf. Das Beispiel `systray-menu` zeigt eine Überschrift, die mit `os.Hostname()` ermittelt wird.
+Überschriften verwenden das standardmäßige Erscheinungsbild von AppKit für Abschnittsüberschriften. Rufen Sie nach dem erneuten Aufbau eines bereits angezeigten Menüs wie bei anderen strukturellen Änderungen `menu.Update()` auf.
+Ein Beispiel für eine über `os.Hostname()` abgerufene Überschrift finden Sie im Beispiel `systray-menu`.
 
-Ausgelassene Überschriften trennen keine Optionsgruppen. Verwenden Sie `AddSeparator()`, wenn Gruppen auf jeder Plattform getrennt bleiben müssen.
+Ausgelassene Überschriften trennen keine Optionsgruppen. Verwenden Sie `AddSeparator()`, wenn Optionsgruppen auf jeder Plattform getrennt bleiben müssen.
 
 ### AddCheckbox()
 
-Fügt einen Menüeintrag mit umschaltbarem Häkchen hinzu.
+Fügt einen auswählbaren Menüeintrag hinzu.
 
 ```go
 func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
@@ -130,8 +132,8 @@ func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
 
 **Parameter:**
 
-- `label` – Die Beschriftung des Kontrollkästchens
-- `checked` – Der anfängliche Auswahlzustand
+- `label` – die Beschriftung des Kontrollkästchens
+- `checked` – anfänglicher Auswahlstatus
 
 **Beispiel:**
 
@@ -145,7 +147,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-Fügt einen Optionsfeld-Menüeintrag hinzu (Gruppe mit gegenseitigem Ausschluss).
+Fügt einen Optionsmenüeintrag hinzu (gegenseitig ausschließende Gruppe).
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -153,8 +155,8 @@ func (m *Menu) AddRadio(label string, checked bool) *MenuItem
 
 **Parameter:**
 
-- `label` – Die Beschriftung des Optionsfelds
-- `checked` – Der anfängliche Auswahlzustand
+- `label` – die Beschriftung des Optionsfelds
+- `checked` – anfänglicher Auswahlstatus
 
 **Beispiel:**
 
@@ -175,7 +177,7 @@ gridView.OnClick(func(ctx *application.Context) {
 
 ### Update()
 
-Aktualisiert das Menü, sodass Änderungen an Menüeinträgen übernommen werden.
+Aktualisiert das Menü, damit alle an Menüeinträgen vorgenommenen Änderungen angezeigt werden.
 
 ```go
 func (m *Menu) Update()
@@ -188,7 +190,7 @@ item.SetEnabled(false)
 menu.Update()  // Must call to apply changes
 ```
 
-**Wichtig:** Rufen Sie nach dem Ändern von Eigenschaften eines Menüeintrags immer `Update()` auf.
+**Wichtig:** Rufen Sie nach dem Ändern der Eigenschaften von Menüeinträgen immer `Update()` auf.
 
 ## Methoden für Menüeinträge
 
@@ -202,9 +204,9 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 **Parameter:**
 
-- `callback` – Funktion, die beim Klicken auf den Eintrag aufgerufen wird
+- `callback` – Funktion, die beim Anklicken des Eintrags aufgerufen wird
 
-**Rückgabewert:** Der Menüeintrag (zur Verkettung von Methodenaufrufen)
+**Rückgabewert:** der Menüeintrag (zur Methodenverkettung)
 
 **Beispiel:**
 
@@ -260,7 +262,7 @@ func updateMenuState() {
 
 ### SetChecked()
 
-Legt den Auswahlzustand von Kontrollkästchen- und Optionsfeld-Menüeinträgen fest.
+Legt den Auswahlstatus von Kontrollkästchen- und Optionsmenüeinträgen fest.
 
 ```go
 func (mi *MenuItem) SetChecked(checked bool) *MenuItem
@@ -275,7 +277,7 @@ menu.Update()
 
 ### Checked()
 
-Gibt den aktuellen Auswahlzustand zurück.
+Gibt den aktuellen Auswahlstatus zurück.
 
 ```go
 func (mi *MenuItem) Checked() bool
@@ -331,7 +333,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-Legt einen Tooltip fest, der beim Bewegen des Mauszeigers über den Menüeintrag angezeigt wird.
+Legt einen Tooltip fest, der angezeigt wird, wenn der Mauszeiger über dem Menüeintrag verweilt.
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -400,13 +402,13 @@ app.Menu.Set(menu)
 
 - **macOS:** Das Menü wird in der oberen Menüleiste angezeigt
 - **Windows/Linux:** Das Menü wird in der Titelleiste des Fensters angezeigt
-- **macOS:** Fügt automatisch ein Anwendungsmenü mit dem Namen der Anwendung hinzu
+- **macOS:** Fügt automatisch ein Anwendungsmenü mit dem Namen der App hinzu
 
 ## Kontextmenüs
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-Erstellen Sie über den Manager ein `*ContextMenu` und registrieren Sie es unter einem Namen. `ContextMenuManager.Add` akzeptiert `*ContextMenu` – **nicht** `*Menu` – und es gibt **keine** Methode `app.RegisterContextMenu`.
+Erstelle über den Manager ein `*ContextMenu` und registriere es unter einem Namen. `ContextMenuManager.Add` akzeptiert `*ContextMenu` – **nicht** `*Menu` – und es gibt **keine** Methode `app.RegisterContextMenu`.
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +417,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-Alternativ erstellt und registriert das paketweite `application.NewContextMenu(name string) *ContextMenu` ein Kontextmenü in einem Schritt.
+Alternativ erstellt und registriert die paketweite Funktion `application.NewContextMenu(name string) *ContextMenu` ein Kontextmenü in einem Schritt.
 
 **Go:**
 
@@ -434,7 +436,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML/CSS:**
 
-Die Runtime löst ein registriertes Kontextmenü aus, wenn für das Ziel des Rechtsklicks (oder ein übergeordnetes Element) die benutzerdefinierte CSS-Eigenschaft `--custom-contextmenu` auf diesen Namen gesetzt ist. Die optionale Eigenschaft `--custom-contextmenu-data` wird über `ctx.ContextMenuData()` an den Go-Callback übergeben. Um das standardmäßige Browser-Kontextmenü zu unterdrücken, setzen Sie `--default-contextmenu: hide` (oder `auto`/`show`).
+Die Runtime löst ein registriertes Kontextmenü aus, wenn für das Ziel des Rechtsklicks oder eines seiner übergeordneten Elemente die benutzerdefinierte CSS-Eigenschaft `--custom-contextmenu` auf diesen Namen gesetzt ist. Die optionale Eigenschaft `--custom-contextmenu-data` wird über `ctx.ContextMenuData()` an den Go-Callback übergeben. Um das standardmäßige Browser-Kontextmenü zu unterdrücken, setze `--default-contextmenu: hide` (oder `auto`/`show`).
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -443,7 +445,7 @@ Die Runtime löst ein registriertes Kontextmenü aus, wenn für das Ziel des Rec
 </div>
 ```
 
-Es gibt kein Attribut `data-wails-context-menu="..."` – es war nie mit der Runtime verbunden.
+Es gibt kein Attribut `data-wails-context-menu="..."` – es war nie an die Runtime angebunden.
 
 **Dynamische Kontextmenüs:**
 
@@ -463,7 +465,7 @@ func updateContextMenu() {
 }
 ```
 
-## Menü im Infobereich
+## Infobereichsmenü
 
 ### app.SystemTray.New()
 
@@ -521,7 +523,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-Legt den Tooltip fest, der beim Bewegen des Mauszeigers über das Symbol im Infobereich angezeigt wird. Gibt nichts zurück.
+Legt den Tooltip fest, der beim Bewegen des Mauszeigers über das Symbol im Infobereich angezeigt wird. Gibt keinen Wert zurück.
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -639,7 +641,7 @@ func main() {
 }
 ```
 
-### Anwendung mit Symbol im Infobereich
+### Anwendung mit Infobereichssymbol
 
 ```go
 func setupSystemTray(app *application.App, window application.Window) {
@@ -752,31 +754,31 @@ func (e *Editor) save() {
 
 ### ✅ Empfohlen
 
-- **Standard-Tastenkombinationen verwenden** – Halten Sie sich an die Plattformkonventionen (Ctrl+C zum Kopieren usw.)
+- **Standard-Tastenkürzel verwenden** – Halte dich an die Konventionen der Plattform (Ctrl+C zum Kopieren usw.)
 - **Nach Änderungen Update() aufrufen** – Andernfalls werden die Änderungen nicht im Menü angezeigt
-- **Zusammengehörige Einträge gruppieren** – Verwenden Sie Trennlinien, um Menüeinträge zu organisieren
-- **Nicht verfügbare Aktionen deaktivieren** – Blenden Sie sie nicht aus, sondern deaktivieren Sie sie mit SetEnabled(false)
-- **Eindeutige Beschriftungen verwenden** – Formulieren Sie kurz und aussagekräftig
-- **Plattformkonventionen einhalten** – Beachten Sie die unterschiedlichen Menümuster von macOS und Windows/Linux
+- **Zusammengehörige Einträge gruppieren** – Verwende Trennlinien, um Menüeinträge zu gliedern
+- **Nicht verfügbare Aktionen deaktivieren** – Blende sie nicht aus, sondern deaktiviere sie mit SetEnabled(false)
+- **Eindeutige Beschriftungen verwenden** – Formuliere knapp und aussagekräftig
+- **Plattformkonventionen befolgen** – Beachte die unterschiedlichen Menümuster von macOS und Windows/Linux
 
 ### ❌ Nicht empfohlen
 
 - **Update() nicht vergessen** – Dies ist der häufigste Fehler
-- **Nicht zu tief verschachteln** – Beschränken Sie Menüs auf höchstens 2-3 Ebenen
-- **Keine mehrdeutigen Beschriftungen verwenden** – „Verarbeiten“ gegenüber „Dokument verarbeiten“
-- **Nicht unnötig verkomplizieren** – Halten Sie Menüs einfach und fokussiert
-- **Keine uneinheitlichen Metaphern verwenden** – Verwenden Sie eine konsistente Benennung und Struktur
+- **Menüs nicht zu tief verschachteln** – Beschränke Menüs auf maximal 2-3 Ebenen
+- **Keine mehrdeutigen Beschriftungen verwenden** – „Verarbeiten“ statt „Dokument verarbeiten“
+- **Nicht unnötig verkomplizieren** – Halte Menüs einfach und zweckgerichtet
+- **Keine uneinheitlichen Metaphern verwenden** – Verwende eine einheitliche Benennung und Gliederung
 
 ## Plattformspezifische Hinweise
 
 ### macOS
 
-- Ein Anwendungsmenü mit dem Namen der Anwendung wird automatisch hinzugefügt
-- Verwenden Sie für Tastenkombinationen `Cmd` anstelle von `Ctrl`
-- „Über“, „Einstellungen“ und „Beenden“ sind standardmäßig im Anwendungsmenü enthalten
+- Ein Anwendungsmenü mit dem Namen der App wird automatisch hinzugefügt
+- Verwende für Tastenkürzel `Cmd` anstelle von `Ctrl`
+- „Über“, „Einstellungen“ und „Beenden“ befinden sich standardmäßig im Anwendungsmenü
 
 ### Windows/Linux
 
 - Kein automatisches Anwendungsmenü
-- `Ctrl` für Tastenkürzel verwenden
+- Verwende `Ctrl` für Tastenkürzel
 - „Beenden“ befindet sich üblicherweise im Menü „Datei“

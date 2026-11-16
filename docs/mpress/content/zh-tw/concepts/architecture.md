@@ -1,11 +1,11 @@
 ---
-title: "Wails 的運作方式"
-description: "瞭解 Wails 架構及其如何實現原生效能"
+title: "Wails 的運作原理"
+description: "瞭解 Wails 架構及其如何達到原生效能"
 slug: "concepts/architecture"
 sourcePath: "concepts/architecture.md"
 ---
 
-Wails 是一個桌面應用程式開發框架，使用<strong>Go 建構後端</strong>，並使用<strong>網頁技術建構前端</strong>。但與 Electron 不同，Wails 不會內附瀏覽器，而是使用<strong>作業系統的原生 WebView</strong>。
+Wails 是一個桌面應用程式開發框架，使用**Go 建構後端**，並使用**網頁技術建構前端**。但與 Electron 不同，Wails 不會內建瀏覽器，而是使用**作業系統的原生 WebView**。
 
 ```d2
 direction: left
@@ -20,7 +20,7 @@ Wails App: {
 
   Initialisation: 初始化 {
     shape: sequence_diagram
-    backend."Serves Static Web App": 提供靜態 Web 應用程式
+    backend."Serves Static Web App": 提供靜態網頁應用程式
     backend -> frontend: HTML / JS / CSS
     frontend."Render Site via OS-native WebView": 透過作業系統原生 WebView 呈現網站
   }
@@ -42,7 +42,7 @@ Wails App: {
 
 | 面向 | Wails | Electron |
 | --- | --- | --- |
-| **瀏覽器** | 作業系統提供的 WebView | 內附 Chromium（約 100MB） |
+| **瀏覽器** | 作業系統提供的 WebView | 內建 Chromium（約 100MB） |
 | **後端** | Go（編譯執行） | Node.js（直譯執行） |
 | **通訊** | 記憶體內橋接器 | IPC（處理程序間通訊） |
 | **套件大小** | 約 15MB | 約 150MB |
@@ -53,7 +53,7 @@ Wails App: {
 
 ### 1. 原生 WebView
 
-Wails 使用作業系統內建的網頁轉譯引擎：
+Wails 使用作業系統內建的網頁呈現引擎：
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -65,7 +65,7 @@ Wails 使用作業系統內建的網頁轉譯引擎：
 - 完整支援現代網頁標準
 
 [macOS]
-**WebKit**（Safari 的轉譯引擎）
+**WebKit**（Safari 的呈現引擎）
 
 - 內建於 macOS
 - 與 Safari 瀏覽器使用相同引擎
@@ -75,23 +75,23 @@ Wails 使用作業系統內建的網頁轉譯引擎：
 [Linux]
 **WebKitGTK**（WebKit 的 GTK 移植版本）
 
-- 透過套件管理員安裝
+- 透過套件管理器安裝
 - 與 GNOME Web（Epiphany）使用相同引擎
-- 良好支援網頁標準
-- 輕量且效能優異
+- 良好的標準支援
+- 輕量且效能良好
 
 @end
 
 **這一點為何重要：**
 
-- **不內附瀏覽器** → 應用程式更小
-- **作業系統原生** → 整合度與效能更佳
+- **不內建瀏覽器** → 應用程式更小
+- **作業系統原生** → 整合與效能更佳
 - **自動更新** → 透過作業系統更新取得安全性修補程式
-- **熟悉的轉譯結果** → 與系統瀏覽器相同
+- **熟悉的呈現方式** → 與系統瀏覽器相同
 
 ### 2. Wails 橋接器
 
-橋接器是 Wails 的核心，可讓 Go 與 JavaScript 之間進行<strong>直接通訊</strong>。
+橋接器是 Wails 的核心，讓 Go 與 JavaScript 之間能夠**直接通訊**。
 
 ```d2
 direction: down
@@ -133,22 +133,22 @@ Bridge.Decoder -> Frontend: "5. 解碼為 JS\nPromise 完成"
 **運作方式：**
 
 1. **前端呼叫 Go 方法**（透過自動產生的繫結）
-2. <strong>橋接器將呼叫編碼</strong>為 JSON（方法名稱 + 引數）
-3. **路由器在已註冊的服務中尋找 Go 方法**
-4. <strong>Go 方法執行</strong>並傳回值
-5. <strong>橋接器將結果解碼</strong>並傳回前端
-6. JavaScript 中的<strong>Promise 以該結果完成</strong>
+2. **橋接器將呼叫編碼**為 JSON（方法名稱 + 引數）
+3. **路由器在已註冊的服務中找到 Go 方法**
+4. **Go 方法執行**並傳回值
+5. **橋接器解碼結果**並將其傳回前端
+6. JavaScript 中的**Promise 會以該結果完成**
 
 **效能特性：**
 
-- **記憶體內通訊**：沒有網路額外負擔，也不使用 HTTP
-- 盡可能採用<strong>零複製</strong>（適用於大型資料）
+- **記憶體內處理**：沒有網路額外負擔，也不使用 HTTP
+- **零複製**：可行時採用（適用於大型資料）
 - **預設為非同步**：兩端皆不會阻塞
 - **型別安全**：自動產生 TypeScript 定義
 
 ### 3. 服務系統
 
-建議透過服務將 Go 功能公開給前端。
+若要向前端公開 Go 功能，建議使用服務。
 
 ```go
 // Define a service (just a regular Go struct)
@@ -175,10 +175,10 @@ app := application.New(application.Options{
 
 **服務探索：**
 
-- Wails 會在啟動時<strong>掃描您的 struct</strong>
-- <strong>匯出的方法</strong>可供前端呼叫
-- 系統會擷取<strong>型別資訊</strong>，用於 TypeScript 繫結
-- <strong>錯誤處理</strong>會自動進行（Go 錯誤 → JS 例外）
+- Wails 會在啟動時**掃描您的 struct**
+- **匯出的方法**可由前端呼叫
+- 系統會擷取**型別資訊**，用於 TypeScript 繫結
+- **錯誤處理**會自動進行（Go 錯誤 → JS 例外）
 
 **產生的 TypeScript 繫結：**
 
@@ -188,18 +188,18 @@ export function Greet(name: string): Promise<string>
 export function GetTime(): Promise<Date>
 ```
 
-**為何使用服務？**
+**為什麼使用服務？**
 
 - **型別安全**：完整支援 TypeScript
 - **自動探索**：無須手動註冊方法
-- **條理分明**：將相關功能分組
-- **可測試**：服務只是 Go 結構體
+- **組織化**：將相關功能分組
+- **可測試**：服務只是 Go struct
 
-[深入瞭解服務 →](/features/bindings/services/)
+[進一步瞭解服務 →](/features/bindings/services/)
 
 ### 4. 事件系統
 
-事件讓元件之間能透過<strong>發布／訂閱模式進行通訊</strong>。
+事件可讓元件之間進行**發布／訂閱通訊**。
 
 ```d2
 direction: left
@@ -211,15 +211,15 @@ Wails Event System: Wails 事件系統 {
   window2: 視窗 2
   backend: Go 後端
 
-  Event Driver: 事件驅動器 {
+  Event Driver: 事件驅動程式 {
     shape: sequence_diagram
     window1."Subscribe to 'data-updated' events": "訂閱 'data-updated' 事件"
     window2."Subscribe to 'data-updated' events": "訂閱 'data-updated' 事件"
     backend.a."App Emit('data-updated', data)": "應用程式 Emit('data-updated', data)"
     backend.a -> window1.a: JSON 事件匯流排
     backend.a -> window2: JSON 事件匯流排
-    window1.a."Subscriber processes On('data-updated', handler)": "訂閱者透過 On('data-updated', handler) 處理"
-    window2."Subscriber processes On('data-updated', handler)": "訂閱者透過 On('data-updated', handler) 處理"
+    window1.a."Subscriber processes On('data-updated', handler)": "訂閱者處理 On('data-updated', handler)"
+    window2."Subscriber processes On('data-updated', handler)": "訂閱者處理 On('data-updated', handler)"
   }
   backend.a.label: a
   window1.a.label: a
@@ -249,11 +249,11 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[深入瞭解事件 →](/features/events/system/)
+[進一步瞭解事件 →](/features/events/system/)
 
 ## 應用程式生命週期
 
-瞭解生命週期有助於掌握初始化資源及執行清理的時機。
+瞭解生命週期有助於掌握初始化資源及進行清理的時機。
 
 ```d2
 direction: down
@@ -286,7 +286,7 @@ Run: 事件迴圈 {
     shape: rectangle
   }
 
-  Render: 更新使用者介面 {
+  Render: 更新 UI {
     shape: rectangle
   }
 }
@@ -334,17 +334,17 @@ app := application.New(application.Options{
 
 `application.Options`上沒有`OnStartup`欄位。啟動工作應放在服務的`ServiceStartup(ctx, options)`中、透過`app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`註冊的回呼中，或直接放在`app.Run()`之前。
 
-[深入瞭解生命週期 →](/concepts/lifecycle/)
+[進一步瞭解生命週期 →](/concepts/lifecycle/)
 
 ## 建置流程
 
-瞭解 Wails 如何建置應用程式：
+瞭解 Wails 如何建置您的應用程式：
 
 ```d2
 direction: down
 
 Source: 原始碼 {
-  Go: "Go 程式碼\n(main.go, 服務)" {
+  Go: "Go 程式碼\n(main.go, services)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -387,8 +387,8 @@ Output: 輸出 {
 Source.Go -> Build.AnalyseGo
 Build.AnalyseGo -> Build.GenerateBindings: 擷取型別
 Build.GenerateBindings -> Source.Frontend: TypeScript 繫結
-Source.Frontend -> Build.BuildFrontend: 編譯（Vite/webpack）
-Build.BuildFrontend -> Build.Embed: 封裝資產
+Source.Frontend -> Build.BuildFrontend: 編譯 (Vite/webpack)
+Build.BuildFrontend -> Build.Embed: 已封裝的資產
 Source.Go -> Build.CompileGo
 Build.CompileGo -> Build.Embed
 Build.Embed -> Output.Binary
@@ -398,7 +398,7 @@ Build.Embed -> Output.Binary
 
 1. **分析 Go 程式碼**
   - 掃描服務中的匯出方法
-  - 擷取參數與傳回型別
+  - 擷取參數及回傳型別
   - 產生方法簽章
 
 
@@ -409,7 +409,7 @@ Build.Embed -> Output.Binary
 
 
 3. **建置前端**
-  - 執行打包工具（Vite、webpack 等）
+  - 執行您的封裝工具（Vite、webpack 等）
   - 縮小並最佳化
   - 輸出至`frontend/dist/`
 
@@ -426,22 +426,22 @@ Build.Embed -> Output.Binary
   - 建立單一可執行檔
 
 
-<strong>結果：</strong>所有內容均已嵌入的單一原生可執行檔。
+<strong>結果：</strong>單一原生可執行檔，所有內容皆已嵌入其中。
 
-[深入瞭解建置 →](/guides/build/building/)
+[進一步瞭解建置 →](/guides/build/building/)
 
 ## 開發環境與正式環境
 
 Wails 在開發環境與正式環境中的行為有所不同：
 
 @tabs{sync-key="mode"}
-[開發環境（wails3 dev）]
+[開發環境 (wails3 dev)]
 **特性：**
 
-- **熱重載**：前端變更會立即重新載入
-- **原始碼對應表**：使用原始程式碼進行偵錯
+- **熱重新載入**：前端變更會立即重新載入
+- **原始碼對應表**：使用原始碼進行偵錯
 - **DevTools**：可使用瀏覽器 DevTools
-- **記錄**：啟用詳細記錄
+- **記錄**：已啟用詳細記錄
 - **外部前端**：由開發伺服器（Vite）提供
 
 **運作方式：**
@@ -464,8 +464,8 @@ WebView: WebView {
   style.fill: "#6B7280"
 }
 
-WailsApp -> DevServer: 代理要求
-DevServer -> WebView: 透過 HMR 提供內容
+WailsApp -> DevServer: 代理請求
+DevServer -> WebView: 透過 HMR 提供
 WebView -> WailsApp: 呼叫 Go 方法
 ```
 
@@ -473,16 +473,16 @@ WebView -> WailsApp: 呼叫 Go 方法
 
 - 立即取得變更回饋
 - 完整的偵錯功能
-- 加快反覆開發速度
+- 更快速地反覆開發
 
 [正式環境（wails3 build）]
 **特性：**
 
-- **嵌入式資產**：前端已建置到二進位檔中
-- **已最佳化**：經過縮小與壓縮
+- **嵌入式資源**：前端建置於二進位檔中
+- **已最佳化**：經過壓縮與縮小
 - **無 DevTools**：預設停用
 - **最少量記錄**：僅記錄錯誤
-- **單一檔案**：所有內容都在一個可執行檔中
+- **單一檔案**：所有內容都包含在一個可執行檔中
 
 **運作方式：**
 
@@ -495,7 +495,7 @@ Binary: "單一二進位檔\n(myapp.exe)" {
     style.fill: "#00ADD8"
   }
 
-  Assets: "嵌入式資產\n(HTML/CSS/JS)" {
+  Assets: "嵌入式資源\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
@@ -506,51 +506,51 @@ WebView: WebView {
   style.fill: "#6B7280"
 }
 
-Binary.Assets -> WebView: 從記憶體提供內容
+Binary.Assets -> WebView: 從記憶體提供
 WebView -> Binary.GoCode: 呼叫 Go 方法
 ```
 
 **優點：**
 
-- 單一檔案發佈
-- 檔案更小（經過最小化）
+- 以單一檔案散佈
+- 體積更小（已縮小）
 - 效能更佳
-- 無外部相依項目
+- 沒有外部相依項目
 
 @end
 
 ## 記憶體模型
 
-瞭解記憶體使用情況，有助於建置高效率的應用程式。
+瞭解記憶體用量有助於建置高效率的應用程式。
 
 **記憶體區域：**
 
 1. **Go 堆積**
   - 您的服務與應用程式狀態
   - 由 Go 垃圾回收器管理
-  - 簡易應用程式通常為 5-10MB
+  - 簡單的應用程式通常為5-10MB
 
 
 2. **WebView 記憶體**
   - DOM、JavaScript 堆積、CSS
   - 由 WebView 引擎管理
-  - 簡易應用程式通常為 10-20MB
+  - 簡單的應用程式通常為10-20MB
 
 
-3. **橋接層記憶體**
+3. **橋接器記憶體**
   - 用於通訊的訊息緩衝區
-  - 額外負擔極低（<1MB）
-  - 大型資料會盡可能採用零複製
+  - 額外負擔極小（<1MB）
+  - 大型資料會盡可能使用零複製
 
 
 **最佳化提示：**
 
-- **避免傳輸大量資料**：傳遞 ID，並視需要擷取詳細資料
+- **避免傳輸大量資料**：傳遞 ID，並按需擷取詳細資料
 - **使用事件進行更新**：不要從前端輪詢
 - **以串流方式處理大型檔案**：不要將整個檔案載入記憶體
-- **清除監聽器**：使用完畢後移除事件監聽器
+- **清除接聽程式**：使用完畢後移除事件接聽程式
 
-[深入瞭解效能 →](/guides/performance/)
+[進一步瞭解效能 →](/guides/performance/)
 
 ## 安全性模型
 
@@ -575,8 +575,8 @@ Backend: 後端（受信任） {
 }
 
 Frontend -> Bridge: 呼叫方法
-Bridge -> Bridge: "驗證：\n- 方法存在嗎？\n- 型別正確嗎？\n- 允許存取嗎？"
-Bridge -> Backend: 驗證通過後執行
+Bridge -> Bridge: "驗證：\n- 方法是否存在？\n- 型別是否正確？\n- 是否允許存取？"
+Bridge -> Backend: 有效時執行
 Backend -> Bridge: 傳回結果
 Bridge -> Frontend: 傳送回應
 ```
@@ -590,7 +590,7 @@ Bridge -> Frontend: 傳送回應
 
 
 2. **型別驗證**
-  - 依據 Go 型別檢查引數
+  - 根據 Go 型別檢查引數
   - 拒絕無效的型別
   - 防止注入攻擊
 
@@ -601,31 +601,31 @@ Bridge -> Frontend: 傳送回應
   - 不會動態執行程式碼
 
 
-4. **情境隔離**
-  - 每個視窗都有自己的情境
-  - 服務可以檢查呼叫端的情境
-  - 可為每個視窗設定不同權限
+4. **內容隔離**
+  - 每個視窗都有自己的內容
+  - 服務可以檢查呼叫端內容
+  - 可為每個視窗設定權限
 
 
 **最佳實務：**
 
-- 在 Go 中<strong>驗證使用者輸入</strong>（不要信任前端）
-- 使用<strong>情境</strong>進行驗證與授權
-- 執行檔案操作前，先<strong>清理檔案路徑</strong>
-- 對高成本操作<strong>實施速率限制</strong>
+- 在 Go 中**驗證使用者輸入**（不要信任前端）
+- **使用內容**進行驗證與授權
+- 執行檔案操作前，先**清理檔案路徑**
+- 對高成本操作**實施速率限制**
 
-[深入瞭解安全性 →](/guides/security/)
+[進一步瞭解安全性 →](/guides/security/)
 
 ## 後續步驟
 
-**應用程式生命週期** - 瞭解啟動、關閉及生命週期掛鉤 [深入瞭解 →](/concepts/lifecycle/)
+**應用程式生命週期** - 瞭解啟動、關閉和生命週期掛鉤 [進一步瞭解 →](/concepts/lifecycle/)
 
-**Go 與前端的橋接層** - 深入探討橋接層的運作方式 [深入瞭解 →](/concepts/bridge/)
+**Go-前端橋接器** - 深入瞭解橋接器的運作方式 [進一步瞭解 →](/concepts/bridge/)
 
-**建置系統** - 瞭解 Wails 如何建置您的應用程式 [深入瞭解 →](/concepts/build-system/)
+**建置系統** - 瞭解 Wails 如何建置您的應用程式 [進一步瞭解 →](/concepts/build-system/)
 
-**開始建置** - 透過教學實作所學內容 [教學 →](/tutorials/03-notes-vanilla/)
+**開始建置** — 在教學中實際運用所學內容 [教學 →](/tutorials/03-notes-vanilla/)
 
 ---
 
-<strong>對架構有疑問嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查閱[API 參考](/reference/overview/)。
+<strong>對架構有疑問嗎？</strong>請至 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看[API 參考](/reference/overview/)。

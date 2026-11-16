@@ -1,19 +1,19 @@
 ---
 title: "构建系统"
-description: "了解 Wails 如何构建和打包你的应用程序"
+description: "了解 Wails 如何构建和打包应用程序"
 slug: "concepts/build-system"
 sourcePath: "concepts/build-system.md"
 ---
 
 ## 统一构建系统
 
-Wails 提供了一个<strong>统一构建系统</strong>，只需一条命令即可编译 Go 代码、打包前端资源、将所有内容嵌入单个可执行文件，并处理特定于平台的构建。
+Wails 提供了一套**统一构建系统**，只需一条命令即可编译 Go 代码、打包前端资源、将所有内容嵌入单个可执行文件，并处理平台特定的构建。
 
 ```bash
 wails3 build
 ```
 
-<strong>输出：</strong>嵌入所有内容的原生可执行文件。
+<strong>输出：</strong>嵌入了所有内容的原生可执行文件。
 
 ## 构建流程概览
 
@@ -23,7 +23,7 @@ wails3 build
 
 ### 1. 分析阶段
 
-Wails 扫描你的 Go 代码以了解其中的服务：
+Wails 会扫描 Go 代码以了解其中的服务：
 
 ```go
 type GreetService struct {
@@ -48,7 +48,7 @@ func (g *GreetService) Greet(name string) string {
 
 #### TypeScript 绑定
 
-Wails 生成类型安全的绑定：
+Wails 会生成类型安全的绑定：
 
 ```javascript
 // Auto-generated: frontend/bindings/<full-go-import-path>/greetservice.js
@@ -65,12 +65,12 @@ export function Greet($0) {
 
 - 完整的类型安全
 - IDE 自动补全
-- 编译时错误
+- 编译时错误检查
 - JSDoc 注释
 
 #### 前端构建
 
-运行你的前端打包工具（Vite、webpack 等）：
+运行前端打包工具（Vite、webpack 等）：
 
 ```bash
 # Vite example
@@ -82,7 +82,7 @@ vite build --outDir dist
 - 编译 JavaScript/TypeScript
 - 处理并压缩 CSS
 - 优化资源
-- 生成源映射（仅开发环境）
+- 生成源映射（仅限开发环境）
 - 输出到`frontend/dist/`
 
 ### 3. 编译阶段
@@ -101,7 +101,7 @@ go build -ldflags="-s -w" -o myapp.exe
 - `-w`：移除 DWARF 调试信息
 - 结果：二进制文件更小（缩小约30%）
 
-**特定于平台的处理：**
+**平台特定输出：**
 
 - Windows：嵌入图标的`.exe`
 - macOS：`.app`包结构
@@ -116,15 +116,15 @@ go build -ldflags="-s -w" -o myapp.exe
 var assets embed.FS
 ```
 
-<strong>结果：</strong>包含所有内容的单个可执行文件。
+<strong>结果：</strong>一个包含所有内容的可执行文件。
 
 ### 4. 输出
 
 **单个原生二进制文件：**
 
-- Windows：`myapp.exe`（约 15MB）
-- macOS：`myapp.app`（约 15MB）
-- Linux：`myapp`（约 15MB）
+- Windows：`myapp.exe`（约15MB）
+- macOS：`myapp.app`（约15MB）
+- Linux：`myapp`（约15MB）
 
 **无依赖项**（系统 WebView 除外）。
 
@@ -140,46 +140,46 @@ wails3 dev
 
 **执行的操作：**
 
-1. 启动前端开发服务器（Vite 默认使用端口9245）
+1. 启动前端开发服务器（默认情况下，Vite 使用端口9245）
 2. 编译 Go 时不启用优化
 3. 启动应用程序并将其指向开发服务器
 4. 启用热重载
 5. 包含源映射
 
-**特征：**
+**特点：**
 
-- **快速重新构建**（前端更改耗时&lt;1 秒）
+- **快速重新构建**（前端更改需&lt;1秒）
 - **不嵌入资源**（由开发服务器提供）
-- 包含<strong>调试符号</strong>
-- 启用<strong>源映射</strong>
+- 包含**调试符号**
+- 启用**源映射**
 - **详细日志**
 
-<strong>文件大小：</strong>较大（包含调试符号时约为 50 MB）
+<strong>文件大小：</strong>较大（包含调试符号时约为50MB）
 
-[生产构建（wails3 build）]
-**针对体积和性能进行了优化：**
+[生产环境（wails3 build）]
+**针对文件大小和性能进行了优化：**
 
 ```bash
 wails3 build
 ```
 
-**构建过程：**
+**执行的操作：**
 
-1. 以生产模式构建前端（压缩）
-2. 启用优化编译 Go 代码
+1. 为生产环境构建前端（压缩后）
+2. 使用优化选项编译 Go
 3. 移除调试符号
 4. 嵌入资源
-5. 生成单个二进制文件
+5. 创建单个二进制文件
 
-**特性：**
+**特点：**
 
-- **经过优化的代码**（已压缩并进行 tree-shaking）
-- **资源已嵌入**（无外部文件）
+- **经过优化的代码**（已压缩并进行摇树优化）
+- **嵌入资源**（无外部文件）
 - **已移除调试符号**
-- **无 source map**
+- **无源映射**
 - **最少量日志**
 
-<strong>文件大小：</strong>较小（约 15 MB）
+<strong>文件大小：</strong>较小（约15MB）
 
 @end
 
@@ -191,9 +191,9 @@ wails3 build
 wails3 build
 ```
 
-**输出：**`bin/<APP_NAME>`（Windows 上为`bin/<APP_NAME>.exe`）。`bin/`目录位于项目根目录。
+**输出：**`bin/<APP_NAME>`（在 Windows 上则为`bin/<APP_NAME>.exe`）。`bin/`目录位于项目根目录。
 
-`wails3 build`是`wails3 task build`的轻量封装。它仅转发`--tags`这一构建时标志，该标志会成为 Taskfile 的`EXTRA_TAGS`变量：
+`wails3 build`是对`wails3 task build`的轻量封装。它唯一转发的构建时标志是`--tags`，该标志会成为 Taskfile 变量`EXTRA_TAGS`：
 
 ```bash
 # Build with extra Go build tags
@@ -202,9 +202,9 @@ wails3 build --tags "myfeature,gtk4"
 
 `wails3 build`没有`-platform`、`-o`、`-skipbindings`、`-clean`、`-debug`、`-devbuild`、`-icon`、`-ldflags`或`-package`标志。交叉编译、输出路径、图标和打包均通过项目的 Taskfile（`Taskfile.yml` + `build/config.yml`）控制。
 
-### 跨平台构建和平台特定构建
+### 跨平台和平台特定构建
 
-平台构建以 Taskfile 任务的形式提供，分别位于`darwin:` / `windows:` / `linux:`命名空间下（在`build/Taskfile.<platform>.yml`中定义）。例如：
+平台构建以 Taskfile 任务的形式提供，位于`darwin:`、`windows:`和`linux:`命名空间下（在`build/Taskfile.<platform>.yml`中定义）。例如：
 
 ```bash
 # macOS — universal binary
@@ -220,7 +220,7 @@ wails3 task windows:build
 wails3 task linux:build
 ```
 
-要查看当前项目中的所有可用任务，请运行：
+要查看当前项目中的所有可用任务：
 
 ```bash
 wails3 task --list
@@ -228,13 +228,13 @@ wails3 task --list
 
 ### 图标和打包
 
-从源 PNG 生成各平台的图标（`build/icons.icns`、`build/icon.ico`等）：
+从源 PNG 生成平台图标（`build/icons.icns`、`build/icon.ico`等）：
 
 ```bash
 wails3 generate icons -input appicon.png
 ```
 
-构建平台特定的安装程序或软件包：
+构建特定于平台的安装程序或软件包：
 
 ```bash
 wails3 package           # uses the current Go build env
@@ -247,7 +247,7 @@ wails3 task darwin:package:universal
 
 ### Taskfile.yml
 
-Wails 3项目使用[Taskfile](https://taskfile.dev/)作为构建编排工具。根目录中的`Taskfile.yml`会包含`build/`中各平台的任务文件：
+Wails 3项目使用[Taskfile](https://taskfile.dev/)来编排构建。根`Taskfile.yml`会包含`build/`中各平台的任务文件：
 
 ```yaml
 # Taskfile.yml (excerpt — the real templates are richer)
@@ -276,7 +276,7 @@ wails3 task linux:create:appimage
 
 ### 项目配置：`build/config.yml`
 
-项目元数据（名称、标识符、版本、info-plist 值、NSIS 设置、`.desktop`字段、自定义协议等）存储在`build/config.yml`中。Taskfile 在生成图标、清单、安装程序等内容时会读取此文件。Wails 3中<strong>没有</strong>`build/build.json`文件。
+项目元数据（名称、标识符、版本、Info.plist 值、NSIS 设置、`.desktop`字段、自定义协议等）保存在`build/config.yml`中。Taskfile 在生成图标、清单、安装程序等内容时会读取此文件。Wails 3中**没有**`build/build.json`文件。
 
 ```yaml
 # build/config.yml (illustrative)
@@ -288,7 +288,7 @@ info:
   productDescription: "An application built with Wails"
 ```
 
-运行`wails3 generate build-assets`（或`wails3 update build-assets`），根据此配置刷新平台特定的构建资源。
+运行`wails3 generate build-assets`（或`wails3 update build-assets`），根据此配置刷新特定于平台的构建资源。
 
 ## 资源嵌入
 
@@ -322,9 +322,9 @@ func main() {
 
 **构建时：**
 
-1. 前端构建至`frontend/dist/`
+1. 前端构建到`frontend/dist/`
 2. `//go:embed`指令包含文件
-3. 将文件编译到二进制文件中
+3. 文件被编译进二进制文件
 4. 二进制文件包含所有内容
 
 **运行时：**
@@ -377,12 +377,12 @@ export default {
 }
 ```
 
-**结果：**
+**效果：**
 
-- JavaScript 已压缩（体积减少约70%）
-- CSS 已压缩（体积减少约60%）
+- JavaScript 已压缩（缩小约70%）
+- CSS 已压缩（缩小约60%）
 - 图像已优化
-- 已应用 tree-shaking
+- 已应用摇树优化
 
 ### Go 优化
 
@@ -392,8 +392,8 @@ export default {
 -ldflags="-s -w"
 ```
 
-- `-s`：移除符号表（大小减少约10%）
-- `-w`：移除 DWARF 调试信息（大小减少约20%）
+- `-s`：移除符号表（缩小约10%）
+- `-w`：移除 DWARF 调试信息（缩小约20%）
 
 **其他优化：**
 
@@ -413,10 +413,10 @@ export default {
 upx --best bin/myapp.exe
 ```
 
-**结果：**
+**效果：**
 
-- 大小减少约50%
-- 启动速度略慢（约 100ms）
+- 大小缩减约50%
+- 启动速度略慢（约100毫秒）
 - 不建议用于 macOS（存在代码签名问题）
 
 ## 特定于平台的构建
@@ -493,7 +493,7 @@ myapp.app/
 
 **通用二进制文件：**
 
-macOS Taskfile 提供`darwin:build:universal`（以及`darwin:package:universal`）任务，用于构建两种架构并通过`wails3 tool lipo`将其合并：
+macOS Taskfile 提供`darwin:build:universal`（以及`darwin:package:universal`）任务，用于构建两种架构，并通过`wails3 tool lipo`将它们合并：
 
 ```bash
 wails3 task darwin:build:universal
@@ -535,17 +535,17 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 
 ## 构建性能
 
-### 典型构建时间
+### 典型构建用时
 
-| 阶段 | 耗时 | 备注 |
+| 阶段 | 用时 | 说明 |
 | --- | --- | --- |
-| 分析 | &lt;1s | 扫描 Go 代码 |
-| 生成绑定 | &lt;1s | 生成 TypeScript 代码 |
-| 前端构建 | 5-30s | 取决于项目大小 |
-| Go 编译 | 2-10s | 取决于代码规模 |
-| 资源嵌入 | &lt;1s | 嵌入前端资源 |
-| **总计** | **10-45s** | 首次构建 |
-| **增量构建** | **5-15s** | 后续构建 |
+| 分析 | &lt;1秒 | 扫描 Go 代码 |
+| 生成绑定 | &lt;1秒 | 生成 TypeScript |
+| 前端构建 | 5-30秒 | 取决于项目大小 |
+| Go 编译 | 2-10秒 | 取决于代码大小 |
+| 资源嵌入 | &lt;1秒 | 嵌入前端 |
+| **总计** | **10-45秒** | 首次构建 |
+| **增量构建** | **5-15秒** | 后续构建 |
 
 ### 加快构建速度
 
@@ -565,9 +565,9 @@ wails3 task common:build:frontend   # rebuild only the frontend
 wails3 task windows:build           # rebuild only the Windows binary
 ```
 
-**3. 并行构建（多台计算机/CI）：**
+**3. 并行构建（多台机器/CI）：**
 
-在 v3 中，Linux、Windows 和 macOS 之间的交叉编译通常在 Docker `wails-cross`容器中进行，或分别在各平台的专用运行器上进行——`wails3 build`本身以宿主操作系统为目标。有关受支持的工作流，请参阅[跨平台构建](/guides/build/cross-platform/)。
+在v3中进行 Linux、Windows 与 macOS 之间的交叉编译时，通常需要使用 Docker `wails-cross`容器，或为各平台使用专用运行器，因为`wails3 build`本身以宿主操作系统为目标。有关受支持的工作流，请参阅[跨平台构建](/guides/build/cross-platform/)。
 
 **4. 使用更快的工具：**
 
@@ -580,7 +580,7 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 ### 构建失败
 
-**症状：**`wails3 build`退出并报错
+**症状：**`wails3 build`退出并报告错误
 
 **常见原因：**
 
@@ -609,7 +609,7 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 ### 二进制文件过大
 
-<strong>症状：</strong>二进制文件大于 50 MB
+<strong>症状：</strong>二进制文件大于50MB
 
 **解决方案：**
 
@@ -636,10 +636,10 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 1. **使用构建缓存**
   - Go 会自动使用缓存
-  - 前端缓存（Vite）会自动启用
+  - 前端缓存（Vite）会自动使用
 
 
-2. **只运行所需的任务**
+2. **仅运行所需任务**
   ```bash
   wails3 task common:build:frontend
   wails3 task windows:build
@@ -659,30 +659,30 @@ wails3 task windows:build           # rebuild only the Windows binary
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 应当
 
-- **开发期间使用`wails3 dev`**——快速迭代
-- **发布时使用`wails3 build`**——生成优化后的产物
+- **在开发期间使用`wails3 dev`**——快速迭代
+- **发布时使用`wails3 build`**——获得优化后的输出
 - **为构建设置版本**——使用`-ldflags`嵌入版本信息
-- **在目标平台上测试构建产物**——交叉编译并非万无一失
+- **在目标平台上测试构建**——交叉编译并非万无一失
 - **保持前端构建快速**——优化打包工具配置
 - **使用构建缓存**——加快后续构建
 
-### ❌ 不应该做
+### ❌ 不应
 
 - **不要提交`build/`目录**——将其添加到`.gitignore`
-- **不要跳过构建测试**——发布前务必测试
-- **不要嵌入不必要的资源**——减小二进制文件大小
-- **不要在生产环境中使用调试构建**——请使用优化构建
+- **不要跳过构建测试**——发布前务必进行测试
+- **不要嵌入不必要的资源**——减小二进制文件体积
+- **不要在生产环境中使用调试构建**——使用优化构建
 - **不要忘记代码签名**——分发时必须进行代码签名
 
 ## 后续步骤
 
-**构建应用程序**——构建和打包的详细指南 [了解更多 →](/guides/build/building/)
+**构建应用程序**——构建和打包的详细指南[了解更多 →](/guides/build/building/)
 
-**跨平台构建**——在一台计算机上为所有平台构建 [了解更多 →](/guides/build/cross-platform/)
+**跨平台构建**——在一台机器上为所有平台进行构建[了解更多 →](/guides/build/cross-platform/)
 
-**创建安装程序**——为最终用户创建安装程序 [了解更多 →](/guides/installers/)
+**创建安装程序**——为最终用户创建安装程序[了解更多 →](/guides/installers/)
 
 ---
 

@@ -7,7 +7,7 @@ sourcePath: "features/windows/multiple.md"
 
 ## 多視窗應用程式
 
-Wails v3 提供<strong>原生多視窗支援</strong>，可用於建立設定視窗、文件視窗、工具面板和檢查器視窗。使用簡單且一致的 API 追蹤視窗、讓視窗彼此通訊，並管理其生命週期。
+Wails v3提供**原生多視窗支援**，可用來建立設定視窗、文件視窗、工具面板和檢查器視窗。您可以使用簡單且一致的 API 追蹤視窗、讓視窗彼此通訊，以及管理其生命週期。
 
 ### 主視窗與設定視窗
 
@@ -60,7 +60,7 @@ func (a *App) ShowSettings() {
 
 **重點：**
 
-- 主視窗一律保持顯示
+- 主視窗始終可見
 - 設定視窗已建立但保持隱藏
 - 視需要顯示設定視窗
 - 重複使用同一個視窗（不要建立多個視窗）
@@ -128,7 +128,7 @@ func (wm *WindowManager) Remove(name string) {
 
 ### 使用事件
 
-視窗透過事件系統通訊：
+視窗透過事件系統進行通訊：
 
 ```go
 // In main window - emit event
@@ -148,9 +148,9 @@ app.Event.On("settings-changed", func(event *application.CustomEvent) {
 })
 ```
 
-### 共用狀態模式
+### 共享狀態模式
 
-使用共用狀態管理器：
+使用共享狀態管理器：
 
 ```go
 type AppState struct {
@@ -194,9 +194,9 @@ if targetWindow, ok := app.Window.GetByName("preview"); ok {
 
 ## 常見模式
 
-### 模式1：單例視窗
+### 模式 1：單例視窗
 
-確保一種視窗只有一個執行個體：
+確保一種視窗只存在一個執行個體：
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -223,9 +223,9 @@ func ShowSettings(app *application.App) {
 }
 ```
 
-### 模式2：文件視窗
+### 模式 2：文件視窗
 
-同一視窗類型的多個執行個體：
+同一種視窗類型的多個執行個體：
 
 ```go
 type DocumentWindow struct {
@@ -269,7 +269,7 @@ func OpenDocument(app *application.App, filePath string) {
 }
 ```
 
-### 模式3：工具面板
+### 模式 3：工具面板
 
 保持在最上層的浮動視窗：
 
@@ -288,9 +288,9 @@ func CreateToolPalette(app *application.App) *application.WebviewWindow {
 }
 ```
 
-### 模式4：強制回應對話方塊（僅限 macOS）
+### 模式 4：強制回應對話方塊（僅限 macOS）
 
-封鎖父視窗操作的子視窗：
+封鎖父視窗的子視窗：
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -306,7 +306,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 }
 ```
 
-### 模式5：檢查器／預覽視窗
+### 模式 5：檢查器／預覽視窗
 
 同步更新的連結視窗：
 
@@ -436,7 +436,7 @@ app := application.New(application.Options{
 
 ## 記憶體管理
 
-### 防止洩漏
+### 防止記憶體洩漏
 
 務必清理視窗參照：
 
@@ -461,7 +461,7 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-v3 中沒有`window.Destroy()`。若要防止視窗關閉，請使用`RegisterHook(events.Common.WindowClosing, ...)`並呼叫`event.Cancel()`。
+v3中沒有`window.Destroy()`。若要防止關閉，請使用`RegisterHook(events.Common.WindowClosing, ...)`並呼叫`event.Cancel()`。
 
 ### 資源清理
 
@@ -558,7 +558,7 @@ func (wg *WindowGroup) CloseAll() {
 
 ### 工作區管理
 
-儲存並還原視窗配置：
+儲存及還原視窗配置：
 
 ```go
 type WindowLayout struct {
@@ -766,28 +766,28 @@ type WindowState struct {
 
 ### ✅ 建議做法
 
-- **追蹤視窗** — 保留參照以便存取
-- **在銷毀時清理資源** — 防止記憶體洩漏
-- **使用事件進行通訊** — 實現解耦架構
-- **重複使用視窗** — 不要建立重複的視窗
-- **儲存／還原配置** — 提升使用者體驗
-- **處理視窗關閉** — 有未儲存的資料時，關閉前先要求確認
+- **追蹤視窗**——保留參照以便存取
+- **銷毀時進行清理**——防止記憶體洩漏
+- **使用事件進行通訊**——實現鬆散耦合的架構
+- **重複使用視窗**——不要建立重複的視窗
+- **儲存／還原配置**——提供更好的使用者體驗
+- **處理視窗關閉**——存在未儲存的資料時，請在關閉前要求確認
 
-### ❌ 避免做法
+### ❌ 避免的做法
 
-- **不要建立無限多個視窗** — 會造成記憶體與效能問題
-- **不要忘記清理資源** — 會造成記憶體洩漏
-- **不要隨意使用全域變數** — 會造成執行緒安全問題
-- **不要阻塞視窗建立作業** — 必要時以非同步方式建立
-- **不要忽略平台差異** — 在所有平台上進行測試
+- **不要建立無限數量的視窗**——會造成記憶體與效能問題
+- **不要忘記清理**——否則會造成記憶體洩漏
+- **不要隨意使用全域變數**——會造成執行緒安全問題
+- **不要阻塞視窗建立作業**——必要時以非同步方式建立
+- **不要忽略平台差異**——請在所有平台上測試
 
 ## 後續步驟
 
-- [視窗基礎](/features/windows/basics/) — 瞭解視窗管理的基本概念
-- [視窗事件](/features/windows/events/) — 處理視窗生命週期事件
-- [事件系統](/features/events/system/) — 深入瞭解事件系統
-- [無邊框視窗](/features/windows/frameless/) — 建立自訂視窗框架
+- [視窗基礎](/features/windows/basics/)——瞭解視窗管理的基礎知識
+- [視窗事件](/features/windows/events/)——處理視窗生命週期事件
+- [事件系統](/features/events/system/)——深入瞭解事件系統
+- [無邊框視窗](/features/windows/frameless/)——建立自訂視窗框架
 
 ---
 
-<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[多視窗範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window)。
+<strong>有任何問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[多視窗範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window)。

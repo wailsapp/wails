@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-As tags são encaminhadas como `EXTRA_TAGS` para o Taskfile subjacente.
+As tags são encaminhadas como `EXTRA_TAGS` para o Taskfile subjacente. Definir `WAILS_PUREGO=1` adiciona a tag `purego` a `build`, `package` e `dev` sem uma flag; consulte [compilações sem CGO](/experimental/#cgo-free-builds-purego).
 
 @note{type="info"}
 Isso equivale a executar `wails3 task build`, que executa a tarefa `build` no Taskfile principal do projeto. Todas as variáveis da CLI passadas para `build` são encaminhadas para a tarefa subjacente. Você pode personalizar o processo de compilação editando o arquivo `Taskfile.yml`.
@@ -132,6 +135,14 @@ As tarefas de empacotamento padrão aceitam `ARCH` para selecionar a arquitetura
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| Opção | Descrição | Padrão |
+|------|-------------|---------|
+| `-tags` | Tags de compilação Go adicionais (separadas por vírgulas), encaminhadas como `EXTRA_TAGS` |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION` e `OUTPUT` só afetam um Taskfile personalizado que leia explicitamente essas variáveis; elas não substituem a versão nem o nome do arquivo do pacote padrão.
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | Arquivo PNG de entrada | Obrigatório |
 | `-windowsfilename` | Nome do arquivo de saída para Windows |  |
 | `-macfilename` | Nome do arquivo de saída para macOS |  |
-| `-sizes` | Tamanhos dos ícones (separados por vírgulas) | `256,128,64,48,32,16` |
+| `-sizes` | Tamanhos de ícone de 1 a 256 pixels (separados por vírgulas; zeros são ignorados) | `256,128,64,48,32,16` |
 | `-example` | Gerar ícone de exemplo | `false` |
 | `-iconcomposerinput` | Arquivo do Icon Composer de entrada (`.icon`) |  |
 | `-macassetdir` | Diretório de saída dos recursos para Mac (Assets.car + icns) |  |
+
+É necessário informar pelo menos um tamanho diferente de zero.
 
 #### Icon Composer (macOS)
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-Gera a versão pré-compilada do runtime.
+Exporta o runtime pré-compilado incorporado à CLI como `runtime.js` (produção) e `runtime-debug.js` (depuração). Funciona a partir de uma CLI instalada, sem acesso à árvore de código-fonte do Wails, inclusive em compilações feitas com `-trimpath`.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,10 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-Copia arquivos.
+Copia um arquivo de origem para um arquivo de destino. Os arquivos existentes são sobrescritos e mantêm suas permissões atuais. Os novos arquivos usam as permissões do arquivo de origem, sujeitas à umask do sistema no Unix. Os diretórios pai já devem existir.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -718,7 +732,7 @@ wails3 releasenotes [flags]
 
 #### Opções
 
-| Opção | Descrição | Padrão |
+| Flag | Descrição | Padrão |
 | --- | --- | --- |
 | `-v` | Versão cujas notas de versão serão exibidas |  |
 | `-n` | Desativar a saída colorida | `false` |

@@ -60,7 +60,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 `docs/mpress/content/community/showcase` folder.
 
 ### Rename the copied file to the name of your project. (Name should not start
-with `_`))
+with `_`)
 
 ### Update the title, image, link and content of the file.
 ### Add it on the above list in

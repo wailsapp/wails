@@ -5,13 +5,13 @@ slug: "community/showcase"
 sourcePath: "community/showcase/index.md"
 ---
 
-@note{type="tip" title="プロジェクトを追加する方法を見る"}
+@note{type="tip" title="プロジェクトの追加方法を見る"}
 [ショーケースにプロジェクトを追加する方法](#heading)のセクションを参照してください。
 
 @end
 
 <div class="mpress-showcase-grid">
-<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Cliporaのスクリーンショット" loading="lazy"><span>Clipora</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Clipora のスクリーンショット" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard のスクリーンショット" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker のスクリーンショット" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Clave のスクリーンショット" loading="lazy"><span>Clave</span></a>
@@ -56,15 +56,15 @@ sourcePath: "community/showcase/index.md"
 @steps
 ### リポジトリをフォークします。
 ### 画像を `docs/mpress/static/showcase-images` フォルダーに追加します。
-### 既存の `.md` ショーケースファイルをコピーします
+### 既存の `.md` ショーケースファイルを次のフォルダー内にコピーします
 `docs/mpress/content/community/showcase` フォルダー。
 
-### コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭は
-`_`で））
+### コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭を
+`_` で始めないでください）
 
 ### ファイルのタイトル、画像、リンク、内容を更新します。
-### 次のファイル内にある上記のリストに追加します：
-`docs/mpress/content/community/showcase/index.md`。
+### 上記のリストに追加します。対象ファイルは
+`docs/mpress/content/community/showcase/index.md`.
 
-### PR を作成します。
+### PR を提出します。
 @end

@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## バインディングのベストプラクティス
 
-バインディング設計には<strong>実績のあるパターン</strong>を採用し、明快で高性能かつ安全なバインディングを作成してください。このガイドでは、保守しやすいアプリケーションを実現するための API 設計原則、パフォーマンス最適化、セキュリティパターン、エラー処理、テスト戦略について説明します。
+バインディング設計で**実証済みのパターン**に従い、明快で高性能かつ安全なバインディングを作成します。このガイドでは、保守しやすいアプリケーションを実現するための API 設計原則、パフォーマンス最適化、セキュリティパターン、エラー処理、テスト戦略について説明します。
 
 ## API 設計原則
 
 ### 1. 単一責任
 
-各サービスには、明確な目的を1つだけ持たせてください：
+各サービスには、明確な目的を1つだけ持たせます。
 
 ```go
 // ❌ Bad: God object
@@ -42,7 +42,7 @@ func (p *PaymentService) Process(amount float64) error
 
 ### 2. 明確なメソッド名
 
-処理内容が分かる、動作を表す名前を使用してください：
+動作を表す分かりやすい名前を使用します。
 
 ```go
 // ❌ Bad: Unclear names
@@ -58,7 +58,7 @@ func (s *OrderService) CreateOrder(items []Item) (*Order, error)
 
 ### 3. 一貫した戻り値の型
 
-エラーは必ず明示的に返してください：
+エラーは必ず明示的に返します。
 
 ```go
 // ❌ Bad: Inconsistent error handling
@@ -70,9 +70,9 @@ func (s *Service) GetData() (Data, error)
 func (s *Service) SaveData(data string) error
 ```
 
-### 4. 入力検証
+### 4. 入力の検証
 
-すべての入力を Go 側で検証してください：
+すべての入力を Go 側で検証します。
 
 ```go
 // ❌ Bad: No validation
@@ -112,7 +112,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ### 1. バッチ処理
 
-処理をバッチ化してブリッジ呼び出しを減らしてください：
+処理をバッチ化して、ブリッジ呼び出しを減らします。
 
 ```go
 // ❌ Bad: N calls
@@ -137,7 +137,7 @@ const results = await ProcessItems(items)  // 1 bridge call
 
 ### 2. ページネーション
 
-巨大なデータセットを返さないでください：
+巨大なデータセットを返さないようにします。
 
 ```go
 // ❌ Bad: Returns everything
@@ -191,7 +191,7 @@ func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
 
 ### 3. キャッシュ
 
-負荷の高い処理の結果をキャッシュしてください：
+コストの高い処理の結果をキャッシュします。
 
 ```go
 type CachedService struct {
@@ -232,9 +232,9 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 }
 ```
 
-### 4. イベントによるストリーミング
+### 4. イベントを使用したストリーミング
 
-データのストリーミングにはイベントを使用してください：
+データのストリーミングにはイベントを使用します。
 
 ```go
 // ❌ Bad: Polling
@@ -309,7 +309,7 @@ Events.On("progress", (event) => {
 
 ### 1. 入力のサニタイズ
 
-ユーザー入力は必ずサニタイズしてください：
+ユーザー入力は必ずサニタイズします。
 
 ```go
 import (
@@ -336,7 +336,7 @@ func (s *Service) SaveComment(text string) error {
 
 ### 2. 認証
 
-機密性の高い処理を保護してください：
+機密性の高い操作を保護します。
 
 ```go
 type AuthService struct {
@@ -395,7 +395,7 @@ func (a *AuthService) DeleteAccount(token string) error {
 
 ### 3. レート制限
 
-不正利用を防止してください：
+不正利用を防止します。
 
 ```go
 type RateLimiter struct {
@@ -446,7 +446,7 @@ func (s *Service) SendEmail(to, subject, body string) error {
 
 ### 1. 説明的なエラー
 
-エラーにコンテキストを含めてください：
+エラーにコンテキストを含めます。
 
 ```go
 // ❌ Bad: Generic errors
@@ -466,7 +466,7 @@ func (s *Service) LoadFile(path string) ([]byte, error) {
 
 ### 2. エラー型
 
-状況に応じた処理ができるよう、型付きエラーを使用してください：
+個別の処理が必要な場合は、型付きエラーを使用します。
 
 ```go
 type ValidationError struct {
@@ -513,7 +513,7 @@ func (s *UserService) GetUser(id int) (*User, error) {
 
 ### 3. エラーからの回復
 
-エラーを適切に処理してください：
+エラーを適切に処理します。
 
 ```go
 func (s *Service) ProcessWithRetry(data string) error {
@@ -547,9 +547,9 @@ func (s *Service) ProcessWithRetry(data string) error {
 
 ## テストパターン
 
-### 1. ユニットテスト
+### 1. 単体テスト
 
-各サービスを分離してテストしてください：
+サービスを分離してテストします。
 
 ```go
 func TestUserService_CreateUser(t *testing.T) {
@@ -582,7 +582,7 @@ func TestUserService_CreateUser(t *testing.T) {
 
 ### 2. 統合テスト
 
-実際の依存関係を使用してテストしてください：
+実際の依存関係を使用してテストします。
 
 ```go
 func TestUserService_Integration(t *testing.T) {
@@ -620,7 +620,7 @@ func TestUserService_Integration(t *testing.T) {
 
 ### 3. モックサービス
 
-テスト可能なインターフェースを作成してください：
+テスト可能なインターフェースを作成します。
 
 ```go
 type UserRepository interface {
@@ -669,35 +669,35 @@ func TestUserService_WithMock(t *testing.T) {
 
 ### ✅ 推奨事項
 
-- **単一責任** — 1つのサービスに1つの目的
-- **明確な命名** — 処理内容が分かるメソッド名
-- **入力を検証する** — 必ず Go 側で検証
-- **エラーを返す** — 明示的なエラー処理
-- **処理をバッチ化する** — ブリッジ呼び出しを削減
-- **イベントを使用する** — データのストリーミングに使用
-- **入力をサニタイズする** — インジェクションを防止
-- **徹底的にテストする** — ユニットテストと統合テスト
-- **メソッドを文書化する** — コメントは JSDoc に変換される
-- **API をバージョン管理する** — 変更を見越して計画
+- **単一責任** - 1つのサービスに1つの目的
+- **明確な命名** - 分かりやすいメソッド名
+- **入力を検証する** - 必ず Go 側で実施
+- **エラーを返す** - 明示的なエラー処理
+- **処理をバッチ化する** - ブリッジ呼び出しを削減
+- **イベントを使用する** - データのストリーミングに使用
+- **入力をサニタイズする** - インジェクションを防止
+- **十分にテストする** - 単体テストと統合テスト
+- **メソッドを文書化する** - コメントが JSDoc になる
+- **API をバージョン管理する** - 変更を見越して計画
 
-### ❌ 禁止事項
+### ❌ 非推奨事項
 
-- **God Object を作らない** — サービスの責務を限定する
-- **フロントエンドを信頼しない** — すべてを検証する
-- **巨大なデータセットを返さない** — ページネーションを使用する
-- **処理をブロックしない** — 長時間かかる処理には goroutine を使用する
-- **エラーを無視しない** — すべてのエラーケースを処理する
-- **テストを省略しない** — 早期から頻繁にテストする
-- **ハードコードしない** — 設定を使用する
-- **内部実装を公開しない** - 実装は非公開に保つ
+- **神オブジェクトを作成しない** - サービスの責務を絞る
+- **フロントエンドを信頼しない** - すべてを検証
+- **巨大なデータセットを返さない** - ページネーションを使用
+- **処理をブロックしない** - 長時間の処理には goroutine を使用
+- **エラーを無視しない** - すべてのエラーケースを処理
+- **テストを省略しない** - 早期かつ頻繁にテスト
+- **ハードコードしない** - 設定を使用
+- **内部実装を公開しない** - 実装を非公開に保つ
 
 ## 次のステップ
 
 - [メソッド](/features/bindings/methods/) - メソッドバインディングの基礎を学ぶ
 - [サービス](/features/bindings/services/) - サービスアーキテクチャを理解する
 - [モデル](/features/bindings/models/) - 複雑なデータ構造をバインドする
-- [イベント](/features/events/system/) - イベントを使用してパブリッシュ／サブスクライブを行う
+- [イベント](/features/events/system/) - pub/sub にイベントを使用する
 
 ---
 
-**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding)を確認してください。

@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:43Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "5f3ce69c0c8d5c1dc63d78bcefa03c6e00c4d318dacacb4cde3f811c1445287c",
-      "machineHash": "5f3ce69c0c8d5c1dc63d78bcefa03c6e00c4d318dacacb4cde3f811c1445287c",
-      "machineText": "ドキュメントのコントリビューターは、Wails CLI やデスクトップビルド用の依存関係をインストールせずに M-Press を使用できます。固定バージョンの実行ファイルのダウンロード、インストール、ライブプレビュー、検証、およびリリースブランチ向け PR のワークフローについては、[M-Press でドキュメントを作成する](/contributing/documentation/)を参照してください。",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "08b5f81c5a01085b5ba15a2a917f2a6988d2a5207eadb780e60338f628febde5",
+      "machineHash": "08b5f81c5a01085b5ba15a2a917f2a6988d2a5207eadb780e60338f628febde5",
+      "machineText": "ドキュメントのコントリビューターは、Wails CLI やデスクトップビルドの依存関係をインストールせずに M-Press を使用できます。固定バージョンの実行ファイルのダウンロード、インストール、ライブプレビュー、検証、および `master` を対象とする PR ワークフローについては、[M-Press を使用したドキュメントの作成](/contributing/documentation/)に従ってください。",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:43Z"
+      "updatedAt": "2026-11-06T02:12:28Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

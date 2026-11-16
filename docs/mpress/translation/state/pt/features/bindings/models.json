@@ -1531,16 +1531,16 @@
       "updatedAt": "2026-10-25T21:31:16Z"
     },
     "b0131-text-01": {
-      "sourceHash": "4459deb0fa600bfa0be9eb84f8bb9b8cdf68146431d08f08855d8897b3832108",
-      "targetHash": "f26d5238af834b1bde35621d3fe7a4c4f82ddb21b9d40352e465ef15d05d1cb6",
-      "machineHash": "f26d5238af834b1bde35621d3fe7a4c4f82ddb21b9d40352e465ef15d05d1cb6",
-      "machineText": "**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding).",
+      "sourceHash": "e73969bee38770f5cb20163dfa8af22ea86a7752e233d569447c68798b7d40cd",
+      "targetHash": "ad51b5fcde52c329e1c02fb11402d566b2e481d6f6310406f21db74a103d4e4f",
+      "machineHash": "ad51b5fcde52c329e1c02fb11402d566b2e481d6f6310406f21db74a103d4e4f",
+      "machineText": "**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:31:16Z"
+      "updatedAt": "2026-11-06T02:13:32Z"
     },
     "c0001-line-001-01": {
       "sourceHash": "73be7e77139b3f80faef9884285257db908b7df2f72d30192829625f23569233",

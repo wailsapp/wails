@@ -307,16 +307,16 @@
       "updatedAt": "2026-10-25T21:50:45Z"
     },
     "b0026-text-01": {
-      "sourceHash": "f5fb6eabe7d16c4cb37fb8f490deddb04ec949479ba108341e5939b2b41df138",
-      "targetHash": "601601eb0e1a3c07df2b72c49ba2a084544f100884fe1e9ccb17d74d717ac822",
-      "machineHash": "601601eb0e1a3c07df2b72c49ba2a084544f100884fe1e9ccb17d74d717ac822",
-      "machineText": "Cette feuille de route est susceptible d’évoluer en fonction des retours de la communauté et des priorités du projet. Nous la mettrons régulièrement à jour pour refléter l’avancement et les changements d’orientation. Signalez les problèmes reproductibles sous forme de tickets ; proposez les nouvelles fonctionnalités au moyen d’une pull request [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).",
+      "sourceHash": "48dfcf206977fbc4c3bcf4217220d4012ab514c1c8d27e085ffbb356fed6d09b",
+      "targetHash": "351abe84888b0e306db3a6f41ca16379360d5066e807b2156003c0dd7049e995",
+      "machineHash": "351abe84888b0e306db3a6f41ca16379360d5066e807b2156003c0dd7049e995",
+      "machineText": "Cette feuille de route est susceptible d’évoluer en fonction des retours de la communauté et des priorités du projet. Nous la mettrons régulièrement à jour pour refléter l’avancement et les changements d’orientation. Signalez les problèmes reproductibles dans des issues ; proposez toute nouvelle fonctionnalité au moyen d’une PR de [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).",
       "status": "machine-translated",
       "sourcePreview": "This roadmap is subject to change based on community feedback and project priorities. We'll update i…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:45Z"
+      "updatedAt": "2026-11-06T02:14:48Z"
     },
     "fm-description": {
       "sourceHash": "acbf6f4923696d9bc59f9c891419bb098d49bd9b30e1ecf24ef15e3f1474b434",

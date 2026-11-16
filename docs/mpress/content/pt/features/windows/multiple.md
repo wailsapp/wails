@@ -1,13 +1,13 @@
 ---
-title: "Várias janelas"
-description: "Padrões e práticas recomendadas para aplicativos com várias janelas"
+title: "Múltiplas janelas"
+description: "Padrões e práticas recomendadas para aplicativos com múltiplas janelas"
 slug: "features/windows/multiple"
 sourcePath: "features/windows/multiple.md"
 ---
 
-## Aplicativos com várias janelas
+## Aplicativos com múltiplas janelas
 
-O Wails v3 oferece **suporte nativo a várias janelas** para criar janelas de configurações, janelas de documentos, paletas de ferramentas e janelas de inspeção. Acompanhe as janelas, permita a comunicação entre elas e gerencie o ciclo de vida delas com APIs simples e consistentes.
+O Wails v3 oferece **suporte nativo a múltiplas janelas** para criar janelas de configurações, janelas de documentos, paletas de ferramentas e janelas de inspeção. Acompanhe as janelas, permita a comunicação entre elas e gerencie seu ciclo de vida com APIs simples e consistentes.
 
 ### Janela principal + janela de configurações
 
@@ -62,10 +62,10 @@ func (a *App) ShowSettings() {
 
 - A janela principal fica sempre visível
 - A janela de configurações é criada, mas permanece oculta
-- Exiba as configurações sob demanda
+- Exiba as configurações quando necessário
 - Reutilize a mesma janela (não crie várias)
 
-## Rastreamento de janelas
+## Acompanhamento de janelas
 
 ### Obter todas as janelas
 
@@ -97,7 +97,7 @@ current := app.Window.Current()
 
 ### Padrão de registro de janelas
 
-Acompanhe as janelas do aplicativo:
+Acompanhe as janelas do seu aplicativo:
 
 ```go
 type WindowManager struct {
@@ -271,7 +271,7 @@ func OpenDocument(app *application.App, filePath string) {
 
 ### Padrão 3: paletas de ferramentas
 
-Janelas flutuantes que permanecem em primeiro plano:
+Janelas flutuantes que permanecem no topo:
 
 ```go
 func CreateToolPalette(app *application.App) *application.WebviewWindow {
@@ -288,7 +288,7 @@ func CreateToolPalette(app *application.App) *application.WebviewWindow {
 }
 ```
 
-### Padrão 4: caixas de diálogo modais (somente no macOS)
+### Padrão 4: caixas de diálogo modais (somente macOS)
 
 Janelas filhas que bloqueiam a janela pai:
 
@@ -359,7 +359,7 @@ parentWindow.AttachModal(childWindow)
 **Comportamento:**
 
 - A janela filha permanece acima da janela pai
-- A janela filha se move junto com a janela pai
+- A janela filha se move com a janela pai
 - A janela filha bloqueia a interação com a janela pai
 
 **Compatibilidade com plataformas:**
@@ -370,7 +370,7 @@ parentWindow.AttachModal(childWindow)
 
 ### Comportamento modal
 
-Crie um comportamento semelhante ao de uma janela modal:
+Crie um comportamento semelhante ao modal:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -388,7 +388,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 
 ### Callbacks de criação
 
-Receba notificações quando as janelas forem criadas:
+Receba notificações quando janelas forem criadas:
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -415,7 +415,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 })
 ```
 
-### Comportamento ao encerrar o aplicativo
+### Comportamento de encerramento do aplicativo
 
 Controle quando o aplicativo é encerrado:
 
@@ -438,7 +438,7 @@ app := application.New(application.Options{
 
 ### Prevenção de vazamentos
 
-Sempre remova as referências às janelas:
+Sempre remova as referências às janelas durante a limpeza:
 
 ```go
 var windows = make(map[string]*application.WebviewWindow)
@@ -461,9 +461,9 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-Não há `window.Destroy()` na v3. Para impedir o fechamento, use `RegisterHook(events.Common.WindowClosing, ...)` e chame `event.Cancel()`.
+Não há `window.Destroy()` em v3. Para impedir o fechamento, use `RegisterHook(events.Common.WindowClosing, ...)` e chame `event.Cancel()`.
 
-### Liberação de recursos
+### Limpeza de recursos
 
 ```go
 type ManagedWindow struct {
@@ -486,7 +486,7 @@ func (mw *ManagedWindow) Destroy() {
 
 ### Pool de janelas
 
-Reutilize as janelas em vez de criar novas:
+Reutilize janelas em vez de criar novas:
 
 ```go
 type WindowPool struct {
@@ -558,7 +558,7 @@ func (wg *WindowGroup) CloseAll() {
 
 ### Gerenciamento do espaço de trabalho
 
-Salve e restaure os layouts das janelas:
+Salve e restaure layouts de janelas:
 
 ```go
 type WindowLayout struct {
@@ -604,7 +604,7 @@ func RestoreLayout(layout *WindowLayout) {
 
 ## Exemplo completo
 
-Veja um aplicativo com várias janelas pronto para produção:
+Veja um aplicativo com múltiplas janelas pronto para produção:
 
 ```go
 package main
@@ -766,28 +766,28 @@ type WindowState struct {
 
 ### ✅ Faça
 
-- **Monitore as janelas** — Mantenha referências para facilitar o acesso
-- **Faça a limpeza ao destruir** — Evite vazamentos de memória
+- **Acompanhe as janelas** — Mantenha referências para facilitar o acesso
+- **Faça a limpeza após a destruição** — Evite vazamentos de memória
 - **Use eventos para a comunicação** — Arquitetura desacoplada
-- **Reutilize as janelas** — Não crie duplicatas
-- **Salve e restaure os layouts** — Melhore a experiência do usuário
-- **Trate o fechamento das janelas** — Peça confirmação antes de fechar quando houver dados não salvos
+- **Reutilize janelas** — Não crie duplicatas
+- **Salve e restaure layouts** — Melhor experiência do usuário
+- **Trate o fechamento da janela** — Peça confirmação antes de fechar quando houver dados não salvos
 
 ### ❌ Não faça
 
-- **Não crie uma quantidade ilimitada de janelas** — Isso causa problemas de memória e desempenho
-- **Não se esqueça de fazer a limpeza** — Esquecer a limpeza causa vazamentos de memória
-- **Não use variáveis globais de forma imprudente** — Isso causa problemas de segurança em threads
+- **Não crie um número ilimitado de janelas** — Isso causa problemas de memória e desempenho
+- **Não se esqueça de fazer a limpeza** — Isso causa vazamentos de memória
+- **Não use variáveis globais de forma descuidada** — Isso causa problemas de segurança de threads
 - **Não bloqueie a criação de janelas** — Crie-as de forma assíncrona, se necessário
 - **Não ignore as diferenças entre plataformas** — Teste em todas as plataformas
 
 ## Próximas etapas
 
 - [Conceitos básicos de janelas](/features/windows/basics/) — Aprenda os fundamentos do gerenciamento de janelas
-- [Eventos de janela](/features/windows/events/) — Trate os eventos do ciclo de vida das janelas
+- [Eventos de janelas](/features/windows/events/) — Trate eventos do ciclo de vida das janelas
 - [Sistema de eventos](/features/events/system/) — Aprofunde-se no sistema de eventos
 - [Janelas sem moldura](/features/windows/frameless/) — Crie uma decoração de janela personalizada
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo com várias janelas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte o [exemplo de múltiplas janelas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window).

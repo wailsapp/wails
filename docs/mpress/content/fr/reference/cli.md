@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Générez les liaisons de Go vers le frontend. Options : `-d` (répertoire de sortie), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (émettre `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (valeur par défaut : `true`), `-f`, `-obfuscated` (générer `wails_obfuscated.gen.go` avec des identifiants de liaison stables pour les builds Garble ; voir [Builds obfusqués](/guides/build/obfuscation/)), `-obfuscated-output` (répertoire du fichier généré ; utilise par défaut le répertoire du paquet principal). Accepte les motifs de paquets (par exemple `./...`) ; utilise le répertoire courant si aucun n’est fourni. |
 | `generate icons` | Convertissez une image PNG source aux formats d’icône des différentes plateformes. Options : `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Générez le contenu du répertoire `build/` (extraits de Taskfile, fichiers NSIS, `Info.plist`, modèle `.desktop`, etc.) à partir de `build/config.yml`. |
-| `generate runtime` | Régénérez le fichier `/wails/runtime.js` précompilé fourni à la webview. |
+| `generate runtime` | Exportez les bundles JavaScript de production/débogage intégrés à la CLI (`-d` sélectionne la destination). |
 | `generate syso` | Générez le fichier de ressources Windows `.syso` (icône, manifeste et informations de version). |
 | `generate webview2bootstrapper` | Générez un programme d’installation d’amorçage WebView2 pour Windows. |
 | `generate constants` | Générez les constantes JavaScript des noms d’événements à partir des types d’événements Go. |
@@ -118,4 +118,4 @@ Dans cette version, l’analyseur de la CLI expose `signing` et `entitlements` a
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

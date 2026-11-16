@@ -7,10 +7,10 @@ sourcePath: "features/bindings/enums.md"
 
 ## Bindings de enums
 
-O gerador de bindings do Wails v3 **detecta automaticamente tipos de constantes Go e gera enums TypeScript ou objetos const JavaScript**. Não é necessário registrar nem configurar nada — basta definir seus tipos e constantes em Go, e o gerador cuida do restante.
+O gerador de bindings v3 do Wails **detecta automaticamente tipos de constantes Go e gera enums TypeScript ou objetos const JavaScript**. Não é necessário registrar nem configurar nada — basta definir seus tipos e constantes em Go, e o gerador cuida do restante.
 
 @note{type="info"}
-Ao contrário do Wails v2, **não é necessário chamar `EnumBind`** nem registrar enums manualmente. O gerador os descobre automaticamente no seu código-fonte.
+Ao contrário do Wails v2, **não é necessário chamar `EnumBind`** nem registrar enums manualmente. O gerador os identifica automaticamente no seu código-fonte.
 
 @end
 
@@ -44,7 +44,7 @@ type Ticket struct {
 wails3 generate bindings
 ```
 
-A saída do gerador informará a quantidade de enums junto com a de modelos:
+A saída do gerador exibirá a quantidade de enums junto com a de modelos:
 
 ```
 3 Enums, 5 Models
@@ -62,7 +62,7 @@ const ticket = new Ticket({
 })
 ```
 
-**É só isso!** O tipo enum é verificado tanto em Go quanto em JavaScript/TypeScript.
+**É só isso!** O tipo enum é aplicado tanto em Go quanto em JavaScript/TypeScript.
 
 ## Definição de enums
 
@@ -161,7 +161,7 @@ export enum Priority {
 
 ### Enums de aliases de tipo
 
-Aliases de tipo do Go (`=`) também funcionam, mas geram uma saída um pouco diferente — uma definição de tipo e um objeto const, em vez de um `enum` nativo do TypeScript:
+Aliases de tipo Go (`=`) também funcionam, mas geram uma saída ligeiramente diferente — uma definição de tipo acompanhada de um objeto const, em vez de um `enum` nativo do TypeScript:
 
 ```go
 // Age is an integer with some predefined values
@@ -237,7 +237,7 @@ export const Age = {
 ```
 
 @note{type="tip"}
-**Tipos nomeados** (`type Title string`) geram declarações `enum` nativas do TypeScript com um membro `$zero`. **Aliases de tipo** (`type Age = int`) geram um par de namespaces `type` + `const` sem `$zero`.
+**Tipos nomeados** (`type Title string`) geram declarações `enum` nativas do TypeScript com um membro `$zero`. **Aliases de tipo** (`type Age = int`) geram um par de namespace `type` + `const` sem `$zero`.
 
 @end
 
@@ -245,7 +245,7 @@ export const Age = {
 
 Todo enum de tipo nomeado inclui um membro especial `$zero` que representa o **valor zero do Go** para o tipo subjacente:
 
-| Tipo subjacente | Valor `$zero` |
+| Tipo subjacente | Valor de `$zero` |
 | --- | --- |
 | `string` | `""` |
 | `int`, `int8`, `int16`, `int32`, `int64` | `0` |
@@ -268,11 +268,11 @@ export class Person {
 }
 ```
 
-Isso garante uma inicialização com segurança de tipos ao gerar classes — campos enum nunca são `undefined`. Ao gerar interfaces TypeScript (usando `-i`), não há construtor, e os campos podem estar ausentes como de costume.
+Isso garante uma inicialização com segurança de tipos ao gerar classes — os campos enum nunca são `undefined`. Ao gerar interfaces TypeScript (usando `-i`), não há construtor, e os campos podem estar ausentes como de costume.
 
 ## Uso de enums em structs
 
-Quando um campo de uma struct tem um tipo enum, o código gerado **preserva esse tipo** em vez de usar o tipo primitivo:
+Quando um campo de uma struct tem um tipo enum, o código gerado **preserva esse tipo** em vez de recorrer ao tipo primitivo:
 
 ```go
 type Person struct {
@@ -306,11 +306,11 @@ export class Person {
 }
 ```
 
-O campo `Title` é tipado como `Title`, e não como `string`. Isso permite que sua IDE ofereça preenchimento automático completo e verificação de tipos para os valores do enum.
+O campo `Title` é tipado como `Title`, e não como `string`. Isso fornece à sua IDE preenchimento automático completo e verificação de tipos para os valores do enum.
 
 ## Enums de pacotes importados
 
-Enums definidos em pacotes separados são totalmente compatíveis. Eles são gerados no diretório do pacote correspondente:
+Enums definidos em pacotes separados têm suporte completo. Eles são gerados no diretório do pacote correspondente:
 
 ```go
 // services/types.go
@@ -350,7 +350,7 @@ export enum Title {
 
 ## Métodos de enums
 
-Você pode adicionar métodos aos seus tipos enum em Go. Esses métodos não afetam a geração de bindings, mas oferecem funcionalidades úteis no lado do servidor:
+Você pode adicionar métodos aos seus tipos enum em Go. Eles não afetam a geração de bindings, mas fornecem funcionalidades úteis no servidor:
 
 ```go
 type Title string
@@ -365,18 +365,18 @@ const (
 )
 ```
 
-O enum gerado é idêntico, independentemente de o tipo ter métodos Go.
+O enum gerado é idêntico, independentemente de haver métodos Go definidos para o tipo.
 
 ## Comentários e documentação
 
 O gerador preserva os comentários Go como JSDoc na saída gerada:
 
-- **Comentários de tipo** tornam-se o comentário de documentação do enum
+- **Comentários do tipo** tornam-se o comentário de documentação do enum
 - **Comentários de grupos de constantes** tornam-se separadores de seção
 - **Comentários de constantes individuais** tornam-se comentários de documentação dos membros
 - **Comentários na mesma linha** são preservados quando possível
 
-Isso significa que sua IDE exibirá a documentação dos valores do enum quando você passar o cursor sobre eles.
+Isso significa que sua IDE exibirá a documentação dos valores do enum ao passar o cursor sobre eles.
 
 ## Tipos subjacentes compatíveis
 
@@ -395,11 +395,11 @@ O gerador de bindings oferece suporte a enums com os seguintes tipos subjacentes
 
 ## Limitações
 
-Os itens a seguir **não** são compatíveis com a geração de enums:
+Os seguintes itens **não** são compatíveis com a geração de enums:
 
-- **Tipos genéricos** — Os parâmetros de tipo impedem a detecção de constantes
+- **Tipos genéricos** — Parâmetros de tipo impedem a detecção de constantes
 - **Tipos com `json.Marshaler` ou `encoding.TextMarshaler`** personalizados — A serialização personalizada significa que os valores gerados podem não corresponder ao comportamento em tempo de execução; por isso, o gerador ignora esses tipos
-- **Constantes cujos valores não podem ser avaliados estaticamente ou representados** — As constantes devem ter valores conhecidos e representáveis em seu tipo subjacente. Os padrões `iota` padrão funcionam normalmente, pois o compilador os resolve em valores concretos
+- **Constantes cujos valores não podem ser avaliados estaticamente nem representados** — As constantes devem ter valores conhecidos e representáveis em seu tipo subjacente. Os padrões padrão de `iota` funcionam normalmente, pois o compilador os resolve como valores concretos
 - **Tipos de números complexos** — `complex64` e `complex128` não podem ser tipos subjacentes de enums
 
 ## Exemplo completo

@@ -1,17 +1,17 @@
 ---
-title: "Übersicht über Dialogfelder"
-description: "Native Systemdialogfelder in Ihrer Anwendung anzeigen"
+title: "Übersicht über Dialoge"
+description: "Native Systemdialoge in Ihrer Anwendung anzeigen"
 slug: "features/dialogs/overview"
 sourcePath: "features/dialogs/overview.md"
 ---
 
-## Native Dialogfelder
+## Native Dialoge
 
-Wails bietet **native Systemdialogfelder**, die auf allen Plattformen funktionieren: Meldungsdialogfelder (Information, Warnung, Fehler, Frage), Dateidialogfelder (Öffnen, Speichern, Ordner) und benutzerdefinierte Dialogfenster mit plattformeigenem Erscheinungsbild und Verhalten.
+Wails bietet **native Systemdialoge**, die auf allen Plattformen funktionieren: Meldungsdialoge (Information, Warnung, Fehler, Frage), Dateidialoge (Öffnen, Speichern, Ordner) und benutzerdefinierte Dialogfenster mit plattformeigenem Erscheinungsbild und Verhalten.
 
-![Ein Wails-Fragedialogfeld unter macOS mit den Schaltflächen „Abbrechen“ und „Verwerfen“](/assets/screenshots/dialog-question-macos.png)
+![Ein Wails-Fragedialog unter macOS mit den Schaltflächen „Abbrechen“ und „Verwerfen“](/assets/screenshots/dialog-question-macos.png)
 
-Dieselbe API verwendet die Konventionen der jeweiligen unterstützten Plattform. Dieses macOS-Beispiel zeigt ein Fragedialogfeld, das an sein Wails-Fenster angehängt ist und die Standard- sowie die Abbrechen-Schaltfläche enthält.
+Dieselbe API verwendet die Konventionen jeder unterstützten Plattform. Dieses macOS-Beispiel zeigt einen Fragedialog, der seinem Wails-Fenster zugeordnet ist, einschließlich der Standard- und Abbruchschaltfläche.
 
 ## Schnellstart
 
@@ -44,11 +44,11 @@ path, _ := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-**Das ist alles!** Native Dialogfelder mit minimalem Code.
+**Das ist alles!** Native Dialoge mit minimalem Code.
 
-## Auf Dialogfelder zugreifen
+## Auf Dialoge zugreifen
 
-Der Zugriff auf Dialogfelder erfolgt über den `app.Dialog`-Manager:
+Der Zugriff auf Dialoge erfolgt über den `app.Dialog`-Manager:
 
 ```go
 app.Dialog.Info()
@@ -59,9 +59,9 @@ app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
 
-## Dialogfeldtypen
+## Dialogtypen
 
-### Informationsdialogfeld
+### Informationsdialog
 
 Einfache Meldungen anzeigen:
 
@@ -78,7 +78,7 @@ app.Dialog.Info().
 - Informationshinweise
 - Abschlussbestätigungen
 
-### Warndialogfeld
+### Warndialog
 
 Warnungen anzeigen:
 
@@ -91,11 +91,11 @@ app.Dialog.Warning().
 
 **Anwendungsfälle:**
 
-- Unkritische Warnungen
+- Nicht kritische Warnungen
 - Hinweise auf veraltete Funktionen
 - Vorsichtshinweise
 
-### Fehlerdialogfeld
+### Fehlerdialog
 
 Fehler anzeigen:
 
@@ -112,7 +112,7 @@ app.Dialog.Error().
 - Benachrichtigungen über fehlgeschlagene Vorgänge
 - Ausnahmebehandlung
 
-### Fragedialogfeld
+### Fragedialog
 
 Benutzern Fragen stellen und Antworten über Schaltflächen-Callbacks verarbeiten:
 
@@ -136,11 +136,11 @@ dialog.Show()
 
 - Aktionen bestätigen
 - Ja/Nein-Fragen
-- Auswahl zwischen mehreren Antwortmöglichkeiten
+- Mehrfachauswahl
 
-## Dateidialogfelder
+## Dateidialoge
 
-### Dialogfeld „Datei öffnen“
+### Dialog zum Öffnen von Dateien
 
 Zu öffnende Dateien auswählen:
 
@@ -171,7 +171,7 @@ if err == nil {
 }
 ```
 
-### Dialogfeld „Datei speichern“
+### Dialog zum Speichern von Dateien
 
 Speicherort auswählen:
 
@@ -187,9 +187,9 @@ if err == nil && path != "" {
 }
 ```
 
-### Dialogfeld „Ordner auswählen“
+### Dialog zur Ordnerauswahl
 
-Ein Verzeichnis über das Dialogfeld „Datei öffnen“ mit aktivierter Verzeichnisauswahl auswählen:
+Ein Verzeichnis über den Dialog zum Öffnen von Dateien auswählen, indem die Verzeichnisauswahl aktiviert wird:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -203,7 +203,7 @@ if err == nil && path != "" {
 }
 ```
 
-## Dialogfeldoptionen
+## Dialogoptionen
 
 ### Titel und Meldung
 
@@ -215,9 +215,9 @@ dialog := app.Dialog.Info().
 
 ### Schaltflächen
 
-**Standardschaltfläche für einfache Dialogfelder:**
+**Standardschaltfläche für einfache Dialoge:**
 
-Informations-, Warn- und Fehlerdialogfelder zeigen standardmäßig eine „OK“-Schaltfläche an:
+Informations-, Warn- und Fehlerdialoge zeigen standardmäßig eine „OK“-Schaltfläche an:
 
 ```go
 app.Dialog.Info().
@@ -225,9 +225,9 @@ app.Dialog.Info().
     Show()
 ```
 
-**Benutzerdefinierte Schaltflächen für Fragedialogfelder:**
+**Benutzerdefinierte Schaltflächen für Fragedialoge:**
 
-Verwenden Sie `AddButton()`, um Schaltflächen hinzuzufügen. Die Methode gibt ein konfigurierbares `*Button` zurück, für das Sie Callbacks festlegen können:
+Fügen Sie mit `AddButton()` Schaltflächen hinzu. Die Methode gibt ein `*Button` zurück, das Sie mit Callbacks konfigurieren können:
 
 ```go
 dialog := app.Dialog.Question().
@@ -251,9 +251,9 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-**Standard- und Abbrechen-Schaltflächen:**
+**Standard- und Abbruchschaltflächen:**
 
-Geben Sie mit `SetDefaultButton()` an, welche Schaltfläche hervorgehoben und durch die Eingabetaste ausgelöst wird. Geben Sie mit `SetCancelButton()` an, welche Schaltfläche durch die Escape-Taste ausgelöst wird.
+Legen Sie mit `SetDefaultButton()` fest, welche Schaltfläche hervorgehoben und durch die Eingabetaste ausgelöst wird. Legen Sie mit `SetCancelButton()` fest, welche Schaltfläche durch Escape ausgelöst wird.
 
 ```go
 dialog := app.Dialog.Question().
@@ -270,9 +270,9 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-### An ein Fenster anhängen
+### Zuordnung zu einem Fenster
 
-Dialogfeld an ein bestimmtes Fenster anhängen:
+Dialog einem bestimmten Fenster zuordnen:
 
 ```go
 dialog := app.Dialog.Info().
@@ -284,22 +284,22 @@ dialog.Show()
 
 **Verhalten:**
 
-- Das Dialogfeld wird mittig über dem übergeordneten Fenster angezeigt
-- Das übergeordnete Fenster ist deaktiviert, solange das Dialogfeld angezeigt wird
-- Das Dialogfeld bewegt sich mit dem übergeordneten Fenster (macOS)
+- Der Dialog erscheint mittig über dem übergeordneten Fenster
+- Das übergeordnete Fenster ist deaktiviert, solange der Dialog angezeigt wird
+- Der Dialog bewegt sich mit dem übergeordneten Fenster (macOS)
 
 ## Plattformverhalten
 
 @tabs{sync-key="platform"}
 [macOS]
-**macOS-Dialogfelder:**
+**macOS-Dialoge:**
 
 - Natives NSAlert-Erscheinungsbild
-- Übernehmen das Systemdesign (hell/dunkel)
+- Verwenden das Systemdesign (hell/dunkel)
 - Unterstützen die Tastaturnavigation
-- Standardtastenkürzel (⌘. für „Abbrechen“)
+- Standardtastenkürzel (⌘. für Abbrechen)
 - Integrierte Barrierefreiheitsfunktionen
-- Bei Anbindung an ein Fenster im Sheet-Stil
+- Bei Zuordnung zu einem Fenster im Sheet-Stil
 
 **Beispiel:**
 
@@ -314,14 +314,14 @@ dialog.Show()
 ```
 
 [Windows]
-**Windows-Dialogfelder:**
+**Windows-Dialoge:**
 
 - Natives TaskDialog-Erscheinungsbild
-- Übernehmen das Systemdesign
+- Verwenden das Systemdesign
 - Unterstützen die Tastaturnavigation
-- Standardtastenkürzel (Esc für „Abbrechen“)
+- Standardtastenkürzel (Esc für Abbrechen)
 - Integrierte Barrierefreiheitsfunktionen
-- Modal zum übergeordneten Fenster
+- Modal gegenüber dem übergeordneten Fenster
 
 **Beispiel:**
 
@@ -336,11 +336,11 @@ app.Dialog.Error().
 [Linux]
 **Linux-Dialoge:**
 
-- Erscheinungsbild von GTK-Dialogen
-- Übernehmen das Desktop-Design
+- GTK-Dialogerscheinungsbild
+- Verwenden das Desktopdesign
 - Unterstützen die Tastaturnavigation
-- Integration in die Desktop-Umgebung
-- Variiert je nach Desktop-Umgebung (GNOME, KDE usw.)
+- Integration in die Desktopumgebung
+- Variiert je nach Desktopumgebung (GNOME, KDE usw.)
 
 **Beispiel:**
 
@@ -355,7 +355,7 @@ app.Dialog.Info().
 
 ## Gängige Muster
 
-### Vor destruktiven Aktionen eine Bestätigung anfordern
+### Vor destruktiven Aktionen bestätigen
 
 ```go
 func deleteFile(app *application.App, path string) {
@@ -476,12 +476,12 @@ func exportData(app *application.App) {
 
 ### ✅ Empfohlen
 
-- **Native Dialoge verwenden** – bessere Benutzerfreundlichkeit als benutzerdefinierte Dialoge
-- **Klare Meldungen verwenden** – konkrete Angaben machen
+- **Native Dialoge verwenden** – bessere UX als bei benutzerdefinierten Dialogen
+- **Klare Meldungen formulieren** – präzise sein
 - **Passende Titel festlegen** – der Kontext ist wichtig
 - **Standardschaltflächen mit Bedacht verwenden** – die sichere Option als Standard festlegen
-- **Abbrüche behandeln** – Benutzer können den Vorgang abbrechen
-- **Dateiauswahl validieren** – Dateitypen prüfen
+- **Abbrüche behandeln** – Benutzer könnten den Vorgang abbrechen
+- **Dateiauswahlen validieren** – Dateitypen prüfen
 
 ### ❌ Nicht empfohlen
 

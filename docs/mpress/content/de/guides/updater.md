@@ -1,13 +1,13 @@
 ---
 title: "Updater"
-description: "In-App-Selbstaktualisierungen für Wails v3 – austauschbare Provider, kryptografische Verifizierung, atomarer Austausch und eine standardmäßige Benutzeroberfläche, die Sie gestalten oder ersetzen können."
+description: "In-App-Selbstaktualisierungen für Wails v3 — austauschbare Provider, kryptografische Verifizierung, atomarer Austausch und eine standardmäßige Benutzeroberfläche, die Sie anpassen oder ersetzen können."
 slug: "guides/updater"
 sourcePath: "guides/updater.md"
 ---
 
-Der Updater stellt Softwareupdates innerhalb der Anwendung bereit, ohne dass Sie eine eigene Pipeline zum Herunterladen, Verifizieren und Austauschen entwickeln müssen. Er basiert auf `app.Updater`, akzeptiert einen oder mehrere austauschbare `Provider` (GitHub Releases, keygen.sh, Sparkle AppCast, das offene Wails-Update-Manifest-Protokoll oder eigene Provider), authentifiziert Downloads anhand eines konfigurierten öffentlichen Schlüssels, tauscht die laufende Binärdatei sicher aus und meldet jeden Zustandsübergang über den standardmäßigen Wails-Event-Bus.
+Der Updater stellt Softwareupdates innerhalb der App bereit, ohne dass Sie eine eigene Pipeline zum Herunterladen, Verifizieren und Austauschen erstellen müssen. Er baut auf `app.Updater` auf, akzeptiert einen oder mehrere austauschbare `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, das offene Wails-Update-Manifest-Protokoll oder eigene Implementierungen), authentifiziert Downloads anhand eines konfigurierten öffentlichen Schlüssels, tauscht die laufende Binärdatei sicher aus und meldet jeden Übergang über den standardmäßigen Wails-Event-Bus.
 
-![Das standardmäßige Updater-Fenster im Zustand „Update bereit“ – zustandsabhängiges Symbol, Versionsanzeige (v1.0.0 → v2.0.1 · 8.8 MB), als Markdown gerenderte Versionshinweise einschließlich einer GFM-Tabelle und eine einzige primäre Aktion.](/assets/updater/default-window-ready.png)
+![Das standardmäßige Updater-Fenster im Zustand „Update bereit“ — zustandsabhängiges Symbol, Versionsanzeige (v1.0.0 → v2.0.1 · 8.8 MB), als Markdown gerenderte Versionshinweise einschließlich einer GFM-Tabelle und eine einzige primäre Aktion.](/assets/updater/default-window-ready.png)
 
 ## Schnellstart
 
@@ -51,31 +51,31 @@ Dadurch wird das Updatefenster des Frameworks geöffnet, GitHub geprüft, das pl
 | Zustand | Zeitpunkt |
 | --- | --- |
 | `unconfigured` | Bevor `Init` aufgerufen wird |
-| `idle` | Nach `Init`, bevor überhaupt eine Prüfung stattgefunden hat |
-| `checking` | Ein Aufruf von `Check` läuft |
-| `up-to-date` | Laut der letzten Provider-Antwort ist der Aufrufer auf dem aktuellen Stand |
-| `available` | Eine neue Version wurde gefunden; der Download hat noch nicht begonnen |
+| `idle` | Nach `Init`, vor jeder Prüfung |
+| `checking` | Eine `Check` wird gerade ausgeführt |
+| `up-to-date` | Laut der letzten Provider-Antwort verwendet der Aufrufer die aktuelle Version |
+| `available` | Eine neue Version wurde gefunden, wird aber noch nicht heruntergeladen |
 | `downloading` | Bytes werden vom Provider gestreamt |
-| `verifying` | Der Download ist abgeschlossen; Signatur/Prüfsumme wird geprüft |
-| `installing` | Verifizierte Bytes werden entpackt und in das Staging-Verzeichnis verschoben |
+| `verifying` | Der Download ist abgeschlossen; Signatur bzw. Prüfsumme wird geprüft |
+| `installing` | Verifizierte Bytes werden entpackt und in das Staging-Verzeichnis umbenannt |
 | `ready` | Das Update wurde bereitgestellt; rufen Sie zum Anwenden `Restart` auf |
 | `error` | Ein vorheriger Schritt ist fehlgeschlagen |
 
-Sie können den aktuellen Zustand jederzeit mit `app.Updater.State()` abrufen. Jeder Zustandsübergang löst außerdem ein Wails-Ereignis aus (siehe [Ereignisse](#ereignisse)).
+Den aktuellen Zustand können Sie jederzeit mit `app.Updater.State()` abrufen. Bei jedem Übergang wird außerdem ein Wails-Event ausgelöst (siehe [Events](#ereignisse)).
 
-`Restart` wartet, bis der Hilfsprozess `application.New` erreicht, bevor die laufende Anwendung zum Beenden aufgefordert wird. Das standardmäßige Startzeitlimit beträgt 30 Sekunden. Wenn Ihre Anwendung vor `application.New` eine längere Initialisierung durchführt, setzen Sie `Config.HelperReadyTimeout` auf eine längere Dauer, beispielsweise `time.Minute`. Null wählt den Standardwert; negative Zeitspannen werden abgelehnt. Bei Überschreitung des Startzeitlimits gibt `Restart` den Fehler `updater.ErrHelperNotReady` zurück und lässt die laufende Anwendung geöffnet.
+`Restart` wartet, bis der Helfer `application.New` erreicht hat, bevor die laufende App zum Beenden aufgefordert wird. Das standardmäßige Startzeitlimit beträgt 30 Sekunden. Wenn Ihre App vor `application.New` eine längere Initialisierung durchführt, legen Sie für `Config.HelperReadyTimeout` eine längere Dauer fest, beispielsweise `time.Minute`. Null wählt den Standardwert; negative Zeitspannen werden abgelehnt. Bei einer Zeitüberschreitung während des Starts gibt `Restart` den Fehler `updater.ErrHelperNotReady` zurück und lässt die laufende App geöffnet.
 
-Das Update wird in einem Verzeichnis `wails-update-*` neben der installierten Binärdatei bereitgestellt (unter macOS neben dem `.app`-Bundle); dieses Verzeichnis muss daher beschreibbar sein.
+Das Update wird in einem `wails-update-*`-Verzeichnis neben der installierten Binärdatei bereitgestellt (unter macOS neben dem `.app`-Bundle). Dieses Verzeichnis muss daher beschreibbar sein.
 
-Innerhalb eines AppImage ersetzt der Updater die durch `$APPIMAGE` benannte `.AppImage`-Datei und startet sie neu, nicht das schreibgeschützte Mount.
+Innerhalb eines AppImage ersetzt und startet der Updater die durch `$APPIMAGE` benannte Datei `.AppImage` neu, nicht den schreibgeschützten Einhängepunkt.
 
-Das Standardfenster zeigt automatisch den aktuellen Zustand an. Wenn `Check` beispielsweise kein Upgrade zurückgibt, wird dies dem Benutzer angezeigt und er schließt das Fenster mit **Schließen**:
+Das standardmäßige Fenster zeigt automatisch den aktuellen Zustand an. Wenn `Check` beispielsweise kein Upgrade zurückgibt, wird dies dem Benutzer angezeigt, und er schließt das Fenster mit **Schließen**:
 
-![Das standardmäßige Updater-Fenster im Zustand „Aktuell“ – grünes Häkchen, Überschrift „Sie sind auf dem aktuellen Stand“ und eine einzige Schaltfläche „Schließen“.](/assets/updater/default-window-up-to-date.png)
+![Das standardmäßige Updater-Fenster im Zustand „Aktuell“ — grünes Häkchen, Überschrift „Sie sind auf dem neuesten Stand“ und eine einzige Schaltfläche „Schließen“.](/assets/updater/default-window-up-to-date.png)
 
 ## Provider
 
-Als `Provider` kann alles dienen, was diese Schnittstelle implementiert:
+Ein `Provider` ist jede Implementierung, die diese Schnittstelle erfüllt:
 
 ```go
 type Provider interface {
@@ -87,7 +87,7 @@ type Provider interface {
 
 Vier Implementierungen sind im Quellbaum enthalten.
 
-### GitHub Releases – `updater/providers/github`
+### GitHub Releases — `updater/providers/github`
 
 ```go {title="github provider"}
 gh, err := github.New(github.Config{
@@ -101,7 +101,7 @@ gh, err := github.New(github.Config{
 })
 ```
 
-Der standardmäßige Artefaktabgleich wählt anhand der Teilzeichenfolgen `GOOS` und `GOARCH` im Dateinamen aus und erkennt dabei gängige Aliasse (`amd64` / `x86_64` / `x64`, `arm64` / `aarch64`, `386` / `i386` / `x86` / `ia32`). Für eigene Benennungsschemata:
+Der standardmäßige Artefaktabgleich sucht im Dateinamen nach den Teilzeichenfolgen `GOOS` und `GOARCH` und erkennt dabei gängige Aliasse (`amd64` / `x86_64` / `x64`, `arm64` / `aarch64`, `386` / `i386` / `x86` / `ia32`). Für benutzerdefinierte Benennungsschemata:
 
 ```go
 gh, _ := github.New(github.Config{
@@ -118,9 +118,9 @@ gh, _ := github.New(github.Config{
 })
 ```
 
-`ChecksumAsset` ist der Name eines weiteren Release-Artefakts, dessen Inhalt aus `<sha256>  <filename>`-Zeilen besteht (dem Format, das `sha256sum` und `shasum -a 256` erzeugen). Der Provider ruft es während `Check` ab, sucht die zum ausgewählten Artefakt passende Zeile und befüllt `Release.Verification.Digest`, damit das Framework den Download verifiziert.
+`ChecksumAsset` ist der Name eines weiteren Release-Artefakts, dessen Inhalt aus `<sha256>  <filename>`-Zeilen besteht (das Format, das `sha256sum` und `shasum -a 256` erzeugen). Der Provider ruft es während `Check` ab, sucht die zum ausgewählten Artefakt passende Zeile und befüllt `Release.Verification.Digest`, damit das Framework den Download verifiziert.
 
-### keygen.sh – `updater/providers/keygen`
+### keygen.sh — `updater/providers/keygen`
 
 ```go {title="keygen provider"}
 kg, err := keygen.New(keygen.Config{
@@ -136,11 +136,11 @@ kg, err := keygen.New(keygen.Config{
 })
 ```
 
-Der Provider überträgt die artefaktspezifische SHA-512-Prüfsumme und Ed25519ph-Signatur von keygen.sh automatisch in den `Release.Verification`-Block des Frameworks – eine zusätzliche Verkabelung ist nicht erforderlich.
+Der Provider überträgt die artefaktspezifische SHA-512-Prüfsumme und Ed25519ph-Signatur von keygen.sh automatisch in den `Release.Verification`-Block des Frameworks — eine zusätzliche Konfiguration ist nicht erforderlich.
 
-**Tokenformate:** keygen.sh-Token enthalten ein Rollenpräfix (`admi-` / `prod-` / `envi-` / `user-`). Die im Dashboard angezeigte reine UUID ist der *Bezeichner* des Tokens, nicht sein geheimer Wert – dieser ist nur beim Erstellen des Tokens sichtbar. Einzelheiten finden Sie in der [Authentifizierungsdokumentation](https://keygen.sh/docs/api/authentication/) von keygen.sh.
+**Tokenformate:** keygen.sh-Token enthalten ein Rollenpräfix (`admi-` / `prod-` / `envi-` / `user-`). Die im Dashboard angezeigte reine UUID ist der *Bezeichner* des Tokens, nicht sein geheimer Wert. Das Geheimnis ist nur beim Erstellen des Tokens sichtbar. Einzelheiten finden Sie in der [Authentifizierungsdokumentation](https://keygen.sh/docs/api/authentication/) von keygen.sh.
 
-### Sparkle AppCast – `updater/providers/appcast`
+### Sparkle AppCast — `updater/providers/appcast`
 
 ```go {title="appcast provider"}
 ac, err := appcast.New(appcast.Config{
@@ -152,9 +152,9 @@ ac, err := appcast.New(appcast.Config{
 
 Lässt sich unverändert in eine vorhandene Sparkle-/WinSparkle-Infrastruktur integrieren. Liest `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>` und `sparkle:channel` aus dem Feed.
 
-Die DSA-Signaturen (`sparkle:dsaSignature`) von Sparkle 1 werden nicht unterstützt. Projekte mit diesem Signaturschema sollten auf EdDSA (Sparkle 2) umstellen.
+Die DSA-Signaturen (`sparkle:dsaSignature`) von Sparkle 1 werden nicht unterstützt. Projekte, die dieses Signaturschema verwenden, sollten auf EdDSA (Sparkle 2) umstellen.
 
-### Wails Update Manifest – `updater/providers/endpoint`
+### Wails Update Manifest — `updater/providers/endpoint`
 
 ```go {title="endpoint provider"}
 ep, err := endpoint.New(endpoint.Config{
@@ -165,9 +165,9 @@ ep, err := endpoint.New(endpoint.Config{
 })
 ```
 
-Verwendet das offene [Wails-Update-Manifest-Protokoll](/reference/update-manifest/): ein einzelnes JSON-Dokument, das die neueste Version und deren plattformspezifische Artefakte mit eingebetteten Prüfsummen und Signaturen beschreibt. Dasselbe Dokument funktioniert sowohl auf einem statischen Dateihost (S3, GitHub Pages oder einem beliebigen CDN – veröffentlichen Sie pro Kanal ein Manifest, das alle Plattformen aufführt) als auch auf einem dynamischen Updateserver. Bei jeder Prüfung sendet der Provider `platform`, `arch`, `version` und `channel`, sodass der Server genau ein Artefakt zurückgeben oder den Zugriff von einer Lizenz abhängig machen kann.
+Verwendet das offene [Wails-Update-Manifest-Protokoll](/reference/update-manifest/): ein JSON-Dokument, das die neueste Version und deren plattformspezifische Artefakte beschreibt und Prüfsummen sowie Signaturen direkt enthält. Dasselbe Dokument funktioniert sowohl auf einem statischen Datei-Host (S3, GitHub Pages oder einem beliebigen CDN — veröffentlichen Sie pro Kanal ein Manifest, das alle Plattformen aufführt) als auch auf einem dynamischen Updateserver (der Provider sendet bei jeder Prüfung `platform`, `arch`, `version` und `channel`, sodass der Server genau ein Artefakt zurückgeben oder den Zugriff von einer Lizenz abhängig machen kann).
 
-Mit URL-Platzhaltern lassen sich statische Layouts in einer einzigen Konfigurationszeile angeben:
+Mit URL-Platzhaltern lassen sich statische Strukturen in einer einzigen Konfigurationszeile angeben:
 
 ```go
 ep, _ := endpoint.New(endpoint.Config{
@@ -175,13 +175,13 @@ ep, _ := endpoint.New(endpoint.Config{
 })
 ```
 
-Konfigurierte Header werden bei jeder Manifestanfrage gesendet. Bei Artefaktdownloads werden sie nur auf dem Host des Manifests wiederverwendet, sofern keine Herabstufung von `https` auf `http` erfolgt. Bei jeder ursprungsübergreifenden oder herabstufenden Weiterleitung wird der Header `Authorization` entfernt.
+Konfigurierte Header werden bei jeder Manifestanfrage gesendet. Für Artefaktdownloads werden sie nur auf dem Host des Manifests und nur ohne Herabstufung von `https` auf `http` wiederverwendet. Bei jeder ursprungsübergreifenden oder herabstufenden Weiterleitung wird der Header `Authorization` entfernt.
 
-Die CLI übernimmt die Veröffentlichung: `wails3 updater manifest` berechnet Prüfsummen, signiert und beschreibt Ihre Releasedateien mit einem einzigen Befehl; `wails3 updater verify` prüft das Ergebnis vor dem Hochladen erneut. Siehe [Veröffentlichen mit der wails3 CLI](/reference/update-manifest/#publishing-with-the-wails3-cli).
+Die CLI übernimmt die Veröffentlichung: `wails3 updater manifest` berechnet Prüfsummen, signiert und beschreibt Ihre Release-Dateien mit einem einzigen Befehl; `wails3 updater verify` prüft das Ergebnis vor dem Hochladen erneut. Siehe [Veröffentlichen mit der wails3-CLI](/reference/update-manifest/#publishing-with-the-wails3-cli).
 
 ### Fallback-Kette
 
-`Config.Providers` ist geordnet. Der Updater durchläuft die Einträge nacheinander: Der erste Provider, der eine Version zurückgibt, erhält den Zuschlag. Der erste Provider, der „aktuell“ meldet, beendet die Kette vorzeitig (der Fallback ist für den Fall „primärer Provider nicht erreichbar“ vorgesehen, nicht für „Provider widersprechen sich“). Bei einem Fehler fährt der Updater mit dem nächsten Provider fort.
+`Config.Providers` ist geordnet. Der Updater durchläuft die Einträge nacheinander: Der erste Provider, der eine Version zurückgibt, gewinnt. Der erste Provider, der „aktuell“ meldet, beendet die Kette vorzeitig (der Fallback ist für den Fall „primärer Provider nicht erreichbar“ vorgesehen, nicht für „Provider sind unterschiedlicher Meinung“). Bei einem Fehler wird mit dem nächsten Provider fortgefahren.
 
 ```go
 app.Updater.Init(updater.Config{
@@ -195,7 +195,7 @@ app.Updater.Init(updater.Config{
 
 ### Eigenen Provider erstellen
 
-Drei Methoden und bei einer typischen Implementierung etwa 150 Zeilen. Der Updater übernimmt Verifizierung, atomares Staging, Austausch und Fenster; der Provider-Code ermittelt das nächste Release und streamt die Bytes:
+Drei Methoden und bei einer typischen Implementierung etwa 150 Zeilen. Der Updater übernimmt Verifizierung, atomares Staging, Austausch und Fenster; der Providercode ermittelt die nächste Version und streamt die Bytes:
 
 ```go
 type CustomProvider struct { /* config */ }
@@ -215,7 +215,7 @@ func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst i
 }
 ```
 
-Verwenden Sie die im Repository enthaltenen Provider als Referenz – jeder besteht aus einer einzigen Go-Datei.
+Verwenden Sie die im Quellbaum enthaltenen Provider als Referenz — jeder besteht aus einer einzelnen Go-Datei.
 
 ## Kryptografische Verifizierung
 
@@ -238,18 +238,18 @@ Unterstützte Algorithmen (`Release.Verification.SignatureAlgo`):
 | --- | --- | --- |
 | `ed25519` | Der SHA-256-Digest des Artefakts | Von Sparkle EdDSA verwendet |
 | `ed25519ph` | Das vollständige Artefakt über den Pre-Hash von Ed25519ph (intern SHA-512) | Von keygen.sh verwendet |
-| `ecdsa-p256` | Der SHA-256-Digest des Artefakts | Sowohl rohe `r∥s`- als auch DER-Signaturen werden akzeptiert |
+| `ecdsa-p256` | Der SHA-256-Digest des Artefakts | Sowohl unformatierte `r∥s`- als auch DER-Signaturen werden akzeptiert |
 
-Zusätzlich ist eine reine Digest-Prüfung (`DigestAlgo`: `sha256` / `sha512`) möglich, wenn ein Release einen Hash, aber keine Signatur enthält.
+Außerdem nur Digest (`DigestAlgo`: `sha256` / `sha512`), wenn ein Release einen Hash, aber keine Signatur enthält.
 
-`Config.PublicKey` ist der EINZIGE Vertrauensanker für die Signaturprüfung – die Release-Quelle kann ihn nicht durch einen eigenen Schlüssel ersetzen. Releases, die ein `Signature` enthalten, obwohl kein `Config.PublicKey` konfiguriert ist, werden sicher abgelehnt. Der Verifizierer berechnet den Digest während des Downloads in einem Streaming-Durchlauf. Daher ist selbst bei Updates von mehreren GB kein zusätzlicher Festplattendurchlauf für die Verifizierung erforderlich.
+`Config.PublicKey` ist der EINZIGE Vertrauensanker für die Signaturprüfung – die Release-Quelle kann keinen eigenen Schlüssel einsetzen. Releases, die eine `Signature` enthalten, obwohl keine `Config.PublicKey` konfiguriert ist, werden sicher abgelehnt. Der Verifizierer berechnet den Digest während des Downloads in einem Streaming-Durchlauf. Daher erfordert die Prüfung selbst bei Updates von mehreren GB keinen zusätzlichen Datenträgerdurchlauf.
 
-@note{type="caution" title="Reine Digest-Prüfung ≠ kryptografische Verifizierung"}
-Ein Release, das nur `Digest` enthält, wird anhand des TLS der Registry und der von der Registry selbst gebotenen Integritätsgarantie authentifiziert – nicht anhand eines von Ihnen kontrollierten kryptografischen Vertrauensankers. Verwenden Sie die reine Digest-Prüfung zur Erkennung von Bit Rot und Signaturen zum Schutz vor Manipulationen bei einer kompromittierten Release-Pipeline.
+@note{type="caution" title="Nur Digest ≠ kryptografische Verifizierung"}
+Ein Release, das nur `Digest` enthält, wird anhand der TLS-Verbindung der Registry und der von der Registry selbst bereitgestellten Integritätsgarantie authentifiziert – nicht anhand eines von Ihnen kontrollierten kryptografischen Vertrauensankers. Verwenden Sie nur einen Digest, um Bitfehler zu erkennen, und Signaturen, um Manipulationen durch eine kompromittierte Release-Pipeline abzuwehren.
 
 @end
 
-### Signaturschlüssel erzeugen
+### Signierschlüssel erzeugen
 
 ```bash
 wails3 updater genkey
@@ -257,7 +257,7 @@ wails3 updater genkey
 # updater.key.pub   — bundle in your app via go:embed
 ```
 
-Der private Schlüssel liegt als PKCS#8-PEM und der öffentliche Schlüssel als PKIX-PEM vor. `Config.PublicKey` akzeptiert die Datei `.pub` unverändert. Ebenfalls akzeptiert werden der rohe, 32 Byte lange Schlüssel oder dessen Base64-Darstellung, die `genkey` zur direkten Einbettung ausgibt. Signieren Sie Releases mit `wails3 updater manifest -key updater.key ...` oder `wails3 updater sign`; siehe [Veröffentlichen mit der wails3-CLI](/reference/update-manifest/#publishing-with-the-wails3-cli).
+Der private Schlüssel ist PKCS#8-PEM, der öffentliche Schlüssel PKIX-PEM. `Config.PublicKey` akzeptiert die Datei `.pub` unverändert. Ebenfalls akzeptiert werden der unformatierte, 32 Byte lange Schlüssel oder dessen Base64-Darstellung, die `genkey` zur direkten Einbettung ausgibt. Signieren Sie Releases mit `wails3 updater manifest -key updater.key ...` oder `wails3 updater sign`; siehe [Veröffentlichen mit der wails3-CLI](/reference/update-manifest/#publishing-with-the-wails3-cli).
 
 Oder in Go:
 
@@ -274,26 +274,26 @@ pub, priv, _ := ed25519.GenerateKey(rand.Reader)
 Provider streamen die Bytes der jeweils veröffentlichten Datei; das Framework entpackt sie anschließend vor dem Austausch:
 
 - **Einzelne Binärdatei** (z. B. `myapp-linux-amd64`) – wird unverändert verwendet. Unter Linux üblich.
-- **`.zip`** – wird direkt am Zielort entpackt. Das Archiv muss genau einen Eintrag auf oberster Ebene enthalten (in der Regel ein macOS-`.app`-Bundle oder eine einzelne Binärdatei). Empfohlenes Paketformat für macOS.
-- **`.tar.gz`** / **`.tgz`** – wird nach derselben Regel eines einzigen Eintrags auf oberster Ebene direkt am Zielort entpackt. Nützlich für Linux-Distributionen, die neben der Binärdatei einen Runtime-Verzeichnisbaum ausliefern.
+- **`.zip`** – wird direkt am Zielort entpackt. Das Archiv muss genau einen Eintrag auf oberster Ebene enthalten (üblicherweise ein macOS-`.app`-Bundle oder eine einzelne Binärdatei). Empfohlenes Paketformat für macOS.
+- **`.tar.gz`** / **`.tgz`** – wird unter derselben Regel eines einzigen Eintrags auf oberster Ebene direkt am Zielort entpackt. Nützlich für Linux-Distributionen, die neben der Binärdatei einen Runtime-Verzeichnisbaum ausliefern.
 
-Archive mit mehr als einem Eintrag auf oberster Ebene werden abgelehnt: Das Framework tauscht ein einzelnes Ziel im Dateisystem aus. Daher ist „dieses Archiv am Zielort einsetzen“ mehrdeutig, wenn das Archiv mehrere Elemente enthält. `.dmg` und `.pkg` (macOS) sowie `.msi` (Windows) werden in v1 nicht unterstützt – verteilen Sie stattdessen ein `.zip` des Bundles. Beim Entpacken wird Schutz vor Zip Slip durchgesetzt, Symlinks, die aus dem Archivstamm herausführen, werden abgelehnt und sowohl die unkomprimierte Gesamtgröße (2 GiB) als auch die Anzahl der Einträge (50 000) werden begrenzt.
+Archive mit mehr als einem Eintrag auf oberster Ebene werden abgelehnt: Das Framework tauscht ein einzelnes Ziel auf dem Datenträger aus. Daher ist „dieses Archiv am Zielort einsetzen“ mehrdeutig, wenn das Archiv mehrere Elemente enthält. `.dmg` und `.pkg` (macOS) sowie `.msi` (Windows) werden in v1 nicht unterstützt – verteilen Sie stattdessen ein `.zip` des Bundles. Beim Entpacken wird Zip-Slip-Schutz erzwungen, Symlinks, die aus dem Archivstamm herausführen, werden abgelehnt und die unkomprimierte Gesamtgröße (2 GiB) sowie die Anzahl der Einträge (50 000) werden begrenzt.
 
 ## Das Standardfenster
 
-`app.Updater.CheckAndInstall(ctx)` öffnet ein vom Framework verwaltetes Fenster mit den Abmessungen 520 × 540 und folgenden Elementen:
+`app.Updater.CheckAndInstall(ctx)` öffnet ein vom Framework verwaltetes Fenster der Größe 520 × 540 mit:
 
-- Ein zustandsabhängiges Hauptsymbol (blaues ↓ für verfügbar/wird heruntergeladen, grünes ✓ für bereit/aktuell, rotes ! für Fehler)
-- Eine Versionsplakette: `v1.0.0 → v2.0.1 · 8.8 MB`
-- Ein scrollbares Panel mit Versionshinweisen und **gerendertem Markdown** (Absätze, Fett-/Kursivschrift, Listen, GFM-Tabellen, Inline-Code, umschlossene Codeblöcke, h1–h3, Links)
-- Eine einzelne primäre Aktion je Zustand (Installieren / Neu starten und anwenden / Erneut versuchen)
-- Sekundäre Aktionen im Ghost-Stil (Diese Version überspringen / Später erinnern)
-- Dunkler/heller Modus über `prefers-color-scheme`
-- Unbestimmter schimmernder Fortschrittsindikator, wenn die Gesamtgröße unbekannt ist
+- Einem statusabhängigen Hauptsymbol (blaues ↓ für verfügbar/wird heruntergeladen, grünes ✓ für bereit/aktuell, rotes ! für Fehler)
+- Einer Versionsplakette: `v1.0.0 → v2.0.1 · 8.8 MB`
+- Einem scrollbaren Bereich für Release-Hinweise mit **gerendertem Markdown** (Absätze, Fett-/Kursivschrift, Listen, GFM-Tabellen, Inline-Code, abgegrenzte Codeblöcke, h1–h3, Links)
+- Einer einzigen primären Aktion pro Status (Installieren / Neu starten und anwenden / Erneut versuchen)
+- Sekundären Aktionen im Ghost-Stil (Diese Version überspringen / Später erinnern)
+- Dunkel-/Hellmodus über `prefers-color-scheme`
+- Einem unbestimmten Fortschrittsschimmer, wenn die Gesamtgröße unbekannt ist
 
-Das Fenster lauscht auf dem Wails-Event-Bus auf `updater:*`-Ereignisse und sendet `updater:user:*`-Aktionen an Go zurück.
+Es lauscht im Wails-Event-Bus auf `updater:*`-Events und sendet `updater:user:*`-Aktionen an Go zurück.
 
-### Theme über CSS-Variablen
+### Design über CSS-Variablen
 
 ```go
 app.Updater.Init(updater.Config{
@@ -304,7 +304,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Das Standard-Stylesheet stellt die folgenden Variablen bereit – Sie können jede davon überschreiben:
+Das Standard-Stylesheet stellt diese Variablen bereit – Sie können jede davon überschreiben:
 
 | Variable | Standard (hell) | Standard (dunkel) |
 | --- | --- | --- |
@@ -320,11 +320,11 @@ Das Standard-Stylesheet stellt die folgenden Variablen bereit – Sie können je
 | `--success` | `#34c759` | — |
 | `--error` | `#ff3b30` | — |
 | `--radius` | `10px` | — |
-| `--font` | Systemschriftarten mit Fallback-Reihenfolge | — |
+| `--font` | Systemschriftarten | — |
 
 ### Vorlage ersetzen
 
-Stellen Sie eigenes HTML bereit. Es muss lediglich auf `wails:updater:*`-Ereignisse lauschen und `wails:updater:user:*`-Aktionen auslösen:
+Stellen Sie eigenes HTML bereit; es muss lediglich auf `wails:updater:*`-Events lauschen und `wails:updater:user:*`-Aktionen senden:
 
 ```go
 app.Updater.Init(updater.Config{
@@ -335,12 +335,12 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-InitialHTML-Fenster werden ohne Ursprung des Asset-Servers geladen und können daher `/wails/runtime.js` nicht dynamisch abrufen. Sie haben zwei Möglichkeiten, von einem solchen Fenster mit dem Host zu kommunizieren:
+InitialHTML-Fenster werden ohne Ursprung des Asset-Servers geladen und können `/wails/runtime.js` daher nicht dynamisch abrufen. Es gibt zwei Möglichkeiten, von einem solchen Fenster aus mit dem Host zu kommunizieren:
 
-1. **Schreiben Sie einfach HTML.** Das Framework fügt automatisch einen minimalen `window.wails.Events`-Shim in jedes Fenster ein, das mit gesetzten Optionen `WebviewWindowOptions.AllowSimpleEventEmit = true` und `HTML` geöffnet wird – genau das tun die integrierten und BYO-Pfade des Updaters. Ein Build-Schritt ist nicht erforderlich. Das folgende Beispiel verwendet diesen Weg.
-2. **Bündeln Sie `@wailsio/runtime` mit Ihrem bevorzugten Bundler** (Vite, esbuild, Rollup) und importieren Sie es zur Build-Zeit in Ihr benutzerdefiniertes HTML. `Events.On` funktioniert direkt, da es ausschließlich clientseitig arbeitet. `Events.Emit` verwendet hingegen den Fetch-Transport der Runtime, der durch den Null-Ursprung nicht funktioniert. Installieren Sie daher über den [`setTransport`](/guides/custom-transport/)-Hook der Runtime einen kleinen postMessage-Transport, der über `window._wails.invoke("wails:event:emit:<name>")` weiterleitet. Die Framework-Injektion führt keine Aktion aus, wenn `window.wails.Events` bereits im Gültigkeitsbereich vorhanden ist, sodass sich die beiden Ansätze nicht gegenseitig beeinträchtigen.
+1. **Schreiben Sie einfach HTML.** Das Framework injiziert automatisch einen minimalen `window.wails.Events`-Shim in jedes Fenster, das mit gesetztem `WebviewWindowOptions.AllowSimpleEventEmit = true` und `HTML` geöffnet wird – genau das geschieht bei den integrierten und den BYO-Pfaden des Updaters. Kein Build-Schritt erforderlich. Das folgende Beispiel verwendet diesen Pfad.
+2. **Bündeln Sie `@wailsio/runtime` mit Ihrem bevorzugten Bundler** (Vite, esbuild, Rollup) und importieren Sie es zur Build-Zeit in Ihr benutzerdefiniertes HTML. `Events.On` funktioniert sofort, da es ausschließlich clientseitig arbeitet; `Events.Emit` verwendet den Fetch-Transport der Runtime, der aufgrund des Null-Ursprungs nicht funktioniert. Installieren Sie daher über den Hook [`setTransport`](/guides/custom-transport/) der Runtime einen kleinen postMessage-Transport, der über `window._wails.invoke("wails:event:emit:<name>")` weiterleitet. Die Framework-Injektion führt keine Aktion aus, wenn `window.wails.Events` bereits im Gültigkeitsbereich vorhanden ist, sodass sich die beiden Ansätze nicht gegenseitig beeinträchtigen.
 
-In beiden Fällen ruft das JavaScript in Ihrem benutzerdefinierten HTML dieselbe `Events.On`-/`Events.Emit`-API auf:
+In beiden Fällen ruft das JavaScript in Ihrem benutzerdefinierten HTML dieselbe API `Events.On` / `Events.Emit` auf:
 
 ```html
 <script>
@@ -359,9 +359,9 @@ Emit("wails:updater:window:ready");
 </script>
 ```
 
-Der Shim stellt die Teilmenge der modernen Runtime bereit, die Ereignisse mit einfachen Namen benötigen: `Events.On(name, cb)` gibt eine Funktion zum Abbestellen zurück, und `Events.Emit(nameOrEventObject)` leitet über den zugriffsbeschränkten postMessage-Pfad `wails:event:emit:` an den Host weiter. Er wird beim Laden der Seite einmalig installiert, bevor eines Ihrer Inline-Skripte ausgeführt wird.
+Der Shim stellt die Teilmenge der modernen Runtime bereit, die Ereignisse mit einfachen Namen benötigen: `Events.On(name, cb)` gibt eine Funktion zum Abbestellen zurück, und `Events.Emit(nameOrEventObject)` leitet über den geschützten postMessage-Pfad `wails:event:emit:` an den Host weiter. Er wird einmal beim Laden der Seite installiert, bevor eines Ihrer Inline-Skripte ausgeführt wird.
 
-Wenn Sie den Shim *bewusst* überschreiben möchten oder die vollständige Runtime auf anderem Weg laden, setzen Sie `window.wails.Events`, bevor das erste `<script>`-Tag der Seite ausgeführt wird. Die Injektion wird dann übersprungen.
+Wenn Sie den Shim *überschreiben möchten* oder die vollständige Runtime auf andere Weise laden, setzen Sie `window.wails.Events`, bevor das erste `<script>`-Tag der Seite ausgeführt wird; die Injektion überspringt sich dann selbst.
 
 ### Fensterrahmen
 
@@ -382,9 +382,9 @@ Window: &updater.BuiltinWindow{
 
 ### Eigenes Fenster verwenden
 
-Führen Sie den Aktualisierungsablauf mit einem selbst erstellten `*application.WebviewWindow` aus. Der Updater ruft `Show()` / `Close()` / `EmitEvent()` für Ihr Fenster auf – Ihr HTML bestimmt, was dargestellt wird:
+Steuern Sie den Aktualisierungsablauf über ein selbst erstelltes `*application.WebviewWindow`. Der Updater ruft `Show()` / `Close()` / `EmitEvent()` für Ihr Fenster auf; Ihr HTML bestimmt, was dargestellt wird:
 
-![Ein benutzerdefiniertes Updater-Fenster mit einem pink-orangefarbenen Verlaufshintergrund, einer einzelnen weißen abgerundeten Karte, eigener Typografie und denselben Updater-Ereignissen zur Steuerung des sichtbaren Zustands. Es zeigt, wie vollständig sich die Standardbenutzeroberfläche ersetzen lässt.](/assets/updater/byo-custom-window.png)
+![Ein eigenes Updater-Fenster mit einem pink-orangefarbenen Verlaufshintergrund, einer einzelnen weißen abgerundeten Karte, benutzerdefinierter Typografie und denselben Updater-Ereignissen, die den sichtbaren Zustand steuern. Zeigt, wie vollständig sich die Standardbenutzeroberfläche ersetzen lässt.](/assets/updater/byo-custom-window.png)
 
 ```go
 myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -399,14 +399,14 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Ihr HTML verwendet `window.wails.Events.On` / `Events.Emit` genau wie die integrierte Vorlage. Der automatisch injizierte Shim des Frameworks wird in jedes Fenster mit `AllowSimpleEventEmit: true` eingebunden, unabhängig davon, ob das Fenster dem Framework oder Ihnen gehört. Die API finden Sie unter [Vorlage ersetzen](#vorlage-ersetzen).
+Ihr HTML verwendet `window.wails.Events.On` / `Events.Emit` genau wie die integrierte Vorlage. Der automatisch vom Framework injizierte Shim wird in jedes Fenster mit `AllowSimpleEventEmit: true` eingebunden, unabhängig davon, ob das Fenster dem Framework oder Ihnen gehört. Informationen zur API finden Sie unter [Vorlage ersetzen](#vorlage-ersetzen).
 
-@note{type="caution" title="`AllowSimpleEventEmit` ist für benutzerdefinierte Updater-Fenster erforderlich"}
-Aus Sicherheitsgründen lässt das Framework die `wails:event:emit:`-postMessage-Abkürzung nur zu, wenn dieses Feld gesetzt ist: Ein Fenster ohne diese Einstellung kann keine benutzerdefinierten Ereignisse auf der Host-Seite erzeugen. Der Shim für benutzerdefiniertes HTML des Updaters löst über diese Abkürzung `updater:user:*`-Ereignisse aus. Vergessen Sie das Feld bei einem eigenen Fenster, werden daher alle Schaltflächenklicks ohne Rückmeldung verworfen – der Benutzer klickt auf Installieren, und nichts geschieht.
+@note{type="caution" title="`AllowSimpleEventEmit` ist für eigene Updater-Fenster erforderlich"}
+Aus Sicherheitsgründen macht das Framework die postMessage-Abkürzung `wails:event:emit:` von diesem Feld abhängig: Ein Fenster, bei dem es nicht gesetzt ist, kann keine benutzerdefinierten hostseitigen Ereignisse erzeugen. Der Shim für benutzerdefiniertes HTML des Updaters sendet `updater:user:*`-Ereignisse über diese Abkürzung. Vergessen Sie das Feld bei einem eigenen Fenster, werden daher sämtliche Schaltflächenklicks stillschweigend verworfen: Der Benutzer klickt auf Installieren, und nichts geschieht.
 
-Lassen Sie `AllowSimpleEventEmit` bei jedem Fenster **deaktiviert**, das HTML lädt, über das Sie nicht die vollständige Kontrolle haben (Remote-URLs, von Benutzern bereitgestellte Inhalte). Ist die Option aktiviert, kann jedes JavaScript auf der Seite – einschließlich XSS-Senken – jeden `app.Event.On(name, …)`-Handler auslösen. Die Abkürzung überträgt nur einfache Namen (keine Nutzdaten) und kann den Binding-/Call-Pfad nicht erreichen. Sie kann jedoch weiterhin privilegierte Handler für benutzerdefinierte Ereignisse in Ihrem Go-Code auslösen, wenn diese Handler ausschließlich anhand des Ereignisnamens handeln.
+Lassen Sie `AllowSimpleEventEmit` für jedes Fenster **deaktiviert**, das HTML lädt, über das Sie nicht die vollständige Kontrolle haben (Remote-URLs, von Benutzern bereitgestellte Inhalte). Ist die Option aktiviert, kann jedes JavaScript auf der Seite – einschließlich XSS-Senken – jeden `app.Event.On(name, …)`-Handler auslösen. Die Abkürzung übermittelt nur einfache Namen ohne Nutzlast und kann den Binding-/Call-Pfad nicht erreichen. Sie kann jedoch weiterhin privilegierte Handler für benutzerdefinierte Ereignisse in Ihrem Go-Code auslösen, wenn diese Handler allein anhand des Ereignisnamens handeln.
 
-Beim *integrierten* Updater-Fenster des Frameworks ist diese Option intern gesetzt – nur bei eigenen Fenstern müssen Aufrufer daran denken.
+Beim *integrierten* Updater-Fenster setzt das Framework diese Option intern; nur Aufrufer mit eigenem Fenster müssen daran denken.
 
 @end
 
@@ -419,15 +419,15 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Es wird zu keinem Zeitpunkt ein Fenster geöffnet. Abonnieren Sie `updater:*`-Ereignisse über Ihre eigene Benutzeroberfläche oder Ihr vorhandenes Hauptfenster und rufen Sie `app.Updater.CheckAndInstall(ctx)` in einem Schaltflächen-Handler auf. Dies eignet sich für regelmäßige Hintergrundprüfungen, die nur sichtbar werden sollen, wenn etwas gefunden wurde, oder für Apps, die den Aktualisierungsablauf in einen benutzerdefinierten Einstellungsbereich integrieren.
+Es wird zu keinem Zeitpunkt ein Fenster geöffnet. Abonnieren Sie `updater:*`-Ereignisse über Ihre eigene Benutzeroberfläche oder Ihr vorhandenes Hauptfenster und rufen Sie `app.Updater.CheckAndInstall(ctx)` in einem Schaltflächen-Handler auf. Dies eignet sich für regelmäßige Hintergrundprüfungen, die nur sichtbar werden sollen, wenn etwas gefunden wurde, oder für Anwendungen, die den Aktualisierungsablauf in einen benutzerdefinierten Einstellungsbereich integrieren.
 
 ## Ereignisse
 
-Sowohl Go als auch JavaScript abonnieren Ereignisse über den standardmäßigen Wails-Ereignisbus. **Geben Sie die Übertragungszeichenfolgen nicht von Hand ein** – verwenden Sie die Konstanten, die vom Updater-Paket (Go) oder Runtime-Paket (JS) exportiert werden. Beide Ebenen verwenden denselben Satz von Namen, der durch einen Regressionstest synchron gehalten wird.
+Sowohl Go als auch JavaScript abonnieren Ereignisse über den standardmäßigen Wails-Ereignisbus. **Geben Sie die Übertragungszeichenfolgen nicht manuell ein**, sondern verwenden Sie die Konstanten, die vom Updater-Paket (Go) beziehungsweise Runtime-Paket (JS) exportiert werden. Beide Ebenen verwenden dieselben Namen, deren Synchronität ein Regressionstest sicherstellt.
 
 ### Aus Go
 
-Die Konstanten befinden sich in `github.com/wailsapp/wails/v3/pkg/updater`. Abonnieren Sie über `app.Event.On(name, fn)`. Der Callback erhält ein `*application.CustomEvent`, dessen Feld `Data` die in der [Ereignisreferenz](#ereignisreferenz) aufgeführten typisierten Nutzdaten enthält. Verwenden Sie eine Typzusicherung und keine JSON-Dekodierung:
+Die Konstanten befinden sich in `github.com/wailsapp/wails/v3/pkg/updater`. Abonnieren Sie sie über `app.Event.On(name, fn)`. Der Callback erhält ein `*application.CustomEvent`, dessen Feld `Data` die in der [Ereignisreferenz](#ereignisreferenz) aufgeführte typisierte Nutzlast enthält. Verwenden Sie eine Typassertion und keine JSON-Dekodierung:
 
 ```go {title="main.go"}
 import (
@@ -482,7 +482,7 @@ Alle verfügbaren Go-Konstanten:
 
 ### Aus JavaScript
 
-Die Konstanten befinden sich unter `Updater.Events` in `@wailsio/runtime`. Sie tragen dieselben Namen wie in Go und sind zur besseren Auffindbarkeit per Autovervollständigung nach Unter-Namensräumen (`User.*`, `Window.*`) gegliedert:
+Die Konstanten befinden sich unter `Updater.Events` in `@wailsio/runtime`. Sie tragen dieselben Namen wie in Go und sind für eine bessere Auffindbarkeit bei der automatischen Vervollständigung nach Unter-Namensräumen (`User.*`, `Window.*`) gegliedert:
 
 ```js
 import { Events, Updater } from "@wailsio/runtime";
@@ -502,7 +502,7 @@ Events.On(Updater.Events.Error, (e) => {
 });
 ```
 
-Ereignisse für Benutzeraktionen, die Ihr benutzerdefiniertes HTML *zurück* an den Host sendet, befinden sich unter `Updater.Events.User`:
+Die Benutzeraktionsereignisse, die Ihr benutzerdefiniertes HTML an den Host *zurücksendet*, befinden sich unter `Updater.Events.User`:
 
 ```js
 import { Updater } from "@wailsio/runtime";
@@ -518,30 +518,30 @@ document.getElementById("install-btn").addEventListener("click", () => {
 
 Abonnementseite (Host → Seite):
 
-| Konstante (Go) | Konstante (JS) | Nutzdaten | Zeitpunkt |
+| Konstante (Go) | Konstante (JS) | Nutzlast | Zeitpunkt |
 | --- | --- | --- | --- |
-| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | keine | Vor jedem Roundtrip von `Check` |
+| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | keine | Vor jedem `Check`-Roundtrip |
 | `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` hat eine neuere Version gefunden |
 | `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | keine | `Check` hat bestätigt, dass die aktuelle Version installiert ist |
-| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Das Streaming der Bytes beginnt |
-| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | Während des Downloads mit ~10 Hz |
-| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | Alle Bytes wurden geschrieben, vor der Verifizierung |
-| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | Die Prüfung der Signatur/des Hashwerts beginnt |
+| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Byte-Streaming beginnt |
+| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ~10 Hz während des Downloads |
+| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | Alle Bytes geschrieben, vor der Verifizierung |
+| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | Signatur-/Digest-Prüfung beginnt |
 | `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | Entpacken und Staging beginnen |
 | `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | Neustart steht aus |
 | `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | Eine beliebige Phase ist fehlgeschlagen |
-| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Einmal pro Sitzung vor der Snapshot-Wiedergabe |
+| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Einmal pro Sitzung vor der Wiedergabe des Snapshots |
 
-Auf der Seite (Seite → Host) — Ihr Code abonniert diese Ereignisse, wenn Sie eine benutzerdefinierte Vorlage erstellen:
+Seitenseitig (Seite → Host) – Ihr Code abonniert diese Ereignisse, wenn Sie eine benutzerdefinierte Vorlage erstellen:
 
-| Konstante (Go) | Konstante (JS) | Wann |
+| Konstante (Go) | Konstante (JS) | Zeitpunkt |
 | --- | --- | --- |
-| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | Das Fenster ist vollständig geladen; der Host gibt den aktuellen Zustand erneut wieder |
+| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | Fenster vollständig geladen; der Host gibt den aktuellen Zustand wieder |
 | `updater.EventUserInstall` | `Updater.Events.User.Install` | Primäre Aktion im Zustand `available` |
 | `updater.EventUserRestart` | `Updater.Events.User.Restart` | Primäre Aktion im Zustand `ready` |
 | `updater.EventUserSkip` | `Updater.Events.User.Skip` | „Diese Version überspringen“ |
 | `updater.EventUserRemind` | `Updater.Events.User.Remind` | „Später erinnern“ |
-| `updater.EventUserCancel` | `Updater.Events.User.Cancel` | Schaltfläche „Schließen“ |
+| `updater.EventUserCancel` | `Updater.Events.User.Cancel` | Schließen-Schaltfläche |
 
 ## API-Referenz
 
@@ -549,13 +549,13 @@ Auf der Seite (Seite → Host) — Ihr Code abonniert diese Ereignisse, wenn Sie
 
 | Feld | Typ | Hinweise |
 | --- | --- | --- |
-| `CurrentVersion` | `string` | **Erforderlich.** Dieselbe Zeichenfolge, mit der Sie Releases taggen (ohne das Präfix `v`) |
+| `CurrentVersion` | `string` | **Erforderlich.** Dieselbe Zeichenfolge, mit der Sie Releases taggen (ohne Präfix `v`) |
 | `Providers` | `[]updater.Provider` | **Erforderlich.** Geordnete Fallback-Kette |
-| `PublicKey` | `[]byte` | PEM- oder Rohbytes. Optional, aber signierte Releases werden ohne sie sicher abgelehnt |
+| `PublicKey` | `[]byte` | PEM oder Rohbytes. Optional, aber signierte Releases schlagen ohne diesen Wert sicher fehl |
 | `CheckInterval` | `time.Duration` | Ein Wert ungleich null startet im Hintergrund eine Abfrageschleife, die `CheckAndInstall` aufruft |
-| `Platform` | `string` | Überschreibt `runtime.GOOS` für die Auswahl des Assets |
-| `Arch` | `string` | Überschreibt `runtime.GOARCH` für die Auswahl des Assets |
-| `Channel` | `string` | Derzeit nur informativ; anbieterspezifische Kanalfilterung |
+| `Platform` | `string` | Überschreibt `runtime.GOOS` für die Asset-Auswahl |
+| `Arch` | `string` | Überschreibt `runtime.GOARCH` für die Asset-Auswahl |
+| `Channel` | `string` | Derzeit nur informativ; providerspezifische Kanalfilterung |
 | `Window` | `updater.WindowOption` | `nil` (integrierte Standardwerte), `&BuiltinWindow{…}`, `BYOWindow(handle)` oder `WindowNone` |
 
 ### Methoden von `*updater.Updater`
@@ -565,42 +565,42 @@ Auf der Seite (Seite → Host) — Ihr Code abonniert diese Ereignisse, wenn Sie
 | `Init(cfg Config) error` | Konfiguriert den Updater. Gibt beim zweiten Aufruf `ErrAlreadyConfigured` zurück |
 | `State() State` | Aktuelle Lebenszyklusphase |
 | `CurrentVersion() string` | Die an `Init` übergebene Version |
-| `Check(ctx) (*Release, error)` | Durchläuft die Anbieterkette. `(rel, nil)` = gefunden, `(nil, nil)` = aktuell, `(nil, err)` = alle fehlgeschlagen |
-| `DownloadAndInstall(ctx) error` | Streamt, verifiziert, extrahiert (bei einem Archiv) und stellt bereit. Erfordert zuvor `Check` |
-| `CheckAndInstall(ctx) error` | Komfortfunktion: Öffnet das Fenster, führt `Check` aus und anschließend bei einem Fund `DownloadAndInstall` |
-| `Restart(ctx) error` | Startet das Hilfsprogramm, ruft `Host.Quit` auf und beendet die Anwendung; das Hilfsprogramm tauscht die Dateien aus und startet die Anwendung neu |
-| `DownloadedPath() string` | Speicherort des bereitgestellten Updates auf dem Datenträger oder `""`, wenn keines vorhanden ist |
-| `SkipVersion(v string)` | Vermerkt `v` als übersprungen; nachfolgende `Check`s behandeln diese Version als aktuell |
+| `Check(ctx) (*Release, error)` | Durchläuft die Provider-Kette. `(rel, nil)` = gefunden, `(nil, nil)` = aktuell, `(nil, err)` = alle fehlgeschlagen |
+| `DownloadAndInstall(ctx) error` | Streamt, verifiziert, entpackt (bei Archiven) und führt das Staging durch. Erfordert einen vorherigen Aufruf von `Check` |
+| `CheckAndInstall(ctx) error` | Komfortmethode: Öffnet das Fenster, führt `Check` aus und anschließend `DownloadAndInstall`, falls ein Update gefunden wurde |
+| `Restart(ctx) error` | Startet den Helper, ruft `Host.Quit` auf und beendet die Anwendung; der Helper tauscht die Anwendung aus und startet sie neu |
+| `DownloadedPath() string` | Speicherort des bereitgestellten Updates auf dem Datenträger oder `""`, falls keines vorhanden ist |
+| `SkipVersion(v string)` | Vermerkt `v` als übersprungen; nachfolgende `Check`-Aufrufe behandeln diese Version als aktuell |
 | `SkippedVersion() string` | Liest die derzeit übersprungene Version |
 | `StopPeriodicCheck()` | Beendet den von `Config.CheckInterval` gestarteten Timer und wartet, bis die Schleife zurückkehrt |
 
 ### Fehler
 
-| Sentinelwert | Zurückgegeben von |
+| Sentinel-Fehler | Zurückgegeben von |
 | --- | --- |
 | `ErrAlreadyConfigured` | `Init` nach dem ersten Erfolg |
-| `ErrNotConfigured` | Jede Operation vor `Init` |
+| `ErrNotConfigured` | Jeder Vorgang vor `Init` |
 | `ErrNoPendingRelease` | `DownloadAndInstall` ohne vorheriges `Check` |
-| `ErrDownloadInProgress` | Aufruf von `DownloadAndInstall`, während bereits ein weiterer Aufruf derselben Methode läuft |
+| `ErrDownloadInProgress` | `DownloadAndInstall` wird aufgerufen, während bereits ein anderer Vorgang läuft |
 | `ErrNotReady` | `Restart` ohne bereitgestelltes Update |
 
 ## So funktioniert der Austausch
 
-`Restart` führt die aktuelle Binärdatei mit gesetzten Sentinel-Umgebungsvariablen erneut aus. `application.New` erkennt sie beim Start und wechselt in den Hilfsmodus:
+`Restart` führt das aktuelle Binärprogramm mit gesetzten Sentinel-Umgebungsvariablen erneut aus. `application.New` erkennt sie beim Start und wechselt in den Hilfsmodus:
 
 1. Das Hilfsprogramm wartet bis zu 30 s darauf, dass die übergeordnete PID beendet wird (`platformIsAlive` fragt unter Windows über `syscall.OpenProcess` + `GetExitCodeProcess` und unter Unix über `os.FindProcess` + `proc.Signal(syscall.Signal(0))` ab).
-2. Das Hilfsprogramm sichert das Ziel (Kopie bei Dateien, rekursive Kopie bei macOS-`.app`-Bundle-Verzeichnissen).
-3. Das Hilfsprogramm ersetzt das Ziel durch das bereitgestellte Artefakt. Dabei wiederholt es den Vorgang bei Fehlschlägen bis zu 20-mal und wartet zwischen den Versuchen jeweils 500 ms:
+2. Das Hilfsprogramm sichert das Ziel (Kopie bei Dateien, rekursive Kopie bei macOS-Verzeichnissen für `.app`-Bundles).
+3. Das Hilfsprogramm ersetzt das Ziel durch das bereitgestellte Artefakt. Bei Fehlern versucht es dies bis zu 20-mal erneut und wartet zwischen den Versuchen jeweils 500 ms:
   - **Unix** — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. Offene Dateideskriptoren, die auf den alten Inode verweisen, bleiben gültig.
-  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. Windows erlaubt das Umbenennen von Dateien, deren Image noch gemappt ist, aber nicht deren Löschen. Beim nächsten Update entfernt das Hilfsprogramm alle verbliebenen gleichgeordneten `.old.*`-Dateien, deren zugehöriges Kernel-Mapping freigegeben wurde.
+  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. Windows erlaubt das Umbenennen von Dateien, deren Image noch gemappt ist, nicht jedoch deren Löschen. Beim nächsten Update entfernt das Hilfsprogramm alle verbliebenen `.old.*`-Geschwisterdateien, deren zugehöriges Kernel-Mapping freigegeben wurde.
 
-4. Das Hilfsprogramm stellt für die neue Binärdatei die ursprünglichen Ausführungsrechte wieder her (die heruntergeladene Datei wurde mit der Standard-umask erstellt, wodurch `+x` unter Unix entfällt; unter Windows hat dies keine Wirkung).
-5. Das Hilfsprogramm entfernt die Umgebungsvariablen des Hilfsmodus und startet die nun ersetzte Binärdatei erneut.
+4. Das Hilfsprogramm stellt beim neuen Binärprogramm den ursprünglichen Modus der ausführbaren Datei wieder her (die heruntergeladene Datei wurde mit der standardmäßigen umask erstellt, wodurch `+x` unter Unix entfällt; unter Windows ist dies eine wirkungslose Operation).
+5. Das Hilfsprogramm entfernt die Umgebungsvariablen des Hilfsmodus und startet das nun ersetzte Binärprogramm erneut.
 6. Das Hilfsprogramm wird beendet.
 
-Schlägt der Start fehl, stellt das Hilfsprogramm die Sicherung wieder her. Wird der übergeordnete Prozess nicht innerhalb von 30 s beendet, bricht das Hilfsprogramm ab, bevor es das Ziel verändert. Dadurch behält der Benutzer selbst dann eine funktionsfähige App, wenn ein Dialog beim Beenden `Quit` blockiert.
+Schlägt der Start fehl, stellt das Hilfsprogramm die Sicherung wieder her. Wird der übergeordnete Prozess nicht innerhalb von 30 s beendet, bricht das Hilfsprogramm ab, bevor es das Ziel verändert. So behält der Benutzer eine funktionsfähige App, selbst wenn ein Dialog beim Beenden `Quit` blockiert.
 
-Bei macOS-`.app`-Bundles, die als `.zip` verteilt werden (die empfohlene Paketierung), wird das Archiv zwischen der Verifizierung und der Bereitschaft entpackt, damit dem Hilfsprogramm ein echtes Verzeichnis für den Austausch zur Verfügung steht.
+Bei macOS-`.app`-Bundles, die als `.zip` verteilt werden (die empfohlene Paketierung), wird das Archiv zwischen der Verifizierung und der Bereitschaftsmeldung entpackt, damit das Hilfsprogramm ein echtes Verzeichnis austauschen kann.
 
 ## Regelmäßige Prüfung
 
@@ -611,13 +611,13 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Bei `CheckInterval > 0` ruft eine Hintergrund-Goroutine `CheckAndInstall` im konfigurierten Intervall auf. Ticks, die eintreffen, während bereits ein anderer Ablauf läuft (Prüfen/Herunterladen/Verifizieren/Installieren), werden verworfen – parallele Zustandsautomaten werden nicht unterstützt.
+Wenn `CheckInterval > 0` gilt, ruft eine Hintergrund-Goroutine `CheckAndInstall` im konfigurierten Intervall auf. Ticks, die eintreffen, während bereits ein anderer Ablauf ausgeführt wird (Prüfen, Herunterladen, Verifizieren oder Installieren), werden verworfen — parallele Zustandsautomaten werden nicht unterstützt.
 
-Für eine stille Abfrage im Hintergrund, die nur bei einem Fund sichtbar wird, setzen Sie `Window: updater.WindowNone` und reagieren Sie in Ihrer eigenen Benutzeroberfläche auf `EventUpdateAvailable`.
+Legen Sie für eine stille Hintergrundabfrage, die nur bei einem Fund sichtbar wird, `Window: updater.WindowNone` fest und reagieren Sie in Ihrer eigenen Benutzeroberfläche auf `EventUpdateAvailable`.
 
-## Überspringen und erinnern
+## Überspringen und später erinnern
 
-Die Schaltfläche „Diese Version überspringen“ im Standardfenster speichert die verfügbare Version über `SkipVersion(rel.Version)`. Nachfolgende `Check`-Aufrufe finden dieselbe Version und behandeln sie als aktuell, bis der Benutzer `CurrentVersion` aktualisiert. Dies geschieht nach einem erfolgreichen `Restart` automatisch. „Später erinnern“ schließt lediglich das Fenster, ohne etwas zu speichern.
+Die Schaltfläche „Diese Version überspringen“ im Standardfenster speichert die verfügbare Version über `SkipVersion(rel.Version)`. Nachfolgende `Check`s finden dieselbe Version und behandeln die App als aktuell, bis der Benutzer `CurrentVersion` aktualisiert; dies geschieht nach einem erfolgreichen `Restart` automatisch. „Später erinnern“ schließt lediglich das Fenster, ohne etwas zu speichern.
 
 ```go
 // Reading what the user skipped (e.g. to surface in app settings)
@@ -633,22 +633,22 @@ app.Updater.SkipVersion("")
 
 Bevor Sie ein Release veröffentlichen, das der Updater installieren soll:
 
-1. **Wählen Sie das richtige Archivformat.** macOS: `.zip` des `.app`-Bundles. Linux: einzelne Binärdatei oder `.tar.gz`. Windows: einzelne `.exe`- oder `.zip`-Datei. `.dmg` / `.msi` / `.pkg` werden nicht unterstützt.
-2. **Signieren Sie das Artefakt** mit dem privaten Schlüssel, der zu `Config.PublicKey` gehört. Befolgen Sie bei von Anbietern veröffentlichten Feeds (keygen.sh, AppCast) den jeweiligen Signierungsablauf. Erzeugen Sie für GitHub Releases mit `ChecksumAsset` eine `SHA256SUMS`-Datei mit `sha256sum` / `shasum -a 256`.
-3. **Gleichen Sie die Versionszeichenfolge ab.** `Config.CurrentVersion` und das Versions-Tag des Releases müssen exakt übereinstimmen (z. B. `1.0.0` ↔ Tag `v1.0.0`; das vorangestellte `v` wird auf Anbieterseite entfernt).
-4. **Testen Sie den Austausch auf der Zielplattform** mindestens einmal vor der Auslieferung – Codesignierung, Notarisierung und die Handhabung durch Gatekeeper sind plattformspezifisch und werden vom Updater selbst nicht abgedeckt.
+1. **Wählen Sie das richtige Archivformat.** macOS: `.zip` des `.app`-Bundles. Linux: einzelnes Binärprogramm oder `.tar.gz`. Windows: einzelne `.exe`- oder `.zip`-Datei. `.dmg` / `.msi` / `.pkg` werden nicht unterstützt.
+2. **Signieren Sie das Artefakt** mit dem privaten Schlüssel, der zu `Config.PublicKey` gehört. Befolgen Sie bei vom Anbieter veröffentlichten Feeds (keygen.sh, AppCast) den Signierablauf des jeweiligen Anbieters. Erzeugen Sie für GitHub Releases mit `ChecksumAsset` eine `SHA256SUMS`-Datei mit `sha256sum` / `shasum -a 256`.
+3. **Gleichen Sie die Versionszeichenfolge ab.** `Config.CurrentVersion` und das Versions-Tag des Releases müssen exakt übereinstimmen (z. B. `1.0.0` ↔ Tag `v1.0.0`; das führende `v` wird auf Anbieterseite entfernt).
+4. **Testen Sie den Austausch auf der Zielplattform** vor der Auslieferung mindestens einmal — Codesignierung, Notarisierung und die Handhabung durch Gatekeeper sind plattformspezifisch und werden nicht vom Updater selbst abgedeckt.
 
 ## Fehlerbehebung
 
-**„signature requires a public key but none configured“** — das Release enthält ein `Signature`-Feld, aber `Config.PublicKey` ist leer. Legen Sie den öffentlichen Schlüssel fest oder ändern Sie Ihre Release-Pipeline so, dass sie keine Signatur einfügt.
+**„Für die Signatur ist ein öffentlicher Schlüssel erforderlich, es wurde jedoch keiner konfiguriert“** — das Release enthält ein `Signature`-Feld, aber `Config.PublicKey` ist leer. Legen Sie den öffentlichen Schlüssel fest oder ändern Sie Ihre Release-Pipeline so, dass sie keine Signatur einfügt.
 
-**„digest mismatch“** — die heruntergeladenen Bytes entsprechen nicht den Angaben des Anbieters. Ursache ist meist ein unvollständiger Download aufgrund einer kurzen Netzwerkstörung oder ein beschädigtes Artefakt. Ein erneuter Versuch behebt das Problem häufig.
+**„Prüfsumme stimmt nicht überein“** — die heruntergeladenen Bytes entsprechen nicht den Angaben des Anbieters. Ursache ist meist ein unvollständiger Download aufgrund einer kurzen Netzwerkstörung oder ein beschädigtes Artefakt. Ein erneuter Versuch behebt das Problem häufig.
 
-**Fenster öffnet sich, verschwindet aber sofort; kein Markdown, kein Fortschritt** — Ihr benutzerdefiniertes HTML hat `wails:runtime:ready` nicht aufgerufen. Siehe den Shim unter [Vorlage ersetzen](#vorlage-ersetzen).
+**Das Fenster wird geöffnet, verschwindet aber sofort; weder Markdown noch Fortschritt werden angezeigt** — Ihr benutzerdefiniertes HTML hat `wails:runtime:ready` nicht aufgerufen. Siehe den Shim unter [Vorlage ersetzen](#vorlage-ersetzen).
 
-**Windows-Update wird nie abgeschlossen; im Hilfsprogrammprotokoll steht „remove old (attempt N): Access is denied“** — dies tritt nur bei Versionen dieses PRs vor `de764fb` auf. Die aktuelle Implementierung benennt die Datei vorübergehend um und ist von diesem Problem nicht betroffen. Führen Sie ein Upgrade durch.
+**Das Windows-Update wird nie abgeschlossen; im Protokoll des Hilfsprogramms steht „remove old (attempt N): Access is denied“** — dies tritt nur bei Versionen dieses PRs vor `de764fb` auf. Die aktuelle Implementierung benennt die alte Datei stattdessen um und ist daher nicht betroffen. Führen Sie ein Upgrade durch.
 
-**macOS Gatekeeper blockiert die ausgetauschte Binärdatei** — die Codesignierung muss durchgängig erhalten bleiben. Signieren Sie das ursprüngliche `.app` *und* signieren Sie die neu gestartete Binärdatei erneut, falls Ihre Build-Pipeline die Berechtigungen während des Updates ändert.
+**macOS Gatekeeper blockiert das ausgetauschte Binärprogramm** — die Codesignierung muss über den gesamten Ablauf hinweg erhalten bleiben. Signieren Sie das ursprüngliche `.app` *und* signieren Sie das neu gestartete Binärprogramm erneut, wenn Ihre Build-Pipeline die Berechtigungen während des Updates ändert.
 
 ## Siehe auch
 

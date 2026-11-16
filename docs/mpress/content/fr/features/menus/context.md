@@ -13,15 +13,15 @@ Les utilisateurs s’attendent à disposer de menus accessibles par clic droit p
 - **Images** : Enregistrer, Copier, Ouvrir
 - **Éléments personnalisés** : actions propres à l’application
 
-Créer manuellement des menus contextuels implique de gérer les événements de la souris, le positionnement et les différences entre plateformes.
+Créer manuellement des menus contextuels implique de gérer les événements de la souris, le positionnement et les différences entre les plateformes.
 
 ## La solution Wails
 
 Wails fournit des **menus contextuels déclaratifs** au moyen de propriétés CSS. Associez des menus à des éléments HTML, transmettez des données et gérez les clics, tout en bénéficiant du comportement natif de la plateforme.
 
-![Un menu contextuel personnalisé Wails affiché au-dessus d’une WebView sous macOS](/assets/screenshots/context-menu-macos.png)
+![Menu contextuel Wails personnalisé affiché au-dessus d’une vue web sous macOS](/assets/screenshots/context-menu-macos.png)
 
-Le menu est natif à la plateforme, tandis que l’élément qui l’a ouvert reste intégré à votre WebView. Cette capture réalisée sous macOS utilise l’enregistrement du menu contextuel personnalisé de l’exemple ci-dessous.
+Le menu est natif de la plateforme, tandis que l’élément qui l’a ouvert reste intégré à votre vue web. Cette capture réalisée sous macOS utilise l’enregistrement du menu contextuel personnalisé de l’exemple ci-dessous.
 
 ## Démarrage rapide
 
@@ -46,7 +46,7 @@ app.ContextMenu.Add("editor-menu", contextMenu)
 </textarea>
 ```
 
-**C’est tout !** Un clic droit dans la zone de texte affiche votre menu personnalisé.
+**C’est tout !** Un clic droit sur la zone de texte affiche votre menu personnalisé.
 
 ## Création de menus contextuels
 
@@ -116,7 +116,7 @@ contextMenu.AddRadio("Large", false).OnClick(handleSize)
 app.ContextMenu.Add("view-menu", contextMenu)
 ```
 
-**Pour tous les types d’éléments de menu**, consultez la [Référence des menus](/features/menus/reference/).
+Pour connaître **tous les types d’éléments de menu**, consultez la [référence des menus](/features/menus/reference/).
 
 ## Association à des éléments HTML
 
@@ -161,7 +161,7 @@ app.ContextMenu.Add("file-menu", contextMenu)
 
 ### Données dynamiques
 
-Générez les données dynamiquement en JavaScript :
+Générez dynamiquement les données en JavaScript :
 
 ```html
 <div id="file-item" style="--custom-contextmenu: file-menu">
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Sécurité"}
-**Validez toujours les données contextuelles** provenant du frontend. Les utilisateurs peuvent modifier les propriétés CSS ; traitez donc ces données comme des entrées non fiables.
+**Validez toujours les données contextuelles** provenant du frontend. Les utilisateurs peuvent modifier les propriétés CSS : traitez donc ces données comme des entrées non fiables.
 
 @end
 
@@ -281,7 +281,7 @@ La WebView fournit un menu contextuel intégré pour les opérations standard (c
 </div>
 ```
 
-**Cas d’utilisation :** éléments d’interface utilisateur personnalisés pour lesquels le menu par défaut n’est pas pertinent.
+**Cas d’utilisation :** éléments d’interface personnalisés pour lesquels le menu par défaut n’est pas pertinent.
 
 ### Afficher le menu par défaut
 
@@ -326,7 +326,7 @@ Dans les autres cas, masque le menu par défaut.
 
 ## Menus contextuels dynamiques
 
-Mettez à jour les menus en fonction de l’état de l’application :
+Mettez à jour les menus selon l’état de l’application :
 
 ### Activation et désactivation des éléments
 
@@ -355,14 +355,14 @@ func onSelectionChanged(hasSelection bool) {
 }
 ```
 
-@note{type="caution" title="Toujours appeler Update()"}
-Après avoir modifié l’état du menu, **appelez `contextMenu.Update()`**. Cette opération est indispensable sous Windows.
+@note{type="caution" title="Appelez toujours Update()"}
+Après avoir modifié l’état du menu, **appelez `contextMenu.Update()`**. Cette étape est indispensable sous Windows.
 
-Consultez la [Référence des menus](/features/menus/reference/#enabled-state) pour plus de détails.
+Pour plus de détails, consultez la [référence des menus](/features/menus/reference/#enabled-state).
 
 @end
 
-### Modifier les libellés
+### Modification des libellés
 
 ```go
 playMenuItem := contextMenu.Add("Play")
@@ -377,9 +377,9 @@ playMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Reconstruire les menus
+### Reconstruction des menus
 
-Pour apporter des modifications importantes, reconstruisez l’intégralité du menu :
+Pour des modifications importantes, reconstruisez l’intégralité du menu :
 
 ```go
 func rebuildContextMenu(fileType string) {
@@ -410,7 +410,7 @@ func rebuildContextMenu(fileType string) {
 
 ## Comportement selon la plateforme
 
-Les menus contextuels sont **natifs de chaque plateforme** :
+Les menus contextuels sont **natifs de la plateforme** :
 
 @tabs{sync-key="platform"}
 [macOS]
@@ -418,7 +418,7 @@ Les menus contextuels sont **natifs de chaque plateforme** :
 
 - Animations et transitions du système
 - Clic droit = Contrôle+clic (automatique)
-- Adaptation à l’apparence du système (claire/sombre)
+- Adaptation à l’apparence du système (claire ou sombre)
 - Opérations de texte standard dans le menu par défaut
 - Défilement natif pour les menus longs
 
@@ -438,21 +438,21 @@ Les menus contextuels sont **natifs de chaque plateforme** :
 
 **Conventions de Windows :**
 
-- Utilisez une majuscule initiale pour les mots principaux des éléments de menu
+- Utilisez une majuscule à chaque mot principal des éléments de menu
 - Utilisez des points de suspension (...) pour les éléments qui ouvrent des boîtes de dialogue
 - Raccourcis courants : Ctrl+C (Copier), Ctrl+V (Coller)
 
 [Linux]
 **Intégration à l’environnement de bureau :**
 
-- Adaptation au thème du bureau (GTK, Qt, etc.)
-- Comportement du clic droit conforme aux paramètres système
-- Contenu du menu par défaut variable selon l’environnement
-- Positionnement conforme aux conventions de l’environnement de bureau
+- S’adapte au thème du bureau (GTK, Qt, etc.)
+- Le comportement du clic droit suit les paramètres du système
+- Le contenu du menu par défaut varie selon l’environnement
+- Le positionnement suit les conventions de l’environnement de bureau
 
 **Points à prendre en compte sous Linux :**
 
-- Effectuez des tests dans les environnements de bureau ciblés
+- Testez sur les environnements de bureau ciblés
 - GTK et Qt ont des comportements différents
 - Certains environnements de bureau personnalisent les menus contextuels
 
@@ -639,7 +639,7 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ À faire
 
-- **Gardez des menus ciblés** — Proposez uniquement les actions pertinentes pour l’élément
+- **Gardez les menus ciblés** — Ne proposez que les actions pertinentes pour l’élément
 - **Validez les données de contexte** — Traitez-les comme des entrées non fiables
 - **Utilisez des libellés explicites** — « Supprimer le fichier » plutôt que « Supprimer »
 - **Appelez menu.Update()** — Après avoir modifié l’état du menu
@@ -649,14 +649,14 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ❌ À ne pas faire
 
-- **Ne faites pas confiance aux données de contexte** — Validez-les systématiquement
+- **Ne faites pas confiance aux données de contexte** — Validez-les toujours
 - **Ne créez pas de menus trop longs** — 7-10 éléments au maximum
 - **N’oubliez pas menu.Update()** — Les menus ne fonctionneront pas correctement
 - **N’imbriquez pas les menus trop profondément** — 2 niveaux au maximum
-- **N’utilisez pas de jargon** — Gardez des libellés faciles à comprendre
+- **N’utilisez pas de jargon** — Gardez des libellés compréhensibles pour les utilisateurs
 - **Ne bloquez pas les gestionnaires** — Veillez à ce qu’ils s’exécutent rapidement
 
-## Résolution des problèmes
+## Dépannage
 
 ### Le menu contextuel ne s’affiche pas
 
@@ -664,7 +664,7 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 1. L’identifiant du menu ne correspond pas
 2. Faute de frappe dans la propriété CSS
-3. Runtime non initialisé
+3. Environnement d’exécution non initialisé
 
 **Solution :**
 
@@ -682,7 +682,7 @@ app.ContextMenu.Add("my-menu", contextMenu)
 
 **Causes possibles :**
 
-1. Propriété CSS non définie
+1. La propriété CSS n’est pas définie
 2. Les données contiennent des caractères spéciaux
 
 **Solution :**
@@ -698,7 +698,7 @@ Vous pouvez également utiliser JavaScript :
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 ```
 
-### Les éléments de menu ne répondent pas
+### Les éléments du menu ne répondent pas
 
 **Cause :** oubli de l’appel à `menu.Update()` après l’activation
 
@@ -713,19 +713,19 @@ contextMenu.Update()  // Add this!
 
 @cards{cols="2"}
 📖 Référence des menus
-Référence complète des types et des propriétés des éléments de menu.
+Référence complète des types et propriétés des éléments de menu.
 
 [En savoir plus →](/features/menus/reference/)
 
 ---
-☰ Menus de l’application
-Créez des barres de menus pour l’application.
+☰ Menus d’application
+Créez des barres de menus d’application.
 
 [En savoir plus →](/features/menus/application/)
 
 ---
 ★ Menus de la zone de notification
-Ajoutez l’intégration à la zone de notification ou à la barre des menus.
+Ajoutez une intégration à la zone de notification ou à la barre de menus.
 
 [En savoir plus →](/features/menus/systray/)
 

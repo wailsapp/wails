@@ -11,7 +11,7 @@ Wails menyediakan **dialog file native** dengan tampilan yang sesuai untuk setia
 
 ![Pemilih file native macOS yang dibuka oleh aplikasi Wails](/assets/screenshots/file-dialog-macos.png)
 
-API Wails mendelegasikan tugas kepada pemilih milik sistem operasi sehingga perilaku navigasi, pemfilteran, dan pemilihan yang familier tetap dipertahankan.
+API Wails mendelegasikan pemilihan kepada pemilih bawaan sistem operasi sehingga perilaku navigasi, pemfilteran, dan pemilihan yang familier tetap dipertahankan.
 
 ## Membuat Dialog File
 
@@ -169,7 +169,7 @@ saveFile(path, data)
 
 ## Dialog Pilih Folder
 
-Pilih direktori menggunakan dialog buka file dengan pemilihan direktori yang diaktifkan:
+Pilih direktori menggunakan dialog buka file dengan pemilihan direktori diaktifkan:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -501,7 +501,7 @@ func importConfiguration(app *application.App) {
 
 - **Sediakan filter file** - Bantu pengguna menemukan file
 - **Tetapkan judul yang sesuai** - Berikan konteks yang jelas
-- **Gunakan direktori default** - Mulai dari lokasi yang logis
+- **Gunakan direktori default** - Mulai dari lokasi yang sesuai
 - **Validasi pilihan** - Periksa jenis file
 - **Tangani pembatalan** - Pengguna mungkin membatalkan
 - **Tampilkan konfirmasi** - Untuk tindakan destruktif
@@ -511,9 +511,9 @@ func importConfiguration(app *application.App) {
 
 - **Jangan lewati validasi** - Periksa jenis file
 - **Jangan abaikan kesalahan** - Tangani pembatalan
-- **Jangan gunakan filter generik** - Gunakan filter yang spesifik
+- **Jangan gunakan filter umum** - Gunakan filter yang spesifik
 - **Jangan lupakan "Semua File"** - Selalu sertakan sebagai opsi
-- **Jangan tulis jalur secara hardcode** - Gunakan direktori beranda pengguna
+- **Jangan tulis jalur secara langsung dalam kode** - Gunakan direktori beranda pengguna
 - **Jangan berasumsi bahwa file tersedia** - Periksa sebelum membukanya
 
 ## Perbedaan Antarplatform
@@ -521,10 +521,10 @@ func importConfiguration(app *application.App) {
 ### macOS
 
 - NSOpenPanel/NSSavePanel native
-- Bergaya sheet saat dilampirkan ke jendela
+- Bergaya lembar saat dilampirkan ke jendela
 - Mengikuti tema sistem
 - Mendukung pratinjau Quick Look
-- Integrasi dengan tag dan favorit
+- Integrasi tag dan favorit
 
 ### Windows
 
@@ -562,7 +562,7 @@ Panggil fungsi Go dari JavaScript.
 
 ---
 ★ Peristiwa
-Gunakan peristiwa untuk memperbarui progres.
+Gunakan peristiwa untuk pembaruan progres.
 
 [Pelajari Selengkapnya →](/features/events/system/)
 

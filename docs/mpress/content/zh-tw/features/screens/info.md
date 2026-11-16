@@ -1,13 +1,13 @@
 ---
 title: "螢幕資訊"
-description: "取得顯示器與監視器的相關資訊"
+description: "取得顯示器與監視器的資訊"
 slug: "features/screens/info"
 sourcePath: "features/screens/info.md"
 ---
 
 ## 螢幕資訊
 
-Wails 提供可跨所有平台運作的<strong>統一螢幕 API</strong>。您可以使用一致的程式碼取得螢幕資訊、偵測多台監視器、查詢螢幕屬性（大小、位置、DPI）、識別主要顯示器，以及處理 DPI 縮放。
+Wails 提供可跨所有平台運作的**統一螢幕 API**。您可以使用一致的程式碼取得螢幕資訊、偵測多部監視器、查詢螢幕屬性（大小、位置、DPI）、識別主要顯示器，以及處理 DPI 縮放。
 
 ## 快速開始
 
@@ -25,7 +25,7 @@ primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
-<strong>就是這麼簡單！</strong>跨平台螢幕資訊。
+<strong>就是這麼簡單！</strong>跨平台取得螢幕資訊。
 
 ## 取得螢幕資訊
 
@@ -57,7 +57,7 @@ fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
 
 ### 目前螢幕
 
-取得視窗所在的螢幕：
+取得包含某個視窗的螢幕：
 
 ```go
 screen, err := window.GetScreen()
@@ -100,7 +100,7 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-透過`screen.Size.Width` / `screen.Size.Height`讀取像素尺寸；頂層沒有`Width`/`Height`欄位。
+透過`screen.Size.Width` / `screen.Size.Height`讀取像素尺寸；最上層沒有`Width`/`Height`欄位。
 
 ### 實體像素與邏輯像素
 
@@ -143,7 +143,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-### 在指定螢幕上定位
+### 定位至指定螢幕
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
@@ -184,9 +184,9 @@ func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-## 多螢幕支援
+## 多監視器支援
 
-### 偵測多台監視器
+### 偵測多部監視器
 
 ```go
 func hasMultipleMonitors() bool {
@@ -251,7 +251,7 @@ func chooseMonitor() (*Screen, error) {
 
 ## 完整範例
 
-### 多螢幕視窗管理器
+### 多監視器視窗管理器
 
 ```go
 type MultiMonitorManager struct {
@@ -344,7 +344,7 @@ func (sm *ScreenMonitor) checkScreens() {
 }
 ```
 
-### 可感知 DPI 的視窗大小調整
+### 支援 DPI 的視窗大小調整
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
@@ -404,44 +404,44 @@ func visualiseScreenLayout() string {
 
 ### ✅ 建議做法
 
-- **檢查螢幕數量**－處理單一與多台監視器的情況
+- **檢查螢幕數量**－同時處理單一與多部監視器的情況
 - **使用邏輯像素**－Wails 會自動處理 DPI
 - **將視窗置中**－比固定位置提供更好的使用者體驗
 - **驗證位置**－確保視窗可見
 - **處理螢幕變更**－監視器可能會新增或移除
 - **在不同 DPI 下測試**－100%、125%、150%、200%
 
-### ❌ 避免做法
+### ❌ 請勿這樣做
 
-- **不要將位置寫死**－請使用螢幕尺寸
-- **不要假設使用主要螢幕**－使用者可能有多台監視器
-- **不要忽略縮放比例**－這對 DPI 感知能力很重要
-- **不要將視窗定位在螢幕範圍外**－請驗證座標
-- **不要忘記處理螢幕變更**－筆記型電腦可能會接上或拔除擴充基座
-- **不要使用實體像素**－請使用邏輯像素
+- **請勿寫死位置**－請使用螢幕尺寸
+- **請勿假設只會使用主要螢幕**－使用者可能有多部監視器
+- **請勿忽略縮放比例**－這對 DPI 感知很重要
+- **請勿將視窗定位到螢幕之外**－請驗證座標
+- **請勿忘記處理螢幕變更**－筆記型電腦可能會連接或中斷擴充基座
+- **請勿使用實體像素**－請使用邏輯像素
 
 ## 平台差異
 
 ### macOS
 
 - Retina 顯示器（2 倍縮放比例）
-- 常見多顯示器配置
-- 座標系統：原點（0,0）位於左下角
+- 常見多部顯示器配置
+- 座標系統：左下角為（0,0）
 - Spaces（虛擬桌面）會影響定位
 
 ### Windows
 
 - 多種 DPI 縮放比例（100%、125%、150%、200%）
-- 常見多顯示器配置
-- 座標系統：原點（0,0）位於左上角
-- 個別監視器 DPI 感知能力
+- 常見多部顯示器配置
+- 座標系統：左上角為（0,0）
+- 各監視器獨立的 DPI 感知
 
 ### Linux
 
-- 依桌面環境而異
-- X11 與 Wayland 之間有所差異
+- 因桌面環境而異
+- X11 與 Wayland 之間存在差異
 - DPI 縮放支援程度不一
-- 支援多台顯示器
+- 支援多部顯示器
 
 ## 後續步驟
 
@@ -458,7 +458,7 @@ func visualiseScreenLayout() string {
 [深入瞭解 →](/features/windows/options/)
 
 ---
-◆ 多個視窗
+◆ 多視窗
 多視窗模式。
 
 [深入瞭解 →](/features/windows/multiple/)
@@ -473,4 +473,4 @@ func visualiseScreenLayout() string {
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[螢幕範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
+<strong>有問題嗎？</strong>請到[Discord](https://discord.gg/JDdSxwjhGf)提問，或查看[螢幕範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

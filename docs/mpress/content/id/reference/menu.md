@@ -7,7 +7,7 @@ sourcePath: "reference/menu.md"
 
 ## Ikhtisar
 
-API Menu menyediakan metode untuk membuat dan mengelola menu aplikasi, menu konteks, dan menu baki sistem.
+API Menu menyediakan metode untuk membuat dan mengelola menu aplikasi, menu konteks, serta menu baki sistem.
 
 **Jenis Menu:**
 
@@ -96,17 +96,19 @@ menu.AddSeparator()
 menu.Add("Select All")
 ```
 
-**Praktik terbaik:** Gunakan pemisah untuk mengelompokkan item menu yang saling berkaitan.
+**Praktik terbaik:** Gunakan pemisah untuk mengelompokkan item menu yang berkaitan.
 
 ### AddSectionHeader()
 
-Menambahkan judul bagian bawaan yang tidak interaktif di **macOS 14 dan versi lebih baru**. Pada versi macOS yang lebih lama dan semua platform lain (termasuk build server), pemanggilan ini tidak melakukan apa pun: tidak ada item pengganti yang disisipkan.
+Menambahkan judul bagian native yang tidak interaktif pada **macOS 14 dan versi yang lebih baru**.
+Pada versi macOS yang lebih lama dan semua platform lainnya (termasuk build server),
+operasi ini tidak melakukan apa pun: tidak ada item placeholder yang disisipkan.
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-Gunakan judul untuk memberi label pada grup di menu baki sistem, menu konteks, atau menu aplikasi:
+Gunakan judul untuk memberi label pada kelompok dalam menu baki, konteks, atau aplikasi:
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,9 +118,12 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-Judul menggunakan tampilan judul bagian standar AppKit. Panggil `menu.Update()` setelah membangun ulang menu yang sudah ditampilkan, seperti pada perubahan struktur lainnya. Lihat contoh `systray-menu` untuk judul yang diperoleh dari `os.Hostname()`.
+Judul menggunakan tampilan judul bagian standar AppKit. Panggil `menu.Update()`
+setelah membangun ulang menu yang sudah ditampilkan, seperti pada perubahan struktural lainnya.
+Lihat contoh `systray-menu` untuk judul yang diperoleh dari `os.Hostname()`.
 
-Judul yang dihilangkan tidak memisahkan grup radio. Gunakan `AddSeparator()` jika grup harus tetap terpisah di setiap platform.
+Judul yang dihilangkan tidak memisahkan grup radio. Gunakan `AddSeparator()` jika grup
+radio harus tetap terpisah di setiap platform.
 
 ### AddCheckbox()
 
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-Menambahkan item menu tombol radio (grup yang saling eksklusif).
+Menambahkan item menu radio (grup yang saling eksklusif).
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -175,7 +180,7 @@ gridView.OnClick(func(ctx *application.Context) {
 
 ### Update()
 
-Memperbarui menu agar mencerminkan setiap perubahan yang dibuat pada item menu.
+Memperbarui menu agar mencerminkan setiap perubahan yang dilakukan pada item menu.
 
 ```go
 func (m *Menu) Update()
@@ -194,7 +199,7 @@ menu.Update()  // Must call to apply changes
 
 ### OnClick()
 
-Mendaftarkan pengendali klik untuk item menu.
+Mendaftarkan handler klik untuk item menu.
 
 ```go
 func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
@@ -204,7 +209,7 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 - `callback` - Fungsi yang dipanggil saat item diklik
 
-**Mengembalikan:** Item menu (untuk perantaian)
+**Mengembalikan:** Item menu (untuk perangkaian)
 
 **Contoh:**
 
@@ -260,7 +265,7 @@ func updateMenuState() {
 
 ### SetChecked()
 
-Mengatur status centang untuk item menu kotak centang/tombol radio.
+Mengatur status centang untuk item menu kotak centang/radio.
 
 ```go
 func (mi *MenuItem) SetChecked(checked bool) *MenuItem
@@ -315,7 +320,7 @@ quitItem.SetAccelerator("Ctrl+Q")
 newItem.SetAccelerator("Ctrl+N")
 ```
 
-**Contoh yang menyesuaikan platform:**
+**Contoh yang mempertimbangkan platform:**
 
 ```go
 import "runtime"
@@ -398,7 +403,7 @@ app.Menu.Set(menu)
 
 **Catatan platform:**
 
-- **macOS:** Menu muncul di bilah menu bagian atas
+- **macOS:** Menu muncul di bilah menu atas
 - **Windows/Linux:** Menu muncul di bilah judul jendela
 - **macOS:** Secara otomatis menambahkan menu aplikasi dengan nama aplikasi
 
@@ -406,7 +411,7 @@ app.Menu.Set(menu)
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-Buat `*ContextMenu` melalui pengelola, lalu daftarkan dengan suatu nama. `ContextMenuManager.Add` menerima `*ContextMenu` — **bukan** `*Menu`, dan **tidak ada** metode `app.RegisterContextMenu`.
+Buat `*ContextMenu` melalui pengelola dan daftarkan dengan sebuah nama. `ContextMenuManager.Add` menerima `*ContextMenu` — **bukan** `*Menu`, dan **tidak ada** metode `app.RegisterContextMenu`.
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -432,7 +437,7 @@ contextMenu.Add("Select All").OnClick(selectAll)
 app.ContextMenu.Add("editor", contextMenu)
 ```
 
-**HTML/CSS:**
+**HTML / CSS:**
 
 Runtime memicu menu konteks terdaftar ketika target klik kanan (atau salah satu leluhurnya) memiliki properti kustom CSS `--custom-contextmenu` yang diatur ke nama tersebut. Properti opsional `--custom-contextmenu-data` diteruskan ke callback Go melalui `ctx.ContextMenuData()`. Untuk menonaktifkan menu konteks bawaan browser, atur `--default-contextmenu: hide` (atau `auto`/`show`).
 
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-Mengatur tooltip yang ditampilkan saat penunjuk diarahkan ke ikon baki sistem. Tidak mengembalikan nilai.
+Mengatur tooltip yang ditampilkan saat penunjuk diarahkan ke ikon baki. Tidak mengembalikan nilai.
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -535,7 +540,7 @@ tray.SetTooltip("My Application - Running")
 
 ### OnClick()
 
-Menangani klik kiri pada ikon baki sistem.
+Menangani klik kiri pada ikon baki.
 
 ```go
 func (st *SystemTray) OnClick(callback func()) *SystemTray
@@ -752,31 +757,31 @@ func (e *Editor) save() {
 
 ### ✅ Lakukan
 
-- **Gunakan akselerator standar** — Ikuti konvensi platform (Ctrl+C untuk menyalin, dan sebagainya)
-- **Panggil Update() setelah melakukan perubahan** — Jika tidak, menu tidak akan mencerminkan perubahan
-- **Kelompokkan item terkait** — Gunakan pemisah untuk menata item menu
-- **Nonaktifkan tindakan yang tidak tersedia** — Jangan sembunyikan; nonaktifkan dengan SetEnabled(false)
-- **Gunakan label yang jelas** — Buat label tetap ringkas dan deskriptif
-- **Ikuti konvensi platform** — Pola menu macOS berbeda dengan Windows/Linux
+- **Gunakan akselerator standar** - Ikuti konvensi platform (Ctrl+C untuk menyalin, dan sebagainya)
+- **Panggil Update() setelah melakukan perubahan** - Jika tidak, menu tidak akan mencerminkan perubahan
+- **Kelompokkan item terkait** - Gunakan pemisah untuk menata item menu
+- **Nonaktifkan tindakan yang tidak tersedia** - Jangan sembunyikan; nonaktifkan dengan SetEnabled(false)
+- **Gunakan label yang jelas** - Buat ringkas dan deskriptif
+- **Ikuti konvensi platform** - Pola menu macOS berbeda dari Windows/Linux
 
 ### ❌ Jangan Lakukan
 
-- **Jangan lupa memanggil Update()** — Ini kesalahan yang paling umum
-- **Jangan membuat menu terlalu bertingkat** — Batasi menu hingga maksimum 2-3 tingkat
-- **Jangan gunakan label yang ambigu** — "Proses" dibandingkan dengan "Proses Dokumen"
-- **Jangan membuatnya terlalu rumit** — Buat menu tetap sederhana dan terfokus
-- **Jangan mencampur metafora** — Gunakan penamaan dan penataan yang konsisten
+- **Jangan lupa memanggil Update()** - Ini kesalahan yang paling umum
+- **Jangan buat penyarangan terlalu dalam** - Batasi menu hingga maksimum 2-3 tingkat
+- **Jangan gunakan label yang ambigu** - "Proses" dibandingkan dengan "Proses Dokumen"
+- **Jangan membuatnya terlalu rumit** - Pertahankan menu agar tetap sederhana dan terfokus
+- **Jangan mencampur metafora** - Gunakan penamaan dan pengaturan yang konsisten
 
 ## Catatan Khusus Platform
 
 ### macOS
 
 - Menu aplikasi ditambahkan secara otomatis dengan nama aplikasi
-- Gunakan `Cmd`, bukan `Ctrl`, untuk akselerator
+- Gunakan `Cmd` sebagai pengganti `Ctrl` untuk akselerator
 - Secara bawaan, "Tentang", "Preferensi", dan "Keluar" berada di menu aplikasi
 
 ### Windows/Linux
 
 - Tidak ada menu aplikasi otomatis
-- Gunakan `Ctrl` untuk tombol pintasan
+- Gunakan `Ctrl` untuk akselerator
 - "Keluar" biasanya berada di menu File

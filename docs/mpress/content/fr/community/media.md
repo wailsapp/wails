@@ -1,22 +1,22 @@
 ---
 title: "Médias"
-description: "Boutons officiels Wails avec aperçus et codes d’intégration HTML et Markdown"
+description: "Boutons Wails officiels avec aperçus et codes d’intégration HTML et Markdown"
 slug: "community/media"
 sourcePath: "community/media.md"
 ---
 
-Utilisez les ressources officielles de Wails pour présenter un projet créé avec Wails. Les boutons ci-dessous renvoient vers [wails.io](https://wails.io) et restent hébergés par Wails : vous n’avez donc pas besoin de copier l’image dans votre projet.
+Utilisez les ressources Wails officielles lorsque vous partagez un projet créé avec Wails. Les boutons ci-dessous renvoient vers [wails.io](https://wails.io) et restent hébergés par Wails ; vous n’avez donc pas besoin de copier l’image dans votre projet.
 
 ## Créé avec Wails
 
-Choisissez la version offrant un contraste suffisant avec son arrière-plan. Chaque aperçu affiche exactement l’image cliquable que verront vos visiteurs.
+Choisissez la version offrant un contraste suffisant avec son arrière-plan. Chaque aperçu correspond exactement à l’image liée que vos visiteurs verront.
 
 ### Arrière-plan clair
 
 <div class="wails-media-preview wails-media-preview-light">  
-<p>Taille standard (<code>180</code> × <code>48</code> px):</p>  
+<p>Standard (<code>180</code> × <code>48</code> px) :</p>  
 <a href="https://wails.io"><img src="/img/wails-button-light.svg" width="180" height="48" alt="Créé avec Wails" /></a>  
-<p>Taille compacte (<code>90</code> × <code>24</code> px):</p>  
+<p>Compact (<code>90</code> × <code>24</code> px) :</p>  
 <a href="https://wails.io"><img src="/img/wails-button-light.svg" width="90" height="24" alt="Créé avec Wails" /></a>  
 </div>
 
@@ -39,9 +39,9 @@ Pour la version compacte, utilisez `width="90" height="24"`.
 ### Arrière-plan sombre
 
 <div class="wails-media-preview wails-media-preview-dark">  
-<p>Taille standard (<code>180</code> × <code>48</code> px):</p>  
+<p>Standard (<code>180</code> × <code>48</code> px) :</p>  
 <a href="https://wails.io"><img src="/img/wails-button-dark.svg" width="180" height="48" alt="Créé avec Wails" /></a>  
-<p>Taille compacte (<code>90</code> × <code>24</code> px):</p>  
+<p>Compact (<code>90</code> × <code>24</code> px) :</p>  
 <a href="https://wails.io"><img src="/img/wails-button-dark.svg" width="90" height="24" alt="Créé avec Wails" /></a>  
 </div>
 
@@ -61,4 +61,4 @@ Pour la version compacte, utilisez `width="90" height="24"`.
 [![Built with Wails](https://wails.io/img/wails-button-dark.svg)](https://wails.io)
 ```
 
-Markdown affiche l’image à sa taille intrinsèque de `180` par `48` pixels. Utilisez la version HTML pour définir une autre taille d’affichage. Conservez les proportions d’origine des boutons, soit `15:4`.
+Markdown affiche l’image à sa taille intrinsèque de `180` par `48` pixels. Utilisez la version HTML lorsque vous devez définir une taille d’affichage différente. Conservez les proportions d’origine `15:4` des boutons.

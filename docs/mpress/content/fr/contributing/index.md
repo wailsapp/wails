@@ -52,7 +52,7 @@ Les nouvelles fonctionnalités et les modifications du comportement public suive
 4. Recueillez des commentaires et des soutiens (commentaires et réactions « pouce levé » sur la PR). Prévoyez au moins deux semaines de discussion et convenez de la personne qui mettra en œuvre la proposition.
 5. Marquez la PR comme prête pour la revue. La décision finale revient aux mainteneurs : les propositions acceptées reçoivent un numéro WEP et sont fusionnées.
 
-Le processus complet est décrit dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
+Le processus complet est documenté dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).
 
 ## Bien démarrer
 
