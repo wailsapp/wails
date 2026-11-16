@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **Keyboard-first** - roving focus through the explorer and result grid, a command palette and chord shortcuts
 - **Private by default** - database credentials are kept in your operating system's keychain
 
-Zentro ships as a single native binary per platform for Windows, macOS and Linux. The core is open source under GPL-3.0 and an optional paid Pro tier adds production guardrails and more, with a 30-day free trial; the source of the Community Edition is public.
+Zentro ships as a single native binary per platform for Windows, macOS and Linux. The core is open source under GPL-3.0 and an optional paid Pro tier adds stronger write-safety guardrails and more, with a 30-day free trial; the source of the Community Edition is public.
 
 [Website](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

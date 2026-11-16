@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **キーボード中心** - エクスプローラーと結果グリッドのフォーカス移動、コマンドパレット、連続ショートカット
 - **デフォルトで非公開** - データベースの認証情報は OS のキーチェーンに保存されます
 
-Zentro は Windows、macOS、Linux 向けに、プラットフォームごとに 1 つのネイティブバイナリとして提供されます。コアは GPL-3.0 のオープンソースで、任意の有料 Pro プランが本番向けの保護機能などを追加します（30 日間の無料トライアル付き）。Community Edition のソースコードは公開されています。
+Zentro は Windows、macOS、Linux 向けに、プラットフォームごとに 1 つのネイティブバイナリとして提供されます。コアは GPL-3.0 のオープンソースで、任意の有料 Pro プランが強化された書き込み保護機能などを追加します（30 日間の無料トライアル付き）。Community Edition のソースコードは公開されています。
 
 [ウェブサイト](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

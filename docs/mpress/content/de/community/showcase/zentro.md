@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **Tastaturorientiert** - Fokus-Navigation durch Explorer und Ergebnisraster, Befehlspalette und Tastenfolgen
 - **Standardmäßig privat** - Datenbank-Zugangsdaten liegen im Schlüsselbund Ihres Betriebssystems
 
-Zentro wird als einzelne native Binärdatei pro Plattform für Windows, macOS und Linux ausgeliefert. Der Kern ist Open Source unter der GPL-3.0, und eine optionale kostenpflichtige Pro-Stufe ergänzt Produktionsschutz und mehr, mit 30 Tagen kostenloser Testphase; der Quellcode der Community Edition ist öffentlich.
+Zentro wird als einzelne native Binärdatei pro Plattform für Windows, macOS und Linux ausgeliefert. Der Kern ist Open Source unter der GPL-3.0, und eine optionale kostenpflichtige Pro-Stufe ergänzt stärkere Schreibschutz-Sicherungen und mehr, mit 30 Tagen kostenloser Testphase; der Quellcode der Community Edition ist öffentlich.
 
 [Website](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

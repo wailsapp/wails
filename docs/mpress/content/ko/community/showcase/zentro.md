@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **키보드 중심** - 탐색기와 결과 그리드에서의 포커스 이동, 명령 팔레트, 연속 단축키
 - **기본적으로 비공개** - 데이터베이스 자격 증명은 운영 체제의 키체인에 보관됩니다
 
-Zentro는 Windows, macOS, Linux용으로 플랫폼마다 하나의 네이티브 바이너리로 제공됩니다. 코어는 GPL-3.0 오픈 소스이며, 선택 사항인 유료 Pro 요금제가 프로덕션 보호 기능 등을 더하고 30일 무료 체험을 제공합니다. Community Edition의 소스 코드는 공개되어 있습니다.
+Zentro는 Windows, macOS, Linux용으로 플랫폼마다 하나의 네이티브 바이너리로 제공됩니다. 코어는 GPL-3.0 오픈 소스이며, 선택 사항인 유료 Pro 요금제가 강화된 쓰기 안전장치 등을 더하고 30일 무료 체험을 제공합니다. Community Edition의 소스 코드는 공개되어 있습니다.
 
 [웹사이트](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

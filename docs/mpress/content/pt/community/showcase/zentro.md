@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **Foco no teclado** - navegação por foco no explorador e na grade de resultados, paleta de comandos e atalhos em sequência
 - **Privado por padrão** - as credenciais dos bancos de dados ficam no chaveiro do seu sistema operacional
 
-O Zentro é distribuído como um único binário nativo por plataforma para Windows, macOS e Linux. O núcleo é de código aberto sob a GPL-3.0 e um nível Pro pago opcional acrescenta proteções de produção e mais, com teste gratuito de 30 dias; o código-fonte da Community Edition é público.
+O Zentro é distribuído como um único binário nativo por plataforma para Windows, macOS e Linux. O núcleo é de código aberto sob a GPL-3.0 e um nível Pro pago opcional acrescenta proteções de escrita mais fortes e mais, com teste gratuito de 30 dias; o código-fonte da Community Edition é público.
 
 [Site](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

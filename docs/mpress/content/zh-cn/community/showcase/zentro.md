@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **键盘优先** - 在浏览器和结果网格中按焦点导航，提供命令面板和组合键序列
 - **默认私密** - 数据库凭据保存在操作系统的钥匙串中
 
-Zentro 为 Windows、macOS 和 Linux 的每个平台提供单个原生二进制文件。核心在 GPL-3.0 下开源，可选的付费 Pro 版增加生产环境防护等功能，并提供 30 天免费试用；Community Edition 的源代码是公开的。
+Zentro 为 Windows、macOS 和 Linux 的每个平台提供单个原生二进制文件。核心在 GPL-3.0 下开源，可选的付费 Pro 版增加更强的写入安全防护等功能，并提供 30 天免费试用；Community Edition 的源代码是公开的。
 
 [网站](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

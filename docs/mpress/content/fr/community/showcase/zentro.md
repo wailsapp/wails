@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **Priorité au clavier** - navigation par focus dans l’explorateur et la grille de résultats, palette de commandes et raccourcis en séquence
 - **Confidentialité par défaut** - les identifiants des bases de données sont conservés dans le trousseau de votre système d’exploitation
 
-Zentro est livré sous la forme d’un binaire natif unique par plateforme pour Windows, macOS et Linux. Le cœur est open source sous GPL-3.0 et une offre Pro payante facultative ajoute des garde-fous de production et davantage, avec un essai gratuit de 30 jours ; le code source de la Community Edition est public.
+Zentro est livré sous la forme d’un binaire natif unique par plateforme pour Windows, macOS et Linux. Le cœur est open source sous GPL-3.0 et une offre Pro payante facultative ajoute des garde-fous d’écriture renforcés et davantage, avec un essai gratuit de 30 jours ; le code source de la Community Edition est public.
 
 [Site web](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

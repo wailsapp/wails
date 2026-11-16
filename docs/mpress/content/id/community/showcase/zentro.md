@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **Mengutamakan keyboard** - navigasi fokus di penjelajah dan grid hasil, palet perintah, dan pintasan berurutan
 - **Privat secara bawaan** - kredensial basis data disimpan di keychain sistem operasi Anda
 
-Zentro dirilis sebagai satu biner native per platform untuk Windows, macOS, dan Linux. Intinya bersumber terbuka di bawah GPL-3.0 dan tingkat Pro berbayar opsional menambahkan pengaman produksi dan lainnya, dengan uji coba gratis 30 hari; kode sumber Community Edition terbuka untuk umum.
+Zentro dirilis sebagai satu biner native per platform untuk Windows, macOS, dan Linux. Intinya bersumber terbuka di bawah GPL-3.0 dan tingkat Pro berbayar opsional menambahkan pengaman penulisan yang lebih kuat dan lainnya, dengan uji coba gratis 30 hari; kode sumber Community Edition terbuka untuk umum.
 
 [Situs web](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |

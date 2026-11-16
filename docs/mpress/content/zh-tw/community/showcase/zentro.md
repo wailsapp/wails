@@ -20,7 +20,7 @@ sourcePath: "community/showcase/zentro.md"
 - **鍵盤優先** - 在瀏覽器與結果表格中以焦點導覽，提供命令面板與組合鍵序列
 - **預設即保有隱私** - 資料庫憑證儲存在作業系統的金鑰鏈中
 
-Zentro 為 Windows、macOS 與 Linux 的每個平台提供單一原生執行檔。核心採 GPL-3.0 開放原始碼，選用的付費 Pro 方案另外提供正式環境防護等功能，並有 30 天免費試用；Community Edition 的原始碼是公開的。
+Zentro 為 Windows、macOS 與 Linux 的每個平台提供單一原生執行檔。核心採 GPL-3.0 開放原始碼，選用的付費 Pro 方案另外提供更強的寫入安全防護等功能，並有 30 天免費試用；Community Edition 的原始碼是公開的。
 
 [網站](https://zentro-ide.com) |
 [GitHub](https://github.com/ZentroIDE/Zentro) |
