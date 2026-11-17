@@ -7,7 +7,8 @@
 // AppKit drains the main queue from the outermost run loop only, so anything
 // dispatched there waits for a nested menu tracking or modal loop to finish.
 // Scheduling on the run loop in common modes reaches the main thread either
-// way, matching dispatchOnMainThread in mainthread_darwin.go.
+// way, matching dispatchOnMainThread in mainthread_darwin.go. The label and
+// icon setters use it so they take effect while the menu is open.
 static void systemTrayOnMainThread(dispatch_block_t block) {
 	CFRunLoopRef loop = CFRunLoopGetMain();
 	CFRunLoopPerformBlock(loop, kCFRunLoopCommonModes, block);
@@ -200,8 +201,10 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isT
 
 // Destroy system tray
 void systemTrayDestroy(void* nsStatusItem) {
-	// Remove the status item from the status bar and its associated menu
-	systemTrayOnMainThread(^{
+	// Remove the status item from the status bar and its associated menu.
+	// The main queue holds this back until an open menu has closed, because
+	// showMenu uses the status item and its controller after tracking ends.
+	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		StatusItemController *controller = (StatusItemController *)[statusItem target];
 		if (controller.eventMonitor) {
@@ -216,8 +219,10 @@ void systemTrayDestroy(void* nsStatusItem) {
 
 // showMenu is used for programmatic OpenMenu() calls.  Click-triggered
 // menus are handled by the event monitor installed in systemTrayNew.
+// The main queue holds a second call back until the open menu has closed,
+// so tracking sessions never nest.
 void showMenu(void* nsStatusItem, void *nsMenu) {
-	systemTrayOnMainThread(^{
+	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		NSMenu *menu = (NSMenu *)nsMenu;
 		StatusItemController *controller = (StatusItemController *)[statusItem target];
