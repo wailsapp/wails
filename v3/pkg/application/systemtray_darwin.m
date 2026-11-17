@@ -4,6 +4,16 @@
 #include "menuitem_darwin.h"
 #include "systemtray_darwin.h"
 
+// AppKit drains the main queue from the outermost run loop only, so anything
+// dispatched there waits for a nested menu tracking or modal loop to finish.
+// Scheduling on the run loop in common modes reaches the main thread either
+// way, matching dispatchOnMainThread in mainthread_darwin.go.
+static void systemTrayOnMainThread(dispatch_block_t block) {
+	CFRunLoopRef loop = CFRunLoopGetMain();
+	CFRunLoopPerformBlock(loop, kCFRunLoopCommonModes, block);
+	CFRunLoopWakeUp(loop);
+}
+
 extern void systrayClickCallback(long, int);
 extern int systrayPreClickCallback(long, int);
 extern void systrayMenuDisplayedCallback(long, int);
@@ -82,7 +92,7 @@ void systemTraySetLabel(void* nsStatusItem, char *label) {
 		return;
 	}
 	// Set the label on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+	systemTrayOnMainThread(^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		statusItem.button.title = [NSString stringWithUTF8String:label];
 		free(label);
@@ -97,7 +107,7 @@ void systemTraySetANSILabel(void* nsStatusItem, void* label) {
     NSMutableAttributedString* attributedString = (NSMutableAttributedString*) label;
 
     // Set the label on the main thread.
-    dispatch_async(dispatch_get_main_queue(), ^{
+    systemTrayOnMainThread(^{
         // setAttributedTitle: copies the string, so drop the owning
         // reference we accumulated while building it.
         NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
@@ -173,7 +183,7 @@ NSImage* imageFromBytes(const unsigned char *bytes, int length) {
 // Set the icon on the system tray
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate) {
 	// Set the icon on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+	systemTrayOnMainThread(^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		NSImage *image = (NSImage *)nsImage;
 
@@ -191,7 +201,7 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isT
 // Destroy system tray
 void systemTrayDestroy(void* nsStatusItem) {
 	// Remove the status item from the status bar and its associated menu
-	dispatch_async(dispatch_get_main_queue(), ^{
+	systemTrayOnMainThread(^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		StatusItemController *controller = (StatusItemController *)[statusItem target];
 		if (controller.eventMonitor) {
@@ -207,7 +217,7 @@ void systemTrayDestroy(void* nsStatusItem) {
 // showMenu is used for programmatic OpenMenu() calls.  Click-triggered
 // menus are handled by the event monitor installed in systemTrayNew.
 void showMenu(void* nsStatusItem, void *nsMenu) {
-	dispatch_async(dispatch_get_main_queue(), ^{
+	systemTrayOnMainThread(^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		NSMenu *menu = (NSMenu *)nsMenu;
 		StatusItemController *controller = (StatusItemController *)[statusItem target];
