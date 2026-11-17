@@ -340,7 +340,9 @@ func (s *windowsSystemTray) updateIcon() {
 
 	s.currentIcon = newIcon
 	nid := s.newNotifyIconData()
-	nid.UFlags = w32.NIF_ICON
+	// Under NOTIFYICON_VERSION_4 the shell stops showing the standard tooltip
+	// after an icon update that leaves out NIF_SHOWTIP.
+	nid.UFlags = w32.NIF_ICON | w32.NIF_SHOWTIP
 	if s.currentIcon != 0 {
 		nid.HIcon = s.currentIcon
 	}
