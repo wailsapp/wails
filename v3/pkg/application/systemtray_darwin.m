@@ -8,7 +8,9 @@
 // dispatched there waits for a nested menu tracking or modal loop to finish.
 // Scheduling on the run loop in common modes reaches the main thread either
 // way, matching dispatchOnMainThread in mainthread_darwin.go. The label and
-// icon setters use it so they take effect while the menu is open.
+// icon setters use it so they take effect while the menu is open. It gives no
+// ordering against the main queue, where systemTrayDestroy runs, so each
+// setter retains its status item until its block has run.
 static void systemTrayOnMainThread(dispatch_block_t block) {
 	CFRunLoopRef loop = CFRunLoopGetMain();
 	CFRunLoopPerformBlock(loop, kCFRunLoopCommonModes, block);
@@ -93,9 +95,10 @@ void systemTraySetLabel(void* nsStatusItem, char *label) {
 		return;
 	}
 	// Set the label on the main thread
+	NSStatusItem *statusItem = [(NSStatusItem *)nsStatusItem retain];
 	systemTrayOnMainThread(^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		statusItem.button.title = [NSString stringWithUTF8String:label];
+		[statusItem release];
 		free(label);
 	});
 }
@@ -108,11 +111,12 @@ void systemTraySetANSILabel(void* nsStatusItem, void* label) {
     NSMutableAttributedString* attributedString = (NSMutableAttributedString*) label;
 
     // Set the label on the main thread.
+    NSStatusItem *statusItem = [(NSStatusItem *)nsStatusItem retain];
     systemTrayOnMainThread(^{
         // setAttributedTitle: copies the string, so drop the owning
         // reference we accumulated while building it.
-        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
         [statusItem setAttributedTitle:attributedString];
+        [statusItem release];
         [attributedString release];
     });
 }
@@ -184,8 +188,8 @@ NSImage* imageFromBytes(const unsigned char *bytes, int length) {
 // Set the icon on the system tray
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate) {
 	// Set the icon on the main thread
+	NSStatusItem *statusItem = [(NSStatusItem *)nsStatusItem retain];
 	systemTrayOnMainThread(^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		NSImage *image = (NSImage *)nsImage;
 
 		NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
@@ -196,6 +200,7 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isT
 		}
 		statusItem.button.image = [image autorelease];
 		statusItem.button.imagePosition = position;
+		[statusItem release];
 	});
 }
 
