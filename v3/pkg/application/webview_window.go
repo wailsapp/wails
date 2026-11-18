@@ -250,9 +250,14 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	}
 }
 
-// EmitEvent emits a custom event with the specified name and associated data.
-// It returns a boolean indicating whether the event was cancelled by a hook.
-// The [CustomEvent.Sender] field will be set to the window name.
+// EmitEvent emits a custom event with the specified name and associated data
+// to this window. It returns a boolean indicating whether the event was
+// cancelled by a hook. The [CustomEvent.Sender] field will be set to the
+// window name.
+//
+// Only this window's frontend receives the event; other windows do not. Hooks
+// and Go listeners registered via app.Event.On are still invoked. To deliver an
+// event to every window, use app.Event.Emit instead.
 //
 // If the given event name is registered, EmitEvent validates the data parameter
 // against the expected data type. In case of a mismatch, EmitEvent reports an error
@@ -261,6 +266,7 @@ func (w *WebviewWindow) EmitEvent(name string, data ...any) bool {
 	event := &CustomEvent{
 		Name:   name,
 		Sender: w.Name(),
+		target: w,
 	}
 
 	if len(data) == 1 {
