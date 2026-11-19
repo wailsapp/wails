@@ -427,7 +427,7 @@ app := application.New(application.Options{
         DisabledFeatures:      []string{"msExperimentalFeature"},
         AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
 
-        // Sign in to Entra ID with the Windows account (applies to ALL windows)
+        // Entra ID sign-in with the Windows account (applies to ALL windows)
         AllowSingleSignOnUsingOSPrimaryAccount: false,
 
         // Other Windows options
@@ -447,7 +447,7 @@ app := application.New(application.Options{
 
 **Single Sign-On:**
 
-- `AllowSingleSignOnUsingOSPrimaryAccount` - let pages sign in to Microsoft Entra ID and Microsoft accounts with the Windows account
+- `AllowSingleSignOnUsingOSPrimaryAccount` - sign in to Entra ID and Microsoft accounts with the Windows account
 
 See [Window Options - Application-Level Windows Options](/features/windows/options/#application-level-windows-options) for detailed documentation.
 

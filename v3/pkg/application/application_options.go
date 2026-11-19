@@ -309,9 +309,7 @@ type WindowsOptions struct {
 	AdditionalBrowserArgs []string
 
 	// AllowSingleSignOnUsingOSPrimaryAccount lets pages sign in to Microsoft Entra ID and Microsoft
-	// accounts with the account signed in to Windows, without a prompt. Applies to all windows.
-	// Only enable it if the app loads trusted content.
-	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions#get_allowsinglesignonusingosprimaryaccount
+	// accounts with the Windows account, without a prompt. Applies to all windows.
 	AllowSingleSignOnUsingOSPrimaryAccount bool
 
 	// UseVisualHosting forces WebView2 to use IDCompositionVisual hosting
