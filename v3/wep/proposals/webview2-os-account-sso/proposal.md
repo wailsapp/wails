@@ -121,7 +121,7 @@ Nothing is sent anywhere it would not be in Edge, and Wails does not read or sto
 
 ## Reference Implementation
 
-To follow as a draft PR linked from this one.
+#6612
 
 ## Maintenance Plan
 
