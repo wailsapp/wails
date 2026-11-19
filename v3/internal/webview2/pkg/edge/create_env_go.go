@@ -8,13 +8,14 @@ import (
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 )
 
-func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder string, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler, additionalBrowserArgs string) error {
+func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder string, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler, additionalBrowserArgs string, allowSSO bool) error {
 	e := &environmentCreatedHandler{environmentCompletedHandle}
 	return webviewloader.CreateCoreWebView2EnvironmentWithOptions(
 		e,
 		webviewloader.WithBrowserExecutableFolder(browserExecutableFolder),
 		webviewloader.WithUserDataFolder(userDataFolder),
 		webviewloader.WithAdditionalBrowserArguments(additionalBrowserArgs),
+		webviewloader.WithAllowSingleSignOnUsingOSPrimaryAccount(allowSSO),
 	)
 }
 
