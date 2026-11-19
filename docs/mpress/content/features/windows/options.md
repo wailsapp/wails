@@ -1214,7 +1214,7 @@ app := application.New(application.Options{
 ```
 
 @note{type="caution" title="Security"}
-Any page loaded in the app can sign in as the Windows user. Only enable this for trusted content. It applies to all windows.
+Any page loaded in the app can sign in as the Windows user. Only enable this for trusted content. It is an application option, so it covers every window.
 
 @end
 
