@@ -427,6 +427,9 @@ app := application.New(application.Options{
         DisabledFeatures:      []string{"msExperimentalFeature"},
         AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
 
+        // Entra ID sign-in with the Windows account (applies to ALL windows)
+        AllowSingleSignOnUsingOSPrimaryAccount: false,
+
         // Other Windows options
         WndClass:                      "MyAppClass",
         WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
@@ -441,6 +444,10 @@ app := application.New(application.Options{
 - `EnabledFeatures` - WebView2 feature flags to enable
 - `DisabledFeatures` - WebView2 feature flags to disable
 - `AdditionalBrowserArgs` - Chromium command-line arguments
+
+**Single Sign-On:**
+
+- `AllowSingleSignOnUsingOSPrimaryAccount` - sign in to Entra ID and Microsoft accounts with the Windows account
 
 See [Window Options - Application-Level Windows Options](/features/windows/options/#application-level-windows-options) for detailed documentation.
 
