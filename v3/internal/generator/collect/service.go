@@ -37,8 +37,9 @@ type (
 		// that should be injected into the generated file.
 		Injections []string
 
-		collector *Collector
-		once      sync.Once
+		collector  *Collector
+		projection *types.TypeName
+		once       sync.Once
 	}
 
 	// ServiceMethodInfo records all information that is required
@@ -62,10 +63,11 @@ type (
 	}
 )
 
-func newServiceInfo(collector *Collector, obj *types.TypeName) *ServiceInfo {
+func newServiceInfo(collector *Collector, obj, projection *types.TypeName) *ServiceInfo {
 	return &ServiceInfo{
-		TypeInfo:  collector.Type(obj),
-		collector: collector,
+		TypeInfo:   collector.Type(obj),
+		collector:  collector,
+		projection: projection,
 	}
 }
 
@@ -74,13 +76,13 @@ func newServiceInfo(collector *Collector, obj *types.TypeName) *ServiceInfo {
 // and registers it for code generation.
 //
 // Service is safe for concurrent use.
-func (collector *Collector) Service(obj *types.TypeName) *ServiceInfo {
+func (collector *Collector) Service(obj, projection *types.TypeName) *ServiceInfo {
 	pkg := collector.Package(obj.Pkg())
 	if pkg == nil {
 		return nil
 	}
 
-	return pkg.recordService(obj)
+	return pkg.recordService(obj, projection)
 }
 
 // IsEmpty returns true if no methods or code injections
@@ -124,6 +126,15 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 		//     which should be far from average.
 		mset := typeutil.IntuitiveMethodSet(obj.Type(), nil)
 
+		var projectedMethods map[string]bool
+		if info.projection != nil {
+			iface := info.projection.Type().Underlying().(*types.Interface).Complete()
+			projectedMethods = make(map[string]bool, iface.NumMethods())
+			for i := range iface.NumMethods() {
+				projectedMethods[iface.Method(i).Name()] = true
+			}
+		}
+
 		// Collect method information.
 		info.Methods = make([]*ServiceMethodInfo, 0, len(mset))
 		for _, sel := range mset {
@@ -133,6 +144,9 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 				continue
 			case !sel.Obj().Exported():
 				// Ignore unexported and internal methods.
+				continue
+			case projectedMethods != nil && !projectedMethods[sel.Obj().Name()]:
+				// Ignore methods outside the frontend binding projection.
 				continue
 			}
 

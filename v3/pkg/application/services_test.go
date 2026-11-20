@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"reflect"
 	"testing"
 )
 
@@ -36,6 +37,23 @@ type testServiceNoInterface struct {
 	value int
 }
 
+type projectedLifecycleAPI interface {
+	Ping() string
+}
+
+type projectedLifecycleService struct {
+	started bool
+}
+
+func (*projectedLifecycleService) Ping() string {
+	return "pong"
+}
+
+func (s *projectedLifecycleService) ServiceStartup(context.Context, ServiceOptions) error {
+	s.started = true
+	return nil
+}
+
 func TestNewService(t *testing.T) {
 	svc := &testService{name: "test"}
 	service := NewService(svc)
@@ -64,6 +82,33 @@ func TestNewServiceWithOptions(t *testing.T) {
 	}
 	if service.options.Route != "/api" {
 		t.Errorf("options.Route = %q, want %q", service.options.Route, "/api")
+	}
+}
+
+func TestNewServiceAsWithOptions(t *testing.T) {
+	svc := &projectedLifecycleService{}
+	opts := ServiceOptions{Name: "projected", Route: "/api"}
+	service := NewServiceAsWithOptions[projectedLifecycleAPI](svc, opts)
+
+	if service.Instance() != svc {
+		t.Error("Instance() should return the concrete service")
+	}
+	if service.bindingProjection != reflect.TypeFor[projectedLifecycleAPI]() {
+		t.Errorf("bindingProjection = %v, want %v", service.bindingProjection, reflect.TypeFor[projectedLifecycleAPI]())
+	}
+	if service.options.Name != "projected" || service.options.Route != "/api" {
+		t.Errorf("options = %+v, want Name=projected Route=/api", service.options)
+	}
+
+	startup, ok := service.Instance().(ServiceStartup)
+	if !ok {
+		t.Fatal("concrete projected service no longer implements ServiceStartup")
+	}
+	if err := startup.ServiceStartup(context.Background(), service.options); err != nil {
+		t.Fatalf("ServiceStartup() error = %v", err)
+	}
+	if !svc.started {
+		t.Fatal("concrete lifecycle hook was not called")
 	}
 }
 
