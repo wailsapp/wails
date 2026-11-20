@@ -1,4 +1,4 @@
-//go:build ((linux && !android) || (darwin && !ios)) && !cgo && !purego && !server
+//go:build ((linux && !android && !openharmony) || (darwin && !ios)) && !cgo && !purego && !server
 
 package buildguard
 
