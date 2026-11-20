@@ -49,6 +49,7 @@ Consulte a seção [Como adicionar meu projeto à galeria](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Captura de tela do Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Captura de tela do MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Captura de tela do Larvyn" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Captura de tela do Zentro" loading="lazy"><span>Zentro</span></a>
 </div>
 
 ## Como adicionar meu projeto à galeria
