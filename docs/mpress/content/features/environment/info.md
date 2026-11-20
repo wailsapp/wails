@@ -63,6 +63,61 @@ type EnvironmentInfo struct {
 }
 ```
 
+## Preferred Languages
+
+`application.PreferredLanguages()` returns the languages the user has chosen for application user interfaces, most preferred first, as canonical BCP-47 tags such as `"nb-NO"`, `"en-US"` or `"zh-Hans-CN"`. `application.PreferredLanguage()` returns the first of them.
+
+```go
+langs := application.PreferredLanguages() // e.g. ["se-NO", "nb-NO", "en-GB"]
+first := application.PreferredLanguage()  // "se-NO", or "" when the list is empty
+```
+
+Both are package-level functions, so you can call them before `application.New`, for example to translate menus and tray labels before the first window opens. On Android the list comes through the Wails bridge, so it is empty until the activity has started.
+
+The list is the user's **display language** setting. It is not the regional format used for dates, numbers and currency, which every platform keeps as a separate setting: someone running English Windows in Norway gets an English tag first, not `nb-NO`.
+
+An empty list means the platform reported no preference. Wails does not substitute `"en"`, so your app can apply its own default.
+
+### Choosing a translation
+
+Keep the whole list rather than only the first entry: a user may list a language you don't ship first and one you do ship second. Match the list against your translations with `golang.org/x/text/language`:
+
+```go
+import "golang.org/x/text/language"
+
+var supported = []language.Tag{language.English, language.Norwegian, language.German}
+var matcher = language.NewMatcher(supported)
+
+func uiLanguage() language.Tag {
+    var prefs []language.Tag
+    for _, s := range application.PreferredLanguages() {
+        if tag, err := language.Parse(s); err == nil {
+            prefs = append(prefs, tag)
+        }
+    }
+    _, index, _ := matcher.Match(prefs...)
+    return supported[index] // the first entry, English, when nothing matches
+}
+```
+
+### Where the list comes from
+
+| Platform | Source |
+| --- | --- |
+| Windows | Settings › Time & language › Language & region (`GetUserPreferredUILanguages`) |
+| macOS | System Settings › General › Language & Region (`CFLocaleCopyPreferredLanguages`) |
+| iOS | Settings › General › Language & Region (`CFLocaleCopyPreferredLanguages`) |
+| Android | Settings › System › Languages (`LocaleList`). Android 6 and older have no list and report their one language. |
+| Linux | `LANGUAGE`, then `LC_ALL`, `LC_MESSAGES` or `LANG`, in GNU gettext's order |
+| Server builds | The host's environment, as on Linux |
+
+Notes:
+
+- **Linux** desktop sessions export the user's choice into the environment that launched apps inherit. The list is empty when the locale is unset, `C` or `POSIX`, as gettext ignores `LANGUAGE` then too.
+- **Server builds** report the host's setting, not the remote user's. To follow a browser user's language, use the request's `Accept-Language` header instead.
+- **Android** needs a `WailsBridge.java` that has the `getPreferredLanguages` method. An app with an older copy of the template gets an empty list.
+- Each call asks the platform again. Whether a running app sees a change the user makes in the settings depends on the platform.
+
 ## Theme Detection
 
 ### Dark Mode Detection

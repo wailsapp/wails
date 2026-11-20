@@ -13,6 +13,10 @@ var assets embed.FS
 
 func main() {
 
+	// The user's display languages, most preferred first. Available before
+	// application.New, so menus can be translated before they are built.
+	log.Printf("Preferred languages: %q", application.PreferredLanguages())
+
 	app := application.New(application.Options{
 		Name:        "Environment Demo",
 		Description: "A demo of the Environment API",
