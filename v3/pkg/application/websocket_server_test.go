@@ -161,3 +161,47 @@ func TestWebSocketBroadcasterKeepsReplacementWindowOnStaleClientRemoval(t *testi
 		t.Fatal("stale client removal removed the replacement browser window")
 	}
 }
+
+func TestWebSocketBroadcasterDeliversTargetedEventOnlyToTargetClient(t *testing.T) {
+	newClient := func(window *BrowserWindow) (*clientInfo, chan *CustomEvent) {
+		events := make(chan *CustomEvent, 2)
+		return &clientInfo{
+			window: window,
+			events: mailbox.New(func(event *CustomEvent) { events <- event }),
+		}, events
+	}
+	firstWindow := NewBrowserWindow(1, "first")
+	secondWindow := NewBrowserWindow(2, "second")
+	first, firstEvents := newClient(firstWindow)
+	second, secondEvents := newClient(secondWindow)
+	broadcaster := &WebSocketBroadcaster{
+		clients: map[*websocket.Conn]*clientInfo{
+			new(websocket.Conn): first,
+			new(websocket.Conn): second,
+		},
+	}
+
+	broadcaster.DispatchWailsEvent(&CustomEvent{Name: "targeted", target: secondWindow})
+	broadcaster.DispatchWailsEvent(&CustomEvent{Name: "broadcast"})
+
+	expect := func(name string, events chan *CustomEvent, want ...string) {
+		t.Helper()
+		for _, w := range want {
+			select {
+			case event := <-events:
+				if event.Name != w {
+					t.Fatalf("%s received %q, want %q", name, event.Name, w)
+				}
+			case <-time.After(time.Second):
+				t.Fatalf("%s did not receive %q", name, w)
+			}
+		}
+		select {
+		case event := <-events:
+			t.Fatalf("%s received unexpected event %q", name, event.Name)
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
+	expect("first client", firstEvents, "broadcast")
+	expect("second client", secondEvents, "targeted", "broadcast")
+}

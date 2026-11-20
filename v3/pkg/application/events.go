@@ -56,7 +56,22 @@ type CustomEvent struct {
 	// or "" if sent from application.
 	Sender string `json:"sender,omitempty"`
 
+	// target restricts frontend delivery to a single window. It is nil for
+	// application-wide events, which are delivered to every window. Go
+	// listeners and hooks see the event regardless of its target.
+	target Window
+
 	cancelled atomic.Bool
+}
+
+// Target returns the window this event is addressed to, or nil when the event
+// is delivered to all windows. Events emitted via [WebviewWindow.EmitEvent]
+// are addressed to that window.
+//
+// Custom [WailsEventListener] transports should deliver an event with a
+// non-nil target only to the frontend of that window.
+func (e *CustomEvent) Target() Window {
+	return e.target
 }
 
 func (e *CustomEvent) Cancel() {

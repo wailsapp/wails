@@ -39,8 +39,22 @@ func (b *BrowserWindow) DispatchWailsEvent(event *CustomEvent) {
 	// Events are dispatched via WebSocket broadcast, not per-window
 }
 
+// EmitEvent emits a custom event to this browser client only. Hooks and Go
+// listeners are still invoked. See [WebviewWindow.EmitEvent].
 func (b *BrowserWindow) EmitEvent(name string, data ...any) bool {
-	return globalApplication.Event.Emit(name, data...)
+	event := &CustomEvent{
+		Name:   name,
+		Sender: b.Name(),
+		target: b,
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	return globalApplication.Event.EmitEvent(event)
 }
 
 // Logging methods
