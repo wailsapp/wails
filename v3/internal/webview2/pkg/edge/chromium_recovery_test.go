@@ -64,12 +64,18 @@ func TestControllerInitializationFailures(t *testing.T) {
 func TestAbandonedChromiumIgnoresLateCallbacks(t *testing.T) {
 	e := NewChromium()
 	e.ShuttingDown()
-	e.NavigationStartingCallback = func(*ICoreWebView2) { t.Error("late navigation starting") }
+	e.NavigationStartingCallback = func(*ICoreWebView2, *ICoreWebView2NavigationStartingEventArgs) { t.Error("late navigation starting") }
+	e.FrameNavigationStartingCallback = func(*ICoreWebView2, *ICoreWebView2NavigationStartingEventArgs) {
+		t.Error("late frame navigation starting")
+	}
+	e.NewWindowRequestedCallback = func(*ICoreWebView2, *ICoreWebView2NewWindowRequestedEventArgs) { t.Error("late new window request") }
 	e.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { t.Error("late navigation completed") }
 	e.ProcessFailedCallback = func(*ICoreWebView2, *ICoreWebView2ProcessFailedEventArgs) { t.Error("late process failure") }
 	e.EnvironmentCompleted(0, nil)
 	e.CreateCoreWebView2CompositionControllerCompleted(0, nil)
 	e.NavigationStarting(nil, nil)
+	e.FrameNavigationStarting(nil, nil)
+	e.NewWindowRequested(nil, nil)
 	e.NavigationCompleted(nil, nil)
 	e.ProcessFailed(nil, nil)
 	closed := false

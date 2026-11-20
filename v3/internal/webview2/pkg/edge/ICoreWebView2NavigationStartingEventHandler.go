@@ -32,13 +32,13 @@ func _ICoreWebView2NavigationStartingEventHandlerIUnknownRelease(this *ICoreWebV
 	return handlerRelease(unsafe.Pointer(this))
 }
 
-func _ICoreWebView2NavigationStartingEventHandlerInvoke(this *ICoreWebView2NavigationStartingEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
+func _ICoreWebView2NavigationStartingEventHandlerInvoke(this *ICoreWebView2NavigationStartingEventHandler, sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr {
 	return this.impl.NavigationStarting(sender, args)
 }
 
 type _ICoreWebView2NavigationStartingEventHandlerImpl interface {
 	_IUnknownImpl
-	NavigationStarting(sender *ICoreWebView2, args *IUnknown) uintptr
+	NavigationStarting(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr
 }
 
 var _ICoreWebView2NavigationStartingEventHandlerFn = _ICoreWebView2NavigationStartingEventHandlerVtbl{
