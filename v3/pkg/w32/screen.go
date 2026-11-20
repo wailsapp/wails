@@ -47,18 +47,21 @@ func getMonitorName(deviceName string) (string, error) {
 
 // I'm not convinced this works properly
 func GetRotationForMonitor(displayName [32]uint16) (float32, error) {
-	var devMode DEVMODE
+	var devMode DEVMODE_MON
 	devMode.DmSize = uint16(unsafe.Sizeof(devMode))
 	resp, _, _ := procEnumDisplaySettings.Call(uintptr(unsafe.Pointer(&displayName[0])), ENUM_CURRENT_SETTINGS, uintptr(unsafe.Pointer(&devMode)))
 	if resp == 0 {
 		return 0, fmt.Errorf("EnumDisplaySettings failed")
 	}
 
+	if (devMode.DmFields & DM_ORIENTATION) != 0 {
+		return 0, fmt.Errorf("GetRotationForMonitor called for printer device")
+	}
 	if (devMode.DmFields & DM_DISPLAYORIENTATION) == 0 {
 		return 0, fmt.Errorf("DM_DISPLAYORIENTATION not set")
 	}
 
-	switch devMode.DmOrientation {
+	switch devMode.DmDisplayOrientation {
 	case DMDO_DEFAULT:
 		return 0, nil
 	case DMDO_90:
