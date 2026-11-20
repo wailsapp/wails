@@ -263,6 +263,25 @@ void SetPosition(void *window, int x, int y)
     ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
+// GetPosition reports the window position relative to the origin of the monitor
+// it is on, mirroring SetPosition so that SetPosition(GetPosition()) is a no-op.
+void GetPosition(void *window, int *x, int *y)
+{
+    gtk_window_get_position((GtkWindow *)window, x, y);
+    if (onWayland())
+    {
+        // Wayland cannot report a global window position; there is no origin to subtract.
+        return;
+    }
+    GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+    if (isNULLRectangle(monitorDimensions))
+    {
+        return;
+    }
+    *x -= monitorDimensions.x;
+    *y -= monitorDimensions.y;
+}
+
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height)
 {
     GdkGeometry size;
