@@ -1355,6 +1355,11 @@ func showMessageDialog(parent uintptr, heading, body, iconName string, iconData 
 	gtk_window_set_modal(dialog, 1)
 	gtk_window_set_resizable(dialog, 0)
 	gtk_window_set_decorated(dialog, 1)
+	// Title the window itself, not only the heading label, so that window lists,
+	// taskbars and assistive technology can identify the dialog (GTK3 parity).
+	if heading != "" {
+		gtk_window_set_title(dialog, heading)
+	}
 	gtk_widget_add_css_class(dialog, "message")
 	gtk_widget_set_size_request(dialog, 300, -1)
 
