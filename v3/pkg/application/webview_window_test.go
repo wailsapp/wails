@@ -1,6 +1,7 @@
 package application
 
 import (
+	"sync"
 	"testing"
 )
 
@@ -379,5 +380,37 @@ func TestSetSizeConstraintsUsesOneMainThreadDispatch(t *testing.T) {
 				t.Errorf("setSize called %d times, size = %dx%d, want one call with %dx%d", impl.stubSetSizes, impl.stubWidth, impl.stubHeight, tc.width, tc.height)
 			}
 		})
+	}
+}
+
+// SetResizable is called from the runtime message goroutine while window event
+// hooks read the same option on another one, so the two must not race.
+// Run with -race.
+func TestSetResizableConcurrentWithResizable(t *testing.T) {
+	w := &WebviewWindow{}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 1000; i++ {
+			w.SetResizable(i%2 == 0)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 1000; i++ {
+			_ = w.Resizable()
+		}
+	}()
+	wg.Wait()
+
+	w.SetResizable(false)
+	if w.Resizable() {
+		t.Fatal("expected the window not to be resizable")
+	}
+	w.SetResizable(true)
+	if !w.Resizable() {
+		t.Fatal("expected the window to be resizable")
 	}
 }
