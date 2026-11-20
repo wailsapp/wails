@@ -13,14 +13,16 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"golang.org/x/sys/windows"
 )
 
-// The recovery decision and the attempt budget are the two pieces of the
-// process-failure path that can be exercised without a live WebView2 runtime:
-// neither touches COM. The rest (rebuildWebView, the re-navigation itself) needs
-// a real controller and is covered by the manual matrix in issue #5733.
+// The recovery decision, the attempt budget and which page a re-navigation
+// loads can be exercised without a live WebView2 runtime: none of them needs a
+// controller (Navigate is a no-op without one). The rest (rebuildWebView, the
+// navigation itself) needs a real controller and is covered by the manual
+// matrix in issue #5733.
 
 func TestWebviewRecoveryActionFor(t *testing.T) {
 	tests := []struct {
@@ -242,5 +244,116 @@ func TestRebuildWebViewStopsAfterWindowCloses(t *testing.T) {
 		if w.webviewRecoveryAttempts != 1 {
 			t.Fatal("closed window spent a recovery attempt")
 		}
+	}
+}
+
+// A renderer that fails before the first navigation leaves that navigation
+// waiting for request cancellation's setup, which may never finish now:
+// recovery gives the setup up, so a late failure of it can't close its tracker
+// under the page's requests, and makes the navigation.
+func TestRenavigateMakesAPendingFirstNavigation(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		options WebviewWindowOptions
+	}{
+		{"URL", WebviewWindowOptions{URL: "/app"}},
+		{"HTML", WebviewWindowOptions{HTML: "<p>Recovered</p>"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			c, _ := cancellationFixture(t)
+			w := &windowsWebviewWindow{
+				parent:                     &WebviewWindow{options: tt.options},
+				hwnd:                       1,
+				chromium:                   edge.NewChromium(),
+				requestCancellation:        c,
+				initialNavigationPending:   true,
+				webviewNavigationCompleted: true, // a navigation clears it
+			}
+			w.renavigate(true)
+
+			if !c.closed {
+				t.Error("request cancellation's setup left running under the recovered page")
+			}
+			if w.initialNavigationPending || w.webviewNavigationCompleted {
+				t.Fatal("recovery did not make the pending first navigation")
+			}
+			want := ""
+			if tt.options.HTML == "" {
+				want, _ = assetserver.GetStartURL(tt.options.URL)
+			}
+			if w.lastNavigatedURL != want {
+				t.Errorf("lastNavigatedURL = %q, want %q", w.lastNavigatedURL, want)
+			}
+		})
+	}
+}
+
+// When the setup makes the first navigation between the failure and the
+// recovery, that page already loads in a working renderer, with request
+// cancellation set up: recovery leaves both alone.
+func TestRenavigateLeavesAFirstNavigationMadeSinceTheFailure(t *testing.T) {
+	c, _ := cancellationFixture(t)
+	w := &windowsWebviewWindow{
+		parent:                     &WebviewWindow{},
+		hwnd:                       1,
+		chromium:                   edge.NewChromium(),
+		requestCancellation:        c,
+		lastNavigatedURL:           "http://wails.localhost/",
+		webviewNavigationCompleted: true,
+	}
+	w.renavigate(true)
+	if !w.webviewNavigationCompleted {
+		t.Error("recovery reloaded a first navigation made after the failure")
+	}
+	if c.closed {
+		t.Error("recovery stopped request cancellation the setup had made")
+	}
+}
+
+// Once the window has navigated, a renderer failure reloads the page it showed
+// and request cancellation stays on.
+func TestRenavigateReloadsTheLastPage(t *testing.T) {
+	c, _ := cancellationFixture(t)
+	const page = "http://wails.localhost/settings"
+	w := &windowsWebviewWindow{
+		parent:                     &WebviewWindow{options: WebviewWindowOptions{URL: "/"}},
+		hwnd:                       1,
+		chromium:                   edge.NewChromium(),
+		requestCancellation:        c,
+		lastNavigatedURL:           page,
+		webviewNavigationCompleted: true,
+	}
+	w.renavigate(false)
+	if w.webviewNavigationCompleted || w.lastNavigatedURL != page {
+		t.Errorf("lastNavigatedURL = %q, navigated = %v; want a navigation to %q",
+			w.lastNavigatedURL, !w.webviewNavigationCompleted, page)
+	}
+	if c.closed {
+		t.Error("recovery stopped request cancellation")
+	}
+}
+
+func TestRenavigateStopsAfterWindowCloses(t *testing.T) {
+	for _, w := range []*windowsWebviewWindow{
+		{parent: &WebviewWindow{destroyed: true}, hwnd: 1},
+		{parent: &WebviewWindow{}, hwnd: 0},
+	} {
+		c, _ := cancellationFixture(t)
+		w.chromium, w.requestCancellation, w.initialNavigationPending, w.webviewNavigationCompleted = edge.NewChromium(), c, true, true
+		w.renavigate(true)
+		if !w.initialNavigationPending || !w.webviewNavigationCompleted || c.closed {
+			t.Fatal("closed window was navigated")
+		}
+	}
+}
+
+// A first navigation still to make is a page to restore: it is what a renderer
+// failing at startup leaves, and giving up there leaves the window blank.
+func TestHasPageToRestore(t *testing.T) {
+	if w := (&windowsWebviewWindow{parent: &WebviewWindow{}, initialNavigationPending: true}); !w.hasPageToRestore() {
+		t.Error("pending first navigation: hasPageToRestore() = false, want true")
+	}
+	if w := (&windowsWebviewWindow{parent: &WebviewWindow{}}); w.hasPageToRestore() {
+		t.Error("nothing navigated: hasPageToRestore() = true, want false")
 	}
 }
