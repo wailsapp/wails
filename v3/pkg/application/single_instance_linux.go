@@ -3,9 +3,14 @@
 package application
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -13,13 +18,86 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-type dbusHandler func(string)
-
 var setup sync.Once
 
-func (f dbusHandler) SendMessage(message string) *dbus.Error {
-	f(message)
+// dbusHandler receives the second instance's call. The session bus is per user, but any process of that user can
+// call the exported method, so a caller that is not this executable is dropped: its arguments would otherwise reach
+// OnSecondInstanceLaunch as if a real second launch had sent them.
+type dbusHandler struct {
+	conn    *dbus.Conn
+	deliver func(string)
+}
+
+func (h dbusHandler) SendMessage(sender dbus.Sender, message string) *dbus.Error {
+	var pid uint32
+	call := h.conn.BusObject().Call("org.freedesktop.DBus.GetConnectionUnixProcessID", 0, string(sender))
+	if err := call.Store(&pid); err != nil {
+		return dbus.MakeFailedError(errors.New("cannot identify the caller"))
+	}
+	if err := checkCaller("/proc", int(pid)); err != nil {
+		return err
+	}
+	h.deliver(message)
 	return nil
+}
+
+// checkCaller refuses a caller whose executable is known and is not this one.
+func checkCaller(procRoot string, pid int) *dbus.Error {
+	if same, known := sameExecutable(procRoot, pid); known && !same {
+		return dbus.MakeFailedError(errors.New("caller is not this application"))
+	}
+	return nil
+}
+
+// sameExecutable compares the executable of process pid with this process's. known is false when pid's executable
+// cannot be read (a sandbox's bus proxy reports a pid from another namespace), which leaves the caller unverified
+// rather than refused.
+func sameExecutable(procRoot string, pid int) (same, known bool) {
+	theirsPath := filepath.Join(procRoot, strconv.Itoa(pid), "exe")
+	oursPath := filepath.Join(procRoot, "self", "exe")
+	theirs, err := os.Stat(theirsPath)
+	if err != nil {
+		return false, false
+	}
+	ours, err := os.Stat(oursPath)
+	if err != nil {
+		return false, false
+	}
+	if os.SameFile(ours, theirs) {
+		return true, true
+	}
+	if !sameBuild(ours, theirs) {
+		return false, true
+	}
+	theirsSum, err := fileSHA256(theirsPath)
+	if err != nil {
+		return false, false
+	}
+	oursSum, err := fileSHA256(oursPath)
+	if err != nil {
+		return false, false
+	}
+	return bytes.Equal(theirsSum, oursSum), true
+}
+
+func fileSHA256(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	sum := sha256.New()
+	if _, err := io.Copy(sum, f); err != nil {
+		return nil, err
+	}
+	return sum.Sum(nil), nil
+}
+
+// sameBuild reports whether two executables are copies of one build. Each AppImage launch mounts its own squashfs,
+// so two launches of one image never share an executable file, but the copies keep the image's name, size, mode and
+// modification time.
+func sameBuild(a, b os.FileInfo) bool {
+	return a.Name() == b.Name() && a.Size() == b.Size() && a.Mode() == b.Mode() && a.ModTime().Equal(b.ModTime())
 }
 
 type linuxLock struct {
@@ -96,9 +174,7 @@ func (l *linuxLock) acquire(uniqueID string) error {
 	}
 
 	setup.Do(func() {
-		f := dbusHandler(func(message string) {
-			secondInstanceBuffer <- message
-		})
+		f := dbusHandler{conn: conn, deliver: func(message string) { secondInstanceBuffer <- message }}
 
 		err = conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusInterface)
 	})
