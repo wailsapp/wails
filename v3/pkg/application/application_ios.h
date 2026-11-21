@@ -26,6 +26,10 @@ void ios_app_quit(void);
 // Check if dark mode is enabled
 bool ios_is_dark_mode(void);
 
+// Safe area insets control
+bool ios_is_safe_area_insets_disabled(void);
+void ios_set_disable_safe_area_insets(bool disabled);
+
 // Configure/show state for iOS WKWebView input accessory view (keyboard toolbar)
 // If disabled, the accessory view will be hidden.
 void ios_set_disable_input_accessory(bool disabled);
