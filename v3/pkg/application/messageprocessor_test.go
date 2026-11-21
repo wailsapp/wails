@@ -14,11 +14,11 @@ func registerCall(m *MessageProcessor, windowID uint, callID string) context.Con
 	ctx, cancel := context.WithCancel(context.Background())
 	m.l.Lock()
 	defer m.l.Unlock()
-	m.runningCalls[callID] = cancel
+	m.runningCalls[bindingCallKey{id: callID}] = cancel
 	if m.windowCalls[windowID] == nil {
-		m.windowCalls[windowID] = make(map[string]bool)
+		m.windowCalls[windowID] = make(map[bindingCallKey]bool)
 	}
-	m.windowCalls[windowID][callID] = true
+	m.windowCalls[windowID][bindingCallKey{id: callID}] = true
 	return ctx
 }
 
@@ -42,10 +42,10 @@ func TestMessageProcessor_CancelWindowCalls_CancelsAllForWindow(t *testing.T) {
 
 	m.l.Lock()
 	defer m.l.Unlock()
-	if _, ok := m.runningCalls["call-a"]; ok {
+	if _, ok := m.runningCalls[bindingCallKey{id: "call-a"}]; ok {
 		t.Error("runningCalls should not contain call-a after cancel")
 	}
-	if _, ok := m.runningCalls["call-b"]; ok {
+	if _, ok := m.runningCalls[bindingCallKey{id: "call-b"}]; ok {
 		t.Error("runningCalls should not contain call-b after cancel")
 	}
 	if _, ok := m.windowCalls[7]; ok {
@@ -73,7 +73,7 @@ func TestMessageProcessor_CancelWindowCalls_PreservesOtherWindows(t *testing.T) 
 
 	m.l.Lock()
 	defer m.l.Unlock()
-	if _, ok := m.runningCalls["w2-call"]; !ok {
+	if _, ok := m.runningCalls[bindingCallKey{id: "w2-call"}]; !ok {
 		t.Error("runningCalls should still contain w2-call")
 	}
 	if _, ok := m.windowCalls[2]; !ok {
@@ -103,7 +103,7 @@ func TestMessageProcessor_CancelWindowCalls_UnknownWindowIsNoOp(t *testing.T) {
 
 	m.l.Lock()
 	defer m.l.Unlock()
-	if _, ok := m.runningCalls["keep-me"]; !ok {
+	if _, ok := m.runningCalls[bindingCallKey{id: "keep-me"}]; !ok {
 		t.Error("registered call should still be present")
 	}
 }
@@ -112,11 +112,11 @@ func TestMessageProcessor_CancelWindowCalls_UnknownWindowIsNoOp(t *testing.T) {
 // runningCalls (the call completed and self-removed concurrently with the
 // window destroy), CancelWindowCalls must not panic and must still clean up
 // the windowCalls bookkeeping. This guards the
-// `if cancel, ok := m.runningCalls[callID]; ok` branch.
+// `if cancel, ok := m.runningCalls[bindingCallKey{id: callID}]; ok` branch.
 func TestMessageProcessor_CancelWindowCalls_StaleEntryCleansUp(t *testing.T) {
 	m := NewMessageProcessor(nil)
 	m.l.Lock()
-	m.windowCalls[5] = map[string]bool{"stale-id": true}
+	m.windowCalls[5] = map[bindingCallKey]bool{{id: "stale-id"}: true}
 	m.l.Unlock()
 
 	m.CancelWindowCalls(5)

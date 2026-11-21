@@ -115,6 +115,8 @@ public class WailsBridge {
     private static native byte[] nativeServeAsset(String path, String method, String headers);
     private static native String nativeHandleMessage(String message);
     private static native String nativeHandleRuntimeCall(String payload);
+    private static native long nativePrepareRuntimeCall(String payload);
+    private static native String nativeRunRuntimeCall(long request);
     private static native String nativeGetAssetMimeType(String path);
     private static native void nativeDialogCallback(int callbackID, int buttonIndex);
     private static native void nativeFilePickerResult(int callbackID, String path);
@@ -299,6 +301,17 @@ public class WailsBridge {
             Log.e(TAG, "Error in runtime call", e);
             return "{\"ok\":false,\"error\":\"" + e.getMessage() + "\"}";
         }
+    }
+
+    long prepareRuntimeCall(String payload) {
+        return initialized ? nativePrepareRuntimeCall(payload) : 0;
+    }
+
+    String runRuntimeCall(long request) {
+        if (request == 0) {
+            return "{\"ok\":false,\"error\":\"Bridge not initialized\"}";
+        }
+        return nativeRunRuntimeCall(request);
     }
 
     /**

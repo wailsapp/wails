@@ -69,16 +69,16 @@ type RuntimeRequest struct {
 type MessageProcessor struct {
 	logger *slog.Logger
 
-	runningCalls map[string]context.CancelFunc
-	windowCalls  map[uint]map[string]bool // Track which calls belong to which window
+	runningCalls map[bindingCallKey]context.CancelFunc
+	windowCalls  map[uint]map[bindingCallKey]bool // Track which calls belong to which window
 	l            sync.Mutex
 }
 
 func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
 		logger:       logger,
-		runningCalls: map[string]context.CancelFunc{},
-		windowCalls:  map[uint]map[string]bool{},
+		runningCalls: map[bindingCallKey]context.CancelFunc{},
+		windowCalls:  map[uint]map[bindingCallKey]bool{},
 	}
 }
 
@@ -89,15 +89,9 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 			err = errs.NewInvalidRuntimeCallErrorf("runtime panic detected!")
 		}
 	}()
-	targetWindow, nameOrID := m.getTargetWindow(req)
-
-	var windowNotRequiredRequests = []int{callRequest, eventsRequest, applicationRequest, systemRequest}
-
-	// Some operations (calls, events, application) don't require a window
-	// This is useful for browser-based deployments with custom transports
-	windowRequired := !slices.Contains(windowNotRequiredRequests, req.Object)
-	if windowRequired && targetWindow == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("window '%s' not found", nameOrID)
+	targetWindow, err := m.resolveRuntimeWindow(req)
+	if err != nil {
+		return nil, err
 	}
 
 	m.logRuntimeCall(req)
@@ -124,7 +118,7 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 	case browserRequest:
 		return m.processBrowserMethod(req)
 	case cancelCallRequest:
-		return m.processCallCancelMethod(req)
+		return m.processCallCancelMethod(req, bindingCallScope{})
 	case iosRequest:
 		return m.processIOSMethod(req, targetWindow)
 	case androidRequest:
@@ -132,6 +126,21 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 	default:
 		return nil, errs.NewInvalidRuntimeCallErrorf("unknown object %d", req.Object)
 	}
+}
+
+func (m *MessageProcessor) resolveRuntimeWindow(req *RuntimeRequest) (Window, error) {
+	targetWindow, nameOrID := m.getTargetWindow(req)
+
+	var windowNotRequiredRequests = []int{callRequest, eventsRequest, applicationRequest, systemRequest}
+
+	// Some operations (calls, events, application) don't require a window
+	// This is useful for browser-based deployments with custom transports
+	windowRequired := !slices.Contains(windowNotRequiredRequests, req.Object)
+	if windowRequired && targetWindow == nil {
+		return nil, errs.NewInvalidRuntimeCallErrorf("window '%s' not found", nameOrID)
+	}
+
+	return targetWindow, nil
 }
 
 func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string) {
