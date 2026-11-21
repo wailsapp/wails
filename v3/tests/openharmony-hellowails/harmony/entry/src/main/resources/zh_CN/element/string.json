@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Wails 本地 ArkWeb 宿主"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Wails 原生运行时示例"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Wails Native Hello"
+    }
+  ]
+}

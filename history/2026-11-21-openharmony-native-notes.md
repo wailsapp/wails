@@ -53,7 +53,7 @@
 | Server 基线（独立） | HelloWails HAP 加载页面、资产及 WebSocket 事件 | 资料记录 x86_64 模拟器通过；本文未重跑 |
 | M1：Native 构建 | `pkg/application` 用 `GOOS=openharmony GOARCH=amd64 CGO_ENABLED=1`、不带 `server` 编译通过；最小 Go 应用通过 `c-shared` 严格链接 | **通过**；`llvm-readelf -d` 确认依赖 `libace_napi.z.so` 和 `libc.so`；同架构纯 Go `-tags server` 包编译也通过 |
 | M2：最小 Native HAP | 不依赖 Wails 应用，ArkTS → Go 入队 → Go 后台 → TSFN → ArkTS 返回；验证多请求、超时、关闭会话后的迟到结果与事件循环响应 | **通过**：OpenHarmony x86_64 模拟器首次运行与强制停止后重新启动均输出 `M2 PASS` |
-| M3：原生 HelloWails | 单窗口、本地资源、`Greet` binding、Go → 页面事件；无 `server` tag、无本地 HTTP 监听；在 Windows DevEco Studio 的 OpenHarmony 模拟器完成冷启动、前后台、退出再开。arm64 真机另验，不阻塞模拟器首验 | 未验证。资源拦截和网页消息桥可在 M2 期间用小页面独立试 |
+| M3：原生 HelloWails | 单窗口、本地资源、`Greet` binding、Go → 页面事件；无 `server` tag、无本地 HTTP 监听；新进程启动与前后台回切 | **x86_64 模拟器通过**；两次新进程 PASS，同一进程回切后页面计数继续更新。首次 ArkWeb renderer 有一次连接超时，见下文 |
 
 **M1 实测**：同一工具链、独立临时目录，原桥文件运行 `go tool cgo` 退出 2；只去掉 `*/` 与 `import "C"` 间的空行，退出 0。空行让 Go 解析器没有把 C 前导码注释附到 `import "C"`，不是 NAPI 类型本身不兼容。改回工作树重跑 `go build ./pkg/application` 已越过 cgo 识别，下一批报错包括 `setupSignalHandler` 重复、缺 `fatalHandler` / `logPlatformInfo` / `platformEnvironment` / `newGlobalShortcutImpl` / `newMenuImpl` 等。
 
@@ -62,6 +62,12 @@
 **M2 实测记录**：独立项目 `C:\Users\a1\wails-oh-m2`，复用 `hm-demo` 的 ArkTS/CMake 打包结构，包名 `com.wails.nativebridgeprobe`，不声明 `INTERNET`、不启动 HTTP。Go 后台根据请求 ID 计算结果，经有界 TSFN 回传；页面通过 `WailsM2` 日志报告结果。首次 ArkTS 构建报 `arkts-no-any-unknown`，给 NAPI 调用结果加显式类型后，`hvigorw.bat assembleHap --no-daemon` 成功，HDC 安装 `harmony/entry/build/default/outputs/default/entry-default-unsigned.hap` 成功。`aa start -b com.wails.nativebridgeprobe -a EntryAbility` 返回 `10106102`，开发者模式下锁定屏幕不能自动解锁。解锁后直接重跑启动，查看 `hdc -t 127.0.0.1:5555 shell hilog -x -T WailsM2`，不用重装。探针只验证桥设计；不能替代 fork 自带桥、ArkWeb 或真实页面/Ability 销毁重建的验收。
 
 **M2 运行结果**：解锁后 `aa start` 成功，随后 `aa force-stop com.wails.nativebridgeprobe` 并再次启动。`hilog -x -T WailsM2` 分别在 PID `26997` 和 `32110` 记录 `M2 PASS`，两次均为 `sent=true complete=true pending=true closed=true cancelled=true deadline=true`；ArkTS 计时器分别触发 13 和 14 次。本次关闭的是探针的 TSFN 会话，强停重启验证的是新进程冷启动，并未验证同一进程内 Ability 或 ArkWeb 的销毁重建。
+
+**M3 复现**：测试工程 `v3/tests/openharmony-hellowails/`，包名 `com.wails.nativehello`。使用 M1 的 x86_64 OpenHarmony Go/Clang，在 `go/` 下运行 `go build -mod=mod -buildmode=c-shared -ldflags=-extldflags=-Wl,--no-undefined -o ../harmony/entry/src/main/cpp/libs/x86_64/libhomecast_go.so .`；将同目录生成的 `libhomecast_go.h` 复制到 `harmony/entry/src/main/cpp/include/`。在 `harmony/` 配好本机 SDK 路径，运行 `hvigorw.bat assembleHap --no-daemon`；确认 `entry/build/default/outputs/default/entry-default-unsigned.hap` 包含 `libs/x86_64/libentry.so` 和 `libs/x86_64/libhomecast_go.so`。用 `hdc -t 127.0.0.1:5555 install <HAP>`、`hdc -t 127.0.0.1:5555 shell aa start -b com.wails.nativehello -a EntryAbility`，再查 `hdc -t 127.0.0.1:5555 shell hilog -x -T WailsM3`。成功信号是 `M3 PASS: local HTML/JS/CSS, Greet and Go event`，不是 `Local-origin frontend loaded`。
+
+**M3 结果**：OpenHarmony `7.0.0.107`、x86_64、API 26；PID `24381`、`28147` 分别通过。ArkWeb 拦截 `https://wails.localhost/`、`/style.css`、`/main.js`、`/wails/runtime.js`，直接调用 Go asset handler。真实 Wails runtime 通过 ArkWeb proxy 调用 `Greet`，Go 通过 TSFN 和 `runJavaScript` 回送绑定结果及事件。Home → `aa start` 后仍为 PID `24381`，页面显示 `Hello OpenHarmony!`，两张截图的事件计数从 `135` 到 `137`。`aa force-stop` 后新 PID `28147` 再次 PASS。不带 `server` 标签、不启动本地 HTTP 服务；设备 `netstat -lntp` 快照没有 loopback TCP 监听，但 shell 无权确认所有套接字归属。纯 Go `CGO_ENABLED=0 go build -tags server ./pkg/application` 交叉编译也通过。
+
+**ArkWeb 边界**：此镜像上，未声明 `ohos.permission.INTERNET` 的 HTTPS 虚拟 origin 实验没有进入资源拦截；声明后能拦截，应用仍不启动 HTTP 服务。权限不是无网络活动的保证：仅验证应用资源和绑定不依赖网络。宿主拒绝其他 origin 的资源和顶层导航；未做完整网络隔离验收。声明权限后第一次运行返回了 HTML 200，但 ArkWeb renderer 报 `channel connect timeout(6s)` 并出现白屏；强停后连续两个新进程通过。没有修复该镜像首次 renderer 超时，也未验证同进程销毁重建、arm64、商业 HarmonyOS、多窗口或完整移动 API。
 
 ## 参考资料
 

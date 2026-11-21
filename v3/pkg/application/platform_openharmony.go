@@ -5,7 +5,6 @@ package application
 import (
 	"encoding/json"
 	"sync"
-	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -40,11 +39,12 @@ func signalAppReady() {
 	appReadyOnce.Do(func() { close(appReady) })
 }
 
-func waitForAppReady(timeout time.Duration) bool {
+// OpenharmonyReady reports whether the host can begin requesting local assets.
+func OpenharmonyReady() bool {
 	select {
 	case <-appReady:
 		return true
-	case <-time.After(timeout):
+	default:
 		return false
 	}
 }
@@ -175,8 +175,7 @@ func WailsOhNativeOnPageFinished(url string) {
 //
 //export WailsOhNativeServeAsset
 func WailsOhNativeServeAsset(path, method, _ string) ([]byte, bool) {
-	if !waitForAppReady(10 * time.Second) {
-		openharmonyDebugLogf("[NAPI] timeout waiting for app ready, dropping %s", path)
+	if !OpenharmonyReady() {
 		return nil, false
 	}
 	globalAppLock.RLock()

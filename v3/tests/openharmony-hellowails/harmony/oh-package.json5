@@ -1,0 +1,6 @@
+{
+  "modelVersion": "6.0.0",
+  "description": "HomeCast ArkTS + ArkWeb + Native Go shell",
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -22,8 +22,6 @@ var (
 	openharmonyMessageProcessorOnce sync.Once
 	openharmonyMessageProcessor     *MessageProcessor
 
-	openharmonyWindowMessageBuffer = make(chan *windowMessage, 20)
-
 	// openharmonyRuntimeReadyWindows tracks windows for which a synthetic
 	// runtime-ready message has already been emitted (mirrors android).
 	openharmonyRuntimeReadyWindows sync.Map
@@ -96,7 +94,7 @@ func serveAssetForOpenharmony(app *App, method string, path string) ([]byte, err
 			// A call to /wails/runtime proves the runtime is mounted, so treat the
 			// first one as an implicit ready signal as a fallback.
 			if _, alreadyReady := openharmonyRuntimeReadyWindows.LoadOrStore(windowID, true); !alreadyReady {
-				openharmonyWindowMessageBuffer <- &windowMessage{
+				windowMessageBuffer <- &windowMessage{
 					windowId: windowID,
 					message:  "wails:runtime:ready",
 				}
@@ -192,7 +190,7 @@ func handleMessageForOpenharmony(app *App, message string) {
 		}
 	}
 
-	openharmonyWindowMessageBuffer <- &windowMessage{
+	windowMessageBuffer <- &windowMessage{
 		windowId: openharmonyFirstWindowID(app),
 		message:  msg,
 	}
