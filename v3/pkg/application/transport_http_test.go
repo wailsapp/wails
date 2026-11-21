@@ -1,11 +1,13 @@
 package application
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -112,5 +114,44 @@ func TestHTTPTransportRuntimeBodyStopsReadingAtLimit(t *testing.T) {
 	}
 	if padding.remaining != maxRuntimeBodyBytes-1 {
 		t.Fatalf("read beyond limit probe: %d bytes remain", padding.remaining)
+	}
+}
+
+// A chunk the client sends again after a failed attempt replaces the first copy; an upload of exactly the limit must
+// not be refused because the retry was counted twice.
+func TestHTTPTransportChunkRetryDoesNotCountTwice(t *testing.T) {
+	const chunks = maxAssembledBytes / maxChunkBodyBytes
+	transport := NewHTTPTransport()
+	send := func(index int) *httptest.ResponseRecorder {
+		body := bytes.Repeat([]byte(" "), maxChunkBodyBytes)
+		if index == 0 {
+			copy(body, "{}")
+		}
+		req := httptest.NewRequest(http.MethodPost, "/wails/runtime", bytes.NewReader(body))
+		req.Header.Set("x-wails-client-id", "test")
+		req.Header.Set(chunkIDHeader, "retry")
+		req.Header.Set(chunkIndexHeader, strconv.Itoa(index))
+		req.Header.Set(chunkTotalHeader, strconv.Itoa(chunks))
+		rec := httptest.NewRecorder()
+		transport.handleRuntimeRequest(rec, req)
+		return rec
+	}
+	if rec := send(0); rec.Code != http.StatusOK {
+		t.Fatalf("chunk 0: %d", rec.Code)
+	}
+	if rec := send(0); rec.Code != http.StatusOK {
+		t.Fatalf("retried chunk 0: %d: %s", rec.Code, rec.Body.String())
+	}
+	var last *httptest.ResponseRecorder
+	for i := 1; i < chunks; i++ {
+		last = send(i)
+	}
+	// The assembled body is "{}" plus spaces, which parses but names no method, so it is answered 422; a refusal
+	// for size is also a 422, told apart by its message.
+	if strings.Contains(last.Body.String(), "too large") {
+		t.Fatalf("final chunk refused for size: %s", last.Body.String())
+	}
+	if last.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("final chunk: %d, want the assembled body processed: %s", last.Code, last.Body.String())
 	}
 }
