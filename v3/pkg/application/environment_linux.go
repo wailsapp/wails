@@ -57,13 +57,9 @@ func getCursorPositionFromCompositor() (x, y int, ok bool) {
 			return 0, 0, false
 		}
 		return parseCursorPos(strings.TrimSpace(out))
-	case "sway":
-		out, err := swayIPC("get_seats")
-		if err != nil {
-			return 0, 0, false
-		}
-		return parseSwayCursor(out)
 	}
+	// Sway's IPC reports no pointer position (GET_SEATS has none), so on
+	// sway, as elsewhere, the caller falls back.
 	return 0, 0, false
 }
 
@@ -81,37 +77,6 @@ func parseCursorPos(s string) (x, y int, ok bool) {
 	if err != nil {
 		return 0, 0, false
 	}
-	return x, y, true
-}
-
-func parseSwayCursor(json string) (x, y int, ok bool) {
-	cursorIdx := strings.Index(json, `"cursor"`)
-	if cursorIdx == -1 {
-		return 0, 0, false
-	}
-
-	xIdx := strings.Index(json[cursorIdx:], `"x"`)
-	if xIdx == -1 {
-		return 0, 0, false
-	}
-	xStart := cursorIdx + xIdx + 4
-	xEnd := strings.IndexAny(json[xStart:], ",}")
-	if xEnd == -1 {
-		return 0, 0, false
-	}
-	x, _ = strconv.Atoi(strings.TrimSpace(json[xStart : xStart+xEnd]))
-
-	yIdx := strings.Index(json[cursorIdx:], `"y"`)
-	if yIdx == -1 {
-		return 0, 0, false
-	}
-	yStart := cursorIdx + yIdx + 4
-	yEnd := strings.IndexAny(json[yStart:], ",}")
-	if yEnd == -1 {
-		return 0, 0, false
-	}
-	y, _ = strconv.Atoi(strings.TrimSpace(json[yStart : yStart+yEnd]))
-
 	return x, y, true
 }
 
@@ -154,57 +119,4 @@ func hyprlandIPC(command string) (string, error) {
 	}
 
 	return result.String(), nil
-}
-
-func swayIPC(command string) (string, error) {
-	socketPath := os.Getenv("SWAYSOCK")
-	if socketPath == "" {
-		return "", fmt.Errorf("SWAYSOCK not set")
-	}
-
-	conn, err := net.Dial("unix", socketPath)
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-
-	msgType := uint32(0)
-	if strings.HasPrefix(command, "get_") {
-		switch command {
-		case "get_seats":
-			msgType = 5
-		}
-	} else {
-		msgType = 0
-	}
-
-	payload := []byte(command)
-	header := make([]byte, 14)
-	copy(header[0:6], "i3-ipc")
-	header[6] = byte(len(payload))
-	header[7] = byte(len(payload) >> 8)
-	header[8] = byte(len(payload) >> 16)
-	header[9] = byte(len(payload) >> 24)
-	header[10] = byte(msgType)
-	header[11] = byte(msgType >> 8)
-	header[12] = byte(msgType >> 16)
-	header[13] = byte(msgType >> 24)
-
-	conn.Write(header)
-	conn.Write(payload)
-
-	respHeader := make([]byte, 14)
-	_, err = conn.Read(respHeader)
-	if err != nil {
-		return "", err
-	}
-
-	respLen := uint32(respHeader[6]) | uint32(respHeader[7])<<8 | uint32(respHeader[8])<<16 | uint32(respHeader[9])<<24
-	respBody := make([]byte, respLen)
-	_, err = conn.Read(respBody)
-	if err != nil {
-		return "", err
-	}
-
-	return string(respBody), nil
 }

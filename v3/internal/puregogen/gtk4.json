@@ -1182,6 +1182,10 @@
       ]
     },
     {
+      "name": "webkit_web_view_reload",
+      "library": "libWebKit"
+    },
+    {
       "name": "webkit_web_view_load_uri",
       "library": "libWebKit",
       "strings": [
@@ -1203,6 +1207,22 @@
     {
       "name": "webkit_web_view_stop_loading",
       "library": "libWebKit"
+    },
+    {
+      "name": "cairo_region_create",
+      "library": "libGtk"
+    },
+    {
+      "name": "cairo_region_destroy",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_surface_set_input_region",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_realize",
+      "library": "libGtk"
     }
   ]
 }

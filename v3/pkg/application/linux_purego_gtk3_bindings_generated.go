@@ -758,7 +758,6 @@ type _Ctype_void [0]byte
 
 const _Ciconst_APPLICATION_DEFAULT_FLAGS = 0x20
 const _Ciconst_GDK_2BUTTON_PRESS = 0x5
-const _Ciconst_GDK_ALL_EVENTS_MASK = 0x3fffffe
 const _Ciconst_GDK_BUTTON1_MASK = 0x100
 const _Ciconst_GDK_BUTTON2_MASK = 0x200
 const _Ciconst_GDK_BUTTON3_MASK = 0x400
@@ -766,12 +765,10 @@ const _Ciconst_GDK_BUTTON_PRESS = 0x4
 const _Ciconst_GDK_BUTTON_RELEASE = 0x7
 const _Ciconst_GDK_COLORSPACE_RGB = 0x0
 const _Ciconst_GDK_CONTROL_MASK = 0x4
-const _Ciconst_GDK_ENTER_NOTIFY_MASK = 0x1000
 const _Ciconst_GDK_FOCUS_CHANGE = 0xc
 const _Ciconst_GDK_GRAVITY_NORTH_WEST = 0x1
 const _Ciconst_GDK_HINT_MAX_SIZE = 0x4
 const _Ciconst_GDK_HINT_MIN_SIZE = 0x2
-const _Ciconst_GDK_LEAVE_NOTIFY_MASK = 0x2000
 const _Ciconst_GDK_MOD1_MASK = 0x8
 const _Ciconst_GDK_MODIFIER_MASK = 0x5c001fff
 const _Ciconst_GDK_SHIFT_MASK = 0x1
@@ -809,6 +806,8 @@ const _Ciconst_WEBKIT_LOAD_STARTED = 0x0
 const _Ciconst_WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES = 0x0
 const _Ciconst_WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START = 0x0
 
+var _Cfunc_cairo_region_create func() (r1 *_Ctype_struct__cairo_region)
+var _Cfunc_cairo_region_destroy func(p0 *_Ctype_struct__cairo_region)
 var _Cfunc_free func(p0 unsafe.Pointer)
 var _Cfunc_g_application_hold func(p0 *_Ctype_struct__GApplication)
 var _Cfunc_g_application_quit func(p0 *_Ctype_struct__GApplication)
@@ -858,7 +857,7 @@ var _Cfunc_gdk_screen_is_composited func(p0 *_Ctype_struct__GdkScreen) (r1 _Ctyp
 var _Cfunc_gdk_seat_get_pointer func(p0 *_Ctype_struct__GdkSeat) (r1 *_Ctype_struct__GdkDevice)
 var _Cfunc_gdk_window_get_display func(p0 *_Ctype_struct__GdkWindow) (r1 *_Ctype_struct__GdkDisplay)
 var _Cfunc_gdk_window_get_state func(p0 *_Ctype_struct__GdkWindow) (r1 _Ctype_GdkWindowState)
-var _Cfunc_gdk_window_set_pass_through func(p0 *_Ctype_struct__GdkWindow, p1 _Ctype_gboolean)
+var _Cfunc_gdk_window_input_shape_combine_region func(p0 *_Ctype_struct__GdkWindow, p1 *_Ctype_struct__cairo_region, p2 _Ctype_gint, p3 _Ctype_gint)
 var _Cfunc_gtk_accel_group_new func() (r1 *_Ctype_struct__GtkAccelGroup)
 var _Cfunc_gtk_accel_label_new func(p0 *_Ctype_gchar) (r1 *_Ctype_struct__GtkWidget)
 var _Cfunc_gtk_accel_label_set_accel_widget func(p0 *_Ctype_struct__GtkAccelLabel, p1 *_Ctype_struct__GtkWidget)
@@ -927,7 +926,6 @@ var _Cfunc_gtk_widget_is_visible func(p0 *_Ctype_struct__GtkWidget) (r1 _Ctype_g
 var _Cfunc_gtk_widget_realize func(p0 *_Ctype_struct__GtkWidget)
 var _Cfunc_gtk_widget_remove_accelerator func(p0 *_Ctype_struct__GtkWidget, p1 *_Ctype_struct__GtkAccelGroup, p2 _Ctype_guint, p3 _Ctype_GdkModifierType) (r1 _Ctype_gboolean)
 var _Cfunc_gtk_widget_set_app_paintable func(p0 *_Ctype_struct__GtkWidget, p1 _Ctype_gboolean)
-var _Cfunc_gtk_widget_set_events func(p0 *_Ctype_struct__GtkWidget, p1 _Ctype_gint)
 var _Cfunc_gtk_widget_set_name func(p0 *_Ctype_struct__GtkWidget, p1 *_Ctype_gchar)
 var _Cfunc_gtk_widget_set_opacity func(p0 *_Ctype_struct__GtkWidget, p1 _Ctype_double)
 var _Cfunc_gtk_widget_set_sensitive func(p0 *_Ctype_struct__GtkWidget, p1 _Ctype_gboolean)
@@ -988,8 +986,8 @@ var _Cfunc_webkit_web_view_get_zoom_level func(p0 *_Ctype_struct__WebKitWebView)
 var _Cfunc_webkit_web_view_load_alternate_html func(p0 *_Ctype_struct__WebKitWebView, p1 *_Ctype_gchar, p2 *_Ctype_gchar, p3 *_Ctype_gchar)
 var _Cfunc_webkit_web_view_load_uri func(p0 *_Ctype_struct__WebKitWebView, p1 *_Ctype_gchar)
 var _Cfunc_webkit_web_view_new_with_user_content_manager func(p0 *_Ctype_struct__WebKitUserContentManager) (r1 *_Ctype_struct__GtkWidget)
+var _Cfunc_webkit_web_view_reload func(p0 *_Ctype_struct__WebKitWebView)
 var _Cfunc_webkit_web_view_set_background_color func(p0 *_Ctype_struct__WebKitWebView, p1 *_Ctype_struct__GdkRGBA)
-var _Cfunc_webkit_web_view_set_editable func(p0 *_Ctype_struct__WebKitWebView, p1 _Ctype_gboolean)
 var _Cfunc_webkit_web_view_set_zoom_level func(p0 *_Ctype_struct__WebKitWebView, p1 _Ctype_gdouble)
 var _Cfunc_webkit_web_view_stop_loading func(p0 *_Ctype_struct__WebKitWebView)
 var _Cfpvar_fp_activateLinux = unsafe.Pointer(purego.NewCallback(activateLinux))
@@ -1008,6 +1006,8 @@ var _Cfpvar_fp_onProcessRequest = unsafe.Pointer(purego.NewCallback(onProcessReq
 var _Cfpvar_fp_sendMessageToBackend = unsafe.Pointer(purego.NewCallback(sendMessageToBackend))
 
 func registerGTK3Functions(lib uintptr, missing *[]string) {
+	bindGTK3Symbol(missing, lib, &_Cfunc_cairo_region_create, "cairo_region_create")
+	bindGTK3Symbol(missing, lib, &_Cfunc_cairo_region_destroy, "cairo_region_destroy")
 	bindGTK3Symbol(missing, lib, &_Cfunc_free, "free")
 	bindGTK3Symbol(missing, lib, &_Cfunc_g_application_hold, "g_application_hold")
 	bindGTK3Symbol(missing, lib, &_Cfunc_g_application_quit, "g_application_quit")
@@ -1057,7 +1057,7 @@ func registerGTK3Functions(lib uintptr, missing *[]string) {
 	bindGTK3Symbol(missing, lib, &_Cfunc_gdk_seat_get_pointer, "gdk_seat_get_pointer")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gdk_window_get_display, "gdk_window_get_display")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gdk_window_get_state, "gdk_window_get_state")
-	bindGTK3Symbol(missing, lib, &_Cfunc_gdk_window_set_pass_through, "gdk_window_set_pass_through")
+	bindGTK3Symbol(missing, lib, &_Cfunc_gdk_window_input_shape_combine_region, "gdk_window_input_shape_combine_region")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_accel_group_new, "gtk_accel_group_new")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_accel_label_new, "gtk_accel_label_new")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_accel_label_set_accel_widget, "gtk_accel_label_set_accel_widget")
@@ -1126,7 +1126,6 @@ func registerGTK3Functions(lib uintptr, missing *[]string) {
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_realize, "gtk_widget_realize")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_remove_accelerator, "gtk_widget_remove_accelerator")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_set_app_paintable, "gtk_widget_set_app_paintable")
-	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_set_events, "gtk_widget_set_events")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_set_name, "gtk_widget_set_name")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_set_opacity, "gtk_widget_set_opacity")
 	bindGTK3Symbol(missing, lib, &_Cfunc_gtk_widget_set_sensitive, "gtk_widget_set_sensitive")
@@ -1187,8 +1186,8 @@ func registerGTK3Functions(lib uintptr, missing *[]string) {
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_load_alternate_html, "webkit_web_view_load_alternate_html")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_load_uri, "webkit_web_view_load_uri")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_new_with_user_content_manager, "webkit_web_view_new_with_user_content_manager")
+	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_reload, "webkit_web_view_reload")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_set_background_color, "webkit_web_view_set_background_color")
-	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_set_editable, "webkit_web_view_set_editable")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_set_zoom_level, "webkit_web_view_set_zoom_level")
 	bindGTK3Symbol(missing, lib, &_Cfunc_webkit_web_view_stop_loading, "webkit_web_view_stop_loading")
 }
