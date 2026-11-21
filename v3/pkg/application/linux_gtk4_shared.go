@@ -51,10 +51,6 @@ func (w *linuxWebviewWindow) setIcon(icon pointer) {
 	// application's .desktop file at the desktop-integration level.
 }
 
-func (w *linuxWebviewWindow) setTransparent() {
-	// GTK4: Transparency via CSS - different from GTK3
-}
-
 func (w *linuxWebviewWindow) zoomIn() {
 	w.setZoom(w.getZoom() * 1.10)
 }
