@@ -7,11 +7,11 @@ sourcePath: "features/dialogs/file.md"
 
 ## Dateidialoge
 
-Wails bietet **native Dateidialoge** mit plattformgerechtem Erscheinungsbild zum Öffnen und Speichern von Dateien sowie zum Auswählen von Ordnern. Die einfache API unterstützt Dateitypfilter, Mehrfachauswahl und Standardverzeichnisse.
+Wails bietet **native Dateidialoge** mit plattformgerechtem Erscheinungsbild zum Öffnen und Speichern von Dateien sowie zum Auswählen von Ordnern. Die einfache API unterstützt Dateitypfilter, Mehrfachauswahl und Standardpfade.
 
 ![Eine von einer Wails-Anwendung geöffnete native macOS-Dateiauswahl](/assets/screenshots/file-dialog-macos.png)
 
-Die Wails-API übergibt die Auswahl an das Betriebssystem, sodass die vertraute Navigation sowie das bekannte Filter- und Auswahlverhalten erhalten bleiben.
+Die Wails-API verwendet die Dateiauswahl des Betriebssystems, sodass das vertraute Navigations-, Filter- und Auswahlverhalten erhalten bleibt.
 
 ## Dateidialoge erstellen
 
@@ -115,7 +115,7 @@ saveFile(path, data)
 - Dokumente speichern
 - Daten exportieren
 - Neue Dateien erstellen
-- Speichern unter …
+- Speichern unter ...
 
 ### Mit Standarddateinamen
 
@@ -135,7 +135,7 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-### Überschreiben bestätigen
+### Bestätigung beim Überschreiben
 
 ```go
 path, err := app.Dialog.SaveFile().
@@ -169,7 +169,7 @@ saveFile(path, data)
 
 ## Dialog zur Ordnerauswahl
 
-Wählen Sie ein Verzeichnis über den Dialog zum Öffnen von Dateien aus, in dem die Verzeichnisauswahl aktiviert ist:
+Wählen Sie ein Verzeichnis über den Dialog zum Öffnen von Dateien aus, indem Sie die Verzeichnisauswahl aktivieren:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -207,7 +207,7 @@ path, err := app.Dialog.OpenFile().
 
 Fügen Sie Dialogen mit der Methode `AddFilter()` Dateitypfilter hinzu. Jeder Aufruf fügt eine neue Filteroption hinzu.
 
-### Grundlegende Filter
+### Einfache Filter
 
 ```go
 path, _ := app.Dialog.OpenFile().
@@ -388,7 +388,7 @@ func processMultipleFiles(app *application.App) {
 }
 ```
 
-### Mit Ordnerauswahl exportieren
+### Export mit Ordnerauswahl
 
 ```go
 func exportData(app *application.App, data []byte) {
@@ -433,7 +433,7 @@ func exportData(app *application.App, data []byte) {
 }
 ```
 
-### Mit Validierung importieren
+### Import mit Validierung
 
 ```go
 func importConfiguration(app *application.App) {
@@ -507,14 +507,14 @@ func importConfiguration(app *application.App) {
 - **Bestätigung anzeigen** – Bei destruktiven Aktionen
 - **Rückmeldung geben** – Erfolgs- und Fehlermeldungen
 
-### ❌ Nicht tun
+### ❌ Nicht empfohlen
 
 - **Validierung nicht überspringen** – Dateitypen prüfen
 - **Fehler nicht ignorieren** – Abbruch behandeln
-- **Keine allgemeinen Filter verwenden** – Konkrete Filter angeben
+- **Keine generischen Filter verwenden** – Filter präzise definieren
 - **„Alle Dateien“ nicht vergessen** – Immer als Option anbieten
-- **Pfade nicht fest codieren** – Home-Verzeichnis des Benutzers verwenden
-- **Nicht voraussetzen, dass die Datei existiert** – Vor dem Öffnen prüfen
+- **Pfade nicht fest codieren** – Das Benutzerverzeichnis verwenden
+- **Nicht voraussetzen, dass die Datei vorhanden ist** – Vor dem Öffnen prüfen
 
 ## Plattformunterschiede
 
@@ -544,7 +544,7 @@ func importConfiguration(app *application.App) {
 
 @cards{cols="2"}
 ℹ Meldungsdialoge
-Informations-, Warn- und Fehlerdialoge.
+Dialoge für Informationen, Warnungen und Fehler.
 
 [Mehr erfahren →](/features/dialogs/message/)
 
@@ -570,4 +570,4 @@ Verwenden Sie Ereignisse für Fortschrittsmeldungen.
 
 ---
 
-**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Beispiele für Dateidialoge](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs) an.
+**Noch Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele für Dateidialoge](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs) an.

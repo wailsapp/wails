@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Go와 프런트엔드 간 바인딩을 생성합니다. 플래그: `-d`(출력 디렉터리), `-models`, `-index`, `-ts`, `-i`(인터페이스), `-b`(번들), `-names`(`Call.ByName` 출력), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean`(기본값 `true`), `-f`, `-obfuscated`(Garble 빌드를 위한 안정적인 바인딩 ID가 포함된 `wails_obfuscated.gen.go` 생성. [난독화 빌드](/guides/build/obfuscation/) 참조), `-obfuscated-output`(생성된 파일을 저장할 디렉터리. 기본값은 main 패키지 디렉터리). 패키지 패턴(예: `./...`)을 인수로 받을 수 있으며, 지정하지 않으면 현재 디렉터리를 사용합니다. |
 | `generate icons` | 원본 PNG를 플랫폼 아이콘 형식으로 변환합니다. 플래그: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | `build/config.yml`에서 `build/` 디렉터리의 콘텐츠(Taskfile 조각, NSIS 파일, `Info.plist`, `.desktop` 템플릿 등)를 생성합니다. |
-| `generate runtime` | 웹뷰에 제공되는 사전 빌드된 `/wails/runtime.js`을 다시 생성합니다. |
+| `generate runtime` | CLI에 내장된 프로덕션/디버그 JavaScript 번들을 내보냅니다(`-d`에서 대상 위치를 선택합니다). |
 | `generate syso` | Windows용 `.syso` 리소스 파일(아이콘 + 매니페스트 + 버전 정보)을 생성합니다. |
 | `generate webview2bootstrapper` | Windows용 WebView2 부트스트랩 설치 프로그램을 생성합니다. |
 | `generate constants` | Go 이벤트 형식에서 JS 이벤트 이름 상수를 생성합니다. |
@@ -118,4 +118,4 @@ wails3 <command> --help
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)를 확인하세요.

@@ -7,7 +7,7 @@ sourcePath: "features/screens/info.md"
 
 ## Informations sur les écrans
 
-Wails fournit une **API unifiée pour les écrans** qui fonctionne sur toutes les plateformes. Utilisez un code uniforme pour obtenir des informations sur les écrans, détecter plusieurs moniteurs, interroger les propriétés des écrans (taille, position et DPI), identifier l’écran principal et gérer la mise à l’échelle selon les DPI.
+Wails fournit une **API unifiée pour les écrans** qui fonctionne sur toutes les plateformes. Obtenez des informations sur les écrans, détectez plusieurs moniteurs, interrogez les propriétés des écrans (taille, position, DPI), identifiez l’écran principal et gérez la mise à l’échelle selon les DPI avec un code cohérent.
 
 ## Démarrage rapide
 
@@ -25,9 +25,9 @@ primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
-**C’est tout !** Vous disposez désormais d’informations multiplateformes sur les écrans.
+**C’est tout !** Vous disposez désormais d’informations multiplateformes sur les écrans.
 
-## Obtention d’informations sur les écrans
+## Obtenir des informations sur les écrans
 
 ### Tous les écrans
 
@@ -57,7 +57,7 @@ fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
 
 ### Écran actuel
 
-Obtenez l’écran qui contient une fenêtre :
+Obtenez l’écran contenant une fenêtre :
 
 ```go
 screen, err := window.GetScreen()
@@ -67,7 +67,7 @@ if err != nil {
 fmt.Printf("Window is on: %s\n", screen.Name)
 ```
 
-### Écran par identifiant
+### Écran par ID
 
 ```go
 screen := app.Screen.GetByID("screen-id")
@@ -76,9 +76,9 @@ if screen != nil {
 }
 ```
 
-## Propriétés des écrans
+## Propriétés de l’écran
 
-### Structure d’un écran
+### Structure de l’écran
 
 ```go
 type Screen struct {
@@ -100,7 +100,7 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-Lisez les dimensions en pixels via `screen.Size.Width` / `screen.Size.Height` : il n’existe aucun champ `Width`/`Height` de premier niveau.
+Lisez les tailles en pixels via `screen.Size.Width` / `screen.Size.Height` — il n’existe aucun champ `Width`/`Height` de premier niveau.
 
 ### Pixels physiques et pixels logiques
 
@@ -120,13 +120,13 @@ fmt.Printf("Physical: %dx%d\n", physicalWidth, physicalHeight)
 fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
 ```
 
-**Facteurs de mise à l’échelle courants :**
+**Facteurs d’échelle courants :**
 
 - `1.0` - DPI standard (96 DPI)
-- `1.25` - Mise à l’échelle à 125 % (120 DPI)
-- `1.5` - Mise à l’échelle à 150 % (144 DPI)
-- `2.0` - Mise à l’échelle à 200 % (192 DPI) - Retina
-- `3.0` - Mise à l’échelle à 300 % (288 DPI) - 4K/5K
+- `1.25` - Mise à l’échelle de 125 % (120 DPI)
+- `1.5` - Mise à l’échelle de 150 % (144 DPI)
+- `2.0` - Mise à l’échelle de 200 % (192 DPI) - Retina
+- `3.0` - Mise à l’échelle de 300 % (288 DPI) - 4K/5K
 
 ## Positionnement des fenêtres
 
@@ -251,7 +251,7 @@ func chooseMonitor() (*Screen, error) {
 
 ## Exemples complets
 
-### Gestionnaire de fenêtres pour plusieurs moniteurs
+### Gestionnaire de fenêtres multimoniteur
 
 ```go
 type MultiMonitorManager struct {
@@ -404,19 +404,19 @@ func visualiseScreenLayout() string {
 
 ### ✅ À faire
 
-- **Vérifiez le nombre d’écrans** - Gérez aussi bien un seul moniteur que plusieurs
+- **Vérifiez le nombre d’écrans** - Gérez les configurations à un ou plusieurs moniteurs
 - **Utilisez des pixels logiques** - Wails gère automatiquement les DPI
 - **Centrez les fenêtres** - L’expérience utilisateur est meilleure qu’avec des positions fixes
 - **Validez les positions** - Assurez-vous que les fenêtres sont visibles
 - **Gérez les changements d’écran** - Des moniteurs peuvent être ajoutés ou retirés
-- **Testez avec différents réglages de DPI** - 100 %, 125 %, 150 %, 200 %
+- **Testez avec différentes valeurs de DPI** - 100 %, 125 %, 150 %, 200 %
 
 ### ❌ À ne pas faire
 
 - **Ne codez pas les positions en dur** - Utilisez les dimensions de l’écran
-- **Ne supposez pas que l’écran principal est le seul écran** - L’utilisateur peut en avoir plusieurs
-- **N’ignorez pas le facteur de mise à l’échelle** - Il est important pour la prise en compte des DPI
-- **Ne placez pas de fenêtre hors de l’écran** - Validez les coordonnées
+- **Ne supposez pas que l’écran principal est utilisé** - L’utilisateur peut en avoir plusieurs
+- **N’ignorez pas le facteur d’échelle** - Il est important pour la prise en compte des DPI
+- **Ne positionnez pas les fenêtres hors de l’écran** - Validez les coordonnées
 - **N’oubliez pas les changements d’écran** - Les ordinateurs portables peuvent être connectés à une station d’accueil ou déconnectés de celle-ci
 - **N’utilisez pas de pixels physiques** - Utilisez des pixels logiques
 
@@ -424,16 +424,16 @@ func visualiseScreenLayout() string {
 
 ### macOS
 
-- Écrans Retina (facteur de mise à l’échelle 2x)
+- Écrans Retina (facteur d’échelle de 2x)
 - Configurations à plusieurs écrans courantes
-- Système de coordonnées : (0,0) dans le coin inférieur gauche
+- Système de coordonnées : (0,0) en bas à gauche
 - Les Spaces (bureaux virtuels) influent sur le positionnement
 
 ### Windows
 
-- Différents niveaux de mise à l’échelle selon les DPI (100 %, 125 %, 150 %, 200 %)
+- Différentes mises à l’échelle selon les DPI (100 %, 125 %, 150 %, 200 %)
 - Configurations à plusieurs écrans courantes
-- Système de coordonnées : (0,0) dans le coin supérieur gauche
+- Système de coordonnées : (0,0) en haut à gauche
 - Prise en compte des DPI propre à chaque moniteur
 
 ### Linux
@@ -441,7 +441,7 @@ func visualiseScreenLayout() string {
 - Varie selon l’environnement de bureau
 - Différences entre X11 et Wayland
 - La prise en charge de la mise à l’échelle selon les DPI varie
-- Prise en charge de plusieurs écrans
+- Plusieurs écrans pris en charge
 
 ## Étapes suivantes
 
@@ -459,7 +459,7 @@ Configurez l’apparence des fenêtres.
 
 ---
 ◆ Fenêtres multiples
-Modèles à plusieurs fenêtres.
+Découvrez les modèles à plusieurs fenêtres.
 
 [En savoir plus →](/features/windows/multiple/)
 
@@ -473,4 +473,4 @@ Appelez des fonctions Go depuis JavaScript.
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples relatifs aux écrans](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples relatifs aux écrans](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

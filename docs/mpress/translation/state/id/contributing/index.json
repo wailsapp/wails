@@ -319,16 +319,16 @@
       "updatedAt": "2026-10-25T22:08:23Z"
     },
     "b0027-text-01": {
-      "sourceHash": "9b91e520eea1c83710e626752e8ab8190718ce1c7ce04eb5af48c73dd146768a",
-      "targetHash": "c52cc386edea2efc962ee14a8cdf67bd61f45b5109b0c70dab87d7804010bb72",
-      "machineHash": "c52cc386edea2efc962ee14a8cdf67bd61f45b5109b0c70dab87d7804010bb72",
-      "machineText": "Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/\u003cproposal name\u003e/proposal.md` dan isi setiap bagiannya.",
+      "sourceHash": "8e25be0cf5540f4c773ecffab0f41cca62baebb8b89aa4512c8a99ce05a791b7",
+      "targetHash": "f2145f05ec1ae56049e601bde9bf8ecf17485289b3cd9f5a8f52ffa3dcfc4bfb",
+      "machineHash": "f2145f05ec1ae56049e601bde9bf8ecf17485289b3cd9f5a8f52ffa3dcfc4bfb",
+      "machineText": "Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/\u003cproposal name\u003e/proposal.md` dan isi setiap bagiannya.",
       "status": "machine-translated",
-      "sourcePreview": "Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TE…",
+      "sourcePreview": "Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/WEP_TEMPLATE.md…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:08:23Z"
+      "updatedAt": "2026-11-06T02:11:40Z"
     },
     "b0028-text-01": {
       "sourceHash": "431b794cfd088b4de5d716a8c98fd3e4fbf833c86fa0767c4fdb20c1e12ad1c4",
@@ -367,16 +367,16 @@
       "updatedAt": "2026-10-25T22:08:23Z"
     },
     "b0031-text-01": {
-      "sourceHash": "f7b1f8fe5caa60e12c9a39002eea12627ea180898361db349ee0ae49b131e94d",
-      "targetHash": "87f2996ce8129ae881377286a8067884b254feed89437272ddfb1b502b54e262",
-      "machineHash": "87f2996ce8129ae881377286a8067884b254feed89437272ddfb1b502b54e262",
-      "machineText": "Proses lengkap didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).",
+      "sourceHash": "3d6aaf1377cf9f121c0dfe95c4fd56233a00d83e4d8c5a8f5568ea9638ae7a0a",
+      "targetHash": "1ce1f518e1a335da25edca8bb31b4fc802a5756051f7d21419fdbc209af5b7c5",
+      "machineHash": "1ce1f518e1a335da25edca8bb31b4fc802a5756051f7d21419fdbc209af5b7c5",
+      "machineText": "Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md).",
       "status": "machine-translated",
-      "sourcePreview": "The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releas…",
+      "sourcePreview": "The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/v3.0.0…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:08:23Z"
+      "updatedAt": "2026-11-06T02:11:40Z"
     },
     "b0032-heading-01": {
       "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",

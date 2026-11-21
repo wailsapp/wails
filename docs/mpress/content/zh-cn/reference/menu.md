@@ -11,9 +11,9 @@ sourcePath: "reference/menu.md"
 
 **菜单类型：**
 
-- **应用程序菜单**——顶部菜单栏（文件、编辑等）
-- **上下文菜单**——右键菜单
-- **系统托盘菜单**——系统托盘/通知区域中的菜单
+- **应用程序菜单** - 顶部菜单栏（文件、编辑等）
+- **上下文菜单** - 右键菜单
+- **系统托盘菜单** - 系统托盘/通知区域中的菜单
 
 ## 创建菜单
 
@@ -35,7 +35,7 @@ menu := app.NewMenu()
 
 ### Add()
 
-向菜单中添加一个菜单项。
+向菜单添加一个菜单项。
 
 ```go
 func (m *Menu) Add(label string) *MenuItem
@@ -43,7 +43,7 @@ func (m *Menu) Add(label string) *MenuItem
 
 **参数：**
 
-- `label`——菜单项显示的文本
+- `label` - 菜单项显示的文本
 
 <strong>返回值：</strong>创建的菜单项
 
@@ -58,7 +58,7 @@ item.OnClick(func(ctx *application.Context) {
 
 ### AddSubmenu()
 
-向菜单中添加一个子菜单。
+向菜单添加一个子菜单。
 
 ```go
 func (m *Menu) AddSubmenu(label string) *Menu
@@ -66,7 +66,7 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 **参数：**
 
-- `label`——子菜单标签
+- `label` - 子菜单标签
 
 <strong>返回值：</strong>创建的子菜单
 
@@ -100,7 +100,9 @@ menu.Add("Select All")
 
 ### AddSectionHeader()
 
-在 **macOS 14 及更高版本**上添加原生、不可交互的分区标题。在较早版本的 macOS 和所有其他平台（包括服务器构建）上，此调用不执行任何操作：不会插入占位菜单项。
+在**macOS 14及更高版本**上添加原生、不可交互的分区标题。
+在较旧的 macOS 版本及所有其他平台（包括服务器构建）上，
+此操作不会产生任何效果：不会插入占位菜单项。
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
@@ -116,9 +118,10 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-标题使用 AppKit 标准的分区标题外观。重新构建已显示的菜单后，与其他结构性更改一样，请调用 `menu.Update()`。有关使用 `os.Hostname()` 获取标题的示例，请参阅 `systray-menu`。
+标题采用 AppKit 的标准分区标题外观。与其他结构性更改一样，重建已经显示的菜单后，请调用`menu.Update()`。
+有关通过`os.Hostname()`获得的标题，请参阅`systray-menu`示例。
 
-被省略的标题不会分隔单选组。如果需要在每个平台上保持各组独立，请使用 `AddSeparator()`。
+被省略的标题不会分隔单选菜单项组。如果单选菜单项组必须在每个平台上都保持彼此独立，请使用`AddSeparator()`。
 
 ### AddCheckbox()
 
@@ -130,8 +133,8 @@ func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
 
 **参数：**
 
-- `label`——复选框标签
-- `checked`——初始选中状态
+- `label` - 复选框标签
+- `checked` - 初始选中状态
 
 **示例：**
 
@@ -153,8 +156,8 @@ func (m *Menu) AddRadio(label string, checked bool) *MenuItem
 
 **参数：**
 
-- `label`——单选按钮标签
-- `checked`——初始选中状态
+- `label` - 单选按钮标签
+- `checked` - 初始选中状态
 
 **示例：**
 
@@ -175,7 +178,7 @@ gridView.OnClick(func(ctx *application.Context) {
 
 ### Update()
 
-更新菜单以反映对菜单项所做的任何更改。
+更新菜单，使其反映对菜单项所做的所有更改。
 
 ```go
 func (m *Menu) Update()
@@ -202,9 +205,9 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 **参数：**
 
-- `callback`——点击菜单项时调用的函数
+- `callback` - 点击菜单项时调用的函数
 
-<strong>返回值：</strong>该菜单项（用于链式调用）
+<strong>返回值：</strong>菜单项（用于链式调用）
 
 **示例：**
 
@@ -299,12 +302,12 @@ func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
 
 **参数：**
 
-- `accelerator`——键盘快捷键（例如“Ctrl+S”、“Cmd+Q”）
+- `accelerator` - 键盘快捷键（例如“Ctrl+S”、“Cmd+Q”）
 
 **快捷键格式：**
 
 - **修饰键：**`Ctrl`、`Cmd`、`Alt`、`Shift`
-- **按键：**`A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace`等
+- **按键：**`A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace`等。
 - <strong>平台：</strong>在 macOS 上使用`Cmd`，在 Windows/Linux 上使用`Ctrl`
 
 **示例：**
@@ -400,13 +403,13 @@ app.Menu.Set(menu)
 
 - <strong>macOS：</strong>菜单显示在屏幕顶部的菜单栏中
 - <strong>Windows/Linux：</strong>菜单显示在窗口标题栏中
-- <strong>macOS：</strong>自动添加以应用名称命名的应用程序菜单
+- <strong>macOS：</strong>自动添加以应用名称命名的应用菜单
 
 ## 上下文菜单
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-通过管理器创建`*ContextMenu`，并以指定名称注册它。`ContextMenuManager.Add`接受`*ContextMenu`，**而不是**`*Menu`，并且<strong>没有</strong>`app.RegisterContextMenu`方法。
+通过管理器创建`*ContextMenu`，并使用一个名称注册它。`ContextMenuManager.Add`接受`*ContextMenu`，**而不是**`*Menu`，并且**没有**`app.RegisterContextMenu`方法。
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +418,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-也可以使用包级`application.NewContextMenu(name string) *ContextMenu`一步创建并注册上下文菜单。
+也可以使用包级`application.NewContextMenu(name string) *ContextMenu`，一步创建并注册上下文菜单。
 
 **Go：**
 
@@ -432,9 +435,9 @@ contextMenu.Add("Select All").OnClick(selectAll)
 app.ContextMenu.Add("editor", contextMenu)
 ```
 
-**HTML/CSS：**
+**HTML / CSS：**
 
-当右键单击的目标元素（或其任意祖先元素）的`--custom-contextmenu` CSS 自定义属性设为某个已注册上下文菜单的名称时，运行时会触发该菜单。可选的`--custom-contextmenu-data`属性会通过`ctx.ContextMenuData()`传递给 Go 回调。要禁用浏览器的默认上下文菜单，请设置`--default-contextmenu: hide`（或`auto`/`show`）。
+当右键单击的目标元素（或其任意祖先元素）的`--custom-contextmenu` CSS 自定义属性被设为相应名称时，运行时会触发已注册的上下文菜单。可选的`--custom-contextmenu-data`属性会通过`ctx.ContextMenuData()`传递给 Go 回调。要阻止浏览器的默认上下文菜单，请设置`--default-contextmenu: hide`（或`auto`/`show`）。
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -443,7 +446,7 @@ app.ContextMenu.Add("editor", contextMenu)
 </div>
 ```
 
-不存在`data-wails-context-menu="..."`属性——运行时从未接入过该属性。
+不存在`data-wails-context-menu="..."`属性——运行时从未接入该属性。
 
 **动态上下文菜单：**
 
@@ -521,7 +524,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-设置将鼠标悬停在托盘图标上时显示的工具提示。此方法不返回任何内容。
+设置鼠标悬停在托盘图标上时显示的工具提示。该方法无返回值。
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -556,7 +559,7 @@ tray.OnClick(func() {
 
 ## 完整示例
 
-### 标准应用程序菜单
+### 标准应用菜单
 
 ```go
 package main
@@ -639,7 +642,7 @@ func main() {
 }
 ```
 
-### 系统托盘应用程序
+### 系统托盘应用
 
 ```go
 func setupSystemTray(app *application.App, window application.Window) {
@@ -753,30 +756,30 @@ func (e *Editor) save() {
 ### ✅ 推荐做法
 
 - **使用标准快捷键**——遵循平台惯例（例如使用 Ctrl+C 复制）
-- **更改后调用 Update()**——否则菜单不会反映这些更改
-- **将相关项目分组**——使用分隔线组织菜单项
-- **禁用不可用的操作**——不要隐藏，应使用 SetEnabled(false) 将其禁用
+- **更改后调用 Update()**——否则菜单不会反映更改
+- **将相关项目分组**——使用分隔线整理菜单项
+- **禁用不可用的操作**——不要隐藏它们，而应使用 SetEnabled(false) 禁用
 - **使用清晰的标签**——保持简洁且含义明确
 - **遵循平台惯例**——注意 macOS 与 Windows/Linux 的菜单模式差异
 
-### ❌ 避免的做法
+### ❌ 避免做法
 
 - **不要忘记调用 Update()**——这是最常见的错误
-- **嵌套不要过深**——菜单最多保持2-3层
+- **不要嵌套过深**——菜单最多保持2-3层
 - **不要使用含义模糊的标签**——例如“处理”与“处理文档”
-- **不要过度复杂化**——保持菜单简洁且重点明确
+- **不要过度复杂化**——保持菜单简单且重点明确
 - **不要混用不同的表达方式**——保持命名和组织方式一致
 
 ## 平台特定说明
 
 ### macOS
 
-- 自动添加以应用名称命名的应用程序菜单
-- 快捷键应使用`Cmd`，而不是`Ctrl`
-- 默认情况下，应用程序菜单中包含“关于”、“偏好设置”和“退出”
+- 自动添加以应用名称命名的应用菜单
+- 快捷键使用`Cmd`，而不是`Ctrl`
+- 默认情况下，应用菜单中包含“关于”、“偏好设置”和“退出”
 
 ### Windows/Linux
 
-- 不会自动创建应用程序菜单
-- 使用`Ctrl`作为快捷键修饰键
+- 不会自动添加应用菜单
+- 快捷键使用`Ctrl`
 - “退出”通常位于“文件”菜单中

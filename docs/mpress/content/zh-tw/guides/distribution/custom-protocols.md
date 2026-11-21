@@ -1,28 +1,28 @@
 ---
 title: "自訂 URL 通訊協定"
-description: "註冊自訂 URL 通訊協定名稱，讓連結能啟動您的應用程式"
+description: "註冊自訂 URL 配置，讓使用者透過連結啟動您的應用程式"
 slug: "guides/distribution/custom-protocols"
 sourcePath: "guides/distribution/custom-protocols.md"
 ---
 
-自訂 URL 通訊協定（也稱為 URL 通訊協定名稱）可讓使用者點選採用自訂通訊協定的連結（例如`myapp://action`或`myapp://open/document`）時啟動您的應用程式。
+自訂 URL 通訊協定（亦稱 URL 配置）可讓使用者在點選使用您自訂通訊協定的連結（例如`myapp://action`或`myapp://open/document`）時啟動您的應用程式。
 
 ## 概觀
 
 自訂通訊協定可用於：
 
 - **深層連結**：使用特定資料啟動您的應用程式
-- **瀏覽器整合**：處理來自網頁的連結
+- **瀏覽器整合**：處理網頁中的連結
 - **電子郵件連結**：從電子郵件用戶端開啟您的應用程式
 - **應用程式間通訊**：從其他應用程式啟動
 
-**範例**：`myapp://open/document?id=123`會啟動您的應用程式，並開啟文件123。
+**範例**：`myapp://open/document?id=123`會啟動您的應用程式並開啟文件123。
 
 ## 設定
 
 在應用程式選項中定義自訂通訊協定：
 
-自訂通訊協定是在`build/config.yml`中宣告（各平台的封裝工具會在封裝時使用此設定，包括 Windows 上的 NSIS 巨集、MSIX 資訊清單、macOS 的`CFBundleURLTypes`，以及 Linux 的`.desktop`/`xdg-mime`）。`application.Protocol`型別並不存在，`application.Options`上也沒有`Protocols`欄位。
+自訂通訊協定宣告於`build/config.yml`中（各平台的封裝工具會在封裝時讀取此設定，包括 Windows 上的 NSIS 巨集、MSIX 資訊清單、macOS 的`CFBundleURLTypes`，以及 Linux 的`.desktop`/`xdg-mime`）。不存在`application.Protocol`型別，`application.Options`上也沒有`Protocols`欄位。
 
 ```yaml
 # build/config.yml
@@ -31,7 +31,7 @@ protocols:
     description: "My Application Protocol"
 ```
 
-在 Go 程式碼中，透過`ApplicationLaunchedWithUrl`事件監聽由 URL 觸發的啟動：
+在 Go 程式碼中，透過`ApplicationLaunchedWithUrl`事件監聽以 URL 啟動的情況：
 
 ```go
 package main
@@ -103,10 +103,10 @@ myapp://settings/theme?mode=dark
 myapp://user/profile?username=john
 ```
 
-**最佳做法：**
+**最佳實務：**
 
-- 通訊協定名稱使用小寫字母
-- 通訊協定名稱應簡短且容易記憶
+- 配置名稱使用小寫字母
+- 配置名稱應簡短且容易記憶
 - 使用階層式路徑表示資源
 - 使用查詢參數傳遞選用資料
 - 對特殊字元進行 URL 編碼
@@ -119,31 +119,31 @@ myapp://user/profile?username=john
 [Windows]
 ### Windows NSIS 安裝程式
 
-使用 NSIS 安裝程式時，**Wails v3 會自動註冊自訂通訊協定**。
+使用 NSIS 安裝程式時，**Wails v3會自動註冊自訂通訊協定**。
 
 #### 自動註冊
 
 使用`wails3 build`建置應用程式時，NSIS 安裝程式會：
 
-1. 自動註冊`build/config.yml`中`protocols:`鍵下宣告的所有通訊協定
+1. 在`protocols:`機碼下，自動註冊所有於`build/config.yml`中宣告的通訊協定
 2. 將通訊協定與應用程式的可執行檔建立關聯
 3. 建立正確的登錄項目
 4. 解除安裝時移除通訊協定關聯
 
-**不需要任何額外設定！**
+**不需要額外設定！**
 
 #### 運作方式
 
 NSIS 範本包含內建巨集：
 
-- `wails.associateCustomProtocols`－在安裝期間註冊通訊協定
-- `wails.unassociateCustomProtocols`－在解除安裝期間移除通訊協定
+- `wails.associateCustomProtocols`－安裝時註冊通訊協定
+- `wails.unassociateCustomProtocols`－解除安裝時移除通訊協定
 
 系統會根據您的`Protocols`設定自動呼叫這些巨集。
 
 #### 手動設定登錄（進階）
 
-如果需要手動註冊（不透過 NSIS）：
+如果您需要手動註冊（不使用 NSIS）：
 
 ```batch
 @echo off
@@ -155,7 +155,7 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"
 
 #### 測試
 
-測試通訊協定註冊：
+測試您的通訊協定註冊：
 
 ```powershell
 # Open protocol URL from PowerShell
@@ -171,7 +171,7 @@ start myapp://test/action
 
 #### 自動註冊
 
-使用 MSIX 建置應用程式時，資訊清單會自動納入`build/config.yml`通訊協定設定中的通訊協定註冊資訊。
+使用 MSIX 建置應用程式時，資訊清單會自動納入`build/config.yml`通訊協定設定中的通訊協定註冊。
 
 產生的資訊清單包含：
 
@@ -183,16 +183,16 @@ start myapp://test/action
 </uap:Extension>
 ```
 
-#### 通用連結（網頁至應用程式連結）
+#### Universal Links（網頁至應用程式連結）
 
-Windows 支援<strong>網頁至應用程式連結</strong>，運作方式類似 macOS 上的通用連結。將應用程式部署為 MSIX 套件時，您可以啟用 HTTPS 連結，直接啟動應用程式。
+Windows 支援**網頁至應用程式連結**，其運作方式與 macOS 上的 Universal Links 類似。將應用程式部署為 MSIX 套件時，您可以允許 HTTPS 連結直接啟動應用程式。
 
 @note{type="note"}
-網頁至應用程式連結需要手動設定資訊清單。自訂通訊協定名稱會依據`build/config.yml`自動設定，但關聯網域必須手動加入您的 MSIX 資訊清單。
+網頁至應用程式連結需要手動設定資訊清單。系統會根據`build/config.yml`自動設定自訂通訊協定配置，但您必須手動將關聯網域加入 MSIX 資訊清單。
 
 @end
 
-若要啟用網頁至應用程式連結，請依照[Microsoft 的網頁至應用程式連結指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)操作。您需要：
+若要啟用網頁至應用程式連結，請按照[Microsoft 的網頁至應用程式連結指南](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking)操作。您需要：
 
 1. **手動將 App URI Handler 加入 MSIX 資訊清單**（`build/windows/msix/app_manifest.xml`）：
   ```xml
@@ -204,20 +204,20 @@ Windows 支援<strong>網頁至應用程式連結</strong>，運作方式類似 
   ```
 
 
-2. <strong>在您的網站上設定`windows-app-web-link`：</strong>在`https://myawesomeapp.com/.well-known/windows-app-web-link`代管`windows-app-web-link`檔案。此檔案應包含應用程式的套件資訊及其處理的路徑。
+2. <strong>在您的網站上設定`windows-app-web-link`：</strong>於`https://myawesomeapp.com/.well-known/windows-app-web-link`託管`windows-app-web-link`檔案。此檔案應包含應用程式的套件資訊及其處理的路徑。
 
-當網頁至應用程式連結啟動您的應用程式時，您會收到與透過自訂通訊協定啟動時相同的`ApplicationLaunchedWithUrl`事件。
+當網頁至應用程式連結啟動您的應用程式時，您會收到與自訂通訊協定配置相同的`ApplicationLaunchedWithUrl`事件。
 
 [macOS]
 ### Info.plist 設定
 
-在 macOS 上，通訊協定是透過您的`Info.plist`檔案註冊。
+在 macOS 上，通訊協定透過您的`Info.plist`檔案註冊。
 
 #### 自動設定
 
-使用`wails3 build`建置時，Wails 會自動產生包含通訊協定的`Info.plist`。
+使用`wails3 build`建置時，Wails 會自動產生包含您所設定通訊協定的`Info.plist`。
 
-在`build/config.yml`中宣告的通訊協定會新增至：
+在`build/config.yml`中宣告的通訊協定會加入：
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -245,18 +245,18 @@ open "myapp://test/action"
 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
 ```
 
-#### 通用連結
+#### Universal Links
 
-除了自訂通訊協定外，macOS 也支援<strong>通用連結</strong>，可讓一般 HTTPS 連結（例如`https://myawesomeapp.com/path`）啟動您的應用程式。通用連結可在您的網頁與桌面應用程式之間提供流暢的使用者體驗。
+除了自訂通訊協定配置外，macOS 也支援**Universal Links**，可讓一般 HTTPS 連結（例如`https://myawesomeapp.com/path`）啟動您的應用程式。Universal Links 可在您的網頁與桌面應用程式之間提供流暢的使用者體驗。
 
 @note{type="caution"}
-通用連結要求您的 macOS 應用程式使用有效的 Apple Developer 憑證和佈建描述檔進行<strong>程式碼簽署</strong>。未簽署或臨時簽署的建置版本無法開啟通用連結。測試前，請確保您的應用程式已正確簽署。
+Universal Links 要求您的 macOS 應用程式使用有效的 Apple Developer 憑證與佈建描述檔進行**程式碼簽署**。未簽署或臨時簽署的組建無法開啟 Universal Links。測試前，請確認您的應用程式已正確簽署。
 
 @end
 
-若要啟用通用連結，請依照[在應用程式中支援通用連結的 Apple 指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)操作。您需要：
+若要啟用 Universal Links，請按照[Apple 的應用程式 Universal Links 支援指南](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)操作。您需要：
 
-1. 在`entitlements.plist`中<strong>新增權利</strong>：
+1. **在`entitlements.plist`中新增權利**：
   ```xml
   <key>com.apple.developer.associated-domains</key>
   <array>
@@ -265,7 +265,7 @@ open "myapp://test/action"
   ```
 
 
-2. **將 NSUserActivityTypes 新增至 Info.plist**：
+2. **將 NSUserActivityTypes 加入 Info.plist**：
   ```xml
   <key>NSUserActivityTypes</key>
   <array>
@@ -274,20 +274,20 @@ open "myapp://test/action"
   ```
 
 
-3. <strong>在您的網站上設定`apple-app-site-association`：</strong>將`apple-app-site-association`檔案託管於`https://myawesomeapp.com/.well-known/apple-app-site-association`。
+3. <strong>在您的網站上設定`apple-app-site-association`：</strong>於`https://myawesomeapp.com/.well-known/apple-app-site-association`託管`apple-app-site-association`檔案。
 
-當通用連結觸發您的應用程式時，您會收到相同的`ApplicationLaunchedWithUrl`事件，因此可使用與自訂通訊協定完全相同的處理程式碼。
+當 Universal Link 觸發您的應用程式時，您會收到相同的`ApplicationLaunchedWithUrl`事件，因此處理程式碼與自訂通訊協定配置完全相同。
 
 [Linux]
 ### 桌面項目
 
-在 Linux 上，通訊協定是透過`.desktop`檔案註冊的。
+在 Linux 上，通訊協定透過`.desktop`檔案註冊。
 
 #### 自動設定
 
 使用`wails3 build`建置時，Wails 會產生包含通訊協定處理常式的桌面項目檔案。
 
-**已在 v3 修正**：Linux 桌面範本現在會正確包含通訊協定處理功能。
+**已在v3**中修正：Linux 桌面範本現在已正確包含通訊協定處理功能。
 
 產生的桌面檔案包含：
 
@@ -480,7 +480,7 @@ Events.On('navigate', (event) => {
 
 ### 驗證所有輸入
 
-務必驗證並清理來自外部來源的 URL：
+請一律驗證並清理來自外部來源的 URL：
 
 ```go
 func (a *App) handleDeepLink(rawURL string) {
@@ -531,7 +531,7 @@ func sanitizeQueryParams(query url.Values) map[string]string {
 
 ### 防止注入攻擊
 
-絕不可將 URL 直接當作程式碼或 SQL 執行：
+絕不可直接將 URL 當作程式碼或 SQL 執行：
 
 ```go
 // ❌ DON'T: Execute URL content
@@ -609,9 +609,9 @@ xdg-open "myapp://test/action?id=123"
 
 **Windows：**
 
-- 檢查登錄：`HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- 檢查登錄檔：`HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
 - 使用 NSIS 安裝程式重新安裝
-- 確認安裝程式以適當權限執行
+- 確認安裝程式是以適當權限執行
 
 **macOS：**
 
@@ -639,27 +639,27 @@ app := application.New(application.Options{
 **常見問題：**
 
 - 應用程式未安裝在預期位置
-- 註冊資訊中的可執行檔路徑與實際位置不符
+- 註冊資訊中的執行檔路徑與實際位置不符
 - 權限問題
 
 ## 最佳實務
 
 ### ✅ 建議做法
 
-- **使用描述清楚的通訊協定名稱**——使用`mycompany-myapp`，而非`mca`
+- **使用描述清楚的配置名稱**——使用`mycompany-myapp`，不要使用`mca`
 - **驗證所有輸入**——絕不要信任來自外部來源的 URL
-- **妥善處理錯誤**——記錄無效的 URL，不要讓程式當機
-- **提供使用者回饋**——顯示觸發了哪項動作
+- **妥善處理錯誤**——記錄無效的 URL，不要讓應用程式當機
+- **向使用者提供回饋**——顯示觸發了哪個動作
 - **在所有平台上測試**——通訊協定的處理方式各有不同
-- **記錄 URL 結構**——協助使用者和整合開發人員
+- **記錄 URL 結構**——協助使用者與整合人員
 
 ### ❌ 請勿這樣做
 
-- **請勿使用常見的通訊協定名稱**——避免使用`http`、`file`、`app`等名稱
-- **請勿將 URL 當作程式碼執行**——這會造成極大的安全風險
-- **請勿公開敏感操作**——破壞性動作必須要求確認
-- **請勿假設通訊協定在所有環境中都能運作**——應提供備援機制
-- **別忘了進行 URL 編碼**——正確處理特殊字元
+- **不要使用常見的配置名稱**——避免使用`http`、`file`、`app`等名稱
+- **不要將 URL 當作程式碼執行**——這會造成極大的安全風險
+- **不要公開敏感操作**——執行破壞性動作前必須要求確認
+- **不要假設通訊協定在所有環境都能運作**——請提供備援機制
+- **不要忘記 URL 編碼**——正確處理特殊字元
 
 ## 後續步驟
 
@@ -669,4 +669,4 @@ app := application.New(application.Options{
 
 ---
 
-<strong>有問題嗎？</strong>請到 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
+<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

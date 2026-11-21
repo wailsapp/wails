@@ -13,15 +13,15 @@ Aplikasi desktop profesional memerlukan bilah menu—File, Edit, Tampilan, Bantu
 - **Windows**: Bilah menu pada bilah judul jendela
 - **Linux**: Berbeda-beda menurut lingkungan desktop
 
-Membuat menu yang sesuai untuk setiap platform secara manual itu merepotkan dan rawan kesalahan.
+Membuat menu yang sesuai dengan setiap platform secara manual itu merepotkan dan rentan kesalahan.
 
 ## Solusi Wails
 
-Wails menyediakan **API terpadu** yang secara otomatis membuat menu native untuk setiap platform. Tulis sekali dan dapatkan perilaku native di semua platform.
+Wails menyediakan **API terpadu** yang secara otomatis membuat menu native platform. Tulis sekali dan dapatkan perilaku native di semua platform.
 
 ![Menu aplikasi Wails di macOS dengan item standar, kotak centang, tombol radio, dan submenu](/assets/screenshots/application-menu-macos.png)
 
-Di macOS, menu aplikasi ditempatkan pada bilah menu global. Tangkapan layar ini menampilkan menu native yang dirender oleh API menu Wails, termasuk item yang dinonaktifkan, kotak centang, tombol radio, dan submenu.
+Di macOS, menu aplikasi ditempatkan pada bilah menu global. Tangkapan ini menunjukkan menu native yang dirender oleh API menu Wails, termasuk item yang dinonaktifkan, kotak centang, tombol radio, dan submenu.
 
 ## Mulai Cepat
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-**Selesai!** Kini Anda memiliki menu native untuk setiap platform dengan item standar. Opsi `UseApplicationMenu` memastikan jendela Windows dan Linux menampilkan menu tanpa kode tambahan.
+**Selesai!** Kini Anda memiliki menu native platform dengan item standar. Opsi `UseApplicationMenu` memastikan jendela Windows dan Linux menampilkan menu tanpa kode tambahan.
 
 ## Membuat Menu
 
@@ -93,7 +93,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### Mengatur Menu
 
-**Pendekatan yang disarankan** — Gunakan `UseApplicationMenu` untuk menjaga konsistensi lintas platform:
+**Pendekatan yang disarankan** — Gunakan `UseApplicationMenu` untuk konsistensi lintas platform:
 
 ```go
 // Set the application menu once
@@ -105,7 +105,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Pendekatan ini menghasilkan perilaku berikut:
+Pendekatan ini menghasilkan:
 
 - Di **macOS**: Menu muncul di bagian atas layar (perilaku standar)
 - Di **Windows/Linux**: Setiap jendela dengan `UseApplicationMenu: true` menampilkan menu aplikasi
@@ -120,7 +120,7 @@ Pendekatan ini menghasilkan perilaku berikut:
 app.Menu.Set(menu)
 ```
 
-Menu muncul di bagian atas layar dan tetap ada meskipun semua jendela ditutup. Opsi `UseApplicationMenu` tidak berpengaruh di macOS karena semua aplikasi menggunakan menu global.
+Menu muncul di bagian atas layar dan tetap tersedia meskipun semua jendela ditutup. Opsi `UseApplicationMenu` tidak berpengaruh di macOS karena semua aplikasi menggunakan menu global.
 
 [Windows]
 **Bilah menu per jendela**:
@@ -157,7 +157,7 @@ Perilakunya berbeda-beda menurut lingkungan desktop. Beberapa lingkungan (sepert
 @end
 
 @note{type="tip" title="Sederhanakan Menu Lintas Platform"}
-Penggunaan `UseApplicationMenu: true` meniadakan kebutuhan akan kode khusus platform seperti:
+Penggunaan `UseApplicationMenu: true` menghilangkan kebutuhan akan kode khusus platform seperti:
 
 ```go
 // Old approach - no longer needed
@@ -178,9 +178,21 @@ Jika suatu jendela memerlukan menu yang berbeda dari menu aplikasi, atur menu te
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**Menghapus bilah menu jendela:**
+
+Teruskan `nil` untuk menghapus bilah menu dari jendela:
+
+```go
+window.SetMenu(nil)
+```
+
+Di Windows dan Linux, jendela tersebut kemudian tidak menampilkan bilah menu, termasuk menu aplikasi yang sebelumnya dipilih melalui `UseApplicationMenu`, dan akselerator menu yang dihapus berhenti berfungsi di jendela tersebut. Memanggilnya sebelum jendela dimulai akan membuat jendela tanpa bilah menu. Pemanggilan `SetMenu(menu)` setelahnya akan mengembalikan bilah menu.
+
+Di macOS, bilah menu merupakan milik aplikasi, bukan jendela, sehingga `SetMenu` tidak melakukan apa pun di sana. Gunakan `app.Menu.Set` untuk mengubah menu aplikasi.
+
 ## Peran Menu
 
-Wails menyediakan **peran menu bawaan** yang secara otomatis membuat struktur menu yang sesuai untuk setiap platform.
+Wails menyediakan **peran menu yang telah ditentukan** untuk membuat struktur menu yang sesuai dengan platform secara otomatis.
 
 ### Peran yang Tersedia
 
@@ -188,8 +200,8 @@ Wails menyediakan **peran menu bawaan** yang secara otomatis membuat struktur me
 | --- | --- | --- |
 | `AppMenu` | Menu aplikasi dengan Tentang, Preferensi, Keluar | **Khusus macOS** |
 | `FileMenu` | Operasi file (Baru, Buka, Simpan, dan sebagainya) | Semua platform |
-| `EditMenu` | Penyuntingan teks (Urungkan, Ulangi, Potong, Salin, Tempel) | Semua platform |
-| `WindowMenu` | Pengelolaan jendela (Minimalkan, Perbesar, dan sebagainya) | Semua platform |
+| `EditMenu` | Pengeditan teks (Urungkan, Ulangi, Potong, Salin, Tempel) | Semua platform |
+| `WindowMenu` | Pengelolaan jendela (Minimalkan, Zoom, dan sebagainya) | Semua platform |
 | `HelpMenu` | Bantuan dan informasi | Semua platform |
 
 ### Menggunakan Peran
@@ -246,7 +258,7 @@ menu.AddRole(application.HelpMenu)
 **WindowMenu**:
 
 - Minimalkan (⌘M)
-- Perbesar
+- Zoom
 - ---
 - Bawa Semua ke Depan
 
@@ -282,13 +294,13 @@ menu.AddRole(application.HelpMenu)
 - Tentang [Nama Aplikasi]
 
 [Linux]
-Serupa dengan Windows, tetapi pintasan keyboard dapat berbeda menurut lingkungan desktop.
+Mirip dengan Windows, tetapi pintasan papan ketik dapat berbeda tergantung lingkungan desktop.
 
 @end
 
 ### Menyesuaikan Menu Peran
 
-`Menu.AddRole(role)` mengembalikan menu **penerima** (menu tingkat teratas), **bukan** submenu peran. Untuk menambahkan item ke submenu peran, cari item peran yang disisipkan dengan `FindByRole`, lalu panggil `GetSubmenu()` pada item tersebut:
+`Menu.AddRole(role)` mengembalikan menu **penerima** (menu tingkat teratas), **bukan** submenu milik peran tersebut. Untuk menambahkan item ke submenu peran, cari item peran yang telah disisipkan dengan `FindByRole`, lalu panggil `GetSubmenu()` pada item tersebut:
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -298,7 +310,7 @@ fileMenu.Add("Import...").OnClick(handleImport)
 fileMenu.Add("Export...").OnClick(handleExport)
 ```
 
-## Menu Khusus
+## Menu Kustom
 
 Buat menu sendiri untuk fitur khusus aplikasi:
 
@@ -329,7 +341,7 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-**Untuk jenis item menu lainnya**, lihat [Referensi Menu](/features/menus/reference/).
+Untuk **jenis item menu lainnya**, lihat [Referensi Menu](/features/menus/reference/).
 
 ## Menu Dinamis
 
@@ -358,7 +370,7 @@ func onDocumentChanged() {
 ```
 
 @note{type="caution" title="Selalu Panggil menu.Update()"}
-Setelah mengubah status menu (aktif/nonaktif, label, status centang), **selalu panggil `menu.Update()`**. Hal ini sangat penting terutama di Windows, tempat menu direkonstruksi.
+Setelah mengubah status menu (aktif/nonaktif, label, dicentang), **selalu panggil `menu.Update()`**. Hal ini sangat penting di Windows karena menu direkonstruksi.
 
 Lihat [Referensi Menu](/features/menus/reference/#enabled-state) untuk detailnya.
 
@@ -458,7 +470,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 **Perilaku bilah menu:**
 
 - Muncul di **bagian atas layar** (global)
-- Tetap ada ketika semua jendela ditutup
+- Tetap tersedia saat semua jendela ditutup
 - Menu pertama **selalu merupakan menu aplikasi**
 - Gunakan `menu.AddRole(application.AppMenu)` untuk item standar
 
@@ -507,11 +519,11 @@ if runtime.GOOS == "windows" {
 
 **Perilaku bilah menu:**
 
-- Biasanya tersedia per jendela (seperti Windows)
-- Beberapa DE mendukung menu global (Unity, GNOME dengan ekstensi)
-- Tampilan bervariasi menurut lingkungan desktop
+- Biasanya per jendela (seperti Windows)
+- Beberapa lingkungan desktop mendukung menu global (Unity, GNOME dengan ekstensi)
+- Tampilan berbeda-beda tergantung lingkungan desktop
 
-**Praktik terbaik:** Ikuti konvensi Windows dan uji pada DE target.
+**Praktik terbaik:** Ikuti konvensi Windows dan uji pada lingkungan desktop target.
 
 ## Contoh Lengkap
 
@@ -643,20 +655,20 @@ func showAbout(ctx *application.Context) {
 
 - **Gunakan peran menu** untuk menu standar (File, Edit, dan sebagainya)
 - **Ikuti konvensi platform** untuk struktur menu
-- **Tambahkan pintasan papan ketik** untuk tindakan yang umum digunakan
+- **Tambahkan pintasan papan ketik** untuk tindakan yang umum
 - **Panggil menu.Update()** setelah mengubah status menu
-- **Uji pada semua platform** — perilakunya bervariasi
-- **Jaga agar hierarki menu tetap dangkal** — maksimum 2-3 tingkat
+- **Uji di semua platform** — perilakunya berbeda-beda
+- **Jaga agar menu tidak terlalu bertingkat** — maksimal 2-3 tingkat
 - **Gunakan label yang jelas** — "Simpan Proyek", bukan "Simpan"
 
-### ❌ Jangan Lakukan
+### ❌ Jangan
 
-- **Jangan melakukan hardcode pada pintasan khusus platform** — Gunakan `CmdOrCtrl`
-- **Jangan menempatkan Keluar di menu File pada macOS** — Opsi tersebut berada di menu aplikasi
-- **Jangan menempatkan Tentang di menu Bantuan pada macOS** — Opsi tersebut berada di menu aplikasi
-- **Jangan lupa memanggil menu.Update()** — Menu tidak akan berfungsi dengan semestinya
-- **Jangan membuat menu bertingkat terlalu dalam** — Pengguna akan kebingungan
-- **Jangan gunakan jargon** — Gunakan label yang mudah dipahami pengguna
+- **Jangan menuliskan pintasan platform secara langsung dalam kode** — Gunakan `CmdOrCtrl`
+- **Jangan tempatkan Keluar dalam menu File di macOS** — Item tersebut berada dalam menu Aplikasi
+- **Jangan tempatkan Tentang dalam menu Bantuan di macOS** — Item tersebut berada dalam menu Aplikasi
+- **Jangan lupa memanggil menu.Update()** — Menu tidak akan berfungsi dengan benar
+- **Jangan membuat tingkatan terlalu dalam** — Pengguna akan kebingungan
+- **Jangan gunakan jargon** — Buat label tetap mudah dipahami pengguna
 
 ## Langkah Berikutnya
 
@@ -668,13 +680,13 @@ Referensi lengkap untuk jenis dan properti item menu.
 
 ---
 ◆ Menu Konteks
-Buat menu konteks yang dibuka dengan klik kanan.
+Buat menu konteks klik kanan.
 
 [Pelajari Selengkapnya →](/features/menus/context/)
 
 ---
 ★ Menu Baki Sistem
-Tambahkan integrasi dengan baki sistem/bilah menu.
+Tambahkan integrasi baki sistem/bilah menu.
 
 [Pelajari Selengkapnya →](/features/menus/systray/)
 

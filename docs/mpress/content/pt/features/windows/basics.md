@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-**Pronto!** Agora você tem uma janela multiplataforma.
+**É só isso!** Agora você tem uma janela multiplataforma.
 
 ## Criação de janelas
 
@@ -161,9 +161,9 @@ x, y := window.Position()
 
 **Sistema de coordenadas:**
 
-- (0, 0) corresponde ao canto superior esquerdo da tela principal
-- X positivo se estende para a direita
-- O Y positivo aponta para baixo
+- (0, 0) é o canto superior esquerdo da tela principal
+- Valores positivos de X avançam para a direita
+- Valores positivos de Y avançam para baixo
 
 ### Estado da janela
 
@@ -218,16 +218,16 @@ window.SetAlwaysOnTop(true)
 window.SetResizable(false)
 ```
 
-### Fechar janelas
+### Fechamento de janelas
 
 ```go
 // Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().
 window.Close()
 ```
 
-Não há um método `window.Destroy()` na v3 — use `Close()` e monitore com `OnWindowEvent` (não permite cancelar) ou intercepte com `RegisterHook` (permite chamar `e.Cancel()` para manter a janela aberta).
+Não há um método `window.Destroy()` em v3 — use `Close()` e escute com `OnWindowEvent` (não é possível cancelar) ou intercepte com `RegisterHook` (é possível chamar `e.Cancel()` para manter a janela aberta).
 
-## Localizar janelas
+## Localização de janelas
 
 ### Por nome
 
@@ -253,7 +253,7 @@ if found, ok := app.Window.GetByID(id); ok {
 
 ### Janela atual
 
-Obtenha a janela que está com o foco no momento:
+Obtenha a janela que está com o foco:
 
 ```go
 current := app.Window.Current()
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**Importante:** `RegisterHook` intercepta o evento de fechamento antes que ele ocorra. Chame `event.Cancel()` para impedir que a janela seja fechada. Isso funciona para fechamentos iniciados pelo usuário (ao clicar no botão X).
+**Importante:** `RegisterHook` intercepta o evento de fechamento antes que ele ocorra. Chame `event.Cancel()` para impedir o fechamento da janela. Isso funciona para fechamentos iniciados pelo usuário (ao clicar no botão X).
 
 ### Destruição
 
-Para realizar a limpeza quando uma janela for fechada, use `OnWindowEvent` com o evento `WindowClosing`:
+Para executar a limpeza quando uma janela for fechada, use `OnWindowEvent` com o evento `WindowClosing`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -320,7 +320,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 
 ## Várias janelas
 
-### Criar várias janelas
+### Criação de várias janelas
 
 ```go
 // Main window
@@ -364,9 +364,9 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 
 **Consulte [Eventos](/features/events/system/) para saber mais.**
 
-### Janelas pai e filha
+### Janelas pai e filhas
 
-`WebviewWindowOptions` não tem um campo `Parent`. Crie a janela filha como uma janela normal e vincule-a a uma janela pai como uma janela modal em formato de folha:
+`WebviewWindowOptions` não possui um campo `Parent`. Crie a janela filha como uma janela normal e anexe-a a uma janela pai como uma folha modal:
 
 ```go
 // Create child window
@@ -381,15 +381,15 @@ mainWindow.AttachModal(childWindow)
 **Comportamento:**
 
 - A janela filha permanece acima da janela pai.
-- A janela filha é modal — ela bloqueia a interação com a janela pai.
+- A janela filha é modal — bloqueia a interação com a janela pai.
 
 **Compatibilidade com plataformas:**
 
-- **macOS:** compatibilidade total (é exibida como uma folha).
+- **macOS:** compatibilidade total (exibida como uma folha modal).
 - **Windows:** não compatível.
 - **Linux:** não compatível.
 
-## Recursos específicos de plataforma
+## Recursos específicos de cada plataforma
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-Não há um `SetIcon` por janela — o ícone do aplicativo é definido no próprio aplicativo por meio de `app.SetIcon([]byte)` (ou, para um ícone de janela específico do Linux, pelo campo `application.LinuxWindow.Icon` durante a criação da janela).
+Não há `SetIcon` por janela — o ícone do aplicativo é definido no próprio aplicativo por meio de `app.SetIcon([]byte)` (ou, para um ícone de janela específico do Linux, pelo campo `application.LinuxWindow.Icon` durante a criação da janela).
 
-**Snap Assist:** Exibe as opções de layout de encaixe do Windows 11 pelo caminho de atalho do sistema. Para usar um botão HTML personalizado de maximização com Snap Layouts nativos ao passar o ponteiro, use, em vez disso, [Regiões não clientes nativas no Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
+**Snap Assist:** exibe as opções de layout de ajuste 11 do Windows por meio do atalho do sistema. Para usar um botão HTML personalizado de maximização com os Snap Layouts nativos ao passar o ponteiro, use [Regiões não clientes nativas no Windows](/features/windows/frameless/#native-non-client-regions-on-windows).
 
-**Piscar na barra de tarefas:** Útil para notificações quando a janela está minimizada.
+**Piscar na barra de tarefas:** útil para notificações quando a janela está minimizada.
 
 [macOS]
 **Recursos específicos do macOS:**
@@ -427,19 +427,19 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **Tipos de plano de fundo:**
 
-- `MacBackdropNormal` - Janela padrão
-- `MacBackdropTranslucent` - Plano de fundo translúcido; **uma API privada é necessária** para a transparência da webview.
-- `MacBackdropTransparent` - Totalmente transparente; **uma API privada é necessária** para a transparência da webview.
-- `MacBackdropLiquidGlass` - Plano de fundo com efeito de vidro; **uma API privada é necessária** para a transparência da webview.
+- `MacBackdropNormal` — Janela padrão
+- `MacBackdropTranslucent` — Plano de fundo translúcido; uma **API privada é necessária** para a transparência da webview.
+- `MacBackdropTransparent` — Totalmente transparente; uma **API privada é necessária** para a transparência da webview.
+- `MacBackdropLiquidGlass` — Plano de fundo de vidro; uma **API privada é necessária** para a transparência da webview.
 
-Compile com `-tags private_mac_apis` para que esses efeitos apareçam através da webview. Sem isso, a webview permanece opaca. O próprio `TitleBar.AppearsTransparent` usa APIs públicas. Consulte [APIs privadas do macOS](/guides/build/private-macos-apis/).
+Compile com `-tags private_mac_apis` para que esses efeitos apareçam através da webview. Sem essa opção, a webview permanece opaca. O próprio `TitleBar.AppearsTransparent` usa APIs públicas. Consulte [APIs privadas do macOS](/guides/build/private-macos-apis/).
 
-**Comportamento da coleção:** Controle como as janelas se comportam entre os Spaces:
+**Comportamento da coleção:** controle como as janelas se comportam entre os Spaces:
 
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visível em todos os Spaces
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Pode sobrepor aplicativos em tela cheia
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` — Visível em todos os Spaces
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` — Pode sobrepor aplicativos em tela cheia
 
-**Tela cheia nativa:** O modo de tela cheia do macOS cria um novo Space (área de trabalho virtual).
+**Tela cheia nativa:** o modo de tela cheia do macOS cria um novo Space (área de trabalho virtual).
 
 [Linux]
 **Recursos específicos do Linux:**
@@ -460,12 +460,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - XFCE: compatibilidade parcial
 - Outros: varia
 
-**Gerenciadores de janelas lado a lado (Hyprland, Sway, i3 etc.):**
+**Gerenciadores de janelas em mosaico (Hyprland, Sway, i3 etc.):**
 
-- `Minimise()` e `Maximise()` podem não funcionar como esperado — o gerenciador de janelas controla a geometria da janela
-- As solicitações `SetSize()` e `SetPosition()` são apenas recomendações e podem ser ignoradas
+- `Minimise()` e `Maximise()` podem não funcionar como esperado — o gerenciador de janelas controla a geometria das janelas
+- As solicitações de `SetSize()` e `SetPosition()` são apenas recomendações e podem ser ignoradas
 - `Fullscreen()` geralmente funciona como esperado
-- Alguns gerenciadores de janelas não oferecem suporte à exibição sempre no topo
+- Alguns gerenciadores de janelas não oferecem suporte a janelas sempre visíveis
 
 @end
 
@@ -529,24 +529,24 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
-- **Dê nomes às janelas importantes** — Isso facilita encontrá-las depois
-- **Defina um tamanho mínimo** — Isso evita layouts inutilizáveis
-- **Centralize as janelas** — Isso proporciona uma experiência melhor do que posições aleatórias
-- **Trate os eventos de fechamento** — Isso evita a perda de dados
-- **Teste em todas as plataformas** — O comportamento varia
-- **Use tamanhos adequados** — Considere os diferentes tamanhos de tela
+- **Dê nomes às janelas importantes** — facilita encontrá-las depois
+- **Defina um tamanho mínimo** — evita layouts inutilizáveis
+- **Centralize as janelas** — oferece uma experiência melhor do que uma posição aleatória
+- **Trate os eventos de fechamento** — evita a perda de dados
+- **Teste em todas as plataformas** — o comportamento varia
+- **Use tamanhos adequados** — considere diferentes tamanhos de tela
 
 ### ❌ Não faça
 
-- **Não crie janelas demais** — Isso confunde os usuários
-- **Não se esqueça de fechar as janelas** — Para evitar vazamentos de memória
-- **Não codifique posições de forma fixa** — Os tamanhos de tela variam
-- **Não ignore as diferenças entre plataformas** — Faça testes completos
-- **Não bloqueie a thread da interface do usuário** — Use goroutines para operações demoradas
+- **Não crie janelas demais** — isso confunde os usuários
+- **Não se esqueça de fechar as janelas** — isso causa vazamentos de memória
+- **Não fixe posições no código** — os tamanhos de tela variam
+- **Não ignore as diferenças entre plataformas** — teste minuciosamente
+- **Não bloqueie a thread da interface** — use goroutines para operações demoradas
 
 ## Solução de problemas
 
@@ -566,7 +566,7 @@ window.Center()
 window.Focus()
 ```
 
-### A janela tem o tamanho incorreto
+### A janela está com o tamanho incorreto
 
 **Causa:** dimensionamento de DPI no Windows/Linux
 
@@ -608,13 +608,13 @@ Padrões para aplicativos com várias janelas.
 
 ---
 ★ Janelas sem moldura
-Crie molduras de janela personalizadas.
+Crie uma decoração de janela personalizada.
 
 [Saiba mais →](/features/windows/frameless/)
 
 ---
 🚀 Eventos de janela
-Trate os eventos do ciclo de vida da janela.
+Trate os eventos do ciclo de vida das janelas.
 
 [Saiba mais →](/features/windows/events/)
 
@@ -622,4 +622,4 @@ Trate os eventos do ciclo de vida da janela.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de janelas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).
+**Tem dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de janelas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).

@@ -1,13 +1,13 @@
 ---
-title: "사용자 지정 대화 상자"
-description: "Wails 애플리케이션에서 사용자 지정 대화 상자 만들기"
+title: "사용자 지정 대화상자"
+description: "Wails 애플리케이션에서 사용자 지정 대화상자를 만듭니다"
 slug: "features/dialogs/custom"
 sourcePath: "features/dialogs/custom.md"
 ---
 
-## 사용자 지정 대화 상자
+## 사용자 지정 대화상자
 
-일반 Wails 창을 사용하여 대화 상자처럼 동작하는 <strong>사용자 지정 대화 상자 창</strong>을 만드세요. 익숙한 대화 상자 패턴을 유지하면서 사용자 지정 양식, 복잡한 입력값 검증, 브랜드에 맞춘 디자인, 리치 콘텐츠(이미지, 동영상)를 구현할 수 있습니다.
+일반 Wails 창에 대화상자와 같은 동작을 적용하여 **사용자 지정 대화상자 창**을 만드세요. 익숙한 대화상자 패턴을 유지하면서 사용자 지정 양식, 복잡한 입력 유효성 검사, 브랜드에 맞춘 디자인, 이미지와 동영상 등의 풍부한 콘텐츠를 구현할 수 있습니다.
 
 ## 빠른 시작
 
@@ -30,11 +30,11 @@ dialog.Show()
 dialog.Focus()
 ```
 
-**이것으로 끝입니다!** 대화 상자처럼 동작하는 사용자 지정 UI가 완성되었습니다.
+**이것으로 끝입니다!** 대화상자처럼 동작하는 사용자 지정 UI가 완성되었습니다.
 
-## 사용자 지정 대화 상자 만들기
+## 사용자 지정 대화상자 만들기
 
-### 기본 사용자 지정 대화 상자
+### 기본 사용자 지정 대화상자
 
 ```go
 type Customdialog struct {
@@ -73,7 +73,7 @@ func (d *Customdialog) Close(result string) {
 }
 ```
 
-### 모달 대화 상자
+### 모달 대화상자
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) string {
@@ -105,7 +105,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) string {
 }
 ```
 
-### 양식 대화 상자
+### 양식 대화상자
 
 ```go
 type Formdialog struct {
@@ -151,9 +151,9 @@ func (fd *Formdialog) Cancel() {
 }
 ```
 
-## 대화 상자 패턴
+## 대화상자 패턴
 
-### 확인 대화 상자
+### 확인 대화상자
 
 ```go
 func ShowConfirmdialog(message string) bool {
@@ -212,7 +212,7 @@ function confirm(result) {
 </script>
 ```
 
-### 입력 대화 상자
+### 입력 대화상자
 
 ```go
 func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
@@ -257,7 +257,7 @@ func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
 }
 ```
 
-### 진행률 대화 상자
+### 진행률 대화상자
 
 ```go
 type Progressdialog struct {
@@ -314,7 +314,7 @@ func processFiles(files []string) {
 
 ## 전체 예제
 
-### 로그인 대화 상자
+### 로그인 대화상자
 
 **Go:**
 
@@ -405,7 +405,7 @@ function cancel() {
 </script>
 ```
 
-### 설정 대화 상자
+### 설정 대화상자
 
 **Go:**
 
@@ -454,7 +454,7 @@ func (sd *Settingsdialog) Cancel() {
 }
 ```
 
-### 마법사 대화 상자
+### 마법사 대화상자
 
 ```go
 type Wizarddialog struct {
@@ -524,25 +524,25 @@ func (wd *Wizarddialog) Cancel() {
 
 ### ✅ 권장 사항
 
-- **적절한 창 옵션 사용** - AlwaysOnTop, Frameless 등
-- **취소 처리** - 항상 취소할 방법 제공
-- **입력값 검증** - 데이터를 수락하기 전에 확인
-- **피드백 제공** - 로딩 상태, 오류
-- **통신에 이벤트 사용** - 명확한 관심사 분리
-- **리소스 정리** - 창 닫기, 리스너 제거
+- **적절한 창 옵션을 사용하세요** - AlwaysOnTop, Frameless 등
+- **취소를 처리하세요** - 항상 취소할 방법을 제공하세요
+- **입력값의 유효성을 검사하세요** - 데이터를 수락하기 전에 확인하세요
+- **피드백을 제공하세요** - 로딩 상태와 오류를 표시하세요
+- **통신에 이벤트를 사용하세요** - 각 부분을 명확히 분리하세요
+- **리소스를 정리하세요** - 창을 닫고 리스너를 제거하세요
 
-### ❌ 금지 사항
+### ❌ 피해야 할 사항
 
-- **메인 스레드를 차단하지 않기** - 결과 전달에는 채널 사용
-- **닫는 것을 잊지 않기** - 메모리 누수 발생 가능
-- **검증을 생략하지 않기** - 항상 입력값 검증
-- **오류를 무시하지 않기** - 모든 오류 상황 처리
-- **지나치게 복잡하게 만들지 않기** - 대화 상자를 단순하게 유지
-- **접근성을 간과하지 않기** - 키보드 탐색 지원
+- **메인 스레드를 차단하지 마세요** - 결과 전달에는 채널을 사용하세요
+- **창 닫기를 잊지 마세요** - 메모리 누수가 발생할 수 있습니다
+- **유효성 검사를 생략하지 마세요** - 항상 입력값의 유효성을 검사하세요
+- **오류를 무시하지 마세요** - 모든 오류 상황을 처리하세요
+- **지나치게 복잡하게 만들지 마세요** - 대화상자를 단순하게 유지하세요
+- **접근성을 잊지 마세요** - 키보드 탐색을 지원하세요
 
-## 사용자 지정 대화 상자 스타일 지정
+## 사용자 지정 대화상자 스타일 지정
 
-### 현대적인 대화 상자 스타일
+### 현대적인 대화상자 스타일
 
 ```css
 .dialog {
@@ -597,26 +597,26 @@ button.secondary {
 ## 다음 단계
 
 @cards{cols="2"}
-ℹ 메시지 대화 상자
-표준 정보, 경고 및 오류 대화 상자입니다.
+ℹ 메시지 대화상자
+표준 정보, 경고 및 오류 대화상자입니다.
 
 [자세히 알아보기 →](/features/dialogs/message/)
 
 ---
-📖 파일 대화 상자
-파일 열기, 저장 및 폴더 선택 기능입니다.
+📖 파일 대화상자
+파일 열기, 저장 및 폴더 선택 기능을 제공합니다.
 
 [자세히 알아보기 →](/features/dialogs/file/)
 
 ---
 ▣ 창
-창 관리 방법을 알아보세요.
+창 관리에 관해 알아보세요.
 
 [자세히 알아보기 →](/features/windows/basics/)
 
 ---
 ★ 이벤트
-대화 상자 통신에 이벤트를 사용하세요.
+대화상자 통신에 이벤트를 사용하세요.
 
 [자세히 알아보기 →](/features/events/system/)
 
@@ -624,4 +624,4 @@ button.secondary {
 
 ---
 
-**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [사용자 지정 대화 상자 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)를 확인하세요.
+**궁금한 점이 있나요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [사용자 지정 대화상자 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs)를 확인하세요.

@@ -1,13 +1,13 @@
 ---
-title: "Plattformübergreifendes Erstellen"
-description: "Auf einem einzigen Rechner für mehrere Plattformen erstellen"
+title: "Plattformübergreifendes Bauen"
+description: "Für mehrere Plattformen auf einem einzigen Rechner bauen"
 slug: "guides/build/cross-platform"
 sourcePath: "guides/build/cross-platform.md"
 ---
 
 ## Schnellstart
 
-Wails v3 unterstützt das Erstellen für Windows, macOS und Linux von jedem Host-Betriebssystem aus. Das Buildsystem erkennt Ihre Umgebung automatisch und wählt die passende Kompilierungsmethode aus.
+Wails v3 unterstützt das Bauen für Windows, macOS und Linux von jedem Host-Betriebssystem aus. Das Build-System erkennt Ihre Umgebung automatisch und wählt die richtige Kompilierungsmethode aus.
 
 **Möchten Sie für macOS und Linux crosskompilieren?** Führen Sie diesen Befehl einmal aus, um die Docker-Images einzurichten (Download von ca. 800 MB):
 
@@ -15,7 +15,7 @@ Wails v3 unterstützt das Erstellen für Windows, macOS und Linux von jedem Host
 wails3 task setup:docker
 ```
 
-Erstellen Sie anschließend für eine beliebige Plattform:
+Bauen Sie anschließend für eine beliebige Plattform:
 
 ```bash
 # Build for current platform (production by default)
@@ -43,9 +43,9 @@ Windows ist das einfachste Ziel für die Crosskompilierung, da es standardmäßi
 wails3 build GOOS=windows
 ```
 
-Dies funktioniert ohne zusätzliche Einrichtung von jedem Host-Betriebssystem aus. Die integrierte Crosskompilierung von Go übernimmt alles.
+Dies funktioniert ohne zusätzliche Einrichtung auf jedem Host-Betriebssystem. Die integrierte Crosskompilierung von Go übernimmt alles.
 
-**Wenn Ihre App CGO benötigt** (z. B. weil Sie eine C-Bibliothek oder ein von CGO abhängiges Paket verwenden), benötigen Sie für das Erstellen unter macOS oder Linux Docker:
+**Wenn Ihre App CGO benötigt** (z. B. weil Sie eine C-Bibliothek oder ein von CGO abhängiges Paket verwenden), benötigen Sie beim Bauen unter macOS oder Linux Docker:
 
 ```bash
 # One-time setup
@@ -59,7 +59,7 @@ Das Taskfile erkennt `CGO_ENABLED=1` auf Nicht-Windows-Hosts und verwendet autom
 
 ### macOS
 
-macOS-Builds benötigen CGO für die WebView-Integration. Daher sind für die Crosskompilierung spezielle Werkzeuge erforderlich.
+macOS-Builds benötigen CGO für die WebView-Integration. Daher erfordert die Crosskompilierung spezielle Werkzeuge.
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -72,13 +72,13 @@ wails3 build GOOS=darwin GOARCH=amd64
 wails3 task darwin:build:universal
 ```
 
-**Unter Linux oder Windows** müssen Sie zunächst Docker einrichten:
+**Unter Linux oder Windows** müssen Sie zuerst Docker einrichten:
 
 ```bash
 wails3 task setup:docker
 ```
 
-Sobald die Images erstellt sind, erkennt das Buildsystem, dass Sie nicht unter macOS arbeiten, und verwendet automatisch Docker. Sie müssen Ihre Buildbefehle nicht ändern.
+Sobald die Images gebaut sind, erkennt das Build-System, dass Sie nicht unter macOS arbeiten, und verwendet automatisch Docker. Sie müssen Ihre Build-Befehle nicht ändern.
 
 Beachten Sie, dass crosskompilierte macOS-Binärdateien nicht codesigniert sind. Vor der Verteilung müssen Sie sie unter macOS oder in der CI signieren.
 
@@ -94,18 +94,18 @@ wails3 build GOOS=linux GOARCH=amd64
 wails3 build GOOS=linux GOARCH=arm64
 ```
 
-**Unter macOS oder Windows** müssen Sie zunächst Docker einrichten:
+**Unter macOS oder Windows** müssen Sie zuerst Docker einrichten:
 
 ```bash
 wails3 task setup:docker
 ```
 
-Das Buildsystem erkennt, dass Sie nicht unter Linux arbeiten, und verwendet automatisch Docker.
+Das Build-System erkennt, dass Sie nicht unter Linux arbeiten, und verwendet automatisch Docker.
 
-**Unter Linux ohne C-Compiler** prüft das Buildsystem, ob `gcc` oder `clang` verfügbar ist. Wird keines von beiden gefunden, weicht es auf Docker aus. Dies ist für minimale Container oder Systeme ohne installierte Buildwerkzeuge nützlich. Sie können entweder:
+**Unter Linux ohne C-Compiler** prüft das Build-System, ob `gcc` oder `clang` vorhanden ist. Wird keines von beiden gefunden, weicht es auf Docker aus. Dies ist für minimale Container oder Systeme ohne installierte Build-Werkzeuge nützlich. Sie können entweder:
 
-1. einen C-Compiler installieren: `sudo apt install build-essential` (Debian/Ubuntu) oder `sudo pacman -S base-devel` (Arch)
-2. das Docker-Image erstellen und automatisch verwenden lassen
+1. Einen C-Compiler installieren: `sudo apt install build-essential` (Debian/Ubuntu) oder `sudo pacman -S base-devel` (Arch)
+2. Das Docker-Image bauen und automatisch verwenden lassen
 
 ### ARM-Architektur
 
@@ -127,13 +127,13 @@ wails3 build GOOS=darwin GOARCH=amd64
 
 Das Docker-Image enthält Zig-Crosscompiler-Ziele für amd64 und arm64 auf allen Plattformen. Daher funktionieren ARM-Builds von jedem Host aus:
 
-| ARM64 erstellen für | Unter Windows | Unter macOS | Unter Linux |
+| ARM64 bauen für | Unter Windows | Unter macOS | Unter Linux |
 | --- | --- | --- | --- |
 | **Windows ARM64** | Natives Go | Natives Go | Natives Go |
 | **macOS ARM64** | Docker | Nativ | Docker |
 | **Linux ARM64** | Docker | Docker | Docker_ |
 
-<em>Linux ARM64 von Linux x86</em>64 aus verwendet Docker, da die CGO-Crosskompilierung eine andere Toolchain benötigt.
+<em>Linux ARM64 unter Linux x86</em>64 verwendet Docker, da die CGO-Crosskompilierung eine andere Toolchain benötigt.
 
 ## Funktionsweise
 
@@ -145,8 +145,8 @@ Das Docker-Image enthält Zig-Crosscompiler-Ziele für amd64 und arm64 auf allen
 | **macOS** | Natives Go | Nativ | Docker |
 | **Linux** | Natives Go | Docker | Nativ |
 
-- **Nativ** = native Toolchain der Plattform, keine zusätzliche Einrichtung erforderlich
-- **Natives Go** = integrierte Crosskompilierung von Go (`CGO_ENABLED=0`)
+- **Nativ** = Native Toolchain der Plattform, keine zusätzliche Einrichtung
+- **Natives Go** = Integrierte Crosskompilierung von Go (`CGO_ENABLED=0`)
 - **Docker** = Docker-Image mit Zig-Crosscompiler
 
 ### CGO-Anforderungen
@@ -159,15 +159,15 @@ Das Docker-Image enthält Zig-Crosscompiler-Ziele für amd64 und arm64 auf allen
 
 ### Automatische Erkennung
 
-Die Taskfiles wählen anhand Ihrer Umgebung automatisch die passende Build-Methode aus:
+Die Taskfiles wählen anhand Ihrer Umgebung automatisch die richtige Build-Methode aus:
 
-- **Windows-Ziel:** Verwendet standardmäßig die native Go-Cross-Kompilierung. Wenn Sie `CGO_ENABLED=1` auf einem Nicht-Windows-Host ausdrücklich festlegen, wird zu Docker gewechselt.
-- **macOS-Ziel:** Verwendet außerhalb von macOS automatisch Docker. Es ist kein manueller Eingriff erforderlich.
-- **Linux-Ziel:** Prüft auf `gcc` oder `clang`. Wird einer davon gefunden, erfolgt die Kompilierung nativ; andernfalls wird auf Docker zurückgegriffen.
+- **Windows-Ziel:** Verwendet standardmäßig die native Go-Crosskompilierung. Wenn Sie auf einem Nicht-Windows-Host ausdrücklich `CGO_ENABLED=1` festlegen, wechselt das System zu Docker.
+- **macOS-Ziel:** Verwendet außerhalb von macOS automatisch Docker. Kein manueller Eingriff erforderlich.
+- **Linux-Ziel:** Prüft, ob `gcc` oder `clang` vorhanden ist. Falls ja, wird nativ kompiliert; andernfalls weicht das System auf Docker aus.
 
 ### Docker-Image
 
-Wails verwendet ein einziges Docker-Image (`wails-cross`), das Builds für alle Plattformen erstellen kann. Als Cross-Compiler dient [Zig](https://ziglang.org/), womit sich von jedem Host aus jede Plattform als Ziel verwenden lässt. Für darwin-Ziele ist das macOS SDK enthalten.
+Wails verwendet ein einziges Docker-Image (`wails-cross`), das für alle Plattformen bauen kann. Es verwendet [Zig](https://ziglang.org/) als Crosscompiler, der von jedem Host aus jede Plattform als Ziel verwenden kann. Für darwin-Ziele ist das macOS SDK enthalten.
 
 ```bash
 wails3 task setup:docker
@@ -177,13 +177,13 @@ Mit `wails3 doctor` können Sie prüfen, ob das Image bereit ist.
 
 ### macOS SDK
 
-Das Docker-Image lädt das macOS SDK während des Image-Builds von [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) herunter. Dies ist erforderlich, weil für die CGO-Kompilierung macOS-Header benötigt werden.
+Das Docker-Image lädt das macOS SDK während des Image-Build-Prozesses von [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) herunter. Dies ist erforderlich, da für die CGO-Kompilierung macOS-Header benötigt werden.
 
-**Wichtig:** Wails vertreibt das macOS SDK nicht. Benutzer müssen die Lizenzbedingungen von Apple für das SDK prüfen, bevor sie diese Funktion verwenden.
+**Wichtig:** Wails vertreibt das macOS SDK nicht. Benutzer sind dafür verantwortlich, vor der Verwendung dieser Funktion die Lizenzbedingungen von Apple für das SDK zu prüfen.
 
 ## Eigenes Image erstellen
 
-Wenn Sie das Docker-Image anpassen müssen, etwa um eine andere Version des macOS SDK, zusätzliche Werkzeuge oder Ihr eigenes SDK zu verwenden, können Sie das Image selbst erstellen.
+Wenn Sie das Docker-Image anpassen müssen, etwa um eine andere macOS-SDK-Version, zusätzliche Werkzeuge oder Ihr eigenes SDK zu verwenden, können Sie das Image selbst erstellen.
 
 ### Dockerfile
 
@@ -405,7 +405,7 @@ Die verfügbaren Optionen finden Sie unter [Verfügbare SDK-Versionen](https://g
 
 ### Eigenes SDK verwenden
 
-Wenn Sie über ein eigenes macOS SDK verfügen, beispielsweise eines aus Xcode, können Sie das Dockerfile so ändern, dass statt des Downloads eine lokale Datei verwendet wird:
+Wenn Sie über ein eigenes macOS-SDK verfügen, etwa eines aus Xcode, können Sie das Dockerfile so ändern, dass statt eines Downloads eine lokale Datei verwendet wird:
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -489,7 +489,7 @@ Starten Sie Docker Desktop oder den Docker-Daemon. Unter Linux müssen Sie mögl
 
 ### Kein C-Compiler unter Linux
 
-Wenn beim Build unter Linux CGO-bezogene Fehler auftreten, haben Sie zwei Möglichkeiten:
+Wenn beim Erstellen unter Linux CGO-bezogene Fehler auftreten, haben Sie zwei Möglichkeiten:
 
 1. **C-Compiler installieren:**
   - Debian/Ubuntu: `sudo apt install build-essential`
@@ -497,28 +497,28 @@ Wenn beim Build unter Linux CGO-bezogene Fehler auftreten, haben Sie zwei Mögli
   - Fedora: `sudo dnf install gcc`
 
 
-2. **Stattdessen Docker verwenden:** Führen Sie `wails3 task setup:docker` aus. Das Taskfile verwendet Docker automatisch, wenn kein Compiler erkannt wird.
+2. **Stattdessen Docker verwenden:** Führen Sie `wails3 task setup:docker` aus. Das Taskfile verwendet das Image automatisch, wenn kein Compiler erkannt wird.
 
 ### macOS-Binärdateien nicht signiert
 
-Cross-kompilierte macOS-Binärdateien sind nicht codesigniert. Apple verlangt für die Verteilung eine Codesignatur. Daher müssen Sie:
+Für macOS cross-kompilierte Binärdateien sind nicht codesigniert. Apple verlangt für die Verteilung eine Codesignatur. Daher müssen Sie entweder:
 
-1. die Binärdatei auf einem macOS-Computer signieren oder
-2. sie in CI mit einem macOS-Runner signieren
+1. die Binärdatei auf einem macOS-Rechner signieren oder
+2. sie in der CI mit einem macOS-Runner signieren
 
-Weitere Einzelheiten finden Sie unter [Anwendungen signieren](/guides/build/signing/).
+Weitere Informationen finden Sie unter [Anwendungen signieren](/guides/build/signing/).
 
 ### Universelle Binärdatei erstellen
 
-Universelle Binärdateien, in denen arm64 und amd64 kombiniert sind, können auf jeder Plattform erstellt werden:
+Universelle Binärdateien, die arm64 und amd64 kombinieren, können auf jeder Plattform erstellt werden:
 
 ```bash
 wails3 task darwin:build:universal
 ```
 
-Unter Linux und Windows kombiniert Wails die Binärdateien mit seinem integrierten Befehl `wails3 tool lipo`, der auf [konoui/lipo](https://github.com/konoui/lipo) basiert. Dadurch entsteht eine einzelne Binärdatei, die sowohl auf Apple-Silicon- als auch auf Intel-Macs nativ ausgeführt wird.
+Unter Linux und Windows verwendet Wails den integrierten Befehl `wails3 tool lipo`, der auf [konoui/lipo](https://github.com/konoui/lipo) basiert, um die Binärdateien zusammenzuführen. Dadurch entsteht eine einzelne Binärdatei, die sowohl auf Apple-Silicon- als auch auf Intel-Macs nativ ausgeführt wird.
 
 ## Nächste Schritte
 
 - [Anwendungen erstellen](/guides/build/building/) – Grundlegende Build-Befehle und Optionen
-- [Anwendungen signieren](/guides/build/signing/) – Codesignierung für die Verteilung
+- [Anwendungen signieren](/guides/build/signing/) – Codesignatur für die Verteilung

@@ -244,4 +244,4 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `windows.signing.key_alias` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `windows.signing.provisioning_profile` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `windows.signing.thumbprint` | `string` | no |  | `"0123456789ABCDEF"` |  | Thumbprint of a certificate in the Windows certificate store; requires Windows with SignTool. |
-| `windows.signing.timestamp_server` | `string` | no |  | `"https://timestamp.example.com"` |  | RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified. |
+| `windows.signing.timestamp_server` | `string` | no |  | `"https://timestamp.example.com"` |  | RFC 3161 timestamp service URL; defaults to `http://timestamp.digicert.com`. Timestamp signatures and trust chains are verified. |

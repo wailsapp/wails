@@ -443,7 +443,7 @@
       "targetHash": "7a6d6e0e211dc9aa32cb25ac2d058594b23520eadad70fc778fee39b543afb21",
       "machineHash": "7a6d6e0e211dc9aa32cb25ac2d058594b23520eadad70fc778fee39b543afb21",
       "machineText": "`404 Not Found`",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`404 Not Found`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -467,7 +467,7 @@
       "targetHash": "6995f63e7935733af1faa2ce48025315ee44d67370662fc42d58cc238ab23eba",
       "machineHash": "6995f63e7935733af1faa2ce48025315ee44d67370662fc42d58cc238ab23eba",
       "machineText": "`403 rate-limited`",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`403 rate-limited`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -1087,16 +1087,16 @@
       "updatedAt": "2026-10-25T22:07:41Z"
     },
     "b0086-text-01": {
-      "sourceHash": "95f493fe6d0b969e195d171baf06d24142ffb05b9c961f3ee4d1353ab3d86abd",
-      "targetHash": "ab8bcfd2ecd96fa7d9da0ea0ef691faa760355ea330ca75788136e76574c05b6",
-      "machineHash": "ab8bcfd2ecd96fa7d9da0ea0ef691faa760355ea330ca75788136e76574c05b6",
-      "machineText": "Consulte [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) para ver um exemplo funcional completo que você pode clonar.",
+      "sourceHash": "a816fe7d2ed9dd2e3be443b37d2d4eff6b856440a3e0e44d57820d974a7431e3",
+      "targetHash": "2ea8f5f71fb40c86229756d11cd6318d6334678d885bfd4aee187c9d46d93394",
+      "machineHash": "2ea8f5f71fb40c86229756d11cd6318d6334678d885bfd4aee187c9d46d93394",
+      "machineText": "Consulte [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater) para ver um exemplo funcional completo que você pode clonar.",
       "status": "machine-translated",
-      "sourcePreview": "Look at [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/u…",
+      "sourcePreview": "Look at [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater) f…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:07:41Z"
+      "updatedAt": "2026-11-06T02:15:05Z"
     },
     "b0087-text-01": {
       "sourceHash": "a369438742b43ac4d9b5da157c8a174ad49d1749dacf6cc5fd792c8cf64fd1a1",

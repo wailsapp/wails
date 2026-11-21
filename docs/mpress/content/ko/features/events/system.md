@@ -1,13 +1,13 @@
 ---
 title: "이벤트 시스템"
-description: "이벤트 시스템을 사용하여 컴포넌트 간에 통신합니다"
+description: "이벤트 시스템으로 컴포넌트 간 통신하기"
 slug: "features/events/system"
 sourcePath: "features/events/system.md"
 ---
 
 ## 이벤트 시스템
 
-Wails는 게시/구독 통신을 위한 <strong>통합 이벤트 시스템</strong>을 제공합니다. Go에서 JavaScript로, JavaScript에서 Go로, 창에서 다른 창으로 어디서든 이벤트를 발생시키고 수신할 수 있으므로, 형식이 지정된 이벤트와 수명 주기 훅을 활용하는 결합도 낮은 아키텍처를 구현할 수 있습니다.
+Wails는 pub/sub 통신을 위한 **통합 이벤트 시스템**을 제공합니다. 어디서든 이벤트를 발생시키고 수신할 수 있습니다. Go에서 JavaScript로, JavaScript에서 Go로, 창에서 다른 창으로 통신할 수 있으므로 형식이 지정된 이벤트와 수명 주기 훅을 활용해 결합도가 낮은 아키텍처를 구현할 수 있습니다.
 
 ## 빠른 시작
 
@@ -30,7 +30,7 @@ Events.On("user-logged-in", (event) => {
 })
 ```
 
-**이게 전부입니다!** 언어 간 게시/구독이 가능합니다.
+**이게 전부입니다!** 언어 간 pub/sub이 완성되었습니다.
 
 ## 이벤트 유형
 
@@ -54,7 +54,7 @@ Events.On("notification", showNotification)
 
 ### 시스템 이벤트
 
-기본 제공되는 OS 및 애플리케이션 이벤트:
+기본 제공 OS 및 애플리케이션 이벤트:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -149,7 +149,7 @@ app.Event.On("custom-event", func(e *application.CustomEvent) {
 })
 ```
 
-**형식 단언 사용:**
+**타입 단언 사용:**
 
 ```go
 app.Event.On("user-updated", func(e *application.CustomEvent) {
@@ -158,7 +158,7 @@ app.Event.On("user-updated", func(e *application.CustomEvent) {
 })
 ```
 
-**여러 핸들러:**
+**여러 핸들러 사용:**
 
 ```go
 // All handlers will be called
@@ -166,6 +166,8 @@ app.Event.On("order-created", logOrder)
 app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
+
+**전달 순서:** `On`, `Once` 또는 `OnMultiple`로 등록된 각 핸들러는 한 번에 하나의 이벤트만 처리하므로 자기 자신과 동시에 실행되지 않으며, 순차적인 `Emit` 호출을 순서대로 수신합니다. 즉, 한 `Emit` 호출이 반환된 후 다음 호출이 이루어지면 모든 핸들러가 해당 호출을 그 순서대로 확인합니다. 서로 다른 goroutine에서 동시에 이루어진 `Emit` 호출 사이에는 정해진 순서가 없습니다. 각 핸들러는 독립적으로 실행됩니다. 느린 핸들러가 다른 핸들러를 지연시키지 않으며 핸들러 사이에도 정해진 순서가 없습니다. `Emit`는 핸들러를 기다리지 않습니다. 핸들러가 제거되면 해당 핸들러의 대기열에 아직 남아 있는 이벤트는 삭제됩니다.
 
 ### JavaScript에서
 
@@ -188,7 +190,7 @@ const unsubscribe = Events.On("event-name", handleEvent)
 unsubscribe()
 ```
 
-**여러 핸들러:**
+**여러 핸들러 사용:**
 
 ```javascript
 Events.On("data-updated", updateUI)
@@ -351,7 +353,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## 이벤트 훅
 
-훅은 표준 리스너보다 **먼저** 실행되며 이벤트를 <strong>취소</strong>할 수 있습니다.
+훅은 표준 리스너보다 **먼저** 실행되며 이벤트를 **취소**할 수 있습니다.
 
 ```go
 // Hook - runs first, can cancel
@@ -374,14 +376,14 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 | 기능 | 훅 | 표준 리스너 |
 | --- | --- | --- |
-| 실행 순서 | 먼저 실행되며, 등록 순서를 따름 | 훅 이후 실행되며 순서는 보장되지 않음 |
-| 블로킹 | 동기식이며 다음 훅을 차단 | 비동기식이며 차단하지 않음 |
-| 취소 가능 여부 | 가능 | 불가능(이미 전파됨) |
+| 실행 순서 | 먼저 등록 순서대로 실행 | 훅 이후 실행되며 순서는 보장되지 않음 |
+| 블로킹 | 동기식이며 다음 훅을 블로킹함 | 비동기식이며 논블로킹 방식임 |
+| 취소 가능 여부 | 예 | 아니요(이미 전파됨) |
 | 사용 사례 | 제어 흐름, 유효성 검사 | 로깅, 부수 효과 |
 
 ## 이벤트 패턴
 
-### 게시/구독 패턴
+### Pub/Sub 패턴
 
 ```go
 // Publisher (service)
@@ -582,37 +584,37 @@ document.getElementById('button').addEventListener('click', () => {
 })
 ```
 
-## 모범 사례
+## 권장 사례
 
 ### ✅ 권장 사항
 
 - **알림에는 이벤트를 사용하세요** - 단방향 통신
 - **요청에는 바인딩을 사용하세요** - 양방향 통신
-- **이벤트 이름을 일관되게 유지하세요** - kebab-case를 사용하세요
-- **이벤트 데이터를 문서화하세요** - 어떤 필드가 포함되나요?
-- **사용이 끝나면 구독을 해제하세요** - 메모리 누수를 방지합니다
-- **유효성 검사에는 훅을 사용하세요** - 이벤트 흐름을 제어합니다
+- **이벤트 이름을 일관되게 지정하세요** - kebab-case를 사용하세요.
+- **이벤트 데이터를 문서화하세요** - 어떤 필드가 포함되는지 설명하세요.
+- **작업이 끝나면 구독을 해제하세요** - 메모리 누수를 방지하세요.
+- **유효성 검사에는 훅을 사용하세요** - 이벤트 흐름을 제어하세요.
 
 ### ❌ 금지 사항
 
-- **RPC에 이벤트를 사용하지 마세요** - 대신 바인딩을 사용하세요
-- **너무 자주 내보내지 마세요** - 필요한 경우 일괄 처리하세요
-- **핸들러에서 실행을 차단하지 마세요** - 빠르게 처리되도록 유지하세요
-- **구독 해제를 잊지 마세요** - 메모리 누수가 발생합니다
-- **대용량 데이터에 이벤트를 사용하지 마세요** - 바인딩을 사용하세요
-- **이벤트 루프를 만들지 마세요** - A가 B를 내보내고 B가 A를 내보내는 방식입니다
+- **RPC에 이벤트를 사용하지 마세요** - 대신 바인딩을 사용하세요.
+- **이벤트를 너무 자주 발생시키지 마세요** - 필요하면 일괄 처리하세요.
+- **핸들러에서 블로킹하지 마세요** - 핸들러를 빠르게 유지하세요.
+- **구독 해제를 잊지 마세요** - 메모리 누수가 발생할 수 있습니다.
+- **대용량 데이터에 이벤트를 사용하지 마세요** - 바인딩을 사용하세요.
+- **이벤트 루프를 만들지 마세요** - A가 B를 발생시키고 B가 A를 발생시키는 구조를 피하세요.
 
 ## 다음 단계
 
 @cards{cols="2"}
 ★ 이벤트 가이드
-이벤트 패턴과 형식이 안전한 이벤트 생성에 대해 알아보세요.
+이벤트 패턴과 타입 안전 이벤트 생성 방법을 알아보세요.
 
 [자세히 알아보기 →](/guides/events-reference/)
 
 ---
 ◆ 이벤트 API
-애플리케이션 및 창 이벤트 API 전체를 살펴보세요.
+전체 애플리케이션 및 창 이벤트 API를 살펴보세요.
 
 [자세히 알아보기 →](/reference/events/)
 

@@ -7,11 +7,11 @@ sourcePath: "features/windows/frameless.md"
 
 ## Fenêtres sans cadre
 
-Wails prend en charge les **fenêtres sans cadre** avec des zones de déplacement définies en CSS et un comportement natif sur chaque plateforme. Supprimez la barre de titre native de la plateforme pour contrôler entièrement l’habillage de la fenêtre, créer des designs personnalisés et proposer des expériences utilisateur uniques, tout en conservant les fonctions essentielles telles que le déplacement, le redimensionnement et les contrôles système.
+Wails prend en charge les **fenêtres sans cadre** avec des zones de déplacement définies en CSS et un comportement natif propre à chaque plateforme. Supprimez la barre de titre native de la plateforme pour maîtriser entièrement l’habillage de la fenêtre, créer des designs personnalisés et proposer des expériences utilisateur uniques, tout en conservant les fonctionnalités essentielles telles que le déplacement, le redimensionnement et les contrôles système.
 
-![L’application de démarrage TypeScript Wails v3 par défaut, exécutée dans une fenêtre sans cadre avec les coins macOS natifs](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![L’application de démarrage TypeScript v3 par défaut de Wails, exécutée dans une fenêtre sans cadre avec les angles natifs de macOS](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
-L’exemple ci-dessus correspond à l’application de démarrage TypeScript Wails v3 par défaut avec `Frameless: true` activé.
+L’exemple ci-dessus est l’application de démarrage TypeScript v3 par défaut de Wails, avec `Frameless: true` activé.
 
 ## Démarrage rapide
 
@@ -24,7 +24,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**CSS de la barre de titre déplaçable :**
+**CSS pour une barre de titre déplaçable :**
 
 ```css
 .titlebar {
@@ -51,9 +51,9 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Création de fenêtres sans cadre
 
-### Rayon des coins (macOS)
+### Rayon des angles (macOS)
 
-Par défaut, les fenêtres sans cadre conservent les coins arrondis macOS standard d’AppKit. Définissez `Mac.CornerRadius` pour utiliser un rayon personnalisé (en points) :
+Par défaut, les fenêtres sans cadre conservent les angles arrondis standard d’AppKit sous macOS. Définissez `Mac.CornerRadius` pour utiliser un rayon personnalisé (en points) :
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -64,7 +64,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Définissez `Mac.CornerType` sur `MacWindowCornerTypeSquare` pour obtenir des coins carrés. Ce réglage ignore `CornerRadius` :
+Définissez `Mac.CornerType` sur `MacWindowCornerTypeSquare` pour obtenir des angles droits. Cela ignore `CornerRadius` :
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -100,7 +100,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### Avec un arrière-plan transparent
 
-**API privée sous macOS :** définissez `Mac.Backdrop: application.MacBackdropTransparent` et effectuez la compilation avec `-tags private_mac_apis` pour rendre la vue web transparente. Sans cette balise, la vue web native reste opaque même si l’arrière-plan HTML/CSS est transparent. `Frameless` et `TitleBar.AppearsTransparent` utilisent eux-mêmes des API publiques. Consultez [API macOS privées](/guides/build/private-macos-apis/#webview-transparency-and-background).
+**API privée sous macOS :** définissez `Mac.Backdrop: application.MacBackdropTransparent` et effectuez la compilation avec `-tags private_mac_apis` pour rendre la webview transparente. Sans cette balise, la webview native reste opaque, même si l’arrière-plan HTML/CSS est transparent. `Frameless` et `TitleBar.AppearsTransparent` utilisent eux-mêmes des API publiques. Consultez [API privées de macOS](/guides/build/private-macos-apis/#webview-transparency-and-background).
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -114,7 +114,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 **Cas d’utilisation :**
 
-- Coins arrondis
+- Angles arrondis
 - Formes personnalisées
 - Fenêtres en superposition
 - Écrans de démarrage
@@ -198,7 +198,7 @@ Utilisez la propriété CSS `--wails-draggable` :
 }
 ```
 
-**JavaScript des boutons :**
+**JavaScript pour les boutons :**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -210,41 +210,41 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ## Zones non clientes natives sous Windows
 
-Windows peut traiter certaines parties d’une barre de titre personnalisée comme des zones non clientes natives. Vous pouvez ainsi dessiner la barre de titre et les boutons de fenêtre avec n’importe quel design HTML/CSS tout en conservant le comportement natif de Windows : la zone de titre permet de déplacer la fenêtre, le bouton d’agrandissement peut afficher Snap Assist / Snap Layouts de Windows 11, et les boutons de réduction, d’agrandissement et de fermeture bénéficient de la détection de zone et de l’état de la souris natifs.
+Windows peut traiter certaines parties d’une barre de titre personnalisée comme des zones non clientes natives. Vous pouvez ainsi dessiner la barre de titre et les boutons de légende avec n’importe quelle conception HTML/CSS, tout en conservant le comportement natif de Windows : la zone de légende permet de déplacer la fenêtre, le bouton d’agrandissement peut afficher les fonctionnalités 11 Snap Assist / Snap Layouts de Windows, et les boutons de réduction, d’agrandissement et de fermeture bénéficient de la détection de zone et de l’état de souris natifs.
 
-La vidéo ci-dessous présente une barre de titre HTML/CSS personnalisée utilisant la détection de zone native de Windows, notamment Snap Assist / Snap Layouts de Windows 11 sur un bouton d’agrandissement personnalisé.
+La vidéo ci-dessous présente une barre de titre HTML/CSS personnalisée qui utilise la détection de zone native de Windows, notamment les fonctionnalités 11 Snap Assist / Snap Layouts de Windows sur un bouton d’agrandissement personnalisé.
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails prend en charge deux mécanismes propres à Windows :
 
-- `app-region` par l’intermédiaire de la prise en charge native des zones non clientes de WebView2
-- `--wails-non-client-region` par l’intermédiaire du suivi effectué par le runtime Wails pour les boutons de fenêtre personnalisés
+- `app-region` via la prise en charge native des zones non clientes de WebView2
+- `--wails-non-client-region` via le suivi assuré par le runtime Wails pour les boutons de légende personnalisés
 
 ### Choix d’un mode
 
 @note{type="caution" title="Expérimental"}
-`WebView2CompositionHosting` modifie en interne la manière dont la fenêtre héberge WebView2 et interagit avec lui. Au lieu du contrôleur WebView2 hébergé par HWND par défaut, Wails utilise l’hébergement par contrôleur de composition et transfère explicitement les entrées. Ce mode peut présenter des problèmes de rendu, d’entrée, de focus ou de compatibilité avec le WebView2 Runtime. Activez-le uniquement si vous avez besoin du comportement natif des boutons de fenêtre personnalisés, puis testez soigneusement votre application avec les versions de Windows et du WebView2 Runtime que vous prenez en charge.
+`WebView2CompositionHosting` modifie en interne la manière dont la fenêtre héberge WebView2 et interagit avec celui-ci. Au lieu du contrôleur WebView2 par défaut hébergé par un HWND, Wails utilise l’hébergement par contrôleur de composition et transmet explicitement les entrées. Ce mode peut présenter des problèmes de rendu, d’entrée, de focus ou de compatibilité avec le runtime WebView2. Activez-le uniquement si vous avez besoin du comportement natif de boutons de légende personnalisés, et testez soigneusement votre application avec les versions de Windows et du runtime WebView2 que vous prenez en charge.
 
 @end
 
-Choisissez selon les fonctions Windows dont vous avez besoin :
+Choisissez en fonction du comportement Windows dont vous avez besoin :
 
-- Utilisez `NonClientRegionSupport` pour permettre simplement le déplacement natif de l’application avec les propriétés `app-region: drag` et `app-region: no-drag` de WebView2.
-- Utilisez `WebView2CompositionHosting` lorsque vos boutons personnalisés de réduction, d’agrandissement et de fermeture doivent se comporter comme des boutons de fenêtre Windows natifs.
-- Activez les deux lorsque la même fenêtre requiert à la fois la prise en charge native de `app-region` par WebView2 et des zones de boutons de fenêtre personnalisés gérées par Wails.
+- Utilisez `NonClientRegionSupport` pour permettre simplement le déplacement natif de l’application avec les zones `app-region: drag` et `app-region: no-drag` de WebView2.
+- Utilisez `WebView2CompositionHosting` lorsque vos boutons personnalisés de réduction, d’agrandissement et de fermeture doivent se comporter comme les boutons de légende natifs de Windows.
+- Activez les deux lorsque la même fenêtre doit prendre en charge les zones `app-region` natives de WebView2 et les zones de boutons de légende personnalisés gérées par Wails.
 
-`NonClientRegionSupport` est l’alternative native légère au suivi `--wails-draggable` de Wails. Vous indiquez en CSS les zones déplaçables et non déplaçables, WebView2 détermine quels pixels appartiennent à la barre de titre, puis Wails demande à WebView2 la zone native lors de la détection de zone.
+`NonClientRegionSupport` est l’alternative native et légère au suivi `--wails-draggable` de Wails. Vous marquez les zones déplaçables et non déplaçables avec CSS, WebView2 détermine quels pixels appartiennent à la légende, puis Wails demande à WebView2 la zone native lors de la détection de zone.
 
-Voilà toute l’étendue actuelle de ce mode. Il ne permet pas aux boutons personnalisés de réduction, d’agrandissement ou de fermeture de se comporter comme des boutons de fenêtre Windows natifs et n’active pas Snap Assist / Snap Layouts de Windows 11 pour un bouton d’agrandissement personnalisé. Utilisez-le si vous avez seulement besoin du déplacement natif de l’application, sans le mécanisme supplémentaire de `--wails-draggable`.
+À ce jour, la portée de ce mode se limite à cela. Il ne permet pas aux boutons personnalisés de réduction, d’agrandissement ou de fermeture de se comporter comme les boutons de légende natifs de Windows, et n’active pas les fonctionnalités 11 Snap Assist / Snap Layouts de Windows pour un bouton d’agrandissement personnalisé. Utilisez-le lorsque vous avez uniquement besoin du déplacement natif de l’application, sans le mécanisme supplémentaire de `--wails-draggable`.
 
-`WebView2CompositionHosting` sert à créer des boutons de barre de titre personnalisés au comportement natif. Wails suit les rectangles du DOM marqués avec `--wails-non-client-region`, les associe à des valeurs de test de positionnement Windows telles que `HTMINBUTTON`, `HTMAXBUTTON` et `HTCLOSE`, puis retransmet les entrées de la souris à la surface WebView2 hébergée par composition. C’est ce qui permet à un bouton d’agrandissement personnalisé de prendre en charge Snap Assist / Snap Layouts de Windows 11, tout en conservant l’apparence de votre choix.
+`WebView2CompositionHosting` est destiné aux boutons de légende personnalisés dotés d’un comportement natif. Wails suit les rectangles du DOM marqués avec `--wails-non-client-region`, les associe à des valeurs de détection de zone Windows telles que `HTMINBUTTON`, `HTMAXBUTTON` et `HTCLOSE`, puis retransmet les entrées de la souris à la surface WebView2 hébergée par composition. C’est ce qui permet à un bouton d’agrandissement personnalisé de prendre part aux fonctionnalités 11 Snap Assist / Snap Layouts de Windows, tout en conservant le design visuel de votre choix.
 
-Autrement dit, `NonClientRegionSupport` correspond à la prise en charge native des régions CSS par WebView2. Avec `WebView2CompositionHosting`, Wails prend en charge la composition appartenant à l’hôte ainsi que les tests de positionnement personnalisés dans la zone non cliente.
+Autrement dit, `NonClientRegionSupport` correspond à la prise en charge des zones CSS natives de WebView2. Avec `WebView2CompositionHosting`, Wails prend en charge la composition détenue par l’hôte et la détection personnalisée des zones non clientes.
 
-### WebView2 app-region
+### app-region de WebView2
 
-Activez la prise en charge native des régions non clientes de WebView2 pour la fenêtre :
+Activez la prise en charge native des zones non clientes de WebView2 pour la fenêtre :
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -270,16 +270,16 @@ Marquez ensuite les zones déplaçables avec la propriété CSS `app-region` :
 }
 ```
 
-Utilisez ce mode si vous avez uniquement besoin du déplacement natif par la barre de titre et si les contrôles de celle-ci sont gérés par des clics classiques dans le frontend.
+Utilisez ce mode si vous avez uniquement besoin du déplacement natif par la légende et si les contrôles de votre barre de titre sont gérés par des clics frontend ordinaires.
 
-Ce mode est limité aux fonctionnalités de WebView2 pour les régions non clientes. Dans les versions actuelles de WebView2, seules les régions déplaçables et non déplaçables sont donc prises en charge. Ce mode n’est pas destiné à représenter des boutons de barre de titre entièrement personnalisés dans le frontend, avec des rôles natifs distincts de réduction, d’agrandissement et de fermeture.
+Ce mode est limité par la prise en charge des zones non clientes propre à WebView2. Dans les versions actuelles de WebView2, seules les zones déplaçables et non déplaçables sont donc disponibles. Ce mode n’est pas conçu pour représenter des boutons de légende frontend entièrement personnalisés, avec des rôles natifs distincts de réduction, d’agrandissement et de fermeture.
 
-### Boutons de barre de titre personnalisés au comportement natif
+### Boutons de légende personnalisés avec comportement natif
 
-Pour que les boutons personnalisés de réduction, d’agrandissement et de fermeture se comportent comme les boutons système de la barre de titre, activez l’hébergement par composition :
+Pour que les boutons personnalisés de réduction, d’agrandissement et de fermeture se comportent comme les boutons de légende système, activez l’hébergement par composition :
 
 @note{type="caution" title="Expérimental"}
-`WebView2CompositionHosting` utilise l’hébergement du contrôleur de composition WebView2 avec DirectComposition. Consultez [Choisir un mode](#choix-dun-mode) avant de l’activer.
+`WebView2CompositionHosting` utilise l’hébergement du contrôleur de composition WebView2 avec DirectComposition. Consultez [Choix d’un mode](#choix-dun-mode) avant de l’activer.
 
 @end
 
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Marquez ensuite chaque région du frontend avec `--wails-non-client-region` :
+Marquez ensuite chaque zone frontend avec `--wails-non-client-region` :
 
 ```html
 <div class="titlebar">
@@ -337,18 +337,18 @@ Marquez ensuite chaque région du frontend avec `--wails-non-client-region` :
 
 Valeurs `--wails-non-client-region` prises en charge :
 
-- `caption` — zone déplaçable de la barre de titre
-- `minimize` — cible de test de positionnement du bouton de réduction natif
-- `maximize` — cible de test de positionnement du bouton d’agrandissement natif, y compris le comportement au survol de Snap Assist / Snap Layouts de Windows 11
-- `close` — cible de test de positionnement du bouton de fermeture natif
+- `caption` — zone de barre de titre permettant le déplacement
+- `minimize` — cible de clic du bouton natif de réduction
+- `maximize` — cible de clic du bouton natif d’agrandissement, y compris le comportement au survol de Snap Assist / Snap Layouts de Windows 11
+- `close` — cible de clic du bouton natif de fermeture
 
-Le runtime Wails surveille les modifications du DOM, des styles, des dimensions, du défilement et de la zone d’affichage, puis envoie des instantanés des régions à la fenêtre native. La géométrie des régions est mesurée en pixels CSS, puis convertie en pixels physiques pour les tests de positionnement de Windows.
+Le runtime Wails surveille les modifications du DOM, des styles, de la taille, du défilement et de la zone d’affichage, puis envoie des instantanés des zones à la fenêtre native. La géométrie des zones est mesurée en pixels CSS, puis convertie en pixels physiques pour les tests de positionnement de Windows.
 
-Vous gardez l’entière maîtrise de l’apparence. Les régions indiquent uniquement à Windows la fonction de chaque rectangle ; la forme, l’icône, la couleur, l’espacement, le style au survol et la disposition des boutons restent définis par votre frontend.
+La conception visuelle reste entièrement sous votre contrôle. Les zones indiquent uniquement à Windows la signification de chaque rectangle ; la forme, l’icône, la couleur, l’espacement, le style au survol et la disposition des boutons proviennent toujours de votre frontend.
 
-### Combiner les deux modes
+### Combiner les deux
 
-Vous pouvez activer les deux options si vous souhaitez utiliser la prise en charge de WebView2 pour `app-region` et des régions de boutons de barre de titre gérées par Wails dans la même fenêtre :
+Vous pouvez activer les deux options si vous souhaitez utiliser dans la même fenêtre la prise en charge de `app-region` par WebView2 et les zones de boutons de barre de titre gérées par Wails :
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -364,7 +364,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### Implémenter la fermeture, la réduction et l’agrandissement
 
-**Côté Go :**
+**Côté Go :**
 
 ```go
 type WindowControls struct {
@@ -388,7 +388,7 @@ func (wc *WindowControls) Close() {
 }
 ```
 
-**Côté JavaScript :**
+**Côté JavaScript :**
 
 ```javascript
 import { Minimise, Maximise, Close } from './bindings/WindowControls'
@@ -398,7 +398,7 @@ document.querySelector('.maximize').addEventListener('click', Maximise)
 document.querySelector('.close').addEventListener('click', Close)
 ```
 
-**Vous pouvez également utiliser les méthodes du runtime :**
+**Vous pouvez aussi utiliser les méthodes du runtime :**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -410,7 +410,7 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ### Basculer l’état d’agrandissement
 
-Suivez l’état d’agrandissement pour adapter l’icône du bouton :
+Suivez l’état d’agrandissement pour adapter l’icône du bouton :
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -436,9 +436,9 @@ async function updateMaximiseButton() {
 
 ## Poignées de redimensionnement
 
-### Redimensionnement basé sur CSS
+### Redimensionnement avec CSS
 
-Wails fournit des poignées de redimensionnement automatiques pour les fenêtres sans cadre :
+Wails fournit des poignées de redimensionnement automatiques pour les fenêtres sans cadre :
 
 ```css
 /* Enable resize on all edges */
@@ -481,14 +481,14 @@ body {
 }
 ```
 
-**Valeurs :**
+**Valeurs :**
 
 - `all` — redimensionnement depuis tous les bords
 - `top`, `bottom`, `left`, `right` — bords spécifiques
-- `top-left`, `top-right`, `bottom-left`, `bottom-right` — angles
+- `top-left`, `top-right`, `bottom-left`, `bottom-right` — coins
 - `none` — aucun redimensionnement
 
-### Exemple de poignée de redimensionnement
+### Exemple de poignées de redimensionnement
 
 ```html
 <div class="window">
@@ -517,7 +517,7 @@ body {
 
 @tabs{sync-key="platform"}
 [Windows]
-**Fenêtres sans cadre sous Windows :**
+**Fenêtres sans cadre sous Windows :**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -528,14 +528,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Fonctionnalités :**
+**Fonctionnalités :**
 
 - Ombre portée automatique
 - Prise en charge de Snap Layouts (Windows 11)
 - Prise en charge d’Aero Snap
-- Mise à l’échelle selon le nombre de PPP
+- Mise à l’échelle selon le DPI
 
-**Désactiver les décorations :**
+**Désactiver les décorations :**
 
 ```go
 Windows: application.WindowsWindow{
@@ -543,19 +543,19 @@ Windows: application.WindowsWindow{
 },
 ```
 
-**Snap Assist :**
+**Snap Assist :**
 
 ```go
 // Trigger Windows 11 Snap Assist
 window.SnapAssist()
 ```
 
-Cette opération déclenche Snap Layouts via le raccourci clavier de Windows. Pour qu’un bouton d’agrandissement HTML personnalisé affiche Snap Layouts nativement au survol, utilisez plutôt [Régions non clientes natives sous Windows](#zones-non-clientes-natives-sous-windows).
+Cela déclenche Snap Layouts par l’intermédiaire du raccourci clavier Windows. Pour créer un bouton HTML personnalisé d’agrandissement qui affiche Snap Layouts au survol comme un bouton natif, utilisez plutôt [Zones non clientes natives sous Windows](#zones-non-clientes-natives-sous-windows).
 
-**Hauteur personnalisée de la barre de titre :** Windows détecte automatiquement les régions déplaçables à partir du CSS.
+**Hauteur personnalisée de la barre de titre :** Windows détecte automatiquement les zones de déplacement définies avec CSS.
 
 [macOS]
-**Fenêtres sans cadre sous macOS :**
+**Fenêtres sans cadre sous macOS :**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -569,14 +569,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Fonctionnalités :**
+**Fonctionnalités :**
 
-- Prise en charge native du mode plein écran
-- Boutons « feux de circulation » (facultatifs)
+- Prise en charge native du plein écran
+- Boutons « feux de circulation » (facultatifs)
 - Effets de vibrance
 - Barre de titre transparente
 
-**Masquez entièrement la barre de titre** (utilisez les variantes prédéfinies exportées par le package `application` — il n’existe ni champ `TitleBarStyle` ni constante `MacTitleBarStyleHidden`) :
+**Masquer entièrement la barre de titre** (utilisez les variantes prédéfinies exportées par le paquet `application` — il n’existe ni champ `TitleBarStyle` ni constante `MacTitleBarStyleHidden`) :
 
 ```go
 Mac: application.MacWindow{
@@ -586,7 +586,7 @@ Mac: application.MacWindow{
 
 Les autres préréglages comprennent `MacTitleBarDefault`, `MacTitleBarHiddenInset` et `MacTitleBarHiddenInsetUnified`.
 
-**Barre de titre invisible :** Permet de faire glisser la fenêtre tout en masquant la barre de titre. Cette option ne prend effet que lorsque la fenêtre est sans cadre ou utilise `AppearsTransparent` :
+**Barre de titre invisible :** permet de déplacer la fenêtre tout en masquant sa barre de titre. Cette option ne prend effet que si la fenêtre est sans cadre ou utilise `AppearsTransparent` :
 
 ```go
 Mac: application.MacWindow{
@@ -595,7 +595,7 @@ Mac: application.MacWindow{
 ```
 
 [Linux]
-**Fenêtres Linux sans cadre :**
+**Fenêtres sans cadre sous Linux :**
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -603,26 +603,26 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**Fonctionnalités :**
+**Fonctionnalités :**
 
 - Prise en charge de base des fenêtres sans cadre
-- Zones de déplacement CSS
-- Varie selon l’environnement de bureau
+- Zones de déplacement définies avec CSS
+- Comportement variable selon l’environnement de bureau
 
-**Remarques sur les environnements de bureau :**
+**Remarques sur les environnements de bureau :**
 
-- **GNOME :** bonne prise en charge
-- **KDE Plasma :** bonne prise en charge
-- **XFCE :** prise en charge de base
-- **Gestionnaires de fenêtres en mosaïque :** prise en charge limitée
+- **GNOME :** bonne prise en charge
+- **KDE Plasma :** bonne prise en charge
+- **XFCE :** prise en charge de base
+- **Gestionnaires de fenêtres en mosaïque :** prise en charge limitée
 
-**Compositeur requis :** La transparence nécessite un compositeur (la plupart des environnements de bureau modernes en disposent).
+**Compositeur requis :** la transparence nécessite un compositeur (la plupart des environnements de bureau modernes en possèdent un).
 
 @end
 
 ## Modèles courants
 
-### Modèle 1 : barre de titre moderne
+### Modèle 1 : barre de titre moderne
 
 ```html
 <div class="modern-titlebar">
@@ -690,7 +690,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-### Modèle 2 : écran de démarrage
+### Modèle 2 : écran de démarrage
 
 ```go
 splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -723,7 +723,7 @@ body {
 }
 ```
 
-### Modèle 3 : fenêtre aux coins arrondis
+### Modèle 3 : fenêtre aux coins arrondis
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -756,7 +756,7 @@ body {
 }
 ```
 
-### Modèle 4 : fenêtre superposée
+### Modèle 4 : fenêtre superposée
 
 ```go
 overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -784,9 +784,9 @@ body {
 
 ## Exemple complet
 
-Voici une fenêtre sans cadre prête pour la production :
+Voici une fenêtre sans cadre prête pour la production :
 
-**Go :**
+**Go :**
 
 ```go
 package main
@@ -834,7 +834,7 @@ func main() {
 }
 ```
 
-**HTML :**
+**HTML :**
 
 ```html
 <!DOCTYPE html>
@@ -861,7 +861,7 @@ func main() {
 </html>
 ```
 
-**CSS :**
+**CSS :**
 
 ```css
 * {
@@ -937,7 +937,7 @@ body {
 }
 ```
 
-**JavaScript :**
+**JavaScript :**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -982,23 +982,23 @@ updateMaximiseButton()
 ### ✅ À faire
 
 - **Prévoyez une zone de déplacement** — les utilisateurs doivent pouvoir déplacer la fenêtre
-- **Implémentez les boutons système** — fermer, réduire et agrandir
-- **Définissez une taille minimale** — évitez les mises en page inutilisables
+- **Implémentez les boutons système** — fermeture, réduction et agrandissement
+- **Définissez une taille minimale** — évitez les dispositions inutilisables
 - **Testez sur toutes les plateformes** — le comportement varie
-- **Utilisez CSS pour les zones de déplacement** — cette solution est flexible et facile à maintenir
-- **Fournissez un retour visuel** — ajoutez des états de survol aux boutons
+- **Utilisez CSS pour les zones de déplacement** — cette solution est souple et facile à maintenir
+- **Fournissez un retour visuel** — ajoutez des états au survol aux boutons
 
 ### ❌ À éviter
 
 - **N’oubliez pas les poignées de redimensionnement** — si la fenêtre est redimensionnable
-- **Ne rendez pas toute la fenêtre déplaçable** — cela empêche toute interaction
-- **N’oubliez pas d’exclure les boutons de la zone de déplacement** — sinon, ils ne fonctionneront pas
+- **Ne rendez pas toute la fenêtre déplaçable** — cela empêche les interactions
+- **N’oubliez pas d’exclure les boutons des zones de déplacement** — sinon, ils ne fonctionneront pas
 - **N’utilisez pas de zones de déplacement minuscules** — elles sont difficiles à saisir
-- **N’oubliez pas les différences entre plateformes** — effectuez des tests approfondis
+- **N’oubliez pas les différences entre les plateformes** — effectuez des tests approfondis
 
 ## Dépannage
 
-### Impossible de faire glisser la fenêtre
+### Impossible de déplacer la fenêtre
 
 **Cause :** `--wails-draggable: drag` manquant
 
@@ -1043,8 +1043,8 @@ Découvrez les principes fondamentaux de la gestion des fenêtres.
 [En savoir plus →](/features/windows/basics/)
 
 ---
-⚙ Options des fenêtres
-Consultez la référence complète des options des fenêtres.
+⚙ Options de fenêtre
+Référence complète des options de fenêtre.
 
 [En savoir plus →](/features/windows/options/)
 
@@ -1056,7 +1056,7 @@ Gérez les événements du cycle de vie des fenêtres.
 
 ---
 ◆ Fenêtres multiples
-Modèles pour les applications multifenêtres.
+Modèles pour les applications à plusieurs fenêtres.
 
 [En savoir plus →](/features/windows/multiple/)
 

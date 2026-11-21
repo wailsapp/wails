@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "3018f3bb94aaef9db88f",
   "sourceFile": "community/showcase/restic-browser.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0002-text-01": {
-      "sourceHash": "63f2b7b0d9629e8238fd228693587f51ee25b0b77fec3f5d7a5ff4eee6f53789",
+      "sourceHash": "2e8ed7bcf07ff2c00f092d6d6cb266bc46a8d82cce314bc7e72277256ce9dc48",
       "targetHash": "bae1f1372426e171c93068cf4d24ed0c8ddf9a212e0d0072c982635918ef6fda",
       "machineHash": "bae1f1372426e171c93068cf4d24ed0c8ddf9a212e0d0072c982635918ef6fda",
       "machineText": "[Restic-Browser](https://github.com/emuell/restic-browser) - GUI pencadangan [restic](https://github.com/restic/restic) lintas platform yang sederhana untuk menelusuri dan memulihkan repositori restic.",
       "status": "final",
-      "sourcePreview": "[Restic-Browser](https://github.com/emuell/restic-browser) - A simple,\\ cross-platform [restic](http…",
+      "sourcePreview": "[Restic-Browser](https://github.com/emuell/restic-browser) - A simple, cross-platform [restic](https…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
       "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
       "targetHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
       "machineHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/restic-browser.mpd",
+    "sourceHash": "6763deba9e34bfaa5f4629a79dff64ea54f43f6168dcfe9414aa80c86f6db6db",
+    "targetHash": "8413d1e6410f8507a5f5514f46cf188ab0c09dff849ffa5816a0a5f57e9d4db2",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+        "targetHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+        "machineHash": "ef7153cbdfb1e15524ae9592eca3a2ac9cdb77045d99858e5065a629075d0df5",
+        "machineText": "![Restic Browser](/assets/showcase-images/restic-browser-2.png)",
+        "status": "final",
+        "sourcePreview": "![Restic Browser](/assets/showcase-images/restic-browser-2.png)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "63f2b7b0d9629e8238fd228693587f51ee25b0b77fec3f5d7a5ff4eee6f53789",
+        "targetHash": "bae1f1372426e171c93068cf4d24ed0c8ddf9a212e0d0072c982635918ef6fda",
+        "machineHash": "bae1f1372426e171c93068cf4d24ed0c8ddf9a212e0d0072c982635918ef6fda",
+        "machineText": "[Restic-Browser](https://github.com/emuell/restic-browser) - GUI pencadangan [restic](https://github.com/restic/restic) lintas platform yang sederhana untuk menelusuri dan memulihkan repositori restic.",
+        "status": "final",
+        "sourcePreview": "[Restic-Browser](https://github.com/emuell/restic-browser) - A simple,\\ cross-platform [restic](http…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+        "targetHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+        "machineHash": "291755dae3851c2e733331d322dc53600bdfa381035febec2d737576d3cadaf0",
+        "machineText": "Restic Browser",
+        "status": "final",
+        "sourcePreview": "Restic Browser",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      }
     }
   }
 }

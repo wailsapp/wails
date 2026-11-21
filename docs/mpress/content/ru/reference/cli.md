@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Генерирует привязки между Go и фронтендом. Флаги: `-d` (выходной каталог), `-models`, `-index`, `-ts`, `-i` (интерфейсы), `-b` (пакет), `-names` (сгенерировать `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (по умолчанию `true`), `-f`, `-obfuscated` (сгенерировать `wails_obfuscated.gen.go` со стабильными идентификаторами привязок для сборок Garble; см. [«Обфусцированные сборки»](/guides/build/obfuscation/)), `-obfuscated-output` (каталог для сгенерированного файла; по умолчанию — каталог основного пакета). Принимает шаблоны пакетов (например, `./...`); если они не заданы, используется текущий каталог. |
 | `generate icons` | Преобразует исходный PNG-файл в форматы значков для соответствующих платформ. Флаги: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Генерирует из `build/config.yml` содержимое каталога `build/`: фрагменты Taskfile, файлы NSIS, `Info.plist`, шаблон `.desktop` и т. д. |
-| `generate runtime` | Повторно генерирует предварительно собранный `/wails/runtime.js`, поставляемый в webview. |
+| `generate runtime` | Экспортировать встроенные в CLI производственные/отладочные пакеты JavaScript (`-d` задаёт каталог назначения). |
 | `generate syso` | Генерирует файл ресурсов Windows `.syso` (значок, манифест и сведения о версии). |
 | `generate webview2bootstrapper` | Генерирует загрузочный установщик WebView2 для Windows. |
 | `generate constants` | Генерирует константы имён событий JS из типов событий Go. |

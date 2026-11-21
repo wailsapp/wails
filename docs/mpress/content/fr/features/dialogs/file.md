@@ -7,24 +7,24 @@ sourcePath: "features/dialogs/file.md"
 
 ## Boîtes de dialogue de fichiers
 
-Wails fournit des **boîtes de dialogue de fichiers natives**, dont l’apparence est adaptée à chaque plateforme, pour ouvrir et enregistrer des fichiers ainsi que sélectionner des dossiers. L’API, simple à utiliser, permet de filtrer les types de fichiers, d’effectuer des sélections multiples et de définir des emplacements par défaut.
+Wails fournit des **boîtes de dialogue de fichiers natives** dont l’apparence est adaptée à chaque plateforme pour ouvrir et enregistrer des fichiers, ainsi que sélectionner des dossiers. L’API est simple et permet de filtrer les types de fichiers, d’effectuer des sélections multiples et de définir des emplacements par défaut.
 
-![Un sélecteur de fichiers macOS natif ouvert par une application Wails](/assets/screenshots/file-dialog-macos.png)
+![Un sélecteur de fichiers natif de macOS ouvert par une application Wails](/assets/screenshots/file-dialog-macos.png)
 
-L’API Wails délègue la sélection au système d’exploitation afin de conserver les fonctions familières de navigation, de filtrage et de sélection.
+L’API Wails délègue la sélection au système d’exploitation afin de conserver les comportements familiers de navigation, de filtrage et de sélection.
 
-## Créer des boîtes de dialogue de fichiers
+## Création de boîtes de dialogue de fichiers
 
-Accédez aux boîtes de dialogue de fichiers à l’aide du gestionnaire `app.Dialog` :
+Accédez aux boîtes de dialogue de fichiers par l’intermédiaire du gestionnaire `app.Dialog` :
 
 ```go
 app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
 
-## Boîte de dialogue Ouvrir un fichier
+## Boîte de dialogue d’ouverture de fichier
 
-Sélectionnez les fichiers à ouvrir :
+Sélectionnez les fichiers à ouvrir :
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -40,7 +40,7 @@ if err != nil || path == "" {
 openFile(path)
 ```
 
-**Cas d’utilisation :**
+**Cas d’utilisation :**
 
 - Ouvrir des documents
 - Importer des fichiers
@@ -92,9 +92,9 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-## Boîte de dialogue Enregistrer un fichier
+## Boîte de dialogue d’enregistrement de fichier
 
-Choisissez l’emplacement d’enregistrement :
+Choisissez l’emplacement d’enregistrement :
 
 ```go
 path, err := app.Dialog.SaveFile().
@@ -110,7 +110,7 @@ if err != nil || path == "" {
 saveFile(path, data)
 ```
 
-**Cas d’utilisation :**
+**Cas d’utilisation :**
 
 - Enregistrer des documents
 - Exporter des données
@@ -135,7 +135,7 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-### Confirmation du remplacement
+### Confirmation de l’écrasement
 
 ```go
 path, err := app.Dialog.SaveFile().
@@ -167,9 +167,9 @@ if _, err := os.Stat(path); err == nil {
 saveFile(path, data)
 ```
 
-## Boîte de dialogue Sélectionner un dossier
+## Boîte de dialogue de sélection de dossier
 
-Choisissez un répertoire au moyen de la boîte de dialogue d’ouverture de fichier après avoir activé la sélection de répertoires :
+Choisissez un répertoire à l’aide de la boîte de dialogue d’ouverture de fichier après avoir activé la sélection de répertoires :
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -185,7 +185,7 @@ if err != nil || path == "" {
 exportToFolder(path)
 ```
 
-**Cas d’utilisation :**
+**Cas d’utilisation :**
 
 - Choisir le répertoire de sortie
 - Sélectionner l’espace de travail
@@ -218,7 +218,7 @@ path, _ := app.Dialog.OpenFile().
 
 ### Extensions multiples
 
-Utilisez des points-virgules pour spécifier plusieurs extensions dans un même filtre :
+Utilisez des points-virgules pour spécifier plusieurs extensions dans un même filtre :
 
 ```go
 dialog := app.Dialog.OpenFile().
@@ -227,9 +227,9 @@ dialog := app.Dialog.OpenFile().
     AddFilter("All Files", "*.*")
 ```
 
-### Format des motifs
+### Format du motif
 
-Utilisez des **points-virgules** pour séparer plusieurs extensions dans un même filtre :
+Utilisez des **points-virgules** pour séparer plusieurs extensions dans un même filtre :
 
 ```go
 // Multiple extensions separated by semicolons
@@ -388,7 +388,7 @@ func processMultipleFiles(app *application.App) {
 }
 ```
 
-### Exporter après sélection d’un dossier
+### Exporter avec sélection d’un dossier
 
 ```go
 func exportData(app *application.App, data []byte) {
@@ -499,29 +499,29 @@ func importConfiguration(app *application.App) {
 
 ### ✅ À faire
 
-- **Fournissez des filtres de fichiers** – Aidez les utilisateurs à trouver leurs fichiers
-- **Définissez des titres appropriés** – Donnez un contexte clair
-- **Utilisez des répertoires par défaut** – Commencez dans un emplacement logique
-- **Validez les sélections** – Vérifiez les types de fichiers
-- **Gérez l’annulation** – L’utilisateur peut annuler l’opération
-- **Demandez confirmation** – Pour les actions destructrices
-- **Informez l’utilisateur du résultat** – Affichez des messages de réussite ou d’erreur
+- **Fournissez des filtres de fichiers** — Aidez les utilisateurs à trouver leurs fichiers
+- **Définissez des titres adaptés** — Donnez un contexte clair
+- **Utilisez des répertoires par défaut** — Commencez dans un emplacement logique
+- **Validez les sélections** — Vérifiez les types de fichiers
+- **Gérez l’annulation** — L’utilisateur peut annuler l’opération
+- **Affichez une confirmation** — Pour les actions destructives
+- **Informez l’utilisateur du résultat** — Affichez des messages de réussite ou d’erreur
 
 ### ❌ À ne pas faire
 
-- **Ne négligez pas la validation** – Vérifiez les types de fichiers
-- **N’ignorez pas les erreurs** – Gérez l’annulation
-- **N’utilisez pas de filtres génériques** – Soyez précis
-- **N’oubliez pas « Tous les fichiers »** – Proposez toujours cette option
-- **Ne codez pas les chemins en dur** – Utilisez le répertoire personnel de l’utilisateur
-- **Ne supposez pas que le fichier existe** – Vérifiez son existence avant de l’ouvrir
+- **Ne négligez pas la validation** — Vérifiez les types de fichiers
+- **N’ignorez pas les erreurs** — Gérez l’annulation
+- **N’utilisez pas de filtres génériques** — Soyez précis
+- **N’oubliez pas « Tous les fichiers »** — Proposez toujours cette option
+- **Ne codez pas les chemins en dur** — Utilisez le répertoire personnel de l’utilisateur
+- **Ne supposez pas que le fichier existe** — Vérifiez son existence avant de l’ouvrir
 
 ## Différences entre les plateformes
 
 ### macOS
 
 - NSOpenPanel/NSSavePanel natifs
-- Présentation sous forme de feuille lorsque la boîte de dialogue est rattachée à une fenêtre
+- Présentation sous forme de feuille lorsque la boîte de dialogue est attachée à une fenêtre
 - Respecte le thème du système
 - Prend en charge l’aperçu Quick Look
 - Intégration des étiquettes et des favoris
@@ -537,7 +537,7 @@ func importConfiguration(app *application.App) {
 
 - Sélecteur de fichiers GTK
 - Varie selon l’environnement de bureau
-- Suit le thème du bureau
+- Respecte le thème de l’environnement de bureau
 - Prise en charge des fichiers récents
 
 ## Étapes suivantes
@@ -562,7 +562,7 @@ Appelez des fonctions Go depuis JavaScript.
 
 ---
 ★ Événements
-Utilisez des événements pour signaler la progression.
+Utilisez des événements pour transmettre les mises à jour de progression.
 
 [En savoir plus →](/features/events/system/)
 

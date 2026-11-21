@@ -1,13 +1,13 @@
 ---
 title: "Benutzerdefinierte Dialoge"
-description: "Erstellen Sie benutzerdefinierte Dialoge in Ihren Wails-Anwendungen"
+description: "Benutzerdefinierte Dialoge in Ihren Wails-Anwendungen erstellen"
 slug: "features/dialogs/custom"
 sourcePath: "features/dialogs/custom.md"
 ---
 
 ## Benutzerdefinierte Dialoge
 
-Erstellen Sie **benutzerdefinierte Dialogfenster** mit regulären Wails-Fenstern, die sich wie Dialoge verhalten. Entwickeln Sie benutzerdefinierte Formulare, komplexe Eingabevalidierungen, ein markenspezifisches Erscheinungsbild und umfangreiche Inhalte (Bilder, Videos), ohne auf vertraute Dialogmuster zu verzichten.
+Erstellen Sie **benutzerdefinierte Dialogfenster** mithilfe regulärer Wails-Fenster mit dialogtypischem Verhalten. Implementieren Sie benutzerdefinierte Formulare, komplexe Eingabevalidierung, ein markenspezifisches Erscheinungsbild und umfangreiche Inhalte (Bilder, Videos), ohne auf vertraute Dialogmuster zu verzichten.
 
 ## Schnellstart
 
@@ -73,7 +73,7 @@ func (d *Customdialog) Close(result string) {
 }
 ```
 
-### Modaler Dialog
+### Modaldialog
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) string {
@@ -525,20 +525,20 @@ func (wd *Wizarddialog) Cancel() {
 ### ✅ Empfohlen
 
 - **Geeignete Fensteroptionen verwenden** – AlwaysOnTop, Frameless usw.
-- **Abbrechen ermöglichen** – Bieten Sie immer eine Möglichkeit zum Abbrechen an
-- **Eingaben validieren** – Prüfen Sie die Daten, bevor Sie sie übernehmen
-- **Rückmeldung geben** – Ladestatus und Fehler anzeigen
-- **Ereignisse zur Kommunikation verwenden** – Für eine klare Trennung
-- **Ressourcen bereinigen** – Schließen Sie Fenster und entfernen Sie Listener
+- **Abbrechen ermöglichen** – Bieten Sie stets eine Möglichkeit zum Abbrechen an
+- **Eingaben validieren** – Prüfen Sie die Daten, bevor Sie sie akzeptieren
+- **Rückmeldung geben** – Ladezustände und Fehler anzeigen
+- **Ereignisse für die Kommunikation verwenden** – Für eine klare Trennung sorgen
+- **Ressourcen bereinigen** – Fenster schließen und Listener entfernen
 
 ### ❌ Nicht empfohlen
 
-- **Den Hauptthread nicht blockieren** – Verwenden Sie Channels für Ergebnisse
+- **Den Haupt-Thread nicht blockieren** – Verwenden Sie Channels für Ergebnisse
 - **Das Schließen nicht vergessen** – Sonst entstehen Speicherlecks
 - **Die Validierung nicht überspringen** – Validieren Sie Eingaben immer
 - **Fehler nicht ignorieren** – Behandeln Sie alle Fehlerfälle
 - **Dialoge nicht zu komplex gestalten** – Halten Sie Dialoge einfach
-- **Barrierefreiheit nicht vergessen** – Ermöglichen Sie die Tastaturnavigation
+- **Barrierefreiheit nicht vergessen** – Unterstützen Sie die Tastaturnavigation
 
 ## Benutzerdefinierte Dialoge gestalten
 
@@ -604,7 +604,7 @@ Standarddialoge für Informationen, Warnungen und Fehler.
 
 ---
 📖 Dateidialoge
-Öffnen, Speichern und Ordnerauswahl.
+Dateien öffnen und speichern sowie Ordner auswählen.
 
 [Mehr erfahren →](/features/dialogs/file/)
 

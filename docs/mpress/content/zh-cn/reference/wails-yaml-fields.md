@@ -60,19 +60,22 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `darwin.microphone_usage_description` | `string` | 否 |  | `"value"` | `darwin` | macOS 麦克风权限说明文本；如果未配置用户自有的授权文件，则生成音频输入授权。 |
 | `darwin.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支持的最低操作系统版本。 |
 | `darwin.notarization` | `object` | 否 |  | `{}` | `darwin` | macOS 公证设置。 |
+| `darwin.notarization.api_key` | `string` | 否 |  | `"signing/AuthKey.p8"` |  | 项目相对路径下的 App Store Connect 团队 API 私钥 .p8 文件。使用可移植的 Notary API，而不是 notarytool；需要 key_id 和 issuer_id。 |
 | `darwin.notarization.credential` | `string` | 否 |  | `"release-notary"` |  | 用于公证的 Apple notarytool 钥匙串配置文件名称。 |
-| `darwin.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 用户可读的产品名称。 |
+| `darwin.notarization.issuer_id` | `string` | 否 |  | `"00000000-0000-0000-0000-000000000000"` |  | 用于 API 公证的 App Store Connect 团队颁发者 ID。 |
+| `darwin.notarization.key_id` | `string` | 否 |  | `"ABCDEFGHIJ"` |  | 属于 api_key 的 App Store Connect 团队 API 密钥 ID。 |
+| `darwin.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人类可读的产品名称。 |
 | `darwin.signing` | `object` | 否 |  | `{}` |  | 平台签名设置。 |
-| `darwin.signing.certificate` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
-| `darwin.signing.credential` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
-| `darwin.signing.entitlements` | `string` | 否 |  | `"signing/entitlements.plist"` |  | 相对于项目的 Apple 授权文件。 |
-| `darwin.signing.identity` | `string` | 否 |  | `"Developer ID Application: Example"` |  | 钥匙串中的 macOS 代码签名身份；使用 - 进行临时签名。 |
+| `darwin.signing.certificate` | `string` | 否 |  | `"signing/developer-id.p12"` |  | 项目相对路径下导出的 PKCS#12 身份，用于可移植的 Go 签名；省略时使用 macOS 钥匙串身份或临时签名。 |
+| `darwin.signing.credential` | `string` | 否 |  | `"APPLE_SIGNING_PASSWORD"` |  | 包含已导出 PKCS#12 身份密码的环境变量名称；绝不能填写密码本身。 |
+| `darwin.signing.entitlements` | `string` | 否 |  | `"signing/entitlements.plist"` |  | 项目相对路径的 Apple 权限声明文件。 |
+| `darwin.signing.identity` | `string` | 否 |  | `"Developer ID Application: Example"` |  | 钥匙串中的 macOS 代码签名身份；使用 - 进行可移植的临时签名，或配置导出的证书。 |
 | `darwin.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `darwin.signing.provisioning_profile` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `darwin.signing.thumbprint` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
-| `darwin.signing.timestamp_server` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
+| `darwin.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | 用于可移植证书签名的 RFC 3161 时间戳 URL；经过公证的证书签名必须配置此项。 |
 | `dev` | `object` | 否 |  | `{}` |  | 开发构建和监视器设置。 |
-| `dev.args` | `list(string)` | 否 |  | `["value"]` |  | 不经 shell 展开而传递的开发应用程序参数；桌面平台和 iOS 支持此项。Android 要求使用空列表。 |
+| `dev.args` | `list(string)` | 否 |  | `["value"]` |  | 不经 shell 展开而传递的开发版应用程序参数；桌面平台和 iOS 支持此设置。Android 要求此项为空列表。 |
 | `dev.debounce_ms` | `integer` | 否 | `250` | `250` |  | 用于合并处理开发文件变更的延迟时间。 |
 | `dev.exclude` | `list(string)` | 否 | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | 开发监视器的排除模式。 |
 | `dev.grace_period_ms` | `integer` | 否 | `1500` | `1500` |  | 允许开发进程正常停止的时间。 |
@@ -83,7 +86,7 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `file_associations` | `map(object)` | 否 |  | `{}` |  | 命名的文件关联注册项。 |
 | `file_associations["association"].description` | `string` | 否 |  | `"value"` |  | 易于理解的描述。 |
 | `file_associations["association"].extensions` | `list(string)` | 是 |  | `["example"]` |  | 应用程序处理的文件扩展名。 |
-| `file_associations["association"].icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 相对于项目且由用户维护的图标文件。 |
+| `file_associations["association"].icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 相对于项目的用户自有图标文件。 |
 | `file_associations["association"].mime_type` | `string` | 否 |  | `"application/x-example"` |  | 为文件关联注册的 MIME 类型。 |
 | `file_associations["association"].name` | `string` | 否 |  | `"value"` |  | 稳定的项目名称或注册名称。 |
 | `file_associations["association"].platforms` | `list(string)` | 否 |  | `["windows", "darwin", "linux"]` |  | 应用此注册项的平台。 |
@@ -112,20 +115,20 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `ios` | `object` | 否 |  | `{}` |  | iOS 平台设置。 |
 | `ios.assets_car` | `string` | 否 |  | `"build/Assets.car"` | `darwin,ios` | 由用户维护且已编译的 Apple 资产目录。 |
 | `ios.background_modes` | `list(string)` | 否 |  | `["fetch"]` | `ios` | iOS 后台执行模式。 |
-| `ios.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台构建号。 |
+| `ios.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台构建编号。 |
 | `ios.bundle_id` | `string` | 否 |  | `"com.example.app"` | `ios` | iOS 软件包标识符。 |
 | `ios.capabilities` | `list(string)` | 否 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 应用程序请求的原生平台功能。 |
 | `ios.cf_bundle_icon_name` | `string` | 否 |  | `"AppIcon"` | `darwin,ios` | Apple 资产目录中的图标集名称。 |
 | `ios.comments` | `string` | 否 |  | `"value"` | `ios,android` | 其他软件包元数据注释。 |
 | `ios.company` | `string` | 否 |  | `"value"` | `ios,android` | 公司或组织名称。 |
 | `ios.display_name` | `string` | 否 |  | `"Example App"` | `ios,android` | 移动平台显示的名称。 |
-| `ios.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 用户自有的项目相对路径图标文件。 |
+| `ios.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 相对于项目且由用户维护的图标文件。 |
 | `ios.info_plist` | `string` | 否 |  | `"assets/Info.plist"` | `darwin,ios` | 用户自有的 Apple Info.plist 文件。 |
 | `ios.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支持的最低操作系统版本。 |
 | `ios.signing` | `object` | 否 |  | `{}` |  | 平台签名设置。 |
 | `ios.signing.certificate` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `ios.signing.credential` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
-| `ios.signing.entitlements` | `string` | 否 |  | `"signing/entitlements.plist"` |  | 项目相对路径的 Apple 权限声明文件。 |
+| `ios.signing.entitlements` | `string` | 否 |  | `"signing/entitlements.plist"` |  | 相对于项目的 Apple 授权文件。 |
 | `ios.signing.identity` | `string` | 否 |  | `"Apple Development: Example"` |  | macOS 钥匙串中的 Apple 代码签名身份。 |
 | `ios.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `ios.signing.provisioning_profile` | `string` | 否 |  | `"signing/app.mobileprovision"` |  | 项目相对路径的 Apple 配置描述文件。 |
@@ -135,13 +138,13 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `linux.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台构建编号。 |
 | `linux.capabilities` | `list(string)` | 否 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 应用程序请求的原生平台功能。 |
 | `linux.desktop_entry` | `string` | 否 |  | `"assets/app.desktop"` | `linux` | 用户自有的 Linux 桌面条目文件。 |
-| `linux.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 用户自有的项目相对路径图标文件。 |
+| `linux.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 相对于项目的用户自有图标文件。 |
 | `linux.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向域名格式的应用程序标识符。 |
 | `linux.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支持的最低操作系统版本。 |
-| `linux.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人类可读的产品名称。 |
+| `linux.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 用户可读的产品名称。 |
 | `linux.signing` | `object` | 否 |  | `{}` |  | 平台签名设置。 |
-| `linux.signing.certificate` | `string` | 否 |  | `"signing/private-key.asc"` |  | Arch：项目相对路径的已导出 ASCII 封装 PGP 私钥文件。DEB/RPM：传递给外部签名工具的 PGP 密钥标识符。 |
-| `linux.signing.credential` | `string` | 否 |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch：包含私钥密码的可选环境变量；如果密钥未加密，则省略此项。 |
+| `linux.signing.certificate` | `string` | 否 |  | `"signing/private-key.asc"` |  | 用于原生 DEB、RPM 或 Arch 签名的已导出 ASCII 封装或二进制 OpenPGP 私钥文件。仅提供 GnuPG 密钥标识符时，仍使用外部 DEB/RPM 签名程序。 |
+| `linux.signing.credential` | `string` | 否 |  | `"LINUX_SIGNING_PASSPHRASE"` |  | 可选的环境变量，其中包含已导出私钥的口令；密钥未加密时省略。 |
 | `linux.signing.entitlements` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `linux.signing.identity` | `string` | 否 |  | `"builder"` |  | DEB 签名角色；默认为 builder。Arch 分离式签名程序不使用该项。 |
 | `linux.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
@@ -157,7 +160,8 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `packages["format"].desktop_entry` | `string` | 否 |  | `"assets/app.desktop"` | `appimage` | 用户自有的 Linux 桌面项文件。 |
 | `packages["format"].file_icon` | `string` | 否 |  | `"assets/file.icns"` | `dmg` | 用户自有的 DMG 文件图标。 |
 | `packages["format"].files` | `map(string)` | 否 |  | `{License.pdf: LICENSE.pdf}` | `dmg` | 复制到 DMG 中的用户自有文件，以目标名称为键。 |
-| `packages["format"].icon` | `string` | 否 |  | `"assets/appicon.png"` | `appimage` | 相对于项目的用户自有图标文件。 |
+| `packages["format"].gtk_version` | `integer` | 否 |  | `1` | `appimage` | GTK 运行时配置：3 或 4。默认使用 GUI 可执行文件的构建标签（包括配套可执行文件）；导入的 CGo 库必须与其一致。 |
+| `packages["format"].icon` | `string` | 否 |  | `"assets/appicon.png"` | `appimage` | 用户自有的项目相对路径图标文件。 |
 | `packages["format"].install_scope` | `string` | 否 |  | `"user"` | `nsis` | NSIS 安装范围。 |
 | `packages["format"].maintainer` | `string` | 否 |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | 原生 Linux 软件包维护者。 |
 | `packages["format"].manifest` | `string` | 否 |  | `"assets/manifest.xml"` | `msix` | 相对于项目的用户自有平台或软件包清单。 |
@@ -166,9 +170,11 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `packages["format"].pre_install` | `string` | 否 |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | 相对于项目的 Linux 安装前脚本。 |
 | `packages["format"].pre_remove` | `string` | 否 |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | 相对于项目的 Linux 移除前脚本。 |
 | `packages["format"].publisher` | `string` | 否 |  | `"CN=Example"` | `msix` | Windows 软件包发布者标识。 |
+| `packages["format"].runtime_path` | `string` | 否 |  | `"value"` | `appimage` | 项目相对路径下的 AppImage 类型 2 运行时 ELF；默认下载已固定版本且经过校验和验证的目标运行时。 |
+| `packages["format"].runtime_root` | `string` | 否 |  | `"value"` | `appimage` | 项目相对路径下的目标 Linux 根文件系统，其中包含 GTK/WebKit 库和已编译的资源缓存；默认为 Linux 主机的根文件系统。 |
 | `packages["format"].section` | `string` | 否 |  | `"utils"` | `deb,rpm,archlinux,void` | Linux 软件包仓库分区。 |
 | `packages["format"].template` | `string` | 否 |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | 完全替换为用户自有的软件包模板。 |
-| `packages["format"].update_info` | `string` | 否 |  | `"value"` | `appimage` | AppImage 更新信息字符串；需要 linuxdeploy 生成匹配的 zsync 辅助文件。 |
+| `packages["format"].update_info` | `string` | 否 |  | `"value"` | `appimage` | AppImage 更新信息字符串；使用 Go 生成匹配的 zsync 附属文件。 |
 | `packages["format"].volume_icon` | `string` | 否 |  | `"assets/volume.icns"` | `dmg` | 用户自有的 DMG 卷图标。 |
 | `packages["format"].window_height` | `integer` | 否 |  | `1` | `dmg` | DMG Finder 窗口的高度（像素）。 |
 | `packages["format"].window_width` | `integer` | 否 |  | `1` | `dmg` | DMG Finder 窗口的宽度（像素）。 |
@@ -186,12 +192,12 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `project.company` | `string` | 否 |  | `"value"` |  | 公司或组织名称。 |
 | `project.copyright` | `string` | 否 |  | `"value"` |  | 嵌入制品中的版权声明。 |
 | `project.description` | `string` | 否 |  | `"value"` |  | 便于阅读的描述。 |
-| `project.icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 相对于项目的用户自有图标文件。 |
+| `project.icon` | `string` | 否 |  | `"assets/appicon.png"` |  | 用户自有的项目相对路径图标文件。 |
 | `project.identifier` | `string` | 是 |  | `"com.example.app"` |  | 反向域名格式的应用程序标识符。 |
 | `project.kind` | `string` | 否 | `gui` | `"gui"` |  | 可执行文件类型：gui、cli 或 server；配套程序默认为 cli。 |
 | `project.name` | `string` | 是 |  | `"value"` |  | 稳定的项目名称或注册名称。 |
 | `project.package` | `string` | 否 | `.` | `"."` |  | 包含一个 Go main 包的项目相对目录。 |
-| `project.product_name` | `string` | 是 |  | `"value"` |  | 易于理解的产品名称。 |
+| `project.product_name` | `string` | 是 |  | `"value"` |  | 人类可读的产品名称。 |
 | `project.supported_platforms` | `list(string)` | 否 |  | `["linux"]` |  | 此项目支持的平台；留空则允许所有平台。 |
 | `project.upx_level` | `integer` | 否 | `0` | `0` |  | 可选的 UPX 压缩强度：0 表示禁用，或设为 1 到 9；在 macOS 和开发环境中会跳过压缩。 |
 | `project.version` | `string` | 否 |  | `"value"` |  | 清单或应用程序版本。 |
@@ -208,7 +214,7 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `targets["target"].build_number` | `integer` | 否 |  | `1` |  | 平台构建编号。 |
 | `targets["target"].compiler_flags` | `list(string)` | 否 |  | `["all=-l"]` |  | 其他 Go 编译器标志。 |
 | `targets["target"].dev` | `object` | 否 |  | `{}` |  | 开发构建和监视器设置。 |
-| `targets["target"].dev.args` | `list(string)` | 否 |  | `["value"]` |  | 不经 shell 展开而传递的开发版应用程序参数；桌面平台和 iOS 支持此设置。Android 要求此项为空列表。 |
+| `targets["target"].dev.args` | `list(string)` | 否 |  | `["value"]` |  | 不经 shell 展开而传递的开发应用程序参数；桌面平台和 iOS 支持此项。Android 要求使用空列表。 |
 | `targets["target"].environment` | `map(string)` | 否 |  | `{RELEASE: "true"}` |  | 添加到此操作的环境变量。 |
 | `targets["target"].garble_args` | `list(string)` | 否 |  | `["-literals"]` |  | 传递给 garble 的其他参数。 |
 | `targets["target"].ldflags` | `list(string)` | 否 |  | `["-X example/build.version=1.0.0"]` |  | 其他 Go 链接器标志。 |
@@ -222,20 +228,20 @@ description: "Wails v3 YAML 清单中各字段的生成参考，包括类型、�
 | `targets["target"].toolchain` | `string` | 否 |  | `"auto"` |  | 此目标的编译器工具链策略。 |
 | `version` | `integer` | 是 |  | `3` |  | Wails 清单架构版本；此字段必须位于首位。 |
 | `windows` | `object` | 否 |  | `{}` |  | Windows 平台设置。 |
-| `windows.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台构建编号。 |
+| `windows.build_number` | `integer` | 否 |  | `1` | `windows,darwin,linux,ios` | 平台构建号。 |
 | `windows.capabilities` | `list(string)` | 否 |  | `["internetClient"]` | `windows,darwin,linux,ios` | 应用程序请求的原生平台功能。 |
 | `windows.icon` | `string` | 否 |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | 由用户维护的项目相对图标文件。 |
 | `windows.identifier` | `string` | 否 |  | `"com.example.app"` | `windows,darwin,linux` | 反向域名格式的应用程序标识符。 |
 | `windows.manifest` | `string` | 否 |  | `"assets/manifest.xml"` | `windows,android` | 由用户维护的项目相对平台清单或包清单。 |
 | `windows.minimum_version` | `string` | 否 |  | `"12.0"` | `windows,darwin,linux,ios` | 支持的最低操作系统版本。 |
-| `windows.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 人类可读的产品名称。 |
+| `windows.product_name` | `string` | 否 |  | `"value"` | `windows,darwin,linux` | 易于理解的产品名称。 |
 | `windows.publisher` | `string` | 否 |  | `"CN=Example"` | `windows` | Windows 软件包发布者标识。 |
 | `windows.signing` | `object` | 否 |  | `{}` |  | 平台签名设置。 |
-| `windows.signing.certificate` | `string` | 否 |  | `"signing/windows.pfx"` |  | 相对于项目路径的 PFX 签名证书文件；也可以配置指纹。 |
+| `windows.signing.certificate` | `string` | 否 |  | `"signing/windows.pfx"` |  | 项目相对路径下导出的 RSA PFX 身份，用于在任意桌面主机上进行可移植的 PE/MSIX 签名。支持 AES/PBKDF2 和 3DES；Windows 原生 SignTool 可处理 RC2 导出文件。也可以改为配置指纹。 |
 | `windows.signing.credential` | `string` | 否 |  | `"WINDOWS_SIGNING_PASSWORD"` |  | 包含 PFX 证书密码的环境变量名称；切勿填写密码本身。 |
 | `windows.signing.entitlements` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `windows.signing.identity` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `windows.signing.key_alias` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
 | `windows.signing.provisioning_profile` | `string` | 否 |  | `""` |  | 此平台的签名操作不使用该项。 |
-| `windows.signing.thumbprint` | `string` | 否 |  | `"0123456789ABCDEF"` |  | Windows 证书存储区中证书的指纹。 |
-| `windows.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | Windows 签名时间戳服务的 URL。 |
+| `windows.signing.thumbprint` | `string` | 否 |  | `"0123456789ABCDEF"` |  | Windows 证书存储中某个证书的指纹；需要 Windows 和 SignTool。 |
+| `windows.signing.timestamp_server` | `string` | 否 |  | `"https://timestamp.example.com"` |  | RFC 3161 时间戳服务 URL；默认为`http://timestamp.digicert.com`。时间戳签名和信任链会经过验证。 |

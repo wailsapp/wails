@@ -60,19 +60,22 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `darwin.microphone_usage_description` | `string` | tidak |  | `"value"` | `darwin` | Teks izin mikrofon macOS; menghasilkan entitlement input audio kecuali jika berkas entitlement milik pengguna telah dikonfigurasi. |
 | `darwin.minimum_version` | `string` | tidak |  | `"12.0"` | `windows,darwin,linux,ios` | Versi minimum sistem operasi yang didukung. |
 | `darwin.notarization` | `object` | tidak |  | `{}` | `darwin` | Pengaturan notarisasi macOS. |
+| `darwin.notarization.api_key` | `string` | tidak |  | `"signing/AuthKey.p8"` |  | File kunci privat API tim App Store Connect berformat .p8 yang relatif terhadap proyek. Menggunakan Notary API portabel sebagai pengganti notarytool; memerlukan key_id dan issuer_id. |
 | `darwin.notarization.credential` | `string` | tidak |  | `"release-notary"` |  | Nama profil keychain Apple notarytool yang digunakan untuk notarisasi. |
+| `darwin.notarization.issuer_id` | `string` | tidak |  | `"00000000-0000-0000-0000-000000000000"` |  | ID penerbit tim App Store Connect untuk notarisasi API. |
+| `darwin.notarization.key_id` | `string` | tidak |  | `"ABCDEFGHIJ"` |  | ID kunci API tim App Store Connect yang terkait dengan api_key. |
 | `darwin.product_name` | `string` | tidak |  | `"value"` | `windows,darwin,linux` | Nama produk yang mudah dibaca. |
 | `darwin.signing` | `object` | tidak |  | `{}` |  | Pengaturan penandatanganan platform. |
-| `darwin.signing.certificate` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
-| `darwin.signing.credential` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
+| `darwin.signing.certificate` | `string` | tidak |  | `"signing/developer-id.p12"` |  | Identitas PKCS#12 yang diekspor dan relatif terhadap proyek untuk penandatanganan Go portabel; hilangkan untuk menggunakan identitas keychain macOS atau penandatanganan ad hoc. |
+| `darwin.signing.credential` | `string` | tidak |  | `"APPLE_SIGNING_PASSWORD"` |  | Nama variabel lingkungan yang berisi kata sandi identitas PKCS#12 yang diekspor; bukan kata sandinya itu sendiri. |
 | `darwin.signing.entitlements` | `string` | tidak |  | `"signing/entitlements.plist"` |  | Berkas entitlement Apple yang relatif terhadap proyek. |
-| `darwin.signing.identity` | `string` | tidak |  | `"Developer ID Application: Example"` |  | Identitas penandatanganan kode macOS dari keychain; gunakan - untuk penandatanganan ad hoc. |
+| `darwin.signing.identity` | `string` | tidak |  | `"Developer ID Application: Example"` |  | Identitas penandatanganan kode macOS dari keychain; gunakan - untuk penandatanganan ad hoc portabel, atau konfigurasikan sertifikat yang diekspor. |
 | `darwin.signing.key_alias` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `darwin.signing.provisioning_profile` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `darwin.signing.thumbprint` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
-| `darwin.signing.timestamp_server` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
-| `dev` | `object` | tidak |  | `{}` |  | Pengaturan build pengembangan dan pemantau. |
-| `dev.args` | `list(string)` | tidak |  | `["value"]` |  | Argumen aplikasi pengembangan yang diteruskan tanpa ekspansi shell; didukung di desktop dan iOS. Android memerlukan daftar kosong. |
+| `darwin.signing.timestamp_server` | `string` | tidak |  | `"https://timestamp.example.com"` |  | URL stempel waktu RFC 3161 untuk penandatanganan sertifikat portabel; wajib untuk tanda tangan sertifikat yang dinotarisasi. |
+| `dev` | `object` | tidak |  | `{}` |  | Pengaturan build pengembangan dan watcher. |
+| `dev.args` | `list(string)` | tidak |  | `["value"]` |  | Argumen aplikasi pengembangan yang diteruskan tanpa ekspansi shell; didukung pada desktop dan iOS. Android memerlukan daftar kosong. |
 | `dev.debounce_ms` | `integer` | tidak | `250` | `250` |  | Penundaan yang digunakan untuk menggabungkan perubahan berkas pengembangan. |
 | `dev.exclude` | `list(string)` | tidak | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | Pola pengecualian pemantau pengembangan. |
 | `dev.grace_period_ms` | `integer` | tidak | `1500` | `1500` |  | Waktu yang diberikan agar proses pengembangan berhenti dengan bersih. |
@@ -85,7 +88,7 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `file_associations["association"].extensions` | `list(string)` | ya |  | `["example"]` |  | Ekstensi file yang ditangani oleh aplikasi. |
 | `file_associations["association"].icon` | `string` | tidak |  | `"assets/appicon.png"` |  | File ikon milik pengguna yang relatif terhadap proyek. |
 | `file_associations["association"].mime_type` | `string` | tidak |  | `"application/x-example"` |  | Tipe MIME yang didaftarkan untuk asosiasi file. |
-| `file_associations["association"].name` | `string` | tidak |  | `"value"` |  | Nama proyek atau pendaftaran yang stabil. |
+| `file_associations["association"].name` | `string` | tidak |  | `"value"` |  | Nama proyek atau registrasi yang stabil. |
 | `file_associations["association"].platforms` | `list(string)` | tidak |  | `["windows", "darwin", "linux"]` |  | Platform yang menerima pendaftaran ini. |
 | `file_associations["association"].role` | `string` | tidak |  | `"editor"` |  | Peran aplikasi untuk asosiasi file. |
 | `frontend` | `object` | tidak |  | `{}` |  | Pengaturan perintah frontend, keluaran, dan binding. |
@@ -114,12 +117,12 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `ios.background_modes` | `list(string)` | tidak |  | `["fetch"]` | `ios` | Mode eksekusi latar belakang iOS. |
 | `ios.build_number` | `integer` | tidak |  | `1` | `windows,darwin,linux,ios` | Nomor build platform. |
 | `ios.bundle_id` | `string` | tidak |  | `"com.example.app"` | `ios` | Pengidentifikasi bundle iOS. |
-| `ios.capabilities` | `list(string)` | tidak |  | `["internetClient"]` | `windows,darwin,linux,ios` | Kemampuan platform native yang diminta oleh aplikasi. |
+| `ios.capabilities` | `list(string)` | tidak |  | `["internetClient"]` | `windows,darwin,linux,ios` | Kapabilitas platform native yang diminta oleh aplikasi. |
 | `ios.cf_bundle_icon_name` | `string` | tidak |  | `"AppIcon"` | `darwin,ios` | Nama set ikon katalog aset Apple. |
 | `ios.comments` | `string` | tidak |  | `"value"` | `ios,android` | Komentar metadata paket tambahan. |
 | `ios.company` | `string` | tidak |  | `"value"` | `ios,android` | Nama perusahaan atau organisasi. |
 | `ios.display_name` | `string` | tidak |  | `"Example App"` | `ios,android` | Nama yang ditampilkan oleh platform seluler. |
-| `ios.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna dengan path relatif terhadap proyek. |
+| `ios.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna yang relatif terhadap proyek. |
 | `ios.info_plist` | `string` | tidak |  | `"assets/Info.plist"` | `darwin,ios` | File Info.plist Apple milik pengguna. |
 | `ios.minimum_version` | `string` | tidak |  | `"12.0"` | `windows,darwin,linux,ios` | Versi minimum sistem operasi yang didukung. |
 | `ios.signing` | `object` | tidak |  | `{}` |  | Pengaturan penandatanganan platform. |
@@ -133,15 +136,15 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `ios.signing.timestamp_server` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `linux` | `object` | tidak |  | `{}` |  | Pengaturan platform Linux. |
 | `linux.build_number` | `integer` | tidak |  | `1` | `windows,darwin,linux,ios` | Nomor build platform. |
-| `linux.capabilities` | `list(string)` | tidak |  | `["internetClient"]` | `windows,darwin,linux,ios` | Kapabilitas platform native yang diminta oleh aplikasi. |
+| `linux.capabilities` | `list(string)` | tidak |  | `["internetClient"]` | `windows,darwin,linux,ios` | Kemampuan platform native yang diminta oleh aplikasi. |
 | `linux.desktop_entry` | `string` | tidak |  | `"assets/app.desktop"` | `linux` | File entri desktop Linux milik pengguna. |
-| `linux.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna dengan path relatif terhadap proyek. |
+| `linux.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna yang relatif terhadap proyek. |
 | `linux.identifier` | `string` | tidak |  | `"com.example.app"` | `windows,darwin,linux` | Pengidentifikasi aplikasi dengan format domain terbalik. |
 | `linux.minimum_version` | `string` | tidak |  | `"12.0"` | `windows,darwin,linux,ios` | Versi minimum sistem operasi yang didukung. |
 | `linux.product_name` | `string` | tidak |  | `"value"` | `windows,darwin,linux` | Nama produk yang mudah dibaca manusia. |
 | `linux.signing` | `object` | tidak |  | `{}` |  | Pengaturan penandatanganan platform. |
-| `linux.signing.certificate` | `string` | tidak |  | `"signing/private-key.asc"` |  | Arch: file kunci privat PGP berformat armored yang diekspor, dengan path relatif terhadap proyek. DEB/RPM: pengidentifikasi kunci PGP yang diteruskan ke alat penandatanganan eksternal. |
-| `linux.signing.credential` | `string` | tidak |  | `"ARCH_SIGNING_PASSPHRASE"` |  | Arch: variabel lingkungan opsional yang berisi frasa sandi kunci privat; hilangkan untuk kunci yang tidak dienkripsi. |
+| `linux.signing.certificate` | `string` | tidak |  | `"signing/private-key.asc"` |  | File kunci privat OpenPGP berformat armored atau biner yang diekspor untuk penandatanganan native DEB, RPM, atau Arch. Pengidentifikasi kunci GnuPG biasa tetap menggunakan penanda tangan DEB/RPM eksternal. |
+| `linux.signing.credential` | `string` | tidak |  | `"LINUX_SIGNING_PASSPHRASE"` |  | Variabel lingkungan opsional yang berisi frasa sandi kunci privat yang diekspor; hilangkan untuk kunci yang tidak dienkripsi. |
 | `linux.signing.entitlements` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `linux.signing.identity` | `string` | tidak |  | `"builder"` |  | Peran penandatanganan DEB; nilai default-nya builder. Tidak digunakan oleh penanda tangan terpisah Arch. |
 | `linux.signing.key_alias` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
@@ -157,7 +160,8 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `packages["format"].desktop_entry` | `string` | tidak |  | `"assets/app.desktop"` | `appimage` | File entri desktop Linux milik pengguna. |
 | `packages["format"].file_icon` | `string` | tidak |  | `"assets/file.icns"` | `dmg` | Ikon file DMG milik pengguna. |
 | `packages["format"].files` | `map(string)` | tidak |  | `{License.pdf: LICENSE.pdf}` | `dmg` | File milik pengguna yang disalin ke dalam DMG, dengan nama tujuan sebagai kunci. |
-| `packages["format"].icon` | `string` | tidak |  | `"assets/appicon.png"` | `appimage` | File ikon milik pengguna yang relatif terhadap proyek. |
+| `packages["format"].gtk_version` | `integer` | tidak |  | `1` | `appimage` | Profil runtime GTK: 3 atau 4. Nilai default mengikuti tag build executable GUI, termasuk executable pendamping; pustaka CGo yang diimpor harus menggunakan profil yang sama. |
+| `packages["format"].icon` | `string` | tidak |  | `"assets/appicon.png"` | `appimage` | File ikon milik pengguna dengan path relatif terhadap proyek. |
 | `packages["format"].install_scope` | `string` | tidak |  | `"user"` | `nsis` | Cakupan instalasi NSIS. |
 | `packages["format"].maintainer` | `string` | tidak |  | `"Example <release@example.com>"` | `deb,rpm,archlinux,void` | Pemelihara paket native Linux. |
 | `packages["format"].manifest` | `string` | tidak |  | `"assets/manifest.xml"` | `msix` | Manifes platform atau paket milik pengguna yang relatif terhadap proyek. |
@@ -166,9 +170,11 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `packages["format"].pre_install` | `string` | tidak |  | `"packaging/preinstall.sh"` | `deb,rpm,archlinux,void` | Skrip prainstalasi Linux yang relatif terhadap proyek. |
 | `packages["format"].pre_remove` | `string` | tidak |  | `"packaging/preremove.sh"` | `deb,rpm,archlinux,void` | Skrip Linux prapenghapusan yang relatif terhadap proyek. |
 | `packages["format"].publisher` | `string` | tidak |  | `"CN=Example"` | `msix` | Identitas penerbit paket Windows. |
+| `packages["format"].runtime_path` | `string` | tidak |  | `"value"` | `appimage` | ELF runtime AppImage tipe-2 yang relatif terhadap proyek; nilai default-nya adalah unduhan runtime target yang versinya dipatok dan checksum-nya diverifikasi. |
+| `packages["format"].runtime_root` | `string` | tidak |  | `"value"` | `appimage` | Sistem file root Linux target yang relatif terhadap proyek dan berisi pustaka GTK/WebKit serta cache sumber daya yang telah dikompilasi; nilai default-nya adalah root host Linux. |
 | `packages["format"].section` | `string` | tidak |  | `"utils"` | `deb,rpm,archlinux,void` | Bagian repositori paket Linux. |
 | `packages["format"].template` | `string` | tidak |  | `"packaging/package.tmpl"` | `nsis,dmg,deb,rpm,archlinux` | Pengganti lengkap untuk templat paket milik pengguna. |
-| `packages["format"].update_info` | `string` | tidak |  | `"value"` | `appimage` | String informasi pembaruan AppImage; memerlukan file pendamping zsync yang sesuai dari linuxdeploy. |
+| `packages["format"].update_info` | `string` | tidak |  | `"value"` | `appimage` | String informasi pembaruan AppImage; menghasilkan file pendamping zsync yang sesuai di Go. |
 | `packages["format"].volume_icon` | `string` | tidak |  | `"assets/volume.icns"` | `dmg` | Ikon volume DMG milik pengguna. |
 | `packages["format"].window_height` | `integer` | tidak |  | `1` | `dmg` | Tinggi jendela Finder DMG dalam piksel. |
 | `packages["format"].window_width` | `integer` | tidak |  | `1` | `dmg` | Lebar jendela Finder DMG dalam piksel. |
@@ -189,7 +195,7 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `project.icon` | `string` | tidak |  | `"assets/appicon.png"` |  | File ikon milik pengguna yang relatif terhadap proyek. |
 | `project.identifier` | `string` | ya |  | `"com.example.app"` |  | Pengidentifikasi aplikasi dengan format domain terbalik. |
 | `project.kind` | `string` | tidak | `gui` | `"gui"` |  | Jenis executable: gui, cli, atau server; companion secara default menggunakan cli. |
-| `project.name` | `string` | ya |  | `"value"` |  | Nama proyek atau registrasi yang stabil. |
+| `project.name` | `string` | ya |  | `"value"` |  | Nama proyek atau pendaftaran yang stabil. |
 | `project.package` | `string` | tidak | `.` | `"."` |  | Direktori relatif terhadap proyek yang berisi satu paket main Go. |
 | `project.product_name` | `string` | ya |  | `"value"` |  | Nama produk yang mudah dibaca manusia. |
 | `project.supported_platforms` | `list(string)` | tidak |  | `["linux"]` |  | Platform yang didukung oleh proyek ini; nilai kosong mengizinkan semua platform. |
@@ -207,8 +213,8 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `targets` | `map(object)` | tidak |  | `{}` |  | Penggantian konfigurasi target bernama. |
 | `targets["target"].build_number` | `integer` | tidak |  | `1` |  | Nomor build platform. |
 | `targets["target"].compiler_flags` | `list(string)` | tidak |  | `["all=-l"]` |  | Flag compiler Go tambahan. |
-| `targets["target"].dev` | `object` | tidak |  | `{}` |  | Pengaturan build pengembangan dan watcher. |
-| `targets["target"].dev.args` | `list(string)` | tidak |  | `["value"]` |  | Argumen aplikasi pengembangan yang diteruskan tanpa ekspansi shell; didukung pada desktop dan iOS. Android memerlukan daftar kosong. |
+| `targets["target"].dev` | `object` | tidak |  | `{}` |  | Pengaturan build pengembangan dan pemantau. |
+| `targets["target"].dev.args` | `list(string)` | tidak |  | `["value"]` |  | Argumen aplikasi pengembangan yang diteruskan tanpa ekspansi shell; didukung di desktop dan iOS. Android memerlukan daftar kosong. |
 | `targets["target"].environment` | `map(string)` | tidak |  | `{RELEASE: "true"}` |  | Variabel lingkungan yang ditambahkan ke operasi ini. |
 | `targets["target"].garble_args` | `list(string)` | tidak |  | `["-literals"]` |  | Argumen tambahan yang diteruskan ke garble. |
 | `targets["target"].ldflags` | `list(string)` | tidak |  | `["-X example/build.version=1.0.0"]` |  | Flag linker Go tambahan. |
@@ -224,18 +230,18 @@ Kolom dicantumkan menggunakan jalur skema. Peta bernama menggunakan placeholder 
 | `windows` | `object` | tidak |  | `{}` |  | Pengaturan platform Windows. |
 | `windows.build_number` | `integer` | tidak |  | `1` | `windows,darwin,linux,ios` | Nomor build platform. |
 | `windows.capabilities` | `list(string)` | tidak |  | `["internetClient"]` | `windows,darwin,linux,ios` | Kapabilitas platform native yang diminta oleh aplikasi. |
-| `windows.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna yang relatif terhadap proyek. |
+| `windows.icon` | `string` | tidak |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | File ikon milik pengguna dengan path relatif terhadap proyek. |
 | `windows.identifier` | `string` | tidak |  | `"com.example.app"` | `windows,darwin,linux` | Pengidentifikasi aplikasi dengan format domain terbalik. |
 | `windows.manifest` | `string` | tidak |  | `"assets/manifest.xml"` | `windows,android` | Manifes platform atau paket milik pengguna yang relatif terhadap proyek. |
 | `windows.minimum_version` | `string` | tidak |  | `"12.0"` | `windows,darwin,linux,ios` | Versi minimum sistem operasi yang didukung. |
 | `windows.product_name` | `string` | tidak |  | `"value"` | `windows,darwin,linux` | Nama produk yang mudah dibaca manusia. |
 | `windows.publisher` | `string` | tidak |  | `"CN=Example"` | `windows` | Identitas penerbit paket Windows. |
 | `windows.signing` | `object` | tidak |  | `{}` |  | Pengaturan penandatanganan platform. |
-| `windows.signing.certificate` | `string` | tidak |  | `"signing/windows.pfx"` |  | File sertifikat penandatanganan PFX yang relatif terhadap proyek; sebagai alternatif, konfigurasikan thumbprint. |
+| `windows.signing.certificate` | `string` | tidak |  | `"signing/windows.pfx"` |  | Identitas RSA PFX yang diekspor dan relatif terhadap proyek untuk penandatanganan PE/MSIX portabel pada host desktop apa pun. Mendukung AES/PBKDF2 dan 3DES; SignTool native Windows menangani hasil ekspor RC2. Sebagai alternatif, konfigurasikan thumbprint. |
 | `windows.signing.credential` | `string` | tidak |  | `"WINDOWS_SIGNING_PASSWORD"` |  | Nama variabel lingkungan yang berisi kata sandi sertifikat PFX; jangan pernah memasukkan kata sandinya secara langsung. |
 | `windows.signing.entitlements` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `windows.signing.identity` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `windows.signing.key_alias` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
 | `windows.signing.provisioning_profile` | `string` | tidak |  | `""` |  | Tidak digunakan oleh operasi penandatanganan platform ini. |
-| `windows.signing.thumbprint` | `string` | tidak |  | `"0123456789ABCDEF"` |  | Thumbprint sertifikat dalam penyimpanan sertifikat Windows. |
-| `windows.signing.timestamp_server` | `string` | tidak |  | `"https://timestamp.example.com"` |  | URL layanan stempel waktu penandatanganan Windows. |
+| `windows.signing.thumbprint` | `string` | tidak |  | `"0123456789ABCDEF"` |  | Thumbprint sertifikat dalam penyimpanan sertifikat Windows; memerlukan Windows dengan SignTool. |
+| `windows.signing.timestamp_server` | `string` | tidak |  | `"https://timestamp.example.com"` |  | URL layanan stempel waktu RFC 3161; nilai defaultnya adalah `http://timestamp.digicert.com`. Tanda tangan stempel waktu dan rantai kepercayaan diverifikasi. |

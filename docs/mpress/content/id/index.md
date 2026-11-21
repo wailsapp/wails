@@ -1,9 +1,9 @@
 ---
 title: "Bangun Aplikasi Desktop dengan Go"
 description: "Aplikasi desktop native menggunakan Go dan teknologi web"
-banner: {"content": "Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. <a href=\"https://v2.wails.io\">Mencari dokumentasi v2?</a>\n"}
+banner: {"content": "Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. \u003ca href=\"https://v2.wails.io\"\u003eMencari dokumentasi v2?\u003c/a\u003e\n"}
 template: "splash"
-hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Mulai","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Lihat Tutorial","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Bangun aplikasi yang indah dan berperforma tinggi menggunakan Go serta teknologi web modern. Satu basis kode. Tiga platform. Tanpa browser.*"}
+hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Mulai","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Lihat Tutorial","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Bangun aplikasi yang indah dan berkinerja tinggi menggunakan Go dan teknologi web modern. Satu basis kode. Tiga platform. Tanpa browser.*"}
 sourcePath: "index.md"
 ---
 
@@ -143,7 +143,7 @@ wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Tidak perlu mengubah kode Go Anda.** `main.go` yang sama, layanan yang sama, frontend yang sama — Wails secara otomatis mengompilasinya untuk iOS dan Android. Fitur khusus platform (haptik, dialog native, area aman) tersedia saat Anda menginginkannya, tetapi Anda tidak memerlukannya untuk merilis aplikasi.
+**Tidak perlu mengubah kode Go Anda.** `main.go` yang sama, layanan yang sama, frontend yang sama — Wails secara otomatis mengompilasinya untuk iOS dan Android. Fitur khusus platform (haptik, dialog native, area aman) tersedia saat Anda membutuhkannya, tetapi tidak diperlukan untuk merilis aplikasi.
 
 [Dokumentasi seluler →](/guides/mobile/)
 
@@ -153,18 +153,18 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 @cards{cols="2"}
 🚀 Performa yang Dirasakan Pengguna
-- Biner ~15MB dibandingkan dengan 150MB pada Electron
-- Memori dasar ~10MB dibandingkan dengan 100MB+
-- Waktu mulai &lt;0.5 detik dibandingkan dengan 2-3 detik
-- Rendering native menggunakan WebView OS
+- Biner berukuran ~15MB dibandingkan 150MB pada Electron
+- Penggunaan memori dasar ~10MB dibandingkan 100MB+
+- Waktu mulai &lt;0.5 detik dibandingkan 2-3 detik
+- Rendering native menggunakan WebView sistem operasi
 - Tanpa overhead browser yang dibundel
 
 ---
 ⚙ Pengalaman Developer
 - Satu basis kode Go untuk semua platform
-- Framework web apa pun - React, Vue, Svelte
+- Dapat menggunakan framework web apa pun—React, Vue, Svelte
 - Hot reload selama pengembangan
-- Binding yang dibuat otomatis untuk memanggil Go dengan mudah dari Javascript
+- Binding yang dibuat otomatis agar Go dapat dipanggil dengan mudah dari Javascript
 - IPC dalam memori. Tanpa port jaringan
 
 ---
@@ -173,11 +173,11 @@ wails3 task android:run  # run your existing app on Android Emulator
 - Menu native dan baki sistem
 - Dialog file native platform
 - Integrasi sistem dan pintasan
-- Alat untuk penandatanganan kode dan pengemasan
+- Alat penandatanganan kode dan pemaketan
 
 ---
 ▣ Desktop & Seluler
-- Windows, macOS, Linux, iOS, dan Android
+- Windows, macOS, Linux, iOS, Android
 - Basis kode yang sama, tanpa penulisan ulang
 - WebView native di setiap platform
 - Tanpa port terbuka, tanpa server localhost
@@ -190,15 +190,15 @@ wails3 task android:run  # run your existing app on Android Emulator
 Berikutnya: [bangun aplikasi lengkap](/tutorials/03-notes-vanilla/), telusuri [contoh](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples), atau lihat [referensi API](/reference/application/). Bermigrasi dari v2? Lihat [panduan peningkatan versi](/migration/v2-to-v3/).
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS tetap eksperimental dan berada di luar jaminan kompatibilitas desktop yang stabil.
+Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS masih bersifat eksperimental dan berada di luar kontrak kompatibilitas desktop stabil.
 
 @end
 
 @cards{cols="1"}
 ♥ Dukung Pengembangan Wails
-Wails gratis dan bersumber terbuka, dibuat oleh developer untuk developer. Jika Wails membantu Anda membangun aplikasi yang luar biasa, pertimbangkan untuk mendukung pengembangannya secara berkelanjutan.
+Wails gratis dan bersumber terbuka, dibuat oleh developer untuk developer. Jika Wails membantu Anda membangun aplikasi yang luar biasa, pertimbangkan untuk mendukung pengembangannya agar terus berlanjut.
 
-Sponsor Anda membantu memelihara proyek, meningkatkan dokumentasi, dan mengembangkan fitur baru yang bermanfaat bagi seluruh komunitas.
+Sponsor Anda membantu memelihara proyek, menyempurnakan dokumentasi, dan mengembangkan fitur baru yang bermanfaat bagi seluruh komunitas.
 
 [Jadilah Sponsor →](https://github.com/sponsors/leaanthony)
 

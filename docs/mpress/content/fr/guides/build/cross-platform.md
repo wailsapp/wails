@@ -9,13 +9,13 @@ sourcePath: "guides/build/cross-platform.md"
 
 Wails v3 permet de compiler pour Windows, macOS et Linux depuis n’importe quel système d’exploitation hôte. Le système de compilation détecte automatiquement votre environnement et choisit la méthode de compilation appropriée.
 
-**Vous souhaitez effectuer une compilation croisée pour macOS et Linux ?** Exécutez cette commande une fois pour configurer les images Docker (environ 800 Mo à télécharger) :
+**Vous souhaitez effectuer une compilation croisée pour macOS et Linux ?** Exécutez cette commande une fois pour configurer les images Docker (téléchargement d’environ 800 Mo) :
 
 ```bash
 wails3 task setup:docker
 ```
 
-Compilez ensuite pour la plateforme de votre choix :
+Compilez ensuite pour n’importe quelle plateforme :
 
 ```bash
 # Build for current platform (production by default)
@@ -43,9 +43,9 @@ Windows est la cible de compilation croisée la plus simple, car elle ne nécess
 wails3 build GOOS=windows
 ```
 
-Cette méthode fonctionne depuis n’importe quel système d’exploitation hôte, sans configuration supplémentaire. La fonctionnalité de compilation croisée intégrée à Go s’occupe de tout.
+Cela fonctionne depuis n’importe quel système d’exploitation hôte, sans configuration supplémentaire. La compilation croisée intégrée à Go s’occupe de tout.
 
-**Si votre application nécessite CGO** (par exemple, si vous utilisez une bibliothèque C ou un paquet qui dépend de CGO), vous devrez utiliser Docker pour compiler depuis macOS ou Linux :
+**Si votre application nécessite CGO** (par exemple, si vous utilisez une bibliothèque C ou un paquet dépendant de CGO), vous aurez besoin de Docker pour compiler depuis macOS ou Linux :
 
 ```bash
 # One-time setup
@@ -59,7 +59,7 @@ Le Taskfile détecte `CGO_ENABLED=1` sur les hôtes autres que Windows et utilis
 
 ### macOS
 
-Les compilations pour macOS nécessitent CGO pour l’intégration de WebView, ce qui impose des outils spéciaux pour la compilation croisée.
+Les compilations macOS nécessitent CGO pour l’intégration de WebView, ce qui impose un outillage spécial pour la compilation croisée.
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -80,11 +80,11 @@ wails3 task setup:docker
 
 Une fois les images créées, le système de compilation détecte que vous n’êtes pas sous macOS et utilise automatiquement Docker. Vous n’avez pas besoin de modifier vos commandes de compilation.
 
-Notez que les binaires macOS issus d’une compilation croisée ne sont pas signés. Vous devrez les signer sous macOS ou dans votre environnement d’intégration continue avant de les distribuer.
+Notez que les binaires macOS issus d’une compilation croisée ne sont pas signés. Vous devrez les signer sous macOS ou dans votre environnement d’intégration continue avant leur distribution.
 
 ### Linux
 
-Les compilations pour Linux nécessitent CGO pour l’intégration de WebView.
+Les compilations Linux nécessitent CGO pour l’intégration de WebView.
 
 ```bash
 wails3 build GOOS=linux
@@ -102,7 +102,7 @@ wails3 task setup:docker
 
 Le système de compilation détecte que vous n’êtes pas sous Linux et utilise automatiquement Docker.
 
-**Sous Linux sans compilateur C**, le système de compilation recherche `gcc` ou `clang`. S’il ne trouve ni l’un ni l’autre, il se rabat sur Docker. Cette méthode est utile pour les conteneurs minimaux ou les systèmes sur lesquels aucun outil de compilation n’est installé. Vous pouvez au choix :
+**Sous Linux sans compilateur C**, le système de compilation recherche `gcc` ou `clang`. S’il ne trouve ni l’un ni l’autre, il se rabat sur Docker. Cette solution est utile pour les conteneurs minimaux ou les systèmes sur lesquels aucun outil de compilation n’est installé. Vous pouvez :
 
 1. Installer un compilateur C : `sudo apt install build-essential` (Debian/Ubuntu) ou `sudo pacman -S base-devel` (Arch)
 2. Créer l’image Docker et laisser le système l’utiliser automatiquement
@@ -133,23 +133,23 @@ L’image Docker inclut les cibles du compilateur croisé Zig pour amd64 et arm6
 | **macOS ARM64** | Docker | Natif | Docker |
 | **Linux ARM64** | Docker | Docker | Docker_ |
 
-<em>La compilation de Linux ARM64 depuis Linux x86</em>64 utilise Docker, car la compilation croisée avec CGO nécessite une chaîne d’outils différente.
+<em>Linux ARM64 depuis Linux x86</em>64 utilise Docker, car la compilation croisée avec CGO nécessite une chaîne d’outils différente.
 
 ## Fonctionnement
 
 ### Matrice de compilation croisée
 
-| Hôte → Cible | Windows | macOS | Linux |
+| Hôte → cible | Windows | macOS | Linux |
 | --- | --- | --- | --- |
 | **Windows** | Natif | Docker | Docker |
 | **macOS** | Go natif | Natif | Docker |
 | **Linux** | Go natif | Docker | Natif |
 
 - **Natif** = chaîne d’outils native de la plateforme, sans configuration supplémentaire
-- **Go natif** = fonctionnalité de compilation croisée intégrée à Go (`CGO_ENABLED=0`)
+- **Go natif** = compilation croisée intégrée à Go (`CGO_ENABLED=0`)
 - **Docker** = image Docker avec le compilateur croisé Zig
 
-### Exigences relatives à CGO
+### Exigences de CGO
 
 | Cible | CGO requis | Méthode de compilation croisée |
 | --- | --- | --- |
@@ -159,11 +159,11 @@ L’image Docker inclut les cibles du compilateur croisé Zig pour amd64 et arm6
 
 ### Détection automatique
 
-Les fichiers Taskfile choisissent automatiquement la méthode de compilation appropriée en fonction de votre environnement :
+Les Taskfiles choisissent automatiquement la méthode de compilation appropriée en fonction de votre environnement :
 
-- **Cible Windows :** utilise par défaut la compilation croisée native de Go. Si vous définissez explicitement `CGO_ENABLED=1` sur un hôte autre que Windows, le processus passe à Docker.
+- **Cible Windows :** utilise par défaut la compilation croisée native de Go. Si vous définissez explicitement `CGO_ENABLED=1` sur un hôte autre que Windows, le système passe à Docker.
 - **Cible macOS :** utilise automatiquement Docker lorsque l’hôte n’exécute pas macOS. Aucune intervention manuelle n’est nécessaire.
-- **Cible Linux :** recherche `gcc` ou `clang`. Si l’un d’eux est trouvé, le processus utilise la compilation native ; sinon, il se rabat sur Docker.
+- **Cible Linux :** recherche `gcc` ou `clang`. Si l’un des deux est trouvé, le système utilise la compilation native ; sinon, il se rabat sur Docker.
 
 ### Image Docker
 
@@ -173,17 +173,17 @@ Wails utilise une seule image Docker (`wails-cross`), capable de compiler pour t
 wails3 task setup:docker
 ```
 
-Pour vérifier si l’image est prête, exécutez `wails3 doctor`.
+Vous pouvez vérifier que l’image est prête en exécutant `wails3 doctor`.
 
 ### SDK macOS
 
-Lors de sa création, l’image Docker télécharge le SDK macOS depuis [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks). Cette opération est requise, car les fichiers d’en-tête macOS sont nécessaires à la compilation avec CGO.
+Pendant la création de l’image, l’image Docker télécharge le SDK macOS depuis [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks). Cette opération est nécessaire, car les en-têtes macOS sont requis pour la compilation avec CGO.
 
-**Important :** Wails ne distribue pas le SDK macOS. Avant d’utiliser cette fonctionnalité, il vous incombe de consulter les conditions de licence d’Apple relatives au SDK.
+**Important :** Wails ne distribue pas le SDK macOS. Il incombe aux utilisateurs de consulter les conditions de licence du SDK d’Apple avant d’utiliser cette fonctionnalité.
 
 ## Créer votre propre image
 
-Si vous devez personnaliser l’image Docker (par exemple, pour utiliser une autre version du SDK macOS, ajouter des outils ou utiliser votre propre SDK), vous pouvez la créer vous-même.
+Si vous devez personnaliser l’image Docker, par exemple pour utiliser une autre version du SDK macOS, ajouter des outils ou utiliser votre propre SDK, vous pouvez créer vous-même l’image.
 
 ### Dockerfile
 
@@ -385,7 +385,7 @@ ENTRYPOINT ["/usr/local/bin/build.sh"]
 CMD ["darwin", "arm64"]
 ```
 
-### Création de l’image
+### Créer l’image
 
 Enregistrez le Dockerfile, puis créez l’image :
 
@@ -401,11 +401,11 @@ Modifiez l’argument de compilation `MACOS_SDK_VERSION` :
 docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
 ```
 
-Consultez les [versions du SDK disponibles](https://github.com/wailsapp/macosx-sdks/releases) pour connaître les différentes possibilités.
+Consultez les [versions disponibles du SDK](https://github.com/wailsapp/macosx-sdks/releases) pour connaître les options.
 
 ### Utiliser votre propre SDK
 
-Si vous disposez de votre propre SDK macOS (par exemple, obtenu à partir de Xcode), vous pouvez modifier le Dockerfile afin d’utiliser un fichier local au lieu de le télécharger :
+Si vous disposez de votre propre SDK macOS, par exemple extrait de Xcode, vous pouvez modifier le Dockerfile pour utiliser un fichier local au lieu de le télécharger :
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -420,7 +420,7 @@ Placez l’archive tar de votre SDK dans le même répertoire que le Dockerfile,
 
 ## Intégration CI/CD
 
-Pour les versions de production, nous vous recommandons d’utiliser un processus CI/CD avec des exécuteurs natifs pour chaque plateforme. Vous évitez ainsi entièrement la compilation croisée et obtenez des binaires correctement signés.
+Pour les versions de production, nous vous recommandons d’utiliser une chaîne CI/CD avec des exécuteurs natifs pour chaque plateforme. Vous évitez ainsi entièrement la compilation croisée et obtenez des binaires correctement signés.
 
 ```yaml
 name: Build
@@ -469,7 +469,7 @@ jobs:
           path: bin/
 ```
 
-## Dépannage
+## Résolution des problèmes
 
 ### Image Docker introuvable
 
@@ -477,7 +477,7 @@ jobs:
 Docker image 'wails-cross' not found.
 ```
 
-Exécutez `wails3 task setup:docker` pour créer l’image Docker. Cette opération n’est nécessaire qu’une seule fois.
+Exécutez `wails3 task setup:docker` pour créer l’image Docker. Vous ne devez le faire qu’une seule fois.
 
 ### Démon Docker non démarré
 
@@ -489,7 +489,7 @@ Démarrez Docker Desktop ou le démon Docker. Sous Linux, vous devrez peut-être
 
 ### Aucun compilateur C sous Linux
 
-Si des erreurs liées à CGO s’affichent lors de la compilation sous Linux, deux possibilités s’offrent à vous :
+Si des erreurs liées à CGO apparaissent lors de la compilation sous Linux, deux possibilités s’offrent à vous :
 
 1. **Installez un compilateur C :**
   - Debian/Ubuntu : `sudo apt install build-essential`
@@ -497,28 +497,28 @@ Si des erreurs liées à CGO s’affichent lors de la compilation sous Linux, de
   - Fedora : `sudo dnf install gcc`
 
 
-2. **Utilisez plutôt Docker :** exécutez `wails3 task setup:docker` ; le Taskfile l’utilisera automatiquement si aucun compilateur n’est détecté.
+2. **Utilisez plutôt Docker :** exécutez `wails3 task setup:docker`. Le Taskfile l’utilisera automatiquement si aucun compilateur n’est détecté.
 
 ### Binaires macOS non signés
 
-Les binaires macOS issus d’une compilation croisée ne sont pas signés avec un certificat de signature de code. Apple exige cette signature pour leur distribution ; vous devez donc :
+Les binaires macOS issus d’une compilation croisée ne sont pas signés. Apple exige la signature du code pour la distribution. Vous devrez donc :
 
 1. Signer le binaire sur une machine macOS, ou
-2. Le signer dans le processus CI à l’aide d’un exécuteur macOS
+2. Le signer dans la chaîne CI à l’aide d’un exécuteur macOS
 
-Consultez [Signature des applications](/guides/build/signing/) pour en savoir plus.
+Consultez [Signer des applications](/guides/build/signing/) pour plus de détails.
 
-### Création d’un binaire universel
+### Créer un binaire universel
 
-Les binaires universels (combinant arm64 et amd64) peuvent être créés sur n’importe quelle plateforme :
+Vous pouvez créer des binaires universels combinant arm64 et amd64 sur n’importe quelle plateforme :
 
 ```bash
 wails3 task darwin:build:universal
 ```
 
-Sous Linux et Windows, Wails utilise sa commande `wails3 tool lipo` intégrée (fondée sur [konoui/lipo](https://github.com/konoui/lipo)) pour combiner les binaires. Cette opération produit un seul binaire qui s’exécute nativement sur les Mac équipés d’Apple Silicon comme sur ceux équipés d’un processeur Intel.
+Sous Linux et Windows, Wails utilise sa commande `wails3 tool lipo` intégrée, basée sur [konoui/lipo](https://github.com/konoui/lipo), pour combiner les binaires. Vous obtenez ainsi un seul binaire qui s’exécute nativement sur les Mac équipés d’Apple Silicon comme sur ceux dotés d’un processeur Intel.
 
 ## Étapes suivantes
 
-- [Compilation des applications](/guides/build/building/) – Commandes et options de compilation de base
-- [Signature des applications](/guides/build/signing/) – Signature du code en vue de sa distribution
+- [Créer des applications](/guides/build/building/) - Commandes et options de compilation de base
+- [Signer des applications](/guides/build/signing/) - Signature du code pour la distribution

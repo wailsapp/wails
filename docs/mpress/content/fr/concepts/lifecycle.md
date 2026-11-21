@@ -20,13 +20,13 @@ Start: Démarrage de l’application {
 }
 
 Init: Initialisation {
-  Parse: Analyser les options {
+  Parse: Analyse des options {
     shape: rectangle
   }
-  Register: Enregistrer les services {
+  Register: Enregistrement des services {
     shape: rectangle
   }
-  Setup: Configurer l’environnement d’exécution {
+  Setup: Configuration de l’environnement d’exécution {
     shape: rectangle
   }
 }
@@ -42,18 +42,18 @@ ServiceStartup: Démarrage des services {
 }
 
 EventLoop: Boucle d’événements {
-  Process: Traiter les événements {
+  Process: Traitement des événements {
     shape: rectangle
   }
-  Handle: Gérer les messages {
+  Handle: Gestion des messages {
     shape: rectangle
   }
-  Update: Mettre à jour l’interface utilisateur {
+  Update: Mise à jour de l’interface utilisateur {
     shape: rectangle
   }
 }
 
-QuitSignal: Signal de fermeture {
+QuitSignal: Signal de sortie {
   shape: diamond
   style.fill: "#F59E0B"
 }
@@ -63,7 +63,7 @@ ShouldQuit: Vérification de ShouldQuit {
   style.fill: "#3B82F6"
 }
 
-OnShutdown: Rappels OnShutdown {
+OnShutdown: Callbacks OnShutdown {
   shape: rectangle
   style.fill: "#3B82F6"
 }
@@ -74,10 +74,10 @@ ServiceShutdown: Arrêt des services {
 }
 
 Cleanup: Nettoyage {
-  Close: Fermer les fenêtres {
+  Close: Fermeture des fenêtres {
     shape: rectangle
   }
-  Release: Libérer les ressources {
+  Release: Libération des ressources {
     shape: rectangle
   }
 }
@@ -97,7 +97,7 @@ EventLoop.Process -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: Boucle
 EventLoop.Process -> QuitSignal: L’utilisateur quitte l’application
-QuitSignal -> ShouldQuit: Vérifier si l’opération est autorisée
+QuitSignal -> ShouldQuit: Sortie autorisée ?
 ShouldQuit -> EventLoop.Process: Refusée
 ShouldQuit -> OnShutdown: Autorisée
 OnShutdown -> ServiceShutdown
@@ -123,10 +123,10 @@ app := application.New(application.Options{
 })
 ```
 
-**Déroulement :**
+**Ce qui se passe :**
 
 1. Les options sont analysées et validées
-2. Les services sont enregistrés (mais pas encore démarrés)
+2. Les services sont enregistrés, mais ne sont pas encore démarrés
 3. Le serveur de ressources est configuré
 4. L’environnement d’exécution est configuré
 
@@ -141,7 +141,7 @@ if err != nil {
 }
 ```
 
-**Déroulement :**
+**Ce qui se passe :**
 
 1. Les services sont démarrés dans leur ordre d’enregistrement
 2. Les écouteurs d’événements sont activés
@@ -152,26 +152,26 @@ if err != nil {
 
 L’application entre dans la boucle d’événements, où elle passe la majeure partie de son temps :
 
-- Les événements du système d’exploitation sont traités (souris, clavier et fenêtres)
-- Les messages de Go vers JS sont traités
-- Les appels de JS vers Go sont exécutés
-- Les mises à jour de l’interface utilisateur sont affichées
+- Traitement des événements du système d’exploitation (souris, clavier et fenêtres)
+- Traitement des messages de Go vers JS
+- Exécution des appels de JS vers Go
+- Rendu des mises à jour de l’interface utilisateur
 
 ### 4. Arrêt
 
 Lorsque l’application se ferme :
 
-1. Le rappel `ShouldQuit` est vérifié (s’il est défini)
-2. Les rappels `OnShutdown` sont exécutés
+1. Le callback `ShouldQuit` est vérifié, s’il est défini
+2. Les callbacks `OnShutdown` sont exécutés
 3. Les services sont arrêtés dans l’ordre inverse
 4. Les fenêtres sont fermées
 5. Les ressources sont libérées
 
 ## Cycle de vie des services
 
-Les services constituent le principal moyen de gérer le cycle de vie dans Wails v3. Ils fournissent, par l’intermédiaire d’interfaces, des hooks de démarrage et d’arrêt. Pour consulter la documentation complète sur les services, reportez-vous au [guide des services](/features/bindings/services/).
+Les services constituent le principal moyen de gérer le cycle de vie dans Wails v3. Ils fournissent des hooks de démarrage et d’arrêt au moyen d’interfaces. Pour consulter la documentation complète sur les services, reportez-vous au [guide des services](/features/bindings/services/).
 
-### Création d’un service
+### Créer un service
 
 ```go
 type MyService struct {
@@ -203,7 +203,7 @@ func (s *MyService) ServiceShutdown() error {
 }
 ```
 
-### Enregistrement des services
+### Enregistrer des services
 
 ```go
 app := application.New(application.Options{
@@ -218,10 +218,10 @@ app := application.New(application.Options{
 
 - Les services démarrent dans leur ordre d’enregistrement
 - Les services s’arrêtent dans l’ordre **inverse** de leur enregistrement
-- Si la méthode `ServiceStartup` d’un service renvoie une erreur, l’application abandonne son démarrage
-- Le contexte `ctx` transmis à `ServiceStartup` est annulé lorsque l’arrêt commence
+- Si la méthode `ServiceStartup` d’un service renvoie une erreur, l’application interrompt son démarrage
+- Le contexte `ctx` transmis à `ServiceStartup` est annulé au début de l’arrêt
 
-### Utilisation du contexte de l’application
+### Utiliser le contexte de l’application
 
 Le contexte transmis à `ServiceStartup` reste valide pendant toute la durée de vie de l’application :
 
@@ -256,20 +256,20 @@ ctx := app.Context()
 
 ## Hooks au niveau de l’application
 
-Il s’agit de fonctions de rappel pratiques dans `application.Options` qui vous permettent d’intervenir dans le cycle de vie de l’application sans créer un service complet. Elles sont utiles pour les tâches de nettoyage simples, la confirmation de la fermeture de l’application ou l’exécution de code à des étapes précises de la séquence d’arrêt.
+Ces callbacks pratiques de `application.Options` vous permettent d’intervenir dans le cycle de vie de l’application sans créer un service complet. Ils sont utiles pour les tâches de nettoyage simples, la confirmation de sortie ou l’exécution de code à des étapes précises de la séquence d’arrêt.
 
 Pour une gestion plus complexe du cycle de vie, avec une logique de démarrage, l’injection de dépendances ou des ressources avec état, utilisez plutôt les [services](#cycle-de-vie-des-services).
 
 ### ShouldQuit
 
-La fonction de rappel `ShouldQuit` est appelée chaque fois que la fermeture de l’application est demandée, que l’utilisateur ferme la dernière fenêtre, appuie sur Cmd+Q (macOS) ou Alt+F4 (Windows), ou qu’un appel à `app.Quit()` est effectué par programmation.
+Le callback `ShouldQuit` est appelé à chaque demande de sortie, que l’utilisateur ferme la dernière fenêtre, appuie sur Cmd+Q (macOS) ou Alt+F4 (Windows), ou que `app.Quit()` soit appelé par programmation.
 
 **Valeur de retour :**
 
-- Renvoyez `true` pour autoriser la fermeture (l’application s’arrêtera).
-- Renvoyez `false` pour annuler la fermeture (l’application continuera de s’exécuter).
+- Renvoyez `true` pour autoriser la sortie (l’application s’arrêtera)
+- Renvoyez `false` pour annuler la sortie (l’application continuera de s’exécuter)
 
-Vous pouvez ainsi intercepter les demandes de fermeture et éventuellement les empêcher, par exemple pour avertir l’utilisateur de modifications non enregistrées :
+Vous pouvez ainsi intercepter les demandes de sortie et éventuellement les empêcher, par exemple pour avertir l’utilisateur de modifications non enregistrées :
 
 ```go
 app := application.New(application.Options{
@@ -299,23 +299,23 @@ app := application.New(application.Options{
 })
 ```
 
-Si `ShouldQuit` n’est pas défini, l’application se ferme immédiatement dès que cela lui est demandé.
+Si `ShouldQuit` n’est pas défini, l’application se ferme immédiatement lorsqu’une sortie est demandée.
 
 **Cas dans lesquels ShouldQuit est appelé :**
 
-- L’utilisateur ferme la dernière fenêtre (sauf si `DisableQuitOnLastWindowClosed` est défini).
-- L’utilisateur appuie sur Cmd+Q sous macOS.
-- L’utilisateur appuie sur Alt+F4 sous Windows (lorsque la dernière fenêtre a le focus).
-- Le code appelle `app.Quit()`.
+- L’utilisateur ferme la dernière fenêtre, sauf si `DisableQuitOnLastWindowClosed` est défini
+- L’utilisateur appuie sur Cmd+Q sous macOS
+- L’utilisateur appuie sur Alt+F4 sous Windows, lorsque la dernière fenêtre a le focus
+- Le code appelle `app.Quit()`
 
 **Cas dans lesquels ShouldQuit n’est PAS appelé :**
 
-- Le processus est arrêté de force (SIGKILL ou arrêt forcé depuis le Gestionnaire des tâches).
-- `os.Exit()` est appelé directement.
+- Le processus est tué (SIGKILL ou arrêt forcé dans le Gestionnaire des tâches)
+- `os.Exit()` est appelé directement
 
 ### OnShutdown
 
-La fonction de rappel `OnShutdown` est appelée lorsque la fermeture de l’application est confirmée (après que `ShouldQuit` a renvoyé `true`, si cette fonction est définie). Utilisez-la pour effectuer des tâches de nettoyage, comme enregistrer l’état, fermer les connexions aux bases de données ou libérer les ressources.
+Le callback `OnShutdown` est appelé lorsque la sortie de l’application est confirmée, après que `ShouldQuit` a renvoyé `true` s’il est défini. Utilisez-le pour les tâches de nettoyage, telles que l’enregistrement de l’état, la fermeture des connexions à la base de données ou la libération des ressources.
 
 ```go
 app := application.New(application.Options{
@@ -329,7 +329,7 @@ app := application.New(application.Options{
 })
 ```
 
-Vous pouvez également enregistrer par programmation des fonctions de rappel d’arrêt supplémentaires à tout moment du cycle de vie de l’application :
+Vous pouvez également enregistrer par programmation des callbacks d’arrêt supplémentaires à tout moment du cycle de vie de l’application :
 
 ```go
 app.OnShutdown(func() {
@@ -337,19 +337,19 @@ app.OnShutdown(func() {
 })
 ```
 
-Les fonctions de rappel sont exécutées dans leur ordre d’enregistrement. Le processus d’arrêt reste bloqué jusqu’à ce qu’elles soient toutes terminées.
+Les différents callbacks sont exécutés dans leur ordre d’enregistrement. Le processus d’arrêt reste bloqué jusqu’à la fin de leur exécution.
 
-**Important :** veillez à ce que les fonctions de rappel d’arrêt s’exécutent rapidement (en moins de 1 seconde). Le système d’exploitation peut forcer l’arrêt des applications qui mettent trop de temps à se fermer, ce qui pourrait interrompre vos tâches de nettoyage et entraîner une perte de données.
+**Important :** veillez à ce que les rappels d’arrêt s’exécutent rapidement (en moins de 1 seconde). Le système d’exploitation peut forcer l’arrêt des applications qui mettent trop de temps à se fermer, ce qui pourrait interrompre vos opérations de nettoyage et entraîner une perte de données.
 
 ### PostShutdown
 
-La fonction de rappel `PostShutdown` est appelée une fois toutes les tâches d’arrêt terminées, juste avant la fin du processus. À ce stade, l’instance de l’application n’est plus utilisable : les fenêtres sont fermées, les services sont arrêtés et les ressources sont libérées.
+Le rappel `PostShutdown` est appelé une fois toutes les tâches d’arrêt terminées, juste avant la fin du processus. À ce stade, l’instance de l’application n’est plus utilisable : les fenêtres sont fermées, les services sont arrêtés et les ressources sont libérées.
 
-Elle est principalement utile pour :
+Cela sert principalement à :
 
-- La journalisation finale qui doit avoir lieu après toutes les autres opérations de nettoyage
-- Le test et le débogage du comportement à l’arrêt
-- Les plateformes sur lesquelles `app.Run()` ne rend pas la main (la fonction de rappel garantit l’exécution de votre code)
+- Effectuer une journalisation finale après toutes les autres opérations de nettoyage
+- Tester et déboguer le comportement à l’arrêt
+- Prendre en charge les plateformes sur lesquelles `app.Run()` ne rend pas la main (le rappel garantit l’exécution de votre code)
 
 ```go
 app := application.New(application.Options{
@@ -363,15 +363,15 @@ app := application.New(application.Options{
 })
 ```
 
-**Remarque :** n’essayez pas d’utiliser les fonctionnalités de l’application (fenêtres, boîtes de dialogue, etc.) dans `PostShutdown`, car elles ne sont plus disponibles.
+**Remarque :** n’essayez pas d’utiliser les fonctionnalités de l’application (fenêtres, boîtes de dialogue, etc.) dans `PostShutdown` : elles ne sont plus disponibles.
 
 ## Cycle de vie basé sur les événements
 
-Wails fournit un système d’événements qui vous avertit lorsque des événements surviennent dans votre application : ouverture de fenêtres, démarrage de l’application, changements de thème, etc. Vous pouvez écouter ces événements pour réagir aux changements du cycle de vie sans les bloquer ni les intercepter.
+Wails fournit un système d’événements qui vous avertit lorsque des actions se produisent dans votre application : ouverture de fenêtres, démarrage de l’application, changements de thème, etc. Vous pouvez écouter ces événements pour réagir aux changements du cycle de vie sans les bloquer ni les intercepter.
 
-Pour les événements de fenêtre, vous pouvez également utiliser `RegisterHook` plutôt que `OnWindowEvent` afin d’intercepter et d’annuler des actions, par exemple pour empêcher la fermeture d’une fenêtre. Consultez la section [Hooks de fenêtre](#hooks-de-fentre-vnements-annulables) ci-dessous.
+Pour les événements de fenêtre, vous pouvez également utiliser `RegisterHook` au lieu de `OnWindowEvent` afin d’intercepter et d’annuler des actions, par exemple pour empêcher la fermeture d’une fenêtre. Consultez la section [Hooks de fenêtre](#hooks-de-fentre-vnements-annulables) ci-dessous.
 
-Pour obtenir la documentation complète du système d’événements, consultez le [guide des événements](/features/events/system/).
+Pour consulter la documentation complète du système d’événements, reportez-vous au [guide des événements](/features/events/system/).
 
 ### Événements de l’application
 
@@ -419,7 +419,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ### Hooks de fenêtre (événements annulables)
 
-Utilisez `RegisterHook` plutôt que `OnWindowEvent` lorsque vous devez **annuler** un événement :
+Utilisez `RegisterHook` au lieu de `OnWindowEvent` lorsque vous devez **annuler** un événement :
 
 ```go
 window := app.Window.New()
@@ -440,11 +440,11 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 **Différence entre OnWindowEvent et RegisterHook :**
 
 - `OnWindowEvent` : vous avertit lorsqu’un événement se produit (sans possibilité de l’annuler)
-- `RegisterHook` : vous permet d’intercepter l’événement et, éventuellement, de l’annuler
+- `RegisterHook` : vous permet d’intercepter et éventuellement d’annuler l’événement
 
 ## Cycle de vie des fenêtres
 
-Les fenêtres ont leur propre cycle de vie, de leur création à leur destruction. Chaque fenêtre charge son contenu frontend indépendamment et peut être affichée, masquée ou fermée à tout moment. Lorsqu’un utilisateur tente de fermer une fenêtre, vous pouvez intercepter cette action avec un `RegisterHook` afin de demander confirmation ou de masquer la fenêtre au lieu de la détruire.
+Les fenêtres possèdent leur propre cycle de vie, de leur création à leur destruction. Chaque fenêtre charge son contenu frontend indépendamment et peut être affichée, masquée ou fermée à tout moment. Lorsqu’un utilisateur tente de fermer une fenêtre, vous pouvez intercepter cette action avec un `RegisterHook` afin de demander une confirmation ou de masquer la fenêtre au lieu de la détruire.
 
 Pour consulter la documentation complète sur les fenêtres, reportez-vous au [guide des fenêtres](/features/windows/basics/).
 
@@ -456,7 +456,7 @@ Create: Créer la fenêtre {
   style.fill: "#10B981"
 }
 
-Load: Charger l’interface {
+Load: Charger le frontend {
   shape: rectangle
 }
 
@@ -539,7 +539,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### Masquer au lieu de fermer
 
-Une approche courante pour les applications de la zone de notification :
+Un modèle courant pour les applications de la zone de notification :
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -569,11 +569,11 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 | Plateforme | Comportement par défaut à la fermeture de la dernière fenêtre |
 | --- | --- |
-| macOS | L’application continue de s’exécuter (la barre des menus reste affichée) |
+| macOS | L’application reste en cours d’exécution (la barre des menus reste affichée) |
 | Windows | L’application se ferme |
 | Linux | L’application se ferme |
 
-macOS suit les conventions natives de la plateforme, selon lesquelles les applications restent généralement actives dans la barre des menus même lorsqu’aucune fenêtre n’est ouverte. Sous Windows et Linux, elles se ferment par défaut.
+macOS respecte les conventions natives de la plateforme, selon lesquelles les applications restent généralement actives dans la barre des menus même lorsqu’aucune fenêtre n’est ouverte. Sous Windows et Linux, elles se ferment par défaut.
 
 **Fermer l’application sur toutes les plateformes lorsque la dernière fenêtre se ferme :**
 
@@ -587,7 +587,7 @@ app := application.New(application.Options{
 
 **Maintenir l’application en cours d’exécution sur toutes les plateformes lorsque la dernière fenêtre se ferme :**
 
-Ce comportement est utile pour les applications de la zone de notification ou celles qui doivent continuer de s’exécuter en arrière-plan.
+Cela est utile pour les applications de la zone de notification ou celles qui doivent continuer à s’exécuter en arrière-plan.
 
 ```go
 app := application.New(application.Options{
@@ -600,9 +600,9 @@ app := application.New(application.Options{
 })
 ```
 
-## Approches courantes
+## Modèles courants
 
-### Approche 1 : service de base de données
+### Modèle 1 : service de base de données
 
 ```go
 type DatabaseService struct {
@@ -636,7 +636,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### Approche 2 : service de configuration
+### Modèle 2 : service de configuration
 
 ```go
 type ConfigService struct {
@@ -668,7 +668,7 @@ func (s *ConfigService) ServiceShutdown() error {
 }
 ```
 
-### Approche 3 : tâche d’arrière-plan
+### Modèle 3 : tâche d’arrière-plan
 
 ```go
 type WorkerService struct {
@@ -710,7 +710,7 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 | Hook/interface | Moment de l’appel | Annulation possible ? | Utilisation |
 | --- | --- | --- | --- |
-| `ServiceStartup` | Pendant `app.Run()`, avant la boucle d’événements | Non (renvoyez une erreur pour interrompre) | Initialisation |
+| `ServiceStartup` | Pendant `app.Run()`, avant la boucle d’événements | Non (renvoyez une erreur pour interrompre l’opération) | Initialisation |
 | `ServiceShutdown` | Pendant l’arrêt, après `OnShutdown` | Non | Nettoyage |
 | `OnShutdown` | Lorsque la fermeture de l’application est confirmée | Non | Nettoyage de l’application |
 | `ShouldQuit` | Lorsqu’une fermeture de l’application est demandée | Oui (renvoyez false) | Confirmer la fermeture de l’application |
@@ -725,12 +725,12 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 - Le **menu de l’application** reste disponible même lorsqu’aucune fenêtre n’est ouverte
 - **Cmd+Q** déclenche la fermeture de l’application (en passant par `ShouldQuit`)
 - L’**icône du Dock** reste affichée, sauf si elle est masquée
-- Utilisez `ApplicationShouldTerminateAfterLastWindowClosed` pour contrôler le comportement lors de la fermeture de l’application
+- Utilisez `ApplicationShouldTerminateAfterLastWindowClosed` pour contrôler le comportement de fermeture de l’application
 
 ### Windows
 
-- Aucun **menu d’application** sans fenêtre
-- **Alt+F4** ferme la fenêtre (cette fermeture peut être empêchée avec `RegisterHook`)
+- **Aucun menu d’application** sans fenêtre
+- **Alt+F4** ferme la fenêtre (cette action peut être empêchée avec `RegisterHook`)
 - La **zone de notification** peut maintenir l’application en cours d’exécution
 
 ### Linux
@@ -738,7 +738,7 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 - Le **comportement varie** selon l’environnement de bureau
 - **Généralement similaire à Windows**
 
-## Débogage des problèmes de cycle de vie
+## Résolution des problèmes de cycle de vie
 
 ### Problème : l’application ne se ferme pas
 
@@ -793,26 +793,26 @@ L’erreur sera consignée et l’application ne démarrera pas.
 
 ### À faire
 
-- **Utilisez des services pour gérer le cycle de vie** : ils fournissent les hooks nécessaires au démarrage et à l’arrêt
-- **Assurez un arrêt rapide** : visez moins de 1 seconde pour l’ensemble du nettoyage
-- **Utilisez le contexte pour l’annulation** : arrêtez correctement les tâches en arrière-plan
-- **Gérez les erreurs au démarrage** : renvoyez les erreurs pour interrompre proprement le démarrage
-- **Consignez les événements du cycle de vie** : cela facilite le débogage
+- **Utilisez des services pour gérer le cycle de vie** — Ils fournissent les hooks appropriés pour le démarrage et l’arrêt
+- **Veillez à ce que l’arrêt soit rapide** — Visez moins de 1 seconde pour l’ensemble du nettoyage
+- **Utilisez le contexte pour l’annulation** — Arrêtez correctement les tâches en arrière-plan
+- **Gérez les erreurs au démarrage** — Renvoyez les erreurs pour interrompre proprement le démarrage
+- **Consignez les événements du cycle de vie** — Cela facilite le débogage
 
 ### À ne pas faire
 
-- **Ne bloquez pas le démarrage d’un service** : veillez à ce que l’initialisation soit rapide (moins de 2 secondes)
-- **N’affichez pas de boîtes de dialogue pendant l’arrêt** : l’application est en cours de fermeture et l’interface utilisateur risque de ne pas fonctionner
-- **N’ignorez pas le contexte** : vérifiez toujours `ctx.Done()` dans les goroutines
-- **Ne laissez pas de ressources non libérées** : implémentez toujours `ServiceShutdown`
+- **Ne bloquez pas le démarrage d’un service** — Veillez à ce que l’initialisation soit rapide (moins de 2 secondes)
+- **N’affichez pas de boîtes de dialogue pendant l’arrêt** — L’application est en cours de fermeture et l’interface utilisateur peut ne pas fonctionner
+- **N’ignorez pas le contexte** — Vérifiez toujours `ctx.Done()` dans les goroutines
+- **Ne provoquez pas de fuite de ressources** — Implémentez toujours `ServiceShutdown`
 
 ## Étapes suivantes
 
-**Services** : approfondissez le système de services [En savoir plus →](/features/bindings/services/)
+**Services** — Découvrez le système de services [En savoir plus →](/features/bindings/services/)
 
-**Système d’événements** : utilisez les événements pour communiquer [En savoir plus →](/features/events/system/)
+**Système d’événements** — Utilisez les événements pour communiquer [En savoir plus →](/features/events/system/)
 
-**Gestion des fenêtres** : créez et gérez des fenêtres [En savoir plus →](/features/windows/basics/)
+**Gestion des fenêtres** — Créez et gérez des fenêtres [En savoir plus →](/features/windows/basics/)
 
 ---
 

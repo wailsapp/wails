@@ -1,6 +1,6 @@
 ---
 title: "Kontextmenüs"
-description: "Erstellen Sie Kontextmenüs für Ihre Anwendung, die per Rechtsklick geöffnet werden"
+description: "Erstellen Sie Rechtsklick-Kontextmenüs für Ihre Anwendung"
 slug: "features/menus/context"
 sourcePath: "features/menus/context.md"
 ---
@@ -13,7 +13,7 @@ Benutzer erwarten bei einem Rechtsklick Menüs mit kontextspezifischen Aktionen.
 - **Bilder**: Speichern, Kopieren, Öffnen
 - **Benutzerdefinierte Elemente**: anwendungsspezifische Aktionen
 
-Wenn Sie Kontextmenüs manuell erstellen, müssen Sie Mausereignisse, Positionierung und Plattformunterschiede selbst behandeln.
+Beim manuellen Erstellen von Kontextmenüs müssen Mausereignisse, die Positionierung und Plattformunterschiede berücksichtigt werden.
 
 ## Die Wails-Lösung
 
@@ -21,7 +21,7 @@ Wails stellt mithilfe von CSS-Eigenschaften **deklarative Kontextmenüs** bereit
 
 ![Ein benutzerdefiniertes Wails-Kontextmenü, das unter macOS über einer Webview angezeigt wird](/assets/screenshots/context-menu-macos.png)
 
-Das Menü ist plattformnativ, während das Element, das es geöffnet hat, Teil Ihrer Webview bleibt. Diese macOS-Aufnahme verwendet die Registrierung des benutzerdefinierten Kontextmenüs aus dem folgenden Beispiel.
+Das Menü ist plattformnativ, während das Element, das es geöffnet hat, Teil Ihrer Webview bleibt. Diese macOS-Aufnahme verwendet die im folgenden Beispiel gezeigte Registrierung eines benutzerdefinierten Kontextmenüs.
 
 ## Schnellstart
 
@@ -120,7 +120,7 @@ Informationen zu **allen Menüelementtypen** finden Sie in der [Menüreferenz](/
 
 ## HTML-Elementen zuordnen
 
-Verwenden Sie benutzerdefinierte CSS-Eigenschaften, um Kontextmenüs zuzuweisen:
+Verwenden Sie benutzerdefinierte CSS-Eigenschaften, um Kontextmenüs zuzuordnen:
 
 ### Einfache Zuordnung
 
@@ -134,7 +134,7 @@ Verwenden Sie benutzerdefinierte CSS-Eigenschaften, um Kontextmenüs zuzuweisen:
 
 ### Mit Kontextdaten
 
-Übergeben Sie Daten aus HTML an Go:
+Übergeben Sie Daten von HTML an Go:
 
 ```html
 <div style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-123">
@@ -156,12 +156,12 @@ app.ContextMenu.Add("file-menu", contextMenu)
 
 **CSS-Eigenschaften:**
 
-- `--custom-contextmenu: <menu-id>` – Das anzuzeigende Menü
-- `--custom-contextmenu-data: <data>` – An Handler zu übergebende Daten
+- `--custom-contextmenu: <menu-id>` – anzuzeigendes Menü
+- `--custom-contextmenu-data: <data>` – an Handler zu übergebende Daten
 
 ### Dynamische Daten
 
-Generieren Sie Daten dynamisch in JavaScript:
+Erzeugen Sie Daten dynamisch in JavaScript:
 
 ```html
 <div id="file-item" style="--custom-contextmenu: file-menu">
@@ -206,7 +206,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Datentyp:** Immer `string`. Parsen Sie die Daten nach Bedarf.
+**Datentyp:** Immer `string`. Parsen Sie ihn nach Bedarf.
 
 ### Komplexe Daten übergeben
 
@@ -242,7 +242,7 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="Sicherheit"}
-**Validieren Sie Kontextdaten aus dem Frontend immer**. Benutzer können CSS-Eigenschaften manipulieren; behandeln Sie die Daten daher als nicht vertrauenswürdige Eingabe.
+**Validieren Sie Kontextdaten aus dem Frontend immer**. Benutzer können CSS-Eigenschaften manipulieren. Behandeln Sie die Daten daher als nicht vertrauenswürdige Eingabe.
 
 @end
 
@@ -271,7 +271,7 @@ contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
 
 ## Standardkontextmenü
 
-Die WebView stellt ein integriertes Kontextmenü für Standardoperationen wie Kopieren, Einfügen und Untersuchen bereit. Steuern Sie es mit `--default-contextmenu`:
+Die WebView stellt ein integriertes Kontextmenü für Standardvorgänge bereit (Kopieren, Einfügen, Untersuchen). Steuern Sie es mit `--default-contextmenu`:
 
 ### Standardmenü ausblenden
 
@@ -304,12 +304,12 @@ Die WebView stellt ein integriertes Kontextmenü für Standardoperationen wie Ko
 **Standardverhalten.** Zeigt das Standardmenü an, wenn:
 
 - Text ausgewählt ist
-- In Texteingabefeldern
-- In bearbeitbaren Inhalten (`contenteditable`)
+- der Zeiger sich in Texteingabefeldern befindet
+- der Zeiger sich in bearbeitbaren Inhalten befindet (`contenteditable`)
 
-Blendet das Standardmenü andernfalls aus.
+Andernfalls wird das Standardmenü ausgeblendet.
 
-### Benutzerdefiniertes und Standardmenü kombinieren
+### Benutzerdefiniertes Menü und Standardmenü kombinieren
 
 ```html
 <!-- Custom menu + default menu -->
@@ -321,14 +321,14 @@ Blendet das Standardmenü andernfalls aus.
 **Verhalten:**
 
 1. Das benutzerdefinierte Menü wird zuerst angezeigt
-2. Wenn das benutzerdefinierte Menü leer ist oder nicht gefunden wird, wird das Standardmenü angezeigt
-3. Beide können gleichzeitig vorhanden sein (plattformabhängig)
+2. Wenn das benutzerdefinierte Menü leer ist oder nicht gefunden wird, erscheint das Standardmenü
+3. Beide können nebeneinander bestehen (plattformabhängig)
 
 ## Dynamische Kontextmenüs
 
-Aktualisieren Sie Menüs anhand des Anwendungszustands:
+Aktualisieren Sie Menüs abhängig vom Anwendungszustand:
 
-### Menüelemente aktivieren/deaktivieren
+### Elemente aktivieren/deaktivieren
 
 ```go
 var cutMenuItem *application.MenuItem
@@ -356,7 +356,7 @@ func onSelectionChanged(hasSelection bool) {
 ```
 
 @note{type="caution" title="Update() immer aufrufen"}
-Rufen Sie nach einer Änderung des Menüzustands **`contextMenu.Update()`** auf. Dies ist unter Windows von entscheidender Bedeutung.
+Rufen Sie nach einer Änderung des Menüzustands **unbedingt `contextMenu.Update()`** auf. Dies ist unter Windows entscheidend.
 
 Weitere Informationen finden Sie in der [Menüreferenz](/features/menus/reference/#enabled-state).
 
@@ -416,7 +416,7 @@ Kontextmenüs sind **plattformnativ**:
 [macOS]
 **Native macOS-Kontextmenüs:**
 
-- Systemanimationen und Übergänge
+- Systemanimationen und -übergänge
 - Rechtsklick = Control+Klick (automatisch)
 - Passt sich dem Erscheinungsbild des Systems an (hell/dunkel)
 - Standardmäßige Textoperationen im Standardmenü
@@ -424,8 +424,8 @@ Kontextmenüs sind **plattformnativ**:
 
 **macOS-Konventionen:**
 
-- Verwenden Sie für Menüeinträge Satzschreibung
-- Verwenden Sie für Einträge, die Dialogfelder öffnen, Auslassungspunkte (...)
+- Verwenden Sie für Menüelemente Satzgroßschreibung
+- Verwenden Sie bei Elementen, die Dialogfelder öffnen, Auslassungspunkte (...)
 - Gängige Tastenkürzel: ⌘C (Kopieren), ⌘V (Einfügen)
 
 [Windows]
@@ -433,26 +433,26 @@ Kontextmenüs sind **plattformnativ**:
 
 - Nativer Windows-Stil
 - Entspricht dem Windows-Design
-- Standardmäßige Windows-Operationen im Standardmenü
-- Unterstützung für Touch- und Stifteingaben
+- Standardmäßige Windows-Vorgänge im Standardmenü
+- Unterstützung für Touch- und Stifteingabe
 
 **Windows-Konventionen:**
 
-- Schreiben Sie bei Menüeinträgen die wichtigen Wörter groß
-- Verwenden Sie für Einträge, die Dialogfelder öffnen, Auslassungspunkte (...)
-- Gängige Tastenkürzel: Ctrl+C (Kopieren), Ctrl+V (Einfügen)
+- Verwenden Sie für Menüelemente Überschriftengroßschreibung
+- Verwenden Sie bei Elementen, die Dialogfelder öffnen, Auslassungspunkte (...)
+- Gängige Tastenkürzel: Strg+C (Kopieren), Strg+V (Einfügen)
 
 [Linux]
 **Integration in die Desktop-Umgebung:**
 
-- Passt sich dem Desktop-Design an (GTK, Qt usw.)
-- Das Rechtsklickverhalten entspricht den Systemeinstellungen
-- Der Inhalt des Standardmenüs variiert je nach Umgebung
-- Die Positionierung entspricht den Konventionen der Desktop-Umgebung
+- Passt sich an das Desktop-Theme an (GTK, Qt usw.)
+- Das Rechtsklickverhalten folgt den Systemeinstellungen
+- Der Inhalt des Standardmenüs hängt von der Umgebung ab
+- Die Positionierung folgt den Konventionen der Desktop-Umgebung
 
-**Hinweise zu Linux:**
+**Besonderheiten unter Linux:**
 
-- Testen Sie auf den Ziel-Desktop-Umgebungen
+- In den Ziel-Desktop-Umgebungen testen
 - GTK und Qt verhalten sich unterschiedlich
 - Einige Desktop-Umgebungen passen Kontextmenüs an
 
@@ -639,10 +639,10 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ Empfohlen
 
-- **Menüs übersichtlich halten** – Nur für das Element relevante Aktionen anbieten
+- **Menüs auf das Wesentliche beschränken** – Nur für das Element relevante Aktionen anbieten
 - **Kontextdaten validieren** – Als nicht vertrauenswürdige Eingabe behandeln
 - **Eindeutige Beschriftungen verwenden** – „Datei löschen“ statt „Löschen“
-- **menu.Update() aufrufen** – Nachdem Sie den Menüzustand geändert haben
+- **menu.Update() aufrufen** – Nachdem der Menüzustand geändert wurde
 - **Auf allen Plattformen testen** – Das Verhalten variiert
 - **Tastenkürzel bereitstellen** – Für häufige Aktionen
 - **Zusammengehörige Einträge gruppieren** – Trennlinien verwenden
@@ -653,8 +653,8 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 - **Menüs nicht zu lang machen** – Höchstens 7-10 Einträge
 - **menu.Update() nicht vergessen** – Andernfalls funktionieren Menüs nicht ordnungsgemäß
 - **Nicht zu tief verschachteln** – Höchstens 2 Ebenen
-- **Keine Fachsprache verwenden** – Beschriftungen benutzerfreundlich halten
-- **Handler nicht blockieren** – Handler schnell halten
+- **Keine Fachsprache verwenden** – Beschriftungen verständlich halten
+- **Handler nicht blockieren** – Schnell ausführen lassen
 
 ## Fehlerbehebung
 
@@ -682,7 +682,7 @@ app.ContextMenu.Add("my-menu", contextMenu)
 
 **Mögliche Ursachen:**
 
-1. CSS-Eigenschaft ist nicht festgelegt
+1. CSS-Eigenschaft nicht festgelegt
 2. Daten enthalten Sonderzeichen
 
 **Lösung:**
@@ -692,7 +692,7 @@ app.ContextMenu.Add("my-menu", contextMenu)
 <div style="--custom-contextmenu-data: {&quot;id&quot;:123}">
 ```
 
-Oder verwenden Sie JavaScript:
+Alternativ JavaScript verwenden:
 
 ```javascript
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
@@ -713,19 +713,19 @@ contextMenu.Update()  // Add this!
 
 @cards{cols="2"}
 📖 Menüreferenz
-Vollständige Referenz zu Menüelementtypen und -eigenschaften.
+Vollständige Referenz zu Menüeintragstypen und -eigenschaften.
 
 [Mehr erfahren →](/features/menus/reference/)
 
 ---
 ☰ Anwendungsmenüs
-Erstellen Sie Menüleisten für Anwendungen.
+Menüleisten für Anwendungen erstellen.
 
 [Mehr erfahren →](/features/menus/application/)
 
 ---
-★ Infobereichsmenüs
-Fügen Sie eine Integration in den Infobereich beziehungsweise die Menüleiste hinzu.
+★ Taskleistenmenüs
+Integration in den Infobereich beziehungsweise die Menüleiste hinzufügen.
 
 [Mehr erfahren →](/features/menus/systray/)
 
@@ -739,4 +739,4 @@ Gängige Menümuster und bewährte Vorgehensweisen.
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich das [Kontextmenübeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus) an.
+**Fragen?** Stelle sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sieh dir das [Kontextmenübeispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/contextmenus) an.

@@ -511,16 +511,16 @@
       "updatedAt": "2026-10-25T21:49:37Z"
     },
     "b0043-cell-01": {
-      "sourceHash": "b47dae65c19dbba7b7fe549f894882eef656bda4afaff0eb9de1400e62754e2a",
-      "targetHash": "e67159e3e658d640f81e41326420bf4a059480fb7aec7767485d87003de2d08d",
-      "machineHash": "e67159e3e658d640f81e41326420bf4a059480fb7aec7767485d87003de2d08d",
-      "machineText": "Régénérez le fichier `/wails/runtime.js` précompilé fourni à la webview.",
+      "sourceHash": "af2ea662c34d6f8d53f3c9a382d485092fc7e154d37d1b2b0614fbb57ab9a6dc",
+      "targetHash": "0ae6703e655073017a0bb70749b6f87a1a20bb310c3d87d20699a07a3f3f26e0",
+      "machineHash": "0ae6703e655073017a0bb70749b6f87a1a20bb310c3d87d20699a07a3f3f26e0",
+      "machineText": "Exportez les bundles JavaScript de production/débogage intégrés à la CLI (`-d` sélectionne la destination).",
       "status": "machine-translated",
-      "sourcePreview": "Regenerate the pre-built `/wails/runtime.js` shipped to the webview.",
+      "sourcePreview": "Export the CLI's embedded production/debug JavaScript bundles (`-d` selects the destination).",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:49:37Z"
+      "updatedAt": "2026-11-02T23:47:36Z"
     },
     "b0044-cell-01": {
       "sourceHash": "5e6125f04cdf2d464f4ecf48bdbfef345ace5b9f41c0ac75bdbda0092584b86c",
@@ -1459,16 +1459,16 @@
       "updatedAt": "2026-10-25T21:49:37Z"
     },
     "b0122-text-01": {
-      "sourceHash": "e0f10f798279cc306a3dbe478b049f6713035f493d7acdd97a8e0a94aaf9903e",
-      "targetHash": "11270f7a1808f391b363b0c4cc078003439bc3536296877902762ab02370e106",
-      "machineHash": "11270f7a1808f391b363b0c4cc078003439bc3536296877902762ab02370e106",
-      "machineText": "**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).",
+      "sourceHash": "b75712c146e06a9d2cb40af01c0ea008daea8af16f79fc7a693bb951bbd77d4e",
+      "targetHash": "474f23ed8490ecab8554952c9008d8e2871fce2928cae2a6c81fa0aa2ec53632",
+      "machineHash": "474f23ed8490ecab8554952c9008d8e2871fce2928cae2a6c81fa0aa2ec53632",
+      "machineText": "**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://githu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:49:37Z"
+      "updatedAt": "2026-11-02T23:47:36Z"
     },
     "fm-description": {
       "sourceHash": "fac0769fc7745d02e2bc1e438b414aad10bd527618fd27890968f5e238e4a82e",

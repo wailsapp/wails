@@ -1,9 +1,9 @@
 ---
 title: "Crie aplicativos para desktop com Go"
 description: "Aplicativos nativos para desktop usando Go e tecnologias web"
-banner: {"content": "O Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. <a href=\"https://v2.wails.io\">Procurando a documentação da v2?</a>\n"}
+banner: {"content": "Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. \u003ca href=\"https://v2.wails.io\"\u003eProcurando a documentação do v2?\u003c/a\u003e\n"}
 template: "splash"
-hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Comece agora","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Ver tutorial","variant":"secondary"}],"image":{"alt":"Logotipo do Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Crie aplicativos bonitos e de alto desempenho usando Go e tecnologias web modernas. Uma única base de código. Três plataformas. Nenhum navegador.*"}
+hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Comece agora","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Ver tutorial","variant":"secondary"}],"image":{"alt":"Logotipo do Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Crie aplicativos bonitos e de alto desempenho usando Go e tecnologias web modernas. Uma base de código. Três plataformas. Sem navegadores.*"}
 sourcePath: "index.md"
 ---
 
@@ -143,7 +143,7 @@ wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Não é necessário alterar o código Go.** O mesmo `main.go`, os mesmos serviços, o mesmo frontend — o Wails compila tudo automaticamente para iOS e Android. Os recursos específicos de cada plataforma (resposta tátil, caixas de diálogo nativas e áreas seguras) estão disponíveis quando você quiser usá-los, mas não são necessários para lançar o aplicativo.
+**Nenhuma alteração no seu código Go.** O mesmo `main.go`, os mesmos serviços, o mesmo frontend — o Wails o compila automaticamente para iOS e Android. Os recursos específicos de cada plataforma (resposta tátil, caixas de diálogo nativas e áreas seguras) estão disponíveis quando você quiser usá-los, mas não são necessários para lançar o aplicativo.
 
 [Documentação para dispositivos móveis →](/guides/mobile/)
 
@@ -153,31 +153,31 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 @cards{cols="2"}
 🚀 Desempenho que os usuários percebem
-- Binários de ~15 MB, em comparação com 150 MB do Electron
-- Consumo básico de memória de ~10 MB, em comparação com mais de 100 MB
-- Tempo de inicialização de &lt;0.5 s, em comparação com 2-3 s
+- Binários de ~15 MB contra 150 MB do Electron
+- Uso básico de memória de ~10 MB contra mais de 100 MB
+- Tempo de inicialização de &lt;0.5 s contra 2-3 s
 - Renderização nativa usando a WebView do sistema operacional
-- Sem a sobrecarga de incluir um navegador no pacote
+- Sem a sobrecarga de um navegador incluído no pacote
 
 ---
 ⚙ Experiência de desenvolvimento
 - Uma única base de código Go para todas as plataformas
 - Qualquer framework web — React, Vue ou Svelte
 - Recarregamento automático durante o desenvolvimento
-- Bindings gerados automaticamente para chamar Go facilmente a partir do JavaScript
+- Bindings gerados automaticamente para chamar Go com facilidade a partir de Javascript
 - IPC na memória. Sem portas de rede
 
 ---
 ✓ Pronto para desktop
-- Várias janelas com ciclos de vida próprios
-- Menus nativos e área de notificação do sistema
+- Várias janelas com ciclos de vida
+- Menus nativos e ícone na bandeja do sistema
 - Caixas de diálogo de arquivos nativas da plataforma
 - Integração com o sistema e atalhos
 - Ferramentas de assinatura de código e empacotamento
 
 ---
 ▣ Desktop e dispositivos móveis
-- Windows, macOS, Linux, iOS e Android
+- Windows, macOS, Linux, iOS, Android
 - A mesma base de código, sem reescritas
 - WebView nativa em todas as plataformas
 - Sem portas abertas nem servidor localhost
@@ -187,10 +187,10 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 ## Próximas etapas
 
-A seguir: [crie um aplicativo completo](/tutorials/03-notes-vanilla/), explore os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ou consulte a [referência da API](/reference/application/). Está migrando da v2? Consulte o [guia de atualização](/migration/v2-to-v3/).
+A seguir: [crie um aplicativo completo](/tutorials/03-notes-vanilla/), explore os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) ou consulte a [referência da API](/reference/application/). Está migrando do v2? Consulte o [guia de atualização](/migration/v2-to-v3/).
 
 @note{type="info" title="Wails v3.0.0"}
-O Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. O suporte a Android e iOS permanece experimental e está fora do contrato de compatibilidade estável para desktop.
+Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, macOS e Linux. O suporte a Android e iOS continua experimental e não faz parte do contrato de compatibilidade estável para desktop.
 
 @end
 

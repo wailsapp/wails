@@ -595,16 +595,16 @@
       "updatedAt": "2026-10-25T22:06:49Z"
     },
     "b0050-text-01": {
-      "sourceHash": "c637005e54aafb4fbf91e4ec62a49bc532f6a24af32108db4a1accc1e2d1eaff",
-      "targetHash": "b87aa13b610ffd493164e3cdb7008064d2cd461eea6026e33ce43f11dfa2f532",
-      "machineHash": "b87aa13b610ffd493164e3cdb7008064d2cd461eea6026e33ce43f11dfa2f532",
-      "machineText": "Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal CLI Wails atau dependensi pembangunan desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengunduh executable dengan versi yang telah ditetapkan, melakukan instalasi, melihat pratinjau langsung, menjalankan validasi, dan mengikuti alur kerja PR untuk cabang rilis.",
+      "sourceHash": "01f1f09bf0091856681d527d7030393d279908effbc8d932477be825a7fa454f",
+      "targetHash": "b64a071e56fcd1c07bb86d835928197a1d801633da158d56f699804e55f4ad85",
+      "machineHash": "b64a071e56fcd1c07bb86d835928197a1d801633da158d56f699804e55f4ad85",
+      "machineText": "Kontributor dokumentasi dapat menggunakan M-Press tanpa menginstal Wails CLI atau dependensi build desktop. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengetahui cara mengunduh dan menginstal executable yang versinya telah ditetapkan, melihat pratinjau langsung, melakukan validasi, serta menjalankan alur kerja PR yang menargetkan `master`.",
       "status": "machine-translated",
       "sourcePreview": "Documentation contributors can use M-Press without installing the Wails CLI or desktop build depende…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:06:49Z"
+      "updatedAt": "2026-11-06T02:12:22Z"
     },
     "b0051-text-01": {
       "sourceHash": "380289f54aff379aacfeed6899f0be638877dee0dc938725d1ea82db726f6f81",

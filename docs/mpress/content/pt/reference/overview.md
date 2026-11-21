@@ -284,7 +284,7 @@ Encontrou um bug ou uma inconsistência?
 - [Tutoriais](/tutorials/overview/) — Aprenda criando aplicações reais
 - [Guias](/guides/architecture/) — Guias orientados a tarefas para cenários comuns
 - [Recursos](/features/windows/basics/) — Documentação de cada recurso
-- [Exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) — Exemplos de código funcionais no GitHub
+- [Exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) — Exemplos de código funcional no GitHub
 
 ---
 

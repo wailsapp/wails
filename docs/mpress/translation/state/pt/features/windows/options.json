@@ -67,16 +67,16 @@
       "updatedAt": "2026-10-25T21:53:47Z"
     },
     "b0005-text-01": {
-      "sourceHash": "b5439bed7f7d23dafef41faecc3b9ad9fafeaa6de939e5cff8733c923ec342ec",
-      "targetHash": "abb5f068af19debf954f5ca40983f9001675ffef58fa4562a683e885c12c1a77",
-      "machineHash": "abb5f068af19debf954f5ca40983f9001675ffef58fa4562a683e885c12c1a77",
-      "machineText": "Código-fonte completo: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).",
+      "sourceHash": "7372ac9991619f5c69b5d57b67daa8c4f7bfa3a5d56d82d353dd13c81dd9dd4c",
+      "targetHash": "e76d4812262edba03b1b79d7221c63793512fc973cb14efaf3cf904080bf089b",
+      "machineHash": "e76d4812262edba03b1b79d7221c63793512fc973cb14efaf3cf904080bf089b",
+      "machineText": "Código-fonte completo: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/v3.0.0/v3/pkg/application/webview_window_options.go).",
       "status": "machine-translated",
       "sourcePreview": "Full source: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:38:34Z"
+      "updatedAt": "2026-11-06T02:14:14Z"
     },
     "b0006-heading-01": {
       "sourceHash": "50a4a49c4d0f44859aabf8b93152fc2f63782da993c189c56a2d44ef74a7e712",
@@ -106,9 +106,9 @@
       "sourceHash": "44117f7cba2692c2f6611b3acd34d034f1d735262db69f9200049955193e54d2",
       "targetHash": "967bd1b0cc3be128e2faec6114bbcebb50039d0812902d9000745e625fbb968b",
       "machineHash": "967bd1b0cc3be128e2faec6114bbcebb50039d0812902d9000745e625fbb968b",
-      "machineText": "**Tipo:** `string` **Padrão:** `window-<numeric ID>` **Plataforma:** Todas",
+      "machineText": "**Tipo:** `string` **Padrão:** `window-\u003cnumeric ID\u003e` **Plataforma:** Todas",
       "status": "machine-translated",
-      "sourcePreview": "**Type:** `string` **Default:** `window-<numeric ID>` **Platform:** All",
+      "sourcePreview": "**Type:** `string` **Default:** `window-\u003cnumeric ID\u003e` **Platform:** All",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -4735,16 +4735,16 @@
       "updatedAt": "2026-10-25T21:38:34Z"
     },
     "b0402-text-01": {
-      "sourceHash": "e0f10f798279cc306a3dbe478b049f6713035f493d7acdd97a8e0a94aaf9903e",
-      "targetHash": "2397e0729948547d8d426c12ef22fef6e7a9634e249ee9def0a453ab708f89ab",
-      "machineHash": "2397e0729948547d8d426c12ef22fef6e7a9634e249ee9def0a453ab708f89ab",
-      "machineText": "**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).",
+      "sourceHash": "b75712c146e06a9d2cb40af01c0ea008daea8af16f79fc7a693bb951bbd77d4e",
+      "targetHash": "e080987b9f054ceac7a271e05e45b716b1d15569dae0e813810a8110a5edaebe",
+      "machineHash": "e080987b9f054ceac7a271e05e45b716b1d15569dae0e813810a8110a5edaebe",
+      "machineText": "**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).",
       "status": "machine-translated",
       "sourcePreview": "**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://githu…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:38:34Z"
+      "updatedAt": "2026-11-06T02:14:14Z"
     },
     "fm-description": {
       "sourceHash": "c6f658c916f298ba16533320d9376ea77d524b06e829a95863115aaea25df5aa",

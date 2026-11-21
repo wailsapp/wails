@@ -1,13 +1,13 @@
 ---
 title: "剪貼簿操作"
-description: "透過系統剪貼簿複製及貼上文字"
+description: "使用系統剪貼簿複製及貼上文字"
 slug: "features/clipboard/basics"
 sourcePath: "features/clipboard/basics.md"
 ---
 
 ## 剪貼簿操作
 
-Wails 提供可在所有平台上運作的<strong>統一剪貼簿 API</strong>。在 Windows、macOS 及 Linux 上使用簡單且一致的方法複製及貼上文字。
+Wails 提供可在所有平台運作的**統一剪貼簿 API**。在 Windows、macOS 和 Linux 上，使用簡單且一致的方法複製及貼上文字。
 
 ## 快速入門
 
@@ -35,7 +35,7 @@ if !success {
 }
 ```
 
-**傳回值：**`bool`—成功時為`true`，否則為`false`
+**傳回值：**`bool`——成功時為`true`，否則為`false`
 
 ### 從服務複製
 
@@ -89,7 +89,7 @@ if !ok {
 fmt.Println("Clipboard text:", text)
 ```
 
-**傳回值：**`(string, bool)`—文字及成功旗標
+**傳回值：**`(string, bool)`——文字與成功旗標
 
 ### 從服務貼上
 
@@ -247,7 +247,7 @@ func (c *CopyService) CopyAsCSV(rows [][]string) bool {
 }
 ```
 
-### 剪貼簿監控
+### 剪貼簿監控器
 
 ```go
 type ClipboardMonitor struct {
@@ -349,7 +349,7 @@ func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
 
 ### 使用瀏覽器剪貼簿 API
 
-若只需處理純文字，可以使用瀏覽器的剪貼簿 API：
+對於簡單文字，可以使用瀏覽器的剪貼簿 API：
 
 ```javascript
 // Copy
@@ -378,7 +378,7 @@ async function pasteText() {
 
 ### 使用 Wails 剪貼簿
 
-若要存取全系統剪貼簿：
+若要在整個系統中存取剪貼簿：
 
 ```javascript
 import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -402,58 +402,58 @@ async function paste() {
 
 ### ✅ 建議做法
 
-- **檢查傳回值**—妥善處理失敗情況
-- **提供回饋**—讓使用者知道複製成功
-- **驗證貼上的文字**—檢查格式及大小
-- **使用適當的方法**—依情況選用瀏覽器 API 或 Wails API
-- **處理剪貼簿為空的情況**—使用前先檢查
-- **移除頭尾空白**—清理貼上的文字
+- **檢查傳回值**——妥善處理失敗情況
+- **提供回饋**——讓使用者知道複製已成功
+- **驗證貼上的文字**——檢查格式及大小
+- **使用適當的方法**——依情況選用瀏覽器 API 或 Wails API
+- **處理空白剪貼簿**——使用前先檢查
+- **移除前後空白**——清理貼上的文字
 
 ### ❌ 請勿
 
-- **請勿忽略失敗情況**—一律檢查操作是否成功
-- **請勿複製敏感資料**—剪貼簿由系統共用
-- **請勿預設資料格式**—驗證貼上的資料
-- **請勿過度頻繁地輪詢**—監控剪貼簿時尤其如此
-- **請勿複製大量資料**—改用檔案
-- **請勿忽略安全性**—清理貼上的內容
+- **請勿忽略失敗情況**——一律檢查是否成功
+- **請勿複製敏感資料**——剪貼簿是共用的
+- **請勿假設資料格式**——驗證貼上的資料
+- **請勿過於頻繁地輪詢**——監控剪貼簿時尤其如此
+- **請勿複製大量資料**——改用檔案
+- **請勿忽略安全性**——淨化貼上的內容
 
 ## 平台差異
 
 ### macOS
 
 - 使用 NSPasteboard
-- 支援格式化文字（未來功能）
+- 支援 RTF 文字（未來）
 - 全系統剪貼簿
 - 剪貼簿歷程記錄（系統功能）
 
 ### Windows
 
 - 使用 Windows Clipboard API
-- 將支援多種格式（未來功能）
+- 支援多種格式（未來）
 - 全系統剪貼簿
 - 剪貼簿歷程記錄（Windows 10+）
 
 ### Linux
 
 - 使用 X11/Wayland 剪貼簿
-- 主要選取區及剪貼簿選取區
+- 主要選取區與剪貼簿選取區
 - 依桌面環境而異
-- 可能需要剪貼簿管理程式
+- 可能需要剪貼簿管理員
 
 ## 限制
 
 ### 目前版本
 
-- **僅支援文字**—尚未支援圖片
-- **不支援格式偵測**—僅支援純文字
-- **無剪貼簿事件**－必須輪詢變更
-- **無剪貼簿歷程記錄**－必須自行實作
+- **僅支援文字**——尚不支援圖片
+- **無格式偵測功能**——僅支援純文字
+- **無剪貼簿事件**——必須透過輪詢偵測變更
+- **無剪貼簿歷程記錄**——需自行實作
 
 ### 未來功能
 
 - 圖片支援
-- 格式化文字支援
+- RTF 文字支援
 - 多種格式
 - 剪貼簿變更事件
 - 剪貼簿歷程記錄 API
@@ -474,7 +474,7 @@ async function paste() {
 
 ---
 ℹ 對話方塊
-顯示複製／貼上的操作結果。
+顯示複製／貼上回饋。
 
 [深入瞭解 →](/features/dialogs/message/)
 
@@ -488,4 +488,4 @@ async function paste() {
 
 ---
 
-<strong>有問題嗎？</strong>請在 [Discord](https://discord.gg/JDdSxwjhGf) 中提問，或查看[剪貼簿範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。
+<strong>有疑問嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[剪貼簿範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)。

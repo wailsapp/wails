@@ -111,9 +111,12 @@ wails3 build -tags server
 
 # Multiple tags
 wails3 build -tags gtk3,customtag
+
+# Experimental CGO-free macOS/Linux backend
+wails3 build -tags purego
 ```
 
-태그는 기본 Taskfile에 `EXTRA_TAGS` 형식으로 전달됩니다.
+태그는 기본 Taskfile에 `EXTRA_TAGS`로 전달됩니다. `WAILS_PUREGO=1`을 설정하면 플래그 없이 `build`, `package` 및 `dev`에 `purego` 태그가 추가됩니다. 자세한 내용은 [CGO 없는 빌드](/experimental/#cgo-free-builds-purego)를 참조하세요.
 
 @note{type="info"}
 이는 `build` 태스크를 프로젝트의 기본 Taskfile에서 실행하는 `wails3 task build` 명령과 동일합니다. `build`에 전달한 모든 CLI 변수는 기본 태스크로 전달됩니다. `Taskfile.yml` 파일을 편집하여 빌드 프로세스를 사용자 지정할 수 있습니다.
@@ -132,6 +135,14 @@ wails3 package [CLI variables...]
 
 ```bash
 wails3 package ARCH=amd64
+```
+
+| 플래그 | 설명 | 기본값 |
+|------|-------------|---------|
+| `-tags` | 추가 Go 빌드 태그(쉼표로 구분). `EXTRA_TAGS`로 전달됨 |  |
+
+```bash
+wails3 package -tags purego
 ```
 
 `VERSION`과 `OUTPUT`은 해당 변수를 명시적으로 읽는 사용자 지정 Taskfile에만 영향을 미치며, 기본 패키지 버전이나 파일 이름을 재정의하지 않습니다.
@@ -308,7 +319,7 @@ wails3 generate build-assets [flags]
 | --- | --- | --- |
 | `-name` | 프로젝트 이름 |  |
 | `-dir` | 출력 디렉터리 | `build` |
-| `-silent` | 출력 억제 | `false` |
+| `-silent` | 출력 표시 안 함 | `false` |
 | `-company` | 회사 이름 |  |
 | `-productname` | 제품 이름 |  |
 | `-description` | 제품 설명 |  |
@@ -332,10 +343,12 @@ wails3 generate icons [flags]
 | `-input` | 입력 PNG 파일 | 필수 |
 | `-windowsfilename` | Windows 출력 파일 이름 |  |
 | `-macfilename` | macOS 출력 파일 이름 |  |
-| `-sizes` | 아이콘 크기(쉼표로 구분) | `256,128,64,48,32,16` |
+| `-sizes` | 1~256픽셀의 아이콘 크기(쉼표로 구분, 0은 무시) | `256,128,64,48,32,16` |
 | `-example` | 예제 아이콘 생성 | `false` |
 | `-iconcomposerinput` | 입력 Icon Composer 파일(`.icon`) |  |
 | `-macassetdir` | Mac 자산의 출력 디렉터리(Assets.car + icns) |  |
+
+0이 아닌 크기를 하나 이상 지정해야 합니다.
 
 #### Icon Composer(macOS)
 
@@ -401,10 +414,11 @@ wails3 generate .desktop [flags]
 
 ### `generate runtime`
 
-미리 빌드된 런타임을 생성합니다.
+CLI에 포함된 사전 빌드 런타임을 `runtime.js`(프로덕션) 및 `runtime-debug.js`(디버그)로 내보냅니다. `-trimpath`로 생성한 빌드를 포함하여, Wails 소스 트리에 접근하지 않고도 설치된 CLI에서 사용할 수 있습니다.
 
 ```bash
 wails3 generate runtime
+wails3 generate runtime -d ./runtime-assets
 ```
 
 ### `generate constants`
@@ -513,10 +527,12 @@ wails3 tool watcher [flags]
 
 ### `tool cp`
 
-파일을 복사합니다.
+하나의 소스 파일을 하나의 대상 파일로 복사합니다. 기존 파일은 덮어쓰되
+현재 권한을 유지합니다. 새 파일에는 소스 파일의 권한이 적용되며, Unix에서는
+시스템 umask의 영향을 받습니다. 상위 디렉터리는 이미 존재해야 합니다.
 
 ```bash
-wails3 tool cp
+wails3 tool cp SOURCE DESTINATION
 ```
 
 ### `tool buildinfo`
@@ -687,7 +703,7 @@ wails3 update build-assets [flags]
 | --- | --- | --- |
 | `-config` | 구성 파일 경로 |  |
 | `-dir` | 출력 디렉터리 | `build` |
-| `-silent` | 출력 표시 안 함 | `false` |
+| `-silent` | 출력 억제 | `false` |
 | `-company` | 회사 이름 |  |
 | `-productname` | 제품 이름 |  |
 | `-description` | 제품 설명 |  |

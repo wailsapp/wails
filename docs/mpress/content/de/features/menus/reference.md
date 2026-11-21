@@ -11,9 +11,9 @@ Vollständige Referenz zu Menüeintragstypen, Eigenschaften und dynamischem Verh
 
 ## Menüeintragstypen
 
-### Reguläre Menüeinträge
+### Normale Menüeinträge
 
-Der häufigste Typ – zeigt Text an und löst eine Aktion aus:
+Der häufigste Typ: Er zeigt Text an und löst eine Aktion aus:
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -26,7 +26,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 ### Kontrollkästchen
 
-Umschaltbare Menüeinträge mit aktiviertem oder deaktiviertem Auswahlzustand:
+Umschaltbare Menüeinträge mit aktiviertem oder deaktiviertem Zustand:
 
 ```go
 checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
@@ -36,13 +36,13 @@ checkbox.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Verwendung:** Boolesche Einstellungen, Funktionsumschalter, Ansichtsoptionen
+**Verwendung:** Boolesche Einstellungen, Funktionsschalter, Ansichtsoptionen
 
 **Wichtig:** Der Auswahlzustand wird beim Anklicken automatisch umgeschaltet.
 
 ### Optionsgruppen
 
-Sich gegenseitig ausschließende Optionen – nur eine kann ausgewählt werden:
+Sich gegenseitig ausschließende Optionen – nur eine kann ausgewählt sein:
 
 ```go
 menu.AddRadio("Small", true)   // true = initially selected
@@ -50,13 +50,13 @@ menu.AddRadio("Medium", false)
 menu.AddRadio("Large", false)
 ```
 
-**Verwendung:** Sich gegenseitig ausschließende Auswahlmöglichkeiten (Größe, Theme, Modus)
+**Verwendung:** Sich gegenseitig ausschließende Optionen (Größe, Theme, Modus)
 
 **Funktionsweise der Gruppierung:**
 
 - Benachbarte Optionsfelder bilden automatisch eine Gruppe
-- Bei Auswahl eines Eintrags werden die anderen Einträge der Gruppe abgewählt
-- Trennen Sie Gruppen durch eine Trennlinie oder einen regulären Menüeintrag
+- Die Auswahl eines Eintrags hebt die Auswahl der anderen Einträge in der Gruppe auf
+- Trennen Sie Gruppen durch eine Trennlinie oder einen normalen Menüeintrag
 
 **Beispiel mit mehreren Gruppen:**
 
@@ -85,9 +85,9 @@ submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
 submenu.Add("Submenu Item 2")
 ```
 
-**Verwendung:** Gruppieren zusammengehöriger Einträge, Reduzieren von Unübersichtlichkeit
+**Verwendung:** Gruppieren zusammengehöriger Einträge, Reduzieren der Unübersichtlichkeit
 
-**Verschachtelungslimit:** Die meisten Plattformen unterstützen 2-3 Ebenen. Vermeiden Sie eine tiefere Verschachtelung.
+**Verschachtelungsgrenze:** Die meisten Plattformen unterstützen 2-3 Ebenen. Vermeiden Sie tiefere Verschachtelungen.
 
 ### Trennlinien
 
@@ -113,9 +113,9 @@ menu.Add("Start build").OnClick(startBuild)
 menu.Add("View logs").OnClick(viewLogs)
 ```
 
-`AddSectionHeader` verwendet das standardmäßige Erscheinungsbild von AppKit für Abschnittsüberschriften. Die Methode gibt keinen Menüeintrag zurück und verknüpft keine Aktion. Unter älteren macOS-Versionen, Windows, Linux, auf mobilen Plattformen und in Server-Builds bleibt der Aufruf ohne Wirkung und fügt keine Zeile ein.
+`AddSectionHeader` verwendet die standardmäßige Darstellung von Abschnittsüberschriften aus AppKit. Die Methode gibt keinen Menüeintrag zurück und verknüpft keine Aktion. Unter älteren macOS-Versionen sowie in Windows-, Linux-, Mobil- und Server-Builds hat der Aufruf keine Wirkung und fügt keine Zeile ein.
 
-Verwenden Sie die Methode in Taskleisten-, Kontext- oder Anwendungsmenüs, um zusammengehörige Befehle zu beschriften. Verwenden Sie `AddSeparator()`, um Optionsgruppen auf allen Plattformen zu trennen, da ausgelassene Überschriften diese Gruppen nicht trennen. Die Methodensignatur finden Sie in der [Menu-API](/reference/menu#addsectionheader); das Beispiel `systray-menu` zeigt eine Überschrift mit dem Hostnamen.
+Verwenden Sie die Methode in Tray-, Kontext- oder Anwendungsmenüs, um zusammengehörige Befehle zu beschriften. Trennen Sie Optionsgruppen auf allen Plattformen mit `AddSeparator()`, da ausgelassene Überschriften Optionsgruppen nicht unterbrechen. Die Methodensignatur finden Sie unter [Menü-API](/reference/menu#addsectionheader) und ein Beispiel für eine Hostnamen-Überschrift im `systray-menu`-Beispiel.
 
 ## Eigenschaften von Menüeinträgen
 
@@ -166,7 +166,7 @@ isEnabled := menuItem.Enabled()
 @note{type="caution" title="Menüverhalten unter Windows"}
 Unter Windows müssen Menüs neu aufgebaut werden, wenn sich ihr Zustand ändert. **Rufen Sie nach dem Aktivieren oder Deaktivieren von Menüeinträgen immer `menu.Update()` auf**, insbesondere wenn der Eintrag im deaktivierten Zustand erstellt wurde.
 
-**Grund:** Windows-Menüs werden bei Aktualisierungen vollständig neu aufgebaut. Wenn Sie `Update()` nicht aufrufen, werden Klick-Handler nicht ordnungsgemäß ausgelöst.
+**Warum:** Windows-Menüs werden bei einer Aktualisierung vollständig neu aufgebaut. Wenn Sie `Update()` nicht aufrufen, werden Klick-Handler nicht ordnungsgemäß ausgelöst.
 
 @end
 
@@ -234,9 +234,9 @@ func syncAutoSave(enabled bool) {
 }
 ```
 
-### Tastenkombinationen
+### Tastenkürzel
 
-Fügen Sie Menüeinträgen Tastenkombinationen hinzu:
+Fügen Sie Menüeinträgen Tastenkürzel hinzu:
 
 ```go
 saveMenuItem := menu.Add("Save")
@@ -246,11 +246,11 @@ quitMenuItem := menu.Add("Quit")
 quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 ```
 
-**Format für Tastenkombinationen:**
+**Format der Tastenkürzel:**
 
 - `CmdOrCtrl` – Cmd unter macOS, Ctrl unter Windows/Linux
 - `Shift`, `Alt`, `Option` – Modifikatortasten
-- `A-Z`, `0-9` – Buchstaben- und Zifferntasten
+- `A-Z`, `0-9` – Buchstaben-/Zifferntasten
 - `F1-F12` – Funktionstasten
 - `Enter`, `Space`, `Backspace` usw. – Sondertasten
 
@@ -266,7 +266,7 @@ quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
 "Alt+F4"                // Close (Windows convention)
 ```
 
-**Plattformspezifische Tastenkombinationen:**
+**Plattformspezifische Tastenkürzel:**
 
 ```go
 if runtime.GOOS == "darwin" {
@@ -278,7 +278,7 @@ if runtime.GOOS == "darwin" {
 
 ### Tooltip
 
-Fügen Sie Menüeinträgen einen beim Darüberfahren angezeigten Text hinzu (die Plattformunterstützung variiert):
+Fügen Sie Menüeinträgen Text hinzu, der beim Darüberfahren angezeigt wird (die Plattformunterstützung variiert):
 
 ```go
 menuItem := menu.Add("Advanced Options")
@@ -312,7 +312,7 @@ if isDebugBuild {
 
 ### OnClick-Handler
 
-Code ausführen, wenn auf den Menüeintrag geklickt wird:
+Führen Sie Code aus, wenn ein Menüeintrag angeklickt wird:
 
 ```go
 menuItem := menu.Add("Click Me")
@@ -325,7 +325,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 **Der Kontext stellt Folgendes bereit:**
 
 - `ctx.ClickedMenuItem()` – Der angeklickte Menüeintrag
-- Fensterkontext (bei Aufruf über das Fenstermenü)
+- Fensterkontext (wenn der Eintrag aus einem Fenstermenü stammt)
 - Anwendungskontext
 
 **Beispiel: Im Handler auf den Menüeintrag zugreifen**
@@ -341,7 +341,7 @@ checkbox.OnClick(func(ctx *application.Context) {
 
 ### Mehrere Handler
 
-Sie können mehrere Handler festlegen (der zuletzt festgelegte wird verwendet):
+Sie können mehrere Handler festlegen (der letzte gilt):
 
 ```go
 menuItem := menu.Add("Action")
@@ -355,7 +355,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-**Empfehlung:** Legen Sie den Handler nur einmal fest und verwenden Sie darin bei Bedarf bedingte Logik.
+**Bewährte Vorgehensweise:** Legen Sie den Handler einmal fest und verwenden Sie darin bei Bedarf bedingte Logik.
 
 ## Dynamische Menüs
 
@@ -375,13 +375,13 @@ menuItem.SetEnabled(true)
 
 **Warum das wichtig ist:**
 
-- **Windows:** Menüs werden beim Aktualisieren neu erstellt
-- **macOS/Linux:** Weniger wichtig, aber dennoch empfohlen
-- **Klick-Handler:** Werden ohne Update() nicht ordnungsgemäß ausgelöst
+- **Windows:** Menüs werden bei der Aktualisierung neu aufgebaut
+- **macOS/Linux:** Weniger kritisch, aber dennoch empfohlen
+- **Click-Handler:** Werden ohne Update() nicht ordnungsgemäß ausgelöst
 
 ### Menüs neu erstellen
 
-Erstellen Sie bei umfangreichen Änderungen das gesamte Menü neu:
+Erstellen Sie bei größeren Änderungen das gesamte Menü neu:
 
 ```go
 func rebuildFileMenu() {
@@ -407,11 +407,11 @@ func rebuildFileMenu() {
 }
 ```
 
-**Wann das Menü neu erstellt werden sollte:**
+**Wann eine Neuerstellung erforderlich ist:**
 
 - Die Liste der zuletzt verwendeten Dateien ändert sich
 - Plugin-Menüs ändern sich
-- Umfangreiche Zustandsübergänge
+- Größere Zustandsübergänge
 
 **Wann eine Aktualisierung ausreicht:**
 
@@ -421,7 +421,7 @@ func rebuildFileMenu() {
 
 ### Kontextsensitive Menüs
 
-Menüs an den Anwendungszustand anpassen:
+Passen Sie Menüs an den Anwendungszustand an:
 
 ```go
 func updateEditMenu() {
@@ -453,7 +453,7 @@ onUndoStackChanged(updateEditMenu)
 
 **macOS:**
 
-- Verfügt über ein Anwendungsmenü (mit dem Namen der App)
+- Besitzt ein Anwendungsmenü (mit dem Namen der App)
 - „Einstellungen“ im Anwendungsmenü
 - „Beenden“ im Anwendungsmenü
 
@@ -463,7 +463,7 @@ onUndoStackChanged(updateEditMenu)
 - „Einstellungen“ im Menü „Bearbeiten“ oder „Extras“
 - „Beenden“ im Menü „Datei“
 
-**Beispiel: Plattformgerechte Struktur**
+**Beispiel: plattformgerechte Struktur**
 
 ```go
 menu := app.Menu.New()
@@ -493,14 +493,14 @@ if runtime.GOOS == "darwin" {
 **macOS:**
 
 - `Cmd+` für die meisten Tastenkürzel
-- `Cmd+,` für „Einstellungen“
-- `Cmd+Q` für „Beenden“
+- `Cmd+,` für Einstellungen
+- `Cmd+Q` zum Beenden
 
 **Windows:**
 
 - `Ctrl+` für die meisten Tastenkürzel
-- `Ctrl+P` oder `Ctrl+,` für „Einstellungen“
-- `Alt+F4` für „Beenden“ (oder `Ctrl+Q`)
+- `Ctrl+P` oder `Ctrl+,` für Einstellungen
+- `Alt+F4` zum Beenden (oder `Ctrl+Q`)
 
 **Linux:**
 
@@ -511,18 +511,18 @@ if runtime.GOOS == "darwin" {
 
 ### ✅ Empfohlen
 
-- **menu.Update() aufrufen**, nachdem Sie den Menüzustand geändert haben (insbesondere unter Windows)
-- **Optionsgruppen verwenden** für Optionen, die sich gegenseitig ausschließen
-- **Kontrollkästchen verwenden** für Funktionen, die ein- und ausgeschaltet werden können
-- **Fügen Sie häufig verwendeten Aktionen Tastenkürzel hinzu**
+- Rufen Sie nach einer Änderung des Menüzustands **menu.Update() auf** (insbesondere unter Windows)
+- Verwenden Sie für Optionen, die sich gegenseitig ausschließen, **Optionsgruppen**
+- Verwenden Sie für umschaltbare Funktionen **Kontrollkästchen**
+- Fügen Sie häufig verwendeten Aktionen **Tastenkürzel hinzu**
 - **Gruppieren Sie zusammengehörige Einträge** mit Trennlinien
-- **Testen Sie auf allen Plattformen** – das Verhalten variiert
+- **Testen Sie auf allen Plattformen** – das Verhalten unterscheidet sich
 
-### ❌ Vermeiden
+### ❌ Nicht empfohlen
 
-- **Vergessen Sie menu.Update() nicht** – Click-Handler funktionieren sonst nicht ordnungsgemäß
-- **Verschachteln Sie Menüs nicht zu tief** – maximal 2-3 Ebenen
-- **Beginnen oder beenden Sie Menüs nicht mit Trennlinien** – das wirkt unprofessionell
+- **Vergessen Sie menu.Update() nicht** – andernfalls funktionieren Click-Handler nicht ordnungsgemäß
+- **Verschachteln Sie Menüs nicht zu tief** – höchstens 2-3 Ebenen
+- **Beginnen oder beenden Sie Menüs nicht mit Trennlinien** – dies wirkt unprofessionell
 - **Verwenden Sie unter macOS keine Tooltips** – sie werden nicht unterstützt
 - **Codieren Sie plattformspezifische Tastenkürzel nicht fest** – verwenden Sie `CmdOrCtrl`
 
@@ -560,7 +560,7 @@ menu.Update()
 
 **Ursachen:**
 
-1. Das Format des Tastenkürzels ist falsch
+1. Falsches Format des Tastenkürzels
 2. Konflikt mit Systemtastenkürzeln
 3. Das Fenster hat nicht den Fokus
 
@@ -580,9 +580,9 @@ menuItem.SetAccelerator("Ctrl+S")       // ❌ Wrong (macOS uses Cmd)
 
 - [Anwendungsmenüs](/features/menus/application/) – Menüleisten für Anwendungen erstellen
 - [Kontextmenüs](/features/menus/context/) – Kontextmenüs für Rechtsklicks
-- [Infobereichsmenüs](/features/menus/systray/) – Menüs für den Infobereich beziehungsweise die Menüleiste
+- [Infobereichsmenüs](/features/menus/systray/) – Menüs im Infobereich bzw. in der Menüleiste
 - [Menümuster](/guides/menus/) – gängige Menümuster und bewährte Vorgehensweisen
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Menübeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu) an.
+**Fragen?** Stellen Sie sie auf [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Menübeispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/menu) an.

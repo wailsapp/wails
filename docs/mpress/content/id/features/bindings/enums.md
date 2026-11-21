@@ -7,7 +7,7 @@ sourcePath: "features/bindings/enums.md"
 
 ## Binding Enum
 
-Generator binding Wails v3 **secara otomatis mendeteksi tipe konstanta Go dan menghasilkan enum TypeScript atau objek const JavaScript**. Tidak perlu registrasi maupun konfigurasi — cukup definisikan tipe dan konstanta Anda di Go, lalu generator akan menangani sisanya.
+Generator binding Wails v3 **secara otomatis mendeteksi tipe konstanta Go dan menghasilkan enum TypeScript atau objek const JavaScript**. Tidak perlu registrasi atau konfigurasi—cukup definisikan tipe dan konstanta Anda di Go, lalu generator akan menangani sisanya.
 
 @note{type="info"}
 Tidak seperti Wails v2, Anda **tidak perlu memanggil `EnumBind`** atau mendaftarkan enum secara manual. Generator menemukannya secara otomatis dari kode sumber Anda.
@@ -44,7 +44,7 @@ type Ticket struct {
 wails3 generate bindings
 ```
 
-Output generator akan melaporkan jumlah enum bersama jumlah model:
+Keluaran generator akan melaporkan jumlah enum bersama dengan model:
 
 ```
 3 Enums, 5 Models
@@ -66,7 +66,7 @@ const ticket = new Ticket({
 
 ## Mendefinisikan Enum
 
-Enum di Wails adalah **tipe bernama** dengan tipe dasar sederhana, yang dipadukan dengan **deklarasi const** bertipe tersebut.
+Enum di Wails adalah **tipe bernama** dengan tipe dasar primitif, yang dipadukan dengan **deklarasi const** bertipe tersebut.
 
 ### Enum String
 
@@ -132,7 +132,7 @@ export const Title = {
 };
 ```
 
-### Enum Bilangan Bulat
+### Enum Integer
 
 ```go
 type Priority int
@@ -161,7 +161,7 @@ export enum Priority {
 
 ### Enum Alias Tipe
 
-Alias tipe Go (`=`) juga didukung, tetapi menghasilkan output yang sedikit berbeda — definisi tipe beserta objek const, bukan `enum` TypeScript native:
+Alias tipe Go (`=`) juga didukung, tetapi menghasilkan keluaran yang sedikit berbeda—definisi tipe beserta objek const, bukan `enum` TypeScript native:
 
 ```go
 // Age is an integer with some predefined values
@@ -253,7 +253,7 @@ Setiap enum bertipe bernama menyertakan anggota khusus `$zero` yang merepresenta
 | `float32`, `float64` | `0` |
 | `bool` | `false` |
 
-Saat sebuah field struct menggunakan tipe enum dan tidak ada nilai yang diberikan, constructor secara default menggunakan `$zero`:
+Jika sebuah field struct menggunakan tipe enum dan tidak ada nilai yang diberikan, konstruktor secara default menggunakan `$zero`:
 
 ```typescript
 export class Person {
@@ -268,11 +268,11 @@ export class Person {
 }
 ```
 
-Hal ini memastikan inisialisasi yang aman secara tipe saat menghasilkan class — field enum tidak pernah bernilai `undefined`. Saat menghasilkan interface TypeScript (menggunakan `-i`), tidak ada constructor dan field dapat tidak disertakan seperti biasa.
+Hal ini memastikan inisialisasi yang aman terhadap tipe saat menghasilkan class—field enum tidak pernah bernilai `undefined`. Saat menghasilkan interface TypeScript (menggunakan `-i`), tidak ada konstruktor dan field dapat tidak disertakan seperti biasa.
 
 ## Menggunakan Enum dalam Struct
 
-Saat sebuah field struct memiliki tipe enum, kode yang dihasilkan **mempertahankan tipe tersebut** alih-alih kembali menggunakan tipe primitif:
+Jika sebuah field struct memiliki tipe enum, kode yang dihasilkan **mempertahankan tipe tersebut** dan tidak menggantinya dengan tipe primitif:
 
 ```go
 type Person struct {
@@ -306,11 +306,11 @@ export class Person {
 }
 ```
 
-Field `Title` diberi tipe `Title`, bukan `string`. Dengan demikian, IDE Anda menyediakan pelengkapan otomatis dan pemeriksaan tipe sepenuhnya untuk nilai enum.
+Field `Title` bertipe `Title`, bukan `string`. Dengan demikian, IDE Anda dapat menyediakan pelengkapan otomatis dan pemeriksaan tipe sepenuhnya untuk nilai enum.
 
 ## Enum dari Paket yang Diimpor
 
-Enum yang didefinisikan dalam paket terpisah didukung sepenuhnya. Enum tersebut dihasilkan dalam direktori paket yang sesuai:
+Enum yang didefinisikan dalam paket terpisah didukung sepenuhnya. Enum tersebut dibuat di direktori paket yang sesuai:
 
 ```go
 // services/types.go
@@ -336,7 +336,7 @@ func (*GreetService) Greet(name string, title services.Title) string {
 }
 ```
 
-Enum `Title` dihasilkan dalam file model `services`, dan path impor ditentukan secara otomatis:
+Enum `Title` dibuat dalam file model `services`, dan path impor diselesaikan secara otomatis:
 
 ```typescript
 // bindings/changeme/services/models.ts
@@ -350,7 +350,7 @@ export enum Title {
 
 ## Metode Enum
 
-Anda dapat menambahkan metode ke tipe enum di Go. Metode tersebut tidak memengaruhi pembuatan binding, tetapi menyediakan fungsionalitas sisi server yang berguna:
+Anda dapat menambahkan metode ke tipe enum di Go. Metode ini tidak memengaruhi pembuatan binding, tetapi menyediakan fungsionalitas sisi server yang berguna:
 
 ```go
 type Title string
@@ -365,24 +365,24 @@ const (
 )
 ```
 
-Enum yang dihasilkan tetap identik, baik ada maupun tidak ada metode Go pada tipe tersebut.
+Enum yang dihasilkan tetap sama, terlepas dari ada atau tidaknya metode Go pada tipe tersebut.
 
 ## Komentar dan Dokumentasi
 
-Generator mempertahankan komentar Go sebagai JSDoc dalam output yang dihasilkan:
+Generator mempertahankan komentar Go sebagai JSDoc dalam keluaran yang dihasilkan:
 
 - **Komentar tipe** menjadi komentar dokumentasi enum
 - **Komentar grup const** menjadi pemisah bagian
-- **Komentar pada masing-masing const** menjadi komentar dokumentasi anggota
+- **Komentar setiap const** menjadi komentar dokumentasi anggota
 - **Komentar inline** dipertahankan jika memungkinkan
 
-Dengan demikian, IDE Anda akan menampilkan dokumentasi nilai enum saat penunjuk diarahkan ke nilai tersebut.
+Artinya, IDE Anda akan menampilkan dokumentasi untuk nilai enum saat kursor diarahkan ke nilai tersebut.
 
 ## Tipe Dasar yang Didukung
 
 Generator binding mendukung enum dengan tipe dasar Go berikut:
 
-| Tipe Go | Berfungsi sebagai Enum |
+| Tipe Go | Dapat Digunakan sebagai Enum |
 | --- | :---: |
 | `string` | Ya |
 | `int`, `int8`, `int16`, `int32`, `int64` | Ya |
@@ -395,11 +395,11 @@ Generator binding mendukung enum dengan tipe dasar Go berikut:
 
 ## Keterbatasan
 
-Berikut ini **tidak** didukung untuk pembuatan enum:
+Hal berikut **tidak** didukung untuk pembuatan enum:
 
-- **Tipe generik** — Parameter tipe mencegah pendeteksian konstanta
-- **Tipe dengan `json.Marshaler` atau `encoding.TextMarshaler`** kustom — Serialisasi kustom berarti nilai yang dihasilkan mungkin tidak sesuai dengan perilaku saat runtime, sehingga generator melewati tipe tersebut
-- **Konstanta yang nilainya tidak dapat dievaluasi atau direpresentasikan secara statis** — Konstanta harus memiliki nilai yang diketahui dan dapat direpresentasikan dalam tipe dasarnya. Pola `iota` standar dapat digunakan tanpa masalah karena compiler menguraikannya menjadi nilai konkret
+- **Tipe generik**—Parameter tipe menghalangi pendeteksian konstanta
+- **Tipe dengan `json.Marshaler` atau `encoding.TextMarshaler`** kustom—Serialisasi kustom berarti nilai yang dihasilkan mungkin tidak cocok dengan perilaku runtime, sehingga generator melewati tipe ini
+- **Konstanta yang nilainya tidak dapat dievaluasi secara statis atau direpresentasikan** — Konstanta harus memiliki nilai yang diketahui dan dapat direpresentasikan dalam tipe dasarnya. Pola `iota` standar dapat digunakan karena compiler mengubahnya menjadi nilai konkret
 - **Tipe bilangan kompleks** — `complex64` dan `complex128` tidak dapat menjadi tipe dasar enum
 
 ## Contoh Lengkap
@@ -501,25 +501,25 @@ switch (bg.type) {
 📖 Model Data
 Struct, pemetaan tipe, dan pembuatan model.
 
-[Pelajari Lebih Lanjut →](/features/bindings/models/)
+[Pelajari Selengkapnya →](/features/bindings/models/)
 
 ---
 🚀 Binding Metode
 Hubungkan metode Go ke frontend.
 
-[Pelajari Lebih Lanjut →](/features/bindings/methods/)
+[Pelajari Selengkapnya →](/features/bindings/methods/)
 
 ---
-⚙ Binding Lanjutan
-Direktif, injeksi kode, dan ID kustom.
+⚙ Binding Tingkat Lanjut
+Direktif, injeksi kode, dan ID khusus.
 
-[Pelajari Lebih Lanjut →](/features/bindings/advanced/)
+[Pelajari Selengkapnya →](/features/bindings/advanced/)
 
 ---
 ✓ Praktik Terbaik
 Pola desain binding.
 
-[Pelajari Lebih Lanjut →](/features/bindings/best-practices/)
+[Pelajari Selengkapnya →](/features/bindings/best-practices/)
 
 @end
 

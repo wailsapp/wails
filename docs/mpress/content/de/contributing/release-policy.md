@@ -11,7 +11,7 @@ Wails v3 veröffentlicht **zeitgesteuert, nicht funktionsgesteuert**. Nach der `
 
 | Release | Tag | Rhythmus | GitHub-Release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC-Datum; bei erneuter Ausführung am selben Tag wird `.N` angehängt) | automatisiert, täglich, nur wenn `UNRELEASED_CHANGELOG.md` Inhalt enthält | Pre-Release, **nicht** Latest | dieselbe Version ohne `v`, Dist-Tag `nightly` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC-Datum; bei erneuter Ausführung am selben Tag wird `.N` angehängt) | automatisiert, täglich, nur wenn zusammengeführte PRs im getesteten Release-Bereich benutzersichtbare Hinweise erzeugen | Pre-Release, **nicht** Latest | dieselbe Version ohne `v`, Dist-Tag `nightly` |
 | Weekly | `v3.<next>.0` | automatisiert, sonntags um 20:00 Uhr Australia/Sydney **(Tag nicht bestätigt)** | reguläres Release, Latest | dieselbe Version, Dist-Tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | selten, manuell | normale Veröffentlichung, Latest | dieselbe Version, Dist-Tag `latest` |
 | Major | `v4.0.0` | nur bei inkompatiblen Änderungen | reguläres Release | `latest` |
@@ -62,7 +62,7 @@ Weeklies werden aus `master` erstellt, jedoch **nicht von dessen Spitze**: Der W
 
 ## So erstellen Sie ein Release
 
-Release-Berechtigungen sind auf die Projektleitung beschränkt (siehe Governance-Dokument). Mitwirkende erstellen oder veröffentlichen niemals Tags; sie fügen Einträge zu `v3/UNRELEASED_CHANGELOG.md` hinzu.
+Release-Rechte sind auf die Projektleitung beschränkt (siehe Governance-Dokument). Mitwirkende erstellen oder veröffentlichen niemals Tags; sie beschreiben benutzersichtbare Änderungen in PR-Titeln oder in einem Beschreibungsabschnitt `## Release notes`. Die Release-Automatisierung generiert Hinweise aus zusammengeführten PRs im exakt getesteten Commit-Bereich; `v3/UNRELEASED_CHANGELOG.md` wurde entfernt.
 
 Alles wird über **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`) ausgeführt:
 
@@ -85,7 +85,7 @@ Der **wöchentliche Release** (niemals der Nightly-Build) verweigert das Setzen 
 
 1. offene Issues oder Pull Requests mit dem Label `P0` oder `release-blocker`;
 2. offene Issues mit dem Label `regression`, die seit dem letzten wöchentlichen Release erstellt wurden;
-3. offene Dependabot-Warnungen mit kritischem oder hohem Schweregrad, offene Code-Scanning-Warnungen mit kritischem oder hohem Schweregrad sowie alle offenen Secret-Scanning-Warnungen, **jedoch nur für ausgelieferten Code**. Warnungen, die sich ausschließlich unter `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` oder in einem beliebigen `examples/`-Verzeichnis befinden, werden ignoriert (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **vom Verantwortlichen zu prüfen**);
+3. offene Dependabot-Warnungen mit kritischem oder hohem Schweregrad, offene Code-Scanning-Warnungen mit kritischem oder hohem Schweregrad sowie alle offenen Secret-Scanning-Warnungen, **nur für ausgelieferten Code**. Warnungen, die sich ausschließlich unter `v2/internal/staticanalysis/test/` (Fixtures für statische Analysen), `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` oder in einem `examples/`-Verzeichnis befinden, werden ignoriert (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **vom zuständigen Verantwortlichen zu prüfen**);
 4. Sicherheitshinweise des Repositorys, die sich noch im Status `triage` befinden.
 
 **Wer einen Blocker setzen kann.** Ein Label zählt nur, wenn sein neuestes `labeled`-Ereignis (ohne ein späteres `unlabeled`-Ereignis) von einem Mitglied des Teams `wailsapp/maintainers` oder von einem Mitwirkenden mit der Berechtigung `maintain`/`admin` stammt. Dasselbe von einer anderen Person angewendete Label wird ignoriert und protokolliert, sodass Außenstehende eine Veröffentlichung weder blockieren noch die Blockierung aufheben können. Das automatisch angewendete Label `high-priority` wird bewusst **nicht** verwendet. Bot-Konten wie `taliesin-ai` passieren die Zulassungsliste, wenn sie über `maintain` verfügen; dies ist beabsichtigt, und der Triage-Agent darf Blocker-Labels mit entsprechenden Nachweisen anwenden.

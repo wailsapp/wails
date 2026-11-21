@@ -1,13 +1,13 @@
 ---
 title: "다중 창"
-description: "다중 창 애플리케이션을 위한 패턴과 모범 사례"
+description: "다중 창 애플리케이션을 위한 패턴 및 모범 사례"
 slug: "features/windows/multiple"
 sourcePath: "features/windows/multiple.md"
 ---
 
 ## 다중 창 애플리케이션
 
-Wails v3는 설정 창, 문서 창, 도구 팔레트 및 검사기 창을 만들 수 있도록 <strong>네이티브 다중 창 지원</strong>을 제공합니다. 간단하고 일관된 API로 창을 추적하고, 창 간 통신을 지원하며, 창의 수명 주기를 관리할 수 있습니다.
+Wails v3는 설정 창, 문서 창, 도구 팔레트 및 인스펙터 창을 만들 수 있는 **네이티브 다중 창 지원**을 제공합니다. 간단하고 일관된 API를 사용하여 창을 추적하고, 창 간 통신을 활성화하고, 창의 수명 주기를 관리할 수 있습니다.
 
 ### 메인 창 + 설정 창
 
@@ -63,7 +63,7 @@ func (a *App) ShowSettings() {
 - 메인 창은 항상 표시
 - 설정 창은 생성하되 숨김
 - 필요할 때 설정 창 표시
-- 같은 창을 재사용(여러 개를 만들지 않음)
+- 같은 창을 재사용(여러 개 생성하지 않음)
 
 ## 창 추적
 
@@ -97,7 +97,7 @@ current := app.Window.Current()
 
 ### 창 레지스트리 패턴
 
-애플리케이션의 창을 추적합니다:
+애플리케이션에서 창을 추적합니다:
 
 ```go
 type WindowManager struct {
@@ -225,7 +225,7 @@ func ShowSettings(app *application.App) {
 
 ### 패턴 2: 문서 창
 
-동일한 창 유형의 인스턴스를 여러 개 사용합니다:
+같은 창 유형의 인스턴스를 여러 개 만듭니다:
 
 ```go
 type DocumentWindow struct {
@@ -271,7 +271,7 @@ func OpenDocument(app *application.App, filePath string) {
 
 ### 패턴 3: 도구 팔레트
 
-항상 위에 표시되는 부동 창입니다:
+항상 위에 표시되는 플로팅 창입니다:
 
 ```go
 func CreateToolPalette(app *application.App) *application.WebviewWindow {
@@ -306,7 +306,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 }
 ```
 
-### 패턴 5: 검사기/미리 보기 창
+### 패턴 5: 인스펙터/미리보기 창
 
 함께 업데이트되는 연결된 창입니다:
 
@@ -438,7 +438,7 @@ app := application.New(application.Options{
 
 ### 누수 방지
 
-창 참조를 항상 정리합니다:
+항상 창 참조를 정리합니다:
 
 ```go
 var windows = make(map[string]*application.WebviewWindow)
@@ -461,7 +461,7 @@ func CreateWindow(name string) {
 window.Close()
 ```
 
-v3에는 `window.Destroy()`이 없습니다. 창이 닫히지 않도록 하려면 `RegisterHook(events.Common.WindowClosing, ...)`을 사용하고 `event.Cancel()`을 호출합니다.
+v3에는 `window.Destroy()`이 없습니다. 창이 닫히지 않게 하려면 `RegisterHook(events.Common.WindowClosing, ...)`을 사용하고 `event.Cancel()`을 호출합니다.
 
 ### 리소스 정리
 
@@ -525,7 +525,7 @@ func (wp *WindowPool) Release(window *application.WebviewWindow) {
 
 ### 창 그룹
 
-관련 창을 함께 관리합니다:
+관련된 창을 함께 관리합니다:
 
 ```go
 type WindowGroup struct {
@@ -556,7 +556,7 @@ func (wg *WindowGroup) CloseAll() {
 }
 ```
 
-### 워크스페이스 관리
+### 작업 공간 관리
 
 창 레이아웃을 저장하고 복원합니다:
 
@@ -604,7 +604,7 @@ func RestoreLayout(layout *WindowLayout) {
 
 ## 전체 예제
 
-다음은 프로덕션 환경에서 바로 사용할 수 있는 다중 창 애플리케이션입니다:
+다음은 프로덕션 환경에서 사용할 수 있는 다중 창 애플리케이션입니다:
 
 ```go
 package main
@@ -766,28 +766,28 @@ type WindowState struct {
 
 ### ✅ 권장 사항
 
-- **창 추적하기** - 쉽게 접근할 수 있도록 참조를 유지하세요
-- **소멸 시 정리하기** - 메모리 누수를 방지하세요
-- **통신에 이벤트 사용하기** - 결합도가 낮은 아키텍처를 구성하세요
-- **창 재사용하기** - 중복 창을 만들지 마세요
-- **레이아웃 저장 및 복원하기** - 더 나은 사용자 경험을 제공하세요
-- **창 닫기 처리하기** - 저장하지 않은 데이터가 있으면 닫기 전에 확인하세요
+- **창 추적** - 쉽게 접근할 수 있도록 참조를 유지합니다
+- **소멸 시 정리** - 메모리 누수를 방지합니다
+- **통신에 이벤트 사용** - 결합도가 낮은 아키텍처를 구현합니다
+- **창 재사용** - 중복된 창을 만들지 않습니다
+- **레이아웃 저장/복원** - 사용자 경험을 개선합니다
+- **창 닫기 처리** - 저장되지 않은 데이터가 있으면 닫기 전에 확인합니다
 
 ### ❌ 금지 사항
 
-- **창을 무제한으로 만들지 않기** - 메모리 및 성능 문제가 발생합니다
-- **정리를 잊지 않기** - 메모리 누수가 발생합니다
-- **전역 변수를 부주의하게 사용하지 않기** - 스레드 안전성 문제가 발생합니다
-- **창 생성 시 실행을 블로킹하지 마세요** - 필요한 경우 비동기 방식으로 생성하세요
-- **플랫폼 차이를 무시하지 않기** - 모든 플랫폼에서 테스트하세요
+- **창을 무제한으로 만들지 마세요** - 메모리 및 성능 문제가 발생합니다
+- **정리를 잊지 마세요** - 메모리 누수가 발생합니다
+- **전역 변수를 부주의하게 사용하지 마세요** - 스레드 안전성 문제가 발생합니다
+- **창 생성을 차단하지 마세요** - 필요한 경우 비동기 방식으로 생성합니다
+- **플랫폼 차이를 무시하지 마세요** - 모든 플랫폼에서 테스트합니다
 
 ## 다음 단계
 
-- [창 기초](/features/windows/basics/) - 창 관리의 기본 사항을 알아보세요
-- [창 이벤트](/features/windows/events/) - 창 수명 주기 이벤트를 처리하세요
-- [이벤트 시스템](/features/events/system/) - 이벤트 시스템을 자세히 알아보세요
-- [프레임리스 창](/features/windows/frameless/) - 사용자 지정 창 프레임을 만드세요
+- [창 기본 사항](/features/windows/basics/) - 창 관리의 기본 개념을 알아봅니다
+- [창 이벤트](/features/windows/events/) - 창 수명 주기 이벤트를 처리합니다
+- [이벤트 시스템](/features/events/system/) - 이벤트 시스템을 자세히 알아봅니다
+- [프레임 없는 창](/features/windows/frameless/) - 사용자 정의 창 장식을 만듭니다
 
 ---
 
-**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [다중 창 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window)를 확인하세요.
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [다중 창 예제](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/window)를 확인하세요.

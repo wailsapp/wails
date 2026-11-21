@@ -1,13 +1,13 @@
 ---
 title: "コード署名"
-description: "あらゆるプラットフォームで Wails アプリケーションに署名するためのガイド"
+description: "すべてのプラットフォームで Wails アプリケーションに署名するためのガイド"
 slug: "guides/build/signing"
 sourcePath: "guides/build/signing.md"
 ---
 
 ## アプリケーションのコード署名
 
-このガイドでは、macOS、Windows、Linux 向けの Wails アプリケーションに署名する方法について説明します。Wails v3 には、コード署名、公証、PGP キー管理のための CLI ツールが組み込まれています。
+このガイドでは、macOS、Windows、Linux 向けの Wails アプリケーションに署名する方法を説明します。Wails v3 には、コード署名、公証、PGP キー管理用の CLI ツールが組み込まれています。
 
 - **macOS** - macOS アプリケーションへの署名と公証
 - **Windows** - Windows の実行ファイルとパッケージへの署名
@@ -19,14 +19,16 @@ sourcePath: "guides/build/signing.md"
 
 | 対象形式 | Windows から | macOS から | Linux から |
 | --- | :---: | :---: | :---: |
-| Windows EXE/MSI | ✅ | ✅ | ✅ |
-| macOS .app バンドル | ❌ | ✅ | ❌ |
-| macOS 公証 | ❌ | ✅ | ❌ |
+| Windows EXE/DLL/MSIX/APPX、エクスポート済み PFX | ✅ | ✅ | ✅ |
+| Windows MSI または証明書ストア／プロバイダーの ID | ✅ | ❌ | ❌ |
+| macOS .app / Mach-O / DMG、エクスポート済み ID | ✅ | ✅ | ✅ |
+| macOS 公証、チーム API 認証情報 | ✅ | ✅ | ✅ |
+| macOS キーチェーン ID または公証プロファイル | ❌ | ✅ | ❌ |
 | Linux DEB | ✅ | ✅ | ✅ |
 | Linux RPM | ✅ | ✅ | ✅ |
 
 @note{type="tip"}
-Windows および Linux のパッケージには、**どのプラットフォームからでも**署名できます。macOS の署名には Apple のツールが必要なため、Mac が必要です。
+エクスポート済みの Apple ID とチーム API 認証情報を使用すると、ポータブルな署名と公証が可能になります。macOS キーチェーン ID と公証プロファイルには Mac が必要です。形式固有の制限については、以下で説明します。
 
 @end
 
@@ -36,55 +38,55 @@ Wails は、利用可能な最適な署名バックエンドを自動的に選�
 
 | プラットフォーム | ネイティブバックエンド | クロスプラットフォームバックエンド |
 | --- | --- | --- |
-| Windows | `signtool.exe`（Windows SDK） | 組み込み |
-| macOS | `codesign`（Xcode） | 利用不可 |
+| Windows | ストア／プロバイダーの ID、MSI、または従来の RC2 PFX には `signtool.exe` | エクスポート済み RSA PFX および PE/MSIX には組み込みバックエンド |
+| macOS | キーチェーン ID には `codesign` | エクスポート済み PKCS#12 ID またはアドホック署名には組み込みバックエンド |
 | Linux | 該当なし | 組み込み |
 
-ネイティブプラットフォーム上で実行する場合、Wails は互換性を最大限に確保するため、ネイティブツールを使用します。クロスコンパイルする場合は、組み込みの署名機能を使用します。
+どのホストでも、認証情報の種類によって Apple 署名バックエンドが選択されます。エクスポート済み ID には Go を使用し、macOS キーチェーン ID には `codesign` を使用します。チケットの取得、検証、ステープルには Go を使用します。
 
 ## クイックスタート
 
-署名を最もすばやく構成するには、セットアップウィザードを使用します。
+署名を最も速く設定するには、セットアップウィザードを使用します。
 
 ```bash
 wails3 setup
 ```
 
-これにより、`~/.config/wails/defaults.yaml` に共有署名構成が書き込まれ、その構成は**すべてのプラットフォームで署名時に適用されます**（[構成の優先順位](#heading-4)を参照）。このウィザードの署名ステップでは、次の処理を行います。
+これにより、共有の署名設定が `~/.config/wails/defaults.yaml` に書き込まれ、**すべてのプラットフォームで署名時に適用されます**（[設定の優先順位](#heading-4)を参照）。このウィザードの署名手順では、次の処理を行います。
 
-- 対象とするプラットフォーム用にインストールされている署名ツールを、**どのホストからでも**検出し、使用中の OS 向けのインストールコマンド（例：`brew install gnupg`、`sudo apt install osslsigncode`、`winget install GnuPG.Gpg4win`）を表示します。
+- OpenSSL や GnuPG など、証明書やキーを生成またはエクスポートするためのセットアップツールを表示します。エクスポート済みの Apple および Windows の ID には組み込み署名ツールを使用します。Windows の証明書ストア／プロバイダーの ID と MSI パッケージには Windows SignTool が必要です。
 - macOS では、キーチェーン内の Developer ID 証明書を一覧表示します。
 - Linux では、GPG キーを一覧表示し、新しいキーを**生成してエクスポート**できます。
-- Windows では、OpenSSL を使用して**自己署名証明書を生成**できます（テスト用）。
-- パスワードは**システムのキーチェーンに安全に保存されます**（Taskfile には保存されません）。
+- Windows では、OpenSSL を使用して（テスト用の）**自己署名証明書を生成**できます。
+- **パスワードをシステムのキーチェーンに安全に保存します**（Taskfile には保存しません）。
 
 @note{type="tip"}
-パスワードは、システムのネイティブ資格情報ストア（macOS Keychain、Windows Credential Manager、または Linux Secret Service）に保存されます。そのため、署名構成は安全に保たれ、すべての Wails プロジェクトで使用できます。
+パスワードは、システムのネイティブな認証情報ストア（macOS Keychain、Windows Credential Manager、または Linux Secret Service）に保存されます。これにより、署名設定の安全性が確保され、すべての Wails プロジェクトで使用できます。
 
 @end
 
-## 構成の優先順位
+## 設定の優先順位
 
-署名タスクを実行すると、各署名オプションは次の順序で解決されます（最初に一致した値が使用されます）。
+署名タスクを実行すると、各署名オプションは次の順序で解決されます（最初に一致した値が優先されます）。
 
-1. `wails3 tool sign` に明示的に渡されたフラグ（例：`--pgp-key`、`--certificate`、`--identity`）。
-2. 対応する**プロジェクトの Taskfile 変数**（`PGP_KEY`、`SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`、`SIGN_IDENTITY`など）。
-3. `~/.config/wails/defaults.yaml` 内の**グローバル構成**（`wails3 setup` によって書き込まれます）。
+1. `wails3 tool sign` に明示的に渡したフラグ（例：`--pgp-key`、`--certificate`、`--identity`）。
+2. 対応する**プロジェクト Taskfile 変数**（`PGP_KEY`、`SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`、`SIGN_IDENTITY`、…）。
+3. `~/.config/wails/defaults.yaml` 内の**グローバル設定**（`wails3 setup` によって書き込まれます）。
 
-つまり、Taskfile 変数は**任意のオーバーライド**です。変数が設定されていない場合は、グローバルに構成されたキー、証明書、または署名 ID が使用されます。3 つのいずれからも値が指定されていない場合、署名コマンドは構成方法を示す明確なエラーを報告します。
+つまり、Taskfile 変数は**任意の上書き設定**です。変数が未設定の場合は、グローバルに設定されたキー、証明書、または ID が使用されます。3 つのいずれにも値がない場合、署名コマンドは設定方法を示す明確なエラーを報告します。
 
-## プロジェクト単位の構成
+## プロジェクト単位の設定
 
-グローバルではなく単一のプロジェクトに署名を構成するには、そのプロジェクト内からプロジェクト単位のウィザードを実行します。このウィザードは、`vars` をそのプロジェクトの `build/<platform>/Taskfile.yml` ファイルに書き込みます。
+署名をグローバルではなく単一のプロジェクトに設定するには、そのプロジェクト内でプロジェクト単位のウィザードを実行します。このウィザードは、そのプロジェクトの `build/<platform>/Taskfile.yml` ファイルに `vars` を書き込みます。
 
 ```bash
 wails3 signing                                   # all detected platforms
 wails3 signing --platform windows --platform linux
 ```
 
-### 手動構成
+### 手動設定
 
-別の方法として、プラットフォーム固有の Taskfile を手動で編集できます。各ファイルの先頭にある `vars` セクションを編集します。
+または、プラットフォーム固有の Taskfile を手動で編集できます。各ファイルの先頭にある `vars` セクションを編集します。
 
 @tabs
 [macOS]
@@ -115,7 +117,7 @@ vars:
   # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-パスワードはシステムのキーチェーンから取得されます（構成するには `wails3 signing` を実行します）。
+パスワードはシステムのキーチェーンから取得されます（設定するには `wails3 signing` を実行します）。
 
 次に、以下を実行します。
 
@@ -133,7 +135,7 @@ vars:
   # SIGN_ROLE: "builder"  # Options: origin, maint, archive, builder
 ```
 
-パスワードはシステムのキーチェーンから取得されます（構成するには `wails3 signing` を実行します）。
+パスワードはシステムのキーチェーンから取得されます（設定するには `wails3 signing` を実行します）。
 
 次に、以下を実行します。
 
@@ -145,7 +147,7 @@ wails3 task linux:sign:packages  # Sign all packages
 
 @end
 
-システムから署名状態を直接確認することもできます。
+署名の状態をシステムから直接確認することもできます。
 
 ```bash
 # List available macOS code-signing identities
@@ -155,7 +157,7 @@ security find-identity -v -p codesigning
 gpg --list-keys
 ```
 
-すべてのプラットフォームの署名構成を対話形式でセットアップするには、ウィザードを使用します。
+すべてのプラットフォームの署名設定を対話形式でセットアップするには、ウィザードを使用します。
 
 ```bash
 wails3 signing
@@ -167,7 +169,32 @@ wails3 signing
 
 - Apple Developer Account（年間 $99）
 - Developer ID Application 証明書
-- Xcode Command Line Tools がインストール済みであること
+- macOS キーチェーン ID を使用する場合：Xcode Command Line Tools がインストールされていること
+- ポータブル署名を使用する場合：エクスポート済みの RSA PKCS#12 ID。Apple の署名ツールは不要です
+
+### Wake を使用したポータブル署名
+
+Wake は `wails.yaml` を直接読み取ります。Taskfile は実行しません。エクスポート済みの Developer ID と App Store Connect チーム API キーを設定します。
+
+```yaml
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+`credential` には、証明書のパスワードを保持する環境変数の名前を指定します。両方の秘密キーファイルをバージョン管理の対象外にしてください。[YAML ビルドガイド](/experimental/yaml-builds/)で説明されているリリースプロファイルで、署名と公証を有効にします。
+
+ポータブル署名ツールは、64 ビットの Intel および Apple Silicon Mach-O ファイル、ユニバーサルバイナリ、ネストされたコードを含む標準的なアプリバンドル、フレームワーク、ならびに 4 GiB 未満の UDIF DMG をサポートします。未対応のレイアウトは、出力を公開する前に拒否されます。アドホック署名では `identity: "-"` を使用するため、公証できません。PKCS#12 ID では、AES/PBKDF2 または従来の 3DES 暗号化を使用できます。RC2 でエクスポートされたものは、サポート対象の暗号方式で再エクスポートする必要があります。
+
+ポータブルな公証済み署名には、明示的な SHA-2 RFC 3161 タイムスタンプサービスが必要です。従来の SHA-1 タイムスタンプ署名は拒否されます。Team API による送信では、最大 5 GiB の単一アップロードをサポートします。個人用 API キーとマルチパートアップロードはサポートされません。チケットの検証とステープルには、Apple Root G3 を固定した Apple の観測済みサービスプロトコルを使用し、`xcrun stapler` は使用しません。配布時の信頼性と失効については、引き続き Gatekeeper が最終的な判断を行います。
+
+以降のセクションでは、従来のプロジェクトと、キーチェーン ID を選択する Wake 構成で使用される既存の macOS キーチェーンワークフローについて説明します。
 
 ### 署名 ID
 
@@ -177,7 +204,7 @@ wails3 signing
 security find-identity -v -p codesigning
 ```
 
-出力：
+出力:
 
 ```
 Found 2 signing identities:
@@ -196,7 +223,7 @@ App Store 外で配布するには、**Developer ID Application** 証明書が�
 
 ### 構成
 
-`build/darwin/Taskfile.yml` を編集し、署名変数を設定します。
+`build/darwin/Taskfile.yml` を編集し、署名用変数を設定します。
 
 ```yaml
 vars:
@@ -207,9 +234,9 @@ vars:
 
 | 変数 | 必須 | 説明 |
 | --- | --- | --- |
-| `SIGN_IDENTITY` | はい | Developer ID（例：「Developer ID Application: Your Company (TEAMID)」） |
-| `KEYCHAIN_PROFILE` | 公証時に必須 | 保存済みの資格情報を含むキーチェーンプロファイル名 |
-| `ENTITLEMENTS` | いいえ | entitlements ファイルへのパス |
+| `SIGN_IDENTITY` | はい | Developer ID（例: 「Developer ID Application: Your Company (TEAMID)」） |
+| `KEYCHAIN_PROFILE` | 公証時に必須 | 保存済みの認証情報を持つキーチェーンプロファイル名 |
+| `ENTITLEMENTS` | いいえ | エンタイトルメントファイルへのパス |
 
 次に、以下を実行します。
 
@@ -220,10 +247,10 @@ wails3 task darwin:sign:notarize  # Build, package, sign, and notarize
 
 ### エンタイトルメント
 
-エンタイトルメントは、アプリがアクセスできる機能を制御します。通常、Wails アプリでは開発用と本番用で異なるエンタイトルメントが必要です。
+エンタイトルメントは、アプリがアクセスできる機能を制御します。通常、Wails アプリでは開発環境と本番環境で異なるエンタイトルメントが必要です。
 
-- **開発**：JIT、未署名メモリ、デバッグのエンタイトルメントが必要
-- **本番**：最小限のエンタイトルメント（ネットワークアクセスのみ）
+- **開発**: JIT、未署名メモリ、およびデバッグ用のエンタイトルメントが必要
+- **本番**: 最小限のエンタイトルメント（ネットワークアクセスのみ）
 
 対話形式のセットアップウィザードを使用して、両方のファイルを生成します。
 
@@ -231,12 +258,12 @@ wails3 task darwin:sign:notarize  # Build, package, sign, and notarize
 wails3 entitlements
 ```
 
-これにより、以下が作成されます。
+次のファイルが作成されます。
 
 - `build/darwin/entitlements.dev.plist` - 開発ビルド用
 - `build/darwin/entitlements.plist` - 本番／署名済みビルド用
 
-**利用可能なプリセット：**\
+**利用可能なプリセット:**\
 
 | プリセット | 説明 |
 | --- | --- |
@@ -244,10 +271,10 @@ wails3 entitlements
 | 本番 | ネットワークのみ（最小限で最も安全） |
 | 両方 | 開発用と本番用の両方のファイルを作成（推奨） |
 | App Store | ネットワークおよびファイルへのアクセスを許可したサンドボックスを有効化 |
-| カスタム | 個々のエンタイトルメントを選択 |
+| カスタム | 個別のエンタイトルメントを選択 |
 
 @note{type="note"}
-darwin Taskfile の `run` タスクは、`entitlements.dev.plist` を自動的に使用します。本番ビルドでは、`sign` タスクが `entitlements.plist` を使用します。
+darwin Taskfile の `run` タスクは、`entitlements.dev.plist` を自動的に使用します。`sign` タスクは、本番ビルドに `entitlements.plist` を使用します。
 
 @end
 
@@ -255,10 +282,10 @@ darwin Taskfile の `run` タスクは、`entitlements.dev.plist` を自動的�
 
 ### 公証
 
-Apple では、配布するすべてのアプリを公証する必要があります。
+Apple は、配布するすべてのアプリに公証を義務付けています。
 
 @steps
-### **認証情報をキーチェーンに保存します**（初回のみのセットアップ）。`wails3 signing` を実行するか（値の入力を求め、内部で `notarytool` を呼び出します）、`notarytool` を直接呼び出します。
+### **認証情報をキーチェーンに保存します**（初回のみのセットアップ）。`wails3 signing` を実行するか（これらの値の入力を求め、内部で `notarytool` を呼び出します）、`notarytool` を直接呼び出します。
 ```bash
 xcrun notarytool store-credentials "my-notarize-profile" \
   --apple-id "your@email.com" \
@@ -266,13 +293,13 @@ xcrun notarytool store-credentials "my-notarize-profile" \
   --password "app-specific-password"
 ```
 
-### **Taskfile で KEYCHAIN_PROFILE を設定し**、上記のプロファイル名と一致させます。
-### **アプリに署名して公証します**。
+### **Taskfile の KEYCHAIN_PROFILE を設定し**、上記のプロファイル名と一致させます。
+### **アプリに署名して公証します**:
 ```bash
 wails3 task darwin:sign:notarize
 ```
 
-### **公証を検証します**。
+### **公証を検証します**:
 ```bash
 spctl --assess --verbose=2 bin/MyApp.app
 ```
@@ -280,7 +307,7 @@ spctl --assess --verbose=2 bin/MyApp.app
 @end
 
 @note{type="note"}
-公証には通常 1-2 分かかります。チケットはアプリに自動的にステープルされます。
+通常、公証には 1-2 分かかります。チケットはアプリに自動的にステープルされます。
 
 @end
 
@@ -289,21 +316,21 @@ spctl --assess --verbose=2 bin/MyApp.app
 ### 前提条件
 
 - コード署名証明書（DigiCert、Sectigo などから取得）
-- Windows でネイティブ署名する場合：Windows SDK がインストールされていること（`signtool.exe` 用）
-- macOS/Linux からクロスプラットフォーム署名する場合：[`osslsigncode`](https://github.com/mtrojnar/osslsigncode)（`wails3 setup` の署名手順に、ホスト固有のインストールコマンドが表示されます）
+- ポータブル署名の場合: AES/PBKDF2 または従来の 3DES で暗号化してエクスポートした RSA PFX ID。外部署名ツールは不要です
+- 証明書ストア／プロバイダーの ID、MSI パッケージ、または従来の RC2 PFX の場合: `PATH` 上に Windows SDK の署名ツールを備えた Windows
 
 ### 自己署名証明書の生成（テスト用）
 
-署名パイプラインのテストだけが必要な場合は、`wails3 setup` を実行し、署名手順の **Windows** タブを開いて、**自己署名証明書を生成**を選択します。OpenSSL を使用してコード署名用の `.pfx` を作成し、そのパスをグローバル設定に記録します。
+署名パイプラインをテストするだけであれば、`wails3 setup` を実行し、署名手順の **Windows** タブを開いて、**自己署名証明書を生成** を選択します。これにより、OpenSSL を使用してコード署名用の `.pfx` が作成され、そのパスがグローバル構成に記録されます。
 
 @note{type="caution"}
-自己署名証明書は**テストおよび内部配布専用**です。エンドユーザーには SmartScreen の警告が表示されます。一般公開リリースには、信頼された CA が発行した証明書が必要です。
+自己署名証明書は、**テストおよび社内配布専用**です。エンドユーザーには SmartScreen の警告が表示されます。一般公開するリリースには、信頼できる CA が発行した証明書が必要です。
 
 @end
 
-### 設定
+### 構成
 
-`build/windows/Taskfile.yml` を編集し、署名用の変数を設定します。
+`build/windows/Taskfile.yml` を編集し、署名用変数を設定します。
 
 ```yaml
 vars:
@@ -315,17 +342,17 @@ vars:
 
 | 変数 | 必須 | 説明 |
 | --- | --- | --- |
-| `SIGN_CERTIFICATE` | 上書き指定 | .pfx/.p12 証明書ファイルへのパス（未設定の場合はグローバル設定を使用） |
-| `SIGN_THUMBPRINT` | 上書き指定 | Windows 証明書ストア内の証明書サムプリント（`SIGN_CERTIFICATE` の代替） |
-| `TIMESTAMP_SERVER` | いいえ | タイムスタンプサーバーの URL（デフォルト：http://timestamp.digicert.com） |
+| `SIGN_CERTIFICATE` | 上書き | .pfx/.p12 証明書ファイルへのパス（未設定の場合はグローバル構成を使用） |
+| `SIGN_THUMBPRINT` | 上書き | Windows 証明書ストア内の証明書サムプリント（`SIGN_CERTIFICATE` の代替） |
+| `TIMESTAMP_SERVER` | いいえ | タイムスタンプサーバーの URL（デフォルト: http://timestamp.digicert.com） |
 
 @note{type="note"}
-これらの変数は、任意の**上書き設定**です。未設定の場合は、`wails3 setup` でグローバルに設定された証明書が使用されます。[設定の優先順位](#heading-4)を参照してください。
+これらの変数は任意の**上書き設定**です。未設定の場合は、`wails3 setup` でグローバルに構成した証明書が使用されます。[構成の優先順位](#heading-4)を参照してください。
 
 @end
 
 @note{type="note"}
-証明書のパスワードは Taskfile ではなく、システムのキーチェーンに保存されます。設定するには `wails3 signing` を実行します。CI では、環境変数 `WAILS_WINDOWS_CERT_PASSWORD` を設定することもできます。
+証明書のパスワードは Taskfile ではなく、システムのキーチェーンに保存されます。`wails3 signing` を実行して構成するか、CI で環境変数 `WAILS_WINDOWS_CERT_PASSWORD` を設定します。
 
 @end
 
@@ -338,19 +365,37 @@ wails3 task windows:sign:installer # Build and sign NSIS installer
 
 ### クロスプラットフォーム署名
 
-Windows 実行ファイルは、どのプラットフォームからでも署名できます。同じ Taskfile の設定とコマンドが macOS と Linux でも機能します。
+エクスポートされた RSA PFX ID を使用すると、Windows、macOS、Linux 上で Go により EXE/DLL ファイル、NSIS インストーラー実行ファイル、個別の MSIX/APPX パッケージに署名できます。既存の署名は置き換え可能です。署名処理では出力をステージングし、署名とタイムスタンプの検証が成功した後にのみ公開するため、失敗時には元のファイルが保持されます。署名済みファイルを別ファイルとして書き込むには、`--output` を使用します。
+
+Wake は、次の設定を `wails.yaml` から直接読み取ります。
+
+```yaml
+windows:
+  signing:
+    certificate: signing/windows.pfx
+    credential: WINDOWS_SIGNING_PASSWORD
+    timestamp_server: http://timestamp.digicert.com
+```
+
+`credential` にはパスワード自体ではなく、パスワードを格納する環境変数の名前を指定します。リリースターゲットでは `sign: true` を有効にしてください。[YAML ビルドガイド](/experimental/yaml-builds/)を参照してください。Wake は Taskfile を呼び出しません。従来のプロジェクトでは、上記の Taskfile 設定を引き続き使用できます。
+
+ポータブルプロファイルは RSA/SHA-256 を使用し、タイムスタンプ署名者の信頼された証明書チェーンを含む RFC 3161 タイムスタンプを検証します。デフォルトのサービスは DigiCert です。MSIX Publisher は署名証明書のサブジェクトと一致する必要があります。パッケージバンドルと、4 GiB 以上のアーカイブはサポートされません。PFX ファイルは 16 MiB までに制限されます。ほかの証明書アルゴリズムと RC2 暗号化は拒否されます。ポータブル署名に使用する RC2 PFX は、AES または 3DES を使用して再エクスポートしてください。Windows では、認証済みの RC2 PFX に代わりに SignTool が使用されます。パスワードが正しくない場合や PFX が破損している場合、このフォールバックが実行されることはありません。
+
+証明書ストア、ハードウェアトークン、プロバイダーにより管理される鍵では、`thumbprint` を使用する Windows ネイティブの SignTool ワークフローが維持されます。MSI への署名にも、Windows 上の SignTool が必要です。エクスポート済み証明書を設定しても、これらのワークフローがポータブルになるわけではありません。
 
 ### サポートされる Windows 形式
 
 | 形式 | 拡張子 | 備考 |
 | --- | --- | --- |
-| 実行ファイル | .exe | 標準的な PE 署名 |
-| インストーラー | .msi | Windows Installer パッケージ |
-| アプリパッケージ | .msix, .appx | モダン Windows アプリ |
+| 実行ファイルとライブラリ | .exe, .dll | NSIS インストーラーを含むポータブル PE 署名 |
+| インストーラー | .msi | Windows SignTool が必要 |
+| アプリパッケージ | .msix, .appx | 個別パッケージへのポータブル署名。バンドルは非対応 |
 
-## Linux パッケージ署名
+## Linux パッケージへの署名
 
-Linux パッケージ（DEB および RPM）は、PGP/GPG 鍵を使用して署名されます。Windows や macOS のコード署名とは異なり、Linux のパッケージ署名は、コードが OS に信頼されていることではなく、パッケージが信頼できる配布元から提供されたことを証明します。
+Linux パッケージ（DEB と RPM）には、PGP/GPG 鍵を使用して署名します。Windows や macOS のコード署名とは異なり、Linux パッケージへの署名は、コードが OS によって信頼されていることではなく、パッケージが信頼できる提供元から入手されたことを証明します。
+
+エクスポートされた ASCII Armor 形式またはバイナリ形式の秘密鍵ファイルでは、Windows、macOS、Linux 上の Go ネイティブ署名機能が使用されます。既存の DEB または RPM への署名では、展開や再圧縮を行わずにパッケージの内容が保持され、GnuPG、`dpkg-sig`、`rpmsign` のインストールは不要です。Arch パッケージでは、同じキーローダーを使用して分離署名を書き込みます。GnuPG は、鍵の生成やエクスポート、および署名の独立した検証には引き続き有用です。鍵ファイルではなくキーリング内の ID を指定する従来の DEB/RPM 設定では、引き続き外部署名ツールが使用されます。
 
 ### 前提条件
 
@@ -358,14 +403,14 @@ Linux パッケージ（DEB および RPM）は、PGP/GPG 鍵を使用して署�
 
 ### PGP 鍵の生成
 
-最も簡単な方法はセットアップウィザードです。`wails3 setup` を実行し、署名手順の **Linux** タブを開いて、**新しい GPG 鍵を作成**を選択します。ウィザードは以下を行います。
+最も簡単な方法はセットアップウィザードです。`wails3 setup` を実行し、署名手順の **Linux** タブを開いて、**新しい GPG 鍵を作成**を選択します。ウィザードでは、次の処理が行われます。
 
-- GPG キーリングに RSA 4096 鍵を生成します（無人実行が可能で CI に適した鍵にするには、パスフレーズを空欄のままにします）。
-- **それを `~/.wails/signing/<keyid>.asc`**（ビルドが署名に使用するファイル）へエクスポートします。
-- 鍵 ID とエクスポート先のパスを `~/.config/wails/defaults.yaml` に記録し、署名時に自動的に使用されるようにします。
+- GPG キーリングに RSA 4096 鍵を生成します（無人実行できる CI 向けの鍵にするには、パスフレーズを空欄のままにします）。
+- その鍵を **`~/.wails/signing/<keyid>.asc`** にエクスポートします（ビルドが署名に使用するファイルです）。
+- 鍵 ID とエクスポート先のパスの両方を `~/.config/wails/defaults.yaml` に記録し、署名時に自動的に使用されるようにします。
 
 @note{type="note"}
-鍵が**ID のみ**で設定されている場合（たとえば、ウィザードが鍵を自動的にエクスポートするようになる前に作成された場合）、次に Linux タブを開いたときに鍵がファイルへエクスポートされ、パスが入力されます。手動操作は不要です。ビルドは鍵*ファイル*を使用して署名するため、重要なのはパスです。
+鍵が **ID のみ**で設定されていた場合（たとえば、ウィザードが鍵を自動的にエクスポートするようになる前に作成された場合）、次回 Linux タブを開いたときに鍵がファイルへエクスポートされ、パスが入力されます。手動操作は不要です。ビルドでは鍵の*ファイル*を使用して署名するため、重要なのはパスです。
 
 @end
 
@@ -380,16 +425,16 @@ gpg --armor --export-secret-keys "your@email.com" > signing-key.asc
 gpg --armor --export "your@email.com" > signing-key.pub.asc
 ```
 
-推奨設定：RSA 4096 ビット、有効期限 1 年、強力なパスワードで保護。
+推奨設定：RSA 4096 ビット、有効期限 1 年、強力なパスワードによる保護。
 
 @note{type="caution"}
-秘密鍵は安全に管理してください。暗号化して保存し、安全な場所にバックアップしてください。
+秘密鍵は厳重に管理してください。暗号化して保存し、安全にバックアップしてください。
 
 @end
 
 ### 設定
 
-`build/linux/Taskfile.yml`を編集し、署名変数を設定します。
+`build/linux/Taskfile.yml` を編集し、署名用の変数を設定します。
 
 ```yaml
 vars:
@@ -399,11 +444,11 @@ vars:
 
 | 変数 | 必須 | 説明 |
 | --- | --- | --- |
-| `PGP_KEY` | 上書き | エクスポートした PGP 秘密鍵ファイルへのパス（未設定の場合は、`wails3 setup`でグローバルに設定した鍵を使用） |
-| `SIGN_ROLE` | いいえ | DEB の署名ロール（デフォルト：builder） |
+| `PGP_KEY` | 上書き指定 | エクスポートされた PGP 秘密鍵ファイルへのパス（未設定の場合は、`wails3 setup` でグローバルに設定された鍵にフォールバック） |
+| `SIGN_ROLE` | いいえ | DEB 署名ロール（デフォルト：builder） |
 
 @note{type="note"}
-PGP 鍵のパスワードは Taskfile ではなく、システムのキーチェーンに保存されます。設定するには`wails3 signing`を実行するか、CI で環境変数`WAILS_PGP_PASSWORD`を設定します。
+PGP 鍵のパスワードは Taskfile ではなく、システムのキーチェーンに保存されます。設定するには `wails3 signing` を実行するか、CI で `WAILS_PGP_PASSWORD` 環境変数を設定します。
 
 @end
 
@@ -415,18 +460,18 @@ wails3 task linux:sign:rpm       # Build and sign RPM package
 wails3 task linux:sign:packages  # Build and sign all packages
 ```
 
-### DEB の署名ロール
+### DEB 署名ロール
 
-DEB パッケージでは、`SIGN_ROLE`を使用して署名ロールを指定できます。
+DEB パッケージでは、`SIGN_ROLE` を使用して署名ロールを指定できます。
 
-- `origin`：パッケージの配布元による署名
+- `origin`：パッケージの提供元による署名
 - `maint`：パッケージメンテナーによる署名
 - `archive`：アーカイブメンテナーによる署名
 - `builder`：パッケージビルダーによる署名（デフォルト）
 
 ### クロスプラットフォーム署名
 
-Linux パッケージは、どのプラットフォームからでも署名できます。同じ Taskfile の設定とコマンドが Windows と macOS でも動作します。
+Linux パッケージには、どのプラットフォームからでも署名できます。同じ Taskfile 設定とコマンドが Windows と macOS でも機能します。
 
 ### 鍵情報の表示
 
@@ -472,14 +517,14 @@ sudo rpm --import myapp-signing.pub.asc
 
 ## GitHub Actions との統合
 
-CI 環境では、システムのキーチェーンではなく環境変数を使用してパスワードを指定します。
+CI 環境では、システムのキーチェーンではなく環境変数を使用してパスワードを渡します。
 
 | 環境変数 | 説明 |
 | --- | --- |
 | `WAILS_WINDOWS_CERT_PASSWORD` | Windows 証明書のパスワード |
 | `WAILS_PGP_PASSWORD` | Linux パッケージ用 PGP 鍵のパスワード |
 
-Taskfile の変数を直接渡すこともできます。
+Taskfile 変数を直接渡すこともできます。
 
 ```bash
 wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
@@ -659,7 +704,7 @@ jobs:
 ```
 
 @note{type="note"}
-クロスプラットフォーム署名に Linux ランナーを使用すると、Windows ランナーを別途用意する必要がなくなり、CI/CD を簡素化できます。macOS の署名には Apple のネイティブツールが必要なため、引き続き macOS ランナーが必要です。
+クロスプラットフォーム署名に Linux ランナーを使用すると、個別の Windows ランナーが不要になり、CI/CD が簡素化されます。Apple キーチェーン内の ID と notary プロファイルには、macOS ランナーが必要です。エクスポートされた ID とチーム API 認証情報は、上記のポータブル Wake ワークフローをサポートします。
 
 @end
 
@@ -667,7 +712,7 @@ jobs:
 
 ### wails3 signing
 
-プロジェクトの署名を設定するための対話形式ウィザードです。
+プロジェクトの署名を設定するための対話型ウィザードです。
 
 ```bash
 wails3 signing [flags]
@@ -677,15 +722,15 @@ Flags:
                 If omitted, auto-detects which platforms to configure from the build directory.
 ```
 
-ウィザードでは、以下の設定を順に行います。
+ウィザードでは、次の手順を案内します。
 
-- **macOS**：Developer ID 証明書を選択し、公証用の認証情報を設定します（`xcrun notarytool store-credentials`を呼び出します）。
-- **Windows**：証明書ファイルまたは拇印のどちらを使用するか選択し、パスワードとタイムスタンプサーバーを設定します。
-- **Linux**：既存の PGP 鍵を使用するか、新しい鍵を生成し（`gpg`を呼び出します）、署名ロールを設定します。
+- **macOS**：Developer ID 証明書の選択、Notarization 認証情報の設定（`xcrun notarytool store-credentials`を呼び出します）。
+- **Windows**：証明書ファイルまたはサムプリントの選択、パスワードとタイムスタンプサーバーの設定。
+- **Linux**：既存の PGP 鍵の使用または新しい鍵の生成（`gpg`を呼び出します）、署名ロールの設定。
 
 ### wails3 entitlements
 
-macOS のエンタイトルメントを設定するための対話形式ウィザードです。
+macOS のエンタイトルメントを設定する対話型ウィザード。
 
 ```bash
 wails3 entitlements [flags]
@@ -696,15 +741,15 @@ Flags:
 
 **プリセット：**
 
-- **Development**：JIT、デバッグ、ネットワーク用のエンタイトルメントを含む`entitlements.dev.plist`を作成します
-- **Production**：必要最小限のエンタイトルメントを含む`entitlements.plist`を作成します
-- **Both**：両方のファイルを作成します（推奨）
-- **App Store**：Mac App Store 向けにサンドボックス化されたエンタイトルメントを作成します
-- **Custom**：個々のエンタイトルメントと出力先ファイルを選択します
+- **開発**：JIT、デバッグ、ネットワーク用の`entitlements.dev.plist`を作成します
+- **本番**：必要最小限のエンタイトルメントを含む`entitlements.plist`を作成します
+- **両方**：両方のファイルを作成します（推奨）
+- **App Store**：Mac App Store 向けのサンドボックス化されたエンタイトルメントを作成します
+- **カスタム**：個々のエンタイトルメントと出力先ファイルを選択します
 
 ### wails3 sign
 
-現在のプラットフォームまたは指定したプラットフォーム向けのバイナリとパッケージに署名します。適切なプラットフォーム固有の署名タスクを呼び出すラッパーです。
+現在のプラットフォームまたは指定したプラットフォーム向けのバイナリとパッケージに署名します。これは、プラットフォームに対応する署名タスクを呼び出すラッパーです。
 
 ```bash
 wails3 sign
@@ -713,11 +758,11 @@ wails3 sign GOOS=windows
 wails3 sign GOOS=linux
 ```
 
-これにより、Taskfile の署名設定を使用する、対応する`<platform>:sign`タスクが実行されます。
+Taskfile の署名設定を使用する、対応する`<platform>:sign`タスクを実行します。
 
 ### wails3 tool sign
 
-指定したファイルに直接署名するための低レベルコマンドです。Taskfile が内部で使用します。
+特定のファイルに直接署名するための低レベルコマンドです。Taskfile が内部で使用します。
 
 ```bash
 wails3 tool sign [flags]
@@ -727,15 +772,15 @@ wails3 tool sign [flags]
 
 | フラグ | 説明 |
 | --- | --- |
-| `--input` | 署名するファイルへのパス |
-| `--output` | 出力先のパス（省略可能。デフォルトでは元のファイルを直接更新） |
+| `--input` | 署名するファイルのパス |
+| `--output` | 出力パス（省略可能。デフォルトでは元のファイルを直接更新） |
 | `--verbose` | 詳細出力を有効にする |
 
-**Windows/macOS 用フラグ：**\
+**Windows/macOS フラグ：**\
 
 | フラグ | 説明 |
 | --- | --- |
-| `--certificate` | PKCS#12（.pfx/.p12）証明書へのパス |
+| `--certificate` | PKCS#12（.pfx/.p12）証明書のパス |
 | `--password` | 証明書のパスワード |
 | `--timestamp` | タイムスタンプサーバーの URL |
 
@@ -744,86 +789,89 @@ wails3 tool sign [flags]
 | フラグ | 説明 |
 | --- | --- |
 | `--identity` | 署名 ID（アドホック署名には「-」を使用） |
-| `--entitlements` | エンタイトルメント plist へのパス |
+| `--entitlements` | エンタイトルメント plist のパス |
 | `--hardened-runtime` | Hardened Runtime を有効にする（デフォルト：true） |
-| `--notarize` | 公証のために送信する |
-| `--keychain-profile` | 公証用のキーチェーンプロファイル |
+| `--notarize` | Notarization のために提出する |
+| `--keychain-profile` | Notarization 用のキーチェーンプロファイル |
+| `--notary-key` | App Store Connect チーム API の秘密鍵`.p8`ファイル。Go Notary API クライアントを使用します |
+| `--notary-key-id` | チーム API キー ID。`--notary-key`と併用する場合は必須です |
+| `--notary-issuer-id` | チーム発行者 ID。`--notary-key`と併用する場合は必須です |
 
 **Windows 固有のフラグ：**\
 
 | フラグ | 説明 |
 | --- | --- |
-| `--thumbprint` | Windows ストア内の証明書の拇印 |
+| `--thumbprint` | Windows 証明書ストア内の証明書サムプリント |
 
-**Linux 固有のフラグ:**\
+**Linux 固有のフラグ：**\
 
 | フラグ | 説明 |
 | --- | --- |
-| `--pgp-key` | PGP 秘密鍵へのパス |
+| `--pgp-key` | PGP 秘密鍵のパス |
 | `--pgp-password` | PGP 鍵のパスワード |
 | `--role` | DEB 署名ロール（origin/maint/archive/builder） |
 
 ### 署名状態の確認（ネイティブツール）
 
-`wails3 signing` は署名用認証情報を設定します。署名の状態を確認するには、ネイティブツールを直接使用してください。
+`wails3 signing`は署名用の認証情報を設定します。署名状態を確認するには、ネイティブツールを直接使用してください。
 
 | タスク | コマンド |
 | --- | --- |
-| macOS のコード署名 ID を一覧表示する | `security find-identity -v -p codesigning` |
-| 公証用の認証情報を保存する | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
-| PGP 鍵ファイルを確認する | `gpg --show-keys <key.asc>` |
-| PGP 鍵ペアを生成する | `gpg --full-generate-key` |
-| 公開鍵をエクスポートする | `gpg --armor --export <email>` |
+| macOS コード署名 ID の一覧表示 | `security find-identity -v -p codesigning` |
+| Notarization 認証情報の保存 | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
+| PGP 鍵ファイルの確認 | `gpg --show-keys <key.asc>` |
+| PGP 鍵ペアの生成 | `gpg --full-generate-key` |
+| 公開鍵のエクスポート | `gpg --armor --export <email>` |
 
 ## トラブルシューティング
 
 ### macOS の問題
 
-**「Developer ID 証明書が見つからない」**
+**「Developer ID 証明書が見つかりません」**
 
 - 証明書がキーチェーンにインストールされていることを確認してください
-- `security find-identity -v -p codesigning`を使用して、証明書の有効期限が切れていないことを確認してください
+- `security find-identity -v -p codesigning`を使用して、有効期限が切れていないことを確認してください
 - 「Apple Development」証明書だけでなく、「Developer ID Application」証明書があることを確認してください
 
-**「公証に失敗した」**
+**「Notarization に失敗しました」**
 
-- 公証ログを確認してください: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- Notarization ログを確認してください：`xcrun notarytool log <submission-id> --keychain-profile <profile>`
 - Hardened Runtime が有効になっていることを確認してください
 - アプリに未署名のバイナリが含まれていないことを確認してください
 
-**「コード署名に失敗した」**
+**「コード署名に失敗しました」**
 
-- キーチェーンがロック解除されていることを確認してください: `security unlock-keychain`
+- キーチェーンがロック解除されていることを確認してください：`security unlock-keychain`
 - アプリバンドルのファイル権限を確認してください
 
 ### Windows の問題
 
-**「証明書が見つからない」**
+**「証明書が見つかりません」**
 
 - 証明書のパスが正しいことを確認してください
 - 証明書のパスワードを確認してください
-- 証明書が有効であること（有効期限切れまたは失効していないこと）を確認してください
+- 証明書が有効であること（有効期限切れまたは失効していないこと）を確認します
 
 **「タイムスタンプサーバーエラー」**
 
-- 別のタイムスタンプサーバーを試してください:
+- 別のタイムスタンプサーバーを試します：
   - `http://timestamp.digicert.com`
   - `http://timestamp.sectigo.com`
   - `http://timestamp.comodoca.com`
 
 
-### Linux の問題
+### Linux に関する問題
 
-**「無効な PGP 鍵」**
+**「無効な PGP キー」**
 
-- 鍵ファイルが ASCII Armor 形式であることを確認してください
-- `gpg --show-keys <key.asc>`を使用して、鍵の有効期限が切れていないことを確認してください
-- パスワードが正しいことを確認してください
+- キーファイルが ASCII Armor 形式であることを確認します
+- `gpg --show-keys <key.asc>`を使用して、キーの有効期限が切れていないことを確認します
+- パスワードが正しいことを確認します
 
-**「署名の検証に失敗した」**
+**「署名の検証に失敗しました」**
 
-- 公開鍵が正しくインポートされていることを確認してください
-- 署名後にパッケージが変更されていないことを確認してください
+- 公開鍵が正しくインポートされていることを確認します
+- 署名後にパッケージが変更されていないことを確認します
 
 ## その他のリソース
 
