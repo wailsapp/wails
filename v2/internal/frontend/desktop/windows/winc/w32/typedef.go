@@ -279,6 +279,20 @@ type MINMAXINFO struct {
 	PtMaxTrackSize POINT
 }
 
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msgboxparamsw
+type MSGBOXPARAMS struct {
+	Size           uint32
+	Owner          HWND
+	Instance       HINSTANCE
+	Text           *uint16
+	Caption        *uint16
+	Style          uint32
+	Icon           *uint16
+	ContextHelpID  uintptr
+	MsgBoxCallback uintptr
+	LanguageID     uint32
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd145037.aspx
 type LOGFONT struct {
 	Height         int32
