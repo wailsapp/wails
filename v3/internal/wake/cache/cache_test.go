@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"go/token"
 	"io"
 	"io/fs"
@@ -1264,6 +1265,32 @@ func TestObserveDirectoryTreeCallbackContracts(t *testing.T) {
 		return callback(filepath.Join(root, "bad.go"), cacheDirEntry{name: "bad.go", infoErr: want}, nil)
 	})
 	require.ErrorIs(t, err, want)
+
+	vanished := fmt.Errorf("deleted mid-walk: %w", fs.ErrNotExist)
+	files, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return true }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
+		require.NoError(t, callback(root, cacheDirEntry{name: "project", dir: true}, nil))
+		require.NoError(t, callback(filepath.Join(root, "gone.txt"), cacheDirEntry{name: "gone.txt"}, vanished))
+		require.NoError(t, callback(filepath.Join(root, "kept.txt"), cacheDirEntry{name: "kept.txt"}, nil))
+		return nil
+	})
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+	assert.Equal(t, "kept.txt", files[0].relative)
+
+	files, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return true }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
+		require.NoError(t, callback(root, cacheDirEntry{name: "project", dir: true}, nil))
+		require.NoError(t, callback(filepath.Join(root, "gone.txt"), cacheDirEntry{name: "gone.txt", infoErr: vanished}, nil))
+		require.NoError(t, callback(filepath.Join(root, "kept.txt"), cacheDirEntry{name: "kept.txt"}, nil))
+		return nil
+	})
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+	assert.Equal(t, "kept.txt", files[0].relative)
+
+	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(_ string, _ int, callback fs.WalkDirFunc) error {
+		return callback(root, cacheDirEntry{name: "project", dir: true}, vanished)
+	})
+	require.ErrorIs(t, err, fs.ErrNotExist)
 
 	_, err = observeDirectoryTreeWithWalk(root, map[string]bool{}, nil, func(string) bool { return false }, 2, func(string, int, fs.WalkDirFunc) error {
 		return want
