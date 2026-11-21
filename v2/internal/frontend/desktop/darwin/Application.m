@@ -66,11 +66,12 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
 
 void ExecJS(void* inctx, const char *script) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    NSString *nsscript = safeInit(script);
-    ON_MAIN_THREAD(
-       [ctx ExecJS:nsscript];
-       [nsscript release];
-    );
+    @autoreleasepool {
+        NSString *nsscript = safeInit(script);
+        ON_MAIN_THREAD(
+           [ctx ExecJS:nsscript];
+        );
+    }
 }
 
 void SetTitle(void* inctx, const char *title) {
@@ -449,9 +450,10 @@ void Run(void *inctx, const char* url) {
     delegate.singleInstanceUniqueId = ctx.singleInstanceUniqueId;
     delegate.startFullscreen = ctx.startFullscreen;
 
-    NSString *_url = safeInit(url);
-    [ctx loadRequest:_url];
-    [_url release];
+    @autoreleasepool {
+        NSString *_url = safeInit(url);
+        [ctx loadRequest:_url];
+    }
 
     [app setMainMenu:ctx.applicationMenu];
 }
