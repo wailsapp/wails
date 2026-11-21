@@ -419,18 +419,6 @@ func (d *serverSaveFileDialog) show() (chan string, error) {
 	return ch, errors.New("file dialogs not available in server mode")
 }
 
-// newMenuImpl creates a menu implementation for server mode.
-func newMenuImpl(menu *Menu) menuImpl {
-	return &serverMenu{}
-}
-
-// serverMenu is a no-op menu for server mode.
-type serverMenu struct{}
-
-func (m *serverMenu) update() {
-	// No-op in server mode
-}
-
 // newPlatformLock creates a platform-specific single instance lock for server mode.
 func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
 	return &serverLock{}, nil
@@ -450,38 +438,6 @@ func (l *serverLock) release() {
 func (l *serverLock) notify(data string) error {
 	return errors.New("single instance not supported in server mode")
 }
-
-// newSystemTrayImpl creates a system tray implementation for server mode.
-func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
-	return &serverSystemTray{parent: s}
-}
-
-// serverSystemTray is a no-op system tray for server mode.
-type serverSystemTray struct {
-	parent *SystemTray
-}
-
-func (t *serverSystemTray) setLabel(label string)            {}
-func (t *serverSystemTray) setTooltip(tooltip string)        {}
-func (t *serverSystemTray) run()                             {}
-func (t *serverSystemTray) setIcon(icon []byte)              {}
-func (t *serverSystemTray) setMenu(menu *Menu)               {}
-func (t *serverSystemTray) setIconPosition(pos IconPosition) {}
-func (t *serverSystemTray) setTemplateIcon(icon []byte)      {}
-func (t *serverSystemTray) destroy()                         {}
-func (t *serverSystemTray) setDarkModeIcon(icon []byte)      {}
-func (t *serverSystemTray) bounds() (*Rect, error) {
-	return nil, errors.New("system tray not available in server mode")
-}
-func (t *serverSystemTray) getScreen() (*Screen, error) {
-	return nil, errors.New("system tray not available in server mode")
-}
-func (t *serverSystemTray) positionWindow(w Window, o int) error {
-	return errors.New("system tray not available in server mode")
-}
-func (t *serverSystemTray) openMenu() {}
-func (t *serverSystemTray) Show()     {}
-func (t *serverSystemTray) Hide()     {}
 
 // newWindowImpl creates a webview window implementation for server mode.
 func newWindowImpl(parent *WebviewWindow) *serverWebviewWindow {

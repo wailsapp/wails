@@ -599,6 +599,42 @@ func newAndroidEvents() androidEvents {
 	}
 }
 
+var Openharmony = newOpenharmonyEvents()
+
+type openharmonyEvents struct {
+	AbilityCreated       ApplicationEventType
+	AbilityStarted       ApplicationEventType
+	AbilityForeground    ApplicationEventType
+	AbilityBackground    ApplicationEventType
+	AbilityDestroyed     ApplicationEventType
+	ApplicationLowMemory ApplicationEventType
+	WebViewPageStarted   WindowEventType
+	WebViewPageFinished  WindowEventType
+	BatteryChanged       ApplicationEventType
+	NetworkChanged       ApplicationEventType
+	ThemeChanged         ApplicationEventType
+	ScreenLocked         ApplicationEventType
+	ScreenUnlocked       ApplicationEventType
+}
+
+func newOpenharmonyEvents() openharmonyEvents {
+	return openharmonyEvents{
+		AbilityCreated:       1300,
+		AbilityStarted:       1301,
+		AbilityForeground:    1302,
+		AbilityBackground:    1303,
+		AbilityDestroyed:     1304,
+		ApplicationLowMemory: 1305,
+		WebViewPageStarted:   1306,
+		WebViewPageFinished:  1307,
+		BatteryChanged:       1308,
+		NetworkChanged:       1309,
+		ThemeChanged:         1310,
+		ScreenLocked:         1311,
+		ScreenUnlocked:       1312,
+	}
+}
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
@@ -867,6 +903,19 @@ var eventToJS = map[uint]string{
 	1284: "android:ThemeChanged",
 	1285: "android:ScreenLocked",
 	1286: "android:ScreenUnlocked",
+	1300: "openharmony:AbilityCreated",
+	1301: "openharmony:AbilityStarted",
+	1302: "openharmony:AbilityForeground",
+	1303: "openharmony:AbilityBackground",
+	1304: "openharmony:AbilityDestroyed",
+	1305: "openharmony:ApplicationLowMemory",
+	1306: "openharmony:WebViewPageStarted",
+	1307: "openharmony:WebViewPageFinished",
+	1308: "openharmony:BatteryChanged",
+	1309: "openharmony:NetworkChanged",
+	1310: "openharmony:ThemeChanged",
+	1311: "openharmony:ScreenLocked",
+	1312: "openharmony:ScreenUnlocked",
 	1287: "common:BatteryChanged",
 	1288: "common:NetworkChanged",
 	1289: "common:ScreenLocked",
