@@ -16,7 +16,17 @@ const (
 	WindowKey   contextKey = "Window"
 )
 
-func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, error) {
+type bindingCallScope struct {
+	clientID   string
+	windowName string
+}
+
+type bindingCallKey struct {
+	scope bindingCallScope
+	id    string
+}
+
+func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest, scope bindingCallScope) (any, error) {
 	callID := req.Args.AsMap().String("call-id")
 	if callID == nil || *callID == "" {
 		return nil, errs.NewInvalidBindingCallErrorf("missing argument 'call-id'")
@@ -26,7 +36,7 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 	func() {
 		m.l.Lock()
 		defer m.l.Unlock()
-		cancel = m.runningCalls[*callID]
+		cancel = m.runningCalls[bindingCallKey{scope: scope, id: *callID}]
 	}()
 
 	if cancel != nil {
@@ -37,74 +47,68 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 }
 
 func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRequest, window Window) (any, error) {
+	run, err := m.prepareCallMethod(ctx, req, window, bindingCallScope{})
+	if err != nil {
+		return nil, err
+	}
+	return run()
+}
+
+// prepareCallMethod registers the binding context and returns the work that
+// runs and unregisters it. The Android bridge prepares calls before dispatching
+// their workers, so a later CancelCall can find even a queued binding.
+func (m *MessageProcessor) prepareCallMethod(ctx context.Context, req *RuntimeRequest, window Window, scope bindingCallScope) (func() (any, error), error) {
 	callID := req.Args.AsMap().String("call-id")
 	if callID == nil || *callID == "" {
 		return nil, errs.NewInvalidBindingCallErrorf("missing argument 'call-id'")
 	}
+	if req.Method != CallBinding {
+		return nil, errs.NewInvalidBindingCallErrorf("unknown method: %d", req.Method)
+	}
 
-	switch req.Method {
-	case CallBinding:
-		var options CallOptions
-		err := req.Args.ToStruct(&options)
-		if err != nil {
-			return nil, errs.WrapInvalidBindingCallErrorf(err, "error parsing call options")
+	var options CallOptions
+	if err := req.Args.ToStruct(&options); err != nil {
+		return nil, errs.WrapInvalidBindingCallErrorf(err, "error parsing call options")
+	}
+
+	var methodRef any = options.MethodName
+	if options.MethodName == "" {
+		methodRef = options.MethodID
+	}
+	m.Debug("Binding call started:", "id", *callID, "method", methodRef)
+
+	// Calls may originate from windowless transports.
+	var windowID uint
+	if window != nil {
+		windowID = window.ID()
+	}
+	ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
+	key := bindingCallKey{scope: scope, id: *callID}
+
+	m.l.Lock()
+	if m.runningCalls[key] != nil {
+		m.l.Unlock()
+		cancel()
+		return nil, errs.NewInvalidBindingCallErrorf("ambiguous call id: %s", *callID)
+	}
+	m.runningCalls[key] = cancel
+	if window != nil {
+		if m.windowCalls[windowID] == nil {
+			m.windowCalls[windowID] = make(map[bindingCallKey]bool)
 		}
+		m.windowCalls[windowID][key] = true
+	}
+	m.l.Unlock()
 
-		// Log call
-		var methodRef any = options.MethodName
-		if options.MethodName == "" {
-			methodRef = options.MethodID
-		}
-		m.Debug("Binding call started:", "id", *callID, "method", methodRef)
-
-		ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
-
-		// Schedule cancel in case panics happen before starting the call.
-		cancelRequired := true
-		defer func() {
-			if cancelRequired {
-				cancel()
-			}
-		}()
-
-		ambiguousID := false
-		// Calls may originate from windowless transports, so the window may be nil.
-		var windowID uint
-		hasWindow := window != nil
-		if hasWindow {
-			windowID = window.ID()
-		}
-		func() {
-			m.l.Lock()
-			defer m.l.Unlock()
-
-			if m.runningCalls[*callID] != nil {
-				ambiguousID = true
-			} else {
-				m.runningCalls[*callID] = cancel
-				if hasWindow {
-					if m.windowCalls[windowID] == nil {
-						m.windowCalls[windowID] = make(map[string]bool)
-					}
-					m.windowCalls[windowID][*callID] = true
-				}
-			}
-		}()
-
-		if ambiguousID {
-			return nil, errs.NewInvalidBindingCallErrorf("ambiguous call id: %s", *callID)
-		}
-
+	return func() (any, error) {
 		defer func() {
 			m.l.Lock()
 			defer m.l.Unlock()
-			delete(m.runningCalls, *callID)
-			if hasWindow {
-				if windowCalls, exists := m.windowCalls[windowID]; exists {
-					delete(windowCalls, *callID)
-					if len(windowCalls) == 0 {
-						delete(m.windowCalls, windowID)
-					}
+			delete(m.runningCalls, key)
+			if windowCalls, exists := m.windowCalls[windowID]; window != nil && exists {
+				delete(windowCalls, key)
+				if len(windowCalls) == 0 {
+					delete(m.windowCalls, windowID)
 				}
 			}
 		}()
@@ -136,7 +140,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			ctx = context.WithValue(ctx, WindowKey, window)
 		}
 
-		result, err = boundMethod.Call(ctx, options.Args)
+		result, err := boundMethod.Call(ctx, options.Args)
 		if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 			switch cerr.Kind {
 			case ReferenceError, TypeError:
@@ -150,8 +154,5 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			return nil, errs.WrapBindingCallFailedErrorf(err, "failed to call binding")
 		}
 		return result, nil
-
-	default:
-		return nil, errs.NewInvalidBindingCallErrorf("unknown method: %d", req.Method)
-	}
+	}, nil
 }
