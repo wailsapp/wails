@@ -57,6 +57,7 @@ type Chromium struct {
 
 	controller                       *ICoreWebView2Controller
 	compositionController            *ICoreWebView2CompositionController
+	compositionDropTarget            *compositionDropTarget
 	compositionController4           *ICoreWebView2CompositionController4
 	webview                          *ICoreWebView2
 	inited                           uintptr
@@ -163,6 +164,9 @@ func NewChromium() *Chromium {
 	return e
 }
 
+// ShuttingDown marks the instance inactive, clears host callbacks, and revokes
+// its drop target. Call it on the owning UI/STA thread before HWND destruction;
+// it does not release the remaining controller or environment references.
 func (e *Chromium) ShuttingDown() {
 	e.shuttingDown = true
 	atomic.StoreUintptr(&e.inited, 0)
@@ -180,6 +184,10 @@ func (e *Chromium) ShuttingDown() {
 	e.MoveFocusRequestedCallback = nil
 	e.CursorChangedCallback = nil
 	e.globalErrorCallback = globalErrorHandler
+	// Normal window closure calls ShuttingDown before destroying the HWND,
+	// without calling Close. Revoke OLE registration while the HWND is valid.
+	// Like controller teardown, this must run on the owning UI/STA thread.
+	e.releaseCompositionDropTarget()
 }
 
 // Close abandons this instance and releases its controller and environment.
@@ -520,6 +528,10 @@ func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Env
 	return env3.CreateCoreWebView2CompositionController(e.hwnd, e.compositionControllerCompleted)
 }
 
+// CreateCoreWebView2CompositionControllerCompleted attaches a newly created
+// composition controller and registers its drop target before initialization.
+// Failed composition setup uses the existing HWND controller fallback; late
+// callbacks after shutdown or initialization failure close their controller.
 func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
 	if e.shuttingDown || e.initErr != nil {
 		if compositionController != nil {
@@ -555,6 +567,12 @@ func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr,
 		return 0
 	}
 
+	if err := e.registerCompositionDropTarget(); err != nil {
+		if fallbackErr := e.fallbackToCoreWebView2Controller(err); fallbackErr != nil {
+			return e.initializationFailed(fallbackErr)
+		}
+		return 0
+	}
 	controller := compositionController.GetICoreWebView2Controller()
 	if controller == nil {
 		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error getting controller from composition controller")); err != nil {
@@ -594,7 +612,11 @@ func (e *Chromium) ReleaseCompositionResources() {
 	e.releaseCompositionHost()
 }
 
+// releaseCompositionController revokes the drop target before closing and
+// releasing composition controller interfaces. It runs on the owning UI/STA
+// thread and tolerates partial initialization and repeated cleanup.
 func (e *Chromium) releaseCompositionController() {
+	e.releaseCompositionDropTarget()
 	if e.compositionController4 != nil {
 		e.compositionController4.Release()
 		e.compositionController4 = nil
