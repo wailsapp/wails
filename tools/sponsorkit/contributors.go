@@ -109,6 +109,9 @@ func FetchContributors(client *http.Client, token, repo string, changelogs []str
 			}
 			// Authored merged PRs but absent from the commit history (e.g.
 			// unlinked commit email). Same validation as changelog mentions.
+			// The pause matches the paginated fetches: bursts of per-login
+			// lookups are what trip GitHub's secondary rate limits.
+			time.Sleep(100 * time.Millisecond)
 			u, err := lookupUser(client, token, key)
 			if err != nil || u.Type != "User" || isBot(u.Login, u.Type) {
 				continue
@@ -132,6 +135,7 @@ func FetchContributors(client *http.Client, token, repo string, changelogs []str
 		// Credited in a changelog but absent from the commit history (e.g.
 		// their PR was squashed under someone else's authorship). Look the
 		// login up so typos and non-user tokens are dropped.
+		time.Sleep(100 * time.Millisecond)
 		u, err := lookupUser(client, token, key)
 		if err != nil {
 			fmt.Printf("  skipping changelog mention @%s: %v\n", key, err)

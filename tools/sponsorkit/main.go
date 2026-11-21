@@ -56,7 +56,7 @@ func main() {
 		case "prs":
 			creditMetric = "prs"
 			for i := range bands {
-				bands[i].MinCredit = prBandMins[i]
+				bands[i].MinCredit = bands[i].PRMinCredit
 			}
 		default:
 			fmt.Fprintf(os.Stderr, "error: unknown -metric %q\n", *metric)
