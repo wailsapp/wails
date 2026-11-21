@@ -83,6 +83,7 @@ extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
+extern gboolean handleDecidePolicy(WebKitWebView*, WebKitPolicyDecision*, WebKitPolicyDecisionType, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
@@ -1814,6 +1815,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {
+	appNavigation.allow(uri)
 	target := C.CString(uri)
 	C.webkit_web_view_load_uri(w.webKitWebView(), target)
 	C.free(unsafe.Pointer(target))
@@ -1880,6 +1882,28 @@ func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) 
 	return C.gboolean(0)
 }
 
+//export handleDecidePolicy
+func handleDecidePolicy(wv *C.WebKitWebView, decision *C.WebKitPolicyDecision, kind C.WebKitPolicyDecisionType, data C.uintptr_t) C.gboolean {
+	var newWindow bool
+	switch kind {
+	case C.WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+	case C.WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+		newWindow = true
+	default:
+		return C.gboolean(0)
+	}
+	action := C.webkit_navigation_policy_decision_get_navigation_action((*C.WebKitNavigationPolicyDecision)(unsafe.Pointer(decision)))
+	request := C.webkit_navigation_action_get_request(action)
+	raw := C.GoString(C.webkit_uri_request_get_uri(request))
+	gesture := C.webkit_navigation_action_is_user_gesture(action) != 0
+	if linuxDecideNavigation(raw, gesture, newWindow) {
+		C.webkit_policy_decision_use(decision)
+	} else {
+		C.webkit_policy_decision_ignore(decision)
+	}
+	return C.gboolean(1)
+}
+
 //export handlePermissionRequest
 func handlePermissionRequest(webview *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
 	// WebKitGTK denies any permission request nobody handles, so without this
@@ -1929,6 +1953,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
+	C.signal_connect(wv, c.String("decide-policy"), C.handleDecidePolicy, winID)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), C.handleConfigureEvent, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())

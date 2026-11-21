@@ -1380,6 +1380,7 @@ func (w *linuxWebviewWindow) reload() {
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {
+	appNavigation.allow(uri)
 	target := C.CString(uri)
 	C.webkit_web_view_load_uri(w.webKitWebView(), target)
 	C.free(unsafe.Pointer(target))
@@ -1418,6 +1419,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
+	C.signal_connect(wv, c.String("decide-policy"), C.handleDecidePolicy, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1494,6 +1496,30 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 	return C.gboolean(0)
+}
+
+//export handleDecidePolicy
+func handleDecidePolicy(wv *C.WebKitWebView, decision *C.WebKitPolicyDecision, kind C.WebKitPolicyDecisionType, data C.uintptr_t) C.gboolean {
+	var newWindow bool
+	switch kind {
+	case C.WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+	case C.WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+		newWindow = true
+	default:
+		return C.gboolean(0)
+	}
+	var uri *C.char
+	var gesture C.int
+	C.policy_decision_info(decision, &uri, &gesture)
+	raw := C.GoString(uri)
+	C.g_free(C.gpointer(uri))
+	allow := linuxDecideNavigation(raw, gesture != 0, newWindow)
+	allowInt := C.int(0)
+	if allow {
+		allowInt = 1
+	}
+	C.policy_decision_apply(decision, allowInt)
+	return C.gboolean(1)
 }
 
 //export handlePermissionRequest

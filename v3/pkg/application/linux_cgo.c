@@ -175,6 +175,23 @@ void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
     g_signal_connect(widget, event, cb, (gpointer)data);
 }
 
+// policy_decision_info reads what the navigation policy needs from a navigation or new-window decision. The caller
+// frees *uri.
+void policy_decision_info(WebKitPolicyDecision *decision, char **uri, int *gesture) {
+    WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+    WebKitURIRequest *request = webkit_navigation_action_get_request(action);
+    *uri = g_strdup(webkit_uri_request_get_uri(request));
+    *gesture = webkit_navigation_action_is_user_gesture(action) ? 1 : 0;
+}
+
+void policy_decision_apply(WebKitPolicyDecision *decision, int allow) {
+    if (allow) {
+        webkit_policy_decision_use(decision);
+    } else {
+        webkit_policy_decision_ignore(decision);
+    }
+}
+
 int is_user_media_permission_request(WebKitPermissionRequest *request) {
     return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
 }

@@ -1048,6 +1048,7 @@ func (w *linuxWebviewWindow) reload() {
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {
+	appNavigation.allow(uri)
 	webkit_web_view_load_uri(w.webKitWebView(), uri)
 }
 
@@ -1072,6 +1073,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	signalConnect(uintptr(w.webview), "load-changed", handleLoadChangedPtr, winID)
 	signalConnect(uintptr(w.webview), "permission-request", handlePermissionRequestPtr, winID)
+	signalConnect(uintptr(w.webview), "decide-policy", handleDecidePolicyPtr, winID)
 
 	contentManager := webkit_web_view_get_user_content_manager(w.webKitWebView())
 	signalConnect(contentManager, "script-message-received::external", sendMessageToBackendPtr, 0)

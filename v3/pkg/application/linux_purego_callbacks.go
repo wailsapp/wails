@@ -239,6 +239,26 @@ var handlePermissionRequestPtr = purego.NewCallback(func(wv, request, data uintp
 	return 1
 })
 
+const (
+	webkitPolicyDecisionNavigationAction = 0
+	webkitPolicyDecisionNewWindowAction  = 1
+)
+
+var handleDecidePolicyPtr = purego.NewCallback(func(wv, decision uintptr, kind int32, data uintptr) uintptr {
+	if kind != webkitPolicyDecisionNavigationAction && kind != webkitPolicyDecisionNewWindowAction {
+		return 0
+	}
+	action := webkit_navigation_policy_decision_get_navigation_action(decision)
+	raw := goString(webkit_uri_request_get_uri(webkit_navigation_action_get_request(action)))
+	gesture := webkit_navigation_action_is_user_gesture(action) != 0
+	if linuxDecideNavigation(raw, gesture, kind == webkitPolicyDecisionNewWindowAction) {
+		webkit_policy_decision_use(decision)
+	} else {
+		webkit_policy_decision_ignore(decision)
+	}
+	return 1
+})
+
 var handleButtonPressedPtr = purego.NewCallback(func(gesture uintptr, nPress int32, x, y float64, data uintptr) uintptr {
 	windowId := uint(data)
 	window, ok := globalApplication.Window.GetByID(windowId)
