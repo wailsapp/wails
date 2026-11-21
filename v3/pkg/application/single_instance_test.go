@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestEncryptDecrypt(t *testing.T) {
@@ -225,5 +226,32 @@ func TestAlreadyRunningError(t *testing.T) {
 	}
 	if alreadyRunningError.Error() != "application is already running" {
 		t.Errorf("alreadyRunningError.Error() = %q", alreadyRunningError.Error())
+	}
+}
+
+func TestSecondInstanceListenerUsesCurrentManager(t *testing.T) {
+	got := make(chan string, 1)
+	t.Cleanup(func() { secondInstanceTarget.Store(nil) })
+	for i, name := range []string{"first", "second"} {
+		key := [32]byte{byte(i + 1)}
+		secondInstanceTarget.Store(&singleInstanceManager{options: &SingleInstanceOptions{
+			EncryptionKey:          key,
+			OnSecondInstanceLaunch: func(d SecondInstanceData) { got <- name + ":" + d.WorkingDir },
+		}})
+		once.Do(func() { go listenForSecondInstances() })
+
+		msg, err := encrypt(key, []byte(`{"workingDir":"/w"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		secondInstanceBuffer <- msg
+		select {
+		case v := <-got:
+			if v != name+":/w" {
+				t.Errorf("delivered to %q, want %s:/w", v, name)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatalf("launch not delivered to the %s manager", name)
+		}
 	}
 }
