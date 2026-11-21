@@ -9,11 +9,12 @@ import (
 	"embed"
 	"encoding/json"
 	"io/fs"
+	"strings"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"unsafe"
 )
 
 //go:embed frontend
@@ -26,6 +27,16 @@ var window *application.WebviewWindow
 type GreetService struct{}
 
 func (*GreetService) Greet(name string) string { return "Hello " + name + "!" }
+
+// LifecycleProbe completes after the host replaces the requesting document.
+func (*GreetService) LifecycleProbe(phase string) string {
+	if phase == "old" {
+		time.Sleep(6 * time.Second)
+	} else {
+		time.Sleep(8 * time.Second)
+	}
+	return phase
+}
 
 //export WailsBridgeOpen
 func WailsBridgeOpen(env, info unsafe.Pointer) unsafe.Pointer {
@@ -105,18 +116,24 @@ func WailsRequest(id, payload *C.char) C.int {
 	if !application.OpenharmonyReady() {
 		return 0
 	}
+	session, requestID, ok := strings.Cut(C.GoString(id), ":")
+	if !ok || session == "" || requestID == "" {
+		return 0
+	}
 	select {
 	case requests <- struct{}{}:
 	default:
 		return 0
 	}
-	requestID, call := C.GoString(id), C.GoString(payload)
+	call := C.GoString(payload)
 	go func() {
 		defer func() { <-requests }()
 		response := application.WailsOhNativeHandleRuntimeCall(call)
+		sessionJSON, _ := json.Marshal(session)
 		idJSON, _ := json.Marshal(requestID)
 		payloadJSON, _ := json.Marshal(response)
-		window.ExecJS("window.wailsOpenHarmonyResolve?.(" + string(idJSON) + "," + string(payloadJSON) + ")")
+		// ExecJS resolves the current document, not the one that started the call.
+		window.ExecJS("if(window.wailsOpenHarmonySession===" + string(sessionJSON) + "){window.wailsOpenHarmonyResolve?.(" + string(idJSON) + "," + string(payloadJSON) + ")}")
 	}()
 	return 1
 }

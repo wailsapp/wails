@@ -69,6 +69,10 @@
 
 **ArkWeb 边界**：此镜像上，未声明 `ohos.permission.INTERNET` 的 HTTPS 虚拟 origin 实验没有进入资源拦截；声明后能拦截，应用仍不启动 HTTP 服务。权限不是无网络活动的保证：仅验证应用资源和绑定不依赖网络。宿主拒绝其他 origin 的资源和顶层导航；未做完整网络隔离验收。声明权限后第一次运行返回了 HTML 200，但 ArkWeb renderer 报 `channel connect timeout(6s)` 并出现白屏；强停后连续两个新进程通过。没有修复该镜像首次 renderer 超时，也未验证同进程销毁重建、arm64、商业 HarmonyOS、多窗口或完整移动 API。
 
+**M4：同进程内的 ArkWeb 文档会话。** 在原生 HelloWails 里让旧页面先发一个延迟 Go 绑定，再做同一 ArkWeb 内重新加载，或销毁并创建新的 ArkWeb 组件和 controller。新文档复用 `lifecycle-reused-id`。修复前两种路径都实际收到 `reply=old`，PID 分别为 `29831`、`13214`。修复后，宿主在导航或组件销毁时清除当前文档会话，新文档在装好监听器后登记自己的会话；Go 回包脚本在执行时再次核对会话，避免同一请求 ID 被新页面的回调消费。旧 Go 调用可以继续执行，只丢弃回包；不是业务取消或撤销。
+
+**M4 一键验收**：沿用 M3 的 OpenHarmony Go、x86_64 `CC`、本机 DevEco SDK 配置和解锁的模拟器。从 `v3/tests/openharmony-hellowails/` 执行 `python smoke.py --go <OpenHarmony-go.exe> --hvigor <hvigorw.bat>`（HDC 在 PATH；默认目标 `127.0.0.1:5555`）。脚本只重新安装和启动 `com.wails.nativehello`，判定每个用例前后 PID 不变、文档会话不同、请求 ID 相同，同时检查新 `Greet` 和至少两个递增事件。一次完整运行输出 `M4 PASS refresh`（PID `15978`）和 `M4 PASS rebuild`（PID `17594`）。脚本不重试失败的 ArkWeb 启动。范围限单窗口的文档和 ArkWeb 组件，不包含整个 UIAbility/WindowStage 销毁重建、renderer 恢复或真机兼容性。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。

@@ -13,12 +13,31 @@ interface MainThreadCommand {
 }
 
 class WailsProxy {
+  private advance: () => void;
+  session: string = '';
+
+  constructor(advance: () => void) {
+    this.advance = advance;
+  }
+
+  advanceLifecycleProbe(): void {
+    this.advance();
+  }
+
   invoke(value: string): void {
     native.message(value);
   }
 
-  request(id: string, payload: string): boolean {
-    return native.request(id, payload);
+  ready(session: string): boolean {
+    if (this.session !== '' || !/^[0-9a-f-]{36}$/.test(session)) {
+      return false;
+    }
+    this.session = session;
+    return true;
+  }
+
+  request(session: string, id: string, payload: string): boolean {
+    return this.session !== '' && session === this.session && native.request(`${session}:${id}`, payload);
   }
 
   report(message: string): void {
@@ -32,7 +51,32 @@ struct Index {
   @State private runtimeReady: boolean = false;
   @State private status: string = 'Starting Wails runtime';
   private controller: webview.WebviewController = new webview.WebviewController();
-  private proxy: WailsProxy = new WailsProxy();
+  private proxy: WailsProxy = new WailsProxy(() => this.advanceLifecycleProbe());
+  @StorageProp('wailsLifecycle') private probe: string = '';
+  private probeAdvanced: boolean = false;
+  private rebuildTimer: number = -1;
+
+  private entryURL(): string {
+    return this.probe === '' ? ORIGIN : `${ORIGIN}?probe=${this.probe}&phase=${this.probeAdvanced ? 'new' : 'old'}`;
+  }
+
+  private advanceLifecycleProbe(): void {
+    if (this.probe === '' || this.probeAdvanced || !this.active) {
+      return;
+    }
+    this.probeAdvanced = true;
+    this.proxy.session = '';
+    if (this.probe === 'refresh') {
+      this.controller.loadUrl(this.entryURL());
+      return;
+    }
+    this.runtimeReady = false;
+    this.rebuildTimer = setTimeout((): void => {
+      this.rebuildTimer = -1;
+      this.controller = new webview.WebviewController();
+      this.runtimeReady = true;
+    }, 200);
+  }
   private timer: number = -1;
   private active: boolean = false;
 
@@ -48,8 +92,15 @@ struct Index {
     }
     try {
       if (name === 'executeJavaScript') {
+        const session: string = this.proxy.session;
+        if (session === '') {
+          this.reply(id, '');
+          return;
+        }
         const command = JSON.parse(payload) as ScriptCommand;
-        this.controller.runJavaScript(command.script).then((value: string): void => {
+        // Recheck inside the document in case ArkWeb runs the command after navigation.
+        const script: string = `if (window.wailsOpenHarmonySession === ${JSON.stringify(session)}) {\n${command.script}\n}`;
+        this.controller.runJavaScript(script).then((value: string): void => {
           this.reply(id, value);
         }).catch((error: Error): void => {
           hilog.error(0x0, 'WailsM3', 'JavaScript error: %{public}s', error.message);
@@ -99,6 +150,11 @@ struct Index {
 
   aboutToDisappear(): void {
     this.active = false;
+    this.proxy.session = '';
+    if (this.rebuildTimer >= 0) {
+      clearTimeout(this.rebuildTimer);
+      this.rebuildTimer = -1;
+    }
     if (this.timer >= 0) {
       clearInterval(this.timer);
       this.timer = -1;
@@ -149,18 +205,21 @@ struct Index {
           .javaScriptProxy({
             object: this.proxy,
             name: 'wailsOpenHarmony',
-            methodList: ['invoke', 'request', 'report'],
+            methodList: ['invoke', 'ready', 'request', 'report', 'advanceLifecycleProbe'],
             controller: this.controller
           })
           .onControllerAttached((): void => {
             hilog.info(0x0, 'WailsM3', 'Controller attached; loading local origin');
-            this.controller.loadUrl(ORIGIN);
+            this.controller.loadUrl(this.entryURL());
           })
           .onLoadIntercept((event: OnLoadInterceptEvent): boolean => {
             return event === undefined || !event.data.getRequestUrl().startsWith(ORIGIN);
           })
           .onInterceptRequest((event: OnInterceptRequestEvent): WebResourceResponse => {
             return this.resource(event === undefined ? '' : event.request.getRequestUrl());
+          })
+          .onPageBegin((): void => {
+            this.proxy.session = '';
           })
           .onErrorReceive((event: OnErrorReceiveEvent): void => {
             hilog.error(0x0, 'WailsM3', 'Web load error: %{public}s', event.error.getErrorInfo());
