@@ -26,6 +26,12 @@ var (
 //	}
 //
 // The order of registration must be in the correct order as specified in the IDL of the interface.
+//
+// Note that syscall.NewCallback rejects callback arguments larger than
+// uintptr. By-value struct arguments of eight bytes (e.g. POINT) are accepted
+// on 64-bit architectures but panic during package initialisation on 386, so
+// trampolines for such interfaces must be split per GOARCH and receive the
+// 32-bit stack slots separately. See pkg/w32/idroptarget*.go for an example.
 func RegisterVTable[TParent, T IUnknown](guid string, fns ...interface{}) {
 	registerVTableInternal[TParent, T](guid, false, fns...)
 }

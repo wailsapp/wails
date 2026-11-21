@@ -23,37 +23,15 @@ func _NOP(_ uintptr) uintptr {
 	return uintptr(windows.S_FALSE)
 }
 
-func init() {
-	combridge.RegisterVTable[combridge.IUnknown, iDropTarget](
-		"{00000122-0000-0000-C000-000000000046}",
-		_iDropTargetDragEnter,
-		_iDropTargetDragOver,
-		_iDropTargetDragLeave,
-		_iDropTargetDrop,
-	)
-}
-
-func _iDropTargetDragEnter(
-	this uintptr,
-	dataObject *IDataObject,
-	grfKeyState DWORD,
-	point POINT,
-	pdfEffect *DWORD,
-) uintptr {
-	return combridge.Resolve[iDropTarget](this).DragEnter(dataObject, grfKeyState, point, pdfEffect)
-}
-
-func _iDropTargetDragOver(this uintptr, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
-	return combridge.Resolve[iDropTarget](this).DragOver(grfKeyState, point, pdfEffect)
-}
-
-func _iDropTargetDragLeave(this uintptr) uintptr {
-	return combridge.Resolve[iDropTarget](this).DragLeave()
-}
-
-func _iDropTargetDrop(this uintptr, dataObject *IDataObject, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
-	return combridge.Resolve[iDropTarget](this).Drop(dataObject, grfKeyState, point, pdfEffect)
-}
+// The IDropTarget vtable trampolines live in architecture-specific files:
+// syscall.NewCallback rejects callback arguments larger than uintptr, and
+// IDropTarget::DragEnter/DragOver/Drop pass POINT by value, which is eight
+// bytes. On 64-bit architectures that matches uintptr, but on 386 the
+// eight-byte struct is pushed as two 32-bit stack slots and must be
+// reassembled from two uintptr arguments instead.
+//
+//	idroptarget_64bit.go: windows && (amd64 || arm64)
+//	idroptarget_386.go:   windows && 386
 
 type iDropTarget interface {
 	combridge.IUnknown
