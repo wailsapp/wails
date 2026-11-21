@@ -26,7 +26,8 @@ func ValidateAndSanitizeURL(rawURL string) (string, error) {
 
 	scheme := strings.ToLower(parsedURL.Scheme)
 
-	if scheme == "javascript" || scheme == "data" || scheme == "file" || scheme == "ftp" || scheme == "" {
+	// Anything else would reach the desktop's URL handler, which can start a program for a scheme it registered.
+	if scheme != "http" && scheme != "https" && scheme != "mailto" {
 		return "", errors.New("scheme not allowed")
 	}
 
