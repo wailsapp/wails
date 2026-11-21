@@ -76,6 +76,7 @@ func main() {
             ContentProtection:                 false,
             BackdropType:                      windows.Mica,
             DisablePinchZoom:                  false,
+            DisableGeneralAutofill:            false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -825,6 +826,18 @@ Type: `bool`
 Setting this to `true` will enable swipe gestures for the webview.
 
 Name: EnableSwipeGestures<br/>
+Type: `bool`
+
+#### DisableGeneralAutofill
+
+Setting this to `true` stops the webview from saving what users type into forms and from suggesting it again (WebView2's
+general autofill). Use it when your forms hold personal data that shouldn't be added to the WebView2 profile: `autocomplete="off"`
+doesn't keep values out of the WebView2 autofill store. It doesn't delete anything already saved: entries from earlier runs stay
+in the profile until its data is cleared, for example by deleting the [WebView2 user data folder](#webviewuserdatapath) while
+the app isn't running. Password autosave is a separate WebView2 setting and is off by default.
+Needs WebView2 Runtime 100.0.1185.39 or later.
+
+Name: DisableGeneralAutofill<br/>
 Type: `bool`
 
 #### WindowClassName
