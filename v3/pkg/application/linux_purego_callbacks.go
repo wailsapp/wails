@@ -436,7 +436,17 @@ var onDropPtr = purego.NewCallback(func(target, value uintptr, x, y float64, dat
 	return uintptr(handleDrop(value, int(x), int(y), uint(data)))
 })
 
+// The motion controller sees every drag over the webview, including WebKit's own
+// in-page HTML drags, so only a drag that carries files counts as a file drop.
+func dragHasFiles(ctrl uintptr) bool {
+	drop := gtk_drop_controller_motion_get_drop(ctrl)
+	return drop != 0 && gdk_content_formats_contain_gtype(gdk_drop_get_formats(drop), gdk_file_list_get_type()) != 0
+}
+
 var onMotionEnterPtr = purego.NewCallback(func(ctrl uintptr, x, y float64, data uintptr) uintptr {
+	if !dragHasFiles(ctrl) {
+		return 0
+	}
 	onDropEnterGo(uint(data))
 	return 0
 })
@@ -447,6 +457,9 @@ var onMotionLeavePtr = purego.NewCallback(func(ctrl, data uintptr) uintptr {
 })
 
 var onMotionMotionPtr = purego.NewCallback(func(ctrl uintptr, x, y float64, data uintptr) uintptr {
+	if !dragHasFiles(ctrl) {
+		return 0
+	}
 	onDropMotionGo(int(x), int(y), uint(data))
 	return 0
 })
