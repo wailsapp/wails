@@ -293,6 +293,23 @@ func (w *WebviewWindow) onApplicationEvent(
 	w.addCancellationFunction(cancelFn)
 }
 
+// closeNow destroys the window on the spot: marks it destroyed, shuts down its
+// native window (and webview) and removes it from the window manager. It is the
+// default WindowClosing listener's work, and App.cleanup calls it directly so
+// that quitting destroys every window without going through the event queue.
+// Safe to call more than once; only the first call does anything.
+func (w *WebviewWindow) closeNow() {
+	if !w.closeStarted.CompareAndSwap(false, true) {
+		return
+	}
+	atomic.StoreUint32(&w.unconditionallyClose, 1)
+	InvokeSync(w.markAsDestroyed)
+	if w.impl != nil {
+		InvokeSync(w.impl.close)
+	}
+	globalApplication.Window.Remove(w.id)
+}
+
 func (w *WebviewWindow) markAsDestroyed() {
 	w.destroyedLock.Lock()
 	w.destroyed = true
@@ -377,13 +394,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		if !result.closeStarted.CompareAndSwap(false, true) {
-			return
-		}
-		atomic.StoreUint32(&result.unconditionallyClose, 1)
-		InvokeSync(result.markAsDestroyed)
-		InvokeSync(result.impl.close)
-		globalApplication.Window.Remove(result.id)
+		result.closeNow()
 	})
 
 	// Process keybindings
