@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
+  "pageKey": "6dc359c16579f68a4162",
+  "sourceFile": "community/showcase/lyyyra.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "fm-description": {
+      "sourceHash": "6382c954985bc170456a2289a67c56efaf63e534b84c6b5a4b8196ce8aea219c",
+      "targetHash": "4518184634345d44487fc36f9e0e64bc2d95497b6870a9850b1eb617049f544d",
+      "status": "adopted",
+      "sourcePreview": "Desktop songbook app for searching, sorting and printing sheet music",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "fm-title": {
+      "sourceHash": "295aea7fcec063df4ac31e642326cdf5a65bcd770fa5cb82700c030e2bb87f4d",
+      "targetHash": "295aea7fcec063df4ac31e642326cdf5a65bcd770fa5cb82700c030e2bb87f4d",
+      "status": "adopted",
+      "sourcePreview": "Lyyyra",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "b0001-text-01": {
+      "sourceHash": "08795accb517953e86f1d1fb989529d66462419e70ed235e15f4fbac2d6118ba",
+      "targetHash": "bb7b0e9bfac32e6bd7adea09588f060eb7ed136784fa70e80232d22193d3bfdb",
+      "status": "adopted",
+      "sourcePreview": "![Lyyyra screenshot](/assets/showcase-images/lyyyra.webp)",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3942fe2e02a271cc41388287f39ae40daccb806c1418dfeca68eb2e629590ffc",
+      "targetHash": "038fdfe1bd3b23875c5e8f242cb8869145db1c70a052006d0c02fc14ab822fa2",
+      "status": "adopted",
+      "sourcePreview": "Lyyyra is a desktop songbook application built with Wails, Go and React. It downloads lyrics, metada…",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "37bf0a9a4413b9650feb65cd1aae3064f7c1123de8aa8d7724954e6c903c0208",
+      "targetHash": "7f4a2c773ff1e6eb24736bc836be04bece688f4305b9fe37600e26e9fd331bb2",
+      "status": "adopted",
+      "sourcePreview": "Key features:",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "4803921b818b5bf552039e1b30b728cbff0f7d5c0f6bce8ac2c6b5e2a7521c9f",
+      "targetHash": "4d7b728ad53b33bb7f191a5330ac6d5f75403bec6fab1ac8af8b628cc85b6887",
+      "status": "adopted",
+      "sourcePreview": "- Full-text search across titles, authors and lyrics\n- Sorting by song number, title, music author a…",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "004a763b2c64a864a362e19046e5491938b746bfed8b151f91d6198ddcc3adbf",
+      "targetHash": "02c5fde5b7bc5caab7c473d8d069d34822770a6c009ac62009e07e6bbe750a0b",
+      "status": "adopted",
+      "sourcePreview": "[View on GitHub](https://github.com/tomvladik/Lyyyra)",
+      "provider": "manual",
+      "updatedAt": "2026-11-22T21:45:00Z"
+    }
+  }
+}
