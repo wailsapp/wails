@@ -138,3 +138,36 @@ func TestCleanupBypassesWindowClosingHooks(t *testing.T) {
 		t.Fatalf("native close called %d times, want 1 - a cancelling hook kept the window alive", got)
 	}
 }
+
+// A user close can already be under way when the app quits: it has claimed the
+// window (closeStarted) but its main-thread steps are still queued behind
+// cleanup, and are dropped once cleanup destroys the main-thread window.
+// cleanup must finish that close itself rather than skip the window.
+func TestCleanupFinishesACloseAlreadyInProgress(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 1)
+	wins[0].closeStarted.Store(true)
+
+	app.cleanup()
+
+	if got := impls[0].closes.Load(); got != 1 {
+		t.Fatalf("native close called %d times, want 1 - a close already in progress left the window open", got)
+	}
+	if !wins[0].isDestroyed() {
+		t.Fatal("window was not marked destroyed")
+	}
+}
+
+// The reverse: the in-progress close already shut the native window down, so
+// cleanup must not send a second WM_CLOSE (that would run the webview shutdown
+// twice).
+func TestCleanupDoesNotCloseTheNativeWindowTwice(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 1)
+	wins[0].closeStarted.Store(true)
+	wins[0].closeNative()
+
+	app.cleanup()
+
+	if got := impls[0].closes.Load(); got != 1 {
+		t.Fatalf("native close called %d times, want exactly 1", got)
+	}
+}

@@ -1002,7 +1002,7 @@ func (a *App) cleanup() {
 // windows still open). WindowClosing hooks are bypassed: the app is quitting,
 // so "hide to tray and cancel" no longer applies.
 func (a *App) closeAllWindows() {
-	// closeNow removes the window from the map, which takes windowsLock, so
+	// finishCloseOnMainThread removes the window from the map, which takes windowsLock, so
 	// iterate over a copy and do not hold the lock while closing.
 	a.windowsLock.RLock()
 	windows := make([]Window, 0, len(a.windows))
@@ -1012,8 +1012,8 @@ func (a *App) closeAllWindows() {
 	a.windowsLock.RUnlock()
 
 	for _, window := range windows {
-		if closer, ok := window.(interface{ closeNow() }); ok {
-			closer.closeNow()
+		if closer, ok := window.(interface{ finishCloseOnMainThread() }); ok {
+			closer.finishCloseOnMainThread()
 		}
 	}
 
