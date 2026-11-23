@@ -73,6 +73,12 @@
 
 **M4 一键验收**：沿用 M3 的 OpenHarmony Go、x86_64 `CC`、本机 DevEco SDK 配置和解锁的模拟器。从 `v3/tests/openharmony-hellowails/` 执行 `python smoke.py --go <OpenHarmony-go.exe> --hvigor <hvigorw.bat>`（HDC 在 PATH；默认目标 `127.0.0.1:5555`）。脚本只重新安装和启动 `com.wails.nativehello`，判定每个用例前后 PID 不变、文档会话不同、请求 ID 相同，同时检查新 `Greet` 和至少两个递增事件。一次完整运行输出 `M4 PASS refresh`（PID `15978`）和 `M4 PASS rebuild`（PID `17594`）。脚本不重试失败的 ArkWeb 启动。范围限单窗口的文档和 ArkWeb 组件，不包含整个 UIAbility/WindowStage 销毁重建、renderer 恢复或真机兼容性。
 
+**M5 arm64 构建通过，真机未验。** 以 `eece2a12f` 的原生 HelloWails 源码，在单独副本将 `harmony/entry/build-profile.json5` 的 `abiFilters` 设成 `["arm64-v8a"]`。沿用 M3 命令，将 Go 架构改为 `GOARCH=arm64`，Clang 改为 `--target=aarch64-linux-ohos`，Go 库输出到 `cpp/libs/arm64-v8a/libhomecast_go.so`，生成头仍复制到 `cpp/include/`。`c-shared` 严格链接及 `assembleHap --no-daemon` 均成功。检查未签名 HAP，`libs/arm64-v8a/` 下的 `libentry.so`、`libhomecast_go.so` 和 `libc++_shared.so` 的 ELF `e_machine` 均为 `183`（AArch64）。未安装到真机，不能推断鸿蒙 3.0 兼容性。
+
+**M5 完整宿主重建未通过。** 在独立测试包 `com.wails.nativehostprobe` 声明一个不创建 ArkWeb 的 `KeeperAbility`，先启动它，再启动 `EntryAbility`；让 `EntryAbility` 调用 `context.terminateSelf()`、记录 `onWindowStageDestroy` / `onDestroy`，随后重新启动 `EntryAbility`。现有实现在 PID `22185` 记录销毁后进程退出，不能据此认定具体退出原因。仅把 TSFN 从页面提升到 ArkTS 模块的实验保住了 PID `29404`，且记录同 PID 的 Stage destroy → Stage create；但第二次创建时报 `Unable to initialize the Wails native dispatcher`，未恢复绑定或事件。这个实验未并入主线。
+
+**M5 宿主交接的一次通过，仍待复验。** 把页面级调度改成进程级：ArkTS 模块持有 `BridgeState`（`opened` 标志和当前 `dispatch` 回调），存进 `AppStorage`；模块级 `dispatchBridge` 始终自己处理 `runOnMainThread`，无页面时对其余命令回空结果；`aboutToAppear` 只在首次 `native.open`，之后仅重新挂接 `dispatch`；`aboutToDisappear` 只解绑仍属于本页的回调，不再 `native.close`。探针 PID `32441` 在旧 Stage 销毁、新 Stage 创建后重新拦截 `index.html`、`style.css`、`main.js`、`wails/runtime.js`，新页面再次 `M3 PASS`。这只是一次通过：尚未做多轮重建，也没测跨 Stage 的迟到回包；代码仍在临时副本，未并入 `com.wails.nativehello` 或框架。下一步按此方案复验，不能用 M4 的页面重建替代。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
