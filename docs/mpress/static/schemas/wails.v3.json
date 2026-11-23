@@ -1439,7 +1439,7 @@
               "type": "string"
             },
             "timestamp_server": {
-              "description": "RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified.",
+              "description": "RFC 3161 timestamp service URL; defaults to `http://timestamp.digicert.com`. Timestamp signatures and trust chains are verified.",
               "type": "string"
             }
           },

@@ -28,6 +28,11 @@ _/
 
 ## [Unreleased]
 
+## v3.2.0-nightly.20261123 - 2026-11-23
+
+## Fixed
+- sync timestamp_server description with published field reference in [PR](https://github.com/wailsapp/wails/pull/6617) by @taliesin-ai
+
 ## v3.2.0-nightly.20261103 - 2026-11-03
 
 ## Changed
