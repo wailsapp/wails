@@ -77,7 +77,9 @@
 
 **M5 完整宿主重建未通过。** 在独立测试包 `com.wails.nativehostprobe` 声明一个不创建 ArkWeb 的 `KeeperAbility`，先启动它，再启动 `EntryAbility`；让 `EntryAbility` 调用 `context.terminateSelf()`、记录 `onWindowStageDestroy` / `onDestroy`，随后重新启动 `EntryAbility`。现有实现在 PID `22185` 记录销毁后进程退出，不能据此认定具体退出原因。仅把 TSFN 从页面提升到 ArkTS 模块的实验保住了 PID `29404`，且记录同 PID 的 Stage destroy → Stage create；但第二次创建时报 `Unable to initialize the Wails native dispatcher`，未恢复绑定或事件。这个实验未并入主线。
 
-**M5 宿主交接的一次通过，仍待复验。** 把页面级调度改成进程级：ArkTS 模块持有 `BridgeState`（`opened` 标志和当前 `dispatch` 回调），存进 `AppStorage`；模块级 `dispatchBridge` 始终自己处理 `runOnMainThread`，无页面时对其余命令回空结果；`aboutToAppear` 只在首次 `native.open`，之后仅重新挂接 `dispatch`；`aboutToDisappear` 只解绑仍属于本页的回调，不再 `native.close`。探针 PID `32441` 在旧 Stage 销毁、新 Stage 创建后重新拦截 `index.html`、`style.css`、`main.js`、`wails/runtime.js`，新页面再次 `M3 PASS`。这只是一次通过：尚未做多轮重建，也没测跨 Stage 的迟到回包；代码仍在临时副本，未并入 `com.wails.nativehello` 或框架。下一步按此方案复验，不能用 M4 的页面重建替代。
+**M5 宿主交接已并入主线并在模拟器通过。** 页面级调度改为进程级：ArkTS 模块持有 `BridgeState`（`opened` 标志和当前 `dispatch` 回调），存进 `AppStorage`；模块级 `dispatchBridge` 始终自己处理 `runOnMainThread`，无页面时对其余命令回空结果；`aboutToAppear` 只在首次 `native.open`，之后仅重新挂接 `dispatch`；`aboutToDisappear` 只解绑仍属于本页的回调，不再 `native.close`。为验收新增 `KeeperAbility`（不建 ArkWeb、只保进程）和 `--ps wailsLifecycle stage [--pb closeStage true]` 模式。`smoke.py` 三次启动全过：refresh PID `24279`、rebuild PID `25374`、stage PID `25798`。stage 用例内：旧 Stage 载入 `?probe=stage&phase=old`，4 秒后 `terminateSelf`，同一 PID `25798` 记录 `Stage destroy`/`Ability destroy`；新 Stage 重建页面，重新拦截资源，再次 `M3 PASS`，复用 `lifecycle-reused-id` 的回包解析为新会话结果 `M4 PASS stage`，旧回包未串入。旧的只提升 TSFN 到模块层实验（PID `29404`）失败于二次 `native.open`；仅提升位置不够，必须把打开状态放进 `AppStorage` 才能跨 Stage 保留。
+
+**首次 ArkWeb 冷启动易冻结。** 安装后第一次启动可能触发系统 `appfreeze`（`THREAD_BLOCK_6S`，主线程阻塞于 `libarkweb_engine.so` 初始化），进程被系统杀，`pidof` 变空、页面不出现。本机表现：16:14/16:15 两次首启失败（PID `21108`、`21185`，有 faultlog），预热后连续三个新进程（`24279`/`25374`/`25798`）全过。这与 M3 记录的首次 renderer 超时同源，不是桥的回归；失败后重跑一次即可，smoke 不自动重试，失败会如实报出。
 
 ## 参考资料
 

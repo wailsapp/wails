@@ -86,6 +86,89 @@ def check(shell, mode, timeout):
     raise RuntimeError(f"{mode}: timed out waiting for {stage} (PID {pid}, phases {list(phase)})")
 
 
+def check_stage(shell, timeout):
+    previous = shell("pidof", BUNDLE).split()
+    if previous:
+        stopped = shell("aa", "force-stop", BUNDLE)
+        if "force stop process successfully" not in stopped:
+            raise RuntimeError(stopped.strip())
+    started = shell("aa", "start", "-b", BUNDLE, "-a", "KeeperAbility")
+    if "start ability successfully" not in started:
+        raise RuntimeError(started.strip())
+
+    deadline = time.monotonic() + timeout
+    pid = None
+    while time.monotonic() < deadline and (pid is None or pid in previous):
+        pids = shell("pidof", BUNDLE).split()
+        if len(pids) == 1 and pids[0].isdecimal() and pids[0] not in previous:
+            pid = pids[0]
+        time.sleep(0.5)
+    if pid is None:
+        raise RuntimeError("stage: keeper process never started")
+
+    started = shell("aa", "start", "-b", BUNDLE, "-a", "EntryAbility",
+                    "--ps", "wailsLifecycle", "stage", "--ps", "wailsPhase", "old",
+                    "--pb", "closeStage", "true")
+    if "start ability successfully" not in started:
+        raise RuntimeError(started.strip())
+
+    seen = set()
+    old_session = None
+    destroyed = False
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if shell("pidof", BUNDLE).split() != [pid]:
+            raise RuntimeError(f"stage: application process {pid} exited before stage change")
+        logs = shell("hilog", "-x", "-P", pid, "-T", "WailsM3")
+        for line in logs.splitlines():
+            if line in seen or "WailsM3: " not in line:
+                continue
+            seen.add(line)
+            print(line, flush=True)
+            msg = line.split("WailsM3: ", 1)[1]
+            match = re.fullmatch(r"M4 stage (old|new) session=([0-9a-f-]+) id=(\S+)", msg)
+            if match and match[1] == "old":
+                old_session = match[2], match[3]
+            if msg == "Stage destroy EntryAbility":
+                destroyed = True
+        if old_session and destroyed:
+            break
+        time.sleep(0.5)
+    if not (old_session and destroyed):
+        raise RuntimeError(f"stage: old stage not fully torn down (session={old_session}, destroyed={destroyed})")
+
+    started = shell("aa", "start", "-b", BUNDLE, "-a", "EntryAbility",
+                    "--ps", "wailsLifecycle", "stage", "--ps", "wailsPhase", "new")
+    if "start ability successfully" not in started:
+        raise RuntimeError(started.strip())
+
+    new_passes = 0
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if shell("pidof", BUNDLE).split() != [pid]:
+            raise RuntimeError(f"stage: application process {pid} exited during reconnect")
+        logs = shell("hilog", "-x", "-P", pid, "-T", "WailsM3")
+        for line in logs.splitlines():
+            if line in seen or "WailsM3: " not in line:
+                continue
+            seen.add(line)
+            print(line, flush=True)
+            msg = line.split("WailsM3: ", 1)[1]
+            new_passes += msg == "M3 PASS: local HTML/JS/CSS, Greet and Go event"
+            if msg.startswith("M4 FAIL stage:"):
+                raise RuntimeError(msg)
+            if msg.startswith("M4 PASS stage session="):
+                new_session = msg.rsplit("=", 1)[1]
+                if not old_session or new_session == old_session[0]:
+                    raise RuntimeError(f"stage: session evidence invalid old={old_session} new={new_session}")
+                if new_passes < 1:
+                    raise RuntimeError("stage: PASS recorded before full frontend reload")
+                print(f"M4 PASS stage session={new_session}", flush=True)
+                return
+        time.sleep(0.5)
+    raise RuntimeError(f"stage: reconnect timed out (old={old_session}, new_passes={new_passes})")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--go", default="go", help="OpenHarmony-enabled go executable")
@@ -106,6 +189,7 @@ def main():
             raise RuntimeError("HAP installation failed")
         for mode in ("refresh", "rebuild"):
             check(shell, mode, args.timeout)
+        check_stage(shell, args.timeout)
     except (OSError, subprocess.SubprocessError, RuntimeError) as exc:
         parser.exit(1, f"M4: {exc}\n")
 

@@ -12,6 +12,42 @@ interface MainThreadCommand {
   id: number;
 }
 
+// The Go app can outlive a single stage, so the bridge belongs to the process,
+// not to a page. Pages attach their Web dispatcher and clear it on exit; the
+// bridge itself is opened once (AppStorage survives stage recreation).
+class BridgeState {
+  opened: boolean = false;
+  dispatch: native.Dispatcher | null = null;
+}
+
+function bridgeState(): BridgeState {
+  const state: BridgeState | undefined = AppStorage.get<BridgeState>('wailsBridgeState');
+  if (state !== undefined) {
+    return state;
+  }
+  const created: BridgeState = new BridgeState();
+  AppStorage.setOrCreate('wailsBridgeState', created);
+  return created;
+}
+
+function dispatchBridge(id: number, name: string, payload: string): void {
+  if (name === 'runOnMainThread') {
+    // Main-thread work must be drained even while no page owns a Web view;
+    // otherwise Go's dispatchOnMainThread never wakes and its panic fires.
+    const command = JSON.parse(payload) as MainThreadCommand;
+    native.runOnMainThread(command.id);
+    return;
+  }
+  const callback: native.Dispatcher | null = bridgeState().dispatch;
+  if (callback !== null) {
+    callback(id, name, payload);
+    return;
+  }
+  if (id > 0) {
+    native.result(id, '');
+  }
+}
+
 class WailsProxy {
   private advance: () => void;
   session: string = '';
@@ -53,15 +89,19 @@ struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
   private proxy: WailsProxy = new WailsProxy(() => this.advanceLifecycleProbe());
   @StorageProp('wailsLifecycle') private probe: string = '';
+  @StorageProp('wailsPhase') private phase: string = '';
   private probeAdvanced: boolean = false;
   private rebuildTimer: number = -1;
 
   private entryURL(): string {
+    if (this.probe === 'stage') {
+      return `${ORIGIN}?probe=stage&phase=${this.phase === 'new' ? 'new' : 'old'}`;
+    }
     return this.probe === '' ? ORIGIN : `${ORIGIN}?probe=${this.probe}&phase=${this.probeAdvanced ? 'new' : 'old'}`;
   }
 
   private advanceLifecycleProbe(): void {
-    if (this.probe === '' || this.probeAdvanced || !this.active) {
+    if (this.probe === '' || this.probe === 'stage' || this.probeAdvanced || !this.active) {
       return;
     }
     this.probeAdvanced = true;
@@ -79,6 +119,9 @@ struct Index {
   }
   private timer: number = -1;
   private active: boolean = false;
+  private dispatchWeb: native.Dispatcher = (id: number, name: string, payload: string): void => {
+    this.dispatch(id, name, payload);
+  };
 
   private reply(id: number, value: string): void {
     if (id > 0 && this.active) {
@@ -128,13 +171,16 @@ struct Index {
 
   aboutToAppear(): void {
     this.active = true;
-    if (!native.open((id: number, name: string, payload: string): void => {
-      this.dispatch(id, name, payload);
-    })) {
+    const state: BridgeState = bridgeState();
+    if (!state.opened) {
+      state.opened = native.open(dispatchBridge);
+    }
+    if (!state.opened) {
       this.status = 'Unable to initialize the Wails native dispatcher';
       hilog.error(0x0, 'WailsM3', '%{public}s', this.status);
       return;
     }
+    state.dispatch = this.dispatchWeb;
     native.start();
     // The Go application starts on a native thread. Do not create ArkWeb until
     // its application, window and embedded asset server have been initialized.
@@ -160,7 +206,10 @@ struct Index {
       this.timer = -1;
     }
     this.runtimeReady = false;
-    native.close();
+    const state: BridgeState = bridgeState();
+    if (state.dispatch === this.dispatchWeb) {
+      state.dispatch = null;
+    }
   }
 
   private resource(url: string): WebResourceResponse {

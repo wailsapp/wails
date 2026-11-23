@@ -24,6 +24,13 @@
             "actions": ["ohos.want.action.home"]
           }
         ]
+      },
+      {
+        "name": "KeeperAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true
       }
     ],
     "requestPermissions": [{ "name": "ohos.permission.INTERNET" }]

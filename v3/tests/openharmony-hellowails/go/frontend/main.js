@@ -82,14 +82,16 @@ Object.defineProperty(window, 'wailsOpenHarmonySession', { value: session });
 if (!host.ready(session)) throw new Error('ArkWeb document session rejected');
 await greet();
 
-if (probe === 'refresh' || probe === 'rebuild') {
+if (probe === 'refresh' || probe === 'rebuild' || probe === 'stage') {
     host.report(`M4 ${probe} ${phase} session=${session} id=lifecycle-reused-id`);
     reuseID = true;
     const reply = runtime.Call.ByName('main.GreetService.LifecycleProbe', phase);
     reuseID = false;
     if (phase === 'old') {
         reply.catch(() => {});
-        host.advanceLifecycleProbe();
+        if (probe !== 'stage') {
+            host.advanceLifecycleProbe();
+        }
     } else {
         try {
             const value = await reply;
