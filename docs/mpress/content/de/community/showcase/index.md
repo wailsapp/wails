@@ -49,6 +49,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Screenshot von Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Bildschirmaufnahme von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Screenshot von Larvyn" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/bmeditor/"><img src="/assets/showcase-images/bmeditor-editor.webp" alt="Screenshot von BMEditor" loading="lazy"><span>BMEditor</span></a>
 </div>
 
 ## So fügst du dein Projekt zum Showcase hinzu

@@ -49,6 +49,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui のスクリーンショット" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio のスクリーンショット" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn のスクリーンショット" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/bmeditor/"><img src="/assets/showcase-images/bmeditor-editor.webp" alt="BMEditor のスクリーンショット" loading="lazy"><span>BMEditor</span></a>
 </div>
 
 ## ショーケースにプロジェクトを追加する方法
