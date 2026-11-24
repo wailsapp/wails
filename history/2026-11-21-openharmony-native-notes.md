@@ -152,6 +152,15 @@ openharmony:
 
 **边界**：仅 DevEco 模拟器 x86_64 端到端实测；arm64 真机、商用 HarmonyOS、多窗口、完整移动 API 未验证（arm64 与 `runtimeOS: HarmonyOS` 仅构建/编译通过）。仍缺：legacy（无 `wails.yaml`）Taskfile、`openharmony:dev`/dev-run、deploy/device run、真实签名出包与安装、CI 构建与模拟器验收任务（签名边界详见上段）。站点文档：`docs/mpress/content/guides/mobile/openharmony.md`。
 
+
+## 6. 桌面 Wails Demo 手感回归（2026-11-24）
+
+用本机 `C:\Users\a1\Desktop\wails3-harmony-demo\Harmony_Demo`（包名 `com.wails.harmonydemo`，原生 ArkWeb + Go backend）在同一台 DevEco x86_64 模拟器回归桌面 demo 的交互手感：8 项生成 binding（Greet / Reverse / Add / Fib / Ping / Version / Delay / Echo）、本地 PNG 与 CSS 资源、前端事件全部通过，日志为 `DEMO PASS: bindings, events, local assets and CSS`（PID 3785）。再 `aa force-stop` 冷启动，新 PID 9713 重复同一 PASS。无本地 HTTP 监听：`netstat -an` 的 3 个 TCP LISTEN 在 force-stop 前后完全一致，属于模拟器系统进程。首启仍有已知的 `appfreeze`，重跑一次即过。
+
+**关键修复：前端桥必须在 npm runtime 模块求值前就绪。** `@wailsio/runtime` 在模块顶层通过 `window.wails?.invoke` 捕获消息通道，而 ES module 的 import 先于 `main.js` 模块体执行。原来在模块体里赋值 `window.wails = {invoke: ...}` 太晚，`System.invoke("wails:runtime:ready")` 落入浏览器警告分支；Go 侧 `runtimeLoaded` 一直为 false，`WebviewWindow.ExecJS` 只把回包脚本塞进 `pendingJS`，binding 调用 5 秒超时。修法是在 `frontend/index.html` 的 `<script type="module">` 之前加普通脚本：`window.wails = {invoke: m => window.wailsOpenHarmony.invoke(m)}`。M3 测试工程用动态 `import('/wails/runtime.js')`，所以之前没有暴露这个时序问题。
+
+**验证边界**：只在这台 DevEco x86_64 模拟器与该 demo 工程验证；桌面 Wails 其他 demo、arm64 真机、商用 HarmonyOS 未验。诊断期间在 fork 源码临时加的 hilog 打点已全部删除，工作树相对已提交的 M3 内容无新增改动。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
