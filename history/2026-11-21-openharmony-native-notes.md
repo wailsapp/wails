@@ -167,7 +167,7 @@ openharmony:
 
 | 内容 | 位置 |
 |---|---|
-| fork 源码 / 已提交 M3 与文档 | `C:\Users\a1\wails3`（分支 `openharmony`，HEAD `ae35b82cc`） |
+| fork 源码 / 已提交 M3 与文档 | `C:\Users\a1\wails3`（分支 `openharmony`，本轮文档已提交） |
 | 本机构建用 CLI | `C:\Users\a1\Desktop\wails3-harmonyos-windows-amd64.exe`（从 `v3/cmd/wails3` 重新构建） |
 | 桌面手感 demo 工程 | `C:\Users\a1\Desktop\wails3-harmony-demo\Harmony_Demo`（`com.wails.harmonydemo`）；桥接前导脚本在 `frontend/index.html`，8 项绑定调用在 `frontend/src/main.js` |
 | M3 最小验证工程 | `C:\Users\a1\wails3\v3\tests\openharmony-hellowails\{go,harmony}`（已入库） |
