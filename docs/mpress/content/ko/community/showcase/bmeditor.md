@@ -9,11 +9,7 @@ sourcePath: "community/showcase/bmeditor.md"
 
 ![Go 프로그램 디버깅 중, 각 변수의 값이 코드 옆에 표시된 모습](/assets/showcase-images/bmeditor-debug.webp)
 
-![compose 프로젝트별로 컨테이너를 묶어 보여 주는 Docker 패널](/assets/showcase-images/bmeditor-docker.webp)
-
 ![BMEditor 공식 확장을 바로 설치할 수 있는 확장 창](/assets/showcase-images/bmeditor-extensions.webp)
-
-![사이드 패널의 Claude Code, 그 변경 사항이 에디터에서 검토를 기다리는 모습](/assets/showcase-images/bmeditor-claude.webp)
 
 BMEditor(Bare Minimum Editor (batteries included))는 Windows와 Linux용 데스크톱 코드 에디터로, 여는 순간 바로 작업할 수 있습니다. 디버거, 터미널, Docker, 프로젝트의 Git 변경 사항, Markdown·HTML·OpenAPI 실시간 미리보기가 에디터에 들어 있어서 먼저 무언가를 찾거나 설정할 필요가 없습니다. Go는 바로 동작하고, 확장도 가능해서 다른 언어와 도구는 확장으로 추가할 수 있습니다.
 

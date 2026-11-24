@@ -9,11 +9,7 @@ sourcePath: "community/showcase/bmeditor.md"
 
 ![Men-debug program Go, dengan nilai setiap variabel tampil di samping kode](/assets/showcase-images/bmeditor-debug.webp)
 
-![Panel Docker, dengan kontainer yang dikelompokkan menurut proyek compose-nya](/assets/showcase-images/bmeditor-docker.webp)
-
 ![Jendela Extensions, dengan ekstensi bawaan BMEditor yang siap dipasang](/assets/showcase-images/bmeditor-extensions.webp)
-
-![Claude Code di panel samping, dengan perubahannya menunggu ditinjau di editor](/assets/showcase-images/bmeditor-claude.webp)
 
 BMEditor, sang Bare Minimum Editor (batteries included), adalah editor kode desktop untuk Windows dan Linux yang langsung siap dipakai begitu dibuka. Debugger, terminal, Docker, perubahan Git di proyek Anda, dan pratinjau langsung untuk Markdown, HTML, dan OpenAPI sudah menjadi bagian dari editor, jadi tidak ada yang perlu dicari atau disiapkan lebih dulu. Go langsung berfungsi, dan editornya dapat diperluas: bahasa dan alat lain bisa ditambahkan lewat ekstensi.
 

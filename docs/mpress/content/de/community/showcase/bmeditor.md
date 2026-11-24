@@ -9,11 +9,7 @@ sourcePath: "community/showcase/bmeditor.md"
 
 ![Debugging eines Go-Programms, mit dem Wert jeder Variable direkt neben dem Code](/assets/showcase-images/bmeditor-debug.webp)
 
-![Das Docker-Panel, mit Containern nach ihrem Compose-Projekt gruppiert](/assets/showcase-images/bmeditor-docker.webp)
-
 ![Das Erweiterungsfenster mit den BMEditor-eigenen Erweiterungen, bereit zur Installation](/assets/showcase-images/bmeditor-extensions.webp)
-
-![Claude Code im Seitenpanel, seine Änderung wartet im Editor auf die Prüfung](/assets/showcase-images/bmeditor-claude.webp)
 
 BMEditor, der Bare Minimum Editor (batteries included), ist ein Desktop-Code-Editor für Windows und Linux, der sofort nach dem Öffnen einsatzbereit ist. Debugger, Terminal, Docker, die Git-Änderungen im Projekt und Live-Vorschauen für Markdown, HTML und OpenAPI gehören zum Editor selbst, du musst also nichts erst suchen oder einrichten. Go funktioniert ohne Einrichtung, und der Editor ist erweiterbar: weitere Sprachen und Werkzeuge kommen über Erweiterungen dazu.
 

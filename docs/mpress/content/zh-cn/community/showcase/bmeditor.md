@@ -9,11 +9,7 @@ sourcePath: "community/showcase/bmeditor.md"
 
 ![调试 Go 程序，每个变量的值显示在代码旁边](/assets/showcase-images/bmeditor-debug.webp)
 
-![Docker 面板，容器按 compose 项目分组](/assets/showcase-images/bmeditor-docker.webp)
-
 ![扩展窗口，BMEditor 自家的扩展随时可以安装](/assets/showcase-images/bmeditor-extensions.webp)
-
-![侧边栏中的 Claude Code，它的修改正在编辑器中等待审阅](/assets/showcase-images/bmeditor-claude.webp)
 
 BMEditor（Bare Minimum Editor (batteries included)）是一款面向 Windows 和 Linux 的桌面代码编辑器，打开就能用。调试器、终端、Docker、项目中的 Git 改动，以及 Markdown、HTML 和 OpenAPI 的实时预览都内置在编辑器里，不用先去找插件或做配置。Go 开箱即用，编辑器本身也可扩展，其他语言和工具都可以通过扩展加入。
 

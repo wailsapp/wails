@@ -9,11 +9,7 @@ sourcePath: "community/showcase/bmeditor.md"
 
 ![Отладка программы на Go, значение каждой переменной видно рядом с кодом](/assets/showcase-images/bmeditor-debug.webp)
 
-![Панель Docker, контейнеры сгруппированы по проектам compose](/assets/showcase-images/bmeditor-docker.webp)
-
 ![Окно расширений, собственные расширения BMEditor готовы к установке](/assets/showcase-images/bmeditor-extensions.webp)
-
-![Claude Code на боковой панели, его правка ждёт проверки в редакторе](/assets/showcase-images/bmeditor-claude.webp)
 
 Настольный редактор кода BMEditor (Bare Minimum Editor (batteries included)) для Windows и Linux готов к работе сразу после запуска. Отладчик, терминал, Docker, изменения Git в проекте и живой предпросмотр Markdown, HTML и OpenAPI встроены в сам редактор, так что ничего не нужно искать и настраивать заранее. Go работает из коробки, а сам редактор расширяемый: другие языки и инструменты добавляются расширениями.
 
