@@ -1573,6 +1573,17 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
 			return pipeline.RunResult{}, err
 		}
+	case "openharmony":
+		// The OpenHarmony shell is a c-shared Go library plus an ArkTS
+		// application. The overlay injects the bridge exports into the app's
+		// main package, mirroring the Android and iOS overlays.
+		overlay := filepath.Join(staged, "openharmony", "overlay.json")
+		if err := OpenHarmonyOverlayGen(&OpenHarmonyOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
+			return pipeline.RunResult{}, err
+		}
+		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
+			return pipeline.RunResult{}, err
+		}
 	}
 	// Apply generated settings before copying complete user replacements.
 	if err := applyGeneratedTargetSettings(staged, s); err != nil {

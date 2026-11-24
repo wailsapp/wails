@@ -127,6 +127,27 @@ func WailsOhNativeInit(env unsafe.Pointer, info unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(result)
 }
 
+// WailsOhNativeStartMain starts the main function registered through
+// RegisterOpenharmonyMain.
+//
+// The shell calls this once, after the bridge is open: in -buildmode=c-shared
+// the application's main() is never invoked automatically, so the host has to
+// start it (mirrors Android's nativeInit starting the registered main).
+//
+//export WailsOhNativeStartMain
+func WailsOhNativeStartMain() {
+	openharmonyMainLock.Lock()
+	mainFunc := openharmonyMainFunc
+	openharmonyMainLock.Unlock()
+	if mainFunc == nil {
+		openharmonyDebugLogf("[NAPI] no main function registered: call application.RegisterOpenharmonyMain(main)")
+		return
+	}
+	go mainFunc()
+}
+
+// WailsOhClose releases the bridge and cancels pending replies.
+//
 //export WailsOhClose
 func WailsOhClose(env, _ unsafe.Pointer) unsafe.Pointer {
 	C.wails_oh_close_bridge()

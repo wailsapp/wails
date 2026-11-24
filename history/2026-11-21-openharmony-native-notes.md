@@ -56,6 +56,7 @@
 | M3：原生 HelloWails | 单窗口、本地资源、`Greet` binding、Go → 页面事件；无 `server` tag、无本地 HTTP 监听；新进程启动与前后台回切 | **x86_64 模拟器通过**；两次新进程 PASS，同一进程回切后页面计数继续更新。首次 ArkWeb renderer 有一次连接超时，见下文 |
 | M4：ArkWeb 文档会话 | 同进程内同一 ArkWeb 重新加载，或销毁并重建 ArkWeb 组件；新文档复用旧请求 ID，回包不得串到新页面 | **通过**；修复前两种路径都收到 `reply=old`，修复后 `M4 PASS refresh/rebuild` |
 | M5：宿主重建 | 同一进程销毁并重建 WindowStage；第二 Stage 重新拦截资源、绑定与事件，复用 ID 的回包指向新会话 | **x86_64 模拟器通过**；`smoke.py` 三用例全过，stage PID `25798` 同进程销毁重建后 `M4 PASS stage` |
+| M6：通用壳模板 | 把 M3 测试工程里已验证的 ArkTS/C++ 壳提炼为 `build_assets/openharmony/` 模板；模板生成的 HAP 必须跑通同一条资源/绑定/事件链路 | **x86_64 模拟器通过**；模板 HAP PID `31792` 与冷重启 `1730` 两次 `M3 PASS` |
 
 **M1 实测**：同一工具链、独立临时目录，原桥文件运行 `go tool cgo` 退出 2；只去掉 `*/` 与 `import "C"` 间的空行，退出 0。空行让 Go 解析器没有把 C 前导码注释附到 `import "C"`，不是 NAPI 类型本身不兼容。改回工作树重跑 `go build ./pkg/application` 已越过 cgo 识别，下一批报错包括 `setupSignalHandler` 重复、缺 `fatalHandler` / `logPlatformInfo` / `platformEnvironment` / `newGlobalShortcutImpl` / `newMenuImpl` 等。
 
@@ -82,6 +83,18 @@
 **M5 宿主交接已并入主线并在模拟器通过。** 页面级调度改为进程级：ArkTS 模块持有 `BridgeState`（`opened` 标志和当前 `dispatch` 回调），存进 `AppStorage`；模块级 `dispatchBridge` 始终自己处理 `runOnMainThread`，无页面时对其余命令回空结果；`aboutToAppear` 只在首次 `native.open`，之后仅重新挂接 `dispatch`；`aboutToDisappear` 只解绑仍属于本页的回调，不再 `native.close`。为验收新增 `KeeperAbility`（不建 ArkWeb、只保进程）和 `--ps wailsLifecycle stage [--pb closeStage true]` 模式。`smoke.py` 三次启动全过：refresh PID `24279`、rebuild PID `25374`、stage PID `25798`；第二轮独立运行 refresh `26137`、rebuild `29081`、stage `29492`，三项同样全过。stage 用例内：旧 Stage 载入 `?probe=stage&phase=old`，4 秒后 `terminateSelf`，同一 PID 记录 `Stage destroy`/`Ability destroy`；新 Stage 重建页面，重新拦截资源，再次 `M3 PASS`，复用 `lifecycle-reused-id` 的回包解析为新会话结果 `M4 PASS stage`，旧回包未串入。旧的只提升 TSFN 到模块层实验（PID `29404`）失败于二次 `native.open`；仅提升位置不够，必须把打开状态放进 `AppStorage` 才能跨 Stage 保留。
 
 **首次 ArkWeb 冷启动易冻结。** 安装后第一次启动可能触发系统 `appfreeze`（`THREAD_BLOCK_6S`，主线程阻塞于 `libarkweb_engine.so` 初始化），进程被系统杀，`pidof` 变空、页面不出现。本机表现：16:14/16:15 两次首启失败（PID `21108`、`21185`，有 faultlog），预热后连续三个新进程（`24279`/`25374`/`25798`）全过。这与 M3 记录的首次 renderer 超时同源，不是桥的回归；失败后重跑一次即可，smoke 不自动重试，失败会如实报出。
+
+**M6：通用壳模板。** M3–M5 的宿主一直住在 `v3/tests/openharmony-hellowails/` 里，协议是测试工程自己定的（`libentry.so` 导出 `open/result/close/start/ready/asset/request/message/runOnMainThread`，Go 侧主包导出 `WailsBridgeOpen/Result/Close` 等）。产品化要把它变成 `v3/internal/commands/build_assets/openharmony/` 模板，让 `wails3 build` 能直接生成鸿蒙工程。第一版模板曾另起一套协议（`libwails.so` + `init/bridgeResult/handleMessage/serveAsset`），与设备上跑通的 M3 协议不兼容，已推倒重写；**模板必须复用已验证协议，不要另造**。
+
+模板内容：`main_openharmony.go`（经 Go build overlay 注入应用主包，`init()` 调 `application.RegisterOpenharmonyMain(main)`，并导出 C ABI）、`app/src/main/cpp/napi_init.cpp`（把 Go 导出注册为 NAPI 模块）、`app/src/main/cpp/CMakeLists.txt`（`IMPORTED` + `IMPORTED_NO_SONAME` 引入 Go 库，POST_BUILD 复制进 HAP）、`app/src/main/ets/`（`pages/Index.ets`、`bridge/WailsBridge.ets`、`common/WailsContext.ets`、`entryability/EntryAbility.ets`）、`app/src/main/module.json5`、`app/src/main/cpp/types/libentry/`。`OpenHarmonyOverlayGen` 与 Android/iOS 的 overlay 同构，接线在 `manifest_pipeline.go` 的 `assets` 分支 `case "openharmony"`。
+
+为此在 `pkg/application` 补了两个导出：`WailsOhNativeStartMain`（启动 `RegisterOpenharmonyMain` 注册的 main；此前 `openharmonyMainFunc` 只注册、从未被调用）和 `WailsOhNativeResolveRuntimeCall`（把异步 runtime call 的回包送回发起请求的 ArkWeb 文档，按文档会话校验，旧文档的回包不会命中新文档）。
+
+**M6 编译与打包实测**：Go 侧 `go build -mod=mod -overlay=<overlay.json> -buildmode=c-shared -ldflags=-extldflags=-Wl,--no-undefined` 退出 0；`llvm-nm -D` 实测导出 `WailsBridgeOpen/WailsBridgeResult/WailsBridgeClose/WailsStart/WailsReady/WailsAsset/WailsMime/WailsRequest/WailsMessage/WailsRunMain` 与 `WailsOhNativeInit/WailsOhNativeStartMain/WailsOhNativeOnBridgeResult/WailsOhClose` 全部存在。`hvigorw.bat assembleHap --no-daemon` 构建成功；未签名 HAP 的 `module.json` 只含 `EntryAbility`，`libs/x86_64/` 下有 `libentry.so`、`libwails_go.so`、`libc++_shared.so`。
+
+**M6 ArkTS 编译踩坑（可复用）**：首次 `CompileArkTS` 报 6 个错，同属三类。其一，`arkts-no-untyped-obj-literals`：对象字面量必须对应显式声明的 interface，并用 `as` 标注（如 `replyJSON(callId, { dark: false } as DarkModeResult)`）。其二，`arkts-no-any-unknown`：`import { asset } from 'libentry.so'` 的具名导入拿不到类型，`asset()` 退化为 `any`；必须写成 `import * as native from 'libentry.so'` 再标注 `const served: native.Asset | null = native.asset(path)`。其三，`cpp/types/libentry/` 下除了 `Index.d.ts` 还必须有 `oh-package.json5`（`"types": "./Index.d.ts"`），否则 d.ts 不生效，导入报 "module for 'libentry.so' is not verified"。三条都是 ArkTS 静态规则，与桥的实现无关。
+
+**M6 设备验收**：在独立副本套用模板（`build_assets/openharmony/` 全量覆盖 M3 测试工程的 `ets/`、`cpp/`、`module.json5`，Go 侧改用 overlay 注入模板 `main_openharmony.go`），重新编译 Go 库并打包 HAP 后装到模拟器。首次启动复现历史同型的 `appfreeze`（`appfreeze-com.wails.nativehello-20020067-20261124161738949.log`，进程被系统杀、`pidof` 变空），与 M5 记录的首启冻结同源，非桥回归；重跑一次即过。第二次启动 PID `31792`：`Stage create` → `Runtime ready; creating local-origin ArkWeb` → `Controller attached` → 依次 `Intercept` `/`、`/style.css`、`/main.js`、`/wails/runtime.js` → `Local-origin frontend loaded` → `M3 PASS: local HTML/JS/CSS, Greet and Go event`。资源来自 Go asset handler，绑定经真实 Wails runtime，Go 事件回到页面，全程无本地 HTTP 监听。`aa force-stop` 后冷重启新 PID `1730` 再次 `M3 PASS`。脚本 `v3/tests/openharmony-hellowails/verify_template.py` 一键复验同样通过（PID `29337`，`TEMPLATE PASS`）；脚本对 hdc 在 Windows 上把 `C:/` 绝对路径拼到 cwd 的问题改用切到 HAP 目录只传文件名，并对 force-stop 后过早起 Ability 导致进程存活但 onCreate 不执行的情况加了 3 秒稳定等待与最多 3 次重试。设备 `netstat -lntp` 快照没有 loopback TCP 监听（shell 无权确认所有套接字归属，结论限于未观察到本地监听）。首启冻结、arm64 真机与鸿蒙 3.0 兼容仍未处理。
 
 ## 参考资料
 

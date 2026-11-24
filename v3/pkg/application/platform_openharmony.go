@@ -260,6 +260,36 @@ func WailsOhNativeMainThreadCallback(callbackID uint) {
 	openharmonyMainThreadCallback(callbackID)
 }
 
+// WailsOhNativeResolveRuntimeCall delivers the response of an asynchronous
+// runtime call back to the ArkWeb document that requested it.
+//
+// The document session is part of the callback id, so a reply produced for a
+// document that has since been replaced is dropped instead of being consumed
+// by the new document.
+//
+//export WailsOhNativeResolveRuntimeCall
+func WailsOhNativeResolveRuntimeCall(session, requestID, response string) {
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+	if app == nil {
+		return
+	}
+	windowID := openharmonyFirstWindowID(app)
+	if windowID == 0 {
+		return
+	}
+	window, ok := app.Window.GetByID(windowID)
+	if !ok || window == nil {
+		return
+	}
+	sessionJSON, _ := json.Marshal(session)
+	idJSON, _ := json.Marshal(requestID)
+	payloadJSON, _ := json.Marshal(response)
+	// ExecJS resolves the current document, not the one that started the call.
+	window.ExecJS("if(window.wailsOpenHarmonySession===" + string(sessionJSON) + "){window.wailsOpenHarmonyResolve?.(" + string(idJSON) + "," + string(payloadJSON) + ")}")
+}
+
 func parseEventJSON(jsonStr string) map[string]any {
 	if jsonStr == "" {
 		return nil
