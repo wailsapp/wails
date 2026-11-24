@@ -208,7 +208,15 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 ## 8. 未跟踪实验目录定性（2026-11-25）
 
-仓库根的 `hello-harmony/`（42.3 MiB）与 `hmtest/`（47.4 MiB）是 M0/M1 之前的 server-mode 原型：前者是 CLI 生成的工程加 `//export Start` 在本地 8080 起服务，后者是 `StartServer(dataDir)` + 端口 28977 的最小探针。两者导出的 `.so`/`.dll`、`bin/hellowails`、darwin 图标都是构建产物；两份 `main_harmony.go` 的教训（goroutine 启动、CMake POST_BUILD 复制、SDK junction、abiFilters）已转述进桌面资料包的 `鸿蒙Go-Demo跑通记录.md` 与 `wails3鸿蒙化通用指南.md`。当前有效工程是已入库的 `v3/tests/openharmony-hellowails/`。**用户确认后已于 2026-11-25 删除这两个目录**，`git status` 不再出现它们；剩余 modified 文件是原有的 Linux C/头文件与服务改动，未清理。
+仓库根的 `hello-harmony/`（42.3 MiB）与 `hmtest/`（47.4 MiB）是 M0/M1 之前的 server-mode 原型：前者是 CLI 生成的工程加 `//export Start` 在本地 8080 起服务，后者是 `StartServer(dataDir)` + 端口 28977 的最小探针。两者导出的 `.so`/`.dll`、`bin/hellowails`、darwin 图标都是构建产物；两份 `main_harmony.go` 的教训（goroutine 启动、CMake POST_BUILD 复制、SDK junction、abiFilters）已转述进桌面资料包的 `鸿蒙Go-Demo跑通记录.md` 与 `wails3鸿蒙化通用指南.md`。当前有效工程是已入库的 `v3/tests/openharmony-hellowails/`。**用户确认后已于 2026-11-25 删除这两个目录**，`git status` 不再出现它们；剩余 6 个 modified 文件的来源与定性见第 9 节。
+
+## 9. 6 个 modified Linux 文件的来源与定性（2026-11-25）
+
+`git status` 剩余的 6 个 modified 文件都是上游 Wails v3 的 Linux 桌面后端，与 OpenHarmony native 方案无关：`linux_cgo.c/.h`（2026-02-06 `5dc3e2169`，GTK4 + WebKitGTK 6.0）、`events_linux.h`（2023-10-03 `8ddd29d28` / 2024-02-04 `bfa53dfd6`，系统休眠/唤醒事件）、`dock_linux.go`（2025-09-24 `ff6a33362`，Dock 空实现）、`notifications_linux.go`（2025-02-24 `253f67243` / 2026-03-14 `51d30325f`，D-Bus 通知）、`notifications_linux_test.go`（2026-10-26 `501c74f1c`）。
+
+**上游有，且与本 fork HEAD 逐字节一致**：6 个文件的 SHA256 与 `raw.githubusercontent.com/wailsapp/wails/master` 全部相同。工作树的 modified 是一次换行符事故——每个文件被压成 1 行（HEAD 行数 1177/214/25/74/704/39 → 工作树均 1 行），diff 为 2235 删 / 12 增；`gofmt -e` 在 `dock_linux.go`、`notifications_linux.go` 报 `expected ';', found 'import'`。唯一看似有意的改动是 build tag 加了 `!openharmony`，但 `GOOS=openharmony` 下 `linux` 标签本就不成立，属于多余。
+
+**用处**：对鸿蒙 native 验收无用；对 fork 与上游保持一致、Linux 构建与绑定生成有用。建议从 HEAD 恢复这 6 个文件，不要提交当前的压坏版本。本轮只做调查记录，未改动这些文件。
 
 ## 参考资料
 
