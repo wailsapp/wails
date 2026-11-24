@@ -18,7 +18,7 @@ func TestExhaustiveProductionCapabilityMatrix(t *testing.T) {
 	hosts := []Target{{OS: "windows", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}, {OS: "linux", Arch: "amd64"}}
 	toolchains := []string{"auto", "native", "zig", "docker"}
 	allTools := []string{"go", "npm", "cc", "zig", "docker", "makensis", "MakeAppx.exe", "signtool.exe", "hdiutil", "xcrun", "codesign", "ditto", "zip", "java", "jarsigner", "apksigner", "dpkg-sig", "rpmsign"}
-	facts := HostFacts{AndroidSDK: true, AndroidNDK: true, DockerImages: []string{"wails-cross"}, AppleSDKs: []string{"macosx", "iphoneos", "iphonesimulator"}}
+	facts := HostFacts{AndroidSDK: true, AndroidNDK: true, OHSDK: true, DockerImages: []string{"wails-cross"}, AppleSDKs: []string{"macosx", "iphoneos", "iphonesimulator"}}
 	cases := 0
 	for _, target := range buildinfo.TargetCapabilities() {
 		for _, format := range formats {
@@ -41,7 +41,7 @@ func TestExhaustiveProductionCapabilityMatrix(t *testing.T) {
 								}
 							}
 							config.Selected = manifest.Profile{Name: "matrix", Targets: []manifest.ProfileTarget{selected}}
-							hostCapabilities := NewHostCapabilitiesWithFacts(host.OS, host.Arch, allTools, []string{"ANDROID_PASSWORD"}, facts)
+							hostCapabilities := NewHostCapabilitiesWithFacts(host.OS, host.Arch, allTools, []string{"ANDROID_PASSWORD", "OHOS_SIGNING_PASSWORD"}, facts)
 							_, err := PlanBuildForHost(config, Request{Verb: "build"}, hostCapabilities)
 							wantSuccess := matrixCombinationSupported(target, format, host, toolchain, sign, notarize)
 							if (err == nil) != wantSuccess {
@@ -84,7 +84,7 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 		return format != "msi" || host.OS == "windows"
 	case "darwin", "ios":
 		return host.OS == "darwin"
-	case "android":
+	case "android", "openharmony":
 		return true
 	case "linux":
 		return format == "deb" || format == "rpm" || format == "archlinux"
@@ -94,14 +94,14 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 }
 
 func matrixToolchainAvailable(target, host Target, toolchain string) bool {
-	native := target.OS == "windows" || target.OS == "android" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin" || target.OS == "windows")
+	native := target.OS == "windows" || target.OS == "android" || target.OS == "openharmony" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin" || target.OS == "windows")
 	switch toolchain {
 	case "native":
 		return native
 	case "zig":
 		return target.OS == "windows" || target.OS == "linux"
 	case "docker":
-		return host.OS != "windows" && target.OS != "ios" && target.OS != "android"
+		return host.OS != "windows" && target.OS != "ios" && target.OS != "android" && target.OS != "openharmony"
 	case "auto":
 		return native || target.OS == "windows" || host.OS != "windows" && (target.OS == "linux" || target.OS == "darwin")
 	default:
@@ -111,7 +111,7 @@ func matrixToolchainAvailable(target, host Target, toolchain string) bool {
 
 func setMatrixToolchain(targets *manifest.Targets, target Target, toolchain string) {
 	platform := map[string]*manifest.Platform{
-		"windows": &targets.Windows, "darwin": &targets.Darwin, "linux": &targets.Linux, "ios": &targets.IOS, "android": &targets.Android,
+		"windows": &targets.Windows, "darwin": &targets.Darwin, "linux": &targets.Linux, "ios": &targets.IOS, "android": &targets.Android, "openharmony": &targets.OpenHarmony,
 	}[target.OS]
 	settings := map[string]*manifest.Target{
 		"amd64": &platform.AMD64, "arm64": &platform.ARM64, "universal": &platform.Universal,
@@ -125,6 +125,7 @@ func configureMatrixSigning(signing *manifest.Signing) {
 	signing.Linux = manifest.SigningPlatform{Enabled: true, Certificate: "release@example.com"}
 	signing.IOS = manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}
 	signing.Android = manifest.SigningPlatform{Enabled: true, Certificate: "android.keystore", KeyAlias: "upload", Credential: "ANDROID_PASSWORD"}
+	signing.OpenHarmony = manifest.SigningPlatform{Enabled: true, Certificate: "oh.p12", KeyAlias: "wails", Credential: "OHOS_SIGNING_PASSWORD"}
 }
 
 func TestDevelopmentAPKMatrixIsSeparateFromProductionFormats(t *testing.T) {

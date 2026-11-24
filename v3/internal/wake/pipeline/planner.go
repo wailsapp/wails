@@ -198,6 +198,9 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if request.TargetOS == "android" {
 		binaryOut = filepath.ToSlash(filepath.Join(generatedRoot, "libwails.so"))
 	}
+	if request.TargetOS == "openharmony" {
+		binaryOut = filepath.ToSlash(filepath.Join(generatedRoot, "libwails_go.so"))
+	}
 	plan := Plan{Name: request.Verb, Target: target, Nodes: map[NodeKey]Node{}}
 	add := func(node Node) NodeKey {
 		taintCacheAfterAlwaysRunHook(plan, &node)
@@ -296,7 +299,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	frontend := frontendStages{config: config, request: request, tags: tags, obfuscated: obfuscated, localInputs: localInputs, dependencies: projectHookDeps, add: add}.plan()
 	var assets NodeKey
-	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" {
+	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" || request.TargetOS == "openharmony" {
 		assets = add(platformAssetsNode(config, request, target, assetsOut, projectHookDeps))
 	}
 
@@ -1063,6 +1066,8 @@ func targetConfig(targets manifest.Targets, platform, arch string) manifest.Targ
 		value = targets.IOS
 	case "android":
 		value = targets.Android
+	case "openharmony":
+		value = targets.OpenHarmony
 	}
 	switch arch {
 	case "amd64":
@@ -1088,6 +1093,8 @@ func platformConfig(targets manifest.Targets, platform string) manifest.Platform
 		return targets.Linux
 	case "ios":
 		return targets.IOS
+	case "openharmony":
+		return targets.OpenHarmony
 	default:
 		return targets.Android
 	}

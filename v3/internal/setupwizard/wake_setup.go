@@ -74,7 +74,7 @@ func (w *Wizard) handleWakeSetup(rw http.ResponseWriter, r *http.Request) {
 func wakeSetupCatalog() []wakeSetupCatalogEntry {
 	catalog := []wakeSetupCatalogEntry{}
 	for _, capability := range buildinfo.TargetCapabilities() {
-		entry := wakeSetupCatalogEntry{OS: capability.Target.OS, Arch: capability.Target.Arch, Formats: []string{}, Experimental: capability.Target.OS == "ios" || capability.Target.OS == "android"}
+		entry := wakeSetupCatalogEntry{OS: capability.Target.OS, Arch: capability.Target.Arch, Formats: []string{}, Experimental: capability.Target.OS == "ios" || capability.Target.OS == "android" || capability.Target.OS == "openharmony"}
 		for _, format := range buildinfo.FormatCapabilities() {
 			if capability.SupportsFormat(format.Name, false) {
 				entry.Formats = append(entry.Formats, format.Name)

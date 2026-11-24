@@ -202,6 +202,8 @@
           link: "/guides/mobile/ios/"
         - label: "Android"
           link: "/guides/mobile/android/"
+        - label: "OpenHarmony"
+          link: "/guides/mobile/openharmony/"
     - label: "Experimental"
       collapsed: true
       items:

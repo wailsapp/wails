@@ -270,7 +270,7 @@ func splitTarget(target string) (string, string, error) {
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf("target must be platform/architecture, got %q", target)
 	}
-	if !slices.Contains([]string{"windows", "darwin", "linux", "ios", "android"}, parts[0]) {
+	if !slices.Contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony"}, parts[0]) {
 		return "", "", fmt.Errorf("unsupported target platform %q", parts[0])
 	}
 	if !slices.Contains([]string{"amd64", "arm64", "386", "arm", "universal"}, parts[1]) {

@@ -29,6 +29,7 @@ type manifestDocument struct {
 	Linux        *manifestPlatform     `manifest:"linux,block"`
 	IOS          *manifestPlatform     `manifest:"ios,block"`
 	Android      *manifestPlatform     `manifest:"android,block"`
+	OpenHarmony  *manifestPlatform     `manifest:"openharmony,block"`
 	Targets      []manifestTarget      `manifest:"target,block"`
 	Packages     []PackageFormat       `manifest:"package,block"`
 	Profiles     []manifestProfile     `manifest:"profile,block"`
@@ -121,7 +122,7 @@ type manifestPlatform struct {
 	MinimumVersion             *string               `manifest:"minimum_version,optional" platforms:"windows,darwin,linux,ios"`
 	BuildNumber                *int                  `manifest:"build_number,optional" platforms:"windows,darwin,linux,ios"`
 	Capabilities               *[]string             `manifest:"capabilities,optional" platforms:"windows,darwin,linux,ios"`
-	Icon                       *string               `manifest:"icon,optional" platforms:"windows,darwin,linux,ios,android"`
+	Icon                       *string               `manifest:"icon,optional" platforms:"windows,darwin,linux,ios,android,openharmony"`
 	Manifest                   *string               `manifest:"manifest,optional" platforms:"windows,android"`
 	AssetsCar                  *string               `manifest:"assets_car,optional" platforms:"darwin,ios"`
 	InfoPlist                  *string               `manifest:"info_plist,optional" platforms:"darwin,ios"`
@@ -300,7 +301,7 @@ func documentFromManifest(raw manifestDocument) (Document, error) {
 	for _, item := range []struct {
 		name string
 		body *manifestPlatform
-	}{{"windows", raw.Windows}, {"darwin", raw.Darwin}, {"linux", raw.Linux}, {"ios", raw.IOS}, {"android", raw.Android}} {
+	}{{"windows", raw.Windows}, {"darwin", raw.Darwin}, {"linux", raw.Linux}, {"ios", raw.IOS}, {"android", raw.Android}, {"openharmony", raw.OpenHarmony}} {
 		if item.body != nil {
 			applyPlatform(&doc, item.name, item.body)
 		}
@@ -682,7 +683,7 @@ func ResolvePackageFormat(packages Packages, platform, format string) (PackageFo
 	case "windows/msix":
 		value := packages.Windows.MSIX
 		return PackageFormat{Publisher: value.Publisher, Manifest: value.Manifest}, nil
-	case "darwin/app", "ios/app", "ios/ipa", "android/apk", "android/aab":
+	case "darwin/app", "ios/app", "ios/ipa", "android/apk", "android/aab", "openharmony/hap":
 		return PackageFormat{}, nil
 	case "darwin/dmg":
 		value := packages.Darwin.DMG
@@ -765,6 +766,8 @@ func platformByName(targets *Targets, name string) *Platform {
 		return &targets.Linux
 	case "ios":
 		return &targets.IOS
+	case "openharmony":
+		return &targets.OpenHarmony
 	default:
 		return &targets.Android
 	}
@@ -780,6 +783,8 @@ func signingByName(signing *Signing, name string) *SigningPlatform {
 		return &signing.Linux
 	case "ios":
 		return &signing.IOS
+	case "openharmony":
+		return &signing.OpenHarmony
 	default:
 		return &signing.Android
 	}

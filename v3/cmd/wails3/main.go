@@ -246,6 +246,15 @@ func main() {
 		androidRun.Action(func() error { return commands.AndroidRun(&androidRunOptions, androidRun.OtherArgs()) })
 	}
 
+	// OpenHarmony tools
+	openharmony := app.NewSubCommand("openharmony", "OpenHarmony tooling")
+	openharmony.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the OpenHarmony main", commands.OpenHarmonyOverlayGen)
+	if features.WakeEnabled() {
+		openharmony.NewSubCommandFunction("devices", "List connected OpenHarmony devices", commands.OpenHarmonyDevices)
+		openharmony.NewSubCommandFunction("deploy", "Install and launch a HAP on a connected device", commands.OpenHarmonyDeploy)
+		openharmony.NewSubCommandFunction("logs", "Stream application logs from a connected device", commands.OpenHarmonyLogs)
+	}
+
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
 

@@ -15,6 +15,7 @@ func TestCapabilityRegistryDefinesTheClosedV3TargetSet(t *testing.T) {
 		"linux/amd64", "linux/arm64",
 		"ios/arm64",
 		"android/amd64", "android/arm64", "android/universal",
+		"openharmony/amd64", "openharmony/arm64",
 	}, supportedTargetNames())
 	seen := map[string]bool{}
 	for _, capability := range buildinfo.TargetCapabilities() {

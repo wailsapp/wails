@@ -11,6 +11,7 @@ func TestRegistryDefinesClosedTargetsAndDefensiveEnumeration(t *testing.T) {
 	want := []string{
 		"windows/amd64", "windows/arm64", "darwin/amd64", "darwin/arm64", "darwin/universal",
 		"linux/amd64", "linux/arm64", "ios/arm64", "android/amd64", "android/arm64", "android/universal",
+		"openharmony/amd64", "openharmony/arm64",
 	}
 	assert.Equal(t, want, SupportedTargetNames())
 	capabilities := TargetCapabilities()
@@ -78,7 +79,7 @@ func TestRegistryOwnsOutputHostAndToolchainRules(t *testing.T) {
 		"nsis": "dist/example-installer.exe", "msix": "dist/example.msix", "dmg": "dist/example.dmg",
 		"appimage": "dist/example-arm64.AppImage", "deb": "dist/example_1.2.3_arm64.deb",
 		"rpm": "dist/example-1.2.3.arm64.rpm", "archlinux": "dist/example-1.2.3-arm64.pkg.tar.zst",
-		"ipa": "dist/example.ipa", "aab": "dist/example.aab", "apk": "dist/example.apk",
+		"ipa": "dist/example.ipa", "aab": "dist/example.aab", "apk": "dist/example.apk", "hap": "dist/example.hap",
 	}
 	for name, want := range wantPaths {
 		format, ok := LookupFormat(name)
@@ -111,4 +112,27 @@ func TestRegistryOwnsOutputHostAndToolchainRules(t *testing.T) {
 	assert.True(t, windows.SupportsToolchain("zig"))
 	ios, _ := LookupTarget("ios", "arm64")
 	assert.False(t, ios.SupportsToolchain("zig"))
+}
+
+func TestOpenHarmonyTargetsAndHapFormatAreRegistered(t *testing.T) {
+	for _, arch := range []string{"amd64", "arm64"} {
+		target, ok := LookupTarget("openharmony", arch)
+		require.True(t, ok)
+		assert.Equal(t, Target{OS: "openharmony", Arch: arch}, target.Target)
+		assert.False(t, target.Synthetic())
+		require.Equal(t, 1, int(target.FormatCount))
+		assert.Equal(t, "hap", target.Formats[0])
+		assert.True(t, target.SupportsFormat("hap", false))
+		assert.False(t, target.SupportsFormat("hap", true))
+		assert.True(t, target.SupportsToolchain("auto"))
+		assert.True(t, target.SupportsToolchain("native"))
+		assert.False(t, target.SupportsToolchain("docker"))
+	}
+	format, ok := LookupFormat("hap")
+	require.True(t, ok)
+	assert.Equal(t, "hap", format.Name)
+	assert.Equal(t, "openharmony", format.Platform)
+	assert.True(t, format.Production)
+	assert.False(t, format.Development)
+	assert.Equal(t, "dist/example.hap", format.OutputPath("dist", "example", "1.2.3", "arm64"))
 }

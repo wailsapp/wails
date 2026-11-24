@@ -151,6 +151,8 @@ var targetRegistry = [...]TargetCapability{
 	{Target: Target{OS: "android", Arch: "amd64"}, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
 	{Target: Target{OS: "android", Arch: "arm64"}, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
 	{Target: Target{OS: "android", Arch: "universal"}, Components: [2]Target{{OS: "android", Arch: "amd64"}, {OS: "android", Arch: "arm64"}}, ComponentCount: 2, Formats: [5]string{"aab", "apk"}, FormatCount: 2, Toolchains: ToolchainAuto | ToolchainNative},
+	{Target: Target{OS: "openharmony", Arch: "amd64"}, Formats: [5]string{"hap"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative},
+	{Target: Target{OS: "openharmony", Arch: "arm64"}, Formats: [5]string{"hap"}, FormatCount: 1, Toolchains: ToolchainAuto | ToolchainNative},
 }
 
 var formatRegistry = [...]FormatCapability{
@@ -165,6 +167,7 @@ var formatRegistry = [...]FormatCapability{
 	{Name: "ipa", Platform: "ios", Production: true, Hosts: HostDarwin, RequiredTools: [3]string{"xcrun", "codesign"}, ToolCount: 2, RequiredDestination: "device", suffix: ".ipa"},
 	{Name: "aab", Platform: "android", Production: true, Hosts: HostAny, RequiredTools: [3]string{"java"}, ToolCount: 1, suffix: ".aab"},
 	{Name: "apk", Platform: "android", Development: true, Hosts: HostAny, RequiredTools: [3]string{"java"}, ToolCount: 1, suffix: ".apk"},
+	{Name: "hap", Platform: "openharmony", Production: true, Hosts: HostAny, suffix: ".hap"},
 }
 
 func LookupTarget(platform, arch string) (TargetCapability, bool) {

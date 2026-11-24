@@ -142,13 +142,15 @@ func defaults(project Project) Document {
 	targets := Targets{
 		Windows: defaultPlatform("amd64", "arm64"), Darwin: defaultPlatform("amd64", "arm64"),
 		Linux: defaultPlatform("amd64", "arm64"), IOS: defaultPlatform("arm64"), Android: defaultPlatform("arm64"),
+		OpenHarmony: defaultPlatform("amd64", "arm64"),
 	}
 	targets.IOS.MinimumVersion = "15.0"
 	targets.Android.MinimumSDK = 21
 	packages := Packages{
 		Windows: PackagePlatform{Formats: []string{"nsis"}}, Darwin: PackagePlatform{Formats: []string{"dmg"}},
 		Linux: PackagePlatform{Formats: []string{"appimage"}}, IOS: PackagePlatform{Formats: []string{"ipa"}},
-		Android: PackagePlatform{Formats: []string{"aab"}},
+		Android:     PackagePlatform{Formats: []string{"aab"}},
+		OpenHarmony: PackagePlatform{Formats: []string{"hap"}},
 	}
 	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Hooks: map[HookPhase]Hook{}, Profiles: map[string]Profile{}}
 }
@@ -185,7 +187,7 @@ func configFromDocument(root, profile string, doc Document) Config {
 
 func validateProject(project Project) error {
 	for _, platform := range project.SupportedPlatforms {
-		if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony"}, platform) {
 			return fieldValidationError("project.supported_platforms", "unsupported platform %q", platform)
 		}
 	}
@@ -267,6 +269,7 @@ func validateConfig(config Config) error {
 	}{
 		{"windows", config.Targets.Windows}, {"darwin", config.Targets.Darwin}, {"linux", config.Targets.Linux},
 		{"ios", config.Targets.IOS}, {"android", config.Targets.Android},
+		{"openharmony", config.Targets.OpenHarmony},
 	} {
 		name, platform := platformEntry.name, platformEntry.value
 		for _, targetEntry := range []struct {
@@ -319,6 +322,7 @@ func validateConfig(config Config) error {
 	}{
 		{"windows", config.Signing.Windows}, {"darwin", config.Signing.Darwin}, {"linux", config.Signing.Linux},
 		{"ios", config.Signing.IOS}, {"android", config.Signing.Android},
+		{"openharmony", config.Signing.OpenHarmony},
 	} {
 		name, signing := signingEntry.name, signingEntry.value
 		for field, value := range map[string]string{"certificate": signing.Certificate, "entitlements": signing.Entitlements, "provisioning_profile": signing.ProvisioningProfile} {
@@ -356,7 +360,7 @@ func validateConfig(config Config) error {
 	for _, formatEntry := range []struct{ platform, format string }{
 		{"windows", "nsis"}, {"windows", "msix"}, {"darwin", "app"}, {"darwin", "dmg"},
 		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"}, {"linux", "void"},
-		{"ios", "app"}, {"ios", "ipa"}, {"android", "apk"}, {"android", "aab"},
+		{"ios", "app"}, {"ios", "ipa"}, {"android", "apk"}, {"android", "aab"}, {"openharmony", "hap"},
 	} {
 		name := formatEntry.platform + "." + formatEntry.format
 		format, _ := ResolvePackageFormat(config.Package, formatEntry.platform, formatEntry.format)
@@ -682,7 +686,7 @@ func pathEntersWails(value string) bool {
 
 func validateRegistrationPlatforms(field string, platforms []string) error {
 	for _, platform := range platforms {
-		if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony"}, platform) {
 			return fieldValidationError(field+".platforms", "contains unsupported platform %q", platform)
 		}
 	}

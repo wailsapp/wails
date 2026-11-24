@@ -98,6 +98,56 @@
 
 **商用 HarmonyOS 仅编译验证（未安装、未运行）。** 为确认模板也能产出商用版本 HAP，在独立副本把 `harmony/build-profile.json5` 的 `runtimeOS` 从 `OpenHarmony` 改为 `HarmonyOS`，其余配置不变（本机 DevEco 安装的是 HarmonyOS 26.0.0.105 SDK，apiVersion 26，`sdk-pkg.json` 明示 displayName 为 HarmonyOS 26.0.0；`sdk/default/hms` 提供商用 ETS/native API 声明，`sdk/default/openharmony/native/llvm` 提供共用编译器与 sysroot）。商用模式需设置环境变量 `DEVECO_SDK_HOME=<DevEco Studio>/sdk`，否则 hvigor 报 `Invalid value of DEVECO_SDK_HOME`（OH 模式用 local.properties 的 sdk.dir 即可，不需要该变量）。`hvigorw.bat assembleHap --no-daemon` BUILD SUCCESSFUL，34 任务全执行；日志出现 `Will skip sign 'hos_hap'`，`hos_hap` 为商用 HarmonyOS 包格式标识（OH 模式为 `hap`）。产物 `entry-default-unsigned.hap` 含 `libs/x86_64/{libentry,libwails_go,libc++_shared}.so`、bundle `com.wails.nativehello`、ability `EntryAbility`；`pack.info` 记录 apiVersion compatible/target 均为 26、releaseType Release。**本次仅编译打包，未安装、未在真机或模拟器运行**，不推断鸿蒙 3.0/4.x/5.x 的运行兼容性。
 
+## 5. 产品化管线端到端实测（2026-11-24）
+
+M6 模板接进 Wake/YAML 构建管线后，用单条 `wails3 build` 命令端到端产出可装机 HAP，并在 DevEco x86_64 模拟器复现 M3 PASS。测试项目在 `C:\Users\a1\oh-e2e-test`（标准 `wails.yaml` + `main.go` + `frontend/`，前端把 M3 的 `index.html` / `main.js` 复制过来以复现同一条 binding/event 链路）。
+
+**精确命令（PowerShell）**：
+
+```powershell
+$env:WAILS_EXP_USE_WAKE = '1'
+$env:DEVECO_SDK_HOME = 'C:\Program Files\Huawei\DevEco Studio/sdk'
+$env:PATH = 'C:\Users\a1\sdk\go1.27.4-hmos\toolchains\81bad8b625b9c845961010ea2af776a3cb426b4a-windows-amd64\bin;' + $env:PATH
+wails3 build -targets openharmony/amd64 -formats hap
+```
+
+`wails3` 是 fork 构建的 `wails3-oh.exe`（`go build -o wails3-oh.exe ./v3/cmd/wails3`）。`WAILS_EXP_USE_WAKE=1` 打开 Wake/YAML 路由；`DEVECO_SDK_HOME` 缺失报 `hap packaging for openharmony/amd64 requires an OpenHarmony SDK (DevEco)`；`PATH` 前置的定制 Go 为 `go1.27.4-hmos-devel windows/amd64`，stock Go 1.26.5 报 `buildmode c-shared not supported`。`OHOS_BASE_SDK_HOME` 由管线从 `DEVECO_SDK_HOME` 自动注入给 hvigor，无需手工设置。管线还需把 c-shared 生成的头复制到模板 `cpp/include/`，并按 8.3 短路径/整体加引号处理含空格的 CC/sysroot（`quoted.Split` 只认整 token 引号）。
+
+**产物**：`bin/ohe2e.hap`，**11,715,510 字节 ≈ 11.2 MiB**；`python zipfile` 读 `module.json` 得 bundleName `com.wails.ohe2e`、ability `EntryAbility`，`libs/x86_64/` 下为 `libentry.so`、`libwails_go.so`、`libc++_shared.so`。模板产物路径为 `bin/<name>.hap`。
+
+**装机、启动与日志（hilog 标签为 `Wails`）**：
+
+```bash
+cd C:/Users/a1/oh-e2e-test
+hdc -t 127.0.0.1:5555 install bin/ohe2e.hap
+hdc -t 127.0.0.1:5555 shell aa start -b com.wails.ohe2e -a EntryAbility
+hdc -t 127.0.0.1:5555 shell hilog -x -T Wails
+```
+
+绝对路径 `install C:/.../ohe2e.hap` 会被 hdc 误解析，必须在 HAP 目录用相对路径。模板 ArkTS 用 `hilog.info(0x0, 'Wails', ...)`，与 M3 测试工程的 `WailsM3` 标签不同；`-T WailsM3` 查不到产品化 HAP 的 PASS。实测 PASS 文本：
+
+```
+M3 PASS: local HTML/JS/CSS, Greet and Go event
+```
+
+同批日志含 `Runtime ready; creating local-origin ArkWeb`、`Controller attached`、`Intercept` `/`、`/style.css`、`/main.js`、`/wails/runtime.js`、`Local-origin frontend loaded`。设备为 OpenHarmony `7.0.0.107`、x86_64、API 26；资源走 Go asset handler，`Greet` 走真实 Wails runtime，Go 事件回页面，无本地 HTTP 监听。首启仍可能 `appfreeze`（`THREAD_BLOCK_6S`），重跑一次即过，与 M5/M6 同源、非桥回归。
+
+**OH 签名 stage 已实现（未端到端验证）。** `v3/internal/commands/openharmony_sign.go` 的 `signOpenHarmony` 从 `signing.openharmony` 读字段，映射为：`certificate` → `.p12` keystore、`entitlements` → `.cer` 签名证书、`provisioning_profile` → `.p7b` profile、`identity`/`key_alias` → keystore 内别名（两者取一）、`credential` → 保存 keystore 密码的**环境变量名**（不是密码本身）。`wails.yaml` 示例：
+
+```yaml
+openharmony:
+  signing:
+    certificate: signing/openharmony.p12
+    entitlements: signing/openharmony.cer
+    provisioning_profile: signing/openharmony.p7b
+    identity: wails
+    credential: OHOS_SIGNING_PASSWORD
+```
+
+签名时设 `$env:OHOS_SIGNING_PASSWORD = '<p12 password>'`。实现方式是往生成的 hvigor 工程的 staging 副本 `build-profile.json5` 注入 `signingConfigs` 段，再重跑 `hvigorw assembleHap` 产出 signed HAP（产物 `<input>.signed`）；还要求 `DEVECO_SDK_HOME` 已设，且能从 `<DevEco Studio>/tools/hvigor/bin/hvigorw(.bat)` 找到 hvigorw。**验证边界**：本机无 DevEco 签名凭据，只验证注入函数单测 `TestInjectOpenHarmonySigningConfig` PASS；真实签名出包、装机与运行均未端到端验证，上面的 M3 PASS 来自 unsigned HAP。
+
+**边界**：仅 DevEco 模拟器 x86_64 端到端实测；arm64 真机、商用 HarmonyOS、多窗口、完整移动 API 未验证（arm64 与 `runtimeOS: HarmonyOS` 仅构建/编译通过）。仍缺：legacy（无 `wails.yaml`）Taskfile、`openharmony:dev`/dev-run、deploy/device run、真实签名出包与安装、CI 构建与模拟器验收任务（签名边界详见上段）。站点文档：`docs/mpress/content/guides/mobile/openharmony.md`。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。

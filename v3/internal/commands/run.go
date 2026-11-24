@@ -130,7 +130,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 	if err != nil {
 		return err
 	}
-	if !options.Plan && goos != "android" && goos != "ios" && (goos != runtime.GOOS || (arch != runtime.GOARCH && !(goos == "darwin" && arch == "universal"))) {
+	if !options.Plan && goos != "android" && goos != "ios" && goos != "openharmony" && (goos != runtime.GOOS || (arch != runtime.GOARCH && !(goos == "darwin" && arch == "universal"))) {
 		return fmt.Errorf("cannot run desktop target %s on %s/%s", target, runtime.GOOS, runtime.GOARCH)
 	}
 	if args != nil {
@@ -156,7 +156,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 		sort.Strings(keys)
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"target": target, "executable": executable, "directory": root, "args": settings.Args, "environment_keys": keys, "compilers": resolvedPlanCompilers(plan)})
 	}
-	if goos == "android" || goos == "ios" {
+	if goos == "android" || goos == "ios" || goos == "openharmony" {
 		return runMobileApplication(ctx, options, settings, build, plan, executable, goos, arch)
 	}
 	if _, err := runManifestPipelineResult(build); err != nil {
@@ -173,7 +173,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 func runArtifactPath(root string, plan pipeline.Plan, goos, binary string) (string, error) {
 	for _, key := range plan.Artifacts {
 		node := plan.Nodes[key]
-		if node.Artifact.Kind != pipeline.ArtifactBinary && node.Artifact.Format != "app" && node.Artifact.Format != "apk" {
+		if node.Artifact.Kind != pipeline.ArtifactBinary && node.Artifact.Format != "app" && node.Artifact.Format != "apk" && node.Artifact.Format != "hap" {
 			continue
 		}
 		path := filepath.Join(root, filepath.FromSlash(node.Output))

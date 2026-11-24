@@ -1126,6 +1126,8 @@ func taskfileRole(rel string) string {
 		return "ios"
 	case strings.Contains(rel, "/android/"):
 		return "android"
+	case strings.Contains(rel, "/openharmony/"):
+		return "openharmony"
 	default:
 		return "unknown"
 	}
@@ -1240,6 +1242,8 @@ func rootTaskDefinitionSupported(definition any) bool {
 func init() {
 	legacyTaskNames["ios"] = set("install:deps", "build", "package", "package:ipa", "compile:ios:link", "create:app:bundle", "deploy-simulator", "deploy-device", "compile:ios", "generate:ios:bindings", "ensure-simulator", "generate:ios:overlay", "generate:ios:xcode", "run", "xcode", "logs", "logs:dev", "logs:wide")
 	legacyTaskNames["android"] = set("install:deps", "build", "compile:go:shared", "compile:go:all-archs", "package", "package:fat", "bundle", "bundle:fat", "assemble:apk", "assemble:apk:release", "assemble:aab", "assemble:aab:release", "generate:android:overlay", "generate:android:bindings", "ensure-emulator", "deploy-emulator", "run", "device:list", "run:device", "deploy-device", "studio", "logs", "logs:all", "clean")
+	legacyTaskNames["openharmony"] = set("install:deps", "build", "generate:openharmony:overlay", "compile:go:shared", "package", "assemble:hap", "clean")
+	knownStockTaskfiles["openharmony"] = set("82b33115beedfb15aa1383e0f4f357b511dd5ab55280dbf417ec5537e8e2a216")
 }
 func set(values ...string) map[string]bool {
 	result := map[string]bool{}

@@ -55,6 +55,7 @@ type HostCapabilities struct {
 	appleSDKs            []string
 	androidSDK           bool
 	androidNDK           bool
+	ohSDK                bool
 }
 
 type HostFacts struct {
@@ -64,6 +65,7 @@ type HostFacts struct {
 	AppleSDKs        []string
 	AndroidSDK       bool
 	AndroidNDK       bool
+	OHSDK            bool
 }
 
 func NewHostCapabilities(hostOS, hostArch string, tools, credentials []string) HostCapabilities {
@@ -92,6 +94,7 @@ func NewHostCapabilitiesWithFacts(hostOS, hostArch string, tools, credentials []
 		containerRuntime: containerRuntime, containerImages: uniqueSorted(containerImages),
 		containerImagesKnown: true,
 		androidSDK:           facts.AndroidSDK, androidNDK: facts.AndroidNDK,
+		ohSDK:                facts.OHSDK,
 	}
 }
 
@@ -165,6 +168,9 @@ func currentHostFacts(tools []string, operations hostProbeOperations, probeConta
 		}
 	}
 	facts.AndroidNDK = directoryExists(ndk, operations.stat)
+	// OpenHarmony uses the DevEco-provided SDK and a matching custom Go
+	// toolchain; DEVECO_SDK_HOME points at the SDK root.
+	facts.OHSDK = directoryExists(operations.getenv("DEVECO_SDK_HOME"), operations.stat)
 	for _, containerRuntime := range []string{"docker", "podman"} {
 		if !hasTool(containerRuntime) {
 			continue
@@ -341,6 +347,9 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 			if spec.TargetOS == "android" && !host.androidSDK {
 				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires an Android SDK", operation))
 			}
+			if spec.TargetOS == "openharmony" && !host.ohSDK {
+				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires an OpenHarmony SDK (DevEco)", operation))
+			}
 		case SignArtifact:
 			if err := validateSigningHost(node.Spec.(SignSpec), host); err != nil {
 				return Plan{}, annotateHostConfigurationError(config, node, err)
@@ -455,6 +464,12 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 			return hostConfigurationField("", fmt.Errorf("%s requires an Android NDK", operation))
 		}
 	}
+	if spec.TargetOS == "openharmony" && !host.ohSDK {
+		return hostConfigurationField("", fmt.Errorf("%s requires an OpenHarmony SDK (DevEco)", operation))
+	}
+	if spec.TargetOS == "openharmony" && spec.Toolchain != "native" {
+		return hostConfigurationField("toolchain", fmt.Errorf("%s requires the native DevEco Go toolchain", operation))
+	}
 	if spec.TargetOS == "ios" {
 		sdk := "iphonesimulator"
 		if spec.Destination == "device" {
@@ -553,6 +568,8 @@ func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 	switch spec.TargetOS {
 	case "android":
 		return hostBit(host.os) != 0
+	case "openharmony":
+		return hostBit(host.os) != 0
 	case "ios":
 		return host.os == "darwin"
 	case "windows":
@@ -603,6 +620,17 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			tool = "apksigner"
 		}
 		return hostConfigurationField("sign", requireHostTools(host, operation, tool))
+	case "openharmony":
+		if spec.Config.Certificate == "" || spec.Config.KeyAlias == "" || spec.Config.Credential == "" {
+			return hostConfigurationField("certificate", fmt.Errorf("openharmony signing requires certificate, key_alias, and credential"))
+		}
+		if !host.hasCredential(spec.Config.Credential) {
+			return hostConfigurationField("credential", fmt.Errorf("openharmony signing credential %q is unavailable", spec.Config.Credential))
+		}
+		if !host.ohSDK {
+			return hostConfigurationField("sign", fmt.Errorf("openharmony signing requires an OpenHarmony SDK (DevEco)"))
+		}
+		return nil
 	case "linux":
 		if spec.Config.Certificate == "" {
 			return hostConfigurationField("certificate", fmt.Errorf("linux signing requires signing.linux.certificate as an exported PGP key file or legacy PGP key identifier"))
