@@ -234,6 +234,7 @@ func checkNativeAPIs(app *application.App, window *application.WebviewWindow) er
 // Only enable dialog automation inside an isolated X server.
 func pressDialogKey(title, key string) error {
 	deadline := time.Now().Add(5 * time.Second)
+	var lastErr error
 	for time.Now().Before(deadline) {
 		output, err := exec.Command("xdotool", "search", "--onlyvisible", "--name", "^"+title+"$").Output()
 		ids := strings.Fields(string(output))
@@ -249,13 +250,22 @@ func pressDialogKey(title, key string) error {
 			}
 		}
 		if err == nil && len(ids) != 0 {
+			// A dialog can be found before it is mapped and able to take
+			// focus, so a failed focus or key press is retried until the
+			// deadline rather than failing the probe.
 			id := ids[len(ids)-1]
 			if err := exec.Command("xdotool", "windowfocus", "--sync", id).Run(); err != nil {
-				return err
+				lastErr = fmt.Errorf("xdotool windowfocus %s: %w", id, err)
+			} else if err := exec.Command("xdotool", "key", "--window", id, key).Run(); err != nil {
+				lastErr = fmt.Errorf("xdotool key %s %s: %w", key, id, err)
+			} else {
+				return nil
 			}
-			return exec.Command("xdotool", "key", "--window", id, key).Run()
 		}
 		time.Sleep(50 * time.Millisecond)
+	}
+	if lastErr != nil {
+		return fmt.Errorf("dialog %q: %w", title, lastErr)
 	}
 	return fmt.Errorf("dialog %q did not appear", title)
 }
