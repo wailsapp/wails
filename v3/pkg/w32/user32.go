@@ -52,10 +52,6 @@ var (
 	procScreenToClient                = moduser32.NewProc("ScreenToClient")
 	procCallWindowProc                = moduser32.NewProc("CallWindowProcW")
 	procSetWindowLong                 = moduser32.NewProc("SetWindowLongW")
-	// Wails v3 does not support 32-bit Windows. On 32-bit Windows these Ptr
-	// APIs are C macros over SetWindowLongW/GetWindowLongW and are not exported
-	// from user32.dll, so keep the real 64-bit exports here instead of adding a
-	// 386 fallback.
 	procSetWindowLongPtr              = moduser32.NewProc("SetWindowLongPtrW")
 	procGetWindowLong                 = moduser32.NewProc("GetWindowLongW")
 	procGetWindowLongPtr              = moduser32.NewProc("GetWindowLongPtrW")
@@ -207,6 +203,10 @@ var (
 )
 
 func init() {
+	if unsafe.Sizeof(uintptr(0)) == 4 {
+		procSetWindowLongPtr = procSetWindowLong
+		procGetWindowLongPtr = procGetWindowLong
+	}
 	runtime.LockOSThread()
 	mainThread = GetCurrentThreadId()
 }
