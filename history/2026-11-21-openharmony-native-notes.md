@@ -216,7 +216,7 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 **上游有，且与本 fork HEAD 逐字节一致**：6 个文件的 SHA256 与 `raw.githubusercontent.com/wailsapp/wails/master` 全部相同。工作树的 modified 是一次换行符事故——每个文件被压成 1 行（HEAD 行数 1177/214/25/74/704/39 → 工作树均 1 行），diff 为 2235 删 / 12 增；`gofmt -e` 在 `dock_linux.go`、`notifications_linux.go` 报 `expected ';', found 'import'`。唯一看似有意的改动是 build tag 加了 `!openharmony`，但 `GOOS=openharmony` 下 `linux` 标签本就不成立，属于多余。
 
-**用处**：对鸿蒙 native 验收无用；对 fork 与上游保持一致、Linux 构建与绑定生成有用。建议从 HEAD 恢复这 6 个文件，不要提交当前的压坏版本。本轮只做调查记录，未改动这些文件。
+**用处**：对鸿蒙 native 验收无用；对 fork 与上游保持一致、Linux 构建与绑定生成有用。**用户确认后已于 2026-11-25 从 HEAD 恢复这 6 个文件**：行数回到 1177/214/25/74/704/39，`gofmt -e` 全部通过，`git status` 已干净；工作树为 CRLF，所以原始字节哈希与上游 LF 不同，但 git blob 与上游 master 一致。
 
 ## 参考资料
 
