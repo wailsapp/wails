@@ -161,6 +161,51 @@ openharmony:
 
 **验证边界**：只在这台 DevEco x86_64 模拟器与该 demo 工程验证；桌面 Wails 其他 demo、arm64 真机、商用 HarmonyOS 未验。诊断期间在 fork 源码临时加的 hilog 打点已全部删除，工作树相对已提交的 M3 内容无新增改动。
 
+## 7. 交付路径与复测说明（2026-11-24）
+
+**路径**
+
+| 内容 | 位置 |
+|---|---|
+| fork 源码 / 已提交 M3 与文档 | `C:\Users\a1\wails3`（分支 `openharmony`，HEAD `ae35b82cc`） |
+| 本机构建用 CLI | `C:\Users\a1\Desktop\wails3-harmonyos-windows-amd64.exe`（从 `v3/cmd/wails3` 重新构建） |
+| 桌面手感 demo 工程 | `C:\Users\a1\Desktop\wails3-harmony-demo\Harmony_Demo`（`com.wails.harmonydemo`）；桥接前导脚本在 `frontend/index.html`，8 项绑定调用在 `frontend/src/main.js` |
+| M3 最小验证工程 | `C:\Users\a1\wails3\v3\tests\openharmony-hellowails\{go,harmony}`（已入库） |
+| 资料包 | `C:\Users\a1\Desktop\wails3鸿蒙化-资料包\` |
+| demo 已验收 OpenHarmony HAP | `...\Harmony_Demo\bin\harmonydemo.hap`，12,478,526 字节，`compileSdkType: OpenHarmony` |
+| HarmonyOS 对照 HAP | `C:\Users\a1\AppData\Local\Temp\harmonydemo-hos_hap.hap`，12,406,886 字节，`compileSdkType: HarmonyOS`；staged 副本在 `...\Harmony_Demo\.wails\build\default\harmonyos-amd64\artifacts\harmonydemo.hap` |
+
+对比构建 5/5 通过：`wails3 build -targets harmonyos/amd64 -formats hos_hap`（20.0s）与 `-targets openharmony/amd64 -formats hap` 均产出 `com.wails.harmonydemo` 的 x86_64 HAP，`libs/x86_64/` 含 `libentry.so`、`libwails_go.so`、`libc++_shared.so`。manifest 差异只在 SDK 口径：`compileSdkType` 分别为 `HarmonyOS` / `OpenHarmony`，`targetAPIVersion` 分别为 `260000026` / `26`。两者模板都声明 `ohos.permission.INTERNET`，但实测无本地 HTTP 监听；这只证明权限声明存在，不代表起过服务。HarmonyOS 对照包只验证构建与内容，未在商用真机安装运行。构建完成后 `bin/harmonydemo.hap` 已还原为 OpenHarmony 版本。
+
+**复测命令**（环境：`WAILS_EXP_USE_WAKE=1`、`DEVECO_SDK_HOME=<DevEco>/sdk`、PATH 前置定制 Go 与 `jbr/bin`）
+
+```bash
+# 在 demo 工程目录
+wails3 build -targets openharmony/amd64 -formats hap
+wails3 build -targets harmonyos/amd64 -formats hos_hap
+
+# OpenHarmony 装机与验收（从 HAP 目录用相对路径）
+hdc -t 127.0.0.1:5555 shell aa force-stop com.wails.harmonydemo
+hdc -t 127.0.0.1:5555 install bin/harmonydemo.hap
+hdc -t 127.0.0.1:5555 shell aa start -b com.wails.harmonydemo -a EntryAbility
+hdc -t 127.0.0.1:5555 shell hilog -x 2>&1 | grep 'DEMO PASS'
+# 期望：DEMO PASS: bindings, events, local assets and CSS
+
+# M3 最小工程（独立标签）
+cd C:/Users/a1/wails3/v3/tests/openharmony-hellowails/harmony
+hdc -t 127.0.0.1:5555 install entry/build/default/outputs/default/entry-default-unsigned.hap
+hdc -t 127.0.0.1:5555 shell aa start -b com.wails.nativehello -a EntryAbility
+hdc -t 127.0.0.1:5555 shell hilog -x 2>&1 | grep 'M3 PASS'
+# 期望：M3 PASS: local HTML/JS/CSS, Greet and Go event
+
+# 冷启动与监听边界
+hdc -t 127.0.0.1:5555 shell aa force-stop com.wails.harmonydemo
+hdc -t 127.0.0.1:5555 shell aa start -b com.wails.harmonydemo -a EntryAbility
+hdc -t 127.0.0.1:5555 shell netstat -an | grep LISTEN
+```
+
+demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 bindings 已生成，跳过自动生成可避开你本地 `v3/pkg/services/dock/dock_linux.go` 的语法错误。冷启动偶发 `appfreeze`，重跑一次即可；hilog 中 `Wails` 是产品化模板标签，`WailsM3` 是 M3 最小工程标签。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
