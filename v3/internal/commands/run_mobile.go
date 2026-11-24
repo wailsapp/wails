@@ -31,6 +31,11 @@ func configureRunTarget(options *RunOptions, goos, arch string, settings manifes
 			return fmt.Errorf("--emulator and --destination are not valid for OpenHarmony; use --device for the hdc target")
 		}
 		build.Formats = []string{"hap"}
+	case "harmonyos":
+		if options.Emulator != "" || options.Destination != "" {
+			return fmt.Errorf("--emulator and --destination are not valid for HarmonyOS; use --device for the hdc target")
+		}
+		build.Formats = []string{"hos_hap"}
 	case "ios":
 		if !options.Plan && runtime.GOOS != "darwin" {
 			return fmt.Errorf("iOS run requires macOS and Xcode")
@@ -89,7 +94,7 @@ func runMobileApplication(ctx context.Context, options *RunOptions, settings man
 		}
 		return androidRunWithOperations(ctx, AndroidRunOptions{Device: options.Device, Emulator: options.Emulator, Logs: true}, "", operations)
 	}
-	if goos == "openharmony" {
+	if goos == "openharmony" || goos == "harmonyos" {
 		device, err := resolveOpenHarmonyDevice(ctx, options.Device)
 		if err != nil {
 			return err

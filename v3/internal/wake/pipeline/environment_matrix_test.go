@@ -84,7 +84,7 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 		return format != "msi" || host.OS == "windows"
 	case "darwin", "ios":
 		return host.OS == "darwin"
-	case "android", "openharmony":
+	case "android", "openharmony", "harmonyos":
 		return true
 	case "linux":
 		return format == "deb" || format == "rpm" || format == "archlinux"
@@ -94,14 +94,14 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 }
 
 func matrixToolchainAvailable(target, host Target, toolchain string) bool {
-	native := target.OS == "windows" || target.OS == "android" || target.OS == "openharmony" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin" || target.OS == "windows")
+	native := target.OS == "windows" || target.OS == "android" || target.OS == "openharmony" || target.OS == "harmonyos" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin" || target.OS == "windows")
 	switch toolchain {
 	case "native":
 		return native
 	case "zig":
 		return target.OS == "windows" || target.OS == "linux"
 	case "docker":
-		return host.OS != "windows" && target.OS != "ios" && target.OS != "android" && target.OS != "openharmony"
+		return host.OS != "windows" && target.OS != "ios" && target.OS != "android" && target.OS != "openharmony" && target.OS != "harmonyos"
 	case "auto":
 		return native || target.OS == "windows" || host.OS != "windows" && (target.OS == "linux" || target.OS == "darwin")
 	default:
@@ -111,7 +111,7 @@ func matrixToolchainAvailable(target, host Target, toolchain string) bool {
 
 func setMatrixToolchain(targets *manifest.Targets, target Target, toolchain string) {
 	platform := map[string]*manifest.Platform{
-		"windows": &targets.Windows, "darwin": &targets.Darwin, "linux": &targets.Linux, "ios": &targets.IOS, "android": &targets.Android, "openharmony": &targets.OpenHarmony,
+		"windows": &targets.Windows, "darwin": &targets.Darwin, "linux": &targets.Linux, "ios": &targets.IOS, "android": &targets.Android, "openharmony": &targets.OpenHarmony, "harmonyos": &targets.HarmonyOS,
 	}[target.OS]
 	settings := map[string]*manifest.Target{
 		"amd64": &platform.AMD64, "arm64": &platform.ARM64, "universal": &platform.Universal,
@@ -126,6 +126,7 @@ func configureMatrixSigning(signing *manifest.Signing) {
 	signing.IOS = manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}
 	signing.Android = manifest.SigningPlatform{Enabled: true, Certificate: "android.keystore", KeyAlias: "upload", Credential: "ANDROID_PASSWORD"}
 	signing.OpenHarmony = manifest.SigningPlatform{Enabled: true, Certificate: "oh.p12", KeyAlias: "wails", Credential: "OHOS_SIGNING_PASSWORD"}
+	signing.HarmonyOS = manifest.SigningPlatform{Enabled: true, Certificate: "hos.p12", KeyAlias: "wails", Credential: "OHOS_SIGNING_PASSWORD"}
 }
 
 func TestDevelopmentAPKMatrixIsSeparateFromProductionFormats(t *testing.T) {

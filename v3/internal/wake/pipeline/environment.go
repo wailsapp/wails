@@ -94,7 +94,7 @@ func NewHostCapabilitiesWithFacts(hostOS, hostArch string, tools, credentials []
 		containerRuntime: containerRuntime, containerImages: uniqueSorted(containerImages),
 		containerImagesKnown: true,
 		androidSDK:           facts.AndroidSDK, androidNDK: facts.AndroidNDK,
-		ohSDK:                facts.OHSDK,
+		ohSDK: facts.OHSDK,
 	}
 }
 
@@ -347,7 +347,7 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 			if spec.TargetOS == "android" && !host.androidSDK {
 				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires an Android SDK", operation))
 			}
-			if spec.TargetOS == "openharmony" && !host.ohSDK {
+			if (spec.TargetOS == "openharmony" || spec.TargetOS == "harmonyos") && !host.ohSDK {
 				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires an OpenHarmony SDK (DevEco)", operation))
 			}
 		case SignArtifact:
@@ -464,10 +464,10 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 			return hostConfigurationField("", fmt.Errorf("%s requires an Android NDK", operation))
 		}
 	}
-	if spec.TargetOS == "openharmony" && !host.ohSDK {
+	if (spec.TargetOS == "openharmony" || spec.TargetOS == "harmonyos") && !host.ohSDK {
 		return hostConfigurationField("", fmt.Errorf("%s requires an OpenHarmony SDK (DevEco)", operation))
 	}
-	if spec.TargetOS == "openharmony" && spec.Toolchain != "native" {
+	if (spec.TargetOS == "openharmony" || spec.TargetOS == "harmonyos") && spec.Toolchain != "native" {
 		return hostConfigurationField("toolchain", fmt.Errorf("%s requires the native DevEco Go toolchain", operation))
 	}
 	if spec.TargetOS == "ios" {
@@ -568,7 +568,7 @@ func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 	switch spec.TargetOS {
 	case "android":
 		return hostBit(host.os) != 0
-	case "openharmony":
+	case "openharmony", "harmonyos":
 		return hostBit(host.os) != 0
 	case "ios":
 		return host.os == "darwin"
@@ -620,15 +620,15 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			tool = "apksigner"
 		}
 		return hostConfigurationField("sign", requireHostTools(host, operation, tool))
-	case "openharmony":
+	case "openharmony", "harmonyos":
 		if spec.Config.Certificate == "" || spec.Config.KeyAlias == "" || spec.Config.Credential == "" {
-			return hostConfigurationField("certificate", fmt.Errorf("openharmony signing requires certificate, key_alias, and credential"))
+			return hostConfigurationField("certificate", fmt.Errorf("%s signing requires certificate, key_alias, and credential", spec.TargetOS))
 		}
 		if !host.hasCredential(spec.Config.Credential) {
-			return hostConfigurationField("credential", fmt.Errorf("openharmony signing credential %q is unavailable", spec.Config.Credential))
+			return hostConfigurationField("credential", fmt.Errorf("%s signing credential %q is unavailable", spec.TargetOS, spec.Config.Credential))
 		}
 		if !host.ohSDK {
-			return hostConfigurationField("sign", fmt.Errorf("openharmony signing requires an OpenHarmony SDK (DevEco)"))
+			return hostConfigurationField("sign", fmt.Errorf("%s signing requires an OpenHarmony SDK (DevEco)", spec.TargetOS))
 		}
 		return nil
 	case "linux":

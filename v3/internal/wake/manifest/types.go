@@ -225,6 +225,7 @@ type Targets struct {
 	IOS         Platform `json:"ios"`
 	Android     Platform `json:"android"`
 	OpenHarmony Platform `json:"openharmony"`
+	HarmonyOS   Platform `json:"harmonyos"`
 }
 
 type Platform struct {
@@ -279,6 +280,7 @@ type Packages struct {
 	IOS         PackagePlatform `json:"ios"`
 	Android     PackagePlatform `json:"android"`
 	OpenHarmony PackagePlatform `json:"openharmony"`
+	HarmonyOS   PackagePlatform `json:"harmonyos"`
 }
 
 type PackagePlatform struct {
@@ -296,6 +298,7 @@ type PackagePlatform struct {
 	APK       RunnablePackage `json:"apk,omitempty"`
 	AAB       RunnablePackage `json:"aab,omitempty"`
 	HAP       RunnablePackage `json:"hap,omitempty"`
+	HOSHAP    RunnablePackage `json:"hos_hap,omitempty"`
 }
 
 type RunnablePackage struct{}
@@ -380,6 +383,7 @@ type Signing struct {
 	IOS         SigningPlatform `json:"ios"`
 	Android     SigningPlatform `json:"android"`
 	OpenHarmony SigningPlatform `json:"openharmony"`
+	HarmonyOS   SigningPlatform `json:"harmonyos"`
 }
 
 // GlobalSigningPaths records exact paths resolved from user-level defaults.

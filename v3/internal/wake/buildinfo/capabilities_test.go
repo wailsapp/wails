@@ -12,6 +12,7 @@ func TestRegistryDefinesClosedTargetsAndDefensiveEnumeration(t *testing.T) {
 		"windows/amd64", "windows/arm64", "darwin/amd64", "darwin/arm64", "darwin/universal",
 		"linux/amd64", "linux/arm64", "ios/arm64", "android/amd64", "android/arm64", "android/universal",
 		"openharmony/amd64", "openharmony/arm64",
+		"harmonyos/amd64", "harmonyos/arm64",
 	}
 	assert.Equal(t, want, SupportedTargetNames())
 	capabilities := TargetCapabilities()
@@ -79,7 +80,7 @@ func TestRegistryOwnsOutputHostAndToolchainRules(t *testing.T) {
 		"nsis": "dist/example-installer.exe", "msix": "dist/example.msix", "dmg": "dist/example.dmg",
 		"appimage": "dist/example-arm64.AppImage", "deb": "dist/example_1.2.3_arm64.deb",
 		"rpm": "dist/example-1.2.3.arm64.rpm", "archlinux": "dist/example-1.2.3-arm64.pkg.tar.zst",
-		"ipa": "dist/example.ipa", "aab": "dist/example.aab", "apk": "dist/example.apk", "hap": "dist/example.hap",
+		"ipa": "dist/example.ipa", "aab": "dist/example.aab", "apk": "dist/example.apk", "hap": "dist/example.hap", "hos_hap": "dist/example.hap",
 	}
 	for name, want := range wantPaths {
 		format, ok := LookupFormat(name)
@@ -135,4 +136,31 @@ func TestOpenHarmonyTargetsAndHapFormatAreRegistered(t *testing.T) {
 	assert.True(t, format.Production)
 	assert.False(t, format.Development)
 	assert.Equal(t, "dist/example.hap", format.OutputPath("dist", "example", "1.2.3", "arm64"))
+}
+
+func TestHarmonyOSTargetsAndHOSHapFormatAreRegistered(t *testing.T) {
+	for _, arch := range []string{"amd64", "arm64"} {
+		target, ok := LookupTarget("harmonyos", arch)
+		require.True(t, ok)
+		assert.Equal(t, Target{OS: "harmonyos", Arch: arch}, target.Target)
+		assert.False(t, target.Synthetic())
+		require.Equal(t, 1, int(target.FormatCount))
+		assert.Equal(t, "hos_hap", target.Formats[0])
+		assert.True(t, target.SupportsFormat("hos_hap", false))
+		assert.False(t, target.SupportsFormat("hos_hap", true))
+		assert.False(t, target.SupportsFormat("hap", false))
+		assert.True(t, target.SupportsToolchain("auto"))
+		assert.True(t, target.SupportsToolchain("native"))
+		assert.False(t, target.SupportsToolchain("docker"))
+	}
+	format, ok := LookupFormat("hos_hap")
+	require.True(t, ok)
+	assert.Equal(t, "hos_hap", format.Name)
+	assert.Equal(t, "harmonyos", format.Platform)
+	assert.True(t, format.Production)
+	assert.False(t, format.Development)
+	assert.Equal(t, "dist/example.hap", format.OutputPath("dist", "example", "1.2.3", "arm64"))
+	assert.True(t, format.SupportsHost("windows"))
+	assert.True(t, format.SupportsHost("darwin"))
+	assert.True(t, format.SupportsHost("linux"))
 }

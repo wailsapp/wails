@@ -187,7 +187,7 @@ func configFromDocument(root, profile string, doc Document) Config {
 
 func validateProject(project Project) error {
 	for _, platform := range project.SupportedPlatforms {
-		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony"}, platform) {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony", "harmonyos"}, platform) {
 			return fieldValidationError("project.supported_platforms", "unsupported platform %q", platform)
 		}
 	}
@@ -270,6 +270,7 @@ func validateConfig(config Config) error {
 		{"windows", config.Targets.Windows}, {"darwin", config.Targets.Darwin}, {"linux", config.Targets.Linux},
 		{"ios", config.Targets.IOS}, {"android", config.Targets.Android},
 		{"openharmony", config.Targets.OpenHarmony},
+		{"harmonyos", config.Targets.HarmonyOS},
 	} {
 		name, platform := platformEntry.name, platformEntry.value
 		for _, targetEntry := range []struct {
@@ -323,6 +324,7 @@ func validateConfig(config Config) error {
 		{"windows", config.Signing.Windows}, {"darwin", config.Signing.Darwin}, {"linux", config.Signing.Linux},
 		{"ios", config.Signing.IOS}, {"android", config.Signing.Android},
 		{"openharmony", config.Signing.OpenHarmony},
+		{"harmonyos", config.Signing.HarmonyOS},
 	} {
 		name, signing := signingEntry.name, signingEntry.value
 		for field, value := range map[string]string{"certificate": signing.Certificate, "entitlements": signing.Entitlements, "provisioning_profile": signing.ProvisioningProfile} {
@@ -360,7 +362,7 @@ func validateConfig(config Config) error {
 	for _, formatEntry := range []struct{ platform, format string }{
 		{"windows", "nsis"}, {"windows", "msix"}, {"darwin", "app"}, {"darwin", "dmg"},
 		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"}, {"linux", "void"},
-		{"ios", "app"}, {"ios", "ipa"}, {"android", "apk"}, {"android", "aab"}, {"openharmony", "hap"},
+		{"ios", "app"}, {"ios", "ipa"}, {"android", "apk"}, {"android", "aab"}, {"openharmony", "hap"}, {"harmonyos", "hos_hap"},
 	} {
 		name := formatEntry.platform + "." + formatEntry.format
 		format, _ := ResolvePackageFormat(config.Package, formatEntry.platform, formatEntry.format)
@@ -686,7 +688,7 @@ func pathEntersWails(value string) bool {
 
 func validateRegistrationPlatforms(field string, platforms []string) error {
 	for _, platform := range platforms {
-		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony"}, platform) {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony", "harmonyos"}, platform) {
 			return fieldValidationError(field+".platforms", "contains unsupported platform %q", platform)
 		}
 	}

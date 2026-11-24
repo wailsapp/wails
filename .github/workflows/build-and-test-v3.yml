@@ -322,7 +322,7 @@ jobs:
       - name: Test OpenHarmony registry, planner and manifest adapters
         working-directory: v3
         run: |
-          go test ./internal/wake/buildinfo/ ./internal/wake/pipeline/ ./internal/commands/ -run 'OH|OpenHarmony|openharmony' -count=1
+          go test ./internal/wake/buildinfo/ ./internal/wake/pipeline/ ./internal/commands/ -run 'OH|OpenHarmony|openharmony|HarmonyOS|harmonyos|hos_hap' -count=1
 
   cleanup:
     name: Cleanup build artifacts

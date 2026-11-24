@@ -38,6 +38,28 @@ func main() {
 	if os.Getenv("WAILS_MCP_CHILD") == "1" {
 		commands.DisableFooter = true
 	}
+	app := newApplication(applicationArgs)
+	defer printFooter()
+
+	err := app.Run()
+	if err != nil {
+		if code, ok := commands.ApplicationExitCode(err); ok {
+			os.Exit(code)
+		}
+		// A wake build failure is already rendered as a clean panel by the build
+		// reporter; printing the raw error again would duplicate it.
+		if !report.IsReported(err) {
+			if diagnostic, ok := manifest.FormatValidationDiagnostics(err); ok {
+				pterm.Error.Println("Invalid wails.yaml\n" + diagnostic)
+			} else {
+				pterm.Error.Println(err)
+			}
+		}
+		os.Exit(1)
+	}
+}
+
+func newApplication(applicationArgs []string) *clir.Cli {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
@@ -255,29 +277,20 @@ func main() {
 		openharmony.NewSubCommandFunction("logs", "Stream application logs from a connected device", commands.OpenHarmonyLogs)
 	}
 
+	// Commercial HarmonyOS tools
+	harmonyos := app.NewSubCommand("harmonyos", "Commercial HarmonyOS tooling")
+	harmonyos.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the HarmonyOS main", commands.OpenHarmonyOverlayGen)
+	if features.WakeEnabled() {
+		harmonyos.NewSubCommandFunction("devices", "List connected HarmonyOS devices", commands.HarmonyOSDevices)
+		harmonyos.NewSubCommandFunction("deploy", "Install and launch a HAP on a connected HarmonyOS device", commands.HarmonyOSDeploy)
+		harmonyos.NewSubCommandFunction("logs", "Stream application logs from a connected HarmonyOS device", commands.HarmonyOSLogs)
+	}
+
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
 
-	defer printFooter()
-
-	err := app.Run()
-	if err != nil {
-		if code, ok := commands.ApplicationExitCode(err); ok {
-			os.Exit(code)
-		}
-		// A wake build failure is already rendered as a clean panel by the build
-		// reporter; printing the raw error again would duplicate it.
-		if !report.IsReported(err) {
-			if diagnostic, ok := manifest.FormatValidationDiagnostics(err); ok {
-				pterm.Error.Println("Invalid wails.yaml\n" + diagnostic)
-			} else {
-				pterm.Error.Println(err)
-			}
-		}
-		os.Exit(1)
-	}
+	return app
 }
-
 func printFooter() {
 	if !commands.DisableFooter {
 		docsLink := term.Hyperlink("https://v3.wails.io/getting-started/your-first-app/", "wails3 docs")

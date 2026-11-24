@@ -198,7 +198,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if request.TargetOS == "android" {
 		binaryOut = filepath.ToSlash(filepath.Join(generatedRoot, "libwails.so"))
 	}
-	if request.TargetOS == "openharmony" {
+	if request.TargetOS == "openharmony" || request.TargetOS == "harmonyos" {
 		binaryOut = filepath.ToSlash(filepath.Join(generatedRoot, "libwails_go.so"))
 	}
 	plan := Plan{Name: request.Verb, Target: target, Nodes: map[NodeKey]Node{}}
@@ -299,7 +299,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	frontend := frontendStages{config: config, request: request, tags: tags, obfuscated: obfuscated, localInputs: localInputs, dependencies: projectHookDeps, add: add}.plan()
 	var assets NodeKey
-	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" || request.TargetOS == "openharmony" {
+	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" || request.TargetOS == "openharmony" || request.TargetOS == "harmonyos" {
 		assets = add(platformAssetsNode(config, request, target, assetsOut, projectHookDeps))
 	}
 
@@ -1043,6 +1043,8 @@ func packagePlatform(p manifest.Packages, os string) manifest.PackagePlatform {
 	switch os {
 	case "windows":
 		return p.Windows
+	case "harmonyos":
+		return p.HarmonyOS
 	case "darwin":
 		return p.Darwin
 	case "linux":
@@ -1068,6 +1070,8 @@ func targetConfig(targets manifest.Targets, platform, arch string) manifest.Targ
 		value = targets.Android
 	case "openharmony":
 		value = targets.OpenHarmony
+	case "harmonyos":
+		value = targets.HarmonyOS
 	}
 	switch arch {
 	case "amd64":
@@ -1095,6 +1099,8 @@ func platformConfig(targets manifest.Targets, platform string) manifest.Platform
 		return targets.IOS
 	case "openharmony":
 		return targets.OpenHarmony
+	case "harmonyos":
+		return targets.HarmonyOS
 	default:
 		return targets.Android
 	}
@@ -1141,6 +1147,8 @@ func signingPlatform(s manifest.Signing, os string) manifest.SigningPlatform {
 		return s.Linux
 	case "ios":
 		return s.IOS
+	case "harmonyos":
+		return s.HarmonyOS
 	default:
 		return s.Android
 	}

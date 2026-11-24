@@ -56,6 +56,7 @@ const (
 	applicabilityIOS
 	applicabilityAndroid
 	applicabilityOpenHarmony
+	applicabilityHarmonyOS
 	applicabilityNSIS
 	applicabilityMSIX
 	applicabilityDMG
@@ -505,6 +506,8 @@ func applicabilityBit(name string) applicabilityMask {
 		return applicabilityAndroid
 	case "openharmony":
 		return applicabilityOpenHarmony
+	case "harmonyos":
+		return applicabilityHarmonyOS
 	case "nsis":
 		return applicabilityNSIS
 	case "msix":

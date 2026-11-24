@@ -7,19 +7,20 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 	"github.com/wailsapp/wails/v3/internal/signingconfig"
+	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
 // signOpenHarmony signs a HAP by re-running hvigor with a signingConfigs
 // section injected into a staging copy of the generated hvigor project.
 //
 // Field mapping in signing.openharmony:
-//   certificate          .p12 keystore
-//   entitlements         .cer signing certificate
-//   provisioning_profile .p7b profile
-//   identity/key_alias   key alias inside the keystore
-//   credential           environment variable holding the keystore password
+//
+//	certificate          .p12 keystore
+//	entitlements         .cer signing certificate
+//	provisioning_profile .p7b profile
+//	identity/key_alias   key alias inside the keystore
+//	credential           environment variable holding the keystore password
 func (h *manifestHandler) signOpenHarmony(ctx context.Context, s pipeline.SignSpec) (string, error) {
 	sdk := os.Getenv("DEVECO_SDK_HOME")
 	if sdk == "" {
@@ -77,6 +78,11 @@ func (h *manifestHandler) signOpenHarmony(ctx context.Context, s pipeline.SignSp
 	if err := copyManifestPath(assets, staged); err != nil {
 		return "", err
 	}
+	// A commercial HarmonyOS build selects hms APIs through runtimeOS and the
+	// installed SDK. Patch only the staging copy; embedded assets stay intact.
+	if err := applyHarmonyOSFormatProfile(staged, s.Format); err != nil {
+		return "", err
+	}
 	if err := injectOpenHarmonySigningConfig(filepath.Join(staged, "build-profile.json5"), keystore, certificate, profile, alias, password); err != nil {
 		return "", err
 	}
@@ -117,14 +123,14 @@ func injectOpenHarmonySigningConfig(path, keystore, certificate, profile, alias,
 		return fmt.Errorf("build-profile.json5 has no products")
 	}
 	document.App.SigningConfigs = []map[string]any{{
-		"name":       "default",
-		"type":       "pkcs12",
-		"certpath":   certificate,
-		"keystore":   keystore,
-		"storepass":  password,
-		"keyalias":   alias,
-		"profile":    profile,
-		"signAlg":    "SHA256withECDSA",
+		"name":          "default",
+		"type":          "pkcs12",
+		"certpath":      certificate,
+		"keystore":      keystore,
+		"storepass":     password,
+		"keyalias":      alias,
+		"profile":       profile,
+		"signAlg":       "SHA256withECDSA",
 		"storepassType": "pkcs12",
 	}}
 	for _, product := range document.App.Products {
@@ -135,4 +141,47 @@ func injectOpenHarmonySigningConfig(path, keystore, certificate, profile, alias,
 		return err
 	}
 	return os.WriteFile(path, encoded, 0o644)
+}
+
+// patchHarmonyOSRuntimeOS switches a staged hvigor project to the commercial
+// HarmonyOS runtime. It operates exclusively on the caller's staging copy so
+// openharmony/hap builds and the embedded build assets are never affected.
+func patchHarmonyOSRuntimeOS(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var document map[string]any
+	if err := json.Unmarshal(data, &document); err != nil {
+		return fmt.Errorf("parse build-profile.json5: %w", err)
+	}
+	app, ok := document["app"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("build-profile.json5 has no app object")
+	}
+	products, ok := app["products"].([]any)
+	if !ok || len(products) == 0 {
+		return fmt.Errorf("build-profile.json5 has no products")
+	}
+	for _, entry := range products {
+		product, ok := entry.(map[string]any)
+		if !ok {
+			continue
+		}
+		product["runtimeOS"] = "HarmonyOS"
+	}
+	encoded, err := json.MarshalIndent(document, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, encoded, 0o644)
+}
+
+// applyHarmonyOSFormatProfile adjusts the staged hvigor project for the
+// commercial HarmonyOS package format. The openharmony/hap path is untouched.
+func applyHarmonyOSFormatProfile(staged, format string) error {
+	if format != "hos_hap" {
+		return nil
+	}
+	return patchHarmonyOSRuntimeOS(filepath.Join(staged, "build-profile.json5"))
 }

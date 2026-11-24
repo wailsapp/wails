@@ -39,3 +39,17 @@ func TestOpenHarmonyManifestPlatformsAndABI(t *testing.T) {
 	_, err := openHarmonyABI("riscv64")
 	assert.ErrorContains(t, err, "unsupported OpenHarmony architecture")
 }
+
+func TestHarmonyOSManifestPlatforms(t *testing.T) {
+	targets := manifest.Targets{}
+	platform := manifestPlatform(targets, "harmonyos")
+	require.NotNil(t, platform)
+	assert.Equal(t, &targets.HarmonyOS, platform)
+	assert.Nil(t, manifestPlatform(targets, "plan9"))
+
+	signing := manifest.Signing{}
+	signingPlatform := manifestSigningPlatform(signing, "harmonyos")
+	require.NotNil(t, signingPlatform)
+	assert.Equal(t, &signing.HarmonyOS, signingPlatform)
+	assert.Nil(t, manifestSigningPlatform(signing, "plan9"))
+}

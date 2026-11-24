@@ -130,7 +130,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 	if err != nil {
 		return err
 	}
-	if !options.Plan && goos != "android" && goos != "ios" && goos != "openharmony" && (goos != runtime.GOOS || (arch != runtime.GOARCH && !(goos == "darwin" && arch == "universal"))) {
+	if !options.Plan && goos != "android" && goos != "ios" && goos != "openharmony" && goos != "harmonyos" && (goos != runtime.GOOS || (arch != runtime.GOARCH && !(goos == "darwin" && arch == "universal"))) {
 		return fmt.Errorf("cannot run desktop target %s on %s/%s", target, runtime.GOOS, runtime.GOARCH)
 	}
 	if args != nil {
@@ -156,7 +156,7 @@ func RunApplication(options *RunOptions, args []string) (resultErr error) {
 		sort.Strings(keys)
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"target": target, "executable": executable, "directory": root, "args": settings.Args, "environment_keys": keys, "compilers": resolvedPlanCompilers(plan)})
 	}
-	if goos == "android" || goos == "ios" || goos == "openharmony" {
+	if goos == "android" || goos == "ios" || goos == "openharmony" || goos == "harmonyos" {
 		return runMobileApplication(ctx, options, settings, build, plan, executable, goos, arch)
 	}
 	if _, err := runManifestPipelineResult(build); err != nil {

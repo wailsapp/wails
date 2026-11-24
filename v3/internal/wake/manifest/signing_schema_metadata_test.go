@@ -55,3 +55,24 @@ func TestEditorSchemaExposesExistingVoidPackageConfiguration(t *testing.T) {
 		t.Fatal("NSIS-only definitions leaked into the Void schema")
 	}
 }
+
+func TestHarmonyOSSigningMetadataIsPublished(t *testing.T) {
+	fields := map[string]SchemaField{}
+	for _, field := range SchemaReference() {
+		fields[field.Path] = field
+	}
+	for path, expected := range map[string]string{
+		"harmonyos.signing.certificate":          `"signing/harmonyos.p12"`,
+		"harmonyos.signing.identity":             `"wails"`,
+		"harmonyos.signing.credential":           `"OHOS_SIGNING_PASSWORD"`,
+		"harmonyos.signing.key_alias":            `"wails"`,
+		"harmonyos.signing.provisioning_profile": `"signing/harmonyos.p7b"`,
+	} {
+		if field := fields[path]; field.Example != expected {
+			t.Errorf("%s example %q; want %q", path, field.Example, expected)
+		}
+	}
+	if !strings.Contains(fields["harmonyos.signing.entitlements"].Description, "Not used") {
+		t.Fatal("Apple entitlements were documented as a HarmonyOS signing input")
+	}
+}

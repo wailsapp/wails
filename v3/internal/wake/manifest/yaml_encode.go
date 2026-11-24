@@ -105,7 +105,7 @@ func encodeConfigYAML(config Config, header string) ([]byte, error) {
 		name    string
 		value   Platform
 		signing SigningPlatform
-	}{{"windows", config.Targets.Windows, config.Signing.Windows}, {"darwin", config.Targets.Darwin, config.Signing.Darwin}, {"linux", config.Targets.Linux, config.Signing.Linux}, {"ios", config.Targets.IOS, config.Signing.IOS}, {"android", config.Targets.Android, config.Signing.Android}, {"openharmony", config.Targets.OpenHarmony, config.Signing.OpenHarmony}} {
+	}{{"windows", config.Targets.Windows, config.Signing.Windows}, {"darwin", config.Targets.Darwin, config.Signing.Darwin}, {"linux", config.Targets.Linux, config.Signing.Linux}, {"ios", config.Targets.IOS, config.Signing.IOS}, {"android", config.Targets.Android, config.Signing.Android}, {"openharmony", config.Targets.OpenHarmony, config.Signing.OpenHarmony}, {"harmonyos", config.Targets.HarmonyOS, config.Signing.HarmonyOS}} {
 		if platform := encodeYAMLPlatform(item.name, item.value, item.signing); platform != nil {
 			yamlSet(root, item.name, platform)
 		}
@@ -121,6 +121,7 @@ func encodeConfigYAML(config Config, header string) ([]byte, error) {
 		{"linux/amd64", config.Targets.Linux.AMD64}, {"linux/arm64", config.Targets.Linux.ARM64},
 		{"ios/arm64", config.Targets.IOS.ARM64},
 		{"android/amd64", config.Targets.Android.AMD64}, {"android/arm64", config.Targets.Android.ARM64}, {"android/universal", config.Targets.Android.Universal},
+		{"harmonyos/amd64", config.Targets.HarmonyOS.AMD64}, {"harmonyos/arm64", config.Targets.HarmonyOS.ARM64},
 	} {
 		if target := encodeYAMLTarget(item.value); target != nil {
 			yamlSet(targets, item.name, target)

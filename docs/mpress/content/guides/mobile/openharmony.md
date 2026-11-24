@@ -121,7 +121,7 @@ Only the **DevEco Studio x86_64 emulator (OpenHarmony 7.0.0.107, API 26)** has b
 | `openharmony/amd64` build → HAP → emulator M3 PASS | ✅ End-to-end verified |
 | Local-origin assets, `Greet` binding, Go → page events | ✅ Verified, no local HTTP listener |
 | `openharmony/arm64` build | ✅ Builds; ❌ not run on a physical device |
-| Commercial HarmonyOS (`runtimeOS: HarmonyOS`) | ⚠️ Compile-only; not run on emulator or device |
+| `harmonyos/amd64` build → `hos_hap` (commercial `runtimeOS: HarmonyOS`) | ✅ Builds; ❌ not run on a device — no physical HarmonyOS device in the verification setup |
 | Physical arm64 device / HarmonyOS 3.0 compatibility | ❌ Not verified |
 | Multiple windows | ❌ Not verified — a single Web window only |
 | Full mobile API surface (`application.Mobile` / `IOS` / `Android`) | ❌ Not verified on OpenHarmony |
@@ -131,7 +131,7 @@ Only the **DevEco Studio x86_64 emulator (OpenHarmony 7.0.0.107, API 26)** has b
 These limits are deliberate: a packaged HAP and a compiling arm64 target are not proof of device behaviour. Do not read "builds" as "supported on devices".
 
 @note{type="info" title="Platform naming"}
-There is only one OH platform identifier in the code and toolchain: `openharmony` (Go `GOOS=openharmony`, `runtimeOS: OpenHarmony`, HAP format `hap`). The commercial OS is called **HarmonyOS** (local SDK `HarmonyOS 26.0.0`, API 26; the compile-only experiment uses `runtimeOS: HarmonyOS` and `hos_hap`). `go-hmos` / `ohos-go` / `hmgo` are toolchain-directory and ecosystem project names, not a second GOOS. `HarmonyOS NEXT` is not used in this repo or toolchain — it was an early name around HarmonyOS 5.0.0 / API 12 in Huawei docs and does not describe this SDK.
+There are now two platform identifiers in the productized pipeline: `openharmony` (Go `GOOS=openharmony`, `runtimeOS: OpenHarmony`, format `hap`) and `harmonyos` (same Go toolchain and `x86_64-linux-ohos` / `aarch64-linux-ohos` clang targets, but `runtimeOS: HarmonyOS` and format `hos_hap`). The commercial OS is called **HarmonyOS** (local SDK `HarmonyOS 26.0.0`, API 26) — not `HarmonyOS NEXT`, an early name around HarmonyOS 5.0.0 / API 12 in Huawei docs. `go-hmos` / `ohos-go` / `hmgo` are toolchain-directory and ecosystem project names, not extra GOOS values. `harmonyos` is opt-in: it is absent from default targets and must be requested explicitly with `-targets harmonyos/<arch> -formats hos_hap`; signing reuses the `openharmony.signing.*` settings. Verified locally: the `hos_hap` build produced a HAP with `compileSdkType: HarmonyOS` and three x86_64 native libraries; the `openharmony/hap` path still produces `compileSdkType: OpenHarmony`. No HarmonyOS device was available for install/run.
 @end
 
 ## Next steps

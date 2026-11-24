@@ -612,3 +612,58 @@ func sortedEjectedAttributeNames(body *yaml.Node) []string {
 	sort.Strings(result)
 	return result
 }
+
+func TestHarmonyOSPlatformAndHOSHapAreExplicitOnly(t *testing.T) {
+	document := NewDocument(Project{Name: "defaults", ProductName: "Defaults", Identifier: "com.example.defaults", Version: "1.0.0"})
+	assert.Equal(t, Platform{}, document.Targets.HarmonyOS)
+	assert.Empty(t, document.Package.HarmonyOS.Formats)
+
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "assets"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "assets", "icon.png"), []byte("icon"), 0o644))
+	path := filepath.Join(root, Filename)
+	source := []byte(`version: 3
+project:
+  name: harmonyos-app
+  product_name: HarmonyOS App
+  identifier: com.example.harmonyos
+  version: 1.0.0
+  supported_platforms: [harmonyos]
+harmonyos:
+  icon: assets/icon.png
+  signing:
+    certificate: signing/harmonyos.p12
+    credential: HARMONYOS_SIGNING_PASSWORD
+    identity: wails
+    key_alias: wails
+    provisioning_profile: signing/harmonyos.p7b
+targets:
+  harmonyos/arm64:
+    tags: [harmony]
+profiles:
+  release:
+    targets:
+      harmonyos/arm64:
+        formats: [hos_hap]
+        sign: true`)
+	require.NoError(t, os.WriteFile(path, source, 0o644))
+	loaded, err := LoadFile(root, path, "release")
+	require.NoError(t, err)
+	assert.Equal(t, "assets/icon.png", loaded.Config.Targets.HarmonyOS.Icon)
+	assert.Equal(t, []string{"harmony"}, loaded.Config.Targets.HarmonyOS.ARM64.Tags)
+	assert.True(t, loaded.Config.Signing.HarmonyOS.Enabled)
+	assert.Equal(t, "wails", loaded.Config.Signing.HarmonyOS.KeyAlias)
+	assert.Equal(t, "HARMONYOS_SIGNING_PASSWORD", loaded.Config.Signing.HarmonyOS.Credential)
+	require.Contains(t, loaded.Config.Profiles, "release")
+	require.Len(t, loaded.Config.Profiles["release"].Targets, 1)
+	assert.Equal(t, []string{"hos_hap"}, loaded.Config.Profiles["release"].Targets[0].Formats)
+
+	encoded, err := EncodeConfig(loaded.Config)
+	require.NoError(t, err)
+	assert.Contains(t, string(encoded), "harmonyos:")
+	roundTripped, err := decodeYAML(root, "round-trip.yaml", encoded, "release")
+	require.NoError(t, err)
+	assert.Equal(t, loaded.Config.Targets.HarmonyOS, roundTripped.Config.Targets.HarmonyOS)
+	assert.Equal(t, loaded.Config.Signing.HarmonyOS, roundTripped.Config.Signing.HarmonyOS)
+	assert.Equal(t, loaded.Config.Profiles, roundTripped.Config.Profiles)
+}

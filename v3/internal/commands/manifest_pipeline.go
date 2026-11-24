@@ -1093,7 +1093,7 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		return h.compileAndroid(ctx, s)
 	case "ios":
 		return h.compileIOS(ctx, s)
-	case "openharmony":
+	case "openharmony", "harmonyos":
 		return h.compileOpenHarmony(ctx, s)
 	}
 	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
@@ -1460,7 +1460,6 @@ func (h *manifestHandler) compileOpenHarmony(ctx context.Context, s pipeline.Com
 	return pipeline.RunResult{Detail: result}, err
 }
 
-
 func (h *manifestHandler) compileIOS(ctx context.Context, s pipeline.CompileSpec) (pipeline.RunResult, error) {
 	if manifestHostOS != "darwin" {
 		return pipeline.RunResult{}, fmt.Errorf("iOS builds require macOS and Xcode")
@@ -1574,11 +1573,17 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		return pipeline.RunResult{}, err
 	}
 	defer os.RemoveAll(staged)
-	source := filepath.Join(tmp, s.TargetOS)
-	if err := copyManifestPath(source, filepath.Join(staged, s.TargetOS)); err != nil {
+	assetsOS := s.TargetOS
+	if s.TargetOS == "harmonyos" {
+		// The commercial HarmonyOS shell reuses the OpenHarmony asset tree;
+		// only the staged build-profile runtimeOS differs at package time.
+		assetsOS = "openharmony"
+	}
+	source := filepath.Join(tmp, assetsOS)
+	if err := copyManifestPath(source, filepath.Join(staged, assetsOS)); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	_ = os.Remove(filepath.Join(staged, s.TargetOS, "Taskfile.yml"))
+	_ = os.Remove(filepath.Join(staged, assetsOS, "Taskfile.yml"))
 	if err := copyManifestPath(filepath.Join(tmp, "appicon.png"), filepath.Join(staged, "appicon.png")); err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -1618,11 +1623,11 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
 			return pipeline.RunResult{}, err
 		}
-	case "openharmony":
-		// The OpenHarmony shell is a c-shared Go library plus an ArkTS
-		// application. The overlay injects the bridge exports into the app's
-		// main package, mirroring the Android and iOS overlays.
-		overlay := filepath.Join(staged, "openharmony", "overlay.json")
+	case "openharmony", "harmonyos":
+		// The OpenHarmony/HarmonyOS shell is a c-shared Go library plus an
+		// ArkTS application. The overlay injects the bridge exports into the
+		// app's main package, mirroring the Android and iOS overlays.
+		overlay := filepath.Join(staged, assetsOS, "overlay.json")
 		if err := OpenHarmonyOverlayGen(&OpenHarmonyOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
 			return pipeline.RunResult{}, err
 		}
@@ -1764,6 +1769,8 @@ func manifestSigningPlatform(signing manifest.Signing, targetOS string) *manifes
 		return &signing.Android
 	case "openharmony":
 		return &signing.OpenHarmony
+	case "harmonyos":
+		return &signing.HarmonyOS
 	default:
 		return nil
 	}
@@ -1832,7 +1839,7 @@ func (h *manifestHandler) applyUserPlatformInputs(assetsRoot, targetOS, binaryNa
 		replacements = []replacement{{"icon", platform.Icon, "ios/icon.png"}, {"assets_car", platform.AssetsCar, "ios/xcode/main/Assets.car"}, {"info_plist", platform.InfoPlist, "ios/xcode/main/Info.plist"}}
 	case "android":
 		replacements = []replacement{{"manifest", platform.Manifest, "android/app/src/main/AndroidManifest.xml"}}
-	case "openharmony":
+	case "openharmony", "harmonyos":
 		replacements = []replacement{{"icon", platform.Icon, filepath.Join("openharmony", "AppScope", "resources", "base", "media", "app_icon.png")}}
 	}
 	for _, item := range replacements {
@@ -1864,6 +1871,8 @@ func manifestPlatform(targets manifest.Targets, targetOS string) *manifest.Platf
 		return &targets.Android
 	case "openharmony":
 		return &targets.OpenHarmony
+	case "harmonyos":
+		return &targets.HarmonyOS
 	default:
 		return nil
 	}
@@ -2156,7 +2165,7 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		return h.packageIOS(ctx, s, true)
 	case "apk", "aab":
 		return h.packageAndroid(ctx, s)
-	case "hap":
+	case "hap", "hos_hap":
 		return h.packageOpenHarmony(ctx, s)
 	default:
 		return pipeline.RunResult{}, fmt.Errorf("unsupported package format %q", s.Format)
@@ -2729,6 +2738,9 @@ func (h *manifestHandler) packageOpenHarmony(ctx context.Context, s pipeline.Pac
 	if err := copyManifestPath(source, staged); err != nil {
 		return pipeline.RunResult{}, err
 	}
+	if err := applyHarmonyOSFormatProfile(staged, s.Format); err != nil {
+		return pipeline.RunResult{}, err
+	}
 	binaries := s.Binaries
 	if len(binaries) == 0 {
 		binaries = []pipeline.ComponentBinary{{Arch: s.TargetArch, Path: s.Binary}}
@@ -2963,7 +2975,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	if !s.Config.Enabled {
 		return pipeline.RunResult{}, fmt.Errorf("signing is not enabled for %s", s.TargetOS)
 	}
-	if s.TargetOS == "openharmony" {
+	if s.TargetOS == "openharmony" || s.TargetOS == "harmonyos" {
 		detail, err := h.signOpenHarmony(ctx, s)
 		return pipeline.RunResult{Detail: detail}, err
 	}
