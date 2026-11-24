@@ -130,6 +130,10 @@ Only the **DevEco Studio x86_64 emulator (OpenHarmony 7.0.0.107, API 26)** has b
 
 These limits are deliberate: a packaged HAP and a compiling arm64 target are not proof of device behaviour. Do not read "builds" as "supported on devices".
 
+@note{type="info" title="Platform naming"}
+There is only one OH platform identifier in the code and toolchain: `openharmony` (Go `GOOS=openharmony`, `runtimeOS: OpenHarmony`, HAP format `hap`). The commercial OS is called **HarmonyOS** (local SDK `HarmonyOS 26.0.0`, API 26; the compile-only experiment uses `runtimeOS: HarmonyOS` and `hos_hap`). `go-hmos` / `ohos-go` / `hmgo` are toolchain-directory and ecosystem project names, not a second GOOS. `HarmonyOS NEXT` is not used in this repo or toolchain — it was an early name around HarmonyOS 5.0.0 / API 12 in Huawei docs and does not describe this SDK.
+@end
+
 ## Next steps
 
 - [Mobile Overview →](/guides/mobile/) — the shared application model across iOS, Android and OpenHarmony.
