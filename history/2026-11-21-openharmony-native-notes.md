@@ -206,6 +206,10 @@ hdc -t 127.0.0.1:5555 shell netstat -an | grep LISTEN
 
 demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 bindings 已生成，跳过自动生成可避开你本地 `v3/pkg/services/dock/dock_linux.go` 的语法错误。冷启动偶发 `appfreeze`，重跑一次即可；hilog 中 `Wails` 是产品化模板标签，`WailsM3` 是 M3 最小工程标签。
 
+## 8. 未跟踪实验目录定性（2026-11-25）
+
+仓库根的 `hello-harmony/`（42.3 MiB）与 `hmtest/`（47.4 MiB）是 M0/M1 之前的 server-mode 原型：前者是 CLI 生成的工程加 `//export Start` 在本地 8080 起服务，后者是 `StartServer(dataDir)` + 端口 28977 的最小探针。两者导出的 `.so`/`.dll`、`bin/hellowails`、darwin 图标都是构建产物；两份 `main_harmony.go` 的教训（goroutine 启动、CMake POST_BUILD 复制、SDK junction、abiFilters）已转述进桌面资料包的 `鸿蒙Go-Demo跑通记录.md` 与 `wails3鸿蒙化通用指南.md`。当前有效工程是已入库的 `v3/tests/openharmony-hellowails/`。结论：**可删**，本轮先记录不定性改动，未实际删除。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
